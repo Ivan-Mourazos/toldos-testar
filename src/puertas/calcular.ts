@@ -1,4 +1,5 @@
 import type { AvisoPuerta, Entrada, Hueco, ModeloPuerta, PiezaPuerta, Puerta, ResultadoPuerta } from './tipos.ts';
+import { ROLLOS_PORTANOVA } from './clientePortanova.ts';
 import { repartirPanos, type RepartoPanos } from './empates.ts';
 import { marcasBolsillo } from './bolsillo.ts';
 import { numerarBorde } from './unionesCorte.ts';
@@ -10,10 +11,11 @@ export const REGLAS_ENROLLABLE = { solapeEntrada:7.5, corteEntrada:8, unionNorma
 const n = (x: number) => Math.round(x * 10000) / 10000;
 const positivo = (x: number) => Number.isFinite(x) && x > 0 && x <= 3000;
 const numero = (x: number) => x.toLocaleString('es-ES', { maximumFractionDigits: 2 });
+// Los rollos de Portanova para todas las puertas, también las que se empiezan a mano (Iván, 25/10/2026).
 export function nuevaPuerta(modelo: ModeloPuerta = 'PUERTAENR'): Puerta {
   return { modelo, articuloOrigen:'', frente: 0, alto: 0, of: '', cantidad: 1, margenMarcas:1.5, confirmada: false, ventanasConfirmadas: false, bolsillo:false, medidasBolsillo:{distancia:20,ancho:30,lado:'izquierdo',altoSuperior:null},
     material: 'LAC900', color: '', materialCristal: 'TRANSP. 1000MI', materialSaco: 'LAC900 NEGRO', sacoDiagonalesAmarillas: false,
-    rollo: 0, rolloCristal: 0, rolloSaco: 0, observaciones: '', entradas: [], ventanas: [],
+    ...ROLLOS_PORTANOVA, observaciones: '', entradas: [], ventanas: [],
     enrollable: { T: 0, D: 60, margen: 0, empates: [], saco: 120 },
     apilable: { pie: 0, pasos: [], cabecera: 0, bolsillo: 24, saco: null, doble: false, empates: null },
     autorreparable: { empates: [], saco: 120 } };
@@ -35,17 +37,18 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
   const piezas: PiezaPuerta[] = [], avisos: AvisoPuerta[] = [];
   const aviso = (codigo: string, texto: string, nivel: 'error' | 'aviso' = 'error') => { if (!avisos.some(a => a.codigo === codigo && a.texto === texto)) avisos.push({ codigo, texto, nivel }); };
   const r: ResultadoPuerta = { version: 1, piezas, alternativasSaco: null, empates: [], uniones:[], bolsillo:null, avisos };
-  if (!p.confirmada) aviso('MODELO', 'Confirma el modelo mirando el dibujo del cliente.');
-  if ((p.modelo==='PUERTAENR'||p.modelo==='PUERTAUTO') && sacoUtil(p)===null) aviso('SACO', 'Pon el saco útil del pedido, en mm (80, 110, 120…).');
-  if(p.articuloOrigen && p.articuloOrigen!==p.modelo)aviso('ARTICULO_MODELO',`RPS indica ${p.articuloOrigen} y has elegido ${MODELOS_PUERTAS[p.modelo].toLowerCase()}. Manda el dibujo del cliente; confirma el modelo.`, 'aviso');
-  if (!positivo(p.frente) || !positivo(p.alto)) aviso('MEDIDAS', 'Introduce frente y alto positivos, en centímetros.');
-  if (!Number.isInteger(p.cantidad) || p.cantidad < 1 || p.cantidad > 50) aviso('CANTIDAD', 'La cantidad debe ser un entero entre 1 y 50.');
-  if (!positivo(p.rollo)) aviso('ROLLO', 'Introduce el ancho real del rollo de lona.');
-  if (!p.material.trim() || !p.color.trim()) aviso('MATERIAL', 'Confirma material y color de la lona.');
-  if (!p.ventanasConfirmadas) aviso('VENTANAS', 'Confirma las ventanas del dibujo o marca puerta ciega.');
-  if (!p.of.trim() || p.of.trim().toUpperCase()==='SIN OF') aviso('SIN_OF', 'SIN OF: solo vista previa; hace falta OF antes de escribir cualquier archivo.', 'aviso');
-  if (p.modelo === 'PUERTAPLE' && /enrollable|varilla\s+superior/i.test(p.observaciones)) aviso('TEXTO_MODELO', 'El texto dice enrollable o varilla superior: revisa el modelo con el dibujo del cliente.', 'aviso');
-  if (/rejilla|mosquitera|antivand[aá]lica|franja corrida|recambio/i.test(p.observaciones)) aviso('FUERA_FASE', 'El texto describe una variante pendiente de despiece específico.');
+  if (!p.confirmada) aviso('MODELO', 'Falta marcar «Confirmado con el dibujo»: comprueba el modelo, las medidas y las ventanas con el dibujo del cliente.');
+  if ((p.modelo==='PUERTAENR'||p.modelo==='PUERTAUTO') && sacoUtil(p)===null) aviso('SACO', 'Falta el saco útil del pedido (en mm: 80, 110, 120…).');
+  if(p.articuloOrigen && p.articuloOrigen!==p.modelo)aviso('ARTICULO_MODELO',`En RPS pone ${p.articuloOrigen} pero has elegido ${MODELOS_PUERTAS[p.modelo].toLowerCase()}: mira en el dibujo del cliente cuál es.`, 'aviso');
+  if (!positivo(p.frente) || !positivo(p.alto)) aviso('MEDIDAS', 'Faltan el frente y el alto de la puerta (en cm).');
+  if (!Number.isInteger(p.cantidad) || p.cantidad < 1 || p.cantidad > 50) aviso('CANTIDAD', 'La cantidad de puertas iguales tiene que ser un número entero entre 1 y 50.');
+  if (!positivo(p.rollo)) aviso('ROLLO', 'Falta el ancho del rollo de lona (en «Materiales y rollos»).');
+  if (!p.material.trim() || !p.color.trim()) aviso('MATERIAL', 'Faltan el material o el color de la lona.');
+  // Con la casilla única las dos van juntas; solo un pedido guardado antes puede tener una sin la otra.
+  if (p.confirmada && !p.ventanasConfirmadas) aviso('VENTANAS', 'Falta confirmar las ventanas con el dibujo (o que la puerta es ciega).');
+  if (!p.of.trim() || p.of.trim().toUpperCase()==='SIN OF') aviso('SIN_OF', 'Sin OF: se puede ver y revisar, pero no se guardan archivos hasta poner la OF.', 'aviso');
+  if (p.modelo === 'PUERTAPLE' && /enrollable|varilla\s+superior/i.test(p.observaciones)) aviso('TEXTO_MODELO', 'El texto del pedido habla de enrollable o de varilla superior: comprueba en el dibujo que es apilable.', 'aviso');
+  if (/rejilla|mosquitera|antivand[aá]lica|franja corrida|recambio/i.test(p.observaciones)) aviso('FUERA_FASE', 'El texto del pedido pide algo que la web todavía no despieza (rejilla, mosquitera, antivandálica…): hazlo a mano.');
   if (avisos.some(a => ['MEDIDAS', 'CANTIDAD'].includes(a.codigo))) return r;
   const ancho = p.frente + (p.modelo === 'PUERTAPLE' && p.frente > 600 ? 2 : 0);
   const lateral = (ancho - p.frente) / 2;
@@ -194,14 +197,14 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       aviso('SUELO_PANO', 'La diferencia de altos se come el paño de abajo: revisa las dos cadenas del pedido.');
     else if (suelo && Math.min(a.pie,a.pie-desnivel)-(p.entradas[0]?.alto??12)/2 <= sacoApilable(p).rematado+2)
       aviso('SUELO_SACO', 'No queda sitio para el saco y su soldadura bajo la primera entrada: revisa los altos.');
-    if (!positivo(a.pie) || !positivo(a.cabecera) || a.pasos.some(x => !positivo(x)) || Math.abs(alturas.at(-1)!+a.cabecera-p.alto) > 0.05) aviso('CADENA', `Pie, pasos y cabecera suman ${numero(alturas.at(-1)!+a.cabecera)} cm; deben sumar ${numero(p.alto)} cm.`);
-    if (!a.saco) aviso('SACO', 'Pon el saco útil del pedido, en mm (80, 110, 120…).');
+    if (!positivo(a.pie) || !positivo(a.cabecera) || a.pasos.some(x => !positivo(x)) || Math.abs(alturas.at(-1)!+a.cabecera-p.alto) > 0.05) aviso('CADENA', `La cadena del dibujo (pie + pasos + cabecera) suma ${numero(alturas.at(-1)!+a.cabecera)} cm y el alto es ${numero(p.alto)} cm: tienen que coincidir.`);
+    if (!a.saco) aviso('SACO', 'Falta el saco útil del pedido (en mm: 80, 110, 120…).');
     if(a.doble && a.saco!==80) aviso('SACO_DOBLE','El doble saco lleva el saco normal de 80 integrado y un envoltorio aparte.');
     // Iván, 23/10/2026 (AR2605035): olvidar los recortes de las cintas es grave; si ninguna E.T. los lleva, se avisa.
     const cintas = (e: Entrada) => e.huecos.some(h => h.x > 1.01 && h.x + h.ancho < e.largo - 1.01);
-    if(p.entradas.length && !p.entradas.some(cintas)) aviso('CINTAS','Ninguna E.T. lleva recortes de cinta: mira el dibujo y ponlos en «Recortes de cintas».','aviso');
-    if (p.entradas.length !== alturas.length) aviso('ENTRADAS', 'Introduce una entrada por cada tubo de la cadena.');
-    if (!positivo(a.bolsillo)) aviso('BOLSILLO', 'Confirma el bolsillo superior del dibujo.');
+    if(p.entradas.length && !p.entradas.some(cintas)) aviso('CINTAS','Ninguna entrada de tubo lleva recortes de cinta: mira el dibujo y ponlos en «Recortes de cintas».','aviso');
+    if (p.entradas.length !== alturas.length) aviso('ENTRADAS', 'Falta una entrada de tubo por cada tubo de la cadena (en «Entradas de tubo y huecos»).');
+    if (!positivo(a.bolsillo)) aviso('BOLSILLO', 'Falta el bolsillo superior del dibujo (en «Tubos y saco»).');
     const bajo = a.doble ? bajoDobleSaco(p) : sacoApilable(p).rematado;
     const arriba = p.alto + a.bolsillo / 2;
     const entradaEn = (i: number) => p.entradas[i-1]?.alto ?? 12;

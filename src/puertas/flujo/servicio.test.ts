@@ -84,7 +84,7 @@ describe('guardar para revisión', () => {
   it('no guarda sin «Soy», sin OF, con comprobaciones pendientes ni si el número es de otro producto', async () => {
     await expect(servicio.guardar({ pedido: pedidoPantalla(), savedBy: '' })).rejects.toThrow(/Soy/);
     await expect(servicio.guardar({ pedido: pedidoPantalla({ of: '' }), savedBy: 'IVÁN' })).rejects.toMatchObject({ statusCode: 409, message: expect.stringMatching(/OF de la puerta A/) });
-    await expect(servicio.guardar({ pedido: pedidoPantalla({ confirmada: false }), savedBy: 'IVÁN' })).rejects.toThrow(/Confirma el modelo/);
+    await expect(servicio.guardar({ pedido: pedidoPantalla({ confirmada: false }), savedBy: 'IVÁN' })).rejects.toThrow(/Confirmado con el dibujo/);
     await expect(servicio.guardar({ pedido: { kind: 'puertas' }, savedBy: 'IVÁN' })).rejects.toMatchObject({ statusCode: 400 });
     otro = 'remolques';
     await expect(servicio.guardar({ pedido: pedidoPantalla(), savedBy: 'IVÁN' })).rejects.toMatchObject({ statusCode: 409, message: expect.stringMatching(/remolques/) });

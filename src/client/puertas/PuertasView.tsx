@@ -15,6 +15,8 @@ import { InputDecimal } from '../remolques/InputDecimal';
 import type { ResumenPedido } from '../remolques/SelectorProducto';
 import { AlzadoPuerta } from './AlzadoPuerta';
 import { VistaCortePuertas } from './VistaCortePuertas';
+import { cintasSimetricas, leerCadena } from './cadenaDibujo';
+import { avanzarConIntro } from '../avanzarConIntro';
 import './puertas.css';
 
 const num=(x:number)=>x.toLocaleString('es-ES',{maximumFractionDigits:2});
@@ -63,16 +65,15 @@ function Configurar({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
       <section className="puerta-config panel panel-vidrio" aria-label="Configurador de puerta">
         <header><h2>Configurador</h2><span>{sd?'System Dock · lona perimetral':'Portanova'} · medidas en cm</span></header>
         <div className="puerta-campos">
+          {/* En el orden en que se leen el pedido y el dibujo (Iván, 25/10/2026): OF y cantidad, que vienen de RPS;
+              después el modelo, las medidas y el color. Material y rollos, que casi no cambian, en «Materiales y rollos». */}
+          <label className="puerta-campo"><span>OF</span><input aria-label="OF de puerta" value={p.of} placeholder="SIN OF" onChange={e=>set('of',e.target.value)}/></label>
+          <Numero titulo={sd?'Cantidad de lonas iguales':'Cantidad de puertas iguales'} valor={p.cantidad} cambiar={v=>set('cantidad',v??0)}/>
           <SelectField label="Modelo de puerta" value={p.modelo} options={Object.keys(MODELOS_PUERTAS)} optionLabel={v=>MODELOS_PUERTAS[v as ModeloPuerta]} onChange={v=>cambiar({...p,modelo:v as ModeloPuerta,entradas:[],ventanas:[],confirmada:false,ventanasConfirmadas:v==='SYSTEMDOCK',
             ...(v==='SYSTEMDOCK'?{material:REGLAS_SYSTEM_DOCK.material,color:REGLAS_SYSTEM_DOCK.color,rollo:REGLAS_SYSTEM_DOCK.rollo}:{})})}/>
           <Numero titulo={sd?'Largo de la lona (cm)':'Frente (cm)'} valor={p.frente||null} cambiar={v=>set('frente',v??0)}/>
           {!(p.modelo==='PUERTAPLE'&&p.apilable.sueloInclinado)&&<Numero titulo={sd?'Ancho de la lona (cm)':'Alto (cm)'} valor={p.alto||null} cambiar={v=>set('alto',v??0)}/>}
-          <label className="puerta-campo"><span>OF</span><input aria-label="OF de puerta" value={p.of} placeholder="SIN OF" onChange={e=>set('of',e.target.value)}/></label>
-          <Numero titulo={sd?'Cantidad de lonas iguales':'Cantidad de puertas iguales'} valor={p.cantidad} cambiar={v=>set('cantidad',v??0)}/>
           <label className="puerta-campo"><span>Color / RAL</span><input aria-label="Color de puerta" value={p.color} placeholder="Azul 5002" onChange={e=>set('color',e.target.value)}/></label>
-          <label className="puerta-campo"><span>Material de lona</span><input aria-label="Material de lona" value={p.material} onChange={e=>set('material',e.target.value)}/></label>
-          <Numero titulo="Rollo de lona (cm)" valor={p.rollo||null} cambiar={v=>set('rollo',v??0)}/>
-          {!sd&&<Numero titulo="Rollo transparente (cm)" valor={p.rolloCristal||null} cambiar={v=>set('rolloCristal',v??0)}/>}
         </div>
         {sd&&<p className="puerta-ayuda">Lona perimetral: corte de {num(p.frente+REGLAS_SYSTEM_DOCK.largo)} × {num(p.alto+REGLAS_SYSTEM_DOCK.ancho)} cm (+1 de largo, al corte, y +6,6 de ancho, con varilla negra de 4,5 a los dos lados). Sin rotulador.</p>}
         {p.modelo==='PUERTAENR'&&<fieldset><legend>Ventanal superior</legend><div className="puerta-campos">
@@ -87,7 +88,7 @@ function Configurar({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
           </div></fieldset>)}
           <button type="button" className="ghost-button" disabled={(p.enrollable.ventanales?.length??0)>=99} onClick={()=>set('enrollable',{...p.enrollable,ventanales:[...p.enrollable.ventanales??[],{D:0,margen:0}]})}>Añadir ventanal debajo</button>
           {Boolean(p.enrollable.ventanales?.length)&&<p className="puerta-ayuda">Ventanales consecutivos: comparten el eje intermedio. Se cortan sus cachos por separado y dos entradas entre ventanales, una por delante y otra por detrás. Indica las cotas del dibujo para cada uno.</p>}
-          <p className="puerta-ayuda">Paño inferior: {propuestaInferior>0?`${num(propuestaInferior)} cm`:'pendiente de medidas'} </p><div className="puerta-campos"><Numero titulo="Saco útil del pedido (mm)" valor={sacoUtil(p)} cambiar={v=>set('enrollable',{...p.enrollable,saco:v})}/></div><AyudaSaco p={p}/><label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.enrollable.sacoPartido)} onChange={e=>set('enrollable',{...p.enrollable,sacoPartido:e.target.checked})}/>Saco en dos piezas con unión de 2 cm</label></fieldset>}
+          <p className="puerta-ayuda">Paño inferior: {propuestaInferior>0?`${num(propuestaInferior)} cm`:'pendiente de medidas'} </p><div className="puerta-campos"><SacoUtil valor={sacoUtil(p)} cambiar={v=>set('enrollable',{...p.enrollable,saco:v})}/></div><AyudaSaco p={p}/><label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.enrollable.sacoPartido)} onChange={e=>set('enrollable',{...p.enrollable,sacoPartido:e.target.checked})}/>Saco en dos piezas con unión de 2 cm</label></fieldset>}
         {!sd&&<><label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.sacoDiagonalesAmarillas)} onChange={e=>set('sacoDiagonalesAmarillas',e.target.checked)}/>Saco con diagonales amarillas (impresión digital)</label>
         <label className="puerta-casilla"><input type="checkbox" checked={p.bolsillo} onChange={e=>set('bolsillo',e.target.checked)}/>Bolsillo · solo marcas, si lo pide el dibujo</label></>}
         {p.bolsillo&&<fieldset><legend>Posición del bolsillo según el dibujo · cm</legend><div className="puerta-campos">
@@ -103,37 +104,51 @@ function Configurar({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
             <Numero titulo="Alto del lado izquierdo (cm)" valor={p.apilable.sueloInclinado.altoIzquierdo||null} cambiar={v=>cambiar({...p,alto:v??0,apilable:{...p.apilable,sueloInclinado:{...p.apilable.sueloInclinado!,altoIzquierdo:v??0}}})}/>
             <Numero titulo="Alto del lado derecho (cm)" valor={p.apilable.sueloInclinado.altoDerecho||null} cambiar={v=>cadena({sueloInclinado:{...p.apilable.sueloInclinado!,altoDerecho:v??0}})}/>
           </div><p className="puerta-ayuda">Mirando por el revés, como el alzado y la hoja de pedido de Portanova. Pie y cadena desde el bajo izquierdo; los tubos y la cabecera siguen horizontales. Solo se inclinan el bajo del primer paño y el saco.</p></>}
+          <CadenaDibujo p={p} cadena={cadena}/>
           <div className="puerta-campos">
           <Numero titulo={p.apilable.sueloInclinado?'Pie izquierdo hasta primer eje (cm)':'Pie hasta primer eje (cm)'} valor={p.apilable.pie||null} cambiar={v=>cadena({pie:v??0})}/>
           <Numero titulo="Cabecera hasta último eje (cm)" valor={p.apilable.cabecera||null} cambiar={v=>cadena({cabecera:v??0})}/>
           <Numero titulo="Bolsillo superior (cm)" valor={p.apilable.bolsillo} cambiar={v=>cadena({bolsillo:v??0})}/>
           <Lista titulo="Pasos entre tubos (cm)" valores={p.apilable.pasos} cambiar={v=>cadena({pasos:v})} ayuda="Un valor por tramo, de abajo arriba, separado con ;"/>
           <fieldset className="puerta-control" disabled={p.apilable.doble}>
-            <Numero titulo="Saco útil del pedido (mm)" valor={p.apilable.saco} cambiar={v=>cadena({saco:v})}/>
+            <SacoUtil valor={p.apilable.saco} cambiar={v=>cadena({saco:v})}/>
           </fieldset>
           <SegmentedField label="Pestaña del saco por el revés" value={p.apilable.ladoPestana==='derecha'?'Derecha':'Izquierda'} options={['Izquierda','Derecha']} onChange={v=>cadena({ladoPestana:v==='Derecha'?'derecha':'izquierda'})}/>
           <label className="puerta-casilla"><input type="checkbox" checked={p.apilable.doble} onChange={e=>cadena({doble:e.target.checked,...(e.target.checked?{saco:80}:{})})}/>Doble saco</label>
           {p.apilable.doble?<p className="puerta-ayuda">El saco de 80 integrado queda rematado de 9 cm: el paño empieza 11,5 cm por debajo del bajo.</p>:<AyudaSaco p={p}/>}
         </div><RecortesCintas p={p} cambiar={cambiar}/></fieldset>}
         {p.modelo==='PUERTAUTO'&&<fieldset><legend>Autorreparable</legend><p className="puerta-ayuda">Dos entradas (F + 11) × 21. El cuerpo arranca en el rematado del saco y acaba 3,5 cm por encima del alto; se añaden 2 cm por empate.</p>
-          <div className="puerta-campos"><Numero titulo="Saco útil del pedido (mm)" valor={sacoUtil(p)} cambiar={v=>set('autorreparable',{...p.autorreparable,saco:v})}/></div><AyudaSaco p={p}/>
+          <div className="puerta-campos"><SacoUtil valor={sacoUtil(p)} cambiar={v=>set('autorreparable',{...p.autorreparable,saco:v})}/></div><AyudaSaco p={p}/>
           <label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.autorreparable.espaciadorCentral)} onChange={e=>set('autorreparable',{...p.autorreparable,espaciadorCentral:e.target.checked})}/>Espaciador central (líneas verticales en medio del dibujo)</label>
           <div className="puerta-campos"><Numero titulo="Rayas laterales a (cm del borde, según el pedido)" valor={p.autorreparable.distanciaEspaciador??10} cambiar={v=>set('autorreparable',{...p.autorreparable,distanciaEspaciador:v??0})}/>
           <Lista titulo="Empates desde abajo del cuerpo (cm)" valores={p.autorreparable.empates} cambiar={v=>set('autorreparable',{...p.autorreparable,empates:v})}/></div></fieldset>}
+        {/* Una casilla para todo (Iván, 25/10/2026): modelo, medidas y ventanas se miran a la vez en el dibujo. */}
         <div className="puerta-confirmaciones">
-          <label className="puerta-casilla"><input type="checkbox" checked={p.confirmada} onChange={e=>set('confirmada',e.target.checked)}/>He confirmado el modelo y las medidas con el dibujo</label>
-          {!sd&&<label className="puerta-casilla"><input type="checkbox" checked={p.ventanasConfirmadas} onChange={e=>set('ventanasConfirmadas',e.target.checked)}/>{p.modelo==='PUERTAENR'?'Ventanal confirmado con el dibujo':'Ventanas confirmadas o puerta ciega'}</label>}
+          <label className="puerta-casilla"><input type="checkbox" checked={p.confirmada&&(sd||p.ventanasConfirmadas)}
+            onChange={e=>cambiar({...p,confirmada:e.target.checked,ventanasConfirmadas:sd||e.target.checked})}/>
+            {sd?'Confirmado con el pedido: medidas de la lona':`Confirmado con el dibujo: modelo, medidas y ${p.modelo==='PUERTAENR'?'ventanal':'ventanas (o puerta ciega)'}`}</label>
         </div>
       </section>
-      <AlzadoPuerta puerta={p} resultado={resultado}/>
+      {/* Lo que falta, junto al alzado: se ve sin bajar hasta el final (Iván, 25/10/2026). */}
+      <div className="puerta-derecha">
+        <AlzadoPuerta puerta={p} resultado={resultado}/>
+        <section className="puerta-avisos panel panel-vidrio" aria-label="Comprobaciones de puerta">
+          <h2>Qué falta o revisar <span>{resultado.avisos.filter(a=>a.nivel==='error').length} pendientes</span></h2>
+          {resultado.avisos.length?<ul>{resultado.avisos.map((a,i)=><li key={i} className={a.nivel==='error'?'es-error':''}>{a.texto}</li>)}</ul>:<p>Todo listo: las medidas comprobadas son coherentes.</p>}
+        </section>
+      </div>
     </div>
     <section className="puerta-detalles panel panel-vidrio" aria-label="Detalles de confección">
-      {!sd&&<details><summary>Materiales del transparente y saco</summary><div className="puerta-campos">
+      <details><summary>Materiales y rollos · {p.material||'sin material'} · rollo {p.rollo?`${num(p.rollo)} cm`:'sin poner'}</summary><div className="puerta-campos">
+        <label className="puerta-campo"><span>Material de lona</span><input aria-label="Material de lona" value={p.material} onChange={e=>set('material',e.target.value)}/></label>
+        <Numero titulo="Rollo de lona (cm)" valor={p.rollo||null} cambiar={v=>set('rollo',v??0)}/>
+        {!sd&&<Numero titulo="Rollo transparente (cm)" valor={p.rolloCristal||null} cambiar={v=>set('rolloCristal',v??0)}/>}
+      </div>{!sd&&<div className="puerta-campos">
         <label className="puerta-campo"><span>Transparente</span><input aria-label="Material transparente" value={p.materialCristal} onChange={e=>set('materialCristal',e.target.value)}/></label>
         <label className="puerta-campo"><span>Material de saco</span><input aria-label="Material de saco" value={p.materialSaco} onChange={e=>set('materialSaco',e.target.value)}/></label>
         <Numero titulo="Rollo de saco (cm)" valor={p.rolloSaco||null} cambiar={v=>set('rolloSaco',v??0)}/>
         <Numero titulo="Margen de las marcas al borde (cm)" valor={p.margenMarcas} cambiar={v=>set('margenMarcas',v??0)}/>
-      </div></details>}
+      </div>}</details>
       {!sd&&p.modelo!=='PUERTAUTO'&&<details><summary>Entradas de tubo y huecos · {p.entradas.length} entradas</summary>
         <p className="puerta-ayuda">Copia los huecos del dibujo. Las ayudas de Ø30 y Ø42 se aplican solo cuando las eliges.</p>
         {p.entradas.map((e,i)=><fieldset key={i}><legend>Tubo {i+1} · eje a {num(e.altura)} cm desde abajo</legend><div className="puerta-campos">
@@ -151,7 +166,6 @@ function Configurar({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
       {!sd&&p.modelo!=='PUERTAENR'&&<details><summary>Ventanas individuales · {p.ventanas.length}</summary><p className="puerta-ayuda">Desde izquierda y desde abajo de la puerta terminada. Cristal = hueco + 4 cm en cada dimensión.</p>{p.ventanas.map((v,i)=><fieldset key={i}><legend>Ventana {i+1}</legend><div className="puerta-campos">{(['x','y','ancho','alto','radio','radioCristal'] as const).map(k=><Numero key={k} titulo={`${k==='x'?'Desde izquierda':k==='y'?'Desde abajo':k==='radioCristal'?'Radio cristal':k} ventana ${i+1}`} valor={v[k]} cambiar={n=>set('ventanas',p.ventanas.map((w,j)=>j===i?{...w,[k]:n??0}:w))}/>)}<button type="button" className="ghost-button" onClick={()=>set('ventanas',p.ventanas.filter((_,j)=>j!==i))}>Quitar ventana</button></div></fieldset>)}<button type="button" className="ghost-button" onClick={()=>set('ventanas',[...p.ventanas,{x:0,y:0,ancho:0,alto:0,radio:2,radioCristal:4}])}>Añadir ventana</button><FilasVentanas cambiar={v=>set('ventanas',[...p.ventanas,...v])}/></details>}
       <details><summary>Texto del pedido y observaciones</summary><div className="puerta-campos"><SelectField label="Artículo indicado en RPS" value={p.articuloOrigen} options={Object.keys(MODELOS_PUERTAS)} allowEmpty emptyLabel="Sin indicar" placeholder="Sin indicar" optionLabel={v=>v?`${v} · ${MODELOS_PUERTAS[v as ModeloPuerta]}`:'Sin indicar'} onChange={v=>set('articuloOrigen',v as Puerta['articuloOrigen'])}/><label className="field puerta-campo puerta-campo-ancho"><span>Texto a comprobar con el dibujo</span><textarea aria-label="Texto del pedido" value={p.observaciones} onChange={e=>set('observaciones',e.target.value)}/></label><label className="field puerta-campo puerta-campo-ancho"><span>Nota en el plano (opcional)</span><textarea aria-label="Nota en el plano" placeholder="Solo si queréis que salga en el plano" value={p.notaPlano??''} onChange={e=>set('notaPlano',e.target.value)}/></label></div></details>
     </section>
-    <section className="puerta-avisos panel panel-vidrio" aria-label="Comprobaciones de puerta"><h2>Comprobaciones <span>{resultado.avisos.filter(a=>a.nivel==='error').length} pendientes</span></h2>{resultado.avisos.length?<ul>{resultado.avisos.map((a,i)=><li key={i} className={a.nivel==='error'?'es-error':''}>{a.texto}</li>)}</ul>:<p>Las medidas comprobadas son coherentes.</p>}</section>
     <details className="puerta-piezas panel panel-vidrio"><summary>Piezas calculadas · {resultado.piezas.reduce((s,p)=>s+p.cantidad,0)} piezas{resultado.alternativasSaco?' y alternativas de saco':''}</summary><table><thead><tr><th>Pieza</th><th>Corte (cm)</th><th>Material</th><th>Cantidad</th><th>Huecos</th></tr></thead><tbody>{[...resultado.piezas,...resultado.alternativasSaco?.entero??[]].map((x,i)=><tr key={i}><td>{x.nombre}</td><td>{num(x.ancho)} × {num(x.alto)}</td><td>{x.material}</td><td>{x.cantidad}</td><td>{x.huecos.length}</td></tr>)}</tbody></table>{resultado.alternativasSaco&&<p className="puerta-ayuda">El saco entero y el saco partido son alternativas de la misma pieza.</p>}</details>
   </>;
 }
@@ -185,8 +199,10 @@ function RecortesCintas({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
   const redondear=(v:number)=>Math.round(v*10)/10;
   const repartir=()=>{ if(!n||n<1||borde===null)return;
     setXs(n===1?[redondear((p.frente-ANCHO)/2)]:Array.from({length:n},(_,i)=>redondear(borde+i*(p.frente-2*borde-ANCHO)/(n-1)))); };
-  return <fieldset><legend>Recortes de cintas</legend>
-    <p className="puerta-ayuda">{conCintas.length?`Ahora: tubos ${conCintas.join(', ')} · X ${actuales.map(num).join(', ')} cm.`:'Ninguna E.T. lleva recortes de cinta todavía.'} Recortes de {ANCHO} cm; X desde la izquierda, como en el dibujo.</p>
+  // Plegado para que no ocupe media pantalla, con lo que hay en el título para que no se olvide (Iván, 25/10/2026).
+  return <details className="puerta-cintas"><summary>Recortes de cintas · {conCintas.length?`tubos ${conCintas.join(', ')} · X ${actuales.map(num).join(', ')} cm`:<span className="puerta-falta">ninguno todavía</span>}</summary>
+    <p className="puerta-ayuda">Recortes de {ANCHO} cm; X desde la izquierda, como en el dibujo.</p>
+    <CintasDelDibujo frente={p.frente} poner={setXs}/>
     <div className="puerta-campos">
       <Numero titulo="Recortes por E.T." valor={n} cambiar={setN}/>
       <Numero titulo="Primer recorte desde el borde (cm)" valor={borde} cambiar={setBorde}/>
@@ -195,7 +211,50 @@ function RecortesCintas({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
       <Lista titulo="Tubos con cintas" valores={tubos} cambiar={setTubos}/>
       <button type="button" className="ghost-button" onClick={()=>setTubos(p.entradas.map((_,i)=>i+1).filter(n=>n%2===1))}>Proponer tubos impares desde abajo</button>
       <button type="button" className="ghost-button" onClick={()=>cambiar({...p,entradas:p.entradas.map((e,i)=>({...e,huecos:huecosEntrada(e.largo,e.diametro,tubos.includes(i+1)?xs:[])}))})}>Aplicar a las E.T.</button>
-    </div></fieldset>;
+    </div></details>;
+}
+/** Las cintas como vienen en el dibujo: de la izquierda hasta el centro, en mm; la derecha sale en simétrico. */
+function CintasDelDibujo({frente,poner}:{frente:number;poner:(xs:number[])=>void}) {
+  const [texto,setTexto]=useState(''),[aviso,setAviso]=useState('');
+  const aplicar=()=>{
+    if(!texto.trim()) { setAviso(''); return; }
+    const mm=texto.trim().split(/[\s;]+/).map(x=>Number(x.replace(',','.')));
+    if(mm.some(v=>!Number.isFinite(v)||v<0)) { setAviso('Escribe las cotas separadas por espacios.'); return; }
+    if(!(frente>0)) { setAviso('Pon antes el frente: hace falta para la parte derecha.'); return; }
+    const xs=cintasSimetricas(mm.map(v=>v/10),frente);
+    poner(xs);
+    setAviso(`Cintas en ${xs.map(num).join(', ')} cm. Revisa y pulsa «Aplicar a las E.T.».`);
+  };
+  return <label className="field puerta-campo puerta-campo-ancho"><span>Cintas del dibujo, de la izquierda hasta el centro (mm)</span>
+    <input aria-label="Cintas del dibujo" value={texto} placeholder="440 2100" onChange={e=>setTexto(e.target.value)}
+      onBlur={aplicar} onKeyDown={e=>{ if(e.key==='Enter') aplicar(); }}/>
+    <small>{aviso||'La parte derecha es simétrica: la web la pone sola.'}</small></label>;
+}
+/** Saco útil con los habituales a un clic (Iván, 25/10/2026); se puede escribir otro. */
+function SacoUtil({valor,cambiar}:{valor:number|null;cambiar:(n:number|null)=>void}) {
+  return <div className="puerta-saco-util">
+    <Numero titulo="Saco útil del pedido (mm)" valor={valor} cambiar={cambiar}/>
+    <div className="puerta-saco-rapido" role="group" aria-label="Sacos habituales">
+      {[80,110,120].map(mm=><button type="button" key={mm} className={`chip-3d ${valor===mm?'glass-chip-activo':''}`} aria-pressed={valor===mm} onClick={()=>cambiar(mm)}>{mm}</button>)}
+    </div>
+  </div>;
+}
+function CadenaDibujo({p,cadena}:{p:Puerta;cadena:(parche:Partial<Puerta['apilable']>)=>void}) {
+  const [texto,setTexto]=useState(''),[aviso,setAviso]=useState('');
+  const inclinado=Boolean(p.apilable.sueloInclinado);
+  const aplicar=()=>{
+    if(!texto.trim()) { setAviso(''); return; }
+    const c=leerCadena(texto,p.alto);
+    if(!c) { setAviso('Escribe las cotas separadas por espacios, de abajo arriba.'); return; }
+    // Con suelo inclinado el pie de cada lado es distinto: se pone a mano el del lado izquierdo.
+    cadena(inclinado?{pasos:c.pasos,cabecera:c.cabecera}:{pie:c.pie,pasos:c.pasos,cabecera:c.cabecera});
+    const total=c.pie+c.pasos.reduce((s,v)=>s+v,0)+c.cabecera;
+    setAviso(`Leído en ${c.enMm?'mm':'cm'}: ${inclinado?'':`pie ${num(c.pie)} · `}${c.pasos.length} pasos · cabecera ${num(c.cabecera)} cm · suma ${num(total)} cm.`);
+  };
+  return <label className="field puerta-campo puerta-campo-ancho"><span>Cadena del dibujo, de abajo arriba (como en la hoja, en mm)</span>
+    <input aria-label="Cadena del dibujo" value={texto} placeholder="310 580 550 580 550 580 700" onChange={e=>setTexto(e.target.value)}
+      onBlur={aplicar} onKeyDown={e=>{ if(e.key==='Enter') aplicar(); }}/>
+    <small>{aviso||(inclinado?'Rellena los pasos y la cabecera; el pie izquierdo va en su campo.':'Rellena el pie, los pasos y la cabecera de una vez. Se pueden corregir debajo.')}</small></label>;
 }
 function FilasVentanas({cambiar}:{cambiar:(v:Ventana[])=>void}) {
   const [fila,setFila]=useState({x:0,y:0,ancho:0,alto:0,columnas:1,pilar:0});
@@ -317,7 +376,7 @@ export function PuertasView({ activo, onResumenChange, usuario, notify, askForCo
     </OrderActions>
   );
 
-  return <div className="puertas-pantalla">
+  return <div className="puertas-pantalla" onKeyDown={avanzarConIntro}>
     {accionesDestino ? createPortal(acciones, accionesDestino) : acciones}
     <section className="puerta-cabecera order-header panel rem-cabecera"><div className="order-header-group order-header-general"><h3>Datos del pedido</h3><div className="order-header-grid">
       <div className="puerta-pedido"><label className="field puerta-campo"><span>Número de pedido</span><input aria-label="Número de pedido de puertas" value={pedido.orderCode} placeholder="AR2600000" onChange={e=>setPedido({...pedido,orderCode:e.target.value})}/></label>

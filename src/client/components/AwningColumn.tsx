@@ -9,6 +9,7 @@ import { TextField } from './TextField';
 import { NumberField } from './NumberField';
 import { curtainConfigurationFields } from './CurtainConfigurationFields';
 import { AwningFormBody } from './AwningFormBody';
+import { avanzarConIntro } from '../avanzarConIntro';
 import { isConfiguredCurtain } from '../../domain/curtainConfiguration.js';
 import { SelectField } from './SelectField';
 import { SegmentedField } from './SegmentedField';
@@ -365,6 +366,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
       aria-label={`${fabricOnly ? 'Trabajo de tela' : 'Toldo'} ${String.fromCharCode(65 + index)} · ${controlLabel(awning.model)}`}
       aria-readonly={readOnly || undefined}
       data-awning-letter={awningLetter(index)}
+      onKeyDown={avanzarConIntro}
     >
       {/* Cabecera en una línea: «TOLDO A · Arzúa Pro» y el estado. El nombre antiguo ya sale
           en Parámetros y en «Añadir toldo»; aquí solo ocupaba sitio (Iván, 25/09/2026). */}

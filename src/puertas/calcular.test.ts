@@ -114,7 +114,13 @@ describe('Comprobaciones y reglas confirmadas', () => {
     expect(inferior.alto).toBe(123.75); expect(inferior.alto).not.toBe(125.75);
   });
   it('no deduce ventanas ni confirma un modelo por sus valores propuestos', () => {
-    expect(calcularPuerta(nuevaPuerta('PUERTAPLE')).avisos.map(x => x.codigo)).toEqual(expect.arrayContaining(['MODELO', 'MEDIDAS', 'ROLLO', 'VENTANAS']));
+    // Los rollos ya vienen puestos (300/140/300) y las ventanas se confirman en la misma casilla que el modelo
+    // (Iván, 25/10/2026): una puerta nueva solo pide confirmar y las medidas.
+    const nueva = calcularPuerta(nuevaPuerta('PUERTAPLE')).avisos.map(x => x.codigo);
+    expect(nueva).toEqual(expect.arrayContaining(['MODELO', 'MEDIDAS']));
+    expect(nueva).not.toContain('ROLLO');
+    // Un pedido guardado antes de la casilla única puede tener el modelo confirmado y las ventanas no.
+    expect(calcularPuerta({ ...nuevaPuerta('PUERTAPLE'), confirmada: true }).avisos.map(x => x.codigo)).toContain('VENTANAS');
   });
   it('parte la enrollable con unión normal de 2 si no hay entrada viable (respuesta nueva de Iván)', () => {
     const p = base('PUERTAENR', 422, 460);

@@ -42,6 +42,9 @@ function byFillOrder(missing) {
 }
 
 function dimensionLabel(model, field) {
+  // Cambio Antica pregunta por la tela vieja: el aviso dice lo mismo que el campo (Iván, 25/10/2026).
+  if (model === 'CAMBIO ANTICA' && field === 'width') return 'frente de tela';
+  if (model === 'CAMBIO ANTICA' && field === 'projection') return 'caída de tela';
   if (field === 'width') return 'frente';
   // La misma palabra que el rótulo del campo en la tarjeta: solo Selena y
   // Electra dicen caída; Cortina, aunque sea vertical, pregunta por la salida.

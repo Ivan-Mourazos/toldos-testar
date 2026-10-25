@@ -122,8 +122,9 @@ export function CampoSiNo(props: {
         aria-invalid={Boolean(props.error)}
         aria-describedby={props.error ? errorId : undefined}
       >
-        {opcion(true, 'Sí')}
+        {/* «No · Sí», como en los toldos: con el mismo orden en toda la web no se pulsa el que no es (Iván, 25/10/2026). */}
         {opcion(false, 'No')}
+        {opcion(true, 'Sí')}
       </div>
       <MensajeError id={errorId} mensaje={props.error} />
       {props.delCliente && <MarcaDelCliente />}

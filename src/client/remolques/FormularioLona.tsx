@@ -8,6 +8,7 @@ import {
   conMedidaDelante, hayValoresDetras, radiosOpcionales, sinDetras, sinRadios, tieneDetras, tieneRadios,
 } from './medidasOpcionales';
 import { ObservationLines } from '../components/ObservationLines';
+import { avanzarConIntro } from '../avanzarConIntro';
 import { MODOS_OLLAOS, opcionesConEtiqueta } from './opciones';
 
 // Formulario de la lona de remolque: los mismos campos, opciones, orden y avisos que el de la
@@ -116,6 +117,7 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
     // leyendo el data-campo que ya llevan. Así los avisos salen al salir del campo, no al teclear.
     <div
       className="rem-form"
+      onKeyDown={avanzarConIntro}
       onBlur={(evento) => {
         const campo = (evento.target as HTMLElement).dataset.campo;
         if (campo) onCampoTocado?.(campo);

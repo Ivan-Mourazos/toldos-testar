@@ -4,6 +4,7 @@ import type { Material } from '../../remolques/calc/materiales-seed.ts';
 import { DEFAULT_PARAMS, type CalcParams } from '../../remolques/calc/params.ts';
 import { CampoMaterial, CampoNum, CampoSelect, CampoSiNo, CampoTexto, MarcaDelCliente, PasoFormulario } from './Campos';
 import { ObservationLines } from '../components/ObservationLines';
+import { avanzarConIntro } from '../avanzarConIntro';
 import { MODOS_OLLAOS, opcionesConEtiqueta } from './opciones';
 
 // Formulario del baquetón: los mismos campos, opciones y avisos que el de la web de remolques
@@ -38,6 +39,7 @@ export function FormularioBaqueton({ input, materiales, params, errores = {}, me
     // Un solo manejador de blur para todos los campos (ver FormularioLona).
     <div
       className="rem-form"
+      onKeyDown={avanzarConIntro}
       onBlur={(evento) => {
         const campo = (evento.target as HTMLElement).dataset.campo;
         if (campo) onCampoTocado?.(campo);

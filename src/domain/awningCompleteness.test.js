@@ -69,6 +69,12 @@ describe('getMissingFields', () => {
     expect(getMissingFields({ model: 'CORTINA', of: '1', width: 300, projection: null })).toContainEqual({ field: 'projection', label: 'salida' });
   });
 
+  it('Cambio Antica dice «frente de tela» y «caída de tela», como sus campos', () => {
+    const faltan = getMissingFields({ model: 'CAMBIO ANTICA', of: '1', width: null, projection: null });
+    expect(faltan).toContainEqual({ field: 'width', label: 'frente de tela' });
+    expect(faltan).toContainEqual({ field: 'projection', label: 'caída de tela' });
+  });
+
   it('Cortina pide ventana y confección, y las cotas de la ventana si la lleva', () => {
     const cortina = { model: 'CORTINA', of: '1', width: 300, projection: 200, rotFabric: 'NO', structureColor: 'BLANCO', device: 'MAQ. INTERIOR', crankHeight: 150, curtainHasWindow: null, curtainFinish: '' };
     expect(fields(cortina)).toEqual(['curtainHasWindow', 'curtainFinish']);

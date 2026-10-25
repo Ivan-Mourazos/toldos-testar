@@ -31,7 +31,7 @@
 .puerta-casilla { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text); line-height:1.5; min-height:28px; padding-block:4px; }
 .puerta-casilla input { width:16px; height:16px; flex-shrink:0; }
 .puerta-casilla input:focus-visible { outline:2px solid var(--focus-ring); outline-offset:2px; }
-.puerta-alzado { position:sticky; top:18px; }
+.puerta-derecha { position:sticky; top:18px; }
 .puerta-alzado svg { width:100%; height:440px; display:block; margin:10px 0; background:var(--zone); border-radius:6px; }
 .puerta-alzado svg text { fill:var(--text); font-family:Arial,sans-serif; font-size:var(--puerta-letra,10px); }
 .puerta-alzado svg .puerta-cota-texto { font-size:calc(var(--puerta-letra,10px) * 0.85); fill:var(--text-muted); }
@@ -87,3 +87,16 @@
 .puerta-corte-dibujo .puerta-texto-rotulador { fill:var(--tramo-ajustado); }
 @media (prefers-reduced-motion:reduce) { .puertas-pantalla summary::before { transition:none; } }
 /* «Abrir corte» junto a la vista previa (flujo del DWG, fase 1). */
+
+/* Formulario más rápido (Iván, 25/10/2026): sacos habituales a un clic, cintas plegadas con su resumen y lo
+   que falta junto al alzado. */
+.puerta-derecha .puerta-avisos { margin-top:12px; }
+.puerta-saco-util { display:flex; align-items:end; gap:8px; }
+.puerta-saco-util .puerta-campo { flex:1; }
+.puerta-saco-rapido { display:flex; gap:4px; }
+.puerta-saco-rapido button { min-width:44px; height:32px; padding:0 8px; border-radius:var(--radius-sm); border:1px solid var(--border-strong); background-color:var(--surface); color:var(--text); font-size:12px; font-weight:600; cursor:pointer; }
+.puerta-cintas { margin-top:12px; }
+.puerta-cintas > summary { cursor:pointer; font-size:12px; font-weight:600; padding-block:6px; }
+.puerta-falta { color:var(--aviso-texto); }
+/* El saco con sus tres botones necesita dos columnas para que el rótulo no se parta. */
+.puerta-campos > .puerta-saco-util, .puerta-campos > .puerta-control:has(.puerta-saco-util) { grid-column:span 2; }

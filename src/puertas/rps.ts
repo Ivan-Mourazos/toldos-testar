@@ -1,5 +1,4 @@
 import { MODELOS_PUERTAS, nuevaPuerta } from './calcular.ts';
-import { CODIGO_PORTANOVA, ROLLOS_PORTANOVA } from './clientePortanova.ts';
 import { REGLAS_SYSTEM_DOCK } from './systemDock.ts';
 import type { ModeloPuerta, Puerta } from './tipos.ts';
 
@@ -21,8 +20,6 @@ export interface LineaPuertaRps {
 const numero = (texto: string) => Number(texto.replace(',', '.'));
 
 export function puertasDesdeRps(lineas: LineaPuertaRps[], { clienteCodigo = '' }: { clienteCodigo?: string } = {}): { puertas: Puerta[]; avisos: string[] } {
-  // RPS no trae los anchos de rollo; los de Portanova son siempre los mismos.
-  const rollos = clienteCodigo.trim() === CODIGO_PORTANOVA ? ROLLOS_PORTANOVA : {};
   const puertas: Puerta[] = [];
   const avisos: string[] = [];
   for (const l of lineas) {
@@ -40,7 +37,6 @@ export function puertasDesdeRps(lineas: LineaPuertaRps[], { clienteCodigo = '' }
     const cantidad = Number.isInteger(l.cantidad) && l.cantidad >= 1 && l.cantidad <= 50 ? l.cantidad : 1;
     puertas.push({
       ...nuevaPuerta(articulo as ModeloPuerta),
-      ...rollos,
       articuloOrigen: articulo as ModeloPuerta,
       frente: medidas ? numero(medidas[1]) : 0,
       alto: medidas ? numero(medidas[2]) : 0,

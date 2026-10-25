@@ -19,14 +19,14 @@ export function calcularSystemDock(p: Puerta): ResultadoPuerta {
   const piezas: PiezaPuerta[] = [], avisos: AvisoPuerta[] = [];
   const aviso = (codigo: string, texto: string, nivel: 'error' | 'aviso' = 'error') => avisos.push({ codigo, texto, nivel });
   const r: ResultadoPuerta = { version: 1, piezas, alternativasSaco: null, empates: [], uniones: [], bolsillo: null, avisos };
-  if (!p.confirmada) aviso('MODELO', 'Confirma las medidas con el pedido del cliente.');
-  if (!positivo(p.frente) || !positivo(p.alto)) aviso('MEDIDAS', 'Introduce el largo y el ancho de la lona, en centímetros.');
+  if (!p.confirmada) aviso('MODELO', 'Falta marcar «Confirmado con el pedido»: comprueba las medidas con el pedido del cliente.');
+  if (!positivo(p.frente) || !positivo(p.alto)) aviso('MEDIDAS', 'Faltan el largo y el ancho de la lona (en cm).');
   if (!Number.isInteger(p.cantidad) || p.cantidad < 1 || p.cantidad > REGLAS_SYSTEM_DOCK.maxUnidades) {
     aviso('CANTIDAD', `La cantidad debe ser un entero entre 1 y ${REGLAS_SYSTEM_DOCK.maxUnidades}.`);
   }
-  if (!positivo(p.rollo)) aviso('ROLLO', 'Introduce el ancho real del rollo de lona.');
-  if (!p.material.trim() || !p.color.trim()) aviso('MATERIAL', 'Confirma material y color de la lona.');
-  if (!p.of.trim() || p.of.trim().toUpperCase() === 'SIN OF') aviso('SIN_OF', 'SIN OF: solo vista previa; hace falta OF antes de escribir cualquier archivo.', 'aviso');
+  if (!positivo(p.rollo)) aviso('ROLLO', 'Falta el ancho del rollo de lona (en «Materiales y rollos»).');
+  if (!p.material.trim() || !p.color.trim()) aviso('MATERIAL', 'Faltan el material o el color de la lona.');
+  if (!p.of.trim() || p.of.trim().toUpperCase() === 'SIN OF') aviso('SIN_OF', 'Sin OF: se puede ver y revisar, pero no se guardan archivos hasta poner la OF.', 'aviso');
   if (avisos.some(a => ['MEDIDAS', 'CANTIDAD'].includes(a.codigo))) return r;
   const largo = n(p.frente + REGLAS_SYSTEM_DOCK.largo), ancho = n(p.alto + REGLAS_SYSTEM_DOCK.ancho);
   if (positivo(p.rollo) && ancho > p.rollo) aviso('NO_CABE', `La lona de ${numero(ancho)} cm de ancho de corte no cabe en el rollo de ${numero(p.rollo)} cm.`);
