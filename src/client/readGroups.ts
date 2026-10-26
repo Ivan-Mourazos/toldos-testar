@@ -35,7 +35,7 @@ const byLabel: Record<string, ReadGroupId> = {
   'Fijación de la guía': 'estructura', 'Forma del cofre': 'estructura', 'Secur Wind Block': 'estructura',
   'Color mecanismos': 'estructura', 'Color cadena': 'estructura', Arriba: 'estructura', Abajo: 'estructura',
   'Empate indicado por cliente': 'estructura', 'Cara hacia el interior (ventana)': 'estructura',
-  'Dibujo de confección': 'estructura', 'Tipo de soporte': 'estructura',
+  'Dibujo de confección': 'estructura', 'Tipo de soporte': 'estructura', 'Cierre de las guías': 'estructura',
   // Estructura: suplemento del dibujo de confección
   'Sujeción del suplemento': 'estructura', 'Indicar sujeción': 'estructura', 'Distancia entre broches (cm)': 'estructura',
   'Solape sobre la onda (cm)': 'estructura', 'Remate inferior': 'estructura', 'Indicar remate': 'estructura',

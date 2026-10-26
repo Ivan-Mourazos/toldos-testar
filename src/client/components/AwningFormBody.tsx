@@ -14,7 +14,7 @@ const orden = [
   'Tela', 'Rotulación tela', 'Curva bamba', 'Tela bamba', 'Remate', 'Color remate', 'Rotulación bamba',
   'Empate indicado por cliente', 'Cara hacia el interior (ventana)',
   'Variante', 'Configuración Antica', 'Altura soporte-brazo (cm)', 'Posición de trabajo', 'Configuración de brazos',
-  'Terminales · confirmar con taller', 'Nº de brazos', 'Nº brazos', 'Lado del brazo suelto', 'Tubo de carga', 'Soporte', 'Tipo de soporte',
+  'Terminales · confirmar con taller', 'Nº de brazos', 'Nº brazos', 'Lado del brazo suelto', 'Tubo de carga', 'Soporte', 'Tipo de soporte', 'Cierre de las guías',
   'Tipo de guía', 'Fijación de la guía', 'Forma del cofre', 'Secur Wind Block', 'Telón', 'Lacado',
   'Ventana', 'Confección', 'Laterales', 'Abajo', 'Arriba',
   'Dispositivo', 'Color cadena', 'Altura instalación', 'Color mecanismos', 'Motor', 'Motor Electra', 'Sensor', 'Posición motor', 'Lado máquina', 'Color manivela', 'Altura manivela',
@@ -26,7 +26,7 @@ const orden = [
 
 const amplios = new Set([
   'Tela', 'Tela bamba', 'Variante', 'Configuración Antica', 'Posición de trabajo', 'Configuración de brazos',
-  'Terminales · confirmar con taller', 'Tubo de carga', 'Soporte', 'Tipo de soporte', 'Laterales', 'Abajo', 'Arriba', 'Ventana', 'Confección',
+  'Terminales · confirmar con taller', 'Tubo de carga', 'Soporte', 'Tipo de soporte', 'Cierre de las guías', 'Laterales', 'Abajo', 'Arriba', 'Ventana', 'Confección',
   'Empate indicado por cliente', 'Cara hacia el interior (ventana)', 'Telón', 'Dibujo de confección', 'Ajuste de salida de tela', 'Ajuste de salida (cm)',
   'Sumar para enrolle y tubo (cm)', 'Diagonal 1 (a salida izq.)', 'Diagonal 2 (a salida der.)',
   'Sujeción del suplemento', 'Indicar sujeción', 'Indicar remate', 'Distancia entre broches (cm)', 'Solape sobre la onda (cm)', 'Remate inferior'
