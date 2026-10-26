@@ -802,6 +802,12 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                   onChange={(electraSupport) => update({ electraSupport: electraSupport as Awning['electraSupport'] })}
                 />
               </div>}
+              {/* Con guías, el cierre de abajo: kit retenedor de Llaza o pasador (Iván, 26/10/2026, NC 10188). */}
+              {isElectra && awning.submodel?.includes('CON GUÍA') && <div className="curtain-option">
+                <SegmentedField label="Cierre de las guías" value={awning.electraGuideLock === 'PASADOR' ? 'PASADOR' : 'KIT RETENEDOR'}
+                  options={['KIT RETENEDOR', 'PASADOR']}
+                  onChange={(value) => update({ electraGuideLock: value === 'PASADOR' ? 'PASADOR' : '' })} />
+              </div>}
               {(fields.curtain || fields.curtainWindow) && <div className="curtain-option">
                 <SegmentedField label="Ventana" missing={isMissing('curtainHasWindow')} value={awning.curtainHasWindow === null ? '' : awning.curtainHasWindow ? 'CON VENTANA' : 'SIN VENTANA'} options={['SIN VENTANA', 'CON VENTANA']} onChange={(value) => update({ curtainHasWindow: value === 'CON VENTANA' })} />
               </div>}

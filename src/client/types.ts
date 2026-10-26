@@ -81,6 +81,8 @@ export type Awning = {
   curtainFabricAdjustmentCm?: number | null;
   curtainSupport: '' | 'UNIVERSAL 3 AGUJEROS' | 'MAXISCREEM' | 'SOPORTE ELIT VERTICAL';
   electraSupport: '' | ElectraSupport;
+  /** Electra con guías: cómo se cierra abajo. Sin indicar = kit retenedor de Llaza (Iván, 26/10/2026, NC 10188). */
+  electraGuideLock?: '' | 'KIT RETENEDOR' | 'PASADOR';
   curtainWindowExit: number | null;
   curtainWindowCorner: number | null;
   curtainWindowFloorHeight: number | null;

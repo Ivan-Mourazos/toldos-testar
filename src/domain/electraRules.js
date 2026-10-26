@@ -258,7 +258,15 @@ function electraPieces(context) {
       : { code: 'TAPASLAMAXSCNE11', quantity: units, description: 'JGO TAPAS PERFIL CARGA MAXISCREEN' }
   ];
   if (hasCofre) pieces.push({ code: boxProfileReference.code, quantity: units, description: 'PERFIL COFRE ELECTRA', length: boxProfileLength });
-  if (hasGuide) {
+  // Con pasador, lo que dice el correo de la NC 10188 (Iván, 26/10/2026): perfil guía cortavientos (Siplan), tope y
+  // pestillo cortavientos, sin referencia ni reserva («después ya gastan lo que toque»). Uno por guía.
+  if (hasGuide && awning.electraGuideLock === 'PASADOR') {
+    pieces.push(
+      { code: null, quantity: 2 * units, description: 'PERFIL GUÍA CORTAVIENTOS (SIPLAN)', length: guideLength, reserve: false },
+      { code: null, quantity: 2 * units, description: 'TOPE CORTAVIENTOS', reserve: false },
+      { code: null, quantity: 2 * units, description: 'PESTILLO CORTAVIENTOS INOX', reserve: false }
+    );
+  } else if (hasGuide) {
     const guideBars = guideStockLength ? Math.max(1, Math.ceil((2 * guideLength) / guideStockLength)) : 2;
     pieces.push(
       { code: guideCode(lacado.suffix, guideStockLength), quantity: guideBars * units, description: 'PERFIL GUÍA ELIT VERTICAL 120', length: guideLength },

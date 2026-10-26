@@ -178,6 +178,7 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     curtainFinish: normalizeCurtainFinish(isConfiguredCurtain({ model }) && awning?.curtainFinish === 'TUBO' ? 'NORMAL' : awning?.curtainFinish),
     curtainSupport: normalizeCurtainSupport(model, awning?.curtainSupport),
     electraSupport: model === 'ELECTRA' ? normalizeElectraFormSupport(awning?.electraSupport, submodel) : '',
+    electraGuideLock: model === 'ELECTRA' && String(awning?.electraGuideLock ?? '').toUpperCase() === 'PASADOR' ? 'PASADOR' : '',
     curtainWindowExit: numberOrDefault(awning?.curtainWindowExit, 0),
     curtainWindowCorner: numberOrDefault(awning?.curtainWindowCorner, 0),
     curtainWindowFloorHeight: numberOrDefault(awning?.curtainWindowFloorHeight, 0),

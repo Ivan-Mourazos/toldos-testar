@@ -482,3 +482,18 @@ describe('ELECTRA / Elit Vertical · límites técnicos', () => {
     ]));
   });
 });
+
+// Iván, 26/10/2026 (NC 10188): con pasador, lo del correo, sin referencia ni reserva; sin el kit retenedor ni la guía Elit.
+describe('Electra con guías y pasador', () => {
+  test('perfil guía cortavientos, tope y pestillo, uno por guía, sin reservar', () => {
+    const result = calculate({ electraGuideLock: 'PASADOR' });
+    const piezas = result.despiece ? JSON.stringify(result.despiece) : '';
+    expect(result.calculation.valid).toBe(true);
+    expect(piezas).toContain('PERFIL GUÍA CORTAVIENTOS (SIPLAN)');
+    expect(piezas).toContain('TOPE CORTAVIENTOS');
+    expect(piezas).toContain('PESTILLO CORTAVIENTOS INOX');
+    const codigos = result.materials.map((m) => m.code ?? '');
+    expect(codigos.some((c) => c.startsWith('KITRETENEDOR') || c.startsWith('ELITGU') || c === 'FELPAELIT')).toBe(false);
+    expect(codigos.some((c) => c.startsWith('PECARMAX'))).toBe(true);
+  });
+});
