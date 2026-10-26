@@ -53,7 +53,13 @@ export function leerPlanoTexto(src) {
         const punto = alineado ? P(11, 21) : P(), q = T(n(r, 10) + n(r, 40), n(r, 20)), origen = P();
         const h = Math.hypot(q[0] - origen[0], q[1] - origen[1]);
         const giro = r.tipo === 'MTEXT' ? Math.atan2(n(r, 21), n(r, 11, 1)) * 180 / Math.PI : n(r, 50);
-        salida.push({ ...comun, tipo: 'texto', punto, h, ancho: n(r, 41), giro, ancla: r.tipo === 'MTEXT' ? n(r, 71, 1) : alineado ? 5 : 7,
+        // En TEXT y ATTRIB el 41 es el factor de anchura de la letra, no el ancho de una caja: tomado como caja, una nota
+        // de una línea salía partida en columnas estrechas y encima de las demás (Iván, 26/10/2026, PDF de AR2605220).
+        // Su anclaje sale de 72 (izquierda, centro, derecha) y 73 (base, abajo, en medio, arriba).
+        const h72 = n(r, 72), v73 = n(r, 73);
+        const anclaTexto = (v73 === 3 ? 0 : v73 === 2 || h72 === 4 ? 3 : 6) + (h72 === 2 ? 3 : h72 === 1 || h72 === 4 ? 2 : 1);
+        salida.push({ ...comun, tipo: 'texto', punto, h, ancho: r.tipo === 'MTEXT' ? n(r, 41) : 0, escalaX: r.tipo === 'MTEXT' ? 1 : n(r, 41, 1) || 1, giro,
+          ancla: r.tipo === 'MTEXT' ? n(r, 71, 1) : alineado ? anclaTexto : 7,
           valor: limpiarTextoDxf((r.tipo === 'MTEXT' ? todos(r, 3).join('') : '') + (valor(r, 1) ?? '')) });
       } else if (r.tipo === 'INSERT') {
         const bloque = bloques.get(valor(r, 2)); if (!bloque) continue;
@@ -184,7 +190,7 @@ export function svgPrimitivas(primitivas, { zona = { x0: 0, y0: 0, x1: 297, y1: 
       }
       const columna = (p.ancla - 1) % 3, fila = Math.floor((p.ancla - 1) / 3), h = p.h;
       const base = fila === 0 ? h : fila === 1 ? -(lineas.length - 1) * h * .7 + h * .36 : -(lineas.length - 1) * h * 1.4;
-      cuerpo = `<g transform="translate(${p.punto[0]} ${-p.punto[1]}) rotate(${-p.giro})"><text fill="${c}" font-family="Arial" font-size="${h / .716}" text-anchor="${['start', 'middle', 'end'][columna]}">${lineas.map((t, j) => `<tspan x="0" y="${base + j * h * 1.4}">${esc(t)}</tspan>`).join('')}</text></g>`;
+      cuerpo = `<g transform="translate(${p.punto[0]} ${-p.punto[1]}) rotate(${-p.giro})${p.escalaX && p.escalaX !== 1 ? ` scale(${p.escalaX} 1)` : ''}"><text fill="${c}" font-family="Arial" font-size="${h / .716}" text-anchor="${['start', 'middle', 'end'][columna]}">${lineas.map((t, j) => `<tspan x="0" y="${base + j * h * 1.4}">${esc(t)}</tspan>`).join('')}</text></g>`;
     } else if (['relleno', 'sombreado'].includes(p.tipo)) {
       const puntos = p.puntos.map(([x, y]) => `${x},${-y}`).join(' ');
       if (p.tipo === 'sombreado' && !p.solido) {
