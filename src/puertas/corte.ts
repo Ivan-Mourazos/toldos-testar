@@ -438,10 +438,10 @@ function colocar(
       { capa: 'texto', x: 0, y: rollo + 250, h: enrollable ? 95 : Math.min(200, largo * .95 / anchoArial(rotuloMaterial, 1)), valor: rotuloMaterial },
       // Las puertas se cortan siempre por el revés: se avisa al principio, como el DERECHO de remolques (Iván, 22/10/2026).
     );
-    if (enrollable) entidades.textos.push({ capa: 'texto', x: 0, y: rollo + 110, h: 80, valor: 'REVÉS' });
-    // Sacos y cristales, en todas las puertas, con el borde del orillo cortado (Iván, 26/10/2026: lo puso a mano en
-    // AR2605035 y lo pidió también en las enrollables). En la lona de los paños, el orillo sigue sin cortarse.
-    // Las apilables y autorreparables, además, sin «REVÉS» en esas filas (lo quitó en AR2605035).
+    // Sacos y cristales, en todas las puertas, sin «REVÉS» y con el borde del orillo cortado (Iván, 26/10/2026: lo
+    // corrigió a mano en AR2605035 y lo pidió también en las enrollables). En la lona de los paños, el REVÉS sigue y el
+    // orillo no se corta.
+    if (enrollable && primerPano) entidades.textos.push({ capa: 'texto', x: 0, y: rollo + 110, h: 80, valor: 'REVÉS' });
     fusionarCortesPuertas(entidades, primerPano ? rollo : undefined);
     return { material: grupo[0].material, anchoRollo: rollo, largo, opcion, entidades, colocadas };
   });

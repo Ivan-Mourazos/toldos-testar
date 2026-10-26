@@ -102,8 +102,9 @@ describe('Corte de puertas', () => {
       expect(x.y + (x.girada ? x.pieza.ancho : x.pieza.alto)*10).toBeLessThanOrEqual(c.anchoRollo+0.01);
     }
     // Iván, 22/10/2026: las puertas se cortan siempre por el revés; va una vez al principio de cada material,
-    // como el DERECHO de remolques, y no en cada pieza.
-    expect(r.archivo?.entidades.textos.filter(x => x.valor === 'REVÉS' && !x.centrado)).toHaveLength(3);
+    // como el DERECHO de remolques, y no en cada pieza. Desde el 26/10/2026, solo en la lona de los paños: el saco y el
+    // cristal, sin REVÉS (Iván).
+    expect(r.archivo?.entidades.textos.filter(x => x.valor === 'REVÉS' && !x.centrado)).toHaveLength(1);
     expect(r.archivo?.entidades.textos.some(x => x.valor.includes('DERECHO'))).toBe(false);
     expect(r.archivo?.entidades.lineas.some(x => x.y1 > 4000)).toBe(true);
     const textosPieza = r.cortes.flatMap(c => c.entidades.textos).filter(t => t.centrado);

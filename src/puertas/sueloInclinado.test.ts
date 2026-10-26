@@ -227,6 +227,7 @@ describe('Correcciones de Iván a AR2605035 (26/10/2026)',()=>{
     for(const c of generarCortePuertas(pedidoDe('AR2600001',puerta4638())).cortes) {
       const paños=c.colocadas.some(t=>t.pieza.clase==='pano');
       expect(c.entidades.lineas.some(l=>l.capa==='DISCO1'&&Math.abs(l.y1)<.001&&Math.abs(l.y2)<.001)).toBe(!paños);
+      expect(c.entidades.textos.some(t=>t.valor==='REVÉS')).toBe(paños);
     }
   });
   it('el plano acota la distancia del bolsillo al borde y su ancho',()=>{
