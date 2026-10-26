@@ -16,6 +16,7 @@ html[data-estilo="hero"] {
   --hero-sombra-campo: 0 1px 2px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.05);
   --hero-sombra-pildora: 0 1px 3px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04);
   --hero-anillo: var(--color-brand-500);
+  --hero-pildora: #ffffff;
 }
 html[data-estilo="hero"][data-theme="dark"] {
   --hero-fondo: #000000;
@@ -27,7 +28,11 @@ html[data-estilo="hero"][data-theme="dark"] {
   --hero-texto-suave: #a1a1aa;
   --hero-sombra-panel: 0 0 0 1px rgba(255, 255, 255, 0.06);
   --hero-sombra-campo: 0 0 0 1px rgba(255, 255, 255, 0.08);
-  --hero-sombra-pildora: 0 1px 3px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --hero-sombra-pildora: 0 1px 3px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.12);
+  /* En oscuro la elegida va más clara que el carril, no más oscura: si no, apenas se ve (Iván, 26/10/2026). */
+  --hero-pildora: #52525b;
+  --hero-carril: #222225;
+  --hero-relleno: #2a2a2e;
 }
 
 /* Fondo liso, sin el grano del aluminio. */
@@ -45,14 +50,14 @@ html[data-estilo="hero"]:root #root :is(.panel-vidrio, .order-header, .awning-co
   background-image: none;
   backdrop-filter: none;
   border: 0;
-  border-radius: 20px;
+  border-radius: 24px;
   box-shadow: var(--hero-sombra-panel);
 }
 /* Lo de dentro de un panel (grupos, zonas) no lleva otra tarjeta encima: solo el gris de fondo. */
 html[data-estilo="hero"]:root #root :is(.panel-vidrio, .order-header, .awning-column, .panel) :is(fieldset, .panel-solido) {
   background: transparent;
   border: 1px solid var(--hero-relleno);
-  border-radius: 14px;
+  border-radius: 16px;
   box-shadow: none;
 }
 
@@ -60,7 +65,7 @@ html[data-estilo="hero"]:root #root :is(.panel-vidrio, .order-header, .awning-co
 html[data-estilo="hero"]:root #root :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
   background: var(--hero-superficie);
   border: 0;
-  border-radius: 12px;
+  border-radius: 14px;
   box-shadow: var(--hero-sombra-campo);
   font-weight: 500;
   transition: box-shadow 150ms ease;
@@ -117,7 +122,7 @@ html[data-estilo="hero"]:root #root .tira-3d > :not(.pestana-activa):hover {
 }
 html[data-estilo="hero"]:root #root .tira-3d > :not(.pestana-activa):hover { color: var(--text); }
 html[data-estilo="hero"]:root #root :is(.pestana-activa, .pestana-activa:hover, .glass-chip-activo, .glass-chip-activo:hover) {
-  background-color: var(--hero-superficie);
+  background-color: var(--hero-pildora);
   background-image: none;
   border: 0;
   border-radius: 999px;
@@ -142,7 +147,7 @@ html[data-estilo="hero"]:root #root .select-control {
   background: var(--hero-superficie);
   background-image: none;
   border: 0;
-  border-radius: 12px;
+  border-radius: 14px;
   box-shadow: var(--hero-sombra-campo);
   transform: none;
 }
@@ -168,9 +173,39 @@ html[data-estilo="hero"]:root #root .segmented-option {
 html[data-estilo="hero"]:root #root .segmented-option:hover:not(:disabled) { background: transparent; box-shadow: none; color: var(--text); transform: none; }
 html[data-estilo="hero"]:root #root .segmented-option.active,
 html[data-estilo="hero"]:root #root .segmented-option.active:hover {
-  background: var(--hero-superficie);
+  background: var(--hero-pildora);
   box-shadow: var(--hero-sombra-pildora);
   color: var(--text);
   font-weight: 600;
 }
 html[data-estilo="hero"]:root #root .segmented-option:active:not(:disabled) { transform: scale(0.97); }
+
+/* La píldora que se desliza (pildoraDeslizante.ts): con data-pildora, el fondo de la elegida lo pinta el ::before del
+   contenedor, que se mueve de una opción a otra. */
+html[data-estilo="hero"]:root #root :is(.tira-3d, .segmented-control)[data-pildora] { isolation: isolate; position: relative; }
+html[data-estilo="hero"]:root #root :is(.tira-3d, .segmented-control)[data-pildora]::before {
+  background: var(--hero-pildora);
+  border-radius: 999px;
+  box-shadow: var(--hero-sombra-pildora);
+  content: "";
+  height: var(--ph);
+  left: 0;
+  position: absolute;
+  top: 0;
+  transform: translate(var(--px), var(--py));
+  width: var(--pw);
+  z-index: -1;
+}
+html[data-estilo="hero"]:root #root :is(.tira-3d, .segmented-control)[data-pildora="lista"]::before {
+  transition: transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1), width 320ms cubic-bezier(0.2, 0.8, 0.2, 1), height 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+html[data-estilo="hero"]:root #root [data-pildora] > :is(.pestana-activa, .pestana-activa:hover, .glass-chip-activo, .glass-chip-activo:hover, .segmented-option.active, .segmented-option.active:hover) {
+  background: transparent;
+  box-shadow: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-estilo="hero"]:root #root :is(.tira-3d, .segmented-control)[data-pildora]::before { transition: none; }
+}
+/* Los pasos de la puerta, en una línea. */
+html[data-estilo="hero"]:root #root .puerta-pestanas { flex-wrap: nowrap; }
+html[data-estilo="hero"]:root #root .puerta-pestanas > * { padding-inline: 12px; }

@@ -68,11 +68,11 @@ function Configurar({p,cambiar,corte,derecha='alzado',cambiarDerecha}:{p:Puerta;
   // Por pestañas, sin un scroll tan largo (Iván, 26/10/2026: «tener un scroll tan grande no es productivo»), en el orden
   // del pedido. El dibujo queda fijo a la derecha.
   const pestanas:Array<[PestanaPuerta,string]>=[['puerta',sd?'Lona':'Puerta'],
-    ...(sd?[]:[['estructura',p.modelo==='PUERTAPLE'?'Tubos y bolsillo':p.modelo==='PUERTAENR'?'Ventanal y bolsillo':'Cuerpo y bolsillo']] as Array<[PestanaPuerta,string]>),
-    ...(p.modelo==='PUERTAPLE'||p.modelo==='PUERTAENR'?[['entradas',p.modelo==='PUERTAPLE'?'Entradas y cintas':'Entradas de tubo']] as Array<[PestanaPuerta,string]>:[]),
+    ...(sd?[]:[['estructura',p.modelo==='PUERTAPLE'?'Tubos':p.modelo==='PUERTAENR'?'Ventanal':'Cuerpo']] as Array<[PestanaPuerta,string]>),
+    ...(p.modelo==='PUERTAPLE'||p.modelo==='PUERTAENR'?[['entradas','Entradas']] as Array<[PestanaPuerta,string]>:[]),
     ...(p.modelo==='PUERTAPLE'||p.modelo==='PUERTAUTO'?[['ventanas','Ventanas']] as Array<[PestanaPuerta,string]>:[]),
     ...(sd?[]:[['saco','Saco y empates']] as Array<[PestanaPuerta,string]>),
-    ['texto','Texto del pedido']];
+    ['texto','Texto']];
   const activa=pestanas.some(([k])=>k===pestana)?pestana:'puerta';
   const ver=(k:PestanaPuerta)=>activa===k;
   const propuestaInferior=p.alto-p.enrollable.T-p.enrollable.D-(p.enrollable.ventanales??[]).reduce((s,v)=>s+v.D,0)+3.75-sacoPuerta(p).rematado;
