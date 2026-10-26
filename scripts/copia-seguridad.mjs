@@ -10,9 +10,20 @@
 // solo va un fichero terminado: si la red se cae a medias, no queda una copia rota con nombre de buena.
 //
 // Uso, desde /webs/toldos-testar (lee su .env):
-//   node scripts/copia-seguridad.mjs /mnt/planteamientos/oftecnica/planteamientos-backups
+//   node scripts/copia-seguridad.mjs /mnt/backups-planteamientos
 //
 // Guarda `planteamientos-AAAA-MM-DD.tar.gz` y borra las de más de DIAS_QUE_SE_GUARDAN.
+//
+// DÓNDE. En el NAS de copias de IT, `\\192.168.0.248\backups_bd\Planteamientos`, montado en
+// /mnt/backups-planteamientos (fstab, con `vers=2.0`: sin él el NAS rechaza la conexión). Hasta el
+// 26/10/2026 iba al share de Oficina Técnica; David (IT) prefiere un NAS a un servidor.
+//
+// Este script no deja copia en local, así que si el NAS no está montado escribiría en el disco del
+// propio servidor sin avisar. Por eso el cron de root solo lo lanza con el NAS montado:
+//   30 2 * * * cd /webs/toldos-testar && if mountpoint -q /mnt/backups-planteamientos; then
+//     node scripts/copia-seguridad.mjs /mnt/backups-planteamientos;
+//     else echo "$(date -Is) ERROR el NAS no está montado"; fi >> /root/copia-seguridad.log 2>&1
+//   (en una sola línea, con node por su ruta entera de nvm: cron no hereda el PATH).
 
 import { execFileSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync } from 'node:fs';
@@ -58,7 +69,7 @@ function leerConfiguracionGuardada(fichero) {
 
 function main() {
   const destino = process.argv[2];
-  if (!destino) throw new Error('Falta la carpeta de destino, p. ej. /mnt/planteamientos/oftecnica/planteamientos-backups');
+  if (!destino) throw new Error('Falta la carpeta de destino, p. ej. /mnt/backups-planteamientos');
   const carpetas = carpetasACopiar(config, leerConfiguracionGuardada(config.workflowSettingsFile)).filter((c) => existsSync(c));
   if (!carpetas.length) throw new Error('No hay ninguna carpeta interna que copiar: ¿se ha lanzado desde /webs/toldos-testar?');
 
