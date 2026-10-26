@@ -803,8 +803,10 @@ export default function App() {
         <div className="workspace-content">
           {activeTab === 'order' && !editorPedidoAbierto && <section className="order-entry" aria-label="Inicio del pedido">
             <OrderSearch number={numeroBusqueda ?? ''} onChange={setNumeroBusqueda} loading={autofillLoading} onSearch={() => void autofillOrder(numeroBusqueda ?? '')} />
-            <span className="order-entry-or">o</span>
             <SelectorProducto inicio puertas={puertasActivas} disabled={autofillLoading} producto={producto} onChange={chooseProducto} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques, puertas: resumenPuertas }} />
+            {pendingCount > 0 && <button type="button" className="ghost-button inicio-pendientes" onClick={() => irAPestana('reviews')}>
+              <span className="inicio-pendientes-numero">{pendingCount}</span>{pendingCount === 1 ? 'pedido espera revisión' : 'pedidos esperan revisión'}
+            </button>}
           </section>}
           {activeTab === 'order' && editorPedidoAbierto && producto === 'toldos' && formularioAntiguo && draft.orderCode === formularioAntiguo.orderCode && !corrigiendo && (
             <div className="review-state-note order-return-note formulario-antiguo" role="status">

@@ -18,5 +18,6 @@ export function OrderSearch({ number, onChange, loading, onSearch }: {
         {loading ? 'Buscando…' : 'Buscar'}
       </button>
     </div>
+    <small className="order-search-ayuda">Trae las líneas de RPS y abre el producto que toca.</small>
   </form>;
 }

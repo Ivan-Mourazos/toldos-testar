@@ -1,4 +1,5 @@
 import React from 'react';
+import { Caravan, DoorOpen, Store } from 'lucide-react';
 
 export type Producto = 'toldos' | 'remolques' | 'puertas';
 
@@ -26,9 +27,31 @@ export function SelectorProducto({ producto, onChange, pedidos, inicio = false, 
       ? `${pedido.numero.trim() || 'Sin número'} · ${pedido.elementos} ${pedido.elementos === 1 ? 'elemento' : 'elementos'}`
       : 'Sin empezar';
   };
+  // En la pantalla de inicio, una tarjeta por producto con lo que lleva y el borrador que haya a medias (Iván, 26/10/2026:
+  // «rediseña la página principal»).
+  if (inicio) {
+    const tarjetas: Array<[Producto, string, string, React.ReactNode]> = [
+      ['toldos', 'Toldos', 'Brazos, cortinas, cofres y trabajos de tela', <Store key="i" aria-hidden="true" />],
+      ['remolques', 'Remolques', 'Lonas y baquetones, con el corte', <Caravan key="i" aria-hidden="true" />],
+      ...(puertas ? [['puertas', 'Puertas', 'Enrollables, apilables y System Dock', <DoorOpen key="i" aria-hidden="true" />] as [Producto, string, string, React.ReactNode]] : []),
+    ];
+    return <div className="producto-contexto inicio-productos">
+      <span className="producto-etiqueta">O empieza uno en blanco</span>
+      <div className="inicio-tarjetas" role="group" aria-label="Producto">
+        {tarjetas.map(([tipo, nombre, lleva, icono]) => {
+          const enCurso = detalle(tipo) !== 'Sin empezar';
+          return <button type="button" key={tipo} disabled={disabled} aria-label={nombre} className="inicio-tarjeta" onClick={() => onChange(tipo)}>
+            <span className="inicio-tarjeta-icono">{icono}</span>
+            <strong>{nombre}</strong>
+            <span className="inicio-tarjeta-lleva">{lleva}</span>
+            <span className={`inicio-tarjeta-estado${enCurso ? ' is-en-curso' : ''}`}>{enCurso ? `Seguir con ${detalle(tipo)}` : 'Sin empezar'}</span>
+          </button>;
+        })}
+      </div>
+    </div>;
+  }
   return (
     <div className="producto-contexto">
-    {inicio && <span className="producto-etiqueta">Empezar un pedido</span>}
     <div className="tira-3d producto-selector" role="group" aria-label="Producto">
       <button type="button" disabled={disabled} aria-label="Toldos" title={detalle('toldos')} className={!inicio && producto === 'toldos' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={inicio ? undefined : producto === 'toldos'} onClick={() => onChange('toldos')}>
         Toldos
