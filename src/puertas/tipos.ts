@@ -4,7 +4,12 @@ export type ModeloPuerta = 'PUERTAENR' | 'PUERTAPLE' | 'PUERTAUTO' | 'SYSTEMDOCK
 export type Punto = [number, number];
 export type Segmento = [number, number, number, number];
 export interface Hueco { x: number; y: number; ancho: number; alto: number; radio: number; abierto?: 'izquierda' | 'derecha' }
-export interface Ventana extends Hueco { radioCristal: number }
+export interface Ventana extends Hueco {
+  radioCristal: number;
+  /** Apilables: tramo entre el tubo n y el n + 1 (desde abajo), con la ventana centrada en él, como viene en la hoja
+   * (Iván, 26/10/2026: «a nosotros esa medida [desde abajo] no nos la dan»). La y se calcula de él. */
+  tramo?: number;
+}
 export interface Entrada { altura: number; diametro: 30 | 42; largo: number; alto: number; huecos: Hueco[] }
 export interface MedidasBolsillo { distancia:number; ancho:number; lado:'izquierdo'|'derecho'; altoSuperior:number|null }
 export interface Puerta {

@@ -110,3 +110,5 @@
 .puerta-corte-resumen .puerta-corte-dibujo { min-height:0; max-height:260px; margin-block:4px 0; }
 /* El paso del corte junto a sus botones, arriba (Iván, 26/10/2026). */
 .puerta-paso { font-size:13px; color:var(--text-muted); max-width:300px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+/* Cada ventana de las apilables en una línea: tramo, izquierda, ancho, alto y quitar (Iván, 26/10/2026). */
+.puerta-campos.puerta-ventana-fila { grid-template-columns: minmax(0,1.6fr) repeat(3, minmax(0,1fr)) auto; margin-bottom: 8px; }

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { CheckCircle2, Eraser, FolderOpen, Plus, Save, Trash2 } from 'lucide-react';
-import { alturasTubos, calcularPuerta, huecosEntrada, MODELOS_PUERTAS, nuevaPuerta } from '../../puertas/calcular.ts';
+import { alturasTubos, calcularPuerta, huecosEntrada, MODELOS_PUERTAS, nuevaPuerta, yEnTramo } from '../../puertas/calcular.ts';
 import type { PedidoPuertasGuardado } from '../../puertas/flujo/tipos.ts';
 import { REGLAS_SYSTEM_DOCK } from '../../puertas/systemDock.ts';
 import { medidasSaco, sacoPuerta, sacoUtil } from '../../puertas/saco.ts';
@@ -56,6 +56,8 @@ function Configurar({p,cambiar,corte,derecha='alzado',cambiarDerecha}:{p:Puerta;
   function cadena(parche:Partial<Puerta['apilable']>) {
     const nuevo={...p,apilable:{...p.apilable,...parche}};
     nuevo.entradas=alturasTubos(nuevo).map((altura,i)=>({...p.entradas[i]??{diametro:30,largo:p.frente+(p.frente>600?2:0),alto:12,huecos:[]},altura}));
+    // Las ventanas puestas por tramo siguen centradas en él si cambia la cadena.
+    nuevo.ventanas=nuevo.ventanas.map(v=>v.tramo?{...v,y:yEnTramo(nuevo,v.tramo,v.alto)??v.y}:v);
     cambiar(nuevo);
   }
   function entrada(i:number,parche:Partial<Entrada>) { set('entradas',p.entradas.map((e,j)=>j===i?{...e,...parche}:e)); }
@@ -167,7 +169,8 @@ function Configurar({p,cambiar,corte,derecha='alzado',cambiarDerecha}:{p:Puerta;
       </details>}
       {p.modelo==='PUERTAPLE'&&<details><summary>Empates · {resultado.empates.length?`tubos ${resultado.empates.join(', ')}`:'sin empate'}</summary><p className="puerta-ayuda">La propuesta usa el tubo más alto que cabe en el rollo y deja su entrada incorporada al paño inferior.</p><label className="puerta-casilla"><input type="checkbox" checked={p.apilable.empates===null} onChange={e=>cadena({empates:e.target.checked?null:resultado.empates})}/>Proponer según el rollo</label>{p.apilable.empates!==null&&<Lista titulo="Números de tubo para empate" valores={p.apilable.empates} cambiar={v=>cadena({empates:v})}/>}</details>}
       {p.modelo==='PUERTAENR'&&<EmpatesEnrollable p={p} cambiar={cambiar}/>}
-      {!sd&&p.modelo!=='PUERTAENR'&&<details><summary>Ventanas individuales · {p.ventanas.length}</summary><p className="puerta-ayuda">Desde izquierda y desde abajo de la puerta terminada. Cristal = hueco + 4 cm en cada dimensión.</p>{p.ventanas.map((v,i)=><fieldset key={i}><legend>Ventana {i+1}</legend><div className="puerta-campos">{(['x','y','ancho','alto','radio','radioCristal'] as const).map(k=><Numero key={k} titulo={`${k==='x'?'Desde izquierda':k==='y'?'Desde abajo':k==='radioCristal'?'Radio cristal':k} ventana ${i+1}`} valor={v[k]} cambiar={n=>set('ventanas',p.ventanas.map((w,j)=>j===i?{...w,[k]:n??0}:w))}/>)}<button type="button" className="ghost-button" onClick={()=>set('ventanas',p.ventanas.filter((_,j)=>j!==i))}>Quitar ventana</button></div></fieldset>)}<button type="button" className="ghost-button" onClick={()=>set('ventanas',[...p.ventanas,{x:0,y:0,ancho:0,alto:0,radio:2,radioCristal:4}])}>Añadir ventana</button><FilasVentanas cambiar={v=>set('ventanas',[...p.ventanas,...v])}/></details>}
+      {p.modelo==='PUERTAPLE'&&<VentanasApilable p={p} cambiar={cambiar}/>}
+      {!sd&&p.modelo==='PUERTAUTO'&&<details><summary>Ventanas individuales · {p.ventanas.length}</summary><p className="puerta-ayuda">Desde izquierda y desde abajo de la puerta terminada. Cristal = hueco + 4 cm en cada dimensión.</p>{p.ventanas.map((v,i)=><fieldset key={i}><legend>Ventana {i+1}</legend><div className="puerta-campos">{(['x','y','ancho','alto','radio','radioCristal'] as const).map(k=><Numero key={k} titulo={`${k==='x'?'Desde izquierda':k==='y'?'Desde abajo':k==='radioCristal'?'Radio cristal':k} ventana ${i+1}`} valor={v[k]} cambiar={n=>set('ventanas',p.ventanas.map((w,j)=>j===i?{...w,[k]:n??0}:w))}/>)}<button type="button" className="ghost-button" onClick={()=>set('ventanas',p.ventanas.filter((_,j)=>j!==i))}>Quitar ventana</button></div></fieldset>)}<button type="button" className="ghost-button" onClick={()=>set('ventanas',[...p.ventanas,{x:0,y:0,ancho:0,alto:0,radio:2,radioCristal:4}])}>Añadir ventana</button><FilasVentanas cambiar={v=>set('ventanas',[...p.ventanas,...v])}/></details>}
       <details><summary>Texto del pedido y observaciones</summary><div className="puerta-campos"><SelectField label="Artículo indicado en RPS" value={p.articuloOrigen} options={Object.keys(MODELOS_PUERTAS)} allowEmpty emptyLabel="Sin indicar" placeholder="Sin indicar" optionLabel={v=>v?`${v} · ${MODELOS_PUERTAS[v as ModeloPuerta]}`:'Sin indicar'} onChange={v=>set('articuloOrigen',v as Puerta['articuloOrigen'])}/><label className="field puerta-campo puerta-campo-ancho"><span>Texto a comprobar con el dibujo</span><textarea aria-label="Texto del pedido" value={p.observaciones} onChange={e=>set('observaciones',e.target.value)}/></label><label className="field puerta-campo puerta-campo-ancho"><span>Nota en el plano (opcional)</span><textarea aria-label="Nota en el plano" placeholder="Solo si queréis que salga en el plano" value={p.notaPlano??''} onChange={e=>set('notaPlano',e.target.value)}/></label></div></details>
     </section>
     <details className="puerta-piezas panel panel-vidrio"><summary>Piezas calculadas · {resultado.piezas.reduce((s,p)=>s+p.cantidad,0)} piezas{resultado.alternativasSaco?' y alternativas de saco':''}</summary><table><thead><tr><th>Pieza</th><th>Corte (cm)</th><th>Material</th><th>Cantidad</th><th>Huecos</th></tr></thead><tbody>{[...resultado.piezas,...resultado.alternativasSaco?.entero??[]].map((x,i)=><tr key={i}><td>{x.nombre}</td><td>{num(x.ancho)} × {num(x.alto)}</td><td>{x.material}</td><td>{x.cantidad}</td><td>{x.huecos.length}</td></tr>)}</tbody></table>{resultado.alternativasSaco&&<p className="puerta-ayuda">El saco entero y el saco partido son alternativas de la misma pieza.</p>}</details>
@@ -287,6 +290,57 @@ function CadenaDibujo({p,cadena}:{p:Puerta;cadena:(parche:Partial<Puerta['apilab
       onBlur={aplicar} onKeyDown={e=>{ if(e.key==='Enter') aplicar(); }}/>
     <small>{aviso||(inclinado?'Rellena los pasos y la cabecera; el pie izquierdo va en su campo.':'Rellena el pie, los pasos y la cabecera de una vez. Se pueden corregir debajo.')}</small></label>;
 }
+/**
+ * Ventanas de las apilables como vienen en la hoja (Iván, 26/10/2026: «no es cómodo, y me pide la medida desde abajo,
+ * que a nosotros no nos la dan»): en qué tramo, entre qué tubos, van; a cuánto del borde izquierdo; ancho y alto. Se
+ * centran en el tramo. Varias iguales seguidas, de una vez, con su separación. Los radios, comunes a todas.
+ */
+function VentanasApilable({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
+  const tubos=alturasTubos(p), tramos=tubos.slice(1).map((_,i)=>i+1);
+  const nombreTramo=(t:number)=>`Entre tubo ${t} y ${t+1} · ${num(n2(tubos[t]-tubos[t-1]))} cm`;
+  const [nueva,setNueva]=useState({tramo:0,x:0,ancho:0,alto:0,cuantas:1,separacion:0});
+  const radio=p.ventanas[0]?.radio??2, radioCristal=p.ventanas[0]?.radioCristal??4;
+  const poner=(ventanas:Ventana[])=>cambiar({...p,ventanas});
+  const cambiarVentana=(i:number,parche:Partial<Ventana>)=>poner(p.ventanas.map((v,j)=>{
+    if(j!==i) return v;
+    const w={...v,...parche};
+    return w.tramo?{...w,y:yEnTramo(p,w.tramo,w.alto)??w.y}:w;
+  }));
+  const tramoNueva=nueva.tramo||tramos[0]||0;
+  const puedeAñadir=tramoNueva>0&&nueva.ancho>0&&nueva.alto>0&&Number.isInteger(nueva.cuantas)&&nueva.cuantas>=1&&nueva.cuantas<=20;
+  const añadir=()=>{
+    const y=yEnTramo(p,tramoNueva,nueva.alto); if(y===null) return;
+    poner([...p.ventanas,...Array.from({length:nueva.cuantas},(_,i)=>({x:n2(nueva.x+i*(nueva.ancho+nueva.separacion)),y,ancho:nueva.ancho,alto:nueva.alto,radio,radioCristal,tramo:tramoNueva}))]);
+  };
+  const opciones=tramos.map(String);
+  return <details open={p.ventanas.length>0||undefined}><summary>Ventanas · {p.ventanas.length||'ninguna'}</summary>
+    <p className="puerta-ayuda">Como en la hoja: el tramo entre tubos donde va, la distancia desde la izquierda, el ancho y el alto; la web la centra en el tramo. Cristal = hueco + 4 cm.</p>
+    {!tramos.length&&<p className="puerta-ayuda puerta-falta">Pon antes la cadena del dibujo: los tramos salen de los tubos.</p>}
+    {p.ventanas.map((v,i)=><div className="puerta-campos puerta-ventana-fila" key={i}>
+      {v.tramo||!tramos.length
+        ? <SelectField label={`Tramo ventana ${i+1}`} value={String(v.tramo??'')} options={opciones} optionLabel={t=>nombreTramo(Number(t))} onChange={t=>cambiarVentana(i,{tramo:Number(t)})}/>
+        : <Numero titulo={`Desde abajo ventana ${i+1} (cm)`} valor={v.y} cambiar={y=>cambiarVentana(i,{y:y??0})}/>}
+      <Numero titulo={`Desde izquierda ventana ${i+1} (cm)`} valor={v.x} cambiar={x=>cambiarVentana(i,{x:x??0})}/>
+      <Numero titulo={`Ancho ventana ${i+1} (cm)`} valor={v.ancho||null} cambiar={a=>cambiarVentana(i,{ancho:a??0})}/>
+      <Numero titulo={`Alto ventana ${i+1} (cm)`} valor={v.alto||null} cambiar={a=>cambiarVentana(i,{alto:a??0})}/>
+      <button type="button" className="ghost-button" onClick={()=>poner(p.ventanas.filter((_,j)=>j!==i))}>Quitar</button>
+    </div>)}
+    <fieldset><legend>Añadir ventanas</legend><div className="puerta-campos">
+      <SelectField label="Tramo de la ventana" value={String(tramoNueva||'')} options={opciones} optionLabel={t=>nombreTramo(Number(t))} onChange={t=>setNueva({...nueva,tramo:Number(t)})}/>
+      <Numero titulo="Desde la izquierda, la primera (cm)" valor={nueva.x} cambiar={v=>setNueva({...nueva,x:v??0})}/>
+      <Numero titulo="Ancho de la ventana (cm)" valor={nueva.ancho||null} cambiar={v=>setNueva({...nueva,ancho:v??0})}/>
+      <Numero titulo="Alto de la ventana (cm)" valor={nueva.alto||null} cambiar={v=>setNueva({...nueva,alto:v??0})}/>
+      <Numero titulo="Cuántas iguales seguidas" valor={nueva.cuantas} cambiar={v=>setNueva({...nueva,cuantas:v??1})}/>
+      <Numero titulo="Separación entre ellas (cm)" valor={nueva.separacion} cambiar={v=>setNueva({...nueva,separacion:v??0})}/>
+      <button type="button" className="ghost-button" disabled={!puedeAñadir} onClick={añadir}>Añadir</button>
+    </div></fieldset>
+    {p.ventanas.length>0&&<div className="puerta-campos">
+      <Numero titulo="Radio del hueco, todas (cm)" valor={radio} cambiar={r=>poner(p.ventanas.map(v=>({...v,radio:r??0})))}/>
+      <Numero titulo="Radio del cristal, todas (cm)" valor={radioCristal} cambiar={r=>poner(p.ventanas.map(v=>({...v,radioCristal:r??0})))}/>
+    </div>}
+  </details>;
+}
+const n2=(v:number)=>Math.round(v*100)/100;
 function FilasVentanas({cambiar}:{cambiar:(v:Ventana[])=>void}) {
   const [fila,setFila]=useState({x:0,y:0,ancho:0,alto:0,columnas:1,pilar:0});
   return <fieldset><legend>Añadir una fila de ventanas iguales</legend><div className="puerta-campos">{(Object.keys(fila) as Array<keyof typeof fila>).map(k=><Numero key={k} titulo={`Fila · ${k==='x'?'margen izquierdo':k==='y'?'desde abajo':k}`} valor={fila[k]} cambiar={v=>setFila({...fila,[k]:v??0})}/>)}<button type="button" className="ghost-button" disabled={!Number.isInteger(fila.columnas)||fila.columnas<1||fila.columnas>20} onClick={()=>cambiar(Array.from({length:fila.columnas},(_,i)=>({x:fila.x+i*(fila.ancho+fila.pilar),y:fila.y,ancho:fila.ancho,alto:fila.alto,radio:2,radioCristal:4})))}>Añadir fila</button></div></fieldset>;

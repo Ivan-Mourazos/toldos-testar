@@ -24,6 +24,12 @@ export function alturasTubos(p: Puerta): number[] {
   let y = p.apilable.pie;
   return [y, ...p.apilable.pasos.map(paso => (y = n(y + paso)))];
 }
+/** Altura desde abajo de una ventana centrada en el tramo entre el tubo n y el n + 1, o null si ese tramo no existe. */
+export function yEnTramo(p: Puerta, tramo: number, alto: number): number | null {
+  const t = alturasTubos(p);
+  if (!Number.isInteger(tramo) || tramo < 1 || tramo >= t.length) return null;
+  return n((t[tramo - 1] + t[tramo]) / 2 - alto / 2);
+}
 export function huecosEntrada(largo: number, diametro: 30 | 42, cintas: number[] = []): Hueco[] {
   const alto = diametro === 42 ? 13.5 : 12, h = diametro === 42 ? 9.5 : 7.5;
   return [{ x: 1, y: (alto - h) / 2, ancho: 5, alto: h, radio: 0.5 },

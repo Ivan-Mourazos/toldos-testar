@@ -30,7 +30,7 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
     const cotas=(x:unknown,claves:string[])=>objeto(x) && claves.every(k=>typeof x[k]==='number' && Number.isFinite(x[k]) && Math.abs(x[k] as number)<=3000);
     const hueco=(x:unknown)=>cotas(x,['x','y','ancho','alto','radio']);
     if(!objeto(p.medidasBolsillo)||!cotas(p.medidasBolsillo,['distancia','ancho'])||!['izquierdo','derecho'].includes(p.medidasBolsillo.lado as string)||(p.medidasBolsillo.altoSuperior!==null&&!cotas(p.medidasBolsillo,['altoSuperior']))) return error();
-    if(!lista(p.entradas,100) || !lista(p.ventanas) || !p.ventanas.every(v=>hueco(v) && cotas(v,['radioCristal']))) return error();
+    if(!lista(p.entradas,100) || !lista(p.ventanas) || !p.ventanas.every(v=>hueco(v) && cotas(v,['radioCristal']) && ((v as {tramo?:unknown}).tramo===undefined || Number.isInteger((v as {tramo?:unknown}).tramo) && ((v as {tramo:number}).tramo>=1)))) return error();
     if(!p.entradas.every(t=>objeto(t) && cotas(t,['altura','largo','alto','diametro']) && (t.diametro===30||t.diametro===42) && lista(t.huecos,100) && t.huecos.every(hueco))) return error();
     if(!objeto(p.apilable) || !cotas(p.apilable,['pie','cabecera','bolsillo']) || !numeros(p.apilable.pasos) || !saco(p.apilable.saco) || typeof p.apilable.doble!=='boolean' || (p.apilable.empates!==null && !numeros(p.apilable.empates))) return error();
     if(p.apilable.ladoPestana!==undefined && !['izquierda','derecha'].includes(p.apilable.ladoPestana as string)) return error();

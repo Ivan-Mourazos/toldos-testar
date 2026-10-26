@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import reales from './__fixtures__/pedidos-reales.json';
 import habitual from './__fixtures__/AR2605134.json';
-import { calcularPuerta, alturasTubos, nuevaPuerta } from './calcular.ts';
+import { calcularPuerta, alturasTubos, nuevaPuerta, yEnTramo } from './calcular.ts';
 import type { Puerta } from './tipos.ts';
 
 function base(modelo: Puerta['modelo'], frente: number, alto: number): Puerta {
@@ -209,5 +209,17 @@ describe('Saco del pedido en todas las puertas (Iván, 23/10/2026)', () => {
     const p = base(modelo, 300, 331);
     if (modelo === 'PUERTAENR') p.enrollable.saco = null; else p.autorreparable.saco = null;
     expect(calcularPuerta(p).avisos.some(a => a.codigo === 'SACO' && a.nivel === 'error')).toBe(true);
+  });
+});
+
+// Iván, 26/10/2026: en las apilables las ventanas vienen en un tramo entre tubos, centradas, no con la medida desde abajo.
+describe('ventanas de apilables por tramo', () => {
+  it('centra la ventana en el tramo entre el tubo n y el n + 1', () => {
+    const p = base('PUERTAPLE', 432, 400);
+    p.apilable = { ...p.apilable, pie: 46, pasos: [58, 55, 58, 55, 58], cabecera: 70 };
+    // Tubos a 46, 104, 159…: el tramo 2 va de 104 a 159; una de 35 de alto, de 114 a 149.
+    expect(yEnTramo(p, 2, 35)).toBe(114);
+    expect(yEnTramo(p, 0, 35)).toBeNull();
+    expect(yEnTramo(p, 6, 35)).toBeNull();
   });
 });
