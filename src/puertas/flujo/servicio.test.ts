@@ -3,6 +3,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import habitual from '../__fixtures__/AR2605134.json';
 import { nuevaPuerta } from '../calcular.ts';
+import { REGLAS_SYSTEM_DOCK } from '../systemDock.ts';
+import { productoDeElementos } from '../producto.ts';
 import { crearAlmacenPedidos } from '../../remolques/flujo/almacen.ts';
 import type { PedidoPuertas, Puerta } from '../tipos.ts';
 import { pedidoParaEditar } from './pedido.ts';
@@ -329,6 +331,27 @@ describe('corte confirmado desde el borrador', () => {
   // Fase 4: al mandar al bot, las presentaciones del DWG revisado en PDF, en planteamientos como AR…-10.pdf.
   const alBot = (extra = {}) => flujo.enviarCorte('AR2605134', { usuario: 'IVÁN', destino: 'bot', confirmBot: true, confirmOverwrite: true, ...extra });
   const pdf = (n: number) => path.join(raiz, 'planteamientos/2026', `AR2605134-${n}.pdf`);
+  it('System Dock conserva el borrador existente, confirma, guarda y envía el corte y las presentaciones con el servicio de puertas', async () => {
+    const pedido = { ...pedidoPantalla(), elementos: [{ id: 'lona-1', input: {
+      ...nuevaPuerta('SYSTEMDOCK'), frente: 1040, alto: 55, cantidad: 3, of: '0232270',
+      material: REGLAS_SYSTEM_DOCK.material, color: REGLAS_SYSTEM_DOCK.color, rollo: REGLAS_SYSTEM_DOCK.rollo,
+      confirmada: true, ventanasConfirmadas: true,
+    } }] };
+    expect((await flujo.borradorCorte({ pedido, savedBy: 'IVÁN' })).status).toBe(200);
+    const contenido = await fs.readFile(borrador(), 'utf8');
+    expect((await flujo.borradorCorte({ pedido, savedBy: 'IVÁN' })).cuerpo).toMatchObject({ existente: true });
+    expect(await fs.readFile(borrador(), 'utf8')).toBe(contenido);
+    await confirmar();
+    expect((await flujo.guardar({ pedido, savedBy: 'IVÁN' })).status).toBe(200);
+    const guardado = await flujo.obtener('AR2605134');
+    expect(guardado.kind).toBe('puertas');
+    expect(productoDeElementos(pedidoParaEditar(guardado).elementos)).toBe('systemdock');
+    expect(await fs.readFile(enAnio(), 'utf8')).toBe(contenido);
+    expect((await alBot()).status).toBe(200);
+    expect(await fs.readFile(pdf(10), 'utf8')).toBe('%PDF 1');
+    expect(await fs.readdir(path.join(raiz, 'bot/Ivan.Sanchez'))).toEqual(['AR2605134.dxf']);
+    expect((await flujo.obtener('AR2605134')).status).toBe('PRODUCED');
+  });
   it('al mandar al bot guarda las presentaciones en AR…-10.pdf, con el revisor; rehecho, lo sustituye sin preguntar', async () => {
     await abrir(); await confirmar(); await guardar();
     const { status, cuerpo } = await alBot();

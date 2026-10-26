@@ -95,7 +95,7 @@ export async function guardarPuertasParaRevision({ pedido, usuario, preguntar, n
 async function sustituirPlano(ruta: string, plano: NonNullable<Plano>, preguntar: AskForConfirmation): Promise<Plano> {
   const existentes = plano.existentes ?? [];
   const eleccion = await preguntar({
-    title: 'Plano de puertas',
+    title: 'Plano del pedido',
     message: `El plano ${existentes.join(' · ')} ya está en su carpeta. ¿Sustituirlo por el de la web?`,
     confirmLabel: 'Sustituir plano', cancelLabel: 'Conservar el actual', tone: 'warning',
   });

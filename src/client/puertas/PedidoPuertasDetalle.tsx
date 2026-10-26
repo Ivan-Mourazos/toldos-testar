@@ -40,7 +40,7 @@ async function guardarPlano(ruta: string, preguntar: AskForConfirmation, notify:
     const respuesta = await fetch(`${ruta}/plano`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirmOverwrite }) });
     const datos = await respuesta.json().catch(() => ({})) as { error?: string; existing?: string[]; plano?: { files: Array<{ filename: string }>; avisos: string[] } | null };
     if (respuesta.status === 409 && datos.existing?.length && !confirmOverwrite) {
-      const eleccion = await preguntar({ title: 'Plano de puertas', message: `El plano ${datos.existing.join(' · ')} ya está en su carpeta. ¿Sustituirlo por el de la web?`,
+      const eleccion = await preguntar({ title: 'Plano del pedido', message: `El plano ${datos.existing.join(' · ')} ya está en su carpeta. ¿Sustituirlo por el de la web?`,
         confirmLabel: 'Sustituir plano', cancelLabel: 'Conservar el actual', tone: 'warning' });
       if (eleccion !== 'confirm') return;
       confirmOverwrite = true;
@@ -50,7 +50,7 @@ async function guardarPlano(ruta: string, preguntar: AskForConfirmation, notify:
     const planos = datos.plano?.files.map((fichero) => fichero.filename) ?? [];
     const avisos = datos.plano?.avisos ?? [];
     notify(planos.length ? `Plano guardado para revisar: ${planos.join(' · ')}.${avisos.length ? ` ${avisos.join(' ')}` : ''}` : avisos.join(' ') || 'No se ha escrito el plano.',
-      { tone: planos.length ? 'success' : 'warning', title: 'Plano de puertas' });
+      { tone: planos.length ? 'success' : 'warning', title: 'Plano del pedido' });
     return;
   }
 }
@@ -82,7 +82,7 @@ function PlanteamientoPuertas({ pedido, ruta, generado, notify, onConfirm }: {
   );
 }
 
-function CortePuertasGuardado({ ruta, version, acciones }: { ruta: string; version: string; acciones?: React.ReactNode }) {
+function CortePuertasGuardado({ ruta, version, acciones, systemDock = false }: { ruta: string; version: string; acciones?: React.ReactNode; systemDock?: boolean }) {
   const clave = `${ruta}|${version}`;
   const [leido, setLeido] = useState<{ clave: string; datos?: VistaPuertas; error?: string } | null>(null);
   useEffect(() => {
@@ -102,7 +102,7 @@ function CortePuertasGuardado({ ruta, version, acciones }: { ruta: string; versi
   return (
     <section className="corte-lona panel bloque-3d" aria-label="Corte" aria-busy={!estado}>
       <CabeceraDocumento titulo="Corte" icono={<Scissors aria-hidden="true" />}>{Boolean(datos?.cortes.length) && acciones}</CabeceraDocumento>
-      <p className="corte-ayuda">Un solo DXF por pedido; si hay saco entero y saco en dos, van las dos opciones y el técnico de la máquina elige.</p>
+      <p className="corte-ayuda">{systemDock?'Un solo DXF por pedido con las tandas de lonas perimetrales.':'Un solo DXF por pedido; si hay saco entero y saco en dos, van las dos opciones y el técnico de la máquina elige.'}</p>
       {!estado && <p className="corte-ayuda">Calculando el corte…</p>}
       {estado?.error && <p role="alert" className="corte-aviso">{estado.error}</p>}
       {datos?.avisos.some((aviso) => aviso.nivel === 'error') && <p role="alert" className="corte-aviso">Hay medidas pendientes de corregir: el corte está incompleto.</p>}
@@ -111,7 +111,7 @@ function CortePuertasGuardado({ ruta, version, acciones }: { ruta: string; versi
           <header><h3>{c.material}</h3><span>{`Rollo de ${num(c.anchoRollo / 10)} cm · ${num(c.largo / 1000)} m`}</span></header>
           {c.opcion !== 'principal' && <p className="corte-aviso">{c.opcion === 'saco-entero' ? 'Opción saco entero' : 'Opción saco en dos piezas'} · Alternativas de un mismo saco: elige una.</p>}
           <DibujoCortePuertas corte={c} />
-          <small className="corte-leyenda"><span>DISCO1 · corte</span><span className="puerta-cutter-texto">CUTTER · huecos y curvas</span><span>ROTULADOR · marcas</span></small>
+          <small className="corte-leyenda"><span>DISCO1 · corte</span>{!systemDock&&<><span className="puerta-cutter-texto">CUTTER · huecos y curvas</span><span>ROTULADOR · marcas</span></>}</small>
         </article>
       ))}
     </section>
@@ -276,13 +276,13 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
         </div>
       )}
 
-      <ul className="rem-pedido-elementos" aria-label="Puertas del pedido">
+      <ul className="rem-pedido-elementos" aria-label={productoDeElementos(pedido.elementos)==='systemdock'?'Lonas del pedido':'Puertas del pedido'}>
         {pedido.elementos.map((elemento, indice) => <FilaPuerta key={elemento.id} letra={letras[indice]} puerta={elemento.input} coordina={coordina} />)}
       </ul>
 
       <DocumentosPedido
         planteamiento={<PlanteamientoPuertas pedido={pedido} ruta={ruta} generado={generado} notify={onToast} onConfirm={onConfirm} />}
-        corte={<CortePuertasGuardado ruta={ruta} version={pedido.updatedAt}
+        corte={<CortePuertasGuardado ruta={ruta} version={pedido.updatedAt} systemDock={productoDeElementos(pedido.elementos)==='systemdock'}
           acciones={<EnviosCorte key={ruta} ruta={`${ruta}/corte`} usuario={currentUser} permitido={permisoCorte.allowed} motivo={permisoCorte.note}
             ocupado={generando} envios={pedido.enviosCorte} descarga={`${ruta}/corte/dxf`} conPdf notify={onToast} preguntar={onConfirm} />} />} />
     </section>
