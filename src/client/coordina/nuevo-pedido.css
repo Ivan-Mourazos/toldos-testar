@@ -1225,6 +1225,7 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
 }
 .awning-column .awning-form-grid { grid-column: 1 / -1; }
 .awning-column .awning-cell { min-width: 0; }
+.awning-edit-group-title { margin:6px 0 2px; padding-top:6px; border-top:1px solid var(--border); color:var(--text-muted); font-size:11px; font-weight:650; }
 .awning-column .awning-cell:empty { display: none; }
 .awning-column .awning-cell > :is(label, .field) { min-width: 0; width: 100%; }
 .awning-column .awning-cell :is(label, .field) > span:first-child {

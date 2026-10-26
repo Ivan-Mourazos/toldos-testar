@@ -51,7 +51,7 @@ function prioridad(label: string, model: string) {
 }
 
 // Se separan solo los envoltorios de presentación: los controles y sus callbacks
-// se conservan. La misma lista ordenada sirve al editar y al leer la ficha.
+// se conservan. Cada modo agrupa los mismos controles para editar o leer la ficha.
 export function AwningFormBody({ reading, awning, children }: { reading: boolean; awning: Awning; children: React.ReactNode }) {
   const items: Item[] = [];
   function recoger(nodes: React.ReactNode, path = '') {
@@ -139,7 +139,21 @@ export function AwningFormBody({ reading, awning, children }: { reading: boolean
     if (item.label.startsWith('Bastilla ')) item.minimum = 4;
   }
 
-  const grupos = READ_GROUPS.map(group => ({ ...group,
+  // Al editar se leen tres bloques; los controles conservan sus claves y su padre.
+  if (!reading) {
+    for (const item of items) {
+      if (['Nº de brazos', 'Nº brazos'].includes(item.label) || /^Nº brazos ·/.test(item.label)) item.group = 'medidas';
+      else if (['Bamba (cm)', 'Tela', 'Tela bamba', 'Curva bamba', 'Remate', 'Color remate', 'Rotulación tela', 'Rotulación bamba', 'Ajuste de tela (cm)', 'Dibujo de confección'].includes(item.label)) item.group = 'tela';
+      else if (['accionamiento', 'colocacion'].includes(item.group)) item.group = 'estructura';
+    }
+  }
+  const gruposPresentacion = reading ? READ_GROUPS : [
+    { id: 'medidas', title: 'Medidas' },
+    { id: 'estructura', title: 'Estructura' },
+    { id: 'tela', title: 'Tela' },
+    ...READ_GROUPS.filter(group => ['observaciones', 'pie', 'otros'].includes(group.id)),
+  ];
+  const grupos = gruposPresentacion.map(group => ({ ...group,
     fields: items.filter(item => item.group === group.id && !item.after).sort((a, b) => prioridad(a.label, awning.model) - prioridad(b.label, awning.model)),
   })).filter(group => group.fields.length);
   // Los detalles de Ventana empiezan en la fila siguiente: los botones no se
@@ -148,35 +162,7 @@ export function AwningFormBody({ reading, awning, children }: { reading: boolean
   const detallesVentana = new Set(['Salida ventana', 'Medida a ventana desde', 'Esquina', 'Suelo-ventana', 'Tubo-ventana', 'Altura ventana', 'Ajuste de salida de tela', 'Ajuste de salida (cm)']);
   const primerDetalle = estructura?.fields.find(item => detallesVentana.has(item.label));
   if (primerDetalle) primerDetalle.start = true;
-  // Si la última fila tiene un solo campo, continúa con el primero del grupo
-  // siguiente. No se recupera ningún campo de las filas ya colocadas. En lectura no: cada
-  // grupo lleva su título y sus campos debajo.
-  for (let i = 0; !reading && i < grupos.length - 1; i++) {
-    const actual = grupos[i], siguiente = grupos[i + 1];
-    let ultima: Item[] = [], usado = 0;
-    for (const item of actual.fields) {
-      if (item.start || usado + item.minimum > 12) { ultima = []; usado = 0; }
-      ultima.push(item);
-      usado += item.minimum;
-      if (usado === 12) { ultima = []; usado = 0; }
-    }
-    if (ultima.length === 1 && ultima[0].label && usado + siguiente.fields[0].minimum <= 12
-      && !['observaciones', 'pie', 'otros'].includes(actual.id)
-      && !['observaciones', 'pie', 'otros'].includes(siguiente.id)) {
-      do {
-        const corte = siguiente.fields.findIndex(item => item.start);
-        const bloque = siguiente.fields.slice(0, corte < 0 ? undefined : corte);
-        // Al continuar otro grupo, sus dos últimos campos permanecen juntos
-        // si no caben ambos aquí. No se altera ninguna fila ya cerrada.
-        if (bloque.length === 2 && bloque[0].minimum + bloque[1].minimum <= 12
-          && usado + bloque[0].minimum + bloque[1].minimum > 12) break;
-        const campo = siguiente.fields.shift()!;
-        actual.fields.push(campo);
-        usado += campo.minimum;
-      } while (siguiente.fields.length && !siguiente.fields[0].start && usado + siguiente.fields[0].minimum <= 12);
-      if (!siguiente.fields.length) { grupos.splice(i + 1, 1); i--; }
-    }
-  }
+  // Cada bloque empieza en su fila; nunca se mezclan campos bajo otro título.
 
   // Una sola lista de hermanos con claves de campo. Los cambios de grupo solo
   // alteran coordenadas, nunca la identidad ni el padre de un control.
@@ -199,9 +185,9 @@ export function AwningFormBody({ reading, awning, children }: { reading: boolean
       }
       avisos = [];
     };
-    // Ficha de lectura: el título del grupo («Medidas», «Estructura»…) en su propia fila.
-    if (reading && group.id !== 'pie') {
-      celdas.push(<h5 className="read-group-title" data-group={group.id} key={`titulo-${group.id}`} style={{ gridColumn: '1 / -1', gridRow: fila++ }}>{group.title}</h5>);
+    // Los tres títulos de edición y los de lectura ocupan su propia fila.
+    if (group.id !== 'pie' && (reading || ['medidas', 'estructura', 'tela'].includes(group.id))) {
+      celdas.push(<h5 className={reading ? 'read-group-title' : 'awning-edit-group-title'} data-group={group.id} key={`titulo-${group.id}`} style={{ gridColumn: '1 / -1', gridRow: fila++ }}>{group.title}</h5>);
     }
     group.fields.forEach((item, index) => {
       // Lo que no cabe en lo que queda de fila empieza la siguiente (en edición nunca pasa:

@@ -612,13 +612,15 @@ describe('excepción técnica en lectura, a partir del aviso', () => {
 });
 
 describe('orden común de las tarjetas al editar y leer', () => {
-  it('agrupa la tela antes de la estructura y las observaciones antes del pie', () => {
+  it('agrupa la edición en medidas, estructura y tela, con las observaciones antes del pie', () => {
     const [base] = samplesFor('ARZUA PRO');
     const awning: Awning = { ...base, structureNotes: 'Nota de estructura', fabricNotes: 'Nota de tela' };
     for (const reading of [false, true]) {
       const markup = render(awning, reading, { sameFabric: false });
       const grupos = [...new Set([...markup.matchAll(/data-logical-group="([^"]+)"/g)].map(match => match[1]))];
-      expect(grupos.slice(0, 5)).toEqual(['medidas', 'tela', 'estructura', 'accionamiento', 'colocacion']);
+      expect(grupos.slice(0, reading ? 5 : 3)).toEqual(reading
+        ? ['medidas', 'tela', 'estructura', 'accionamiento', 'colocacion']
+        : ['medidas', 'estructura', 'tela']);
       expect(grupos).not.toContain('otros');
       expect(markup.indexOf('Obs. estructura')).toBeLessThan(markup.indexOf('Obs. tela'));
       if (!reading) expect(markup.indexOf('Obs. tela')).toBeLessThan(markup.indexOf('El ajuste suma tela'));
@@ -633,10 +635,10 @@ describe('orden común de las tarjetas al editar y leer', () => {
     expect(markup.indexOf('<figcaption')).toBeLessThan(markup.indexOf('Obs. tela'));
   });
 
-  it.each(['IRIS', 'CAMBIO ANTICA', 'BAMBALINA', 'GALICIA'])('%s conserva el orden de campos al leer', model => {
+  it.each(['IRIS', 'CAMBIO ANTICA', 'BAMBALINA', 'GALICIA'])('%s conserva todos los campos al agrupar la edición', model => {
     const awning = maxSample(model);
     const campos = (reading: boolean) => [...render(awning, reading, { sameFabric: false }).matchAll(/data-field="([^"]+)"/g)].map(match => match[1]);
-    expect(campos(true)).toEqual(campos(false));
+    expect(campos(true).sort()).toEqual(campos(false).sort());
     const lectura = render(awning, true, { sameFabric: false });
     expect(lectura).not.toMatch(/style="[^"]*order:/);
     expect(lectura.indexOf('Obs. tela')).toBeLessThan(lectura.indexOf('read-exception'));
