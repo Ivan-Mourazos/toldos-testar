@@ -344,7 +344,7 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
     if (ocupados.has(orderCode)) return { status: 409, cuerpo: { error: MENSAJE_OCUPADO } };
     ocupados.set(orderCode, "generando");
     try {
-      const c = (cuerpo ?? {}) as { usuario?: unknown; destino?: unknown; confirmBot?: unknown; confirmOverwrite?: unknown; aceptarCambioCorte?: unknown; pdfModo?: unknown };
+      const c = (cuerpo ?? {}) as { usuario?: unknown; destino?: unknown; confirmBot?: unknown; confirmOverwrite?: unknown; aceptarCambioCorte?: unknown; pdfModo?: unknown; sinPdf?: unknown };
       const usuario = typeof c.usuario === "string" ? c.usuario.trim() : "";
       if (!deps.tecnicos.includes(usuario)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de mandar o guardar el corte.");
       const pedido = await obtener(orderCode);
@@ -363,7 +363,8 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
       // Fase 4: al mandar al bot, las presentaciones del DWG revisado en PDF, en planteamientos como AR…-10.pdf (Iván,
       // 24/10/2026). Se mira antes de mandar nada: si ya hay uno que no hizo la web, se pregunta si es otra parte del pedido.
       let pdf: { ruta: string; numero: number } | null = null;
-      if (c.destino === "bot" && dwg && deps.presentacionesPdf) {
+      // Al volver a mandar solo el corte, el PDF no se toca (Iván, 26/10/2026).
+      if (c.destino === "bot" && dwg && deps.presentacionesPdf && c.sinPdf !== true) {
         const destino = await destinoPresentaciones(pedido, c.pdfModo);
         if ("respuesta" in destino) return destino.respuesta;
         pdf = destino;
@@ -376,23 +377,52 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
       if (respuesta.status !== 200 || !pdf || !dwg) return respuesta;
       // El corte ya está en el bot: un fallo del PDF solo se avisa.
       try {
-        const aprobacion = elementosAprobacion(pedido);
-        const revisor = approvalReviewers(aprobacion, await deps.coordina.statusOf(uniqueOfs(aprobacion)), deps.tecnicos);
-        const contenido = await deps.presentacionesPdf!(htmlPresentaciones(conRevisor(dwg.plano, revisor), pedido.numeroPedido));
-        await mkdir(path.dirname(pdf.ruta), { recursive: true });
-        await writeFileAtomic(pdf.ruta, contenido);
-        const presentacionesPdf = { numero: pdf.numero, ruta: pdf.ruta, fecha: ahora() };
-        await deps.almacen.guardar({ ...(await obtener(orderCode)), presentacionesPdf });
-        // Si el DWG lleva algo que el PDF no sabe dibujar, se dice (Iván, 26/10/2026: «que el PDF lleve todo lo del DWG»).
-        const faltan = Object.entries(sinDibujarEnPdf(dwg.plano)).map(([tipo, cuantas]) => `${cuantas} ${tipo}`);
-        if (faltan.length) registrar(`Pedido ${orderCode}: el PDF de las presentaciones no lleva ${faltan.join(', ')} del DWG.`);
-        return { status: 200, cuerpo: { ...(respuesta.cuerpo as object), presentaciones: { filename: path.basename(pdf.ruta), ruta: pdf.ruta },
-          ...(faltan.length ? { avisos: [...((respuesta.cuerpo as { avisos?: string[] }).avisos ?? []),
-            `El PDF de las presentaciones no lleva algunas cosas del DWG (${faltan.join(', ')}): revísalo con el DWG.`] } : {}) } };
+        const hecho = await guardarPdf(pedido, dwg.plano, pdf);
+        const avisos = [...((respuesta.cuerpo as { avisos?: string[] }).avisos ?? []), ...hecho.avisos];
+        return { status: 200, cuerpo: { ...(respuesta.cuerpo as object), presentaciones: hecho.presentaciones, ...(avisos.length ? { avisos } : {}) } };
       } catch (error) {
         registrar(`Pedido ${orderCode}: el corte salió al bot, pero no se pudo guardar el PDF de las presentaciones: ${(error as Error).stack ?? (error as Error).message}`);
         return { status: 200, cuerpo: { ...(respuesta.cuerpo as object), avisos: [`El corte ya está en el bot, pero no se pudo guardar el PDF de las presentaciones: ${(error as Error).message}`] } };
       }
+    } finally {
+      ocupados.delete(orderCode);
+    }
+  }
+
+  /** Escribe el PDF de las presentaciones del DWG y lo apunta en el pedido. Avisa si el DWG lleva algo que no sabe dibujar. */
+  async function guardarPdf(pedido: PedidoPuertasGuardado, plano: string, pdf: { ruta: string; numero: number }) {
+    const aprobacion = elementosAprobacion(pedido);
+    const revisor = approvalReviewers(aprobacion, await deps.coordina.statusOf(uniqueOfs(aprobacion)), deps.tecnicos);
+    const contenido = await deps.presentacionesPdf!(htmlPresentaciones(conRevisor(plano, revisor), pedido.numeroPedido));
+    await mkdir(path.dirname(pdf.ruta), { recursive: true });
+    await writeFileAtomic(pdf.ruta, contenido);
+    await deps.almacen.guardar({ ...(await obtener(pedido.orderCode)), presentacionesPdf: { numero: pdf.numero, ruta: pdf.ruta, fecha: ahora() } });
+    // Si el DWG lleva algo que el PDF no sabe dibujar, se dice (Iván, 26/10/2026: «que el PDF lleve todo lo del DWG»).
+    const faltan = Object.entries(sinDibujarEnPdf(plano)).map(([tipo, cuantas]) => `${cuantas} ${tipo}`);
+    if (faltan.length) registrar(`Pedido ${pedido.orderCode}: el PDF de las presentaciones no lleva ${faltan.join(', ')} del DWG.`);
+    return { presentaciones: { filename: path.basename(pdf.ruta), ruta: pdf.ruta },
+      avisos: faltan.length ? [`El PDF de las presentaciones no lleva algunas cosas del DWG (${faltan.join(', ')}): revísalo con el DWG.`] : [] };
+  }
+
+  /**
+   * «Rehacer el PDF» (Iván, 26/10/2026): solo el PDF de las presentaciones, del DWG tal como esté ahora, sin mandar nada al
+   * bot. Va al mismo número que ya tenía el pedido.
+   */
+  async function rehacerPdf(orderCodeBruto: string, cuerpo: unknown): Promise<Respuesta> {
+    const orderCode = codigoPedido(orderCodeBruto);
+    if (ocupados.has(orderCode)) return { status: 409, cuerpo: { error: MENSAJE_OCUPADO } };
+    ocupados.set(orderCode, "generando");
+    try {
+      const c = (cuerpo ?? {}) as { usuario?: unknown; pdfModo?: unknown };
+      const usuario = typeof c.usuario === "string" ? c.usuario.trim() : "";
+      if (!deps.tecnicos.includes(usuario)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de rehacer el PDF.");
+      if (!deps.presentacionesPdf) throw new ErrorPedidoRemolques("Este servidor no puede hacer el PDF de las presentaciones.", 404);
+      const pedido = await obtener(orderCode);
+      if (!pedido.corteConfirmado) throw new ErrorPedidoRemolques("El PDF sale del DWG del corte y este pedido no tiene el corte del DWG confirmado.", 409);
+      const destino = await destinoPresentaciones(pedido, c.pdfModo);
+      if ("respuesta" in destino) return destino.respuesta;
+      const hecho = await guardarPdf(pedido, (await corteDelDwg(pedido)).plano, destino);
+      return { status: 200, cuerpo: { ok: true, presentaciones: hecho.presentaciones, ...(hecho.avisos.length ? { avisos: hecho.avisos } : {}) } };
     } finally {
       ocupados.delete(orderCode);
     }
@@ -421,5 +451,5 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
       error: `Ya hay ${path.basename(ruta(10))} de este pedido. Si es de otra parte del pedido, las presentaciones irán en ${path.basename(ruta(siguiente))}; si es lo mismo, se sustituye.` } } };
   }
 
-  return { listar, obtener, guardar, borradorCorte, confirmarCorte, estadoCorte, planoRevision, generar, corte, descargarCorte, enviarCorte };
+  return { listar, obtener, guardar, borradorCorte, confirmarCorte, estadoCorte, planoRevision, generar, corte, descargarCorte, enviarCorte, rehacerPdf };
 }

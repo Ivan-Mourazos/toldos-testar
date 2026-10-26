@@ -972,6 +972,12 @@ app.post('/api/puertas/pedidos/:orderCode/corte/enviar', rutaRemolques(async (re
   res.status(status).json(cuerpo);
 }));
 
+// «Rehacer el PDF»: solo las presentaciones del DWG actual, sin mandar nada al bot (Iván, 26/10/2026).
+app.post('/api/puertas/pedidos/:orderCode/corte/pdf', rutaRemolques(async (req, res) => {
+  const { status, cuerpo } = await pedidosPuertas.rehacerPdf(req.params.orderCode, req.body);
+  res.status(status).json(cuerpo);
+}));
+
 app.get('/api/puertas/pedidos/:orderCode/corte/dxf', rutaRemolques(async (req, res) => {
   const { filename, contents } = await pedidosPuertas.descargarCorte(req.params.orderCode);
   res.set('Cache-Control', 'no-store').type('application/dxf').attachment(filename).send(Buffer.from(contents));

@@ -356,6 +356,25 @@ describe('corte confirmado desde el borrador', () => {
     // Ya es suyo el -11: la siguiente vez lo sustituye sin preguntar.
     expect((await alBot()).cuerpo).toMatchObject({ presentaciones: { filename: 'AR2605134-11.pdf' } });
   });
+  // Iván, 26/10/2026: «deberíamos poder generar solo el PDF o mandar de nuevo solo el corte».
+  it('volver a mandar solo el corte no toca el PDF; «Rehacer el PDF» lo rehace sin mandar nada al bot', async () => {
+    await abrir(); await confirmar(); await guardar();
+    await alBot();
+    expect(paginas).toHaveLength(1);
+    const otraVez = await alBot({ sinPdf: true });
+    expect(otraVez.status).toBe(200);
+    expect(otraVez.cuerpo).not.toHaveProperty('presentaciones');
+    expect(paginas).toHaveLength(1);
+    const envios = (await flujo.obtener('AR2605134')).enviosCorte?.length ?? 0;
+    const rehecho = await flujo.rehacerPdf('AR2605134', { usuario: 'IVÁN' });
+    expect(rehecho).toMatchObject({ status: 200, cuerpo: { presentaciones: { filename: 'AR2605134-10.pdf' } } });
+    expect(await fs.readFile(pdf(10), 'utf8')).toBe('%PDF 2');
+    expect((await flujo.obtener('AR2605134')).enviosCorte?.length ?? 0).toBe(envios);
+  });
+  it('«Rehacer el PDF» pide quién eres y el corte del DWG confirmado', async () => {
+    await abrir(); await confirmar(); await guardar();
+    await expect(flujo.rehacerPdf('AR2605134', { usuario: '' })).rejects.toThrow(/Soy/);
+  });
   it('si el PDF falla, el corte ya está en el bot: se avisa', async () => {
     await abrir(); await confirmar(); await guardar();
     pdfFalla = true;

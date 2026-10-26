@@ -276,7 +276,7 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
         planteamiento={<PlanteamientoPuertas pedido={pedido} ruta={ruta} generado={generado} notify={onToast} onConfirm={onConfirm} />}
         corte={<CortePuertasGuardado ruta={ruta} version={pedido.updatedAt}
           acciones={<EnviosCorte key={ruta} ruta={`${ruta}/corte`} usuario={currentUser} permitido={permisoCorte.allowed} motivo={permisoCorte.note}
-            ocupado={generando} envios={pedido.enviosCorte} descarga={`${ruta}/corte/dxf`} notify={onToast} preguntar={onConfirm} />} />} />
+            ocupado={generando} envios={pedido.enviosCorte} descarga={`${ruta}/corte/dxf`} conPdf notify={onToast} preguntar={onConfirm} />} />} />
     </section>
   );
 }
