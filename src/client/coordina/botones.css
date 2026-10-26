@@ -33,8 +33,8 @@
 }
 
 /* Secundarios: blancos con borde. */
-html:root :is(.ghost-button, .icon-text-button, .icon-button, .glass-chip, .chip-3d, .pildora-plantear, .pildora-revisar, .pildora-aviso),
-html:root .tira-3d > :not(.pestana-activa) {
+html:root #root :is(.ghost-button, .icon-text-button, .icon-button, .glass-chip, .chip-3d, .pildora-plantear, .pildora-revisar, .pildora-aviso),
+html:root #root .tira-3d > :not(.pestana-activa) {
   background-color: var(--boton-fondo);
   background-image: none;
   border: 1px solid var(--boton-borde);
@@ -42,15 +42,15 @@ html:root .tira-3d > :not(.pestana-activa) {
   transform: none;
   transition: background-color 120ms ease, border-color 120ms ease;
 }
-html:root :is(.ghost-button, .icon-text-button, .icon-button, .glass-chip, .chip-3d, .pildora-plantear, .pildora-revisar, .pildora-aviso):hover:not(:disabled),
-html:root .tira-3d > :not(.pestana-activa):hover {
+html:root #root :is(.ghost-button, .icon-text-button, .icon-button, .glass-chip, .chip-3d, .pildora-plantear, .pildora-revisar, .pildora-aviso):hover:not(:disabled),
+html:root #root .tira-3d > :not(.pestana-activa):hover {
   background-color: var(--boton-fondo-encima);
   border-color: var(--boton-borde-encima);
   box-shadow: var(--boton-sombra);
   transform: none;
 }
-html:root :is(.ghost-button, .icon-text-button, .icon-button, .glass-chip, .chip-3d, .pildora-plantear, .pildora-revisar, .pildora-aviso):active:not(:disabled),
-html:root .tira-3d > :not(.pestana-activa):active {
+html:root #root :is(.ghost-button, .icon-text-button, .icon-button, .glass-chip, .chip-3d, .pildora-plantear, .pildora-revisar, .pildora-aviso):active:not(:disabled),
+html:root #root .tira-3d > :not(.pestana-activa):active {
   background-color: var(--boton-fondo-pulsado);
   background-image: none;
   box-shadow: none;
@@ -58,8 +58,8 @@ html:root .tira-3d > :not(.pestana-activa):active {
 }
 
 /* Principal: el amarillo TGM, con un borde algo más oscuro para que tenga contorno. */
-html:root .primary-button,
-html:root .primary-button.boton-3d {
+html:root #root .primary-button,
+html:root #root .primary-button.boton-3d {
   background-color: var(--tgm-yellow);
   background-image: none;
   border: 1px solid var(--boton-principal-borde);
@@ -67,35 +67,75 @@ html:root .primary-button.boton-3d {
   color: var(--tgm-black);
   transform: none;
 }
-html:root .primary-button:hover:not(:disabled) { background-color: var(--color-brand-500); box-shadow: var(--boton-sombra); transform: none; }
-html:root .primary-button:active:not(:disabled) { background-color: var(--color-brand-600); box-shadow: none; transform: none; }
+html:root #root .primary-button:hover:not(:disabled) { background-color: var(--color-brand-500); box-shadow: var(--boton-sombra); transform: none; }
+html:root #root .primary-button:active:not(:disabled) { background-color: var(--color-brand-600); box-shadow: none; transform: none; }
 
 /* El relieve macizo de los botones de color, fuera. */
-html:root .boton-3d,
-html:root .boton-3d:hover:not(:disabled),
-html:root .boton-3d:active:not(:disabled) { transform: none; }
+html:root #root .boton-3d,
+html:root #root .boton-3d:hover:not(:disabled),
+html:root #root .boton-3d:active:not(:disabled) { transform: none; }
 
-/* Lo elegido (pestaña, filtro, Sí/No): fondo ámbar muy claro, borde ámbar y la costura debajo. */
-html:root :is(.pestana-activa, .pestana-activa:hover, .glass-chip-activo, .glass-chip-activo:hover) {
-  background-color: var(--boton-elegido-fondo);
-  background-image: repeating-linear-gradient(90deg, var(--costura) 0 6px, transparent 6px 10px);
-  background-position: left 6px bottom 1px;
-  background-repeat: no-repeat;
-  background-size: calc(100% - 12px) 1.5px;
-  border: 1px solid var(--costura);
-  box-shadow: none;
-  color: var(--boton-elegido-texto);
+/* Lo elegido (pestaña, filtro, Sí/No). Tres propuestas para elegir con capturas (Iván, 26/10/2026: la costura
+   discontinua no le gustó); `data-elegido` en <html> elige una, «a» por defecto mientras tanto.
+   A · barra maciza abajo y seminegrita (IBM Carbon, pestañas «line» y «contained»).
+   B · relleno pizarra oscuro y letra blanca (el elegido como pieza maciza del carril, patrón de control segmentado).
+   C · ámbar suave: relleno ámbar claro, borde ámbar y negrita, sin línea. */
+html:root #root :is(.pestana-activa, .pestana-activa:hover, .glass-chip-activo, .glass-chip-activo:hover) {
+  background-color: var(--boton-fondo);
+  background-image: none;
+  border: 1px solid var(--boton-borde-encima);
+  box-shadow: inset 0 -3px 0 var(--costura);
+  color: var(--text);
   font-weight: 600;
   transform: none;
 }
+html:root[data-elegido="b"] :is(.pestana-activa, .pestana-activa:hover, .glass-chip-activo, .glass-chip-activo:hover) {
+  background-color: var(--elegido-macizo);
+  border-color: var(--elegido-macizo);
+  box-shadow: none;
+  color: var(--elegido-macizo-texto);
+}
+html:root[data-elegido="c"] :is(.pestana-activa, .pestana-activa:hover, .glass-chip-activo, .glass-chip-activo:hover) {
+  background-color: var(--boton-elegido-fondo);
+  border-color: var(--costura);
+  box-shadow: none;
+  color: var(--boton-elegido-texto);
+  font-weight: 700;
+}
+/* D · carril de shadcn/ui (Radix): las pestañas de una tira van dentro de un carril gris, sin borde, y la elegida es
+   una pieza blanca con una sombra pequeña. */
+html:root[data-elegido="d"] .tira-3d {
+  background-color: var(--carril);
+  border-radius: 10px;
+  gap: 2px;
+  padding: 3px;
+}
+html:root[data-elegido="d"] .tira-3d > :not(.pestana-activa),
+html:root[data-elegido="d"] .tira-3d > :not(.pestana-activa):hover {
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--text-muted);
+}
+html:root[data-elegido="d"] .tira-3d > :not(.pestana-activa):hover { color: var(--text); }
+html:root[data-elegido="d"] :is(.pestana-activa, .pestana-activa:hover, .glass-chip-activo, .glass-chip-activo:hover) {
+  background-color: var(--boton-fondo);
+  border-color: transparent;
+  box-shadow: 0 1px 2px rgba(17, 21, 34, 0.18), 0 0 0 1px rgba(17, 21, 34, 0.06);
+  color: var(--text);
+}
+:root { --carril: #c9d2e1; }
+:root[data-theme="dark"] { --carril: #2c2e34; }
+:root { --elegido-macizo: #303d59; --elegido-macizo-texto: #ffffff; }
+:root[data-theme="dark"] { --elegido-macizo: #d9dde4; --elegido-macizo-texto: #17181c; }
 
 /* Teclado: un anillo ámbar claro, separado del borde. */
-html:root :is(.ghost-button, .icon-text-button, .icon-button, .primary-button, .glass-chip, .chip-3d, .pestana, .tira-3d > *):focus-visible {
+html:root #root :is(.ghost-button, .icon-text-button, .icon-button, .primary-button, .glass-chip, .chip-3d, .pestana, .tira-3d > *):focus-visible {
   outline: 2px solid var(--anillo);
   outline-offset: 2px;
 }
 
-html:root :is(.ghost-button, .icon-text-button, .icon-button, .primary-button, .glass-chip, .chip-3d):disabled {
+html:root #root :is(.ghost-button, .icon-text-button, .icon-button, .primary-button, .glass-chip, .chip-3d):disabled {
   box-shadow: none;
   opacity: 0.5;
 }

@@ -38,3 +38,5 @@
 @import './coordina/metal.css';
 /* Botones planos encima del metal (26/10/2026). */
 @import './coordina/botones.css';
+/* Prueba del estilo de HeroUI, solo con data-estilo="hero" (26/10/2026). */
+@import './coordina/hero.css';
