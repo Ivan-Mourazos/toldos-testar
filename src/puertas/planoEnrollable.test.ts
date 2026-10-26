@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { numero, registrosDxf, valor } from '../domain/corteLona/dxfTestHelpers.js';
 import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
-import { apilable, autorreparable, base, pedidoDe } from './__fixtures__/ejemplos.ts';
+import { apilable, autorreparable, base, pedidoDe, puerta4638 } from './__fixtures__/ejemplos.ts';
 import { calcularPuerta } from './calcular.ts';
 import { generarCortePuertas } from './corte.ts';
 import { escribirPlanoPuertas } from './plano.ts';
@@ -211,5 +211,13 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
       zonas: { toldos: { x0: 9, y0: 9, x1: 15, y1: 13 }, corte: { x0: 19, y0: 19, x1: 24, y1: 23 } } };
     const dxf = escribirDxfPlano(toldo, { pedido: 'AR2600001', of: '0232309', ...cabecera, fecha: '22/10/26', pagina: '1/1', material: 'LAC900 BLANCO' }).dxf;
     expect(createHash('sha256').update(dxf).digest('hex')).toBe('6383dcfb81e796a03e5ad233215521ac7944ad261b93c88c39dac25c2f8ca6c6');
+  });
+});
+
+// Iván, 26/10/2026: en el PDF de AR2605220 «no salía el texto de saco de 80».
+describe('rótulo del saco en el plano de enrollables', () => {
+  it('lleva «SACO DE …» bajo la puerta, como las apilables', () => {
+    const p = { ...puerta4638(), enrollable: { ...puerta4638().enrollable, saco: 80 } };
+    expect(escribirPlanoPuertas({ pedido: pedidoDe('AR2605220', p), cabecera })).toContain('SACO DE 80');
   });
 });

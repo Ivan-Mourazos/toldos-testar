@@ -12,7 +12,7 @@ import { crearPlanoPuertas } from './puertas/flujo/archivos.ts';
 import { crearServicioPedidosPuertas } from './puertas/flujo/servicio.ts';
 import { crearAlmacenConfirmaciones } from './flujoDwg/confirmaciones.js';
 import { crearFlujoDwg, planosDe, ultimaAprobacion } from './flujoDwg/flujo.ts';
-import { conRevisor, htmlPresentaciones } from './flujoDwg/planoDxf.js';
+import { conRevisor, htmlPresentaciones, sinDibujarEnPdf } from './flujoDwg/planoDxf.js';
 import { conHojasDelante } from './flujoDwg/unirPdf.js';
 import { SUBCARPETA_PUERTAS, TIPO_PEDIDO_PUERTAS } from './puertas/flujo/tipos.ts';
 import { crearOfStockSacos } from './ofStockSacos.js';
@@ -1334,6 +1334,9 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
       try {
         for (const plano of await flujoToldos.planosDelDwg(updated.corteConfirmado)) {
           cad.push(await presentacionesPdf(htmlPresentaciones(conRevisor(plano, reviewer || ''), cleanOrder)));
+          // Si el DWG lleva algo que el PDF no sabe dibujar, se avisa (Iván, 26/10/2026).
+          const faltan = Object.entries(sinDibujarEnPdf(plano)).map(([tipo, cuantas]) => `${cuantas} ${tipo}`);
+          if (faltan.length) avisos.push(`El PDF de las presentaciones no lleva algunas cosas del DWG (${faltan.join(', ')}): revísalo con el DWG.`);
         }
       } catch (error) {
         cad = [];

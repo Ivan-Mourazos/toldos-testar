@@ -2,7 +2,7 @@ import { mkdir, stat } from "node:fs/promises";
 import path from "node:path";
 import { enviarCorte as enviarCorteCompartido } from "../../corteEnvios.js";
 import { crearFlujoDwg, ultimaAprobacion } from "../../flujoDwg/flujo.ts";
-import { conRevisor, htmlPresentaciones } from "../../flujoDwg/planoDxf.js";
+import { conRevisor, htmlPresentaciones, sinDibujarEnPdf } from "../../flujoDwg/planoDxf.js";
 import { writeFileAtomic } from "../../workflow.js";
 import { normalizarNumeroPedido } from "../../remolques/pedidos/numero-pedido.ts";
 import { anioDelPlanteamiento } from "../../remolques/salida/nombre-pdf.ts";
@@ -383,7 +383,12 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
         await writeFileAtomic(pdf.ruta, contenido);
         const presentacionesPdf = { numero: pdf.numero, ruta: pdf.ruta, fecha: ahora() };
         await deps.almacen.guardar({ ...(await obtener(orderCode)), presentacionesPdf });
-        return { status: 200, cuerpo: { ...(respuesta.cuerpo as object), presentaciones: { filename: path.basename(pdf.ruta), ruta: pdf.ruta } } };
+        // Si el DWG lleva algo que el PDF no sabe dibujar, se dice (Iván, 26/10/2026: «que el PDF lleve todo lo del DWG»).
+        const faltan = Object.entries(sinDibujarEnPdf(dwg.plano)).map(([tipo, cuantas]) => `${cuantas} ${tipo}`);
+        if (faltan.length) registrar(`Pedido ${orderCode}: el PDF de las presentaciones no lleva ${faltan.join(', ')} del DWG.`);
+        return { status: 200, cuerpo: { ...(respuesta.cuerpo as object), presentaciones: { filename: path.basename(pdf.ruta), ruta: pdf.ruta },
+          ...(faltan.length ? { avisos: [...((respuesta.cuerpo as { avisos?: string[] }).avisos ?? []),
+            `El PDF de las presentaciones no lleva algunas cosas del DWG (${faltan.join(', ')}): revísalo con el DWG.`] } : {}) } };
       } catch (error) {
         registrar(`Pedido ${orderCode}: el corte salió al bot, pero no se pudo guardar el PDF de las presentaciones: ${(error as Error).stack ?? (error as Error).message}`);
         return { status: 200, cuerpo: { ...(respuesta.cuerpo as object), avisos: [`El corte ya está en el bot, pero no se pudo guardar el PDF de las presentaciones: ${(error as Error).message}`] } };

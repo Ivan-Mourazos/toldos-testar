@@ -2,7 +2,7 @@ import { escribirDxfPlano, separacionCorte } from '../domain/corteLona/presentac
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { calcularPuerta } from './calcular.ts';
 import { esClientePortanova } from './clientePortanova.ts';
-import { rotuloSaco, sacoPuerta } from './saco.ts';
+import { rotuloSaco, sacoPuerta, sacoUtil } from './saco.ts';
 import { anclarCotas } from './cotasPuertas.ts';
 import { presentacionPortanova, VENTANA_CORTE_PORTANOVA } from './plantillaPortanova.ts';
 import { corteEnPlano, entidadesDePieza, textosFuera } from './corteEnPlano.ts';
@@ -129,6 +129,8 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSac
   hitos.slice(1).forEach((h, i) => cota(l, F, -hitos[i], F, -h, F + 21.93));
   cota(l, F, 0, F, -H, F + 37.91);
   cota(l, F, -H, F, -H + bajo, F + 9.79, 'XERAL 5');
+  // El saco del pedido bajo la puerta, como en las apilables (Iván, 26/10/2026: «no salía el texto de saco de 80»).
+  texto(l, `SACO DE ${sacoUtil(p) ?? 100}`, F / 2, -H - 14, Math.min(10, F / 25), { centrado: true });
 
   // Saco desplegado, con escalón y los dos velcros en su capa original. Con el de 120: corte 26, pestaña y velcros
   // de 11 a 2 de cada lado; con otro saco, sus medidas (Iván, 23/10/2026).

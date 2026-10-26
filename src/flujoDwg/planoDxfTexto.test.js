@@ -19,3 +19,14 @@ describe('textos de una línea en el PDF del plano', () => {
     expect(p.ancla).toBe(3);
   });
 });
+
+describe('el PDF lleva todo lo del DWG (26/10/2026)', () => {
+  it('dibuja las SPLINE (las letras del logo del cajetín) y no avisa de nada que sepa dibujar', async () => {
+    const { sinDibujarEnPdf } = await import('./planoDxf.js');
+    const spline = ['0', 'SPLINE', '8', 'Capa 1', '71', '1', '72', '4', '73', '2', '40', '0', '40', '0', '40', '1', '40', '1', '10', '0', '20', '0', '10', '4', '20', '2'];
+    const src = dxf([...spline, '0', 'POINT', '8', 'Defpoints', '10', '0', '20', '0']);
+    expect(leerPlanoTexto(src).modelo.filter((p) => p.tipo === 'raya').length).toBeGreaterThan(0);
+    expect(sinDibujarEnPdf(src)).toEqual({});
+    expect(sinDibujarEnPdf(dxf(['0', 'ELLIPSE', '8', 'x', '10', '0', '20', '0']))).toEqual({ ELLIPSE: 1 });
+  });
+});

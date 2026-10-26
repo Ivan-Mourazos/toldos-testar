@@ -16,7 +16,49 @@ const vertices = r => {
   }
   return pts;
 };
-const colores = { 1: '#ed1313', 2: '#c4bd00', 3: '#00a900', 4: '#009c9c', 5: '#0000e8', 6: '#d000d0', 7: '#111', 8: '#777', 9: '#bbb', 11: '#e57e7e', 23: '#a55252', 40: '#d38d00', 51: '#c9c97a', 106: '#58a858', 112: '#429d80' };
+/**
+ * Los puntos de una SPLINE para dibujarla en tramos: la curva B-spline de sus puntos de control y nudos (de Boor), o sus
+ * puntos de ajuste, o, si no cuadran los datos, el polígono de control.
+ */
+export function puntosSpline(r) {
+  const pares = (cx, cy) => { const pts = []; let p; for (const [k, v] of r.pares) { if (k === cx) { p = [+v, 0]; pts.push(p); } else if (k === cy && p) p[1] = +v; } return pts; };
+  const control = pares(10, 20), ajuste = pares(11, 21), nudos = todos(r, 40).map(Number), grado = n(r, 71, 3);
+  const pesos = todos(r, 41).map(Number);
+  if (control.length <= grado || nudos.length !== control.length + grado + 1) return ajuste.length > 1 ? ajuste : control;
+  const w = (i) => pesos.length === control.length ? pesos[i] : 1;
+  const enT = (t) => {
+    let k = grado;
+    while (k < control.length - 1 && t >= nudos[k + 1]) k++;
+    const d = Array.from({ length: grado + 1 }, (_, j) => { const c = control[j + k - grado], wi = w(j + k - grado); return [c[0] * wi, c[1] * wi, wi]; });
+    for (let r1 = 1; r1 <= grado; r1++) {
+      for (let j = grado; j >= r1; j--) {
+        const i = j + k - grado, den = nudos[i + grado - r1 + 1] - nudos[i];
+        const a = den ? (t - nudos[i]) / den : 0;
+        d[j] = d[j].map((v, m) => (1 - a) * d[j - 1][m] + a * v);
+      }
+    }
+    return [d[grado][0] / d[grado][2], d[grado][1] / d[grado][2]];
+  };
+  const [t0, t1] = [nudos[grado], nudos[control.length]], pasos = Math.max(8, control.length * 8);
+  return Array.from({ length: pasos + 1 }, (_, i) => enT(t0 + (t1 - t0) * Math.min(i / pasos, 1 - 1e-9)));
+}
+
+// Lo que el visor dibuja y lo que nunca se imprime (puntos de Defpoints, definiciones de atributos, marcas de bloque).
+const DIBUJADAS = new Set(['LINE', 'LWPOLYLINE', 'TEXT', 'MTEXT', 'ATTRIB', 'INSERT', 'DIMENSION', 'SOLID', 'HATCH', 'ARC', 'CIRCLE', 'SPLINE', 'VIEWPORT']);
+const NO_SE_IMPRIMEN = new Set(['POINT', 'ATTDEF', 'SEQEND', 'BLOCK', 'ENDBLK', 'SECTION', 'ENDSEC', 'EOF']);
+/**
+ * Lo que lleva el DWG y el PDF no sabría dibujar, por tipo y cuántas (Iván, 26/10/2026: «hay que asegurarse de que el PDF
+ * lleve todo lo del DWG»). Vacío si el PDF lo lleva todo.
+ */
+export function sinDibujarEnPdf(src) {
+  const cuenta = {};
+  const conBloques = /\n\s*2\r?\nBLOCKS\r?\n/.test(src);
+  for (const r of [...registrosDxf(src), ...(conBloques ? registrosDxf(src, 'BLOCKS') : [])]) {
+    if (!DIBUJADAS.has(r.tipo) && !NO_SE_IMPRIMEN.has(r.tipo)) cuenta[r.tipo] = (cuenta[r.tipo] ?? 0) + 1;
+  }
+  return cuenta;
+}
+const colores = { 1:'#ed1313', 2: '#c4bd00', 3: '#00a900', 4: '#009c9c', 5: '#0000e8', 6: '#d000d0', 7: '#111', 8: '#777', 9: '#bbb', 11: '#e57e7e', 23: '#a55252', 40: '#d38d00', 51: '#c9c97a', 106: '#58a858', 112: '#429d80' };
 /** El DXF en bytes, como texto: UTF-8 si lo es, si no Windows-1252 (los DXF 2004 del bot). */
 export function textoDxf(bytes) {
   try { return new TextDecoder('utf-8', { fatal: true }).decode(bytes); } catch { return new TextDecoder('windows-1252').decode(bytes); }
@@ -82,6 +124,10 @@ export function leerPlanoTexto(src) {
       } else if (['ARC', 'CIRCLE'].includes(r.tipo)) {
         const p = P(), q = T(n(r, 10) + n(r, 40), n(r, 20));
         salida.push({ ...comun, tipo: 'arco', punto: p, r: Math.hypot(q[0] - p[0], q[1] - p[1]), desde: n(r, 50), hasta: n(r, 51, 360) });
+      } else if (r.tipo === 'SPLINE') {
+        // Las curvas del logo y del cajetín (Iván, 26/10/2026: «que el PDF lleve todo lo del DWG»), en tramos rectos.
+        const pts = puntosSpline(r);
+        for (let i = 1; i < pts.length; i++) segmento(T(...pts[i - 1]), T(...pts[i]));
       }
     }
     return salida;
