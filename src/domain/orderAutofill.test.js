@@ -427,6 +427,26 @@ describe('autocompletado de pedidos RPS', () => {
     expect(result.order.awnings[0]).toMatchObject({ model: 'CAMBIO CORTINA', width: 138.5, projection: 255 });
   });
 
+  // Iván, 26/10/2026: «en el 4976, la web en vez de rellenar dos toldos cortina rellena uno solo pero con 2 unidades;
+  // queremos que abra toldo A y toldo B».
+  test('AR2604976: una línea de 2 Cortina con medidas abre dos toldos de 1 unidad, con las mismas medidas', () => {
+    const result = buildOrderAutofill({
+      header: { orderCode: 'AR.26.04976' },
+      lines: [{
+        lineId: 'ar2604976-2',
+        articleCode: 'CORTINAUNI',
+        description: 'TOLDO CORTINA UNIVERSAL CON MAQUINA O MOTOR',
+        comment: 'POR CONFECCION E INSTALACION DE TOLDOS VERTICALES MODELO CORTINA, DE MEDIDAS 293 X 241 CM.',
+        manufacturingOrder: '0232898',
+        quantity: 2
+      }]
+    });
+    expect(result.order.awnings).toHaveLength(2);
+    expect(result.order.awnings.map((a) => [a.model, a.units, a.width, a.projection, a.of])).toEqual([
+      ['CORTINA', 1, 293, 241, '0232898'], ['CORTINA', 1, 293, 241, '0232898']]);
+    expect(result.warnings.filter((w) => w.includes('un toldo por unidad'))).toHaveLength(1);
+  });
+
   test('AR2604667 (CORTINAUNI, accionamiento manual sin interior/exterior) deja el dispositivo pendiente', () => {
     const result = buildOrderAutofill({
       header: { orderCode: 'AR.26.04667' },

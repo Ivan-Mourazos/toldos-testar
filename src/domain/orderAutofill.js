@@ -40,7 +40,10 @@ export function buildOrderAutofill({ header = {}, lines = [], materials = [], pu
   const editableLines = mappedLines.flatMap(({ line, model }) => expandEditableLine(line, model));
   for (const editableLine of editableLines) {
     if (editableLine.expandedFromQuantity) {
-      warnings.push(`${editableLine.model}: RPS agrupa ${editableLine.expandedFromQuantity} unidades sin medidas; se han creado elementos individuales para completar cada estructura.`);
+      const aviso = editableLine.conMedidas
+        ? `${editableLine.model}: RPS trae ${editableLine.expandedFromQuantity} unidades en una línea; se ha abierto un toldo por unidad con las mismas medidas: revisa si alguna cambia.`
+        : `${editableLine.model}: RPS agrupa ${editableLine.expandedFromQuantity} unidades sin medidas; se han creado elementos individuales para completar cada estructura.`;
+      if (!warnings.includes(aviso)) warnings.push(aviso);
     }
   }
   const awnings = editableLines.map(({ line, model }, index) => {
@@ -228,16 +231,15 @@ function expandEditableLine(line, model) {
 
   const detailText = [line.comment, line.manufacturingNotes].filter(Boolean).join('\n');
   const dimensions = extractOrderTextData(detailText, model);
-  const needsIndividualMeasures = !positiveNumber(dimensions.width)
-    || (model === 'BAMBALINA'
-      ? !positiveNumber(dimensions.valanceHeight)
-      : !positiveNumber(dimensions.projection));
-  if (!needsIndividualMeasures) return [{ line, model }];
-
+  const conMedidas = positiveNumber(dimensions.width)
+    && (model === 'BAMBALINA' ? positiveNumber(dimensions.valanceHeight) : positiveNumber(dimensions.projection));
+  // Una línea de RPS con varias unidades abre un toldo por unidad (A, B…), aunque traiga las medidas (Iván, 26/10/2026,
+  // AR2604976: dos Cortina de 293 × 241 salían como un toldo de 2 unidades).
   return Array.from({ length: wholeUnits }, () => ({
     model,
     line: { ...line, quantity: 1 },
-    expandedFromQuantity: wholeUnits
+    expandedFromQuantity: wholeUnits,
+    conMedidas: Boolean(conMedidas)
   }));
 }
 
