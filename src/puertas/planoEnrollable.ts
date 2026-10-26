@@ -183,6 +183,10 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSac
     // Una nota corta con su raya para que se vea que lleva bolsillo (Iván, 23/10/2026), justo bajo el bajo.
     texto(l, 'BOLSILLO', b.x + b.ancho / 2, -H - 8, 5, { centrado: true });
     linea(l, 'texto', b.x + b.ancho / 2, -H - 5.5, b.x + b.ancho / 2, -H + b.y);
+    // La distancia al borde más cercano y el ancho, encima del bolsillo (Iván, 26/10/2026, AR2605035: las puso a mano).
+    const alto = -H + b.y + b.alto, izquierda = b.x <= F - b.x - b.ancho;
+    if (izquierda) cota(l, 0, alto, b.x, alto, alto + 5); else cota(l, b.x + b.ancho, alto, F, alto, alto + 5);
+    cota(l, b.x, alto, b.x + b.ancho, alto, alto + 5);
   }
   for (const pieza of r.piezas.filter(p => p.origenAlzado)) {
     const [x, y] = pieza.origenAlzado!;

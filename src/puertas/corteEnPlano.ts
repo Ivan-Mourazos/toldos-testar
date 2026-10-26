@@ -32,6 +32,52 @@ function recortar([x1, y1, x2, y2]: number[], caja: { x0: number; y0: number; x1
   return [x1 + t0 * dx, y1 + t0 * dy, x1 + t1 * dx, y1 + t1 * dy];
 }
 
+/** Distancia del punto al segmento. */
+function distancia([px, py]: number[], [ax, ay]: number[], [bx, by]: number[]) {
+  const [dx, dy] = [bx - ax, by - ay], l2 = dx * dx + dy * dy;
+  const t = l2 ? Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / l2)) : 0;
+  return Math.hypot(px - ax - t * dx, py - ay - t * dy);
+}
+
+/** Dentro del contorno o sobre él (con 0,5 mm de tolerancia). */
+function enPieza(p: number[], contorno: number[][]) {
+  if (contorno.some((a, i) => distancia(p, a, contorno[(i + 1) % contorno.length]) < .5)) return true;
+  let dentro = false;
+  for (let i = 0, j = contorno.length - 1; i < contorno.length; j = i++) {
+    const [[xi, yi], [xj, yj]] = [contorno[i], contorno[j]];
+    if ((yi > p[1]) !== (yj > p[1]) && p[0] < (xj - xi) * (p[1] - yi) / (yj - yi) + xi) dentro = !dentro;
+  }
+  return dentro;
+}
+
+/** Los tramos del segmento que caen en la pieza: se parte donde cruza su contorno y se queda lo de dentro o encima. */
+function tramosEnPieza([x1, y1, x2, y2]: number[], contorno: number[][]): number[][] {
+  const [dx, dy] = [x2 - x1, y2 - y1];
+  const cortes = [0, 1];
+  contorno.forEach((a, i) => {
+    const b = contorno[(i + 1) % contorno.length], [ex, ey] = [b[0] - a[0], b[1] - a[1]], d = dx * ey - dy * ex;
+    if (Math.abs(d) < 1e-12) return;
+    const t = ((a[0] - x1) * ey - (a[1] - y1) * ex) / d, u = ((a[0] - x1) * dy - (a[1] - y1) * dx) / d;
+    if (t > 0 && t < 1 && u >= -1e-9 && u <= 1 + 1e-9) cortes.push(t);
+  });
+  // También en las esquinas por las que pasa rozando: una raya del bot a una milésima del borde no corta la cabeza.
+  const l2 = dx * dx + dy * dy;
+  for (const a of contorno) {
+    const t = ((a[0] - x1) * dx + (a[1] - y1) * dy) / l2;
+    if (t > 0 && t < 1 && distancia(a, [x1, y1], [x2, y2]) < .5) cortes.push(t);
+  }
+  cortes.sort((a, b) => a - b);
+  const tramos: number[][] = [];
+  for (let k = 1; k < cortes.length; k++) {
+    const [t0, t1] = [cortes[k - 1], cortes[k]];
+    if ((t1 - t0) * Math.hypot(dx, dy) < .1 || !enPieza([x1 + (t0 + t1) / 2 * dx, y1 + (t0 + t1) / 2 * dy], contorno)) continue;
+    const ultimo = tramos.at(-1);
+    if (ultimo && Math.abs(ultimo[2] - (x1 + t0 * dx)) < 1e-9 && Math.abs(ultimo[3] - (y1 + t0 * dy)) < 1e-9) [ultimo[2], ultimo[3]] = [x1 + t1 * dx, y1 + t1 * dy];
+    else tramos.push([x1 + t0 * dx, y1 + t0 * dy, x1 + t1 * dx, y1 + t1 * dy]);
+  }
+  return tramos;
+}
+
 /** Los textos del bot que no son de ninguna pieza (el título «MATERIAL · CORTE», REVÉS…), en el orden del bot. */
 export function textosFuera(c: CortePuertas): EntidadesPuertas['textos'] {
   return c.entidades.textos.filter(a => !c.colocadas.some(t => {
@@ -55,11 +101,16 @@ export function entidadesDePieza(c: CortePuertas, t: Colocada): EntidadesPuertas
   };
   const giro = t.girada ? -90 : 0;
   const salida = vacias();
+  // El contorno de la pieza en el rollo (mm), como lo coloca el corte: de su caja solo vale lo que cae en ella. Con las
+  // cabezas del saco inclinado o una pestaña, la caja coge trozos de las rayas de la vecina (Iván, 26/10/2026, AR2605035).
+  const contorno = p.contorno.map(([a, b]) => t.girada ? [t.x + (p.alto - b) * 10, t.y + a * 10] : [t.x + a * 10, t.y + b * 10]);
   for (const a of c.entidades.lineas) {
     const r = recortar([a.x1, a.y1, a.x2, a.y2], caja);
     if (!r) continue;
-    const [p1, p2] = [local(r[0], r[1]), local(r[2], r[3])];
-    salida.lineas.push({ ...a, x1: p1[0], y1: p1[1], x2: p2[0], y2: p2[1] });
+    for (const s of tramosEnPieza(r, contorno)) {
+      const [p1, p2] = [local(s[0], s[1]), local(s[2], s[3])];
+      salida.lineas.push({ ...a, x1: p1[0], y1: p1[1], x2: p2[0], y2: p2[1] });
+    }
   }
   for (const a of c.entidades.arcos) {
     if (!dentro(a.x, a.y)) continue;

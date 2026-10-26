@@ -3,7 +3,7 @@ import { anchoArial } from '../domain/corteLona/texto.js';
 import { sacosEnHuecos } from '../domain/corteLona/colocacion.js';
 import { calcularPuerta } from './calcular.ts';
 import { cortarSystemDock, medidaSystemDock } from './systemDock.ts';
-import { enderezarSaco } from './saco.ts';
+import { enderezarSaco, invertirPanoInclinado } from './saco.ts';
 import { centroLibre } from './unionesCorte.ts';
 import { buscarColocacion, huecosLibres, PRESUPUESTO_TETRIS, type PresupuestoCorte, type RectanguloCorte } from '../domain/corteLona/colocacionTetris.ts';
 import type { CortePuertas, EntidadesPuertas, Hueco, PedidoPuertas, PiezaPuerta, Punto, VistaPuertas } from './tipos.ts';
@@ -428,7 +428,7 @@ function colocar(
         ? 'CORTE'
         : opcion === 'saco-entero'
           ? 'SACO ENTERO · ALTERNATIVA'
-          : 'SACO EN DOS · ALTERNATIVA, ELEGIR SOLO UNA';
+          : 'SACO EN DOS';
     const enrollable = grupo.every(p => esEnrollable(p.id));
     const rotuloMaterial = !enrollable && opcion === 'principal' ? grupo[0].material : `${grupo[0].material} · ${titulo}`;
     entidades.textos.push(
@@ -436,8 +436,9 @@ function colocar(
       // Las puertas se cortan siempre por el revés: se avisa al principio, como el DERECHO de remolques (Iván, 22/10/2026).
     );
     if (enrollable) entidades.textos.push({ capa: 'texto', x: 0, y: rollo + 110, h: 80, valor: 'REVÉS' });
-    else if (!primerPano) entidades.textos.push({ capa: 'texto', x: 80, y: Math.min(rollo * .35, 800), h: 80, valor: 'REVÉS', giro: 90 });
-    fusionarCortesPuertas(entidades, rollo);
+    // Apilables y autorreparables: sacos y cristales sin «REVÉS» y con el borde del orillo cortado. Iván quitó esos
+    // REVÉS y puso esas rayas a mano en AR2605035 (26/10/2026). En la lona de los paños y en las enrollables, como antes.
+    fusionarCortesPuertas(entidades, primerPano || enrollable ? rollo : undefined);
     return { material: grupo[0].material, anchoRollo: rollo, largo, opcion, entidades, colocadas };
   });
 }
@@ -477,7 +478,7 @@ export function generarCortePuertas(
   const autorreparables = pedido.elementos.filter(e => e.input.modelo === 'PUERTAUTO').map(e => `${e.id}:`);
   const esAutorreparable = (idPieza: string) => autorreparables.some(prefijo => idPieza.startsWith(prefijo));
   // El saco inclinado se corta con su lado largo recto con el rollo (Iván, 23/10/2026, AR2605035).
-  const principal = resultados.flatMap(r => r.piezas).map(enderezarSaco);
+  const principal = resultados.flatMap(r => r.piezas).map(enderezarSaco).map(invertirPanoInclinado);
   const entero = resultados.flatMap(r => r.alternativasSaco?.entero ?? []).map(enderezarSaco);
   const partido = resultados.flatMap(r => r.alternativasSaco?.partido ?? []).map(enderezarSaco);
   const presupuesto: PresupuestoCorte = { restantes: PRESUPUESTO_TETRIS };

@@ -13,7 +13,7 @@ const positivo = (x: number) => Number.isFinite(x) && x > 0 && x <= 3000;
 const numero = (x: number) => x.toLocaleString('es-ES', { maximumFractionDigits: 2 });
 // Los rollos de Portanova para todas las puertas, también las que se empiezan a mano (Iván, 25/10/2026).
 export function nuevaPuerta(modelo: ModeloPuerta = 'PUERTAENR'): Puerta {
-  return { modelo, articuloOrigen:'', frente: 0, alto: 0, of: '', cantidad: 1, margenMarcas:1.5, confirmada: false, ventanasConfirmadas: false, bolsillo:false, medidasBolsillo:{distancia:20,ancho:30,lado:'izquierdo',altoSuperior:null},
+  return { modelo, articuloOrigen:'', frente: 0, alto: 0, of: '', cantidad: 1, margenMarcas:1.5, confirmada: false, ventanasConfirmadas: false, bolsillo:false, medidasBolsillo:{distancia:0,ancho:0,lado:'izquierdo',altoSuperior:null},
     material: 'LAC900', color: '', materialCristal: 'TRANSP. 1000MI', materialSaco: 'LAC900 NEGRO', sacoDiagonalesAmarillas: false,
     ...ROLLOS_PORTANOVA, observaciones: '', entradas: [], ventanas: [],
     enrollable: { T: 0, D: 60, margen: 0, empates: [], saco: 120 },
@@ -321,7 +321,9 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       if (e.huecos.slice(0,j).some(o => seCruzan(o,h))) aviso('HUECOS_SOLAPADOS',`Entrada ${i+1}: hay huecos que se solapan.`);
     }
   }
-  if(p.bolsillo) {
+  // Sin medida propuesta: la del pedido (Iván, 26/10/2026, AR2605035: se quedó el 20 propuesto y el pedido decía 21).
+  if(p.bolsillo && (!positivo(p.medidasBolsillo.distancia) || !positivo(p.medidasBolsillo.ancho))) aviso('BOLSILLO_COTA','Faltan la distancia al borde y el ancho del bolsillo: escríbelos como vienen en el pedido.');
+  else if(p.bolsillo) {
     const b=p.medidasBolsillo, x=b.lado==='izquierdo'?b.distancia:p.frente-b.distancia-b.ancho;
     // Con el suelo inclinado, la altura cuenta desde el bajo en el sitio del bolsillo, que sube con él (AR2605035).
     const arriba=(b.altoSuperior??18)+desnivelSuelo(p)*(x+b.ancho/2)/p.frente;

@@ -6,9 +6,10 @@ import { geometriaAlzado } from './alzado.ts';
 import { dibujarAlzadoTaller } from './planoTaller.ts';
 import { generarCortePuertas } from './corte.ts';
 import { leerPedidoPuertas } from './pedido.ts';
-import { medidasSaco } from './saco.ts';
+import { enderezarSaco, medidasSaco } from './saco.ts';
 import type { Punto } from './tipos.ts';
 import { anchoArial } from '../domain/corteLona/texto.js';
+import { entidadesDePieza } from './corteEnPlano.ts';
 
 function puerta5035(i = 0) {
   const f = fixture.puertas[i], p = base('PUERTAPLE', f.frente, f.altoIzquierdo);
@@ -36,18 +37,33 @@ describe('Apilable con suelo inclinado · AR2605035',()=>{
       expect((soldadura![3]-soldadura![1])/(soldadura![2]-soldadura![0])).toBeCloseTo((f.altoIzquierdo-f.altoDerecho)/p.frente);
     }
   });
-  it.each([0,1,2])('el saco %s tiene largo diagonal y cabezas verticales',i=>{
+  // Iván, 26/10/2026 (AR2605035): con las dos cabezas verticales, al doblar el saco la cabeza no quedaba vertical. La
+  // mitad de arriba la conserva vertical y la de abajo es su reflejo sobre la raya del doblez, que va en diagonal.
+  it.each([0,1,2])('el saco %s: lado largo en diagonal y, al doblarlo, las cabezas verticales',i=>{
     const p=puerta5035(i), r=calcularPuerta(p), s=r.alternativasSaco!.entero[0];
-    const [a,b,c,d]=s.contorno, diferencia=p.apilable.sueloInclinado!.altoIzquierdo-p.apilable.sueloInclinado!.altoDerecho;
+    const diferencia=p.apilable.sueloInclinado!.altoIzquierdo-p.apilable.sueloInclinado!.altoDerecho, m=diferencia/p.frente;
+    const [a,b]=s.contorno;
     expect(largo(a,b)).toBeCloseTo(Math.hypot(p.frente,diferencia),3);
     expect(b[1]-a[1]).toBeCloseTo(diferencia);
-    expect(b[0]).toBe(c[0]); expect(a[0]).toBe(d[0]);
-    expect(c[1]-b[1]).toBe(32); expect(d[1]-a[1]).toBe(32);
+    // La cabeza sin pestaña: de la esquina de abajo al doblez, torcida; del doblez a la de arriba, vertical.
+    const cabeza=s.contorno.filter(([x])=>x>s.ancho-2).sort((u,v)=>u[1]-v[1]);
+    expect(cabeza).toHaveLength(3);
+    const [abajo,doblez,arriba]=cabeza;
+    expect(arriba[0]).toBeCloseTo(doblez[0],3);
+    expect(arriba[1]-doblez[1]).toBeCloseTo(16,3);
+    // Doblada sobre la raya del doblez, la esquina de abajo cae justo encima, en la de arriba: la cabeza queda vertical.
+    const [dx,dy]=[abajo[0]-doblez[0],abajo[1]-doblez[1]], t=(dx+m*dy)/(1+m*m);
+    expect(doblez[0]+2*t-dx).toBeCloseTo(doblez[0],3);
+    expect(doblez[1]+2*m*t-dy-doblez[1]).toBeCloseTo(16,3);
+    // En el corte, con el doblez recto en el rollo, las dos mitades de la cabeza forman una V simétrica.
+    const corte=enderezarSaco(s), h=corte.alto, derecha=corte.contorno.filter(([x])=>x>corte.ancho-2);
+    const enY=(y:number)=>derecha.find(q=>Math.abs(q[1]-y)<1e-3)![0];
+    expect(enY(0)).toBeCloseTo(enY(h),3);
+    expect(Math.abs(enY(0)-enY(h/2))).toBeCloseTo(h/2*Math.abs(m),2);
     expect(r.alternativasSaco!.partido).toHaveLength(2);
     for(const mitad of r.alternativasSaco!.partido) {
-      const [a,b,c]=mitad.contorno;
-      expect(b[0]).toBe(c[0]);
-      expect((b[1]-a[1])/(b[0]-a[0])).toBeCloseTo(diferencia/p.frente,3);
+      const [a,b]=mitad.contorno;
+      expect((b[1]-a[1])/(b[0]-a[0])).toBeCloseTo(m,3);
     }
   });
   it.each([80,110,120])('admite saco %s y doble sin perder la pestaña',saco=>{
@@ -55,7 +71,7 @@ describe('Apilable con suelo inclinado · AR2605035',()=>{
     for(const doble of [false,...saco===80?[true]:[]]) {
       p.apilable.doble=doble;
       const s=calcularPuerta(p).alternativasSaco!.entero[0], [a,b,c]=s.contorno;
-      expect(s.contorno).toHaveLength(8); expect(b[0]).toBe(c[0]);
+      expect(s.contorno.filter(([x])=>x<11)).not.toHaveLength(0); void c;
       expect((b[1]-a[1])/(b[0]-a[0])).toBeCloseTo(15/432,3);
     }
   });
@@ -74,7 +90,9 @@ describe('Apilable con suelo inclinado · AR2605035',()=>{
     expect(Math.min(...pestana(izquierda.alternativasSaco!.entero[0]))).toBeGreaterThan(0);
     expect(Math.max(...pestana(s))).toBeLessThan(ancho);
     expect(s.contorno.some(([u])=>u===ancho)).toBe(true);
-    expect(pestana(s).every(u=>u>=ancho-10)).toBe(true);
+    // La pestaña sobresale a la derecha del cuerpo (lo de arriba del saco es solo cuerpo).
+    const cuerpo=(x:typeof s)=>x.contorno.filter(([,y])=>y>x.alto*.75).map(([u])=>u);
+    expect(ancho-Math.max(...cuerpo(s))).toBeGreaterThan(9);
     // Mismo bajo inclinado: la cabeza izquierda del cuerpo sigue más abajo que la derecha si baja el suelo.
     const [mitadIzquierda,mitadDerecha]=r.alternativasSaco!.partido;
     expect(mitadIzquierda.nombre).toContain('sin pestaña'); expect(mitadDerecha.nombre).toContain('con pestaña');
@@ -181,5 +199,42 @@ describe('Cintas y bolsillo (Iván, 23/10/2026, AR2605035)', () => {
     p.medidasBolsillo = { distancia: 20, ancho: 30, lado: 'derecho', altoSuperior: null };
     const b = calcularPuerta(p).bolsillo!;
     expect(b.y + b.alto).toBeCloseTo(18 + 15 * (382 + 15) / 432, 3);
+  });
+});
+
+describe('Correcciones de Iván a AR2605035 (26/10/2026)',()=>{
+  it('en el corte, el paño del bajo inclinado va girado: lo recto contra el borde del rollo',()=>{
+    const corte=generarCortePuertas(pedidoDe('AR2605035',puerta5035(0)));
+    const inclinado=corte.cortes.flatMap(c=>c.colocadas).map(t=>t.pieza).find(x=>x.clase==='pano'&&x.contorno.length===4&&new Set(x.contorno.map(([,y])=>y)).size>2)!;
+    // Las dos esquinas de abajo a la misma altura (lo recto) y las de arriba no (lo inclinado, dentro del rollo).
+    const [a,b,c,d]=[...inclinado.contorno].sort((u,v)=>u[1]-v[1]);
+    expect(a[1]).toBe(b[1]);
+    expect(c[1]).not.toBe(d[1]);
+    // En la confección sigue como estaba: lo inclinado abajo.
+    const [ca,cb,cc,cd]=calcularPuerta(puerta5035(0)).piezas.find(x=>x.clase==='pano')!.contorno;
+    expect(ca[1]).not.toBe(cb[1]); expect(cc[1]).toBe(cd[1]);
+  });
+  it('sacos y cristales: sin «REVÉS» y con el borde del orillo cortado; la lona de los paños, como antes',()=>{
+    const corte=generarCortePuertas(pedidoDe('AR2600001',apilable()));
+    for(const c of corte.cortes) {
+      const paños=c.colocadas.some(t=>t.pieza.clase==='pano'), textos=c.entidades.textos.map(t=>t.valor);
+      const orillo=c.entidades.lineas.some(l=>l.capa==='DISCO1'&&Math.abs(l.y1)<.001&&Math.abs(l.y2)<.001);
+      expect(orillo).toBe(!paños);
+      if(!paños) expect(textos).not.toContain('REVÉS');
+    }
+    expect(corte.cortes.some(c=>c.opcion==='saco-partido'&&c.entidades.textos.some(t=>/SACO EN DOS$/.test(t.valor)))).toBe(true);
+  });
+  it('el plano acota la distancia del bolsillo al borde y su ancho',()=>{
+    const p=puerta5035(0); p.bolsillo=true; p.medidasBolsillo={distancia:21,ancho:30,lado:'derecho',altoSuperior:null};
+    const valores=dibujarAlzadoTaller(p,'A').lienzo.cotas.filter(c=>c.giro===0).map(c=>Math.round(c.valor*100)/100);
+    expect(valores).toEqual(expect.arrayContaining([21,30]));
+  });
+  it('las muestras del plano no llevan rayas de la vecina: ningún extremo suelto en los sacos',()=>{
+    const corte=generarCortePuertas(pedidoDe('AR2605035',...[0,1,2,3].map(puerta5035)));
+    const toca=(p:number[],a:number[],b:number[])=>{const [dx,dy]=[b[0]-a[0],b[1]-a[1]],l2=dx*dx+dy*dy||1e-12,t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/l2));return Math.hypot(p[0]-a[0]-t*dx,p[1]-a[1]-t*dy)<.01;};
+    for(const c of corte.cortes.filter(c=>c.opcion!=='principal')) for(const t of c.colocadas) {
+      const s=entidadesDePieza(c,t).lineas.filter(l=>l.capa==='DISCO1').map(l=>[[l.x1,l.y1],[l.x2,l.y2]]);
+      for(const seg of s) for(const p of seg) expect(s.some(o=>o!==seg&&toca(p,o[0],o[1]))).toBe(true);
+    }
   });
 });

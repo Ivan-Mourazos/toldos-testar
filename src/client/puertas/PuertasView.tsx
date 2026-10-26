@@ -92,8 +92,8 @@ function Configurar({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
         {!sd&&<><label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.sacoDiagonalesAmarillas)} onChange={e=>set('sacoDiagonalesAmarillas',e.target.checked)}/>Saco con diagonales amarillas (impresión digital)</label>
         <label className="puerta-casilla"><input type="checkbox" checked={p.bolsillo} onChange={e=>set('bolsillo',e.target.checked)}/>Bolsillo · solo marcas, si lo pide el dibujo</label></>}
         {p.bolsillo&&<fieldset><legend>Posición del bolsillo según el dibujo · cm</legend><div className="puerta-campos">
-          <Numero titulo="Distancia del bolsillo al borde (cm)" valor={p.medidasBolsillo.distancia} cambiar={v=>set('medidasBolsillo',{...p.medidasBolsillo,distancia:v??0})}/>
-          <Numero titulo="Ancho del bolsillo (cm)" valor={p.medidasBolsillo.ancho} cambiar={v=>set('medidasBolsillo',{...p.medidasBolsillo,ancho:v??0})}/>
+          <Numero titulo="Distancia del bolsillo al borde (cm)" valor={p.medidasBolsillo.distancia||null} cambiar={v=>set('medidasBolsillo',{...p.medidasBolsillo,distancia:v??0})}/>
+          <Numero titulo="Ancho del bolsillo (cm)" valor={p.medidasBolsillo.ancho||null} cambiar={v=>set('medidasBolsillo',{...p.medidasBolsillo,ancho:v??0})}/>
           <SegmentedField label="Lado del bolsillo por el revés" value={p.medidasBolsillo.lado==='izquierdo'?'Izquierdo':'Derecho'} options={['Izquierdo','Derecho']} onChange={v=>set('medidasBolsillo',{...p.medidasBolsillo,lado:v==='Izquierdo'?'izquierdo':'derecho'})}/>
           <Numero titulo="Altura superior del bolsillo desde el bajo terminado (cm)" valor={p.medidasBolsillo.altoSuperior??18} cambiar={v=>set('medidasBolsillo',{...p.medidasBolsillo,altoSuperior:v})}/>
           <button type="button" className="ghost-button" onClick={()=>set('medidasBolsillo',{...p.medidasBolsillo,altoSuperior:null})}>Usar altura propuesta</button>

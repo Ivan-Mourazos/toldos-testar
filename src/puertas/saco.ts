@@ -1,4 +1,4 @@
-import type { PiezaPuerta, Puerta } from './tipos.ts';
+import type { PiezaPuerta, Punto, Puerta } from './tipos.ts';
 
 /** Diferencia firmada del bajo en coordenadas de confección (y hacia arriba). */
 export function desnivelSuelo(p: Puerta): number {
@@ -52,20 +52,64 @@ export function espejarPieza(pieza: PiezaPuerta): void {
     abierto: h.abierto === 'izquierda' ? 'derecha' : h.abierto === 'derecha' ? 'izquierda' : undefined }));
 }
 
-/** Cizalla vertical: conserva cabezas verticales, pestaña y ancho proyectado.
- * El lado largo mide hypot(ancho, desnivel); nunca se suma otra diagonal al ancho.
- * El origen sirve para continuar la misma pendiente en las mitades con solape.
+/** Saco del suelo inclinado. El doblez (la mitad del alto) sigue la pendiente del bajo y el lado largo mide
+ * hypot(ancho, desnivel); nunca se suma otra diagonal al ancho. La mitad de arriba se cizalla y conserva la cabeza
+ * vertical; la de abajo es su reflejo sobre la raya del doblez, con la cabeza un poco torcida, para que al doblar el
+ * saco quede encima de la otra y la cabeza terminada salga vertical (Iván, 26/10/2026, AR2605035: con las dos cabezas
+ * verticales, al doblarlo no quedaba bien).
+ * El origen sirve para continuar el mismo doblez en las mitades con solape.
  */
 export function inclinarSaco(pieza: PiezaPuerta, pendiente: number, origen = 0): void {
   if (!pendiente) return;
-  const y = (x: number, alto: number) => alto + pendiente * (x + origen);
-  const contorno = pieza.contorno.map(([x, alto]) => [x, y(x, alto)] as [number, number]);
-  const minimo = Math.min(...contorno.map(p => p[1]));
-  pieza.contorno = contorno.map(([x, alto]) => [x, alto - minimo]);
+  const m = pendiente, f = pieza.alto / 2, k = 1 / (1 + m * m);
+  const mover = ([x, y]: Punto): Punto => {
+    if (y >= f) return [x, y + m * (x + origen)];
+    // Doblada encima de la de arriba, cizallada y devuelta por reflejo sobre el doblez y = f + m·(x + origen).
+    const dx = x + origen, dy = 2 * f - y + m * dx - f, t = (dx + m * dy) * k;
+    return [2 * t - dx - origen, f + 2 * m * t - dy];
+  };
+  // Los tramos que cruzan el doblez se parten en él, para que cada mitad tome su forma.
+  const cruce = (a: Punto, b: Punto): Punto | null =>
+    (a[1] - f) * (b[1] - f) < 0 ? [a[0] + (b[0] - a[0]) * (f - a[1]) / (b[1] - a[1]), f] : null;
+  const contorno = pieza.contorno.flatMap((a, i, c) => {
+    const corte = cruce(a, c[(i + 1) % c.length]);
+    return corte ? [a, corte] : [a];
+  }).map(mover);
+  const marcas = pieza.marcas.flatMap(([x1, y1, x2, y2]): Punto[][] => {
+    const corte = cruce([x1, y1], [x2, y2]);
+    return corte ? [[[x1, y1], corte], [corte, [x2, y2]]] : [[[x1, y1], [x2, y2]]];
+  }).map(([a, b]) => [mover(a), mover(b)]);
+  const x0 = Math.min(...contorno.map(p => p[0])), y0 = Math.min(...contorno.map(p => p[1]));
+  const red = (v: number) => Math.round(v * 1e4) / 1e4;
+  const llevar = (p: Punto): Punto => { const [x, y] = mover(p); return [red(x - x0), red(y - y0)]; };
+  pieza.contorno = contorno.map(([x, y]) => [red(x - x0), red(y - y0)]);
+  pieza.ancho = Math.max(...pieza.contorno.map(p => p[0]));
   pieza.alto = Math.max(...pieza.contorno.map(p => p[1]));
-  pieza.marcas = pieza.marcas.map(([x1,y1,x2,y2]) => [x1,y(x1,y1)-minimo,x2,y(x2,y2)-minimo]);
-  pieza.textos = pieza.textos.map(t=>({...t,y:y(t.x,t.y)-minimo}));
-  pieza.unionesCorte = pieza.unionesCorte?.map(t=>({...t,y:y(t.x,t.y)-minimo}));
+  pieza.marcas = marcas.map(([a, b]) => [red(a[0] - x0), red(a[1] - y0), red(b[0] - x0), red(b[1] - y0)]);
+  pieza.textos = pieza.textos.map(t => { const [x, y] = llevar([t.x, t.y]); return { ...t, x, y }; });
+  pieza.unionesCorte = pieza.unionesCorte?.map(t => { const [x, y] = llevar([t.x, t.y]); return { ...t, x, y }; });
+}
+
+/** Paño del bajo inclinado en el corte: media vuelta, para que su lado recto (el de arriba) vaya contra el borde del
+ * rollo y lo inclinado quede dentro (Iván, 26/10/2026, AR2605035: «en el corte se suelen invertir para tener el fondo
+ * recto»). Girar no le da la vuelta: sigue cortándose por el revés. En la confección no cambia nada.
+ */
+export function invertirPanoInclinado(pieza: PiezaPuerta): PiezaPuerta {
+  // Solo el trapecio del bajo inclinado: cuatro esquinas, arriba recto y abajo no.
+  if (pieza.clase !== 'pano' || pieza.contorno.length !== 4) return pieza;
+  const [a, b, c, d] = pieza.contorno;
+  if (Math.abs(c[1] - d[1]) > 1e-6 || Math.abs(a[1] - b[1]) < 1e-6) return pieza;
+  const { ancho: w, alto: h } = pieza;
+  const red = (v: number) => Math.round(v * 1e4) / 1e4;
+  const girar = ([x, y]: Punto): Punto => [red(w - x), red(h - y)];
+  return { ...pieza,
+    contorno: pieza.contorno.map(girar),
+    marcas: pieza.marcas.map(([x1, y1, x2, y2]) => [...girar([x1, y1]), ...girar([x2, y2])] as [number, number, number, number]),
+    textos: pieza.textos.map(t => { const [x, y] = girar([t.x, t.y]); return { ...t, x, y }; }),
+    unionesCorte: pieza.unionesCorte?.map(t => { const [x, y] = girar([t.x, t.y]); return { ...t, x, y }; }),
+    huecos: pieza.huecos.map(q => ({ ...q, x: red(w - q.x - q.ancho), y: red(h - q.y - q.alto),
+      abierto: q.abierto === 'izquierda' ? 'derecha' : q.abierto === 'derecha' ? 'izquierda' : undefined })),
+    entradasIncorporadas: pieza.entradasIncorporadas?.map(e => ({ ...e, y: red(h - e.y) })) };
 }
 
 /** Iván, 22/10/2026: las diagonales se imprimen después de cortar el saco negro. */

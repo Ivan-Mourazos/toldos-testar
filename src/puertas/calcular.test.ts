@@ -80,7 +80,7 @@ describe('Comprobaciones y reglas confirmadas', () => {
     const p=base('PUERTAENR',172,314);p.enrollable={T:123,D:60,margen:6,empates:[]};
     p.entradas=[{altura:71,diametro:30,largo:172,alto:8,huecos:[]}];
     expect(p.bolsillo).toBe(false);
-    const sin=calcularPuerta(p);p.bolsillo=true;p.medidasBolsillo.altoSuperior=66.25;const con=calcularPuerta(p);
+    const sin=calcularPuerta(p);p.bolsillo=true;p.medidasBolsillo={...p.medidasBolsillo,distancia:20,ancho:30,altoSuperior:66.25};const con=calcularPuerta(p);
     expect(con.piezas.map(x=>[x.clase,x.ancho,x.alto,x.cantidad])).toEqual(sin.piezas.map(x=>[x.clase,x.ancho,x.alto,x.cantidad]));
     const marcas=con.piezas.find(x=>x.nombre==='Paño inferior')!.marcas;
     expect(marcas.slice(-4)).toEqual([[20,54.75,20,55.25],[20,55.25,20.5,55.25],[50,54.75,50,55.25],[50,55.25,49.5,55.25]]);
@@ -89,6 +89,10 @@ describe('Comprobaciones y reglas confirmadas', () => {
   });
   it('propone 1 + 17 desde el saco doblado y permite otra altura terminada',()=>{
     const p=base('PUERTAUTO',200,300);p.bolsillo=true;
+    // Sin medidas no se inventa ninguna: avisa (Iván, 26/10/2026, AR2605035).
+    expect(calcularPuerta(p).bolsillo).toBeNull();
+    expect(calcularPuerta(p).avisos.some(a=>a.codigo==='BOLSILLO_COTA'&&a.nivel==='error'&&/en el pedido/.test(a.texto))).toBe(true);
+    p.medidasBolsillo={...p.medidasBolsillo,distancia:20,ancho:30};
     expect(calcularPuerta(p).bolsillo).toEqual({x:20,y:1,ancho:30,alto:17});
     p.medidasBolsillo.altoSuperior=44;
     expect(calcularPuerta(p).bolsillo).toEqual({x:20,y:27,ancho:30,alto:17});

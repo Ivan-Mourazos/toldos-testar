@@ -335,6 +335,10 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
     const xb = r.bolsillo.x + r.bolsillo.ancho / 2, yb = -H + desnivel * xb / F;
     texto(l, 'BOLSILLO', xb, yb - 8, 5);
     linea(l, 'texto', xb, yb - 5.5, xb, -H + r.bolsillo.y);
+    // La distancia al borde más cercano y el ancho, encima del bolsillo (Iván, 26/10/2026, AR2605035: las puso a mano).
+    const alto = -H + r.bolsillo.y + r.bolsillo.alto, izquierda = r.bolsillo.x <= F - r.bolsillo.x - r.bolsillo.ancho;
+    if (izquierda) cota(l, 0, alto, r.bolsillo.x, alto, alto + 5); else cota(l, r.bolsillo.x + r.bolsillo.ancho, alto, F, alto, alto + 5);
+    cota(l, r.bolsillo.x, alto, r.bolsillo.x + r.bolsillo.ancho, alto, alto + 5);
   }
   // El alzado conserva horizontales todas las entradas y solo desplaza el bajo.
   if (desnivel) {
