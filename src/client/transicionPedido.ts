@@ -7,7 +7,7 @@ let actual: ViewTransition | undefined;
 export function transicionPedido(actualizar: () => void) {
   actual?.skipTransition();
   if (!document.startViewTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    actualizar();
+    flushSync(actualizar);
     return Promise.resolve();
   }
   document.documentElement.dataset.transicionPedido = 'activa';

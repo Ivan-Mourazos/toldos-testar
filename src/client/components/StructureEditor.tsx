@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Search, Trash2 } from 'lucide-react';
 import type { Awning, StructureEditorState, StructureRow } from '../types';
-import { formatDecimal } from '../constants';
+import { formatDecimal, uid } from '../constants';
 
 type Article = { code: string; description: string; unitCode: string };
 type Props = {
@@ -40,7 +40,7 @@ export function StructureEditor({ awning, editor, armCount, onUpdate, onEditingC
   }
   function addRow() {
     const num = Math.max(0, ...rows.map((row) => row.num)) + 1;
-    const row: StructureRow = { id: 'added:' + crypto.randomUUID(), num, name: '', reference: null, units: 1, length: null, reservationQuantity: 1, unitCode: '', kind: 'piece' };
+    const row: StructureRow = { id: 'added:' + uid(), num, name: '', reference: null, units: 1, length: null, reservationQuantity: 1, unitCode: '', kind: 'piece' };
     lastUnits.current.set(row.id, row.units);
     setRows((current) => [...current, row]); setSearchRow(row.id);
   }
