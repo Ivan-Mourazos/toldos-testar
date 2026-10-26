@@ -126,3 +126,12 @@
 .puerta-config .puerta-tubo-nombre { grid-column:1 / -1; padding:0; }
 .puerta-config .puerta-ventana-fila { grid-template-columns:repeat(2,minmax(0,1fr)); padding-block:10px; border-bottom:1px solid var(--border); }
 .puerta-config .puerta-ventana-fila > :first-child { grid-column:1 / -1; }
+
+/* Dibujo fijo a la derecha con el alto de la pantalla y formulario por pestañas (Iván, 26/10/2026: «el dibujo
+   siempre estático a la derecha de la pantalla con la altura de la pantalla»). */
+.puerta-pestanas { display:flex; flex-wrap:wrap; margin:0 0 12px; }
+.puerta-derecha { position:sticky; top:12px; height:calc(100vh - 120px); display:flex; flex-direction:column; gap:10px; min-height:0; }
+.puerta-derecha > .puerta-alzado, .puerta-derecha > .puerta-corte-resumen { flex:1; min-height:0; display:flex; flex-direction:column; overflow:auto; }
+.puerta-derecha .puerta-alzado svg { flex:1; height:auto; min-height:300px; }
+.puerta-derecha .puerta-avisos { flex:none; max-height:24vh; overflow:auto; }
+.puerta-derecha .puerta-derecha-pestanas { flex:none; margin-bottom:0; }

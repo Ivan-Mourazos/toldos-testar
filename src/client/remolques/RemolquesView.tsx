@@ -245,6 +245,8 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
               <DibujoElemento params={params} elemento={lineaActiva.tipo === 'lona'
                 ? { tipo: 'lona', input: lona, res: resLona }
                 : { tipo: 'baqueton', input: baq, res: resBaq }} />
+              {/* Los resultados, en su caja con scroll bajo el dibujo: el dibujo no se va (Iván, 26/10/2026). */}
+              <div className="rem-resultados-scroll">
               {ws.medidasSuficientes && lineaActiva.tipo === 'lona' ? (
                 <ResultadosLona
                   res={resLona}
@@ -270,6 +272,7 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
                   Completa las medidas necesarias para calcular los paños y el reparto de ollaos.
                 </p>
               )}
+              </div>
               </>}
             </div>
           </div>
