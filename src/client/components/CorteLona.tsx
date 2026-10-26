@@ -1,7 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { CheckCircle2, FolderOpen, Scissors, RefreshCw } from 'lucide-react';
-import { abrirCorteDwg, confirmarCorteDwg } from '../abrirCorte';
-import type { AskForConfirmation, Notify } from './NotificationCenter';
+import { CheckCircle2, Scissors, RefreshCw } from 'lucide-react';
 import { corteReadiness } from '../../domain/corteReadiness.js';
 import { resolveFabric } from '../../domain/fabricCatalog.js';
 import { awningLetter } from '../../domain/awningCompleteness.js';
@@ -15,15 +13,21 @@ const numero = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits:
 
 // `regenerable`: en un pedido guardado, su autor puede generar el corte que falta o está viejo sin «Corregir»
 // (Iván, 21/10/2026); `onGenerated` lo guarda con el pedido tal cual está.
-// `dwg`: en el formulario, «Abrir corte» y «Confirmar corte» del flujo del DWG (plan del 24/10/2026), como en puertas.
-export function CorteLona({ order, estado, onGenerated, reviewCode, acciones, regenerable = false, dwg }: {
+// «Abrir corte» y «Confirmar corte» del flujo del DWG están arriba, junto a «Guardar para revisión», como en puertas
+// (Iván, 26/10/2026); `onListo` les dice si el corte está generado, al día y con sus OF.
+
+/** Los toldos del pedido que llevan corte de lona: PVC de un modelo con corte. */
+export function toldosConCorte(order: DraftState) {
+  return order.awnings.flatMap((t, i) => corteReadiness(t.model).ready &&
+    resolveFabric(order.sameFabric ? order.fabric : t.fabric)?.material?.trim().toUpperCase() === 'PLASTICA (LONA)' ? [{ t, letra: awningLetter(i) }] : []);
+}
+
+export function CorteLona({ order, estado, onGenerated, reviewCode, acciones, regenerable = false, onListo }: {
   order: DraftState; estado?: EstadoCorte | null; onGenerated?: (estado: EstadoCorte) => void; reviewCode?: string; regenerable?: boolean;
   acciones?: (alDia: boolean) => React.ReactNode;
-  dwg?: { usuario: string; notify: Notify; preguntar: AskForConfirmation };
+  onListo?: (falta: string | null) => void;
 }) {
-  const [abriendo, setAbriendo] = useState(false);
-  const toldos = order.awnings.flatMap((t, i) => corteReadiness(t.model).ready &&
-    resolveFabric(order.sameFabric ? order.fabric : t.fabric)?.material?.trim().toUpperCase() === 'PLASTICA (LONA)' ? [{ t, letra: awningLetter(i) }] : []);
+  const toldos = toldosConCorte(order);
   const entrada = JSON.stringify(order);
   const [vista, setVista] = useState<{ entrada: string; datos: CorteRespuesta } | null>(null);
   const [comprobacion, setComprobacion] = useState<{ entrada: string; pendientes: PendienteCorte[] } | null>(null);
@@ -54,11 +58,14 @@ export function CorteLona({ order, estado, onGenerated, reviewCode, acciones, re
     return () => { clearTimeout(timer); controller.abort(); };
   }, [entrada, estadoJson, requerido, reviewCode]);
 
-  if (!requerido) return null;
   const datos = vista?.entrada === entrada ? vista.datos : null;
   const sinOf = toldos.some(({ t }) => !t.of?.trim());
   const pendientes = comprobacion?.entrada === entrada ? comprobacion.pendientes : estado ? null : toldos.map(({ letra }) => ({ letra, motivo: 'sinGenerar' as const }));
   const estadoVisible = pendientes?.some(p => p.motivo === 'viejo') ? 'viejo' : pendientes?.length || !estado ? 'falta' : 'hecho';
+  const falta = sinOf ? 'Falta la OF de algún toldo' : estadoVisible === 'viejo' ? 'Corte viejo: genéralo de nuevo' : estadoVisible === 'falta' ? 'Genera el corte de lona' : null;
+  useEffect(() => { if (requerido) onListo?.(falta); }, [falta, requerido, onListo]);
+
+  if (!requerido) return null;
 
   async function generar(ajustes = estado?.ajustes || {}) {
     const solicitud = ++secuencia.current;
@@ -75,19 +82,6 @@ export function CorteLona({ order, estado, onGenerated, reviewCode, acciones, re
     } catch (e) { if (solicitud === secuencia.current) setError(e instanceof Error ? e.message : 'No se pudo generar el corte.'); }
     finally { if (solicitud === secuencia.current) setGenerando(false); }
   }
-  // Fase 1: los planos del corte en la carpeta de borradores, abiertos en ZWCAD. Fase 2: su corte, confirmado para guardar.
-  async function abrirCorte() {
-    if (!dwg) return;
-    setAbriendo(true);
-    try { await abrirCorteDwg({ ruta: '/api/corte-lona/borrador', orderCode: order.orderCode, cuerpo: { order, corteLona: estado }, usuario: dwg.usuario, preguntar: dwg.preguntar, notify: dwg.notify }); }
-    finally { setAbriendo(false); }
-  }
-  async function confirmarCorte() {
-    if (!dwg) return;
-    setAbriendo(true);
-    try { await confirmarCorteDwg({ ruta: '/api/corte-lona/borrador/confirmar', orderCode: order.orderCode, usuario: dwg.usuario, notify: dwg.notify }); }
-    finally { setAbriendo(false); }
-  }
   function cambiar(clave: string, patch: AjustesCorte) {
     void generar({ ...estado?.ajustes, [clave]: { ...estado?.ajustes[clave], ...patch } });
   }
@@ -96,12 +90,6 @@ export function CorteLona({ order, estado, onGenerated, reviewCode, acciones, re
     <CabeceraDocumento titulo={reviewCode ? 'Corte' : 'Corte de lona'} icono={<Scissors aria-hidden="true" />}>
       <span className={`corte-estado is-${sinOf ? 'aviso' : estadoVisible}`} role="status">{!sinOf && estadoVisible === 'hecho' && <CheckCircle2 size={16} aria-hidden="true" />}{sinOf ? 'Vista previa · falta la OF' : pendientes === null ? 'Comprobando el corte…' : textoEstadoCorte(estadoVisible)}</span>
       {(!reviewCode || (regenerable && pendientes !== null && estadoVisible !== 'hecho')) && <button className="primary-button boton-3d" type="button" disabled={generando} onClick={() => void generar()}><RefreshCw size={16} aria-hidden="true" />{generando ? 'Generando corte…' : 'Generar corte'}</button>}
-      {dwg && !reviewCode && <>
-        <button type="button" className="ghost-button boton-3d" onClick={() => void abrirCorte()} disabled={abriendo || generando || sinOf || estadoVisible !== 'hecho'}
-          title={estadoVisible !== 'hecho' ? 'Genera el corte antes de abrirlo' : 'Deja el plano en la carpeta de borradores y lo abre en ZWCAD'}><FolderOpen size={16} aria-hidden="true" />{abriendo ? 'Un momento…' : 'Abrir corte'}</button>
-        <button type="button" className="ghost-button boton-3d" onClick={() => void confirmarCorte()} disabled={abriendo || generando || sinOf || estadoVisible !== 'hecho'}
-          title="Lee el borrador tal como quedó en ZWCAD y lo da por bueno para guardar para revisión"><CheckCircle2 size={16} aria-hidden="true" />Confirmar corte</button>
-      </>}
       {acciones?.(Boolean(datos && pendientes?.length === 0))}
     </CabeceraDocumento>
     <p className="corte-ayuda">PVC · piezas y marcas de confección, agrupadas por tela</p>

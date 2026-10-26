@@ -334,6 +334,16 @@ app.post('/api/corte-lona/borrador', async (req, res, next) => {
   }
 });
 
+// En qué paso está el corte, para los botones de arriba (26/10/2026), como en puertas y remolques.
+app.get('/api/corte-lona/borrador/estado', async (req, res, next) => {
+  try {
+    const codigo = String(req.query?.orderCode ?? '').trim();
+    res.set('Cache-Control', 'no-store').json(codigo ? await flujoToldos.estado(sanitizeOrderCode(codigo)) : { activo: false });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Fase 2: el corte de los borradores, tal como quedaron en ZWCAD, confirmado para poder guardar para revisión.
 app.post('/api/corte-lona/borrador/confirmar', async (req, res, next) => {
   try {
@@ -865,6 +875,11 @@ app.post('/api/remolques/pedidos', rutaRemolques(async (req, res) => {
 app.post('/api/remolques/borrador-corte', rutaRemolques(async (req, res) => {
   const { status, cuerpo } = await pedidosRemolques.borradorCorte(req.body);
   res.status(status).json(cuerpo);
+}));
+
+// En qué paso está el corte, para los botones de arriba (26/10/2026), como en puertas.
+app.get('/api/remolques/borrador-corte/estado', rutaRemolques(async (req, res) => {
+  res.set('Cache-Control', 'no-store').json(await pedidosRemolques.estadoCorte(req.query.orderCode));
 }));
 
 app.post('/api/remolques/borrador-corte/confirmar', rutaRemolques(async (req, res) => {

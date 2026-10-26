@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { CorteLona, CorteLonaVista, DibujoCorte } from './CorteLona';
+import { CorteLona, CorteLonaVista, DibujoCorte, toldosConCorte } from './CorteLona';
 import { textoEstadoCorte } from '../corteLona';
 import { defaultDraft } from '../hooks/useDraft';
 import { createAwning } from '../constants';
@@ -35,16 +35,12 @@ describe('Vista compartida del corte de lona', () => {
     expect(html).toContain('corte-estado is-aviso');
     expect(html).not.toContain('Corte al día');
   });
-  // Flujo del DWG (24/10/2026): en el formulario, como en puertas; solo con el corte generado (y su OF) se puede abrir.
-  it('en el formulario ofrece «Abrir corte» y «Confirmar corte», desactivados hasta generar el corte', () => {
+  // Flujo del DWG: «Abrir corte» y «Confirmar corte» están arriba, en la barra del pedido (Iván, 26/10/2026), no aquí.
+  it('no lleva los botones del DWG; solo los toldos de PVC con corte cuentan para el flujo', () => {
     const order = { ...defaultDraft(), fabric: 'PVC|||250|||LONA PVC|||PLASTICA (LONA)', awnings: [{ ...createAwning(), model: 'GALICIA', of: '0232568' }] };
-    const dwg = { usuario: 'IVÁN', notify: () => {}, preguntar: async () => 'cancel' as const };
-    const html = renderToStaticMarkup(<CorteLona order={order} dwg={dwg} />);
-    expect(html).toContain('Abrir corte');
-    expect(html).toContain('Confirmar corte');
-    expect(html.match(/<button[^>]*disabled=""[^>]*title="Genera el corte antes de abrirlo"/)).not.toBeNull();
     expect(renderToStaticMarkup(<CorteLona order={order} />)).not.toContain('Abrir corte');
-    expect(renderToStaticMarkup(<CorteLona order={order} reviewCode="AR2604784" dwg={dwg} />)).not.toContain('Abrir corte');
+    expect(toldosConCorte(order)).toHaveLength(1);
+    expect(toldosConCorte({ ...order, fabric: 'ACRILI2018P120' })).toHaveLength(0);
   });
   it('en un pedido guardado, «Generar corte» solo para el autor y si el corte falta (Iván, 21/10/2026)', () => {
     const order = { ...defaultDraft(), fabric: 'PVC|||250|||LONA PVC|||PLASTICA (LONA)', awnings: [{ ...createAwning(), model: 'GALICIA', of: '0232568' }] };

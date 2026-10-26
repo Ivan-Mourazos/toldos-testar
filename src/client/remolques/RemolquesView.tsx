@@ -17,7 +17,8 @@ import { PestanasElementos } from './PestanasElementos';
 import { pantallaGanchos, ResultadosBaqueton, ResultadosLona } from './Resultados';
 import { rotuloElemento } from './rotulo';
 import { VistaPreviaPdf } from './VistaPreviaPdf';
-import { VistaPreviaCorte } from './VistaPreviaCorte';
+import { entradaCorte, useVistaCorteRemolques, VistaPreviaCorte } from './VistaPreviaCorte';
+import { BotonesFlujoCorte, esperaAlCorte, useFlujoCorteDwg } from '../flujoCorteDwg';
 import { faltaParaPdf } from './vistaPrevia';
 import type { ModoCarga } from './guardarPedido';
 import { useRemolques } from './useRemolques';
@@ -98,6 +99,16 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
   const fichaCliente = useGuardarEnFicha({ usuario, numeroPedido, pedidoRps: rps.pedido, params, notify });
   const clienteActivo = lineaActiva ? clienteDeLinea(lineaActiva, numeroPedido, rps.pedido) : null;
   // Solo comunica los datos del rótulo; el pedido y sus operaciones siguen en este editor.
+  // El corte del pedido, calculado solo (pestaña «Corte» junto al dibujo), y su flujo con el DWG en la barra de arriba,
+  // como en puertas: «Abrir corte», «Confirmar corte» y, con el corte confirmado, «Guardar para revisión».
+  const bloqueoCorte = ws.bloqueoParams.motivo ?? faltaPdf;
+  const entrada = entradaCorte(lineas, params);
+  const vistaCorte = useVistaCorteRemolques(lineas.length ? entrada : '', lineas.length ? bloqueoCorte : 'Añade un elemento');
+  const flujo = useFlujoCorteDwg({ base: '/api/remolques/borrador-corte', codigo: numeroPedido, entrada,
+    cuerpo: () => JSON.parse(entrada) as Record<string, unknown>, aplica: Boolean(vistaCorte.actual?.datos?.cortes.length),
+    falta: bloqueoCorte, usuario, notify, askForConfirmation, activo: accionesVisibles && lineas.length > 0 });
+  const esperaCorte = esperaAlCorte(flujo.paso);
+  const [derecha, setDerecha] = React.useState<'dibujo' | 'corte'>('dibujo');
   React.useEffect(() => {
     onResumenChange?.({ numero: numeroPedido, elementos: lineas.length });
   }, [numeroPedido, lineas.length, onResumenChange]);
@@ -111,9 +122,10 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
         onClick={() => void ws.guardarBorrador()}>
         <FilePen aria-hidden="true" />{ws.guardandoBorrador ? 'Guardando…' : 'Guardar borrador'}
       </button>
+      <BotonesFlujoCorte flujo={flujo} ocupado={ws.guardando} />
       <button type="button" className="primary-button rem-guardar-boton"
-        disabled={lineas.length === 0 || Boolean(faltaPdf) || ws.guardando || ws.guardandoBorrador || Boolean(ws.bloqueoParams.motivo)}
-        aria-busy={ws.guardando} title={ws.bloqueoParams.motivo ?? faltaPdf ?? undefined}
+        disabled={lineas.length === 0 || Boolean(faltaPdf) || ws.guardando || ws.guardandoBorrador || Boolean(ws.bloqueoParams.motivo) || Boolean(esperaCorte)}
+        aria-busy={ws.guardando} title={ws.bloqueoParams.motivo ?? faltaPdf ?? esperaCorte ?? undefined}
         onClick={() => void ws.guardarParaRevision()}>
         <Save aria-hidden="true" />{ws.guardando ? 'Guardando…' : 'Guardar para revisión'}
       </button>
@@ -225,6 +237,11 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
             >
               {/* El render 3D (fase 2b) y, de respaldo, el dibujo de la web de remolques (DibujoElemento,
                   el mismo que el del pedido guardado abierto en Pedidos). */}
+              {lineas.length > 0 && <div className="tira-3d pestanas-derecha" role="group" aria-label="Ver junto al formulario">
+                {(['dibujo', 'corte'] as const).map((v) => <button type="button" key={v} className={`pestana ${derecha === v ? 'pestana-activa' : ''}`}
+                  aria-pressed={derecha === v} onClick={() => setDerecha(v)}>{v === 'dibujo' ? 'Dibujo' : 'Corte del pedido'}</button>)}
+              </div>}
+              {derecha === 'corte' ? <VistaPreviaCorte vista={vistaCorte} /> : <>
               <DibujoElemento params={params} elemento={lineaActiva.tipo === 'lona'
                 ? { tipo: 'lona', input: lona, res: resLona }
                 : { tipo: 'baqueton', input: baq, res: resBaq }} />
@@ -253,6 +270,7 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
                   Completa las medidas necesarias para calcular los paños y el reparto de ollaos.
                 </p>
               )}
+              </>}
             </div>
           </div>
         </section>
@@ -263,8 +281,6 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
               : 'Busca el pedido arriba para traer sus líneas, o escribe su número en Datos del pedido para empezar a mano.'}
         </OrderEmptyState>
       )}
-      {lineas.length > 0 && <VistaPreviaCorte lineas={lineas} params={params} bloqueo={ws.bloqueoParams.motivo ?? faltaPdf}
-        numeroPedido={numeroPedido} usuario={usuario} notify={notify} preguntar={askForConfirmation} />}
       {fichaCliente.abierta && (
         <GuardarEnFicha abierta={fichaCliente.abierta} usuario={usuario} numeroPedido={numeroPedido}
           ocupado={fichaCliente.ocupado} onGuardar={(claves) => void fichaCliente.guardar(claves)} onCerrar={fichaCliente.cerrar} />

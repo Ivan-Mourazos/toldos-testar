@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CheckCircle2, Eraser, FolderOpen, Plus, Save, Trash2 } from 'lucide-react';
+import { Eraser, Plus, Save, Trash2 } from 'lucide-react';
 import { alturasTubos, calcularPuerta, huecosEntrada, MODELOS_PUERTAS, nuevaPuerta, yEnTramo } from '../../puertas/calcular.ts';
 import type { PedidoPuertasGuardado } from '../../puertas/flujo/tipos.ts';
 import { REGLAS_SYSTEM_DOCK } from '../../puertas/systemDock.ts';
@@ -15,7 +15,8 @@ import { InputDecimal } from '../remolques/InputDecimal';
 import type { ResumenPedido } from '../remolques/SelectorProducto';
 import { AlzadoPuerta } from './AlzadoPuerta';
 import { CorteResumen, useVistaCortePuertas } from './VistaCortePuertas';
-import { textoPaso, useFlujoCorte } from './flujoCorte';
+import { useFlujoCorte } from './flujoCorte';
+import { BotonesFlujoCorte, esperaAlCorte } from '../flujoCorteDwg';
 import { cintasDesdeFila, ejesDesdeTramos, leerCadena } from './cadenaDibujo';
 import { avanzarConIntro } from '../avanzarConIntro';
 import './puertas.css';
@@ -448,19 +449,9 @@ export function PuertasView({ activo, onResumenChange, usuario, notify, askForCo
     <OrderActions hidden={!accionesVisibles}>
       <button className="ghost-button clear-form-button" type="button" disabled={guardando} onClick={() => void limpiar()}><Eraser aria-hidden="true" />Limpiar</button>
       {/* El flujo del corte, aquí arriba y en orden: cada botón se habilita cuando toca (Iván, 26/10/2026). */}
-      {flujo.paso.paso !== 'sin-flujo' && <>
-        <span className="puerta-paso" role="status" title={textoPaso(flujo.paso)}>{textoPaso(flujo.paso)}</span>
-        <button type="button" className="ghost-button" disabled={flujo.ocupado || guardando || flujo.paso.paso === 'incompleto'}
-          title={flujo.paso.paso === 'incompleto' ? flujo.paso.motivo : 'Deja el plano en la carpeta de borradores y lo abre en ZWCAD'} onClick={() => void flujo.abrir()}>
-          <FolderOpen aria-hidden="true" />{flujo.ocupado ? 'Un momento…' : 'Abrir corte'}
-        </button>
-        <button type="button" className="ghost-button" disabled={flujo.ocupado || guardando || !['confirmar', 'tocado', 'guardar'].includes(flujo.paso.paso)}
-          title={['confirmar', 'tocado', 'guardar'].includes(flujo.paso.paso) ? 'Lee el borrador tal como quedó en ZWCAD y lo da por bueno' : textoPaso(flujo.paso)} onClick={() => void flujo.confirmar()}>
-          <CheckCircle2 aria-hidden="true" />{flujo.paso.paso === 'guardar' ? 'Corte confirmado' : 'Confirmar corte'}
-        </button>
-      </>}
-      <button type="button" className="primary-button" disabled={guardando || !pedido.orderCode.trim() || (flujo.paso.paso !== 'sin-flujo' && flujo.paso.paso !== 'guardar')} aria-busy={guardando}
-        title={!pedido.orderCode.trim() ? 'Escribe el número de pedido.' : flujo.paso.paso !== 'sin-flujo' && flujo.paso.paso !== 'guardar' ? textoPaso(flujo.paso) : undefined} onClick={() => void guardar()}>
+      <BotonesFlujoCorte flujo={flujo} ocupado={guardando} />
+      <button type="button" className="primary-button" disabled={guardando || !pedido.orderCode.trim() || Boolean(esperaAlCorte(flujo.paso))} aria-busy={guardando}
+        title={!pedido.orderCode.trim() ? 'Escribe el número de pedido.' : esperaAlCorte(flujo.paso) ?? undefined} onClick={() => void guardar()}>
         <Save aria-hidden="true" />{guardando ? 'Guardando…' : 'Guardar para revisión'}
       </button>
     </OrderActions>

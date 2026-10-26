@@ -26,7 +26,8 @@ import { incompleteAwningLines } from './incompleteAwnings';
 import { PdfPreviewViewer } from './components/PdfPreviewViewer';
 import { controlLabel } from './components/controlLabels';
 import { OrderView } from './views/OrderView';
-import { CorteLona } from './components/CorteLona';
+import { CorteLona, toldosConCorte } from './components/CorteLona';
+import { BotonesFlujoCorte, esperaAlCorte, useFlujoCorteDwg } from './flujoCorteDwg';
 import { ParametersView, type VistaRemolques } from './views/ParametersView';
 import { useParameters, type SaveDraftResult } from './hooks/useParameters';
 import { ParametersSaveBar } from './components/ParametersSaveBar';
@@ -719,6 +720,16 @@ export default function App() {
         ? 'Pedidos'
         : 'Configuración de carpetas';
 
+  // El flujo del corte de lona con el DWG, arriba junto a «Guardar para revisión», como en puertas y remolques.
+  const [faltaCorteLona, setFaltaCorteLona] = useState<string | null>('Genera el corte de lona');
+  const pedidoToldos = currentOrderPayload();
+  const corteToldos = useFlujoCorteDwg({ base: '/api/corte-lona/borrador', codigo: draft.orderCode,
+    entrada: JSON.stringify({ order: pedidoToldos, corteLona: draft.corteLona ?? null }),
+    cuerpo: () => ({ order: pedidoToldos, corteLona: draft.corteLona }), aplica: toldosConCorte(pedidoToldos).length > 0,
+    falta: faltaCorteLona, usuario: currentUser, notify, askForConfirmation,
+    activo: activeTab === 'order' && editorPedidoAbierto && producto === 'toldos' });
+  const esperaCorteToldos = esperaAlCorte(corteToldos.paso);
+
   return (
     <main className={`app-shell${activeTab === 'order' ? ' is-new-order' : ''}`}>
       {/* Cabecera como la de CoordinaOT (diseño 29/09/2026, estilo CoordinaOT): del color de
@@ -778,7 +789,9 @@ export default function App() {
                 <FilePen aria-hidden="true" />
                 {working === 'draft' ? 'Guardando…' : 'Guardar borrador'}
               </button>
-              <button className="primary-button" type="button" disabled={Boolean(working) || calculationState === 'validating' || draft.awnings.length === 0} onClick={() => void saveForReview()}>
+              <BotonesFlujoCorte flujo={corteToldos} ocupado={Boolean(working)} />
+              <button className="primary-button" type="button" disabled={Boolean(working) || calculationState === 'validating' || draft.awnings.length === 0 || Boolean(esperaCorteToldos)}
+                title={esperaCorteToldos ?? undefined} onClick={() => void saveForReview()}>
                 <Save aria-hidden="true" />
                 {working === 'review' ? 'Guardando…' : 'Guardar para revisión'}
               </button>
@@ -859,7 +872,7 @@ export default function App() {
                 onNotify={notify}
               />
               <CorteLona order={currentOrderPayload()} estado={draft.corteLona} onGenerated={draft.setCorteLona}
-                dwg={{ usuario: currentUser, notify, preguntar: askForConfirmation }} />
+                onListo={setFaltaCorteLona} />
             </fieldset>
           )}
 

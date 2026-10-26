@@ -235,6 +235,13 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
   }
 
   /** «Confirmar corte» (fase 2): el corte del borrador, tal como quedó en ZWCAD, apuntado para guardar para revisión. */
+  /** En qué paso está el corte del pedido (borrador, confirmado, tocado después), para los botones de arriba (26/10/2026). */
+  async function estadoCorte(orderCode: unknown) {
+    const codigo = typeof orderCode === "string" ? orderCode.trim() : "";
+    if (!codigo) return { activo: false as const };
+    return flujo.estado(codigoPedido(codigo));
+  }
+
   async function confirmarCorte(cuerpo: unknown): Promise<Respuesta> {
     const c = (cuerpo ?? {}) as { orderCode?: unknown; savedBy?: unknown };
     const autor = typeof c.savedBy === "string" ? c.savedBy.trim() : "";
@@ -540,5 +547,5 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     } finally { ocupados.delete(orderCode); }
   }
 
-  return { listar, obtener, guardar, borradorCorte, confirmarCorte, generar, vistaPrevia, archivo, buscar, corte, vistaPreviaCorte, planoCorte, enviarCorte, descargarCorte };
+  return { listar, obtener, guardar, borradorCorte, confirmarCorte, estadoCorte, generar, vistaPrevia, archivo, buscar, corte, vistaPreviaCorte, planoCorte, enviarCorte, descargarCorte };
 }

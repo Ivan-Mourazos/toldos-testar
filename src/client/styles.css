@@ -3426,3 +3426,9 @@ fieldset.order-strip { border: 0; margin: 0; min-inline-size: 0; padding: 0; }
 .workspace-heading .parameters-history summary span { color: var(--text-muted); display: block; font-size: 12px; font-weight: 600; letter-spacing: 0; margin: 0; overflow: hidden; text-decoration: underline dotted; text-overflow: ellipsis; text-transform: none; text-underline-offset: 3px; white-space: nowrap; }
 .parameters-history summary svg { height: 14px; width: 14px; }
 .parameters-history-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; left: 0; max-height: 60vh; overflow-y: auto; padding-top: var(--sp-2); position: absolute; top: calc(100% + 4px); width: min(560px, 80vw); z-index: 40; }
+
+/* El paso del corte junto a sus botones, arriba, en toda la web (Iván, 26/10/2026). */
+.flujo-corte-paso { font-size: 13px; color: var(--text-muted); max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Pestañas «Dibujo» / «Corte del pedido» encima de la columna derecha (remolques y toldos). */
+.pestanas-derecha { display: inline-flex; margin-bottom: 10px; }
+.rem-corte-junto { padding: 0; }
