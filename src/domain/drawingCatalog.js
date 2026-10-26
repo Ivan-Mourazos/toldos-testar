@@ -71,7 +71,8 @@ export function drawingConditionOptions(model) {
   if (curtain || code === 'SELENA') add('curtainHasWindow', YES_NO);
   if (curtain) add('curtainFinish', code.includes('CORTINA') ? ['NORMAL', 'VELCRO'] : CURTAIN_FINISHES);
   if (code.includes('CORTINA')) add('curtainBottomFinish', ['TUBO DE CARGA', 'ET']);
-  if (code === 'CORTINA' || code === 'SELENA') add('curtainSupport', ['UNIVERSAL 3 AGUJEROS', 'MAXISCREEM']);
+  if (code === 'CORTINA') add('curtainSupport', ['UNIVERSAL 3 AGUJEROS', 'MAXISCREEM', 'SOPORTE ELIT VERTICAL']);
+  if (code === 'SELENA') add('curtainSupport', ['UNIVERSAL 3 AGUJEROS', 'MAXISCREEM']);
   if (code === 'ELECTRA') add('electraSupport', electraSupports);
   if (code === 'IRIS') {
     add('irisGuideType', irisGuideTypes);

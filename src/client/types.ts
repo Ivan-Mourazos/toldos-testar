@@ -79,7 +79,7 @@ export type Awning = {
   curtainWindowReference?: '' | 'SUELO' | 'TUBO DE CARGA';
   curtainFabricAdjustment?: '' | 'NINGUNO' | 'TUBO DE CARGA' | 'ET' | 'PERSONALIZADO';
   curtainFabricAdjustmentCm?: number | null;
-  curtainSupport: '' | 'UNIVERSAL 3 AGUJEROS' | 'MAXISCREEM';
+  curtainSupport: '' | 'UNIVERSAL 3 AGUJEROS' | 'MAXISCREEM' | 'SOPORTE ELIT VERTICAL';
   electraSupport: '' | ElectraSupport;
   curtainWindowExit: number | null;
   curtainWindowCorner: number | null;

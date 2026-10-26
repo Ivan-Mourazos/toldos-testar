@@ -11,6 +11,7 @@ import { calculateFabricUsage } from './fabricMath.js';
 import { crankSuffix, machineCode, plasticCapSuffix, resolveLacado, universProfileSuffix } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { normalizeCortinaParameters } from './cortinaParameters.js';
+import { normalizeElectraParameters } from './electraParameters.js';
 import { universProfileStockLengths } from './universProfileLengths.js';
 import { selenaArmCode } from './selenaArms.js';
 import {
@@ -64,9 +65,14 @@ export function calculateCortina({ order, awning }) {
     : [];
   if (missingWindowDimensions.length) missingFields.push('medidas de ventana');
 
-  const fabricWidthDiscount = effectiveDiscount(awning, 'curtainFabricWidthDiscountCm', parameters.fabricWidthDiscounts, device);
-  const rollTubeDiscount = effectiveDiscount(awning, 'curtainRollTubeDiscountCm', parameters.rollTubeDiscounts, device);
-  const loadProfileDiscount = effectiveDiscount(awning, 'curtainLoadProfileDiscountCm', parameters.loadProfileDiscounts, device);
+  // Con el soporte Elit vertical, los descuentos de ese soporte en la Electra (Iván, 26/10/2026: «como existe en el
+  // Electra, con sus descuentos»). Los demás soportes, los de la Cortina.
+  const elit = curtainSupport === 'SOPORTE ELIT VERTICAL'
+    ? normalizeElectraParameters(order.parameters?.electra).supportDiscounts['SOPORTE ELIT VERTICAL'] : null;
+  const porSoporte = (campo) => elit && Object.fromEntries(Object.entries(elit).map(([d, v]) => [d, v[campo]]));
+  const fabricWidthDiscount = effectiveDiscount(awning, 'curtainFabricWidthDiscountCm', porSoporte('fabric') || parameters.fabricWidthDiscounts, device);
+  const rollTubeDiscount = effectiveDiscount(awning, 'curtainRollTubeDiscountCm', porSoporte('roll') || parameters.rollTubeDiscounts, device);
+  const loadProfileDiscount = effectiveDiscount(awning, 'curtainLoadProfileDiscountCm', porSoporte('loadBar') || parameters.loadProfileDiscounts, device);
   const fabricWidth = round1(awning.width - fabricWidthDiscount);
   const rollTubeLength = round1(awning.width - rollTubeDiscount);
   const structureLength = round1(awning.width - loadProfileDiscount);
@@ -282,6 +288,7 @@ function material(code, quantity, description) {
 }
 
 function supportMaterial(curtainSupport, suffix, units) {
+  if (curtainSupport === 'SOPORTE ELIT VERTICAL') return material(`ELITSOST${suffix}`, units, 'JGO. SOPORTE ELIT VERTICAL');
   return curtainSupport === 'MAXISCREEM'
     ? material(`SOPMAXSCR${suffix}`, units, 'JGO. SOPORTE MAXISCREEM')
     : material(`SOPUNI3AGU${suffix}`, units, 'JGO. SOPORTE UNIVERSAL 3 AGUJEROS');
@@ -300,7 +307,9 @@ function discount(table, device) {
 }
 
 function normalizeCurtainSupport(value) {
-  return String(value || '').trim().toUpperCase() === 'MAXISCREEM'
+  const limpio = String(value || '').trim().toUpperCase();
+  if (limpio.includes('ELIT')) return 'SOPORTE ELIT VERTICAL';
+  return limpio === 'MAXISCREEM'
     ? 'MAXISCREEM'
     : 'UNIVERSAL 3 AGUJEROS';
 }
@@ -320,7 +329,8 @@ function chooseStockLength(length, stockLengths) {
 
 function buildDescription(awning, calculation) {
   const window = awning.curtainHasWindow ? 'con ventana' : 'sin ventana';
-  const support = normalizeCurtainSupport(awning.curtainSupport) === 'MAXISCREEM' ? ' · soporte Maxiscreem' : '';
+  const soporte = normalizeCurtainSupport(awning.curtainSupport);
+  const support = soporte === 'MAXISCREEM' ? ' · soporte Maxiscreem' : soporte === 'SOPORTE ELIT VERTICAL' ? ' · soporte Elit vertical' : '';
   return `Toldo CORTINA ${formatNumber(awning.width)}x${formatNumber(awning.projection)} · ${window}${support} · tela ${formatNumber(calculation.fabricWidth)}x${formatNumber(calculation.fabricDrop)} · ${formatNumber(calculation.fabricMl)} ml`;
 }
 

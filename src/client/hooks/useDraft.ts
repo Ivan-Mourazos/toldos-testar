@@ -116,6 +116,7 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   if (isConfiguredCurtain(base) && base.curtainFinish === 'TUBO') base.curtainFinish = 'NORMAL';
   base.curtainSupport = old.curtainSupport === 'MAXISCREEM'
     ? 'MAXISCREEM'
+    : base.model === 'CORTINA' && old.curtainSupport === 'SOPORTE ELIT VERTICAL' ? 'SOPORTE ELIT VERTICAL'
     : base.model === 'CORTINA' ? 'UNIVERSAL 3 AGUJEROS' : '';
   base.electraSupport = base.model === 'ELECTRA'
     ? normalizeElectraFormSupport(old.electraSupport, base.submodel)

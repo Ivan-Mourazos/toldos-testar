@@ -788,8 +788,8 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 <SelectField
                   label="Soporte"
                   value={awning.curtainSupport || 'UNIVERSAL 3 AGUJEROS'}
-                  options={['UNIVERSAL 3 AGUJEROS', 'MAXISCREEM']}
-                  optionLabel={(value) => value === 'MAXISCREEM' ? 'Maxiscreen' : controlLabel(value)}
+                  options={awning.model === 'CORTINA' ? ['UNIVERSAL 3 AGUJEROS', 'MAXISCREEM', 'SOPORTE ELIT VERTICAL'] : ['UNIVERSAL 3 AGUJEROS', 'MAXISCREEM']}
+                  optionLabel={(value) => value === 'MAXISCREEM' ? 'Maxiscreen' : value === 'SOPORTE ELIT VERTICAL' ? 'Elit vertical' : controlLabel(value)}
                   onChange={(curtainSupport) => update({ curtainSupport: curtainSupport as Awning['curtainSupport'] })}
                 />
               </div>}

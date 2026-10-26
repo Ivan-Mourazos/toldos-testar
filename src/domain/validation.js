@@ -373,6 +373,8 @@ function normalizeCurtainFinish(value) {
 function normalizeCurtainSupport(model, value) {
   // Selena comparte soporte con Cortina (Iván, 22/09/2026).
   if (model !== 'CORTINA' && model !== 'SELENA') return '';
+  // El soporte Elit vertical, solo en la Cortina (Iván, 26/10/2026).
+  if (model === 'CORTINA' && cleanText(value).toUpperCase().includes('ELIT')) return 'SOPORTE ELIT VERTICAL';
   return cleanText(value).toUpperCase() === 'MAXISCREEM'
     ? 'MAXISCREEM'
     : 'UNIVERSAL 3 AGUJEROS';
