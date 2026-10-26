@@ -59,8 +59,9 @@ html[data-estilo="hero"]:root #root :is(.panel-vidrio, .order-header, .awning-co
 }
 /* Lo de dentro de un panel (grupos, zonas) no lleva otra tarjeta encima: solo el gris de fondo. */
 html[data-estilo="hero"]:root #root :is(.panel-vidrio, .order-header, .awning-column, .panel) :is(fieldset, .panel-solido) {
-  background: transparent;
-  border: 1px solid var(--hero-relleno);
+  /* Como la ficha de CoordinaOT: lo de dentro de un panel, sobre gris de zona y sin borde (Iván, 26/10/2026). */
+  background: var(--hero-zona);
+  border: 0;
   border-radius: 12px;
   box-shadow: none;
 }
@@ -313,3 +314,35 @@ html[data-estilo="hero"]:root #root .read-group-title {
 }
 html[data-estilo="hero"]:root #root .orders-detail { background: var(--hero-zona); border-radius: 0 0 14px 14px; }
 html[data-estilo="hero"]:root #root .orders-detail-list li { background: var(--hero-superficie); border: 0; border-radius: 10px; box-shadow: var(--hero-sombra-campo); }
+
+/* Toque de color vivo en cada apartado, como las barritas de la ficha de CoordinaOT (Iván, 26/10/2026: «el toque de
+   colores neón me gusta mucho»): una barra corta a la izquierda del título, un color por apartado y en el mismo orden. */
+html[data-estilo="hero"]:root {
+  --neon-1: #3b82f6; --neon-2: #f59e0b; --neon-3: #06b6d4; --neon-4: #8b5cf6; --neon-5: #10b981; --neon-6: #ec4899;
+}
+html[data-estilo="hero"]:root #root :is(.read-group-title, fieldset > legend) {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+html[data-estilo="hero"]:root #root :is(.read-group-title, fieldset > legend)::before {
+  background: var(--neon, var(--neon-1));
+  border-radius: 2px;
+  content: "";
+  flex: none;
+  height: 12px;
+  width: 3px;
+}
+html[data-estilo="hero"]:root #root .read-group-title:nth-of-type(6n + 2),
+html[data-estilo="hero"]:root #root fieldset:nth-of-type(6n + 2) > legend { --neon: var(--neon-2); }
+html[data-estilo="hero"]:root #root .read-group-title:nth-of-type(6n + 3),
+html[data-estilo="hero"]:root #root fieldset:nth-of-type(6n + 3) > legend { --neon: var(--neon-3); }
+html[data-estilo="hero"]:root #root .read-group-title:nth-of-type(6n + 4),
+html[data-estilo="hero"]:root #root fieldset:nth-of-type(6n + 4) > legend { --neon: var(--neon-4); }
+html[data-estilo="hero"]:root #root .read-group-title:nth-of-type(6n + 5),
+html[data-estilo="hero"]:root #root fieldset:nth-of-type(6n + 5) > legend { --neon: var(--neon-5); }
+html[data-estilo="hero"]:root #root .read-group-title:nth-of-type(6n),
+html[data-estilo="hero"]:root #root fieldset:nth-of-type(6n) > legend { --neon: var(--neon-6); }
+html[data-estilo="hero"][data-theme="dark"]:root {
+  --neon-1: #60a5fa; --neon-2: #fbbf24; --neon-3: #22d3ee; --neon-4: #a78bfa; --neon-5: #34d399; --neon-6: #f472b6;
+}
