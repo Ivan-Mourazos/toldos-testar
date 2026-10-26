@@ -1,5 +1,8 @@
 import React from 'react';
-import { Caravan, DoorOpen, RectangleHorizontal, Store } from 'lucide-react';
+import { Building2, Caravan, DoorOpen, Store, Warehouse } from 'lucide-react';
+
+// COMBURSA queda a la vista para la siguiente fase de lotes de ASSA ABLOY.
+export const COMBURSA_DISPONIBLE = false;
 
 export type Producto = 'toldos' | 'remolques' | 'puertas' | 'systemdock';
 
@@ -35,7 +38,7 @@ export function SelectorProducto({ producto, onChange, pedidos, inicio = false, 
       ['remolques', 'Remolques', 'Lonas y baquetones, con el corte', <Caravan key="i" aria-hidden="true" />],
       ...(puertas ? [
         ['puertas', 'Puertas', 'Enrollables, apilables y autorreparables', <DoorOpen key="i" aria-hidden="true" />] as [Producto, string, string, React.ReactNode],
-        ['systemdock', 'System Dock', 'Lonas perimetrales de abrigo de muelle', <RectangleHorizontal key="i" aria-hidden="true" />] as [Producto, string, string, React.ReactNode],
+        ['systemdock', 'System Dock', 'Lonas perimetrales de muelle de carga', <Warehouse key="i" aria-hidden="true" />] as [Producto, string, string, React.ReactNode],
       ] : []),
     ];
     return <div className="producto-contexto inicio-productos">
@@ -50,6 +53,12 @@ export function SelectorProducto({ producto, onChange, pedidos, inicio = false, 
             <span className={`inicio-tarjeta-estado${enCurso ? ' is-en-curso' : ''}`}>{enCurso ? `Seguir con ${detalle(tipo)}` : 'Sin empezar'}</span>
           </button>;
         })}
+        <button type="button" disabled={!COMBURSA_DISPONIBLE || disabled} aria-label="COMBURSA" title="Todavía no está disponible" className="inicio-tarjeta">
+          <span className="inicio-tarjeta-icono"><Building2 aria-hidden="true" /></span>
+          <strong>COMBURSA</strong>
+          <span className="inicio-tarjeta-lleva">Lotes del sábado de ASSA ABLOY</span>
+          <span className="inicio-tarjeta-estado">Próximamente</span>
+        </button>
       </div>
     </div>;
   }
