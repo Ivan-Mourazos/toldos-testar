@@ -155,14 +155,29 @@ function dibujarSaco(l: Lienzo, p: Puerta, letraPuerta = '') {
   }
   if (desnivel) {
     const mover = (x:number,y:number) => y + desnivel*x/p.frente-Math.max(0,desnivel);
-    for (const a of l.lineas) { a.y1=mover(a.x1,a.y1); a.y2=mover(a.x2,a.y2); }
+    // El saco como se corta (inclinarSaco): la mitad de arriba cizallada, con la cabeza vertical, y la de abajo su
+    // reflejo sobre la raya del doblez, con la cabeza un poco torcida (Iván, 26/10/2026, AR2605035: el corte ya estaba
+    // bien, pero el dibujo seguía con las dos cabezas verticales). Lo de fuera del saco solo se cizalla.
+    const m = desnivel / p.frente, fold = ys - h / 2, k = 1 / (1 + m * m);
+    const doblar = (x: number, y: number): [number, number] => {
+      if (y >= fold - 1e-9 || y < ys - h - 1e-6) return [x, mover(x, y)];
+      const dy = fold - y + m * x, t = (x + m * dy) * k;
+      return [2 * t - x, fold + 2 * m * t - dy - Math.max(0, desnivel)];
+    };
+    // Las rayas que cruzan el doblez se parten en él, para que cada mitad tome su forma.
+    l.lineas = l.lineas.flatMap(a => {
+      if ((a.y1 - fold) * (a.y2 - fold) >= 0) return [a];
+      const xc = a.x1 + (a.x2 - a.x1) * (fold - a.y1) / (a.y2 - a.y1);
+      return [{ ...a, x2: xc, y2: fold }, { ...a, x1: xc, y1: fold }];
+    });
+    for (const a of l.lineas) { [a.x1, a.y1] = doblar(a.x1, a.y1); [a.x2, a.y2] = doblar(a.x2, a.y2); }
     // Los de fuera del saco, con la punta del texto que más se acerca a él: con la pendiente, el centro no basta y
     // los velcros pisaban la raya (Iván, 23/10/2026, AR2605035).
     for (const a of l.textos) {
       const m = anchoArial(a.valor, a.h) / 2, puntas = [mover(a.x - m, a.y), mover(a.x + m, a.y)];
       a.y = a.y > ys ? Math.max(...puntas) : a.y < ys - h ? Math.min(...puntas) : mover(a.x, a.y);
     }
-    for (const a of l.sombreados) a.puntos=a.puntos.map(([x,y])=>[x,mover(x,y)]);
+    for (const a of l.sombreados) a.puntos=a.puntos.map(([x,y])=>doblar(x,y));
     for (const a of l.cotas) {
       // La del largo, alineada con el lado diagonal: mide lo que de verdad se corta (Iván, 23/10/2026, AR2605035).
       if (a.giro === 0) Object.assign(a, { alineada: true, desvio: a.d - a.y1 });
