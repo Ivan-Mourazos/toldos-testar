@@ -143,3 +143,6 @@
 .systemdock-pantalla .puerta-alzado svg { flex:none; width:100%; height:auto; min-height:0; }
 .systemdock-pantalla .puerta-corte-dibujo { width:100%; height:auto; min-height:0; max-height:none; }
 .systemdock-pantalla .puerta-derecha .puerta-avisos { max-height:none; overflow:visible; }
+/* Revisión en Pedidos: una puerta o lona cada vez con pestañas, y el alzado del tamaño de la pieza (Iván, 26/10/2026). */
+.puerta-planteamiento-pestanas { display:inline-flex; flex-wrap:wrap; align-self:flex-start; margin:4px 0 10px; }
+.puerta-planteamiento .puerta-alzado svg { height:auto; max-height:calc(100vh - 300px); min-height:0; }

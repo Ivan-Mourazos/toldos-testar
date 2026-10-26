@@ -14,6 +14,7 @@ import type { AskForConfirmation, Notify } from '../components/NotificationCente
 import { controlLabel } from '../components/controlLabels';
 import { puedeCorregir } from '../generatePermission';
 import { useCoordinaStatus } from '../hooks/useCoordinaStatus';
+import { useContenidoFluido } from '../hooks/useContenidoFluido';
 import type { CoordinaStatus } from '../types';
 import { AlzadoPuerta } from './AlzadoPuerta';
 import { estadoGenerarPuertas } from './generarPuertas';
@@ -59,6 +60,10 @@ function PlanteamientoPuertas({ pedido, ruta, generado, notify, onConfirm }: {
   pedido: PedidoPuertasGuardado; ruta: string; generado: boolean; notify: Notify; onConfirm: AskForConfirmation;
 }) {
   const [guardando, setGuardando] = useState(false);
+  const [indice, setIndice] = useState(0);
+  const elegido = pedido.elementos[Math.min(indice, pedido.elementos.length - 1)];
+  const letras = elementosAprobacion(pedido).map((item) => item.letter);
+  const alzadoFluido = useContenidoFluido(String(indice));
   async function guardar() {
     setGuardando(true);
     try { await guardarPlano(ruta, onConfirm, notify); }
@@ -75,8 +80,14 @@ function PlanteamientoPuertas({ pedido, ruta, generado, notify, onConfirm }: {
         )}
       </CabeceraDocumento>
       <p className="corte-ayuda">Lo mismo que va al plano DWG: el alzado de cada elemento con sus cotas y textos. El plano sale al guardar para revisión.</p>
-      <div className="puerta-planteamiento-alzados">
-        {pedido.elementos.map(({ id, input }) => <AlzadoPuerta key={id} puerta={input} resultado={calcularPuerta(input)} />)}
+      {/* Una puerta o lona cada vez, con pestañas (Iván, 26/10/2026: «no quiero que salgan todas las puertas una debajo
+          de otra»), y el dibujo del tamaño de la pieza, sin hueco. */}
+      {pedido.elementos.length > 1 && <div className="tira-3d puerta-planteamiento-pestanas" role="tablist" aria-label="Elemento del planteamiento">
+        {pedido.elementos.map(({ id, input }, i) => <button type="button" role="tab" key={id} aria-selected={i === indice}
+          className={`pestana ${i === indice ? 'pestana-activa' : ''}`} onClick={() => setIndice(i)}>{`${letras[i] ?? i + 1} · ${input.of || 'SIN OF'}`}</button>)}
+      </div>}
+      <div className="puerta-planteamiento-alzados" ref={alzadoFluido}>
+        {elegido && <AlzadoPuerta key={elegido.id} puerta={elegido.input} resultado={calcularPuerta(elegido.input)} />}
       </div>
     </section>
   );
