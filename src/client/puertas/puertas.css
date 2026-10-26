@@ -6,7 +6,7 @@
 .puerta-cabecera p, .puerta-ayuda, .puerta-alzado p { color:var(--text-muted); font-size:12px; line-height:1.5; margin:6px 0; }
 .puerta-selector { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
 .puerta-selector .tira-3d { display:flex; flex-wrap:wrap; }
-.puerta-config-alzado { display:grid; grid-template-columns:minmax(490px, 1.3fr) minmax(310px, 1fr); gap:16px; align-items:start; }
+.puerta-config-alzado { display:grid; grid-template-columns:minmax(450px, 2fr) minmax(0, 3fr); gap:16px; align-items:start; }
 .puerta-config-alzado, .puertas-pantalla .corte-cabecera { scroll-margin-top:72px; }
 .puerta-config, .puerta-alzado, .puerta-detalles, .puerta-avisos, .puerta-piezas { padding:14px; }
 .puerta-config header, .puerta-alzado header { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:12px; }
@@ -32,7 +32,7 @@
 .puerta-casilla input { width:16px; height:16px; flex-shrink:0; }
 .puerta-casilla input:focus-visible { outline:2px solid var(--focus-ring); outline-offset:2px; }
 .puerta-derecha { position:sticky; top:18px; }
-.puerta-alzado svg { width:100%; height:440px; display:block; margin:10px 0; background:var(--zone); border-radius:6px; }
+.puerta-alzado svg { width:100%; height:calc(100vh - 190px); min-height:400px; display:block; margin:10px 0; background:var(--zone); border-radius:6px; }
 .puerta-alzado svg text { fill:var(--text); font-family:Arial,sans-serif; font-size:var(--puerta-letra,10px); }
 .puerta-alzado svg .puerta-cota-texto { font-size:calc(var(--puerta-letra,10px) * 0.85); fill:var(--text-muted); }
 .puerta-alzado svg .puerta-texto-cabecera { font-size:calc(var(--puerta-letra,10px) * 0.9); font-weight:600; }
@@ -107,7 +107,7 @@
 .puerta-corte-resumen h2 span { color:var(--text-muted); font-weight:500; font-size:13px; margin-left:6px; }
 .puerta-corte-resumen figure { margin:10px 0 0; }
 .puerta-corte-resumen figcaption { font-size:12px; color:var(--text-muted); }
-.puerta-corte-resumen .puerta-corte-dibujo { min-height:0; max-height:260px; margin-block:4px 0; }
+.puerta-corte-resumen .puerta-corte-dibujo { min-height:0; max-height:calc(100vh - 200px); margin-block:4px 0; }
 /* El paso del corte junto a sus botones, arriba (Iván, 26/10/2026). */
 .puerta-paso { font-size:13px; color:var(--text-muted); max-width:300px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 /* Cada ventana de las apilables en una línea: tramo, izquierda, ancho, alto y quitar (Iván, 26/10/2026). */
@@ -115,3 +115,14 @@
 /* Cada tubo de la apilable en una línea: nombre, diámetro, largo, alto y cintas (Iván, 26/10/2026). */
 .puerta-campos.puerta-tubo-fila { grid-template-columns: minmax(0,1.1fr) minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.3fr); align-items: end; margin-bottom: 6px; }
 .puerta-tubo-nombre { font-size: 13px; color: var(--text-muted); padding-bottom: 8px; }
+/* Los bloques siguen el pedido, con separación entre ayudas y campos. */
+.puerta-config > fieldset > .puerta-campos + .puerta-campos,
+.puerta-config fieldset > .puerta-campo + .puerta-campos,
+.puerta-config fieldset > .ghost-button + .puerta-campos { margin-top:12px; }
+.puerta-campos > .puerta-ayuda { grid-column:1 / -1; margin:0; }
+.puerta-config fieldset > .puerta-campos > .puerta-casilla { grid-column:1 / -1; }
+.puerta-config .puerta-hueco { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.puerta-config .puerta-tubo-fila { grid-template-columns:repeat(2,minmax(0,1fr)); padding-block:10px; border-bottom:1px solid var(--border); }
+.puerta-config .puerta-tubo-nombre { grid-column:1 / -1; padding:0; }
+.puerta-config .puerta-ventana-fila { grid-template-columns:repeat(2,minmax(0,1fr)); padding-block:10px; border-bottom:1px solid var(--border); }
+.puerta-config .puerta-ventana-fila > :first-child { grid-column:1 / -1; }
