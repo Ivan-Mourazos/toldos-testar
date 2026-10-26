@@ -53,7 +53,7 @@ const nombreOpcion=(c:CortePuertas)=>c.opcion==='saco-entero'?' · saco entero (
 export function CorteResumen({vista}:{vista:VistaCorte}) {
   const {actual}=vista;
   return <section className="puerta-corte-resumen panel panel-vidrio" aria-label="Corte del pedido" aria-busy={Boolean(actual?.cargando)}>
-    <h2>Corte <span>{actual?.cargando?'calculando…':actual?.datos?`${actual.datos.cortes.length} rollos`:''}</span></h2>
+    <h2>Corte <span>{actual?.cargando?'calculando…':actual?.datos?`${actual.datos.cortes.length} ${actual.datos.cortes.length===1?'rollo':'rollos'}`:''}</span></h2>
     {actual?.error&&<p role="alert" className="corte-aviso">{actual.error}</p>}
     {actual?.datos&&!actual.datos.cortes.length&&<p className="corte-ayuda">Completa las medidas y los anchos de rollo para colocar las piezas.</p>}
     {actual?.datos?.cortes.map((c,i)=><figure key={i}>
