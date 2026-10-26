@@ -238,10 +238,15 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
           {!generado && (
             <>
               {corregible && <button className="ghost-button boton-3d" type="button" disabled={generando} onClick={() => onCorregir(pedido)}><PencilLine aria-hidden="true" />Corregir</button>}
-              <button className="primary-button boton-3d review-generate-button" type="button" disabled={generando || !allowed} title={note || undefined} onClick={() => void generar()}>
-                <Factory aria-hidden="true" />{generando ? 'Generando…' : 'Generar archivos'}
-              </button>
-              {note && <span className="review-generate-note">{note}</span>}
+              {/* Con el corte del DWG confirmado, «Mandar corte al bot» deja el pedido generado (Iván, 26/10/2026). */}
+              {pedido.corteConfirmado
+                ? <span className="review-generate-note">Se cierra con «Mandar corte al bot», en Corte.</span>
+                : <>
+                  <button className="primary-button boton-3d review-generate-button" type="button" disabled={generando || !allowed} title={note || undefined} onClick={() => void generar()}>
+                    <Factory aria-hidden="true" />{generando ? 'Generando…' : 'Generar archivos'}
+                  </button>
+                  {note && <span className="review-generate-note">{note}</span>}
+                </>}
             </>
           )}
         </div>

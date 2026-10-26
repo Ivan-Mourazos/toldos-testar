@@ -356,6 +356,15 @@ describe('corte confirmado desde el borrador', () => {
     // Ya es suyo el -11: la siguiente vez lo sustituye sin preguntar.
     expect((await alBot()).cuerpo).toMatchObject({ presentaciones: { filename: 'AR2605134-11.pdf' } });
   });
+  // Iván, 26/10/2026: «si al mandar corte a bot ya crea el PDF, ¿para qué sirve después generar archivos?».
+  it('con el corte del DWG confirmado, mandarlo al bot deja el pedido generado, con el plano revisado', async () => {
+    await abrir(); await confirmar(); await guardar();
+    expect((await flujo.obtener('AR2605134')).status).not.toBe('PRODUCED');
+    expect((await alBot()).status).toBe(200);
+    const pedido = await flujo.obtener('AR2605134');
+    expect(pedido.status).toBe('PRODUCED');
+    expect(pedido.production?.files).toEqual([expect.objectContaining({ type: 'plano-puertas', filename: pedido.corteConfirmado!.filename })]);
+  });
   // Iván, 26/10/2026: «deberíamos poder generar solo el PDF o mandar de nuevo solo el corte».
   it('volver a mandar solo el corte no toca el PDF; «Rehacer el PDF» lo rehace sin mandar nada al bot', async () => {
     await abrir(); await confirmar(); await guardar();

@@ -374,6 +374,15 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
         elementos: elementosAprobacion(pedido), coordina: deps.coordina, nombres: PUERTA_NOUNS,
         comprobarCorte: () => {}, preparar: () => prepararDxf(pedido),
         guardarRegistro: (actualizado: PedidoPuertasGuardado) => deps.almacen.guardar(actualizado), ahora: reloj });
+      // Con el corte del DWG confirmado, mandarlo al bot cierra el pedido: queda generado, sin «Generar archivos», que ya
+      // no escribía nada (Iván, 26/10/2026: «si al mandar corte a bot ya crea el PDF, ¿para qué sirve después generar?»).
+      if (respuesta.status === 200 && c.destino === "bot" && pedido.corteConfirmado && pedido.status !== "PRODUCED") {
+        const aprobacion = elementosAprobacion(pedido);
+        const revisor = approvalReviewers(aprobacion, await deps.coordina.statusOf(uniqueOfs(aprobacion)), deps.tecnicos);
+        const confirmado = pedido.corteConfirmado;
+        await deps.almacen.guardar(marcarPedidoGenerado(await obtener(orderCode), { revisor, ahora: ahora(),
+          ficheros: [{ type: "plano-puertas", filename: confirmado.filename, savedPath: confirmado.plano }] }));
+      }
       if (respuesta.status !== 200 || !pdf || !dwg) return respuesta;
       // El corte ya está en el bot: un fallo del PDF solo se avisa.
       try {
