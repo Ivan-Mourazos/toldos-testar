@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { calculateOrder } from './domain/rules.js';
 import { normalizeOrder } from './domain/validation.js';
+import { abreTgmPedidos, rutaParaTgmPedidos } from './flujoDwg/rutaPc.js';
 import { summarizeAwnings } from './domain/awningListSummary.js';
 import { copiarEstadoCorteLona, corteLonaPendiente } from './corteLonaEstado.js';
 import { corteReadiness } from './domain/corteReadiness.js';
@@ -45,7 +46,7 @@ export function normalizeWorkflowSettings(input, current = defaultWorkflowSettin
     corteLonaDxfDirectory: cleanPath(input?.corteLonaDxfDirectory ?? current.corteLonaDxfDirectory),
     // Borradores del corte (flujo del DWG, fase 1): la carpeta en el servidor y la misma vista desde los PC, para abrirla en ZWCAD.
     corteBorradoresDirectory: cleanPath(input?.corteBorradoresDirectory ?? current.corteBorradoresDirectory),
-    corteBorradoresRed: String(input?.corteBorradoresRed ?? current.corteBorradoresRed ?? '').trim(),
+    corteBorradoresRed: rutaParaTgmPedidos(input?.corteBorradoresRed ?? current.corteBorradoresRed ?? ''),
     reviewDirectory: cleanPath(input?.reviewDirectory ?? current.reviewDirectory),
     planteamientosDirectory: cleanPath(input?.planteamientosDirectory ?? current.planteamientosDirectory),
     rpsUploadDirectory: cleanPath(input?.rpsUploadDirectory ?? current.rpsUploadDirectory),
@@ -91,8 +92,8 @@ export function normalizeWorkflowSettings(input, current = defaultWorkflowSettin
   if (/{[^}]*}/.test(settings.corteBorradoresDirectory) || /{[^}]*}/.test(settings.corteBorradoresRed)) {
     throw new Error('La carpeta de borradores del corte no lleva plantillas: todos los borradores van en la misma carpeta.');
   }
-  if (settings.corteBorradoresRed && !/^\\\\[^\\]+\\[^\\]+/.test(settings.corteBorradoresRed)) {
-    throw new Error('La carpeta de borradores del corte vista desde los PC debe ser una ruta de red, como \\\\stinkor\\oftecnica\\BORRADORES CORTE.');
+  if (settings.corteBorradoresRed && !abreTgmPedidos(settings.corteBorradoresRed)) {
+    throw new Error('La carpeta de borradores del corte vista desde los PC tiene que estar dentro de \\\\stinkor\\oftecnica, la única que abre TGM Pedidos en los PC: \\\\stinkor\\oftecnica\\BORRADORES CORTE.');
   }
   if (settings.draftsDirectory.includes('{YYYY}')) {
     throw new Error('La carpeta de borradores no lleva {YYYY}: todos los borradores van en la misma carpeta.');

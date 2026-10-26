@@ -237,7 +237,10 @@ describe('flujo de revisión y producción', () => {
     const red = String.raw`\\stinkor\oftecnica\BORRADORES CORTE`;
     expect(normalizeWorkflowSettings({ corteBorradoresDirectory: available, corteBorradoresRed: ` ${red} ` }))
       .toMatchObject({ corteBorradoresDirectory: available, corteBorradoresRed: red });
-    expect(() => normalizeWorkflowSettings({ corteBorradoresRed: 'Z:/BORRADORES CORTE' })).toThrow('ruta de red');
+    expect(() => normalizeWorkflowSettings({ corteBorradoresRed: 'Z:/BORRADORES CORTE' })).toThrow('dentro de');
+    // Con la IP, TGM Pedidos no la abría (26/10/2026): se guarda como \\stinkor\oftecnica.
+    expect(normalizeWorkflowSettings({ corteBorradoresRed: '\\\\192.168.0.128\\Oftecnica\\Oficina Tecnica\\BORRADORES CORTE' }).corteBorradoresRed)
+      .toBe('\\\\stinkor\\oftecnica\\BORRADORES CORTE');
     expect(() => normalizeWorkflowSettings({ corteBorradoresDirectory: path.join(available, '{YYYY}') })).toThrow('no lleva plantillas');
     const result = await checkWorkflowDirectories(settings, { year: 2026 });
     expect(result.directories.map(({ label, ok }) => ({ label, ok }))).toEqual([

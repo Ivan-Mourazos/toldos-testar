@@ -4,6 +4,7 @@ import path from "node:path";
 import { carpetaCorte } from "../corteLonaArchivos.js";
 import { escribirDxf2004 } from "../domain/corteLona/dxfCorte.js";
 import { corteDelPlano, entidadesBot } from "./corteDwg.js";
+import { rutaParaTgmPedidos } from "./rutaPc.js";
 
 // El flujo del corte con el DWG que manda (plan del 24/10/2026), común a puertas, remolques y toldos: el borrador del plano
 // y «Abrir corte» (fase 1), «Confirmar corte» y el paso del DWG a la carpeta del año al guardar para revisión (fase 2), y el
@@ -177,7 +178,8 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
     const { avisos } = preparado;
     const ficheros = preparado.ficheros ?? (preparado.fichero ? [preparado.fichero] : []);
     if (!ficheros.length) throw new ErrorFlujoDwg(avisos.at(-1) ?? "No se pudo preparar el borrador del corte.", 500);
-    const redBase = ajustes.corteBorradoresRed.replace(/[\\/]+$/, "");
+    // La Configuración guardada con la IP también abre: TGM Pedidos solo admite \\stinkor\oftecnica (rutaPc.js).
+    const redBase = rutaParaTgmPedidos(ajustes.corteBorradoresRed).replace(/[\\/]+$/, "");
     const enlace = (filename: string) => {
       const ruta = `${redBase}\\${filename}`;
       return { filename, ruta, url: `tgm-pedidos://open?kind=cad&path=${encodeURIComponent(ruta)}` };
