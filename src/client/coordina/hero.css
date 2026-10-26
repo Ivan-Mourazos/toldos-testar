@@ -17,22 +17,26 @@ html[data-estilo="hero"] {
   --hero-sombra-pildora: 0 1px 3px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04);
   --hero-anillo: var(--color-brand-500);
   --hero-pildora: #ffffff;
+  /* Lo de dentro de un panel (apartados, la fila desplegada): un gris por debajo del blanco para que se distinga. */
+  --hero-zona: #eeeef1;
 }
 html[data-estilo="hero"][data-theme="dark"] {
-  --hero-fondo: #000000;
-  --hero-superficie: #18181b;
+  /* Carbón y no negro puro (Iván, 26/10/2026: «el modo oscuro se me hace demasiado negro el fondo»). */
+  --hero-fondo: #161618;
+  --hero-superficie: #202024;
   --hero-relleno: #27272a;
-  --hero-relleno-encima: #303036;
-  --hero-relleno-pulsado: #3a3a41;
+  --hero-relleno-encima: #3a3a41;
+  --hero-relleno-pulsado: #44444c;
   --hero-carril: #27272a;
   --hero-texto-suave: #a1a1aa;
   --hero-sombra-panel: 0 0 0 1px rgba(255, 255, 255, 0.06);
   --hero-sombra-campo: 0 0 0 1px rgba(255, 255, 255, 0.08);
   --hero-sombra-pildora: 0 1px 3px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.12);
   /* En oscuro la elegida va más clara que el carril, no más oscura: si no, apenas se ve (Iván, 26/10/2026). */
-  --hero-pildora: #52525b;
-  --hero-carril: #222225;
-  --hero-relleno: #2a2a2e;
+  --hero-pildora: #5a5a63;
+  --hero-zona: #29292e;
+  --hero-carril: #2b2b30;
+  --hero-relleno: #303036;
 }
 
 /* Fondo liso, sin el grano del aluminio. */
@@ -50,14 +54,14 @@ html[data-estilo="hero"]:root #root :is(.panel-vidrio, .order-header, .awning-co
   background-image: none;
   backdrop-filter: none;
   border: 0;
-  border-radius: 24px;
+  border-radius: 14px;
   box-shadow: var(--hero-sombra-panel);
 }
 /* Lo de dentro de un panel (grupos, zonas) no lleva otra tarjeta encima: solo el gris de fondo. */
 html[data-estilo="hero"]:root #root :is(.panel-vidrio, .order-header, .awning-column, .panel) :is(fieldset, .panel-solido) {
   background: transparent;
   border: 1px solid var(--hero-relleno);
-  border-radius: 16px;
+  border-radius: 12px;
   box-shadow: none;
 }
 
@@ -65,7 +69,7 @@ html[data-estilo="hero"]:root #root :is(.panel-vidrio, .order-header, .awning-co
 html[data-estilo="hero"]:root #root :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
   background: var(--hero-superficie);
   border: 0;
-  border-radius: 14px;
+  border-radius: 10px;
   box-shadow: var(--hero-sombra-campo);
   font-weight: 500;
   transition: box-shadow 150ms ease;
@@ -147,7 +151,7 @@ html[data-estilo="hero"]:root #root .select-control {
   background: var(--hero-superficie);
   background-image: none;
   border: 0;
-  border-radius: 14px;
+  border-radius: 10px;
   box-shadow: var(--hero-sombra-campo);
   transform: none;
 }
@@ -251,7 +255,7 @@ html[data-estilo="hero"]:root #root .inicio-tarjeta {
   align-items: flex-start;
   background: var(--hero-superficie);
   border: 0;
-  border-radius: 24px;
+  border-radius: 14px;
   box-shadow: var(--hero-sombra-panel);
   color: var(--text);
   display: grid;
@@ -295,3 +299,17 @@ html[data-estilo="hero"]:root #root .inicio-pendientes-numero {
   min-width: 26px;
   padding-inline: 7px;
 }
+
+/* Apartados de los paneles de Pedidos (Iván, 26/10/2026: «en claro, los apartados en los paneles de pedidos no se
+   distinguen bien»): cada grupo de la ficha («Medidas», «Estructura»…) abre con una banda gris, y la fila desplegada
+   de un pedido lleva fondo gris con sus elementos en blanco. */
+html[data-estilo="hero"]:root #root .read-group-title {
+  background: var(--hero-zona);
+  border-radius: 8px;
+  color: var(--text);
+  grid-column: 1 / -1;
+  margin: 10px 0 4px;
+  padding: 6px 10px;
+}
+html[data-estilo="hero"]:root #root .orders-detail { background: var(--hero-zona); border-radius: 0 0 14px 14px; }
+html[data-estilo="hero"]:root #root .orders-detail-list li { background: var(--hero-superficie); border: 0; border-radius: 10px; box-shadow: var(--hero-sombra-campo); }
