@@ -198,39 +198,53 @@ function RecortesCintas({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
   const ANCHO=12, centrales=(e:Entrada)=>e.huecos.filter(h=>h.x>1.01&&h.x+h.ancho<e.largo-1.01).map(h=>h.x);
   const conCintas=p.entradas.flatMap((e,i)=>centrales(e).length?[i+1]:[]);
   const actuales=centrales(p.entradas.find(e=>centrales(e).length)??{altura:0,diametro:30,largo:0,alto:0,huecos:[]});
-  const [xs,setXs]=useState<number[]>(actuales),[tubos,setTubos]=useState<number[]>(conCintas);
+  // Iván, 26/10/2026: «no entiendo cómo se ponen las cintas». Dos pasos y se aplica solo: 1) en qué tubos van (de
+  // salida, los impares desde abajo), 2) las cotas tal como vienen en el dibujo. El reparto a mano queda plegado.
+  const impares=p.entradas.map((_,i)=>i+1).filter(n=>n%2===1);
+  // Sin elegir, los que ya llevan cintas o los impares de las E.T. que haya ahora (al abrir puede no haber ninguna).
+  const [elegidos,setTubos]=useState<number[]|null>(null);
+  const tubos=elegidos??(conCintas.length?conCintas:impares);
+  const [xs,setXs]=useState<number[]>(actuales);
   const [n,setN]=useState<number|null>(actuales.length||3),[borde,setBorde]=useState<number|null>(actuales[0]??44);
   const redondear=(v:number)=>Math.round(v*10)/10;
+  const poner=(nuevasXs:number[],nuevosTubos=tubos)=>{
+    setXs(nuevasXs);
+    cambiar({...p,entradas:p.entradas.map((e,i)=>({...e,huecos:huecosEntrada(e.largo,e.diametro,nuevosTubos.includes(i+1)?nuevasXs:[])}))});
+  };
+  const cambiarTubos=(t:number[])=>{ setTubos(t); if(xs.length) poner(xs,t); };
   const repartir=()=>{ if(!n||n<1||borde===null)return;
-    setXs(n===1?[redondear((p.frente-ANCHO)/2)]:Array.from({length:n},(_,i)=>redondear(borde+i*(p.frente-2*borde-ANCHO)/(n-1)))); };
+    poner(n===1?[redondear((p.frente-ANCHO)/2)]:Array.from({length:n},(_,i)=>redondear(borde+i*(p.frente-2*borde-ANCHO)/(n-1)))); };
   // Plegado para que no ocupe media pantalla, con lo que hay en el título para que no se olvide (Iván, 25/10/2026).
   return <details className="puerta-cintas"><summary>Recortes de cintas · {conCintas.length?`tubos ${conCintas.join(', ')} · X ${actuales.map(num).join(', ')} cm`:<span className="puerta-falta">ninguno todavía</span>}</summary>
-    <p className="puerta-ayuda">Recortes de {ANCHO} cm; X desde la izquierda, como en el dibujo.</p>
-    <CintasDelDibujo frente={p.frente} poner={setXs}/>
     <div className="puerta-campos">
-      <Numero titulo="Recortes por E.T." valor={n} cambiar={setN}/>
-      <Numero titulo="Primer recorte desde el borde (cm)" valor={borde} cambiar={setBorde}/>
-      <button type="button" className="ghost-button" onClick={repartir}>Repartir</button>
-      <Lista titulo="Cintas · posiciones X (cm)" valores={xs} cambiar={setXs}/>
-      <Lista titulo="Tubos con cintas" valores={tubos} cambiar={setTubos}/>
-      <button type="button" className="ghost-button" onClick={()=>setTubos(p.entradas.map((_,i)=>i+1).filter(n=>n%2===1))}>Proponer tubos impares desde abajo</button>
-      <button type="button" className="ghost-button" onClick={()=>cambiar({...p,entradas:p.entradas.map((e,i)=>({...e,huecos:huecosEntrada(e.largo,e.diametro,tubos.includes(i+1)?xs:[])}))})}>Aplicar a las E.T.</button>
-    </div></details>;
+      <Lista titulo="1 · Tubos que llevan cintas (de abajo arriba)" valores={tubos} cambiar={cambiarTubos}/>
+      <button type="button" className="ghost-button" onClick={()=>cambiarTubos(impares)}>Los impares desde abajo</button>
+    </div>
+    <CintasDelDibujo frente={p.frente} tubos={tubos} poner={xs=>poner(xs)}/>
+    <details className="puerta-cintas-a-mano"><summary>Otra forma: posiciones a mano o repartidas por igual</summary>
+      <p className="puerta-ayuda">Recortes de {ANCHO} cm; X desde la izquierda, en cm. Se aplican a los tubos de arriba.</p>
+      <div className="puerta-campos">
+        <Lista titulo="Cintas · posiciones X (cm)" valores={xs} cambiar={v=>poner(v)}/>
+        <Numero titulo="Recortes por E.T." valor={n} cambiar={setN}/>
+        <Numero titulo="Primer recorte desde el borde (cm)" valor={borde} cambiar={setBorde}/>
+        <button type="button" className="ghost-button" onClick={repartir}>Repartir por igual</button>
+      </div></details></details>;
 }
-/** Las cintas como vienen en el dibujo: de la izquierda hasta el centro, en mm; la derecha sale en simétrico. */
-function CintasDelDibujo({frente,poner}:{frente:number;poner:(xs:number[])=>void}) {
+/** Las cintas como vienen en el dibujo: de la izquierda hasta el centro, en mm; la derecha sale en simétrico. Al leerlas
+ * bien, se ponen solas en los tubos elegidos. */
+function CintasDelDibujo({frente,tubos,poner}:{frente:number;tubos:number[];poner:(xs:number[])=>void}) {
   const [texto,setTexto]=useState(''),[aviso,setAviso]=useState('');
   const aplicar=()=>{
     if(!texto.trim()) { setAviso(''); return; }
     const leido=cintasDesdeCotas(texto.trim().split(/[\s;]+/).map(x=>Number(x.replace(',','.'))),frente);
     if('error' in leido) { setAviso(leido.error); return; }
     poner(leido.xs);
-    setAviso(`Cintas en ${leido.xs.map(num).join(', ')} cm. Revisa los tubos y pulsa «Aplicar a las E.T.».`);
+    setAviso(tubos.length?`Puesto en las E.T. ${tubos.join(', ')}: recortes en ${leido.xs.map(num).join(', ')} cm.`:`Recortes en ${leido.xs.map(num).join(', ')} cm. Di en qué tubos van (paso 1).`);
   };
-  return <label className="field puerta-campo puerta-campo-ancho"><span>Cotas de las cintas del dibujo, de la izquierda hasta el centro (mm)</span>
+  return <label className="field puerta-campo puerta-campo-ancho"><span>2 · Cotas de las cintas del dibujo, de la izquierda hasta el centro (mm)</span>
     <input aria-label="Cintas del dibujo" value={texto} placeholder="60 380 120 1540" onChange={e=>setTexto(e.target.value)}
       onBlur={aplicar} onKeyDown={e=>{ if(e.key==='Enter') aplicar(); }}/>
-    <small>{aviso||'Como vienen: hasta cada recorte y el recorte (120). La parte derecha es simétrica: la web la pone sola.'}</small></label>;
+    <small>{aviso||'Todas en mm, como en el dibujo: hasta el primer recorte, el recorte (120), hasta el siguiente… y la última hasta el recorte del centro o hasta el centro. La derecha la pone la web.'}</small></label>;
 }
 /** Saco útil con los habituales a un clic (Iván, 25/10/2026); se puede escribir otro. */
 function SacoUtil({valor,cambiar}:{valor:number|null;cambiar:(n:number|null)=>void}) {

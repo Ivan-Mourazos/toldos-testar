@@ -38,7 +38,13 @@ export function cintasDesdeCotas(mm: number[], frente: number, ancho = 12): { xs
   const tolerancia = 1;
   if (Math.abs(x - (frente - ancho) / 2) <= tolerancia) izquierda.push((frente - ancho) / 2);
   else if (Math.abs(x - frente / 2) > tolerancia) {
-    return { error: `Las cotas llegan a ${Math.round(x * 10) / 10} cm y el centro está en ${frente / 2} cm: revisa la fila.` };
+    // AR2605035: «60 380 120 154» con la última en cm; en mm es 1540. Se dice cuál falla, en mm, como en el dibujo.
+    const ultimo = mm[mm.length - 1], conCero = x + (ultimo * 9) / 10;
+    const cuadra = [frente / 2, (frente - ancho) / 2].some((c) => Math.abs(conCero - c) <= tolerancia);
+    const hastaCentro = Math.round(((frente - ancho) / 2) * 10);
+    return { error: cuadra
+      ? `La última cota no cuadra: ¿es ${ultimo * 10} mm en vez de ${ultimo}? Todas van en mm.`
+      : `Las cotas suman ${Math.round(x * 10)} mm y hasta el recorte del centro hay ${hastaCentro} mm (${Math.round(frente * 5)} hasta el centro): revisa la fila; todas van en mm.` };
   }
   return { xs: cintasSimetricas(izquierda, frente, ancho) };
 }

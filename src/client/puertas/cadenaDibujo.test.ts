@@ -52,3 +52,12 @@ describe('ejesDesdeTramos (E.T. de enrollable, 26/10/2026)', () => {
     expect(ejesDesdeTramos('60 x', 360)).toHaveProperty('error');
   });
 });
+
+describe('cintasDesdeCotas: avisos claros (26/10/2026)', () => {
+  it('con la última cota en cm en vez de mm, dice cuál es', () => {
+    expect(cintasDesdeCotas([60, 380, 120, 154], 432)).toEqual({ error: 'La última cota no cuadra: ¿es 1540 mm en vez de 154? Todas van en mm.' });
+  });
+  it('si no cuadra por otra cosa, dice cuánto suman y cuánto hay hasta el centro, en mm', () => {
+    expect(cintasDesdeCotas([60, 380, 120, 1000], 432)).toHaveProperty('error', expect.stringMatching(/suman 1560 mm.*2100 mm/));
+  });
+});
