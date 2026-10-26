@@ -127,6 +127,13 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
   const flujo = crearFlujoDwg({ ajustes: deps.ajustes, leer: deps.plano?.leer, confirmaciones: deps.confirmaciones, registrar, ahora: reloj,
     escribir: (fichero) => deps.plano!.escribir({ type: "plano-puertas", ...fichero }) });
 
+  /** En qué paso está el corte del pedido (borrador, confirmado, tocado después), para los botones de la pantalla. */
+  async function estadoCorte(orderCode: unknown) {
+    const codigo = typeof orderCode === "string" ? orderCode.trim() : "";
+    if (!codigo) return { activo: false as const };
+    return flujo.estado(codigoPedido(codigo));
+  }
+
   /** «Confirmar corte» (fase 2): el corte del borrador, tal como quedó en ZWCAD, apuntado para guardar para revisión. */
   async function confirmarCorte(cuerpo: unknown): Promise<Respuesta> {
     const c = (cuerpo ?? {}) as { orderCode?: unknown; savedBy?: unknown };
@@ -409,5 +416,5 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
       error: `Ya hay ${path.basename(ruta(10))} de este pedido. Si es de otra parte del pedido, las presentaciones irán en ${path.basename(ruta(siguiente))}; si es lo mismo, se sustituye.` } } };
   }
 
-  return { listar, obtener, guardar, borradorCorte, confirmarCorte, planoRevision, generar, corte, descargarCorte, enviarCorte };
+  return { listar, obtener, guardar, borradorCorte, confirmarCorte, estadoCorte, planoRevision, generar, corte, descargarCorte, enviarCorte };
 }

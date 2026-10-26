@@ -949,6 +949,11 @@ app.post('/api/puertas/borrador-corte', rutaRemolques(async (req, res) => {
   res.status(status).json(cuerpo);
 }));
 
+// En qué paso está el corte (borrador, confirmado, tocado después de confirmar): la pantalla pone los botones cuando tocan.
+app.get('/api/puertas/borrador-corte/estado', rutaRemolques(async (req, res) => {
+  res.set('Cache-Control', 'no-store').json(await pedidosPuertas.estadoCorte(req.query.orderCode));
+}));
+
 app.post('/api/puertas/borrador-corte/confirmar', rutaRemolques(async (req, res) => {
   const { status, cuerpo } = await pedidosPuertas.confirmarCorte(req.body);
   res.status(status).json(cuerpo);

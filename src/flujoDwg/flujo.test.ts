@@ -23,7 +23,7 @@ beforeEach(async () => {
   raiz = await fs.mkdtemp(path.resolve('tmp/flujo-dwg-'));
   flujo = crearFlujoDwg({
     ajustes: async () => ({ productionEnabled: true, corteBorradoresDirectory: path.join(raiz, 'borradores'),
-      corteBorradoresRed: String.raw`\\stinkor\oftecnica\BORRADORES CORTE`, corteLonaPlanoDirectory: path.join(raiz, '{YYYY}') }),
+      corteBorradoresRed: String.raw`\\toldosgomez.local\DFS_POL\oftecnica\BORRADORES CORTE`, corteLonaPlanoDirectory: path.join(raiz, '{YYYY}') }),
     leer: async (ruta) => fs.readFile(ruta, 'utf8'),
     escribir: async (f) => { await fs.mkdir(path.dirname(f.savedPath), { recursive: true }); await fs.writeFile(f.savedPath, f.contenido); },
     confirmaciones: crearAlmacenConfirmaciones({ carpeta: async () => path.join(raiz, 'confirmados') }),
@@ -63,4 +63,17 @@ it('si cambia uno de los dos borradores, hay que volver a confirmar; al generar 
   const solo = async (carpeta: string) => ({ avisos: [], ficheros: (await preparar(carpeta)).ficheros.slice(0, 1) });
   expect((await flujo.borrador({ orderCode: 'AR2600096', preparar: solo, regenerar: true })).cuerpo).toMatchObject({ sustituido: true, filename: nombres[0] });
   expect(await fs.readdir(path.join(raiz, 'borradores'))).toEqual([nombres[0]]);
+});
+
+// Iván, 26/10/2026: la pantalla pone los botones según el paso del corte.
+it('el estado dice si hay borrador, si está confirmado y si se tocó después de confirmar', async () => {
+  expect(await flujo.estado('AR2600096')).toMatchObject({ activo: true, borrador: false, confirmado: null });
+  await flujo.borrador({ orderCode: 'AR2600096', preparar });
+  expect(await flujo.estado('AR2600096')).toMatchObject({ borrador: true, confirmado: null, cambiadoTrasConfirmar: false });
+  await flujo.confirmar('AR2600096', 'IVÁN');
+  expect(await flujo.estado('AR2600096')).toMatchObject({ borrador: true, confirmado: { por: 'IVÁN' }, cambiadoTrasConfirmar: false });
+  // Guardado en ZWCAD dos minutos después de confirmar.
+  const fichero = path.join(raiz, 'borradores', nombres[0]), luego = new Date(Date.now() + 120_000);
+  await fs.utimes(fichero, luego, luego);
+  expect(await flujo.estado('AR2600096')).toMatchObject({ cambiadoTrasConfirmar: true });
 });

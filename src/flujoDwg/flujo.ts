@@ -349,7 +349,26 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
     return { dwg, nota: `Corte cambiado en el DWG después de confirmarlo; lo mandó ${usuario} con los cambios.` };
   }
 
-  return { activo, borrador, confirmar, alGuardar, corteDelDwg, planosDelDwg, antesDeMandar };
+  /**
+   * En qué paso está el corte de un pedido, para que la pantalla ponga los botones cuando tocan (Iván, 26/10/2026):
+   * si hay borrador, si está confirmado y si el DWG se ha guardado después de confirmarlo. Sin leer el DWG (eso lo hace
+   * «Guardar para revisión», con la huella): basta la fecha del fichero, con un minuto de margen por los relojes.
+   */
+  async function estado(orderCode: string) {
+    const ajustes = await deps.ajustes();
+    if (!activo(ajustes)) return { activo: false as const };
+    const borradores = await borradoresDe(ajustes.corteBorradoresDirectory!, orderCode);
+    const confirmacion = borradores.length ? await deps.confirmaciones!.leer(orderCode) : null;
+    let cambiadoTrasConfirmar = false;
+    if (confirmacion) {
+      const limite = Date.parse(confirmacion.fecha) + 60_000;
+      for (const b of borradores) if ((await stat(b.ruta)).mtimeMs > limite) cambiadoTrasConfirmar = true;
+    }
+    return { activo: true as const, borrador: borradores.length > 0, ficheros: borradores.map((b) => b.filename),
+      confirmado: confirmacion ? { por: confirmacion.por, fecha: confirmacion.fecha } : null, cambiadoTrasConfirmar };
+  }
+
+  return { activo, borrador, confirmar, estado, alGuardar, corteDelDwg, planosDelDwg, antesDeMandar };
 }
 
 type Linea = { capa: string; x1: number; y1: number; x2: number; y2: number };

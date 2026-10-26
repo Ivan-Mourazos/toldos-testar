@@ -32,7 +32,7 @@ beforeEach(async () => {
   const ajustes = async () => ({ productionEnabled: true, corteLonaBotDirectory: path.join(raiz, 'bot/{TECNICO}'),
     corteLonaPlanoDirectory: path.join(raiz, 'planos'), corteLonaDxfDirectory: path.join(raiz, '{YYYY}/DXFs'),
     remolquesPlanteamientosDirectory: path.join(raiz, 'pdf'), remolquesOficinaTecnicaDirectory: path.join(raiz, '{YYYY}/oficina'),
-    corteBorradoresDirectory: borradores ? path.join(raiz, 'borradores') : '', corteBorradoresRed: borradores ? String.raw`\\stinkor\oftecnica\BORRADORES CORTE` : '' });
+    corteBorradoresDirectory: borradores ? path.join(raiz, 'borradores') : '', corteBorradoresRed: borradores ? String.raw`\\toldosgomez.local\DFS_POL\oftecnica\BORRADORES CORTE` : '' });
   servicio = crearServicioPedidosRemolques({ almacen, ajustes, parametros: async () => fixture.params,
     coordina: { statusOf: async (ofs) => ({ disponible: true, ofs: Object.fromEntries(ofs.map((of) => [of, { estado: 'aprobada', revisor: 'DAVID', actualizado: aprobadoEn }])) }) },
     tecnicos: ['IVÁN', 'DAVID'], hacerPdf: async () => { const pdf = await pdfLib.PDFDocument.create(); pdf.addPage(); return pdf.save(); },
@@ -58,7 +58,7 @@ async function dibujar(fichero: string, fuera = false) {
 }
 
 describe('borrador del corte', () => {
-  const red = String.raw`\\stinkor\oftecnica\BORRADORES CORTE\AR2605132.dxf`;
+  const red = String.raw`\\toldosgomez.local\DFS_POL\oftecnica\BORRADORES CORTE\AR2605132.dxf`;
   it('escribe el plano de la pantalla en la carpeta de borradores y da el enlace tgm-pedidos', async () => {
     const { status, cuerpo } = await abrir();
     expect(status).toBe(200);

@@ -108,3 +108,5 @@
 .puerta-corte-resumen figure { margin:10px 0 0; }
 .puerta-corte-resumen figcaption { font-size:12px; color:var(--text-muted); }
 .puerta-corte-resumen .puerta-corte-dibujo { min-height:0; max-height:260px; margin-block:4px 0; }
+/* El paso del corte junto a sus botones, arriba (Iván, 26/10/2026). */
+.puerta-paso { font-size:13px; color:var(--text-muted); max-width:300px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }

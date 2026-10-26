@@ -58,7 +58,7 @@ beforeEach(async () => {
     almacen, plano, tecnicos: ['IVÁN', 'DAVID'], otroProducto: async () => otro,
     ajustes: async () => ({ productionEnabled: activa, corteLonaBotDirectory: path.join(raiz, 'bot/{TECNICO}'),
       corteLonaPlanoDirectory: path.join(raiz, 'planos'), corteLonaDxfDirectory: path.join(raiz, '{YYYY}/DXFs'),
-      corteBorradoresDirectory: borradores ? path.join(raiz, 'borradores') : '', corteBorradoresRed: borradores ? String.raw`\\stinkor\oftecnica\BORRADORES CORTE` : '' }),
+      corteBorradoresDirectory: borradores ? path.join(raiz, 'borradores') : '', corteBorradoresRed: borradores ? String.raw`\\toldosgomez.local\DFS_POL\oftecnica\BORRADORES CORTE` : '' }),
     coordina: { statusOf: async (ofs) => ({ disponible: true, ofs: Object.fromEntries(ofs.map((of) => [of, aprobada ? { estado: 'aprobada', revisor: 'DAVID' } : { estado: 'en_revision' }])) }) },
     ahora: () => new Date('2026-10-22T08:00:00Z'),
   });
@@ -168,7 +168,7 @@ it('«Corregir» vuelve a la pantalla con lo guardado (número tal cual, cliente
 
 // Flujo del DWG, fase 1 (plan del 24/10/2026): el borrador del plano en su carpeta y el enlace para abrirlo en ZWCAD.
 describe('borrador del corte', () => {
-  const red = String.raw`\\stinkor\oftecnica\BORRADORES CORTE\AR2605134.dwg`;
+  const red = String.raw`\\toldosgomez.local\DFS_POL\oftecnica\BORRADORES CORTE\AR2605134.dwg`;
   it('escribe el plano en la carpeta de borradores y da el enlace tgm-pedidos con su ruta de red', async () => {
     const { status, cuerpo } = await servicio.borradorCorte({ pedido: pedidoPantalla(), savedBy: 'IVÁN' });
     expect(status).toBe(200);
@@ -211,7 +211,7 @@ describe('corte confirmado desde el borrador', () => {
       tipo: TIPO_PEDIDO_PUERTAS, nombre: 'puertas', sinCarpeta: 'Sin carpeta' });
     const ajustes = async () => ({ productionEnabled: true, corteLonaPlanoDirectory: path.join(raiz, 'planos'), corteLonaDxfDirectory: path.join(raiz, '{YYYY}/DXFs'),
       corteLonaBotDirectory: path.join(raiz, 'bot/{TECNICO}'), remolquesPlanteamientosDirectory: path.join(raiz, 'planteamientos/{YYYY}'),
-      corteBorradoresDirectory: path.join(raiz, 'borradores'), corteBorradoresRed: String.raw`\\stinkor\oftecnica\BORRADORES CORTE` });
+      corteBorradoresDirectory: path.join(raiz, 'borradores'), corteBorradoresRed: String.raw`\\toldosgomez.local\DFS_POL\oftecnica\BORRADORES CORTE` });
     flujo = crearServicioPedidosPuertas({
       almacen, tecnicos: ['IVÁN', 'DAVID'], otroProducto: async () => null, ajustes,
       // Sin ODA el plano va en DXF: se lee tal cual.

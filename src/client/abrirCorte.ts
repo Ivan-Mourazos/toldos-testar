@@ -42,7 +42,7 @@ export async function confirmarCorteDwg({ ruta, orderCode, usuario, notify }: {
   }
 }
 
-export async function abrirCorteDwg({ ruta, orderCode, cuerpo, usuario, preguntar, notify, abrir = (url) => window.location.assign(url) }: {
+export async function abrirCorteDwg({ ruta, orderCode, cuerpo, usuario, preguntar, notify, abrir = (url) => window.location.assign(url), alAbrir }: {
   ruta: string;
   orderCode: string;
   /** Lo que pide el servidor de cada producto para hacer el plano (el pedido de puertas, los elementos de remolques…). */
@@ -51,6 +51,8 @@ export async function abrirCorteDwg({ ruta, orderCode, cuerpo, usuario, pregunta
   preguntar: AskForConfirmation;
   notify: Notify;
   abrir?: (url: string) => void;
+  /** Qué borrador se abrió: uno nuevo con los datos de la pantalla, el que había o uno generado de nuevo. */
+  alAbrir?: (tipo: 'creado' | 'existente' | 'regenerado') => void;
 }): Promise<boolean> {
   if (!usuario) {
     notify('Elige quién eres en «Soy» antes de abrir el corte.', { tone: 'warning' });
@@ -84,6 +86,7 @@ export async function abrirCorteDwg({ ruta, orderCode, cuerpo, usuario, pregunta
       if (i > 0) await new Promise((resolver) => setTimeout(resolver, 1000));
       abrir(fichero.url);
     }
+    alAbrir?.(datos.existente ? 'existente' : datos.sustituido ? 'regenerado' : 'creado');
     const avisos = datos.avisos?.length ? ` ${datos.avisos.join(' ')}` : '';
     notify(`Abriendo en ZWCAD: ${ficheros.map((f) => f.ruta).join(' · ')}.${avisos}`, { tone: 'success', title: datos.existente ? 'Borrador del corte' : datos.sustituido ? 'Borrador generado de nuevo' : 'Borrador del corte creado' });
     return true;

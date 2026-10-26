@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Eraser, Plus, Save, Trash2 } from 'lucide-react';
+import { CheckCircle2, Eraser, FolderOpen, Plus, Save, Trash2 } from 'lucide-react';
 import { alturasTubos, calcularPuerta, huecosEntrada, MODELOS_PUERTAS, nuevaPuerta } from '../../puertas/calcular.ts';
 import type { PedidoPuertasGuardado } from '../../puertas/flujo/tipos.ts';
 import { REGLAS_SYSTEM_DOCK } from '../../puertas/systemDock.ts';
@@ -14,7 +14,8 @@ import { guardarPuertasParaRevision, pedidoDesdeGuardado, pedidoDesdeRps, type M
 import { InputDecimal } from '../remolques/InputDecimal';
 import type { ResumenPedido } from '../remolques/SelectorProducto';
 import { AlzadoPuerta } from './AlzadoPuerta';
-import { CorteResumen, useVistaCortePuertas, VistaCortePuertas } from './VistaCortePuertas';
+import { CorteResumen, useVistaCortePuertas } from './VistaCortePuertas';
+import { textoPaso, useFlujoCorte } from './flujoCorte';
 import { cintasDesdeCotas, ejesDesdeTramos, leerCadena } from './cadenaDibujo';
 import { avanzarConIntro } from '../avanzarConIntro';
 import './puertas.css';
@@ -299,6 +300,7 @@ export function PuertasView({ activo, onResumenChange, usuario, notify, askForCo
   const [pedido, setPedido] = useState<PedidoPantallaPuertas>(pedidoVacio);
   const [indice, setIndice] = useState(0);
   const vistaCorte = useVistaCortePuertas(pedido, activo);
+  const flujo = useFlujoCorte({ pedido, usuario, notify, askForConfirmation, activo });
   const [derecha, setDerecha] = useState<'alzado' | 'corte'>('alzado');
   const [guardando, setGuardando] = useState(false);
   const [trayendo, setTrayendo] = useState(false);
@@ -367,6 +369,7 @@ export function PuertasView({ activo, onResumenChange, usuario, notify, askForCo
     try {
       if (await guardarPuertasParaRevision({ pedido, usuario, preguntar: askForConfirmation, notify })) {
         onGuardado?.();
+        void flujo.refrescar();
         setPedido(pedidoVacio());
         setIndice(0);
       }
@@ -387,8 +390,20 @@ export function PuertasView({ activo, onResumenChange, usuario, notify, askForCo
   const acciones = (
     <OrderActions hidden={!accionesVisibles}>
       <button className="ghost-button clear-form-button" type="button" disabled={guardando} onClick={() => void limpiar()}><Eraser aria-hidden="true" />Limpiar</button>
-      <button type="button" className="primary-button" disabled={guardando || !pedido.orderCode.trim()} aria-busy={guardando}
-        title={pedido.orderCode.trim() ? undefined : 'Escribe el número de pedido.'} onClick={() => void guardar()}>
+      {/* El flujo del corte, aquí arriba y en orden: cada botón se habilita cuando toca (Iván, 26/10/2026). */}
+      {flujo.paso.paso !== 'sin-flujo' && <>
+        <span className="puerta-paso" role="status" title={textoPaso(flujo.paso)}>{textoPaso(flujo.paso)}</span>
+        <button type="button" className="ghost-button" disabled={flujo.ocupado || guardando || flujo.paso.paso === 'incompleto'}
+          title={flujo.paso.paso === 'incompleto' ? flujo.paso.motivo : 'Deja el plano en la carpeta de borradores y lo abre en ZWCAD'} onClick={() => void flujo.abrir()}>
+          <FolderOpen aria-hidden="true" />{flujo.ocupado ? 'Un momento…' : 'Abrir corte'}
+        </button>
+        <button type="button" className="ghost-button" disabled={flujo.ocupado || guardando || !['confirmar', 'tocado', 'guardar'].includes(flujo.paso.paso)}
+          title={['confirmar', 'tocado', 'guardar'].includes(flujo.paso.paso) ? 'Lee el borrador tal como quedó en ZWCAD y lo da por bueno' : textoPaso(flujo.paso)} onClick={() => void flujo.confirmar()}>
+          <CheckCircle2 aria-hidden="true" />{flujo.paso.paso === 'guardar' ? 'Corte confirmado' : 'Confirmar corte'}
+        </button>
+      </>}
+      <button type="button" className="primary-button" disabled={guardando || !pedido.orderCode.trim() || (flujo.paso.paso !== 'sin-flujo' && flujo.paso.paso !== 'guardar')} aria-busy={guardando}
+        title={!pedido.orderCode.trim() ? 'Escribe el número de pedido.' : flujo.paso.paso !== 'sin-flujo' && flujo.paso.paso !== 'guardar' ? textoPaso(flujo.paso) : undefined} onClick={() => void guardar()}>
         <Save aria-hidden="true" />{guardando ? 'Guardando…' : 'Guardar para revisión'}
       </button>
     </OrderActions>
@@ -405,6 +420,5 @@ export function PuertasView({ activo, onResumenChange, usuario, notify, askForCo
     </section>
     <div className="puerta-selector"><div className="tira-3d" role="group" aria-label="Puertas del pedido">{pedido.elementos.map((e,i)=><button type="button" key={e.id} className={`pestana ${indice===i?'pestana-activa':''}`} aria-pressed={indice===i} onClick={()=>setIndice(i)}>{e.input.modelo==='SYSTEMDOCK'?'Lona':'Puerta'} {i+1} · {e.input.of||'SIN OF'}</button>)}</div><button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:[...pedido.elementos,{id:crypto.randomUUID(),input:nuevaPuerta()}]});setIndice(pedido.elementos.length);}}><Plus size={16}/>Añadir puerta</button>{pedido.elementos.length>1&&<button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:pedido.elementos.filter((_,i)=>i!==indice)});setIndice(0);}}><Trash2 size={16}/>Quitar puerta</button>}</div>
     <Configurar key={pedido.elementos[indice].id} p={pedido.elementos[indice].input} cambiar={p=>setPedido({...pedido,elementos:pedido.elementos.map((e,i)=>i===indice?{...e,input:p}:e)})} corte={<CorteResumen vista={vistaCorte}/>} derecha={derecha} cambiarDerecha={setDerecha}/>
-    <VistaCortePuertas pedido={pedido} vista={vistaCorte} usuario={usuario} notify={notify} askForConfirmation={askForConfirmation}/>
   </div>;
 }
