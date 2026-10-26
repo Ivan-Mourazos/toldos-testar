@@ -234,13 +234,13 @@ describe('flujo de revisión y producción', () => {
     expect(() => normalizeWorkflowSettings({ remolquesPlanteamientosDirectory: 'relativa' }))
       .toThrow('La carpeta de planteamientos de remolques debe ser una ruta absoluta válida en el sistema del servidor.');
     // Borradores del corte (flujo del DWG): la del servidor, absoluta; la de los PC, de red; ninguna con plantillas.
-    const red = String.raw`\\stinkor\oftecnica\BORRADORES CORTE`;
+    const red = String.raw`\\toldosgomez.local\DFS_POL\oftecnica\BORRADORES CORTE`;
     expect(normalizeWorkflowSettings({ corteBorradoresDirectory: available, corteBorradoresRed: ` ${red} ` }))
       .toMatchObject({ corteBorradoresDirectory: available, corteBorradoresRed: red });
     expect(() => normalizeWorkflowSettings({ corteBorradoresRed: 'Z:/BORRADORES CORTE' })).toThrow('dentro de');
-    // Con la IP, TGM Pedidos no la abría (26/10/2026): se guarda como \\stinkor\oftecnica.
+    // Con la IP o con \\stinkor no se abría (26/10/2026): se guarda con la ruta de DFS.
     expect(normalizeWorkflowSettings({ corteBorradoresRed: '\\\\192.168.0.128\\Oftecnica\\Oficina Tecnica\\BORRADORES CORTE' }).corteBorradoresRed)
-      .toBe('\\\\stinkor\\oftecnica\\BORRADORES CORTE');
+      .toBe('\\\\toldosgomez.local\\DFS_POL\\oftecnica\\BORRADORES CORTE');
     expect(() => normalizeWorkflowSettings({ corteBorradoresDirectory: path.join(available, '{YYYY}') })).toThrow('no lleva plantillas');
     const result = await checkWorkflowDirectories(settings, { year: 2026 });
     expect(result.directories.map(({ label, ok }) => ({ label, ok }))).toEqual([

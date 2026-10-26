@@ -93,7 +93,7 @@ export function normalizeWorkflowSettings(input, current = defaultWorkflowSettin
     throw new Error('La carpeta de borradores del corte no lleva plantillas: todos los borradores van en la misma carpeta.');
   }
   if (settings.corteBorradoresRed && !abreTgmPedidos(settings.corteBorradoresRed)) {
-    throw new Error('La carpeta de borradores del corte vista desde los PC tiene que estar dentro de \\\\stinkor\\oftecnica, la única que abre TGM Pedidos en los PC: \\\\stinkor\\oftecnica\\BORRADORES CORTE.');
+    throw new Error('La carpeta de borradores del corte vista desde los PC tiene que estar dentro de Oficina Tecnica: \\\\toldosgomez.local\\DFS_POL\\oftecnica\\BORRADORES CORTE.');
   }
   if (settings.draftsDirectory.includes('{YYYY}')) {
     throw new Error('La carpeta de borradores no lleva {YYYY}: todos los borradores van en la misma carpeta.');

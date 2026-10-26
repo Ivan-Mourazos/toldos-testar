@@ -1,23 +1,24 @@
-// «TGM Pedidos» (el programa de los PC que abre los DWG en ZWCAD, de historial-pedido-hecho) solo abre lo que está
-// dentro de \\stinkor\oftecnica: cualquier otra ruta da «La ruta no pertenece a una carpeta autorizada» (Iván,
-// 26/10/2026, con la carpeta de borradores escrita con la IP). Es la misma carpeta Oficina Tecnica con otros nombres.
+// La ruta de red con la que los PC abren los DWG en ZWCAD («TGM Pedidos», de historial-pedido-hecho). Oficina Tecnica
+// tiene tres nombres: el de DFS (la unidad Y:), el servidor por IP y el antiguo \\stinkor. El 26/10/2026 \\stinkor ya no
+// respondía («no se encuentra el archivo») y la IP no la admitía TGM Pedidos («no pertenece a una carpeta autorizada»):
+// la web usa siempre la de DFS, que responde y que admite el TGM Pedidos actualizado.
 
-export const RAIZ_TGM_PEDIDOS = '\\\\stinkor\\oftecnica';
+export const RAIZ_TGM_PEDIDOS = '\\\\toldosgomez.local\\DFS_POL\\oftecnica';
 
 const ALIAS = [
   /^\\\\192\.168\.0\.128\\oftecnica\\oficina tecnica(?=\\|$)/i,
-  /^\\\\toldosgomez\.local\\dfs_pol\\oftecnica(?=\\|$)/i,
   /^\\\\stinkor\\oftecnica(?=\\|$)/i,
+  /^\\\\toldosgomez\.local\\dfs_pol\\oftecnica(?=\\|$)/i,
 ];
 
-/** La ruta de red como la abre TGM Pedidos: los otros nombres de Oficina Tecnica pasan a \\stinkor\oftecnica. */
+/** La ruta de red como la abren los PC: los otros nombres de Oficina Tecnica pasan a la de DFS. */
 export function rutaParaTgmPedidos(ruta) {
   const limpia = String(ruta ?? '').trim().replace(/\//g, '\\');
   for (const alias of ALIAS) if (alias.test(limpia)) return limpia.replace(alias, RAIZ_TGM_PEDIDOS);
   return limpia;
 }
 
-/** Si TGM Pedidos la puede abrir (está dentro de \\stinkor\oftecnica). */
+/** Si es una carpeta de Oficina Tecnica que los PC pueden abrir. */
 export function abreTgmPedidos(ruta) {
   const r = rutaParaTgmPedidos(ruta).toLowerCase(), raiz = RAIZ_TGM_PEDIDOS.toLowerCase();
   return r === raiz || r.startsWith(`${raiz}\\`);

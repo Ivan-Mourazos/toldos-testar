@@ -178,7 +178,7 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
     const { avisos } = preparado;
     const ficheros = preparado.ficheros ?? (preparado.fichero ? [preparado.fichero] : []);
     if (!ficheros.length) throw new ErrorFlujoDwg(avisos.at(-1) ?? "No se pudo preparar el borrador del corte.", 500);
-    // La Configuración guardada con la IP también abre: TGM Pedidos solo admite \\stinkor\oftecnica (rutaPc.js).
+    // La Configuración guardada con la IP o con \\stinkor también abre: se pasa a la ruta de DFS (rutaPc.js).
     const redBase = rutaParaTgmPedidos(ajustes.corteBorradoresRed).replace(/[\\/]+$/, "");
     const enlace = (filename: string) => {
       const ruta = `${redBase}\\${filename}`;
