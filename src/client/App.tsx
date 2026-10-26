@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useContenidoFluido } from './hooks/useContenidoFluido';
 import {
   Eraser,
   Eye,
@@ -736,6 +737,7 @@ export default function App() {
     notify('El formulario está listo para un pedido nuevo.', { tone: 'success', title: 'Formulario limpio' });
   }
 
+  const contenidoFluido = useContenidoFluido(`${activeTab}/${producto}/${editorPedidoAbierto}`);
   const viewTitle = activeTab === 'order'
     ? 'Nuevo pedido'
     : activeTab === 'parameters'
@@ -824,7 +826,7 @@ export default function App() {
           </div>
         </header>
 
-        <div className="workspace-content">
+        <div className="workspace-content" ref={contenidoFluido}>
           {activeTab === 'order' && !editorPedidoAbierto && <section className="order-entry" aria-label="Inicio del pedido">
             <OrderSearch number={numeroBusqueda ?? ''} onChange={setNumeroBusqueda} loading={autofillLoading} onSearch={() => void autofillOrder(numeroBusqueda ?? '')} />
             <InicioProductos disponibles={catalog?.models.map(m=>m.code)??[]} puertas={puertasActivas} disabled={autofillLoading} producto={producto} onChange={chooseProducto} onModelo={m=>void empezarModelo(m)} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques, puertas: resumenPuertas, systemdock: resumenSystemDock }} />

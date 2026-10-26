@@ -164,7 +164,8 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
   );
 }
 
-export function PedidoRemolquesDetalle({ orderCode, refreshKey, currentUser, onBack, onCorregir, onReutilizar, onChanged, onToast, onConfirm, elementoInicial, textoVolver }: {
+export function PedidoRemolquesDetalle({ orderCode, refreshKey, currentUser, onBack, onCorregir, onReutilizar, onChanged, onToast, onConfirm, elementoInicial, textoVolver, pedidoInicial }: {
+  pedidoInicial?: PedidoRemolques;
   orderCode: string;
   refreshKey: number;
   currentUser: string;
@@ -178,7 +179,7 @@ export function PedidoRemolquesDetalle({ orderCode, refreshKey, currentUser, onB
   onToast: Notify;
   onConfirm: AskForConfirmation;
 }) {
-  const [detalle, setDetalle] = useState<{ orderCode: string; pedido: PedidoRemolques | null } | null>(null);
+  const [detalle, setDetalle] = useState<{ orderCode: string; pedido: PedidoRemolques | null } | null>(()=>pedidoInicial?.orderCode===orderCode?{orderCode,pedido:pedidoInicial}:null);
   const [generando, setGenerando] = useState(false);
   const cargando = detalle?.orderCode !== orderCode;
   const pedido = detalle && detalle.orderCode === orderCode ? detalle.pedido : null;

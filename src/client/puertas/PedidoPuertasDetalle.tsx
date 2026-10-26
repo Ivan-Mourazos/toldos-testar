@@ -135,7 +135,8 @@ function FilaPuerta({ letra, puerta, coordina }: { letra: string; puerta: Pedido
   );
 }
 
-export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBack, onCorregir, onReutilizar, onChanged, onToast, onConfirm }: {
+export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBack, onCorregir, onReutilizar, onChanged, onToast, onConfirm, pedidoInicial }: {
+  pedidoInicial?: PedidoPuertasGuardado;
   orderCode: string;
   refreshKey: number;
   currentUser: string;
@@ -146,7 +147,7 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
   onToast: Notify;
   onConfirm: AskForConfirmation;
 }) {
-  const [detalle, setDetalle] = useState<{ orderCode: string; pedido: PedidoPuertasGuardado | null } | null>(null);
+  const [detalle, setDetalle] = useState<{ orderCode: string; pedido: PedidoPuertasGuardado | null } | null>(()=>pedidoInicial?.orderCode===orderCode?{orderCode,pedido:pedidoInicial}:null);
   const [generando, setGenerando] = useState(false);
   const cargando = detalle?.orderCode !== orderCode;
   const pedido = detalle && detalle.orderCode === orderCode ? detalle.pedido : null;

@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useContenidoFluido } from '../hooks/useContenidoFluido';
 import { calcBaqueton, type BaquetonInput } from '../../remolques/calc/baqueton.ts';
 import { calcLona, type LonaInput } from '../../remolques/calc/lona.ts';
 import type { CalcParams } from '../../remolques/calc/params.ts';
@@ -61,6 +62,7 @@ export function LecturaPedidoRemolques({ pedido, versionInicial }: {
     [lineas],
   );
   const [elegida, setElegida] = useState<string | null>(versionInicial ?? null);
+  const contenidoFluido=useContenidoFluido<HTMLElement>(elegida??'');
   // Si al releer el pedido ya no está el elegido, se abre el primero.
   const indice = Math.max(lineas.findIndex((linea) => linea.version === elegida), 0);
   const linea = lineas[indice];
@@ -84,7 +86,7 @@ export function LecturaPedidoRemolques({ pedido, versionInicial }: {
         onNuevo={nada}
         soloLectura
       />
-      <section className="panel-vidrio rem-editor" aria-label={`Datos de ${rotulo}`}>
+      <section ref={contenidoFluido} className="panel-vidrio rem-editor" aria-label={`Datos de ${rotulo}`}>
         <header className="rem-editor-cabecera">
           <p className="rem-editor-etiqueta">{`Solo lectura · ${pedido.numeroPedido}`}</p>
           <h2>{rotulo}</h2>

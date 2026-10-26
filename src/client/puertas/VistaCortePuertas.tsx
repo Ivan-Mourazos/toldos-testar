@@ -39,7 +39,7 @@ export function useVistaCortePuertas(pedido:PedidoPuertas,activo:boolean):VistaC
   }
   // Se recalcula solo, un momento después de dejar de escribir.
   useEffect(()=>{
-    if(!activo) return;
+    if(!activo || (vista?.entrada===entrada && vista.datos)) return;
     const espera=setTimeout(()=>void calcular(),600);
     return ()=>{clearTimeout(espera);solicitud.current?.abort();};
     // eslint-disable-next-line react-hooks/exhaustive-deps

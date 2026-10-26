@@ -20,6 +20,8 @@ import { useFlujoCorte } from './flujoCorte';
 import { BotonesFlujoCorte, esperaAlCorte } from '../flujoCorteDwg';
 import { cintasDesdeFila, ejesDesdeTramos, leerCadena } from './cadenaDibujo';
 import { avanzarConIntro } from '../avanzarConIntro';
+import { uid } from '../constants';
+import { useContenidoFluido } from '../hooks/useContenidoFluido';
 import './puertas.css';
 
 const num=(x:number)=>x.toLocaleString('es-ES',{maximumFractionDigits:2});
@@ -54,6 +56,8 @@ type PestanaPuerta='puerta'|'estructura'|'entradas'|'ventanas'|'saco'|'texto';
 function Configurar({p,cambiar,corte,derecha='alzado',cambiarDerecha}:{p:Puerta;cambiar:(p:Puerta)=>void;corte?:React.ReactNode;derecha?:'alzado'|'corte';cambiarDerecha?:(v:'alzado'|'corte')=>void}) {
   const resultado=calcularPuerta(p);
   const [pestana,setPestana]=useState<PestanaPuerta>('puerta');
+  const formularioFluido=useContenidoFluido<HTMLElement>(pestana);
+  const dibujoFluido=useContenidoFluido(derecha);
   // System Dock: una lona rectangular; sin cristal, saco, tubos ni ventanas (src/puertas/systemDock.ts).
   const sd=p.modelo==='SYSTEMDOCK';
   const set=<K extends keyof Puerta>(k:K,v:Puerta[K])=>cambiar({...p,[k]:v});
@@ -79,7 +83,7 @@ function Configurar({p,cambiar,corte,derecha='alzado',cambiarDerecha}:{p:Puerta;
   const propuestaInferior=p.alto-p.enrollable.T-p.enrollable.D-(p.enrollable.ventanales??[]).reduce((s,v)=>s+v.D,0)+3.75-sacoPuerta(p).rematado;
   return <>
     <div className="puerta-config-alzado">
-      <section className="puerta-config panel panel-vidrio" aria-label={sd?'Configurador de System Dock':'Configurador de puerta'}>
+      <section ref={formularioFluido} className="puerta-config panel panel-vidrio" aria-label={sd?'Configurador de System Dock':'Configurador de puerta'}>
         <header><h2>Configurador</h2><span>{sd?'System Dock · lona perimetral':'Portanova'} · medidas en cm</span></header>
         {!sd&&<div className="tira-3d puerta-pestanas" role="tablist" aria-label="Partes de la puerta">{pestanas.map(([k,t])=><button type="button" role="tab" key={k} aria-selected={activa===k}
           className={`pestana ${activa===k?'pestana-activa':''}`} onClick={()=>setPestana(k)}>{t}</button>)}</div>}
@@ -94,7 +98,7 @@ function Configurar({p,cambiar,corte,derecha='alzado',cambiarDerecha}:{p:Puerta;
           {!(p.modelo==='PUERTAPLE'&&p.apilable.sueloInclinado)&&<Numero titulo={sd?'Ancho de la lona (cm)':'Alto (cm)'} valor={p.alto||null} cambiar={v=>set('alto',v??0)}/>}
           <label className="puerta-campo"><span>{sd?'Color':'Color / RAL'}</span><input aria-label={sd?'Color de lona':'Color de puerta'} value={p.color} placeholder={sd?'Negro':'Azul 5002'} onChange={e=>set('color',e.target.value)}/></label>
         </div>
-        {sd&&<p className="puerta-ayuda">Lona perimetral: corte de {num(p.frente+REGLAS_SYSTEM_DOCK.largo)} × {num(p.alto+REGLAS_SYSTEM_DOCK.ancho)} cm (+1 de largo, al corte, y +6,6 de ancho, con varilla negra de 4,5 a los dos lados). Sin rotulador.</p>}
+        {sd&&<p className="puerta-ayuda">{p.frente>0&&p.alto>0?`Lona perimetral: corte de ${num(p.frente+REGLAS_SYSTEM_DOCK.largo)} × ${num(p.alto+REGLAS_SYSTEM_DOCK.ancho)} cm.`:'Completa el largo y el ancho para ver el dibujo y el corte.'} +1 de largo, al corte, y +6,6 de ancho, con varilla negra de 4,5 a los dos lados. Sin rotulador.</p>}
       <fieldset><legend>Materiales y rollos · {p.material||'sin material'} · rollo {p.rollo?`${num(p.rollo)} cm`:'sin poner'}</legend><div className="puerta-campos">
         <label className="puerta-campo"><span>Material de lona</span><input aria-label="Material de lona" value={p.material} onChange={e=>set('material',e.target.value)}/></label>
         <Numero titulo="Rollo de lona (cm)" valor={p.rollo||null} cambiar={v=>set('rollo',v??0)}/>
@@ -194,9 +198,9 @@ function Configurar({p,cambiar,corte,derecha='alzado',cambiarDerecha}:{p:Puerta;
         </div>
       </section>
       {/* Lo que falta, junto al alzado: se ve sin bajar hasta el final (Iván, 25/10/2026). */}
-      <div className="puerta-derecha">
+      <div className="puerta-derecha" ref={dibujoFluido}>
         {/* El corte entero a un clic, sin bajar (Iván, 26/10/2026). */}
-        {corte&&cambiarDerecha&&<div className="tira-3d puerta-derecha-pestanas" role="group" aria-label="Ver junto al configurador">{(['alzado','corte'] as const).map(v=><button type="button" key={v} className={`pestana ${derecha===v?'pestana-activa':''}`} aria-pressed={derecha===v} onClick={()=>cambiarDerecha(v)}>{v==='alzado'?'Alzado':'Corte'}</button>)}</div>}
+        {!sd&&corte&&cambiarDerecha&&<div className="tira-3d puerta-derecha-pestanas" role="group" aria-label="Ver junto al configurador">{(['alzado','corte'] as const).map(v=><button type="button" key={v} className={`pestana ${derecha===v?'pestana-activa':''}`} aria-pressed={derecha===v} onClick={()=>cambiarDerecha(v)}>{v==='alzado'?'Alzado':'Corte'}</button>)}</div>}
         {derecha==='corte'&&corte?corte:<AlzadoPuerta puerta={p} resultado={resultado}/>}
         <section className="puerta-avisos panel panel-vidrio" aria-label="Comprobaciones de puerta">
           <h2>Qué falta o revisar <span>{resultado.avisos.filter(a=>a.nivel==='error').length} pendientes</span></h2>
@@ -392,6 +396,7 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
   const nombre = sd ? 'System Dock' : 'Puertas';
   const [pedido, setPedido] = useState<PedidoPantallaPuertas>(() => pedidoVacio(producto));
   const [indice, setIndice] = useState(0);
+  const elementoFluido=useContenidoFluido(String(indice));
   const vistaCorte = useVistaCortePuertas(pedido, activo);
   const flujo = useFlujoCorte({ pedido, usuario, notify, askForConfirmation, activo });
   const [derecha, setDerecha] = useState<'alzado' | 'corte'>('alzado');
@@ -404,7 +409,7 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
     ultimoModelo.current=modeloInicialSolicitado.id;
     void (async()=>{
       if(tieneDatos(pedido)&&await askForConfirmation({title:'Empezar otro pedido de Puertas',message:'Se sustituirá el pedido a medias de Puertas por uno nuevo con el modelo elegido.',confirmLabel:'Empezar pedido',cancelLabel:'Conservar formulario',tone:'warning'})!=='confirm')return;
-      setPedido({...pedidoVacio('puertas'),elementos:[{id:crypto.randomUUID(),input:nuevaPuerta(modeloInicialSolicitado.modelo)}]});
+      setPedido({...pedidoVacio('puertas'),elementos:[{id:uid(),input:nuevaPuerta(modeloInicialSolicitado.modelo)}]});
       setIndice(0);
     })();
   },[modeloInicialSolicitado,pedido,askForConfirmation]);
@@ -510,7 +515,7 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
     </OrderActions>
   );
 
-  return <div className="puertas-pantalla" onKeyDown={avanzarConIntro}>
+  return <div className={`puertas-pantalla${sd?' systemdock-pantalla':''}`} onKeyDown={avanzarConIntro}>
     {accionesDestino ? createPortal(acciones, accionesDestino) : acciones}
     <section className="puerta-cabecera order-header panel rem-cabecera"><div className="order-header-group order-header-general"><h3>Datos del pedido</h3><div className="order-header-grid">
       <div className="puerta-pedido"><label className="field puerta-campo"><span>Número de pedido</span><input aria-label={`Número de pedido de ${nombre}`} value={pedido.orderCode} placeholder="AR2600000" onChange={e=>setPedido({...pedido,orderCode:e.target.value})}/></label>
@@ -519,7 +524,9 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
       <label className="field puerta-campo"><span>Fecha</span><input type="date" aria-label={`Fecha del pedido de ${nombre}`} value={pedido.cabecera.fecha} onChange={e=>cabecera({fecha:e.target.value})}/></label>
     </div></div>
     </section>
-    <div className="puerta-selector"><div className="tira-3d" role="group" aria-label={sd?'Lonas del pedido':'Puertas del pedido'}>{pedido.elementos.map((e,i)=><button type="button" key={e.id} className={`pestana ${indice===i?'pestana-activa':''}`} aria-pressed={indice===i} onClick={()=>setIndice(i)}>{e.input.modelo==='SYSTEMDOCK'?'Lona':'Puerta'} {i+1} · {e.input.of||'SIN OF'}</button>)}</div><button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:[...pedido.elementos,{id:crypto.randomUUID(),input:sd?nuevaLona():nuevaPuerta()}]});setIndice(pedido.elementos.length);}}><Plus size={16}/>{sd?'Añadir lona':'Añadir puerta'}</button>{pedido.elementos.length>1&&<button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:pedido.elementos.filter((_,i)=>i!==indice)});setIndice(0);}}><Trash2 size={16}/>{sd?'Quitar lona':'Quitar puerta'}</button>}</div>
-    <Configurar key={pedido.elementos[indice].id} p={pedido.elementos[indice].input} cambiar={p=>setPedido({...pedido,elementos:pedido.elementos.map((e,i)=>i===indice?{...e,input:p}:e)})} corte={<CorteResumen vista={vistaCorte}/>} derecha={derecha} cambiarDerecha={setDerecha}/>
+    <div className="puerta-selector"><div className="tira-3d" role="group" aria-label={sd?'Lonas del pedido':'Puertas del pedido'}>{pedido.elementos.map((e,i)=><button type="button" key={e.id} className={`pestana ${indice===i?'pestana-activa':''}`} aria-pressed={indice===i} onClick={()=>setIndice(i)}>{e.input.modelo==='SYSTEMDOCK'?'Lona':'Puerta'} {i+1} · {e.input.of||'SIN OF'}</button>)}</div><button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:[...pedido.elementos,{id:uid(),input:sd?nuevaLona():nuevaPuerta()}]});setIndice(pedido.elementos.length);}}><Plus size={16}/>{sd?'Añadir lona':'Añadir puerta'}</button>{pedido.elementos.length>1&&<button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:pedido.elementos.filter((_,i)=>i!==indice)});setIndice(Math.max(0,indice-1));}}><Trash2 size={16}/>{sd?'Quitar lona':'Quitar puerta'}</button>}
+    {sd&&<div className="tira-3d systemdock-vistas" role="group" aria-label="Ver junto al configurador">{(['alzado','corte'] as const).map(v=><button type="button" key={v} className={`pestana ${derecha===v?'pestana-activa':''}`} aria-pressed={derecha===v} onClick={()=>setDerecha(v)}>{v==='alzado'?'Alzado':'Corte'}</button>)}</div>}
+    </div>
+    <div ref={elementoFluido}><Configurar key={pedido.elementos[indice].id} p={pedido.elementos[indice].input} cambiar={p=>setPedido({...pedido,elementos:pedido.elementos.map((e,i)=>i===indice?{...e,input:p}:e)})} corte={<CorteResumen vista={vistaCorte}/>} derecha={derecha} cambiarDerecha={setDerecha}/></div>
   </div>;
 }

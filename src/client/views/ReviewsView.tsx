@@ -1,4 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useContenidoFluido } from '../hooks/useContenidoFluido';
+import { transicionPedido } from '../transicionPedido';
 import type { PedidoBandeja, ReviewPackage, RuleParameters } from '../types';
 import type { EstadoCorte } from '../corteLona';
 import type { PedidoRemolques } from '../../remolques/flujo/tipos.ts';
@@ -53,6 +55,23 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
   const [selectedRemolques, setSelectedRemolques] = useState('');
   // El de puertas (fase 2, 22/10/2026).
   const [selectedPuertas, setSelectedPuertas] = useState('');
+  const [puertasLeido,setPuertasLeido] = useState<PedidoPuertasGuardado>();
+  const [remolquesLeido,setRemolquesLeido] = useState<PedidoRemolques>();
+  const contenidoFluido=useContenidoFluido<HTMLElement>(`${selectedCode}/${selectedRemolques}/${selectedPuertas}`);
+  const solicitudApertura=useRef(0);
+  const origenApertura=useRef<{boton:HTMLElement|null;scroll:number}>({boton:null,scroll:0});
+  useEffect(()=>()=>{solicitudApertura.current++;},[]);
+
+  function volverALista() {
+    solicitudApertura.current++;
+    void transicionPedido(()=>{
+      setSelectedCode('');setSelectedRemolques('');setSelectedPuertas('');
+    }).then(()=>{
+      window.scrollTo({top:origenApertura.current.scroll,behavior:'instant'});
+      if(origenApertura.current.boton?.isConnected) origenApertura.current.boton.focus({preventScroll:true});
+      else contenidoFluido.current?.querySelector<HTMLElement>('button,input')?.focus({preventScroll:true});
+    });
+  }
   // El buscador de remolques (diseño 02/10/2026): si está abierto, y sus filtros y resultado, que
   // siguen ahí al abrir un pedido desde él y volver. `elementoRemolques` es el elemento buscado.
   const [buscadorAbierto, setBuscadorAbierto] = useState(false);
@@ -86,12 +105,26 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
   }, [year, refreshKey, onToast]);
 
   // Cada producto abre su ficha.
-  function abrir(review: PedidoBandeja) {
-    const producto = productoDe(review);
-    if (producto === 'remolques') setSelectedRemolques(review.orderCode);
-    else if (producto === 'puertas' || producto === 'systemdock') setSelectedPuertas(review.orderCode);
-    else setSelectedCode(review.orderCode);
-  }
+  const abrirCodigo=useCallback(async (orderCode:string, producto:string) => {
+    const solicitud=++solicitudApertura.current;
+    origenApertura.current={boton:document.activeElement instanceof HTMLElement?document.activeElement:null,scroll:window.scrollY};
+    try {
+      const ruta=producto==='remolques'?'remolques/pedidos':producto==='puertas'||producto==='systemdock'?'puertas/pedidos':'reviews';
+      const respuesta=await fetch(`/api/${ruta}/${encodeURIComponent(orderCode)}`,{cache:'no-store'});
+      const datos=await respuesta.json();
+      if(!respuesta.ok)throw new Error(datos.error||'No se pudo abrir el pedido.');
+      if(solicitud!==solicitudApertura.current)return;
+      await transicionPedido(()=>{
+        if(producto==='remolques'){setRemolquesLeido(datos as PedidoRemolques);setSelectedRemolques(orderCode);}
+        else if(producto==='puertas'||producto==='systemdock'){setPuertasLeido(datos as PedidoPuertasGuardado);setSelectedPuertas(orderCode);}
+        else {setDetail({orderCode,review:datos as ReviewPackage});setSelectedCode(orderCode);}
+      });
+      contenidoFluido.current?.querySelector<HTMLElement>('.reviews-back-button')?.focus({preventScroll:true});
+    } catch(error) {
+      if(solicitud===solicitudApertura.current)onToast(error instanceof Error?error.message:'No se pudo abrir el pedido.',{tone:'error'});
+    }
+  },[onToast,contenidoFluido]);
+  const abrir=useCallback((review:PedidoBandeja)=>abrirCodigo(review.orderCode,productoDe(review)),[abrirCodigo]);
 
   const atendidoAlCargar = useRef<string | null>(null);
   // EL PEDIDO QUE MANDA COORDINAOT. Se espera a que estén las dos listas: si no está en
@@ -110,7 +143,7 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
       }
       abrir(encontrado);
     });
-  }, [abrirAlCargar, pendingLoading, historyLoading, pending, history, onAbiertoAlCargar, onToast]);
+  }, [abrirAlCargar, pendingLoading, historyLoading, pending, history, onAbiertoAlCargar, onToast, abrir]);
 
   const detailIsCurrent = detail?.orderCode === selectedCode;
   const selectedReview = detailIsCurrent ? detail.review : null;
@@ -305,14 +338,15 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
   }
 
   return (
-    <section className="reviews-layout">
+    <section className="reviews-layout" ref={contenidoFluido}>
       {selectedPuertas
         ? (
           <PedidoPuertasDetalle
+            pedidoInicial={puertasLeido}
             orderCode={selectedPuertas}
             refreshKey={refreshKey}
             currentUser={currentUser}
-            onBack={() => setSelectedPuertas('')}
+            onBack={volverALista}
             onCorregir={onEditPuertas}
             onReutilizar={onReusePuertas}
             onChanged={onChanged}
@@ -323,12 +357,13 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
         : selectedRemolques
         ? (
           <PedidoRemolquesDetalle
+            pedidoInicial={remolquesLeido}
             orderCode={selectedRemolques}
             refreshKey={refreshKey}
             currentUser={currentUser}
             elementoInicial={elementoRemolques}
             textoVolver={buscadorAbierto ? '← Buscar remolques' : undefined}
-            onBack={() => { setSelectedRemolques(''); setElementoRemolques(undefined); }}
+            onBack={() => { volverALista(); setElementoRemolques(undefined); }}
             onCorregir={onEditRemolques}
             onReutilizar={onReuseRemolques}
             onChanged={onChanged}
@@ -342,27 +377,12 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
             estado={estadoBuscador}
             onEstado={setEstadoBuscador}
             onVolver={() => setBuscadorAbierto(false)}
-            onAbrir={(orderCode, version) => { setElementoRemolques(version); setSelectedRemolques(orderCode); }}
+            onAbrir={(orderCode, version) => { setElementoRemolques(version); void abrirCodigo(orderCode,'remolques'); }}
             onToast={onToast}
           />
         )
         : selectedCode === ''
-        ? <OrdersInbox
-            puertas={puertas}
-            pending={pending}
-            history={history}
-            currentUser={currentUser}
-            pendingLoading={pendingLoading}
-            historyLoading={historyLoading}
-            year={year}
-            onYear={(value) => { setHistoryLoading(true); setYear(value); }}
-            onOpen={abrir}
-            coordinaStatus={coordinaStatus}
-            borradores={borradores}
-            onSeguirBorrador={(borrador) => void seguirBorrador(borrador)}
-            onDescartarBorrador={(borrador) => void descartar(borrador)}
-            onBuscarRemolques={() => setBuscadorAbierto(true)}
-          />
+        ? null
         : (
           <ReviewOrderDetail
             review={selectedReview}
@@ -372,7 +392,7 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
             coordinaStatus={detailCoordina}
             disabled={working || generating}
             generating={generating}
-            onBack={() => setSelectedCode('')}
+            onBack={volverALista}
             onEdit={() => void openSelected()}
             onReuse={() => void reuseSelected()}
             onGenerate={() => void generateSelected()}
@@ -381,6 +401,13 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
             onGuardarCorte={(estado) => { if (selectedReview) void guardarCorte(selectedReview, estado); }}
           />
         )}
+      <div hidden={Boolean(selectedCode||selectedRemolques||selectedPuertas||buscadorAbierto)}>
+        <OrdersInbox puertas={puertas} pending={pending} history={history} currentUser={currentUser}
+          pendingLoading={pendingLoading} historyLoading={historyLoading} year={year}
+          onYear={value=>{setHistoryLoading(true);setYear(value);}} onOpen={abrir} coordinaStatus={coordinaStatus}
+          borradores={borradores} onSeguirBorrador={borrador=>void seguirBorrador(borrador)}
+          onDescartarBorrador={borrador=>void descartar(borrador)} onBuscarRemolques={()=>setBuscadorAbierto(true)}/>
+      </div>
     </section>
   );
 }

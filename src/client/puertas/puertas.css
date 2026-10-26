@@ -135,3 +135,11 @@
 .puerta-derecha .puerta-alzado svg { flex:1; height:auto; min-height:300px; }
 .puerta-derecha .puerta-avisos { flex:none; max-height:24vh; overflow:auto; }
 .puerta-derecha .puerta-derecha-pestanas { flex:none; margin-bottom:0; }
+
+/* La lona rectangular ocupa su ancho y su alto real, con las cotas incluidas. */
+.systemdock-vistas { margin-left:auto; display:inline-flex; }
+.systemdock-pantalla .puerta-derecha { position:static; height:auto; max-height:none; overflow:visible; }
+.systemdock-pantalla .puerta-derecha > :is(.puerta-alzado,.puerta-corte-resumen) { flex:none; overflow:visible; }
+.systemdock-pantalla .puerta-alzado svg { flex:none; width:100%; height:auto; min-height:0; }
+.systemdock-pantalla .puerta-corte-dibujo { width:100%; height:auto; min-height:0; max-height:none; }
+.systemdock-pantalla .puerta-derecha .puerta-avisos { max-height:none; overflow:visible; }

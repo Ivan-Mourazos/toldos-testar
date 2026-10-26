@@ -1,4 +1,5 @@
 import React from 'react';
+import { useContenidoFluido } from '../hooks/useContenidoFluido';
 import { createPortal } from 'react-dom';
 import { BookUser, Eraser, FilePen, Save } from 'lucide-react';
 import { OrderActions } from '../components/OrderActions';
@@ -117,6 +118,8 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
     falta: bloqueoCorte, usuario, notify, askForConfirmation, activo: accionesVisibles && lineas.length > 0 });
   const esperaCorte = esperaAlCorte(flujo.paso);
   const [derecha, setDerecha] = React.useState<'dibujo' | 'corte'>('dibujo');
+  const elementoFluido=useContenidoFluido<HTMLElement>(String(versionActiva));
+  const dibujoFluido=useContenidoFluido(derecha);
   React.useEffect(() => {
     onResumenChange?.({ numero: numeroPedido, elementos: lineas.length });
   }, [numeroPedido, lineas.length, onResumenChange]);
@@ -188,7 +191,7 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
       />
 
       {lineaActiva ? (
-        <section className="panel-vidrio rem-editor" aria-label={`Editor de ${rotuloElemento(lineaActiva, indiceActivo)}`}>
+        <section ref={elementoFluido} className="panel-vidrio rem-editor" aria-label={`Editor de ${rotuloElemento(lineaActiva, indiceActivo)}`}>
           <header className="rem-editor-cabecera">
             <div>
               <p className="rem-editor-etiqueta">Editando dentro de {numeroPedido}</p>
@@ -236,6 +239,7 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
                 editor lo declara en data-campo-grupo. Sin esto el error de bloqueo nunca llegaría a verse. */}
             <div
               className="rem-editor-derecha"
+              ref={dibujoFluido}
               onBlur={(evento) => {
                 const destino = evento.target as HTMLElement;
                 const campo = destino.dataset.campo

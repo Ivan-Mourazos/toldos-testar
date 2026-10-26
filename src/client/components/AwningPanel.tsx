@@ -1,4 +1,5 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useContenidoFluido } from '../hooks/useContenidoFluido';
 import { FileSpreadsheet, Layers3, Scissors, X } from 'lucide-react';
 import type { Awning, Calculation } from '../types';
 import { awningLetter, describeMissing, getMissingFields } from '../../domain/awningCompleteness.js';
@@ -44,6 +45,7 @@ export function AwningPanel({ awning, index, calculation, order, onUpdate, onClo
   const hasStructure = !fabricOnly && Boolean(block?.despiece);
   const [chosenTab, setTab] = useState<PanelTab>(hasStructure ? 'despiece' : 'dibujo');
   const tab = chosenTab === 'despiece' && !hasStructure ? 'dibujo' : chosenTab;
+  const contenidoFluido = useContenidoFluido(tab);
   // Mientras se edita el despiece, el panel no se cierra ni cambia de pestaña sin preguntar:
   // la edición vive en el editor y se perdería sin avisar.
   const [editingDespiece, setEditingDespiece] = useState(false);
@@ -190,7 +192,7 @@ export function AwningPanel({ awning, index, calculation, order, onUpdate, onClo
                 </button>
               ))}
             </div>
-            <div className="awning-panel-body" id="awning-panel-tabpanel" role="tabpanel" aria-labelledby={`awning-panel-tab-${tab}`}>
+            <div ref={contenidoFluido} className="awning-panel-body" id="awning-panel-tabpanel" role="tabpanel" aria-labelledby={`awning-panel-tab-${tab}`}>
               {tab === 'despiece' && <div className="structure-sheet-preview"><StructureSheet block={block} awning={awning} onUpdate={onUpdate} onEditingChange={setEditingDespiece} /></div>}
               {tab === 'dibujo' && <>
                 <FabricImageEditor awning={awning} source={drawingSource(awning, order)} onUpdate={onUpdate} />

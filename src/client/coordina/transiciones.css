@@ -1,0 +1,18 @@
+/* Fundido breve como Tabs/Modal de HeroUI; el desplazamiento solo acompaña la entrada. */
+@keyframes pedido-entra {
+  from { opacity:0; transform:translateY(5px); }
+  to { opacity:1; transform:translateY(0); }
+}
+@keyframes pedido-sale { to { opacity:0; } }
+html[data-transicion-pedido] .reviews-layout { view-transition-name:contenido-pedido; }
+html[data-transicion-pedido]::view-transition-old(root),
+html[data-transicion-pedido]::view-transition-new(root) { animation:none; }
+::view-transition-group(contenido-pedido) { animation-duration:200ms; }
+::view-transition-old(contenido-pedido) { animation:150ms ease-out both pedido-sale; }
+::view-transition-new(contenido-pedido) { animation:200ms cubic-bezier(.2,.8,.2,1) both pedido-entra; }
+html[data-transicion-pedido]::view-transition { pointer-events:none; }
+@media (prefers-reduced-motion:reduce) {
+  ::view-transition-group(contenido-pedido),
+  ::view-transition-old(contenido-pedido),
+  ::view-transition-new(contenido-pedido) { animation:none !important; }
+}
