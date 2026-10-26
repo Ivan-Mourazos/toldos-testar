@@ -259,11 +259,12 @@
   align-items: start;
   display: grid;
   gap: 0.75rem;
-  grid-template-columns: clamp(28rem, 37%, 39rem) minmax(0, 1fr);
+  grid-template-columns: minmax(26rem, 34%) minmax(0, 1fr);
 }
 .rem-editor-izquierda,
 .rem-editor-derecha { min-width: 0; }
 .rem-editor-derecha { display: flex; flex-direction: column; gap: 0.5rem; }
+.rem-editor-derecha .corte-dibujo.is-remolques { max-height:calc(100vh - 180px); }
 
 /* ── El dibujo de siempre (Escena3D): tarjeta con cabecera, lienzo y observaciones ──
    El marco sigue a los tokens (claro y oscuro); el lienzo del SVG no: es una hoja técnica con
@@ -319,11 +320,11 @@
 
 /* Render 3D (fase 2b): el lienzo transparente sobre la superficie del panel, así se ve bien en
    claro y en oscuro; las cotas en SVG encima, con los tokens de texto de CoordinaOT. */
-.rem-render { background: var(--surface); height: clamp(20rem, 28vw, 27.5rem); position: relative; }
+.rem-render { background: var(--surface); height: clamp(26rem, calc(100vh - 180px), 52rem); position: relative; }
 /* Las vistas rectas conservan la escala del dibujo técnico; con cotas hay sitio para sus letras.
    La 3/4, que se usa por defecto, necesita menos alto gracias al ajuste de la silueta. */
-.rem-render[data-vista]:not([data-vista="tres-cuartos"]) { height: clamp(24rem, 31.25vw, 31.25rem); }
-.rem-render[data-vista]:not([data-vista="tres-cuartos"])[data-cotas="true"] { height: clamp(25rem, 33vw, 33rem); }
+.rem-render[data-vista]:not([data-vista="tres-cuartos"]) { height: clamp(26rem, calc(100vh - 180px), 52rem); }
+.rem-render[data-vista]:not([data-vista="tres-cuartos"])[data-cotas="true"] { height: clamp(26rem, calc(100vh - 180px), 52rem); }
 .rem-render-lienzo { inset: 0; position: absolute; }
 .rem-render canvas { display: block; height: 100%; width: 100%; }
 .rem-render-cotas { inset: 0; pointer-events: none; position: absolute; z-index: 1; }
