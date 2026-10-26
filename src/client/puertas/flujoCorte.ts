@@ -9,7 +9,7 @@ export { pasoCorte, textoPaso, type EstadoCorteServidor, type Paso } from '../fl
 /** Lo que falta para poder abrir el corte, o null si el pedido está completo. */
 export function faltaParaAbrir(pedido: PedidoPuertas): string | null {
   if (!pedidoValido(pedido.orderCode)) return 'Falta el número de pedido';
-  if (pedido.elementos.some(e => !e.input.of.trim() || e.input.of.trim().toUpperCase() === 'SIN OF')) return 'Falta la OF de alguna puerta';
+  if (pedido.elementos.some(e => !e.input.of.trim() || e.input.of.trim().toUpperCase() === 'SIN OF')) return 'Falta la OF de algún elemento';
   const errores = pedido.elementos.reduce((n, e) => n + calcularPuerta(e.input).avisos.filter(a => a.nivel === 'error').length, 0);
   return errores ? `Quedan ${errores} comprobaciones por resolver` : null;
 }

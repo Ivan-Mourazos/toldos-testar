@@ -4,6 +4,7 @@ import { formOptions } from '../../domain/modelBehavior.js';
 import { calcularPuerta, MODELOS_PUERTAS } from '../../puertas/calcular.ts';
 import { elementosAprobacion } from '../../puertas/flujo/pedido.ts';
 import type { PedidoPuertasGuardado } from '../../puertas/flujo/tipos.ts';
+import { productoDeElementos } from '../../puertas/producto.ts';
 import type { VistaPuertas } from '../../puertas/tipos.ts';
 import { normalizeOf, reviewerName } from '../../reviewRules.js';
 import { CabeceraDocumento, DocumentosPedido } from '../components/DocumentosPedido';
@@ -73,7 +74,7 @@ function PlanteamientoPuertas({ pedido, ruta, generado, notify, onConfirm }: {
           </button>
         )}
       </CabeceraDocumento>
-      <p className="corte-ayuda">Lo mismo que va al plano DWG: el alzado de cada puerta con sus cotas y textos. El plano sale al guardar para revisión.</p>
+      <p className="corte-ayuda">Lo mismo que va al plano DWG: el alzado de cada elemento con sus cotas y textos. El plano sale al guardar para revisión.</p>
       <div className="puerta-planteamiento-alzados">
         {pedido.elementos.map(({ id, input }) => <AlzadoPuerta key={id} puerta={input} resultado={calcularPuerta(input)} />)}
       </div>
@@ -124,7 +125,7 @@ function FilaPuerta({ letra, puerta, coordina }: { letra: string; puerta: Pedido
   return (
     <li className="rem-pedido-elemento bloque-3d">
       <strong className="rem-pedido-letra">{letra}</strong>
-      <span>{`Puerta ${MODELOS_PUERTAS[puerta.modelo].toLowerCase()}${puerta.cantidad > 1 ? ` · ${puerta.cantidad} iguales` : ''}`}</span>
+      <span>{`${puerta.modelo==='SYSTEMDOCK'?'Lona System Dock':`Puerta ${MODELOS_PUERTAS[puerta.modelo].toLowerCase()}`}${puerta.cantidad > 1 ? ` · ${puerta.cantidad} iguales` : ''}`}</span>
       <span>{`${num(puerta.frente)} × ${num(puerta.alto)} cm`}</span>
       <span>{`OF ${of || '—'}`}</span>
       <span className="rem-pedido-material" title={puerta.material}>{[puerta.material, puerta.color].filter(Boolean).join(' · ') || 'Sin material'}</span>
@@ -228,11 +229,11 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
   ].filter(Boolean).join(' · ');
 
   return (
-    <section className="review-reader rem-pedido-guardado" aria-label={`Pedido de puertas ${pedido.orderCode}`}>
+    <section className="review-reader rem-pedido-guardado" aria-label={`Pedido de ${productoDeElementos(pedido.elementos)==='systemdock'?'System Dock':'puertas'} ${pedido.orderCode}`}>
       <header className="review-reader-header">
         {volver}
         <div className="review-reader-title">
-          <h2>{pedido.orderCode}<span className="orders-kind-tag familia-tag is-puertas">Puerta</span></h2>
+          <h2>{pedido.orderCode}<span className="orders-kind-tag familia-tag is-puertas">{productoDeElementos(pedido.elementos)==='systemdock'?'System Dock':'Puerta'}</span></h2>
           <small>{datos}</small>
         </div>
         <div className="review-reader-actions">
@@ -268,7 +269,7 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
             {pedido.production.files.map((fichero) => (
               <span className="review-generated-file chip-3d" key={fichero.savedPath} title={fichero.savedPath}>
                 <span className="review-generated-file-icon"><DoorOpen aria-hidden="true" /></span>
-                <span><strong>{fichero.filename}</strong><small>Plano de las puertas · oficina técnica</small></span>
+                <span><strong>{fichero.filename}</strong><small>Plano · oficina técnica</small></span>
               </span>
             ))}
           </div>

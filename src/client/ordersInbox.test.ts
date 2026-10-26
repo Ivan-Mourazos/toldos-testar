@@ -9,6 +9,20 @@ const review = (orderCode: string, status: string, technician: string, extra: Re
   ...extra
 }) as unknown as PedidoBandeja;
 
+describe('System Dock en Pedidos', () => {
+  it('clasifica y filtra pedidos antiguos guardados como puertas, también en el historial', () => {
+    const lona = review('AR2600001', 'PENDING_REVIEW', 'IVÁN', { kind: 'puertas', summary: { models: ['System Dock'], technician: 'IVÁN' } });
+    const puerta = review('AR2600002', 'PENDING_REVIEW', 'IVÁN', { kind: 'puertas', summary: { models: ['Enrollable'], technician: 'IVÁN' } });
+    expect(productoDe(lona)).toBe('systemdock');
+    expect(claveBandeja(lona)).toBe('systemdock:AR2600001');
+    const listas = { pending: [lona, puerta], history: [{ ...lona, status: 'PRODUCED' } as PedidoBandeja] };
+    const filtro = { me: 'IVÁN', scope: 'all' as const, query: '', producto: 'systemdock' as const };
+    expect(inboxSections(listas, filtro).pending).toEqual([lona]);
+    expect(inboxSections(listas, filtro).history).toHaveLength(1);
+    expect(inboxSections(listas, { ...filtro, producto: 'puertas' }).pending).toEqual([puerta]);
+  });
+});
+
 describe('inboxSections', () => {
   const pending = [
     review('AR1', 'PENDING_REVIEW', 'IVÁN'),

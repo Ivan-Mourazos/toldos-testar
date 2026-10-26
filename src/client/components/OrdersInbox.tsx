@@ -85,7 +85,7 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
         </div>
         <span className="orders-filter-label">Pedidos de</span>
         <div className="orders-scope tira-3d glass-chip" role="group" aria-label="Qué tipo de pedidos">
-          {filtrosProducto.filter((filtro) => puertas || filtro.key !== 'puertas').map((filtro) => (
+          {filtrosProducto.filter((filtro) => puertas || (filtro.key !== 'puertas' && filtro.key !== 'systemdock')).map((filtro) => (
             <button key={filtro.key} type="button" className={producto === filtro.key ? 'pestana-activa' : undefined} aria-pressed={producto === filtro.key} onClick={() => setProducto(filtro.key)}>{filtro.label}</button>
           ))}
         </div>
@@ -302,7 +302,7 @@ function useAjustarAlDesplegar(open: boolean) {
   return ref;
 }
 
-const ETIQUETA_PRODUCTO = { toldos: 'Toldo', remolques: 'Remolque', puertas: 'Puerta' } as const;
+const ETIQUETA_PRODUCTO = { toldos: 'Toldo', remolques: 'Remolque', puertas: 'Puerta', systemdock: 'System Dock' } as const;
 
 function ModelTags({ models, producto, borrador = false }: { models?: string[]; producto: Producto; borrador?: boolean }) {
   // Una sola línea (Iván, 01/10/2026: «prefiero abreviaturas o un + que filas más grandes»): el

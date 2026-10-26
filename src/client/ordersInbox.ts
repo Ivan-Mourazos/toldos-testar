@@ -1,5 +1,6 @@
 import type { CoordinaStatus, PedidoBandeja } from './types';
 import type { ResumenBorrador } from '../borradores/tipos.ts';
+import { productoDeModelos } from '../puertas/producto.ts';
 import { authorNames, coordinaGroup, isPendingGeneration, normalizeOf } from '../reviewRules.js';
 
 // Bandeja de Pedidos (diseño 24/09/2026, apartado 4): pendientes de generar (todo lo
@@ -17,17 +18,19 @@ export function pendingYears(now = new Date()) {
 
 // Toldos y remolques en la misma bandeja (fase 5): cada fila dice de qué es y un filtro deja ver
 // solo unos. Un número es de toldos o de remolques; aun así la clave lleva el tipo para no confundirlos.
-export type FiltroProducto = 'todos' | 'toldos' | 'remolques' | 'puertas';
+export type FiltroProducto = 'todos' | 'toldos' | 'remolques' | 'puertas' | 'systemdock';
 export type Producto = Exclude<FiltroProducto, 'todos'>;
 export const filtrosProducto = [
   { key: 'todos', label: 'Todos' },
   { key: 'toldos', label: 'Toldos' },
   { key: 'remolques', label: 'Remolques' },
   { key: 'puertas', label: 'Puertas' },
+  { key: 'systemdock', label: 'System Dock' },
 ] as const;
 
-export function productoDe(review: Pick<PedidoBandeja, 'kind'>): Producto {
-  return review.kind === 'remolques' || review.kind === 'puertas' ? review.kind : 'toldos';
+export function productoDe(review: Pick<PedidoBandeja, 'kind'> & { summary?: { models?: string[] } }): Producto {
+  if (review.kind === 'puertas') return productoDeModelos(review.summary?.models ?? []);
+  return review.kind === 'remolques' ? review.kind : 'toldos';
 }
 
 export function claveBandeja(review: Pick<PedidoBandeja, 'kind' | 'orderCode'>) {

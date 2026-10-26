@@ -51,6 +51,7 @@ import type { PedidoPuertasGuardado } from '../puertas/flujo/tipos.ts';
 import { mirarFueraDeToldos, type ModoCargaPuertas, type PuertasRps } from './puertas/guardarPuertas';
 import { RemolquesView } from './remolques/RemolquesView';
 import { PuertasView } from './puertas/PuertasView';
+import { esPedidoMixto, productoDeElementos } from '../puertas/producto.ts';
 import { RemolquesParametersView } from './remolques/RemolquesParametersView';
 import { useRemolquesParameters } from './remolques/useRemolquesParameters';
 import { ClientesRemolquesView } from './remolques/ClientesRemolquesView';
@@ -86,6 +87,8 @@ export default function App() {
   const [producto, setProducto] = useState<Producto>(() => leerProducto());
   const [remolquesMontado, setRemolquesMontado] = useState(producto === 'remolques');
   const [puertasMontado, setPuertasMontado] = useState(producto === 'puertas');
+  const [systemDockMontado, setSystemDockMontado] = useState(producto === 'systemdock');
+  const [resumenSystemDock, setResumenSystemDock] = useState<ResumenPedido>({ numero: '', elementos: 0 });
   const [resumenPuertas, setResumenPuertas] = useState<ResumenPedido>({ numero: '', elementos: 0 });
   const [resumenRemolques, setResumenRemolques] = useState<ResumenPedido>({ numero: '', elementos: 0 });
   const [accionesPedido, setAccionesPedido] = useState<HTMLDivElement | null>(null);
@@ -100,6 +103,7 @@ export default function App() {
     guardarProducto(next);
     if (next === 'remolques') setRemolquesMontado(true);
     if (next === 'puertas') setPuertasMontado(true);
+    if (next === 'systemdock') setSystemDockMontado(true);
   }
   const [working, setWorking] = useState<'review' | 'preview' | 'draft' | null>(null);
   const [previewUrl, setPreviewUrl] = useState('');
@@ -183,7 +187,7 @@ export default function App() {
       .then((datos: Catalog) => {
         setCatalog(datos);
         // Si este navegador se quedó en Puertas y están en pausa, vuelve a Toldos.
-        if (!datos.features?.puertasEnabled && leerProducto() === 'puertas') {
+        if (!datos.features?.puertasEnabled && ['puertas', 'systemdock'].includes(leerProducto())) {
           setProducto('toldos');
           guardarProducto('toldos');
         }
@@ -259,7 +263,7 @@ export default function App() {
   }
 
   function abrirPedidoPuertas(pedido: PedidoPuertasGuardado, modo: ModoCargaPuertas) {
-    chooseProducto('puertas');
+    chooseProducto(productoDeElementos(pedido.elementos));
     setActiveTab('order');
     setPedidoPuertasSolicitado({ id: Date.now(), pedido, modo });
   }
@@ -361,7 +365,11 @@ export default function App() {
         const puertas = puertasActivas ? await puertasPedidoOf(orderCode) : null;
         if (seq !== autofillSeq.current) return;
         if (puertas && (puertas.puertas.length || puertas.avisos.length)) {
-          chooseProducto('puertas');
+          if (esPedidoMixto(puertas.puertas.map(input => ({ input })))) {
+            notify('RPS devuelve puertas y System Dock en el mismo pedido. No se ha importado: consulta con Oficina Técnica.', { tone: 'warning' });
+            return;
+          }
+          chooseProducto(productoDeElementos(puertas.puertas.map(input => ({ input }))));
           setPedidoPuertasRps({ id: Date.now(), numero: orderCode, rps: puertas });
           return;
         }
@@ -766,7 +774,7 @@ export default function App() {
           <div className="workspace-heading">
             {activeTab !== 'order' && <h2>{viewTitle}</h2>}
             {activeTab === 'order' && <button type="button" className="ghost-button order-entry-back" disabled={Boolean(working) || autofillLoading} onClick={() => { setNumeroBusqueda(''); setEditorPedidoAbierto(false); }}><ArrowLeft aria-hidden="true" />Buscar otro pedido</button>}
-            {activeTab === 'order' && <SelectorProducto puertas={puertasActivas} producto={producto} onChange={chooseProducto} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques, puertas: resumenPuertas }} />}
+            {activeTab === 'order' && <SelectorProducto puertas={puertasActivas} producto={producto} onChange={chooseProducto} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques, puertas: resumenPuertas, systemdock: resumenSystemDock }} />}
             {/* La versión de los parámetros, en una línea junto al título (Iván, 25/09/2026). */}
             {activeTab === 'parameters' && (enFichasClientes
               ? null
@@ -803,7 +811,7 @@ export default function App() {
         <div className="workspace-content">
           {activeTab === 'order' && !editorPedidoAbierto && <section className="order-entry" aria-label="Inicio del pedido">
             <OrderSearch number={numeroBusqueda ?? ''} onChange={setNumeroBusqueda} loading={autofillLoading} onSearch={() => void autofillOrder(numeroBusqueda ?? '')} />
-            <SelectorProducto inicio puertas={puertasActivas} disabled={autofillLoading} producto={producto} onChange={chooseProducto} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques, puertas: resumenPuertas }} />
+            <SelectorProducto inicio puertas={puertasActivas} disabled={autofillLoading} producto={producto} onChange={chooseProducto} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques, puertas: resumenPuertas, systemdock: resumenSystemDock }} />
             {pendingCount > 0 && <button type="button" className="ghost-button inicio-pendientes" onClick={() => irAPestana('reviews')}>
               <span className="inicio-pendientes-numero">{pendingCount}</span>{pendingCount === 1 ? 'pedido espera revisión' : 'pedidos esperan revisión'}
             </button>}
@@ -882,6 +890,12 @@ export default function App() {
             <PuertasView activo={activeTab === 'order' && editorPedidoAbierto && producto === 'puertas'} onResumenChange={setResumenPuertas}
               usuario={currentUser} notify={notify} askForConfirmation={askForConfirmation}
               accionesDestino={accionesPedido} accionesVisibles={activeTab === 'order' && editorPedidoAbierto && producto === 'puertas'}
+              pedidoGuardadoSolicitado={pedidoPuertasSolicitado} pedidoRpsSolicitado={pedidoPuertasRps} onGuardado={() => setReviewRefresh((value) => value + 1)} />
+          </div>}
+          {puertasActivas && systemDockMontado && <div hidden={activeTab !== 'order' || !editorPedidoAbierto || producto !== 'systemdock'}>
+            <PuertasView producto="systemdock" activo={activeTab === 'order' && editorPedidoAbierto && producto === 'systemdock'} onResumenChange={setResumenSystemDock}
+              usuario={currentUser} notify={notify} askForConfirmation={askForConfirmation}
+              accionesDestino={accionesPedido} accionesVisibles={activeTab === 'order' && editorPedidoAbierto && producto === 'systemdock'}
               pedidoGuardadoSolicitado={pedidoPuertasSolicitado} pedidoRpsSolicitado={pedidoPuertasRps} onGuardado={() => setReviewRefresh((value) => value + 1)} />
           </div>}
           {remolquesMontado && (

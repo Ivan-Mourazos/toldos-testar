@@ -89,7 +89,7 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
   function abrir(review: PedidoBandeja) {
     const producto = productoDe(review);
     if (producto === 'remolques') setSelectedRemolques(review.orderCode);
-    else if (producto === 'puertas') setSelectedPuertas(review.orderCode);
+    else if (producto === 'puertas' || producto === 'systemdock') setSelectedPuertas(review.orderCode);
     else setSelectedCode(review.orderCode);
   }
 

@@ -1,13 +1,13 @@
 import React from 'react';
-import { Caravan, DoorOpen, Store } from 'lucide-react';
+import { Caravan, DoorOpen, RectangleHorizontal, Store } from 'lucide-react';
 
-export type Producto = 'toldos' | 'remolques' | 'puertas';
+export type Producto = 'toldos' | 'remolques' | 'puertas' | 'systemdock';
 
 // Lo último que se eligió se recuerda en este navegador (como el modo oscuro).
 export const PRODUCTO_KEY = 'planteamientos-producto';
 
 export function leerProducto(storage: Storage | null = window.localStorage): Producto {
-  try { const valor=storage?.getItem(PRODUCTO_KEY); return valor==='remolques'||valor==='puertas'?valor:'toldos'; } catch { return 'toldos'; }
+  try { const valor=storage?.getItem(PRODUCTO_KEY); return valor==='remolques'||valor==='puertas'||valor==='systemdock'?valor:'toldos'; } catch { return 'toldos'; }
 }
 
 export function guardarProducto(producto: Producto, storage: Storage | null = window.localStorage) {
@@ -33,7 +33,10 @@ export function SelectorProducto({ producto, onChange, pedidos, inicio = false, 
     const tarjetas: Array<[Producto, string, string, React.ReactNode]> = [
       ['toldos', 'Toldos', 'Brazos, cortinas, cofres y trabajos de tela', <Store key="i" aria-hidden="true" />],
       ['remolques', 'Remolques', 'Lonas y baquetones, con el corte', <Caravan key="i" aria-hidden="true" />],
-      ...(puertas ? [['puertas', 'Puertas', 'Enrollables, apilables y System Dock', <DoorOpen key="i" aria-hidden="true" />] as [Producto, string, string, React.ReactNode]] : []),
+      ...(puertas ? [
+        ['puertas', 'Puertas', 'Enrollables, apilables y autorreparables', <DoorOpen key="i" aria-hidden="true" />] as [Producto, string, string, React.ReactNode],
+        ['systemdock', 'System Dock', 'Lonas perimetrales de abrigo de muelle', <RectangleHorizontal key="i" aria-hidden="true" />] as [Producto, string, string, React.ReactNode],
+      ] : []),
     ];
     return <div className="producto-contexto inicio-productos">
       <span className="producto-etiqueta">O empieza uno en blanco</span>
@@ -62,6 +65,7 @@ export function SelectorProducto({ producto, onChange, pedidos, inicio = false, 
       {puertas && <button type="button" disabled={disabled} aria-label="Puertas" title={detalle('puertas')} className={!inicio && producto === 'puertas' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={inicio ? undefined : producto === 'puertas'} onClick={() => onChange('puertas')}>
         Puertas
       </button>}
+      {puertas && <button type="button" disabled={disabled} aria-label="System Dock" title={detalle('systemdock')} className={producto === 'systemdock' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={producto === 'systemdock'} onClick={() => onChange('systemdock')}>System Dock</button>}
     </div>
     </div>
   );

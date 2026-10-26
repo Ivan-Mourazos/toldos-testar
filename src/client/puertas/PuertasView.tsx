@@ -4,6 +4,7 @@ import { Eraser, Plus, Save, Trash2 } from 'lucide-react';
 import { alturasTubos, calcularPuerta, huecosEntrada, MODELOS_PUERTAS, nuevaPuerta, yEnTramo } from '../../puertas/calcular.ts';
 import type { PedidoPuertasGuardado } from '../../puertas/flujo/tipos.ts';
 import { REGLAS_SYSTEM_DOCK } from '../../puertas/systemDock.ts';
+import { esPedidoMixto, productoDeElementos } from '../../puertas/producto.ts';
 import { medidasSaco, sacoPuerta, sacoUtil } from '../../puertas/saco.ts';
 import type { Entrada, Hueco, ModeloPuerta, Puerta, Ventana } from '../../puertas/tipos.ts';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
@@ -78,21 +79,20 @@ function Configurar({p,cambiar,corte,derecha='alzado',cambiarDerecha}:{p:Puerta;
   const propuestaInferior=p.alto-p.enrollable.T-p.enrollable.D-(p.enrollable.ventanales??[]).reduce((s,v)=>s+v.D,0)+3.75-sacoPuerta(p).rematado;
   return <>
     <div className="puerta-config-alzado">
-      <section className="puerta-config panel panel-vidrio" aria-label="Configurador de puerta">
+      <section className="puerta-config panel panel-vidrio" aria-label={sd?'Configurador de System Dock':'Configurador de puerta'}>
         <header><h2>Configurador</h2><span>{sd?'System Dock · lona perimetral':'Portanova'} · medidas en cm</span></header>
-        <div className="tira-3d puerta-pestanas" role="tablist" aria-label="Partes de la puerta">{pestanas.map(([k,t])=><button type="button" role="tab" key={k} aria-selected={activa===k}
-          className={`pestana ${activa===k?'pestana-activa':''}`} onClick={()=>setPestana(k)}>{t}</button>)}</div>
+        {!sd&&<div className="tira-3d puerta-pestanas" role="tablist" aria-label="Partes de la puerta">{pestanas.map(([k,t])=><button type="button" role="tab" key={k} aria-selected={activa===k}
+          className={`pestana ${activa===k?'pestana-activa':''}`} onClick={()=>setPestana(k)}>{t}</button>)}</div>}
         {ver('puerta')&&<>
         <div className="puerta-campos">
           {/* En el orden en que se leen el pedido y el dibujo (Iván, 25/10/2026): OF y cantidad, que vienen de RPS;
               después el modelo, las medidas y el color. Material y rollos, que casi no cambian, en «Materiales y rollos». */}
-          <label className="puerta-campo"><span>OF</span><input aria-label="OF de puerta" value={p.of} placeholder="SIN OF" onChange={e=>set('of',e.target.value)}/></label>
+          <label className="puerta-campo"><span>OF</span><input aria-label={sd?'OF de lona':'OF de puerta'} value={p.of} placeholder="SIN OF" onChange={e=>set('of',e.target.value)}/></label>
           <Numero titulo={sd?'Cantidad de lonas iguales':'Cantidad de puertas iguales'} valor={p.cantidad} cambiar={v=>set('cantidad',v??0)}/>
-          <SelectField label="Modelo de puerta" value={p.modelo} options={Object.keys(MODELOS_PUERTAS)} optionLabel={v=>MODELOS_PUERTAS[v as ModeloPuerta]} onChange={v=>cambiar({...p,modelo:v as ModeloPuerta,entradas:[],ventanas:[],confirmada:false,ventanasConfirmadas:v==='SYSTEMDOCK',
-            ...(v==='SYSTEMDOCK'?{material:REGLAS_SYSTEM_DOCK.material,color:REGLAS_SYSTEM_DOCK.color,rollo:REGLAS_SYSTEM_DOCK.rollo}:{})})}/>
+          {!sd&&<SelectField label="Modelo de puerta" value={p.modelo} options={Object.keys(MODELOS_PUERTAS).filter(v=>v!=='SYSTEMDOCK')} optionLabel={v=>MODELOS_PUERTAS[v as ModeloPuerta]} onChange={v=>cambiar({...p,modelo:v as ModeloPuerta,entradas:[],ventanas:[],confirmada:false,ventanasConfirmadas:false})}/>}
           <Numero titulo={sd?'Largo de la lona (cm)':'Frente (cm)'} valor={p.frente||null} cambiar={v=>set('frente',v??0)}/>
           {!(p.modelo==='PUERTAPLE'&&p.apilable.sueloInclinado)&&<Numero titulo={sd?'Ancho de la lona (cm)':'Alto (cm)'} valor={p.alto||null} cambiar={v=>set('alto',v??0)}/>}
-          <label className="puerta-campo"><span>Color / RAL</span><input aria-label="Color de puerta" value={p.color} placeholder="Azul 5002" onChange={e=>set('color',e.target.value)}/></label>
+          <label className="puerta-campo"><span>{sd?'Color':'Color / RAL'}</span><input aria-label={sd?'Color de lona':'Color de puerta'} value={p.color} placeholder={sd?'Negro':'Azul 5002'} onChange={e=>set('color',e.target.value)}/></label>
         </div>
         {sd&&<p className="puerta-ayuda">Lona perimetral: corte de {num(p.frente+REGLAS_SYSTEM_DOCK.largo)} × {num(p.alto+REGLAS_SYSTEM_DOCK.ancho)} cm (+1 de largo, al corte, y +6,6 de ancho, con varilla negra de 4,5 a los dos lados). Sin rotulador.</p>}
       <fieldset><legend>Materiales y rollos · {p.material||'sin material'} · rollo {p.rollo?`${num(p.rollo)} cm`:'sin poner'}</legend><div className="puerta-campos">
@@ -184,7 +184,8 @@ function Configurar({p,cambiar,corte,derecha='alzado',cambiarDerecha}:{p:Puerta;
       {p.modelo==='PUERTAENR'&&<EmpatesEnrollable p={p} cambiar={cambiar}/>}
         {p.modelo==='PUERTAUTO'&&<fieldset><legend>Empates</legend><div className="puerta-campos">          <Lista titulo="Empates desde abajo del cuerpo (cm)" valores={p.autorreparable.empates} cambiar={v=>set('autorreparable',{...p.autorreparable,empates:v})}/></div></fieldset>}
       </>}
-      {ver('texto')&&<fieldset><legend>Texto del pedido y observaciones</legend><div className="puerta-campos"><SelectField label="Artículo indicado en RPS" value={p.articuloOrigen} options={Object.keys(MODELOS_PUERTAS)} allowEmpty emptyLabel="Sin indicar" placeholder="Sin indicar" optionLabel={v=>v?`${v} · ${MODELOS_PUERTAS[v as ModeloPuerta]}`:'Sin indicar'} onChange={v=>set('articuloOrigen',v as Puerta['articuloOrigen'])}/><label className="field puerta-campo puerta-campo-ancho"><span>Texto a comprobar con el dibujo</span><textarea aria-label="Texto del pedido" value={p.observaciones} onChange={e=>set('observaciones',e.target.value)}/></label><label className="field puerta-campo puerta-campo-ancho"><span>Nota en el plano (opcional)</span><textarea aria-label="Nota en el plano" placeholder="Solo si queréis que salga en el plano" value={p.notaPlano??''} onChange={e=>set('notaPlano',e.target.value)}/></label></div></fieldset>}
+      {sd&&<label className="field puerta-campo"><span>Texto del pedido</span><textarea aria-label="Texto del pedido" value={p.observaciones} onChange={e=>set('observaciones',e.target.value)}/></label>}
+      {!sd&&ver('texto')&&<fieldset><legend>Texto del pedido y observaciones</legend><div className="puerta-campos"><SelectField label="Artículo indicado en RPS" value={p.articuloOrigen} options={Object.keys(MODELOS_PUERTAS).filter(v=>v!=='SYSTEMDOCK')} allowEmpty emptyLabel="Sin indicar" placeholder="Sin indicar" optionLabel={v=>v?`${v} · ${MODELOS_PUERTAS[v as ModeloPuerta]}`:'Sin indicar'} onChange={v=>set('articuloOrigen',v as Puerta['articuloOrigen'])}/><label className="field puerta-campo puerta-campo-ancho"><span>Texto a comprobar con el dibujo</span><textarea aria-label="Texto del pedido" value={p.observaciones} onChange={e=>set('observaciones',e.target.value)}/></label><label className="field puerta-campo puerta-campo-ancho"><span>Nota en el plano (opcional)</span><textarea aria-label="Nota en el plano" placeholder="Solo si queréis que salga en el plano" value={p.notaPlano??''} onChange={e=>set('notaPlano',e.target.value)}/></label></div></fieldset>}
         {/* Una casilla para todo (Iván, 25/10/2026): modelo, medidas y ventanas se miran a la vez en el dibujo. */}
         <div className="puerta-confirmaciones">
           <label className="puerta-casilla"><input type="checkbox" checked={p.confirmada&&(sd||p.ventanasConfirmadas)}
@@ -365,10 +366,12 @@ function FilasVentanas({cambiar}:{cambiar:(v:Ventana[])=>void}) {
   return <fieldset><legend>Añadir una fila de ventanas iguales</legend><div className="puerta-campos">{(Object.keys(fila) as Array<keyof typeof fila>).map(k=><Numero key={k} titulo={`Fila · ${k==='x'?'margen izquierdo':k==='y'?'desde abajo':k}`} valor={fila[k]} cambiar={v=>setFila({...fila,[k]:v??0})}/>)}<button type="button" className="ghost-button" disabled={!Number.isInteger(fila.columnas)||fila.columnas<1||fila.columnas>20} onClick={()=>cambiar(Array.from({length:fila.columnas},(_,i)=>({x:fila.x+i*(fila.ancho+fila.pilar),y:fila.y,ancho:fila.ancho,alto:fila.alto,radio:2,radioCristal:4})))}>Añadir fila</button></div></fieldset>;
 }
 const hoy = () => new Date().toISOString().slice(0, 10);
-const pedidoVacio = (): PedidoPantallaPuertas => ({ schemaVersion: 1, kind: 'puertas', orderCode: '', cabecera: { cliente: '', fecha: hoy() }, elementos: [{ id: 'puerta-1', input: nuevaPuerta() }] });
+const nuevaLona = (): Puerta => ({ ...nuevaPuerta('SYSTEMDOCK'), material: REGLAS_SYSTEM_DOCK.material, color: REGLAS_SYSTEM_DOCK.color, rollo: REGLAS_SYSTEM_DOCK.rollo, ventanasConfirmadas: true });
+const pedidoVacio = (producto: 'puertas' | 'systemdock'): PedidoPantallaPuertas => ({ schemaVersion: 1, kind: 'puertas', orderCode: '', cabecera: { cliente: '', fecha: hoy() }, elementos: [{ id: 'puerta-1', input: producto === 'systemdock' ? nuevaLona() : nuevaPuerta() }] });
 const tieneDatos = (p: PedidoPantallaPuertas) => Boolean(p.orderCode.trim() || p.cabecera.cliente.trim() || p.elementos.some(e => e.input.frente || e.input.alto || e.input.of));
 
-export function PuertasView({ activo, onResumenChange, usuario, notify, askForConfirmation, accionesDestino, accionesVisibles = true, pedidoGuardadoSolicitado, pedidoRpsSolicitado, onGuardado }: {
+export function PuertasView({ producto = 'puertas', activo, onResumenChange, usuario, notify, askForConfirmation, accionesDestino, accionesVisibles = true, pedidoGuardadoSolicitado, pedidoRpsSolicitado, onGuardado }: {
+  producto?: 'puertas' | 'systemdock';
   activo: boolean;
   onResumenChange: (r: ResumenPedido) => void;
   usuario: string;
@@ -384,7 +387,9 @@ export function PuertasView({ activo, onResumenChange, usuario, notify, askForCo
   /** Tras «Guardar para revisión»: Pedidos vuelve a leer sus listas. */
   onGuardado?: () => void;
 }) {
-  const [pedido, setPedido] = useState<PedidoPantallaPuertas>(pedidoVacio);
+  const sd = producto === 'systemdock';
+  const nombre = sd ? 'System Dock' : 'Puertas';
+  const [pedido, setPedido] = useState<PedidoPantallaPuertas>(() => pedidoVacio(producto));
   const [indice, setIndice] = useState(0);
   const vistaCorte = useVistaCortePuertas(pedido, activo);
   const flujo = useFlujoCorte({ pedido, usuario, notify, askForConfirmation, activo });
@@ -392,21 +397,21 @@ export function PuertasView({ activo, onResumenChange, usuario, notify, askForCo
   const [guardando, setGuardando] = useState(false);
   const [trayendo, setTrayendo] = useState(false);
   const ultimoSolicitado = useRef<number | null>(null);
-  useEffect(() => { onResumenChange({ numero: pedido.orderCode, elementos: pedido.elementos.length }); }, [pedido.orderCode, pedido.elementos.length, onResumenChange]);
+  useEffect(() => { onResumenChange({ numero: pedido.orderCode, elementos: tieneDatos(pedido) ? pedido.elementos.length : 0 }); }, [pedido, onResumenChange]);
 
   useEffect(() => {
-    if (!pedidoGuardadoSolicitado || ultimoSolicitado.current === pedidoGuardadoSolicitado.id) return;
+    if (!pedidoGuardadoSolicitado || productoDeElementos(pedidoGuardadoSolicitado.pedido.elementos) !== producto || ultimoSolicitado.current === pedidoGuardadoSolicitado.id) return;
     ultimoSolicitado.current = pedidoGuardadoSolicitado.id;
     const { pedido: guardado, modo } = pedidoGuardadoSolicitado;
     void (async () => {
-      if (tieneDatos(pedido) && await askForConfirmation({ title: `Abrir ${guardado.orderCode} en Puertas`,
-        message: 'Se sustituirá lo que hay ahora en Puertas por el pedido guardado.', confirmLabel: 'Abrir pedido', cancelLabel: 'Conservar pantalla', tone: 'warning' }) !== 'confirm') return;
+      if (tieneDatos(pedido) && await askForConfirmation({ title: `Abrir ${guardado.orderCode} en ${nombre}`,
+        message: `Se sustituirá lo que hay ahora en ${nombre} por el pedido guardado.`, confirmLabel: 'Abrir pedido', cancelLabel: 'Conservar pantalla', tone: 'warning' }) !== 'confirm') return;
       setPedido(pedidoDesdeGuardado(guardado, modo, hoy()));
       setIndice(0);
       notify(modo === 'corregir' ? `Pedido ${guardado.orderCode} cargado para corregirlo.` : `Datos de ${guardado.orderCode} cargados.`,
         { tone: 'info', title: modo === 'corregir' ? 'Modo de corrección' : 'Datos reutilizados' });
     })();
-  }, [pedidoGuardadoSolicitado, pedido, askForConfirmation, notify]);
+  }, [pedidoGuardadoSolicitado, pedido, askForConfirmation, notify, producto, nombre]);
 
   const cargarDeRps = useCallback((rps: PuertasRps, numero: string) => {
     setPedido(pedidoDesdeRps(rps, numero, hoy()));
@@ -414,19 +419,19 @@ export function PuertasView({ activo, onResumenChange, usuario, notify, askForCo
     const n = rps.puertas.length;
     const lonas = n > 0 && rps.puertas.every(p => p.modelo === 'SYSTEMDOCK');
     notify(`${n} ${lonas ? (n === 1 ? 'lona de SYSTEM DOCK traída' : 'lonas de SYSTEM DOCK traídas') : n === 1 ? 'puerta traída' : 'puertas traídas'} de RPS con sus medidas, ${lonas ? '' : 'color, '}cantidad y OF. Confirma ${lonas ? 'las medidas con el pedido' : 'el modelo y las medidas con el dibujo'} del cliente.${rps.avisos.length ? ` ${rps.avisos.join(' ')}` : ''}`,
-      { tone: 'success', title: 'Pedido de puertas' });
-  }, [notify]);
+      { tone: 'success', title: nombre });
+  }, [notify, nombre]);
   const ultimoRps = useRef<number | null>(null);
   useEffect(() => {
-    if (!pedidoRpsSolicitado || ultimoRps.current === pedidoRpsSolicitado.id) return;
+    if (!pedidoRpsSolicitado || productoDeElementos(pedidoRpsSolicitado.rps.puertas.map(input => ({ input }))) !== producto || ultimoRps.current === pedidoRpsSolicitado.id) return;
     ultimoRps.current = pedidoRpsSolicitado.id;
     const { numero, rps } = pedidoRpsSolicitado;
     void (async () => {
-      if (tieneDatos(pedido) && await askForConfirmation({ title: `Abrir ${numero} en Puertas`,
-        message: 'Se sustituirá lo que hay ahora en Puertas por lo que dice RPS.', confirmLabel: 'Abrir pedido', cancelLabel: 'Conservar pantalla', tone: 'warning' }) !== 'confirm') return;
+      if (tieneDatos(pedido) && await askForConfirmation({ title: `Abrir ${numero} en ${nombre}`,
+        message: `Se sustituirá lo que hay ahora en ${nombre} por lo que dice RPS.`, confirmLabel: 'Abrir pedido', cancelLabel: 'Conservar pantalla', tone: 'warning' }) !== 'confirm') return;
       cargarDeRps(rps, numero);
     })();
-  }, [pedidoRpsSolicitado, pedido, askForConfirmation, cargarDeRps]);
+  }, [pedidoRpsSolicitado, pedido, askForConfirmation, cargarDeRps, producto, nombre]);
 
 
   const cabecera = (cambios: Partial<PedidoPantallaPuertas['cabecera']>) => setPedido({ ...pedido, cabecera: { ...pedido.cabecera, ...cambios } });
@@ -440,6 +445,14 @@ export function PuertasView({ activo, onResumenChange, usuario, notify, askForCo
       if (!respuesta.ok) throw new Error(datos.error || 'No se pudo consultar RPS.');
       if (!datos.pedido) { notify('No encuentro ese pedido en RPS.', { tone: 'warning' }); return; }
       const { cliente, fecha, puertas } = datos.pedido;
+      if (esPedidoMixto(puertas.map(input => ({ input })))) {
+        notify('RPS devuelve puertas y System Dock en el mismo pedido. No se ha importado: consulta con Oficina Técnica.', { tone: 'warning' });
+        return;
+      }
+      if (puertas.length && productoDeElementos(puertas.map(input => ({ input }))) !== producto) {
+        notify('Este pedido corresponde a otro producto. Ábrelo con «Buscar pedido» en la página principal.', { tone: 'warning' });
+        return;
+      }
       const sinPuertas = !pedido.elementos.some(e => e.input.frente || e.input.alto || e.input.of);
       if (puertas.length && sinPuertas) { cargarDeRps(datos.pedido, pedido.orderCode); return; }
       cabecera({ cliente: cliente.nombre, fecha: fecha || pedido.cabecera.fecha, clienteRps: { codigo: cliente.codigo, nombre: cliente.nombre } });
@@ -457,7 +470,7 @@ export function PuertasView({ activo, onResumenChange, usuario, notify, askForCo
       if (await guardarPuertasParaRevision({ pedido, usuario, preguntar: askForConfirmation, notify })) {
         onGuardado?.();
         void flujo.refrescar();
-        setPedido(pedidoVacio());
+        setPedido(pedidoVacio(producto));
         setIndice(0);
       }
     } catch {
@@ -468,9 +481,9 @@ export function PuertasView({ activo, onResumenChange, usuario, notify, askForCo
   }
 
   async function limpiar() {
-    if (tieneDatos(pedido) && await askForConfirmation({ title: 'Limpiar Puertas', message: 'Se borrarán las puertas y los datos de esta pantalla.',
+    if (tieneDatos(pedido) && await askForConfirmation({ title: `Limpiar ${nombre}`, message: 'Se borrarán los elementos y los datos de esta pantalla.',
       confirmLabel: 'Limpiar', cancelLabel: 'Conservar', tone: 'warning' }) !== 'confirm') return;
-    setPedido(pedidoVacio());
+    setPedido(pedidoVacio(producto));
     setIndice(0);
   }
 
@@ -489,13 +502,13 @@ export function PuertasView({ activo, onResumenChange, usuario, notify, askForCo
   return <div className="puertas-pantalla" onKeyDown={avanzarConIntro}>
     {accionesDestino ? createPortal(acciones, accionesDestino) : acciones}
     <section className="puerta-cabecera order-header panel rem-cabecera"><div className="order-header-group order-header-general"><h3>Datos del pedido</h3><div className="order-header-grid">
-      <div className="puerta-pedido"><label className="field puerta-campo"><span>Número de pedido</span><input aria-label="Número de pedido de puertas" value={pedido.orderCode} placeholder="AR2600000" onChange={e=>setPedido({...pedido,orderCode:e.target.value})}/></label>
+      <div className="puerta-pedido"><label className="field puerta-campo"><span>Número de pedido</span><input aria-label={`Número de pedido de ${nombre}`} value={pedido.orderCode} placeholder="AR2600000" onChange={e=>setPedido({...pedido,orderCode:e.target.value})}/></label>
       <button type="button" className="ghost-button" disabled={trayendo || !pedido.orderCode.trim()} onClick={() => void traerDeRps()}>{trayendo ? 'Consultando…' : 'Traer de RPS'}</button>
-      </div><label className="field puerta-campo"><span>Cliente</span><input aria-label="Cliente de puertas" value={pedido.cabecera.cliente} onChange={e=>cabecera({cliente:e.target.value,clienteRps:undefined})}/></label>
-      <label className="field puerta-campo"><span>Fecha</span><input type="date" aria-label="Fecha del pedido de puertas" value={pedido.cabecera.fecha} onChange={e=>cabecera({fecha:e.target.value})}/></label>
+      </div><label className="field puerta-campo"><span>Cliente</span><input aria-label={`Cliente de ${nombre}`} value={pedido.cabecera.cliente} onChange={e=>cabecera({cliente:e.target.value,clienteRps:undefined})}/></label>
+      <label className="field puerta-campo"><span>Fecha</span><input type="date" aria-label={`Fecha del pedido de ${nombre}`} value={pedido.cabecera.fecha} onChange={e=>cabecera({fecha:e.target.value})}/></label>
     </div></div>
     </section>
-    <div className="puerta-selector"><div className="tira-3d" role="group" aria-label="Puertas del pedido">{pedido.elementos.map((e,i)=><button type="button" key={e.id} className={`pestana ${indice===i?'pestana-activa':''}`} aria-pressed={indice===i} onClick={()=>setIndice(i)}>{e.input.modelo==='SYSTEMDOCK'?'Lona':'Puerta'} {i+1} · {e.input.of||'SIN OF'}</button>)}</div><button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:[...pedido.elementos,{id:crypto.randomUUID(),input:nuevaPuerta()}]});setIndice(pedido.elementos.length);}}><Plus size={16}/>Añadir puerta</button>{pedido.elementos.length>1&&<button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:pedido.elementos.filter((_,i)=>i!==indice)});setIndice(0);}}><Trash2 size={16}/>Quitar puerta</button>}</div>
+    <div className="puerta-selector"><div className="tira-3d" role="group" aria-label={sd?'Lonas del pedido':'Puertas del pedido'}>{pedido.elementos.map((e,i)=><button type="button" key={e.id} className={`pestana ${indice===i?'pestana-activa':''}`} aria-pressed={indice===i} onClick={()=>setIndice(i)}>{e.input.modelo==='SYSTEMDOCK'?'Lona':'Puerta'} {i+1} · {e.input.of||'SIN OF'}</button>)}</div><button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:[...pedido.elementos,{id:crypto.randomUUID(),input:sd?nuevaLona():nuevaPuerta()}]});setIndice(pedido.elementos.length);}}><Plus size={16}/>{sd?'Añadir lona':'Añadir puerta'}</button>{pedido.elementos.length>1&&<button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:pedido.elementos.filter((_,i)=>i!==indice)});setIndice(0);}}><Trash2 size={16}/>{sd?'Quitar lona':'Quitar puerta'}</button>}</div>
     <Configurar key={pedido.elementos[indice].id} p={pedido.elementos[indice].input} cambiar={p=>setPedido({...pedido,elementos:pedido.elementos.map((e,i)=>i===indice?{...e,input:p}:e)})} corte={<CorteResumen vista={vistaCorte}/>} derecha={derecha} cambiarDerecha={setDerecha}/>
   </div>;
 }

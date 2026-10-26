@@ -11,4 +11,10 @@ describe('selector de producto', () => {
     expect(pintar(false)).not.toContain('aria-label="Puertas"');
     expect(pintar(false)).toContain('aria-label="Remolques"');
   });
+  it('muestra System Dock como producto con su propio pedido a medias', () => {
+    const html = renderToStaticMarkup(<SelectorProducto inicio producto="systemdock" onChange={() => undefined} pedidos={{ systemdock: { numero: 'AR2604615', elementos: 2 } }} />);
+    expect(html).toContain('aria-label="System Dock"');
+    expect(html).toContain('Seguir con AR2604615 · 2 elementos');
+    expect(renderToStaticMarkup(<SelectorProducto producto="systemdock" onChange={() => undefined} />)).toContain('aria-pressed="true"');
+  });
 });

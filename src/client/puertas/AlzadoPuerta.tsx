@@ -80,7 +80,7 @@ function Forma({ f }: { f: FormaAlzado }) {
 export function AlzadoPuerta({ puerta: p, resultado }: { puerta: Puerta; resultado: ResultadoPuerta }) {
   const { formas, vista, letraBase, F, H } = geometriaAlzado(p, resultado);
   return (
-    <section className="puerta-alzado panel panel-vidrio" aria-label="Alzado de la puerta">
+    <section className="puerta-alzado panel panel-vidrio" aria-label={p.modelo==='SYSTEMDOCK'?'Alzado de la lona':'Alzado de la puerta'}>
       <header>
         <h2>Alzado</h2>
         <span>
@@ -98,7 +98,7 @@ export function AlzadoPuerta({ puerta: p, resultado }: { puerta: Puerta; resulta
           <Forma key={i} f={f} />
         ))}
       </svg>
-      <small>Compara tubos, huecos, ventanal y textos de taller con el dibujo del cliente.</small>
+      <small>{p.modelo==='SYSTEMDOCK'?'Compara las medidas y el texto con el pedido del cliente.':'Compara tubos, huecos, ventanal y textos de taller con el dibujo del cliente.'}</small>
       {p.observaciones.trim() && (
         <p className="puerta-observaciones-plano" aria-label="Observaciones particulares del pedido">
           <strong>Observaciones del pedido:</strong> {p.observaciones}
