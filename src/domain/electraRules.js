@@ -101,8 +101,9 @@ export function calculateElectra({ order, awning }) {
   const rollStockLength = chooseStock(rollTubeLength, parameters.rollStockLengths);
   // El perfil de carga depende de la variante, no del soporte: sin cofre se consume el
   // perfil Maxiscreen-Elit (PECARMAX) también con soporte universal, y con cofre el
-  // Univers 280 (consumo real de 35 OF desde 2024).
-  const universalLoadProfile = hasCofre;
+  // Univers 280 (consumo real de 35 OF desde 2024). Con guías, nunca el Univers 280: el kit retenedor va con la barra
+  // de carga de Llaza, el PECARMAX (Iván, 26/10/2026, AR2605227 / NC 10188; el con cofre y con guía no tenía producción).
+  const universalLoadProfile = hasCofre && !hasGuide;
   // El UNIVERS-280 tiene sus propias referencias en blanco y negro; ver lacados.js.
   const loadProfileSuffix = universalLoadProfile ? universProfileSuffix(lacado.suffix) : lacado.suffix;
   // Perfil de carga y perfil del cofre eligen su largo cada uno: en las OF reales van,
@@ -252,7 +253,7 @@ function electraPieces(context) {
     { code: `TURA80HG${rollStockLength}C`, quantity: units, description: 'TUBO DE ENROLLE P801', length: rollTubeLength },
     { code: tipBushing('P801').code, quantity: units, description: tipBushing('P801').description },
     { code: loadProfileReference.code, quantity: units, description: loadProfileDescription(), length: loadBarLength },
-    hasCofre
+    loadProfileReference.code.startsWith('PUNI280')
       ? plasticUniversalCaps(lacado, units)
       : { code: 'TAPASLAMAXSCNE11', quantity: units, description: 'JGO TAPAS PERFIL CARGA MAXISCREEN' }
   ];

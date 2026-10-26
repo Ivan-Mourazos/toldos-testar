@@ -257,6 +257,21 @@ describe('ELECTRA / Elit Vertical · variantes', () => {
     expect(confirmed.calculation).toMatchObject({ valid: true, guideLength: 238 });
   });
 
+  // Iván, 26/10/2026 (AR2605227, NC 10188): con guías no puede salir el Univers 280; el kit retenedor va con la barra de
+  // carga de Llaza (PECARMAX) y sus tapas, también con cofre.
+  test('con cofre y con guía, la barra de carga de Llaza y no el Univers 280', () => {
+    const result = calculate({
+      submodel: 'CON COFRE / CON GUÍA',
+      electraSupport: 'SOPORTE MAXISCREEM BOX',
+      reglasModificadas: true,
+      electraGuideDiscountCm: 12
+    });
+    const codigos = result.materials.map((m) => m.code ?? '');
+    expect(codigos.some((c) => c.startsWith('PUNI280') || c.startsWith('TAPOPLUN280'))).toBe(false);
+    expect(codigos.some((c) => c.startsWith('PECARMAX'))).toBe(true);
+    expect(codigos).toEqual(expect.arrayContaining(['TAPASLAMAXSCNE11', 'KITRETENEDORBL16']));
+  });
+
   test('con cofre y máquina aplica los descuentos históricos de MAXISCREEM', () => {
     const result = calculate({
       submodel: 'CON COFRE / SIN GUÍA',
