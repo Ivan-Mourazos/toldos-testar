@@ -439,9 +439,10 @@ function colocar(
       // Las puertas se cortan siempre por el revés: se avisa al principio, como el DERECHO de remolques (Iván, 22/10/2026).
     );
     if (enrollable) entidades.textos.push({ capa: 'texto', x: 0, y: rollo + 110, h: 80, valor: 'REVÉS' });
-    // Apilables y autorreparables: sacos y cristales sin «REVÉS» y con el borde del orillo cortado. Iván quitó esos
-    // REVÉS y puso esas rayas a mano en AR2605035 (26/10/2026). En la lona de los paños y en las enrollables, como antes.
-    fusionarCortesPuertas(entidades, primerPano || enrollable ? rollo : undefined);
+    // Sacos y cristales, en todas las puertas, con el borde del orillo cortado (Iván, 26/10/2026: lo puso a mano en
+    // AR2605035 y lo pidió también en las enrollables). En la lona de los paños, el orillo sigue sin cortarse.
+    // Las apilables y autorreparables, además, sin «REVÉS» en esas filas (lo quitó en AR2605035).
+    fusionarCortesPuertas(entidades, primerPano ? rollo : undefined);
     return { material: grupo[0].material, anchoRollo: rollo, largo, opcion, entidades, colocadas };
   });
 }

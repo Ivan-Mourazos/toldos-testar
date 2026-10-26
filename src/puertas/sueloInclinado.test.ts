@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fixture from './__fixtures__/AR2605035.json';
 import { alturasTubos, calcularPuerta, huecosEntrada } from './calcular.ts';
-import { base, apilable, pedidoDe } from './__fixtures__/ejemplos.ts';
+import { base, apilable, pedidoDe, puerta4638 } from './__fixtures__/ejemplos.ts';
 import { geometriaAlzado } from './alzado.ts';
 import { dibujarAlzadoTaller } from './planoTaller.ts';
 import { generarCortePuertas } from './corte.ts';
@@ -223,6 +223,11 @@ describe('Correcciones de Iván a AR2605035 (26/10/2026)',()=>{
       if(!paños) expect(textos).not.toContain('REVÉS');
     }
     expect(corte.cortes.some(c=>c.opcion==='saco-partido'&&c.entidades.textos.some(t=>/SACO EN DOS$/.test(t.valor)))).toBe(true);
+    // También en las enrollables (Iván, 26/10/2026).
+    for(const c of generarCortePuertas(pedidoDe('AR2600001',puerta4638())).cortes) {
+      const paños=c.colocadas.some(t=>t.pieza.clase==='pano');
+      expect(c.entidades.lineas.some(l=>l.capa==='DISCO1'&&Math.abs(l.y1)<.001&&Math.abs(l.y2)<.001)).toBe(!paños);
+    }
   });
   it('el plano acota la distancia del bolsillo al borde y su ancho',()=>{
     const p=puerta5035(0); p.bolsillo=true; p.medidasBolsillo={distancia:21,ancho:30,lado:'derecho',altoSuperior:null};
