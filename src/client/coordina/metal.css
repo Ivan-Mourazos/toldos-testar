@@ -1,7 +1,9 @@
 /* ── Metal y aluminio: resaltos y hundidos ──
    Copiado de coordina-ot/src/app/globals.css, bloque «Metal y aluminio» (Iván lo eligió con
    capturas el 15/10/2026): en oscuro, metal cepillado; en claro, aluminio. Las MISMAS reglas
-   para los dos temas; lo que cambia son las variables (`--veta`, `--relieve`… en tokens.css).
+   para los dos temas; lo que cambia son las variables (`--relieve`, `--hundir`… en tokens.css).
+   Grano solo en el fondo de la página y la cabecera (`--veta-fondo`): en paneles, botones y campos
+   ensuciaba el texto pequeño (Iván, 26/10/2026, también en CoordinaOT).
    Aquí solo van las clases que existen en esta web.
    - En resalto, lo que está encima: paneles, bloques, botones, menús. La capa de resalto es
      TRANSLÚCIDA sobre el color que ya tiene cada cosa.
@@ -29,7 +31,7 @@ body {
 :root .pildora-plantear,
 :root .pildora-revisar,
 :root .pildora-aviso {
-  background-image: var(--veta), var(--relieve);
+  background-image: var(--relieve);
   border-top-color: var(--relieve-canto);
   box-shadow: var(--relieve-sombra);
 }
@@ -50,7 +52,7 @@ body {
 :root .pildora-plantear:active,
 :root .pildora-revisar:active,
 :root .pildora-aviso:active {
-  background-image: var(--veta), var(--hundir);
+  background-image: var(--hundir);
   border-top-color: transparent;
   transform: translateY(1px);
   box-shadow: var(--pulsado-sombra);
@@ -68,7 +70,7 @@ body {
 :root .pestana-activa,
 :root .pestana-activa:hover,
 :root .bloque-3d-hundido {
-  background-image: var(--veta), var(--hundir);
+  background-image: var(--hundir);
   border-top-color: transparent;
   transform: translateY(1px);
   box-shadow: var(--pulsado-sombra);

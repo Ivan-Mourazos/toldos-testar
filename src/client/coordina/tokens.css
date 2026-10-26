@@ -59,8 +59,8 @@
   --edge: rgba(17, 21, 34, 0.08);
   --contact: rgba(17, 21, 34, 0.12);
 
-  /* Aluminio (metal.css): grano fino (Iván, 26/10/2026: mejor que las vetas rayadas), relieve y hundido de CoordinaOT, hacia el azul. */
-  --veta: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 0.19 0 0 0 0 0.24 0 0 0 0 0.35 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+  /* Aluminio (metal.css): grano fino solo en el fondo de la página (Iván, 26/10/2026: mejor que las vetas rayadas, y fuera
+     de paneles y botones porque ensuciaba el texto pequeño), relieve y hundido de CoordinaOT, hacia el azul. */
   --veta-fondo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0.19 0 0 0 0 0.24 0 0 0 0 0.35 0 0 0 0.1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
   --fondo-metal: linear-gradient(180deg, #e3e9f3, #d2dae7);
   --relieve: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(220, 227, 239, 0.35));
@@ -117,7 +117,6 @@
      neutro, sin azul (Iván, 26/10/2026, entre cuatro combinaciones: el gris con el negro azulado
      chocaba): luz arriba a la izquierda, esquinas más oscuras y grano fino. */
   --fondo-pagina: #111214;
-  --veta: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
   --veta-fondo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='5' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.85 0 0 0 0 0.85 0 0 0 0 0.85 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
   --fondo-metal:
     radial-gradient(ellipse 50% 45% at 0% 0%, rgb(160 160 165 / 0.16), transparent 72%),
@@ -161,7 +160,7 @@
    | --brillo               | --glass-highlight                            | el brillo del canto superior              |
    | --topnav-height        | 58px (py-2.5 ×2 + h-9 + borde de la tira)    | alto de la cabecera, en px porque         |
    |                        |                                              | ParameterSectionIndex lo lee con parseFloat|
-   | --danger               | #b91c1c (text-red-700; oscuro red-400 #f87171)| el rojo de texto de CoordinaOT            |
+   | --danger               | #b91c1c (text-red-700; oscuro red-300 #fca5a5)| el rojo de texto de CoordinaOT            |
 */
 :root {
   --tgm-yellow: var(--color-brand-400);
@@ -180,11 +179,12 @@
   --surface-muted: var(--surface-2);
   /* --danger: el rojo de texto de CoordinaOT. En claro `text-red-700` (el de «URGENTE» en
      PedidoCard.tsx): el #c62828 de antes se quedaba en 4,0:1 sobre el --bg nuevo en los «falta N»
-     del índice de toldos y este da 4,65:1. En oscuro `dark:text-red-400`, más abajo. */
+     del índice de toldos y este da 4,65:1. En oscuro red-300, más abajo:
+     el red-400 daba 4,2:1 sobre la fila oscura (CoordinaOT, 26/10/2026). */
   --danger: #b91c1c;
 }
 :root[data-theme="dark"] {
   --tgm-yellow-soft: color-mix(in srgb, var(--color-brand-400) 18%, var(--glass-chip));
   --accent-text: var(--color-brand-300);
-  --danger: #f87171;
+  --danger: #fca5a5;
 }
