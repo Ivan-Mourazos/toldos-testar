@@ -4,7 +4,7 @@ import path from "node:path";
 import { carpetaCorte } from "../corteLonaArchivos.js";
 import { escribirDxf2004 } from "../domain/corteLona/dxfCorte.js";
 import { corteDelPlano, entidadesBot } from "./corteDwg.js";
-import { rutaParaTgmPedidos } from "./rutaPc.js";
+import { rutaDeRed, rutaParaTgmPedidos } from "./rutaPc.js";
 
 // El flujo del corte con el DWG que manda (plan del 24/10/2026), común a puertas, remolques y toldos: el borrador del plano
 // y «Abrir corte» (fase 1), «Confirmar corte» y el paso del DWG a la carpeta del año al guardar para revisión (fase 2), y el
@@ -318,6 +318,22 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
     return { huella: leido.huella, dxf: escribirDxf2004(juntos) as string, plano: leido.cortes[0].dxf, planos: leido.cortes.map((c) => c.dxf) };
   }
 
+  /**
+   * «Abrir corte» en la revisión (Iván, 26/10/2026: «faltan los botones de abrir corte en las revisiones»): el enlace
+   * tgm-pedidos: de cada DWG revisado, en la carpeta del año. La ruta de red sale del mismo montaje que los borradores.
+   */
+  async function enlacesRevisado(confirmado: CorteConfirmado) {
+    const ajustes = await deps.ajustes();
+    const ficheros = [];
+    for (const p of planosDe(confirmado)) {
+      if (!(await existeFichero(p.plano))) throw new ErrorFlujoDwg(`No está el plano revisado ${p.filename} en su carpeta.`, 409);
+      const ruta = rutaDeRed(p.plano, ajustes.corteBorradoresDirectory, ajustes.corteBorradoresRed);
+      if (!ruta) throw new ErrorFlujoDwg("No se sabe la ruta de red del plano: revisa la carpeta de borradores en Configuración.", 409);
+      ficheros.push({ filename: p.filename, ruta, url: `tgm-pedidos://open?kind=cad&path=${encodeURIComponent(ruta)}` });
+    }
+    return { ficheros };
+  }
+
   /** Fase 4: los DWG revisados tal como están, en DXF, para imprimir sus presentaciones. */
   async function planosDelDwg(confirmado: CorteConfirmado) {
     if (!deps.leer) throw new ErrorFlujoDwg("Este servidor no puede leer el plano del corte.", 503);
@@ -368,7 +384,7 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
       confirmado: confirmacion ? { por: confirmacion.por, fecha: confirmacion.fecha } : null, cambiadoTrasConfirmar };
   }
 
-  return { activo, borrador, confirmar, estado, alGuardar, corteDelDwg, planosDelDwg, antesDeMandar };
+  return { activo, borrador, confirmar, estado, alGuardar, corteDelDwg, planosDelDwg, enlacesRevisado, antesDeMandar };
 }
 
 type Linea = { capa: string; x1: number; y1: number; x2: number; y2: number };

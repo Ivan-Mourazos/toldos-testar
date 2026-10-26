@@ -134,6 +134,13 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
     return flujo.estado(codigoPedido(codigo));
   }
 
+  /** «Abrir corte» en la revisión: el DWG revisado del pedido, en ZWCAD (Iván, 26/10/2026). */
+  async function enlacesCorte(orderCode: string) {
+    const pedido = await obtener(orderCode);
+    if (!pedido.corteConfirmado) throw new ErrorPedidoRemolques("Este pedido no tiene el corte del DWG confirmado.", 409);
+    return flujo.enlacesRevisado(pedido.corteConfirmado);
+  }
+
   /** «Confirmar corte» (fase 2): el corte del borrador, tal como quedó en ZWCAD, apuntado para guardar para revisión. */
   async function confirmarCorte(cuerpo: unknown): Promise<Respuesta> {
     const c = (cuerpo ?? {}) as { orderCode?: unknown; savedBy?: unknown };
@@ -460,5 +467,5 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
       error: `Ya hay ${path.basename(ruta(10))} de este pedido. Si es de otra parte del pedido, las presentaciones irán en ${path.basename(ruta(siguiente))}; si es lo mismo, se sustituye.` } } };
   }
 
-  return { listar, obtener, guardar, borradorCorte, confirmarCorte, estadoCorte, planoRevision, generar, corte, descargarCorte, enviarCorte, rehacerPdf };
+  return { listar, obtener, guardar, borradorCorte, confirmarCorte, estadoCorte, enlacesCorte, planoRevision, generar, corte, descargarCorte, enviarCorte, rehacerPdf };
 }

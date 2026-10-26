@@ -5,6 +5,7 @@ import type { EstadoCorte } from '../corteLona';
 import { OrderView } from '../views/OrderView';
 import { CorteLona } from './CorteLona';
 import { DocumentosPedido } from './DocumentosPedido';
+import { BotonAbrirCorteRevisado } from '../flujoCorteDwg';
 import { PlanteamientoPedido } from './PlanteamientoPedido';
 import { controlLabel } from './controlLabels';
 import { generateState, puedeCorregir } from '../generatePermission';
@@ -113,6 +114,7 @@ export function ReviewOrderDetail({
           ].filter(Boolean).join(' · ')}</small>
         </div>
         <div className="review-reader-actions">
+          {review.corteConfirmado && <BotonAbrirCorteRevisado ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-dwg`} notify={notify} />}
           {!isProduced && (
             <>
               {corregible && <button className="ghost-button boton-3d" type="button" disabled={disabled} onClick={onEdit}>

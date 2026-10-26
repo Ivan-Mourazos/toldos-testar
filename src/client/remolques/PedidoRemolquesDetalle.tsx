@@ -16,6 +16,7 @@ import { formatearNumeroEs } from './numeroEs';
 import { DocumentosPedido } from '../components/DocumentosPedido';
 import { PlanteamientoPedido } from '../components/PlanteamientoPedido';
 import { EnviosCorte } from '../components/EnviosCorte';
+import { BotonAbrirCorteRevisado } from '../flujoCorteDwg';
 
 // Un pedido de remolques abierto desde Pedidos (fase 5), con las acciones del de toldos: ver la
 // hoja, «Corregir», «Generar archivos» (solo el autor, con todo aprobado en CoordinaOT) y, ya
@@ -97,6 +98,7 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
           <small>{datos}</small>
         </div>
         <div className="review-reader-actions">
+          {pedido.corteConfirmado && <BotonAbrirCorteRevisado ruta={`${ruta}/corte-dwg`} notify={notify} />}
           {!generado && (
             <>
               {corregible && <button className="ghost-button boton-3d" type="button" disabled={generando} onClick={onCorregir}>

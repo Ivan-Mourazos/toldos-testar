@@ -249,6 +249,13 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     return flujo.confirmar(codigoPedido(typeof c.orderCode === "string" ? c.orderCode : ""), autor);
   }
 
+  /** «Abrir corte» en la revisión: el DWG revisado del pedido, en ZWCAD (Iván, 26/10/2026). */
+  async function enlacesCorte(orderCode: string) {
+    const pedido = await obtener(orderCode);
+    if (!pedido.corteConfirmado) throw new ErrorPedidoRemolques("Este pedido no tiene el corte del DWG confirmado.", 409);
+    return flujo.enlacesRevisado(pedido.corteConfirmado);
+  }
+
   async function obtener(orderCode: string): Promise<PedidoRemolques> {
     const pedido = await deps.almacen.obtener(codigoPedido(orderCode));
     if (!pedido) throw new ErrorPedidoRemolques("No se encontró el pedido de remolques.", 404);
@@ -547,5 +554,5 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     } finally { ocupados.delete(orderCode); }
   }
 
-  return { listar, obtener, guardar, borradorCorte, confirmarCorte, estadoCorte, generar, vistaPrevia, archivo, buscar, corte, vistaPreviaCorte, planoCorte, enviarCorte, descargarCorte };
+  return { listar, obtener, guardar, borradorCorte, confirmarCorte, estadoCorte, enlacesCorte, generar, vistaPrevia, archivo, buscar, corte, vistaPreviaCorte, planoCorte, enviarCorte, descargarCorte };
 }

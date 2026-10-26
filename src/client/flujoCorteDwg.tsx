@@ -144,3 +144,27 @@ export function BotonesFlujoCorte({ flujo, ocupado = false }: { flujo: FlujoCort
     </button>
   </>;
 }
+
+/**
+ * «Abrir corte» en la revisión de un pedido (Iván, 26/10/2026: «faltan los botones de abrir corte en las revisiones»):
+ * abre en ZWCAD el DWG revisado, el de la carpeta del año. `ruta`: la del servidor que da su enlace (…/corte-dwg).
+ */
+export function BotonAbrirCorteRevisado({ ruta, notify }: { ruta: string; notify: Notify }) {
+  const [ocupado, setOcupado] = useState(false);
+  async function abrir() {
+    setOcupado(true);
+    try {
+      const respuesta = await fetch(ruta, { cache: 'no-store' });
+      const datos = await respuesta.json().catch(() => ({})) as { error?: string; ficheros?: Array<{ filename: string; url: string }> };
+      if (!respuesta.ok || !datos.ficheros?.length) throw new Error(datos.error || 'No se pudo abrir el corte.');
+      // Con varios planos (toldos de varias telas), uno detrás de otro: ZWCAD los abre todos.
+      datos.ficheros.forEach((f, i) => setTimeout(() => window.location.assign(f.url), i * 1500));
+      notify(`Abriendo ${datos.ficheros.map(f => f.filename).join(' · ')} en ZWCAD.`, { tone: 'success', title: 'Abrir corte' });
+    } catch (error) {
+      notify(error instanceof Error ? error.message : 'No se pudo abrir el corte.', { tone: 'error', title: 'Abrir corte' });
+    } finally { setOcupado(false); }
+  }
+  return <button type="button" className="ghost-button boton-3d" disabled={ocupado} title="Abre en ZWCAD el DWG del corte revisado" onClick={() => void abrir()}>
+    <FolderOpen aria-hidden="true" />{ocupado ? 'Un momento…' : 'Abrir corte'}
+  </button>;
+}

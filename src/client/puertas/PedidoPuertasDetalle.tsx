@@ -7,6 +7,7 @@ import type { PedidoPuertasGuardado } from '../../puertas/flujo/tipos.ts';
 import type { VistaPuertas } from '../../puertas/tipos.ts';
 import { normalizeOf, reviewerName } from '../../reviewRules.js';
 import { CabeceraDocumento, DocumentosPedido } from '../components/DocumentosPedido';
+import { BotonAbrirCorteRevisado } from '../flujoCorteDwg';
 import { EnviosCorte } from '../components/EnviosCorte';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { controlLabel } from '../components/controlLabels';
@@ -235,6 +236,7 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
           <small>{datos}</small>
         </div>
         <div className="review-reader-actions">
+          {pedido.corteConfirmado && <BotonAbrirCorteRevisado ruta={`${ruta}/corte-dwg`} notify={onToast} />}
           {!generado && (
             <>
               {corregible && <button className="ghost-button boton-3d" type="button" disabled={generando} onClick={() => onCorregir(pedido)}><PencilLine aria-hidden="true" />Corregir</button>}

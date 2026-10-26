@@ -77,3 +77,26 @@ it('el estado dice si hay borrador, si está confirmado y si se tocó después d
   await fs.utimes(fichero, luego, luego);
   expect(await flujo.estado('AR2600096')).toMatchObject({ cambiadoTrasConfirmar: true });
 });
+
+// Iván, 26/10/2026: «faltan los botones de abrir corte en las revisiones». El enlace sale del mismo montaje que los borradores.
+it('en la revisión, «Abrir corte» da el enlace de cada DWG revisado en la carpeta del año', async () => {
+  const oftecnica = path.join(raiz, 'oftecnica');
+  const conRed = crearFlujoDwg({
+    ajustes: async () => ({ productionEnabled: true, corteBorradoresDirectory: path.join(oftecnica, 'BORRADORES CORTE'),
+      corteBorradoresRed: String.raw`\\toldosgomez.local\DFS_POL\oftecnica\BORRADORES CORTE`, corteLonaPlanoDirectory: path.join(oftecnica, '{YYYY}') }),
+    leer: async (ruta) => fs.readFile(ruta, 'utf8'),
+    escribir: async (f) => { await fs.mkdir(path.dirname(f.savedPath), { recursive: true }); await fs.writeFile(f.savedPath, f.contenido); },
+    confirmaciones: crearAlmacenConfirmaciones({ carpeta: async () => path.join(raiz, 'confirmados') }),
+  });
+  await conRed.borrador({ orderCode: 'AR2600096', preparar });
+  await conRed.confirmar('AR2600096', 'IVÁN');
+  const guardado = await conRed.alGuardar({ orderCode: 'AR2600096', technician: 'IVÁN', confirmOverwrite: false });
+  if (!guardado || 'respuesta' in guardado) throw new Error('debería poder guardarse');
+  await guardado.escribir();
+  const { ficheros } = await conRed.enlacesRevisado(guardado.corteConfirmado);
+  const anio = path.basename(path.dirname(guardado.corteConfirmado.plano));
+  expect(ficheros.map((f) => f.ruta)).toEqual(nombres.map((n) => [String.raw`\\toldosgomez.local\DFS_POL\oftecnica`, anio, n].join('\\')));
+  expect(ficheros[0].url).toMatch(/^tgm-pedidos:\/\/open\?kind=cad&path=/);
+  await fs.rm(guardado.corteConfirmado.plano);
+  await expect(conRed.enlacesRevisado(guardado.corteConfirmado)).rejects.toMatchObject({ statusCode: 409 });
+});

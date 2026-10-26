@@ -344,6 +344,17 @@ app.get('/api/corte-lona/borrador/estado', async (req, res, next) => {
   }
 });
 
+app.get('/api/reviews/:orderCode/corte-dwg', async (req, res, next) => {
+  try {
+    const review = await workflowStore.getReview(sanitizeOrderCode(req.params.orderCode));
+    if (!review.corteConfirmado) throw httpError(409, 'Este pedido no tiene el corte del DWG confirmado.');
+    res.set('Cache-Control', 'no-store').json(await flujoToldos.enlacesRevisado(review.corteConfirmado));
+  } catch (error) {
+    if (error.code === 'ENOENT') return next(httpError(404, 'No se encontró el pedido de revisión.'));
+    next(error);
+  }
+});
+
 // Fase 2: el corte de los borradores, tal como quedaron en ZWCAD, confirmado para poder guardar para revisión.
 app.post('/api/corte-lona/borrador/confirmar', async (req, res, next) => {
   try {
@@ -882,6 +893,10 @@ app.get('/api/remolques/borrador-corte/estado', rutaRemolques(async (req, res) =
   res.set('Cache-Control', 'no-store').json(await pedidosRemolques.estadoCorte(req.query.orderCode));
 }));
 
+app.get('/api/remolques/pedidos/:orderCode/corte-dwg', rutaRemolques(async (req, res) => {
+  res.set('Cache-Control', 'no-store').json(await pedidosRemolques.enlacesCorte(req.params.orderCode));
+}));
+
 app.post('/api/remolques/borrador-corte/confirmar', rutaRemolques(async (req, res) => {
   const { status, cuerpo } = await pedidosRemolques.confirmarCorte(req.body);
   res.status(status).json(cuerpo);
@@ -967,6 +982,11 @@ app.post('/api/puertas/borrador-corte', rutaRemolques(async (req, res) => {
 // En qué paso está el corte (borrador, confirmado, tocado después de confirmar): la pantalla pone los botones cuando tocan.
 app.get('/api/puertas/borrador-corte/estado', rutaRemolques(async (req, res) => {
   res.set('Cache-Control', 'no-store').json(await pedidosPuertas.estadoCorte(req.query.orderCode));
+}));
+
+// «Abrir corte» en la revisión: el enlace del DWG revisado (Iván, 26/10/2026), en puertas, remolques y toldos.
+app.get('/api/puertas/pedidos/:orderCode/corte-dwg', rutaRemolques(async (req, res) => {
+  res.set('Cache-Control', 'no-store').json(await pedidosPuertas.enlacesCorte(req.params.orderCode));
 }));
 
 app.post('/api/puertas/borrador-corte/confirmar', rutaRemolques(async (req, res) => {

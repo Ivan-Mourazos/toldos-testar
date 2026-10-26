@@ -687,6 +687,8 @@ export type ReviewSummary = {
   corteLona?: import('./corteLona').EstadoCorte | null;
   corteLonaEstado?: 'hecho' | 'falta' | 'viejo';
   planosCorte?: { files: { filename: string; savedPath: string; writtenAt: string }[]; avisos: string[] };
+  /** El corte confirmado del DWG revisado (flujo del DWG): con él, «Abrir corte» en la revisión. */
+  corteConfirmado?: { por: string; fecha: string; filename: string };
   schemaVersion: number;
   kind: 'toldos-testar-review';
   orderCode: string;
