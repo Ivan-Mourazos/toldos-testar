@@ -100,3 +100,11 @@
 .puerta-falta { color:var(--aviso-texto); }
 /* El saco con sus tres botones necesita dos columnas para que el rótulo no se parta. */
 .puerta-campos > .puerta-saco-util, .puerta-campos > .puerta-control:has(.puerta-saco-util) { grid-column:span 2; }
+/* El corte entero junto al alzado, sin bajar (Iván, 26/10/2026). La columna no pasa de la pantalla: se desplaza sola. */
+.puerta-derecha { max-height:calc(100vh - 36px); overflow:auto; }
+.puerta-derecha-pestanas { display:inline-flex; margin-bottom:10px; }
+.puerta-corte-resumen { padding:12px 14px; }
+.puerta-corte-resumen h2 span { color:var(--text-muted); font-weight:500; font-size:13px; margin-left:6px; }
+.puerta-corte-resumen figure { margin:10px 0 0; }
+.puerta-corte-resumen figcaption { font-size:12px; color:var(--text-muted); }
+.puerta-corte-resumen .puerta-corte-dibujo { min-height:0; max-height:260px; margin-block:4px 0; }

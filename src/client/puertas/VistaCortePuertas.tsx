@@ -5,10 +5,11 @@ import { abrirCorteDwg, confirmarCorteDwg } from '../abrirCorte';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import '../coordina/corte-lona.css';
 
-export function DibujoCortePuertas({corte:c,zoom=1}:{corte:CortePuertas;zoom?:number}) {
+/** `ajustado`: solo lo que ocupan las piezas, sin el resto del rollo ni el título (el resumen junto al alzado). */
+export function DibujoCortePuertas({corte:c,zoom=1,ajustado=false}:{corte:CortePuertas;zoom?:number;ajustado?:boolean}) {
   const alto=c.anchoRollo+430;
   const techo=Math.max(0,...c.colocadas.map(p=>p.y+10*(p.girada?p.pieza.ancho:p.pieza.alto)));
-  return <svg role="img" aria-label={`Corte ${c.material}`} className="corte-dibujo puerta-corte-dibujo" style={zoom>1?{width:`${zoom*100}%`,maxHeight:'none'}:undefined} viewBox={zoom>1?`0 ${-techo} ${c.largo} ${techo}`:`-100 ${-alto} ${c.largo+200} ${alto+100}`}>
+  return <svg role="img" aria-label={`Corte ${c.material}`} className="corte-dibujo puerta-corte-dibujo" style={zoom>1?{width:`${zoom*100}%`,maxHeight:'none'}:undefined} viewBox={ajustado?`-20 ${-techo-20} ${c.largo+40} ${techo+40}`:zoom>1?`0 ${-techo} ${c.largo} ${techo}`:`-100 ${-alto} ${c.largo+200} ${alto+100}`}>
     <rect className="corte-rollo" width={c.largo} height={c.anchoRollo} y={-c.anchoRollo}/>
     {c.entidades.lineas.map((l,i)=><line key={i} x1={l.x1} y1={-l.y1} x2={l.x2} y2={-l.y2} className={l.capa==='ROTULADOR'?'corte-marca':l.capa==='CUTTER'?'puerta-cutter':'corte-linea'} vectorEffect="non-scaling-stroke"/>)}
     {c.entidades.arcos.map((a,i)=>{
@@ -35,7 +36,52 @@ function MaterialCorte({c}:{c:CortePuertas}) {
     <small className="corte-leyenda"><span>DISCO1 · corte</span><span className="puerta-cutter-texto">CUTTER · huecos y curvas</span><span>ROTULADOR · marcas y mininúmeros de 1 cm</span></small>
   </article>;
 }
-export function VistaCortePuertas({pedido,activo,usuario,notify,askForConfirmation}:{pedido:PedidoPuertas;activo:boolean;usuario:string;notify:Notify;askForConfirmation:AskForConfirmation}) {
+type EstadoVista = {entrada:string;datos?:VistaPuertas;error?:string;cargando?:boolean};
+export type VistaCorte = {actual:EstadoVista|null;anticuada:boolean;calcular:()=>Promise<void>};
+
+/** El corte del pedido, calculado solo al cambiar los datos (Iván, 26/10/2026: «que salga ya el corte tal cual, con
+ * los cristales y sacos; así no hay que andar bajando»). Lo comparten el resumen junto al alzado y la vista grande. */
+export function useVistaCortePuertas(pedido:PedidoPuertas,activo:boolean):VistaCorte {
+  const entrada=JSON.stringify(pedido), solicitud=useRef<AbortController|null>(null);
+  const [vista,setVista]=useState<EstadoVista|null>(null);
+  const actual=vista?.entrada===entrada?vista:null;
+  async function calcular() {
+    solicitud.current?.abort(); const abortar=new AbortController(); solicitud.current=abortar;
+    setVista({entrada,cargando:true});
+    try {
+      const r=await fetch('/api/puertas/corte/vista-previa',{method:'POST',headers:{'Content-Type':'application/json'},body:entrada,signal:abortar.signal});
+      const datos=await r.json() as VistaPuertas & {error?:string};
+      if(!r.ok) throw new Error(datos.error||'No se pudo calcular el corte.');
+      if(!abortar.signal.aborted) setVista({entrada,datos});
+    } catch(error) { if(!abortar.signal.aborted) setVista({entrada,error:error instanceof Error?error.message:'No se pudo calcular el corte.'}); else setVista(v=>v?.cargando?null:v); }
+  }
+  // Se recalcula solo, un momento después de dejar de escribir.
+  useEffect(()=>{
+    if(!activo) return;
+    const espera=setTimeout(()=>void calcular(),600);
+    return ()=>{clearTimeout(espera);solicitud.current?.abort();};
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[entrada,activo]);
+  return {actual,anticuada:Boolean(vista&&!actual),calcular};
+}
+
+const nombreOpcion=(c:CortePuertas)=>c.opcion==='saco-entero'?' · saco entero (alternativa)':c.opcion==='saco-partido'?' · saco en dos':'';
+
+/** Todo el corte de un vistazo, junto al alzado: cada material con su rollo, uno debajo de otro. */
+export function CorteResumen({vista}:{vista:VistaCorte}) {
+  const {actual}=vista;
+  return <section className="puerta-corte-resumen panel panel-vidrio" aria-label="Corte del pedido" aria-busy={Boolean(actual?.cargando)}>
+    <h2>Corte <span>{actual?.cargando?'calculando…':actual?.datos?`${actual.datos.cortes.length} rollos`:''}</span></h2>
+    {actual?.error&&<p role="alert" className="corte-aviso">{actual.error}</p>}
+    {actual?.datos&&!actual.datos.cortes.length&&<p className="corte-ayuda">Completa las medidas y los anchos de rollo para colocar las piezas.</p>}
+    {actual?.datos?.cortes.map((c,i)=><figure key={i}>
+      <figcaption>{c.material}{nombreOpcion(c)} · rollo {(c.anchoRollo/10).toLocaleString('es-ES')} · {(c.largo/1000).toLocaleString('es-ES',{maximumFractionDigits:2})} m</figcaption>
+      <DibujoCortePuertas corte={c} ajustado/>
+    </figure>)}
+  </section>;
+}
+
+export function VistaCortePuertas({pedido,vista,usuario,notify,askForConfirmation}:{pedido:PedidoPuertas;vista:VistaCorte;usuario:string;notify:Notify;askForConfirmation:AskForConfirmation}) {
   const [abriendo,setAbriendo]=useState(false);
   // Flujo del DWG, fase 1: el plano en la carpeta de borradores, abierto en ZWCAD para perfilarlo.
   async function abrirCorte() {
@@ -49,31 +95,18 @@ export function VistaCortePuertas({pedido,activo,usuario,notify,askForConfirmati
     try { await confirmarCorteDwg({ruta:'/api/puertas/borrador-corte/confirmar',orderCode:pedido.orderCode,usuario,notify}); }
     finally { setAbriendo(false); }
   }
-  const entrada=JSON.stringify(pedido), solicitud=useRef<AbortController|null>(null);
-  const [vista,setVista]=useState<{entrada:string;datos?:VistaPuertas;error?:string;cargando?:boolean}|null>(null);
-  useEffect(()=>()=>{solicitud.current?.abort();},[entrada,activo]);
-  const actual=vista?.entrada===entrada?vista:null;
-  async function calcular() {
-    solicitud.current?.abort(); const abortar=new AbortController(); solicitud.current=abortar;
-    setVista({entrada,cargando:true});
-    try {
-      const r=await fetch('/api/puertas/corte/vista-previa',{method:'POST',headers:{'Content-Type':'application/json'},body:entrada,signal:abortar.signal});
-      const datos=await r.json() as VistaPuertas & {error?:string};
-      if(!r.ok) throw new Error(datos.error||'No se pudo calcular el corte.');
-      if(!abortar.signal.aborted) setVista({entrada,datos});
-    } catch(error) { if(!abortar.signal.aborted) setVista({entrada,error:error instanceof Error?error.message:'No se pudo calcular el corte.'}); else setVista(v=>v?.cargando?null:v); }
-  }
+  const {actual,anticuada,calcular}=vista;
   return <section className="corte-lona panel bloque-3d" aria-label="Vista previa del corte de puertas" aria-busy={Boolean(actual?.cargando)}>
-    <header className="corte-cabecera"><div><span className="corte-titulo"><Scissors aria-hidden="true"/><h2>Vista previa del corte</h2></span><p>{pedido.orderCode||'Sin número de pedido'} · Revisa las piezas y el material antes de preparar la puerta.</p></div>
+    <header className="corte-cabecera"><div><span className="corte-titulo"><Scissors aria-hidden="true"/><h2>Vista previa del corte</h2></span><p>{pedido.orderCode||'Sin número de pedido'} · Se actualiza sola al cambiar los datos; aquí, cada material con su ampliación.</p></div>
       <div className="corte-acciones"><button type="button" className="ghost-button boton-3d" onClick={()=>void abrirCorte()} disabled={abriendo} title="Deja el plano en la carpeta de borradores y lo abre en ZWCAD"><FolderOpen size={16} aria-hidden="true"/>{abriendo?'Un momento…':'Abrir corte'}</button>
       <button type="button" className="ghost-button boton-3d" onClick={()=>void confirmarCorte()} disabled={abriendo} title="Lee el borrador tal como quedó en ZWCAD y lo da por bueno para guardar para revisión"><CheckCircle2 size={16} aria-hidden="true"/>Confirmar corte</button>
-      <button type="button" className="primary-button boton-3d" onClick={()=>void calcular()} disabled={Boolean(actual?.cargando)}>{actual?.cargando?'Calculando…':'Ver vista previa del corte'}</button></div></header>
-    {vista&&!actual&&<p role="status" className="corte-aviso">Han cambiado los datos. Vuelve a calcular el corte.</p>}
+      <button type="button" className="ghost-button boton-3d" onClick={()=>void calcular()} disabled={Boolean(actual?.cargando)}>{actual?.cargando?'Calculando…':'Recalcular'}</button></div></header>
+    {anticuada&&<p role="status" className="corte-aviso">Han cambiado los datos: recalculando…</p>}
     {actual?.error&&<p role="alert" className="corte-aviso">{actual.error}</p>}
     {actual?.datos&&<>
       {actual.datos.avisos.some(a=>a.nivel==='error')&&<p role="alert" className="corte-aviso">Hay medidas pendientes de corregir. Se muestran solo las piezas que caben; el corte está incompleto.</p>}
       {actual.datos.sinOf.length>0&&<p className="corte-aviso">SIN OF · Solo vista previa.</p>}
-      {actual.datos.cortes.map((c,i)=><MaterialCorte key={`${entrada}:${i}`} c={c}/>)}
+      {actual.datos.cortes.map((c,i)=><MaterialCorte key={`${i}:${c.material}:${c.opcion}`} c={c}/>)}
       {!actual.datos.cortes.length&&<p className="corte-ayuda">Completa las medidas y los anchos de rollo para colocar las piezas.</p>}
     </>}
   </section>;

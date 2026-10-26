@@ -14,7 +14,7 @@ import { guardarPuertasParaRevision, pedidoDesdeGuardado, pedidoDesdeRps, type M
 import { InputDecimal } from '../remolques/InputDecimal';
 import type { ResumenPedido } from '../remolques/SelectorProducto';
 import { AlzadoPuerta } from './AlzadoPuerta';
-import { VistaCortePuertas } from './VistaCortePuertas';
+import { CorteResumen, useVistaCortePuertas, VistaCortePuertas } from './VistaCortePuertas';
 import { cintasDesdeCotas, leerCadena } from './cadenaDibujo';
 import { avanzarConIntro } from '../avanzarConIntro';
 import './puertas.css';
@@ -47,7 +47,7 @@ function Huecos({huecos,cambiar}:{huecos:Hueco[];cambiar:(h:Hueco[])=>void}) {
     <button type="button" className="ghost-button" aria-label={`Quitar hueco ${j+1}`} onClick={()=>cambiar(huecos.filter((_,i)=>i!==j))}><Trash2 size={16}/></button>
   </div>)}<button type="button" className="ghost-button" onClick={()=>cambiar([...huecos,{x:0,y:0,ancho:12,alto:7.5,radio:0.5}])}>Añadir hueco</button></div>;
 }
-function Configurar({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
+function Configurar({p,cambiar,corte,derecha='alzado',cambiarDerecha}:{p:Puerta;cambiar:(p:Puerta)=>void;corte?:React.ReactNode;derecha?:'alzado'|'corte';cambiarDerecha?:(v:'alzado'|'corte')=>void}) {
   const resultado=calcularPuerta(p);
   // System Dock: una lona rectangular; sin cristal, saco, tubos ni ventanas (src/puertas/systemDock.ts).
   const sd=p.modelo==='SYSTEMDOCK';
@@ -131,7 +131,9 @@ function Configurar({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
       </section>
       {/* Lo que falta, junto al alzado: se ve sin bajar hasta el final (Iván, 25/10/2026). */}
       <div className="puerta-derecha">
-        <AlzadoPuerta puerta={p} resultado={resultado}/>
+        {/* El corte entero a un clic, sin bajar (Iván, 26/10/2026). */}
+        {corte&&cambiarDerecha&&<div className="tira-3d puerta-derecha-pestanas" role="group" aria-label="Ver junto al configurador">{(['alzado','corte'] as const).map(v=><button type="button" key={v} className={`pestana ${derecha===v?'pestana-activa':''}`} aria-pressed={derecha===v} onClick={()=>cambiarDerecha(v)}>{v==='alzado'?'Alzado':'Corte'}</button>)}</div>}
+        {derecha==='corte'&&corte?corte:<AlzadoPuerta puerta={p} resultado={resultado}/>}
         <section className="puerta-avisos panel panel-vidrio" aria-label="Comprobaciones de puerta">
           <h2>Qué falta o revisar <span>{resultado.avisos.filter(a=>a.nivel==='error').length} pendientes</span></h2>
           {resultado.avisos.length?<ul>{resultado.avisos.map((a,i)=><li key={i} className={a.nivel==='error'?'es-error':''}>{a.texto}</li>)}</ul>:<p>Todo listo: las medidas comprobadas son coherentes.</p>}
@@ -280,6 +282,8 @@ export function PuertasView({ activo, onResumenChange, usuario, notify, askForCo
 }) {
   const [pedido, setPedido] = useState<PedidoPantallaPuertas>(pedidoVacio);
   const [indice, setIndice] = useState(0);
+  const vistaCorte = useVistaCortePuertas(pedido, activo);
+  const [derecha, setDerecha] = useState<'alzado' | 'corte'>('alzado');
   const [guardando, setGuardando] = useState(false);
   const [trayendo, setTrayendo] = useState(false);
   const ultimoSolicitado = useRef<number | null>(null);
@@ -384,7 +388,7 @@ export function PuertasView({ activo, onResumenChange, usuario, notify, askForCo
     </div></div>
     </section>
     <div className="puerta-selector"><div className="tira-3d" role="group" aria-label="Puertas del pedido">{pedido.elementos.map((e,i)=><button type="button" key={e.id} className={`pestana ${indice===i?'pestana-activa':''}`} aria-pressed={indice===i} onClick={()=>setIndice(i)}>{e.input.modelo==='SYSTEMDOCK'?'Lona':'Puerta'} {i+1} · {e.input.of||'SIN OF'}</button>)}</div><button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:[...pedido.elementos,{id:crypto.randomUUID(),input:nuevaPuerta()}]});setIndice(pedido.elementos.length);}}><Plus size={16}/>Añadir puerta</button>{pedido.elementos.length>1&&<button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:pedido.elementos.filter((_,i)=>i!==indice)});setIndice(0);}}><Trash2 size={16}/>Quitar puerta</button>}</div>
-    <Configurar key={pedido.elementos[indice].id} p={pedido.elementos[indice].input} cambiar={p=>setPedido({...pedido,elementos:pedido.elementos.map((e,i)=>i===indice?{...e,input:p}:e)})}/>
-    <VistaCortePuertas pedido={pedido} activo={activo} usuario={usuario} notify={notify} askForConfirmation={askForConfirmation}/>
+    <Configurar key={pedido.elementos[indice].id} p={pedido.elementos[indice].input} cambiar={p=>setPedido({...pedido,elementos:pedido.elementos.map((e,i)=>i===indice?{...e,input:p}:e)})} corte={<CorteResumen vista={vistaCorte}/>} derecha={derecha} cambiarDerecha={setDerecha}/>
+    <VistaCortePuertas pedido={pedido} vista={vistaCorte} usuario={usuario} notify={notify} askForConfirmation={askForConfirmation}/>
   </div>;
 }
