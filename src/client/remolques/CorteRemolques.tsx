@@ -112,9 +112,9 @@ export function CorteRemolques({ ruta, version, generado = false, notify, onConf
             <FileDown aria-hidden="true" />{guardandoPlano ? 'Guardando plano…' : 'Guardar plano para revisar'}
           </button>
         )}
-        {Boolean(datos?.cortes.length) && acciones}
       </CabeceraDocumento>
-      <p className="corte-ayuda">El plano sale al guardar para revisión. El DXF se manda o guarda con sus botones.</p>
+      <p className="corte-ayuda">El plano sale al guardar para revisión. El DXF se manda al bot con el botón de arriba.</p>
+      {Boolean(datos?.cortes.length) && acciones}
       {!estado && <p className="corte-ayuda">Calculando el corte…</p>}
       {estado?.error && <p role="alert" className="corte-aviso">{estado.error}</p>}
       {datos && <CorteRemolquesVista datos={datos} />}

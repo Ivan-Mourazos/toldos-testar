@@ -3,14 +3,32 @@ import { Download, FileText, FolderDown, Send } from 'lucide-react';
 import type { EnvioCorte } from '../../corteEnviosTipos';
 import type { AskForConfirmation, Notify } from './NotificationCenter';
 import { carpetaLegible, mensajeEnvio } from './enviosCorteTexto';
+import { MenuMas } from './MenuMas';
+
+/** El historial de envíos del corte, en el bloque del corte de la revisión (los botones van arriba). */
+export function HistorialEnvios({ envios = [], motivo }: { envios?: EnvioCorte[]; motivo?: string }) {
+  if (!envios.length && !motivo) return null;
+  return <div className="corte-envios">
+    {motivo && <p className="corte-ayuda">{motivo}</p>}
+    {envios.length > 0 && <div className="corte-envios-historial" role="status"><strong>Envíos del corte</strong>
+      <ul>{envios.map((e) => <li key={e.id}><span>{new Date(e.fecha).toLocaleString('es-ES')} · {e.usuario} · {e.destino === 'bot' ? 'Bot' : 'DXFs'}{e.parcial ? ' · Envío incompleto: revisarlo antes de repetir' : ''}{e.nota ? ` · ${e.nota}` : ''}</span><small title={e.carpeta}>{carpetaLegible(e.carpeta)} · {e.archivos.map((a) => a.filename).join(' · ')}</small></li>)}</ul>
+    </div>}
+  </div>;
+}
 
 /** Las mismas acciones y preguntas para todos los productos que envíen un corte. */
-export function EnviosCorte({ ruta, usuario, permitido, motivo, ocupado = false, envios = [], descarga, conPdf = false, notify, preguntar }: {
+export function EnviosCorte({ ruta, usuario, permitido, motivo, ocupado = false, envios = [], descarga, conPdf = false, notify, preguntar, barra = false, mas, onEnviado }: {
   ruta: string; usuario: string; permitido: boolean; motivo?: string; ocupado?: boolean; envios?: EnvioCorte[];
   descarga?: string;
   /** El producto saca el PDF de las presentaciones al mandar al bot (puertas): ya mandado, «Volver a mandar el corte» y «Rehacer el PDF». */
   conPdf?: boolean;
   notify: Notify; preguntar: AskForConfirmation;
+  /** En la barra de arriba de la revisión: el principal y «Más ⋯»; el historial lo pinta `HistorialEnvios` en el bloque del corte. */
+  barra?: boolean;
+  /** Más elementos para el menú «Más ⋯» (p. ej. «Reutilizar datos»). */
+  mas?: React.ReactNode;
+  /** Tras mandar o guardar: para que la revisión vuelva a leer el pedido (y su historial de envíos). */
+  onEnviado?: () => void;
 }) {
   const [trabajando, setTrabajando] = useState(false);
   const [historial, setHistorial] = useState<EnvioCorte[] | null>(null);
@@ -51,6 +69,7 @@ export function EnviosCorte({ ruta, usuario, permitido, motivo, ocupado = false,
         }
         if (!res.ok) throw new Error(datos.error || 'No se pudo guardar el corte.');
         setHistorial(datos.enviosCorte);
+        onEnviado?.();
         const ultimo = (datos.enviosCorte as EnvioCorte[] | undefined)?.at(-1);
         notify(ultimo ? mensajeEnvio(destino, ultimo.carpeta, ultimo.archivos.map((a) => a.filename)) : destino === 'bot' ? 'Corte mandado al bot.' : 'DXF guardado en DXFs.', { tone: 'success' });
         if (datos.presentaciones?.filename) notify(`Presentaciones guardadas en PDF: ${datos.presentaciones.filename}.`, { tone: 'success', title: 'Presentaciones' });
@@ -86,6 +105,25 @@ export function EnviosCorte({ ruta, usuario, permitido, motivo, ocupado = false,
   }
   const registros = historial ?? envios;
   const yaMandado = conPdf && registros.some((e) => e.destino === 'bot' && !e.parcial);
+  // En la barra de arriba de la revisión (Iván, 26/10/2026): solo el paso que toca como botón principal; lo demás, en
+  // «Más ⋯». Ya mandado el corte, no hay principal: «Volver a mandar el corte» pasa al menú.
+  if (barra) {
+    const mandado = registros.some((e) => e.destino === 'bot' && !e.parcial);
+    return <>
+      {permitido && !mandado && <button type="button" className="primary-button boton-3d" disabled={ocupado || trabajando} aria-busy={trabajando}
+        onClick={() => void enviar('bot')}><Send size={16} aria-hidden="true" />{trabajando ? 'Mandando…' : 'Mandar corte al bot'}</button>}
+      <MenuMas>
+        {permitido && mandado && <button type="button" role="menuitem" className="menu-mas-item" disabled={ocupado || trabajando}
+          title="Lee el DWG tal como está ahora y manda solo el corte al bot" onClick={() => void enviar('bot', conPdf)}><Send size={16} aria-hidden="true" />Volver a mandar el corte</button>}
+        {yaMandado && <button type="button" role="menuitem" className="menu-mas-item" disabled={ocupado || trabajando}
+          title="Solo el PDF de las presentaciones, del DWG actual; no manda nada al bot" onClick={() => void rehacerPdf()}><FileText size={16} aria-hidden="true" />Rehacer el PDF</button>}
+        {permitido && <button type="button" role="menuitem" className="menu-mas-item" disabled={ocupado || trabajando}
+          onClick={() => void enviar('dxfs')}><FolderDown size={16} aria-hidden="true" />Guardar DXF en DXFs</button>}
+        {descarga && <a role="menuitem" className="menu-mas-item" href={descarga} download><Download size={16} aria-hidden="true" />Descargar DXF</a>}
+        {mas}
+      </MenuMas>
+    </>;
+  }
   return <div className="corte-envios" aria-label="Envíos del corte" aria-busy={trabajando}>
     <div className="corte-envios-acciones">
       {yaMandado ? <>

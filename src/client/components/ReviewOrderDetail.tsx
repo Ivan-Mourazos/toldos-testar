@@ -3,7 +3,7 @@ import { CopyPlus, Download, ExternalLink, Factory, FileSearch, FileSpreadsheet,
 import type { Calculation, CoordinaStatus, ReviewPackage, RuleParameters } from '../types';
 import type { EstadoCorte } from '../corteLona';
 import { OrderView } from '../views/OrderView';
-import { CorteLona } from './CorteLona';
+import { CorteLona, toldosConCorte } from './CorteLona';
 import { DocumentosPedido } from './DocumentosPedido';
 import { BotonAbrirCorteRevisado } from '../flujoCorteDwg';
 import { PlanteamientoPedido } from './PlanteamientoPedido';
@@ -11,7 +11,7 @@ import { controlLabel } from './controlLabels';
 import { generateState, puedeCorregir } from '../generatePermission';
 import { awningLetter } from '../../domain/awningCompleteness.js';
 import { isCurrentAuthor } from '../../reviewRules.js';
-import { EnviosCorte } from './EnviosCorte';
+import { EnviosCorte, HistorialEnvios } from './EnviosCorte';
 import type { AskForConfirmation, Notify } from './NotificationCenter';
 
 const noop = () => undefined;
@@ -61,6 +61,8 @@ export function ReviewOrderDetail({
   // Un solo cálculo para «Qué revisar» y para el estado de cada toldo en el índice de
   // los bloques: si no, el índice daba ✓ a un toldo con errores de cálculo.
   const [diagnostics, setDiagnostics] = useState<Calculation['diagnostics'] | null>(null);
+  // Lo que le falta al corte de lona para poder mandarlo (null: al día); lo dice el bloque del corte (CorteLona).
+  const [faltaCorte, setFaltaCorte] = useState<string | null>('Comprobando el corte…');
 
   useEffect(() => {
     if (!order) return undefined;
@@ -97,6 +99,7 @@ export function ReviewOrderDetail({
   const corregible = puedeCorregir(review.status, (order.awnings || []).map((a, i) => ({ letter: awningLetter(i), of: String(a.of || '') })),
     order.technician || '', currentUser, coordinaStatus);
   const cortePermitido = generateState({ ...review, status: isProduced ? 'PENDING_REVIEW' : review.status }, currentUser, coordinaStatus);
+  const conCorteLona = toldosConCorte(review.order).length > 0;
   const pdfIndex = review.production?.files.findIndex(file => file.type === 'pdf') ?? -1;
   const pdfGenerado = isProduced && pdfIndex >= 0;
 
@@ -115,23 +118,21 @@ export function ReviewOrderDetail({
         </div>
         <div className="review-reader-actions">
           {review.corteConfirmado && <BotonAbrirCorteRevisado ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-dwg`} notify={notify} />}
-          {!isProduced && (
-            <>
-              {corregible && <button className="ghost-button boton-3d" type="button" disabled={disabled} onClick={onEdit}>
-                <PencilLine aria-hidden="true" />Corregir
-              </button>}
-              <button
-                className="primary-button boton-3d review-generate-button"
-                type="button"
-                disabled={disabled || !canGenerate}
-                title={generateNote || undefined}
-                onClick={onGenerate}
-              >
-                <Factory aria-hidden="true" />{generating ? 'Generando…' : 'Generar archivos'}
-              </button>
-              {generateNote && <span className="review-generate-note">{generateNote}</span>}
-            </>
-          )}
+          {!isProduced && corregible && <button className="ghost-button boton-3d" type="button" disabled={disabled} onClick={onEdit}>
+            <PencilLine aria-hidden="true" />Corregir
+          </button>}
+          {/* Arriba, solo el paso que toca; lo que se usa poco, en «Más» (Iván, 26/10/2026). */}
+          {!isProduced && canGenerate && <button className="primary-button boton-3d review-generate-button" type="button" disabled={disabled} onClick={onGenerate}>
+            <Factory aria-hidden="true" />{generating ? 'Generando…' : 'Generar archivos'}
+          </button>}
+          {conCorteLona
+            ? <EnviosCorte barra ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona`} usuario={currentUser}
+              permitido={cortePermitido.allowed && !faltaCorte} motivo={faltaCorte ?? cortePermitido.note}
+              ocupado={disabled} envios={review.enviosCorte} notify={notify} preguntar={onConfirm}
+              descarga={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona/dxf`}
+              mas={produced ? <button type="button" role="menuitem" className="menu-mas-item" disabled={disabled} onClick={onReuse}><CopyPlus size={16} aria-hidden="true" />Reutilizar datos</button> : null} />
+            : produced && <button className="ghost-button boton-3d review-reuse-button" type="button" disabled={disabled} onClick={onReuse}><CopyPlus aria-hidden="true" />Reutilizar datos</button>}
+          {!isProduced && !canGenerate && generateNote && <span className="review-generate-note">{generateNote}</span>}
         </div>
       </header>
 
@@ -143,9 +144,6 @@ export function ReviewOrderDetail({
               <strong>Archivos generados{review.order.technician || review.production.createdBy ? ` por ${review.order.technician || review.production.createdBy}, autor del pedido` : ''}</strong>
               <small>{formatDateTime(review.production.createdAt)} · abre el PDF o descarga cada reserva directamente.</small>
             </span>
-            <button className="ghost-button boton-3d review-reuse-button" type="button" disabled={disabled} onClick={onReuse}>
-              <CopyPlus aria-hidden="true" />Reutilizar datos
-            </button>
           </div>
           <div className="review-generated-files">
             {review.production.files.map((file, index) => (
@@ -200,10 +198,8 @@ export function ReviewOrderDetail({
         corte={<CorteLona key={review.orderCode} order={review.order} estado={review.corteLona} reviewCode={review.orderCode}
         regenerable={!isProduced && Boolean(onGuardarCorte) && isCurrentAuthor(currentUser, order.technician || '',
           (order.awnings || []).map((a, i) => ({ letter: awningLetter(i), of: String(a.of || '') })), coordinaStatus)} onGenerated={onGuardarCorte}
-        acciones={(alDia) => <EnviosCorte ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona`} usuario={currentUser}
-          permitido={cortePermitido.allowed && alDia} motivo={alDia ? cortePermitido.note : 'El corte tiene que estar al día.'}
-          ocupado={disabled} envios={review.enviosCorte} notify={notify} preguntar={onConfirm}
-          descarga={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona/dxf`} />} />} />
+        onListo={setFaltaCorte} />} />
+      <HistorialEnvios envios={review.enviosCorte} />
       {review.planosCorte && <div className="corte-ayuda">{review.planosCorte.files.map(f => <p key={f.savedPath}>Plano: {f.savedPath} · {formatDateTime(f.writtenAt)}</p>)}{review.planosCorte.avisos.map((a, i) => <p key={i}>{a}</p>)}</div>}
     </section>
   );

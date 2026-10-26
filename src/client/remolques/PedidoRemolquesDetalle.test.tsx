@@ -50,9 +50,9 @@ describe('el pedido de remolques abierto en Pedidos', () => {
     expect(html).not.toMatch(/review-generate-button" type="button" disabled=""/);
   });
 
-  it('otro técnico ve el botón apagado y por qué', () => {
+  it('otro técnico no ve «Generar archivos», pero sí por qué', () => {
     const html = pintar({ currentUser: 'JAIME' });
-    expect(html).toMatch(/review-generate-button" type="button" disabled=""/);
+    expect(html).not.toContain('review-generate-button');
     expect(html).toContain('Lo genera el autor (Iván)');
   });
 
@@ -73,7 +73,8 @@ describe('el pedido de remolques abierto en Pedidos', () => {
     const html = pintar({ pedido: generado });
     expect(html).not.toContain('Generar archivos');
     expect(html).not.toContain('Corregir');
-    expect(html).toContain('Reutilizar datos');
+    // «Reutilizar datos» va en el menú «Más ⋯» de arriba.
+    expect(html).toContain('aria-haspopup="menu"');
     expect(html).toContain('href="/api/remolques/pedidos/AR2604286/archivo"');
     expect(html).toContain('revisado por Jaime');
   });

@@ -9,7 +9,7 @@ import type { VistaPuertas } from '../../puertas/tipos.ts';
 import { normalizeOf, reviewerName } from '../../reviewRules.js';
 import { CabeceraDocumento, DocumentosPedido } from '../components/DocumentosPedido';
 import { BotonAbrirCorteRevisado } from '../flujoCorteDwg';
-import { EnviosCorte } from '../components/EnviosCorte';
+import { EnviosCorte, HistorialEnvios } from '../components/EnviosCorte';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { controlLabel } from '../components/controlLabels';
 import { puedeCorregir } from '../generatePermission';
@@ -93,7 +93,7 @@ function PlanteamientoPuertas({ pedido, ruta, generado, notify, onConfirm }: {
   );
 }
 
-function CortePuertasGuardado({ ruta, version, acciones, systemDock = false }: { ruta: string; version: string; acciones?: React.ReactNode; systemDock?: boolean }) {
+function CortePuertasGuardado({ ruta, version, historial, systemDock = false }: { ruta: string; version: string; historial?: React.ReactNode; systemDock?: boolean }) {
   const clave = `${ruta}|${version}`;
   const [leido, setLeido] = useState<{ clave: string; datos?: VistaPuertas; error?: string } | null>(null);
   useEffect(() => {
@@ -112,7 +112,7 @@ function CortePuertasGuardado({ ruta, version, acciones, systemDock = false }: {
   const datos = estado?.datos;
   return (
     <section className="corte-lona panel bloque-3d" aria-label="Corte" aria-busy={!estado}>
-      <CabeceraDocumento titulo="Corte" icono={<Scissors aria-hidden="true" />}>{Boolean(datos?.cortes.length) && acciones}</CabeceraDocumento>
+      <CabeceraDocumento titulo="Corte" icono={<Scissors aria-hidden="true" />} />{historial}
       <p className="corte-ayuda">{systemDock?'Un solo DXF por pedido con las tandas de lonas perimetrales.':'Un solo DXF por pedido; si hay saco entero y saco en dos, van las dos opciones y el técnico de la máquina elige.'}</p>
       {!estado && <p className="corte-ayuda">Calculando el corte…</p>}
       {estado?.error && <p role="alert" className="corte-aviso">{estado.error}</p>}
@@ -250,20 +250,17 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
         </div>
         <div className="review-reader-actions">
           {pedido.corteConfirmado && <BotonAbrirCorteRevisado ruta={`${ruta}/corte-dwg`} notify={onToast} />}
-          {!generado && (
-            <>
-              {corregible && <button className="ghost-button boton-3d" type="button" disabled={generando} onClick={() => onCorregir(pedido)}><PencilLine aria-hidden="true" />Corregir</button>}
-              {/* Con el corte del DWG confirmado, «Mandar corte al bot» deja el pedido generado (Iván, 26/10/2026). */}
-              {pedido.corteConfirmado
-                ? <span className="review-generate-note">Se cierra con «Mandar corte al bot», en Corte.</span>
-                : <>
-                  <button className="primary-button boton-3d review-generate-button" type="button" disabled={generando || !allowed} title={note || undefined} onClick={() => void generar()}>
-                    <Factory aria-hidden="true" />{generando ? 'Generando…' : 'Generar archivos'}
-                  </button>
-                  {note && <span className="review-generate-note">{note}</span>}
-                </>}
-            </>
-          )}
+          {!generado && corregible && <button className="ghost-button boton-3d" type="button" disabled={generando} onClick={() => onCorregir(pedido)}><PencilLine aria-hidden="true" />Corregir</button>}
+          {/* Arriba, solo el paso que toca (Iván, 26/10/2026: «hay que revisar qué botones son necesarios o sobran»). Con el
+              corte del DWG confirmado, «Mandar corte al bot» deja el pedido generado; sin él, «Generar archivos». Lo que se
+              usa poco (guardar o descargar el DXF, rehacer el PDF, reutilizar datos), en «Más». */}
+          {!generado && !pedido.corteConfirmado && allowed && <button className="primary-button boton-3d review-generate-button" type="button" disabled={generando} onClick={() => void generar()}>
+            <Factory aria-hidden="true" />{generando ? 'Generando…' : 'Generar archivos'}
+          </button>}
+          <EnviosCorte key={ruta} barra ruta={`${ruta}/corte`} usuario={currentUser} permitido={permisoCorte.allowed} motivo={permisoCorte.note}
+            ocupado={generando} envios={pedido.enviosCorte} descarga={`${ruta}/corte/dxf`} conPdf notify={onToast} preguntar={onConfirm} onEnviado={onChanged}
+            mas={generado ? <button type="button" role="menuitem" className="menu-mas-item" onClick={() => onReutilizar(pedido)}><CopyPlus size={16} aria-hidden="true" />Reutilizar datos</button> : null} />
+          {!generado && !permisoCorte.allowed && (note || permisoCorte.note) && <span className="review-generate-note">{note || permisoCorte.note}</span>}
         </div>
       </header>
 
@@ -275,7 +272,6 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
               <strong>{`Archivos generados${pedido.production.createdBy ? ` por ${controlLabel(pedido.production.createdBy)}, autor del pedido` : ''}`}</strong>
               <small>{`${fechaHora(pedido.production.createdAt)}${pedido.reviewedBy ? ` · revisado por ${controlLabel(pedido.reviewedBy)}` : ''}`}</small>
             </span>
-            <button className="ghost-button boton-3d review-reuse-button" type="button" onClick={() => onReutilizar(pedido)}><CopyPlus aria-hidden="true" />Reutilizar datos</button>
           </div>
           <div className="review-generated-files">
             {pedido.production.files.map((fichero) => (
@@ -293,10 +289,9 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
       </ul>
 
       <DocumentosPedido
-        planteamiento={<PlanteamientoPuertas pedido={pedido} ruta={ruta} generado={generado} notify={onToast} onConfirm={onConfirm} />}
+        planteamiento={<PlanteamientoPuertas pedido={pedido} ruta={ruta} generado={generado || Boolean(pedido.corteConfirmado)} notify={onToast} onConfirm={onConfirm} />}
         corte={<CortePuertasGuardado ruta={ruta} version={pedido.updatedAt} systemDock={productoDeElementos(pedido.elementos)==='systemdock'}
-          acciones={<EnviosCorte key={ruta} ruta={`${ruta}/corte`} usuario={currentUser} permitido={permisoCorte.allowed} motivo={permisoCorte.note}
-            ocupado={generando} envios={pedido.enviosCorte} descarga={`${ruta}/corte/dxf`} conPdf notify={onToast} preguntar={onConfirm} />} />} />
+          historial={<HistorialEnvios envios={pedido.enviosCorte} />} />} />
     </section>
   );
 }

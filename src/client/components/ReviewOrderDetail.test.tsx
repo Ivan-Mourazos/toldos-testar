@@ -26,7 +26,11 @@ describe('los documentos del pedido de toldos', () => {
     expect(html).toContain('Preparando el planteamiento…');
     expect(html).toContain('<h2>Corte</h2>');
     const cabecera = html.match(/<header class="corte-cabecera[^"]*">(?:(?!<\/header>)[\s\S])*<h2>Corte<\/h2>([\s\S]*?)<\/header>/)?.[1] ?? '';
-    for (const texto of ['Mandar corte al bot', 'Guardar DXF en DXFs', 'Descargar DXF']) expect(cabecera).toContain(texto);
+    // Los envíos del corte van en la barra de arriba (el principal y «Más ⋯»), no en el bloque del corte.
+    for (const texto of ['Mandar corte al bot', 'Guardar DXF en DXFs', 'Descargar DXF']) expect(cabecera).not.toContain(texto);
+    expect(html).toContain('aria-haspopup="menu"');
+    // Mientras se comprueba si el corte está al día, no se puede mandar.
+    expect(html).not.toContain('Mandar corte al bot');
     expect(html.match(/Abrir en grande/g)).toHaveLength(1);
     expect(html).not.toContain('>Vista previa<');
     expect(html.includes('>Corregir<')).toBe(usuario === 'IVÁN');

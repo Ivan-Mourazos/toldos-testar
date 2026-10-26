@@ -15,7 +15,7 @@ import { LecturaPedidoRemolques } from './LecturaPedidoRemolques';
 import { formatearNumeroEs } from './numeroEs';
 import { DocumentosPedido } from '../components/DocumentosPedido';
 import { PlanteamientoPedido } from '../components/PlanteamientoPedido';
-import { EnviosCorte } from '../components/EnviosCorte';
+import { EnviosCorte, HistorialEnvios } from '../components/EnviosCorte';
 import { BotonAbrirCorteRevisado } from '../flujoCorteDwg';
 
 // Un pedido de remolques abierto desde Pedidos (fase 5), con las acciones del de toldos: ver la
@@ -51,7 +51,7 @@ function FilaElemento({ elemento, letra, coordina }: { elemento: ElementoGuardad
   );
 }
 
-export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, generando, onBack, onCorregir, onReutilizar, onGenerar, notify, onConfirm, elementoInicial, textoVolver = '← Pedidos' }: {
+export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, generando, onBack, onCorregir, onReutilizar, onGenerar, onEnviado, notify, onConfirm, elementoInicial, textoVolver = '← Pedidos' }: {
   pedido: PedidoRemolques | null;
   cargando: boolean;
   coordina: CoordinaStatus | null;
@@ -61,6 +61,8 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
   onCorregir: () => void;
   onReutilizar: () => void;
   onGenerar: () => void;
+  /** Tras mandar o guardar el corte: volver a leer el pedido. */
+  onEnviado?: () => void;
   notify: Notify;
   onConfirm: AskForConfirmation;
   /** El elemento que se abre primero en la lectura (por su versión); sin él, el primero. */
@@ -99,17 +101,17 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
         </div>
         <div className="review-reader-actions">
           {pedido.corteConfirmado && <BotonAbrirCorteRevisado ruta={`${ruta}/corte-dwg`} notify={notify} />}
-          {!generado && (
-            <>
-              {corregible && <button className="ghost-button boton-3d" type="button" disabled={generando} onClick={onCorregir}>
-                <PencilLine aria-hidden="true" />Corregir
-              </button>}
-              <button className="primary-button boton-3d review-generate-button" type="button" disabled={generando || !allowed} title={note || undefined} onClick={onGenerar}>
-                <Factory aria-hidden="true" />{generando ? 'Generando…' : 'Generar archivos'}
-              </button>
-              {note && <span className="review-generate-note">{note}</span>}
-            </>
-          )}
+          {!generado && corregible && <button className="ghost-button boton-3d" type="button" disabled={generando} onClick={onCorregir}>
+            <PencilLine aria-hidden="true" />Corregir
+          </button>}
+          {/* Arriba, solo el paso que toca; lo que se usa poco, en «Más» (Iván, 26/10/2026). */}
+          {!generado && allowed && <button className="primary-button boton-3d review-generate-button" type="button" disabled={generando} onClick={onGenerar}>
+            <Factory aria-hidden="true" />{generando ? 'Generando…' : 'Generar archivos'}
+          </button>}
+          <EnviosCorte key={ruta} barra ruta={`${ruta}/corte`} usuario={currentUser} permitido={permisoCorte.allowed}
+            motivo={permisoCorte.note} ocupado={generando} envios={pedido.enviosCorte} descarga={`${ruta}/corte/dxf`} notify={notify} preguntar={onConfirm} onEnviado={onEnviado}
+            mas={generado ? <button type="button" role="menuitem" className="menu-mas-item" onClick={onReutilizar}><CopyPlus size={16} aria-hidden="true" />Reutilizar datos</button> : null} />
+          {!generado && !allowed && note && <span className="review-generate-note">{note}</span>}
         </div>
       </header>
 
@@ -121,9 +123,6 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
               <strong>{`Archivos generados${pedido.production.createdBy ? ` por ${controlLabel(pedido.production.createdBy)}, autor del pedido` : ''}`}</strong>
               <small>{`${fechaHora(pedido.production.createdAt)}${pedido.reviewedBy ? ` · revisado por ${controlLabel(pedido.reviewedBy)}` : ''}`}</small>
             </span>
-            <button className="ghost-button boton-3d review-reuse-button" type="button" onClick={onReutilizar}>
-              <CopyPlus aria-hidden="true" />Reutilizar datos
-            </button>
           </div>
           <div className="review-generated-files">
             <a className="review-generated-file chip-3d is-pdf" href={`${ruta}/archivo`} target="_blank" rel="noreferrer"
@@ -157,9 +156,8 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
 
       {/* Debajo de los datos (Iván, 20/10/2026). Se vuelve a calcular si el pedido cambia (guardado o generado). */}
       <DocumentosPedido planteamiento={<PlanteamientoPedido origen={`${ruta}/vista-previa`} version={pedido.updatedAt} />}
-        corte={<CorteRemolques ruta={ruta} version={pedido.updatedAt} generado={generado} notify={notify} onConfirm={onConfirm}
-        acciones={<EnviosCorte key={ruta} ruta={`${ruta}/corte`} usuario={currentUser} permitido={permisoCorte.allowed}
-          motivo={permisoCorte.note} ocupado={generando} envios={pedido.enviosCorte} descarga={`${ruta}/corte/dxf`} notify={notify} preguntar={onConfirm} />} />} />
+        corte={<CorteRemolques ruta={ruta} version={pedido.updatedAt} generado={generado || Boolean(pedido.corteConfirmado)} notify={notify} onConfirm={onConfirm}
+        acciones={<HistorialEnvios envios={pedido.enviosCorte} />} />} />
     </section>
   );
 }
@@ -268,6 +266,7 @@ export function PedidoRemolquesDetalle({ orderCode, refreshKey, currentUser, onB
       onCorregir={() => { if (pedido) onCorregir(pedido); }}
       onReutilizar={() => { if (pedido) onReutilizar(pedido); }}
       onGenerar={() => void generar()}
+      onEnviado={onChanged}
       notify={onToast}
       onConfirm={onConfirm}
       elementoInicial={elementoInicial}
