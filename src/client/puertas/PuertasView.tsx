@@ -16,7 +16,7 @@ import type { ResumenPedido } from '../remolques/SelectorProducto';
 import { AlzadoPuerta } from './AlzadoPuerta';
 import { CorteResumen, useVistaCortePuertas } from './VistaCortePuertas';
 import { textoPaso, useFlujoCorte } from './flujoCorte';
-import { cintasDesdeCotas, ejesDesdeTramos, leerCadena } from './cadenaDibujo';
+import { cintasDesdeFila, ejesDesdeTramos, leerCadena } from './cadenaDibujo';
 import { avanzarConIntro } from '../avanzarConIntro';
 import './puertas.css';
 
@@ -55,7 +55,7 @@ function Configurar({p,cambiar,corte,derecha='alzado',cambiarDerecha}:{p:Puerta;
   const set=<K extends keyof Puerta>(k:K,v:Puerta[K])=>cambiar({...p,[k]:v});
   function cadena(parche:Partial<Puerta['apilable']>) {
     const nuevo={...p,apilable:{...p.apilable,...parche}};
-    nuevo.entradas=alturasTubos(nuevo).map((altura,i)=>({...p.entradas[i]??{diametro:30,largo:p.frente+(p.frente>600?2:0),alto:12,huecos:[]},altura}));
+    nuevo.entradas=alturasTubos(nuevo).map((altura,i)=>({...p.entradas[i]??{diametro:30 as const,largo:p.frente+(p.frente>600?2:0),alto:12,huecos:huecosEntrada(p.frente+(p.frente>600?2:0),30)},altura}));
     // Las ventanas puestas por tramo siguen centradas en él si cambia la cadena.
     nuevo.ventanas=nuevo.ventanas.map(v=>v.tramo?{...v,y:yEnTramo(nuevo,v.tramo,v.alto)??v.y}:v);
     cambiar(nuevo);
@@ -120,7 +120,7 @@ function Configurar({p,cambiar,corte,derecha='alzado',cambiarDerecha}:{p:Puerta;
           <SegmentedField label="Pestaña del saco por el revés" value={p.apilable.ladoPestana==='derecha'?'Derecha':'Izquierda'} options={['Izquierda','Derecha']} onChange={v=>cadena({ladoPestana:v==='Derecha'?'derecha':'izquierda'})}/>
           <label className="puerta-casilla"><input type="checkbox" checked={p.apilable.doble} onChange={e=>cadena({doble:e.target.checked,...(e.target.checked?{saco:80}:{})})}/>Doble saco</label>
           {p.apilable.doble?<p className="puerta-ayuda">El saco de 80 integrado queda rematado de 9 cm: el paño empieza 11,5 cm por debajo del bajo.</p>:<AyudaSaco p={p}/>}
-        </div><RecortesCintas p={p} cambiar={cambiar}/></fieldset>}
+        </div></fieldset>}
         {p.modelo==='PUERTAUTO'&&<fieldset><legend>Autorreparable</legend><p className="puerta-ayuda">Dos entradas (F + 11) × 21. El cuerpo arranca en el rematado del saco y acaba 3,5 cm por encima del alto; se añaden 2 cm por empate.</p>
           <div className="puerta-campos"><SacoUtil valor={sacoUtil(p)} cambiar={v=>set('autorreparable',{...p.autorreparable,saco:v})}/></div><AyudaSaco p={p}/>
           <label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.autorreparable.espaciadorCentral)} onChange={e=>set('autorreparable',{...p.autorreparable,espaciadorCentral:e.target.checked})}/>Espaciador central (líneas verticales en medio del dibujo)</label>
@@ -155,17 +155,17 @@ function Configurar({p,cambiar,corte,derecha='alzado',cambiarDerecha}:{p:Puerta;
         <Numero titulo="Rollo de saco (cm)" valor={p.rolloSaco||null} cambiar={v=>set('rolloSaco',v??0)}/>
         <Numero titulo="Margen de las marcas al borde (cm)" valor={p.margenMarcas} cambiar={v=>set('margenMarcas',v??0)}/>
       </div>}</details>
-      {!sd&&p.modelo!=='PUERTAUTO'&&<details><summary>Entradas de tubo y huecos · {p.entradas.length} entradas</summary>
+      {p.modelo==='PUERTAPLE'&&<EntradasApilable p={p} cambiar={cambiar}/>}
+      {p.modelo==='PUERTAENR'&&<details><summary>Entradas de tubo y huecos · {p.entradas.length} entradas</summary>
         <p className="puerta-ayuda">Copia los huecos del dibujo. Las ayudas de Ø30 y Ø42 se aplican solo cuando las eliges.</p>
         {p.entradas.map((e,i)=><fieldset key={i}><legend>Tubo {i+1} · eje a {num(e.altura)} cm desde abajo</legend><div className="puerta-campos">
-          {p.modelo!=='PUERTAPLE'&&<Numero titulo={`Eje tubo ${i+1} (cm)`} valor={e.altura} cambiar={v=>entrada(i,{altura:v??0})}/>}
-          <SegmentedField label={`Diámetro tubo ${i+1}`} value={`Ø${e.diametro} mm`} options={['Ø30 mm','Ø42 mm']} onChange={v=>{const d=v==='Ø30 mm'?30:42;entrada(i,{diametro:d,alto:p.modelo==='PUERTAPLE'?(d===42?13.5:12):e.alto});}}/>
+          {<Numero titulo={`Eje tubo ${i+1} (cm)`} valor={e.altura} cambiar={v=>entrada(i,{altura:v??0})}/>}
+          <SegmentedField label={`Diámetro tubo ${i+1}`} value={`Ø${e.diametro} mm`} options={['Ø30 mm','Ø42 mm']} onChange={v=>{const d=v==='Ø30 mm'?30:42;entrada(i,{diametro:d,alto:e.alto});}}/>
           <Numero titulo={`Largo entrada ${i+1} (cm)`} valor={e.largo} cambiar={v=>entrada(i,{largo:v??0})}/>
           {p.modelo==='PUERTAENR'?<p className="puerta-ayuda">Alto de corte: 8 cm · cota del plano: 7,5 cm</p>:<Numero titulo={`Alto entrada ${i+1} (cm)`} valor={e.alto} cambiar={v=>entrada(i,{alto:v??0})}/>}
-          {p.modelo==='PUERTAPLE'&&<button type="button" className="ghost-button" onClick={()=>entrada(i,{huecos:huecosEntrada(e.largo,e.diametro)})}>Proponer huecos laterales</button>}
-          {p.modelo!=='PUERTAPLE'&&<button type="button" className="ghost-button" onClick={()=>set('entradas',p.entradas.filter((_,j)=>j!==i))}>Quitar entrada</button>}
+          {<button type="button" className="ghost-button" onClick={()=>set('entradas',p.entradas.filter((_,j)=>j!==i))}>Quitar entrada</button>}
         </div><details><summary>Huecos de cutter · {e.huecos.length}</summary><Huecos huecos={e.huecos} cambiar={h=>entrada(i,{huecos:h})}/></details></fieldset>)}
-        {p.modelo!=='PUERTAPLE'&&<button type="button" className="ghost-button" onClick={()=>set('entradas',[...p.entradas,{altura:0,diametro:30,largo:p.frente,alto:8,huecos:[]}])}>Añadir entrada</button>}
+        {<button type="button" className="ghost-button" onClick={()=>set('entradas',[...p.entradas,{altura:0,diametro:30,largo:p.frente,alto:8,huecos:[]}])}>Añadir entrada</button>}
       </details>}
       {p.modelo==='PUERTAPLE'&&<details><summary>Empates · {resultado.empates.length?`tubos ${resultado.empates.join(', ')}`:'sin empate'}</summary><p className="puerta-ayuda">La propuesta usa el tubo más alto que cabe en el rollo y deja su entrada incorporada al paño inferior.</p><label className="puerta-casilla"><input type="checkbox" checked={p.apilable.empates===null} onChange={e=>cadena({empates:e.target.checked?null:resultado.empates})}/>Proponer según el rollo</label>{p.apilable.empates!==null&&<Lista titulo="Números de tubo para empate" valores={p.apilable.empates} cambiar={v=>cadena({empates:v})}/>}</details>}
       {p.modelo==='PUERTAENR'&&<EmpatesEnrollable p={p} cambiar={cambiar}/>}
@@ -195,61 +195,50 @@ function EmpatesEnrollable({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
     {valores.length>0&&<button type="button" className="ghost-button" onClick={()=>set([])}>Usar propuesta del rollo</button>}
   </details>;
 }
-/** Recortes de las cintas de las E.T. (Iván, 23/10/2026): a la vista, porque olvidarlos es grave y cada puerta lleva
- * los suyos. Parte de lo que ya tiene la puerta; «Repartir» los separa por igual entre el primero y el último. */
-function RecortesCintas({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
-  const ANCHO=12, centrales=(e:Entrada)=>e.huecos.filter(h=>h.x>1.01&&h.x+h.ancho<e.largo-1.01).map(h=>h.x);
-  const conCintas=p.entradas.flatMap((e,i)=>centrales(e).length?[i+1]:[]);
-  const actuales=centrales(p.entradas.find(e=>centrales(e).length)??{altura:0,diametro:30,largo:0,alto:0,huecos:[]});
-  // Iván, 26/10/2026: «no entiendo cómo se ponen las cintas». Dos pasos y se aplica solo: 1) en qué tubos van (de
-  // salida, los impares desde abajo), 2) las cotas tal como vienen en el dibujo. El reparto a mano queda plegado.
-  const impares=p.entradas.map((_,i)=>i+1).filter(n=>n%2===1);
-  // Sin elegir, los que ya llevan cintas o los impares de las E.T. que haya ahora (al abrir puede no haber ninguna).
-  const [elegidos,setTubos]=useState<number[]|null>(null);
-  const tubos=elegidos??(conCintas.length?conCintas:impares);
-  const [xs,setXs]=useState<number[]>(actuales);
-  const [n,setN]=useState<number|null>(actuales.length||3),[borde,setBorde]=useState<number|null>(actuales[0]??44);
-  const redondear=(v:number)=>Math.round(v*10)/10;
-  const poner=(nuevasXs:number[],nuevosTubos=tubos)=>{
-    setXs(nuevasXs);
-    cambiar({...p,entradas:p.entradas.map((e,i)=>({...e,huecos:huecosEntrada(e.largo,e.diametro,nuevosTubos.includes(i+1)?nuevasXs:[])}))});
-  };
-  const cambiarTubos=(t:number[])=>{ setTubos(t); if(xs.length) poner(xs,t); };
-  const repartir=()=>{ if(!n||n<1||borde===null)return;
-    poner(n===1?[redondear((p.frente-ANCHO)/2)]:Array.from({length:n},(_,i)=>redondear(borde+i*(p.frente-2*borde-ANCHO)/(n-1)))); };
-  // Plegado para que no ocupe media pantalla, con lo que hay en el título para que no se olvide (Iván, 25/10/2026).
-  return <details className="puerta-cintas"><summary>Recortes de cintas · {conCintas.length?`tubos ${conCintas.join(', ')} · X ${actuales.map(num).join(', ')} cm`:<span className="puerta-falta">ninguno todavía</span>}</summary>
-    <div className="puerta-campos">
-      <Lista titulo="1 · Tubos que llevan cintas (de abajo arriba)" valores={tubos} cambiar={cambiarTubos}/>
-      <button type="button" className="ghost-button" onClick={()=>cambiarTubos(impares)}>Los impares desde abajo</button>
-    </div>
-    <CintasDelDibujo frente={p.frente} tubos={tubos} poner={xs=>poner(xs)}/>
-    <details className="puerta-cintas-a-mano"><summary>Otra forma: posiciones a mano o repartidas por igual</summary>
-      <p className="puerta-ayuda">Recortes de {ANCHO} cm; X desde la izquierda, en cm. Se aplican a los tubos de arriba.</p>
-      <div className="puerta-campos">
-        <Lista titulo="Cintas · posiciones X (cm)" valores={xs} cambiar={v=>poner(v)}/>
-        <Numero titulo="Recortes por E.T." valor={n} cambiar={setN}/>
-        <Numero titulo="Primer recorte desde el borde (cm)" valor={borde} cambiar={setBorde}/>
-        <button type="button" className="ghost-button" onClick={repartir}>Repartir por igual</button>
-      </div></details></details>;
-}
-/** Las cintas como vienen en el dibujo: de la izquierda hasta el centro, en mm; la derecha sale en simétrico. Al leerlas
- * bien, se ponen solas en los tubos elegidos. */
-function CintasDelDibujo({frente,tubos,poner}:{frente:number;tubos:number[];poner:(xs:number[])=>void}) {
+/**
+ * Entradas de las apilables (Iván, 26/10/2026: «si tengo que poner cada recorte me mato; es una sí y otra no; los
+ * recortes de los lados van siempre: pon un sí o no y listo»). Las cintas, una vez: la fila del dibujo desde la
+ * izquierda (hasta el primer recorte, el recorte, hasta el siguiente…), y la derecha la pone la web. Cada tubo, en una
+ * línea, con Cintas No/Sí; los huecos de los lados los pone siempre la web. Los huecos a mano, plegados.
+ */
+function EntradasApilable({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
+  const centrales=(e:Entrada)=>e.huecos.filter(h=>h.x>1.01&&h.x+h.ancho<e.largo-1.01).map(h=>h.x);
+  const conCintas=(e:Entrada)=>centrales(e).length>0;
+  const primera=p.entradas.find(conCintas), xs=primera?centrales(primera):[];
+  const tubos=p.entradas.flatMap((e,i)=>conCintas(e)?[i+1]:[]);
   const [texto,setTexto]=useState(''),[aviso,setAviso]=useState('');
-  const aplicar=()=>{
+  const huecos=(e:Entrada,cintas:boolean,posiciones=xs)=>huecosEntrada(e.largo,e.diametro,cintas?posiciones:[]);
+  const leer=()=>{
     if(!texto.trim()) { setAviso(''); return; }
-    const leido=cintasDesdeCotas(texto.trim().split(/[\s;]+/).map(x=>Number(x.replace(',','.'))),frente);
-    if('error' in leido) { setAviso(leido.error); return; }
-    poner(leido.xs);
-    setAviso(tubos.length?`Puesto en las E.T. ${tubos.join(', ')}: recortes en ${leido.xs.map(num).join(', ')} cm.`:`Recortes en ${leido.xs.map(num).join(', ')} cm. Di en qué tubos van (paso 1).`);
+    const r=cintasDesdeFila(texto.trim().split(/[\s;]+/).map(x=>Number(x.replace(',','.'))),p.frente);
+    if('error' in r) { setAviso(r.error); return; }
+    // La primera vez, una sí y otra no empezando por el tubo de abajo; después, en los que ya las llevan.
+    const ninguna=!tubos.length;
+    cambiar({...p,entradas:p.entradas.map((e,i)=>({...e,huecos:huecos(e,ninguna?i%2===0:conCintas(e),r.xs)}))});
+    setAviso(`Recortes a ${r.xs.map(num).join(', ')} cm${ninguna?' · puestos en los tubos 1, 3, 5…':''}.`);
   };
-  return <label className="field puerta-campo puerta-campo-ancho"><span>2 · Cotas de las cintas del dibujo, de la izquierda hasta el centro (mm)</span>
-    <input aria-label="Cintas del dibujo" value={texto} placeholder="60 380 120 1540" onChange={e=>setTexto(e.target.value)}
-      onBlur={aplicar} onKeyDown={e=>{ if(e.key==='Enter') aplicar(); }}/>
-    <small>{aviso||'Todas en mm, como en el dibujo: hasta el primer recorte, el recorte (120), hasta el siguiente… y la última hasta el recorte del centro o hasta el centro. La derecha la pone la web.'}</small></label>;
+  const tubo=(i:number,parche:Partial<Entrada>,cintas=conCintas(p.entradas[i]))=>{
+    if(cintas&&!xs.length) { setAviso('Escribe antes la fila de las cintas del dibujo.'); return; }
+    cambiar({...p,entradas:p.entradas.map((e,j)=>{ if(j!==i) return e; const n={...e,...parche}; return {...n,huecos:huecos(n,cintas)}; })});
+  };
+  return <details><summary>Entradas de tubo y cintas · {p.entradas.length} · {tubos.length?`cintas en los tubos ${tubos.join(', ')} a ${xs.map(num).join(', ')} cm`:<span className="puerta-falta">sin cintas todavía</span>}</summary>
+    <label className="field puerta-campo puerta-campo-ancho"><span>Cintas del dibujo, desde la izquierda (mm)</span>
+      <input aria-label="Cintas del dibujo" value={texto} placeholder="60 380 120 1540" onChange={e=>setTexto(e.target.value)}
+        onBlur={leer} onKeyDown={e=>{ if(e.key==='Enter') leer(); }}/>
+      <small>{aviso||'Como en el dibujo: hasta el primer recorte, el recorte (120), hasta el siguiente… Solo la mitad izquierda: la derecha la pone la web.'}</small></label>
+    {p.entradas.map((e,i)=><div className="puerta-campos puerta-tubo-fila" key={i}>
+      <span className="puerta-tubo-nombre">Tubo {i+1} · eje a {num(e.altura)} cm</span>
+      <SegmentedField label={`Diámetro tubo ${i+1}`} value={`Ø${e.diametro} mm`} options={['Ø30 mm','Ø42 mm']} onChange={v=>{const d=v==='Ø30 mm'?30:42;tubo(i,{diametro:d,alto:d===42?13.5:12});}}/>
+      <Numero titulo={`Largo entrada ${i+1} (cm)`} valor={e.largo} cambiar={v=>tubo(i,{largo:v??0})}/>
+      <Numero titulo={`Alto entrada ${i+1} (cm)`} valor={e.alto} cambiar={v=>tubo(i,{alto:v??0})}/>
+      <SegmentedField label={`Cintas tubo ${i+1}`} value={conCintas(e)?'Sí':'No'} options={['No','Sí']} onChange={v=>tubo(i,{},v==='Sí')}/>
+    </div>)}
+    <details><summary>Huecos a mano (solo excepciones)</summary>
+      <p className="puerta-ayuda">Los de los lados y los de las cintas ya los pone la web. Si cambias el diámetro, el largo o las cintas de un tubo, sus huecos se vuelven a poner solos.</p>
+      {p.entradas.map((e,i)=><fieldset key={i}><legend>Tubo {i+1} · {e.huecos.length} huecos</legend><Huecos huecos={e.huecos} cambiar={h=>cambiar({...p,entradas:p.entradas.map((x,j)=>j===i?{...x,huecos:h}:x)})}/></fieldset>)}
+    </details>
+  </details>;
 }
-/** Saco útil con los habituales a un clic (Iván, 25/10/2026); se puede escribir otro. */
 function SacoUtil({valor,cambiar}:{valor:number|null;cambiar:(n:number|null)=>void}) {
   return <div className="puerta-saco-util">
     <Numero titulo="Saco útil del pedido (mm)" valor={valor} cambiar={cambiar}/>

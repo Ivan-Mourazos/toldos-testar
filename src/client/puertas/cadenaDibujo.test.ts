@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cintasDesdeCotas, cintasSimetricas, leerCadena, ejesDesdeTramos } from './cadenaDibujo';
+import { cintasDesdeCotas, cintasSimetricas, leerCadena, ejesDesdeTramos, cintasDesdeFila } from './cadenaDibujo';
 
 describe('leerCadena', () => {
   it('lee la fila de la hoja de Portanova en mm, de abajo arriba (AR2605035)', () => {
@@ -59,5 +59,21 @@ describe('cintasDesdeCotas: avisos claros (26/10/2026)', () => {
   });
   it('si no cuadra por otra cosa, dice cuánto suman y cuánto hay hasta el centro, en mm', () => {
     expect(cintasDesdeCotas([60, 380, 120, 1000], 432)).toHaveProperty('error', expect.stringMatching(/suman 1560 mm.*2100 mm/));
+  });
+});
+
+describe('cintasDesdeFila (26/10/2026: la primera desde la izquierda, el recorte, hasta el siguiente…)', () => {
+  it('AR2605035: como antes, con la cota hasta el recorte del centro', () => {
+    expect(cintasDesdeFila([60, 380, 120, 1540], 432)).toEqual({ xs: [44, 210, 376], enMm: true });
+  });
+  it('sin llegar al centro: refleja los recortes escritos', () => {
+    expect(cintasDesdeFila([440, 120, 500, 120], 432)).toEqual({ xs: [44, 106, 314, 376], enMm: true });
+  });
+  it('en cm si los recortes vienen como 12', () => {
+    expect(cintasDesdeFila([44, 12], 432)).toEqual({ xs: [44, 376], enMm: false });
+  });
+  it('avisa si pasa del centro o no hay recortes', () => {
+    expect(cintasDesdeFila([60, 380, 120, 3000], 432)).toHaveProperty('error', expect.stringMatching(/pasan del centro/));
+    expect(cintasDesdeFila([440, 500], 432)).toHaveProperty('error', expect.stringMatching(/ningún recorte/));
   });
 });

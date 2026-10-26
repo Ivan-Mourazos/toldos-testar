@@ -112,3 +112,6 @@
 .puerta-paso { font-size:13px; color:var(--text-muted); max-width:300px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 /* Cada ventana de las apilables en una línea: tramo, izquierda, ancho, alto y quitar (Iván, 26/10/2026). */
 .puerta-campos.puerta-ventana-fila { grid-template-columns: minmax(0,1.6fr) repeat(3, minmax(0,1fr)) auto; margin-bottom: 8px; }
+/* Cada tubo de la apilable en una línea: nombre, diámetro, largo, alto y cintas (Iván, 26/10/2026). */
+.puerta-campos.puerta-tubo-fila { grid-template-columns: minmax(0,1.1fr) minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.3fr); align-items: end; margin-bottom: 6px; }
+.puerta-tubo-nombre { font-size: 13px; color: var(--text-muted); padding-bottom: 8px; }

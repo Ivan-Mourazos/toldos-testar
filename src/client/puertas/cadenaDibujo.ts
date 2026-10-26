@@ -67,3 +67,25 @@ export function ejesDesdeTramos(texto: string, alto: number): { ejes: number[]; 
   if (ejes[ejes.length - 1] >= alto) return { error: `Los tramos suman ${ejes[ejes.length - 1]} cm y la puerta mide ${alto}: revisa las cotas.` };
   return { ejes, enMm };
 }
+
+/**
+ * Cintas desde la fila del dibujo, empezando por la izquierda (Iván, 26/10/2026): hasta el primer recorte, el recorte,
+ * hasta el siguiente… La derecha es simétrica y la pone la web. No hace falta llegar al centro: si la última cota llega
+ * al inicio del recorte del centro, ese recorte se añade; si llega al centro o se queda antes, solo se reflejan los
+ * escritos. En mm, como el dibujo; si los recortes vienen como 12 (en cm), se toma todo en cm. Devuelve las X en cm.
+ */
+export function cintasDesdeFila(valores: number[], frente: number, ancho = 12): { xs: number[]; enMm: boolean } | { error: string } {
+  if (!valores.length || valores.some((v) => !Number.isFinite(v) || v <= 0)) return { error: 'Escribe las cotas separadas por espacios, empezando por la izquierda.' };
+  if (!(frente > 0)) return { error: 'Pon antes el frente: hace falta para la parte derecha.' };
+  const enMm = !valores.some((v) => Math.abs(v - ancho) < 0.05) || valores.some((v) => Math.abs(v - ancho * 10) < 0.5);
+  const cm = valores.map((v) => (enMm ? v / 10 : v));
+  const esRecorte = (v: number) => Math.abs(v - ancho) < 0.05;
+  if (!cm.some(esRecorte)) return { error: `No hay ningún recorte de ${enMm ? ancho * 10 : ancho} en la fila: entre cota y cota va el recorte.` };
+  const izquierda: number[] = [];
+  let x = 0;
+  for (const v of cm) { if (esRecorte(v)) izquierda.push(x); x += v; }
+  const tolerancia = 1, mitad = frente / 2, centro = (frente - ancho) / 2;
+  if (x > mitad + tolerancia) return { error: `Las cotas suman ${Math.round(x * 10)} mm y pasan del centro (${Math.round(mitad * 10)} mm): escribe solo hasta el centro.` };
+  if (!esRecorte(cm[cm.length - 1]) && Math.abs(x - centro) <= tolerancia) izquierda.push(centro);
+  return { xs: cintasSimetricas(izquierda, frente, ancho), enMm };
+}
