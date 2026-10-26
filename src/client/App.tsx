@@ -57,6 +57,8 @@ import { useRemolquesParameters } from './remolques/useRemolquesParameters';
 import { ClientesRemolquesView } from './remolques/ClientesRemolquesView';
 import { useFichasClientes } from './remolques/useFichasClientes';
 import { SelectorProducto, guardarProducto, leerProducto, type Producto, type ResumenPedido } from './remolques/SelectorProducto';
+import { InicioProductos } from './components/InicioProductos';
+import type { ModeloInicio } from './modelosInicio';
 
 export default function App() {
   const draft = useDraft();
@@ -89,6 +91,7 @@ export default function App() {
   const [puertasMontado, setPuertasMontado] = useState(producto === 'puertas');
   const [systemDockMontado, setSystemDockMontado] = useState(producto === 'systemdock');
   const [resumenSystemDock, setResumenSystemDock] = useState<ResumenPedido>({ numero: '', elementos: 0 });
+  const [modeloInicio, setModeloInicio] = useState<{ id:number; valor:ModeloInicio }|null>(null);
   const [resumenPuertas, setResumenPuertas] = useState<ResumenPedido>({ numero: '', elementos: 0 });
   const [resumenRemolques, setResumenRemolques] = useState<ResumenPedido>({ numero: '', elementos: 0 });
   const [accionesPedido, setAccionesPedido] = useState<HTMLDivElement | null>(null);
@@ -104,6 +107,19 @@ export default function App() {
     if (next === 'remolques') setRemolquesMontado(true);
     if (next === 'puertas') setPuertasMontado(true);
     if (next === 'systemdock') setSystemDockMontado(true);
+  }
+  async function empezarModelo(valor: ModeloInicio) {
+    if(valor.producto==='toldos') {
+      if((draft.orderCode||draft.customer||draft.fabric||draft.notes||draft.awnings.length) && await askForConfirmation({
+        title:'Empezar otro pedido de Toldos', message:'Se sustituirá el pedido a medias de Toldos por uno nuevo con el modelo elegido.',
+        confirmLabel:'Empezar pedido',cancelLabel:'Conservar formulario',tone:'warning',
+      })!=='confirm') return;
+      draft.resetDraft();
+      draft.addAwning(valor.workType,valor.modelo);
+      ruleSettings.restoreParameters();
+      setCorrigiendo(null);setAutofill(null);setReturnNote(null);setFormularioAntiguo(null);
+    } else setModeloInicio({id:Date.now(),valor});
+    chooseProducto(valor.producto);
   }
   const [working, setWorking] = useState<'review' | 'preview' | 'draft' | null>(null);
   const [previewUrl, setPreviewUrl] = useState('');
@@ -811,7 +827,7 @@ export default function App() {
         <div className="workspace-content">
           {activeTab === 'order' && !editorPedidoAbierto && <section className="order-entry" aria-label="Inicio del pedido">
             <OrderSearch number={numeroBusqueda ?? ''} onChange={setNumeroBusqueda} loading={autofillLoading} onSearch={() => void autofillOrder(numeroBusqueda ?? '')} />
-            <SelectorProducto inicio puertas={puertasActivas} disabled={autofillLoading} producto={producto} onChange={chooseProducto} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques, puertas: resumenPuertas, systemdock: resumenSystemDock }} />
+            <InicioProductos disponibles={catalog?.models.map(m=>m.code)??[]} puertas={puertasActivas} disabled={autofillLoading} producto={producto} onChange={chooseProducto} onModelo={m=>void empezarModelo(m)} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques, puertas: resumenPuertas, systemdock: resumenSystemDock }} />
             {pendingCount > 0 && <button type="button" className="ghost-button inicio-pendientes" onClick={() => irAPestana('reviews')}>
               <span className="inicio-pendientes-numero">{pendingCount}</span>{pendingCount === 1 ? 'pedido espera revisión' : 'pedidos esperan revisión'}
             </button>}
@@ -888,6 +904,7 @@ export default function App() {
 
           {puertasActivas && puertasMontado && <div hidden={activeTab !== 'order' || !editorPedidoAbierto || producto !== 'puertas'}>
             <PuertasView activo={activeTab === 'order' && editorPedidoAbierto && producto === 'puertas'} onResumenChange={setResumenPuertas}
+              modeloInicialSolicitado={modeloInicio?.valor.producto==='puertas'?{id:modeloInicio.id,modelo:modeloInicio.valor.modelo}:null}
               usuario={currentUser} notify={notify} askForConfirmation={askForConfirmation}
               accionesDestino={accionesPedido} accionesVisibles={activeTab === 'order' && editorPedidoAbierto && producto === 'puertas'}
               pedidoGuardadoSolicitado={pedidoPuertasSolicitado} pedidoRpsSolicitado={pedidoPuertasRps} onGuardado={() => setReviewRefresh((value) => value + 1)} />
@@ -901,6 +918,7 @@ export default function App() {
           {remolquesMontado && (
             <div className="remolques-pantalla" hidden={activeTab !== 'order' || !editorPedidoAbierto || producto !== 'remolques'}>
               <RemolquesView usuario={currentUser} notify={notify} askForConfirmation={askForConfirmation} pedidoSolicitado={pedidoSolicitado} limpiarSolicitado={limpiarRemolques}
+                modeloInicialSolicitado={modeloInicio?.valor.producto==='remolques'?{id:modeloInicio.id,tipo:modeloInicio.valor.modelo}:null}
                 accionesDestino={accionesPedido} accionesVisibles={activeTab === 'order' && editorPedidoAbierto && producto === 'remolques'} onResumenChange={setResumenRemolques}
                 onLimpiar={() => setLimpiarRemolques((n) => n + 1)}
                 pedidoGuardadoSolicitado={pedidoGuardadoSolicitado}

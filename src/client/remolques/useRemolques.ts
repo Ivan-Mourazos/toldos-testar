@@ -38,6 +38,7 @@ import type { FichaCliente } from '../../remolques/clientes/tipos.ts';
 import { decidirFicha, notaFicha, preguntaSugerencia } from './fichaAlObtener';
 import { AVISO_FICHAS_ILEGIBLES, guardarDesdePedido, leerFichas, nombreClienteRps } from './fichasClientes';
 import { escribirPlanoCorte, type PlanoCorte } from './CorteRemolques';
+import { primeraLineaInicio } from '../modelosInicio';
 
 /** Pausa sin cambios tras la que se escriben los borradores en el navegador. */
 const PAUSA_GUARDADO_MS = 600;
@@ -1019,8 +1020,21 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
     }
   }, [cargarBorrador, confirmar, obtenerDatosPedido]);
 
+  const empezarConTipo=useCallback(async(tipo:'lona'|'baqueton')=>{
+    const actual=estadoRef.current;
+    if((actual.numeroPedido.trim()||actual.cliente.trim()||actual.lineas.length)&&await confirmar({
+      title:'Empezar otro pedido de Remolques',message:'Se sustituirá el pedido a medias de Remolques por uno nuevo con el tipo elegido.',
+      confirmLabel:'Empezar pedido',cancelLabel:'Conservar formulario',tone:'warning',
+    })!=='confirm')return;
+    consultaEnCurso.current?.abort();consultaEnEspera.current=null;pendienteRef.current=null;
+    limpiarBorradores(almacen,actual.numeroPedido);setParamsGuardados(null);
+    const fecha=hoy();
+    despachar({tipo:'PEDIDO_CARGADO',numeroPedido:'',cliente:'',fecha,lineas:[primeraLineaInicio(tipo,fecha,usuario)]});
+  },[almacen,confirmar,usuario]);
+
   return {
     estado,
+    empezarConTipo,
     materiales,
     origenMateriales,
     params,

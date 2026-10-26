@@ -23,7 +23,7 @@ export function guardarProducto(producto: Producto, storage: Storage | null = wi
 export type ResumenPedido = { numero: string; elementos: number };
 
 // `puertas` false: puertas en pausa en el servidor (ENABLE_PUERTAS), sin pestaña.
-export function SelectorProducto({ producto, onChange, pedidos, inicio = false, disabled = false, puertas = true }: { producto: Producto; onChange: (producto: Producto) => void; pedidos?: Partial<Record<Producto, ResumenPedido>>; inicio?: boolean; disabled?: boolean; puertas?: boolean }) {
+export function SelectorProducto({ producto, onChange, pedidos, inicio = false, disabled = false, puertas = true, transicion }: { producto: Producto; onChange: (producto: Producto) => void; pedidos?: Partial<Record<Producto, ResumenPedido>>; inicio?: boolean; disabled?: boolean; puertas?: boolean; transicion?: Producto | null }) {
   const detalle = (tipo: Producto) => {
     const pedido = pedidos?.[tipo];
     return pedido?.numero.trim() || pedido?.elementos
@@ -46,7 +46,7 @@ export function SelectorProducto({ producto, onChange, pedidos, inicio = false, 
       <div className="inicio-tarjetas" role="group" aria-label="Producto">
         {tarjetas.map(([tipo, nombre, lleva, icono]) => {
           const enCurso = detalle(tipo) !== 'Sin empezar';
-          return <button type="button" key={tipo} disabled={disabled} aria-label={nombre} className="inicio-tarjeta" onClick={() => onChange(tipo)}>
+          return <button type="button" key={tipo} data-producto={tipo} style={transicion===tipo?{viewTransitionName:'categoria-inicio'}:undefined} disabled={disabled} aria-label={nombre} className="inicio-tarjeta" onClick={() => onChange(tipo)}>
             <span className="inicio-tarjeta-icono">{icono}</span>
             <strong>{nombre}</strong>
             <span className="inicio-tarjeta-lleva">{lleva}</span>

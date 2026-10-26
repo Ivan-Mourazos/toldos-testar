@@ -30,7 +30,8 @@ import { TITULO_BORRADOR_EN_CORRECCION } from '../borradores';
 // Nuevo pedido de remolques (fase 2a de la unificación): cabecera, importación de RPS,
 // pestañas de elementos y, debajo, el editor del elemento activo: el formulario a la izquierda
 // (con «Listo» / «Falta: …» debajo) y, a la derecha, el render 3D o el dibujo de siempre y los resultados.
-export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolicitado, limpiarSolicitado = 0, pedidoGuardadoSolicitado, onGuardado, borradorSolicitado, onAbrirBorradorToldos, accionesDestino, accionesVisibles = true, onResumenChange, onLimpiar }: {
+export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolicitado, limpiarSolicitado = 0, pedidoGuardadoSolicitado, onGuardado, borradorSolicitado, onAbrirBorradorToldos, accionesDestino, accionesVisibles = true, onResumenChange, onLimpiar, modeloInicialSolicitado }: {
+  modeloInicialSolicitado?:{id:number;tipo:'lona'|'baqueton'}|null;
   usuario: string;
   notify: Notify;
   askForConfirmation: AskForConfirmation;
@@ -52,6 +53,13 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
   onLimpiar?: () => void;
 }) {
   const ws = useRemolques({ usuario, notify, askForConfirmation, onGuardado, onAbrirBorradorToldos });
+  const ultimoModelo=React.useRef<number|null>(null);
+  const { empezarConTipo }=ws;
+  React.useEffect(()=>{
+    if(!modeloInicialSolicitado||ultimoModelo.current===modeloInicialSolicitado.id)return;
+    ultimoModelo.current=modeloInicialSolicitado.id;
+    void empezarConTipo(modeloInicialSolicitado.tipo);
+  },[modeloInicialSolicitado,empezarConTipo]);
   // Solo se atiende cada petición una vez: repetirla pisaría lo que se escriba después. Abrir
   // el pedido desde Toldos es pedirlo a propósito: crea sus elementos como «Obtener datos del
   // pedido» y, si ya tenía, pregunta.

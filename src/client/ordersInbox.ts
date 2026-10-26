@@ -33,7 +33,7 @@ export function productoDe(review: Pick<PedidoBandeja, 'kind'> & { summary?: { m
   return review.kind === 'remolques' ? review.kind : 'toldos';
 }
 
-export function claveBandeja(review: Pick<PedidoBandeja, 'kind' | 'orderCode'>) {
+export function claveBandeja(review: Pick<PedidoBandeja, 'kind' | 'orderCode'> & { summary?: { models?: string[] } }) {
   return `${productoDe(review)}:${review.orderCode}`;
 }
 
