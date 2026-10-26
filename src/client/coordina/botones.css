@@ -1,0 +1,105 @@
+/* ── Botones planos (Iván, 26/10/2026: «¿por qué los botones se ven sin la raya de arriba?») ──
+   El relieve de aluminio llevaba arriba un canto BLANCO de luz que sobre el fondo claro no se ve: el botón parecía
+   abierto por arriba y su contorno no llegaba al contraste 3:1 que pide la WCAG (1.4.11) para lo que se pulsa.
+   Aquí, encima de metal.css, los botones y las pestañas pasan a planos: fondo liso, borde pizarra a 3:1 por los
+   cuatro lados y una sombra mínima. Lo propio de esta web es la pestaña elegida: una costura ámbar discontinua debajo,
+   como las de la lona. Los paneles (bloque-3d, panel-solido) siguen con su relieve.
+   `html:root` delante gana a los `:root …` de metal.css sin `!important`. */
+:root {
+  --boton-fondo: #ffffff;
+  --boton-fondo-encima: #f2f5fa;
+  --boton-fondo-pulsado: #e4e9f2;
+  --boton-borde: #72809a;          /* 3,1:1 sobre la página (#dce3ef) y 3,9:1 sobre blanco */
+  --boton-borde-encima: #56647d;
+  --boton-sombra: 0 1px 1px rgba(17, 21, 34, 0.08);
+  --boton-principal-borde: var(--color-brand-700);
+  --boton-elegido-fondo: var(--color-brand-50);
+  --boton-elegido-texto: var(--color-brand-800);
+  --costura: var(--color-brand-600);
+  --anillo: var(--color-brand-600);
+}
+:root[data-theme="dark"] {
+  --boton-fondo: #26282d;
+  --boton-fondo-encima: #2f3238;
+  --boton-fondo-pulsado: #1d1f23;
+  --boton-borde: #6b707a;          /* 3,4:1 sobre el grafito de la página */
+  --boton-borde-encima: #8a909b;
+  --boton-sombra: 0 1px 1px rgba(0, 0, 0, 0.5);
+  --boton-principal-borde: var(--color-brand-300);
+  --boton-elegido-fondo: color-mix(in srgb, var(--color-brand-400) 14%, #26282d);
+  --boton-elegido-texto: var(--color-brand-300);
+  --costura: var(--color-brand-400);
+  --anillo: var(--color-brand-300);
+}
+
+/* Secundarios: blancos con borde. */
+html:root :is(.ghost-button, .icon-text-button, .icon-button, .glass-chip, .chip-3d, .pildora-plantear, .pildora-revisar, .pildora-aviso),
+html:root .tira-3d > :not(.pestana-activa) {
+  background-color: var(--boton-fondo);
+  background-image: none;
+  border: 1px solid var(--boton-borde);
+  box-shadow: var(--boton-sombra);
+  transform: none;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+html:root :is(.ghost-button, .icon-text-button, .icon-button, .glass-chip, .chip-3d, .pildora-plantear, .pildora-revisar, .pildora-aviso):hover:not(:disabled),
+html:root .tira-3d > :not(.pestana-activa):hover {
+  background-color: var(--boton-fondo-encima);
+  border-color: var(--boton-borde-encima);
+  box-shadow: var(--boton-sombra);
+  transform: none;
+}
+html:root :is(.ghost-button, .icon-text-button, .icon-button, .glass-chip, .chip-3d, .pildora-plantear, .pildora-revisar, .pildora-aviso):active:not(:disabled),
+html:root .tira-3d > :not(.pestana-activa):active {
+  background-color: var(--boton-fondo-pulsado);
+  background-image: none;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Principal: el amarillo TGM, con un borde algo más oscuro para que tenga contorno. */
+html:root .primary-button,
+html:root .primary-button.boton-3d {
+  background-color: var(--tgm-yellow);
+  background-image: none;
+  border: 1px solid var(--boton-principal-borde);
+  box-shadow: var(--boton-sombra);
+  color: var(--tgm-black);
+  transform: none;
+}
+html:root .primary-button:hover:not(:disabled) { background-color: var(--color-brand-500); box-shadow: var(--boton-sombra); transform: none; }
+html:root .primary-button:active:not(:disabled) { background-color: var(--color-brand-600); box-shadow: none; transform: none; }
+
+/* El relieve macizo de los botones de color, fuera. */
+html:root .boton-3d,
+html:root .boton-3d:hover:not(:disabled),
+html:root .boton-3d:active:not(:disabled) { transform: none; }
+
+/* Lo elegido (pestaña, filtro, Sí/No): fondo ámbar muy claro, borde ámbar y la costura debajo. */
+html:root :is(.pestana-activa, .pestana-activa:hover, .glass-chip-activo, .glass-chip-activo:hover) {
+  background-color: var(--boton-elegido-fondo);
+  background-image: repeating-linear-gradient(90deg, var(--costura) 0 6px, transparent 6px 10px);
+  background-position: left 6px bottom 1px;
+  background-repeat: no-repeat;
+  background-size: calc(100% - 12px) 1.5px;
+  border: 1px solid var(--costura);
+  box-shadow: none;
+  color: var(--boton-elegido-texto);
+  font-weight: 600;
+  transform: none;
+}
+
+/* Teclado: un anillo ámbar claro, separado del borde. */
+html:root :is(.ghost-button, .icon-text-button, .icon-button, .primary-button, .glass-chip, .chip-3d, .pestana, .tira-3d > *):focus-visible {
+  outline: 2px solid var(--anillo);
+  outline-offset: 2px;
+}
+
+html:root :is(.ghost-button, .icon-text-button, .icon-button, .primary-button, .glass-chip, .chip-3d):disabled {
+  box-shadow: none;
+  opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:root :is(.ghost-button, .icon-text-button, .icon-button, .primary-button, .glass-chip, .chip-3d, .tira-3d > *) { transition: none; }
+}

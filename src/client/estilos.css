@@ -36,3 +36,5 @@
 @import './coordina/pedido-comun.css';
 /* El metal de CoordinaOT va el último: pisa el fondo y el relieve de todo lo anterior. */
 @import './coordina/metal.css';
+/* Botones planos encima del metal (26/10/2026). */
+@import './coordina/botones.css';
