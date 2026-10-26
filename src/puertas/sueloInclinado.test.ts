@@ -159,7 +159,7 @@ describe('Correcciones de Iván sobre AR2605035 (23/10/2026)', () => {
     expect(panos.flatMap(x => x.unionesCorte ?? [])).toEqual([]);
     expect(panos.flatMap(x => x.entradasIncorporadas ?? []).map(e => e.tubo)).toEqual([r.uniones.find(u => u.tubo)!.tubo]);
     const textos = generarCortePuertas(pedidoDe('AR2605035', p())).archivo!.entidades.textos.map(t => t.valor);
-    expect(textos.some(v => /ENTRADA 5$/.test(v))).toBe(true);
+    expect(textos.some(v => /ET 5$/.test(v))).toBe(true);
   });
   it('en el corte, el saco va con su lado largo recto con el rollo y las mitades pegadas', () => {
     const corte = generarCortePuertas(pedidoDe('AR2605035', p()));

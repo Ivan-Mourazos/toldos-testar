@@ -54,12 +54,13 @@ function etiquetaClasePieza(pieza: PiezaPuerta, codigoPano?: string): string {
     return codigoPano || 'PAÑO';
   }
   if (pieza.clase === 'cacho') return 'CACHO';
+  // «ET» y no «ENTRADA» (Iván, 26/10/2026).
   if (pieza.clase === 'entrada') {
     const n = /(\d+)\s*$/.exec(pieza.nombre)?.[1];
-    if (n) return `ENTRADA ${n}`;
-    if (/delantera/i.test(pieza.nombre)) return 'ENTRADA DELANTERA';
-    if (/trasera/i.test(pieza.nombre)) return 'ENTRADA TRASERA';
-    return 'ENTRADA';
+    if (n) return `ET ${n}`;
+    if (/delantera/i.test(pieza.nombre)) return 'ET DELANTERA';
+    if (/trasera/i.test(pieza.nombre)) return 'ET TRASERA';
+    return 'ET';
   }
   if (pieza.clase === 'saco') return pieza.sacoDiagonalesAmarillas ? 'SACO AMARILLO/NEGRO' : 'SACO';
   return 'CRISTAL';
@@ -90,7 +91,7 @@ function rotulosPieza(
     : `${codigoPano ?? ''} · ${etiquetaClasePieza(pieza)}`;
   // La E.T. que va dentro del paño, rotulada en su franja como las sueltas (Iván, 23/10/2026).
   for (const e of pieza.entradasIncorporadas ?? []) {
-    const valor = `${/^[A-Z]+/.exec(codigoPano ?? '')?.[0] ?? ''} · ENTRADA ${e.tubo}`.replace(/^ · /, '');
+    const valor = `${/^[A-Z]+/.exec(codigoPano ?? '')?.[0] ?? ''} · ET ${e.tubo}`.replace(/^ · /, '');
     const h = Math.min(mm(e.alto) * .55, mm(pieza.ancho) * .3 / anchoArial(valor, 1));
     const u = centroLibre(pieza.huecos.filter(q => q.y < e.y + e.alto / 2 && q.y + q.alto > e.y - e.alto / 2), pieza.ancho);
     entidades.textos.push({ capa: 'texto', x: x + mm(girada ? pieza.alto - e.y : u), y: y + mm(girada ? u : e.y),
@@ -119,7 +120,9 @@ function rotulosPieza(
 
   const multiplicador = (pieza.multiplicador ?? 1) > 1 ? [`X${pieza.multiplicador}`] : [];
   // Sin REVÉS: va una vez al principio del material (Iván, 22/10/2026).
-  const lineasTexto = [...(cortoMm < 130 ? [`${clase} · ${of}`] : [clase, of]), ...multiplicador];
+  // La E.T. sin OF: comparte la letra con su puerta y la OF ya va en la pieza grande (Iván, 26/10/2026).
+  const conOf = pieza.clase === 'entrada' ? [clase] : cortoMm < 130 ? [`${clase} · ${of}`] : [clase, of];
+  const lineasTexto = [...conOf, ...multiplicador];
 
   const maxPorCorto = (cortoMm * 0.82) / ((lineasTexto.length - 1) * 1.5 + 1);
   const maxPorLargo = Math.min(...lineasTexto.map(v => (largoMm * 0.88) / Math.max(1, anchoArial(v, 1))));
