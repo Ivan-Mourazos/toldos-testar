@@ -3075,7 +3075,9 @@ textarea,
 .structure-editor .structure-row-actions button { display: inline-grid; place-items: center; width: 31px; height: 31px; padding: 0; }
 .structure-row-actions svg { width: 15px; height: 15px; }
 .structure-row-modified { background: #fff8e6; }
-.structure-article-search { margin-top: 14px; padding: 14px; border: 2px solid #476e5d; border-radius: 8px; background: white; }
+/* Encima de todo y en el centro de la pantalla: dentro del panel «Despiece y dibujo» quedaba debajo de la tabla, fuera
+   de la vista, y la lupa y «Añadir pieza» parecían no hacer nada (Iván, 26/10/2026). */
+.structure-article-search { position: fixed; z-index: 1000; top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(720px, 92vw); max-height: 80vh; overflow: auto; box-sizing: border-box; padding: 14px; border: 2px solid #476e5d; border-radius: 8px; background: white; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35); }
 .structure-article-search header { display: flex; justify-content: space-between; margin-bottom: 10px; }
 .structure-article-search > input { width: 100%; box-sizing: border-box; }
 .structure-article-search ul { padding: 0; list-style: none; max-height: 330px; overflow: auto; }

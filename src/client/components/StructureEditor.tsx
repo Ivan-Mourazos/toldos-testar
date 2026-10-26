@@ -99,7 +99,7 @@ function ArticleSearch({ onSelect, onClose }: { onSelect: (article: Article) => 
   }, [query]);
   return <div className="structure-article-search" role="dialog" aria-label="Buscar artículo en RPS">
     <header><strong>Buscar artículo en RPS</strong><button type="button" onClick={onClose}>Cerrar</button></header>
-    <input aria-label="Referencia o descripción de artículo" placeholder="Referencia, manivela blanca, brazo…" value={query} onChange={(event) => { setItems([]); setQuery(event.target.value); }} />
+    <input autoFocus aria-label="Referencia o descripción de artículo" placeholder="Referencia, manivela blanca, brazo…" value={query} onChange={(event) => { setItems([]); setQuery(event.target.value); }} />
     <p role="status">{status}</p><ul>{items.map((item) => <li key={item.code}><button type="button" onClick={() => onSelect(item)}><strong>{item.code}</strong><span>{item.description}</span><small>Unidad RPS: {item.unitCode || 'No indicada'}</small></button></li>)}</ul>
   </div>;
 }
