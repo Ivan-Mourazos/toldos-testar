@@ -5,6 +5,7 @@ import { esClientePortanova } from './clientePortanova.ts';
 import { rotuloSaco, sacoPuerta, sacoUtil } from './saco.ts';
 import { anclarCotas } from './cotasPuertas.ts';
 import { presentacionPortanova, VENTANA_CORTE_PORTANOVA } from './plantillaPortanova.ts';
+import { SEPARACION_EXTRA_FILAS, TITULO_MATERIAL_MM } from './corte.ts';
 import { corteEnPlano, entidadesDePieza, textosFuera } from './corteEnPlano.ts';
 import type { CortePuertas, EntidadesPuertas, PedidoPuertas, Puerta, Punto } from './tipos.ts';
 
@@ -257,9 +258,9 @@ function dibujarCorte(cortes: CortePuertas[], _pedido: PedidoPuertas): { lienzo:
       // Encima de la fila, grandes (Iván, 24/10/2026: hasta 20 cm), los textos del bot que no son de ninguna pieza: el título
       // «MATERIAL · CORTE» y REVÉS, uno detrás de otro. Son los mismos que van al bot.
       if (!xo) {
-        const anchoFila = fila.reduce((suma, q) => suma + q.t.pieza.ancho, 0) + 80 * (fila.length - 1);
         const fuera = [...new Set(fila.map(m => m.c))].flatMap(textosFuera);
-        const alto = Math.min(20, anchoFila * .95 / anchoArial(fuera.map(a => a.valor).join('    '), 1));
+        // Del mismo tamaño que el título de la lona, aunque la fila sea corta (Iván, 26/10/2026).
+        const alto = TITULO_MATERIAL_MM / 10;
         let x = xMuestra;
         for (const a of fuera) {
           l.textos.push({ capa: a.capa, valor: a.valor, x, y: techo + (p.clase === 'saco' ? 11.6223 : 5.5194), h: alto, ...(a.literal ? { literal: true } : {}) });
@@ -272,7 +273,7 @@ function dibujarCorte(cortes: CortePuertas[], _pedido: PedidoPuertas): { lienzo:
       anchoMax = Math.max(anchoMax, xo - 80);
     }
     // Separaciones de presentación medidas en AR2605134; no afectan al corte ni a sus piezas.
-    techo = fondo - (fila[0].t.pieza.clase === 'saco' ? 82.0735 : 92.3202);
+    techo = fondo - (fila[0].t.pieza.clase === 'saco' ? 82.0735 : 92.3202) - SEPARACION_EXTRA_FILAS;
   }
   for (const c of cortes.filter(c => c.colocadas.some(t => !['saco', 'cristal'].includes(t.pieza.clase)))) {
     const alto = c.anchoRollo / 10, yc = techo - alto;
@@ -287,7 +288,7 @@ function dibujarCorte(cortes: CortePuertas[], _pedido: PedidoPuertas): { lienzo:
     cota(l, 0, yc, 0, borde, -35.1317, CORTE_COTAS);
     anchoMax = Math.max(anchoMax, c.largo / 10);
     // Sitio para el título del bot («MATERIAL · CORTE»), que va encima del rollo.
-    techo = yc - 100;
+    techo = yc - 100 - SEPARACION_EXTRA_FILAS;
   }
   return { lienzo: l, zona: { x0: -70, y0: techo + 45, x1: anchoMax + 30, y1: 55 } };
 }

@@ -12,6 +12,11 @@ const vacias = (): EntidadesPuertas => ({ lineas: [], textos: [], arcos: [], cir
 const mm = (x: number) => Math.round(x * 10000) / 1000;
 
 /** Une tramos colineales y elimina cortes sobre los orillos, como remolques/corte. */
+/** Alto del título de cada material en el corte (mm): el mismo en la lona, el cristal y el saco (Iván, 26/10/2026). */
+export const TITULO_MATERIAL_MM = 200;
+/** Espacio de más (cm) entre las filas del corte en el plano: lona, saco y cristal menos juntos (Iván, 26/10/2026). */
+export const SEPARACION_EXTRA_FILAS = 40;
+
 export function fusionarCortesPuertas(entidades: EntidadesPuertas, rollo?: number) {
   const grupos = new Map<string, number[][]>();
   const resto: EntidadesPuertas['lineas'] = [];
@@ -435,7 +440,8 @@ function colocar(
     const enrollable = grupo.every(p => esEnrollable(p.id));
     const rotuloMaterial = !enrollable && opcion === 'principal' ? grupo[0].material : `${grupo[0].material} · ${titulo}`;
     entidades.textos.push(
-      { capa: 'texto', x: 0, y: rollo + 250, h: enrollable ? 95 : Math.min(200, largo * .95 / anchoArial(rotuloMaterial, 1)), valor: rotuloMaterial },
+      // El título de cada material, grande y del mismo tamaño en la lona, el cristal y el saco (Iván, 26/10/2026).
+      { capa: 'texto', x: 0, y: rollo + 250, h: TITULO_MATERIAL_MM, valor: rotuloMaterial },
       // Las puertas se cortan siempre por el revés: se avisa al principio, como el DERECHO de remolques (Iván, 22/10/2026).
     );
     // Sacos y cristales, en todas las puertas, sin «REVÉS» y con el borde del orillo cortado (Iván, 26/10/2026: lo

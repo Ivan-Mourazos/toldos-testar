@@ -178,9 +178,9 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
     // y los refuerzos centrados en su hueco con una raya a cada uno; sin los «a2» del saco partido en el dibujo
     // del saco (correcciones de Iván sobre AR2605035). Después, cotas verticales más juntas, nota BOLSILLO y
     // cajetín algo más pequeño (23/10/2026). Luego, presentación «PUERTA A», el corte en fila con la puerta y ventanas con la proporción justa. Después, el corte a la derecha y los recuadros DIBUJO y CORTE pegados, con margen del 20 %.
-    ['apilable', apilable, '70077c4be7994e1c1da6815356bb314346841f7ca2db80fc8142513d35940e60'],
+    ['apilable', apilable, 'deba5a3bd8eee4e66bb12d6e9abbcae394cdb7b8c588a1ce585da64916af991a'],
     // Tetris coloca las dos E.T. sobre los paños: baja de 711 a 700 cm sin cambiar el alzado.
-    ['autorreparable', autorreparable, '94eeceaaa4994a00e61477270148d769e107128d34f2c205aa2afca4f4d678fd'], // Solo cambia «SACO DE 110» (23/10/2026).,
+    ['autorreparable', autorreparable, '1dd06496b64f865819301b8659b348277a94fcf9ff14af809be6c62b7d9ec08b'], // Solo cambia «SACO DE 110» (23/10/2026).,
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {
     const pedido = { ...pedidoDe('AR2600001', crear()), cabecera: { clienteRps: { codigo: '009999' } } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido, cabecera })).digest('hex')).toBe(hash);

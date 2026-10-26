@@ -1,7 +1,7 @@
 import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { alturasTubos, calcularPuerta } from './calcular.ts';
-import { fusionarCortesPuertas } from './corte.ts';
+import { fusionarCortesPuertas, SEPARACION_EXTRA_FILAS, TITULO_MATERIAL_MM } from './corte.ts';
 import { esClientePortanova } from './clientePortanova.ts';
 import { bajoDobleSaco, desnivelSuelo, pestanaDerecha, rotuloSaco, sacoApilable, sacoPuerta, sacoUtil } from './saco.ts';
 import { corteEnPlano, entidadesDePieza, textosFuera } from './corteEnPlano.ts';
@@ -28,8 +28,9 @@ function sumarEntidades(l: Lienzo, e: EntidadesPuertas, dx = 0, dy = 0) {
   l.textos.push(...e.textos.map(a => ({ ...a, x: a.x + dx, y: a.y + dy })));
 }
 /** Los textos del bot de fuera de las piezas, en una línea encima de la fila, grandes y sin pasarse de su ancho. */
-function rotuloFila(l: Lienzo, textos: EntidadesPuertas['textos'], ancho: number, y: number) {
-  const alto = Math.min(20, ancho * .95 / anchoArial(textos.map(a => a.valor).join('    '), 1));
+function rotuloFila(l: Lienzo, textos: EntidadesPuertas['textos'], y: number) {
+  // Del mismo tamaño que el título de la lona, aunque la fila sea corta (Iván, 26/10/2026).
+  const alto = TITULO_MATERIAL_MM / 10;
   let x = 0;
   for (const a of textos) {
     l.textos.push({ capa: a.capa, valor: a.valor, x, y, h: alto, centrado: false, giro: 0, ...(a.literal ? { literal: true } : {}) });
@@ -398,7 +399,6 @@ function dibujarCorteTaller(cortes: CortePuertas[]): { lienzo: Lienzo; zona: Zon
         if (c.opcion === 'saco-partido' && g && puertaDe(g[0]) === puertaDe(p)) g.push(p); else grupos.push([p]);
       }
       let xo = 0, fondo = techo;
-      const anchoFila = grupos.reduce((suma, g) => suma + Math.max(...g.map(p => p.ancho)), 0) + ENTRE_MUESTRAS * (grupos.length - 1);
       for (const g of grupos) {
         const dibujo = vacio(); let arriba = techo;
         // Saco partido: las dos mitades se acotan como un saco, con su alto y el largo ya empatado, el del saco entero
@@ -411,7 +411,7 @@ function dibujarCorteTaller(cortes: CortePuertas[]): { lienzo: Lienzo; zona: Zon
           sumarEntidades(dibujo, entidadesDePieza(c, c.colocadas.find(t => t.pieza.id === p.id)!), 0, y);
           const anterior = g[i - 1], siguiente = g[i + 1];
           // Encima de la fila, grandes, los textos del bot que no son de ninguna pieza (el título del material, REVÉS…).
-          if (!xo && !i) rotuloFila(dibujo, textosFuera(c), anchoFila, techo + 15);
+          if (!xo && !i) rotuloFila(dibujo, textosFuera(c), techo + 15);
           if (entero) {
             // El alto, de las dos mitades juntas (Iván, 24/10/2026).
             if (!siguiente) {
@@ -432,7 +432,8 @@ function dibujarCorteTaller(cortes: CortePuertas[]): { lienzo: Lienzo; zona: Zon
         xo += Math.max(...g.map(p => p.ancho)) + ENTRE_MUESTRAS; fondo = Math.min(fondo, arriba);
       }
       if (c.opcion === 'saco-partido') fusionarCortesPuertas(l);
-      anchoMax = Math.max(anchoMax, xo - ENTRE_MUESTRAS); techo = fondo - 95;
+      // 40 cm más entre filas que antes (Iván, 26/10/2026: «no dejes tan agrupado el corte… sin pasarse»).
+      anchoMax = Math.max(anchoMax, xo - ENTRE_MUESTRAS); techo = fondo - 95 - SEPARACION_EXTRA_FILAS;
       continue;
     }
     const yc = techo - c.anchoRollo / 10;
@@ -443,7 +444,7 @@ function dibujarCorteTaller(cortes: CortePuertas[]): { lienzo: Lienzo; zona: Zon
     // son corte; como en las enrollables (planos a mano 4638 y 5220).
     const ocupado = Math.max(...c.colocadas.map(t => t.y / 10 + (t.girada ? t.pieza.ancho : t.pieza.alto)));
     cota(l, 0, yc, c.largo / 10, yc, yc - 30, 'XERA 20'); cota(l, 0, yc, 0, yc + ocupado, -35, 'XERA 20');
-    anchoMax = Math.max(anchoMax, c.largo / 10); techo = yc - 100;
+    anchoMax = Math.max(anchoMax, c.largo / 10); techo = yc - 100 - SEPARACION_EXTRA_FILAS;
   }
   return { lienzo: l, zona: { x0: -70, x1: anchoMax + 35, y0: techo + 45, y1: 45 } };
 }
