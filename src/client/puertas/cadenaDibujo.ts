@@ -42,3 +42,22 @@ export function cintasDesdeCotas(mm: number[], frente: number, ancho = 12): { xs
   }
   return { xs: cintasSimetricas(izquierda, frente, ancho) };
 }
+
+/** Tramos de las E.T. de una enrollable tal como vienen en el dibujo, de abajo arriba (Iván, 26/10/2026: «no quiero
+ * tener que andar calculando las sumas para las posiciones»): del bajo al primer eje y de eje a eje. Si el último
+ * tramo llega arriba (la suma da el alto), es la cabecera y no es un eje. En mm o en cm: si en cm la suma se pasa
+ * del alto, son mm. Devuelve el eje de cada E.T. desde abajo, en cm. */
+export function ejesDesdeTramos(texto: string, alto: number): { ejes: number[]; enMm: boolean } | { error: string } {
+  const valores = texto.trim().split(/[\s;]+/).filter(Boolean).map((x) => Number(x.replace(',', '.')));
+  if (!valores.length || valores.some((v) => !Number.isFinite(v) || v <= 0)) return { error: 'Escribe los tramos separados por espacios, de abajo arriba.' };
+  if (!(alto > 0)) return { error: 'Pon antes el alto de la puerta.' };
+  const suma = valores.reduce((s, v) => s + v, 0);
+  const enMm = suma > alto + 1;
+  const cm = valores.map((v) => Math.round((enMm ? v / 10 : v) * 100) / 100);
+  let eje = 0;
+  const ejes = cm.map((v) => (eje = Math.round((eje + v) * 100) / 100));
+  if (Math.abs(ejes[ejes.length - 1] - alto) <= 1) ejes.pop();
+  if (!ejes.length) return { error: 'Solo hay un tramo hasta arriba: falta el del primer eje.' };
+  if (ejes[ejes.length - 1] >= alto) return { error: `Los tramos suman ${ejes[ejes.length - 1]} cm y la puerta mide ${alto}: revisa las cotas.` };
+  return { ejes, enMm };
+}

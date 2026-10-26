@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cintasDesdeCotas, cintasSimetricas, leerCadena } from './cadenaDibujo';
+import { cintasDesdeCotas, cintasSimetricas, leerCadena, ejesDesdeTramos } from './cadenaDibujo';
 
 describe('leerCadena', () => {
   it('lee la fila de la hoja de Portanova en mm, de abajo arriba (AR2605035)', () => {
@@ -36,5 +36,19 @@ describe('cintasDesdeCotas', () => {
   it('avisa si la fila no llega al centro o acaba en un recorte', () => {
     expect(cintasDesdeCotas([440, 120, 1000], 432)).toHaveProperty('error');
     expect(cintasDesdeCotas([440, 120], 432)).toHaveProperty('error');
+  });
+});
+
+describe('ejesDesdeTramos (E.T. de enrollable, 26/10/2026)', () => {
+  it('suma los tramos en cm: del bajo al primer eje y de eje a eje', () => {
+    expect(ejesDesdeTramos('60 71 60', 360)).toEqual({ ejes: [60, 131, 191], enMm: false });
+  });
+  it('en mm, como en la hoja, y sin la cabecera si el último tramo llega arriba', () => {
+    expect(ejesDesdeTramos('600 710 600 1690', 360)).toEqual({ ejes: [60, 131, 191], enMm: true });
+  });
+  it('avisa si los tramos se pasan del alto o no hay alto', () => {
+    expect(ejesDesdeTramos('3000 3000', 360)).toHaveProperty('error');
+    expect(ejesDesdeTramos('60', 0)).toHaveProperty('error');
+    expect(ejesDesdeTramos('60 x', 360)).toHaveProperty('error');
   });
 });

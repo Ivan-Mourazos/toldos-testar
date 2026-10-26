@@ -15,7 +15,7 @@ import { InputDecimal } from '../remolques/InputDecimal';
 import type { ResumenPedido } from '../remolques/SelectorProducto';
 import { AlzadoPuerta } from './AlzadoPuerta';
 import { CorteResumen, useVistaCortePuertas, VistaCortePuertas } from './VistaCortePuertas';
-import { cintasDesdeCotas, leerCadena } from './cadenaDibujo';
+import { cintasDesdeCotas, ejesDesdeTramos, leerCadena } from './cadenaDibujo';
 import { avanzarConIntro } from '../avanzarConIntro';
 import './puertas.css';
 
@@ -88,6 +88,7 @@ function Configurar({p,cambiar,corte,derecha='alzado',cambiarDerecha}:{p:Puerta;
           </div></fieldset>)}
           <button type="button" className="ghost-button" disabled={(p.enrollable.ventanales?.length??0)>=99} onClick={()=>set('enrollable',{...p.enrollable,ventanales:[...p.enrollable.ventanales??[],{D:0,margen:0}]})}>Añadir ventanal debajo</button>
           {Boolean(p.enrollable.ventanales?.length)&&<p className="puerta-ayuda">Ventanales consecutivos: comparten el eje intermedio. Se cortan sus cachos por separado y dos entradas entre ventanales, una por delante y otra por detrás. Indica las cotas del dibujo para cada uno.</p>}
+          <div className="puerta-campos"><TramosET p={p} cambiar={cambiar}/></div>
           <p className="puerta-ayuda">Paño inferior: {propuestaInferior>0?`${num(propuestaInferior)} cm`:'pendiente de medidas'} </p><div className="puerta-campos"><SacoUtil valor={sacoUtil(p)} cambiar={v=>set('enrollable',{...p.enrollable,saco:v})}/></div><AyudaSaco p={p}/><label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.enrollable.sacoPartido)} onChange={e=>set('enrollable',{...p.enrollable,sacoPartido:e.target.checked})}/>Saco en dos piezas con unión de 2 cm</label></fieldset>}
         {!sd&&<><label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.sacoDiagonalesAmarillas)} onChange={e=>set('sacoDiagonalesAmarillas',e.target.checked)}/>Saco con diagonales amarillas (impresión digital)</label>
         <label className="puerta-casilla"><input type="checkbox" checked={p.bolsillo} onChange={e=>set('bolsillo',e.target.checked)}/>Bolsillo · solo marcas, si lo pide el dibujo</label></>}
@@ -238,6 +239,21 @@ function SacoUtil({valor,cambiar}:{valor:number|null;cambiar:(n:number|null)=>vo
       {[80,110,120].map(mm=><button type="button" key={mm} className={`chip-3d ${valor===mm?'glass-chip-activo':''}`} aria-pressed={valor===mm} onClick={()=>cambiar(mm)}>{mm}</button>)}
     </div>
   </div>;
+}
+/** Las E.T. de la enrollable con los tramos de la hoja (Iván, 26/10/2026): la web hace las sumas. */
+function TramosET({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
+  const [texto,setTexto]=useState(''),[aviso,setAviso]=useState('');
+  const aplicar=()=>{
+    if(!texto.trim()) { setAviso(''); return; }
+    const r=ejesDesdeTramos(texto,p.alto);
+    if('error' in r) { setAviso(r.error); return; }
+    cambiar({...p,entradas:r.ejes.map((altura,i)=>({...(p.entradas[i]??{diametro:30 as const,largo:p.frente,alto:8,huecos:[]}),altura}))});
+    setAviso(`Leído en ${r.enMm?'mm':'cm'}: ${r.ejes.length} E.T. con el eje a ${r.ejes.map(num).join(', ')} cm desde abajo.`);
+  };
+  return <label className="field puerta-campo puerta-campo-ancho"><span>Tramos de las E.T. del dibujo, de abajo arriba (como en la hoja)</span>
+    <input aria-label="Tramos de las E.T." value={texto} placeholder="600 710 600" onChange={e=>setTexto(e.target.value)}
+      onBlur={aplicar} onKeyDown={e=>{ if(e.key==='Enter') aplicar(); }}/>
+    <small>{aviso||'Del bajo al primer eje y de eje a eje, en mm o en cm. La web hace las sumas y pone el eje de cada E.T.; se corrigen en «Entradas de tubo».'}</small></label>;
 }
 function CadenaDibujo({p,cadena}:{p:Puerta;cadena:(parche:Partial<Puerta['apilable']>)=>void}) {
   const [texto,setTexto]=useState(''),[aviso,setAviso]=useState('');
