@@ -9,7 +9,9 @@ export function useContenidoFluido<T extends HTMLElement = HTMLDivElement>(clave
     const cambio = anterior.current !== clave;
     anterior.current = clave;
     const zona = ref.current;
-    if (!cambio || !zona || document.documentElement.dataset.transicionPedido || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    // Marca la zona para que el cambio de pestaña (pestanasFluidas.ts) funda solo lo que cambia.
+    zona?.setAttribute('data-fluido', '');
+    if (!cambio || !zona || document.documentElement.dataset.transicionPedido || document.documentElement.dataset.transicionPestana || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const animaciones = Array.from(zona.children)
       .filter((hijo): hijo is HTMLElement => hijo instanceof HTMLElement && !hijo.matches('.tira-3d, header, [hidden]') && Boolean(hijo.getClientRects().length))
       .map(hijo => hijo.animate?.([
