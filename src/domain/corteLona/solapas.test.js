@@ -76,3 +76,15 @@ describe('Solapas con velcro (SOLAPACONVELCROS)', () => {
     expect(res.diagnostics.some((d) => d.message.includes('pendiente de Oficina Técnica'))).toBe(true);
   });
 });
+
+describe('solapa oblicua en el corte (AR2604205, D de 275 con 85 y 40)', () => {
+  it('lleva el alto de cada punta para dibujoCorte, con el corte inclinado de 253,5 y 27,5', () => {
+    const piezas = piezasSolapas({ solapas: [{ nombre: 'D', largo: 275, ancho: 85, oblicua: true, ancho2: 40 }], anchoRollo: 250 });
+    expect(piezas.map((p) => [p.nombre, p.largo, p.oblicua])).toEqual([
+      ['D1', 2500, { altoIzq: 850, altoDer: 441 }],
+      ['D2', 270, { altoIzq: 444, altoDer: 400 }],
+    ]);
+    const inclinados = piezas.map((p) => Math.hypot(p.largo, p.oblicua.altoIzq - p.oblicua.altoDer) / 10);
+    expect(inclinados.map((v) => Math.round(v * 2) / 2)).toEqual([253.5, 27.5]);
+  });
+});

@@ -43,7 +43,8 @@ export function piezasSolapas({ solapas = [], anchoRollo }) {
     if (L <= anchoRollo) {
       piezas.push({
         nombre, rotulo: nombre, letra: nombre, solapaNombre: nombre, rotuloCortina: true,
-        oblicua: true, ancho0: mm(w0), ancho1: mm(w1),
+        // Para dibujoCorte.js: el alto de cada punta (mm), el ancho grande a la izquierda.
+        oblicua: { altoIzq: mm(w0), altoDer: mm(w1) }, ancho0: mm(w0), ancho1: mm(w1),
         largo: mm(L), alto: mm(w0), marcas: [], uniones: []
       });
       continue;
@@ -61,7 +62,7 @@ export function piezasSolapas({ solapas = [], anchoRollo }) {
       const id = `${nombre}${k + 1}`;
       return {
         nombre: id, rotulo: id, letra: nombre, solapaNombre: nombre, rotuloCortina: true,
-        oblicua: true, ancho0: mm(wa), ancho1: mm(wb),
+        oblicua: { altoIzq: mm(wa), altoDer: mm(wb) }, ancho0: mm(wa), ancho1: mm(wb),
         largo: mm(zb - za), alto: mm(Math.max(wa, wb)), marcas: [], uniones: []
       };
     });
