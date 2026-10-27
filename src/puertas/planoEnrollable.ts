@@ -5,6 +5,7 @@ import { esClientePortanova } from './clientePortanova.ts';
 import { rotuloSaco, sacoPuerta, sacoUtil } from './saco.ts';
 import { anclarCotas } from './cotasPuertas.ts';
 import { ventanalesEnrollable } from './ventanalesEnrollable.ts';
+import { flechaEmpate } from './marcasEmpate.ts';
 import { presentacionPortanova, VENTANA_CORTE_PORTANOVA } from './plantillaPortanova.ts';
 import { SEPARACION_EXTRA_FILAS, TITULO_MATERIAL_MM } from './corte.ts';
 import { corteEnPlano, entidadesDePieza, textosFuera } from './corteEnPlano.ts';
@@ -189,9 +190,15 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSac
   // Los empates y bolsillos configurados conservan sus marcas; nunca crean una pieza nueva.
   for (const u of r.uniones) {
     linea(l, 'referencias', 0, -H + u.altura, F, -H + u.altura);
-    for (const s of [-1, 1]) {
-      const y = -H + u.altura + s * u.solape / 2;
-      linea(l, 'ROTULADOR', 0, y, F, y); flecha(l, F / 2, y, s < 0 ? 180 : 0);
+    if (u.tubo) {
+      for (const s of [-1, 1]) {
+        const y = -H + u.altura + s * u.solape / 2;
+        linea(l, 'ROTULADOR', 0, y, F, y); flecha(l, F / 2, y, s < 0 ? 180 : 0);
+      }
+    } else {
+      const y = -H + u.altura + u.solape / 2;
+      linea(l, 'ROTULADOR', 0, y, F, y);
+      for (const [x1, y1, x2, y2] of flechaEmpate(F / 2, y, -1)) linea(l, 'ROTULADOR', x1, y1, x2, y2);
     }
     if (!u.tubo) texto(l, `EMPATE ${u.solape.toLocaleString('es-ES')} CM`, F / 2, -H + u.altura + 8, 5, { centrado: true });
   }

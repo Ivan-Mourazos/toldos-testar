@@ -1,6 +1,7 @@
 import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { alturasTubos, calcularPuerta } from './calcular.ts';
+import { flechaEmpate } from './marcasEmpate.ts';
 import { fusionarCortesPuertas, SEPARACION_EXTRA_FILAS, TITULO_MATERIAL_MM } from './corte.ts';
 import { esClientePortanova } from './clientePortanova.ts';
 import { bajoDobleSaco, desnivelSuelo, pestanaDerecha, rotuloSaco, sacoApilable, sacoPuerta, sacoUtil } from './saco.ts';
@@ -308,6 +309,9 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
   for (const u of r.uniones) {
     for (const signo of [-1, 1]) linea(l, ple ? 'DISCO1' : 'referencia-1', 0, -H + u.altura + signo * u.solape / 2, F, -H + u.altura + signo * u.solape / 2);
     if (!u.tubo) {
+      const y = -H + u.altura + u.solape / 2;
+      linea(l, 'ROTULADOR', 0, y, F, y);
+      for (const [x1, y1, x2, y2] of flechaEmpate(F / 2, y, -1)) linea(l, 'ROTULADOR', x1, y1, x2, y2);
       const anchoLibre = !ple && p.autorreparable.espaciadorCentral ? F / 2 - 40 : F - 40;
       const nota = `EMPATE ${num(u.solape)} CM`, h = Math.min(5, anchoLibre * .8 / anchoArial(nota, 1));
       texto(l, nota, !ple && p.autorreparable.espaciadorCentral ? F / 4 : F / 2, -H + u.altura + 8, h, 0, 'referencia-1');

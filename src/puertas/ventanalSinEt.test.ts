@@ -27,7 +27,7 @@ describe('Enrollable sin E.T. encima del ventanal', () => {
     const r = calcularPuerta(puerta(true));
     expect(r.piezas.filter(x => x.nombre.startsWith('Entrada de tubo')).map(x => x.origenAlzado?.[1])).toEqual([24, 95]);
     const superior = r.piezas.find(x => x.nombre === 'Paño superior')!;
-    // Propuesta pendiente de confirmar por Iván: T=200 al borde del paño; arriba conserva sus 3,5 de varilla.
+    // Iván, 27/10/2026: T=200 al borde del paño; arriba conserva sus 3,5 de varilla.
     expect(superior.alto).toBe(203.5);
     expect(superior.origenAlzado?.[1]).toBe(190);
     expect(rayas(superior.marcas)).not.toContain(2);

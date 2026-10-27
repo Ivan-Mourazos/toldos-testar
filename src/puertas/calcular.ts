@@ -5,6 +5,7 @@ import { marcasBolsillo } from './bolsillo.ts';
 import { numerarBorde } from './unionesCorte.ts';
 import { calcularSystemDock } from './systemDock.ts';
 import { ventanalesEnrollable } from './ventanalesEnrollable.ts';
+import { flechaEmpate } from './marcasEmpate.ts';
 import { bajoDobleSaco, desnivelSuelo, espejarPieza, inclinarSaco, pestanaDerecha, sacoApilable, sacoPuerta, sacoUtil } from './saco.ts';
 
 export const MODELOS_PUERTAS: Record<ModeloPuerta, string> = { PUERTAENR: 'Enrollable', PUERTAPLE: 'Apilable', PUERTAUTO: 'Autorreparable', SYSTEMDOCK: 'System Dock' };
@@ -95,13 +96,14 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       const x=panel(`${nombre}${plan.tramos.length>1?` ${i+1}`:''}`,t.desde,t.hasta);
       if(t.unionInferior!==undefined) {
         const u=plan.uniones[t.unionInferior];
-        if(u.tubo) marca(x,u.solape,-1); else marca(x,u.solape);
+        if(u.tubo) marca(x,u.solape,-1);
+        else { marca(x,u.solape); x.marcas.push(...flechaEmpate(x.ancho/2,u.solape,-1)); }
         // Apilable: en un tubo la E.T. ya une los dos paños y no lleva mininúmeros (Iván, 23/10/2026, AR2605035).
         if(!(u.tubo && p.modelo==='PUERTAPLE')) numerarBorde(x,numeros[t.unionInferior],'abajo');
       }
       if(t.unionSuperior!==undefined) {
         const u=plan.uniones[t.unionSuperior];
-        if(!u.tubo) marca(x,x.alto-u.solape);
+        // Iván, 27/10/2026: en los empates normales se marca solo el paño superior; abajo quedan los mininúmeros.
         if(!(u.tubo && p.modelo==='PUERTAPLE')) numerarBorde(x,numeros[t.unionSuperior],'arriba');
         if(u.tubo && p.entradas[u.tubo-1]) x.huecos.push(...huecosET(p.entradas[u.tubo-1]).map(h=>({...h,y:n(x.alto-u.solape+h.y)})));
         // Apilable: la E.T. que va dentro del paño se rotula en él, para que no parezca que falta (Iván, 23/10/2026).

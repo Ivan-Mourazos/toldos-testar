@@ -3,6 +3,7 @@ import { colocarTextosPuerta } from './textosPlano.ts';
 import { desnivelSuelo, pestanaDerecha, rotuloSaco, sacoPuerta } from './saco.ts';
 import { medidaSystemDock, REGLAS_SYSTEM_DOCK } from './systemDock.ts';
 import { ventanalesEnrollable } from './ventanalesEnrollable.ts';
+import { flechaEmpate } from './marcasEmpate.ts';
 import type { Puerta, Punto, ResultadoPuerta } from './tipos.ts';
 
 // El alzado de una puerta como dibujo puro, en cm y con la y hacia abajo (como el SVG): lo pinta la pantalla
@@ -302,8 +303,14 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
       linea('puerta-empate-autorreparable', 0, H - u.altura + u.solape / 2, F, H - u.altura + u.solape / 2);
     } else linea('puerta-empate', 0, H - u.altura, F, H - u.altura);
     if (!u.tubo) nota(`EMPATE ${numAlzado(u.solape)}cm`, 40, H - u.altura - 4, 5);
-    marca(H - u.altura - u.solape / 2);
-    marca(H - u.altura + u.solape / 2, -1);
+    if (u.tubo) {
+      marca(H - u.altura - u.solape / 2);
+      marca(H - u.altura + u.solape / 2, -1);
+    } else {
+      const y = H - u.altura - u.solape / 2;
+      linea('puerta-rotulador', p.margenMarcas, y, F - p.margenMarcas, y);
+      for (const [x1, y1, x2, y2] of flechaEmpate(F / 2, y, 1)) linea('puerta-rotulador', x1, y1, x2, y2);
+    }
   }
 
   // Textos de taller colocados en huecos libres
