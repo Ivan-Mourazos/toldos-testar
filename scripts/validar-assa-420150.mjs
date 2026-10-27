@@ -11,7 +11,8 @@ import { generarPanos420150 } from '../src/assa/generar420150.js';
 import { escribirDxf2004 } from '../src/domain/corteLona/dxfCorte.js';
 
 const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const base = path.join(raiz, 'tmp/assa-estudio'), salida = path.join(raiz, 'tmp/assa-fase1');
+const base = process.env.ASSA_ESTUDIO || path.join(raiz, 'tmp/assa-estudio');
+const salida = path.join(raiz, 'tmp/assa-fase1');
 const toleranciaMm = 1, inicio = '<!-- INICIO ASSA FASE 1 GENERADO -->', fin = '<!-- FIN ASSA FASE 1 GENERADO -->';
 const leer = nombre => JSON.parse(fs.readFileSync(path.join(base, nombre), 'utf8'));
 const hash = fichero => crypto.createHash('sha256').update(fs.readFileSync(fichero)).digest('hex');
@@ -49,7 +50,7 @@ async function recogerRps() {
 
 fs.mkdirSync(salida, { recursive: true });
 const rps = process.argv.includes('--actualizar-rps') ? await recogerRps() :
-  fs.existsSync(path.join(salida, 'rps.json')) ? JSON.parse(fs.readFileSync(path.join(salida, 'rps.json'), 'utf8')) : leer('rps.json');
+  fs.existsSync(process.env.ASSA_RPS || path.join(salida, 'rps.json')) ? JSON.parse(fs.readFileSync(process.env.ASSA_RPS || path.join(salida, 'rps.json'), 'utf8')) : leer('rps.json');
 const archivos = [], programas = [], sinFecha = [], sinPano = [];
 for (const anio of [2025, 2026]) {
   const carpeta = path.join(base, 'cortes', String(anio));

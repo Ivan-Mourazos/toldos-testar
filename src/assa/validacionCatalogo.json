@@ -1,0 +1,1239 @@
+{
+  "version": 1,
+  "rpsRecogido": "2026-10-26T14:00:05.870Z",
+  "referencias": {
+    "420150-0021": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE MIT REGENRINNE NT=600 NB=3250 NH=3400",
+          "corteMm": [
+            10052,
+            666
+          ],
+          "lineas": 39,
+          "cuadran": 33,
+          "geometria": 37,
+          "ultimaFecha": "2026-10-10",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": [
+            10042,
+            600
+          ]
+        }
+      ]
+    },
+    "420150-0002": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE MIT REGENRINNE NT=600 NB=3450 NH=3600",
+          "corteMm": [
+            10652,
+            666
+          ],
+          "lineas": 79,
+          "cuadran": 62,
+          "geometria": 74,
+          "ultimaFecha": "2026-10-31",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": [
+            10642,
+            600
+          ]
+        }
+      ]
+    },
+    "420150-0088": {
+      "descripciones": [
+        {
+          "descripcion": "LONA ENVOLVENTE CON VIERTEAGUAS NT600 NB3250 NH348",
+          "corteMm": [
+            10212,
+            666
+          ],
+          "lineas": 36,
+          "cuadran": 24,
+          "geometria": 28,
+          "ultimaFecha": "2026-10-31",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": [
+            10202,
+            600
+          ]
+        }
+      ]
+    },
+    "420102-0034": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE SEITENTEIL NH=4200-200 NT=600 SCHWARZ",
+          "corteMm": [
+            4010,
+            666
+          ],
+          "lineas": 41,
+          "cuadran": 2,
+          "geometria": 19,
+          "ultimaFecha": "2026-10-31",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420102-0030": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE SEINTENTEIL NH=4000-200 NT=600 SCHWARZ",
+          "corteMm": [
+            3810,
+            666
+          ],
+          "lineas": 32,
+          "cuadran": 7,
+          "geometria": 25,
+          "ultimaFecha": "2026-10-31",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420150-0007": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE MIT REGENRINNE NT=600 NB=3250 NH=3600",
+          "corteMm": [
+            10452,
+            666
+          ],
+          "lineas": 53,
+          "cuadran": 43,
+          "geometria": 49,
+          "ultimaFecha": "2026-10-10",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": [
+            10442,
+            600
+          ]
+        }
+      ]
+    },
+    "420150-0127": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE MIT REGENRINNE NT=600 NB=3040 NH=3000 SCHWARZ",
+          "corteMm": null,
+          "lineas": 1,
+          "cuadran": 0,
+          "geometria": 0,
+          "ultimaFecha": "2025-01-11",
+          "ultimaGeometria": false,
+          "nkValidado": false,
+          "terminadoMm": [
+            9032,
+            600
+          ]
+        }
+      ]
+    },
+    "420150-0090": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE MIT REGENRINNE NT600NB3450NH3480 SCHWA",
+          "corteMm": [
+            10412,
+            666
+          ],
+          "lineas": 80,
+          "cuadran": 54,
+          "geometria": 66,
+          "ultimaFecha": "2026-10-31",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": [
+            10402,
+            600
+          ]
+        }
+      ]
+    },
+    "420148-0104": {
+      "descripciones": [
+        {
+          "descripcion": "LONA ENVOLVENTE NB3450 NH3480 NT600-5",
+          "corteMm": [
+            10415,
+            661
+          ],
+          "lineas": 28,
+          "cuadran": 19,
+          "geometria": 24,
+          "ultimaFecha": "2026-10-24",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420148-0111": {
+      "descripciones": [
+        {
+          "descripcion": "LONA ENVOLVENTE NB=3250-8 NH=3480 NT=900-5 SCHWARZ",
+          "corteMm": [
+            10215,
+            961
+          ],
+          "lineas": 14,
+          "cuadran": 13,
+          "geometria": 14,
+          "ultimaFecha": "2026-09-26",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420150-0087": {
+      "descripciones": [
+        {
+          "descripcion": "LONA ENVOLVENTE CON VIERTEAGU. NT600 NB3250 NH3280",
+          "corteMm": [
+            9812,
+            666
+          ],
+          "lineas": 11,
+          "cuadran": 11,
+          "geometria": 11,
+          "ultimaFecha": "2026-10-17",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": [
+            9802,
+            600
+          ]
+        }
+      ]
+    },
+    "420102-0050": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE SEITENTEIL NH=3600-200 NT=600 SCHWARZ",
+          "corteMm": [
+            3410,
+            666
+          ],
+          "lineas": 53,
+          "cuadran": 11,
+          "geometria": 37,
+          "ultimaFecha": "2026-10-31",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420150-0033": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE MIT REGENRINNE NT=600 NB=3450 NH=3400",
+          "corteMm": [
+            10252,
+            666
+          ],
+          "lineas": 55,
+          "cuadran": 39,
+          "geometria": 50,
+          "ultimaFecha": "2026-10-10",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": [
+            10242,
+            600
+          ]
+        }
+      ]
+    },
+    "420102-0060": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE SEITENTEIL NH=3800-200 NT=900 SCHWARZ",
+          "corteMm": [
+            3610,
+            966
+          ],
+          "lineas": 7,
+          "cuadran": 3,
+          "geometria": 4,
+          "ultimaFecha": "2026-10-31",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420150-0091": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE MIT REGENRINNE NT600 NB3450 NH3680 SCH",
+          "corteMm": [
+            10812,
+            666
+          ],
+          "lineas": 42,
+          "cuadran": 32,
+          "geometria": 35,
+          "ultimaFecha": "2026-10-24",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": [
+            10802,
+            600
+          ]
+        }
+      ]
+    },
+    "420102-0043": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE SEITENTEIL NH=3700-200 NT=600 SCHWARZ",
+          "corteMm": [
+            3510,
+            666
+          ],
+          "lineas": 1,
+          "cuadran": 0,
+          "geometria": 0,
+          "ultimaFecha": "2025-01-25",
+          "ultimaGeometria": false,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420150-0109": {
+      "descripciones": [
+        {
+          "descripcion": "LONA ENVOLV. CON VIERTEA NT600 NB2200 NH400 BLACK",
+          "corteMm": null,
+          "lineas": 1,
+          "cuadran": 0,
+          "geometria": 0,
+          "ultimaFecha": "2025-01-25",
+          "ultimaGeometria": false,
+          "nkValidado": false,
+          "terminadoMm": [
+            2992,
+            600
+          ]
+        }
+      ]
+    },
+    "420148-0002": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE NB=3450-8 NH=3600 NT=600-5",
+          "corteMm": [
+            10655,
+            661
+          ],
+          "lineas": 17,
+          "cuadran": 10,
+          "geometria": 15,
+          "ultimaFecha": "2026-10-24",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420148-0099": {
+      "descripciones": [
+        {
+          "descripcion": "LONA ENVOLVELTE NB3250-8 NH3680 NT600 SCHWAR",
+          "corteMm": [
+            10615,
+            661
+          ],
+          "lineas": 31,
+          "cuadran": 28,
+          "geometria": 30,
+          "ultimaFecha": "2026-10-10",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420148-0108": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE NB3450-8 NH3680 NT900-5 SCHWARZ",
+          "corteMm": [
+            10815,
+            961
+          ],
+          "lineas": 3,
+          "cuadran": 3,
+          "geometria": 3,
+          "ultimaFecha": "2025-05-10",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420102-0179": {
+      "descripciones": [
+        {
+          "descripcion": "LONA ENVOLVENTE LATERAL NH=3950-200 NT=600 SCHWARZ",
+          "corteMm": [
+            3760,
+            666
+          ],
+          "lineas": 2,
+          "cuadran": 0,
+          "geometria": 1,
+          "ultimaFecha": "2025-03-08",
+          "ultimaGeometria": false,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420102-0018": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE SEITENTEIL NH=3400-200 NT=900 SCHWARZ",
+          "corteMm": [
+            3210,
+            966
+          ],
+          "lineas": 15,
+          "cuadran": 6,
+          "geometria": 9,
+          "ultimaFecha": "2026-10-31",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420102-0001": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE NSEITENTEIL NH=3200-200 NT=600 SCHWARZ",
+          "corteMm": [
+            3010,
+            666
+          ],
+          "lineas": 12,
+          "cuadran": 2,
+          "geometria": 8,
+          "ultimaFecha": "2026-08-22",
+          "ultimaGeometria": false,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420148-0030": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE NB=3250-8 NH=3600 NT=900-5 SCHWARZ",
+          "corteMm": [
+            10455,
+            961
+          ],
+          "lineas": 6,
+          "cuadran": 5,
+          "geometria": 5,
+          "ultimaFecha": "2025-10-25",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420148-0105": {
+      "descripciones": [
+        {
+          "descripcion": "LONA ENVOLVENTE NB=3450-8 NK=3680 NT=600-5 SCHWARZ",
+          "corteMm": [
+            10815,
+            661
+          ],
+          "lineas": 41,
+          "cuadran": 33,
+          "geometria": 36,
+          "ultimaFecha": "2026-10-31",
+          "ultimaGeometria": true,
+          "nkValidado": true,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420102-0017": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE SEITENTEIL NH=3400-200 NT=600 SCHWARZ",
+          "corteMm": [
+            3210,
+            666
+          ],
+          "lineas": 31,
+          "cuadran": 10,
+          "geometria": 18,
+          "ultimaFecha": "2026-10-31",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420148-0018": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE NB=3250-8 NH=3600 NT=600-5",
+          "corteMm": [
+            10455,
+            661
+          ],
+          "lineas": 9,
+          "cuadran": 9,
+          "geometria": 9,
+          "ultimaFecha": "2026-10-31",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420150-0116": {
+      "descripciones": [
+        {
+          "descripcion": "Lona envolvente con vierteagua NT=600 NB=2300 NH=400 black PCV",
+          "corteMm": null,
+          "lineas": 3,
+          "cuadran": 0,
+          "geometria": 0,
+          "ultimaFecha": "2026-09-26",
+          "ultimaGeometria": false,
+          "nkValidado": false,
+          "terminadoMm": [
+            3092,
+            600
+          ]
+        }
+      ]
+    },
+    "420102-0002": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE SEINTENTEIL NH=3200-200 NT=900 SCHWARZ",
+          "corteMm": [
+            3010,
+            966
+          ],
+          "lineas": 11,
+          "cuadran": 9,
+          "geometria": 9,
+          "ultimaFecha": "2026-09-19",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420102-0021": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE SEITENTEIL NH=3800-200 NT=600 SCHWARZ",
+          "corteMm": [
+            3610,
+            666
+          ],
+          "lineas": 32,
+          "cuadran": 12,
+          "geometria": 20,
+          "ultimaFecha": "2026-10-03",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420150-0092": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE MIT REGENRINNE NT600 NB3450 NH3280 SCH",
+          "corteMm": [
+            10012,
+            666
+          ],
+          "lineas": 26,
+          "cuadran": 17,
+          "geometria": 22,
+          "ultimaFecha": "2026-10-31",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": [
+            10002,
+            600
+          ]
+        }
+      ]
+    },
+    "420102-0092": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE SEITENTEIL NH=4600-200 NT=600 SCHWARZ",
+          "corteMm": [
+            4410,
+            666
+          ],
+          "lineas": 28,
+          "cuadran": 4,
+          "geometria": 20,
+          "ultimaFecha": "2026-10-31",
+          "ultimaGeometria": false,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420102-0022": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE SEITENTEIL NH=4400-200 NT=600 SCHWARZ",
+          "corteMm": [
+            4210,
+            666
+          ],
+          "lineas": 27,
+          "cuadran": 11,
+          "geometria": 20,
+          "ultimaFecha": "2026-10-31",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420148-0031": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE NB=3450-8 NH=3600 NT=900-5",
+          "corteMm": [
+            10655,
+            961
+          ],
+          "lineas": 5,
+          "cuadran": 5,
+          "geometria": 5,
+          "ultimaFecha": "2026-08-01",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420150-0020": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE MIT REGENRINNE NT=600 NB=3450 NH=3200",
+          "corteMm": [
+            9852,
+            666
+          ],
+          "lineas": 20,
+          "cuadran": 10,
+          "geometria": 13,
+          "ultimaFecha": "2026-05-02",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": [
+            9842,
+            600
+          ]
+        }
+      ]
+    },
+    "420102-0027": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE SEITENTEIL NH=3900-200 NT=600",
+          "corteMm": [
+            3710,
+            666
+          ],
+          "lineas": 3,
+          "cuadran": 0,
+          "geometria": 2,
+          "ultimaFecha": "2026-04-18",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420150-0089": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE MIT REGENRINNE NT600 NB3250 NH3680 SCH",
+          "corteMm": [
+            10612,
+            666
+          ],
+          "lineas": 22,
+          "cuadran": 15,
+          "geometria": 20,
+          "ultimaFecha": "2026-10-31",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": [
+            10602,
+            600
+          ]
+        }
+      ]
+    },
+    "420102-0089": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE SEITENTEIL NH=4200-200 NT=900 SCHWARZ",
+          "corteMm": [
+            4010,
+            966
+          ],
+          "lineas": 9,
+          "cuadran": 4,
+          "geometria": 6,
+          "ultimaFecha": "2026-07-18",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420150-0001": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE MIT REGENRINNE NT=600 NB=3250 NH=3200",
+          "corteMm": [
+            9652,
+            666
+          ],
+          "lineas": 17,
+          "cuadran": 9,
+          "geometria": 13,
+          "ultimaFecha": "2026-10-10",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": [
+            9642,
+            600
+          ]
+        }
+      ]
+    },
+    "420102-0086": {
+      "descripciones": [
+        {
+          "descripcion": "LONA ENVOLVENTE LATERAL NH=4400-200 NT=900 SCHWARZ",
+          "corteMm": [
+            4210,
+            966
+          ],
+          "lineas": 8,
+          "cuadran": 3,
+          "geometria": 4,
+          "ultimaFecha": "2026-08-29",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420102-0004": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE SEITENTIL NH=3600-200 NT=900 SCHWARZ",
+          "corteMm": [
+            3410,
+            966
+          ],
+          "lineas": 9,
+          "cuadran": 5,
+          "geometria": 5,
+          "ultimaFecha": "2026-10-31",
+          "ultimaGeometria": false,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420102-0085": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE SEITENTEIL NH=4600-200 NT=900 SCHWARZ",
+          "corteMm": [
+            4410,
+            966
+          ],
+          "lineas": 4,
+          "cuadran": 1,
+          "geometria": 1,
+          "ultimaFecha": "2026-10-31",
+          "ultimaGeometria": false,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420148-0103": {
+      "descripciones": [
+        {
+          "descripcion": "LONA ENVOLVENTE NB3450-8 NH3280 NT600-5 SCHWARZ",
+          "corteMm": [
+            10015,
+            661
+          ],
+          "lineas": 5,
+          "cuadran": 5,
+          "geometria": 5,
+          "ultimaFecha": "2026-08-29",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420148-0033": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE NB=3450-8 NH=3400 NT=600-5",
+          "corteMm": [
+            10255,
+            661
+          ],
+          "lineas": 12,
+          "cuadran": 9,
+          "geometria": 10,
+          "ultimaFecha": "2026-08-29",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420102-0053": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE SEITENTEIL NH=2800-200 NT=600 SCHWARZ",
+          "corteMm": [
+            2610,
+            666
+          ],
+          "lineas": 1,
+          "cuadran": 1,
+          "geometria": 1,
+          "ultimaFecha": "2025-07-05",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420102-0042": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE SEITENTEIL NH=3500-200 NT=600 SCHWARZ",
+          "corteMm": [
+            3310,
+            666
+          ],
+          "lineas": 2,
+          "cuadran": 0,
+          "geometria": 1,
+          "ultimaFecha": "2026-03-07",
+          "ultimaGeometria": false,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420102-0059": {
+      "descripciones": [
+        {
+          "descripcion": "LONA ENVOLVENTE LATERAL NH=3250-200 NT=900 SCHWARZ",
+          "corteMm": [
+            3060,
+            966
+          ],
+          "lineas": 1,
+          "cuadran": 0,
+          "geometria": 0,
+          "ultimaFecha": "2025-08-23",
+          "ultimaGeometria": false,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420150-0064": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE MIT REGENRINNE NT600 NB3400 NH3400 SCH",
+          "corteMm": null,
+          "lineas": 2,
+          "cuadran": 0,
+          "geometria": 0,
+          "ultimaFecha": "2026-05-16",
+          "ultimaGeometria": false,
+          "nkValidado": false,
+          "terminadoMm": [
+            10192,
+            600
+          ]
+        }
+      ]
+    },
+    "420148-0034": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE NB=3250-8 NH=3400 NT=600-5",
+          "corteMm": [
+            10055,
+            661
+          ],
+          "lineas": 2,
+          "cuadran": 2,
+          "geometria": 2,
+          "ultimaFecha": "2025-11-15",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420102-0020": {
+      "descripciones": [
+        {
+          "descripcion": "LONA ENVOLVENTE LATERAL NH=4500-200 NT=600 SCHWARZ",
+          "corteMm": [
+            4310,
+            666
+          ],
+          "lineas": 1,
+          "cuadran": 1,
+          "geometria": 1,
+          "ultimaFecha": "2025-11-15",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420150-0129": {
+      "descripciones": [
+        {
+          "descripcion": "LONA ENVOLVENTE CON VIERTEAGUA NT=600 NB=3100 NH=3400 SCHWARZ",
+          "corteMm": null,
+          "lineas": 1,
+          "cuadran": 0,
+          "geometria": 0,
+          "ultimaFecha": "2026-01-10",
+          "ultimaGeometria": false,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420102-0049": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE SEITENTEIL NH=4100-200 NT=600 SCHWARZ",
+          "corteMm": [
+            3910,
+            666
+          ],
+          "lineas": 3,
+          "cuadran": 0,
+          "geometria": 0,
+          "ultimaFecha": "2026-05-23",
+          "ultimaGeometria": false,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420148-0120": {
+      "descripciones": [
+        {
+          "descripcion": "CLADDING NW3450 NH3480 NT900 CONFIGURATION",
+          "corteMm": [
+            10415,
+            961
+          ],
+          "lineas": 4,
+          "cuadran": 4,
+          "geometria": 4,
+          "ultimaFecha": "2026-10-17",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420148-0116": {
+      "descripciones": [
+        {
+          "descripcion": "CLADDING NW3250 NH3480 NT600 CONFIGURATION",
+          "corteMm": [
+            10215,
+            661
+          ],
+          "lineas": 7,
+          "cuadran": 4,
+          "geometria": 7,
+          "ultimaFecha": "2026-08-08",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420150-0130": {
+      "descripciones": [
+        {
+          "descripcion": "CLAD W.R.C. NW3500 NH3500 NT600 CONFIGURATION:",
+          "corteMm": null,
+          "lineas": 1,
+          "cuadran": 0,
+          "geometria": 0,
+          "ultimaFecha": "2026-02-14",
+          "ultimaGeometria": false,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420150-0131": {
+      "descripciones": [
+        {
+          "descripcion": "CLAD W.R.C. NW2500 NH2750 NT600 CONFIGURATION",
+          "corteMm": null,
+          "lineas": 1,
+          "cuadran": 0,
+          "geometria": 0,
+          "ultimaFecha": "2026-02-21",
+          "ultimaGeometria": false,
+          "nkValidado": false,
+          "terminadoMm": [
+            7992,
+            600
+          ]
+        }
+      ]
+    },
+    "420150-0132": {
+      "descripciones": [
+        {
+          "descripcion": "Clad w.r.c. NW3400 NH3300 NT600",
+          "corteMm": null,
+          "lineas": 1,
+          "cuadran": 0,
+          "geometria": 0,
+          "ultimaFecha": "2026-03-14",
+          "ultimaGeometria": false,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420102-0016": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE SEITENTEIL NH=4000-200 NT=900 SCHWARZ",
+          "corteMm": [
+            3810,
+            966
+          ],
+          "lineas": 2,
+          "cuadran": 0,
+          "geometria": 1,
+          "ultimaFecha": "2026-05-30",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420148-0026": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE NB=3250-8 NH=3200 NT=900-5",
+          "corteMm": [
+            9655,
+            961
+          ],
+          "lineas": 1,
+          "cuadran": 1,
+          "geometria": 1,
+          "ultimaFecha": "2026-05-16",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420148-0115": {
+      "descripciones": [
+        {
+          "descripcion": "CLADDING NW3250 NH3280 NT600 CONFIGURATION:",
+          "corteMm": [
+            9815,
+            661
+          ],
+          "lineas": 1,
+          "cuadran": 0,
+          "geometria": 0,
+          "ultimaFecha": "2026-05-23",
+          "ultimaGeometria": false,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420102-0009": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE SEITENTEIL NH=3300-200 NT=600 SCHWARZ",
+          "corteMm": [
+            3110,
+            666
+          ],
+          "lineas": 2,
+          "cuadran": 0,
+          "geometria": 0,
+          "ultimaFecha": "2026-06-06",
+          "ultimaGeometria": false,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420102-0172": {
+      "descripciones": [
+        {
+          "descripcion": "LONA ENVOLVENTE LATERAL NH=2350-200 NT=600 SCHWARZ",
+          "corteMm": [
+            2160,
+            666
+          ],
+          "lineas": 1,
+          "cuadran": 0,
+          "geometria": 0,
+          "ultimaFecha": "2026-06-27",
+          "ultimaGeometria": false,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420148-0117": {
+      "descripciones": [
+        {
+          "descripcion": "CLADDING NW3250 NH3280 NT900",
+          "corteMm": [
+            9815,
+            961
+          ],
+          "lineas": 5,
+          "cuadran": 2,
+          "geometria": 5,
+          "ultimaFecha": "2026-09-26",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420148-0003": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE NB=3450-8 NH=3200 NT=600-5",
+          "corteMm": [
+            9855,
+            661
+          ],
+          "lineas": 1,
+          "cuadran": 0,
+          "geometria": 0,
+          "ultimaFecha": "2026-08-01",
+          "ultimaGeometria": false,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420150-0133": {
+      "descripciones": [
+        {
+          "descripcion": "CLAD W.R.C. NW3450 NH3480 NT600 RED RAL 3002 PVC CONFIGURATION:",
+          "corteMm": null,
+          "lineas": 1,
+          "cuadran": 0,
+          "geometria": 0,
+          "ultimaFecha": "2026-09-26",
+          "ultimaGeometria": false,
+          "nkValidado": false,
+          "terminadoMm": [
+            10402,
+            600
+          ]
+        }
+      ]
+    },
+    "420148-0118": {
+      "descripciones": [
+        {
+          "descripcion": "CLADDING NW3250 NH3680 NT900",
+          "corteMm": [
+            10615,
+            961
+          ],
+          "lineas": 1,
+          "cuadran": 0,
+          "geometria": 0,
+          "ultimaFecha": "2026-10-17",
+          "ultimaGeometria": false,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    },
+    "420148-0001": {
+      "descripciones": [
+        {
+          "descripcion": "ABDECKPLANE NB=3250-8 NH=3200 NT=600-5",
+          "corteMm": [
+            9655,
+            661
+          ],
+          "lineas": 1,
+          "cuadran": 1,
+          "geometria": 1,
+          "ultimaFecha": "2026-10-24",
+          "ultimaGeometria": true,
+          "nkValidado": false,
+          "terminadoMm": null
+        }
+      ]
+    }
+  }
+}

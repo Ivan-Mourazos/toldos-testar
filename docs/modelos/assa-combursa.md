@@ -1325,3 +1325,53 @@ Solo realiza SELECT; no arranca la web ni usa rutas de escritura de configuraci�
 
 Pruebas: `pnpm test src/assa`, `pnpm typecheck`, `pnpm lint`. No se amplía a 420102/420148 mientras queden por resolver el despiece y las diferencias de la primera familia.
 <!-- FIN ASSA FASE 1 GENERADO -->
+
+
+<!-- INICIO ASSA FASE A -->
+## Fase A: contraste reproducible de las tres familias
+
+Generado por `scripts/validar-assa-fase-a.mjs`. Foto de RPS: 2026-10-26T14:00:05.870Z. Se contrastan 110 DXF locales de 2025 y 2026, sin modificar los originales. Se exige cantidad exacta por referencia y fecha, operaciones por herramienta y geometría de todos los paños identificados, ±1 mm y orillo abierto. Los casos sin coincidencia quedan a mano. El detalle por línea, los motivos y SHA-256 quedan en `tmp/assa-fase-a/validacion.json`.
+
+| Familia | Líneas | Paño y cantidad iguales | % | Toda la geometría igual |
+| --- | --- | --- | --- | --- |
+| 420102 | 338 | 92 | 27,2 % | 212 |
+| 420148 | 194 | 153 | 78,9 % | 176 |
+| 420150 | 492 | 349 | 70,9 % | 418 |
+
+La columna 420150 certifica **paños**, no conjuntos completos: canalones retenidos hasta cerrar su cantidad por cubierta. NK solo se considera candidato a NH para 420148-0105 y exige el mismo contraste geométrico; las demás referencias NK se retienen. NW equivale a NB por respuesta de Iván del 27/10/2026. Las descripciones recortadas de 420150 se recuperan de la hoja de medidas de producción autorizada, con aviso visible. No se completa stock automáticamente.
+
+### Canalones: largos medidos por referencia
+
+| Referencia | Lotes con contorno asignable | Largos reales mm | Cantidad por cubierta |
+| --- | --- | --- | --- |
+| 420150-0090 | 56 | 1805 / 3610 | Pendiente |
+| 420150-0002 | 54 | 1800 / 3600 | Pendiente |
+| 420150-0007 | 42 | 1705 / 1800 / 3410 / 3600 | Pendiente |
+| 420150-0021 | 34 | 1705 / 3410 | Pendiente |
+| 420150-0087 | 10 | 1705 / 3410 | Pendiente |
+| 420150-0088 | 30 | 1705 / 3410 | Pendiente |
+| 420150-0091 | 36 | 1805 / 3610 | Pendiente |
+| 420150-0033 | 38 | 1805 / 3610 | Pendiente |
+| 420150-0020 | 13 | 1800 / 3600 | Pendiente |
+| 420150-0092 | 23 | 1805 / 3610 | Pendiente |
+| 420150-0089 | 18 | 1705 / 3410 | Pendiente |
+| 420150-0116 | 3 | 1230 / 2460 | Pendiente |
+| 420150-0001 | 15 | 1705 / 3410 | Pendiente |
+| 420150-0127 | 1 | 1600 / 3200 | Pendiente |
+| 420150-0109 | 1 | 1180 / 2360 | Pendiente |
+| 420150-0064 | 2 | 1780 / 3560 | Pendiente |
+| 420150-0129 | 1 | 1630 / 3260 | Pendiente |
+| 420150-0130 | 1 | 1705 / 3410 | Pendiente |
+| 420150-0132 | 1 | 1780 / 3560 | Pendiente |
+| 420150-0120 | 1 |  | Pendiente |
+| 420150-0131 | 1 | 1330 | Pendiente |
+| 420150-0133 | 1 | 1800 / 3600 | Pendiente |
+
+Son medidas observadas, no una regla NB más un margen común: 0090 tiene 3610/1805, 0002 tiene 3600/1800 y 0133 comparte el paño de 0090 pero usa 3600/1800 en el lote del 26-09. No se suman vistas ni se deduce la cantidad por cubierta del número de caras cerradas del DXF. Los canalones originales contienen DISCO2 además de DISCO1: pendiente confirmar la herramienta.
+
+### Repetir sin copiar los datos grandes
+
+`ASSA_ESTUDIO=<ruta absoluta>/tmp/assa-estudio ASSA_RPS=<ruta absoluta>/tmp/assa-fase1/rps.json node scripts/validar-assa-fase-a.mjs --catalogo --informe`
+
+Solo `--informe` sustituye este bloque y solo `--catalogo` actualiza el catálogo pequeño de descripciones contrastadas. El resto de resultados se escribe en tmp de este repositorio.
+<!-- FIN ASSA FASE A -->

@@ -1,0 +1,33 @@
+import { expect, it } from 'vitest';
+import { prepararLote } from './lote.js';
+
+const l = { IDOrderLine: 'a', CodOrder: 'AR.26.04704', NumLine: 1, CodArticle: 'H0K420102-0034', descripcion: 'NH3200 NT600', cantidad: 8, of_: '0232434', entregaSolicitada: '2026-10-31' };
+const certificado = { referencias: { '420102-0034': { descripciones: [{ descripcion: l.descripcion, corteMm: [3010, 666], cuadran: 2, geometria: 2, ultimaGeometria: true }] } } };
+
+it('la falta de validación retiene la línea a mano aunque la fórmula sea evaluable', () => {
+  const lote = prepararLote('2026-10-31', [l], {}, { referencias: {} });
+  expect(lote.lineas[0].estado).toBe('a-mano');
+  expect(lote.programas).toEqual([]);
+});
+
+it('conserva reparto por pedido y OF, agrupa referencias y corta exactamente juegos más sueltas', () => {
+  const lote = prepararLote('2026-10-31', [l, { ...l, IDOrderLine: 'b', of_: '0232444', cantidad: 2 }], {}, certificado);
+  expect(lote.nombre).toBe('LOTE 31-10');
+  expect(lote.programas.reduce((n, p) => n + p.panos * p.repeticiones, 0)).toBe(10);
+  expect(lote.reparto).toHaveLength(2);
+  expect(lote.reparto.map(r => r.of)).toEqual(['0232434', '0232444']);
+  expect(lote.entidades.lineas.every(l => l.capa === 'DISCO1')).toBe(true);
+  expect(lote.programas.every(p => p.y === 0)).toBe(true);
+});
+
+it('la opción por referencia cambia a sueltas y no altera la cantidad', () => {
+  const lote = prepararLote('2026-10-31', [l], { '420102-0034': true }, certificado);
+  expect(lote.programas).toHaveLength(1);
+  expect(lote.programas[0]).toMatchObject({ panos: 1, repeticiones: 8 });
+});
+
+it('no permite enviar líneas que difieran de su certificado o correspondan a otra fecha', () => {
+  expect(prepararLote('2026-10-31', [{ ...l, descripcion: 'NH3600 NT600' }], {}, certificado).programas).toEqual([]);
+  expect(() => prepararLote('2026-10-31', [{ ...l, entregaSolicitada: '2026-11-07' }], {}, certificado)).toThrow(/fecha/);
+  expect(() => prepararLote('2026-10-31', [l, l], {}, certificado)).toThrow(/duplicadas/);
+});

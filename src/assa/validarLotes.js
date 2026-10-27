@@ -3,7 +3,7 @@ import { generarPanos420150 } from './generar420150.js';
 import { compararOperaciones, operacionesGeneradas } from './comparar.js';
 
 // Los pedidos se contrastan por sábado y referencia; no por distancia en el dibujo.
-export function validarLineasLote(lineas, programas, { toleranciaMm = 1 } = {}) {
+export function validarLineasLote(lineas, programas, { toleranciaMm = 1, generar = generarPanos420150 } = {}) {
   if (new Set(lineas.map(l => l.IDOrderLine)).size !== lineas.length) throw new Error('Hay líneas RPS duplicadas.');
   const lineasPorLote = Map.groupBy(lineas, l => `${l.entregaSolicitada}|${codigoAssa(l.CodArticle)}`);
   const gruposPorLote = Map.groupBy(programas, p => `${p.fecha}|${p.codigo}`);
@@ -26,7 +26,7 @@ export function validarLineasLote(lineas, programas, { toleranciaMm = 1 } = {}) 
     if (!gs.length) generales.push('No se ha identificado un paño rectangular con ese código en el lote.');
     if (variosFicheros) generales.push('Hay varios DXF de la misma fecha: no se supone que sean acumulables ni revisiones.');
     if (cantidadesRps !== cantidadCorte) generales.push(`Cantidad agrupada: RPS ${cantidadesRps}; paños identificados × repeticiones ${cantidadCorte}.`);
-    const generados = ls.map(l => generarPanos420150(l));
+    const generados = ls.map(l => generar(l));
     const firmas = new Set(generados.map(g => g.estado === 'generado' ? JSON.stringify(g.medidas) : 'a-mano'));
     if (firmas.size > 1) generales.push('La misma referencia y fecha tiene distintas medidas o líneas a mano; no se asignan piezas a pedidos por proximidad.');
     for (let i = 0; i < ls.length; i++) {
@@ -39,7 +39,7 @@ export function validarLineasLote(lineas, programas, { toleranciaMm = 1 } = {}) 
           const forma = compararOperaciones(esperado, p.operaciones, toleranciaMm);
           comprobaciones.push({ fichero: g.fichero, rotulo: g.rotulo, medidasMm: p.medidasMm, medidas, ...forma });
         }
-        if (comprobaciones.some(c => !c.medidas)) motivos.push('Las medidas del contorno real difieren más de 1 mm de NB + 2NH + 2 / NT + 66.');
+        if (comprobaciones.some(c => !c.medidas)) motivos.push('Las medidas del contorno real difieren más de 1 mm de la regla de la familia.');
         if (comprobaciones.some(c => !c.coincide)) motivos.push('Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla.');
         if (gs.some(g => g.panos.some(p => !p.orilloDelConjunto))) motivos.push('No se ha encontrado un orillo abierto en el conjunto real de paños.');
       }
