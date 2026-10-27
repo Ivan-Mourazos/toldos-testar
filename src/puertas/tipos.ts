@@ -40,7 +40,7 @@ export interface Puerta {
   ventanas: Ventana[];
   enrollable: { T: number; D: number; margen: number; sacoPartido?:boolean;
     /** Sin E.T. encima del ventanal de arriba (Iván, 27/10/2026, AR2605247): el paño grande solapa 2 cm sobre el cristal
-     * y los cachos, y las marcas van en el paño y en los cachos. Sin el campo, con E.T. como siempre. */
+     * y los cachos, y la marca va en el paño. Sin el campo, con E.T. como siempre. */
     sinEtArriba?: boolean;
     /** Lo mismo bajo el ventanal de abajo del todo: el paño de abajo solapa 2 cm sobre el cristal y los cachos. */
     sinEtAbajo?: boolean;

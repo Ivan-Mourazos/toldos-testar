@@ -20,17 +20,15 @@ const puerta = (sinEtArriba?: boolean): Puerta => ({
 const rayas = (marcas: number[][]) => marcas.filter(m => Math.abs(m[1] - m[3]) < .001 && Math.abs(m[2] - m[0]) > 3).map(m => m[1]);
 
 describe('Enrollable sin E.T. encima del ventanal', () => {
-  it('no corta la E.T. de arriba y marca el paño grande y los cachos donde se solapan 2 cm', () => {
+  it('no corta la E.T. de arriba y marca el paño grande donde llega el cristal; los cachos, sin marca', () => {
     const r = calcularPuerta(puerta(true));
     expect(r.piezas.filter(x => x.nombre.startsWith('Entrada de tubo')).map(x => x.origenAlzado?.[1])).toEqual([24, 95]);
     const superior = r.piezas.find(x => x.nombre === 'Paño superior')!;
     // El paño baja hasta 186,25 y el cristal llega a 188,25: la marca a 2 de su borde, no la de la E.T. (7,5).
     expect(rayas(superior.marcas)).toContain(2);
     expect(rayas(superior.marcas)).not.toContain(7.5);
-    for (const lado of ['izquierdo', 'derecho']) {
-      const cacho = r.piezas.find(x => x.nombre === `Cacho ${lado} · ventanal 1`)!;
-      expect(cacho.marcas.some(m => Math.abs(m[1] - (cacho.alto - 2)) < .001 && Math.abs(m[3] - m[1]) < .001)).toBe(true);
-    }
+    // Los cachos no llevan marca (Iván, 27/10/2026).
+    for (const lado of ['izquierdo', 'derecho']) expect(r.piezas.find(x => x.nombre === `Cacho ${lado} · ventanal 1`)!.marcas).toEqual([]);
   });
 
   it('avisa si queda una entrada a la altura del ventanal y no la corta', () => {
@@ -62,17 +60,14 @@ describe('Enrollable sin E.T. debajo del ventanal de abajo', () => {
     p.entradas = p.entradas.filter(t => t.altura !== 99);
     return p;
   };
-  it('no corta la E.T. de abajo y marca el paño de abajo y los cachos del último ventanal', () => {
+  it('no corta la E.T. de abajo y marca el paño de abajo donde llega el cristal; los cachos, sin marca', () => {
     const r = calcularPuerta(abajo());
     expect(r.piezas.filter(x => x.nombre.startsWith('Entrada de tubo')).map(x => x.origenAlzado?.[1])).toEqual([24, 186]);
     const inferior = r.piezas.find(x => x.nombre === 'Paño inferior')!;
     // El paño sube hasta 102,75 y el cristal baja a 100,75: la marca a 2 de su borde de arriba, no la de la E.T.
     expect(rayas(inferior.marcas)).toContain(inferior.alto - 2);
     expect(rayas(inferior.marcas)).not.toContain(inferior.alto - 7.5);
-    for (const lado of ['izquierdo', 'derecho']) {
-      const cacho = r.piezas.find(x => x.nombre === `Cacho ${lado} · ventanal 2`)!;
-      expect(cacho.marcas.some(m => Math.abs(m[1] - 2) < .001 && Math.abs(m[3] - m[1]) < .001)).toBe(true);
-    }
+    for (const lado of ['izquierdo', 'derecho']) expect(r.piezas.find(x => x.nombre === `Cacho ${lado} · ventanal 2`)!.marcas).toEqual([]);
   });
   it('el plano no dibuja la banda de la E.T. de abajo', () => {
     const huecos = (q: Puerta) => dibujarAlzadoEnrollable(q, 'A').lienzo.textos.filter(t => t.valor === '3 CM (HUECOS)').length;

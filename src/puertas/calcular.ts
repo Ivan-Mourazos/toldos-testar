@@ -156,9 +156,7 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     }
     if(ventanales.length===1) {
       agregar(pieza('Cristal del ventanal', 'cristal', p.frente-2*e.margen+4, e.D-3.5, p.materialCristal,p.rolloCristal));
-      const cachos=agregar(pieza('Cachos laterales', 'cacho', e.margen+1,e.D-3.5,lona,p.rollo,2));
-      if(e.sinEtArriba)marca(cachos,cachos.alto-2,1);
-      if(e.sinEtAbajo)marca(cachos,2,-1);
+      agregar(pieza('Cachos laterales', 'cacho', e.margen+1,e.D-3.5,lona,p.rollo,2));
     } else {
       // AR2605065 (A) y AR2605038 (D): los cachos son piezas sueltas, no huecos de un paño entero.
       const separaciones:Array<{delantera:PiezaPuerta;trasera:PiezaPuerta}>=[];
@@ -180,9 +178,6 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
         agregar(pieza(`Cristal del ventanal ${i+1}`,'cristal',p.frente-2*v.margen+4,v.D-3.5,p.materialCristal,p.rolloCristal));
         for(const [lado,nombre] of ['izquierdo','derecho'].entries()) {
           const cacho=agregar(pieza(`Cacho ${nombre} · ventanal ${i+1}`,'cacho',v.margen+1,v.D-3.5));
-          // Sin E.T. encima, los cachos del de arriba marcan dónde llega el paño grande, 2 cm bajo su borde de arriba.
-          if(i===0&&e.sinEtArriba)marca(cacho,cacho.alto-2,1);
-          if(i===ventanales.length-1&&e.sinEtAbajo)marca(cacho,2,-1);
           cacho.origenAlzado=[lado===0?-1:p.frente-v.margen,p.alto-e.T-ventanales.slice(0,i+1).reduce((s,v)=>s+v.D,0)+1.75];
           // Cada pareja de mininúmeros en el mismo punto de la puerta (Iván, 27/10/2026: «no quedan exactos»): a 4 cm del
           // borde de la puerta, no del de cada pieza (el cacho es 1 cm más ancho para escuadrar), y en medio de lo que se

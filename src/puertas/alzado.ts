@@ -234,19 +234,9 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
     marca(b.y + b.alto / 2, -1);
   }
   marca(auto ? 30 : ple ? p.apilable.bolsillo / 2 : 3.5);
-  // Sin E.T. encima del ventanal: la marca del paño donde llega el cristal y las de los cachos donde llega el paño.
-  if (ventanales.length && p.enrollable.sinEtArriba) {
-    const m = ventanales[0].margen;
-    marca(T + 1.75, 1);
-    linea('puerta-rotulador', 0, T + 3.75, m, T + 3.75);
-    linea('puerta-rotulador', F - m, T + 3.75, F, T + 3.75);
-  }
-  if (ventanales.length && p.enrollable.sinEtAbajo) {
-    const m = ventanales.at(-1)!.margen, E = ejesVentanal.at(-1)!;
-    marca(E - 1.75, -1);
-    linea('puerta-rotulador', 0, E - 3.75, m, E - 3.75);
-    linea('puerta-rotulador', F - m, E - 3.75, F, E - 3.75);
-  }
+  // Sin E.T. encima o debajo del ventanal: la marca del paño donde llega el cristal (los cachos, sin marca).
+  if (ventanales.length && p.enrollable.sinEtArriba) marca(T + 1.75, 1);
+  if (ventanales.length && p.enrollable.sinEtAbajo) marca(ejesVentanal.at(-1)! - 1.75, -1);
   const inicioMarcaSaco = formas.length;
   marca(H - hSaco, -1);
   if (desnivel) for (const f of formas.slice(inicioMarcaSaco)) {

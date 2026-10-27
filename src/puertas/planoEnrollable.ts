@@ -103,20 +103,18 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSac
   // ya no es el eje de arriba del ventanal. Ese marca hacia arriba y el siguiente eje del ventanal, hacia abajo.
   const esEje = (b: number, k: number) => ejes.length > k && Math.abs(ejes[k] - b) < .01;
   // Sin E.T. encima del ventanal de arriba o debajo del de abajo (Iván, 27/10/2026, AR2605247): en ese eje no hay banda de
-  // E.T.; el paño lleva la marca donde llega el cristal y los cachos, donde llega el paño (solapan 2 cm).
+  // E.T.; el paño lleva la marca donde llega el cristal (solapan 2 cm). Los cachos, sin marca (Iván, 27/10/2026).
   const sinEtArriba = ventanales.length > 0 && Boolean(p.enrollable.sinEtArriba);
   const sinEtAbajo = ventanales.length > 0 && Boolean(p.enrollable.sinEtAbajo);
-  const sinEt = (eje: number, m: number, haciaAbajo: boolean) => {
-    const s = haciaAbajo ? 1 : -1, yPaño = -eje - s * 1.75, yCacho = -eje - s * 3.75;
+  const sinEt = (eje: number, haciaAbajo: boolean) => {
+    const yPaño = -eje + (haciaAbajo ? -1.75 : 1.75);
     linea(l, 'ejes', 0, -eje, F, -eje);
     linea(l, 'ROTULADOR', 0, yPaño, F, yPaño);
     flecha(l, F / 2, yPaño, haciaAbajo ? 180 : 0);
-    linea(l, 'ROTULADOR', 0, yCacho, m, yCacho);
-    linea(l, 'ROTULADOR', F - m, yCacho, F, yCacho);
     texto(l, 'SIN E.T.: SOLAPAR 2 CM SOBRE EL CRISTAL', F / 2, -eje + (haciaAbajo ? 8 : -12), 6, { centrado: true });
   };
-  if (sinEtArriba) sinEt(T, ventanales[0].margen, true);
-  if (sinEtAbajo) sinEt(ejes.at(-1)!, ventanales.at(-1)!.margen, false);
+  if (sinEtArriba) sinEt(T, true);
+  if (sinEtAbajo) sinEt(ejes.at(-1)!, false);
   bandas.forEach((b, i) => {
     if (sinEtArriba && esEje(b, 0) || sinEtAbajo && esEje(b, ejes.length - 1)) return;
     const superior = ventanales.length > 0 && esEje(b, 0);
