@@ -80,7 +80,9 @@ export function generarProgramas(g, { sueltas = false } = {}) {
     const entidades = entidadesVacias();
     for (let i = 0; i < panos; i++) unirEntidades(entidades, desplazarEntidades(g.pieza.entidades, 0, i * g.pieza.medidasMm[1]));
     entidades.textos.push({ capa: 'texto', x: 100, y: panos * g.pieza.medidasMm[1] + 80, h: 40,
-      literal: true, valor: `${g.trazabilidad.referencia} x${repeticiones}` });
+      literal: true, valor: g.trazabilidad.referencia });
+    entidades.textos.push({ capa: 'texto', x: 100, y: panos * g.pieza.medidasMm[1] + 180, h: 60,
+      literal: true, valor: `x${repeticiones}` });
     return { panos, repeticiones, anchoOcupadoMm: panos * g.pieza.medidasMm[1], entidades };
   });
 }

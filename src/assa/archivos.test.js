@@ -1,0 +1,53 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { afterEach, expect, it } from 'vitest';
+import { crearServicioLotes, planoDelLote } from './archivos.js';
+import { prepararLote } from './lote.js';
+import { corteDelPlano, entidadesBot } from '../flujoDwg/corteDwg.js';
+
+const raiz = path.resolve('tmp/assa-archivos-tests');
+afterEach(() => fs.rm(raiz, { recursive: true, force: true }));
+const linea = { IDOrderLine: 'a', CodOrder: 'AR.26.04704', NumLine: 1, CodArticle: 'H0K420102-0034', descripcion: 'NH3200 NT600', cantidad: 8, of_: '0232434', entregaSolicitada: '2026-10-31' };
+const certificados = { referencias: { '420102-0034': { descripciones: [{ descripcion: linea.descripcion, corteMm: [3010, 666], cuadran: 2, ultimaGeometria: true }] } } };
+const preparar = (f, ls, s) => prepararLote(f, ls, s, certificados);
+
+it('el plano sin presentaciones conserva arcos, textos y mm al pasar por el flujo del DWG', () => {
+  const lote = preparar('2026-10-31', [linea], {});
+  const plano = planoDelLote(lote);
+  const corte = corteDelPlano(plano);
+  expect(corte.error).toBeNull();
+  const bot = entidadesBot(corte.entidades);
+  expect(bot.lineas).toHaveLength(lote.entidades.lineas.length);
+  expect(bot.lineas.some(l => Math.abs(Math.abs(l.x2 - l.x1) - 3010) < .01)).toBe(true);
+  expect(bot.textos.some(t => t.valor.includes('H0K420102-0034'))).toBe(true);
+});
+
+it('exige abrir, confirmar, RPS sin cambios y DWG sin cambios; el envío de prueba es idempotente', async () => {
+  let lineas = [linea];
+  const servicio = crearServicioLotes({ carpeta: raiz, leer: async () => lineas, preparar,
+    oda: { disponible: true, convertir: async b => b } });
+  const input = { fecha: '2026-10-31', savedBy: 'IVÁN', sueltas: {} };
+  await expect(servicio.mandar(input)).rejects.toThrow(/confirmar/);
+  await servicio.abrir(input);
+  await servicio.confirmar(input);
+  await servicio.abrir({ ...input, regenerar: true });
+  await expect(servicio.mandar(input)).rejects.toThrow(/Confirmar/);
+  await servicio.confirmar(input);
+  lineas = [{ ...linea, cantidad: 9 }];
+  await expect(servicio.mandar(input)).rejects.toThrow(/RPS|opciones/);
+  lineas = [linea];
+  const envio = await servicio.mandar(input);
+  expect(envio.ruta).toContain('DXF');
+  expect(envio.ruta).not.toMatch(/BOT[\\/]Pendientes|maqcorte/i);
+  expect((await servicio.mandar(input)).yaEnviado).toBe(true);
+  const bytes = await fs.readFile(envio.ruta, 'latin1');
+  expect(bytes).toContain('AC1018');
+  expect(bytes).toContain('LOTE 31-10');
+});
+
+it('no admite una carpeta de producción ni fabrica sin OF o sin programas validados', async () => {
+  expect(() => crearServicioLotes({ carpeta: 'C:/maqcorte/BOT/Pendientes' })).toThrow(/PRUEBAS/);
+  const servicio = crearServicioLotes({ carpeta: raiz, leer: async () => [{ ...linea, of_: '' }], preparar,
+    oda: { disponible: false } });
+  await expect(servicio.abrir({ fecha: '2026-10-31', savedBy: 'IVÁN' })).rejects.toThrow(/validado/);
+});
