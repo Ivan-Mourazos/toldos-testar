@@ -455,3 +455,77 @@ html[data-estilo="hero"]:root #root .menu-mas-item:focus-visible { background: v
 html[data-estilo="hero"]:root #root .menu-mas-item:disabled { cursor: not-allowed; opacity: 0.5; }
 html[data-estilo="hero"]:root #root .menu-mas-item svg { color: var(--hero-texto-suave); flex: none; }
 @media (prefers-reduced-motion: reduce) { html[data-estilo="hero"]:root #root .menu-mas-panel { animation: none; } }
+
+/* ── Repaso de lo que se quedó con el metal (Iván, 27/10/2026: «falta el nuevo estilo en un montón de apartados») ──
+   Se midió en el navegador qué tenía aún relieve, degradado o borde de tarjeta: Parámetros, Configuración, la fila
+   abierta de Pedidos, las observaciones y los recuadros de remolques. */
+
+/* Teclas sueltas (Modelo e «Ir a» de Parámetros, ¿Quién eres?, zoom del PDF, fichas de clientes): píldoras grises. */
+html[data-estilo="hero"]:root #root .tecla-3d:not(.segmented-option) {
+  background: var(--hero-relleno);
+  background-image: none;
+  border: 0;
+  border-radius: 999px;
+  box-shadow: none;
+  color: var(--text);
+  transition: transform 200ms cubic-bezier(0.2, 0, 0, 1), background-color 120ms ease, box-shadow 150ms ease;
+}
+html[data-estilo="hero"]:root #root .tecla-3d:not(.segmented-option):hover:not(:disabled) { background: var(--hero-relleno-encima); box-shadow: none; transform: none; }
+html[data-estilo="hero"]:root #root .tecla-3d:not(.segmented-option):active:not(:disabled) { background: var(--hero-relleno-pulsado); transform: scale(0.97); }
+/* La elegida, como en las pestañas: píldora clara con sombra. */
+html[data-estilo="hero"]:root #root :is(.tecla-3d.is-active, .tecla-3d[aria-pressed="true"], .tecla-3d[aria-current="true"], .tecla-3d[aria-current="page"]):not(.segmented-option) {
+  background: var(--hero-pildora);
+  box-shadow: var(--hero-sombra-pildora);
+  font-weight: 600;
+}
+/* Los modelos de Parámetros, sobre su carril gris, igual que la fila de Grupo. */
+html[data-estilo="hero"]:root #root .parameter-model-options {
+  background: var(--hero-carril);
+  border-radius: 20px;
+  gap: 2px;
+  padding: 4px;
+  width: fit-content;
+}
+html[data-estilo="hero"]:root #root .parameter-model-options .tecla-3d:not(.is-active) { background: transparent; color: var(--hero-texto-suave); }
+html[data-estilo="hero"]:root #root .parameter-model-options .tecla-3d:not(.is-active):hover { background: var(--hero-relleno-encima); color: var(--text); }
+/* «Ir a»: sin banda de color detrás. */
+html[data-estilo="hero"]:root #root .parameter-section-index { background: var(--hero-fondo); border: 0; box-shadow: none; }
+
+/* Lo hundido (filas de recogidas, fila abierta de Pedidos, interruptor de Configuración, filtros): gris de zona, liso. */
+html[data-estilo="hero"]:root #root .bloque-3d-hundido {
+  background: var(--hero-zona);
+  background-image: none;
+  border: 0;
+  border-radius: 12px;
+  box-shadow: none;
+}
+/* Paneles con el relieve viejo: como el resto de paneles. */
+html[data-estilo="hero"]:root #root .panel-3d {
+  background: var(--hero-superficie);
+  background-image: none;
+  backdrop-filter: none;
+  border: 0;
+  border-radius: 14px;
+  box-shadow: var(--hero-sombra-panel);
+}
+html[data-estilo="hero"]:root #root .panel-3d.glass-pop { box-shadow: 0 18px 50px -18px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.06); }
+html[data-estilo="hero"]:root #root .familia-tag { box-shadow: none; }
+
+/* Recuadros dentro de un panel (observaciones, ajustes de remolques, notas, el dibujo de remolques): gris de zona, sin borde. */
+html[data-estilo="hero"]:root #root :is(.observation-lines, .order-fabric-notes, .order-fabric-per-awning, .rem-banda, .rem-nota, .rem-dibujo, .rem-vacio-resultado, .rps-evidence, .parameter-details, .review-empty, .drawing-empty, .orders-detail, .corte-material, .puerta-confirmaciones, .awning-form-footnotes) {
+  background: var(--hero-zona);
+  background-image: none;
+  border: 0;
+  border-radius: 12px;
+  box-shadow: none;
+}
+html[data-estilo="hero"]:root #root .observation-lines-header { background: transparent; border-bottom: 0; }
+html[data-estilo="hero"]:root #root .observation-line { border: 0; box-shadow: none; }
+/* El dibujo de remolques y las miniaturas de dibujos: blancos, con la sombra de los campos en vez de borde. */
+html[data-estilo="hero"]:root #root :is(.rem-dibujo, .drawing-today-thumb) { background: var(--hero-superficie); border: 0; box-shadow: var(--hero-sombra-campo); }
+html[data-estilo="hero"]:root #root .planning-summary { background: var(--hero-superficie); border: 0; border-radius: 14px; box-shadow: var(--hero-sombra-panel); }
+/* Configuración: la explicación de cada carpeta, en texto normal (heredaba la negrita de la etiqueta). */
+html[data-estilo="hero"]:root #root .workflow-route-copy small { font-weight: 400; }
+/* ¿Quién eres?: cada técnico en una tarjeta gris lisa, como los botones. */
+html[data-estilo="hero"]:root #root .who-are-you-options button.tecla-3d { background: var(--hero-relleno); border-radius: 14px; }
+html[data-estilo="hero"]:root #root .who-are-you-options button.tecla-3d:hover:not(:disabled) { background: var(--hero-relleno-encima); }
