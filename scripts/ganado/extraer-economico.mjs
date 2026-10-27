@@ -188,9 +188,11 @@ for (const c of crudo) {
     // la zona en cuña, a 19°).
     const direccion = ((Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI + 180) % 180;
     if (c.clase === 1 || (giro !== 0 && giro !== 90 && Math.abs(direccion - (((c.giro % 180) + 180) % 180)) < 1)) {
-      // Alineada: la línea de cota a `desvio` cm, a la izquierda de 1 → 2.
-      const L = Math.hypot(x2 - x1, y2 - y1), nx = -(y2 - y1) / L, ny = (x2 - x1) / L;
-      dibujo.cotas.push({ x1, y1, x2, y2, valor, alineada: true, desvio: r((lx - x1) * nx + (ly - y1) * ny, 2) });
+      // Alineada: la línea de cota a `desvio` cm, a la izquierda de 1 → 2. De izquierda a derecha, para que su
+      // texto se lea derecho (la de 105,15 venía al revés).
+      const [a, b] = x2 < x1 ? [[x2, y2], [x1, y1]] : [[x1, y1], [x2, y2]];
+      const L = Math.hypot(b[0] - a[0], b[1] - a[1]), nx = -(b[1] - a[1]) / L, ny = (b[0] - a[0]) / L;
+      dibujo.cotas.push({ x1: a[0], y1: a[1], x2: b[0], y2: b[1], valor, alineada: true, desvio: r((lx - a[0]) * nx + (ly - a[1]) * ny, 2) });
     } else if (giro === 90) dibujo.cotas.push({ x1, y1, x2, y2, valor, giro: 90, d: lx });
     else dibujo.cotas.push({ x1, y1, x2, y2, valor, giro: 0, d: ly });
   }

@@ -342,8 +342,11 @@ function confeccionGanado(L, el, X, Y) {
   for (const c of d.cotas) {
     const [x1, y1] = t(c.x1, c.y1), [x2, y2] = t(c.x2, c.y2);
     const estilo = c.valor >= 25 ? 'XERAL' : 'XERAL 5';
-    if (c.alineada) L.g.cotas.push({ capa: 'cotas', estilo, x1, y1, x2, y2, alineada: true, desvio: c.desvio, valor: c.valor });
-    else L.g.cotas.push({ capa: 'cotas', estilo, x1, y1, x2, y2, giro: c.giro, d: c.d + (c.giro === 90 ? X : Y), valor: c.valor });
+    // Con dos decimales (105,15), escrito tal cual: la cota de la web redondea a uno.
+    const rotulo = Math.round(c.valor * 10) !== c.valor * 10 ? String(c.valor).replace('.', ',') : undefined;
+    const comun = { capa: 'cotas', estilo, x1, y1, x2, y2, valor: c.valor, ...(rotulo ? { rotulo } : {}) };
+    if (c.alineada) L.g.cotas.push({ ...comun, alineada: true, desvio: c.desvio });
+    else L.g.cotas.push({ ...comun, giro: c.giro, d: c.d + (c.giro === 90 ? X : Y) });
   }
   return { ancho: d.ancho, alto: d.alto + 40 };
 }

@@ -24,7 +24,8 @@ export function avisosLineaRps(linea: LineaPedidoRps, conBobina: boolean): strin
   const avisos: string[] = [];
   // Una línea sin medidas legibles («CONFECCIÓN SEGÚN PATRÓN») se crea igual, con lo que
   // haya, para no perderla de vista; el aviso dice por qué le faltan medidas.
-  if (linea.requiereRevision) avisos.push("RPS no da las medidas completas: revísalas con el texto de la línea.");
+  // El de ganado no lleva medidas: sus piezas salen de la plantilla del modelo.
+  if (linea.requiereRevision && linea.tipoTrabajo !== "ganado") avisos.push("RPS no da las medidas completas: revísalas con el texto de la línea.");
   if (linea.materialRps.texto && !conBobina) avisos.push(`RPS pide ${linea.materialRps.texto}: elige la bobina.`);
   if (linea.rotulacion === null && !linea.tipoRotulacion) avisos.push("RPS no indica si lleva rotulación.");
   if (linea.recogidaDelante) avisos.push("RPS menciona una recogida delante: elige de qué tipo.");
