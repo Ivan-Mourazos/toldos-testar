@@ -1,5 +1,5 @@
-/** Flecha FLECHA2 de la oficina, en cm; el sentido cambia entre el SVG y el corte. */
-export const ESCALA_FLECHA_EMPATE = 1;
+/** FLECHA2 a media escala (1,266 cm), hacia fuera del paño superior (Iván, 27/10/2026). */
+export const ESCALA_FLECHA_EMPATE = .5;
 
 export function flechaEmpate(x: number, y: number, sentido: 1 | -1): Array<[number, number, number, number]> {
   const n = (v: number) => Math.round(v * 10000) / 10000;

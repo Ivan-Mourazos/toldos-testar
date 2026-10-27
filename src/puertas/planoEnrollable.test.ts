@@ -182,7 +182,8 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
     // Tetris coloca las dos E.T. sobre los paños: baja de 711 a 700 cm sin cambiar el alzado.
     // 27/10/2026 (AR2605249): saco de 2 × (rematado + 2) y la raya de soldar el saco, 2 cm sobre el bajo del paño.
     // Se elimina la segunda raya del saco y las dos referencias fijas de la regla anterior (Iván, 27/10/2026).
-    ['autorreparable', autorreparable, '4e4f55e8ddff4207df3657f9b5ed7390c13633141ab7db3e6288993979687714'],
+    // Empates: una raya en el paño superior y flecha hacia el borde a media escala; abajo solo mininúmeros.
+    ['autorreparable', autorreparable, 'c75fbad6bb2eac7e6a7f5b4d4773c616be245d738f371933c5d4b9eb64c3cb8d'],
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {
     const pedido = { ...pedidoDe('AR2600001', crear()), cabecera: { clienteRps: { codigo: '009999' } } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido, cabecera })).digest('hex')).toBe(hash);
