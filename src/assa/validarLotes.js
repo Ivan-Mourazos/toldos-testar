@@ -43,7 +43,8 @@ export function validarLineasLote(lineas, programas, { toleranciaMm = 1, generar
         if (comprobaciones.some(c => !c.coincide)) motivos.push('Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla.');
         if (gs.some(g => g.panos.some(p => !p.orilloDelConjunto))) motivos.push('No se ha encontrado un orillo abierto en el conjunto real de paños.');
       }
-      const geometria = generado.estado === 'generado' && comprobaciones.length > 0 && comprobaciones.every(c => c.medidas && c.coincide);
+      const geometria = generado.estado === 'generado' && comprobaciones.length > 0 &&
+        comprobaciones.every(c => c.medidas && c.coincide) && gs.every(g => g.panos.every(p => p.orilloDelConjunto));
       const muestraCompatible = comprobaciones.some(c => c.medidas && c.coincide);
       const coincide = geometria && motivos.length === 0;
       const sinDiferenciaDeCantidad = geometria && motivos.filter(m => !m.startsWith('Cantidad agrupada:')).length === 0;

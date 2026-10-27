@@ -1334,11 +1334,19 @@ Generado por `scripts/validar-assa-fase-a.mjs`. Foto de RPS: 2026-10-26T14:00:05
 
 | Familia | Líneas | Paño y cantidad iguales | % | Toda la geometría igual |
 | --- | --- | --- | --- | --- |
-| 420102 | 338 | 92 | 27,2 % | 212 |
-| 420148 | 194 | 153 | 78,9 % | 176 |
-| 420150 | 492 | 349 | 70,9 % | 418 |
+| 420102 | 338 | 92 | 27,2 % | 143 |
+| 420148 | 194 | 153 | 78,9 % | 170 |
+| 420150 | 492 | 349 | 70,9 % | 415 |
 
 La columna 420150 certifica **paños**, no conjuntos completos: canalones retenidos hasta cerrar su cantidad por cubierta. NK solo se considera candidato a NH para 420148-0105 y exige el mismo contraste geométrico; las demás referencias NK se retienen. NW equivale a NB por respuesta de Iván del 27/10/2026. Las descripciones recortadas de 420150 se recuperan de la hoja de medidas de producción autorizada, con aviso visible. No se completa stock automáticamente.
+
+### NK contrastado en la 420148-0105
+
+| Referencia | Líneas RPS | Geometría y orillo iguales | Paño y cantidad iguales |
+| --- | --- | --- | --- |
+| 420148-0105 | 41 | 35 | 33 |
+
+La equivalencia NK = NH se limita a esta referencia y descripción contrastadas; no autoriza otras NK. El 31-10 sigue a mano al no probarse su orillo abierto.
 
 ### Canalones: largos medidos por referencia
 
@@ -1367,7 +1375,7 @@ La columna 420150 certifica **paños**, no conjuntos completos: canalones reteni
 | 420150-0131 | 1 | 1330 | Pendiente |
 | 420150-0133 | 1 | 1800 / 3600 | Pendiente |
 
-Son medidas observadas, no una regla NB más un margen común: 0090 tiene 3610/1805, 0002 tiene 3600/1800 y 0133 comparte el paño de 0090 pero usa 3600/1800 en el lote del 26-09. No se suman vistas ni se deduce la cantidad por cubierta del número de caras cerradas del DXF. Los canalones originales contienen DISCO2 además de DISCO1: pendiente confirmar la herramienta.
+Son medidas observadas, no una regla NB más un margen común: 0090 tiene 3610/1805, 0002 tiene 3600/1800 y 0133 comparte el paño de 0090 pero usa 3600/1800 en el lote del 26-09. No se suman vistas ni se deduce la cantidad por cubierta del número de caras cerradas del DXF. Los canalones conservan DISCO2 donde aparece en el original, además de DISCO1, según la decisión del 27/10/2026. Solo queda pendiente su cuenta por cubierta; la 420150 permanece a mano detrás de la constante CANALONES_PENDIENTES.
 
 ### Repetir sin copiar los datos grandes
 

@@ -62,5 +62,6 @@ describe('cantidades y trazabilidad del contraste de lotes', () => {
     expect(validarLineasLote([{ ...linea, descripcion: 'NT600 NB3250 NH348' }], [programa])[0].estado).toBe('a-mano');
     const sinOrillo = { ...programa, panos: programa.panos.map(p => ({ ...p, orilloDelConjunto: false })) };
     expect(validarLineasLote([linea], [sinOrillo])[0].coincide).toBe(false);
+    expect(validarLineasLote([linea], [sinOrillo])[0].geometria).toBe(false);
   });
 });
