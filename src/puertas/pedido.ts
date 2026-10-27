@@ -38,6 +38,7 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
     if(!objeto(p.enrollable) || !cotas(p.enrollable,['T','D','margen']) || !lista(p.enrollable.empates,100) || !p.enrollable.empates.every(u=>objeto(u) && ['superior','inferior'].includes(u.pano as string) && cotas(u,['altura','solape']) && (u.tubo===undefined || (typeof u.tubo==='number'&&Number.isInteger(u.tubo)&&u.tubo>0&&u.tubo<=(p.entradas as unknown[]).length)))) return error();
     if(p.enrollable.sacoPartido!==undefined && typeof p.enrollable.sacoPartido!=='boolean')return error();
     if(p.enrollable.sinEtArriba!==undefined && typeof p.enrollable.sinEtArriba!=='boolean')return error();
+    if(p.enrollable.sinEtAbajo!==undefined && typeof p.enrollable.sinEtAbajo!=='boolean')return error();
     if(p.enrollable.saco!==undefined && !saco(p.enrollable.saco))return error();
     if(p.enrollable.ventanales!==undefined && (!lista(p.enrollable.ventanales,99) || !p.enrollable.ventanales.every(v=>cotas(v,['D','margen']))))return error();
     if(!objeto(p.autorreparable) || !numeros(p.autorreparable.empates)) return error();

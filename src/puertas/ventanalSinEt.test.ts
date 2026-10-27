@@ -55,6 +55,31 @@ describe('Enrollable sin E.T. encima del ventanal', () => {
   });
 });
 
+describe('Enrollable sin E.T. debajo del ventanal de abajo', () => {
+  const abajo = () => {
+    const p = puerta();
+    p.enrollable.sinEtAbajo = true;
+    p.entradas = p.entradas.filter(t => t.altura !== 99);
+    return p;
+  };
+  it('no corta la E.T. de abajo y marca el paño de abajo y los cachos del último ventanal', () => {
+    const r = calcularPuerta(abajo());
+    expect(r.piezas.filter(x => x.nombre.startsWith('Entrada de tubo')).map(x => x.origenAlzado?.[1])).toEqual([24, 186]);
+    const inferior = r.piezas.find(x => x.nombre === 'Paño inferior')!;
+    // El paño sube hasta 102,75 y el cristal baja a 100,75: la marca a 2 de su borde de arriba, no la de la E.T.
+    expect(rayas(inferior.marcas)).toContain(inferior.alto - 2);
+    expect(rayas(inferior.marcas)).not.toContain(inferior.alto - 7.5);
+    for (const lado of ['izquierdo', 'derecho']) {
+      const cacho = r.piezas.find(x => x.nombre === `Cacho ${lado} · ventanal 2`)!;
+      expect(cacho.marcas.some(m => Math.abs(m[1] - 2) < .001 && Math.abs(m[3] - m[1]) < .001)).toBe(true);
+    }
+  });
+  it('el plano no dibuja la banda de la E.T. de abajo', () => {
+    const huecos = (q: Puerta) => dibujarAlzadoEnrollable(q, 'A').lienzo.textos.filter(t => t.valor === '3 CM (HUECOS)').length;
+    expect(huecos(abajo())).toBe(huecos(puerta()) - 1);
+  });
+});
+
 describe('Mininúmeros de unión del ventanal (AR2605247)', () => {
   it('cada pareja cae en el mismo punto de la puerta en sus dos piezas', () => {
     const r = calcularPuerta(puerta());

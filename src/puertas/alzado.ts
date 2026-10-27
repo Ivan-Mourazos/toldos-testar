@@ -121,7 +121,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
   // Bandas de entrada de tubo con sus cotas de alto a la izquierda (sin duplicar ejes del ventanal)
   const bandasIzquierda: Array<{ y: number; alto: number }> = enr
     ? [
-        ...(ventanales.length ? (p.enrollable.sinEtArriba ? ejesVentanal.slice(1) : ejesVentanal) : []),
+        ...(ventanales.length ? ejesVentanal.filter((_, k) => !(k === 0 && p.enrollable.sinEtArriba) && !(k === ejesVentanal.length - 1 && p.enrollable.sinEtAbajo)) : []),
         ...tubos.map(altura => H - altura),
       ]
         .filter((y, idx, arr) => y > 0 && y < H && arr.findIndex(v => Math.abs(v - y) < 0.5) === idx)
@@ -186,7 +186,8 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
   for (const [i, v] of ventanales.entries()) {
     const { margen: m, D } = v, T = ejesVentanal[i];
     // Sin E.T. encima, el cristal se ve desde donde lo solapa el paño grande (1,75 bajo el eje).
-    const arriba = i === 0 && p.enrollable.sinEtArriba ? 1.75 : 3.75, alto = Math.max(0, D - 3.75 - arriba);
+    const arriba = i === 0 && p.enrollable.sinEtArriba ? 1.75 : 3.75;
+    const abajo = i === ventanales.length - 1 && p.enrollable.sinEtAbajo ? 1.75 : 3.75, alto = Math.max(0, D - abajo - arriba);
     rect('puerta-cacho', 0, T + arriba, m, alto);
     rect('puerta-cacho', Math.max(0, F - m), T + arriba, m, alto);
     rect('puerta-cristal', m, T + arriba, Math.max(0, F - 2 * m), alto);
@@ -239,6 +240,12 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
     marca(T + 1.75, 1);
     linea('puerta-rotulador', 0, T + 3.75, m, T + 3.75);
     linea('puerta-rotulador', F - m, T + 3.75, F, T + 3.75);
+  }
+  if (ventanales.length && p.enrollable.sinEtAbajo) {
+    const m = ventanales.at(-1)!.margen, E = ejesVentanal.at(-1)!;
+    marca(E - 1.75, -1);
+    linea('puerta-rotulador', 0, E - 3.75, m, E - 3.75);
+    linea('puerta-rotulador', F - m, E - 3.75, F, E - 3.75);
   }
   const inicioMarcaSaco = formas.length;
   marca(H - hSaco, -1);

@@ -122,6 +122,9 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
   if (p.modelo === 'PUERTAENR') {
     const e = p.enrollable, ventanales=[{D:e.D,margen:e.margen},...e.ventanales??[]];
     const altoVentanales=ventanales.reduce((s,v)=>s+v.D,0), s = sacoPuerta(p), origenInferior = s.rematado;
+    // La E.T. que no lleva el ventanal, arriba o abajo (Iván, 27/10/2026, AR2605247): ni se corta ni se marca.
+    const etVentanal=(t:Entrada)=>Boolean(e.sinEtArriba)&&Math.abs(t.altura-(p.alto-e.T))<.01
+      ||Boolean(e.sinEtAbajo)&&Math.abs(t.altura-(p.alto-e.T-altoVentanales))<.01;
     // El paño inferior arranca en el rematado del saco, lo libre (13 con el de 120), y acaba donde siempre; el saco
     // sube 2 más para la soldadura (Iván, 24/10/2026).
     const inferior = n(p.alto - e.T - altoVentanales + 3.75 - origenInferior);
@@ -129,7 +132,7 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     const incorporadas=new Set<number>();
     for (const [nombre,h,origen] of [['superior',e.T+7.25,p.alto-e.T-3.75],['inferior',inferior,origenInferior]] as const) {
       const manual=e.empates.filter(u=>u.pano===nombre);
-      const tubos=p.entradas.map((t,i)=>({eje:t.altura-origen,solape:REGLAS_ENROLLABLE.solapeEntrada,tubo:i+1}));
+      const tubos=p.entradas.map((t,i)=>({eje:t.altura-origen,solape:REGLAS_ENROLLABLE.solapeEntrada,tubo:i+1})).filter(t=>!etVentanal(p.entradas[t.tubo-1]));
       const plan=repartirPanos({desde:0,hasta:h,frente:ancho,rollo:p.rollo,tubos,normal:true,indicados:manual.length?manual.map(u=>({eje:u.altura,solape:u.solape,tubo:u.tubo})):undefined});
       const antes=paneles.length;
       reparto(plan,`Paño ${nombre}`);
@@ -143,9 +146,10 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       // Sin E.T. encima del ventanal, el paño grande lleva la marca donde llega el cristal (2 cm sobre su borde) en vez de
       // la de la E.T. (Iván, 27/10/2026, AR2605247).
       marcarEn(origen+(nombre==='superior'?(e.sinEtArriba?2:7.5):2),nombre==='superior'?-1:undefined);
-      marcarEn(origen+h-(nombre==='superior'?7:7.5),nombre==='inferior'?1:undefined);
+      // Y lo mismo abajo: sin E.T. bajo el ventanal de abajo, la marca del paño donde llega el cristal.
+      marcarEn(origen+h-(nombre==='superior'?7:e.sinEtAbajo?2:7.5),nombre==='inferior'?1:undefined);
       for(const [i,t] of p.entradas.entries()) {
-        if(plan.uniones.some(u=>u.tubo===i+1))continue;
+        if(plan.uniones.some(u=>u.tubo===i+1)||etVentanal(t))continue;
         const y=t.altura-REGLAS_ENROLLABLE.solapeEntrada/2;
         if(y>origen+7.5 && y<origen+h-(nombre==='superior'?7:7.5)-.001)marcarEn(y,1);
       }
@@ -154,6 +158,7 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       agregar(pieza('Cristal del ventanal', 'cristal', p.frente-2*e.margen+4, e.D-3.5, p.materialCristal,p.rolloCristal));
       const cachos=agregar(pieza('Cachos laterales', 'cacho', e.margen+1,e.D-3.5,lona,p.rollo,2));
       if(e.sinEtArriba)marca(cachos,cachos.alto-2,1);
+      if(e.sinEtAbajo)marca(cachos,2,-1);
     } else {
       // AR2605065 (A) y AR2605038 (D): los cachos son piezas sueltas, no huecos de un paño entero.
       const separaciones:Array<{delantera:PiezaPuerta;trasera:PiezaPuerta}>=[];
@@ -177,6 +182,7 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
           const cacho=agregar(pieza(`Cacho ${nombre} · ventanal ${i+1}`,'cacho',v.margen+1,v.D-3.5));
           // Sin E.T. encima, los cachos del de arriba marcan dónde llega el paño grande, 2 cm bajo su borde de arriba.
           if(i===0&&e.sinEtArriba)marca(cacho,cacho.alto-2,1);
+          if(i===ventanales.length-1&&e.sinEtAbajo)marca(cacho,2,-1);
           cacho.origenAlzado=[lado===0?-1:p.frente-v.margen,p.alto-e.T-ventanales.slice(0,i+1).reduce((s,v)=>s+v.D,0)+1.75];
           // Cada pareja de mininúmeros en el mismo punto de la puerta (Iván, 27/10/2026: «no quedan exactos»): a 4 cm del
           // borde de la puerta, no del de cada pieza (el cacho es 1 cm más ancho para escuadrar), y en medio de lo que se
@@ -204,9 +210,8 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       numerarBorde(izquierda,++numeroUnion,'derecha');
       numerarBorde(derecha,numeroUnion,'izquierda');
     }else agregar(sacoConPestana(p.frente,s.corte,6.5,s.altoPestana,s.corte/2));
-    // Sin E.T. encima del ventanal, una entrada a esa altura no se corta: se avisa por si sobra en el pedido.
-    const etVentanal=(t:Entrada)=>Boolean(e.sinEtArriba)&&Math.abs(t.altura-(p.alto-e.T))<.01;
-    if(p.entradas.some(etVentanal))aviso('ET_VENTANAL','Marcado sin E.T. encima del ventanal, pero hay una entrada a esa altura: no se corta. Quítala del pedido si sobra.','aviso');
+    // Sin E.T. encima o debajo del ventanal, una entrada a esa altura no se corta: se avisa por si sobra en el pedido.
+    if(p.entradas.some(etVentanal))aviso('ET_VENTANAL','Marcado sin E.T. en el ventanal, pero hay una entrada a esa altura: no se corta. Quítala del pedido si sobra.','aviso');
     p.entradas.forEach((t,i)=>{if(!incorporadas.has(i+1)&&!etVentanal(t))entrada(t,i);});
   } else if (p.modelo === 'PUERTAPLE') {
     const a = p.apilable, alturas = alturasTubos(p);
