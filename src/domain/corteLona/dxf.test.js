@@ -142,10 +142,11 @@ describe('Plano de confección', () => {
     expect(campos).toMatchObject({ PEDIDO: 'AR2604784', OF: '0232568', CLIENTE: 'OTILIA VAZQUEZ', TECNICO: 'ALBERTO', REVISOR: 'JAIME', FECHA: '29/09/26', HOJA: '1/1' });
     expect(campos).not.toHaveProperty('EMPATE');
     const textos = entidades.filter((e) => e.tipo === 'MTEXT' && valor(e, 330) === '1F' && valor(e, 8) !== 'RECUADROS');
-    // Centrados, salvo los rótulos del bot (tela y OF, opciones), que van como en su DXF: abajo a la izquierda.
-    const delBot = (e) => valor(e, 8) === 'texto' && valor(e, 71) === '7' && / · (OF|OPCIÓN) /.test(valor(e, 1));
+    // Centrados, salvo los rótulos de opciones del bot, que van como en su DXF: abajo a la izquierda. La tela y la OF,
+    // centradas encima del corte (Iván, 27/10/2026).
+    const delBot = (e) => valor(e, 8) === 'texto' && valor(e, 71) === '7' && / · OPCIÓN /.test(valor(e, 1));
     expect(textos.every((e) => (valor(e, 71) === '5' || delBot(e)) && valor(e, 1) === valor(e, 1).toUpperCase())).toBe(true);
-    expect(textos.some(delBot)).toBe(true);
+    expect(textos.some((e) => valor(e, 1) === 'OF 0232568')).toBe(true);
     // Lejos de los ejes del CAD: los toldos empiezan a 100 m y el corte va a su derecha.
     expect(textos.every((e) => numero(e, 10) > 90 && numero(e, 20) > 50)).toBe(true);
     comprobarHandles(dxf);

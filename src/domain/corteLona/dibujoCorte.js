@@ -74,8 +74,11 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
     // girados 90° si la pieza está girada. Con REVÉS, nombre y REVÉS quedan a los dos lados del centro.
     // Los sacos de stock llevan la OF de stock, SACO, su medida y STOCK (como AR2602119).
     // Cortina: todos los rótulos hasta 25 cm, también en la bamba (Iván, 27/10/2026: más grandes que los 15 de AR2605193).
-    let alto = p.saco ? Math.min(150, Math.min(p.ancho, p.hueco) / 8) : p.rotuloCortina ? Math.min(250, Math.min(p.ancho, p.hueco) * 0.7)
-      : Math.min(300, Math.min(p.ancho, p.hueco) / 4);
+    // En la oblicua cuenta su ancho estrecho: con los textos en su centro, lo que cabe sin salirse por la punta estrecha.
+    const menor = p.oblicua
+      ? Math.max(1, 2 * Math.min(p.oblicua.altoIzq, p.oblicua.altoDer) - (p.oblicua.altoIzq + p.oblicua.altoDer) / 2)
+      : Math.min(p.ancho, p.hueco);
+    let alto = p.saco ? Math.min(150, menor / 8) : p.rotuloCortina ? Math.min(250, menor * 0.7) : Math.min(300, menor / 4);
     // La bamba de cortina rotula por debajo de la raya de la varilla. La de toldo, como el resto: en toda la pieza,
     // aunque pise el rotulador, sin llegar a las líneas de corte (Iván, 23/10/2026: «pueden ir más grandes»).
     const franja = !p.nombre.includes('BAMBA') || !p.rotuloCortina ? null : Math.max(1, p.alto - p.marcas[0].mm);
@@ -86,35 +89,46 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
     const lineasTexto = p.saco ? [p.of, 'SACO', p.medida, 'STOCK']
       : p.rotuloCortina ? [p.rotulo ?? p.nombre, ...(conOf.has(p) && p.of ? [p.of] : []), ...(p === deCortina[0] ? ['REVÉS'] : [])]
       : [p.nombre, ...(p.of ? [p.of] : []), ...(p.nombre.includes('BAMBA') || p.sinReves ? [] : ['REVÉS'])];
-    const espacioTexto = p.girada ? p.hueco : p.ancho;
-    const altoLibre = franja === null ? Math.min(p.ancho, p.hueco) * 0.9 / ((lineasTexto.length - 1) * 1.6 + 1)
+    // Cortina y solapas: a lo largo del lado largo de la pieza tal como queda en el rollo, vaya girada o no (los
+    // laterales de la ventana son más altos que anchos; Iván, 27/10/2026: A3 y A4 salían montados).
+    const vertical = p.rotuloCortina && !p.oblicua ? p.hueco > p.ancho : p.girada;
+    const espacioTexto = vertical ? p.hueco : p.ancho;
+    const altoLibre = franja === null ? menor * 0.9 / ((lineasTexto.length - 1) * 1.6 + 1)
       : franja * 0.8 / ((lineasTexto.length - 1) * 1.6 + (p.rotuloCortina ? 1 : 2));
     alto = Math.min(alto, altoLibre,
       ...lineasTexto.map((v) => espacioTexto * 0.9 / anchoArial(v, 1)));
     // Piezas largas y bajas (las bandas de la cortina, las bambas): nombre, OF y REVÉS en fila, repartidos a lo largo,
     // para que vayan más grandes (Iván, 22/10/2026, como en las puertas apilables). En las de toldo, en fila siempre
     // que así salgan más grandes que uno encima de otro (Iván, 23/10/2026: «la OF la pones de lado si ves que tal»).
-    const n = lineasTexto.length, largo = p.girada ? p.hueco : p.ancho, corto = p.girada ? p.ancho : p.hueco;
-    const enFila = Math.min(p.rotuloCortina ? 150 : 300, corto * 0.7, ...lineasTexto.map((v) => (largo / n) * 0.8 / anchoArial(v, 1)));
-    if (n > 1 && (p.enFila || (!p.saco && !p.rotuloCortina && enFila > alto * 1.05))) {
+    // Cortina y solapas (Iván, 27/10/2026: más grandes): en fila o uno debajo de otro, como salgan más grandes.
+    const n = lineasTexto.length, largo = vertical ? p.hueco : p.ancho, corto = p.oblicua ? menor : vertical ? p.ancho : p.hueco;
+    const enFila = Math.min(p.rotuloCortina ? 250 : 300, corto * 0.7, ...lineasTexto.map((v) => (largo / n) * 0.8 / anchoArial(v, 1)));
+    if (n > 1 && ((p.enFila && !p.rotuloCortina) || p.oblicua || (!p.saco && enFila > alto * 1.05))) {
       const h = p.enFila && !p.rotuloCortina ? Math.min(enFila, corto * 0.4) : enFila;
       lineasTexto.forEach((valor, i) => {
         const u = (largo * (i + 0.5)) / n;
-        textos.push(p.girada
-          ? { capa: 'texto', x: x0 + p.ancho / 2, y: y0 + u, h, valor: valor.toUpperCase(), giro: 90, centrado: true }
-          : { capa: 'texto', x: x0 + u, y: y0 + p.hueco / 2, h, valor: valor.toUpperCase(), centrado: true });
+        textos.push(vertical
+          ? { capa: 'texto', x: p.oblicua ? cx : x0 + p.ancho / 2, y: y0 + u, h, valor: valor.toUpperCase(), giro: 90, centrado: true }
+          : { capa: 'texto', x: x0 + u, y: p.oblicua ? cy : y0 + p.hueco / 2, h, valor: valor.toUpperCase(), centrado: true });
       });
       continue;
     }
     lineasTexto.forEach((valor, i) => {
       const d = (i - (lineasTexto.length - 1) / 2) * alto * 1.6;   // separación desde el centro
-      textos.push(p.girada
+      textos.push(vertical
         ? { capa: 'texto', x: cx + d, y: cy, h: alto, valor: valor.toUpperCase(), giro: 90, centrado: true }
         : { capa: 'texto', x: cx, y: cy - d, h: alto, valor: valor.toUpperCase(), centrado: true });
     });
   }
-  // Material y OF justo debajo del corte, en grande (Iván, 27/10/2026).
-  textos.push({ capa: 'texto', x: 0, y: -260, h: 200, valor: `${tela} · OF ${of}` });
+  // Encima del corte, centrados y tan grandes como quepan en su largo, de 10 a 20 cm: el material y, justo debajo de
+  // él, la OF (Iván, 27/10/2026).
+  const largoCorte = Math.max(0, ...colocadas.filter((p) => !p.aparte).map((p) => p.x + p.ancho));
+  let y = anchoRolloMm + 60;
+  for (const valor of [of ? `OF ${of}` : '', tela].filter(Boolean)) {
+    const h = Math.max(100, Math.min(200, (largoCorte * 0.95) / anchoArial(valor, 1)));
+    textos.push({ capa: 'texto', x: largoCorte / 2, y: y + h / 2, h, valor, centrado: true });
+    y += h + 40;
+  }
   return { lineas, textos };
 }
 

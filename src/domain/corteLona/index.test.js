@@ -206,7 +206,8 @@ describe('Del pedido guardado al corte de lona', () => {
     expect(['A1', 'A2', 'A3', 'A4'].map((n) => minis.filter((v) => v === n).length)).toEqual([6, 6, 6, 6]);
     const rotulos = lona.dibujo.textos.filter((t) => t.capa === 'texto').map((t) => t.valor);
     expect(['REVÉS', '0233272', 'A1', 'A2', 'A', 'A3', 'A4'].map((v) => rotulos.filter((r) => r === v).length)).toEqual([1, 1, 3, 3, 3, 3, 3]);
-    expect(cristal.dibujo.textos.filter((t) => t.capa === 'texto' && t.valor !== cristal.dibujo.textos.at(-1).valor)).toEqual([]);
+    // El cristal, sin rótulos: solo su material y la OF, encima del corte.
+    expect(cristal.dibujo.textos.filter((t) => t.capa === 'texto' && t.y < 1400)).toEqual([]);
     // Un solo plano: el del cristal es el de su lona.
     expect(salida.plano).toHaveLength(2);
     expect(salida.plano[1]).toMatchObject({ incluidoEn: salida.plano[0].codigoTela, dxf: salida.plano[0].dxf });
@@ -265,7 +266,7 @@ describe('Del pedido guardado al corte de lona', () => {
     const salida = generar(order);
     expect(salida.cortes.trozoSeparado).toHaveLength(1);
     expect(salida.cortes.trozoSeparado[0].dxf).toContain('CORTAR DE RESTOS');
-    expect(salida.cortes.trozoSeparado[0].dibujo.textos.filter((t) => t.valor === salida.cortes.conSacos[0].material.toUpperCase())).toHaveLength(1);
+    expect(salida.cortes.trozoSeparado[0].dibujo.textos.filter((t) => t.x > salida.cortes.trozoSeparado[0].largo && t.valor === salida.cortes.conSacos[0].material.toUpperCase())).toHaveLength(1);
     expect(salida.cortes.conSacos[0].colocadas.filter((p) => p.saco).every((p) => p.of === '0230811')).toBe(true);
   });
   it('no genera corte para un planteamiento inválido ni sin medidas', () => {
