@@ -17,7 +17,7 @@ export function useContenidoFluido<T extends HTMLElement = HTMLDivElement>(clave
       .map(hijo => hijo.animate?.([
         { opacity: 0.35, transform: 'translateY(5px)' },
         { opacity: 1, transform: 'translateY(0)' },
-      ], { duration: 200, easing: 'cubic-bezier(.2,.8,.2,1)' }));
+      ], { duration: 320, easing: 'cubic-bezier(.2,.8,.2,1)' }));
     const reducir = window.matchMedia('(prefers-reduced-motion: reduce)');
     const cancelar = () => animaciones.forEach(a => a?.cancel());
     reducir.addEventListener('change', cancelar);

@@ -45,10 +45,10 @@ export function InicioProductos({ producto, onChange, onModelo, pedidos, puertas
         <h2 className="cat-titulo"><span className="inicio-tarjeta-icono"><Icono size={20} aria-hidden="true"/></span>{nombres[categoria]}</h2>
         <label className="cat-buscar"><Search size={17} aria-hidden="true"/><input ref={buscador} type="search" aria-label="Buscar modelo" placeholder="Buscar modelo…" value={busqueda} onChange={e=>setBusqueda(e.target.value)}/></label>
       </header>
-      {(resumen?.numero.trim()||resumen?.elementos)?<button className="ghost-button cat-seguir" type="button" onClick={()=>onChange(categoria)}>Seguir con {resumen.numero||'el pedido a medias'} · {resumen.elementos} elementos</button>:null}
+      {(resumen?.numero.trim()||resumen?.elementos)?<button className="ghost-button cat-seguir" type="button" data-cambio-fluido onClick={()=>onChange(categoria)}>Seguir con {resumen.numero||'el pedido a medias'} · {resumen.elementos} elementos</button>:null}
       {grupos.length?grupos.map(grupo=><section key={grupo.nombre} aria-label={grupo.nombre}>
         <h3 className="cat-sec">{grupo.nombre}</h3>
-        <div className="cat-rejilla">{grupo.modelos.map(modelo=><button type="button" className="cat-modelo" key={modelo.nombre} disabled={modelo.proximamente||!modelo.valor||disabled}
+        <div className="cat-rejilla">{grupo.modelos.map(modelo=><button type="button" className="cat-modelo" data-cambio-fluido key={modelo.nombre} disabled={modelo.proximamente||!modelo.valor||disabled}
           title={modelo.proximamente?'Todavía no está disponible':undefined} style={{animationDelay:`${posicion++*14}ms`}} onClick={()=>{if(modelo.valor)onModelo(modelo.valor);}}>
           <span className="cat-iniciales" aria-hidden="true">{modelo.nombre.normalize('NFD').replace(/[\u0300-\u036f]/g,'').slice(0,2).toUpperCase()}</span>
           <span>{modelo.nombre}{modelo.proximamente&&<small>Próximamente</small>}</span>

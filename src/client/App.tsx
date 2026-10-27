@@ -791,7 +791,7 @@ export default function App() {
         <header className="topbar" hidden={activeTab === 'order' && !editorPedidoAbierto}>
           <div className="workspace-heading">
             {activeTab !== 'order' && <h2>{viewTitle}</h2>}
-            {activeTab === 'order' && <button type="button" className="ghost-button order-entry-back" disabled={Boolean(working) || autofillLoading} onClick={() => { setNumeroBusqueda(''); setEditorPedidoAbierto(false); }}><ArrowLeft aria-hidden="true" />Buscar otro pedido</button>}
+            {activeTab === 'order' && <button type="button" className="ghost-button order-entry-back" data-cambio-fluido disabled={Boolean(working) || autofillLoading} onClick={() => { setNumeroBusqueda(''); setEditorPedidoAbierto(false); }}><ArrowLeft aria-hidden="true" />Buscar otro pedido</button>}
             {activeTab === 'order' && <SelectorProducto puertas={puertasActivas} producto={producto} onChange={chooseProducto} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques, puertas: resumenPuertas, systemdock: resumenSystemDock }} />}
             {/* La versión de los parámetros, en una línea junto al título (Iván, 25/09/2026). */}
             {activeTab === 'parameters' && (enFichasClientes

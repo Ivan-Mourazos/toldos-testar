@@ -9,7 +9,10 @@ import './coordina/transiciones.css';
 // No hay que tocar cada pestaña: se escucha el clic en captura, antes que React, se para, se hace la foto y dentro de la
 // transición se repite el clic para que React haga el cambio con flushSync.
 
-const PESTANA = ':is(.tira-3d, [role="tablist"]) > button:not(.pestana-activa, .glass-chip-activo, [aria-selected="true"], [aria-pressed="true"], :disabled)';
+// Además de las tiras: las pestañas de elementos de remolques (el botón va dentro de la pestaña), los modelos y los
+// clientes de Parámetros, y los botones marcados con data-cambio-fluido (elegir modelo en el inicio, «Buscar otro pedido»).
+const PESTANA = ':is(:is(.tira-3d, [role="tablist"]) > button, .rem-pestana > .rem-pestana-abrir, .parameter-model-options > button, .clientes-remolques-lista > button, button[data-cambio-fluido])'
+  + ':not(.pestana-activa, .glass-chip-activo, .is-active, [aria-selected="true"], [aria-pressed="true"], [aria-current="true"], :disabled)';
 
 let repitiendo = false;
 let actual: ViewTransition | undefined;
@@ -22,7 +25,7 @@ function alPulsar(evento: MouseEvent) {
   evento.stopPropagation();
   evento.preventDefault();
   actual?.skipTransition();
-  const tira = boton.parentElement as HTMLElement;
+  const tira = (boton.closest('.tira-3d, [role="tablist"]') ?? boton.parentElement) as HTMLElement;
   tira.style.setProperty('view-transition-name', 'tira-pulsada');
   // Se funde la zona más cercana que cambia con la pestaña; las de la cabecera, todo el espacio de trabajo con su título.
   const zona = tira.closest<HTMLElement>('[data-fluido]') ?? document.querySelector<HTMLElement>('.app-workspace');
