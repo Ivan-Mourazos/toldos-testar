@@ -137,7 +137,8 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       plan.uniones.forEach(u=>{if(u.tubo)incorporadas.add(u.tubo);});
       // El origen del tramo se conserva también para el alzado y las ventanas de la futura ficha.
       const grupo=paneles.slice(antes);
-      for(const panel of grupo) {panel.desde+=origen;panel.hasta+=origen;}
+      // También en el dibujo: sin esto los mininúmeros de los paños salían contados desde el bajo de la puerta (27/10/2026).
+      for(const panel of grupo) {panel.desde+=origen;panel.hasta+=origen;panel.pieza.origenAlzado=[-lateral,panel.desde];}
       const marcarEn=(y:number,dir?:1|-1)=>{const panel=grupo.find(t=>y>=t.desde&&y<=t.hasta);if(panel)marca(panel.pieza,y-panel.desde,dir);};
       marcarEn(origen+(nombre==='superior'?7.5:2),nombre==='superior'?-1:undefined);
       marcarEn(origen+h-(nombre==='superior'?7:7.5),nombre==='inferior'?1:undefined);
@@ -172,17 +173,22 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
         for(const [lado,nombre] of ['izquierdo','derecho'].entries()) {
           const cacho=agregar(pieza(`Cacho ${nombre} · ventanal ${i+1}`,'cacho',v.margen+1,v.D-3.5));
           cacho.origenAlzado=[lado===0?-1:p.frente-v.margen,p.alto-e.T-ventanales.slice(0,i+1).reduce((s,v)=>s+v.D,0)+1.75];
-          const x=lado===0?4:cacho.ancho-4;
-          const punto=(destino:PiezaPuerta,numero:number,y:number,xc=lado===0?4:destino.ancho-4)=>{
-            destino.unionesCorte=[...destino.unionesCorte??[],{x:xc,y,numero}];
+          // Cada pareja de mininúmeros en el mismo punto de la puerta (Iván, 27/10/2026: «no quedan exactos»): a 4 cm del
+          // borde de la puerta, no del de cada pieza (el cacho es 1 cm más ancho para escuadrar), y en medio de lo que se
+          // solapan las dos piezas. Antes el del cacho quedaba 1 cm hacia fuera y, en la E.T. del medio, 0,25 desplazado.
+          const xPuerta=lado===0?4:p.frente-4;
+          const enPuerta=(x:PiezaPuerta)=>{const [ox,oy]=x.origenAlzado??[0,0];return {ox,desde:oy,hasta:oy+x.alto};};
+          const juntar=(otra:PiezaPuerta,numero:number)=>{
+            const a=enPuerta(cacho),b=enPuerta(otra),y=n((Math.max(a.desde,b.desde)+Math.min(a.hasta,b.hasta))/2);
+            for(const [destino,o] of [[cacho,a],[otra,b]] as const)
+              destino.unionesCorte=[...destino.unionesCorte??[],{x:n(xPuerta-o.ox),y:n(y-o.desde),numero}];
           };
           const arriba=++numeroUnion,abajo=++numeroUnion;
-          punto(cacho,arriba,cacho.alto-1,x);punto(cacho,abajo,1,x);
-          if(i===0&&superior)punto(superior.pieza,arriba,1);
+          if(i===0&&superior)juntar(superior.pieza,arriba);
           // En la E.T. del medio solo se numera la delantera; la de detrás no hace falta (Iván, 22/10/2026).
-          else if(i>0)punto(separaciones[i-1].delantera,arriba,1);
-          if(i===ventanales.length-1&&inferior)punto(inferior.pieza,abajo,inferior.pieza.alto-1);
-          else if(i<separaciones.length)punto(separaciones[i].delantera,abajo,REGLAS_ENROLLABLE.corteEntrada-1);
+          else if(i>0)juntar(separaciones[i-1].delantera,arriba);
+          if(i===ventanales.length-1&&inferior)juntar(inferior.pieza,abajo);
+          else if(i<separaciones.length)juntar(separaciones[i].delantera,abajo);
         }
       }
     }
