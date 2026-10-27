@@ -89,15 +89,20 @@ export function piezasCortina({ letra, frenteTela, caidaTela, bamba = 0, anchoRo
     const superior = cuerpo - inferior - V;
     if (superior <= arriba + R.solapeCristal) throw new Error('La ventana no cabe en la cortina: revisa su alto y la distancia desde abajo.');
     if (!cabe(inferior) || !cabe(superior)) throw new Error('Una banda de la cortina no cabe en el rollo: el corte se hace a mano por ahora.');
-    const lateral = { largo: mm(esquina + R.bastillaLado), alto: mm(V + 2 * R.solapeCristal), marcas: [], uniones: [], sinRotulo: true };
+    // Los laterales con su nombre, en grande y en mininúmero en la esquina, como a mano en AR2604988 y AR2601829 (Iván,
+    // 27/10/2026); sin la OF ni el REVÉS, que van en las bandas.
+    const lateral = (nombre) => {
+      const largo = mm(esquina + R.bastillaLado), alto = mm(V + 2 * R.solapeCristal);
+      return { nombre, letra, rotuloCortina: true, soloNombre: true, largo, alto, marcas: [], uniones: [{ valor: nombre, u: largo - BORDE, v: alto - BORDE }] };
+    };
     const inf = mm(inferior), sup = mm(superior);
     pvc.push(
       { nombre: `${letra}1`, letra, rotuloCortina: true, largo: mm(ancho), alto: inf, marcas: [marcaAbajo], enFila: true,
         uniones: [{ valor: `${letra}1`, u: mm(ancho) - BORDE, v: inf - BORDE }] },
       { nombre: `${letra}2`, letra, rotuloCortina: true, largo: mm(ancho), alto: sup, marcas: marcasArriba, enFila: true,
         uniones: [{ valor: `${letra}2`, u: mm(ancho) - BORDE, v: BORDE }] },
-      { nombre: `${letra}3`, ...lateral },
-      { nombre: `${letra}4`, ...lateral }
+      lateral(`${letra}3`),
+      lateral(`${letra}4`)
     );
 
     // Cristal: el hueco + 2 por lado. Si no cabe en su rollo, se empata en vertical en tramos (Iván, AR2605080).

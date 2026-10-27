@@ -200,11 +200,12 @@ describe('Del pedido guardado al corte de lona', () => {
     expect(cristal.sacos).toEqual([]);
     expect(salida.cortes.trozoSeparado).toBeNull();
     // Como el corte a mano (Iván, 23/10/2026): el nombre de cada banda de mininúmero en su esquina del lado de la
-    // ventana, una vez por cortina; solo el nombre en las piezas, y REVÉS y la OF una vez; laterales y cristal sin rótulo.
+    // ventana, una vez por cortina; solo el nombre en las piezas, y REVÉS y la OF una vez. Los laterales, con su nombre
+    // (Iván, 27/10/2026, como AR2604988 a mano); el cristal, sin rótulo.
     const minis = lona.dibujo.textos.filter((t) => t.capa === 'ROTULADOR').map((t) => t.valor);
     expect(['A1', 'A2'].map((n) => minis.filter((v) => v === n).length)).toEqual([3, 3]);
     const rotulos = lona.dibujo.textos.filter((t) => t.capa === 'texto').map((t) => t.valor);
-    expect(['REVÉS', '0233272', 'A1', 'A2', 'A', 'A3', 'A4'].map((v) => rotulos.filter((r) => r === v).length)).toEqual([1, 1, 3, 3, 3, 0, 0]);
+    expect(['REVÉS', '0233272', 'A1', 'A2', 'A', 'A3', 'A4'].map((v) => rotulos.filter((r) => r === v).length)).toEqual([1, 1, 3, 3, 3, 3, 3]);
     expect(cristal.dibujo.textos.filter((t) => t.capa === 'texto' && t.valor !== cristal.dibujo.textos.at(-1).valor)).toEqual([]);
     // Un solo plano: el del cristal es el de su lona.
     expect(salida.plano).toHaveLength(2);
@@ -229,7 +230,7 @@ describe('Del pedido guardado al corte de lona', () => {
       expect(sobre([numero(c, 14), numero(c, 24)]), `cota ${numero(c, 42)}`).toBe(true);
     }
     const minisAlzado = modelo.filter((r) => r.tipo === 'MTEXT' && valor(r, 8) === 'ROTULADOR' && numero(r, 10) < finDibujo).map((r) => valor(r, 1));
-    expect(minisAlzado.sort()).toEqual(['A1', 'A2']);
+    expect(minisAlzado.sort()).toEqual(['A1', 'A2', 'A3', 'A4']);
     expect(modelo.some((r) => r.tipo === 'MTEXT' && valor(r, 1) === 'X3')).toBe(true);
   });
   it('corta el cuerpo cuando la bamba es de otra tela y deja aviso', () => {

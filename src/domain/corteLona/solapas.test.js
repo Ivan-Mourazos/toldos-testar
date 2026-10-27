@@ -35,8 +35,10 @@ describe('Solapas con velcro (SOLAPACONVELCROS)', () => {
       ['G', 275, 35.5]
     ]);
     const [d1, d2] = piezas.filter((p) => p.solapaNombre === 'D');
-    expect(d1.uniones).toEqual([{ valor: 'D1', u: 2490, v: 10 }]);
-    expect(d2.uniones).toEqual([{ valor: 'D1', u: 10, v: 10 }]);
+    // Su letra con rotulador cerca de la punta izquierda (Iván, 27/10/2026, como AR2604205 a mano) y los números de unión.
+    expect(d1.uniones).toEqual([{ valor: 'D1', u: 100, v: 220.5 }, { valor: 'D1', u: 2490, v: 10 }]);
+    expect(d2.uniones).toEqual([{ valor: 'D2', u: 100, v: 200 }, { valor: 'D1', u: 10, v: 10 }]);
+    expect(piezas.find((p) => p.nombre === 'A').uniones).toEqual([{ valor: 'A', u: 100, v: 255 }]);
   });
 
   it('AR2604890: seis solapas rectas al corte en rollo de 250', () => {

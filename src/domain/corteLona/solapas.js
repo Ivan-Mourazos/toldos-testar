@@ -35,7 +35,7 @@ export function piezasSolapas({ solapas = [], anchoRollo }) {
     if (!oblicua) {
       piezas.push({
         nombre, rotulo: nombre, letra: nombre, solapaNombre: nombre, rotuloCortina: true,
-        largo: mm(L), alto: mm(w0), marcas: [], uniones: []
+        largo: mm(L), alto: mm(w0), marcas: [], uniones: [letraRotulador(nombre, mm(w0))]
       });
       continue;
     }
@@ -45,7 +45,7 @@ export function piezasSolapas({ solapas = [], anchoRollo }) {
         nombre, rotulo: nombre, letra: nombre, solapaNombre: nombre, rotuloCortina: true,
         // Para dibujoCorte.js: el alto de cada punta (mm), el ancho grande a la izquierda.
         oblicua: { altoIzq: mm(w0), altoDer: mm(w1) }, ancho0: mm(w0), ancho1: mm(w1),
-        largo: mm(L), alto: mm(w0), marcas: [], uniones: []
+        largo: mm(L), alto: mm(w0), marcas: [], uniones: [letraRotulador(nombre, mm(w1))]
       });
       continue;
     }
@@ -63,7 +63,7 @@ export function piezasSolapas({ solapas = [], anchoRollo }) {
       return {
         nombre: id, rotulo: id, letra: nombre, solapaNombre: nombre, rotuloCortina: true,
         oblicua: { altoIzq: mm(wa), altoDer: mm(wb) }, ancho0: mm(wa), ancho1: mm(wb),
-        largo: mm(zb - za), alto: mm(Math.max(wa, wb)), marcas: [], uniones: []
+        largo: mm(zb - za), alto: mm(Math.max(wa, wb)), marcas: [], uniones: [letraRotulador(id, mm(Math.min(wa, wb)))]
       };
     });
     for (let k = 0; k < creadas.length - 1; k++) {
@@ -75,6 +75,10 @@ export function piezasSolapas({ solapas = [], anchoRollo }) {
   }
   return piezas;
 }
+
+// La letra de la solapa también con rotulador, de 1 cm, cerca de la punta de la izquierda y en medio del ancho
+// más estrecho, como a mano en AR2604205 (Iván, 27/10/2026).
+const letraRotulador = (valor, anchoMm) => ({ valor, u: 100, v: anchoMm / 2 });
 
 function letraIndice(index) {
   let n = index + 1;

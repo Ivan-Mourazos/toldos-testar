@@ -42,7 +42,7 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
   // material, y la OF en la primera de cada cortina, como en las puertas. Primera: al principio del rollo, arriba,
   // y antes un paño que la bamba, que es estrecha (en el corte a mano van en el A1).
   const esBamba = (p) => p.nombre.includes('BAMBA');
-  const deCortina = colocadas.filter((p) => p.rotuloCortina)
+  const deCortina = colocadas.filter((p) => p.rotuloCortina && !p.soloNombre)
     .sort((a, b) => esBamba(a) - esBamba(b) || a.x - b.x || (b.y + b.hueco) - (a.y + a.hueco));
   const primeraDe = new Map();
   for (const p of deCortina) if (!primeraDe.has(p.letra)) primeraDe.set(p.letra, p);
