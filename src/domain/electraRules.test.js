@@ -108,8 +108,10 @@ describe('ELECTRA / Elit Vertical · descuentos según soporte', () => {
     const result = calculate({ electraSupport: 'UNIVERSAL 3 AGUJEROS' });
 
     expect(result.materials.map(({ code }) => code)).toEqual(expect.arrayContaining([
-      expect.stringMatching(/^PECARMAXBL16/), 'TAPASLAMAXSCNE11', 'MOSQBOACIN60MM', 'FELPAELIT', 'VARILLAVAINARBLA'
+      expect.stringMatching(/^PECARMAXBL16/), 'TAPASLAMAXSCNE11', 'KITRETENEDORBL16', 'FELPAELIT', 'VARILLAVAINARBLA'
     ]));
+    // Nunca mosquetones (Iván, 27/10/2026).
+    expect(result.materials.map(({ code }) => code)).not.toContain('MOSQBOACIN60MM');
     expect(result.materials.some(({ code }) => code.startsWith('PUNI280'))).toBe(false);
   });
 
@@ -166,7 +168,8 @@ describe('ELECTRA / Elit Vertical · variantes', () => {
     expect(result.calculation.guideLength > 0).toBe(hasGuide);
     expect(codes.some((code) => code.startsWith('PERPRLON'))).toBe(hasCofre);
     expect(codes.some((code) => code.startsWith('ELITGU12'))).toBe(hasGuide);
-    expect(codes.some((code) => code.startsWith('KITRETENEDOR'))).toBe(hasGuide);
+    // Siempre el kit retenedor, con guías o sin ellas (Iván, 27/10/2026).
+    expect(codes.some((code) => code.startsWith('KITRETENEDOR'))).toBe(true);
   });
 
   test('con guía incluye perfiles y retenedor, además de conservar su medida para observaciones', () => {
@@ -197,15 +200,12 @@ describe('ELECTRA / Elit Vertical · variantes', () => {
     });
   });
 
-  test('sin cofre reproduce las filas auxiliares del planteamiento Cortina', () => {
+  // Iván, 27/10/2026: nunca mosquetones, cadenillas ni puentes abatibles; la regleta sigue.
+  test('sin cofre lleva la regleta y el kit retenedor, sin cadenillas, puentes abatibles ni mosquetones', () => {
     const names = calculate({ electraSupport: 'UNIVERSAL 3 AGUJEROS' }).despiece.rows.map(({ name }) => name);
 
-    expect(names).toEqual(expect.arrayContaining([
-      'CADENILLAS INOX',
-      'PUENTES ABATIBLES',
-      'MOSQUETÓN BOMBERO ACERO INOX 60 MM',
-      'REGLETA ZAMACK'
-    ]));
+    expect(names).toEqual(expect.arrayContaining(['REGLETA ZAMACK', 'KIT RETENEDOR ELIT VERTICAL']));
+    for (const fuera of ['CADENILLAS INOX', 'PUENTES ABATIBLES', 'MOSQUETÓN BOMBERO ACERO INOX 60 MM']) expect(names).not.toContain(fuera);
   });
 
   test.each(['CON COFRE / CON GUÍA', 'SIN COFRE / SIN GUÍA'])(
@@ -396,16 +396,13 @@ describe('ELECTRA / Elit Vertical · variantes', () => {
     expect(codes('MAQ. EXTERIOR')).not.toContain('CASMAQEJE5078MM');
   });
 
-  // Taller, 30/09/2026 (Q-E03): el puente abatible va cuando lleva tubo Univers sin guías,
-  // que es el Electra con cofre y sin guía (con cofre la barra es siempre el Univers 280).
-  // Se consume en 5 de las 8 OF así desde 2024: dos anillas, dos pletinas y dos mosquetones.
-  test('con cofre y sin guía reserva el puente abatible', () => {
+  // Iván, 27/10/2026: el puente abatible que se reservaba con cofre y sin guía (Q-E03) deja de ir; en su lugar,
+  // el kit retenedor, uno por toldo.
+  test('con cofre y sin guía lleva el kit retenedor y no el puente abatible', () => {
     const result = calculate({ submodel: 'CON COFRE / SIN GUÍA', electraSupport: 'SOPORTE MAXISCREEM BOX', units: 2 });
-    expect(result.materials).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'ANIACIN', quantity: 4 }),
-      expect.objectContaining({ code: 'PLEACIN', quantity: 4 }),
-      expect.objectContaining({ code: 'MOSQBOACIN60MM', quantity: 4 })
-    ]));
+    const codes = result.materials.map(({ code }) => code);
+    expect(result.materials).toEqual(expect.arrayContaining([expect.objectContaining({ code: expect.stringMatching(/^KITRETENEDOR/), quantity: 2 })]));
+    for (const fuera of ['ANIACIN', 'PLEACIN', 'MOSQBOACIN60MM']) expect(codes).not.toContain(fuera);
   });
 
   test('con guía no lleva puente abatible', () => {
@@ -493,7 +490,9 @@ describe('Electra con guías y pasador', () => {
     expect(piezas).toContain('TOPE CORTAVIENTOS');
     expect(piezas).toContain('PESTILLO CORTAVIENTOS INOX');
     const codigos = result.materials.map((m) => m.code ?? '');
-    expect(codigos.some((c) => c.startsWith('KITRETENEDOR') || c.startsWith('ELITGU') || c === 'FELPAELIT')).toBe(false);
+    expect(codigos.some((c) => c.startsWith('ELITGU') || c === 'FELPAELIT')).toBe(false);
+    // Con pasador también va el kit retenedor (Iván, 27/10/2026).
+    expect(codigos.some((c) => c.startsWith('KITRETENEDOR'))).toBe(true);
     expect(codigos.some((c) => c.startsWith('PECARMAX'))).toBe(true);
   });
 });

@@ -270,22 +270,14 @@ function electraPieces(context) {
     const guideBars = guideStockLength ? Math.max(1, Math.ceil((2 * guideLength) / guideStockLength)) : 2;
     pieces.push(
       { code: guideCode(lacado.suffix, guideStockLength), quantity: guideBars * units, description: 'PERFIL GUÍA ELIT VERTICAL 120', length: guideLength },
-      { code: retainerCode(lacado.suffix), quantity: units, description: 'KIT RETENEDOR ELIT VERTICAL' },
       { code: 'FELPAELIT', quantity: round1((2 * guideLength) / 100 * units), description: 'FELPA 7X8 ELIT VERTICAL', despiece: false }
     );
   }
-  if (support === 'UNIVERSAL 3 AGUJEROS') pieces.push(...universalSupportAccessories(units));
-  // Taller, 30/09/2026 (Q-E03): el puente abatible va cuando lleva tubo Univers sin guías,
-  // que es el Electra con cofre y sin guía (con cofre la barra es siempre el Univers 280).
-  // Dos anillas, dos pletinas y dos mosquetones, lo consumido en 5 de las 8 OF así.
-  if (hasCofre && !hasGuide) pieces.push(...swingBridgePieces(units));
-  if (!hasCofre) {
-    pieces.push(
-      { code: null, quantity: 2 * units, description: 'CADENILLAS INOX', reserve: false },
-      { code: null, quantity: 2 * units, description: 'PUENTES ABATIBLES', reserve: false },
-      { code: null, quantity: 2 * units, description: 'REGLETA ZAMACK', reserve: false }
-    );
-  }
+  // El Electra siempre lleva el kit retenedor, con guías o sin ellas y también con pasador; y nunca mosquetones,
+  // cadenillas ni puentes abatibles (Iván, 27/10/2026). Antes: puente abatible con cofre y sin guía (Q-E03),
+  // mosquetones con el soporte universal y cadenillas y puentes sin cofre.
+  pieces.push({ code: retainerCode(lacado.suffix), quantity: units, description: 'KIT RETENEDOR ELIT VERTICAL' });
+  if (!hasCofre) pieces.push({ code: null, quantity: 2 * units, description: 'REGLETA ZAMACK', reserve: false });
   pieces.push({ code: 'VARILLAVAINARBLA', quantity: round1(varillaMl * units), description: 'VARILLA VAINA RIGIDA 5,5 BLANCA', despiece: false });
   if (hasCofre) pieces.push({ code: 'VARILLAVAINANEG5', quantity: round1(varillaMl * units), description: 'VARILLA VAINA NEGRA 4,5MM', despiece: false });
   if (awning.curtainHasWindow === true) {
@@ -391,18 +383,6 @@ function loadProfileDescription() {
 
 function plasticUniversalCaps(lacado, units) {
   return line(`TAPOPLUN280${plasticCapSuffix(lacado)}`, units, 'KIT TAPONES PLÁSTICO UNIVERS 280');
-}
-
-function swingBridgePieces(units) {
-  return [
-    line('ANIACIN', 2 * units, 'ANILLA PUENTE ABATIBLE ACERO INOX'),
-    line('PLEACIN', 2 * units, 'PLETINA PUENTE ABATIBLE ACERO INOX'),
-    line('MOSQBOACIN60MM', 2 * units, 'MOSQUETÓN BOMBERO ACERO INOX 60 MM')
-  ];
-}
-
-function universalSupportAccessories(units) {
-  return [line('MOSQBOACIN60MM', 2 * units, 'MOSQUETÓN BOMBERO ACERO INOX 60 MM')];
 }
 
 function wallMaterial(wallType, units) {
