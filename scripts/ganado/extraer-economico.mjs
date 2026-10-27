@@ -155,7 +155,15 @@ for (const e of plantilla) {
     const valor = e.t === 'MTEXT' ? limpiarMtext(e.todos.filter(([c]) => c === '3' || c === '1').map(([, v]) => v).join('')) : limpiarMtext(e.g['1'] ?? '');
     // El «X2» del pedido no va en el dibujo fijo: la cantidad la pone la web.
     if (/^X\d+$/.test(valor)) continue;
-    crudo.push({ tipo: 'texto', p, valor, h: +e.g['40'] * e.escala, giro: (+e.g['50'] || 0) + e.giroT, mtext: e.t === 'MTEXT', anclaje: +e.g['71'] || 0, alin: [+e.g['72'] || 0, +e.g['73'] || 0] });
+    // En los MTEXT el giro suele ir en su dirección (11/21: un vector unitario), no en el 50: así van los
+    // «ENFUNDAR» verticales y los de la zona en cuña a ±19°. Si el 11 no es un vector unitario, manda el 50.
+    let giro = +e.g['50'] || 0;
+    if (e.t === 'MTEXT') {
+      const xs = e.todos.filter(([c]) => c === '11').map(([, v]) => +v), ys = e.todos.filter(([c]) => c === '21').map(([, v]) => +v);
+      const k = xs.findIndex((x, i) => Math.abs(Math.hypot(x, ys[i] ?? 0) - 1) < 0.05);
+      if (k >= 0) giro = (Math.atan2(ys[k], xs[k]) * 180) / Math.PI;
+    }
+    crudo.push({ tipo: 'texto', p, valor, h: +e.g['40'] * e.escala, giro: giro + e.giroT, mtext: e.t === 'MTEXT', anclaje: +e.g['71'] || 0, alin: [+e.g['72'] || 0, +e.g['73'] || 0] });
   } else if (e.t === 'DIMENSION' && e.capa === 'cotas') {
     const p1 = T([+e.g['13'], +e.g['23']]), p2 = T([+e.g['14'], +e.g['24']]), dl = T([+e.g['10'], +e.g['20']]);
     if (!enZona(p1) || !enZona(p2)) continue;
