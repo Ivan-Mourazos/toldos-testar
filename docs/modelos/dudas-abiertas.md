@@ -109,6 +109,14 @@ Contestadas el 30/09 (Iván):
 
 Las muestras de PDF que tenía que mirar el taller (Cambio de tela, Enrollable, Bambalina y Cambio Antica) se quitan: Iván, 03/10/2026, «olvídate».
 
+## Solapas con velcro
+
+Añadida el 28/10/2026:
+
+| Código | Pregunta | Ahora la web |
+| --- | --- | --- |
+| Q-SO01 | ¿Se puede empatar una solapa oblicua más larga que el ancho del rollo? (Iván: «no tengo claro si las solapas se pueden empatar») | Prueba la solapa entera y acostada y partida con 2 cm de empate, y deja la que gasta menos lona. En AR2604205 la D va partida: 3,6 m de corte; entera serían 5,5 m |
+
 ## Contestadas el 01/10/2026
 
 | Código | Pregunta | Respuesta | En la web |
