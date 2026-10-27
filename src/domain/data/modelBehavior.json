@@ -21,7 +21,8 @@
     "CAMBIO CORTINA": { "tipo01": null, "tipo02": null, "multipleBrazos": false, "implemented": true, "workType": "FABRIC_ONLY", "diagram": "CORTINA-VENTANA", "dimensions": ["width", "projection", "valanceHeight"] },
     "CAMBIO ANTICA":  { "tipo01": null, "tipo02": null, "multipleBrazos": false, "implemented": true, "workType": "FABRIC_ONLY", "diagram": "ANTICA", "dimensions": ["width", "projection", "valanceHeight"] },
     "BAMBALINA":      { "tipo01": null, "tipo02": null, "multipleBrazos": false, "implemented": true, "workType": "FABRIC_ONLY", "diagram": "BAMBALINA", "dimensions": ["width", "valanceHeight"] },
-    "ENROLLABLE":     { "tipo01": null, "tipo02": null, "multipleBrazos": false, "implemented": true, "workType": "FABRIC_ONLY", "diagram": "ENROLLABLE", "dimensions": ["width", "projection"] }
+    "ENROLLABLE":     { "tipo01": null, "tipo02": null, "multipleBrazos": false, "implemented": true, "workType": "FABRIC_ONLY", "diagram": "ENROLLABLE", "dimensions": ["width", "projection"] },
+    "SOLAPAS":        { "tipo01": null, "tipo02": null, "multipleBrazos": false, "implemented": true, "workType": "FABRIC_ONLY", "diagram": "SOLAPAS", "dimensions": [], "requiresRotFabric": false }
   },
   "options": {
     "alturasManivela": [80, 100, 120, 150, 170, 200, 225, 250, 300],

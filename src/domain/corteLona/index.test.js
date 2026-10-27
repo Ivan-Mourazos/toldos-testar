@@ -93,7 +93,7 @@ describe('Del pedido guardado al corte de lona', () => {
   it.each(['HERA', 'IRIS', 'ANTICA', '', undefined])('no anuncia corte para %s', (modelo) => {
     expect(corteReadiness(modelo).ready).toBe(false);
   });
-  it.each(['ARZUA PRO', 'GALICIA', 'MONOBLOCK 350', 'CAMBIO TELA'])('marca corte PVC de %s', (modelo) => {
+  it.each(['ARZUA PRO', 'GALICIA', 'MONOBLOCK 350', 'CAMBIO TELA', 'CORTINA', 'CAMBIO CORTINA', 'SOLAPAS'])('marca corte PVC de %s', (modelo) => {
     expect(corteReadiness(modelo).ready).toBe(true);
   });
   it('avisa de modelos y materiales fuera de alcance sin generar geometría', () => {
@@ -274,5 +274,93 @@ describe('Del pedido guardado al corte de lona', () => {
     order.awnings[0].units = 1;
     order.awnings[0].width = null;
     expect(generar(order).cortes.conSacos).toEqual([]);
+  });
+
+  it('corta CAMBIO CORTINA con varilla blanca de 5,5 (+3,5 arriba y raya de rotulador a 7) y con remachado B.N.(4,5) (+4,5 arriba sin raya)', () => {
+    const baseOrder = {
+      orderCode: 'AR2601829', customer: 'PRUEBA CAMBIO CORTINA', technician: 'IVÁN', orderDate: '2026-10-27',
+      fabric: 'PVC580BL|||250|||LONA PVC 580 BLANCO :250 AN|||PLASTICA (LONA)',
+      awnings: [{
+        id: 'cc-1', of: '0230037', model: 'CAMBIO CORTINA', workType: 'FABRIC_ONLY', units: 1,
+        width: 342, projection: 200, hasValance: false, valanceHeight: 0, rotFabric: 'NO',
+        curtainHasWindow: false, curtainFinish: 'NORMAL', curtainBottomFinish: 'TUBO DE CARGA',
+        curtainTopFinish: 'VARILLA', curtainFabricAdjustment: 'NINGUNO', curtainFabricAdjustmentCm: 0
+      }]
+    };
+    const conVarilla = generar(baseOrder);
+    expect(conVarilla.avisos).toEqual([]);
+    expect(conVarilla.modelos).toEqual(['CAMBIO CORTINA']);
+    const piezaVarilla = conVarilla.cortes.conSacos[0].piezas[0].piezas[0];
+    // Frente 342 + 8 (B.N(4) por lado) = 350 cm = 3500 mm; caída 200 + 40 = 240 cm = 2400 mm
+    expect([piezaVarilla.nombre, piezaVarilla.largo, piezaVarilla.alto]).toEqual(['A', 3500, 2400]);
+    expect(piezaVarilla.marcas).toEqual([
+      { lado: 'abajo', mm: 70, retiroMm: 40 },
+      { lado: 'arriba', mm: 70, retiroMm: 40 }
+    ]);
+    expect(conVarilla.plano[0].dxf).toContain('VARILLA BLANCA (5,5)');
+    expect(conVarilla.plano[0].dxf).not.toContain('VARILLA NEGRA O BLANCA');
+
+    const remachadoOrder = structuredClone(baseOrder);
+    remachadoOrder.awnings[0].curtainTopFinish = 'REMACHADO';
+    const conRemachado = generar(remachadoOrder);
+    expect(conRemachado.avisos).toEqual([]);
+    const piezaRemachado = conRemachado.cortes.conSacos[0].piezas[0].piezas[0];
+    expect([piezaRemachado.nombre, piezaRemachado.largo, piezaRemachado.alto]).toEqual(['A', 3500, 2400]);
+    expect(piezaRemachado.marcas).toEqual([{ lado: 'abajo', mm: 70, retiroMm: 40 }]);
+    expect(conRemachado.plano[0].dxf).toContain('REMACHADO · B.N.(4,5)');
+  });
+
+  it('refleja el velcro elegible (cara, lado, color, ancho y alto) en el plano de CORTINA y CAMBIO CORTINA', () => {
+    const order = {
+      orderCode: 'AR2604890', customer: 'PRUEBA VELCRO', technician: 'IVÁN', orderDate: '2026-10-27', structureColor: 'BLANCO',
+      fabric: 'PVC580BL|||250|||LONA PVC 580 BLANCO :250 AN|||PLASTICA (LONA)',
+      awnings: [{
+        id: 'c-vel', of: '0232763', model: 'CORTINA', workType: 'FULL_AWNING', units: 1,
+        width: 300, projection: 200, hasValance: false, valanceHeight: 0, device: 'MAQ. INTERIOR',
+        crankHeight: 170, machineSide: 'M.F.IZQ', placement: 'TECHO', rotFabric: 'NO',
+        curtainHasWindow: false, curtainFinish: 'VELCRO', curtainBottomFinish: 'TUBO DE CARGA',
+        curtainVelcroType: 'BRAVO', curtainVelcroSide: 'POR REVÉS', curtainVelcroColor: 'NEGRO',
+        curtainVelcroWidth: 5, curtainVelcroHeight: 215
+      }]
+    };
+    const salida = generar(order);
+    expect(salida.avisos).toEqual([]);
+    expect(salida.plano[0].dxf).toContain('B.N(4) · VELCRO BRAVO (5) NEGRO POR REVÉS HASTA 215');
+  });
+
+  it('corta las 7 solapas de AR2604205 con empate en la oblicua D y avisa si lleva bastilla', () => {
+    const velcro = { tipo: 'BRAVO', lado: 'POR REVÉS', color: 'BLANCO', anchoCm: 5 };
+    const order = {
+      orderCode: 'AR2604205', customer: 'CONSTRUCCIONES VALIÑAS, S.L', technician: 'IVÁN', orderDate: '2026-10-27',
+      fabric: 'PVC650BL|||250|||LONA PVC 650 BLANCO BRILLO :250 AN|||PLASTICA (LONA)',
+      awnings: [{
+        id: 'sol-1', of: '0231643', model: 'SOLAPAS', workType: 'FABRIC_ONLY', units: 1,
+        rotFabric: 'NO', bastilla: false,
+        solapas: [
+          { id: 's-a', nombre: 'A', largoCm: 275, oblicua: false, anchoCm: 51, velcroIzq: velcro, velcroDer: velcro, velcroDerDistinto: false },
+          { id: 's-b', nombre: 'B', largoCm: 275, oblicua: false, anchoCm: 25.5, velcroIzq: velcro, velcroDer: velcro, velcroDerDistinto: false },
+          { id: 's-c', nombre: 'C', largoCm: 275, oblicua: false, anchoCm: 35.5, velcroIzq: velcro, velcroDer: velcro, velcroDerDistinto: false },
+          { id: 's-d', nombre: 'D', largoCm: 275, oblicua: true, anchoIzqCm: 40, anchoDerCm: 85, velcroIzq: velcro, velcroDer: velcro, velcroDerDistinto: false },
+          { id: 's-e', nombre: 'E', largoCm: 275, oblicua: false, anchoCm: 37, velcroIzq: velcro, velcroDer: velcro, velcroDerDistinto: false },
+          { id: 's-f', nombre: 'F', largoCm: 275, oblicua: false, anchoCm: 26.5, velcroIzq: velcro, velcroDer: velcro, velcroDerDistinto: false },
+          { id: 's-g', nombre: 'G', largoCm: 275, oblicua: false, anchoCm: 35.5, velcroIzq: velcro, velcroDer: velcro, velcroDerDistinto: false }
+        ]
+      }]
+    };
+    const salida = generar(order);
+    expect(salida.avisos).toEqual([]);
+    expect(salida.modelos).toEqual(['SOLAPAS']);
+    const corte = salida.cortes.conSacos[0];
+    expect(corte.largo).toBe(3600);
+    expect(corte.piezas[0].piezas.map((p) => p.nombre)).toEqual([
+      'A', 'B', 'C', 'D1', 'D2', 'E', 'F', 'G'
+    ]);
+    expect(salida.plano[0].dxf).toContain('VELCRO BRAVO (5) BLANCO AL CORTE REVÉS');
+
+    const conBastilla = structuredClone(order);
+    conBastilla.awnings[0].bastilla = true;
+    const salidaBastilla = generar(conBastilla);
+    expect(salidaBastilla.cortes.conSacos).toEqual([]);
+    expect(salidaBastilla.avisos).toEqual([expect.stringContaining('pendiente de Oficina Técnica')]);
   });
 });

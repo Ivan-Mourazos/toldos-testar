@@ -1,4 +1,5 @@
 import { piezasCortina } from './cortina.js';
+import { piezasSolapas } from './solapas.js';
 
 // Estudio DXF: piezas de la lona de PVC de un toldo de fachada y su colocación en el rollo.
 // Medidas de entrada en cm (como el planteamiento); las piezas salen en mm (el DXF va en mm).
@@ -40,7 +41,9 @@ export const despiecesPorModelo = Object.freeze({
   'MONOBLOCK 350': piezasFachada,
   'CAMBIO TELA': piezasFachada,
   // La cortina va en dos materiales: la lona de PVC y, aparte, el cristal de su ventana.
-  CORTINA: (datos) => (datos.soloCristal ? piezasCortina({ ...datos, anchoRollo: datos.anchoRolloLona }).cristal : piezasCortina(datos).pvc)
+  CORTINA: (datos) => (datos.soloCristal ? piezasCortina({ ...datos, anchoRollo: datos.anchoRolloLona }).cristal : piezasCortina(datos).pvc),
+  'CAMBIO CORTINA': (datos) => (datos.soloCristal ? piezasCortina({ ...datos, anchoRollo: datos.anchoRolloLona }).cristal : piezasCortina(datos).pvc),
+  SOLAPAS: (datos) => piezasSolapas(datos)
 });
 
 function piezasFachada({ letra, frenteTela, caidaTela, bamba, soloBamba = false, anchoRollo, ajustes = {} }) {

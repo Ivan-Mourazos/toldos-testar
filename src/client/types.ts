@@ -20,6 +20,26 @@ export type Catalog = {
   features: { heraEnabled: boolean; puertasEnabled?: boolean };
 };
 
+export type SolapaItem = {
+  nombre: string;
+  largo: number | null;
+  ancho: number | null;
+  oblicua: boolean;
+  ancho2: number | null;
+  anchoIzq?: number | null;
+  anchoDer?: number | null;
+  bastilla?: boolean;
+  velcroTipo: 'BRAVO' | 'SUAVE';
+  velcroLado: 'POR DERECHO' | 'POR REVÉS';
+  velcroColor: 'BLANCO' | 'NEGRO';
+  velcroAncho: number;
+  velcro2Tipo: 'BRAVO' | 'SUAVE';
+  velcro2Lado: 'POR DERECHO' | 'POR REVÉS';
+  velcro2Color: 'BLANCO' | 'NEGRO';
+  velcro2Ancho: number;
+  velcroDerDistinto?: boolean;
+};
+
 export type Awning = {
   id: string;
   workType: 'FULL_AWNING' | 'FABRIC_ONLY';
@@ -93,6 +113,13 @@ export type Awning = {
   curtainSkipBottomDeduction: boolean;
   /** Cambio de cortina: cómo va arriba. Remachado lleva bastilla. */
   curtainTopFinish: '' | 'VARILLA' | 'REMACHADO';
+  curtainVelcroType?: '' | 'SUAVE' | 'BRAVO';
+  curtainVelcroSide?: '' | 'POR DERECHO' | 'POR REVÉS';
+  curtainVelcroColor?: '' | 'BLANCO' | 'NEGRO';
+  curtainVelcroWidth?: number | null;
+  curtainVelcroHeight?: number | null;
+  bastilla?: boolean;
+  solapas?: SolapaItem[];
   curtainFabricWidthDiscountCm: number | null;
   curtainRollTubeDiscountCm: number | null;
   curtainLoadProfileDiscountCm: number | null;

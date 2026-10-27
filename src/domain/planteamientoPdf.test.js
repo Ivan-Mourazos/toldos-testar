@@ -1508,7 +1508,7 @@ describe('maqueta única del planteamiento de telas', () => {
       }]
     });
 
-    expect(text.match(/VARILLA BLANCA \(5,5\)/g)).toHaveLength(2);
+    expect(text.match(/VARILLA BLANCA \(5,5\)/g)).toHaveLength(3);
     expect(text).toContain('B.N(3)');
   });
 
@@ -1562,10 +1562,10 @@ describe('maqueta única del planteamiento de telas', () => {
     const rod = await fabricPageText(order(awning));
     const riveted = await fabricPageText(order({ ...awning, curtainTopFinish: 'REMACHADO' }));
 
-    expect(rod).toContain('VARILLA NEGRA (5,09) EN PVC');
+    expect(rod).toContain('VARILLA BLANCA (5,5)');
     expect(rod).toContain('B.N(4)');
     expect(rod).not.toContain('PARA ENROLLAR EN TUBO');
-    expect(riveted).toContain('REMACHADO · BASTILLA ARRIBA');
+    expect(riveted).toContain('REMACHADO · B.N.(4,5)');
     expect(riveted).not.toContain('VARILLA NEGRA (5,09) EN PVC');
   });
 

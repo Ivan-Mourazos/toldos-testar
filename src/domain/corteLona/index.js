@@ -11,7 +11,8 @@ import { dibujarPlano } from './plano.js';
 import { escribirDxfPlano } from './presentacion.js';
 import { textoSeguro } from './texto.js';
 import { piezasCortina } from './cortina.js';
-import { configuredCurtainVelcroHeight, curtainWindowDrawingHeight, normalizeCurtainConfiguration } from '../curtainConfiguration.js';
+import { configuredCurtainVelcroHeight, curtainWindowDrawingHeight, formatCurtainVelcroLabel, normalizeCurtainConfiguration } from '../curtainConfiguration.js';
+import { formatSolapaVelcroLabels, normalizeSolapas } from '../solapasRules.js';
 
 export const OF_PROVISIONAL = 'SIN OF';
 
@@ -74,7 +75,8 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
       bamba: toldo.hasValance && !toldo.valanceFabric ? Number(toldo.valanceHeight) : 0,
       unidades: Number(toldo.units), tela: c.fabricDescription,
       ajustes: ajustes[toldo.id] ?? ajustes[toldo.of] ?? ajustes[letra] ?? {},
-      ...(toldo.model === 'CORTINA' ? { cortina: datosCortina(toldo) } : {})
+      ...(toldo.model === 'CORTINA' || toldo.model === 'CAMBIO CORTINA' ? { cortina: datosCortina(toldo) } : {}),
+      ...(toldo.model === 'SOLAPAS' ? { solapas: datosSolapas(toldo) } : {})
     };
     let cristal = [];
     if (t.cortina) {
@@ -130,10 +132,15 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
     const cristales = calculados.filter((c) => c.cristal && c.grupo.toldos.some((ct) => grupo.toldos.some((t) => !t.soloBamba && t.letra === ct.letra)))
       .map((c) => ({ material: c.grupo.material, anchoRollo: c.grupo.anchoRollo, corte: c.conSacos, codigoTela: c.grupo.codigoTela }));
     const geometria = dibujarPlano(grupo, corte, trozoSeparado, cristales);
+    const solapas = grupo.toldos.every((t) => t.solapas);
     const cortinas = grupo.toldos.every((t) => t.cortina);
+    const subtituloTipo = solapas ? 'SOLAPA CON VELCRO'
+      : cortinas ? (grupo.toldos.every((t) => t.cortina?.cambio) ? 'CAMBIO DE TELA · CORTINA' : 'CORTINA')
+      : grupo.toldos.every((t) => t.cambioTela) ? 'CAMBIO DE TELA'
+      : grupo.toldos.some((t) => t.cambioTela) ? 'TOLDO Y CAMBIO DE TELA' : 'TOLDO DE FACHADA';
     const datos = Object.fromEntries(Object.entries({ ...cabecera,
       tituloCorte: `CORTE · ${grupo.material} · ROLLO DE ${grupo.anchoRollo / 10} · ${(corte.largo / 1000).toLocaleString('es-ES')} M`,
-      subtitulo: `MEDIDAS EN CM · LONA DE PVC · ${cortinas ? 'CORTINA' : grupo.toldos.every((t) => t.cambioTela) ? 'CAMBIO DE TELA' : grupo.toldos.some((t) => t.cambioTela) ? 'TOLDO Y CAMBIO DE TELA' : 'TOLDO DE FACHADA'}`
+      subtitulo: `MEDIDAS EN CM · LONA DE PVC · ${subtituloTipo}`
     }).map(([k, v]) => [k, textoSeguro(v)]));
     for (const h of geometria.hojas) h.cajetin.OF = textoSeguro(h.cajetin.OF);
     planos.push({ codigoTela: grupo.codigoTela, material: grupo.material, geometria,
@@ -152,14 +159,26 @@ const CRISTAL = { code: 'CRISTATP140650', description: 'CRISTAL UV ALTA TRANSPAR
 
 /** Lo que la cortina necesita para su corte, sacado de su tarjeta (docs/modelos/cortina-pvc-corte.md). */
 function datosCortina(toldo) {
+  const esCambio = toldo.model === 'CAMBIO CORTINA';
   return {
+    cambio: esCambio,
+    arriba: esCambio && String(toldo.curtainTopFinish || '').toUpperCase() === 'REMACHADO' ? 'REMACHADO' : 'VARILLA',
     abajo: normalizeCurtainConfiguration(toldo).curtainBottomFinish === 'ET' ? 'ET' : 'VARILLA',
     ventana: toldo.curtainHasWindow ? { alto: Number(toldo.curtainWindowHeight), esquina: Number(toldo.curtainWindowCorner),
       desdeAbajo: curtainWindowDrawingHeight(toldo) } : null,
     anchoCristal: CRISTAL.ancho,
     laterales: toldo.curtainFinish === 'VELCRO' ? 'VELCRO' : 'NORMAL',
-    alturaVelcro: configuredCurtainVelcroHeight(toldo)
+    alturaVelcro: configuredCurtainVelcroHeight(toldo),
+    etiquetaVelcro: formatCurtainVelcroLabel(toldo)
   };
+}
+
+function datosSolapas(toldo) {
+  const alCorte = !toldo.bastilla;
+  return normalizeSolapas(toldo.solapas, toldo.bastilla).map((s) => {
+    const [izquierda, derecha] = formatSolapaVelcroLabels(s, alCorte);
+    return { ...s, etiquetaIzq: izquierda, etiquetaDer: derecha };
+  });
 }
 
 function fechaCorta(fecha) {

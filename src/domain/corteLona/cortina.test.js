@@ -83,6 +83,21 @@ describe('Piezas de la cortina de PVC', () => {
     expect(medidas(piezasCortina(base({ soloBamba: true })).pvc)).toEqual([['A BAMBA', 308, 26.5]]);
   });
 
+  it('cambio de cortina remachado arriba (B.N.(4,5), Iván 27/10/2026): sin raya de rotulador arriba', () => {
+    const sinVentana = piezasCortina(base({
+      caidaTela: 240, bamba: 0,
+      cortina: { abajo: 'VARILLA', arriba: 'REMACHADO', cambio: true, ventana: null, anchoCristal: 140 },
+    })).pvc;
+    expect(medidas(sinVentana)).toEqual([['A', 308, 240]]);
+    expect(sinVentana[0].marcas).toEqual([{ lado: 'abajo', mm: 70, retiroMm: 40 }]);
+
+    const conVentana = piezasCortina(base({
+      cortina: { ...base().cortina, arriba: 'REMACHADO', cambio: true },
+    })).pvc;
+    expect(conVentana[0].marcas).toEqual([{ lado: 'abajo', mm: 70, retiroMm: 40 }]);
+    expect(conVentana[1].marcas).toEqual([]);
+  });
+
   it.each([
     [{ ventana: { alto: 300, esquina: 15, desdeAbajo: 52 } }, /ventana no cabe/],
     [{ ventana: { alto: 137, esquina: 160, desdeAbajo: 52 } }, /laterales de la ventana/],

@@ -77,6 +77,10 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
       escalaTexto = Math.min(1.3, Math.max(0.55, tamano(g) / 450));
       hojas.push({ toldos: g, x0: x, T: T.length, Q: Q.length });
     }
+    if (t.solapas) {
+      x += alzadoSolapas(t, corteRollo.piezas[i].piezas, x, { linea, rect, P, texto, cota, mini }) + ENTRE_TOLDOS;
+      continue;
+    }
     if (t.cortina) {
       x += alzadoCortina(t, corteRollo.piezas[i].piezas, x, { linea, rect, texto, cota, mini }) + ENTRE_TOLDOS;
       continue;
@@ -301,7 +305,7 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
     // Cada presentación con su nombre («TOLDO A», «TOLDOS C, D + E») y sus OF en el cajetín; el corte, en todas.
     hojas: hojas.map((h, i) => {
       const letras = [...new Set(h.toldos.map((t) => t.letra))];
-      const tipo = h.toldos.every((t) => t.cortina) ? 'CORTINA' : 'TOLDO';
+      const tipo = h.toldos.every((t) => t.solapas) ? 'SOLAPA' : h.toldos.every((t) => t.cortina) ? 'CORTINA' : 'TOLDO';
       return {
         nombre: letras.length === 1 ? `${tipo} ${letras[0]}` : `${tipo}S ${letras.slice(0, -1).join(', ')} + ${letras.at(-1)}`,
         zona: zona({ x0: h.x0 - 60, x1: h.x1 + 60, y0: -30, y1: arriba(h.T, h.Q) }),
@@ -346,16 +350,18 @@ function alzadoCortina(t, piezas, x0, { linea, rect, texto, cota, mini }) {
     if (!et) texto(VARILLA_ABAJO, cx, altoBamba + 10, 10, 0, 'texto', F * 0.9);
   }
 
-  // Cuerpo: arriba la varilla negra; abajo la varilla blanca o la E.T. Ø40.
+  // Cuerpo: arriba la varilla negra (o blanca / B.N.(4,5) en cambio de tela); abajo la varilla blanca o la E.T. Ø40.
+  const remachado = c.arriba === 'REMACHADO';
+  const arriba = remachado ? R.bastillaRemachado : R.varillaArriba;
   const abajo = et ? R.et : R.varillaAbajo;
   const yc0 = altoBamba ? altoBamba + HUECO_TIRA : 0;
   const yc1 = yc0 + t.caidaTela - (t.bamba > 0 ? t.bamba + 5 : 0);
-  const [yf0, yf1] = [yc0 + abajo, yc1 - R.varillaArriba];
+  const [yf0, yf1] = [yc0 + abajo, yc1 - arriba];
   rect('DISCO1', cx0, yc0, cx1, yc1);
   rect('referencias', fx0, yf0, fx1, yf1);
-  linea('ROTULADOR', fx0, yf1 - R.marcaVarilla, fx1, yf1 - R.marcaVarilla);
+  if (!remachado) linea('ROTULADOR', fx0, yf1 - R.marcaVarilla, fx1, yf1 - R.marcaVarilla);
   linea('ROTULADOR', fx0, yf0 + (et ? R.marcaEt : R.marcaVarilla), fx1, yf0 + (et ? R.marcaEt : R.marcaVarilla));
-  texto(VARILLA_TOLDO, cx, yc1 + 10, 10, 0, 'texto', F * 0.9);
+  texto(remachado ? 'REMACHADO · B.N.(4,5)' : c.cambio ? VARILLA_ABAJO : VARILLA_TOLDO, cx, yc1 + 10, 10, 0, 'texto', F * 0.9);
   if (et) {
     linea('ejes', cx0, yc0 + R.referenciaEt, cx1, yc0 + R.referenciaEt);
     texto('E.T%%C40', cx, yc0 - 10, 10, 0, 'texto', F * 0.9);
@@ -364,8 +370,9 @@ function alzadoCortina(t, piezas, x0, { linea, rect, texto, cota, mini }) {
 
   const cuerpos = piezas.filter((p) => !p.nombre.includes('BAMBA'));
   const empate = !c.ventana && cuerpos.length > 1;
+  const etiquetaVelcro = c.etiquetaVelcro || 'VELCRO SUAVE (5) BLANCO POR DERECHO';
   const lateral = empate ? 'AL CORTE' : c.laterales === 'VELCRO'
-    ? `B.N(4) · VELCRO SUAVE (5) POR DERECHO${c.alturaVelcro ? ` HASTA ${n(c.alturaVelcro)}` : ''}` : 'B.N(4)';
+    ? `B.N(4) · ${etiquetaVelcro}${c.alturaVelcro ? ` HASTA ${n(c.alturaVelcro)}` : ''}` : 'B.N(4)';
   for (const xl of [cx0 - 10, cx1 + 10]) texto(lateral, xl, (yc0 + yc1) / 2, 10, 90, 'texto', (yc1 - yc0) * 0.85);
   const unidades = t.unidades > 1 ? [`${t.unidades} UDS`] : [];
   // Uniones de una pieza (mm desde su esquina de abajo a la izquierda) puestas en el alzado.
@@ -434,4 +441,47 @@ function alzadoCortina(t, piezas, x0, { linea, rect, texto, cota, mini }) {
   cota('cotas', fx1, yf0, fx1, yf1, n(yf1 - yf0), xDer + 15 - fx1);
   cota('vent-pre-noimpr', cx0, yc0, cx0, yc1, n(yc1 - yc0), xIzq - cx0);
   return W;
+}
+
+/**
+ * Alzado de un grupo de solapas con velcro (como AR2604205 y AR2604890): cada solapa en vertical con sus
+ * medidas al corte, sus etiquetas de velcro en los lados largos y, si supera el ancho del rollo, su empate.
+ */
+function alzadoSolapas(t, _piezas, x0, { linea, rect, P, texto, cota }) {
+  const GAP = 70;
+  const n = (v) => Math.round(v * 10) / 10;
+  let sx = x0;
+  for (const [k, s] of t.solapas.entries()) {
+    const L = n(s.largo);
+    const wTop = n(s.anchoIzq);
+    const wBot = n(s.anchoDer);
+    const wMax = Math.max(wTop, wBot);
+    const cx = sx + wMax / 2;
+    if (wTop === wBot) {
+      rect('DISCO1', sx, 0, sx + wTop, L);
+    } else {
+      P.push({ capa: 'DISCO1', puntos: [[sx, 0], [sx + wBot, 0], [sx + wTop, L], [sx, L]], cerrada: true });
+    }
+    texto('AL CORTE', cx, L + 8, 7, 0, 'texto', Math.max(25, wMax * 0.9));
+    texto('AL CORTE', cx, -8, 7, 0, 'texto', Math.max(25, wMax * 0.9));
+    texto(s.etiquetaIzq, sx - 8, L / 2, 7.5, 90, 'texto', L * 0.85);
+    texto(s.etiquetaDer, sx + wMax + 8, L / 2, 7.5, 90, 'texto', L * 0.85);
+    if (L > t.anchoRollo) {
+      const yEmp = t.anchoRollo;
+      const wAt = (y) => wBot + ((wTop - wBot) * y) / L;
+      linea('ejes', sx, yEmp - 2, sx + wAt(yEmp - 2), yEmp - 2);
+      linea('ejes', sx, yEmp, sx + wAt(yEmp), yEmp);
+      texto('EMPATE 2 CM', sx + wAt(yEmp - 1) / 2, yEmp - 8, 7, 0, 'texto', Math.max(20, wAt(yEmp) * 0.8));
+      texto(`${s.nombre}1`, sx + wAt(yEmp / 2) / 2, yEmp / 2, 12, 0, 'texto', Math.max(15, wAt(yEmp / 2) * 0.7));
+      texto(`${s.nombre}2`, sx + wAt((yEmp + L) / 2) / 2, (yEmp + L) / 2, 10, 0, 'texto', Math.max(15, wAt((yEmp + L) / 2) * 0.7));
+    } else {
+      texto(s.nombre, sx + (wTop + wBot) / 4, L / 2, 12, 0, 'texto', Math.max(15, Math.min(wTop, wBot) * 0.7));
+    }
+    if (k === 0 && t.of) texto(t.of, cx, L + 40, 14, 0, 'texto', Math.max(40, wMax));
+    cota('cotas', sx, L, sx + wTop, L, wTop, 22);
+    if (wBot !== wTop) cota('cotas', sx, 0, sx + wBot, 0, wBot, -22);
+    cota('cotas', sx, 0, sx, L, L, -24);
+    sx += wMax + GAP;
+  }
+  return Math.max(40, sx - x0 - GAP);
 }

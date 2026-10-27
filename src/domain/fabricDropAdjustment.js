@@ -2,7 +2,7 @@
 // técnico suma o quita a la caída sin abrir el candado, como el «ajuste de salida» de la Cortina.
 // Por ejemplo, una bambalina pisada doble lleva más tela. Vale para los toldos completos; la
 // Cortina y los trabajos de tela ya tienen su propia casilla.
-const ownAdjustment = new Set(['CORTINA', 'CAMBIO CORTINA', 'CAMBIO TELA', 'CAMBIO ANTICA', 'BAMBALINA', 'ENROLLABLE']);
+const ownAdjustment = new Set(['CORTINA', 'CAMBIO CORTINA', 'CAMBIO TELA', 'CAMBIO ANTICA', 'BAMBALINA', 'ENROLLABLE', 'SOLAPAS']);
 
 export function supportsFabricDropAdjustment(model) {
   const clean = String(model || '').trim().toUpperCase();

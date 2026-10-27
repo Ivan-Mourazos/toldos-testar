@@ -20,7 +20,8 @@ export const models = [
   { code: 'CORAL BOX', family: 'COFRE', subtype: '', ruleSheet: 'ST400 (legado STORBOX 400)', supportsMultipleArms: false },
   { code: 'XACOBEO', family: 'BRAZOS INVISIBLES', subtype: '', ruleSheet: 'XAC', supportsMultipleArms: false },
   { code: 'BAMBALINA', family: '', subtype: '', ruleSheet: 'BAMBALINA', supportsMultipleArms: false },
-  { code: 'CAMBIO ANTICA', family: '', subtype: '', ruleSheet: 'CAM. ANTICA', supportsMultipleArms: false }
+  { code: 'CAMBIO ANTICA', family: '', subtype: '', ruleSheet: 'CAM. ANTICA', supportsMultipleArms: false },
+  { code: 'SOLAPAS', family: '', subtype: '', ruleSheet: 'SOLAPAS', supportsMultipleArms: false }
 ];
 
 // `family` es la categoría comercial con la que la oficina agrupa su catálogo,

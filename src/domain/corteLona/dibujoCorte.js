@@ -3,9 +3,23 @@ import { anchoArial } from './texto.js';
 
 /** Líneas de corte (DISCO1), del rotulador y textos de las piezas ya colocadas. */
 export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
-  const horizontales = []; const verticales = [];
+  const horizontales = []; const verticales = []; const oblicuas = [];
   for (const p of colocadas) {
     const [x0, y0, x1, y1] = [p.x, p.y, p.x + p.ancho, p.y + p.hueco];
+    if (p.oblicua) {
+      const { altoIzq, altoDer } = p.oblicua;
+      if (p.girada) {
+        verticales.push([x0, y0, y1]);
+        if (y0 > 0 || p.aparte) horizontales.push([y0, x0, x0 + altoIzq]);
+        if (y1 < anchoRolloMm || p.aparte) horizontales.push([y1, x0, x0 + altoDer]);
+        oblicuas.push({ capa: 'DISCO1', x1: x0 + altoIzq, y1: y0, x2: x0 + altoDer, y2: y1 });
+      } else {
+        if (y0 > 0 || p.aparte) horizontales.push([y0, x0, x1]);
+        verticales.push([x0, y0, y0 + altoIzq], [x1, y0, y0 + altoDer]);
+        oblicuas.push({ capa: 'DISCO1', x1: x0, y1: y0 + altoIzq, x2: x1, y2: y0 + altoDer });
+      }
+      continue;
+    }
     // Los orillos del rollo no se cortan; las piezas «aparte» (para cortar de un resto) sí, por los
     // cuatro lados, porque no se apoyan en el orillo.
     if (y0 > 0 || p.aparte) horizontales.push([y0, x0, x1]);
@@ -14,7 +28,8 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
   }
   const lineas = [
     ...unir(horizontales).map(([y, a, b]) => ({ capa: 'DISCO1', x1: a, y1: y, x2: b, y2: y })),
-    ...unir(verticales).map(([x, a, b]) => ({ capa: 'DISCO1', x1: x, y1: a, x2: x, y2: b }))
+    ...unir(verticales).map(([x, a, b]) => ({ capa: 'DISCO1', x1: x, y1: a, x2: x, y2: b })),
+    ...oblicuas
   ];
   const textos = [];
   // Cuántos paños con empate tiene cada toldo (A1, A2…), para saber con quién se une cada uno.
@@ -62,7 +77,9 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
     // La bamba de cortina rotula por debajo de la raya de la varilla. La de toldo, como el resto: en toda la pieza,
     // aunque pise el rotulador, sin llegar a las líneas de corte (Iván, 23/10/2026: «pueden ir más grandes»).
     const franja = !p.nombre.includes('BAMBA') || !p.rotuloCortina ? null : Math.max(1, p.alto - p.marcas[0].mm);
-    const [cx, cy] = franja === null ? [x0 + p.ancho / 2, y0 + p.hueco / 2]
+    const [cx, cy] = p.oblicua
+      ? (p.girada ? [x0 + (p.oblicua.altoIzq + p.oblicua.altoDer) / 4, y0 + p.hueco / 2] : [x0 + p.ancho / 2, y0 + (p.oblicua.altoIzq + p.oblicua.altoDer) / 4])
+      : franja === null ? [x0 + p.ancho / 2, y0 + p.hueco / 2]
       : p.girada ? [x0 + p.alto - franja / 2, y0 + p.largo / 2] : [x0 + p.largo / 2, y0 + franja / 2];
     const lineasTexto = p.saco ? [p.of, 'SACO', p.medida, 'STOCK']
       : p.rotuloCortina ? [p.rotulo ?? p.nombre, ...(conOf.has(p) && p.of ? [p.of] : []), ...(p === deCortina[0] ? ['REVÉS'] : [])]
