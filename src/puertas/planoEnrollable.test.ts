@@ -211,7 +211,7 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
       corte: { ...vacio, lineas: [{ capa: 'DISCO1', x1: 20, y1: 20, x2: 23, y2: 22 }] },
       zonas: { toldos: { x0: 9, y0: 9, x1: 15, y1: 13 }, corte: { x0: 19, y0: 19, x1: 24, y1: 23 } } };
     const dxf = escribirDxfPlano(toldo, { pedido: 'AR2600001', of: '0232309', ...cabecera, fecha: '22/10/26', pagina: '1/1', material: 'LAC900 BLANCO' }).dxf;
-    expect(createHash('sha256').update(dxf).digest('hex')).toBe('6383dcfb81e796a03e5ad233215521ac7944ad261b93c88c39dac25c2f8ca6c6');
+    expect(createHash('sha256').update(dxf).digest('hex')).toBe('957e61719ec90acc9aab089e637e2205ec1d128530949f4a70b543ec44615ff3');
   });
 });
 

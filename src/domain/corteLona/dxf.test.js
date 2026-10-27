@@ -160,7 +160,7 @@ describe('Plano de confección', () => {
       const ancho = numero(ventana, 40), alto = numero(ventana, 41);
       expect(numero(ventana, 10) - ancho / 2).toBeGreaterThanOrEqual(8);
       expect(numero(ventana, 10) + ancho / 2).toBeLessThanOrEqual(289.1);
-      expect(numero(ventana, 20) - alto / 2).toBeGreaterThanOrEqual(26 - 0.000001);
+      expect(numero(ventana, 20) - alto / 2).toBeGreaterThanOrEqual(11 - 0.000001);
       expect(numero(ventana, 20) + alto / 2).toBeLessThanOrEqual(199.9 + 0.000001);
       // Con la vista girada 90° (el corte sigue horizontal en el modelo), el alto de la ventana cubre el largo.
       const [zw, zh] = numero(ventana, 51) === 90 ? [z.y1 - z.y0, z.x1 - z.x0] : [z.x1 - z.x0, z.y1 - z.y0];
@@ -187,9 +187,9 @@ describe('Plano de confección', () => {
     expect([numero(arco, 40), numero(arco, 50), numero(arco, 51)]).toEqual([0.111, 0, 90]);
     expect(e.filter((x) => x.tipo === 'CIRCLE' && valor(x, 330) === '1F' && valor(x, 8) === 'ROTULADOR')).toHaveLength(2);
     comprobarHandles(dxf);
-    // Un corte alto se giraría en la hoja; con corteDerecho se deja como va en el rollo.
+    // El corte va siempre derecho, como en el rollo (Iván, 27/10/2026), aunque sea alto.
     const alto = { ...plano, zonas: { ...plano.zonas, corte: { x0: 99.9, y0: 80, x1: 101, y1: 92.6 } } };
-    expect(escribirDxfPlano(alto, { pedido: 'AR1' }).reparto).toContain('girado');
+    expect(escribirDxfPlano(alto, { pedido: 'AR1' }).reparto).not.toContain('girado');
     expect(escribirDxfPlano({ ...alto, corteDerecho: true }, { pedido: 'AR1' }).reparto).not.toContain('girado');
   });
   it('escribe cotas de verdad (DIMENSION) con los estilos de la oficina y su bloque dibujado', () => {

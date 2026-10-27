@@ -229,7 +229,9 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
   // El cristal de las cortinas, en su rollo, debajo del corte de la lona (como AR2605080).
   const rollos = [corteRollo, trozoSeparado].filter(Boolean).map((opcion) => ({ opcion, anchoRollo }));
   rollos.push(...cristales.map((c) => ({ opcion: c.corte, anchoRollo: c.anchoRollo / 10, titulo: `CRISTAL · ${c.material}` })));
+  const tramosRollo = [];   // lo de cada rollo en L, T y Q: cada uno va en su ventana de la hoja
   for (const [i, { opcion, anchoRollo, titulo: tituloCristal }] of rollos.entries()) {
+    tramosRollo.push({ L: L.length, T: T.length, Q: Q.length });
     // El corte del bot tal cual (flujo del DWG, 25/10/2026): lo que hay en el recuadro CORTE es lo que se manda, con su
     // rótulo de tela y OF, los restos y, si hay dos opciones, el «ELEGIR SOLO UNA». Sin él (pruebas), el de las piezas.
     const corte = opcion.dibujo ?? { ...dibujo(opcion.colocadas, anchoRollo * 10, { of: '', tela: '' }), textos: [] };
@@ -272,17 +274,22 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
   const largoRollo = Math.max(...colocadas.map((p) => p.x + p.ancho)) / 10;
   // Ancho real que ocupan las piezas, no el del rollo (Iván).
   const usado = Math.max(...colocadas.map((p) => p.y + p.hueco)) / 10;
-  const puntosCorte = L.slice(desde.L).flatMap(l => [[l.x1, l.y1], [l.x2, l.y2]]);
-  for (const t of T.slice(desde.T)) {
-    const mitad = anchoArial(t.valor, t.h) / 2;
-    puntosCorte.push([t.x - (t.giro ? t.h : mitad), t.y - (t.giro ? mitad : t.h)], [t.x + (t.giro ? t.h : mitad), t.y + (t.giro ? mitad : t.h)]);
-  }
-  // Las cotas del corte, con el sitio de su texto a los dos lados de la línea.
-  for (const q of Q.slice(desde.Q)) {
-    puntosCorte.push(...(q.giro ? [[q.d - 16, q.y1], [q.d + 16, q.y2]] : [[q.x1, q.d - 16], [q.x2, q.d + 16]]));
-  }
-  const zonaCorte = { x0: Math.min(...puntosCorte.map(p => p[0])) - 10, x1: Math.max(...puntosCorte.map(p => p[0])) + 10,
-    y0: Math.min(...puntosCorte.map(p => p[1])) - 10, y1: Math.max(...puntosCorte.map(p => p[1])) + 10 };
+  const caja = (ls, ts, qs) => {
+    const puntos = ls.flatMap(l => [[l.x1, l.y1], [l.x2, l.y2]]);
+    for (const t of ts) {
+      const mitad = anchoArial(t.valor, t.h) / 2;
+      puntos.push([t.x - (t.giro ? t.h : mitad), t.y - (t.giro ? mitad : t.h)], [t.x + (t.giro ? t.h : mitad), t.y + (t.giro ? mitad : t.h)]);
+    }
+    // Las cotas del corte, con el sitio de su texto a los dos lados de la línea.
+    for (const q of qs) puntos.push(...(q.giro ? [[q.d - 16, q.y1], [q.d + 16, q.y2]] : [[q.x1, q.d - 16], [q.x2, q.d + 16]]));
+    return { x0: Math.min(...puntos.map(p => p[0])) - 10, x1: Math.max(...puntos.map(p => p[0])) + 10,
+      y0: Math.min(...puntos.map(p => p[1])) - 10, y1: Math.max(...puntos.map(p => p[1])) + 10 };
+  };
+  const zonaCorte = caja(L.slice(desde.L), T.slice(desde.T), Q.slice(desde.Q));
+  const zonasRollo = tramosRollo.map((a, i) => {
+    const b = tramosRollo[i + 1] ?? { L: L.length, T: T.length, Q: Q.length };
+    return caja(L.slice(a.L, b.L), T.slice(a.T, b.T), Q.slice(a.Q, b.Q));
+  });
 
   // A metros y lejos del origen, en diagonal (Iván: no pegado a los ejes X e Y del CAD).
   const m = (v) => v / 100;
@@ -302,7 +309,8 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
     ...convertir(L.slice(0, desde.L), P.slice(0, desde.P), T.slice(0, desde.T), Q.slice(0, desde.Q)),
     sombreados: S.map((s) => ({ ...s, puntos: s.puntos.map(([a, b]) => [px(a), py(b)]) })),
     corte: convertir(L.slice(desde.L), P.slice(desde.P), T.slice(desde.T), Q.slice(desde.Q), dx, dy),
-    zonas: { toldos: zona(toldos), corte: zona({ x0: zonaCorte.x0 + dx, x1: zonaCorte.x1 + dx, y0: zonaCorte.y0 + dy, y1: zonaCorte.y1 + dy }) },
+    zonas: { toldos: zona(toldos), corte: zona({ x0: zonaCorte.x0 + dx, x1: zonaCorte.x1 + dx, y0: zonaCorte.y0 + dy, y1: zonaCorte.y1 + dy }),
+      cortes: zonasRollo.map((z) => zona({ x0: z.x0 + dx, x1: z.x1 + dx, y0: z.y0 + dy, y1: z.y1 + dy })) },
     // Cada presentación con su nombre («TOLDO A», «TOLDOS C, D + E») y sus OF en el cajetín; el corte, en todas.
     hojas: hojas.map((h, i) => {
       const letras = [...new Set(h.toldos.map((t) => t.letra))];
