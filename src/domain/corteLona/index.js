@@ -104,7 +104,7 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
   const conSacos = [], trozos = [], planos = [];
   // Un solo presupuesto de intentos del Tetris para todas las telas del pedido, como en puertas.
   const presupuesto = { restantes: PRESUPUESTO_TETRIS };
-  const calculados = [...grupos.values()].map((grupo) => ({ grupo, opciones: opcionesCorte(grupo.toldos, String(ofStockSacos), presupuesto),
+  const calculados = [...grupos.values()].map((grupo) => ({ grupo, opciones: opcionesSolapas(grupo, String(ofStockSacos), presupuesto),
     cristal: grupo.toldos.every((t) => t.soloCristal) }));
   // Cada corte con su dibujo del bot, antes de los planos: el recuadro CORTE de cada plano lleva ese mismo dibujo.
   for (const c of calculados) {
@@ -172,6 +172,16 @@ function datosCortina(toldo) {
     velcro: { ancho: normalizeCurtainConfiguration(toldo).curtainVelcroWidth, bravo: normalizeCurtainConfiguration(toldo).curtainVelcroType === 'BRAVO' },
     etiquetaVelcro: formatCurtainVelcroLabel(toldo)
   };
+}
+
+// Una solapa oblicua más larga que el rollo puede ir entera y acostada o partida con empate: se prueban las dos y
+// va la de menos metros; si gastan lo mismo, entera (Iván, 27/10/2026, la D de AR2604205: partida, 3,6 m; entera, 5,5).
+function opcionesSolapas(grupo, ofStockSacos, presupuesto) {
+  const partida = opcionesCorte(grupo.toldos, ofStockSacos, presupuesto);
+  const partible = grupo.toldos.some((t) => t.solapas?.some((s) => s.oblicua && s.largo > t.anchoRollo));
+  if (!partible) return partida;
+  const entera = opcionesCorte(grupo.toldos.map((t) => (t.solapas ? { ...t, oblicuasEnteras: true } : t)), ofStockSacos, presupuesto);
+  return entera.conSacos.largo <= partida.conSacos.largo ? entera : partida;
 }
 
 function datosSolapas(toldo) {

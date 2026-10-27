@@ -31,14 +31,15 @@ describe('Piezas de la cortina de PVC', () => {
     expect(pvc[0].marcas).toEqual([{ lado: 'abajo', mm: 210, retiroMm: 40 }]);
   });
 
-  it('cada banda y cada lateral llevan su nombre de mininúmero en una esquina; el cristal, nada (Iván, 27/10/2026, como AR2604988)', () => {
+  it('los mininúmeros, del 1 al 4, son las esquinas de la ventana, en las dos piezas que se sueldan en cada una; el cristal, nada (Iván, 27/10/2026, como AR2601829)', () => {
     const { pvc, cristal } = piezasCortina(base());
     const [a1, a2, a3, a4] = pvc;
     const en = (p) => p.uniones.map((u) => [u.valor, u.u, u.v]);
-    expect(en(a1)).toEqual([['A1', 3070, 545]]);
-    expect(en(a2)).toEqual([['A2', 3070, 10]]);
-    expect(en(a3)).toEqual([['A3', a3.largo - 10, a3.alto - 10]]);
-    expect(en(a4)).toEqual([['A4', a4.largo - 10, a4.alto - 10]]);
+    // 1 abajo a la derecha, 2 arriba a la derecha, 3 arriba a la izquierda y 4 abajo a la izquierda.
+    expect(en(a1)).toEqual([['A4', 10, 545], ['A1', 3070, 545]]);
+    expect(en(a2)).toEqual([['A3', 10, 10], ['A2', 3070, 10]]);
+    expect(en(a3)).toEqual([['A4', 10, 10], ['A3', 10, a3.alto - 10]]);
+    expect(en(a4)).toEqual([['A1', a4.largo - 10, 10], ['A2', a4.largo - 10, a4.alto - 10]]);
     // Los laterales con su nombre en grande, pero sin la OF ni el REVÉS; el cristal sigue sin rótulo.
     expect([a3, a4].every((p) => p.rotuloCortina && p.soloNombre && !p.sinRotulo)).toBe(true);
     expect(cristal.every((p) => p.sinRotulo)).toBe(true);

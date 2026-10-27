@@ -199,11 +199,11 @@ describe('Del pedido guardado al corte de lona', () => {
     expect(cristal.colocadas).toHaveLength(3);
     expect(cristal.sacos).toEqual([]);
     expect(salida.cortes.trozoSeparado).toBeNull();
-    // Como el corte a mano (Iván, 23/10/2026): el nombre de cada banda de mininúmero en su esquina del lado de la
-    // ventana, una vez por cortina; solo el nombre en las piezas, y REVÉS y la OF una vez. Los laterales, con su nombre
-    // (Iván, 27/10/2026, como AR2604988 a mano); el cristal, sin rótulo.
+    // Como el corte a mano (Iván, 23/10/2026): solo el nombre en las piezas, y REVÉS y la OF una vez. Los laterales,
+    // con su nombre (Iván, 27/10/2026, como AR2604988 a mano); el cristal, sin rótulo. Mininúmeros: cada esquina de la
+    // ventana en sus dos piezas, en las tres cortinas (Iván, 27/10/2026, como AR2601829).
     const minis = lona.dibujo.textos.filter((t) => t.capa === 'ROTULADOR').map((t) => t.valor);
-    expect(['A1', 'A2'].map((n) => minis.filter((v) => v === n).length)).toEqual([3, 3]);
+    expect(['A1', 'A2', 'A3', 'A4'].map((n) => minis.filter((v) => v === n).length)).toEqual([6, 6, 6, 6]);
     const rotulos = lona.dibujo.textos.filter((t) => t.capa === 'texto').map((t) => t.valor);
     expect(['REVÉS', '0233272', 'A1', 'A2', 'A', 'A3', 'A4'].map((v) => rotulos.filter((r) => r === v).length)).toEqual([1, 1, 3, 3, 3, 3, 3]);
     expect(cristal.dibujo.textos.filter((t) => t.capa === 'texto' && t.valor !== cristal.dibujo.textos.at(-1).valor)).toEqual([]);
@@ -383,6 +383,15 @@ describe('Del pedido guardado al corte de lona', () => {
       expect(lineas.map(tramo).some(([x1, y1, x2, y2]) => x1 === derecha && x2 === derecha
         && Math.min(y1, y2) <= ay && Math.max(y1, y2) >= by)).toBe(true);
     }
+
+    // Partida porque ahorra lona (3,6 m; entera, 5,5). Si entera cabe sin alargar el corte, va entera y acostada,
+    // sin empate (Iván, 27/10/2026).
+    const dosSolapas = structuredClone(order);
+    dosSolapas.awnings[0].solapas = dosSolapas.awnings[0].solapas.filter((s) => ['A', 'D'].includes(s.nombre));
+    const entera = generar(dosSolapas);
+    expect(entera.cortes.conSacos[0].piezas[0].piezas.map((p) => p.nombre)).toEqual(['A', 'D']);
+    expect(entera.cortes.conSacos[0].largo).toBe(2750);
+    expect(entera.plano[0].dxf).not.toContain('EMPATE 2 CM');
 
     const conBastilla = structuredClone(order);
     conBastilla.awnings[0].bastilla = true;

@@ -10,9 +10,10 @@ export const REGLAS_SOLAPAS = {
 /**
  * Despiece de las solapas de una OF. Cada solapa va al corte por defecto; si es oblicua y su
  * largo supera el ancho del rollo, se parte al ancho del rollo con 2 cm de empate (como la D
- * de AR2604205: 275 × 40..85 → D1 de 250 × 85..44,1 y D2 de 27 × 44,4..40).
+ * de AR2604205: 275 × 40..85 → D1 de 250 × 85..44,1 y D2 de 27 × 44,4..40). Con `oblicuasEnteras`, va entera y
+ * acostada; el corte prueba las dos y se queda con la de menos lona (Iván, 27/10/2026).
  */
-export function piezasSolapas({ solapas = [], anchoRollo }) {
+export function piezasSolapas({ solapas = [], anchoRollo, oblicuasEnteras = false }) {
   if (!Number.isFinite(anchoRollo) || anchoRollo <= 0) throw new Error('Medida no válida: anchoRollo.');
   if (!Array.isArray(solapas) || !solapas.length) throw new Error('Añade al menos una solapa.');
   const R = REGLAS_SOLAPAS;
@@ -40,7 +41,7 @@ export function piezasSolapas({ solapas = [], anchoRollo }) {
       continue;
     }
     if (w0 > anchoRollo) throw new Error(`El ancho de la solapa oblicua ${nombre} no cabe en el rollo.`);
-    if (L <= anchoRollo) {
+    if (L <= anchoRollo || oblicuasEnteras) {
       piezas.push({
         nombre, rotulo: nombre, letra: nombre, solapaNombre: nombre, rotuloCortina: true,
         // Para dibujoCorte.js: el alto de cada punta (mm), el ancho grande a la izquierda.
