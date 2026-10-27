@@ -73,8 +73,8 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
     // Textos centrados en la pieza y en mayúsculas (Iván, 19/10/2026); a lo largo de la pieza,
     // girados 90° si la pieza está girada. Con REVÉS, nombre y REVÉS quedan a los dos lados del centro.
     // Los sacos de stock llevan la OF de stock, SACO, su medida y STOCK (como AR2602119).
-    // Cortina: todos los rótulos de 15 cm, también en la bamba, como el corte a mano de AR2605193 (Iván, 23/10/2026).
-    let alto = p.saco ? Math.min(150, Math.min(p.ancho, p.hueco) / 8) : p.rotuloCortina ? Math.min(150, Math.min(p.ancho, p.hueco) * 0.7)
+    // Cortina: todos los rótulos hasta 25 cm, también en la bamba (Iván, 27/10/2026: más grandes que los 15 de AR2605193).
+    let alto = p.saco ? Math.min(150, Math.min(p.ancho, p.hueco) / 8) : p.rotuloCortina ? Math.min(250, Math.min(p.ancho, p.hueco) * 0.7)
       : Math.min(300, Math.min(p.ancho, p.hueco) / 4);
     // La bamba de cortina rotula por debajo de la raya de la varilla. La de toldo, como el resto: en toda la pieza,
     // aunque pise el rotulador, sin llegar a las líneas de corte (Iván, 23/10/2026: «pueden ir más grandes»).
@@ -113,7 +113,8 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
         : { capa: 'texto', x: cx, y: cy - d, h: alto, valor: valor.toUpperCase(), centrado: true });
     });
   }
-  textos.push({ capa: 'texto', x: 0, y: anchoRolloMm + 140, h: 100, valor: `${tela} · OF ${of}` });
+  // Material y OF justo debajo del corte, en grande (Iván, 27/10/2026).
+  textos.push({ capa: 'texto', x: 0, y: -260, h: 200, valor: `${tela} · OF ${of}` });
   return { lineas, textos };
 }
 

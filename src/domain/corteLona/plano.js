@@ -266,8 +266,8 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
     const alta = opcion.colocadas.reduce((p, q) => (q.y + q.hueco > p.y + p.hueco ? q : p)).x / 10;
     // Cotas del corte grandes, que se lean al imprimir (Iván, 22/10/2026, como en las puertas).
     cota('cotas', alta, yRollo, alta, yRollo + usadoOpcion, usadoOpcion, -30 - alta, 'XERA 20');
-    cota('cotas', 0, yRollo, opcion.largo / 10, yRollo, opcion.largo / 10, -25, 'XERA 20');
-    yRollo -= anchoRollo + 280;
+    cota('cotas', 0, yRollo, opcion.largo / 10, yRollo, opcion.largo / 10, -40, 'XERA 20');
+    yRollo -= anchoRollo + 300;   // con aire bajo el rótulo de material y OF y la cota del largo
   }
   const largoRollo = Math.max(...colocadas.map((p) => p.x + p.ancho)) / 10;
   // Ancho real que ocupan las piezas, no el del rollo (Iván).
