@@ -102,7 +102,7 @@
 .puerta-campos > .puerta-saco-util, .puerta-campos > .puerta-control:has(.puerta-saco-util) { grid-column:span 2; }
 /* El corte entero junto al alzado, sin bajar (Iván, 26/10/2026). La columna no pasa de la pantalla: se desplaza sola. */
 .puerta-derecha { max-height:calc(100vh - 36px); overflow:auto; }
-.puerta-derecha-pestanas { display:inline-flex; margin-bottom:10px; }
+
 .puerta-corte-resumen { padding:12px 14px; }
 .puerta-corte-resumen h2 span { color:var(--text-muted); font-weight:500; font-size:13px; margin-left:6px; }
 .puerta-corte-resumen figure { margin:10px 0 0; }
@@ -134,10 +134,10 @@
 .puerta-derecha > .puerta-alzado, .puerta-derecha > .puerta-corte-resumen { flex:1; min-height:0; display:flex; flex-direction:column; overflow:auto; }
 .puerta-derecha .puerta-alzado svg { flex:1; height:auto; min-height:300px; }
 .puerta-derecha .puerta-avisos { flex:none; max-height:24vh; overflow:auto; }
-.puerta-derecha .puerta-derecha-pestanas { flex:none; margin-bottom:0; }
+
 
 /* La lona rectangular ocupa su ancho y su alto real, con las cotas incluidas. */
-.systemdock-vistas { margin-left:auto; display:inline-flex; }
+.puerta-vistas { margin-left:auto; display:inline-flex; }
 .systemdock-pantalla .puerta-derecha { position:static; height:auto; max-height:none; overflow:visible; }
 .systemdock-pantalla .puerta-derecha > :is(.puerta-alzado,.puerta-corte-resumen) { flex:none; overflow:visible; }
 .systemdock-pantalla .puerta-alzado svg { flex:none; width:100%; height:auto; min-height:0; }

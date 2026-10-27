@@ -53,7 +53,7 @@ function Huecos({huecos,cambiar}:{huecos:Hueco[];cambiar:(h:Hueco[])=>void}) {
   </div>)}<button type="button" className="ghost-button" onClick={()=>cambiar([...huecos,{x:0,y:0,ancho:12,alto:7.5,radio:0.5}])}>Añadir hueco</button></div>;
 }
 type PestanaPuerta='puerta'|'estructura'|'entradas'|'ventanas'|'saco'|'texto';
-function Configurar({p,cambiar,corte,derecha='alzado',cambiarDerecha}:{p:Puerta;cambiar:(p:Puerta)=>void;corte?:React.ReactNode;derecha?:'alzado'|'corte';cambiarDerecha?:(v:'alzado'|'corte')=>void}) {
+function Configurar({p,cambiar,corte,derecha='alzado'}:{p:Puerta;cambiar:(p:Puerta)=>void;corte?:React.ReactNode;derecha?:'alzado'|'corte'}) {
   const resultado=calcularPuerta(p);
   const [pestana,setPestana]=useState<PestanaPuerta>('puerta');
   const formularioFluido=useContenidoFluido<HTMLElement>(pestana);
@@ -199,8 +199,6 @@ function Configurar({p,cambiar,corte,derecha='alzado',cambiarDerecha}:{p:Puerta;
       </section>
       {/* Lo que falta, junto al alzado: se ve sin bajar hasta el final (Iván, 25/10/2026). */}
       <div className="puerta-derecha" ref={dibujoFluido}>
-        {/* El corte entero a un clic, sin bajar (Iván, 26/10/2026). */}
-        {!sd&&corte&&cambiarDerecha&&<div className="tira-3d puerta-derecha-pestanas" role="group" aria-label="Ver junto al configurador">{(['alzado','corte'] as const).map(v=><button type="button" key={v} className={`pestana ${derecha===v?'pestana-activa':''}`} aria-pressed={derecha===v} onClick={()=>cambiarDerecha(v)}>{v==='alzado'?'Alzado':'Corte'}</button>)}</div>}
         {derecha==='corte'&&corte?corte:<AlzadoPuerta puerta={p} resultado={resultado}/>}
         <section className="puerta-avisos panel panel-vidrio" aria-label="Comprobaciones de puerta">
           <h2>Qué falta o revisar <span>{resultado.avisos.filter(a=>a.nivel==='error').length} pendientes</span></h2>
@@ -525,8 +523,9 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
     </div></div>
     </section>
     <div className="puerta-selector"><div className="tira-3d" role="group" aria-label={sd?'Lonas del pedido':'Puertas del pedido'}>{pedido.elementos.map((e,i)=><button type="button" key={e.id} className={`pestana ${indice===i?'pestana-activa':''}`} aria-pressed={indice===i} onClick={()=>setIndice(i)}>{e.input.modelo==='SYSTEMDOCK'?'Lona':'Puerta'} {i+1} · {e.input.of||'SIN OF'}</button>)}</div><button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:[...pedido.elementos,{id:uid(),input:sd?nuevaLona():nuevaPuerta()}]});setIndice(pedido.elementos.length);}}><Plus size={16}/>{sd?'Añadir lona':'Añadir puerta'}</button>{pedido.elementos.length>1&&<button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:pedido.elementos.filter((_,i)=>i!==indice)});setIndice(Math.max(0,indice-1));}}><Trash2 size={16}/>{sd?'Quitar lona':'Quitar puerta'}</button>}
-    {sd&&<div className="tira-3d systemdock-vistas" role="group" aria-label="Ver junto al configurador">{(['alzado','corte'] as const).map(v=><button type="button" key={v} className={`pestana ${derecha===v?'pestana-activa':''}`} aria-pressed={derecha===v} onClick={()=>setDerecha(v)}>{v==='alzado'?'Alzado':'Corte'}</button>)}</div>}
+    {/* Alzado / Corte en la línea de las puertas o lonas, a la derecha (Iván, 27/10/2026). */}
+    <div className="tira-3d puerta-vistas" role="group" aria-label="Ver junto al configurador">{(['alzado','corte'] as const).map(v=><button type="button" key={v} className={`pestana ${derecha===v?'pestana-activa':''}`} aria-pressed={derecha===v} onClick={()=>setDerecha(v)}>{v==='alzado'?'Alzado':'Corte'}</button>)}</div>
     </div>
-    <div ref={elementoFluido}><Configurar key={pedido.elementos[indice].id} p={pedido.elementos[indice].input} cambiar={p=>setPedido({...pedido,elementos:pedido.elementos.map((e,i)=>i===indice?{...e,input:p}:e)})} corte={<CorteResumen vista={vistaCorte}/>} derecha={derecha} cambiarDerecha={setDerecha}/></div>
+    <div ref={elementoFluido}><Configurar key={pedido.elementos[indice].id} p={pedido.elementos[indice].input} cambiar={p=>setPedido({...pedido,elementos:pedido.elementos.map((e,i)=>i===indice?{...e,input:p}:e)})} corte={<CorteResumen vista={vistaCorte}/>} derecha={derecha}/></div>
   </div>;
 }

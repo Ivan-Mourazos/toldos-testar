@@ -8,13 +8,21 @@ const ELEGIDA = ':scope > :is(.pestana-activa, .glass-chip-activo, .segmented-op
 
 function colocar(contenedor: HTMLElement) {
   const elegida = contenedor.querySelector<HTMLElement>(ELEGIDA);
-  if (!elegida || elegida.offsetParent !== contenedor || !elegida.offsetWidth) {
+  if (!elegida || !elegida.offsetWidth) {
     delete contenedor.dataset.pildora;
     return;
   }
   const s = contenedor.style;
-  s.setProperty('--px', `${elegida.offsetLeft}px`);
-  s.setProperty('--py', `${elegida.offsetTop}px`);
+  // Una tira sin posición propia (p. ej. los pasos de la puerta) aún no es el offsetParent de sus botones la primera
+  // vez: entonces se mide con los rectángulos, y desde ahí el CSS ya la deja en position:relative.
+  let x = elegida.offsetLeft, y = elegida.offsetTop;
+  if (elegida.offsetParent !== contenedor) {
+    const a = elegida.getBoundingClientRect(), c = contenedor.getBoundingClientRect();
+    x = a.left - c.left - contenedor.clientLeft;
+    y = a.top - c.top - contenedor.clientTop;
+  }
+  s.setProperty('--px', `${x}px`);
+  s.setProperty('--py', `${y}px`);
   s.setProperty('--pw', `${elegida.offsetWidth}px`);
   s.setProperty('--ph', `${elegida.offsetHeight}px`);
   // La primera vez se coloca sin animar; a partir de ahí, se desliza.

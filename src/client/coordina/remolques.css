@@ -851,7 +851,8 @@
 /* El dibujo siempre a la vista (Iván, 26/10/2026): la columna derecha queda fija con el alto de la pantalla y los
    resultados se desplazan dentro, debajo del dibujo. */
 .rem-editor-derecha { position: sticky; top: 12px; height: calc(100vh - 120px); min-height: 34rem; overflow: hidden; }
-.rem-editor-derecha > .pestanas-derecha { flex: none; }
+.rem-tira-linea { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.rem-tira-linea > .rem-vistas { margin-left: auto; display: inline-flex; }
 .rem-editor-derecha > .rem-dibujo { flex: 1 1 auto; min-height: 18rem; }
 .rem-editor-derecha .rem-render,
 .rem-editor-derecha .rem-render[data-vista] { flex: 1 1 auto; height: auto; min-height: 0; }

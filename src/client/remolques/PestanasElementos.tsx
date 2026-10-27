@@ -13,7 +13,7 @@ import { rotuloElemento } from './rotulo';
 // guardado abierto en Pedidos) solo se cambia de pestaña: sin «+ Remolque», «+ Baquetón» ni «×».
 
 export function PestanasElementos({
-  lineas, estadosLinea, versionActiva, puedeAnadir, onSeleccionar, onEliminar, onNuevo, acciones, pie, soloLectura = false,
+  lineas, estadosLinea, versionActiva, puedeAnadir, onSeleccionar, onEliminar, onNuevo, acciones, vistas, pie, soloLectura = false,
 }: {
   lineas: LineaPedido[];
   estadosLinea: Record<string, EstadoLinea>;
@@ -25,6 +25,8 @@ export function PestanasElementos({
   onNuevo: (tipo: TipoPlanteamiento) => void;
   /** Acciones del pedido entero, antes de «+ Remolque» (la vista previa del PDF). */
   acciones?: React.ReactNode;
+  /** En la línea de las pestañas, a la derecha: «Dibujo / Corte del pedido» (Iván, 27/10/2026). */
+  vistas?: React.ReactNode;
   /** Debajo de las pestañas (qué falta para el PDF). */
   pie?: React.ReactNode;
   /** Solo para mirar: ni añadir ni quitar elementos. */
@@ -54,6 +56,7 @@ export function PestanasElementos({
       </div>
 
       {lineas.length > 0 && (
+        <div className="rem-tira-linea">
         <div className="tira-3d rem-tira" role="group" aria-label="Elementos del pedido">
           {lineas.map((linea, indice) => {
             const activa = linea.version === versionActiva;
@@ -94,6 +97,8 @@ export function PestanasElementos({
               </div>
             );
           })}
+        </div>
+        {vistas}
         </div>
       )}
       {pie}

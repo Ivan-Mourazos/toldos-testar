@@ -185,6 +185,10 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
         onSeleccionar={ws.seleccionarLinea}
         onEliminar={(version) => void ws.eliminarLinea(version)}
         onNuevo={ws.nuevaLinea}
+        vistas={<div className="tira-3d rem-vistas" role="group" aria-label="Ver junto al formulario">
+          {(['dibujo', 'corte'] as const).map((v) => <button type="button" key={v} className={`pestana ${derecha === v ? 'pestana-activa' : ''}`}
+            aria-pressed={derecha === v} onClick={() => setDerecha(v)}>{v === 'dibujo' ? 'Dibujo' : 'Corte del pedido'}</button>)}
+        </div>}
         pie={lineas.length > 0 && faltaPdf
           ? <p className="rem-pdf-falta" role="status">Para la vista previa del PDF falta: {faltaPdf}</p>
           : null}
@@ -249,10 +253,6 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
             >
               {/* El render 3D (fase 2b) y, de respaldo, el dibujo de la web de remolques (DibujoElemento,
                   el mismo que el del pedido guardado abierto en Pedidos). */}
-              {lineas.length > 0 && <div className="tira-3d pestanas-derecha" role="group" aria-label="Ver junto al formulario">
-                {(['dibujo', 'corte'] as const).map((v) => <button type="button" key={v} className={`pestana ${derecha === v ? 'pestana-activa' : ''}`}
-                  aria-pressed={derecha === v} onClick={() => setDerecha(v)}>{v === 'dibujo' ? 'Dibujo' : 'Corte del pedido'}</button>)}
-              </div>}
               {derecha === 'corte' ? <VistaPreviaCorte vista={vistaCorte} /> : <>
               <DibujoElemento params={params} elemento={lineaActiva.tipo === 'lona'
                 ? { tipo: 'lona', input: lona, res: resLona }
