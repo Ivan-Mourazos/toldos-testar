@@ -169,6 +169,7 @@ function datosCortina(toldo) {
     anchoCristal: CRISTAL.ancho,
     laterales: toldo.curtainFinish === 'VELCRO' ? 'VELCRO' : 'NORMAL',
     alturaVelcro: configuredCurtainVelcroHeight(toldo),
+    velcro: { ancho: normalizeCurtainConfiguration(toldo).curtainVelcroWidth, bravo: normalizeCurtainConfiguration(toldo).curtainVelcroType === 'BRAVO' },
     etiquetaVelcro: formatCurtainVelcroLabel(toldo)
   };
 }

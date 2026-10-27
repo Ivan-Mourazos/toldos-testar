@@ -26,7 +26,7 @@ const TAMANO_HOJA = 585;    // tamaño de dibujo a partir del cual los textos ya
 const ENTRE_HOJAS = 300;    // cm entre toldos de presentaciones distintas, para que no asome uno en la del otro
 
 export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales = []) {
-  const L = [], P = [], T = [], Q = [];   // en cm; se pasan a metros al final (Q: cotas)
+  const L = [], P = [], T = [], Q = [], S = [];   // en cm; se pasan a metros al final (Q: cotas; S: sombreados)
   const linea = (capa, x1, y1, x2, y2) => L.push({ capa, x1, y1, x2, y2 });
   const rect = (capa, x0, y0, x1, y1) => P.push({ capa, puntos: [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], cerrada: true });
   // Cada texto se ajusta a su hueco: si a su altura no cabe en `max` cm, se reduce (Iván: en los
@@ -82,7 +82,7 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
       continue;
     }
     if (t.cortina) {
-      x += alzadoCortina(t, corteRollo.piezas[i].piezas, x, { linea, rect, texto, cota, mini }) + ENTRE_TOLDOS;
+      x += alzadoCortina(t, corteRollo.piezas[i].piezas, x, { linea, rect, texto, cota, mini, S }) + ENTRE_TOLDOS;
       continue;
     }
     const A = { ...AJUSTES_POR_DEFECTO, ...t.ajustes };
@@ -300,6 +300,7 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
   return {
     capas: CAPAS,
     ...convertir(L.slice(0, desde.L), P.slice(0, desde.P), T.slice(0, desde.T), Q.slice(0, desde.Q)),
+    sombreados: S.map((s) => ({ ...s, puntos: s.puntos.map(([a, b]) => [px(a), py(b)]) })),
     corte: convertir(L.slice(desde.L), P.slice(desde.P), T.slice(desde.T), Q.slice(desde.Q), dx, dy),
     zonas: { toldos: zona(toldos), corte: zona({ x0: zonaCorte.x0 + dx, x1: zonaCorte.x1 + dx, y0: zonaCorte.y0 + dy, y1: zonaCorte.y1 + dy }) },
     // Cada presentación con su nombre («TOLDO A», «TOLDOS C, D + E») y sus OF en el cajetín; el corte, en todas.
@@ -323,7 +324,7 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
  * rotulador y sus textos; con ventana, las bandas, los laterales y el cristal despiezados; la bamba debajo.
  * Las cotas impresas son las terminadas; las de corte van en la capa que no se imprime. Devuelve su ancho.
  */
-function alzadoCortina(t, piezas, x0, { linea, rect, texto, cota, mini }) {
+function alzadoCortina(t, piezas, x0, { linea, rect, texto, cota, mini, S }) {
   const R = REGLAS_CORTINA, c = t.cortina, F = t.frenteTela;
   const W = F + 2 * R.bastillaLado, et = c.abajo === 'ET';
   const [cx0, cx1] = [x0, x0 + W], [fx0, fx1] = [x0 + R.bastillaLado, x0 + W - R.bastillaLado], cx = x0 + W / 2;
@@ -374,6 +375,17 @@ function alzadoCortina(t, piezas, x0, { linea, rect, texto, cota, mini }) {
   const lateral = empate ? 'AL CORTE' : c.laterales === 'VELCRO'
     ? `B.N(4) · ${etiquetaVelcro}${c.alturaVelcro ? ` HASTA ${n(c.alturaVelcro)}` : ''}` : 'B.N(4)';
   for (const xl of [cx0 - 10, cx1 + 10]) texto(lateral, xl, (yc0 + yc1) / 2, 10, 90, 'texto', (yc1 - yc0) * 0.85);
+  // El velcro dibujado en cada lateral, después de la bastilla y desde abajo hasta su alto, como en AR2600842;
+  // rayado el suave y relleno el bravo, como en la plantilla de puertas (Iván, 27/10/2026).
+  if (!empate && c.laterales === 'VELCRO') {
+    const ancho = c.velcro?.ancho ?? 5;
+    const yv1 = Math.min(yf1, c.alturaVelcro ? yf0 + c.alturaVelcro : yf1);
+    for (const xv of [fx0 + R.bastillaLado, fx1 - R.bastillaLado - ancho]) {
+      const puntos = [[xv, yf0], [xv + ancho, yf0], [xv + ancho, yv1], [xv, yv1]];
+      rect('referencia-1', xv, yf0, xv + ancho, yv1);
+      S.push({ capa: 'referencia-1', puntos, solido: !!c.velcro?.bravo });
+    }
+  }
   const unidades = t.unidades > 1 ? [`${t.unidades} UDS`] : [];
   // Uniones de una pieza (mm desde su esquina de abajo a la izquierda) puestas en el alzado.
   const uniones = (p, ox, oy) => (p.uniones ?? []).forEach((u) => mini(u.valor, ox + u.u / 10, oy + u.v / 10));

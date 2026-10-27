@@ -327,6 +327,19 @@ describe('Del pedido guardado al corte de lona', () => {
     const salida = generar(order);
     expect(salida.avisos).toEqual([]);
     expect(salida.plano[0].dxf).toContain('B.N(4) · VELCRO BRAVO (5) NEGRO POR REVÉS HASTA 215');
+    // Y dibujado (Iván, 27/10/2026): una franja de 5 en cada lateral, después de la bastilla, rellena por ser bravo.
+    const franjas = (o) => registrosDxf(generar(o).plano[0].dxf).filter((r) => r.tipo === 'HATCH' && valor(r, 8) === 'referencia-1');
+    const bravo = franjas(order);
+    expect(bravo).toHaveLength(2);
+    expect(bravo.every((r) => valor(r, 2) === 'SOLID')).toBe(true);
+    const anchos = bravo.map((r) => { const xs = r.pares.filter(([k]) => k === 10).map(([, v]) => Number(v)).slice(1); return Math.round((Math.max(...xs) - Math.min(...xs)) * 1000) / 10; });
+    expect(anchos).toEqual([5, 5]);
+    const suave = { ...order, awnings: [{ ...order.awnings[0], curtainVelcroType: 'SUAVE' }] };
+    expect(franjas(suave).every((r) => valor(r, 2) === 'ANGLE')).toBe(true);
+    // Sin velcro en los laterales, ni texto ni franjas.
+    const normal = { ...order, awnings: [{ ...order.awnings[0], curtainFinish: 'NORMAL' }] };
+    expect(franjas(normal)).toHaveLength(0);
+    expect(generar(normal).plano[0].dxf).not.toContain('· VELCRO');
   });
 
   it('corta las 7 solapas de AR2604205 con empate en la oblicua D y avisa si lleva bastilla', () => {
