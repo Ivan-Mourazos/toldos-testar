@@ -112,15 +112,15 @@ function Configurar({p,cambiar,corte,derecha='alzado'}:{p:Puerta;cambiar:(p:Puer
         </>}
         {ver('estructura')&&<>
         {p.modelo==='PUERTAENR'&&<fieldset><legend>Ventanal superior</legend><div className="puerta-campos">
-          <Numero titulo="T · desde arriba al eje (cm)" valor={p.enrollable.T||null} cambiar={v=>set('enrollable',{...p.enrollable,T:v??0})}/>
-          <Numero titulo="D · entre ejes (cm)" valor={p.enrollable.D} cambiar={v=>set('enrollable',{...p.enrollable,D:v??0})}/>
+          <Numero titulo={p.enrollable.sinEtArriba?'T · desde arriba al borde del paño (cm)':'T · desde arriba al eje (cm)'} valor={p.enrollable.T||null} cambiar={v=>set('enrollable',{...p.enrollable,T:v??0})}/>
+          <Numero titulo={p.enrollable.sinEtArriba?(p.enrollable.sinEtAbajo&&!p.enrollable.ventanales?.length?'D · entre bordes de paño (cm)':'D · del borde del paño al eje (cm)'):p.enrollable.sinEtAbajo&&!p.enrollable.ventanales?.length?'D · del eje al borde del paño (cm)':'D · entre ejes (cm)'} valor={p.enrollable.D} cambiar={v=>set('enrollable',{...p.enrollable,D:v??0})}/>
           <Numero titulo="Margen lateral m (cm)" valor={p.enrollable.margen||null} cambiar={v=>set('enrollable',{...p.enrollable,margen:v??0})}/>
         </div>
           {/* Iván, 27/10/2026 (AR2605247): hay puertas sin E.T. encima del ventanal de arriba. */}
-          <label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.enrollable.sinEtArriba)} onChange={e=>set('enrollable',{...p.enrollable,sinEtArriba:e.target.checked})}/>Sin E.T. encima del ventanal: el paño grande solapa 2 cm sobre el cristal y los cachos</label>
-          <label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.enrollable.sinEtAbajo)} onChange={e=>set('enrollable',{...p.enrollable,sinEtAbajo:e.target.checked})}/>Sin E.T. debajo del ventanal de abajo: el paño de abajo solapa 2 cm sobre el cristal y los cachos</label>
+          <label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.enrollable.sinEtArriba)} onChange={e=>set('enrollable',{...p.enrollable,sinEtArriba:e.target.checked})}/>Sin E.T. encima del ventanal: T al borde del paño, sin marcas de E.T.</label>
+          <label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.enrollable.sinEtAbajo)} onChange={e=>set('enrollable',{...p.enrollable,sinEtAbajo:e.target.checked})}/>Sin E.T. debajo del ventanal de abajo: cota al borde del paño, sin marcas de E.T.</label>
           {(p.enrollable.ventanales??[]).map((v,i)=><fieldset key={i}><legend>Ventanal {i+2} · debajo del anterior</legend><div className="puerta-campos">
-            <Numero titulo={`D · entre ejes ventanal ${i+2} (cm)`} valor={v.D} cambiar={n=>set('enrollable',{...p.enrollable,ventanales:p.enrollable.ventanales!.map((v,j)=>i===j?{...v,D:n??0}:v)})}/>
+            <Numero titulo={p.enrollable.sinEtAbajo&&i===p.enrollable.ventanales!.length-1?`D · del eje al borde del paño ventanal ${i+2} (cm)`:`D · entre ejes ventanal ${i+2} (cm)`} valor={v.D} cambiar={n=>set('enrollable',{...p.enrollable,ventanales:p.enrollable.ventanales!.map((v,j)=>i===j?{...v,D:n??0}:v)})}/>
             <Numero titulo={`Margen lateral ventanal ${i+2} (cm)`} valor={v.margen} cambiar={n=>set('enrollable',{...p.enrollable,ventanales:p.enrollable.ventanales!.map((v,j)=>i===j?{...v,margen:n??0}:v)})}/>
             <button type="button" className="ghost-button" onClick={()=>set('enrollable',{...p.enrollable,ventanales:p.enrollable.ventanales!.filter((_,j)=>j!==i)})}>Quitar ventanal {i+2}</button>
           </div></fieldset>)}

@@ -4,6 +4,7 @@ import { repartirPanos, type RepartoPanos } from './empates.ts';
 import { marcasBolsillo } from './bolsillo.ts';
 import { numerarBorde } from './unionesCorte.ts';
 import { calcularSystemDock } from './systemDock.ts';
+import { ventanalesEnrollable } from './ventanalesEnrollable.ts';
 import { bajoDobleSaco, desnivelSuelo, espejarPieza, inclinarSaco, pestanaDerecha, sacoApilable, sacoPuerta, sacoUtil } from './saco.ts';
 
 export const MODELOS_PUERTAS: Record<ModeloPuerta, string> = { PUERTAENR: 'Enrollable', PUERTAPLE: 'Apilable', PUERTAUTO: 'Autorreparable', SYSTEMDOCK: 'System Dock' };
@@ -120,17 +121,19 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     return x;
   }
   if (p.modelo === 'PUERTAENR') {
-    const e = p.enrollable, ventanales=[{D:e.D,margen:e.margen},...e.ventanales??[]];
+    const e = p.enrollable, ventanales=ventanalesEnrollable(p);
     const altoVentanales=ventanales.reduce((s,v)=>s+v.D,0), s = sacoPuerta(p), origenInferior = s.rematado;
     // La E.T. que no lleva el ventanal, arriba o abajo (Iván, 27/10/2026, AR2605247): ni se corta ni se marca.
     const etVentanal=(t:Entrada)=>Boolean(e.sinEtArriba)&&Math.abs(t.altura-(p.alto-e.T))<.01
       ||Boolean(e.sinEtAbajo)&&Math.abs(t.altura-(p.alto-e.T-altoVentanales))<.01;
     // El paño inferior arranca en el rematado del saco, lo libre (13 con el de 120), y acaba donde siempre; el saco
     // sube 2 más para la soldadura (Iván, 24/10/2026).
-    const inferior = n(p.alto - e.T - altoVentanales + 3.75 - origenInferior);
-    if (!positivo(e.T) || ventanales.some(v=>!positivo(v.D)||v.D<=7.5||!positivo(v.margen)||2*v.margen>=p.frente) || e.T + altoVentanales >= p.alto) aviso('VENTANAL', 'Revisa T, las distancias entre ejes y los márgenes de cada ventanal.');
+    const bordeSuperior = p.alto - e.T - (e.sinEtArriba ? 0 : 3.75);
+    const bordeInferior = p.alto - e.T - altoVentanales + (e.sinEtAbajo ? 0 : 3.75);
+    const inferior = n(bordeInferior - origenInferior);
+    if (!positivo(e.T) || ventanales.some(v=>!positivo(v.D)||v.altoVisible<=0||!positivo(v.margen)||2*v.margen>=p.frente) || e.T + altoVentanales >= p.alto) aviso('VENTANAL', 'Revisa T, las cotas de los ventanales y los márgenes laterales.');
     const incorporadas=new Set<number>();
-    for (const [nombre,h,origen] of [['superior',e.T+7.25,p.alto-e.T-3.75],['inferior',inferior,origenInferior]] as const) {
+    for (const [nombre,h,origen] of [['superior',p.alto+3.5-bordeSuperior,bordeSuperior],['inferior',inferior,origenInferior]] as const) {
       const manual=e.empates.filter(u=>u.pano===nombre);
       const tubos=p.entradas.map((t,i)=>({eje:t.altura-origen,solape:REGLAS_ENROLLABLE.solapeEntrada,tubo:i+1})).filter(t=>!etVentanal(p.entradas[t.tubo-1]));
       const plan=repartirPanos({desde:0,hasta:h,frente:ancho,rollo:p.rollo,tubos,normal:true,indicados:manual.length?manual.map(u=>({eje:u.altura,solape:u.solape,tubo:u.tubo})):undefined});
@@ -143,11 +146,9 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       // También en el dibujo: sin esto los mininúmeros de los paños salían contados desde el bajo de la puerta (27/10/2026).
       for(const panel of grupo) {panel.desde+=origen;panel.hasta+=origen;panel.pieza.origenAlzado=[-lateral,panel.desde];}
       const marcarEn=(y:number,dir?:1|-1)=>{const panel=grupo.find(t=>y>=t.desde&&y<=t.hasta);if(panel)marca(panel.pieza,y-panel.desde,dir);};
-      // Sin E.T. encima del ventanal, el paño grande lleva la marca donde llega el cristal (2 cm sobre su borde) en vez de
-      // la de la E.T. (Iván, 27/10/2026, AR2605247).
-      marcarEn(origen+(nombre==='superior'?(e.sinEtArriba?2:7.5):2),nombre==='superior'?-1:undefined);
-      // Y lo mismo abajo: sin E.T. bajo el ventanal de abajo, la marca del paño donde llega el cristal.
-      marcarEn(origen+h-(nombre==='superior'?7:e.sinEtAbajo?2:7.5),nombre==='inferior'?1:undefined);
+      // Sin E.T., ninguna raya en ese borde; se conservan la varilla y la soldadura del saco.
+      if(nombre==='inferior'||!e.sinEtArriba) marcarEn(origen+(nombre==='superior'?7.5:2),nombre==='superior'?-1:undefined);
+      if(nombre==='superior'||!e.sinEtAbajo) marcarEn(origen+h-(nombre==='superior'?7:7.5),nombre==='inferior'?1:undefined);
       for(const [i,t] of p.entradas.entries()) {
         if(plan.uniones.some(u=>u.tubo===i+1)||etVentanal(t))continue;
         const y=t.altura-REGLAS_ENROLLABLE.solapeEntrada/2;
@@ -155,8 +156,8 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       }
     }
     if(ventanales.length===1) {
-      agregar(pieza('Cristal del ventanal', 'cristal', p.frente-2*e.margen+4, e.D-3.5, p.materialCristal,p.rolloCristal));
-      agregar(pieza('Cachos laterales', 'cacho', e.margen+1,e.D-3.5,lona,p.rollo,2));
+      agregar(pieza('Cristal del ventanal', 'cristal', p.frente-2*e.margen+4, ventanales[0].altoCorte, p.materialCristal,p.rolloCristal));
+      agregar(pieza('Cachos laterales', 'cacho', e.margen+1,ventanales[0].altoCorte,lona,p.rollo,2));
     } else {
       // AR2605065 (A) y AR2605038 (D): los cachos son piezas sueltas, no huecos de un paño entero.
       const separaciones:Array<{delantera:PiezaPuerta;trasera:PiezaPuerta}>=[];
@@ -171,14 +172,13 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
         separaciones.push({delantera,trasera});
         p.entradas.forEach((t,j)=>{if(Math.abs(t.altura-eje)<.001)incorporadas.add(j+1);});
       }
-      const superior=paneles.find(t=>t.desde<=p.alto-e.T-3.75+.001&&t.hasta>p.alto-e.T)!;
-      const abajo=p.alto-e.T-altoVentanales;
-      const inferior=paneles.find(t=>t.desde<abajo&&t.hasta>=abajo+3.75-.001)!;
+      const superior=paneles.find(t=>t.desde<=bordeSuperior+.001&&t.hasta>bordeSuperior)!;
+      const inferior=paneles.find(t=>t.desde<bordeInferior&&t.hasta>=bordeInferior-.001)!;
       for(const [i,v] of ventanales.entries()) {
-        agregar(pieza(`Cristal del ventanal ${i+1}`,'cristal',p.frente-2*v.margen+4,v.D-3.5,p.materialCristal,p.rolloCristal));
+        agregar(pieza(`Cristal del ventanal ${i+1}`,'cristal',p.frente-2*v.margen+4,v.altoCorte,p.materialCristal,p.rolloCristal));
         for(const [lado,nombre] of ['izquierdo','derecho'].entries()) {
-          const cacho=agregar(pieza(`Cacho ${nombre} · ventanal ${i+1}`,'cacho',v.margen+1,v.D-3.5));
-          cacho.origenAlzado=[lado===0?-1:p.frente-v.margen,p.alto-e.T-ventanales.slice(0,i+1).reduce((s,v)=>s+v.D,0)+1.75];
+          const cacho=agregar(pieza(`Cacho ${nombre} · ventanal ${i+1}`,'cacho',v.margen+1,v.altoCorte));
+          cacho.origenAlzado=[lado===0?-1:p.frente-v.margen,n(p.alto-v.corteHasta)];
           // Cada pareja de mininúmeros en el mismo punto de la puerta (Iván, 27/10/2026: «no quedan exactos»): a 4 cm del
           // borde de la puerta, no del de cada pieza (el cacho es 1 cm más ancho para escuadrar), y en medio de lo que se
           // solapan las dos piezas. Antes el del cacho quedaba 1 cm hacia fuera y, en la E.T. del medio, 0,25 desplazado.

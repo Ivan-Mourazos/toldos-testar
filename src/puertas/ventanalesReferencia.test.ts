@@ -28,6 +28,10 @@ describe('AR2605065: E.T. entre ventanales alineada con los paños', () => {
     expect(tiras[0]).toMatchObject({ ancho: 214, alto: 8, origenAlzado: [0, 127] });
     expect(tiras[0].unionesCorte).toHaveLength(4);
     expect(tiras[1].unionesCorte ?? []).toHaveLength(0);
+    for (const u of tiras[0].unionesCorte ?? []) {
+      expect(g.formas.filter(a => a.tipo === 'texto' && a.lineas[0] === `a${u.numero}`))
+        .toMatchObject([{ x: u.x, y: p.alto - tiras[0].origenAlzado![1] - u.y, tamano: 1 }]);
+    }
     const cachos = r.piezas.filter(a => a.clase === 'cacho');
     expect(Math.min(...cachos.map(a => a.origenAlzado![0]))).toBe(-1);
     expect(Math.max(...cachos.map(a => a.origenAlzado![0] + a.ancho))).toBe(215);

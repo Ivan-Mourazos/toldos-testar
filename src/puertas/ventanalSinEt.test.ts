@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { calcularPuerta } from './calcular.ts';
 import { dibujarAlzadoEnrollable } from './planoEnrollable.ts';
+import { geometriaAlzado } from './alzado.ts';
+import { generarCortePuertas } from './corte.ts';
+import { pedidoDe } from './__fixtures__/ejemplos.ts';
 import type { Puerta } from './tipos.ts';
 
 // AR2605247 (Iván, 27/10/2026): enrollable de 282 × 390 con dos ventanales seguidos y sin E.T. encima del de arriba.
@@ -20,13 +23,16 @@ const puerta = (sinEtArriba?: boolean): Puerta => ({
 const rayas = (marcas: number[][]) => marcas.filter(m => Math.abs(m[1] - m[3]) < .001 && Math.abs(m[2] - m[0]) > 3).map(m => m[1]);
 
 describe('Enrollable sin E.T. encima del ventanal', () => {
-  it('no corta la E.T. de arriba y marca el paño grande donde llega el cristal; los cachos, sin marca', () => {
+  it('acota al borde del paño y no deja ninguna raya de la E.T. de arriba', () => {
     const r = calcularPuerta(puerta(true));
     expect(r.piezas.filter(x => x.nombre.startsWith('Entrada de tubo')).map(x => x.origenAlzado?.[1])).toEqual([24, 95]);
     const superior = r.piezas.find(x => x.nombre === 'Paño superior')!;
-    // El paño baja hasta 186,25 y el cristal llega a 188,25: la marca a 2 de su borde, no la de la E.T. (7,5).
-    expect(rayas(superior.marcas)).toContain(2);
+    // Propuesta pendiente de confirmar por Iván: T=200 al borde del paño; arriba conserva sus 3,5 de varilla.
+    expect(superior.alto).toBe(203.5);
+    expect(superior.origenAlzado?.[1]).toBe(190);
+    expect(rayas(superior.marcas)).not.toContain(2);
     expect(rayas(superior.marcas)).not.toContain(7.5);
+    expect(r.piezas.find(x => x.nombre === 'Cristal del ventanal 1')).toMatchObject({ alto: 31.25 });
     // Los cachos no llevan marca (Iván, 27/10/2026).
     for (const lado of ['izquierdo', 'derecho']) expect(r.piezas.find(x => x.nombre === `Cacho ${lado} · ventanal 1`)!.marcas).toEqual([]);
   });
@@ -50,6 +56,38 @@ describe('Enrollable sin E.T. encima del ventanal', () => {
     const huecos = (sin: boolean) => textos(sin).filter(v => v === '3 CM (HUECOS)').length;
     expect(huecos(true)).toBe(huecos(false) - 1);
     expect(textos(true)).toContain('SIN E.T.: SOLAPAR 2 CM SOBRE EL CRISTAL');
+    const l = dibujarAlzadoEnrollable(puerta(true), 'A').lienzo;
+    expect(l.lineas.filter(a => a.capa === 'ROTULADOR' && a.y1 === a.y2 && a.y1 > -208 && a.y1 < -192)).toEqual([]);
+    expect(l.lineas.some(a => a.capa === 'DISCO1' && a.y1 === -200 && a.y2 === -200)).toBe(true);
+    expect(l.cotas.some(a => a.valor === 200 && a.y2 === -200)).toBe(true);
+    const g = geometriaAlzado(puerta(true), calcularPuerta(puerta(true)));
+    expect(g.formas.filter(a => a.tipo === 'rect' && a.clase === 'puerta-cristal')[0]).toMatchObject({ y: 200, alto: 27.25 });
+    expect(g.formas.filter(a => a.tipo === 'linea' && a.clase === 'puerta-rotulador' && a.y1 > 192 && a.y1 < 208)).toEqual([]);
+  });
+
+  it('el bot no añade la raya de 2 ni la de 7,5 al girar el paño superior', () => {
+    const c = generarCortePuertas(pedidoDe('AR2605247', puerta(true))).cortes.find(c => c.colocadas.some(t => t.pieza.nombre === 'Paño superior'))!;
+    const t = c.colocadas.find(t => t.pieza.nombre === 'Paño superior')!;
+    expect(t.pieza.alto).toBe(203.5);
+    for (const y of [2, 7.5]) {
+      const punto = (x: number) => t.girada ? [t.x + (t.pieza.alto - y) * 10, t.y + x * 10] : [t.x + x * 10, t.y + y * 10];
+      const [x1, y1] = punto(1.5), [x2, y2] = punto(t.pieza.ancho - 1.5);
+      expect(c.entidades.lineas.some(a => a.capa === 'ROTULADOR' && Math.abs(a.x1 - x1) < .001 && Math.abs(a.y1 - y1) < .001
+        && Math.abs(a.x2 - x2) < .001 && Math.abs(a.y2 - y2) < .001)).toBe(false);
+    }
+  });
+
+  it('un único ventanal sin E.T. en ambos extremos conserva 2 cm de solape a cada lado', () => {
+    const p = puerta(true);
+    p.enrollable.ventanales = [];
+    p.enrollable.sinEtAbajo = true;
+    const r = calcularPuerta(p);
+    expect(r.piezas.find(a => a.clase === 'cristal')?.alto).toBe(35);
+    expect(r.piezas.find(a => a.clase === 'cacho')?.alto).toBe(35);
+    expect(r.piezas.find(a => a.nombre === 'Paño superior')?.alto).toBe(203.5);
+    expect(r.piezas.find(a => a.nombre === 'Paño inferior')?.alto).toBe(150);
+    expect(geometriaAlzado(p, r).formas.filter(a => a.tipo === 'rect' && a.clase === 'puerta-cristal'))
+      .toMatchObject([{ y: 200, alto: 31 }]);
   });
 });
 
@@ -60,13 +98,15 @@ describe('Enrollable sin E.T. debajo del ventanal de abajo', () => {
     p.entradas = p.entradas.filter(t => t.altura !== 99);
     return p;
   };
-  it('no corta la E.T. de abajo y marca el paño de abajo donde llega el cristal; los cachos, sin marca', () => {
+  it('el paño inferior termina en el borde acotado, sin raya de la E.T. que no lleva', () => {
     const r = calcularPuerta(abajo());
     expect(r.piezas.filter(x => x.nombre.startsWith('Entrada de tubo')).map(x => x.origenAlzado?.[1])).toEqual([24, 186]);
     const inferior = r.piezas.find(x => x.nombre === 'Paño inferior')!;
-    // El paño sube hasta 102,75 y el cristal baja a 100,75: la marca a 2 de su borde de arriba, no la de la E.T.
-    expect(rayas(inferior.marcas)).toContain(inferior.alto - 2);
+    expect(inferior.alto).toBe(90);
+    expect(inferior.origenAlzado?.[1]).toBe(9);
+    expect(rayas(inferior.marcas)).not.toContain(inferior.alto - 2);
     expect(rayas(inferior.marcas)).not.toContain(inferior.alto - 7.5);
+    expect(r.piezas.find(x => x.nombre === 'Cristal del ventanal 2')).toMatchObject({ alto: 60.25 });
     for (const lado of ['izquierdo', 'derecho']) expect(r.piezas.find(x => x.nombre === `Cacho ${lado} · ventanal 2`)!.marcas).toEqual([]);
   });
   it('el plano no dibuja la banda de la E.T. de abajo', () => {
@@ -76,8 +116,8 @@ describe('Enrollable sin E.T. debajo del ventanal de abajo', () => {
 });
 
 describe('Mininúmeros de unión del ventanal (AR2605247)', () => {
-  it('cada pareja cae en el mismo punto de la puerta en sus dos piezas', () => {
-    const r = calcularPuerta(puerta());
+  it.each([undefined, true])('con sinEtArriba=%s cada pareja cae en el mismo punto en sus dos piezas', sin => {
+    const r = calcularPuerta(puerta(sin));
     const puntos = new Map<number, Array<[number, number]>>();
     for (const x of r.piezas) for (const u of x.unionesCorte ?? []) {
       const [ox, oy] = x.origenAlzado!;
