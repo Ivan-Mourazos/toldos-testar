@@ -51,3 +51,18 @@ it('no admite una carpeta de producción ni fabrica sin OF o sin programas valid
     oda: { disponible: false } });
   await expect(servicio.abrir({ fecha: '2026-10-31', savedBy: 'IVÁN' })).rejects.toThrow(/validado/);
 });
+
+it('bloquea el envío si el DWG cambia después de confirmar o se eligen sueltas', async () => {
+  const servicio = crearServicioLotes({ carpeta: raiz, leer: async () => [linea], preparar,
+    oda: { disponible: true, convertir: async b => b } });
+  const input = { fecha: '2026-10-31', savedBy: 'IVÁN', sueltas: {} };
+  await servicio.abrir(input);
+  await servicio.confirmar(input);
+  await expect(servicio.mandar({ ...input, sueltas: { '420102-0034': true } })).rejects.toThrow(/opciones/);
+  const dwg = path.join(raiz, 'COMBURSA/2026/Borradores/LOTE 31-10.dwg');
+  const original = await fs.readFile(dwg, 'utf8');
+  const cambiado = original.replaceAll('3.010000', '3.020000');
+  expect(cambiado).not.toBe(original);
+  await fs.writeFile(dwg, cambiado);
+  await expect(servicio.mandar(input)).rejects.toThrow(/DWG ha cambiado/);
+});
