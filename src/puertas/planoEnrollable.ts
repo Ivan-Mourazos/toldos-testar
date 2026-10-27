@@ -99,6 +99,11 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSac
     cota(l, F - m, -t - 5.89, F, -t - 5.89, -t + 13.22);
     cota(l, m - 2, -t - 26.48, F - m + 2, -t - 26.48, -t - 18.56);
   }
+  // AR2605065: la tira intermedia va de 0 a F; los cachos sobresalen 1 cm por cada lado.
+  // Sus cuatro bordes y los mininúmeros del despiece se ven también en el alzado del plano.
+  for (const eje of ejes.slice(1, -1)) {
+    contorno(l, 'DISCO1', [[0, -eje - 3.75], [F, -eje - 3.75], [F, -eje + 3.75], [0, -eje + 3.75]]);
+  }
   // Cada eje por su papel, no por su orden: con una E.T. encima del ventanal (AR2604725, AR2605220) el primero
   // ya no es el eje de arriba del ventanal. Ese marca hacia arriba y el siguiente eje del ventanal, hacia abajo.
   const esEje = (b: number, k: number) => ejes.length > k && Math.abs(ejes[k] - b) < .01;

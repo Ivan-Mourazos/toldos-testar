@@ -281,8 +281,6 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
     linea(l, 'ROTULADOR', 0, -3.5, F, -3.5);
     linea(l, 'ROTULADOR', 0, -20, F, -20);
     linea(l, 'ROTULADOR', 0, -30, F, -30);
-    linea(l, 'ROTULADOR', 0, -H + 14, F, -H + 14);
-    linea(l, 'referencias', 0, -H, 0, -H + 14); linea(l, 'referencias', F, -H, F, -H + 12);
     texto(l, 'VARILLA NEGRA (4,5)', F / 2, 14, 7);
     texto(l, 'E.T POR DELANTE Y POR DETRÁS CORTADA DE 21', F / 2, -17, Math.min(7, F / 45));
     texto(l, 'E.T 5,5 cms MAS LARGAS EN CADA LADO', F / 2, -26, Math.min(7, F / 40));
