@@ -35,10 +35,11 @@ describe('Solapas con velcro (SOLAPACONVELCROS)', () => {
       ['G', 275, 35.5]
     ]);
     const [d1, d2] = piezas.filter((p) => p.solapaNombre === 'D');
-    // Su letra con rotulador cerca de la punta izquierda (Iván, 27/10/2026, como AR2604205 a mano) y los números de unión.
-    expect(d1.uniones).toEqual([{ valor: 'D1', u: 100, v: 220.5 }, { valor: 'D1', u: 2490, v: 10 }]);
-    expect(d2.uniones).toEqual([{ valor: 'D2', u: 100, v: 200 }, { valor: 'D1', u: 10, v: 10 }]);
-    expect(piezas.find((p) => p.nombre === 'A').uniones).toEqual([{ valor: 'A', u: 100, v: 255 }]);
+    // Como AR2604205 a mano (Iván, 27/10/2026): la letra D con rotulador solo en el D1, en la esquina de la punta ancha;
+    // el número del empate en los dos trozos. Las rectas, con su letra en la esquina de abajo de la punta.
+    expect(d1.uniones).toEqual([{ valor: 'D', u: 20, v: 820 }, { valor: 'D1', u: 2490, v: 10 }]);
+    expect(d2.uniones).toEqual([{ valor: 'D1', u: 10, v: 10 }]);
+    expect(piezas.find((p) => p.nombre === 'A').uniones).toEqual([{ valor: 'A', u: 2730, v: 20 }]);
   });
 
   it('AR2604890: seis solapas rectas al corte en rollo de 250', () => {

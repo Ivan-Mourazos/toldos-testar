@@ -9,10 +9,12 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
     if (p.oblicua) {
       const { altoIzq, altoDer } = p.oblicua;
       if (p.girada) {
-        verticales.push([x0, y0, y1]);
-        if (y0 > 0 || p.aparte) horizontales.push([y0, x0, x0 + altoIzq]);
-        if (y1 < anchoRolloMm || p.aparte) horizontales.push([y1, x0, x0 + altoDer]);
-        oblicuas.push({ capa: 'DISCO1', x1: x0 + altoIzq, y1: y0, x2: x0 + altoDer, y2: y1 });
+        // Girada 90° de verdad, como las marcas (unionesPropias): el lado recto a la derecha. Transpuesta saldría en
+        // espejo, con la cara cambiada (Iván, 27/10/2026, la D de AR2604205).
+        verticales.push([x1, y0, y1]);
+        if (y0 > 0 || p.aparte) horizontales.push([y0, x1 - altoIzq, x1]);
+        if (y1 < anchoRolloMm || p.aparte) horizontales.push([y1, x1 - altoDer, x1]);
+        oblicuas.push({ capa: 'DISCO1', x1: x1 - altoIzq, y1: y0, x2: x1 - altoDer, y2: y1 });
       } else {
         if (y0 > 0 || p.aparte) horizontales.push([y0, x0, x1]);
         verticales.push([x0, y0, y0 + altoIzq], [x1, y0, y0 + altoDer]);
@@ -78,7 +80,7 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
     // aunque pise el rotulador, sin llegar a las líneas de corte (Iván, 23/10/2026: «pueden ir más grandes»).
     const franja = !p.nombre.includes('BAMBA') || !p.rotuloCortina ? null : Math.max(1, p.alto - p.marcas[0].mm);
     const [cx, cy] = p.oblicua
-      ? (p.girada ? [x0 + (p.oblicua.altoIzq + p.oblicua.altoDer) / 4, y0 + p.hueco / 2] : [x0 + p.ancho / 2, y0 + (p.oblicua.altoIzq + p.oblicua.altoDer) / 4])
+      ? (p.girada ? [x0 + p.ancho - (p.oblicua.altoIzq + p.oblicua.altoDer) / 4, y0 + p.hueco / 2] : [x0 + p.ancho / 2, y0 + (p.oblicua.altoIzq + p.oblicua.altoDer) / 4])
       : franja === null ? [x0 + p.ancho / 2, y0 + p.hueco / 2]
       : p.girada ? [x0 + p.alto - franja / 2, y0 + p.largo / 2] : [x0 + p.largo / 2, y0 + franja / 2];
     const lineasTexto = p.saco ? [p.of, 'SACO', p.medida, 'STOCK']

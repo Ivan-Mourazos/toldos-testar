@@ -370,6 +370,19 @@ describe('Del pedido guardado al corte de lona', () => {
       'A', 'B', 'C', 'D1', 'D2', 'E', 'F', 'G'
     ]);
     expect(salida.plano[0].dxf).toContain('VELCRO BRAVO (5) BLANCO AL CORTE REVÉS');
+    // Girados, D1 y D2 van como en el corte a mano: el lado recto a la derecha y la punta ancha abajo; en espejo
+    // saldrían con la cara cambiada (Iván, 27/10/2026).
+    const lineas = registrosDxf(corte.dxf).filter((e) => e.tipo === 'LINE' && valor(e, 8) === 'DISCO1');
+    const tramo = (e) => [numero(e, 10), numero(e, 20), numero(e, 11), numero(e, 21)].map((v) => Math.round(v * 10) / 10);
+    const oblicuas = lineas.map(tramo).filter(([x1, y1, x2, y2]) => x1 !== x2 && Math.abs(y2 - y1) > 200)
+      .map(([x1, y1, x2, y2]) => (y1 < y2 ? [x1, y1, x2, y2] : [x2, y2, x1, y1]));
+    expect(oblicuas).toHaveLength(2);
+    for (const [abajo, arriba] of [[850, 441], [444, 400]]) {
+      const [ax, ay, , by] = oblicuas.find(([x1, , x2]) => Math.abs(x2 - x1 - (abajo - arriba)) < 1);
+      const derecha = ax + abajo;
+      expect(lineas.map(tramo).some(([x1, y1, x2, y2]) => x1 === derecha && x2 === derecha
+        && Math.min(y1, y2) <= ay && Math.max(y1, y2) >= by)).toBe(true);
+    }
 
     const conBastilla = structuredClone(order);
     conBastilla.awnings[0].bastilla = true;
