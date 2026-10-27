@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { prepararLote } from './lote.js';
+import { prepararLote, CANALONES_PENDIENTES } from './lote.js';
 
 const l = { IDOrderLine: 'a', CodOrder: 'AR.26.04704', NumLine: 1, CodArticle: 'H0K420102-0034', descripcion: 'NH3200 NT600', cantidad: 8, of_: '0232434', entregaSolicitada: '2026-10-31' };
 const certificado = { referencias: { '420102-0034': { descripciones: [{ descripcion: l.descripcion, corteMm: [3010, 666], cuadran: 2, geometria: 2, ultimaGeometria: true }] } } };
@@ -30,4 +30,12 @@ it('no permite enviar líneas que difieran de su certificado o correspondan a ot
   expect(prepararLote('2026-10-31', [{ ...l, descripcion: 'NH3600 NT600' }], {}, certificado).programas).toEqual([]);
   expect(() => prepararLote('2026-10-31', [{ ...l, entregaSolicitada: '2026-11-07' }], {}, certificado)).toThrow(/fecha/);
   expect(() => prepararLote('2026-10-31', [l, l], {}, certificado)).toThrow(/duplicadas/);
+});
+
+it('retiene el conjunto 420150 con aviso visible hasta resolver la cuenta de canalones', () => {
+  expect(CANALONES_PENDIENTES).toMatch(/cantidad.*cubierta/i);
+  const lote = prepararLote('2026-10-31', [{ ...l, CodArticle: 'H0K420150-0090', descripcion: 'NB3450 NH3480 NT600' }]);
+  expect(lote.avisos).toContain(CANALONES_PENDIENTES);
+  expect(lote.lineas[0].motivos).toContain(CANALONES_PENDIENTES);
+  expect(lote.programas).toEqual([]);
 });

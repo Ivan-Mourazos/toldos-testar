@@ -1,5 +1,10 @@
 .combursa-dialogo { position: fixed; inset: 0; width: 100vw; height: 100vh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: var(--bg); color: var(--text); overflow: auto; }
 .combursa-dialogo::backdrop { background: var(--bg); }
+/* Como panel-vidrio de CoordinaOT: el fondo es liso, sin nada detrás que desenfocar. */
+.combursa-dialogo .glass-panel { backdrop-filter: none; }
+.combursa-dialogo button { min-height: 36px; padding: 8px 14px; border: 1px solid var(--boton-borde); border-radius: var(--radius-sm); background: var(--boton-fondo); color: var(--text); box-shadow: var(--boton-sombra); font: inherit; font-size: 13px; font-weight: 600; }
+.combursa-dialogo button:hover:not(:disabled) { background: var(--boton-fondo-encima); border-color: var(--boton-borde-encima); }
+.combursa-dialogo button:disabled { opacity: .5; box-shadow: none; }
 .combursa-pagina { max-width: 1860px; min-width: 1180px; margin: 0 auto; padding: 24px 32px 40px; }
 .combursa-cabecera { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
 .combursa-cliente { color: var(--text-muted); font-size: 12px; font-weight: 650; letter-spacing: .08em; }
@@ -27,6 +32,7 @@
 .combursa-listado small, .combursa-acciones small { display: block; color: var(--text-muted); margin-top: 4px; font-size: 11px; }
 .combursa-referencia, .combursa-numero { font-variant-numeric: tabular-nums; font-weight: 600; }
 .combursa-validado { color: var(--tramo-holgado); font-weight: 650; }
+.combursa-manual { color: var(--tramo-trabajo); }
 .combursa-listado summary { color: var(--tramo-trabajo); cursor: pointer; font-weight: 650; }
 .combursa-listado details p { margin: 6px 0; line-height: 1.45; }
 .combursa-suelta { display: flex; gap: 5px; align-items: center; font-size: 11px; }
@@ -36,6 +42,7 @@
 .combursa-programas article { border-radius: 10px; padding: 14px; }
 .combursa-programas header { display: flex; justify-content: space-between; font-size: 12px; }
 .combursa-programas svg { display: block; width: 100%; height: 125px; margin: 8px 0; }
+.combursa-programas svg :is(line, circle, path) { vector-effect: non-scaling-stroke; stroke-width: 1.2px; }
 .combursa-programas footer { color: var(--text-muted); font-size: 11px; }
 .combursa-acciones { display: flex; gap: 10px; padding: 14px 18px; border-radius: 10px; margin-top: 18px; align-items: center; }
 .combursa-acciones > div { flex: 1; min-width: 0; font-size: 13px; }

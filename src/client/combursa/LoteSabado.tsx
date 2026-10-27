@@ -36,8 +36,8 @@ export default function LoteSabado({ onCerrar }: { onCerrar: () => void }) {
     return datos;
   };
   const cargar = async (opciones = sueltas) => {
-    setOcupado(true); setError(''); invalidar();
-    try { setLote(await post('vista', opciones) as Lote); setSueltas(opciones); }
+    setOcupado(true); setSueltas(opciones); setError(''); invalidar();
+    try { setLote(await post('vista', opciones) as Lote); }
     catch (e) { setLote(null); setError(e instanceof Error ? e.message : 'No se pudo leer RPS.'); }
     finally { setOcupado(false); }
   };
@@ -76,6 +76,7 @@ export default function LoteSabado({ onCerrar }: { onCerrar: () => void }) {
         </form>
         {error && <p role="alert" className="combursa-aviso">{error}</p>}
         {lote ? <>
+          {lote.avisos.map(aviso => <p className="combursa-aviso" role="status" key={aviso}>{aviso}</p>)}
           <div className="combursa-resumen">
             <div className="glass-panel"><Layers aria-hidden="true" /><strong>{numero(lote.totalUnidades)}</strong><span>unidades pedidas · {lote.lineas.length} líneas</span></div>
             <div className="glass-panel"><Scissors aria-hidden="true" /><strong>{validas}</strong><span>líneas validadas para el corte</span></div>
@@ -90,7 +91,7 @@ export default function LoteSabado({ onCerrar }: { onCerrar: () => void }) {
                 <td className="combursa-referencia">{l.CodArticle}</td>
                 <td>{l.descripcion}{l.corteMm && <small>{l.corteMm.map(numero).join(' × ')} mm</small>}{l.avisos.map(a => <small className="combursa-nota" key={a}>{a}</small>)}</td>
                 <td className="combursa-numero">{numero(l.cantidad)}</td><td>{l.of_ || 'Sin OF'}</td><td>{l.comentarioLinea || '—'}</td>
-                <td>{l.estado === 'validado' ? <span className="combursa-validado">Validado</span> : <details><summary>A mano</summary>{l.motivos.map(m => <p key={m}>{m}</p>)}</details>}</td>
+                <td>{l.estado === 'validado' ? <span className="combursa-validado">Validado</span> : <><strong className="combursa-manual">A mano</strong><small>{l.motivos[0]}</small>{l.motivos.length > 1 && <details><summary>Ver motivos</summary>{l.motivos.slice(1).map(m => <p key={m}>{m}</p>)}</details>}</>}</td>
                 <td><label className="combursa-suelta"><input type="checkbox" disabled={ocupado || l.estado !== 'validado' || !l.codigo} checked={Boolean(l.codigo && sueltas[l.codigo])} aria-label={`Sueltas ${l.CodArticle} ${l.CodOrder} línea ${l.NumLine ?? '—'}`} onChange={e => { if (l.codigo) void cargar({ ...sueltas, [l.codigo]: e.target.checked }); }} />Sueltas</label></td>
               </tr>)}</tbody>
             </table></div>}

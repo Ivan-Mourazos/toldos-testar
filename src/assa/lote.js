@@ -3,6 +3,9 @@ import { codigoAssa } from './leerCorte.js';
 import { calcularFamilia, fechaLote, generarProgramas, entidadesVacias, desplazarEntidades, unirEntidades } from './faseA.js';
 import { buscarColocacion } from '../domain/corteLona/colocacionTetris.ts';
 
+// Pendiente de la respuesta de Tamara: no habilitar el conjunto hasta contrastar su cuenta.
+export const CANALONES_PENDIENTES = '420150 a mano: falta confirmar la cantidad de canalones por cubierta o por juego de tres paños.';
+
 /** Los datos enviados por el navegador son solo opciones: las líneas siempre vienen del SELECT. */
 export function prepararLote(fecha, lineasRps, sueltas = {}, certificados = catalogo) {
   const nombre = fechaLote(fecha);
@@ -16,7 +19,7 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados = cata
     if (!prueba || !prueba.cuadran || !prueba.ultimaGeometria || !g.pieza?.medidasMm.every((n, i) => Math.abs(n - prueba.corteMm[i]) < .01)) motivos.push('Referencia y medidas sin validación completa vigente contra los lotes reales.');
     const historico = ref?.fechas?.[fecha];
     if (historico && !historico.coincide) motivos.push(...historico.motivos);
-    if (g.familia === '420150') motivos.push('Canalones: falta cerrar la cantidad por cubierta y validar el conjunto completo.');
+    if (g.familia === '420150') motivos.push(CANALONES_PENDIENTES);
     return { ...l, codigo: g.codigo, familia: g.familia, estado: motivos.length ? 'a-mano' : 'validado', motivos: [...new Set(motivos)],
       avisos: g.avisos, terminadoMm: g.terminadoMm, corteMm: g.pieza?.medidasMm, calculo: g };
   });
@@ -48,6 +51,7 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados = cata
   }
   entidades.textos.push({ capa: 'texto', x: 0, y: 2400, h: 100, valor: nombre, literal: true });
   return { nombre, fecha, lineas: lineas.map(({ calculo: _calculo, ...l }) => l), programas, reparto, entidades,
+    avisos: lineas.some(l => l.familia === '420150') ? [CANALONES_PENDIENTES] : [],
     totalUnidades: lineas.reduce((n, l) => n + Number(l.cantidad || 0), 0),
     aMano: lineas.filter(l => l.estado === 'a-mano').length };
 }

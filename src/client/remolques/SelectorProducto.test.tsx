@@ -17,10 +17,11 @@ describe('selector de producto', () => {
     expect(html).toContain('Seguir con AR2604615 · 2 elementos');
     expect(renderToStaticMarkup(<SelectorProducto producto="systemdock" onChange={() => undefined} />)).toContain('aria-pressed="true"');
   });
-  it('deja COMBURSA anunciada y apagada, sin pestaña de producto', () => {
+  it('activa COMBURSA para preparar el lote, sin pestaña de producto', () => {
     const inicio = renderToStaticMarkup(<SelectorProducto inicio producto="toldos" onChange={() => undefined} />);
-    expect(inicio).toContain('disabled="" aria-label="COMBURSA" title="Todavía no está disponible"');
-    expect(inicio).toContain('Próximamente');
+    expect(inicio).toContain('aria-label="COMBURSA" title="Preparar el lote del sábado"');
+    expect(inicio).not.toContain('disabled="" aria-label="COMBURSA"');
+    expect(inicio).toContain('Preparar lote');
     expect(renderToStaticMarkup(<SelectorProducto producto="toldos" onChange={() => undefined} />)).not.toContain('COMBURSA');
   });
 });
