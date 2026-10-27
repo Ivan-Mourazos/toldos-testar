@@ -2,7 +2,8 @@
 // Remolcar, sacados de los originales (docs/modelos/remolque-ganado.md):
 // - el corte, del DXF real del bot de AR2600752 (mm), que es el de la plantilla «POR MEDIDAS» más las dos
 //   solapas cortadas aparte, igual que en AR2601976;
-// - el dibujo, de la zona «POR MEDIDAS (SE HIZO ASÍ) AR2202089» de REMOLQUE 3M ECO 3X150 (BUENO).dwg (metros).
+// - el dibujo, del DWG del pedido AR2601976 (la referencia que dio Iván): es la zona «POR MEDIDAS» de
+//   REMOLQUE 3M ECO 3X150 (BUENO).dwg con las solapas ya corregidas a 58 de corte (cota de 54), en metros.
 // Solo lee: las copias están en tmp/dxf-estudio/ganado (convertidas con ODA). Uso:
 //   node scripts/ganado/extraer-economico.mjs [--comprobar]
 import fs from 'node:fs';
@@ -12,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const ESTUDIO = path.join(raiz, 'tmp/dxf-estudio/ganado');
 const BOT = path.join(ESTUDIO, 'originales/AR2600752-bot.dxf');
-const PLANTILLA = path.join(ESTUDIO, 'plantillas/dxf/t164.dxf');
+const PLANTILLA = path.join(ESTUDIO, 'dwg-dxf/AR2601976.dxf');
 const SALIDA = path.join(raiz, 'src/remolques/ganado/economicoDatos.ts');
 // Zona del dibujo dentro de la zona «POR MEDIDAS» de la plantilla (metros): el corte colocado va debajo (y < 580).
 const ZONA_DIBUJO = { x0: 1278, x1: 1296, y0: 582.3, y1: 586.6 };
@@ -132,7 +133,7 @@ const cierreOrillo = [Math.min(...abajo), 0, Math.max(...abajo), 0];
 // --- 2. El dibujo de confección de la plantilla (metros → cm) ---
 const plantilla = expandir(leer(PLANTILLA));
 const enZona = ([x, y]) => x >= ZONA_DIBUJO.x0 && x <= ZONA_DIBUJO.x1 && y >= ZONA_DIBUJO.y0 && y <= ZONA_DIBUJO.y1;
-const CAPAS = { corte: 'DISCO1', referencias: 'referencias', 'referencia-1': 'referencias', marca: 'ROTULADOR', texto: 'texto', ejes: 'ejes' };
+const CAPAS = { corte: 'DISCO1', referencias: 'referencias', 'referencia-1': 'referencias', marca: 'ROTULADOR', texto: 'texto', ejes: 'ejes', 'vent-pre-noimpr': 'vent-pre-noimpr' };
 const dibujo = { lineas: [], polilineas: [], arcos: [], circulos: [], textos: [], cotas: [] };
 const crudo = [];
 for (const e of plantilla) {
@@ -152,6 +153,8 @@ for (const e of plantilla) {
     const p = T(usaAlineacion ? [+e.g['11'], +e.g['21']] : [+e.g['10'], +e.g['20']]);
     if (!enZona(p)) continue;
     const valor = e.t === 'MTEXT' ? limpiarMtext(e.todos.filter(([c]) => c === '3' || c === '1').map(([, v]) => v).join('')) : limpiarMtext(e.g['1'] ?? '');
+    // El «X2» del pedido no va en el dibujo fijo: la cantidad la pone la web.
+    if (/^X\d+$/.test(valor)) continue;
     crudo.push({ tipo: 'texto', p, valor, h: +e.g['40'] * e.escala, giro: (+e.g['50'] || 0) + e.giroT, mtext: e.t === 'MTEXT', anclaje: +e.g['71'] || 0, alin: [+e.g['72'] || 0, +e.g['73'] || 0] });
   } else if (e.t === 'DIMENSION' && e.capa === 'cotas') {
     const p1 = T([+e.g['13'], +e.g['23']]), p2 = T([+e.g['14'], +e.g['24']]), dl = T([+e.g['10'], +e.g['20']]);

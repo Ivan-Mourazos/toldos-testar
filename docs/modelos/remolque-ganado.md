@@ -8,7 +8,7 @@ respuestas de Iván del 23/10/2026, está en `tmp/dxf-estudio/ganado/plantillas/
 
 | Modelo | Fuente del dibujo | Fuente del corte | Contraste |
 | --- | --- | --- | --- |
-| Remolcar económico 300 × 150 | `REMOLQUES GANADO/REMOLCAR/REMOLQUE 3M ECO 3X150 (BUENO).dwg`, zona «POR MEDIDAS (SE HIZO ASÍ) AR2202089» | DXF del bot de AR2600752 (el de la plantilla más las dos solapas cortadas aparte, igual que en AR2601976) | La web reproduce los 34 tramos de corte de AR2600752 y no añade ninguno (`tmp/ganado-ejemplo/generar.mjs`) |
+| Remolcar económico 300 × 150 | DWG del pedido AR2601976: la zona «POR MEDIDAS (SE HIZO ASÍ) AR2202089» de `REMOLQUE 3M ECO 3X150 (BUENO).dwg`, con las solapas corregidas a 58 de corte y su cota de 54 | DXF del bot de AR2600752 (el de la plantilla más las dos solapas cortadas aparte, igual que en AR2601976) | La web reproduce los 34 tramos de corte de AR2600752 y no añade ninguno (`tmp/ganado-ejemplo/generar.mjs`) |
 
 Los datos salen por script de los originales: `node scripts/ganado/extraer-economico.mjs` escribe
 `src/remolques/ganado/economicoDatos.ts`. Con `--comprobar`, dice si el fichero sigue igual que los originales.
@@ -33,3 +33,15 @@ Los datos salen por script de los originales: `node scripts/ganado/extraer-econo
 - Ferrodeza, Talleres Cal, caballos y los que van por medidas: más adelante.
 - Por confirmar con Iván: si «arcos comprobados» tiene que bloquear el guardado y si los ollaos se quedan
   a 4 cm (en el corte a mano del económico estaban a 4,5).
+
+## Comparación capa a capa con lo hecho a mano (27/10/2026)
+
+`node tmp/ganado-ejemplo/comparar-capas.mjs AR2600752` compara el dibujo, el corte del plano y el DXF del bot de la
+web con los del pedido. Resultado con AR2600752:
+- Dibujo: iguales todos los tramos de corte, terminado, marcas, ejes y triangulación (que no se imprime), y las
+  14 cotas.
+- Corte en el plano y DXF del bot: iguales todos los tramos de corte y de rotulador.
+- Diferencias: los 17 ollaos van 0,5 cm más cerca del borde, por la regla de 4 cm; y el texto del material va
+  resumido, como en los demás remolques («LONA PVC 580 GRIS CLARO 7038» por «LONA NS86 630 GRIS 7038»).
+- AR2601976 se cortó a mano junto con piezas de otra OF y tiras de stock, con la zona en cuña colocada de otra forma.
+  La web corta siempre el juego como en AR2600752: mismas piezas y el mismo largo, 6,34 m.
