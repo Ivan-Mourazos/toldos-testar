@@ -1,16 +1,16 @@
 import { fabricOnlyModelNames, fullAwningModelNames } from '../domain/modelBehavior.js';
 import { MODELOS_PUERTAS } from '../puertas/calcular.ts';
 import type { ModeloPuerta } from '../puertas/tipos.ts';
-import { emptyBaqueton, emptyLona } from '../remolques/entradas-vacias.ts';
+import { emptyBaqueton, emptyGanado, emptyLona } from '../remolques/entradas-vacias.ts';
 import type { LineaPedido } from '../remolques/workspace/lineas.ts';
 import { controlLabel } from './components/controlLabels';
 
-export const GANADO_DISPONIBLE = false;
+export const GANADO_DISPONIBLE = true;
 export type CategoriaConModelos = 'toldos' | 'puertas' | 'remolques';
 export type ModeloInicio =
   | { producto: 'toldos'; modelo: string; workType: 'FULL_AWNING' | 'FABRIC_ONLY' }
   | { producto: 'puertas'; modelo: Exclude<ModeloPuerta, 'SYSTEMDOCK'> }
-  | { producto: 'remolques'; modelo: 'lona' | 'baqueton' };
+  | { producto: 'remolques'; modelo: 'lona' | 'baqueton' | 'ganado' };
 export type OpcionModelo = { nombre: string; valor?: ModeloInicio; proximamente?: boolean };
 export type GrupoModelos = { nombre: string; modelos: OpcionModelo[] };
 
@@ -29,7 +29,7 @@ export function modelosInicio(categoria: CategoriaConModelos, disponibles: strin
     grupos = [{nombre:'Tipos de elemento',modelos:[
       {nombre:'Remolque',valor:{producto:'remolques',modelo:'lona'}},
       {nombre:'Baquetón',valor:{producto:'remolques',modelo:'baqueton'}},
-      {nombre:'Remolque de ganado',proximamente:!GANADO_DISPONIBLE},
+      GANADO_DISPONIBLE ? {nombre:'Remolque de ganado',valor:{producto:'remolques',modelo:'ganado'}} : {nombre:'Remolque de ganado',proximamente:true},
     ]}];
   }
   const termino = normalizar(busqueda.trim());
@@ -37,7 +37,7 @@ export function modelosInicio(categoria: CategoriaConModelos, disponibles: strin
 }
 
 /** Primer elemento vacío, con el tipo elegido; el número y la OF los completa el técnico. */
-export function primeraLineaInicio(tipo: 'lona' | 'baqueton', fecha: string, usuario: string): LineaPedido {
-  const input = tipo === 'lona' ? emptyLona() : emptyBaqueton();
+export function primeraLineaInicio(tipo: 'lona' | 'baqueton' | 'ganado', fecha: string, usuario: string): LineaPedido {
+  const input = tipo === 'lona' ? emptyLona() : tipo === 'ganado' ? emptyGanado() : emptyBaqueton();
   return { version:'1', tipo, input:{...input,cabecera:{...input.cabecera,numeroPedido:'',cliente:'',fecha,version:'1',realizadoPor:usuario}} };
 }

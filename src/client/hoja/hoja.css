@@ -186,3 +186,16 @@ body {
 .hoja-tabla .hoja-tabla-total { font-weight: 700; width: 12mm; }
 
 .hoja-error { font: 12pt Arial, sans-serif; padding: 10mm; }
+/* Remolque de ganado: el dibujo de su plantilla ocupa el sitio de las vistas, en negro sobre blanco. */
+.hoja-dibujo-ganado .gan-dibujo { border: 0; flex: 1 1 auto; }
+.hoja-dibujo-ganado .rem-dibujo-cabecera { display: none; }
+.hoja-dibujo-ganado .gan-svg { --text: #111; --text-muted: #555; --accent-text: #1f5f99; --danger: #c0392b; min-height: 0; padding: 0; }
+.hoja-dibujo-ganado .gan-svg { display: block; height: 100%; width: 100%; }
+.hoja-dibujo-ganado .gan-svg line, .hoja-dibujo-ganado .gan-svg path, .hoja-dibujo-ganado .gan-svg circle { fill: none; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.hoja-dibujo-ganado .gan-corte { stroke: #111; stroke-width: 1; }
+.hoja-dibujo-ganado .gan-terminado { stroke: #d4549a; stroke-width: 0.8; }
+.hoja-dibujo-ganado .gan-marca { stroke: #c0392b; stroke-width: 0.8; }
+.hoja-dibujo-ganado .gan-eje { stroke: #777; stroke-dasharray: 4 3; stroke-width: 0.6; }
+.hoja-dibujo-ganado .gan-cota line { stroke: #1f5f99; stroke-width: 0.6; }
+.hoja-dibujo-ganado .gan-cota text { fill: #1f5f99; font-size: 7px; }
+.hoja-dibujo-ganado .gan-texto { fill: #111; }

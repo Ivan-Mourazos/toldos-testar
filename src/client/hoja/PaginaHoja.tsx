@@ -3,6 +3,7 @@ import { lineasObservaciones } from '../../remolques/hoja/observaciones.ts';
 import type { PaginaHojaDatos, TablaPosiciones } from '../../remolques/hoja/pagina.ts';
 import type { CapturaVista, VistaHoja } from '../remolques/render/captura';
 import { CapaCotasHoja } from './CapaCotasHoja';
+import { DibujoGanado } from '../remolques/DibujoGanado';
 import { tamanoVista } from './medidas';
 
 // Una hoja de taller (A4 apaisado) de un elemento del pedido. Mismo contenido y orden que la hoja
@@ -143,13 +144,18 @@ export function PaginaHoja({ pagina, vistas }: { pagina: PaginaHojaDatos; vistas
             ) : <p className="hoja-observaciones-vacias">—</p>}
           </div>
         </div>
-        <div className="hoja-dibujo">
-          <div className="hoja-fila">{vista('tres-cuartos')}{vista('tres-cuartos-detras')}</div>
-          <div className="hoja-fila">{vista('delante')}{vista('detras')}{vista('lateral')}</div>
-        </div>
+        {/* El de ganado no tiene vistas 3D: el dibujo de confección de su plantilla. */}
+        {pagina.ganado ? (
+          <div className="hoja-dibujo hoja-dibujo-ganado"><DibujoGanado modelo={pagina.ganado.modelo} cantidad={pagina.ganado.cantidad} compacto /></div>
+        ) : (
+          <div className="hoja-dibujo">
+            <div className="hoja-fila">{vista('tres-cuartos')}{vista('tres-cuartos-detras')}</div>
+            <div className="hoja-fila">{vista('delante')}{vista('detras')}{vista('lateral')}</div>
+          </div>
+        )}
       </section>
 
-      <Tabla tabla={pagina.ollaos} />
+      {pagina.ollaos.filas.length > 0 && <Tabla tabla={pagina.ollaos} />}
       {pagina.ganchos && <Tabla tabla={pagina.ganchos} />}
     </article>
   );

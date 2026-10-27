@@ -1,5 +1,6 @@
 import type { LonaInput } from "../calc/lona.ts";
 import type { BaquetonInput } from "../calc/baqueton.ts";
+import type { GanadoInput } from "../calc/ganado.ts";
 import type { PlanteamientoRecord, TipoPlanteamiento } from "../store/types.ts";
 import type { PedidoRps } from "../rps/types.ts";
 import type { EstadoConsultaRps } from "./selectores.ts";
@@ -43,7 +44,7 @@ export interface EstadoWorkspace {
 export interface EntradaInicial {
   id?: string;
   tipo: TipoPlanteamiento;
-  input: LonaInput | BaquetonInput;
+  input: LonaInput | BaquetonInput | GanadoInput;
 }
 
 export type AccionWorkspace =
@@ -55,7 +56,7 @@ export type AccionWorkspace =
   | { tipo: "LINEA_ANADIDA"; linea: LineaPedido }
   | { tipo: "LINEA_SELECCIONADA"; version: string }
   | { tipo: "LINEA_ELIMINADA"; version: string }
-  | { tipo: "INPUT_CAMBIADO"; input: LonaInput | BaquetonInput }
+  | { tipo: "INPUT_CAMBIADO"; input: LonaInput | BaquetonInput | GanadoInput }
   | { tipo: "SNAPSHOT_CAPTURADO"; version: string; svg: string | null }
   | { tipo: "PEDIDO_COMPLETADO"; numeroPedido: string; registros: PlanteamientoRecord[] }
   | { tipo: "RPS_IMPORTADO"; lineas: LineaPedido[]; modo: ModoImportacionRps }

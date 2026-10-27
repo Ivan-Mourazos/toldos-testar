@@ -1,6 +1,7 @@
 import React from 'react';
 import type { LonaResult } from '../../remolques/calc/lona.ts';
 import type { BaquetonResult } from '../../remolques/calc/baqueton.ts';
+import type { GanadoResult } from '../../remolques/calc/ganado.ts';
 import { sinPosiciones, type ModoOllaos } from '../../remolques/calc/ollaos.ts';
 import { avisosGanchos, MAX_GANCHOS_POR_LADO, sinReves } from '../../remolques/calc/ganchos.ts';
 import { InputDecimal } from './InputDecimal';
@@ -314,6 +315,29 @@ export function ResultadosBaqueton({ res, modoOllaos, primerOllao, errorOllaos, 
         <Dato label="Metros de tela" valor={res.metrosTela > 0 ? `${fmt(res.metrosTela)} m` : '—'} />
       </div>
       <Ollaos modo={modoOllaos} reparto={res.reparto} primerOllao={primerOllao} error={errorOllaos} onChange={onOllaosChange} ganchos={ganchos} />
+      <Notas notas={res.notas} />
+    </div>
+  );
+}
+
+/** El de ganado: sus piezas de la plantilla (terminado y corte) y lo que gasta de rollo. Sin ollaos que repartir. */
+export function ResultadosGanado({ res, cantidad }: { res: GanadoResult; cantidad: number }) {
+  return (
+    <div className="rem-resultados" aria-label="Resultados del remolque de ganado" role="group">
+      <div className="rem-datos">
+        <Dato label="Modelo" valor={res.modelo || '—'} />
+        <Dato label="Corte" valor={cantidad > 1 ? `1 juego · X${cantidad}` : '1 juego'} />
+        <Dato label="Largo de rollo" valor={`${fmt(res.largoJuego)} cm por juego`} />
+        <Dato label="Metros de tela" valor={res.metrosTela > 0 ? `${fmt(res.metrosTela)} m` : '—'} />
+      </div>
+      <table className="gan-piezas">
+        <thead><tr><th>Pieza</th><th>Terminado</th><th>Corte</th><th>Acabado</th></tr></thead>
+        <tbody>
+          {res.piezas.map((p) => (
+            <tr key={p.nombre}><td>{p.nombre}</td><td>{p.hecho || '—'}</td><td>{p.corte || '—'}</td><td>{p.acabado || '—'}</td></tr>
+          ))}
+        </tbody>
+      </table>
       <Notas notas={res.notas} />
     </div>
   );

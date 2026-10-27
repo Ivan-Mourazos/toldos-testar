@@ -8,11 +8,14 @@ import type { PedidoRemolques } from '../../remolques/flujo/tipos.ts';
 import { estadoLinea, type LineaPedido } from '../../remolques/workspace/lineas.ts';
 import { medidasSuficientes } from '../../remolques/workspace/selectores.ts';
 import { ReadModeContext } from '../components/ReadMode';
+import { calcGanado, type GanadoInput } from '../../remolques/calc/ganado.ts';
 import { DibujoElemento } from './DibujoElemento';
+import { DibujoGanado } from './DibujoGanado';
 import { FormularioBaqueton } from './FormularioBaqueton';
+import { FormularioGanado } from './FormularioGanado';
 import { FormularioLona } from './FormularioLona';
 import { PestanasElementos } from './PestanasElementos';
-import { pantallaGanchos, ResultadosBaqueton, ResultadosLona } from './Resultados';
+import { pantallaGanchos, ResultadosBaqueton, ResultadosGanado, ResultadosLona } from './Resultados';
 import { rotuloElemento } from './rotulo';
 
 // El pedido de remolques guardado, en solo lectura, como el de toldos en Pedidos: las pestañas de
@@ -67,8 +70,11 @@ export function LecturaPedidoRemolques({ pedido, versionInicial }: {
   const indice = Math.max(lineas.findIndex((linea) => linea.version === elegida), 0);
   const linea = lineas[indice];
   const params = pedido.params;
-  const elemento = useMemo(() => (linea ? elementoConCalculo(linea, params) : null), [linea, params]);
-  if (!linea || !elemento) return null;
+  // El de ganado no tiene escena ni cálculo por medidas: su plantilla (DibujoGanado, ResultadosGanado).
+  const ganado = linea?.tipo === 'ganado' ? (linea.input as GanadoInput) : null;
+  const elemento = useMemo(() => (linea && linea.tipo !== 'ganado' ? elementoConCalculo(linea, params) : null), [linea, params]);
+  const resGanado = useMemo(() => (ganado ? calcGanado(ganado) : null), [ganado]);
+  if (!linea || (!elemento && !ganado)) return null;
   const rotulo = rotuloElemento(linea, indice);
   const estado = estadosLinea[linea.version];
 
@@ -98,10 +104,12 @@ export function LecturaPedidoRemolques({ pedido, versionInicial }: {
               <fieldset className="rem-lectura-campos" disabled>
                 <legend className="sr-only">{`Formulario de ${rotulo}, solo lectura`}</legend>
                 {/* key: los «Sí» pulsados a mano del formulario son de cada elemento. */}
-                {elemento.tipo === 'lona' ? (
+                {ganado ? (
+                  <FormularioGanado key={linea.version} input={ganado} materiales={[]} onChange={nada} />
+                ) : elemento?.tipo === 'lona' ? (
                   <FormularioLona key={linea.version} input={elemento.input} materiales={[]} params={params}
                     onChange={nada} />
-                ) : (
+                ) : elemento && (
                   <FormularioBaqueton key={linea.version} input={elemento.input} materiales={[]} params={params}
                     onChange={nada} />
                 )}
@@ -112,11 +120,16 @@ export function LecturaPedidoRemolques({ pedido, versionInicial }: {
             )}
           </div>
           <div className="rem-editor-derecha">
-            <DibujoElemento elemento={elemento} params={params} />
-            <fieldset className="rem-lectura-campos" disabled>
-              <legend className="sr-only">{`Resultados de ${rotulo}`}</legend>
-              <ResultadosElemento elemento={elemento} params={params} />
-            </fieldset>
+            {ganado && resGanado ? <>
+              <DibujoGanado modelo={ganado.ganado} cantidad={ganado.cantidad} />
+              <ResultadosGanado res={resGanado} cantidad={ganado.cantidad} />
+            </> : elemento && <>
+              <DibujoElemento elemento={elemento} params={params} />
+              <fieldset className="rem-lectura-campos" disabled>
+                <legend className="sr-only">{`Resultados de ${rotulo}`}</legend>
+                <ResultadosElemento elemento={elemento} params={params} />
+              </fieldset>
+            </>}
           </div>
         </div>
       </section>

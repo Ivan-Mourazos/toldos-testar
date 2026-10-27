@@ -22,7 +22,7 @@ const CUALQUIERA = 'Cualquiera';
 type Opcion<T extends string> = { value: T; label: string };
 
 const TIPOS: Opcion<FormularioBusqueda['tipo']>[] = [
-  { value: '', label: 'Todos' }, { value: 'lona', label: 'Lona' }, { value: 'baqueton', label: 'Baquetón' },
+  { value: '', label: 'Todos' }, { value: 'lona', label: 'Lona' }, { value: 'baqueton', label: 'Baquetón' }, { value: 'ganado', label: 'Ganado' },
 ];
 const ESTADOS: Opcion<FormularioBusqueda['estado']>[] = [
   { value: '', label: 'Todos' }, { value: 'pendientes', label: 'Pendientes' }, { value: 'generados', label: 'Generados' },

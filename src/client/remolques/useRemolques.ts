@@ -4,7 +4,8 @@ import { calcBaqueton, type BaquetonInput } from '../../remolques/calc/baqueton.
 import type { Material } from '../../remolques/calc/materiales-seed.ts';
 import { DEFAULT_PARAMS, type CalcParams } from '../../remolques/calc/params.ts';
 import type { TipoPlanteamiento } from '../../remolques/store/types.ts';
-import { emptyLona, emptyBaqueton } from '../../remolques/entradas-vacias.ts';
+import { emptyLona, emptyBaqueton, emptyGanado } from '../../remolques/entradas-vacias.ts';
+import { calcGanado, type GanadoInput } from '../../remolques/calc/ganado.ts';
 import { FORMA_PEDIDO_RPS, normalizarNumeroPedidoRps } from '../../remolques/rps/numero-pedido.ts';
 import type { PedidoRps } from '../../remolques/rps/types.ts';
 import { erroresPlanteamiento } from '../../remolques/pedidos/validar-planteamiento.ts';
@@ -402,6 +403,11 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
     () => (activa?.tipo === 'baqueton' ? activa.input : emptyBaqueton()) as BaquetonInput,
     [activa],
   );
+  const gan = useMemo(
+    () => (activa?.tipo === 'ganado' ? activa.input : emptyGanado()) as GanadoInput,
+    [activa],
+  );
+  const resGan = useMemo(() => calcGanado(gan), [gan]);
   const resLona = useMemo(() => calcLona(lona, params), [lona, params]);
   const resBaq = useMemo(() => calcBaqueton(baq, params), [baq, params]);
   const erroresActuales = useMemo(
@@ -435,7 +441,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
       avisar('info', 'Espera a que carguen las líneas del pedido.');
       return;
     }
-    const plantilla = nuevoTipo === 'lona' ? emptyLona() : emptyBaqueton();
+    const plantilla = nuevoTipo === 'lona' ? emptyLona() : nuevoTipo === 'ganado' ? emptyGanado() : emptyBaqueton();
     const version = siguienteVersion(lineas);
     const linea: LineaPedido = {
       version,
@@ -678,7 +684,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
   const cambiarClientePedido = (valor: string) => despachar({ tipo: 'CLIENTE_CAMBIADO', valor });
   const cambiarFechaPedido = (valor: string) => despachar({ tipo: 'FECHA_CAMBIADA', valor });
 
-  const cambiarInput = (entrada: LonaInput | BaquetonInput) =>
+  const cambiarInput = (entrada: LonaInput | BaquetonInput | GanadoInput) =>
     despachar({ tipo: 'INPUT_CAMBIADO', input: entrada });
 
   /**
@@ -1020,7 +1026,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
     }
   }, [cargarBorrador, confirmar, obtenerDatosPedido]);
 
-  const empezarConTipo=useCallback(async(tipo:'lona'|'baqueton')=>{
+  const empezarConTipo=useCallback(async(tipo:'lona'|'baqueton'|'ganado')=>{
     const actual=estadoRef.current;
     if((actual.numeroPedido.trim()||actual.cliente.trim()||actual.lineas.length)&&await confirmar({
       title:'Empezar otro pedido de Remolques',message:'Se sustituirá el pedido a medias de Remolques por uno nuevo con el tipo elegido.',
@@ -1050,7 +1056,9 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
     tipo,
     lona,
     baq,
+    gan,
     input,
+    resGan,
     resLona,
     resBaq,
     erroresVisibles,

@@ -14,9 +14,10 @@ describe('modelos al empezar un pedido', () => {
     expect(modelosInicio('toldos',['ARZUA PRO'],'arzua')[0].modelos[0].nombre).toBe('Arzúa Pro');
     expect(modelosInicio('puertas',[],'dock')).toEqual([]);
   });
-  it('deja ganado apagado y prepara el tipo de remolque seleccionado sin inventar datos', () => {
-    expect(modelosInicio('remolques',[])[0].modelos.find(m=>m.nombre==='Remolque de ganado')).toMatchObject({proximamente:true});
-    for (const tipo of ['lona','baqueton'] as const) {
+  it('ofrece el remolque de ganado y prepara el tipo de remolque seleccionado sin inventar datos', () => {
+    expect(modelosInicio('remolques',[])[0].modelos.find(m=>m.nombre==='Remolque de ganado')).toMatchObject({valor:{producto:'remolques',modelo:'ganado'}});
+    expect(primeraLineaInicio('ganado','2026-10-27','IVÁN').input).toMatchObject({ganado:'REMOLCAR_ECONOMICO',largo:300,ancho:150,arcosComprobados:false});
+    for (const tipo of ['lona','baqueton','ganado'] as const) {
       expect(primeraLineaInicio(tipo,'2026-10-26','IVÁN')).toMatchObject({tipo,version:'1',input:{cabecera:{numeroPedido:'',fecha:'2026-10-26',realizadoPor:'IVÁN'}}});
     }
   });

@@ -51,6 +51,7 @@ export function PestanasElementos({
             {acciones}
             <button type="button" className="ghost-button" disabled={!puedeAnadir} onClick={() => onNuevo('lona')}>+ Remolque</button>
             <button type="button" className="ghost-button" disabled={!puedeAnadir} onClick={() => onNuevo('baqueton')}>+ Baquetón</button>
+            <button type="button" className="ghost-button" disabled={!puedeAnadir} onClick={() => onNuevo('ganado')}>+ Ganado</button>
           </div>
         )}
       </div>

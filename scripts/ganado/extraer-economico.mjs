@@ -207,7 +207,6 @@ console.log(JSON.stringify(resumen, null, 1));
 const contenido = `// Generado por scripts/ganado/extraer-economico.mjs a partir de los originales; no se edita a mano.
 // Corte: DXF real del bot de AR2600752 (mm, origen abajo a la izquierda, el orillo en y = 0). Dibujo: zona
 // «POR MEDIDAS (SE HIZO ASÍ) AR2202089» de REMOLQUE 3M ECO 3X150 (BUENO).dwg (cm, origen abajo a la izquierda).
-/* eslint-disable */
 
 /** Ollao: [x, y, nx, ny, d]: posición original, dirección hacia su borde más cercano y distancia a él (mm). */
 export type OllaoGanado = [number, number, number, number, number];

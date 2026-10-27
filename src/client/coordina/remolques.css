@@ -858,3 +858,21 @@
 .rem-editor-derecha .rem-render[data-vista] { flex: 1 1 auto; height: auto; min-height: 0; }
 .rem-editor-derecha > .rem-resultados-scroll { flex: 0 1 auto; max-height: 42%; overflow-y: auto; overscroll-behavior: contain; }
 .rem-editor-derecha > .corte-lona { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+
+/* ── Remolque de ganado: el dibujo de confección de su plantilla (DibujoGanado) ──
+   Con los tokens, en claro y en oscuro: corte en el color del texto, terminado en rosa y marcas en rojo,
+   como en el plano. */
+.gan-dibujo-nota { color: var(--text-muted); font-size: 12px; margin: 0; }
+.gan-svg { display: block; flex: 1 1 auto; min-height: 16rem; padding: 0.5rem; width: 100%; }
+.gan-svg line, .gan-svg path, .gan-svg circle { fill: none; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.gan-svg .gan-corte { stroke: var(--text); stroke-width: 1.2; }
+.gan-svg .gan-terminado { stroke: #d4549a; stroke-width: 1; }
+.gan-svg .gan-marca { stroke: var(--danger); stroke-width: 1; }
+.gan-svg .gan-eje { stroke: var(--text-muted); stroke-dasharray: 4 3; stroke-width: 0.8; }
+.gan-svg .gan-cota line { stroke: var(--accent-text); stroke-width: 0.8; }
+.gan-svg .gan-cota text { fill: var(--accent-text); font-family: var(--font-sans); font-size: 7px; }
+.gan-svg .gan-texto { fill: var(--text); font-family: var(--font-sans); }
+.gan-piezas { border-collapse: collapse; font-size: 13px; width: 100%; }
+.gan-piezas th, .gan-piezas td { border-bottom: 1px solid var(--border); padding: 0.375rem 0.5rem; text-align: left; vertical-align: top; }
+.gan-piezas th { color: var(--text-muted); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.gan-aviso { color: var(--danger); font-size: 13px; margin: 0.5rem 0 0; }

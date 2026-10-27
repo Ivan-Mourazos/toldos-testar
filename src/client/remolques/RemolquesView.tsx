@@ -11,11 +11,13 @@ import type { BorradorRemolques, BorradorToldos } from '../../borradores/tipos.t
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { CabeceraPedido } from './CabeceraPedido';
 import { DibujoElemento } from './DibujoElemento';
+import { DibujoGanado } from './DibujoGanado';
 import { FormularioBaqueton } from './FormularioBaqueton';
+import { FormularioGanado } from './FormularioGanado';
 import { FormularioLona } from './FormularioLona';
 import { OrigenRpsElemento } from './OrigenRps';
 import { PestanasElementos } from './PestanasElementos';
-import { pantallaGanchos, ResultadosBaqueton, ResultadosLona } from './Resultados';
+import { pantallaGanchos, ResultadosBaqueton, ResultadosGanado, ResultadosLona } from './Resultados';
 import { rotuloElemento } from './rotulo';
 import { VistaPreviaPdf } from './VistaPreviaPdf';
 import { entradaCorte, useVistaCorteRemolques, VistaPreviaCorte } from './VistaPreviaCorte';
@@ -32,7 +34,7 @@ import { TITULO_BORRADOR_EN_CORRECCION } from '../borradores';
 // pestañas de elementos y, debajo, el editor del elemento activo: el formulario a la izquierda
 // (con «Listo» / «Falta: …» debajo) y, a la derecha, el render 3D o el dibujo de siempre y los resultados.
 export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolicitado, limpiarSolicitado = 0, pedidoGuardadoSolicitado, onGuardado, borradorSolicitado, onAbrirBorradorToldos, accionesDestino, accionesVisibles = true, onResumenChange, onLimpiar, modeloInicialSolicitado }: {
-  modeloInicialSolicitado?:{id:number;tipo:'lona'|'baqueton'}|null;
+  modeloInicialSolicitado?:{id:number;tipo:'lona'|'baqueton'|'ganado'}|null;
   usuario: string;
   notify: Notify;
   askForConfirmation: AskForConfirmation;
@@ -226,6 +228,10 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
                   delCliente={lineaActiva.delCliente?.campos}
                   onChange={ws.cambiarInput} onCampoTocado={ws.marcarCampoTocado}
                   onConfirm={askForConfirmation} />
+              ) : lineaActiva.tipo === 'ganado' ? (
+                <FormularioGanado input={ws.gan} materiales={ws.materiales} errores={ws.erroresVisibles}
+                  metrosTela={ws.medidasSuficientes ? ws.resGan.metrosTela : 0}
+                  onChange={ws.cambiarInput} onCampoTocado={ws.marcarCampoTocado} />
               ) : (
                 <FormularioBaqueton input={baq} materiales={ws.materiales} params={params} errores={ws.erroresVisibles}
                   metrosTela={ws.medidasSuficientes ? resBaq.metrosTela : 0}
@@ -254,9 +260,11 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
               {/* El render 3D (fase 2b) y, de respaldo, el dibujo de la web de remolques (DibujoElemento,
                   el mismo que el del pedido guardado abierto en Pedidos). */}
               {derecha === 'corte' ? <VistaPreviaCorte vista={vistaCorte} /> : <>
-              <DibujoElemento params={params} elemento={lineaActiva.tipo === 'lona'
-                ? { tipo: 'lona', input: lona, res: resLona }
-                : { tipo: 'baqueton', input: baq, res: resBaq }} />
+              {lineaActiva.tipo === 'ganado'
+                ? <DibujoGanado modelo={ws.gan.ganado} cantidad={ws.gan.cantidad} />
+                : <DibujoElemento params={params} elemento={lineaActiva.tipo === 'lona'
+                  ? { tipo: 'lona', input: lona, res: resLona }
+                  : { tipo: 'baqueton', input: baq, res: resBaq }} />}
               {/* Los resultados, en su caja con scroll bajo el dibujo: el dibujo no se va (Iván, 26/10/2026). */}
               <div className="rem-resultados-scroll">
               {ws.medidasSuficientes && lineaActiva.tipo === 'lona' ? (
@@ -269,6 +277,8 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
                   ganchos={pantallaGanchos(lona, ws.erroresVisibles.ganchos,
                     (ganchos, ganchosAlReves) => ws.cambiarInput({ ...lona, ganchos, ganchosAlReves }))}
                 />
+              ) : ws.medidasSuficientes && lineaActiva.tipo === 'ganado' ? (
+                <ResultadosGanado res={ws.resGan} cantidad={ws.gan.cantidad} />
               ) : ws.medidasSuficientes && lineaActiva.tipo === 'baqueton' ? (
                 <ResultadosBaqueton
                   res={resBaq}

@@ -28,7 +28,8 @@ function fechaHora(valor: string) {
   return Number.isNaN(fecha.getTime()) ? valor : new Intl.DateTimeFormat('es-ES', { dateStyle: 'short', timeStyle: 'short' }).format(fecha);
 }
 
-const nombreElemento = (elemento: ElementoGuardado) => (elemento.tipo === 'lona' ? `Remolque · ${modeloElemento(elemento)}` : 'Baquetón');
+const nombreElemento = (elemento: ElementoGuardado) => (elemento.tipo === 'lona' ? `Remolque · ${modeloElemento(elemento)}`
+  : elemento.tipo === 'ganado' ? `Ganado · ${modeloElemento(elemento)}` : 'Baquetón');
 
 function FilaElemento({ elemento, letra, coordina }: { elemento: ElementoGuardado; letra: string; coordina: CoordinaStatus | null }) {
   const of = normalizeOf(elemento.input.cabecera.ordenFabricacion ?? '');

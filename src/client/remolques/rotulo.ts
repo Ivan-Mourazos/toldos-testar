@@ -10,7 +10,7 @@ import type { LineaPedidoRps } from '../../remolques/rps/types.ts';
  * aviso).
  */
 export function rotuloElemento(linea: LineaPedido, indice: number): string {
-  const nombre = linea.tipo === 'lona' ? 'Remolque' : 'Baquetón';
+  const nombre = linea.tipo === 'lona' ? 'Remolque' : linea.tipo === 'ganado' ? 'Ganado' : 'Baquetón';
   const { largo, ancho } = linea.input;
   const medidas = largo > 0 && ancho > 0 ? ` ${formatearNumeroEs(largo)}×${formatearNumeroEs(ancho)}` : '';
   return `${awningLetter(indice)} · ${nombre}${medidas}`;
@@ -20,6 +20,7 @@ export function rotuloElemento(linea: LineaPedido, indice: number): string {
 export function medidasLineaRps(linea: LineaPedidoRps): string {
   const n = (valor: number | null) => (valor === null ? '—' : formatearNumeroEs(valor));
   if (linea.tipoTrabajo === 'baqueton') return [linea.largo, linea.ancho, linea.baqueton].map(n).join(' × ');
+  if (linea.tipoTrabajo === 'ganado') return 'Remolque de ganado · plantilla del modelo';
   const alto = linea.alto !== null
     ? n(linea.alto)
     : linea.altoDelante !== null || linea.altoAtras !== null

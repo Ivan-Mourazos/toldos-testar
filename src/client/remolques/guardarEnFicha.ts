@@ -9,6 +9,8 @@ import type { LineaPedido } from '../../remolques/workspace/lineas.ts';
 // importarse o, si no lo tiene (un elemento tecleado a mano), el del pedido de RPS de esta pantalla.
 
 export function clienteDeLinea(linea: LineaPedido, numeroPedido: string, pedidoRps: PedidoRps | null): ClienteRps | null {
+  // Las fichas son de lonas y baquetones: el remolque de ganado lo trae todo de su plantilla.
+  if (linea.tipo === 'ganado') return null;
   if (linea.origenRps?.cliente?.codigo) return linea.origenRps.cliente;
   if (pedidoRps?.cliente.codigo && normalizarNumeroPedidoRps(pedidoRps.numero) === normalizarNumeroPedidoRps(numeroPedido)) {
     return pedidoRps.cliente;
