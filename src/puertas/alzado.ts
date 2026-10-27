@@ -108,7 +108,8 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
       ? [...new Set([0, ...tubos, ...(ventanales.length ? ejesVentanal.map(y => H - y) : []), H])]
           .filter(y => y >= 0 && y <= H)
           .sort((a, b) => a - b)
-      : [...new Set([0, 14, ...p.autorreparable.empates.map(e => e + 12), H])]
+      // Autorreparable: la soldadura del saco y los empates, desde su rematado (antes 14 y +12 fijos, del rematado de 12).
+      : [...new Set([0, hSaco, ...p.autorreparable.empates.map(e => e + saco.rematado), H])]
           .filter(y => y >= 0 && y <= H)
           .sort((a, b) => a - b);
 
@@ -120,7 +121,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
   // Bandas de entrada de tubo con sus cotas de alto a la izquierda (sin duplicar ejes del ventanal)
   const bandasIzquierda: Array<{ y: number; alto: number }> = enr
     ? [
-        ...(ventanales.length ? ejesVentanal : []),
+        ...(ventanales.length ? (p.enrollable.sinEtArriba ? ejesVentanal.slice(1) : ejesVentanal) : []),
         ...tubos.map(altura => H - altura),
       ]
         .filter((y, idx, arr) => y > 0 && y < H && arr.findIndex(v => Math.abs(v - y) < 0.5) === idx)
@@ -184,9 +185,11 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
   // Ventanal enrollable: cachos laterales acotados y cristal acotado con su ancho de corte
   for (const [i, v] of ventanales.entries()) {
     const { margen: m, D } = v, T = ejesVentanal[i];
-    rect('puerta-cacho', 0, T + 3.75, m, Math.max(0, D - 7.5));
-    rect('puerta-cacho', Math.max(0, F - m), T + 3.75, m, Math.max(0, D - 7.5));
-    rect('puerta-cristal', m, T + 3.75, Math.max(0, F - 2 * m), Math.max(0, D - 7.5));
+    // Sin E.T. encima, el cristal se ve desde donde lo solapa el paño grande (1,75 bajo el eje).
+    const arriba = i === 0 && p.enrollable.sinEtArriba ? 1.75 : 3.75, alto = Math.max(0, D - 3.75 - arriba);
+    rect('puerta-cacho', 0, T + arriba, m, alto);
+    rect('puerta-cacho', Math.max(0, F - m), T + arriba, m, alto);
+    rect('puerta-cristal', m, T + arriba, Math.max(0, F - 2 * m), alto);
     if (m > 0) {
       cota({ x1: 0, y1: T - 8, x2: m, y2: T - 8, linea: T - 8, valor: m, estilo: 'XERAL', marcas: 0, texto: { x: m / 2, y: T - 10, ancla: 'middle' } });
       cota({ x1: F - m, y1: T - 8, x2: F, y2: T - 8, linea: T - 8, valor: m, estilo: 'XERAL', marcas: 0, texto: { x: F - m / 2, y: T - 10, ancla: 'middle' } });
@@ -230,6 +233,13 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
     marca(b.y + b.alto / 2, -1);
   }
   marca(auto ? 30 : ple ? p.apilable.bolsillo / 2 : 3.5);
+  // Sin E.T. encima del ventanal: la marca del paño donde llega el cristal y las de los cachos donde llega el paño.
+  if (ventanales.length && p.enrollable.sinEtArriba) {
+    const m = ventanales[0].margen;
+    marca(T + 1.75, 1);
+    linea('puerta-rotulador', 0, T + 3.75, m, T + 3.75);
+    linea('puerta-rotulador', F - m, T + 3.75, F, T + 3.75);
+  }
   const inicioMarcaSaco = formas.length;
   marca(H - hSaco, -1);
   if (desnivel) for (const f of formas.slice(inicioMarcaSaco)) {

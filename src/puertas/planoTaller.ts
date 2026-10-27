@@ -201,6 +201,13 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
   rect(l, 'DISCO1', 0, -H + (ple && p.apilable.doble ? bajoDoble : hSaco), F, H - hSaco + arriba + (ple && p.apilable.doble ? hSaco - bajoDoble : 0));
   for (const y of [0, -H]) linea(l, 'referencias', 0, y, F, y);
   const tubos = ple ? alturasTubos(p) : [], obstaculos: Array<[number, number]> = [];
+  // La autorreparable también marca dónde se suelda el saco, 2 cm por encima del bajo del paño, como la enrollable
+  // (Iván, 27/10/2026, AR2605249: faltaba la marca en la puerta).
+  if (!ple) {
+    linea(l, 'ROTULADOR', 0, -H + hSaco + 2, F, -H + hSaco + 2);
+    linea(l, 'referencias', 0, -H, 0, -H + hSaco + 2);
+    linea(l, 'referencias', F, -H, F, -H + hSaco);
+  }
   if (ple) {
     linea(l, 'ROTULADOR', 0, -arriba, F, -arriba);
     linea(l, 'ROTULADOR', 0, -H + (p.apilable.doble ? bajoDoble + 2 : hSaco + 2), F, -H + (p.apilable.doble ? bajoDoble + 2 : hSaco + 2));

@@ -15,9 +15,11 @@ export function medidasSaco(utilMm: number, modelo: Puerta['modelo'] = 'PUERTAPL
   const rematado = utilMm / 10 + 1;
   // La enrollable no se suelda doblada. El rematado es lo que queda libre bajo el paño y los 2 cm de soldar van
   // encima (Iván, 24/10/2026, AR2605220: con el de 80 quedaba de 7): el corte es el doble de rematado + 2 y la
-  // pestaña de velcro queda a 2 de cada lado (120: corte 30, pestaña 13 entre 15 y 28). La autorreparable no lleva pestaña.
+  // pestaña de velcro queda a 2 de cada lado (120: corte 30, pestaña 13 entre 15 y 28). La autorreparable, igual pero sin
+  // pestaña (Iván, 27/10/2026, AR2605249: con el de 120 se cortaba de 34 y debe ser de 30).
   if (modelo === 'PUERTAENR') return { rematado, corte: 2 * (rematado + 2), altoPestana: rematado };
-  return { rematado, corte: 2 * rematado + 8, altoPestana: modelo === 'PUERTAUTO' ? 0 : rematado + 2 };
+  if (modelo === 'PUERTAUTO') return { rematado, corte: 2 * (rematado + 2), altoPestana: 0 };
+  return { rematado, corte: 2 * rematado + 8, altoPestana: rematado + 2 };
 }
 
 /** Saco simple de la apilable; sin elegir, el de 80, que es el habitual. */

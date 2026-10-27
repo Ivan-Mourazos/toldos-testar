@@ -39,6 +39,9 @@ export interface Puerta {
   entradas: Entrada[];
   ventanas: Ventana[];
   enrollable: { T: number; D: number; margen: number; sacoPartido?:boolean;
+    /** Sin E.T. encima del ventanal de arriba (Iván, 27/10/2026, AR2605247): el paño grande solapa 2 cm sobre el cristal
+     * y los cachos, y las marcas van en el paño y en los cachos. Sin el campo, con E.T. como siempre. */
+    sinEtArriba?: boolean;
     /** Saco útil del pedido en mm; sin el campo (guardadas antes del 23/10/2026), 120. */
     saco?: number | null;
     /** Ventanales consecutivos bajo el primero, separados por E.T. a las dos caras. */

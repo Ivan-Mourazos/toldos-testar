@@ -102,7 +102,20 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSac
   // Cada eje por su papel, no por su orden: con una E.T. encima del ventanal (AR2604725, AR2605220) el primero
   // ya no es el eje de arriba del ventanal. Ese marca hacia arriba y el siguiente eje del ventanal, hacia abajo.
   const esEje = (b: number, k: number) => ejes.length > k && Math.abs(ejes[k] - b) < .01;
+  // Sin E.T. encima del ventanal (Iván, 27/10/2026, AR2605247): en el eje de arriba no hay banda de E.T.; el paño grande
+  // lleva la marca donde llega el cristal y los cachos, donde llega el paño.
+  const sinEt = ventanales.length > 0 && Boolean(p.enrollable.sinEtArriba);
+  if (sinEt) {
+    const m = ventanales[0].margen, yPaño = -T - 1.75, yCacho = -T - 3.75;
+    linea(l, 'ejes', 0, -T, F, -T);
+    linea(l, 'ROTULADOR', 0, yPaño, F, yPaño);
+    flecha(l, F / 2, yPaño, 180);
+    linea(l, 'ROTULADOR', 0, yCacho, m, yCacho);
+    linea(l, 'ROTULADOR', F - m, yCacho, F, yCacho);
+    texto(l, 'SIN E.T.: SOLAPAR 2 CM SOBRE EL CRISTAL', F / 2, -T + 8, 6, { centrado: true });
+  }
   bandas.forEach((b, i) => {
+    if (sinEt && esEje(b, 0)) return;
     const superior = ventanales.length > 0 && esEje(b, 0);
     const segundo = ventanales.length > 0 ? esEje(b, 1) : i === 1;
     const yMarca = -b + (superior ? 3.75 : -3.75);

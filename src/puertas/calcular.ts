@@ -140,7 +140,9 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       // También en el dibujo: sin esto los mininúmeros de los paños salían contados desde el bajo de la puerta (27/10/2026).
       for(const panel of grupo) {panel.desde+=origen;panel.hasta+=origen;panel.pieza.origenAlzado=[-lateral,panel.desde];}
       const marcarEn=(y:number,dir?:1|-1)=>{const panel=grupo.find(t=>y>=t.desde&&y<=t.hasta);if(panel)marca(panel.pieza,y-panel.desde,dir);};
-      marcarEn(origen+(nombre==='superior'?7.5:2),nombre==='superior'?-1:undefined);
+      // Sin E.T. encima del ventanal, el paño grande lleva la marca donde llega el cristal (2 cm sobre su borde) en vez de
+      // la de la E.T. (Iván, 27/10/2026, AR2605247).
+      marcarEn(origen+(nombre==='superior'?(e.sinEtArriba?2:7.5):2),nombre==='superior'?-1:undefined);
       marcarEn(origen+h-(nombre==='superior'?7:7.5),nombre==='inferior'?1:undefined);
       for(const [i,t] of p.entradas.entries()) {
         if(plan.uniones.some(u=>u.tubo===i+1))continue;
@@ -150,7 +152,8 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     }
     if(ventanales.length===1) {
       agregar(pieza('Cristal del ventanal', 'cristal', p.frente-2*e.margen+4, e.D-3.5, p.materialCristal,p.rolloCristal));
-      agregar(pieza('Cachos laterales', 'cacho', e.margen+1,e.D-3.5,lona,p.rollo,2));
+      const cachos=agregar(pieza('Cachos laterales', 'cacho', e.margen+1,e.D-3.5,lona,p.rollo,2));
+      if(e.sinEtArriba)marca(cachos,cachos.alto-2,1);
     } else {
       // AR2605065 (A) y AR2605038 (D): los cachos son piezas sueltas, no huecos de un paño entero.
       const separaciones:Array<{delantera:PiezaPuerta;trasera:PiezaPuerta}>=[];
@@ -172,6 +175,8 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
         agregar(pieza(`Cristal del ventanal ${i+1}`,'cristal',p.frente-2*v.margen+4,v.D-3.5,p.materialCristal,p.rolloCristal));
         for(const [lado,nombre] of ['izquierdo','derecho'].entries()) {
           const cacho=agregar(pieza(`Cacho ${nombre} · ventanal ${i+1}`,'cacho',v.margen+1,v.D-3.5));
+          // Sin E.T. encima, los cachos del de arriba marcan dónde llega el paño grande, 2 cm bajo su borde de arriba.
+          if(i===0&&e.sinEtArriba)marca(cacho,cacho.alto-2,1);
           cacho.origenAlzado=[lado===0?-1:p.frente-v.margen,p.alto-e.T-ventanales.slice(0,i+1).reduce((s,v)=>s+v.D,0)+1.75];
           // Cada pareja de mininúmeros en el mismo punto de la puerta (Iván, 27/10/2026: «no quedan exactos»): a 4 cm del
           // borde de la puerta, no del de cada pieza (el cacho es 1 cm más ancho para escuadrar), y en medio de lo que se
@@ -199,7 +204,10 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       numerarBorde(izquierda,++numeroUnion,'derecha');
       numerarBorde(derecha,numeroUnion,'izquierda');
     }else agregar(sacoConPestana(p.frente,s.corte,6.5,s.altoPestana,s.corte/2));
-    p.entradas.forEach((e,i)=>{if(!incorporadas.has(i+1))entrada(e,i);});
+    // Sin E.T. encima del ventanal, una entrada a esa altura no se corta: se avisa por si sobra en el pedido.
+    const etVentanal=(t:Entrada)=>Boolean(e.sinEtArriba)&&Math.abs(t.altura-(p.alto-e.T))<.01;
+    if(p.entradas.some(etVentanal))aviso('ET_VENTANAL','Marcado sin E.T. encima del ventanal, pero hay una entrada a esa altura: no se corta. Quítala del pedido si sobra.','aviso');
+    p.entradas.forEach((t,i)=>{if(!incorporadas.has(i+1)&&!etVentanal(t))entrada(t,i);});
   } else if (p.modelo === 'PUERTAPLE') {
     const a = p.apilable, alturas = alturasTubos(p);
     const suelo = a.sueloInclinado, desnivel = desnivelSuelo(p);

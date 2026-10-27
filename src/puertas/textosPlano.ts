@@ -152,6 +152,8 @@ export function plantillaTextosPuerta(p: Puerta, resultado: ResultadoPuerta = ca
     for (const v of vs) ejes.push(ejes.at(-1)! + v.D);
     for (const y of tubos.map(y => H - y)) if (!ejes.some(eje => Math.abs(eje - y) < 0.1)) ejes.push(y);
     ejes.filter(y => y > 0 && y < H - 13).forEach((y, i) => {
+      // Sin E.T. encima del ventanal, su eje no lleva leyenda de E.T. (Iván, 27/10/2026, AR2605247).
+      if (e.sinEtArriba && i === 0 && y === T) return;
       if (ejes.slice(1, vs.length).includes(y)) {
         // Entre dos cristales no hay hueco para una leyenda: llamada por fuera al borde de la E.T.
         anclas.push({ id: `et-${i}`, texto: '3 CM (HUECOS)', x: -85, y: y - 6, tamano: 7,

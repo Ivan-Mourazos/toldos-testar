@@ -180,7 +180,8 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
     // cajetín algo más pequeño (23/10/2026). Luego, presentación «PUERTA A», el corte en fila con la puerta y ventanas con la proporción justa. Después, el corte a la derecha y los recuadros DIBUJO y CORTE pegados, con margen del 20 %.
     ['apilable', apilable, 'deba5a3bd8eee4e66bb12d6e9abbcae394cdb7b8c588a1ce585da64916af991a'],
     // Tetris coloca las dos E.T. sobre los paños: baja de 711 a 700 cm sin cambiar el alzado.
-    ['autorreparable', autorreparable, '1dd06496b64f865819301b8659b348277a94fcf9ff14af809be6c62b7d9ec08b'], // Solo cambia «SACO DE 110» (23/10/2026).,
+    // 27/10/2026 (AR2605249): saco de 2 × (rematado + 2) y la raya de soldar el saco, 2 cm sobre el bajo del paño.
+    ['autorreparable', autorreparable, '00004667d0375f068f126f5c0e2cd8e2261a8040e7a830810e07fcb09ec7e2c5'],
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {
     const pedido = { ...pedidoDe('AR2600001', crear()), cabecera: { clienteRps: { codigo: '009999' } } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido, cabecera })).digest('hex')).toBe(hash);

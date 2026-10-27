@@ -56,7 +56,9 @@ describe('Despiece de puertas contrastado con medidas del bot (cm)', () => {
     p.autorreparable.empates = f.panos.length > 1 ? [299] : [];
     const r = calcularPuerta(p), panos = r.piezas.filter(x => x.clase === 'pano');
     expect(panos.map(x => x.alto)).toEqual(f.panos);
-    expect(r.piezas.find(x => x.clase === 'saco')).toMatchObject({ ancho: f.frente, alto: 32 });
+    // Los cortes reales de entonces eran de 32; desde el 27/10/2026 la autorreparable sigue la regla de la enrollable,
+    // 2 × (rematado + 2): con el de 110 (rematado 12), 28 (Iván, AR2605249).
+    expect(r.piezas.find(x => x.clase === 'saco')).toMatchObject({ ancho: f.frente, alto: 28 });
     const entradas = r.piezas.filter(x => x.clase === 'entrada');
     expect(entradas).toHaveLength(2);
     if (f.entrada) expect(entradas[0]).toMatchObject({ ancho: f.entrada[0], alto: f.entrada[1] });
@@ -199,10 +201,10 @@ describe('Saco del pedido en todas las puertas (Iván, 23/10/2026)', () => {
     const p = base('PUERTAENR', 172, 314); p.enrollable = { T: 123, D: 60, margen: 6, empates: [] };
     expect(calcularPuerta(p).piezas.find(x => x.clase === 'saco')!.alto).toBe(26);
   });
-  it('autorreparable con saco de 120: rematado 13, corte 34 y cuerpo desde 13', () => {
+  it('autorreparable con saco de 120: rematado 13, corte 30 y cuerpo desde 13 (27/10/2026, AR2605249)', () => {
     const p = base('PUERTAUTO', 300, 331); p.autorreparable = { empates: [], saco: 120 };
     const r = calcularPuerta(p);
-    expect(r.piezas.find(x => x.clase === 'saco')).toMatchObject({ nombre: 'Saco de 120', alto: 34 });
+    expect(r.piezas.find(x => x.clase === 'saco')).toMatchObject({ nombre: 'Saco de 120', alto: 30 });
     expect(r.piezas.find(x => x.clase === 'pano')!.alto).toBe(331 + 3.5 - 13);
   });
   it.each(['PUERTAENR','PUERTAUTO'] as const)('%s sin saco puesto avisa', modelo => {
