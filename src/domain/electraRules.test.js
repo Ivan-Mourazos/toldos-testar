@@ -480,8 +480,8 @@ describe('ELECTRA / Elit Vertical · límites técnicos', () => {
   });
 });
 
-// Iván, 26/10/2026 (NC 10188): con pasador, lo del correo, sin referencia ni reserva; sin el kit retenedor ni la guía Elit.
-describe('Electra con guías y pasador', () => {
+// Para capota (Iván, 27/10/2026), el pasador del correo de la NC 10188: sin referencia ni reserva, sin kit retenedor ni guía Elit.
+describe('Electra con guías para capota', () => {
   test('perfil guía cortavientos, tope y pestillo, uno por guía, sin reservar', () => {
     const result = calculate({ electraGuideLock: 'PASADOR' });
     const piezas = result.despiece ? JSON.stringify(result.despiece) : '';
@@ -491,8 +491,8 @@ describe('Electra con guías y pasador', () => {
     expect(piezas).toContain('PESTILLO CORTAVIENTOS INOX');
     const codigos = result.materials.map((m) => m.code ?? '');
     expect(codigos.some((c) => c.startsWith('ELITGU') || c === 'FELPAELIT')).toBe(false);
-    // Con pasador también va el kit retenedor (Iván, 27/10/2026).
-    expect(codigos.some((c) => c.startsWith('KITRETENEDOR'))).toBe(true);
+    // Para capota, el pasador en lugar del kit retenedor (Iván, 27/10/2026).
+    expect(codigos.some((c) => c.startsWith('KITRETENEDOR'))).toBe(false);
     expect(codigos.some((c) => c.startsWith('PECARMAX'))).toBe(true);
   });
 });

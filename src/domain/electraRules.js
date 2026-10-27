@@ -258,9 +258,10 @@ function electraPieces(context) {
       : { code: 'TAPASLAMAXSCNE11', quantity: units, description: 'JGO TAPAS PERFIL CARGA MAXISCREEN' }
   ];
   if (hasCofre) pieces.push({ code: boxProfileReference.code, quantity: units, description: 'PERFIL COFRE ELECTRA', length: boxProfileLength });
-  // Con pasador, lo que dice el correo de la NC 10188 (Iván, 26/10/2026): perfil guía cortavientos (Siplan), tope y
-  // pestillo cortavientos, sin referencia ni reserva («después ya gastan lo que toque»). Uno por guía.
-  if (hasGuide && awning.electraGuideLock === 'PASADOR') {
+  // Para capota (Iván, 27/10/2026), con el pasador del correo de la NC 10188: perfil guía cortavientos (Siplan), tope
+  // y pestillo cortavientos, sin referencia ni reserva («después ya gastan lo que toque»). Uno por guía.
+  const paraCapota = hasGuide && awning.electraGuideLock === 'PASADOR';
+  if (paraCapota) {
     pieces.push(
       { code: null, quantity: 2 * units, description: 'PERFIL GUÍA CORTAVIENTOS (SIPLAN)', length: guideLength, reserve: false },
       { code: null, quantity: 2 * units, description: 'TOPE CORTAVIENTOS', reserve: false },
@@ -273,10 +274,10 @@ function electraPieces(context) {
       { code: 'FELPAELIT', quantity: round1((2 * guideLength) / 100 * units), description: 'FELPA 7X8 ELIT VERTICAL', despiece: false }
     );
   }
-  // El Electra siempre lleva el kit retenedor, con guías o sin ellas y también con pasador; y nunca mosquetones,
-  // cadenillas ni puentes abatibles (Iván, 27/10/2026). Antes: puente abatible con cofre y sin guía (Q-E03),
-  // mosquetones con el soporte universal y cadenillas y puentes sin cofre.
-  pieces.push({ code: retainerCode(lacado.suffix), quantity: units, description: 'KIT RETENEDOR ELIT VERTICAL' });
+  // Si no es para capota, siempre el kit retenedor, con guías o sin ellas; y nunca mosquetones, cadenillas ni puentes
+  // abatibles (Iván, 27/10/2026). Antes: puente abatible con cofre y sin guía (Q-E03), mosquetones con el soporte
+  // universal y cadenillas y puentes sin cofre.
+  if (!paraCapota) pieces.push({ code: retainerCode(lacado.suffix), quantity: units, description: 'KIT RETENEDOR ELIT VERTICAL' });
   if (!hasCofre) pieces.push({ code: null, quantity: 2 * units, description: 'REGLETA ZAMACK', reserve: false });
   pieces.push({ code: 'VARILLAVAINARBLA', quantity: round1(varillaMl * units), description: 'VARILLA VAINA RIGIDA 5,5 BLANCA', despiece: false });
   if (hasCofre) pieces.push({ code: 'VARILLAVAINANEG5', quantity: round1(varillaMl * units), description: 'VARILLA VAINA NEGRA 4,5MM', despiece: false });
