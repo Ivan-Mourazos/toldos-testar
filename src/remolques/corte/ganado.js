@@ -4,8 +4,8 @@
 // «X2», «X3»…, que el cortador repite (AR2600752, cantidad 2).
 import { CORTE_ECONOMICO } from '../ganado/economicoDatos.ts';
 
-/** Iván, 23/10/2026: en el ganado, los ollaos a 4 cm del borde de corte (en los cortes viejos, 4,5). */
-export const OLLAO_AL_BORDE = 40;
+/** Iván, 27/10/2026: en el económico, los ollaos a 4,5 cm del borde de corte, como en sus cortes a mano. */
+export const OLLAO_AL_BORDE = 45;
 const PLANTILLAS = { REMOLCAR_ECONOMICO: CORTE_ECONOMICO };
 const r1 = (v) => Math.round(v * 10) / 10;
 

@@ -31,7 +31,7 @@ describe('piezaGanado (económico de Remolcar)', () => {
     expect(p.rot).toHaveLength(14);
   });
 
-  it('pone los 17 ollaos a 4 cm del borde de corte (en el corte a mano estaban a 4,5)', () => {
+  it('pone los 17 ollaos a 4,5 cm del borde de corte, como en el corte a mano (Iván, 27/10/2026)', () => {
     expect(CORTE_ECONOMICO.ollaos.every((o) => o[4] === 45)).toBe(true);
     const p = piezaGanado({ ...elementoGanado(), of: '0225519' });
     expect(p.ollaos).toHaveLength(17);
