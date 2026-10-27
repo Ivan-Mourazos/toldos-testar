@@ -7,6 +7,14 @@ import { geometriaAlzado } from './alzado.ts';
 // Medido por tmp/puertas-5247/medir-referencia.mjs en las copias del DWG y del bot de AR2605065.
 // Tira: X 0–214, a 1 cm de los cachos (-1–8 / 206–215), Y 265,25–272,75 desde cabecera.
 describe('AR2605065: E.T. entre ventanales alineada con los paños', () => {
+  it('los mininúmeros conservan la letra de la puerta al cambiar de elemento', () => {
+    const p = puertaPlanoReal('AR2605065');
+    const g = geometriaAlzado(p, calcularPuerta(p), 'B');
+    const minis = g.formas.filter(a => a.tipo === 'texto' && a.clase === 'puerta-texto-rotulador');
+    expect(minis).toHaveLength(8);
+    expect(minis.every(a => a.tipo === 'texto' && /^b\d+$/.test(a.lineas[0]))).toBe(true);
+  });
+
   it('el plano cierra los cuatro lados de la tira de 214 × 7,5, no solo pinta el eje', () => {
     const l = dibujarAlzadoEnrollable(puertaPlanoReal('AR2605065'), 'A').lienzo;
     const segmento = (x1: number, y1: number, x2: number, y2: number) => l.lineas.some(a => a.capa === 'DISCO1'

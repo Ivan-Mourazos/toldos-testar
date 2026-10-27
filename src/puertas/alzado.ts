@@ -66,7 +66,7 @@ export const textoCota = (c: CotaAlzado) => `${c.prefijo ? `${c.prefijo} ` : ''}
 
 export const esVertical = (c: Pick<CotaAlzado, 'x1' | 'x2' | 'y1' | 'y2'>) => Math.abs(c.x1 - c.x2) < 1e-9 && Math.abs(c.y1 - c.y2) > 1e-9;
 
-export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): GeometriaAlzado {
+export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = 'A'): GeometriaAlzado {
   if (p.modelo === 'SYSTEMDOCK') return alzadoSystemDock(p);
   const F = p.frente > 0 ? p.frente : 400;
   const H = p.alto > 0 ? p.alto : 400;
@@ -249,7 +249,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
       if (!pieza.origenAlzado) continue;
       const [ox, oy] = pieza.origenAlzado;
       for (const u of pieza.unionesCorte ?? []) {
-        const x = ox + u.x, y = H - oy - u.y, valor = `a${u.numero}`;
+        const x = ox + u.x, y = H - oy - u.y, valor = `${letra.toLowerCase()}${u.numero}`;
         const clave = `${valor}:${x.toFixed(4)}:${y.toFixed(4)}`;
         if (escritas.has(clave)) continue;
         escritas.add(clave);
