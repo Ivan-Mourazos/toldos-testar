@@ -2,6 +2,8 @@ import { alturasTubos } from './calcular.ts';
 import { colocarTextosPuerta } from './textosPlano.ts';
 import { desnivelSuelo, pestanaDerecha, rotuloSaco, sacoPuerta } from './saco.ts';
 import { medidaSystemDock, REGLAS_SYSTEM_DOCK } from './systemDock.ts';
+import { ventanalesEnrollable } from './ventanalesEnrollable.ts';
+import { flechaEmpate } from './marcasEmpate.ts';
 import type { Puerta, Punto, ResultadoPuerta } from './tipos.ts';
 
 // El alzado de una puerta como dibujo puro, en cm y con la y hacia abajo (como el SVG): lo pinta la pantalla
@@ -65,7 +67,7 @@ export const textoCota = (c: CotaAlzado) => `${c.prefijo ? `${c.prefijo} ` : ''}
 
 export const esVertical = (c: Pick<CotaAlzado, 'x1' | 'x2' | 'y1' | 'y2'>) => Math.abs(c.x1 - c.x2) < 1e-9 && Math.abs(c.y1 - c.y2) > 1e-9;
 
-export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): GeometriaAlzado {
+export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = 'A'): GeometriaAlzado {
   if (p.modelo === 'SYSTEMDOCK') return alzadoSystemDock(p);
   const F = p.frente > 0 ? p.frente : 400;
   const H = p.alto > 0 ? p.alto : 400;
@@ -93,7 +95,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
 
   const tubos = ple ? alturasTubos(p) : p.entradas.map(t => t.altura);
   const T = enr && p.enrollable.T > 0 ? p.enrollable.T : 0;
-  const ventanales = enr && T > 0 ? [{ D: p.enrollable.D, margen: p.enrollable.margen }, ...p.enrollable.ventanales ?? []] : [];
+  const ventanales = enr && T > 0 ? ventanalesEnrollable(p) : [];
   const ejesVentanal = [T];
   for (const v of ventanales) ejesVentanal.push(ejesVentanal.at(-1)! + v.D);
   const D = p.enrollable.D;
@@ -124,6 +126,8 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
         ...(ventanales.length ? ejesVentanal.filter((_, k) => !(k === 0 && p.enrollable.sinEtArriba) && !(k === ejesVentanal.length - 1 && p.enrollable.sinEtAbajo)) : []),
         ...tubos.map(altura => H - altura),
       ]
+        .filter(y => !(p.enrollable.sinEtArriba && Math.abs(y - T) < .01)
+          && !(p.enrollable.sinEtAbajo && Math.abs(y - ejesVentanal.at(-1)!) < .01))
         .filter((y, idx, arr) => y > 0 && y < H && arr.findIndex(v => Math.abs(v - y) < 0.5) === idx)
         .sort((a, b) => a - b)
         .map(y => ({ y, alto: 7.5 }))
@@ -184,13 +188,10 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
 
   // Ventanal enrollable: cachos laterales acotados y cristal acotado con su ancho de corte
   for (const [i, v] of ventanales.entries()) {
-    const { margen: m, D } = v, T = ejesVentanal[i];
-    // Sin E.T. encima, el cristal se ve desde donde lo solapa el paño grande (1,75 bajo el eje).
-    const arriba = i === 0 && p.enrollable.sinEtArriba ? 1.75 : 3.75;
-    const abajo = i === ventanales.length - 1 && p.enrollable.sinEtAbajo ? 1.75 : 3.75, alto = Math.max(0, D - abajo - arriba);
-    rect('puerta-cacho', 0, T + arriba, m, alto);
-    rect('puerta-cacho', Math.max(0, F - m), T + arriba, m, alto);
-    rect('puerta-cristal', m, T + arriba, Math.max(0, F - 2 * m), alto);
+    const { margen: m, D } = v, T = ejesVentanal[i], alto = Math.max(0, v.altoVisible);
+    rect('puerta-cacho', 0, v.visibleDesde, m, alto);
+    rect('puerta-cacho', Math.max(0, F - m), v.visibleDesde, m, alto);
+    rect('puerta-cristal', m, v.visibleDesde, Math.max(0, F - 2 * m), alto);
     if (m > 0) {
       cota({ x1: 0, y1: T - 8, x2: m, y2: T - 8, linea: T - 8, valor: m, estilo: 'XERAL', marcas: 0, texto: { x: m / 2, y: T - 10, ancla: 'middle' } });
       cota({ x1: F - m, y1: T - 8, x2: F, y2: T - 8, linea: T - 8, valor: m, estilo: 'XERAL', marcas: 0, texto: { x: F - m / 2, y: T - 10, ancla: 'middle' } });
@@ -234,9 +235,6 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
     marca(b.y + b.alto / 2, -1);
   }
   marca(auto ? 30 : ple ? p.apilable.bolsillo / 2 : 3.5);
-  // Sin E.T. encima o debajo del ventanal: la marca del paño donde llega el cristal (los cachos, sin marca).
-  if (ventanales.length && p.enrollable.sinEtArriba) marca(T + 1.75, 1);
-  if (ventanales.length && p.enrollable.sinEtAbajo) marca(ejesVentanal.at(-1)! - 1.75, -1);
   const inicioMarcaSaco = formas.length;
   marca(H - hSaco, -1);
   if (desnivel) for (const f of formas.slice(inicioMarcaSaco)) {
@@ -244,10 +242,29 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
     if (f.tipo==='polilinea') f.puntos=f.puntos.map(([x,y])=>[x,y-desnivel*x/F]);
   }
 
+  // La tira entre ventanales lleva los mismos mininúmeros que el corte y el plano.
+  // Una pareja coincidente se escribe una sola vez en pantalla.
+  if (enr && ventanales.length > 1) {
+    const escritas = new Set<string>();
+    for (const pieza of resultado.piezas) {
+      if (!pieza.origenAlzado) continue;
+      const [ox, oy] = pieza.origenAlzado;
+      for (const u of pieza.unionesCorte ?? []) {
+        const x = ox + u.x, y = H - oy - u.y, valor = `${letra.toLowerCase()}${u.numero}`;
+        const clave = `${valor}:${x.toFixed(4)}:${y.toFixed(4)}`;
+        if (escritas.has(clave)) continue;
+        escritas.add(clave);
+        formas.push({ tipo: 'texto', clase: 'puerta-texto-rotulador', x, y, lineas: [valor], ancla: 'middle', tamano: 1 });
+      }
+    }
+  }
+
   // Huecos de cutter en las entradas
   if (!auto) {
     p.entradas.forEach((e, i) => {
       const yEje = H - (ple ? tubos[i] ?? e.altura : e.altura);
+      if (enr && (p.enrollable.sinEtArriba && Math.abs(yEje - T) < .01
+        || p.enrollable.sinEtAbajo && Math.abs(yEje - ejesVentanal.at(-1)!) < .01)) return;
       const altoE = enr ? 7.5 : e.alto || (e.diametro === 42 ? 13.5 : 12);
       for (const h of e.huecos) rect('puerta-hueco-alzado', h.x - (ple && F > 600 ? 1 : 0), yEje + altoE / 2 - h.y - h.alto, h.ancho, h.alto, h.radio);
       // Cadena completa de las cintas: extremos a 6, huecos y separaciones, como AR2605036.
@@ -286,8 +303,14 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta): Geometri
       linea('puerta-empate-autorreparable', 0, H - u.altura + u.solape / 2, F, H - u.altura + u.solape / 2);
     } else linea('puerta-empate', 0, H - u.altura, F, H - u.altura);
     if (!u.tubo) nota(`EMPATE ${numAlzado(u.solape)}cm`, 40, H - u.altura - 4, 5);
-    marca(H - u.altura - u.solape / 2);
-    marca(H - u.altura + u.solape / 2, -1);
+    if (u.tubo) {
+      marca(H - u.altura - u.solape / 2);
+      marca(H - u.altura + u.solape / 2, -1);
+    } else {
+      const y = H - u.altura - u.solape / 2;
+      linea('puerta-rotulador', p.margenMarcas, y, F - p.margenMarcas, y);
+      for (const [x1, y1, x2, y2] of flechaEmpate(F / 2, y, 1)) linea('puerta-rotulador', x1, y1, x2, y2);
+    }
   }
 
   // Textos de taller colocados en huecos libres

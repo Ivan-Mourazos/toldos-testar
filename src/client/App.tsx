@@ -198,8 +198,12 @@ export default function App() {
     parameters: ruleSettings.parameters
   });
 
+  // La búsqueda de un pedido espera al catálogo, que dice si hay puertas: abierta la web con el pedido en
+  // la dirección («Plantear» de CoordinaOT), la primera búsqueda salía antes y abría las puertas enrollables
+  // en Toldos, como «Enrollable» (Iván, 27/10/2026).
+  const catalogoCargado = useRef<Promise<Catalog | null> | null>(null);
   useEffect(() => {
-    fetch('/api/catalog')
+    catalogoCargado.current = fetch('/api/catalog')
       .then((response) => response.json())
       .then((datos: Catalog) => {
         setCatalog(datos);
@@ -208,8 +212,12 @@ export default function App() {
           setProducto('toldos');
           guardarProducto('toldos');
         }
+        return datos;
       })
-      .catch(() => notify('No se pudo cargar el catálogo.', { tone: 'error' }));
+      .catch(() => {
+        notify('No se pudo cargar el catálogo.', { tone: 'error' });
+        return null;
+      });
   }, [notify]);
 
   useEffect(() => {
@@ -360,10 +368,13 @@ export default function App() {
       if (seq !== autofillSeq.current) return;
       if (!response.ok) throw new Error(data.error || 'No se pudieron obtener los datos del pedido.');
       const result = data as OrderAutofill;
+      // Del catálogo ya cargado, no de este pintado: esta función puede venir del primero (el enlace).
+      const conPuertas = (await catalogoCargado.current)?.features.puertasEnabled === true;
+      if (seq !== autofillSeq.current) return;
       // Un pedido sin ningún toldo puede ser de remolques: se pregunta a la ruta de RPS de
       // remolques (la que decide qué es una línea de remolque). Los pedidos con toldos no
       // pasan por aquí y, si la consulta falla, todo sigue como antes.
-      if (mirarFueraDeToldos(result.order.awnings.map((awning) => awning.model), puertasActivas)) {
+      if (mirarFueraDeToldos(result.order.awnings.map((awning) => awning.model), conPuertas)) {
         const trailers = await trailerPedidoOf(orderCode);
         if (seq !== autofillSeq.current) return;
         if (trailers && trailers.lineas.length > 0) {
@@ -379,7 +390,7 @@ export default function App() {
           return;
         }
         // Ni toldos ni remolques: puede ser de puertas (artículos PUERTAENR, PUERTAPLE, PUERTAUTO).
-        const puertas = puertasActivas ? await puertasPedidoOf(orderCode) : null;
+        const puertas = conPuertas ? await puertasPedidoOf(orderCode) : null;
         if (seq !== autofillSeq.current) return;
         if (puertas && (puertas.puertas.length || puertas.avisos.length)) {
           if (esPedidoMixto(puertas.puertas.map(input => ({ input })))) {

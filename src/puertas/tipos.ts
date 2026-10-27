@@ -39,10 +39,10 @@ export interface Puerta {
   entradas: Entrada[];
   ventanas: Ventana[];
   enrollable: { T: number; D: number; margen: number; sacoPartido?:boolean;
-    /** Sin E.T. encima del ventanal de arriba (Iván, 27/10/2026, AR2605247): el paño grande solapa 2 cm sobre el cristal
-     * y los cachos, y la marca va en el paño. Sin el campo, con E.T. como siempre. */
+    /** Sin E.T. encima: T llega al borde del paño y no hay marcas de esa E.T.
+     * El cristal y los cachos solapan 2 cm con el paño. Sin el campo, con E.T. como siempre. */
     sinEtArriba?: boolean;
-    /** Lo mismo bajo el ventanal de abajo del todo: el paño de abajo solapa 2 cm sobre el cristal y los cachos. */
+    /** Sin E.T. debajo: la última D llega al borde del paño inferior, sin marcas de esa E.T. */
     sinEtAbajo?: boolean;
     /** Saco útil del pedido en mm; sin el campo (guardadas antes del 23/10/2026), 120. */
     saco?: number | null;

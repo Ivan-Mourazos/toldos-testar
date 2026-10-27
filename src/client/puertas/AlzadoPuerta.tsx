@@ -77,9 +77,9 @@ function Forma({ f }: { f: FormaAlzado }) {
   }
 }
 
-export function AlzadoPuerta({ puerta: p, resultado }: { puerta: Puerta; resultado: ResultadoPuerta }) {
+export function AlzadoPuerta({ puerta: p, resultado, letra = 'A' }: { puerta: Puerta; resultado: ResultadoPuerta; letra?: string }) {
   if(p.modelo==='SYSTEMDOCK'&&!(p.frente>0&&p.alto>0)) return <section className="puerta-alzado panel panel-vidrio" aria-label="Alzado de la lona"><h2>Alzado</h2><p>Completa el largo y el ancho de la lona para ver sus medidas reales.</p></section>;
-  const { formas, vista, letraBase, F, H } = geometriaAlzado(p, resultado);
+  const { formas, vista, letraBase, F, H } = geometriaAlzado(p, resultado, letra);
   return (
     <section className="puerta-alzado panel panel-vidrio" aria-label={p.modelo==='SYSTEMDOCK'?'Alzado de la lona':'Alzado de la puerta'}>
       <header>

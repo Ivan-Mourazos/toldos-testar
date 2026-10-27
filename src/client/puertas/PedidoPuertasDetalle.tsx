@@ -87,7 +87,7 @@ function PlanteamientoPuertas({ pedido, ruta, generado, notify, onConfirm }: {
           className={`pestana ${i === indice ? 'pestana-activa' : ''}`} onClick={() => setIndice(i)}>{`${letras[i] ?? i + 1} · ${input.of || 'SIN OF'}`}</button>)}
       </div>}
       <div className="puerta-planteamiento-alzados" ref={alzadoFluido}>
-        {elegido && <AlzadoPuerta key={elegido.id} puerta={elegido.input} resultado={calcularPuerta(elegido.input)} />}
+        {elegido && <AlzadoPuerta key={elegido.id} puerta={elegido.input} resultado={calcularPuerta(elegido.input)} letra={letras[indice]} />}
       </div>
     </section>
   );
