@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import casos from "../../__fixtures__/produccion-2026-09.json";
+import type { LonaInput } from "../../calc/lona.ts";
 import { DEFAULT_PARAMS } from "../../calc/params.ts";
 import { normalizarNumeroPedido } from "../../pedidos/numero-pedido.ts";
 import { muestrasHoja, NOMBRES_MUESTRAS, type CasoFixture } from "../muestras.ts";
@@ -24,7 +25,7 @@ describe("muestras de la hoja de taller", () => {
   });
 
   it("la de ganchos lleva la tabla de ganchos con delante medido al revés", () => {
-    const tabla = tablaGanchos(muestras["segun-ganchos"][0].input)!;
+    const tabla = tablaGanchos(muestras["segun-ganchos"][0].input as LonaInput)!;
     expect(tabla.filas[2].nombre).toBe("GANCHOS DELANTE DE DERECHA A IZQUIERDA (MEDIDO AL REVÉS)");
   });
 

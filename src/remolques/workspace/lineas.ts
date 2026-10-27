@@ -1,5 +1,6 @@
 import type { LonaInput } from "../calc/lona.ts";
 import type { BaquetonInput } from "../calc/baqueton.ts";
+import type { GanadoInput } from "../calc/ganado.ts";
 import type { OrigenRps } from "../rps/types.ts";
 import type { PlanteamientoRecord, TipoPlanteamiento } from "../store/types.ts";
 import type { MarcaDelCliente } from "../clientes/tipos.ts";
@@ -14,7 +15,7 @@ import { erroresPlanteamiento } from "../pedidos/validar-planteamiento.ts";
 export interface LineaPedido {
   version: string;
   tipo: TipoPlanteamiento;
-  input: LonaInput | BaquetonInput;
+  input: LonaInput | BaquetonInput | GanadoInput;
   /** id del registro guardado del que salió; ausente si nunca se guardó. */
   id?: string;
   /**

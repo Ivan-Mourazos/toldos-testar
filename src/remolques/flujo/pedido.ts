@@ -1,6 +1,7 @@
 import { awningLetter } from "../../domain/awningCompleteness.js";
 import { normalizeOf } from "../../reviewRules.js";
 import type { BaquetonInput } from "../calc/baqueton.ts";
+import { MODELOS_GANADO, esModeloGanado, type GanadoInput } from "../calc/ganado.ts";
 import type { CabeceraInput, LonaInput } from "../calc/lona.ts";
 import { nombrePerfil } from "../calc/params.ts";
 import type { DatosHojaPedido, ElementoPedidoHoja } from "../hoja/tipos.ts";
@@ -49,14 +50,18 @@ export function validarClienteRps(bruto: unknown): ClienteRpsPedido | undefined 
   return { codigo: codigo.slice(0, 40), nombre: typeof c.nombre === "string" ? c.nombre.trim().slice(0, 200) : "" };
 }
 
-/** El modelo de un elemento en Pedidos: el perfil de la lona («Recto con aguas») o «Baquetón». */
-export function modeloElemento(elemento: { tipo: TipoPlanteamiento; input: LonaInput | BaquetonInput }): string {
+/** El modelo de un elemento en Pedidos: el perfil de la lona («Recto con aguas»), «Baquetón» o el de ganado. */
+export function modeloElemento(elemento: { tipo: TipoPlanteamiento; input: LonaInput | BaquetonInput | GanadoInput }): string {
   if (elemento.tipo === "baqueton") return "Baquetón";
+  if (elemento.tipo === "ganado") {
+    const modelo = (elemento.input as GanadoInput).ganado;
+    return esModeloGanado(modelo) ? MODELOS_GANADO[modelo].nombre : "Remolque de ganado";
+  }
   const perfil = (elemento.input as LonaInput).tipoPerfil;
   return perfil ? nombrePerfil(perfil) : "Remolque";
 }
 
-const ofDe = (elemento: { input: LonaInput | BaquetonInput }) => normalizeOf(elemento.input.cabecera.ordenFabricacion ?? "");
+const ofDe = (elemento: { input: LonaInput | BaquetonInput | GanadoInput }) => normalizeOf(elemento.input.cabecera.ordenFabricacion ?? "");
 const unicos = (valores: string[]) => [...new Set(valores.filter(Boolean))];
 
 /** Las letras y OF que se preguntan a CoordinaOT, en el orden del pedido (A, B…), como los toldos. */

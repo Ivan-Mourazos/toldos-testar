@@ -1,5 +1,6 @@
 import { contornoAutomatico, contornoSesgado, type LonaInput } from "../calc/lona.ts";
 import type { BaquetonInput } from "../calc/baqueton.ts";
+import { esModeloGanado, type GanadoInput } from "../calc/ganado.ts";
 import { erroresGanchos, medidasRemolque } from "../calc/ganchos.ts";
 import { sinPosiciones } from "../calc/ollaos.ts";
 
@@ -10,7 +11,10 @@ export interface ErrorPlanteamiento {
 
 const positivo = (valor: number | null | undefined) => Number.isFinite(valor) && Number(valor) > 0;
 
-export function erroresPlanteamiento(input: LonaInput | BaquetonInput): ErrorPlanteamiento[] {
+/** El remolque de ganado se distingue por su modelo de plantilla (`ganado`), igual que el baquetón por `baqueton`. */
+export const esGanado = (input: LonaInput | BaquetonInput | GanadoInput): input is GanadoInput => "ganado" in input;
+
+export function erroresPlanteamiento(input: LonaInput | BaquetonInput | GanadoInput): ErrorPlanteamiento[] {
   const errores: ErrorPlanteamiento[] = [];
   const agregar = (condicion: boolean, campo: string, mensaje: string) => {
     if (condicion) errores.push({ campo, mensaje });
@@ -18,6 +22,12 @@ export function erroresPlanteamiento(input: LonaInput | BaquetonInput): ErrorPla
 
   agregar(!input.cabecera.numeroPedido.trim(), "numeroPedido", "Introduce el número de pedido.");
   agregar(!positivo(input.cantidad), "cantidad", "La cantidad debe ser mayor que cero.");
+  // El de ganado trae sus piezas de la plantilla: solo hace falta el modelo y el material.
+  if (esGanado(input)) {
+    agregar(!esModeloGanado(input.ganado), "ganado", "Elige el modelo del remolque de ganado.");
+    agregar(!input.material.trim(), "material", "Selecciona o escribe el material.");
+    return errores;
+  }
   agregar(!positivo(input.largo), "largo", "Introduce el largo del remolque.");
   agregar(!positivo(input.ancho), "ancho", "Introduce el ancho del remolque.");
   agregar(!input.material.trim(), "material", "Selecciona o escribe el material.");
@@ -119,10 +129,10 @@ export function erroresPlanteamiento(input: LonaInput | BaquetonInput): ErrorPla
   return errores;
 }
 
-export function errorPlanteamientoIncompleto(input: LonaInput | BaquetonInput): string | null {
+export function errorPlanteamientoIncompleto(input: LonaInput | BaquetonInput | GanadoInput): string | null {
   return erroresPlanteamiento(input)[0]?.mensaje ?? null;
 }
 
-export function planteamientoGenerable(input: LonaInput | BaquetonInput): boolean {
+export function planteamientoGenerable(input: LonaInput | BaquetonInput | GanadoInput): boolean {
   return erroresPlanteamiento(input).length === 0;
 }

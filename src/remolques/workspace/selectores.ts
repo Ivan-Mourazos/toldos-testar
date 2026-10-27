@@ -1,5 +1,6 @@
 import type { LonaInput } from "../calc/lona.ts";
 import type { BaquetonInput } from "../calc/baqueton.ts";
+import { esModeloGanado, type GanadoInput } from "../calc/ganado.ts";
 import type { EstadoWorkspace } from "./estado.ts";
 import type { LineaPedido } from "./lineas.ts";
 import type { OrigenRps, PedidoRps } from "../rps/types.ts";
@@ -15,7 +16,9 @@ export function lineaActiva(estado: EstadoWorkspace): LineaPedido | null {
 }
 
 /** Medidas mínimas para que el cálculo de paños y ollaos tenga sentido. */
-export function medidasSuficientes(input: LonaInput | BaquetonInput): boolean {
+export function medidasSuficientes(input: LonaInput | BaquetonInput | GanadoInput): boolean {
+  // El de ganado no tiene medidas que pedir: sus piezas salen del modelo.
+  if ("ganado" in input) return esModeloGanado(input.ganado);
   if ("baqueton" in input) {
     return input.largo > 0 && input.ancho > 0 && input.baqueton > 0;
   }

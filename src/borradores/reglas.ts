@@ -46,7 +46,7 @@ const esObjeto = (valor: unknown): valor is Record<string, unknown> =>
 const texto = (valor: unknown) => (typeof valor === "string" ? valor : "");
 const unicos = (valores: string[]) => [...new Set(valores.filter(Boolean))];
 const pareceLinea = (valor: unknown): valor is LineaPedido =>
-  esObjeto(valor) && typeof valor.version === "string" && (valor.tipo === "lona" || valor.tipo === "baqueton")
+  esObjeto(valor) && typeof valor.version === "string" && (valor.tipo === "lona" || valor.tipo === "baqueton" || valor.tipo === "ganado")
   && esObjeto(valor.input) && esObjeto(valor.input.cabecera);
 
 /** El contenido que manda la pantalla, comprobado: su tipo, su número tal como se escribió y lo que se guarda. */

@@ -1,8 +1,9 @@
 import type { LonaInput, LonaResult } from "../calc/lona.ts";
 import type { BaquetonInput, BaquetonResult } from "../calc/baqueton.ts";
+import type { GanadoInput, GanadoResult } from "../calc/ganado.ts";
 import type { CalcParams } from "../calc/params.ts";
 
-export type TipoPlanteamiento = "lona" | "baqueton";
+export type TipoPlanteamiento = "lona" | "baqueton" | "ganado";
 
 export interface PlanteamientoRecord {
   id: string;
@@ -10,8 +11,8 @@ export interface PlanteamientoRecord {
   numeroPedido: string;
   version: string;
   cliente: string;
-  input: LonaInput | BaquetonInput;
-  result: LonaResult | BaquetonResult;
+  input: LonaInput | BaquetonInput | GanadoInput;
+  result: LonaResult | BaquetonResult | GanadoResult;
   paramsSnapshot: CalcParams;
   /** SVG serializado de la vista técnica en el momento de guardar (para PDF multi-remolque). */
   snapshotSvg?: string | null;

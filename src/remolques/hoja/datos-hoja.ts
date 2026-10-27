@@ -1,5 +1,6 @@
 import type { LonaInput, LonaResult } from "../calc/lona.ts";
 import type { BaquetonInput, BaquetonResult } from "../calc/baqueton.ts";
+import type { GanadoInput, GanadoResult } from "../calc/ganado.ts";
 import type { PlanteamientoRecord, TipoPlanteamiento } from "../store/types.ts";
 import { nombrePerfil } from "../calc/params.ts";
 import { datosGeometriaPdf } from "./datos-geometria.ts";
@@ -38,7 +39,7 @@ export function textoPanos(cantidad: number, a: number, b: number | string): str
  * varias, quien tiene las hojas en la mano sabe cuál es cuál y si le falta una.
  */
 export function tituloPagina(tipo: TipoPlanteamiento, indice: number, total: number): string {
-  const nombre = tipo === "lona" ? "REMOLQUE" : "BAQUETÓN";
+  const nombre = tipo === "lona" ? "REMOLQUE" : tipo === "ganado" ? "REMOLQUE DE GANADO" : "BAQUETÓN";
   return total <= 1 ? nombre : `${nombre} · ${indice + 1} DE ${total}`;
 }
 
@@ -155,6 +156,30 @@ export function hojaBaqueton(i: BaquetonInput, r: BaquetonResult): CuerpoHoja {
   };
 }
 
+/** El de ganado: el modelo y sus piezas, de la plantilla; el dibujo de confección va a la derecha. */
+export function hojaGanado(i: GanadoInput, r: GanadoResult): CuerpoHoja {
+  const cantidad = Math.max(1, Math.round(i.cantidad || 1));
+  return {
+    banda: [
+      { titulo: "MODELO", lineas: [oRaya(r.modelo)], notas: ["SEGÚN PLANTILLA DE LA OFICINA"] },
+      { titulo: "JUEGOS A CORTAR", lineas: [cantidad === 1 ? "1 JUEGO" : `1 JUEGO · X${cantidad}`], notas: cantidad > 1 ? [`EL CORTADOR LO REPITE ${cantidad} VECES`] : [] },
+      { titulo: "LARGO DE ROLLO", lineas: [`${fmt(r.largoJuego)} CM POR JUEGO`], notas: [`OCUPA ${fmt(r.anchoJuego)} DE ANCHO`] },
+    ],
+    grupos: [
+      {
+        titulo: "PIEZAS",
+        datos: r.piezas.map((p) => ({
+          etiqueta: p.nombre.toUpperCase(),
+          valores: [p.hecho && `HECHO ${p.hecho}`, p.corte && `CORTE ${p.corte}`, p.acabado.toUpperCase()].filter(Boolean),
+        })),
+      },
+      { titulo: "ACABADOS", datos: [{ etiqueta: "ARCOS COMPROBADOS", valores: [i.arcosComprobados ? "SÍ" : "NO · COMPROBAR ANTES DE CORTAR"] }] },
+    ],
+    material: oRaya(i.material),
+    observaciones: oRaya(i.observaciones),
+  };
+}
+
 export interface DatosHoja extends CuerpoHoja { titulo: string }
 
 /** Lo único que la hoja necesita saber de un elemento. */
@@ -163,6 +188,8 @@ export function datosHoja(
 ): DatosHoja {
   const cuerpo = rec.tipo === "lona"
     ? hojaLona(rec.input as LonaInput, rec.result as LonaResult)
-    : hojaBaqueton(rec.input as BaquetonInput, rec.result as BaquetonResult);
+    : rec.tipo === "ganado"
+      ? hojaGanado(rec.input as GanadoInput, rec.result as GanadoResult)
+      : hojaBaqueton(rec.input as BaquetonInput, rec.result as BaquetonResult);
   return { titulo: tituloPagina(rec.tipo, indice, total), ...cuerpo };
 }

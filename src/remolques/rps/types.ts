@@ -1,3 +1,5 @@
+import type { ModeloGanado } from "../calc/ganado.ts";
+
 export interface ClienteRps {
   codigo: string;
   nombre: string;
@@ -16,7 +18,9 @@ export interface LineaPedidoRps {
   codigoArticulo: string;
   ordenFabricacion: string | null;
   cantidad: number;
-  tipoTrabajo: "lona" | "baqueton";
+  tipoTrabajo: "lona" | "baqueton" | "ganado";
+  /** Con «ganado», el modelo de plantilla que nombra la línea (hoy, el económico de Remolcar). */
+  modeloGanado?: ModeloGanado;
   largo: number | null;
   ancho: number | null;
   alto: number | null;

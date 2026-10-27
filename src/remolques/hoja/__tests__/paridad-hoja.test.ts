@@ -65,7 +65,8 @@ describe("hoja de taller: paridad con la web vieja", () => {
   });
 
   it.each(lista.map((c) => [c.caso, c] as const))("%s da los mismos textos que la web vieja", (_nombre, caso) => {
-    const elemento = { version: "10", tipo: caso.tipo, input: caso.input, result: caso.result } as ElementoHoja;
+    // Las de la web vieja son lonas y baquetones; el de ganado no tiene hoja vieja con que comparar.
+    const elemento = { version: "10", tipo: caso.tipo, input: caso.input, result: caso.result } as Exclude<ElementoHoja, { tipo: "ganado" }>;
     const esperada = esperadas.get(caso.caso)!;
     expect(sinAnadidos(datosHoja(elemento, 0, 1))).toEqual(conPerfilRenombrado(esperada.hoja));
     const primerOllao = elemento.input.primerOllao ?? (caso.paramsSnapshot as CalcParams).primerOllao;

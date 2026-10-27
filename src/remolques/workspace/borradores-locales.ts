@@ -45,7 +45,7 @@ const pareceLinea = (valor: unknown): valor is LineaPedido => {
   if (typeof valor !== "object" || valor === null) return false;
   const linea = valor as Partial<LineaPedido>;
   return typeof linea.version === "string"
-    && (linea.tipo === "lona" || linea.tipo === "baqueton")
+    && (linea.tipo === "lona" || linea.tipo === "baqueton" || linea.tipo === "ganado")
     && typeof linea.input === "object" && linea.input !== null;
 };
 

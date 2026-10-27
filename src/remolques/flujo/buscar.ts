@@ -25,7 +25,7 @@ const SI_NO = ["si", "no"] as const;
 export type SiNoFiltro = (typeof SI_NO)[number];
 const ESTADOS = ["pendientes", "generados"] as const;
 export type EstadoFiltro = (typeof ESTADOS)[number];
-const TIPOS: readonly TipoPlanteamiento[] = ["lona", "baqueton"];
+const TIPOS: readonly TipoPlanteamiento[] = ["lona", "baqueton", "ganado"];
 
 /** Una medida buscada: el valor y cuánto puede apartarse, en cm (los bordes cuentan). */
 export interface MedidaFiltro {
@@ -291,7 +291,8 @@ export function elementoCumple(
   if (f.desde && (!fecha || fecha < f.desde)) return false;
   if (f.hasta && (!fecha || fecha > f.hasta)) return false;
   if (f.material && !contiene(elemento.input.material, f.material)) return false;
-  if (!cumpleSiNo(f.rotulacion, elemento.input.rotulacion === true)) return false;
+  // El de ganado no lleva rotulación: cuenta como «no».
+  if (!cumpleSiNo(f.rotulacion, "rotulacion" in elemento.input && elemento.input.rotulacion === true)) return false;
   for (const [campo, medida] of Object.entries(f.medidas ?? {}) as [CampoMedida, MedidaFiltro][]) {
     const valor = valorMedida(elemento, campo);
     if (valor === null || !cerca(valor, medida)) return false;

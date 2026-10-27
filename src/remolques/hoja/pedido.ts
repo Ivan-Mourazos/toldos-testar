@@ -1,4 +1,5 @@
 import { calcBaqueton, type BaquetonInput } from "../calc/baqueton.ts";
+import { calcGanado, type GanadoInput } from "../calc/ganado.ts";
 import { calcLona, type LonaInput } from "../calc/lona.ts";
 import type { CalcParams } from "../calc/params.ts";
 import { nombreElementoPedido } from "../pedidos/agrupar-pedido.ts";
@@ -31,7 +32,7 @@ const esObjeto = (valor: unknown): valor is Record<string, unknown> =>
 
 function leerElemento(valor: unknown, posicion: number): ElementoPedidoHoja {
   if (
-    !esObjeto(valor) || (valor.tipo !== "lona" && valor.tipo !== "baqueton") || typeof valor.version !== "string"
+    !esObjeto(valor) || (valor.tipo !== "lona" && valor.tipo !== "baqueton" && valor.tipo !== "ganado") || typeof valor.version !== "string"
     || !esObjeto(valor.input) || !esObjeto(valor.input.cabecera)
   ) {
     throw new ErrorPedidoHoja(`El elemento ${posicion + 1} del pedido no tiene el formato esperado.`);
@@ -42,8 +43,8 @@ function leerElemento(valor: unknown, posicion: number): ElementoPedidoHoja {
   if (typeof valor.input.cabecera.numeroPedido !== "string" || typeof valor.input.material !== "string") {
     throw new ErrorPedidoHoja(`${nombre}: faltan el número de pedido o el material, o no son texto.`);
   }
-  const input = valor.input as unknown as LonaInput | BaquetonInput;
-  if ((valor.tipo === "baqueton") !== ("baqueton" in input)) {
+  const input = valor.input as unknown as LonaInput | BaquetonInput | GanadoInput;
+  if ((valor.tipo === "baqueton") !== ("baqueton" in input) || (valor.tipo === "ganado") !== ("ganado" in input)) {
     throw new ErrorPedidoHoja(`${nombre}: el tipo no cuadra con sus datos.`);
   }
   return { version: valor.version, tipo: valor.tipo, input };
@@ -76,6 +77,10 @@ export function prepararPedidoHoja(elementos: unknown, params: CalcParams): Dato
     if (e.tipo === "lona") {
       const input = e.input as LonaInput;
       return { version: e.version, tipo: "lona", input, result: calcLona(input, params) };
+    }
+    if (e.tipo === "ganado") {
+      const input = e.input as GanadoInput;
+      return { version: e.version, tipo: "ganado", input, result: calcGanado(input) };
     }
     const input = e.input as BaquetonInput;
     return { version: e.version, tipo: "baqueton", input, result: calcBaqueton(input, params) };

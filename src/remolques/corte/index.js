@@ -5,6 +5,7 @@
 import { escribirDxf2004 } from '../../domain/corteLona/dxfCorte.js';
 import { ofElemento, OF_PROVISIONAL } from './of.js';
 import { cabeEnRollo, cortarBaquetones, piezasBaqueton } from './baqueton.js';
+import { descripcionGanado, piezaGanado, soportadaGanado } from './ganado.js';
 import { cortarLonasAltas, soportada, R_OLLAO } from './lonaAlta.js';
 import { escribirPlanoRemolques } from './plano.js';
 
@@ -62,7 +63,7 @@ function apilar(cortes) {
 }
 
 const ofDe = (el) => ofElemento(el) || OF_PROVISIONAL;
-const descripcion = (e) => (e.tipo === 'baqueton'
+const descripcion = (e) => (e.tipo === 'ganado' ? descripcionGanado(e) : e.tipo === 'baqueton'
   ? `baquetón ${e.input.largo}×${e.input.ancho}×${e.input.baqueton}`
   : `lona alta ${e.input.largo}×${e.input.ancho}×${e.input.altoDelante} ${e.input.tipoPerfil}`);
 /**
@@ -77,13 +78,15 @@ export function generarCorteRemolques(pedido) {
   const cliente = `${pedido.summary?.customer ?? ''} ${pedido.clienteRps?.nombre ?? ''}`.toUpperCase();
   // Copias con su OF: no se toca el pedido que llega.
   const elementos = pedido.elementos.map((el) => ({ ...el, of: ofDe(el) }));
-  // Varios remolques: letras A, B, C… por unidad (Iván, 20/10/2026); con uno solo, sin letras.
-  const unidades = elementos.reduce((n, e) => n + (e.input.cantidad || 1), 0);
+  // Varios remolques: letras A, B, C… por unidad (Iván, 20/10/2026); con uno solo, sin letras. El de ganado no
+  // lleva letras: es un juego de su plantilla con «X2»… (ganado.js).
+  const conLetrasPosibles = elementos.filter((e) => e.tipo !== 'ganado');
+  const unidades = conLetrasPosibles.reduce((n, e) => n + (e.input.cantidad || 1), 0);
   const letras = new Map();
-  if (unidades > 1) { let k = 0; for (const e of elementos) letras.set(e, Array.from({ length: e.input.cantidad || 1 }, () => String.fromCharCode(65 + k++))); }
+  if (unidades > 1) { let k = 0; for (const e of conLetrasPosibles) letras.set(e, Array.from({ length: e.input.cantidad || 1 }, () => String.fromCharCode(65 + k++))); }
   // El nombre de pieza en rotulador solo si hay paños que se pueden confundir: dos lonas altas o más, o dos
   // baquetones o más (Iván, 22/10/2026). Los números de los empates van siempre.
-  const cuantos = (baq) => elementos.filter((e) => (e.tipo === 'baqueton') === baq).reduce((n, e) => n + (e.input.cantidad || 1), 0);
+  const cuantos = (baq) => conLetrasPosibles.filter((e) => (e.tipo === 'baqueton') === baq).reduce((n, e) => n + (e.input.cantidad || 1), 0);
   const marcarLonas = cuantos(false) > 1, marcarBaquetones = cuantos(true) > 1;
   const porLona = new Map();
   for (const el of elementos) {
@@ -93,10 +96,11 @@ export function generarCorteRemolques(pedido) {
   const cortes = [], aMano = [];
   // El nombre que pide el bot (BOT/Pendientes/Instrucions.txt: «formato AR2600000»).
   const nombre = codigo;
-  const cortadas = { lonas: [], baquetones: [], refuerzos: false };
+  const cortadas = { lonas: [], baquetones: [], ganados: [], refuerzos: false };
   for (const [material, els] of porLona) {
-    const lonas = els.filter((e) => e.tipo !== 'baqueton'), baqs = els.filter((e) => e.tipo === 'baqueton');
-    const fuera = lonas.map((e) => [e, soportada(e)]).filter(([, motivo]) => motivo);
+    const lonas = els.filter((e) => e.tipo !== 'baqueton' && e.tipo !== 'ganado'), baqs = els.filter((e) => e.tipo === 'baqueton');
+    const ganados = els.filter((e) => e.tipo === 'ganado');
+    const fuera = [...lonas.map((e) => [e, soportada(e)]), ...ganados.map((e) => [e, soportadaGanado(e)])].filter(([, motivo]) => motivo);
     if (fuera.length) {
       aMano.push({ nombre, material, motivo: fuera.map(([e, m]) => `${e.of} ${e.input.largo}×${e.input.ancho}: ${m}`).join('; '), elementos: els.map((e) => e.of) });
       continue;
@@ -107,10 +111,11 @@ export function generarCorteRemolques(pedido) {
     // AR2605088: las cabezas encima de los baquetones); los que llevan empate van detrás, como siempre.
     const juntos = lonas.length ? baqs.filter((e) => cabeEnRollo(e, params)) : [];
     const aparte = baqs.filter((e) => !juntos.includes(e));
-    const extras = juntos.flatMap((e) => piezasBaqueton(e, params, letras.get(e) ?? [], refuerzos, marcarBaquetones));
+    // El juego del remolque de ganado se coloca con las lonas, como una pieza más.
+    const extras = [...ganados.map(piezaGanado), ...juntos.flatMap((e) => piezasBaqueton(e, params, letras.get(e) ?? [], refuerzos, marcarBaquetones))];
     const cb = aparte.length ? cortarBaquetones(codigo, aparte, params, refuerzos, letras, marcarBaquetones) : { lineas: [], marcas: [], textos: [], avisos: [], largo: 0 };
     const sinLonas = { lineas: [], rot: [], ollaos: [], arcos: [], textos: [], avisos: [], largo: 0, conTira: false, apartes: [] };
-    const conTira = lonas.length ? cortarLonasAltas(lonas, 0, conLetras, extras, marcarLonas) : sinLonas;
+    const conTira = lonas.length || ganados.length ? cortarLonasAltas(lonas, 0, conLetras, extras, marcarLonas) : sinLonas;
     // Con un contorno que no cabe en el rollo, dos opciones en el mismo DXF, y el técnico de la máquina elige (Iván,
     // 22/10/2026: «un corte con la tira puesta en el corte y otro con la tira entera»).
     // Pero si la tira entera entra en el corte sin alargarlo más que el de la tira empatada, se corta así y no hay
@@ -151,6 +156,7 @@ export function generarCorteRemolques(pedido) {
     }
     cortadas.lonas.push(...lonas);
     cortadas.baquetones.push(...baqs);
+    cortadas.ganados.push(...ganados);
     cortadas.refuerzos ||= refuerzos;
   }
   if (!cortes.length) return { cortes, aMano, archivo: null };
@@ -158,7 +164,7 @@ export function generarCorteRemolques(pedido) {
   // baquetón, con sus cotas, y los cortes, sobre la presentación A4.
   const plano = {
     dxf: escribirPlanoRemolques({
-      pedido, lonas: cortadas.lonas, baquetones: cortadas.baquetones, params, refuerzos: cortadas.refuerzos,
+      pedido, lonas: cortadas.lonas, baquetones: cortadas.baquetones, ganados: cortadas.ganados, params, refuerzos: cortadas.refuerzos,
       letras: letras.size ? letras : null,
       cortes: cortes.map((c) => ({ entidades: c.entidades, material: c.materialCorto, largo: c.largo, opcion: c.opcion, apartes: c.apartes })),
     }),

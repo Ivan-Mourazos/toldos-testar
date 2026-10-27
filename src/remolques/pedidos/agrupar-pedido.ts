@@ -55,7 +55,7 @@ export function nombreRemolque(version: string): string {
 
 export function nombreElementoPedido(version: string, tipo: TipoPlanteamiento): string {
   const indice = Number(version) - 9;
-  const nombre = tipo === "lona" ? "Remolque" : "Baquetón";
+  const nombre = tipo === "lona" ? "Remolque" : tipo === "ganado" ? "Remolque de ganado" : "Baquetón";
   return Number.isInteger(indice) && indice > 0 ? `${nombre} ${indice}` : `${nombre} ${version}`;
 }
 

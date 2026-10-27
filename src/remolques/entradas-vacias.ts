@@ -1,5 +1,6 @@
 import type { LonaInput } from "./calc/lona.ts";
 import type { BaquetonInput } from "./calc/baqueton.ts";
+import { MODELOS_GANADO, type GanadoInput, type ModeloGanado } from "./calc/ganado.ts";
 import { DEFAULT_PARAMS } from "./calc/params.ts";
 
 // La posición interna comienza en 10; las siguientes piezas del pedido usan
@@ -34,5 +35,15 @@ export function emptyBaqueton(): BaquetonInput {
     primerOllao: DEFAULT_PARAMS.primerOllao,
     ollaosManuales: sinOllaos(), rotulacion: null,
     material: "", observaciones: "",
+  };
+}
+
+/** Remolque de ganado; con el modelo, su medida comercial. Hoy solo hay uno, y sale elegido. */
+export function emptyGanado(modelo: ModeloGanado | "" = "REMOLCAR_ECONOMICO"): GanadoInput {
+  const ficha = modelo ? MODELOS_GANADO[modelo] : null;
+  return {
+    cabecera: cabecera(),
+    ganado: modelo, cantidad: 1, largo: ficha?.largo ?? 0, ancho: ficha?.ancho ?? 0,
+    arcosComprobados: false, material: "", observaciones: "",
   };
 }

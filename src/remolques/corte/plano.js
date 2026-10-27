@@ -3,6 +3,8 @@
 // contorno, cada uno con la línea de corte, la rosa de terminado, los ollaos y marcas, y sus cotas (verde lo
 // terminado, ocre lo de corte), como en los DWG de los pedidos (AR2605120). Debajo, el corte del rollo.
 import { cruz, medidasRefuerzo, piezaBaqueton } from './baqueton.js';
+import { dibujoGanado } from '../ganado/dibujo.ts';
+import { MODELOS_GANADO } from '../calc/ganado.ts';
 import { aguasArquilladas, DOBLEZ_BASTILLA, esquinasChaflan, piezasLona } from './lonaAlta.js';
 import { escribirDxfPlano, separacionCorte } from '../../domain/corteLona/presentacion.js';
 
@@ -324,11 +326,40 @@ function confeccionBaqueton(L, el, params, X, Y, letras, refuerzos) {
   return { ancho: W + 40 + (atr.join() !== del.join() ? 4 * atr.length : 0) + 30 + 4 * del.length, alto: H, abajo };
 }
 
-// pedido: el de la web; lonas y baquetones: los elementos que se cortan; cortes: uno por lona (color), con sus
-// entidades del bot (mm), su material resumido y su largo de rollo. Siempre un plano por pedido (Iván, 20/10/2026).
-export function escribirPlanoRemolques({ pedido, lonas, baquetones = [], params = {}, refuerzos = false, letras, cortes }) {
+// Dibujo de confección de un remolque de ganado (cm): el de su plantilla tal cual (piezas, notas y cotas), con
+// los ollaos a 4 cm del borde de corte como en el corte (ganado/dibujo.ts).
+function confeccionGanado(L, el, X, Y) {
+  const i = el.input, d = dibujoGanado(i.ganado);
+  const cantidad = Math.max(1, Math.round(i.cantidad || 1));
+  const nombre = MODELOS_GANADO[i.ganado]?.nombre ?? 'REMOLQUE DE GANADO';
+  L.texto(`REMOLQUE DE GANADO · ${nombre}${cantidad > 1 ? ` · X${cantidad}` : ''} · OF ${el.of}`, X + d.ancho / 2, Y + d.alto + 30, 9);
+  const t = (x, y) => [X + x, Y + y];
+  for (const l of d.lineas) { const [x1, y1] = t(l.x1, l.y1), [x2, y2] = t(l.x2, l.y2); L.linea(l.capa, x1, y1, x2, y2); }
+  for (const p of d.polilineas) L.g.polilineas.push({ capa: p.capa, cerrada: p.cerrada, puntos: p.puntos.map(([x, y]) => t(x, y)), ...(p.curvas ? { curvas: p.curvas } : {}) });
+  for (const a of d.arcos) { const [x, y] = t(a.x, a.y); L.g.arcos.push({ capa: a.capa, x, y, r: a.r, desde: a.desde, hasta: a.hasta }); }
+  for (const c of d.circulos) { const [x, y] = t(c.x, c.y); L.g.circulos.push({ capa: c.capa, x, y, r: c.r }); }
+  for (const tx of d.textos) { const [x, y] = t(tx.x, tx.y); L.g.textos.push({ capa: 'texto', x, y, h: tx.h, valor: tx.valor, giro: tx.giro, centrado: true }); }
+  for (const c of d.cotas) {
+    const [x1, y1] = t(c.x1, c.y1), [x2, y2] = t(c.x2, c.y2);
+    const estilo = c.valor >= 25 ? 'XERAL' : 'XERAL 5';
+    if (c.alineada) L.g.cotas.push({ capa: 'cotas', estilo, x1, y1, x2, y2, alineada: true, desvio: c.desvio, valor: c.valor });
+    else L.g.cotas.push({ capa: 'cotas', estilo, x1, y1, x2, y2, giro: c.giro, d: c.d + (c.giro === 90 ? X : Y), valor: c.valor });
+  }
+  return { ancho: d.ancho, alto: d.alto + 40 };
+}
+
+// pedido: el de la web; lonas, baquetones y ganados: los elementos que se cortan; cortes: uno por lona (color),
+// con sus entidades del bot (mm), su material resumido y su largo de rollo. Siempre un plano por pedido (Iván,
+// 20/10/2026).
+export function escribirPlanoRemolques({ pedido, lonas, baquetones = [], ganados = [], params = {}, refuerzos = false, letras, cortes }) {
   const L = lienzo();
   let y = 0, ancho = 0;
+  // Los remolques de ganado, cada uno en su fila con el dibujo de su plantilla.
+  for (const el of ganados) {
+    const d = confeccionGanado(L, el, 0, y);
+    ancho = Math.max(ancho, d.ancho);
+    y += d.alto + 120;
+  }
   // Los baquetones abajo, en una fila uno al lado de otro, con sitio para sus escaleras de ollaos por debajo.
   if (baquetones.length) {
     let x = 30 + 4 * 6, alto = 0;
@@ -391,7 +422,9 @@ export function escribirPlanoRemolques({ pedido, lonas, baquetones = [], params 
     textos: G.textos.map((t) => ({ ...t, x: m(t.x + ox), y: m(t.y + oy), h: t.h / 100 })),
     arcos: G.arcos.map((a) => ({ ...a, x: m(a.x + ox), y: m(a.y + oy), r: a.r / 100 })),
     circulos: G.circulos.map((c) => ({ ...c, x: m(c.x + ox), y: m(c.y + oy), r: c.r / 100 })),
-    cotas: (G.cotas ?? []).map((c) => ({ ...c, x1: m(c.x1 + ox), y1: m(c.y1 + oy), x2: m(c.x2 + ox), y2: m(c.y2 + oy), d: m(c.d + (c.giro ? ox : oy)) })),
+    // Las alineadas llevan su línea a `desvio` de lo acotado, en metros (las del ganado).
+    cotas: (G.cotas ?? []).map((c) => ({ ...c, x1: m(c.x1 + ox), y1: m(c.y1 + oy), x2: m(c.x2 + ox), y2: m(c.y2 + oy),
+      ...(c.alineada ? { desvio: c.desvio / 100 } : { d: m(c.d + (c.giro ? ox : oy)) }) })),
   });
   const zona = (z, ox = 0, oy = 0) => ({ x0: m(z.x0 + ox), y0: m(z.y0 + oy), x1: m(z.x1 + ox), y1: m(z.y1 + oy) });
   const plano = { ...aM(L.g), corte: aM(C, dx, dy), zonas: { toldos: zona(zonaDibujo), corte: zona(zonaCorte, dx, dy) }, corteDerecho: true };
@@ -400,7 +433,7 @@ export function escribirPlanoRemolques({ pedido, lonas, baquetones = [], params 
   const metros = (mm) => `${(mm / 1000).toLocaleString('es-ES', { maximumFractionDigits: 2 })} M`;
   const material = [...new Set(cortes.map((c) => c.material))].join(' / ');
   const cabecera = {
-    pedido: pedido.orderCode, of: [...new Set([...lonas, ...baquetones].map((e) => e.of))].join(' / '), cliente: s.customer ?? '', tecnico: s.technician ?? '', revisor: s.reviewer ?? '',
+    pedido: pedido.orderCode, of: [...new Set([...ganados, ...lonas, ...baquetones].map((e) => e.of))].join(' / '), cliente: s.customer ?? '', tecnico: s.technician ?? '', revisor: s.reviewer ?? '',
     fecha, pagina: '1/1', material, subtitulo: 'MEDIDAS EN CM · LONA REMOLQUE',
     tituloCorte: cortes.length === 1
       ? `CORTE · ${material} · ROLLO DE 250 · ${metros(cortes[0].largo)}`

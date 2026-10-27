@@ -335,7 +335,9 @@ function colocar(p, x, y, giro) {
     const [nx, ny] = tipo === 'esquina' && giro ? t(a + 10, b) : t(a, b);
     return { capa: 'ROTULADOR', x: nx, y: ny, h: 10, valor: n, giro: (g + (giro ? 270 : 0)) % 360, centrado: tipo !== 'esquina', literal: tipo !== 'esquina' };
   });
-  return { lineas, rot, ollaos, arcos, numeros, ancho: giro ? p.h : p.w, alto: giro ? p.w : p.h };
+  // Textos grandes en un sitio fijo de la pieza (la OF en el cuerpo del remolque de ganado).
+  const textos = (p.textos ?? []).map((tx) => { const [x1, y1] = t(tx.x, tx.y); return { capa: 'texto', x: x1, y: y1, h: tx.h, valor: tx.valor, centrado: true, ...(giro ? { giro: 270 } : {}) }; });
+  return { lineas, rot, ollaos, arcos, numeros, textos, ancho: giro ? p.h : p.w, alto: giro ? p.w : p.h };
 }
 
 // Colocación (Iván, 20/10/2026: «se debe aprovechar el paño lo máximo posible»): todas las piezas de la lona
@@ -523,7 +525,7 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], 
   for (const [p, sitio] of [...piezas.map((p, k) => [p, pack.sitios[k]]), ...puestas]) {
     const pc = colocar(p, x0 + sitio.x, sitio.y, sitio.giro);
     for (const k of ['lineas', 'rot', 'ollaos', 'arcos']) out[k].push(...pc[k]);
-    out.textos.push(...pc.numeros);
+    out.textos.push(...pc.numeros, ...pc.textos);
     // En grande en el centro: el rótulo de la pieza (si hay varios remolques) y, en el contorno, la OF.
     const grandes = [p.etiqueta, p.subtitulo, p.contornoDe].filter(Boolean);
     grandes.forEach((v, n) => out.textos.push({ capa: 'texto', x: x0 + sitio.x + pc.ancho / 2, y: sitio.y + pc.alto / 2 + 90 * (grandes.length - 1) - 180 * n, h: 100, valor: v, centrado: true }));

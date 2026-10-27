@@ -135,6 +135,8 @@ function aplicarBaqueton(entrada: BaquetonInput, ficha: FichaCliente, campos: st
 
 /** La ficha sobre un elemento recién creado desde RPS: solo rellena lo vacío y marca lo que pone. */
 export function aplicarFichaAlImportar(linea: LineaPedido, ficha: FichaCliente): LineaPedido {
+  // Las fichas de cliente son de lonas y baquetones; el de ganado trae todo de su plantilla.
+  if (linea.tipo === "ganado") return linea;
   const campos: string[] = [];
   const input = linea.tipo === "lona"
     ? aplicarLona(linea.input as LonaInput, ficha, campos)

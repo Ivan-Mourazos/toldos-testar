@@ -2,7 +2,8 @@ import type { Material } from "../calc/materiales-seed.ts";
 import type { CalcParams } from "../calc/params.ts";
 import type { LonaInput } from "../calc/lona.ts";
 import type { BaquetonInput } from "../calc/baqueton.ts";
-import { emptyBaqueton, emptyLona } from "../entradas-vacias.ts";
+import type { GanadoInput } from "../calc/ganado.ts";
+import { emptyBaqueton, emptyGanado, emptyLona } from "../entradas-vacias.ts";
 import type { LineaPedidoRps, PedidoRps } from "./types.ts";
 import { materialPreferidoRps } from "./material-rps.ts";
 
@@ -38,9 +39,16 @@ export function crearInputDesdeRps(
   materiales: Material[],
   params: CalcParams,
   realizadoPor = "",
-): { tipo: "lona"; input: LonaInput } | { tipo: "baqueton"; input: BaquetonInput } {
+): { tipo: "lona"; input: LonaInput } | { tipo: "baqueton"; input: BaquetonInput } | { tipo: "ganado"; input: GanadoInput } {
   const version = String(10 + indice);
   const material = linea.materialSugerido || materialPreferidoRps(linea, materiales);
+  // El de ganado trae sus piezas de la plantilla: de RPS, solo la cabecera, la cantidad y el material.
+  if (linea.tipoTrabajo === "ganado") {
+    return {
+      tipo: "ganado",
+      input: { ...emptyGanado(linea.modeloGanado ?? ""), cabecera: cabeceraRps(pedido, linea, version, realizadoPor), cantidad: linea.cantidad, material },
+    };
+  }
   if (linea.tipoTrabajo === "baqueton") {
     const input = emptyBaqueton();
     const clienteNormalizado = normalizar(pedido.cliente.alias || pedido.cliente.nombre);

@@ -99,6 +99,18 @@ export function tablaGanchos(input: LonaInput | BaquetonInput): TablaPosiciones 
 }
 
 export function paginaHoja(elemento: ElementoHoja, indice: number, total: number, params: CalcParams, revisadoPor = ""): PaginaHojaDatos {
+  // El de ganado no reparte ollaos: van en su dibujo de confección y en el corte.
+  if (elemento.tipo === "ganado") {
+    return {
+      ...datosHoja(elemento, indice, total),
+      clave: elemento.version,
+      tipo: elemento.tipo,
+      cabecera: cabeceraHoja(elemento.input.cabecera, revisadoPor),
+      ollaos: { titulo: "OLLAOS · LOS DEL DIBUJO DE CONFECCIÓN", columnas: COLUMNAS_MINIMAS, filas: [] },
+      ganchos: null,
+      notasVistas: null,
+    };
+  }
   return {
     ...datosHoja(elemento, indice, total),
     clave: elemento.version,

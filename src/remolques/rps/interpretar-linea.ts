@@ -67,7 +67,10 @@ export function interpretarLineaRps(fila: FilaLineaRps): LineaPedidoRps | null {
   const altoBase = numeroMedida(match?.[3]);
   const altoAtras = numeroMedida(match?.[4]);
   const altoExtra = numeroMedida(match?.[5]);
-  const esBaqueton = altoBase !== null && altoBase <= 25 && altoAtras === null && altoExtra === null;
+  // Lona de remolque de ganado con plantilla: hoy, el económico de Remolcar (LONAREMGANA con «ECONOMICO»: AR2600752,
+  // AR2601976). Las demás de ganado siguen como lona, como hasta ahora, hasta que tengan su plantilla.
+  const modeloGanado = codigoArticulo === "LONAREMGANA" && /ECONOMICO/.test(texto) ? "REMOLCAR_ECONOMICO" as const : null;
+  const esBaqueton = !modeloGanado && altoBase !== null && altoBase <= 25 && altoAtras === null && altoExtra === null;
   const cantidadRaw = Number(fila.Quantity ?? 1);
   const cantidad = Number.isFinite(cantidadRaw) && cantidadRaw > 0 ? cantidadRaw : 1;
   const rotulacionNegativa = /(?:NO\s+INCLUYE|SIN|NO\s+LLEVA)\s+ROTUL|NO\s+ROTULAD/.test(texto);
@@ -82,7 +85,8 @@ export function interpretarLineaRps(fila: FilaLineaRps): LineaPedidoRps | null {
     codigoArticulo,
     ordenFabricacion: fila.CodManufacturingOrder?.trim() || null,
     cantidad,
-    tipoTrabajo: esBaqueton ? "baqueton" : "lona",
+    tipoTrabajo: modeloGanado ? "ganado" : esBaqueton ? "baqueton" : "lona",
+    ...(modeloGanado ? { modeloGanado } : {}),
     largo,
     ancho,
     alto: esBaqueton || altoAtras !== null ? null : altoBase === null ? null : altoBase + (altoExtra ?? 0),

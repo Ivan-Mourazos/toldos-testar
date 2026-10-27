@@ -1,4 +1,5 @@
 import type { BaquetonInput, BaquetonResult } from "../calc/baqueton.ts";
+import type { GanadoInput, GanadoResult } from "../calc/ganado.ts";
 import type { LonaInput, LonaResult } from "../calc/lona.ts";
 import type { CalcParams } from "../calc/params.ts";
 import type { TipoPlanteamiento } from "../store/types.ts";
@@ -16,8 +17,8 @@ export type EstadoPedidoRemolques = "PENDING_REVIEW" | "CHANGES_REQUESTED" | "AP
 export interface ElementoGuardado {
   version: string;
   tipo: TipoPlanteamiento;
-  input: LonaInput | BaquetonInput;
-  result: LonaResult | BaquetonResult;
+  input: LonaInput | BaquetonInput | GanadoInput;
+  result: LonaResult | BaquetonResult | GanadoResult;
   /** Los parámetros con que se calculó este elemento (los de la web vieja si viene de ella). */
   paramsSnapshot: CalcParams;
 }
