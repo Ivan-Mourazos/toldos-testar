@@ -9,6 +9,7 @@ import { TextField } from './TextField';
 import { NumberField } from './NumberField';
 import { curtainConfigurationFields } from './CurtainConfigurationFields';
 import { solapasConfigurationFields } from './SolapasConfigurationFields';
+import { embudoConfigurationFields } from './EmbudoConfigurationFields';
 import { AwningFormBody } from './AwningFormBody';
 import { avanzarConIntro } from '../avanzarConIntro';
 import { isConfiguredCurtain } from '../../domain/curtainConfiguration.js';
@@ -512,6 +513,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           {!readOnly && isOfOutsideOrder(awning.of, knownOfs) && <p className="field-hint-warn awning-row-warn" role="status">La OF {awning.of} no pertenece al pedido en RPS.</p>}
           <TextField label="OF" missing={isMissing('of')} value={awning.of} onChange={(of) => update({ of: of.trim() })} />
           {awning.model === 'SOLAPAS' && solapasConfigurationFields({ awning, update, missing: isMissing, reading: readOnly })}
+          {awning.model === 'EMBUDO' && embudoConfigurationFields({ awning, update, missing: isMissing })}
           {fields.dimensions.includes('width') && <NumberField label={widthLabel} missing={isMissing('width')} value={awning.width} min={0} onChange={updateWidth} />}
           {fields.dimensions.includes('projection') && (useEstablishedProjection ? (
             <SelectField
@@ -830,7 +832,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
             </div>
           )}
           {!sameFabric && <div className="awning-wide-field">
-            <FabricCombobox label="Tela" value={awning.fabric} disabled={readOnly} missing={isMissing('fabric')} onChange={(fabric) => update({ fabric })} />
+            <FabricCombobox label="Tela" value={awning.fabric} onlyPvc={awning.model === 'EMBUDO'} disabled={readOnly} missing={isMissing('fabric')} onChange={(fabric) => update({ fabric })} />
             {!readOnly && <FabricStockLine selection={awning.fabric} neededMl={fabricNeedMl} />}
           </div>}
           {(fields.device || fields.sensor || fields.motorLocation || fields.machineLocation || fields.crankHeight) && (

@@ -29,6 +29,11 @@ const byLabel: Record<string, ReadGroupId> = {
   'Cara del velcro': 'estructura', 'Lado del velcro': 'estructura', 'Color del velcro': 'estructura',
   'Ancho velcro (cm)': 'estructura', 'Alto velcro (cm)': 'estructura',
   'Confección solapas': 'medidas',
+  'Forma del embudo': 'medidas', 'Alto del embudo (cm)': 'medidas', 'Contorno (cm)': 'medidas',
+  Cantidad: 'medidas',
+  'Contorno de arriba (cm)': 'medidas', 'Contorno de abajo (cm)': 'medidas', 'Cierre (cm)': 'medidas',
+  'Remate de arriba': 'tela', 'Remate de abajo': 'tela', 'Bastilla de arriba (cm)': 'tela', 'Bastilla de abajo (cm)': 'tela',
+  'Sujeción del embudo': 'tela', 'Ancho de cinta (mm)': 'tela', 'Largo de cinta (cm)': 'tela',
   'Altura soporte-brazo (cm)': 'medidas', 'Medida de caída': 'medidas', 'Sumar a la caída (cm)': 'medidas', 'Sumado a la caída': 'medidas', 'Ajuste de tela (cm)': 'medidas', 'Ajuste de tela': 'medidas', 'Sumar para enrolle y tubo (cm)': 'medidas',
   // Estructura
   Lacado: 'estructura', Variante: 'estructura', 'Configuración de brazos': 'estructura',

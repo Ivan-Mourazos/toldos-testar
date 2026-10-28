@@ -1,5 +1,6 @@
 import { piezasCortina } from './cortina.js';
 import { piezasSolapas } from './solapas.js';
+import { piezasEmbudo } from './embudo.js';
 import { altoTiraCm, HOLGURA_ONDA_MM } from './bambalina.js';
 
 // Estudio DXF: piezas de la lona de PVC de un toldo de fachada y su colocación en el rollo.
@@ -44,7 +45,8 @@ export const despiecesPorModelo = Object.freeze({
   // La cortina va en dos materiales: la lona de PVC y, aparte, el cristal de su ventana.
   CORTINA: (datos) => (datos.soloCristal ? piezasCortina({ ...datos, anchoRollo: datos.anchoRolloLona }).cristal : piezasCortina(datos).pvc),
   'CAMBIO CORTINA': (datos) => (datos.soloCristal ? piezasCortina({ ...datos, anchoRollo: datos.anchoRolloLona }).cristal : piezasCortina(datos).pvc),
-  SOLAPAS: (datos) => piezasSolapas(datos)
+  SOLAPAS: (datos) => piezasSolapas(datos),
+  EMBUDO: (datos) => piezasEmbudo(datos)
 });
 
 function piezasFachada({ letra, frenteTela, caidaTela, bamba, soloBamba = false, anchoRollo, ajustes = {}, onda = null }) {

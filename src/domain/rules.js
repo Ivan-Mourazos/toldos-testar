@@ -19,6 +19,7 @@ import { calculateHera } from './heraRules.js';
 import { calculateCambioTela } from './cambioTelaRules.js';
 import { calculateBambalina, calculateCambioAntica, calculateCambioCortina, calculateEnrollable } from './fabricOnlyRules.js';
 import { calculateSolapas } from './solapasRules.js';
+import { calculateEmbudo } from './embudoRules.js';
 import { normalizeOrder } from './validation.js';
 import { getRequiredDimensions } from './modelBehavior.js';
 import { awningLetter, describeMissing, getMissingFields } from './awningCompleteness.js';
@@ -52,7 +53,8 @@ const implementedRules = new Map([
   ['CAMBIO ANTICA', calculateCambioAntica],
   ['BAMBALINA', calculateBambalina],
   ['ENROLLABLE', calculateEnrollable],
-  ['SOLAPAS', calculateSolapas]
+  ['SOLAPAS', calculateSolapas],
+  ['EMBUDO', calculateEmbudo]
 ]);
 
 // Iván, 25/09/2026: el aviso de una excepción técnica tiene que decir lo que de verdad

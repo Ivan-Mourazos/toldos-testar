@@ -33,6 +33,12 @@ const amplios = new Set([
 ]);
 
 function prioridad(label: string, model: string) {
+  if (model === 'EMBUDO') {
+    const embudo = ['OF', 'Forma del embudo', 'Alto del embudo (cm)', 'Contorno (cm)', 'Contorno de arriba (cm)',
+      'Contorno de abajo (cm)', 'Cierre (cm)', 'Cantidad', 'Tela', 'Remate de arriba', 'Bastilla de arriba (cm)',
+      'Remate de abajo', 'Bastilla de abajo (cm)', 'Sujeción del embudo', 'Ancho de cinta (mm)', 'Largo de cinta (cm)'];
+    if (embudo.includes(label)) return embudo.indexOf(label) - 100;
+  }
   if (model === 'CAMBIO ANTICA' && label === 'Configuración Antica') return -1;
   if (model === 'IRIS') {
     const iris = ['OF', 'Variante', 'Hueco escuadrado', 'Frente superior', 'Salida izquierda', 'Frente inferior', 'Salida derecha', 'Diagonal 1 (a salida izq.)', 'Diagonal 2 (a salida der.)', 'Ajuste de tela (cm)'];

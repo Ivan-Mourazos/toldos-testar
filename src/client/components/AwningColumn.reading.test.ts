@@ -25,6 +25,10 @@ const noop = () => undefined;
 // AwningColumn los lee sin comprobar antes (normalizeBoxDevice, valanceFabric.trim()):
 // sin valor por defecto la muestra a medias (Partial<Awning>) hacía saltar un TypeError.
 const extraSamples: Record<string, Partial<Awning>> = {
+  EMBUDO: { of: '0000005', model: 'EMBUDO', workType: 'FABRIC_ONLY', units: 2, device: '', valanceFabric: '',
+    embudo: { forma: 'CÓNICO', alto: 90, contornoArriba: 88, contornoAbajo: 76, cierre: 3,
+      remateArriba: 'REFUERZO 10', remateAbajo: 'BASTILLA', bastillaArriba: 10, bastillaAbajo: 9,
+      sujecion: 'MORDAZA', anchoCinta: 25, largoCinta: 100 } },
   'CAMBIO CORTINA': { of: '0000001', model: 'CAMBIO CORTINA', workType: 'FABRIC_ONLY', units: 1, width: 300, projection: 250, device: '', curtainHasWindow: false, curtainFinish: 'NORMAL' },
   'CAMBIO ANTICA': { of: '0000002', model: 'CAMBIO ANTICA', workType: 'FABRIC_ONLY', units: 1, width: 380, projection: 70, device: '', anticaVariant: 'TUBO 50X30 SIN BAMBA' },
   BAMBALINA: { of: '0000003', model: 'BAMBALINA', workType: 'FABRIC_ONLY', units: 1, width: 300, valanceHeight: 30, valanceCurve: 'RECTA', device: '', valanceFabric: '', remate: 'COMO TELA' },
@@ -49,6 +53,7 @@ const OBSERVATION_SAMPLE = 'OBS PRUEBA LECTURA';
 // Telas de la muestra «máxima»: la de la tarjeta (sin tela común) y la de la bamba, las
 // dos distintas de la del pedido para no confundirlas en el marcado.
 const CARD_FABRIC = 'ACRILI2018P120|||120|||ACR AZUL';
+const EMBUDO_FABRIC = 'PVC900BL|||250|||LONA PVC 900 BLANCO :250 AN|||PLASTICA (LONA)';
 const VALANCE_FABRIC = 'ACRILI2020P120|||120|||ACR VERDE';
 
 function render(awning: Awning, readOnly: boolean, { sameFabric = true, ofCalculation = undefined as unknown } = {}) {
@@ -264,7 +269,7 @@ function maxSample(model: string): Awning {
     wallType: fields.wallType ? last(formOptions.tiposPared).pared : base.wallType,
     structureColor: fields.requiresStructureColor ? 'NEGRO (R-09011)' : base.structureColor,
     rotFabric: 'SI',
-    fabric: CARD_FABRIC,
+    fabric: model === 'EMBUDO' ? EMBUDO_FABRIC : CARD_FABRIC,
     fabricDiagramOverride: diagram as Awning['fabricDiagramOverride']
   };
 
@@ -325,6 +330,7 @@ const excludedKeys = new Set([
   'workType',           // metadato de las muestras de tela suelta (fabricOnly), no se enseña
   'reglasModificadas',  // conmuta la sección de excepciones; no se enseña como "true"/"false"
   'solapas',            // lista de objetos de SOLAPAS; sus campos se comprueban uno a uno en expectControlsKept
+  'embudo',             // configuración de EMBUDO; sus controles se comprueban uno a uno en expectControlsKept
   'bastilla'            // booleano de SOLAPAS; se enseña como segmentado AL CORTE / CON BASTILLA
 ]);
 // fabric y valanceFabric no se enseñan tal cual: FabricCombobox los pasa por
@@ -443,8 +449,8 @@ describe('tarjeta de lectura: salen todos los datos (rediseño §5)', () => {
   // Recorre calculateOrder para cada modelo (sampleAwnings): con la suite completa en
   // paralelo, otros ficheros compiten por CPU y el valor por defecto (5 s) a veces no
   // llega, aunque en solitario tarda ~1 s.
-  it('cubre los 23 modelos', () => {
-    expect(models).toHaveLength(23);
+  it('cubre los 24 modelos', () => {
+    expect(models).toHaveLength(24);
     for (const model of models) expect(samplesFor(model).length, model).toBeGreaterThan(0);
   }, 20000);
 

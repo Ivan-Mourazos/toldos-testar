@@ -14,6 +14,7 @@ import { cambioTelaExtraError } from './fabricJobParameters.js';
 import { curtainWindowDrawingHeight, isConfiguredCurtain } from './curtainConfiguration.js';
 import { getIrisWindow } from './irisWindow.js';
 import { solapaCompletenessIssues } from './solapasRules.js';
+import { embudoIssues } from './embudoConfiguration.js';
 
 const windowDimensions = [
   ['curtainWindowExit', 'salida ventana'],
@@ -108,6 +109,13 @@ export function getMissingFields(awning, order = null) {
   }
   if (model === 'SOLAPAS') {
     for (const { field, label } of solapaCompletenessIssues(awning)) add(field, label);
+  }
+  if (model === 'EMBUDO') {
+    for (const { field, label } of embudoIssues(awning.embudo)) add(field, label);
+    if (order) {
+      const fabric = resolveFabric(order.sameFabric !== false ? order.fabric : awning.fabric);
+      if (fabric?.material?.trim().toUpperCase() !== 'PLASTICA (LONA)') add('fabric', 'lona de PVC');
+    }
   }
   if (isHera) {
     const withChain = awning.submodel !== 'HERA 56 MOTOR';

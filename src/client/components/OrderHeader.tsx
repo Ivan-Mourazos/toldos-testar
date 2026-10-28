@@ -19,6 +19,7 @@ type Props = {
   autofill: OrderAutofill | null;
   // Metros que el pedido pide de la tela común, para compararlos con su stock.
   fabricNeedMl?: number;
+  onlyPvc?: boolean;
   readOnly?: boolean;
 };
 
@@ -58,7 +59,7 @@ export function OrderHeader(props: Props) {
               {/* Con «Por toldo» la tela común no es la del pedido: enseñarla en gris hacía
                   creer que había una elegida (F4). */}
               {props.sameFabric
-                ? <FabricCombobox label="Referencia" value={props.fabric} onChange={(v) => props.set({ fabric: v })} />
+                ? <FabricCombobox label="Referencia" value={props.fabric} onlyPvc={props.onlyPvc} onChange={(v) => props.set({ fabric: v })} />
                 : <div className="field order-fabric-per-awning-field"><span>Referencia</span><p className="order-fabric-per-awning-value">Tela por toldo · se elige en cada tarjeta</p></div>}
               {/* En lectura no se puede cambiar: el interruptor sobra y solo se indica si
                   cada toldo lleva su propia tela. */}

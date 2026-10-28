@@ -40,6 +40,21 @@ export type SolapaItem = {
   velcroDerDistinto?: boolean;
 };
 
+export type EmbudoConfiguration = {
+  forma: string;
+  alto: number | null;
+  contornoArriba: number | null;
+  contornoAbajo: number | null;
+  cierre: number | null;
+  remateArriba: string;
+  remateAbajo: string;
+  bastillaArriba: number | null;
+  bastillaAbajo: number | null;
+  sujecion: string;
+  anchoCinta: number | null;
+  largoCinta: number | null;
+};
+
 export type Awning = {
   id: string;
   workType: 'FULL_AWNING' | 'FABRIC_ONLY';
@@ -120,6 +135,7 @@ export type Awning = {
   curtainVelcroHeight?: number | null;
   bastilla?: boolean;
   solapas?: SolapaItem[];
+  embudo?: EmbudoConfiguration;
   curtainFabricWidthDiscountCm: number | null;
   curtainRollTubeDiscountCm: number | null;
   curtainLoadProfileDiscountCm: number | null;

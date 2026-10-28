@@ -265,7 +265,9 @@ function dibujarCorte(cortes: CortePuertas[], _pedido: PedidoPuertas): { lienzo:
   // El saco encima del transparente, como en la referencia, sin repetir las copias físicas. Con varias puertas, los
   // sacos y los cristales en la misma fila, hacia la derecha (Iván, 23/10/2026, AR2605035).
   const filas: Array<Array<{ c: CortePuertas; t: CortePuertas['colocadas'][number] }>> = [];
-  for (const m of [...muestras.values()].sort((a, b) => (a.t.pieza.clase === 'saco' ? -1 : 1) - (b.t.pieza.clase === 'saco' ? -1 : 1))) {
+  // Por orden de puerta, A, B, C… (Iván, 28/10/2026, AR2605035: salía la D primero).
+  const puerta = (m: { t: CortePuertas['colocadas'][number] }) => _pedido.elementos.findIndex(e => m.t.pieza.id.startsWith(`${e.id}:`));
+  for (const m of [...muestras.values()].sort((a, b) => (a.t.pieza.clase === 'saco' ? -1 : 1) - (b.t.pieza.clase === 'saco' ? -1 : 1) || puerta(a) - puerta(b))) {
     const fila = filas.at(-1);
     if (fila?.[0].t.pieza.clase === m.t.pieza.clase) fila.push(m); else filas.push([m]);
   }

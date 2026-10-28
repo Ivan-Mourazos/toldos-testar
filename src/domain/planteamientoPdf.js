@@ -1,6 +1,7 @@
 import { normalizeFabricImage } from './fabricImage.js';
 import { configuredCurtainVelcroHeight, curtainWindowDrawingHeight, formatCurtainVelcroLabel, isConfiguredCurtain, normalizeCurtainConfiguration } from './curtainConfiguration.js';
 import { formatSolapaVelcroLabels, normalizeSolapas } from './solapasRules.js';
+import { normalizeEmbudo, etiquetasEmbudo } from './embudoConfiguration.js';
 import PDFDocument from 'pdfkit';
 import pdfLib from 'pdf-lib';
 import { existsSync } from 'node:fs';
@@ -1098,6 +1099,23 @@ function drawSolapasDiagram(doc, x, y, w, h, awning = {}) {
     .text(`${solapas.length} ${solapas.length === 1 ? 'SOLAPA' : 'SOLAPAS'}`, panelX + 10, panelY + panelH / 2 - 6, { width: panelW - 20, align: 'center' });
 }
 
+function drawEmbudoDiagram(doc, x, y, w, h, awning = {}) {
+  drawDiagramShell(doc, x, y, w, h);
+  const e = normalizeEmbudo(awning.embudo), etiquetas = etiquetasEmbudo(e);
+  const superior = Number(e.contornoArriba) || 1;
+  const inferior = e.forma === 'RECTO' ? superior : Number(e.contornoAbajo) || superior;
+  const max = Math.max(superior, inferior), cx = x + w / 2;
+  const arriba = w * 0.50 * superior / max, abajo = w * 0.50 * inferior / max;
+  const y0 = y + h * 0.24, y1 = y + h * 0.72;
+  doc.save().lineWidth(1).moveTo(cx - arriba / 2, y0).lineTo(cx + arriba / 2, y0)
+    .lineTo(cx + abajo / 2, y1).lineTo(cx - abajo / 2, y1).closePath().fillAndStroke('#fbfcfc', '#4f6e63').restore();
+  drawDiagramText(doc, `${etiquetas.arriba} · C ${formatNumber(e.contornoArriba)} CM`, x + 4, y0 - 15, w - 8);
+  drawDiagramText(doc, `${etiquetas.abajo} · C ${formatNumber(inferior)} CM`, x + 4, y1 + 5, w - 8);
+  drawDiagramText(doc, `ALTO ${formatNumber(e.alto)} CM · X${awning.units || 1}`, x + 4, y0 + (y1 - y0) / 2 - 10, w - 8);
+  drawDiagramText(doc, 'DERECHO', x + 4, y0 + (y1 - y0) / 2 + 4, w - 8);
+  if (inferior > superior) drawDiagramText(doc, 'BOCA MAYOR ABAJO', x + 4, y1 + 20, w - 8);
+}
+
 function drawHeraDiagram(doc, x, y, w, h, awning = {}) {
   const green = '#0b5a26';
   const face = heraInteriorFace(awning);
@@ -1294,6 +1312,7 @@ function drawAwningDiagram(doc, x, y, w, h, diagram = 'GENERAL', awning = {}, ca
   if (diagram === 'CAMBIO ENROLLABLE') return drawChangeRollerDiagram(doc, x, y, w, h);
   if (diagram === 'SUPLEMENTO') return drawSupplementDiagram(doc, x, y, w, h, awning);
   if (diagram === 'SOLAPAS') return drawSolapasDiagram(doc, x, y, w, h, awning);
+  if (diagram === 'EMBUDO') return drawEmbudoDiagram(doc, x, y, w, h, awning);
   if (diagram === 'ENROLLABLE') return drawRollerDiagram(doc, x, y, w, h, calculation);
   if (diagram === 'BAMBALINA') return drawValanceDiagram(doc, x, y, w, h, awning, calculation);
   if (diagram === 'ANTICA') return drawAnticaDiagram(doc, x, y, w, h, awning);
@@ -2742,6 +2761,12 @@ export function buildFabricLineDetail(awning = {}, calculation = {}) {
     if (velcroHeight !== null) instructionParts.push(`ALTURA VELCRO ${formatInstructionMeasure(velcroHeight)}CM`);
   }
 
+  if (model === 'EMBUDO') {
+    const e = normalizeEmbudo(awning.embudo), etiquetas = etiquetasEmbudo(e);
+    instructionParts.push(`EMBUDO ${e.forma} · ALTO ${formatInstructionMeasure(e.alto)} CM`,
+      `CONTORNOS ${formatInstructionMeasure(e.contornoArriba)}${e.forma === 'CÓNICO' ? ` / ${formatInstructionMeasure(e.contornoAbajo)}` : ''} CM`,
+      etiquetas.cierre, `ARRIBA ${etiquetas.arriba}`, `ABAJO ${etiquetas.abajo}`, ...etiquetas.cinta, 'DERECHO');
+  }
   if (model === 'SOLAPAS') {
     const solapas = normalizeSolapas(awning.solapas);
     const resumen = solapas.map((s) => {

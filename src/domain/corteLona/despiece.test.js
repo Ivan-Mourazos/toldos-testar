@@ -30,8 +30,8 @@ describe('Ajustes y límites del despiece', () => {
   const toldo = { letra: 'A', frenteTela: 400, caidaTela: 420, bamba: 25, anchoRollo: 250 };
   it('reserva un despiece por modelo y mantiene su marca de corte', () => {
     expect(Object.keys(despiecesPorModelo)).toEqual(modelosConCorte);
-    // La cortina, su cambio de tela y las solapas tienen su propio despiece; los de fachada comparten el mismo.
-    for (const modelo of modelosConCorte.filter((m) => !['CORTINA', 'CAMBIO CORTINA', 'SOLAPAS'].includes(m))) expect(piezasToldo({ ...toldo, modelo })).toEqual(piezasToldo(toldo));
+    // Cortina, solapas y embudo tienen despiece propio; los de fachada comparten el mismo.
+    for (const modelo of modelosConCorte.filter((m) => !['CORTINA', 'CAMBIO CORTINA', 'SOLAPAS', 'EMBUDO'].includes(m))) expect(piezasToldo({ ...toldo, modelo })).toEqual(piezasToldo(toldo));
     expect(() => piezasToldo({ ...toldo, modelo: 'HERA' })).toThrow(/pendiente/);
   });
   it('aplica el ajuste de cada toldo también al colocar', () => {

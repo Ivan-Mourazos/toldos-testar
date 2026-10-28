@@ -2,6 +2,7 @@ import { normalizeFabricImage } from '../../domain/fabricImage.js';
 import { supportsFabricDropAdjustment } from '../../domain/fabricDropAdjustment.js';
 import { isConfiguredCurtain, normalizeCurtainConfiguration } from '../../domain/curtainConfiguration.js';
 import { createDefaultSolapa, normalizeSolapas } from '../../domain/solapasRules.js';
+import { normalizeEmbudo } from '../../domain/embudoConfiguration.js';
 import { normalizeStructureEdit } from '../../domain/structureEdits.js';
 import { useEffect, useRef, useState } from 'react';
 import type { Awning, DraftState, FabricProposal } from '../types';
@@ -137,6 +138,7 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
     ? old.curtainTopFinish === 'REMACHADO' ? 'REMACHADO' : 'VARILLA'
     : '';
   base.bastilla = base.model === 'SOLAPAS' && old.bastilla === true;
+  base.embudo = base.model === 'EMBUDO' ? normalizeEmbudo(old.embudo) : undefined;
   base.solapas = base.model === 'SOLAPAS'
     ? (Array.isArray(old.solapas) && old.solapas.length > 0 ? normalizeSolapas(old.solapas) : [createDefaultSolapa(0)])
     : [];
@@ -616,6 +618,7 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     curtainSkipBottomDeduction: model === 'CORTINA' ? Boolean(awning.curtainSkipBottomDeduction) : false,
     curtainTopFinish: model === 'CAMBIO CORTINA' ? (awning.curtainTopFinish || 'VARILLA') : '',
     bastilla: model === 'SOLAPAS' ? Boolean(awning.bastilla) : false,
+    embudo: model === 'EMBUDO' ? normalizeEmbudo(awning.embudo) : undefined,
     solapas: model === 'SOLAPAS'
       ? (Array.isArray(awning.solapas) && awning.solapas.length > 0 ? normalizeSolapas(awning.solapas) : [createDefaultSolapa(0)])
       : [],

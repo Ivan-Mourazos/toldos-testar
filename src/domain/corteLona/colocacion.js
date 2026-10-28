@@ -231,6 +231,14 @@ export function cortePedido(toldos, verticales = [], { presupuesto = { restantes
     const colocadas = colocar(todas, anchoRollo * 10, { presupuesto, aprovechamiento });
     const largo = Math.max(...colocadas.map((p) => p.x + p.ancho));
     if (!mejor || largo < mejor.largo) mejor = { piezas: porToldo, colocadas, largo };
+    // Iván, 28/10/2026: una plantilla Xn solo si su gasto real (n cortes) no supera el de todas anidadas.
+    if (toldos.length === 1 && toldos[0].embudo && toldos[0].unidades > 1) {
+      const n = toldos[0].unidades;
+      const plantilla = colocar(todas.slice(0, porToldo[0].piezas.length).map(p => ({ ...p, repeticiones: n })), anchoRollo * 10, { presupuesto, aprovechamiento });
+      const largoPlantilla = Math.max(...plantilla.map(p => p.x + p.ancho));
+      if (largoPlantilla * n <= largo + 1e-6) mejor = { piezas: porToldo, colocadas: plantilla,
+        largo: largoPlantilla, largoMaterial: largoPlantilla * n, repeticiones: n };
+    }
   }
   return mejor;
 }
@@ -247,7 +255,7 @@ export function opcionesCorte(toldos, ofStockSacos, presupuesto = { restantes: P
   const conSacos = { ...corte, colocadas: [...corte.colocadas, ...sacos], sacos };
   // La cortina no: sus piezas pequeñas son los laterales de la ventana, que se sueldan a las bandas.
   const letras = new Set(corte.piezas.filter((p, i) =>
-    !toldos[i].cortina && !toldos[i].solapas && (toldos[i].ajustes?.empate || 'horizontal') === 'horizontal' &&
+    !toldos[i].cortina && !toldos[i].solapas && !toldos[i].embudo && (toldos[i].ajustes?.empate || 'horizontal') === 'horizontal' &&
     p.piezas.filter((q) => !q.nombre.includes('BAMBA')).length > 1).map((p) => p.letra));
   const pequena = (p) => letras.has(p.letra) && (p.nombre.includes('BAMBA') || p.alto < anchoRollo);
   const todas = corte.colocadas.map(({ girada: _g, ancho: _a, hueco: _h, x: _x, y: _y, ...p }) => p);

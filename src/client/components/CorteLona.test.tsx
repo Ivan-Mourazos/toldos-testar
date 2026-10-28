@@ -12,6 +12,15 @@ const corte: VistaCorte = { idMaterial: 'PVC|2500', codigoTela: 'PVC', material:
   dibujo: { lineas: [{ capa: 'DISCO1', x1: 0, x2: 4875, y1: 0, y2: 0 }, { capa: 'ROTULADOR', x1: 0, x2: 4875, y1: 70, y2: 70 }], textos: [{ x: 40, y: 40, h: 100, valor: 'REVÉS' }] } };
 const vista: CorteRespuesta = { corteLona: null, pendientes: [], avisos: ['Toldo B: bamba con onda.'], cortes: { conSacos: [corte], trozoSeparado: null } };
 describe('Vista compartida del corte de lona', () => {
+  it('el embudo muestra los arcos de corte y de rotulador que recibe el bot', () => {
+    const curvo = { ...corte, dibujo: { ...corte.dibujo, arcos: [
+      { capa: 'DISCO1', x: 100, y: -5000, r: 6600, desde: 86, hasta: 94 },
+      { capa: 'ROTULADOR', x: 100, y: -5000, r: 6500, desde: 86, hasta: 94 }
+    ] } };
+    const html = renderToStaticMarkup(<DibujoCorte corte={curvo} />);
+    expect(html.match(/<path /g)).toHaveLength(2);
+    expect(html).toContain('data-capa="ROTULADOR"');
+  });
   it('la bamba sola tiene un corte único, sin rótulos de sacos ni trozo separado', () => {
     const bamba = { ...corte, piezas: [{ letra: 'A', piezas: [{ nombre: 'A BAMBA', largo: 4875, alto: 350 }] }] };
     const html = renderToStaticMarkup(<CorteLonaVista datos={{ ...vista, cortes: { conSacos: [bamba], trozoSeparado: null } }} />);

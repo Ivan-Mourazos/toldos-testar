@@ -11,11 +11,14 @@ export type EstadoCorte = {
 export type PendienteCorte = { letra: string; motivo: 'sinGenerar' | 'viejo' };
 export type VistaCorte = {
   idMaterial: string; codigoTela: string; material: string; anchoRollo: number; largo: number; largoRestos?: number;
+  largoMaterial?: number;
+  repeticiones?: number;
   piezas: { letra: string; unidades?: number; piezas: { nombre: string; largo: number; alto: number }[] }[];
   sacos: { largo: number; alto: number }[];
   dibujo: {
     lineas: { capa: string; x1: number; y1: number; x2: number; y2: number }[];
     textos: { x: number; y: number; h: number; valor: string; giro?: number; centrado?: boolean }[];
+    arcos?: { capa: string; x: number; y: number; r: number; desde: number; hasta: number }[];
   };
 };
 export type CorteRespuesta = {
