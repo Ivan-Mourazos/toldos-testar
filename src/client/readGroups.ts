@@ -26,6 +26,9 @@ const byLabel: Record<string, ReadGroupId> = {
   'Salida ventana': 'medidas', Esquina: 'medidas', 'Suelo-ventana': 'medidas', 'Altura ventana': 'medidas',
   'Tubo-ventana': 'medidas', 'Medida a ventana desde': 'medidas', 'Ajuste de salida de tela': 'medidas', 'Ajuste de salida (cm)': 'medidas',
   Laterales: 'estructura',
+  'Cara del velcro': 'estructura', 'Lado del velcro': 'estructura', 'Color del velcro': 'estructura',
+  'Ancho velcro (cm)': 'estructura', 'Alto velcro (cm)': 'estructura',
+  'Confección solapas': 'medidas',
   'Altura soporte-brazo (cm)': 'medidas', 'Medida de caída': 'medidas', 'Sumar a la caída (cm)': 'medidas', 'Sumado a la caída': 'medidas', 'Ajuste de tela (cm)': 'medidas', 'Ajuste de tela': 'medidas', 'Sumar para enrolle y tubo (cm)': 'medidas',
   // Estructura
   Lacado: 'estructura', Variante: 'estructura', 'Configuración de brazos': 'estructura',
@@ -65,7 +68,8 @@ const byLabel: Record<string, ReadGroupId> = {
 // Etiquetas con un número dentro: «Nº brazos · mínimo 3», «Restar 10 cm abajo».
 const byPattern: Array<[RegExp, ReadGroupId]> = [
   [/^Nº brazos · /, 'estructura'],
-  [/^Restar .+ cm abajo$/, 'estructura']
+  [/^Restar .+ cm abajo$/, 'estructura'],
+  [/^Solapa [A-Z0-9]+ · /, 'medidas']
 ];
 
 // Unidad de cada valor en la ficha («285 cm»): las medidas en cm que no la llevan ya en la

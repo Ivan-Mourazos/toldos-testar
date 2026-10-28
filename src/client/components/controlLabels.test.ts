@@ -14,6 +14,7 @@ describe('nombres de modelo contrastados con RPS', () => {
     ['CAMBIO TELA', 'Cambio de tela', 'CAMBIO DE TELA A TOLDO DE FACHADA'],
     ['ENROLLABLE', 'Enrollable', 'LONA PARA PUERTA ENROLLABLE'],
     ['BAMBALINA', 'Bambalina', 'BAMBALINA NUEVA'],
+    ['SOLAPAS', 'Solapas', 'SOLAPA CON VELCRO PARA TOLDOS CORTINA'],
     ['CAMBIO ANTICA', 'Cambio antica', 'CAMBIO DE TELA A TOLDO ANTICA'],
     ['HERA', 'HERA', 'SCREEN ROLL-SYSTEM'],
     ['SELENA', 'Selena', 'STOR-21 (LLAZA)'],
@@ -31,7 +32,7 @@ describe('nombres de modelo contrastados con RPS', () => {
 
   // Iván, 22/09/2026: el "antes …" solo si el modelo cambió de nombre; si repite
   // lo mismo o es la descripción del artículo, sobra.
-  test.each(['CORTINA', 'CAMBIO CORTINA', 'CAMBIO TELA', 'CAMBIO ANTICA', 'ENROLLABLE', 'BAMBALINA', 'GALICIA', 'PUNTO RECTO', 'ANTICA'])(
+  test.each(['CORTINA', 'CAMBIO CORTINA', 'SOLAPAS', 'CAMBIO TELA', 'CAMBIO ANTICA', 'ENROLLABLE', 'BAMBALINA', 'GALICIA', 'PUNTO RECTO', 'ANTICA'])(
     '%s no muestra "antes …"',
     (model) => expect(legacyModelName(model)).toBe('')
   );

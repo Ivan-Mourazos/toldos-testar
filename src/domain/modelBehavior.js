@@ -104,7 +104,7 @@ export function getFabricDiagramOptions(modelCode) {
   const diagram = modelBehavior.diagram || 'GENERAL';
   if (diagram === 'ENROLLABLE') return [...options, fabricDiagramOptions.CAMBIO_ENROLLABLE];
   if (diagram === 'BAMBALINA') return [...options, fabricDiagramOptions.SUPLEMENTO];
-  if (diagram === 'HERA' || diagram === 'ANTICA' || diagram.startsWith('CORTINA')) return options;
+  if (diagram === 'HERA' || diagram === 'ANTICA' || diagram === 'SOLAPAS' || diagram.startsWith('CORTINA')) return options;
   return [...options, fabricDiagramOptions.TOLDO_VELCRO];
 }
 

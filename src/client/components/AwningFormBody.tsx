@@ -16,7 +16,7 @@ const orden = [
   'Variante', 'Configuración Antica', 'Altura soporte-brazo (cm)', 'Posición de trabajo', 'Configuración de brazos',
   'Terminales · confirmar con taller', 'Nº de brazos', 'Nº brazos', 'Lado del brazo suelto', 'Tubo de carga', 'Soporte', 'Tipo de soporte', 'Para capota',
   'Tipo de guía', 'Fijación de la guía', 'Forma del cofre', 'Secur Wind Block', 'Telón', 'Lacado',
-  'Ventana', 'Confección', 'Laterales', 'Abajo', 'Arriba',
+  'Ventana', 'Confección', 'Laterales', 'Abajo', 'Cara del velcro', 'Lado del velcro', 'Color del velcro', 'Ancho velcro (cm)', 'Alto velcro (cm)', 'Arriba', 'Confección solapas',
   'Dispositivo', 'Color cadena', 'Altura instalación', 'Color mecanismos', 'Motor', 'Motor Electra', 'Sensor', 'Posición motor', 'Lado máquina', 'Color manivela', 'Altura manivela',
   'Colocación', 'Tipo de pared', 'Dibujo de confección',
   'Sujeción del suplemento', 'Indicar sujeción', 'Distancia entre broches (cm)', 'Solape sobre la onda (cm)',
@@ -137,6 +137,21 @@ export function AwningFormBody({ reading, awning, children }: { reading: boolean
     }
     // Las tres bastillas son medidas del mismo bloque y caben en tercios.
     if (item.label.startsWith('Bastilla ')) item.minimum = 4;
+    if (['Cara del velcro', 'Lado del velcro', 'Color del velcro'].includes(item.label)) item.minimum = 4;
+    if (item.label === 'Cara del velcro') item.start = true;
+    if (['Ancho velcro (cm)', 'Alto velcro (cm)'].includes(item.label)) item.minimum = 6;
+    if (item.label === 'Ancho velcro (cm)') item.start = true;
+    if (item.label === 'Confección solapas') item.minimum = 6;
+    if (/^Solapa [A-Z0-9]+ · largo/.test(item.label)) { item.start = true; item.minimum = 4; }
+    if (/^Solapa [A-Z0-9]+ · forma$/.test(item.label)) item.minimum = 4;
+    if (/^Solapa [A-Z0-9]+ · ancho \(cm\)$/.test(item.label)) item.minimum = 4;
+    if (/^Solapa [A-Z0-9]+ · ancho punta 1/.test(item.label)) { item.start = true; item.minimum = 6; }
+    if (/^Solapa [A-Z0-9]+ · ancho punta 2/.test(item.label)) item.minimum = 6;
+    if (/^Solapa [A-Z0-9]+ · cara velcro/.test(item.label)) { item.start = true; item.minimum = 4; }
+    if (/^Solapa [A-Z0-9]+ · lado velcro/.test(item.label)) item.minimum = 4;
+    if (/^Solapa [A-Z0-9]+ · color velcro/.test(item.label)) item.minimum = 4;
+    if (/^Solapa [A-Z0-9]+ · ancho velcro/.test(item.label)) { item.start = true; item.minimum = 4; }
+    if (/^Solapa [A-Z0-9]+ · segundo lado largo$/.test(item.label)) item.minimum = 8;
   }
 
   // Al editar se leen tres bloques; los controles conservan sus claves y su padre.

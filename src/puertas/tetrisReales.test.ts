@@ -28,8 +28,14 @@ describe('Tetris contra todos los pedidos configurables de las fixtures', () => 
       const piezasPedido = c.colocadas.filter(s => !s.pieza.id.startsWith('stock-'));
       const originales = r.resultados.flatMap(r => c.opcion === 'principal' ? r.piezas : c.opcion === 'saco-entero' ? r.alternativasSaco?.entero ?? [] : r.alternativasSaco?.partido ?? [])
         .filter(p => p.material === c.material && p.rollo * 10 === c.anchoRollo);
-      for (const pieza of originales.filter(p => p.clase !== 'cristal')) {
+      for (const pieza of originales.filter(p => p.clase !== 'cristal' && p.clase !== 'saco')) {
         expect(piezasPedido.filter(s => s.pieza.id === pieza.id)).toHaveLength(pieza.cantidad);
+      }
+      // El saco, como el cristal: una vez con «X2», «X3»… (Iván, 28/10/2026, AR2605246).
+      for (const pieza of originales.filter(p => p.clase === 'saco')) {
+        const puestos = piezasPedido.filter(s => s.pieza.id === pieza.id);
+        expect(puestos).toHaveLength(1);
+        expect(puestos[0].pieza.multiplicador ?? 1).toBe(pieza.cantidad);
       }
       // Con el mismo largo y área, manda el ancho total que se acota, contando stock.
       if (originales.some(p => p.clase === 'pano')) {

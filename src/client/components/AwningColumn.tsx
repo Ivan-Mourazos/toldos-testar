@@ -8,6 +8,7 @@ import { awningLetter, getMissingFields } from '../../domain/awningCompleteness.
 import { TextField } from './TextField';
 import { NumberField } from './NumberField';
 import { curtainConfigurationFields } from './CurtainConfigurationFields';
+import { solapasConfigurationFields } from './SolapasConfigurationFields';
 import { AwningFormBody } from './AwningFormBody';
 import { avanzarConIntro } from '../avanzarConIntro';
 import { isConfiguredCurtain } from '../../domain/curtainConfiguration.js';
@@ -510,6 +511,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           {/* En su propia línea: dentro del campo alargaba la fila y bajaba Frente y Salida. */}
           {!readOnly && isOfOutsideOrder(awning.of, knownOfs) && <p className="field-hint-warn awning-row-warn" role="status">La OF {awning.of} no pertenece al pedido en RPS.</p>}
           <TextField label="OF" missing={isMissing('of')} value={awning.of} onChange={(of) => update({ of: of.trim() })} />
+          {awning.model === 'SOLAPAS' && solapasConfigurationFields({ awning, update, missing: isMissing, reading: readOnly })}
           {fields.dimensions.includes('width') && <NumberField label={widthLabel} missing={isMissing('width')} value={awning.width} min={0} onChange={updateWidth} />}
           {fields.dimensions.includes('projection') && (useEstablishedProjection ? (
             <SelectField

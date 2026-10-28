@@ -4,7 +4,8 @@
 
 export const REGLAS_CORTINA = {
   bastillaLado: 4,       // B.N(4) a cada lado: el corte es el frente + 8
-  varillaArriba: 3.5,    // VARILLA NEGRA (4,5)
+  varillaArriba: 3.5,    // VARILLA NEGRA (4,5) en cortina y VARILLA BLANCA (5,5) en cambio de cortina
+  bastillaRemachado: 4.5,// REMACHADO · B.N.(4,5) arriba en el cambio de cortina (Iván, 27/10/2026)
   varillaAbajo: 3.5,     // VARILLA BLANCA (5,5)
   et: 12,                // E.T. Ø40: la lona baja 12 por debajo del terminado
   marcaVarilla: 3.5,     // rotulador dentro del terminado: a 7 del corte con varilla
@@ -20,9 +21,8 @@ export const REGLAS_CORTINA = {
   bambaBastilla: 3       // B.N(3) abajo
 };
 const ACABADOS = ['VARILLA', 'ET'];
-// Mininúmeros: a 1 cm del borde y de la punta. Con ventana, el nombre de cada banda en su esquina del lado de la
-// ventana, a la derecha, igual en el corte y en el alzado: así se sabe cómo va la pieza (Iván, 23/10/2026,
-// AR2605193 a mano). Sin ventana, los números de empate como en toldos y remolques.
+// Mininúmeros: a 1 cm del borde y de la punta, igual en el corte y en el alzado. Con ventana, el número de cada
+// esquina de la ventana (piezasCortina); sin ventana, los números de empate como en toldos y remolques.
 const BORDE = 10;
 
 /**
@@ -53,10 +53,12 @@ export function piezasCortina({ letra, frenteTela, caidaTela, bamba = 0, anchoRo
 
   // El cuerpo es la caída de la web sin la bamba y su remate de 5, como en fachada.
   const cuerpo = caidaTela - (bamba > 0 ? bamba + 5 : 0);
+  const remachado = cortina.arriba === 'REMACHADO';
+  const arriba = remachado ? R.bastillaRemachado : R.varillaArriba;
   const abajo = cortina.abajo === 'ET' ? R.et : R.varillaAbajo;
   const marcaAbajo = marca('abajo', abajo + (cortina.abajo === 'ET' ? R.marcaEt : R.marcaVarilla));
-  const marcaArriba = marca('arriba', R.varillaArriba + R.marcaVarilla);
-  if (cuerpo <= R.varillaArriba + abajo) throw new Error('La bamba no puede ocupar toda la caída.');
+  const marcasArriba = remachado ? [] : [marca('arriba', R.varillaArriba + R.marcaVarilla)];
+  if (cuerpo <= arriba + abajo) throw new Error('La bamba no puede ocupar toda la caída.');
   const pvc = [], cristal = [];
   const cabe = (alto) => alto <= anchoRollo || ancho <= anchoRollo;
 
@@ -68,7 +70,7 @@ export function piezasCortina({ letra, frenteTela, caidaTela, bamba = 0, anchoRo
     paños.push(resto);
     paños.forEach((alto, i) => pvc.push({
       nombre: paños.length > 1 ? `${letra}${i + 1}` : letra, letra, rotuloCortina: true, largo: mm(ancho), alto: mm(alto), uniones: [],
-      marcas: [...(i === 0 ? [marcaAbajo] : []), ...(i === paños.length - 1 ? [marcaArriba] : [])]
+      marcas: [...(i === 0 ? [marcaAbajo] : []), ...(i === paños.length - 1 ? marcasArriba : [])]
     }));
     // Cada empate, con el mismo número en los dos paños, a 1 de cada punta.
     for (let i = 0; i < pvc.length - 1; i++) {
@@ -84,17 +86,25 @@ export function piezasCortina({ letra, frenteTela, caidaTela, bamba = 0, anchoRo
     if (2 * esquina >= frenteTela) throw new Error('Los laterales de la ventana no dejan hueco en el frente.');
     const inferior = desdeAbajo + abajo;
     const superior = cuerpo - inferior - V;
-    if (superior <= R.varillaArriba + R.solapeCristal) throw new Error('La ventana no cabe en la cortina: revisa su alto y la distancia desde abajo.');
+    if (superior <= arriba + R.solapeCristal) throw new Error('La ventana no cabe en la cortina: revisa su alto y la distancia desde abajo.');
     if (!cabe(inferior) || !cabe(superior)) throw new Error('Una banda de la cortina no cabe en el rollo: el corte se hace a mano por ahora.');
-    const lateral = { largo: mm(esquina + R.bastillaLado), alto: mm(V + 2 * R.solapeCristal), marcas: [], uniones: [], sinRotulo: true };
+    // Los laterales con su nombre, en grande y en mininúmero en la esquina, como a mano en AR2604988 y AR2601829 (Iván,
+    // 27/10/2026); sin la OF ni el REVÉS, que van en las bandas.
+    // Mininúmeros: uno por esquina de la ventana, del 1 al 4 (abajo a la derecha, arriba a la derecha, arriba a la
+    // izquierda y abajo a la izquierda), en las dos piezas que se sueldan en ella y en el mismo sitio, como a mano en
+    // AR2601829 (Iván, 27/10/2026): cada banda, en sus puntas del lado de la ventana; cada lateral, en las suyas.
+    const esquinaN = (k) => `${letra}${k}`;
+    const lado = mm(esquina + R.bastillaLado), altoLateral = mm(V + 2 * R.solapeCristal);
+    const lateral = (nombre, u, abajo, arriba) => ({ nombre, letra, rotuloCortina: true, soloNombre: true, largo: lado, alto: altoLateral,
+      marcas: [], uniones: [{ valor: esquinaN(abajo), u, v: BORDE }, { valor: esquinaN(arriba), u, v: altoLateral - BORDE }] });
     const inf = mm(inferior), sup = mm(superior);
     pvc.push(
       { nombre: `${letra}1`, letra, rotuloCortina: true, largo: mm(ancho), alto: inf, marcas: [marcaAbajo], enFila: true,
-        uniones: [{ valor: `${letra}1`, u: mm(ancho) - BORDE, v: inf - BORDE }] },
-      { nombre: `${letra}2`, letra, rotuloCortina: true, largo: mm(ancho), alto: sup, marcas: [marcaArriba], enFila: true,
-        uniones: [{ valor: `${letra}2`, u: mm(ancho) - BORDE, v: BORDE }] },
-      { nombre: `${letra}3`, ...lateral },
-      { nombre: `${letra}4`, ...lateral }
+        uniones: [{ valor: esquinaN(4), u: BORDE, v: inf - BORDE }, { valor: esquinaN(1), u: mm(ancho) - BORDE, v: inf - BORDE }] },
+      { nombre: `${letra}2`, letra, rotuloCortina: true, largo: mm(ancho), alto: sup, marcas: marcasArriba, enFila: true,
+        uniones: [{ valor: esquinaN(3), u: BORDE, v: BORDE }, { valor: esquinaN(2), u: mm(ancho) - BORDE, v: BORDE }] },
+      lateral(`${letra}3`, BORDE, 4, 3),
+      lateral(`${letra}4`, lado - BORDE, 1, 2)
     );
 
     // Cristal: el hueco + 2 por lado. Si no cabe en su rollo, se empata en vertical en tramos (Iván, AR2605080).

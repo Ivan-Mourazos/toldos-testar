@@ -4,6 +4,8 @@ import { calcularPuerta } from './calcular.ts';
 import { esClientePortanova } from './clientePortanova.ts';
 import { rotuloSaco, sacoPuerta, sacoUtil } from './saco.ts';
 import { anclarCotas } from './cotasPuertas.ts';
+import { ventanalesEnrollable } from './ventanalesEnrollable.ts';
+import { flechaEmpate } from './marcasEmpate.ts';
 import { presentacionPortanova, VENTANA_CORTE_PORTANOVA } from './plantillaPortanova.ts';
 import { SEPARACION_EXTRA_FILAS, TITULO_MATERIAL_MM } from './corte.ts';
 import { corteEnPlano, entidadesDePieza, textosFuera } from './corteEnPlano.ts';
@@ -73,14 +75,14 @@ function huecoRotulo(abajo: number, arriba: number, obstaculos: number[], margen
 export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSaco = false): { lienzo: Lienzo; zona: Zona } {
   const l = vacio(), F = p.frente, H = p.alto, T = p.enrollable.T;
   const r = calcularPuerta(p), saco = sacoPuerta(p), bajo = saco.rematado, hs = saco.corte, hp = saco.altoPestana;
-  const ventanales = T > 0 ? [{ D: p.enrollable.D, margen: p.enrollable.margen }, ...p.enrollable.ventanales ?? []] : [];
+  const ventanales = T > 0 ? ventanalesEnrollable(p) : [];
   const ejes: number[] = ventanales.length ? [T] : [];
   for (const v of ventanales) ejes.push(ejes.at(-1)! + v.D);
   const bandas = [...new Set([...ejes, ...p.entradas.map(e => H - e.altura)])].filter(y => y > 0 && y < H).sort((a, b) => a - b);
   // Los contornos son los paños cortados: 3,5 sobre la cabecera y, abajo, en el rematado del saco (13 con el de 120);
   // el saco sube 2 más para soldar (Iván, 24/10/2026, AR2605220).
   const paños: Array<[number, number]> = ventanales.length
-    ? [[-T - 3.75, 3.5], [-H + bajo, -ejes.at(-1)! + 3.75]] : [[-H + bajo, 3.5]];
+    ? [[-T - (p.enrollable.sinEtArriba ? 0 : 3.75), 3.5], [-H + bajo, -ejes.at(-1)! + (p.enrollable.sinEtAbajo ? 0 : 3.75)]] : [[-H + bajo, 3.5]];
   paños.forEach(([abajo, arriba], i) => {
     contorno(l, 'DISCO1', [[0, abajo], [F, abajo], [F, arriba], [0, arriba]]);
     const [a, b] = huecoRotulo(abajo, arriba, bandas.map(y => -y), 18);
@@ -90,27 +92,27 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSac
   linea(l, 'ROTULADOR', 0, -3.5, F, -3.5);
   texto(l, 'VARILLA NEGRA (4,5)', F / 2 - 51.2490, 13.5486, 7, { ancla: 1 });
   for (const [i, v] of ventanales.entries()) {
-    const t = ejes[i], m = v.margen, alto = v.D - 3.5;
+    const t = ejes[i], m = v.margen, alto = v.altoCorte;
     // El cristal y los cachos son su corte completo: solapan 2 arriba y 2 abajo.
-    rectangulo(l, 'DISCO1', -1, -t - v.D + 1.75, m + 1, alto);
-    rectangulo(l, 'DISCO1', F - m, -t - v.D + 1.75, m + 1, alto);
-    rectangulo(l, 'DISCO1', m - 2, -t - v.D + 1.75, F - 2 * m + 4, alto, 5);
+    rectangulo(l, 'DISCO1', -1, -v.corteHasta, m + 1, alto);
+    rectangulo(l, 'DISCO1', F - m, -v.corteHasta, m + 1, alto);
+    rectangulo(l, 'DISCO1', m - 2, -v.corteHasta, F - 2 * m + 4, alto, 5);
     cota(l, 0, -t - 12.57, m, -t - 12.57, -t + 11.67);
     cota(l, F - m, -t - 5.89, F, -t - 5.89, -t + 13.22);
     cota(l, m - 2, -t - 26.48, F - m + 2, -t - 26.48, -t - 18.56);
   }
+  // AR2605065: la tira intermedia va de 0 a F; los cachos sobresalen 1 cm por cada lado.
+  // Sus cuatro bordes y los mininúmeros del despiece se ven también en el alzado del plano.
+  for (const eje of ejes.slice(1, -1)) {
+    contorno(l, 'DISCO1', [[0, -eje - 3.75], [F, -eje - 3.75], [F, -eje + 3.75], [0, -eje + 3.75]]);
+  }
   // Cada eje por su papel, no por su orden: con una E.T. encima del ventanal (AR2604725, AR2605220) el primero
   // ya no es el eje de arriba del ventanal. Ese marca hacia arriba y el siguiente eje del ventanal, hacia abajo.
   const esEje = (b: number, k: number) => ejes.length > k && Math.abs(ejes[k] - b) < .01;
-  // Sin E.T. encima del ventanal de arriba o debajo del de abajo (Iván, 27/10/2026, AR2605247): en ese eje no hay banda de
-  // E.T.; el paño lleva la marca donde llega el cristal (solapan 2 cm). Los cachos, sin marca (Iván, 27/10/2026).
+  // Sin E.T. la cota señala el borde del paño: no hay eje, banda, raya ni flecha de esa E.T.
   const sinEtArriba = ventanales.length > 0 && Boolean(p.enrollable.sinEtArriba);
   const sinEtAbajo = ventanales.length > 0 && Boolean(p.enrollable.sinEtAbajo);
   const sinEt = (eje: number, haciaAbajo: boolean) => {
-    const yPaño = -eje + (haciaAbajo ? -1.75 : 1.75);
-    linea(l, 'ejes', 0, -eje, F, -eje);
-    linea(l, 'ROTULADOR', 0, yPaño, F, yPaño);
-    flecha(l, F / 2, yPaño, haciaAbajo ? 180 : 0);
     texto(l, 'SIN E.T.: SOLAPAR 2 CM SOBRE EL CRISTAL', F / 2, -eje + (haciaAbajo ? 8 : -12), 6, { centrado: true });
   };
   if (sinEtArriba) sinEt(T, true);
@@ -188,9 +190,15 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSac
   // Los empates y bolsillos configurados conservan sus marcas; nunca crean una pieza nueva.
   for (const u of r.uniones) {
     linea(l, 'referencias', 0, -H + u.altura, F, -H + u.altura);
-    for (const s of [-1, 1]) {
-      const y = -H + u.altura + s * u.solape / 2;
-      linea(l, 'ROTULADOR', 0, y, F, y); flecha(l, F / 2, y, s < 0 ? 180 : 0);
+    if (u.tubo) {
+      for (const s of [-1, 1]) {
+        const y = -H + u.altura + s * u.solape / 2;
+        linea(l, 'ROTULADOR', 0, y, F, y); flecha(l, F / 2, y, s < 0 ? 180 : 0);
+      }
+    } else {
+      const y = -H + u.altura + u.solape / 2;
+      linea(l, 'ROTULADOR', 0, y, F, y);
+      for (const [x1, y1, x2, y2] of flechaEmpate(F / 2, y, -1)) linea(l, 'ROTULADOR', x1, y1, x2, y2);
     }
     if (!u.tubo) texto(l, `EMPATE ${u.solape.toLocaleString('es-ES')} CM`, F / 2, -H + u.altura + 8, 5, { centrado: true });
   }

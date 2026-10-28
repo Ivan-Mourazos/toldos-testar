@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'vitest';
 import { calculateOrder } from './rules.js';
 import { normalizeOrder } from './validation.js';
-import { buildCurtainDiagramSpec, buildOrderPlanteamientoPdf } from './planteamientoPdf.js';
+import { buildCurtainDiagramSpec, buildOrderPlanteamientoPdf, resolveCurtainVelcroHeight } from './planteamientoPdf.js';
+import { configuredCurtainVelcroHeight, defaultCurtainVelcroHeight, formatCurtainVelcroLabel, formatVelcroLabel } from './curtainConfiguration.js';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 const fabric = 'ACRILI2170P120|||120|||LONA ACRILICA NEGRA|||ACR';
@@ -58,6 +59,40 @@ describe.each(['CORTINA', 'CAMBIO CORTINA'])('%s · configuraciones independient
   test('la configuración y el ajuste con signo sobreviven a normalizar dos veces', () => {
     const order = normalizeOrder(payload(model, { curtainFinish: 'VELCRO', curtainBottomFinish: 'ET', curtainFabricAdjustment: 'PERSONALIZADO', curtainFabricAdjustmentCm: -23, curtainWindowReference: 'TUBO DE CARGA' }));
     expect(normalizeOrder(order).awnings[0]).toMatchObject({ curtainFinish: 'VELCRO', curtainBottomFinish: 'ET', curtainFabricAdjustment: 'PERSONALIZADO', curtainFabricAdjustmentCm: -23, curtainWindowReference: 'TUBO DE CARGA' });
+  });
+  test('el velcro por defecto es suave blanco de 5 por derecho con altura Q-CO06 y permite elegir tipo, cara, color, ancho y alto', () => {
+    const porDefecto = normalizeOrder(payload(model, { curtainFinish: 'VELCRO' })).awnings[0];
+    expect(porDefecto).toMatchObject({
+      curtainVelcroType: 'SUAVE',
+      curtainVelcroSide: 'POR DERECHO',
+      curtainVelcroColor: 'BLANCO',
+      curtainVelcroWidth: 5,
+      curtainVelcroHeight: null
+    });
+    expect(defaultCurtainVelcroHeight(porDefecto)).toBe(283);
+    expect(configuredCurtainVelcroHeight(porDefecto)).toBe(283);
+    expect(formatCurtainVelcroLabel(porDefecto)).toBe('VELCRO SUAVE (5) BLANCO POR DERECHO');
+
+    const elegido = normalizeOrder(payload(model, {
+      curtainFinish: 'VELCRO',
+      curtainVelcroType: 'BRAVO',
+      curtainVelcroSide: 'POR REVÉS',
+      curtainVelcroColor: 'NEGRO',
+      curtainVelcroWidth: 4,
+      curtainVelcroHeight: 240
+    })).awnings[0];
+    expect(elegido).toMatchObject({
+      curtainVelcroType: 'BRAVO',
+      curtainVelcroSide: 'POR REVÉS',
+      curtainVelcroColor: 'NEGRO',
+      curtainVelcroWidth: 4,
+      curtainVelcroHeight: 240
+    });
+    expect(defaultCurtainVelcroHeight(elegido)).toBe(283);
+    expect(configuredCurtainVelcroHeight(elegido)).toBe(240);
+    expect(resolveCurtainVelcroHeight(elegido)).toBe(240);
+    expect(formatCurtainVelcroLabel(elegido)).toBe('VELCRO BRAVO (4) NEGRO POR REVÉS');
+    expect(formatVelcroLabel({ tipo: 'BRAVO', ancho: 5, color: 'BLANCO', lado: 'POR REVÉS', alCorte: true })).toBe('VELCRO BRAVO (5) BLANCO AL CORTE REVÉS');
   });
 });
 

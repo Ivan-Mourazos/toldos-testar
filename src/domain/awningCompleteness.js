@@ -13,6 +13,7 @@ import { resolveFabric } from './fabricCatalog.js';
 import { cambioTelaExtraError } from './fabricJobParameters.js';
 import { curtainWindowDrawingHeight, isConfiguredCurtain } from './curtainConfiguration.js';
 import { getIrisWindow } from './irisWindow.js';
+import { solapaCompletenessIssues } from './solapasRules.js';
 
 const windowDimensions = [
   ['curtainWindowExit', 'salida ventana'],
@@ -104,6 +105,9 @@ export function getMissingFields(awning, order = null) {
   if (isElectra && !awning.electraSupport) add('electraSupport', 'tipo de soporte');
   for (const field of getRequiredDimensions(model)) {
     if (!Number(awning[field])) add(field, dimensionLabel(model, field));
+  }
+  if (model === 'SOLAPAS') {
+    for (const { field, label } of solapaCompletenessIssues(awning)) add(field, label);
   }
   if (isHera) {
     const withChain = awning.submodel !== 'HERA 56 MOTOR';

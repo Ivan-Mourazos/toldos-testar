@@ -38,3 +38,16 @@ describe('el corte del plano es el del bot', () => {
     expect(corte.entidades.reduce((s, e) => s + (e.arcos?.length ?? 0), 0)).toBe(bot.entidades.arcos.length);
   });
 });
+
+// Iván, 28/10/2026, AR2605246: dos OF, una puerta de 1 y otra de 2; salía un solo saco para las dos puertas iguales.
+describe('el saco de dos puertas iguales', () => {
+  it('va una vez con «X2», en el bot y en el plano, como el cristal', () => {
+    const pedido = pedidoDe('AR2600001', puerta4638(), { ...puerta4638(), of: '0239999', cantidad: 2 });
+    const bot = generarCortePuertas(pedido, { ofStockSacos: '0230811' });
+    const sacos = bot.cortes.flatMap(c => c.colocadas).filter(t => t.pieza.clase === 'saco' && !t.pieza.id.startsWith('stock-'));
+    expect(sacos.map(t => [t.pieza.of, t.pieza.multiplicador ?? 1])).toEqual([[puerta4638().of, 1], ['0239999', 2]]);
+    const corte = corteDelPlano(escribirPlanoPuertas({ pedido, cabecera, ofStockSacos: '0230811' }));
+    expect(corte.entidades.filter(e => e.texto?.valor === 'B · SACO')).toHaveLength(1);
+    expect(corte.entidades.filter(e => e.texto?.valor === 'X2').length).toBeGreaterThanOrEqual(2);
+  });
+});

@@ -247,7 +247,7 @@ export function opcionesCorte(toldos, ofStockSacos, presupuesto = { restantes: P
   const conSacos = { ...corte, colocadas: [...corte.colocadas, ...sacos], sacos };
   // La cortina no: sus piezas pequeñas son los laterales de la ventana, que se sueldan a las bandas.
   const letras = new Set(corte.piezas.filter((p, i) =>
-    !toldos[i].cortina && (toldos[i].ajustes?.empate || 'horizontal') === 'horizontal' &&
+    !toldos[i].cortina && !toldos[i].solapas && (toldos[i].ajustes?.empate || 'horizontal') === 'horizontal' &&
     p.piezas.filter((q) => !q.nombre.includes('BAMBA')).length > 1).map((p) => p.letra));
   const pequena = (p) => letras.has(p.letra) && (p.nombre.includes('BAMBA') || p.alto < anchoRollo);
   const todas = corte.colocadas.map(({ girada: _g, ancho: _a, hueco: _h, x: _x, y: _y, ...p }) => p);

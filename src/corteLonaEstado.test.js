@@ -28,11 +28,11 @@ describe('Estado guardado del corte de lona', () => {
   });
   it('firma los cortes y marca el toldo manual sin bloquear el resto', () => {
     const otro = structuredClone(order);
-    otro.awnings.push({ ...otro.awnings[0], id: 'onda', of: '0232569', valanceCurve: 'SUAVE' });
+    otro.awnings.push({ ...otro.awnings[0], id: 'onda', of: '0232569', valanceCurve: 'SIN PLANTILLA' });
     const estado = generar(otro, { A: { empate: 'vertical' } });
     expect(estado).toMatchObject({ generadoPor: order.technician, generadoEn: '2026-10-19T12:00:00.000Z' });
     expect(estado.ajustes[order.awnings[0].id].empate).toBe('vertical');
-    expect(estado.toldos[1]).toMatchObject({ id: 'onda', manual: true, motivoManual: expect.stringContaining('bamba con onda') });
+    expect(estado.toldos[1]).toMatchObject({ id: 'onda', manual: true, motivoManual: expect.stringContaining('no está en la plantilla') });
     expect(corteLonaPendiente(otro, estado)).toEqual([]);
     expect(createReviewPackage({ order: otro, calculation: calculateOrder(otro), corteLona: estado }).corteLona).toEqual(estado);
     otro.awnings[1].width += 10;

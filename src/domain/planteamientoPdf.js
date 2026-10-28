@@ -1,5 +1,6 @@
 import { normalizeFabricImage } from './fabricImage.js';
-import { configuredCurtainVelcroHeight, curtainWindowDrawingHeight, isConfiguredCurtain, normalizeCurtainConfiguration } from './curtainConfiguration.js';
+import { configuredCurtainVelcroHeight, curtainWindowDrawingHeight, formatCurtainVelcroLabel, isConfiguredCurtain, normalizeCurtainConfiguration } from './curtainConfiguration.js';
+import { formatSolapaVelcroLabels, normalizeSolapas } from './solapasRules.js';
 import PDFDocument from 'pdfkit';
 import pdfLib from 'pdf-lib';
 import { existsSync } from 'node:fs';
@@ -343,6 +344,7 @@ export function getFabricPatternDiagram(awning = {}, cadDiagram = getAwningDiagr
   if (override) return override;
   if (model.startsWith('HERA')) return 'HERA';
   if (model.includes('CORTINA') || cadDiagram.startsWith('CORTINA')) return cadDiagram;
+  if (model === 'SOLAPAS') return 'SOLAPAS';
   if (model === 'ENROLLABLE') return 'ENROLLABLE';
   if (model === 'BAMBALINA') return 'BAMBALINA';
   if (model.includes('ANTICA')) return 'ANTICA';
@@ -1075,6 +1077,27 @@ function drawExcelFabricBody(doc, { order, lines, diagram, diagramAwning, diagra
 
 // El dibujo de la hoja de telas del HERA: la tela vista de canto junto a la ventana, con la cara
 // que queda hacia dentro. Sin letra de toldo, porque la hoja puede llevar varios.
+function drawSolapasDiagram(doc, x, y, w, h, awning = {}) {
+  drawDiagramShell(doc, x, y, w, h);
+  const solapas = normalizeSolapas(awning.solapas);
+  const primera = solapas[0] || {};
+  const [izquierda, derecha] = formatSolapaVelcroLabels(primera, !awning.bastilla);
+  const panelX = x + w * 0.25;
+  const panelY = y + h * 0.14;
+  const panelW = w * 0.50;
+  const panelH = h * 0.70;
+  doc.rect(panelX, panelY, panelW, panelH).fillAndStroke('#fbfcfc', '#4f6e63');
+  for (const bandX of [panelX, panelX + panelW - 7]) {
+    doc.rect(bandX, panelY, 7, panelH).fillAndStroke('#f7eeee', '#8a4f48');
+  }
+  drawDiagramText(doc, awning.bastilla ? 'CON BASTILLA' : 'AL CORTE', panelX, panelY - 12, panelW);
+  drawDiagramText(doc, awning.bastilla ? 'CON BASTILLA' : 'AL CORTE', panelX, panelY + panelH + 4, panelW);
+  drawRotatedDiagramText(doc, izquierda, panelX - 11, panelY + panelH / 2, panelH - 12, { fit: true, size: diagramText(5.6) });
+  drawRotatedDiagramText(doc, derecha, panelX + panelW + 11, panelY + panelH / 2, panelH - 12, { fit: true, size: diagramText(5.6) });
+  doc.fillColor(colors.inkSoft).font(fonts.bold).fontSize(diagramText(7))
+    .text(`${solapas.length} ${solapas.length === 1 ? 'SOLAPA' : 'SOLAPAS'}`, panelX + 10, panelY + panelH / 2 - 6, { width: panelW - 20, align: 'center' });
+}
+
 function drawHeraDiagram(doc, x, y, w, h, awning = {}) {
   const green = '#0b5a26';
   const face = heraInteriorFace(awning);
@@ -1270,6 +1293,7 @@ function drawAwningDiagram(doc, x, y, w, h, diagram = 'GENERAL', awning = {}, ca
   if (diagram === 'TOLDO-VELCRO') return drawToldoVelcroDiagram(doc, x, y, w, h, awning);
   if (diagram === 'CAMBIO ENROLLABLE') return drawChangeRollerDiagram(doc, x, y, w, h);
   if (diagram === 'SUPLEMENTO') return drawSupplementDiagram(doc, x, y, w, h, awning);
+  if (diagram === 'SOLAPAS') return drawSolapasDiagram(doc, x, y, w, h, awning);
   if (diagram === 'ENROLLABLE') return drawRollerDiagram(doc, x, y, w, h, calculation);
   if (diagram === 'BAMBALINA') return drawValanceDiagram(doc, x, y, w, h, awning, calculation);
   if (diagram === 'ANTICA') return drawAnticaDiagram(doc, x, y, w, h, awning);
@@ -1872,9 +1896,10 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
   const frameH = contentBottom - afterFrame - frameY;
   doc.rect(frameX, frameY, frameW, frameH).fillAndStroke('#fbfcfc', '#4f6e63');
 
+  const cambioCortina = String(awning.model || '').trim().toUpperCase() === 'CAMBIO CORTINA';
   drawDiagramText(
     doc,
-    spec.riveted ? 'REMACHADO · BASTILLA ARRIBA' : spec.generalCurtain ? 'VARILLA NEGRA O BLANCA' : 'VARILLA NEGRA (5,09) EN PVC',
+    spec.riveted ? 'REMACHADO · B.N.(4,5)' : cambioCortina ? 'VARILLA BLANCA (5,5)' : spec.generalCurtain ? 'VARILLA NEGRA O BLANCA' : 'VARILLA NEGRA (5,09) EN PVC',
     frameX - 8,
     frameY - 13,
     frameW + 16
@@ -1982,6 +2007,7 @@ export function fabricDiagramHeading(diagram, awnings = []) {
   if (diagram === 'ANTICA') return String(first.model || '').toUpperCase() === 'ANTICA' ? 'ANTICA' : 'CAMBIO ANTICA';
   if (diagram === 'IRIS') return String(first.submodel || 'IRIS').toUpperCase();
   if (diagram === 'HERA') return heraHeading(first);
+  if (diagram === 'SOLAPAS') return 'SOLAPA CON VELCRO';
   if (diagram === 'TOLDO-VELCRO') return 'TOLDO · VELCRO';
   if (diagram !== 'GENERAL') return diagram.replaceAll('-', ' ');
   const names = [...new Set(awnings.map((awning) => {
@@ -2711,8 +2737,20 @@ export function buildFabricLineDetail(awning = {}, calculation = {}) {
   }
 
   if ((model.includes('CORTINA') || model === 'ELECTRA') && String(awning.curtainFinish || '').toUpperCase() === 'VELCRO') {
+    if (isConfiguredCurtain(awning)) instructionParts.push(formatCurtainVelcroLabel(awning));
     const velcroHeight = resolveCurtainVelcroHeight(awning);
     if (velcroHeight !== null) instructionParts.push(`ALTURA VELCRO ${formatInstructionMeasure(velcroHeight)}CM`);
+  }
+
+  if (model === 'SOLAPAS') {
+    const solapas = normalizeSolapas(awning.solapas);
+    const resumen = solapas.map((s) => {
+      const ancho = s.anchoIzq === s.anchoDer ? formatInstructionMeasure(s.anchoIzq) : `${formatInstructionMeasure(s.anchoIzq)}..${formatInstructionMeasure(s.anchoDer)}`;
+      return `${s.nombre}: ${formatInstructionMeasure(s.largo)}×${ancho}`;
+    }).join(', ');
+    if (resumen) instructionParts.push(resumen);
+    const etiquetas = [...new Set(solapas.flatMap((s) => formatSolapaVelcroLabels(s, !awning.bastilla)))];
+    instructionParts.push(...etiquetas);
   }
 
   if (['XACOBEO', 'CUARZO BOX', 'STORBOX 250'].includes(model)) {
@@ -2957,6 +2995,7 @@ function fabricWorkLabel(model) {
   if (model === 'CAMBIO TELA') return 'CAMB. TELA';
   if (model === 'ENROLLABLE') return 'ENROLLABLE';
   if (model === 'BAMBALINA') return 'CAMB. BAMBA';
+  if (model === 'SOLAPAS') return 'SOLAPAS';
   if (model === 'CAMBIO ANTICA') return 'CAMB. ANTICA';
   if (model === 'ANTICA') return 'ANTICA';
   return model || 'TOLDO';

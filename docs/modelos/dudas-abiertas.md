@@ -109,6 +109,23 @@ Contestadas el 30/09 (Iván):
 
 Las muestras de PDF que tenía que mirar el taller (Cambio de tela, Enrollable, Bambalina y Cambio Antica) se quitan: Iván, 03/10/2026, «olvídate».
 
+## Bambalinas con onda
+
+Añadidas el 28/10/2026 (ver [bambalina.md](./bambalina.md)):
+
+| Código | Pregunta | Ahora la web |
+| --- | --- | --- |
+| Q-BO01 | Con onda, ¿bastilla o remate abajo? | Contestada el 28/10 (Iván): «bastilla solo la puede llevar la bamba recta, el resto lleva remate. Los remates se cortan aparte, no se incluyen en el corte; puede ser de una tela diferente». La tira con onda es la bamba + 3 (sin la B.N(2) de abajo) |
+| Q-BO02 | ¿Cuánto separar la onda del borde de abajo de la tira? En AR2603936 iba a 2,75 del orillo | Contestada el 28/10 (Iván): «sí, deja 1 cm». Ya lo hace |
+
+## Solapas con velcro
+
+Contestada el 28/10/2026 (Iván: «las solapas sí pueden empatarse, así que están bien en el ejemplo»):
+
+| Código | Pregunta | Respuesta | En la web |
+| --- | --- | --- | --- |
+| Q-SO01 | ¿Se puede empatar una solapa oblicua más larga que el ancho del rollo? | Sí | Ya lo hace: prueba la solapa entera y acostada y partida con 2 cm de empate, y deja la que gasta menos lona. En AR2604205 la D va partida: 3,6 m de corte; entera serían 5,5 m |
+
 ## Contestadas el 01/10/2026
 
 | Código | Pregunta | Respuesta | En la web |

@@ -4,7 +4,7 @@ import { normalizeElectraMotor } from './electraParameters.js';
 import { irisAsksBoxShape, irisSubmodels } from './irisParameters.js';
 import { irisMotorPowers, motorPowerFromCode } from './screenMotors.js';
 
-const fabricOnlyModels = new Set(['CAMBIO TELA', 'CAMBIO CORTINA', 'CAMBIO ANTICA', 'BAMBALINA', 'ENROLLABLE']);
+const fabricOnlyModels = new Set(['CAMBIO TELA', 'CAMBIO CORTINA', 'CAMBIO ANTICA', 'BAMBALINA', 'ENROLLABLE', 'SOLAPAS']);
 const electraArticleCodes = new Set(['ELECTR', 'ELECTRCCCG', 'ELECTRCCSG', 'ELECTRSCCG', 'ELECTRSCSG', 'ELITV']);
 const blockedElectraArticleCodes = new Set(['ELECTRA', 'ELECTRAZIP', 'ELECTRS/COS/GU']);
 
@@ -134,6 +134,7 @@ const summaryModelNames = {
   'CAMBIO ANTICA': ['cambio de antica', 'cambios de antica'],
   BAMBALINA: ['bambalina', 'bambalinas'],
   ENROLLABLE: ['lona de puerta enrollable', 'lonas de puerta enrollable'],
+  SOLAPAS: ['solapa con velcro', 'solapas con velcro'],
   'AMBAR BOX': 'Ámbar Box',
   'AGATA BOX': 'Ágata Box',
   'PERLA BOX': 'Perla Box',
@@ -225,6 +226,9 @@ function structureColorSummary(value) {
 function expandEditableLine(line, model) {
   const quantity = positiveNumber(line.quantity) || 1;
   const wholeUnits = Number.isInteger(quantity) ? quantity : 1;
+  if (model === 'SOLAPAS') {
+    return [{ line: { ...line, quantity: 1, solapasCount: wholeUnits }, model }];
+  }
   if (wholeUnits <= 1 || wholeUnits > 50) {
     return [{ line, model }];
   }
@@ -293,6 +297,7 @@ export function inferOrderModel(line = {}) {
   }
   if (code === 'BAMBA' || description.includes('BAMBALINA NUEVA')) return 'BAMBALINA';
   if (code === 'PUERTAENR' || description.includes('LONA PARA PUERTA ENROLLABLE')) return 'ENROLLABLE';
+  if (code === 'SOLAPACONVELCROS' || description.includes('SOLAPA CON VELCRO')) return 'SOLAPAS';
 
   if (code === 'AMBARBOX' || text.includes('AMBAR BOX') || text.includes('AMBARBOX')) return 'AMBAR BOX';
   if (['AGATABOX', 'AGATASCLOSE', 'AGATASOPEN', 'ASTORGA'].includes(code) || text.includes('AGATA BOX')) return 'AGATA BOX';
@@ -421,6 +426,25 @@ function buildAwningSuggestion(line, model, index) {
     curtainWindowCorner: extracted.curtainWindowCorner,
     curtainWindowFloorHeight: extracted.curtainWindowFloorHeight,
     curtainWindowHeight: extracted.curtainWindowHeight,
+    ...(model === 'SOLAPAS' ? {
+      solapas: Array.from({ length: Math.max(1, Number(line.solapasCount || line.quantity) || 1) }, (_, idx) => ({
+        nombre: letter(idx),
+        largo: null,
+        anchoIzq: null,
+        anchoDer: null,
+        oblicua: false,
+        velcroIzqTipo: 'BRAVO',
+        velcroIzqLado: 'POR REVÉS',
+        velcroIzqColor: 'BLANCO',
+        velcroIzqAncho: 5,
+        velcroDerIgual: true,
+        velcroDerTipo: 'BRAVO',
+        velcroDerLado: 'POR REVÉS',
+        velcroDerColor: 'BLANCO',
+        velcroDerAncho: 5
+      })),
+      bastilla: false
+    } : {}),
     fabric: '',
     valanceFabric: '',
     structureNotes: model === 'SELENA' ? 'BRAZOS STOR · PIEZAS STOR BARANDILLA' : '',
