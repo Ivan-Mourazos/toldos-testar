@@ -1,8 +1,5 @@
-// Uso: node scripts/bambalinas/motivos.mjs formas.json
 // De cada forma del catálogo (catalogo.mjs): el borde de abajo como un camino de izquierda a derecha y el paso con
 // que se repite (el desplazamiento con el que el borde coincide consigo mismo).
-import fs from 'node:fs';
-
 const TOL = 0.1;   // cm
 
 /** El borde de abajo: sin el techo ni los lados rectos de las puntas, encadenado de izquierda a derecha. */
@@ -59,16 +56,6 @@ export function pasoDe(camino, ancho) {
   // El primer mínimo que casi coincide; si no hay, el mejor.
   const bueno = resultados.find(([, e], k) => e < 0.08 && (resultados[k + 1]?.[1] ?? Infinity) >= e && (resultados[k - 1]?.[1] ?? Infinity) >= e);
   return bueno ?? resultados.reduce((a, b) => (b[1] < a[1] ? b : a));
-}
-
-if (import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/').split('/').pop())) {
-  for (const f of formas) {
-    const { camino, sueltos } = bordeDeAbajo(f);
-    const [p, e] = pasoDe(camino, f.ancho);
-    const ys = camino.map((q) => q[1]);
-    console.log(f.nombre.padEnd(15), 'paso', p.toFixed(2), 'error', e.toFixed(3), '| abajo', Math.min(...ys).toFixed(2), 'arriba', Math.max(...ys).toFixed(2),
-      '| empieza', camino[0].map((v) => v.toFixed(2)).join(','), 'acaba', camino.at(-1).map((v) => v.toFixed(2)).join(','), sueltos ? `(${sueltos} sueltos)` : '');
-  }
 }
 
 /** El paso afinado: el de menos error cerca del primero que coincide. */
