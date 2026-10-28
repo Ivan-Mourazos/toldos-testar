@@ -41,11 +41,19 @@ describe('Embudo de descarga · dibujos de oficina del 28/10/2026', () => {
     }
   });
 
-  it('AR2600169: rectángulo de 69 × 120 y sus tres marcas de confección', () => {
-    const [p] = piezasEmbudo({ embudo: recto });
-    expect([p.largo, p.alto]).toEqual([690, 1200]);
-    expect(p.geometria.lineas.filter(l => l.capa === 'ROTULADOR')).toHaveLength(3);
-    expect(p.geometria.textos.map(t => t.valor)).toContain('B.N (10)');
+  it('AR2600169: 70 × 116, E.CINTA (25) arriba suma 6 y B.N (10) abajo 10; rayas al doble (20 y 104)', () => {
+    const piezas = piezasEmbudo({ embudo: recto }), [p] = piezas;
+    expect(piezas).toHaveLength(1);
+    expect([p.largo, p.alto]).toEqual([700, 1160]);
+    const rot = p.geometria.lineas.filter(l => l.capa === 'ROTULADOR');
+    expect(rot.filter(l => l.y1 === l.y2).map(l => l.y1).sort((a, b) => a - b)).toEqual(oficina.recto.medido.rotuladorDesdeAbajo.map(y => y * 10));
+    expect(rot.filter(l => l.x1 === l.x2).map(l => l.x1)).toEqual([40]);
+    expect(p.geometria.textos.map(t => t.valor)).toEqual(expect.arrayContaining(['B.N (10)', 'E.CINTA (25)', 'MORDAZA (25) CON CINTA DE 95 CM METIDA EN ENTRADA']));
+  });
+  it('AR2506008: en el recto el refuerzo es una B.N (10) en cada boca, sin tiras aparte (120 → 140)', () => {
+    const piezas = piezasEmbudo({ embudo: { ...recto, alto: 120, contornoArriba: 63, remateArriba: 'REFUERZO 10', remateAbajo: 'REFUERZO 10' } });
+    expect(piezas).toHaveLength(1);
+    expect([piezas[0].largo, piezas[0].alto]).toEqual([670, 1400]);
   });
 
   it('calcula, normaliza y genera corte y plano sin reservar ningún material', () => {
@@ -84,9 +92,9 @@ describe('Embudo de descarga · dibujos de oficina del 28/10/2026', () => {
     expect(calculateOrder(pedido(conico, 1.5)).ofs[0].calculation.valid).toBe(false);
   });
 
-  it('AR2600169: genera también su plano completo y marca bastillas a 10 y 110 cm', () => {
+  it('AR2600169: genera también su plano completo y marca los remates a 104 y 20 cm', () => {
     const [p] = piezasEmbudo({ embudo: recto });
-    expect(p.geometria.lineas.filter(l => l.capa === 'ROTULADOR' && l.y1 === l.y2).map(l => l.y1)).toEqual([1100, 100]);
+    expect(p.geometria.lineas.filter(l => l.capa === 'ROTULADOR' && l.y1 === l.y2).map(l => l.y1)).toEqual([1040, 200]);
     const r = generarCorteLona(pedido(recto, 1), { ofStockSacos: '2600001' });
     expect(r.avisos).toEqual([]);
     expect(r.plano[0].dxf).toContain('B.N (10)');

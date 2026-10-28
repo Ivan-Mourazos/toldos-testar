@@ -37,7 +37,10 @@ Pieza rectangular: ancho = contorno + 3 de cierre; alto = alto + las bastillas (
 derecho; a veces B.N(9) o B.N(4,5)), con rayas de rotulador a lo que mide cada bastilla. «E.CINTA (25)»: la entrada
 de la cinta; «MORDAZA (25) CON CINTA BLANCA DE 95 CM METIDA EN ENTRADA».
 
-AR2600169: perímetro 66, alto 100 → 69 × 120.
+AR2600169 (plano revisado con Iván, 28/10/2026): perímetro 66, alto 100, cierre 4 → **70 × 116**. Cada boca añade su
+remate (B.N (10) abajo = 10; E.CINTA (25) arriba = 6) y la raya de rotulador va al **doble** de lo añadido, donde llega
+el borde doblado: a 20 desde abajo y a 12 desde arriba (104). En el recto, «refuerzo» es una B.N (10) en cada boca, sin
+tiras aparte (AR2506008: 120 → 140). AR2601883: 190 → 204,5 (B.N 10 + 4,5).
 
 ## Lo que pedirá la tarjeta
 

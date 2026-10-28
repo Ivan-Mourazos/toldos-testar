@@ -1,4 +1,4 @@
-import { embudoIssues, etiquetasEmbudo, normalizeEmbudo } from '../embudoConfiguration.js';
+import { ENTRADA_CINTA_CM, embudoIssues, etiquetasEmbudo, normalizeEmbudo } from '../embudoConfiguration.js';
 import { anchoArial } from './texto.js';
 
 const grados = (a) => a * 180 / Math.PI;
@@ -28,26 +28,20 @@ export function piezasEmbudo({ embudo, letra = 'A' }) {
   if (g.mayorAbajo) textos.push('BOCA MAYOR ABAJO');
   const linea = (capa, a, b) => ({ capa, x1: a[0], y1: a[1], x2: b[0], y2: b[1] });
   if (e.forma === 'RECTO') {
-    const w = (e.contornoArriba + e.cierre) * 10, h = e.alto * 10 + bastilla('Arriba') + bastilla('Abajo');
+    // AR2600169 (Iván, 28/10/2026): cada boca añade su remate (B.N (10) = 10, E.CINTA (25) = 6; el refuerzo del recto
+    // es una B.N (10)) y la raya de rotulador va al doble, donde llega el borde doblado: 100 de alto → 116, rayas a 20 y 104.
+    // El cierre se marca a su medida desde el borde izquierdo.
+    const anade = (boca) => ({ BASTILLA: e[`bastilla${boca}`], 'REFUERZO 10': 10, 'ENTRADA CINTA': ENTRADA_CINTA_CM })[e[`remate${boca}`]] * 10 || 0;
+    const w = (e.contornoArriba + e.cierre) * 10, h = e.alto * 10 + anade('Arriba') + anade('Abajo');
     const lineas = [linea('DISCO1', [0, 0], [w, 0]), linea('DISCO1', [w, 0], [w, h]),
       linea('DISCO1', [w, h], [0, h]), linea('DISCO1', [0, h], [0, 0])];
-    if (e.cierre > 0) lineas.push(linea('ROTULADOR', [e.contornoArriba * 10, 0], [e.contornoArriba * 10, h]));
-    for (const [boca, y] of [['Arriba', h - bastilla('Arriba') - (refuerzo('Arriba') ? 100 : 0)],
-      ['Abajo', bastilla('Abajo') + (refuerzo('Abajo') ? 100 : 0)]]) {
-      if (bastilla(boca) || refuerzo(boca)) {
-        if (y <= 0 || y >= h) throw new Error('El refuerzo no cabe en el alto del embudo.');
-        lineas.push(linea('ROTULADOR', [0, y], [w, y]));
-      }
+    if (e.cierre > 0) lineas.push(linea('ROTULADOR', [e.cierre * 10, 0], [e.cierre * 10, h]));
+    for (const [boca, y] of [['Arriba', h - 2 * anade('Arriba')], ['Abajo', 2 * anade('Abajo')]]) {
+      if (!anade(boca)) continue;
+      if (y <= 0 || y >= h) throw new Error('El remate no cabe en el alto del embudo.');
+      lineas.push(linea('ROTULADOR', [0, y], [w, y]));
     }
-    const piezas = [pieza(`${letra} EMBUDO`, { lineas, arcos: [], textos: [] }, textos)];
-    for (const boca of ['Arriba', 'Abajo']) if (refuerzo(boca)) {
-      const largo = e.contornoArriba * 10;
-      piezas.push({ ...pieza(`${letra} REF. ${boca.toUpperCase()}`, {
-        lineas: [linea('DISCO1', [0, 0], [largo, 0]), linea('DISCO1', [largo, 0], [largo, 100]),
-          linea('DISCO1', [largo, 100], [0, 100]), linea('DISCO1', [0, 100], [0, 0])], arcos: [], textos: []
-      }, ['REF.(10)', 'REF. POR EL DERECHO']), refuerzo: boca.toLowerCase() });
-    }
-    return piezas;
+    return [pieza(`${letra} EMBUDO`, { lineas, arcos: [], textos: [] }, textos)];
   }
   const R = g.radioExterior * 10, r = g.radioInterior * 10, angulo = grados(g.angulo);
   const grande = g.mayorAbajo ? 'Abajo' : 'Arriba', pequena = g.mayorAbajo ? 'Arriba' : 'Abajo';

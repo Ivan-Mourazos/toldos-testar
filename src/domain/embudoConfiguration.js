@@ -1,5 +1,7 @@
 // Iván, 28/10/2026: embudos de descarga de solo PVC; la cinta la mide el cliente.
-export const REMATES_EMBUDO = ['REFUERZO 10', 'BASTILLA', 'NADA'];
+export const REMATES_EMBUDO = ['REFUERZO 10', 'BASTILLA', 'ENTRADA CINTA', 'NADA'];
+// AR2600169 (Iván, 28/10/2026): la entrada de la cinta de 25 añade 6 cm a la boca.
+export const ENTRADA_CINTA_CM = 6;
 export const SUJECIONES_EMBUDO = ['MORDAZA', 'CARRACA', 'HEBILLA', 'OJALES Y GOMA', 'VELCRO', 'NINGUNA'];
 
 /** @param {any} raw @returns {import('../client/types').EmbudoConfiguration} */
@@ -42,10 +44,12 @@ export function embudoIssues(raw = {}) {
 
 export function etiquetasEmbudo(raw = {}) {
   const e = normalizeEmbudo(raw), n = (v) => Number(v).toLocaleString('es-ES');
+  // En el recto el refuerzo es una bastilla de 10 (AR2506008: «refuerzo arriba y abajo» = B.N.(10)).
   const remate = (boca) => e[`remate${boca}`] === 'BASTILLA' ? `B.N (${n(e[`bastilla${boca}`])})`
-    : e[`remate${boca}`] === 'REFUERZO 10' ? 'REF.(10)' : 'AL CORTE';
+    : e[`remate${boca}`] === 'REFUERZO 10' ? (e.forma === 'RECTO' ? 'B.N (10)' : 'REF.(10)')
+    : e[`remate${boca}`] === 'ENTRADA CINTA' ? `E.CINTA (${n(e.anchoCinta)})` : 'AL CORTE';
   const cinta = e.sujecion === 'NINGUNA' ? [] : e.forma === 'RECTO'
-    ? [`E.CINTA (${n(e.anchoCinta)})`, `${e.sujecion} (${n(e.anchoCinta)}) CON CINTA BLANCA DE ${n(e.largoCinta)} CM METIDA EN ENTRADA`]
+    ? [`${e.sujecion} (${n(e.anchoCinta)}) CON CINTA DE ${n(e.largoCinta)} CM METIDA EN ENTRADA`]
     : [`CINTA (${n(e.anchoCinta)}) BLANCA DE ${n(e.largoCinta)} CM`,
       e.sujecion === 'MORDAZA' ? `MORDAZA(${n(e.anchoCinta)}) CON CINTA DE 12 CM` : `${e.sujecion} (${n(e.anchoCinta)})`];
   return { arriba: remate('Arriba'), abajo: remate('Abajo'), cierre: `CERRAR ${n(e.cierre)} CM`, cinta };
