@@ -177,6 +177,10 @@ El “terminado” es el que suele cuadrar con el Excel. El corte es el contorno
 
 **Son fórmulas del cuerpo principal, con las excepciones detalladas más abajo; no generan por sí solas el juego completo de piezas.** En las envolventes el margen habitual añade un centímetro al largo y 6,6 cm al ancho, repartido entre los bordes. En los techos el corte añade cinco centímetros al largo de la hoja y 6,6 al ancho. No se deben aplicar los mismos márgenes a un canalón ni a una cortina.
 
+**Paños unidos de dos en dos** (Tamara por Iván, 28/10/2026): dos paños seguidos a lo largo con una raya de rotulador
+en medio, para envarillar dos de un golpe. Siempre en la 420102; en la 420150, solo las referencias de menos de 5 m de
+largo (0109 y 0116). En los lotes antiguos la 0116 iba suelta, pero «pueden ir unidos»; la 0109 era una sola unidad.
+
 **Techos de NT 600 (430125 / 430127), tres en el ancho del rollo** (Tamara por Iván, 28/10/2026: «son 691 y se corta a
 68, 68 × 3 = 204»). El corte normal es T + 9,1 = 69,1, pero cuando van tres apilados en el ancho del rollo se cortan a
 68 para que quepan justos en 204. Comprobado en los lotes de 2026: todas las pilas de tres van a 680 mm (una a 681);
