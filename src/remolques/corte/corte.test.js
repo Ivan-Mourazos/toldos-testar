@@ -449,3 +449,12 @@ describe('generarCorteRemolques', () => {
     expect(textos.some((t) => /BAQUETÓN 153 × 120 × 10 × 2/.test(t))).toBe(true);
   });
 });
+
+describe('ventana del delantero', () => {
+  it('va a 5 cm del terminado de arriba, que está 1 cm por dentro del corte (Iván, 28/10/2026: «a 4 desde el borde, pero es desde la línea rosa, 5 cm»)', () => {
+    const e = AR2604412.elementos.find((x) => x.input.ventana);
+    const { p } = piezasLona({ ...e, of: 'x', input: { ...e.input, tipoPerfil: 'TIPO 01' } }).d;
+    const ventana = p.rot.filter(([x1, , x2]) => Math.abs(x2 - x1) === e.input.ventanaAncho * 10);
+    expect(Math.max(...ventana.map(([, y]) => y))).toBe(p.h - 60);
+  });
+});

@@ -9,8 +9,8 @@
 //   aguas: el hombro − 6).
 // - Ollaos a 4,5 cm del borde, la lona hecha centrada en cada paño; en las orejas, dos más (4,5 y 11,5).
 // - Marcas de rotulador: centro de cada cabeza; en el contorno, el centro y los hombros en los dos extremos.
-// - Ventana: rectángulo de rotulador en el delantero, centrado, con las esquinas de arriba a 4 cm en
-//   vertical de lo que tienen encima; y su tapa (ventana + 3 cm), una por ventana, donde mejor quepa.
+// - Ventana: rectángulo de rotulador en el delantero, centrado, con las esquinas de arriba a 5 cm en
+//   vertical del terminado de lo que tienen encima; y su tapa (ventana + 3 cm), una por ventana, donde mejor quepa.
 // - Contorno girado si no cabe a lo ancho del rollo; si no cabe de ninguna forma, con empate (ver abajo).
 // - Todas las piezas, colocadas de la forma que menos rollo gaste.
 // - Remolque distinto detrás: contorno en trapecio (lo que da la web delante y detrás) y trasero con el
@@ -24,6 +24,8 @@ import { anchoArial } from '../../domain/corteLona/texto.js';
 import { buscarColocacion, PRESUPUESTO_TETRIS } from '../../domain/corteLona/colocacionTetris.ts';
 
 const ROLLO = 2500, BORDE = 45, R_OLLAO = 2.5;
+// La rosa de terminado de las cabezas va 1 cm por dentro del corte de arriba (plano.js); la ventana, 5 cm por debajo.
+const TERMINADO_ARRIBA = 10, VENTANA_AL_TERMINADO = 50;
 const r1 = (v) => Math.round(v * 10) / 10;
 const completas = (eje, guardadas) => (eje && eje.n > guardadas.length ? Array.from({ length: eje.n }, (_, i) => r1(guardadas[0] + eje.dist * i)) : guardadas);
 const PUENTES_HPL = /PUENTES HIJOS DE PEDRO LOPEZ/;
@@ -201,9 +203,10 @@ function cabeza(f, w, h, oreja, ollaos, hecha, ventana, cremallera = false, puen
     }
   }
   if (ventana) {
-    // Las esquinas de arriba de la ventana, a 4 cm en vertical de lo que tienen encima (Iván, 20/10/2026).
+    // Las esquinas de arriba de la ventana, a 5 cm en vertical del remolque terminado, que va 1 cm por dentro del
+    // corte de arriba: a 6 del corte (Iván, 28/10/2026; antes, 4 del corte).
     const [va, vh] = ventana, xa = x0 + (w - va) / 2;
-    const arriba = Math.min(encima(xa), encima(xa + va)) - 40;
+    const arriba = Math.min(encima(xa), encima(xa + va)) - VENTANA_AL_TERMINADO - TERMINADO_ARRIBA;
     for (const [a, b, c, d] of [[xa, arriba - vh, xa + va, arriba - vh], [xa + va, arriba - vh, xa + va, arriba], [xa + va, arriba, xa, arriba], [xa, arriba, xa, arriba - vh]]) marca(p, a, b, c, d);
   }
   return { p, altoOreja, hombro };

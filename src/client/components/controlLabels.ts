@@ -11,6 +11,7 @@ const preferredLabels: Record<string, string> = {
   'ELECTRA': 'Electra',
   'SELENA': 'Selena',
   'CAMBIO CORTINA': 'Cambio de cortina',
+  'SOLAPAS': 'Solapas',
   'CAMBIO TELA': 'Cambio de tela',
   'CAMBIO ANTICA': 'Cambio antica',
   'HERA': 'HERA',
@@ -58,6 +59,7 @@ const legacyModelNames: Record<string, string> = {
   'CAMBIO TELA': 'CAMBIO DE TELA A TOLDO DE FACHADA',
   ENROLLABLE: 'LONA PARA PUERTA ENROLLABLE',
   BAMBALINA: 'BAMBALINA NUEVA',
+  SOLAPAS: 'SOLAPA CON VELCRO PARA TOLDOS CORTINA',
   'CAMBIO ANTICA': 'CAMBIO DE TELA A TOLDO ANTICA',
   HERA: 'SCREEN ROLL-SYSTEM',
   SELENA: 'STOR-21 (LLAZA)',
@@ -84,7 +86,7 @@ export function controlLabel(value: string) {
 // ("MODELO GALICIA") o la descripción del artículo ("CORTINA UNIVERSAL").
 // Se revisa en cada modelo al darlo por terminado (Iván, 22/09/2026).
 const redundantLegacyNames = new Set([
-  'CORTINA', 'CAMBIO CORTINA', 'CAMBIO TELA', 'CAMBIO ANTICA', 'ENROLLABLE', 'BAMBALINA', 'GALICIA', 'PUNTO RECTO', 'ANTICA'
+  'CORTINA', 'CAMBIO CORTINA', 'SOLAPAS', 'CAMBIO TELA', 'CAMBIO ANTICA', 'ENROLLABLE', 'BAMBALINA', 'GALICIA', 'PUNTO RECTO', 'ANTICA'
 ]);
 
 export function rpsModelName(value: string) {

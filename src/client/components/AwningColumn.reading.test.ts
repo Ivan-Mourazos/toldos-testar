@@ -27,7 +27,18 @@ const noop = () => undefined;
 const extraSamples: Record<string, Partial<Awning>> = {
   'CAMBIO CORTINA': { of: '0000001', model: 'CAMBIO CORTINA', workType: 'FABRIC_ONLY', units: 1, width: 300, projection: 250, device: '', curtainHasWindow: false, curtainFinish: 'NORMAL' },
   'CAMBIO ANTICA': { of: '0000002', model: 'CAMBIO ANTICA', workType: 'FABRIC_ONLY', units: 1, width: 380, projection: 70, device: '', anticaVariant: 'TUBO 50X30 SIN BAMBA' },
-  BAMBALINA: { of: '0000003', model: 'BAMBALINA', workType: 'FABRIC_ONLY', units: 1, width: 300, valanceHeight: 30, valanceCurve: 'RECTA', device: '', valanceFabric: '', remate: 'COMO TELA' }
+  BAMBALINA: { of: '0000003', model: 'BAMBALINA', workType: 'FABRIC_ONLY', units: 1, width: 300, valanceHeight: 30, valanceCurve: 'RECTA', device: '', valanceFabric: '', remate: 'COMO TELA' },
+  SOLAPAS: {
+    of: '0000004', model: 'SOLAPAS', workType: 'FABRIC_ONLY', units: 1, device: '', valanceFabric: '', bastilla: false,
+    solapas: [
+      {
+        nombre: 'A', largo: 275, oblicua: false, ancho: 51, ancho2: 51,
+        velcroTipo: 'BRAVO', velcroLado: 'POR REVÉS', velcroColor: 'BLANCO', velcroAncho: 5,
+        velcro2Tipo: 'BRAVO', velcro2Lado: 'POR REVÉS', velcro2Color: 'BLANCO', velcro2Ancho: 5,
+        velcroDerDistinto: false
+      }
+    ]
+  }
 };
 
 // Texto libre de prueba para Obs. estructura: mismo formato que useDraft/AwningColumn
@@ -312,7 +323,9 @@ function maxSample(model: string): Awning {
 const excludedKeys = new Set([
   'id',                // identificador interno de React/estado, no aparece en la tarjeta
   'workType',           // metadato de las muestras de tela suelta (fabricOnly), no se enseña
-  'reglasModificadas'   // conmuta la sección de excepciones; no se enseña como "true"/"false"
+  'reglasModificadas',  // conmuta la sección de excepciones; no se enseña como "true"/"false"
+  'solapas',            // lista de objetos de SOLAPAS; sus campos se comprueban uno a uno en expectControlsKept
+  'bastilla'            // booleano de SOLAPAS; se enseña como segmentado AL CORTE / CON BASTILLA
 ]);
 // fabric y valanceFabric no se enseñan tal cual: FabricCombobox los pasa por
 // fabricSelectionLabel(), que separa el código|||ancho|||color guardado en un texto legible
@@ -430,8 +443,8 @@ describe('tarjeta de lectura: salen todos los datos (rediseño §5)', () => {
   // Recorre calculateOrder para cada modelo (sampleAwnings): con la suite completa en
   // paralelo, otros ficheros compiten por CPU y el valor por defecto (5 s) a veces no
   // llega, aunque en solitario tarda ~1 s.
-  it('cubre los 22 modelos', () => {
-    expect(models).toHaveLength(22);
+  it('cubre los 23 modelos', () => {
+    expect(models).toHaveLength(23);
     for (const model of models) expect(samplesFor(model).length, model).toBeGreaterThan(0);
   }, 20000);
 

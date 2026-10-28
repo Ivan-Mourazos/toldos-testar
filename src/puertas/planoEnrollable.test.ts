@@ -181,7 +181,9 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
     ['apilable', apilable, 'deba5a3bd8eee4e66bb12d6e9abbcae394cdb7b8c588a1ce585da64916af991a'],
     // Tetris coloca las dos E.T. sobre los paños: baja de 711 a 700 cm sin cambiar el alzado.
     // 27/10/2026 (AR2605249): saco de 2 × (rematado + 2) y la raya de soldar el saco, 2 cm sobre el bajo del paño.
-    ['autorreparable', autorreparable, '00004667d0375f068f126f5c0e2cd8e2261a8040e7a830810e07fcb09ec7e2c5'],
+    // Se elimina la segunda raya del saco y las dos referencias fijas de la regla anterior (Iván, 27/10/2026).
+    // Empates: una raya en el paño superior y flecha hacia el borde a media escala; abajo solo mininúmeros.
+    ['autorreparable', autorreparable, 'c75fbad6bb2eac7e6a7f5b4d4773c616be245d738f371933c5d4b9eb64c3cb8d'],
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {
     const pedido = { ...pedidoDe('AR2600001', crear()), cabecera: { clienteRps: { codigo: '009999' } } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido, cabecera })).digest('hex')).toBe(hash);
@@ -211,7 +213,7 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
       corte: { ...vacio, lineas: [{ capa: 'DISCO1', x1: 20, y1: 20, x2: 23, y2: 22 }] },
       zonas: { toldos: { x0: 9, y0: 9, x1: 15, y1: 13 }, corte: { x0: 19, y0: 19, x1: 24, y1: 23 } } };
     const dxf = escribirDxfPlano(toldo, { pedido: 'AR2600001', of: '0232309', ...cabecera, fecha: '22/10/26', pagina: '1/1', material: 'LAC900 BLANCO' }).dxf;
-    expect(createHash('sha256').update(dxf).digest('hex')).toBe('6383dcfb81e796a03e5ad233215521ac7944ad261b93c88c39dac25c2f8ca6c6');
+    expect(createHash('sha256').update(dxf).digest('hex')).toBe('957e61719ec90acc9aab089e637e2205ec1d128530949f4a70b543ec44615ff3');
   });
 });
 

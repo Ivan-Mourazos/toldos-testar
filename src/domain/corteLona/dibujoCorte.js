@@ -1,11 +1,52 @@
 import { AJUSTES_POR_DEFECTO } from './despiece.js';
 import { anchoArial } from './texto.js';
+import { bordeOndulado, HOLGURA_ONDA_MM } from './bambalina.js';
+
+// La tira lleva B.N(2) en cada punta (tiraExtraLargoCm): las ondas, enteras, entre los dos.
+const MARGEN_ONDA = (AJUSTES_POR_DEFECTO.tiraExtraLargoCm / 2) * 10;
 
 /** Líneas de corte (DISCO1), del rotulador y textos de las piezas ya colocadas. */
 export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
-  const horizontales = []; const verticales = [];
+  const horizontales = []; const verticales = []; const oblicuas = [];
   for (const p of colocadas) {
     const [x0, y0, x1, y1] = [p.x, p.y, p.x + p.ancho, p.y + p.hueco];
+    if (p.oblicua) {
+      const { altoIzq, altoDer } = p.oblicua;
+      if (p.girada) {
+        // Girada 90° de verdad, como las marcas (unionesPropias): el lado recto a la derecha. Transpuesta saldría en
+        // espejo, con la cara cambiada (Iván, 27/10/2026, la D de AR2604205).
+        verticales.push([x1, y0, y1]);
+        if (y0 > 0 || p.aparte) horizontales.push([y0, x1 - altoIzq, x1]);
+        if (y1 < anchoRolloMm || p.aparte) horizontales.push([y1, x1 - altoDer, x1]);
+        oblicuas.push({ capa: 'DISCO1', x1: x1 - altoIzq, y1: y0, x2: x1 - altoDer, y2: y1 });
+      } else {
+        if (y0 > 0 || p.aparte) horizontales.push([y0, x0, x1]);
+        verticales.push([x0, y0, y0 + altoIzq], [x1, y0, y0 + altoDer]);
+        oblicuas.push({ capa: 'DISCO1', x1: x0, y1: y0 + altoIzq, x2: x1, y2: y0 + altoDer });
+      }
+      continue;
+    }
+    if (p.onda) {
+      // Bambalina con onda (bambalina.js): el borde de abajo, con su forma y con la cuchilla, aunque vaya en el orillo;
+      // las ondas enteras entre los B.N(2) de las puntas. Girada, el de abajo queda a la derecha.
+      const onda = bordeOndulado(p.onda, p.largo, MARGEN_ONDA).map(([u, v]) => [u, v + HOLGURA_ONDA_MM]);
+      const enRollo = ([u, v]) => (p.girada ? [x0 + p.alto - v, y0 + u] : [x0 + u, y0 + v]);
+      for (let k = 0; k < onda.length - 1; k++) {
+        const [[a, b], [c, d]] = [enRollo(onda[k]), enRollo(onda[k + 1])];
+        oblicuas.push({ capa: 'CUTTER', x1: a, y1: b, x2: c, y2: d });
+      }
+      // Los lados, del arranque de la onda en las puntas hasta arriba; y arriba.
+      const nivel = onda[0][1];
+      if (p.girada) {
+        if (y0 > 0 || p.aparte) horizontales.push([y0, x0, x1 - nivel]);
+        if (y1 < anchoRolloMm || p.aparte) horizontales.push([y1, x0, x1 - nivel]);
+        verticales.push([x0, y0, y1]);
+      } else {
+        verticales.push([x0, y0 + nivel, y1], [x1, y0 + nivel, y1]);
+        if (y1 < anchoRolloMm || p.aparte) horizontales.push([y1, x0, x1]);
+      }
+      continue;
+    }
     // Los orillos del rollo no se cortan; las piezas «aparte» (para cortar de un resto) sí, por los
     // cuatro lados, porque no se apoyan en el orillo.
     if (y0 > 0 || p.aparte) horizontales.push([y0, x0, x1]);
@@ -14,7 +55,8 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
   }
   const lineas = [
     ...unir(horizontales).map(([y, a, b]) => ({ capa: 'DISCO1', x1: a, y1: y, x2: b, y2: y })),
-    ...unir(verticales).map(([x, a, b]) => ({ capa: 'DISCO1', x1: x, y1: a, x2: x, y2: b }))
+    ...unir(verticales).map(([x, a, b]) => ({ capa: 'DISCO1', x1: x, y1: a, x2: x, y2: b })),
+    ...oblicuas
   ];
   const textos = [];
   // Cuántos paños con empate tiene cada toldo (A1, A2…), para saber con quién se une cada uno.
@@ -27,7 +69,7 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
   // material, y la OF en la primera de cada cortina, como en las puertas. Primera: al principio del rollo, arriba,
   // y antes un paño que la bamba, que es estrecha (en el corte a mano van en el A1).
   const esBamba = (p) => p.nombre.includes('BAMBA');
-  const deCortina = colocadas.filter((p) => p.rotuloCortina)
+  const deCortina = colocadas.filter((p) => p.rotuloCortina && !p.soloNombre)
     .sort((a, b) => esBamba(a) - esBamba(b) || a.x - b.x || (b.y + b.hueco) - (a.y + a.hueco));
   const primeraDe = new Map();
   for (const p of deCortina) if (!primeraDe.has(p.letra)) primeraDe.set(p.letra, p);
@@ -53,48 +95,80 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
       if (m === 'tira') marca(ajustes.varillaTiraMm, 20);
     }
     if (p.sinRotulo) continue;
+    if (p.onda) {
+      // Tira con onda: nombre y OF en fila a lo largo, en la franja que queda entre lo más alto de la onda y el borde
+      // de arriba, sin pisar la onda.
+      const fondo = HOLGURA_ONDA_MM + Math.max(...bordeOndulado(p.onda, p.largo, MARGEN_ONDA).map(([, v]) => v));
+      const franja = Math.max(1, p.alto - fondo), lineasTexto = [p.nombre, ...(p.of ? [p.of] : [])];
+      const h = Math.min(300, franja * 0.6, ...lineasTexto.map((v) => (p.largo / lineasTexto.length) * 0.8 / anchoArial(v, 1)));
+      const v = fondo + franja / 2;
+      lineasTexto.forEach((valor, i) => {
+        const u = (p.largo * (i + 0.5)) / lineasTexto.length;
+        textos.push(p.girada
+          ? { capa: 'texto', x: x0 + p.alto - v, y: y0 + u, h, valor: valor.toUpperCase(), giro: 90, centrado: true }
+          : { capa: 'texto', x: x0 + u, y: y0 + v, h, valor: valor.toUpperCase(), centrado: true });
+      });
+      continue;
+    }
     // Textos centrados en la pieza y en mayúsculas (Iván, 19/10/2026); a lo largo de la pieza,
     // girados 90° si la pieza está girada. Con REVÉS, nombre y REVÉS quedan a los dos lados del centro.
     // Los sacos de stock llevan la OF de stock, SACO, su medida y STOCK (como AR2602119).
-    // Cortina: todos los rótulos de 15 cm, también en la bamba, como el corte a mano de AR2605193 (Iván, 23/10/2026).
-    let alto = p.saco ? Math.min(150, Math.min(p.ancho, p.hueco) / 8) : p.rotuloCortina ? Math.min(150, Math.min(p.ancho, p.hueco) * 0.7)
-      : Math.min(300, Math.min(p.ancho, p.hueco) / 4);
+    // Cortina: todos los rótulos hasta 25 cm, también en la bamba (Iván, 27/10/2026: más grandes que los 15 de AR2605193).
+    // En la oblicua cuenta su ancho estrecho: con los textos en su centro, lo que cabe sin salirse por la punta estrecha.
+    const menor = p.oblicua
+      ? Math.max(1, 2 * Math.min(p.oblicua.altoIzq, p.oblicua.altoDer) - (p.oblicua.altoIzq + p.oblicua.altoDer) / 2)
+      : Math.min(p.ancho, p.hueco);
+    let alto = p.saco ? Math.min(150, menor / 8) : p.rotuloCortina ? Math.min(250, menor * 0.7) : Math.min(300, menor / 4);
     // La bamba de cortina rotula por debajo de la raya de la varilla. La de toldo, como el resto: en toda la pieza,
     // aunque pise el rotulador, sin llegar a las líneas de corte (Iván, 23/10/2026: «pueden ir más grandes»).
     const franja = !p.nombre.includes('BAMBA') || !p.rotuloCortina ? null : Math.max(1, p.alto - p.marcas[0].mm);
-    const [cx, cy] = franja === null ? [x0 + p.ancho / 2, y0 + p.hueco / 2]
+    const [cx, cy] = p.oblicua
+      ? (p.girada ? [x0 + p.ancho - (p.oblicua.altoIzq + p.oblicua.altoDer) / 4, y0 + p.hueco / 2] : [x0 + p.ancho / 2, y0 + (p.oblicua.altoIzq + p.oblicua.altoDer) / 4])
+      : franja === null ? [x0 + p.ancho / 2, y0 + p.hueco / 2]
       : p.girada ? [x0 + p.alto - franja / 2, y0 + p.largo / 2] : [x0 + p.largo / 2, y0 + franja / 2];
     const lineasTexto = p.saco ? [p.of, 'SACO', p.medida, 'STOCK']
       : p.rotuloCortina ? [p.rotulo ?? p.nombre, ...(conOf.has(p) && p.of ? [p.of] : []), ...(p === deCortina[0] ? ['REVÉS'] : [])]
       : [p.nombre, ...(p.of ? [p.of] : []), ...(p.nombre.includes('BAMBA') || p.sinReves ? [] : ['REVÉS'])];
-    const espacioTexto = p.girada ? p.hueco : p.ancho;
-    const altoLibre = franja === null ? Math.min(p.ancho, p.hueco) * 0.9 / ((lineasTexto.length - 1) * 1.6 + 1)
+    // Cortina y solapas: a lo largo del lado largo de la pieza tal como queda en el rollo, vaya girada o no (los
+    // laterales de la ventana son más altos que anchos; Iván, 27/10/2026: A3 y A4 salían montados).
+    const vertical = p.rotuloCortina && !p.oblicua ? p.hueco > p.ancho : p.girada;
+    const espacioTexto = vertical ? p.hueco : p.ancho;
+    const altoLibre = franja === null ? menor * 0.9 / ((lineasTexto.length - 1) * 1.6 + 1)
       : franja * 0.8 / ((lineasTexto.length - 1) * 1.6 + (p.rotuloCortina ? 1 : 2));
     alto = Math.min(alto, altoLibre,
       ...lineasTexto.map((v) => espacioTexto * 0.9 / anchoArial(v, 1)));
     // Piezas largas y bajas (las bandas de la cortina, las bambas): nombre, OF y REVÉS en fila, repartidos a lo largo,
     // para que vayan más grandes (Iván, 22/10/2026, como en las puertas apilables). En las de toldo, en fila siempre
     // que así salgan más grandes que uno encima de otro (Iván, 23/10/2026: «la OF la pones de lado si ves que tal»).
-    const n = lineasTexto.length, largo = p.girada ? p.hueco : p.ancho, corto = p.girada ? p.ancho : p.hueco;
-    const enFila = Math.min(p.rotuloCortina ? 150 : 300, corto * 0.7, ...lineasTexto.map((v) => (largo / n) * 0.8 / anchoArial(v, 1)));
-    if (n > 1 && (p.enFila || (!p.saco && !p.rotuloCortina && enFila > alto * 1.05))) {
+    // Cortina y solapas (Iván, 27/10/2026: más grandes): en fila o uno debajo de otro, como salgan más grandes.
+    const n = lineasTexto.length, largo = vertical ? p.hueco : p.ancho, corto = p.oblicua ? menor : vertical ? p.ancho : p.hueco;
+    const enFila = Math.min(p.rotuloCortina ? 250 : 300, corto * 0.7, ...lineasTexto.map((v) => (largo / n) * 0.8 / anchoArial(v, 1)));
+    if (n > 1 && ((p.enFila && !p.rotuloCortina) || p.oblicua || (!p.saco && enFila > alto * 1.05))) {
       const h = p.enFila && !p.rotuloCortina ? Math.min(enFila, corto * 0.4) : enFila;
       lineasTexto.forEach((valor, i) => {
         const u = (largo * (i + 0.5)) / n;
-        textos.push(p.girada
-          ? { capa: 'texto', x: x0 + p.ancho / 2, y: y0 + u, h, valor: valor.toUpperCase(), giro: 90, centrado: true }
-          : { capa: 'texto', x: x0 + u, y: y0 + p.hueco / 2, h, valor: valor.toUpperCase(), centrado: true });
+        textos.push(vertical
+          ? { capa: 'texto', x: p.oblicua ? cx : x0 + p.ancho / 2, y: y0 + u, h, valor: valor.toUpperCase(), giro: 90, centrado: true }
+          : { capa: 'texto', x: x0 + u, y: p.oblicua ? cy : y0 + p.hueco / 2, h, valor: valor.toUpperCase(), centrado: true });
       });
       continue;
     }
     lineasTexto.forEach((valor, i) => {
       const d = (i - (lineasTexto.length - 1) / 2) * alto * 1.6;   // separación desde el centro
-      textos.push(p.girada
+      textos.push(vertical
         ? { capa: 'texto', x: cx + d, y: cy, h: alto, valor: valor.toUpperCase(), giro: 90, centrado: true }
         : { capa: 'texto', x: cx, y: cy - d, h: alto, valor: valor.toUpperCase(), centrado: true });
     });
   }
-  textos.push({ capa: 'texto', x: 0, y: anchoRolloMm + 140, h: 100, valor: `${tela} · OF ${of}` });
+  // Encima del corte, centrados y tan grandes como quepan en su largo, de 10 a 20 cm: el material y, justo debajo de
+  // él, la OF (Iván, 27/10/2026).
+  const largoCorte = Math.max(0, ...colocadas.filter((p) => !p.aparte).map((p) => p.x + p.ancho));
+  let y = anchoRolloMm + 60;
+  for (const valor of [of ? `OF ${of}` : '', tela].filter(Boolean)) {
+    const h = Math.max(100, Math.min(200, (largoCorte * 0.95) / anchoArial(valor, 1)));
+    textos.push({ capa: 'texto', x: largoCorte / 2, y: y + h / 2, h, valor, centrado: true });
+    y += h + 40;
+  }
   return { lineas, textos };
 }
 

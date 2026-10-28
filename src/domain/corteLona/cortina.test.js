@@ -31,15 +31,18 @@ describe('Piezas de la cortina de PVC', () => {
     expect(pvc[0].marcas).toEqual([{ lado: 'abajo', mm: 210, retiroMm: 40 }]);
   });
 
-  it('cada banda lleva su nombre de mininúmero en la esquina del lado de la ventana, a la derecha; los laterales y el cristal, nada (AR2605193 a mano)', () => {
+  it('los mininúmeros, del 1 al 4, son las esquinas de la ventana, en las dos piezas que se sueldan en cada una; el cristal, nada (Iván, 27/10/2026, como AR2601829)', () => {
     const { pvc, cristal } = piezasCortina(base());
     const [a1, a2, a3, a4] = pvc;
     const en = (p) => p.uniones.map((u) => [u.valor, u.u, u.v]);
-    expect(en(a1)).toEqual([['A1', 3070, 545]]);
-    expect(en(a2)).toEqual([['A2', 3070, 10]]);
-    expect(en(a3)).toEqual([]);
-    expect(en(a4)).toEqual([]);
-    expect([a3, a4, ...cristal].every((p) => p.sinRotulo)).toBe(true);
+    // 1 abajo a la derecha, 2 arriba a la derecha, 3 arriba a la izquierda y 4 abajo a la izquierda.
+    expect(en(a1)).toEqual([['A4', 10, 545], ['A1', 3070, 545]]);
+    expect(en(a2)).toEqual([['A3', 10, 10], ['A2', 3070, 10]]);
+    expect(en(a3)).toEqual([['A4', 10, 10], ['A3', 10, a3.alto - 10]]);
+    expect(en(a4)).toEqual([['A1', a4.largo - 10, 10], ['A2', a4.largo - 10, a4.alto - 10]]);
+    // Los laterales con su nombre en grande, pero sin la OF ni el REVÉS; el cristal sigue sin rótulo.
+    expect([a3, a4].every((p) => p.rotuloCortina && p.soloNombre && !p.sinRotulo)).toBe(true);
+    expect(cristal.every((p) => p.sinRotulo)).toBe(true);
     expect([a1, a2, pvc[4]].every((p) => p.rotuloCortina && p.letra === 'A')).toBe(true);
     expect(pvc[4].rotulo).toBe('A');
   });
@@ -81,6 +84,21 @@ describe('Piezas de la cortina de PVC', () => {
 
   it('la bamba de otra tela sale sola, con su remate', () => {
     expect(medidas(piezasCortina(base({ soloBamba: true })).pvc)).toEqual([['A BAMBA', 308, 26.5]]);
+  });
+
+  it('cambio de cortina remachado arriba (B.N.(4,5), Iván 27/10/2026): sin raya de rotulador arriba', () => {
+    const sinVentana = piezasCortina(base({
+      caidaTela: 240, bamba: 0,
+      cortina: { abajo: 'VARILLA', arriba: 'REMACHADO', cambio: true, ventana: null, anchoCristal: 140 },
+    })).pvc;
+    expect(medidas(sinVentana)).toEqual([['A', 308, 240]]);
+    expect(sinVentana[0].marcas).toEqual([{ lado: 'abajo', mm: 70, retiroMm: 40 }]);
+
+    const conVentana = piezasCortina(base({
+      cortina: { ...base().cortina, arriba: 'REMACHADO', cambio: true },
+    })).pvc;
+    expect(conVentana[0].marcas).toEqual([{ lado: 'abajo', mm: 70, retiroMm: 40 }]);
+    expect(conVentana[1].marcas).toEqual([]);
   });
 
   it.each([

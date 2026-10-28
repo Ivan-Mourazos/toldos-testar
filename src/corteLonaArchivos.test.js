@@ -41,7 +41,7 @@ describe('Reglas y salidas del corte', () => {
     otro.awnings[0].model = 'HERA';
     expect(() => exigirCorteAlDia(otro, null)).not.toThrow();
   });
-  it.each([{ valanceCurve: 'SUAVE' }, { curtainHasWindow: true }])('permite revisar y producir junto a un toldo manual: %j', async (manual) => {
+  it.each([{ valanceCurve: 'SIN PLANTILLA' }, { curtainHasWindow: true }])('permite revisar y producir junto a un toldo manual: %j', async (manual) => {
     const otro = structuredClone(order);
     otro.awnings.push({ ...otro.awnings[0], id: 'manual', of: '0232569', ...manual });
     const estado = crearEstadoCorteLona(otro, { resultado: generarCorteLona(otro, { ofStockSacos: '0230811' }), ofStockSacos: '0230811' });

@@ -3,6 +3,7 @@
 // (DISCO1), rotulador (ROTULADOR), anotaciones y cotas; debajo el corte en el rollo.
 // Se escribe en metros sobre la presentación A4. La conversión a DWG se hará en la fase 2.
 import { AJUSTES_POR_DEFECTO } from './despiece.js';
+import { altoTiraCm, bordeOndulado } from './bambalina.js';
 import { dibujo } from './dibujoCorte.js';
 import { anchoArial } from './texto.js';
 import { piezasCortina, REGLAS_CORTINA } from './cortina.js';
@@ -26,7 +27,7 @@ const TAMANO_HOJA = 585;    // tamaño de dibujo a partir del cual los textos ya
 const ENTRE_HOJAS = 300;    // cm entre toldos de presentaciones distintas, para que no asome uno en la del otro
 
 export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales = []) {
-  const L = [], P = [], T = [], Q = [];   // en cm; se pasan a metros al final (Q: cotas)
+  const L = [], P = [], T = [], Q = [], S = [];   // en cm; se pasan a metros al final (Q: cotas; S: sombreados)
   const linea = (capa, x1, y1, x2, y2) => L.push({ capa, x1, y1, x2, y2 });
   const rect = (capa, x0, y0, x1, y1) => P.push({ capa, puntos: [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], cerrada: true });
   // Cada texto se ajusta a su hueco: si a su altura no cabe en `max` cm, se reduce (Iván: en los
@@ -77,15 +78,19 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
       escalaTexto = Math.min(1.3, Math.max(0.55, tamano(g) / 450));
       hojas.push({ toldos: g, x0: x, T: T.length, Q: Q.length });
     }
+    if (t.solapas) {
+      x += alzadoSolapas(t, corteRollo.piezas[i].piezas, x, { linea, rect, P, texto, cota, mini }) + ENTRE_TOLDOS;
+      continue;
+    }
     if (t.cortina) {
-      x += alzadoCortina(t, corteRollo.piezas[i].piezas, x, { linea, rect, texto, cota, mini }) + ENTRE_TOLDOS;
+      x += alzadoCortina(t, corteRollo.piezas[i].piezas, x, { linea, rect, texto, cota, mini, S }) + ENTRE_TOLDOS;
       continue;
     }
     const A = { ...AJUSTES_POR_DEFECTO, ...t.ajustes };
     const vertical = A.empate === 'vertical' && t.frenteTela > t.anchoRollo;
     const piezas = corteRollo.piezas[i].piezas;
     const cuerpos = piezas.filter((p) => !p.nombre.includes('BAMBA'));
-    const tiraCm = t.bamba > 0 ? t.bamba + A.tiraExtraAltoCm : 0;
+    const tiraCm = altoTiraCm(t.bamba, A.tiraExtraAltoCm, t.onda);
     const unidades = t.unidades > 1 ? [[`${t.unidades} UDS`, 15]] : [];
     const F = t.frenteTela;
     // Corte del cuerpo: con empate horizontal, el aumento para escuadrar; con vertical, los laterales.
@@ -107,13 +112,19 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
 
     if (tiraCm) {
       const tc = tiraCm / 2;
-      rect('DISCO1', tx0, 0, tx1, tiraCm);
-      rect('referencias', fx0, tc - t.bamba / 2, fx1, tc + t.bamba / 2);
+      // Con onda, el borde de abajo con su forma, como en el corte (bambalina.js), y la bamba hecha desde lo más bajo
+      // de la onda: sin bastilla, con su remate, que va aparte.
+      const borde = t.onda ? bordeOndulado(t.onda, tiraLargo * 10, (A.tiraExtraLargoCm / 2) * 10).map(([u, v]) => [tx0 + u / 10, v / 10]) : null;
+      const fondo = borde ? Math.max(...borde.map(([, v]) => v)) : 0;
+      const [h0, h1] = borde ? [0, t.bamba] : [tc - t.bamba / 2, tc + t.bamba / 2];
+      if (borde) P.push({ capa: 'DISCO1', puntos: [...borde, [tx1, tiraCm], [tx0, tiraCm]], cerrada: true });
+      else rect('DISCO1', tx0, 0, tx1, tiraCm);
+      rect('referencias', fx0, h0, fx1, h1);
       linea('ROTULADOR', fx0, tiraCm - A.varillaTiraMm / 10, fx1, tiraCm - A.varillaTiraMm / 10);
       // Tira en trozos (empate vertical): la letra en el primero y sus uniones, como las de los paños.
       const trozos = piezas.filter((q) => q.nombre.includes('BAMBA'));
-      const franja = Math.max(0.1, tiraCm - A.varillaTiraMm / 10);
-      texto(t.letra, trozos.length > 1 ? tx0 + trozos[0].largo / 20 : cx, franja / 2, Math.min(12, franja * 0.4));
+      const franja = Math.max(0.1, tiraCm - A.varillaTiraMm / 10 - fondo);
+      texto(t.letra, trozos.length > 1 ? tx0 + trozos[0].largo / 20 : cx, fondo + franja / 2, Math.min(12, franja * 0.4));
       let xt = tx0;
       trozos.slice(0, -1).forEach((q) => {
         xt += q.largo / 10;
@@ -122,10 +133,10 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
         xt -= A.empateCm;
       });
       texto(VARILLA_ABAJO, cx, tiraCm + 10, 10, 0, 'texto', F * 0.9);
-      texto('B.N(2)', cx, -12, 10, 0, 'texto', F * 0.9);
+      texto(t.onda ? `ONDA ${t.onda} · REMATE APARTE` : 'B.N(2)', cx, -12, 10, 0, 'texto', F * 0.9);
       texto('B.N(2)', tx0 - 10, tc, 10, 90);
       texto('B.N(2)', tx1 + 10, tc, 10, 90);
-      cota('cotas', fx1, tc - t.bamba / 2, fx1, tc + t.bamba / 2, t.bamba, xDer - fx1);
+      cota('cotas', fx1, h0, fx1, h1, t.bamba, xDer - fx1);
       cota('vent-pre-noimpr', tx0, 0, tx0, tiraCm, tiraCm, xIzq - tx0);
     }
 
@@ -225,7 +236,9 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
   // El cristal de las cortinas, en su rollo, debajo del corte de la lona (como AR2605080).
   const rollos = [corteRollo, trozoSeparado].filter(Boolean).map((opcion) => ({ opcion, anchoRollo }));
   rollos.push(...cristales.map((c) => ({ opcion: c.corte, anchoRollo: c.anchoRollo / 10, titulo: `CRISTAL · ${c.material}` })));
+  const tramosRollo = [];   // lo de cada rollo en L, T y Q: cada uno va en su ventana de la hoja
   for (const [i, { opcion, anchoRollo, titulo: tituloCristal }] of rollos.entries()) {
+    tramosRollo.push({ L: L.length, T: T.length, Q: Q.length });
     // El corte del bot tal cual (flujo del DWG, 25/10/2026): lo que hay en el recuadro CORTE es lo que se manda, con su
     // rótulo de tela y OF, los restos y, si hay dos opciones, el «ELEGIR SOLO UNA». Sin él (pruebas), el de las piezas.
     const corte = opcion.dibujo ?? { ...dibujo(opcion.colocadas, anchoRollo * 10, { of: '', tela: '' }), textos: [] };
@@ -268,17 +281,22 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
   const largoRollo = Math.max(...colocadas.map((p) => p.x + p.ancho)) / 10;
   // Ancho real que ocupan las piezas, no el del rollo (Iván).
   const usado = Math.max(...colocadas.map((p) => p.y + p.hueco)) / 10;
-  const puntosCorte = L.slice(desde.L).flatMap(l => [[l.x1, l.y1], [l.x2, l.y2]]);
-  for (const t of T.slice(desde.T)) {
-    const mitad = anchoArial(t.valor, t.h) / 2;
-    puntosCorte.push([t.x - (t.giro ? t.h : mitad), t.y - (t.giro ? mitad : t.h)], [t.x + (t.giro ? t.h : mitad), t.y + (t.giro ? mitad : t.h)]);
-  }
-  // Las cotas del corte, con el sitio de su texto a los dos lados de la línea.
-  for (const q of Q.slice(desde.Q)) {
-    puntosCorte.push(...(q.giro ? [[q.d - 16, q.y1], [q.d + 16, q.y2]] : [[q.x1, q.d - 16], [q.x2, q.d + 16]]));
-  }
-  const zonaCorte = { x0: Math.min(...puntosCorte.map(p => p[0])) - 10, x1: Math.max(...puntosCorte.map(p => p[0])) + 10,
-    y0: Math.min(...puntosCorte.map(p => p[1])) - 10, y1: Math.max(...puntosCorte.map(p => p[1])) + 10 };
+  const caja = (ls, ts, qs) => {
+    const puntos = ls.flatMap(l => [[l.x1, l.y1], [l.x2, l.y2]]);
+    for (const t of ts) {
+      const mitad = anchoArial(t.valor, t.h) / 2;
+      puntos.push([t.x - (t.giro ? t.h : mitad), t.y - (t.giro ? mitad : t.h)], [t.x + (t.giro ? t.h : mitad), t.y + (t.giro ? mitad : t.h)]);
+    }
+    // Las cotas del corte, con el sitio de su texto a los dos lados de la línea.
+    for (const q of qs) puntos.push(...(q.giro ? [[q.d - 16, q.y1], [q.d + 16, q.y2]] : [[q.x1, q.d - 16], [q.x2, q.d + 16]]));
+    return { x0: Math.min(...puntos.map(p => p[0])) - 10, x1: Math.max(...puntos.map(p => p[0])) + 10,
+      y0: Math.min(...puntos.map(p => p[1])) - 10, y1: Math.max(...puntos.map(p => p[1])) + 10 };
+  };
+  const zonaCorte = caja(L.slice(desde.L), T.slice(desde.T), Q.slice(desde.Q));
+  const zonasRollo = tramosRollo.map((a, i) => {
+    const b = tramosRollo[i + 1] ?? { L: L.length, T: T.length, Q: Q.length };
+    return caja(L.slice(a.L, b.L), T.slice(a.T, b.T), Q.slice(a.Q, b.Q));
+  });
 
   // A metros y lejos del origen, en diagonal (Iván: no pegado a los ejes X e Y del CAD).
   const m = (v) => v / 100;
@@ -296,12 +314,14 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
   return {
     capas: CAPAS,
     ...convertir(L.slice(0, desde.L), P.slice(0, desde.P), T.slice(0, desde.T), Q.slice(0, desde.Q)),
+    sombreados: S.map((s) => ({ ...s, puntos: s.puntos.map(([a, b]) => [px(a), py(b)]) })),
     corte: convertir(L.slice(desde.L), P.slice(desde.P), T.slice(desde.T), Q.slice(desde.Q), dx, dy),
-    zonas: { toldos: zona(toldos), corte: zona({ x0: zonaCorte.x0 + dx, x1: zonaCorte.x1 + dx, y0: zonaCorte.y0 + dy, y1: zonaCorte.y1 + dy }) },
+    zonas: { toldos: zona(toldos), corte: zona({ x0: zonaCorte.x0 + dx, x1: zonaCorte.x1 + dx, y0: zonaCorte.y0 + dy, y1: zonaCorte.y1 + dy }),
+      cortes: zonasRollo.map((z) => zona({ x0: z.x0 + dx, x1: z.x1 + dx, y0: z.y0 + dy, y1: z.y1 + dy })) },
     // Cada presentación con su nombre («TOLDO A», «TOLDOS C, D + E») y sus OF en el cajetín; el corte, en todas.
     hojas: hojas.map((h, i) => {
       const letras = [...new Set(h.toldos.map((t) => t.letra))];
-      const tipo = h.toldos.every((t) => t.cortina) ? 'CORTINA' : 'TOLDO';
+      const tipo = h.toldos.every((t) => t.solapas) ? 'SOLAPA' : h.toldos.every((t) => t.cortina) ? 'CORTINA' : 'TOLDO';
       return {
         nombre: letras.length === 1 ? `${tipo} ${letras[0]}` : `${tipo}S ${letras.slice(0, -1).join(', ')} + ${letras.at(-1)}`,
         zona: zona({ x0: h.x0 - 60, x1: h.x1 + 60, y0: -30, y1: arriba(h.T, h.Q) }),
@@ -319,7 +339,7 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
  * rotulador y sus textos; con ventana, las bandas, los laterales y el cristal despiezados; la bamba debajo.
  * Las cotas impresas son las terminadas; las de corte van en la capa que no se imprime. Devuelve su ancho.
  */
-function alzadoCortina(t, piezas, x0, { linea, rect, texto, cota, mini }) {
+function alzadoCortina(t, piezas, x0, { linea, rect, texto, cota, mini, S }) {
   const R = REGLAS_CORTINA, c = t.cortina, F = t.frenteTela;
   const W = F + 2 * R.bastillaLado, et = c.abajo === 'ET';
   const [cx0, cx1] = [x0, x0 + W], [fx0, fx1] = [x0 + R.bastillaLado, x0 + W - R.bastillaLado], cx = x0 + W / 2;
@@ -346,16 +366,18 @@ function alzadoCortina(t, piezas, x0, { linea, rect, texto, cota, mini }) {
     if (!et) texto(VARILLA_ABAJO, cx, altoBamba + 10, 10, 0, 'texto', F * 0.9);
   }
 
-  // Cuerpo: arriba la varilla negra; abajo la varilla blanca o la E.T. Ø40.
+  // Cuerpo: arriba la varilla negra (o blanca / B.N.(4,5) en cambio de tela); abajo la varilla blanca o la E.T. Ø40.
+  const remachado = c.arriba === 'REMACHADO';
+  const arriba = remachado ? R.bastillaRemachado : R.varillaArriba;
   const abajo = et ? R.et : R.varillaAbajo;
   const yc0 = altoBamba ? altoBamba + HUECO_TIRA : 0;
   const yc1 = yc0 + t.caidaTela - (t.bamba > 0 ? t.bamba + 5 : 0);
-  const [yf0, yf1] = [yc0 + abajo, yc1 - R.varillaArriba];
+  const [yf0, yf1] = [yc0 + abajo, yc1 - arriba];
   rect('DISCO1', cx0, yc0, cx1, yc1);
   rect('referencias', fx0, yf0, fx1, yf1);
-  linea('ROTULADOR', fx0, yf1 - R.marcaVarilla, fx1, yf1 - R.marcaVarilla);
+  if (!remachado) linea('ROTULADOR', fx0, yf1 - R.marcaVarilla, fx1, yf1 - R.marcaVarilla);
   linea('ROTULADOR', fx0, yf0 + (et ? R.marcaEt : R.marcaVarilla), fx1, yf0 + (et ? R.marcaEt : R.marcaVarilla));
-  texto(VARILLA_TOLDO, cx, yc1 + 10, 10, 0, 'texto', F * 0.9);
+  texto(remachado ? 'REMACHADO · B.N.(4,5)' : c.cambio ? VARILLA_ABAJO : VARILLA_TOLDO, cx, yc1 + 10, 10, 0, 'texto', F * 0.9);
   if (et) {
     linea('ejes', cx0, yc0 + R.referenciaEt, cx1, yc0 + R.referenciaEt);
     texto('E.T%%C40', cx, yc0 - 10, 10, 0, 'texto', F * 0.9);
@@ -364,9 +386,21 @@ function alzadoCortina(t, piezas, x0, { linea, rect, texto, cota, mini }) {
 
   const cuerpos = piezas.filter((p) => !p.nombre.includes('BAMBA'));
   const empate = !c.ventana && cuerpos.length > 1;
+  const etiquetaVelcro = c.etiquetaVelcro || 'VELCRO SUAVE (5) BLANCO POR DERECHO';
   const lateral = empate ? 'AL CORTE' : c.laterales === 'VELCRO'
-    ? `B.N(4) · VELCRO SUAVE (5) POR DERECHO${c.alturaVelcro ? ` HASTA ${n(c.alturaVelcro)}` : ''}` : 'B.N(4)';
+    ? `B.N(4) · ${etiquetaVelcro}${c.alturaVelcro ? ` HASTA ${n(c.alturaVelcro)}` : ''}` : 'B.N(4)';
   for (const xl of [cx0 - 10, cx1 + 10]) texto(lateral, xl, (yc0 + yc1) / 2, 10, 90, 'texto', (yc1 - yc0) * 0.85);
+  // El velcro dibujado en cada lateral, pegado por dentro a la raya rosa del terminado y desde abajo hasta su alto;
+  // rayado el suave y relleno el bravo, como en la plantilla de puertas (Iván, 27/10/2026).
+  if (!empate && c.laterales === 'VELCRO') {
+    const ancho = c.velcro?.ancho ?? 5;
+    const yv1 = Math.min(yf1, c.alturaVelcro ? yf0 + c.alturaVelcro : yf1);
+    for (const xv of [fx0, fx1 - ancho]) {
+      const puntos = [[xv, yf0], [xv + ancho, yf0], [xv + ancho, yv1], [xv, yv1]];
+      rect('referencia-1', xv, yf0, xv + ancho, yv1);
+      S.push({ capa: 'referencia-1', puntos, solido: !!c.velcro?.bravo });
+    }
+  }
   const unidades = t.unidades > 1 ? [`${t.unidades} UDS`] : [];
   // Uniones de una pieza (mm desde su esquina de abajo a la izquierda) puestas en el alzado.
   const uniones = (p, ox, oy) => (p.uniones ?? []).forEach((u) => mini(u.valor, ox + u.u / 10, oy + u.v / 10));
@@ -434,4 +468,46 @@ function alzadoCortina(t, piezas, x0, { linea, rect, texto, cota, mini }) {
   cota('cotas', fx1, yf0, fx1, yf1, n(yf1 - yf0), xDer + 15 - fx1);
   cota('vent-pre-noimpr', cx0, yc0, cx0, yc1, n(yc1 - yc0), xIzq - cx0);
   return W;
+}
+
+/**
+ * Alzado de un grupo de solapas con velcro (como AR2604205 y AR2604890): cada solapa en vertical con sus
+ * medidas al corte y sus etiquetas de velcro en los lados largos. El empate, solo en la que el corte parte: las
+ * rectas, aunque pasen del ancho del rollo, van acostadas y enteras (Iván, 27/10/2026).
+ */
+function alzadoSolapas(t, piezas, x0, { linea, rect, P, texto, cota }) {
+  const GAP = 70;
+  const n = (v) => Math.round(v * 10) / 10;
+  let sx = x0;
+  for (const [k, s] of t.solapas.entries()) {
+    const L = n(s.largo);
+    const wTop = n(s.anchoIzq);
+    const wBot = n(s.anchoDer);
+    const wMax = Math.max(wTop, wBot);
+    const cx = sx + wMax / 2;
+    if (wTop === wBot) {
+      rect('DISCO1', sx, 0, sx + wTop, L);
+    } else {
+      P.push({ capa: 'DISCO1', puntos: [[sx, 0], [sx + wBot, 0], [sx + wTop, L], [sx, L]], cerrada: true });
+    }
+    texto('AL CORTE', cx, L + 8, 7, 0, 'texto', Math.max(25, wMax * 0.9));
+    texto('AL CORTE', cx, -8, 7, 0, 'texto', Math.max(25, wMax * 0.9));
+    texto(s.etiquetaIzq, sx - 8, L / 2, 7.5, 90, 'texto', L * 0.85);
+    texto(s.etiquetaDer, sx + wMax + 8, L / 2, 7.5, 90, 'texto', L * 0.85);
+    if (piezas.filter((p) => p.solapaNombre === s.nombre).length > 1) {
+      const yEmp = t.anchoRollo;
+      const wAt = (y) => wBot + ((wTop - wBot) * y) / L;
+      linea('ejes', sx, yEmp - 2, sx + wAt(yEmp - 2), yEmp - 2);
+      linea('ejes', sx, yEmp, sx + wAt(yEmp), yEmp);
+      texto('EMPATE 2 CM', sx + wAt(yEmp - 1) / 2, yEmp - 8, 7, 0, 'texto', Math.max(20, wAt(yEmp) * 0.8));
+      texto(`${s.nombre}1`, sx + wAt(yEmp / 2) / 2, yEmp / 2, 12, 0, 'texto', Math.max(15, wAt(yEmp / 2) * 0.7));
+      texto(`${s.nombre}2`, sx + wAt((yEmp + L) / 2) / 2, (yEmp + L) / 2, 10, 0, 'texto', Math.max(15, wAt((yEmp + L) / 2) * 0.7));
+    } else texto(s.nombre, sx + (wTop + wBot) / 4, L / 2, 12, 0, 'texto', Math.max(15, Math.min(wTop, wBot) * 0.7));
+    if (k === 0 && t.of) texto(t.of, cx, L + 40, 14, 0, 'texto', Math.max(40, wMax));
+    cota('cotas', sx, L, sx + wTop, L, wTop, 22);
+    if (wBot !== wTop) cota('cotas', sx, 0, sx + wBot, 0, wBot, -22);
+    cota('cotas', sx, 0, sx, L, L, -24);
+    sx += wMax + GAP;
+  }
+  return Math.max(40, sx - x0 - GAP);
 }

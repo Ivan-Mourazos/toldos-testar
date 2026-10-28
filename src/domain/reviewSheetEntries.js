@@ -8,6 +8,8 @@ import {
   resolveAnticaRoundEntry
 } from './anticaRules.js';
 import { normalizeDropArmMode, supportsVerticalDropArm } from './dropArmMode.js';
+import { formatCurtainVelcroLabel } from './curtainConfiguration.js';
+import { normalizeSolapas } from './solapasRules.js';
 
 const legacyModelNames = {
   'AMBAR BOX': 'Microbox 300', 'AGATA BOX': 'Modul 400 / Modulbox', 'CUARZO BOX': 'Storbox 250',
@@ -133,15 +135,27 @@ export function buildReviewSheetEntries(order, calculation) {
     if (awning.model === 'ELECTRA') addField(cardFields, 'Soporte', awning.electraSupport, true);
     if (String(awning.model || '').includes('CORTINA') || awning.model === 'ELECTRA') {
       if (awning.model === 'CORTINA') addField(cardFields, 'Soporte', awning.curtainSupport || 'UNIVERSAL 3 AGUJEROS', true);
+      if (awning.model === 'CAMBIO CORTINA') addField(cardFields, 'Arriba', awning.curtainTopFinish || 'VARILLA', true);
       const windowValue = awning.curtainHasWindow === null || awning.curtainHasWindow === undefined
         ? '' : awning.curtainHasWindow ? 'CON VENTANA' : 'SIN VENTANA';
       addField(cardFields, 'Ventana', windowValue, true);
       if (windowValue) addField(cardFields, 'Confección', awning.curtainFinish, true);
+      if (awning.curtainFinish === 'VELCRO' && (awning.model === 'CORTINA' || awning.model === 'CAMBIO CORTINA')) {
+        addField(cardFields, 'Velcro', formatCurtainVelcroLabel(awning), true);
+      }
       if (awning.curtainHasWindow) {
         addField(cardFields, 'Salida ventana', measure(awning.curtainWindowExit), true);
         addField(cardFields, 'Esquina', measure(awning.curtainWindowCorner), true);
         addField(cardFields, 'Suelo-ventana', measure(awning.curtainWindowFloorHeight), true);
         addField(cardFields, 'H. ventana', measure(awning.curtainWindowHeight), true);
+      }
+    }
+    if (awning.model === 'SOLAPAS') {
+      const solapas = normalizeSolapas(awning.solapas, awning.bastilla);
+      addField(cardFields, 'Confección solapas', awning.bastilla ? 'CON BASTILLA' : 'AL CORTE', true);
+      for (const s of solapas) {
+        const anchoTxt = s.oblicua ? measure(s.ancho) + '..' + measure(s.ancho2) : measure(s.ancho);
+        addField(cardFields, 'Solapa ' + s.nombre, measure(s.largo) + ' × ' + anchoTxt + ' cm', true);
       }
     }
     if (awning.model === 'SELENA') addField(cardFields, 'Sistema', 'BRAZOS STOR · 2 UDS.', true);

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Eraser, Plus, Save, Trash2 } from 'lucide-react';
 import { alturasTubos, calcularPuerta, huecosEntrada, MODELOS_PUERTAS, nuevaPuerta, yEnTramo } from '../../puertas/calcular.ts';
+import { awningLetter } from '../../domain/awningCompleteness.js';
 import type { PedidoPuertasGuardado } from '../../puertas/flujo/tipos.ts';
 import { REGLAS_SYSTEM_DOCK } from '../../puertas/systemDock.ts';
 import { esPedidoMixto, productoDeElementos } from '../../puertas/producto.ts';
@@ -53,7 +54,7 @@ function Huecos({huecos,cambiar}:{huecos:Hueco[];cambiar:(h:Hueco[])=>void}) {
   </div>)}<button type="button" className="ghost-button" onClick={()=>cambiar([...huecos,{x:0,y:0,ancho:12,alto:7.5,radio:0.5}])}>Añadir hueco</button></div>;
 }
 type PestanaPuerta='puerta'|'estructura'|'entradas'|'ventanas'|'saco'|'texto';
-function Configurar({p,cambiar,corte,derecha='alzado'}:{p:Puerta;cambiar:(p:Puerta)=>void;corte?:React.ReactNode;derecha?:'alzado'|'corte'}) {
+function Configurar({p,cambiar,corte,derecha='alzado',letra='A'}:{p:Puerta;cambiar:(p:Puerta)=>void;corte?:React.ReactNode;derecha?:'alzado'|'corte';letra?:string}) {
   const resultado=calcularPuerta(p);
   const [pestana,setPestana]=useState<PestanaPuerta>('puerta');
   const formularioFluido=useContenidoFluido<HTMLElement>(pestana);
@@ -112,15 +113,15 @@ function Configurar({p,cambiar,corte,derecha='alzado'}:{p:Puerta;cambiar:(p:Puer
         </>}
         {ver('estructura')&&<>
         {p.modelo==='PUERTAENR'&&<fieldset><legend>Ventanal superior</legend><div className="puerta-campos">
-          <Numero titulo="T · desde arriba al eje (cm)" valor={p.enrollable.T||null} cambiar={v=>set('enrollable',{...p.enrollable,T:v??0})}/>
-          <Numero titulo="D · entre ejes (cm)" valor={p.enrollable.D} cambiar={v=>set('enrollable',{...p.enrollable,D:v??0})}/>
+          <Numero titulo={p.enrollable.sinEtArriba?'T · desde arriba al borde del paño (cm)':'T · desde arriba al eje (cm)'} valor={p.enrollable.T||null} cambiar={v=>set('enrollable',{...p.enrollable,T:v??0})}/>
+          <Numero titulo={p.enrollable.sinEtArriba?(p.enrollable.sinEtAbajo&&!p.enrollable.ventanales?.length?'D · entre bordes de paño (cm)':'D · del borde del paño al eje (cm)'):p.enrollable.sinEtAbajo&&!p.enrollable.ventanales?.length?'D · del eje al borde del paño (cm)':'D · entre ejes (cm)'} valor={p.enrollable.D} cambiar={v=>set('enrollable',{...p.enrollable,D:v??0})}/>
           <Numero titulo="Margen lateral m (cm)" valor={p.enrollable.margen||null} cambiar={v=>set('enrollable',{...p.enrollable,margen:v??0})}/>
         </div>
           {/* Iván, 27/10/2026 (AR2605247): hay puertas sin E.T. encima del ventanal de arriba. */}
-          <label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.enrollable.sinEtArriba)} onChange={e=>set('enrollable',{...p.enrollable,sinEtArriba:e.target.checked})}/>Sin E.T. encima del ventanal: el paño grande solapa 2 cm sobre el cristal y los cachos</label>
-          <label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.enrollable.sinEtAbajo)} onChange={e=>set('enrollable',{...p.enrollable,sinEtAbajo:e.target.checked})}/>Sin E.T. debajo del ventanal de abajo: el paño de abajo solapa 2 cm sobre el cristal y los cachos</label>
+          <label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.enrollable.sinEtArriba)} onChange={e=>set('enrollable',{...p.enrollable,sinEtArriba:e.target.checked})}/>Sin E.T. encima del ventanal: T al borde del paño, sin marcas de E.T.</label>
+          <label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.enrollable.sinEtAbajo)} onChange={e=>set('enrollable',{...p.enrollable,sinEtAbajo:e.target.checked})}/>Sin E.T. debajo del ventanal de abajo: cota al borde del paño, sin marcas de E.T.</label>
           {(p.enrollable.ventanales??[]).map((v,i)=><fieldset key={i}><legend>Ventanal {i+2} · debajo del anterior</legend><div className="puerta-campos">
-            <Numero titulo={`D · entre ejes ventanal ${i+2} (cm)`} valor={v.D} cambiar={n=>set('enrollable',{...p.enrollable,ventanales:p.enrollable.ventanales!.map((v,j)=>i===j?{...v,D:n??0}:v)})}/>
+            <Numero titulo={p.enrollable.sinEtAbajo&&i===p.enrollable.ventanales!.length-1?`D · del eje al borde del paño ventanal ${i+2} (cm)`:`D · entre ejes ventanal ${i+2} (cm)`} valor={v.D} cambiar={n=>set('enrollable',{...p.enrollable,ventanales:p.enrollable.ventanales!.map((v,j)=>i===j?{...v,D:n??0}:v)})}/>
             <Numero titulo={`Margen lateral ventanal ${i+2} (cm)`} valor={v.margen} cambiar={n=>set('enrollable',{...p.enrollable,ventanales:p.enrollable.ventanales!.map((v,j)=>i===j?{...v,margen:n??0}:v)})}/>
             <button type="button" className="ghost-button" onClick={()=>set('enrollable',{...p.enrollable,ventanales:p.enrollable.ventanales!.filter((_,j)=>j!==i)})}>Quitar ventanal {i+2}</button>
           </div></fieldset>)}
@@ -202,7 +203,7 @@ function Configurar({p,cambiar,corte,derecha='alzado'}:{p:Puerta;cambiar:(p:Puer
       </section>
       {/* Lo que falta, junto al alzado: se ve sin bajar hasta el final (Iván, 25/10/2026). */}
       <div className="puerta-derecha" ref={dibujoFluido}>
-        {derecha==='corte'&&corte?corte:<AlzadoPuerta puerta={p} resultado={resultado}/>}
+        {derecha==='corte'&&corte?corte:<AlzadoPuerta puerta={p} resultado={resultado} letra={letra}/>}
         <section className="puerta-avisos panel panel-vidrio" aria-label="Comprobaciones de puerta">
           <h2>Qué falta o revisar <span>{resultado.avisos.filter(a=>a.nivel==='error').length} pendientes</span></h2>
           {resultado.avisos.length?<ul>{resultado.avisos.map((a,i)=><li key={i} className={a.nivel==='error'?'es-error':''}>{a.texto}</li>)}</ul>:<p>Todo listo: las medidas comprobadas son coherentes.</p>}
@@ -529,6 +530,6 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
     {/* Alzado / Corte en la línea de las puertas o lonas, a la derecha (Iván, 27/10/2026). */}
     <div className="tira-3d puerta-vistas" role="group" aria-label="Ver junto al configurador">{(['alzado','corte'] as const).map(v=><button type="button" key={v} className={`pestana ${derecha===v?'pestana-activa':''}`} aria-pressed={derecha===v} onClick={()=>setDerecha(v)}>{v==='alzado'?'Alzado':'Corte'}</button>)}</div>
     </div>
-    <div ref={elementoFluido}><Configurar key={pedido.elementos[indice].id} p={pedido.elementos[indice].input} cambiar={p=>setPedido({...pedido,elementos:pedido.elementos.map((e,i)=>i===indice?{...e,input:p}:e)})} corte={<CorteResumen vista={vistaCorte}/>} derecha={derecha}/></div>
+    <div ref={elementoFluido}><Configurar key={pedido.elementos[indice].id} p={pedido.elementos[indice].input} cambiar={p=>setPedido({...pedido,elementos:pedido.elementos.map((e,i)=>i===indice?{...e,input:p}:e)})} corte={<CorteResumen vista={vistaCorte}/>} derecha={derecha} letra={awningLetter(indice)}/></div>
   </div>;
 }

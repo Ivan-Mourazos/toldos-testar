@@ -1,6 +1,14 @@
 import React from 'react';
 import type { Awning } from '../types';
-import { curtainFabricAdjustments, curtainWindowDrawingHeight, normalizeCurtainConfiguration } from '../../domain/curtainConfiguration.js';
+import {
+  curtainFabricAdjustments,
+  curtainVelcroColors,
+  curtainVelcroSides,
+  curtainVelcroTypes,
+  curtainWindowDrawingHeight,
+  defaultCurtainVelcroHeight,
+  normalizeCurtainConfiguration
+} from '../../domain/curtainConfiguration.js';
 import { NumberField } from './NumberField';
 import { SegmentedField } from './SegmentedField';
 import { SelectField } from './SelectField';
@@ -31,6 +39,19 @@ export function curtainConfigurationFields({ awning, update, missing, bodyAllowa
     <div className="curtain-option">
       <SegmentedField label="Abajo" value={config.curtainBottomFinish} options={['TUBO DE CARGA', 'ET']} onChange={(curtainBottomFinish) => update({ curtainBottomFinish: curtainBottomFinish as Awning['curtainBottomFinish'] })} />
     </div>
+    {awning.curtainFinish === 'VELCRO' && <>
+      <div className="curtain-option">
+        <SegmentedField label="Cara del velcro" value={config.curtainVelcroType} options={[...curtainVelcroTypes]} onChange={(curtainVelcroType) => update({ curtainVelcroType: curtainVelcroType as Awning['curtainVelcroType'] })} />
+      </div>
+      <div className="curtain-option">
+        <SegmentedField label="Lado del velcro" value={config.curtainVelcroSide} options={[...curtainVelcroSides]} onChange={(curtainVelcroSide) => update({ curtainVelcroSide: curtainVelcroSide as Awning['curtainVelcroSide'] })} />
+      </div>
+      <div className="curtain-option">
+        <SegmentedField label="Color del velcro" value={config.curtainVelcroColor} options={[...curtainVelcroColors]} onChange={(curtainVelcroColor) => update({ curtainVelcroColor: curtainVelcroColor as Awning['curtainVelcroColor'] })} />
+      </div>
+      <NumberField label="Ancho velcro (cm)" value={config.curtainVelcroWidth} min={1} step={0.5} onChange={(curtainVelcroWidth) => update({ curtainVelcroWidth: curtainVelcroWidth ?? 5 })} />
+      <NumberField label="Alto velcro (cm)" value={config.curtainVelcroHeight ?? (defaultCurtainVelcroHeight(awning) || null)} min={0} step={0.5} onChange={(curtainVelcroHeight) => update({ curtainVelcroHeight })} />
+    </>}
     <div className="curtain-adjustment-row">
       <SelectField label="Ajuste de salida de tela" value={config.curtainFabricAdjustment} options={curtainFabricAdjustments} optionLabel={adjustmentLabel} onChange={(curtainFabricAdjustment) => update({ curtainFabricAdjustment: curtainFabricAdjustment as Awning['curtainFabricAdjustment'], curtainFabricAdjustmentCm: 0 })} />
       {config.curtainFabricAdjustment === 'PERSONALIZADO' && <NumberField label="Ajuste de salida (cm)" value={config.curtainFabricAdjustmentCm} step={0.5} missing={missing('curtainFabricAdjustmentCm')} onChange={(curtainFabricAdjustmentCm) => update({ curtainFabricAdjustmentCm })} />}

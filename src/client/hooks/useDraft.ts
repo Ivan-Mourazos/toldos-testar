@@ -1,6 +1,7 @@
 import { normalizeFabricImage } from '../../domain/fabricImage.js';
 import { supportsFabricDropAdjustment } from '../../domain/fabricDropAdjustment.js';
 import { isConfiguredCurtain, normalizeCurtainConfiguration } from '../../domain/curtainConfiguration.js';
+import { createDefaultSolapa, normalizeSolapas } from '../../domain/solapasRules.js';
 import { normalizeStructureEdit } from '../../domain/structureEdits.js';
 import { useEffect, useRef, useState } from 'react';
 import type { Awning, DraftState, FabricProposal } from '../types';
@@ -135,6 +136,10 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   base.curtainTopFinish = base.model === 'CAMBIO CORTINA'
     ? old.curtainTopFinish === 'REMACHADO' ? 'REMACHADO' : 'VARILLA'
     : '';
+  base.bastilla = base.model === 'SOLAPAS' && old.bastilla === true;
+  base.solapas = base.model === 'SOLAPAS'
+    ? (Array.isArray(old.solapas) && old.solapas.length > 0 ? normalizeSolapas(old.solapas) : [createDefaultSolapa(0)])
+    : [];
   base.curtainFabricWidthDiscountCm = nullableNumber(old.curtainFabricWidthDiscountCm);
   base.curtainRollTubeDiscountCm = nullableNumber(old.curtainRollTubeDiscountCm);
   base.curtainLoadProfileDiscountCm = nullableNumber(old.curtainLoadProfileDiscountCm);
@@ -610,6 +615,10 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     curtainFabricDeductionCm: isCurtainStructure ? awning.curtainFabricDeductionCm : null,
     curtainSkipBottomDeduction: model === 'CORTINA' ? Boolean(awning.curtainSkipBottomDeduction) : false,
     curtainTopFinish: model === 'CAMBIO CORTINA' ? (awning.curtainTopFinish || 'VARILLA') : '',
+    bastilla: model === 'SOLAPAS' ? Boolean(awning.bastilla) : false,
+    solapas: model === 'SOLAPAS'
+      ? (Array.isArray(awning.solapas) && awning.solapas.length > 0 ? normalizeSolapas(awning.solapas) : [createDefaultSolapa(0)])
+      : [],
     curtainFabricWidthDiscountCm: isCurtainStructure ? awning.curtainFabricWidthDiscountCm : null,
     curtainRollTubeDiscountCm: isCurtainStructure ? awning.curtainRollTubeDiscountCm : null,
     curtainLoadProfileDiscountCm: isCurtainStructure ? awning.curtainLoadProfileDiscountCm : null,
