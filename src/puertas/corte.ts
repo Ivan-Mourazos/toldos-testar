@@ -320,9 +320,12 @@ function colocar(
     // restos (Iván, 21/10/2026; en los cortes hechos, «X2», «X3»… dentro de la pieza).
     const grupo: PiezaPuerta[] = [];
     const cristales = new Map<string, PiezaPuerta>();
+    // Los sacos, igual: con dos puertas iguales en una OF, un saco con «X2» (Iván, 28/10/2026, AR2605246: el plano y el
+    // bot dibujan cada saco una vez y salía uno solo para las dos puertas).
     for (const p of grupoOriginal) {
-      if (p.clase !== 'cristal') { grupo.push(p); continue; }
-      const clave = JSON.stringify([p.ancho, p.alto, p.of, p.radio]);
+      if (p.clase !== 'cristal' && p.clase !== 'saco') { grupo.push(p); continue; }
+      // El saco, por su forma: el partido con pestaña y el sin ella no son iguales.
+      const clave = JSON.stringify(p.clase === 'saco' ? ['saco', p.nombre, p.ancho, p.alto, p.of, p.contorno] : [p.ancho, p.alto, p.of, p.radio]);
       const igual = cristales.get(clave);
       if (igual) igual.multiplicador = (igual.multiplicador ?? 1) + p.cantidad;
       else { const una = { ...p, cantidad: 1, multiplicador: p.cantidad }; cristales.set(clave, una); grupo.push(una); }
