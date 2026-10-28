@@ -46,17 +46,19 @@ export const despiecesPorModelo = Object.freeze({
   SOLAPAS: (datos) => piezasSolapas(datos)
 });
 
-function piezasFachada({ letra, frenteTela, caidaTela, bamba, soloBamba = false, anchoRollo, ajustes = {} }) {
+function piezasFachada({ letra, frenteTela, caidaTela, bamba, soloBamba = false, anchoRollo, ajustes = {}, onda = null }) {
   const a = validarAjustes({ ...AJUSTES_POR_DEFECTO, ...ajustes }, anchoRollo);
   for (const [nombre, valor] of Object.entries({ frenteTela, caidaTela, anchoRollo })) {
     if (!Number.isFinite(valor) || valor <= 0) throw new Error(`Medida no válida: ${nombre}.`);
   }
   if (!Number.isFinite(bamba) || bamba < 0) throw new Error('Altura de bamba no válida.');
   const tira = bamba > 0 ? bamba + a.tiraExtraAltoCm : 0;
-  if (soloBamba) return [{ nombre: `${letra} BAMBA`, largo: mm(frenteTela + a.tiraExtraLargoCm), alto: mm(tira), marcas: ['tira'] }];
+  // Con onda (bambalina.js), la tira lleva su forma abajo; el alto, hasta lo más bajo de la onda.
+  const conOnda = onda ? { onda } : {};
+  if (soloBamba) return [{ nombre: `${letra} BAMBA`, largo: mm(frenteTela + a.tiraExtraLargoCm), alto: mm(tira), marcas: ['tira'], ...conOnda }];
   const cuerpo = caidaTela - tira;
   if (cuerpo <= 0) throw new Error('La tira no puede ocupar toda la caída.');
-  if (a.empate === 'vertical' && frenteTela > anchoRollo) return piezasVerticales({ letra, frenteTela, cuerpo, tira, anchoRollo, a });
+  if (a.empate === 'vertical' && frenteTela > anchoRollo) return piezasVerticales({ letra, frenteTela, cuerpo, tira, anchoRollo, a, conOnda });
   const paños = [];
   let resto = cuerpo;
   // Si el frente cabe en el rollo, el cuerpo se puede cortar girado (frente a lo ancho del rollo)
@@ -75,7 +77,7 @@ function piezasFachada({ letra, frenteTela, caidaTela, bamba, soloBamba = false,
     // La varilla inferior engancha el cuerpo al tubo de carga, haya bamba o no (Iván).
     marcas: [...(i === 0 ? ['abajo'] : []), ...(i === paños.length - 1 ? ['arriba'] : [])]
   }));
-  if (tira) piezas.push({ nombre: `${letra} BAMBA`, largo: mm(frenteTela + a.tiraExtraLargoCm), alto: mm(tira), marcas: ['tira'] });
+  if (tira) piezas.push({ nombre: `${letra} BAMBA`, largo: mm(frenteTela + a.tiraExtraLargoCm), alto: mm(tira), marcas: ['tira'], ...conOnda });
   return piezas;
 }
 
@@ -84,7 +86,7 @@ function piezasFachada({ letra, frenteTela, caidaTela, bamba, soloBamba = false,
  * se reparte en paños iguales a lo largo de la caída, con los cm de empate en cada unión, como en
  * AR2604097 y AR2604784. La tira va entera o, con `tiraPartida`, en tantos trozos como paños.
  */
-function piezasVerticales({ letra, frenteTela, cuerpo, tira, anchoRollo, a }) {
+function piezasVerticales({ letra, frenteTela, cuerpo, tira, anchoRollo, a, conOnda }) {
   const anchos = (total) => {
     let n = 2;
     while ((total + a.empateCm * (n - 1)) / n > anchoRollo) n++;
@@ -93,7 +95,8 @@ function piezasVerticales({ letra, frenteTela, cuerpo, tira, anchoRollo, a }) {
   const piezas = anchos(frenteTela + 2 * a.lateralVerticalCm).map((ancho, i) => ({
     nombre: `${letra}${i + 1}`, largo: mm(ancho), alto: mm(cuerpo), marcas: ['arriba', 'abajo']
   }));
-  if (tira && !a.tiraPartida) piezas.push({ nombre: `${letra} BAMBA`, largo: mm(frenteTela + a.tiraExtraLargoCm), alto: mm(tira), marcas: ['tira'] });
+  if (tira && !a.tiraPartida) piezas.push({ nombre: `${letra} BAMBA`, largo: mm(frenteTela + a.tiraExtraLargoCm), alto: mm(tira), marcas: ['tira'], ...conOnda });
+  if (tira && a.tiraPartida && conOnda.onda) throw new Error('Bambalina con onda en trozos: el corte se hace a mano por ahora.');
   if (tira && a.tiraPartida) {
     anchos(frenteTela + a.tiraExtraLargoCm).forEach((ancho, i) =>
       piezas.push({ nombre: `${letra} BAMBA ${i + 1}`, largo: mm(ancho), alto: mm(tira), marcas: ['tira'] }));

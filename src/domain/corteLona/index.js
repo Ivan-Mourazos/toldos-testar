@@ -1,4 +1,5 @@
 import { calculateOrder } from '../rules.js';
+import { formaBambalina } from './bambalina.js';
 import { normalizeOrder } from '../validation.js';
 import { resolveFabric } from '../fabricCatalog.js';
 import { shortFabricName } from '../fabricShortName.js';
@@ -73,6 +74,7 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
       letra, of: bloque.of, modelo: toldo.model, cambioTela: toldo.workType !== 'FULL_AWNING',
       frenteTela: c.fabricWidth, caidaTela: c.fabricDrop, anchoRollo: c.fabricRollWidth,
       bamba: toldo.hasValance && !toldo.valanceFabric ? Number(toldo.valanceHeight) : 0,
+      onda: toldo.hasValance ? formaBambalina(toldo.valanceCurve) : null,
       unidades: Number(toldo.units), tela: c.fabricDescription,
       ajustes: ajustes[toldo.id] ?? ajustes[toldo.of] ?? ajustes[letra] ?? {},
       ...(toldo.model === 'CORTINA' || toldo.model === 'CAMBIO CORTINA' ? { cortina: datosCortina(toldo) } : {}),

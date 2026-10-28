@@ -3,6 +3,7 @@
 // (DISCO1), rotulador (ROTULADOR), anotaciones y cotas; debajo el corte en el rollo.
 // Se escribe en metros sobre la presentación A4. La conversión a DWG se hará en la fase 2.
 import { AJUSTES_POR_DEFECTO } from './despiece.js';
+import { bordeOndulado } from './bambalina.js';
 import { dibujo } from './dibujoCorte.js';
 import { anchoArial } from './texto.js';
 import { piezasCortina, REGLAS_CORTINA } from './cortina.js';
@@ -111,7 +112,11 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
 
     if (tiraCm) {
       const tc = tiraCm / 2;
-      rect('DISCO1', tx0, 0, tx1, tiraCm);
+      if (t.onda) {
+        // Con onda, el borde de abajo con su forma, como en el corte (bambalina.js).
+        const borde = bordeOndulado(t.onda, tiraLargo * 10, (A.tiraExtraLargoCm / 2) * 10).map(([u, v]) => [tx0 + u / 10, v / 10]);
+        P.push({ capa: 'DISCO1', puntos: [...borde, [tx1, tiraCm], [tx0, tiraCm]], cerrada: true });
+      } else rect('DISCO1', tx0, 0, tx1, tiraCm);
       rect('referencias', fx0, tc - t.bamba / 2, fx1, tc + t.bamba / 2);
       linea('ROTULADOR', fx0, tiraCm - A.varillaTiraMm / 10, fx1, tiraCm - A.varillaTiraMm / 10);
       // Tira en trozos (empate vertical): la letra en el primero y sus uniones, como las de los paños.
@@ -126,7 +131,7 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
         xt -= A.empateCm;
       });
       texto(VARILLA_ABAJO, cx, tiraCm + 10, 10, 0, 'texto', F * 0.9);
-      texto('B.N(2)', cx, -12, 10, 0, 'texto', F * 0.9);
+      texto(t.onda ? `ONDA ${t.onda}` : 'B.N(2)', cx, -12, 10, 0, 'texto', F * 0.9);
       texto('B.N(2)', tx0 - 10, tc, 10, 90);
       texto('B.N(2)', tx1 + 10, tc, 10, 90);
       cota('cotas', fx1, tc - t.bamba / 2, fx1, tc + t.bamba / 2, t.bamba, xDer - fx1);

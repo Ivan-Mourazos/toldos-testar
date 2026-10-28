@@ -43,7 +43,7 @@
       { "pared": "PARED TRANSVENTILADA CON AISLANTE", "tornilleria": "TORNILLOS THERMAX M16", "referencia": "THERMAX", "unidades": 4 },
       { "pared": "CON SEPARADORES", "tornilleria": "PIEZAS SEPARADOR", "referencia": null, "unidades": 1 }
     ],
-    "curvasBamba": ["RECTA", "NORMAL", "SUAVE", "EXTRASUAVE"],
+    "curvasBamba": ["RECTA", "NORMAL", "SUAVE", "EXTRASUAVE", "NORMAL CAPOTAS", "MARINA", "DENTADA", "PIRAMIDE", "CUADRADA", "TORRE", "RECTANGULAR", "ALMENA", "CAMELOT 1", "CAMELOT 2", "MACETA", "ARABICA"],
     "colocaciones": ["FRONTAL", "TECHO", "ENTRE PAREDES"],
     "localizacionesMaquina": ["M.F.DER", "M.F IZQ"],
     "tecnicos": ["ÁNGEL", "JAIME", "ALBERTO", "ADRIÁN", "TAMARA", "IVÁN"],

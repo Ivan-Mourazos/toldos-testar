@@ -1,5 +1,9 @@
 import { AJUSTES_POR_DEFECTO } from './despiece.js';
 import { anchoArial } from './texto.js';
+import { bordeOndulado } from './bambalina.js';
+
+// La tira lleva B.N(2) en cada punta (tiraExtraLargoCm): las ondas, enteras, entre los dos.
+const MARGEN_ONDA = (AJUSTES_POR_DEFECTO.tiraExtraLargoCm / 2) * 10;
 
 /** Líneas de corte (DISCO1), del rotulador y textos de las piezas ya colocadas. */
 export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
@@ -19,6 +23,27 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
         if (y0 > 0 || p.aparte) horizontales.push([y0, x0, x1]);
         verticales.push([x0, y0, y0 + altoIzq], [x1, y0, y0 + altoDer]);
         oblicuas.push({ capa: 'DISCO1', x1: x0, y1: y0 + altoIzq, x2: x1, y2: y0 + altoDer });
+      }
+      continue;
+    }
+    if (p.onda) {
+      // Bambalina con onda (bambalina.js): el borde de abajo, con su forma y con la cuchilla, aunque vaya en el orillo;
+      // las ondas enteras entre los B.N(2) de las puntas. Girada, el de abajo queda a la derecha.
+      const onda = bordeOndulado(p.onda, p.largo, MARGEN_ONDA);
+      const enRollo = ([u, v]) => (p.girada ? [x0 + p.alto - v, y0 + u] : [x0 + u, y0 + v]);
+      for (let k = 0; k < onda.length - 1; k++) {
+        const [[a, b], [c, d]] = [enRollo(onda[k]), enRollo(onda[k + 1])];
+        oblicuas.push({ capa: 'CUTTER', x1: a, y1: b, x2: c, y2: d });
+      }
+      // Los lados, del arranque de la onda en las puntas hasta arriba; y arriba.
+      const nivel = onda[0][1];
+      if (p.girada) {
+        if (y0 > 0 || p.aparte) horizontales.push([y0, x0, x1 - nivel]);
+        if (y1 < anchoRolloMm || p.aparte) horizontales.push([y1, x0, x1 - nivel]);
+        verticales.push([x0, y0, y1]);
+      } else {
+        verticales.push([x0, y0 + nivel, y1], [x1, y0 + nivel, y1]);
+        if (y1 < anchoRolloMm || p.aparte) horizontales.push([y1, x0, x1]);
       }
       continue;
     }

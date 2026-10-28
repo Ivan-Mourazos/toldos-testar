@@ -131,12 +131,17 @@ describe('Del pedido guardado al corte de lona', () => {
   it('rechaza una OF de stock ausente', () => {
     expect(() => generarCorteLona(revision.order)).toThrow(/stock/i);
   });
-  it.each(['SUAVE', 'EXTRASUAVE'])('avisa de bamba %s y mantiene los demás toldos', (valanceCurve) => {
+  // Iván, 28/10/2026: las bambalinas con onda se cortan en la máquina con la forma de la plantilla.
+  it.each([['SUAVE', 'SUAVE'], ['EXTRASUAVE', 'SUPERSUAVE'], ['NORMAL', 'NORMAL']])('corta la bamba %s con su onda en la cuchilla', (valanceCurve, forma) => {
     const order = structuredClone(revision.order);
-    order.awnings.push({ ...order.awnings[0], id: 'onda', of: '0232569', valanceCurve });
+    order.awnings.push({ ...order.awnings[0], id: 'onda', of: '0232569', hasValance: true, valanceHeight: 25, valanceCurve });
     const salida = generar(order);
-    expect(salida.cortes.conSacos[0].piezas.map((p) => p.letra)).toEqual(['A']);
-    expect(salida.avisos).toEqual([expect.stringContaining('bamba con onda')]);
+    expect(salida.avisos).toEqual([]);
+    const corte = salida.cortes.conSacos[0];
+    const tira = corte.colocadas.find((p) => p.letra === 'B' && p.nombre.includes('BAMBA'));
+    expect(tira.onda).toBe(forma);
+    expect(corte.dibujo.lineas.filter((l) => l.capa === 'CUTTER').length).toBeGreaterThan(20);
+    expect(corte.dxf).toContain('CUTTER');
   });
   it('avisa de ventana y excluye solo ese toldo', () => {
     const order = structuredClone(revision.order);
