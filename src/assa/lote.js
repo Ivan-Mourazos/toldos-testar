@@ -1,7 +1,7 @@
 import catalogo from './validacionCatalogo.json' with { type: 'json' };
 import { codigoAssa } from './leerCorte.js';
 import { calcularFamilia, fechaLote, generarProgramas, entidadesVacias, desplazarEntidades, unirEntidades } from './faseA.js';
-import { ALTO_BLOQUE_MM, CANALONES_POR_BLOQUE, bloqueCanalon, canalonDe, juegosCanalon } from './canalon.js';
+import { CANALONES_POR_BLOQUE, bloqueCanalon, canalonDe, juegosCanalon, pilaCanalon } from './canalon.js';
 
 // Textos como en los cortes mandados: rótulos de 20 cm, números de línea y palet de 3 m, listado de 40 cm.
 const ROTULO = 200, GRANDE = 3000, LISTA = 400, PASO_FILA = 2040 + 5000, HUECO = 500, SEPARACION_PALETS = 15000;
@@ -53,13 +53,16 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados = cata
     for (const conJuego of Map.groupBy(deCorte.filter(l => l.canalon), l => JSON.stringify(l.canalon)).values()) {
       const canalon = conJuego[0].canalon, juegos = juegosCanalon(conJuego.reduce((s, l) => s + l.cantidad, 0));
       const refs = [...new Set(conJuego.map(l => l.CodArticle))], fila = filas.find(f => f.grupo.includes(conJuego[0]));
-      for (const tipo of /** @type {const} */ (['combinado', 'mitades'])) if (juegos[tipo]) {
-        const b = bloqueCanalon(canalon, tipo), e = entidadesVacias();
+      // Justo lo pedido: los combinados completos con su «x» y una pila con el resto (Iván, 28/10/2026).
+      const bloques = [...juegos.completos ? [{ b: bloqueCanalon(canalon, 'combinado'), x: juegos.completos }] : [],
+        ...juegos.resto ? [{ b: pilaCanalon(canalon, juegos.resto.enteros, juegos.resto.parejas), x: 1 }] : []];
+      for (const { b, x } of bloques) {
+        const e = entidadesVacias();
         e.lineas.push(...b.lineas);
-        e.textos.push({ capa: 'texto', x: 100, y: ALTO_BLOQUE_MM + 120, h: ROTULO, literal: true, valor: refs.join(' ') },
-          { capa: 'texto', x: 100, y: ALTO_BLOQUE_MM + 420, h: ROTULO, literal: true, valor: `x${juegos[tipo]}` });
+        e.textos.push({ capa: 'texto', x: 100, y: b.altoMm + 120, h: ROTULO, literal: true, valor: refs.join(' ') },
+          { capa: 'texto', x: 100, y: b.altoMm + 420, h: ROTULO, literal: true, valor: `x${x}` });
         fila.programas.push({ tipo: 'canalon', codigo: `CANALÓN ${2 * canalon.mitad / 10}`, referencias: refs, panos: 0, palet,
-          canalones: CANALONES_POR_BLOQUE[tipo], repeticiones: juegos[tipo], largoMm: b.largoMm, anchoOcupadoMm: ALTO_BLOQUE_MM, entidades: e });
+          canalones: b.canalones, repeticiones: x, largoMm: b.largoMm, anchoOcupadoMm: b.altoMm, entidades: e });
       }
     }
     // Cada fila es una tirada del rollo con el orillo abajo (y = 0 de la fila); las piezas van seguidas, sin girar.
@@ -101,10 +104,10 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados = cata
     const unidades = ps.reduce((s, p) => s + (canalon ? p.canalones : p.panos) * p.repeticiones, 0);
     const pedidas = validadas.filter(l => (l.palet ?? 0) === (p0.palet ?? 0) && (canalon ? p0.referencias.includes(l.CodArticle) : l.codigo === p0.codigo))
       .reduce((s, l) => s + l.cantidad, 0);
-    const como = ps.map(p => canalon ? `x${p.repeticiones} bloque ${p.canalones === CANALONES_POR_BLOQUE.combinado ? 'combinado (8 enteros + 14 mitades)' : 'de 15 mitades'}`
+    const como = ps.map(p => canalon ? `x${p.repeticiones} ${p.canalones === CANALONES_POR_BLOQUE.combinado ? 'bloque combinado (8 enteros + 14 mitades)' : `pila de ${Math.ceil(p.canalones / 2)} ${Math.ceil(p.canalones / 2) === 1 ? 'entero' : 'enteros'} + ${2 * Math.floor(p.canalones / 2)} mitades`}`
       : `x${p.repeticiones} de ${p.unidos ? `${p.filas} ${p.filas === 1 ? 'fila' : 'filas'} de 2 unidos` : `${p.panos} ${p.panos === 1 ? 'paño' : 'paños'}`}`);
     return { palet: p0.palet ?? null, referencia: canalon ? p0.codigo : validadas.find(l => l.codigo === p0.codigo)?.CodArticle ?? p0.codigo,
-      referencias: canalon ? p0.referencias : undefined, unidades, como, pedidas, cuadra: canalon ? unidades >= pedidas : unidades === pedidas };
+      referencias: canalon ? p0.referencias : undefined, unidades, como, pedidas, cuadra: unidades === pedidas };
   }).sort((a, b) => (a.palet ?? 1e9) - (b.palet ?? 1e9) || String(a.referencia).localeCompare(String(b.referencia)));
   return { nombre, fecha, lineas: lineas.map(({ calculo: _calculo, ...l }) => l), programas, reparto, entidades, cortador,
     avisos: sinPalet ? [`Falta el palet de ${sinPalet} ${sinPalet === 1 ? 'línea' : 'líneas'}: ponlo del correo de Producción.`] : [],

@@ -46,9 +46,10 @@ it('420150: canalones en bloques de la plantilla, juntando las referencias del m
   expect(lote.lineas.map(x => x.estado)).toEqual(['validado', 'validado', 'validado']);
   const canalones = lote.programas.filter(p => p.tipo === 'canalon');
   expect(canalones.map(p => [p.codigo, p.largoMm, p.repeticiones, p.referencias.length])).toEqual([
-    ['CANALÓN 361', 3610, 1, 2], ['CANALÓN 361', 1805, 1, 2], ['CANALÓN 360', 3600, 1, 1]]);
+    ['CANALÓN 361', 3610, 1, 2], ['CANALÓN 361', 3610, 1, 2], ['CANALÓN 360', 3600, 1, 1]]);
   const hechos = codigo => canalones.filter(p => p.codigo === codigo).reduce((s, p) => s + p.canalones * p.repeticiones, 0);
-  expect(hechos('CANALÓN 361')).toBeGreaterThanOrEqual(22);
+  // Justo lo pedido: 0090 (20) + 0092 (2) = 22 canalones de 361.
+  expect(hechos('CANALÓN 361')).toBe(22);
   expect(hechos('CANALÓN 360')).toBe(CANALONES_POR_BLOQUE.combinado);
   // Una fila por referencia: sus programas comparten la tirada (misma y) y van seguidos.
   for (const fila of Map.groupBy(lote.programas, p => p.y).values()) expect(fila.every((p, i) => !i || p.x > fila[i - 1].x)).toBe(true);
