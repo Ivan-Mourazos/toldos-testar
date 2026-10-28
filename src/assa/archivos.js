@@ -16,7 +16,10 @@ const huella = dato => createHash('sha256').update(JSON.stringify(dato)).digest(
 
 /** Plano de revisión en metros y sin hojas: el mismo extractor CORTE del resto de la web. */
 export function planoDelLote(lote) {
-  const xmax = Math.max(1, ...lote.programas.map(p => p.x + p.largoMm)) / 1000 + 1;
+  // El recuadro CORTE abarca todo el lote: los palets, sus filas, los números grandes y el listado de cada palet.
+  const e = lote.entidades, xs = [0, ...e.lineas.flatMap(l => [l.x1, l.x2]), ...e.textos.flatMap(t => [t.x, t.x + String(t.valor).length * t.h * 0.7])];
+  const ys = [0, 2040, ...e.lineas.flatMap(l => [l.y1, l.y2]), ...e.textos.flatMap(t => [t.y, t.y + t.h])];
+  const [xmin, xmax, ymin, ymax] = [Math.min(...xs) / 1000 - 1, Math.max(...xs) / 1000 + 1, Math.min(...ys) / 1000 - 1, Math.max(...ys) / 1000 + 1];
   let dxf = escribirDxf2004(lote.entidades, { dx: 0, dy: 0, escala: .001, leyenda: false }).replace(/\r\n/g, '\n');
   // Se añade una capa de revisión que jamás llega al bot. Sus entidades usan el modelo 1F de la plantilla común.
   const ini = dxf.indexOf('  0\nTABLE\n  2\nLAYER\n'), fin = dxf.indexOf('  0\nENDTAB\n', ini);
@@ -28,8 +31,8 @@ export function planoDelLote(lote) {
   const tabla = dxf.slice(ini, fin).replace(/( 70\n\s*)(\d+)/, (_m, p, n) => p + (Number(n) + 1));
   dxf = dxf.slice(0, ini) + tabla + capa + dxf.slice(fin);
   const comun = tipo => `  0\n${tipo}\n  5\n${id()}\n330\n1F\n100\nAcDbEntity\n  8\nRECUADROS\n`;
-  const marco = comun('LWPOLYLINE') + `100\nAcDbPolyline\n 90\n4\n 70\n1\n 10\n-1\n 20\n-1\n 10\n${xmax}\n 20\n-1\n 10\n${xmax}\n 20\n3\n 10\n-1\n 20\n3\n`;
-  const titulo = comun('TEXT') + '100\nAcDbText\n 10\n-1\n 20\n3.2\n 30\n0\n 40\n0.15\n  1\nCORTE\n100\nAcDbText\n';
+  const marco = comun('LWPOLYLINE') + `100\nAcDbPolyline\n 90\n4\n 70\n1\n 10\n${xmin}\n 20\n${ymin}\n 10\n${xmax}\n 20\n${ymin}\n 10\n${xmax}\n 20\n${ymax}\n 10\n${xmin}\n 20\n${ymax}\n`;
+  const titulo = comun('TEXT') + `100\nAcDbText\n 10\n${xmin}\n 20\n${ymax + 0.2}\n 30\n0\n 40\n0.15\n  1\nCORTE\n100\nAcDbText\n`;
   const comienzo = dxf.indexOf('\nENTITIES\n') + '\nENTITIES\n'.length;
   const end = dxf.indexOf('  0\nENDSEC\n', comienzo);
   return (dxf.slice(0, end) + marco + titulo + dxf.slice(end)).replace(/(\$HANDSEED\n\s*5\n)[0-9A-F]+/, `$1${id()}`).replace(/\n/g, '\r\n');
@@ -43,8 +46,11 @@ export function crearServicioLotes({ carpeta = path.resolve('tmp/combursa'), oda
     fechaLote(input.fecha);
     const lineas = await leer(input.fecha), sueltas = input.sueltas ?? {};
     if (typeof sueltas !== 'object' || Array.isArray(sueltas) || Object.values(sueltas).some(v => typeof v !== 'boolean')) throw error('Las opciones por referencia deben ser casillas de sueltas.');
-    const lote = preparar(input.fecha, lineas, sueltas);
-    const firma = huella({ lineas, sueltas: Object.entries(sueltas).sort(([a], [b]) => a.localeCompare(b)), version: 1 });
+    const palets = input.palets ?? {};
+    if (typeof palets !== 'object' || Array.isArray(palets) || Object.values(palets).some(v => !Number.isSafeInteger(v) || v < 1 || v > 99)) throw error('El palet de cada línea debe ser un número del 1 al 99.');
+    const lote = preparar(input.fecha, lineas, sueltas, undefined, { palets });
+    const ordenadas = o => Object.entries(o).sort(([a], [b]) => a.localeCompare(b));
+    const firma = huella({ lineas, sueltas: ordenadas(sueltas), palets: ordenadas(palets), version: 2 });
     const raiz = path.join(base, 'COMBURSA', input.fecha.slice(0, 4));
     const borradores = path.join(raiz, 'Borradores'), interno = path.join(raiz, 'Registro');
     const manifest = path.join(interno, input.fecha + '.json');
@@ -80,6 +86,7 @@ export function crearServicioLotes({ carpeta = path.resolve('tmp/combursa'), oda
     },
     abrir: accion(async (ctx, input) => {
       if (!ctx.lote.programas.length) throw error('No hay corte validado para preparar: todas las líneas quedan a mano.');
+      if (!ctx.lote.paletsCompletos) throw error('Pon el palet de todas las líneas del corte antes de abrirlo.');
       if (!oda.disponible) throw error('Configura ODA para preparar y abrir el DWG del lote.');
       const respuesta = await ctx.flujo.borrador({ orderCode: ctx.lote.nombre, regenerar: input.regenerar === true,
         preparar: async carpeta => ({ avisos: ctx.lote.aMano ? [`${ctx.lote.aMano} líneas a mano: no están incluidas en este corte.`] : [],

@@ -19,7 +19,10 @@ fs.mkdirSync(carpeta, { recursive: true });
 const entrada = process.env.ASSA_RPS;
 const lineas = process.argv.includes('--actualizar-rps') ? await leerLoteRps(fecha) :
   JSON.parse(fs.readFileSync(entrada, 'utf8')).lineas.filter(l => l.entregaSolicitada === fecha);
-const lote = prepararLote(fecha, lineas);
+// Palets de prueba en ASSA_PALETS: {"AR.26.05047": 1, "AR.26.05064/1": 1, …}; la línea manda sobre el pedido.
+const porPedido = process.env.ASSA_PALETS ? JSON.parse(process.env.ASSA_PALETS) : {};
+const palets = Object.fromEntries(lineas.map(l => [l.IDOrderLine, porPedido[`${l.CodOrder}/${l.NumLine}`] ?? porPedido[l.CodOrder]]).filter(([, p]) => p));
+const lote = prepararLote(fecha, lineas, {}, undefined, { palets });
 const local = path.join(carpeta, lote.nombre + '.dxf');
 if (!lote.programas.length) throw new Error('No hay líneas validadas: no se escribe un corte vacío.');
 fs.writeFileSync(path.join(carpeta, 'rps.json'), JSON.stringify({ recogido: new Date().toISOString(), lineas }, null, 2));

@@ -35,6 +35,7 @@
 .combursa-manual { color: var(--tramo-trabajo); }
 .combursa-listado summary { color: var(--tramo-trabajo); cursor: pointer; font-weight: 650; }
 .combursa-listado details p { margin: 6px 0; line-height: 1.45; }
+.combursa-palet { width: 56px; padding: 4px 6px; font: inherit; text-align: center; }
 .combursa-suelta { display: flex; gap: 5px; align-items: center; font-size: 11px; }
 .combursa-suelta input { accent-color: var(--color-brand-600); }
 .combursa-corte { margin-top: 22px; }

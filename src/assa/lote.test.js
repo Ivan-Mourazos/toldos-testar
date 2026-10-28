@@ -49,7 +49,8 @@ it('420150: canalones en bloques de la plantilla, juntando las referencias del m
   const hechos = codigo => canalones.filter(p => p.codigo === codigo).reduce((s, p) => s + p.canalones * p.repeticiones, 0);
   expect(hechos('CANALÓN 361')).toBeGreaterThanOrEqual(22);
   expect(hechos('CANALÓN 360')).toBe(CANALONES_POR_BLOQUE.combinado);
-  expect(lote.programas.every(p => p.y === 0)).toBe(true);
+  // Una fila por referencia: sus programas comparten la tirada (misma y) y van seguidos.
+  for (const fila of Map.groupBy(lote.programas, p => p.y).values()) expect(fila.every((p, i) => !i || p.x > fila[i - 1].x)).toBe(true);
 });
 
 it('420150 sin juego de canalones para su NB en la plantilla: a mano', () => {
@@ -67,4 +68,31 @@ it('habilita la forma contrastada aunque ningún lote real cuadrara en cantidad,
   const lote = prepararLote('2026-10-31', [l], {}, certificados);
   expect(lote.lineas[0].estado).toBe('validado');
   expect(lote.programas.reduce((n, p) => n + p.panos * p.repeticiones, 0)).toBe(41);
+});
+
+// Iván, 28/10/2026: «ponerlos como en los que se han mandado a corte, por palets: textos enormes y debajo todo lo que
+// lleva el palet con su referencia y cantidades».
+it('por palets: PALET n enorme, el nº de línea de cada fila y el listado del palet debajo', () => {
+  const ls = [l, { ...l, IDOrderLine: 'b', CodOrder: 'AR.26.04864', NumLine: 3, of_: '0232999', cantidad: 2 },
+    { ...l, IDOrderLine: 'c', NumLine: 4, CodArticle: 'H0K430125-0002', descripcion: 'DACHPLANE NB=3450+3 NT=600+25', cantidad: 2 }];
+  const lote = prepararLote('2026-10-31', ls, {}, certificado, { palets: { a: 2, b: 1, c: 2 } });
+  expect(lote.paletsCompletos).toBe(true);
+  const textos = lote.entidades.textos.map(t => t.valor);
+  expect(textos).toEqual(expect.arrayContaining(['PALET 1', 'PALET 2', '1', '3']));
+  expect(lote.entidades.textos.find(t => t.valor === 'PALET 1').h).toBe(3000);
+  expect(textos).toContain('L1   H0K420102-0034   8 UDS   AR.26.04704   OF 0232434');
+  expect(textos).toContain('L4   H0K430125-0002   2 UDS   AR.26.04704   OF 0232434   A MANO');
+  // Cada palet tiene sus piezas: la misma referencia en dos palets se corta en los dos, con su cantidad.
+  const porPalet = p => lote.programas.filter(q => q.palet === p).reduce((n, q) => n + q.panos * q.repeticiones, 0);
+  expect([porPalet(1), porPalet(2)]).toEqual([2, 8]);
+  expect(lote.reparto.map(r => r.palet)).toEqual([2, 1]);
+  const x1 = lote.entidades.textos.find(t => t.valor === 'PALET 1').x, x2 = lote.entidades.textos.find(t => t.valor === 'PALET 2').x;
+  expect(x1).toBeLessThan(x2);
+});
+
+it('sin palet: aviso y no se da el lote por completo', () => {
+  const lote = prepararLote('2026-10-31', [l], {}, certificado);
+  expect(lote.paletsCompletos).toBe(false);
+  expect(lote.avisos[0]).toMatch(/palet/);
+  expect(lote.entidades.textos.map(t => t.valor)).toContain('SIN PALET');
 });

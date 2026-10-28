@@ -96,9 +96,9 @@ export function generarProgramas(g, { sueltas = false } = {}) {
   return cantidades.filter(([filas, , r]) => filas > 0 && r > 0).map(([filas, enFila, repeticiones]) => {
     const fila = enFila === 2 ? pareja(g.pieza) : g.pieza, entidades = entidadesVacias();
     for (let i = 0; i < filas; i++) unirEntidades(entidades, desplazarEntidades(fila.entidades, 0, i * alto));
-    entidades.textos.push({ capa: 'texto', x: 100, y: filas * alto + 80, h: 40,
+    entidades.textos.push({ capa: 'texto', x: 100, y: filas * alto + 120, h: 200,
       literal: true, valor: g.trazabilidad.referencia });
-    entidades.textos.push({ capa: 'texto', x: 100, y: filas * alto + 180, h: 60,
+    entidades.textos.push({ capa: 'texto', x: 100, y: filas * alto + 420, h: 200,
       literal: true, valor: `x${repeticiones}` });
     return { panos: filas * enFila, filas, unidos: enFila === 2, repeticiones, largoMm: fila.medidasMm[0],
       anchoOcupadoMm: filas * alto, entidades };

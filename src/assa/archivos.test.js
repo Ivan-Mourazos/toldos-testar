@@ -9,7 +9,7 @@ const raiz = path.resolve('tmp/assa-archivos-tests');
 afterEach(() => fs.rm(raiz, { recursive: true, force: true }));
 const linea = { IDOrderLine: 'a', CodOrder: 'AR.26.04704', NumLine: 1, CodArticle: 'H0K420102-0034', descripcion: 'NH3200 NT600', cantidad: 8, of_: '0232434', entregaSolicitada: '2026-10-31' };
 const certificados = { referencias: { '420102-0034': { descripciones: [{ descripcion: linea.descripcion, corteMm: [3010, 666], cuadran: 2, geometria: 2, ultimaGeometria: true }] } } };
-const preparar = (f, ls, s) => prepararLote(f, ls, s, certificados);
+const preparar = (f, ls, s, _c, o) => prepararLote(f, ls, s, certificados, o);
 
 it('el plano sin presentaciones conserva arcos, textos y mm al pasar por el flujo del DWG', () => {
   const lote = preparar('2026-10-31', [linea], {});
@@ -26,8 +26,11 @@ it('exige abrir, confirmar, RPS sin cambios y DWG sin cambios; el envío de prue
   let lineas = [linea];
   const servicio = crearServicioLotes({ carpeta: raiz, leer: async () => lineas, preparar,
     oda: { disponible: true, convertir: async b => b } });
-  const input = { fecha: '2026-10-31', savedBy: 'IVÁN', sueltas: {} };
+  const input = { fecha: '2026-10-31', savedBy: 'IVÁN', sueltas: {}, palets: { a: 1 } };
   await expect(servicio.mandar(input)).rejects.toThrow(/confirmar/);
+  // El palet lo pone el técnico: sin él no se abre el corte, y solo se admite un número.
+  await expect(servicio.abrir({ ...input, palets: {} })).rejects.toThrow(/palet/);
+  await expect(servicio.vista({ ...input, palets: { a: 'PALET 1' } })).rejects.toThrow(/palet/);
   await servicio.abrir(input);
   await servicio.confirmar(input);
   await servicio.abrir({ ...input, regenerar: true });
@@ -55,10 +58,11 @@ it('no admite una carpeta de producción ni fabrica sin OF o sin programas valid
 it('bloquea el envío si el DWG cambia después de confirmar o se eligen sueltas', async () => {
   const servicio = crearServicioLotes({ carpeta: raiz, leer: async () => [linea], preparar,
     oda: { disponible: true, convertir: async b => b } });
-  const input = { fecha: '2026-10-31', savedBy: 'IVÁN', sueltas: {} };
+  const input = { fecha: '2026-10-31', savedBy: 'IVÁN', sueltas: {}, palets: { a: 1 } };
   await servicio.abrir(input);
   await servicio.confirmar(input);
   await expect(servicio.mandar({ ...input, sueltas: { '420102-0034': true } })).rejects.toThrow(/opciones/);
+  await expect(servicio.mandar({ ...input, palets: { a: 2 } })).rejects.toThrow(/opciones/);
   const dwg = path.join(raiz, 'COMBURSA/2026/Borradores/LOTE 31-10.dwg');
   const original = await fs.readFile(dwg, 'utf8');
   const cambiado = original.replaceAll('3.010000', '3.020000');

@@ -1,13 +1,15 @@
 import catalogo from './validacionCatalogo.json' with { type: 'json' };
 import { codigoAssa } from './leerCorte.js';
 import { calcularFamilia, fechaLote, generarProgramas, entidadesVacias, desplazarEntidades, unirEntidades } from './faseA.js';
-import { buscarColocacion } from '../domain/corteLona/colocacionTetris.ts';
 import { ALTO_BLOQUE_MM, CANALONES_POR_BLOQUE, bloqueCanalon, canalonDe, juegosCanalon } from './canalon.js';
+
+// Textos como en los cortes mandados: rótulos de 20 cm, números de línea y palet de 3 m, listado de 40 cm.
+const ROTULO = 200, GRANDE = 3000, LISTA = 400, PASO_FILA = 2040 + 5000, HUECO = 500, SEPARACION_PALETS = 15000;
 
 export const CANALON_SIN_PLANTILLA = '420150 a mano: la plantilla COMBURSA no tiene un juego de canalones para esta referencia y su NB.';
 
 /** Los datos enviados por el navegador son solo opciones: las líneas siempre vienen del SELECT. */
-export function prepararLote(fecha, lineasRps, sueltas = {}, certificados = catalogo) {
+export function prepararLote(fecha, lineasRps, sueltas = {}, certificados = catalogo, { palets = {} } = {}) {
   const nombre = fechaLote(fecha);
   if (new Set(lineasRps.map(l => l.IDOrderLine)).size !== lineasRps.length) throw new Error('Hay líneas duplicadas en el lote.');
   if (lineasRps.some(l => l.entregaSolicitada !== fecha)) throw new Error('Hay líneas de otra fecha de entrega.');
@@ -26,50 +28,67 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados = cata
     return { ...l, codigo: g.codigo, familia: g.familia, estado: motivos.length ? 'a-mano' : 'validado', motivos: [...new Set(motivos)],
       avisos: g.avisos, terminadoMm: g.terminadoMm, corteMm: g.pieza?.medidasMm, canalon, calculo: g };
   });
-  const programas = [], reparto = [];
-  for (const [codigo, ls] of Map.groupBy(lineas.filter(l => l.estado === 'validado'), l => l.codigo)) {
-    const firmas = new Set(ls.map(l => JSON.stringify(l.corteMm)));
-    if (firmas.size !== 1) {
-      for (const l of ls) { l.estado = 'a-mano'; l.motivos.push('La referencia tiene medidas distintas en el mismo lote.'); }
-      continue;
+  // El palet lo pone el técnico del correo de Producción (Iván, 28/10/2026: «de principio ponemos el palet a mano»).
+  for (const l of lineas) l.palet = Number.isSafeInteger(palets[l.IDOrderLine]) && palets[l.IDOrderLine] > 0 ? palets[l.IDOrderLine] : null;
+  for (const [, ls] of Map.groupBy(lineas.filter(l => l.estado === 'validado'), l => l.codigo)) {
+    if (new Set(ls.map(l => JSON.stringify(l.corteMm))).size === 1) continue;
+    for (const l of ls) { l.estado = 'a-mano'; l.motivos.push('La referencia tiene medidas distintas en el mismo lote.'); }
+  }
+  const validadas = lineas.filter(l => l.estado === 'validado');
+  const reparto = validadas.map(l => ({ pedido: l.CodOrder, numeroLinea: l.NumLine, linea: l.IDOrderLine, referencia: l.CodArticle, of: l.of_, cantidad: l.cantidad, palet: l.palet }));
+  const orden = (a, b) => String(a.CodOrder).localeCompare(String(b.CodOrder)) || (a.NumLine ?? 0) - (b.NumLine ?? 0);
+  const programas = [], entidades = entidadesVacias();
+  let x0 = 0;
+  // Como los cortes mandados (LOTE 31-10): una zona por palet con «PALET n» enorme; dentro, una fila por referencia con el
+  // número de su línea de pedido (RPS) en grande, y debajo todo lo que lleva el palet.
+  for (const [palet, ls] of [...Map.groupBy(lineas.filter(l => l.estado === 'validado' || l.palet), l => l.palet ?? 0)].sort((a, b) => (a[0] || 1e9) - (b[0] || 1e9))) {
+    const deCorte = ls.filter(l => l.estado === 'validado').sort(orden);
+    const filas = [...Map.groupBy(deCorte, l => l.codigo).values()].map(grupo => ({ grupo, programas: [] }));
+    for (const fila of filas) {
+      const cantidad = fila.grupo.reduce((n, l) => n + l.cantidad, 0), g = { ...fila.grupo[0].calculo, cantidadPedida: cantidad };
+      fila.programas.push(...generarProgramas(g, { sueltas: sueltas[fila.grupo[0].codigo] === true }).map(p => ({ ...p, codigo: fila.grupo[0].codigo, palet })));
     }
-    const cantidad = ls.reduce((n, l) => n + l.cantidad, 0), g = { ...ls[0].calculo, cantidadPedida: cantidad };
-    for (const p of generarProgramas(g, { sueltas: sueltas[codigo] === true })) programas.push({ ...p, codigo });
-    reparto.push(...ls.map(l => ({ pedido: l.CodOrder, numeroLinea: l.NumLine, linea: l.IDOrderLine, referencia: l.CodArticle, of: l.of_, cantidad: l.cantidad })));
-  }
-  // Un canalón por unidad, entero o dos mitades (taller, 28/10/2026). Las referencias con el mismo juego de la plantilla
-  // comparten bloques («en los cortes se pueden mezclar»); cada bloque se repite con su «x».
-  const conCanalon = lineas.filter(l => l.estado === 'validado' && l.canalon);
-  for (const ls of Map.groupBy(conCanalon, l => JSON.stringify(l.canalon)).values()) {
-    const canalon = ls[0].canalon, n = ls.reduce((s, l) => s + l.cantidad, 0), juegos = juegosCanalon(n);
-    const refs = [...new Set(ls.map(l => l.CodArticle))];
-    for (const tipo of /** @type {const} */ (['combinado', 'mitades'])) if (juegos[tipo]) {
-      const b = bloqueCanalon(canalon, tipo), entidades = entidadesVacias();
-      entidades.lineas.push(...b.lineas);
-      entidades.textos.push({ capa: 'texto', x: 100, y: ALTO_BLOQUE_MM + 80, h: 40, literal: true, valor: refs.join(' ') },
-        { capa: 'texto', x: 100, y: ALTO_BLOQUE_MM + 180, h: 60, literal: true, valor: `x${juegos[tipo]}` });
-      programas.push({ tipo: 'canalon', codigo: `CANALÓN ${2 * canalon.mitad / 10}`, referencias: refs, panos: 0,
-        canalones: CANALONES_POR_BLOQUE[tipo], repeticiones: juegos[tipo], largoMm: b.largoMm, anchoOcupadoMm: ALTO_BLOQUE_MM, entidades });
+    // Un canalón por unidad, entero o dos mitades (taller, 28/10/2026). Las referencias del palet con el mismo juego de la
+    // plantilla comparten bloques («en los cortes se pueden mezclar»); van en la fila de la primera que lo lleva.
+    for (const conJuego of Map.groupBy(deCorte.filter(l => l.canalon), l => JSON.stringify(l.canalon)).values()) {
+      const canalon = conJuego[0].canalon, juegos = juegosCanalon(conJuego.reduce((s, l) => s + l.cantidad, 0));
+      const refs = [...new Set(conJuego.map(l => l.CodArticle))], fila = filas.find(f => f.grupo.includes(conJuego[0]));
+      for (const tipo of /** @type {const} */ (['combinado', 'mitades'])) if (juegos[tipo]) {
+        const b = bloqueCanalon(canalon, tipo), e = entidadesVacias();
+        e.lineas.push(...b.lineas);
+        e.textos.push({ capa: 'texto', x: 100, y: ALTO_BLOQUE_MM + 120, h: ROTULO, literal: true, valor: refs.join(' ') },
+          { capa: 'texto', x: 100, y: ALTO_BLOQUE_MM + 420, h: ROTULO, literal: true, valor: `x${juegos[tipo]}` });
+        fila.programas.push({ tipo: 'canalon', codigo: `CANALÓN ${2 * canalon.mitad / 10}`, referencias: refs, panos: 0, palet,
+          canalones: CANALONES_POR_BLOQUE[tipo], repeticiones: juegos[tipo], largoMm: b.largoMm, anchoOcupadoMm: ALTO_BLOQUE_MM, entidades: e });
+      }
     }
+    // Cada fila es una tirada del rollo con el orillo abajo (y = 0 de la fila); las piezas van seguidas, sin girar.
+    let ancho = 0;
+    filas.forEach((fila, i) => {
+      const y = -i * PASO_FILA;
+      let x = x0;
+      for (const p of fila.programas) {
+        p.x = x; p.y = y; x += p.largoMm + HUECO;
+        unirEntidades(entidades, desplazarEntidades(p.entidades, p.x, p.y));
+        programas.push(p);
+      }
+      ancho = Math.max(ancho, x - x0);
+      const numeros = [...new Set(fila.grupo.map(l => l.NumLine))].join(' · ');
+      entidades.textos.push({ capa: 'texto', x: x0 - 1500 - GRANDE * 0.6 * numeros.length, y: y + 400, h: GRANDE, literal: true, valor: numeros });
+    });
+    entidades.textos.push({ capa: 'texto', x: x0, y: 2040 + 2500, h: GRANDE, literal: true, valor: palet ? `PALET ${palet}` : 'SIN PALET' });
+    const listado = ls.sort(orden).map(l => [`L${l.NumLine ?? '—'}`, l.CodArticle, `${l.cantidad} UDS`, l.CodOrder, `OF ${l.of_ || '—'}`,
+      l.estado === 'validado' ? '' : 'A MANO'].filter(Boolean).join('   '));
+    const yLista = -(Math.max(filas.length, 1) - 1) * PASO_FILA - 2500;
+    listado.forEach((valor, i) => entidades.textos.push({ capa: 'texto', x: x0, y: yLista - i * LISTA * 1.8, h: LISTA, literal: true, valor }));
+    ancho = Math.max(ancho, ...listado.map(v => v.length * LISTA * 0.7));
+    x0 += ancho + SEPARACION_PALETS;
   }
-  // Cada programa repetible conserva su orillo. El colocador común recibe una sola orientación
-  // y exige y=0: nunca gira ni convierte el borde abierto en un borde interior del rollo.
-  let x = 0;
-  const inicial = programas.map((p, i) => {
-    const r = { id: String(i), x, y: 0, w: p.largoMm + 300, h: p.anchoOcupadoMm, girada: false };
-    x += r.w; return r;
-  });
-  const colocadas = buscarColocacion(inicial.map(r => ({ id: r.id, formas: [{ w: r.w, h: r.h, girada: false }] })), 2040, inicial,
-    { restantes: 1000 }, rs => rs.every(r => r.y === 0));
-  const entidades = entidadesVacias();
-  for (const r of colocadas) {
-    const p = programas[Number(r.id)];
-    p.x = r.x; p.y = r.y;
-    unirEntidades(entidades, desplazarEntidades(p.entidades, p.x, p.y));
-  }
-  entidades.textos.push({ capa: 'texto', x: 0, y: 2400, h: 100, valor: nombre, literal: true });
+  const sinPalet = lineas.filter(l => l.estado === 'validado' && !l.palet).length;
+  entidades.textos.push({ capa: 'texto', x: 0, y: 2040 + 6500, h: 1000, valor: nombre, literal: true });
   return { nombre, fecha, lineas: lineas.map(({ calculo: _calculo, ...l }) => l), programas, reparto, entidades,
-    avisos: [],
+    avisos: sinPalet ? [`Falta el palet de ${sinPalet} ${sinPalet === 1 ? 'línea' : 'líneas'}: ponlo del correo de Producción.`] : [],
+    paletsCompletos: !sinPalet,
     totalUnidades: lineas.reduce((n, l) => n + Number(l.cantidad || 0), 0),
     aMano: lineas.filter(l => l.estado === 'a-mano').length };
 }

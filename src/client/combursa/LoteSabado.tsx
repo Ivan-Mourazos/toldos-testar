@@ -18,6 +18,8 @@ export default function LoteSabado({ onCerrar }: { onCerrar: () => void }) {
   const dialogo = useRef<HTMLDialogElement>(null);
   const [fecha, setFecha] = useState(proximoSabado);
   const [sueltas, setSueltas] = useState<Record<string, boolean>>({});
+  // El palet lo pone el técnico a mano, del correo de Producción (Iván, 28/10/2026).
+  const [palets, setPalets] = useState<Record<string, number>>({});
   const [lote, setLote] = useState<Lote | null>(null);
   const [ocupado, setOcupado] = useState(false);
   const [error, setError] = useState('');
@@ -28,16 +30,16 @@ export default function LoteSabado({ onCerrar }: { onCerrar: () => void }) {
   useEffect(() => { dialogo.current?.showModal(); }, []);
   const usuario = () => localStorage.getItem('toldos-testar-usuario') || '';
   const invalidar = () => { setAbierto(false); setConfirmado(false); setEnvio(''); };
-  const post = async (accion: string, opciones = sueltas) => {
+  const post = async (accion: string, opciones = sueltas, porLinea = palets) => {
     const respuesta = await fetch(`/api/assa/lote/${accion}`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fecha, sueltas: opciones, savedBy: usuario() }) });
+      body: JSON.stringify({ fecha, sueltas: opciones, palets: porLinea, savedBy: usuario() }) });
     const datos = await respuesta.json();
     if (!respuesta.ok) throw new Error(datos.error || 'No se pudo preparar el lote.');
     return datos;
   };
-  const cargar = async (opciones = sueltas) => {
-    setOcupado(true); setSueltas(opciones); setError(''); invalidar();
-    try { setLote(await post('vista', opciones) as Lote); }
+  const cargar = async (opciones = sueltas, porLinea = palets) => {
+    setOcupado(true); setSueltas(opciones); setPalets(porLinea); setError(''); invalidar();
+    try { setLote(await post('vista', opciones, porLinea) as Lote); }
     catch (e) { setLote(null); setError(e instanceof Error ? e.message : 'No se pudo leer RPS.'); }
     finally { setOcupado(false); }
   };
@@ -45,7 +47,7 @@ export default function LoteSabado({ onCerrar }: { onCerrar: () => void }) {
     setOcupado(true); setConfirmado(false); setEnvio('');
     try {
       const ok = await abrirCorteDwg({ ruta: '/api/assa/lote/borrador', orderCode: lote!.nombre,
-        cuerpo: { fecha, sueltas }, usuario: usuario(), preguntar: n.askForConfirmation, notify: n.notify });
+        cuerpo: { fecha, sueltas, palets }, usuario: usuario(), preguntar: n.askForConfirmation, notify: n.notify });
       setAbierto(ok);
     } finally { setOcupado(false); }
   };
@@ -62,6 +64,14 @@ export default function LoteSabado({ onCerrar }: { onCerrar: () => void }) {
     finally { setOcupado(false); }
   };
   const validas = lote ? lote.lineas.length - lote.aMano : 0;
+  // Al poner el palet en una línea, las del mismo pedido que aún no lo tienen van al mismo; luego se cambian una a una.
+  const conPalet = (l: Lote['lineas'][number], v: number | null) => {
+    const siguiente = { ...palets };
+    if (v == null || !Number.isInteger(v) || v < 1 || v > 99) { delete siguiente[l.IDOrderLine]; return siguiente; }
+    siguiente[l.IDOrderLine] = v;
+    for (const o of lote?.lineas ?? []) if (o.CodOrder === l.CodOrder && siguiente[o.IDOrderLine] === undefined) siguiente[o.IDOrderLine] = v;
+    return siguiente;
+  };
   return createPortal(<>
     <dialog ref={dialogo} className="combursa-dialogo" aria-labelledby="combursa-titulo" onCancel={e => { e.preventDefault(); if (!ocupado) onCerrar(); }}>
       <div className="combursa-pagina">
@@ -70,7 +80,7 @@ export default function LoteSabado({ onCerrar }: { onCerrar: () => void }) {
           <button className="boton-3d" type="button" disabled={ocupado} onClick={onCerrar}><ArrowLeft size={16} aria-hidden="true" /> Volver</button>
         </header>
         <form className="glass-panel combursa-fecha" onSubmit={e => { e.preventDefault(); void cargar(); }}>
-          <label><CalendarDays size={17} aria-hidden="true" /> Sábado de entrega<input type="date" value={fecha} disabled={ocupado} required onChange={e => { setFecha(e.target.value); setLote(null); setSueltas({}); invalidar(); }} /></label>
+          <label><CalendarDays size={17} aria-hidden="true" /> Sábado de entrega<input type="date" value={fecha} disabled={ocupado} required onChange={e => { setFecha(e.target.value); setLote(null); setSueltas({}); setPalets({}); invalidar(); }} /></label>
           <button className="boton-3d" type="submit" disabled={ocupado}>{ocupado ? 'Preparando…' : 'Leer lote de RPS'}</button>
           <p>420150 · 420102 · 420148</p>
         </form>
@@ -85,13 +95,16 @@ export default function LoteSabado({ onCerrar }: { onCerrar: () => void }) {
           <section className="glass-panel combursa-listado" aria-label="Líneas del lote">
             <header><h2>{lote.nombre}</h2><span>Rollo PLASTEL 204 · sin giros ni empates</span></header>
             {!lote.lineas.length ? <p>No hay líneas de ASSA con esta fecha de entrega.</p> : <div className="combursa-tabla-scroll"><table>
-              <thead><tr><th>Pedido / línea</th><th>Referencia</th><th>Descripción / corte en mm</th><th>Cantidad</th><th>OF</th><th>Comentario</th><th>Estado</th><th>Cortar</th></tr></thead>
+              <thead><tr><th>Pedido / línea</th><th>Referencia</th><th>Descripción / corte en mm</th><th>Cantidad</th><th>OF</th><th>Comentario</th><th>Estado</th><th>Palet</th><th>Cortar</th></tr></thead>
               <tbody>{lote.lineas.map(l => <tr key={l.IDOrderLine}>
                 <td>{l.CodOrder}<small>Línea {l.NumLine ?? '—'}</small></td>
                 <td className="combursa-referencia">{l.CodArticle}</td>
                 <td>{l.descripcion}{l.corteMm && <small>{l.corteMm.map(numero).join(' × ')} mm</small>}{l.avisos.map(a => <small className="combursa-nota" key={a}>{a}</small>)}</td>
                 <td className="combursa-numero">{numero(l.cantidad)}</td><td>{l.of_ || 'Sin OF'}</td><td>{l.comentarioLinea || '—'}</td>
                 <td>{l.estado === 'validado' ? <span className="combursa-validado">Validado</span> : <><strong className="combursa-manual">A mano</strong><small>{l.motivos[0]}</small>{l.motivos.length > 1 && <details><summary>Ver motivos</summary>{l.motivos.slice(1).map(m => <p key={m}>{m}</p>)}</details>}</>}</td>
+                <td><input className="combursa-palet" type="number" min={1} max={99} step={1} inputMode="numeric" disabled={ocupado}
+                  defaultValue={palets[l.IDOrderLine] ?? ''} key={`${l.IDOrderLine}-${palets[l.IDOrderLine] ?? ''}`} aria-label={`Palet de ${l.CodArticle} ${l.CodOrder} línea ${l.NumLine ?? '—'}`}
+                  onBlur={e => { const v = Number(e.target.value); if (e.target.value === '' ? palets[l.IDOrderLine] === undefined : v === palets[l.IDOrderLine]) return; void cargar(sueltas, conPalet(l, e.target.value === '' ? null : v)); }} /></td>
                 <td><label className="combursa-suelta"><input type="checkbox" disabled={ocupado || l.estado !== 'validado' || !l.codigo} checked={Boolean(l.codigo && sueltas[l.codigo])} aria-label={`Sueltas ${l.CodArticle} ${l.CodOrder} línea ${l.NumLine ?? '—'}`} onChange={e => { if (l.codigo) void cargar({ ...sueltas, [l.codigo]: e.target.checked }); }} />Sueltas</label></td>
               </tr>)}</tbody>
             </table></div>}
@@ -99,7 +112,7 @@ export default function LoteSabado({ onCerrar }: { onCerrar: () => void }) {
           {lote.programas.length > 0 && <VistaCorte programas={lote.programas} />}
           <footer className="glass-panel combursa-acciones">
             <div><strong>{envio ? 'Prueba enviada' : confirmado ? 'Corte confirmado' : abierto ? 'Revisa el DWG y confirma el corte' : 'Revisa la vista del corte'}</strong><small>{envio || `Destino de prueba: ${lote.destino}`}</small></div>
-            <button type="button" className="boton-3d" disabled={ocupado || !lote.programas.length || !lote.dwgDisponible} onClick={() => void abrir()}>Abrir corte</button>
+            <button type="button" className="boton-3d" disabled={ocupado || !lote.programas.length || !lote.dwgDisponible || !lote.paletsCompletos} onClick={() => void abrir()}>Abrir corte</button>
             <button type="button" className="boton-3d" disabled={ocupado || !abierto} onClick={() => void confirmar()}>Confirmar corte</button>
             <button type="button" className="boton-3d" disabled={ocupado || !confirmado || Boolean(envio)} onClick={() => void enviar()}>Enviar prueba al bot</button>
           </footer>
