@@ -1851,3 +1851,20 @@ Las 16 referencias con variantes quedan abiertas para confirmar la vista complet
 - **430172-0009**: forma coincide con plantilla; revisar cotas y textos; fuente elegida LOTE 31-10.dwg. [Variantes y plantilla](../../tmp/assa-investigacion/variantes-430172-0009.png).
 
 - **430172-0033**: forma coincide con plantilla; revisar cotas y textos; fuente elegida LOTE 23-05.dwg. [Variantes y plantilla](../../tmp/assa-investigacion/variantes-430172-0033.png).
+
+### Respuestas de Iván (28/10/2026)
+
+1. **Cifra del DWG distinta de NumLine:** «habrá errores». Son fallos de la hoja hecha a mano; la web usa siempre el
+   NumLine de RPS.
+2. **«Se corta en palet…»:** «es el palet donde va esa pieza». El palet es el de la pieza; no hay que separar destino y
+   lugar del corte.
+3. **«3 MM» / CUTTER 625 × 400:** «es una lona de 3 mm»; Iván especifica referencias y cantidades más adelante.
+4. **Parejas con raya central en techos:** «supongo; compruébalo en los cortes: si después lo ves unido en el corte, pues
+   ya sabes que sí se juntan». Regla: se juntan de dos en dos donde los cortes reales lo muestran (los 13 grupos de
+   techo de la sección 6); comprobar por referencia antes de generarlo.
+5. **Techos de fondo 600, 691 o 680:** «si no son 3 o más, pueden ir a 69,1 porque no cubren el ancho del paño». Regla:
+   680 solo cuando van tres o más en el ancho del rollo; sueltas o de dos, 691.
+6. **Dibujo de confección vigente:** «sí, lo lógico es eso»: el del lote más reciente.
+7. **Lo que recibe el cortador:** «solo le llega el papel donde le ponen las cantidades que debe cortar de cada referencia,
+   y debe coincidir con las cantidades que salen en el corte que le pasemos». La web debe sacar esa hoja de cantidades
+   por referencia, cuadrada con el corte (repeticiones «x» incluidas).
