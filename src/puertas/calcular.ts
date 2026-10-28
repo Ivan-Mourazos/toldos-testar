@@ -263,14 +263,17 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     const s = sacoApilable(p), h = a.doble ? 37 : s.corte;
     const w = a.doble ? p.frente-6 : ancho;
     const pestana = a.doble ? 12 : 10, altoPestana = a.doble ? 14 : s.altoPestana;
-    const entero = sacoConPestana(w,h,pestana,altoPestana,2,a.doble?'Envoltorio del doble saco':'Saco');
+    // La pestaña a 2 cm del borde de arriba, como en el dibujo (Iván, 28/10/2026, AR2605035: en el corte salía a 2 del de
+    // abajo, el saco volteado). El corte dibuja la pieza con la y hacia arriba.
+    const desdePestana = h - 2 - altoPestana;
+    const entero = sacoConPestana(w,h,pestana,altoPestana,desdePestana,a.doble?'Envoltorio del doble saco':'Saco');
     if(a.doble) {
       entero.textos.push({x:pestana+2,y:5,valor:'CENTRAR EL SACO · DOBLAR A LA MITAD · SOLDAR 2 CM'});
       paneles[0].pieza.textos.push({x:ancho/2,y:15,valor:'SACO NORMAL INTEGRADO · VELCRO REVÉS 5 BRAVO / DERECHO 5 SUAVE'});
     }
     if (/negro|9005|\bblack\b/i.test(p.color)) { entero.material=lona; entero.rollo=p.rollo; agregar(entero); }
     else {
-      const izquierdo = sacoConPestana(w/2+1,h,pestana,altoPestana,2,a.doble?'Envoltorio partido · con pestaña':'Saco partido · con pestaña');
+      const izquierdo = sacoConPestana(w/2+1,h,pestana,altoPestana,desdePestana,a.doble?'Envoltorio partido · con pestaña':'Saco partido · con pestaña');
       const derecho = pieza(a.doble?'Envoltorio partido · sin pestaña':'Saco partido · sin pestaña','saco',w/2+1,h,p.materialSaco,p.rolloSaco);
       numerarBorde(izquierdo,++numeroUnion,'derecha');
       numerarBorde(derecho,numeroUnion,'izquierda');
