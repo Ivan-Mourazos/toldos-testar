@@ -83,7 +83,7 @@ export default function LoteSabado({ onCerrar }: { onCerrar: () => void }) {
         <form className="glass-panel combursa-fecha" onSubmit={e => { e.preventDefault(); void cargar(); }}>
           <label><CalendarDays size={17} aria-hidden="true" /> Sábado de entrega<input type="date" value={fecha} disabled={ocupado} required onChange={e => { setFecha(e.target.value); setLote(null); setSueltas({}); setPalets({}); invalidar(); }} /></label>
           <button className="boton-3d" type="submit" disabled={ocupado}>{ocupado ? 'Preparando…' : 'Leer lote de RPS'}</button>
-          <p>420150 · 420102 · 420148</p>
+          <p>420102 · 420148 · 420150 · 430125 · 430127 · 430129 · 430172</p>
         </form>
         {error && <p role="alert" className="combursa-aviso">{error}</p>}
         {lote ? <>
