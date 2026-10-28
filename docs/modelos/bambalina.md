@@ -165,3 +165,21 @@ Límites: las bastillas 1, 3 y 4 y el paso 34 salen del plano del 4220, un únic
 | AR2505997, toldo 1 (OF 0223162) | 3 ml | 1,05 ml | `Q28` escrito a mano, sin fórmula; el cálculo da 35 cm × 3 paños |
 
 Con 2026, son 231 bambalinas reales de dos años sin ninguna diferencia atribuible a la web.
+
+## Corte de la bamba con onda (28/10/2026)
+
+Iván: «se cortan en la máquina con su forma y listo; siempre las medidas de la plantilla»; y que estén todas las formas
+«por si acaso».
+
+- **Formas:** las 15 de la plantilla de la oficina `\192.168.0.128\Oftecnica\Oficina Tecnica\DIBUJOS\TOLDOS\BAMBALINAS.dwg`,
+  sacadas por `scripts/bambalinas/extraer.mjs` a `src/domain/corteLona/bambalinasDatos.js` (paso y una onda de cada una).
+  Vueltas a montar sobre la plantilla, coinciden en todas. La EXTRASUAVE de la web es la SUPERSUAVE de la plantilla.
+- **NORMAL contrastada con el único corte a máquina con onda de 2026 (AR2603936):** arcos de radio 15,6, paso 26,06 y
+  7,1 de fondo, igual que la plantilla.
+- **Encaje (como AR2603936):** solo ondas enteras entre los B.N(2) de las puntas, centradas; lo que sobra, recto, a la
+  altura donde arranca la onda. La onda va en la capa CUTTER (cuchilla), 1 cm por encima del borde de abajo de la tira
+  (no cortar a menos de 1 cm de otro corte); ese centímetro se tira.
+- **Alto de la tira:** como sin onda (bamba + 5), medido hasta lo más bajo de la onda, más el centímetro de holgura.
+- **Fuera por ahora (a mano):** la bamba con onda de las cortinas de PVC y la tira con onda partida en trozos.
+
+Dudas abiertas: Q-BO01 y Q-BO02 en [dudas-abiertas.md](./dudas-abiertas.md).

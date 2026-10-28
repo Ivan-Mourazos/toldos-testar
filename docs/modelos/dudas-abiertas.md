@@ -109,6 +109,15 @@ Contestadas el 30/09 (Iván):
 
 Las muestras de PDF que tenía que mirar el taller (Cambio de tela, Enrollable, Bambalina y Cambio Antica) se quitan: Iván, 03/10/2026, «olvídate».
 
+## Bambalinas con onda
+
+Añadidas el 28/10/2026 (ver [bambalina.md](./bambalina.md)):
+
+| Código | Pregunta | Ahora la web |
+| --- | --- | --- |
+| Q-BO01 | Con onda, ¿la bamba lleva bastilla abajo o va con remate (galón)? En la plantilla pone «REMATE AMARILLO» abajo y B.N(3) en las puntas; la web hace la tira como sin onda: bamba + 5 y B.N(2) en las puntas | La tira como sin onda, medida hasta lo más bajo de la onda |
+| Q-BO02 | ¿Cuánto separar la onda del borde de abajo de la tira? En AR2603936 iba a 2,75 del orillo | 1 cm |
+
 ## Solapas con velcro
 
 Contestada el 28/10/2026 (Iván: «las solapas sí pueden empatarse, así que están bien en el ejemplo»):
