@@ -1,5 +1,6 @@
 import { piezasCortina } from './cortina.js';
 import { piezasSolapas } from './solapas.js';
+import { HOLGURA_ONDA_MM } from './bambalina.js';
 
 // Estudio DXF: piezas de la lona de PVC de un toldo de fachada y su colocación en el rollo.
 // Medidas de entrada en cm (como el planteamiento); las piezas salen en mm (el DXF va en mm).
@@ -54,11 +55,13 @@ function piezasFachada({ letra, frenteTela, caidaTela, bamba, soloBamba = false,
   if (!Number.isFinite(bamba) || bamba < 0) throw new Error('Altura de bamba no válida.');
   const tira = bamba > 0 ? bamba + a.tiraExtraAltoCm : 0;
   // Con onda (bambalina.js), la tira lleva su forma abajo; el alto, hasta lo más bajo de la onda.
+  // Con onda, 1 cm más por debajo de ella (HOLGURA_ONDA_MM).
   const conOnda = onda ? { onda } : {};
-  if (soloBamba) return [{ nombre: `${letra} BAMBA`, largo: mm(frenteTela + a.tiraExtraLargoCm), alto: mm(tira), marcas: ['tira'], ...conOnda }];
+  const altoTira = mm(tira) + (onda ? HOLGURA_ONDA_MM : 0);
+  if (soloBamba) return [{ nombre: `${letra} BAMBA`, largo: mm(frenteTela + a.tiraExtraLargoCm), alto: altoTira, marcas: ['tira'], ...conOnda }];
   const cuerpo = caidaTela - tira;
   if (cuerpo <= 0) throw new Error('La tira no puede ocupar toda la caída.');
-  if (a.empate === 'vertical' && frenteTela > anchoRollo) return piezasVerticales({ letra, frenteTela, cuerpo, tira, anchoRollo, a, conOnda });
+  if (a.empate === 'vertical' && frenteTela > anchoRollo) return piezasVerticales({ letra, frenteTela, cuerpo, tira, anchoRollo, a, conOnda, altoTira });
   const paños = [];
   let resto = cuerpo;
   // Si el frente cabe en el rollo, el cuerpo se puede cortar girado (frente a lo ancho del rollo)
@@ -77,7 +80,7 @@ function piezasFachada({ letra, frenteTela, caidaTela, bamba, soloBamba = false,
     // La varilla inferior engancha el cuerpo al tubo de carga, haya bamba o no (Iván).
     marcas: [...(i === 0 ? ['abajo'] : []), ...(i === paños.length - 1 ? ['arriba'] : [])]
   }));
-  if (tira) piezas.push({ nombre: `${letra} BAMBA`, largo: mm(frenteTela + a.tiraExtraLargoCm), alto: mm(tira), marcas: ['tira'], ...conOnda });
+  if (tira) piezas.push({ nombre: `${letra} BAMBA`, largo: mm(frenteTela + a.tiraExtraLargoCm), alto: altoTira, marcas: ['tira'], ...conOnda });
   return piezas;
 }
 
@@ -86,7 +89,7 @@ function piezasFachada({ letra, frenteTela, caidaTela, bamba, soloBamba = false,
  * se reparte en paños iguales a lo largo de la caída, con los cm de empate en cada unión, como en
  * AR2604097 y AR2604784. La tira va entera o, con `tiraPartida`, en tantos trozos como paños.
  */
-function piezasVerticales({ letra, frenteTela, cuerpo, tira, anchoRollo, a, conOnda }) {
+function piezasVerticales({ letra, frenteTela, cuerpo, tira, anchoRollo, a, conOnda, altoTira }) {
   const anchos = (total) => {
     let n = 2;
     while ((total + a.empateCm * (n - 1)) / n > anchoRollo) n++;
@@ -95,7 +98,7 @@ function piezasVerticales({ letra, frenteTela, cuerpo, tira, anchoRollo, a, conO
   const piezas = anchos(frenteTela + 2 * a.lateralVerticalCm).map((ancho, i) => ({
     nombre: `${letra}${i + 1}`, largo: mm(ancho), alto: mm(cuerpo), marcas: ['arriba', 'abajo']
   }));
-  if (tira && !a.tiraPartida) piezas.push({ nombre: `${letra} BAMBA`, largo: mm(frenteTela + a.tiraExtraLargoCm), alto: mm(tira), marcas: ['tira'], ...conOnda });
+  if (tira && !a.tiraPartida) piezas.push({ nombre: `${letra} BAMBA`, largo: mm(frenteTela + a.tiraExtraLargoCm), alto: altoTira, marcas: ['tira'], ...conOnda });
   if (tira && a.tiraPartida && conOnda.onda) throw new Error('Bambalina con onda en trozos: el corte se hace a mano por ahora.');
   if (tira && a.tiraPartida) {
     anchos(frenteTela + a.tiraExtraLargoCm).forEach((ancho, i) =>

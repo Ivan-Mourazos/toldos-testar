@@ -1,6 +1,6 @@
 import { AJUSTES_POR_DEFECTO } from './despiece.js';
 import { anchoArial } from './texto.js';
-import { bordeOndulado } from './bambalina.js';
+import { bordeOndulado, HOLGURA_ONDA_MM } from './bambalina.js';
 
 // La tira lleva B.N(2) en cada punta (tiraExtraLargoCm): las ondas, enteras, entre los dos.
 const MARGEN_ONDA = (AJUSTES_POR_DEFECTO.tiraExtraLargoCm / 2) * 10;
@@ -29,7 +29,7 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
     if (p.onda) {
       // Bambalina con onda (bambalina.js): el borde de abajo, con su forma y con la cuchilla, aunque vaya en el orillo;
       // las ondas enteras entre los B.N(2) de las puntas. Girada, el de abajo queda a la derecha.
-      const onda = bordeOndulado(p.onda, p.largo, MARGEN_ONDA);
+      const onda = bordeOndulado(p.onda, p.largo, MARGEN_ONDA).map(([u, v]) => [u, v + HOLGURA_ONDA_MM]);
       const enRollo = ([u, v]) => (p.girada ? [x0 + p.alto - v, y0 + u] : [x0 + u, y0 + v]);
       for (let k = 0; k < onda.length - 1; k++) {
         const [[a, b], [c, d]] = [enRollo(onda[k]), enRollo(onda[k + 1])];
@@ -95,6 +95,21 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
       if (m === 'tira') marca(ajustes.varillaTiraMm, 20);
     }
     if (p.sinRotulo) continue;
+    if (p.onda) {
+      // Tira con onda: nombre y OF en fila a lo largo, en la franja que queda entre lo más alto de la onda y el borde
+      // de arriba, sin pisar la onda.
+      const fondo = HOLGURA_ONDA_MM + Math.max(...bordeOndulado(p.onda, p.largo, MARGEN_ONDA).map(([, v]) => v));
+      const franja = Math.max(1, p.alto - fondo), lineasTexto = [p.nombre, ...(p.of ? [p.of] : [])];
+      const h = Math.min(300, franja * 0.6, ...lineasTexto.map((v) => (p.largo / lineasTexto.length) * 0.8 / anchoArial(v, 1)));
+      const v = fondo + franja / 2;
+      lineasTexto.forEach((valor, i) => {
+        const u = (p.largo * (i + 0.5)) / lineasTexto.length;
+        textos.push(p.girada
+          ? { capa: 'texto', x: x0 + p.alto - v, y: y0 + u, h, valor: valor.toUpperCase(), giro: 90, centrado: true }
+          : { capa: 'texto', x: x0 + u, y: y0 + v, h, valor: valor.toUpperCase(), centrado: true });
+      });
+      continue;
+    }
     // Textos centrados en la pieza y en mayúsculas (Iván, 19/10/2026); a lo largo de la pieza,
     // girados 90° si la pieza está girada. Con REVÉS, nombre y REVÉS quedan a los dos lados del centro.
     // Los sacos de stock llevan la OF de stock, SACO, su medida y STOCK (como AR2602119).

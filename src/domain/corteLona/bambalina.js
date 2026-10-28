@@ -4,6 +4,10 @@
 // recto en las puntas, a la altura donde arranca la onda. La onda se corta con la cuchilla (CUTTER).
 import { ONDAS_BAMBALINA } from './bambalinasDatos.js';
 
+/** La onda va 1 cm por encima del borde de abajo de la tira: la cuchilla no corta a menos de 1 cm de otro corte (el
+ * del paño de al lado o el orillo; en AR2603936, a 2,75 del orillo). Ese centímetro se tira. */
+export const HOLGURA_ONDA_MM = 10;
+
 /** Las formas de la plantilla; la EXTRASUAVE de la web es la SUPERSUAVE de la plantilla. */
 export const FORMAS_BAMBALINA = Object.freeze(Object.keys(ONDAS_BAMBALINA));
 
