@@ -33,7 +33,7 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados = cata
       continue;
     }
     const cantidad = ls.reduce((n, l) => n + l.cantidad, 0), g = { ...ls[0].calculo, cantidadPedida: cantidad };
-    for (const p of generarProgramas(g, { sueltas: sueltas[codigo] === true })) programas.push({ ...p, codigo, largoMm: g.pieza.medidasMm[0] });
+    for (const p of generarProgramas(g, { sueltas: sueltas[codigo] === true })) programas.push({ ...p, codigo });
     reparto.push(...ls.map(l => ({ pedido: l.CodOrder, numeroLinea: l.NumLine, linea: l.IDOrderLine, referencia: l.CodArticle, of: l.of_, cantidad: l.cantidad })));
   }
   // Cada programa repetible conserva su orillo. El colocador común recibe una sola orientación

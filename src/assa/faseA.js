@@ -72,17 +72,35 @@ export function unirEntidades(destino, origen) {
   for (const clave of ['lineas', 'arcos', 'circulos', 'textos']) destino[clave].push(...origen[clave]);
 }
 
+// Dos paños unidos a lo largo con una raya de rotulador en medio, para envarillar dos de un golpe y separarlos después
+// (Tamara, 28/10/2026). Siempre en la 420102; en la 420150 solo con menos de 5 m de largo.
+export const vanUnidos = g => g.familia === '420102' || (g.familia === '420150' && g.pieza.medidasMm[0] < 5000);
+
+function pareja(pieza) {
+  const largo = pieza.medidasMm[0], e = entidadesVacias();
+  unirEntidades(e, pieza.entidades);
+  unirEntidades(e, desplazarEntidades(pieza.entidades, largo, 0));
+  const union = l => l.capa === 'DISCO1' && Math.abs(l.x1 - largo) < .01 && Math.abs(l.x2 - largo) < .01;
+  const cortes = e.lineas.filter(union);
+  e.lineas = e.lineas.filter(l => !union(l));
+  if (cortes.length) e.lineas.push({ ...cortes[0], capa: 'ROTULADOR' });
+  return { medidasMm: [2 * largo, pieza.medidasMm[1]], entidades: e };
+}
+
 export function generarProgramas(g, { sueltas = false } = {}) {
   if (g.estado !== 'generado') return [];
-  const capacidad = sueltas ? 1 : Math.min(3, Math.floor(2040 / g.pieza.medidasMm[1]));
-  const cantidades = [[capacidad, Math.floor(g.cantidadPedida / capacidad)], [g.cantidadPedida % capacidad, 1]];
-  return cantidades.filter(([n, r]) => n > 0 && r > 0).map(([panos, repeticiones]) => {
-    const entidades = entidadesVacias();
-    for (let i = 0; i < panos; i++) unirEntidades(entidades, desplazarEntidades(g.pieza.entidades, 0, i * g.pieza.medidasMm[1]));
-    entidades.textos.push({ capa: 'texto', x: 100, y: panos * g.pieza.medidasMm[1] + 80, h: 40,
+  const alto = g.pieza.medidasMm[1], capacidad = sueltas ? 1 : Math.min(3, Math.floor(2040 / alto));
+  const porFila = vanUnidos(g) ? 2 : 1, total = g.cantidadPedida, juegos = Math.floor(total / (capacidad * porFila));
+  const resto = total - juegos * capacidad * porFila;
+  const cantidades = [[capacidad, porFila, juegos], [Math.floor(resto / porFila), porFila, 1], [resto % porFila, 1, 1]];
+  return cantidades.filter(([filas, , r]) => filas > 0 && r > 0).map(([filas, enFila, repeticiones]) => {
+    const fila = enFila === 2 ? pareja(g.pieza) : g.pieza, entidades = entidadesVacias();
+    for (let i = 0; i < filas; i++) unirEntidades(entidades, desplazarEntidades(fila.entidades, 0, i * alto));
+    entidades.textos.push({ capa: 'texto', x: 100, y: filas * alto + 80, h: 40,
       literal: true, valor: g.trazabilidad.referencia });
-    entidades.textos.push({ capa: 'texto', x: 100, y: panos * g.pieza.medidasMm[1] + 180, h: 60,
+    entidades.textos.push({ capa: 'texto', x: 100, y: filas * alto + 180, h: 60,
       literal: true, valor: `x${repeticiones}` });
-    return { panos, repeticiones, anchoOcupadoMm: panos * g.pieza.medidasMm[1], entidades };
+    return { panos: filas * enFila, filas, unidos: enFila === 2, repeticiones, largoMm: fila.medidasMm[0],
+      anchoOcupadoMm: filas * alto, entidades };
   });
 }

@@ -40,9 +40,20 @@ describe('lote del sábado: reglas de fase A', () => {
       const ps = generarProgramas(g, { sueltas });
       expect(ps.reduce((n, p) => n + p.panos * p.repeticiones, 0)).toBe(cantidad);
       expect(ps.every(p => p.anchoOcupadoMm <= 2040)).toBe(true);
-      if (sueltas) expect(ps.every(p => p.panos === 1)).toBe(true);
+      if (sueltas) expect(ps.every(p => p.filas === 1)).toBe(true);
       expect(ps.every(p => p.entidades.textos.every(t => t.capa === 'texto'))).toBe(true);
     }
+  });
+  it('la 420102 va de dos en dos a lo largo, con raya de rotulador en la unión', () => {
+    const ps = generarProgramas(calcularFamilia({ ...linea, cantidad: 13 }));
+    expect(ps.map(p => [p.filas, p.panos, p.repeticiones, p.largoMm])).toEqual([[3, 6, 2, 6020], [0, 0, 1, 6020], [1, 1, 1, 3010]].filter(p => p[0]));
+    const [juego] = ps, union = juego.entidades.lineas.filter(l => l.x1 === 3010 && l.x2 === 3010);
+    expect(union.map(l => l.capa)).toEqual(['ROTULADOR', 'ROTULADOR', 'ROTULADOR']);
+    expect(juego.entidades.lineas.filter(l => l.capa === 'DISCO1' && l.y1 === l.y2)).toHaveLength(6);
+  });
+  it('la 420150 solo va unida con menos de 5 m de largo', () => {
+    const g = calcularFamilia({ ...linea, CodArticle: 'H0K420150-0001', descripcion: 'NT600 NB3250 NH3600' });
+    expect(generarProgramas(g).every(p => !p.unidos)).toBe(true);
   });
   it.each([
     { of_: '' }, { cantidad: 1.5 }, { descripcion: 'NH=3 NT=600' },

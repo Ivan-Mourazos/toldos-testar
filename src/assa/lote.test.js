@@ -16,14 +16,15 @@ it('conserva reparto por pedido y OF, agrupa referencias y corta exactamente jue
   expect(lote.programas.reduce((n, p) => n + p.panos * p.repeticiones, 0)).toBe(10);
   expect(lote.reparto).toHaveLength(2);
   expect(lote.reparto.map(r => r.of)).toEqual(['0232434', '0232444']);
-  expect(lote.entidades.lineas.every(l => l.capa === 'DISCO1')).toBe(true);
+  // Los 420102 van de dos en dos: la unión es de rotulador; el resto, disco.
+  expect(lote.entidades.lineas.every(l => l.capa === 'DISCO1' || (l.capa === 'ROTULADOR' && l.x1 === l.x2))).toBe(true);
   expect(lote.programas.every(p => p.y === 0)).toBe(true);
 });
 
 it('la opción por referencia cambia a sueltas y no altera la cantidad', () => {
   const lote = prepararLote('2026-10-31', [l], { '420102-0034': true }, certificado);
   expect(lote.programas).toHaveLength(1);
-  expect(lote.programas[0]).toMatchObject({ panos: 1, repeticiones: 8 });
+  expect(lote.programas[0]).toMatchObject({ filas: 1, panos: 2, repeticiones: 4 });
 });
 
 it('no permite enviar líneas que difieran de su certificado o correspondan a otra fecha', () => {
