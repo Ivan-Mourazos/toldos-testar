@@ -116,7 +116,7 @@ Añadidas el 28/10/2026 (ver [bambalina.md](./bambalina.md)):
 | Código | Pregunta | Ahora la web |
 | --- | --- | --- |
 | Q-BO01 | Con onda, ¿bastilla o remate abajo? | Contestada el 28/10 (Iván): «bastilla solo la puede llevar la bamba recta, el resto lleva remate. Los remates se cortan aparte, no se incluyen en el corte; puede ser de una tela diferente». La tira con onda es la bamba + 3 (sin la B.N(2) de abajo) |
-| Q-BO02 | ¿Cuánto separar la onda del borde de abajo de la tira? En AR2603936 iba a 2,75 del orillo | 1 cm |
+| Q-BO02 | ¿Cuánto separar la onda del borde de abajo de la tira? En AR2603936 iba a 2,75 del orillo | Contestada el 28/10 (Iván): «sí, deja 1 cm». Ya lo hace |
 
 ## Solapas con velcro
 

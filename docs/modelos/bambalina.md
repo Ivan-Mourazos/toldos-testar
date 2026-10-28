@@ -184,4 +184,4 @@ Iván: «se cortan en la máquina con su forma y listo; siempre las medidas de l
   28/10/2026). Cuadra con AR2603936: 33 desde lo más bajo de la onda.
 - **Fuera por ahora (a mano):** la bamba con onda de las cortinas de PVC y la tira con onda partida en trozos.
 
-Q-BO01 contestada; Q-BO02 abierta, en [dudas-abiertas.md](./dudas-abiertas.md).
+Q-BO01 y Q-BO02 contestadas (1 cm bajo la onda, Iván 28/10/2026), en [dudas-abiertas.md](./dudas-abiertas.md).
