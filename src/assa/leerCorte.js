@@ -90,7 +90,7 @@ export function extraerPanos(modelo) {
     const techo = Math.max(...[...pila].map(q => q.caja.y1));
     const interioresPila = titulos.filter(t => [...pila].some(q => t.punto[0] >= x0 && t.punto[0] <= x1 && t.punto[1] > q.caja.y0 && t.punto[1] < q.caja.y1));
     const comun = new Set(interioresPila.map(t => codigoAssa(t.valor))).size === 1 ? interioresPila[0] : null;
-    const superiores = titulos.filter(t => t.punto[0] >= x0 && t.punto[0] <= x1 && t.punto[1] >= techo && t.punto[1] - techo < 500)
+    const superiores = titulos.filter(t => t.punto[0] >= x0 && t.punto[0] <= x1 && t.punto[1] >= techo && t.punto[1] - techo < 700)
       .sort((a, b) => a.punto[1] - b.punto[1]);
     const titulo = interiores.length === 1 ? interiores[0] : interiores.length ? null : comun ?? superiores[0];
     if (!titulo) continue;

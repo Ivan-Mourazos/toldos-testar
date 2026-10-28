@@ -1337,9 +1337,9 @@ Generado por `scripts/validar-assa-fase-a.mjs`. Foto de RPS: 2026-10-26T14:00:05
 
 | Familia | Líneas | Paño y cantidad iguales | % | Toda la geometría igual |
 | --- | --- | --- | --- | --- |
-| 420102 | 338 | 206 | 60,9 % | 262 |
+| 420102 | 338 | 220 | 65,1 % | 265 |
 | 420148 | 194 | 159 | 82 % | 176 |
-| 420150 | 492 | 352 | 71,5 % | 418 |
+| 420150 | 492 | 354 | 72 % | 419 |
 
 La columna 420150 certifica **paños**, no conjuntos completos: canalones retenidos hasta cerrar su cantidad por cubierta. NK solo se considera candidato a NH para 420148-0105 y exige el mismo contraste geométrico; las demás referencias NK se retienen. NW equivale a NB por respuesta de Iván del 27/10/2026. Las descripciones recortadas de 420150 se recuperan de la hoja de medidas de producción autorizada, con aviso visible. No se completa stock automáticamente.
 
