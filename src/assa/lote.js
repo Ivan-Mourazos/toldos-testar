@@ -2,9 +2,9 @@ import catalogo from './validacionCatalogo.json' with { type: 'json' };
 import { codigoAssa } from './leerCorte.js';
 import { calcularFamilia, fechaLote, generarProgramas, entidadesVacias, desplazarEntidades, unirEntidades } from './faseA.js';
 import { buscarColocacion } from '../domain/corteLona/colocacionTetris.ts';
+import { ALTO_BLOQUE_MM, CANALONES_POR_BLOQUE, bloqueCanalon, canalonDe, juegosCanalon } from './canalon.js';
 
-// Pendiente de la respuesta de Tamara: no habilitar el conjunto hasta contrastar su cuenta.
-export const CANALONES_PENDIENTES = '420150 a mano: falta confirmar la cantidad de canalones por cubierta o por juego de tres paños.';
+export const CANALON_SIN_PLANTILLA = '420150 a mano: la plantilla COMBURSA no tiene un juego de canalones para esta referencia y su NB.';
 
 /** Los datos enviados por el navegador son solo opciones: las líneas siempre vienen del SELECT. */
 export function prepararLote(fecha, lineasRps, sueltas = {}, certificados = catalogo) {
@@ -21,9 +21,10 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados = cata
     if (!prueba || !prueba.geometria || !prueba.ultimaGeometria || !g.pieza?.medidasMm.every((n, i) => Math.abs(n - prueba.corteMm[i]) < .01)) motivos.push('Referencia y medidas sin validación completa vigente contra los lotes reales.');
     const historico = ref?.fechas?.[fecha];
     if (historico && !(historico.forma ?? historico.coincide)) motivos.push(...historico.motivos.filter(m => !m.startsWith('Cantidad agrupada:')));
-    if (g.familia === '420150') motivos.push(CANALONES_PENDIENTES);
+    const canalon = g.familia === '420150' ? canalonDe(g.codigo, g.medidas?.NB) : null;
+    if (g.familia === '420150' && !canalon) motivos.push(CANALON_SIN_PLANTILLA);
     return { ...l, codigo: g.codigo, familia: g.familia, estado: motivos.length ? 'a-mano' : 'validado', motivos: [...new Set(motivos)],
-      avisos: g.avisos, terminadoMm: g.terminadoMm, corteMm: g.pieza?.medidasMm, calculo: g };
+      avisos: g.avisos, terminadoMm: g.terminadoMm, corteMm: g.pieza?.medidasMm, canalon, calculo: g };
   });
   const programas = [], reparto = [];
   for (const [codigo, ls] of Map.groupBy(lineas.filter(l => l.estado === 'validado'), l => l.codigo)) {
@@ -35,6 +36,21 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados = cata
     const cantidad = ls.reduce((n, l) => n + l.cantidad, 0), g = { ...ls[0].calculo, cantidadPedida: cantidad };
     for (const p of generarProgramas(g, { sueltas: sueltas[codigo] === true })) programas.push({ ...p, codigo });
     reparto.push(...ls.map(l => ({ pedido: l.CodOrder, numeroLinea: l.NumLine, linea: l.IDOrderLine, referencia: l.CodArticle, of: l.of_, cantidad: l.cantidad })));
+  }
+  // Un canalón por unidad, entero o dos mitades (taller, 28/10/2026). Las referencias con el mismo juego de la plantilla
+  // comparten bloques («en los cortes se pueden mezclar»); cada bloque se repite con su «x».
+  const conCanalon = lineas.filter(l => l.estado === 'validado' && l.canalon);
+  for (const ls of Map.groupBy(conCanalon, l => JSON.stringify(l.canalon)).values()) {
+    const canalon = ls[0].canalon, n = ls.reduce((s, l) => s + l.cantidad, 0), juegos = juegosCanalon(n);
+    const refs = [...new Set(ls.map(l => l.CodArticle))];
+    for (const tipo of /** @type {const} */ (['combinado', 'mitades'])) if (juegos[tipo]) {
+      const b = bloqueCanalon(canalon, tipo), entidades = entidadesVacias();
+      entidades.lineas.push(...b.lineas);
+      entidades.textos.push({ capa: 'texto', x: 100, y: ALTO_BLOQUE_MM + 80, h: 40, literal: true, valor: refs.join(' ') },
+        { capa: 'texto', x: 100, y: ALTO_BLOQUE_MM + 180, h: 60, literal: true, valor: `x${juegos[tipo]}` });
+      programas.push({ tipo: 'canalon', codigo: `CANALÓN ${2 * canalon.mitad / 10}`, referencias: refs, panos: 0,
+        canalones: CANALONES_POR_BLOQUE[tipo], repeticiones: juegos[tipo], largoMm: b.largoMm, anchoOcupadoMm: ALTO_BLOQUE_MM, entidades });
+    }
   }
   // Cada programa repetible conserva su orillo. El colocador común recibe una sola orientación
   // y exige y=0: nunca gira ni convierte el borde abierto en un borde interior del rollo.
@@ -53,7 +69,7 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados = cata
   }
   entidades.textos.push({ capa: 'texto', x: 0, y: 2400, h: 100, valor: nombre, literal: true });
   return { nombre, fecha, lineas: lineas.map(({ calculo: _calculo, ...l }) => l), programas, reparto, entidades,
-    avisos: lineas.some(l => l.familia === '420150') ? [CANALONES_PENDIENTES] : [],
+    avisos: [],
     totalUnidades: lineas.reduce((n, l) => n + Number(l.cantidad || 0), 0),
     aMano: lineas.filter(l => l.estado === 'a-mano').length };
 }

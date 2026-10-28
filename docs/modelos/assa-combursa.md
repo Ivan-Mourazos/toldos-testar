@@ -1357,7 +1357,7 @@ Generado por `scripts/validar-assa-fase-a.mjs`. Foto de RPS: 2026-10-26T14:00:05
 | 420148 | 194 | 159 | 82 % | 176 |
 | 420150 | 492 | 354 | 72 % | 419 |
 
-La columna 420150 certifica **paños**, no conjuntos completos: canalones retenidos hasta cerrar su cantidad por cubierta. NK solo se considera candidato a NH para 420148-0105 y exige el mismo contraste geométrico; las demás referencias NK se retienen. NW equivale a NB por respuesta de Iván del 27/10/2026. Las descripciones recortadas de 420150 se recuperan de la hoja de medidas de producción autorizada, con aviso visible. No se completa stock automáticamente.
+La columna 420150 certifica **paños**; los canalones van aparte, en los bloques de la plantilla (un canalón por unidad). NK solo se considera candidato a NH para 420148-0105 y exige el mismo contraste geométrico; las demás referencias NK se retienen. NW equivale a NB por respuesta de Iván del 27/10/2026. Las descripciones recortadas de 420150 se recuperan de la hoja de medidas de producción autorizada, con aviso visible. No se completa stock automáticamente.
 
 ### NK contrastado en la 420148-0105
 
@@ -1371,30 +1371,30 @@ La equivalencia NK = NH se limita a esta referencia y descripción contrastadas;
 
 | Referencia | Lotes con contorno asignable | Largos reales mm | Cantidad por cubierta |
 | --- | --- | --- | --- |
-| 420150-0090 | 56 | 1805 / 3610 | Pendiente |
-| 420150-0002 | 54 | 1800 / 3600 | Pendiente |
-| 420150-0007 | 42 | 1705 / 1800 / 3410 / 3600 | Pendiente |
-| 420150-0021 | 34 | 1705 / 3410 | Pendiente |
-| 420150-0087 | 10 | 1705 / 3410 | Pendiente |
-| 420150-0088 | 30 | 1705 / 3410 | Pendiente |
-| 420150-0091 | 36 | 1805 / 3610 | Pendiente |
-| 420150-0033 | 38 | 1805 / 3610 | Pendiente |
-| 420150-0020 | 13 | 1800 / 3600 | Pendiente |
-| 420150-0092 | 23 | 1805 / 3610 | Pendiente |
-| 420150-0089 | 18 | 1705 / 3410 | Pendiente |
-| 420150-0116 | 3 | 1230 / 2460 | Pendiente |
-| 420150-0001 | 15 | 1705 / 3410 | Pendiente |
-| 420150-0127 | 1 | 1600 / 3200 | Pendiente |
-| 420150-0109 | 1 | 1180 / 2360 | Pendiente |
-| 420150-0064 | 2 | 1780 / 3560 | Pendiente |
-| 420150-0129 | 1 | 1630 / 3260 | Pendiente |
-| 420150-0130 | 1 | 1705 / 3410 | Pendiente |
-| 420150-0132 | 1 | 1780 / 3560 | Pendiente |
-| 420150-0120 | 1 |  | Pendiente |
-| 420150-0131 | 1 | 1330 | Pendiente |
-| 420150-0133 | 1 | 1800 / 3600 | Pendiente |
+| 420150-0090 | 56 | 1805 / 3610 | Un canalón por unidad |
+| 420150-0002 | 54 | 1800 / 3600 | Un canalón por unidad |
+| 420150-0007 | 42 | 1705 / 1800 / 3410 / 3600 | Un canalón por unidad |
+| 420150-0021 | 34 | 1705 / 3410 | Un canalón por unidad |
+| 420150-0087 | 10 | 1705 / 3410 | Un canalón por unidad |
+| 420150-0088 | 30 | 1705 / 3410 | Un canalón por unidad |
+| 420150-0091 | 36 | 1805 / 3610 | Un canalón por unidad |
+| 420150-0033 | 38 | 1805 / 3610 | Un canalón por unidad |
+| 420150-0020 | 13 | 1800 / 3600 | Un canalón por unidad |
+| 420150-0092 | 23 | 1805 / 3610 | Un canalón por unidad |
+| 420150-0089 | 18 | 1705 / 3410 | Un canalón por unidad |
+| 420150-0116 | 3 | 1230 / 2460 | Un canalón por unidad |
+| 420150-0001 | 15 | 1705 / 3410 | Un canalón por unidad |
+| 420150-0127 | 1 | 1600 / 3200 | Un canalón por unidad |
+| 420150-0109 | 1 | 1180 / 2360 | Un canalón por unidad |
+| 420150-0064 | 2 | 1780 / 3560 | Un canalón por unidad |
+| 420150-0129 | 1 | 1630 / 3260 | Un canalón por unidad |
+| 420150-0130 | 1 | 1705 / 3410 | Un canalón por unidad |
+| 420150-0132 | 1 | 1780 / 3560 | Un canalón por unidad |
+| 420150-0120 | 1 |  | Un canalón por unidad |
+| 420150-0131 | 1 | 1330 | Un canalón por unidad |
+| 420150-0133 | 1 | 1800 / 3600 | Un canalón por unidad |
 
-Son medidas observadas, no una regla NB más un margen común: 0090 tiene 3610/1805, 0002 tiene 3600/1800 y 0133 comparte el paño de 0090 pero usa 3600/1800 en el lote del 26-09. No se suman vistas ni se deduce la cantidad por cubierta del número de caras cerradas del DXF. Los canalones conservan DISCO2 donde aparece en el original, además de DISCO1, según la decisión del 27/10/2026. Solo queda pendiente su cuenta por cubierta; la 420150 permanece a mano detrás de la constante CANALONES_PENDIENTES.
+Son medidas observadas, no una regla NB más un margen común: 0090 tiene 3610/1805, 0002 tiene 3600/1800 y 0133 comparte el paño de 0090 pero usa 3600/1800 en el lote del 26-09. No se suman vistas ni se deduce la cantidad por cubierta del número de caras cerradas del DXF. Los canalones conservan DISCO2 donde aparece en el original, además de DISCO1, según la decisión del 27/10/2026. Desde el 28/10/2026 el lote los corta en los bloques de la plantilla, un canalón por unidad (src/assa/canalon.js); sin juego para su NB, la línea va a mano (CANALON_SIN_PLANTILLA).
 
 ### Repetir sin copiar los datos grandes
 
