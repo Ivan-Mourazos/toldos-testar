@@ -1,6 +1,6 @@
 import { piezasCortina } from './cortina.js';
 import { piezasSolapas } from './solapas.js';
-import { HOLGURA_ONDA_MM } from './bambalina.js';
+import { altoTiraCm, HOLGURA_ONDA_MM } from './bambalina.js';
 
 // Estudio DXF: piezas de la lona de PVC de un toldo de fachada y su colocación en el rollo.
 // Medidas de entrada en cm (como el planteamiento); las piezas salen en mm (el DXF va en mm).
@@ -53,8 +53,9 @@ function piezasFachada({ letra, frenteTela, caidaTela, bamba, soloBamba = false,
     if (!Number.isFinite(valor) || valor <= 0) throw new Error(`Medida no válida: ${nombre}.`);
   }
   if (!Number.isFinite(bamba) || bamba < 0) throw new Error('Altura de bamba no válida.');
-  const tira = bamba > 0 ? bamba + a.tiraExtraAltoCm : 0;
-  // Con onda (bambalina.js), la tira lleva su forma abajo; el alto, hasta lo más bajo de la onda.
+  const tira = altoTiraCm(bamba, a.tiraExtraAltoCm, onda);
+  // Con onda (bambalina.js), la tira lleva su forma abajo, sin bastilla (va con remate, aparte); el alto, hasta lo
+  // más bajo de la onda.
   // Con onda, 1 cm más por debajo de ella (HOLGURA_ONDA_MM).
   const conOnda = onda ? { onda } : {};
   const altoTira = mm(tira) + (onda ? HOLGURA_ONDA_MM : 0);

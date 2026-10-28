@@ -115,7 +115,7 @@ Añadidas el 28/10/2026 (ver [bambalina.md](./bambalina.md)):
 
 | Código | Pregunta | Ahora la web |
 | --- | --- | --- |
-| Q-BO01 | Con onda, ¿la bamba lleva bastilla abajo o va con remate (galón)? En la plantilla pone «REMATE AMARILLO» abajo y B.N(3) en las puntas; la web hace la tira como sin onda: bamba + 5 y B.N(2) en las puntas | La tira como sin onda, medida hasta lo más bajo de la onda |
+| Q-BO01 | Con onda, ¿bastilla o remate abajo? | Contestada el 28/10 (Iván): «bastilla solo la puede llevar la bamba recta, el resto lleva remate. Los remates se cortan aparte, no se incluyen en el corte; puede ser de una tela diferente». La tira con onda es la bamba + 3 (sin la B.N(2) de abajo) |
 | Q-BO02 | ¿Cuánto separar la onda del borde de abajo de la tira? En AR2603936 iba a 2,75 del orillo | 1 cm |
 
 ## Solapas con velcro

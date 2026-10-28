@@ -179,7 +179,9 @@ Iván: «se cortan en la máquina con su forma y listo; siempre las medidas de l
 - **Encaje (como AR2603936):** solo ondas enteras entre los B.N(2) de las puntas, centradas; lo que sobra, recto, a la
   altura donde arranca la onda. La onda va en la capa CUTTER (cuchilla), 1 cm por encima del borde de abajo de la tira
   (no cortar a menos de 1 cm de otro corte); ese centímetro se tira.
-- **Alto de la tira:** como sin onda (bamba + 5), medido hasta lo más bajo de la onda, más el centímetro de holgura.
+- **Alto de la tira:** bamba + 3, medido hasta lo más bajo de la onda, más el centímetro de holgura. Solo la bamba recta lleva
+  bastilla abajo (la B.N(2) de sus 5); con onda lleva remate, que se corta aparte y puede ser de otra tela (Iván,
+  28/10/2026). Cuadra con AR2603936: 33 desde lo más bajo de la onda.
 - **Fuera por ahora (a mano):** la bamba con onda de las cortinas de PVC y la tira con onda partida en trozos.
 
-Dudas abiertas: Q-BO01 y Q-BO02 en [dudas-abiertas.md](./dudas-abiertas.md).
+Q-BO01 contestada; Q-BO02 abierta, en [dudas-abiertas.md](./dudas-abiertas.md).

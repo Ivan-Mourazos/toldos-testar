@@ -8,6 +8,13 @@ import { ONDAS_BAMBALINA } from './bambalinasDatos.js';
  * del paño de al lado o el orillo; en AR2603936, a 2,75 del orillo). Ese centímetro se tira. */
 export const HOLGURA_ONDA_MM = 10;
 
+/** Solo la bamba recta lleva bastilla abajo, la B.N(2) de los 5 cm que se le suman; con onda lleva remate, que se
+ * corta aparte (puede ser de otra tela) y no va en este corte (Iván, 28/10/2026). */
+export const BASTILLA_ABAJO_TIRA_CM = 2;
+
+/** El alto de corte de la tira (cm): la bamba y lo que se le suma, sin la bastilla de abajo si lleva onda. */
+export const altoTiraCm = (bamba, extraAltoCm, onda) => (bamba > 0 ? bamba + extraAltoCm - (onda ? BASTILLA_ABAJO_TIRA_CM : 0) : 0);
+
 /** Las formas de la plantilla; la EXTRASUAVE de la web es la SUPERSUAVE de la plantilla. */
 export const FORMAS_BAMBALINA = Object.freeze(Object.keys(ONDAS_BAMBALINA));
 

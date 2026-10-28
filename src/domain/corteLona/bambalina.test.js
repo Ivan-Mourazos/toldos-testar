@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { bordeOndulado, FORMAS_BAMBALINA, formaBambalina } from './bambalina.js';
 import { ONDAS_BAMBALINA } from './bambalinasDatos.js';
+import { piezasToldo } from './despiece.js';
 
 describe('Bambalinas con onda (plantilla BAMBALINAS.dwg)', () => {
   it('tiene las 15 formas de la plantilla; la EXTRASUAVE de la web es la SUPERSUAVE', () => {
@@ -35,5 +36,11 @@ describe('Bambalinas con onda (plantilla BAMBALINAS.dwg)', () => {
 
   it('si no cabe ninguna onda entera, va recta a la altura de las puntas', () => {
     expect(bordeOndulado('ARABICA', 600, 20)).toEqual([[0, 0], [600, 0]]);
+  });
+
+  it('con onda, la tira no lleva bastilla abajo (va con remate, aparte): bamba + 3 y 1 cm libre bajo la onda; recta, bamba + 5', () => {
+    const tira = (onda) => piezasToldo({ letra: 'A', frenteTela: 400, caidaTela: 300, bamba: 30, anchoRollo: 250, onda }).find((p) => p.nombre === 'A BAMBA');
+    expect(tira(null).alto).toBe(350);
+    expect(tira('NORMAL')).toMatchObject({ alto: 340, onda: 'NORMAL' });
   });
 });
