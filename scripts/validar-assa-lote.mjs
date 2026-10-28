@@ -33,7 +33,7 @@ const familias = new Set(['420102', '420148', '420150']);
 const seleccion = lineas.filter(l => familias.has(codigoAssa(l.CodArticle)?.slice(0, 6)));
 const programas = (grupos, modelo, fichero) => grupos.map(g => ({ fecha, fichero, sha256: hash(fichero), codigo: g.codigo,
   rotulo: g.titulo.handle, repeticiones: g.repeticiones,
-  panos: g.panos.map(p => ({ ...p, operaciones: operacionesEnPano(modelo, p.caja) })) }));
+  panos: g.panos.map(p => ({ ...p, operaciones: operacionesEnPano(modelo, p.caja, p.uniones) })) }));
 const generar = l => {
   const prueba = catalogo.referencias[codigoAssa(l.CodArticle)]?.descripciones.find(p => p.descripcion === String(l.descripcion).trim());
   const g = calcularFamilia(l, prueba);

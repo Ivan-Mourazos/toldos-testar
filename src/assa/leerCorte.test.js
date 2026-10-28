@@ -77,3 +77,19 @@ describe('lectura independiente de los paños del lote', () => {
     expect(grupos[0].repeticiones).toBe(1);
   });
 });
+
+// Tamara, 28/10/2026 (LOTE 31-10, 420102-0034): dos paños unidos a lo largo, con una raya de rotulador entre ellos, para
+// envarillar dos de un golpe y separarlos después. La raya de arriba de cada fila va en dos tramos.
+describe('paños unidos de dos en dos', () => {
+  it('lee la pareja entera y la cuenta como dos paños, con el rótulo y las repeticiones de la de la izquierda', () => {
+    const modelo = [texto('HOK420102-0034', [2800, 2200]), texto('x6', [4000, 2400])];
+    for (const y of [666, 1332, 1998]) modelo.push(raya([0, y], [4010, y]), raya([4010, y], [8020, y]));
+    modelo.push(raya([0, 0], [0, 1998]), raya([8020, 0], [8020, 1998]), raya([4010, 20], [4010, 1998], 'ROTULADOR'));
+    const grupos = extraerPanos(modelo);
+    expect(grupos).toHaveLength(1);
+    expect(grupos[0].codigo).toBe('420102-0034');
+    expect(grupos[0].panos.map(p => p.medidasMm)).toEqual(Array(6).fill([4010, 666]));
+    expect(grupos[0].panos.length * grupos[0].repeticiones).toBe(36);
+    expect(grupos[0].panos.every(p => p.uniones.length === 1 && p.uniones[0] === 4010)).toBe(true);
+  });
+});

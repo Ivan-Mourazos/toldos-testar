@@ -989,9 +989,6 @@ Lista actualizada el 26/10/2026, con las respuestas del taller del mismo día. S
 | Código | Qué hay que cerrar | Pregunta | Qué debe hacer la futura web mientras tanto |
 | --- | --- | --- | --- |
 | Q-AS05 | Versiones de cortinas y material | Taller, 26/10/2026: «ni idea». Hay que preguntarlo a otra persona (¿Producción o el comercial de ASSA?). Las cortinas combinan lona de distinta clase, tapas y guías blancas o amarillas. ¿Qué plano y material corresponden a cada versión actual y qué datos deben venir en el pedido? ¿Son válidos los anchos de rollo del maestro de materiales de RPS? | Excluir las cortinas de la generación por fórmula hasta validar su despiece completo. |
-| Q-AS11 | Canalones de la 420150 | En los lotes hay un canalón entero (p. ej. 3610) y dos mitades (1805). ¿Es **un juego por cubierta** o **uno por cada juego de tres paños**? (Iván, 27/10: «mañana le pregunto a Tamara»). | La 420150 sigue a mano entera, con aviso. |
-| Q-AS12 | Referencias del RPS que no salen en el lote | En el LOTE 31-10 el RPS pide la 420102-0085 (4), la 0004 (8) y la 0092 (12), y en el corte no hay ningún paño de esas medidas. ¿Salen todas de stock, se cortan en otro archivo o fue otra cosa? | Quedan a mano. Si es stock, la web las cortará igual y el cortador las baja. |
-| Q-AS13 | Cantidad del lote frente al RPS | La 420102-0034 pide 41 y en el LOTE 31-10 hay 5; en el 29-03, la 0050 pedía 30 y se cortaron 20. ¿Es siempre stock? La web corta lo que pide el RPS (41) y deja «Sueltas» para ajustar. Confirmar que es lo que queréis ver en el corte. | Corta la cantidad del RPS. |
 
 ### Contestadas
 
@@ -1007,6 +1004,9 @@ Lista actualizada el 26/10/2026, con las respuestas del taller del mismo día. S
 | Q-AS08 | Fechas distintas dentro de un lote y diferencias entre DWG y DXF del mismo nombre. | Taller, 26/10/2026: seguramente, si hay fechas distintas, es porque el cliente cambió cosas después. | Vale la última versión del pedido en RPS; las diferencias antiguas son cambios del cliente. |
 | Q-AS09 | OF y referencia cruzadas en AR.26.03328: ¿qué se corrige, el cajetín, el rótulo o RPS? | Iván, 26/10/2026: el error está en el cajetín; RPS manda. | La OF de cada referencia sale siempre de RPS; el cajetín de los DWG antiguos no se usa como fuente. |
 | Q-AS10 | ¿Con qué criterio se reparten las líneas en palets? | Taller, 26/10/2026: por peso, para no sobrepasar el peso por palet; lo decide el encargado de planta. | El palet no lo calcula la web: lo escribe el encargado de planta. Como mucho, la web puede sumar el peso de cada palet para ayudarle. |
+| Q-AS11 | Canalones de la 420150: ¿un entero y dos mitades por cubierta o por juego de tres paños? | Taller, 28/10/2026: «el paño es de 204; se colocan enteros o partidos para optimizar la lona, no hay reglas exactas: o uno entero o dos mitades». | Cada canalón va entero o en dos mitades, lo que gaste menos lona. Pendiente de programar. |
+| Q-AS12 | Referencias de RPS que no salían en el lote (0085, 0004, 0092 del 31-10). | Taller, 28/10/2026: la 0085 sí sale en el DXF del 31-10. Era la lectura: iba en paños unidos de dos en dos (Q-AS13). | El lector reconoce los paños unidos; la 0085 y la 0004 cuadran. La 0092 sigue sin leerse. |
+| Q-AS13 | ¿Por qué el lote lleva menos paños que RPS? | Taller, 28/10/2026: «hacen dos unidas por fila con una raya de marcar para poder envarillar dos de un golpe y después las separan». | El lector parte la pareja por la raya de rotulador y la cuenta como dos: la 0034 del 31-10 pasa de 5 a 41, como RPS. |
 
 ## 8. Cómo repetir y verificar el estudio
 
@@ -1337,7 +1337,7 @@ Generado por `scripts/validar-assa-fase-a.mjs`. Foto de RPS: 2026-10-26T14:00:05
 
 | Familia | Líneas | Paño y cantidad iguales | % | Toda la geometría igual |
 | --- | --- | --- | --- | --- |
-| 420102 | 338 | 121 | 35,8 % | 212 |
+| 420102 | 338 | 206 | 60,9 % | 262 |
 | 420148 | 194 | 159 | 82 % | 176 |
 | 420150 | 492 | 352 | 71,5 % | 418 |
 

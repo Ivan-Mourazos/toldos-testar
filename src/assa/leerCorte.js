@@ -7,8 +7,20 @@ export const codigoAssa = texto => String(texto ?? '').toUpperCase()
 
 export function extraerPanos(modelo) {
   const discos = modelo.filter(p => !p.deCota && p.tipo === 'raya' && p.capa === 'DISCO1' && !p.curva);
-  const hs = discos.filter(p => cerca(p.a[1], p.b[1]) && Math.abs(p.a[0] - p.b[0]) > 2000)
-    .map(p => ({ x0: Math.min(p.a[0], p.b[0]), x1: Math.max(p.a[0], p.b[0]), y: p.a[1] }));
+  // Dos paños unidos a lo largo, con una raya de rotulador entre ellos, para envarillar dos de un golpe y separarlos
+  // después (Tamara, 28/10/2026; LOTE 31-10: 0034 de 8020 = 2 × 4010). Esa raya cruza la fila entera, justo en medio (las
+  // marcas de dentro del paño son cortas). El paño doble se lee entero y después se parte en dos.
+  const uniones = modelo.filter(p => !p.deCota && p.tipo === 'raya' && p.capa === 'ROTULADOR' && !p.curva && cerca(p.a[0], p.b[0]) && Math.abs(p.a[1] - p.b[1]) >= 500)
+    .map(p => ({ x: p.a[0], y0: Math.min(p.a[1], p.b[1]), y1: Math.max(p.a[1], p.b[1]), union: true }));
+  // La raya de un paño doble va en dos tramos que se tocan en la unión: para leerlo entero, se juntan ahí.
+  const tramos = discos.filter(p => cerca(p.a[1], p.b[1]) && Math.abs(p.a[0] - p.b[0]) > 2000)
+    .map(p => ({ x0: Math.min(p.a[0], p.b[0]), x1: Math.max(p.a[0], p.b[0]), y: p.a[1] })).sort((p, q) => p.y - q.y || p.x0 - q.x0);
+  const hs = [];
+  for (const t of tramos) {
+    const previo = hs.at(-1);
+    if (previo && cerca(previo.y, t.y) && cerca(previo.x1, t.x0) && uniones.some(u => cerca(u.x, t.x0) && u.y0 <= t.y + EPS && u.y1 >= t.y - EPS)) previo.x1 = t.x1;
+    else hs.push({ ...t });
+  }
   const vs = discos.filter(p => cerca(p.a[0], p.b[0]) && Math.abs(p.a[1] - p.b[1]) >= 100)
     .map(p => ({ x: p.a[0], y0: Math.min(p.a[1], p.b[1]), y1: Math.max(p.a[1], p.b[1]) }));
   const titulos = modelo.filter(p => p.tipo === 'texto' && !p.deCota && codigoAssa(p.valor));
@@ -40,7 +52,17 @@ export function extraerPanos(modelo) {
       const clave = [x0, x1, y0, y1].map(red).join('|');
       if (vistos.has(clave)) continue;
       vistos.add(clave);
-      panos.push({ caja: { x0, x1, y0, y1 }, medidasMm: [red(x1 - x0), red(y1 - y0)],
+      const medio = (x0 + x1) / 2, margen = (y1 - y0) * 0.1,
+        // La raya puede empezar o acabar un poco dentro del paño (en el 31-10, 2 cm por encima del orillo).
+        union = uniones.find(v => Math.abs(v.x - medio) < 1 && v.y0 <= y0 + margen + EPS && v.y1 >= y1 - margen - EPS);
+      if (union && medio - x0 > 2000) {
+        const orilloSuperior = !!h.orillo, orilloInferior = !hs.some(q => cerca(q.y, y0) && cubre(q, x0, x1));
+        for (const [a, b, u] of [[x0, union.x, [union.x]], [union.x, x1, [union.x]]]) {
+          panos.push({ caja: { x0: a, x1: b, y0, y1 }, medidasMm: [red(b - a), red(y1 - y0)], uniones: u, orilloSuperior, orilloInferior });
+        }
+        continue;
+      }
+      panos.push({ caja: { x0, x1, y0, y1 }, medidasMm: [red(x1 - x0), red(y1 - y0)], uniones: [],
         orilloSuperior: !!h.orillo, orilloInferior: !hs.some(q => cerca(q.y, y0) && cubre(q, x0, x1)) });
     }
   }
@@ -52,8 +74,11 @@ export function extraerPanos(modelo) {
     return vecinos(p).some(q => llegaAlOrillo(q, vistos));
   };
   for (const p of panos) p.orilloDelConjunto = llegaAlOrillo(p);
-  const grupos = new Map();
-  for (const p of panos) {
+  const grupos = new Map(), grupoDe = new Map();
+  for (const p of [...panos].sort((a, b) => a.caja.x0 - b.caja.x0 || a.caja.y0 - b.caja.y0)) {
+    // El de la derecha de una pareja unida va con el de su izquierda: mismo rótulo y mismas repeticiones.
+    const pareja = p.uniones.some(x => cerca(x, p.caja.x0)) && panos.find(q => cerca(q.caja.x1, p.caja.x0) && cerca(q.caja.y0, p.caja.y0) && cerca(q.caja.y1, p.caja.y1));
+    if (pareja && grupoDe.has(pareja)) { grupos.get(grupoDe.get(pareja)).panos.push(p); grupoDe.set(p, grupoDe.get(pareja)); continue; }
     const { x0, x1, y0, y1 } = p.caja;
     const interiores = titulos.filter(t => t.punto[0] >= x0 && t.punto[0] <= x1 && t.punto[1] > y0 && t.punto[1] < y1);
     // Un único código interior sirve de rótulo común de las sueltas contiguas.
@@ -72,6 +97,7 @@ export function extraerPanos(modelo) {
     const clave = [titulo.handle ?? modelo.indexOf(titulo), red(x0), red(x1)].join('|');
     if (!grupos.has(clave)) grupos.set(clave, { codigo: codigoAssa(titulo.valor), titulo, x0, x1, panos: [], repeticiones: 1, multiplicador: null });
     grupos.get(clave).panos.push(p);
+    grupoDe.set(p, clave);
   }
   for (const g of grupos.values()) {
     g.panos.sort((a, b) => a.caja.y0 - b.caja.y0);

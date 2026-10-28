@@ -41,7 +41,7 @@ for (const anio of [2025, 2026]) {
     archivos.push({ fichero: `${anio}/${nombre}`, fecha, sha256 });
     for (const g of extraerPanos(modelo).filter(g => familias.includes(g.codigo.slice(0, 6)))) programas.push({
       fichero: `${anio}/${nombre}`, sha256, fecha, codigo: g.codigo, rotulo: g.titulo.handle,
-      repeticiones: g.repeticiones, panos: g.panos.map(p => ({ ...p, operaciones: operacionesEnPano(modelo, p.caja) })),
+      repeticiones: g.repeticiones, panos: g.panos.map(p => ({ ...p, operaciones: operacionesEnPano(modelo, p.caja, p.uniones) })),
     });
   }
 }

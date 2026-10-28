@@ -73,7 +73,7 @@ for (const anio of [2025, 2026]) {
       .map(t => ({ fichero, fecha, codigo: codigoAssa(t.valor), handle: t.handle, punto: t.punto, motivo: 'Rótulo sin pila rectangular asignable: puede ser canalón, refuerzo o paño no identificable.' })));
     for (const g of grupos) programas.push({ fichero, sha256, fecha, codigo: g.codigo, rotulo: g.titulo.handle,
       repeticiones: g.repeticiones, multiplicador: g.multiplicador?.valor ?? 'sin xN: una vez',
-      panos: g.panos.map(p => ({ ...p, operaciones: operacionesEnPano(d.modelo, p.caja) })) });
+      panos: g.panos.map(p => ({ ...p, operaciones: operacionesEnPano(d.modelo, p.caja, p.uniones) })) });
   }
 }
 

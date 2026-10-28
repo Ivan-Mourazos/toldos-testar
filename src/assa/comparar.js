@@ -51,7 +51,8 @@ export function compararOperaciones(esperadas, reales, toleranciaMm = 1) {
   return { coincide: !diferencias.length, desviacionMm: Number.isFinite(desviacionMm) ? desviacionMm : null, diferencias };
 }
 
-export function operacionesEnPano(modelo, b) {
+/** Lo que hay dentro del paño; `uniones`: las x de sus bordes de rotulador con el paño unido (no son una marca suya). */
+export function operacionesEnPano(modelo, b, uniones = []) {
   const limitar = original => {
     const p = sinBulge(original);
     if (p.tipo === 'arco') {
@@ -70,7 +71,8 @@ export function operacionesEnPano(modelo, b) {
     const punto = t => p.a.map((n, i) => n + (p.b[i] - n) * t);
     return { ...p, a: punto(t0), b: punto(t1) };
   };
-  return modelo.filter(p => !p.deCota && ['raya', 'arco'].includes(p.tipo) && ['CUTTER', 'ROTULADOR', 'DISCO1', 'DISCO2'].includes(p.capa))
+  const deUnion = p => p.capa === 'ROTULADOR' && p.tipo === 'raya' && Math.abs(p.a[0] - p.b[0]) < .01 && uniones.some(x => Math.abs(p.a[0] - x) < .5);
+  return modelo.filter(p => !p.deCota && ['raya', 'arco'].includes(p.tipo) && ['CUTTER', 'ROTULADOR', 'DISCO1', 'DISCO2'].includes(p.capa) && !deUnion(p))
     .map(limitar).filter(Boolean)
     .filter(p => !(p.capa === 'DISCO1' && p.tipo === 'raya' && !p.curva &&
       ((Math.abs(p.a[0] - p.b[0]) < .01 && [b.x0, b.x1].some(x => Math.abs(p.a[0] - x) < .01)) ||
