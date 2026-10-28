@@ -1,12 +1,12 @@
 import catalogo from './validacionCatalogo.json' with { type: 'json' };
 import { codigoAssa } from './leerCorte.js';
 import { calcularFamilia, fechaLote, generarProgramas, entidadesVacias, desplazarEntidades, unirEntidades } from './faseA.js';
-import { CANALONES_POR_BLOQUE, bloqueCanalon, canalonDe, juegosCanalon, pilaCanalon } from './canalon.js';
+import { bloqueCanalon, canalonDe, juegosCanalon, pilaDePlantilla } from './canalon.js';
 
 // Textos como en los cortes mandados: rótulos de 20 cm, números de línea y palet de 3 m, listado de 40 cm.
 const ROTULO = 200, GRANDE = 3000, LISTA = 400, PASO_FILA = 2040 + 5000, HUECO = 500, SEPARACION_PALETS = 15000;
 
-export const CANALON_SIN_PLANTILLA = '420150 a mano: la plantilla COMBURSA no tiene un juego de canalones para esta referencia y su NB.';
+export const CANALON_SIN_PLANTILLA = 'Canalón a mano: falta un juego de plantilla contrastado para esta referencia y sus medidas.';
 
 /** Los datos enviados por el navegador son solo opciones: las líneas siempre vienen del SELECT. */
 export function prepararLote(fecha, lineasRps, sueltas = {}, certificados = catalogo, { palets = {} } = {}) {
@@ -16,15 +16,16 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados = cata
   const lineas = lineasRps.map(l => {
     const ref = certificados.referencias[codigoAssa(l.CodArticle)];
     const prueba = ref?.descripciones.find(p => p.descripcion === String(l.descripcion).trim());
-    const g = calcularFamilia(l, { nkValidado: prueba?.nkValidado, terminadoMm: prueba?.terminadoMm });
+    const g = calcularFamilia(l, prueba);
     const motivos = [...g.motivos];
     // Habilita la forma igual a la de los lotes reales: en alguno y en el último. La cantidad la manda RPS; la del lote
     // real puede ser menor porque el stock se pone en corte (Q-AS03, Iván 26/10/2026).
     if (!prueba || !prueba.geometria || !prueba.ultimaGeometria || !g.pieza?.medidasMm.every((n, i) => Math.abs(n - prueba.corteMm[i]) < .01)) motivos.push('Referencia y medidas sin validación completa vigente contra los lotes reales.');
     const historico = ref?.fechas?.[fecha];
     if (historico && !(historico.forma ?? historico.coincide)) motivos.push(...historico.motivos.filter(m => !m.startsWith('Cantidad agrupada:')));
-    const canalon = g.familia === '420150' ? canalonDe(g.codigo, g.medidas?.NB) : null;
-    if (g.familia === '420150' && !canalon) motivos.push(CANALON_SIN_PLANTILLA);
+    const conCanalon = ['420150', '430127', '430129', '430172'].includes(g.familia);
+    const canalon = conCanalon ? canalonDe(g.codigo, g.medidas?.NB) : null;
+    if (conCanalon && (!canalon || (g.familia !== '420150' && !prueba?.canalonValidado))) motivos.push(CANALON_SIN_PLANTILLA);
     return { ...l, codigo: g.codigo, familia: g.familia, estado: motivos.length ? 'a-mano' : 'validado', motivos: [...new Set(motivos)],
       avisos: g.avisos, terminadoMm: g.terminadoMm, corteMm: g.pieza?.medidasMm, canalon, calculo: g };
   });
@@ -50,19 +51,22 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados = cata
     }
     // Un canalón por unidad, entero o dos mitades (taller, 28/10/2026). Las referencias del palet con el mismo juego de la
     // plantilla comparten bloques («en los cortes se pueden mezclar»); van en la fila de la primera que lo lleva.
+    let grupoCanalon = 0;
     for (const conJuego of Map.groupBy(deCorte.filter(l => l.canalon), l => JSON.stringify(l.canalon)).values()) {
-      const canalon = conJuego[0].canalon, juegos = juegosCanalon(conJuego.reduce((s, l) => s + l.cantidad, 0));
+      grupoCanalon++;
+      const canalon = conJuego[0].canalon, juegos = juegosCanalon(conJuego.reduce((s, l) => s + l.cantidad, 0), canalon);
       const refs = [...new Set(conJuego.map(l => l.CodArticle))], fila = filas.find(f => f.grupo.includes(conJuego[0]));
       // Justo lo pedido: los combinados completos con su «x» y una pila con el resto (Iván, 28/10/2026).
       const bloques = [...juegos.completos ? [{ b: bloqueCanalon(canalon, 'combinado'), x: juegos.completos }] : [],
-        ...juegos.resto ? [{ b: pilaCanalon(canalon, juegos.resto.enteros, juegos.resto.parejas), x: 1 }] : []];
+        ...juegos.resto ? [{ b: pilaDePlantilla(canalon, juegos.resto.enteros, juegos.resto.parejas), x: 1 }] : []];
       for (const { b, x } of bloques) {
         const e = entidadesVacias();
         e.lineas.push(...b.lineas);
         e.textos.push({ capa: 'texto', x: 100, y: b.altoMm + 120, h: ROTULO, literal: true, valor: refs.join(' ') },
           { capa: 'texto', x: 100, y: b.altoMm + 420, h: ROTULO, literal: true, valor: `x${x}` });
         fila.programas.push({ tipo: 'canalon', codigo: `CANALÓN ${2 * canalon.mitad / 10}`, referencias: refs, panos: 0, palet,
-          canalones: b.canalones, repeticiones: x, largoMm: b.largoMm, anchoOcupadoMm: b.altoMm, entidades: e });
+          canalones: b.canalones, grupoCanalon, enteros: Math.ceil(b.canalones / 2), parejas: Math.floor(b.canalones / 2),
+          repeticiones: x, largoMm: b.largoMm, anchoOcupadoMm: b.altoMm, entidades: e });
       }
     }
     // Cada fila es una tirada del rollo con el orillo abajo (y = 0 de la fila); las piezas van seguidas, sin girar.
@@ -99,12 +103,12 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados = cata
   // El papel del cortador (Iván, 28/10/2026: «solo le llega el papel donde le ponen las cantidades que debe cortar de
   // cada referencia, y debe coincidir con las cantidades que salen en el corte»): sale de los mismos programas del corte,
   // con sus repeticiones, por palet; y se comprueba contra lo que pide RPS.
-  const cortador = [...Map.groupBy(programas, p => `${p.palet ?? 0}|${p.codigo}`).values()].map(ps => {
+  const cortador = [...Map.groupBy(programas, p => `${p.palet ?? 0}|${p.codigo}|${p.grupoCanalon ?? ''}`).values()].map(ps => {
     const p0 = ps[0], canalon = p0.tipo === 'canalon';
     const unidades = ps.reduce((s, p) => s + (canalon ? p.canalones : p.panos) * p.repeticiones, 0);
     const pedidas = validadas.filter(l => (l.palet ?? 0) === (p0.palet ?? 0) && (canalon ? p0.referencias.includes(l.CodArticle) : l.codigo === p0.codigo))
       .reduce((s, l) => s + l.cantidad, 0);
-    const como = ps.map(p => canalon ? `x${p.repeticiones} ${p.canalones === CANALONES_POR_BLOQUE.combinado ? 'bloque combinado (8 enteros + 14 mitades)' : `pila de ${Math.ceil(p.canalones / 2)} ${Math.ceil(p.canalones / 2) === 1 ? 'entero' : 'enteros'} + ${2 * Math.floor(p.canalones / 2)} mitades`}`
+    const como = ps.map(p => canalon ? `x${p.repeticiones} pila de ${p.enteros} ${p.enteros === 1 ? 'entero' : 'enteros'} + ${2 * p.parejas} mitades`
       : `x${p.repeticiones} de ${p.unidos ? `${p.filas} ${p.filas === 1 ? 'fila' : 'filas'} de 2 unidos` : `${p.panos} ${p.panos === 1 ? 'paño' : 'paños'}`}`);
     return { palet: p0.palet ?? null, referencia: canalon ? p0.codigo : validadas.find(l => l.codigo === p0.codigo)?.CodArticle ?? p0.codigo,
       referencias: canalon ? p0.referencias : undefined, unidades, como, pedidas, cuadra: unidades === pedidas };

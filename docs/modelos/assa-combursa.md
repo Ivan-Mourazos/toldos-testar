@@ -1352,15 +1352,19 @@ Pruebas: `pnpm test src/assa`, `pnpm typecheck`, `pnpm lint`. No se amplía a 42
 
 
 <!-- INICIO ASSA FASE A -->
-## Fase A: contraste reproducible de las tres familias
+## Fase A: contraste reproducible de las siete familias
 
-Generado por `scripts/validar-assa-fase-a.mjs`. Foto de RPS: 2026-10-26T14:00:05.870Z. Se contrastan 110 DXF locales de 2025 y 2026, sin modificar los originales. Se exige cantidad exacta por referencia y fecha, operaciones por herramienta y geometría de todos los paños identificados, ±1 mm y orillo abierto. Los casos sin coincidencia quedan a mano. El detalle por línea, los motivos y SHA-256 quedan en `tmp/assa-fase-a/validacion.json`.
+Generado por `scripts/validar-assa-fase-a.mjs`. Foto de RPS: 2026-10-28T19:41:25.455Z. Se contrastan 110 DXF locales de 2025 y 2026, sin modificar los originales. Se exige cantidad exacta por referencia y fecha, operaciones por herramienta y geometría de todos los paños identificados, ±1 mm y orillo abierto. Los casos sin coincidencia quedan a mano. El detalle por línea, los motivos y SHA-256 quedan en `tmp/assa-fase-a/validacion.json`.
 
 | Familia | Líneas | Paño y cantidad iguales | % | Toda la geometría igual |
 | --- | --- | --- | --- | --- |
 | 420102 | 338 | 220 | 65,1 % | 265 |
 | 420148 | 194 | 159 | 82 % | 176 |
 | 420150 | 492 | 354 | 72 % | 419 |
+| 430125 | 116 | 48 | 41,4 % | 64 |
+| 430127 | 178 | 67 | 37,6 % | 111 |
+| 430129 | 54 | 17 | 31,5 % | 18 |
+| 430172 | 250 | 104 | 41,6 % | 114 |
 
 La columna 420150 certifica **paños**; los canalones van aparte, en los bloques de la plantilla (un canalón por unidad). NK solo se considera candidato a NH para 420148-0105 y exige el mismo contraste geométrico; las demás referencias NK se retienen. NW equivale a NB por respuesta de Iván del 27/10/2026. Las descripciones recortadas de 420150 se recuperan de la hoja de medidas de producción autorizada, con aviso visible. No se completa stock automáticamente.
 
@@ -1406,4 +1410,74 @@ Son medidas observadas, no una regla NB más un margen común: 0090 tiene 3610/1
 `ASSA_ESTUDIO=<ruta absoluta>/tmp/assa-estudio ASSA_RPS=<ruta absoluta>/tmp/assa-fase1/rps.json node scripts/validar-assa-fase-a.mjs --catalogo --informe`
 
 Solo `--informe` sustituye este bloque y solo `--catalogo` actualiza el catálogo pequeño de descripciones contrastadas. El resto de resultados se escribe en tmp de este repositorio.
+
+### Familias y referencias habilitadas tras ampliar los techos
+
+Tabla calculada del catálogo, sin listas de autorización escritas a mano. Cada descripción habilitada tiene alguna muestra igual y toda la forma igual en su último lote comparable. Un lote histórico con diferencias propias sigue retenido. Los canalones nuevos exigen además un combinado completo igual a la plantilla en el último lote: cada tramo, pestaña, marca y herramienta dentro de ±1 mm.
+
+| Familia | Referencias habilitadas | Códigos |
+| --- | --- | --- |
+| 420102 | 17 | 420102-0002, 420102-0004, 420102-0009, 420102-0017, 420102-0018, 420102-0020, 420102-0022, 420102-0027, 420102-0030, 420102-0034, 420102-0050, 420102-0053, 420102-0060, 420102-0085, 420102-0086, 420102-0089, 420102-0092 |
+| 420148 | 17 | 420148-0001, 420148-0002, 420148-0018, 420148-0026, 420148-0030, 420148-0031, 420148-0033, 420148-0034, 420148-0099, 420148-0103, 420148-0104, 420148-0105, 420148-0108, 420148-0111, 420148-0116, 420148-0117, 420148-0120 |
+| 420150 | 12 | 420150-0001, 420150-0002, 420150-0007, 420150-0020, 420150-0021, 420150-0033, 420150-0087, 420150-0088, 420150-0089, 420150-0090, 420150-0091, 420150-0092 |
+| 430125 | 7 | 430125-0001, 430125-0002, 430125-0007, 430125-0010, 430125-0019, 430125-0020, 430125-0041 |
+| 430127 | 4 | 430127-0002, 430127-0004, 430127-0014, 430127-0025 |
+| 430129 | 1 | 430129-0008 |
+| 430172 | 4 | 430172-0001, 430172-0002, 430172-0030, 430172-0031 |
+
+El techo usa NB + 53 por NT + 91 mm de corte y NB + 3 por NT + 25 mm terminado. Las anotaciones NB+3 / NT+25 de RPS no se suman dos veces. Solo los programas de tres alturas de NT600 pasan a 680; las sueltas y pilas de dos salen a 691. Al reducir, agujeros y marcas mantienen su tamaño y se centran. El contraste reconoce las alturas históricas 680 y 691, incluso las sueltas antiguas de 680; eso no cambia la regla del programa nuevo. La 430172 usa NB + 2NH + 10 por NT + 66 mm, con sus operaciones propias copiadas de la plantilla y contrastadas por referencia.
+
+### Parejas de techo comprobadas
+
+| Referencia habilitada | Cortes que prueban la unión con el largo correcto |
+| --- | --- |
+| 430125-0002 | 2025/LOTE 01-11.dxf / 2025/LOTE 08-02 (PALET 3_4_5).dxf / 2025/LOTE 19-07.dxf / 2025/LOTE 21-06.dxf / 2025/LOTE 22-11.dxf / 2026/LOTE 06-06.dxf / 2026/LOTE 30-05.dxf |
+
+La marca de 430127-0001 en el lote del 01-02-2025 no autoriza una pareja de techo: cada mitad mide 3010, incompatible con su NB y la fórmula del techo. No se propaga una unión solo por el nombre de familia.
+
+### Canalones nuevos
+
+La extracción reproducible está en `scripts/extraer-geometrias-assa.mjs`; `geometriasPlantilla.json` conserva el SHA-256 del original. En la 430172, la caída medida es 140 mm, alto 400 y paso 520: cuatro enteros y tres parejas por combinado, siete canalones, con 1960 mm ocupados. La 430129 tiene otra pendiente y otro alto, medidos en cada referencia; no hereda los de la envolvente. Las de 600 conservan el bloque de ocho enteros y siete parejas. Se generan combinados completos y una pila con el resto, un canalón por unidad y por palet, sin stock añadido. El papel del cortador sale de esos mismos programas y separa juegos de igual largo con pendientes distintas.
+
+### Referencias nuevas que siguen a mano
+
+| Referencia | Último lote comparable | Motivo comprobado |
+| --- | --- | --- |
+| 430125-0012 | 2026-10-31 | Las medidas del contorno real difieren más de 1 mm de la regla de la familia. |
+| 430172-0005 | 2026-10-24 | Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla. El corte real contiene recorridos duplicados en una misma herramienta. |
+| 430172-0007 | 2026-10-31 | Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla. El corte real contiene recorridos duplicados en una misma herramienta. |
+| 430172-0041 | 2025-01-11 | Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla. El corte real contiene recorridos duplicados en una misma herramienta. Sin combinado de canalón igual a la plantilla en su último lote comparable. |
+| 430127-0001 | 2026-10-17 | No se ha identificado un paño rectangular con ese código en el lote. |
+| 430172-0032 | 2026-09-05 | No se ha identificado un paño rectangular con ese código en el lote. Sin combinado de canalón igual a la plantilla en su último lote comparable. |
+| 430125-0009 | 2026-01-24 / 2026-08-08 | Las medidas del contorno real difieren más de 1 mm de la regla de la familia. |
+| 430127-0005 | 2025-05-10 | Cuerpo sin forma de plantilla para estas medidas: agujeros y marcas a mano. Sin combinado de canalón igual a la plantilla en su último lote comparable. |
+| 430172-0009 | 2026-10-31 | Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla. El corte real contiene recorridos duplicados en una misma herramienta. Sin combinado de canalón igual a la plantilla en su último lote comparable. |
+| 430129-0017 | 2026-10-31 | Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla. El corte real contiene recorridos duplicados en una misma herramienta. Sin combinado de canalón igual a la plantilla en su último lote comparable. |
+| 430129-0001 | 2025-08-06 | Cuerpo sin forma de plantilla para estas medidas: agujeros y marcas a mano. |
+| 430129-0002 | 2026-10-10 | No se ha identificado un paño rectangular con ese código en el lote. Sin combinado de canalón igual a la plantilla en su último lote comparable. |
+| 430172-0010 | 2026-09-19 | Cuerpo sin forma de plantilla para estas medidas: agujeros y marcas a mano. Sin combinado de canalón igual a la plantilla en su último lote comparable. |
+| 430127-0019 | 2026-10-03 | Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla. El corte real contiene recorridos duplicados en una misma herramienta. |
+| 430127-0023 | 2025-04-12 | Cuerpo sin forma de plantilla para estas medidas: agujeros y marcas a mano. Sin combinado de canalón igual a la plantilla en su último lote comparable. |
+| 430172-0034 | 2026-09-26 | Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla. El corte real contiene recorridos duplicados en una misma herramienta. |
+| 430125-0014 | 2025-05-10 | Las medidas del contorno real difieren más de 1 mm de la regla de la familia. |
+| 430172-0035 | 2026-08-01 | Cuerpo sin forma de plantilla para estas medidas: agujeros y marcas a mano. |
+| 430129-0006 | 2026-10-31 | Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla. El corte real contiene recorridos duplicados en una misma herramienta. |
+| 430129-0014 | 2025-08-30 | Sin combinado de canalón igual a la plantilla en su último lote comparable. |
+| 430125-0004 | 2026-04-18 | Las medidas del contorno real difieren más de 1 mm de la regla de la familia. Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla. |
+| 430125-0003 | 2025-11-22 | Las medidas del contorno real difieren más de 1 mm de la regla de la familia. Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla. |
+| 430172-0042 | 2025-11-08 | Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla. El corte real contiene recorridos duplicados en una misma herramienta. Sin combinado de canalón igual a la plantilla en su último lote comparable. |
+| 430125-0013 | 2026-01-31 | Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla. |
+| 430172-0033 | 2026-05-23 | Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla. El corte real contiene recorridos duplicados en una misma herramienta. |
+| 430127-0007 | 2026-05-23 | No se ha identificado un paño rectangular con ese código en el lote. Sin combinado de canalón igual a la plantilla en su último lote comparable. |
+| 430127-0016 | 2026-06-27 | No se ha identificado un paño rectangular con ese código en el lote. Sin combinado de canalón igual a la plantilla en su último lote comparable. |
+| 430127-0068 | 2026-09-05 | No se ha identificado un paño rectangular con ese código en el lote. Cuerpo sin forma de plantilla para estas medidas: agujeros y marcas a mano. Sin combinado de canalón igual a la plantilla en su último lote comparable. |
+
+Los recorridos duplicados se retienen con el mismo criterio de las tres familias anteriores: una distancia geométrica casi nula no elimina una pasada repetida de herramienta. No se han borrado duplicados de los originales ni relajado esa comprobación para habilitar más referencias.
+
+### Otras familias del 31-10
+
+| Familia | Líneas | Unidades pedidas | Estado |
+| --- | --- | --- | --- |
+
+La lona CUTTER 625 × 400 «3 MM» sigue a mano hasta que Iván especifique sus referencias y cantidades. No se convierte en un accesorio por contar los rectángulos de una plantilla.
 <!-- FIN ASSA FASE A -->

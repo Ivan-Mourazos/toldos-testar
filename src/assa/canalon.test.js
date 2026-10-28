@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ALTO_BLOQUE_MM, CANALONES_POR_BLOQUE, bloqueCanalon, canalonDe, juegosCanalon, pilaCanalon } from './canalon.js';
+import { ALTO_BLOQUE_MM, CANALONES_POR_BLOQUE, bloqueCanalon, canalonDe, juegosCanalon, pilaCanalon, pilaDePlantilla } from './canalon.js';
 
 const tiene = (lineas, capa, x1, y1, x2, y2) => lineas.some(l => l.capa === capa &&
   [[l.x1, l.y1, l.x2, l.y2], [l.x2, l.y2, l.x1, l.y1]].some(v => v.every((n, i) => Math.abs(n - [x1, y1, x2, y2][i]) < 0.05)));
@@ -42,5 +42,34 @@ describe('canalón de la 420150 como en el lote de la oficina', () => {
     const p = pilaCanalon(juego, 1, 1);
     expect([p.altoMm, p.canalones]).toEqual([310, 2]);
     expect(tiene(p.lineas, 'DISCO1', 0, 260, 1805, 310)).toBe(true);
+  });
+});
+
+describe('canalones de techo y de envolvente de fondo 900', () => {
+  it('conserva la pendiente y el bloque propios de la 430172, sin heredar el juego de 600', () => {
+    const j = canalonDe('430172-0030', 3250);
+    expect([j.mitad, j.grueso, j.caida, j.paso, j.filas]).toEqual([1725, 400, 140, 520, 4]);
+    const b = bloqueCanalon(j, 'combinado');
+    expect([b.largoMm, b.altoMm, b.canalones]).toEqual([3450, 1960, 7]);
+    expect(tiene(b.lineas, 'DISCO1', 0, 0, 1725, 140)).toBe(true);
+    expect(tiene(b.lineas, 'DISCO2', 1725, 260, 1725, 660)).toBe(true);
+    expect(b.lineas.some(l => l.capa === 'DISCO1' && l.x1 === 100 && l.x2 === 100)).toBe(true);
+  });
+  it('430129 y 430172 no comparten pendiente ni alto aunque compartan NB', () => {
+    const techo = canalonDe('430129-0002', 3450), envolvente = canalonDe('430172-0007', 3450);
+    expect(techo.mitad).toBe(envolvente.mitad);
+    expect(techo.caida).not.toBe(envolvente.caida);
+    expect(techo.grueso).not.toBe(envolvente.grueso);
+  });
+  it.each([1, 2, 6, 7, 8, 14, 15, 46])('fondo 900: %i canalones justos con bloques completos y resto', n => {
+    const j = canalonDe('430172-0030', 3250), b = bloqueCanalon(j, 'combinado');
+    const { completos, resto } = juegosCanalon(n, j);
+    const p = resto && pilaDePlantilla(j, resto.enteros, resto.parejas);
+    expect(completos * b.canalones + (p?.canalones ?? 0)).toBe(n);
+    if (p) expect(p.altoMm).toBeLessThanOrEqual(2040);
+  });
+  it('no usa el juego de otra referencia ni otro NB', () => {
+    expect(canalonDe('430172-9999', 3250)).toBeNull();
+    expect(canalonDe('430172-0030', 3450)).toBeNull();
   });
 });

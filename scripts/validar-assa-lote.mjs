@@ -6,7 +6,8 @@ import { prepararLote } from '../src/assa/lote.js';
 import { leerLoteRps } from '../src/assa/rps.js';
 import { calcularFamilia, generarProgramas } from '../src/assa/faseA.js';
 import catalogo from '../src/assa/validacionCatalogo.json' with { type: 'json' };
-import { operacionesEnPano } from '../src/assa/comparar.js';
+import { compararOperaciones, operacionesEnPano } from '../src/assa/comparar.js';
+import { contrastarCanalon } from '../src/assa/contrastarCanalon.js';
 import { validarLineasLote } from '../src/assa/validarLotes.js';
 import { escribirDxf2004 } from '../src/domain/corteLona/dxfCorte.js';
 import { codigoAssa, extraerPanos } from '../src/assa/leerCorte.js';
@@ -32,7 +33,7 @@ const real = process.env.ASSA_CORTE_REAL || path.join(process.env.ASSA_ESTUDIO, 
 const hash = p => crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 const modeloReal = leerPlanoDxf(real).modelo, modeloNuevo = leerPlanoDxf(local).modelo;
 const reales = extraerPanos(modeloReal), nuevos = extraerPanos(modeloNuevo);
-const familias = new Set(['420102', '420148', '420150']);
+const familias = new Set(['420102', '420148', '420150', '430125', '430127', '430129', '430172']);
 const seleccion = lineas.filter(l => familias.has(codigoAssa(l.CodArticle)?.slice(0, 6)));
 const programas = (grupos, modelo, fichero) => grupos.map(g => ({ fecha, fichero, sha256: hash(fichero), codigo: g.codigo,
   rotulo: g.titulo.handle, repeticiones: g.repeticiones,
@@ -44,6 +45,28 @@ const generar = l => {
 };
 const contrasteReal = validarLineasLote(seleccion, programas(reales, modeloReal, real), { generar });
 const contrasteNuevo = validarLineasLote(seleccion, programas(nuevos, modeloNuevo, local), { generar });
+// Se vuelve a leer cada programa por sus coordenadas, con todos sus bordes, curvas y marcas. Las columnas de una o
+// dos sueltas no dependen así del lector de rótulos de oficina. El escritor desplaza el corte 1000 mm en ambos ejes.
+const programasEscritos = lote.programas.map(p => {
+  const e = p.entidades;
+  const esperado = [
+    ...e.lineas.map(l => ({ tipo: 'raya', capa: l.capa, a: [l.x1, l.y1], b: [l.x2, l.y2] })),
+    ...e.arcos.map(a => ({ ...a, tipo: 'arco', punto: [a.x, a.y] })),
+    ...e.circulos.map(c => ({ ...c, tipo: 'arco', punto: [c.x, c.y], desde: 0, hasta: 360 })),
+  ];
+  const caja = { x0: p.x + 1000, y0: p.y + 1000, x1: p.x + 1000 + p.largoMm, y1: p.y + 1000 + p.anchoOcupadoMm };
+  return { codigo: p.codigo, palet: p.palet, ...compararOperaciones(esperado,
+    operacionesEnPano(modeloNuevo, caja, [], { conBordes: true })) };
+});
+const canalesReales = [...new Map(lote.lineas.filter(l => l.estado === 'validado' && l.canalon)
+  .map(l => [JSON.stringify(l.canalon), l])).values()].map(l => ({ codigo: l.codigo,
+    ...contrastarCanalon(modeloReal, l.canalon) }));
+if (programasEscritos.some(p => !p.coincide) || canalesReales.some(p => !p.coincide) || lote.cortador.some(f => !f.cuadra)) {
+  throw new Error('El DXF escrito, los canalones reales o el papel del cortador no cuadran: no se publica. ' + JSON.stringify({
+    programas: programasEscritos.filter(p => !p.coincide), canalones: canalesReales.filter(p => !p.coincide),
+    cortador: lote.cortador.filter(f => !f.cuadra),
+  }));
+}
 const filas = [...Map.groupBy(lineas.filter(l => familias.has(codigoAssa(l.CodArticle)?.slice(0, 6))), l => codigoAssa(l.CodArticle))].map(([codigo, ls]) => {
   const cantidad = gs => gs.filter(g => g.codigo === codigo).reduce((n, g) => n + g.panos.length * g.repeticiones, 0);
   const manuales = lote.lineas.filter(l => l.codigo === codigo && l.estado === 'a-mano');
@@ -76,9 +99,10 @@ const tabla = [
   '| --- | --- | --- | --- | --- | --- |',
   ...filas.map(f => `| ${f.codigo} | ${f.pedida} | ${f.nueva} | ${f.real} | ${f.geometriaReal ? 'Igual' : 'Difiere'} / ${f.nueva ? (f.geometriaNueva ? 'Igual' : 'Difiere') : 'Excluida'} | ${f.estado}: ${[...new Set([...f.motivos, ...f.diferencias])].join(' ').replaceAll('|', '\\|')} |`),
 ].join('\n');
-const informe = `# ${lote.nombre} · ${fecha}\n\nComparación generada por \`scripts/validar-assa-lote.mjs\`. Medidas, herramientas y orillo de todos los paños identificados dentro de ±1 mm, y cantidades exactas por fecha y referencia; los motivos se conservan, sin completar stock ni ocultar las líneas a mano. Las familias de fase B no entran en esta tabla.\n\n${tabla}\n\nOriginal leído: ${real}\n\nSHA-256 original: ${hash(real)}\n\nSHA-256 nuevo: ${hash(local)}\n\nPrueba publicada: ${publicado || 'No solicitada'}\n\nLa 420150 permanece fuera del archivo mientras no se cierre la cantidad de canalones por cubierta. Este archivo es una prueba parcial de las líneas validadas, no un lote completo aprobado.\n`;
+const informe = `# ${lote.nombre} · ${fecha}\n\nComparación generada por \`scripts/validar-assa-lote.mjs\`. Medidas y herramientas dentro de ±1 mm; cantidades exactas de RPS, sin completar stock ni ocultar las líneas a mano. NumLine, OF y palet se conservan en el listado.\n\n${tabla}\n\nOriginal leído: ${real}\n\nSHA-256 original: ${hash(real)}\n\nSHA-256 nuevo: ${hash(local)}\n\nPrueba publicada: ${publicado || 'No solicitada'}\n\nSe han releído y contrastado ${programasEscritos.length} programas escritos y ${canalesReales.length} juegos reales de canalón. El papel del cortador cuadra en sus ${lote.cortador.length} filas. Las líneas sin certificado vigente siguen a mano; la lona de 3 mm sigue pendiente de especificación.\n`;
 fs.writeFileSync(path.join(carpeta, 'diferencias.md'), informe);
-fs.writeFileSync(path.join(carpeta, 'comparacion.json'), JSON.stringify({ fecha, lineas: filas, hashReal: hash(real), hashNuevo: hash(local), corteReal: real, publicado, parcial: lote.aMano > 0, contrasteReal, contrasteNuevo }, null, 2));
+fs.writeFileSync(path.join(carpeta, 'comparacion.json'), JSON.stringify({ fecha, lineas: filas, hashReal: hash(real), hashNuevo: hash(local), corteReal: real, publicado, parcial: lote.aMano > 0,
+  programasEscritos, canalesReales, cortador: lote.cortador, contrasteReal, contrasteNuevo }, null, 2));
 console.log(JSON.stringify({ fecha, lineas: lineas.length, unidades: lote.totalUnidades, aMano: lote.aMano, programas: lote.programas.length, publicado, informe: path.join(carpeta, 'diferencias.md') }, null, 2));
 if (process.argv.includes('--actualizar-rps')) {
   const { closeRpsCatalog } = await import('../src/rpsCatalog.js');

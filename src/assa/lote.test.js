@@ -116,3 +116,26 @@ it('el papel del cortador sale de los programas del corte y cuadra con RPS por p
   expect(lote.cortador.map(f => f.unidades)).toEqual([deCorte(1), deCorte(2)]);
   expect(lote.cortador[0].como.join(' + ')).toMatch(/unidos/);
 });
+
+it('el techo con canalón exige tanto el cuerpo como el juego de canalones contrastados', () => {
+  const techo = { ...l, CodArticle: 'H0K430127-0002', descripcion: 'NB3450 NT600' };
+  const prueba = { descripcion: techo.descripcion, corteMm: [3503, 691], geometria: 1, ultimaGeometria: true };
+  const cert = { referencias: { '430127-0002': { descripciones: [prueba] } } };
+  expect(prepararLote('2026-10-31', [techo], {}, cert).lineas[0].motivos).toContain(CANALON_SIN_PLANTILLA);
+  prueba.canalonValidado = true;
+  const lote = prepararLote('2026-10-31', [techo], {}, cert, { palets: { a: 2 } });
+  expect(lote.lineas[0].estado).toBe('validado');
+  expect(lote.cortador.every(f => f.cuadra)).toBe(true);
+  expect(lote.programas.filter(p => p.tipo === 'canalon').reduce((n, p) => n + p.canalones * p.repeticiones, 0)).toBe(techo.cantidad);
+});
+
+it('el cortador distingue dos canalones del mismo largo con pendientes diferentes en un mismo palet', () => {
+  const ls = [{ ...l, CodArticle: 'H0K430129-0002', descripcion: 'NB3450 NT900', cantidad: 8 },
+    { ...l, IDOrderLine: 'b', CodArticle: 'H0K430172-0007', descripcion: 'NB3450 NH3400 NT900', cantidad: 10 }];
+  const cert = { referencias: Object.fromEntries(ls.map((x, i) => [x.CodArticle.slice(3), { descripciones: [{
+    descripcion: x.descripcion, corteMm: i ? [10260, 966] : [3503, 991], geometria: 1, ultimaGeometria: true, canalonValidado: true,
+  }] }])) };
+  const lote = prepararLote('2026-10-31', ls, {}, cert, { palets: { a: 1, b: 1 } });
+  const filas = lote.cortador.filter(f => f.referencia === 'CANALÓN 365');
+  expect(filas.map(f => [f.unidades, f.pedidas, f.cuadra])).toEqual([[8, 8, true], [10, 10, true]]);
+});

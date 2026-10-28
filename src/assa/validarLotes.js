@@ -1,6 +1,7 @@
 import { codigoAssa } from './leerCorte.js';
 import { generarPanos420150 } from './generar420150.js';
 import { compararOperaciones, operacionesGeneradas } from './comparar.js';
+import { esTecho, piezaConAlto } from './faseA.js';
 
 // Los pedidos se contrastan por sábado y referencia; no por distancia en el dibujo.
 export function validarLineasLote(lineas, programas, { toleranciaMm = 1, generar = generarPanos420150 } = {}) {
@@ -33,10 +34,12 @@ export function validarLineasLote(lineas, programas, { toleranciaMm = 1, generar
       const l = ls[i], generado = generados[i], motivos = [...generales], comprobaciones = [], avisos = [];
       if (generado.estado === 'a-mano') motivos.push(...generado.motivos);
       else {
-        const esperado = operacionesGeneradas(generado.pieza.entidades);
         for (const g of gs) for (const p of g.panos) {
-          const medidas = p.medidasMm.every((v, j) => Math.abs(v - generado.pieza.medidasMm[j]) <= toleranciaMm);
-          const forma = compararOperaciones(esperado, p.operaciones, toleranciaMm);
+          // Ambas alturas de techo están medidas en los cortes. El programa nuevo elige 680 solo en pilas de tres.
+          const pieza = esTecho(generado.familia) && generado.medidas.NT === 600 && Math.abs(p.medidasMm[1] - 680) <= toleranciaMm ?
+            piezaConAlto(generado.pieza, 680) : generado.pieza;
+          const medidas = p.medidasMm.every((v, j) => Math.abs(v - pieza.medidasMm[j]) <= toleranciaMm);
+          const forma = compararOperaciones(operacionesGeneradas(pieza.entidades), p.operaciones, toleranciaMm);
           comprobaciones.push({ fichero: g.fichero, rotulo: g.rotulo, medidasMm: p.medidasMm, medidas, ...forma });
         }
         if (comprobaciones.some(c => !c.medidas)) motivos.push('Las medidas del contorno real difieren más de 1 mm de la regla de la familia.');

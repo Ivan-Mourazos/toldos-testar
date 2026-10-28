@@ -1,5 +1,8 @@
 import { codigoAssa } from './leerCorte.js';
 import { generarPanos420150 } from './generar420150.js';
+import plantilla from './geometriasPlantilla.json' with { type: 'json' };
+
+export const esTecho = familia => ['430125', '430127', '430129'].includes(familia);
 
 export function fechaLote(fecha) {
   if (typeof fecha !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) throw new Error('Elige un sábado de entrega.');
@@ -11,11 +14,11 @@ export function fechaLote(fecha) {
 export const entidadesVacias = () => ({ lineas: [], arcos: [], circulos: [], textos: [] });
 
 /** Reglas candidatas: la autorización para fabricar exige además el contraste del catálogo. */
-export function calcularFamilia(l, { nkValidado = false, terminadoMm } = {}) {
+export function calcularFamilia(l, { nkValidado = false, terminadoMm, indiceCuerpo = 0, unidos = false } = {}) {
   const codigo = codigoAssa(l.CodArticle), familia = codigo?.slice(0, 6);
   const motivos = [], avisos = [], medidas = {};
   const texto = String(l.descripcion ?? '').toUpperCase().replace(/NW(?=\s*=?\s*\d)/g, 'NB');
-  if (!['420102', '420148', '420150'].includes(familia)) motivos.push('Familia fuera de la fase A: preparación a mano.');
+  if (!['420102', '420148', '420150', '430125', '430127', '430129', '430172'].includes(familia)) motivos.push('Familia sin regla contrastada: preparación a mano.');
   if (!String(l.of_ ?? '').trim()) motivos.push('Falta la OF de RPS.');
   if (!Number.isSafeInteger(l.cantidad) || l.cantidad <= 0) motivos.push('La cantidad de RPS debe ser un entero positivo.');
   if (/\b(?:RED|BLUE|ROT|BLAU|ROJ[OA]|AZUL|WHITE|WEISS|BLANC[OA])\b|RAL\s*(?!9005\b)\d{4}/.test(texto)) motivos.push('Material o color distinto de PLASTEL negra: sin validación de material.');
@@ -27,6 +30,7 @@ export function calcularFamilia(l, { nkValidado = false, terminadoMm } = {}) {
     medidas[clave] = valor;
     const ajuste = m[3]?.replace(/\s/g, '') ?? '';
     const permitido = !ajuste || (familia === '420102' && clave === 'NH' && ajuste === '-200') ||
+      (esTecho(familia) && ((clave === 'NB' && ajuste === '+3') || (clave === 'NT' && ajuste === '+25'))) ||
       (familia === '420148' && ((clave === 'NB' && ajuste === '-8') || (clave === 'NT' && ajuste === '-5')));
     if (!permitido) motivos.push(`${clave}${ajuste}: suma o descuento sin validar para esta familia.`);
   }
@@ -35,11 +39,11 @@ export function calcularFamilia(l, { nkValidado = false, terminadoMm } = {}) {
     medidas.NH = (terminadoMm[0] - medidas.NB + 8) / 2;
     avisos.push('Descripción de RPS recortada: medida recuperada de la ficha de medidas de producción del cliente.');
   }
-  for (const k of familia === '420102' ? ['NH', 'NT'] : ['NB', 'NH', 'NT']) {
+  for (const k of familia === '420102' ? ['NH', 'NT'] : esTecho(familia) ? ['NB', 'NT'] : ['NB', 'NH', 'NT']) {
     if (!Number.isFinite(medidas[k]) || medidas[k] < (k === 'NT' ? 100 : 1000)) motivos.push(`Falta ${k} completa en la línea de RPS.`);
   }
   const trazabilidad = { referencia: l.CodArticle, pedido: l.CodOrder, linea: l.IDOrderLine, of: l.of_, numeroLinea: l.NumLine };
-  const resultado = { estado: 'a-mano', familia, codigo, motivos, avisos, medidas, trazabilidad, cantidadPedida: l.cantidad,
+  const resultado = { estado: 'a-mano', familia, codigo, motivos, avisos, medidas, trazabilidad, cantidadPedida: l.cantidad, unidos,
     material: { nombre: 'PLASTEL 8800 TE62 negra', anchoRolloMm: 2040, permitirEmpates: false, permitirGiro: false } };
   if (motivos.length) return resultado;
   if (familia === '420150') {
@@ -47,15 +51,26 @@ export function calcularFamilia(l, { nkValidado = false, terminadoMm } = {}) {
     return { ...resultado, ...g, avisos, familia, codigo };
   }
   const { NB, NH, NT } = medidas;
-  const largo = familia === '420102' ? NH - 190 : NB + 2 * NH + 5;
-  const ancho = NT + (familia === '420102' ? 66 : 61);
+  const largo = esTecho(familia) ? NB + 53 : familia === '420102' ? NH - 190 : NB + 2 * NH + (familia === '430172' ? 10 : 5);
+  const ancho = NT + (esTecho(familia) ? 91 : familia === '420148' ? 61 : 66);
   if (ancho > 2040) return { ...resultado, motivos: ['La pieza no cabe en el rollo de 2040 mm sin girar ni empatar.'] };
   const entidades = entidadesVacias();
   entidades.lineas.push(
     { capa: 'DISCO1', x1: 0, y1: 0, x2: 0, y2: ancho },
     { capa: 'DISCO1', x1: largo, y1: 0, x2: largo, y2: ancho },
     { capa: 'DISCO1', x1: 0, y1: ancho, x2: largo, y2: ancho });
-  return { ...resultado, estado: 'generado', terminadoMm: [largo - 10, ancho - 66],
+  if (['430127', '430129', '430172'].includes(familia)) {
+    const cuerpo = plantilla.cuerpos[codigo]?.[indiceCuerpo];
+    if (!cuerpo || !cuerpo.medidasMm.every((n, i) => Math.abs(n - [largo, ancho][i]) <= 1)) {
+      return { ...resultado, motivos: ['Cuerpo sin forma de plantilla para estas medidas: agujeros y marcas a mano.'] };
+    }
+    for (const p of cuerpo.operaciones) {
+      if (p.tipo === 'raya') entidades.lineas.push({ capa: p.capa, x1: p.a[0], y1: p.a[1], x2: p.b[0], y2: p.b[1], ...(p.curva ? { curva: p.curva } : {}) });
+      else if (Math.abs((p.hasta - p.desde) % 360) < 1e-7) entidades.circulos.push({ capa: p.capa, x: p.punto[0], y: p.punto[1], r: p.r });
+      else entidades.arcos.push({ capa: p.capa, x: p.punto[0], y: p.punto[1], r: p.r, desde: p.desde, hasta: p.hasta });
+    }
+  }
+  return { ...resultado, estado: 'generado', terminadoMm: [largo - (esTecho(familia) ? 50 : 10), ancho - 66],
     pieza: { tipo: 'pano', medidasMm: [largo, ancho], entidades } };
 }
 
@@ -74,7 +89,18 @@ export function unirEntidades(destino, origen) {
 
 // Dos paños unidos a lo largo con una raya de rotulador en medio, para envarillar dos de un golpe y separarlos después
 // (Tamara, 28/10/2026). Siempre en la 420102; en la 420150 solo con menos de 5 m de largo.
-export const vanUnidos = g => g.familia === '420102' || (g.familia === '420150' && g.pieza.medidasMm[0] < 5000);
+export const vanUnidos = g => g.familia === '420102' || (g.familia === '420150' && g.pieza.medidasMm[0] < 5000) ||
+  (esTecho(g.familia) && g.unidos === true);
+
+// La reducción del techo mantiene agujeros y marcas centrados; las dimensiones de los accesorios no se escalan.
+export function piezaConAlto(pieza, alto) {
+  if (alto === pieza.medidasMm[1]) return pieza;
+  const dy = (alto - pieza.medidasMm[1]) / 2;
+  const e = desplazarEntidades(pieza.entidades, 0, dy);
+  e.lineas = pieza.entidades.lineas.map((l, i) => l.capa === 'DISCO1' ?
+    { ...l, y1: l.y1 === pieza.medidasMm[1] ? alto : l.y1, y2: l.y2 === pieza.medidasMm[1] ? alto : l.y2 } : e.lineas[i]);
+  return { ...pieza, medidasMm: [pieza.medidasMm[0], alto], entidades: e };
+}
 
 function pareja(pieza) {
   const largo = pieza.medidasMm[0], e = entidadesVacias();
@@ -89,12 +115,16 @@ function pareja(pieza) {
 
 export function generarProgramas(g, { sueltas = false } = {}) {
   if (g.estado !== 'generado') return [];
-  const alto = g.pieza.medidasMm[1], capacidad = sueltas ? 1 : Math.min(3, Math.floor(2040 / alto));
+  const ajustable = esTecho(g.familia) && g.medidas.NT === 600;
+  const capacidad = sueltas ? 1 : ajustable ? 3 : Math.min(3, Math.floor(2040 / g.pieza.medidasMm[1]));
   const porFila = vanUnidos(g) ? 2 : 1, total = g.cantidadPedida, juegos = Math.floor(total / (capacidad * porFila));
   const resto = total - juegos * capacidad * porFila;
   const cantidades = [[capacidad, porFila, juegos], [Math.floor(resto / porFila), porFila, 1], [resto % porFila, 1, 1]];
   return cantidades.filter(([filas, , r]) => filas > 0 && r > 0).map(([filas, enFila, repeticiones]) => {
-    const fila = enFila === 2 ? pareja(g.pieza) : g.pieza, entidades = entidadesVacias();
+    // Iván, 28/10/2026: 68 solo con tres o más en el ancho; sueltas y pilas de dos conservan 69,1.
+    const alto = ajustable && filas >= 3 ? 680 : g.pieza.medidasMm[1];
+    const pieza = piezaConAlto(g.pieza, alto);
+    const fila = enFila === 2 ? pareja(pieza) : pieza, entidades = entidadesVacias();
     for (let i = 0; i < filas; i++) unirEntidades(entidades, desplazarEntidades(fila.entidades, 0, i * alto));
     entidades.textos.push({ capa: 'texto', x: 100, y: filas * alto + 120, h: 200,
       literal: true, valor: g.trazabilidad.referencia });

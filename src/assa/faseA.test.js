@@ -55,6 +55,37 @@ describe('lote del sábado: reglas de fase A', () => {
     const g = calcularFamilia({ ...linea, CodArticle: 'H0K420150-0001', descripcion: 'NT600 NB3250 NH3600' });
     expect(generarProgramas(g).every(p => !p.unidos)).toBe(true);
   });
+  it('el techo usa NB y NT, sin pedir una NH que no tiene', () => {
+    const g = calcularFamilia({ ...linea, CodArticle: 'H0K430125-0002', descripcion: 'NB3450 NT600' });
+    expect(g.estado).toBe('generado');
+    expect(g.terminadoMm).toEqual([3453, 625]);
+    expect(g.pieza.medidasMm).toEqual([3503, 691]);
+  });
+  it('NB+3 y NT+25 describen el terminado del techo y no se vuelven a sumar al corte', () => {
+    const g = calcularFamilia({ ...linea, CodArticle: 'H0K430125-0002', descripcion: 'DACHPLANE NB=3450+3 NT=600+25' });
+    expect(g.estado).toBe('generado');
+    expect(g.pieza.medidasMm).toEqual([3503, 691]);
+    expect(g.terminadoMm).toEqual([3453, 625]);
+  });
+  it.each([1, 2, 3, 4, 5, 6, 7, 13])('techo: %i unidades exactas y 680 solo en pilas de tres', cantidad => {
+    const g = calcularFamilia({ ...linea, CodArticle: 'H0K430125-9999', descripcion: 'NB3450 NT600', cantidad });
+    const ps = generarProgramas(g);
+    expect(ps.reduce((n, p) => n + p.panos * p.repeticiones, 0)).toBe(cantidad);
+    expect(ps.some(p => p.filas === 3)).toBe(cantidad >= 3);
+    for (const p of ps) expect(p.anchoOcupadoMm / p.filas).toBe(p.filas >= 3 ? 680 : 691);
+    expect(generarProgramas(g, { sueltas: true }).every(p => p.filas === 1 && p.anchoOcupadoMm === 691)).toBe(true);
+  });
+  it('el techo de fondo 900 conserva 991 y nunca se estrecha para meter tres', () => {
+    const g = calcularFamilia({ ...linea, CodArticle: 'H0K430125-0003', descripcion: 'NB3250 NT900', cantidad: 9 });
+    expect(g.estado).toBe('generado');
+    expect(generarProgramas(g).every(p => p.filas <= 2 && p.anchoOcupadoMm / p.filas === 991)).toBe(true);
+  });
+  it('los agujeros completos de la plantilla se escriben como círculos de corte', () => {
+    const g = calcularFamilia({ ...linea, CodArticle: 'H0K430127-0002', descripcion: 'NB3450 NT600' });
+    expect(g.pieza.entidades.circulos).toHaveLength(11);
+    expect(g.pieza.entidades.circulos.every(c => c.capa === 'CUTTER' && c.r === 7)).toBe(true);
+    expect(g.pieza.entidades.arcos).toHaveLength(0);
+  });
   it.each([
     { of_: '' }, { cantidad: 1.5 }, { descripcion: 'NH=3 NT=600' },
     { descripcion: 'NH=3200-100 NT=600' }, { descripcion: 'NH3200 NH3600 NT600' },
