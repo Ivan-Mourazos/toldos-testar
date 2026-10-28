@@ -1,0 +1,71 @@
+import { codigoAssa } from './leerCorte.js';
+import { generarPanos420150 } from './generar420150.js';
+import { compararOperaciones, operacionesGeneradas } from './comparar.js';
+import { esTecho, piezaConAlto } from './faseA.js';
+
+// Los pedidos se contrastan por sábado y referencia; no por distancia en el dibujo.
+export function validarLineasLote(lineas, programas, { toleranciaMm = 1, generar = generarPanos420150 } = {}) {
+  if (new Set(lineas.map(l => l.IDOrderLine)).size !== lineas.length) throw new Error('Hay líneas RPS duplicadas.');
+  const lineasPorLote = Map.groupBy(lineas, l => `${l.entregaSolicitada}|${codigoAssa(l.CodArticle)}`);
+  const gruposPorLote = Map.groupBy(programas, p => `${p.fecha}|${p.codigo}`);
+  const filas = [];
+  for (const [clave, ls] of lineasPorLote) {
+    // Solo se deduplican copias con los mismos bytes: los sufijos pueden ser otro palet o revisión.
+    const vistos = new Set();
+    const gs = (gruposPorLote.get(clave) ?? []).filter(g => {
+      const k = `${g.sha256}|${g.rotulo}|${JSON.stringify(g.panos.map(p => p.caja))}`;
+      if (vistos.has(k)) return false;
+      vistos.add(k); return true;
+    });
+    const cantidadesRps = ls.reduce((n, l) => n + l.cantidad, 0);
+    const cantidadConjuntosAgrupados = Math.ceil(cantidadesRps / 3) * 3;
+    const cantidadConjuntosPorLinea = ls.reduce((n, l) => n + Math.ceil(l.cantidad / 3) * 3, 0);
+    const cantidadCorte = gs.reduce((n, g) => n + g.panos.length * g.repeticiones, 0);
+    const archivosDelCodigo = [...new Set(gs.map(g => g.fichero))];
+    const variosFicheros = new Set(gs.map(g => g.sha256)).size > 1;
+    const generales = [];
+    if (!gs.length) generales.push('No se ha identificado un paño rectangular con ese código en el lote.');
+    if (variosFicheros) generales.push('Hay varios DXF de la misma fecha: no se supone que sean acumulables ni revisiones.');
+    if (cantidadesRps !== cantidadCorte) generales.push(`Cantidad agrupada: RPS ${cantidadesRps}; paños identificados × repeticiones ${cantidadCorte}.`);
+    const generados = ls.map(l => generar(l));
+    const firmas = new Set(generados.map(g => g.estado === 'generado' ? JSON.stringify(g.medidas) : 'a-mano'));
+    if (firmas.size > 1) generales.push('La misma referencia y fecha tiene distintas medidas o líneas a mano; no se asignan piezas a pedidos por proximidad.');
+    for (let i = 0; i < ls.length; i++) {
+      const l = ls[i], generado = generados[i], motivos = [...generales], comprobaciones = [], avisos = [];
+      if (generado.estado === 'a-mano') motivos.push(...generado.motivos);
+      else {
+        for (const g of gs) for (const p of g.panos) {
+          // Ambas alturas de techo están medidas en los cortes. El programa nuevo elige 680 solo en pilas de tres.
+          const pieza = esTecho(generado.familia) && generado.medidas.NT === 600 && Math.abs(p.medidasMm[1] - 680) <= toleranciaMm ?
+            piezaConAlto(generado.pieza, 680) : generado.pieza;
+          const medidas = p.medidasMm.every((v, j) => Math.abs(v - pieza.medidasMm[j]) <= toleranciaMm);
+          const forma = compararOperaciones(operacionesGeneradas(pieza.entidades), p.operaciones, toleranciaMm);
+          comprobaciones.push({ fichero: g.fichero, rotulo: g.rotulo, medidasMm: p.medidasMm, medidas, ...forma });
+        }
+        if (comprobaciones.some(c => !c.medidas)) motivos.push('Las medidas del contorno real difieren más de 1 mm de la regla de la familia.');
+        if (comprobaciones.some(c => !c.coincide)) motivos.push('Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla.');
+        // Iván, 26/10/2026 (Q-AS06b): la pieza que aprovecha el orillo va pegada al borde del rollo y ese lado no se corta.
+        // Que el corte real la cortara por los cuatro lados no cambia la pieza: es un aviso, no un motivo para dejarla a mano.
+        if (gs.some(g => g.panos.some(p => !p.orilloDelConjunto))) avisos.push('En el corte real el paño no iba contra el orillo.');
+      }
+      const geometria = generado.estado === 'generado' && comprobaciones.length > 0 &&
+        comprobaciones.every(c => c.medidas && c.coincide);
+      const muestraCompatible = comprobaciones.some(c => c.medidas && c.coincide);
+      const coincide = geometria && motivos.length === 0;
+      const sinDiferenciaDeCantidad = geometria && motivos.filter(m => !m.startsWith('Cantidad agrupada:')).length === 0;
+      filas.push({ fecha: l.entregaSolicitada, pedido: l.CodOrder, linea: l.IDOrderLine, of: l.of_, referencia: l.CodArticle,
+        descripcion: l.descripcion, cantidad: l.cantidad, estado: generado.estado === 'a-mano' ? 'a-mano' : coincide ? 'cuadra-pano-y-cantidad' : 'no-cuadra',
+        geometria, muestraCompatible, coincide, terminadoMm: generado.terminadoMm ?? null, corteMm: generado.pieza?.medidasMm ?? null,
+        cantidadRpsAgrupada: cantidadesRps, cantidadCorteAgrupada: cantidadCorte, ficheros: archivosDelCodigo,
+        cantidadConjuntosAgrupados, cantidadConjuntosPorLinea,
+        cuadraCompletandoConjuntosAgrupados: sinDiferenciaDeCantidad && cantidadCorte === cantidadConjuntosAgrupados,
+        cuadraCompletandoPorLinea: sinDiferenciaDeCantidad && cantidadCorte === cantidadConjuntosPorLinea,
+        accion: coincide ? 'panos-validados' : 'a-mano',
+        motivos, avisos, comprobaciones,
+        programasReales: gs.map(g => ({ fichero: g.fichero, rotulo: g.rotulo, panos: g.panos.length, repeticiones: g.repeticiones, medidasMm: g.panos.map(p => p.medidasMm) })),
+        programasGenerados: generado.programas.map(p => ({ panos: p.panos, repeticiones: p.repeticiones })) });
+    }
+  }
+  filas.sort((a, b) => a.fecha.localeCompare(b.fecha) || a.referencia.localeCompare(b.referencia) || a.pedido.localeCompare(b.pedido));
+  return filas;
+}

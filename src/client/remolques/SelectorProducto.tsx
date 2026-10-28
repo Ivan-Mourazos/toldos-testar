@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { lazy, Suspense, useState } from 'react';
 import { Building2, Caravan, DoorOpen, Store, Warehouse } from 'lucide-react';
 
-// COMBURSA queda a la vista para la siguiente fase de lotes de ASSA ABLOY.
-export const COMBURSA_DISPONIBLE = false;
+const LoteSabado = lazy(() => import('../combursa/LoteSabado'));
+export const COMBURSA_DISPONIBLE = true;
 
 export type Producto = 'toldos' | 'remolques' | 'puertas' | 'systemdock';
 
@@ -24,6 +24,7 @@ export type ResumenPedido = { numero: string; elementos: number };
 
 // `puertas` false: puertas en pausa en el servidor (ENABLE_PUERTAS), sin pestaña.
 export function SelectorProducto({ producto, onChange, pedidos, inicio = false, disabled = false, puertas = true, transicion }: { producto: Producto; onChange: (producto: Producto) => void; pedidos?: Partial<Record<Producto, ResumenPedido>>; inicio?: boolean; disabled?: boolean; puertas?: boolean; transicion?: Producto | null }) {
+  const [combursaAbierta, setCombursaAbierta] = useState(false);
   const detalle = (tipo: Producto) => {
     const pedido = pedidos?.[tipo];
     return pedido?.numero.trim() || pedido?.elementos
@@ -53,13 +54,14 @@ export function SelectorProducto({ producto, onChange, pedidos, inicio = false, 
             <span className={`inicio-tarjeta-estado${enCurso ? ' is-en-curso' : ''}`}>{enCurso ? `Seguir con ${detalle(tipo)}` : 'Sin empezar'}</span>
           </button>;
         })}
-        <button type="button" disabled={!COMBURSA_DISPONIBLE || disabled} aria-label="COMBURSA" title="Todavía no está disponible" className="inicio-tarjeta">
+        <button type="button" disabled={!COMBURSA_DISPONIBLE || disabled} aria-label="COMBURSA" title="Preparar el lote del sábado" className="inicio-tarjeta" onClick={() => setCombursaAbierta(true)}>
           <span className="inicio-tarjeta-icono"><Building2 aria-hidden="true" /></span>
           <strong>COMBURSA</strong>
           <span className="inicio-tarjeta-lleva">Lotes del sábado de ASSA ABLOY</span>
-          <span className="inicio-tarjeta-estado">Próximamente</span>
+          <span className="inicio-tarjeta-estado">Preparar lote</span>
         </button>
       </div>
+      {combursaAbierta && <Suspense fallback={<p role="status">Abriendo el lote…</p>}><LoteSabado onCerrar={() => setCombursaAbierta(false)} /></Suspense>}
     </div>;
   }
   return (

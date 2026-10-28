@@ -71,6 +71,22 @@ function etiquetaClasePieza(pieza: PiezaPuerta, codigoPano?: string): string {
   return 'CRISTAL';
 }
 
+/** Lo que mide la pieza en vertical en todo el tramo [x0, x1]: lo más alto de abajo y lo más bajo de arriba. */
+function altoEnTramo(contorno: Punto[], x0: number, x1: number): [number, number] {
+  let abajo = -Infinity, arriba = Infinity;
+  for (const x of [x0, (x0 + x1) / 2, x1]) {
+    const ys: number[] = [];
+    contorno.forEach((p, i) => {
+      const q = contorno[(i + 1) % contorno.length];
+      if (p[0] === q[0] || x < Math.min(p[0], q[0]) || x > Math.max(p[0], q[0])) return;
+      ys.push(p[1] + (q[1] - p[1]) * (x - p[0]) / (q[0] - p[0]));
+    });
+    if (ys.length < 2) continue;
+    abajo = Math.max(abajo, Math.min(...ys)); arriba = Math.min(arriba, Math.max(...ys));
+  }
+  return Number.isFinite(abajo) && Number.isFinite(arriba) ? [abajo, arriba] : [-Infinity, Infinity];
+}
+
 function rotulosPieza(
   entidades: EntidadesPuertas,
   pieza: PiezaPuerta,
@@ -113,10 +129,25 @@ function rotulosPieza(
     const libre = huecos.sort((a, b) => (b[1] - b[0]) - (a[1] - a[0]))[0] ?? [margenY, pieza.alto - margenY];
     const central = pieza.marcas.some(m => m[0] === m[2] && Math.abs(m[0] - pieza.ancho / 2) < 2 && Math.abs(m[3] - m[1]) > pieza.alto / 2);
     const margenX = Math.min(10, pieza.ancho / 10);
-    const inicio = central ? pieza.ancho / 2 + margenX : margenX, fin = pieza.ancho - margenX, w = (fin - inicio) / valores.length;
-    const h = Math.min(25, (libre[1] - libre[0]) * .65, ...valores.map(v => w * .82 / anchoArial(v, 1)));
+    let inicio = central ? pieza.ancho / 2 + margenX : margenX, fin = pieza.ancho - margenX;
+    // Si la pieza es inclinada, los textos van en su parte alta: donde mide al menos el 70 % de lo más alto.
+    const muestras = Array.from({ length: 21 }, (_, k) => inicio + (fin - inicio) * k / 20)
+      .map(x => { const [u, v] = altoEnTramo(pieza.contorno, x, x); return { x, alto: Math.min(v, libre[1]) - Math.max(u, libre[0]) }; });
+    const maximo = Math.max(...muestras.map(m => m.alto));
+    if (Number.isFinite(maximo)) {
+      const altas = muestras.filter(m => m.alto >= maximo * .7);
+      [inicio, fin] = [altas[0].x, altas.at(-1)!.x];
+    }
+    const w = (fin - inicio) / valores.length;
+    // En los paños inclinados (suelo inclinado) cada texto se mide con el alto real de la pieza en su tramo, no con
+    // el de la caja: si no, casi se salen por el borde inclinado (Iván, 28/10/2026, AR2605035).
+    const franjas = valores.map((_, i) => {
+      const a = inicio + w * (i + .5), [b0, b1] = altoEnTramo(pieza.contorno, a - w * .41, a + w * .41);
+      return [Math.max(libre[0], b0 + margenY), Math.min(libre[1], b1 - margenY)];
+    });
+    const h = Math.min(25, ...franjas.map(([u, v]) => (v - u) * .65), ...valores.map(v => w * .82 / anchoArial(v, 1)));
     valores.forEach((valor, i) => {
-      const a = inicio + w * (i + .5), b = (libre[0] + libre[1]) / 2;
+      const a = inicio + w * (i + .5), b = (franjas[i][0] + franjas[i][1]) / 2;
       entidades.textos.push({ capa: 'texto', x: x + mm(girada ? pieza.alto - b : a), y: y + mm(girada ? a : b),
         h: mm(h), valor, giro: girada ? 90 : 0, centrado: true });
     });

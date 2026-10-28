@@ -21,7 +21,8 @@ export const models = [
   { code: 'XACOBEO', family: 'BRAZOS INVISIBLES', subtype: '', ruleSheet: 'XAC', supportsMultipleArms: false },
   { code: 'BAMBALINA', family: '', subtype: '', ruleSheet: 'BAMBALINA', supportsMultipleArms: false },
   { code: 'CAMBIO ANTICA', family: '', subtype: '', ruleSheet: 'CAM. ANTICA', supportsMultipleArms: false },
-  { code: 'SOLAPAS', family: '', subtype: '', ruleSheet: 'SOLAPAS', supportsMultipleArms: false }
+  { code: 'SOLAPAS', family: '', subtype: '', ruleSheet: 'SOLAPAS', supportsMultipleArms: false },
+  { code: 'EMBUDO', family: '', subtype: '', ruleSheet: 'EMBUDO', supportsMultipleArms: false }
 ];
 
 // `family` es la categoría comercial con la que la oficina agrupa su catálogo,

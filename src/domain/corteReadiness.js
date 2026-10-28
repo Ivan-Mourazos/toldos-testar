@@ -1,7 +1,7 @@
 import { formaBambalina } from './corteLona/bambalina.js';
 // Primera fase: lona de PVC recta de estos cuatro modelos de fachada.
 // Desde el 22/10/2026 también la cortina de PVC, con su ventana (docs/modelos/cortina-pvc-corte.md).
-export const modelosConCorte = Object.freeze(['ARZUA PRO', 'GALICIA', 'MONOBLOCK 350', 'CAMBIO TELA', 'CORTINA', 'CAMBIO CORTINA', 'SOLAPAS']);
+export const modelosConCorte = Object.freeze(['ARZUA PRO', 'GALICIA', 'MONOBLOCK 350', 'CAMBIO TELA', 'CORTINA', 'CAMBIO CORTINA', 'SOLAPAS', 'EMBUDO']);
 
 export function corteReadiness(modelo) {
   const ready = modelosConCorte.includes(String(modelo || '').trim().toUpperCase());

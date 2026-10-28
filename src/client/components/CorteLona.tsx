@@ -96,8 +96,8 @@ export function CorteLona({ order, estado, onGenerated, reviewCode, acciones, re
     {error && <p role="alert" className="corte-aviso">{error}</p>}
     {pendientes && pendientes.length > 0 && <p className="corte-aviso">{pendientes.map(p => `Toldo ${p.letra}: ${p.motivo === 'viejo' ? 'corte viejo' : 'falta generar el corte'}`).join(' · ')}</p>}
     {!datos && estado?.toldos.some(t => t.manual) && <ul className="corte-avisos">{estado.toldos.filter(t => t.manual).map(t => <li key={t.clave}>Toldo {t.letra}, OF {t.of}: {t.motivoManual}</li>)}</ul>}
-    {!reviewCode && <details className="corte-ajustes"><summary>Ajustes por toldo · se regenera al cambiar</summary>
-      {toldos.map(({ t, letra }) => {
+    {!reviewCode && toldos.some(({ t }) => t.model !== 'EMBUDO') && <details className="corte-ajustes"><summary>Ajustes por toldo · se regenera al cambiar</summary>
+      {toldos.filter(({ t }) => t.model !== 'EMBUDO').map(({ t, letra }) => {
         const clave = t.id || t.of || letra;
         const a = { ...AJUSTES_POR_DEFECTO, ...estado?.ajustes[clave] } as AjustesCorte;
         return <fieldset key={clave} disabled={generando}><legend>Toldo {letra} · OF {t.of || 'sin indicar'}</legend>
@@ -138,7 +138,8 @@ export function CorteLonaVista({ datos }: { datos: CorteRespuesta }) {
 }
 
 function Opcion({ corte, titulo, soloBamba = false }: { corte: VistaCorte; titulo: string; soloBamba?: boolean }) {
-  return <section className="corte-opcion"><header><strong>{titulo}</strong><span><b>{numero(corte.largo / 1000)} m</b> de rollo</span></header>
+  return <section className="corte-opcion"><header><strong>{titulo}</strong><span><b>{numero((corte.largoMaterial ?? corte.largo) / 1000)} m</b> de rollo</span></header>
+    {(corte.repeticiones ?? 1) > 1 && <p>Repetir corte X{corte.repeticiones} · metros totales de todas las unidades</p>}
     {Boolean(corte.largoRestos) && <p>{numero(corte.largoRestos! / 1000)} m aparte, para cortar de un resto</p>}
     <DibujoCorte corte={corte} />
     <small className="corte-leyenda"><span>DISCO1 · corte</span><span>ROTULADOR · marcas</span></small>
@@ -147,14 +148,26 @@ function Opcion({ corte, titulo, soloBamba = false }: { corte: VistaCorte; titul
 }
 
 export function DibujoCorte({ corte }: { corte: VistaCorte }) {
-  const { lineas, textos } = corte.dibujo;
+  const { lineas, textos, arcos = [] } = corte.dibujo;
+  const punto = (a: typeof arcos[number], grados: number) => [a.x + a.r * Math.cos(grados * Math.PI / 180), -a.y - a.r * Math.sin(grados * Math.PI / 180)];
   let maxX = corte.largo, maxY = corte.anchoRollo, minX = 0, minY = 0;
   for (const l of lineas) { maxX = Math.max(maxX, l.x1, l.x2); maxY = Math.max(maxY, l.y1, l.y2); minX = Math.min(minX, l.x1, l.x2); minY = Math.min(minY, l.y1, l.y2); }
   for (const t of textos) { maxY = Math.max(maxY, t.y + t.h); maxX = Math.max(maxX, t.x); minY = Math.min(minY, t.y - t.h); }
+  for (const a of arcos) {
+    for (const angulo of [a.desde, a.hasta, ...[0, 90, 180, 270, 360].filter(v => v >= a.desde && v <= a.hasta)]) {
+      const [x, y] = punto(a, angulo);
+      maxX = Math.max(maxX, x); minX = Math.min(minX, x); maxY = Math.max(maxY, -y); minY = Math.min(minY, -y);
+    }
+  }
   const margen = 180;
   return <svg className="corte-dibujo" role="img" aria-label={`Vista del corte ${corte.material}`} viewBox={`${minX - margen} ${-maxY - margen} ${maxX - minX + margen * 2} ${maxY - minY + margen * 2}`}>
     <rect x="0" y={-corte.anchoRollo} width={corte.largo} height={corte.anchoRollo} className="corte-rollo" />
     {lineas.map((l, i) => <line key={i} x1={l.x1} y1={-l.y1} x2={l.x2} y2={-l.y2} data-capa={l.capa} className={l.capa === 'ROTULADOR' ? 'corte-marca' : 'corte-linea'} vectorEffect="non-scaling-stroke" />)}
+    {arcos.map((a, i) => {
+      const [x0, y0] = punto(a, a.desde), [x1, y1] = punto(a, a.hasta);
+      return <path key={i} d={`M${x0} ${y0} A${a.r} ${a.r} 0 ${a.hasta - a.desde > 180 ? 1 : 0} 0 ${x1} ${y1}`}
+        fill="none" data-capa={a.capa} className={a.capa === 'ROTULADOR' ? 'corte-marca' : 'corte-linea'} vectorEffect="non-scaling-stroke" />;
+    })}
     {textos.map((t, i) => <text key={i} x={t.x} y={-t.y} fontSize={t.h} textAnchor={t.centrado ? 'middle' : 'start'} transform={t.giro ? `rotate(${-t.giro} ${t.x} ${-t.y})` : undefined}>{t.valor}</text>)}
   </svg>;
 }

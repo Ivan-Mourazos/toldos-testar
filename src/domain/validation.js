@@ -31,6 +31,7 @@ import { normalizeDropArmModeForModel, supportsVerticalDropArm } from './dropArm
 import { inferHeraVariant, normalizeHeraJoin } from './heraParameters.js';
 import { collectFabricMaterialKeys, roundFabricMeters } from './reservationFabrics.js';
 import { normalizeSolapas } from './solapasRules.js';
+import { normalizeEmbudo } from './embudoConfiguration.js';
 
 export function normalizeOrder(payload) {
   if (!payload || typeof payload !== 'object') {
@@ -190,6 +191,7 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
       ? cleanText(awning?.curtainTopFinish).toUpperCase() === 'REMACHADO' ? 'REMACHADO' : 'VARILLA'
       : '',
     solapas: model === 'SOLAPAS' ? normalizeSolapas(awning?.solapas, awning?.bastilla) : [],
+    ...(model === 'EMBUDO' ? { embudo: normalizeEmbudo(awning?.embudo) } : {}),
     bastilla: model === 'SOLAPAS' && awning?.bastilla === true,
     curtainFabricWidthDiscountCm: nullableNumber(awning?.curtainFabricWidthDiscountCm),
     curtainRollTubeDiscountCm: nullableNumber(awning?.curtainRollTubeDiscountCm),

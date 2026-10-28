@@ -24,9 +24,10 @@ type Props = {
   // Solo para la ficha: qué leer si no hay tela y eso significa algo («Tela bamba · Igual
   // que la tela»); si no, «—».
   readEmptyAs?: string;
+  onlyPvc?: boolean;
 };
 
-export function FabricCombobox({ label, value, onChange, placeholder = 'Código, color o nombre…', disabled = false, missing = false, readEmptyAs = '' }: Props) {
+export function FabricCombobox({ label, value, onChange, placeholder = 'Código, color o nombre…', disabled = false, missing = false, readEmptyAs = '', onlyPvc = false }: Props) {
   const reading = useReadMode();
   const labelId = useId();
   const [query, setQuery] = useState(() => fabricSelectionLabel(value));
@@ -50,7 +51,8 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
       try {
         const response = await fetch(`/api/catalog/fabrics?q=${encodeURIComponent(query)}&limit=35`, { signal: controller.signal });
         const data = await response.json();
-        setOptions(Array.isArray(data.items) ? data.items : []);
+        const items: FabricOption[] = Array.isArray(data.items) ? data.items : [];
+        setOptions(onlyPvc ? items.filter(f => f.material?.trim().toUpperCase() === 'PLASTICA (LONA)') : items);
       } catch {
         if (!controller.signal.aborted) setOptions([]);
       } finally {
@@ -61,7 +63,7 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [open, query]);
+  }, [open, query, onlyPvc]);
 
   useEffect(() => {
     if (!open) return undefined;

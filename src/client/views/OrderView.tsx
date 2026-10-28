@@ -178,6 +178,7 @@ export function OrderView({
             customer={customer}
             orderDate={orderDate}
             fabric={fabric}
+            onlyPvc={awnings.length > 0 && awnings.every(a => a.model === 'EMBUDO')}
             sameFabric={sameFabric}
             notes={notes}
             onNotesChange={setNotes}

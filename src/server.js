@@ -17,6 +17,7 @@ import { conHojasDelante } from './flujoDwg/unirPdf.js';
 import { SUBCARPETA_PUERTAS, TIPO_PEDIDO_PUERTAS } from './puertas/flujo/tipos.ts';
 import { crearOfStockSacos } from './ofStockSacos.js';
 import { registrarRutasCorteLona } from './corteLonaRoutes.js';
+import { registrarRutasAssa } from './assa/rutas.js';
 import { exigirCorteAlDia, escribirPlanosCorte, prepararArchivosCorte } from './corteLonaArchivos.js';
 import { registrarRutasEnviosCorte } from './corteEnviosRoutes.js';
 import { createCoordinaClient } from './coordinaStatus.js';
@@ -296,6 +297,7 @@ const flujoToldos = crearFlujoDwg({
 const dxfToldosDesdeDwg = async (review) => (await flujoToldos.corteDelDwg(review.corteConfirmado)).dxf;
 
 registrarRutasCorteLona(app, { workflowStore, oda, ofStockSacos, dxfDesdeDwg: dxfToldosDesdeDwg });
+registrarRutasAssa(app, { oda });
 
 /** El pedido de toldos que manda la pantalla, con su número limpio, para el borrador del corte. */
 function pedidoToldosDeLaPantalla(body) {

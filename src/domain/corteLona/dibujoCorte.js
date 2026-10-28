@@ -1,6 +1,7 @@
 import { AJUSTES_POR_DEFECTO } from './despiece.js';
 import { anchoArial } from './texto.js';
 import { bordeOndulado, HOLGURA_ONDA_MM } from './bambalina.js';
+import { dibujoPiezaEmbudo } from './embudo.js';
 
 // La tira lleva B.N(2) en cada punta (tiraExtraLargoCm): las ondas, enteras, entre los dos.
 const MARGEN_ONDA = (AJUSTES_POR_DEFECTO.tiraExtraLargoCm / 2) * 10;
@@ -8,7 +9,13 @@ const MARGEN_ONDA = (AJUSTES_POR_DEFECTO.tiraExtraLargoCm / 2) * 10;
 /** Líneas de corte (DISCO1), del rotulador y textos de las piezas ya colocadas. */
 export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
   const horizontales = []; const verticales = []; const oblicuas = [];
+  const arcos = [], propios = [];
   for (const p of colocadas) {
+    if (p.geometria) {
+      const d = dibujoPiezaEmbudo(p);
+      oblicuas.push(...d.lineas); arcos.push(...d.arcos); propios.push(...d.textos);
+      continue;
+    }
     const [x0, y0, x1, y1] = [p.x, p.y, p.x + p.ancho, p.y + p.hueco];
     if (p.oblicua) {
       const { altoIzq, altoDer } = p.oblicua;
@@ -58,7 +65,7 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
     ...unir(verticales).map(([x, a, b]) => ({ capa: 'DISCO1', x1: x, y1: a, x2: x, y2: b })),
     ...oblicuas
   ];
-  const textos = [];
+  const textos = [...propios];
   // Cuántos paños con empate tiene cada toldo (A1, A2…), para saber con quién se une cada uno.
   const panos = new Map();
   for (const p of colocadas) {
@@ -76,6 +83,7 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
   const conOf = new Set(primeraDe.values());
   for (const p of colocadas) {
     const [x0, y0] = [p.x, p.y];
+    if (p.geometria) continue;
     // Las piezas con sus uniones ya puestas (las de la cortina) no siguen la cadena de paños de fachada.
     textos.push(...(p.uniones ? unionesPropias(p) : numerosDeUnion(p, panos)));
     // Marca a `d` del borde de arriba (d > 0) o de abajo (d < 0) de la pieza, metida `m` en los
@@ -169,7 +177,7 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
     textos.push({ capa: 'texto', x: largoCorte / 2, y: y + h / 2, h, valor, centrado: true });
     y += h + 40;
   }
-  return { lineas, textos };
+  return { lineas, textos, arcos };
 }
 
 // Números de unión de los empates, como en remolques (Iván, 20/10/2026): el mismo en los dos paños que se

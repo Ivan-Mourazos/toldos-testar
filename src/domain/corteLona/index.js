@@ -14,6 +14,7 @@ import { textoSeguro } from './texto.js';
 import { piezasCortina } from './cortina.js';
 import { configuredCurtainVelcroHeight, curtainWindowDrawingHeight, formatCurtainVelcroLabel, normalizeCurtainConfiguration } from '../curtainConfiguration.js';
 import { formatSolapaVelcroLabels, normalizeSolapas } from '../solapasRules.js';
+import { normalizeEmbudo } from '../embudoConfiguration.js';
 
 export const OF_PROVISIONAL = 'SIN OF';
 
@@ -78,7 +79,8 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
       unidades: Number(toldo.units), tela: c.fabricDescription,
       ajustes: ajustes[toldo.id] ?? ajustes[toldo.of] ?? ajustes[letra] ?? {},
       ...(toldo.model === 'CORTINA' || toldo.model === 'CAMBIO CORTINA' ? { cortina: datosCortina(toldo) } : {}),
-      ...(toldo.model === 'SOLAPAS' ? { solapas: datosSolapas(toldo) } : {})
+      ...(toldo.model === 'SOLAPAS' ? { solapas: datosSolapas(toldo) } : {}),
+      ...(toldo.model === 'EMBUDO' ? { embudo: normalizeEmbudo(toldo.embudo) } : {})
     };
     let cristal = [];
     if (t.cortina) {
@@ -115,6 +117,8 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
     const completar = (corte) => {
       const dib = dibujo(corte.colocadas, grupo.anchoRollo, { of: c.of, tela: grupo.material });
       dib.textos.push(...(corte.textosExtra || []));
+      if (corte.repeticiones > 1) dib.textos.push({ capa: 'texto', x: corte.largo / 2, y: grupo.anchoRollo + 700,
+        h: 70, centrado: true, valor: `REPETIR CORTE X${corte.repeticiones} · ${(corte.largoMaterial / 1000).toLocaleString('es-ES')} M TOTALES` });
       if (corte.largoRestos) dib.textos.push({ capa: 'texto', valor: grupo.material.toUpperCase(),
         x: corte.largo + 1500 + corte.largoRestos / 2, y: grupo.anchoRollo + 140, h: 100, centrado: true });
       return { codigoTela: grupo.codigoTela, material: grupo.material, anchoRollo: grupo.anchoRollo,
@@ -136,12 +140,12 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
     const geometria = dibujarPlano(grupo, corte, trozoSeparado, cristales);
     const solapas = grupo.toldos.every((t) => t.solapas);
     const cortinas = grupo.toldos.every((t) => t.cortina);
-    const subtituloTipo = solapas ? 'SOLAPA CON VELCRO'
+    const subtituloTipo = grupo.toldos.every((t) => t.embudo) ? 'EMBUDO DE DESCARGA' : solapas ? 'SOLAPA CON VELCRO'
       : cortinas ? (grupo.toldos.every((t) => t.cortina?.cambio) ? 'CAMBIO DE TELA · CORTINA' : 'CORTINA')
       : grupo.toldos.every((t) => t.cambioTela) ? 'CAMBIO DE TELA'
       : grupo.toldos.some((t) => t.cambioTela) ? 'TOLDO Y CAMBIO DE TELA' : 'TOLDO DE FACHADA';
     const datos = Object.fromEntries(Object.entries({ ...cabecera,
-      tituloCorte: `CORTE · ${grupo.material} · ROLLO DE ${grupo.anchoRollo / 10} · ${(corte.largo / 1000).toLocaleString('es-ES')} M`,
+      tituloCorte: `CORTE · ${grupo.material} · ROLLO DE ${grupo.anchoRollo / 10} · ${((corte.largoMaterial ?? corte.largo) / 1000).toLocaleString('es-ES')} M${corte.repeticiones > 1 ? ` · REPETIR X${corte.repeticiones}` : ''}`,
       subtitulo: `MEDIDAS EN CM · LONA DE PVC · ${subtituloTipo}`
     }).map(([k, v]) => [k, textoSeguro(v)]));
     for (const h of geometria.hojas) h.cajetin.OF = textoSeguro(h.cajetin.OF);

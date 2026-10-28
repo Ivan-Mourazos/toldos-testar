@@ -112,7 +112,8 @@ describe('Comprobaciones y reglas confirmadas', () => {
     const r=calcularPuerta(p);
     expect(r.piezas.filter(x=>x.clase==='pano').map(x=>x.alto)).toEqual([inferior,superior]);
     expect(r.alternativasSaco!.entero[0]).toMatchObject({ancho:F-6+12,alto:37});
-    expect(r.alternativasSaco!.entero[0].contorno.slice(4)).toEqual([[12,16],[0,16],[0,2],[12,2]]);
+    // La pestaña 12 × 14 a 2 cm del borde de arriba, como en el dibujo (Iván, 28/10/2026, AR2605035).
+    expect(r.alternativasSaco!.entero[0].contorno.slice(4)).toEqual([[12,35],[0,35],[0,21],[12,21]]);
   });
   it.each([['AR2603284',251,297,106],['AR2603277',358,430,239]] as const)('bajo %s: los 125,75 antiguos son un error conocido, confirmado por Iván', (_pedido,F,H,T)=>{
     const p=base('PUERTAENR',F,H); p.enrollable={T,D:60,margen:6,empates:[]};
