@@ -989,6 +989,9 @@ Lista actualizada el 26/10/2026, con las respuestas del taller del mismo día. S
 | Código | Qué hay que cerrar | Pregunta | Qué debe hacer la futura web mientras tanto |
 | --- | --- | --- | --- |
 | Q-AS05 | Versiones de cortinas y material | Taller, 26/10/2026: «ni idea». Hay que preguntarlo a otra persona (¿Producción o el comercial de ASSA?). Las cortinas combinan lona de distinta clase, tapas y guías blancas o amarillas. ¿Qué plano y material corresponden a cada versión actual y qué datos deben venir en el pedido? ¿Son válidos los anchos de rollo del maestro de materiales de RPS? | Excluir las cortinas de la generación por fórmula hasta validar su despiece completo. |
+| Q-AS11 | Canalones de la 420150 | En los lotes hay un canalón entero (p. ej. 3610) y dos mitades (1805). ¿Es **un juego por cubierta** o **uno por cada juego de tres paños**? (Iván, 27/10: «mañana le pregunto a Tamara»). | La 420150 sigue a mano entera, con aviso. |
+| Q-AS12 | Referencias del RPS que no salen en el lote | En el LOTE 31-10 el RPS pide la 420102-0085 (4), la 0004 (8) y la 0092 (12), y en el corte no hay ningún paño de esas medidas. ¿Salen todas de stock, se cortan en otro archivo o fue otra cosa? | Quedan a mano. Si es stock, la web las cortará igual y el cortador las baja. |
+| Q-AS13 | Cantidad del lote frente al RPS | La 420102-0034 pide 41 y en el LOTE 31-10 hay 5; en el 29-03, la 0050 pedía 30 y se cortaron 20. ¿Es siempre stock? La web corta lo que pide el RPS (41) y deja «Sueltas» para ajustar. Confirmar que es lo que queréis ver en el corte. | Corta la cantidad del RPS. |
 
 ### Contestadas
 
