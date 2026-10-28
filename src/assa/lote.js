@@ -93,7 +93,20 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados = cata
   const movidas = desplazarEntidades(entidades, dx, dy);
   for (const clave of ['lineas', 'arcos', 'circulos', 'textos']) entidades[clave] = movidas[clave];
   for (const p of programas) { p.x += dx; p.y += dy; }
-  return { nombre, fecha, lineas: lineas.map(({ calculo: _calculo, ...l }) => l), programas, reparto, entidades,
+  // El papel del cortador (Iván, 28/10/2026: «solo le llega el papel donde le ponen las cantidades que debe cortar de
+  // cada referencia, y debe coincidir con las cantidades que salen en el corte»): sale de los mismos programas del corte,
+  // con sus repeticiones, por palet; y se comprueba contra lo que pide RPS.
+  const cortador = [...Map.groupBy(programas, p => `${p.palet ?? 0}|${p.codigo}`).values()].map(ps => {
+    const p0 = ps[0], canalon = p0.tipo === 'canalon';
+    const unidades = ps.reduce((s, p) => s + (canalon ? p.canalones : p.panos) * p.repeticiones, 0);
+    const pedidas = validadas.filter(l => (l.palet ?? 0) === (p0.palet ?? 0) && (canalon ? p0.referencias.includes(l.CodArticle) : l.codigo === p0.codigo))
+      .reduce((s, l) => s + l.cantidad, 0);
+    const como = ps.map(p => canalon ? `x${p.repeticiones} bloque ${p.canalones === CANALONES_POR_BLOQUE.combinado ? 'combinado (8 enteros + 14 mitades)' : 'de 15 mitades'}`
+      : `x${p.repeticiones} de ${p.unidos ? `${p.filas} ${p.filas === 1 ? 'fila' : 'filas'} de 2 unidos` : `${p.panos} ${p.panos === 1 ? 'paño' : 'paños'}`}`);
+    return { palet: p0.palet ?? null, referencia: canalon ? p0.codigo : validadas.find(l => l.codigo === p0.codigo)?.CodArticle ?? p0.codigo,
+      referencias: canalon ? p0.referencias : undefined, unidades, como, pedidas, cuadra: canalon ? unidades >= pedidas : unidades === pedidas };
+  }).sort((a, b) => (a.palet ?? 1e9) - (b.palet ?? 1e9) || String(a.referencia).localeCompare(String(b.referencia)));
+  return { nombre, fecha, lineas: lineas.map(({ calculo: _calculo, ...l }) => l), programas, reparto, entidades, cortador,
     avisos: sinPalet ? [`Falta el palet de ${sinPalet} ${sinPalet === 1 ? 'línea' : 'líneas'}: ponlo del correo de Producción.`] : [],
     paletsCompletos: !sinPalet,
     totalUnidades: lineas.reduce((n, l) => n + Number(l.cantidad || 0), 0),

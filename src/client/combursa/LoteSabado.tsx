@@ -4,6 +4,7 @@ import { ArrowLeft, CalendarDays, Layers, Scissors } from 'lucide-react';
 import { abrirCorteDwg } from '../abrirCorte';
 import { NotificationCenter, useNotifications } from '../components/NotificationCenter';
 import { VistaCorte } from './VistaCorte';
+import { HojaCortador } from './HojaCortador';
 import type { Lote } from './tipos';
 import './combursa.css';
 
@@ -110,6 +111,7 @@ export default function LoteSabado({ onCerrar }: { onCerrar: () => void }) {
             </table></div>}
           </section>
           {lote.programas.length > 0 && <VistaCorte programas={lote.programas} />}
+          {lote.cortador.length > 0 && <HojaCortador lote={lote} />}
           <footer className="glass-panel combursa-acciones">
             <div><strong>{envio ? 'Prueba enviada' : confirmado ? 'Corte confirmado' : abierto ? 'Revisa el DWG y confirma el corte' : 'Revisa la vista del corte'}</strong><small>{envio || `Destino de prueba: ${lote.destino}`}</small></div>
             <button type="button" className="boton-3d" disabled={ocupado || !lote.programas.length || !lote.dwgDisponible || !lote.paletsCompletos} onClick={() => void abrir()}>Abrir corte</button>

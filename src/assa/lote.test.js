@@ -106,3 +106,12 @@ it('el corte queda dentro de los ejes: nada en x o y negativas', () => {
   expect([Math.min(...xs), Math.min(...ys)]).toEqual([0, 0]);
   expect(programas.every(p => p.x >= 0 && p.y >= 0)).toBe(true);
 });
+
+// Iván, 28/10/2026: al cortador le llega el papel con las cantidades de cada referencia, que debe coincidir con el corte.
+it('el papel del cortador sale de los programas del corte y cuadra con RPS por palet', () => {
+  const lote = prepararLote('2026-10-31', [l, { ...l, IDOrderLine: 'b', cantidad: 3 }], {}, certificado, { palets: { a: 1, b: 2 } });
+  expect(lote.cortador.map(f => [f.palet, f.referencia, f.unidades, f.cuadra])).toEqual([[1, 'H0K420102-0034', 8, true], [2, 'H0K420102-0034', 3, true]]);
+  const deCorte = (p) => lote.programas.filter(q => q.palet === p).reduce((n, q) => n + q.panos * q.repeticiones, 0);
+  expect(lote.cortador.map(f => f.unidades)).toEqual([deCorte(1), deCorte(2)]);
+  expect(lote.cortador[0].como.join(' + ')).toMatch(/unidos/);
+});
