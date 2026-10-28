@@ -44,3 +44,17 @@ AR2600169: perímetro 66, alto 100 → 69 × 120.
 Forma (cónico / recto), alto, contorno de arriba y de abajo, cantidad, cierre (3), remate de cada boca (refuerzo de
 10, bastilla de 10 u otra, nada), sujeción y largo de la cinta, lona. Del RPS se trae lo que se pueda leer del
 comentario; lo demás, del último pedido del mismo cliente si lo hay.
+
+## Reglas confirmadas para la fase 1 (28/10/2026)
+
+- Iván: «son PVC, no se reserva». El cálculo no reserva lona, cintas ni herrajes; conserva medidas y metros de corte.
+- Entrada a mano; no se interpreta el comentario RPS en esta fase. El largo de cinta nunca se toma como alto.
+- Confirmado por el coordinador: bastilla cónica hacia fuera de la corona terminada: `R1 + bastilla` en la boca
+  grande y `R2 − bastilla` en la pequeña, mismo ángulo; rotulador en la boca terminada. Cada arco añade el cierre
+  pedido, por un lado, también con bastilla.
+- Refuerzos: boca grande `R1 − 10 .. R1`; pequeña `R2 .. R2 + 10`; ángulo útil, sin cierre. Una tira por boca
+  con refuerzo y por unidad. En recto son tiras rectas del contorno, sin cierre.
+- Se admite boca mayor abajo; el alzado respeta su posición y avisa «BOCA MAYOR ABAJO».
+- Plantilla con `Xn` solo si `largo de plantilla × n` no gasta más que todas las piezas anidadas. AR2605215 lleva
+  dos cuerpos y cuatro refuerzos en el corte; su alzado dice `X2`. El plano y el corte de una plantilla indican
+  expresamente cuántas veces repetirla y los metros totales.
