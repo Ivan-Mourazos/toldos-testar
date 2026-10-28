@@ -12,11 +12,11 @@ for (const ejemplo of [oficina.conico, oficina.recto]) {
   const order = { orderCode: ejemplo.pedido, customer: 'EJEMPLO LOCAL · OFICINA TÉCNICA',
     orderDate: '2026-10-28', technician: 'IVÁN', reviewer: 'OFICINA TÉCNICA',
     sameFabric: true, fabric: 'PVC900BL|||250|||LONA PVC 900 BLANCO :250 AN|||PLASTICA (LONA)',
-    awnings: [{ id: ejemplo.pedido, of: ejemplo.pedido.slice(2), model: 'EMBUDO', units: ejemplo.cantidad, embudo: ejemplo.entrada }] };
+    awnings: [{ id: ejemplo.pedido, of: { AR2605215: '0233311', AR2600169: '0224292' }[ejemplo.pedido], model: 'EMBUDO', units: ejemplo.cantidad, embudo: ejemplo.entrada }] };
   const calc = calculateOrder(order);
   if (calc.diagnostics.some(d => d.level === 'error')) throw new Error(JSON.stringify(calc.diagnostics));
   if (calc.ofs.some(o => o.materials.length)) throw new Error('El embudo no debe reservar material.');
-  const r = generarCorteLona(order, { ofStockSacos: '2600001' });
+  const r = generarCorteLona(order, { ofStockSacos: '0230811' });
   if (r.avisos.length) throw new Error(r.avisos.join('\n'));
   const corte = r.cortes.conSacos[0], plano = r.plano[0];
   await writeFile(new URL(`${ejemplo.pedido}-corte.dxf`, salida), Buffer.from(corte.dxf, 'latin1'));

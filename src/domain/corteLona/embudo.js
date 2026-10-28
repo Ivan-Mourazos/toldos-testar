@@ -45,7 +45,7 @@ export function piezasEmbudo({ embudo, letra = 'A' }) {
       piezas.push({ ...pieza(`${letra} REF. ${boca.toUpperCase()}`, {
         lineas: [linea('DISCO1', [0, 0], [largo, 0]), linea('DISCO1', [largo, 0], [largo, 100]),
           linea('DISCO1', [largo, 100], [0, 100]), linea('DISCO1', [0, 100], [0, 0])], arcos: [], textos: []
-      }, ['REF.(10)']), refuerzo: boca.toLowerCase() });
+      }, ['REF.(10)', 'REF. POR EL DERECHO']), refuerzo: boca.toLowerCase() });
     }
     return piezas;
   }
@@ -69,7 +69,7 @@ export function piezasEmbudo({ embudo, letra = 'A' }) {
   const piezas = [pieza(`${letra} EMBUDO`, forma, textos)];
   for (const boca of ['Arriba', 'Abajo']) if (refuerzo(boca)) {
     const esGrande = boca === grande;
-    piezas.push({ ...pieza(`${letra} REF. ${boca.toUpperCase()}`, corona(esGrande ? R : r + 100, esGrande ? R - 100 : r), ['REF.(10)']),
+    piezas.push({ ...pieza(`${letra} REF. ${boca.toUpperCase()}`, corona(esGrande ? R : r + 100, esGrande ? R - 100 : r), ['REF.(10)', 'REF. POR EL DERECHO']),
       refuerzo: boca.toLowerCase() });
   }
   return piezas;
