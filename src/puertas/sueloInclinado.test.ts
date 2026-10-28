@@ -245,3 +245,37 @@ describe('Correcciones de Iván a AR2605035 (26/10/2026)',()=>{
     }
   });
 });
+
+// Iván, 28/10/2026 (AR2605035): «en las piezas inclinadas, los textos casi se salen de la pieza».
+describe('rótulos dentro de los paños inclinados · AR2605035', () => {
+  const dentro = (q: Punto, segs: Punto[][]) => segs.filter(([a, b]) => (a[1] > q[1]) !== (b[1] > q[1]) &&
+    q[0] < a[0] + (b[0] - a[0]) * (q[1] - a[1]) / (b[1] - a[1])).length % 2 === 1;
+  it('cada texto del paño cabe entero dentro de su contorno', () => {
+    const { cortes } = generarCortePuertas(pedidoDe('AR2605035', ...fixture.puertas.map((_, i) => puerta5035(i))));
+    let inclinados = 0;
+    for (const c of cortes) for (const t of c.colocadas) {
+      const ys = new Set(t.pieza.contorno.map(p => p[1]));
+      if (t.pieza.clase !== 'pano' || ys.size <= 2) continue;
+      inclinados++;
+      const e = entidadesDePieza(c, t), segs = e.lineas.filter(l => l.capa === 'DISCO1').map(l => [[l.x1, l.y1], [l.x2, l.y2]] as Punto[]);
+      for (const x of e.textos.filter(x => x.capa === 'texto' && /^\d{7}$|^[A-D]\d$|REVÉS/.test(x.valor))) {
+        const w = anchoArial(x.valor, x.h) / 2, h = x.h / 2, [dx, dy] = (x.giro ?? 0) % 180 ? [h, w] : [w, h];
+        for (const q of [[x.x - dx, x.y - dy], [x.x + dx, x.y - dy], [x.x - dx, x.y + dy], [x.x + dx, x.y + dy]] as Punto[])
+          expect(dentro(q, segs), `${x.valor} en ${t.pieza.nombre}`).toBe(true);
+      }
+    }
+    expect(inclinados).toBeGreaterThan(0);
+  });
+});
+
+// Iván, 28/10/2026 (AR2605035): «la cota verde no se engancha donde debe»: la de 32 del saco inclinado de la puerta A
+// se enganchaba a la raya de la puerta B, porque su punto no se doblaba como el saco.
+it('las cotas del saco inclinado se enganchan a su propio saco', async () => {
+  const { escribirPlanoPuertas } = await import('./plano.ts');
+  const { numero, registrosDxf } = await import('../domain/corteLona/dxfTestHelpers.js');
+  const dxf = escribirPlanoPuertas({ pedido: pedidoDe('AR2605035', ...fixture.puertas.map((_, i) => puerta5035(i))),
+    cabecera: { cliente: 'OTRO', tecnico: 'IVÁN', revisor: '', fecha: '2026-10-28' } });
+  const cotas = registrosDxf(dxf).filter(r => r.tipo === 'DIMENSION' && [3, 32].some(m => Math.abs(numero(r, 42) - m) < 0.1));
+  expect(cotas.length).toBeGreaterThanOrEqual(8);
+  for (const c of cotas) expect(Math.abs(numero(c, 13) - numero(c, 14))).toBeLessThan(0.1);
+});

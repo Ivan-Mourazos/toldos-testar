@@ -9,7 +9,10 @@ import { anchoArial } from './texto.js';
 
 const MODELO = '1F';   // *Model_Space en la plantilla
 // Capas del bot que no trae la plantilla.
-const CAPAS_BOT = [{ nombre: 'DISCO1', color: 7 }, { nombre: 'ROTULADOR', color: 1 }, { nombre: 'RECUADROS', color: 30, imprimir: false }];
+// Las capas del bot con sus colores de la plantilla del bot: sin CUTTER en la tabla, ZWCAD la pintaba en blanco, como
+// DISCO1 (Iván, 28/10/2026: «los cortes de cinta van de CUTTER»).
+const CAPAS_BOT = [{ nombre: 'DISCO1', color: 7 }, { nombre: 'DISCO2', color: 6 }, { nombre: 'CUTTER', color: 112 }, { nombre: 'taladro', color: 160 },
+  { nombre: 'ROTULADOR', color: 1 }, { nombre: 'RECUADROS', color: 30, imprimir: false }];
 // Mismo orden en todos los planos (Iván, 23/10/2026): el dibujo a la izquierda, lejos de los ejes, y el corte a su
 // derecha, alineado arriba; cada uno en su recuadro, pegados, con su nombre en grande encima, por fuera, para saber
 // qué es cada cosa al abrir el DWG. Los dos recuadros iguales: el mismo alto y el mismo margen, el 20 % del más ancho
@@ -93,16 +96,21 @@ export function escribirDxfPlano(plano, cabecera) {
   const zNormal = plano.zonas.corte;
   const zonasCorte = plano.zonas.cortes?.length ? plano.zonas.cortes : [zNormal];
   const ENTRE_VENTANAS = 4;
-  const anchos = zonasCorte.map((z) => z.x1 - z.x0), altos = zonasCorte.map((z) => z.y1 - z.y0);
+  // Con la vista girada 90° el ancho del corte pasa a ser su alto en la hoja.
+  const anchosDe = (girado) => zonasCorte.map((z) => (girado ? z.y1 - z.y0 : z.x1 - z.x0));
+  const altosDe = (girado) => zonasCorte.map((z) => (girado ? z.x1 - z.x0 : z.y1 - z.y0));
   const suma = (v) => v.reduce((a, b) => a + b, 0);
   const huecos = ENTRE_VENTANAS * (zonasCorte.length - 1);
   const escala = (z, r) => Math.min((r.x1 - r.x0) / (z.x1 - z.x0), (r.y1 - r.y0) / (z.y1 - z.y0));
   // Los cortes uno debajo de otro o, si así se ven más grandes, uno al lado de otro.
-  const escalaCortes = (r, enFila) => (enFila
-    ? Math.min((r.x1 - r.x0 - huecos) / suma(anchos), (r.y1 - r.y0) / Math.max(...altos))
-    : Math.min((r.x1 - r.x0) / Math.max(...anchos), (r.y1 - r.y0 - huecos) / suma(altos)));
-  const enFilaEn = (r) => zonasCorte.length > 1 && escalaCortes(r, true) > escalaCortes(r, false);
-  const tamCortes = (r) => escalaCortes(r, enFilaEn(r));
+  const escalaCortes = (r, enFila, girado = false) => {
+    const anchos = anchosDe(girado), altos = altosDe(girado);
+    return enFila
+      ? Math.min((r.x1 - r.x0 - huecos) / suma(anchos), (r.y1 - r.y0) / Math.max(...altos))
+      : Math.min((r.x1 - r.x0) / Math.max(...anchos), (r.y1 - r.y0 - huecos) / suma(altos));
+  };
+  const enFilaEn = (r, girado = false) => zonasCorte.length > 1 && escalaCortes(r, true, girado) > escalaCortes(r, false, girado);
+  const tamCortes = (r, girado = false) => escalaCortes(r, enFilaEn(r, girado), girado);
   const repartir = (zt) => {
     const repartos = [];
     // Debajo: el corte a la izquierda del cajetín; el toldo encima de los dos.
@@ -118,22 +126,39 @@ export function escribirDxfPlano(plano, cabecera) {
       // La raya de separación no cruza el cajetín.
       const desde = corte.x0 - 2 > esquina.x0 ? esquina.y1 : A4.y0;
       repartos.push({ zc: zNormal, corte, toldo, raya: [[corte.x0 - 2, desde], [corte.x0 - 2, A4.y1]] });
+      // El corte largo, girado contra el lado derecho, si así el dibujo sale más grande (dibujo alto); con un dibujo
+      // alargado gana el corte debajo (Iván, 28/10/2026, AR2605035; «el criterio debe ser igual» en todos los cortes).
+      // Solo se gira la vista; el corte, sus textos y sus cotas no cambian en el modelo.
+      repartos.push({ zc: zNormal, corte: { ...corte }, toldo: { ...toldo }, raya: [[corte.x0 - 2, desde], [corte.x0 - 2, A4.y1]], girado: true });
     }
     // Lo más grande posible el toldo y, con eso, los cortes (Iván, 27/10/2026: «cubrir el máximo de papel»).
-    const nota = (r) => Math.min(escala(zt, r.toldo), 1.5 * tamCortes(r.corte));
-    const mejor = (a, b) => nota(b) > nota(a) + 1e-9 || (nota(b) > nota(a) - 1e-9 && tamCortes(b.corte) > tamCortes(a.corte) + 1e-9);
-    const reparto = repartos.reduce((a, b) => (mejor(a, b) ? b : a));
+    const nota = (r) => Math.min(escala(zt, r.toldo), 1.5 * tamCortes(r.corte, r.girado));
+    const mejor = (a, b) => nota(b) > nota(a) + 1e-9 || (nota(b) > nota(a) - 1e-9 && tamCortes(b.corte, b.girado) > tamCortes(a.corte, a.girado) + 1e-9);
+    // El dibujo al máximo, con el corte a no menos del 80 % de su mejor escala (Iván, 28/10/2026, AR2605035).
+    const mejorCorte = Math.max(...repartos.map((r) => tamCortes(r.corte, r.girado)));
+    const validos = repartos.filter((r) => tamCortes(r.corte, r.girado) >= 0.8 * mejorCorte);
+    const masDibujo = (a, b) => escala(zt, b.toldo) > escala(zt, a.toldo) + 1e-9 || (escala(zt, b.toldo) > escala(zt, a.toldo) - 1e-9 && mejor(a, b));
+    const reparto = validos.reduce((a, b) => (masDibujo(a, b) ? b : a));
     const zc = reparto.zc;
     // El sitio de los cortes, sin más alto ni ancho del que usan a su escala.
     const rc = reparto.corte;
-    const enFila = enFilaEn(rc), ec = escalaCortes(rc, enFila);
+    const girado = !!reparto.girado, enFila = enFilaEn(rc, girado), ec = escalaCortes(rc, enFila, girado);
+    const altos = altosDe(girado);
     const altoUsado = enFila ? Math.max(...altos) * ec : suma(altos) * ec + huecos;
     if (rc.x0 === A4.x0) rc.y1 = rc.y0 + Math.max(25, altoUsado);
     else rc.y0 = rc.y1 - altoUsado;
+    // El corte girado, pegado al lado derecho; lo que sobra de su columna es para la puerta.
+    if (girado) {
+      const anchos = anchosDe(true), anchoUsado = enFila ? suma(anchos) * ec + huecos : Math.max(...anchos) * ec;
+      rc.x0 = Math.max(rc.x0, A4.x1 - anchoUsado);
+      reparto.toldo = libre({ x0: A4.x0, y0: A4.y0, x1: rc.x0 - 4, y1: A4.y1 });
+      reparto.raya = [[rc.x0 - 2, rc.x0 - 2 > esquina.x0 ? esquina.y1 : A4.y0], [rc.x0 - 2, A4.y1]];
+    }
     // Una ventana por rollo, arriba a la izquierda y a la misma escala: de arriba abajo o de izquierda a derecha.
     let [xv, yv] = [rc.x0, rc.y1];
     rc.ventanas = zonasCorte.map((z) => {
-      const r = { x0: xv, x1: xv + (z.x1 - z.x0) * ec, y1: yv, y0: yv - (z.y1 - z.y0) * ec };
+      const [zw, zh] = girado ? [z.y1 - z.y0, z.x1 - z.x0] : [z.x1 - z.x0, z.y1 - z.y0];
+      const r = { x0: xv, x1: xv + zw * ec, y1: yv, y0: yv - zh * ec };
       if (enFila) xv = r.x1 + ENTRE_VENTANAS; else yv = r.y0 - ENTRE_VENTANAS;
       return { z, r };
     });
@@ -157,7 +182,7 @@ export function escribirDxfPlano(plano, cabecera) {
   const ventanasDe = (h, { reparto: r, zc, rc }) => {
     const pv = plano.presentacion?.ventanas;
     const v = pv ? { ...pv, 2: { ...pv[2], z: h.zona } }
-      : { 2: encuadre(h.zona, r.toldo), ...Object.fromEntries(rc.ventanas.map(({ z, r: rv }, k) => [3 + k, encuadre(z, rv, true)])) };
+      : { 2: encuadre(h.zona, r.toldo), ...Object.fromEntries(rc.ventanas.map(({ z, r: rv }, k) => [3 + k, encuadre(z, rv, true, !!r.girado)])) };
     if (plano.corteGirable) for (const id of Object.keys(v)) if (v[id].z === zNormal || v[id].z === zc) v[id] = { ...v[id], girable: true };
     return v;
   };

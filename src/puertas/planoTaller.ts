@@ -182,8 +182,10 @@ function dibujarSaco(l: Lienzo, p: Puerta, letraPuerta = '') {
     for (const a of l.cotas) {
       // La del largo, alineada con el lado diagonal: mide lo que de verdad se corta (Iván, 23/10/2026, AR2605035).
       if (a.giro === 0) Object.assign(a, { alineada: true, desvio: a.d - a.y1 });
-      a.y1=mover(a.x1,a.y1); a.y2=mover(a.x2,a.y2);
-      a.valor=Math.hypot(a.x2-a.x1,a.y2-a.y1);
+      // Los extremos se mueven como el saco (doblado), para que se enganchen a su propia raya y no a la de la puerta de al
+      // lado (Iván, 28/10/2026, AR2605035: «la cota verde no se engancha donde debe»).
+      [a.x1, a.y1] = doblar(a.x1, a.y1); [a.x2, a.y2] = doblar(a.x2, a.y2);
+      a.valor=a.giro === 90 ? Math.abs(a.y2-a.y1) : Math.hypot(a.x2-a.x1,a.y2-a.y1);
     }
     // Sin el texto «LARGO DIAGONAL … · CABEZAS VERTICALES»: sobraba (Iván, 23/10/2026, AR2605035).
   }

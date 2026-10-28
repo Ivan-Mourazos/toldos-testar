@@ -122,3 +122,37 @@ describe('orden de las muestras del corte', () => {
     for (const f of filas) expect(f.sort((a: typeof f[number], b: typeof f[number]) => numero(a, 10) - numero(b, 10)).map((r: typeof f[number]) => (valor(r, 1) ?? '')[0])).toEqual(['A', 'B', 'C', 'D'].slice(0, f.length));
   });
 });
+
+// Iván, 28/10/2026 (AR2605035): «es el claro ejemplo de un corte que se debe poner girado contra el lado derecho, y la
+// puerta al máximo de tamaño»; solo se gira la vista, no las cotas.
+it('AR2605035: el corte largo va con la vista girada y la puerta, en el resto de la hoja', async () => {
+  const fixture = (await import('./__fixtures__/AR2605035.json')).default;
+  const { alturasTubos, huecosEntrada } = await import('./calcular.ts');
+  const { base } = await import('./__fixtures__/ejemplos.ts');
+  const puertas = fixture.puertas.map(f => {
+    const p = base('PUERTAPLE', f.frente, f.altoIzquierdo);
+    p.of = f.of; p.color = 'GRIS 7038';
+    p.apilable = { pie: f.pieIzquierdo, pasos: f.pasos, cabecera: f.cabecera, bolsillo: 24, saco: fixture.sacoUtilPedidoMm, doble: false, empates: [1, 4],
+      sueloInclinado: { altoIzquierdo: f.altoIzquierdo, altoDerecho: f.altoDerecho } };
+    p.entradas = alturasTubos(p).map(altura => ({ altura, diametro: 30, largo: p.frente, alto: 12, huecos: huecosEntrada(p.frente, 30) }));
+    return p;
+  });
+  const rs = registrosDxf(escribirPlanoPuertas({ pedido: pedidoDe('AR2605035', ...puertas), cabecera: { cliente: 'OTRO', tecnico: 'IVÁN', revisor: '', fecha: '2026-10-28' } }));
+  const vistas = rs.filter(r => r.tipo === 'VIEWPORT' && numero(r, 69) > 1);
+  expect(vistas.some(r => numero(r, 51) === 90)).toBe(true);
+  // La vista girada, contra el lado derecho de la hoja (x del centro + medio ancho ≈ borde útil de 287 mm).
+  const girada = vistas.find(r => numero(r, 51) === 90)!;
+  expect(numero(girada, 10) + numero(girada, 40) / 2).toBeGreaterThan(280);
+});
+
+// Iván, 28/10/2026: «los cortes de cinta van de CUTTER y está en DISCO1»: el plano no definía la capa CUTTER y ZWCAD la
+// pintaba en blanco, como DISCO1. Ahora lleva las capas del bot con los colores de su plantilla.
+it('el plano define CUTTER, DISCO2 y taladro con los colores del bot', () => {
+  const dxf = escribirPlanoPuertas({ pedido: pedidoDe('AR2600001', apilable()), cabecera: { cliente: 'OTRO', tecnico: 'IVÁN', revisor: '', fecha: '2026-10-28' } });
+  const lineas = dxf.split(String.fromCharCode(10)).map(l => l.trim()), capas: Record<string, number> = {};
+  lineas.forEach((l, k) => {
+    if (l !== 'AcDbLayerTableRecord') return;
+    capas[lineas[k + 2]] = Number(lineas[lineas.indexOf('62', k) + 1]);
+  });
+  expect(capas).toMatchObject({ DISCO1: 7, DISCO2: 6, CUTTER: 112, taladro: 160, ROTULADOR: 1 });
+});
