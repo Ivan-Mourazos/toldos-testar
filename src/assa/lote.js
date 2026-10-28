@@ -86,6 +86,13 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados = cata
   }
   const sinPalet = lineas.filter(l => l.estado === 'validado' && !l.palet).length;
   entidades.textos.push({ capa: 'texto', x: 0, y: 2040 + 6500, h: 1000, valor: nombre, literal: true });
+  // Todo el corte en el cuadrante positivo, como los mandados (Iván, 28/10/2026: «dentro del eje X Y»): el número de
+  // línea más a la izquierda y el listado más bajo quedan en x = 0 e y = 0.
+  const dx = -Math.min(0, ...entidades.lineas.flatMap(l => [l.x1, l.x2]), ...entidades.textos.map(t => t.x));
+  const dy = -Math.min(0, ...entidades.lineas.flatMap(l => [l.y1, l.y2]), ...entidades.textos.map(t => t.y));
+  const movidas = desplazarEntidades(entidades, dx, dy);
+  for (const clave of ['lineas', 'arcos', 'circulos', 'textos']) entidades[clave] = movidas[clave];
+  for (const p of programas) { p.x += dx; p.y += dy; }
   return { nombre, fecha, lineas: lineas.map(({ calculo: _calculo, ...l }) => l), programas, reparto, entidades,
     avisos: sinPalet ? [`Falta el palet de ${sinPalet} ${sinPalet === 1 ? 'línea' : 'líneas'}: ponlo del correo de Producción.`] : [],
     paletsCompletos: !sinPalet,

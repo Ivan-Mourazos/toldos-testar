@@ -65,7 +65,9 @@ it('bloquea el envío si el DWG cambia después de confirmar o se eligen sueltas
   await expect(servicio.mandar({ ...input, palets: { a: 2 } })).rejects.toThrow(/opciones/);
   const dwg = path.join(raiz, 'COMBURSA/2026/Borradores/LOTE 31-10.dwg');
   const original = await fs.readFile(dwg, 'utf8');
-  const cambiado = original.replaceAll('3.010000', '3.020000');
+  // Alarga 1 cm el final de la primera raya del corte.
+  const cambiado = original.replace(/(\nLINE\r?\n(?:(?!\n {2}0\r?\n)[\s\S])*?\n {2}8\r?\nDISCO1\r?\n(?:(?!\n {2}0\r?\n)[\s\S])*?\n 11\r?\n)(-?[\d.]+)/,
+    (_m, g, x) => g + (Number(x) + 0.01).toFixed(6));
   expect(cambiado).not.toBe(original);
   await fs.writeFile(dwg, cambiado);
   await expect(servicio.mandar(input)).rejects.toThrow(/DWG ha cambiado/);

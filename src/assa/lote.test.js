@@ -19,7 +19,8 @@ it('conserva reparto por pedido y OF, agrupa referencias y corta exactamente jue
   expect(lote.reparto.map(r => r.of)).toEqual(['0232434', '0232444']);
   // Los 420102 van de dos en dos: la unión es de rotulador; el resto, disco.
   expect(lote.entidades.lineas.every(l => l.capa === 'DISCO1' || (l.capa === 'ROTULADOR' && l.x1 === l.x2))).toBe(true);
-  expect(lote.programas.every(p => p.y === 0)).toBe(true);
+  // Una sola referencia: una sola fila, todos sus programas en la misma tirada.
+  expect(new Set(lote.programas.map(p => p.y)).size).toBe(1);
 });
 
 it('la opción por referencia cambia a sueltas y no altera la cantidad', () => {
@@ -95,4 +96,13 @@ it('sin palet: aviso y no se da el lote por completo', () => {
   expect(lote.paletsCompletos).toBe(false);
   expect(lote.avisos[0]).toMatch(/palet/);
   expect(lote.entidades.textos.map(t => t.valor)).toContain('SIN PALET');
+});
+
+it('el corte queda dentro de los ejes: nada en x o y negativas', () => {
+  const ls = [l, { ...l, IDOrderLine: 'b', NumLine: 2, CodOrder: 'AR.26.04864' }];
+  const { entidades, programas } = prepararLote('2026-10-31', ls, {}, certificado, { palets: { a: 1, b: 2 } });
+  const xs = [...entidades.lineas.flatMap(l => [l.x1, l.x2]), ...entidades.textos.map(t => t.x)];
+  const ys = [...entidades.lineas.flatMap(l => [l.y1, l.y2]), ...entidades.textos.map(t => t.y)];
+  expect([Math.min(...xs), Math.min(...ys)]).toEqual([0, 0]);
+  expect(programas.every(p => p.x >= 0 && p.y >= 0)).toBe(true);
 });
