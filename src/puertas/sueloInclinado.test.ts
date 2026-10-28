@@ -90,8 +90,9 @@ describe('Apilable con suelo inclinado · AR2605035',()=>{
     expect(Math.min(...pestana(izquierda.alternativasSaco!.entero[0]))).toBeGreaterThan(0);
     expect(Math.max(...pestana(s))).toBeLessThan(ancho);
     expect(s.contorno.some(([u])=>u===ancho)).toBe(true);
-    // La pestaña sobresale a la derecha del cuerpo (lo de arriba del saco es solo cuerpo).
-    const cuerpo=(x:typeof s)=>x.contorno.filter(([,y])=>y>x.alto*.75).map(([u])=>u);
+    // La pestaña sobresale a la derecha del cuerpo, arriba, como en el dibujo (lo de abajo del saco es solo cuerpo;
+    // Iván, 28/10/2026).
+    const cuerpo=(x:typeof s)=>x.contorno.filter(([,y])=>y<x.alto*.25).map(([u])=>u);
     expect(ancho-Math.max(...cuerpo(s))).toBeGreaterThan(9);
     // Mismo bajo inclinado: la cabeza izquierda del cuerpo sigue más abajo que la derecha si baja el suelo.
     const [mitadIzquierda,mitadDerecha]=r.alternativasSaco!.partido;

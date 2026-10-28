@@ -103,3 +103,17 @@ describe('escribirPlanoPuertas', () => {
     expect(Math.max(...codigos)).toBeLessThan(inicioCorte(registrosDxf(dxf)));
   });
 });
+
+// Iván, 28/10/2026, AR2605035: las muestras de sacos y cristales, por orden de puerta (salía la D primero, la más ancha).
+describe('orden de las muestras del corte', () => {
+  it.each([['enrollables', puerta4638], ['apilables', apilable]] as const)('%s: A, B, C, D aunque la D sea la más ancha', (_, crear) => {
+    const puertas = [0, 20, 40, 100].map((mas, i) => ({ ...crear(), of: `023900${i}`, frente: crear().frente + mas }));
+    const cabecera = { cliente: 'OTRO', tecnico: 'IVÁN', revisor: '', fecha: '2026-10-28' };
+    const rs = registrosDxf(escribirPlanoPuertas({ pedido: pedidoDe('AR2600001', ...puertas), cabecera })).filter(r => valor(r, 67) !== '1');
+    const x0 = inicioCorte(rs);
+    const sacos = rs.filter(r => r.tipo === 'MTEXT' && /^[A-D] · SACO$/.test(valor(r, 1) ?? '') && numero(r, 10) >= x0);
+    const filas = [...Map.groupBy(sacos, r => Math.round(numero(r, 20) * 100)).values()];
+    expect(filas.length).toBeGreaterThan(0);
+    for (const f of filas) expect(f.sort((a, b) => numero(a, 10) - numero(b, 10)).map(r => (valor(r, 1) ?? '')[0])).toEqual(['A', 'B', 'C', 'D'].slice(0, f.length));
+  });
+});

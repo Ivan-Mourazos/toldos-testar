@@ -8,7 +8,7 @@ import { bajoDobleSaco, desnivelSuelo, pestanaDerecha, rotuloSaco, sacoApilable,
 import { corteEnPlano, entidadesDePieza, textosFuera } from './corteEnPlano.ts';
 import { bloqueFlechaEnrollable, dibujarAlzadoEnrollable, ENTRE_PUERTAS, hojasPuertas, lienzoAMetros, origenCorte, sumarLienzo, type LienzoEnrollable } from './planoEnrollable.ts';
 import { presentacionPortanova, VENTANA_CORTE_PORTANOVA } from './plantillaPortanova.ts';
-import type { CortePuertas, EntidadesPuertas, Hueco, PedidoPuertas, Puerta, Punto } from './tipos.ts';
+import type { CortePuertas, EntidadesPuertas, Hueco, PedidoPuertas, PiezaPuerta, Puerta, Punto } from './tipos.ts';
 
 // Alzados de oficina, separados del SVG del configurador. Referencias locales:
 // AR2605036/4906 (apilables), AR2604904/4526 (autorreparables).
@@ -405,7 +405,7 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
   return { lienzo: l, zona: { x0: izquierdaZona, x1: F + (desnivel ? 100 : 82), y0: abajo, y1: arriba + 50 } };
 }
 
-function dibujarCorteTaller(cortes: CortePuertas[]): { lienzo: Lienzo; zona: Zona } {
+function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: Lienzo; zona: Zona } {
   const l = vacio(); let techo = 0, anchoMax = 250;
   const prioridad = (c: CortePuertas) => c.colocadas.every(t => t.pieza.clase === 'saco') ? 0
     : c.colocadas.every(t => t.pieza.clase === 'cristal') ? 1 : 2;
@@ -413,7 +413,10 @@ function dibujarCorteTaller(cortes: CortePuertas[]): { lienzo: Lienzo; zona: Zon
     const muestra = c.colocadas.every(t => ['saco', 'cristal'].includes(t.pieza.clase));
     if (muestra) {
       const unicas = new Map(c.colocadas.map(t => [t.pieza.id, t.pieza]));
-      const lista = [...unicas.values()];
+      // Por orden de puerta, A, B, C… (Iván, 28/10/2026, AR2605035: salía la D primero); las mitades del saco partido,
+      // en el orden en que se cortan.
+      const orden = (p: PiezaPuerta) => pedido.elementos.findIndex(e => p.id.startsWith(`${e.id}:`));
+      const lista = [...unicas.values()].map((p, i) => ({ p, i })).sort((a, b) => orden(a.p) - orden(b.p) || a.i - b.i).map(x => x.p);
       // Con varias puertas, los sacos y los cristales en la misma fila, hacia la derecha (Iván, 23/10/2026, AR2605035);
       // las dos mitades de un saco partido, juntas una encima de otra.
       const puertaDe = (p: (typeof lista)[number]) => p.id.split(':')[0];
@@ -497,7 +500,7 @@ export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[
     zonasPuertas.push({ x0: dx + d.zona.x0, x1: dx + d.zona.x1, y0: suelo, y1: d.zona.y1 });
   }
   const zonaM = (z: Zona, x: number, y: number): Zona => ({ x0: x + z.x0 / 100, x1: x + z.x1 / 100, y0: y + z.y0 / 100, y1: y + z.y1 / 100 });
-  const za = zonaM({ x0: izquierda, x1: cursor - ENTRE_PUERTAS, y0: abajo, y1: arriba }, 100, 100), corte = dibujarCorteTaller(cortes);
+  const za = zonaM({ x0: izquierda, x1: cursor - ENTRE_PUERTAS, y0: abajo, y1: arriba }, 100, 100), corte = dibujarCorteTaller(cortes, pedido);
   const [ox, oy] = origenCorte(za, corte.zona);
   let zc = zonaM(corte.zona, ox, oy), altoVista: number | undefined;
   const corteReal = zc;
