@@ -48,6 +48,8 @@ comentario; lo demás, del último pedido del mismo cliente si lo hay.
 ## Reglas confirmadas para la fase 1 (28/10/2026)
 
 - Iván: «son PVC, no se reserva». El cálculo no reserva lona, cintas ni herrajes; conserva medidas y metros de corte.
+- Cierre (Iván, 28/10/2026): «en teoría debe dar igual, lo que más se hiciera». Por defecto 3 cm en cónico y recto
+  (16 planos dicen «CERRAR 3 CM» y ninguno otra medida; algún recto va con 4), y se puede cambiar en la tarjeta.
 - Entrada a mano; no se interpreta el comentario RPS en esta fase. El largo de cinta nunca se toma como alto.
 - Confirmado por el coordinador: bastilla cónica hacia fuera de la corona terminada: `R1 + bastilla` en la boca
   grande y `R2 − bastilla` en la pequeña, mismo ángulo; rotulador en la boca terminada. Cada arco añade el cierre
