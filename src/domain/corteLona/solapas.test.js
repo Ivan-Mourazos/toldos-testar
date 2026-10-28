@@ -54,7 +54,7 @@ describe('Solapas con velcro (SOLAPACONVELCROS)', () => {
     ]);
   });
 
-  it('calcula los metros del corte colocado (3,6 m en AR2604205), reserva solo la lona y avisa del velcro sin reserva automática', () => {
+  it('calcula los metros del corte colocado (3,6 m en AR2604205), reserva solo la lona, sin aviso del velcro, que no se reserva (Iván, 28/10/2026)', () => {
     const res = calculateSolapas({
       order: { sameFabric: true, fabric: 'PVC580MAR|||250|||LONA PVC 580 MARFIL :250 AN|||PLASTICA (LONA)' },
       awning: { id: 's1', of: '0231643', model: 'SOLAPAS', units: 1, solapas: ar2604205Solapas }
@@ -64,9 +64,7 @@ describe('Solapas con velcro (SOLAPACONVELCROS)', () => {
     expect(res.materials).toEqual([
       { code: 'PVC580MAR', quantity: 3.6, description: 'LONA PVC 580 MARFIL :250 AN' }
     ]);
-    expect(res.diagnostics).toEqual([
-      expect.objectContaining({ level: 'warn', message: expect.stringContaining('velcro sin reserva automática') })
-    ]);
+    expect(res.diagnostics).toEqual([]);
   });
 
   it('si una solapa lleva bastilla avisa que está pendiente de Oficina Técnica y bloquea el corte', () => {

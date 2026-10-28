@@ -146,14 +146,8 @@ export function calculateSolapas({ order, awning }) {
     totalPieces = solapas.length;
   }
 
+  // Solo se reserva la lona: el velcro no se reserva (Iván, 28/10/2026).
   const valid = Boolean(fabric) && incomplete.length === 0 && !cutError && placedMl > 0;
-  if (valid) {
-    diagnostics.push({
-      level: 'warn',
-      awningId: awning.id,
-      message: `OF ${awning.of}: velcro sin reserva automática.`
-    });
-  }
 
   const fabricWidth = round1(solapas.reduce((acc, s) => acc + Math.max(s.ancho || 0, s.oblicua ? s.ancho2 || 0 : 0), 0));
   const fabricDrop = round1(Math.max(0, ...solapas.map((s) => s.largo || 0)));
