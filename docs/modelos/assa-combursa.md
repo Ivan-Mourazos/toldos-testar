@@ -177,6 +177,13 @@ El “terminado” es el que suele cuadrar con el Excel. El corte es el contorno
 
 **Son fórmulas del cuerpo principal, con las excepciones detalladas más abajo; no generan por sí solas el juego completo de piezas.** En las envolventes el margen habitual añade un centímetro al largo y 6,6 cm al ancho, repartido entre los bordes. En los techos el corte añade cinco centímetros al largo de la hoja y 6,6 al ancho. No se deben aplicar los mismos márgenes a un canalón ni a una cortina.
 
+**Canalones de NT 600 en los lotes de 2026** (lectura de piezas cerradas, 28/10/2026). Se cortan por **juegos fijos del
+ancho del rollo**, uno por cada largo de canalón: un bloque combinado de 8 enteros con 14 mitades encajadas en ellos y
+otro bloque de 15 mitades (8 enteros + 29 mitades). Un lote lleva 1, 2 o 3 juegos de cada largo, sin relación con las
+unidades de RPS (22-08: 90 unidades NB 3450 → un juego; 31-01: 39 → casi tres). El largo es el de la referencia, no solo
+el NB: 3410 (NB 3250), 3610 (NB 3450), 3600 (la 0002, también NB 3450), 3660 (NB 3500), 3560 (NB 3400), 3360 (NB 3200),
+3760 (NB 3600), 2460 (0116, NB 2300, solo enteros). Pendiente de Tamara: cuántos juegos se cortan (Q-AS14).
+
 **Paños unidos de dos en dos** (Tamara por Iván, 28/10/2026): dos paños seguidos a lo largo con una raya de rotulador
 en medio, para envarillar dos de un golpe. Siempre en la 420102; en la 420150, solo las referencias de menos de 5 m de
 largo (0109 y 0116). En los lotes antiguos la 0116 iba suelta, pero «pueden ir unidos»; la 0109 era una sola unidad.
