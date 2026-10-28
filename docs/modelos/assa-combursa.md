@@ -177,6 +177,11 @@ El “terminado” es el que suele cuadrar con el Excel. El corte es el contorno
 
 **Son fórmulas del cuerpo principal, con las excepciones detalladas más abajo; no generan por sí solas el juego completo de piezas.** En las envolventes el margen habitual añade un centímetro al largo y 6,6 cm al ancho, repartido entre los bordes. En los techos el corte añade cinco centímetros al largo de la hoja y 6,6 al ancho. No se deben aplicar los mismos márgenes a un canalón ni a una cortina.
 
+**Techos de NT 600 (430125 / 430127), tres en el ancho del rollo** (Tamara por Iván, 28/10/2026: «son 691 y se corta a
+68, 68 × 3 = 204»). El corte normal es T + 9,1 = 69,1, pero cuando van tres apilados en el ancho del rollo se cortan a
+68 para que quepan justos en 204. Comprobado en los lotes de 2026: todas las pilas de tres van a 680 mm (una a 681);
+las sueltas salen unas a 691 y otras a 680. Pendiente para cuando se programen los techos (están fuera de la fase A).
+
 Estas son las comprobaciones reproducibles. “Con fórmula” exige que RPS conserve los parámetros necesarios; las referencias sin datos suficientes no se cuentan como coincidencias. Los contornos se asocian al rótulo que tienen encima, sin usar el resultado esperado para escogerlos. Se toleran dos centésimas de centímetro en la comparación numérica; esto es una tolerancia de lectura, no una tolerancia de fabricación aprobada.
 
 | Familia | Referencias Excel | Con fórmula evaluable | Excel coincide | Excel discrepa | Contorno principal localizado | Corte coincide con fórmula |
