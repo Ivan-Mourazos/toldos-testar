@@ -24,7 +24,7 @@ export function HojaCortador({ lote }: { lote: Lote }) {
   return <section className="glass-panel combursa-listado" aria-label="Papel del cortador">
     <header><h2>Papel del cortador</h2><span>{descuadres ? `${descuadres} sin cuadrar con RPS` : 'Cuadra con RPS'}</span>
       <button type="button" className="boton-3d" onClick={imprimir}><Printer size={16} aria-hidden="true" /> Imprimir</button></header>
-    <div className="combursa-tabla-scroll"><table>
+    <div className="combursa-tabla-scroll"><table className="combursa-cortador">
       <thead><tr><th>Palet</th><th>Referencia</th><th>Cantidad</th><th>Cómo va en el corte</th><th>Pedido en RPS</th></tr></thead>
       <tbody>{lote.cortador.map(f => <tr key={`${f.palet}-${f.referencia}`}>
         <td>{f.palet ?? 'Sin palet'}</td>

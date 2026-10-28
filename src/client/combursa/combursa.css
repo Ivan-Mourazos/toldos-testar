@@ -28,7 +28,13 @@
 .combursa-listado table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
 .combursa-listado th { position: sticky; top: 0; text-align: left; background: var(--surface-2); color: var(--text-muted); z-index: 1; font-size: 11px; }
 .combursa-listado td, .combursa-listado th { padding: 10px 10px; border-top: 1px solid var(--border); vertical-align: top; overflow-wrap: anywhere; }
-.combursa-listado th:nth-child(1) { width: 12%; }.combursa-listado th:nth-child(2) { width: 14%; }.combursa-listado th:nth-child(3) { width: 28%; }.combursa-listado th:nth-child(4) { width: 6%; }.combursa-listado th:nth-child(5) { width: 8%; }.combursa-listado th:nth-child(6) { width: 11%; }.combursa-listado th:nth-child(7) { width: 12%; }.combursa-listado th:nth-child(8) { width: 9%; }
+/* Líneas del lote: pedido, referencia, descripción, cantidad, OF, comentario, estado, palet, cortar. */
+.combursa-lineas th:nth-child(1) { width: 11%; } .combursa-lineas th:nth-child(2) { width: 13%; } .combursa-lineas th:nth-child(3) { width: 26%; }
+.combursa-lineas th:nth-child(4) { width: 6%; } .combursa-lineas th:nth-child(5) { width: 7%; } .combursa-lineas th:nth-child(6) { width: 10%; }
+.combursa-lineas th:nth-child(7) { width: 13%; } .combursa-lineas th:nth-child(8) { width: 6%; } .combursa-lineas th:nth-child(9) { width: 8%; }
+/* Papel del cortador: palet, referencia, cantidad, cómo va en el corte, pedido en RPS. */
+.combursa-cortador th:nth-child(1) { width: 7%; } .combursa-cortador th:nth-child(2) { width: 24%; } .combursa-cortador th:nth-child(3) { width: 9%; }
+.combursa-cortador th:nth-child(4) { width: 48%; } .combursa-cortador th:nth-child(5) { width: 12%; }
 .combursa-listado small, .combursa-acciones small { display: block; color: var(--text-muted); margin-top: 4px; font-size: 11px; }
 .combursa-referencia, .combursa-numero { font-variant-numeric: tabular-nums; font-weight: 600; }
 .combursa-validado { color: var(--tramo-holgado); font-weight: 650; }

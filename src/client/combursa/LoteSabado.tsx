@@ -95,7 +95,7 @@ export default function LoteSabado({ onCerrar }: { onCerrar: () => void }) {
           </div>
           <section className="glass-panel combursa-listado" aria-label="Líneas del lote">
             <header><h2>{lote.nombre}</h2><span>Rollo PLASTEL 204 · sin giros ni empates</span></header>
-            {!lote.lineas.length ? <p>No hay líneas de ASSA con esta fecha de entrega.</p> : <div className="combursa-tabla-scroll"><table>
+            {!lote.lineas.length ? <p>No hay líneas de ASSA con esta fecha de entrega.</p> : <div className="combursa-tabla-scroll"><table className="combursa-lineas">
               <thead><tr><th>Pedido / línea</th><th>Referencia</th><th>Descripción / corte en mm</th><th>Cantidad</th><th>OF</th><th>Comentario</th><th>Estado</th><th>Palet</th><th>Cortar</th></tr></thead>
               <tbody>{lote.lineas.map(l => <tr key={l.IDOrderLine}>
                 <td>{l.CodOrder}<small>Línea {l.NumLine ?? '—'}</small></td>
