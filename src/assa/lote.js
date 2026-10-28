@@ -16,9 +16,11 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados = cata
     const prueba = ref?.descripciones.find(p => p.descripcion === String(l.descripcion).trim());
     const g = calcularFamilia(l, { nkValidado: prueba?.nkValidado, terminadoMm: prueba?.terminadoMm });
     const motivos = [...g.motivos];
-    if (!prueba || !prueba.cuadran || !prueba.ultimaGeometria || !g.pieza?.medidasMm.every((n, i) => Math.abs(n - prueba.corteMm[i]) < .01)) motivos.push('Referencia y medidas sin validación completa vigente contra los lotes reales.');
+    // Habilita la forma igual a la de los lotes reales: en alguno y en el último. La cantidad la manda RPS; la del lote
+    // real puede ser menor porque el stock se pone en corte (Q-AS03, Iván 26/10/2026).
+    if (!prueba || !prueba.geometria || !prueba.ultimaGeometria || !g.pieza?.medidasMm.every((n, i) => Math.abs(n - prueba.corteMm[i]) < .01)) motivos.push('Referencia y medidas sin validación completa vigente contra los lotes reales.');
     const historico = ref?.fechas?.[fecha];
-    if (historico && !historico.coincide) motivos.push(...historico.motivos);
+    if (historico && !(historico.forma ?? historico.coincide)) motivos.push(...historico.motivos.filter(m => !m.startsWith('Cantidad agrupada:')));
     if (g.familia === '420150') motivos.push(CANALONES_PENDIENTES);
     return { ...l, codigo: g.codigo, familia: g.familia, estado: motivos.length ? 'a-mano' : 'validado', motivos: [...new Set(motivos)],
       avisos: g.avisos, terminadoMm: g.terminadoMm, corteMm: g.pieza?.medidasMm, calculo: g };

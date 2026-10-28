@@ -58,10 +58,16 @@ describe('cantidades y trazabilidad del contraste de lotes', () => {
     expect(validarLineasLote([linea], [programa, otro])[0].cantidadCorteAgrupada).toBe(180);
   });
 
-  it('no convierte una descripción truncada o un orillo no probado en coincidencia', () => {
+  it('no convierte una descripción truncada en coincidencia', () => {
     expect(validarLineasLote([{ ...linea, descripcion: 'NT600 NB3250 NH348' }], [programa])[0].estado).toBe('a-mano');
+  });
+
+  // Iván, 26/10/2026 (Q-AS06b): la pieza va contra el orillo y ese lado no se corta; que el corte real la cortara por
+  // los cuatro lados no la cambia. Es un aviso, no un motivo para dejarla a mano.
+  it('un orillo no probado en el corte real es solo un aviso', () => {
     const sinOrillo = { ...programa, panos: programa.panos.map(p => ({ ...p, orilloDelConjunto: false })) };
-    expect(validarLineasLote([linea], [sinOrillo])[0].coincide).toBe(false);
-    expect(validarLineasLote([linea], [sinOrillo])[0].geometria).toBe(false);
+    const [f] = validarLineasLote([linea], [sinOrillo]);
+    expect([f.geometria, f.coincide]).toEqual([true, true]);
+    expect(f.avisos).toEqual(['En el corte real el paño no iba contra el orillo.']);
   });
 });

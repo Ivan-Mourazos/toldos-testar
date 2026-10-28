@@ -68,6 +68,8 @@ for (const [codigo, ls] of Map.groupBy(lineas, l => codigoAssa(l.CodArticle))) {
   });
   const fechas = Object.fromEntries([...Map.groupBy(validaciones, f => f.fecha)].map(([fecha, fs]) => [fecha, {
     coincide: fs.every(f => f.coincide), cantidad: fs[0].cantidadRpsAgrupada,
+    // La forma de todos sus paños igual; la cantidad del lote real puede ser menor por el stock (Q-AS03).
+    forma: fs.every(f => f.geometria && f.motivos.every(m => m.startsWith('Cantidad agrupada:'))),
     motivos: [...new Set(fs.flatMap(f => f.motivos))],
   }]));
   referencias[codigo] = { descripciones, fechas };

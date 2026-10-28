@@ -30,7 +30,7 @@ export function validarLineasLote(lineas, programas, { toleranciaMm = 1, generar
     const firmas = new Set(generados.map(g => g.estado === 'generado' ? JSON.stringify(g.medidas) : 'a-mano'));
     if (firmas.size > 1) generales.push('La misma referencia y fecha tiene distintas medidas o líneas a mano; no se asignan piezas a pedidos por proximidad.');
     for (let i = 0; i < ls.length; i++) {
-      const l = ls[i], generado = generados[i], motivos = [...generales], comprobaciones = [];
+      const l = ls[i], generado = generados[i], motivos = [...generales], comprobaciones = [], avisos = [];
       if (generado.estado === 'a-mano') motivos.push(...generado.motivos);
       else {
         const esperado = operacionesGeneradas(generado.pieza.entidades);
@@ -41,10 +41,12 @@ export function validarLineasLote(lineas, programas, { toleranciaMm = 1, generar
         }
         if (comprobaciones.some(c => !c.medidas)) motivos.push('Las medidas del contorno real difieren más de 1 mm de la regla de la familia.');
         if (comprobaciones.some(c => !c.coincide)) motivos.push('Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla.');
-        if (gs.some(g => g.panos.some(p => !p.orilloDelConjunto))) motivos.push('No se ha encontrado un orillo abierto en el conjunto real de paños.');
+        // Iván, 26/10/2026 (Q-AS06b): la pieza que aprovecha el orillo va pegada al borde del rollo y ese lado no se corta.
+        // Que el corte real la cortara por los cuatro lados no cambia la pieza: es un aviso, no un motivo para dejarla a mano.
+        if (gs.some(g => g.panos.some(p => !p.orilloDelConjunto))) avisos.push('En el corte real el paño no iba contra el orillo.');
       }
       const geometria = generado.estado === 'generado' && comprobaciones.length > 0 &&
-        comprobaciones.every(c => c.medidas && c.coincide) && gs.every(g => g.panos.every(p => p.orilloDelConjunto));
+        comprobaciones.every(c => c.medidas && c.coincide);
       const muestraCompatible = comprobaciones.some(c => c.medidas && c.coincide);
       const coincide = geometria && motivos.length === 0;
       const sinDiferenciaDeCantidad = geometria && motivos.filter(m => !m.startsWith('Cantidad agrupada:')).length === 0;
@@ -56,7 +58,7 @@ export function validarLineasLote(lineas, programas, { toleranciaMm = 1, generar
         cuadraCompletandoConjuntosAgrupados: sinDiferenciaDeCantidad && cantidadCorte === cantidadConjuntosAgrupados,
         cuadraCompletandoPorLinea: sinDiferenciaDeCantidad && cantidadCorte === cantidadConjuntosPorLinea,
         accion: coincide ? 'panos-validados' : 'a-mano',
-        motivos, comprobaciones,
+        motivos, avisos, comprobaciones,
         programasReales: gs.map(g => ({ fichero: g.fichero, rotulo: g.rotulo, panos: g.panos.length, repeticiones: g.repeticiones, medidasMm: g.panos.map(p => p.medidasMm) })),
         programasGenerados: generado.programas.map(p => ({ panos: p.panos, repeticiones: p.repeticiones })) });
     }

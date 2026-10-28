@@ -26,31 +26,37 @@
         "2025-01-11": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2025-03-01": {
           "coincide": true,
           "cantidad": 16,
+          "forma": true,
           "motivos": []
         },
         "2025-03-15": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-03-29": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2025-04-05": {
           "coincide": true,
           "cantidad": 9,
+          "forma": true,
           "motivos": []
         },
         "2025-04-12": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 2; paños identificados × repeticiones 0."
@@ -59,86 +65,103 @@
         "2025-04-26": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-05-10": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-05-24": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2025-05-31": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-06-07": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2025-06-14": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2025-06-21": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2025-07-05": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-07-19": {
           "coincide": true,
           "cantidad": 34,
+          "forma": true,
           "motivos": []
         },
         "2025-08-23": {
           "coincide": true,
           "cantidad": 8,
+          "forma": true,
           "motivos": []
         },
         "2025-09-06": {
           "coincide": true,
           "cantidad": 17,
+          "forma": true,
           "motivos": []
         },
         "2025-09-13": {
           "coincide": true,
           "cantidad": 6,
+          "forma": true,
           "motivos": []
         },
         "2025-10-04": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2025-11-01": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2026-01-10": {
           "coincide": true,
           "cantidad": 6,
+          "forma": true,
           "motivos": []
         },
         "2026-02-28": {
           "coincide": true,
           "cantidad": 18,
+          "forma": true,
           "motivos": []
         },
         "2026-03-07": {
           "coincide": false,
           "cantidad": 1,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 1; paños identificados × repeticiones 0."
@@ -147,16 +170,19 @@
         "2026-03-14": {
           "coincide": true,
           "cantidad": 7,
+          "forma": true,
           "motivos": []
         },
         "2026-04-11": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-04-18": {
           "coincide": false,
           "cantidad": 18,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 18; paños identificados × repeticiones 17."
           ]
@@ -164,16 +190,19 @@
         "2026-05-02": {
           "coincide": true,
           "cantidad": 15,
+          "forma": true,
           "motivos": []
         },
         "2026-08-08": {
           "coincide": true,
           "cantidad": 14,
+          "forma": true,
           "motivos": []
         },
         "2026-09-05": {
           "coincide": false,
           "cantidad": 20,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 20; paños identificados × repeticiones 19."
           ]
@@ -181,16 +210,19 @@
         "2026-09-12": {
           "coincide": true,
           "cantidad": 8,
+          "forma": true,
           "motivos": []
         },
         "2026-10-03": {
           "coincide": true,
           "cantidad": 20,
+          "forma": true,
           "motivos": []
         },
         "2026-10-10": {
           "coincide": true,
           "cantidad": 17,
+          "forma": true,
           "motivos": []
         }
       }
@@ -219,16 +251,19 @@
         "2025-01-11": {
           "coincide": true,
           "cantidad": 18,
+          "forma": true,
           "motivos": []
         },
         "2025-01-18": {
           "coincide": true,
           "cantidad": 81,
+          "forma": true,
           "motivos": []
         },
         "2025-02-08": {
           "coincide": false,
           "cantidad": 44,
+          "forma": false,
           "motivos": [
             "Hay varios DXF de la misma fecha: no se supone que sean acumulables ni revisiones."
           ]
@@ -236,81 +271,97 @@
         "2025-02-15": {
           "coincide": true,
           "cantidad": 45,
+          "forma": true,
           "motivos": []
         },
         "2025-02-22": {
           "coincide": true,
           "cantidad": 24,
+          "forma": true,
           "motivos": []
         },
         "2025-03-01": {
           "coincide": true,
           "cantidad": 16,
+          "forma": true,
           "motivos": []
         },
         "2025-03-08": {
           "coincide": true,
           "cantidad": 30,
+          "forma": true,
           "motivos": []
         },
         "2025-04-05": {
           "coincide": true,
           "cantidad": 43,
+          "forma": true,
           "motivos": []
         },
         "2025-04-26": {
           "coincide": true,
           "cantidad": 23,
+          "forma": true,
           "motivos": []
         },
         "2025-05-10": {
           "coincide": true,
           "cantidad": 48,
+          "forma": true,
           "motivos": []
         },
         "2025-05-17": {
           "coincide": true,
           "cantidad": 12,
+          "forma": true,
           "motivos": []
         },
         "2025-05-24": {
           "coincide": true,
           "cantidad": 37,
+          "forma": true,
           "motivos": []
         },
         "2025-05-31": {
           "coincide": true,
           "cantidad": 52,
+          "forma": true,
           "motivos": []
         },
         "2025-06-07": {
           "coincide": true,
           "cantidad": 19,
+          "forma": true,
           "motivos": []
         },
         "2025-06-14": {
           "coincide": true,
           "cantidad": 21,
+          "forma": true,
           "motivos": []
         },
         "2025-06-21": {
           "coincide": true,
           "cantidad": 20,
+          "forma": true,
           "motivos": []
         },
         "2025-07-05": {
           "coincide": true,
           "cantidad": 25,
+          "forma": true,
           "motivos": []
         },
         "2025-07-12": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2025-07-30": {
           "coincide": false,
           "cantidad": 7,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 7; paños identificados × repeticiones 0."
@@ -319,36 +370,43 @@
         "2025-09-06": {
           "coincide": true,
           "cantidad": 33,
+          "forma": true,
           "motivos": []
         },
         "2025-09-13": {
           "coincide": true,
           "cantidad": 28,
+          "forma": true,
           "motivos": []
         },
         "2025-09-20": {
           "coincide": true,
           "cantidad": 18,
+          "forma": true,
           "motivos": []
         },
         "2025-09-27": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2025-10-04": {
           "coincide": true,
           "cantidad": 29,
+          "forma": true,
           "motivos": []
         },
         "2025-10-11": {
           "coincide": true,
           "cantidad": 48,
+          "forma": true,
           "motivos": []
         },
         "2025-10-25": {
           "coincide": false,
           "cantidad": 86,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 86; paños identificados × repeticiones 53.",
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
@@ -357,31 +415,37 @@
         "2025-11-15": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2025-11-22": {
           "coincide": true,
           "cantidad": 26,
+          "forma": true,
           "motivos": []
         },
         "2025-11-29": {
           "coincide": true,
           "cantidad": 25,
+          "forma": true,
           "motivos": []
         },
         "2025-12-13": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2026-01-10": {
           "coincide": true,
           "cantidad": 8,
+          "forma": true,
           "motivos": []
         },
         "2026-01-17": {
           "coincide": false,
           "cantidad": 5,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 5; paños identificados × repeticiones 2."
           ]
@@ -389,36 +453,43 @@
         "2026-01-24": {
           "coincide": true,
           "cantidad": 42,
+          "forma": true,
           "motivos": []
         },
         "2026-02-07": {
           "coincide": true,
           "cantidad": 8,
+          "forma": true,
           "motivos": []
         },
         "2026-02-14": {
           "coincide": true,
           "cantidad": 65,
+          "forma": true,
           "motivos": []
         },
         "2026-02-21": {
           "coincide": true,
           "cantidad": 46,
+          "forma": true,
           "motivos": []
         },
         "2026-03-07": {
           "coincide": true,
           "cantidad": 43,
+          "forma": true,
           "motivos": []
         },
         "2026-03-28": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2026-04-25": {
           "coincide": false,
           "cantidad": 16,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 16; paños identificados × repeticiones 12."
           ]
@@ -426,6 +497,7 @@
         "2026-05-02": {
           "coincide": false,
           "cantidad": 25,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 25; paños identificados × repeticiones 24."
           ]
@@ -433,16 +505,19 @@
         "2026-06-06": {
           "coincide": true,
           "cantidad": 20,
+          "forma": true,
           "motivos": []
         },
         "2026-06-20": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2026-07-18": {
           "coincide": false,
           "cantidad": 45,
+          "forma": false,
           "motivos": [
             "Hay varios DXF de la misma fecha: no se supone que sean acumulables ni revisiones."
           ]
@@ -450,6 +525,7 @@
         "2026-07-25": {
           "coincide": false,
           "cantidad": 20,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 20; paños identificados × repeticiones 21."
           ]
@@ -457,21 +533,25 @@
         "2026-08-08": {
           "coincide": true,
           "cantidad": 20,
+          "forma": true,
           "motivos": []
         },
         "2026-09-26": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2026-10-03": {
           "coincide": true,
           "cantidad": 15,
+          "forma": true,
           "motivos": []
         },
         "2026-10-10": {
           "coincide": false,
           "cantidad": 11,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 11; paños identificados × repeticiones 9."
           ]
@@ -479,11 +559,13 @@
         "2026-10-17": {
           "coincide": true,
           "cantidad": 15,
+          "forma": true,
           "motivos": []
         },
         "2026-10-31": {
           "coincide": true,
           "cantidad": 15,
+          "forma": true,
           "motivos": []
         }
       }
@@ -497,8 +579,8 @@
             666
           ],
           "lineas": 36,
-          "cuadran": 24,
-          "geometria": 27,
+          "cuadran": 25,
+          "geometria": 28,
           "ultimaFecha": "2026-10-31",
           "ultimaGeometria": true,
           "nkValidado": false,
@@ -512,16 +594,19 @@
         "2025-01-11": {
           "coincide": true,
           "cantidad": 14,
+          "forma": true,
           "motivos": []
         },
         "2025-01-18": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-01-25": {
           "coincide": false,
           "cantidad": 3,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 3; paños identificados × repeticiones 0."
@@ -530,31 +615,37 @@
         "2025-02-08": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-02-15": {
           "coincide": true,
           "cantidad": 15,
+          "forma": true,
           "motivos": []
         },
         "2025-02-22": {
           "coincide": true,
           "cantidad": 36,
+          "forma": true,
           "motivos": []
         },
         "2025-03-01": {
           "coincide": true,
           "cantidad": 39,
+          "forma": true,
           "motivos": []
         },
         "2025-03-15": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2025-03-29": {
           "coincide": false,
           "cantidad": 55,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 55; paños identificados × repeticiones 17.",
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
@@ -563,41 +654,49 @@
         "2025-04-05": {
           "coincide": true,
           "cantidad": 28,
+          "forma": true,
           "motivos": []
         },
         "2025-04-12": {
           "coincide": true,
           "cantidad": 80,
+          "forma": true,
           "motivos": []
         },
         "2025-05-10": {
           "coincide": true,
           "cantidad": 32,
+          "forma": true,
           "motivos": []
         },
         "2025-05-24": {
           "coincide": true,
           "cantidad": 17,
+          "forma": true,
           "motivos": []
         },
         "2025-05-31": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2025-06-21": {
           "coincide": true,
           "cantidad": 37,
+          "forma": true,
           "motivos": []
         },
         "2025-07-05": {
           "coincide": true,
           "cantidad": 8,
+          "forma": true,
           "motivos": []
         },
         "2025-08-30": {
           "coincide": false,
           "cantidad": 30,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 30; paños identificados × repeticiones 29."
           ]
@@ -605,6 +704,7 @@
         "2025-09-06": {
           "coincide": false,
           "cantidad": 50,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 50; paños identificados × repeticiones 49."
           ]
@@ -612,11 +712,13 @@
         "2025-09-13": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2025-10-18": {
           "coincide": false,
           "cantidad": 15,
+          "forma": false,
           "motivos": [
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
@@ -624,6 +726,7 @@
         "2025-10-25": {
           "coincide": false,
           "cantidad": 18,
+          "forma": false,
           "motivos": [
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
@@ -631,28 +734,31 @@
         "2025-11-01": {
           "coincide": true,
           "cantidad": 18,
+          "forma": true,
           "motivos": []
         },
         "2026-07-04": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2026-07-18": {
           "coincide": true,
           "cantidad": 68,
+          "forma": true,
           "motivos": []
         },
         "2026-07-25": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 1,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-08-15": {
           "coincide": false,
           "cantidad": 1,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 1; paños identificados × repeticiones 0."
@@ -661,21 +767,25 @@
         "2026-08-22": {
           "coincide": true,
           "cantidad": 57,
+          "forma": true,
           "motivos": []
         },
         "2026-09-12": {
           "coincide": true,
           "cantidad": 9,
+          "forma": true,
           "motivos": []
         },
         "2026-10-03": {
           "coincide": true,
           "cantidad": 18,
+          "forma": true,
           "motivos": []
         },
         "2026-10-31": {
           "coincide": false,
           "cantidad": 10,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 10; paños identificados × repeticiones 9."
           ]
@@ -691,10 +801,10 @@
             666
           ],
           "lineas": 41,
-          "cuadran": 2,
-          "geometria": 12,
+          "cuadran": 4,
+          "geometria": 19,
           "ultimaFecha": "2026-10-31",
-          "ultimaGeometria": false,
+          "ultimaGeometria": true,
           "nkValidado": false,
           "terminadoMm": null
         }
@@ -703,6 +813,7 @@
         "2025-01-11": {
           "coincide": false,
           "cantidad": 4,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 4; paños identificados × repeticiones 0."
@@ -711,21 +822,22 @@
         "2025-02-08": {
           "coincide": false,
           "cantidad": 8,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 8; paños identificados × repeticiones 2.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia."
           ]
         },
         "2025-02-15": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 2,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-02-22": {
           "coincide": false,
           "cantidad": 94,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 94; paños identificados × repeticiones 0."
@@ -734,6 +846,7 @@
         "2025-04-12": {
           "coincide": false,
           "cantidad": 8,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 8; paños identificados × repeticiones 5.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
@@ -743,6 +856,7 @@
         "2025-04-16": {
           "coincide": false,
           "cantidad": 24,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 24; paños identificados × repeticiones 0."
@@ -751,6 +865,7 @@
         "2025-05-10": {
           "coincide": false,
           "cantidad": 38,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 38; paños identificados × repeticiones 2."
           ]
@@ -758,15 +873,16 @@
         "2025-05-24": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
         },
         "2025-06-28": {
           "coincide": false,
           "cantidad": 54,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 54; paños identificados × repeticiones 0."
@@ -775,6 +891,7 @@
         "2025-07-05": {
           "coincide": false,
           "cantidad": 4,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 4; paños identificados × repeticiones 3."
           ]
@@ -782,6 +899,7 @@
         "2025-07-12": {
           "coincide": false,
           "cantidad": 100,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 100; paños identificados × repeticiones 34.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
@@ -791,21 +909,23 @@
         "2025-07-19": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-09-06": {
           "coincide": false,
           "cantidad": 24,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 24; paños identificados × repeticiones 15.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
         },
         "2025-09-13": {
           "coincide": false,
           "cantidad": 24,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 24; paños identificados × repeticiones 12.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
@@ -815,6 +935,7 @@
         "2025-09-20": {
           "coincide": false,
           "cantidad": 28,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 28; paños identificados × repeticiones 10.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia."
@@ -823,6 +944,7 @@
         "2025-11-22": {
           "coincide": false,
           "cantidad": 66,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 66; paños identificados × repeticiones 0."
@@ -831,6 +953,7 @@
         "2026-01-10": {
           "coincide": false,
           "cantidad": 52,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 52; paños identificados × repeticiones 28.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
@@ -840,31 +963,32 @@
         "2026-02-21": {
           "coincide": false,
           "cantidad": 20,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 20; paños identificados × repeticiones 5.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 20; paños identificados × repeticiones 5."
           ]
         },
         "2026-02-28": {
           "coincide": false,
           "cantidad": 50,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 50; paños identificados × repeticiones 2.",
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
         },
         "2026-03-07": {
           "coincide": false,
           "cantidad": 8,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 8; paños identificados × repeticiones 2.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 8; paños identificados × repeticiones 2."
           ]
         },
         "2026-03-14": {
           "coincide": false,
           "cantidad": 60,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 60; paños identificados × repeticiones 30.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
@@ -874,6 +998,7 @@
         "2026-03-21": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 2; paños identificados × repeticiones 6.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia."
@@ -882,6 +1007,7 @@
         "2026-04-04": {
           "coincide": false,
           "cantidad": 146,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 146; paños identificados × repeticiones 2."
           ]
@@ -889,6 +1015,7 @@
         "2026-04-11": {
           "coincide": false,
           "cantidad": 20,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 20; paños identificados × repeticiones 2."
           ]
@@ -896,6 +1023,7 @@
         "2026-04-18": {
           "coincide": false,
           "cantidad": 2,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 2; paños identificados × repeticiones 1."
           ]
@@ -903,6 +1031,7 @@
         "2026-04-25": {
           "coincide": false,
           "cantidad": 24,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 24; paños identificados × repeticiones 6.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia."
@@ -911,6 +1040,7 @@
         "2026-05-30": {
           "coincide": false,
           "cantidad": 80,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 80; paños identificados × repeticiones 2."
           ]
@@ -918,6 +1048,7 @@
         "2026-06-13": {
           "coincide": false,
           "cantidad": 60,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 60; paños identificados × repeticiones 0."
@@ -926,6 +1057,7 @@
         "2026-06-27": {
           "coincide": false,
           "cantidad": 30,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 30; paños identificados × repeticiones 0."
@@ -934,33 +1066,35 @@
         "2026-07-18": {
           "coincide": false,
           "cantidad": 8,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 8; paños identificados × repeticiones 2.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 8; paños identificados × repeticiones 2."
           ]
         },
         "2026-08-08": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2026-08-15": {
           "coincide": false,
           "cantidad": 55,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 55; paños identificados × repeticiones 1."
           ]
         },
         "2026-09-05": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 5,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-10-17": {
           "coincide": false,
           "cantidad": 43,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 43; paños identificados × repeticiones 1."
           ]
@@ -968,9 +1102,9 @@
         "2026-10-31": {
           "coincide": false,
           "cantidad": 41,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 41; paños identificados × repeticiones 5.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 41; paños identificados × repeticiones 5."
           ]
         }
       }
@@ -984,10 +1118,10 @@
             666
           ],
           "lineas": 32,
-          "cuadran": 7,
-          "geometria": 15,
+          "cuadran": 12,
+          "geometria": 25,
           "ultimaFecha": "2026-10-31",
-          "ultimaGeometria": false,
+          "ultimaGeometria": true,
           "nkValidado": false,
           "terminadoMm": null
         }
@@ -996,6 +1130,7 @@
         "2025-01-11": {
           "coincide": false,
           "cantidad": 66,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 66; paños identificados × repeticiones 0."
@@ -1004,6 +1139,7 @@
         "2025-01-25": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 0."
@@ -1012,36 +1148,40 @@
         "2025-03-29": {
           "coincide": false,
           "cantidad": 8,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 8; paños identificados × repeticiones 0."
           ]
         },
         "2025-04-12": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 4,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-04-16": {
           "coincide": true,
           "cantidad": 8,
+          "forma": true,
           "motivos": []
         },
         "2025-04-26": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-05-10": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2025-05-17": {
           "coincide": false,
           "cantidad": 16,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 16; paños identificados × repeticiones 4."
           ]
@@ -1049,28 +1189,29 @@
         "2025-09-06": {
           "coincide": false,
           "cantidad": 44,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 44; paños identificados × repeticiones 23.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
         },
         "2025-09-13": {
           "coincide": true,
           "cantidad": 12,
+          "forma": true,
           "motivos": []
         },
         "2025-10-11": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 4,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-11-01": {
           "coincide": false,
           "cantidad": 31,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 31; paños identificados × repeticiones 7."
           ]
@@ -1078,34 +1219,36 @@
         "2025-11-15": {
           "coincide": false,
           "cantidad": 14,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 14; paños identificados × repeticiones 2.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 14; paños identificados × repeticiones 2."
           ]
         },
         "2025-11-22": {
           "coincide": false,
           "cantidad": 60,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 60; paños identificados × repeticiones 0."
           ]
         },
         "2025-11-29": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 14,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-12-06": {
           "coincide": true,
           "cantidad": 14,
+          "forma": true,
           "motivos": []
         },
         "2026-04-11": {
           "coincide": false,
           "cantidad": 10,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 10; paños identificados × repeticiones 4."
           ]
@@ -1113,6 +1256,7 @@
         "2026-04-18": {
           "coincide": false,
           "cantidad": 70,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 70; paños identificados × repeticiones 4."
           ]
@@ -1120,14 +1264,15 @@
         "2026-04-25": {
           "coincide": false,
           "cantidad": 22,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 22; paños identificados × repeticiones 4.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 22; paños identificados × repeticiones 4."
           ]
         },
         "2026-07-18": {
           "coincide": false,
           "cantidad": 14,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 14; paños identificados × repeticiones 2."
           ]
@@ -1135,28 +1280,29 @@
         "2026-08-08": {
           "coincide": false,
           "cantidad": 18,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 18; paños identificados × repeticiones 5.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 18; paños identificados × repeticiones 5."
           ]
         },
         "2026-08-29": {
           "coincide": false,
           "cantidad": 4,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 4; paños identificados × repeticiones 3."
           ]
         },
         "2026-09-12": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 2,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-09-19": {
           "coincide": false,
           "cantidad": 60,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 60; paños identificados × repeticiones 0."
@@ -1165,27 +1311,29 @@
         "2026-09-26": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-10-10": {
           "coincide": true,
           "cantidad": 16,
+          "forma": true,
           "motivos": []
         },
         "2026-10-24": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 2; paños identificados × repeticiones 0."
           ]
         },
         "2026-10-31": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 5,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         }
       }
     },
@@ -1213,11 +1361,13 @@
         "2025-01-11": {
           "coincide": true,
           "cantidad": 9,
+          "forma": true,
           "motivos": []
         },
         "2025-01-18": {
           "coincide": false,
           "cantidad": 4,
+          "forma": false,
           "motivos": [
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
@@ -1226,26 +1376,31 @@
         "2025-01-25": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2025-02-08": {
           "coincide": true,
           "cantidad": 17,
+          "forma": true,
           "motivos": []
         },
         "2025-02-15": {
           "coincide": true,
           "cantidad": 11,
+          "forma": true,
           "motivos": []
         },
         "2025-02-22": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2025-03-01": {
           "coincide": false,
           "cantidad": 6,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 4."
           ]
@@ -1253,56 +1408,67 @@
         "2025-03-29": {
           "coincide": true,
           "cantidad": 22,
+          "forma": true,
           "motivos": []
         },
         "2025-04-05": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-04-26": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-05-10": {
           "coincide": true,
           "cantidad": 14,
+          "forma": true,
           "motivos": []
         },
         "2025-05-24": {
           "coincide": true,
           "cantidad": 21,
+          "forma": true,
           "motivos": []
         },
         "2025-05-31": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2025-06-14": {
           "coincide": true,
           "cantidad": 8,
+          "forma": true,
           "motivos": []
         },
         "2025-07-05": {
           "coincide": true,
           "cantidad": 20,
+          "forma": true,
           "motivos": []
         },
         "2025-07-19": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2025-09-06": {
           "coincide": true,
           "cantidad": 22,
+          "forma": true,
           "motivos": []
         },
         "2025-09-13": {
           "coincide": false,
           "cantidad": 98,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 98; paños identificados × repeticiones 96."
           ]
@@ -1310,16 +1476,19 @@
         "2025-10-04": {
           "coincide": true,
           "cantidad": 11,
+          "forma": true,
           "motivos": []
         },
         "2025-10-11": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2025-10-18": {
           "coincide": false,
           "cantidad": 34,
+          "forma": false,
           "motivos": [
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
@@ -1327,6 +1496,7 @@
         "2025-10-25": {
           "coincide": false,
           "cantidad": 16,
+          "forma": false,
           "motivos": [
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
@@ -1334,66 +1504,79 @@
         "2025-11-01": {
           "coincide": true,
           "cantidad": 20,
+          "forma": true,
           "motivos": []
         },
         "2025-11-08": {
           "coincide": true,
           "cantidad": 15,
+          "forma": true,
           "motivos": []
         },
         "2025-11-22": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-11-29": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-12-06": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2025-12-13": {
           "coincide": true,
           "cantidad": 36,
+          "forma": true,
           "motivos": []
         },
         "2026-01-10": {
           "coincide": true,
           "cantidad": 11,
+          "forma": true,
           "motivos": []
         },
         "2026-01-24": {
           "coincide": true,
           "cantidad": 26,
+          "forma": true,
           "motivos": []
         },
         "2026-02-28": {
           "coincide": true,
           "cantidad": 15,
+          "forma": true,
           "motivos": []
         },
         "2026-03-14": {
           "coincide": true,
           "cantidad": 35,
+          "forma": true,
           "motivos": []
         },
         "2026-03-28": {
           "coincide": true,
           "cantidad": 22,
+          "forma": true,
           "motivos": []
         },
         "2026-04-11": {
           "coincide": true,
           "cantidad": 20,
+          "forma": true,
           "motivos": []
         },
         "2026-05-02": {
           "coincide": false,
           "cantidad": 4,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 4; paños identificados × repeticiones 3."
           ]
@@ -1401,31 +1584,37 @@
         "2026-06-06": {
           "coincide": true,
           "cantidad": 6,
+          "forma": true,
           "motivos": []
         },
         "2026-06-13": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2026-07-18": {
           "coincide": true,
           "cantidad": 20,
+          "forma": true,
           "motivos": []
         },
         "2026-08-15": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2026-09-26": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2026-10-10": {
           "coincide": true,
           "cantidad": 15,
+          "forma": true,
           "motivos": []
         }
       }
@@ -1451,6 +1640,7 @@
         "2025-01-11": {
           "coincide": false,
           "cantidad": 1,
+          "forma": false,
           "motivos": [
             "NB3040: reparto de agujeros y accesorios pendiente de validar."
           ]
@@ -1481,16 +1671,19 @@
         "2025-01-11": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2025-01-18": {
           "coincide": true,
           "cantidad": 17,
+          "forma": true,
           "motivos": []
         },
         "2025-01-25": {
           "coincide": false,
           "cantidad": 1,
+          "forma": false,
           "motivos": [
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
@@ -1499,76 +1692,91 @@
         "2025-02-01": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-02-08": {
           "coincide": true,
           "cantidad": 52,
+          "forma": true,
           "motivos": []
         },
         "2025-02-15": {
           "coincide": true,
           "cantidad": 31,
+          "forma": true,
           "motivos": []
         },
         "2025-02-22": {
           "coincide": true,
           "cantidad": 47,
+          "forma": true,
           "motivos": []
         },
         "2025-03-01": {
           "coincide": true,
           "cantidad": 45,
+          "forma": true,
           "motivos": []
         },
         "2025-03-08": {
           "coincide": true,
           "cantidad": 86,
+          "forma": true,
           "motivos": []
         },
         "2025-04-05": {
           "coincide": true,
           "cantidad": 25,
+          "forma": true,
           "motivos": []
         },
         "2025-05-10": {
           "coincide": true,
           "cantidad": 16,
+          "forma": true,
           "motivos": []
         },
         "2025-05-17": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-05-24": {
           "coincide": true,
           "cantidad": 59,
+          "forma": true,
           "motivos": []
         },
         "2025-05-31": {
           "coincide": true,
           "cantidad": 59,
+          "forma": true,
           "motivos": []
         },
         "2025-06-07": {
           "coincide": true,
           "cantidad": 25,
+          "forma": true,
           "motivos": []
         },
         "2025-06-14": {
           "coincide": true,
           "cantidad": 60,
+          "forma": true,
           "motivos": []
         },
         "2025-07-05": {
           "coincide": true,
           "cantidad": 30,
+          "forma": true,
           "motivos": []
         },
         "2025-08-02": {
           "coincide": false,
           "cantidad": 100,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 100; paños identificados × repeticiones 250."
           ]
@@ -1576,6 +1784,7 @@
         "2025-08-30": {
           "coincide": false,
           "cantidad": 150,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 150; paños identificados × repeticiones 79."
           ]
@@ -1583,6 +1792,7 @@
         "2025-09-13": {
           "coincide": false,
           "cantidad": 78,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 78; paños identificados × repeticiones 114."
           ]
@@ -1590,21 +1800,25 @@
         "2025-09-20": {
           "coincide": true,
           "cantidad": 36,
+          "forma": true,
           "motivos": []
         },
         "2025-10-04": {
           "coincide": true,
           "cantidad": 20,
+          "forma": true,
           "motivos": []
         },
         "2025-10-11": {
           "coincide": true,
           "cantidad": 27,
+          "forma": true,
           "motivos": []
         },
         "2025-10-18": {
           "coincide": false,
           "cantidad": 42,
+          "forma": false,
           "motivos": [
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
@@ -1612,6 +1826,7 @@
         "2025-10-25": {
           "coincide": false,
           "cantidad": 53,
+          "forma": false,
           "motivos": [
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
@@ -1619,21 +1834,25 @@
         "2025-11-01": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2025-11-08": {
           "coincide": true,
           "cantidad": 76,
+          "forma": true,
           "motivos": []
         },
         "2025-11-15": {
           "coincide": true,
           "cantidad": 30,
+          "forma": true,
           "motivos": []
         },
         "2025-11-29": {
           "coincide": false,
           "cantidad": 18,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 18; paños identificados × repeticiones 24."
           ]
@@ -1641,6 +1860,7 @@
         "2026-01-10": {
           "coincide": false,
           "cantidad": 22,
+          "forma": false,
           "motivos": [
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
@@ -1648,6 +1868,7 @@
         "2026-01-17": {
           "coincide": false,
           "cantidad": 18,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 18; paños identificados × repeticiones 0."
@@ -1656,21 +1877,25 @@
         "2026-01-31": {
           "coincide": true,
           "cantidad": 28,
+          "forma": true,
           "motivos": []
         },
         "2026-02-07": {
           "coincide": true,
           "cantidad": 24,
+          "forma": true,
           "motivos": []
         },
         "2026-02-21": {
           "coincide": true,
           "cantidad": 20,
+          "forma": true,
           "motivos": []
         },
         "2026-03-07": {
           "coincide": false,
           "cantidad": 40,
+          "forma": false,
           "motivos": [
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
@@ -1678,16 +1903,19 @@
         "2026-03-14": {
           "coincide": true,
           "cantidad": 30,
+          "forma": true,
           "motivos": []
         },
         "2026-03-28": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2026-04-04": {
           "coincide": false,
           "cantidad": 30,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 30; paños identificados × repeticiones 10."
           ]
@@ -1695,16 +1923,19 @@
         "2026-04-11": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2026-04-18": {
           "coincide": true,
           "cantidad": 70,
+          "forma": true,
           "motivos": []
         },
         "2026-05-02": {
           "coincide": false,
           "cantidad": 55,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 55; paños identificados × repeticiones 38.",
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
@@ -1713,11 +1944,13 @@
         "2026-06-06": {
           "coincide": true,
           "cantidad": 20,
+          "forma": true,
           "motivos": []
         },
         "2026-06-20": {
           "coincide": false,
           "cantidad": 10,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 10; paños identificados × repeticiones 57."
           ]
@@ -1725,6 +1958,7 @@
         "2026-07-04": {
           "coincide": false,
           "cantidad": 5,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 5; paños identificados × repeticiones 3."
           ]
@@ -1732,6 +1966,7 @@
         "2026-07-18": {
           "coincide": false,
           "cantidad": 81,
+          "forma": false,
           "motivos": [
             "Hay varios DXF de la misma fecha: no se supone que sean acumulables ni revisiones.",
             "Cantidad agrupada: RPS 81; paños identificados × repeticiones 84."
@@ -1740,6 +1975,7 @@
         "2026-07-25": {
           "coincide": false,
           "cantidad": 10,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 10; paños identificados × repeticiones 12."
           ]
@@ -1747,31 +1983,37 @@
         "2026-08-22": {
           "coincide": true,
           "cantidad": 90,
+          "forma": true,
           "motivos": []
         },
         "2026-09-12": {
           "coincide": true,
           "cantidad": 51,
+          "forma": true,
           "motivos": []
         },
         "2026-10-03": {
           "coincide": true,
           "cantidad": 15,
+          "forma": true,
           "motivos": []
         },
         "2026-10-10": {
           "coincide": true,
           "cantidad": 30,
+          "forma": true,
           "motivos": []
         },
         "2026-10-17": {
           "coincide": true,
           "cantidad": 40,
+          "forma": true,
           "motivos": []
         },
         "2026-10-31": {
           "coincide": true,
           "cantidad": 20,
+          "forma": true,
           "motivos": []
         }
       }
@@ -1785,8 +2027,8 @@
             661
           ],
           "lineas": 28,
-          "cuadran": 19,
-          "geometria": 22,
+          "cuadran": 21,
+          "geometria": 24,
           "ultimaFecha": "2026-10-24",
           "ultimaGeometria": true,
           "nkValidado": false,
@@ -1797,16 +2039,19 @@
         "2025-01-18": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-01-25": {
           "coincide": true,
           "cantidad": 6,
+          "forma": true,
           "motivos": []
         },
         "2025-03-29": {
           "coincide": false,
           "cantidad": 15,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 15; paños identificados × repeticiones 0."
@@ -1815,11 +2060,13 @@
         "2025-05-10": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-05-24": {
           "coincide": false,
           "cantidad": 16,
+          "forma": false,
           "motivos": [
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
@@ -1827,31 +2074,37 @@
         "2025-05-31": {
           "coincide": true,
           "cantidad": 51,
+          "forma": true,
           "motivos": []
         },
         "2025-06-07": {
           "coincide": true,
           "cantidad": 8,
+          "forma": true,
           "motivos": []
         },
         "2025-06-28": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-07-05": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2025-07-12": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-08-06": {
           "coincide": false,
           "cantidad": 26,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 26; paños identificados × repeticiones 0."
@@ -1860,11 +2113,13 @@
         "2025-08-23": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2025-10-18": {
           "coincide": false,
           "cantidad": 8,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 8; paños identificados × repeticiones 9."
           ]
@@ -1872,6 +2127,7 @@
         "2025-10-25": {
           "coincide": false,
           "cantidad": 6,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 9."
           ]
@@ -1879,55 +2135,61 @@
         "2025-11-01": {
           "coincide": true,
           "cantidad": 67,
+          "forma": true,
           "motivos": []
         },
         "2025-11-29": {
           "coincide": true,
           "cantidad": 26,
+          "forma": true,
           "motivos": []
         },
         "2026-08-01": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2026-08-08": {
           "coincide": true,
           "cantidad": 9,
+          "forma": true,
           "motivos": []
         },
         "2026-08-22": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 1,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-09-05": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-09-12": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2026-09-21": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 2,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-10-03": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2026-10-24": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         }
       }
@@ -1953,26 +2215,31 @@
         "2025-01-18": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-01-25": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-03-15": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-04-05": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-04-26": {
           "coincide": false,
           "cantidad": 1,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 1; paños identificados × repeticiones 2."
           ]
@@ -1980,46 +2247,55 @@
         "2025-05-24": {
           "coincide": true,
           "cantidad": 8,
+          "forma": true,
           "motivos": []
         },
         "2025-06-07": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-08-30": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-09-06": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2025-09-13": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-10-25": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-01-10": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2026-09-12": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-09-26": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         }
       }
@@ -2048,51 +2324,61 @@
         "2025-01-18": {
           "coincide": true,
           "cantidad": 8,
+          "forma": true,
           "motivos": []
         },
         "2025-03-01": {
           "coincide": true,
           "cantidad": 12,
+          "forma": true,
           "motivos": []
         },
         "2025-07-19": {
           "coincide": true,
           "cantidad": 11,
+          "forma": true,
           "motivos": []
         },
         "2025-09-06": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2025-11-15": {
           "coincide": true,
           "cantidad": 9,
+          "forma": true,
           "motivos": []
         },
         "2025-11-22": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2026-03-07": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-05-16": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2026-06-06": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-10-17": {
           "coincide": true,
           "cantidad": 8,
+          "forma": true,
           "motivos": []
         }
       }
@@ -2106,10 +2392,10 @@
             666
           ],
           "lineas": 53,
-          "cuadran": 11,
-          "geometria": 21,
+          "cuadran": 14,
+          "geometria": 37,
           "ultimaFecha": "2026-10-31",
-          "ultimaGeometria": false,
+          "ultimaGeometria": true,
           "nkValidado": false,
           "terminadoMm": null
         }
@@ -2118,6 +2404,7 @@
         "2025-01-18": {
           "coincide": false,
           "cantidad": 10,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 10; paños identificados × repeticiones 1."
           ]
@@ -2125,14 +2412,15 @@
         "2025-02-01": {
           "coincide": false,
           "cantidad": 16,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 16; paños identificados × repeticiones 1.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 16; paños identificados × repeticiones 1."
           ]
         },
         "2025-02-08": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 0."
@@ -2141,6 +2429,7 @@
         "2025-02-15": {
           "coincide": false,
           "cantidad": 42,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 42; paños identificados × repeticiones 0."
@@ -2149,26 +2438,27 @@
         "2025-02-22": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-03-01": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 44,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-03-29": {
           "coincide": false,
           "cantidad": 30,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 30; paños identificados × repeticiones 20.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 30; paños identificados × repeticiones 20."
           ]
         },
         "2025-04-05": {
           "coincide": false,
           "cantidad": 8,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 8; paños identificados × repeticiones 2."
           ]
@@ -2176,16 +2466,19 @@
         "2025-04-16": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-04-26": {
           "coincide": true,
           "cantidad": 12,
+          "forma": true,
           "motivos": []
         },
         "2025-05-10": {
           "coincide": false,
           "cantidad": 8,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 8; paños identificados × repeticiones 6."
           ]
@@ -2193,6 +2486,7 @@
         "2025-05-17": {
           "coincide": false,
           "cantidad": 16,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 16; paños identificados × repeticiones 4."
           ]
@@ -2200,11 +2494,13 @@
         "2025-05-24": {
           "coincide": true,
           "cantidad": 16,
+          "forma": true,
           "motivos": []
         },
         "2025-07-12": {
           "coincide": false,
           "cantidad": 36,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 36; paños identificados × repeticiones 18.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
@@ -2214,6 +2510,7 @@
         "2025-09-06": {
           "coincide": false,
           "cantidad": 28,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 28; paños identificados × repeticiones 8."
           ]
@@ -2221,6 +2518,7 @@
         "2025-09-27": {
           "coincide": false,
           "cantidad": 4,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 4; paños identificados × repeticiones 0."
@@ -2229,58 +2527,59 @@
         "2025-10-18": {
           "coincide": false,
           "cantidad": 16,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 16; paños identificados × repeticiones 4.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 16; paños identificados × repeticiones 4."
           ]
         },
         "2025-10-25": {
           "coincide": false,
           "cantidad": 18,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 18; paños identificados × repeticiones 9.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 18; paños identificados × repeticiones 9."
           ]
         },
         "2025-11-01": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-11-15": {
           "coincide": false,
           "cantidad": 8,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 8; paños identificados × repeticiones 2.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 8; paños identificados × repeticiones 2."
           ]
         },
         "2025-11-29": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 10,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-12-06": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
         },
         "2026-02-07": {
           "coincide": false,
           "cantidad": 20,
+          "forma": false,
           "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
         },
         "2026-02-28": {
           "coincide": false,
           "cantidad": 32,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 32; paños identificados × repeticiones 2."
           ]
@@ -2288,6 +2587,7 @@
         "2026-03-07": {
           "coincide": false,
           "cantidad": 54,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 54; paños identificados × repeticiones 0."
@@ -2296,6 +2596,7 @@
         "2026-04-11": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 0."
@@ -2304,6 +2605,7 @@
         "2026-04-18": {
           "coincide": false,
           "cantidad": 10,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 10; paños identificados × repeticiones 1."
           ]
@@ -2311,6 +2613,7 @@
         "2026-05-16": {
           "coincide": false,
           "cantidad": 10,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 10; paños identificados × repeticiones 4.",
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
@@ -2319,19 +2622,21 @@
         "2026-05-23": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-06-06": {
           "coincide": false,
           "cantidad": 4,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 4; paños identificados × repeticiones 2.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 4; paños identificados × repeticiones 2."
           ]
         },
         "2026-06-13": {
           "coincide": false,
           "cantidad": 12,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 12; paños identificados × repeticiones 0."
@@ -2340,6 +2645,7 @@
         "2026-06-20": {
           "coincide": false,
           "cantidad": 10,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 10; paños identificados × repeticiones 6.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
@@ -2349,11 +2655,13 @@
         "2026-07-04": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2026-07-18": {
           "coincide": false,
           "cantidad": 18,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 18; paños identificados × repeticiones 0."
@@ -2362,6 +2670,7 @@
         "2026-08-08": {
           "coincide": false,
           "cantidad": 12,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 12; paños identificados × repeticiones 5."
           ]
@@ -2369,16 +2678,19 @@
         "2026-08-29": {
           "coincide": true,
           "cantidad": 6,
+          "forma": true,
           "motivos": []
         },
         "2026-09-05": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2026-09-12": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 0."
@@ -2387,6 +2699,7 @@
         "2026-09-26": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 0."
@@ -2395,6 +2708,7 @@
         "2026-10-10": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 0."
@@ -2403,22 +2717,22 @@
         "2026-10-17": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2026-10-24": {
           "coincide": false,
           "cantidad": 16,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 16; paños identificados × repeticiones 9.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 16; paños identificados × repeticiones 9."
           ]
         },
         "2026-10-31": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 2,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         }
       }
     },
@@ -2446,66 +2760,79 @@
         "2025-01-18": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-02-15": {
           "coincide": true,
           "cantidad": 6,
+          "forma": true,
           "motivos": []
         },
         "2025-02-22": {
           "coincide": true,
           "cantidad": 17,
+          "forma": true,
           "motivos": []
         },
         "2025-03-15": {
           "coincide": true,
           "cantidad": 108,
+          "forma": true,
           "motivos": []
         },
         "2025-03-29": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-04-26": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-05-10": {
           "coincide": true,
           "cantidad": 14,
+          "forma": true,
           "motivos": []
         },
         "2025-05-24": {
           "coincide": true,
           "cantidad": 41,
+          "forma": true,
           "motivos": []
         },
         "2025-06-07": {
           "coincide": true,
           "cantidad": 20,
+          "forma": true,
           "motivos": []
         },
         "2025-07-05": {
           "coincide": true,
           "cantidad": 13,
+          "forma": true,
           "motivos": []
         },
         "2025-07-19": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-08-23": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2025-09-13": {
           "coincide": false,
           "cantidad": 42,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 42; paños identificados × repeticiones 69."
           ]
@@ -2513,11 +2840,13 @@
         "2025-09-20": {
           "coincide": true,
           "cantidad": 27,
+          "forma": true,
           "motivos": []
         },
         "2025-10-18": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 0."
@@ -2526,6 +2855,7 @@
         "2025-10-25": {
           "coincide": false,
           "cantidad": 53,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 53; paños identificados × repeticiones 56.",
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
@@ -2534,16 +2864,19 @@
         "2025-11-15": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2025-11-22": {
           "coincide": true,
           "cantidad": 14,
+          "forma": true,
           "motivos": []
         },
         "2025-12-13": {
           "coincide": false,
           "cantidad": 28,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 28; paños identificados × repeticiones 4."
           ]
@@ -2551,6 +2884,7 @@
         "2026-01-10": {
           "coincide": false,
           "cantidad": 117,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 117; paños identificados × repeticiones 75."
           ]
@@ -2558,31 +2892,37 @@
         "2026-01-31": {
           "coincide": true,
           "cantidad": 11,
+          "forma": true,
           "motivos": []
         },
         "2026-02-21": {
           "coincide": true,
           "cantidad": 26,
+          "forma": true,
           "motivos": []
         },
         "2026-02-28": {
           "coincide": true,
           "cantidad": 15,
+          "forma": true,
           "motivos": []
         },
         "2026-03-14": {
           "coincide": true,
           "cantidad": 28,
+          "forma": true,
           "motivos": []
         },
         "2026-03-21": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-04-04": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
@@ -2590,6 +2930,7 @@
         "2026-04-18": {
           "coincide": false,
           "cantidad": 11,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 11; paños identificados × repeticiones 10."
           ]
@@ -2597,16 +2938,19 @@
         "2026-05-02": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2026-05-23": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2026-06-06": {
           "coincide": false,
           "cantidad": 35,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 35; paños identificados × repeticiones 34."
           ]
@@ -2614,16 +2958,19 @@
         "2026-07-04": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2026-07-18": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2026-07-25": {
           "coincide": false,
           "cantidad": 5,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 5; paños identificados × repeticiones 6."
           ]
@@ -2631,26 +2978,31 @@
         "2026-08-29": {
           "coincide": true,
           "cantidad": 86,
+          "forma": true,
           "motivos": []
         },
         "2026-09-05": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2026-09-19": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2026-09-26": {
           "coincide": true,
           "cantidad": 83,
+          "forma": true,
           "motivos": []
         },
         "2026-10-10": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         }
       }
@@ -2664,10 +3016,10 @@
             966
           ],
           "lineas": 7,
-          "cuadran": 3,
-          "geometria": 3,
+          "cuadran": 4,
+          "geometria": 4,
           "ultimaFecha": "2026-10-31",
-          "ultimaGeometria": false,
+          "ultimaGeometria": true,
           "nkValidado": false,
           "terminadoMm": null
         }
@@ -2676,6 +3028,7 @@
         "2025-01-18": {
           "coincide": false,
           "cantidad": 16,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 16; paños identificados × repeticiones 0."
@@ -2684,6 +3037,7 @@
         "2025-03-15": {
           "coincide": false,
           "cantidad": 24,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 24; paños identificados × repeticiones 0."
@@ -2692,32 +3046,35 @@
         "2025-04-12": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-07-19": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-05-16": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-10-03": {
           "coincide": false,
           "cantidad": 36,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 36; paños identificados × repeticiones 0."
           ]
         },
         "2026-10-31": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 2,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         }
       }
     },
@@ -2745,11 +3102,13 @@
         "2025-01-18": {
           "coincide": true,
           "cantidad": 43,
+          "forma": true,
           "motivos": []
         },
         "2025-01-25": {
           "coincide": false,
           "cantidad": 5,
+          "forma": false,
           "motivos": [
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
@@ -2757,16 +3116,19 @@
         "2025-03-01": {
           "coincide": true,
           "cantidad": 12,
+          "forma": true,
           "motivos": []
         },
         "2025-03-15": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-03-29": {
           "coincide": false,
           "cantidad": 14,
+          "forma": false,
           "motivos": [
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
@@ -2774,46 +3136,55 @@
         "2025-04-12": {
           "coincide": true,
           "cantidad": 36,
+          "forma": true,
           "motivos": []
         },
         "2025-04-26": {
           "coincide": true,
           "cantidad": 9,
+          "forma": true,
           "motivos": []
         },
         "2025-05-10": {
           "coincide": true,
           "cantidad": 12,
+          "forma": true,
           "motivos": []
         },
         "2025-05-24": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-05-31": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2025-06-28": {
           "coincide": true,
           "cantidad": 8,
+          "forma": true,
           "motivos": []
         },
         "2025-07-05": {
           "coincide": true,
           "cantidad": 73,
+          "forma": true,
           "motivos": []
         },
         "2025-07-12": {
           "coincide": true,
           "cantidad": 29,
+          "forma": true,
           "motivos": []
         },
         "2025-08-23": {
           "coincide": false,
           "cantidad": 71,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 71; paños identificados × repeticiones 142."
           ]
@@ -2821,16 +3192,19 @@
         "2025-09-13": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-10-04": {
           "coincide": true,
           "cantidad": 18,
+          "forma": true,
           "motivos": []
         },
         "2025-10-25": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
@@ -2838,36 +3212,43 @@
         "2025-11-01": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2025-11-08": {
           "coincide": true,
           "cantidad": 11,
+          "forma": true,
           "motivos": []
         },
         "2025-11-29": {
           "coincide": true,
           "cantidad": 15,
+          "forma": true,
           "motivos": []
         },
         "2025-12-06": {
           "coincide": true,
           "cantidad": 12,
+          "forma": true,
           "motivos": []
         },
         "2025-12-13": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2026-01-10": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2026-01-17": {
           "coincide": false,
           "cantidad": 9,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 9; paños identificados × repeticiones 0."
@@ -2876,16 +3257,19 @@
         "2026-02-07": {
           "coincide": true,
           "cantidad": 40,
+          "forma": true,
           "motivos": []
         },
         "2026-03-21": {
           "coincide": true,
           "cantidad": 12,
+          "forma": true,
           "motivos": []
         },
         "2026-03-28": {
           "coincide": false,
           "cantidad": 5,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 5; paños identificados × repeticiones 4."
           ]
@@ -2893,11 +3277,13 @@
         "2026-04-18": {
           "coincide": true,
           "cantidad": 11,
+          "forma": true,
           "motivos": []
         },
         "2026-05-02": {
           "coincide": false,
           "cantidad": 5,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 5; paños identificados × repeticiones 6.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
@@ -2907,6 +3293,7 @@
         "2026-05-16": {
           "coincide": false,
           "cantidad": 5,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 5; paños identificados × repeticiones 3."
           ]
@@ -2914,21 +3301,25 @@
         "2026-05-30": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2026-06-06": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2026-06-13": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2026-06-27": {
           "coincide": false,
           "cantidad": 10,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 10; paños identificados × repeticiones 0."
@@ -2937,16 +3328,19 @@
         "2026-07-25": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2026-08-01": {
           "coincide": true,
           "cantidad": 30,
+          "forma": true,
           "motivos": []
         },
         "2026-10-24": {
           "coincide": true,
           "cantidad": 55,
+          "forma": true,
           "motivos": []
         }
       }
@@ -2972,6 +3366,7 @@
         "2025-01-25": {
           "coincide": false,
           "cantidad": 18,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 18; paños identificados × repeticiones 0."
@@ -3000,6 +3395,7 @@
         "2025-01-25": {
           "coincide": false,
           "cantidad": 1,
+          "forma": false,
           "motivos": [
             "Falta NH completa en la línea de RPS."
           ]
@@ -3027,26 +3423,31 @@
         "2025-01-25": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-03-15": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-05-10": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-06-07": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2025-06-14": {
           "coincide": false,
           "cantidad": 2,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 2; paños identificados × repeticiones 5."
           ]
@@ -3054,6 +3455,7 @@
         "2025-07-30": {
           "coincide": false,
           "cantidad": 2,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 2; paños identificados × repeticiones 6."
           ]
@@ -3061,6 +3463,7 @@
         "2025-09-06": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 0."
@@ -3069,6 +3472,7 @@
         "2025-09-27": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 2; paños identificados × repeticiones 0."
@@ -3077,6 +3481,7 @@
         "2025-10-25": {
           "coincide": false,
           "cantidad": 8,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 8; paños identificados × repeticiones 2."
           ]
@@ -3084,36 +3489,43 @@
         "2026-02-07": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2026-03-14": {
           "coincide": true,
           "cantidad": 20,
+          "forma": true,
           "motivos": []
         },
         "2026-03-28": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2026-04-25": {
           "coincide": true,
           "cantidad": 20,
+          "forma": true,
           "motivos": []
         },
         "2026-06-13": {
           "coincide": true,
           "cantidad": 15,
+          "forma": true,
           "motivos": []
         },
         "2026-07-18": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-10-24": {
           "coincide": false,
           "cantidad": 4,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 4; paños identificados × repeticiones 3."
           ]
@@ -3141,46 +3553,55 @@
         "2025-01-25": {
           "coincide": true,
           "cantidad": 42,
+          "forma": true,
           "motivos": []
         },
         "2025-02-01": {
           "coincide": true,
           "cantidad": 9,
+          "forma": true,
           "motivos": []
         },
         "2025-02-08": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2025-02-15": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-03-01": {
           "coincide": true,
           "cantidad": 18,
+          "forma": true,
           "motivos": []
         },
         "2025-03-29": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-04-12": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-04-26": {
           "coincide": true,
           "cantidad": 50,
+          "forma": true,
           "motivos": []
         },
         "2025-05-10": {
           "coincide": false,
           "cantidad": 13,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 13; paños identificados × repeticiones 7."
           ]
@@ -3188,81 +3609,97 @@
         "2025-05-24": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-05-31": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-06-14": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2025-07-05": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-07-12": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2025-08-23": {
           "coincide": true,
           "cantidad": 12,
+          "forma": true,
           "motivos": []
         },
         "2025-11-15": {
           "coincide": true,
           "cantidad": 28,
+          "forma": true,
           "motivos": []
         },
         "2025-11-29": {
           "coincide": true,
           "cantidad": 23,
+          "forma": true,
           "motivos": []
         },
         "2026-01-10": {
           "coincide": true,
           "cantidad": 22,
+          "forma": true,
           "motivos": []
         },
         "2026-05-23": {
           "coincide": true,
           "cantidad": 8,
+          "forma": true,
           "motivos": []
         },
         "2026-06-13": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-07-04": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-07-25": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2026-08-01": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-08-15": {
           "coincide": true,
           "cantidad": 30,
+          "forma": true,
           "motivos": []
         },
         "2026-08-29": {
           "coincide": false,
           "cantidad": 1,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 1; paños identificados × repeticiones 0."
@@ -3271,6 +3708,7 @@
         "2026-10-10": {
           "coincide": true,
           "cantidad": 32,
+          "forma": true,
           "motivos": []
         }
       }
@@ -3296,16 +3734,19 @@
         "2025-01-25": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2025-03-15": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2025-05-10": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         }
       }
@@ -3331,6 +3772,7 @@
         "2025-01-25": {
           "coincide": false,
           "cantidad": 10,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 10; paños identificados × repeticiones 1."
           ]
@@ -3338,9 +3780,9 @@
         "2025-03-08": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
         }
       }
@@ -3354,8 +3796,8 @@
             966
           ],
           "lineas": 15,
-          "cuadran": 6,
-          "geometria": 8,
+          "cuadran": 7,
+          "geometria": 9,
           "ultimaFecha": "2026-10-31",
           "ultimaGeometria": true,
           "nkValidado": false,
@@ -3364,20 +3806,21 @@
       ],
       "fechas": {
         "2025-02-01": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 2,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-06-07": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2025-07-12": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 2.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
@@ -3387,6 +3830,7 @@
         "2025-08-30": {
           "coincide": false,
           "cantidad": 4,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 4; paños identificados × repeticiones 0."
@@ -3395,6 +3839,7 @@
         "2025-09-13": {
           "coincide": false,
           "cantidad": 48,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 48; paños identificados × repeticiones 76.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
@@ -3404,6 +3849,7 @@
         "2025-09-20": {
           "coincide": false,
           "cantidad": 40,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 40; paños identificados × repeticiones 0."
@@ -3412,6 +3858,7 @@
         "2025-10-25": {
           "coincide": false,
           "cantidad": 26,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 26; paños identificados × repeticiones 2."
           ]
@@ -3419,21 +3866,25 @@
         "2025-11-29": {
           "coincide": true,
           "cantidad": 14,
+          "forma": true,
           "motivos": []
         },
         "2026-03-14": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-04-25": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2026-10-31": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         }
       }
@@ -3447,8 +3898,8 @@
             666
           ],
           "lineas": 12,
-          "cuadran": 2,
-          "geometria": 5,
+          "cuadran": 3,
+          "geometria": 8,
           "ultimaFecha": "2026-08-22",
           "ultimaGeometria": false,
           "nkValidado": false,
@@ -3459,6 +3910,7 @@
         "2025-02-01": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 2; paños identificados × repeticiones 0."
@@ -3467,6 +3919,7 @@
         "2025-02-08": {
           "coincide": false,
           "cantidad": 38,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 38; paños identificados × repeticiones 2."
           ]
@@ -3474,6 +3927,7 @@
         "2025-04-12": {
           "coincide": false,
           "cantidad": 14,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 14; paños identificados × repeticiones 2."
           ]
@@ -3481,6 +3935,7 @@
         "2025-05-10": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 2; paños identificados × repeticiones 0."
@@ -3489,11 +3944,13 @@
         "2025-07-12": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-10-25": {
           "coincide": false,
           "cantidad": 12,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 12; paños identificados × repeticiones 3."
           ]
@@ -3501,34 +3958,36 @@
         "2025-11-08": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 0."
           ]
         },
         "2026-01-10": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 2,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-02-07": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2026-02-14": {
           "coincide": false,
           "cantidad": 16,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 16; paños identificados × repeticiones 4.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 16; paños identificados × repeticiones 4."
           ]
         },
         "2026-08-22": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia."
           ]
@@ -3556,16 +4015,19 @@
         "2025-02-01": {
           "coincide": true,
           "cantidad": 31,
+          "forma": true,
           "motivos": []
         },
         "2025-02-08": {
           "coincide": true,
           "cantidad": 40,
+          "forma": true,
           "motivos": []
         },
         "2025-07-30": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 0."
@@ -3574,11 +4036,13 @@
         "2025-09-13": {
           "coincide": true,
           "cantidad": 16,
+          "forma": true,
           "motivos": []
         },
         "2025-10-25": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         }
       }
@@ -3592,10 +4056,10 @@
             661
           ],
           "lineas": 41,
-          "cuadran": 33,
-          "geometria": 35,
+          "cuadran": 34,
+          "geometria": 36,
           "ultimaFecha": "2026-10-31",
-          "ultimaGeometria": false,
+          "ultimaGeometria": true,
           "nkValidado": true,
           "terminadoMm": null
         }
@@ -3604,71 +4068,85 @@
         "2025-02-01": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-02-22": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-03-01": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-03-15": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2025-03-29": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2025-04-12": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2025-05-10": {
           "coincide": true,
           "cantidad": 19,
+          "forma": true,
           "motivos": []
         },
         "2025-05-24": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-06-07": {
           "coincide": true,
           "cantidad": 6,
+          "forma": true,
           "motivos": []
         },
         "2025-06-21": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2025-07-05": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-08-23": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-09-06": {
           "coincide": true,
           "cantidad": 13,
+          "forma": true,
           "motivos": []
         },
         "2025-09-13": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 2; paños identificados × repeticiones 0."
@@ -3677,21 +4155,25 @@
         "2025-09-20": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-10-04": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-10-18": {
           "coincide": true,
           "cantidad": 8,
+          "forma": true,
           "motivos": []
         },
         "2025-10-25": {
           "coincide": false,
           "cantidad": 1,
+          "forma": false,
           "motivos": [
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
@@ -3699,31 +4181,37 @@
         "2025-11-15": {
           "coincide": true,
           "cantidad": 6,
+          "forma": true,
           "motivos": []
         },
         "2025-11-22": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-12-06": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-01-10": {
           "coincide": true,
           "cantidad": 17,
+          "forma": true,
           "motivos": []
         },
         "2026-01-31": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-03-28": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 2; paños identificados × repeticiones 0."
@@ -3732,6 +4220,7 @@
         "2026-04-04": {
           "coincide": false,
           "cantidad": 37,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 37; paños identificados × repeticiones 0."
@@ -3740,11 +4229,13 @@
         "2026-04-11": {
           "coincide": true,
           "cantidad": 8,
+          "forma": true,
           "motivos": []
         },
         "2026-04-25": {
           "coincide": false,
           "cantidad": 10,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 10; paños identificados × repeticiones 9."
           ]
@@ -3752,6 +4243,7 @@
         "2026-05-02": {
           "coincide": false,
           "cantidad": 10,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 10; paños identificados × repeticiones 9."
           ]
@@ -3759,6 +4251,7 @@
         "2026-06-27": {
           "coincide": false,
           "cantidad": 10,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 10; paños identificados × repeticiones 0."
@@ -3767,39 +4260,44 @@
         "2026-07-04": {
           "coincide": true,
           "cantidad": 24,
+          "forma": true,
           "motivos": []
         },
         "2026-07-18": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2026-09-12": {
           "coincide": true,
           "cantidad": 11,
+          "forma": true,
           "motivos": []
         },
         "2026-10-03": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2026-10-10": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-10-17": {
           "coincide": true,
           "cantidad": 12,
+          "forma": true,
           "motivos": []
         },
         "2026-10-31": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 2,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         }
       }
     },
@@ -3812,8 +4310,8 @@
             666
           ],
           "lineas": 31,
-          "cuadran": 10,
-          "geometria": 15,
+          "cuadran": 11,
+          "geometria": 18,
           "ultimaFecha": "2026-10-31",
           "ultimaGeometria": true,
           "nkValidado": false,
@@ -3824,16 +4322,19 @@
         "2025-02-01": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-02-08": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-04-12": {
           "coincide": false,
           "cantidad": 18,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 18; paños identificados × repeticiones 9.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
@@ -3843,11 +4344,13 @@
         "2025-04-16": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-04-26": {
           "coincide": false,
           "cantidad": 24,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 24; paños identificados × repeticiones 15.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
@@ -3857,19 +4360,21 @@
         "2025-05-10": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2025-05-17": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
         },
         "2025-05-31": {
           "coincide": false,
           "cantidad": 4,
+          "forma": false,
           "motivos": [
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
@@ -3877,28 +4382,31 @@
         "2025-06-07": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-07-05": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-07-12": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-09-06": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 8,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-09-13": {
           "coincide": false,
           "cantidad": 14,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 14; paños identificados × repeticiones 8.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
@@ -3908,6 +4416,7 @@
         "2025-10-25": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 0."
@@ -3916,11 +4425,13 @@
         "2025-11-08": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-11-29": {
           "coincide": false,
           "cantidad": 2,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 2; paños identificados × repeticiones 3."
           ]
@@ -3928,6 +4439,7 @@
         "2026-01-17": {
           "coincide": false,
           "cantidad": 4,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 4; paños identificados × repeticiones 0."
@@ -3936,19 +4448,21 @@
         "2026-03-14": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
         },
         "2026-03-21": {
           "coincide": true,
           "cantidad": 12,
+          "forma": true,
           "motivos": []
         },
         "2026-03-28": {
           "coincide": false,
           "cantidad": 14,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 14; paños identificados × repeticiones 13."
           ]
@@ -3956,6 +4470,7 @@
         "2026-05-16": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 0."
@@ -3964,19 +4479,21 @@
         "2026-06-06": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-07-04": {
           "coincide": false,
           "cantidad": 10,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 10; paños identificados × repeticiones 4.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 10; paños identificados × repeticiones 4."
           ]
         },
         "2026-07-18": {
           "coincide": false,
           "cantidad": 10,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 10; paños identificados × repeticiones 0."
@@ -3985,6 +4502,7 @@
         "2026-08-15": {
           "coincide": false,
           "cantidad": 20,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 20; paños identificados × repeticiones 2."
           ]
@@ -3992,14 +4510,15 @@
         "2026-09-12": {
           "coincide": false,
           "cantidad": 6,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 6; paños identificados × repeticiones 4.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 6; paños identificados × repeticiones 4."
           ]
         },
         "2026-10-31": {
           "coincide": false,
           "cantidad": 4,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 4; paños identificados × repeticiones 3."
           ]
@@ -4027,41 +4546,49 @@
         "2025-02-01": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-02-22": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-03-15": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2025-11-15": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2025-11-22": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2026-04-11": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2026-08-08": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2026-10-31": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         }
       }
@@ -4087,6 +4614,7 @@
         "2025-02-08": {
           "coincide": false,
           "cantidad": 20,
+          "forma": false,
           "motivos": [
             "Falta NH completa en la línea de RPS."
           ]
@@ -4094,6 +4622,7 @@
         "2025-02-15": {
           "coincide": false,
           "cantidad": 24,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 24; paños identificados × repeticiones 18.",
             "Falta NH completa en la línea de RPS."
@@ -4102,6 +4631,7 @@
         "2026-09-26": {
           "coincide": false,
           "cantidad": 17,
+          "forma": false,
           "motivos": [
             "Falta NH completa en la línea de RPS."
           ]
@@ -4129,26 +4659,31 @@
         "2025-02-15": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-06-14": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-09-13": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-10-18": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-10-25": {
           "coincide": false,
           "cantidad": 8,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 8; paños identificados × repeticiones 0."
@@ -4157,11 +4692,13 @@
         "2025-11-15": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-11-22": {
           "coincide": false,
           "cantidad": 12,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 12; paños identificados × repeticiones 0."
@@ -4170,16 +4707,19 @@
         "2026-04-18": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-08-01": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2026-09-19": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         }
       }
@@ -4193,8 +4733,8 @@
             666
           ],
           "lineas": 32,
-          "cuadran": 12,
-          "geometria": 16,
+          "cuadran": 16,
+          "geometria": 20,
           "ultimaFecha": "2026-10-03",
           "ultimaGeometria": true,
           "nkValidado": false,
@@ -4203,49 +4743,51 @@
       ],
       "fechas": {
         "2025-02-22": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 2,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-03-01": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 2,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-04-05": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 4,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-04-12": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-04-26": {
           "coincide": true,
           "cantidad": 14,
+          "forma": true,
           "motivos": []
         },
         "2025-05-10": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-05-17": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-05-24": {
           "coincide": false,
           "cantidad": 42,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 42; paños identificados × repeticiones 21.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
@@ -4255,11 +4797,13 @@
         "2025-06-07": {
           "coincide": true,
           "cantidad": 12,
+          "forma": true,
           "motivos": []
         },
         "2025-06-21": {
           "coincide": false,
           "cantidad": 28,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 28; paños identificados × repeticiones 1.",
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
@@ -4268,21 +4812,22 @@
         "2025-06-28": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 0."
           ]
         },
         "2025-07-05": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 28,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-07-12": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 3.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
@@ -4292,6 +4837,7 @@
         "2025-07-19": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 0."
@@ -4300,26 +4846,31 @@
         "2025-10-11": {
           "coincide": true,
           "cantidad": 13,
+          "forma": true,
           "motivos": []
         },
         "2025-10-18": {
           "coincide": true,
           "cantidad": 13,
+          "forma": true,
           "motivos": []
         },
         "2025-10-25": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-11-01": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-11-08": {
           "coincide": false,
           "cantidad": 5,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 5; paños identificados × repeticiones 4."
           ]
@@ -4327,6 +4878,7 @@
         "2025-11-15": {
           "coincide": false,
           "cantidad": 12,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 12; paños identificados × repeticiones 0."
@@ -4335,6 +4887,7 @@
         "2025-12-13": {
           "coincide": false,
           "cantidad": 18,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 18; paños identificados × repeticiones 9.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
@@ -4344,11 +4897,13 @@
         "2026-01-10": {
           "coincide": true,
           "cantidad": 26,
+          "forma": true,
           "motivos": []
         },
         "2026-05-02": {
           "coincide": false,
           "cantidad": 10,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 10; paños identificados × repeticiones 3."
           ]
@@ -4356,6 +4911,7 @@
         "2026-05-16": {
           "coincide": false,
           "cantidad": 35,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 35; paños identificados × repeticiones 0."
@@ -4364,6 +4920,7 @@
         "2026-07-18": {
           "coincide": false,
           "cantidad": 14,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 14; paños identificados × repeticiones 0."
@@ -4372,6 +4929,7 @@
         "2026-08-01": {
           "coincide": false,
           "cantidad": 24,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 24; paños identificados × repeticiones 0."
@@ -4380,6 +4938,7 @@
         "2026-08-15": {
           "coincide": false,
           "cantidad": 40,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 40; paños identificados × repeticiones 4."
           ]
@@ -4387,6 +4946,7 @@
         "2026-09-12": {
           "coincide": false,
           "cantidad": 8,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 8; paños identificados × repeticiones 0."
@@ -4395,6 +4955,7 @@
         "2026-10-03": {
           "coincide": false,
           "cantidad": 10,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 10; paños identificados × repeticiones 1."
           ]
@@ -4410,10 +4971,10 @@
             666
           ],
           "lineas": 26,
-          "cuadran": 17,
-          "geometria": 21,
+          "cuadran": 18,
+          "geometria": 22,
           "ultimaFecha": "2026-10-31",
-          "ultimaGeometria": false,
+          "ultimaGeometria": true,
           "nkValidado": false,
           "terminadoMm": [
             10002,
@@ -4425,11 +4986,13 @@
         "2025-02-22": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-03-29": {
           "coincide": false,
           "cantidad": 7,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 7; paños identificados × repeticiones 0."
@@ -4438,36 +5001,43 @@
         "2025-04-05": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-04-26": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2025-05-10": {
           "coincide": true,
           "cantidad": 22,
+          "forma": true,
           "motivos": []
         },
         "2025-05-24": {
           "coincide": true,
           "cantidad": 15,
+          "forma": true,
           "motivos": []
         },
         "2025-06-07": {
           "coincide": true,
           "cantidad": 13,
+          "forma": true,
           "motivos": []
         },
         "2025-07-19": {
           "coincide": true,
           "cantidad": 10,
+          "forma": true,
           "motivos": []
         },
         "2025-08-30": {
           "coincide": false,
           "cantidad": 1,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 1; paños identificados × repeticiones 0."
@@ -4476,26 +5046,31 @@
         "2025-09-06": {
           "coincide": true,
           "cantidad": 66,
+          "forma": true,
           "motivos": []
         },
         "2025-09-13": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-11-15": {
           "coincide": true,
           "cantidad": 6,
+          "forma": true,
           "motivos": []
         },
         "2026-01-10": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2026-02-07": {
           "coincide": false,
           "cantidad": 3,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 3; paños identificados × repeticiones 0."
@@ -4504,21 +5079,25 @@
         "2026-02-28": {
           "coincide": true,
           "cantidad": 6,
+          "forma": true,
           "motivos": []
         },
         "2026-03-07": {
           "coincide": true,
           "cantidad": 49,
+          "forma": true,
           "motivos": []
         },
         "2026-04-11": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2026-05-16": {
           "coincide": false,
           "cantidad": 16,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 16; paños identificados × repeticiones 11."
           ]
@@ -4526,11 +5105,13 @@
         "2026-05-30": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2026-06-13": {
           "coincide": false,
           "cantidad": 3,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 3; paños identificados × repeticiones 0."
@@ -4539,6 +5120,7 @@
         "2026-07-18": {
           "coincide": false,
           "cantidad": 14,
+          "forma": false,
           "motivos": [
             "Hay varios DXF de la misma fecha: no se supone que sean acumulables ni revisiones."
           ]
@@ -4546,16 +5128,16 @@
         "2026-08-08": {
           "coincide": false,
           "cantidad": 5,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 5; paños identificados × repeticiones 2."
           ]
         },
         "2026-10-31": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 2,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         }
       }
     },
@@ -4568,8 +5150,8 @@
             666
           ],
           "lineas": 28,
-          "cuadran": 4,
-          "geometria": 9,
+          "cuadran": 6,
+          "geometria": 20,
           "ultimaFecha": "2026-10-31",
           "ultimaGeometria": false,
           "nkValidado": false,
@@ -4580,27 +5162,29 @@
         "2025-02-22": {
           "coincide": false,
           "cantidad": 14,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 14; paños identificados × repeticiones 5.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 14; paños identificados × repeticiones 5."
           ]
         },
         "2025-04-26": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-05-10": {
           "coincide": false,
           "cantidad": 4,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 4; paños identificados × repeticiones 1.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 4; paños identificados × repeticiones 1."
           ]
         },
         "2025-05-24": {
           "coincide": false,
           "cantidad": 4,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 4; paños identificados × repeticiones 1."
           ]
@@ -4608,6 +5192,7 @@
         "2025-07-12": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 3.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
@@ -4617,18 +5202,19 @@
         "2025-07-19": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-09-06": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 2,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-09-13": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 0."
@@ -4637,6 +5223,7 @@
         "2025-10-18": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 0."
@@ -4645,24 +5232,27 @@
         "2025-10-25": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-11-15": {
           "coincide": false,
           "cantidad": 8,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 8; paños identificados × repeticiones 2.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 8; paños identificados × repeticiones 2."
           ]
         },
         "2025-12-06": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-01-10": {
           "coincide": false,
           "cantidad": 4,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 4; paños identificados × repeticiones 1."
           ]
@@ -4670,31 +5260,32 @@
         "2026-02-07": {
           "coincide": false,
           "cantidad": 8,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 8; paños identificados × repeticiones 2.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 8; paños identificados × repeticiones 2."
           ]
         },
         "2026-03-21": {
           "coincide": false,
           "cantidad": 8,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 8; paños identificados × repeticiones 2.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 8; paños identificados × repeticiones 2."
           ]
         },
         "2026-04-11": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 7.",
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
         },
         "2026-04-18": {
           "coincide": false,
           "cantidad": 2,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 2; paños identificados × repeticiones 1."
           ]
@@ -4702,28 +5293,29 @@
         "2026-04-25": {
           "coincide": false,
           "cantidad": 6,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 1."
           ]
         },
         "2026-05-30": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 2,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-07-18": {
           "coincide": false,
           "cantidad": 6,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 6; paños identificados × repeticiones 3.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 6; paños identificados × repeticiones 3."
           ]
         },
         "2026-08-08": {
           "coincide": false,
           "cantidad": 8,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 8; paños identificados × repeticiones 2."
           ]
@@ -4731,6 +5323,7 @@
         "2026-09-05": {
           "coincide": false,
           "cantidad": 4,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 4; paños identificados × repeticiones 0."
@@ -4739,6 +5332,7 @@
         "2026-10-31": {
           "coincide": false,
           "cantidad": 12,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 12; paños identificados × repeticiones 0."
@@ -4755,106 +5349,114 @@
             666
           ],
           "lineas": 27,
-          "cuadran": 11,
-          "geometria": 12,
+          "cuadran": 16,
+          "geometria": 20,
           "ultimaFecha": "2026-10-31",
-          "ultimaGeometria": false,
+          "ultimaGeometria": true,
           "nkValidado": false,
           "terminadoMm": null
         }
       ],
       "fechas": {
         "2025-02-22": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 2,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-03-29": {
           "coincide": false,
           "cantidad": 4,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 4; paños identificados × repeticiones 6.",
-            "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Las medidas del contorno real difieren más de 1 mm de la regla de la familia."
           ]
         },
         "2025-05-10": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-05-17": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-05-24": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 8,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-07-19": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-08-23": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 4,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-09-06": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-09-13": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-10-25": {
           "coincide": false,
           "cantidad": 14,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 14; paños identificados × repeticiones 4.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 14; paños identificados × repeticiones 4."
           ]
         },
         "2025-11-08": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-11-15": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2026-02-07": {
           "coincide": true,
           "cantidad": 12,
+          "forma": true,
           "motivos": []
         },
         "2026-03-14": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2026-04-18": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-04-25": {
           "coincide": false,
           "cantidad": 10,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 10; paños identificados × repeticiones 1."
           ]
@@ -4862,6 +5464,7 @@
         "2026-05-16": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 0."
@@ -4870,35 +5473,36 @@
         "2026-07-04": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 2; paños identificados × repeticiones 3.",
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
         },
         "2026-08-08": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 2,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-08-15": {
           "coincide": false,
           "cantidad": 4,
+          "forma": false,
           "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
         },
         "2026-09-12": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-09-19": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 2; paños identificados × repeticiones 0."
@@ -4907,25 +5511,25 @@
         "2026-10-10": {
           "coincide": false,
           "cantidad": 8,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 8; paños identificados × repeticiones 2.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 8; paños identificados × repeticiones 2."
           ]
         },
         "2026-10-17": {
           "coincide": false,
           "cantidad": 14,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 14; paños identificados × repeticiones 5.",
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
         },
         "2026-10-31": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 4,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         }
       }
     },
@@ -4950,26 +5554,31 @@
         "2025-03-01": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-05-10": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-11-15": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2026-07-25": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-08-01": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         }
       }
@@ -4998,6 +5607,7 @@
         "2025-03-01": {
           "coincide": false,
           "cantidad": 1,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 1; paños identificados × repeticiones 0."
@@ -5006,6 +5616,7 @@
         "2025-04-05": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 2; paños identificados × repeticiones 0."
@@ -5014,11 +5625,13 @@
         "2025-05-10": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2025-05-24": {
           "coincide": false,
           "cantidad": 1,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 1; paños identificados × repeticiones 0."
@@ -5027,6 +5640,7 @@
         "2025-06-07": {
           "coincide": false,
           "cantidad": 3,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 3; paños identificados × repeticiones 0."
@@ -5035,11 +5649,13 @@
         "2025-06-14": {
           "coincide": true,
           "cantidad": 9,
+          "forma": true,
           "motivos": []
         },
         "2025-07-30": {
           "coincide": false,
           "cantidad": 7,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 7; paños identificados × repeticiones 0."
@@ -5048,6 +5664,7 @@
         "2025-08-30": {
           "coincide": false,
           "cantidad": 8,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 8; paños identificados × repeticiones 6."
           ]
@@ -5055,36 +5672,43 @@
         "2025-09-06": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         },
         "2025-10-04": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2025-11-22": {
           "coincide": true,
           "cantidad": 8,
+          "forma": true,
           "motivos": []
         },
         "2025-11-29": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-03-14": {
           "coincide": true,
           "cantidad": 14,
+          "forma": true,
           "motivos": []
         },
         "2026-04-11": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2026-04-25": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 2; paños identificados × repeticiones 1.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia."
@@ -5093,6 +5717,7 @@
         "2026-05-02": {
           "coincide": false,
           "cantidad": 10,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 10; paños identificados × repeticiones 9."
           ]
@@ -5108,36 +5733,35 @@
             666
           ],
           "lineas": 3,
-          "cuadran": 0,
-          "geometria": 0,
+          "cuadran": 2,
+          "geometria": 2,
           "ultimaFecha": "2026-04-18",
-          "ultimaGeometria": false,
+          "ultimaGeometria": true,
           "nkValidado": false,
           "terminadoMm": null
         }
       ],
       "fechas": {
         "2025-03-15": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 2,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-02-14": {
           "coincide": false,
           "cantidad": 114,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 114; paños identificados × repeticiones 0."
           ]
         },
         "2026-04-18": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 4,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         }
       }
     },
@@ -5150,10 +5774,10 @@
             666
           ],
           "lineas": 22,
-          "cuadran": 15,
-          "geometria": 19,
+          "cuadran": 16,
+          "geometria": 20,
           "ultimaFecha": "2026-10-31",
-          "ultimaGeometria": false,
+          "ultimaGeometria": true,
           "nkValidado": false,
           "terminadoMm": [
             10602,
@@ -5165,11 +5789,13 @@
         "2025-03-15": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2025-04-26": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 2; paños identificados × repeticiones 0."
@@ -5178,56 +5804,67 @@
         "2025-05-24": {
           "coincide": true,
           "cantidad": 16,
+          "forma": true,
           "motivos": []
         },
         "2025-06-14": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2025-07-05": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-07-19": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2025-08-23": {
           "coincide": true,
           "cantidad": 15,
+          "forma": true,
           "motivos": []
         },
         "2025-09-13": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-12-06": {
           "coincide": true,
           "cantidad": 8,
+          "forma": true,
           "motivos": []
         },
         "2026-01-10": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2026-02-14": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-02-21": {
           "coincide": true,
           "cantidad": 11,
+          "forma": true,
           "motivos": []
         },
         "2026-03-21": {
           "coincide": false,
           "cantidad": 2,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 2; paños identificados × repeticiones 3."
           ]
@@ -5235,6 +5872,7 @@
         "2026-04-18": {
           "coincide": false,
           "cantidad": 3,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 3; paños identificados × repeticiones 2."
           ]
@@ -5242,6 +5880,7 @@
         "2026-04-25": {
           "coincide": false,
           "cantidad": 1,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 1; paños identificados × repeticiones 0."
@@ -5250,11 +5889,13 @@
         "2026-08-01": {
           "coincide": true,
           "cantidad": 20,
+          "forma": true,
           "motivos": []
         },
         "2026-09-05": {
           "coincide": false,
           "cantidad": 11,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 11; paños identificados × repeticiones 10."
           ]
@@ -5262,14 +5903,14 @@
         "2026-09-19": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-10-31": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 2,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         }
       }
     },
@@ -5282,8 +5923,8 @@
             966
           ],
           "lineas": 9,
-          "cuadran": 4,
-          "geometria": 4,
+          "cuadran": 6,
+          "geometria": 6,
           "ultimaFecha": "2026-07-18",
           "ultimaGeometria": true,
           "nkValidado": false,
@@ -5292,15 +5933,15 @@
       ],
       "fechas": {
         "2025-03-15": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 10,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-05-10": {
           "coincide": false,
           "cantidad": 4,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 4; paños identificados × repeticiones 0."
@@ -5309,28 +5950,31 @@
         "2025-05-31": {
           "coincide": true,
           "cantidad": 16,
+          "forma": true,
           "motivos": []
         },
         "2025-10-18": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-11-15": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-12-06": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 2,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-01-17": {
           "coincide": false,
           "cantidad": 10,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 10; paños identificados × repeticiones 0."
@@ -5339,6 +5983,7 @@
         "2026-06-27": {
           "coincide": false,
           "cantidad": 8,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 8; paños identificados × repeticiones 0."
@@ -5347,6 +5992,7 @@
         "2026-07-18": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         }
       }
@@ -5375,21 +6021,25 @@
         "2025-03-15": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-03-29": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-07-19": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-09-13": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 2; paños identificados × repeticiones 0."
@@ -5398,6 +6048,7 @@
         "2025-10-18": {
           "coincide": false,
           "cantidad": 1,
+          "forma": false,
           "motivos": [
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
@@ -5405,16 +6056,19 @@
         "2025-11-08": {
           "coincide": true,
           "cantidad": 17,
+          "forma": true,
           "motivos": []
         },
         "2026-03-14": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2026-03-28": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 2; paños identificados × repeticiones 0."
@@ -5423,6 +6077,7 @@
         "2026-05-16": {
           "coincide": false,
           "cantidad": 5,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 5; paños identificados × repeticiones 3."
           ]
@@ -5430,6 +6085,7 @@
         "2026-06-06": {
           "coincide": false,
           "cantidad": 3,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 3; paños identificados × repeticiones 2."
           ]
@@ -5437,6 +6093,7 @@
         "2026-06-27": {
           "coincide": false,
           "cantidad": 1,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 1; paños identificados × repeticiones 0."
@@ -5445,21 +6102,25 @@
         "2026-07-18": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2026-09-05": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2026-09-19": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2026-10-10": {
           "coincide": true,
           "cantidad": 8,
+          "forma": true,
           "motivos": []
         }
       }
@@ -5474,7 +6135,7 @@
           ],
           "lineas": 8,
           "cuadran": 3,
-          "geometria": 3,
+          "geometria": 4,
           "ultimaFecha": "2026-08-29",
           "ultimaGeometria": true,
           "nkValidado": false,
@@ -5485,6 +6146,7 @@
         "2025-03-29": {
           "coincide": false,
           "cantidad": 4,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 4; paños identificados × repeticiones 0."
@@ -5493,6 +6155,7 @@
         "2025-10-25": {
           "coincide": false,
           "cantidad": 8,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 8; paños identificados × repeticiones 0."
@@ -5501,14 +6164,15 @@
         "2026-03-07": {
           "coincide": false,
           "cantidad": 2,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 2; paños identificados × repeticiones 4.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Cantidad agrupada: RPS 2; paños identificados × repeticiones 4."
           ]
         },
         "2026-04-18": {
           "coincide": false,
           "cantidad": 10,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 10; paños identificados × repeticiones 0."
@@ -5517,16 +6181,19 @@
         "2026-06-06": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-06-13": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-08-08": {
           "coincide": false,
           "cantidad": 4,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 4; paños identificados × repeticiones 0."
@@ -5535,6 +6202,7 @@
         "2026-08-29": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         }
       }
@@ -5560,29 +6228,33 @@
         "2025-04-12": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-05-10": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-09-13": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-11-22": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla.",
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
+            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
         },
         "2026-03-14": {
           "coincide": false,
           "cantidad": 30,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 30; paños identificados × repeticiones 16.",
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
@@ -5592,16 +6264,19 @@
         "2026-05-23": {
           "coincide": true,
           "cantidad": 22,
+          "forma": true,
           "motivos": []
         },
         "2026-07-18": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-09-26": {
           "coincide": false,
           "cantidad": 20,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 20; paños identificados × repeticiones 0."
@@ -5610,6 +6285,7 @@
         "2026-10-31": {
           "coincide": false,
           "cantidad": 8,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 8; paños identificados × repeticiones 0."
@@ -5638,6 +6314,7 @@
         "2025-05-10": {
           "coincide": false,
           "cantidad": 8,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 8; paños identificados × repeticiones 0."
@@ -5646,11 +6323,13 @@
         "2025-10-04": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-10-10": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 2; paños identificados × repeticiones 0."
@@ -5659,6 +6338,7 @@
         "2026-10-31": {
           "coincide": false,
           "cantidad": 4,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 4; paños identificados × repeticiones 0."
@@ -5687,26 +6367,31 @@
         "2025-06-07": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-09-13": {
           "coincide": true,
           "cantidad": 7,
+          "forma": true,
           "motivos": []
         },
         "2026-04-04": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-04-18": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-08-29": {
           "coincide": true,
           "cantidad": 8,
+          "forma": true,
           "motivos": []
         }
       }
@@ -5732,16 +6417,19 @@
         "2025-06-07": {
           "coincide": true,
           "cantidad": 40,
+          "forma": true,
           "motivos": []
         },
         "2025-08-23": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2025-09-06": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 0."
@@ -5750,21 +6438,25 @@
         "2025-10-04": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2025-11-29": {
           "coincide": true,
           "cantidad": 40,
+          "forma": true,
           "motivos": []
         },
         "2026-02-28": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         },
         "2026-03-21": {
           "coincide": false,
           "cantidad": 1,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 1; paños identificados × repeticiones 0."
@@ -5773,6 +6465,7 @@
         "2026-04-18": {
           "coincide": false,
           "cantidad": 10,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 10; paños identificados × repeticiones 33."
           ]
@@ -5780,16 +6473,19 @@
         "2026-07-04": {
           "coincide": true,
           "cantidad": 14,
+          "forma": true,
           "motivos": []
         },
         "2026-08-01": {
           "coincide": true,
           "cantidad": 3,
+          "forma": true,
           "motivos": []
         },
         "2026-08-29": {
           "coincide": true,
           "cantidad": 5,
+          "forma": true,
           "motivos": []
         }
       }
@@ -5815,6 +6511,7 @@
         "2025-07-05": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         }
       }
@@ -5840,6 +6537,7 @@
         "2025-07-05": {
           "coincide": false,
           "cantidad": 8,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 8; paños identificados × repeticiones 2."
           ]
@@ -5847,6 +6545,7 @@
         "2026-03-07": {
           "coincide": false,
           "cantidad": 4,
+          "forma": false,
           "motivos": [
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
@@ -5874,6 +6573,7 @@
         "2025-08-23": {
           "coincide": false,
           "cantidad": 18,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 18; paños identificados × repeticiones 0."
@@ -5902,6 +6602,7 @@
         "2025-10-25": {
           "coincide": false,
           "cantidad": 3,
+          "forma": false,
           "motivos": [
             "NB3400: reparto de agujeros y accesorios pendiente de validar."
           ]
@@ -5909,6 +6610,7 @@
         "2026-05-16": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 2; paños identificados × repeticiones 0.",
@@ -5938,11 +6640,13 @@
         "2025-11-08": {
           "coincide": true,
           "cantidad": 6,
+          "forma": true,
           "motivos": []
         },
         "2025-11-15": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         }
       }
@@ -5968,6 +6672,7 @@
         "2025-11-15": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         }
       }
@@ -5990,6 +6695,7 @@
         "2026-01-10": {
           "coincide": false,
           "cantidad": 1,
+          "forma": false,
           "motivos": [
             "NB3100: reparto de agujeros y accesorios pendiente de validar."
           ]
@@ -6017,6 +6723,7 @@
         "2026-01-17": {
           "coincide": false,
           "cantidad": 4,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 4; paños identificados × repeticiones 0."
@@ -6025,6 +6732,7 @@
         "2026-01-31": {
           "coincide": false,
           "cantidad": 4,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 4; paños identificados × repeticiones 0."
@@ -6033,6 +6741,7 @@
         "2026-05-23": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 2; paños identificados × repeticiones 0."
@@ -6061,21 +6770,25 @@
         "2026-01-31": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2026-05-02": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2026-06-27": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-10-17": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         }
       }
@@ -6101,16 +6814,19 @@
         "2026-02-07": {
           "coincide": true,
           "cantidad": 11,
+          "forma": true,
           "motivos": []
         },
         "2026-02-21": {
           "coincide": true,
           "cantidad": 6,
+          "forma": true,
           "motivos": []
         },
         "2026-06-06": {
           "coincide": false,
           "cantidad": 49,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 49; paños identificados × repeticiones 69."
           ]
@@ -6118,11 +6834,13 @@
         "2026-08-01": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         },
         "2026-08-08": {
           "coincide": true,
           "cantidad": 4,
+          "forma": true,
           "motivos": []
         }
       }
@@ -6145,6 +6863,7 @@
         "2026-02-14": {
           "coincide": false,
           "cantidad": 1,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 1; paños identificados × repeticiones 2.",
             "NB3500: reparto de agujeros y accesorios pendiente de validar."
@@ -6173,6 +6892,7 @@
         "2026-02-21": {
           "coincide": false,
           "cantidad": 2,
+          "forma": false,
           "motivos": [
             "NB2500: reparto de agujeros y accesorios pendiente de validar."
           ]
@@ -6197,6 +6917,7 @@
         "2026-03-14": {
           "coincide": false,
           "cantidad": 6,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 6; paños identificados × repeticiones 0.",
@@ -6226,6 +6947,7 @@
         "2026-04-18": {
           "coincide": false,
           "cantidad": 12,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 12; paños identificados × repeticiones 0."
@@ -6234,6 +6956,7 @@
         "2026-05-30": {
           "coincide": false,
           "cantidad": 50,
+          "forma": true,
           "motivos": [
             "Cantidad agrupada: RPS 50; paños identificados × repeticiones 2."
           ]
@@ -6261,6 +6984,7 @@
         "2026-05-16": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         }
       }
@@ -6286,6 +7010,7 @@
         "2026-05-23": {
           "coincide": false,
           "cantidad": 4,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 4; paños identificados × repeticiones 0."
@@ -6314,6 +7039,7 @@
         "2026-06-06": {
           "coincide": false,
           "cantidad": 48,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 48; paños identificados × repeticiones 0."
@@ -6342,6 +7068,7 @@
         "2026-06-27": {
           "coincide": false,
           "cantidad": 12,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 12; paños identificados × repeticiones 0."
@@ -6358,8 +7085,8 @@
             961
           ],
           "lineas": 5,
-          "cuadran": 2,
-          "geometria": 2,
+          "cuadran": 5,
+          "geometria": 5,
           "ultimaFecha": "2026-09-26",
           "ultimaGeometria": true,
           "nkValidado": false,
@@ -6370,25 +7097,25 @@
         "2026-07-04": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         },
         "2026-08-29": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 1,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-09-12": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 6,
-          "motivos": [
-            "No se ha encontrado un orillo abierto en el conjunto real de paños."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-09-26": {
           "coincide": true,
           "cantidad": 1,
+          "forma": true,
           "motivos": []
         }
       }
@@ -6414,6 +7141,7 @@
         "2026-08-01": {
           "coincide": false,
           "cantidad": 1,
+          "forma": false,
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 1; paños identificados × repeticiones 0."
@@ -6442,6 +7170,7 @@
         "2026-09-26": {
           "coincide": false,
           "cantidad": 62,
+          "forma": false,
           "motivos": [
             "Cantidad agrupada: RPS 62; paños identificados × repeticiones 60.",
             "Material o color distinto de PLASTEL negra: sin validación de material."
@@ -6470,6 +7199,7 @@
         "2026-10-17": {
           "coincide": false,
           "cantidad": 5,
+          "forma": false,
           "motivos": [
             "Las medidas del contorno real difieren más de 1 mm de la regla de la familia."
           ]
@@ -6497,6 +7227,7 @@
         "2026-10-24": {
           "coincide": true,
           "cantidad": 2,
+          "forma": true,
           "motivos": []
         }
       }

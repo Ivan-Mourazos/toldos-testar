@@ -8,7 +8,7 @@ import { corteDelPlano, entidadesBot } from '../flujoDwg/corteDwg.js';
 const raiz = path.resolve('tmp/assa-archivos-tests');
 afterEach(() => fs.rm(raiz, { recursive: true, force: true }));
 const linea = { IDOrderLine: 'a', CodOrder: 'AR.26.04704', NumLine: 1, CodArticle: 'H0K420102-0034', descripcion: 'NH3200 NT600', cantidad: 8, of_: '0232434', entregaSolicitada: '2026-10-31' };
-const certificados = { referencias: { '420102-0034': { descripciones: [{ descripcion: linea.descripcion, corteMm: [3010, 666], cuadran: 2, ultimaGeometria: true }] } } };
+const certificados = { referencias: { '420102-0034': { descripciones: [{ descripcion: linea.descripcion, corteMm: [3010, 666], cuadran: 2, geometria: 2, ultimaGeometria: true }] } } };
 const preparar = (f, ls, s) => prepararLote(f, ls, s, certificados);
 
 it('el plano sin presentaciones conserva arcos, textos y mm al pasar por el flujo del DWG', () => {

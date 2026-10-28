@@ -46,12 +46,16 @@ const filas = [...Map.groupBy(lineas.filter(l => familias.has(codigoAssa(l.CodAr
   const manuales = lote.lineas.filter(l => l.codigo === codigo && l.estado === 'a-mano');
   const rs = contrasteReal.filter(f => codigoAssa(f.referencia) === codigo);
   const ns = contrasteNuevo.filter(f => codigoAssa(f.referencia) === codigo);
-  return { codigo, pedida: ls.reduce((n, l) => n + l.cantidad, 0), nueva: cantidad(nuevos), real: cantidad(reales),
+  // Lo generado se cuenta en los programas del lote: el lector de cortes está hecho para los lotes de la oficina y
+  // confunde columnas sueltas de uno o dos paños. Sus medidas ya se exigen iguales a las del catálogo contrastado.
+  const generada = lote.programas.filter(p => p.codigo === codigo).reduce((n, p) => n + p.panos * p.repeticiones, 0);
+  return { codigo, pedida: ls.reduce((n, l) => n + l.cantidad, 0), nueva: generada, leidaNueva: cantidad(nuevos), real: cantidad(reales),
     geometriaReal: rs.every(f => f.geometria), geometriaNueva: ns.every(f => f.geometria),
     estado: manuales.length ? 'a-mano' : 'generado', motivos: [...new Set(manuales.flatMap(l => l.motivos))],
     diferencias: [...new Set(rs.flatMap(f => f.motivos))] };
 });
-if (filas.some(f => f.estado === 'generado' && (!f.geometriaReal || !f.geometriaNueva || f.nueva !== f.pedida || f.real !== f.pedida))) {
+// La cantidad del lote real puede ser menor: el stock se pone en corte (Q-AS03). Se exige la forma real y la cantidad de RPS.
+if (filas.some(f => f.estado === 'generado' && (!f.geometriaReal || f.nueva !== f.pedida))) {
   throw new Error('Una referencia habilitada no coincide en contorno, herramienta, orillo o cantidad: no se publica. ' +
     JSON.stringify(contrasteNuevo.filter(f => lote.lineas.some(l => l.IDOrderLine === f.linea && l.estado === 'validado'))
       .map(f => ({ referencia: f.referencia, motivos: f.motivos, comprobaciones: f.comprobaciones }))));

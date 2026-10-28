@@ -1334,9 +1334,9 @@ Generado por `scripts/validar-assa-fase-a.mjs`. Foto de RPS: 2026-10-26T14:00:05
 
 | Familia | Líneas | Paño y cantidad iguales | % | Toda la geometría igual |
 | --- | --- | --- | --- | --- |
-| 420102 | 338 | 92 | 27,2 % | 143 |
-| 420148 | 194 | 153 | 78,9 % | 170 |
-| 420150 | 492 | 349 | 70,9 % | 415 |
+| 420102 | 338 | 121 | 35,8 % | 212 |
+| 420148 | 194 | 159 | 82 % | 176 |
+| 420150 | 492 | 352 | 71,5 % | 418 |
 
 La columna 420150 certifica **paños**, no conjuntos completos: canalones retenidos hasta cerrar su cantidad por cubierta. NK solo se considera candidato a NH para 420148-0105 y exige el mismo contraste geométrico; las demás referencias NK se retienen. NW equivale a NB por respuesta de Iván del 27/10/2026. Las descripciones recortadas de 420150 se recuperan de la hoja de medidas de producción autorizada, con aviso visible. No se completa stock automáticamente.
 
@@ -1344,7 +1344,7 @@ La columna 420150 certifica **paños**, no conjuntos completos: canalones reteni
 
 | Referencia | Líneas RPS | Geometría y orillo iguales | Paño y cantidad iguales |
 | --- | --- | --- | --- |
-| 420148-0105 | 41 | 35 | 33 |
+| 420148-0105 | 41 | 36 | 34 |
 
 La equivalencia NK = NH se limita a esta referencia y descripción contrastadas; no autoriza otras NK. El 31-10 sigue a mano al no probarse su orillo abierto.
 

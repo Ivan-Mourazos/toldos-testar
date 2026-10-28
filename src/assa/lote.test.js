@@ -39,3 +39,14 @@ it('retiene el conjunto 420150 con aviso visible hasta resolver la cuenta de can
   expect(lote.lineas[0].motivos).toContain(CANALONES_PENDIENTES);
   expect(lote.programas).toEqual([]);
 });
+
+// Iván, 26/10/2026 (Q-AS03): el stock se pone en corte, así que el lote real puede llevar menos que RPS. Basta con que la
+// forma coincida con los cortes reales; se corta lo que pide RPS.
+it('habilita la forma contrastada aunque ningún lote real cuadrara en cantidad, con la cantidad de RPS', () => {
+  const l = { IDOrderLine: 'x', CodOrder: 'AR.26.05047', NumLine: 1, CodArticle: 'H0K420102-0034', descripcion: 'NH4200-200 NT600',
+    cantidad: 41, of_: '0233001', entregaSolicitada: '2026-10-31' };
+  const certificados = { referencias: { '420102-0034': { descripciones: [{ descripcion: l.descripcion, corteMm: [4010, 666], cuadran: 0, geometria: 3, ultimaGeometria: true }] } } };
+  const lote = prepararLote('2026-10-31', [l], {}, certificados);
+  expect(lote.lineas[0].estado).toBe('validado');
+  expect(lote.programas.reduce((n, p) => n + p.panos * p.repeticiones, 0)).toBe(41);
+});
