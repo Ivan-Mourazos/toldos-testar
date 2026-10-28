@@ -267,3 +267,15 @@ describe('rótulos dentro de los paños inclinados · AR2605035', () => {
     expect(inclinados).toBeGreaterThan(0);
   });
 });
+
+// Iván, 28/10/2026 (AR2605035): «la cota verde no se engancha donde debe»: la de 32 del saco inclinado de la puerta A
+// se enganchaba a la raya de la puerta B, porque su punto no se doblaba como el saco.
+it('las cotas del saco inclinado se enganchan a su propio saco', async () => {
+  const { escribirPlanoPuertas } = await import('./plano.ts');
+  const { numero, registrosDxf } = await import('../domain/corteLona/dxfTestHelpers.js');
+  const dxf = escribirPlanoPuertas({ pedido: pedidoDe('AR2605035', ...fixture.puertas.map((_, i) => puerta5035(i))),
+    cabecera: { cliente: 'OTRO', tecnico: 'IVÁN', revisor: '', fecha: '2026-10-28' } });
+  const cotas = registrosDxf(dxf).filter(r => r.tipo === 'DIMENSION' && [3, 32].some(m => Math.abs(numero(r, 42) - m) < 0.1));
+  expect(cotas.length).toBeGreaterThanOrEqual(8);
+  for (const c of cotas) expect(Math.abs(numero(c, 13) - numero(c, 14))).toBeLessThan(0.1);
+});
