@@ -8,11 +8,14 @@ import { puntos } from './dibujos.mjs';
 import { cajaDe, dentro } from './geometria.mjs';
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const dir = path.join(repo, 'tmp/assa-investigacion');
+const temporales = path.join(dir, 'navegador');
+fs.mkdirSync(temporales, { recursive: true });
 const catalogo = JSON.parse(fs.readFileSync(path.join(repo, 'src/assa/dibujosConfeccion.json'), 'utf8'));
 const a = JSON.parse(fs.readFileSync(path.join(dir, 'analisis.json'), 'utf8'));
 function png(html, salida) {
   const r = spawnSync(process.execPath, [path.join(repo, 'node_modules/playwright/cli.js'), 'screenshot', '--browser', 'chromium',
-    '--viewport-size', '1600,1000', '--full-page', pathToFileURL(html).href, salida], { cwd: repo, encoding: 'utf8' });
+    '--viewport-size', '1600,1000', '--full-page', pathToFileURL(html).href, salida], { cwd: dir, encoding: 'utf8',
+    env: { ...process.env, TEMP: temporales, TMP: temporales, TMPDIR: temporales } });
   if (r.status !== 0) throw new Error(r.stderr || r.stdout);
 }
 for (const familia of ['420102', '420148', '420150', '430125', '430127', '430129', '430172']) {
