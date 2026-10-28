@@ -1,4 +1,4 @@
-import test from 'node:test';
+import { test } from 'vitest';
 import assert from 'node:assert/strict';
 import { cotaDePieza, textoDeReferencia, firmaEntidades } from './dibujos.mjs';
 const l = { tipo: 'raya', a: [0, 0], b: [10, 0], capa: 'referencias' };
