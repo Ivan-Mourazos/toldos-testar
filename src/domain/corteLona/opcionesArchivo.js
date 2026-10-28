@@ -7,7 +7,7 @@ import { anchoArial } from './texto.js';
 // mismo código puede venir en rollos distintos.
 export function archivoCorte(cortes, pedido) {
   if (!cortes.conSacos.length) return null;
-  const dibujo = { lineas: [], textos: [] };
+  const dibujo = { lineas: [], textos: [], arcos: [] };
   let siguiente = 0;
   const alcance = t => t.giro ? anchoArial(t.valor, t.h) : t.h;
   const apilar = (corte, etiqueta) => {
@@ -18,6 +18,8 @@ export function archivoCorte(cortes, pedido) {
     const dy = siguiente - abajo;
     dibujo.lineas.push(...lineas.map(l => ({ ...l, y1: l.y1 + dy, y2: l.y2 + dy })));
     dibujo.textos.push(...textos.map(t => ({ ...t, y: t.y + dy })));
+    // Iván, 28/10/2026: el archivo final del bot conserva los arcos reales de los embudos.
+    dibujo.arcos.push(...(corte.dibujo.arcos ?? []).map(a => ({ ...a, y: a.y + dy })));
     let techo = arriba + dy;
     if (etiqueta) {
       dibujo.textos.push({ capa: 'texto', x: 0, y: techo + 250, h: 150, valor: etiqueta });

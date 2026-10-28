@@ -10,6 +10,7 @@ import {
 import { normalizeDropArmMode, supportsVerticalDropArm } from './dropArmMode.js';
 import { formatCurtainVelcroLabel } from './curtainConfiguration.js';
 import { normalizeSolapas } from './solapasRules.js';
+import { normalizeEmbudo, etiquetasEmbudo } from './embudoConfiguration.js';
 
 const legacyModelNames = {
   'AMBAR BOX': 'Microbox 300', 'AGATA BOX': 'Modul 400 / Modulbox', 'CUARZO BOX': 'Storbox 250',
@@ -149,6 +150,24 @@ export function buildReviewSheetEntries(order, calculation) {
         addField(cardFields, 'Suelo-ventana', measure(awning.curtainWindowFloorHeight), true);
         addField(cardFields, 'H. ventana', measure(awning.curtainWindowHeight), true);
       }
+    }
+    if (awning.model === 'EMBUDO') {
+      const e = normalizeEmbudo(awning.embudo), etiquetas = etiquetasEmbudo(e);
+      addField(cardFields, 'Forma del embudo', e.forma, true);
+      addField(cardFields, 'Alto del embudo (cm)', formatNumber(e.alto), true);
+      addField(cardFields, e.forma === 'RECTO' ? 'Contorno (cm)' : 'Contorno de arriba (cm)', formatNumber(e.contornoArriba), true);
+      if (e.forma === 'CÓNICO') addField(cardFields, 'Contorno de abajo (cm)', formatNumber(e.contornoAbajo), true);
+      addField(cardFields, 'Cierre (cm)', formatNumber(e.cierre), true);
+      addField(cardFields, 'Remate de arriba', e.remateArriba, true);
+      addField(cardFields, 'Remate de abajo', e.remateAbajo, true);
+      if (e.remateArriba === 'BASTILLA') addField(cardFields, 'Bastilla de arriba (cm)', formatNumber(e.bastillaArriba), true);
+      if (e.remateAbajo === 'BASTILLA') addField(cardFields, 'Bastilla de abajo (cm)', formatNumber(e.bastillaAbajo), true);
+      addField(cardFields, 'Sujeción del embudo', e.sujecion, true);
+      if (e.sujecion !== 'NINGUNA') {
+        addField(cardFields, 'Ancho de cinta (mm)', formatNumber(e.anchoCinta), true);
+        addField(cardFields, 'Largo de cinta (cm)', formatNumber(e.largoCinta), true);
+      }
+      addField(cardFields, 'Confección del embudo', [etiquetas.cierre, ...etiquetas.cinta, 'DERECHO'].join(' · '), true);
     }
     if (awning.model === 'SOLAPAS') {
       const solapas = normalizeSolapas(awning.solapas, awning.bastilla);

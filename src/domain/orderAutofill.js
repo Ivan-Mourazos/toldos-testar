@@ -1,10 +1,11 @@
 import { serializeFabricSelection } from './fabricCatalog.js';
+import { normalizeEmbudo } from './embudoConfiguration.js';
 import { getFieldVisibility, getModelBehavior } from './modelBehavior.js';
 import { normalizeElectraMotor } from './electraParameters.js';
 import { irisAsksBoxShape, irisSubmodels } from './irisParameters.js';
 import { irisMotorPowers, motorPowerFromCode } from './screenMotors.js';
 
-const fabricOnlyModels = new Set(['CAMBIO TELA', 'CAMBIO CORTINA', 'CAMBIO ANTICA', 'BAMBALINA', 'ENROLLABLE', 'SOLAPAS']);
+const fabricOnlyModels = new Set(['CAMBIO TELA', 'CAMBIO CORTINA', 'CAMBIO ANTICA', 'BAMBALINA', 'ENROLLABLE', 'SOLAPAS', 'EMBUDO']);
 const electraArticleCodes = new Set(['ELECTR', 'ELECTRCCCG', 'ELECTRCCSG', 'ELECTRSCCG', 'ELECTRSCSG', 'ELITV']);
 const blockedElectraArticleCodes = new Set(['ELECTRA', 'ELECTRAZIP', 'ELECTRS/COS/GU']);
 
@@ -135,6 +136,7 @@ const summaryModelNames = {
   BAMBALINA: ['bambalina', 'bambalinas'],
   ENROLLABLE: ['lona de puerta enrollable', 'lonas de puerta enrollable'],
   SOLAPAS: ['solapa con velcro', 'solapas con velcro'],
+  EMBUDO: ['embudo de descarga', 'embudo de boca de descarga'],
   'AMBAR BOX': 'Ámbar Box',
   'AGATA BOX': 'Ágata Box',
   'PERLA BOX': 'Perla Box',
@@ -224,6 +226,8 @@ function structureColorSummary(value) {
 }
 
 function expandEditableLine(line, model) {
+  // Iván, 28/10/2026: fase 1 a mano; no interpretar el largo de cinta como alto del embudo.
+  if (model === 'EMBUDO') return [{ line, model }];
   const quantity = positiveNumber(line.quantity) || 1;
   const wholeUnits = Number.isInteger(quantity) ? quantity : 1;
   if (model === 'SOLAPAS') {
@@ -298,6 +302,7 @@ export function inferOrderModel(line = {}) {
   if (code === 'BAMBA' || description.includes('BAMBALINA NUEVA')) return 'BAMBALINA';
   if (code === 'PUERTAENR' || description.includes('LONA PARA PUERTA ENROLLABLE')) return 'ENROLLABLE';
   if (code === 'SOLAPACONVELCROS' || description.includes('SOLAPA CON VELCRO')) return 'SOLAPAS';
+  if (code === 'EMBUDO') return 'EMBUDO';
 
   if (code === 'AMBARBOX' || text.includes('AMBAR BOX') || text.includes('AMBARBOX')) return 'AMBAR BOX';
   if (['AGATABOX', 'AGATASCLOSE', 'AGATASOPEN', 'ASTORGA'].includes(code) || text.includes('AGATA BOX')) return 'AGATA BOX';
@@ -380,7 +385,7 @@ function inferFabricRotulation(text) {
 
 function buildAwningSuggestion(line, model, index) {
   const detailText = [line.comment, line.manufacturingNotes].filter(Boolean).join('\n');
-  const extracted = extractOrderTextData(detailText, model);
+  const extracted = extractOrderTextData(model === 'EMBUDO' ? '' : detailText, model);
   const crossed = model === 'ARZUA PRO' && (normalize(line.articleCode) === 'BRACRU' || /BRAZOS?\s+CRUZADOS?/.test(normalize(`${line.description || ''} ${detailText}`)));
   const fabricOnly = fabricOnlyModels.has(model);
   const submodel = model === 'ELECTRA' ? inferElectraVariant(line.articleCode, detailText)
@@ -396,6 +401,7 @@ function buildAwningSuggestion(line, model, index) {
     of: cleanOf(line.manufacturingOrder),
     model,
     units: positiveNumber(line.quantity) || 1,
+    ...(model === 'EMBUDO' ? { embudo: normalizeEmbudo() } : {}),
     width: extracted.width,
     projection: extracted.projection,
     height: model === 'HERA' ? extracted.height : null,

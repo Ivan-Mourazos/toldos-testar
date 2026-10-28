@@ -30,7 +30,8 @@ const aliases = new Map([
   ['ROLL-SYSTEM', 'HERA'],
   ['SOLAPACONVELCROS', 'SOLAPAS'],
   ['SOLAPA CON VELCRO', 'SOLAPAS'],
-  ['SOLAPA CON VELCROS', 'SOLAPAS']
+  ['SOLAPA CON VELCROS', 'SOLAPAS'],
+  ['EMBUDO DE DESCARGA', 'EMBUDO']
 ]);
 
 export function normalizeModelName(value) {

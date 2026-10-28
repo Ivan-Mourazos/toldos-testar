@@ -1,0 +1,29 @@
+{
+  "fuente": "DXF de oficina AR2605215 y AR2600169, revisión del 28/10/2026; medidas en cm",
+  "conico": {
+    "pedido": "AR2605215",
+    "cantidad": 2,
+    "entrada": {
+      "forma": "CÓNICO", "alto": 90, "contornoArriba": 88, "contornoAbajo": 76,
+      "cierre": 3, "remateArriba": "REFUERZO 10", "remateAbajo": "REFUERZO 10",
+      "sujecion": "MORDAZA", "anchoCinta": 25, "largoCinta": 100
+    },
+    "medido": {
+      "radioExterior": 660.1485876681816, "radioInterior": 570.1283257122594,
+      "desdeGrados": 86.1799999999937, "hastaUtilGrados": 93.81999999997929,
+      "hastaExteriorCierreGrados": 94.08037763828251,
+      "hastaInteriorCierreGrados": 94.12149025052629,
+      "arcoGrandeUtil": 88.03, "arcoPequenoUtil": 76.02
+    }
+  },
+  "recto": {
+    "pedido": "AR2600169",
+    "cantidad": 1,
+    "entrada": {
+      "forma": "RECTO", "alto": 100, "contornoArriba": 66, "cierre": 3,
+      "remateArriba": "BASTILLA", "remateAbajo": "BASTILLA", "bastillaArriba": 10, "bastillaAbajo": 10,
+      "sujecion": "MORDAZA", "anchoCinta": 25, "largoCinta": 95
+    },
+    "medido": { "anchoCorte": 69, "altoCorte": 120 }
+  }
+}
