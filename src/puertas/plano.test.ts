@@ -112,8 +112,13 @@ describe('orden de las muestras del corte', () => {
     const rs = registrosDxf(escribirPlanoPuertas({ pedido: pedidoDe('AR2600001', ...puertas), cabecera })).filter(r => valor(r, 67) !== '1');
     const x0 = inicioCorte(rs);
     const sacos = rs.filter(r => r.tipo === 'MTEXT' && /^[A-D] · SACO$/.test(valor(r, 1) ?? '') && numero(r, 10) >= x0);
-    const filas = [...Map.groupBy(sacos, r => Math.round(numero(r, 20) * 100)).values()];
+    const porFila = new Map<number, typeof sacos>();
+    for (const r of sacos) {
+      const y = Math.round(numero(r, 20) * 100);
+      porFila.set(y, [...(porFila.get(y) ?? []), r]);
+    }
+    const filas = [...porFila.values()];
     expect(filas.length).toBeGreaterThan(0);
-    for (const f of filas) expect(f.sort((a, b) => numero(a, 10) - numero(b, 10)).map(r => (valor(r, 1) ?? '')[0])).toEqual(['A', 'B', 'C', 'D'].slice(0, f.length));
+    for (const f of filas) expect(f.sort((a: typeof f[number], b: typeof f[number]) => numero(a, 10) - numero(b, 10)).map((r: typeof f[number]) => (valor(r, 1) ?? '')[0])).toEqual(['A', 'B', 'C', 'D'].slice(0, f.length));
   });
 });
