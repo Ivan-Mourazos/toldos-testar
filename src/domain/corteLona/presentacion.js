@@ -9,7 +9,10 @@ import { anchoArial } from './texto.js';
 
 const MODELO = '1F';   // *Model_Space en la plantilla
 // Capas del bot que no trae la plantilla.
-const CAPAS_BOT = [{ nombre: 'DISCO1', color: 7 }, { nombre: 'ROTULADOR', color: 1 }, { nombre: 'RECUADROS', color: 30, imprimir: false }];
+// Las capas del bot con sus colores de la plantilla del bot: sin CUTTER en la tabla, ZWCAD la pintaba en blanco, como
+// DISCO1 (Iván, 28/10/2026: «los cortes de cinta van de CUTTER»).
+const CAPAS_BOT = [{ nombre: 'DISCO1', color: 7 }, { nombre: 'DISCO2', color: 6 }, { nombre: 'CUTTER', color: 112 }, { nombre: 'taladro', color: 160 },
+  { nombre: 'ROTULADOR', color: 1 }, { nombre: 'RECUADROS', color: 30, imprimir: false }];
 // Mismo orden en todos los planos (Iván, 23/10/2026): el dibujo a la izquierda, lejos de los ejes, y el corte a su
 // derecha, alineado arriba; cada uno en su recuadro, pegados, con su nombre en grande encima, por fuera, para saber
 // qué es cada cosa al abrir el DWG. Los dos recuadros iguales: el mismo alto y el mismo margen, el 20 % del más ancho
