@@ -34,7 +34,10 @@ describe('los documentos del pedido de toldos', () => {
     expect(html.match(/Abrir en grande/g)).toHaveLength(1);
     expect(html).not.toContain('>Vista previa<');
     expect(html.includes('>Corregir<')).toBe(usuario === 'IVÁN');
-    expect(html.includes('>Generar corte<')).toBe(usuario === 'IVÁN');
+    // «Generar corte» ya no va abajo del corte (Iván, 29/10/2026): sale arriba cuando la comprobación dice que falta o
+    // está viejo, y en este pintado estático aún se está comprobando.
+    expect(html).not.toContain('>Generar corte<');
+    expect(html).not.toContain('Generando corte');
   });
   it.each([['ACRILI2018P120', 'GALICIA'], ['PVC|||250|||LONA PVC|||PLASTICA (LONA)', 'HERA']])('sin corte solo enseña el planteamiento (%s, %s)', (tela, modelo) => {
     const html = pintar(pedido(tela, modelo));

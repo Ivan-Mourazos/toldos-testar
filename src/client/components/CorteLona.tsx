@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { CheckCircle2, Scissors, RefreshCw } from 'lucide-react';
 import { corteReadiness } from '../../domain/corteReadiness.js';
 import { resolveFabric } from '../../domain/fabricCatalog.js';
@@ -22,11 +22,18 @@ export function toldosConCorte(order: DraftState) {
     resolveFabric(order.sameFabric ? order.fabric : t.fabric)?.material?.trim().toUpperCase() === 'PLASTICA (LONA)' ? [{ t, letra: awningLetter(i) }] : []);
 }
 
-export function CorteLona({ order, estado, onGenerated, reviewCode, acciones, regenerable = false, onListo }: {
+/** Para generar el corte desde la barra de arriba del pedido guardado. */
+export type CorteLonaControl = { generar: () => void };
+
+// `generarArriba`: en el pedido guardado, «Generar corte» va en la barra de arriba con «Abrir corte» y «Confirmar corte»
+// (Iván, 29/10/2026: «el botón de generar corte de abajo no es cómodo»); `local`: el corte generado aún no se ha guardado,
+// así que se comprueba con lo de la pantalla y no con lo guardado.
+export const CorteLona = forwardRef<CorteLonaControl, {
   order: DraftState; estado?: EstadoCorte | null; onGenerated?: (estado: EstadoCorte) => void; reviewCode?: string; regenerable?: boolean;
   acciones?: (alDia: boolean) => React.ReactNode;
   onListo?: (falta: string | null) => void;
-}) {
+  generarArriba?: boolean; local?: boolean; onGenerando?: (generando: boolean) => void;
+}>(function CorteLona({ order, estado, onGenerated, reviewCode, acciones, regenerable = false, onListo, generarArriba = false, local = false, onGenerando }, ref) {
   const toldos = toldosConCorte(order);
   const entrada = JSON.stringify(order);
   const [vista, setVista] = useState<{ entrada: string; datos: CorteRespuesta } | null>(null);
@@ -43,8 +50,9 @@ export function CorteLona({ order, estado, onGenerated, reviewCode, acciones, re
     if (!requerido) return;
     const controller = new AbortController();
     const timer = setTimeout(() => {
-      const url = reviewCode ? `/api/reviews/${encodeURIComponent(reviewCode)}/corte-lona` : '/api/corte-lona/estado';
-      fetch(url, reviewCode ? { signal: controller.signal } : {
+      const guardado = Boolean(reviewCode) && !local;
+      const url = guardado ? `/api/reviews/${encodeURIComponent(reviewCode!)}/corte-lona` : '/api/corte-lona/estado';
+      fetch(url, guardado ? { signal: controller.signal } : {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ order: JSON.parse(entrada), corteLona: JSON.parse(estadoJson) }), signal: controller.signal
       }).then(async response => {
@@ -52,11 +60,12 @@ export function CorteLona({ order, estado, onGenerated, reviewCode, acciones, re
         if (!response.ok) throw new Error(datos.error || 'No se pudo comprobar el corte.');
         if (controller.signal.aborted) return;
         setComprobacion({ entrada, pendientes: datos.pendientes });
-        if (reviewCode) setVista({ entrada, datos });
+        if (guardado) setVista({ entrada, datos });
       }).catch(e => { if (!controller.signal.aborted) setError(e.message); });
     }, 250);
     return () => { clearTimeout(timer); controller.abort(); };
-  }, [entrada, estadoJson, requerido, reviewCode]);
+  }, [entrada, estadoJson, requerido, reviewCode, local]);
+  useImperativeHandle(ref, () => ({ generar: () => void generar() }));
 
   const datos = vista?.entrada === entrada ? vista.datos : null;
   const sinOf = toldos.some(({ t }) => !t.of?.trim());
@@ -69,7 +78,7 @@ export function CorteLona({ order, estado, onGenerated, reviewCode, acciones, re
 
   async function generar(ajustes = estado?.ajustes || {}) {
     const solicitud = ++secuencia.current;
-    setGenerando(true);
+    setGenerando(true); onGenerando?.(true);
     setError('');
     try {
       const response = await fetch('/api/corte-lona', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order, ajustes }) });
@@ -80,7 +89,7 @@ export function CorteLona({ order, estado, onGenerated, reviewCode, acciones, re
       setComprobacion({ entrada, pendientes: datos.pendientes });
       if (datos.corteLona) onGenerated?.(datos.corteLona);
     } catch (e) { if (solicitud === secuencia.current) setError(e instanceof Error ? e.message : 'No se pudo generar el corte.'); }
-    finally { if (solicitud === secuencia.current) setGenerando(false); }
+    finally { if (solicitud === secuencia.current) { setGenerando(false); onGenerando?.(false); } }
   }
   function cambiar(clave: string, patch: AjustesCorte) {
     void generar({ ...estado?.ajustes, [clave]: { ...estado?.ajustes[clave], ...patch } });
@@ -89,7 +98,7 @@ export function CorteLona({ order, estado, onGenerated, reviewCode, acciones, re
   return <section className="corte-lona panel bloque-3d" aria-label={reviewCode ? 'Corte' : 'Corte de lona'} aria-busy={generando}>
     <CabeceraDocumento titulo={reviewCode ? 'Corte' : 'Corte de lona'} icono={<Scissors aria-hidden="true" />}>
       <span className={`corte-estado is-${sinOf ? 'aviso' : estadoVisible}`} role="status">{!sinOf && estadoVisible === 'hecho' && <CheckCircle2 size={16} aria-hidden="true" />}{sinOf ? 'Vista previa · falta la OF' : pendientes === null ? 'Comprobando el corte…' : textoEstadoCorte(estadoVisible)}</span>
-      {(!reviewCode || (regenerable && pendientes !== null && estadoVisible !== 'hecho')) && <button className="primary-button boton-3d" type="button" disabled={generando} onClick={() => void generar()}><RefreshCw size={16} aria-hidden="true" />{generando ? 'Generando corte…' : 'Generar corte'}</button>}
+      {!generarArriba && (!reviewCode || (regenerable && pendientes !== null && estadoVisible !== 'hecho')) && <button className="primary-button boton-3d" type="button" disabled={generando} onClick={() => void generar()}><RefreshCw size={16} aria-hidden="true" />{generando ? 'Generando corte…' : 'Generar corte'}</button>}
       {acciones?.(Boolean(datos && pendientes?.length === 0))}
     </CabeceraDocumento>
     <p className="corte-ayuda">PVC · piezas y marcas de confección, agrupadas por tela</p>
@@ -118,7 +127,7 @@ export function CorteLona({ order, estado, onGenerated, reviewCode, acciones, re
     {datos && <CorteLonaVista datos={datos} />}
     {!datos && estado && !reviewCode && <p className="corte-ayuda">Genera el corte para ver las piezas y las dos opciones del rollo.</p>}
   </section>;
-}
+});
 
 export function CorteLonaVista({ datos }: { datos: CorteRespuesta }) {
   return <>
