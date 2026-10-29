@@ -4,7 +4,7 @@ Fecha: 29/10/2026. Histórico exportado 2026-10-29T10:20:35.818Z. Solo lectura d
 
 Se estudian las 2.085 líneas del histórico (1.467 números de pedido distintos), sus 276 clientes, las once fichas que existen en el servidor y los 41 PDF producidos recientes. La propuesta contiene 285 fichas y 955 medidas; conserva las once fichas vigentes y todas sus medidas. Las identidades sin regla acreditada llevan solo el código y los datos que constan: no se fabrica un perfil o reparto para completar casillas.
 
-**Cobertura y límite:** hay 349 líneas de lona/baquetón sin medida completa acreditada en la propuesta y 46 líneas de ganado. Esas referencias se enumeran por cliente y en evidencias.json. El registro de identidades está completo para los 276 clientes del histórico; los repartos aún no lo están. Las plantillas antiguas sin código confirmado se enumeran al final y no se cargan por un parecido de nombre.
+**Cobertura y límite:** hay 348 líneas de lona/baquetón sin medida completa acreditada en la propuesta, una línea sin tipo identificado y 46 líneas de ganado. Esas referencias se enumeran por cliente y en evidencias.json. El registro de identidades está completo para los 276 clientes del histórico; los repartos aún no lo están. Las plantillas antiguas sin código confirmado se enumeran al final y no se cargan por un parecido de nombre.
 
 ## Fuentes y criterio
 
@@ -8053,7 +8053,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ## Apéndice: inventario completo de plantillas
 
-Todas las fuentes siguientes se abrieron en solo lectura. Las copias, recuperados y carpetas antiguas se inventarían; su presencia no las convierte en una regla actual. Los SHA-256 y las notas extraídas están en evidencias.json.
+Todas las fuentes siguientes se abrieron en solo lectura. Las copias, recuperados y carpetas antiguas se incluyen en el inventario; su presencia no las convierte en una regla actual. Los SHA-256 y las notas extraídas están en evidencias.json.
 
 - `PL/REMOLQUE MACHADO-CAMACHO (ANTIGUO MALDONADO).dwg`: 24 textos leídos.
 - `PL/AR2005931.dwg`: 27 textos leídos.
