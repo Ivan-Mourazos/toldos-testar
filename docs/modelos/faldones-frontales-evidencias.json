@@ -3,6 +3,16 @@
   "estado": "Estudio iniciado: fuentes y tres casos; sin histórico completo ni reglas generales validadas",
   "rama": "estudio-faldones-frontales",
   "revisionCodigo": "318ad63",
+  "confirmacionesOT": [
+    {
+      "id": "OT-FF01",
+      "fecha": "2026-10-29",
+      "persona": "Iván, Oficina Técnica",
+      "texto": "En este producto los faldones de acrílico también se plantean a veces.",
+      "consecuenciaEstudio": "Incluir los planteamientos de acrílico y registrar la disponibilidad de documentos por pedido; no excluir del censo pedidos sin un planteamiento localizado.",
+      "limite": "No acredita que todos los acrílicos se planteen, ni una proporción, ni una regla nueva de confección o corte."
+    }
+  ],
   "unidades": {
     "textil": "cm según cajetines",
     "soportes": "mm según cajetines",

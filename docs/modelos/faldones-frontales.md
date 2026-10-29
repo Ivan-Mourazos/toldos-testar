@@ -2,6 +2,8 @@
 
 Estudio iniciado el **29/10/2026**, por encargo de Iván. **Fase 1: fuentes, medición, variantes y casos de referencia.** Hay tres pedidos contrastados, con cuatro laterales y dos frontales representados en sus planos. Esta muestra permite separar configuraciones; todavía no constituye el histórico completo ni valida reglas generales de corte o reserva.
 
+**Confirmación de Iván, 29/10/2026 (OT-FF01):** los faldones de acrílico también se plantean a veces. El estudio debe recoger esos planteamientos y conservar su material. La muestra actual de acrílico no acredita qué proporción se plantea: al ampliar el histórico se distinguirán pedidos con planteamiento localizado y pedidos sin él localizado, sin excluir estos últimos por faltar DWG, DXF o PDF.
+
 ## 1. Alcance y estado recuperable
 
 - Rama: `estudio-faldones-frontales`; revisión del código de partida: `318ad63`.
@@ -59,6 +61,7 @@ Propuesta de organización a estudiar: una familia de trabajo «Faldones», con 
 | Confección superior | Entrada de tubo; entrada con solapa/velcro; goma elástica | F01–F02, V01–V03; dependen de variante y pedido |
 | Laterales y bajo | Bastilla, tira con ollaos, entrada de tubo/fleje, velcro y solapa | F04 y V02/V03; no hay un único remate universal |
 | Material | Acrílico, PVC y ventana transparente | F04; muestra real en acrílico, V03 con transparente 650 micras. PVC pendiente de contraste real |
+| Planteamiento | También se realiza a veces en faldones acrílicos | OT-FF01, confirmado por Iván; registrar disponibilidad de documentos por pedido, sin dar por hecho que todos se plantean |
 | Ventana | Tamaño, posición y márgenes propios; varios paños | V03. No se fija una ventana por defecto |
 | Apertura / recogida | Puerta con cremallera o velcro; correas de recoger | F04 y plantillas; sin caso completo contrastado en esta fase |
 | Tensado | Mordazas/cintas y abatibles, ollaos, entrada de tubo inferior | F04 y V02. Cantidad y posición dependen del pedido |
@@ -173,7 +176,7 @@ La compatibilidad de ganchos por cofre, las referencias RPS y el criterio de vis
 ## 14. Próxima fase
 
 1. Incorporar el histórico exportado de 2025–2026; identificar artículos y separar laterales, frontales, cambios de tela y trabajos de montaje. Registrar también los excluidos y el motivo.
-2. Agrupar por variante, material, remates, perfil y presencia de ventana/apertura; localizar escaneo, plano, DWG y corte de los pedidos de cada grupo.
+2. Agrupar por variante, material, remates, perfil y presencia de ventana/apertura; incluir expresamente los acrílicos que se plantean. Localizar escaneo, plano, DWG y corte de cada grupo y registrar por separado qué documentos se han encontrado. La ausencia de un planteamiento localizado no excluye el pedido del censo.
 3. Contrastar todos los casos recuperables por script, distinguiendo instalación, hecho, corte y reserva; resolver discrepancias antes de proponer fórmulas.
 4. Completar despiece y códigos RPS, soportes/adaptaciones y ejemplos de frontales recientes, PVC, puertas, zócalos y mamparas.
 5. Con la evidencia y respuestas de OT, preparar propuesta de cálculo, ficha y dibujo; la implementación tendrá su validación propia.
