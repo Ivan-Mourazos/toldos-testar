@@ -1,0 +1,548 @@
+{
+  "fecha": "2026-10-29",
+  "estado": "Estudio iniciado: fuentes y tres casos; sin histórico completo ni reglas generales validadas",
+  "rama": "estudio-faldones-frontales",
+  "revisionCodigo": "318ad63",
+  "unidades": {
+    "textil": "cm según cajetines",
+    "soportes": "mm según cajetines",
+    "transparente": "micras"
+  },
+  "limites": [
+    "Muestra de tres pedidos: cuatro laterales y dos frontales; no es un censo de producción.",
+    "Sin consultas a bases de datos ni lecturas de credenciales; originales de red y servidor sin modificar.",
+    "DWG convertidos en carpetas locales con ODA; una figura copiada se distingue de la pieza del pedido.",
+    "No se han verificado artículos RPS, consumos, límites dimensionales generales o compatibilidad completa de soportes.",
+    "Los libros se leen con fórmulas y valores guardados; no se ejecutan macros ni se recalculan.",
+    "Las cifras manuscritas utilizadas se cotejaron visualmente; no proceden solo de OCR."
+  ],
+  "fuentes": [
+    {
+      "id": "F01",
+      "clave": "plantilla-principal",
+      "fichero": "//192.168.0.128/Oftecnica/Oficina Tecnica/DIBUJOS/FALDON/FALDON.dwg",
+      "bytes": 201874,
+      "sha256": "9d45c16c130d314af6058418f1a8c1ce34cd93741d006b9c6182c1e3f8f1d51b",
+      "entidadesLeidas": {
+        "LINE": 454,
+        "CIRCLE": 9,
+        "MTEXT": 114,
+        "ARC": 31,
+        "LWPOLYLINE": 55,
+        "DIMENSION": 156,
+        "TEXT": 4,
+        "INSERT": 1
+      },
+      "conversion": "DWG a DXF ACAD2018 con src/odaConverter.js; ODAFileConverter.exe; temporales dentro de tmp/faldones-frontales"
+    },
+    {
+      "id": "F02",
+      "clave": "plantilla-2",
+      "fichero": "//192.168.0.128/Oftecnica/Oficina Tecnica/DIBUJOS/FALDON/FALDON2.DWG",
+      "bytes": 193037,
+      "sha256": "a4b89c21e55cd2a9aa550f96194b8284bc028d52e4ffdb63a424ce5966c93380",
+      "entidadesLeidas": {
+        "LINE": 399,
+        "CIRCLE": 7,
+        "MTEXT": 101,
+        "ARC": 12,
+        "LWPOLYLINE": 54,
+        "DIMENSION": 140,
+        "TEXT": 4,
+        "INSERT": 1
+      },
+      "conversion": "DWG a DXF ACAD2018 con src/odaConverter.js; ODAFileConverter.exe; temporales dentro de tmp/faldones-frontales"
+    },
+    {
+      "id": "F03",
+      "clave": "dibujo-instruccion",
+      "fichero": "//192.168.0.128/Oftecnica/Oficina Tecnica/DIBUJOS/FALDON/INFORMACION/IMAGENES/FALDON.dwg",
+      "bytes": 5323575,
+      "sha256": "4132b2fcff3e2ef919ad70e6719f75776ec65c34cbe09407b5d1ecfbd98ee00f",
+      "entidadesLeidas": {
+        "LWPOLYLINE": 19,
+        "ARC": 20,
+        "TEXT": 1,
+        "MTEXT": 1,
+        "INSERT": 1
+      },
+      "conversion": "DWG a DXF ACAD2018 con src/odaConverter.js; ODAFileConverter.exe; temporales dentro de tmp/faldones-frontales"
+    },
+    {
+      "id": "F04",
+      "clave": "instruccion-medicion",
+      "fichero": "//192.168.0.128/Oftecnica/Oficina Tecnica/DIBUJOS/FALDON/INFORMACION/INSTRUCCIÓN MEDICIÓN faldones.doc",
+      "bytes": 20427264,
+      "sha256": "48521eee92ed90fdb33b82f5c7e04b48886eb16cb569c13eb54b93866c9344c1"
+    },
+    {
+      "id": "F05",
+      "clave": "soportes",
+      "fichero": "//192.168.0.128/Oftecnica/Oficina Tecnica/DIBUJOS/FALDON/Soporte-gancho/Soportes_faldon.pdf",
+      "bytes": 103719,
+      "sha256": "b9f63498e2008f0e5dedf4a721dbdfa6f63422411aa132ebb20cf187570d9810",
+      "paginasUsadas": [
+        1
+      ],
+      "revision": "Páginas revisadas visualmente."
+    },
+    {
+      "id": "F06",
+      "clave": "soporte-monobloc",
+      "fichero": "//192.168.0.128/Oftecnica/Oficina Tecnica/DIBUJOS/FALDON/Soporte-gancho/Soporte_Faldon_Monobloc.pdf",
+      "bytes": 157598,
+      "sha256": "f27135a2c62e489d09ea2f4f25227ca5e230f7f8138fbae7268e576282b42cd3",
+      "paginasUsadas": [
+        1
+      ],
+      "revision": "Páginas revisadas visualmente."
+    },
+    {
+      "id": "F07",
+      "clave": "maestro",
+      "fichero": "//192.168.0.128/Oftecnica/Oficina Tecnica/PROGRAMAS CALCULO/TOLDOS TESTAR 10-4.xlsm",
+      "bytes": 1444791,
+      "sha256": "e3b70d6dc87e52233e584931663167a6667a8da874c23390c0e33312b0e5093b",
+      "hojas": [
+        "DATOS ",
+        "D.COM",
+        "ENROL.",
+        "PRO",
+        "GAL",
+        "XAC",
+        "CORT",
+        "ST250",
+        "ST400",
+        "MODUL",
+        "PUNTO RECTO",
+        "MAXISCREEM",
+        "MON.350",
+        "MICRO",
+        "CAM.CORT.",
+        "CAM. TELA",
+        "BAMBALINA",
+        "CAM. ANTICA",
+        "M1",
+        "M2",
+        "M3",
+        "M4",
+        "IMAGENES",
+        "ESTR.01",
+        "ESTR.02",
+        "ESTR.03",
+        "ESTR.04",
+        "M REF",
+        "TELA",
+        "RPS",
+        "M.TELA",
+        "_56F9DC9755BA473782653E2940F9"
+      ]
+    },
+    {
+      "id": "F08",
+      "clave": "AR2502986-dwg",
+      "fichero": "//192.168.0.128/Oftecnica/Oficina Tecnica/2025/AR2502986.dwg",
+      "bytes": 193084,
+      "sha256": "627e5ac295144f4e9c120af3f929af70abedd1f4ce720440d29093da624b277c",
+      "entidadesLeidas": {
+        "LINE": 431,
+        "CIRCLE": 8,
+        "MTEXT": 106,
+        "ARC": 62,
+        "LWPOLYLINE": 54,
+        "DIMENSION": 148,
+        "TEXT": 4,
+        "INSERT": 1
+      },
+      "conversion": "DWG a DXF ACAD2018 con src/odaConverter.js; ODAFileConverter.exe; temporales dentro de tmp/faldones-frontales"
+    },
+    {
+      "id": "F09",
+      "clave": "AR2601947-dwg",
+      "fichero": "//192.168.0.128/Oftecnica/Oficina Tecnica/2026/AR2601947.dwg",
+      "bytes": 79005,
+      "sha256": "4a39ade9d45823069a1ab09356cdcc4584ca704c5b14454837152394ddc26410",
+      "entidadesLeidas": {
+        "LINE": 48,
+        "CIRCLE": 2,
+        "MTEXT": 12,
+        "DIMENSION": 12,
+        "LWPOLYLINE": 2,
+        "ARC": 3,
+        "TEXT": 1,
+        "INSERT": 1
+      },
+      "conversion": "DWG a DXF ACAD2018 con src/odaConverter.js; ODAFileConverter.exe; temporales dentro de tmp/faldones-frontales"
+    },
+    {
+      "id": "F10",
+      "clave": "AR2502986-pedido",
+      "fichero": "//192.168.0.128/RPS/VENTAS/PEDIDOS/2025/AR.25.02986.pdf",
+      "bytes": 791050,
+      "sha256": "9dad81e9d1d586489c781f273d3c966b8890e130b192e047f57cbf793ffde64b",
+      "paginasUsadas": [
+        1,
+        2
+      ],
+      "revision": "Páginas revisadas visualmente."
+    },
+    {
+      "id": "F11",
+      "clave": "AR2601947-pedido",
+      "fichero": "//192.168.0.128/RPS/VENTAS/PEDIDOS/2026/AR.26.01947.pdf",
+      "bytes": 2042649,
+      "sha256": "9bc26d72dec889a922dd682bd240c0f8521011239af76ad7b8ebb846cc332073",
+      "paginasUsadas": [
+        1,
+        2,
+        3,
+        5
+      ],
+      "revision": "Páginas revisadas visualmente."
+    },
+    {
+      "id": "F12",
+      "clave": "AR2502986-plano-1",
+      "fichero": "//192.168.0.128/RPS/VENTAS/PLANTEAMIENTOS/2025/AR.25.02986-1.pdf",
+      "bytes": 55312,
+      "sha256": "574880c00f2050212609736acb13fbf02fe56e55cba191add93a31eeef606123",
+      "paginasUsadas": [
+        1
+      ],
+      "revision": "Páginas revisadas visualmente."
+    },
+    {
+      "id": "F13",
+      "clave": "AR2601947-plano-1",
+      "fichero": "//192.168.0.128/RPS/VENTAS/PLANTEAMIENTOS/2026/AR.26.01947-1.pdf",
+      "bytes": 179984,
+      "sha256": "3c1133d629443a527d8b79f5fdc285d3630ef0a0d40c623ec728fa73f344798b",
+      "paginasUsadas": [
+        1,
+        2
+      ],
+      "revision": "Texto extraído para identificar la OF del toldo; sin validación de su despiece."
+    },
+    {
+      "id": "F14",
+      "clave": "AR2601947-plano-10",
+      "fichero": "//192.168.0.128/RPS/VENTAS/PLANTEAMIENTOS/2026/AR.26.01947-10.pdf",
+      "bytes": 69272,
+      "sha256": "98684b5ed7a0fada9db88a4a622a4ce13376def1d8e252c7564e7c031a70e3db",
+      "paginasUsadas": [
+        1
+      ],
+      "revision": "Páginas revisadas visualmente."
+    },
+    {
+      "id": "F15",
+      "clave": "AR2601947-libro",
+      "fichero": "//192.168.0.128/Oftecnica/Oficina Tecnica/2026/TOLDOS/AR2601947.xlsm",
+      "bytes": 1458953,
+      "sha256": "34897005c17c49566b5a210a00d1f9fb223ba9c1f582b9044b0bb7e2fe62277f",
+      "hojas": [
+        "D.COM",
+        "ENROL.",
+        "PRO",
+        "GAL",
+        "XAC",
+        "CORT",
+        "ST250",
+        "S300",
+        "M.TELA",
+        "MODUL",
+        "PUNTO RECTO",
+        "MAXISCREEM",
+        "MON.350",
+        "MICRO",
+        "CAM.CORT.",
+        "CAM. TELA",
+        "M1",
+        "M2",
+        "M3",
+        "M4",
+        "IMAGENES",
+        "DATOS ",
+        "ESTR.01",
+        "ESTR.02",
+        "ESTR.03",
+        "ESTR.04",
+        "M REF",
+        "TELA",
+        "RPS",
+        "_56F9DC9755BA473782653E2940F9"
+      ]
+    },
+    {
+      "id": "F16",
+      "clave": "AR2300285-dwg",
+      "fichero": "//192.168.0.128/Oftecnica/Oficina Tecnica/2023/AR2300285.dwg",
+      "bytes": 235856,
+      "sha256": "10dcf5c7a01689fa7c2b3e7cc78285e4db871d20521a77d2a90416e22d5d97fb",
+      "entidadesLeidas": {
+        "LINE": 140,
+        "CIRCLE": 2,
+        "ARC": 5,
+        "MTEXT": 27,
+        "LWPOLYLINE": 17,
+        "DIMENSION": 43,
+        "TEXT": 7,
+        "INSERT": 1
+      },
+      "conversion": "DWG a DXF ACAD2018 con src/odaConverter.js; ODAFileConverter.exe; temporales dentro de tmp/faldones-frontales"
+    },
+    {
+      "id": "F17",
+      "clave": "AR2300285-pedido",
+      "fichero": "//192.168.0.128/RPS/VENTAS/PEDIDOS/2023/AR.23.00285.pdf",
+      "bytes": 2973649,
+      "sha256": "795b32fac8f803870fefd1a8b933bb209913b50632d3995818a1ac4526839a6e",
+      "paginasUsadas": [
+        1,
+        2,
+        3
+      ],
+      "revision": "Páginas revisadas visualmente."
+    },
+    {
+      "id": "F18",
+      "clave": "AR2300285-plano-1",
+      "fichero": "//192.168.0.128/RPS/VENTAS/PLANTEAMIENTOS/2023/AR.23.00285-1.pdf",
+      "bytes": 120028,
+      "sha256": "6254b9d3a65e0cac3744d9e6e8e37b6b7a95046f616b3bfd239ef4e51f8a76f0",
+      "paginasUsadas": [
+        1
+      ],
+      "revision": "Páginas revisadas visualmente."
+    },
+    {
+      "id": "F19",
+      "clave": "AR2300285-plano-10",
+      "fichero": "//192.168.0.128/RPS/VENTAS/PLANTEAMIENTOS/2023/AR.23.00285-10.pdf",
+      "bytes": 316641,
+      "sha256": "8f7b61c1b138e3df10bbedbd106d9965d18a4dc6d3c700d1e19c39125950d196",
+      "paginasUsadas": [
+        1,
+        2
+      ],
+      "revision": "Páginas revisadas visualmente."
+    }
+  ],
+  "casos": [
+    {
+      "id": "V01",
+      "pedido": "AR2502986",
+      "variantes": [
+        "lateral con goma para Cuarzo Box"
+      ],
+      "piezas": 1,
+      "ofEscritaEnPlano": "0217885",
+      "fuentes": [
+        "F08",
+        "F10",
+        "F12"
+      ],
+      "observado": {
+        "material": "Acrílico Vesubio 2636",
+        "ofertaNominal": [
+          236,
+          85
+        ],
+        "cotaHechaRotulada": 236,
+        "cajaCorteRotulada": [
+          102.9,
+          244
+        ],
+        "anotaciones": [
+          "Goma elástica de 7 blanca",
+          "BN(4)",
+          "Ollao en esquina inferior",
+          "Remate amarillo ondulado",
+          "Adaptación con alcayata al cofre"
+        ]
+      },
+      "decision": "No trasladar el tubo con garfio convencional ni las medidas nominales de oferta como regla de corte."
+    },
+    {
+      "id": "V02",
+      "pedido": "AR2601947",
+      "variantes": [
+        "lateral para Perla Box"
+      ],
+      "piezas": 1,
+      "ofFaldonEscritaEnPlano": "0227726",
+      "ofToldoEscritaEnPlano": "0227725",
+      "fuentes": [
+        "F09",
+        "F11",
+        "F13",
+        "F14",
+        "F15"
+      ],
+      "observado": {
+        "material": "Acrílico antracita",
+        "ofertaNominal": [
+          300,
+          290
+        ],
+        "medicionPosterior": {
+          "distanciaPared": 272,
+          "alturas": [
+            206,
+            295
+          ],
+          "diagonal": 326,
+          "alturaTira": 20
+        },
+        "cotasPlano": {
+          "alturaPequena": 206,
+          "prolongacion": 3,
+          "total": 209,
+          "alturaGrande": 295
+        },
+        "cajaCorteRotulada": [
+          280,
+          322.3
+        ],
+        "anotaciones": [
+          "E.T. faldón superior",
+          "BN(4)",
+          "Refuerzo esquina",
+          "Tira de 4 ollaos lado pared",
+          "Tira inferior",
+          "Abajo: 4 mordazas (25), cinta negra de 55 cm y 4 abatibles",
+          "Mordazas/cinta y abatibles lado pared: cantidad no inequívoca",
+          "Ganchos para ambos lados: no equivale a 2 faldones"
+        ]
+      },
+      "decision": "Separar OF, paño del toldo, pieza de faldón, medidas comerciales y medición posterior."
+    },
+    {
+      "id": "V03",
+      "pedido": "AR2300285",
+      "variantes": [
+        "laterales con ventana A/B",
+        "frontales con ventana C/D"
+      ],
+      "piezas": 4,
+      "ofLateralesEscritaEnPlano": "0188203",
+      "ofFrontalesEscritaEnPlano": "0188204",
+      "fuentes": [
+        "F16",
+        "F17",
+        "F18",
+        "F19"
+      ],
+      "observado": {
+        "materiales": [
+          "Acrílico negro",
+          "Transparente 650 micras"
+        ],
+        "frontales": {
+          "cantidad": 2,
+          "frenteTotal": 626,
+          "frentePorPieza": [
+            313,
+            313
+          ],
+          "alturasExtremosYUnion": [
+            198.5,
+            218.2,
+            238
+          ],
+          "ventanas": [
+            {
+              "pieza": "C",
+              "ancho": 273,
+              "alto": 137,
+              "margenesLaterales": [
+                20,
+                20
+              ]
+            },
+            {
+              "pieza": "D",
+              "ancho": 273,
+              "alto": 137,
+              "margenesLaterales": [
+                20,
+                20
+              ]
+            }
+          ],
+          "cajasCorte": [
+            {
+              "pieza": "C",
+              "ancho": 317.5,
+              "alto": 228.9
+            },
+            {
+              "pieza": "D",
+              "ancho": 320.5,
+              "alto": 248.6
+            }
+          ]
+        },
+        "empateRotulado": 2,
+        "anotaciones": [
+          "Pendiente de bajo distinta por pieza",
+          "Entradas de tubo superior e inferior en C/D",
+          "Velcro bravo/suave con cara especificada",
+          "Solapas y borde de unión propios",
+          "F18 corresponde a cambios de tela y no se cuenta como faldón"
+        ]
+      },
+      "decision": "No igualar cortes por compartir el frente hecho; conservar letras, pendientes, ventanas y remates."
+    }
+  ],
+  "comprobaciones": [
+    {
+      "id": "V03-frente",
+      "operacion": "313 + 313",
+      "esperado": 626,
+      "fuentes": [
+        "F17/p3",
+        "F19/p2"
+      ]
+    },
+    {
+      "id": "V03-ventana",
+      "operacion": "20 + 273 + 20",
+      "esperado": 313,
+      "fuentes": [
+        "F19/p2"
+      ]
+    },
+    {
+      "id": "V02-altura",
+      "operacion": "206 + 3",
+      "esperado": 209,
+      "fuentes": [
+        "F14/p1"
+      ]
+    }
+  ],
+  "dudas": [
+    {
+      "id": "Q-FF01",
+      "tema": "Transformación de remates a corte y reglas de esquina",
+      "fuentes": [
+        "F04",
+        "F12",
+        "F14",
+        "F19"
+      ],
+      "estado": "Sin demasías generales registradas"
+    },
+    {
+      "id": "Q-FF02",
+      "tema": "Altura habitual de la tira: instrucción 15 cm, V02 20 cm",
+      "fuentes": [
+        "F04",
+        "F11/p3",
+        "F14/p1"
+      ],
+      "estado": "Prevalece la posición explícita del pedido; sin valor obligatorio nuevo"
+    }
+  ]
+}

@@ -187,3 +187,12 @@ Respuestas de Iván. «Pendiente» quiere decir que la web todavía no lo aplica
 | Q-A02 | Lacados poco habituales (bronce, gris texturado, lacado especial…) | A veces se venden; las piezas se mandan a lacar. Reservar la pieza en blanco y que la laquen | Hecho: si la pieza no existe en ese color, se reserva la blanca y la tarjeta avisa de qué piezas van a lacar. De unos 300 códigos inexistentes quedan 4 (barra EVO de 400 del Monoblock, que tampoco existe en blanco) |
 | Q-B07 | Notas largas de la Bambalina | En la línea va «bamba de tanto, hecha de tanto»; lo demás, en Observaciones | Hecho: la línea dice «BAMBALINA DE 30CM, HECHA DE 25CM» y las notas van al recuadro de Observaciones con la letra del toldo |
 | Q-C04 | Posición de las medidas bajo el dibujo de Cortina con ventana | En `drawCurtainDiagram` las filas H. VENTANA y ALTURA VELCRO quedaban debajo del marco; la última podía coincidir con las notas de tela | Hecha (02/10/2026): altura del dibujo y de la ventana reducida para dejar sitio a las cinco filas dentro del recuadro. Probados Cortina y Cambio de cortina con ventana, velcro, ET y bamba incluida, sin notas y con 35 observaciones completas; capturas claras y oscuras a 1280×720 y 1600×1000 revisadas. Solo cambia la colocación; valores y cálculos conservados |
+
+## Faldones laterales y frontales · estudio iniciado el 29/10/2026
+
+[Expediente y casos](./faldones-frontales.md#13-dudas-para-cerrar-antes-de-automatizar). Fase documental: todavía no hay cálculo propio en la web.
+
+| Código | Duda y muestra para decidir | Tratamiento mientras tanto |
+| --- | --- | --- |
+| Q-FF01 | ¿Qué aumentos y reglas de esquina se aplican hoy por bastilla, entrada de tubo, fleje, tira, solapa, cara y material? AR2502986 tiene 236 cm hechos y 244 de corte; los frontales C/D de AR2300285 comparten 313 cm de frente, pero sus cortes son distintos | Se conservan cotas y remates de cada caso; no se registran demasías generales inventadas |
+| Q-FF02 | La instrucción de medición describe la tira inferior a 15 cm; AR2601947 la pide y dibuja a 20 cm. ¿Los 15 cm siguen como habitual editable o ha cambiado el criterio general? | Prevalece la posición explícita del pedido; sin nuevo valor obligatorio |
