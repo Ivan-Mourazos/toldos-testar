@@ -476,7 +476,8 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], 
         const nombre = L && `${L}${emp || entera ? 5 : 4}`;
         tapa.deRestos = `TAPA DE VENTANA ${ventana[0] / 10 + 3} × ${ventana[1] / 10 + 3}${L ? ` (${nombre})` : ''}`;
         tapa.subtitulo = anchoArial('VENTANA', 100) <= Math.min(tapa.w, tapa.h) * 0.9 ? 'VENTANA' : 'VENT';
-        tapas.push(rotular(tapa, nombre, undefined, marcar));
+        // Sin el nombre en rotulador: en la tapa no hace falta (Iván, 29/10/2026, AR2605291); en grande, sí.
+        tapas.push(rotular(tapa, nombre, undefined, false));
       }
     }
   }
