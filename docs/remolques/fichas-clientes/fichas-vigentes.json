@@ -1,0 +1,1525 @@
+[
+  {
+    "id": "hijos-de-pedro-lopez",
+    "nombre": "HIJOS DE PEDRO LOPEZ",
+    "codigosRps": [
+      "001300"
+    ],
+    "extrasBaqueton": {
+      "extraLargoCostura": 11,
+      "extraAnchoCostura": 2,
+      "extraBaquetonLargoDelante": 1,
+      "extraBaquetonLargoDetras": 11,
+      "extraLargoFinal": 0,
+      "extraAnchoFinal": 0,
+      "extraBaquetonTrasero": 10,
+      "observaciones": [
+        "ABIERTO EN LA PARTE TRASERA (REFORZAR)"
+      ]
+    },
+    "recogidaPropia": {
+      "nombre": "PUENTES HIJOS DE PEDRO LOPEZ",
+      "delante": 42.5,
+      "atras": 42.5,
+      "lateralSoloAtras": 11.5,
+      "lateralSoloDelante": 9,
+      "panoTraseroConAnchoDelante": true
+    },
+    "recogeAtras": "PUENTES HIJOS DE PEDRO LOPEZ",
+    "recogeDelante": "NO",
+    "bastillaEnfundar": false,
+    "medidas": [
+      {
+        "tipo": "baqueton",
+        "largo": 200,
+        "ancho": 130,
+        "ollaos": {
+          "delante": [
+            2.7,
+            42.6,
+            88.4,
+            128.4
+          ],
+          "atras": [
+            2.7,
+            42.6,
+            88.4,
+            128.4
+          ],
+          "laterales": [
+            2.7,
+            29.8,
+            58.1,
+            86.4,
+            114.7,
+            143,
+            171.3,
+            198.4
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 200,
+        "ancho": 130,
+        "ollaos": {
+          "delante": [
+            2.5,
+            42.5,
+            88.2,
+            128.2
+          ],
+          "atras": [
+            4,
+            44,
+            89.7,
+            129.7
+          ],
+          "laterales": [
+            2.7,
+            29.8,
+            58.1,
+            86.4,
+            114.7,
+            143,
+            171.3,
+            198.4
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 180,
+        "ancho": 120,
+        "ollaos": {
+          "delante": [
+            2.7,
+            40.1,
+            80.9,
+            118.4
+          ],
+          "atras": [
+            2.7,
+            40.1,
+            80.9,
+            118.4
+          ],
+          "laterales": [
+            2.7,
+            30.5,
+            60.5,
+            90.5,
+            120.5,
+            150.5,
+            178.3
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 140,
+        "ancho": 108,
+        "ollaos": {
+          "delante": [
+            2.5,
+            37.1,
+            71.8,
+            106.5
+          ],
+          "atras": [
+            2.5,
+            37.6,
+            72.8,
+            108
+          ],
+          "laterales": [
+            2.5,
+            37.1,
+            71.7,
+            106.3,
+            141
+          ]
+        }
+      }
+    ],
+    "rotulacion": true,
+    "sesgoDetras": 1.5,
+    "version": 8
+  },
+  {
+    "id": "ayala",
+    "nombre": "AYALA",
+    "codigosRps": [
+      "048286"
+    ],
+    "extrasBaqueton": {
+      "extraLargoCostura": 1,
+      "extraAnchoCostura": 1,
+      "extraBaquetonLargoDelante": 0,
+      "extraBaquetonLargoDetras": 0,
+      "extraLargoFinal": 1,
+      "extraAnchoFinal": 1,
+      "extraBaquetonTrasero": 0,
+      "observaciones": []
+    },
+    "medidas": [
+      {
+        "tipo": "lona",
+        "largo": 222,
+        "ancho": 130,
+        "ollaos": {
+          "delante": [
+            8.5,
+            41.5,
+            90.5,
+            123
+          ],
+          "atras": [
+            8.5,
+            41.5,
+            90.5,
+            123
+          ],
+          "laterales": [
+            7,
+            35,
+            83.5,
+            138.5,
+            187,
+            214.5
+          ]
+        }
+      },
+      {
+        "tipo": "baqueton",
+        "largo": 200,
+        "ancho": 130,
+        "ollaos": {
+          "delante": [
+            6,
+            42,
+            91,
+            123.5
+          ],
+          "atras": [
+            6,
+            42,
+            91,
+            123.5
+          ],
+          "laterales": [
+            7.5,
+            33.5,
+            77,
+            127,
+            170.5,
+            195.5
+          ]
+        }
+      },
+      {
+        "tipo": "baqueton",
+        "largo": 250,
+        "ancho": 152,
+        "ollaos": {
+          "delante": [
+            5,
+            32.5,
+            76.7,
+            121.5,
+            149
+          ],
+          "atras": [
+            5,
+            32.5,
+            76.7,
+            121.5,
+            149
+          ],
+          "laterales": [
+            8,
+            33.5,
+            77,
+            127,
+            177,
+            220.5,
+            245.5
+          ]
+        }
+      },
+      {
+        "tipo": "baqueton",
+        "largo": 250,
+        "ancho": 170,
+        "ollaos": {
+          "delante": [
+            15,
+            58,
+            112,
+            155
+          ],
+          "atras": [
+            15,
+            58,
+            112,
+            155
+          ],
+          "laterales": [
+            8,
+            33.5,
+            77,
+            127,
+            177,
+            220.5,
+            245.5
+          ]
+        }
+      }
+    ],
+    "recogeAtras": "GOMA",
+    "ventana": {
+      "lleva": false
+    },
+    "version": 7
+  },
+  {
+    "id": "general-wolder",
+    "nombre": "GENERAL WOLDER",
+    "codigosRps": [
+      "001047"
+    ],
+    "extrasBaqueton": {
+      "extraLargoCostura": -1,
+      "extraAnchoCostura": -1,
+      "extraBaquetonLargoDelante": -0.5,
+      "extraBaquetonLargoDetras": -0.5,
+      "extraLargoFinal": 0,
+      "extraAnchoFinal": 0,
+      "extraBaquetonTrasero": 0,
+      "observaciones": [
+        "OLLAOS EN ALTA FRECUENCIA",
+        "ETIQUETA EN I.D EN LA PARTE TRASERA ENTRE LOS 2 OLLAOS MÁS A LA DERECHA",
+        "MANDAR GOMA SUELTA"
+      ]
+    },
+    "version": 1
+  },
+  {
+    "id": "remolcar",
+    "nombre": "REMOLCAR",
+    "codigosRps": [
+      "000265"
+    ],
+    "medidas": [
+      {
+        "tipo": "lona",
+        "largo": 200,
+        "ancho": 160,
+        "ollaos": {
+          "delante": [
+            10.5,
+            41.5,
+            80.5,
+            116.5,
+            150.5
+          ],
+          "atras": [
+            10.5,
+            41.5,
+            80.5,
+            116.5,
+            150.5
+          ],
+          "laterales": [
+            10,
+            41,
+            81,
+            121,
+            161,
+            191
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 230,
+        "ancho": 130,
+        "ollaos": {
+          "delante": [
+            10,
+            45,
+            86,
+            121
+          ],
+          "atras": [
+            10,
+            45,
+            86,
+            121
+          ],
+          "laterales": [
+            5,
+            11,
+            52,
+            98,
+            141,
+            185,
+            221
+          ]
+        }
+      },
+      {
+        "tipo": "baqueton",
+        "largo": 210,
+        "ancho": 130,
+        "ollaos": {
+          "delante": [
+            8,
+            42,
+            89.8,
+            123
+          ],
+          "atras": [
+            8,
+            42,
+            89.8,
+            123
+          ],
+          "laterales": [
+            10,
+            43.5,
+            85,
+            127.5,
+            169.5,
+            200.5
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 140,
+        "ancho": 110,
+        "ollaos": {
+          "delante": [
+            4.3,
+            31.8,
+            78.5,
+            106.5
+          ],
+          "atras": [
+            4.3,
+            31.8,
+            78.5,
+            106.5
+          ],
+          "laterales": [
+            5,
+            11,
+            48,
+            93.8,
+            128.8
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 180,
+        "ancho": 120,
+        "ollaos": {
+          "laterales": [
+            10,
+            46,
+            93,
+            138,
+            171
+          ],
+          "atras": [
+            10,
+            42,
+            76,
+            111
+          ],
+          "delante": [
+            10,
+            42,
+            76,
+            111
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 270,
+        "ancho": 160,
+        "ollaos": {
+          "laterales": [
+            5,
+            11,
+            47,
+            91,
+            137,
+            180,
+            225,
+            261
+          ],
+          "atras": [
+            10.5,
+            41.5,
+            80.5,
+            116.5,
+            150.5
+          ],
+          "delante": [
+            10.5,
+            41.5,
+            80.5,
+            116.5,
+            150.5
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 150,
+        "ancho": 110,
+        "ollaos": {
+          "laterales": [
+            10,
+            50,
+            100,
+            141
+          ],
+          "delante": [
+            10.5,
+            37.5,
+            76.5,
+            100.5
+          ],
+          "atras": [
+            10.5,
+            37.5,
+            76.5,
+            100.5
+          ]
+        }
+      },
+      {
+        "tipo": "baqueton",
+        "largo": 150,
+        "ancho": 110,
+        "ollaos": {
+          "laterales": [
+            10,
+            50,
+            100,
+            141
+          ],
+          "delante": [
+            10.5,
+            37.5,
+            76.5,
+            100.5
+          ],
+          "atras": [
+            10.5,
+            37.5,
+            76.5,
+            100.5
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 225,
+        "ancho": 125,
+        "ollaos": {
+          "laterales": [
+            5,
+            11,
+            48,
+            93,
+            136,
+            181,
+            216
+          ],
+          "delante": [
+            10,
+            40,
+            88,
+            116
+          ],
+          "atras": [
+            10,
+            38,
+            86,
+            116
+          ]
+        }
+      },
+      {
+        "tipo": "baqueton",
+        "largo": 225,
+        "ancho": 125,
+        "ollaos": {
+          "laterales": [
+            5,
+            11,
+            48,
+            93,
+            136,
+            181,
+            216
+          ],
+          "delante": [
+            10,
+            40,
+            88,
+            116
+          ],
+          "atras": [
+            10,
+            38,
+            86,
+            116
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 250,
+        "ancho": 140,
+        "ollaos": {
+          "laterales": [
+            10,
+            44,
+            86,
+            128,
+            168,
+            208,
+            241
+          ],
+          "delante": [
+            6.5,
+            46.5,
+            98.5,
+            134.5
+          ],
+          "atras": [
+            6.5,
+            46.5,
+            98.5,
+            134.5
+          ]
+        }
+      },
+      {
+        "tipo": "baqueton",
+        "largo": 250,
+        "ancho": 140,
+        "ollaos": {
+          "laterales": [
+            10,
+            44,
+            86,
+            128,
+            168,
+            208,
+            241
+          ],
+          "delante": [
+            6.5,
+            46.5,
+            98.5,
+            134.5
+          ],
+          "atras": [
+            6.5,
+            46.5,
+            98.5,
+            134.5
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 260,
+        "ancho": 160,
+        "ollaos": {
+          "laterales": [
+            10,
+            45,
+            91,
+            133,
+            176,
+            218,
+            251
+          ],
+          "delante": [
+            10.5,
+            44.5,
+            80.5,
+            119.5,
+            150.5
+          ],
+          "atras": [
+            10.5,
+            44.5,
+            80.5,
+            119.5,
+            150.5
+          ]
+        }
+      },
+      {
+        "tipo": "baqueton",
+        "largo": 260,
+        "ancho": 160,
+        "ollaos": {
+          "laterales": [
+            10,
+            45,
+            91,
+            133,
+            176,
+            218,
+            251
+          ],
+          "delante": [
+            10.5,
+            44.5,
+            80.5,
+            119.5,
+            150.5
+          ],
+          "atras": [
+            10.5,
+            44.5,
+            80.5,
+            119.5,
+            150.5
+          ]
+        }
+      }
+    ],
+    "perfil": {
+      "tipoPerfil": "TIPO 05",
+      "radioEsquina": 10.1
+    },
+    "recogeDelante": "NO",
+    "recogeAtras": "GOMA",
+    "bastillaEnfundar": false,
+    "ventana": {
+      "lleva": true,
+      "ancho": 50,
+      "alto": 35
+    },
+    "version": 10
+  },
+  {
+    "id": "pamilakan-sas",
+    "nombre": "PAMILAKAN SAS",
+    "codigosRps": [
+      "048363"
+    ],
+    "perfil": {
+      "tipoPerfil": "TIPO 01"
+    },
+    "bastillaEnfundar": true,
+    "ventana": {
+      "lleva": false
+    },
+    "rotulacion": false,
+    "medidas": [
+      {
+        "tipo": "lona",
+        "largo": 205,
+        "ancho": 145,
+        "ollaos": {
+          "delante": [
+            2.5,
+            49.5,
+            96.5,
+            143.5
+          ],
+          "atras": [
+            2.5,
+            49.5,
+            96.5,
+            143.5
+          ],
+          "laterales": [
+            2.5,
+            42.7,
+            82.9,
+            123.1,
+            163.3,
+            203.5
+          ]
+        }
+      },
+      {
+        "tipo": "baqueton",
+        "largo": 258,
+        "ancho": 132,
+        "ollaos": {
+          "delante": [
+            2.5,
+            28.1,
+            53.7,
+            79.3,
+            104.9,
+            130.5
+          ],
+          "atras": [
+            2.5,
+            28.1,
+            53.7,
+            79.3,
+            104.9,
+            130.5
+          ],
+          "laterales": [
+            2.5,
+            30.7,
+            58.9,
+            87.2,
+            115.4,
+            143.6,
+            171.8,
+            200.1,
+            228.3,
+            256.5
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 202,
+        "ancho": 127,
+        "ollaos": {
+          "delante": [
+            2.5,
+            33.3,
+            64,
+            94.8,
+            125.5
+          ],
+          "atras": [
+            2.5,
+            33.3,
+            64,
+            94.8,
+            125.5
+          ],
+          "laterales": [
+            2.5,
+            42.1,
+            81.7,
+            121.3,
+            160.9,
+            200.5
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 172,
+        "ancho": 127,
+        "ollaos": {
+          "delante": [
+            2.5,
+            43.5,
+            84.5,
+            125.5
+          ],
+          "atras": [
+            2.5,
+            43.5,
+            84.5,
+            125.5
+          ],
+          "laterales": [
+            2.5,
+            30.5,
+            58.5,
+            86.5,
+            114.5,
+            142.5,
+            170.5
+          ]
+        }
+      }
+    ],
+    "recogeAtras": "CREMALLERA",
+    "version": 5
+  },
+  {
+    "codigosRps": [
+      "021493"
+    ],
+    "nombre": "EURO REMOLQUE",
+    "observaciones": [
+      "SI SE MANDA GOMA PARA VARIOS REMOLQUES, MANDAR LA GOMA POR SEPARADO"
+    ],
+    "medidas": [
+      {
+        "tipo": "lona",
+        "largo": 160,
+        "ancho": 120,
+        "ollaos": {
+          "laterales": [
+            13.5,
+            42.5,
+            80.5,
+            118.5,
+            147.5
+          ],
+          "atras": [
+            10.5,
+            35.5,
+            85.5,
+            110.5
+          ],
+          "delante": [
+            10.5,
+            35.5,
+            85.5,
+            110.5
+          ]
+        }
+      },
+      {
+        "tipo": "baqueton",
+        "largo": 160,
+        "ancho": 120,
+        "ollaos": {
+          "laterales": [
+            13.5,
+            42.5,
+            80.5,
+            118.5,
+            147.5
+          ],
+          "atras": [
+            10.5,
+            35.5,
+            85.5,
+            110.5
+          ],
+          "delante": [
+            10.5,
+            35.5,
+            85.5,
+            110.5
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 175,
+        "ancho": 110,
+        "ollaos": {
+          "laterales": [
+            13.5,
+            46.5,
+            87.5,
+            129.5,
+            162.5
+          ],
+          "atras": [
+            10.5,
+            55.5,
+            100.5
+          ],
+          "delante": [
+            10.5,
+            55.5,
+            100.5
+          ]
+        }
+      },
+      {
+        "tipo": "baqueton",
+        "largo": 175,
+        "ancho": 110,
+        "ollaos": {
+          "laterales": [
+            13.5,
+            46.5,
+            87.5,
+            129.5,
+            162.5
+          ],
+          "atras": [
+            10.5,
+            55.5,
+            100.5
+          ],
+          "delante": [
+            10.5,
+            55.5,
+            100.5
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 200,
+        "ancho": 125,
+        "ollaos": {
+          "laterales": [
+            10.5,
+            50.5,
+            100.5,
+            150.5,
+            190.5
+          ],
+          "atras": [
+            12.5,
+            45.5,
+            80.5,
+            113.5
+          ],
+          "delante": [
+            12.5,
+            45.5,
+            80.5,
+            113.5
+          ]
+        }
+      },
+      {
+        "tipo": "baqueton",
+        "largo": 200,
+        "ancho": 125,
+        "ollaos": {
+          "laterales": [
+            10.5,
+            50.5,
+            100.5,
+            150.5,
+            190.5
+          ],
+          "atras": [
+            12.5,
+            45.5,
+            80.5,
+            113.5
+          ],
+          "delante": [
+            12.5,
+            45.5,
+            80.5,
+            113.5
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 225,
+        "ancho": 125,
+        "ollaos": {
+          "laterales": [
+            13.5,
+            48.5,
+            92.5,
+            135.5,
+            178.5,
+            212.5
+          ],
+          "atras": [
+            12.5,
+            45.5,
+            80.5,
+            113.5
+          ],
+          "delante": [
+            12.5,
+            45.5,
+            80.5,
+            113.5
+          ]
+        }
+      },
+      {
+        "tipo": "baqueton",
+        "largo": 225,
+        "ancho": 125,
+        "ollaos": {
+          "laterales": [
+            13.5,
+            48.5,
+            92.5,
+            135.5,
+            178.5,
+            212.5
+          ],
+          "atras": [
+            12.5,
+            45.5,
+            80.5,
+            113.5
+          ],
+          "delante": [
+            12.5,
+            45.5,
+            80.5,
+            113.5
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 250,
+        "ancho": 140,
+        "ollaos": {
+          "laterales": [
+            10.5,
+            50.5,
+            100.5,
+            150.5,
+            200.5,
+            240.5
+          ],
+          "atras": [
+            12.5,
+            49.5,
+            91.5,
+            128.5
+          ],
+          "delante": [
+            12.5,
+            49.5,
+            91.5,
+            128.5
+          ]
+        }
+      },
+      {
+        "tipo": "baqueton",
+        "largo": 250,
+        "ancho": 140,
+        "ollaos": {
+          "laterales": [
+            10.5,
+            50.5,
+            100.5,
+            150.5,
+            200.5,
+            240.5
+          ],
+          "atras": [
+            12.5,
+            49.5,
+            91.5,
+            128.5
+          ],
+          "delante": [
+            12.5,
+            49.5,
+            91.5,
+            128.5
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 260,
+        "ancho": 150,
+        "ollaos": {
+          "laterales": [
+            12.5,
+            46.5,
+            88.5,
+            130.5,
+            172.5,
+            214.5,
+            248.5
+          ],
+          "atras": [
+            12.5,
+            54.5,
+            96.5,
+            138.5
+          ],
+          "delante": [
+            12.5,
+            54.5,
+            96.5,
+            138.5
+          ]
+        }
+      },
+      {
+        "tipo": "baqueton",
+        "largo": 260,
+        "ancho": 150,
+        "ollaos": {
+          "laterales": [
+            12.5,
+            46.5,
+            88.5,
+            130.5,
+            172.5,
+            214.5,
+            248.5
+          ],
+          "atras": [
+            12.5,
+            54.5,
+            96.5,
+            138.5
+          ],
+          "delante": [
+            12.5,
+            54.5,
+            96.5,
+            138.5
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 300,
+        "ancho": 175,
+        "ollaos": {
+          "laterales": [
+            13,
+            51,
+            101,
+            151,
+            201,
+            251,
+            288
+          ],
+          "atras": [
+            13,
+            57,
+            119,
+            163
+          ],
+          "delante": [
+            13,
+            57,
+            119,
+            163
+          ]
+        }
+      },
+      {
+        "tipo": "baqueton",
+        "largo": 300,
+        "ancho": 175,
+        "ollaos": {
+          "laterales": [
+            13,
+            51,
+            101,
+            151,
+            201,
+            251,
+            288
+          ],
+          "atras": [
+            13,
+            57,
+            119,
+            163
+          ],
+          "delante": [
+            13,
+            57,
+            119,
+            163
+          ]
+        }
+      }
+    ],
+    "id": "euro-remolque",
+    "version": 1
+  },
+  {
+    "id": "remolques-robustos",
+    "nombre": "REMOLQUES ROBUSTOS",
+    "codigosRps": [
+      "054598"
+    ],
+    "medidas": [
+      {
+        "tipo": "baqueton",
+        "largo": 200,
+        "ancho": 135,
+        "ollaos": {
+          "delante": [
+            2.5,
+            35.3,
+            68,
+            100.8,
+            133.5
+          ],
+          "atras": [
+            2.5,
+            46.2,
+            89.8,
+            133.5
+          ],
+          "laterales": [
+            2.5,
+            35.2,
+            67.8,
+            100.5,
+            133.2,
+            165.8,
+            198.5
+          ]
+        }
+      }
+    ],
+    "version": 1
+  },
+  {
+    "codigosRps": [
+      "030179"
+    ],
+    "nombre": "CANO MUÑOZ S.L.U.",
+    "medidas": [
+      {
+        "tipo": "baqueton",
+        "largo": 186,
+        "ancho": 121,
+        "ollaos": {
+          "laterales": [
+            2.5,
+            32.8,
+            63.2,
+            93.5,
+            123.8,
+            154.2,
+            184.5
+          ],
+          "atras": [
+            2.5,
+            31.8,
+            61,
+            90.3,
+            119.5
+          ],
+          "delante": [
+            2.5,
+            31.8,
+            61,
+            90.3,
+            119.5
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 253,
+        "ancho": 152,
+        "ollaos": {
+          "laterales": [
+            2.5,
+            33.6,
+            64.8,
+            95.9,
+            127,
+            158.1,
+            189.3,
+            220.4,
+            251.5
+          ],
+          "atras": [
+            2.5,
+            39.5,
+            76.5,
+            113.5,
+            150.5
+          ],
+          "delante": [
+            2.5,
+            39.5,
+            76.5,
+            113.5,
+            150.5
+          ]
+        }
+      }
+    ],
+    "id": "cano-munoz-s-l-u",
+    "perfil": {
+      "tipoPerfil": "TIPO 03",
+      "aguas": 16,
+      "radioCumbrera": 11,
+      "radioHombro": 9.2
+    },
+    "recogeDelante": "NO",
+    "recogeAtras": "CREMALLERA",
+    "bastillaEnfundar": false,
+    "ventana": {
+      "lleva": false
+    },
+    "version": 2
+  },
+  {
+    "id": "carma",
+    "nombre": "CARMA",
+    "codigosRps": [
+      "000108"
+    ],
+    "medidas": [
+      {
+        "tipo": "lona",
+        "largo": 206,
+        "ancho": 130,
+        "ollaos": {
+          "delante": [
+            2.5,
+            44.3,
+            86.7,
+            128.5
+          ],
+          "atras": [
+            2.5,
+            44.3,
+            86.7,
+            128.5
+          ],
+          "laterales": [
+            2.5,
+            42.7,
+            82.9,
+            123.1,
+            163.3,
+            203.5
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 230,
+        "ancho": 150,
+        "ollaos": {
+          "delante": [
+            2.5,
+            44.2,
+            75.5,
+            106.7,
+            148.5
+          ],
+          "atras": [
+            2.5,
+            44.2,
+            75.5,
+            106.7,
+            148.5
+          ],
+          "laterales": [
+            2.5,
+            34.8,
+            67.1,
+            99.4,
+            131.6,
+            163.9,
+            196.2,
+            228.5
+          ]
+        }
+      }
+    ],
+    "perfil": {
+      "tipoPerfil": "TIPO 05",
+      "radioEsquina": 8.1
+    },
+    "recogeAtras": "GOMA",
+    "recogeDelante": "NO",
+    "ollaosRepartidos": true,
+    "version": 3
+  },
+  {
+    "id": "talleres-santaballa",
+    "nombre": "TALLERES SANTABALLA",
+    "codigosRps": [
+      "049971"
+    ],
+    "medidas": [
+      {
+        "tipo": "lona",
+        "largo": 310,
+        "ancho": 188,
+        "ollaos": {
+          "delante": [
+            2.5,
+            33.2,
+            63.8,
+            94.5,
+            125.2,
+            155.9,
+            186.5
+          ],
+          "atras": [
+            2.5,
+            33.2,
+            63.8,
+            94.5,
+            125.2,
+            155.9,
+            186.5
+          ],
+          "laterales": [
+            2.5,
+            36.5,
+            70.5,
+            104.5,
+            138.5,
+            172.5,
+            206.5,
+            240.5,
+            274.5,
+            308.5
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 160,
+        "ancho": 100,
+        "ollaos": {
+          "delante": [
+            2.5,
+            26.5,
+            50.5,
+            74.5,
+            98.5
+          ],
+          "atras": [
+            2.5,
+            26.5,
+            50.5,
+            74.5,
+            98.5
+          ],
+          "laterales": [
+            2.5,
+            36.4,
+            65.8,
+            95.2,
+            124.6,
+            158.5
+          ]
+        }
+      }
+    ],
+    "recogeAtras": "GOMA",
+    "version": 2
+  },
+  {
+    "codigosRps": [
+      "031580"
+    ],
+    "nombre": "CAMACHO",
+    "id": "camacho",
+    "ollaosRepartidos": true,
+    "version": 2
+  }
+]
