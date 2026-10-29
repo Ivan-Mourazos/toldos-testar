@@ -56,9 +56,14 @@ export function piezasEmbudo({ embudo, letra = 'A' }) {
   };
   const forma = corona(exterior, interior, e.cierre * 10);
   if (e.cierre > 0) forma.lineas.push(linea('ROTULADOR', punto(exterior, hasta), punto(interior, hasta)));
-  for (const [boca, radio, marca] of [[grande, R, R - 100], [pequena, r, r + 100]]) {
+  // La bastilla, como en los rectos (en el histórico ningún cónico la lleva: los 13 van con REF.(10); Iván, 29/10/2026:
+  // «mira cómo se puso la bastilla y listo»): añade su medida y la raya va al doble desde el corte, a la bastilla del
+  // terminado hacia dentro de la pieza.
+  for (const [boca, radio, marca, dentro] of [[grande, R, R - 100, -1], [pequena, r, r + 100, 1]]) {
     if (refuerzo(boca) && (marca <= r || marca >= R)) throw new Error('El refuerzo de 10 cm no cabe en la generatriz del embudo.');
-    if (refuerzo(boca) || bastilla(boca)) forma.arcos.push(arco('ROTULADOR', refuerzo(boca) ? marca : radio, bastilla(boca) ? e.cierre * 10 : 0));
+    const raya = refuerzo(boca) ? marca : radio + dentro * bastilla(boca);
+    if (bastilla(boca) && (raya <= r || raya >= R)) throw new Error('La bastilla no cabe en la generatriz del embudo.');
+    if (refuerzo(boca) || bastilla(boca)) forma.arcos.push(arco('ROTULADOR', raya, bastilla(boca) ? e.cierre * 10 : 0));
   }
   const piezas = [pieza(`${letra} EMBUDO`, forma, textos)];
   for (const boca of ['Arriba', 'Abajo']) if (refuerzo(boca)) {

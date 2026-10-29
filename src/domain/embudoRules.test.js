@@ -101,11 +101,13 @@ describe('Embudo de descarga · dibujos de oficina del 28/10/2026', () => {
     expect(r.cortes.conSacos[0].dibujo.textos.map(t => t.valor)).toContain('DERECHO');
   });
 
-  it('bastilla cónica radial: el terminado se conserva y cada arco de corte suma 3 cm', () => {
+  // Iván, 29/10/2026: como en los rectos (ningún cónico del histórico la lleva): la bastilla suma su medida y la raya va
+  // al doble desde el corte.
+  it('bastilla cónica como la del recto: el corte suma la bastilla y la raya va al doble desde el corte', () => {
     const entrada = { ...conico, remateArriba: 'BASTILLA', bastillaArriba: 9, remateAbajo: 'BASTILLA', bastillaAbajo: 4.5 };
     const g = geometriaEmbudo(entrada), [p] = piezasEmbudo({ embudo: entrada });
     expect(p.geometria.arcos.filter(a => a.capa === 'DISCO1').map(a => a.r)).toEqual([g.radioExterior * 10 + 90, g.radioInterior * 10 - 45]);
-    expect(p.geometria.arcos.filter(a => a.capa === 'ROTULADOR').map(a => a.r)).toEqual([g.radioExterior * 10, g.radioInterior * 10]);
+    expect(p.geometria.arcos.filter(a => a.capa === 'ROTULADOR').map(a => a.r)).toEqual([g.radioExterior * 10 - 90, g.radioInterior * 10 + 45]);
   });
 
   it('permite boca mayor abajo, advierte en el plano y dibuja el alzado invertido', () => {
