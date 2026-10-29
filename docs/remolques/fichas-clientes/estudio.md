@@ -2,24 +2,29 @@
 
 Fecha: 29/10/2026. Histórico exportado 2026-10-29T10:20:35.818Z. Solo lectura de fuentes y del servidor; no se ha cargado ninguna ficha.
 
-Se estudian las 2.085 líneas del histórico (1.467 números de pedido distintos), sus 276 clientes, las once fichas que existen en el servidor y los 41 PDF producidos recientes. La propuesta contiene 285 fichas y 955 medidas; conserva las once fichas vigentes y todas sus medidas. Las identidades sin regla acreditada llevan solo el código y los datos que constan: no se fabrica un perfil o reparto para completar casillas.
+Se estudian las 2.085 líneas del histórico (1.467 números de pedido distintos), sus 276 clientes, las once fichas que existen en el servidor y los 41 PDF producidos recientes. La propuesta contiene 290 fichas y 965 medidas; conserva las once fichas vigentes y todas sus medidas. Las identidades sin regla acreditada llevan solo el código y los datos que constan: no se fabrica un perfil o reparto para completar casillas.
 
-**Cobertura y límite:** hay 348 líneas de lona/baquetón sin medida completa acreditada en la propuesta, una línea sin tipo identificado y 46 líneas de ganado. Esas referencias se enumeran por cliente y en evidencias.json. El registro de identidades está completo para los 276 clientes del histórico; los repartos aún no lo están. Las plantillas antiguas sin código confirmado se enumeran al final y no se cargan por un parecido de nombre.
+**Cobertura y límite:** hay 331 líneas de lona/baquetón sin medida completa acreditada en la propuesta, 46 líneas de ganado y 1 línea sin tipo. Esas referencias se enumeran por cliente y en evidencias.json. El registro de identidades está completo para los 276 clientes del histórico; los repartos aún no lo están. Las plantillas antiguas sin código confirmado se enumeran al final y no se cargan por un parecido de nombre.
+
+La continuación incorpora cinco identidades acreditadas por pedidos antiguos y diez medidas: tres de HPL, dos de NUÑEZ, cuatro de MALLON y un baquetón de PAMILAKAN. Se han convertido otros 85 DWG de pedidos con medidas pendientes, incluso cuando tenían una hoja Excel de otro elemento. Las líneas pendientes de lona/baquetón bajan de 348 a 331. También se completan las aguas habituales de CANO personal, LF y NORTE, con sus excepciones documentadas.
 
 ## Fuentes y criterio
 
 - PL = \192.168.0.128\Oftecnica\Oficina Tecnica\DIBUJOS\REMOLQUES. Leídos 260 ficheros: 172 DWG convertidos con ODA a DXF, 84 XLS, un XLSB y tres DOC. Las copias y temporales de ODA están en tmp del worktree. Se leyeron textos, cotas y círculos de los DWG; las tablas de los DOC se extrajeron de su tabla de piezas de texto, sin OCR.
 - OT = \192.168.0.128\Oftecnica\Oficina Tecnica. Leídas 1657 hojas de pedidos, todas las que se localizaron por el número del histórico en 2023–2026 (series AR, BE y SA). Se aprovecharon solo pestañas con número de pedido, tipo y largo × ancho coincidentes; las demás no son evidencia de ese elemento.
-- Convertidos 162 DWG de pedidos sin una hoja aprovechable. Un DWG puede contener toda la plantilla copiada: que aparezca una cifra en él no demuestra que pertenezca a su elemento activo.
+- Convertidos 247 DWG de pedidos con algún elemento sin reparto completo. Se incluyen los pedidos con Excel cuando la hoja solo acredita una de sus medidas. Un DWG puede contener toda la plantilla copiada: que aparezca una cifra en él no demuestra que pertenezca a su elemento activo.
 - RPS = \192.168.0.128\RPS\VENTAS\PEDIDOS. Buscados 470 PDF de pedidos sin reparto completo: 467 accesibles, todos escaneados sin capa de texto; 467 con reconocimiento local. Los BE se buscaron en BERGONDO y los SA en SANTIAGO. El OCR sirve para localizar indicios, nunca para fijar sin cotejo una cifra manuscrita.
 - Buscados los cortes de 466 pedidos restantes en \192.168.0.128\Oftecnica\maqcorte\<año>\ARCHIVOS DXF - MAQUINA NUEVA. 300 tienen fichero y 266 tienen filas de marcas extraíbles. Sin orientación, pieza activa y origen sobre lona hecha confirmados no se convierten en medidas automáticas.
 - El histórico y las extracciones previas están en C:\Users\ivan.sanchez\Documents\Proyectos DEV\toldos-testar\tmp\dxf-estudio\remolques. Se contrastan historico-remolques.json, repartos-todo.json, repartos-lonas.json, medidas-cliente.json, remolques-clientes.json y lonas-pdf.json. Cabeza A/B no equivale por sí sola a delante/detrás; medidas-cliente mezcla tipos y no se usa como agrupación final.
 - Código: código explícito del histórico o GET /api/remolques/rps-pedido?numero=... del pedido más reciente, con consultas espaciadas. Los datos de cada asociación están en codigos-rps.json. No se ha consultado ninguna base de datos ni leído credenciales.
 - Ollaos: cm sobre lona hecha; laterales de atrás a delante y cabezas de izquierda a derecha. Las hojas lo indican en las etiquetas de las filas. En baquetón se leen I:T de 38/39/40 si el modo es «según se indica», y 33/34/35 si es «repartidos». En lona se lee el resultado activo I:T de 26/27/28. No se recalculan fórmulas del libro: se toma lo que quedó guardado.
-- Se centra trasladando todos los puntos la misma cantidad cuando los huecos interiores son simétricos (tolerancia de redondeo 0,21 cm) y la asimetría está en los márgenes. Se conserva la asimetría interna acreditada y la deliberada de REMOLCAR. No se alteran los huecos ni se sustituyen puntas fijas por un paso genérico. Las medidas ya vigentes quedan intactas.
+- Se centra trasladando todos los puntos la misma cantidad cuando los huecos interiores son simétricos (tolerancia de redondeo 0,21 cm) y la asimetría está en los márgenes. Se centra antes de validar el resultado: también vale si el último punto guardado quedó justo en el borde. No se rescatan coordenadas exteriores ni listas desordenadas. Se conserva la asimetría interna acreditada y la deliberada de REMOLCAR. No se alteran los huecos ni se sustituyen puntas fijas por un paso genérico. Las medidas ya vigentes quedan intactas.
 - Se compara cada cliente × tipo × largo × ancho. Una variante necesita mayoría estricta de pedidos distintos; si no existe, se toma el ejemplo más reciente. Copias o varias fuentes del mismo pedido no añaden votos. Los PDF producidos tienen prioridad cuando son del mismo pedido y fecha.
+- Las aguas se contrastan en C17 de las pestañas coincidentes de lona. CANO personal: 16 cm en 24 pedidos; LF: 15 cm en cinco. NORTE tiene 10 cm en 32 de 35 pedidos con valor numérico, dos de 20 y uno de 15; otras dos hojas escriben NO y otra SI. Su plantilla vigente pide 10 cm incluidos en la altura y prevalece para el valor habitual propuesto; las excepciones quedan en la tabla. En NUÑEZ, los 2 cm de C17 corresponden al aumento descrito en la plantilla; no se fijan como aguas absolutas.
 - «Habitual» por estadística exige tres pedidos y al menos 90 % de los votos de valor observado; los valores distintos dentro de un pedido cuentan como contradicción. La plantilla expresa prevalece y sus contradicciones se señalan. No se infiere una obligación de lo que falta en un texto de RPS.
 - Ganado está inventariado, pero FichaCliente no se aplica a esos elementos (aplicar.ts); manda su modelo de plantilla, conforme a docs/modelos/remolque-ganado.md. No se convierte «ganado» en lona alta por su altura.
+
+Se ha probado también por script la extracción de baquetones simétricos en los DWG disponibles: exige reconocer las dos medidas del remolque y las cotas hechas, encontrar las cuatro filas completas, comprobar que los lados opuestos son iguales y simétricos, y cotejar todos los centros con una representación ROTULADOR del mismo dibujo mediante traslado y giro. El control AR2400131 devuelve sus 22 marcas; ningún otro baquetón pendiente supera todas esas condiciones. No se añaden repartos por una coincidencia parcial con una plantilla copiada.
 
 ## Archivos de revisión y carga
 
@@ -27,6 +32,9 @@ Se estudian las 2.085 líneas del histórico (1.467 números de pedido distintos
 - fichas-propuestas.json: lista válida de FichaCliente; incluye identidades, reglas acreditadas y medidas con evidencia.
 - codigos-rps.json: todas las asociaciones nombre/código, pedido y método de resolución.
 - evidencias.json: variantes, pedidos contados, posiciones originales y centradas, fuente, hoja y filas, descartes y referencias sin reparto completo. Los originales se identifican con SHA-256 cuando se han leído.
+- comprobaciones-cad.json: anclajes de coordenadas, dimensiones hechas y círculos verificados en las cinco referencias de MALLON. Una plantilla no cuenta como pedido en la votación del histórico.
+- asociaciones-plantillas.json: trece pedidos citados en los dibujos resuelven nueve cuentas; cinco no estaban en el histórico exportado. Se conserva la separación entre el cliente del pedido y otras plantillas copiadas dentro del DWG.
+- pedidos-cad.json: repartos de pedidos completados con cotas y círculos del CAD, con anclajes comprobados, y discrepancias que requieren aclarar la orientación.
 - scripts/cargar-fichas-remolques.mjs: por defecto es un ensayo local, sin peticiones; con --url contrasta por GET. Crear requiere POST en la API actual; modificar usa PUT /api/remolques/clientes/:id y la baseVersion estudiada. La carga se detiene ante conflicto, no borra fichas ni medidas y nunca sustituye una versión por la última solo para poder guardar.
 
 ```powershell
@@ -39,13 +47,15 @@ El segundo comando queda documentado para Iván: no se ha ejecutado. Una correcc
 
 ## Dudas que afectan a reglas de cliente
 
+- **VIEITES GOMEZ, JESUS (054473):** El elemento 0232307 tiene las cabezas distintas: una lleva 2,5;35;75;108,5 y la otra 2,5;55;108,5. El CAD no identifica cuál es delante ni desde qué extremo se orienta el lateral. No se mezclan con el elemento vecino 0232306 de 186 × 110. ¿Cuál de las dos cabezas es delante y desde qué extremo está medido el lateral?
+- **REMOLQUES Y CARAVANAS MALLON, S. L. (001795):** RL23 (229×139,5): hay un círculo justo en el borde trasero (0 cm), además de los diez acotados. ¿Es un ollao real o una marca sobrante? Las cabezas y el resto del lateral están acreditados en comprobaciones-cad.json; esta referencia queda sin cargar.
+- **J&B AGROMAQUINAS Y REMOLQUES S. L. (000033):** Los repartos escritos de J&B para 115×93,5, 150×114,5, 200×131, 230×131 y 260×131 no indican el tipo ni la longitud hecha. ¿Son medidas del remolque o acabadas y valen tanto para lona como para baquetón? Con el largo hecho se invertirán los laterales que vienen desde delante.
 - **METALURGICAS NORTE BURGOS S.L. (023649):** ¿La holgura total de 2 cm de largo y ancho de la nota de mayo se aplica tanto a la lona alta como al baquetón? FichaCliente no tiene una holgura general de lona; hay que confirmar las demasías antes de automatizarla.
-- **REMOLQUES Y CARAVANAS MALLON, S. L. (001795):** Falta confirmar si las referencias RL14/RL16/RL18/RL20/RL23 son medidas del remolque o de la lona y asociar cada una a las dos cabezas. Los pedidos BE y sus cortes están localizados en las fuentes; no se cargan repartos completos deducidos de una sola fila.
 - **CERRAJERIA MALDONADO / CAMACHO · CARROCERIAS Y REMOLQUES CAMACHO 1990 SL (031580):** ¿La recogida habitual actual de CAMACHO es cremallera, como dice la plantilla, o GOMA, como sus hojas del histórico? También falta aclarar si los 10 cm de aguas están incluidos en la altura.
 - **CANO MUÑOZ, FRANCISCO (045288):** ¿Qué dimensiones entrega ahora CANO: remolque o lona acabada, y qué aumentos concretos deben quedar en cada uno de los siete campos de baquetón? No se suman las dos notas de +0,5 sin aclararlo.
 - **CANO MUÑOZ S.L.U. (030179):** Confirmar las demasías del baquetón con la nota de CANO: la ficha de esta sociedad se conserva sin reemplazarla por las reglas inferidas de la cuenta personal 045288.
 - **TALLERES R.CASAL, S. L. , (001138):** AR2401103: el croquis escribe huecos laterales 12–28–35–35–28–12 y cabezas 12–26–30–26–12. Su DXF tiene dos laterales distintos (desde corte: 13–41–76–112–140 y 13–41–69–114–140). ¿Qué lado es el patrón? FichaCliente solo admite un reparto lateral común; no se mezcla el croquis con uno de los dos cortes para completar esta medida.
-- **Plantillas sin identidad RPS:** falta asociar los clientes antiguos enumerados en el apéndice. Se ha preguntado al coordinador; todos los 276 del histórico sí están asociados. No se crean fichas con códigos inventados o vacíos.
+- **Plantillas sin identidad RPS:** falta asociar los clientes antiguos enumerados en el apéndice. Los pedidos escritos en los DWG han permitido resolver ESVA, J&B y LA AZABA, entre otros; los restantes necesitan un pedido o nombre RPS confirmado. Todos los 276 del histórico están asociados.
 - **Referencias sin reparto:** la tabla de cada cliente identifica los pedidos y medidas pendientes. Hace falta confirmar los lados y su origen o leer las cotas manuscritas; no se pregunta de nuevo por lo ya acreditado.
 
 ## Clientes
@@ -54,7 +64,7 @@ El segundo comando queda documentado para Iván: no se ha ejecutado. Una correcc
 
 Ficha: `remolcar`. Histórico: **244 líneas / 171 pedidos**. PDF producidos adicionales examinados: 7. Registro vigente versión 10, conservado.
 
-Código acreditado por histórico (AR2603999). Nombres/alias del histórico: REMOLCAR · JUAN BARREIRO, S. L..
+Código acreditado por histórico (AR2603999). Nombres/alias conocidos: REMOLCAR · JUAN BARREIRO, S. L..
 
 Plantillas encontradas: `PL/REMOLQUES GANADO/REMOLCAR/Nueva carpeta (ANTIGUOS NO SE UTILIZAN)/GANADO2,50X1,40 ARQU.NORMAL(REMOLCAR).dwg`; `PL/REMOLCAR/MEDIDAS OLLAOS NUEVAS/320X160.doc`; `PL/REMOLQUES GANADO/REMOLCAR/Nueva carpeta (ANTIGUOS NO SE UTILIZAN)/REMOLCAR_CABALLOS_275_x_160_arquillo_reforzado.dwg`; `PL/REMOLQUES GANADO/REMOLCAR/Nueva carpeta (ANTIGUOS NO SE UTILIZAN)/REMOLQUE 300X150 ECONOMICO OBSOLETO.dwg`; `PL/REMOLQUES GANADO/REMOLCAR/Nueva carpeta (ANTIGUOS NO SE UTILIZAN)/REMOLCAR_GANADO_275_X_160_ARQUILLO_REFORZADO.dwg`; `PL/REMOLQUES GANADO/REMOLCAR/Nueva carpeta (ANTIGUOS NO SE UTILIZAN)/REMOLCAR  GANADO 300 X 160 ARCO REFORZADO.dwg`; `PL/REMOLQUES GANADO/REMOLCAR/REMOLQUES CONFIRMADOS/CABALLOS 300 x160 TABLERO POLIESTER.dwg`; `PL/REMOLQUES GANADO/REMOLCAR/REMOLQUE GANADO 3X160M ALTURA CABALLOS.dwg`; `PL/REMOLQUES GANADO/REMOLCAR/REMOLQUE 3M ECO 3X150 (BUENO).dwg`; `PL/REMOLQUES GANADO/REMOLCAR/Nueva carpeta (ANTIGUOS NO SE UTILIZAN)/REMOLCAR_CABALLOS_275_x_160_arquillo_reforzadofdf.dwg`; `PL/REMOLQUES GANADO/REMOLCAR/REMOLQUE 300X160 ESTANDAR.dwg`; `PL/REMOLQUES GANADO/REMOLCAR/Nueva carpeta (ANTIGUOS NO SE UTILIZAN)/remolcar CABALLOS 3x1,60 arquillo reforzado.dwg`; `PL/REMOLQUES GANADO/REMOLCAR/REMOLQUES CONFIRMADOS/CABALLOS 300X140 TABLERO.dwg`; `PL/REMOLQUES GANADO/REMOLCAR/Nueva carpeta (ANTIGUOS NO SE UTILIZAN)/REMOLCAR GANADO 250 X 140 ARQUILLO REFORZADO.dwg`; `PL/REMOLQUES GANADO/REMOLCAR/REMOLQUES CONFIRMADOS/REMOLQUE CABALLOS 300 x160 TABLERO ATRÁS BAJA 10 CM.dwg`; `PL/REMOLQUES GANADO/REMOLCAR/Nueva carpeta (ANTIGUOS NO SE UTILIZAN)/REMOLCAR CABALLOS 250 X 140 ARQUILLO REFORZADO.dwg`; `PL/REMOLCAR/REMOLCAR.dwg`; `PL/REMOLQUES GANADO/REMOLCAR/Nueva carpeta (ANTIGUOS NO SE UTILIZAN)/REMOLQUE 300X150 ECONOMICO (MODIFICADO) OBSOLETO.dwg`; `PL/REMOLCAR/REJILLA.dwg`; `PL/REMOLQUES GANADO/REMOLCAR/REMOLQUES GANADO NUEVOS/REMOLQUE GANADO 300 x160 TABLERO ATRÁS BAJA 10 CM.dwg`
 
@@ -69,6 +79,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 105 (AR2402349, AR2401442, AR2402915, AR2602190, AR2406550, AR2504973, AR2500972, AR2401199, AR2406341, AR2500275, AR2401001, AR2401254, AR2506341, AR2600852, AR2500804, AR2600739, AR2503696, AR2600280, AR2406601, AR2401318, AR2602890, AR2600997, AR2503374, AR2500694, AR2600815, AR2503793, AR2401787, AR2405862, AR2402844, AR2400897, AR2603690, AR2500304, AR2406454, AR2600987, AR2500949, AR2401315, AR2404141, AR2400629, AR2400014, AR2600889, AR2500156, AR2500235, AR2603230, AR2400731, AR2400013, AR2503868, AR2504984, AR2600281, AR2506284, AR2500654, AR2401431, AR2501637, AR2503280, AR2500494, AR2600543, AR2503900, AR2405087, AR2400288, AR2500864, AR2405483, AR2406102, AR2500090, AR2403813, AR2601016, AR2603306, AR2500621, AR2600439, AR2603166, AR2600995, AR2600487, AR2405784, AR2402115, AR2501686, AR2400761, AR2505412, AR2403170, AR2406322, AR2601673, AR2406134, AR2602022, AR2406826, AR2603114, AR2503974, AR2405519, AR2501252, AR2401227, AR2400229, AR2402676, AR2500777, AR2502456, AR2504629, AR2600392, AR2405382, AR2404121, AR2503740, AR2506313, AR2406782, AR2401799, AR2503423, AR2600067, AR2501698, AR2503282, AR2502233, AR2505483, AR2600122); TIPO 01: 5 (AR2505051, AR2403178, AR2602177, AR2402363, AR2601607); TIPO 03: 4 (AR2400230, AR2406064, AR2405784, AR2602890) |
+| aguas | NO: 57 (AR2401442, AR2402594, AR2404319, AR2403702, AR2406550, AR2402591, AR2401199, AR2406341, AR2403178, AR2500275, AR2404284, AR2401254, AR2403343, AR2600852, AR2406601, AR2401318, AR2600997, AR2401787, AR2405862, AR2403189, AR2402844, AR2500304, AR2406454, AR2600987, AR2401315, AR2404141, AR2405784, AR2600889, AR2500235, AR2402363, AR2600281, AR2401431, AR2501637, AR2403428, AR2504973, AR2405483, AR2406102, AR2601016, AR2404422, AR2600439, AR2600995, AR2402115, AR2504035, AR2403170, AR2406322, AR2404605, AR2406134, AR2503974, AR2405519, AR2401227, AR2405382, AR2404121, AR2503740, AR2406782, AR2401799, AR2503423, AR2501698); 6: 1 (AR2406064); 1: 1 (AR2506341); 12: 1 (AR2602890) |
 | recogeDelante | NO: 118 (AR2402349, AR2401442, AR2402594, AR2404319, AR2402915, AR2400230, AR2403702, AR2602190, AR2406550, AR2402591, AR2504973, AR2500972, AR2505051, AR2406341, AR2403178, AR2500275, AR2404284, AR2401001, AR2403343, AR2506341, AR2600852, AR2500804, AR2600739, AR2503696, AR2600280, AR2406601, AR2401318, AR2602890, AR2600997, AR2503374, AR2500694, AR2600815, AR2503793, AR2401787, AR2405862, AR2403189, AR2402844, AR2400897, AR2603690, AR2500304, AR2406454, AR2600987, AR2500949, AR2401315, AR2404141, AR2400629, AR2602177, AR2400014, AR2405784, AR2600889, AR2500156, AR2500235, AR2603230, AR2402363, AR2400731, AR2400013, AR2503868, AR2504984, AR2600281, AR2400229, AR2500654, AR2401431, AR2501637, AR2503280, AR2500494, AR2600543, AR2403428, AR2503900, AR2405087, AR2400288, AR2500864, AR2405483, AR2404538, AR2406102, AR2506284, AR2500090, AR2403813, AR2601016, AR2603306, AR2500621, AR2404422, AR2600439, AR2603166, AR2600995, AR2600487, AR2601607, AR2504035, AR2501686, AR2400761, AR2505412, AR2403170, AR2406322, AR2404605, AR2601673, AR2406134, AR2602022, AR2406826, AR2503974, AR2405519, AR2501252, AR2402676, AR2500777, AR2502456, AR2504629, AR2401227, AR2600392, AR2405382, AR2404121, AR2503740, AR2506313, AR2406782, AR2401799, AR2503423, AR2600067, AR2503282, AR2502233, AR2505483, AR2600122); GOMA: 10 (AR2406064, AR2401199, AR2401254, AR2600852, AR2506284, AR2402115, AR2603114, AR2401227, AR2600281, AR2505412); no: 1 (AR2501698) |
 | recogeAtras | GOMA: 124 (AR2402349, AR2401442, AR2402594, AR2404319, AR2402915, AR2400230, AR2403702, AR2406064, AR2602190, AR2406550, AR2402591, AR2504973, AR2500972, AR2505051, AR2401199, AR2406341, AR2403178, AR2500275, AR2404284, AR2401001, AR2401254, AR2403343, AR2506341, AR2600852, AR2500804, AR2600739, AR2503696, AR2600280, AR2406601, AR2401318, AR2602890, AR2600997, AR2503374, AR2500694, AR2600815, AR2503793, AR2401787, AR2405862, AR2403189, AR2402844, AR2400897, AR2603690, AR2500304, AR2406454, AR2600987, AR2500949, AR2401315, AR2404141, AR2400629, AR2602177, AR2400014, AR2405784, AR2600889, AR2500156, AR2500235, AR2603230, AR2402363, AR2400731, AR2400013, AR2503868, AR2504984, AR2600281, AR2506284, AR2400229, AR2500654, AR2401431, AR2501637, AR2503280, AR2500494, AR2600543, AR2403428, AR2503900, AR2405087, AR2400288, AR2500864, AR2405483, AR2404538, AR2406102, AR2500090, AR2403813, AR2601016, AR2603306, AR2500621, AR2404422, AR2600439, AR2603166, AR2600995, AR2600487, AR2601607, AR2402115, AR2504035, AR2501686, AR2400761, AR2505412, AR2403170, AR2406322, AR2404605, AR2601673, AR2406134, AR2602022, AR2406826, AR2603114, AR2503974, AR2405519, AR2501252, AR2401227, AR2402676, AR2500777, AR2502456, AR2504629, AR2600392, AR2405382, AR2404121, AR2503740, AR2506313, AR2406782, AR2401799, AR2503423, AR2600067, AR2501698, AR2503282, AR2502233, AR2505483, AR2600122) |
 | bastillaEnfundar | NO: 103 (AR2402349, AR2404319, AR2402915, AR2400230, AR2403702, AR2406064, AR2602190, AR2406550, AR2504973, AR2500972, AR2406341, AR2403178, AR2500275, AR2404284, AR2401001, AR2403343, AR2506341, AR2600852, AR2500804, AR2600739, AR2503696, AR2600280, AR2406601, AR2602890, AR2600997, AR2503374, AR2500694, AR2600815, AR2503793, AR2405862, AR2403189, AR2402844, AR2400897, AR2603690, AR2500304, AR2406454, AR2600987, AR2500949, AR2400629, AR2500156, AR2500235, AR2603230, AR2400731, AR2400013, AR2503868, AR2400014, AR2504984, AR2600281, AR2506284, AR2400229, AR2500654, AR2501637, AR2503280, AR2500494, AR2600543, AR2403428, AR2503900, AR2405087, AR2400288, AR2500864, AR2405483, AR2404538, AR2406102, AR2500090, AR2403813, AR2603306, AR2500621, AR2404422, AR2600439, AR2603166, AR2600995, AR2600487, AR2601607, AR2405784, AR2402115, AR2501686, AR2400761, AR2505412, AR2403170, AR2406322, AR2404605, AR2601673, AR2406134, AR2602022, AR2406826, AR2603114, AR2503974, AR2405519, AR2501252, AR2402676, AR2500777, AR2502456, AR2504629, AR2600392, AR2405382, AR2404121, AR2503740, AR2506313, AR2600067, AR2501698, AR2503282, AR2505483, AR2600122); SÍ: 9 (AR2505051, AR2402349, AR2400014, AR2500972, AR2405784, AR2600889, AR2601016, AR2600281, AR2502233) |
@@ -172,9 +183,9 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `talleres-cal-c-b`. Histórico: **215 líneas / 113 pedidos**. PDF producidos adicionales examinados: 1. Alta propuesta.
 
-Código acreditado por histórico (AR2604596). Nombres/alias del histórico: TALLERES CAL, C. B..
+Código acreditado por histórico (AR2604596). Nombres/alias conocidos: TALLERES CAL, C. B.. Pedidos de plantilla consultados: AR2103992, AR2103242.
 
-Plantillas encontradas: `PL/REMOLQUES GANADO/TALLERES CAL/REF 280 X 140.dwg`; `PL/REMOLQUES GANADO/TALLERES CAL/ref 260 x120.dwg`; `PL/TALLERES CAL2.DWG`; `PL/REMOLQUES GANADO/TALLERES CAL/AR2103811-2.dwg`; `PL/REMOLQUES GANADO/TALLERES CAL/REF 280 X 154.dwg`; `PL/REMOLQUES GANADO/TALLERES CAL/REF 280 X 130.dwg`; `PL/REMOLQUES GANADO/TALLERES CAL/ref 300x154.dwg`
+Plantillas encontradas: `PL/REMOLQUES GANADO/TALLERES CAL/REF 280 X 140.dwg`; `PL/AR2103992.dwg`; `PL/REMOLQUES GANADO/TALLERES CAL/ref 260 x120.dwg`; `PL/TALLERES CAL2.DWG`; `PL/REMOLQUES GANADO/TALLERES CAL/AR2103811-2.dwg`; `PL/AR2103242.dwg`; `PL/REMOLQUES GANADO/TALLERES CAL/REF 280 X 154.dwg`; `PL/REMOLQUES GANADO/TALLERES CAL/REF 280 X 130.dwg`; `PL/REMOLQUES GANADO/TALLERES CAL/ref 300x154.dwg`
 
 TALLERES CAL2.DWG: siempre ventana; «CAMBIO LA CURVA, AHORA TIENE RADIO 8CM» y «ARCO DE 8 CM DESDE EL 14-02-19». Esta nota fechada prevalece sobre los 9 cm de REMOLQUILLEROS.doc.
 
@@ -187,6 +198,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 84 (AR2500037, AR2400461, AR2506260, AR2406479, AR2505303, AR2500610, AR2505112, AR2600269, AR2400071, AR2504986, AR2406178, AR2506374, AR2400064, AR2400673, AR2402295, AR2405130, AR2503489, AR2407077, AR2405983, AR2505688, AR2503274, AR2600669, AR2501227, AR2601018, AR2504326, AR2500010, AR2506052, AR2405711, AR2602298, AR2406195, AR2402319, AR2405521, AR2401635, AR2600027, AR2405338, AR2504722, AR2500826, AR2504358, AR2400077, AR2400701, AR2500243, AR2500107, AR2603582, AR2600810, AR2401289, AR2501548, AR2503143, AR2402801, AR2504919, AR2503227, AR2406781, AR2502022, AR2500335, AR2501420, AR2500309, AR2601761, AR2506170, AR2401060, AR2503735, AR2406760, AR2403882, AR2401241, AR2601861, AR2406914, AR2601621, AR2601461, AR2402172, AR2500859, AR2501556, AR2506435, AR2505197, AR2600295, AR2503152, AR2401758, AR2505219, AR2504854, AR2601515, AR2601672, AR2600183, AR2402401, AR2502453, AR2601270, AR2505574, AR2502276); TIPO 03: 5 (AR2503143, AR2406883, AR2504854, AR2406824, AR2600051); TIPO 02: 2 (AR2406627, AR2500335) |
+| aguas | NO: 35 (AR2500037, AR2406479, AR2404748, AR2406178, AR2404626, AR2503489, AR2407077, AR2405983, AR2601018, AR2500010, AR2405711, AR2406195, AR2405521, AR2401635, AR2405338, AR2403642, AR2500243, AR2500107, AR2401289, AR2402801, AR2406781, AR2502022, AR2500309, AR2406760, AR2403882, AR2401241, AR2601621, AR2402172, AR2506435, AR2505197, AR2505219, AR2601515, AR2402401, AR2601270, AR2502276); 14: 2 (AR2406627, AR2406824); 5: 1 (AR2503143); 11: 1 (AR2406883); 8: 1 (AR2500335); 15: 1 (AR2600051) |
 | recogeDelante | NO: 83 (AR2400461, AR2506260, AR2406479, AR2404748, AR2505303, AR2500610, AR2505112, AR2400071, AR2504986, AR2406178, AR2404626, AR2506374, AR2400064, AR2400673, AR2406627, AR2405130, AR2503489, AR2407077, AR2405983, AR2505688, AR2503274, AR2600669, AR2501227, AR2601018, AR2503143, AR2504326, AR2500010, AR2506052, AR2503341, AR2602298, AR2406195, AR2402319, AR2405711, AR2405521, AR2401635, AR2406883, AR2600027, AR2405338, AR2504722, AR2500826, AR2504358, AR2400077, AR2400701, AR2500107, AR2603582, AR2600810, AR2504854, AR2401289, AR2501548, AR2402801, AR2504919, AR2503227, AR2406781, AR2502022, AR2500335, AR2500309, AR2601761, AR2506170, AR2401060, AR2503735, AR2402295, AR2406760, AR2403882, AR2401241, AR2601861, AR2601621, AR2600269, AR2601461, AR2402172, AR2501556, AR2506435, AR2505197, AR2503152, AR2401758, AR2505219, AR2601515, AR2600051, AR2600183, AR2402401, AR2502453, AR2601270, AR2505574, AR2502276); CREMALLERA: 17 (AR2500037, AR2600269, AR2402295, AR2405711, AR2403642, AR2500243, AR2400673, AR2500335, AR2501420, AR2406914, AR2500859, AR2406824, AR2404748, AR2600295, AR2504919, AR2601672, AR2501556) |
 | recogeAtras | GOMA: 83 (AR2400461, AR2506260, AR2406479, AR2404748, AR2505303, AR2500610, AR2505112, AR2400071, AR2504986, AR2406178, AR2404626, AR2506374, AR2400064, AR2400673, AR2402295, AR2406627, AR2405130, AR2503489, AR2407077, AR2405983, AR2505688, AR2503274, AR2600669, AR2501227, AR2601018, AR2503143, AR2504326, AR2500010, AR2506052, AR2503341, AR2602298, AR2406195, AR2402319, AR2405711, AR2405521, AR2401635, AR2406883, AR2600027, AR2405338, AR2504722, AR2500826, AR2504358, AR2400077, AR2400701, AR2500107, AR2603582, AR2600810, AR2504854, AR2401289, AR2501548, AR2402801, AR2504919, AR2503227, AR2406781, AR2502022, AR2500335, AR2500309, AR2601761, AR2506170, AR2401060, AR2503735, AR2406760, AR2403882, AR2401241, AR2601861, AR2601621, AR2600269, AR2601461, AR2402172, AR2501556, AR2506435, AR2505197, AR2503152, AR2401758, AR2505219, AR2601515, AR2600051, AR2600183, AR2402401, AR2502453, AR2601270, AR2505574, AR2502276); CREMALLERA: 16 (AR2500037, AR2600269, AR2405711, AR2403642, AR2500243, AR2400673, AR2500335, AR2501420, AR2406914, AR2500859, AR2406824, AR2600295, AR2504919, AR2601672, AR2404748, AR2501556); NO: 1 (AR2404748) |
 | bastillaEnfundar | NO: 81 (AR2500037, AR2400461, AR2506260, AR2406479, AR2404748, AR2505303, AR2500610, AR2505112, AR2600269, AR2400071, AR2504986, AR2406178, AR2404626, AR2506374, AR2400064, AR2400673, AR2402295, AR2406627, AR2503489, AR2407077, AR2405983, AR2505688, AR2600669, AR2501227, AR2601018, AR2503143, AR2504326, AR2500010, AR2506052, AR2405711, AR2503341, AR2602298, AR2406195, AR2405521, AR2406883, AR2600027, AR2405338, AR2504722, AR2500826, AR2504358, AR2400077, AR2400701, AR2500243, AR2500107, AR2405130, AR2603582, AR2600810, AR2504854, AR2501548, AR2402801, AR2504919, AR2503227, AR2500335, AR2501420, AR2500309, AR2601761, AR2506170, AR2401060, AR2503735, AR2403882, AR2601861, AR2406914, AR2601621, AR2601461, AR2402172, AR2500859, AR2501556, AR2506435, AR2505197, AR2600295, AR2503152, AR2502022, AR2505219, AR2601515, AR2601672, AR2600051, AR2600183, AR2502453, AR2601270, AR2505574, AR2502276); SÍ: 6 (AR2405130, AR2503274, AR2402319, AR2403642, AR2502022, AR2400461) |
@@ -295,7 +307,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `hijos-de-pedro-lopez`. Histórico: **169 líneas / 154 pedidos**. PDF producidos adicionales examinados: 5. Registro vigente versión 8, conservado.
 
-Código acreditado por histórico (AR2604609). Nombres/alias del histórico: HIJOS DE PEDRO LOPEZ GARCIA, S. L..
+Código acreditado por histórico (AR2604609). Nombres/alias conocidos: HIJOS DE PEDRO LOPEZ GARCIA, S. L..
 
 Plantillas encontradas: `PL/CALCULOS REMOLQUES/Nueva carpeta/REMOLQUES PUENTES HIJOS DE PEDRO LOPEZ(CM) DELANTE Y ATRAS.xls`; `PL/CALCULOS REMOLQUES/BAQUETÓN (HIJOS DE PEDRO LOPEZ).xls`; `PL/HIJOS DE PEDRO LOPEZ/HIJOS DE PEDRO LOPEZ2.DWG`; `PL/CALCULOS EXCEL2/CALCULOS REMOLQUES/REMOLQUES PUENTES HIJOS DE PEDRO LOPEZ(CM).xls`; `PL/HIJOS DE PEDRO LOPEZ/HIJOS DE PEDRO LOPEZ.DWG`; `PL/CALCULOS EXCEL2/CALCULOS REMOLQUES/Nueva carpeta/REMOLQUES PUENTES HIJOS DE PEDRO LOPEZ(CM) DELANTE Y ATRAS.xls`; `PL/HIJOS DE PEDRO LOPEZ/RECOGE CON GANCHOS CORAZÓN.dwg`; `PL/CALCULOS EXCEL2/CALCULOS REMOLQUES/REMOLQUES PUENTES HIJOS DE PEDRO LOPEZ(CM)2.xls`; `PL/CALCULOS REMOLQUES/REMOLQUES PUENTES HIJOS DE PEDRO LOPEZ(CM).xls`; `PL/CALCULOS EXCEL2/CALCULOS REMOLQUES/BAQUETÓN (HIJOS DE PEDRO LOPEZ).xls`
 
@@ -312,6 +324,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 03: 34 (AR2401369, AR2500415, AR2406762, AR2403022, AR2500835, AR2602990, AR2504036, AR2505776, AR2401864, AR2600005, AR2406256, AR2404054, AR2503961, AR2400756, AR2500996, AR2406784, AR2405640, AR2503522, AR2401572, AR2502368, AR2403278, AR2501391, AR2400543, AR2400554, AR2400205, AR2506129, AR2505467, AR2503054, AR2600136, AR2506051, AR2400504, AR2402665, AR2402389, AR2600488); TIPO 01: 7 (AR2601766, AR2505949, AR2506268, AR2500071, AR2500070, AR2602230, AR2401766); TIPO 05: 3 (AR2403277, AR2403259, AR2406670) |
+| aguas | 8.5: 10 (AR2406762, AR2602990, AR2401864, AR2406256, AR2503961, AR2502368, AR2501391, AR2400543, AR2400205, AR2506129); 8: 8 (AR2401369, AR2505776, AR2600005, AR2400756, AR2403278, AR2506051, AR2402665, AR2600488); NO: 8 (AR2403277, AR2403179, AR2403259, AR2500071, AR2401572, AR2500070, AR2406670, AR2401766); 9: 7 (AR2500415, AR2500835, AR2504036, AR2404054, AR2405640, AR2503054, AR2402389); 7: 3 (AR2405223, AR2406784, AR2503522); 64: 1 (AR2403022); 9.5: 1 (AR2500996) |
 | recogeDelante | NO: 45 (AR2403277, AR2500415, AR2405223, AR2406762, AR2403022, AR2500835, AR2602990, AR2601766, AR2504036, AR2505776, AR2401864, AR2505949, AR2600005, AR2406256, AR2403179, AR2404054, AR2506268, AR2503961, AR2400756, AR2403259, AR2500996, AR2406784, AR2405640, AR2500071, AR2503522, AR2401572, AR2502368, AR2403278, AR2501391, AR2400543, AR2400554, AR2400205, AR2506129, AR2505467, AR2503054, AR2500070, AR2406670, AR2600136, AR2602230, AR2506051, AR2400504, AR2402665, AR2402389, AR2401766, AR2600488); PUENTES HIJOS DE PEDRO LOPEZ: 1 (AR2401369) |
 | recogeAtras | PUENTES HIJOS DE PEDRO LOPEZ: 45 (AR2401369, AR2403277, AR2500415, AR2405223, AR2406762, AR2403022, AR2500835, AR2602990, AR2601766, AR2504036, AR2505776, AR2401864, AR2505949, AR2600005, AR2406256, AR2404054, AR2506268, AR2503961, AR2400756, AR2403259, AR2500996, AR2406784, AR2405640, AR2500071, AR2503522, AR2401572, AR2502368, AR2403278, AR2501391, AR2400543, AR2400554, AR2400205, AR2506129, AR2505467, AR2503054, AR2500070, AR2406670, AR2600136, AR2602230, AR2506051, AR2400504, AR2402665, AR2402389, AR2401766, AR2600488); GOMA: 1 (AR2403179) |
 | bastillaEnfundar | NO: 38 (AR2401369, AR2403277, AR2500415, AR2405223, AR2406762, AR2403022, AR2500835, AR2602990, AR2601766, AR2504036, AR2505776, AR2505949, AR2600005, AR2406256, AR2404054, AR2503961, AR2400756, AR2403259, AR2405640, AR2500071, AR2503522, AR2502368, AR2403278, AR2501391, AR2400543, AR2400554, AR2400205, AR2506129, AR2505467, AR2503054, AR2500070, AR2406670, AR2600136, AR2602230, AR2506051, AR2400504, AR2402665, AR2600488); SÍ: 4 (AR2403179, AR2506268, AR2500996, AR2406784) |
@@ -326,7 +339,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | --- | --- | --- | --- | --- |
 | baqueton; 200 × 130 | 2,7; 42,6; 88,4; 128,4 | 2,7; 42,6; 88,4; 128,4 | 2,7; 29,8; 58,1; 86,4; 114,7; 143; 171,3; 198,4 | Vigente v8; se conserva. AR2600101; OT/2026/AR2600101.xlsb / BAQUETÓN, filas 38/39/40, I:T; más reciente sin mayoría clara. Variantes: 14 pedido(s): AR2406847, AR2500007, AR2500122, AR2500650, AR2501404, AR2505218, AR2505325, AR2505861, AR2506314, AR2600101, AR2600254, AR2603006, AR2605017, AR2605177 / 8 pedido(s): AR2401500, AR2401698, AR2405640, AR2405693, AR2406369, AR2406480, AR2406766, AR2505637 / 3 pedido(s): AR2505975, AR2506072, AR2603653 / 2 pedido(s): AR2400212, AR2400755 / 2 pedido(s): AR2600341, AR2601671 / 1 pedido(s): AR2601527 / 1 pedido(s): AR2601066 / 1 pedido(s): AR2600788. |
 | lona; 200 × 130 | 2,5; 42,5; 88,2; 128,2 | 4; 44; 89,7; 129,7 | 2,7; 29,8; 58,1; 86,4; 114,7; 143; 171,3; 198,4 | Vigente v8; se conserva. AR2600005; OT/2026/AR2600005.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 2 pedido(s): AR2402665, AR2600005 / 1 pedido(s): AR2403278 / 1 pedido(s): AR2400756 / 1 pedido(s): AR2605078. |
-| lona; 180 × 120 | 2,7; 40,1; 80,9; 118,4 | 2,7; 40,1; 80,9; 118,4 | 2,7; 30,5; 60,5; 90,5; 120,5; 150,5; 178,3 | Vigente v8; se conserva. AR2406784; OT/2024/AR2406784.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2406784 / 1 pedido(s): AR2605103 / 1 pedido(s): AR2503522. |
+| lona; 180 × 120 | 2,7; 40,1; 80,9; 118,4 | 2,7; 40,1; 80,9; 118,4 | 2,7; 30,5; 60,5; 90,5; 120,5; 150,5; 178,3 | Vigente v8; se conserva. AR2406784; OT/2024/AR2406784.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2406784 / 1 pedido(s): AR2605103 / 1 pedido(s): AR2503522 / 1 pedido(s): AR2405223. |
 | lona; 140 × 108 | 2,5; 37,1; 71,8; 106,5 | 2,5; 37,6; 72,8; 108 | 2,5; 37,1; 71,7; 106,3; 141 | Vigente v8; se conserva. |
 | baqueton; 160 × 120 | 2,65; 40,15; 80,85; 118,35 | 2,65; 40,15; 80,85; 118,35 | 2,8; 31,8; 64,3; 96,8; 129,3; 158,2 |  AR2403542; OT/2024/AR2403542.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 3 pedido(s): AR2401578, AR2403542, AR2404992 / 2 pedido(s): AR2501185, AR2600705. |
 | baqueton; 180 × 120 | 3; 40; 81; 118,5 | 3; 40; 81; 118,5 | 2,5; 30,5; 60,5; 90,5; 120,5; 150,5; 178,5 |  AR2504098; OT/2025/AR2504098.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 5 pedido(s): AR2400118, AR2402504, AR2504098, AR2504584, AR2604280 / 2 pedido(s): AR2403654, AR2603173 / 2 pedido(s): AR2401156, AR2504037. |
@@ -346,28 +359,28 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 160 × 120 | 2,5; 31,5; 60,5; 89,58; 118,5 | 3,25; 32,25; 61,25; 90,25; 119,25 | 2,5; 33,7; 64,9; 96,1; 127,3; 158,5 |  AR2403179; OT/2024/AR2403179.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2403179 / 1 pedido(s): AR2400554. |
 | lona; 200 × 120 | 2,65; 40,15; 80,85; 118,35 | 3,4; 40,9; 81,6; 119,1 | 2,65; 29,75; 58,05; 86,35; 114,65; 142,95; 171,25; 198,35 |  AR2401766; OT/2024/AR2401766.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401766. |
 | lona; 211 × 125 | 2,5; 33,5; 63; 92,5; 123,5 | 3,25; 34,25; 63,75; 93,25; 124,25 | 2,25; 36,85; 71,45; 105,95; 140,55; 175,15; 209,75 |  AR2500070; OT/2025/AR2500070.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2406670, AR2500070. |
-| lona; 220 × 130 | 2,65; 42,55; 88,35; 128,35 | 3,4; 43,3; 89,1; 129,1 | 2,65; 31,55; 63,15; 94,75; 126,35; 157,95; 189,55; 218,35 |  AR2602230; OT/2026/AR2602230.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 3 pedido(s): AR2505467, AR2600136, AR2602230 / 2 pedido(s): AR2400504, AR2401369 / 1 pedido(s): AR2604800 / 1 pedido(s): AR2600488. |
+| lona; 220 × 130 | 2,65; 42,55; 88,35; 128,35 | 3,4; 43,3; 89,1; 129,1 | 2,65; 31,55; 63,15; 94,75; 126,35; 157,95; 189,55; 218,35 |  AR2602230; OT/2026/AR2602230.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 3 pedido(s): AR2505467, AR2600136, AR2602230 / 2 pedido(s): AR2400504, AR2401369 / 1 pedido(s): AR2500071 / 1 pedido(s): AR2604800 / 1 pedido(s): AR2600488. |
 | lona; 220 × 140 | 2,6; 37; 70,5; 104; 138,4 | 3,35; 37,75; 71,25; 104,75; 139,15 | 2,65; 31,45; 63,05; 94,65; 126,25; 157,85; 189,45; 218,35 |  AR2400756; OT/2024/AR2400756-2.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2400756. |
 | lona; 223 × 165 | 2,5; 34,7; 66,9; 99,1; 131,3; 163,5 | 3,25; 35,45; 67,65; 99,85; 132,05; 164,25 | 6,25; 41,45; 76,75; 111,95; 147,25; 182,45; 217,75 |  AR2504036; OT/2025/AR2504036.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2504036. |
-| lona; 250 × 140 | 2,6; 37; 70,5; 104; 138,4 | 3,35; 37,75; 71,25; 104,75; 139,15 | 2,8; 31; 62,5; 94; 125,5; 157; 188,5; 220; 248,2 |  AR2506268; OT/2025/AR2506268.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2505949, AR2506268 / 1 pedido(s): AR2406762. |
-| lona; 250 × 150 | 17,1; 46,3; 75,5; 104,7; 133,9 | 17,85; 47,05; 76,25; 105,45; 134,65 | 2,8; 31; 62,5; 94; 125,5; 157; 188,5; 219,9; 248,2 |  AR2501391; OT/2025/AR2501391.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2501391 / 1 pedido(s): AR2401572 / 1 pedido(s): AR2400205. |
+| lona; 250 × 140 | 2,6; 37; 70,5; 104; 138,4 | 3,35; 37,75; 71,25; 104,75; 139,15 | 2,8; 31; 62,5; 94; 125,5; 157; 188,5; 220; 248,2 |  AR2506268; OT/2025/AR2506268.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 2 pedido(s): AR2505949, AR2506268 / 2 pedido(s): AR2506129, AR2602990 / 1 pedido(s): AR2406762 / 1 pedido(s): AR2400543 / 1 pedido(s): AR2601766. |
+| lona; 250 × 150 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 3,25; 32,45; 61,65; 90,85; 120,05; 149,25 | 1,25; 32,35; 63,35; 94,45; 125,45; 156,55; 187,65; 218,65; 249,75 |  AR2503961; OT/2025/AR2503961-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 2 pedido(s): AR2401864, AR2503961 / 1 pedido(s): AR2501391 / 1 pedido(s): AR2401572 / 1 pedido(s): AR2400205. |
+| lona; 250 × 160 | 2,5; 31,8; 64,3; 96,8; 129,3; 158,5 | 3,25; 32,55; 65,05; 97,55; 130,05; 159,25 | 1,25; 31,05; 62,55; 94,05; 125,55; 157,05; 188,55; 220,05; 249,75 |  AR2500835; OT/2025/AR2500835.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 2 pedido(s): AR2500835, AR2503054 / 1 pedido(s): AR2403022 / 1 pedido(s): AR2402389. |
+| lona; 260 × 160 | 1,75; 33,25; 64,75; 96,25; 127,75; 159,25 | 3,25; 34,45; 65,65; 96,85; 128,05; 159,25 | 1,25; 33,55; 65,85; 98,15; 130,45; 162,85; 195,15; 227,45; 259,75 |  AR2500415; OT/2025/AR2500415.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500415. |
+| lona; 320 × 170 | 2,5; 35,7; 68,9; 102,1; 135,3; 168,5 | 2,5; 36; 69,5; 103; 136,5; 170 | 1,25; 33,05; 64,95; 96,75; 128,65; 160,45; 192,35; 224,15; 256,05; 287,85; 319,75 |  AR2500996; OT/2025/AR2500996.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500996. |
 
 Referencias que quedan fuera de las medidas automáticas:
 
 | Tipo y medida del histórico | Pedidos | Motivo y fuentes |
 | --- | --- | --- |
-| Lona alta; 250 × 160 | AR2402389, AR2403022, AR2500835, AR2503054 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2402389.dwg; OT/2024/AR2402389.xlsb; OT/2024/AR2403022.dwg; OT/2024/AR2403022.xlsb; OT/2025/AR2500835.dwg; OT/2025/AR2500835.xlsb; OT/2025/AR2503054.dwg; OT/2025/AR2503054.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 221 × 130 | AR2403259 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2403259.dwg; OT/2024/AR2403259.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 400 × 210 | AR2404054 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2404054.dwg; OT/2024/AR2404054.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 450 × 210 | AR2404960 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2404960.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 301 × 181 | AR2405194 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2405194.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
-| Lona alta; 320 × 170 | AR2405495, AR2500996, AR2503324 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2405495.dwg; OT/2025/AR2500996.dwg; OT/2025/AR2500996.xlsb; OT/2025/AR2503324.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 310 × 150 | AR2405640, AR2502368, AR2502944 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2405640-10.xlsb; OT/2024/AR2405640-11.xlsb; OT/2024/AR2405640-12.xlsb; OT/2024/AR2405640-13.xlsb; OT/2024/AR2405640.dwg; OT/2025/AR2502368.dwg; OT/2025/AR2502368.xlsb; OT/2025/AR2502944.dwg; OT/2025/AR2502944.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 330 × 150 | AR2405948 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2405948.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 220 × 150 | AR2406256 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2406256-10.xlsb; OT/2024/AR2406256.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 270 × 170 | AR2500320 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2500320.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 371 × 221 | AR2500334 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2500334.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
-| Lona alta; 260 × 160 | AR2500415 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2500415.dwg; OT/2025/AR2500415.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 300 × 150 | AR2503054 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2503054.dwg; OT/2025/AR2503054.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 250 × 160 | AR2503961 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2503961-11.xlsb; OT/2025/AR2503961.dwg; OT/2025/AR2503961.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 200 × 1300 | AR2601757 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2601757.dwg; OT/2026/AR2601757.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
@@ -376,7 +389,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `talleres-santaballa`. Histórico: **143 líneas / 68 pedidos**. PDF producidos adicionales examinados: 2. Registro vigente versión 2, conservado.
 
-Código acreditado por histórico (AR2604602). Nombres/alias del histórico: TALLERES SANTABALLA · SANTABALLA PALAS, S.L..
+Código acreditado por histórico (AR2604602). Nombres/alias conocidos: TALLERES SANTABALLA · SANTABALLA PALAS, S.L..
 
 Plantillas encontradas: `PL/SANTABALLA/RUEDA SANTABALLA.dwg`; `PL/SANTABALLA_recover.dwg`; `PL/SANTABALLA.dwg`
 
@@ -391,6 +404,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 03: 47 (AR2500626, AR2600007, AR2405389, AR2504727, AR2600377, AR2500064, AR2502866, AR2500832, AR2400611, AR2401748, AR2403653, AR2602633, AR2505859, AR2402628, AR2600153, AR2600875, AR2604093, AR2502334, AR2602963, AR2602254, AR2401328, AR2501995, AR2406136, AR2503373, AR2502410, AR2503897, AR2406591, AR2405136, AR2401975, AR2500659, AR2501663, AR2602153, AR2400206, AR2505469, AR2406316, AR2402799, AR2504172, AR2503183, AR2604092, AR2505004, AR2603478, AR2600515, AR2405339, AR2603691, AR2403257, AR2500181, AR2405985); TIPO 05: 8 (AR2500064, AR2400301, AR2406591, AR2404928, AR2501667, AR2602633, AR2401975, AR2505859) |
+| aguas | 10: 27 (AR2504727, AR2500832, AR2400611, AR2403653, AR2602633, AR2505859, AR2402628, AR2600153, AR2401328, AR2503373, AR2502410, AR2503897, AR2406591, AR2602963, AR2402393, AR2602153, AR2505469, AR2406316, AR2500659, AR2504172, AR2402799, AR2604092, AR2505004, AR2603478, AR2600515, AR2603691, AR2403257); 9: 11 (AR2600007, AR2604093, AR2400611, AR2406136, AR2500659, AR2602254, AR2501995, AR2602153, AR2503373, AR2600515, AR2403257); 12: 9 (AR2500626, AR2602963, AR2501667, AR2502410, AR2600153, AR2406316, AR2505859, AR2600377, AR2505004); 7: 9 (AR2600377, AR2500064, AR2401748, AR2502334, AR2600153, AR2501667, AR2503373, AR2405985, AR2401975); 8: 7 (AR2602254, AR2505859, AR2402799, AR2402393, AR2503897, AR2406591, AR2405339); 13: 6 (AR2405389, AR2502866, AR2401975, AR2505859, AR2406591, AR2500181); 11: 4 (AR2501995, AR2505469, AR2503183, AR2406316); NO: 3 (AR2403859, AR2403667, AR2501667); SI: 2 (AR2401328, AR2405136); 6: 2 (AR2406591, AR2403817); SI, 9CM: 1 (AR2600875); SI, 12CM: 1 (AR2600875); SI, 10CM: 1 (AR2600875); SI, 7CM: 1 (AR2600875); 16: 1 (AR2501663) |
 | recogeDelante | NO: 47 (AR2500626, AR2504727, AR2600377, AR2500064, AR2500832, AR2400611, AR2401748, AR2403653, AR2602633, AR2600007, AR2403859, AR2505859, AR2402628, AR2600153, AR2600875, AR2604093, AR2403667, AR2502334, AR2602963, AR2602254, AR2401328, AR2501667, AR2503373, AR2502410, AR2405136, AR2402393, AR2400301, AR2406591, AR2500659, AR2602153, AR2400206, AR2404928, AR2505469, AR2406316, AR2501995, AR2402799, AR2503183, AR2604092, AR2505004, AR2401975, AR2603478, AR2503897, AR2600515, AR2405339, AR2603691, AR2403257, AR2405985); GOMA: 16 (AR2600007, AR2405389, AR2502866, AR2501995, AR2401328, AR2406136, AR2503897, AR2406591, AR2401975, AR2403817, AR2501663, AR2505859, AR2406316, AR2504172, AR2505469, AR2500181) |
 | recogeAtras | GOMA: 54 (AR2500626, AR2600007, AR2405389, AR2504727, AR2600377, AR2500064, AR2502866, AR2500832, AR2400611, AR2401748, AR2403653, AR2602633, AR2403859, AR2505859, AR2402628, AR2600153, AR2600875, AR2604093, AR2403667, AR2502334, AR2602963, AR2602254, AR2401328, AR2501995, AR2406136, AR2503373, AR2502410, AR2503897, AR2406591, AR2405136, AR2402393, AR2401975, AR2400301, AR2403817, AR2500659, AR2501663, AR2602153, AR2400206, AR2404928, AR2505469, AR2501667, AR2406316, AR2402799, AR2504172, AR2503183, AR2604092, AR2505004, AR2603478, AR2600515, AR2405339, AR2603691, AR2403257, AR2500181, AR2405985); NO: 1 (AR2501667) |
 | bastillaEnfundar | NO: 47 (AR2500626, AR2600007, AR2405389, AR2504727, AR2600377, AR2500064, AR2502866, AR2500832, AR2400611, AR2403653, AR2403859, AR2505859, AR2600153, AR2600875, AR2604093, AR2403667, AR2502334, AR2602963, AR2602254, AR2501995, AR2406136, AR2503373, AR2502410, AR2406591, AR2401975, AR2400301, AR2403817, AR2501663, AR2602153, AR2400206, AR2404928, AR2505469, AR2501667, AR2406316, AR2402799, AR2500659, AR2602633, AR2604092, AR2505004, AR2603478, AR2503897, AR2600515, AR2405339, AR2603691, AR2403257, AR2500181, AR2405985); SÍ: 10 (AR2602633, AR2600875, AR2501667, AR2502410, AR2503897, AR2500659, AR2600153, AR2504172, AR2503183, AR2505004) |
@@ -417,7 +431,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 155 × 105 | 2,5; 37,5; 72,5; 103,5 | 2,5; 37,5; 72,5; 103,5 | 2,5; 32,7; 62,9; 93,1; 123,3; 153,5 |  AR2505859; OT/2025/AR2505859-12.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2505859 / 1 pedido(s): AR2406591. |
 | lona; 160 × 112 | 2,5; 27,5; 56,5; 85,5; 110,5 | 2,5; 27,5; 56,5; 85,5; 110,5 | 2,5; 15; 54,5; 80,5; 106,5; 132,5; 158,5 |  AR2403653; OT/2024/AR2403653-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2403653. |
 | lona; 174 × 118 | 2,5; 31; 59,5; 88; 116,5 | 2,5; 31; 59,5; 88; 116,5 | 2,5; 30; 58,5; 87; 115,5; 144; 172,5 |  AR2501667; OT/2025/AR2501667-12.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501667. |
-| lona; 175 × 110 | 2,5; 37,8; 73,2; 108,5 | 2,5; 37,8; 73,2; 108,5 | 2,5; 36,7; 70,9; 105,1; 139,3; 173,5 |  AR2405985; OT/2024/AR2405985.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2402628, AR2405985. |
+| lona; 175 × 110 | 2,5; 37,8; 73,2; 108,5 | 2,5; 37,8; 73,2; 108,5 | 2,5; 36,7; 70,9; 105,1; 139,3; 173,5 |  AR2405985; OT/2024/AR2405985.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2402628, AR2405985 / 1 pedido(s): AR2402393. |
 | lona; 175 × 111 | 18,7; 56; 93,3 | 18,7; 56; 93,3 | 18; 53; 88; 123; 158 |  AR2401748; OT/2024/AR2401748-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401748. |
 | lona; 175 × 112 | 2,5; 38,5; 74,5; 110,5 | 2,5; 38,5; 74,5; 110,5 | 2,5; 31; 59,5; 88; 116,5; 145; 173,5 |  AR2600875; OT/2026/AR2600875.xlsb / LONA REMOLQUE 0225813, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600875. |
 | lona; 175 × 120 | 2,5; 29; 60,5; 92; 118,5 | 2,5; 29; 60,5; 92; 118,5 | 2,5; 36,7; 70,9; 105,1; 139,3; 173,5 |  AR2402799; OT/2024/AR2402799-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2402799 / 1 pedido(s): AR2402393. |
@@ -466,7 +480,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 275 × 164 | 2,5; 34,5; 66,5; 98,5; 130,5; 162,5 | 2,5; 34,5; 66,5; 98,5; 130,5; 162,5 | 2,5; 32,6; 62,7; 92,8; 122,9; 153,1; 183,2; 213,3; 243,4; 273,5 |  AR2406316; OT/2024/AR2406316-3.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2406316. |
 | lona; 290 × 212 | 2,5; 37,2; 71,8; 106,5; 141,2; 175,8; 210,5 | 2,5; 37,2; 71,8; 106,5; 141,2; 175,8; 210,5 | 2,5; 31,1; 59,7; 88,3; 114,7; 145,5; 174,1; 202,7; 231,3; 259,9; 288,5 |  AR2406591; OT/2024/AR2406591-3.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2406591. |
 | lona; 300 × 160 | 2,5; 33,7; 64,9; 96,1; 127,3; 158,5 | 2,5; 33,7; 64,9; 96,1; 127,3; 158,5 | 2,5; 35,4; 68,3; 101,2; 134,1; 166,9; 199,8; 232,7; 265,6; 298,5 |  AR2600153; OT/2026/AR2600153-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2600153 / 1 pedido(s): AR2403653. |
-| lona; 300 × 163 | 2,5; 42,3; 82; 121,8; 161,5 | 2,5; 42,3; 82; 121,8; 161,5 | 2,5; 35,4; 68,3; 101,2; 134,1; 166,9; 199,8; 232,7; 265,6; 298,5 |  AR2402799; OT/2024/AR2402799-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402799. |
+| lona; 300 × 163 | 16,4; 49,2; 82; 114,8; 147,6 | 16,4; 49,2; 82; 114,8; 147,6 | 17,3; 50,6; 83,9; 117,2; 150,5; 183,8; 217,1; 250,4; 283,7 |  AR2403257; OT/2024/AR2403257-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2403257 / 1 pedido(s): AR2402799. |
 | lona; 300 × 172 | 2,5; 36,7; 69,4; 102,6; 136,3; 170,5 | 2,5; 36,7; 69,4; 102,6; 136,3; 170,5 | 2,5; 35,4; 68,3; 101,2; 134,1; 166,9; 199,8; 232,7; 265,6; 298,5 |  AR2602633; OT/2026/AR2602633-12.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2602633. |
 | lona; 300 × 182 | 2,5; 38,1; 73,7; 109,3; 144,9; 180,5 | 2,5; 38,1; 73,7; 109,3; 144,9; 180,5 | 2,5; 35,4; 68,3; 101,2; 134,1; 166,9; 199,8; 232,7; 265,6; 298,5 |  AR2604816; OT/2026/AR2604816.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2604816. |
 | lona; 300 × 195 | 2,5; 34,3; 66,2; 98; 129,8; 161,7; 193,5 | 2,5; 34,3; 66,2; 98; 129,8; 161,7; 193,5 | 2,5; 35,3; 68,1; 100,8; 136,6; 166,4; 199,2; 231,9; 264,7; 297,5 |  AR2401975; OT/2024/AR2401975-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401975. |
@@ -511,13 +525,15 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `pamilakan-sas`. Histórico: **126 líneas / 106 pedidos**. PDF producidos adicionales examinados: 6. Registro vigente versión 5, conservado.
 
-Código acreditado por histórico (AR2604490). Nombres/alias del histórico: PAMILAKAN SAS.
+Código acreditado por histórico (AR2604490). Nombres/alias conocidos: PAMILAKAN SAS.
 
 Plantillas encontradas: `PL/PAMILAKAN/PAMILAKAN SAS.dwg`
 
 Se conserva bastillaEnfundar=true de la ficha vigente, confirmada por Iván el 20/10/2026 en Q-R07 (docs/modelos/dudas-abiertas.md).
 
 PAMILAKAN/PAMILAKAN SAS.dwg combina refuerzos en esquinas sin marcar y ejemplos sin refuerzos. También indica cremallera de 10 con dos cursores de un medallón: no se transforma en cremallera del 9.
+
+El baquetón 92×50 de AR2400131 se completa desde su CAD: cotas hechas 93×51, puntas de 2,5 cm y filas opuestas iguales y simétricas. Se verificaron los 22 círculos del contorno hecho, sin usar como origen la representación ROTULADOR de corte. Anclajes y comprobación en pedidos-cad.json.
 
 Campos vigentes que se respetan: `perfil` = {"tipoPerfil":"TIPO 01"}; `bastillaEnfundar` = true; `ventana` = {"lleva":false}; `rotulacion` = false; `recogeAtras` = "CREMALLERA".
 
@@ -526,6 +542,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 01: 23 (AR2404598, AR2600968, AR2403608, AR2502766, AR2405795, AR2600707, AR2603744, AR2603438, AR2403950, AR2502379, AR2603907, AR2401687, AR2404050, AR2501973, AR2602423, AR2600014, AR2404194, AR2603235, AR2403880, AR2406297, AR2401000, AR2401187, AR2405868); TIPO 02: 4 (AR2502297, AR2401000, AR2400478, AR2501555); TIPO 05: 4 (AR2403127, AR2602769, AR2401566, AR2402752); TIPO 03: 1 (AR2403739) |
+| aguas | NO: 14 (AR2404598, AR2403608, AR2405795, AR2403127, AR2403950, AR2401566, AR2401687, AR2403249, AR2404194, AR2403880, AR2406297, AR2401000, AR2401187, AR2402752); 9: 2 (AR2502297, AR2403739); SI: 1 (AR2401000); 6: 1 (AR2405541); 40: 1 (AR2400478); 19: 1 (AR2501555) |
 | recogeDelante | NO: 29 (AR2502297, AR2600968, AR2403608, AR2405795, AR2400342, AR2600707, AR2401000, AR2603744, AR2603438, AR2602769, AR2403950, AR2401566, AR2603907, AR2401687, AR2404050, AR2501973, AR2405541, AR2403249, AR2400676, AR2602423, AR2400478, AR2600014, AR2404194, AR2603235, AR2403880, AR2403739, AR2501555, AR2401187, AR2402752); CREMALLERA: 7 (AR2404598, AR2502766, AR2403127, AR2502379, AR2406297, AR2401000, AR2405868) |
 | recogeAtras | CREMALLERA: 23 (AR2404598, AR2502297, AR2502766, AR2400342, AR2403127, AR2401000, AR2603744, AR2603438, AR2403950, AR2502379, AR2401687, AR2404050, AR2405541, AR2403249, AR2405795, AR2600014, AR2603235, AR2406297, AR2403739, AR2501555, AR2401187, AR2402752, AR2405868); NO: 12 (AR2600968, AR2403608, AR2405795, AR2600707, AR2602769, AR2401566, AR2501973, AR2400676, AR2602423, AR2400478, AR2404194, AR2403880); GOMA: 1 (AR2603907) |
 | bastillaEnfundar | SÍ: 28 (AR2404598, AR2502297, AR2600968, AR2502766, AR2403127, AR2401000, AR2603744, AR2603438, AR2602769, AR2401566, AR2502379, AR2401687, AR2404050, AR2501973, AR2403249, AR2405795, AR2400676, AR2602423, AR2600014, AR2404194, AR2603235, AR2403880, AR2406297, AR2403739, AR2501555, AR2401187, AR2402752, AR2405868); NO: 8 (AR2403608, AR2405795, AR2400342, AR2600707, AR2403950, AR2603907, AR2405541, AR2400478) |
@@ -607,6 +624,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | baqueton; 268 × 160 | 2,5; 18,1; 33,7; 49,3; 64,9; 80,5; 96,1; 111,7; 127,3; 142,9; 158,5 | 2,5; 18,1; 33,7; 49,3; 64,9; 80,5; 96,1; 111,7; 127,3; 142,9; 158,5 | 53,85; 68,55; 83,15; 97,85; 112,55; 127,15; 141,85; 156,55; 171,15; 185,85; 200,55; 215,15 |  AR2404836; OT/2024/AR2404836.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404836. |
 | baqueton; 303 × 171 | 2,5; 27,3; 35,9; 69,3; 102,7; 136,1 | 2,5; 27,3; 35,9; 69,3; 102,7; 136,1 | 2,5; 45,2; 87,9; 130,6; 173,4; 216,1; 258,8; 301,5 |  AR2405388; OT/2024/AR2405388.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405388. |
 | baqueton; 350 × 250 | 2,5; 39,5; 82,5; 125,5; 168,5; 211,5; 248,5 | 2,5; 39,5; 82,5; 125,5; 168,5; 211,5; 248,5 | 2,5; 12,7; 22,9; 33; 43,2; 53,4; 63,6; 73; 83,9; 94,1; 104,3; 114,4 |  AR2402895; OT/2024/AR2402895.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402895. |
+| baqueton; 92 × 50 | 2,5; 17,833333; 33,166667; 48,5 | 2,5; 17,833333; 33,166667; 48,5 | 2,5; 17,166667; 31,833333; 46,5; 61,166667; 75,833333; 90,5 |  AR2400131; OT/2024/AR2400131.dwg; mayoría de pedidos. Variantes: 1 pedido(s): AR2400131. |
 | lona; 122 × 109 | 2,5; 23,5; 44,5; 65,5; 86,5; 107,5 | 2,5; 23,5; 44,5; 65,5; 86,5; 107,5 | 2,5; 22,2; 41,8; 61,5; 81,2; 100,8; 120,5 |  AR2403950; OT/2024/AR2403950.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2403950. |
 | lona; 123 × 103 | 2,5; 16,6; 30,8; 44,9; 59,1; 73,2; 87,4; 101,5 | 2,5; 16,6; 30,8; 44,9; 59,1; 73,2; 87,4; 101,5 | 2,5; 17,4; 32,3; 47,1; 62; 76,9; 91,8; 106,6; 121,5 |  AR2403249; OT/2024/AR2403249.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2403249. |
 | lona; 127 × 107 | 5,5; 32,5; 54; 75,5; 102,5 | 5,5; 32,5; 54; 75,5; 102,5 | 5; 32; 64; 96; 123 |  AR2602769; OT/2026/AR2602769.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2602769 / 1 pedido(s): AR2602423. |
@@ -643,7 +661,6 @@ Referencias que quedan fuera de las medidas automáticas:
 
 | Tipo y medida del histórico | Pedidos | Motivo y fuentes |
 | --- | --- | --- |
-| Baquetón; 92 × 50 | AR2400131 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2400131.dwg; OT/2024/AR2400131.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 202 × 112 | AR2400225 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2400225-1.xlsb; OT/2024/AR2400225-2.xlsb; OT/2024/AR2400225.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 226 × 115 | AR2400225 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2400225-1.xlsb; OT/2024/AR2400225-2.xlsb; OT/2024/AR2400225.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 158 × 120 | AR2400478 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2400478.dwg; OT/2024/AR2400478.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
@@ -673,7 +690,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `ayala`. Histórico: **115 líneas / 42 pedidos**. PDF producidos adicionales examinados: 1. Registro vigente versión 7, conservado.
 
-Código acreditado por histórico (AR2604276). Nombres/alias del histórico: ENGANCHES Y REMOLQUES AYALA S.L.U.
+Código acreditado por histórico (AR2604276). Nombres/alias conocidos: ENGANCHES Y REMOLQUES AYALA S.L.U.
 
 Plantillas encontradas: `PL/AYALA/AYALA.dwg`; `PL/CALCULOS EXCEL2/CALCULOS REMOLQUES/REMOLQUES BAQUETON AYALA.xls`
 
@@ -686,6 +703,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 01: 23 (AR2400922, AR2504928, AR2503249, AR2502311, AR2601615, AR2503833, AR2603115, AR2501369, AR2401063, AR2405907, AR2603583, AR2505827, AR2403710, AR2505705, AR2402309, AR2401761, AR2400758, AR2500948, AR2600484, AR2406884, AR2602085, AR2500145, AR2500201); TIPO 03: 16 (AR2500201, AR2401042, AR2505827, AR2402309, AR2502311, AR2601895, AR2501007, AR2404016, AR2503833, AR2405961, AR2601615, AR2602175, AR2600484, AR2601896, AR2401761, AR2505795) |
+| aguas | 10: 12 (AR2500201, AR2401042, AR2402309, AR2502311, AR2601895, AR2501007, AR2404016, AR2503833, AR2405961, AR2601615, AR2602175, AR2600484); NO: 6 (AR2405907, AR2603583, AR2403710, AR2401761, AR2500948, AR2406884); 4: 1 (AR2600484); 5: 1 (AR2601896); 30: 1 (AR2505795) |
 | recogeDelante | NO: 30 (AR2500201, AR2401042, AR2400922, AR2504928, AR2503249, AR2601615, AR2505827, AR2402309, AR2503833, AR2603115, AR2601895, AR2501369, AR2401063, AR2405907, AR2603583, AR2403710, AR2502311, AR2505705, AR2401761, AR2400758, AR2501007, AR2500948, AR2404016, AR2602175, AR2600484, AR2406884, AR2601896, AR2602085, AR2505795, AR2500145); GOMA: 2 (AR2502311, AR2405961) |
 | recogeAtras | GOMA: 31 (AR2500201, AR2401042, AR2400922, AR2504928, AR2503249, AR2502311, AR2601615, AR2505827, AR2402309, AR2503833, AR2603115, AR2601895, AR2501369, AR2401063, AR2405907, AR2603583, AR2403710, AR2505705, AR2401761, AR2400758, AR2501007, AR2500948, AR2404016, AR2405961, AR2602175, AR2600484, AR2406884, AR2601896, AR2602085, AR2505795, AR2500145) |
 | bastillaEnfundar | NO: 29 (AR2500201, AR2401042, AR2400922, AR2504928, AR2503249, AR2601615, AR2505827, AR2402309, AR2503833, AR2601895, AR2501369, AR2401063, AR2405907, AR2603583, AR2403710, AR2502311, AR2505705, AR2400758, AR2501007, AR2500948, AR2404016, AR2405961, AR2602175, AR2600484, AR2406884, AR2601896, AR2602085, AR2505795, AR2500145); SÍ: 2 (AR2502311, AR2603115) |
@@ -759,7 +777,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `nl-digital`. Histórico: **91 líneas / 20 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2504257). Nombres/alias del histórico: NL DIGITAL.
+Código acreditado por GET RPS pedido (AR2504257). Nombres/alias conocidos: NL DIGITAL.
 
 Plantillas encontradas: `PL/NL.DIGITAL/NL.DIGITAL.dwg`
 
@@ -770,6 +788,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 01: 16 (AR2404172, AR2404780, AR2404248, AR2403877, AR2504105, AR2404082, AR2403994, AR2503420, AR2503198, AR2503812, AR2405960, AR2503985, AR2504257, AR2404641, AR2404309, AR2403955); TIPO 02: 5 (AR2404172, AR2404082, AR2504257, AR2404248, AR2404641); TIPO 03: 1 (AR2404384) |
+| aguas | NO: 6 (AR2403877, AR2404172, AR2404082, AR2503812, AR2405960, AR2404309); 10: 3 (AR2404172, AR2404248, AR2404641); 4: 2 (AR2404172, AR2404783); 13: 2 (AR2404384, AR2504257); 18: 1 (AR2404082); 14: 1 (AR2405518) |
 | recogeDelante | NO: 19 (AR2404172, AR2404248, AR2403877, AR2404082, AR2403994, AR2503420, AR2503198, AR2404780, AR2503812, AR2405960, AR2504105, AR2503985, AR2405518, AR2504257, AR2404384, AR2404783, AR2404309, AR2403955, AR2404641); CREMALLERA: 3 (AR2404780, AR2504105, AR2404641) |
 | recogeAtras | CREMALLERA: 16 (AR2404780, AR2403877, AR2504105, AR2404172, AR2404082, AR2403994, AR2503985, AR2503812, AR2405518, AR2504257, AR2404384, AR2404783, AR2404641, AR2404309, AR2404248, AR2403955); NO: 12 (AR2404172, AR2404248, AR2404082, AR2403994, AR2503420, AR2503198, AR2403877, AR2503812, AR2405960, AR2503985, AR2504105, AR2504257) |
 | bastillaEnfundar | SÍ: 19 (AR2404172, AR2404780, AR2404248, AR2403877, AR2504105, AR2404082, AR2403994, AR2503420, AR2503198, AR2503812, AR2405960, AR2503985, AR2405518, AR2504257, AR2404384, AR2404783, AR2404641, AR2404309, AR2403955); NO: 5 (AR2403877, AR2504105, AR2504257, AR2503985, AR2404248) |
@@ -878,7 +897,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `euro-remolque`. Histórico: **90 líneas / 82 pedidos**. PDF producidos adicionales examinados: 1. Registro vigente versión 1, conservado.
 
-Código acreditado por histórico (AR2604383). Nombres/alias del histórico: INCAR · EURO REMOLQUE, S. L..
+Código acreditado por histórico (AR2604383). Nombres/alias conocidos: INCAR · EURO REMOLQUE, S. L..
 
 Plantillas encontradas: `PL/INCAR (EURO REMOLQUE)/FOTOS AR2306267/AR2306267.dwg`; `PL/INCAR (EURO REMOLQUE)/INCAR (EURO REMOLQUE).DWG`; `PL/REMOLQUES GANADO/INCAR GANADO 300 X 160.dwg`
 
@@ -891,6 +910,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 25 (AR2504989, AR2402017, AR2400860, AR2503722, AR2400974, AR2402347, AR2601271, AR2401008, AR2401225, AR2405115, AR2402321, AR2400645, AR2405574, AR2502620, AR2406101, AR2402320, AR2503824, AR2400511, AR2402511, AR2401329, AR2402946, AR2404922, AR2404967, AR2403045, AR2601570); TIPO 04: 21 (AR2601080, AR2603563, AR2603096, AR2600693, AR2506073, AR2501638, AR2504094, AR2406768, AR2604263, AR2502030, AR2500907, AR2604335, AR2500478, AR2600511, AR2504256, AR2602866, AR2601020, AR2600251, AR2500521, AR2500139, AR2500261); TIPO 01: 1 (AR2405925) |
+| aguas | NO: 19 (AR2405925, AR2404232, AR2600693, AR2601271, AR2501638, AR2401225, AR2406768, AR2403606, AR2405574, AR2406101, AR2602866, AR2601020, AR2401329, AR2500139, AR2403314, AR2402946, AR2403455, AR2500261, AR2403045) |
 | recogeDelante | NO: 50 (AR2601080, AR2603563, AR2405925, AR2404232, AR2603096, AR2504989, AR2402017, AR2400860, AR2600693, AR2400974, AR2506073, AR2402347, AR2601271, AR2501638, AR2401008, AR2401225, AR2405115, AR2504094, AR2402321, AR2406768, AR2604263, AR2502030, AR2400645, AR2403606, AR2500907, AR2604335, AR2500478, AR2600511, AR2405574, AR2502620, AR2504256, AR2406101, AR2602866, AR2402320, AR2503824, AR2601020, AR2400511, AR2402511, AR2600251, AR2401329, AR2500521, AR2500139, AR2403314, AR2402946, AR2404922, AR2404967, AR2403455, AR2500261, AR2403045, AR2601570); GOMA: 1 (AR2503722) |
 | recogeAtras | GOMA: 51 (AR2601080, AR2603563, AR2405925, AR2404232, AR2603096, AR2504989, AR2402017, AR2400860, AR2503722, AR2600693, AR2400974, AR2506073, AR2402347, AR2601271, AR2501638, AR2401008, AR2401225, AR2405115, AR2504094, AR2402321, AR2406768, AR2604263, AR2502030, AR2400645, AR2403606, AR2500907, AR2604335, AR2500478, AR2600511, AR2405574, AR2502620, AR2504256, AR2406101, AR2602866, AR2402320, AR2503824, AR2601020, AR2400511, AR2402511, AR2600251, AR2401329, AR2500521, AR2500139, AR2403314, AR2402946, AR2404922, AR2404967, AR2403455, AR2500261, AR2403045, AR2601570) |
 | bastillaEnfundar | NO: 46 (AR2601080, AR2603563, AR2405925, AR2404232, AR2603096, AR2504989, AR2402017, AR2400860, AR2600693, AR2400974, AR2506073, AR2402347, AR2601271, AR2501638, AR2401008, AR2405115, AR2504094, AR2402321, AR2406768, AR2604263, AR2502030, AR2400645, AR2403606, AR2500907, AR2604335, AR2500478, AR2600511, AR2405574, AR2502620, AR2504256, AR2406101, AR2402320, AR2503824, AR2601020, AR2400511, AR2600251, AR2500521, AR2500139, AR2403314, AR2402946, AR2404922, AR2404967, AR2403455, AR2500261, AR2403045, AR2601570); SÍ: 2 (AR2503722, AR2602866) |
@@ -945,7 +965,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `metalurgicas-norte-burgos-s-l`. Histórico: **80 líneas / 57 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por histórico (AR2603988). Nombres/alias del histórico: METALURGICAS NORTE BURGOS S.L..
+Código acreditado por histórico (AR2603988). Nombres/alias conocidos: METALURGICAS NORTE BURGOS S.L..
 
 Plantillas encontradas: `PL/METALURGICAS NORTE/NORTE.dwg`; `PL/METALURGICAS NORTE/NORTE2.DWG`; `PL/METALURGICAS NORTE/_CLOSE.dwg`
 
@@ -953,13 +973,14 @@ METALURGICAS NORTE/NORTE.dwg: puentes como ESVA, sin ventana, azul 5015; 10 cm d
 
 Nota fechada 10/03/2026: +1,5 cm. Nota 20/05/2026: +0,5 cm más, total remolque +2 cm en largo y ancho. Las hojas antiguas no bastan para convertir esa nota en las siete demasías de baquetón ni en una holgura general de lona.
 
-Reglas añadidas a la propuesta: `ventana` = {"lleva":false}; `perfil` = {"tipoPerfil":"TIPO 03"}; `recogeAtras` = "PUENTES ESVA"; `bastillaEnfundar` = false.
+Reglas añadidas a la propuesta: `ventana` = {"lleva":false}; `perfil` = {"tipoPerfil":"TIPO 03","aguas":10}; `recogeAtras` = "PUENTES ESVA"; `bastillaEnfundar` = false; `observaciones` = ["LOS 10 CM DE AGUAS VAN INCLUIDOS EN LA ALTURA"].
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 03: 37 (AR2406114, AR2402778, AR2502117, AR2503685, AR2504797, AR2506302, AR2505254, AR2404582, AR2502805, AR2401158, AR2505455, AR2501137, AR2400680, AR2403085, AR2600222, AR2405707, AR2600406, AR2401226, AR2503180, AR2505724, AR2503492, AR2600792, AR2400730, AR2600750, AR2600255, AR2401917, AR2405116, AR2504111, AR2400792, AR2405634, AR2500391, AR2505110, AR2500829, AR2401819, AR2406296, AR2600853, AR2404307); TIPO 01: 1 (AR2503492) |
+| aguas | 10: 32 (AR2402778, AR2502117, AR2503685, AR2504797, AR2506302, AR2505254, AR2404582, AR2502805, AR2505455, AR2501137, AR2400680, AR2403085, AR2600222, AR2405707, AR2600406, AR2503180, AR2505724, AR2503492, AR2400730, AR2600750, AR2600255, AR2401917, AR2402200, AR2405116, AR2504111, AR2400792, AR2405634, AR2505110, AR2406296, AR2500391, AR2600853, AR2404307); NO: 2 (AR2401158, AR2401226); 20: 2 (AR2500391, AR2401819); 15: 1 (AR2406114); SI: 1 (AR2600792) |
 | recogeDelante | NO: 34 (AR2406114, AR2402778, AR2502117, AR2503685, AR2504797, AR2506302, AR2505254, AR2404582, AR2502805, AR2401158, AR2505455, AR2503492, AR2501137, AR2403085, AR2600222, AR2405707, AR2600406, AR2401226, AR2503180, AR2505724, AR2600792, AR2400730, AR2600750, AR2600255, AR2401917, AR2402200, AR2504111, AR2405634, AR2500391, AR2505110, AR2500829, AR2406296, AR2600853, AR2404307); PUENTES ESVA: 4 (AR2400680, AR2405116, AR2400792, AR2401819) |
 | recogeAtras | PUENTES ESVA: 38 (AR2406114, AR2402778, AR2502117, AR2503685, AR2504797, AR2506302, AR2505254, AR2404582, AR2502805, AR2401158, AR2505455, AR2503492, AR2501137, AR2400680, AR2403085, AR2600222, AR2405707, AR2600406, AR2401226, AR2503180, AR2505724, AR2600792, AR2400730, AR2600750, AR2600255, AR2401917, AR2402200, AR2405116, AR2504111, AR2400792, AR2405634, AR2500391, AR2505110, AR2500829, AR2401819, AR2406296, AR2600853, AR2404307) |
 | bastillaEnfundar | NO: 36 (AR2406114, AR2402778, AR2502117, AR2503685, AR2504797, AR2506302, AR2505254, AR2404582, AR2502805, AR2401158, AR2505455, AR2503492, AR2501137, AR2400680, AR2403085, AR2600222, AR2405707, AR2600406, AR2503180, AR2505724, AR2600792, AR2400730, AR2600750, AR2401917, AR2402200, AR2405116, AR2504111, AR2400792, AR2405634, AR2500391, AR2505110, AR2500829, AR2401819, AR2406296, AR2600853, AR2404307); SÍ: 1 (AR2600255) |
@@ -1028,7 +1049,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `www-remolquesnunez-com-remolques-nunez-s-l`. Histórico: **80 líneas / 32 pedidos**. PDF producidos adicionales examinados: 1. Alta propuesta.
 
-Código acreditado por histórico (AR2603693). Nombres/alias del histórico: www.remolquesnunez.com · REMOLQUES NUÑEZ, S. L..
+Código acreditado por histórico (AR2603693). Nombres/alias conocidos: www.remolquesnunez.com · REMOLQUES NUÑEZ, S. L..
 
 Plantillas encontradas: `PL/NUÑEZ(TUBILLA-BURGOS)(remolquesnuñez.com)4.DWG`; `PL/REMOLQUES GANADO/REMOLQUES NUÑEZ (TUBILLA)/REMOLQUES NUÑEZ VAN-1.dwg`
 
@@ -1036,13 +1057,14 @@ OLLAOS/REMOLQUILLEROS.doc: cremallera gorda, normalmente gris, sin ventana, 2 cm
 
 El aumento de aguas es una operación sobre el pedido, no una altura fija de aguas que se pueda imponer a todos los perfiles.
 
-Reglas añadidas a la propuesta: `ollaosRepartidos` = true; `ventana` = {"lleva":false}; `perfil` = {"tipoPerfil":"TIPO 02"}; `recogeAtras` = "CREMALLERA".
+Reglas añadidas a la propuesta: `ollaosRepartidos` = true; `ventana` = {"lleva":false}; `perfil` = {"tipoPerfil":"TIPO 02"}; `recogeAtras` = "CREMALLERA"; `observaciones` = ["LONA ALTA: 2 CM DE AGUAS A MAYORES DE LAS MEDIDAS DEL PEDIDO","BAQUETÓN QUE BAJA MENOS DE 10 CM: SIN AUMENTO DE AGUAS"].
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 02: 25 (AR2401157, AR2600480, AR2501947, AR2601189, AR2401840, AR2500595, AR2503142, AR2503951, AR2404306, AR2407011, AR2403884, AR2502213, AR2405345, AR2501121, AR2403077, AR2404382, AR2506231, AR2506039, AR2600701, AR2505807, AR2505957, AR2406560, AR2504494, AR2601288, AR2600738); TIPO 03: 1 (AR2400340) |
+| aguas | 2: 20 (AR2401157, AR2406162, AR2501947, AR2401840, AR2500595, AR2503142, AR2503951, AR2407011, AR2403884, AR2405345, AR2501121, AR2403077, AR2404382, AR2506231, AR2506039, AR2600701, AR2505807, AR2505957, AR2406560, AR2504494); SI: 2 (AR2601189, AR2601288); NO: 1 (AR2404306) |
 | recogeDelante | NO: 23 (AR2401157, AR2600480, AR2406162, AR2501947, AR2601189, AR2401840, AR2503142, AR2503951, AR2404306, AR2407011, AR2403884, AR2405345, AR2501121, AR2403077, AR2500595, AR2404382, AR2400340, AR2505807, AR2505957, AR2406560, AR2504494, AR2601288, AR2600738); CREMALLERA: 8 (AR2600480, AR2401157, AR2500595, AR2502213, AR2506231, AR2506039, AR2600701, AR2403884) |
 | recogeAtras | CREMALLERA: 27 (AR2401157, AR2600480, AR2406162, AR2501947, AR2601189, AR2401840, AR2500595, AR2503142, AR2503951, AR2404306, AR2407011, AR2403884, AR2502213, AR2405345, AR2501121, AR2403077, AR2404382, AR2506231, AR2400340, AR2506039, AR2600701, AR2505807, AR2505957, AR2406560, AR2504494, AR2601288, AR2600738) |
 | bastillaEnfundar | NO: 25 (AR2600480, AR2401157, AR2406162, AR2501947, AR2601189, AR2401840, AR2503142, AR2404306, AR2407011, AR2403884, AR2502213, AR2501121, AR2500595, AR2405345, AR2404382, AR2506231, AR2400340, AR2506039, AR2505807, AR2403077, AR2406560, AR2504494, AR2601288, AR2503951, AR2600738); SÍ: 7 (AR2401157, AR2500595, AR2503951, AR2405345, AR2403077, AR2600701, AR2505957) |
@@ -1074,7 +1096,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 153 × 150 | 2,5; 39; 75,5; 112; 148,5 | 2,5; 39; 75,5; 112; 148,5 | 2,5; 32,3; 62,1; 91,9; 121,7; 151,5 |  AR2506039; OT/2025/AR2506039.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2506039. |
 | lona; 173 × 120 | 2,5; 31,5; 60,5; 89,5; 118,5 | 2,5; 31,5; 60,5; 89,5; 118,5 | 2,5; 36,3; 70,1; 103,9; 137,7; 171,5 |  AR2500595; OT/2025/AR2500595-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2500595 / 1 pedido(s): AR2406560. |
 | lona; 193 × 120 | 2,5; 31,5; 60,5; 89,5; 118,5 | 2,5; 31,5; 60,5; 89,5; 118,5 | 4; 35; 66; 97; 128; 159; 190 |  AR2403884; OT/2024/AR2403884-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2403884 / 1 pedido(s): AR2403077. |
-| lona; 193 × 135 | 2,5; 34,3; 68; 102; 133,5 | 2,5; 34,3; 68; 102; 133,5 | 2,5; 35; 66; 97; 128; 159; 191,5 |  AR2401840; OT/2024/AR2401840-13.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401840. |
+| lona; 193 × 135 | 2,5; 34,3; 68; 102; 133,5 | 2,5; 34,3; 68; 102; 133,5 | 2,5; 35; 66; 97; 128; 159; 191,5 |  AR2401840; OT/2024/AR2401840-13.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2401840 / 1 pedido(s): AR2401157. |
 | lona; 213 × 120 | 2,5; 31,5; 60,5; 89,5; 118,5 | 2,5; 31,5; 60,5; 89,5; 118,5 | 2,5; 37,3; 72,2; 107; 141,8; 176,7; 211,5 |  AR2600480; OT/2026/AR2600480.xlsb / LONA REMOLQUE 224964, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600480. |
 | lona; 213 × 135 | 2,5; 35,3; 68; 100,8; 133,5 | 2,5; 35,3; 68; 100,8; 133,5 | 2,5; 37,3; 72,2; 107; 141,8; 176,7; 211,5 |  AR2501947; OT/2025/AR2501947-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 5 pedido(s): AR2400340, AR2404382, AR2501121, AR2501947, AR2601288. |
 | lona; 223 × 135 | 2,5; 35,3; 68; 100,8; 133,5 | 2,5; 35,3; 68; 100,8; 133,5 | 2,5; 33,8; 65,1; 96,4; 127,6; 158,9; 190,2; 221,5 |  AR2503951; OT/2025/AR2503951-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503951. |
@@ -1086,7 +1108,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 243 × 150 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 36,6; 70,8; 104,9; 139,1; 173,2; 207,3; 241,5 |  AR2407011; OT/2024/AR2407011.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2407011. |
 | lona; 245 × 135 | 2,5; 35,3; 68; 100,8; 133,5 | 2,5; 35,3; 68; 100,8; 133,5 | 2,5; 32,6; 62,8; 92,9; 123; 153,1; 183,3; 213,4; 243,5 |  AR2502213; OT/2025/AR2502213.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2502213. |
 | lona; 253 × 150 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 38,1; 73,6; 109,2; 144,8; 180,4; 215,9; 251,5 |  AR2600480; OT/2026/AR2600480.xlsb / LONA REMOLQUE 224963, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2600480 / 1 pedido(s): AR2403884 / 1 pedido(s): AR2401840. |
-| lona; 253 × 170 | 2,5; 35,7; 68,9; 102,1; 135,3; 168,5 | 2,5; 35,7; 68,9; 102,1; 135,3; 168,5 | 2,5; 38,1; 73,6; 109,2; 144,8; 180,4; 215,9; 251,5 |  AR2504494; OT/2025/AR2504494.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2504494. |
+| lona; 253 × 170 | 2,5; 35,7; 68,9; 102,1; 135,3; 168,5 | 2,5; 35,7; 68,9; 102,1; 135,3; 168,5 | 2,5; 38,1; 73,6; 109,2; 144,8; 180,4; 215,9; 251,5 |  AR2504494; OT/2025/AR2504494.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2504494 / 1 pedido(s): AR2401157. |
 | lona; 255 × 150 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 33,6; 65,3; 96,6; 128; 159,4; 190,8; 222,1; 253,5 |  AR2505807; OT/2025/AR2505807.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2505807 / 1 pedido(s): AR2406162. |
 | lona; 255 × 180 | 17,5; 46,7; 75,9; 105,1; 134,3; 163,5 | 17,5; 46,7; 75,9; 105,1; 134,3; 163,5 | 17,5; 50,1; 81,3; 112,4; 143,6; 174,7; 205,9; 238,5 |  AR2405345; OT/2024/AR2405345-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405345. |
 | lona; 273 × 150 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 36,1; 69,8; 103,4; 137; 170,6; 204,3; 237,9; 271,5 |  AR2506231; OT/2025/AR2506231.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2506231. |
@@ -1097,14 +1119,14 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 303 × 180 | 2,5; 37,7; 72,9; 108,1; 143,3; 178,5 | 2,5; 37,7; 72,9; 108,1; 143,3; 178,5 | 2,5; 35,7; 68,9; 102,2; 135,4; 168,6; 201,8; 235,1; 268,3; 301,5 |  AR2505957; OT/2025/AR2505957.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2505957. |
 | lona; 303 × 200 | 2,5; 35,2; 67,8; 100,5; 133,2; 165,8; 198,5 | 2,5; 35,2; 67,8; 100,5; 133,2; 165,8; 198,5 | 2,5; 35,7; 68,9; 102,2; 135,4; 168,6; 201,8; 235,1; 268,3; 301,5 |  AR2503951; OT/2025/AR2503951.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503951. |
 | lona; 303 × 210 | 2,5; 36,8; 71,2; 105,5; 139,8; 174,2; 208,5 | 2,5; 36,8; 71,2; 105,5; 139,8; 174,2; 208,5 | 2,5; 35,7; 68,9; 102,2; 135,4; 168,6; 201,8; 235,1; 268,3; 301,5 |  AR2503142; OT/2025/AR2503142-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503142. |
+| lona; 305 × 190 | 19,1; 57,3; 95,5; 133,7; 171,9 | 19,1; 57,3; 95,5; 133,7; 171,9 | 17,4; 51,3; 85,2; 119,1; 153; 186,9; 220,8; 254,7; 288,6 |  AR2401157; OT/2024/AR2401157-3.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401157. |
+| lona; 355 × 190 | 19,1; 57,3; 95,5; 133,7; 171,9 | 19,1; 57,3; 95,5; 133,7; 171,9 | 18,25; 53,75; 89,25; 124,75; 160,25; 195,75; 231,25; 266,75; 302,25; 337,75 |  AR2401157; OT/2024/AR2401157-1.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401157. |
 | lona; 403 × 160 | 2,5; 33,7; 64,9; 96,1; 127,3; 158,5 | 2,5; 33,7; 64,9; 96,1; 127,3; 158,5 | 19,15; 52,45; 85,65; 118,95; 152,15; 185,45; 218,65; 252,15; 285,15; 318,45; 351,65; 384,85 |  AR2500595; OT/2025/AR2500595-12.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500595. |
 
 Referencias que quedan fuera de las medidas automáticas:
 
 | Tipo y medida del histórico | Pedidos | Motivo y fuentes |
 | --- | --- | --- |
-| Lona alta; 305 × 190 | AR2401157 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2401157-1.xlsb; OT/2024/AR2401157-2.xlsb; OT/2024/AR2401157-3.xlsb; OT/2024/AR2401157-4.xlsb; OT/2024/AR2401157-5.xlsb; OT/2024/AR2401157.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
-| Lona alta; 355 × 190 | AR2401157 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2401157-1.xlsb; OT/2024/AR2401157-2.xlsb; OT/2024/AR2401157-3.xlsb; OT/2024/AR2401157-4.xlsb; OT/2024/AR2401157-5.xlsb; OT/2024/AR2401157.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 220 × 160 | AR2407010 | Sin los tres lados acreditados sobre la lona hecha. ; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 353 × 135 | AR2501121 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2501121-11.xlsb; OT/2025/AR2501121.dwg; OT/2025/AR2501121.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 253 × 135 | AR2501947 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2501947-10.xlsb; OT/2025/AR2501947-11.xlsb; OT/2025/AR2501947-12.xlsb; OT/2025/AR2501947-13.xlsb; OT/2025/AR2501947-14.xlsb; OT/2025/AR2501947-15.xlsb; OT/2025/AR2501947.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
@@ -1120,7 +1142,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `cano-munoz-francisco`. Histórico: **61 líneas / 41 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2506232). Nombres/alias del histórico: CANO MUÑOZ, FRANCISCO.
+Código acreditado por GET RPS pedido (AR2506232). Nombres/alias conocidos: CANO MUÑOZ, FRANCISCO.
 
 Plantillas encontradas: `PL/CALCULOS EXCEL2/CALCULOS REMOLQUES/CANO MUÑOZ.xls`; `PL/CANO MUÑOZ(METALCAR)/CANO BAQUETON.xls`; `PL/CANO MUÑOZ(METALCAR)/Copia de CANO BAQUETON.xls`; `PL/CANO MUÑOZ(METALCAR)/REMOLQUES CANO(METALURGIA Y CARROCERIAS).dwg`; `PL/CALCULOS REMOLQUES/CANO MUÑOZ.xls`
 
@@ -1128,13 +1150,14 @@ CANO MUÑOZ(METALCAR)/REMOLQUES CANO(METALURGIA Y CARROCERIAS).dwg: el cliente d
 
 En baquetón indica +0,5 cm al largo y ancho; también hay una nota de +0,5 al ancho por la máquina de corte. Son notas distintas y no se suman a ciegas. El propio DWG pide consultar AR1502785 si hay duda.
 
-Reglas añadidas a la propuesta: `ollaosRepartidos` = true; `perfil` = {"tipoPerfil":"TIPO 03"}; `recogeDelante` = "NO"; `recogeAtras` = "CREMALLERA"; `ventana` = {"lleva":false}.
+Reglas añadidas a la propuesta: `ollaosRepartidos` = true; `perfil` = {"tipoPerfil":"TIPO 03","aguas":16}; `recogeDelante` = "NO"; `recogeAtras` = "CREMALLERA"; `ventana` = {"lleva":false}; `observaciones` = ["EL CLIENTE DA LA HOLGURA: AÑADIR SOLO LA COSTURA","LOS 16 CM DE AGUAS VAN INCLUIDOS EN LA ALTURA"].
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 03: 21 (AR2506232, AR2500120, AR2502938, AR2405774, AR2500557, AR2505290, AR2500050, AR2502639, AR2505702, AR2502662, AR2502285, AR2504126, AR2406975, AR2502864, AR2505925, AR2504407, AR2406500, AR2403311, AR2404257, AR2500855, AR2505107); TIPO 02: 1 (AR2504932) |
+| aguas | 16: 24 (AR2506232, AR2500120, AR2502938, AR2405774, AR2500557, AR2505290, AR2500050, AR2502639, AR2505702, AR2502662, AR2502285, AR2504126, AR2406975, AR2502864, AR2505925, AR2504407, AR2406846, AR2406500, AR2403311, AR2404257, AR2500855, AR2504932, AR2505107, AR2501116); SI: 1 (AR2501116) |
 | recogeDelante | NO: 22 (AR2506232, AR2500120, AR2502938, AR2500557, AR2501116, AR2500050, AR2502639, AR2505702, AR2502662, AR2502285, AR2504126, AR2406975, AR2502864, AR2505925, AR2504407, AR2406846, AR2406500, AR2403311, AR2404257, AR2500855, AR2504932, AR2505107); CREMALLERA: 2 (AR2405774, AR2505290) |
 | recogeAtras | CREMALLERA: 24 (AR2506232, AR2500120, AR2502938, AR2405774, AR2500557, AR2501116, AR2505290, AR2500050, AR2502639, AR2505702, AR2502662, AR2502285, AR2504126, AR2406975, AR2502864, AR2505925, AR2504407, AR2406846, AR2406500, AR2403311, AR2404257, AR2500855, AR2504932, AR2505107) |
 | bastillaEnfundar | NO: 21 (AR2506232, AR2500120, AR2502938, AR2405774, AR2500557, AR2501116, AR2500050, AR2502639, AR2505702, AR2502662, AR2502285, AR2504126, AR2406975, AR2502864, AR2505925, AR2504407, AR2403311, AR2404257, AR2500855, AR2504932, AR2505107); SÍ: 3 (AR2505290, AR2406846, AR2406500) |
@@ -1182,13 +1205,15 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `remolques-y-caravanas-mallon-s-l`. Histórico: **57 líneas / 57 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2600466). Nombres/alias del histórico: REMOLQUES Y CARAVANAS MALLON, S. L..
+Código acreditado por GET RPS pedido (BE2600466). Nombres/alias conocidos: REMOLQUES Y CARAVANAS MALLON, S. L..
 
 Plantillas encontradas: `PL/MALLON.dwg`
 
 MALLON.dwg: radio de INBA R=12 desde el 10/12/2019; referencia AR2007020 hecha con la curva nueva. Prevalece sobre los antiguos radios de 11 cm con oreja y 8 cm con puentes del DOC.
 
-Referencias rotuladas RL14 138×108×62, RL16 158×118×72, RL18 178×118×72, RL20 199×118×72 y RL23 229×139,5×72. Las cotas laterales se recogen como datos parciales, sin convertir ganchos, contorno o la cota de una pieza en una medida completa de remolque.
+Comprobadas las cinco referencias RL14/RL16/RL18/RL20/RL23: el largo y ancho del rótulo son del remolque; las cotas hechas son 1 cm mayores. Se han relacionado el cuerpo, la cabeza cerrada delantera y la cabeza trasera con orejas. Las posiciones se miden desde el borde hecho del cuerpo; se excluyen las marcas exteriores de las orejas y los aumentos de corte. Las coordenadas y medidas están en comprobaciones-cad.json.
+
+RL16, RL18 y RL20 tienen un círculo adicional a 2 cm de atrás que no aparece en la cadena de cotas del reparto: se conserva. RL23 tiene también el ollao a 199 cm que faltaba en la transcripción parcial. Se han cotejado por script todos los círculos de las cinco referencias y revisado el dibujo; no se extienden estas reglas al baquetón ni a medidas próximas.
 
 Reglas añadidas a la propuesta: `ventana` = {"lleva":false}.
 
@@ -1197,6 +1222,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 2 (BE2401106, BE2401282) |
+| aguas | NO: 2 (BE2401106, BE2401282) |
 | recogeDelante | NO: 1 (BE2401106); GOMA: 1 (BE2401282) |
 | recogeAtras | PUENTES ESVA: 1 (BE2401106); GOMA: 1 (BE2401282) |
 | bastillaEnfundar | NO: 2 (BE2401106, BE2401282) |
@@ -1211,6 +1237,10 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | --- | --- | --- | --- | --- |
 | lona; 256 × 150 | 50,3; 100,7 | 1; 37,8; 75,5; 113,3; 150 | 1; 51,4; 102,8; 154,2; 205,6; 256 |  BE2401106; OT/2024/BE2401106.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): BE2401106. |
 | lona; 310 × 160 | 10,5; 40,5; 80,5; 120,5; 150,5 | 10,5; 40,5; 80,5; 120,5; 150,5 | 10; 54; 105; 157; 210; 260; 300 |  BE2401282; OT/2024/BE2401282.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): BE2401282. |
+| lona; 138 × 108 | 4; 37,5; 71,5; 105 | 4; 37,5; 71,5; 105 | 10; 33; 56; 84; 105; 134 |  Plantilla RL14; PL/MALLON.dwg; plantilla acotada; sin reparto completo de pedido para esta medida. Círculos y bordes hechos cotejados; detalle en comprobaciones-cad.json. |
+| lona; 158 × 118 | 4; 38; 81; 115 | 4; 38; 81; 115 | 2; 13; 31; 70; 90; 128; 148 |  Plantilla RL16; PL/MALLON.dwg; plantilla acotada; sin reparto completo de pedido para esta medida. Círculos y bordes hechos cotejados; detalle en comprobaciones-cad.json. |
+| lona; 178 × 118 | 4; 38; 81; 115 | 4; 38; 81; 115 | 2; 13; 37; 73; 107; 145; 174 |  Plantilla RL18; PL/MALLON.dwg; plantilla acotada; sin reparto completo de pedido para esta medida. Círculos y bordes hechos cotejados; detalle en comprobaciones-cad.json. |
+| lona; 199 × 118 | 4; 38; 81; 115 | 4; 38; 81; 115 | 2; 13; 41; 83; 118; 162; 195 |  Plantilla RL20; PL/MALLON.dwg; plantilla acotada; sin reparto completo de pedido para esta medida. Círculos y bordes hechos cotejados; detalle en comprobaciones-cad.json. |
 
 Referencias que quedan fuera de las medidas automáticas:
 
@@ -1222,7 +1252,6 @@ Referencias que quedan fuera de las medidas automáticas:
 | Lona alta; 200 × 121 | BE2400535 | Sin los tres lados acreditados sobre la lona hecha. ; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 232 × 136 | BE2400632 | Sin los tres lados acreditados sobre la lona hecha. ; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 200 × 119 | BE2400651 | Sin los tres lados acreditados sobre la lona hecha. ; escaneo RPS localizado (detalle en evidencias.json) |
-| Lona alta; 178 × 118 | BE2400657, BE2400662, BE2500203, BE2501174 | Sin los tres lados acreditados sobre la lona hecha. ; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 178 × 118 | BE2400658 | Sin los tres lados acreditados sobre la lona hecha. ; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 180 × 119 | BE2400681 | Sin los tres lados acreditados sobre la lona hecha. ; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 230 × 160 | BE2400692 | Sin los tres lados acreditados sobre la lona hecha. ; escaneo RPS localizado (detalle en evidencias.json) |
@@ -1249,17 +1278,14 @@ Referencias que quedan fuera de las medidas automáticas:
 | Lona alta; 200 × 124 | BE2600127 | Sin los tres lados acreditados sobre la lona hecha. ; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 178 × 120 | BE2600234 | Sin los tres lados acreditados sobre la lona hecha. ; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 179 × 129 | BE2600310 | Sin los tres lados acreditados sobre la lona hecha. ; escaneo RPS localizado (detalle en evidencias.json) |
-| Lona alta; 158 × 118 | BE2600446, BE2600447 | Sin los tres lados acreditados sobre la lona hecha. ; escaneo RPS localizado (detalle en evidencias.json) |
 
-Cotas laterales parciales de la plantilla (origen rotulado ATRÁS, dimensión en cm, sin completar cabezas): RL14 138×108: 10; 33; 56; 84; 105; 134. RL16 158×118: 13; 31; 70; 90; 128; 148. RL18 178×118: 13; 37; 73; 107; 145; 174. RL20 199×118: 13; 41; 83; 118; 162; 195. RL23 229×139,5: 13; 30; 58; 78; 105; 125; 152; 172; 219. Son cotas que terminan en centros de círculos, contrastadas por script en MALLON.dwg; falta acreditar la clave de medida del remolque y las dos cabezas antes de cargarlas.
-
-**Duda para Iván:** Falta confirmar si las referencias RL14/RL16/RL18/RL20/RL23 son medidas del remolque o de la lona y asociar cada una a las dos cabezas. Los pedidos BE y sus cortes están localizados en las fuentes; no se cargan repartos completos deducidos de una sola fila.
+**Duda para Iván:** RL23 (229×139,5): hay un círculo justo en el borde trasero (0 cm), además de los diez acotados. ¿Es un ollao real o una marca sobrante? Las cabezas y el resto del lateral están acreditados en comprobaciones-cad.json; esta referencia queda sin cargar.
 
 ### REMOLQUES YAGÜE · LEON PEREZ, ADELINA — 038304
 
 Ficha: `remolques-yague-leon-perez-adelina`. Histórico: **53 líneas / 41 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por histórico (AR2604146). Nombres/alias del histórico: REMOLQUES YAGÜE · LEON PEREZ, ADELINA.
+Código acreditado por histórico (AR2604146). Nombres/alias conocidos: REMOLQUES YAGÜE · LEON PEREZ, ADELINA.
 
 Plantillas encontradas: `PL/ADELINA LEÓN PÉREZ -REMOLQUES YAGUE.dwg`
 
@@ -1272,6 +1298,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 02: 22 (AR2501596, AR2404614, AR2502922, AR2502149, AR2504043, AR2402644, AR2600690, AR2502782, AR2401918, AR2406576, AR2604146, AR2505156, AR2505858, AR2501979, AR2503121, AR2500329, AR2505982, AR2504096, AR2502299, AR2505302, AR2503241, AR2501597); TIPO 03: 3 (AR2403402, AR2403296, AR2403336); TIPO 01: 2 (AR2404537, AR2406249) |
+| aguas | 7: 24 (AR2501596, AR2404614, AR2502922, AR2502149, AR2504043, AR2402644, AR2600690, AR2502782, AR2405583, AR2401918, AR2406576, AR2604146, AR2505858, AR2501979, AR2403402, AR2503121, AR2505982, AR2504096, AR2502299, AR2505302, AR2503241, AR2403296, AR2403336, AR2501597); 4: 1 (AR2406566); 55: 1 (AR2500329); NO: 1 (AR2406249) |
 | recogeDelante | NO: 24 (AR2501596, AR2404614, AR2502922, AR2502149, AR2402644, AR2600690, AR2401918, AR2404537, AR2604146, AR2505156, AR2505858, AR2501979, AR2403402, AR2503121, AR2500329, AR2505982, AR2406249, AR2504096, AR2502299, AR2505302, AR2503241, AR2403296, AR2403336, AR2501597); CREMALLERA: 3 (AR2502782, AR2405583, AR2406566); PUENTES ESVA: 2 (AR2504043, AR2406576) |
 | recogeAtras | CREMALLERA: 27 (AR2501596, AR2404614, AR2502922, AR2502149, AR2402644, AR2600690, AR2502782, AR2405583, AR2401918, AR2404537, AR2604146, AR2505156, AR2505858, AR2501979, AR2406566, AR2403402, AR2503121, AR2500329, AR2505982, AR2406249, AR2504096, AR2502299, AR2505302, AR2503241, AR2403296, AR2403336, AR2501597); PUENTES ESVA: 2 (AR2504043, AR2406576) |
 | bastillaEnfundar | NO: 24 (AR2501596, AR2404614, AR2502922, AR2502149, AR2504043, AR2600690, AR2405583, AR2604146, AR2505156, AR2505858, AR2501979, AR2406566, AR2403402, AR2503121, AR2500329, AR2505982, AR2406249, AR2504096, AR2502299, AR2505302, AR2503241, AR2403296, AR2403336, AR2501597); SÍ: 3 (AR2502782, AR2401918, AR2404537) |
@@ -1327,7 +1354,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `remolques-celis-de-celis-perez-luis-miguel`. Histórico: **44 líneas / 31 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por histórico (AR2603574). Nombres/alias del histórico: REMOLQUES CELIS · DE CELIS PEREZ, LUIS MIGUEL.
+Código acreditado por histórico (AR2603574). Nombres/alias conocidos: REMOLQUES CELIS · DE CELIS PEREZ, LUIS MIGUEL.
 
 Plantillas encontradas: `PL/LUIS MIGUEL DE CELIS2_recover.dwg`; `PL/LUIS MIGUEL DE CELIS2.dwg`; `PL/REMOLQUES GANADO/LUIS MIGUEL DE CELIS.DWG`
 
@@ -1338,6 +1365,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 13 (AR2500109, AR2404127, AR2602805, AR2502622, AR2506203, AR2501051, AR2504555, AR2402626, AR2501283, AR2500834, AR2501323, AR2406870, AR2503952); TIPO 01: 3 (AR2403594, AR2404963, AR2600737); TIPO 02: 3 (AR2506406, AR2400246, AR2504183) |
+| aguas | NO: 6 (AR2403525, AR2403594, AR2500109, AR2404127, AR2502622, AR2406870); 10: 2 (AR2506406, AR2504183); no: 1 (AR2501051) |
 | recogeDelante | NO: 18 (AR2403525, AR2500109, AR2404127, AR2506406, AR2602805, AR2502622, AR2501051, AR2400246, AR2504555, AR2404963, AR2402626, AR2501283, AR2500834, AR2501323, AR2600737, AR2406870, AR2504183, AR2503952); GOMA: 2 (AR2403594, AR2506203) |
 | recogeAtras | GOMA: 19 (AR2403525, AR2403594, AR2500109, AR2404127, AR2506406, AR2602805, AR2506203, AR2501051, AR2400246, AR2504555, AR2404963, AR2402626, AR2501283, AR2501323, AR2600737, AR2406870, AR2504183, AR2503952, AR2502622); CREMALLERA: 2 (AR2502622, AR2500834) |
 | bastillaEnfundar | NO: 16 (AR2403594, AR2500109, AR2404127, AR2506406, AR2602805, AR2502622, AR2506203, AR2501051, AR2400246, AR2504555, AR2404963, AR2501283, AR2500834, AR2501323, AR2406870, AR2504183); SÍ: 3 (AR2403525, AR2600737, AR2503952) |
@@ -1402,7 +1430,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `carma`. Histórico: **35 líneas / 30 pedidos**. PDF producidos adicionales examinados: 2. Registro vigente versión 3, conservado.
 
-Código acreditado por histórico (AR2604112). Nombres/alias del histórico: CARMA · LOPEZ LEIRO, CARLOS.
+Código acreditado por histórico (AR2604112). Nombres/alias conocidos: CARMA · LOPEZ LEIRO, CARLOS.
 
 Plantillas encontradas: `PL/(CARMA) CARLOS LOPEZ LEIRO.dwg`
 
@@ -1415,6 +1443,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 18 (AR2601801, AR2505766, AR2602496, AR2604026, AR2402907, AR2401743, AR2501645, AR2600683, AR2500677, AR2505195, AR2401823, AR2402410, AR2600105, AR2504484, AR2400754, AR2406575, AR2401161, AR2602203); TIPO 03: 1 (AR2604070); TIPO 01: 1 (AR2401269) |
+| aguas | NO: 10 (AR2405175, AR2405480, AR2402907, AR2401743, AR2401823, AR2402410, AR2406575, AR2404768, AR2401161, AR2401269); 6: 1 (AR2604070) |
 | recogeDelante | NO: 21 (AR2405175, AR2601801, AR2505766, AR2405480, AR2602496, AR2604026, AR2402907, AR2401743, AR2501645, AR2600683, AR2500677, AR2505195, AR2401823, AR2402410, AR2600105, AR2504484, AR2406575, AR2404768, AR2401161, AR2401269, AR2602203); GOMA: 2 (AR2402907, AR2604070); VELCRO: 1 (AR2400754) |
 | recogeAtras | GOMA: 22 (AR2405175, AR2601801, AR2505766, AR2405480, AR2602496, AR2604026, AR2402907, AR2401743, AR2501645, AR2600683, AR2500677, AR2505195, AR2401823, AR2402410, AR2600105, AR2604070, AR2504484, AR2406575, AR2404768, AR2401161, AR2401269, AR2602203); VELCRO: 1 (AR2400754) |
 | bastillaEnfundar | NO: 19 (AR2405175, AR2601801, AR2505766, AR2405480, AR2602496, AR2604026, AR2402907, AR2501645, AR2600683, AR2500677, AR2505195, AR2401823, AR2600105, AR2604070, AR2504484, AR2400754, AR2406575, AR2404768, AR2602203) |
@@ -1470,7 +1499,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `cano-munoz-s-l-u`. Histórico: **19 líneas / 12 pedidos**. PDF producidos adicionales examinados: 1. Registro vigente versión 2, conservado.
 
-Código acreditado por histórico (AR2604501). Nombres/alias del histórico: CANO MUÑOZ S.L.U..
+Código acreditado por histórico (AR2604501). Nombres/alias conocidos: CANO MUÑOZ S.L.U..
 
 Plantillas encontradas: `PL/CALCULOS EXCEL2/CALCULOS REMOLQUES/CANO MUÑOZ.xls`; `PL/CANO MUÑOZ(METALCAR)/CANO BAQUETON.xls`; `PL/CANO MUÑOZ(METALCAR)/Copia de CANO BAQUETON.xls`; `PL/CANO MUÑOZ(METALCAR)/REMOLQUES CANO(METALURGIA Y CARROCERIAS).dwg`; `PL/CALCULOS REMOLQUES/CANO MUÑOZ.xls`
 
@@ -1487,6 +1516,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 03: 4 (AR2602736, AR2603150, AR2600668, AR2601834) |
+| aguas | 16: 4 (AR2602736, AR2603150, AR2600668, AR2601834) |
 | recogeDelante | NO: 4 (AR2602736, AR2603150, AR2600668, AR2601834) |
 | recogeAtras | CREMALLERA: 4 (AR2602736, AR2603150, AR2600668, AR2601834) |
 | bastillaEnfundar | NO: 4 (AR2602736, AR2603150, AR2600668, AR2601834) |
@@ -1524,7 +1554,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `carbajo-carbajo-eliseo`. Histórico: **19 líneas / 12 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2602232). Nombres/alias del histórico: CARBAJO CARBAJO, ELISEO.
+Código acreditado por GET RPS pedido (AR2602232). Nombres/alias conocidos: CARBAJO CARBAJO, ELISEO.
 
 Plantillas encontradas: `PL/TALLERES CARBAJO.dwg`
 
@@ -1535,6 +1565,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 02: 9 (AR2502729, AR2600667, AR2504812, AR2600066, AR2600931, AR2503552, AR2502010, AR2600596, AR2501173); TIPO 04: 1 (AR2602232) |
+| aguas | 17: 3 (AR2502729, AR2503552, AR2502212); 15: 3 (AR2600667, AR2502729, AR2504812); 14: 3 (AR2600066, AR2503552, AR2505566); 12: 2 (AR2502729, AR2600066); 13: 2 (AR2504812, AR2501173); SI, 12CM: 1 (AR2600931); 11: 1 (AR2502010) |
 | recogeDelante | NO: 8 (AR2602232, AR2502729, AR2600667, AR2504812, AR2600931, AR2600596, AR2501173, AR2503552); CREMALLERA: 7 (AR2502729, AR2600066, AR2503552, AR2502010, AR2600596, AR2502212, AR2505566) |
 | recogeAtras | CREMALLERA: 11 (AR2602232, AR2502729, AR2600667, AR2600066, AR2600931, AR2503552, AR2502010, AR2600596, AR2501173, AR2502212, AR2505566); GOMA: 1 (AR2504812) |
 | bastillaEnfundar | NO: 10 (AR2502729, AR2600667, AR2504812, AR2600066, AR2600931, AR2502010, AR2600596, AR2501173, AR2502212, AR2503552); SÍ: 4 (AR2600066, AR2503552, AR2600596, AR2505566) |
@@ -1564,7 +1595,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `carrocerias-vallejo-s-a`. Histórico: **18 líneas / 14 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por histórico (AR2604282). Nombres/alias del histórico: CARROCERIAS VALLEJO, S.A..
+Código acreditado por histórico (AR2604282). Nombres/alias conocidos: CARROCERIAS VALLEJO, S.A..
 
 Plantillas encontradas: `PL/CARROCERIAS VALLEJO.dwg`
 
@@ -1577,6 +1608,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 03: 7 (AR2505607, AR2403537, AR2402566, AR2503579, AR2401427, AR2406530, AR2402738) |
+| aguas | 5: 5 (AR2505607, AR2402566, AR2503579, AR2406530, AR2402738); NO: 2 (AR2403537, AR2401427); 10: 1 (AR2406530) |
 | recogeDelante | NO: 6 (AR2505607, AR2403537, AR2402566, AR2503579, AR2401427, AR2402738); no: 1 (AR2406530) |
 | recogeAtras | VELCRO: 6 (AR2505607, AR2403537, AR2402566, AR2503579, AR2401427, AR2402738); velcro: 1 (AR2406530); PUENTES ESVA: 1 (AR2406530) |
 | bastillaEnfundar | NO: 6 (AR2505607, AR2403537, AR2402566, AR2503579, AR2406530, AR2402738) |
@@ -1611,7 +1643,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `hnos-sanchez-lafuente-s-a`. Histórico: **18 líneas / 10 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por histórico (AR2602967). Nombres/alias del histórico: HNOS. SANCHEZ-LAFUENTE S.A..
+Código acreditado por histórico (AR2602967). Nombres/alias conocidos: HNOS. SANCHEZ-LAFUENTE S.A..
 
 Plantillas encontradas: `PL/HNOS. SANCHES-LAFUENTE/HNOS.SANCHEZ-LAFUENTE.dwg`
 
@@ -1619,13 +1651,14 @@ HNOS. SANCHES-LAFUENTE/HNOS.SANCHEZ-LAFUENTE.dwg: «VAN SIEMPRE DE RECOGER CON V
 
 Cambio desde 12/03/2026, aprobado para todos el 10/06/2026: 2,5 cm más de ancho por lado en la trasera (5 cm total) por los cierres. Se lleva a observaciones; no se confunde con un remolque físicamente 5 cm más ancho detrás.
 
-Reglas añadidas a la propuesta: `ollaosRepartidos` = true; `perfil` = {"tipoPerfil":"TIPO 02"}; `bastillaEnfundar` = false; `ventana` = {"lleva":false}; `rotulacion` = false; `recogeAtras` = "VELCRO"; `observaciones` = ["IDENTIFICAR CADA LONA CON SU REFERENCIA","TRASERA: 5 CM MÁS DE ANCHO POR LOS CIERRES (2,5 CM POR LADO)"].
+Reglas añadidas a la propuesta: `ollaosRepartidos` = true; `perfil` = {"tipoPerfil":"TIPO 02","aguas":15}; `bastillaEnfundar` = false; `ventana` = {"lleva":false}; `rotulacion` = false; `recogeAtras` = "VELCRO"; `observaciones` = ["IDENTIFICAR CADA LONA CON SU REFERENCIA","TRASERA: 5 CM MÁS DE ANCHO POR LOS CIERRES (2,5 CM POR LADO)"].
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 02: 5 (AR2502675, AR2602714, AR2600093, AR2500429, AR2404011) |
+| aguas | 15: 5 (AR2502675, AR2602714, AR2600093, AR2500429, AR2404011) |
 | recogeDelante | NO: 4 (AR2502675, AR2602714, AR2600093, AR2500429); CREMALLERA: 1 (AR2404011) |
 | recogeAtras | GOMA: 2 (AR2502675, AR2600093); VELCRO: 2 (AR2602714, AR2500429); CREMALLERA: 1 (AR2404011) |
 | bastillaEnfundar | NO: 5 (AR2502675, AR2602714, AR2600093, AR2500429, AR2404011) |
@@ -1658,9 +1691,9 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `antiguo-cobelo-vazquez-barreiro-javier`. Histórico: **17 líneas / 14 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (SA2600310). Nombres/alias del histórico: ANTIGUO COBELO · VAZQUEZ BARREIRO, JAVIER.
+Código acreditado por GET RPS pedido (SA2600310). Nombres/alias conocidos: ANTIGUO COBELO · VAZQUEZ BARREIRO, JAVIER. Pedidos de plantilla consultados: AR2002470.
 
-Plantillas encontradas: `PL/CALCULOS EXCEL2/REMOLQUES ORIGINALES EN CM/COBELO.xls`; `PL/COBELO (RVG)-2.DWG`
+Plantillas encontradas: `PL/CALCULOS EXCEL2/REMOLQUES ORIGINALES EN CM/COBELO.xls`; `PL/COBELO (RVG)-2.DWG`; `PL/AR2002470.dwg`
 
 Reglas añadidas a la propuesta: `ollaosRepartidos` = true; `ventana` = {"lleva":true}; `recogeDelante` = "NO"; `recogeAtras` = "GOMA"; `bastillaEnfundar` = false.
 
@@ -1669,6 +1702,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 2 (AR2504171, AR2400848) |
+| aguas | NO: 1 (AR2404578) |
 | recogeDelante | NO: 3 (AR2504171, AR2404578, AR2400848) |
 | recogeAtras | GOMA: 3 (AR2504171, AR2404578, AR2400848) |
 | bastillaEnfundar | NO: 3 (AR2504171, AR2404578, AR2400848) |
@@ -1703,7 +1737,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `talleres-carbajo-c-b`. Histórico: **14 líneas / 9 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2501069). Nombres/alias del histórico: TALLERES CARBAJO C.B..
+Código acreditado por GET RPS pedido (AR2501069). Nombres/alias conocidos: TALLERES CARBAJO C.B..
 
 Plantillas encontradas: `PL/TALLERES CARBAJO.dwg`
 
@@ -1714,6 +1748,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 02: 7 (AR2400496, AR2501069, AR2404797, AR2404498, AR2401300, AR2402604, AR2400097) |
+| aguas | 15: 4 (AR2404797, AR2404498, AR2402604, AR2400097); 12: 1 (AR2501069); 11: 1 (AR2404797); 13: 1 (AR2405908); NO: 1 (AR2401300); 14: 1 (AR2405968) |
 | recogeDelante | NO: 8 (AR2400496, AR2501069, AR2404797, AR2405908, AR2401300, AR2402604, AR2400097, AR2405968); CREMALLERA: 1 (AR2404498) |
 | recogeAtras | CREMALLERA: 7 (AR2400496, AR2404797, AR2405908, AR2404498, AR2401300, AR2402604, AR2405968); GOMA: 2 (AR2501069, AR2400097) |
 | bastillaEnfundar | NO: 8 (AR2400496, AR2501069, AR2404797, AR2405908, AR2404498, AR2402604, AR2400097, AR2405968) |
@@ -1745,7 +1780,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `remolques-caredu-induvec-s-l`. Histórico: **13 líneas / 12 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2600858). Nombres/alias del histórico: REMOLQUES CAREDU · INDUVEC, S.L..
+Código acreditado por GET RPS pedido (AR2600858). Nombres/alias conocidos: REMOLQUES CAREDU · INDUVEC, S.L..
 
 Plantillas encontradas: `PL/CAREDU(INDUVEC).dwg`
 
@@ -1758,6 +1793,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 9 (AR2405831, AR2401285, AR2400702, AR2401084, AR2503831, AR2402914, AR2402675, AR2403147, AR2600858); TIPO 02: 1 (AR2504249); TIPO 03: 1 (AR2403623) |
+| aguas | NO: 5 (AR2405831, AR2401285, AR2402914, AR2402675, AR2403147); 9: 1 (AR2504249); 8: 1 (AR2403623) |
 | recogeDelante | NO: 10 (AR2405831, AR2401285, AR2400702, AR2401084, AR2503831, AR2402914, AR2403623, AR2402675, AR2403147, AR2600858); PUENTES ESVA: 1 (AR2504249) |
 | recogeAtras | GOMA: 10 (AR2405831, AR2401285, AR2400702, AR2401084, AR2503831, AR2402914, AR2403623, AR2402675, AR2403147, AR2600858); PUENTES ESVA: 1 (AR2504249) |
 | bastillaEnfundar | NO: 9 (AR2405831, AR2504249, AR2400702, AR2401084, AR2503831, AR2402914, AR2403623, AR2403147, AR2600858) |
@@ -1790,7 +1826,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `talleres-gonzalo-ferrodeza-s-l`. Histórico: **13 líneas / 11 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2602760). Nombres/alias del histórico: TALLERES GONZALO · FERRODEZA, S. L..
+Código acreditado por GET RPS pedido (AR2602760). Nombres/alias conocidos: TALLERES GONZALO · FERRODEZA, S. L..
 
 Plantillas encontradas: `PL/REMOLQUES GANADO/FERRODEZA/FERRODEZA CABALOS-GANADO REF 1500 BAIXO (SIN PUERTA).dwg`; `PL/REMOLQUES GANADO/FERRODEZA/FERRODEZA_GANADERO_1250_KG.dwg`; `PL/FERRODEZA (GONZALOMERZA)2.DWG`; `PL/REMOLQUES GANADO/FERRODEZA/FERRODEZA REF.1050 REDONDO.dwg`; `PL/FERRODEZA (GONZALOMERZA).dwg`
 
@@ -1801,6 +1837,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 7 (AR2400377, AR2602760, AR2503892, AR2601617, AR2503801, AR2502739, AR2401525); TIPO 04: 2 (AR2403286, AR2504106) |
+| aguas | NO: 2 (AR2403286, AR2401525) |
 | recogeDelante | NO: 7 (AR2400377, AR2602760, AR2503892, AR2601617, AR2503801, AR2502739, AR2401525); GOMA: 2 (AR2403286, AR2504106) |
 | recogeAtras | GOMA: 9 (AR2403286, AR2400377, AR2602760, AR2503892, AR2504106, AR2601617, AR2503801, AR2502739, AR2401525) |
 | bastillaEnfundar | NO: 6 (AR2403286, AR2400377, AR2504106, AR2601617, AR2503801, AR2502739); SÍ: 1 (AR2503892) |
@@ -1835,7 +1872,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `j-carballo-s-c`. Histórico: **11 líneas / 10 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2506256). Nombres/alias del histórico: J. CARBALLO, S. C..
+Código acreditado por GET RPS pedido (AR2506256). Nombres/alias conocidos: J. CARBALLO, S. C..
 
 Plantillas encontradas: `PL/J.CARBALLO.dwg`
 
@@ -1846,6 +1883,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 02: 3 (AR2400134, AR2500308, AR2502665); TIPO 03: 2 (AR2506256, AR2406953); TIPO 01: 2 (AR2503850, AR2400481); TIPO 05: 2 (AR2403990, AR2405249) |
+| aguas | 5: 4 (AR2506256, AR2500308, AR2406953, AR2502665); NO: 1 (AR2405249) |
 | recogeDelante | VELCRO: 4 (AR2506256, AR2400134, AR2500308, AR2403990); NO: 3 (AR2406953, AR2405249, AR2400481); GOMA: 2 (AR2503850, AR2502665) |
 | recogeAtras | VELCRO: 6 (AR2506256, AR2400134, AR2500308, AR2406953, AR2403990, AR2405249); GOMA: 3 (AR2503850, AR2502665, AR2400481) |
 | bastillaEnfundar | NO: 8 (AR2506256, AR2400134, AR2500308, AR2406953, AR2503850, AR2502665, AR2405249, AR2400481); SÍ: 1 (AR2403990) |
@@ -1878,7 +1916,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `remolques-tarragona-s-l`. Histórico: **10 líneas / 6 pedidos**. PDF producidos adicionales examinados: 1. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2601328). Nombres/alias del histórico: REMOLQUES TARRAGONA S.L.
+Código acreditado por GET RPS pedido (AR2601328). Nombres/alias conocidos: REMOLQUES TARRAGONA S.L.
 
 Plantillas encontradas: `PL/REMOLQUES TARRAGONA.dwg`
 
@@ -1889,6 +1927,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 02: 2 (AR2601328, AR2600694); TIPO 01: 2 (AR2501494, AR2505552) |
+| aguas | SI, 10CM: 1 (AR2601328); NO: 1 (AR2501494); 10: 1 (AR2600694) |
 | recogeDelante | NO: 4 (AR2601328, AR2501494, AR2505552, AR2600694) |
 | recogeAtras | CREMALLERA: 2 (AR2601328, AR2505552); GOMA: 2 (AR2501494, AR2600694) |
 | bastillaEnfundar | SÍ: 3 (AR2601328, AR2501494, AR2505552); NO: 2 (AR2501494, AR2600694) |
@@ -1922,7 +1961,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `camacho`. Histórico: **9 líneas / 8 pedidos**. PDF producidos adicionales examinados: 1. Registro vigente versión 2, conservado.
 
-Código acreditado por GET RPS pedido (AR2601661). Nombres/alias del histórico: CERRAJERIA MALDONADO / CAMACHO · CARROCERIAS Y REMOLQUES CAMACHO 1990 SL.
+Código acreditado por GET RPS pedido (AR2601661). Nombres/alias conocidos: CERRAJERIA MALDONADO / CAMACHO · CARROCERIAS Y REMOLQUES CAMACHO 1990 SL.
 
 Plantillas encontradas: `PL/REMOLQUE MACHADO-CAMACHO (ANTIGUO MALDONADO).dwg`; `PL/CERRAJERIA MALDONADO.DWG`
 
@@ -1939,6 +1978,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 02: 6 (AR2400971, AR2505086, AR2501350, AR2502234, AR2404719, AR2601661); TIPO 01: 1 (AR2600337) |
+| aguas | 13: 5 (AR2400971, AR2505086, AR2501350, AR2502234, AR2601661); 12: 1 (AR2404719) |
 | recogeDelante | NO: 6 (AR2400971, AR2505086, AR2501350, AR2502234, AR2404719, AR2601661); GOMA: 1 (AR2600337) |
 | recogeAtras | GOMA: 7 (AR2400971, AR2505086, AR2501350, AR2502234, AR2600337, AR2404719, AR2601661) |
 | bastillaEnfundar | NO: 7 (AR2400971, AR2505086, AR2501350, AR2502234, AR2600337, AR2404719, AR2601661) |
@@ -1967,7 +2007,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `industrias-eduardo-romay-s-l`. Histórico: **9 líneas / 7 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por histórico (AR2603807). Nombres/alias del histórico: INDUSTRIAS EDUARDO ROMAY, S. L..
+Código acreditado por histórico (AR2603807). Nombres/alias conocidos: INDUSTRIAS EDUARDO ROMAY, S. L..
 
 Plantillas encontradas: `PL/ROMAY2.DWG`
 
@@ -1978,6 +2018,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 4 (AR2500461, AR2400119, AR2400339, AR2603807) |
+| aguas | NO: 4 (AR2500461, AR2403666, AR2405273, AR2603807) |
 | recogeDelante | PUENTES ESVA: 5 (AR2400119, AR2400339, AR2403666, AR2405273, AR2603807); NO: 1 (AR2500461) |
 | recogeAtras | PUENTES ESVA: 6 (AR2500461, AR2400119, AR2400339, AR2403666, AR2405273, AR2603807) |
 | bastillaEnfundar | NO: 6 (AR2500461, AR2400119, AR2400339, AR2403666, AR2405273, AR2603807) |
@@ -2008,7 +2049,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `auto-recambios-ajalvir-s-l`. Histórico: **8 líneas / 7 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2505976). Nombres/alias del histórico: AUTO RECAMBIOS AJALVIR S.L..
+Código acreditado por GET RPS pedido (AR2505976). Nombres/alias conocidos: AUTO RECAMBIOS AJALVIR S.L..
 
 Plantillas encontradas: `PL/AJALVIR/AJALVIR.dwg`
 
@@ -2019,6 +2060,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 03: 1 (AR2501207); TIPO 01: 1 (AR2406750) |
+| aguas | 10: 1 (AR2501207) |
 | recogeDelante | NO: 2 (AR2501207, AR2406750) |
 | recogeAtras | GOMA: 2 (AR2501207, AR2406750) |
 | bastillaEnfundar | NO: 2 (AR2501207, AR2406750) |
@@ -2039,7 +2081,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `iberica-de-remolques-s-a`. Histórico: **8 líneas / 8 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por histórico (AR2603495). Nombres/alias del histórico: IBERICA DE REMOLQUES S.A..
+Código acreditado por histórico (AR2603495). Nombres/alias conocidos: IBERICA DE REMOLQUES S.A..
 
 Plantillas encontradas: `PL/IBERICA DE REMOLQUES.dwg`
 
@@ -2050,6 +2092,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 03: 5 (AR2600664, AR2603022, AR2601198, AR2603495, AR2602006); TIPO 05: 1 (AR2602277) |
+| aguas | SI: 3 (AR2600664, AR2601198, AR2602006); 9.3: 3 (AR2603022, AR2602277, AR2603495) |
 | recogeDelante | NO: 6 (AR2600664, AR2603022, AR2602277, AR2601198, AR2603495, AR2602006) |
 | recogeAtras | VELCRO: 6 (AR2600664, AR2603022, AR2602277, AR2601198, AR2603495, AR2602006) |
 | bastillaEnfundar | NO: 6 (AR2600664, AR2603022, AR2602277, AR2601198, AR2603495, AR2602006) |
@@ -2072,7 +2115,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `talleres-r-casal-s-l`. Histórico: **8 líneas / 8 pedidos**. PDF producidos adicionales examinados: 1. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2504657). Nombres/alias del histórico: TALLERES R.CASAL, S. L. ,.
+Código acreditado por GET RPS pedido (AR2504657). Nombres/alias conocidos: TALLERES R.CASAL, S. L. ,.
 
 Plantillas encontradas: `PL/T.CASAL.dwg`
 
@@ -2083,6 +2126,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 2 (AR2502416, AR2504657); TIPO 02: 1 (AR2501808) |
+| aguas | 10: 1 (AR2501808) |
 | recogeDelante | NO: 3 (AR2501808, AR2502416, AR2504657) |
 | recogeAtras | GOMA: 3 (AR2501808, AR2502416, AR2504657) |
 | bastillaEnfundar | NO: 3 (AR2501808, AR2502416, AR2504657) |
@@ -2115,7 +2159,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `construcciones-metalicas-loureiro-reis-s-l-u`. Histórico: **5 líneas / 2 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2401290). Nombres/alias del histórico: CONSTRUCCIONES METALICAS LOUREIRO REIS, S.L.U..
+Código acreditado por GET RPS pedido (AR2401290). Nombres/alias conocidos: CONSTRUCCIONES METALICAS LOUREIRO REIS, S.L.U..
 
 Plantillas encontradas: `PL/LOUREIRO REIS.dwg`
 
@@ -2126,6 +2170,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 02: 2 (AR2401290, AR2401132) |
+| aguas | 12: 2 (AR2401290, AR2401132); 9.5: 2 (AR2401290, AR2401132) |
 | recogeDelante | NO: 2 (AR2401290, AR2401132) |
 | recogeAtras | GOMA: 2 (AR2401290, AR2401132) |
 | bastillaEnfundar | NO: 2 (AR2401290, AR2401132) |
@@ -2146,7 +2191,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `remolkea-nunez-martin-gemma`. Histórico: **5 líneas / 5 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2600103). Nombres/alias del histórico: REMOLKEA · NUÑEZ MARTIN, GEMMA.
+Código acreditado por GET RPS pedido (AR2600103). Nombres/alias conocidos: REMOLKEA · NUÑEZ MARTIN, GEMMA.
 
 Plantillas encontradas: `PL/GEMMA NUÑEZ MARTIN (REMOLKEA).dwg`
 
@@ -2157,6 +2202,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 03: 3 (AR2600103, AR2500805, AR2506171) |
+| aguas | 4: 1 (AR2600103); 6: 1 (AR2402094); 12: 1 (AR2500805); 7: 1 (AR2506171) |
 | recogeDelante | NO: 4 (AR2600103, AR2402094, AR2500805, AR2506171) |
 | recogeAtras | GOMA: 3 (AR2402094, AR2500805, AR2506171); VELCRO: 1 (AR2600103) |
 | bastillaEnfundar | NO: 4 (AR2600103, AR2402094, AR2500805, AR2506171) |
@@ -2184,7 +2230,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `remolques-hermanos-cervera-s-l`. Histórico: **5 líneas / 4 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2601463). Nombres/alias del histórico: REMOLQUES HERMANOS CERVERA S.L.
+Código acreditado por GET RPS pedido (AR2601463). Nombres/alias conocidos: REMOLQUES HERMANOS CERVERA S.L.
 
 Plantillas encontradas: `PL/REMOLQUES HNOS.CERVERA.dwg`
 
@@ -2195,6 +2241,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 2 (AR2600266, AR2600800) |
+| aguas | NO: 1 (AR2600266) |
 | recogeDelante | NO: 2 (AR2600266, AR2600800) |
 | recogeAtras | GOMA: 2 (AR2600266, AR2600800) |
 | bastillaEnfundar | NO: 2 (AR2600266, AR2600800) |
@@ -2222,7 +2269,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `remolques-jalon-s-l`. Histórico: **5 líneas / 3 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2602280). Nombres/alias del histórico: REMOLQUES JALON S.L.
+Código acreditado por GET RPS pedido (AR2602280). Nombres/alias conocidos: REMOLQUES JALON S.L.
 
 Plantillas encontradas: `PL/JALON.dwg`
 
@@ -2252,9 +2299,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `cerrajeria-cerri-fernandez-municio-juan`. Histórico: **4 líneas / 4 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por histórico (AR2604535). Nombres/alias del histórico: CERRAJERIA CERRI · FERNANDEZ MUNICIO, JUAN.
+Código acreditado por histórico (AR2604535). Nombres/alias conocidos: CERRAJERIA CERRI · FERNANDEZ MUNICIO, JUAN. Pedidos de plantilla consultados: AR1503345.
 
-Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
+Plantillas encontradas: `PL/JUAN FERNANDEZ.dwg`
+
+La plantilla JUAN FERNANDEZ.dwg cita AR1503345: el GET devuelve FERNANDEZ MUNICIO, JUAN, alias CERRAJERIA CERRI, código 005734. Se asocia este fichero; JUAN FERNANDEZ(CACERES).dwg sigue pendiente de identidad porque no se extiende la asociación solo por el nombre.
 
 No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
@@ -2263,6 +2312,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 02: 2 (AR2403313, AR2603385) |
+| aguas | 23: 1 (AR2403313); 15: 1 (AR2603385) |
 | recogeDelante | NO: 2 (AR2403313, AR2603385) |
 | recogeAtras | VELCRO: 2 (AR2403313, AR2603385) |
 | bastillaEnfundar | NO: 2 (AR2403313, AR2603385) |
@@ -2289,9 +2339,9 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `talleres-aldipe-s-l`. Histórico: **3 líneas / 3 pedidos**. PDF producidos adicionales examinados: 1. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2600587). Nombres/alias del histórico: TALLERES ALDIPE, S. L..
+Código acreditado por GET RPS pedido (AR2600587). Nombres/alias conocidos: TALLERES ALDIPE, S. L.. Pedidos de plantilla consultados: AR1807168.
 
-Plantillas encontradas: `PL/ALDIPE.dwg`
+Plantillas encontradas: `PL/AR1807168.dwg`; `PL/ALDIPE.dwg`
 
 Reglas añadidas a la propuesta: `ollaosRepartidos` = true; `recogeAtras` = "GOMA"; `ventana` = {"lleva":false}.
 
@@ -2300,6 +2350,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 2 (AR2600587, AR2501122); TIPO 03: 1 (AR2401587) |
+| aguas | SI: 1 (AR2401587) |
 | recogeDelante | NO: 2 (AR2600587, AR2501122); GOMA: 1 (AR2401587) |
 | recogeAtras | GOMA: 3 (AR2600587, AR2401587, AR2501122) |
 | bastillaEnfundar | NO: 2 (AR2600587, AR2501122) |
@@ -2321,7 +2372,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `talleres-j-lema-transformaciones-bergantinos-s-l`. Histórico: **3 líneas / 3 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2600892). Nombres/alias del histórico: TALLERES J. LEMA · TRANSFORMACIONES BERGANTIÑOS S.L.
+Código acreditado por GET RPS pedido (AR2600892). Nombres/alias conocidos: TALLERES J. LEMA · TRANSFORMACIONES BERGANTIÑOS S.L.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2331,6 +2382,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
+| aguas | NO: 1 (AR2402627) |
 | recogeDelante | NO: 1 (AR2402627) |
 | recogeAtras | GOMA: 1 (AR2402627) |
 | ventana | SÍ: 1 (AR2402627) |
@@ -2355,7 +2407,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `alba-alvarez-noe`. Histórico: **2 líneas / 2 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2506290). Nombres/alias del histórico: ALBA ALVAREZ, NOE.
+Código acreditado por GET RPS pedido (AR2506290). Nombres/alias conocidos: ALBA ALVAREZ, NOE.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2390,7 +2442,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `alvarellos-garcia-adrian`. Histórico: **2 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2600084). Nombres/alias del histórico: ALVARELLOS GARCIA, ADRIAN.
+Código acreditado por GET RPS pedido (AR2600084). Nombres/alias conocidos: ALVARELLOS GARCIA, ADRIAN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2409,7 +2461,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `blanco-barros-fernando`. Histórico: **2 líneas / 2 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2601802). Nombres/alias del histórico: BLANCO BARROS, FERNANDO.
+Código acreditado por GET RPS pedido (AR2601802). Nombres/alias conocidos: BLANCO BARROS, FERNANDO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2432,7 +2484,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `canosa-lema-celestino`. Histórico: **2 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2603456). Nombres/alias del histórico: CANOSA LEMA, CELESTINO.
+Código acreditado por GET RPS pedido (AR2603456). Nombres/alias conocidos: CANOSA LEMA, CELESTINO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2461,7 +2513,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `casas-ferrero-ivan`. Histórico: **2 líneas / 2 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2500702). Nombres/alias del histórico: CASAS FERRERO, IVAN.
+Código acreditado por GET RPS pedido (BE2500702). Nombres/alias conocidos: CASAS FERRERO, IVAN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2480,7 +2532,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `corral-exposito-antonio-angel`. Histórico: **2 líneas / 2 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2505127). Nombres/alias del histórico: CORRAL EXPOSITO, ANTONIO ANGEL.
+Código acreditado por GET RPS pedido (AR2505127). Nombres/alias conocidos: CORRAL EXPOSITO, ANTONIO ANGEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2491,6 +2543,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 03: 1 (AR2505127) |
+| aguas | 6: 1 (AR2505127) |
 | recogeDelante | NO: 1 (AR2505127) |
 | recogeAtras | GOMA: 1 (AR2505127) |
 | bastillaEnfundar | NO: 1 (AR2505127) |
@@ -2515,7 +2568,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `ferreiro-conde-jesus`. Histórico: **2 líneas / 2 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2503766). Nombres/alias del histórico: FERREIRO CONDE, JESUS.
+Código acreditado por GET RPS pedido (AR2503766). Nombres/alias conocidos: FERREIRO CONDE, JESUS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2534,7 +2587,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `ferroelena-s-l`. Histórico: **2 líneas / 2 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2505511). Nombres/alias del histórico: FERROELEÑA S.L..
+Código acreditado por GET RPS pedido (AR2505511). Nombres/alias conocidos: FERROELEÑA S.L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2545,6 +2598,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 02: 2 (AR2503486, AR2505511) |
+| aguas | 12: 1 (AR2503486); 20: 1 (AR2505511) |
 | recogeDelante | NO: 2 (AR2503486, AR2505511) |
 | recogeAtras | NO: 2 (AR2503486, AR2505511) |
 | bastillaEnfundar | SÍ: 2 (AR2503486, AR2505511) |
@@ -2565,7 +2619,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `garcia-garcia-alberto`. Histórico: **2 líneas / 2 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2405410). Nombres/alias del histórico: GARCIA GARCIA, ALBERTO.
+Código acreditado por GET RPS pedido (AR2405410). Nombres/alias conocidos: GARCIA GARCIA, ALBERTO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2589,7 +2643,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `lago-grana-veronica`. Histórico: **2 líneas / 2 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2502616). Nombres/alias del histórico: LAGO GRAÑA, VERONICA.
+Código acreditado por GET RPS pedido (AR2502616). Nombres/alias conocidos: LAGO GRAÑA, VERONICA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2619,7 +2673,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `orgales-perez-juan`. Histórico: **2 líneas / 2 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2501012). Nombres/alias del histórico: ORGALES PEREZ, JUAN.
+Código acreditado por GET RPS pedido (BE2501012). Nombres/alias conocidos: ORGALES PEREZ, JUAN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2638,7 +2692,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `pernas-pernas-maikel`. Histórico: **2 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2601694). Nombres/alias del histórico: PERNAS PERNAS, MAIKEL.
+Código acreditado por GET RPS pedido (AR2601694). Nombres/alias conocidos: PERNAS PERNAS, MAIKEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2673,7 +2727,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `quijano-gonzalez-eduardo`. Histórico: **2 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2601579). Nombres/alias del histórico: QUIJANO GONZALEZ, EDUARDO.
+Código acreditado por GET RPS pedido (AR2601579). Nombres/alias conocidos: QUIJANO GONZALEZ, EDUARDO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2703,7 +2757,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `rojas-contardo-pablo`. Histórico: **2 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2603148). Nombres/alias del histórico: ROJAS CONTARDO, PABLO.
+Código acreditado por GET RPS pedido (AR2603148). Nombres/alias conocidos: ROJAS CONTARDO, PABLO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2727,7 +2781,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `talleres-mecanicos-o-cruce-jose-breijo-santalla-y-otro-s-l`. Histórico: **2 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2602976). Nombres/alias del histórico: TALLERES MECANICOS O CRUCE · JOSE BREIJO SANTALLA Y OTRO, S. L..
+Código acreditado por GET RPS pedido (AR2602976). Nombres/alias conocidos: TALLERES MECANICOS O CRUCE · JOSE BREIJO SANTALLA Y OTRO, S. L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2756,7 +2810,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `talleres-odl-cci-carrocerias-inteligentes-s-l`. Histórico: **2 líneas / 2 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2600366). Nombres/alias del histórico: TALLERES ODL · CCI  CARROCERIAS INTELIGENTES S.L..
+Código acreditado por GET RPS pedido (AR2600366). Nombres/alias conocidos: TALLERES ODL · CCI  CARROCERIAS INTELIGENTES S.L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2767,6 +2821,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 03: 1 (AR2406681); TIPO 05: 1 (AR2600366) |
+| aguas | 6.5: 1 (AR2406681) |
 | recogeDelante | GOMA: 1 (AR2406681); NO: 1 (AR2600366) |
 | recogeAtras | GOMA: 1 (AR2406681); NO: 1 (AR2600366) |
 | bastillaEnfundar | NO: 2 (AR2406681, AR2600366) |
@@ -2791,7 +2846,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `teijeiro-martinez-agustin`. Histórico: **2 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2600419). Nombres/alias del histórico: TEIJEIRO MARTINEZ, AGUSTIN.
+Código acreditado por GET RPS pedido (BE2600419). Nombres/alias conocidos: TEIJEIRO MARTINEZ, AGUSTIN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2810,7 +2865,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `vieites-gomez-jesus`. Histórico: **2 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por histórico (AR2604619). Nombres/alias del histórico: VIEITES GOMEZ, JESUS.
+Código acreditado por histórico (AR2604619). Nombres/alias conocidos: VIEITES GOMEZ, JESUS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2825,11 +2880,13 @@ Referencias que quedan fuera de las medidas automáticas:
 | Baquetón; 181 × 110 | AR2604619 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2604619.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 186 × 110 | AR2604619 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2604619.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 
+**Duda para Iván:** El elemento 0232307 tiene las cabezas distintas: una lleva 2,5;35;75;108,5 y la otra 2,5;55;108,5. El CAD no identifica cuál es delante ni desde qué extremo se orienta el lateral. No se mezclan con el elemento vecino 0232306 de 186 × 110. ¿Cuál de las dos cabezas es delante y desde qué extremo está medido el lateral?
+
 ### VILLAR VAZQUEZ, JUAN CARLOS — 010192
 
 Ficha: `villar-vazquez-juan-carlos`. Histórico: **2 líneas / 2 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2500904). Nombres/alias del histórico: VILLAR VAZQUEZ, JUAN CARLOS.
+Código acreditado por GET RPS pedido (BE2500904). Nombres/alias conocidos: VILLAR VAZQUEZ, JUAN CARLOS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2848,7 +2905,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `adan-quintela-miguel-angel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2501034). Nombres/alias del histórico: ADAN QUINTELA, MIGUEL ANGEL.
+Código acreditado por GET RPS pedido (AR2501034). Nombres/alias conocidos: ADAN QUINTELA, MIGUEL ANGEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2877,7 +2934,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `aguion-carreira-marcos`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2500266). Nombres/alias del histórico: AGUION CARREIRA, MARCOS.
+Código acreditado por GET RPS pedido (BE2500266). Nombres/alias conocidos: AGUION CARREIRA, MARCOS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2895,7 +2952,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `albarino-abella-venerando`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2504254). Nombres/alias del histórico: ALBARIÑO ABELLA, VENERANDO.
+Código acreditado por GET RPS pedido (AR2504254). Nombres/alias conocidos: ALBARIÑO ABELLA, VENERANDO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2906,6 +2963,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 02: 1 (AR2504254) |
+| aguas | 8: 1 (AR2504254) |
 | recogeDelante | NO: 1 (AR2504254) |
 | recogeAtras | GOMA: 1 (AR2504254) |
 | bastillaEnfundar | NO: 1 (AR2504254) |
@@ -2924,7 +2982,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `alfonso-de-jesus-juan-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2504348). Nombres/alias del histórico: ALFONSO DE JESUS, JUAN ANTONIO.
+Código acreditado por GET RPS pedido (AR2504348). Nombres/alias conocidos: ALFONSO DE JESUS, JUAN ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2953,7 +3011,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `aluminios-beres-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2503919). Nombres/alias del histórico: ALUMINIOS BERES, S. L..
+Código acreditado por GET RPS pedido (AR2503919). Nombres/alias conocidos: ALUMINIOS BERES, S. L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -2971,7 +3029,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `alvarez-hermida-jose`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2501503). Nombres/alias del histórico: ALVAREZ HERMIDA, JOSE.
+Código acreditado por GET RPS pedido (AR2501503). Nombres/alias conocidos: ALVAREZ HERMIDA, JOSE.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3000,7 +3058,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `alves-fernandez-alberto`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2505391). Nombres/alias del histórico: ALVES FERNANDEZ, ALBERTO.
+Código acreditado por GET RPS pedido (AR2505391). Nombres/alias conocidos: ALVES FERNANDEZ, ALBERTO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3018,7 +3076,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `americo-dos-anjos-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2401210). Nombres/alias del histórico: AMERICO DOS ANJOS, MANUEL.
+Código acreditado por GET RPS pedido (BE2401210). Nombres/alias conocidos: AMERICO DOS ANJOS, MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3036,7 +3094,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `andujar-martinez-jose-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2502312). Nombres/alias del histórico: ANDUJAR MARTINEZ, JOSE MANUEL.
+Código acreditado por GET RPS pedido (AR2502312). Nombres/alias conocidos: ANDUJAR MARTINEZ, JOSE MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3059,7 +3117,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `angel-roade-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2504327). Nombres/alias del histórico: ANGEL ROADE, S. L..
+Código acreditado por GET RPS pedido (AR2504327). Nombres/alias conocidos: ANGEL ROADE, S. L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3077,7 +3135,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `antelo-luaces-domingo`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2503399). Nombres/alias del histórico: ANTELO LUACES, DOMINGO.
+Código acreditado por GET RPS pedido (AR2503399). Nombres/alias conocidos: ANTELO LUACES, DOMINGO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3095,7 +3153,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `antiguo-rua-nobel-talleres-y-servicios-jyp-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2400033). Nombres/alias del histórico: ANTIGUO RUA NOBEL · TALLERES Y SERVICIOS JYP S.L..
+Código acreditado por GET RPS pedido (BE2400033). Nombres/alias conocidos: ANTIGUO RUA NOBEL · TALLERES Y SERVICIOS JYP S.L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3113,7 +3171,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `anvasoan-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2402186). Nombres/alias del histórico: ANVASOAN S.L..
+Código acreditado por GET RPS pedido (AR2402186). Nombres/alias conocidos: ANVASOAN S.L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3136,7 +3194,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `aparicio-quindimil-jose-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2500060). Nombres/alias del histórico: APARICIO QUINDIMIL, JOSE ANTONIO.
+Código acreditado por GET RPS pedido (BE2500060). Nombres/alias conocidos: APARICIO QUINDIMIL, JOSE ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3154,7 +3212,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `ardiaca-paredes-josep`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2505734). Nombres/alias del histórico: ARDIACA PAREDES, JOSEP.
+Código acreditado por GET RPS pedido (AR2505734). Nombres/alias conocidos: ARDIACA PAREDES, JOSEP.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3185,7 +3243,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `ares-souto-javier`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2504920). Nombres/alias del histórico: ARES SOUTO, JAVIER.
+Código acreditado por GET RPS pedido (AR2504920). Nombres/alias conocidos: ARES SOUTO, JAVIER.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3203,7 +3261,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `barro-grueiro-claudio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2601051). Nombres/alias del histórico: BARRO GRUEIRO, CLAUDIO.
+Código acreditado por GET RPS pedido (AR2601051). Nombres/alias conocidos: BARRO GRUEIRO, CLAUDIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3214,6 +3272,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 1 (AR2601051) |
+| aguas | NO: 1 (AR2601051) |
 | recogeDelante | NO: 1 (AR2601051) |
 | recogeAtras | GOMA: 1 (AR2601051) |
 | bastillaEnfundar | NO: 1 (AR2601051) |
@@ -3232,7 +3291,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `bascunana-sanchez-david`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2403610). Nombres/alias del histórico: BASCUÑANA SANCHEZ, DAVID.
+Código acreditado por GET RPS pedido (AR2403610). Nombres/alias conocidos: BASCUÑANA SANCHEZ, DAVID.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3242,6 +3301,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
+| aguas | NO: 1 (AR2403610) |
 | recogeDelante | GOMA: 1 (AR2403610) |
 | recogeAtras | GOMA: 1 (AR2403610) |
 | bastillaEnfundar | NO: 1 (AR2403610) |
@@ -3260,7 +3320,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `bea-lope-hector`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por histórico (AR2604632). Nombres/alias del histórico: BEA LOPE, HECTOR.
+Código acreditado por histórico (AR2604632). Nombres/alias conocidos: BEA LOPE, HECTOR.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3278,7 +3338,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `bertoa-castro-jose-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2404389). Nombres/alias del histórico: BERTOA CASTRO, JOSE ANTONIO.
+Código acreditado por GET RPS pedido (AR2404389). Nombres/alias conocidos: BERTOA CASTRO, JOSE ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3296,7 +3356,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `blanco-miranda-lino`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2600569). Nombres/alias del histórico: BLANCO MIRANDA, LINO.
+Código acreditado por GET RPS pedido (BE2600569). Nombres/alias conocidos: BLANCO MIRANDA, LINO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3314,7 +3374,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `bodegas-seixido-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2504220). Nombres/alias del histórico: BODEGAS SEIXIDO, S. L. ,.
+Código acreditado por GET RPS pedido (AR2504220). Nombres/alias conocidos: BODEGAS SEIXIDO, S. L. ,.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3343,7 +3403,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `boronat-andreu`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2600859). Nombres/alias del histórico: BORONAT, ANDREU.
+Código acreditado por GET RPS pedido (AR2600859). Nombres/alias conocidos: BORONAT, ANDREU.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3371,7 +3431,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `bouso-leivas-stefan`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2505603). Nombres/alias del histórico: BOUSO LEIVAS, STEFAN.
+Código acreditado por GET RPS pedido (AR2505603). Nombres/alias conocidos: BOUSO LEIVAS, STEFAN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3382,6 +3442,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 03: 1 (AR2505603) |
+| aguas | 1: 1 (AR2505603) |
 | recogeDelante | NO: 1 (AR2505603) |
 | recogeAtras | GOMA: 1 (AR2505603) |
 | bastillaEnfundar | NO: 1 (AR2505603) |
@@ -3400,7 +3461,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `bouza-sanchez-alvaro`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2400851). Nombres/alias del histórico: BOUZA SANCHEZ, ALVARO.
+Código acreditado por GET RPS pedido (BE2400851). Nombres/alias conocidos: BOUZA SANCHEZ, ALVARO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3418,7 +3479,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `cafeteria-rosalia-ocampo-fernandez-jose-angel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2505725). Nombres/alias del histórico: CAFETERIA ROSALIA · OCAMPO FERNANDEZ, JOSE ANGEL.
+Código acreditado por GET RPS pedido (AR2505725). Nombres/alias conocidos: CAFETERIA ROSALIA · OCAMPO FERNANDEZ, JOSE ANGEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3436,7 +3497,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `cal-lopez-jesus`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2500271). Nombres/alias del histórico: CAL LOPEZ, JESUS.
+Código acreditado por GET RPS pedido (BE2500271). Nombres/alias conocidos: CAL LOPEZ, JESUS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3454,7 +3515,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `calveiro-novo-jose-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2406023). Nombres/alias del histórico: CALVEIRO NOVO, JOSE ANTONIO.
+Código acreditado por GET RPS pedido (AR2406023). Nombres/alias conocidos: CALVEIRO NOVO, JOSE ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3465,6 +3526,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 1 (AR2406023) |
+| aguas | NO: 1 (AR2406023) |
 | recogeDelante | NO: 1 (AR2406023) |
 | recogeAtras | GOMA: 1 (AR2406023) |
 | bastillaEnfundar | NO: 1 (AR2406023) |
@@ -3483,7 +3545,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `calvo-espana-ismael`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2500539). Nombres/alias del histórico: CALVO ESPAÑA, ISMAEL.
+Código acreditado por GET RPS pedido (BE2500539). Nombres/alias conocidos: CALVO ESPAÑA, ISMAEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3501,7 +3563,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `camba-gil-ramon`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2405178). Nombres/alias del histórico: CAMBA GIL, RAMON.
+Código acreditado por GET RPS pedido (AR2405178). Nombres/alias conocidos: CAMBA GIL, RAMON.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3530,7 +3592,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `campos-autotecnica-s-c`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2402012). Nombres/alias del histórico: CAMPOS AUTOTECNICA S.C.
+Código acreditado por GET RPS pedido (AR2402012). Nombres/alias conocidos: CAMPOS AUTOTECNICA S.C.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3541,6 +3603,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 04: 1 (AR2402012) |
+| aguas | 10: 1 (AR2402012) |
 | recogeDelante | PUENTES ESVA: 1 (AR2402012) |
 | recogeAtras | PUENTES ESVA: 1 (AR2402012) |
 | bastillaEnfundar | NO: 1 (AR2402012) |
@@ -3559,7 +3622,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `cardelle-hidraulica-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2500727). Nombres/alias del histórico: CARDELLE HIDRAULICA, S. L. ,.
+Código acreditado por GET RPS pedido (BE2500727). Nombres/alias conocidos: CARDELLE HIDRAULICA, S. L. ,.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3577,7 +3640,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `carmelo-carmelo-barreiro-paz`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2501233). Nombres/alias del histórico: CARMELO · CARMELO BARREIRO PAZ.
+Código acreditado por GET RPS pedido (AR2501233). Nombres/alias conocidos: CARMELO · CARMELO BARREIRO PAZ.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3595,7 +3658,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `carrasco-gascon-francisco`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2403830). Nombres/alias del histórico: CARRASCO GASCON, FRANCISCO.
+Código acreditado por GET RPS pedido (AR2403830). Nombres/alias conocidos: CARRASCO GASCON, FRANCISCO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3606,6 +3669,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 1 (AR2403830) |
+| aguas | NO: 1 (AR2403830) |
 | recogeDelante | NO: 1 (AR2403830) |
 | recogeAtras | GOMA: 1 (AR2403830) |
 | bastillaEnfundar | NO: 1 (AR2403830) |
@@ -3624,7 +3688,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `carro-vazquez-sergio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2401292). Nombres/alias del histórico: CARRO VAZQUEZ, SERGIO.
+Código acreditado por GET RPS pedido (BE2401292). Nombres/alias conocidos: CARRO VAZQUEZ, SERGIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3642,7 +3706,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `carroceros-del-noroeste-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2405193). Nombres/alias del histórico: CARROCEROS DEL NOROESTE, S. L..
+Código acreditado por GET RPS pedido (AR2405193). Nombres/alias conocidos: CARROCEROS DEL NOROESTE, S. L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3653,6 +3717,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 01: 1 (AR2405193) |
+| aguas | NO: 1 (AR2405193) |
 | recogeDelante | NO: 1 (AR2405193) |
 | recogeAtras | VELCRO: 1 (AR2405193) |
 | bastillaEnfundar | NO: 1 (AR2405193) |
@@ -3671,7 +3736,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `casal-pacheco-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2500013). Nombres/alias del histórico: CASAL PACHECO, MANUEL.
+Código acreditado por GET RPS pedido (AR2500013). Nombres/alias conocidos: CASAL PACHECO, MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3681,6 +3746,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
+| aguas | 11.5: 1 (AR2500013) |
 | recogeDelante | GOMA: 1 (AR2500013) |
 | recogeAtras | GOMA: 1 (AR2500013) |
 | bastillaEnfundar | NO: 1 (AR2500013) |
@@ -3699,7 +3765,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `castillo-de-moya-ivan`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2603364). Nombres/alias del histórico: CASTILLO DE MOYA, IVAN.
+Código acreditado por GET RPS pedido (AR2603364). Nombres/alias conocidos: CASTILLO DE MOYA, IVAN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3710,6 +3776,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 02: 1 (AR2603364) |
+| aguas | 5: 1 (AR2603364) |
 | recogeDelante | NO: 1 (AR2603364) |
 | recogeAtras | GOMA: 1 (AR2603364) |
 | bastillaEnfundar | NO: 1 (AR2603364) |
@@ -3728,7 +3795,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `castro-bellon-pablo`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2505558). Nombres/alias del histórico: CASTRO BELLON, PABLO.
+Código acreditado por GET RPS pedido (AR2505558). Nombres/alias conocidos: CASTRO BELLON, PABLO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3757,7 +3824,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `castro-carro-francisco`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2503639). Nombres/alias del histórico: CASTRO CARRO, FRANCISCO.
+Código acreditado por GET RPS pedido (AR2503639). Nombres/alias conocidos: CASTRO CARRO, FRANCISCO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3786,7 +3853,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `castro-garcia-rogelio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2401752). Nombres/alias del histórico: CASTRO GARCIA, ROGELIO.
+Código acreditado por GET RPS pedido (AR2401752). Nombres/alias conocidos: CASTRO GARCIA, ROGELIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3797,6 +3864,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 01: 1 (AR2401752) |
+| aguas | NO: 1 (AR2401752) |
 | recogeDelante | NO: 1 (AR2401752) |
 | recogeAtras | GOMA: 1 (AR2401752) |
 | bastillaEnfundar | NO: 1 (AR2401752) |
@@ -3815,7 +3883,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `castro-mourino-juan-jose`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2402048). Nombres/alias del histórico: CASTRO MOURIÑO, JUAN JOSE.
+Código acreditado por GET RPS pedido (AR2402048). Nombres/alias conocidos: CASTRO MOURIÑO, JUAN JOSE.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3826,6 +3894,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 1 (AR2402048) |
+| aguas | NO: 1 (AR2402048) |
 | recogeDelante | NO: 1 (AR2402048) |
 | recogeAtras | GOMA: 1 (AR2402048) |
 | ventana | NO: 1 (AR2402048) |
@@ -3845,7 +3914,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `castro-rodriguez-maria-luisa`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2600832). Nombres/alias del histórico: CASTRO RODRIGUEZ, MARIA LUISA.
+Código acreditado por GET RPS pedido (AR2600832). Nombres/alias conocidos: CASTRO RODRIGUEZ, MARIA LUISA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3867,7 +3936,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `cernadas-fernandez-juan`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2505489). Nombres/alias del histórico: CERNADAS FERNANDEZ, JUAN.
+Código acreditado por GET RPS pedido (AR2505489). Nombres/alias conocidos: CERNADAS FERNANDEZ, JUAN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3885,7 +3954,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `chg-quierountoldo2013-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 1. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2505659). Nombres/alias del histórico: CHG QUIEROUNTOLDO2013 S.L..
+Código acreditado por GET RPS pedido (AR2505659). Nombres/alias conocidos: CHG QUIEROUNTOLDO2013 S.L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3915,7 +3984,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `cibreiro-rodriguez-jose`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2405149). Nombres/alias del histórico: CIBREIRO RODRIGUEZ, JOSE.
+Código acreditado por GET RPS pedido (AR2405149). Nombres/alias conocidos: CIBREIRO RODRIGUEZ, JOSE.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3944,7 +4013,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `clh-exolum-corporation-s-a`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2501970). Nombres/alias del histórico: CLH · EXOLUM CORPORATION S.A..
+Código acreditado por GET RPS pedido (AR2501970). Nombres/alias conocidos: CLH · EXOLUM CORPORATION S.A..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3955,6 +4024,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 03: 1 (AR2501970) |
+| aguas | 10: 1 (AR2501970) |
 | recogeDelante | NO: 1 (AR2501970) |
 | recogeAtras | NO: 1 (AR2501970) |
 | bastillaEnfundar | NO: 1 (AR2501970) |
@@ -3975,7 +4045,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `cliente-tpv`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2504855). Nombres/alias del histórico: CLIENTE TPV.
+Código acreditado por GET RPS pedido (AR2504855). Nombres/alias conocidos: CLIENTE TPV.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -3993,7 +4063,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `coafor-sdad-coop-galega`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2403932). Nombres/alias del histórico: COAFOR, SDAD. COOP. GALEGA ,.
+Código acreditado por GET RPS pedido (AR2403932). Nombres/alias conocidos: COAFOR, SDAD. COOP. GALEGA ,.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4003,6 +4073,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
+| aguas | 2: 1 (AR2403932) |
 | recogeDelante | NO: 1 (AR2403932) |
 | recogeAtras | GOMA: 1 (AR2403932) |
 | bastillaEnfundar | NO: 1 (AR2403932) |
@@ -4021,7 +4092,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `concello-de-pontedeume`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2602109). Nombres/alias del histórico: CONCELLO DE PONTEDEUME.
+Código acreditado por GET RPS pedido (AR2602109). Nombres/alias conocidos: CONCELLO DE PONTEDEUME.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4032,6 +4103,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 03: 1 (AR2602109) |
+| aguas | 7: 1 (AR2602109) |
 | recogeDelante | NO: 1 (AR2602109) |
 | recogeAtras | GOMA: 1 (AR2602109) |
 | bastillaEnfundar | NO: 1 (AR2602109) |
@@ -4050,7 +4122,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `cooperativas-lacteas-unidas-scg-clun`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2601575). Nombres/alias del histórico: COOPERATIVAS LACTEAS UNIDAS SCG (CLUN).
+Código acreditado por GET RPS pedido (AR2601575). Nombres/alias conocidos: COOPERATIVAS LACTEAS UNIDAS SCG (CLUN).
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4068,7 +4140,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `dejesus-machado-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2600382). Nombres/alias del histórico: DEJESUS MACHADO, ANTONIO.
+Código acreditado por GET RPS pedido (BE2600382). Nombres/alias conocidos: DEJESUS MACHADO, ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4086,7 +4158,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `diaz-izquierdo-ana`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2502595). Nombres/alias del histórico: DIAZ IZQUIERDO, ANA.
+Código acreditado por GET RPS pedido (AR2502595). Nombres/alias conocidos: DIAZ IZQUIERDO, ANA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4097,6 +4169,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 01: 1 (AR2502595) |
+| aguas | NO: 1 (AR2502595) |
 | recogeDelante | NO: 1 (AR2502595) |
 | recogeAtras | GOMA: 1 (AR2502595) |
 | bastillaEnfundar | NO: 1 (AR2502595) |
@@ -4115,7 +4188,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `diaz-menendez-carlos`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2601042). Nombres/alias del histórico: DIAZ MENENDEZ, CARLOS.
+Código acreditado por GET RPS pedido (AR2601042). Nombres/alias conocidos: DIAZ MENENDEZ, CARLOS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4126,6 +4199,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 01: 1 (AR2601042) |
+| aguas | NO: 1 (AR2601042) |
 | recogeDelante | NO: 1 (AR2601042) |
 | recogeAtras | GOMA: 1 (AR2601042) |
 | bastillaEnfundar | NO: 1 (AR2601042) |
@@ -4144,7 +4218,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `divirtt-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2600225). Nombres/alias del histórico: DIVIRTT S.L.
+Código acreditado por GET RPS pedido (BE2600225). Nombres/alias conocidos: DIVIRTT S.L.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4162,7 +4236,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `docampo-abeijon-fernando`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2506092). Nombres/alias del histórico: DOCAMPO ABEIJON, FERNANDO.
+Código acreditado por GET RPS pedido (AR2506092). Nombres/alias conocidos: DOCAMPO ABEIJON, FERNANDO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4191,7 +4265,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `domangues-estraviz-ruben`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2400498). Nombres/alias del histórico: DOMANGUES ESTRAVIZ, RUBEN.
+Código acreditado por GET RPS pedido (BE2400498). Nombres/alias conocidos: DOMANGUES ESTRAVIZ, RUBEN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4209,7 +4283,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `duran-veiga-andres`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2406832). Nombres/alias del histórico: DURAN VEIGA, ANDRES.
+Código acreditado por GET RPS pedido (AR2406832). Nombres/alias conocidos: DURAN VEIGA, ANDRES.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4227,7 +4301,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `electrificaciones-minones-sl`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2601560). Nombres/alias del histórico: ELECTRIFICACIONES MIÑONES SL.
+Código acreditado por GET RPS pedido (AR2601560). Nombres/alias conocidos: ELECTRIFICACIONES MIÑONES SL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4245,7 +4319,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `enriquez-collazo-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2600570). Nombres/alias del histórico: ENRIQUEZ COLLAZO, MANUEL.
+Código acreditado por GET RPS pedido (AR2600570). Nombres/alias conocidos: ENRIQUEZ COLLAZO, MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4269,7 +4343,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `estrella-galicia-hijos-de-rivera-s-a-u`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2500051). Nombres/alias del histórico: ESTRELLA GALICIA · HIJOS DE RIVERA, S.A.U..
+Código acreditado por GET RPS pedido (AR2500051). Nombres/alias conocidos: ESTRELLA GALICIA · HIJOS DE RIVERA, S.A.U..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4287,7 +4361,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `explotaciones-forestales-garafete-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2405950). Nombres/alias del histórico: EXPLOTACIONES FORESTALES GARAFETE S.L.
+Código acreditado por GET RPS pedido (AR2405950). Nombres/alias conocidos: EXPLOTACIONES FORESTALES GARAFETE S.L.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4298,6 +4372,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 03: 1 (AR2405950) |
+| aguas | 10: 1 (AR2405950) |
 | recogeDelante | NO: 1 (AR2405950) |
 | recogeAtras | GOMA: 1 (AR2405950) |
 | bastillaEnfundar | NO: 1 (AR2405950) |
@@ -4316,7 +4391,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `facenda-o-agro-baixa-limia-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2600570). Nombres/alias del histórico: FACENDA O AGRO BAIXA LIMIA S.L.
+Código acreditado por GET RPS pedido (BE2600570). Nombres/alias conocidos: FACENDA O AGRO BAIXA LIMIA S.L.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4334,7 +4409,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `fernandez-barro-pedro`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2400243). Nombres/alias del histórico: FERNANDEZ BARRO, PEDRO.
+Código acreditado por GET RPS pedido (BE2400243). Nombres/alias conocidos: FERNANDEZ BARRO, PEDRO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4352,7 +4427,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `fernandez-calvo-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2504541). Nombres/alias del histórico: FERNANDEZ CALVO, MANUEL.
+Código acreditado por GET RPS pedido (AR2504541). Nombres/alias conocidos: FERNANDEZ CALVO, MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4381,7 +4456,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `fernandez-de-la-llave-luis-miguel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por histórico (AR2604390). Nombres/alias del histórico: FERNANDEZ DE LA LLAVE, LUIS MIGUEL.
+Código acreditado por histórico (AR2604390). Nombres/alias conocidos: FERNANDEZ DE LA LLAVE, LUIS MIGUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4399,7 +4474,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `fernandez-diaz-jose-ramon`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2501008). Nombres/alias del histórico: FERNANDEZ DIAZ, JOSE RAMON.
+Código acreditado por GET RPS pedido (AR2501008). Nombres/alias conocidos: FERNANDEZ DIAZ, JOSE RAMON.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4428,7 +4503,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `fernandez-fondevila-carlos`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2400350). Nombres/alias del histórico: FERNANDEZ FONDEVILA, CARLOS.
+Código acreditado por GET RPS pedido (AR2400350). Nombres/alias conocidos: FERNANDEZ FONDEVILA, CARLOS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4457,7 +4532,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `fernandez-fraga-jose-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2400987). Nombres/alias del histórico: FERNANDEZ FRAGA, JOSE MANUEL.
+Código acreditado por GET RPS pedido (BE2400987). Nombres/alias conocidos: FERNANDEZ FRAGA, JOSE MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4475,7 +4550,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `fernandez-gomez-alberto`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2406331). Nombres/alias del histórico: FERNANDEZ GOMEZ , ALBERTO.
+Código acreditado por GET RPS pedido (AR2406331). Nombres/alias conocidos: FERNANDEZ GOMEZ , ALBERTO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4498,7 +4573,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `fernandez-gomez-jaime`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2506133). Nombres/alias del histórico: FERNANDEZ GOMEZ, JAIME.
+Código acreditado por GET RPS pedido (AR2506133). Nombres/alias conocidos: FERNANDEZ GOMEZ, JAIME.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4527,7 +4602,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `fernandez-gonzalez-orfidio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2504260). Nombres/alias del histórico: FERNANDEZ GONZALEZ, ORFIDIO.
+Código acreditado por GET RPS pedido (AR2504260). Nombres/alias conocidos: FERNANDEZ GONZALEZ, ORFIDIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4550,7 +4625,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `fernandez-vilela-luis`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2600495). Nombres/alias del histórico: FERNANDEZ VILELA, LUIS.
+Código acreditado por GET RPS pedido (BE2600495). Nombres/alias conocidos: FERNANDEZ VILELA, LUIS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4568,7 +4643,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `ferreira-fabeiro-roberto`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por histórico (AR2604206). Nombres/alias del histórico: FERREIRA FABEIRO, ROBERTO.
+Código acreditado por histórico (AR2604206). Nombres/alias conocidos: FERREIRA FABEIRO, ROBERTO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4591,7 +4666,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `ferro-ameal-faustino`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2505792). Nombres/alias del histórico: FERRO AMEAL, FAUSTINO.
+Código acreditado por GET RPS pedido (AR2505792). Nombres/alias conocidos: FERRO AMEAL, FAUSTINO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4609,7 +4684,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `ferrodeiro-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2502519). Nombres/alias del histórico: FERRODEIRO, S.L..
+Código acreditado por GET RPS pedido (AR2502519). Nombres/alias conocidos: FERRODEIRO, S.L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4638,7 +4713,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `freire-fernandez-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2500087). Nombres/alias del histórico: FREIRE FERNANDEZ, MANUEL.
+Código acreditado por GET RPS pedido (BE2500087). Nombres/alias conocidos: FREIRE FERNANDEZ, MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4656,7 +4731,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `fricur-instalaciones-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2600353). Nombres/alias del histórico: FRICUR INSTALACIONES, S.L..
+Código acreditado por GET RPS pedido (BE2600353). Nombres/alias conocidos: FRICUR INSTALACIONES, S.L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4674,7 +4749,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `ganaderia-pardo-s-c`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2505854). Nombres/alias del histórico: GANADERIA PARDO, S. C..
+Código acreditado por GET RPS pedido (AR2505854). Nombres/alias conocidos: GANADERIA PARDO, S. C..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4692,7 +4767,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `ganaderia-ron-s-c`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por histórico (AR2603663). Nombres/alias del histórico: GANADERIA RON, S.C..
+Código acreditado por histórico (AR2603663). Nombres/alias conocidos: GANADERIA RON, S.C..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4710,7 +4785,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `gandara-lema-david`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2406159). Nombres/alias del histórico: GANDARA LEMA, DAVID.
+Código acreditado por GET RPS pedido (AR2406159). Nombres/alias conocidos: GANDARA LEMA, DAVID.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4721,6 +4796,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 01: 1 (AR2406159) |
+| aguas | NO: 1 (AR2406159) |
 | recogeDelante | GOMA: 1 (AR2406159) |
 | recogeAtras | GOMA: 1 (AR2406159) |
 | bastillaEnfundar | NO: 1 (AR2406159) |
@@ -4739,7 +4815,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `garcia-moris-sonia`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2505196). Nombres/alias del histórico: GARCIA MORIS, SONIA.
+Código acreditado por GET RPS pedido (AR2505196). Nombres/alias conocidos: GARCIA MORIS, SONIA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4768,7 +4844,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `garcia-seco-regino`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2500609). Nombres/alias del histórico: GARCIA SECO, REGINO.
+Código acreditado por GET RPS pedido (BE2500609). Nombres/alias conocidos: GARCIA SECO, REGINO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4786,7 +4862,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `garea-fernandez-jose`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2404260). Nombres/alias del histórico: GAREA FERNANDEZ, JOSE.
+Código acreditado por GET RPS pedido (AR2404260). Nombres/alias conocidos: GAREA FERNANDEZ, JOSE.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4796,6 +4872,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
+| aguas | NO: 1 (AR2404260) |
 | recogeDelante | NO: 1 (AR2404260) |
 | recogeAtras | GOMA: 1 (AR2404260) |
 | bastillaEnfundar | NO: 1 (AR2404260) |
@@ -4814,7 +4891,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `garrido-gomez-josep-donat`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por histórico (AR2604095). Nombres/alias del histórico: GARRIDO GOMEZ, JOSEP DONAT.
+Código acreditado por histórico (AR2604095). Nombres/alias conocidos: GARRIDO GOMEZ, JOSEP DONAT.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4832,7 +4909,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `gis-cerceda-s-l-u`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2600342). Nombres/alias del histórico: GIS CERCEDA S.L.U.
+Código acreditado por GET RPS pedido (BE2600342). Nombres/alias conocidos: GIS CERCEDA S.L.U.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4850,7 +4927,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `golpe-romero-bernardo`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2400372). Nombres/alias del histórico: GOLPE ROMERO, BERNARDO.
+Código acreditado por GET RPS pedido (BE2400372). Nombres/alias conocidos: GOLPE ROMERO, BERNARDO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4868,7 +4945,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `gomez-alamancos-teresa`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2401982). Nombres/alias del histórico: GOMEZ ALAMANCOS, TERESA.
+Código acreditado por GET RPS pedido (AR2401982). Nombres/alias conocidos: GOMEZ ALAMANCOS, TERESA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4879,6 +4956,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 04: 1 (AR2401982) |
+| aguas | 7.5: 1 (AR2401982) |
 | recogeDelante | NO: 1 (AR2401982) |
 | recogeAtras | PUENTES ESVA: 1 (AR2401982) |
 | bastillaEnfundar | NO: 1 (AR2401982) |
@@ -4897,7 +4975,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `gomez-camino-lucia`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2400960). Nombres/alias del histórico: GOMEZ CAMINO, LUCIA.
+Código acreditado por GET RPS pedido (AR2400960). Nombres/alias conocidos: GOMEZ CAMINO, LUCIA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4915,7 +4993,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `gomez-dominguez-miguel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2506111). Nombres/alias del histórico: GOMEZ DOMINGUEZ, MIGUEL.
+Código acreditado por GET RPS pedido (AR2506111). Nombres/alias conocidos: GOMEZ DOMINGUEZ, MIGUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4933,7 +5011,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `gomez-garcia-jose-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2600467). Nombres/alias del histórico: GOMEZ GARCIA, JOSE ANTONIO.
+Código acreditado por GET RPS pedido (BE2600467). Nombres/alias conocidos: GOMEZ GARCIA, JOSE ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4951,7 +5029,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `gomez-otero-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2600460). Nombres/alias del histórico: GOMEZ OTERO, ANTONIO.
+Código acreditado por GET RPS pedido (BE2600460). Nombres/alias conocidos: GOMEZ OTERO, ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4969,7 +5047,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `gomez-pazos-juan`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2404366). Nombres/alias del histórico: GOMEZ PAZOS, JUAN.
+Código acreditado por GET RPS pedido (AR2404366). Nombres/alias conocidos: GOMEZ PAZOS, JUAN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -4979,6 +5057,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
+| aguas | NO: 1 (AR2404366) |
 | recogeDelante | NO: 1 (AR2404366) |
 | recogeAtras | GOMA: 1 (AR2404366) |
 | bastillaEnfundar | NO: 1 (AR2404366) |
@@ -4996,7 +5075,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `gonzalez-agrasar-susana`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2402296). Nombres/alias del histórico: GONZALEZ AGRASAR, SUSANA.
+Código acreditado por GET RPS pedido (AR2402296). Nombres/alias conocidos: GONZALEZ AGRASAR, SUSANA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5019,7 +5098,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `gonzalez-de-aledo-gomez-alvaro`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2406616). Nombres/alias del histórico: GONZALEZ DE ALEDO GOMEZ, ALVARO.
+Código acreditado por GET RPS pedido (AR2406616). Nombres/alias conocidos: GONZALEZ DE ALEDO GOMEZ, ALVARO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5037,7 +5116,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `gonzalez-dopazo-jose-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2506445). Nombres/alias del histórico: GONZALEZ DOPAZO, JOSE MANUEL.
+Código acreditado por GET RPS pedido (AR2506445). Nombres/alias conocidos: GONZALEZ DOPAZO, JOSE MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5060,7 +5139,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `gonzalez-hermida-david`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2400239). Nombres/alias del histórico: GONZALEZ HERMIDA, DAVID.
+Código acreditado por GET RPS pedido (AR2400239). Nombres/alias conocidos: GONZALEZ HERMIDA, DAVID.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5089,7 +5168,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `gonzalez-torres-jose`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2402422). Nombres/alias del histórico: GONZALEZ TORRES, JOSE.
+Código acreditado por GET RPS pedido (AR2402422). Nombres/alias conocidos: GONZALEZ TORRES, JOSE.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5107,7 +5186,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `hertrans-sdad-coop-ltda`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2501169). Nombres/alias del histórico: HERTRANS, SDAD. COOP. LTDA..
+Código acreditado por GET RPS pedido (BE2501169). Nombres/alias conocidos: HERTRANS, SDAD. COOP. LTDA..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5125,7 +5204,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `ibabre-baloiras-brea-ivan`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2402595). Nombres/alias del histórico: IBABRE, BALOIRAS BREA IVAN.
+Código acreditado por GET RPS pedido (AR2402595). Nombres/alias conocidos: IBABRE, BALOIRAS BREA IVAN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5153,7 +5232,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `informacion-comunicacion-local-s-a-incolsa`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2407078). Nombres/alias del histórico: INFORMACION & COMUNICACION LOCAL S.A. (INCOLSA).
+Código acreditado por GET RPS pedido (AR2407078). Nombres/alias conocidos: INFORMACION & COMUNICACION LOCAL S.A. (INCOLSA).
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5171,7 +5250,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `jimenez-caliz-hnos-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2600682). Nombres/alias del histórico: JIMENEZ CALIZ HNOS., S.L..
+Código acreditado por GET RPS pedido (AR2600682). Nombres/alias conocidos: JIMENEZ CALIZ HNOS., S.L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5182,6 +5261,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 03: 1 (AR2600682) |
+| aguas | SI: 1 (AR2600682) |
 | recogeDelante | NO: 1 (AR2600682) |
 | recogeAtras | VELCRO: 1 (AR2600682) |
 | bastillaEnfundar | SÍ: 1 (AR2600682) |
@@ -5200,7 +5280,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `lacteos-terra-de-melide-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2506342). Nombres/alias del histórico: LACTEOS TERRA DE MELIDE, S. L. ,.
+Código acreditado por GET RPS pedido (AR2506342). Nombres/alias conocidos: LACTEOS TERRA DE MELIDE, S. L. ,.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5211,6 +5291,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 02: 1 (AR2506342) |
+| aguas | 9: 1 (AR2506342) |
 | recogeDelante | NO: 1 (AR2506342) |
 | recogeAtras | GOMA: 1 (AR2506342) |
 | bastillaEnfundar | NO: 1 (AR2506342) |
@@ -5229,7 +5310,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `lago-casal-francisco`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2406910). Nombres/alias del histórico: LAGO CASAL, FRANCISCO.
+Código acreditado por GET RPS pedido (AR2406910). Nombres/alias conocidos: LAGO CASAL, FRANCISCO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5240,6 +5321,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 1 (AR2406910) |
+| aguas | NO: 1 (AR2406910) |
 | recogeDelante | NO: 1 (AR2406910) |
 | recogeAtras | VELCRO: 1 (AR2406910) |
 | bastillaEnfundar | NO: 1 (AR2406910) |
@@ -5258,7 +5340,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `lavanderia-axina-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2500989). Nombres/alias del histórico: LAVANDERIA AXIÑA S.L.
+Código acreditado por GET RPS pedido (BE2500989). Nombres/alias conocidos: LAVANDERIA AXIÑA S.L.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5276,7 +5358,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `laziturri-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por histórico (AR2603682). Nombres/alias del histórico: LAZITURRI, S.L..
+Código acreditado por histórico (AR2603682). Nombres/alias conocidos: LAZITURRI, S.L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5299,7 +5381,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `leiras-insua-yolanda`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2501754). Nombres/alias del histórico: LEIRAS INSUA, YOLANDA.
+Código acreditado por GET RPS pedido (AR2501754). Nombres/alias conocidos: LEIRAS INSUA, YOLANDA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5309,6 +5391,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
+| aguas | 4: 1 (AR2501754) |
 | recogeDelante | NO: 1 (AR2501754) |
 | recogeAtras | GOMA: 1 (AR2501754) |
 | bastillaEnfundar | NO: 1 (AR2501754) |
@@ -5327,7 +5410,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `libreria-siglo-xxi-mrv-construcciones-san-miguel-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2501981). Nombres/alias del histórico: LIBRERIA SIGLO XXI · MRV CONSTRUCCIONES SAN MIGUEL  S.L.
+Código acreditado por GET RPS pedido (AR2501981). Nombres/alias conocidos: LIBRERIA SIGLO XXI · MRV CONSTRUCCIONES SAN MIGUEL  S.L.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5350,7 +5433,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `lopez-barcala-cesar`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2400199). Nombres/alias del histórico: LOPEZ BARCALA, CESAR.
+Código acreditado por GET RPS pedido (AR2400199). Nombres/alias conocidos: LOPEZ BARCALA, CESAR.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5379,7 +5462,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `lopez-carballal-guillermo`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2600204). Nombres/alias del histórico: LOPEZ CARBALLAL, GUILLERMO.
+Código acreditado por GET RPS pedido (BE2600204). Nombres/alias conocidos: LOPEZ CARBALLAL, GUILLERMO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5397,7 +5480,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `lopez-prado-roberto-carlos`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2401457). Nombres/alias del histórico: LOPEZ PRADO, ROBERTO CARLOS.
+Código acreditado por GET RPS pedido (AR2401457). Nombres/alias conocidos: LOPEZ PRADO, ROBERTO CARLOS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5415,7 +5498,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `lopez-regueira-juan`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2401009). Nombres/alias del histórico: LOPEZ REGUEIRA, JUAN.
+Código acreditado por GET RPS pedido (BE2401009). Nombres/alias conocidos: LOPEZ REGUEIRA, JUAN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5433,7 +5516,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `lopez-vaamonde-ricardo-pedro`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2503441). Nombres/alias del histórico: LOPEZ VAAMONDE, RICARDO PEDRO.
+Código acreditado por GET RPS pedido (AR2503441). Nombres/alias conocidos: LOPEZ VAAMONDE, RICARDO PEDRO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5451,7 +5534,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `lopez-valin-angeles`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2400828). Nombres/alias del histórico: LOPEZ VALIN, ANGELES.
+Código acreditado por GET RPS pedido (BE2400828). Nombres/alias conocidos: LOPEZ VALIN, ANGELES.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5469,7 +5552,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `lopez-viana-oscar`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2506477). Nombres/alias del histórico: LOPEZ VIANA, OSCAR.
+Código acreditado por GET RPS pedido (AR2506477). Nombres/alias conocidos: LOPEZ VIANA, OSCAR.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5498,7 +5581,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `lorenzo-barbeito-jose-salvador`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2400117). Nombres/alias del histórico: LORENZO BARBEITO, JOSE SALVADOR.
+Código acreditado por GET RPS pedido (BE2400117). Nombres/alias conocidos: LORENZO BARBEITO, JOSE SALVADOR.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5516,7 +5599,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `losada-gomez-alejandro`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2400653). Nombres/alias del histórico: LOSADA GOMEZ, ALEJANDRO.
+Código acreditado por GET RPS pedido (BE2400653). Nombres/alias conocidos: LOSADA GOMEZ, ALEJANDRO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5534,7 +5617,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `macero-montanez-jesus`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por histórico (AR2604519). Nombres/alias del histórico: MACERO MONTAÑEZ, JESUS.
+Código acreditado por histórico (AR2604519). Nombres/alias conocidos: MACERO MONTAÑEZ, JESUS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5552,7 +5635,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `madera-chiquillo-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2600156). Nombres/alias del histórico: MADERA CHIQUILLO S.L.
+Código acreditado por GET RPS pedido (BE2600156). Nombres/alias conocidos: MADERA CHIQUILLO S.L.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5570,7 +5653,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `maderas-jorge-rey-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2406680). Nombres/alias del histórico: MADERAS JORGE REY S.L..
+Código acreditado por GET RPS pedido (AR2406680). Nombres/alias conocidos: MADERAS JORGE REY S.L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5581,6 +5664,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 03: 1 (AR2406680) |
+| aguas | 10: 1 (AR2406680) |
 | recogeDelante | NO: 1 (AR2406680) |
 | recogeAtras | GOMA: 1 (AR2406680) |
 | bastillaEnfundar | NO: 1 (AR2406680) |
@@ -5601,7 +5685,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `magarinos-villar-javier`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2402953). Nombres/alias del histórico: MAGARIÑOS VILLAR, JAVIER.
+Código acreditado por GET RPS pedido (AR2402953). Nombres/alias conocidos: MAGARIÑOS VILLAR, JAVIER.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5619,7 +5703,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `mahia-freire-jose`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2405834). Nombres/alias del histórico: MAHIA FREIRE, JOSE.
+Código acreditado por GET RPS pedido (AR2405834). Nombres/alias conocidos: MAHIA FREIRE, JOSE.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5630,6 +5714,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 1 (AR2405834) |
+| aguas | NO: 1 (AR2405834) |
 | recogeDelante | NO: 1 (AR2405834) |
 | recogeAtras | GOMA: 1 (AR2405834) |
 | bastillaEnfundar | NO: 1 (AR2405834) |
@@ -5650,7 +5735,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `marcos-ojeda-simon`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2504838). Nombres/alias del histórico: MARCOS OJEDA, SIMON.
+Código acreditado por GET RPS pedido (AR2504838). Nombres/alias conocidos: MARCOS OJEDA, SIMON.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5673,7 +5758,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `martinez-garrido-alberto`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2600170). Nombres/alias del histórico: MARTINEZ GARRIDO, ALBERTO.
+Código acreditado por GET RPS pedido (AR2600170). Nombres/alias conocidos: MARTINEZ GARRIDO, ALBERTO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5691,7 +5776,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `martinez-lorenzo-raimundo`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2406570). Nombres/alias del histórico: MARTINEZ LORENZO, RAIMUNDO.
+Código acreditado por GET RPS pedido (AR2406570). Nombres/alias conocidos: MARTINEZ LORENZO, RAIMUNDO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5714,7 +5799,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `matias-vaquerizo-mario`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2405969). Nombres/alias del histórico: MATIAS VAQUERIZO, MARIO.
+Código acreditado por GET RPS pedido (AR2405969). Nombres/alias conocidos: MATIAS VAQUERIZO, MARIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5725,6 +5810,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 1 (AR2405969) |
+| aguas | NO: 1 (AR2405969) |
 | recogeDelante | GOMA: 1 (AR2405969) |
 | recogeAtras | GOMA: 1 (AR2405969) |
 | bastillaEnfundar | SÍ: 1 (AR2405969) |
@@ -5743,7 +5829,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `medancli-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2501030). Nombres/alias del histórico: MEDANCLI S.L.
+Código acreditado por GET RPS pedido (BE2501030). Nombres/alias conocidos: MEDANCLI S.L.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5761,7 +5847,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `mendez-vilas-diego`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2500716). Nombres/alias del histórico: MENDEZ VILAS, DIEGO.
+Código acreditado por GET RPS pedido (AR2500716). Nombres/alias conocidos: MENDEZ VILAS, DIEGO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5779,7 +5865,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `metales-jaifer-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2406695). Nombres/alias del histórico: METALES JAIFER, S.L..
+Código acreditado por GET RPS pedido (AR2406695). Nombres/alias conocidos: METALES JAIFER, S.L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5808,7 +5894,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `montajes-electricos-tibar-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2401042). Nombres/alias del histórico: MONTAJES ELECTRICOS TIBAR, S. L..
+Código acreditado por GET RPS pedido (BE2401042). Nombres/alias conocidos: MONTAJES ELECTRICOS TIBAR, S. L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5826,7 +5912,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `montero-pintor-antonio-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2401206). Nombres/alias del histórico: MONTERO PINTOR, ANTONIO MANUEL.
+Código acreditado por GET RPS pedido (BE2401206). Nombres/alias conocidos: MONTERO PINTOR, ANTONIO MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5844,7 +5930,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `morada-alcantara-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2504136). Nombres/alias del histórico: MORADA  ALCANTARA, ANTONIO.
+Código acreditado por GET RPS pedido (AR2504136). Nombres/alias conocidos: MORADA  ALCANTARA, ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5855,6 +5941,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 03: 1 (AR2504136) |
+| aguas | 19: 1 (AR2504136) |
 | recogeDelante | PUENTES ESVA: 1 (AR2504136) |
 | recogeAtras | PUENTES ESVA: 1 (AR2504136) |
 | bastillaEnfundar | NO: 1 (AR2504136) |
@@ -5875,7 +5962,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `morandeira-perez-david`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2406615). Nombres/alias del histórico: MORANDEIRA PEREZ, DAVID.
+Código acreditado por GET RPS pedido (AR2406615). Nombres/alias conocidos: MORANDEIRA PEREZ, DAVID.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5886,6 +5973,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 03: 1 (AR2406615) |
+| aguas | 17: 1 (AR2406615) |
 | recogeDelante | NO: 1 (AR2406615) |
 | recogeAtras | GOMA: 1 (AR2406615) |
 | bastillaEnfundar | NO: 1 (AR2406615) |
@@ -5904,7 +5992,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `muniz-lampon-juan-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2400806). Nombres/alias del histórico: MUÑIZ LAMPON, JUAN ANTONIO.
+Código acreditado por GET RPS pedido (AR2400806). Nombres/alias conocidos: MUÑIZ LAMPON, JUAN ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5922,7 +6010,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `nunez-barral-carlos`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2400625). Nombres/alias del histórico: NUÑEZ BARRAL, CARLOS.
+Código acreditado por GET RPS pedido (BE2400625). Nombres/alias conocidos: NUÑEZ BARRAL, CARLOS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5940,7 +6028,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `ormaechea-padilla-cristina`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2600663). Nombres/alias del histórico: ORMAECHEA PADILLA, CRISTINA.
+Código acreditado por GET RPS pedido (AR2600663). Nombres/alias conocidos: ORMAECHEA PADILLA, CRISTINA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5958,7 +6046,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `panaderia-veiganova-perez-brea-maria-jesus`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2602498). Nombres/alias del histórico: PANADERIA VEIGANOVA · PEREZ BREA, MARIA JESUS.
+Código acreditado por GET RPS pedido (AR2602498). Nombres/alias conocidos: PANADERIA VEIGANOVA · PEREZ BREA, MARIA JESUS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5976,7 +6064,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `parada-sanchez-jose-fernando`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2404925). Nombres/alias del histórico: PARADA SANCHEZ, JOSE FERNANDO.
+Código acreditado por GET RPS pedido (AR2404925). Nombres/alias conocidos: PARADA SANCHEZ, JOSE FERNANDO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -5987,6 +6075,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 02: 1 (AR2404925) |
+| aguas | 30: 1 (AR2404925) |
 | recogeDelante | CREMALLERA: 1 (AR2404925) |
 | recogeAtras | CREMALLERA: 1 (AR2404925) |
 | bastillaEnfundar | NO: 1 (AR2404925) |
@@ -6005,7 +6094,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `parga-gonzalez-alvaro`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2500160). Nombres/alias del histórico: PARGA GONZALEZ, ALVARO.
+Código acreditado por GET RPS pedido (BE2500160). Nombres/alias conocidos: PARGA GONZALEZ, ALVARO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6023,7 +6112,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `pazos-leiro-julio-cesar`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2406205). Nombres/alias del histórico: PAZOS LEIRO, JULIO CESAR.
+Código acreditado por GET RPS pedido (AR2406205). Nombres/alias conocidos: PAZOS LEIRO, JULIO CESAR.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6046,7 +6135,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `pazos-piay-marcial`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2405050). Nombres/alias del histórico: PAZOS PIAY, MARCIAL.
+Código acreditado por GET RPS pedido (AR2405050). Nombres/alias conocidos: PAZOS PIAY, MARCIAL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6075,7 +6164,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `pedreira-tasende-ignacio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2400852). Nombres/alias del histórico: PEDREIRA TASENDE, IGNACIO.
+Código acreditado por GET RPS pedido (BE2400852). Nombres/alias conocidos: PEDREIRA TASENDE, IGNACIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6093,7 +6182,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `pedreira-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2500972). Nombres/alias del histórico: PEDREIRA, ANTONIO.
+Código acreditado por GET RPS pedido (BE2500972). Nombres/alias conocidos: PEDREIRA, ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6111,7 +6200,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `pena-lopez-jose-francisco`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2400072). Nombres/alias del histórico: PENA LOPEZ, JOSE FRANCISCO.
+Código acreditado por GET RPS pedido (BE2400072). Nombres/alias conocidos: PENA LOPEZ, JOSE FRANCISCO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6129,7 +6218,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `perez-hermida-jose-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2400434). Nombres/alias del histórico: PEREZ HERMIDA, JOSE MANUEL.
+Código acreditado por GET RPS pedido (BE2400434). Nombres/alias conocidos: PEREZ HERMIDA, JOSE MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6147,7 +6236,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `perez-lopez-jose-maria`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2601199). Nombres/alias del histórico: PEREZ LOPEZ, JOSE MARIA.
+Código acreditado por GET RPS pedido (AR2601199). Nombres/alias conocidos: PEREZ LOPEZ, JOSE MARIA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6165,7 +6254,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `pineiro-balay-santiago`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2400151). Nombres/alias del histórico: PIÑEIRO BALAY, SANTIAGO.
+Código acreditado por GET RPS pedido (BE2400151). Nombres/alias conocidos: PIÑEIRO BALAY, SANTIAGO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6183,7 +6272,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `pinon-puma-oscar`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2502271). Nombres/alias del histórico: PIÑON PUMA, OSCAR.
+Código acreditado por GET RPS pedido (AR2502271). Nombres/alias conocidos: PIÑON PUMA, OSCAR.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6212,7 +6301,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `portos-fernandez-cesareo`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2500598). Nombres/alias del histórico: PORTOS FERNANDEZ, CESAREO.
+Código acreditado por GET RPS pedido (AR2500598). Nombres/alias conocidos: PORTOS FERNANDEZ, CESAREO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6223,6 +6312,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 03: 1 (AR2500598) |
+| aguas | 35: 1 (AR2500598) |
 | recogeDelante | NO: 1 (AR2500598) |
 | recogeAtras | GOMA: 1 (AR2500598) |
 | bastillaEnfundar | NO: 1 (AR2500598) |
@@ -6241,7 +6331,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `pose-canosa-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2400415). Nombres/alias del histórico: POSE CANOSA, MANUEL.
+Código acreditado por GET RPS pedido (BE2400415). Nombres/alias conocidos: POSE CANOSA, MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6259,7 +6349,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `pose-dean-francisco`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2601559). Nombres/alias del histórico: POSE DEAN, FRANCISCO.
+Código acreditado por GET RPS pedido (AR2601559). Nombres/alias conocidos: POSE DEAN, FRANCISCO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6288,7 +6378,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `prieto-cuba-tomas`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2401272). Nombres/alias del histórico: PRIETO CUBA,TOMAS.
+Código acreditado por GET RPS pedido (BE2401272). Nombres/alias conocidos: PRIETO CUBA,TOMAS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6306,7 +6396,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `prieto-vilarino-cristian`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2501521). Nombres/alias del histórico: PRIETO VILARIÑO, CRISTIAN.
+Código acreditado por GET RPS pedido (AR2501521). Nombres/alias conocidos: PRIETO VILARIÑO, CRISTIAN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6324,7 +6414,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `puga-sexto-jose-maria`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2400030). Nombres/alias del histórico: PUGA SEXTO, JOSE MARIA.
+Código acreditado por GET RPS pedido (AR2400030). Nombres/alias conocidos: PUGA SEXTO, JOSE MARIA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6335,6 +6425,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 02: 1 (AR2400030) |
+| aguas | 5: 1 (AR2400030) |
 | recogeDelante | NO: 1 (AR2400030) |
 | recogeAtras | GOMA: 1 (AR2400030) |
 | bastillaEnfundar | NO: 1 (AR2400030) |
@@ -6353,7 +6444,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `rego-do-santos-garcia-garcia-victor-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2601123). Nombres/alias del histórico: REGO DO SANTOS · GARCIA GARCIA, VICTOR MANUEL.
+Código acreditado por GET RPS pedido (AR2601123). Nombres/alias conocidos: REGO DO SANTOS · GARCIA GARCIA, VICTOR MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6364,6 +6455,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 03: 1 (AR2601123) |
+| aguas | 9: 1 (AR2601123) |
 | recogeDelante | NO: 1 (AR2601123) |
 | recogeAtras | GOMA: 1 (AR2601123) |
 | bastillaEnfundar | NO: 1 (AR2601123) |
@@ -6382,7 +6474,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `remolques-descansabacas-tux-4-sl`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2400808). Nombres/alias del histórico: REMOLQUES DESCANSABACAS · TUX 4 SL.
+Código acreditado por GET RPS pedido (AR2400808). Nombres/alias conocidos: REMOLQUES DESCANSABACAS · TUX 4 SL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6410,7 +6502,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `rey-lopez-cesareo`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2405005). Nombres/alias del histórico: REY LOPEZ, CESAREO.
+Código acreditado por GET RPS pedido (AR2405005). Nombres/alias conocidos: REY LOPEZ, CESAREO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6428,7 +6520,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `rey-miguez-david`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2405866). Nombres/alias del histórico: REY MIGUEZ, DAVID.
+Código acreditado por GET RPS pedido (AR2405866). Nombres/alias conocidos: REY MIGUEZ, DAVID.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6439,6 +6531,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 1 (AR2405866) |
+| aguas | NO: 1 (AR2405866) |
 | recogeDelante | NO: 1 (AR2405866) |
 | recogeAtras | GOMA: 1 (AR2405866) |
 | bastillaEnfundar | NO: 1 (AR2405866) |
@@ -6457,7 +6550,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `rey-yanez-julio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2500069). Nombres/alias del histórico: REY YAÑEZ, JULIO.
+Código acreditado por GET RPS pedido (BE2500069). Nombres/alias conocidos: REY YAÑEZ, JULIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6475,7 +6568,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `rial-boo-eduardo`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2401614). Nombres/alias del histórico: RIAL BOO, EDUARDO.
+Código acreditado por GET RPS pedido (AR2401614). Nombres/alias conocidos: RIAL BOO, EDUARDO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6486,6 +6579,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 01: 1 (AR2401614) |
+| aguas | NO: 1 (AR2401614) |
 | recogeDelante | GOMA: 1 (AR2401614) |
 | recogeAtras | NO: 1 (AR2401614) |
 | ventana | SÍ: 1 (AR2401614) |
@@ -6503,7 +6597,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `rial-lopez-ismael`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2500169). Nombres/alias del histórico: RIAL LOPEZ, ISMAEL.
+Código acreditado por GET RPS pedido (AR2500169). Nombres/alias conocidos: RIAL LOPEZ, ISMAEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6514,6 +6608,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 02: 1 (AR2500169) |
+| aguas | 4.5: 1 (AR2500169) |
 | recogeDelante | NO: 1 (AR2500169) |
 | recogeAtras | GOMA: 1 (AR2500169) |
 | bastillaEnfundar | NO: 1 (AR2500169) |
@@ -6532,7 +6627,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `rial-suarez-jose-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2501043). Nombres/alias del histórico: RIAL SUAREZ, JOSE MANUEL.
+Código acreditado por GET RPS pedido (BE2501043). Nombres/alias conocidos: RIAL SUAREZ, JOSE MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6550,7 +6645,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `rivas-castelo-jesus`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2505953). Nombres/alias del histórico: RIVAS CASTELO, JESUS.
+Código acreditado por GET RPS pedido (AR2505953). Nombres/alias conocidos: RIVAS CASTELO, JESUS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6568,7 +6663,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `rodriguez-carrucho-alberto`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2401003). Nombres/alias del histórico: RODRIGUEZ CARRUCHO, ALBERTO.
+Código acreditado por GET RPS pedido (BE2401003). Nombres/alias conocidos: RODRIGUEZ CARRUCHO, ALBERTO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6586,7 +6681,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `rodriguez-exposito-gumersindo`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2406886). Nombres/alias del histórico: RODRIGUEZ EXPOSITO, GUMERSINDO.
+Código acreditado por GET RPS pedido (AR2406886). Nombres/alias conocidos: RODRIGUEZ EXPOSITO, GUMERSINDO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6604,7 +6699,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `rodriguez-fernandez-carlos`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2406207). Nombres/alias del histórico: RODRIGUEZ FERNANDEZ, CARLOS.
+Código acreditado por GET RPS pedido (AR2406207). Nombres/alias conocidos: RODRIGUEZ FERNANDEZ, CARLOS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6615,6 +6710,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 1 (AR2406207) |
+| aguas | NO: 1 (AR2406207) |
 | recogeDelante | NO: 1 (AR2406207) |
 | recogeAtras | GOMA: 1 (AR2406207) |
 | bastillaEnfundar | NO: 1 (AR2406207) |
@@ -6633,7 +6729,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `rodriguez-fuentes-sandra`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2602205). Nombres/alias del histórico: RODRIGUEZ FUENTES, SANDRA.
+Código acreditado por GET RPS pedido (AR2602205). Nombres/alias conocidos: RODRIGUEZ FUENTES, SANDRA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6662,7 +6758,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `rodriguez-garcia-diego`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2600492). Nombres/alias del histórico: RODRIGUEZ GARCIA, DIEGO.
+Código acreditado por GET RPS pedido (BE2600492). Nombres/alias conocidos: RODRIGUEZ GARCIA, DIEGO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6680,7 +6776,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `rodriguez-lista-juan-carlos`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2400076). Nombres/alias del histórico: RODRIGUEZ LISTA, JUAN CARLOS.
+Código acreditado por GET RPS pedido (AR2400076). Nombres/alias conocidos: RODRIGUEZ LISTA, JUAN CARLOS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6709,7 +6805,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `rodriguez-mourelle-maria-jose`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2500089). Nombres/alias del histórico: RODRIGUEZ MOURELLE, MARIA JOSE.
+Código acreditado por GET RPS pedido (AR2500089). Nombres/alias conocidos: RODRIGUEZ MOURELLE, MARIA JOSE.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6720,6 +6816,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 02: 1 (AR2500089) |
+| aguas | 12: 1 (AR2500089) |
 | recogeDelante | NO: 1 (AR2500089) |
 | recogeAtras | GOMA: 1 (AR2500089) |
 | bastillaEnfundar | NO: 1 (AR2500089) |
@@ -6738,7 +6835,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `rodriguez-paz-inocencio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2500177). Nombres/alias del histórico: RODRIGUEZ PAZ, INOCENCIO.
+Código acreditado por GET RPS pedido (BE2500177). Nombres/alias conocidos: RODRIGUEZ PAZ, INOCENCIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6756,7 +6853,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `rodriguez-vazquez-jose-maria`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2500888). Nombres/alias del histórico: RODRIGUEZ VAZQUEZ, JOSE MARIA.
+Código acreditado por GET RPS pedido (BE2500888). Nombres/alias conocidos: RODRIGUEZ VAZQUEZ, JOSE MARIA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6774,7 +6871,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `rouco-iglesias-ruben`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2403757). Nombres/alias del histórico: ROUCO IGLESIAS, RUBEN.
+Código acreditado por GET RPS pedido (AR2403757). Nombres/alias conocidos: ROUCO IGLESIAS, RUBEN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6803,7 +6900,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `s-a-t-isidro-xuga-1070`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2600446). Nombres/alias del histórico: S. A. T. ISIDRO,  XUGA 1070 ,.
+Código acreditado por GET RPS pedido (AR2600446). Nombres/alias conocidos: S. A. T. ISIDRO,  XUGA 1070 ,.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6832,7 +6929,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `sabio-fernandez-rafael`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2600690). Nombres/alias del histórico: SABIO FERNANDEZ, RAFAEL.
+Código acreditado por GET RPS pedido (BE2600690). Nombres/alias conocidos: SABIO FERNANDEZ, RAFAEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6850,7 +6947,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `sagaseta-munarriz-angel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2602080). Nombres/alias del histórico: SAGASETA MUNARRIZ, ANGEL.
+Código acreditado por GET RPS pedido (AR2602080). Nombres/alias conocidos: SAGASETA MUNARRIZ, ANGEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6873,7 +6970,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `sait-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2400444). Nombres/alias del histórico: SAIT, S. L. ,.
+Código acreditado por GET RPS pedido (BE2400444). Nombres/alias conocidos: SAIT, S. L. ,.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6891,7 +6988,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `sanchez-aguirrebeitia-inigo`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2602127). Nombres/alias del histórico: SANCHEZ AGUIRREBEITIA, IÑIGO.
+Código acreditado por GET RPS pedido (AR2602127). Nombres/alias conocidos: SANCHEZ AGUIRREBEITIA, IÑIGO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6902,6 +6999,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 1 (AR2602127) |
+| aguas | 18: 1 (AR2602127) |
 | recogeDelante | NO: 1 (AR2602127) |
 | recogeAtras | GOMA: 1 (AR2602127) |
 | bastillaEnfundar | NO: 1 (AR2602127) |
@@ -6920,7 +7018,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `sanchez-vazquez-ivan`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2400228). Nombres/alias del histórico: SANCHEZ VAZQUEZ, IVAN.
+Código acreditado por GET RPS pedido (AR2400228). Nombres/alias conocidos: SANCHEZ VAZQUEZ, IVAN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6938,7 +7036,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `sanestevan-coira-daniel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2500698). Nombres/alias del histórico: SANESTEVAN COIRA, DANIEL.
+Código acreditado por GET RPS pedido (BE2500698). Nombres/alias conocidos: SANESTEVAN COIRA, DANIEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6956,7 +7054,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `sanisidro-laino-santiago`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2502568). Nombres/alias del histórico: SANISIDRO LAIÑO, SANTIAGO.
+Código acreditado por GET RPS pedido (AR2502568). Nombres/alias conocidos: SANISIDRO LAIÑO, SANTIAGO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -6979,7 +7077,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `sartages-medrano-ramon`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2505052). Nombres/alias del histórico: SARTAGES MEDRANO, RAMON.
+Código acreditado por GET RPS pedido (AR2505052). Nombres/alias conocidos: SARTAGES MEDRANO, RAMON.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7002,7 +7100,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `seijo-torreiro-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2600163). Nombres/alias del histórico: SEIJO TORREIRO, ANTONIO.
+Código acreditado por GET RPS pedido (BE2600163). Nombres/alias conocidos: SEIJO TORREIRO, ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7020,7 +7118,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `souto-vilarino-ana`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2405636). Nombres/alias del histórico: SOUTO VILARIÑO, ANA.
+Código acreditado por GET RPS pedido (AR2405636). Nombres/alias conocidos: SOUTO VILARIÑO, ANA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7048,7 +7146,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `suarez-alvarez-roberto`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2400187). Nombres/alias del histórico: SUAREZ ALVAREZ, ROBERTO.
+Código acreditado por GET RPS pedido (BE2400187). Nombres/alias conocidos: SUAREZ ALVAREZ, ROBERTO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7066,7 +7164,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `suarez-perez-rafael`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2601586). Nombres/alias del histórico: SUAREZ PEREZ, RAFAEL.
+Código acreditado por GET RPS pedido (AR2601586). Nombres/alias conocidos: SUAREZ PEREZ, RAFAEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7089,7 +7187,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `suarez-pimentel-oscar`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2406834). Nombres/alias del histórico: SUAREZ PIMENTEL, OSCAR.
+Código acreditado por GET RPS pedido (AR2406834). Nombres/alias conocidos: SUAREZ PIMENTEL, OSCAR.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7112,7 +7210,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `suministros-y-reparaciones-myt-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2505061). Nombres/alias del histórico: SUMINISTROS Y REPARACIONES MYT S.L.
+Código acreditado por GET RPS pedido (AR2505061). Nombres/alias conocidos: SUMINISTROS Y REPARACIONES MYT S.L.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7123,6 +7221,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 03: 1 (AR2505061) |
+| aguas | 1: 1 (AR2505061) |
 | recogeDelante | NO: 1 (AR2505061) |
 | recogeAtras | GOMA: 1 (AR2505061) |
 | bastillaEnfundar | NO: 1 (AR2505061) |
@@ -7141,7 +7240,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `supermuino-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2500586). Nombres/alias del histórico: SUPERMUIÑO S.L.
+Código acreditado por GET RPS pedido (AR2500586). Nombres/alias conocidos: SUPERMUIÑO S.L.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7152,6 +7251,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 1 (AR2500586) |
+| aguas | NO: 1 (AR2500586) |
 | recogeDelante | NO: 1 (AR2500586) |
 | recogeAtras | NO: 1 (AR2500586) |
 | bastillaEnfundar | NO: 1 (AR2500586) |
@@ -7172,7 +7272,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `t-g-talleres-gonzalez-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2500542). Nombres/alias del histórico: T.G TALLERES GONZALEZ, S. L..
+Código acreditado por GET RPS pedido (AR2500542). Nombres/alias conocidos: T.G TALLERES GONZALEZ, S. L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7201,7 +7301,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `taller-de-artesanos-zoclos-millan-gomez-luis`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2406885). Nombres/alias del histórico: TALLER DE ARTESANOS ZOCLOS · MILLAN GOMEZ,LUIS.
+Código acreditado por GET RPS pedido (AR2406885). Nombres/alias conocidos: TALLER DE ARTESANOS ZOCLOS · MILLAN GOMEZ,LUIS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7219,7 +7319,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `talleres-jose-suarez-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2406598). Nombres/alias del histórico: TALLERES JOSE SUAREZ S.L..
+Código acreditado por GET RPS pedido (AR2406598). Nombres/alias conocidos: TALLERES JOSE SUAREZ S.L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7242,7 +7342,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `talleres-trebore-jardineria-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2500759). Nombres/alias del histórico: TALLERES TREBORE JARDINERIA S.L..
+Código acreditado por GET RPS pedido (BE2500759). Nombres/alias conocidos: TALLERES TREBORE JARDINERIA S.L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7260,7 +7360,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `tipsa-recambios-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2600017). Nombres/alias del histórico: TIPSA RECAMBIOS S.L.
+Código acreditado por GET RPS pedido (AR2600017). Nombres/alias conocidos: TIPSA RECAMBIOS S.L.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7271,6 +7371,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 02: 1 (AR2600017) |
+| aguas | 2: 1 (AR2600017) |
 | recogeDelante | CREMALLERA: 1 (AR2600017) |
 | recogeAtras | CREMALLERA: 1 (AR2600017) |
 | bastillaEnfundar | NO: 1 (AR2600017) |
@@ -7289,7 +7390,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `tobio-arribas-jorge`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2400631). Nombres/alias del histórico: TOBIO ARRIBAS, JORGE.
+Código acreditado por GET RPS pedido (AR2400631). Nombres/alias conocidos: TOBIO ARRIBAS, JORGE.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7312,7 +7413,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `tojeiro-lopez-amandino`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2400254). Nombres/alias del histórico: TOJEIRO LOPEZ, AMANDINO.
+Código acreditado por GET RPS pedido (BE2400254). Nombres/alias conocidos: TOJEIRO LOPEZ, AMANDINO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7330,7 +7431,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `toldos-y-cerramientos-gyg-s-l-u`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2505739). Nombres/alias del histórico: TOLDOS Y CERRAMIENTOS GYG S.L.U..
+Código acreditado por GET RPS pedido (AR2505739). Nombres/alias conocidos: TOLDOS Y CERRAMIENTOS GYG S.L.U..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7359,7 +7460,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `u-t-e-portos-sector-centro`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2401271). Nombres/alias del histórico: U.T.E PORTOS SECTOR CENTRO.
+Código acreditado por GET RPS pedido (BE2401271). Nombres/alias conocidos: U.T.E PORTOS SECTOR CENTRO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7377,7 +7478,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `uria-martinez-luis-miguel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2603435). Nombres/alias del histórico: URIA MARTINEZ, LUIS MIGUEL.
+Código acreditado por GET RPS pedido (AR2603435). Nombres/alias conocidos: URIA MARTINEZ, LUIS MIGUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7400,7 +7501,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `vaello-rodriguez-jose-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2601884). Nombres/alias del histórico: VAELLO RODRIGUEZ, JOSE ANTONIO.
+Código acreditado por GET RPS pedido (AR2601884). Nombres/alias conocidos: VAELLO RODRIGUEZ, JOSE ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7423,7 +7524,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `van-berkum-cecilia-margaretha`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2602182). Nombres/alias del histórico: VAN BERKUM, CECILIA MARGARETHA.
+Código acreditado por GET RPS pedido (AR2602182). Nombres/alias conocidos: VAN BERKUM, CECILIA MARGARETHA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7452,7 +7553,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `varela-fernandez-jose-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2400638). Nombres/alias del histórico: VARELA FERNANDEZ, JOSE MANUEL.
+Código acreditado por GET RPS pedido (BE2400638). Nombres/alias conocidos: VARELA FERNANDEZ, JOSE MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7470,7 +7571,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `varela-freire-alvaro`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2505632). Nombres/alias del histórico: VARELA FREIRE, ALVARO.
+Código acreditado por GET RPS pedido (AR2505632). Nombres/alias conocidos: VARELA FREIRE, ALVARO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7488,7 +7589,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `varela-gandoy-jose-luis`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2405906). Nombres/alias del histórico: VARELA GANDOY, JOSE LUIS.
+Código acreditado por GET RPS pedido (AR2405906). Nombres/alias conocidos: VARELA GANDOY, JOSE LUIS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7499,6 +7600,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 1 (AR2405906) |
+| aguas | NO: 1 (AR2405906) |
 | recogeDelante | NO: 1 (AR2405906) |
 | recogeAtras | GOMA: 1 (AR2405906) |
 | bastillaEnfundar | NO: 1 (AR2405906) |
@@ -7517,7 +7619,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `varela-lopez-alberto`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2600602). Nombres/alias del histórico: VARELA LOPEZ, ALBERTO.
+Código acreditado por GET RPS pedido (BE2600602). Nombres/alias conocidos: VARELA LOPEZ, ALBERTO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7535,7 +7637,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `vazquez-barros-domingo`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2500033). Nombres/alias del histórico: VAZQUEZ BARROS,DOMINGO.
+Código acreditado por GET RPS pedido (BE2500033). Nombres/alias conocidos: VAZQUEZ BARROS,DOMINGO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7553,7 +7655,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `vazquez-castro-jose-ramon`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2405036). Nombres/alias del histórico: VAZQUEZ CASTRO, JOSE RAMON.
+Código acreditado por GET RPS pedido (AR2405036). Nombres/alias conocidos: VAZQUEZ CASTRO, JOSE RAMON.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7571,7 +7673,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `vazquez-quinteiro-justa`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2406740). Nombres/alias del histórico: VAZQUEZ QUINTEIRO, JUSTA.
+Código acreditado por GET RPS pedido (AR2406740). Nombres/alias conocidos: VAZQUEZ QUINTEIRO, JUSTA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7600,7 +7702,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `vazquez-torres-laura`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2402694). Nombres/alias del histórico: VAZQUEZ TORRES, LAURA.
+Código acreditado por GET RPS pedido (AR2402694). Nombres/alias conocidos: VAZQUEZ TORRES, LAURA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7623,7 +7725,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `vences-bouzas-benjamin`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2400508). Nombres/alias del histórico: VENCES BOUZAS, BENJAMIN.
+Código acreditado por GET RPS pedido (AR2400508). Nombres/alias conocidos: VENCES BOUZAS, BENJAMIN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7652,7 +7754,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `vidal-nunez-joaquin`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2501584). Nombres/alias del histórico: VIDAL NUÑEZ, JOAQUIN.
+Código acreditado por GET RPS pedido (AR2501584). Nombres/alias conocidos: VIDAL NUÑEZ, JOAQUIN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7663,6 +7765,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 1 (AR2501584) |
+| aguas | NO: 1 (AR2501584) |
 | recogeDelante | NO: 1 (AR2501584) |
 | recogeAtras | GOMA: 1 (AR2501584) |
 | bastillaEnfundar | NO: 1 (AR2501584) |
@@ -7681,7 +7784,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `vidal-otero-andrea`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2505385). Nombres/alias del histórico: VIDAL OTERO, ANDREA.
+Código acreditado por GET RPS pedido (AR2505385). Nombres/alias conocidos: VIDAL OTERO, ANDREA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7704,7 +7807,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `vidal-santorum-ana-belen`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2502296). Nombres/alias del histórico: VIDAL SANTORUM, ANA BELEN.
+Código acreditado por GET RPS pedido (AR2502296). Nombres/alias conocidos: VIDAL SANTORUM, ANA BELEN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7715,6 +7818,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 01: 1 (AR2502296) |
+| aguas | NO: 1 (AR2502296) |
 | recogeDelante | NO: 1 (AR2502296) |
 | recogeAtras | GOMA: 1 (AR2502296) |
 | bastillaEnfundar | NO: 1 (AR2502296) |
@@ -7733,7 +7837,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `vidal-vazquez-juan-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2504350). Nombres/alias del histórico: VIDAL VAZQUEZ, JUAN ANTONIO.
+Código acreditado por GET RPS pedido (AR2504350). Nombres/alias conocidos: VIDAL VAZQUEZ, JUAN ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7762,7 +7866,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `vila-veiga-jose-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2504507). Nombres/alias del histórico: VILA VEIGA, JOSE MANUEL.
+Código acreditado por GET RPS pedido (AR2504507). Nombres/alias conocidos: VILA VEIGA, JOSE MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7791,7 +7895,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `vilar-lopez-fidel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (BE2500250). Nombres/alias del histórico: VILAR LOPEZ, FIDEL.
+Código acreditado por GET RPS pedido (BE2500250). Nombres/alias conocidos: VILAR LOPEZ, FIDEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7809,7 +7913,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `vilar-sanchez-ismael`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2503567). Nombres/alias del histórico: VILAR SANCHEZ, ISMAEL.
+Código acreditado por GET RPS pedido (AR2503567). Nombres/alias conocidos: VILAR SANCHEZ, ISMAEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7838,7 +7942,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `vilarino-silva-jorge`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2601075). Nombres/alias del histórico: VILARIÑO SILVA, JORGE.
+Código acreditado por GET RPS pedido (AR2601075). Nombres/alias conocidos: VILARIÑO SILVA, JORGE.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7849,6 +7953,7 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | Campo | Valores y pedidos que lo acreditan |
 | --- | --- |
 | perfil | TIPO 05: 1 (AR2601075) |
+| aguas | 4.5: 1 (AR2601075) |
 | recogeDelante | GOMA: 1 (AR2601075) |
 | recogeAtras | GOMA: 1 (AR2601075) |
 | bastillaEnfundar | NO: 1 (AR2601075) |
@@ -7867,7 +7972,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `yebra-pastor-enrique`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2601412). Nombres/alias del histórico: YEBRA PASTOR, ENRIQUE.
+Código acreditado por GET RPS pedido (AR2601412). Nombres/alias conocidos: YEBRA PASTOR, ENRIQUE.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7885,7 +7990,7 @@ Referencias que quedan fuera de las medidas automáticas:
 
 Ficha: `zayas-luque-juan-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
 
-Código acreditado por GET RPS pedido (AR2500189). Nombres/alias del histórico: ZAYAS LUQUE, JUAN ANTONIO.
+Código acreditado por GET RPS pedido (AR2500189). Nombres/alias conocidos: ZAYAS LUQUE, JUAN ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7914,7 +8019,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `benedicto-castells-miriam`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 1. Alta propuesta.
 
-Código acreditado por GET RPS pedido PDF producido (AR2604843). Nombres/alias del histórico: BENEDICTO CASTELLS, MIRIAM.
+Código acreditado por GET RPS pedido PDF producido (AR2604843). Nombres/alias conocidos: BENEDICTO CASTELLS, MIRIAM.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7930,7 +8035,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `dominguez-galinanes-juan-jose`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 1. Alta propuesta.
 
-Código acreditado por GET RPS pedido PDF producido (AR2605140). Nombres/alias del histórico: DOMINGUEZ GALIÑANES, JUAN JOSE.
+Código acreditado por GET RPS pedido PDF producido (AR2605140). Nombres/alias conocidos: DOMINGUEZ GALIÑANES, JUAN JOSE.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7942,11 +8047,27 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | --- | --- | --- | --- | --- |
 | baqueton; 175 × 125 | 2,5; 32,8; 63; 93,3; 123,5 | 2,5; 32,8; 63; 93,3; 123,5 | 2,5; 31; 59,5; 88; 116,5; 145; 173,5 |  AR2605140; OT/2026/AR2605140.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2605140. |
 
+### ESVA · AGRICOLA Y REMOLQUES ESVA, S. L. — 001021
+
+Ficha: `esva-agricola-y-remolques-esva-s-l`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+
+Código acreditado por GET RPS pedido citado en plantilla (AR1506680). Nombres/alias conocidos: ESVA · AGRICOLA Y REMOLQUES ESVA, S. L.. Pedidos de plantilla consultados: AR1506680, AR1901137, AR2000769.
+
+Plantillas encontradas: `PL/ESVA/ESVA.DWG`; `PL/ESVA/ESVA_recover.dwg`; `PL/ESVA/LONA CHURRERIA.dwg`; `PL/ESVA/ARCO NUEVO.dwg`; `PL/ESVA/GL1,5 ESPECIAL.dwg`; `PL/ESVA/REMOLQUES DE GANADO CONFIRMADOS/REMOLQUE GANADERO GL-14 (ARCO NUEVO).dwg`; `PL/ESVA/2800 X 1500.dwg`; `PL/ESVA/REMOLQUE CON GOMA FRUNCIDA PARA ABRAZAR TUBOS.dwg`; `PL/ESVA/ESVA3.DWG`
+
+Código 001021 confirmado por tres pedidos escritos en las plantillas ESVA: AR1506680, AR1901137 y AR2000769. ESVA.DWG dice que, si no indica otra cosa, las posiciones son de ollaos y no de ganchos; deben seguir las medidas del cliente.
+
+ESVA.DWG: no poner cuños TGM; normalmente gris; con más de 60 cm de alto, puentes. El arco habitual es R=7,5 y el arco nuevo R=17,5 se hace cuando lo pide. Estas condiciones se dejan en observaciones: no se impone una recogida o un perfil a todas las alturas.
+
+Reglas añadidas a la propuesta: `rotulacion` = false; `observaciones` = ["SI NO INDICA OTRA COSA, LAS POSICIONES SON DE OLLAOS, NO DE GANCHOS","CON MÁS DE 60 CM DE ALTO, RECOGIDA CON PUENTES; CONFIRMAR LOS LADOS QUE RECOGEN","ARCO HABITUAL DE RADIO 7,5 CM; ARCO NUEVO DE RADIO 17,5 SOLO CUANDO LO PIDE"].
+
+Sin medidas completas acreditadas para cargar.
+
 ### FERNANDEZ FERNANDEZ, JESUS — 054576
 
 Ficha: `fernandez-fernandez-jesus`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 1. Alta propuesta.
 
-Código acreditado por GET RPS pedido PDF producido (AR2605079). Nombres/alias del histórico: FERNANDEZ FERNANDEZ, JESUS.
+Código acreditado por GET RPS pedido PDF producido (AR2605079). Nombres/alias conocidos: FERNANDEZ FERNANDEZ, JESUS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7962,7 +8083,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `fidalgo-leon-daniel`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 1. Alta propuesta.
 
-Código acreditado por GET RPS pedido PDF producido (AR2604959). Nombres/alias del histórico: FIDALGO LEON, DANIEL.
+Código acreditado por GET RPS pedido PDF producido (AR2604959). Nombres/alias conocidos: FIDALGO LEON, DANIEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -7978,7 +8099,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `general-wolder`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 0. Registro vigente versión 1, conservado.
 
-Código acreditado por registro vigente leído por GET. Nombres/alias del histórico: GENERAL WOLDER.
+Código acreditado por registro vigente leído por GET. Nombres/alias conocidos: GENERAL WOLDER.
 
 Plantillas encontradas: `PL/general wolder.DWG`; `PL/CALCULOS REMOLQUES/GENERAL WOLDER.xls`; `PL/CALCULOS EXCEL2/CALCULOS REMOLQUES/GENERAL WOLDER.xls`
 
@@ -7986,11 +8107,29 @@ Campos vigentes que se respetan: `extrasBaqueton` = {"extraLargoCostura":-1,"ext
 
 Sin medidas completas acreditadas para cargar.
 
+### J&B AGROMAQUINAS Y REMOLQUES S. L. — 000033
+
+Ficha: `j-b-agromaquinas-y-remolques-s-l`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+
+Código acreditado por GET RPS pedido citado en plantilla (AR1707015). Nombres/alias conocidos: J&B AGROMAQUINAS Y REMOLQUES S. L.. Pedidos de plantilla consultados: AR1707015, AR1500073.
+
+Plantillas encontradas: `PL/REMOLQUES GANADO/JB/RANCHERO II LARGO.dwg`; `PL/J&B.dwg`; `PL/REMOLQUES GANADO/JB/RANCHERO I (1300).dwg`
+
+Código 000033 confirmado por AR1707015 de J&B.dwg y AR1500073 de RANCHERO I. No se confunde con J&J(BURGOS).dwg.
+
+J&B.dwg indica que el cliente da la holgura y solo se añade costura; no poner cuños TGM, cremallera habitual del 6 y del 9 si pide ancha. La altura pequeña es baquetón, mediana 52 cm y alta 95 cm. Los cinco repartos escritos vienen desde delante; falta relacionar cada uno con su tipo y longitud hecha antes de invertirlos y cargar medidas.
+
+Reglas añadidas a la propuesta: `rotulacion` = false; `recogeAtras` = "CREMALLERA"; `observaciones` = ["EL CLIENTE DA LA HOLGURA: AÑADIR SOLO LA COSTURA","CREMALLERA HABITUAL DEL 6; SI PIDE ANCHA, DEL 9"].
+
+Sin medidas completas acreditadas para cargar.
+
+**Duda para Iván:** Los repartos escritos de J&B para 115×93,5, 150×114,5, 200×131, 230×131 y 260×131 no indican el tipo ni la longitud hecha. ¿Son medidas del remolque o acabadas y valen tanto para lona como para baquetón? Con el largo hecho se invertirán los laterales que vienen desde delante.
+
 ### LLANOS MARTINEZ, JORGE — 054612
 
 Ficha: `llanos-martinez-jorge`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 1. Alta propuesta.
 
-Código acreditado por GET RPS pedido PDF producido (AR2605260). Nombres/alias del histórico: LLANOS MARTINEZ, JORGE.
+Código acreditado por GET RPS pedido PDF producido (AR2605260). Nombres/alias conocidos: LLANOS MARTINEZ, JORGE.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -8006,7 +8145,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `lopez-barreiro-pablo`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 1. Alta propuesta.
 
-Código acreditado por GET RPS pedido PDF producido (AR2605158). Nombres/alias del histórico: LOPEZ BARREIRO, PABLO.
+Código acreditado por GET RPS pedido PDF producido (AR2605158). Nombres/alias conocidos: LOPEZ BARREIRO, PABLO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -8022,7 +8161,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 Ficha: `remolques-robustos`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 1. Registro vigente versión 1, conservado.
 
-Código acreditado por GET RPS pedido PDF producido (AR2605183). Nombres/alias del histórico: REMOLQUES ROBUSTOS.
+Código acreditado por GET RPS pedido PDF producido (AR2605183). Nombres/alias conocidos: REMOLQUES ROBUSTOS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -8034,11 +8173,53 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | --- | --- | --- | --- | --- |
 | baqueton; 200 × 135 | 2,5; 35,3; 68; 100,8; 133,5 | 2,5; 46,2; 89,8; 133,5 | 2,5; 35,2; 67,8; 100,5; 133,2; 165,8; 198,5 | Vigente v1; se conserva. AR2605183; OT/2026/AR2605183.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2605183. |
 
+### RODEIRO LOUZAO, MANUEL — 050254
+
+Ficha: `rodeiro-louzao-manuel`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+
+Código acreditado por GET RPS pedido citado en plantilla (AR2305318). Nombres/alias conocidos: RODEIRO LOUZAO, MANUEL. Pedidos de plantilla consultados: AR2305318.
+
+Plantillas encontradas: `PL/AR2305318.dwg`
+
+AR2305318.dwg se acredita por el pedido homónimo: RODEIRO LOUZAO, MANUEL, código 050254. Contiene la plantilla PAMILAKAN copiada: sus notas generales no se convierten en preferencias de RODEIRO.
+
+No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+
+Sin medidas completas acreditadas para cargar.
+
+### TALLERES DE LA AZABA, S.L. — 012902
+
+Ficha: `talleres-de-la-azaba-s-l`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+
+Código acreditado por GET RPS pedido citado en plantilla (AR0805372). Nombres/alias conocidos: TALLERES DE LA AZABA, S.L.. Pedidos de plantilla consultados: AR0805372.
+
+Plantillas encontradas: `PL/TALLERES DE LA AZABA.dwg`
+
+Código 012902 confirmado por AR0805372, escrito en TALLERES DE LA AZABA.dwg. La plantilla mezcla un modelo de ganado y ejemplos de varias medidas: no se trasladan a una lona alta por compartir dibujo.
+
+No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+
+Sin medidas completas acreditadas para cargar.
+
+### TRIÑANES SILVA, ALFREDO — 000472
+
+Ficha: `trinanes-silva-alfredo`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+
+Código acreditado por GET RPS pedido citado en plantilla (AR1901084). Nombres/alias conocidos: TRIÑANES SILVA, ALFREDO. Pedidos de plantilla consultados: AR1901084.
+
+Plantillas encontradas: `PL/AR1901084.dwg`
+
+AR1901084.dwg se acredita por el pedido homónimo: TRIÑANES SILVA, ALFREDO, código 000472. La plantilla llamada TRIÑANES.dwg permanece en la lista de identidades por confirmar: el apellido por sí solo no acredita que sea la misma cuenta.
+
+No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+
+Sin medidas completas acreditadas para cargar.
+
 ### UGARTE SARO, AIDA — 054529
 
 Ficha: `ugarte-saro-aida`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 2. Alta propuesta.
 
-Código acreditado por GET RPS pedido PDF producido (AR2605055). Nombres/alias del histórico: UGARTE SARO, AIDA.
+Código acreditado por GET RPS pedido PDF producido (AR2605055). Nombres/alias conocidos: UGARTE SARO, AIDA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
@@ -8053,7 +8234,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ## Apéndice: inventario completo de plantillas
 
-Todas las fuentes siguientes se abrieron en solo lectura. Las copias, recuperados y carpetas antiguas se incluyen en el inventario; su presencia no las convierte en una regla actual. Los SHA-256 y las notas extraídas están en evidencias.json.
+Todas las fuentes siguientes se abrieron en solo lectura. Las copias, recuperados y carpetas antiguas se inventarían; su presencia no las convierte en una regla actual. Los SHA-256 y las notas extraídas están en evidencias.json.
 
 - `PL/REMOLQUE MACHADO-CAMACHO (ANTIGUO MALDONADO).dwg`: 24 textos leídos.
 - `PL/AR2005931.dwg`: 27 textos leídos.
@@ -8328,32 +8509,21 @@ Estas identidades no están acreditadas en los 276 clientes del histórico. Requ
 - `PL/ARCOS REMOLQUES.dwg`: CONTORNO RECOLLE / CONTORNO NON RECOLLE / ALTURA ORELLA + 1 / CARLOS LOPEZ LEIRO
 - `PL/DONO.dwg`: CASI SIEMPRE PIDE VENTANA / LAS LONA DE GANADO LLEVAN LA CURVA DEL GANADO 1 / LOS PEDIDOS CON LAS MEDIDAS ESTAN EN ; C - DISCODUROALBERTO -  DIBuJOS IMPORTANTES - LONAS GANADO
 - `PL/EDER ELECTRO MECANICAS.dwg`: AZUL EUROPA LONA 2ª CALIDAD 500-700GR (ANCHO 320 CM PREGUNTAR) / SE PUEDE UTILIZAR LONA DE VESTAS (550 GR) / SE ESTAN HACIENDO DE LA LONA CFR 550 GR AZUL 5003 (VESTAS) HASTA QUE SE TERMINE; ESTAS LONAS NO LLEVAN OLLAOS
-- `PL/ESVA/ESVA.DWG`: CUANDO PASA DE 60 CM DE ALTO SIEMPRE CON PUENTES; NORMALMENTE GRISES / CUANDO  RECOGE LATERALES CON PUENTES METER LOS PUENTES EN EL LATERAL (TIPO HIJO PEDRO LOPEZ (SOLO DELANTE) / NO PONER CUÑOS TGM / RECOGE LATERALES
-- `PL/ESVA/ESVA_recover.dwg`: CUANDO PASA DE 60 CM DE ALTO SIEMPRE CON PUENTES; NORMALMENTE GRISES / CUANDO  RECOGE LATERALES CON PUENTES METER LOS PUENTES EN EL LATERAL (TIPO HIJO PEDRO LOPEZ (SOLO DELANTE) / NO PONER CUÑOS TGM / RECOGE LATERALES
 - `PL/REMOLQUES ALCES.DWG`: CON CURVA DE "120 CM" / CON CURVA DE "140 CM" / -TIENE 2 TIPOS DE ARCOS SEGUN MEDIDA; -TIENE MUESTRA DE GANCHOS; -NORMALMENTE  CREMALLERA; -NORMALMENTE COLOR AZUL; -CAIDA ESTANDAR 55 CM; - INTENTAR HACER LONAS DE LA MEDIDA QUE PIDE / PARA 120 CM DE ANCHO
-- `PL/ESVA/LONA CHURRERIA.dwg`: NO RECORTAR PARA BASTILLA / 4 CORREAS CUERO ; HEBILLA - NEGRO 55 CM / LAS CORREAS VAN SUELTAS, NORMALMENTE DE CUERO, PUEDEN IR TAMBIÉN EN PVC / PVC RECORD 580 GR GRIS 7038
 - `PL/ALBERTO PACIN.dwg`: sin una asociación RPS acreditada.
 - `PL/J&J(BURGOS).dwg`: sin una asociación RPS acreditada.
-- `PL/ESVA/ARCO NUEVO.dwg`: GANADERO GL-1 ESPECIAL (132) ARCO NUEVO (AR1506680) / 2800 X 1500 ARCO NUEVO
 - `PL/GONZALEZ (CAMPORRAPADO-BOQUEIXO).dwg`: sin una asociación RPS acreditada.
 - `PL/MATOVA (AGRICOLA).dwg`: sin una asociación RPS acreditada.
 - `PL/REMOLQUES AGRONALON.dwg`: sin una asociación RPS acreditada.
 - `PL/LOMBREBA2.DWG`: sin una asociación RPS acreditada.
 - `PL/CARROCERIAS CAYVOL.dwg`: LOS HACE DE TODOS LO COLORES
-- `PL/ESVA/GL1,5 ESPECIAL.dwg`: GANADERO GL-1 (132) ARCO NUEVO (AR1506680) / PUERTA TRASERA BAJA MÁS
 - `PL/TALLERES ORENSANOS.dwg`: VERDE 165; CURVA  6 CM RADIO / GANCHOS: ; LATERALES, DELANTERA Y TRASERA: 1º A 10 CM RESTO A 30 CM
-- `PL/JUAN FERNANDEZ.dwg`: - pone 4 ganchos a lo largo del remolque / - cuando solo se daban 2 cm de aumento al largo le quedo algo justo. sin embargo al ancho tambien le quedo justo Â¡Â¡ cuidadoÂ¡Â¡
-- `PL/ESVA/REMOLQUES DE GANADO CONFIRMADOS/REMOLQUE GANADERO GL-14 (ARCO NUEVO).dwg`: B.N.(3) + OLLAOS / CON PUENTES ATRÁS Y LATERAL / TOLDO GANADERO GL-14 (ARCO NUEVO) / MATERIALES 580 GR GRIS 7038
-- `PL/ESVA/2800 X 1500.dwg`: sin una asociación RPS acreditada.
 - `PL/SEREN.dwg`: sin una asociación RPS acreditada.
 - `PL/MARIA GIL (ARES).dwg`: sin una asociación RPS acreditada.
 - `PL/JOSE MANUEL LOURES.dwg`: sin una asociación RPS acreditada.
 - `PL/CURVAS BERGONDO.dwg`: sin una asociación RPS acreditada.
-- `PL/TALLERES DE LA AZABA.dwg`: HASTA PIDIO UNO GRIS Y UNO AZUL / ALTO: 45 CM DELANTE EN LINEA; 70 CM ATRÁS NO EN LINEA / ANCHO: 25 CM DELANTE; 115 CM ATRÁS
 - `PL/KARGO.dwg`: sin una asociación RPS acreditada.
 - `PL/HIJOS DE JEREMIAS.dwg`: sin una asociación RPS acreditada.
-- `PL/ESVA/REMOLQUE CON GOMA FRUNCIDA PARA ABRAZAR TUBOS.dwg`: CAPUCHÓN CON VELVRO / CORTAR Y COSER CAPUCHÓN / ESQUINAS SIN CERRAR / ESQUINAS CERRADAS
-- `PL/ESVA/ESVA3.DWG`: CUANDO PASA DE 60 CM DE ALTO SIEMPRE CON PUENTES; NORMALMENTE GRISES / CUANDO  RECOGE LATERALES CON PUENTES METER LOS PUENTES EN EL LATERAL (TIPO HIJO PEDRO LOPEZ (SOLO DELANTE) / NO PONER CUÑOS TGM / RECOGE LATERALES
 - `PL/LAMEIRO.dwg`: sin una asociación RPS acreditada.
 - `PL/TALLERES IGLESIAS.dwg`: sin una asociación RPS acreditada.
 - `PL/gozlez(tordoia).dwg`: sin una asociación RPS acreditada.
@@ -8364,16 +8534,17 @@ Estas identidades no están acreditadas en los 276 clientes del histórico. Requ
 - `PL/CARAVANAS VINALOPO.dwg`: a veces los pide con aguas (10cm) en esquina; y otras en esquina planos; normalmente llevan cremallera; y de colores varios
 - `PL/INDUVISA(padron).dwg`: CON CURVA Y 10 CM DE AGUAS
 - `PL/REMOLQUES RODRIGUEZ.dwg`: sin una asociación RPS acreditada.
-- `PL/J&B.dwg`: SOLO DAR AUMENTO PARA COSER. EL YA LE DA LOS AUMENTOS DE HOLGURA.; NORMALMENTE 2 CM AL ANCHO Y 2 AL LARGO (preguntar) / LA MEDIDAS STANDAR DE  LA ALTURA SON:; PEQUENA=BAQUETON; MEDIANA=52 CM; ALTURA=95 CM / NO PONER CUÑOS TGM; RECOGEN CON CREMALLERA (NORMALMENTE DE 6 - SI PIDE ANCHA ES DE 9) / OVEJAS - SIN CREMALLERA - VELCRO DELANTE - FIJA ATRÁS
 - `PL/NUÑEZ PICA.dwg`: sin una asociación RPS acreditada.
 - `PL/REMOLQUES MB3.dwg`: RECOLLE CON GOMA; AGUAS 7 CM; CURVA - TRUNQUE (HIJOS DE PEDRO LOPEZ); AZUL 5015
 - `PL/RAMON GIRON.dwg`: sin una asociación RPS acreditada.
 - `PL/ALBERTO SANCHEZ SERRANO.dwg`: ALBERTO SANCHEZ SERRANO; ; NORMALMENTE SIN CURVA, SI LA LLEVA YA DICEN CUAL ES; ; OLLAOS REPARTIDOS
 
-J&B.dwg contiene cinco repartos escritos «laterales desde delante»: 115×93,5; 150×114,5; 200×131; 230×131; 260×131. Se conserva el texto en evidencias.json; no se carga hasta confirmar cliente, tipo y longitud hecha. Al hacerlo se invierte toda la lista con L_hecha − posición y se ordena de atrás a delante, sin cambiar los huecos.
+J&B.dwg (código 000033 confirmado) contiene cinco repartos escritos «laterales desde delante»: 115×93,5; 150×114,5; 200×131; 230×131; 260×131. Se conserva el texto en evidencias.json; no se carga hasta confirmar tipo y longitud hecha. Al hacerlo se invierte toda la lista con L_hecha − posición y se ordena de atrás a delante, sin cambiar los huecos.
 
 EDER ELECTRO MECÁNICAS indica expresamente que sus lonas no llevan ollaos. FichaCliente no tiene un estado «sin ollaos» que impida un reparto genérico, y validarFichas rechaza una medida con los tres lados vacíos: no se finge un reparto de ceros ni se marca repartidos.
 
 ## Comprobaciones
 
-La prueba scripts/fichas-propuestas.test.ts valida el JSON completo con validarFichas, acredita la cobertura de códigos y comprueba la conservación del registro leído. scripts/fichas-remolques.test.js cubre centrado, inversión, comparación sin duplicar pedidos, recencia sin mayoría, ensayo sin escrituras, altas por POST, cambios por PUT con versión y parada en conflicto. El resultado de la suite completa, TypeScript y lint se comunica con el commit al coordinador.
+La prueba scripts/fichas-propuestas.test.ts valida el JSON completo con validarFichas, acredita la cobertura de códigos y comprueba la conservación del registro leído. scripts/fichas-remolques.test.js cubre centrado, inversión, comparación sin duplicar pedidos, recencia sin mayoría, ensayo sin escrituras, altas por POST, cambios por PUT con versión y parada en conflicto.
+
+Comprobaciones de esta continuación: `pnpm exec vitest run` pasa los 331 archivos y las 4.392 pruebas; `pnpm exec tsc --noEmit -p .` y `pnpm lint` terminan correctamente. La comprobación por script de todos los repartos confirma que el centrado conserva los huecos interiores. El ensayo local del cargador, sin URL ni peticiones al servidor, propone 279 altas y nueve cambios, sin bajas.

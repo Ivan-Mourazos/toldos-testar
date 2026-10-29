@@ -3,37 +3,43 @@
     "nombre": "REMOLCAR · JUAN BARREIRO, S. L.",
     "codigo": "000265",
     "fuente": "histórico",
-    "pedido": "AR2603999"
+    "pedido": "AR2603999",
+    "ambito": "historico"
   },
   {
     "nombre": "TALLERES CAL, C. B.",
     "codigo": "016573",
     "fuente": "histórico",
-    "pedido": "AR2604596"
+    "pedido": "AR2604596",
+    "ambito": "historico"
   },
   {
     "nombre": "HIJOS DE PEDRO LOPEZ GARCIA, S. L.",
     "codigo": "001300",
     "fuente": "histórico",
-    "pedido": "AR2604609"
+    "pedido": "AR2604609",
+    "ambito": "historico"
   },
   {
     "nombre": "TALLERES SANTABALLA · SANTABALLA PALAS, S.L.",
     "codigo": "049971",
     "fuente": "histórico",
-    "pedido": "AR2604602"
+    "pedido": "AR2604602",
+    "ambito": "historico"
   },
   {
     "nombre": "PAMILAKAN SAS",
     "codigo": "048363",
     "fuente": "histórico",
-    "pedido": "AR2604490"
+    "pedido": "AR2604490",
+    "ambito": "historico"
   },
   {
     "nombre": "ENGANCHES Y REMOLQUES AYALA S.L.U",
     "codigo": "048286",
     "fuente": "histórico",
-    "pedido": "AR2604276"
+    "pedido": "AR2604276",
+    "ambito": "historico"
   },
   {
     "nombre": "NL DIGITAL",
@@ -42,25 +48,29 @@
     "aliasRps": null,
     "pedido": "AR2504257",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "049631"
+    "codigoExtraccionAnterior": "049631",
+    "ambito": "historico"
   },
   {
     "nombre": "INCAR · EURO REMOLQUE, S. L.",
     "codigo": "021493",
     "fuente": "histórico",
-    "pedido": "AR2604383"
+    "pedido": "AR2604383",
+    "ambito": "historico"
   },
   {
     "nombre": "METALURGICAS NORTE BURGOS S.L.",
     "codigo": "023649",
     "fuente": "histórico",
-    "pedido": "AR2603988"
+    "pedido": "AR2603988",
+    "ambito": "historico"
   },
   {
     "nombre": "www.remolquesnunez.com · REMOLQUES NUÑEZ, S. L.",
     "codigo": "001302",
     "fuente": "histórico",
-    "pedido": "AR2603693"
+    "pedido": "AR2603693",
+    "ambito": "historico"
   },
   {
     "nombre": "CANO MUÑOZ, FRANCISCO",
@@ -69,7 +79,8 @@
     "aliasRps": null,
     "pedido": "AR2506232",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "045288"
+    "codigoExtraccionAnterior": "045288",
+    "ambito": "historico"
   },
   {
     "nombre": "REMOLQUES Y CARAVANAS MALLON, S. L.",
@@ -78,31 +89,36 @@
     "aliasRps": null,
     "pedido": "BE2600466",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "001795"
+    "codigoExtraccionAnterior": "001795",
+    "ambito": "historico"
   },
   {
     "nombre": "REMOLQUES YAGÜE · LEON PEREZ, ADELINA",
     "codigo": "038304",
     "fuente": "histórico",
-    "pedido": "AR2604146"
+    "pedido": "AR2604146",
+    "ambito": "historico"
   },
   {
     "nombre": "REMOLQUES CELIS · DE CELIS PEREZ, LUIS MIGUEL",
     "codigo": "006835",
     "fuente": "histórico",
-    "pedido": "AR2603574"
+    "pedido": "AR2603574",
+    "ambito": "historico"
   },
   {
     "nombre": "CARMA · LOPEZ LEIRO, CARLOS",
     "codigo": "000108",
     "fuente": "histórico",
-    "pedido": "AR2604112"
+    "pedido": "AR2604112",
+    "ambito": "historico"
   },
   {
     "nombre": "CANO MUÑOZ S.L.U.",
     "codigo": "030179",
     "fuente": "histórico",
-    "pedido": "AR2604501"
+    "pedido": "AR2604501",
+    "ambito": "historico"
   },
   {
     "nombre": "CARBAJO CARBAJO, ELISEO",
@@ -111,19 +127,22 @@
     "aliasRps": null,
     "pedido": "AR2602232",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052321"
+    "codigoExtraccionAnterior": "052321",
+    "ambito": "historico"
   },
   {
     "nombre": "CARROCERIAS VALLEJO, S.A.",
     "codigo": "032353",
     "fuente": "histórico",
-    "pedido": "AR2604282"
+    "pedido": "AR2604282",
+    "ambito": "historico"
   },
   {
     "nombre": "HNOS. SANCHEZ-LAFUENTE S.A.",
     "codigo": "042412",
     "fuente": "histórico",
-    "pedido": "AR2602967"
+    "pedido": "AR2602967",
+    "ambito": "historico"
   },
   {
     "nombre": "ANTIGUO COBELO · VAZQUEZ BARREIRO, JAVIER",
@@ -132,7 +151,8 @@
     "aliasRps": "ANTIGUO COBELO",
     "pedido": "SA2600310",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "042623"
+    "codigoExtraccionAnterior": "042623",
+    "ambito": "historico"
   },
   {
     "nombre": "TALLERES CARBAJO C.B.",
@@ -141,7 +161,8 @@
     "aliasRps": null,
     "pedido": "AR2501069",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "020015"
+    "codigoExtraccionAnterior": "020015",
+    "ambito": "historico"
   },
   {
     "nombre": "REMOLQUES CAREDU · INDUVEC, S.L.",
@@ -150,7 +171,8 @@
     "aliasRps": "REMOLQUES CAREDU",
     "pedido": "AR2600858",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "000530"
+    "codigoExtraccionAnterior": "000530",
+    "ambito": "historico"
   },
   {
     "nombre": "TALLERES GONZALO · FERRODEZA, S. L.",
@@ -159,7 +181,8 @@
     "aliasRps": "TALLERES GONZALO",
     "pedido": "AR2602760",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "016533"
+    "codigoExtraccionAnterior": "016533",
+    "ambito": "historico"
   },
   {
     "nombre": "J. CARBALLO, S. C.",
@@ -168,7 +191,8 @@
     "aliasRps": null,
     "pedido": "AR2506256",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "000494"
+    "codigoExtraccionAnterior": "000494",
+    "ambito": "historico"
   },
   {
     "nombre": "REMOLQUES TARRAGONA S.L",
@@ -177,7 +201,8 @@
     "aliasRps": null,
     "pedido": "AR2601328",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052388"
+    "codigoExtraccionAnterior": "052388",
+    "ambito": "historico"
   },
   {
     "nombre": "CERRAJERIA MALDONADO / CAMACHO · CARROCERIAS Y REMOLQUES CAMACHO 1990 SL",
@@ -186,13 +211,15 @@
     "aliasRps": "CERRAJERIA MALDONADO / CAMACHO",
     "pedido": "AR2601661",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "031580"
+    "codigoExtraccionAnterior": "031580",
+    "ambito": "historico"
   },
   {
     "nombre": "INDUSTRIAS EDUARDO ROMAY, S. L.",
     "codigo": "003491",
     "fuente": "histórico",
-    "pedido": "AR2603807"
+    "pedido": "AR2603807",
+    "ambito": "historico"
   },
   {
     "nombre": "AUTO RECAMBIOS AJALVIR S.L.",
@@ -201,13 +228,15 @@
     "aliasRps": null,
     "pedido": "AR2505976",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "036805"
+    "codigoExtraccionAnterior": "036805",
+    "ambito": "historico"
   },
   {
     "nombre": "IBERICA DE REMOLQUES S.A.",
     "codigo": "053595",
     "fuente": "histórico",
-    "pedido": "AR2603495"
+    "pedido": "AR2603495",
+    "ambito": "historico"
   },
   {
     "nombre": "TALLERES R.CASAL, S. L. ,",
@@ -216,7 +245,8 @@
     "aliasRps": null,
     "pedido": "AR2504657",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "001138"
+    "codigoExtraccionAnterior": "001138",
+    "ambito": "historico"
   },
   {
     "nombre": "CONSTRUCCIONES METALICAS LOUREIRO REIS, S.L.U.",
@@ -225,7 +255,8 @@
     "aliasRps": null,
     "pedido": "AR2401290",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "024041"
+    "codigoExtraccionAnterior": "024041",
+    "ambito": "historico"
   },
   {
     "nombre": "REMOLKEA · NUÑEZ MARTIN, GEMMA",
@@ -234,7 +265,8 @@
     "aliasRps": "REMOLKEA",
     "pedido": "AR2600103",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "048954"
+    "codigoExtraccionAnterior": "048954",
+    "ambito": "historico"
   },
   {
     "nombre": "REMOLQUES HERMANOS CERVERA S.L",
@@ -243,7 +275,8 @@
     "aliasRps": null,
     "pedido": "AR2601463",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "048657"
+    "codigoExtraccionAnterior": "048657",
+    "ambito": "historico"
   },
   {
     "nombre": "REMOLQUES JALON S.L",
@@ -252,13 +285,15 @@
     "aliasRps": null,
     "pedido": "AR2602280",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "048719"
+    "codigoExtraccionAnterior": "048719",
+    "ambito": "historico"
   },
   {
     "nombre": "CERRAJERIA CERRI · FERNANDEZ MUNICIO, JUAN",
     "codigo": "005734",
     "fuente": "histórico",
-    "pedido": "AR2604535"
+    "pedido": "AR2604535",
+    "ambito": "historico"
   },
   {
     "nombre": "TALLERES ALDIPE, S. L.",
@@ -267,7 +302,8 @@
     "aliasRps": null,
     "pedido": "AR2600587",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "000064"
+    "codigoExtraccionAnterior": "000064",
+    "ambito": "historico"
   },
   {
     "nombre": "TALLERES J. LEMA · TRANSFORMACIONES BERGANTIÑOS S.L",
@@ -276,7 +312,8 @@
     "aliasRps": "TALLERES J. LEMA",
     "pedido": "AR2600892",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "046101"
+    "codigoExtraccionAnterior": "046101",
+    "ambito": "historico"
   },
   {
     "nombre": "ALBA ALVAREZ, NOE",
@@ -285,7 +322,8 @@
     "aliasRps": null,
     "pedido": "AR2506290",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052354"
+    "codigoExtraccionAnterior": "052354",
+    "ambito": "historico"
   },
   {
     "nombre": "ALVARELLOS GARCIA, ADRIAN",
@@ -293,7 +331,8 @@
     "nombreRps": "ALVARELLOS GARCIA, ADRIAN",
     "aliasRps": null,
     "pedido": "AR2600084",
-    "fuente": "GET RPS pedido"
+    "fuente": "GET RPS pedido",
+    "ambito": "historico"
   },
   {
     "nombre": "BLANCO BARROS, FERNANDO",
@@ -302,7 +341,8 @@
     "aliasRps": null,
     "pedido": "AR2601802",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053458"
+    "codigoExtraccionAnterior": "053458",
+    "ambito": "historico"
   },
   {
     "nombre": "CANOSA LEMA, CELESTINO",
@@ -311,7 +351,8 @@
     "aliasRps": null,
     "pedido": "AR2603456",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "054207"
+    "codigoExtraccionAnterior": "054207",
+    "ambito": "historico"
   },
   {
     "nombre": "CASAS FERRERO, IVAN",
@@ -320,7 +361,8 @@
     "aliasRps": null,
     "pedido": "BE2500702",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "037583"
+    "codigoExtraccionAnterior": "037583",
+    "ambito": "historico"
   },
   {
     "nombre": "CORRAL EXPOSITO, ANTONIO ANGEL",
@@ -329,7 +371,8 @@
     "aliasRps": null,
     "pedido": "AR2505127",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "045310"
+    "codigoExtraccionAnterior": "045310",
+    "ambito": "historico"
   },
   {
     "nombre": "FERREIRO CONDE, JESUS",
@@ -338,7 +381,8 @@
     "aliasRps": null,
     "pedido": "AR2503766",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052333"
+    "codigoExtraccionAnterior": "052333",
+    "ambito": "historico"
   },
   {
     "nombre": "FERROELEÑA S.L.",
@@ -347,7 +391,8 @@
     "aliasRps": null,
     "pedido": "AR2505511",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053029"
+    "codigoExtraccionAnterior": "053029",
+    "ambito": "historico"
   },
   {
     "nombre": "GARCIA GARCIA, ALBERTO",
@@ -356,7 +401,8 @@
     "aliasRps": null,
     "pedido": "AR2405410",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051667"
+    "codigoExtraccionAnterior": "051667",
+    "ambito": "historico"
   },
   {
     "nombre": "LAGO GRAÑA, VERONICA",
@@ -365,7 +411,8 @@
     "aliasRps": null,
     "pedido": "AR2502616",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051467"
+    "codigoExtraccionAnterior": "051467",
+    "ambito": "historico"
   },
   {
     "nombre": "ORGALES PEREZ, JUAN",
@@ -374,7 +421,8 @@
     "aliasRps": null,
     "pedido": "BE2501012",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052733"
+    "codigoExtraccionAnterior": "052733",
+    "ambito": "historico"
   },
   {
     "nombre": "PERNAS PERNAS, MAIKEL",
@@ -383,7 +431,8 @@
     "aliasRps": null,
     "pedido": "AR2601694",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053799"
+    "codigoExtraccionAnterior": "053799",
+    "ambito": "historico"
   },
   {
     "nombre": "QUIJANO GONZALEZ, EDUARDO",
@@ -392,7 +441,8 @@
     "aliasRps": null,
     "pedido": "AR2601579",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053773"
+    "codigoExtraccionAnterior": "053773",
+    "ambito": "historico"
   },
   {
     "nombre": "ROJAS CONTARDO, PABLO",
@@ -401,7 +451,8 @@
     "aliasRps": null,
     "pedido": "AR2603148",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "054131"
+    "codigoExtraccionAnterior": "054131",
+    "ambito": "historico"
   },
   {
     "nombre": "TALLERES MECANICOS O CRUCE · JOSE BREIJO SANTALLA Y OTRO, S. L.",
@@ -410,7 +461,8 @@
     "aliasRps": "TALLERES MECANICOS O CRUCE",
     "pedido": "AR2602976",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "029831"
+    "codigoExtraccionAnterior": "029831",
+    "ambito": "historico"
   },
   {
     "nombre": "TALLERES ODL · CCI  CARROCERIAS INTELIGENTES S.L.",
@@ -419,7 +471,8 @@
     "aliasRps": "TALLERES ODL",
     "pedido": "AR2600366",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "001166"
+    "codigoExtraccionAnterior": "001166",
+    "ambito": "historico"
   },
   {
     "nombre": "TEIJEIRO MARTINEZ, AGUSTIN",
@@ -428,13 +481,15 @@
     "aliasRps": null,
     "pedido": "BE2600419",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053869"
+    "codigoExtraccionAnterior": "053869",
+    "ambito": "historico"
   },
   {
     "nombre": "VIEITES GOMEZ, JESUS",
     "codigo": "054473",
     "fuente": "histórico",
-    "pedido": "AR2604619"
+    "pedido": "AR2604619",
+    "ambito": "historico"
   },
   {
     "nombre": "VILLAR VAZQUEZ, JUAN CARLOS",
@@ -443,7 +498,8 @@
     "aliasRps": null,
     "pedido": "BE2500904",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "010192"
+    "codigoExtraccionAnterior": "010192",
+    "ambito": "historico"
   },
   {
     "nombre": "ADAN QUINTELA, MIGUEL ANGEL",
@@ -452,7 +508,8 @@
     "aliasRps": null,
     "pedido": "AR2501034",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052308"
+    "codigoExtraccionAnterior": "052308",
+    "ambito": "historico"
   },
   {
     "nombre": "AGUION CARREIRA, MARCOS",
@@ -461,7 +518,8 @@
     "aliasRps": null,
     "pedido": "BE2500266",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "036048"
+    "codigoExtraccionAnterior": "036048",
+    "ambito": "historico"
   },
   {
     "nombre": "ALBARIÑO ABELLA, VENERANDO",
@@ -470,7 +528,8 @@
     "aliasRps": null,
     "pedido": "AR2504254",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053053"
+    "codigoExtraccionAnterior": "053053",
+    "ambito": "historico"
   },
   {
     "nombre": "ALFONSO DE JESUS, JUAN ANTONIO",
@@ -479,7 +538,8 @@
     "aliasRps": null,
     "pedido": "AR2504348",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "009413"
+    "codigoExtraccionAnterior": "009413",
+    "ambito": "historico"
   },
   {
     "nombre": "ALUMINIOS BERES, S. L.",
@@ -488,7 +548,8 @@
     "aliasRps": null,
     "pedido": "AR2503919",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "022526"
+    "codigoExtraccionAnterior": "022526",
+    "ambito": "historico"
   },
   {
     "nombre": "ALVAREZ HERMIDA, JOSE",
@@ -497,7 +558,8 @@
     "aliasRps": null,
     "pedido": "AR2501503",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052393"
+    "codigoExtraccionAnterior": "052393",
+    "ambito": "historico"
   },
   {
     "nombre": "ALVES FERNANDEZ, ALBERTO",
@@ -506,7 +568,8 @@
     "aliasRps": null,
     "pedido": "AR2505391",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053283"
+    "codigoExtraccionAnterior": "053283",
+    "ambito": "historico"
   },
   {
     "nombre": "AMERICO DOS ANJOS, MANUEL",
@@ -515,7 +578,8 @@
     "aliasRps": null,
     "pedido": "BE2401210",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051182"
+    "codigoExtraccionAnterior": "051182",
+    "ambito": "historico"
   },
   {
     "nombre": "ANDUJAR MARTINEZ, JOSE MANUEL",
@@ -524,7 +588,8 @@
     "aliasRps": null,
     "pedido": "AR2502312",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "036319"
+    "codigoExtraccionAnterior": "036319",
+    "ambito": "historico"
   },
   {
     "nombre": "ANGEL ROADE, S. L.",
@@ -532,7 +597,8 @@
     "nombreRps": "ANGEL ROADE, S. L.",
     "aliasRps": null,
     "pedido": "AR2504327",
-    "fuente": "GET RPS pedido"
+    "fuente": "GET RPS pedido",
+    "ambito": "historico"
   },
   {
     "nombre": "ANTELO LUACES, DOMINGO",
@@ -541,7 +607,8 @@
     "aliasRps": null,
     "pedido": "AR2503399",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "018666"
+    "codigoExtraccionAnterior": "018666",
+    "ambito": "historico"
   },
   {
     "nombre": "ANTIGUO RUA NOBEL · TALLERES Y SERVICIOS JYP S.L.",
@@ -550,7 +617,8 @@
     "aliasRps": "ANTIGUO RUA NOBEL",
     "pedido": "BE2400033",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "047706"
+    "codigoExtraccionAnterior": "047706",
+    "ambito": "historico"
   },
   {
     "nombre": "ANVASOAN S.L.",
@@ -559,7 +627,8 @@
     "aliasRps": null,
     "pedido": "AR2402186",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "050508"
+    "codigoExtraccionAnterior": "050508",
+    "ambito": "historico"
   },
   {
     "nombre": "APARICIO QUINDIMIL, JOSE ANTONIO",
@@ -568,7 +637,8 @@
     "aliasRps": null,
     "pedido": "BE2500060",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052162"
+    "codigoExtraccionAnterior": "052162",
+    "ambito": "historico"
   },
   {
     "nombre": "ARDIACA PAREDES, JOSEP",
@@ -577,7 +647,8 @@
     "aliasRps": null,
     "pedido": "AR2505734",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053351"
+    "codigoExtraccionAnterior": "053351",
+    "ambito": "historico"
   },
   {
     "nombre": "ARES SOUTO, JAVIER",
@@ -585,7 +656,8 @@
     "nombreRps": "ARES SOUTO, JAVIER",
     "aliasRps": null,
     "pedido": "AR2504920",
-    "fuente": "GET RPS pedido"
+    "fuente": "GET RPS pedido",
+    "ambito": "historico"
   },
   {
     "nombre": "BARRO GRUEIRO, CLAUDIO",
@@ -594,7 +666,8 @@
     "aliasRps": null,
     "pedido": "AR2601051",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053659"
+    "codigoExtraccionAnterior": "053659",
+    "ambito": "historico"
   },
   {
     "nombre": "BASCUÑANA SANCHEZ, DAVID",
@@ -603,13 +676,15 @@
     "aliasRps": null,
     "pedido": "AR2403610",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051361"
+    "codigoExtraccionAnterior": "051361",
+    "ambito": "historico"
   },
   {
     "nombre": "BEA LOPE, HECTOR",
     "codigo": "054474",
     "fuente": "histórico",
-    "pedido": "AR2604632"
+    "pedido": "AR2604632",
+    "ambito": "historico"
   },
   {
     "nombre": "BERTOA CASTRO, JOSE ANTONIO",
@@ -618,7 +693,8 @@
     "aliasRps": null,
     "pedido": "AR2404389",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051561"
+    "codigoExtraccionAnterior": "051561",
+    "ambito": "historico"
   },
   {
     "nombre": "BLANCO MIRANDA, LINO",
@@ -627,7 +703,8 @@
     "aliasRps": null,
     "pedido": "BE2600569",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "054057"
+    "codigoExtraccionAnterior": "054057",
+    "ambito": "historico"
   },
   {
     "nombre": "BODEGAS SEIXIDO, S. L. ,",
@@ -636,7 +713,8 @@
     "aliasRps": null,
     "pedido": "AR2504220",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "007494"
+    "codigoExtraccionAnterior": "007494",
+    "ambito": "historico"
   },
   {
     "nombre": "BORONAT, ANDREU",
@@ -645,7 +723,8 @@
     "aliasRps": null,
     "pedido": "AR2600859",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053633"
+    "codigoExtraccionAnterior": "053633",
+    "ambito": "historico"
   },
   {
     "nombre": "BOUSO LEIVAS, STEFAN",
@@ -654,7 +733,8 @@
     "aliasRps": null,
     "pedido": "AR2505603",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053330"
+    "codigoExtraccionAnterior": "053330",
+    "ambito": "historico"
   },
   {
     "nombre": "BOUZA SANCHEZ, ALVARO",
@@ -663,7 +743,8 @@
     "aliasRps": null,
     "pedido": "BE2400851",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "009438"
+    "codigoExtraccionAnterior": "009438",
+    "ambito": "historico"
   },
   {
     "nombre": "CAFETERIA ROSALIA · OCAMPO FERNANDEZ, JOSE ANGEL",
@@ -671,7 +752,8 @@
     "nombreRps": "OCAMPO FERNANDEZ, JOSE ANGEL",
     "aliasRps": "CAFETERIA ROSALIA",
     "pedido": "AR2505725",
-    "fuente": "GET RPS pedido"
+    "fuente": "GET RPS pedido",
+    "ambito": "historico"
   },
   {
     "nombre": "CAL LOPEZ, JESUS",
@@ -680,7 +762,8 @@
     "aliasRps": null,
     "pedido": "BE2500271",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052322"
+    "codigoExtraccionAnterior": "052322",
+    "ambito": "historico"
   },
   {
     "nombre": "CALVEIRO NOVO, JOSE ANTONIO",
@@ -689,7 +772,8 @@
     "aliasRps": null,
     "pedido": "AR2406023",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051930"
+    "codigoExtraccionAnterior": "051930",
+    "ambito": "historico"
   },
   {
     "nombre": "CALVO ESPAÑA, ISMAEL",
@@ -698,7 +782,8 @@
     "aliasRps": null,
     "pedido": "BE2500539",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052688"
+    "codigoExtraccionAnterior": "052688",
+    "ambito": "historico"
   },
   {
     "nombre": "CAMBA GIL, RAMON",
@@ -707,7 +792,8 @@
     "aliasRps": null,
     "pedido": "AR2405178",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051746"
+    "codigoExtraccionAnterior": "051746",
+    "ambito": "historico"
   },
   {
     "nombre": "CAMPOS AUTOTECNICA S.C",
@@ -716,7 +802,8 @@
     "aliasRps": null,
     "pedido": "AR2402012",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "050969"
+    "codigoExtraccionAnterior": "050969",
+    "ambito": "historico"
   },
   {
     "nombre": "CARDELLE HIDRAULICA, S. L. ,",
@@ -725,7 +812,8 @@
     "aliasRps": null,
     "pedido": "BE2500727",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "012688"
+    "codigoExtraccionAnterior": "012688",
+    "ambito": "historico"
   },
   {
     "nombre": "CARMELO · CARMELO BARREIRO PAZ",
@@ -734,7 +822,8 @@
     "aliasRps": "CARMELO",
     "pedido": "AR2501233",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "045150"
+    "codigoExtraccionAnterior": "045150",
+    "ambito": "historico"
   },
   {
     "nombre": "CARRASCO GASCON, FRANCISCO",
@@ -743,7 +832,8 @@
     "aliasRps": null,
     "pedido": "AR2403830",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051418"
+    "codigoExtraccionAnterior": "051418",
+    "ambito": "historico"
   },
   {
     "nombre": "CARRO VAZQUEZ, SERGIO",
@@ -752,7 +842,8 @@
     "aliasRps": null,
     "pedido": "BE2401292",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052107"
+    "codigoExtraccionAnterior": "052107",
+    "ambito": "historico"
   },
   {
     "nombre": "CARROCEROS DEL NOROESTE, S. L.",
@@ -761,7 +852,8 @@
     "aliasRps": null,
     "pedido": "AR2405193",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "000564"
+    "codigoExtraccionAnterior": "000564",
+    "ambito": "historico"
   },
   {
     "nombre": "CASAL PACHECO, MANUEL",
@@ -770,7 +862,8 @@
     "aliasRps": null,
     "pedido": "AR2500013",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "020894"
+    "codigoExtraccionAnterior": "020894",
+    "ambito": "historico"
   },
   {
     "nombre": "CASTILLO DE MOYA, IVAN",
@@ -779,7 +872,8 @@
     "aliasRps": null,
     "pedido": "AR2603364",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "054187"
+    "codigoExtraccionAnterior": "054187",
+    "ambito": "historico"
   },
   {
     "nombre": "CASTRO BELLON, PABLO",
@@ -788,7 +882,8 @@
     "aliasRps": null,
     "pedido": "AR2505558",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "031692"
+    "codigoExtraccionAnterior": "031692",
+    "ambito": "historico"
   },
   {
     "nombre": "CASTRO CARRO, FRANCISCO",
@@ -797,7 +892,8 @@
     "aliasRps": null,
     "pedido": "AR2503639",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052922"
+    "codigoExtraccionAnterior": "052922",
+    "ambito": "historico"
   },
   {
     "nombre": "CASTRO GARCIA, ROGELIO",
@@ -806,7 +902,8 @@
     "aliasRps": null,
     "pedido": "AR2401752",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "050904"
+    "codigoExtraccionAnterior": "050904",
+    "ambito": "historico"
   },
   {
     "nombre": "CASTRO MOURIÑO, JUAN JOSE",
@@ -815,7 +912,8 @@
     "aliasRps": null,
     "pedido": "AR2402048",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "019415"
+    "codigoExtraccionAnterior": "019415",
+    "ambito": "historico"
   },
   {
     "nombre": "CASTRO RODRIGUEZ, MARIA LUISA",
@@ -824,7 +922,8 @@
     "aliasRps": null,
     "pedido": "AR2600832",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053628"
+    "codigoExtraccionAnterior": "053628",
+    "ambito": "historico"
   },
   {
     "nombre": "CERNADAS FERNANDEZ, JUAN",
@@ -833,7 +932,8 @@
     "aliasRps": null,
     "pedido": "AR2505489",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053305"
+    "codigoExtraccionAnterior": "053305",
+    "ambito": "historico"
   },
   {
     "nombre": "CHG QUIEROUNTOLDO2013 S.L.",
@@ -842,7 +942,8 @@
     "aliasRps": null,
     "pedido": "AR2505659",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "047782"
+    "codigoExtraccionAnterior": "047782",
+    "ambito": "historico"
   },
   {
     "nombre": "CIBREIRO RODRIGUEZ, JOSE",
@@ -851,7 +952,8 @@
     "aliasRps": null,
     "pedido": "AR2405149",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051737"
+    "codigoExtraccionAnterior": "051737",
+    "ambito": "historico"
   },
   {
     "nombre": "CLH · EXOLUM CORPORATION S.A.",
@@ -860,7 +962,8 @@
     "aliasRps": "CLH",
     "pedido": "AR2501970",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "015375"
+    "codigoExtraccionAnterior": "015375",
+    "ambito": "historico"
   },
   {
     "nombre": "CLIENTE TPV",
@@ -868,7 +971,8 @@
     "nombreRps": "CLIENTE TPV",
     "aliasRps": null,
     "pedido": "AR2504855",
-    "fuente": "GET RPS pedido"
+    "fuente": "GET RPS pedido",
+    "ambito": "historico"
   },
   {
     "nombre": "COAFOR, SDAD. COOP. GALEGA ,",
@@ -877,7 +981,8 @@
     "aliasRps": null,
     "pedido": "AR2403932",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "015645"
+    "codigoExtraccionAnterior": "015645",
+    "ambito": "historico"
   },
   {
     "nombre": "CONCELLO DE PONTEDEUME",
@@ -886,7 +991,8 @@
     "aliasRps": null,
     "pedido": "AR2602109",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "013287"
+    "codigoExtraccionAnterior": "013287",
+    "ambito": "historico"
   },
   {
     "nombre": "COOPERATIVAS LACTEAS UNIDAS SCG (CLUN)",
@@ -894,7 +1000,8 @@
     "nombreRps": "COOPERATIVAS LACTEAS UNIDAS SCG (CLUN)",
     "aliasRps": null,
     "pedido": "AR2601575",
-    "fuente": "GET RPS pedido"
+    "fuente": "GET RPS pedido",
+    "ambito": "historico"
   },
   {
     "nombre": "DEJESUS MACHADO, ANTONIO",
@@ -903,7 +1010,8 @@
     "aliasRps": null,
     "pedido": "BE2600382",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "025062"
+    "codigoExtraccionAnterior": "025062",
+    "ambito": "historico"
   },
   {
     "nombre": "DIAZ IZQUIERDO, ANA",
@@ -912,7 +1020,8 @@
     "aliasRps": null,
     "pedido": "AR2502595",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052652"
+    "codigoExtraccionAnterior": "052652",
+    "ambito": "historico"
   },
   {
     "nombre": "DIAZ MENENDEZ, CARLOS",
@@ -921,7 +1030,8 @@
     "aliasRps": null,
     "pedido": "AR2601042",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053657"
+    "codigoExtraccionAnterior": "053657",
+    "ambito": "historico"
   },
   {
     "nombre": "DIVIRTT S.L",
@@ -930,7 +1040,8 @@
     "aliasRps": null,
     "pedido": "BE2600225",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053625"
+    "codigoExtraccionAnterior": "053625",
+    "ambito": "historico"
   },
   {
     "nombre": "DOCAMPO ABEIJON, FERNANDO",
@@ -939,7 +1050,8 @@
     "aliasRps": null,
     "pedido": "AR2506092",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053410"
+    "codigoExtraccionAnterior": "053410",
+    "ambito": "historico"
   },
   {
     "nombre": "DOMANGUES ESTRAVIZ, RUBEN",
@@ -948,7 +1060,8 @@
     "aliasRps": null,
     "pedido": "BE2400498",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051204"
+    "codigoExtraccionAnterior": "051204",
+    "ambito": "historico"
   },
   {
     "nombre": "DURAN VEIGA, ANDRES",
@@ -957,7 +1070,8 @@
     "aliasRps": null,
     "pedido": "AR2406832",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052066"
+    "codigoExtraccionAnterior": "052066",
+    "ambito": "historico"
   },
   {
     "nombre": "ELECTRIFICACIONES MIÑONES SL",
@@ -966,7 +1080,8 @@
     "aliasRps": null,
     "pedido": "AR2601560",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "045829"
+    "codigoExtraccionAnterior": "045829",
+    "ambito": "historico"
   },
   {
     "nombre": "ENRIQUEZ COLLAZO, MANUEL",
@@ -975,7 +1090,8 @@
     "aliasRps": null,
     "pedido": "AR2600570",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "033788"
+    "codigoExtraccionAnterior": "033788",
+    "ambito": "historico"
   },
   {
     "nombre": "ESTRELLA GALICIA · HIJOS DE RIVERA, S.A.U.",
@@ -983,7 +1099,8 @@
     "nombreRps": "HIJOS DE RIVERA, S.A.U.",
     "aliasRps": "ESTRELLA GALICIA",
     "pedido": "AR2500051",
-    "fuente": "GET RPS pedido"
+    "fuente": "GET RPS pedido",
+    "ambito": "historico"
   },
   {
     "nombre": "EXPLOTACIONES FORESTALES GARAFETE S.L",
@@ -992,7 +1109,8 @@
     "aliasRps": null,
     "pedido": "AR2405950",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "050070"
+    "codigoExtraccionAnterior": "050070",
+    "ambito": "historico"
   },
   {
     "nombre": "FACENDA O AGRO BAIXA LIMIA S.L",
@@ -1001,7 +1119,8 @@
     "aliasRps": null,
     "pedido": "BE2600570",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "054059"
+    "codigoExtraccionAnterior": "054059",
+    "ambito": "historico"
   },
   {
     "nombre": "FERNANDEZ BARRO, PEDRO",
@@ -1010,7 +1129,8 @@
     "aliasRps": null,
     "pedido": "BE2400243",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "050818"
+    "codigoExtraccionAnterior": "050818",
+    "ambito": "historico"
   },
   {
     "nombre": "FERNANDEZ CALVO, MANUEL",
@@ -1019,13 +1139,15 @@
     "aliasRps": null,
     "pedido": "AR2504541",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053179"
+    "codigoExtraccionAnterior": "053179",
+    "ambito": "historico"
   },
   {
     "nombre": "FERNANDEZ DE LA LLAVE, LUIS MIGUEL",
     "codigo": "054425",
     "fuente": "histórico",
-    "pedido": "AR2604390"
+    "pedido": "AR2604390",
+    "ambito": "historico"
   },
   {
     "nombre": "FERNANDEZ DIAZ, JOSE RAMON",
@@ -1034,7 +1156,8 @@
     "aliasRps": null,
     "pedido": "AR2501008",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "012790"
+    "codigoExtraccionAnterior": "012790",
+    "ambito": "historico"
   },
   {
     "nombre": "FERNANDEZ FONDEVILA, CARLOS",
@@ -1043,7 +1166,8 @@
     "aliasRps": null,
     "pedido": "AR2400350",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "050653"
+    "codigoExtraccionAnterior": "050653",
+    "ambito": "historico"
   },
   {
     "nombre": "FERNANDEZ FRAGA, JOSE MANUEL",
@@ -1052,7 +1176,8 @@
     "aliasRps": null,
     "pedido": "BE2400987",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051815"
+    "codigoExtraccionAnterior": "051815",
+    "ambito": "historico"
   },
   {
     "nombre": "FERNANDEZ GOMEZ , ALBERTO",
@@ -1061,7 +1186,8 @@
     "aliasRps": null,
     "pedido": "AR2406331",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051979"
+    "codigoExtraccionAnterior": "051979",
+    "ambito": "historico"
   },
   {
     "nombre": "FERNANDEZ GOMEZ, JAIME",
@@ -1070,7 +1196,8 @@
     "aliasRps": null,
     "pedido": "AR2506133",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053417"
+    "codigoExtraccionAnterior": "053417",
+    "ambito": "historico"
   },
   {
     "nombre": "FERNANDEZ GONZALEZ, ORFIDIO",
@@ -1079,7 +1206,8 @@
     "aliasRps": null,
     "pedido": "AR2504260",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053055"
+    "codigoExtraccionAnterior": "053055",
+    "ambito": "historico"
   },
   {
     "nombre": "FERNANDEZ VILELA, LUIS",
@@ -1088,13 +1216,15 @@
     "aliasRps": null,
     "pedido": "BE2600495",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "038983"
+    "codigoExtraccionAnterior": "038983",
+    "ambito": "historico"
   },
   {
     "nombre": "FERREIRA FABEIRO, ROBERTO",
     "codigo": "054382",
     "fuente": "histórico",
-    "pedido": "AR2604206"
+    "pedido": "AR2604206",
+    "ambito": "historico"
   },
   {
     "nombre": "FERRO AMEAL, FAUSTINO",
@@ -1103,7 +1233,8 @@
     "aliasRps": null,
     "pedido": "AR2505792",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053364"
+    "codigoExtraccionAnterior": "053364",
+    "ambito": "historico"
   },
   {
     "nombre": "FERRODEIRO, S.L.",
@@ -1112,7 +1243,8 @@
     "aliasRps": null,
     "pedido": "AR2502519",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052636"
+    "codigoExtraccionAnterior": "052636",
+    "ambito": "historico"
   },
   {
     "nombre": "FREIRE FERNANDEZ, MANUEL",
@@ -1121,7 +1253,8 @@
     "aliasRps": null,
     "pedido": "BE2500087",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "038568"
+    "codigoExtraccionAnterior": "038568",
+    "ambito": "historico"
   },
   {
     "nombre": "FRICUR INSTALACIONES, S.L.",
@@ -1130,7 +1263,8 @@
     "aliasRps": null,
     "pedido": "BE2600353",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "043449"
+    "codigoExtraccionAnterior": "043449",
+    "ambito": "historico"
   },
   {
     "nombre": "GANADERIA PARDO, S. C.",
@@ -1139,13 +1273,15 @@
     "aliasRps": null,
     "pedido": "AR2505854",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "023233"
+    "codigoExtraccionAnterior": "023233",
+    "ambito": "historico"
   },
   {
     "nombre": "GANADERIA RON, S.C.",
     "codigo": "054259",
     "fuente": "histórico",
-    "pedido": "AR2603663"
+    "pedido": "AR2603663",
+    "ambito": "historico"
   },
   {
     "nombre": "GANDARA LEMA, DAVID",
@@ -1154,7 +1290,8 @@
     "aliasRps": null,
     "pedido": "AR2406159",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051947"
+    "codigoExtraccionAnterior": "051947",
+    "ambito": "historico"
   },
   {
     "nombre": "GARCIA MORIS, SONIA",
@@ -1163,7 +1300,8 @@
     "aliasRps": null,
     "pedido": "AR2505196",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053233"
+    "codigoExtraccionAnterior": "053233",
+    "ambito": "historico"
   },
   {
     "nombre": "GARCIA SECO, REGINO",
@@ -1172,7 +1310,8 @@
     "aliasRps": null,
     "pedido": "BE2500609",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "028190"
+    "codigoExtraccionAnterior": "028190",
+    "ambito": "historico"
   },
   {
     "nombre": "GAREA FERNANDEZ, JOSE",
@@ -1181,13 +1320,15 @@
     "aliasRps": null,
     "pedido": "AR2404260",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051526"
+    "codigoExtraccionAnterior": "051526",
+    "ambito": "historico"
   },
   {
     "nombre": "GARRIDO GOMEZ, JOSEP DONAT",
     "codigo": "054360",
     "fuente": "histórico",
-    "pedido": "AR2604095"
+    "pedido": "AR2604095",
+    "ambito": "historico"
   },
   {
     "nombre": "GIS CERCEDA S.L.U",
@@ -1196,7 +1337,8 @@
     "aliasRps": null,
     "pedido": "BE2600342",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053748"
+    "codigoExtraccionAnterior": "053748",
+    "ambito": "historico"
   },
   {
     "nombre": "GOLPE ROMERO, BERNARDO",
@@ -1205,7 +1347,8 @@
     "aliasRps": null,
     "pedido": "BE2400372",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "006406"
+    "codigoExtraccionAnterior": "006406",
+    "ambito": "historico"
   },
   {
     "nombre": "GOMEZ ALAMANCOS, TERESA",
@@ -1214,7 +1357,8 @@
     "aliasRps": null,
     "pedido": "AR2401982",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "017592"
+    "codigoExtraccionAnterior": "017592",
+    "ambito": "historico"
   },
   {
     "nombre": "GOMEZ CAMINO, LUCIA",
@@ -1223,7 +1367,8 @@
     "aliasRps": null,
     "pedido": "AR2400960",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "020641"
+    "codigoExtraccionAnterior": "020641",
+    "ambito": "historico"
   },
   {
     "nombre": "GOMEZ DOMINGUEZ, MIGUEL",
@@ -1232,7 +1377,8 @@
     "aliasRps": null,
     "pedido": "AR2506111",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053409"
+    "codigoExtraccionAnterior": "053409",
+    "ambito": "historico"
   },
   {
     "nombre": "GOMEZ GARCIA, JOSE ANTONIO",
@@ -1241,7 +1387,8 @@
     "aliasRps": null,
     "pedido": "BE2600467",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053940"
+    "codigoExtraccionAnterior": "053940",
+    "ambito": "historico"
   },
   {
     "nombre": "GOMEZ OTERO, ANTONIO",
@@ -1250,7 +1397,8 @@
     "aliasRps": null,
     "pedido": "BE2600460",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "038642"
+    "codigoExtraccionAnterior": "038642",
+    "ambito": "historico"
   },
   {
     "nombre": "GOMEZ PAZOS, JUAN",
@@ -1259,7 +1407,8 @@
     "aliasRps": null,
     "pedido": "AR2404366",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051552"
+    "codigoExtraccionAnterior": "051552",
+    "ambito": "historico"
   },
   {
     "nombre": "GONZALEZ AGRASAR, SUSANA",
@@ -1268,7 +1417,8 @@
     "aliasRps": null,
     "pedido": "AR2402296",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051056"
+    "codigoExtraccionAnterior": "051056",
+    "ambito": "historico"
   },
   {
     "nombre": "GONZALEZ DE ALEDO GOMEZ, ALVARO",
@@ -1277,7 +1427,8 @@
     "aliasRps": null,
     "pedido": "AR2406616",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052015"
+    "codigoExtraccionAnterior": "052015",
+    "ambito": "historico"
   },
   {
     "nombre": "GONZALEZ DOPAZO, JOSE MANUEL",
@@ -1286,7 +1437,8 @@
     "aliasRps": null,
     "pedido": "AR2506445",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053469"
+    "codigoExtraccionAnterior": "053469",
+    "ambito": "historico"
   },
   {
     "nombre": "GONZALEZ HERMIDA, DAVID",
@@ -1295,7 +1447,8 @@
     "aliasRps": null,
     "pedido": "AR2400239",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "036339"
+    "codigoExtraccionAnterior": "036339",
+    "ambito": "historico"
   },
   {
     "nombre": "GONZALEZ TORRES, JOSE",
@@ -1303,7 +1456,8 @@
     "nombreRps": "GONZALEZ TORRES, JOSE",
     "aliasRps": null,
     "pedido": "AR2402422",
-    "fuente": "GET RPS pedido"
+    "fuente": "GET RPS pedido",
+    "ambito": "historico"
   },
   {
     "nombre": "HERTRANS, SDAD. COOP. LTDA.",
@@ -1312,7 +1466,8 @@
     "aliasRps": null,
     "pedido": "BE2501169",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "001510"
+    "codigoExtraccionAnterior": "001510",
+    "ambito": "historico"
   },
   {
     "nombre": "IBABRE, BALOIRAS BREA IVAN",
@@ -1321,7 +1476,8 @@
     "aliasRps": null,
     "pedido": "AR2402595",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "033454"
+    "codigoExtraccionAnterior": "033454",
+    "ambito": "historico"
   },
   {
     "nombre": "INFORMACION & COMUNICACION LOCAL S.A. (INCOLSA)",
@@ -1329,7 +1485,8 @@
     "nombreRps": "INFORMACION & COMUNICACION LOCAL S.A. (INCOLSA)",
     "aliasRps": null,
     "pedido": "AR2407078",
-    "fuente": "GET RPS pedido"
+    "fuente": "GET RPS pedido",
+    "ambito": "historico"
   },
   {
     "nombre": "JIMENEZ CALIZ HNOS., S.L.",
@@ -1338,7 +1495,8 @@
     "aliasRps": null,
     "pedido": "AR2600682",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "016071"
+    "codigoExtraccionAnterior": "016071",
+    "ambito": "historico"
   },
   {
     "nombre": "LACTEOS TERRA DE MELIDE, S. L. ,",
@@ -1347,7 +1505,8 @@
     "aliasRps": null,
     "pedido": "AR2506342",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "004338"
+    "codigoExtraccionAnterior": "004338",
+    "ambito": "historico"
   },
   {
     "nombre": "LAGO CASAL, FRANCISCO",
@@ -1356,7 +1515,8 @@
     "aliasRps": null,
     "pedido": "AR2406910",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "022314"
+    "codigoExtraccionAnterior": "022314",
+    "ambito": "historico"
   },
   {
     "nombre": "LAVANDERIA AXIÑA S.L",
@@ -1365,13 +1525,15 @@
     "aliasRps": null,
     "pedido": "BE2500989",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053222"
+    "codigoExtraccionAnterior": "053222",
+    "ambito": "historico"
   },
   {
     "nombre": "LAZITURRI, S.L.",
     "codigo": "054263",
     "fuente": "histórico",
-    "pedido": "AR2603682"
+    "pedido": "AR2603682",
+    "ambito": "historico"
   },
   {
     "nombre": "LEIRAS INSUA, YOLANDA",
@@ -1380,7 +1542,8 @@
     "aliasRps": null,
     "pedido": "AR2501754",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052448"
+    "codigoExtraccionAnterior": "052448",
+    "ambito": "historico"
   },
   {
     "nombre": "LIBRERIA SIGLO XXI · MRV CONSTRUCCIONES SAN MIGUEL  S.L",
@@ -1389,7 +1552,8 @@
     "aliasRps": "LIBRERIA SIGLO XXI",
     "pedido": "AR2501981",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052508"
+    "codigoExtraccionAnterior": "052508",
+    "ambito": "historico"
   },
   {
     "nombre": "LOPEZ BARCALA, CESAR",
@@ -1398,7 +1562,8 @@
     "aliasRps": null,
     "pedido": "AR2400199",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "039696"
+    "codigoExtraccionAnterior": "039696",
+    "ambito": "historico"
   },
   {
     "nombre": "LOPEZ CARBALLAL, GUILLERMO",
@@ -1407,7 +1572,8 @@
     "aliasRps": null,
     "pedido": "BE2600204",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "010815"
+    "codigoExtraccionAnterior": "010815",
+    "ambito": "historico"
   },
   {
     "nombre": "LOPEZ PRADO, ROBERTO CARLOS",
@@ -1416,7 +1582,8 @@
     "aliasRps": null,
     "pedido": "AR2401457",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "050840"
+    "codigoExtraccionAnterior": "050840",
+    "ambito": "historico"
   },
   {
     "nombre": "LOPEZ REGUEIRA, JUAN",
@@ -1425,7 +1592,8 @@
     "aliasRps": null,
     "pedido": "BE2401009",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "017555"
+    "codigoExtraccionAnterior": "017555",
+    "ambito": "historico"
   },
   {
     "nombre": "LOPEZ VAAMONDE, RICARDO PEDRO",
@@ -1434,7 +1602,8 @@
     "aliasRps": null,
     "pedido": "AR2503441",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052864"
+    "codigoExtraccionAnterior": "052864",
+    "ambito": "historico"
   },
   {
     "nombre": "LOPEZ VALIN, ANGELES",
@@ -1443,7 +1612,8 @@
     "aliasRps": null,
     "pedido": "BE2400828",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051650"
+    "codigoExtraccionAnterior": "051650",
+    "ambito": "historico"
   },
   {
     "nombre": "LOPEZ VIANA, OSCAR",
@@ -1452,7 +1622,8 @@
     "aliasRps": null,
     "pedido": "AR2506477",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053477"
+    "codigoExtraccionAnterior": "053477",
+    "ambito": "historico"
   },
   {
     "nombre": "LORENZO BARBEITO, JOSE SALVADOR",
@@ -1461,7 +1632,8 @@
     "aliasRps": null,
     "pedido": "BE2400117",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "050688"
+    "codigoExtraccionAnterior": "050688",
+    "ambito": "historico"
   },
   {
     "nombre": "LOSADA GOMEZ, ALEJANDRO",
@@ -1470,13 +1642,15 @@
     "aliasRps": null,
     "pedido": "BE2400653",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051435"
+    "codigoExtraccionAnterior": "051435",
+    "ambito": "historico"
   },
   {
     "nombre": "MACERO MONTAÑEZ, JESUS",
     "codigo": "054454",
     "fuente": "histórico",
-    "pedido": "AR2604519"
+    "pedido": "AR2604519",
+    "ambito": "historico"
   },
   {
     "nombre": "MADERA CHIQUILLO S.L",
@@ -1485,7 +1659,8 @@
     "aliasRps": null,
     "pedido": "BE2600156",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053586"
+    "codigoExtraccionAnterior": "053586",
+    "ambito": "historico"
   },
   {
     "nombre": "MADERAS JORGE REY S.L.",
@@ -1494,7 +1669,8 @@
     "aliasRps": null,
     "pedido": "AR2406680",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "048540"
+    "codigoExtraccionAnterior": "048540",
+    "ambito": "historico"
   },
   {
     "nombre": "MAGARIÑOS VILLAR, JAVIER",
@@ -1503,7 +1679,8 @@
     "aliasRps": null,
     "pedido": "AR2402953",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "023117"
+    "codigoExtraccionAnterior": "023117",
+    "ambito": "historico"
   },
   {
     "nombre": "MAHIA FREIRE, JOSE",
@@ -1512,7 +1689,8 @@
     "aliasRps": null,
     "pedido": "AR2405834",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051879"
+    "codigoExtraccionAnterior": "051879",
+    "ambito": "historico"
   },
   {
     "nombre": "MARCOS OJEDA, SIMON",
@@ -1521,7 +1699,8 @@
     "aliasRps": null,
     "pedido": "AR2504838",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053172"
+    "codigoExtraccionAnterior": "053172",
+    "ambito": "historico"
   },
   {
     "nombre": "MARTINEZ GARRIDO, ALBERTO",
@@ -1530,7 +1709,8 @@
     "aliasRps": null,
     "pedido": "AR2600170",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053509"
+    "codigoExtraccionAnterior": "053509",
+    "ambito": "historico"
   },
   {
     "nombre": "MARTINEZ LORENZO, RAIMUNDO",
@@ -1539,7 +1719,8 @@
     "aliasRps": null,
     "pedido": "AR2406570",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052013"
+    "codigoExtraccionAnterior": "052013",
+    "ambito": "historico"
   },
   {
     "nombre": "MATIAS VAQUERIZO, MARIO",
@@ -1548,7 +1729,8 @@
     "aliasRps": null,
     "pedido": "AR2405969",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051916"
+    "codigoExtraccionAnterior": "051916",
+    "ambito": "historico"
   },
   {
     "nombre": "MEDANCLI S.L",
@@ -1557,7 +1739,8 @@
     "aliasRps": null,
     "pedido": "BE2501030",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053269"
+    "codigoExtraccionAnterior": "053269",
+    "ambito": "historico"
   },
   {
     "nombre": "MENDEZ VILAS, DIEGO",
@@ -1566,7 +1749,8 @@
     "aliasRps": null,
     "pedido": "AR2500716",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052258"
+    "codigoExtraccionAnterior": "052258",
+    "ambito": "historico"
   },
   {
     "nombre": "METALES JAIFER, S.L.",
@@ -1575,7 +1759,8 @@
     "aliasRps": null,
     "pedido": "AR2406695",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "041356"
+    "codigoExtraccionAnterior": "041356",
+    "ambito": "historico"
   },
   {
     "nombre": "MONTAJES ELECTRICOS TIBAR, S. L.",
@@ -1584,7 +1769,8 @@
     "aliasRps": null,
     "pedido": "BE2401042",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "027577"
+    "codigoExtraccionAnterior": "027577",
+    "ambito": "historico"
   },
   {
     "nombre": "MONTERO PINTOR, ANTONIO MANUEL",
@@ -1593,7 +1779,8 @@
     "aliasRps": null,
     "pedido": "BE2401206",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052016"
+    "codigoExtraccionAnterior": "052016",
+    "ambito": "historico"
   },
   {
     "nombre": "MORADA  ALCANTARA, ANTONIO",
@@ -1602,7 +1789,8 @@
     "aliasRps": null,
     "pedido": "AR2504136",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "036277"
+    "codigoExtraccionAnterior": "036277",
+    "ambito": "historico"
   },
   {
     "nombre": "MORANDEIRA PEREZ, DAVID",
@@ -1611,7 +1799,8 @@
     "aliasRps": null,
     "pedido": "AR2406615",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052029"
+    "codigoExtraccionAnterior": "052029",
+    "ambito": "historico"
   },
   {
     "nombre": "MUÑIZ LAMPON, JUAN ANTONIO",
@@ -1620,7 +1809,8 @@
     "aliasRps": null,
     "pedido": "AR2400806",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "050740"
+    "codigoExtraccionAnterior": "050740",
+    "ambito": "historico"
   },
   {
     "nombre": "NUÑEZ BARRAL, CARLOS",
@@ -1629,7 +1819,8 @@
     "aliasRps": null,
     "pedido": "BE2400625",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051391"
+    "codigoExtraccionAnterior": "051391",
+    "ambito": "historico"
   },
   {
     "nombre": "ORMAECHEA PADILLA, CRISTINA",
@@ -1638,7 +1829,8 @@
     "aliasRps": null,
     "pedido": "AR2600663",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053594"
+    "codigoExtraccionAnterior": "053594",
+    "ambito": "historico"
   },
   {
     "nombre": "PANADERIA VEIGANOVA · PEREZ BREA, MARIA JESUS",
@@ -1647,7 +1839,8 @@
     "aliasRps": "PANADERIA VEIGANOVA",
     "pedido": "AR2602498",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "030107"
+    "codigoExtraccionAnterior": "030107",
+    "ambito": "historico"
   },
   {
     "nombre": "PARADA SANCHEZ, JOSE FERNANDO",
@@ -1656,7 +1849,8 @@
     "aliasRps": null,
     "pedido": "AR2404925",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051693"
+    "codigoExtraccionAnterior": "051693",
+    "ambito": "historico"
   },
   {
     "nombre": "PARGA GONZALEZ, ALVARO",
@@ -1665,7 +1859,8 @@
     "aliasRps": null,
     "pedido": "BE2500160",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052235"
+    "codigoExtraccionAnterior": "052235",
+    "ambito": "historico"
   },
   {
     "nombre": "PAZOS LEIRO, JULIO CESAR",
@@ -1674,7 +1869,8 @@
     "aliasRps": null,
     "pedido": "AR2406205",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051957"
+    "codigoExtraccionAnterior": "051957",
+    "ambito": "historico"
   },
   {
     "nombre": "PAZOS PIAY, MARCIAL",
@@ -1683,7 +1879,8 @@
     "aliasRps": null,
     "pedido": "AR2405050",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "032691"
+    "codigoExtraccionAnterior": "032691",
+    "ambito": "historico"
   },
   {
     "nombre": "PEDREIRA TASENDE, IGNACIO",
@@ -1692,7 +1889,8 @@
     "aliasRps": null,
     "pedido": "BE2400852",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051674"
+    "codigoExtraccionAnterior": "051674",
+    "ambito": "historico"
   },
   {
     "nombre": "PEDREIRA, ANTONIO",
@@ -1701,7 +1899,8 @@
     "aliasRps": null,
     "pedido": "BE2500972",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "017858"
+    "codigoExtraccionAnterior": "017858",
+    "ambito": "historico"
   },
   {
     "nombre": "PENA LOPEZ, JOSE FRANCISCO",
@@ -1710,7 +1909,8 @@
     "aliasRps": null,
     "pedido": "BE2400072",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "050647"
+    "codigoExtraccionAnterior": "050647",
+    "ambito": "historico"
   },
   {
     "nombre": "PEREZ HERMIDA, JOSE MANUEL",
@@ -1719,7 +1919,8 @@
     "aliasRps": null,
     "pedido": "BE2400434",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "046705"
+    "codigoExtraccionAnterior": "046705",
+    "ambito": "historico"
   },
   {
     "nombre": "PEREZ LOPEZ, JOSE MARIA",
@@ -1728,7 +1929,8 @@
     "aliasRps": null,
     "pedido": "AR2601199",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053690"
+    "codigoExtraccionAnterior": "053690",
+    "ambito": "historico"
   },
   {
     "nombre": "PIÑEIRO BALAY, SANTIAGO",
@@ -1737,7 +1939,8 @@
     "aliasRps": null,
     "pedido": "BE2400151",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "050726"
+    "codigoExtraccionAnterior": "050726",
+    "ambito": "historico"
   },
   {
     "nombre": "PIÑON PUMA, OSCAR",
@@ -1746,7 +1949,8 @@
     "aliasRps": null,
     "pedido": "AR2502271",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052640"
+    "codigoExtraccionAnterior": "052640",
+    "ambito": "historico"
   },
   {
     "nombre": "PORTOS FERNANDEZ, CESAREO",
@@ -1755,7 +1959,8 @@
     "aliasRps": null,
     "pedido": "AR2500598",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "018638"
+    "codigoExtraccionAnterior": "018638",
+    "ambito": "historico"
   },
   {
     "nombre": "POSE CANOSA, MANUEL",
@@ -1764,7 +1969,8 @@
     "aliasRps": null,
     "pedido": "BE2400415",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051067"
+    "codigoExtraccionAnterior": "051067",
+    "ambito": "historico"
   },
   {
     "nombre": "POSE DEAN, FRANCISCO",
@@ -1773,7 +1979,8 @@
     "aliasRps": null,
     "pedido": "AR2601559",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053772"
+    "codigoExtraccionAnterior": "053772",
+    "ambito": "historico"
   },
   {
     "nombre": "PRIETO CUBA,TOMAS",
@@ -1782,7 +1989,8 @@
     "aliasRps": null,
     "pedido": "BE2401272",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "044989"
+    "codigoExtraccionAnterior": "044989",
+    "ambito": "historico"
   },
   {
     "nombre": "PRIETO VILARIÑO, CRISTIAN",
@@ -1791,7 +1999,8 @@
     "aliasRps": null,
     "pedido": "AR2501521",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052398"
+    "codigoExtraccionAnterior": "052398",
+    "ambito": "historico"
   },
   {
     "nombre": "PUGA SEXTO, JOSE MARIA",
@@ -1800,7 +2009,8 @@
     "aliasRps": null,
     "pedido": "AR2400030",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "050586"
+    "codigoExtraccionAnterior": "050586",
+    "ambito": "historico"
   },
   {
     "nombre": "REGO DO SANTOS · GARCIA GARCIA, VICTOR MANUEL",
@@ -1809,7 +2019,8 @@
     "aliasRps": "REGO DO SANTOS",
     "pedido": "AR2601123",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "016537"
+    "codigoExtraccionAnterior": "016537",
+    "ambito": "historico"
   },
   {
     "nombre": "REMOLQUES DESCANSABACAS · TUX 4 SL",
@@ -1818,7 +2029,8 @@
     "aliasRps": "REMOLQUES DESCANSABACAS",
     "pedido": "AR2400808",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "049668"
+    "codigoExtraccionAnterior": "049668",
+    "ambito": "historico"
   },
   {
     "nombre": "REY LOPEZ, CESAREO",
@@ -1827,7 +2039,8 @@
     "aliasRps": null,
     "pedido": "AR2405005",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051711"
+    "codigoExtraccionAnterior": "051711",
+    "ambito": "historico"
   },
   {
     "nombre": "REY MIGUEZ, DAVID",
@@ -1836,7 +2049,8 @@
     "aliasRps": null,
     "pedido": "AR2405866",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051884"
+    "codigoExtraccionAnterior": "051884",
+    "ambito": "historico"
   },
   {
     "nombre": "REY YAÑEZ, JULIO",
@@ -1845,7 +2059,8 @@
     "aliasRps": null,
     "pedido": "BE2500069",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052172"
+    "codigoExtraccionAnterior": "052172",
+    "ambito": "historico"
   },
   {
     "nombre": "RIAL BOO, EDUARDO",
@@ -1854,7 +2069,8 @@
     "aliasRps": null,
     "pedido": "AR2401614",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "050870"
+    "codigoExtraccionAnterior": "050870",
+    "ambito": "historico"
   },
   {
     "nombre": "RIAL LOPEZ, ISMAEL",
@@ -1863,7 +2079,8 @@
     "aliasRps": null,
     "pedido": "AR2500169",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052157"
+    "codigoExtraccionAnterior": "052157",
+    "ambito": "historico"
   },
   {
     "nombre": "RIAL SUAREZ, JOSE MANUEL",
@@ -1872,7 +2089,8 @@
     "aliasRps": null,
     "pedido": "BE2501043",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053275"
+    "codigoExtraccionAnterior": "053275",
+    "ambito": "historico"
   },
   {
     "nombre": "RIVAS CASTELO, JESUS",
@@ -1881,7 +2099,8 @@
     "aliasRps": null,
     "pedido": "AR2505953",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "025596"
+    "codigoExtraccionAnterior": "025596",
+    "ambito": "historico"
   },
   {
     "nombre": "RODRIGUEZ CARRUCHO, ALBERTO",
@@ -1890,7 +2109,8 @@
     "aliasRps": null,
     "pedido": "BE2401003",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051838"
+    "codigoExtraccionAnterior": "051838",
+    "ambito": "historico"
   },
   {
     "nombre": "RODRIGUEZ EXPOSITO, GUMERSINDO",
@@ -1898,7 +2118,8 @@
     "nombreRps": "RODRIGUEZ EXPOSITO, GUMERSINDO",
     "aliasRps": null,
     "pedido": "AR2406886",
-    "fuente": "GET RPS pedido"
+    "fuente": "GET RPS pedido",
+    "ambito": "historico"
   },
   {
     "nombre": "RODRIGUEZ FERNANDEZ, CARLOS",
@@ -1907,7 +2128,8 @@
     "aliasRps": null,
     "pedido": "AR2406207",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051958"
+    "codigoExtraccionAnterior": "051958",
+    "ambito": "historico"
   },
   {
     "nombre": "RODRIGUEZ FUENTES, SANDRA",
@@ -1916,7 +2138,8 @@
     "aliasRps": null,
     "pedido": "AR2602205",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "020273"
+    "codigoExtraccionAnterior": "020273",
+    "ambito": "historico"
   },
   {
     "nombre": "RODRIGUEZ GARCIA, DIEGO",
@@ -1925,7 +2148,8 @@
     "aliasRps": null,
     "pedido": "BE2600492",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053972"
+    "codigoExtraccionAnterior": "053972",
+    "ambito": "historico"
   },
   {
     "nombre": "RODRIGUEZ LISTA, JUAN CARLOS",
@@ -1934,7 +2158,8 @@
     "aliasRps": null,
     "pedido": "AR2400076",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "050596"
+    "codigoExtraccionAnterior": "050596",
+    "ambito": "historico"
   },
   {
     "nombre": "RODRIGUEZ MOURELLE, MARIA JOSE",
@@ -1943,7 +2168,8 @@
     "aliasRps": null,
     "pedido": "AR2500089",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052139"
+    "codigoExtraccionAnterior": "052139",
+    "ambito": "historico"
   },
   {
     "nombre": "RODRIGUEZ PAZ, INOCENCIO",
@@ -1952,7 +2178,8 @@
     "aliasRps": null,
     "pedido": "BE2500177",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052250"
+    "codigoExtraccionAnterior": "052250",
+    "ambito": "historico"
   },
   {
     "nombre": "RODRIGUEZ VAZQUEZ, JOSE MARIA",
@@ -1961,7 +2188,8 @@
     "aliasRps": null,
     "pedido": "BE2500888",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053127"
+    "codigoExtraccionAnterior": "053127",
+    "ambito": "historico"
   },
   {
     "nombre": "ROUCO IGLESIAS, RUBEN",
@@ -1970,7 +2198,8 @@
     "aliasRps": null,
     "pedido": "AR2403757",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051396"
+    "codigoExtraccionAnterior": "051396",
+    "ambito": "historico"
   },
   {
     "nombre": "S. A. T. ISIDRO,  XUGA 1070 ,",
@@ -1979,7 +2208,8 @@
     "aliasRps": null,
     "pedido": "AR2600446",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "010191"
+    "codigoExtraccionAnterior": "010191",
+    "ambito": "historico"
   },
   {
     "nombre": "SABIO FERNANDEZ, RAFAEL",
@@ -1988,7 +2218,8 @@
     "aliasRps": null,
     "pedido": "BE2600690",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "054217"
+    "codigoExtraccionAnterior": "054217",
+    "ambito": "historico"
   },
   {
     "nombre": "SAGASETA MUNARRIZ, ANGEL",
@@ -1997,7 +2228,8 @@
     "aliasRps": null,
     "pedido": "AR2602080",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053886"
+    "codigoExtraccionAnterior": "053886",
+    "ambito": "historico"
   },
   {
     "nombre": "SAIT, S. L. ,",
@@ -2006,7 +2238,8 @@
     "aliasRps": null,
     "pedido": "BE2400444",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "009386"
+    "codigoExtraccionAnterior": "009386",
+    "ambito": "historico"
   },
   {
     "nombre": "SANCHEZ AGUIRREBEITIA, IÑIGO",
@@ -2015,7 +2248,8 @@
     "aliasRps": null,
     "pedido": "AR2602127",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053681"
+    "codigoExtraccionAnterior": "053681",
+    "ambito": "historico"
   },
   {
     "nombre": "SANCHEZ VAZQUEZ, IVAN",
@@ -2024,7 +2258,8 @@
     "aliasRps": null,
     "pedido": "AR2400228",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "050628"
+    "codigoExtraccionAnterior": "050628",
+    "ambito": "historico"
   },
   {
     "nombre": "SANESTEVAN COIRA, DANIEL",
@@ -2033,7 +2268,8 @@
     "aliasRps": null,
     "pedido": "BE2500698",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052912"
+    "codigoExtraccionAnterior": "052912",
+    "ambito": "historico"
   },
   {
     "nombre": "SANISIDRO LAIÑO, SANTIAGO",
@@ -2042,7 +2278,8 @@
     "aliasRps": null,
     "pedido": "AR2502568",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052647"
+    "codigoExtraccionAnterior": "052647",
+    "ambito": "historico"
   },
   {
     "nombre": "SARTAGES MEDRANO, RAMON",
@@ -2051,7 +2288,8 @@
     "aliasRps": null,
     "pedido": "AR2505052",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "029848"
+    "codigoExtraccionAnterior": "029848",
+    "ambito": "historico"
   },
   {
     "nombre": "SEIJO TORREIRO, ANTONIO",
@@ -2060,7 +2298,8 @@
     "aliasRps": null,
     "pedido": "BE2600163",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053592"
+    "codigoExtraccionAnterior": "053592",
+    "ambito": "historico"
   },
   {
     "nombre": "SOUTO VILARIÑO, ANA",
@@ -2069,7 +2308,8 @@
     "aliasRps": null,
     "pedido": "AR2405636",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051846"
+    "codigoExtraccionAnterior": "051846",
+    "ambito": "historico"
   },
   {
     "nombre": "SUAREZ ALVAREZ, ROBERTO",
@@ -2078,7 +2318,8 @@
     "aliasRps": null,
     "pedido": "BE2400187",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "050760"
+    "codigoExtraccionAnterior": "050760",
+    "ambito": "historico"
   },
   {
     "nombre": "SUAREZ PEREZ, RAFAEL",
@@ -2087,7 +2328,8 @@
     "aliasRps": null,
     "pedido": "AR2601586",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053777"
+    "codigoExtraccionAnterior": "053777",
+    "ambito": "historico"
   },
   {
     "nombre": "SUAREZ PIMENTEL, OSCAR",
@@ -2096,7 +2338,8 @@
     "aliasRps": null,
     "pedido": "AR2406834",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052069"
+    "codigoExtraccionAnterior": "052069",
+    "ambito": "historico"
   },
   {
     "nombre": "SUMINISTROS Y REPARACIONES MYT S.L",
@@ -2105,7 +2348,8 @@
     "aliasRps": null,
     "pedido": "AR2505061",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053211"
+    "codigoExtraccionAnterior": "053211",
+    "ambito": "historico"
   },
   {
     "nombre": "SUPERMUIÑO S.L",
@@ -2114,7 +2358,8 @@
     "aliasRps": null,
     "pedido": "AR2500586",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "049022"
+    "codigoExtraccionAnterior": "049022",
+    "ambito": "historico"
   },
   {
     "nombre": "T.G TALLERES GONZALEZ, S. L.",
@@ -2123,7 +2368,8 @@
     "aliasRps": null,
     "pedido": "AR2500542",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "007698"
+    "codigoExtraccionAnterior": "007698",
+    "ambito": "historico"
   },
   {
     "nombre": "TALLER DE ARTESANOS ZOCLOS · MILLAN GOMEZ,LUIS",
@@ -2131,7 +2377,8 @@
     "nombreRps": "MILLAN GOMEZ,LUIS",
     "aliasRps": "TALLER DE ARTESANOS ZOCLOS",
     "pedido": "AR2406885",
-    "fuente": "GET RPS pedido"
+    "fuente": "GET RPS pedido",
+    "ambito": "historico"
   },
   {
     "nombre": "TALLERES JOSE SUAREZ S.L.",
@@ -2140,7 +2387,8 @@
     "aliasRps": null,
     "pedido": "AR2406598",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "030323"
+    "codigoExtraccionAnterior": "030323",
+    "ambito": "historico"
   },
   {
     "nombre": "TALLERES TREBORE JARDINERIA S.L.",
@@ -2149,7 +2397,8 @@
     "aliasRps": null,
     "pedido": "BE2500759",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "036510"
+    "codigoExtraccionAnterior": "036510",
+    "ambito": "historico"
   },
   {
     "nombre": "TIPSA RECAMBIOS S.L",
@@ -2158,7 +2407,8 @@
     "aliasRps": null,
     "pedido": "AR2600017",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "047265"
+    "codigoExtraccionAnterior": "047265",
+    "ambito": "historico"
   },
   {
     "nombre": "TOBIO ARRIBAS, JORGE",
@@ -2167,7 +2417,8 @@
     "aliasRps": null,
     "pedido": "AR2400631",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "050707"
+    "codigoExtraccionAnterior": "050707",
+    "ambito": "historico"
   },
   {
     "nombre": "TOJEIRO LOPEZ, AMANDINO",
@@ -2176,7 +2427,8 @@
     "aliasRps": null,
     "pedido": "BE2400254",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "050834"
+    "codigoExtraccionAnterior": "050834",
+    "ambito": "historico"
   },
   {
     "nombre": "TOLDOS Y CERRAMIENTOS GYG S.L.U.",
@@ -2185,7 +2437,8 @@
     "aliasRps": null,
     "pedido": "AR2505739",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "041952"
+    "codigoExtraccionAnterior": "041952",
+    "ambito": "historico"
   },
   {
     "nombre": "U.T.E PORTOS SECTOR CENTRO",
@@ -2194,7 +2447,8 @@
     "aliasRps": null,
     "pedido": "BE2401271",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052095"
+    "codigoExtraccionAnterior": "052095",
+    "ambito": "historico"
   },
   {
     "nombre": "URIA MARTINEZ, LUIS MIGUEL",
@@ -2203,7 +2457,8 @@
     "aliasRps": null,
     "pedido": "AR2603435",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "054199"
+    "codigoExtraccionAnterior": "054199",
+    "ambito": "historico"
   },
   {
     "nombre": "VAELLO RODRIGUEZ, JOSE ANTONIO",
@@ -2212,7 +2467,8 @@
     "aliasRps": null,
     "pedido": "AR2601884",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053832"
+    "codigoExtraccionAnterior": "053832",
+    "ambito": "historico"
   },
   {
     "nombre": "VAN BERKUM, CECILIA MARGARETHA",
@@ -2221,7 +2477,8 @@
     "aliasRps": null,
     "pedido": "AR2602182",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053917"
+    "codigoExtraccionAnterior": "053917",
+    "ambito": "historico"
   },
   {
     "nombre": "VARELA FERNANDEZ, JOSE MANUEL",
@@ -2230,7 +2487,8 @@
     "aliasRps": null,
     "pedido": "BE2400638",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051411"
+    "codigoExtraccionAnterior": "051411",
+    "ambito": "historico"
   },
   {
     "nombre": "VARELA FREIRE, ALVARO",
@@ -2239,7 +2497,8 @@
     "aliasRps": null,
     "pedido": "AR2505632",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053339"
+    "codigoExtraccionAnterior": "053339",
+    "ambito": "historico"
   },
   {
     "nombre": "VARELA GANDOY, JOSE LUIS",
@@ -2248,7 +2507,8 @@
     "aliasRps": null,
     "pedido": "AR2405906",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051899"
+    "codigoExtraccionAnterior": "051899",
+    "ambito": "historico"
   },
   {
     "nombre": "VARELA LOPEZ, ALBERTO",
@@ -2257,7 +2517,8 @@
     "aliasRps": null,
     "pedido": "BE2600602",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "054094"
+    "codigoExtraccionAnterior": "054094",
+    "ambito": "historico"
   },
   {
     "nombre": "VAZQUEZ BARROS,DOMINGO",
@@ -2266,7 +2527,8 @@
     "aliasRps": null,
     "pedido": "BE2500033",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "044426"
+    "codigoExtraccionAnterior": "044426",
+    "ambito": "historico"
   },
   {
     "nombre": "VAZQUEZ CASTRO, JOSE RAMON",
@@ -2275,7 +2537,8 @@
     "aliasRps": null,
     "pedido": "AR2405036",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051720"
+    "codigoExtraccionAnterior": "051720",
+    "ambito": "historico"
   },
   {
     "nombre": "VAZQUEZ QUINTEIRO, JUSTA",
@@ -2284,7 +2547,8 @@
     "aliasRps": null,
     "pedido": "AR2406740",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "020501"
+    "codigoExtraccionAnterior": "020501",
+    "ambito": "historico"
   },
   {
     "nombre": "VAZQUEZ TORRES, LAURA",
@@ -2293,7 +2557,8 @@
     "aliasRps": null,
     "pedido": "AR2402694",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "051163"
+    "codigoExtraccionAnterior": "051163",
+    "ambito": "historico"
   },
   {
     "nombre": "VENCES BOUZAS, BENJAMIN",
@@ -2302,7 +2567,8 @@
     "aliasRps": null,
     "pedido": "AR2400508",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "050685"
+    "codigoExtraccionAnterior": "050685",
+    "ambito": "historico"
   },
   {
     "nombre": "VIDAL NUÑEZ, JOAQUIN",
@@ -2311,7 +2577,8 @@
     "aliasRps": null,
     "pedido": "AR2501584",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052410"
+    "codigoExtraccionAnterior": "052410",
+    "ambito": "historico"
   },
   {
     "nombre": "VIDAL OTERO, ANDREA",
@@ -2320,7 +2587,8 @@
     "aliasRps": null,
     "pedido": "AR2505385",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053280"
+    "codigoExtraccionAnterior": "053280",
+    "ambito": "historico"
   },
   {
     "nombre": "VIDAL SANTORUM, ANA BELEN",
@@ -2329,7 +2597,8 @@
     "aliasRps": null,
     "pedido": "AR2502296",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052571"
+    "codigoExtraccionAnterior": "052571",
+    "ambito": "historico"
   },
   {
     "nombre": "VIDAL VAZQUEZ, JUAN ANTONIO",
@@ -2338,7 +2607,8 @@
     "aliasRps": null,
     "pedido": "AR2504350",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053078"
+    "codigoExtraccionAnterior": "053078",
+    "ambito": "historico"
   },
   {
     "nombre": "VILA VEIGA, JOSE MANUEL",
@@ -2347,7 +2617,8 @@
     "aliasRps": null,
     "pedido": "AR2504507",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "021774"
+    "codigoExtraccionAnterior": "021774",
+    "ambito": "historico"
   },
   {
     "nombre": "VILAR LOPEZ, FIDEL",
@@ -2356,7 +2627,8 @@
     "aliasRps": null,
     "pedido": "BE2500250",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052312"
+    "codigoExtraccionAnterior": "052312",
+    "ambito": "historico"
   },
   {
     "nombre": "VILAR SANCHEZ, ISMAEL",
@@ -2365,7 +2637,8 @@
     "aliasRps": null,
     "pedido": "AR2503567",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "052904"
+    "codigoExtraccionAnterior": "052904",
+    "ambito": "historico"
   },
   {
     "nombre": "VILARIÑO SILVA, JORGE",
@@ -2374,7 +2647,8 @@
     "aliasRps": null,
     "pedido": "AR2601075",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053666"
+    "codigoExtraccionAnterior": "053666",
+    "ambito": "historico"
   },
   {
     "nombre": "YEBRA PASTOR, ENRIQUE",
@@ -2383,7 +2657,8 @@
     "aliasRps": null,
     "pedido": "AR2601412",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "053739"
+    "codigoExtraccionAnterior": "053739",
+    "ambito": "historico"
   },
   {
     "nombre": "ZAYAS LUQUE, JUAN ANTONIO",
@@ -2392,62 +2667,129 @@
     "aliasRps": null,
     "pedido": "AR2500189",
     "fuente": "GET RPS pedido",
-    "codigoExtraccionAnterior": "041861"
+    "codigoExtraccionAnterior": "041861",
+    "ambito": "historico"
   },
   {
     "nombre": "BENEDICTO CASTELLS, MIRIAM",
     "codigo": "054524",
     "alias": null,
     "pedido": "AR2604843",
-    "fuente": "GET RPS pedido PDF producido"
+    "fuente": "GET RPS pedido PDF producido",
+    "ambito": "pdf-producido"
   },
   {
     "nombre": "UGARTE SARO, AIDA",
     "codigo": "054529",
     "alias": null,
     "pedido": "AR2605055",
-    "fuente": "GET RPS pedido PDF producido"
+    "fuente": "GET RPS pedido PDF producido",
+    "ambito": "pdf-producido"
   },
   {
     "nombre": "FIDALGO LEON, DANIEL",
     "codigo": "054552",
     "alias": null,
     "pedido": "AR2604959",
-    "fuente": "GET RPS pedido PDF producido"
+    "fuente": "GET RPS pedido PDF producido",
+    "ambito": "pdf-producido"
   },
   {
     "nombre": "FERNANDEZ FERNANDEZ, JESUS",
     "codigo": "054576",
     "alias": null,
     "pedido": "AR2605079",
-    "fuente": "GET RPS pedido PDF producido"
+    "fuente": "GET RPS pedido PDF producido",
+    "ambito": "pdf-producido"
   },
   {
     "nombre": "DOMINGUEZ GALIÑANES, JUAN JOSE",
     "codigo": "054592",
     "alias": null,
     "pedido": "AR2605140",
-    "fuente": "GET RPS pedido PDF producido"
+    "fuente": "GET RPS pedido PDF producido",
+    "ambito": "pdf-producido"
   },
   {
     "nombre": "LOPEZ BARREIRO, PABLO",
     "codigo": "054595",
     "alias": null,
     "pedido": "AR2605158",
-    "fuente": "GET RPS pedido PDF producido"
+    "fuente": "GET RPS pedido PDF producido",
+    "ambito": "pdf-producido"
   },
   {
     "nombre": "FERRI JUAN, VICENTE",
     "codigo": "054598",
     "alias": "REMOLQUES ROBUSTOS",
     "pedido": "AR2605183",
-    "fuente": "GET RPS pedido PDF producido"
+    "fuente": "GET RPS pedido PDF producido",
+    "ambito": "pdf-producido"
   },
   {
     "nombre": "LLANOS MARTINEZ, JORGE",
     "codigo": "054612",
     "alias": null,
     "pedido": "AR2605260",
-    "fuente": "GET RPS pedido PDF producido"
+    "fuente": "GET RPS pedido PDF producido",
+    "ambito": "pdf-producido"
+  },
+  {
+    "nombre": "AGRICOLA Y REMOLQUES ESVA, S. L.",
+    "codigo": "001021",
+    "aliasRps": "ESVA",
+    "pedido": "AR1506680",
+    "pedidos": [
+      "AR1506680",
+      "AR1901137",
+      "AR2000769"
+    ],
+    "fuente": "GET RPS pedido citado en plantilla",
+    "ambito": "plantilla"
+  },
+  {
+    "nombre": "J&B AGROMAQUINAS Y REMOLQUES S. L.",
+    "codigo": "000033",
+    "aliasRps": null,
+    "pedido": "AR1707015",
+    "pedidos": [
+      "AR1707015",
+      "AR1500073"
+    ],
+    "fuente": "GET RPS pedido citado en plantilla",
+    "ambito": "plantilla"
+  },
+  {
+    "nombre": "TALLERES DE LA AZABA, S.L.",
+    "codigo": "012902",
+    "aliasRps": null,
+    "pedido": "AR0805372",
+    "pedidos": [
+      "AR0805372"
+    ],
+    "fuente": "GET RPS pedido citado en plantilla",
+    "ambito": "plantilla"
+  },
+  {
+    "nombre": "TRIÑANES SILVA, ALFREDO",
+    "codigo": "000472",
+    "aliasRps": null,
+    "pedido": "AR1901084",
+    "pedidos": [
+      "AR1901084"
+    ],
+    "fuente": "GET RPS pedido citado en plantilla",
+    "ambito": "plantilla"
+  },
+  {
+    "nombre": "RODEIRO LOUZAO, MANUEL",
+    "codigo": "050254",
+    "aliasRps": null,
+    "pedido": "AR2305318",
+    "pedidos": [
+      "AR2305318"
+    ],
+    "fuente": "GET RPS pedido citado en plantilla",
+    "ambito": "plantilla"
   }
 ]

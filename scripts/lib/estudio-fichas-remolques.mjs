@@ -11,6 +11,16 @@ export function invertirPosiciones(posiciones, longitudHecha) {
   return posiciones.map(p => r(longitudHecha - p)).reverse();
 }
 
+/** Centra solo la asimetría de márgenes; una coordenada exterior no se corrige por conjetura. */
+export function normalizarPosiciones(posiciones, longitudHecha, deliberado = false) {
+  if (!(longitudHecha > 0) || !Number.isFinite(longitudHecha) || !posiciones.length
+      || posiciones.some((p, i) => !Number.isFinite(p) || p <= 0 || p > longitudHecha || i > 0 && p <= posiciones[i - 1])) return null;
+  const huecos = posiciones.slice(1).map((p, i) => p - posiciones[i]);
+  const simetricos = huecos.every((h, i) => Math.abs(h - huecos[huecos.length - 1 - i]) <= 0.21);
+  const resultado = centrarPosiciones(posiciones, longitudHecha, deliberado || !simetricos);
+  return resultado.every(p => p > 0 && p < longitudHecha) ? resultado : null;
+}
+
 /** Un pedido cuenta una sola vez por variante, aunque tenga varias copias o fuentes. */
 export function elegirVariante(casos) {
   const variantes = new Map();

@@ -855,29 +855,135 @@
         "ancho": 150,
         "ollaos": {
           "laterales": [
-            2.8,
-            31,
-            62.5,
-            94,
-            125.5,
-            157,
-            188.5,
-            219.9,
-            248.2
+            1.25,
+            32.35,
+            63.35,
+            94.45,
+            125.45,
+            156.55,
+            187.65,
+            218.65,
+            249.75
           ],
           "atras": [
-            17.85,
-            47.05,
-            76.25,
-            105.45,
-            134.65
+            3.25,
+            32.45,
+            61.65,
+            90.85,
+            120.05,
+            149.25
           ],
           "delante": [
-            17.1,
-            46.3,
-            75.5,
-            104.7,
-            133.9
+            2.5,
+            31.7,
+            60.9,
+            90.1,
+            119.3,
+            148.5
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 250,
+        "ancho": 160,
+        "ollaos": {
+          "laterales": [
+            1.25,
+            31.05,
+            62.55,
+            94.05,
+            125.55,
+            157.05,
+            188.55,
+            220.05,
+            249.75
+          ],
+          "atras": [
+            3.25,
+            32.55,
+            65.05,
+            97.55,
+            130.05,
+            159.25
+          ],
+          "delante": [
+            2.5,
+            31.8,
+            64.3,
+            96.8,
+            129.3,
+            158.5
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 260,
+        "ancho": 160,
+        "ollaos": {
+          "laterales": [
+            1.25,
+            33.55,
+            65.85,
+            98.15,
+            130.45,
+            162.85,
+            195.15,
+            227.45,
+            259.75
+          ],
+          "atras": [
+            3.25,
+            34.45,
+            65.65,
+            96.85,
+            128.05,
+            159.25
+          ],
+          "delante": [
+            1.75,
+            33.25,
+            64.75,
+            96.25,
+            127.75,
+            159.25
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 320,
+        "ancho": 170,
+        "ollaos": {
+          "laterales": [
+            1.25,
+            33.05,
+            64.95,
+            96.75,
+            128.65,
+            160.45,
+            192.35,
+            224.15,
+            256.05,
+            287.85,
+            319.75
+          ],
+          "atras": [
+            2.5,
+            36,
+            69.5,
+            103,
+            136.5,
+            170
+          ],
+          "delante": [
+            2.5,
+            35.7,
+            68.9,
+            102.1,
+            135.3,
+            168.5
           ]
         }
       }
@@ -6538,6 +6644,34 @@
         }
       },
       {
+        "tipo": "baqueton",
+        "largo": 92,
+        "ancho": 50,
+        "ollaos": {
+          "laterales": [
+            2.5,
+            17.166667,
+            31.833333,
+            46.5,
+            61.166667,
+            75.833333,
+            90.5
+          ],
+          "delante": [
+            2.5,
+            17.833333,
+            33.166667,
+            48.5
+          ],
+          "atras": [
+            2.5,
+            17.833333,
+            33.166667,
+            48.5
+          ]
+        }
+      },
+      {
         "tipo": "lona",
         "largo": 122,
         "ancho": 109,
@@ -11778,30 +11912,29 @@
         "ancho": 163,
         "ollaos": {
           "laterales": [
-            2.5,
-            35.4,
-            68.3,
-            101.2,
-            134.1,
-            166.9,
-            199.8,
-            232.7,
-            265.6,
-            298.5
+            17.3,
+            50.6,
+            83.9,
+            117.2,
+            150.5,
+            183.8,
+            217.1,
+            250.4,
+            283.7
           ],
           "atras": [
-            2.5,
-            42.3,
+            16.4,
+            49.2,
             82,
-            121.8,
-            161.5
+            114.8,
+            147.6
           ],
           "delante": [
-            2.5,
-            42.3,
+            16.4,
+            49.2,
             82,
-            121.8,
-            161.5
+            114.8,
+            147.6
           ]
         }
       },
@@ -17251,10 +17384,14 @@
       "lleva": false
     },
     "perfil": {
-      "tipoPerfil": "TIPO 03"
+      "tipoPerfil": "TIPO 03",
+      "aguas": 10
     },
     "recogeAtras": "PUENTES ESVA",
     "bastillaEnfundar": false,
+    "observaciones": [
+      "LOS 10 CM DE AGUAS VAN INCLUIDOS EN LA ALTURA"
+    ],
     "medidas": [
       {
         "tipo": "baqueton",
@@ -18297,6 +18434,10 @@
       "tipoPerfil": "TIPO 02"
     },
     "recogeAtras": "CREMALLERA",
+    "observaciones": [
+      "LONA ALTA: 2 CM DE AGUAS A MAYORES DE LAS MEDIDAS DEL PEDIDO",
+      "BAQUETÓN QUE BAJA MENOS DE 10 CM: SIN AUMENTO DE AGUAS"
+    ],
     "medidas": [
       {
         "tipo": "baqueton",
@@ -19639,6 +19780,71 @@
       },
       {
         "tipo": "lona",
+        "largo": 305,
+        "ancho": 190,
+        "ollaos": {
+          "laterales": [
+            17.4,
+            51.3,
+            85.2,
+            119.1,
+            153,
+            186.9,
+            220.8,
+            254.7,
+            288.6
+          ],
+          "atras": [
+            19.1,
+            57.3,
+            95.5,
+            133.7,
+            171.9
+          ],
+          "delante": [
+            19.1,
+            57.3,
+            95.5,
+            133.7,
+            171.9
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 355,
+        "ancho": 190,
+        "ollaos": {
+          "laterales": [
+            18.25,
+            53.75,
+            89.25,
+            124.75,
+            160.25,
+            195.75,
+            231.25,
+            266.75,
+            302.25,
+            337.75
+          ],
+          "atras": [
+            19.1,
+            57.3,
+            95.5,
+            133.7,
+            171.9
+          ],
+          "delante": [
+            19.1,
+            57.3,
+            95.5,
+            133.7,
+            171.9
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
         "largo": 403,
         "ancho": 160,
         "ollaos": {
@@ -19684,13 +19890,18 @@
     ],
     "ollaosRepartidos": true,
     "perfil": {
-      "tipoPerfil": "TIPO 03"
+      "tipoPerfil": "TIPO 03",
+      "aguas": 16
     },
     "recogeDelante": "NO",
     "recogeAtras": "CREMALLERA",
     "ventana": {
       "lleva": false
     },
+    "observaciones": [
+      "EL CLIENTE DA LA HOLGURA: AÑADIR SOLO LA COSTURA",
+      "LOS 16 CM DE AGUAS VAN INCLUIDOS EN LA ALTURA"
+    ],
     "medidas": [
       {
         "tipo": "baqueton",
@@ -20295,6 +20506,117 @@
             80.5,
             120.5,
             150.5
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 138,
+        "ancho": 108,
+        "ollaos": {
+          "delante": [
+            4,
+            37.5,
+            71.5,
+            105
+          ],
+          "atras": [
+            4,
+            37.5,
+            71.5,
+            105
+          ],
+          "laterales": [
+            10,
+            33,
+            56,
+            84,
+            105,
+            134
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 158,
+        "ancho": 118,
+        "ollaos": {
+          "delante": [
+            4,
+            38,
+            81,
+            115
+          ],
+          "atras": [
+            4,
+            38,
+            81,
+            115
+          ],
+          "laterales": [
+            2,
+            13,
+            31,
+            70,
+            90,
+            128,
+            148
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 178,
+        "ancho": 118,
+        "ollaos": {
+          "delante": [
+            4,
+            38,
+            81,
+            115
+          ],
+          "atras": [
+            4,
+            38,
+            81,
+            115
+          ],
+          "laterales": [
+            2,
+            13,
+            37,
+            73,
+            107,
+            145,
+            174
+          ]
+        }
+      },
+      {
+        "tipo": "lona",
+        "largo": 199,
+        "ancho": 118,
+        "ollaos": {
+          "delante": [
+            4,
+            38,
+            81,
+            115
+          ],
+          "atras": [
+            4,
+            38,
+            81,
+            115
+          ],
+          "laterales": [
+            2,
+            13,
+            41,
+            83,
+            118,
+            162,
+            195
           ]
         }
       }
@@ -22828,7 +23150,8 @@
     ],
     "ollaosRepartidos": true,
     "perfil": {
-      "tipoPerfil": "TIPO 02"
+      "tipoPerfil": "TIPO 02",
+      "aguas": 15
     },
     "bastillaEnfundar": false,
     "ventana": {
@@ -31618,6 +31941,53 @@
           ]
         }
       }
+    ]
+  },
+  {
+    "id": "esva-agricola-y-remolques-esva-s-l",
+    "nombre": "ESVA · AGRICOLA Y REMOLQUES ESVA, S. L.",
+    "codigosRps": [
+      "001021"
+    ],
+    "rotulacion": false,
+    "observaciones": [
+      "SI NO INDICA OTRA COSA, LAS POSICIONES SON DE OLLAOS, NO DE GANCHOS",
+      "CON MÁS DE 60 CM DE ALTO, RECOGIDA CON PUENTES; CONFIRMAR LOS LADOS QUE RECOGEN",
+      "ARCO HABITUAL DE RADIO 7,5 CM; ARCO NUEVO DE RADIO 17,5 SOLO CUANDO LO PIDE"
+    ]
+  },
+  {
+    "id": "j-b-agromaquinas-y-remolques-s-l",
+    "nombre": "J&B AGROMAQUINAS Y REMOLQUES S. L.",
+    "codigosRps": [
+      "000033"
+    ],
+    "rotulacion": false,
+    "recogeAtras": "CREMALLERA",
+    "observaciones": [
+      "EL CLIENTE DA LA HOLGURA: AÑADIR SOLO LA COSTURA",
+      "CREMALLERA HABITUAL DEL 6; SI PIDE ANCHA, DEL 9"
+    ]
+  },
+  {
+    "id": "talleres-de-la-azaba-s-l",
+    "nombre": "TALLERES DE LA AZABA, S.L.",
+    "codigosRps": [
+      "012902"
+    ]
+  },
+  {
+    "id": "trinanes-silva-alfredo",
+    "nombre": "TRIÑANES SILVA, ALFREDO",
+    "codigosRps": [
+      "000472"
+    ]
+  },
+  {
+    "id": "rodeiro-louzao-manuel",
+    "nombre": "RODEIRO LOUZAO, MANUEL",
+    "codigosRps": [
+      "050254"
     ]
   }
 ]

@@ -1,0 +1,38 @@
+{
+  "fecha": "2026-10-29",
+  "criterio": "Solo se completan los lados cuyo origen sobre la medida hecha y correspondencia con el elemento del pedido se han cotejado en el dibujo. Las filas opuestas de este baquetón son iguales y simétricas: invertir el sentido no cambia las posiciones.",
+  "casos": [
+    {
+      "pedido": "AR2400131",
+      "codigo": "048363",
+      "tipo": "baqueton",
+      "largo": 92,
+      "ancho": 50,
+      "hechoLargo": 93,
+      "hechoAncho": 51,
+      "fichero": "//192.168.0.128/Oftecnica/Oficina Tecnica/2024/AR2400131.dwg",
+      "origenLargoCad": [-5609.820745665458, -1355.979275106005],
+      "filasLargoY": [-1355.989275106005, -1356.679275106005],
+      "origenAnchoCad": [-5609.920745665459, -1356.079275106005],
+      "filasAnchoX": [-5609.910745665458, -5608.800745665459],
+      "ollaos": {
+        "laterales": [2.5, 17.166667, 31.833333, 46.5, 61.166667, 75.833333, 90.5],
+        "delante": [2.5, 17.833333, 33.166667, 48.5],
+        "atras": [2.5, 17.833333, 33.166667, 48.5]
+      },
+      "comprobacion": "Rótulo interior 92 × 50, cotas hechas 93 × 51, puntas a 2,5 cm. Cotejados los 22 círculos de la capa marca, dos filas de siete y dos de cuatro, y el contorno con sus demasías. Las marcas ROTULADOR de corte son otra representación y no se usan como origen."
+    }
+  ],
+  "dudas": [
+    {
+      "pedido": "AR2604619",
+      "codigo": "054473",
+      "tipo": "baqueton",
+      "largo": 181,
+      "ancho": 110,
+      "fichero": "//192.168.0.128/Oftecnica/Oficina Tecnica/2026/AR2604619.dwg",
+      "motivo": "El elemento 0232307 tiene las cabezas distintas: una lleva 2,5;35;75;108,5 y la otra 2,5;55;108,5. El CAD no identifica cuál es delante ni desde qué extremo se orienta el lateral. No se mezclan con el elemento vecino 0232306 de 186 × 110.",
+      "lateralesSinOrientar": [2.5, 23, 67, 114, 158, 179.5]
+    }
+  ]
+}

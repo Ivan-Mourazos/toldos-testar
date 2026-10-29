@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { centrarPosiciones, elegirVariante, invertirPosiciones } from './lib/estudio-fichas-remolques.mjs';
+import { centrarPosiciones, elegirVariante, invertirPosiciones, normalizarPosiciones } from './lib/estudio-fichas-remolques.mjs';
 import { cargarPlan, prepararCarga } from './cargar-fichas-remolques.mjs';
 
 const ficha = { id: 'taller', nombre: 'TALLER', codigosRps: ['000001'], version: 3 };
@@ -18,6 +18,19 @@ describe('Convenio y comparación del estudio de remolques', () => {
 
   it('invierte los laterales que vienen medidos desde delante', () => {
     expect(invertirPosiciones([10, 50, 90], 111)).toEqual([21, 61, 101]);
+  });
+
+  it('centra antes de descartar el último punto que quedó justo en el borde', () => {
+    expect(normalizarPosiciones([2.5, 34.8, 67.1, 99.4], 99.4)).toEqual([1.25, 33.55, 65.85, 98.15]);
+    expect(normalizarPosiciones([35, 70, 105], 105)).toEqual([17.5, 52.5, 87.5]);
+  });
+
+  it('rechaza coordenadas exteriores o desordenadas y conserva las asimetrías internas', () => {
+    expect(normalizarPosiciones([10, 50, 111], 110)).toBeNull();
+    expect(normalizarPosiciones([10, 80, 50], 110)).toBeNull();
+    expect(normalizarPosiciones([10, 25, 70, 100], 111)).toEqual([10, 25, 70, 100]);
+    expect(normalizarPosiciones([2.5, 35, 67.5], 70, true)).toEqual([2.5, 35, 67.5]);
+    expect(normalizarPosiciones([2.5, 35, 67.5], 67.5, true)).toBeNull();
   });
 
   it('elige el reparto más frecuente por pedidos distintos y resuelve empates por fecha', () => {

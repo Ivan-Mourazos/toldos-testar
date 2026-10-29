@@ -1,0 +1,16 @@
+{
+  "fecha": "2026-10-29",
+  "fuente": "GET /api/remolques/rps-pedido?numero=<pedido>, solo lectura",
+  "criterio": "Pedidos escritos en las plantillas o en el nombre del DWG. Una plantilla de pedido puede contener otras plantillas copiadas: el código se asocia al pedido y no se extiende al contenido copiado.",
+  "clientes": [
+    {"codigo": "001021", "nombre": "AGRICOLA Y REMOLQUES ESVA, S. L.", "alias": "ESVA", "pedidos": ["AR1506680", "AR1901137", "AR2000769"], "plantillas": ["ESVA/ARCO NUEVO.dwg", "ESVA/GL1,5 ESPECIAL.dwg", "ESVA/LONA CHURRERIA.dwg", "ESVA/REMOLQUES DE GANADO CONFIRMADOS/REMOLQUE GANADERO GL-14 (ARCO NUEVO).dwg"], "familia": "ESVA/"},
+    {"codigo": "000033", "nombre": "J&B AGROMAQUINAS Y REMOLQUES S. L.", "alias": null, "pedidos": ["AR1707015", "AR1500073"], "plantillas": ["J&B.dwg", "REMOLQUES GANADO/JB/RANCHERO I (1300).dwg"], "familia": "REMOLQUES GANADO/JB/"},
+    {"codigo": "012902", "nombre": "TALLERES DE LA AZABA, S.L.", "alias": null, "pedidos": ["AR0805372"], "plantillas": ["TALLERES DE LA AZABA.dwg"]},
+    {"codigo": "005734", "nombre": "FERNANDEZ MUNICIO, JUAN", "alias": "CERRAJERIA CERRI", "pedidos": ["AR1503345"], "plantillas": ["JUAN FERNANDEZ.dwg"]},
+    {"codigo": "000064", "nombre": "TALLERES ALDIPE, S. L.", "alias": null, "pedidos": ["AR1807168"], "plantillas": ["AR1807168.dwg"]},
+    {"codigo": "000472", "nombre": "TRIÑANES SILVA, ALFREDO", "alias": null, "pedidos": ["AR1901084"], "plantillas": ["AR1901084.dwg"]},
+    {"codigo": "016573", "nombre": "TALLERES CAL, C. B.", "alias": null, "pedidos": ["AR2103992", "AR2103242"], "plantillas": ["AR2103992.dwg", "AR2103242.dwg"]},
+    {"codigo": "050254", "nombre": "RODEIRO LOUZAO, MANUEL", "alias": null, "pedidos": ["AR2305318"], "plantillas": ["AR2305318.dwg"]},
+    {"codigo": "042623", "nombre": "VAZQUEZ BARREIRO, JAVIER", "alias": "ANTIGUO COBELO", "pedidos": ["AR2002470"], "plantillas": ["AR2002470.dwg"]}
+  ]
+}
