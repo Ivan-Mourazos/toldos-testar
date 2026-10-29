@@ -62,6 +62,8 @@ export interface FichaCliente {
   sesgoDetras?: number;
   /** Cremallera del 9: sale como observación en las lonas. */
   cremallera?: boolean;
+  /** Sus ollaos van siempre repartidos (su plantilla dice «OLLAOS REPARTIDOS»), salvo una medida habitual exacta. */
+  ollaosRepartidos?: boolean;
   extrasBaqueton?: ExtrasBaqueton;
   /** Observaciones fijas, una por línea: salen siempre en sus planteamientos. */
   observaciones?: string[];

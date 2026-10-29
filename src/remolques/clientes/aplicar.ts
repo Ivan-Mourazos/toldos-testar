@@ -35,6 +35,11 @@ export function ollaosHabituales(ficha: FichaCliente, tipo: TipoPlanteamiento, l
   return { laterales: lat?.ollaos.laterales ?? [], atras: cab?.ollaos.atras ?? [], delante: cab?.ollaos.delante ?? [] };
 }
 
+/** Con «siempre repartidos» solo cuenta la medida exacta: una medida suelta dejaría un lado sin ollaos. */
+const ollaosDeFicha = (ficha: FichaCliente, tipo: TipoPlanteamiento, largo: number, ancho: number) => (ficha.ollaosRepartidos
+  ? medidaHabitual(ficha, tipo, largo, ancho)?.ollaos ?? null
+  : ollaosHabituales(ficha, tipo, largo, ancho));
+
 function conObservaciones(actual: string, nuevas: readonly string[], campos: string[]): string {
   const lineas = lineasDe(actual);
   const faltan = nuevas.map((n) => n.trim()).filter((n) => n && !lineas.some((l) => clave(l) === clave(n)));
@@ -43,8 +48,14 @@ function conObservaciones(actual: string, nuevas: readonly string[], campos: str
   return [...lineas, ...faltan].join("\n");
 }
 
-function conOllaos<T extends LonaInput | BaquetonInput>(input: T, ollaos: RepartoLados | null, campos: string[]): T {
-  if (!ollaos || input.modoOllaos !== "") return input;
+function conOllaos<T extends LonaInput | BaquetonInput>(input: T, ollaos: RepartoLados | null, campos: string[], repartidos = false): T {
+  if (input.modoOllaos !== "") return input;
+  // «Siempre repartidos» (Iván, 29/10/2026: CARMA, Camacho): si no hay una medida habitual exacta, repartidos.
+  if (repartidos && !ollaos) {
+    campos.push("modoOllaos");
+    return { ...input, modoOllaos: "REPARTIDOS" };
+  }
+  if (!ollaos) return input;
   campos.push("modoOllaos", "ollaosManuales");
   return {
     ...input,
@@ -110,7 +121,7 @@ function aplicarLona(entrada: LonaInput, ficha: FichaCliente, campos: string[]):
     input.anchoAtras = r1(input.ancho + ficha.sesgoDetras);
     campos.push("anchoAtras");
   }
-  input = conOllaos(input, ollaosHabituales(ficha, "lona", input.largo, input.ancho), campos);
+  input = conOllaos(input, ollaosDeFicha(ficha, "lona", input.largo, input.ancho), campos, ficha.ollaosRepartidos);
   const fijas = [...(ficha.cremallera ? [LINEA_CREMALLERA] : []), ...(ficha.observaciones ?? [])];
   return { ...input, observaciones: conObservaciones(input.observaciones, fijas, campos) };
 }
@@ -129,7 +140,7 @@ function aplicarBaqueton(entrada: BaquetonInput, ficha: FichaCliente, campos: st
     input.material = ficha.material;
     campos.push("material");
   }
-  input = conOllaos(input, ollaosHabituales(ficha, "baqueton", input.largo, input.ancho), campos);
+  input = conOllaos(input, ollaosDeFicha(ficha, "baqueton", input.largo, input.ancho), campos, ficha.ollaosRepartidos);
   return { ...input, observaciones: conObservaciones(input.observaciones, ficha.observaciones ?? [], campos) };
 }
 

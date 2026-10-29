@@ -257,6 +257,7 @@ function FichaEditor({ ficha, recogidasGenerales, onChange, onQuitar }: {
         <TextField label="Material" value={ficha.material ?? ''} onChange={(material) => onChange({ material })} />
         <CampoNumFicha label="Sesgo detrás (cm más ancho atrás)" value={ficha.sesgoDetras ?? null} onChange={(v) => onChange({ sesgoDetras: numero(v) })} />
         <SelectField label="Cremallera del 9" value={deSiNo(ficha.cremallera)} options={SI_NO} onChange={(v) => onChange({ cremallera: aSiNo(v) })} />
+        <SelectField label="Ollaos siempre repartidos" value={deSiNo(ficha.ollaosRepartidos)} options={SI_NO} onChange={(v) => onChange({ ollaosRepartidos: aSiNo(v) })} />
       </div>
     </ParameterBand>
     <ParameterBand number="05" title="Extras de baquetón" description="Se suman a las demasías generales del baquetón cuando el baquetón es de este cliente.">

@@ -130,3 +130,21 @@ describe("aplicarFichaALineas y marcasTrasCambio", () => {
     expect(marcasTrasCambio(undefined, antes, antes)).toBeUndefined();
   });
 });
+
+describe("aplicarFichaAlImportar · ollaos siempre repartidos (CARMA, Camacho; Iván, 29/10/2026)", () => {
+  const REPARTIDOS: FichaCliente = { ...FICHA, ollaosRepartidos: true };
+  it("sin medida habitual exacta, la lona y el baquetón salen con «Repartidos»", () => {
+    const lona = aplicarFichaAlImportar(deRps({ largo: 230, ancho: 150 }), REPARTIDOS);
+    expect((lona.input as LonaInput).modoOllaos).toBe("REPARTIDOS");
+    expect(lona.delCliente?.campos).toContain("modoOllaos");
+    expect((aplicarFichaAlImportar(baqueton({ largo: 230, ancho: 150 }), REPARTIDOS).input as BaquetonInput).modoOllaos).toBe("REPARTIDOS");
+  });
+  it("una medida suelta no cuenta (dejaría un lado sin ollaos); la exacta sí manda", () => {
+    expect((aplicarFichaAlImportar(deRps({ largo: 200, ancho: 150 }), REPARTIDOS).input as LonaInput).modoOllaos).toBe("REPARTIDOS");
+    const exacta = aplicarFichaAlImportar(deRps(), REPARTIDOS).input as LonaInput;
+    expect([exacta.modoOllaos, exacta.ollaosManuales.laterales]).toEqual(["SEGUN SE INDICA", MEDIDA.ollaos.laterales]);
+  });
+  it("lo que ya trae el elemento no se toca", () => {
+    expect((aplicarFichaAlImportar(deRps({ largo: 230, modoOllaos: "SEGUN GANCHOS" }), REPARTIDOS).input as LonaInput).modoOllaos).toBe("SEGUN GANCHOS");
+  });
+});
