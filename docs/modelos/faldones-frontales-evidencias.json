@@ -1,6 +1,7 @@
 {
   "fecha": "2026-10-29",
-  "estado": "Estudio iniciado: fuentes y tres casos; sin histórico completo ni reglas generales validadas",
+  "estado": "Fase inicial: fuentes y tres casos; la ampliación posterior se conserva por separado, sin histórico completo ni reglas generales validadas",
+  "ampliacion": "./faldones-frontales-ampliacion.json",
   "rama": "estudio-faldones-frontales",
   "revisionCodigo": "318ad63",
   "confirmacionesOT": [

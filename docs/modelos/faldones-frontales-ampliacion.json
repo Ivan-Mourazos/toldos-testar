@@ -1,0 +1,982 @@
+{
+  "fecha": "2026-10-29",
+  "estado": "Ampliación documental: siete pedidos originales con18 piezas y una reforma vinculada; censo de ventas y reglas generales pendientes.",
+  "antecedente": "./faldones-frontales-evidencias.json",
+  "indice": "./faldones-frontales-indice.json",
+  "unidades": "cm en textil y posiciones; soportes en mm; transparente en micras; unidades RPS conservadas.",
+  "limites": [
+    "Sin conexión directa a bases ni credenciales; catálogo y pertenencia de OF mediante GET de la web.",
+    "No se ha implementado cálculo, reserva, pantalla ni escritura de producción.",
+    "Los candidatos pendientes no son pedidos confirmados de fachada; los negativos no se excluyen del futuro censo."
+  ],
+  "cobertura": {
+    "fecha": "2026-10-29",
+    "carpeta": "//192.168.0.128/RPS/VENTAS/PLANTEAMIENTOS",
+    "pdf": 8011,
+    "paginasExtraidas": 10974,
+    "porAno": [
+      {
+        "ano": "2025",
+        "pdf": 4509,
+        "bytes": 581450662
+      },
+      {
+        "ano": "2026",
+        "pdf": 3502,
+        "bytes": 458069776
+      }
+    ],
+    "textoFaldon": 112,
+    "textoSoloFrontales": 14,
+    "pdfSinTexto": 3163,
+    "pdfConPaginasSinTexto": 3185,
+    "paginasOCR": 3199,
+    "orientaciones": [
+      0,
+      270
+    ],
+    "pasadasOCR": 6398,
+    "erroresOCR": 0,
+    "positivosOCRPorOrientacion": [
+      {
+        "rotacion": 0,
+        "paginas": 34
+      },
+      {
+        "rotacion": 270,
+        "paginas": 112
+      }
+    ],
+    "documentosCandidatos": 266,
+    "pedidosPorNombre": 206,
+    "documentosSoloOCR": 140,
+    "erroresPDF": [
+      {
+        "fichero": "//192.168.0.128/RPS/VENTAS/PLANTEAMIENTOS/2025/AR.25.03754-2.pdf",
+        "sha256": "51627ce29ad2575b8c29a802ff172e0cbb5a463e25fe853639d9bcf496092f50",
+        "error": "Invalid PDF structure."
+      },
+      {
+        "fichero": "//192.168.0.128/RPS/VENTAS/PLANTEAMIENTOS/2026/AR.26.04469-1.pdf",
+        "sha256": "527c6315e519495960bbb665c710564aced8bc1b0650a08608c75a8bf3286ce0",
+        "error": "Invalid PDF structure."
+      },
+      {
+        "fichero": "//192.168.0.128/RPS/VENTAS/PLANTEAMIENTOS/2026/AR.26.04469-11.af~l.pdf",
+        "sha256": "fd8a0d14b9470ca5ff51b47357d4a420cb9538f50bee12ee47d70435a2ec9a24",
+        "error": "Invalid PDF structure."
+      }
+    ],
+    "auditoriaLocal": [
+      {
+        "fichero": "tmp/faldones-frontales/indice-planos.jsonl",
+        "sha256": "ac29a26fb7cd6396ccc11d63fce811883f869c8d488fdb41fbb79300a6353921"
+      },
+      {
+        "fichero": "tmp/faldones-frontales/indice-ocr.jsonl",
+        "sha256": "4aa2fdab58bbcd8ed39ef1d11fdec20e1468640c05d3b0012a8077cc83805a3e"
+      },
+      {
+        "fichero": "tmp/faldones-frontales/indice-ocr-r270.jsonl",
+        "sha256": "d0794e0d7dddca4bd84446915bf4bb4572b5102f849a24c63c5d8f31353e52dc"
+      }
+    ]
+  },
+  "fuentes": [
+    {
+      "id": "F20",
+      "clave": "AR2502986-corte",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2025/ARCHIVOS DXF - MAQUINA NUEVA/AR2502986.dxf",
+      "bytes": 192727,
+      "sha256": "7082ee02c9b315221111ff150344bac5da0638797c2f58377183b7ebee3e61cb",
+      "cotejo": {
+        "lectura": "Extracción o geometría por script; no se declara revisión visual completa."
+      }
+    },
+    {
+      "id": "F21",
+      "clave": "AR2601947-corte",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2026/ARCHIVOS DXF - MAQUINA NUEVA/AR2601947.dxf",
+      "bytes": 244937,
+      "sha256": "1d8b28ff51a842fda6b6f1101bb3e2df745478d8eff6b608006688e6ffb944b8",
+      "cotejo": {
+        "lectura": "Extracción o geometría por script; no se declara revisión visual completa."
+      }
+    },
+    {
+      "id": "F22",
+      "clave": "soporte-kit-foto",
+      "fichero": "//192.168.0.128/Oftecnica/Oficina Tecnica/DIBUJOS/FALDON/Soporte-gancho/Soporte_Faldon_Kit.jpg",
+      "bytes": 2578648,
+      "sha256": "96aaa633e9d1c748b33d5d4744800d7175728e0ef14d9841b46221f77d9d58a3",
+      "cotejo": {
+        "visual": [
+          1
+        ]
+      }
+    },
+    {
+      "id": "F23",
+      "clave": "soporte-monobloc-foto",
+      "fichero": "//192.168.0.128/Oftecnica/Oficina Tecnica/DIBUJOS/FALDON/Soporte-gancho/Soporte_Faldon_Monobloc.jpg",
+      "bytes": 2509469,
+      "sha256": "3ddb1e0a66aab31aac5ab17075a0cd362ab14428ecbbe6136718164ba91c5a50",
+      "cotejo": {
+        "visual": [
+          1
+        ]
+      }
+    },
+    {
+      "id": "F24",
+      "clave": "soporte-carga-foto",
+      "fichero": "//192.168.0.128/Oftecnica/Oficina Tecnica/DIBUJOS/FALDON/Soporte-gancho/Soporte_Faldon_TCarga.jpg",
+      "bytes": 2597237,
+      "sha256": "09a0a72d4ba8dcc82072cd7ec85143b30c37f048a177878e6b8df4fc7a03fe7f",
+      "cotejo": {
+        "visual": [
+          1
+        ]
+      }
+    },
+    {
+      "id": "F25",
+      "clave": "soporte-enrolle-foto",
+      "fichero": "//192.168.0.128/Oftecnica/Oficina Tecnica/DIBUJOS/FALDON/Soporte-gancho/Soporte_Faldon_TEnrolle.jpg",
+      "bytes": 2240810,
+      "sha256": "670d31ee700f7e7925a58a7c6bcf159dac86ce5a2e32a05c2007616e2db0caca",
+      "cotejo": {
+        "visual": [
+          1
+        ]
+      }
+    },
+    {
+      "id": "F26",
+      "clave": "AR2501627-dwg",
+      "fichero": "//192.168.0.128/Oftecnica/Oficina Tecnica/2025/AR2501627.dwg",
+      "bytes": 119574,
+      "sha256": "5b9cc2dacb1eda69f067e29c101856480852d78ffc6929e814091a7793487bd9",
+      "cotejo": {
+        "lectura": "Extracción o geometría por script; no se declara revisión visual completa."
+      }
+    },
+    {
+      "id": "F27",
+      "clave": "AR2501627-pedido",
+      "fichero": "//192.168.0.128/RPS/VENTAS/PEDIDOS/2025/AR.25.01627.pdf",
+      "bytes": 3433499,
+      "sha256": "c72c3c49d69fd453f6490c2a79445b7091846d1038f95efb41fe1e853532d583",
+      "cotejo": {
+        "visual": [
+          2,
+          3,
+          4
+        ]
+      }
+    },
+    {
+      "id": "F28",
+      "clave": "AR2501627-plano-1",
+      "fichero": "//192.168.0.128/RPS/VENTAS/PLANTEAMIENTOS/2025/AR.25.01627-1.pdf",
+      "bytes": 83566,
+      "sha256": "f35bf23173b079cf6bc74c618b4e9bdb0c5265b94818abec5039c229c8558078",
+      "cotejo": {
+        "visual": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "id": "F29",
+      "clave": "AR2601478-dwg",
+      "fichero": "//192.168.0.128/Oftecnica/Oficina Tecnica/2026/AR2601478.dwg",
+      "bytes": 113736,
+      "sha256": "4e3459e5ed9f1dba824179ee2bf6a327be98896b669fb85dd8c49aa1329ee85f",
+      "cotejo": {
+        "lectura": "Extracción o geometría por script; no se declara revisión visual completa."
+      }
+    },
+    {
+      "id": "F30",
+      "clave": "AR2601478-pedido",
+      "fichero": "//192.168.0.128/RPS/VENTAS/PEDIDOS/2026/AR.26.01478.pdf",
+      "bytes": 1506684,
+      "sha256": "14dfe61ea322759f620173823cba6354c9499eb0542348e7deafb5920bde5716",
+      "cotejo": {
+        "lectura": "Extracción o geometría por script; no se declara revisión visual completa."
+      }
+    },
+    {
+      "id": "F31",
+      "clave": "AR2601478-plano-10",
+      "fichero": "//192.168.0.128/RPS/VENTAS/PLANTEAMIENTOS/2026/AR.26.01478-10.pdf",
+      "bytes": 42740,
+      "sha256": "9bb04c9db00f5aa224b9f7bd65c14c668c403e0fa7a2686a80e412106562f7db",
+      "cotejo": {
+        "visual": [
+          1
+        ]
+      }
+    },
+    {
+      "id": "F32",
+      "clave": "AR2601502-dwg",
+      "fichero": "//192.168.0.128/Oftecnica/Oficina Tecnica/2026/TOLDOS/AR2601502.dwg",
+      "bytes": 114835,
+      "sha256": "80652e96934b6021826ffabb024389dd3e1859a3b881e8b0e6c8af0accbf0a23",
+      "cotejo": {
+        "lectura": "Extracción o geometría por script; no se declara revisión visual completa."
+      }
+    },
+    {
+      "id": "F33",
+      "clave": "AR2601502-pedido",
+      "fichero": "//192.168.0.128/RPS/VENTAS/PEDIDOS/2026/AR.26.01502.pdf",
+      "bytes": 1606255,
+      "sha256": "243908a182e1def05ad960ab875c8d9fdbf71562cc9060948fa37e47c4788b65",
+      "cotejo": {
+        "lectura": "Extracción o geometría por script; no se declara revisión visual completa."
+      }
+    },
+    {
+      "id": "F34",
+      "clave": "AR2601502-plano-10",
+      "fichero": "//192.168.0.128/RPS/VENTAS/PLANTEAMIENTOS/2026/AR.26.01502-10.pdf",
+      "bytes": 83130,
+      "sha256": "73d106acbda87dde5f751923ff803e414dbb8bc9efec0233a731a9b5727fa575",
+      "cotejo": {
+        "visual": [
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    {
+      "id": "F35",
+      "clave": "AR2601656-pedido",
+      "fichero": "//192.168.0.128/RPS/VENTAS/PEDIDOS/2026/AR.26.01656.pdf",
+      "bytes": 1076326,
+      "sha256": "b94ceda38a21f2b0e2d172a3eca7de06761eb034ccac64cddbce7228ae6c3001",
+      "cotejo": {
+        "visual": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "id": "F36",
+      "clave": "AR2601656-plano-10",
+      "fichero": "//192.168.0.128/RPS/VENTAS/PLANTEAMIENTOS/2026/AR.26.01656-10.pdf",
+      "bytes": 76290,
+      "sha256": "46323c005ac0c34ad9e919c333a8c9fa46c4f1aa3adc0e8db85961b85d7fa52c",
+      "cotejo": {
+        "visual": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "id": "F37",
+      "clave": "AR2600872-dwg",
+      "fichero": "//192.168.0.128/Oftecnica/Oficina Tecnica/2026/AR2600872.dwg",
+      "bytes": 104456,
+      "sha256": "911df28e124010d4f9eb84ccf43b161efd1236228f77e89717594c4cbbf8a118",
+      "cotejo": {
+        "lectura": "Extracción o geometría por script; no se declara revisión visual completa."
+      }
+    },
+    {
+      "id": "F38",
+      "clave": "AR2600872-pedido",
+      "fichero": "//192.168.0.128/RPS/VENTAS/PEDIDOS/2026/AR.26.00872.pdf",
+      "bytes": 2098963,
+      "sha256": "3019f1822da34ec34fdf444c8d4a5572aeaa819c0cd359df4c9cf2a44eb49869",
+      "cotejo": {
+        "visual": [
+          3
+        ]
+      }
+    },
+    {
+      "id": "F39",
+      "clave": "AR2600872-plano-10",
+      "fichero": "//192.168.0.128/RPS/VENTAS/PLANTEAMIENTOS/2026/AR.26.00872-10.pdf",
+      "bytes": 87962,
+      "sha256": "90266784b22170224e4fb65829ba7baeb51c75cf193f04211f54e83226363415",
+      "cotejo": {
+        "visual": [
+          1
+        ]
+      }
+    },
+    {
+      "id": "F40",
+      "clave": "AR2600872-plano-11",
+      "fichero": "//192.168.0.128/RPS/VENTAS/PLANTEAMIENTOS/2026/AR.26.00872-11.pdf",
+      "bytes": 83937,
+      "sha256": "8652f10a8a8af198379df49f7fbe3ddd909a5a79bf288ea59ea1325e98562b24",
+      "cotejo": {
+        "visual": [
+          1
+        ]
+      }
+    }
+  ],
+  "consultas": [
+    {
+      "ficheroLocal": "ofs-web-AR2300285.json",
+      "sha256": "dac9b184e1b46deaefc812809a454660134508da459d0018dbbf33e7b1c54bcc",
+      "consultado": "2026-10-29T19:51:03.349Z",
+      "metodo": "GET",
+      "url": "http://192.168.0.90:4400/api/orders/AR.23.00285/ofs",
+      "status": 200,
+      "orderCode": "AR.23.00285",
+      "ofs": [
+        "0188201",
+        "0188202",
+        "0188203",
+        "0188204",
+        "0188205"
+      ]
+    },
+    {
+      "ficheroLocal": "ofs-web-AR2400926.json",
+      "sha256": "d3f3a25135a1f836151c92751c2fffcd6d008b094fd3f1dea21cdabdd1722126",
+      "consultado": "2026-10-29T19:51:25.263Z",
+      "metodo": "GET",
+      "url": "http://192.168.0.90:4400/api/orders/AR.24.00926/ofs",
+      "status": 200,
+      "orderCode": "AR.24.00926",
+      "ofs": [
+        "0202423",
+        "0201670",
+        "0202425",
+        "0202424"
+      ]
+    },
+    {
+      "ficheroLocal": "ofs-web-AR2500926.json",
+      "sha256": "8b7686c4ed5466bf1e31a769e94449f32a71d41befbbcf0402f7f28c8590c359",
+      "consultado": "2026-10-29T19:51:21.689Z",
+      "metodo": "GET",
+      "url": "http://192.168.0.90:4400/api/orders/AR.25.00926/ofs",
+      "status": 200,
+      "orderCode": "AR.25.00926",
+      "ofs": [
+        "0214058",
+        "0214059"
+      ]
+    },
+    {
+      "ficheroLocal": "ofs-web-AR2501627.json",
+      "sha256": "8673a5739eb298fccd688b7ab9cea3355d56075cda3137394271a381eb587e9e",
+      "consultado": "2026-10-29T19:51:06.953Z",
+      "metodo": "GET",
+      "url": "http://192.168.0.90:4400/api/orders/AR.25.01627/ofs",
+      "status": 200,
+      "orderCode": "AR.25.01627",
+      "ofs": [
+        "0216144",
+        "0215424",
+        "0215421",
+        "0215422",
+        "0215423"
+      ]
+    },
+    {
+      "ficheroLocal": "ofs-web-AR2502986.json",
+      "sha256": "a511f717e4359a29690c7548d01f317efe68aec716078ac34e69c27578a3bfd1",
+      "consultado": "2026-10-29T19:50:56.151Z",
+      "metodo": "GET",
+      "url": "http://192.168.0.90:4400/api/orders/AR.25.02986/ofs",
+      "status": 200,
+      "orderCode": "AR.25.02986",
+      "ofs": [
+        "0217885"
+      ]
+    },
+    {
+      "ficheroLocal": "ofs-web-AR2600872.json",
+      "sha256": "769f7f18838ca430a357f2dfa3a25189873a2306ead1c31424079e3efa3a2b77",
+      "consultado": "2026-10-29T19:54:24.722Z",
+      "metodo": "GET",
+      "url": "http://192.168.0.90:4400/api/orders/AR.26.00872/ofs",
+      "status": 200,
+      "orderCode": "AR.26.00872",
+      "ofs": [
+        "0225857",
+        "0225859",
+        "0225858",
+        "0225860"
+      ]
+    },
+    {
+      "ficheroLocal": "ofs-web-AR2601478.json",
+      "sha256": "d606b17262b91760d712062166eb517e9c27019c9eb1a2942b3a889a7b76a534",
+      "consultado": "2026-10-29T19:51:10.637Z",
+      "metodo": "GET",
+      "url": "http://192.168.0.90:4400/api/orders/AR.26.01478/ofs",
+      "status": 200,
+      "orderCode": "AR.26.01478",
+      "ofs": [
+        "0226900",
+        "0226899",
+        "0226901"
+      ]
+    },
+    {
+      "ficheroLocal": "ofs-web-AR2601502.json",
+      "sha256": "f452c65ffda85b9172be20fb611b4fe7300f26edf5635c067ebc12ec6e563673",
+      "consultado": "2026-10-29T19:51:14.348Z",
+      "metodo": "GET",
+      "url": "http://192.168.0.90:4400/api/orders/AR.26.01502/ofs",
+      "status": 200,
+      "orderCode": "AR.26.01502",
+      "ofs": [
+        "0228211",
+        "0226983",
+        "0226984",
+        "0226985"
+      ]
+    },
+    {
+      "ficheroLocal": "ofs-web-AR2601618.json",
+      "sha256": "f09cddfff1a8c769ef013236c3cf22fcb08826213993d9a076be9197066261b6",
+      "consultado": "2026-10-29T19:51:32.416Z",
+      "metodo": "GET",
+      "url": "http://192.168.0.90:4400/api/orders/AR.26.01618/ofs",
+      "status": 200,
+      "orderCode": "AR.26.01618",
+      "ofs": [
+        "0227168",
+        "0227170",
+        "0227169"
+      ]
+    },
+    {
+      "ficheroLocal": "ofs-web-AR2601656.json",
+      "sha256": "906412208b645c776e706c9a3bdb29ae9d1fcdc182656ca5f6c9d99cbc1e290d",
+      "consultado": "2026-10-29T19:51:18.104Z",
+      "metodo": "GET",
+      "url": "http://192.168.0.90:4400/api/orders/AR.26.01656/ofs",
+      "status": 200,
+      "orderCode": "AR.26.01656",
+      "ofs": [
+        "0227198",
+        "0227197"
+      ]
+    },
+    {
+      "ficheroLocal": "ofs-web-AR2601947.json",
+      "sha256": "9852d757b8843a3dafc3debcd97e6a13a5c2d9514fa13cfddf672b7b333e7b3a",
+      "consultado": "2026-10-29T19:50:59.683Z",
+      "metodo": "GET",
+      "url": "http://192.168.0.90:4400/api/orders/AR.26.01947/ofs",
+      "status": 200,
+      "orderCode": "AR.26.01947",
+      "ofs": [
+        "0227725",
+        "0229252",
+        "0227726"
+      ]
+    },
+    {
+      "ficheroLocal": "ofs-web-AR2603123.json",
+      "sha256": "bbdd6dde041ac05693e74cc87ab6f8bb12a45faa79c6e7f7b8e4d6fa318356a0",
+      "consultado": "2026-10-29T19:51:28.809Z",
+      "metodo": "GET",
+      "url": "http://192.168.0.90:4400/api/orders/AR.26.03123/ofs",
+      "status": 200,
+      "orderCode": "AR.26.03123",
+      "ofs": [
+        "0229790"
+      ]
+    }
+  ],
+  "cortes": [
+    {
+      "pedido": "AR2502986",
+      "fuente": "F20",
+      "sha256": "7082ee02c9b315221111ff150344bac5da0638797c2f58377183b7ebee3e61cb",
+      "seleccion": "LINE/ARC/CIRCLE con x > 500: separa el cuerpo de la leyenda en estos dos ficheros; no es regla general.",
+      "entidades": 27,
+      "capas": [
+        "ROTULADOR"
+      ],
+      "cajaUnidadesDXF": {
+        "xMin": 1017.056526252767,
+        "yMin": 1042.514327494031,
+        "ancho": 2440.000000000117,
+        "alto": 1029.4930267823402
+      },
+      "escalaContrastada": "10 unidades DXF por cm frente al plano publicado",
+      "cajaCm": [
+        244.00000000001168,
+        102.94930267823402
+      ],
+      "cajaPlanoCm": [
+        244,
+        102.9
+      ],
+      "toleranciaCm": 0.051,
+      "limite": "Geometría en ROTULADOR; acredita marcado y dimensiones, no ejecución física de corte ni herramienta utilizada."
+    },
+    {
+      "pedido": "AR2601947",
+      "fuente": "F21",
+      "sha256": "1d8b28ff51a842fda6b6f1101bb3e2df745478d8eff6b608006688e6ffb944b8",
+      "seleccion": "LINE/ARC/CIRCLE con x > 500: separa el cuerpo de la leyenda en estos dos ficheros; no es regla general.",
+      "entidades": 14,
+      "capas": [
+        "ROTULADOR"
+      ],
+      "cajaUnidadesDXF": {
+        "xMin": 2354.269206849233,
+        "yMin": 1769.290985354112,
+        "ancho": 3223.430346962065,
+        "alto": 2800.000000000001
+      },
+      "escalaContrastada": "10 unidades DXF por cm frente al plano publicado",
+      "cajaCm": [
+        322.3430346962065,
+        280.0000000000001
+      ],
+      "cajaPlanoCm": [
+        322.3,
+        280
+      ],
+      "toleranciaCm": 0.051,
+      "limite": "Geometría en ROTULADOR; acredita marcado y dimensiones, no ejecución física de corte ni herramienta utilizada."
+    }
+  ],
+  "casos": [
+    {
+      "id": "V04",
+      "pedido": "AR2501627",
+      "laterales": 2,
+      "frontales": 2,
+      "fuentes": [
+        "F26",
+        "F27",
+        "F28"
+      ],
+      "ofLaterales": "0215423",
+      "ofFrontales": "0215424",
+      "material": "Acrílico negro y transparente 650 micras",
+      "piezas": [
+        {
+          "letra": "A",
+          "tipo": "lateral",
+          "cajaCorteCm": [
+            228,
+            388.9
+          ],
+          "ventanaCm": [
+            175,
+            110
+          ]
+        },
+        {
+          "letra": "B",
+          "tipo": "lateral",
+          "cajaCorteCm": [
+            229,
+            395.6
+          ],
+          "ventanaCm": [
+            176,
+            110
+          ]
+        },
+        {
+          "letra": "C",
+          "tipo": "frontal",
+          "hechoCm": [
+            419,
+            204
+          ],
+          "cajaCorteCm": [
+            423.5,
+            214
+          ],
+          "ventanaCm": [
+            379,
+            110
+          ],
+          "margenLateralVentanaCm": 20,
+          "alturaDesdeAbajoVentanaCm": 60
+        },
+        {
+          "letra": "D",
+          "tipo": "frontal",
+          "hechoCm": [
+            247,
+            204
+          ],
+          "cajaCorteCm": [
+            251.5,
+            214
+          ],
+          "ventanaCm": [
+            207,
+            110
+          ],
+          "margenLateralVentanaCm": 20,
+          "alturaDesdeAbajoVentanaCm": 60
+        }
+      ],
+      "notas": [
+        "ET superior e inferior en frontales; BN1 con velcro y cara indicados en F28 p2.",
+        "Mordazas y abatibles abajo, chapitas para frontales y ganchos blancos.",
+        "F27 p4 pide dos remates especiales para Monobloc; no trasladar dimensiones a todos los soportes."
+      ],
+      "limite": "El incremento +4,5/+10 de C/D es una observación de este pedido, no una fórmula general."
+    },
+    {
+      "id": "V05",
+      "pedido": "AR2601478",
+      "laterales": 2,
+      "frontales": 1,
+      "fuentes": [
+        "F29",
+        "F31"
+      ],
+      "ofLiteral": "0226900-01",
+      "ofVerificadas": [
+        "0226900",
+        "0226901"
+      ],
+      "material": "Acrílico negro y transparente 650 micras",
+      "piezas": [
+        {
+          "letra": "A1",
+          "tipo": "frontal",
+          "anchoHechoCm": 290,
+          "alturasHechasCm": [
+            238,
+            200
+          ],
+          "ventanaCm": [
+            226,
+            138
+          ],
+          "margenesVentanaCm": {
+            "lados": 32,
+            "arriba": 30
+          },
+          "cajaCorteCm": [
+            295.5,
+            248.2
+          ]
+        },
+        {
+          "letra": "A2",
+          "tipo": "lateral",
+          "cajaCorteCm": [
+            228.5,
+            300.2
+          ]
+        },
+        {
+          "letra": "A3",
+          "tipo": "lateral",
+          "cajaCorteCm": [
+            223.5,
+            262.6
+          ]
+        }
+      ],
+      "notas": [
+        "ET, BN4, velcro de 5 negro con suave al revés y bravo a la cara, y tira con tres ollaos.",
+        "Nota por lateral: tubo con garfio de 215 cm, gancho delantero y tres mordazas25 con cinta50 y abatibles."
+      ],
+      "limite": "Dos alturas y contorno inclinado; no reducir el frontal a ancho por altura única. La OF abreviada se conserva literal y se contrasta con las dos OF reales."
+    },
+    {
+      "id": "V06",
+      "pedido": "AR2601502",
+      "laterales": 2,
+      "frontales": 0,
+      "fuentes": [
+        "F32",
+        "F34"
+      ],
+      "of": "0226985",
+      "material": "PVC580 arena",
+      "paginaPlano": 3,
+      "piezas": [
+        {
+          "letra": "D",
+          "tipo": "lateral",
+          "anchoSuperiorCm": 314.5,
+          "alturaParedCm": 120,
+          "contorno": "Con recorte/escalón; no rectangular.",
+          "torniquetes": {
+            "origen": "desde atrás",
+            "posicionesCm": [
+              16,
+              73,
+              130,
+              187,
+              244.5
+            ],
+            "separacionAbajoCm": 2
+          },
+          "mordazas": {
+            "origen": "desde abajo",
+            "posicionesCm": [
+              7,
+              42.5,
+              78.5,
+              103.5
+            ],
+            "separacionBordeCm": 10
+          }
+        },
+        {
+          "letra": "E",
+          "tipo": "lateral",
+          "anchoSuperiorCm": 316.5,
+          "alturaParedCm": 123.5,
+          "contorno": "Con pestaña exterior de 16,5 cm.",
+          "torniquetes": {
+            "origen": "desde atrás",
+            "posicionesCm": [
+              25.5,
+              84.5,
+              144,
+              203.5,
+              263,
+              322.5
+            ],
+            "separacionAbajoCm": 2
+          },
+          "mordazas": {
+            "origen": "desde arriba",
+            "posicionesCm": [
+              5,
+              44,
+              84,
+              120.5
+            ],
+            "separacionBordeCm": 10
+          }
+        }
+      ],
+      "notas": [
+        "ET faldón superior, BN4 y refuerzo en esquina.",
+        "Cintas negras de45 cm al revés; mandar10 torniquetes nuevos; existe lona de muestra."
+      ],
+      "excluidos": [
+        "F34 p1 A/B son telas de toldo con bambalinas (OF0226983).",
+        "F34 p2 C es una tela estrecha con varillas (OF0226984), no se cuenta automáticamente como faldón."
+      ],
+      "limite": "Preservar origen y posiciones por pieza. No centrar ni invertir usando el convenio de remolques. El anidado conjunto no acredita reserva exclusiva de D/E."
+    },
+    {
+      "id": "V07",
+      "pedido": "AR2600872",
+      "laterales": 2,
+      "frontales": 1,
+      "fuentes": [
+        "F37",
+        "F38",
+        "F39",
+        "F40"
+      ],
+      "ofLaterales": "0225860",
+      "ofFrontal": "0225859",
+      "fechaPlano": "2026-04-06",
+      "material": "Acrílico resinado antracita y transparente650 micras",
+      "piezas": [
+        {
+          "letra": "A",
+          "tipo": "lateral",
+          "cajaCorteCm": [
+            281,
+            224.2
+          ]
+        },
+        {
+          "letra": "B",
+          "tipo": "lateral",
+          "cajaCorteCm": [
+            279,
+            215.9
+          ]
+        },
+        {
+          "letra": "C",
+          "tipo": "frontal",
+          "hechoCm": [
+            475,
+            198
+          ],
+          "cajaCorteCm": [
+            477,
+            208
+          ],
+          "alturaVentanaCm": 108,
+          "margenesVentanaCm": {
+            "lados": 20,
+            "arriba": 20,
+            "abajo": 70
+          },
+          "puerta": {
+            "anchoCm": 120,
+            "distanciaIzquierdaCm": 165,
+            "cierre": "Dos cremalleras con doble accionador y cintas para recoger"
+          }
+        }
+      ],
+      "notas": [
+        "F38 p3 y F40 p1 confirman puerta120 a165 del lado izquierdo.",
+        "F37 conserva cotas165/120 y nota RECTIFICADO AR.26.01656."
+      ],
+      "limite": "La reforma posterior se registra en R01, sin duplicar las tres piezas originales."
+    }
+  ],
+  "reformas": [
+    {
+      "id": "R01",
+      "pedido": "AR2601656",
+      "original": "V07",
+      "pedidoOriginal": "AR2600872",
+      "fuentes": [
+        "F35",
+        "F36",
+        "F37"
+      ],
+      "ofPropiasWeb": [
+        "0227197",
+        "0227198"
+      ],
+      "ofConservadasPlano": [
+        "0225860",
+        "0225859"
+      ],
+      "evidenciaVinculo": "F35 p2 identifica AR.26.00872; las OF del plano pertenecen al original por GET /ofs. F37 contiene RECTIFICADO AR.26.01656.",
+      "actuacion": "F35 p1: reformar frontal; p2: AUMENTAR A PORTA35CM PARA A DEREITA.",
+      "plano": {
+        "fuente": "F36",
+        "pagina": 2,
+        "anchoPuertaCm": 120,
+        "distanciaIzquierdaCm": 200
+      },
+      "diferencia": "Respecto a165/120 del original, el plano desplaza35 cm el comienzo y mantiene120 de ancho. No representa ensanchar de120 a155.",
+      "decision": "Conservar ambas versiones; no contar laterales ni frontal como nueva fabricación ni inferir una regla automática de reforma.",
+      "duda": "Q-FF03"
+    }
+  ],
+  "catalogoFrontal": {
+    "metodo": "GET",
+    "url": "http://192.168.0.90:4400/api/catalog/articles?q=FRONTAL&limit=100",
+    "consultado": "2026-10-29T19:45:26.109Z",
+    "sha256RespuestaLocal": "4cb9812d2151e34146201310096facfbe87e8f20eefea32916ce07ecffb8d026",
+    "encontrados": 60,
+    "limite": "Respuesta limitada a60 resultados; no acredita catálogo completo."
+  },
+  "catalogo": {
+    "metodo": "GET",
+    "url": "http://192.168.0.90:4400/api/catalog/articles?q=FALDON&limit=100",
+    "consultado": "2026-10-29T19:45:25.985Z",
+    "fuente": "RPSNext",
+    "sha256RespuestaLocal": "0f4b7bd0659eed870233778b13c9ad0b8bbb1100e74a3325ae094fe309bd5977",
+    "encontrados": 37,
+    "articulos": [
+      {
+        "code": "FALDON",
+        "description": "FALDON LATERAL O FRONTAL NUEVO PARA TOLDO FACHADA",
+        "unitCode": "UNI"
+      },
+      {
+        "code": "CAMBIOTELAFALDON",
+        "description": "CAMBIO DE TELA A FALDON DE TOLDO FACHADA",
+        "unitCode": "UNI"
+      },
+      {
+        "code": "FALDONINTERMEDIO",
+        "description": "FALDON INTERMEDIO ENTRE TOLDOS",
+        "unitCode": "UNI"
+      },
+      {
+        "code": "GAFALD",
+        "description": "GANCHO FALDON DERECHO",
+        "unitCode": "UNI"
+      },
+      {
+        "code": "GAFALDTCBL",
+        "description": "GANCHO FALDON DERECHO:TUBO CARGA (inox):BLANCO",
+        "unitCode": "UNI"
+      },
+      {
+        "code": "GAFALDTCNEG",
+        "description": "GANCHO FALDON DERECHO:TUBO CARGA (inox):NEGRO",
+        "unitCode": "UNI"
+      },
+      {
+        "code": "GAFALDTMOBL",
+        "description": "GANCHO FALDON DERECHO:TUBO MONOBLOC (aluminio):BLANCO",
+        "unitCode": "UNI"
+      },
+      {
+        "code": "GAFALDTMONEG",
+        "description": "GANCHO FALDON DERECHO:TUBO MONOBLOC (aluminio):NEGRO",
+        "unitCode": "UNI"
+      },
+      {
+        "code": "GANCHOFATE",
+        "description": "GANCHO FALDON:TUBO ENROLLE (inox)",
+        "unitCode": "UNI"
+      },
+      {
+        "code": "GFALI",
+        "description": "GANCHO FALDON IZQUIERDO",
+        "unitCode": "UNI"
+      },
+      {
+        "code": "GFALITCBL",
+        "description": "GANCHO FALDON IZQUIERDO:TUBO CARGA (inox):BLANCO",
+        "unitCode": "UNI"
+      },
+      {
+        "code": "GFALITCNEG",
+        "description": "GANCHO FALDON IZQUIERDO:TUBO CARGA (inox):NEGRO",
+        "unitCode": "UNI"
+      },
+      {
+        "code": "GFALITMOBL",
+        "description": "GANCHO FALDON IZQUIERDO:TUBO MONOBLOC (aluminio):BLANCO",
+        "unitCode": "UNI"
+      },
+      {
+        "code": "GFALITMONEG",
+        "description": "GANCHO FALDON IZQUIERDO:TUBO MONOBLOC (aluminio):NEGRO",
+        "unitCode": "UNI"
+      },
+      {
+        "code": "REFUFALDON",
+        "description": "REFUERZO PARA FALDON (stock)",
+        "unitCode": "M²"
+      },
+      {
+        "code": "TUBLI3/8",
+        "description": "TUBO 6M LISO GALVANIZADO :3/8\" (faldones)",
+        "unitCode": "BARRA"
+      }
+    ]
+  },
+  "noLocalizados": [
+    {
+      "clave": "AR2601656-dwg",
+      "fichero": "//192.168.0.128/Oftecnica/Oficina Tecnica/2026/AR2601656.dwg",
+      "error": "ENOENT: no such file or directory, open '\\\\192.168.0.128\\Oftecnica\\Oficina Tecnica\\2026\\AR2601656.dwg'",
+      "alcance": "Búsqueda por prefijo en OT/2026 y OT/2026/TOLDOS; no prueba ausencia en otras carpetas."
+    }
+  ]
+}

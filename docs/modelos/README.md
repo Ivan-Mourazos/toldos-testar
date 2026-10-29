@@ -49,7 +49,7 @@ Estados de la revisión: pendiente / en curso / con dudas / verificado para un a
 
 | Producto | Estado y evidencia | Siguiente paso |
 | --- | --- | --- |
-| Faldones laterales y frontales de toldo de fachada | Iniciado el 29/10/2026: [expediente](./faldones-frontales.md) y [fuentes/casos](./faldones-frontales-evidencias.json); 19 fuentes y tres pedidos contrastados, con cuatro laterales y dos frontales. Medición, remates, soportes y diferencias de OF documentados | Completar histórico 2025–2026, frontales recientes, despiece y reglas de corte por remate; dudas Q-FF01/Q-FF02. Sin implementación en esta fase |
+| Faldones laterales y frontales de toldo de fachada | Ampliado el 29/10/2026: [expediente](./faldones-frontales.md), [evidencia inicial](./faldones-frontales-evidencias.json), [ampliación](./faldones-frontales-ampliacion.json) e [índice documental](./faldones-frontales-indice.json). Siete pedidos originales, 18 piezas y una reforma; 40 fuentes técnicas. Barrido de 8.011 PDF con OCR, 266 documentos candidatos. Incluye acrílicos, PVC, ventanas, cremalleras y torniquetes | Incorporar histórico de ventas 2025–2026, clasificar 259 documentos pendientes y acreditar reglas de corte/reserva; dudas Q-FF01/Q-FF02/Q-FF03. Sin implementación |
 
 ## Lotes propuestos, de menor a mayor alcance
 
