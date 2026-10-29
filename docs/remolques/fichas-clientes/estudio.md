@@ -2,11 +2,24 @@
 
 Fecha: 29/10/2026. Histórico exportado 2026-10-29T10:20:35.818Z. Solo lectura de fuentes y del servidor; no se ha cargado ninguna ficha.
 
-Se estudian las 2.085 líneas del histórico (1.467 números de pedido distintos), sus 276 clientes, las once fichas que existen en el servidor y los 41 PDF producidos recientes. La propuesta contiene 290 fichas y 965 medidas; conserva las once fichas vigentes y todas sus medidas. Las identidades sin regla acreditada llevan solo el código y los datos que constan: no se fabrica un perfil o reparto para completar casillas.
+Se estudian las 2.085 líneas del histórico (1.467 números de pedido distintos), sus 276 clientes, las once fichas que existen en el servidor y los 41 PDF producidos recientes. La propuesta corregida contiene 129 fichas y 844 medidas; conserva las once fichas vigentes y todas sus medidas. Las altas nuevas necesitan alguna medida acreditada con los tres lados o una regla de ollaosRepartidos. No se proponen identidades vacías ni plantillas antiguas ausentes del histórico.
 
-**Cobertura y límite:** hay 331 líneas de lona/baquetón sin medida completa acreditada en la propuesta, 46 líneas de ganado y 1 línea sin tipo. Esas referencias se enumeran por cliente y en evidencias.json. El registro de identidades está completo para los 276 clientes del histórico; los repartos aún no lo están. Las plantillas antiguas sin código confirmado se enumeran al final y no se cargan por un parecido de nombre.
+**Cobertura y límite:** hay 446 líneas de lona/baquetón sin medida completa acreditada en la propuesta, 46 líneas de ganado y 1 línea sin tipo. Se enumeran por cliente y en evidencias.json. codigos-rps.json conserva el índice de los 276 clientes del histórico; ese índice documental no implica que todos se propongan para el registro. Las plantillas antiguas sin cliente en el histórico quedan fuera de las altas, incluso cuando se ha resuelto un código antiguo.
 
-La continuación incorpora cinco identidades acreditadas por pedidos antiguos y diez medidas: tres de HPL, dos de NUÑEZ, cuatro de MALLON y un baquetón de PAMILAKAN. Se han convertido otros 85 DWG de pedidos con medidas pendientes, incluso cuando tenían una hoja Excel de otro elemento. Las líneas pendientes de lona/baquetón bajan de 348 a 331. También se completan las aguas habituales de CANO personal, LF y NORTE, con sus excepciones documentadas.
+## Correcciones de Iván y contraste de fuentes
+
+Revisión de las ocho instrucciones: de 290 fichas y 965 medidas se pasa a 129 fichas y 844 medidas. Se excluyen 161 altas sin respaldo suficiente, se retiran 121 medidas y se sustituyen 10 selecciones por otro caso acreditado del mismo tamaño. Las once fichas vigentes se conservan.
+
+- CAMACHO: GOMA detrás en los siete pedidos aplicables de lona; aguas en altura sigue sin registrar.
+- NORTE: comprobada la holgura total de 2 cm en el baquetón AR2603988 de agosto, tanto en hoja 0231286 como en DWG fechado 12/08/2026. Los cuatro extras de largo/ancho y costura son +1, porque el cálculo general ya añade 1 cm al acabado. AR2603671 de julio conserva +1 total y queda documentado como excepción. Para lona alta falta un campo de holgura en la web.
+- CANO sociedad 030179: el escaneo y DWG de AR2604501 acreditan remolque 253×152×109 más 16 de aguas y cremallera trasera del 9 de soldar. No acredita las reglas de la cuenta personal 045288. Los extras dudosos de baquetón quedan fuera.
+- J&B: los cinco repartos valen para ambos tipos, según Iván; sin largo hecho acreditado no se pueden invertir. La cuenta antigua queda fuera de las altas por ausencia en el histórico.
+- VIEITES, R. CASAL AR2401103 y MALLON RL23: los casos discutidos quedan exclusivamente como evidencia y duda. ESVA, J&B, LA AZABA, TRIÑANES y RODEIRO, y las plantillas antiguas sin código, quedan fuera de las altas por la instrucción 6.
+- CARMA 206×129,5: retirada por discrepancia del resultado activo del Excel con el DWG, que tiene 7/5/5 y puntas de 2,5 cm. No se toman filas inactivas para completar el resultado.
+- REMOLCAR 380×235 (AR2600281): retirada por dejar 42,8 cm hasta el borde delantero sin respaldo independiente. Solo existe un caso; la costumbre del ollao extra a 5/10 cm atrás no acredita ese hueco en el extremo opuesto. Se conservan las demás asimetrías deliberadas acreditadas.
+- Auditoría por script de las 965 medidas: se calculan primero y último margen sobre la longitud hecha de cada lado. 157 selecciones iniciales presentan un margen mayor de 12 cm; las decisiones, sustituciones, fuentes, márgenes originales y desplazamientos se conservan en revision-ivan.json. Un reparto automático con margen grande sin cotejo se retira. En manuales, además de coincidir las tres filas escritas y sus orígenes, el margen grande debe estar equilibrado ya en el original (tolerancia 0,21 cm), o existir asimetría deliberada acreditada. Si centrar una lista antigua o incompleta crea el margen grande, se retira sin respaldo CAD/corte/PDF.
+
+La documentación conserva antecedentes descartados para que se pueda revisar la decisión; solo fichas-propuestas.json es el contenido propuesto para carga.
 
 ## Fuentes y criterio
 
@@ -24,14 +37,13 @@ La continuación incorpora cinco identidades acreditadas por pedidos antiguos y 
 - «Habitual» por estadística exige tres pedidos y al menos 90 % de los votos de valor observado; los valores distintos dentro de un pedido cuentan como contradicción. La plantilla expresa prevalece y sus contradicciones se señalan. No se infiere una obligación de lo que falta en un texto de RPS.
 - Ganado está inventariado, pero FichaCliente no se aplica a esos elementos (aplicar.ts); manda su modelo de plantilla, conforme a docs/modelos/remolque-ganado.md. No se convierte «ganado» en lona alta por su altura.
 
-Se ha probado también por script la extracción de baquetones simétricos en los DWG disponibles: exige reconocer las dos medidas del remolque y las cotas hechas, encontrar las cuatro filas completas, comprobar que los lados opuestos son iguales y simétricos, y cotejar todos los centros con una representación ROTULADOR del mismo dibujo mediante traslado y giro. El control AR2400131 devuelve sus 22 marcas; ningún otro baquetón pendiente supera todas esas condiciones. No se añaden repartos por una coincidencia parcial con una plantilla copiada.
-
 ## Archivos de revisión y carga
 
 - fichas-vigentes.json: copia íntegra de las once fichas leídas por GET, con sus versiones.
 - fichas-propuestas.json: lista válida de FichaCliente; incluye identidades, reglas acreditadas y medidas con evidencia.
 - codigos-rps.json: todas las asociaciones nombre/código, pedido y método de resolución.
 - evidencias.json: variantes, pedidos contados, posiciones originales y centradas, fuente, hoja y filas, descartes y referencias sin reparto completo. Los originales se identifican con SHA-256 cuando se han leído.
+- revision-ivan.json: respuestas aplicadas, contraste de NORTE/CANO/CARMA y auditoría de márgenes de las 965 medidas iniciales, con la decisión de conservar, sustituir o retirar cada una y sus fuentes.
 - comprobaciones-cad.json: anclajes de coordenadas, dimensiones hechas y círculos verificados en las cinco referencias de MALLON. Una plantilla no cuenta como pedido en la votación del histórico.
 - asociaciones-plantillas.json: trece pedidos citados en los dibujos resuelven nueve cuentas; cinco no estaban en el histórico exportado. Se conserva la separación entre el cliente del pedido y otras plantillas copiadas dentro del DWG.
 - pedidos-cad.json: repartos de pedidos completados con cotas y círculos del CAD, con anclajes comprobados, y discrepancias que requieren aclarar la orientación.
@@ -49,13 +61,12 @@ El segundo comando queda documentado para Iván: no se ha ejecutado. Una correcc
 
 - **VIEITES GOMEZ, JESUS (054473):** El elemento 0232307 tiene las cabezas distintas: una lleva 2,5;35;75;108,5 y la otra 2,5;55;108,5. El CAD no identifica cuál es delante ni desde qué extremo se orienta el lateral. No se mezclan con el elemento vecino 0232306 de 186 × 110. ¿Cuál de las dos cabezas es delante y desde qué extremo está medido el lateral?
 - **REMOLQUES Y CARAVANAS MALLON, S. L. (001795):** RL23 (229×139,5): hay un círculo justo en el borde trasero (0 cm), además de los diez acotados. ¿Es un ollao real o una marca sobrante? Las cabezas y el resto del lateral están acreditados en comprobaciones-cad.json; esta referencia queda sin cargar.
-- **J&B AGROMAQUINAS Y REMOLQUES S. L. (000033):** Los repartos escritos de J&B para 115×93,5, 150×114,5, 200×131, 230×131 y 260×131 no indican el tipo ni la longitud hecha. ¿Son medidas del remolque o acabadas y valen tanto para lona como para baquetón? Con el largo hecho se invertirán los laterales que vienen desde delante.
-- **METALURGICAS NORTE BURGOS S.L. (023649):** ¿La holgura total de 2 cm de largo y ancho de la nota de mayo se aplica tanto a la lona alta como al baquetón? FichaCliente no tiene una holgura general de lona; hay que confirmar las demasías antes de automatizarla.
-- **CERRAJERIA MALDONADO / CAMACHO · CARROCERIAS Y REMOLQUES CAMACHO 1990 SL (031580):** ¿La recogida habitual actual de CAMACHO es cremallera, como dice la plantilla, o GOMA, como sus hojas del histórico? También falta aclarar si los 10 cm de aguas están incluidos en la altura.
-- **CANO MUÑOZ, FRANCISCO (045288):** ¿Qué dimensiones entrega ahora CANO: remolque o lona acabada, y qué aumentos concretos deben quedar en cada uno de los siete campos de baquetón? No se suman las dos notas de +0,5 sin aclararlo.
-- **CANO MUÑOZ S.L.U. (030179):** Confirmar las demasías del baquetón con la nota de CANO: la ficha de esta sociedad se conserva sin reemplazarla por las reglas inferidas de la cuenta personal 045288.
+- **J&B AGROMAQUINAS Y REMOLQUES S. L. (000033):** Iván confirma que los cinco repartos valen para lona y baquetón. Falta acreditar la longitud hecha para invertir los laterales desde delante; esas medidas no se registran. La cuenta tampoco está en el histórico y queda fuera de las altas.
+- **CERRAJERIA MALDONADO / CAMACHO · CARROCERIAS Y REMOLQUES CAMACHO 1990 SL (031580):** Sigue sin aclararse si los 10 cm de aguas están incluidos en la altura; no se registra esa regla. La recogida GOMA detrás queda resuelta por los siete pedidos aplicables de lona.
+- **CANO MUÑOZ, FRANCISCO (045288):** No hay demasías de baquetón claras para esta cuenta personal: no se registran. AR2604501 pertenece a la sociedad 030179 y no acredita las condiciones de la cuenta 045288.
+- **CANO MUÑOZ S.L.U. (030179):** Las demasías de baquetón no están acreditadas: no se registran. Las medidas del remolque, aguas aparte y cremallera trasera del 9 de soldar quedan resueltas por AR2604501.
 - **TALLERES R.CASAL, S. L. , (001138):** AR2401103: el croquis escribe huecos laterales 12–28–35–35–28–12 y cabezas 12–26–30–26–12. Su DXF tiene dos laterales distintos (desde corte: 13–41–76–112–140 y 13–41–69–114–140). ¿Qué lado es el patrón? FichaCliente solo admite un reparto lateral común; no se mezcla el croquis con uno de los dos cortes para completar esta medida.
-- **Plantillas sin identidad RPS:** falta asociar los clientes antiguos enumerados en el apéndice. Los pedidos escritos en los DWG han permitido resolver ESVA, J&B y LA AZABA, entre otros; los restantes necesitan un pedido o nombre RPS confirmado. Todos los 276 del histórico están asociados.
+- **Plantillas antiguas:** las cuentas ausentes del histórico no se registran, según Iván. Se conserva su inventario y las asociaciones antiguas únicamente como documentación.
 - **Referencias sin reparto:** la tabla de cada cliente identifica los pedidos y medidas pendientes. Hace falta confirmar los lados y su origen o leer las cotas manuscritas; no se pregunta de nuevo por lo ya acreditado.
 
 ## Clientes
@@ -136,18 +147,17 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 200 × 125 | 10; 41,5; 84,5; 116 | 10; 41,5; 84,5; 116 | 10; 41; 81; 121; 161; 191 |  AR2500156; OT/2025/AR2500156.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500156. |
 | lona; 200 × 130 | 8; 42; 89,8; 123 | 8; 42; 89,8; 123 | 5; 10; 41; 81; 121; 161; 191 |  AR2600739; OT/2026/AR2600739.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 3 pedido(s): AR2500777, AR2600739, AR2602022. |
 | lona; 200 × 140 | 6; 42; 94; 134 | 6; 42; 94; 134 | 10; 41; 81; 121; 161; 191 |  AR2600392; OT/2026/AR2600392.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600392. |
-| lona; 210 × 130 | 8; 42; 89,8; 123 | 8; 42; 89,8; 123 | 2,5; 10; 48; 85,5; 128; 170; 201 |  AR2500864; OT/2025/AR2500864.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 7 pedido(s): AR2404284, AR2500621, AR2500864, AR2503374, AR2504984, AR2505483, AR2604801 / 3 pedido(s): AR2401442, AR2600487, AR2600543 / 2 pedido(s): AR2402591, AR2503423 / 1 pedido(s): AR2400230 / 1 pedido(s): AR2405862 / 1 pedido(s): AR2404319 / 1 pedido(s): AR2404141. |
+| lona; 210 × 130 | 8; 42; 89,8; 123 | 8; 42; 89,8; 123 | 2,5; 10; 48; 85,5; 128; 170; 201 |  AR2500864; OT/2025/AR2500864.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 6 pedido(s): AR2404284, AR2500621, AR2500864, AR2503374, AR2504984, AR2505483 / 3 pedido(s): AR2401442, AR2600487, AR2600543 / 2 pedido(s): AR2402591, AR2503423 / 1 pedido(s): AR2400230 / 1 pedido(s): AR2405862 / 1 pedido(s): AR2404319 / 1 pedido(s): AR2404141. |
 | lona; 210 × 135 | 8; 43,8; 91,5; 128 | 8; 43,8; 91,5; 128 | 2,5; 10; 48; 85,5; 128; 170; 201 |  AR2401787; OT/2024/AR2401787-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2401787 / 1 pedido(s): AR2400629. |
 | lona; 210 × 140 | 6; 42; 94; 134 | 6; 42; 94; 134 | 2,5; 10; 48; 85,5; 128; 170; 201 |  AR2504973; OT/2025/AR2504973-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2504973. |
 | lona; 210 × 160 | 11; 42; 81; 117; 151 | 11; 42; 81; 117; 151 | 5; 10; 43,5; 85; 127,5; 169,5; 200,5 |  AR2400014; OT/2024/AR2400014-2.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2400014. |
 | lona; 220 × 140 | 6; 42; 94; 134 | 6; 42; 94; 134 | 5; 11; 45; 89; 133; 177; 211 |  AR2402349; OT/2024/AR2402349-5.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402349. |
 | lona; 221 × 161 | 11; 42,5; 81,5; 117,5; 152 | 11; 42,5; 81,5; 117,5; 152 | 5; 11; 45,5; 89,5; 133,5; 177,5; 212 |  AR2402363; OT/2024/AR2402363.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402363. |
 | lona; 225 × 160 | 10; 44; 80; 119; 150 | 10; 44; 80; 119; 150 | 10; 45; 90; 135; 180; 216; 221 |  AR2401199; OT/2024/AR2401199.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2401199 / 1 pedido(s): AR2401254. |
-| lona; 230 × 155 | 5; 41,5; 78; 114,5; 151 | 5; 41,5; 78; 114,5; 151 | 5; 10; 47; 93; 139; 185; 221; 226 |  AR2604801; OT/2026/AR2604801.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2604801. |
 | lona; 240 × 140 | 6; 42; 94; 134 | 6; 42; 94; 134 | 10; 41,4; 79,7; 118,1; 158,4; 198,8; 231 |  AR2501252; OT/2025/AR2501252.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 3 pedido(s): AR2406134, AR2501252, AR2503282 / 1 pedido(s): AR2401318. |
 | lona; 250 × 130 | 8; 42; 89,8; 123 | 8; 42; 89,8; 123 | 10; 44; 86; 128; 168; 208; 241 |  AR2603230; OT/2026/AR2603230.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2603230. |
 | lona; 250 × 150 | 7; 46; 106; 145 | 7; 46; 106; 145 | 5; 10; 44; 86; 128; 167,8; 208; 241 |  AR2600281; OT/2026/AR2600281.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 2 pedido(s): AR2403702, AR2406134 / 1 pedido(s): AR2600281 / 1 pedido(s): AR2603306 / 1 pedido(s): AR2600997 / 1 pedido(s): AR2501686. |
-| lona; 250 × 160 | 11; 42; 81; 117; 151 | 11; 42; 81; 117; 151 | 5; 10; 44; 86; 128; 168; 208; 241 |  AR2506284; OT/2025/AR2506284-12.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 7 pedido(s): AR2400229, AR2500694, AR2500972, AR2503793, AR2506284, AR2601673, AR2603166 / 1 pedido(s): AR2404538. |
+| lona; 250 × 160 | 11; 42; 81; 117; 151 | 11; 42; 81; 117; 151 | 5; 10; 44; 86; 128; 168; 208; 241 |  AR2506284; OT/2025/AR2506284-12.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 6 pedido(s): AR2500694, AR2500972, AR2503793, AR2506284, AR2601673, AR2603166 / 1 pedido(s): AR2404538. |
 | lona; 250 × 170 | 10; 43; 86; 127; 160 | 10; 43; 86; 127; 160 | 5; 10; 44; 86; 128; 168; 208; 241 |  AR2400014; OT/2024/AR2400014-1.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2400014. |
 | lona; 255 × 150 | 7; 46; 106; 145 | 7; 46; 106; 145 | 5; 10; 45; 88; 131; 172; 213; 246 |  AR2506341; OT/2025/AR2506341.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 3 pedido(s): AR2500304, AR2503696, AR2506341 / 2 pedido(s): AR2403813, AR2406826. |
 | lona; 260 × 135 | 8; 43,8; 91,5; 128 | 8; 43,8; 91,5; 128 | 10; 45; 91; 133; 176; 218; 251 |  AR2401799; OT/2024/AR2401799.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401799. |
@@ -156,14 +166,20 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 261 × 150 | 7; 46; 106; 145 | 7; 46; 106; 145 | 5; 10; 46; 92; 134; 177; 219; 252 |  AR2504629; OT/2025/AR2504629.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2504629. |
 | lona; 270 × 140 | 6; 42; 94; 134 | 6; 42; 94; 134 | 5; 11; 47; 91; 137; 180; 225; 261 |  AR2503900; OT/2025/AR2503900.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503900. |
 | lona; 270 × 170 | 10; 43; 86; 127; 160 | 10; 43; 86; 127; 160 | 5; 11; 47; 91; 137; 180; 225; 261 |  AR2402349; OT/2024/AR2402349-4.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402349. |
-| lona; 300 × 160 | 5; 25; 60; 100; 138; 158,5 | 5; 25; 60; 100; 138; 158,5 | 12,5; 45; 88; 131,5; 173,5; 216,5; 258; 289,5 |  AR2402349; OT/2024/AR2402349-1.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2402349 / 1 pedido(s): AR2400288. |
+| lona; 300 × 160 | 11; 42; 81; 117; 151 | 11; 42; 81; 117; 151 | 12,5; 45; 88; 131,5; 173,5; 216,5; 258; 289,5 |  AR2400288; OT/2024/AR2400288.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2400288. |
 | lona; 300 × 180 | 13,8; 48,5; 90; 131,3; 166,5 | 13,8; 48,5; 90; 131,3; 166,5 | 2,5; 45; 88; 131,5; 173,5; 216,5; 258; 289,5 |  AR2502233; OT/2025/AR2502233.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2502233. |
 | lona; 300 × 190 | 8; 51; 98; 143; 183 | 8; 51; 98; 143; 183 | 12,5; 45; 88; 131,5; 173,5; 216,5; 258; 289,5 |  AR2500972; OT/2025/AR2500972.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500972. |
 | lona; 310 × 150 | 7; 46; 106; 145 | 7; 46; 106; 145 | 5; 10; 45,8; 88,3; 133,3; 178; 223,3; 266; 301 |  AR2500654; OT/2025/AR2500654.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2500654, AR2505051. |
 | lona; 310 × 170 | 10; 43; 86; 127; 160 | 10; 43; 86; 127; 160 | 5; 10; 52,3; 93,6; 134,9; 176,1; 217,4; 258,7; 300; 306 |  AR2405784; OT/2024/AR2405784-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405784. |
 | lona; 315 × 180 | 13,8; 48,5; 90; 131,3; 166,5 | 13,8; 48,5; 90; 131,3; 166,5 | 5; 10; 57; 94,6; 136,9; 179,1; 221,4; 263,7; 306 |  AR2601016; OT/2026/AR2601016.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2601016. |
 | lona; 320 × 180 | 14; 48,5; 90; 131,5; 166,5 | 14; 48,5; 90; 131,5; 166,5 | 5; 24; 58,5; 99; 138,5; 178; 218,5; 258,5; 294; 315,5 |  AR2400014; OT/2024/AR2400014-3.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2400014. |
-| lona; 380 × 235 | 7,5; 38,9; 77,2; 115,6; 155,9; 196,3; 228,5 | 7,5; 38,9; 77,2; 115,6; 155,9; 196,3; 228,5 | 5; 10; 42,8; 75,6; 108,5; 141,3; 174,1; 206,7; 239,7; 272,5; 305,4; 338,2 |  AR2600281; OT/2026/AR2600281-12.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600281. |
+
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 230 × 155 | AR2604801 | No se acredita la longitud hecha de los tres lados; no se suple con largo/ancho del remolque. |
+| lona; 380 × 235 | AR2600281 | REMOLCAR AR2600281: la lista lateral termina a 42,8 cm del borde delantero (hecho 381; último ollao 338,2). Solo hay un caso y no hay cotejo que acredite ese extremo. La costumbre del ollao extra trasero a 5/10 no justifica este hueco delantero; se retira sin alterar las asimetrías acreditadas de las otras medidas. |
 
 Referencias que quedan fuera de las medidas automáticas:
 
@@ -177,6 +193,7 @@ Referencias que quedan fuera de las medidas automáticas:
 | Lona alta; 161 × 120 | AR2500559 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2500559.dwg; OT/2025/AR2500559.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Ganado; 195 × 283 | AR2500862 | Modelo de ganado; fuera de FichaCliente. ; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 270 × 130 | AR2505412 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2505412-10.xlsb; OT/2025/AR2505412-11.xlsb; OT/2025/AR2505412-12.xlsb; OT/2025/AR2505412.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 380 × 235 | AR2600281 | REMOLCAR AR2600281: la lista lateral termina a 42,8 cm del borde delantero (hecho 381; último ollao 338,2). Solo hay un caso y no hay cotejo que acredite ese extremo. La costumbre del ollao extra trasero a 5/10 no justifica este hueco delantero; se retira sin alterar las asimetrías acreditadas de las otras medidas. OT/2026/AR2600281-11.xlsb; OT/2026/AR2600281-12.xlsb; OT/2026/AR2600281.dwg; OT/2026/AR2600281.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 230 × 140 | AR2603632 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2603632.dwg; OT/2026/AR2603632.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 
 ### TALLERES CAL, C. B. — 016573
@@ -231,7 +248,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 225 × 133 | 5; 36; 67; 98; 129 | 5; 36; 67; 98; 129 | 2,5; 10; 56; 112; 168; 216; 223,5 |  AR2500243; OT/2025/AR2500243-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 6 pedido(s): AR2500243, AR2503489, AR2505112, AR2505197, AR2505219, AR2602298 / 2 pedido(s): AR2406781, AR2601461 / 1 pedido(s): AR2602298 / 1 pedido(s): AR2600810 / 1 pedido(s): AR2505688 / 1 pedido(s): AR2503227. |
 | lona; 225 × 134 | 2,5; 35; 67,5; 100; 132,5 | 2,5; 35; 67,5; 100; 132,5 | 2,5; 10; 56; 112; 168; 216; 223,5 |  AR2506260; OT/2025/AR2506260.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2506260 / 1 pedido(s): AR2501556. |
 | lona; 225 × 142 | 5,2; 38,5; 71,1; 105; 138,2 | 5,2; 38,5; 71,1; 105; 138,2 | 2,5; 10; 20,5; 50,5; 88,5; 136,5; 175,5; 210,5; 216; 223,5 |  AR2400064; OT/2024/AR2400064.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2400064. |
-| lona; 225 × 143 | 2,5; 37,3; 72; 106,8; 141,5 | 2,5; 37,3; 72; 106,8; 141,5 | 2,5; 10; 56; 112; 168; 216; 223,5 |  AR2600027; OT/2026/AR2600027-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 2 pedido(s): AR2500335, AR2504722 / 1 pedido(s): AR2600027 / 1 pedido(s): AR2504358 / 1 pedido(s): AR2500107 / 1 pedido(s): AR2605157. |
+| lona; 225 × 143 | 2,5; 37,3; 72; 106,8; 141,5 | 2,5; 37,3; 72; 106,8; 141,5 | 2,5; 10; 56; 112; 168; 216; 223,5 |  AR2600027; OT/2026/AR2600027-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 2 pedido(s): AR2500335, AR2504722 / 1 pedido(s): AR2600027 / 1 pedido(s): AR2504358 / 1 pedido(s): AR2500107. |
 | lona; 230 × 132 | 5; 35,8; 66,5; 97,3; 128 | 5; 35,8; 66,5; 97,3; 128 | 5; 10; 33; 66; 99; 132; 165; 198; 221; 226 |  AR2500826; OT/2025/AR2500826.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500826. |
 | lona; 230 × 145 | 5; 39; 73; 107; 141 | 5; 39; 73; 107; 141 | 2,5; 10; 57,5; 115; 172; 221; 228,5 |  AR2501548; OT/2025/AR2501548.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501548. |
 | lona; 230 × 157 | 5; 42; 79; 116; 153 | 5; 42; 79; 116; 153 | 2,5; 10; 57; 115; 173; 221; 228,5 |  AR2400077; OT/2024/AR2400077.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2400077. |
@@ -256,16 +273,14 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 261 × 162 | 5; 43,3; 81,5; 119,8; 158 | 5; 43,3; 81,5; 119,8; 158 | 2,5; 10; 62,5; 114,5; 166,5; 218,5; 252; 259,5 |  AR2404748; OT/2024/AR2404748-12.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2404748 / 1 pedido(s): AR2404626 / 1 pedido(s): AR2401635. |
 | lona; 261 × 163 | 2,5; 34,3; 66,1; 97,9; 129,7; 161,5 | 2,5; 34,3; 66,1; 97,9; 129,7; 161,5 | 2,5; 10; 65; 130; 195; 252; 259,5 |  AR2506260; OT/2025/AR2506260-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2506260 / 1 pedido(s): AR2601270. |
 | lona; 263 × 162 | 5; 43,5; 81,5; 120; 158 | 5; 43,5; 81,5; 120; 158 | 2,5; 10; 65; 130; 195; 254; 261,5 |  AR2400673; OT/2024/AR2400673-2.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2400673. |
-| lona; 263 × 163 | 26,5; 63,5; 100,5; 137,5 | 26,5; 63,5; 100,5; 137,5 | 2,5; 10; 65; 131; 196; 254; 261,5 |  AR2504854; OT/2025/AR2504854-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2504854 / 1 pedido(s): AR2502022. |
+| lona; 263 × 163 | 5; 43,8; 82; 120,3; 159 | 5; 43,8; 82; 120,3; 159 | 2,5; 10; 59,2; 108,4; 157,6; 206,8; 256; 261,5 |  AR2502022; OT/2025/AR2502022-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2502022. |
 | lona; 265 × 134,5 | 5,5; 36,4; 67,8; 99,1; 130 | 5,5; 36,4; 67,8; 99,1; 130 | 2,5; 10; 30; 60; 90; 120; 150; 180; 210; 240; 256; 263,5 |  AR2405711; OT/2024/AR2405711-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405711. |
 | lona; 270 × 140 | 2,5; 36,5; 70,5; 104,5; 138,5 | 2,5; 36,5; 70,5; 104,5; 138,5 | 2,5; 10; 54; 108; 162; 216; 261; 268,5 |  AR2506170; OT/2025/AR2506170.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2506170. |
 | lona; 270 × 142 | 5; 38,3; 71,5; 104,8; 138 | 5; 38,3; 71,5; 104,8; 138 | 2,5; 10; 54; 108; 162; 216; 268,5 |  AR2405338; OT/2024/AR2405338-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405338. |
-| lona; 270 × 143 | 2,5; 37,3; 72; 106,8; 141,5 | 2,5; 37,3; 72; 106,8; 141,5 | 2,5; 10; 54; 108; 162; 216; 260; 268,5 |  AR2605157; OT/2026/AR2605157.pdf; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2605157 / 1 pedido(s): AR2502276. |
 | lona; 270 × 155 | 5; 41,5; 78; 114,5; 151 | 5; 41,5; 78; 114,5; 151 | 2,5; 10; 54; 108; 162; 216; 268,5 |  AR2506435; OT/2025/AR2506435.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2506435 / 1 pedido(s): AR2506374. |
 | lona; 270 × 157 | 5; 42; 79; 116; 153 | 5; 42; 79; 116; 153 | 2,5; 10; 54,5; 108,5; 162,5; 216,5; 263; 268 |  AR2400071; OT/2024/ar2400071-16.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2400071. |
 | lona; 271 × 163 | 2,5; 34,3; 66,1; 97,9; 129,7; 161,5 | 2,5; 34,3; 66,1; 97,9; 129,7; 161,5 | 2,5; 10; 67; 135; 202; 262; 269,5 |  AR2506374; OT/2025/AR2506374-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2506374. |
 | lona; 272 × 163 | 2,5; 34,3; 66,1; 97,9; 129,7; 161,5 | 2,5; 34,3; 66,1; 97,9; 129,7; 161,5 | 2,5; 10; 68; 136; 204; 263; 270,5 |  AR2505197; OT/2025/AR2505197-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2505197. |
-| lona; 274 × 180 | 2,5; 32,3; 63; 93,8; 123,5; 178,5 | 2,5; 32,3; 63; 93,8; 123,5; 178,5 | 2,5; 12,5; 37,8; 74,2; 110,5; 146,8; 183,2; 218,5 |  AR2600295; OT/2026/AR2600295.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600295. |
 | lona; 279 × 159 | 5; 42,5; 80; 117,5; 155 | 5; 42,5; 80; 117,5; 155 | 2,5; 10; 62; 114; 166; 218; 270; 277,5 |  AR2407077; OT/2024/AR2407077-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2407077. |
 | lona; 280 × 157 | 5; 34,6; 64,2; 93,8; 123,4; 153 | 5; 34,6; 64,2; 93,8; 123,4; 153 | 2,5; 10; 56; 112; 168; 224; 271; 278,5 |  AR2500610; OT/2025/AR2500610-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500610. |
 | lona; 297 × 162 | 4,8; 44,4; 81,5; 118,6; 158,2 | 4,8; 44,4; 81,5; 118,6; 158,2 | 2,5; 10; 58; 116; 174; 232; 288; 295,5 |  AR2402801; OT/2024/AR2402801.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402801. |
@@ -281,6 +296,13 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 350 × 175 | 2,5; 36,7; 70,9; 105,1; 139,3; 173,5 | 2,5; 36,7; 70,9; 105,1; 139,3; 173,5 | 2,5; 10; 39; 78; 117; 156; 195; 234; 273; 312; 341; 348,5 |  AR2406824; OT/2024/AR2406824.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2406824. |
 | lona; 355 × 167 | 5; 57,7; 110,3; 163 | 5; 57,7; 110,3; 163 | 2,5; 10; 38; 90; 136; 185; 230; 275; 320; 346; 353,5 |  AR2406883; OT/2024/AR2406883.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2406883. |
 
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 270 × 143 | AR2605157 | No se acredita la longitud hecha de los tres lados; no se suple con largo/ancho del remolque. |
+| lona; 274 × 180 | AR2600295 | El resultado guardado no coincide con las listas manuales que indica el modo seleccionado. |
+
 Referencias que quedan fuera de las medidas automáticas:
 
 | Tipo y medida del histórico | Pedidos | Motivo y fuentes |
@@ -295,8 +317,10 @@ Referencias que quedan fuera de las medidas automáticas:
 | Lona alta; 251 × 141 | AR2406627 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2406627.dwg; OT/2024/AR2406627.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Ganado; 188 × 149,5 | AR2406732 | Modelo de ganado; fuera de FichaCliente. ; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 275 × 160 | AR2501383 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2501383.dwg; OT/2025/AR2501383.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 270 × 143 | AR2502276 | No se acredita la longitud hecha de los tres lados; no se suple con largo/ancho del remolque. OT/2025/AR2502276-1.xlsb; OT/2025/AR2502276-2.xlsb; OT/2025/ar2502276-3.xlsb; OT/2025/AR2502276.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 200 × 115 | AR2504854 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2504854-10.xlsb; OT/2025/AR2504854-11.xlsb; OT/2025/AR2504854.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Ganado; 250 × 143 | AR2506052 | Modelo de ganado; fuera de FichaCliente. OT/2025/AR2506052.dwg; OT/2025/AR2506052.xlsb; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 274 × 180 | AR2600295 | El resultado guardado no coincide con las listas manuales que indica el modo seleccionado. OT/2026/AR2600295.dwg; OT/2026/AR2600295.xlsb |
 | Baquetón; 250 × 177 | AR2601018 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2601018-10.xlsb; OT/2026/AR2601018-11.xlsb; OT/2026/AR2601018.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Ganado; 160 × 110 | AR2601621 | Modelo de ganado; fuera de FichaCliente. OT/2026/AR2601621.dwg; OT/2026/AR2601621.xlsb; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 248 × 173 | AR2602458 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2602458.dwg; OT/2026/AR2602458.xlsm; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
@@ -355,18 +379,23 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | baqueton; 300 × 200 | 2,65; 29,75; 58,05; 86,35; 114,65; 142,95; 171,25; 198,35 | 2,65; 29,75; 58,05; 86,35; 114,65; 142,95; 171,25; 198,35 | 2,5; 35,4; 68,3; 101,2; 134,1; 166,9; 199,8; 232,7; 265,6; 298,5 |  AR2501005; OT/2025/AR2501005.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501005. |
 | baqueton; 320 × 170 | 2,5; 35,7; 68,9; 102,1; 135,3; 168,5 | 2,5; 35,7; 68,9; 102,1; 135,3; 168,5 | 2,5; 36,8; 68,7; 100,5; 132,4; 164,2; 196,1; 227,9; 259,8; 291,6; 319,5 |  AR2600341; OT/2026/AR2600341.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600341. |
 | baqueton; 351 × 209 | 1,5; 31,1; 60,6; 90,2; 119,8; 149,4; 178,9; 208,5 | 11,5; 42,7; 73,8; 105; 136,2; 167,3; 198,5 | 2; 36,8; 71,6; 106,4; 141,2; 176; 210,8; 245,6; 280,4; 315,2; 350 |  AR2501991; OT/2025/AR2501991.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501991. |
-| baqueton; 452 × 222 | 2; 34; 65; 96; 127; 158; 189; 221 | 2; 34; 65; 96; 127; 158; 189; 221 | 117,5; 161,1; 204,7; 248,3; 291,9; 335,5 |  AR2406256; OT/2024/AR2406256-10.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2406256. |
 | lona; 160 × 120 | 2,5; 31,5; 60,5; 89,58; 118,5 | 3,25; 32,25; 61,25; 90,25; 119,25 | 2,5; 33,7; 64,9; 96,1; 127,3; 158,5 |  AR2403179; OT/2024/AR2403179.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2403179 / 1 pedido(s): AR2400554. |
 | lona; 200 × 120 | 2,65; 40,15; 80,85; 118,35 | 3,4; 40,9; 81,6; 119,1 | 2,65; 29,75; 58,05; 86,35; 114,65; 142,95; 171,25; 198,35 |  AR2401766; OT/2024/AR2401766.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401766. |
 | lona; 211 × 125 | 2,5; 33,5; 63; 92,5; 123,5 | 3,25; 34,25; 63,75; 93,25; 124,25 | 2,25; 36,85; 71,45; 105,95; 140,55; 175,15; 209,75 |  AR2500070; OT/2025/AR2500070.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2406670, AR2500070. |
-| lona; 220 × 130 | 2,65; 42,55; 88,35; 128,35 | 3,4; 43,3; 89,1; 129,1 | 2,65; 31,55; 63,15; 94,75; 126,35; 157,95; 189,55; 218,35 |  AR2602230; OT/2026/AR2602230.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 3 pedido(s): AR2505467, AR2600136, AR2602230 / 2 pedido(s): AR2400504, AR2401369 / 1 pedido(s): AR2500071 / 1 pedido(s): AR2604800 / 1 pedido(s): AR2600488. |
+| lona; 220 × 130 | 2,65; 42,55; 88,35; 128,35 | 3,4; 43,3; 89,1; 129,1 | 2,65; 31,55; 63,15; 94,75; 126,35; 157,95; 189,55; 218,35 |  AR2602230; OT/2026/AR2602230.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 3 pedido(s): AR2505467, AR2600136, AR2602230 / 2 pedido(s): AR2400504, AR2401369 / 1 pedido(s): AR2600488. |
 | lona; 220 × 140 | 2,6; 37; 70,5; 104; 138,4 | 3,35; 37,75; 71,25; 104,75; 139,15 | 2,65; 31,45; 63,05; 94,65; 126,25; 157,85; 189,45; 218,35 |  AR2400756; OT/2024/AR2400756-2.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2400756. |
 | lona; 223 × 165 | 2,5; 34,7; 66,9; 99,1; 131,3; 163,5 | 3,25; 35,45; 67,65; 99,85; 132,05; 164,25 | 6,25; 41,45; 76,75; 111,95; 147,25; 182,45; 217,75 |  AR2504036; OT/2025/AR2504036.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2504036. |
 | lona; 250 × 140 | 2,6; 37; 70,5; 104; 138,4 | 3,35; 37,75; 71,25; 104,75; 139,15 | 2,8; 31; 62,5; 94; 125,5; 157; 188,5; 220; 248,2 |  AR2506268; OT/2025/AR2506268.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 2 pedido(s): AR2505949, AR2506268 / 2 pedido(s): AR2506129, AR2602990 / 1 pedido(s): AR2406762 / 1 pedido(s): AR2400543 / 1 pedido(s): AR2601766. |
-| lona; 250 × 150 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 3,25; 32,45; 61,65; 90,85; 120,05; 149,25 | 1,25; 32,35; 63,35; 94,45; 125,45; 156,55; 187,65; 218,65; 249,75 |  AR2503961; OT/2025/AR2503961-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 2 pedido(s): AR2401864, AR2503961 / 1 pedido(s): AR2501391 / 1 pedido(s): AR2401572 / 1 pedido(s): AR2400205. |
+| lona; 250 × 150 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 3,25; 32,45; 61,65; 90,85; 120,05; 149,25 | 1,25; 32,35; 63,35; 94,45; 125,45; 156,55; 187,65; 218,65; 249,75 |  AR2503961; OT/2025/AR2503961-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 2 pedido(s): AR2401864, AR2503961 / 1 pedido(s): AR2401572 / 1 pedido(s): AR2400205. |
 | lona; 250 × 160 | 2,5; 31,8; 64,3; 96,8; 129,3; 158,5 | 3,25; 32,55; 65,05; 97,55; 130,05; 159,25 | 1,25; 31,05; 62,55; 94,05; 125,55; 157,05; 188,55; 220,05; 249,75 |  AR2500835; OT/2025/AR2500835.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 2 pedido(s): AR2500835, AR2503054 / 1 pedido(s): AR2403022 / 1 pedido(s): AR2402389. |
 | lona; 260 × 160 | 1,75; 33,25; 64,75; 96,25; 127,75; 159,25 | 3,25; 34,45; 65,65; 96,85; 128,05; 159,25 | 1,25; 33,55; 65,85; 98,15; 130,45; 162,85; 195,15; 227,45; 259,75 |  AR2500415; OT/2025/AR2500415.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500415. |
 | lona; 320 × 170 | 2,5; 35,7; 68,9; 102,1; 135,3; 168,5 | 2,5; 36; 69,5; 103; 136,5; 170 | 1,25; 33,05; 64,95; 96,75; 128,65; 160,45; 192,35; 224,15; 256,05; 287,85; 319,75 |  AR2500996; OT/2025/AR2500996.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500996. |
+
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| baqueton; 452 × 222 | AR2406256 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
 
 Referencias que quedan fuera de las medidas automáticas:
 
@@ -379,6 +408,7 @@ Referencias que quedan fuera de las medidas automáticas:
 | Lona alta; 310 × 150 | AR2405640, AR2502368, AR2502944 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2405640-10.xlsb; OT/2024/AR2405640-11.xlsb; OT/2024/AR2405640-12.xlsb; OT/2024/AR2405640-13.xlsb; OT/2024/AR2405640.dwg; OT/2025/AR2502368.dwg; OT/2025/AR2502368.xlsb; OT/2025/AR2502944.dwg; OT/2025/AR2502944.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 330 × 150 | AR2405948 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2405948.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 220 × 150 | AR2406256 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2406256-10.xlsb; OT/2024/AR2406256.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Baquetón; 452 × 222 | AR2406256 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2406256-10.xlsb; OT/2024/AR2406256.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 270 × 170 | AR2500320 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2500320.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 371 × 221 | AR2500334 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2500334.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 300 × 150 | AR2503054 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2503054.dwg; OT/2025/AR2503054.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
@@ -419,22 +449,18 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | --- | --- | --- | --- | --- |
 | lona; 310 × 188 | 2,5; 33,2; 63,8; 94,5; 125,2; 155,9; 186,5 | 2,5; 33,2; 63,8; 94,5; 125,2; 155,9; 186,5 | 2,5; 36,5; 70,5; 104,5; 138,5; 172,5; 206,5; 240,5; 274,5; 308,5 | Vigente v2; se conserva. AR2500626; OT/2025/AR2500626.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2500626, AR2605291. |
 | lona; 160 × 100 | 2,5; 26,5; 50,5; 74,5; 98,5 | 2,5; 26,5; 50,5; 74,5; 98,5 | 2,5; 36,4; 65,8; 95,2; 124,6; 158,5 | Vigente v2; se conserva. AR2605291; OT/2026/AR2605291.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2605291. |
-| baqueton; 180 × 120 | 2,5; 41,2; 79,8; 118,5 | 25; 41,2; 79,8; 118,5 | 2,5; 37,78; 73,2; 108,1; 143,3; 178,5 |  AR2406591; OT/2024/AR2406591-6.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2406591. |
 | baqueton; 250 × 172 | 2,5; 36,1; 69,7; 103,3; 136,9; 170,5 | 2,5; 36,1; 69,7; 103,3; 136,9; 170,5 | 2,5; 37,6; 72,8; 107,9; 143,1; 178,2; 213,4; 248,5 |  AR2400301; OT/2024/AR2400301-2.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2400301. |
 | baqueton; 251 × 142 | 3,5; 37,5; 71,5; 105,5; 139,5 | 3,5; 37,5; 71,5; 105,5; 139,5 | 3; 33,8; 64,5; 95,3; 126; 156,8; 187,5; 218,3; 249 |  AR2404189; OT/2024/AR2404189.xlsb / BAQUETÓN, filas 33/34/35, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404189. |
 | baqueton; 260 × 160 | 2,5; 33,7; 64,9; 96,1; 127,3; 158,5 | 2,5; 33,7; 64,9; 96,1; 127,3; 158,5 | 2,5; 34,5; 66,5; 98,5; 130,5; 162,5; 194,5; 226,5; 258,5 |  AR2505469; OT/2025/AR2505469.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2505469. |
 | baqueton; 260 × 162 | 2,5; 31,7; 65,7; 97,3; 128,9; 160,5 | 2,5; 34,1; 65,7; 97,3; 128,9; 160,5 | 2,5; 34,5; 66,5; 98,5; 130,5; 162,5; 194,5; 226,5; 258,5 |  AR2500659; OT/2025/AR2500659-10.xlsb / BAQUETÓN, filas 33/34/35, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500659. |
 | baqueton; 260 × 163 | 2,5; 34,3; 66,1; 97,9; 129,7; 161,5 | 2,5; 34,3; 66,1; 97,9; 129,7; 161,5 | 2,5; 34,5; 66,5; 98,5; 130,5; 162,5; 194,5; 226,5; 258,5 |  AR2500181; OT/2025/AR2500181.xlsb / BAQUETÓN, filas 33/34/35, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500181. |
 | baqueton; 276 × 151 | 2,5; 31,7; 61,3; 90,7; 120,1; 149,5 | 2,5; 31,9; 61,3; 90,7; 120,1; 149,5 | 2,5; 32,7; 62,9; 93,2; 123,4; 153,6; 183,8; 214,1; 274,5 |  AR2405766; OT/2024/AR2405766.xlsb / BAQUETÓN, filas 33/34/35, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405766. |
-| baqueton; 505 × 255 | 2,5; 31,7; 65,3; 96,6; 128; 159,4; 190,8; 222,1; 253,5 | 2,5; 33,9; 65,3; 96,6; 128; 159,4; 190,8; 222,1; 253,5 | 2,5; 35,9; 69,3; 102,7; 136,1; 169,5; 202,9; 236,3; 269,7; 336,5; 369,9; 403,3 |  AR2502866; OT/2025/AR2502866.xlsb / BAQUETÓN, filas 33/34/35, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2502866. |
 | lona; 115 × 100 | 2,5; 26,5; 50,5; 74,5; 98,5 | 2,5; 26,5; 50,5; 74,5; 98,5 | 2,5; 39,5; 76,5; 113,5 |  AR2500064; OT/2025/AR2500064-2.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500064. |
 | lona; 155 × 105 | 2,5; 37,5; 72,5; 103,5 | 2,5; 37,5; 72,5; 103,5 | 2,5; 32,7; 62,9; 93,1; 123,3; 153,5 |  AR2505859; OT/2025/AR2505859-12.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2505859 / 1 pedido(s): AR2406591. |
-| lona; 160 × 112 | 2,5; 27,5; 56,5; 85,5; 110,5 | 2,5; 27,5; 56,5; 85,5; 110,5 | 2,5; 15; 54,5; 80,5; 106,5; 132,5; 158,5 |  AR2403653; OT/2024/AR2403653-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2403653. |
 | lona; 174 × 118 | 2,5; 31; 59,5; 88; 116,5 | 2,5; 31; 59,5; 88; 116,5 | 2,5; 30; 58,5; 87; 115,5; 144; 172,5 |  AR2501667; OT/2025/AR2501667-12.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501667. |
-| lona; 175 × 110 | 2,5; 37,8; 73,2; 108,5 | 2,5; 37,8; 73,2; 108,5 | 2,5; 36,7; 70,9; 105,1; 139,3; 173,5 |  AR2405985; OT/2024/AR2405985.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2402628, AR2405985 / 1 pedido(s): AR2402393. |
-| lona; 175 × 111 | 18,7; 56; 93,3 | 18,7; 56; 93,3 | 18; 53; 88; 123; 158 |  AR2401748; OT/2024/AR2401748-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401748. |
+| lona; 175 × 110 | 2,5; 37,8; 73,2; 108,5 | 2,5; 37,8; 73,2; 108,5 | 2,5; 36,7; 70,9; 105,1; 139,3; 173,5 |  AR2405985; OT/2024/AR2405985.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2402628, AR2405985. |
 | lona; 175 × 112 | 2,5; 38,5; 74,5; 110,5 | 2,5; 38,5; 74,5; 110,5 | 2,5; 31; 59,5; 88; 116,5; 145; 173,5 |  AR2600875; OT/2026/AR2600875.xlsb / LONA REMOLQUE 0225813, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600875. |
-| lona; 175 × 120 | 2,5; 29; 60,5; 92; 118,5 | 2,5; 29; 60,5; 92; 118,5 | 2,5; 36,7; 70,9; 105,1; 139,3; 173,5 |  AR2402799; OT/2024/AR2402799-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2402799 / 1 pedido(s): AR2402393. |
+| lona; 175 × 120 | 2,5; 29; 60,5; 92; 118,5 | 2,5; 29; 60,5; 92; 118,5 | 2,5; 36,7; 70,9; 105,1; 139,3; 173,5 |  AR2402799; OT/2024/AR2402799-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402799. |
 | lona; 180 × 115 | 2,5; 40,3; 75,7; 113,5 | 2,5; 40,3; 75,7; 113,5 | 2,5; 39,2; 73,4; 107,6; 141,8; 178,5 |  AR2401975; OT/2024/AR2401975-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401975. |
 | lona; 180 × 120 | 2,5; 41,2; 79,8; 118,5 | 2,5; 41,2; 79,8; 118,5 | 2,5; 37,7; 72,9; 108,1; 143,3; 178,5 |  AR2400301; OT/2024/AR2400301.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2400301. |
 | lona; 185 × 120 | 2,5; 31,5; 60,5; 89,5; 118,5 | 2,5; 31,5; 60,5; 89,5; 118,5 | 2,5; 38,5; 75; 111; 147,5; 183,5 |  AR2400611; OT/2024/AR2400611-3.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2400611. |
@@ -460,12 +486,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 250 × 145 | 2,5; 37,8; 73; 108,3; 143,5 | 2,5; 37,8; 73; 108,3; 143,5 | 2,5; 33,3; 64; 94,8; 125,5; 156,3; 187; 217,8; 248,5 |  AR2604093; OT/2026/AR2604093.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2604093. |
 | lona; 250 × 152 | 2,5; 32,1; 61,7; 91,3; 120,9; 150,5 | 2,5; 32,1; 61,7; 91,3; 120,9; 150,5 | 2,5; 33,3; 64; 94,8; 125,5; 156,3; 187; 217,8; 248,5 |  AR2406316; OT/2024/AR2406316-2.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2406316. |
 | lona; 250 × 163 | 2,5; 34,3; 66,1; 97,9; 129,7; 161,5 | 2,5; 34,3; 66,1; 97,9; 129,7; 161,5 | 2,5; 33,3; 64; 94,8; 125,5; 156,3; 187; 217,8; 248,5 |  AR2503373; OT/2025/AR2503373-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503373. |
-| lona; 250 × 175 | 2,5; 36,7; 70,9; 105,1; 139,3; 173,5 | 2,5; 36,7; 70,9; 105,1; 139,3; 173,5 | 12,5; 44,8; 77,1; 109,4; 141,6; 173,9; 206,2; 238,5 |  AR2501995; OT/2025/AR2501995-12.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501995. |
 | lona; 251 × 140 | 2,5; 36,5; 70,5; 104,5; 138,5 | 2,5; 36,5; 70,5; 104,5; 138,5 | 2,5; 33,3; 64; 94,7; 125,5; 156,3; 187; 217,8; 249,5 |  AR2501667; OT/2025/AR2501667-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501667. |
 | lona; 251 × 155 | 2,5; 32,5; 63; 93; 123,5; 153,5 | 2,5; 32,5; 63; 93; 123,5; 153,5 | 2,5; 38; 73; 108,5; 143,5; 179; 214; 249,5 |  AR2400611; OT/2024/AR2400611-1.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2400611. |
 | lona; 260 × 150 | 2,5; 39; 75,5; 112; 148,5 | 2,5; 39; 75,5; 112; 148,5 | 2,5; 34,5; 66,5; 98,5; 130,5; 162,5; 194,5; 226,5; 258,5 |  AR2600515; OT/2026/AR2600515.xlsb / LONA REMOLQUE 224999, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2600515 / 1 pedido(s): AR2401328. |
 | lona; 260 × 151 | 2,5; 39,3; 76; 112,8; 149,5 | 2,5; 39,3; 76; 112,8; 149,5 | 2,5; 34,5; 66,5; 98,5; 130,5; 162,5; 194,5; 226,5; 258,5 |  AR2505859; OT/2025/AR2505859-13.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2505859 / 1 pedido(s): AR2403257. |
-| lona; 260 × 152 | 2,5; 32,1; 61,7; 91,3; 120,9; 150,5 | 2,5; 32,1; 61,7; 91,3; 120,9; 150,5 | 2,5; 34,5; 66,5; 98,5; 130,5; 162,5; 194,5; 226,5; 258,5 |  AR2505469; OT/2025/AR2505469-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 3 pedido(s): AR2500064, AR2505469, AR2604816. |
+| lona; 260 × 152 | 2,5; 32,1; 61,7; 91,3; 120,9; 150,5 | 2,5; 32,1; 61,7; 91,3; 120,9; 150,5 | 2,5; 34,5; 66,5; 98,5; 130,5; 162,5; 194,5; 226,5; 258,5 |  AR2505469; OT/2025/AR2505469-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2500064, AR2505469. |
 | lona; 260 × 153 | 2,5; 32,6; 62,2; 91,8; 121,4; 151,5 | 2,5; 32,6; 62,2; 91,8; 121,4; 151,5 | 2,5; 34,5; 66,5; 98,5; 130,5; 162,5; 194,5; 226,5; 258,5 |  AR2602963; OT/2026/AR2602963-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2602963. |
 | lona; 260 × 157 | 2,5; 33; 63,5; 94,5; 125; 155,5 | 2,5; 33; 63,5; 94,5; 125; 155,5 | 2,5; 34,5; 66,5; 98,5; 130,5; 162,5; 194,5; 226,5; 258,5 |  AR2400206; OT/2024/AR2400206.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2400206. |
 | lona; 260 × 160 | 2,5; 33,7; 64,9; 96,1; 127,3; 158,5 | 2,5; 33,7; 64,9; 96,1; 127,3; 158,5 | 2,5; 34,5; 66,5; 98,5; 130,5; 162,5; 194,5; 226,5; 258,5 |  AR2600007; OT/2026/AR2600007-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 3 pedido(s): AR2401328, AR2505469, AR2600007 / 1 pedido(s): AR2403653. |
@@ -480,9 +505,8 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 275 × 164 | 2,5; 34,5; 66,5; 98,5; 130,5; 162,5 | 2,5; 34,5; 66,5; 98,5; 130,5; 162,5 | 2,5; 32,6; 62,7; 92,8; 122,9; 153,1; 183,2; 213,3; 243,4; 273,5 |  AR2406316; OT/2024/AR2406316-3.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2406316. |
 | lona; 290 × 212 | 2,5; 37,2; 71,8; 106,5; 141,2; 175,8; 210,5 | 2,5; 37,2; 71,8; 106,5; 141,2; 175,8; 210,5 | 2,5; 31,1; 59,7; 88,3; 114,7; 145,5; 174,1; 202,7; 231,3; 259,9; 288,5 |  AR2406591; OT/2024/AR2406591-3.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2406591. |
 | lona; 300 × 160 | 2,5; 33,7; 64,9; 96,1; 127,3; 158,5 | 2,5; 33,7; 64,9; 96,1; 127,3; 158,5 | 2,5; 35,4; 68,3; 101,2; 134,1; 166,9; 199,8; 232,7; 265,6; 298,5 |  AR2600153; OT/2026/AR2600153-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2600153 / 1 pedido(s): AR2403653. |
-| lona; 300 × 163 | 16,4; 49,2; 82; 114,8; 147,6 | 16,4; 49,2; 82; 114,8; 147,6 | 17,3; 50,6; 83,9; 117,2; 150,5; 183,8; 217,1; 250,4; 283,7 |  AR2403257; OT/2024/AR2403257-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2403257 / 1 pedido(s): AR2402799. |
+| lona; 300 × 163 | 2,5; 42,3; 82; 121,8; 161,5 | 2,5; 42,3; 82; 121,8; 161,5 | 2,5; 35,4; 68,3; 101,2; 134,1; 166,9; 199,8; 232,7; 265,6; 298,5 |  AR2402799; OT/2024/AR2402799-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402799. |
 | lona; 300 × 172 | 2,5; 36,7; 69,4; 102,6; 136,3; 170,5 | 2,5; 36,7; 69,4; 102,6; 136,3; 170,5 | 2,5; 35,4; 68,3; 101,2; 134,1; 166,9; 199,8; 232,7; 265,6; 298,5 |  AR2602633; OT/2026/AR2602633-12.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2602633. |
-| lona; 300 × 182 | 2,5; 38,1; 73,7; 109,3; 144,9; 180,5 | 2,5; 38,1; 73,7; 109,3; 144,9; 180,5 | 2,5; 35,4; 68,3; 101,2; 134,1; 166,9; 199,8; 232,7; 265,6; 298,5 |  AR2604816; OT/2026/AR2604816.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2604816. |
 | lona; 300 × 195 | 2,5; 34,3; 66,2; 98; 129,8; 161,7; 193,5 | 2,5; 34,3; 66,2; 98; 129,8; 161,7; 193,5 | 2,5; 35,3; 68,1; 100,8; 136,6; 166,4; 199,2; 231,9; 264,7; 297,5 |  AR2401975; OT/2024/AR2401975-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401975. |
 | lona; 310 × 160 | 2,5; 33,7; 64,9; 96,1; 127,3; 158,5 | 2,5; 33,7; 64,9; 96,1; 127,3; 158,5 | 2,5; 36,5; 70,5; 104,5; 138,5; 172,5; 206,5; 240,5; 274,5; 308,5 |  AR2504172; OT/2025/AR2504172.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2503897, AR2504172. |
 | lona; 310 × 162 | 2,5; 34,1; 65,7; 97,3; 128,9; 160,5 | 2,5; 34,1; 65,7; 97,3; 128,9; 160,5 | 2,5; 36,5; 70,5; 104,5; 138,5; 172,5; 206,5; 240,5; 274,5; 308,5 |  AR2501663; OT/2025/AR2501663.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501663. |
@@ -493,21 +517,38 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 350 × 187 | 2,5; 34,5; 66,5; 98,5; 130,5; 162,5; 185,5 | 2,5; 33; 63,5; 94; 124,5; 155; 185,5 | 2,5; 34; 65,4; 96,9; 128,3; 159,8; 191,2; 222,7; 254,1; 285,6; 317; 348,5 |  AR2406316; OT/2024/AR2406316-4.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2406316. |
 | lona; 350 × 202 | 2,5; 35,5; 68,5; 101,5; 134,5; 167,5; 200,5 | 2,5; 35,5; 68,5; 101,5; 134,5; 167,5; 200,5 | 2,5; 37,1; 71,7; 106,3; 140,9; 175,5; 210,1; 244,7; 279,3; 313,9; 348,5 |  AR2503897; OT/2025/AR2503897-12.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503897. |
 | lona; 400 × 171 | 2,5; 41,8; 83,5; 125,3; 167 | 2,5; 41,8; 83,5; 125,3; 167 | 2,5; 52; 101,5; 151; 200,5; 250; 299,5; 349; 398,5 |  AR2600875; OT/2026/AR2600875.xlsb / LONA REMOLQUE 0225812, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600875. |
-| lona; 500 × 255 | 2,5; 33,3; 64; 94,8; 125,5; 156,3; 187; 217,8; 253,5 | 2,5; 33,3; 64; 94,8; 125,5; 156,3; 187; 217,8; 253,5 | 90,05; 119,25; 148,45; 177,55; 206,75; 235,95; 265,15; 294,25; 323,45; 352,65; 381,85; 410,95 |  AR2501667; OT/2025/AR2501667-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501667. |
+
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| baqueton; 180 × 120 | AR2406591 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| baqueton; 505 × 255 | AR2502866 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| lona; 160 × 112 | AR2403653 | El resultado guardado no coincide con las listas manuales que indica el modo seleccionado. |
+| lona; 175 × 111 | AR2401748 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| lona; 250 × 175 | AR2501995 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| lona; 300 × 182 | AR2604816 | No se acredita la longitud hecha de los tres lados; no se suple con largo/ancho del remolque. |
+| lona; 500 × 255 | AR2501667 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
 
 Referencias que quedan fuera de las medidas automáticas:
 
 | Tipo y medida del histórico | Pedidos | Motivo y fuentes |
 | --- | --- | --- |
 | Ganado; 260 × 150 | AR2400301 | Modelo de ganado; fuera de FichaCliente. OT/2024/AR2400301-2.xlsb; OT/2024/AR2400301.dwg; OT/2024/AR2400301.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 175 × 111 | AR2401748 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. OT/2024/AR2401748-10.xlsb; OT/2024/AR2401748-11.xlsb; OT/2024/AR2401748.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 260 × 141 | AR2403257 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2403257-10.xlsb; OT/2024/AR2403257-11.xlsb; OT/2024/AR2403257.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 160 × 112 | AR2403653 | El resultado guardado no coincide con las listas manuales que indica el modo seleccionado. OT/2024/AR2403653-10.xlsb; OT/2024/AR2403653-11.xlsb; OT/2024/AR2403653-12.xlsb; OT/2024/AR2403653.dwg; OT/2024/AR2403653.xlsb |
 | Lona alta; 269 × 170 | AR2403817 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2403817.dwg; OT/2024/AR2403817.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 251 × 153 | AR2404155 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2404155.dwg; OT/2024/AR2404155.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Ganado; 280,5 × 153,5 | AR2404844 | Modelo de ganado; fuera de FichaCliente. ; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 151 × 261 | AR2405724 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2405724.dwg; OT/2024/AR2405724.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 140 × 111 | AR2406591 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2406591-1.xlsb; OT/2024/AR2406591-2.xlsb; OT/2024/AR2406591-3.xlsb; OT/2024/AR2406591-4.xlsb; OT/2024/AR2406591-5.xlsb; OT/2024/AR2406591-6.xlsb; OT/2024/AR2406591.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 231 × 133 | AR2406591 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2406591-1.xlsb; OT/2024/AR2406591-2.xlsb; OT/2024/AR2406591-3.xlsb; OT/2024/AR2406591-4.xlsb; OT/2024/AR2406591-5.xlsb; OT/2024/AR2406591-6.xlsb; OT/2024/AR2406591.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Baquetón; 180 × 120 | AR2406591 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2406591-1.xlsb; OT/2024/AR2406591-2.xlsb; OT/2024/AR2406591-3.xlsb; OT/2024/AR2406591-4.xlsb; OT/2024/AR2406591-5.xlsb; OT/2024/AR2406591-6.xlsb; OT/2024/AR2406591.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 500 × 255 | AR2501667 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. OT/2025/AR2501667-10.xlsb; OT/2025/AR2501667-11.xlsb; OT/2025/AR2501667-12.xlsb; OT/2025/AR2501667.dwg |
+| Lona alta; 250 × 175 | AR2501995 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. OT/2025/AR2501995-10.xlsb; OT/2025/AR2501995-11.xlsb; OT/2025/AR2501995-12.xlsb; OT/2025/AR2501995.dwg |
 | Lona alta; 210 × 122 | AR2502410 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2502410-11.xlsb; OT/2025/AR2502410-12.xlsb; OT/2025/AR2502410.dwg; OT/2025/AR2502410.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Baquetón; 505 × 255 | AR2502866 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. OT/2025/AR2502866.dwg; OT/2025/AR2502866.xlsb |
 | Lona alta; 250,5 × 140,5 | AR2503373 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2503373-10.xlsb; OT/2025/AR2503373-11.xlsb; OT/2025/AR2503373-12.xlsb; OT/2025/AR2503373-13.xlsb; OT/2025/AR2503373-14.xlsb; OT/2025/AR2503373.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Ganado; 250 × 140 | AR2504727 | Modelo de ganado; fuera de FichaCliente. OT/2025/AR2504727.dwg; OT/2025/AR2504727.xlsb; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 212 × 160 | AR2506346 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2506346.dwg; OT/2025/AR2506346.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
@@ -584,7 +625,6 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | baqueton; 158 × 118 | 2,5; 16,8; 31; 45,3; 59,5; 73,8; 88; 102,3; 116,5 | 2,5; 16,8; 31; 45,3; 59,5; 73,8; 88; 102,3; 116,5 | 2,5; 17,9; 33,3; 48,7; 64,1; 79,5; 94,9; 110,3; 125,7; 141,1; 156,5 |  AR2503188; OT/2025/AR2503188.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503188. |
 | baqueton; 158 × 137 | 2,5; 35,8; 69; 102,3; 135,5 | 2,5; 35,8; 69; 102,3; 135,5 | 2,5; 21,8; 41; 60,3; 79,5; 98,8; 118; 137,3; 156,5 |  AR2405387; OT/2024/AR2405387.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405387. |
 | baqueton; 162 × 148 | 2,5; 21,4; 39,3; 57,1; 75; 92,9; 110,8; 128,6; 146,5 | 2,5; 21,4; 39,3; 57,1; 75; 92,9; 110,8; 128,6; 146,5 | 2,5; 22,3; 42; 61,8; 81,5; 101,3; 121; 140,8; 160,5 |  AR2401566; OT/2024/AR2401566.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401566. |
-| baqueton; 163 × 123 | 2,5; 32,3; 62; 91,8; 121,5 | 2,5; 32,3; 62; 91,8; 121,5 | 2,5; 34,3; 66,1; 97,9; 129,7; 161,5 |  AR2604802; OT/2026/AR2604802.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2604802. |
 | baqueton; 163 × 133 | 2,5; 18,6; 34,8; 50,9; 67; 83,1; 99,3; 115,4; 131,5 | 2,5; 18,6; 34,8; 50,9; 67; 83,1; 99,3; 115,4; 131,5 | 2,5; 18,4; 34,3; 50,2; 66,1; 82; 97,9; 113,8; 129,7; 145,6; 161,5 |  AR2402238; OT/2024/AR2402238-10.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402238. |
 | baqueton; 164 × 122 | 2,5; 31,7; 41,8; 61,5; 81,2; 100,8; 120,5 | 2,5; 22,2; 41,8; 61,5; 81,2; 100,8; 120,5 | 2,5; 22,5; 42,5; 62,5; 82,5; 102,5; 122,5; 142,5; 162,5 |  AR2405926; OT/2024/AR2405926.xlsb / BAQUETÓN, filas 33/34/35, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405926. |
 | baqueton; 164 × 124 | 2,5; 42,5; 82,5; 122,5 | 2,5; 42,5; 82,5; 122,5 | 2,5; 42,5; 82,5; 122,5; 162,5 |  AR2401187; OT/2024/AR2401187-12.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401187. |
@@ -600,7 +640,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | baqueton; 203 × 124 | 2,5; 32,5; 62,5; 92,5; 122,5 | 2,5; 32,5; 62,5; 92,5; 122,5 | 2,5; 35,7; 68,8; 102; 135,2; 168,3; 201,5 |  AR2604224; OT/2026/AR2604224.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2604224. |
 | baqueton; 203 × 127 | 2,5; 33,3; 64; 94,8; 125,5 | 2,5; 33,3; 64; 94,8; 125,5 | 2,5; 35,7; 68,8; 102; 135,2; 168,3; 201,5 |  AR2402471; OT/2024/AR2402471.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402471. |
 | baqueton; 203 × 157 | 2,5; 28; 53,5; 79; 104,5; 130; 155,5 | 2,5; 28; 53,5; 79; 104,5; 130; 155,5 | 2,5; 27,4; 52,3; 77,1; 101,9; 126,9; 151,8; 176,6; 201,5 |  AR2404596; OT/2024/AR2404596.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404596. |
-| baqueton; 204 × 110 | 14; 42; 70,5; 98 | 14; 42; 70,5; 98 | 35; 62; 89; 116; 143; 170 |  AR2402954; OT/2024/AR2402954.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402954 / 1 pedido(s): AR2402954. |
+| baqueton; 204 × 110 | 2,5; 23,7; 44,9; 66,1; 87,3; 108,5 | 2,5; 23,7; 44,9; 66,1; 87,3; 108,5 | 2,5; 24,7; 46,9; 69,2; 91,4; 113,6; 135,8; 158,1; 180,3; 202,5 |  AR2402954; OT/2024/AR2402954-10.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402954. |
 | baqueton; 209 × 121 | 2,5; 41,5; 80,5; 119,5 | 2,5; 41,5; 80,5; 119,5 | 2,5; 53,8; 105; 156,3; 207,5 |  AR2501441; OT/2025/AR2501441.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2501009, AR2501441. |
 | baqueton; 210 × 143 | 2,5; 25,7; 48,8; 72; 95,2; 118,3; 141,5 | 2,5; 25,7; 48,8; 72; 95,2; 118,3; 141,5 | 2,5; 23,1; 43,7; 64,3; 84,9; 105,5; 126,1; 146,7; 167,3; 187,9; 208,5 |  AR2500908; OT/2025/AR2500908-11.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500908. |
 | baqueton; 212 × 137 | 2,5; 17,3; 32,1; 46,8; 61,6; 76,4; 91,2; 105,9; 120,7; 135,5 | 2,5; 17,3; 32,1; 46,8; 61,6; 76,4; 91,2; 105,9; 120,7; 135,5 | 2,5; 23,3; 44,1; 64,9; 85,7; 106,5; 127,3; 148,1; 168,9; 189,7; 210,5 |  AR2405138; OT/2024/AR2405138.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405138. |
@@ -613,17 +653,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | baqueton; 232 × 132 | 26; 66,5; 107 | 26; 66,5; 107 | 20,5; 68,5; 116,5; 164,5; 212,5 |  AR2502379; OT/2025/AR2502379-11.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2502379. |
 | baqueton; 242 × 131 | 2,5; 27,9; 53,3; 78,7; 104,1; 129,5 | 2,5; 27,9; 53,3; 78,7; 104,1; 129,5 | 2,5; 26,3; 50,1; 73,9; 97,7; 121,5; 145,3; 168,9; 192,9; 216,7; 240,5 |  AR2502555; OT/2025/AR2502555.xlsb / BAQUETÓN, filas 33/34/35, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2502555. |
 | baqueton; 245 × 138 | 2,5; 36; 69,5; 103; 136,5 | 2,5; 36; 69,5; 103; 136,5 | 2,5; 36,9; 71,4; 105,8; 140,2; 174,7; 210,1; 243,5 |  AR2500354; OT/2025/AR2500354.xlsb / BAQUETÓN, filas 33/34/35, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500354. |
-| baqueton; 246 × 99 | 14,4; 38,1; 61,9; 85,6 | 14,4; 38,1; 61,9; 85,6 | 2,5; 26,7; 50,9; 75,1; 99,3; 123,5; 147,7; 171,9; 196,1; 220,3; 244,5 |  AR2602929; OT/2026/AR2602929.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2602929. |
 | baqueton; 252 × 128 | 2,5; 27,3; 52,1; 76,9; 101,7; 126,5 | 2,5; 27,3; 52,1; 76,9; 101,7; 126,5 | 2,5; 27,3; 52,1; 76,9; 101,7; 126,5; 151,3; 176,1; 200,9; 225,7; 250,5 |  AR2501009; OT/2025/AR2501009-11.xlsb / BAQUETÓN, filas 33/34/35, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501009. |
-| baqueton; 257 × 135 | 2,5; 24,3; 46,2; 68; 89,8; 111,7; 133,5 | 2,5; 24,3; 46,2; 68; 89,8; 111,7; 133,5 | 23,6; 44,7; 65,8; 86,8; 107,9; 129; 150,1; 171,2; 192,3; 213,3; 234,4 |  AR2500908; OT/2025/AR2500908.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500908. |
 | baqueton; 260 × 138 | 2,5; 31,7; 56,1; 82,9; 109,7; 136,5 | 2,5; 29,3; 56,1; 82,9; 109,7; 136,5 | 2,5; 34,5; 66,5; 98,5; 130,5; 162,5; 194,5; 226,5; 258,5 |  AR2501253; OT/2025/AR2501253-11.xlsb / BAQUETÓN, filas 33/34/35, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501253. |
 | baqueton; 262 × 142 | 2,5; 37; 71,5; 106; 140,5 | 2,5; 37; 71,5; 106; 140,5 | 2,5; 34,8; 67; 99,3; 131,5; 163,8; 196; 228,3; 260,5 |  AR2402779; OT/2024/AR2402779.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402779. |
-| baqueton; 262 × 143 | 2,5; 31,7; 68,5; 101,5; 134,5 | 6; 39; 72; 105; 138 | 31; 64,5; 98; 131,5; 165; 198,5; 232 |  AR2502181; OT/2025/AR2502181.xlsb / BAQUETÓN, filas 33/34/35, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2502181. |
 | baqueton; 265 × 157 | 2,5; 33,1; 63,7; 94,3; 124,9; 155,5 | 2,5; 33,1; 63,7; 94,3; 124,9; 155,5 | 2,5; 54,7; 106,9; 159,1; 211,3; 263,5 |  AR2404166; OT/2024/AR2404166.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404166. |
 | baqueton; 267 × 137 | 2,5; 35,8; 69; 102,3; 135,5 | 2,5; 35,8; 69; 102,3; 135,5 | 2,5; 31,7; 60,9; 119,4; 148,6; 177,8; 207,1; 236,3; 265,5 |  AR2405748; OT/2024/AR2405748.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405748. |
-| baqueton; 268 × 160 | 2,5; 18,1; 33,7; 49,3; 64,9; 80,5; 96,1; 111,7; 127,3; 142,9; 158,5 | 2,5; 18,1; 33,7; 49,3; 64,9; 80,5; 96,1; 111,7; 127,3; 142,9; 158,5 | 53,85; 68,55; 83,15; 97,85; 112,55; 127,15; 141,85; 156,55; 171,15; 185,85; 200,55; 215,15 |  AR2404836; OT/2024/AR2404836.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404836. |
-| baqueton; 303 × 171 | 2,5; 27,3; 35,9; 69,3; 102,7; 136,1 | 2,5; 27,3; 35,9; 69,3; 102,7; 136,1 | 2,5; 45,2; 87,9; 130,6; 173,4; 216,1; 258,8; 301,5 |  AR2405388; OT/2024/AR2405388.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405388. |
-| baqueton; 350 × 250 | 2,5; 39,5; 82,5; 125,5; 168,5; 211,5; 248,5 | 2,5; 39,5; 82,5; 125,5; 168,5; 211,5; 248,5 | 2,5; 12,7; 22,9; 33; 43,2; 53,4; 63,6; 73; 83,9; 94,1; 104,3; 114,4 |  AR2402895; OT/2024/AR2402895.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402895. |
 | baqueton; 92 × 50 | 2,5; 17,833333; 33,166667; 48,5 | 2,5; 17,833333; 33,166667; 48,5 | 2,5; 17,166667; 31,833333; 46,5; 61,166667; 75,833333; 90,5 |  AR2400131; OT/2024/AR2400131.dwg; mayoría de pedidos. Variantes: 1 pedido(s): AR2400131. |
 | lona; 122 × 109 | 2,5; 23,5; 44,5; 65,5; 86,5; 107,5 | 2,5; 23,5; 44,5; 65,5; 86,5; 107,5 | 2,5; 22,2; 41,8; 61,5; 81,2; 100,8; 120,5 |  AR2403950; OT/2024/AR2403950.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2403950. |
 | lona; 123 × 103 | 2,5; 16,6; 30,8; 44,9; 59,1; 73,2; 87,4; 101,5 | 2,5; 16,6; 30,8; 44,9; 59,1; 73,2; 87,4; 101,5 | 2,5; 17,4; 32,3; 47,1; 62; 76,9; 91,8; 106,6; 121,5 |  AR2403249; OT/2024/AR2403249.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2403249. |
@@ -644,18 +678,30 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 206 × 116 | 2,5; 30,5; 58,5; 86,5; 114,5 | 2,5; 30,5; 58,5; 86,5; 114,5 | 2,5; 27,8; 53; 78,3; 103,5; 128,8; 154; 179,3; 204,5 |  AR2600014; OT/2026/AR2600014.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600014. |
 | lona; 207 × 107 | 2,5; 23,1; 43,7; 64,3; 84,9; 105,5 | 2,5; 23,1; 43,7; 64,3; 84,9; 105,5 | 2,5; 22,8; 43,1; 63,4; 83,7; 104; 124,3; 144,6; 164,9; 185,2; 205,5 |  AR2403608; OT/2024/AR2403608.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2403608. |
 | lona; 209 × 122 | 2,5; 41,8; 81,2; 120,5 | 2,5; 41,8; 81,2; 120,5 | 2,5; 36,7; 70,8; 105; 139,2; 173,3; 207,5 |  AR2502766; OT/2025/AR2502766.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2502379, AR2502766 / 1 pedido(s): AR2603744. |
-| lona; 216 × 142 | 2,5; 37; 71,5; 106; 140,5 | 2,5; 37; 71,5; 106; 140,5 | 2,5; 32,8; 63,1; 93,4; 123,6; 153,9; 184,2; 214,5 |  AR2604944; OT/2026/AR2604944.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2604944. |
 | lona; 218 × 119 | 2,5; 16,9; 45,6; 60; 74,4; 88,8; 103,1; 117,5 | 2,5; 16,9; 45,6; 60; 74,4; 88,8; 103,1; 117,5 | 2,5; 33,1; 63,6; 94,2; 124,8; 155,4; 185,9; 216,5 |  AR2401000; OT/2024/AR2401000-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401000. |
 | lona; 220 × 139 | 2,5; 36,3; 70; 103,8; 137,5 | 2,5; 36,3; 70; 103,8; 137,5 | 2,5; 33,4; 64,2; 95,1; 125,9; 156,8; 187,6; 218,5 |  AR2603438; OT/2026/AR2603438.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2603438. |
-| lona; 222 × 195 | 42,7; 52,8; 62,8; 72,9; 82,9; 93; 103; 113,1; 123,1; 133,2; 143,2; 153,3 | 42,7; 52,8; 62,8; 72,9; 82,9; 93; 103; 113,1; 123,1; 133,2; 143,2; 153,3 | 54,4; 64,8; 75,2; 85,5; 95,9; 106,3; 116,7; 127,1; 137,4; 147,8; 158,2; 168,6 |  AR2404598; OT/2024/ar2404598.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404598. |
-| lona; 244 × 135 | 12,6; 22,7; 32,8; 42,8; 52,9; 63; 73,1; 83,1; 93,2; 103,3; 113,4; 123,4 | 12,6; 22,7; 32,8; 42,8; 52,9; 63; 73,1; 83,1; 93,2; 103,3; 113,4; 123,4 | 2,5; 12,8; 23; 33,3; 43,5; 53,8; 64,1; 74,3; 84,6; 94,1; 105,1; 115,4 |  AR2406297; OT/2024/AR2406297.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2406297. |
 | lona; 244 × 137 | 12,7; 23; 33,2; 43,4; 53,7; 63,9; 74,1; 84,3; 94,6; 104,8; 115; 125,3 | 12,7; 23; 33,2; 43,4; 53,7; 63,9; 74,1; 84,3; 94,6; 104,8; 115; 125,3 | 36,8; 71,1; 105,4; 139,6; 173,9; 208,2 |  AR2603235; OT/2026/AR2603235.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2603235. |
 | lona; 245 × 138 | 2,5; 47,2; 91,8; 136,5 | 2,5; 47,2; 91,8; 136,5 | 3; 43; 83; 123; 163; 203; 243 |  AR2405795; OT/2024/AR2405795-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405795. |
 | lona; 247 × 143 | 2,5; 48,8; 95,2; 141,5 | 2,5; 48,8; 95,2; 141,5 | 2,5; 43; 83,5; 124; 164,5; 205; 245,5 |  AR2501555; OT/2025/AR2501555.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501555. |
 | lona; 257 × 149 | 2,5; 31,5; 60,5; 89,5; 118,5; 147,5 | 2,5; 31,5; 60,5; 89,5; 118,5; 147,5 | 2,5; 44,7; 86,8; 129; 171,2; 213,3; 255,5 |  AR2402752; OT/2024/AR2402752.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402752. |
-| lona; 268 × 148 | 2,5; 23,1; 43,6; 64,2; 84,8; 105,4; 125,9; 146,5 | 2,5; 23,1; 43,6; 64,2; 84,8; 105,4; 125,9; 146,5 | 13,5; 35,5; 57,5; 79,5; 101,5; 123,5; 145,5; 167,5; 189,5; 211,5; 233,5; 255,5 |  AR2403127; OT/2024/AR2403127.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2403127. |
-| lona; 301 × 101 | 2,5; 34,8; 67,2; 99,5 | 2,5; 34,8; 67,2; 99,5 | 17,35; 47,05; 76,75; 106,45; 136,15; 165,85; 195,55; 225,25; 254,95; 284,65 |  AR2404194; OT/2024/AR2404194.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404194. |
 | lona; 62 × 62 | 2,5; 9,2; 18,1; 27; 36; 44,9; 53,8; 60,5 | 2,5; 9,2; 18,1; 27; 36; 44,9; 53,8; 60,5 | 2,5; 8,7; 17,6; 26,5; 35,5; 44,4; 53,3; 60,5 |  AR2403739; OT/2024/AR2403739.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2403739. |
+
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| baqueton; 163 × 123 | AR2604802 | No se acredita la longitud hecha de los tres lados; no se suple con largo/ancho del remolque. |
+| baqueton; 246 × 99 | AR2602929 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| baqueton; 257 × 135 | AR2500908 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| baqueton; 262 × 143 | AR2502181 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| baqueton; 268 × 160 | AR2404836 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| baqueton; 303 × 171 | AR2405388 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| baqueton; 350 × 250 | AR2402895 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| lona; 216 × 142 | AR2604944 | No se acredita la longitud hecha de los tres lados; no se suple con largo/ancho del remolque. |
+| lona; 222 × 195 | AR2404598 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| lona; 244 × 135 | AR2406297 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| lona; 268 × 148 | AR2403127 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| lona; 301 × 101 | AR2404194 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
 
 Referencias que quedan fuera de las medidas automáticas:
 
@@ -666,23 +712,33 @@ Referencias que quedan fuera de las medidas automáticas:
 | Lona alta; 158 × 120 | AR2400478 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2400478.dwg; OT/2024/AR2400478.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 213 × 133 | AR2401000 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2401000-10.xlsb; OT/2024/AR2401000-11.xlsb; OT/2024/AR2401000-12.xlsb; OT/2024/AR2401000-13.xlsb; OT/2024/AR2401000.dwg; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 258 × 141 | AR2401187 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2401187-10.xlsb; OT/2024/AR2401187-11.xlsb; OT/2024/AR2401187-12.xlsb; OT/2024/AR2401187.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Baquetón; 350 × 250 | AR2402895 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2402895.dwg; OT/2024/AR2402895.xlsb |
 | Baquetón; 126 × 106 | AR2402954 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2402954-10.xlsb; OT/2024/AR2402954-11.xlsb; OT/2024/AR2402954.dwg; OT/2024/AR2402954.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 268 × 148 | AR2403127 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2403127.dwg; OT/2024/AR2403127.xlsb |
 | Baquetón; 194 × 143 | AR2403541 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2403541-10.xlsb; OT/2024/AR2403541-11.xlsb; OT/2024/ar2403541.dwg; OT/2024/ar2403541.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 301 × 101 | AR2404194 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2404194.dwg; OT/2024/AR2404194.xlsb |
 | Baquetón; 122 × 112 | AR2404510 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2404510.dwg; OT/2024/AR2404510.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 222 × 195 | AR2404598 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2404598.dwg; OT/2024/ar2404598.xlsb |
+| Baquetón; 268 × 160 | AR2404836 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2404836.dwg; OT/2024/AR2404836.xlsb |
 | Baquetón; 270 × 160 | AR2404840 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2404840.dwg; OT/2024/AR2404840.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 131 × 95 | AR2404880 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2404880.dwg; OT/2024/AR2404880.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 112 × 157 | AR2405271 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2405271.dwg; OT/2024/AR2405271.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Baquetón; 303 × 171 | AR2405388 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2405388.dwg; OT/2024/AR2405388.xlsb |
 | Lona alta; 107 × 128 | AR2405540 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2405540.dwg; OT/2024/AR2405540.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 254 × 158 | AR2405795 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2405795-10.xlsb; OT/2024/AR2405795-11.xlsb; OT/2024/AR2405795.dwg; OT/2024/AR2405795.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 164 × 134 | AR2405987 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2405987.dwg; OT/2024/AR2405987.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 244 × 135 | AR2406297 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2406297.dwg; OT/2024/AR2406297.xlsb |
+| Baquetón; 257 × 135 | AR2500908 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2025/AR2500908-11.xlsb; OT/2025/AR2500908.dwg; OT/2025/AR2500908.xlsb |
 | Baquetón; 140 × 55 | AR2501177 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2501177.dwg; OT/2025/AR2501177.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 210 × 136 | AR2501253 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2501253-10.xlsb; OT/2025/AR2501253-11.xlsb; OT/2025/AR2501253-12.xlsb; OT/2025/AR2501253.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 311 × 172 | AR2501765 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2501765.dwg; OT/2025/AR2501765.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 185 × 132 | AR2501973 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2501973.dwg; OT/2025/AR2501973.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Baquetón; 262 × 143 | AR2502181 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. OT/2025/AR2502181.dwg; OT/2025/AR2502181.xlsb |
 | Baquetón; 220 × 120 | AR2600972 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2600972.dwg; OT/2026/AR2600972.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 228 × 136 | AR2601067 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2601067.dwg; OT/2026/AR2601067.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 190 × 132 | AR2601172 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2601172.dwg; OT/2026/AR2601172.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 170 × 125 | AR2601635 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2601635.dwg; OT/2026/AR2601635.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Baquetón; 246 × 99 | AR2602929 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2026/AR2602929.dwg; OT/2026/AR2602929.xlsb |
 | Lona alta; 92 × 84 | AR2603907 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2603907.dwg; OT/2026/AR2603907.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 265 × 135 | AR2604490 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2604490.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 
@@ -722,22 +778,19 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | baqueton; 250 × 170 | 15; 58; 112; 155 | 15; 58; 112; 155 | 8; 33,5; 77; 127; 177; 220,5; 245,5 | Vigente v7; se conserva. AR2605129; OT/2026/AR2605129.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2605129. |
 | baqueton; 140 × 105 | 5; 37,3; 69,7; 102 | 5; 37,3; 69,7; 102 | 5; 33,5; 70,5; 108; 137 |  AR2502311; OT/2025/AR2502311.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2502311. |
 | baqueton; 140 × 115 | 5; 36,3; 80,8; 112 | 5; 36,3; 80,8; 112 | 9; 32,5; 69,5; 107; 132 |  AR2506095; OT/2025/AR2506095-12.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2506095. |
-| baqueton; 150 × 105 | 10; 36,5; 69; 96 | 10; 36,5; 69; 96 | 12; 41; 75; 109; 139 |  AR2404016; OT/2024/AR2404016.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404016. |
 | baqueton; 160 × 115 | 8,5; 41,8; 75,2; 108,5 | 8,5; 41,8; 75,2; 108,5 | 5; 34,5; 81; 127,5; 157 |  AR2504301; OT/2025/AR2504301.xlsb / BAQUETÓN, filas 38/39/40, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2504301 / 1 pedido(s): AR2405907. |
 | baqueton; 160 × 130 | 9; 42; 91; 123,5 | 9; 42; 91; 123,5 | 5; 34,5; 81; 127,5; 157 |  AR2500145; OT/2025/AR2500145-10.xlsb / BAQUETÓN, filas 33/34/35, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500145. |
 | baqueton; 170 × 130 | 9; 42; 91; 123,5 | 9; 42; 91; 123,5 | 5; 36; 86; 136; 167 |  AR2502311; OT/2025/AR2502311-12.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2502311. |
-| baqueton; 180 × 115 | 16,5; 58,5; 100,5 | 16,5; 58,5; 100,5 | 13; 60; 125,5; 171,5 |  AR2406443; OT/2024/AR2406443-10.xlsb / BAQUETÓN, filas 38/39/40, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2406443 / 1 pedido(s): AR2406126 / 1 pedido(s): AR2400922. |
+| baqueton; 180 × 115 | 7; 36,3; 80,8; 110 | 7; 36,3; 80,8; 110 | 7; 37,5; 93,8; 148,5; 177,3 |  AR2406126; OT/2024/AR2406126-11.xlsb / BAQUETÓN, filas 38/39/40, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2406126 / 1 pedido(s): AR2400922. |
 | baqueton; 180 × 130 | 9; 42; 91; 123,5 | 9; 42; 91; 123,5 | 7; 37,5; 94; 149,5; 177,5 |  AR2402309; OT/2024/AR2402309-3.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402309. |
 | baqueton; 210 × 138 | 9; 44; 96; 131,5 | 9; 44; 96; 131,5 | 6,6; 34,6; 78,1; 130,1; 176,6; 204,5 |  AR2406443; OT/2024/AR2406443-12.xlsb / BAQUETÓN, filas 38/39/40, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2406443 / 1 pedido(s): AR2406126. |
-| baqueton; 220 × 130 | 9; 42; 91; 123,5 | 9; 42; 91; 123,5 | 7,5; 35; 83,5; 138,5; 187; 215 |  AR2505703; OT/2025/AR2505703.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 6 pedido(s): AR2406126, AR2406884, AR2504928, AR2505703, AR2601615, AR2603583 / 1 pedido(s): AR2406443 / 1 pedido(s): AR2405907 / 1 pedido(s): AR2404942. |
+| baqueton; 220 × 130 | 9; 42; 91; 123,5 | 9; 42; 91; 123,5 | 7,5; 35; 83,5; 138,5; 187; 215 |  AR2505703; OT/2025/AR2505703.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 6 pedido(s): AR2406126, AR2406884, AR2504928, AR2505703, AR2601615, AR2603583 / 1 pedido(s): AR2405907 / 1 pedido(s): AR2404942. |
 | baqueton; 220 × 140 | 10; 35; 72,5; 109,5; 133 | 10; 35; 72,5; 109,5; 133 | 7,5; 35; 83,5; 138,5; 187; 215 |  AR2500948; OT/2025/AR2500948-10.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 3 pedido(s): AR2406884, AR2500948, AR2603583. |
 | baqueton; 220 × 152 | 5; 32,5; 76,7; 121,5; 149 | 5; 32,5; 76,7; 121,5; 149 | 7,5; 35; 83,5; 138,5; 187; 215 |  AR2403710; OT/2024/AR2403710-10.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2403710. |
 | baqueton; 230 × 152 | 5; 32,5; 76,7; 121,5; 149 | 5; 32,5; 76,7; 121,5; 149 | 7,8; 36,6; 87,3; 144,7; 195,4; 224,7 |  AR2600484; OT/2026/AR2600484.xlsb / BAQUETÓN 0224958, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600484. |
-| baqueton; 260 × 140 | 10; 35; 72,5; 109,5; 133 | 10; 35; 72,5; 109,5; 133 | 20; 71,5; 133; 193; 242,5 |  AR2404942; OT/2024/AR2404942-1.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404942. |
 | baqueton; 264 × 164 | 5; 38,5; 82,7; 127,5; 161 | 5; 38,5; 82,7; 127,5; 161 | 6,5; 38,5; 82; 132; 182; 225,5; 258 |  AR2403190; OT/2024/AR2403190.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2403190. |
 | baqueton; 300 × 180 | 4,8; 32,5; 88,3; 144,5; 175 | 4,8; 32,5; 88,3; 144,5; 175 | 9; 40; 77; 114; 151; 188; 225; 262; 293,5 |  AR2502311; OT/2025/AR2502311-11.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2502311. |
 | baqueton; 302 × 154 | 5; 32,5; 76,7; 121,5; 149 | 5; 32,5; 76,7; 121,5; 149 | 9; 40; 77; 114; 151; 188; 225; 262; 293,5 |  AR2500145; OT/2025/AR2500145-11.xlsb / BAQUETÓN, filas 33/34/35, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500145. |
-| baqueton; 306 × 180 | 4,8; 32,5; 88,3; 144,5; 175 | 4,8; 32,5; 88,3; 144,5; 175 | 9; 40; 77; 114; 188; 225; 262; 293,5 |  AR2405907; OT/2024/AR2405907-13.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405907. |
 | lona; 162 × 115 | 8; 41,3; 74,7; 108 | 8; 41,3; 74,7; 108 | 5,5; 35; 81,5; 128; 157,5 |  AR2503249; OT/2025/AR2503249-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2503249 / 1 pedido(s): AR2400758. |
 | lona; 182 × 115 | 8; 41,3; 74,7; 108 | 8; 41,3; 74,7; 108 | 5,8; 33,5; 89,3; 145,5; 176 |  AR2503249; OT/2025/AR2503249.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503249. |
 | lona; 182 × 130 | 8,5; 41,5; 90,5; 123 | 8,5; 41,5; 90,5; 123 | 7; 37,5; 93,8; 149,5; 177,3 |  AR2405907; OT/2024/AR2405907-12.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 3 pedido(s): AR2401042, AR2401761, AR2405907 / 1 pedido(s): AR2505705. |
@@ -750,27 +803,42 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 222 × 140 | 7; 30,5; 70; 110; 134 | 7; 30,5; 70; 110; 134 | 8; 35,5; 84; 139; 187,5; 215,5 |  AR2505795; OT/2025/AR2505795.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2505795. |
 | lona; 222 × 153 | 5; 32,5; 77,3; 121,5; 149 | 5; 32,5; 77,3; 121,5; 149 | 8; 35,5; 84; 139; 187,5; 215,5 |  AR2503833; OT/2025/AR2503833.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503833. |
 | lona; 223 × 132 | 8,5; 42; 92; 125 | 8,5; 42; 92; 125 | 7; 35; 83,5; 138,5; 187; 214,54 |  AR2403710; OT/2024/AR2403710-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2403710. |
-| lona; 250 × 134 | 7,5; 27; 52; 85; 112,5 | 7,5; 30; 60,5; 89; 113 | 50,5; 80,5; 110,5; 140,5; 170,5; 200,5 |  AR2500948; OT/2025/AR2500948-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500948. |
 | lona; 250 × 150 | 6,5; 31,5; 73,1; 116,7; 144,5 | 6,5; 31,5; 73,1; 116,7; 144,5 | 10,5; 38; 73; 108; 143; 178; 213; 240,5 |  AR2601896; OT/2026/AR2601896.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2601896. |
 | lona; 250 × 152 | 6,5; 31,9; 74,1; 118,3; 146 | 6,5; 31,9; 74,1; 118,3; 146 | 7; 32,5; 76; 126; 176; 219,5; 244,5 |  AR2500201; OT/2025/AR2500201-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2500201, AR2601895. |
 | lona; 250 × 180 | 6,5; 36,5; 90; 143; 173,5 | 6,5; 36,5; 90; 143; 173,5 | 10,5; 38; 73; 108; 143; 178; 213; 240,5 |  AR2505827; OT/2025/AR2505827-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2505827. |
 | lona; 252 × 130 | 8,5; 41,5; 90,5; 123 | 8,5; 41,5; 90,5; 123 | 9; 34,5; 78; 128; 178; 221,5; 246,5 |  AR2402309; OT/2024/AR2402309-4.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402309. |
 | lona; 252 × 152 | 10,75; 48,95; 103,95; 142,25 | 10,75; 48,95; 103,95; 142,25 | 11,5; 39; 74; 109; 144; 179; 214; 241,5 |  AR2602085; OT/2026/AR2602085.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 3 pedido(s): AR2501369, AR2505827, AR2602085 / 2 pedido(s): AR2400758, AR2400922 / 1 pedido(s): AR2402309. |
-| lona; 252 × 172 | 16,5; 59,5; 113,5; 156,5 | 16,5; 59,5; 113,5; 156,5 | 8; 33,5; 77; 127; 177; 220,5; 245,5 |  AR2603583; OT/2026/AR2603583-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2405961, AR2603583. |
 | lona; 253 × 132 | 8,75; 41,95; 90,95; 124,25 | 8,75; 41,95; 90,95; 124,25 | 8,5; 34; 77,5; 127,5; 177,5; 221; 246 |  AR2501007; OT/2025/AR2501007.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501007. |
-| lona; 300 × 172 | 15,5; 59,5; 113,5; 157,5 | 15,5; 59,5; 113,5; 157,5 | 9; 40,5; 77,5; 114,5; 151,5; 188,5; 225,5; 262,5; 293,5 |  AR2603115; OT/2026/AR2603115.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2603115. |
-| lona; 303 × 173 | 17; 60; 114; 157 | 17; 60; 114; 157 | 8,5; 41; 78; 115; 152; 189; 226; 263; 296 |  AR2502311; OT/2025/AR2502311.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2502311. |
 | lona; 303 × 183 | 8; 38,5; 92; 150,5; 178,3 | 8; 38,5; 92; 150,5; 178,3 | 8,5; 41; 78; 115; 152; 189; 226; 263; 296 |  AR2502311; OT/2025/AR2502311-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2502311. |
+
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| baqueton; 150 × 105 | AR2404016 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| baqueton; 260 × 140 | AR2404942 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| baqueton; 306 × 180 | AR2405907 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| lona; 250 × 134 | AR2500948 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| lona; 252 × 172 | AR2603583 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| lona; 300 × 172 | AR2603115 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| lona; 303 × 173 | AR2502311 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
 
 Referencias que quedan fuera de las medidas automáticas:
 
 | Tipo y medida del histórico | Pedidos | Motivo y fuentes |
 | --- | --- | --- |
+| Baquetón; 150 × 105 | AR2404016 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2404016.dwg; OT/2024/AR2404016.xlsb |
+| Baquetón; 260 × 140 | AR2404942 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2404942-1.xlsb; OT/2024/AR2404942-2.xlsb; OT/2024/AR2404942.dwg |
+| Baquetón; 306 × 180 | AR2405907 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2405907-10.xlsb; OT/2024/AR2405907-11.xlsb; OT/2024/AR2405907-12.xlsb; OT/2024/AR2405907-13.xlsb; OT/2024/AR2405907.dwg |
+| Lona alta; 252 × 172 | AR2405961, AR2603583 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2405961.dwg; OT/2024/AR2405961.xlsb; OT/2026/AR2603583-10.xlsb; OT/2026/AR2603583-11.xlsb; OT/2026/AR2603583.dwg |
 | Baquetón; 222 × 130 | AR2500145, AR2505705 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2500145-10.xlsb; OT/2025/AR2500145-11.xlsb; OT/2025/AR2500145-12.xlsb; OT/2025/AR2500145-13.xlsb; OT/2025/AR2500145.dwg; OT/2025/AR2505705-11.xlsb; OT/2025/AR2505705.dwg; OT/2025/AR2505705.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 250 × 134 | AR2500948 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2025/AR2500948-10.xlsb; OT/2025/AR2500948-11.xlsb; OT/2025/AR2500948.dwg; OT/2025/AR2500948-10.xlsb; OT/2025/AR2500948-11.xlsb; OT/2025/AR2500948.dwg |
 | Lona alta; 252 × 132 | AR2501286 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2501286-10.xlsb; OT/2025/AR2501286-11.xlsb; OT/2025/AR2501286-12.xlsb; OT/2025/AR2501286.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 303 × 173 | AR2502311 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2025/AR2502311-11.xlsb; OT/2025/AR2502311-12.xlsb; OT/2025/AR2502311-13.xlsb; OT/2025/AR2502311.dwg; OT/2025/AR2502311.xlsb |
 | Lona alta; 220 × 130 | AR2505705 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2505705-11.xlsb; OT/2025/AR2505705.dwg; OT/2025/AR2505705.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 300 × 170 | AR2506095 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2506095-12.xlsb; OT/2025/AR2506095.dwg; OT/2025/AR2506095.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 252 × 182 | AR2602800 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2602800.dwg; OT/2026/AR2602800.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 300 × 172 | AR2603115 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2026/AR2603115.dwg; OT/2026/AR2603115.xlsb |
 | Lona alta; 220 × 140 | AR2604276 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2604276.dwg; OT/2026/AR2604276.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 
 ### NL DIGITAL — 049631
@@ -826,12 +894,10 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | baqueton; 264 × 136 | 2,5; 28,9; 55,3; 81,7; 108,1; 134,5 | 2,5; 28,9; 55,3; 81,7; 108,1; 134,5 | 2,5; 28,5; 54,5; 80,5; 106,5; 132,5; 158,5; 184,5; 210,5; 236,5; 262,5 |  AR2504257; OT/2025/AR2504257-14.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2504257. |
 | baqueton; 264 × 167 | 2,5; 43; 84,5; 125; 165,5 | 2,5; 43; 84,5; 125; 165,5 | 2,5; 39,6; 76,8; 113,9; 151,1; 188,2; 225,4; 262,5 |  AR2503812; OT/2025/AR2503812-13.xlsb / BAQUETÓN, filas 33/34/35, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503812. |
 | baqueton; 266 × 128 | 2,5; 27,3; 52,1; 76,9; 101,7; 126,5 | 2,5; 27,3; 52,1; 76,9; 101,7; 126,5 | 2,5; 28,7; 54,9; 81,1; 107,3; 133,5; 159,7; 185,9; 212,1; 238,3; 264,5 |  AR2404172; OT/2024/AR2404172-12.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404172. |
-| baqueton; 530 × 250 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5; 184,4 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5; 184,4 | 2,5; 33,8; 65,1; 96,4; 127,6; 158,9; 190,2; 221,5; 256,9; 292,3; 327,7; 363,1 |  AR2404641; OT/2024/AR2404641-2.xlsb / BAQUETÓN, filas 33/34/35, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404641. |
 | lona; 115 × 100 | 2,5; 26,5; 50,5; 74,5; 98,5 | 2,5; 26,5; 50,5; 74,5; 98,5 | 2,5; 30,3; 58; 85,8; 113,5 |  AR2504105; OT/2025/AR2504105-12.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2504105. |
 | lona; 120 × 105 | 2,5; 27,8; 53; 78,3; 103,5 | 2,5; 27,8; 53; 78,3; 103,5 | 2,5; 31,5; 60,5; 89,5; 118,5 |  AR2503985; OT/2025/AR2503985-12.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503985. |
 | lona; 132 × 99 | 2,5; 26,3; 50; 73,8; 97,5 | 2,5; 26,3; 50; 73,8; 97,5 | 2,5; 28,1; 53,7; 79,3; 104,9; 130,5 |  AR2404641; OT/2024/AR2404641-3.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404641. |
 | lona; 144 × 141 | 2,5; 25,3; 48,2; 71; 93,8; 116,7; 139,5 | 2,5; 25,3; 48,2; 71; 93,8; 116,7; 139,5 | 2,5; 25,8; 49,2; 72,5; 95,8; 119,2; 142,5 |  AR2503985; OT/2025/AR2503985-13.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503985. |
-| lona; 152 × 104 | 2,5; 16,8; 31,1; 45,4; 59,6; 73,9; 88,2; 102,5 | 2,5; 16,8; 31,1; 45,4; 59,6; 73,9; 88,2; 102,5 | 2,5; 17,3; 32,1; 46,9; 61,7; 76,5; 91,3; 106,1; 120,9; 135,7; 150,5 |  AR2404172; OT/2024/AR2404172-13.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404172. |
 | lona; 152 × 117 | 2,5; 47,7; 70,3; 92,9; 115,5 | 2,5; 47,7; 70,3; 92,9; 115,5 | 2,5; 27,2; 51,8; 76,5; 101,2; 125,8; 150,5 |  AR2403877; OT/2024/AR2403877.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2403877. |
 | lona; 158 × 100 | 2,5; 34,5; 66,5; 98,5 | 2,5; 34,5; 66,5; 98,5 | 2,5; 33,3; 64,1; 94,9; 125,7; 156,5 |  AR2504257; OT/2025/AR2504257-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2504257. |
 | lona; 158 × 115 | 2,5; 30,3; 58; 85,8; 113,5 | 2,5; 30,3; 58; 85,8; 113,5 | 2,5; 33,3; 64,1; 94,9; 125,7; 156,5 |  AR2404248; OT/2024/AR2404248-4.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404248. |
@@ -876,8 +942,15 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 277 × 162 | 2,5; 28,8; 55,2; 81,5; 107,8; 134,2; 160,5 | 2,5; 28,8; 55,2; 81,5; 107,8; 134,2; 160,5 | 2,5; 32,8; 63,2; 93,5; 123,8; 154,2; 184,5; 214,8; 245,2; 275,5 |  AR2404248; OT/2024/AR2404248-1.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404248. |
 | lona; 278 × 164 | 2,5; 29,2; 55,8; 82,5; 109,2; 135,8; 162,5 | 2,5; 29,2; 55,8; 82,5; 109,2; 135,8; 162,5 | 2,5; 27,4; 52,3; 77,2; 102,1; 127; 152; 176,9; 201,8; 226,7; 251,6; 276,5 |  AR2404641; OT/2024/AR2404641-1.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404641. |
 | lona; 285 × 155 | 2,5; 40,5; 78; 116; 153,5 | 2,5; 40,5; 78; 116; 153,5 | 2,5; 42,5; 83; 123; 163; 203; 243,5; 283,5 |  AR2403994; OT/2024/AR2403994-3.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2403994. |
-| lona; 313 × 172 | 2,5; 26,5; 50,5; 74,5; 98,5; 122,5; 146,5; 170,5 | 2,5; 26,5; 50,5; 74,5; 98,5; 122,5; 146,5; 170,5 | 15,35; 41,15; 66,85; 92,65; 118,35; 144,15; 169,85; 195,65; 221,35; 247,15; 272,85; 298,65 |  AR2404082; OT/2024/AR2404082-15.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404082. |
-| lona; 367 × 192 | 2,5; 29,4; 56,2; 83,1; 109,9; 136,8; 163,6; 190,5 | 2,5; 29,4; 56,2; 83,1; 109,9; 136,8; 163,6; 190,5 | 41,4; 67,3; 93,3; 119,2; 145,1; 171; 197; 222,9; 248,8; 274,8; 300,7; 326,6 |  AR2404641; OT/2024/AR2404641-2.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404641. |
+
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| baqueton; 530 × 250 | AR2404641 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| lona; 152 × 104 | AR2404172 | El resultado guardado no coincide con las listas manuales que indica el modo seleccionado. |
+| lona; 313 × 172 | AR2404082 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| lona; 367 × 192 | AR2404641 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
 
 Referencias que quedan fuera de las medidas automáticas:
 
@@ -887,8 +960,12 @@ Referencias que quedan fuera de las medidas automáticas:
 | Baquetón; 188 × 96 | AR2403955 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2403955-1.xlsb; OT/2024/AR2403955.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 512 × 226 | AR2403955 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2403955-1.xlsb; OT/2024/AR2403955.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 252 × 135 | AR2403994 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2403994-1.xlsb; OT/2024/AR2403994-2.xlsb; OT/2024/AR2403994-3.xlsb; OT/2024/AR2403994-4.xlsb; OT/2024/AR2403994.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 313 × 172 | AR2404082 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2404082-10.xlsb; OT/2024/AR2404082-11.xlsb; OT/2024/AR2404082-12.xlsb; OT/2024/AR2404082-13.xlsb; OT/2024/AR2404082-14.xlsb; OT/2024/AR2404082-15.xlsb; OT/2024/AR2404082.dwg |
+| Lona alta; 152 × 104 | AR2404172 | El resultado guardado no coincide con las listas manuales que indica el modo seleccionado. OT/2024/AR2404172-10.xlsb; OT/2024/AR2404172-11.xlsb; OT/2024/AR2404172-12.xlsb; OT/2024/AR2404172-13.xlsb; OT/2024/AR2404172-14.xlsb; OT/2024/AR2404172-15.xlsb; OT/2024/AR2404172.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 280 × 90 | AR2404248 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2404248-1.xlsb; OT/2024/AR2404248-2.xlsb; OT/2024/AR2404248-3.xlsb; OT/2024/AR2404248-4.xlsb; OT/2024/AR2404248-5.xlsb; OT/2024/AR2404248-6.xlsb; OT/2024/AR2404248.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Baquetón; 530 × 250 | AR2404641 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. OT/2024/AR2404641-1.xlsb; OT/2024/AR2404641-2.xlsb; OT/2024/AR2404641-3.xlsb; OT/2024/AR2404641.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 130 × 130 | AR2404641, AR2405534 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2404641-1.xlsb; OT/2024/AR2404641-2.xlsb; OT/2024/AR2404641-3.xlsb; OT/2024/AR2404641.dwg; OT/2024/AR2405534.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 367 × 192 | AR2404641 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2404641-1.xlsb; OT/2024/AR2404641-2.xlsb; OT/2024/AR2404641-3.xlsb; OT/2024/AR2404641.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 309 × 179 | AR2503198 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2503198-10.dwg; OT/2025/AR2503198.dwg; OT/2025/AR2503198.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | tipo sin identificar; 250 × 145 | AR2503812 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2503812-10.xlsb; OT/2025/AR2503812-11.xlsb; OT/2025/AR2503812-12.xlsb; OT/2025/AR2503812-13.xlsb; OT/2025/AR2503812-14.xlsb; OT/2025/AR2503812.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 275 × 125 | AR2503985 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2503985-10.xlsb; OT/2025/AR2503985-11.xlsb; OT/2025/AR2503985-12.xlsb; OT/2025/AR2503985-13.xlsb; OT/2025/AR2503985-14.xlsb; OT/2025/AR2503985-15.xlsb; OT/2025/AR2503985.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
@@ -937,29 +1014,49 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | baqueton; 260 × 150 | 12,5; 54,5; 96,5; 138,5 | 12,5; 54,5; 96,5; 138,5 | 12,5; 46,5; 88,5; 130,5; 172,5; 214,5; 248,5 | Vigente v1; se conserva. AR2603563; OT/2026/AR2603563-11.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2603563. |
 | lona; 300 × 175 | 13; 57; 119; 163 | 13; 57; 119; 163 | 13; 51; 101; 151; 201; 251; 288 | Vigente v1; se conserva. |
 | baqueton; 300 × 175 | 13; 57; 119; 163 | 13; 57; 119; 163 | 13; 51; 101; 151; 201; 251; 288 | Vigente v1; se conserva. |
-| baqueton; 150 × 110 | 12,5; 41,2; 69,8; 98,5 | 12,5; 41,2; 69,8; 98,5 | 12,5; 54,5; 96,5; 138,5 |  AR2406190; OT/2024/AR2406190.xlsb / BAQUETÓN, filas 33/34/35, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2406190. |
 | baqueton; 180 × 115 | 10,5; 34,3; 81,8; 105,5 | 10,5; 34,3; 81,8; 105,5 | 13; 46; 88; 131; 168 |  AR2602078; OT/2026/AR2602078.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2602078. |
 | baqueton; 180 × 120 | 10,5; 35,5; 85,5; 110,5 | 10,5; 35,5; 85,5; 110,5 | 13; 50; 93; 135; 168 |  AR2501098; OT/2025/AR2501098.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501098. |
 | baqueton; 200 × 120 | 10,5; 35,5; 85,5; 110,5 | 10,5; 35,5; 85,5; 110,5 | 10,5; 50,5; 100,5; 150,5; 190,5 |  AR2402066; OT/2024/AR2402066.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402066. |
-| baqueton; 235 × 150 | 12,5; 54,5; 96,5; 138,5 | 12,5; 54,5; 96,5; 138,5 | 12,5; 48,5; 95; 141,5; 188; 223,5 |  AR2400475; OT/2024/AR2400475.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2400475. |
-| baqueton; 250 × 150 | 12; 54; 97; 139 | 12; 54; 97; 139 | 10; 50; 100; 151; 201; 241 |  AR2501756; OT/2025/AR2501756.xlsb / BAQUETÓN, filas 38/39/40, I:T; más reciente sin mayoría clara. Variantes: 2 pedido(s): AR2501756, AR2604089 / 2 pedido(s): AR2501235, AR2501529. |
+| baqueton; 250 × 150 | 12; 54; 97; 139 | 12; 54; 97; 139 | 10; 50; 100; 151; 201; 241 |  AR2501756; OT/2025/AR2501756.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2501756, AR2604089 / 1 pedido(s): AR2501529. |
 | baqueton; 252 × 142 | 13,5; 50,5; 92,5; 129,5 | 13,5; 50,5; 92,5; 129,5 | 11,5; 51,5; 101,5; 151,5; 201,5; 241,5 |  AR2501699; OT/2025/AR2501699.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501699. |
 | baqueton; 256 × 146 | 12,5; 52,5; 94,5; 134,5 | 12,5; 52,5; 94,5; 134,5 | 10,5; 44,5; 86,5; 128,5; 170,5; 212,5; 246,5 |  AR2601570; OT/2026/AR2601570-11.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2601570. |
-| baqueton; 280 × 175 | 12; 45,8; 87,3; 128,8; 163 | 12; 45,8; 87,3; 128,8; 163 | 12,5; 47,3; 93,8; 140,3; 185,8; 232,3; 268,5 |  AR2405935; OT/2024/AR2405935.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405935. |
 | baqueton; 300 × 150 | 12; 54; 97; 139 | 12; 54; 97; 139 | 13; 50; 100; 150; 200; 250; 288 |  AR2602341; OT/2026/AR2602341.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2602341. |
 | lona; 180 × 120 | 10; 41; 83; 110 | 10; 41; 83; 110 | 13; 46; 88; 131; 168 |  AR2400974; OT/2024/AR2400974.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2400974. |
-| lona; 220 × 130 | 12,5; 47; 84; 118,5 | 12,5; 47; 84; 118,5 | 13,5; 50,5; 90,5; 130,5; 170,5; 207,5 |  AR2604335; OT/2026/AR2604335.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2604335. |
-| lona; 225 × 130 | 12; 45; 86; 119 | 12; 45; 86; 119 | 13; 47; 90; 133; 177; 212 |  AR2603563; OT/2026/AR2603563-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 3 pedido(s): AR2402017, AR2402321, AR2603563 / 1 pedido(s): AR2500478. |
 | lona; 235 × 145 | 12; 51,5; 94,5; 134 | 12; 51,5; 94,5; 134 | 12,5; 48,3; 94,8; 141,3; 187,8; 223,5 |  AR2401329; OT/2024/AR2401329.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401329. |
-| lona; 250 × 150 | 12,5; 54,5; 96,5; 138,5 | 12,5; 54,5; 96,5; 138,5 | 10,5; 50,5; 100,5; 150,5; 200,5; 240,5 |  AR2504989; OT/2025/AR2504989.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2400860, AR2504989. |
+| lona; 250 × 150 | 12,5; 54,5; 96,5; 138,5 | 12,5; 54,5; 96,5; 138,5 | 10,5; 50,5; 100,5; 150,5; 200,5; 240,5 |  AR2504989; OT/2025/AR2504989.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2504989. |
 | lona; 250 × 160 | 12,5; 57,5; 103,5; 148,5 | 12,5; 57,5; 103,5; 148,5 | 10,5; 50,5; 100,5; 150,5; 200,5; 240,5 |  AR2402946; OT/2024/AR2402946.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402946. |
 | lona; 255 × 175 | 12; 45; 87; 130; 164 | 12; 45; 87; 130; 164 | 11; 52; 102; 153; 204; 245 |  AR2404922; OT/2024/AR2404922.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404922. |
-| lona; 260 × 165 | 12,75; 44,45; 82,95; 121,45; 153,25 | 12,75; 44,45; 82,95; 121,45; 153,25 | 12,5; 46,5; 88,5; 130,5; 172,5; 214,5; 248,5 |  AR2601271; OT/2026/AR2601271.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2601271. |
-| lona; 300 × 150 | 12,5; 54,5; 96,5; 138,5 | 12,5; 54,5; 96,5; 138,5 | 13; 50; 100; 150; 200; 240; 288 |  AR2602866; OT/2026/AR2602866.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2602866. |
 | lona; 301 × 162,5 | 2,5; 34,2; 97,6; 129,3; 161 | 2,5; 34,2; 97,6; 129,3; 161 | 2,5; 35,5; 68,5; 101,5; 134,5; 167,5; 200,5; 233,5; 266,5; 299,5 |  AR2402511; OT/2024/AR2402511.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402511. |
-| lona; 333 × 168 | 12,5; 55; 114,5; 156,5 | 12,5; 55; 114,5; 156,5 | 20; 68; 124,5; 176; 227,5; 284,5; 328 |  AR2405925; OT/2024/AR2405925.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405925. |
-| lona; 335 × 170 | 12,5; 45; 85; 125; 158 | 12,5; 45; 85; 125; 158 | 12,5; 53,5; 110,8; 167,8; 224,8; 281,8; 323 |  AR2500261; OT/2025/AR2500261.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500261. |
-| lona; 400 × 210 | 12,5; 51,5; 105,5; 159,5; 198,5 | 12,5; 51,5; 105,5; 159,5; 198,5 | 12,5; 50; 100; 150; 200; 250; 300; 350; 388 |  AR2503722; OT/2025/AR2503722.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503722. |
+
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| baqueton; 150 × 110 | AR2406190 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| baqueton; 235 × 150 | AR2400475 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| baqueton; 280 × 175 | AR2405935 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| lona; 220 × 130 | AR2604335 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| lona; 225 × 130 | AR2603563 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| lona; 260 × 165 | AR2601271 | El resultado guardado no coincide con las listas manuales que indica el modo seleccionado. |
+| lona; 300 × 150 | AR2602866 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| lona; 333 × 168 | AR2405925 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| lona; 335 × 170 | AR2500261 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| lona; 400 × 210 | AR2503722 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Baquetón; 235 × 150 | AR2400475 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2400475.dwg; OT/2024/AR2400475.xlsb |
+| Lona alta; 225 × 130 | AR2402017, AR2402321, AR2500478, AR2603563 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2402017-10.xlsb; OT/2024/AR2402017-11.xlsb; OT/2024/AR2402017.dwg; OT/2024/AR2402321.dwg; OT/2024/AR2402321.xlsb; OT/2025/AR2500478.dwg; OT/2025/AR2500478.xlsb; OT/2026/AR2603563-10.xlsb; OT/2026/AR2603563-11.xlsb; OT/2026/AR2603563.dwg |
+| Lona alta; 333 × 168 | AR2405925 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2405925.dwg; OT/2024/AR2405925.xlsb |
+| Baquetón; 280 × 175 | AR2405935 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2405935.dwg; OT/2024/AR2405935.xlsb |
+| Baquetón; 150 × 110 | AR2406190 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. OT/2024/AR2406190.dwg; OT/2024/AR2406190.xlsb |
+| Lona alta; 335 × 170 | AR2500261 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2025/AR2500261.dwg; OT/2025/AR2500261.xlsb |
+| Lona alta; 400 × 210 | AR2503722 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2025/AR2503722.dwg; OT/2025/AR2503722.xlsb |
+| Lona alta; 260 × 165 | AR2601271 | El resultado guardado no coincide con las listas manuales que indica el modo seleccionado. OT/2026/AR2601271.dwg; OT/2026/AR2601271.xlsb |
+| Lona alta; 300 × 150 | AR2602866 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2026/AR2602866.dwg; OT/2026/AR2602866.xlsb |
+| Lona alta; 220 × 130 | AR2604335 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2026/AR2604335.dwg; OT/2026/AR2604335.xlsb |
 
 ### METALURGICAS NORTE BURGOS S.L. — 023649
 
@@ -969,11 +1066,13 @@ Código acreditado por histórico (AR2603988). Nombres/alias conocidos: METALURG
 
 Plantillas encontradas: `PL/METALURGICAS NORTE/NORTE.dwg`; `PL/METALURGICAS NORTE/NORTE2.DWG`; `PL/METALURGICAS NORTE/_CLOSE.dwg`
 
-METALURGICAS NORTE/NORTE.dwg: puentes como ESVA, sin ventana, azul 5015; 10 cm de aguas incluidas en la altura; «toldo bajo» es baquetón sin aguas.
+Iván confirma la holgura TOTAL de 2 cm de largo y ancho para lona alta y baquetón. AR2603988, baquetón de agosto de 2026, acredita su aplicación: remolque 250×150×15, entrada de hoja 251×151×15, hecho 252×152, corte 288×188 y esquinas 17 cm.
 
-Nota fechada 10/03/2026: +1,5 cm. Nota 20/05/2026: +0,5 cm más, total remolque +2 cm en largo y ancho. Las hojas antiguas no bastan para convertir esa nota en las siete demasías de baquetón ni en una holgura general de lona.
+OT/2026/AR2603988.xlsb, hoja 0231286: C12/C13=251/151, G21/G22=252/152, C26/C27=288/188 y C28=17. El DWG del mismo pedido, OF 0231286 y fecha 12/08/2026, coincide. AR2603671 de julio aún tiene solo +1 cm total: se documenta la excepción anterior.
 
-Reglas añadidas a la propuesta: `ventana` = {"lleva":false}; `perfil` = {"tipoPerfil":"TIPO 03","aguas":10}; `recogeAtras` = "PUENTES ESVA"; `bastillaEnfundar` = false; `observaciones` = ["LOS 10 CM DE AGUAS VAN INCLUIDOS EN LA ALTURA"].
+extrasBaqueton: +1 en extraLargoCostura, extraAnchoCostura, extraLargoFinal y extraAnchoFinal; los otros tres campos, 0. Los valores generales ya aportan 1 cm al acabado: registrar +2 como extra daría 3 cm y sería incorrecto. FichaCliente no admite holgura de lona alta: la web tendría que soportarla para automatizarla.
+
+Reglas añadidas a la propuesta: `ventana` = {"lleva":false}; `perfil` = {"tipoPerfil":"TIPO 03","aguas":10}; `recogeAtras` = "PUENTES ESVA"; `bastillaEnfundar` = false; `observaciones` = ["LOS 10 CM DE AGUAS VAN INCLUIDOS EN LA ALTURA"]; `extrasBaqueton` = {"extraLargoCostura":1,"extraAnchoCostura":1,"extraBaquetonLargoDelante":0,"extraBaquetonLargoDetras":0,"extraLargoFinal":1,"extraAnchoFinal":1,"extraBaquetonTrasero":0,"observaciones":[]}.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -995,15 +1094,13 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | --- | --- | --- | --- | --- |
 | baqueton; 160 × 120 | 10; 40,3; 80,8; 111 | 10; 40,3; 80,8; 111 | 10,6; 50,5; 110,5; 150,4 |  AR2501277; OT/2025/AR2501277.xlsb / BAQUETÓN, filas 38/39/40, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2501277 / 1 pedido(s): AR2406590. |
 | baqueton; 180 × 120 | 10; 40,3; 80,8; 111 | 10; 40,3; 80,8; 111 | 9,5; 40; 93,5; 143,5; 171 |  AR2406114; OT/2024/AR2406114-11.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2406114. |
-| baqueton; 200 × 130 | 10; 42,8; 88,3; 121 | 10; 42,8; 88,3; 121 | 12,5; 62,8; 138,3; 188,5 |  AR2500229; OT/2025/AR2500229.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2500229, AR2503798. |
 | baqueton; 220 × 120 | 10; 40,3; 80,8; 111 | 10; 40,3; 80,8; 111 | 10,25; 45,45; 110,45; 175,45; 210,75 |  AR2503492; OT/2025/AR2503492-10.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503492. |
-| baqueton; 225 × 130 | 10; 42,8; 88,3; 121 | 10; 42,8; 88,3; 121 | 10,3; 47,5; 114,5; 180; 215,8 |  AR2600406; OT/2026/AR2600406.xlsb / BAQUETÓN, filas 38/39/40, I:T; más reciente sin mayoría clara. Variantes: 2 pedido(s): AR2503505, AR2600406 / 1 pedido(s): AR2505110 / 1 pedido(s): AR2406114 / 1 pedido(s): AR2405116 / 1 pedido(s): AR2404154. |
+| baqueton; 225 × 130 | 10; 42,8; 88,3; 121 | 10; 42,8; 88,3; 121 | 10,3; 47,5; 114,5; 180; 215,8 |  AR2600406; OT/2026/AR2600406.xlsb / BAQUETÓN, filas 38/39/40, I:T; más reciente sin mayoría clara. Variantes: 2 pedido(s): AR2503505, AR2600406 / 1 pedido(s): AR2505110 / 1 pedido(s): AR2406114 / 1 pedido(s): AR2404154. |
 | baqueton; 225 × 150 | 10; 50,3; 100,8; 141 | 10; 50,3; 100,8; 141 | 10,3; 47,5; 113; 180; 215,8 |  AR2500391; OT/2025/AR2500391-10.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500391. |
 | baqueton; 230 × 135 | 10; 45,3; 90,8; 126 | 10; 45,3; 90,8; 126 | 11; 49; 114,5; 181,5; 221 |  AR2402778; OT/2024/AR2402778.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402778. |
 | baqueton; 250 × 130 | 10; 42,7; 88,2; 121 | 10; 42,7; 88,2; 121 | 9,5; 46,3; 98,8; 151,3; 203,8; 239 |  AR2500829; OT/2025/AR2500829.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500829. |
-| baqueton; 250 × 140 | 10; 45,3; 95,8; 131 | 10; 45,3; 95,8; 131 | 11; 46,3; 98,8; 151,3; 203,8; 240 |  AR2502117; OT/2025/AR2502117.xlsb / BAQUETÓN, filas 38/39/40, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2502117 / 1 pedido(s): AR2406590. |
+| baqueton; 250 × 140 | 10; 45,3; 95,8; 131 | 10; 45,3; 95,8; 131 | 11; 46,3; 98,8; 151,3; 203,8; 240 |  AR2502117; OT/2025/AR2502117.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2502117. |
 | baqueton; 250 × 150 | 10; 50,3; 100,7; 141 | 10; 50,3; 100,7; 141 | 9,5; 46,3; 98,8; 151,3; 203,8; 239 |  AR2501670; OT/2025/AR2501670.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501670. |
-| baqueton; 253 × 133 | 10; 43,5; 90,5; 124 | 10; 43,5; 90,5; 124 | 11; 47,8; 100,3; 152,8; 205,3; 240,5 |  AR2505110; OT/2025/AR2505110-11.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2505110. |
 | baqueton; 300 × 160 | 10; 50; 110; 150,5 | 10; 50; 110; 150,5 | 10; 52,5; 117,8; 183,3; 248,5; 291 |  AR2503180; OT/2025/AR2503180.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503180. |
 | baqueton; 312 × 205 | 10; 33,3; 79,8; 126,3; 172,8; 196 | 10; 33,3; 79,8; 126,3; 172,8; 196 | 11; 35,3; 83,9; 156,7; 181; 229,5; 277,6; 302,5 |  AR2404808; OT/2024/AR2404808.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404808. |
 | lona; 150 × 110 | 10; 37,8; 73,3; 101 | 10; 37,8; 73,3; 101 | 10; 47,8; 103,3; 141 |  AR2504111; OT/2025/AR2504111.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2504111. |
@@ -1015,11 +1112,10 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 200 × 130 | 10; 42,7; 88,2; 121 | 10; 42,7; 88,2; 121 | 10; 40; 97; 157,5; 191 |  AR2600406; OT/2026/AR2600406.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2600406 / 1 pedido(s): AR2600853. |
 | lona; 200 × 140 | 10; 45,3; 95,8; 131 | 10; 45,3; 95,8; 131 | 10; 40,1; 80,4; 120,6; 160,9; 191 |  AR2505724; OT/2025/AR2505724-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2505724. |
 | lona; 207 × 120 | 10; 40,3; 80,8; 111 | 10; 40,3; 80,8; 111 | 10; 47,5; 107,5; 164; 197 |  AR2401917; OT/2024/AR2401917-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401917. |
-| lona; 225 × 130 | 10; 42,7; 88,2; 121 | 10; 42,7; 88,2; 121 | 10; 47; 114; 179,5; 215 |  AR2505724; OT/2025/AR2505724.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 3 pedido(s): AR2501137, AR2503492, AR2505724 / 2 pedido(s): AR2500391, AR2502805 / 1 pedido(s): AR2401158. |
+| lona; 225 × 130 | 10; 42,7; 88,2; 121 | 10; 42,7; 88,2; 121 | 10; 47; 114; 179,5; 215 |  AR2505724; OT/2025/AR2505724.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 3 pedido(s): AR2501137, AR2503492, AR2505724 / 1 pedido(s): AR2401158. |
 | lona; 225 × 150 | 10; 50,3; 100,8; 141 | 10; 50,3; 100,8; 141 | 10; 46,5; 112; 179; 215,5 |  AR2401917; OT/2024/AR2401917-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2401917 / 1 pedido(s): AR2401226. |
 | lona; 230 × 130 | 10; 42,8; 88,3; 121 | 10; 42,8; 88,3; 121 | 10; 46,5; 113,5; 182; 220 |  AR2404582; OT/2024/AR2404582.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404582. |
 | lona; 230 × 140 | 10; 45,3; 95,8; 131 | 10; 45,3; 95,8; 131 | 10; 52; 119; 184,5; 220 |  AR2600750; OT/2026/AR2600750.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600750. |
-| lona; 230 × 160 | 10; 52,8; 108,3; 151 | 10; 52,8; 108,3; 151 | 20; 58; 123,5; 190,5; 230 |  AR2402778; OT/2024/AR2402778.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402778. |
 | lona; 235 × 149 | 10; 47,5; 102,5; 140 | 10; 47,5; 102,5; 140 | 13; 52,5; 119,5; 185; 223 |  AR2503492; OT/2025/AR2503492-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503492. |
 | lona; 250 × 130 | 10; 42,7; 88,2; 121 | 10; 42,7; 88,2; 121 | 9,5; 46,3; 98,8; 151,3; 203,8; 239 |  AR2600792; OT/2026/AR2600792.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2600792 / 1 pedido(s): AR2405116. |
 | lona; 250 × 140 | 10; 45,3; 95,8; 131 | 10; 45,3; 95,8; 131 | 11; 46,3; 98,8; 151,3; 203,8; 240,5 |  AR2503180; OT/2025/AR2503180.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503180. |
@@ -1029,21 +1125,31 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 300 × 180 | 10; 50,3; 90,5; 130,8; 171 | 10; 50,3; 90,5; 130,8; 171 | 11; 66,1; 122,2; 178,3; 234,4; 290,5 |  AR2402200; OT/2024/AR2402200.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402200. |
 | lona; 310 × 164 | 12,6; 52,5; 112,5; 152,4 | 12,6; 52,5; 112,5; 152,4 | 9,75; 34,05; 82,65; 131,25; 179,75; 228,25; 276,85; 301,25 |  AR2600255; OT/2026/AR2600255.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600255. |
 | lona; 330 × 190 | 10; 45,2; 95,5; 147,2; 181 | 10; 45,2; 95,5; 147,2; 181 | 10,5; 49,5; 107,5; 165,5; 223,5; 281,5; 320,5 |  AR2500391; OT/2025/AR2500391-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500391. |
-| lona; 400 × 190 | 10; 45; 95,5; 146; 181 | 10; 45; 95,5; 146; 181 | 13; 50,5; 100,5; 150,5; 200,5; 250,5; 300,5; 350,5; 388,5 |  AR2400792; OT/2024/AR2400792.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2400792. |
 | lona; 400 × 193 | 10; 46,7; 97; 147,3; 184 | 10; 46,7; 97; 147,3; 184 | 12,8; 50,5; 100,5; 200,5; 250,5; 300,5; 350,5; 388,3 |  AR2401819; OT/2024/AR2401819.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401819. |
+
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| baqueton; 200 × 130 | AR2500229 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| baqueton; 253 × 133 | AR2505110 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| lona; 230 × 160 | AR2402778 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| lona; 400 × 190 | AR2400792 | El resultado guardado no coincide con las listas manuales que indica el modo seleccionado. |
 
 Referencias que quedan fuera de las medidas automáticas:
 
 | Tipo y medida del histórico | Pedidos | Motivo y fuentes |
 | --- | --- | --- |
+| Lona alta; 400 × 190 | AR2400792 | El resultado guardado no coincide con las listas manuales que indica el modo seleccionado. OT/2024/AR2400792.dwg; OT/2024/AR2400792.xlsb |
+| Lona alta; 230 × 160 | AR2402778 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2402778.dwg; OT/2024/AR2402778.xlsb |
 | Lona alta; 280 × 160 | AR2404101 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2404101.dwg; OT/2024/AR2404101.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Baquetón; 200 × 130 | AR2500229, AR2503798, AR2603671 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2025/AR2500229.dwg; OT/2025/AR2500229.xlsb; OT/2025/AR2503798.dwg; OT/2025/AR2503798.xlsb; OT/2026/AR2603671.dwg; OT/2026/AR2603671.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 412 × 195 | AR2502225 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2502225.dwg; OT/2025/AR2502225.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Baquetón; 253 × 133 | AR2505110 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2025/AR2505110-11.xlsb; OT/2025/AR2505110.dwg; OT/2025/AR2505110.xlsb |
 | Lona alta; 303 × 160 | AR2601144 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2601144.dwg; OT/2026/AR2601144.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 210,5 × 130,5 | AR2602338 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2602338.dwg; OT/2026/AR2602338.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 275 × 150 | AR2603557 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2603557.dwg; OT/2026/AR2603557.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 262 × 162 | AR2603988 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2603988.dwg; OT/2026/AR2603988.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
-
-**Duda para Iván:** ¿La holgura total de 2 cm de largo y ancho de la nota de mayo se aplica tanto a la lona alta como al baquetón? FichaCliente no tiene una holgura general de lona; hay que confirmar las demasías antes de automatizarla.
 
 ### www.remolquesnunez.com · REMOLQUES NUÑEZ, S. L. — 001302
 
@@ -1080,54 +1186,64 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | baqueton; 143 × 100 | 2,5; 34,5; 66,5; 98,5 | 2,5; 34,5; 66,5; 98,5 | 2,5; 37,5; 72; 106,5; 141,5 |  AR2403884; OT/2024/AR2403884-10.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2403077, AR2403884. |
 | baqueton; 153 × 105 | 2,5; 36,2; 69,8; 103,5 | 2,5; 36,2; 69,8; 103,5 | 4; 33,2; 62,4; 91,6; 120,8; 150 |  AR2401840; OT/2024/AR2401840-15.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401840. |
 | baqueton; 173 × 120 | 2,5; 31,5; 60,5; 89,5; 118,5 | 2,5; 31,5; 60,5; 89,5; 118,5 | 2,5; 36,3; 70,1; 103,9; 137,7; 171,5 |  AR2500595; OT/2025/AR2500595-10.xlsb / BAQUETÓN, filas 33/34/35, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500595. |
-| baqueton; 193 × 120 | 2,5; 41,2; 79,8; 118,5 | 2,5; 41,2; 79,8; 118,5 | 2,5; 34; 65,5; 97; 128,5; 160; 191,5 |  AR2605088; OT/2026/AR2605088.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2605088. |
 | baqueton; 193 × 135 | 2,5; 35,3; 68; 100,8; 133,5 | 2,5; 35,3; 68; 100,8; 133,5 | 3; 34,3; 65,7; 97; 128,3; 159,7; 191,5 |  AR2400340; OT/2024/AR2400340-2.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2400340. |
 | baqueton; 213 × 120 | 2,5; 31,5; 60,5; 89,5; 118,5 | 2,5; 31,5; 60,5; 89,5; 118,5 | 2,5; 37,3; 72,2; 107; 141,8; 176,7; 211,5 |  AR2501121; OT/2025/AR2501121-11.xlsb / BAQUETÓN, filas 33/34/35, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501121. |
 | baqueton; 213 × 135 | 2,5; 35,3; 68; 100,8; 133,5 | 2,5; 35,3; 68; 100,8; 133,5 | 2,5; 37,3; 72,2; 107; 141,8; 176,7; 211,5 |  AR2501121; OT/2025/AR2501121.xlsb / BAQUETÓN, filas 33/34/35, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501121. |
 | baqueton; 223 × 135 | 2,5; 35,3; 68; 100,8; 133,5 | 2,5; 35,3; 68; 100,8; 133,5 | 2,5; 33,8; 65,1; 96,4; 127,6; 158,9; 190,2; 221,5 |  AR2501947; OT/2025/AR2501947-14.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501947. |
-| baqueton; 223 × 150 | 2,5; 39; 75,5; 112; 148,5 | 2,5; 39; 75,5; 112; 148,5 | 2,5; 39; 75,5; 112; 148,5; 185; 221,5 |  AR2605088; OT/2026/AR2605088.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2605088. |
 | baqueton; 233 × 135 | 2,5; 35,3; 68; 100,8; 133,5 | 2,5; 35,3; 68; 100,8; 133,5 | 2,5; 35,2; 67,9; 100,6; 133,4; 166,1; 198,8; 231,5 |  AR2502012; OT/2025/AR2502012-11.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 3 pedido(s): AR2501947, AR2502012, AR2503142. |
-| baqueton; 253 × 150 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 33,6; 64,8; 95,9; 127; 158,1; 189,3; 220,4; 251,5 |  AR2502012; OT/2025/AR2502012.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2501947, AR2502012 / 1 pedido(s): AR2605088. |
+| baqueton; 253 × 150 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 33,6; 64,8; 95,9; 127; 158,1; 189,3; 220,4; 251,5 |  AR2502012; OT/2025/AR2502012.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2501947, AR2502012. |
 | baqueton; 275 × 160 | 2,5; 31,7; 64,9; 96,1; 127,3; 158,5 | 2,5; 33,7; 64,9; 96,1; 127,3; 158,5 | 2,5; 32,6; 62,7; 92,8; 122,9; 153,1; 183,2; 213,3; 243,4; 273,5 |  AR2406560; OT/2024/AR2406560.xlsb / BAQUETÓN, filas 33/34/35, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2406560 / 1 pedido(s): AR2401840. |
 | baqueton; 303 × 190 | 2,5; 33,5; 64,5; 95,5; 126,5; 157,5; 188,5 | 2,5; 33,5; 64,5; 95,5; 126,5; 157,5; 188,5 | 2,5; 35,7; 68,9; 102,2; 135,4; 168,6; 201,8; 235,1; 268,3; 301,5 |  AR2501947; OT/2025/AR2501947-15.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501947. |
-| baqueton; 303 × 200 | 2,5; 35,2; 67,8; 100,5; 133,2; 165,8; 198,5 | 2,5; 35,2; 67,8; 100,5; 133,2; 165,8; 198,5 | 19,55; 52,65; 85,75; 118,85; 151,95; 185,15; 218,25; 251,35; 284,45 |  AR2401840; OT/2024/AR2401840-11.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401840. |
 | baqueton; 337 × 175 | 2,5; 36,7; 70,9; 105,1; 139,3; 173,5 | 2,5; 36,7; 70,9; 105,1; 139,3; 173,5 | 2,5; 35,8; 69,1; 102,4; 135,7; 169; 202,3; 235,6; 268,9; 302,2; 335,5 |  AR2503182; OT/2025/AR2503182.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503182. |
 | lona; 143 × 100 | 2,5; 34,5; 66,5; 98,5 | 2,5; 34,5; 66,5; 98,5 | 2,5; 37,5; 71,5; 107,5; 141,5 |  AR2401840; OT/2024/AR2401840-14.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401840. |
 | lona; 153 × 150 | 2,5; 39; 75,5; 112; 148,5 | 2,5; 39; 75,5; 112; 148,5 | 2,5; 32,3; 62,1; 91,9; 121,7; 151,5 |  AR2506039; OT/2025/AR2506039.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2506039. |
 | lona; 173 × 120 | 2,5; 31,5; 60,5; 89,5; 118,5 | 2,5; 31,5; 60,5; 89,5; 118,5 | 2,5; 36,3; 70,1; 103,9; 137,7; 171,5 |  AR2500595; OT/2025/AR2500595-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2500595 / 1 pedido(s): AR2406560. |
 | lona; 193 × 120 | 2,5; 31,5; 60,5; 89,5; 118,5 | 2,5; 31,5; 60,5; 89,5; 118,5 | 4; 35; 66; 97; 128; 159; 190 |  AR2403884; OT/2024/AR2403884-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2403884 / 1 pedido(s): AR2403077. |
-| lona; 193 × 135 | 2,5; 34,3; 68; 102; 133,5 | 2,5; 34,3; 68; 102; 133,5 | 2,5; 35; 66; 97; 128; 159; 191,5 |  AR2401840; OT/2024/AR2401840-13.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2401840 / 1 pedido(s): AR2401157. |
+| lona; 193 × 135 | 2,5; 34,3; 68; 102; 133,5 | 2,5; 34,3; 68; 102; 133,5 | 2,5; 35; 66; 97; 128; 159; 191,5 |  AR2401840; OT/2024/AR2401840-13.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401840. |
 | lona; 213 × 120 | 2,5; 31,5; 60,5; 89,5; 118,5 | 2,5; 31,5; 60,5; 89,5; 118,5 | 2,5; 37,3; 72,2; 107; 141,8; 176,7; 211,5 |  AR2600480; OT/2026/AR2600480.xlsb / LONA REMOLQUE 224964, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600480. |
 | lona; 213 × 135 | 2,5; 35,3; 68; 100,8; 133,5 | 2,5; 35,3; 68; 100,8; 133,5 | 2,5; 37,3; 72,2; 107; 141,8; 176,7; 211,5 |  AR2501947; OT/2025/AR2501947-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 5 pedido(s): AR2400340, AR2404382, AR2501121, AR2501947, AR2601288. |
 | lona; 223 × 135 | 2,5; 35,3; 68; 100,8; 133,5 | 2,5; 35,3; 68; 100,8; 133,5 | 2,5; 33,8; 65,1; 96,4; 127,6; 158,9; 190,2; 221,5 |  AR2503951; OT/2025/AR2503951-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503951. |
 | lona; 223 × 150 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 33,8; 65,1; 96,4; 127,7; 158,7; 190,2; 221,5 |  AR2500595; OT/2025/AR2500595-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500595. |
-| lona; 225 × 150 | 2,5; 39; 75,5; 112; 148,5 | 2,5; 39; 75,5; 112; 148,5 | 2,5; 39,3; 76,2; 113; 149,8; 186,7; 223,5 |  AR2605088; OT/2026/AR2605088.pdf; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2605088 / 1 pedido(s): AR2405345. |
+| lona; 225 × 150 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 35,1; 66,3; 97,4; 128,6; 159,7; 190,9; 223,5 |  AR2405345; OT/2024/AR2405345-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405345. |
 | lona; 233 × 135 | 2,5; 35,3; 68; 100,8; 133,5 | 2,5; 35,3; 68; 100,8; 133,5 | 2,5; 25,2; 67,9; 100,6; 133,4; 166,1; 198,8; 231,5 |  AR2600738; OT/2026/AR2600738.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 2 pedido(s): AR2503142, AR2600480 / 1 pedido(s): AR2600738 / 1 pedido(s): AR2405345 / 1 pedido(s): AR2403884. |
-| lona; 235 × 150 | 2,5; 39; 75,5; 112; 148,5 | 2,5; 39; 75,5; 112; 148,5 | 2,5; 35,5; 68,5; 101,5; 134,5; 167,5; 200,5; 233,5 |  AR2605088; OT/2026/AR2605088.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2605088. |
 | lona; 243 × 120 | 2,5; 31,5; 60,5; 89,5; 118,5 | 2,5; 31,5; 60,5; 89,5; 118,5 | 2,5; 36,6; 70,8; 104,9; 139,1; 173,2; 207,4; 241,5 |  AR2600480; OT/2026/AR2600480.xlsb / LONA REMOLQUE 224961, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600480. |
 | lona; 243 × 150 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 36,6; 70,8; 104,9; 139,1; 173,2; 207,3; 241,5 |  AR2407011; OT/2024/AR2407011.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2407011. |
 | lona; 245 × 135 | 2,5; 35,3; 68; 100,8; 133,5 | 2,5; 35,3; 68; 100,8; 133,5 | 2,5; 32,6; 62,8; 92,9; 123; 153,1; 183,3; 213,4; 243,5 |  AR2502213; OT/2025/AR2502213.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2502213. |
 | lona; 253 × 150 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 38,1; 73,6; 109,2; 144,8; 180,4; 215,9; 251,5 |  AR2600480; OT/2026/AR2600480.xlsb / LONA REMOLQUE 224963, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2600480 / 1 pedido(s): AR2403884 / 1 pedido(s): AR2401840. |
-| lona; 253 × 170 | 2,5; 35,7; 68,9; 102,1; 135,3; 168,5 | 2,5; 35,7; 68,9; 102,1; 135,3; 168,5 | 2,5; 38,1; 73,6; 109,2; 144,8; 180,4; 215,9; 251,5 |  AR2504494; OT/2025/AR2504494.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2504494 / 1 pedido(s): AR2401157. |
+| lona; 253 × 170 | 2,5; 35,7; 68,9; 102,1; 135,3; 168,5 | 2,5; 35,7; 68,9; 102,1; 135,3; 168,5 | 2,5; 38,1; 73,6; 109,2; 144,8; 180,4; 215,9; 251,5 |  AR2504494; OT/2025/AR2504494.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2504494. |
 | lona; 255 × 150 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 33,6; 65,3; 96,6; 128; 159,4; 190,8; 222,1; 253,5 |  AR2505807; OT/2025/AR2505807.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2505807 / 1 pedido(s): AR2406162. |
-| lona; 255 × 180 | 17,5; 46,7; 75,9; 105,1; 134,3; 163,5 | 17,5; 46,7; 75,9; 105,1; 134,3; 163,5 | 17,5; 50,1; 81,3; 112,4; 143,6; 174,7; 205,9; 238,5 |  AR2405345; OT/2024/AR2405345-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405345. |
 | lona; 273 × 150 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 36,1; 69,8; 103,4; 137; 170,6; 204,3; 237,9; 271,5 |  AR2506231; OT/2025/AR2506231.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2506231. |
 | lona; 273 × 160 | 2,5; 33,7; 64,9; 96,14; 127,3; 158,5 | 2,5; 33,7; 64,9; 96,1; 127,3; 158,5 | 2,5; 36,5; 70; 103,5; 137; 170,5; 204; 237,5; 271,5 |  AR2403077; OT/2024/AR2403077-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2403077. |
-| lona; 273 × 170 | 2,5; 35,7; 68,9; 102,1; 135,3; 168,5 | 2,5; 35,7; 68,9; 102,1; 135,3; 168,5 | 2,5; 36,1; 69,8; 103,4; 137; 170,6; 204,3; 237,9; 271,5 |  AR2605088; OT/2026/AR2605088.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2605088. |
 | lona; 273 × 190 | 2,5; 33,5; 64,5; 95,5; 126,5; 157,5; 188,5 | 2,5; 33,5; 64,5; 95,5; 126,5; 157,5; 188,5 | 2,5; 36,1; 69,8; 103,4; 137; 170,6; 204,3; 237,9; 271,5 |  AR2600701; OT/2026/AR2600701.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2600701 / 1 pedido(s): AR2600480. |
-| lona; 303 × 150 | 2,5; 39; 75,5; 112; 148,5 | 2,5; 39; 75,5; 112; 148,5 | 2,5; 35,7; 68,9; 102,2; 135,4; 168,6; 201,8; 235,1; 268,3; 301,5 |  AR2605088; OT/2026/AR2605088.pdf; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2605088 / 1 pedido(s): AR2600480. |
+| lona; 303 × 150 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 35,7; 68,9; 102,2; 135,4; 168,6; 201,8; 235,1; 268,3; 301,5 |  AR2600480; OT/2026/AR2600480.xlsb / LONA REMOLQUE 224959, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600480. |
 | lona; 303 × 180 | 2,5; 37,7; 72,9; 108,1; 143,3; 178,5 | 2,5; 37,7; 72,9; 108,1; 143,3; 178,5 | 2,5; 35,7; 68,9; 102,2; 135,4; 168,6; 201,8; 235,1; 268,3; 301,5 |  AR2505957; OT/2025/AR2505957.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2505957. |
 | lona; 303 × 200 | 2,5; 35,2; 67,8; 100,5; 133,2; 165,8; 198,5 | 2,5; 35,2; 67,8; 100,5; 133,2; 165,8; 198,5 | 2,5; 35,7; 68,9; 102,2; 135,4; 168,6; 201,8; 235,1; 268,3; 301,5 |  AR2503951; OT/2025/AR2503951.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503951. |
 | lona; 303 × 210 | 2,5; 36,8; 71,2; 105,5; 139,8; 174,2; 208,5 | 2,5; 36,8; 71,2; 105,5; 139,8; 174,2; 208,5 | 2,5; 35,7; 68,9; 102,2; 135,4; 168,6; 201,8; 235,1; 268,3; 301,5 |  AR2503142; OT/2025/AR2503142-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503142. |
-| lona; 305 × 190 | 19,1; 57,3; 95,5; 133,7; 171,9 | 19,1; 57,3; 95,5; 133,7; 171,9 | 17,4; 51,3; 85,2; 119,1; 153; 186,9; 220,8; 254,7; 288,6 |  AR2401157; OT/2024/AR2401157-3.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401157. |
-| lona; 355 × 190 | 19,1; 57,3; 95,5; 133,7; 171,9 | 19,1; 57,3; 95,5; 133,7; 171,9 | 18,25; 53,75; 89,25; 124,75; 160,25; 195,75; 231,25; 266,75; 302,25; 337,75 |  AR2401157; OT/2024/AR2401157-1.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401157. |
-| lona; 403 × 160 | 2,5; 33,7; 64,9; 96,1; 127,3; 158,5 | 2,5; 33,7; 64,9; 96,1; 127,3; 158,5 | 19,15; 52,45; 85,65; 118,95; 152,15; 185,45; 218,65; 252,15; 285,15; 318,45; 351,65; 384,85 |  AR2500595; OT/2025/AR2500595-12.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500595. |
+
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| baqueton; 193 × 120 | AR2605088 | No se acredita la longitud hecha de los tres lados; no se suple con largo/ancho del remolque. |
+| baqueton; 223 × 150 | AR2605088 | No se acredita la longitud hecha de los tres lados; no se suple con largo/ancho del remolque. |
+| baqueton; 303 × 200 | AR2401840 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| lona; 235 × 150 | AR2605088 | No se acredita la longitud hecha de los tres lados; no se suple con largo/ancho del remolque. |
+| lona; 255 × 180 | AR2405345 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| lona; 273 × 170 | AR2605088 | No se acredita la longitud hecha de los tres lados; no se suple con largo/ancho del remolque. |
+| lona; 305 × 190 | AR2401157 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| lona; 355 × 190 | AR2401157 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| lona; 403 × 160 | AR2500595 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
 
 Referencias que quedan fuera de las medidas automáticas:
 
 | Tipo y medida del histórico | Pedidos | Motivo y fuentes |
 | --- | --- | --- |
+| Lona alta; 305 × 190 | AR2401157 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. OT/2024/AR2401157-1.xlsb; OT/2024/AR2401157-2.xlsb; OT/2024/AR2401157-3.xlsb; OT/2024/AR2401157-4.xlsb; OT/2024/AR2401157-5.xlsb; OT/2024/AR2401157.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 355 × 190 | AR2401157 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. OT/2024/AR2401157-1.xlsb; OT/2024/AR2401157-2.xlsb; OT/2024/AR2401157-3.xlsb; OT/2024/AR2401157-4.xlsb; OT/2024/AR2401157-5.xlsb; OT/2024/AR2401157.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Baquetón; 303 × 200 | AR2401840 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2401840-10.xlsb; OT/2024/AR2401840-11.xlsb; OT/2024/AR2401840-12.xlsb; OT/2024/AR2401840-13.xlsb; OT/2024/AR2401840-14.xlsb; OT/2024/AR2401840-15.xlsb; OT/2024/AR2401840.dwg |
+| Lona alta; 255 × 180 | AR2405345 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2405345-10.xlsb; OT/2024/AR2405345-11.xlsb; OT/2024/AR2405345-12.xlsb; OT/2024/AR2405345.dwg |
 | Lona alta; 220 × 160 | AR2407010 | Sin los tres lados acreditados sobre la lona hecha. ; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 403 × 160 | AR2500595 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. OT/2025/AR2500595-10.xlsb; OT/2025/AR2500595-11.xlsb; OT/2025/AR2500595-12.xlsb; OT/2025/AR2500595.dwg |
 | Lona alta; 353 × 135 | AR2501121 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2501121-11.xlsb; OT/2025/AR2501121.dwg; OT/2025/AR2501121.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 253 × 135 | AR2501947 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2501947-10.xlsb; OT/2025/AR2501947-11.xlsb; OT/2025/AR2501947-12.xlsb; OT/2025/AR2501947-13.xlsb; OT/2025/AR2501947-14.xlsb; OT/2025/AR2501947-15.xlsb; OT/2025/AR2501947.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 2530 × 150 | AR2600738 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2600738.dwg; OT/2026/AR2600738.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
@@ -1146,11 +1262,11 @@ Código acreditado por GET RPS pedido (AR2506232). Nombres/alias conocidos: CANO
 
 Plantillas encontradas: `PL/CALCULOS EXCEL2/CALCULOS REMOLQUES/CANO MUÑOZ.xls`; `PL/CANO MUÑOZ(METALCAR)/CANO BAQUETON.xls`; `PL/CANO MUÑOZ(METALCAR)/Copia de CANO BAQUETON.xls`; `PL/CANO MUÑOZ(METALCAR)/REMOLQUES CANO(METALURGIA Y CARROCERIAS).dwg`; `PL/CALCULOS REMOLQUES/CANO MUÑOZ.xls`
 
-CANO MUÑOZ(METALCAR)/REMOLQUES CANO(METALURGIA Y CARROCERIAS).dwg: el cliente da la holgura; en lonas que recogen, solo aumento de costura. Indica 16 cm de aguas incluidos en altura y cremallera atrás.
+Cuenta personal CANO MUÑOZ, FRANCISCO (045288), distinta de la sociedad 030179. No se le traslada la cremallera del 9 acreditada en AR2604501.
 
-En baquetón indica +0,5 cm al largo y ancho; también hay una nota de +0,5 al ancho por la máquina de corte. Son notas distintas y no se suman a ciegas. El propio DWG pide consultar AR1502785 si hay duda.
+Las notas antiguas sobre holgura aportada por el cliente, aguas incluidas y dos incrementos de +0,5 cm quedan como antecedentes sin registrar: hay dudas y no se suman. Se conserva la altura habitual de aguas contrastada en sus propias hojas, sin afirmar que vaya incluida en la altura.
 
-Reglas añadidas a la propuesta: `ollaosRepartidos` = true; `perfil` = {"tipoPerfil":"TIPO 03","aguas":16}; `recogeDelante` = "NO"; `recogeAtras` = "CREMALLERA"; `ventana` = {"lleva":false}; `observaciones` = ["EL CLIENTE DA LA HOLGURA: AÑADIR SOLO LA COSTURA","LOS 16 CM DE AGUAS VAN INCLUIDOS EN LA ALTURA"].
+Reglas añadidas a la propuesta: `ollaosRepartidos` = true; `perfil` = {"tipoPerfil":"TIPO 03","aguas":16}; `recogeDelante` = "NO"; `recogeAtras` = "CREMALLERA"; `ventana` = {"lleva":false}.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -1185,8 +1301,13 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 223 × 122 | 2,5; 32; 61,5; 91; 120,5 | 2,5; 32; 61,5; 91; 120,5 | 2,5; 33,8; 65,1; 96,4; 127,6; 158,9; 190,2; 221,5 |  AR2406975; OT/2024/AR2406975.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2404257, AR2406975 / 1 pedido(s): AR2501116. |
 | lona; 223 × 132 | 2,5; 34,5; 66,5; 98,5; 130,5 | 2,5; 34,5; 66,5; 98,5; 130,5 | 2,5; 33,8; 65,1; 96,4; 127,6; 158,9; 190,2; 221,5 |  AR2500050; OT/2025/AR2500050-1.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 4 pedido(s): AR2500050, AR2502864, AR2502938, AR2504932 / 1 pedido(s): AR2501116 / 1 pedido(s): AR2502639. |
 | lona; 253 × 152 | 2,5; 32,1; 61,7; 91,3; 120,9; 150,5 | 2,5; 32,1; 61,7; 91,3; 120,9; 150,5 | 2,5; 33,6; 64,8; 95,9; 127; 158,1; 189,3; 220,4; 251,5 |  AR2500855; OT/2025/AR2500855.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 7 pedido(s): AR2500120, AR2500557, AR2500855, AR2502662, AR2504126, AR2504407, AR2505107 / 1 pedido(s): AR2403311. |
-| lona; 353 × 202 | 2,5; 35,5; 68,5; 101,5; 134,5; 167,5; 200,5 | 2,5; 35,5; 68,5; 101,5; 134,5; 167,5; 200,5 | 17,05; 46,15; 75,25; 104,35; 133,35; 162,45; 191,55; 220,65; 249,75; 278,85; 307,85; 336,95 |  AR2406500; OT/2024/AR2406500.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2406500. |
-| lona; 403 × 182 | 2,5; 38,1; 73,7; 109,3; 144,9; 180,5 | 2,5; 38,1; 73,7; 109,3; 144,9; 180,5 | 19,1; 52,4; 85,6; 118,9; 152,1; 185,4; 218,6; 251,9; 285,1; 318,4; 351,6; 384,9 |  AR2505290; OT/2025/AR2505290.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2505290. |
+
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 353 × 202 | AR2406500 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| lona; 403 × 182 | AR2505290 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
 
 Referencias que quedan fuera de las medidas automáticas:
 
@@ -1197,9 +1318,11 @@ Referencias que quedan fuera de las medidas automáticas:
 | Lona alta; 253 × 133 | AR2400649 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2400649.dwg; OT/2024/AR2400649.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 253 × 132 | AR2404486, AR2502285 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2404486.dwg; OT/2024/AR2404486.xlsb; OT/2025/AR2502285.dwg; OT/2025/AR2502285.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 186 × 131 | AR2406252 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2406252-10.xlsb; OT/2024/AR2406252-11.xlsb; OT/2024/AR2406252.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 353 × 202 | AR2406500 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. OT/2024/AR2406500.dwg; OT/2024/AR2406500.xlsb |
 | Lona alta; 353 × 172 | AR2406846 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2406846.dwg; OT/2024/AR2406846.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 403 × 182 | AR2505290 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. OT/2025/AR2505290.dwg; OT/2025/AR2505290.xlsb |
 
-**Duda para Iván:** ¿Qué dimensiones entrega ahora CANO: remolque o lona acabada, y qué aumentos concretos deben quedar en cada uno de los siete campos de baquetón? No se suman las dos notas de +0,5 sin aclararlo.
+**Duda para Iván:** No hay demasías de baquetón claras para esta cuenta personal: no se registran. AR2604501 pertenece a la sociedad 030179 y no acredita las condiciones de la cuenta 045288.
 
 ### REMOLQUES Y CARAVANAS MALLON, S. L. — 001795
 
@@ -1235,12 +1358,17 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 | Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
 | --- | --- | --- | --- | --- |
-| lona; 256 × 150 | 50,3; 100,7 | 1; 37,8; 75,5; 113,3; 150 | 1; 51,4; 102,8; 154,2; 205,6; 256 |  BE2401106; OT/2024/BE2401106.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): BE2401106. |
 | lona; 310 × 160 | 10,5; 40,5; 80,5; 120,5; 150,5 | 10,5; 40,5; 80,5; 120,5; 150,5 | 10; 54; 105; 157; 210; 260; 300 |  BE2401282; OT/2024/BE2401282.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): BE2401282. |
 | lona; 138 × 108 | 4; 37,5; 71,5; 105 | 4; 37,5; 71,5; 105 | 10; 33; 56; 84; 105; 134 |  Plantilla RL14; PL/MALLON.dwg; plantilla acotada; sin reparto completo de pedido para esta medida. Círculos y bordes hechos cotejados; detalle en comprobaciones-cad.json. |
 | lona; 158 × 118 | 4; 38; 81; 115 | 4; 38; 81; 115 | 2; 13; 31; 70; 90; 128; 148 |  Plantilla RL16; PL/MALLON.dwg; plantilla acotada; sin reparto completo de pedido para esta medida. Círculos y bordes hechos cotejados; detalle en comprobaciones-cad.json. |
 | lona; 178 × 118 | 4; 38; 81; 115 | 4; 38; 81; 115 | 2; 13; 37; 73; 107; 145; 174 |  Plantilla RL18; PL/MALLON.dwg; plantilla acotada; sin reparto completo de pedido para esta medida. Círculos y bordes hechos cotejados; detalle en comprobaciones-cad.json. |
 | lona; 199 × 118 | 4; 38; 81; 115 | 4; 38; 81; 115 | 2; 13; 41; 83; 118; 162; 195 |  Plantilla RL20; PL/MALLON.dwg; plantilla acotada; sin reparto completo de pedido para esta medida. Círculos y bordes hechos cotejados; detalle en comprobaciones-cad.json. |
+
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 256 × 150 | BE2401106 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
 
 Referencias que quedan fuera de las medidas automáticas:
 
@@ -1250,6 +1378,7 @@ Referencias que quedan fuera de las medidas automáticas:
 | Baquetón; 231 × 140 | BE2400179 | Sin los tres lados acreditados sobre la lona hecha. ; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 270 × 160 | BE2400248 | Sin los tres lados acreditados sobre la lona hecha. ; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 200 × 121 | BE2400535 | Sin los tres lados acreditados sobre la lona hecha. ; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 256 × 150 | BE2400605, BE2401103, BE2401106, BE2500714, BE2500748 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. OT/2024/BE2400605.dwg; OT/2024/BE2400605.xlsb; OT/2024/BE2401106.dwg; OT/2024/BE2401106.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 232 × 136 | BE2400632 | Sin los tres lados acreditados sobre la lona hecha. ; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 200 × 119 | BE2400651 | Sin los tres lados acreditados sobre la lona hecha. ; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 178 × 118 | BE2400658 | Sin los tres lados acreditados sobre la lona hecha. ; escaneo RPS localizado (detalle en evidencias.json) |
@@ -1331,7 +1460,6 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 226 × 132 | 2,5; 34,5; 66,5; 98,5; 130,5 | 2,5; 34,5; 66,5; 98,5; 130,5 | 2,5; 34,2; 65,9; 97,6; 129,4; 161,1; 192,8; 224,5 |  AR2501979; OT/2025/AR2501979.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501979. |
 | lona; 226 × 140 | 2,5; 36,5; 70,5; 104,5; 138,5 | 2,5; 36,5; 70,5; 104,5; 138,5 | 2,5; 34,2; 65,9; 97,6; 129,4; 161,1; 192,8; 224,5 |  AR2505156; OT/2025/AR2505156-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2505156. |
 | lona; 248 × 141 | 2,5; 36,8; 71; 105,3; 139,5 | 2,5; 36,8; 71; 105,3; 139,5 | 2,5; 29,6; 56,7; 83,8; 110,9; 138,1; 165,2; 192,3; 219,4; 246,5 |  AR2403336; OT/2024/AR2403336.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2403336. |
-| lona; 251 × 136 | 12,5; 40,5; 68,5; 96,5; 124,5 | 12,5; 40,5; 68,5; 96,5; 124,5 | 20; 53; 86,1; 119,1; 152,1; 185,2; 218,2; 242 |  AR2406576; OT/2024/AR2406576.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2406576. |
 | lona; 255 × 160 | 2,5; 33,7; 64,9; 96,1; 127,3; 158,5 | 2,5; 33,7; 64,9; 96,1; 127,3; 158,5 | 2,5; 33,9; 65,3; 96,6; 128; 159,4; 190,8; 222,1; 253,5 |  AR2406566; OT/2024/AR2406566.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2406566. |
 | lona; 255 × 163 | 2,5; 34,3; 66,1; 97,9; 129,7; 161,5 | 2,5; 34,3; 66,1; 97,9; 129,7; 161,5 | 2,5; 33,9; 65,2; 96,6; 128; 159,4; 190,7; 222,1; 253,5 |  AR2405583; OT/2024/AR2405583-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405583. |
 | lona; 257 × 168 | 2,5; 35,3; 68,1; 100,9; 133,7; 166,5 | 2,5; 35,3; 68,1; 100,9; 133,7; 166,5 | 2,5; 34,1; 65,7; 97,4; 129; 160,6; 192,2; 223,9; 255,5 |  AR2405583; OT/2024/AR2405583-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405583. |
@@ -1340,11 +1468,18 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 305 × 171 | 2,5; 33,3; 59,7; 86; 112,3; 138,7; 169,5 | 2,5; 33,3; 59,7; 86; 112,3; 138,7; 169,5 | 2,5; 31,9; 58,8; 85,7; 112,6; 139,5; 166,5; 193,4; 220,3; 247,2; 274,1; 303,5 |  AR2401918; OT/2024/AR2401918.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401918. |
 | lona; 307 × 182 | 2,5; 38,1; 73,7; 109,3; 144,9; 180,5 | 2,5; 38,1; 73,7; 109,3; 144,9; 180,5 | 2,5; 36,2; 69,8; 103,5; 137,2; 170,8; 204,5; 238,2; 271,8; 305,5 |  AR2502782; OT/2025/AR2502782.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2502782. |
 
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 251 × 136 | AR2406576 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+
 Referencias que quedan fuera de las medidas automáticas:
 
 | Tipo y medida del histórico | Pedidos | Motivo y fuentes |
 | --- | --- | --- |
 | Ganado; 303 × 161 | AR2405583 | Modelo de ganado; fuera de FichaCliente. OT/2024/AR2405583-10.xlsb; OT/2024/AR2405583-11.xlsb; OT/2024/AR2405583.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 251 × 136 | AR2406576 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. OT/2024/AR2406576.dwg; OT/2024/AR2406576.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Ganado; 301 × 161 | AR2505156, AR2601490, AR2603339 | Modelo de ganado; fuera de FichaCliente. OT/2025/AR2505156-10.xlsb; OT/2025/AR2505156-11.xlsb; OT/2025/AR2505156.dwg; OT/2026/AR2601490.dwg; OT/2026/AR2601490.xlsb; OT/2026/AR2603339.dwg; OT/2026/AR2603339.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 226 × 136 | AR2601490 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2601490.dwg; OT/2026/AR2601490.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 250 × 151 | AR2602796 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2602796.dwg; OT/2026/AR2602796.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
@@ -1434,6 +1569,8 @@ Código acreditado por histórico (AR2604112). Nombres/alias conocidos: CARMA ·
 
 Plantillas encontradas: `PL/(CARMA) CARLOS LOPEZ LEIRO.dwg`
 
+CARMA 206×129,5, AR2401161: se retira. Las filas activas 26/27/28 del Excel producen 6/4/4 ollaos y puntas centradas a 17,75/16,35 cm; el DWG acredita 7/5/5 y puntas de 2,5 cm. El ancho hecho también difiere (130,5 frente a 130). No se mezclan filas manuales inactivas con el dibujo para fabricar una medida. Las medidas vigentes 206×130 y 230×150 se conservan.
+
 Reglas añadidas a la propuesta: `bastillaEnfundar` = false; `ventana` = {"lleva":false}.
 
 Campos vigentes que se respetan: `perfil` = {"tipoPerfil":"TIPO 05","radioEsquina":8.1}; `recogeAtras` = "GOMA"; `recogeDelante` = "NO"; `ollaosRepartidos` = true.
@@ -1469,7 +1606,6 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 159,5 × 114 | 2,5; 39,2; 75,8; 112,5 | 2,5; 39,2; 75,8; 112,5 | 2,5; 33,6; 64,7; 95,8; 126,9; 158 |  AR2505766; OT/2025/AR2505766.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2505766. |
 | lona; 160 × 120 | 2,5; 31,5; 60,5; 89,5; 118,5 | 2,5; 31,5; 60,5; 89,5; 118,5 | 2,5; 33,7; 64,9; 96,1; 127,3; 158,5 |  AR2500677; OT/2025/AR2500677.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2500677 / 1 pedido(s): AR2401269. |
 | lona; 160 × 121 | 2,5; 31,8; 61; 90,3; 119,5 | 2,5; 31,8; 61; 90,3; 119,5 | 2,5; 33,7; 64,9; 96,1; 127,3; 158,5 |  AR2600105; OT/2026/AR2600105-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600105. |
-| lona; 160 × 125 | 2,5; 21; 36; 63; 90; 105; 123,5 | 2,5; 42,8; 83,2; 123,5 | 22; 61; 100; 139 |  AR2602203; OT/2026/AR2602203.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2602203. |
 | lona; 175 × 110 | 2,5; 37,8; 73,2; 108,5 | 2,5; 37,8; 73,2; 108,5 | 2,5; 36,9; 70,9; 105,1; 139,3; 173,5 |  AR2600105; OT/2026/AR2600105.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600105. |
 | lona; 175 × 117 | 2,5; 40,2; 77,8; 115,5 | 2,5; 40,2; 77,8; 115,5 | 2,5; 36,9; 70,9; 105,1; 139,3; 173,5 |  AR2604070; OT/2026/AR2604070.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2604070. |
 | lona; 179,5 × 127,5 | 2,5; 33,4; 64,3; 95,1; 126 | 2,5; 33,4; 64,3; 95,1; 126 | 2,5; 37,6; 72,7; 107,8; 142,9; 178 |  AR2501645; OT/2025/AR2501645.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501645. |
@@ -1477,23 +1613,32 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 205 × 125 | 2,5; 30; 40; 63; 86; 96; 123,5 | 2,5; 31,7; 63; 94,2; 123,5 | 2,5; 36,7; 69,3; 103; 136,7; 170,3; 203,5 |  AR2402410; OT/2024/AR2402410.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402410. |
 | lona; 205 × 128 | 2,5; 43,8; 85,2; 126,5 | 2,5; 43,8; 85,2; 126,5 | 2,5; 42,7; 82,9; 123,1; 163,3; 203,5 |  AR2602496; OT/2026/AR2602496.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2602496. |
 | lona; 205 × 130 | 2,5; 34; 65,5; 97; 128,5 | 2,5; 34; 65,5; 97; 128,5 | 2,5; 36; 69,5; 103; 136,5; 170; 203,5 |  AR2505195; OT/2025/AR2505195.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2505195. |
-| lona; 206 × 129,5 | 16,35; 48,95; 81,55; 114,15 | 16,35; 48,95; 81,55; 114,15 | 17,75; 52,05; 86,35; 120,65; 154,95; 189,25 |  AR2401161; OT/2024/AR2401161.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401161. |
 | lona; 209 × 119,5 | 2,5; 31,4; 60,2; 89,1; 118 | 2,5; 31,4; 60,2; 89,1; 118 | 2,5; 32,8; 61,1; 90,4; 119,6; 148,9; 178,2; 207,5 |  AR2405480; OT/2024/AR2405480.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2405175, AR2405480. |
-| lona; 210 × 130 | 2,5; 34; 65,5; 97; 128,5 | 2,5; 34; 65,5; 97; 128,5 | 2,5; 31,9; 61,4; 90,8; 120,2; 149,6; 179,1; 208,5 |  AR2605000; OT/2026/AR2605000.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2605000. |
 | lona; 217,5 × 115,5 | 2,5; 39,7; 76,7; 114 | 2,5; 39,7; 76,7; 114 | 2,5; 38,1; 73,7; 109,3; 144,8; 180,4; 216 |  AR2401743; OT/2024/AR2401743.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401743. |
 | lona; 219,5 × 128 | 2,5; 46; 83; 126,5 | 2,5; 46; 83; 126,5 | 2,5; 36,8; 73,5; 110,3; 147; 183,8; 218 |  AR2604026; OT/2026/AR2604026.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2604026. |
 | lona; 220 × 129,5 | 2,5; 41,8; 83,6; 128 | 2,5; 41,8; 83,6; 128 | 2,5; 38,5; 74,5; 110,5; 146,5; 182,5; 218,5 |  AR2401823; OT/2024/AR2401823.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401823. |
 | lona; 249,5 × 149 | 2,5; 38,8; 75; 111,3; 147,5 | 2,5; 38,8; 75; 111,3; 147,5 | 2,5; 37,6; 72,6; 107,7; 142,8; 177,9; 212,9; 248 |  AR2504484; OT/2025/AR2504484.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2504484. |
 | lona; 250 × 151 | 2,5; 39,3; 76; 112,8; 149,5 | 2,5; 39,3; 76; 112,8; 149,5 | 2,5; 33,3; 64; 94,8; 125,5; 156,3; 187; 217,8; 248,5 |  AR2600683; OT/2026/AR2600683.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600683. |
-| lona; 250 × 180 | 20,1; 55,3; 90,5; 125,7; 160,9 | 20,1; 55,3; 90,5; 125,7; 160,9 | 20,05; 55,25; 90,35; 125,55; 160,65; 195,85; 230,95 |  AR2400754; OT/2024/AR2400754.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2400754. |
+
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 160 × 125 | AR2602203 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| lona; 206 × 129,5 | AR2401161 | CARMA AR2401161: el resultado activo del Excel tiene 6/4/4 ollaos, frente a 7/5/5 y puntas de 2,5 cm del DWG; además difiere el ancho hecho (130,5 frente a 130). No se mezcla ninguna de las versiones. |
+| lona; 210 × 130 | AR2605000 | No se acredita la longitud hecha de los tres lados; no se suple con largo/ancho del remolque. |
+| lona; 250 × 180 | AR2400754 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
 
 Referencias que quedan fuera de las medidas automáticas:
 
 | Tipo y medida del histórico | Pedidos | Motivo y fuentes |
 | --- | --- | --- |
+| Lona alta; 250 × 180 | AR2400754 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. OT/2024/AR2400754.dwg; OT/2024/AR2400754.xlsb |
+| Lona alta; 206 × 129,5 | AR2401161 | CARMA AR2401161: el resultado activo del Excel tiene 6/4/4 ollaos, frente a 7/5/5 y puntas de 2,5 cm del DWG; además difiere el ancho hecho (130,5 frente a 130). No se mezcla ninguna de las versiones. OT/2024/AR2401161.dwg; OT/2024/AR2401161.xlsb |
 | Lona alta; 205,5 × 129,5 | AR2402907 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2402907-10.xlsb; OT/2024/AR2402907-11.xlsb; OT/2024/AR2402907.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 204 × 128 | AR2404280 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2404280-10.xlsb; OT/2024/AR2404280-11.xlsb; OT/2024/AR2404280.dwg; OT/2024/AR2404280-10.xlsb; OT/2024/AR2404280-11.xlsb; OT/2024/AR2404280.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Ganado; 330 × 156 | AR2505484 | Modelo de ganado; fuera de FichaCliente. ; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 160 × 125 | AR2602203 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2026/AR2602203.dwg; OT/2026/AR2602203.xlsb |
 
 ### CANO MUÑOZ S.L.U. — 030179
 
@@ -1503,11 +1648,11 @@ Código acreditado por histórico (AR2604501). Nombres/alias conocidos: CANO MU�
 
 Plantillas encontradas: `PL/CALCULOS EXCEL2/CALCULOS REMOLQUES/CANO MUÑOZ.xls`; `PL/CANO MUÑOZ(METALCAR)/CANO BAQUETON.xls`; `PL/CANO MUÑOZ(METALCAR)/Copia de CANO BAQUETON.xls`; `PL/CANO MUÑOZ(METALCAR)/REMOLQUES CANO(METALURGIA Y CARROCERIAS).dwg`; `PL/CALCULOS REMOLQUES/CANO MUÑOZ.xls`
 
-CANO MUÑOZ S.L.U. y CANO MUÑOZ, FRANCISCO tienen códigos diferentes (030179 y 045288). Se conserva cada identidad y la ficha vigente de la sociedad; no se fusionan sus códigos por el apellido.
+AR2604501 pertenece a CANO MUÑOZ S.L.U. (030179), aunque Francisco Cano firme el correo. El escaneo RPS/2026/AR.26.04501.pdf dice 253×152×109 +16 y cremallera grande; la anotación manuscrita precisa «cremallera de 9 de soldar».
 
-Las notas de CANO sobre medidas acabadas, holgura aportada por el cliente y +0,5 cm de baquetón se documentan como revisión de demasías, sin sobrescribir parámetros vigentes.
+Son dimensiones del remolque y aguas aparte. El DWG acredita altura 125=109+16, largo hecho 254 y cabeza hecha 153. Se añade cremallera=true (del 9) y su observación; se conserva el perfil vigente y recogeAtras=CREMALLERA. No se registran extras de baquetón inciertos ni se inventa un campo de altura.
 
-Reglas añadidas a la propuesta: `ollaosRepartidos` = true; `rotulacion` = true.
+Reglas añadidas a la propuesta: `ollaosRepartidos` = true; `rotulacion` = true; `cremallera` = true; `observaciones` = ["CREMALLERA TRASERA DEL 9 DE SOLDAR"].
 
 Campos vigentes que se respetan: `perfil` = {"tipoPerfil":"TIPO 03","aguas":16,"radioCumbrera":11,"radioHombro":9.2}; `recogeDelante` = "NO"; `recogeAtras` = "CREMALLERA"; `bastillaEnfundar` = false; `ventana` = {"lleva":false}.
 
@@ -1548,7 +1693,7 @@ Referencias que quedan fuera de las medidas automáticas:
 | Baquetón; 221 × 151 | AR2603765 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2603765.dwg; OT/2026/AR2603765.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 223 × 152 | AR2603765 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2603765.dwg; OT/2026/AR2603765.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 
-**Duda para Iván:** Confirmar las demasías del baquetón con la nota de CANO: la ficha de esta sociedad se conserva sin reemplazarla por las reglas inferidas de la cuenta personal 045288.
+**Duda para Iván:** Las demasías de baquetón no están acreditadas: no se registran. Las medidas del remolque, aguas aparte y cremallera trasera del 9 de soldar quedan resueltas por AR2604501.
 
 ### CARBAJO CARBAJO, ELISEO — 052321
 
@@ -1583,13 +1728,25 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 201 × 131 | 17; 49; 83; 115 | 17; 49; 83; 115 | 20; 53,4; 84,8; 117,2; 149,6; 182 |  AR2600667; OT/2026/AR2600667.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2600667 / 1 pedido(s): AR2504812 / 1 pedido(s): AR2503552 / 1 pedido(s): AR2502729. |
 | lona; 201 × 141 | 17; 44; 71; 98; 125 | 17; 44; 71; 98; 125 | 13,5; 48,5; 83,5; 118,5; 153,5; 188,5 |  AR2600931; OT/2026/AR2600931.xlsm / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600931. |
 | lona; 236 × 150 | 10; 53; 98; 141 | 10; 53; 98; 141 | 15; 50; 95; 142; 187; 222 |  AR2502010; OT/2025/AR2502010.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2502010. |
-| lona; 251 × 141 | 17; 44; 71; 98; 125 | 17; 44; 71; 98; 125 | 13,5; 45,5; 77,5; 109,5; 141; 173,5; 205,5; 237,5 |  AR2600066; OT/2026/AR2600066-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2600066 / 1 pedido(s): AR2502729. |
 | lona; 251 × 171 | 15,5; 43,7; 71,9; 100,1; 128,3; 156,5 | 15,5; 43,7; 71,9; 100,1; 128,3; 156,5 | 17; 48,1; 79,3; 110; 141,6; 172,7; 203,9; 235 |  AR2602232; OT/2026/AR2602232.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2602232 / 1 pedido(s): AR2502212. |
 | lona; 251 × 178 | 19; 47; 75; 104; 132; 160 | 19; 47; 75; 104; 132; 160 | 17; 48; 79; 110; 142; 173; 204; 235 |  AR2502729; OT/2025/AR2502729-12.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2502729. |
-| lona; 302 × 151 | 16; 46; 76; 106; 136 | 16; 46; 76; 106; 136 | 11,5; 46,5; 81,5; 116,5; 151,5; 186,5; 221,5; 256,5; 291,5 |  AR2600066; OT/2026/AR2600066.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600066. |
 | lona; 303 × 167 | 6,5; 37,5; 68,5; 99,5; 130,5; 161,5 | 6,5; 37,5; 68,5; 99,5; 130,5; 161,5 | 17; 47; 77; 107; 137; 167; 197; 227; 257; 287 |  AR2503552; OT/2025/AR2503552-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503552. |
 | lona; 318 × 182 | 4; 31; 61; 91,5; 122; 152; 179 | 4; 31; 61; 91,5; 122; 152; 179 | 8; 38; 68; 98; 128; 159,5; 191; 221; 281; 311 |  AR2505566; OT/2025/AR2505566.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2505566. |
 | lona; 401 × 166 | 14; 48,8; 83,5; 118,3; 153 | 14; 48,8; 83,5; 118,3; 153 | 16,5; 53,4; 90,3; 127,2; 164,1; 201; 237,9; 274,8; 311,7; 348,6; 385,5 |  AR2600596; OT/2026/AR2600596.xlsb / LONA REMOLQUE 0225173, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600596. |
+
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 251 × 141 | AR2600066 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| lona; 302 × 151 | AR2600066 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Lona alta; 251 × 141 | AR2502729, AR2600066 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2025/AR2502729-11.xlsb; OT/2025/AR2502729-12.xlsb; OT/2025/AR2502729.dwg; OT/2025/AR2502729.xlsb; OT/2026/AR2600066-11.xlsb; OT/2026/AR2600066.dwg; OT/2026/AR2600066.xlsb |
+| Lona alta; 302 × 151 | AR2600066 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2026/AR2600066-11.xlsb; OT/2026/AR2600066.dwg; OT/2026/AR2600066.xlsb |
 
 ### CARROCERIAS VALLEJO, S.A. — 032353
 
@@ -1673,7 +1830,6 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | --- | --- | --- | --- | --- |
 | baqueton; 120 × 102 | 2,5; 35,2; 67,8; 100,5 | 2,5; 35,2; 67,8; 100,5 | 2,5; 31,5; 60,5; 89,5; 118,5 |  AR2500429; OT/2025/AR2500429-12.xlsb / BAQUETÓN, filas 33/34/35, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500429. |
 | baqueton; 160 × 102 | 2,5; 35,2; 67,8; 100,5 | 2,5; 35,2; 67,8; 100,5 | 2,5; 33,7; 64,9; 96,1; 127,3; 158,5 |  AR2505996; OT/2025/AR2505996.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2505996. |
-| baqueton; 160 × 107 | 37,7; 70,3 | 37,7; 70,3 | 33,7; 64,9; 96,1; 127,3 |  AR2601052; OT/2026/AR2601052.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2601052. |
 | baqueton; 185 × 110 | 2,5; 31,7; 73,2; 108,5 | 2,5; 37,8; 73,2; 108,5 | 2,5; 32,7; 62,8; 93; 123,2; 153,3; 183,5 |  AR2500429; OT/2025/AR2500429-11.xlsb / BAQUETÓN, filas 33/34/35, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500429. |
 | baqueton; 185 × 115 | 2,5; 39,4; 76,5; 113,5 | 2,5; 39,4; 76,5; 113,5 | 2,5; 32,7; 62,8; 93; 123,2; 153,3; 183,5 |  AR2505947; OT/2025/AR2505947.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2505947. |
 | baqueton; 205 × 136 | 2,5; 35,5; 68,5; 101,5; 134,5 | 2,5; 35,5; 68,5; 101,5; 134,5 | 2,5; 36; 69,5; 103; 136,5; 170; 203,5 |  AR2600093; OT/2026/AR2600093.xlsb / BAQUETÓN, filas 38/39/40, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2600093 / 1 pedido(s): AR2500429. |
@@ -1681,10 +1837,17 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 205 × 136 | 2,5; 35,5; 68,5; 101,5; 134,5 | 2,5; 35,5; 68,5; 101,5; 134,5 | 2,5; 36; 69,5; 103; 136,5; 170; 203,5 |  AR2600093; OT/2026/AR2600093.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2502675, AR2600093. |
 | lona; 211 × 136 | 2,5; 29; 55,5; 81,5; 108; 134,5 | 2,5; 29; 55,5; 81,5; 108; 134,5 | 2,5; 28,5; 54,5; 80; 106; 132; 158; 183,5; 209,5 |  AR2404011; OT/2024/AR2404011.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404011. |
 
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| baqueton; 160 × 107 | AR2601052 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+
 Referencias que quedan fuera de las medidas automáticas:
 
 | Tipo y medida del histórico | Pedidos | Motivo y fuentes |
 | --- | --- | --- |
+| Baquetón; 160 × 107 | AR2601052 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2026/AR2601052.dwg; OT/2026/AR2601052.xlsb |
 | Lona alta; 160 × 108 | AR2602714 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2602714.dwg; OT/2026/AR2602714.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 
 ### ANTIGUO COBELO · VAZQUEZ BARREIRO, JAVIER — 042623
@@ -1717,14 +1880,20 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | --- | --- | --- | --- | --- |
 | lona; 200 × 130 | 7; 39,3; 65,5; 91,7; 124 | 7; 39,3; 65,5; 91,7; 124 | 2,5; 10; 36,1; 68,3; 100,5; 132,7; 164,9; 194 |  AR2404578; OT/2024/AR2404578.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2404578 / 1 pedido(s): AR2400848. |
 | lona; 230 × 130 | 7; 39,3; 65,5; 91,7; 124 | 7; 39,3; 65,5; 91,7; 124 | 2,5; 10; 43,3; 72,2; 101,1; 129,9; 158,8; 187,7; 224 |  AR2504171; OT/2025/AR2504171-12.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2504171. |
-| lona; 250 × 159 | 7; 48; 80; 112; 144 | 7; 48; 80; 112; 144 | 2,5; 10; 35,1; 65,2; 95,4; 125,5; 155,6; 185,8; 215,9; 244 |  AR2504171; OT/2025/AR2504171-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2504171. |
 | lona; 260 × 140 | 7; 36,5; 70,5; 104,5; 134 | 7; 36,5; 70,5; 104,5; 134 | 2,5; 10; 43,5; 72,5; 101,5; 130,5; 159,5; 188,5; 217,5; 254 |  AR2504171; OT/2025/AR2504171.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2504171. |
 | lona; 270 × 150 | 7; 45,5; 75,5; 105,5; 144 | 5; 38; 88; 113,5; 146 | 2,5; 10; 41; 68; 95; 122; 149; 176; 203; 230; 264 |  AR2400848; OT/2024/AR2400848-2.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2400848. |
+
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 250 × 159 | AR2504171 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
 
 Referencias que quedan fuera de las medidas automáticas:
 
 | Tipo y medida del histórico | Pedidos | Motivo y fuentes |
 | --- | --- | --- |
+| Lona alta; 250 × 159 | AR2504171 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2025/AR2504171-11.xlsb; OT/2025/AR2504171-12.xlsb; OT/2025/AR2504171.dwg; OT/2025/AR2504171.xlsb |
 | Lona alta; 250 × 140 | SA2400675, SA2500879, SA2500880, SA2500901, SA2500902 | Sin los tres lados acreditados sobre la lona hecha. ; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 215 × 130 | SA2500878 | Sin los tres lados acreditados sobre la lona hecha. ; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 230 × 153 | SA2500900 | Sin los tres lados acreditados sobre la lona hecha. ; escaneo RPS localizado (detalle en evidencias.json) |
@@ -1762,19 +1931,26 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
 | --- | --- | --- | --- | --- |
 | baqueton; 181 × 131 | 18; 50; 82; 114 | 18; 50; 82; 114 | 15,95; 45,95; 75,95; 105,95; 135,95; 166,05 |  AR2401300; OT/2024/AR2401300.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401300. |
-| baqueton; 201 × 131 | 18; 50; 82; 114 | 18; 50; 82; 114 | 33,5; 60,5; 87,5; 114,5; 141,5; 168,5 |  AR2404797; OT/2024/AR2404797.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404797 / 1 pedido(s): AR2404797. |
 | lona; 141 × 111 | 2,5; 15,5; 42,5; 69,5; 96,5; 109,5 | 2,5; 15,5; 42,5; 69,5; 96,5; 109,5 | 2,5; 16; 43,5; 71; 98,5; 126; 139,5 |  AR2501069; OT/2025/AR2501069.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2501069 / 1 pedido(s): AR2401300. |
-| lona; 161 × 121 | 17; 46; 75; 105 | 17; 46; 75; 105 | 16; 42; 68; 94; 120; 146 |  AR2405908; OT/2024/AR2405908.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405908. |
-| lona; 181 × 131 | 17; 49,7; 82,3; 115 | 17; 49,7; 82,3; 115 | 16; 46; 76; 106; 136; 166 |  AR2404797; OT/2024/AR2404797-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2404797 / 1 pedido(s): AR2404498 / 1 pedido(s): AR2400496. |
+| lona; 181 × 131 | 18; 50; 82; 114 | 18; 50; 82; 114 | 16; 46; 76; 106; 136; 166 |  AR2404498; OT/2024/AR2404498.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404498. |
 | lona; 201 × 131 | 17; 49,7; 82,3; 115 | 17; 49,7; 82,3; 115 | 20; 52; 84,5; 117; 149,5; 182 |  AR2402604; OT/2024/AR2402604-1.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2402604 / 1 pedido(s): AR2400097. |
 | lona; 251 × 131 | 17; 49; 83; 115 | 17; 49; 83; 115 | 13,5; 46,5; 78,5; 110,5; 142,5; 174,5; 206,5; 238,5 |  AR2405968; OT/2024/AR2405968.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405968. |
-| lona; 251 × 141 | 17; 44; 98; 125 | 17; 44; 98; 125 | 14; 46; 78; 110; 142; 174; 206; 238 |  AR2404797; OT/2024/AR2404797-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2404797 / 1 pedido(s): AR2400496. |
+| lona; 251 × 141 | 2,5; 17; 44; 71; 98; 125; 139,5 | 2,5; 17; 44; 71; 98; 125; 139,5 | 14; 46; 78; 110; 142; 174; 206; 238 |  AR2400496; OT/2024/AR2400496.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2400496. |
+
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| baqueton; 201 × 131 | AR2404797 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| lona; 161 × 121 | AR2405908 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
 
 Referencias que quedan fuera de las medidas automáticas:
 
 | Tipo y medida del histórico | Pedidos | Motivo y fuentes |
 | --- | --- | --- |
 | Baquetón; 232 × 155 | AR2402604 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2402604-1.xlsb; OT/2024/AR2402604-2.xlsb; OT/2024/AR2402604.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Baquetón; 201 × 131 | AR2404797 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2404797-10.xlsb; OT/2024/AR2404797-11.xlsb; OT/2024/AR2404797.dwg; OT/2024/AR2404797.xlsb |
+| Lona alta; 161 × 121 | AR2405908 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2405908.dwg; OT/2024/AR2405908.xlsb |
 
 ### REMOLQUES CAREDU · INDUVEC, S.L. — 000530
 
@@ -1814,12 +1990,18 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 220 × 130 | 2,5; 34; 65,5; 97; 128,5 | 2,5; 34; 65,5; 97; 128,5 | 2,5; 38,5; 74,5; 110,5; 146,5; 182,5; 218,5 |  AR2600858; OT/2026/AR2600858.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600858. |
 | lona; 225 × 128 | 2,5; 33,5; 64,5; 95,5; 126,5 | 2,5; 33,5; 64,5; 95,5; 126,5 | 2,5; 39,9; 76,2; 113; 149,8; 186,7; 223,5 |  AR2401285; OT/2024/AR2401285.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401285. |
 | lona; 225 × 135 | 2,5; 36,5; 68; 99; 133,5 | 2,5; 36,5; 68; 99; 133,5 | 2,5; 35,9; 66,7; 97,6; 128,4; 159,3; 190,1; 223,5 |  AR2403147; OT/2024/AR2403147.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2403147. |
-| lona; 287 × 176 | 2,5; 45,5; 88,5; 131,5; 174,5 | 2,5; 45,5; 88,5; 131,5; 174,5 | 22,7; 63,2; 103,6; 144; 184,4; 224,9; 265,3 |  AR2401084; OT/2024/AR2401084-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401084. |
+
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 287 × 176 | AR2401084 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
 
 Referencias que quedan fuera de las medidas automáticas:
 
 | Tipo y medida del histórico | Pedidos | Motivo y fuentes |
 | --- | --- | --- |
+| Lona alta; 287 × 176 | AR2401084 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2401084-10.xlsb; OT/2024/AR2401084.dwg |
 | Lona alta; 169 × 118 | AR2503848 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2503848.dwg; OT/2025/AR2503848.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 
 ### TALLERES GONZALO · FERRODEZA, S. L. — 016533
@@ -1876,7 +2058,7 @@ Código acreditado por GET RPS pedido (AR2506256). Nombres/alias conocidos: J. C
 
 Plantillas encontradas: `PL/J.CARBALLO.dwg`
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -1903,12 +2085,18 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 261,5 × 141 | 2,5; 36,8; 71; 105,3; 139,5 | 2,5; 36,8; 71; 105,3; 139,5 | 2,5; 34,7; 66,9; 99,1; 131,3; 163,4; 195,6; 227,8; 260 |  AR2503850; OT/2025/AR2503850.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503850. |
 | lona; 261 × 141 | 2,5; 36,8; 71; 105,3; 139,5 | 2,5; 36,8; 71; 105,3; 139,5 | 2,5; 34,6; 66,8; 98,9; 131; 163,1; 195,3; 227,4; 259,5 |  AR2406953; OT/2024/AR2406953.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2406953. |
 | lona; 267,5 × 169,5 | 2,5; 35,5; 68,5; 102; 135; 168 | 2,5; 35,5; 68,5; 102; 135; 168 | 2,5; 35,5; 68,5; 101,5; 134,5; 167; 200; 233; 266 |  AR2400134; OT/2024/AR2400134.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2400134. |
-| lona; 363 × 209 | 2,5; 36,5; 71; 105; 139; 173,5; 207,5 | 2,5; 36,5; 71; 105; 139; 173,5; 207,5 | 2,5; 38,5; 74,5; 110; 146; 182; 218; 254; 289,5; 325,5; 361,5 |  AR2403990; OT/2024/AR2403990.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2403990. |
+
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 363 × 209 | AR2403990 | El resultado guardado no coincide con las listas manuales que indica el modo seleccionado. |
 
 Referencias que quedan fuera de las medidas automáticas:
 
 | Tipo y medida del histórico | Pedidos | Motivo y fuentes |
 | --- | --- | --- |
+| Lona alta; 363 × 209 | AR2403990 | El resultado guardado no coincide con las listas manuales que indica el modo seleccionado. OT/2024/AR2403990.dwg; OT/2024/AR2403990.xlsb; OT/2024/AR2403990.dwg; OT/2024/AR2403990.xlsb |
 | Lona alta; 261 × 132 | AR2405249 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2405249.dwg; OT/2024/AR2405249.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 161 × 121 | AR2405289 | Sin los tres lados acreditados sobre la lona hecha. OT/2024/AR2405289.dwg; OT/2024/AR2405289.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 
@@ -1940,7 +2128,6 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 | Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
 | --- | --- | --- | --- | --- |
-| baqueton; 153 × 120 | 2,5; 41; 80; 118,5 | 2,5; 41; 80; 118,5 | 2,5; 32,5; 62; 92; 121,5; 151,5 |  AR2605071; OT/2026/AR2605071.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2605071. |
 | baqueton; 200 × 132 | 2,5; 34,5; 66,5; 98,5; 130,5 | 2,5; 34,5; 66,5; 98,5; 130,5 | 2,5; 35,2; 67,8; 100,5; 133,2; 165,8; 198,5 |  AR2600694; OT/2026/AR2600694-11.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600694. |
 | baqueton; 203 × 133 | 2,5; 34,8; 67; 99,3; 131,5 | 2,5; 34,8; 67; 99,3; 131,5 | 2,5; 35,7; 68,8; 102; 135,2; 168,3; 201,5 |  AR2502089; OT/2025/AR2502089.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2502089. |
 | baqueton; 222 × 152 | 2,5; 51,8; 101,2; 150,5 | 2,5; 51,8; 101,2; 150,5 | 2,5; 46,1; 90; 133,3; 176,9; 220,5 |  AR2600856; OT/2026/AR2600856.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600856. |
@@ -1948,13 +2135,20 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | lona; 250 × 165 | 5,2; 36,4; 67,6; 98,8; 120; 161,2 | 5,2; 36,4; 67,6; 98,8; 120; 161,2 | 2,5; 10; 38,9; 67,8; 96,6; 125,5; 154,5; 183,3; 212,1; 241; 248,5 |  AR2501494; OT/2025/AR2501494-11.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501494. |
 | lona; 300 × 150 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 31,7; 60,9; 90,1; 119,3; 148,5 | 2,5; 35,4; 68,3; 101,2; 134,1; 166,9; 199,8; 232,7; 265,6; 298,5 |  AR2505552; OT/2025/AR2505552.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2505552. |
 | lona; 302 × 152 | 2,5; 39,5; 76,5; 113,5; 150,5 | 2,5; 39,5; 76,5; 113,5; 150,5 | 2,5; 39,8; 77; 114,3; 151,5; 188,8; 226; 263,3; 300,5 |  AR2601328; OT/2026/AR2601328.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2601328. |
-| lona; 450 × 130 | 5; 35,3; 65,5; 95,8; 126 | 5; 35,3; 65,5; 95,8; 126 | 2,5; 10; 40,8; 71,6; 102,4; 133,1; 163,9; 194,7; 225,5; 256,3; 287,1; 317,9 |  AR2501494; OT/2025/AR2501494-10.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501494. |
+
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| baqueton; 153 × 120 | AR2605071 | No se acredita la longitud hecha de los tres lados; no se suple con largo/ancho del remolque. |
+| lona; 450 × 130 | AR2501494 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
 
 Referencias que quedan fuera de las medidas automáticas:
 
 | Tipo y medida del histórico | Pedidos | Motivo y fuentes |
 | --- | --- | --- |
 | Baquetón; 300 × 150 | AR2501494 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2501494-10.xlsb; OT/2025/AR2501494-11.xlsb; OT/2025/AR2501494-12.xlsb; OT/2025/AR2501494-13.xlsb; OT/2025/AR2501494.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 450 × 130 | AR2501494 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. OT/2025/AR2501494-10.xlsb; OT/2025/AR2501494-11.xlsb; OT/2025/AR2501494-12.xlsb; OT/2025/AR2501494-13.xlsb; OT/2025/AR2501494.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Baquetón; 200 × 140 | AR2501494 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2501494-10.xlsb; OT/2025/AR2501494-11.xlsb; OT/2025/AR2501494-12.xlsb; OT/2025/AR2501494-13.xlsb; OT/2025/AR2501494.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 
 ### CERRAJERIA MALDONADO / CAMACHO · CARROCERIAS Y REMOLQUES CAMACHO 1990 SL — 031580
@@ -1965,11 +2159,11 @@ Código acreditado por GET RPS pedido (AR2601661). Nombres/alias conocidos: CERR
 
 Plantillas encontradas: `PL/REMOLQUE MACHADO-CAMACHO (ANTIGUO MALDONADO).dwg`; `PL/CERRAJERIA MALDONADO.DWG`
 
-CERRAJERIA MALDONADO.DWG: normalmente azules, normalmente 10 cm de aguas (la propia plantilla pregunta si están incluidos), recogen con cremallera y ollaos repartidos.
+CAMACHO: los siete pedidos de lona del histórico tienen GOMA detrás en la hoja coincidente: AR2400971, AR2404719, AR2501350, AR2502234, AR2505086, AR2600337 y AR2601661. Se registra recogeAtras=GOMA conforme a la respuesta de Iván; la cremallera de la plantilla antigua no prevalece.
 
-Sus hojas del histórico registran GOMA detrás. Se conserva el reparto de la ficha vigente y se deja la recogida sin fijar, pendiente de aclarar la contradicción entre la plantilla y las hojas.
+Las otras dos líneas del histórico son baquetones, donde no se aplica recogida de lona. No se afirma que nueve líneas tengan GOMA. La inclusión de aguas en altura sigue sin respuesta y no se registra.
 
-Reglas añadidas a la propuesta: `bastillaEnfundar` = false.
+Reglas añadidas a la propuesta: `bastillaEnfundar` = false; `recogeAtras` = "GOMA".
 
 Campos vigentes que se respetan: `ollaosRepartidos` = true.
 
@@ -1994,14 +2188,14 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | baqueton; 208 × 138 | 2,5; 36; 69,5; 103; 136,5 | 2,5; 36; 69,5; 103; 136,5 | 2,5; 36,5; 70,5; 104,5; 138,5; 172,5; 206,5 |  AR2501350; OT/2025/AR2501350.xlsb / BAQUETÓN, filas 33/34/35, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501350. |
 | baqueton; 226 × 138 | 2,5; 36; 69,5; 103; 136,5 | 2,5; 36; 69,5; 103; 136,5 | 2,5; 34,2; 65,9; 97,6; 129,3; 161,1; 192,8; 224,5 |  AR2406943; OT/2024/AR2406943.xlsb / BAQUETÓN, filas 33/34/35, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2406943. |
 | lona; 144 × 113 | 2,5; 29,8; 57; 84,3; 111,5 | 2,5; 29,8; 57; 84,3; 111,5 | 2,5; 37,5; 72,5; 107,5; 142,5 |  AR2601661; OT/2026/AR2601661.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2601661. |
-| lona; 184 × 138 | 2,5; 36; 69,5; 103; 136,5 | 2,5; 36; 69,5; 103; 136,5 | 2,5; 38,5; 74,5; 110,5; 146,5; 182,5 |  AR2605297; OT/2026/AR2605297.pdf; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2605297 / 1 pedido(s): AR2400971. |
+| lona; 184 × 138 | 2,5; 34,8; 70,6; 105,4; 136,5 | 2,5; 34,8; 70,6; 105,4; 136,5 | 2,5; 34,1; 72,3; 109,5; 145,7; 182,5 |  AR2400971; OT/2024/AR2400971.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2400971. |
 | lona; 204 × 138 | 5; 37,3; 69,5; 101,8; 134 | 5; 37,3; 69,5; 101,8; 134 | 5; 37,5; 70; 102,5; 135; 167,5; 200 |  AR2404719; OT/2024/AR2404719.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404719. |
 | lona; 206 × 117 | 2,5; 40,2; 77,8; 115,5 | 2,5; 40,2; 77,8; 115,5 | 2,5; 36,2; 69,8; 103,5; 137,2; 170,8; 204,5 |  AR2600337; OT/2026/AR2600337.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600337. |
 | lona; 225 × 158 | 2,5; 33,3; 64,1; 94,9; 125,7; 156,5 | 2,5; 33,3; 64,1; 94,9; 125,7; 156,5 | 2,5; 34,07; 65,6; 97,2; 128,8; 160,4; 191,9; 223,5 |  AR2502234; OT/2025/AR2502234.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2502234. |
 | lona; 232 × 138 | 2,5; 36; 69,5; 103; 136,5 | 2,5; 36; 69,5; 103; 136,5 | 2,5; 35,1; 67,6; 100,2; 132,8; 165,4; 197,9; 230,5 |  AR2501350; OT/2025/AR2501350.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501350. |
 | lona; 255 × 138 | 2,5; 36; 69,5; 103; 136,5 | 2,5; 36; 69,5; 103; 136,5 | 2,5; 33,9; 65,3; 96,6; 128; 159,4; 190,8; 222,1; 253,5 |  AR2505086; OT/2025/AR2505086.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2505086. |
 
-**Duda para Iván:** ¿La recogida habitual actual de CAMACHO es cremallera, como dice la plantilla, o GOMA, como sus hojas del histórico? También falta aclarar si los 10 cm de aguas están incluidos en la altura.
+**Duda para Iván:** Sigue sin aclararse si los 10 cm de aguas están incluidos en la altura; no se registra esa regla. La recogida GOMA detrás queda resuelta por los siete pedidos aplicables de lona.
 
 ### INDUSTRIAS EDUARDO ROMAY, S. L. — 003491
 
@@ -2073,7 +2267,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 | Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
 | --- | --- | --- | --- | --- |
-| baqueton; 200 × 130 | 2,5; 34; 65,5; 97; 128,5 | 14,5; 48,5; 82,5; 116,5 | 2,5; 35,2; 67,8; 100,5; 133,2; 165,8; 198,5 |  AR2505976; OT/2025/AR2505976.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 5 pedido(s): AR2501115, AR2502308, AR2503493, AR2505046, AR2505976. |
+| baqueton; 200 × 130 | 2,5; 34; 65,5; 97; 128,5 | 14,5; 48,5; 82,5; 116,5 | 2,5; 35,2; 67,8; 100,5; 133,2; 165,8; 198,5 |  AR2505976; OT/2025/AR2505976.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 3 pedido(s): AR2503493, AR2505046, AR2505976. |
 | lona; 200 × 131 | 2,5; 34,3; 66; 97,8; 129,5 | 2,5; 34,3; 66; 97,8; 129,5 | 2,5; 35,2; 67,8; 100,5; 133,2; 165,8; 198,5 |  AR2501207; OT/2025/AR2501207.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501207. |
 | lona; 265 × 166 | 2,5; 34,9; 67,3; 99,7; 132,1; 164,5 | 2,5; 34,9; 67,3; 99,7; 132,1; 164,5 | 2,5; 35,1; 67,8; 100,4; 133; 165,6; 198,3; 230,9; 263,5 |  AR2406750; OT/2024/AR2406750.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2406750. |
 
@@ -2106,10 +2300,21 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
 | --- | --- | --- | --- | --- |
 | baqueton; 250 × 150 | 2,5; 39; 75,5; 112; 148,5 | 2,5; 39; 75,5; 112; 148,5 | 2,5; 43,5; 84,5; 125,5; 166,5; 207,5; 248,5 |  AR2601956; OT/2026/AR2601956.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2601956. |
-| lona; 200 × 150 | 2,5; 37,8; 75,6; 113,4; 148,5 | 2,5; 37,8; 75,6; 113,4; 148,5 | 2,5; 33,5; 67; 100,5; 134; 167,5; 198,5 |  AR2602277; OT/2026/AR2602277.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; más reciente sin mayoría clara. Variantes: 1 pedido(s): AR2602277 / 1 pedido(s): AR2602006. |
-| lona; 220 × 140 | 35,2; 70,5; 105,8 | 35,2; 70,5; 105,8 | 36,9; 73,7; 110,5; 147,3; 184,1 |  AR2600664; OT/2026/AR2600664.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600664. |
+| lona; 200 × 150 | 2,5; 37,8; 75,6; 113,4; 148,5 | 2,5; 37,8; 75,6; 113,4; 148,5 | 2,5; 33,5; 67; 100,5; 134; 167,5; 198,5 |  AR2602277; OT/2026/AR2602277.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2602277. |
 | lona; 250 × 130 | 2,5; 34; 65,5; 97; 128,5 | 2,5; 34; 65,5; 97; 128,5 | 2,5; 37,6; 72,8; 107,9; 143,1; 178,2; 213,4; 248,5 |  AR2601198; OT/2026/AR2601198.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2601198. |
 | lona; 250 × 150 | 2,5; 37,8; 75,6; 113,4; 148,5 | 2,5; 37,8; 75,6; 113,4; 148,5 | 2,5; 37,6; 72,8; 107,9; 143,1; 178,2; 213,3; 248,5 |  AR2603495; OT/2026/AR2603495.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 2 pedido(s): AR2603022, AR2603495. |
+
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 220 × 140 | AR2600664 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Lona alta; 220 × 140 | AR2600664 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. OT/2026/AR2600664.dwg; OT/2026/AR2600664.xlsb |
 
 ### TALLERES R.CASAL, S. L. , — 001138
 
@@ -2139,19 +2344,28 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 | Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
 | --- | --- | --- | --- | --- |
-| baqueton; 150 × 104 | 12; 38; 67; 93 | 12; 38; 67; 93 | 13,5; 41,5; 75,5; 109,5; 137,5 |  AR2405582; OT/2024/AR2405582.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405582. |
-| baqueton; 150 × 105 | 11,5; 38,5; 67,5; 94,5 | 11,5; 38,5; 67,5; 94,5 | 12,5; 41,5; 75,5; 109,5; 138,5 |  AR2502057; OT/2025/AR2502057.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2502057. |
 | baqueton; 160 × 120 | 2,5; 31,5; 60,5; 89,5; 118,5 | 2,5; 31,5; 60,5; 89,5; 118,5 | 2,5; 33,7; 64,9; 96,1; 127,3; 158,5 |  AR2503364; OT/2025/AR2503364.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503364. |
-| baqueton; 180 × 120 | 10,5; 35,5; 85,5; 110,5 | 10,5; 35,5; 85,5; 110,5 | 13; 46; 88; 131; 168 |  AR2604926; OT/2026/AR2604926.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2604926. |
-| baqueton; 260 × 150 | 14; 51; 100; 137,3 | 14; 51; 100; 137,3 | 12,5; 46,5; 88,5; 130,5; 172,5; 214,5; 248,5 |  AR2403829; OT/2024/AR2403829.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2403829. |
-| lona; 170 × 115 | 5; 40; 74; 111 | 24; 58; 90 | 2,5; 33; 66; 97; 130; 168,5 |  AR2502416; OT/2025/AR2502416.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2502416. |
 | lona; 174 × 116 | 2,5; 39; 78; 111 | 29; 58; 88 | 2,5; 31; 59; 88; 117; 145,5; 171 |  AR2504657; OT/2025/AR2504657.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2504657. |
+
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| baqueton; 150 × 104 | AR2405582 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| baqueton; 150 × 105 | AR2502057 | R. CASAL AR2401103: el croquis y los dos laterales de corte no coinciden. |
+| baqueton; 180 × 120 | AR2604926 | No se acredita la longitud hecha de los tres lados; no se suple con largo/ancho del remolque. |
+| baqueton; 260 × 150 | AR2403829 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| lona; 170 × 115 | AR2502416 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
 
 Referencias que quedan fuera de las medidas automáticas:
 
 | Tipo y medida del histórico | Pedidos | Motivo y fuentes |
 | --- | --- | --- |
+| Baquetón; 150 × 105 | AR2401103, AR2502057 | R. CASAL AR2401103: el croquis y los dos laterales de corte no coinciden. OT/2024/AR2401103-10.xlsb; OT/2024/AR2401103.dwg; OT/2025/AR2502057.dwg; OT/2025/AR2502057.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Baquetón; 260 × 150 | AR2403829 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2403829.dwg; OT/2024/AR2403829.xlsb |
+| Baquetón; 150 × 104 | AR2405582 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2405582.dwg; OT/2024/AR2405582.xlsb |
 | Lona alta; 160 × 120 | AR2501808 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2501808.dwg; OT/2025/AR2501808.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 170 × 115 | AR2502416 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2025/AR2502416.dwg; OT/2025/AR2502416.xlsb |
 
 **Duda para Iván:** AR2401103: el croquis escribe huecos laterales 12–28–35–35–28–12 y cabezas 12–26–30–26–12. Su DXF tiene dos laterales distintos (desde corte: 13–41–76–112–140 y 13–41–69–114–140). ¿Qué lado es el patrón? FichaCliente solo admite un reparto lateral común; no se mezcla el croquis con uno de los dos cortes para completar esta medida.
 
@@ -2163,7 +2377,7 @@ Código acreditado por GET RPS pedido (AR2401290). Nombres/alias conocidos: CONS
 
 Plantillas encontradas: `PL/LOUREIRO REIS.dwg`
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -2234,7 +2448,7 @@ Código acreditado por GET RPS pedido (AR2601463). Nombres/alias conocidos: REMO
 
 Plantillas encontradas: `PL/REMOLQUES HNOS.CERVERA.dwg`
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -2256,13 +2470,19 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | --- | --- | --- | --- | --- |
 | baqueton; 262 × 162 | 2,5; 34,1; 65,7; 97,3; 128,9; 160,5 | 2,5; 34,1; 65,7; 97,3; 128,9; 160,5 | 2,5; 34,8; 67; 99,3; 131,5; 163,8; 196; 228,3; 260,5 |  AR2503575; OT/2025/AR2503575.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2503575. |
 | lona; 220 × 125 | 2,5; 32,3; 63; 93,8; 123,5 | 2,5; 32,3; 63; 93,8; 123,5 | 2,5; 12,5; 37,8; 74,2; 110,5; 146,8; 183,2; 218,5 |  AR2600266; OT/2026/AR2600266.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600266. |
-| lona; 250 × 125 | 2,5; 32,8; 63; 93,3; 123,5 | 2,5; 32,8; 63; 93,3; 123,5 | 16,5; 47,6; 78,8; 109,9; 141,1; 172,2; 203,4; 234,5 |  AR2600800; OT/2026/AR2600800.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600800. |
+
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 250 × 125 | AR2600800 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
 
 Referencias que quedan fuera de las medidas automáticas:
 
 | Tipo y medida del histórico | Pedidos | Motivo y fuentes |
 | --- | --- | --- |
 | Baquetón; 264 × 142 | AR2600266 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2600266.dwg; OT/2026/AR2600266.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Lona alta; 250 × 125 | AR2600800 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2026/AR2600800.dwg; OT/2026/AR2600800.xlsb |
 | Ganado; 275 × 126 | AR2601463 | Modelo de ganado; fuera de FichaCliente. OT/2026/AR2601463.dwg; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 
 ### REMOLQUES JALON S.L — 048719
@@ -2273,7 +2493,7 @@ Código acreditado por GET RPS pedido (AR2602280). Nombres/alias conocidos: REMO
 
 Plantillas encontradas: `PL/JALON.dwg`
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -2287,13 +2507,19 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
 | --- | --- | --- | --- | --- |
 | baqueton; 159,5 × 117 | 7; 29; 59; 89; 111 | 7; 29; 59; 89; 111 | 10,5; 35,25; 65,25; 95,25; 125,25; 150 |  AR2602280; OT/2026/AR2602280-11.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2602280. |
-| baqueton; 241 × 136 | 5; 36,8; 68,5; 100,3; 132 | 5; 36,8; 68,5; 100,3; 132 | 12,5; 43,5; 74,5; 105,5; 136,5; 167,5; 198,5; 229,5 |  AR2504983; OT/2025/AR2504983.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2504983. |
+
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| baqueton; 241 × 136 | AR2504983 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
 
 Referencias que quedan fuera de las medidas automáticas:
 
 | Tipo y medida del histórico | Pedidos | Motivo y fuentes |
 | --- | --- | --- |
 | Lona alta; 211 × 136 | AR2504631 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2504631.dwg; OT/2025/AR2504631.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
+| Baquetón; 241 × 136 | AR2504631, AR2504983 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2025/AR2504631.dwg; OT/2025/AR2504631.xlsb; OT/2025/AR2504983.dwg; OT/2025/AR2504983.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 
 ### CERRAJERIA CERRI · FERNANDEZ MUNICIO, JUAN — 005734
 
@@ -2305,7 +2531,7 @@ Plantillas encontradas: `PL/JUAN FERNANDEZ.dwg`
 
 La plantilla JUAN FERNANDEZ.dwg cita AR1503345: el GET devuelve FERNANDEZ MUNICIO, JUAN, alias CERRAJERIA CERRI, código 005734. Se asocia este fichero; JUAN FERNANDEZ(CACERES).dwg sigue pendiente de identidad porque no se extiende la asociación solo por el nombre.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -2365,18 +2591,21 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 | --- | --- | --- | --- | --- |
 | lona; 180 × 110 | 2,5; 37,8; 73,2; 108,5 | 2,5; 37,8; 73,2; 108,5 | 2,5; 37,7; 72,9; 108,1; 143,3; 178,5 |  AR2501122; OT/2025/AR2501122.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501122. |
 | lona; 194 × 139 | 2,5; 33,7; 67,5; 101,2; 135 | 2,5; 33,7; 67,5; 101,2; 135 | 2,5; 34,2; 65,8; 97,5; 129,2; 160,8; 192,5 |  AR2600587; OT/2026/AR2600587.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2600587. |
-| lona; 200 × 130 | 10; 45; 86; 121 | 10; 45; 86; 121 | 10; 41; 81; 121; 161; 191 |  AR2605267; OT/2026/AR2605267.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2605267. |
 | lona; 201,5 × 121,5 | 10; 43; 78; 112,8 | 10; 43; 78; 112,8 | 10; 36; 79; 122; 165; 192,5 |  AR2401587; OT/2024/AR2401587.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2401587. |
+
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 200 × 130 | AR2605267 | No se acredita la longitud hecha de los tres lados; no se suple con largo/ancho del remolque. |
 
 ### TALLERES J. LEMA · TRANSFORMACIONES BERGANTIÑOS S.L — 046101
 
-Ficha: `talleres-j-lema-transformaciones-bergantinos-s-l`. Histórico: **3 líneas / 3 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `talleres-j-lema-transformaciones-bergantinos-s-l`. Histórico: **3 líneas / 3 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2600892). Nombres/alias conocidos: TALLERES J. LEMA · TRANSFORMACIONES BERGANTIÑOS S.L.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -2390,16 +2619,19 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA ALPHA 1L 580 :NARANJA RAL2004 :250 AN: 1 (AR2402627) |
 | modo | SEGUN SE INDICA: 1 (AR2402627) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 216 × 134,5 | 22; 68; 113 | 22,75; 67,75; 112,75 | 20,5; 56,5; 90,5; 126,5; 160,5; 196,5 |  AR2402627; OT/2024/AR2402627.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402627. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 216 × 134,5 | AR2402627 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
 
 Referencias que quedan fuera de las medidas automáticas:
 
 | Tipo y medida del histórico | Pedidos | Motivo y fuentes |
 | --- | --- | --- |
+| Lona alta; 216 × 134,5 | AR2402627 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/ar2402627.dwg; OT/2024/AR2402627.xlsb |
 | Lona alta; 160 × 120 | AR2503272 | Sin los tres lados acreditados sobre la lona hecha. OT/2025/AR2503272.dwg; OT/2025/AR2503272.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 | Lona alta; 176 × 111 | AR2600892 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2600892.dwg; OT/2026/AR2600892.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 
@@ -2411,7 +2643,7 @@ Código acreditado por GET RPS pedido (AR2506290). Nombres/alias conocidos: ALBA
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -2440,13 +2672,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### ALVARELLOS GARCIA, ADRIAN — 048310
 
-Ficha: `alvarellos-garcia-adrian`. Histórico: **2 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `alvarellos-garcia-adrian`. Histórico: **2 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2600084). Nombres/alias conocidos: ALVARELLOS GARCIA, ADRIAN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -2465,7 +2695,7 @@ Código acreditado por GET RPS pedido (AR2601802). Nombres/alias conocidos: BLAN
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -2488,7 +2718,7 @@ Código acreditado por GET RPS pedido (AR2603456). Nombres/alias conocidos: CANO
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -2511,13 +2741,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### CASAS FERRERO, IVAN — 037583
 
-Ficha: `casas-ferrero-ivan`. Histórico: **2 líneas / 2 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `casas-ferrero-ivan`. Histórico: **2 líneas / 2 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2500702). Nombres/alias conocidos: CASAS FERRERO, IVAN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -2536,7 +2764,7 @@ Código acreditado por GET RPS pedido (AR2505127). Nombres/alias conocidos: CORR
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -2566,13 +2794,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### FERREIRO CONDE, JESUS — 052333
 
-Ficha: `ferreiro-conde-jesus`. Histórico: **2 líneas / 2 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `ferreiro-conde-jesus`. Histórico: **2 líneas / 2 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2503766). Nombres/alias conocidos: FERREIRO CONDE, JESUS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -2585,13 +2811,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### FERROELEÑA S.L. — 053029
 
-Ficha: `ferroelena-s-l`. Histórico: **2 líneas / 2 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `ferroelena-s-l`. Histórico: **2 líneas / 2 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2505511). Nombres/alias conocidos: FERROELEÑA S.L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -2623,7 +2847,7 @@ Código acreditado por GET RPS pedido (AR2405410). Nombres/alias conocidos: GARC
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -2647,7 +2871,7 @@ Código acreditado por GET RPS pedido (AR2502616). Nombres/alias conocidos: LAGO
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -2671,13 +2895,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### ORGALES PEREZ, JUAN — 052733
 
-Ficha: `orgales-perez-juan`. Histórico: **2 líneas / 2 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `orgales-perez-juan`. Histórico: **2 líneas / 2 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2501012). Nombres/alias conocidos: ORGALES PEREZ, JUAN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -2696,7 +2918,7 @@ Código acreditado por GET RPS pedido (AR2601694). Nombres/alias conocidos: PERN
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -2731,7 +2953,7 @@ Código acreditado por GET RPS pedido (AR2601579). Nombres/alias conocidos: QUIJ
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -2761,7 +2983,7 @@ Código acreditado por GET RPS pedido (AR2603148). Nombres/alias conocidos: ROJA
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -2785,7 +3007,7 @@ Código acreditado por GET RPS pedido (AR2602976). Nombres/alias conocidos: TALL
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -2808,13 +3030,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### TALLERES ODL · CCI  CARROCERIAS INTELIGENTES S.L. — 001166
 
-Ficha: `talleres-odl-cci-carrocerias-inteligentes-s-l`. Histórico: **2 líneas / 2 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `talleres-odl-cci-carrocerias-inteligentes-s-l`. Histórico: **2 líneas / 2 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2600366). Nombres/alias conocidos: TALLERES ODL · CCI  CARROCERIAS INTELIGENTES S.L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -2830,27 +3050,28 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA ALPHA 1L 580  :AZUL EUROPA :250 AN: 2 (AR2406681, AR2600366) |
 | modo | SEGUN SE INDICA: 2 (AR2406681, AR2600366) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 259,5 × 159,5 | 10,1; 50,6; 110,1; 150,4 | 19; 59; 103,3; 141,3 | 18; 54; 90,5; 130,5; 170; 205; 241,3 |  AR2406681; OT/2024/AR2406681.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2406681. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 259,5 × 159,5 | AR2406681 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
 
 Referencias que quedan fuera de las medidas automáticas:
 
 | Tipo y medida del histórico | Pedidos | Motivo y fuentes |
 | --- | --- | --- |
+| Lona alta; 259,5 × 159,5 | AR2406681 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2406681.dwg; OT/2024/AR2406681.xlsb |
 | Lona alta; 235 × 126 | AR2600366 | Sin los tres lados acreditados sobre la lona hecha. OT/2026/AR2600366.dwg; OT/2026/AR2600366.xlsb; corte localizado; escaneo RPS localizado (detalle en evidencias.json) |
 
 ### TEIJEIRO MARTINEZ, AGUSTIN — 053869
 
-Ficha: `teijeiro-martinez-agustin`. Histórico: **2 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `teijeiro-martinez-agustin`. Histórico: **2 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2600419). Nombres/alias conocidos: TEIJEIRO MARTINEZ, AGUSTIN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -2863,13 +3084,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### VIEITES GOMEZ, JESUS — 054473
 
-Ficha: `vieites-gomez-jesus`. Histórico: **2 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `vieites-gomez-jesus`. Histórico: **2 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por histórico (AR2604619). Nombres/alias conocidos: VIEITES GOMEZ, JESUS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -2884,13 +3103,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### VILLAR VAZQUEZ, JUAN CARLOS — 010192
 
-Ficha: `villar-vazquez-juan-carlos`. Histórico: **2 líneas / 2 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `villar-vazquez-juan-carlos`. Histórico: **2 líneas / 2 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2500904). Nombres/alias conocidos: VILLAR VAZQUEZ, JUAN CARLOS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -2909,7 +3126,7 @@ Código acreditado por GET RPS pedido (AR2501034). Nombres/alias conocidos: ADAN
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -2932,13 +3149,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### AGUION CARREIRA, MARCOS — 036048
 
-Ficha: `aguion-carreira-marcos`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `aguion-carreira-marcos`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2500266). Nombres/alias conocidos: AGUION CARREIRA, MARCOS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -2950,13 +3165,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### ALBARIÑO ABELLA, VENERANDO — 053053
 
-Ficha: `albarino-abella-venerando`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `albarino-abella-venerando`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2504254). Nombres/alias conocidos: ALBARIÑO ABELLA, VENERANDO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -2972,11 +3185,19 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA ALPHA 1L 580  :AZUL RAL5015 :250 AN: 1 (AR2504254) |
 | modo | SEGUN SE INDICA: 1 (AR2504254) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 160 × 110 | 18; 54; 91,5 | 18; 54; 91,5 | 16; 48; 80; 112; 144,5 |  AR2504254; OT/2025/AR2504254.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2504254. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 160 × 110 | AR2504254 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Lona alta; 160 × 110 | AR2504254 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2025/AR2504254.dwg; OT/2025/AR2504254.xlsb |
 
 ### ALFONSO DE JESUS, JUAN ANTONIO — 009413
 
@@ -2986,7 +3207,7 @@ Código acreditado por GET RPS pedido (AR2504348). Nombres/alias conocidos: ALFO
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -3009,13 +3230,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### ALUMINIOS BERES, S. L. — 022526
 
-Ficha: `aluminios-beres-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `aluminios-beres-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2503919). Nombres/alias conocidos: ALUMINIOS BERES, S. L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -3033,7 +3252,7 @@ Código acreditado por GET RPS pedido (AR2501503). Nombres/alias conocidos: ALVA
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -3056,13 +3275,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### ALVES FERNANDEZ, ALBERTO — 053283
 
-Ficha: `alves-fernandez-alberto`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `alves-fernandez-alberto`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2505391). Nombres/alias conocidos: ALVES FERNANDEZ, ALBERTO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -3074,13 +3291,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### AMERICO DOS ANJOS, MANUEL — 051182
 
-Ficha: `americo-dos-anjos-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `americo-dos-anjos-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2401210). Nombres/alias conocidos: AMERICO DOS ANJOS, MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -3092,13 +3307,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### ANDUJAR MARTINEZ, JOSE MANUEL — 036319
 
-Ficha: `andujar-martinez-jose-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `andujar-martinez-jose-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2502312). Nombres/alias conocidos: ANDUJAR MARTINEZ, JOSE MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -3107,21 +3320,27 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA NS86 2L 630GR [580]: GRIS 7037 (COR/902): 250AN: 1 (AR2502312) |
 | modo | SEGUN SE INDICA: 1 (AR2502312) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| baqueton; 275 × 195 | 2,5; 19; 69; 109; 149; 181,5 | 2,5; 25; 75; 115; 155; 193,5 | 2,5; 25; 70; 110; 155; 196; 240; 267,5 |  AR2502312; OT/2025/AR2502312.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2502312. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| baqueton; 275 × 195 | AR2502312 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Baquetón; 275 × 195 | AR2502312 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2025/AR2502312.dwg; OT/2025/AR2502312.xlsb |
 
 ### ANGEL ROADE, S. L. — 009750
 
-Ficha: `angel-roade-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `angel-roade-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2504327). Nombres/alias conocidos: ANGEL ROADE, S. L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -3133,13 +3352,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### ANTELO LUACES, DOMINGO — 018666
 
-Ficha: `antelo-luaces-domingo`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `antelo-luaces-domingo`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2503399). Nombres/alias conocidos: ANTELO LUACES, DOMINGO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -3151,13 +3368,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### ANTIGUO RUA NOBEL · TALLERES Y SERVICIOS JYP S.L. — 047706
 
-Ficha: `antiguo-rua-nobel-talleres-y-servicios-jyp-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `antiguo-rua-nobel-talleres-y-servicios-jyp-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2400033). Nombres/alias conocidos: ANTIGUO RUA NOBEL · TALLERES Y SERVICIOS JYP S.L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -3169,13 +3384,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### ANVASOAN S.L. — 050508
 
-Ficha: `anvasoan-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `anvasoan-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2402186). Nombres/alias conocidos: ANVASOAN S.L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -3184,21 +3397,27 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA G650 2L 650 :AZUL RAL5015 :250 AN (M5729): 1 (AR2402186) |
 | modo | SEGUN SE INDICA: 1 (AR2402186) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| baqueton; 161 × 112 | 14; 42; 70,5; 98 | 14; 42; 70,5; 98 | 13,5; 40,5; 67,5; 94,5; 121,5; 148,5 |  AR2402186; OT/2024/AR2402186.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402186. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| baqueton; 161 × 112 | AR2402186 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Baquetón; 161 × 112 | AR2402186 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2402186.dwg; OT/2024/AR2402186.xlsb |
 
 ### APARICIO QUINDIMIL, JOSE ANTONIO — 052162
 
-Ficha: `aparicio-quindimil-jose-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `aparicio-quindimil-jose-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2500060). Nombres/alias conocidos: APARICIO QUINDIMIL, JOSE ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -3210,13 +3429,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### ARDIACA PAREDES, JOSEP — 053351
 
-Ficha: `ardiaca-paredes-josep`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `ardiaca-paredes-josep`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2505734). Nombres/alias conocidos: ARDIACA PAREDES, JOSEP.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -3241,13 +3458,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### ARES SOUTO, JAVIER — 023262
 
-Ficha: `ares-souto-javier`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `ares-souto-javier`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2504920). Nombres/alias conocidos: ARES SOUTO, JAVIER.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -3265,7 +3480,7 @@ Código acreditado por GET RPS pedido (AR2601051). Nombres/alias conocidos: BARR
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -3289,13 +3504,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### BASCUÑANA SANCHEZ, DAVID — 051361
 
-Ficha: `bascunana-sanchez-david`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `bascunana-sanchez-david`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2403610). Nombres/alias conocidos: BASCUÑANA SANCHEZ, DAVID.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -3310,21 +3523,27 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA RECORD 1 L 580:BLANCO 099 RAL 9010:220 AN: 1 (AR2403610) |
 | modo | SEGUN SE INDICA: 1 (AR2403610) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 200 × 130 | 20; 65; 110,5 | 12,5; 45; 90; 123 | 12,5; 50; 100; 150; 188 |  AR2403610; OT/2024/AR2403610.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2403610. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 200 × 130 | AR2403610 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Lona alta; 200 × 130 | AR2403610 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2403610.dwg; OT/2024/AR2403610.xlsb |
 
 ### BEA LOPE, HECTOR — 054474
 
-Ficha: `bea-lope-hector`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `bea-lope-hector`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por histórico (AR2604632). Nombres/alias conocidos: BEA LOPE, HECTOR.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -3336,13 +3555,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### BERTOA CASTRO, JOSE ANTONIO — 051561
 
-Ficha: `bertoa-castro-jose-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `bertoa-castro-jose-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2404389). Nombres/alias conocidos: BERTOA CASTRO, JOSE ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -3354,13 +3571,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### BLANCO MIRANDA, LINO — 054057
 
-Ficha: `blanco-miranda-lino`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `blanco-miranda-lino`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2600569). Nombres/alias conocidos: BLANCO MIRANDA, LINO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -3372,13 +3587,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### BODEGAS SEIXIDO, S. L. , — 007494
 
-Ficha: `bodegas-seixido-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `bodegas-seixido-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2504220). Nombres/alias conocidos: BODEGAS SEIXIDO, S. L. ,.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -3393,11 +3606,19 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA ALPHA 1L 580  :NEGRO :250 AN: 1 (AR2504220) |
 | modo | SEGUN SE INDICA: 1 (AR2504220) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 195 × 125 | 12,75; 44,25; 81,75; 113,25 | 12,75; 44,25; 81,75; 113,25 | 12,5; 48,5; 95,5; 142,5; 181 |  AR2504220; OT/2025/AR2504220.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2504220. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 195 × 125 | AR2504220 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Lona alta; 195 × 125 | AR2504220 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2025/AR2504220.dwg; OT/2025/AR2504220.xlsb |
 
 ### BORONAT, ANDREU — 053633
 
@@ -3407,7 +3628,7 @@ Código acreditado por GET RPS pedido (AR2600859). Nombres/alias conocidos: BORO
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -3435,7 +3656,7 @@ Código acreditado por GET RPS pedido (AR2505603). Nombres/alias conocidos: BOUS
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -3459,13 +3680,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### BOUZA SANCHEZ, ALVARO — 009438
 
-Ficha: `bouza-sanchez-alvaro`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `bouza-sanchez-alvaro`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2400851). Nombres/alias conocidos: BOUZA SANCHEZ, ALVARO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -3477,13 +3696,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### CAFETERIA ROSALIA · OCAMPO FERNANDEZ, JOSE ANGEL — 030174
 
-Ficha: `cafeteria-rosalia-ocampo-fernandez-jose-angel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `cafeteria-rosalia-ocampo-fernandez-jose-angel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2505725). Nombres/alias conocidos: CAFETERIA ROSALIA · OCAMPO FERNANDEZ, JOSE ANGEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -3495,13 +3712,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### CAL LOPEZ, JESUS — 052322
 
-Ficha: `cal-lopez-jesus`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `cal-lopez-jesus`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2500271). Nombres/alias conocidos: CAL LOPEZ, JESUS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -3519,7 +3734,7 @@ Código acreditado por GET RPS pedido (AR2406023). Nombres/alias conocidos: CALV
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -3543,13 +3758,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### CALVO ESPAÑA, ISMAEL — 052688
 
-Ficha: `calvo-espana-ismael`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `calvo-espana-ismael`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2500539). Nombres/alias conocidos: CALVO ESPAÑA, ISMAEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -3567,7 +3780,7 @@ Código acreditado por GET RPS pedido (AR2405178). Nombres/alias conocidos: CAMB
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -3596,7 +3809,7 @@ Código acreditado por GET RPS pedido (AR2402012). Nombres/alias conocidos: CAMP
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -3620,13 +3833,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### CARDELLE HIDRAULICA, S. L. , — 012688
 
-Ficha: `cardelle-hidraulica-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `cardelle-hidraulica-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2500727). Nombres/alias conocidos: CARDELLE HIDRAULICA, S. L. ,.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -3638,13 +3849,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### CARMELO · CARMELO BARREIRO PAZ — 045150
 
-Ficha: `carmelo-carmelo-barreiro-paz`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `carmelo-carmelo-barreiro-paz`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2501233). Nombres/alias conocidos: CARMELO · CARMELO BARREIRO PAZ.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -3662,7 +3871,7 @@ Código acreditado por GET RPS pedido (AR2403830). Nombres/alias conocidos: CARR
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -3686,13 +3895,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### CARRO VAZQUEZ, SERGIO — 052107
 
-Ficha: `carro-vazquez-sergio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `carro-vazquez-sergio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2401292). Nombres/alias conocidos: CARRO VAZQUEZ, SERGIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -3710,7 +3917,7 @@ Código acreditado por GET RPS pedido (AR2405193). Nombres/alias conocidos: CARR
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -3740,7 +3947,7 @@ Código acreditado por GET RPS pedido (AR2500013). Nombres/alias conocidos: CASA
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -3769,7 +3976,7 @@ Código acreditado por GET RPS pedido (AR2603364). Nombres/alias conocidos: CAST
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -3799,7 +4006,7 @@ Código acreditado por GET RPS pedido (AR2505558). Nombres/alias conocidos: CAST
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -3828,7 +4035,7 @@ Código acreditado por GET RPS pedido (AR2503639). Nombres/alias conocidos: CAST
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -3857,7 +4064,7 @@ Código acreditado por GET RPS pedido (AR2401752). Nombres/alias conocidos: CAST
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -3881,13 +4088,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### CASTRO MOURIÑO, JUAN JOSE — 019415
 
-Ficha: `castro-mourino-juan-jose`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `castro-mourino-juan-jose`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2402048). Nombres/alias conocidos: CASTRO MOURIÑO, JUAN JOSE.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -3918,7 +4123,7 @@ Código acreditado por GET RPS pedido (AR2600832). Nombres/alias conocidos: CAST
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -3934,13 +4139,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### CERNADAS FERNANDEZ, JUAN — 053305
 
-Ficha: `cernadas-fernandez-juan`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `cernadas-fernandez-juan`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2505489). Nombres/alias conocidos: CERNADAS FERNANDEZ, JUAN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -3952,13 +4155,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### CHG QUIEROUNTOLDO2013 S.L. — 047782
 
-Ficha: `chg-quierountoldo2013-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 1. Alta propuesta.
+Ficha: `chg-quierountoldo2013-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 1. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2505659). Nombres/alias conocidos: CHG QUIEROUNTOLDO2013 S.L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -3973,12 +4174,20 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA NS86 2L 630GR [580]: GRIS 7037 (COR/902): 250AN: 1 (AR2505659) |
 | modo | REPARTIDOS: 1 (AR2505659) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 134 × 110 | 2,5; 37,8; 73,2; 108,5 | 2,5; 37,8; 73,2; 108,5 | 2,5; 35; 67,5; 100; 132,5 |  AR2605145; OT/2026/AR2605145.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2605145. |
-| lona; 206 × 133 | 2,5; 33,5; 67; 100,5 | 2,5; 33,5; 67; 100,5 | 2,5; 34,5; 69; 103,5; 138; 172,5; 204,5 |  AR2505659; OT/2025/AR2505659.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2505659. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 134 × 110 | AR2605145 | No se acredita la longitud hecha de los tres lados; no se suple con largo/ancho del remolque. |
+| lona; 206 × 133 | AR2505659 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Lona alta; 206 × 133 | AR2505659 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. OT/2025/AR2505659.dwg; OT/2025/AR2505659.xlsb |
 
 ### CIBREIRO RODRIGUEZ, JOSE — 051737
 
@@ -3988,7 +4197,7 @@ Código acreditado por GET RPS pedido (AR2405149). Nombres/alias conocidos: CIBR
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -4011,13 +4220,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### CLH · EXOLUM CORPORATION S.A. — 015375
 
-Ficha: `clh-exolum-corporation-s-a`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `clh-exolum-corporation-s-a`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2501970). Nombres/alias conocidos: CLH · EXOLUM CORPORATION S.A..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -4043,13 +4250,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### CLIENTE TPV — 016564
 
-Ficha: `cliente-tpv`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `cliente-tpv`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2504855). Nombres/alias conocidos: CLIENTE TPV.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -4067,7 +4272,7 @@ Código acreditado por GET RPS pedido (AR2403932). Nombres/alias conocidos: COAF
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -4096,7 +4301,7 @@ Código acreditado por GET RPS pedido (AR2602109). Nombres/alias conocidos: CONC
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -4120,13 +4325,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### COOPERATIVAS LACTEAS UNIDAS SCG (CLUN) — 038264
 
-Ficha: `cooperativas-lacteas-unidas-scg-clun`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `cooperativas-lacteas-unidas-scg-clun`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2601575). Nombres/alias conocidos: COOPERATIVAS LACTEAS UNIDAS SCG (CLUN).
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -4138,13 +4341,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### DEJESUS MACHADO, ANTONIO — 025062
 
-Ficha: `dejesus-machado-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `dejesus-machado-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2600382). Nombres/alias conocidos: DEJESUS MACHADO, ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -4162,7 +4363,7 @@ Código acreditado por GET RPS pedido (AR2502595). Nombres/alias conocidos: DIAZ
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -4192,7 +4393,7 @@ Código acreditado por GET RPS pedido (AR2601042). Nombres/alias conocidos: DIAZ
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -4216,13 +4417,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### DIVIRTT S.L — 053625
 
-Ficha: `divirtt-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `divirtt-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2600225). Nombres/alias conocidos: DIVIRTT S.L.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -4240,7 +4439,7 @@ Código acreditado por GET RPS pedido (AR2506092). Nombres/alias conocidos: DOCA
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -4263,13 +4462,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### DOMANGUES ESTRAVIZ, RUBEN — 051204
 
-Ficha: `domangues-estraviz-ruben`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `domangues-estraviz-ruben`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2400498). Nombres/alias conocidos: DOMANGUES ESTRAVIZ, RUBEN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -4281,13 +4478,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### DURAN VEIGA, ANDRES — 052066
 
-Ficha: `duran-veiga-andres`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `duran-veiga-andres`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2406832). Nombres/alias conocidos: DURAN VEIGA, ANDRES.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -4299,13 +4494,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### ELECTRIFICACIONES MIÑONES SL — 045829
 
-Ficha: `electrificaciones-minones-sl`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `electrificaciones-minones-sl`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2601560). Nombres/alias conocidos: ELECTRIFICACIONES MIÑONES SL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -4317,13 +4510,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### ENRIQUEZ COLLAZO, MANUEL — 033788
 
-Ficha: `enriquez-collazo-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `enriquez-collazo-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2600570). Nombres/alias conocidos: ENRIQUEZ COLLAZO, MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -4341,13 +4532,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### ESTRELLA GALICIA · HIJOS DE RIVERA, S.A.U. — 003380
 
-Ficha: `estrella-galicia-hijos-de-rivera-s-a-u`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `estrella-galicia-hijos-de-rivera-s-a-u`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2500051). Nombres/alias conocidos: ESTRELLA GALICIA · HIJOS DE RIVERA, S.A.U..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -4365,7 +4554,7 @@ Código acreditado por GET RPS pedido (AR2405950). Nombres/alias conocidos: EXPL
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -4389,13 +4578,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### FACENDA O AGRO BAIXA LIMIA S.L — 054059
 
-Ficha: `facenda-o-agro-baixa-limia-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `facenda-o-agro-baixa-limia-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2600570). Nombres/alias conocidos: FACENDA O AGRO BAIXA LIMIA S.L.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -4407,13 +4594,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### FERNANDEZ BARRO, PEDRO — 050818
 
-Ficha: `fernandez-barro-pedro`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `fernandez-barro-pedro`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2400243). Nombres/alias conocidos: FERNANDEZ BARRO, PEDRO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -4425,13 +4610,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### FERNANDEZ CALVO, MANUEL — 053179
 
-Ficha: `fernandez-calvo-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `fernandez-calvo-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2504541). Nombres/alias conocidos: FERNANDEZ CALVO, MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -4446,21 +4629,27 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA ALPHA 1L 580  :AZUL RAL5015 :250 AN: 1 (AR2504541) |
 | modo | SEGUN SE INDICA: 1 (AR2504541) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 228,5 × 148 | 5; 15; 45; 75; 110; 134 | 5; 15; 45; 75; 110; 134 | 5; 15; 60; 90; 117; 145; 175; 200; 223 |  AR2504541; OT/2025/AR2504541.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2504541. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 228,5 × 148 | AR2504541 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Lona alta; 228,5 × 148 | AR2504541 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2025/AR2504541.dwg; OT/2025/AR2504541.xlsb |
 
 ### FERNANDEZ DE LA LLAVE, LUIS MIGUEL — 054425
 
-Ficha: `fernandez-de-la-llave-luis-miguel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `fernandez-de-la-llave-luis-miguel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por histórico (AR2604390). Nombres/alias conocidos: FERNANDEZ DE LA LLAVE, LUIS MIGUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -4472,13 +4661,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### FERNANDEZ DIAZ, JOSE RAMON — 012790
 
-Ficha: `fernandez-diaz-jose-ramon`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `fernandez-diaz-jose-ramon`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2501008). Nombres/alias conocidos: FERNANDEZ DIAZ, JOSE RAMON.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -4493,11 +4680,19 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA ALPHA 1L 580  :NEGRO :250 AN: 1 (AR2501008) |
 | modo | SEGUN SE INDICA: 1 (AR2501008) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 200 × 125 | 9,5; 33; 62; 91; 115,5 | 9,5; 33; 62; 91; 115,5 | 8; 31; 62; 94; 126; 158; 187,5 |  AR2501008; OT/2025/AR2501008.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501008. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 200 × 125 | AR2501008 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Lona alta; 200 × 125 | AR2501008 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2025/AR2501008.dwg; OT/2025/AR2501008.xlsb |
 
 ### FERNANDEZ FONDEVILA, CARLOS — 050653
 
@@ -4507,7 +4702,7 @@ Código acreditado por GET RPS pedido (AR2400350). Nombres/alias conocidos: FERN
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -4530,13 +4725,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### FERNANDEZ FRAGA, JOSE MANUEL — 051815
 
-Ficha: `fernandez-fraga-jose-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `fernandez-fraga-jose-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2400987). Nombres/alias conocidos: FERNANDEZ FRAGA, JOSE MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -4554,7 +4747,7 @@ Código acreditado por GET RPS pedido (AR2406331). Nombres/alias conocidos: FERN
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -4577,7 +4770,7 @@ Código acreditado por GET RPS pedido (AR2506133). Nombres/alias conocidos: FERN
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -4600,13 +4793,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### FERNANDEZ GONZALEZ, ORFIDIO — 053055
 
-Ficha: `fernandez-gonzalez-orfidio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `fernandez-gonzalez-orfidio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2504260). Nombres/alias conocidos: FERNANDEZ GONZALEZ, ORFIDIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -4615,21 +4806,27 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA ALPHA 1L 580  :AZUL RAL5015 :250 AN: 1 (AR2504260) |
 | modo | SEGUN SE INDICA: 1 (AR2504260) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| baqueton; 180 × 110 | 13,5; 40,5; 67,5; 96 | 13,5; 40,5; 67,5; 96 | 11,3; 33,8; 56,3; 78,8; 101,3; 123,8; 146,3; 169,3 |  AR2504260; OT/2025/AR2504260.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2504260. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| baqueton; 180 × 110 | AR2504260 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Baquetón; 180 × 110 | AR2504260 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2025/AR2504260.dwg; OT/2025/AR2504260.xlsb |
 
 ### FERNANDEZ VILELA, LUIS — 038983
 
-Ficha: `fernandez-vilela-luis`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `fernandez-vilela-luis`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2600495). Nombres/alias conocidos: FERNANDEZ VILELA, LUIS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -4647,7 +4844,7 @@ Código acreditado por histórico (AR2604206). Nombres/alias conocidos: FERREIRA
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -4664,13 +4861,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### FERRO AMEAL, FAUSTINO — 053364
 
-Ficha: `ferro-ameal-faustino`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `ferro-ameal-faustino`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2505792). Nombres/alias conocidos: FERRO AMEAL, FAUSTINO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -4688,7 +4883,7 @@ Código acreditado por GET RPS pedido (AR2502519). Nombres/alias conocidos: FERR
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -4711,13 +4906,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### FREIRE FERNANDEZ, MANUEL — 038568
 
-Ficha: `freire-fernandez-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `freire-fernandez-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2500087). Nombres/alias conocidos: FREIRE FERNANDEZ, MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -4729,13 +4922,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### FRICUR INSTALACIONES, S.L. — 043449
 
-Ficha: `fricur-instalaciones-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `fricur-instalaciones-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2600353). Nombres/alias conocidos: FRICUR INSTALACIONES, S.L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -4747,13 +4938,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### GANADERIA PARDO, S. C. — 023233
 
-Ficha: `ganaderia-pardo-s-c`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `ganaderia-pardo-s-c`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2505854). Nombres/alias conocidos: GANADERIA PARDO, S. C..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -4765,13 +4954,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### GANADERIA RON, S.C. — 054259
 
-Ficha: `ganaderia-ron-s-c`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `ganaderia-ron-s-c`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por histórico (AR2603663). Nombres/alias conocidos: GANADERIA RON, S.C..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -4789,7 +4976,7 @@ Código acreditado por GET RPS pedido (AR2406159). Nombres/alias conocidos: GAND
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -4819,7 +5006,7 @@ Código acreditado por GET RPS pedido (AR2505196). Nombres/alias conocidos: GARC
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -4842,13 +5029,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### GARCIA SECO, REGINO — 028190
 
-Ficha: `garcia-seco-regino`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `garcia-seco-regino`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2500609). Nombres/alias conocidos: GARCIA SECO, REGINO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -4860,13 +5045,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### GAREA FERNANDEZ, JOSE — 051526
 
-Ficha: `garea-fernandez-jose`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `garea-fernandez-jose`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2404260). Nombres/alias conocidos: GAREA FERNANDEZ, JOSE.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -4881,21 +5064,27 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA ALPHA 1L 580  :AZUL RAL5015 :250 AN: 1 (AR2404260) |
 | modo | SEGUN SE INDICA: 1 (AR2404260) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 176 × 110 | 10; 37,3; 72,2; 101 | 10; 37,3; 72,2; 101 | 6; 16; 60; 117,5; 162 |  AR2404260; OT/2024/ar2404260.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404260. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 176 × 110 | AR2404260 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Lona alta; 176 × 110 | AR2404260 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2404260.dwg; OT/2024/ar2404260.xlsb |
 
 ### GARRIDO GOMEZ, JOSEP DONAT — 054360
 
-Ficha: `garrido-gomez-josep-donat`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `garrido-gomez-josep-donat`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por histórico (AR2604095). Nombres/alias conocidos: GARRIDO GOMEZ, JOSEP DONAT.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -4907,13 +5096,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### GIS CERCEDA S.L.U — 053748
 
-Ficha: `gis-cerceda-s-l-u`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `gis-cerceda-s-l-u`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2600342). Nombres/alias conocidos: GIS CERCEDA S.L.U.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -4925,13 +5112,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### GOLPE ROMERO, BERNARDO — 006406
 
-Ficha: `golpe-romero-bernardo`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `golpe-romero-bernardo`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2400372). Nombres/alias conocidos: GOLPE ROMERO, BERNARDO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -4949,7 +5134,7 @@ Código acreditado por GET RPS pedido (AR2401982). Nombres/alias conocidos: GOME
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -4973,13 +5158,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### GOMEZ CAMINO, LUCIA — 020641
 
-Ficha: `gomez-camino-lucia`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `gomez-camino-lucia`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2400960). Nombres/alias conocidos: GOMEZ CAMINO, LUCIA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -4991,13 +5174,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### GOMEZ DOMINGUEZ, MIGUEL — 053409
 
-Ficha: `gomez-dominguez-miguel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `gomez-dominguez-miguel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2506111). Nombres/alias conocidos: GOMEZ DOMINGUEZ, MIGUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -5009,13 +5190,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### GOMEZ GARCIA, JOSE ANTONIO — 053940
 
-Ficha: `gomez-garcia-jose-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `gomez-garcia-jose-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2600467). Nombres/alias conocidos: GOMEZ GARCIA, JOSE ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -5027,13 +5206,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### GOMEZ OTERO, ANTONIO — 038642
 
-Ficha: `gomez-otero-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `gomez-otero-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2600460). Nombres/alias conocidos: GOMEZ OTERO, ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -5045,13 +5222,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### GOMEZ PAZOS, JUAN — 051552
 
-Ficha: `gomez-pazos-juan`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `gomez-pazos-juan`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2404366). Nombres/alias conocidos: GOMEZ PAZOS, JUAN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -5065,11 +5240,19 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA STARPLUS 1L 610:GRIS 096 7037 (OSCURO):250 AN: 1 (AR2404366) |
 | modo | SEGUN SE INDICA: 1 (AR2404366) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 175 × 115 | 36,5; 79,5 | 25; 58; 90 | 5; 27; 66; 103; 141; 166 |  AR2404366; OT/2024/AR2404366.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2404366. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 175 × 115 | AR2404366 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Lona alta; 175 × 115 | AR2404366 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2404366.dwg; OT/2024/AR2404366.xlsb |
 
 ### GONZALEZ AGRASAR, SUSANA — 051056
 
@@ -5079,7 +5262,7 @@ Código acreditado por GET RPS pedido (AR2402296). Nombres/alias conocidos: GONZ
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -5096,13 +5279,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### GONZALEZ DE ALEDO GOMEZ, ALVARO — 052015
 
-Ficha: `gonzalez-de-aledo-gomez-alvaro`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `gonzalez-de-aledo-gomez-alvaro`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2406616). Nombres/alias conocidos: GONZALEZ DE ALEDO GOMEZ, ALVARO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -5120,7 +5301,7 @@ Código acreditado por GET RPS pedido (AR2506445). Nombres/alias conocidos: GONZ
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -5143,7 +5324,7 @@ Código acreditado por GET RPS pedido (AR2400239). Nombres/alias conocidos: GONZ
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -5166,13 +5347,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### GONZALEZ TORRES, JOSE — 051093
 
-Ficha: `gonzalez-torres-jose`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `gonzalez-torres-jose`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2402422). Nombres/alias conocidos: GONZALEZ TORRES, JOSE.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -5184,13 +5363,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### HERTRANS, SDAD. COOP. LTDA. — 001510
 
-Ficha: `hertrans-sdad-coop-ltda`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `hertrans-sdad-coop-ltda`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2501169). Nombres/alias conocidos: HERTRANS, SDAD. COOP. LTDA..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -5202,13 +5379,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### IBABRE, BALOIRAS BREA IVAN — 033454
 
-Ficha: `ibabre-baloiras-brea-ivan`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `ibabre-baloiras-brea-ivan`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2402595). Nombres/alias conocidos: IBABRE, BALOIRAS BREA IVAN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -5222,21 +5397,27 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA STARPLUS 1L 610:GRIS 095  7038 (CLARO):250 AN: 1 (AR2402595) |
 | modo | SEGUN SE INDICA: 1 (AR2402595) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 199,5 × 124,5 | 10; 45; 80; 115,5 | 10; 50; 80; 110 | 2,5; 15; 40; 70; 100; 130; 160; 198 |  AR2402595; OT/2024/AR2402595.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2402595. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 199,5 × 124,5 | AR2402595 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Lona alta; 199,5 × 124,5 | AR2402595 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2402595.dwg; OT/2024/AR2402595.xlsb |
 
 ### INFORMACION & COMUNICACION LOCAL S.A. (INCOLSA) — 006397
 
-Ficha: `informacion-comunicacion-local-s-a-incolsa`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `informacion-comunicacion-local-s-a-incolsa`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2407078). Nombres/alias conocidos: INFORMACION & COMUNICACION LOCAL S.A. (INCOLSA).
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -5254,7 +5435,7 @@ Código acreditado por GET RPS pedido (AR2600682). Nombres/alias conocidos: JIME
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -5284,7 +5465,7 @@ Código acreditado por GET RPS pedido (AR2506342). Nombres/alias conocidos: LACT
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -5314,7 +5495,7 @@ Código acreditado por GET RPS pedido (AR2406910). Nombres/alias conocidos: LAGO
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -5338,13 +5519,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### LAVANDERIA AXIÑA S.L — 053222
 
-Ficha: `lavanderia-axina-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `lavanderia-axina-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2500989). Nombres/alias conocidos: LAVANDERIA AXIÑA S.L.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -5362,7 +5541,7 @@ Código acreditado por histórico (AR2603682). Nombres/alias conocidos: LAZITURR
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -5385,7 +5564,7 @@ Código acreditado por GET RPS pedido (AR2501754). Nombres/alias conocidos: LEIR
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -5408,13 +5587,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### LIBRERIA SIGLO XXI · MRV CONSTRUCCIONES SAN MIGUEL  S.L — 052508
 
-Ficha: `libreria-siglo-xxi-mrv-construcciones-san-miguel-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `libreria-siglo-xxi-mrv-construcciones-san-miguel-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2501981). Nombres/alias conocidos: LIBRERIA SIGLO XXI · MRV CONSTRUCCIONES SAN MIGUEL  S.L.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -5423,11 +5600,19 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA NS86 2L 630GR [580]: GRIS 7037 (COR/902): 250AN: 1 (AR2501981) |
 | modo | SEGUN SE INDICA: 1 (AR2501981) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| baqueton; 180,5 × 121 | 22,5; 40,5; 81,5; 119,5 | 2,5; 40,5; 81,5; 119,5 | 2,5; 34,2; 62,5; 90,8; 119,1; 147,4; 179 |  AR2501981; OT/2025/AR2501981-2.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501981. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| baqueton; 180,5 × 121 | AR2501981 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Baquetón; 180,5 × 121 | AR2501981 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2025/AR2501981-2.xlsb; OT/2025/AR2501981.dwg |
 
 ### LOPEZ BARCALA, CESAR — 039696
 
@@ -5437,7 +5622,7 @@ Código acreditado por GET RPS pedido (AR2400199). Nombres/alias conocidos: LOPE
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -5460,13 +5645,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### LOPEZ CARBALLAL, GUILLERMO — 010815
 
-Ficha: `lopez-carballal-guillermo`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `lopez-carballal-guillermo`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2600204). Nombres/alias conocidos: LOPEZ CARBALLAL, GUILLERMO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -5478,13 +5661,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### LOPEZ PRADO, ROBERTO CARLOS — 050840
 
-Ficha: `lopez-prado-roberto-carlos`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `lopez-prado-roberto-carlos`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2401457). Nombres/alias conocidos: LOPEZ PRADO, ROBERTO CARLOS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -5496,13 +5677,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### LOPEZ REGUEIRA, JUAN — 017555
 
-Ficha: `lopez-regueira-juan`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `lopez-regueira-juan`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2401009). Nombres/alias conocidos: LOPEZ REGUEIRA, JUAN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -5514,13 +5693,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### LOPEZ VAAMONDE, RICARDO PEDRO — 052864
 
-Ficha: `lopez-vaamonde-ricardo-pedro`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `lopez-vaamonde-ricardo-pedro`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2503441). Nombres/alias conocidos: LOPEZ VAAMONDE, RICARDO PEDRO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -5532,13 +5709,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### LOPEZ VALIN, ANGELES — 051650
 
-Ficha: `lopez-valin-angeles`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `lopez-valin-angeles`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2400828). Nombres/alias conocidos: LOPEZ VALIN, ANGELES.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -5556,7 +5731,7 @@ Código acreditado por GET RPS pedido (AR2506477). Nombres/alias conocidos: LOPE
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -5579,13 +5754,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### LORENZO BARBEITO, JOSE SALVADOR — 050688
 
-Ficha: `lorenzo-barbeito-jose-salvador`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `lorenzo-barbeito-jose-salvador`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2400117). Nombres/alias conocidos: LORENZO BARBEITO, JOSE SALVADOR.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -5597,13 +5770,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### LOSADA GOMEZ, ALEJANDRO — 051435
 
-Ficha: `losada-gomez-alejandro`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `losada-gomez-alejandro`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2400653). Nombres/alias conocidos: LOSADA GOMEZ, ALEJANDRO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -5615,13 +5786,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### MACERO MONTAÑEZ, JESUS — 054454
 
-Ficha: `macero-montanez-jesus`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `macero-montanez-jesus`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por histórico (AR2604519). Nombres/alias conocidos: MACERO MONTAÑEZ, JESUS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -5633,13 +5802,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### MADERA CHIQUILLO S.L — 053586
 
-Ficha: `madera-chiquillo-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `madera-chiquillo-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2600156). Nombres/alias conocidos: MADERA CHIQUILLO S.L.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -5651,13 +5818,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### MADERAS JORGE REY S.L. — 048540
 
-Ficha: `maderas-jorge-rey-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `maderas-jorge-rey-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2406680). Nombres/alias conocidos: MADERAS JORGE REY S.L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -5683,13 +5848,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### MAGARIÑOS VILLAR, JAVIER — 023117
 
-Ficha: `magarinos-villar-javier`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `magarinos-villar-javier`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2402953). Nombres/alias conocidos: MAGARIÑOS VILLAR, JAVIER.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -5701,13 +5864,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### MAHIA FREIRE, JOSE — 051879
 
-Ficha: `mahia-freire-jose`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `mahia-freire-jose`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2405834). Nombres/alias conocidos: MAHIA FREIRE, JOSE.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -5739,7 +5900,7 @@ Código acreditado por GET RPS pedido (AR2504838). Nombres/alias conocidos: MARC
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -5756,13 +5917,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### MARTINEZ GARRIDO, ALBERTO — 053509
 
-Ficha: `martinez-garrido-alberto`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `martinez-garrido-alberto`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2600170). Nombres/alias conocidos: MARTINEZ GARRIDO, ALBERTO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -5780,7 +5939,7 @@ Código acreditado por GET RPS pedido (AR2406570). Nombres/alias conocidos: MART
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -5797,13 +5956,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### MATIAS VAQUERIZO, MARIO — 051916
 
-Ficha: `matias-vaquerizo-mario`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `matias-vaquerizo-mario`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2405969). Nombres/alias conocidos: MATIAS VAQUERIZO, MARIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -5819,21 +5976,27 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA ALPHA 1L 580  :NEGRO :250 AN: 1 (AR2405969) |
 | modo | REPARTIDOS: 1 (AR2405969) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 320 × 180 | 10; 36,8; 63,7; 90,5; 117,3; 144,2; 171 | 10; 36,8; 63,7; 90,5; 117,3; 144,2; 171 | 22,55; 47,65; 72,75; 97,85; 122,85; 147,95; 173,05; 198,15; 223,25; 248,35; 273,35; 298,45 |  AR2405969; OT/2024/AR2405969.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405969. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 320 × 180 | AR2405969 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Lona alta; 320 × 180 | AR2405969 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. OT/2024/AR2405969.dwg; OT/2024/AR2405969.xlsb |
 
 ### MEDANCLI S.L — 053269
 
-Ficha: `medancli-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `medancli-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2501030). Nombres/alias conocidos: MEDANCLI S.L.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -5845,13 +6008,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### MENDEZ VILAS, DIEGO — 052258
 
-Ficha: `mendez-vilas-diego`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `mendez-vilas-diego`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2500716). Nombres/alias conocidos: MENDEZ VILAS, DIEGO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -5869,7 +6030,7 @@ Código acreditado por GET RPS pedido (AR2406695). Nombres/alias conocidos: META
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -5892,13 +6053,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### MONTAJES ELECTRICOS TIBAR, S. L. — 027577
 
-Ficha: `montajes-electricos-tibar-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `montajes-electricos-tibar-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2401042). Nombres/alias conocidos: MONTAJES ELECTRICOS TIBAR, S. L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -5910,13 +6069,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### MONTERO PINTOR, ANTONIO MANUEL — 052016
 
-Ficha: `montero-pintor-antonio-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `montero-pintor-antonio-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2401206). Nombres/alias conocidos: MONTERO PINTOR, ANTONIO MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -5928,13 +6085,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### MORADA  ALCANTARA, ANTONIO — 036277
 
-Ficha: `morada-alcantara-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `morada-alcantara-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2504136). Nombres/alias conocidos: MORADA  ALCANTARA, ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -5960,13 +6115,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### MORANDEIRA PEREZ, DAVID — 052029
 
-Ficha: `morandeira-perez-david`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `morandeira-perez-david`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2406615). Nombres/alias conocidos: MORANDEIRA PEREZ, DAVID.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -5982,21 +6135,27 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA ALPHA 1L 580  :VERDE RAL6026 :250 AN: 1 (AR2406615) |
 | modo | SEGUN SE INDICA: 1 (AR2406615) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 170 × 115,5 | 12,25; 43,25; 73,25; 104,25 | 3; 39; 75; 110 | 3; 16; 46; 76,5; 107; 137; 168 |  AR2406615; OT/2024/AR2406615.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2406615. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 170 × 115,5 | AR2406615 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Lona alta; 170 × 115,5 | AR2406615 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2406615.dwg; OT/2024/AR2406615.xlsb |
 
 ### MUÑIZ LAMPON, JUAN ANTONIO — 050740
 
-Ficha: `muniz-lampon-juan-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `muniz-lampon-juan-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2400806). Nombres/alias conocidos: MUÑIZ LAMPON, JUAN ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6008,13 +6167,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### NUÑEZ BARRAL, CARLOS — 051391
 
-Ficha: `nunez-barral-carlos`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `nunez-barral-carlos`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2400625). Nombres/alias conocidos: NUÑEZ BARRAL, CARLOS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6026,13 +6183,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### ORMAECHEA PADILLA, CRISTINA — 053594
 
-Ficha: `ormaechea-padilla-cristina`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `ormaechea-padilla-cristina`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2600663). Nombres/alias conocidos: ORMAECHEA PADILLA, CRISTINA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6044,13 +6199,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### PANADERIA VEIGANOVA · PEREZ BREA, MARIA JESUS — 030107
 
-Ficha: `panaderia-veiganova-perez-brea-maria-jesus`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `panaderia-veiganova-perez-brea-maria-jesus`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2602498). Nombres/alias conocidos: PANADERIA VEIGANOVA · PEREZ BREA, MARIA JESUS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6068,7 +6221,7 @@ Código acreditado por GET RPS pedido (AR2404925). Nombres/alias conocidos: PARA
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -6092,13 +6245,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### PARGA GONZALEZ, ALVARO — 052235
 
-Ficha: `parga-gonzalez-alvaro`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `parga-gonzalez-alvaro`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2500160). Nombres/alias conocidos: PARGA GONZALEZ, ALVARO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6110,13 +6261,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### PAZOS LEIRO, JULIO CESAR — 051957
 
-Ficha: `pazos-leiro-julio-cesar`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `pazos-leiro-julio-cesar`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2406205). Nombres/alias conocidos: PAZOS LEIRO, JULIO CESAR.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -6125,21 +6274,27 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA STARPLUS 1L 610:GRIS 096 7037 (OSCURO):250 AN: 1 (AR2406205) |
 | modo | SEGUN SE INDICA: 1 (AR2406205) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| baqueton; 225,5 × 145 | 16; 71; 128,5 | 16; 71; 128,5 | 20; 65; 112,5; 161,5; 207,3 |  AR2406205; OT/2024/AR2406205.xlsb / BAQUETÓN, filas 38/39/40, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2406205. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| baqueton; 225,5 × 145 | AR2406205 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Baquetón; 225,5 × 145 | AR2406205 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2406205.dwg; OT/2024/AR2406205.xlsb |
 
 ### PAZOS PIAY, MARCIAL — 032691
 
-Ficha: `pazos-piay-marcial`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `pazos-piay-marcial`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2405050). Nombres/alias conocidos: PAZOS PIAY, MARCIAL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -6154,21 +6309,27 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA G650 2L 650 :GRIS RAL7037 :250 AN (M5736): 1 (AR2405050) |
 | modo | SEGUN SE INDICA: 1 (AR2405050) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 220 × 130 | 6; 34; 65; 96; 123 | 6; 34; 65; 96; 123 | 10; 34; 72; 110; 147; 185; 210 |  AR2405050; OT/2024/AR2405050.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405050. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 220 × 130 | AR2405050 | El resultado guardado no coincide con las listas manuales que indica el modo seleccionado. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Lona alta; 220 × 130 | AR2405050 | El resultado guardado no coincide con las listas manuales que indica el modo seleccionado. OT/2024/AR2405050.dwg; OT/2024/AR2405050.xlsb |
 
 ### PEDREIRA TASENDE, IGNACIO — 051674
 
-Ficha: `pedreira-tasende-ignacio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `pedreira-tasende-ignacio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2400852). Nombres/alias conocidos: PEDREIRA TASENDE, IGNACIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6180,13 +6341,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### PEDREIRA, ANTONIO — 017858
 
-Ficha: `pedreira-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `pedreira-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2500972). Nombres/alias conocidos: PEDREIRA, ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6198,13 +6357,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### PENA LOPEZ, JOSE FRANCISCO — 050647
 
-Ficha: `pena-lopez-jose-francisco`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `pena-lopez-jose-francisco`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2400072). Nombres/alias conocidos: PENA LOPEZ, JOSE FRANCISCO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6216,13 +6373,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### PEREZ HERMIDA, JOSE MANUEL — 046705
 
-Ficha: `perez-hermida-jose-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `perez-hermida-jose-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2400434). Nombres/alias conocidos: PEREZ HERMIDA, JOSE MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6234,13 +6389,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### PEREZ LOPEZ, JOSE MARIA — 053690
 
-Ficha: `perez-lopez-jose-maria`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `perez-lopez-jose-maria`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2601199). Nombres/alias conocidos: PEREZ LOPEZ, JOSE MARIA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6252,13 +6405,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### PIÑEIRO BALAY, SANTIAGO — 050726
 
-Ficha: `pineiro-balay-santiago`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `pineiro-balay-santiago`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2400151). Nombres/alias conocidos: PIÑEIRO BALAY, SANTIAGO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6276,7 +6427,7 @@ Código acreditado por GET RPS pedido (AR2502271). Nombres/alias conocidos: PIÑ
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -6305,7 +6456,7 @@ Código acreditado por GET RPS pedido (AR2500598). Nombres/alias conocidos: PORT
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -6329,13 +6480,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### POSE CANOSA, MANUEL — 051067
 
-Ficha: `pose-canosa-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `pose-canosa-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2400415). Nombres/alias conocidos: POSE CANOSA, MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6353,7 +6502,7 @@ Código acreditado por GET RPS pedido (AR2601559). Nombres/alias conocidos: POSE
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -6376,13 +6525,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### PRIETO CUBA,TOMAS — 044989
 
-Ficha: `prieto-cuba-tomas`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `prieto-cuba-tomas`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2401272). Nombres/alias conocidos: PRIETO CUBA,TOMAS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6394,13 +6541,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### PRIETO VILARIÑO, CRISTIAN — 052398
 
-Ficha: `prieto-vilarino-cristian`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `prieto-vilarino-cristian`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2501521). Nombres/alias conocidos: PRIETO VILARIÑO, CRISTIAN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6418,7 +6563,7 @@ Código acreditado por GET RPS pedido (AR2400030). Nombres/alias conocidos: PUGA
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -6448,7 +6593,7 @@ Código acreditado por GET RPS pedido (AR2601123). Nombres/alias conocidos: REGO
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -6478,7 +6623,7 @@ Código acreditado por GET RPS pedido (AR2400808). Nombres/alias conocidos: REMO
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -6500,13 +6645,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### REY LOPEZ, CESAREO — 051711
 
-Ficha: `rey-lopez-cesareo`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `rey-lopez-cesareo`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2405005). Nombres/alias conocidos: REY LOPEZ, CESAREO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6518,13 +6661,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### REY MIGUEZ, DAVID — 051884
 
-Ficha: `rey-miguez-david`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `rey-miguez-david`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2405866). Nombres/alias conocidos: REY MIGUEZ, DAVID.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -6540,21 +6681,27 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA ALPHA 1L 580  :AZUL RAL5015 :250 AN: 1 (AR2405866) |
 | modo | SEGUN SE INDICA: 1 (AR2405866) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 300 × 160 | 12,3; 38,8; 80,5; 121,5; 148 | 12,3; 43,3; 80,8; 118,3; 150 | 10; 33,5; 60,5; 115,8; 149,8; 183,8; 211; 238,5; 266,3; 290,5 |  AR2405866; OT/2024/AR2405866.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405866. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 300 × 160 | AR2405866 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Lona alta; 300 × 160 | AR2405866 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2024/AR2405866.dwg; OT/2024/AR2405866.xlsb |
 
 ### REY YAÑEZ, JULIO — 052172
 
-Ficha: `rey-yanez-julio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `rey-yanez-julio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2500069). Nombres/alias conocidos: REY YAÑEZ, JULIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6572,7 +6719,7 @@ Código acreditado por GET RPS pedido (AR2401614). Nombres/alias conocidos: RIAL
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -6601,7 +6748,7 @@ Código acreditado por GET RPS pedido (AR2500169). Nombres/alias conocidos: RIAL
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -6625,13 +6772,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### RIAL SUAREZ, JOSE MANUEL — 053275
 
-Ficha: `rial-suarez-jose-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `rial-suarez-jose-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2501043). Nombres/alias conocidos: RIAL SUAREZ, JOSE MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6643,13 +6788,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### RIVAS CASTELO, JESUS — 025596
 
-Ficha: `rivas-castelo-jesus`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `rivas-castelo-jesus`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2505953). Nombres/alias conocidos: RIVAS CASTELO, JESUS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6661,13 +6804,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### RODRIGUEZ CARRUCHO, ALBERTO — 051838
 
-Ficha: `rodriguez-carrucho-alberto`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `rodriguez-carrucho-alberto`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2401003). Nombres/alias conocidos: RODRIGUEZ CARRUCHO, ALBERTO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6679,13 +6820,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### RODRIGUEZ EXPOSITO, GUMERSINDO — 052080
 
-Ficha: `rodriguez-exposito-gumersindo`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `rodriguez-exposito-gumersindo`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2406886). Nombres/alias conocidos: RODRIGUEZ EXPOSITO, GUMERSINDO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6703,7 +6842,7 @@ Código acreditado por GET RPS pedido (AR2406207). Nombres/alias conocidos: RODR
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -6733,7 +6872,7 @@ Código acreditado por GET RPS pedido (AR2602205). Nombres/alias conocidos: RODR
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -6756,13 +6895,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### RODRIGUEZ GARCIA, DIEGO — 053972
 
-Ficha: `rodriguez-garcia-diego`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `rodriguez-garcia-diego`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2600492). Nombres/alias conocidos: RODRIGUEZ GARCIA, DIEGO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6780,7 +6917,7 @@ Código acreditado por GET RPS pedido (AR2400076). Nombres/alias conocidos: RODR
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -6809,7 +6946,7 @@ Código acreditado por GET RPS pedido (AR2500089). Nombres/alias conocidos: RODR
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -6833,13 +6970,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### RODRIGUEZ PAZ, INOCENCIO — 052250
 
-Ficha: `rodriguez-paz-inocencio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `rodriguez-paz-inocencio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2500177). Nombres/alias conocidos: RODRIGUEZ PAZ, INOCENCIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6851,13 +6986,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### RODRIGUEZ VAZQUEZ, JOSE MARIA — 053127
 
-Ficha: `rodriguez-vazquez-jose-maria`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `rodriguez-vazquez-jose-maria`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2500888). Nombres/alias conocidos: RODRIGUEZ VAZQUEZ, JOSE MARIA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6875,7 +7008,7 @@ Código acreditado por GET RPS pedido (AR2403757). Nombres/alias conocidos: ROUC
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -6904,7 +7037,7 @@ Código acreditado por GET RPS pedido (AR2600446). Nombres/alias conocidos: S. A
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -6927,13 +7060,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### SABIO FERNANDEZ, RAFAEL — 054217
 
-Ficha: `sabio-fernandez-rafael`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `sabio-fernandez-rafael`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2600690). Nombres/alias conocidos: SABIO FERNANDEZ, RAFAEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6951,7 +7082,7 @@ Código acreditado por GET RPS pedido (AR2602080). Nombres/alias conocidos: SAGA
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -6968,13 +7099,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### SAIT, S. L. , — 009386
 
-Ficha: `sait-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `sait-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2400444). Nombres/alias conocidos: SAIT, S. L. ,.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -6992,7 +7121,7 @@ Código acreditado por GET RPS pedido (AR2602127). Nombres/alias conocidos: SANC
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7016,13 +7145,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### SANCHEZ VAZQUEZ, IVAN — 050628
 
-Ficha: `sanchez-vazquez-ivan`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `sanchez-vazquez-ivan`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2400228). Nombres/alias conocidos: SANCHEZ VAZQUEZ, IVAN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -7034,13 +7161,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### SANESTEVAN COIRA, DANIEL — 052912
 
-Ficha: `sanestevan-coira-daniel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `sanestevan-coira-daniel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2500698). Nombres/alias conocidos: SANESTEVAN COIRA, DANIEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -7058,7 +7183,7 @@ Código acreditado por GET RPS pedido (AR2502568). Nombres/alias conocidos: SANI
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7081,7 +7206,7 @@ Código acreditado por GET RPS pedido (AR2505052). Nombres/alias conocidos: SART
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7098,13 +7223,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### SEIJO TORREIRO, ANTONIO — 053592
 
-Ficha: `seijo-torreiro-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `seijo-torreiro-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2600163). Nombres/alias conocidos: SEIJO TORREIRO, ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -7116,13 +7239,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### SOUTO VILARIÑO, ANA — 051846
 
-Ficha: `souto-vilarino-ana`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `souto-vilarino-ana`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2405636). Nombres/alias conocidos: SOUTO VILARIÑO, ANA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7136,21 +7257,27 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA ALPHA 1L 580  :AZUL RAL5015 :250 AN: 1 (AR2405636) |
 | modo | SEGUN SE INDICA: 1 (AR2405636) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 155,5 × 105 | 7; 30; 76; 99 | 5; 25; 55; 85; 100 | 2,5; 5; 32; 62; 92; 122; 150; 154 |  AR2405636; OT/2024/AR2405636.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2405636. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 155,5 × 105 | AR2405636 | El resultado guardado no coincide con las listas manuales que indica el modo seleccionado. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Lona alta; 155,5 × 105 | AR2405636 | El resultado guardado no coincide con las listas manuales que indica el modo seleccionado. OT/2024/AR2405636.dwg; OT/2024/AR2405636.xlsb |
 
 ### SUAREZ ALVAREZ, ROBERTO — 050760
 
-Ficha: `suarez-alvarez-roberto`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `suarez-alvarez-roberto`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2400187). Nombres/alias conocidos: SUAREZ ALVAREZ, ROBERTO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -7168,7 +7295,7 @@ Código acreditado por GET RPS pedido (AR2601586). Nombres/alias conocidos: SUAR
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7191,7 +7318,7 @@ Código acreditado por GET RPS pedido (AR2406834). Nombres/alias conocidos: SUAR
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7214,7 +7341,7 @@ Código acreditado por GET RPS pedido (AR2505061). Nombres/alias conocidos: SUMI
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7238,13 +7365,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### SUPERMUIÑO S.L — 049022
 
-Ficha: `supermuino-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `supermuino-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2500586). Nombres/alias conocidos: SUPERMUIÑO S.L.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7270,13 +7395,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### T.G TALLERES GONZALEZ, S. L. — 007698
 
-Ficha: `t-g-talleres-gonzalez-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `t-g-talleres-gonzalez-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2500542). Nombres/alias conocidos: T.G TALLERES GONZALEZ, S. L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7291,21 +7414,27 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA ALPHA 1L 580  :AZUL RAL5015 :250 AN: 1 (AR2500542) |
 | modo | SEGUN SE INDICA: 1 (AR2500542) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 175 × 120 | 7,5; 27; 52; 85; 112,5 | 7,5; 30; 60,5; 89; 113 | 13; 43; 73; 103; 133; 163 |  AR2500542; OT/2025/AR2500542.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500542. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 175 × 120 | AR2500542 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Lona alta; 175 × 120 | AR2500542 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2025/AR2500542.dwg; OT/2025/AR2500542.xlsb |
 
 ### TALLER DE ARTESANOS ZOCLOS · MILLAN GOMEZ,LUIS — 051556
 
-Ficha: `taller-de-artesanos-zoclos-millan-gomez-luis`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `taller-de-artesanos-zoclos-millan-gomez-luis`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2406885). Nombres/alias conocidos: TALLER DE ARTESANOS ZOCLOS · MILLAN GOMEZ,LUIS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -7323,7 +7452,7 @@ Código acreditado por GET RPS pedido (AR2406598). Nombres/alias conocidos: TALL
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7340,13 +7469,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### TALLERES TREBORE JARDINERIA S.L. — 036510
 
-Ficha: `talleres-trebore-jardineria-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `talleres-trebore-jardineria-s-l`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2500759). Nombres/alias conocidos: TALLERES TREBORE JARDINERIA S.L..
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -7364,7 +7491,7 @@ Código acreditado por GET RPS pedido (AR2600017). Nombres/alias conocidos: TIPS
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7394,7 +7521,7 @@ Código acreditado por GET RPS pedido (AR2400631). Nombres/alias conocidos: TOBI
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7411,13 +7538,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### TOJEIRO LOPEZ, AMANDINO — 050834
 
-Ficha: `tojeiro-lopez-amandino`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `tojeiro-lopez-amandino`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2400254). Nombres/alias conocidos: TOJEIRO LOPEZ, AMANDINO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -7435,7 +7560,7 @@ Código acreditado por GET RPS pedido (AR2505739). Nombres/alias conocidos: TOLD
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7458,13 +7583,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### U.T.E PORTOS SECTOR CENTRO — 052095
 
-Ficha: `u-t-e-portos-sector-centro`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `u-t-e-portos-sector-centro`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2401271). Nombres/alias conocidos: U.T.E PORTOS SECTOR CENTRO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -7482,7 +7605,7 @@ Código acreditado por GET RPS pedido (AR2603435). Nombres/alias conocidos: URIA
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7505,7 +7628,7 @@ Código acreditado por GET RPS pedido (AR2601884). Nombres/alias conocidos: VAEL
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7528,7 +7651,7 @@ Código acreditado por GET RPS pedido (AR2602182). Nombres/alias conocidos: VAN 
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7551,13 +7674,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### VARELA FERNANDEZ, JOSE MANUEL — 051411
 
-Ficha: `varela-fernandez-jose-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `varela-fernandez-jose-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2400638). Nombres/alias conocidos: VARELA FERNANDEZ, JOSE MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -7569,13 +7690,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### VARELA FREIRE, ALVARO — 053339
 
-Ficha: `varela-freire-alvaro`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `varela-freire-alvaro`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2505632). Nombres/alias conocidos: VARELA FREIRE, ALVARO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -7593,7 +7712,7 @@ Código acreditado por GET RPS pedido (AR2405906). Nombres/alias conocidos: VARE
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7617,13 +7736,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### VARELA LOPEZ, ALBERTO — 054094
 
-Ficha: `varela-lopez-alberto`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `varela-lopez-alberto`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2600602). Nombres/alias conocidos: VARELA LOPEZ, ALBERTO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -7635,13 +7752,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### VAZQUEZ BARROS,DOMINGO — 044426
 
-Ficha: `vazquez-barros-domingo`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `vazquez-barros-domingo`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2500033). Nombres/alias conocidos: VAZQUEZ BARROS,DOMINGO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -7653,13 +7768,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### VAZQUEZ CASTRO, JOSE RAMON — 051720
 
-Ficha: `vazquez-castro-jose-ramon`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `vazquez-castro-jose-ramon`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2405036). Nombres/alias conocidos: VAZQUEZ CASTRO, JOSE RAMON.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -7677,7 +7790,7 @@ Código acreditado por GET RPS pedido (AR2406740). Nombres/alias conocidos: VAZQ
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7706,7 +7819,7 @@ Código acreditado por GET RPS pedido (AR2402694). Nombres/alias conocidos: VAZQ
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7729,7 +7842,7 @@ Código acreditado por GET RPS pedido (AR2400508). Nombres/alias conocidos: VENC
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7752,13 +7865,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### VIDAL NUÑEZ, JOAQUIN — 052410
 
-Ficha: `vidal-nunez-joaquin`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `vidal-nunez-joaquin`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2501584). Nombres/alias conocidos: VIDAL NUÑEZ, JOAQUIN.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7774,11 +7885,19 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA ALPHA 1L 580  :AZUL RAL5015 :250 AN: 1 (AR2501584) |
 | modo | SEGUN SE INDICA: 1 (AR2501584) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 160 × 109 | 19; 54; 99 | 19; 54; 99 | 5,7; 25; 62; 98; 140 |  AR2501584; OT/2025/AR2501584.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2501584. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 160 × 109 | AR2501584 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Lona alta; 160 × 109 | AR2501584 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2025/AR2501584.dwg; OT/2025/AR2501584.xlsb |
 
 ### VIDAL OTERO, ANDREA — 053280
 
@@ -7788,7 +7907,7 @@ Código acreditado por GET RPS pedido (AR2505385). Nombres/alias conocidos: VIDA
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7811,7 +7930,7 @@ Código acreditado por GET RPS pedido (AR2502296). Nombres/alias conocidos: VIDA
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7835,13 +7954,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### VIDAL VAZQUEZ, JUAN ANTONIO — 053078
 
-Ficha: `vidal-vazquez-juan-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `vidal-vazquez-juan-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2504350). Nombres/alias conocidos: VIDAL VAZQUEZ, JUAN ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7856,21 +7973,27 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA ALPHA 1L 580 :NARANJA RAL2004 :250 AN: 1 (AR2504350) |
 | modo | SEGUN SE INDICA: 1 (AR2504350) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 260 × 140 | 35,5; 70,5; 105,5 | 35,5; 105,5 | 25; 68; 110; 152; 195; 238 |  AR2504350; OT/2025/AR2504350.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2504350. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 260 × 140 | AR2504350 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Lona alta; 260 × 140 | AR2504350 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2025/AR2504350.dwg; OT/2025/AR2504350.xlsb |
 
 ### VILA VEIGA, JOSE MANUEL — 021774
 
-Ficha: `vila-veiga-jose-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `vila-veiga-jose-manuel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2504507). Nombres/alias conocidos: VILA VEIGA, JOSE MANUEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7885,21 +8008,27 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA ALPHA 1L 580  :AZUL RAL5015 :250 AN: 1 (AR2504507) |
 | modo | SEGUN SE INDICA: 1 (AR2504507) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 181 × 112 | 7; 41; 75; 108 | 25; 57; 90 | 7; 62; 92; 122; 152; 177 |  AR2504507; OT/2025/AR2504507.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2504507. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 181 × 112 | AR2504507 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Lona alta; 181 × 112 | AR2504507 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2025/AR2504507.dwg; OT/2025/AR2504507.xlsb |
 
 ### VILAR LOPEZ, FIDEL — 052312
 
-Ficha: `vilar-lopez-fidel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `vilar-lopez-fidel`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (BE2500250). Nombres/alias conocidos: VILAR LOPEZ, FIDEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -7917,7 +8046,7 @@ Código acreditado por GET RPS pedido (AR2503567). Nombres/alias conocidos: VILA
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Solo se proponen las medidas completas que constan; no se añade una regla fija de cliente.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7940,13 +8069,11 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### VILARIÑO SILVA, JORGE — 053666
 
-Ficha: `vilarino-silva-jorge`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `vilarino-silva-jorge`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2601075). Nombres/alias conocidos: VILARIÑO SILVA, JORGE.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -7962,21 +8089,27 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA ALPHA 1L 580  :AZUL RAL5015 :250 AN: 1 (AR2601075) |
 | modo | SEGUN SE INDICA: 1 (AR2601075) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 229,5 × 132,5 | 28; 65; 103 | 33,75; 66,75; 99,75 | 36; 76; 116; 156; 194 |  AR2601075; OT/2026/AR2601075.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2601075. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 229,5 × 132,5 | AR2601075 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Lona alta; 229,5 × 132,5 | AR2601075 | La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. OT/2026/AR2601075.dwg; OT/2026/AR2601075.xlsb |
 
 ### YEBRA PASTOR, ENRIQUE — 053739
 
-Ficha: `yebra-pastor-enrique`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `yebra-pastor-enrique`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2601412). Nombres/alias conocidos: YEBRA PASTOR, ENRIQUE.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Sin medidas completas acreditadas para cargar.
 
@@ -7988,13 +8121,11 @@ Referencias que quedan fuera de las medidas automáticas:
 
 ### ZAYAS LUQUE, JUAN ANTONIO — 041861
 
-Ficha: `zayas-luque-juan-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `zayas-luque-juan-antonio`. Histórico: **1 líneas / 1 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido (AR2500189). Nombres/alias conocidos: ZAYAS LUQUE, JUAN ANTONIO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
-
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
 
 Valores observados en las hojas coincidentes (un pedido puede tener elementos con valores distintos):
 
@@ -8009,47 +8140,55 @@ Valores observados en las hojas coincidentes (un pedido puede tener elementos co
 | material | LONA STARPLUS 1L 610:GRIS 096 7037 (OSCURO):250 AN: 1 (AR2500189) |
 | modo | REPARTIDOS: 1 (AR2500189) |
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Sin medidas completas acreditadas para cargar.
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 156 × 158 | 2,5; 33,3; 64,1; 94,9; 125,7; 156,5 | 2,5; 33,3; 64,1; 94,9; 125,7; 156,5 | 17; 42; 67; 87; 114; 127 |  AR2500189; OT/2025/AR2500189.xlsb / LONA REMOLQUE, filas 26/27/28, I:T; mayoría de pedidos. Variantes: 1 pedido(s): AR2500189. |
+Medidas retiradas en esta revisión (no se cargan):
+
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 156 × 158 | AR2500189 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+
+Referencias que quedan fuera de las medidas automáticas:
+
+| Tipo y medida del histórico | Pedidos | Motivo y fuentes |
+| --- | --- | --- |
+| Lona alta; 156 × 158 | AR2500189 | El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. OT/2025/AR2500189.dwg; OT/2025/AR2500189.xlsb |
 
 ### BENEDICTO CASTELLS, MIRIAM — 054524
 
-Ficha: `benedicto-castells-miriam`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 1. Alta propuesta.
+Ficha: `benedicto-castells-miriam`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 1. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido PDF producido (AR2604843). Nombres/alias conocidos: BENEDICTO CASTELLS, MIRIAM.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Sin medidas completas acreditadas para cargar.
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Medidas retiradas en esta revisión (no se cargan):
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 244 × 143 | 2,5; 30,3; 58,1; 85,9; 113,7; 141,5 | 2,5; 30,3; 58,1; 85,9; 113,7; 141,5 | 2,5; 32,5; 62,5; 92,5; 122,5; 152,5; 182,5; 212,5; 242,5 |  AR2604843; OT/2026/AR2604843.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2604843. |
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 244 × 143 | AR2604843 | No se acredita la longitud hecha de los tres lados; no se suple con largo/ancho del remolque. |
 
 ### DOMINGUEZ GALIÑANES, JUAN JOSE — 054592
 
-Ficha: `dominguez-galinanes-juan-jose`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 1. Alta propuesta.
+Ficha: `dominguez-galinanes-juan-jose`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 1. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido PDF producido (AR2605140). Nombres/alias conocidos: DOMINGUEZ GALIÑANES, JUAN JOSE.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Sin medidas completas acreditadas para cargar.
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Medidas retiradas en esta revisión (no se cargan):
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| baqueton; 175 × 125 | 2,5; 32,8; 63; 93,3; 123,5 | 2,5; 32,8; 63; 93,3; 123,5 | 2,5; 31; 59,5; 88; 116,5; 145; 173,5 |  AR2605140; OT/2026/AR2605140.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2605140. |
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| baqueton; 175 × 125 | AR2605140 | No se acredita la longitud hecha de los tres lados; no se suple con largo/ancho del remolque. |
 
 ### ESVA · AGRICOLA Y REMOLQUES ESVA, S. L. — 001021
 
-Ficha: `esva-agricola-y-remolques-esva-s-l`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `esva-agricola-y-remolques-esva-s-l`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Plantilla antigua ajena al histórico exportado: no se registra (regla 6 de Iván).
 
 Código acreditado por GET RPS pedido citado en plantilla (AR1506680). Nombres/alias conocidos: ESVA · AGRICOLA Y REMOLQUES ESVA, S. L.. Pedidos de plantilla consultados: AR1506680, AR1901137, AR2000769.
 
@@ -8059,41 +8198,39 @@ Código 001021 confirmado por tres pedidos escritos en las plantillas ESVA: AR15
 
 ESVA.DWG: no poner cuños TGM; normalmente gris; con más de 60 cm de alto, puentes. El arco habitual es R=7,5 y el arco nuevo R=17,5 se hace cuando lo pide. Estas condiciones se dejan en observaciones: no se impone una recogida o un perfil a todas las alturas.
 
-Reglas añadidas a la propuesta: `rotulacion` = false; `observaciones` = ["SI NO INDICA OTRA COSA, LAS POSICIONES SON DE OLLAOS, NO DE GANCHOS","CON MÁS DE 60 CM DE ALTO, RECOGIDA CON PUENTES; CONFIRMAR LOS LADOS QUE RECOGEN","ARCO HABITUAL DE RADIO 7,5 CM; ARCO NUEVO DE RADIO 17,5 SOLO CUANDO LO PIDE"].
-
 Sin medidas completas acreditadas para cargar.
 
 ### FERNANDEZ FERNANDEZ, JESUS — 054576
 
-Ficha: `fernandez-fernandez-jesus`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 1. Alta propuesta.
+Ficha: `fernandez-fernandez-jesus`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 1. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido PDF producido (AR2605079). Nombres/alias conocidos: FERNANDEZ FERNANDEZ, JESUS.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Sin medidas completas acreditadas para cargar.
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Medidas retiradas en esta revisión (no se cargan):
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 260 × 140 | 7; 36,5; 70,5; 104,5; 134 | 7; 36,5; 70,5; 104,5; 134 | 2,5; 10; 43,5; 72,5; 101,5; 130,5; 159,5; 188,5; 217,5; 254 |  AR2605079; OT/2026/AR2605079.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2605079. |
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 260 × 140 | AR2605079 | No se acredita la longitud hecha de los tres lados; no se suple con largo/ancho del remolque. |
 
 ### FIDALGO LEON, DANIEL — 054552
 
-Ficha: `fidalgo-leon-daniel`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 1. Alta propuesta.
+Ficha: `fidalgo-leon-daniel`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 1. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido PDF producido (AR2604959). Nombres/alias conocidos: FIDALGO LEON, DANIEL.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Sin medidas completas acreditadas para cargar.
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Medidas retiradas en esta revisión (no se cargan):
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 179 × 117 | 2,5; 40,2; 77,8; 115,5 | 2,5; 40,2; 77,8; 115,5 | 2,5; 37,5; 72,5; 107,5; 142,5; 177,5 |  AR2604959; OT/2026/AR2604959.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2604959. |
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 179 × 117 | AR2604959 | No se acredita la longitud hecha de los tres lados; no se suple con largo/ancho del remolque. |
 
 ### GENERAL WOLDER — 001047
 
@@ -8109,53 +8246,51 @@ Sin medidas completas acreditadas para cargar.
 
 ### J&B AGROMAQUINAS Y REMOLQUES S. L. — 000033
 
-Ficha: `j-b-agromaquinas-y-remolques-s-l`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `j-b-agromaquinas-y-remolques-s-l`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Plantilla antigua ajena al histórico exportado: no se registra (regla 6 de Iván).
 
 Código acreditado por GET RPS pedido citado en plantilla (AR1707015). Nombres/alias conocidos: J&B AGROMAQUINAS Y REMOLQUES S. L.. Pedidos de plantilla consultados: AR1707015, AR1500073.
 
 Plantillas encontradas: `PL/REMOLQUES GANADO/JB/RANCHERO II LARGO.dwg`; `PL/J&B.dwg`; `PL/REMOLQUES GANADO/JB/RANCHERO I (1300).dwg`
 
-Código 000033 confirmado por AR1707015 de J&B.dwg y AR1500073 de RANCHERO I. No se confunde con J&J(BURGOS).dwg.
+Código 000033 acreditado por pedidos antiguos de plantilla, pero ausente del histórico exportado: no se propone el alta (instrucción 6 de Iván).
 
-J&B.dwg indica que el cliente da la holgura y solo se añade costura; no poner cuños TGM, cremallera habitual del 6 y del 9 si pide ancha. La altura pequeña es baquetón, mediana 52 cm y alta 95 cm. Los cinco repartos escritos vienen desde delante; falta relacionar cada uno con su tipo y longitud hecha antes de invertirlos y cargar medidas.
-
-Reglas añadidas a la propuesta: `rotulacion` = false; `recogeAtras` = "CREMALLERA"; `observaciones` = ["EL CLIENTE DA LA HOLGURA: AÑADIR SOLO LA COSTURA","CREMALLERA HABITUAL DEL 6; SI PIDE ANCHA, DEL 9"].
+Iván confirma que los cinco repartos escritos valen tanto para lona como para baquetón. Los laterales vienen desde delante; sin largo hecho acreditado no se invierten ni se registran.
 
 Sin medidas completas acreditadas para cargar.
 
-**Duda para Iván:** Los repartos escritos de J&B para 115×93,5, 150×114,5, 200×131, 230×131 y 260×131 no indican el tipo ni la longitud hecha. ¿Son medidas del remolque o acabadas y valen tanto para lona como para baquetón? Con el largo hecho se invertirán los laterales que vienen desde delante.
+**Duda para Iván:** Iván confirma que los cinco repartos valen para lona y baquetón. Falta acreditar la longitud hecha para invertir los laterales desde delante; esas medidas no se registran. La cuenta tampoco está en el histórico y queda fuera de las altas.
 
 ### LLANOS MARTINEZ, JORGE — 054612
 
-Ficha: `llanos-martinez-jorge`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 1. Alta propuesta.
+Ficha: `llanos-martinez-jorge`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 1. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido PDF producido (AR2605260). Nombres/alias conocidos: LLANOS MARTINEZ, JORGE.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Sin medidas completas acreditadas para cargar.
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Medidas retiradas en esta revisión (no se cargan):
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 251 × 136 | 2,5; 35,5; 68,5; 101,5; 134,5 | 2,5; 35,5; 68,5; 101,5; 134,5 | 2,5; 37,8; 73,1; 108,4; 143,6; 178,9; 214,2; 249,5 |  AR2605260; OT/2026/AR2605260.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2605260. |
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 251 × 136 | AR2605260 | No se acredita la longitud hecha de los tres lados; no se suple con largo/ancho del remolque. |
 
 ### LOPEZ BARREIRO, PABLO — 054595
 
-Ficha: `lopez-barreiro-pablo`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 1. Alta propuesta.
+Ficha: `lopez-barreiro-pablo`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 1. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido PDF producido (AR2605158). Nombres/alias conocidos: LOPEZ BARREIRO, PABLO.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Sin medidas completas acreditadas para cargar.
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Medidas retiradas en esta revisión (no se cargan):
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| lona; 184 × 120 | 2,5; 12,5; 30,5; 45,5; 60,5; 75,5; 90,5; 108,5; 118,5 | 2,5; 30,5; 60,5; 90,5; 118,5 | 2,5; 15; 38; 73; 109; 145; 181,5 |  AR2605158; OT/2026/AR2605158.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2605158. |
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| lona; 184 × 120 | AR2605158 | No se acredita la longitud hecha de los tres lados; no se suple con largo/ancho del remolque. |
 
 ### REMOLQUES ROBUSTOS — 054598
 
@@ -8175,7 +8310,7 @@ Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
 
 ### RODEIRO LOUZAO, MANUEL — 050254
 
-Ficha: `rodeiro-louzao-manuel`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `rodeiro-louzao-manuel`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Plantilla antigua ajena al histórico exportado: no se registra (regla 6 de Iván).
 
 Código acreditado por GET RPS pedido citado en plantilla (AR2305318). Nombres/alias conocidos: RODEIRO LOUZAO, MANUEL. Pedidos de plantilla consultados: AR2305318.
 
@@ -8183,13 +8318,11 @@ Plantillas encontradas: `PL/AR2305318.dwg`
 
 AR2305318.dwg se acredita por el pedido homónimo: RODEIRO LOUZAO, MANUEL, código 050254. Contiene la plantilla PAMILAKAN copiada: sus notas generales no se convierten en preferencias de RODEIRO.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
-
 Sin medidas completas acreditadas para cargar.
 
 ### TALLERES DE LA AZABA, S.L. — 012902
 
-Ficha: `talleres-de-la-azaba-s-l`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `talleres-de-la-azaba-s-l`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Plantilla antigua ajena al histórico exportado: no se registra (regla 6 de Iván).
 
 Código acreditado por GET RPS pedido citado en plantilla (AR0805372). Nombres/alias conocidos: TALLERES DE LA AZABA, S.L.. Pedidos de plantilla consultados: AR0805372.
 
@@ -8197,13 +8330,11 @@ Plantillas encontradas: `PL/TALLERES DE LA AZABA.dwg`
 
 Código 012902 confirmado por AR0805372, escrito en TALLERES DE LA AZABA.dwg. La plantilla mezcla un modelo de ganado y ejemplos de varias medidas: no se trasladan a una lona alta por compartir dibujo.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
-
 Sin medidas completas acreditadas para cargar.
 
 ### TRIÑANES SILVA, ALFREDO — 000472
 
-Ficha: `trinanes-silva-alfredo`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 0. Alta propuesta.
+Ficha: `trinanes-silva-alfredo`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 0. Fuera del registro: Plantilla antigua ajena al histórico exportado: no se registra (regla 6 de Iván).
 
 Código acreditado por GET RPS pedido citado en plantilla (AR1901084). Nombres/alias conocidos: TRIÑANES SILVA, ALFREDO. Pedidos de plantilla consultados: AR1901084.
 
@@ -8211,26 +8342,188 @@ Plantillas encontradas: `PL/AR1901084.dwg`
 
 AR1901084.dwg se acredita por el pedido homónimo: TRIÑANES SILVA, ALFREDO, código 000472. La plantilla llamada TRIÑANES.dwg permanece en la lista de identidades por confirmar: el apellido por sí solo no acredita que sea la misma cuenta.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
-
 Sin medidas completas acreditadas para cargar.
 
 ### UGARTE SARO, AIDA — 054529
 
-Ficha: `ugarte-saro-aida`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 2. Alta propuesta.
+Ficha: `ugarte-saro-aida`. Histórico: **0 líneas / 0 pedidos**. PDF producidos adicionales examinados: 2. Fuera del registro: Ficha nueva sin ninguna medida acreditada de tres lados y sin ollaosRepartidos: no se registra (regla 7 de Iván).
 
 Código acreditado por GET RPS pedido PDF producido (AR2605055). Nombres/alias conocidos: UGARTE SARO, AIDA.
 
 Plantillas encontradas: ninguna con identidad acreditada en el inventario de PL.
 
-No hay una regla fija de cliente acreditada; se propone la identidad y solo las medidas que constan.
+Sin medidas completas acreditadas para cargar.
 
-Medidas propuestas; todas las posiciones son cm sobre la lona hecha.
+Medidas retiradas en esta revisión (no se cargan):
 
-| Tipo; remolque largo × ancho | Delante | Detrás | Laterales (atrás → delante) | Evidencia y elección |
-| --- | --- | --- | --- | --- |
-| baqueton; 246 × 144 | 2,5; 37,5; 72,5; 107,5; 142,5 | 2,5; 37,5; 72,5; 107,5; 142,5 | 2,5; 37,1; 71,6; 106,2; 140,8; 175,4; 209,9; 244,5 |  AR2604869; OT/2026/AR2604869.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2604869. |
-| baqueton; 252 × 150 | 2,5; 39; 75,5; 112; 148,5 | 2,5; 39; 75,5; 112; 148,5 | 2,5; 37,9; 73,4; 108,8; 144,2; 179,6; 215,1; 250,5 |  AR2605055; OT/2026/AR2605055.pdf; mayoría de pedidos. Variantes: 1 pedido(s): AR2605055. |
+| Tipo; remolque | Pedido seleccionado antes | Motivo |
+| --- | --- | --- |
+| baqueton; 246 × 144 | AR2604869 | No se acredita la longitud hecha de los tres lados; no se suple con largo/ancho del remolque. |
+| baqueton; 252 × 150 | AR2605055 | No se acredita la longitud hecha de los tres lados; no se suple con largo/ancho del remolque. |
+
+## Apéndice: revisión de márgenes mayores de 12 cm
+
+Se muestra cualquier medida con aviso antes o después de revisar. Los márgenes corresponden al primer y último ollao respecto a cada borde hecho, nunca al largo del remolque. Las listas manuales conservadas se cotejaron con las tres filas escritas y con el equilibrio de márgenes original; las vigentes se mantienen por indicación expresa. revision-ivan.json contiene la auditoría de todas las medidas, también las que no superan el umbral, y los desplazamientos que permite detectar un centrado injustificado.
+
+| Cliente; tipo; medida | Pedido y fuente | Márgenes delante; detrás; laterales (primero / último) | Decisión y motivo |
+| --- | --- | --- | --- |
+| 001300; baqueton; 452 × 222 | AR2406256; OT/2024/AR2406256-10.xlsb | delante: 2 / 2; atras: 2 / 2; laterales: 117,5 / 117,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 048286; baqueton; 250 × 170 | AR2605129; OT/2026/AR2605129.pdf | delante: 15 / sin dato; atras: 15 / sin dato; laterales: 8 / sin dato | conservada: Ficha y medida vigentes: se conservan por indicación de Iván. |
+| 048286; baqueton; 150 × 105 | AR2404016; OT/2024/AR2404016.xlsb | delante: 10 / 11; atras: 10 / 11; laterales: 12 / 13 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 048286; baqueton; 180 × 115 | AR2406126; OT/2024/AR2406126-11.xlsb | delante: 7 / 7; atras: 7 / 7; laterales: 7 / 4,7 | sustituida: Se vuelve a elegir por mayoría/recencia entre los casos acreditados; quedan fuera las filas incoherentes o automáticas sin cotejo. |
+| 048286; baqueton; 260 × 140 | AR2404942; OT/2024/AR2404942-1.xlsb | delante: 10 / 9; atras: 10 / 9; laterales: 20 / 19,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 048286; baqueton; 306 × 180 | AR2405907; OT/2024/AR2405907-13.xlsb | delante: 4,8 / 7; atras: 4,8 / 7; laterales: 9 / 14,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 048286; lona; 250 × 134 | AR2500948; OT/2025/AR2500948-10.xlsb | delante: 7,5 / 22,5; atras: 7,5 / 22; laterales: 50,5 / 50,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 048286; lona; 252 × 172 | AR2603583; OT/2026/AR2603583-10.xlsb | delante: 16,5 / 16,5; atras: 16,5 / 16,5; laterales: 8 / 7,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 048286; lona; 300 × 172 | AR2603115; OT/2026/AR2603115.xlsb | delante: 15,5 / 15,5; atras: 15,5 / 15,5; laterales: 9 / 7,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 048286; lona; 303 × 173 | AR2502311; OT/2025/AR2502311.xlsb | delante: 17 / 17; atras: 17 / 17; laterales: 8,5 / 8 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 000265; baqueton; 180 × 120 | AR2602077; OT/2026/AR2602077.xlsb | delante: 10 / 10; atras: 10 / 10; laterales: 14,5 / 13,8 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 000265; baqueton; 180 × 130 | AR2506027; OT/2025/AR2506027.xlsb | delante: 10 / 10; atras: 10 / 10; laterales: 13,8 / 14,5 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 000265; lona; 300 × 160 | AR2400288; OT/2024/AR2400288.xlsb | delante: 11 / 10; atras: 11 / 10; laterales: 12,5 / 11,5 | sustituida: Se vuelve a elegir por mayoría/recencia entre los casos acreditados; quedan fuera las filas incoherentes o automáticas sin cotejo. |
+| 000265; lona; 300 × 180 | AR2502233; OT/2025/AR2502233.xlsb | delante: 13,8 / 14,5; atras: 13,8 / 14,5; laterales: 2,5 / 11,5 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 000265; lona; 300 × 190 | AR2500972; OT/2025/AR2500972.xlsb | delante: 8 / 8; atras: 8 / 8; laterales: 12,5 / 11,5 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 000265; lona; 315 × 180 | AR2601016; OT/2026/AR2601016.xlsb | delante: 13,8 / 14,5; atras: 13,8 / 14,5; laterales: 5 / 10 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 000265; lona; 320 × 180 | AR2400014; OT/2024/AR2400014-3.xlsb | delante: 14 / 14,5; atras: 14 / 14,5; laterales: 5 / 5,5 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 000265; lona; 380 × 235 | AR2600281; OT/2026/AR2600281-12.xlsb | delante: 7,5 / 7,5; atras: 7,5 / 7,5; laterales: 5 / 42,8 | retirada: REMOLCAR AR2600281: la lista lateral termina a 42,8 cm del borde delantero (hecho 381; último ollao 338,2). Solo hay un caso y no hay cotejo que acredite ese extremo. La costumbre del ollao extra trasero a 5/10 no justifica este hueco delantero; se retira sin alterar las asimetrías acreditadas de las otras medidas. |
+| 048363; baqueton; 204 × 110 | AR2402954; OT/2024/AR2402954-10.xlsb | delante: 2,5 / 2,5; atras: 2,5 / 2,5; laterales: 2,5 / 2,5 | sustituida: Se vuelve a elegir por mayoría/recencia entre los casos acreditados; quedan fuera las filas incoherentes o automáticas sin cotejo. |
+| 048363; baqueton; 232 × 132 | AR2502379; OT/2025/AR2502379-11.xlsb | delante: 26 / 26; atras: 26 / 26; laterales: 20,5 / 20,5 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 048363; baqueton; 246 × 99 | AR2602929; OT/2026/AR2602929.xlsb | delante: 14,4 / 14,4; atras: 14,4 / 14,4; laterales: 2,5 / 2,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 048363; baqueton; 257 × 135 | AR2500908; OT/2025/AR2500908.xlsb | delante: 2,5 / 2,5; atras: 2,5 / 2,5; laterales: 23,6 / 23,6 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 048363; baqueton; 262 × 143 | AR2502181; OT/2025/AR2502181.xlsb | delante: 2,5 / 9,5; atras: 6 / 6; laterales: 31 / 31 | retirada: El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| 048363; baqueton; 268 × 160 | AR2404836; OT/2024/AR2404836.xlsb | delante: 2,5 / 2,5; atras: 2,5 / 2,5; laterales: 53,85 / 53,85 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 048363; baqueton; 303 × 171 | AR2405388; OT/2024/AR2405388.xlsb | delante: 2,5 / 35,9; atras: 2,5 / 35,9; laterales: 2,5 / 2,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 048363; baqueton; 350 × 250 | AR2402895; OT/2024/AR2402895.xlsb | delante: 2,5 / 2,5; atras: 2,5 / 2,5; laterales: 2,5 / 236,6 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 048363; lona; 222 × 195 | AR2404598; OT/2024/ar2404598.xlsb | delante: 42,7 / 42,7; atras: 42,7 / 42,7; laterales: 54,4 / 54,4 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 048363; lona; 244 × 135 | AR2406297; OT/2024/AR2406297.xlsb | delante: 12,6 / 12,6; atras: 12,6 / 12,6; laterales: 2,5 / 129,6 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 048363; lona; 244 × 137 | AR2603235; OT/2026/AR2603235.xlsb | delante: 12,7 / 12,7; atras: 12,7 / 12,7; laterales: 36,8 / 36,8 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 048363; lona; 268 × 148 | AR2403127; OT/2024/AR2403127.xlsb | delante: 2,5 / 2,5; atras: 2,5 / 2,5; laterales: 13,5 / 13,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 048363; lona; 301 × 101 | AR2404194; OT/2024/AR2404194.xlsb | delante: 2,5 / 2,5; atras: 2,5 / 2,5; laterales: 17,35 / 17,35 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 021493; lona; 160 × 120 | AR2604263; OT/2026/AR2604263.xlsb | delante: 10,5 / 10,5; atras: 10,5 / 10,5; laterales: 13,5 / 13,5 | conservada: Ficha y medida vigentes: se conservan por indicación de Iván. |
+| 021493; baqueton; 160 × 120 | AR2601377; OT/2026/AR2601377.xlsb | delante: 10,5 / 10,5; atras: 10,5 / 10,5; laterales: 13,5 / 13,5 | conservada: Ficha y medida vigentes: se conservan por indicación de Iván. |
+| 021493; lona; 175 × 110 | AR2502030; OT/2025/AR2502030.xlsb | delante: 10,5 / 10,5; atras: 10,5 / 10,5; laterales: 13,5 / 13,5 | conservada: Ficha y medida vigentes: se conservan por indicación de Iván. |
+| 021493; baqueton; 175 × 110 | AR2504856; OT/2025/AR2504856.xlsb | delante: 10,5 / 10,5; atras: 10,5 / 10,5; laterales: 13,5 / 13,5 | conservada: Ficha y medida vigentes: se conservan por indicación de Iván. |
+| 021493; lona; 200 × 125 | AR2506073; OT/2025/AR2506073.xlsb | delante: 12,5 / 12,5; atras: 12,5 / 12,5; laterales: 10,5 / 10,5 | conservada: Ficha y medida vigentes: se conservan por indicación de Iván. |
+| 021493; baqueton; 200 × 125 | AR2605273; OT/2026/AR2605273.pdf | delante: 12,5 / sin dato; atras: 12,5 / sin dato; laterales: 10,5 / sin dato | conservada: Ficha y medida vigentes: se conservan por indicación de Iván. |
+| 021493; lona; 225 × 125 | AR2500139; OT/2025/AR2500139.xlsb | delante: 12,5 / 12,5; atras: 12,5 / 12,5; laterales: 13,5 / 13,5 | conservada: Ficha y medida vigentes: se conservan por indicación de Iván. |
+| 021493; baqueton; 225 × 125 | AR2505227; OT/2025/AR2505227.xlsb | delante: 12,5 / 12,5; atras: 12,5 / 12,5; laterales: 13,5 / 13,5 | conservada: Ficha y medida vigentes: se conservan por indicación de Iván. |
+| 021493; lona; 250 × 140 | AR2600251; OT/2026/AR2600251.xlsb | delante: 12,5 / 12,5; atras: 12,5 / 12,5; laterales: 10,5 / 10,5 | conservada: Ficha y medida vigentes: se conservan por indicación de Iván. |
+| 021493; baqueton; 250 × 140 | AR2501475; OT/2025/AR2501475.xlsb | delante: 12,5 / 12,5; atras: 12,5 / 12,5; laterales: 10,5 / 10,5 | conservada: Ficha y medida vigentes: se conservan por indicación de Iván. |
+| 021493; lona; 260 × 150 | AR2600693; OT/2026/AR2600693.xlsb | delante: 12,5 / 12,5; atras: 12,5 / 12,5; laterales: 12,5 / 12,5 | conservada: Ficha y medida vigentes: se conservan por indicación de Iván. |
+| 021493; baqueton; 260 × 150 | AR2603563; OT/2026/AR2603563-11.xlsb | delante: 12,5 / 12,5; atras: 12,5 / 12,5; laterales: 12,5 / 12,5 | conservada: Ficha y medida vigentes: se conservan por indicación de Iván. |
+| 021493; lona; 300 × 175 | vigente; docs/remolques/fichas-clientes/fichas-vigentes.json | delante: 13 / sin dato; atras: 13 / sin dato; laterales: 13 / sin dato | conservada: Ficha y medida vigentes: se conservan por indicación de Iván. |
+| 021493; baqueton; 300 × 175 | vigente; docs/remolques/fichas-clientes/fichas-vigentes.json | delante: 13 / sin dato; atras: 13 / sin dato; laterales: 13 / sin dato | conservada: Ficha y medida vigentes: se conservan por indicación de Iván. |
+| 021493; baqueton; 150 × 110 | AR2406190; OT/2024/AR2406190.xlsb | delante: 12,5 / 12,5; atras: 12,5 / 12,5; laterales: 12,5 / 12,5 | retirada: El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| 021493; baqueton; 180 × 115 | AR2602078; OT/2026/AR2602078.xlsb | delante: 10,5 / 10,5; atras: 10,5 / 10,5; laterales: 13 / 13 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 021493; baqueton; 180 × 120 | AR2501098; OT/2025/AR2501098.xlsb | delante: 10,5 / 10,5; atras: 10,5 / 10,5; laterales: 13 / 13 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 021493; baqueton; 235 × 150 | AR2400475; OT/2024/AR2400475.xlsb | delante: 12,5 / 12,5; atras: 12,5 / 12,5; laterales: 12,5 / 12,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 021493; baqueton; 252 × 142 | AR2501699; OT/2025/AR2501699.xlsb | delante: 13,5 / 13,5; atras: 13,5 / 13,5; laterales: 11,5 / 11,5 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 021493; baqueton; 256 × 146 | AR2601570; OT/2026/AR2601570-11.xlsb | delante: 12,5 / 12,5; atras: 12,5 / 12,5; laterales: 10,5 / 10,5 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 021493; baqueton; 280 × 175 | AR2405935; OT/2024/AR2405935.xlsb | delante: 12 / 13; atras: 12 / 13; laterales: 12,5 / 12,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 021493; baqueton; 300 × 150 | AR2602341; OT/2026/AR2602341.xlsb | delante: 12 / 12; atras: 12 / 12; laterales: 13 / 13 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 021493; lona; 180 × 120 | AR2400974; OT/2024/AR2400974.xlsb | delante: 10 / 11; atras: 10 / 11; laterales: 13 / 13 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 021493; lona; 220 × 130 | AR2604335; OT/2026/AR2604335.xlsb | delante: 12,5 / 12,5; atras: 12,5 / 12,5; laterales: 13,5 / 13,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 021493; lona; 225 × 130 | AR2603563; OT/2026/AR2603563-11.xlsb | delante: 12 / 12; atras: 12 / 12; laterales: 13 / 14 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 021493; lona; 235 × 145 | AR2401329; OT/2024/AR2401329.xlsb | delante: 12 / 12; atras: 12 / 12; laterales: 12,5 / 12,5 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 021493; lona; 250 × 150 | AR2504989; OT/2025/AR2504989.xlsb | delante: 12,5 / 12,5; atras: 12,5 / 12,5; laterales: 10,5 / 10,5 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 021493; lona; 250 × 160 | AR2402946; OT/2024/AR2402946.xlsb | delante: 12,5 / 12,5; atras: 12,5 / 12,5; laterales: 10,5 / 10,5 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 021493; lona; 260 × 165 | AR2601271; OT/2026/AR2601271.xlsb | delante: 12,75 / 12,75; atras: 12,75 / 12,75; laterales: 12,5 / 12,5 | retirada: El resultado guardado no coincide con las listas manuales que indica el modo seleccionado. |
+| 021493; lona; 300 × 150 | AR2602866; OT/2026/AR2602866.xlsb | delante: 12,5 / 12,5; atras: 12,5 / 12,5; laterales: 13 / 13 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 021493; lona; 333 × 168 | AR2405925; OT/2024/AR2405925.xlsb | delante: 12,5 / 12,5; atras: 12,5 / 12,5; laterales: 20 / 6 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 021493; lona; 335 × 170 | AR2500261; OT/2025/AR2500261.xlsb | delante: 12,5 / 13; atras: 12,5 / 13; laterales: 12,5 / 13 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 021493; lona; 400 × 210 | AR2503722; OT/2025/AR2503722.xlsb | delante: 12,5 / 12,5; atras: 12,5 / 12,5; laterales: 12,5 / 13 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 000108; lona; 160 × 125 | AR2602203; OT/2026/AR2602203.xlsb | delante: 2,5 / 2,5; atras: 2,5 / 2,5; laterales: 22 / 22 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 000108; lona; 206 × 129,5 | AR2401161; OT/2024/AR2401161.xlsb | delante: 16,35 / 16,35; atras: 16,35 / 16,35; laterales: 17,75 / 17,75 | retirada: CARMA AR2401161: el resultado activo del Excel tiene 6/4/4 ollaos, frente a 7/5/5 y puntas de 2,5 cm del DWG; además difiere el ancho hecho (130,5 frente a 130). No se mezcla ninguna de las versiones. |
+| 000108; lona; 250 × 180 | AR2400754; OT/2024/AR2400754.xlsb | delante: 20,1 / 20,1; atras: 20,1 / 20,1; laterales: 20,05 / 20,05 | retirada: El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| 049971; baqueton; 180 × 120 | AR2406591; OT/2024/AR2406591-6.xlsb | delante: 2,5 / 2,5; atras: 25 / 2,5; laterales: 2,5 / 2,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 049971; baqueton; 505 × 255 | AR2502866; OT/2025/AR2502866.xlsb | delante: 2,5 / 2,5; atras: 2,5 / 2,5; laterales: 2,5 / 102,7 | retirada: El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| 049971; lona; 175 × 111 | AR2401748; OT/2024/AR2401748-10.xlsb | delante: 18,7 / 18,7; atras: 18,7 / 18,7; laterales: 18 / 18 | retirada: El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| 049971; lona; 250 × 175 | AR2501995; OT/2025/AR2501995-12.xlsb | delante: 2,5 / 2,5; atras: 2,5 / 2,5; laterales: 12,5 / 12,5 | retirada: El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| 049971; lona; 300 × 163 | AR2402799; OT/2024/AR2402799-11.xlsb | delante: 2,5 / 2,5; atras: 2,5 / 2,5; laterales: 2,5 / 2,5 | sustituida: Se vuelve a elegir por mayoría/recencia entre los casos acreditados; quedan fuera las filas incoherentes o automáticas sin cotejo. |
+| 049971; lona; 500 × 255 | AR2501667; OT/2025/AR2501667-11.xlsb | delante: 2,5 / 2,5; atras: 2,5 / 2,5; laterales: 90,05 / 90,05 | retirada: El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| 016573; lona; 263 × 163 | AR2502022; OT/2025/AR2502022-11.xlsb | delante: 5 / 5; atras: 5 / 5; laterales: 2,5 / 2,5 | sustituida: Se vuelve a elegir por mayoría/recencia entre los casos acreditados; quedan fuera las filas incoherentes o automáticas sin cotejo. |
+| 016573; lona; 274 × 180 | AR2600295; OT/2026/AR2600295.xlsb | delante: 2,5 / 2,5; atras: 2,5 / 2,5; laterales: 2,5 / 56,5 | retirada: El resultado guardado no coincide con las listas manuales que indica el modo seleccionado. |
+| 049631; baqueton; 530 × 250 | AR2404641; OT/2024/AR2404641-2.xlsb | delante: 2,5 / 66,6; atras: 2,5 / 66,6; laterales: 2,5 / 167,9 | retirada: El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| 049631; lona; 313 × 172 | AR2404082; OT/2024/AR2404082-15.xlsb | delante: 2,5 / 2,5; atras: 2,5 / 2,5; laterales: 15,35 / 15,35 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 049631; lona; 367 × 192 | AR2404641; OT/2024/AR2404641-2.xlsb | delante: 2,5 / 2,5; atras: 2,5 / 2,5; laterales: 41,4 / 41,4 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 023649; baqueton; 200 × 130 | AR2500229; OT/2025/AR2500229.xlsb | delante: 10 / 10; atras: 10 / 10; laterales: 12,5 / 12,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 023649; baqueton; 253 × 133 | AR2505110; OT/2025/AR2505110-11.xlsb | delante: 10 / 10; atras: 10 / 10; laterales: 11 / 13,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 023649; lona; 230 × 160 | AR2402778; OT/2024/AR2402778.xlsb | delante: 10 / 10; atras: 10 / 10; laterales: 20 / 1 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 023649; lona; 235 × 149 | AR2503492; OT/2025/AR2503492-11.xlsb | delante: 10 / 10; atras: 10 / 10; laterales: 13 / 13 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 023649; lona; 271 × 181 | AR2400680; OT/2024/AR2400680.xlsb | delante: 17,5 / 17,5; atras: 17,5 / 17,5; laterales: 17,5 / 17,5 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 023649; lona; 310 × 164 | AR2600255; OT/2026/AR2600255.xlsb | delante: 12,6 / 12,6; atras: 12,6 / 12,6; laterales: 9,75 / 9,75 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 023649; lona; 400 × 190 | AR2400792; OT/2024/AR2400792.xlsb | delante: 10 / 10; atras: 10 / 10; laterales: 13 / 12,5 | retirada: El resultado guardado no coincide con las listas manuales que indica el modo seleccionado. |
+| 023649; lona; 400 × 193 | AR2401819; OT/2024/AR2401819.xlsb | delante: 10 / 10; atras: 10 / 10; laterales: 12,8 / 12,7 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 001302; baqueton; 303 × 200 | AR2401840; OT/2024/AR2401840-11.xlsb | delante: 2,5 / 2,5; atras: 2,5 / 2,5; laterales: 19,55 / 19,55 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 001302; lona; 255 × 180 | AR2405345; OT/2024/AR2405345-11.xlsb | delante: 17,5 / 17,5; atras: 17,5 / 17,5; laterales: 17,5 / 17,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 001302; lona; 305 × 190 | AR2401157; OT/2024/AR2401157-3.xlsb | delante: 19,1 / 19,1; atras: 19,1 / 19,1; laterales: 17,4 / 17,4 | retirada: El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| 001302; lona; 355 × 190 | AR2401157; OT/2024/AR2401157-1.xlsb | delante: 19,1 / 19,1; atras: 19,1 / 19,1; laterales: 18,25 / 18,25 | retirada: El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| 001302; lona; 403 × 160 | AR2500595; OT/2025/AR2500595-12.xlsb | delante: 2,5 / 2,5; atras: 2,5 / 2,5; laterales: 19,15 / 19,15 | retirada: El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| 045288; lona; 353 × 202 | AR2406500; OT/2024/AR2406500.xlsb | delante: 2,5 / 2,5; atras: 2,5 / 2,5; laterales: 17,05 / 17,05 | retirada: El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| 045288; lona; 403 × 182 | AR2505290; OT/2025/AR2505290.xlsb | delante: 2,5 / 2,5; atras: 2,5 / 2,5; laterales: 19,1 / 19,1 | retirada: El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| 001795; lona; 256 × 150 | BE2401106; OT/2024/BE2401106.xlsb | delante: 50,3 / 50,3; atras: 1 / 1; laterales: 1 / 1 | retirada: El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| 038304; lona; 251 × 136 | AR2406576; OT/2024/AR2406576.xlsb | delante: 12,5 / 12,5; atras: 12,5 / 12,5; laterales: 20 / 10 | retirada: El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| 052321; lona; 181 × 131 | AR2600596; OT/2026/AR2600596.xlsb | delante: 18 / 18; atras: 18 / 18; laterales: 16 / 16 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 052321; lona; 201 × 131 | AR2600667; OT/2026/AR2600667.xlsb | delante: 17 / 17; atras: 17 / 17; laterales: 20 / 20 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 052321; lona; 201 × 141 | AR2600931; OT/2026/AR2600931.xlsm | delante: 17 / 17; atras: 17 / 17; laterales: 13,5 / 13,5 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 052321; lona; 236 × 150 | AR2502010; OT/2025/AR2502010.xlsb | delante: 10 / 10; atras: 10 / 10; laterales: 15 / 15 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 052321; lona; 251 × 141 | AR2600066; OT/2026/AR2600066-11.xlsb | delante: 17 / 17; atras: 17 / 17; laterales: 13,5 / 14,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 052321; lona; 251 × 171 | AR2602232; OT/2026/AR2602232.xlsb | delante: 15,5 / 15,5; atras: 15,5 / 15,5; laterales: 17 / 17 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 052321; lona; 251 × 178 | AR2502729; OT/2025/AR2502729-12.xlsb | delante: 19 / 19; atras: 19 / 19; laterales: 17 / 17 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 052321; lona; 302 × 151 | AR2600066; OT/2026/AR2600066.xlsb | delante: 16 / 16; atras: 16 / 16; laterales: 11,5 / 11,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 052321; lona; 303 × 167 | AR2503552; OT/2025/AR2503552-11.xlsb | delante: 6,5 / 6,5; atras: 6,5 / 6,5; laterales: 17 / 17 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 052321; lona; 401 × 166 | AR2600596; OT/2026/AR2600596.xlsb | delante: 14 / 14; atras: 14 / 14; laterales: 16,5 / 16,5 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 042412; baqueton; 160 × 107 | AR2601052; OT/2026/AR2601052.xlsb | delante: 37,7 / 37,7; atras: 37,7 / 37,7; laterales: 33,7 / 33,7 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 042623; lona; 250 × 159 | AR2504171; OT/2025/AR2504171-11.xlsb | delante: 7 / 16; atras: 7 / 16; laterales: 2,5 / 7 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 020015; baqueton; 181 × 131 | AR2401300; OT/2024/AR2401300.xlsb | delante: 18 / 18; atras: 18 / 18; laterales: 15,95 / 15,95 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 020015; baqueton; 201 × 131 | AR2404797; OT/2024/AR2404797.xlsb | delante: 18 / 18; atras: 18 / 18; laterales: 33,5 / 33,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 020015; lona; 161 × 121 | AR2405908; OT/2024/AR2405908.xlsb | delante: 17 / 17; atras: 17 / 17; laterales: 16 / 16 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 020015; lona; 181 × 131 | AR2404498; OT/2024/AR2404498.xlsb | delante: 18 / 18; atras: 18 / 18; laterales: 16 / 16 | sustituida: Se vuelve a elegir por mayoría/recencia entre los casos acreditados; quedan fuera las filas incoherentes o automáticas sin cotejo. |
+| 020015; lona; 201 × 131 | AR2402604; OT/2024/AR2402604-1.xlsb | delante: 17 / 17; atras: 17 / 17; laterales: 20 / 20 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 020015; lona; 251 × 131 | AR2405968; OT/2024/AR2405968.xlsb | delante: 17 / 17; atras: 17 / 17; laterales: 13,5 / 13,5 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 020015; lona; 251 × 141 | AR2400496; OT/2024/AR2400496.xlsb | delante: 2,5 / 2,5; atras: 2,5 / 2,5; laterales: 14 / 14 | sustituida: Se vuelve a elegir por mayoría/recencia entre los casos acreditados; quedan fuera las filas incoherentes o automáticas sin cotejo. |
+| 000530; lona; 287 × 176 | AR2401084; OT/2024/AR2401084-10.xlsb | delante: 2,5 / 2,5; atras: 2,5 / 2,5; laterales: 22,7 / 22,7 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 052388; lona; 450 × 130 | AR2501494; OT/2025/AR2501494-10.xlsb | delante: 5 / 5; atras: 5 / 5; laterales: 2,5 / 133,1 | retirada: El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| 036805; baqueton; 200 × 130 | AR2505976; OT/2025/AR2505976.xlsb | delante: 2,5 / 2,5; atras: 14,5 / 14,5; laterales: 2,5 / 2,5 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 053595; lona; 220 × 140 | AR2600664; OT/2026/AR2600664.xlsb | delante: 35,2 / 35,2; atras: 35,2 / 35,2; laterales: 36,9 / 36,9 | retirada: El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| 001138; baqueton; 150 × 104 | AR2405582; OT/2024/AR2405582.xlsb | delante: 12 / 12; atras: 12 / 12; laterales: 13,5 / 13,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 001138; baqueton; 150 × 105 | AR2502057; OT/2025/AR2502057.xlsb | delante: 11,5 / 11,5; atras: 11,5 / 11,5; laterales: 12,5 / 12,5 | retirada: R. CASAL AR2401103: el croquis y los dos laterales de corte no coinciden. |
+| 001138; baqueton; 180 × 120 | AR2604926; OT/2026/AR2604926.pdf | delante: 10,5 / sin dato; atras: 10,5 / sin dato; laterales: 13 / sin dato | retirada: No se acredita la longitud hecha de los tres lados; no se suple con largo/ancho del remolque. |
+| 001138; baqueton; 260 × 150 | AR2403829; OT/2024/AR2403829.xlsb | delante: 14 / 13,7; atras: 14 / 13,7; laterales: 12,5 / 12,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 001138; lona; 170 × 115 | AR2502416; OT/2025/AR2502416.xlsb | delante: 5 / 5; atras: 24 / 26; laterales: 2,5 / 2,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 001138; lona; 174 × 116 | AR2504657; OT/2025/AR2504657.xlsb | delante: 2,5 / 6; atras: 29 / 29; laterales: 2,5 / 4 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 048657; lona; 250 × 125 | AR2600800; OT/2026/AR2600800.xlsb | delante: 2,5 / 2,5; atras: 2,5 / 2,5; laterales: 16,5 / 16,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 048719; baqueton; 241 × 136 | AR2504983; OT/2025/AR2504983.xlsb | delante: 5 / 5; atras: 5 / 5; laterales: 12,5 / 12,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 005734; lona; 230 × 142 | AR2403313; OT/2024/AR2403313.xlsb | delante: 16 / 16; atras: 16 / 16; laterales: 5 / 10 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 046101; lona; 216 × 134,5 | AR2402627; OT/2024/AR2402627.xlsb | delante: 22 / 22,5; atras: 22,75 / 22,75; laterales: 20,5 / 20,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 052354; lona; 160 × 120,5 | AR2501346; OT/2025/AR2501346.xlsb | delante: 15 / 15; atras: 15 / 15; laterales: 15 / 15 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 054131; baqueton; 200 × 130 | AR2603148; OT/2026/AR2603148-10.xlsb | delante: 2,5 / 2,5; atras: 14,5 / 14,5; laterales: 2,5 / 2,5 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 001166; lona; 259,5 × 159,5 | AR2406681; OT/2024/AR2406681.xlsb | delante: 10,1 / 10,1; atras: 19 / 19,2; laterales: 18 / 19,2 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 053053; lona; 160 × 110 | AR2504254; OT/2025/AR2504254.xlsb | delante: 18 / 19,5; atras: 18 / 19,5; laterales: 16 / 16,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 036319; baqueton; 275 × 195 | AR2502312; OT/2025/AR2502312.xlsb | delante: 2,5 / 14,5; atras: 2,5 / 2,5; laterales: 2,5 / 8,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 050508; baqueton; 161 × 112 | AR2402186; OT/2024/AR2402186.xlsb | delante: 14 / 15; atras: 14 / 15; laterales: 13,5 / 13,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 051361; lona; 200 × 130 | AR2403610; OT/2024/AR2403610.xlsb | delante: 20 / 20,5; atras: 12,5 / 8; laterales: 12,5 / 13 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 007494; lona; 195 × 125 | AR2504220; OT/2025/AR2504220.xlsb | delante: 12,75 / 12,75; atras: 12,75 / 12,75; laterales: 12,5 / 15 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 047782; lona; 206 × 133 | AR2505659; OT/2025/AR2505659.xlsb | delante: 2,5 / 33,5; atras: 2,5 / 33,5; laterales: 2,5 / 2,5 | retirada: El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| 053179; lona; 228,5 × 148 | AR2504541; OT/2025/AR2504541.xlsb | delante: 5 / 15; atras: 5 / 15; laterales: 5 / 6,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 012790; lona; 200 × 125 | AR2501008; OT/2025/AR2501008.xlsb | delante: 9,5 / 10,5; atras: 9,5 / 10,5; laterales: 8 / 13,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 053055; baqueton; 180 × 110 | AR2504260; OT/2025/AR2504260.xlsb | delante: 13,5 / 15; atras: 13,5 / 15; laterales: 11,3 / 11,7 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 051526; lona; 176 × 110 | AR2404260; OT/2024/ar2404260.xlsb | delante: 10 / 10; atras: 10 / 10; laterales: 6 / 15 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 051552; lona; 175 × 115 | AR2404366; OT/2024/AR2404366.xlsb | delante: 36,5 / 36,5; atras: 25 / 26; laterales: 5 / 10 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 033454; lona; 199,5 × 124,5 | AR2402595; OT/2024/AR2402595.xlsb | delante: 10 / 10; atras: 10 / 15,5; laterales: 2,5 / 2,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 052508; baqueton; 180,5 × 121 | AR2501981; OT/2025/AR2501981-2.xlsb | delante: 22,5 / 2,5; atras: 2,5 / 2,5; laterales: 2,5 / 2,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 053172; baqueton; 302,5 × 161 | AR2504838; OT/2025/AR2504838.xlsb | delante: 15,5 / 15,5; atras: 15,5 / 15,5; laterales: 7,5 / 8,7 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 051916; lona; 320 × 180 | AR2405969; OT/2024/AR2405969.xlsb | delante: 10 / 10; atras: 10 / 10; laterales: 22,55 / 22,55 | retirada: El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
+| 041356; lona; 206 × 140 | AR2406695; OT/2024/AR2406695.xlsb | delante: 17 / 17; atras: 17 / 17; laterales: 12 / 12 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 052029; lona; 170 × 115,5 | AR2406615; OT/2024/AR2406615.xlsb | delante: 12,25 / 12,25; atras: 3 / 6,5; laterales: 3 / 3 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 051957; baqueton; 225,5 × 145 | AR2406205; OT/2024/AR2406205.xlsb | delante: 16 / 17,5; atras: 16 / 17,5; laterales: 20 / 19,2 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 051884; lona; 300 × 160 | AR2405866; OT/2024/AR2405866.xlsb | delante: 12,3 / 13; atras: 12,3 / 11; laterales: 10 / 10,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 052647; baqueton; 180 × 125 | AR2502568; OT/2025/AR2502568.xlsb | delante: 5,5 / 5,5; atras: 16 / 16; laterales: 12,5 / 12,5 | conservada: Modo SEGÚN SE INDICA: tres listas escritas coincidentes con I:T38/39/40 y sus orígenes; los márgenes mayores de 12 cm ya están equilibrados en el original (tolerancia 0,21 cm), o la asimetría es deliberada y acreditada. No se justifica un margen grande solo por haberlo centrado. |
+| 007698; lona; 175 × 120 | AR2500542; OT/2025/AR2500542.xlsb | delante: 7,5 / 8,5; atras: 7,5 / 8; laterales: 13 / 13 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 052410; lona; 160 × 109 | AR2501584; OT/2025/AR2501584.xlsb | delante: 19 / 11; atras: 19 / 11; laterales: 5,7 / 21 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 053078; lona; 260 × 140 | AR2504350; OT/2025/AR2504350.xlsb | delante: 35,5 / 35,5; atras: 35,5 / 35,5; laterales: 25 / 23 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 021774; lona; 181 × 112 | AR2504507; OT/2025/AR2504507.xlsb | delante: 7 / 5; atras: 25 / 23; laterales: 7 / 5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 053666; lona; 229,5 × 132,5 | AR2601075; OT/2026/AR2601075.xlsb | delante: 28 / 30,5; atras: 33,75 / 33,75; laterales: 36 / 36,5 | retirada: La lista manual coincide con las filas, pero el margen grande exige centrar una asimetría no acreditada (o deja un extremo lejano del borde). Puede ser una lista anterior a la medida actual: sin CAD/corte/PDF que la confirme se retira. |
+| 041861; lona; 156 × 158 | AR2500189; OT/2025/AR2500189.xlsb | delante: 2,5 / 2,5; atras: 2,5 / 2,5; laterales: 17 / 30 | retirada: El margen mayor de 12 cm procede de filas de reparto automático, sin un CAD/corte/PDF que acredite ese patrón. Se retira; no se convierte en regla por centrarlo. |
 
 ## Apéndice: inventario completo de plantillas
 
@@ -8539,12 +8832,12 @@ Estas identidades no están acreditadas en los 276 clientes del histórico. Requ
 - `PL/RAMON GIRON.dwg`: sin una asociación RPS acreditada.
 - `PL/ALBERTO SANCHEZ SERRANO.dwg`: ALBERTO SANCHEZ SERRANO; ; NORMALMENTE SIN CURVA, SI LA LLEVA YA DICEN CUAL ES; ; OLLAOS REPARTIDOS
 
-J&B.dwg (código 000033 confirmado) contiene cinco repartos escritos «laterales desde delante»: 115×93,5; 150×114,5; 200×131; 230×131; 260×131. Se conserva el texto en evidencias.json; no se carga hasta confirmar tipo y longitud hecha. Al hacerlo se invierte toda la lista con L_hecha − posición y se ordena de atrás a delante, sin cambiar los huecos.
+J&B.dwg (código 000033 confirmado) contiene cinco repartos escritos «laterales desde delante»: 115×93,5; 150×114,5; 200×131; 230×131; 260×131. Iván confirma que valen para lona y baquetón; falta la longitud hecha. Se conserva el texto en evidencias.json; no se registran. La inversión necesitaría L_hecha − posición y orden de atrás a delante, sin cambiar los huecos. La cuenta antigua queda fuera de las altas por ausencia en el histórico.
 
 EDER ELECTRO MECÁNICAS indica expresamente que sus lonas no llevan ollaos. FichaCliente no tiene un estado «sin ollaos» que impida un reparto genérico, y validarFichas rechaza una medida con los tres lados vacíos: no se finge un reparto de ceros ni se marca repartidos.
 
 ## Comprobaciones
 
-La prueba scripts/fichas-propuestas.test.ts valida el JSON completo con validarFichas, acredita la cobertura de códigos y comprueba la conservación del registro leído. scripts/fichas-remolques.test.js cubre centrado, inversión, comparación sin duplicar pedidos, recencia sin mayoría, ensayo sin escrituras, altas por POST, cambios por PUT con versión y parada en conflicto.
+La prueba scripts/fichas-propuestas.test.ts valida el JSON completo con validarFichas, comprueba las once fichas vigentes, las exclusiones, los márgenes originales de los casos manuales y el cálculo real de NORTE AR2603988 (hecho 252×152, corte 288×188 y esquinas 17). scripts/fichas-remolques.test.js cubre centrado, inversión, comparación sin duplicar pedidos, recencia sin mayoría, ensayo sin escrituras, altas por POST, cambios por PUT con versión y parada en conflicto.
 
-Comprobaciones de esta continuación: `pnpm exec vitest run` pasa los 331 archivos y las 4.392 pruebas; `pnpm exec tsc --noEmit -p .` y `pnpm lint` terminan correctamente. La comprobación por script de todos los repartos confirma que el centrado conserva los huecos interiores. El ensayo local del cargador, sin URL ni peticiones al servidor, propone 279 altas y nueve cambios, sin bajas.
+Comprobaciones finales del 29/10/2026: `pnpm exec vitest run`, 331 ficheros y 4.396 pruebas pasados; `pnpm exec tsc --noEmit -p .` y `pnpm lint`, correctos. El ensayo `node scripts/cargar-fichas-remolques.mjs --dry-run`, sin `--url`, termina correctamente: 118 altas y nueve cambios, sin bajas. No se ha ejecutado la carga ni escrito en el servidor o en las carpetas de red. La propuesta final contiene 129 fichas y 844 medidas; la revisión de las 965 medidas iniciales retira 121 y sustituye diez selecciones por otra variante acreditada.
