@@ -67,9 +67,13 @@ export function interpretarLineaRps(fila: FilaLineaRps): LineaPedidoRps | null {
   const altoBase = numeroMedida(match?.[3]);
   const altoAtras = numeroMedida(match?.[4]);
   const altoExtra = numeroMedida(match?.[5]);
-  // Lona de remolque de ganado con plantilla: hoy, el económico de Remolcar (LONAREMGANA con «ECONOMICO»: AR2600752,
-  // AR2601976). Las demás de ganado siguen como lona, como hasta ahora, hasta que tengan su plantilla.
-  const modeloGanado = codigoArticulo === "LONAREMGANA" && /\bECONOMICO\b/.test(texto) ? "REMOLCAR_ECONOMICO" as const : null;
+  // El estándar de AR2601847 no nombra el modelo: se reconoce solo su referencia completa,
+  // con las medidas y la puerta y ventana comprobadas. «300 × 160» solo también puede ser caballos.
+  const referenciaEstandar = /\b195\s*CM\s*\+\s*112[,.]5\s*CM\s*X\s*160\s*\/\s*70\s*CM\s*X\s*10\s*\/\s*47\s*CM\b/.test(texto)
+    && /\bCON PUERTA LATERAL Y VENTANA DELANTERA\b/.test(texto);
+  const modeloGanado = codigoArticulo !== "LONAREMGANA" ? null
+    : /\bECONOMICO\b/.test(texto) ? "REMOLCAR_ECONOMICO" as const
+    : referenciaEstandar ? "REMOLCAR_ESTANDAR" as const : null;
   const esBaqueton = !modeloGanado && altoBase !== null && altoBase <= 25 && altoAtras === null && altoExtra === null;
   const cantidadRaw = Number(fila.Quantity ?? 1);
   const cantidad = Number.isFinite(cantidadRaw) && cantidadRaw > 0 ? cantidadRaw : 1;

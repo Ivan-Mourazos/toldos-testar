@@ -19,7 +19,7 @@ export interface LineaPedidoRps {
   ordenFabricacion: string | null;
   cantidad: number;
   tipoTrabajo: "lona" | "baqueton" | "ganado";
-  /** Con «ganado», el modelo de plantilla que nombra la línea (hoy, el económico de Remolcar). */
+  /** Con «ganado», el modelo de plantilla reconocido en la referencia de la línea. */
   modeloGanado?: ModeloGanado;
   largo: number | null;
   ancho: number | null;

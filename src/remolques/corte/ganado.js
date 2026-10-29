@@ -3,10 +3,11 @@
 // así sus piezas siguen encajadas unas con otras como en el corte real. Con varias unidades, un juego con
 // «X2», «X3»…, que el cortador repite (AR2600752, cantidad 2).
 import { CORTE_ECONOMICO } from '../ganado/economicoDatos.ts';
+import { CORTE_ESTANDAR } from '../ganado/estandarDatos.ts';
 
 /** Iván, 27/10/2026: en el económico, los ollaos a 4,5 cm del borde de corte, como en sus cortes a mano. */
 export const OLLAO_AL_BORDE = 45;
-const PLANTILLAS = { REMOLCAR_ECONOMICO: CORTE_ECONOMICO };
+const PLANTILLAS = { REMOLCAR_ECONOMICO: CORTE_ECONOMICO, REMOLCAR_ESTANDAR: CORTE_ESTANDAR };
 const r1 = (v) => Math.round(v * 10) / 10;
 
 /** Null si se sabe cortar; si no, el motivo para dejarlo a mano. */
@@ -22,15 +23,19 @@ export function piezaGanado(el) {
   // va siempre y, si el juego queda pegado a él, la quita como cualquier corte por el orillo.
   const p = {
     w: c.ancho, h: c.alto,
-    lineas: [...c.lineas, c.cierreOrillo].map((l) => [...l]),
+    lineas: [...c.lineas, ...(c.cierresOrillo ?? [c.cierreOrillo])].map((l) => [...l]),
     arcos: c.arcos.map((a) => ({ ...a })),
-    ollaos: c.ollaos.map(([x, y, nx, ny, d]) => [r1(x + nx * (d - OLLAO_AL_BORDE)), r1(y + ny * (d - OLLAO_AL_BORDE))]),
+    // En el estándar se conservan las posiciones del original: la puerta y las solapas tienen
+    // distancias distintas; aplicarles los 4,5 cm del económico estropearía su reparto.
+    ollaos: el.input.ganado === 'REMOLCAR_ESTANDAR' ? c.ollaos.map(([x, y]) => [x, y])
+      : c.ollaos.map(([x, y, nx, ny, d]) => [r1(x + nx * (d - OLLAO_AL_BORDE)), r1(y + ny * (d - OLLAO_AL_BORDE))]),
     rot: c.rot.map((l) => [...l]),
     numeros: [],
   };
   // La OF y la cantidad, en el cuerpo, donde van en el corte real.
   const cx = (c.cuerpo.x0 + c.cuerpo.x1) / 2, cy = (c.cuerpo.y0 + c.cuerpo.y1) / 2;
   p.textos = [
+    ...(c.textos ?? []),
     { x: cx, y: cy + 200, h: 150, valor: el.of },
     ...(cantidad > 1 ? [{ x: cx, y: cy - 250, h: 150, valor: `X${cantidad}` }] : []),
   ];

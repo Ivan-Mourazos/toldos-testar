@@ -12,6 +12,14 @@ Actualizado el 25/09/2026:
 
 Cómo se decide cada respuesta: primero, el manual del fabricante (el de Oficina Técnica o, si no está, el de la web del fabricante); después, el maestro de RPS (qué piezas existen y cuáles están de baja); y por último, lo que de verdad se gasta en las OF. En el expediente de cada modelo se anota en qué se apoya cada decisión.
 
+## Remolcar estándar · remolque de ganado (29/10/2026)
+
+**Q-GAN01.** En el corte real de AR2601847 hay dos piezas de **98 × 32** y **34,5 × 56** de corte que no
+tienen dibujo de confección identificado en la zona de t163. ¿Qué son esas dos piezas y llevan ollaos o
+algún acabado? Mientras tanto, el bot conserva exactamente el corte real y la pantalla, el plano y la hoja
+las muestran como «Pieza del corte sin dibujo de confección», con su medida de corte, sin darles nombre de
+puerta ni inventar terminado o acabado. Fuentes y contraste por script en [remolque-ganado.md](./remolque-ganado.md#remolcar-estándar-300--160-ar2601847).
+
 ## SYSTEM DOCK · lonas perimetrales (23/10/2026)
 
 Estudio de 44 pedidos de lonas; ocho pedidos escaneados y sus planteamientos y DWG revisados. Todavía no hay modelo implementado. Evidencia y discrepancias en [system-dock.md](./system-dock.md).

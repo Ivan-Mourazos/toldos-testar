@@ -327,7 +327,7 @@ function confeccionBaqueton(L, el, params, X, Y, letras, refuerzos) {
 }
 
 // Dibujo de confección de un remolque de ganado (cm): el de su plantilla tal cual (piezas, notas y cotas), con
-// los ollaos a 4 cm del borde de corte como en el corte (ganado/dibujo.ts).
+// los ollaos de su modelo (ganado/dibujo.ts).
 function confeccionGanado(L, el, X, Y) {
   const i = el.input, d = dibujoGanado(i.ganado);
   const cantidad = Math.max(1, Math.round(i.cantidad || 1));

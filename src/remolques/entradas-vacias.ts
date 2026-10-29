@@ -38,7 +38,7 @@ export function emptyBaqueton(): BaquetonInput {
   };
 }
 
-/** Remolque de ganado; con el modelo, su medida comercial. Hoy solo hay uno, y sale elegido. */
+/** Remolque de ganado; con el modelo, su medida comercial. Sale elegido el económico. */
 export function emptyGanado(modelo: ModeloGanado | "" = "REMOLCAR_ECONOMICO"): GanadoInput {
   const ficha = modelo ? MODELOS_GANADO[modelo] : null;
   return {

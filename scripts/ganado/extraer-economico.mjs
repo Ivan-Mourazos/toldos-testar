@@ -11,12 +11,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+export function extraerGanado(config = {}) {
 const ESTUDIO = path.join(raiz, 'tmp/dxf-estudio/ganado');
-const BOT = path.join(ESTUDIO, 'originales/AR2600752-bot.dxf');
-const PLANTILLA = path.join(ESTUDIO, 'dwg-dxf/AR2601976.dxf');
-const SALIDA = path.join(raiz, 'src/remolques/ganado/economicoDatos.ts');
+const BOT = path.join(ESTUDIO, config.bot ?? 'originales/AR2600752-bot.dxf');
+const PLANTILLA = path.join(ESTUDIO, config.plantilla ?? 'dwg-dxf/AR2601976.dxf');
+const SALIDA = path.join(raiz, config.salida ?? 'src/remolques/ganado/economicoDatos.ts');
+const estandar = config.modelo === 'ESTANDAR';
 // Zona del dibujo dentro de la zona «POR MEDIDAS» de la plantilla (metros): el corte colocado va debajo (y < 580).
-const ZONA_DIBUJO = { x0: 1278, x1: 1296, y0: 582.3, y1: 586.6 };
+const ZONA_DIBUJO = config.zona ?? { x0: 1278, x1: 1296, y0: 582.3, y1: 586.6 };
 
 // --- Lector de DXF en texto: entidades con todos sus códigos, bloques y polilíneas con curvas ---
 function leer(ruta) {
@@ -89,8 +91,11 @@ const limpiarMtext = (v) => String(v).replace(/\\P/g, ' ').replace(/\\[ACcFfHhLl
   .replace(/%%[cC]/g, 'Ø').replace(/\\U\+([0-9A-Fa-f]{4})/g, (_, h) => String.fromCharCode(parseInt(h, 16))).replace(/\s+/g, ' ').trim();
 
 // --- 1. El corte del bot (mm) ---
-const bot = expandir(leer(BOT)).filter((e) => ['LINE', 'ARC', 'CIRCLE'].includes(e.t) && (+e.g['10'] || 0) > 300); // sin la leyenda de capas
-const pts = bot.flatMap((e) => (e.t === 'LINE' ? [[+e.g['10'], +e.g['20']], [+e.g['11'], +e.g['21']]] : [[+e.g['10'] - +e.g['40'], +e.g['20'] - +e.g['40']], [+e.g['10'] + +e.g['40'], +e.g['20'] + +e.g['40']]]));
+const bot = expandir(leer(BOT)).filter((e) => ['LINE', 'ARC', 'CIRCLE'].includes(e.t) && (+e.g['10'] || 0) > 300
+  && (!estandar || ['DISCO1', 'ROTULADOR'].includes(e.capa.toUpperCase()))); // sin la leyenda de capas
+// En el estándar las rectas ya contienen los extremos de la caja; el círculo completo de un arco
+// sobresaldría de la pieza y daría un origen falso. El económico conserva su extracción comprobada.
+const pts = bot.flatMap((e) => (e.t === 'LINE' ? [[+e.g['10'], +e.g['20']], [+e.g['11'], +e.g['21']]] : estandar ? [] : [[+e.g['10'] - +e.g['40'], +e.g['20'] - +e.g['40']], [+e.g['10'] + +e.g['40'], +e.g['20'] + +e.g['40']]]));
 const ox = Math.min(...pts.map((p) => p[0])), oy = Math.min(...pts.map((p) => p[1]));
 const capaDe = (e) => e.capa.toUpperCase();
 const corte = { lineas: [], arcos: [], ollaos: [], rot: [] };
@@ -125,10 +130,17 @@ const ladoCuerpo = verticales.find((l) => Math.abs(l[0] - derecha) > 2000 && Mat
 // Arriba, la raya horizontal que llega al lado derecho (la del lado izquierdo sigue hacia las solapas).
 const techo = corte.lineas.filter(([x1, y1, x2, y2]) => Math.abs(y1 - y2) < 0.05 && Math.abs(Math.max(x1, x2) - derecha) < 0.05)
   .reduce((m, l) => Math.max(m, l[1]), 0);
-const cuerpo = { x0: ladoCuerpo[0], x1: derecha, y0: 0, y1: techo };
+const ladosEstandar = verticales.filter((l) => Math.min(l[1], l[3]) === 0).slice(0, 2);
+const cuerpo = estandar ? { x0: Math.min(...ladosEstandar.map((l) => l[0])), x1: Math.max(...ladosEstandar.map((l) => l[0])), y0: 0, y1: Math.max(...ladosEstandar.flatMap((l) => [l[1], l[3]])) }
+  : { x0: ladoCuerpo[0], x1: derecha, y0: 0, y1: techo };
 // Las piezas que van contra el orillo no tienen corte abajo; si el colocador las sube del orillo, hace falta.
 const abajo = corte.lineas.filter((l) => Math.abs(l[0] - l[2]) < 0.05 && Math.min(l[1], l[3]) < 0.05).map((l) => l[0]);
 const cierreOrillo = [Math.min(...abajo), 0, Math.max(...abajo), 0];
+const extremosOrillo = [...new Set(abajo)].sort((a, b) => a - b);
+const cierresOrillo = extremosOrillo.filter((_, k) => k % 2 === 0).map((x, k) => [x, 0, extremosOrillo[k * 2 + 1], 0]);
+const textosCorte = estandar ? expandir(leer(BOT)).filter((e) => e.t === 'TEXT' && /STOCK/.test(e.g['1'] ?? '')).map((e) => ({
+  valor: e.g['1'], x: r(+e.g['10'] - ox + e.g['1'].length * +e.g['40'] * 0.3), y: r(+e.g['20'] - oy + +e.g['40'] / 2), h: +e.g['40'],
+})) : [];
 
 // --- 2. El dibujo de confección de la plantilla (metros → cm) ---
 const plantilla = expandir(leer(PLANTILLA));
@@ -209,15 +221,56 @@ for (const c of crudo) {
   }
 }
 const dw = r(Math.max(...dpts.map((p) => p[0])) * 100 - dx0 * 100, 1), dh = r(Math.max(...dpts.map((p) => p[1])) * 100 - dy0 * 100, 1);
+let piezasEstandar = [], altoDibujo = dh;
+if (estandar) {
+  // Dos piezas rectangulares presentes en el corte, sin despiece de confección identificado.
+  // Se localizan por sus uniones con el cuerpo y el orillo; las medidas se calculan, no se rotulan a mano.
+  const ladosAbajo = verticales.filter((l) => Math.min(l[1], l[3]) === 0 && l[0] > cuerpo.x1).sort((a, b) => a[0] - b[0]);
+  const ladoArriba = verticales.find((l) => l[0] > cuerpo.x1 && Math.max(l[1], l[3]) === cuerpo.y1);
+  const sinDibujo = [
+    { w: r((ladosAbajo[1][0] - ladosAbajo[0][0]) / 10, 2), h: r(Math.max(ladosAbajo[0][1], ladosAbajo[0][3]) / 10, 2) },
+    { w: r((ladoArriba[0] - cuerpo.x1) / 10, 2), h: r(Math.abs(ladoArriba[3] - ladoArriba[1]) / 10, 2) },
+  ];
+  const fmt = (v) => v.toLocaleString('es-ES', { maximumFractionDigits: 2 });
+  const medida = (a, b) => `${fmt(a)} × ${fmt(b)}`;
+  const cota = (k) => dibujo.cotas[k].valor;
+  piezasEstandar = [
+    { nombre: 'Cuerpo', hecho: medida(cota(4), cota(6)), corte: medida(cota(5), cota(7)), acabado: 'B.N.(3) + ollaos en los bajos; enfundar (1)' },
+    { nombre: 'Trasero', hecho: `${fmt(cota(2))} de ancho; fondo de ${fmt(cota(0))}`, corte: `${fmt(cota(3))} de ancho; fondo de ${fmt(cota(1))}`, acabado: 'B.N.(3) + ollaos; enfundar (1), no alineados' },
+    { nombre: 'Zona en cuña', hecho: `lateral de ${fmt(cota(14))} en planta; frente de ${fmt(cota(10))} de ancho`, corte: '', acabado: 'B.N.(3) + ollaos + velcro suave al revés; mandar contrario; enfundar (1)' },
+    { nombre: 'Frente', hecho: `${medida(cota(10), cota(8))}; ventana de ${medida(cota(12), cota(13))}`, corte: medida(cota(11), cota(9)), acabado: 'B.N.(3) + ollaos' },
+    ...sinDibujo.map((p) => ({ nombre: `Pieza del corte sin dibujo de confección (${medida(p.w, p.h)})`, hecho: '', corte: medida(p.w, p.h), acabado: '' })),
+  ];
+  const niveles = [...new Set(corte.lineas.filter(([x1, y1, , y2]) => x1 === 0 && y1 === y2).map((l) => l[1]))].sort((a, b) => b - a);
+  for (const [k, nombre] of ['T.O. / refuerzo de stock', 'Refuerzo de stock «16,5»'].entries()) {
+    const y = niveles[1 - k], w = Math.max(...corte.lineas.filter((l) => l[1] === y && l[3] === y).flatMap((l) => [l[0], l[2]]));
+    piezasEstandar.push({ nombre, hecho: '', corte: medida(w / 10, ((k ? H : niveles[0]) - y) / 10), acabado: '' });
+  }
+  // Detalles de corte debajo del dibujo original, sin añadir acabado ni ollaos a esas piezas.
+  const dy = 110;
+  for (const l of dibujo.lineas) { l.y1 = r(l.y1 + dy, 2); l.y2 = r(l.y2 + dy, 2); }
+  for (const p of dibujo.polilineas) for (const v of p.puntos) v[1] = r(v[1] + dy, 2);
+  for (const e of [...dibujo.arcos, ...dibujo.circulos, ...dibujo.textos]) e.y = r(e.y + dy, 2);
+  for (const c of dibujo.cotas) { c.y1 = r(c.y1 + dy, 2); c.y2 = r(c.y2 + dy, 2); if ('giro' in c && c.giro === 0) c.d = r(c.d + dy, 2); }
+  for (const [k, p] of sinDibujo.entries()) {
+    const cx = k ? 385 : 135, x = cx - p.w / 2, y = 25;
+    dibujo.polilineas.push({ capa: 'DISCO1', puntos: [[x, y], [x + p.w, y], [x + p.w, y + p.h], [x, y + p.h]], cerrada: true });
+    dibujo.textos.push({ valor: 'Pieza del corte sin dibujo', x: cx, y: 14, h: 7, giro: 0 },
+      { valor: `de confección (${medida(p.w, p.h)})`, x: cx, y: 3, h: 7, giro: 0 });
+    dibujo.cotas.push({ x1: x, y1: y + p.h, x2: x + p.w, y2: y + p.h, valor: p.w, giro: 0, d: y + p.h + 5 },
+      { x1: x + p.w, y1: y, x2: x + p.w, y2: y + p.h, valor: p.h, giro: 90, d: x + p.w + 7 });
+  }
+  altoDibujo += dy;
+}
 
 const resumen = {
   corte: { ancho: W, alto: H, lineas: corte.lineas.length, arcos: corte.arcos.length, ollaos: ollaos.length, rotulador: corte.rot.length, cuerpo, cierreOrillo,
     distanciasOllaos: [...new Set(ollaos.map((o) => o[4]))].sort((a, b) => a - b) },
-  dibujo: { ancho: dw, alto: dh, lineas: dibujo.lineas.length, polilineas: dibujo.polilineas.length, arcos: dibujo.arcos.length, circulos: dibujo.circulos.length, textos: dibujo.textos.length, cotas: dibujo.cotas.map((c) => c.valor) },
+  dibujo: { ancho: dw, alto: altoDibujo, lineas: dibujo.lineas.length, polilineas: dibujo.polilineas.length, arcos: dibujo.arcos.length, circulos: dibujo.circulos.length, textos: dibujo.textos.length, cotas: dibujo.cotas.map((c) => c.valor) },
 };
 console.log(JSON.stringify(resumen, null, 1));
 
-const contenido = `// Generado por scripts/ganado/extraer-economico.mjs a partir de los originales; no se edita a mano.
+let contenido = `// Generado por scripts/ganado/extraer-economico.mjs a partir de los originales; no se edita a mano.
 // Corte: DXF real del bot de AR2600752 (mm, origen abajo a la izquierda, el orillo en y = 0). Dibujo: zona
 // «POR MEDIDAS (SE HIZO ASÍ) AR2202089» de REMOLQUE 3M ECO 3X150 (BUENO).dwg (cm, origen abajo a la izquierda).
 
@@ -239,7 +292,7 @@ export const CORTE_ECONOMICO = {
 
 export const DIBUJO_ECONOMICO = {
   ancho: ${dw},
-  alto: ${dh},
+  alto: ${altoDibujo},
   lineas: ${JSON.stringify(dibujo.lineas)},
   polilineas: ${JSON.stringify(dibujo.polilineas)} as { capa: string; puntos: [number, number][]; cerrada: boolean; curvas?: number[] }[],
   arcos: ${JSON.stringify(dibujo.arcos)},
@@ -248,12 +301,22 @@ export const DIBUJO_ECONOMICO = {
   cotas: ${JSON.stringify(dibujo.cotas)} as ({ x1: number; y1: number; x2: number; y2: number; valor: number } & ({ giro: 0 | 90; d: number } | { alineada: true; desvio: number }))[],
 };
 `;
+if (estandar) contenido = contenido
+  .replace(/\/\/ Corte: DXF real[\s\S]*?\n\n\/\*\*/, '// Corte: DXF real del bot de AR2601847 (mm), incluidas las dos tiras de stock.\n// Dibujo: versión AR2601847 de REMOLQUE 300X160 ESTANDAR.dwg (t163), en cm.\n\n/**')
+  .replace('extraer-economico.mjs a partir', 'extraer-estandar.mjs a partir')
+  .replaceAll('_ECONOMICO', '_ESTANDAR')
+  .replace('  lineas:', `  cierresOrillo: ${JSON.stringify(cierresOrillo)} as [number, number, number, number][],\n  textos: ${JSON.stringify(textosCorte)},\n  lineas:`);
+if (estandar) contenido += `\n// Medidas de las cotas y del corte original, calculadas durante la extracción.\nexport const PIEZAS_ESTANDAR = ${JSON.stringify(piezasEstandar, null, 2)};\n`;
 if (process.argv.includes('--comprobar')) {
   const actual = fs.existsSync(SALIDA) ? fs.readFileSync(SALIDA, 'utf8') : '';
-  if (actual !== contenido) { console.error('economicoDatos.ts no coincide con los originales: vuelve a generarlo.'); process.exit(1); }
-  console.log('economicoDatos.ts coincide con los originales.');
+  if (actual.replace(/\r\n/g, '\n') !== contenido.replace(/\r\n/g, '\n')) { console.error(`${path.basename(SALIDA)} no coincide con los originales: vuelve a generarlo.`); process.exit(1); }
+  console.log(`${path.basename(SALIDA)} coincide con los originales.`);
 } else {
   fs.mkdirSync(path.dirname(SALIDA), { recursive: true });
   fs.writeFileSync(SALIDA, contenido);
   console.log('escrito', path.relative(raiz, SALIDA));
 }
+return { corte, dibujo, resumen };
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) extraerGanado();

@@ -1,12 +1,13 @@
 import { excelRound } from "./redondeo.ts";
 import type { CabeceraInput } from "./lona.ts";
 import { CORTE_ECONOMICO } from "../ganado/economicoDatos.ts";
+import { CORTE_ESTANDAR, PIEZAS_ESTANDAR } from "../ganado/estandarDatos.ts";
 
 // Remolques de ganado y caballos con plantilla (docs/modelos/remolque-ganado.md). No se calculan por
 // medidas: cada modelo trae su dibujo de confección y su corte, sacados de los originales de la oficina.
 
 /** Modelos con plantilla. Iván, 23/10/2026: el económico de Remolcar es el de la versión «por medidas». */
-export type ModeloGanado = "REMOLCAR_ECONOMICO";
+export type ModeloGanado = "REMOLCAR_ECONOMICO" | "REMOLCAR_ESTANDAR";
 
 export interface GanadoInput {
   cabecera: CabeceraInput;
@@ -71,6 +72,14 @@ export const MODELOS_GANADO: Record<ModeloGanado, FichaModeloGanado> = {
       { nombre: "Solapas (2)", hecho: "12,5 de ancho", corte: "58 × 14,5", acabado: "coser, velcro suave al revés, doblar 1 cm alrededor" },
     ],
   },
+  REMOLCAR_ESTANDAR: {
+    nombre: "Remolcar estándar 300 × 160",
+    cliente: "REMOLCAR",
+    largo: 300,
+    ancho: 160,
+    fuente: "REMOLQUE 300X160 ESTANDAR.dwg, versión con puerta lateral de AR2601847; corte como en el pedido.",
+    piezas: PIEZAS_ESTANDAR,
+  },
 };
 
 export const esModeloGanado = (valor: unknown): valor is ModeloGanado =>
@@ -79,7 +88,8 @@ export const esModeloGanado = (valor: unknown): valor is ModeloGanado =>
 export function calcGanado(input: GanadoInput): GanadoResult {
   const ficha = esModeloGanado(input.ganado) ? MODELOS_GANADO[input.ganado] : null;
   const cantidad = Math.max(1, Math.round(input.cantidad || 1));
-  const largoJuego = excelRound(CORTE_ECONOMICO.ancho / 10, 1);
+  const corte = input.ganado === "REMOLCAR_ESTANDAR" ? CORTE_ESTANDAR : CORTE_ECONOMICO;
+  const largoJuego = excelRound(corte.ancho / 10, 1);
   const notas: string[] = [];
   // El corte lleva un juego y «X2», «X3»…: el cortador lo repite, como en AR2600752.
   if (cantidad > 1) notas.push(`Se corta un juego con «X${cantidad}»: el cortador lo repite ${cantidad} veces.`);
@@ -88,7 +98,7 @@ export function calcGanado(input: GanadoInput): GanadoResult {
     modelo: ficha?.nombre ?? "",
     piezas: ficha?.piezas ?? [],
     largoJuego,
-    anchoJuego: excelRound(CORTE_ECONOMICO.alto / 10, 1),
+    anchoJuego: excelRound(corte.alto / 10, 1),
     metrosTela: ficha ? excelRound((cantidad * largoJuego) / 100, 2) : 0,
     notas,
   };

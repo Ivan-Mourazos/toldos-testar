@@ -159,6 +159,10 @@ export function hojaBaqueton(i: BaquetonInput, r: BaquetonResult): CuerpoHoja {
 /** El de ganado: el modelo y sus piezas, de la plantilla; el dibujo de confección va a la derecha. */
 export function hojaGanado(i: GanadoInput, r: GanadoResult): CuerpoHoja {
   const cantidad = Math.max(1, Math.round(i.cantidad || 1));
+  // En el estándar los acabados y las dos piezas sin confección se leen en el dibujo acotado.
+  // La columna resume las medidas; duplicar allí esas notas largas no cabe en el A4.
+  const estandar = i.ganado === "REMOLCAR_ESTANDAR";
+  const piezasColumna = estandar ? r.piezas.filter((p) => !p.nombre.startsWith("Pieza del corte sin dibujo")) : r.piezas;
   return {
     banda: [
       { titulo: "MODELO", lineas: [oRaya(r.modelo)], notas: ["SEGÚN PLANTILLA DE LA OFICINA"] },
@@ -168,11 +172,16 @@ export function hojaGanado(i: GanadoInput, r: GanadoResult): CuerpoHoja {
     grupos: [
       {
         titulo: "PIEZAS",
-        datos: r.piezas.map((p) => ({
+        datos: piezasColumna.map((p) => ({
           etiqueta: p.nombre.toUpperCase(),
-          valores: [p.hecho && `HECHO ${p.hecho}`, p.corte && `CORTE ${p.corte}`, p.acabado.toUpperCase()].filter(Boolean),
+          valores: estandar ? [p.corte ? `CORTE ${p.corte}` : `HECHO ${p.hecho}`]
+            : [p.hecho && `HECHO ${p.hecho}`, p.corte && `CORTE ${p.corte}`, p.acabado.toUpperCase()].filter(Boolean),
         })),
       },
+      ...(estandar ? [{
+        titulo: "PIEZAS DEL CORTE SIN DIBUJO DE CONFECCIÓN",
+        datos: r.piezas.filter((p) => p.nombre.startsWith("Pieza del corte sin dibujo")).map((p, k) => ({ etiqueta: `CORTE ${k + 1}`, valores: [p.corte] })),
+      }] : []),
       { titulo: "ACABADOS", datos: [{ etiqueta: "ARCOS COMPROBADOS", valores: [i.arcosComprobados ? "SÍ" : "NO · COMPROBAR ANTES DE CORTAR"] }] },
     ],
     material: oRaya(i.material),

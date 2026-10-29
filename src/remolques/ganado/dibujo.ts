@@ -1,5 +1,6 @@
 import type { ModeloGanado } from "../calc/ganado.ts";
 import { DIBUJO_ECONOMICO } from "./economicoDatos.ts";
+import { DIBUJO_ESTANDAR } from "./estandarDatos.ts";
 
 // El dibujo de confección de un remolque de ganado (cm, origen abajo a la izquierda): el de su plantilla, con
 // los ollaos a la distancia del borde de corte que lleva el corte (ganado.js). Lo usan el plano y la
@@ -10,7 +11,7 @@ export const OLLAO_AL_BORDE_CM = 4.5;
 
 export type DibujoGanado = typeof DIBUJO_ECONOMICO;
 
-const PLANTILLAS: Record<ModeloGanado, DibujoGanado> = { REMOLCAR_ECONOMICO: DIBUJO_ECONOMICO };
+const PLANTILLAS: Record<ModeloGanado, DibujoGanado> = { REMOLCAR_ECONOMICO: DIBUJO_ECONOMICO, REMOLCAR_ESTANDAR: DIBUJO_ESTANDAR };
 
 /** Las rectas del borde de corte (capa DISCO1): las líneas y los lados de las polilíneas. */
 function bordesDeCorte(d: DibujoGanado): [number, number, number, number][] {
@@ -42,6 +43,8 @@ function acercarAlBorde(c: { capa: string; x: number; y: number; r: number }, bo
 export function dibujoGanado(modelo: string): DibujoGanado | null {
   const d = (PLANTILLAS as Record<string, DibujoGanado>)[modelo];
   if (!d) return null;
+  // El estándar lleva el reparto propio de puerta y solapas, tal cual en AR2601847.
+  if (modelo === "REMOLCAR_ESTANDAR") return d;
   const bordes = bordesDeCorte(d);
   return { ...d, circulos: d.circulos.map((c) => acercarAlBorde(c, bordes)) };
 }

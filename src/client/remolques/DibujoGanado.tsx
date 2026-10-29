@@ -2,7 +2,7 @@ import React from 'react';
 import { dibujoGanado } from '../../remolques/ganado/dibujo.ts';
 
 // El dibujo de confección de un remolque de ganado: el de su plantilla de la oficina, igual que en el plano
-// (corte, terminado, ollaos a 4 cm, notas y cotas). No tiene 3D: no se calcula por medidas.
+// (corte, terminado, ollaos según su modelo, notas y cotas). No tiene 3D: no se calcula por medidas.
 
 const CLASES: Record<string, string> = { DISCO1: 'gan-corte', referencias: 'gan-terminado', ROTULADOR: 'gan-marca', ejes: 'gan-eje' };
 const coma = (v: number) => String(Math.round(v * 100) / 100).replace('.', ',');

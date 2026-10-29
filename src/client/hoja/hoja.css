@@ -187,7 +187,8 @@ body {
 
 .hoja-error { font: 12pt Arial, sans-serif; padding: 10mm; }
 /* Remolque de ganado: el dibujo de su plantilla ocupa el sitio de las vistas, en negro sobre blanco. */
-.hoja-dibujo-ganado .gan-dibujo { border: 0; flex: 1 1 auto; }
+.hoja-dibujo-ganado { min-height: 0; }
+.hoja-dibujo-ganado .gan-dibujo { border: 0; flex: 1 1 auto; height: 100%; min-height: 0; overflow: hidden; }
 .hoja-dibujo-ganado .rem-dibujo-cabecera { display: none; }
 .hoja-dibujo-ganado .gan-svg { --text: #111; --text-muted: #555; --accent-text: #1f5f99; --danger: #c0392b; min-height: 0; padding: 0; }
 .hoja-dibujo-ganado .gan-svg { display: block; height: 100%; width: 100%; }
