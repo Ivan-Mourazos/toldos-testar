@@ -24,13 +24,16 @@ export function resumirMaterial(material) {
 
 // Une los cortes que se solapan en la misma recta (el borde del contorno y la base de las cabezas) y quita
 // los que van por el orillo (y = 0 o y = 2500): la sierra no pasa dos veces ni corta el orillo.
-function fusionar(segs) {
+// `enteras`: tramos [desde, hasta] en x de piezas que se cortan de restos con todos sus bordes (la tapa de la ventana
+// aparte; Iván, 29/10/2026: «la ventana déjala con la raya de abajo»).
+function fusionar(segs, enteras = []) {
   const r = (v) => Math.round(v * 10) / 10;
   const grupos = new Map(), resto = [];
+  const deResto = (a, b) => enteras.some(([d, h]) => Math.min(a, b) >= d - 0.05 && Math.max(a, b) <= h + 0.05);
   for (const [x1, y1, x2, y2] of segs) {
     if (Math.abs(x1 - x2) < 0.05 && Math.abs(y1 - y2) < 0.05) continue;
     if (Math.abs(y1 - y2) < 0.05) {
-      if (Math.abs(y1) < 0.05 || Math.abs(y1 - ROLLO) < 0.05) continue;
+      if ((Math.abs(y1) < 0.05 || Math.abs(y1 - ROLLO) < 0.05) && !deResto(x1, x2)) continue;
       const k = `h${r(y1)}`; (grupos.get(k) ?? grupos.set(k, []).get(k)).push([Math.min(x1, x2), Math.max(x1, x2)]);
     } else if (Math.abs(x1 - x2) < 0.05) {
       const k = `v${r(x1)}`; (grupos.get(k) ?? grupos.set(k, []).get(k)).push([Math.min(y1, y2), Math.max(y1, y2)]);
@@ -134,7 +137,8 @@ export function generarCorteRemolques(pedido) {
         : [[conTira, 'OPCIÓN 1 · TIRA EMPATADA EN DOS · ELEGIR SOLO UNA'], [entera, 'OPCIÓN 2 · TIRA ENTERA · ELEGIR SOLO UNA']];
     for (const [la, opcion] of opciones) {
       const dx = la.largo;
-      const lineas = fusionar([...la.lineas, ...cb.lineas.map((l) => [l.x1 + dx, l.y1, l.x2 + dx, l.y2])]);
+      const lineas = fusionar([...la.lineas, ...cb.lineas.map((l) => [l.x1 + dx, l.y1, l.x2 + dx, l.y2])],
+        la.apartes.filter((a) => a.tapa).map((a) => [a.x, a.x + a.w]));
       const textos = [...la.textos, ...cb.textos.map((t) => ({ ...t, x: t.x + dx }))];
       const largo = la.largo + cb.largo;
       // Encima del corte: el material resumido y, debajo, «DERECHO» (por dónde se corta), una sola vez; con dos

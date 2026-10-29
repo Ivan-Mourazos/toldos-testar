@@ -490,7 +490,7 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], 
   if (sitiosTapas) pack = { ...conTapas, sitios: conTapas.sitios.slice(0, piezas.length) };
   // Tapas: solo en huecos que no alarguen el corte; si no, se cortan de restos (AR2605023).
   let libres = pack.libres;
-  const puestas = [];
+  const puestas = [], tapasAparte = [];
   tapas.forEach((tapa, n) => {
     if (sitiosTapas) { puestas.push([tapa, sitiosTapas[n]]); return; }
     let sitio = null;
@@ -500,13 +500,13 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], 
       if (l && !sitio) sitio = { x: l.x, y: l.y, w, h, giro };
     }
     if (sitio) { libres = partir(libres, sitio); puestas.push([tapa, sitio]); return; }
-    out.textos.push({ capa: 'texto', x: x0 + 100, y: -200 - 150 * n, h: 100, valor: `${tapa.deRestos}: CORTAR DE RESTOS` });
-    out.avisos.push(`${tapa.deRestos}: no cabe sin alargar el corte; se deja para cortar de restos.`);
+    // Si no, dibujada aparte como la tira entera, para cortarla (Iván, 29/10/2026: «no vale solo poner las medidas»).
+    tapasAparte.push(tapa);
   });
-  // La tira entera: en un hueco que no alargue el corte o, si no cabe, aparte a la derecha para cortar de restos, con
-  // sus medidas (como el trozo separado de toldos).
+  // La tira entera (y la tapa que no cabe): en un hueco que no alargue el corte o, si no cabe, aparte a la derecha
+  // para cortar de restos, con sus medidas (como el trozo separado de toldos).
   let xAparte = pack.largo + 1500;
-  for (const t of tirasEnteras) {
+  for (const t of [...tirasEnteras, ...tapasAparte]) {
     let sitio = null;
     for (const giro of [0, -90]) {
       const w = giro ? t.h : t.w, h = giro ? t.w : t.h;
@@ -516,7 +516,7 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], 
     if (sitio) { libres = partir(libres, sitio); puestas.push([t, sitio]); continue; }
     const giro = t.w > ROLLO ? 0 : -90, w = giro ? t.h : t.w, h = giro ? t.w : t.h;
     puestas.push([t, { x: xAparte, y: 0, w, h, giro }]);
-    out.apartes.push({ x: x0 + xAparte, y: 0, w, h, nombre: t.deRestos });
+    out.apartes.push({ x: x0 + xAparte, y: 0, w, h, nombre: t.deRestos, ...(tapasAparte.includes(t) ? { tapa: true } : {}) });
     out.textos.push(
       { capa: 'texto', x: x0 + xAparte + w / 2, y: Math.max(h, 600) + 500, h: 150, valor: 'CORTAR DE RESTOS', centrado: true },
       { capa: 'texto', x: x0 + xAparte + w / 2, y: Math.max(h, 600) + 300, h: 100, valor: 'SI NO HAY RESTO, CORTAR DEL ROLLO', centrado: true },

@@ -58,8 +58,13 @@ describe('generarCorteRemolques', () => {
     const [c] = cortes;
     expect(c.nombre).toBe('AR2605132');
     expect(c.largo).toBeLessThanOrEqual(8031);
-    // Sin empate y sin la tira aparte; la tapa pequeña que no cabe sin alargar va de restos, como en AR2605023.
-    expect(c.entidades.textos.some((t) => /[AB]4-[12]|^CORTAR DE RESTOS$|TIRA ENTERA/.test(t.valor))).toBe(false);
+    // Sin empate y sin la tira aparte; la tapa pequeña que no cabe sin alargar va de restos, como en AR2605023, pero
+    // dibujada aparte para cortarla, no solo con sus medidas (Iván, 29/10/2026).
+    expect(c.entidades.textos.some((t) => /[AB]4-[12]|TIRA ENTERA/.test(t.valor))).toBe(false);
+    for (const a of c.apartes) {
+      expect(a.nombre).toMatch(/^TAPA DE VENTANA /);
+      expect(c.entidades.lineas.filter((l) => l.capa === 'DISCO1' && Math.min(l.x1, l.x2) >= a.x - 0.01)).toHaveLength(4);
+    }
     // Piezas A1…A3 y B1…B3 en la esquina, y la tapa de la ventana de cada una (A4, B4, la pieza siguiente) si cabe,
     // con «VENTANA» (o «VENT» si no cabe) debajo de su nombre.
     const esquinas = rotulador(c).filter((t) => !t.literal).map((t) => t.valor);
