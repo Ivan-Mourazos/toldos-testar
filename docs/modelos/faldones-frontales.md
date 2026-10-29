@@ -1,6 +1,6 @@
 # Faldones laterales y frontales de toldo de fachada
 
-Estudio iniciado el **29/10/2026**, por encargo de Iván. **Ampliación documental de 2025–2026:** siete pedidos originales contrastados, con **12 laterales y 6 frontales**, más una reforma vinculada al original. Se han inventariado 8.011 PDF y conservado 266 documentos candidatos. Esta muestra permite separar configuraciones; todavía no constituye el histórico completo de ventas ni valida reglas generales de corte o reserva.
+Estudio iniciado el **29/10/2026**, por encargo de Iván. Se mantiene una muestra técnica de siete pedidos originales contrastados, con **12 laterales y 6 frontales**, más una reforma vinculada al original. **Clasificación documental de 2025–2026:** los 266 candidatos del barrido de 8.011 PDF ya tienen decisión y evidencia; se separan otras familias, herrajes, cierres por confirmar y rectificaciones. Todavía no constituye el histórico completo de ventas ni valida reglas generales de corte o reserva.
 
 **Confirmación de Iván, 29/10/2026 (OT-FF01):** los faldones de acrílico también se plantean a veces. El estudio debe recoger esos planteamientos y conservar su material. La muestra actual de acrílico no acredita qué proporción se plantea: al ampliar el histórico se distinguirán pedidos con planteamiento localizado y pedidos sin él localizado, sin excluir estos últimos por faltar DWG, DXF o PDF.
 
@@ -10,7 +10,7 @@ Estudio iniciado el **29/10/2026**, por encargo de Iván. **Ampliación document
 - Alcance inicial: faldones que cierran el lateral o el frente de un toldo de fachada existente, según la instrucción propia de OT. Se conservan las diferencias por perfil, anclaje, entorno y remate.
 - Documentación técnica, toma de medidas, despiece preliminar y propuesta de datos de entrada. La aplicación no se ha modificado.
 - Fuentes compartidas abiertas en solo lectura; conversiones, extracción y renders en `tmp/faldones-frontales/`. Sin conexiones directas a bases, SQL propio ni credenciales. Catálogo y pertenencia de OF consultados mediante GET de la web; sin escrituras en el servidor o carpetas de red.
-- Evidencia duradera: [fase inicial](./faldones-frontales-evidencias.json), [ampliación con fuentes y casos](./faldones-frontales-ampliacion.json) e [índice de candidatos](./faldones-frontales-indice.json), con rutas originales, SHA-256, páginas utilizadas y límites. No se incorporan copias de documentos comerciales ni datos bancarios al expediente.
+- Evidencia duradera: [fase inicial](./faldones-frontales-evidencias.json), [ampliación con fuentes y casos](./faldones-frontales-ampliacion.json), [índice documental](./faldones-frontales-indice.json) y [clasificación razonada](./faldones-frontales-clasificacion.md), con rutas originales, SHA-256, páginas utilizadas y límites. No se incorporan copias de documentos comerciales ni datos bancarios al expediente.
 - Siguiente paso: cruzar los candidatos con el histórico exportado de ventas de 2025–2026, separar familias y completar los grupos pendientes. Se ha solicitado la ruta de ese histórico; los casos de 2023 sirven como antecedentes técnicos, no para afirmar vigencia general.
 
 ## 2. Fuentes y límites
@@ -182,7 +182,7 @@ El texto reconoce **112 PDF que mencionan faldones**, correspondientes a 104 nú
 
 **3.185 PDF tienen alguna página sin texto**; 3.163 no tienen texto en ninguna. Las **3.199 páginas sin texto** se han procesado con OCR local en dos orientaciones (6.398 reconocimientos, sin errores de procesamiento). Hay 34 páginas positivas en la orientación original y 112 con giro adicional de 270°; son resultados solapados, no piezas ni pedidos distintos. El total incluye la página de control procesada antes de reanudar el lote.
 
-La unión de texto y OCR conserva **266 documentos candidatos, de 206 números por nombre de fichero**: **140 documentos se recuperan únicamente por OCR**. Se han vinculado siete de esos documentos a casos cotejados; los otros **259 siguen pendientes de clasificación**. El índice conserva páginas, método, orientación, SHA-256 e indicios; no guarda las cifras del OCR como medidas. Las etiquetas de material, apertura, riel u otra familia son ayudas automáticas, sin exclusiones definitivas.
+La unión de texto y OCR conserva **266 documentos candidatos, de 206 números por nombre de fichero**: **140 documentos se recuperan únicamente por OCR**. En la primera ampliación se habían vinculado siete documentos a casos cotejados y quedaban 259 por clasificar. Esa clasificación se ha completado documentalmente en la sección 20; los cierres sin vínculo acreditado se mantienen por confirmar. El índice conserva páginas, método, orientación, SHA-256 e indicios; no guarda las cifras del OCR como medidas. Las etiquetas automáticas de material o confección no sustituyen la decisión razonada.
 
 Dos controles muestran el límite de cobertura: AR2601947 no se reconoce en la orientación inicial y sí al girar 270°; AR2502986 describe la pieza con material, goma y remates **sin nombrar «faldón»**, por lo que queda acreditado por el caso V01 aunque no aparezca en los candidatos por palabra. Un negativo no acredita ausencia. El singular «FRONTAL» puede designar una posición de montaje de otro toldo y no identifica esta familia por sí solo.
 
@@ -245,7 +245,7 @@ La comparación acredita una escala de10 unidades DXF por cm y diferencias infer
 Las OF se han contrastado mediante `GET /api/orders/<pedido>/ofs`; la ampliación conserva fecha, URL, respuesta y SHA-256 local de12 consultas. Ese endpoint confirma pertenencia, sin aportar artículo, cantidad o consumo. Se han detectado y conservado estas incidencias:
 
 - `AR.25.00926-1.pdf` imprime AR2400926, pero su OF0214058 pertenece a **AR25.00926**. La web devuelve otras OF para AR24.00926: no asociar solo por la cabecera.
-- `AR.26.03123-10.pdf` contiene AR2601618 / OF0227170. La OF pertenece a **AR26.01618**, mientras AR26.03123 tiene OF0229790: no contar la copia como otro ejemplo de fabricación.
+- `AR.26.03123-10.pdf` contiene **dos estados**: p1 actual AR2603123 / OF0229790 y p2 anterior AR2601618 / OF0227170, marcada visualmente «RECTIFICADO». El nuevo escaneo confirma una rectificación con lateral nuevo; no descartar el PDF entero ni sumar la página anterior como otra fabricación. Se precisa así la advertencia de la primera ampliación; detalle ID03 de la clasificación.
 - **AR2601656** conserva OF del original AR2600872 porque es una reforma, vinculada por escaneo y nota del DWG. El propio DWG original mantiene165/120, mientras el PDF reformado muestra200/120; no sustituir las cotas originales ni deducir cambios por la fecha del fichero.
 
 Se han comprobado por script: cobertura única de las3.199 páginas en ambas orientaciones; correspondencia de huellas entre OCR y PDF; fuentes, referencias y OF de los casos; aritmética de ventanas y posiciones de puerta; cajas DXF frente a planos; JSON y enlaces del expediente. Los ficheros locales de auditoría completos permanecen en `tmp/`; el índice duradero conserva candidatos, método y SHA-256, sin copiar textos comerciales ajenos.
@@ -253,9 +253,29 @@ Se han comprobado por script: cobertura única de las3.199 páginas en ambas ori
 ## 19. Trabajo pendiente para cerrar el estudio
 
 1. Incorporar el histórico exportado de2025–2026 con pedido, cliente, artículo, cantidad, descripción y OF. Separar nuevo, cambio de tela, reforma y montaje; registrar también los excluidos y su motivo. No eliminar acrílicos sin plano localizado.
-2. Clasificar los259 documentos candidatos pendientes y agrupar los pedidos reales por material, perfil, remate, ventana/apertura, riel, recorte y anclaje. Comprobar duplicados y versiones con el pedido, no solo por nombre o cabecera.
+2. Resolver con ventas el vínculo de los 120 documentos compatibles aún por confirmar; separar piezas y OF de los 5 conjuntos mixtos y el alcance de los 7 cierres a riel. La clasificación documental de los 266 está hecha; no convertir estos recuentos de documentos en pedidos ni unidades.
 3. Recuperar para cada grupo escaneo, DWG/planteamiento y DXF cuando existan; ampliar a faldón intermedio, mamparas, zócalos y cambios de tela. La lista de documentos encontrados debe permanecer separada del censo de pedidos.
 4. Contrastar por script todos los casos recuperables, distinguiendo instalación, hecho, corte, marcado y reserva. Resolver Q-FF01/Q-FF02 antes de fijar aumentos y valores habituales; aclarar la reforma Q-FF03 sin propagarla a un cálculo general.
 5. Completar códigos y consumos de despiece, equivalencias de tubo y compatibilidad de soportes. Preparar después propuesta de cálculo, ficha y dibujo; la implementación tendrá sus propias pruebas.
 
-**Estado:** ampliación documental consolidada, sin cambios de producción ni carga. Quedan pendientes el censo de ventas, clasificación completa y reglas generales de confección y reserva.
+**Estado:** clasificación documental consolidada, sin cambios de producción ni carga. Quedan pendientes el censo de ventas, los vínculos no acreditados y las reglas generales de confección y reserva.
+
+## 20. Clasificación de los 266 candidatos
+
+Se han leído las **752 páginas** de los candidatos y contrastado **49 páginas de planos** y **24 páginas de 14 escaneos de apoyo**. El [informe de clasificación](./faldones-frontales-clasificacion.md) y su [evidencia por documento](./faldones-frontales-clasificacion.json) conservan decisiones, fuentes P01–P14 y relaciones entre versiones. C001–C266 son identificadores documentales, no fichas ni unidades de producción.
+
+| Resultado | Documentos |
+| --- | ---: |
+| Otra familia | 100 |
+| Tubos/perfiles/herrajes de taller | 19 |
+| Referencia sin planteamiento de faldón | 3 |
+| Fachada documentada | 10 |
+| Rectificación de fachada | 2 |
+| Cierre compatible, vínculo por confirmar | 120 |
+| Cierre a riel | 7 |
+| Cierre de estructura o conjunto mixto | 5 |
+| **Total** | **266** |
+
+La clasificación evita tres errores concretos: deduplicar A/B de AR2500865 por tener el mismo OCR, descartar todo AR2603123 por llevar una página anterior, y excluir el faldón triangular de AR2504913 por su forma. El escaneo vincula este último con un cofre y sus tubos existentes. Las referencias a otros números detectadas en 12 documentos se conservan para cotejar por página y OF, sin exclusiones automáticas.
+
+Se han comprobado las correspondencias de los 266 registros con el índice, las huellas de los PDF locales, fuentes de apoyo y renders, las referencias internas y los recuentos por grupo. No se han extraído reglas numéricas nuevas de OCR ni cambios para la web.
