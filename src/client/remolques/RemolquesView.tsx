@@ -1,7 +1,7 @@
 import React from 'react';
 import { useContenidoFluido } from '../hooks/useContenidoFluido';
 import { createPortal } from 'react-dom';
-import { BookUser, Eraser, FilePen, Save } from 'lucide-react';
+import { ArrowLeftRight, BookUser, Eraser, FilePen, Save } from 'lucide-react';
 import { OrderActions } from '../components/OrderActions';
 import { OrderEmptyState } from '../components/OrderEmptyState';
 import type { ResumenPedido } from './SelectorProducto';
@@ -203,6 +203,14 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
               <p className="rem-editor-etiqueta">Editando dentro de {numeroPedido}</p>
               <h2>{rotuloElemento(lineaActiva, indiceActivo)}</h2>
             </div>
+            {(lineaActiva.tipo === 'lona' || lineaActiva.tipo === 'baqueton') && (
+              <button type="button" className="ghost-button"
+                title={lineaActiva.tipo === 'baqueton' ? 'Es lona alta (p. ej. «ARQUILLOS»): pasarlo sin salir del pedido' : 'Es baquetón (p. ej. «PLANA»): pasarlo sin salir del pedido'}
+                onClick={() => void ws.cambiarTipo(lineaActiva.version, lineaActiva.tipo === 'baqueton' ? 'lona' : 'baqueton')}>
+                <ArrowLeftRight aria-hidden="true" />
+                {lineaActiva.tipo === 'baqueton' ? 'Pasar a lona alta' : 'Pasar a baquetón'}
+              </button>
+            )}
             {clienteActivo && (
               <button type="button" className="ghost-button rem-ficha-boton"
                 disabled={!usuario || fichaCliente.ocupado} aria-busy={fichaCliente.ocupado}

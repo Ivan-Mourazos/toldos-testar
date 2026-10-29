@@ -1,4 +1,5 @@
 import React from 'react';
+import { RefreshCw } from 'lucide-react';
 import { OrderIdentity } from '../components/OrderIdentity';
 import type { PedidoRps } from '../../remolques/rps/types.ts';
 import { indiceElementoDeLineaRps } from '../../remolques/workspace/importar-rps.ts';
@@ -47,6 +48,14 @@ export function CabeceraPedido(props: Props) {
         />
 
       <EstadoRps {...props} />
+      {/* Volver a traer el pedido sin salir del formulario (Iván, 29/10/2026: «antes había un botón de traer de
+          RPS… ahora no hay nada»). Con elementos ya puestos, la consulta pregunta si sustituirlos o añadir lo que falta. */}
+      {hayPedido && props.estadoRps !== 'buscando' && props.estadoRps !== 'error' && props.estadoRps !== 'no-encontrado' && (
+        <button type="button" className="ghost-button rem-traer-rps" disabled={props.cargando || Boolean(props.bloqueoConsulta)}
+          title={props.bloqueoConsulta ?? 'Vuelve a consultar el pedido en RPS y trae sus líneas'} onClick={props.onConsultarRps}>
+          <RefreshCw aria-hidden="true" />Traer de RPS
+        </button>
+      )}
     </section>
   );
 }

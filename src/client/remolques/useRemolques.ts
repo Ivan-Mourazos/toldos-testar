@@ -36,6 +36,9 @@ import { faltaParaPdf } from './vistaPrevia';
 import { REMOLQUES_PARAMETERS_SAVED } from './useRemolquesParameters';
 import { aplicarFichaALineas } from '../../remolques/clientes/aplicar.ts';
 import type { FichaCliente } from '../../remolques/clientes/tipos.ts';
+import { fichaPorCodigo } from '../../remolques/clientes/reglas.ts';
+import { cambiarTipoLinea, type TipoCambiable } from '../../remolques/workspace/cambiar-tipo.ts';
+import { clienteDeLinea } from './guardarEnFicha';
 import { decidirFicha, notaFicha, preguntaSugerencia } from './fichaAlObtener';
 import { AVISO_FICHAS_ILEGIBLES, guardarDesdePedido, leerFichas, nombreClienteRps } from './fichasClientes';
 import { escribirPlanoCorte, type PlanoCorte } from './CorteRemolques';
@@ -479,6 +482,36 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
     despachar({ tipo: 'LINEA_ELIMINADA', version });
     avisar('exito', `${rotulo} eliminado del pedido.`);
   }, [avisar, confirmar, lineas]);
+
+  /**
+   * Baquetón ↔ lona alta sin salir del pedido (Iván, 29/10/2026, AR2605299: «si me lo abre como baquetón no doy
+   * cambiado a lona alta sin tener que salir»). Conserva lo común y vuelve a aplicar la ficha del cliente.
+   */
+  const cambiarTipo = useCallback(async (version: string, nuevo: TipoCambiable) => {
+    const indice = lineas.findIndex((item) => item.version === version);
+    const linea = lineas[indice];
+    if (!linea || linea.tipo === nuevo || linea.tipo === 'ganado') return;
+    const rotulo = rotuloElemento(linea, indice);
+    const destino = nuevo === 'lona' ? 'lona alta' : 'baquetón';
+    const respuesta = await confirmar({
+      title: `Pasar ${rotulo} a ${destino}`,
+      message: `Se quedan la OF, la cantidad, el largo, el ancho, el material, la rotulación y las observaciones; el alto pasa ${nuevo === 'lona' ? 'del baquetón a la lona' : 'de la lona al baquetón'}. Lo demás (ollaos, perfil, recogidas…) se vuelve a rellenar con la ficha del cliente o queda por completar.`,
+      confirmLabel: `Pasar a ${destino}`,
+      cancelLabel: 'Cancelar',
+    });
+    if (respuesta !== 'confirm') return;
+    let ficha: FichaCliente | null = null;
+    const cliente = clienteDeLinea(linea, estadoRef.current.numeroPedido, rps.pedido);
+    if (cliente?.codigo) {
+      try {
+        ficha = fichaPorCodigo((await leerFichas()).fichas, cliente.codigo);
+      } catch {
+        avisar('info', 'No se pudieron leer las fichas de cliente: el elemento cambia sin ellas.');
+      }
+    }
+    despachar({ tipo: 'LINEA_ANADIDA', linea: cambiarTipoLinea(linea, nuevo, ficha) });
+    avisar('exito', `${rotulo} pasa a ${destino}.${ficha ? ` Con la ficha de ${ficha.nombre}.` : ''} Revisa lo que falta.`);
+  }, [avisar, confirmar, lineas, rps.pedido]);
 
   /** Las bobinas hacen falta para proponer la de RPS; si aún no han llegado, se piden ya. */
   const asegurarMateriales = useCallback(async () => {
@@ -1073,6 +1106,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
     cambiarInput,
     seleccionarLinea,
     eliminarLinea,
+    cambiarTipo,
     nuevaLinea,
     obtenerDatosPedido,
     abrirPedido,
