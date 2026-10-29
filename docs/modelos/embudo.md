@@ -54,8 +54,9 @@ comentario; lo demás, del último pedido del mismo cliente si lo hay.
 - Cierre (Iván, 28/10/2026): «en teoría debe dar igual, lo que más se hiciera». Por defecto 3 cm en cónico y recto
   (16 planos dicen «CERRAR 3 CM» y ninguno otra medida; algún recto va con 4), y se puede cambiar en la tarjeta.
 - Entrada a mano; no se interpreta el comentario RPS en esta fase. El largo de cinta nunca se toma como alto.
-- Confirmado por el coordinador: bastilla cónica hacia fuera de la corona terminada: `R1 + bastilla` en la boca
-  grande y `R2 − bastilla` en la pequeña, mismo ángulo; rotulador en la boca terminada. Cada arco añade el cierre
+- Bastilla en el cónico (Iván, 29/10/2026: «mira cómo se puso la bastilla y listo»): en el histórico los 13 cónicos
+  llevan REF.(10) y ninguno bastilla, así que va como en el recto: corte en `R1 + b` / `R2 − b` y raya de rotulador al
+  doble desde el corte (`R1 − b` / `R2 + b`), mismo ángulo. Cada arco añade el cierre
   pedido, por un lado, también con bastilla.
 - Refuerzos: boca grande `R1 − 10 .. R1`; pequeña `R2 .. R2 + 10`; ángulo útil, sin cierre. Una tira por boca
   con refuerzo y por unidad. En recto son tiras rectas del contorno, sin cierre.
