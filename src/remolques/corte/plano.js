@@ -382,11 +382,11 @@ export function escribirPlanoRemolques({ pedido, lonas, baquetones = [], ganados
   }
   const zonaDibujo = { x0: -45, y0: -45, x1: ancho + 20, y1: y - 40 };
   // Los cortes debajo, a escala (mm → cm), lejos del dibujo: uno por lona, uno encima de otro como en el DXF del
-  // bot (el primero abajo), cada uno con su material y sus cotas.
+  // bot (el primero arriba; Iván, 29/10/2026), cada uno con su material y sus cotas.
   const C = { lineas: [], polilineas: [], textos: [], arcos: [], circulos: [], cotas: [] };
   const cm = (v) => v / 10, FILA = 400;
   cortes.forEach(({ entidades: corte, largo: largoRollo, apartes = [] }, k) => {
-    const yc = -900 - (cortes.length - 1 - k) * FILA;
+    const yc = -900 - k * FILA;
     for (const l of corte.lineas) C.lineas.push({ capa: l.capa, x1: cm(l.x1), y1: yc + cm(l.y1), x2: cm(l.x2), y2: yc + cm(l.y2) });
     for (const t of corte.textos) C.textos.push({ ...t, valor: String(t.valor), x: cm(t.x), y: yc + cm(t.y), h: cm(t.h), centrado: Boolean(t.centrado) });
     for (const c of corte.circulos) C.circulos.push({ capa: c.capa, x: cm(c.x), y: yc + cm(c.y), r: 0.25 });

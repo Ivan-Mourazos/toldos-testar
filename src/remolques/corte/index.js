@@ -10,6 +10,8 @@ import { cortarLonasAltas, soportada, R_OLLAO } from './lonaAlta.js';
 import { escribirPlanoRemolques } from './plano.js';
 
 const ROLLO = 2500;
+// Una tira de más de 30 cm de alto no se empata al medio (Iván, 29/10/2026, AR2605291): solo la tira entera.
+const TIRA_MAX_EMPATADA = 300;
 
 // Material resumido (Iván, 20/10/2026): LONA PVC, el gramaje del paréntesis (el de verdad; si no hay, el de
 // g/m²) y el color con su RAL. «LONA NS86 2L 630 g/m² :GRIS CLARO 7038 :250 AN (580)» → «LONA PVC 580 GRIS CLARO 7038».
@@ -45,13 +47,14 @@ function fusionar(segs) {
   return out;
 }
 
-// Los cortes de un pedido con varias lonas, en el mismo DXF, cada uno en su fila: el primero abajo y los demás
-// encima, con 1 m entre medias (como a mano en AR2605088: dos colores en un DXF, en cortes separados).
+// Los cortes de un pedido con varias lonas, en el mismo DXF, cada uno en su fila: el primero arriba y los demás
+// debajo, con 1 m entre medias (como a mano en AR2605088: dos colores en un DXF, en cortes separados).
 const SEPARACION_CORTES = 1000;
 function apilar(cortes) {
   const juntas = { lineas: [], textos: [], circulos: [], arcos: [] };
   let dy = 0;
-  for (const c of cortes) {
+  // El primero arriba (Iván, 29/10/2026: «sale la opción B arriba y la A debajo»): se apilan desde el último.
+  for (const c of [...cortes].reverse()) {
     juntas.lineas.push(...c.lineas.map((l) => ({ ...l, y1: l.y1 + dy, y2: l.y2 + dy })));
     juntas.textos.push(...c.textos.map((t) => ({ ...t, y: t.y + dy })));
     juntas.circulos.push(...c.circulos.map((x) => ({ ...x, y: x.y + dy })));
@@ -127,6 +130,7 @@ export function generarCorteRemolques(pedido) {
     const sinOpciones = [entera, dentro].filter(cabeEntera).sort((a, b) => a.largo - b.largo)[0];
     const opciones = !conTira.conTira ? [[conTira, null]]
       : sinOpciones ? [[sinOpciones, null]]
+        : conTira.altoTira > TIRA_MAX_EMPATADA ? [[entera, null]]
         : [[conTira, 'OPCIÓN 1 · TIRA EMPATADA EN DOS · ELEGIR SOLO UNA'], [entera, 'OPCIÓN 2 · TIRA ENTERA · ELEGIR SOLO UNA']];
     for (const [la, opcion] of opciones) {
       const dx = la.largo;

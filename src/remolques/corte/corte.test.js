@@ -147,6 +147,22 @@ describe('generarCorteRemolques', () => {
     // Los dos en el mismo DXF del bot, cada uno con su rótulo.
     const enDxf = registrosDxf(archivo.dxf).filter((r) => ['TEXT', 'MTEXT'].includes(r.tipo)).map((r) => valor(r, 1));
     expect(enDxf.filter((v) => /ELEGIR SOLO UNA/.test(v))).toHaveLength(2);
+    // La opción 1 arriba y la 2 debajo (Iván, 29/10/2026), en el DXF del bot y en el plano.
+    for (const dxf of [archivo.dxf, archivo.plano.dxf]) {
+      const y = (n) => registrosDxf(dxf).filter((r) => ['TEXT', 'MTEXT'].includes(r.tipo) && String(valor(r, 1)).includes(`OPCIÓN ${n}`)).map((r) => numero(r, 20))[0];
+      expect(y(1)).toBeGreaterThan(y(2));
+    }
+  });
+
+  it('una tira de más de 30 cm de alto no se empata al medio: solo la tira entera (Iván, 29/10/2026, AR2605291)', () => {
+    const alta = structuredClone(AR2605079);
+    // El contorno 20 cm más ancho: la tira pasa de 15 a 35 cm.
+    for (const e of alta.elementos) e.result.panoContorno.ancho += 20;
+    const { cortes } = generarCorteRemolques(alta);
+    expect(cortes).toHaveLength(1);
+    expect(cortes[0].opcion).toBeUndefined();
+    expect(cortes[0].avisos.some((a) => /tira entera de/.test(a))).toBe(true);
+    expect(cortes[0].avisos.some((a) => /empatada en dos/.test(a))).toBe(false);
   });
 
   it('pone una letra a cada baquetón cuando hay más de uno (AR2605071)', () => {

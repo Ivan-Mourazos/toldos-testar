@@ -431,7 +431,7 @@ function colocarTodo(piezas, intentos = 400) {
 // 22/10/2026) o «dentro» (entera y colocada con las demás piezas, para ver si cabe sin alargar el corte). Devuelve
 // también si algún contorno lleva tira (`conTira`) y las piezas que van aparte para cortar de restos (`apartes`).
 export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], marcar = true, tira = 'empatada') {
-  const out = { lineas: [], rot: [], ollaos: [], arcos: [], textos: [], avisos: [], conTira: false, apartes: [] };
+  const out = { lineas: [], rot: [], ollaos: [], arcos: [], textos: [], avisos: [], conTira: false, altoTira: 0, apartes: [] };
   const piezas = [], tapas = [], tirasEnteras = [];
   let union = 1; // número de la siguiente unión de empate (sin letras)
   for (const el of elementos) {
@@ -443,7 +443,7 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], 
       const L = letras?.get(el)?.[u] ?? '';
       const c = contorno(el, marcasHombro, rebajeLado, marcasAtras);
       const conEmpate = c.h > ROLLO && c.w > ROLLO;
-      if (conEmpate) out.conTira = true;
+      if (conEmpate) { out.conTira = true; out.altoTira = Math.max(out.altoTira, c.w - ROLLO + EMPATE); }
       const entera = conEmpate && tira !== 'empatada' ? contornoConTiraEntera(c, L ? 1 : union, L.toLowerCase()) : null;
       const emp = conEmpate && !entera ? contornoConEmpate(c, L ? 1 : union, L.toLowerCase()) : null;
       if (emp && !L) union += 3;
