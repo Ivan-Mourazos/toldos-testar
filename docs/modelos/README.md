@@ -49,7 +49,7 @@ Estados de la revisión: pendiente / en curso / con dudas / verificado para un a
 
 | Producto | Estado y evidencia | Siguiente paso |
 | --- | --- | --- |
-| Faldones laterales y frontales de toldo de fachada | [Expediente](./faldones-frontales.md), [ampliación técnica](./faldones-frontales-ampliacion.json), [índice](./faldones-frontales-indice.json) y [clasificación](./faldones-frontales-clasificacion.md), actualizados el 29/10/2026. Muestra V01–V07 de 18 piezas; 266 candidatos clasificados tras leer 752 páginas. Separadas 100 fuentes de otras familias y 19 documentos de taller; versiones y rectificaciones cotejadas | Cruzar histórico de ventas 2025–2026 con 120 documentos compatibles, 5 conjuntos mixtos y 7 cierres a riel; acreditar corte/reserva y resolver Q-FF01/Q-FF02/Q-FF03. Sin implementación |
+| Faldones laterales y frontales de toldo de fachada | [Expediente](./faldones-frontales.md), [índice](./faldones-frontales-indice.json), [clasificación inicial](./faldones-frontales-clasificacion.md) y [ejemplos de Iván V08/V09](./faldones-frontales-casos-ivan.md), actualizados el29/10/2026. Muestra V01–V09 de22 piezas; exportado recibido,219 líneas de tres códigos comerciales y296 PDF recuperados. Separados escenarios y otros productos; intermedios en grupo propio | Completar el cruce por página/OF de118 documentos compatibles,5 conjuntos mixtos y7 cierres a riel; acreditar corte/reserva y resolver Q-FF01/Q-FF02/Q-FF03/Q-FF04. Sin implementación |
 
 ## Lotes propuestos, de menor a mayor alcance
 

@@ -2,6 +2,8 @@
 
 Ampliación del **29/10/2026** del [expediente](./faldones-frontales.md). Se ha leído el contexto de las **752 páginas de los 266 PDF candidatos**, contrastando el texto de todas sus páginas con el OCR disponible. Se han revisado visualmente **49 páginas de planos** y **24 páginas de 14 escaneos de apoyo**, sin declarar revisados completos esos escaneos. Las huellas de los 266 PDF locales corresponden al inventario previo.
 
+**Actualización posterior al exportado de ventas:** este informe y su JSON conservan la clasificación inicial de10 documentos de fachada y120 compatibles pendientes. La [ampliación V08/V09](./faldones-frontales-casos-ivan.md) acredita C206 y C237: el acumulado pasa a12 y118, respectivamente. También corrige C018/C019 como **frontales nuevos, OF0213964**, separándolos del cambio de tela de otra línea, OF0213960. Las resoluciones y sus fuentes se conservan en el [JSON posterior](./faldones-frontales-casos-ivan.json).
+
 El resultado por documento, sus motivos, evidencia y fuentes P01–P14 están en [faldones-frontales-clasificacion.json](./faldones-frontales-clasificacion.json). Los identificadores **C001–C266** enlazan con el [índice documental](./faldones-frontales-indice.json); su orden se conserva. La muestra técnica V01–V07 mantiene sus medidas y sus fuentes. Esta clasificación no incorpora reglas a la web.
 
 ## 1. Resultado y significado de cada grupo
@@ -53,7 +55,7 @@ No hay PDF binariamente idénticos entre los 266. Esto no descarta páginas repe
 
 ### AR2500865: OCR idéntico, piezas distintas
 
-C018 (`-20.pdf`) y C019 (`-21.pdf`) generan el mismo texto OCR. El dibujo distingue **B** y **A**, con diferencias visibles, y las huellas de los renders son distintas. Se conservan ambas piezas. P12 pp.1–2 identifica cambios de tela de toldos y de faldón enrollable: no convertirlo en dos pedidos ni automáticamente en faldón nuevo.
+C018 (`-20.pdf`) y C019 (`-21.pdf`) generan el mismo texto OCR. El dibujo distingue **B** y **A**, con diferencias visibles, y las huellas de los renders son distintas. Se conservan ambas piezas. La atribución inicial del JSON a cambio de tela se corrige con el exportado F48: **línea5, FALDON nuevo, OF0213964, cantidad2, frontales**. P12 pp.1–2 describe también un cambio de tela enrollable que corresponde a **otra línea,2 / OF0213960**. El escaneo de un pedido mixto no determina el tipo de actuación de todas sus OF.
 
 ### AR2600320: dos versiones de once páginas
 
@@ -92,13 +94,13 @@ Estas son necesidades de datos acreditadas por la documentación, **no fórmulas
 
 ## 6. Qué queda para cerrar
 
-El siguiente cruce necesita el **histórico exportado de ventas de 2025–2026**, con pedido, cliente, artículo, cantidad, descripción y OF. No se ha localizado una exportación específica por nombre en las carpetas `tmp` consultadas; no se afirma que no exista en otra ubicación. Se mantienen fuera de esta investigación las conexiones directas a bases y las credenciales.
+El **histórico exportado de ventas de2025–2026 ya se ha recibido**, fuente F48 de la ampliación V08/V09. La sección21 del expediente describe los219 registros de los tres códigos comerciales y su cobertura documental inicial. Se mantienen fuera de esta investigación las conexiones directas a bases y las credenciales; el análisis lee el fichero entregado por Iván.
 
 Iván dispone del exportador `scripts/exportar-historico-faldones.mjs`. Desde la raíz del worktree, `node scripts/exportar-historico-faldones.mjs --exportar` consulta las conexiones ya configuradas de la aplicación `historial-pedido-hecho`: líneas de ventas RPS y, si está disponible, el histórico técnico. Lo ejecuta Iván; el agente solo ha probado `--dry-run` y las pruebas sin conexión. Sin `--exportar` no lee configuración ni abre conexiones. El JSON nuevo queda en `tmp/faldones-frontales/exportaciones/`, incluye todas las líneas de los pedidos seleccionados y los controles documentales, y registra si falta el histórico técnico. No filtra por presencia de OF o plano ni considera todas las coincidencias como faldones de fachada.
 
-Con ese histórico se podrá resolver el vínculo de los **120 documentos compatibles**, separar las líneas de los **5 conjuntos mixtos** y decidir el alcance de los **7 cierres a riel**. Los artículos vendidos sin plano, incluidos acrílicos, seguirán entrando en el censo. Los documentos de otras familias y los herrajes se conservan como contexto, sin ocupar el lugar de las líneas textiles.
+El cruce por página/OF debe resolver los **118 documentos compatibles** que quedan tras acreditar C206/C237, separar las líneas de los **5 conjuntos mixtos** y decidir el alcance de los **7 cierres a riel**. Los artículos vendidos sin plano, incluidos acrílicos, siguen entrando en el censo. Los documentos de otras familias y los herrajes se conservan como contexto, sin ocupar el lugar de las líneas textiles.
 
-Después se compararán medidas, remates y reserva dentro de grupos ya identificados. Siguen abiertas Q-FF01/Q-FF02 sobre aumentos y tira inferior, y Q-FF03 sobre la reforma de la puerta. No se ha modificado producción, cargado datos ni subido la rama.
+Después se compararán medidas, remates y reserva dentro de grupos ya identificados. Siguen abiertas Q-FF01/Q-FF02 sobre aumentos y tira inferior, Q-FF03 sobre la reforma de la puerta y Q-FF04 sobre la ventana130/109 de O Lugar. No se ha modificado producción, cargado datos ni subido la rama.
 
 ## 7. Comprobaciones de esta clasificación
 

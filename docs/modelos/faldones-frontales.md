@@ -1,17 +1,17 @@
 # Faldones laterales y frontales de toldo de fachada
 
-Estudio iniciado el **29/10/2026**, por encargo de Iván. Se mantiene una muestra técnica de siete pedidos originales contrastados, con **12 laterales y 6 frontales**, más una reforma vinculada al original. **Clasificación documental de 2025–2026:** los 266 candidatos del barrido de 8.011 PDF ya tienen decisión y evidencia; se separan otras familias, herrajes, cierres por confirmar y rectificaciones. Todavía no constituye el histórico completo de ventas ni valida reglas generales de corte o reserva.
+Estudio iniciado el **29/10/2026**, por encargo de Iván. La muestra técnica comprende nueve pedidos originales contrastados, con **15 laterales y 7 frontales**, más una reforma vinculada al original. **Clasificación documental de 2025–2026:** los266 candidatos del barrido de8.011 PDF tienen decisión y evidencia, con las resoluciones posteriores de V08/V09. Se ha recibido el exportado de ventas y comprobado su alcance comercial; todavía falta cerrar el cruce completo por pieza/OF y las reglas generales de corte o reserva.
 
 **Confirmación de Iván, 29/10/2026 (OT-FF01):** los faldones de acrílico también se plantean a veces. El estudio debe recoger esos planteamientos y conservar su material. La muestra actual de acrílico no acredita qué proporción se plantea: al ampliar el histórico se distinguirán pedidos con planteamiento localizado y pedidos sin él localizado, sin excluir estos últimos por faltar DWG, DXF o PDF.
 
 ## 1. Alcance y estado recuperable
 
 - Rama: `estudio-faldones-frontales`; revisión del código de partida: `318ad63`.
-- Alcance inicial: faldones que cierran el lateral o el frente de un toldo de fachada existente, según la instrucción propia de OT. Se conservan las diferencias por perfil, anclaje, entorno y remate.
+- Alcance confirmado por Iván: faldones laterales y frontales para toldos de fachada, con prioridad en los faldones; intermedios incluidos como grupo propio. Las lonas de escenario quedan fuera. Se conservan las diferencias por perfil, anclaje, entorno y remate.
 - Documentación técnica, toma de medidas, despiece preliminar y propuesta de datos de entrada. La aplicación no se ha modificado.
 - Fuentes compartidas abiertas en solo lectura; conversiones, extracción y renders en `tmp/faldones-frontales/`. Sin conexiones directas a bases, SQL propio ni credenciales. Catálogo y pertenencia de OF consultados mediante GET de la web; sin escrituras en el servidor o carpetas de red.
 - Evidencia duradera: [fase inicial](./faldones-frontales-evidencias.json), [ampliación con fuentes y casos](./faldones-frontales-ampliacion.json), [índice documental](./faldones-frontales-indice.json) y [clasificación razonada](./faldones-frontales-clasificacion.md), con rutas originales, SHA-256, páginas utilizadas y límites. No se incorporan copias de documentos comerciales ni datos bancarios al expediente.
-- Siguiente paso: cruzar los candidatos con el histórico exportado de ventas de 2025–2026, separar familias y completar los grupos pendientes. Se ha solicitado la ruta de ese histórico; los casos de 2023 sirven como antecedentes técnicos, no para afirmar vigencia general.
+- Exportado de ventas recibido y verificado: fuente F48 de la [ampliación de los ejemplos de Iván](./faldones-frontales-casos-ivan.md). Los casos de2023 sirven como antecedentes técnicos, no para afirmar vigencia general. El siguiente paso es cerrar el cruce por línea/OF de los grupos pendientes, conservando también las ventas sin plano localizado.
 
 ## 2. Fuentes y límites
 
@@ -130,7 +130,7 @@ Los planos F05/F06 dan materiales y medidas concretos de soportes, no una lista 
 
 ## 9. Reserva y contraste histórico
 
-No se ha obtenido todavía un histórico completo de líneas, artículos, OF ni consumos de esta familia. No se declara reserva verificada. Las OF escritas en los planos permiten localizar la documentación, pero no prueban por sí solas el artículo o la cantidad reservada en RPS.
+El exportado recibido aporta líneas, artículos, cantidades comerciales y OF; la sección21 describe su alcance. Falta cerrar el censo por pieza y obtener consumos: no se declara reserva verificada. Las OF escritas en los planos permiten localizar la documentación, pero no prueban por sí solas el artículo o la cantidad reservada en RPS.
 
 El futuro contraste debe separar tela del toldo, laterales, frontales, adaptación metálica y montaje. V02 tiene OF distintas para toldo y faldón; V03 tiene OF distintas para laterales y frontales. No sumar documentos duplicados ni usar cantidad de páginas, sufijo `-10` o número de ganchos como cantidad de piezas.
 
@@ -171,6 +171,7 @@ La vista de revés y la orientación deben ser explícitas. El soporte metálico
 | Q-FF01 | V01 rotula 236 cm hechos y 244 de corte; los frontales C/D de V03 tienen el mismo frente de 313 pero cortes distintos. Falta una tabla vigente de transformación por BN, entrada de tubo, fleje, tira, solapa, cara y material. ¿Qué aumentos y reglas de esquina se deben aplicar hoy a cada remate? | Conservar las cotas y anotaciones por caso; no registrar demasías generales inventadas |
 | Q-FF02 | F04 describe la tira inferior a 15 cm; V02 la pide y dibuja a 20 cm. ¿Los 15 cm siguen como valor habitual editable, o se ha cambiado el criterio general? | La posición explícita del pedido prevalece; sin valor obligatorio nuevo |
 | Q-FF03 | En la reforma AR2601656 del frontal AR2600872 se pide «aumentar a porta 35 cm para a dereita». El original tiene puerta de 120 a 165 del borde; el plano de reforma mantiene 120 y la sitúa a 200. ¿Se debía desplazar la abertura o ensancharla? | Conservar las dos versiones y la petición; no interpretar automáticamente la reforma ni convertirla en nueva fabricación |
+| Q-FF04 | En AR2602384, la visita pide ventanas de130 de alto y los dos planos y el DWG muestran109. En el frontal25+109+70=204. ¿Fue una decisión para conservar esos márgenes y alinear las ventanas, o hubo otra indicación? | Conservar la petición y el diseño dibujado por separado; no crear un descuento habitual de21. Evidencia V09 |
 
 La compatibilidad de ganchos por cofre y el criterio de vista se completarán con documentación e histórico pendientes; no se dan por resueltos por un único ejemplo. Las referencias RPS ya contrastadas se recogen en la sección 16.
 
@@ -186,7 +187,7 @@ La unión de texto y OCR conserva **266 documentos candidatos, de 206 números p
 
 Dos controles muestran el límite de cobertura: AR2601947 no se reconoce en la orientación inicial y sí al girar 270°; AR2502986 describe la pieza con material, goma y remates **sin nombrar «faldón»**, por lo que queda acreditado por el caso V01 aunque no aparezca en los candidatos por palabra. Un negativo no acredita ausencia. El singular «FRONTAL» puede designar una posición de montaje de otro toldo y no identifica esta familia por sí solo.
 
-Esto es un **inventario documental**, no el censo de ventas. Faltan las líneas originales de pedido con artículo, cantidades y OF, incluidos los acrílicos sin planteamiento localizado. El GET de autocompletado de toldos no sirve para obtenerlas: en AR2601656 devuelve líneas no reconocidas, y la ruta de pedido de remolques tampoco expone estas líneas.
+Esto es un **inventario documental**, distinto del censo de ventas. El exportado recibido posteriormente aporta las líneas de pedido con artículo, cantidades y OF: véase sección21. El GET de autocompletado de toldos no basta para obtenerlas: en AR2601656 devuelve líneas no reconocidas, y la ruta de pedido de remolques tampoco expone estas líneas.
 
 ## 15. Casos añadidos y separación de documentos
 
@@ -219,7 +220,7 @@ Consulta de catálogo por GET del29/10/2026, fuente devuelta `RPSNext`; respuest
 | --- | --- | --- |
 | `FALDON` | Faldón lateral o frontal nuevo para toldo fachada | UNI; el artículo no distingue la geometría lateral/frontal |
 | `CAMBIOTELAFALDON` | Cambio de tela a faldón de toldo fachada | UNI; separar del nuevo y de las reformas |
-| `FALDONINTERMEDIO` | Faldón intermedio entre toldos | UNI; variante existente en catálogo, sin caso específico validado todavía |
+| `FALDONINTERMEDIO` | Faldón intermedio entre toldos | UNI; en AR2602384 hay una unidad nominal66×265, OF0228561, con fabricación directa anotada; no se acredita su corte con los planos A/B |
 | `GAFALD` / `GFALI` | Gancho derecho / izquierdo genérico | UNI; no demuestra compatibilidad con cualquier cofre |
 | `GAFALDTCBL`, `GAFALDTCNEG` / `GFALITCBL`, `GFALITCNEG` | Gancho de tubo de carga inox, derecho / izquierdo, blanco / negro | UNI |
 | `GAFALDTMOBL`, `GAFALDTMONEG` / `GFALITMOBL`, `GFALITMONEG` | Gancho de tubo Monobloc aluminio, derecho / izquierdo, blanco / negro | UNI |
@@ -252,26 +253,26 @@ Se han comprobado por script: cobertura única de las3.199 páginas en ambas ori
 
 ## 19. Trabajo pendiente para cerrar el estudio
 
-1. Incorporar el histórico exportado de2025–2026 con pedido, cliente, artículo, cantidad, descripción y OF. Separar nuevo, cambio de tela, reforma y montaje; registrar también los excluidos y su motivo. No eliminar acrílicos sin plano localizado.
-2. Resolver con ventas el vínculo de los 120 documentos compatibles aún por confirmar; separar piezas y OF de los 5 conjuntos mixtos y el alcance de los 7 cierres a riel. La clasificación documental de los 266 está hecha; no convertir estos recuentos de documentos en pedidos ni unidades.
-3. Recuperar para cada grupo escaneo, DWG/planteamiento y DXF cuando existan; ampliar a faldón intermedio, mamparas, zócalos y cambios de tela. La lista de documentos encontrados debe permanecer separada del censo de pedidos.
-4. Contrastar por script todos los casos recuperables, distinguiendo instalación, hecho, corte, marcado y reserva. Resolver Q-FF01/Q-FF02 antes de fijar aumentos y valores habituales; aclarar la reforma Q-FF03 sin propagarla a un cálculo general.
+1. Completar el censo por línea/OF sobre el exportado ya recibido, separando nuevo, cambio de tela, reforma y montaje; revisar también los casos codificados como notas o artículos genéricos, sin sumarlos a ciegas. No eliminar acrílicos sin plano localizado.
+2. Resolver el vínculo de los118 documentos compatibles pendientes tras acreditar C206/C237; separar piezas y OF de los5 conjuntos mixtos y el alcance de los7 cierres a riel. La lectura documental de los266 está hecha; no convertir sus recuentos en pedidos ni unidades.
+3. Recuperar para cada grupo escaneo, DWG/planteamiento y DXF cuando existan; completar intermedios y cambios de tela dentro del alcance de fachada. Mamparas y zócalos se estudian como condicionantes del faldón, sin ampliar el producto a otros cerramientos ni escenarios.
+4. Contrastar por script todos los casos recuperables, distinguiendo instalación, hecho, corte, marcado y reserva. Resolver Q-FF01/Q-FF02 antes de fijar aumentos y valores habituales; aclarar la reforma Q-FF03 y la altura de ventana Q-FF04 sin propagarlas a un cálculo general.
 5. Completar códigos y consumos de despiece, equivalencias de tubo y compatibilidad de soportes. Preparar después propuesta de cálculo, ficha y dibujo; la implementación tendrá sus propias pruebas.
 
-**Estado:** clasificación documental consolidada, sin cambios de producción ni carga. Quedan pendientes el censo de ventas, los vínculos no acreditados y las reglas generales de confección y reserva.
+**Estado:** exportado recibido y dos casos nuevos contrastados, sin cambios de producción ni carga. Quedan pendientes el cierre del censo por línea/OF, los vínculos no acreditados y las reglas generales de confección y reserva.
 
 ## 20. Clasificación de los 266 candidatos
 
-Se han leído las **752 páginas** de los candidatos y contrastado **49 páginas de planos** y **24 páginas de 14 escaneos de apoyo**. El [informe de clasificación](./faldones-frontales-clasificacion.md) y su [evidencia por documento](./faldones-frontales-clasificacion.json) conservan decisiones, fuentes P01–P14 y relaciones entre versiones. C001–C266 son identificadores documentales, no fichas ni unidades de producción.
+En la clasificación inicial se leyeron las **752 páginas** de los candidatos y se contrastaron **49 páginas de planos** y **24 páginas de14 escaneos de apoyo**. El [informe de clasificación](./faldones-frontales-clasificacion.md) y su [evidencia inicial por documento](./faldones-frontales-clasificacion.json) conservan esa fotografía anterior al exportado. Las [resoluciones posteriores](./faldones-frontales-casos-ivan.json) acreditan C206/C237 y corrigen el tipo de actuación de C018/C019. La tabla siguiente incorpora esas dos admisiones. C001–C266 son identificadores documentales, no fichas ni unidades de producción.
 
 | Resultado | Documentos |
 | --- | ---: |
 | Otra familia | 100 |
 | Tubos/perfiles/herrajes de taller | 19 |
 | Referencia sin planteamiento de faldón | 3 |
-| Fachada documentada | 10 |
+| Fachada documentada | 12 |
 | Rectificación de fachada | 2 |
-| Cierre compatible, vínculo por confirmar | 120 |
+| Cierre compatible, vínculo por confirmar | 118 |
 | Cierre a riel | 7 |
 | Cierre de estructura o conjunto mixto | 5 |
 | **Total** | **266** |
@@ -279,3 +280,31 @@ Se han leído las **752 páginas** de los candidatos y contrastado **49 páginas
 La clasificación evita tres errores concretos: deduplicar A/B de AR2500865 por tener el mismo OCR, descartar todo AR2603123 por llevar una página anterior, y excluir el faldón triangular de AR2504913 por su forma. El escaneo vincula este último con un cofre y sus tubos existentes. Las referencias a otros números detectadas en 12 documentos se conservan para cotejar por página y OF, sin exclusiones automáticas.
 
 Se han comprobado las correspondencias de los 266 registros con el índice, las huellas de los PDF locales, fuentes de apoyo y renders, las referencias internas y los recuentos por grupo. No se han extraído reglas numéricas nuevas de OCR ni cambios para la web.
+
+## 21. Exportado de ventas recibido y cobertura inicial
+
+Iván ha entregado el exportado F48, de29/10/2026 a21:34:55 UTC, SHA-256 `40d38990125fa55bf6f392f7164976a6ca97a5c3ed58667f4f10d2fe369817f9`. Comprende530 pedidos y1.917 líneas de contexto del período2025–2026; las fechas presentes van de02/01/2025 a23/10/2026. Se ha analizado localmente, sin que el estudio ejecute conexiones a bases ni lea credenciales. No son1.917 ventas de faldones: el exportador incluye otras líneas de los pedidos seleccionados.
+
+| Grupo comercial por código exacto | Líneas | Pedidos distintos en ese código | Cantidad comercial |
+| --- | ---: | ---: | ---: |
+| FALDON · nuevos laterales/frontales | 171 | 133 | 285 |
+| CAMBIOTELAFALDON · cambios de tela | 10 | 10 | 13 |
+| FALDONINTERMEDIO · grupo separado | 38 | 38 | 50 |
+| **Unión de los tres códigos** | **219** | **169** | **348** |
+
+Los dos primeros códigos suman181 líneas,139 pedidos distintos y298 unidades comerciales. Los pedidos por código se solapan; no sumar133+10+38 como pedidos únicos. La cantidad comercial no demuestra que una pieza se fabricase: hay notas de actuaciones que finalmente no se hacen y revisiones que deben conservarse aparte.
+
+Se han recuperado y leído texto/OCR de **296 PDF /393 páginas** de156 de esos169 pedidos, incluyendo198 PDF adicionales a los98 que ya tenían contexto recuperado. Sus huellas se han contrastado con el inventario anterior, sin errores de lectura. Es **cobertura documental por pedido**, no prueba de que todos esos PDF sean de faldones: pueden pertenecer al toldo, mampara u otra OF. Falta consolidar el vínculo por página/OF y resolver revisiones.
+
+En el inventario publicado no se localizaron PDF de13 de los169 pedidos: AR2500776, AR2501585, AR2501697, AR2502069, AR2502499, AR2503861, AR2602111, AR2602836, AR2603103, AR2603253, AR2603345, AR2604620 yAR2604755. Se mantienen en ventas; no se declara que carezcan de planteamiento en cualquier soporte. **AR2502499, línea3, FALDON, cantidad1, tampoco tiene OF en el exportado.**
+
+El apartado técnico `historico` del exportado devuelve30 registros de otras familias:28 puertas y2 remolques. No aporta medidas técnicas de faldón. Los artículos de escenario se excluyen del censo de fachada; las notas, reformas y posibles cambios de tela codificados con artículos genéricos siguen siendo un grupo adicional por verificar. Estos recuentos describen los códigos seleccionados, no una exhaustividad semántica ya cerrada.
+
+## 22. Ejemplos aportados por Iván: V08 y V09
+
+El [contraste detallado de Vita-K y O Lugar](./faldones-frontales-casos-ivan.md) incorpora las fuentes F41–F48 y los casos V08/V09, con [datos y cotas verificables](./faldones-frontales-casos-ivan.json).
+
+- **V08 · AR2601308:** dos laterales nuevos, OF0226602, acrílico negro y transparente650. Contornos distintos hasta mampara; A lleva escalón y refuerzo posterior10cm de PVC. Cada lateral pide2 mordazas(25) con cinta negra50cm y2 abatibles. Se separan los croquis de visita, el tachado, el detalle de confección y los patrones135×163,1 /134×170.
+- **V09 · AR2602384:** lateral A OF0228556 y frontal B OF0228555, con solapa independiente OF0228560. Frontal hecho337×204 y patrón342×214; ventana297×109. El lateral lleva ET superior, velcro suave derecho anterior y tira con ollaos abajo, sin inventar sus posiciones. El transparente conjunto510,6×113 se cuenta una vez aunque figure en los dos PDF.
+- **Diferencia conservada:** la ventana manuscrita130 pasa a109 en ambos planos y en el DWG. Q-FF04 pregunta por esa decisión; no se introduce un descuento de21. Las cotas de una anotación posterior de julio no se adjudican a la solapa de mayo.
+- **Corrección AR2500865:** C018/C019 son frontales nuevos, línea5 / OF0213964. El cambio de tela enrollable es otra línea y otra OF,0213960. Se corrige la atribución previa del tipo de trabajo y se mantienen A/B como piezas distintas.
