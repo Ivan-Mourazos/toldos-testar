@@ -31,6 +31,10 @@ export type VistaCorteRemolques = {
   aMano: Array<{ nombre: string; material: string; motivo: string; elementos: string[] }>;
 };
 
+/** Sin nada que cortar a máquina no salen «Abrir corte» ni «Confirmar corte»: la barra de arriba dice por qué. */
+export const avisoCorteAMano = (vista: VistaCorteRemolques | null | undefined): string | null =>
+  vista && !vista.cortes.length && vista.aMano.length ? `Se corta a mano: ${vista.aMano.map((a) => a.motivo).join('; ')}` : null;
+
 export type PlanoCorte = { files: Array<{ filename: string }>; avisos: string[]; existentes?: string[] } | null;
 
 /**

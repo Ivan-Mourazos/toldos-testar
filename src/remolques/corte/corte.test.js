@@ -20,7 +20,7 @@ import { generarCorteRemolques, resumirMaterial } from './index.js';
 import { calcLona } from '../calc/lona.ts';
 import { DEFAULT_PARAMS } from '../calc/params.ts';
 import { emptyLona } from '../entradas-vacias.ts';
-import { piezasLona, contornoConEmpate } from './lonaAlta.js';
+import { piezasLona, contornoConEmpate, contornoConTiraEntera, rebajePuentes, soportada } from './lonaAlta.js';
 import { piezaBaqueton } from './baqueton.js';
 import { escaleraCabeza } from './plano.js';
 
@@ -354,7 +354,7 @@ describe('generarCorteRemolques', () => {
     // Ollaos: los del pedido en los laterales, delante y detrás, y ninguno en las orejas.
     const { reparto } = AR2605078.elementos[0].result;
     expect(c.entidades.circulos).toHaveLength(2 * (2 * reparto.laterales.length + reparto.delante.length + reparto.atras.length));
-    expect(c.avisos.some((a) => /Hijos de Pedro López/i.test(a))).toBe(true);
+    expect(c.avisos.some((a) => /PUENTES HIJOS DE PEDRO LOPEZ/.test(a))).toBe(true);
     // El plano acota el contorno delante (285,5) y detrás (287), con su terminado (− 7), y el fondo del rebaje.
     const { archivo } = generarCorteRemolques(AR2605078);
     const cotas = registrosDxf(archivo.plano.dxf).filter((r) => r.tipo === 'DIMENSION').map((r) => Math.round(numero(r, 42) * 10) / 10);
@@ -416,9 +416,34 @@ describe('generarCorteRemolques', () => {
     expect(cerca(techo.x, 133.5) && cerca(techo.y, 660)).toBe(true);
   });
 
-  it('sigue dejando a mano los puentes que no son de Hijos de Pedro López', () => {
+  it('los puentes ESVA rebajan el techo la demasía configurada, también en la tira (NORTE: 190 en 44 de 52 cortes)', () => {
     const pedido = structuredClone(AR2604800);
-    pedido.elementos[0].input.recogeAtras = 'PUENTES ESVA';
+    const el = pedido.elementos[0];
+    el.input = { ...el.input, recogeDelante: 'NO', recogeAtras: 'PUENTES ESVA' };
+    el.paramsSnapshot = DEFAULT_PARAMS;
+    el.result = calcLona(el.input, DEFAULT_PARAMS);
+    expect(rebajePuentes(el)).toBe(190);
+    const { cortes, aMano } = generarCorteRemolques(pedido);
+    expect(aMano).toEqual([]);
+    expect(cortes[0].avisos.some((a) => /PUENTES ESVA: rebaje de 19 cm/.test(a))).toBe(true);
+    const c = { w: 2800, h: 2700, ollaos: [], rot: [], geo: { reb: 190, rebajeLado: 400 } };
+    const fondo = (p) => p.lineas.filter(([, y1, , y2]) => y1 === y2 && y1 === 320 - 190).length;
+    expect(fondo(contornoConTiraEntera(c).tira)).toBe(1);
+    expect(contornoConEmpate(c).tiras.map(fondo)).toEqual([1, 1]);
+  });
+
+  it('el rebaje que caería en el empate va a mano, con su motivo', () => {
+    const pedido = structuredClone(AR2604800);
+    const el = pedido.elementos[0];
+    el.paramsSnapshot = DEFAULT_PARAMS;
+    el.input = { ...el.input, recogeDelante: 'NO', recogeAtras: 'PUENTES ESVA', largo: 230, ancho: 130, altoDelante: 70, altoAtras: 70, anchoAtras: 130, contorno: 0, contornoAtras: 0 };
+    el.result = calcLona(el.input, DEFAULT_PARAMS);
+    expect(soportada(el)).toBe('el rebaje de los puentes cae en el empate');
+  });
+
+  it('sigue dejando a mano los puentes sin corte contrastado', () => {
+    const pedido = structuredClone(AR2604800);
+    pedido.elementos[0].input.recogeAtras = 'PUENTES LATERALES';
     const { cortes, aMano } = generarCorteRemolques(pedido);
     expect(cortes).toEqual([]);
     expect(aMano).toEqual([expect.objectContaining({ motivo: expect.stringContaining('puentes') })]);

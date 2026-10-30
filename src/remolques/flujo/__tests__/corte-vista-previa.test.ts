@@ -102,7 +102,7 @@ it('exige los parámetros del formulario sin llamar a almacenes que podrían ini
 
 it('conserva los cortes a mano y sus avisos también sin OF', async () => {
   pedido.elementos[0].input.cabecera.ordenFabricacion = '';
-  if ('recogeAtras' in pedido.elementos[0].input) pedido.elementos[0].input.recogeAtras = 'PUENTES ESVA';
+  if ('recogeAtras' in pedido.elementos[0].input) pedido.elementos[0].input.recogeAtras = 'PUENTES LATERALES';
   const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cuerpo()) });
   expect(res.status).toBe(200);
   const json = await res.json();

@@ -336,7 +336,9 @@ AR2605103, con su corte a mano. Ninguno con chaflán (TIPO 04).
 - Ollaos: los del pedido. En AR2605078 el pedido tiene 7 laterales (falta el de 171 y el último está a 201);
   el histórico de 200 × 130 (26 pedidos) y su baquetón llevan 8. La ficha del cliente guarda esa lona con los
   7: hay que corregirla (pendiente de Iván).
-- Siguen a mano: los demás puentes (ESVA, LATERALES) y el contorno en trapecio que no cabe en el rollo.
+- Siguen a mano: los demás puentes (LATERALES) y el contorno en trapecio que no cabe en el rollo.
+- Puentes ESVA (30/10/2026): como los de Hijos de Pedro López, con el rebaje de la demasía configurada: 19 cm, los
+  190 mm de 44 de los 52 cortes de NORTE. También en la tira. Si el rebaje caería en el empate, a mano.
 
 ## Perfil con chaflán (TIPO 04, 21/10/2026)
 

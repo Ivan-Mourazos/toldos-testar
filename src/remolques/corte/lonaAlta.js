@@ -17,8 +17,10 @@
 //   perfil del ancho de detrás.
 // - Puentes de Hijos de Pedro López detrás (cortes a mano AR2604800, AR2605078): rebaje de 9 cm en el techo
 //   del contorno, detrás, y orejas sin ollaos en el trasero (ver `contorno` y `cabeza`).
+// - Puentes ESVA detrás (NORTE): igual, con el rebaje de su demasía configurada (190 en 44 de 52 cortes reales).
 // Fuera de esta versión (se cortan a mano): TIPO 04 y los demás puentes.
 
+import { findRecogida } from '../calc/params.ts';
 import { esquinaChaflan } from '../geometry/chaflan.ts';
 import { anchoArial } from '../../domain/corteLona/texto.js';
 import { buscarColocacion, PRESUPUESTO_TETRIS } from '../../domain/corteLona/colocacionTetris.ts';
@@ -28,9 +30,10 @@ const ROLLO = 2500, BORDE = 45, R_OLLAO = 2.5;
 const TERMINADO_ARRIBA = 10, VENTANA_AL_TERMINADO = 50;
 const r1 = (v) => Math.round(v * 10) / 10;
 const completas = (eje, guardadas) => (eje && eje.n > guardadas.length ? Array.from({ length: eje.n }, (_, i) => r1(guardadas[0] + eje.dist * i)) : guardadas);
-const PUENTES_HPL = /PUENTES HIJOS DE PEDRO LOPEZ/;
-// Lo que el techo del contorno queda más corto que los lados, detrás, con los puentes de HPL (a mano, 90 en los tres).
-export const REBAJE_PUENTES = 90;
+// Los puentes con corte detrás. ESVA: 190 mm de rebaje en 44 de los 52 cortes de NORTE (30/10/2026).
+const PUENTES_CON_CORTE = /PUENTES (HIJOS DE PEDRO LOPEZ|ESVA)/;
+// Lo que el techo del contorno queda más corto que los lados, detrás: la demasía configurada de esa recogida.
+export const rebajePuentes = (el) => findRecogida(el.paramsSnapshot, el.input.recogeAtras).lateralSoloDelante * 10;
 // Holgura a cada lado del contorno en trapecio: las piezas de al lado no se pegan del todo, para que la máquina
 // no corte a menos de 1 cm de una raya ya cortada (Iván, 20/10/2026; a mano, de 8 a 12 mm).
 const HOLGURA_TRAPECIO = 10;
@@ -39,10 +42,13 @@ export function soportada(el) {
   const i = el.input, r = el.result;
   if (!['TIPO 01', 'TIPO 02', 'TIPO 03', 'TIPO 04', 'TIPO 05'].includes(i.tipoPerfil)) return `perfil ${i.tipoPerfil || 'sin elegir'}`;
   if (i.tipoPerfil === 'TIPO 04' && !((i.chaflan ?? 0) > 0)) return 'chaflán sin medida';
-  if (/PUENTES/.test(i.recogeDelante ?? '') || (/PUENTES/.test(i.recogeAtras ?? '') && !PUENTES_HPL.test(i.recogeAtras))) return 'recogida con puentes';
+  if (/PUENTES/.test(i.recogeDelante ?? '') || (/PUENTES/.test(i.recogeAtras ?? '') && !PUENTES_CON_CORTE.test(i.recogeAtras))) return 'recogida con puentes';
   if (!r.panoContorno) return 'sin contorno calculado';
   const c = r.panoContorno;
   if (c.altoAtras && Math.max(c.alto, c.altoAtras) * 10 > ROLLO && c.ancho * 10 > ROLLO) return 'contorno en trapecio que no cabe en el rollo';
+  // El rebaje tiene que caber en la tira: si no, caería en el empate.
+  if (PUENTES_CON_CORTE.test(i.recogeAtras ?? '') && c.alto * 10 > ROLLO && c.ancho * 10 > ROLLO
+    && c.ancho * 10 - ROLLO + EMPATE <= rebajePuentes(el) + EMPATE) return 'el rebaje de los puentes cae en el empate';
   return null;
 }
 
@@ -224,7 +230,7 @@ function contorno(el, marcasHombro, rebajeLado = 0, marcasAtras = marcasHombro) 
   const m = Bt !== B ? HOLGURA_TRAPECIO : 0, H = Math.max(B, Bt) + 2 * m, p = pieza(A, H);
   // Bordes de abajo y de arriba a lo largo de la lona.
   const yb = (u) => (H - B - ((Bt - B) * u) / A) / 2, yt = (u) => H - yb(u);
-  const reb = rebajeLado ? REBAJE_PUENTES : 0;
+  const reb = rebajeLado ? rebajePuentes(el) : 0;
   seg(p, 0, yb(0), A, yb(A)); seg(p, A, yt(A), 0, yt(0)); seg(p, 0, yt(0), 0, yb(0));
   if (reb) {
     const y1 = yb(A) + rebajeLado, y2 = yt(A) - rebajeLado;
@@ -279,7 +285,14 @@ export function contornoConEmpate(c, n = 1, pre = '') {
   // Cada media tira: x = v (desde 0 la primera y desde (B − 2 cm) / 2 la segunda), y = u − desde.
   const tiras = [pieza(mitad, s), pieza(mitad, s)];
   const dv = [0, (B - EMPATE) / 2];
-  for (const t of tiras) { seg(t, 0, 0, mitad, 0); seg(t, mitad, 0, mitad, s); seg(t, mitad, s, 0, s); seg(t, 0, s, 0, 0); }
+  const { reb = 0, rebajeLado: lado = 0 } = c.geo ?? {};
+  for (const t of tiras) seg(t, 0, 0, mitad, 0);
+  if (reb) {
+    // El rebaje de los puentes: cada media tira lleva su lado entero y el techo se queda `reb` más corto.
+    const [a, b] = tiras, y = s - reb;
+    seg(a, mitad, 0, mitad, y); seg(a, mitad, y, lado, y); seg(a, lado, y, lado, s); seg(a, lado, s, 0, s); seg(a, 0, s, 0, 0);
+    seg(b, mitad, 0, mitad, s); seg(b, mitad, s, mitad - lado, s); seg(b, mitad - lado, s, mitad - lado, y); seg(b, mitad - lado, y, 0, y); seg(b, 0, y, 0, 0);
+  } else for (const t of tiras) { seg(t, mitad, 0, mitad, s); seg(t, mitad, s, 0, s); seg(t, 0, s, 0, 0); }
   for (const [u, v] of c.ollaos) {
     if (u <= ROLLO - 10) grande.ollaos.push([v, u]);
     else if (v < B / 2) tiras[0].ollaos.push([v, u - desde]);
@@ -311,7 +324,10 @@ export function contornoConTiraEntera(c, n = 1, pre = '') {
   const grande = pieza(B, ROLLO);
   seg(grande, 0, 0, B, 0); seg(grande, B, 0, B, ROLLO); seg(grande, B, ROLLO, 0, ROLLO); seg(grande, 0, ROLLO, 0, 0);
   const tira = pieza(B, s); // x = v, y = u − desde
-  seg(tira, 0, 0, B, 0); seg(tira, B, 0, B, s); seg(tira, B, s, 0, s); seg(tira, 0, s, 0, 0);
+  const { reb = 0, rebajeLado: lado = 0 } = c.geo ?? {};
+  seg(tira, 0, 0, B, 0); seg(tira, B, 0, B, s); seg(tira, 0, s, 0, 0);
+  if (reb) { const y = s - reb; seg(tira, B, s, B - lado, s); seg(tira, B - lado, s, B - lado, y); seg(tira, B - lado, y, lado, y); seg(tira, lado, y, lado, s); seg(tira, lado, s, 0, s); }
+  else seg(tira, B, s, 0, s);
   for (const [u, v] of c.ollaos) {
     if (u <= ROLLO - 10) grande.ollaos.push([v, u]);
     else tira.ollaos.push([v, u - desde]);
@@ -438,7 +454,7 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], 
     const i = el.input;
     const { d, t, ventana, marcasHombro, marcasAtras, rebajeLado, puentes } = cabezasLona(el);
     if (ventana) out.avisos.push(`${el.of}: ventana marcada con rotulador y su tapa de ${ventana[0] / 10 + 3} × ${ventana[1] / 10 + 3}; revisar la altura de la ventana.`);
-    if (puentes) out.avisos.push(`${el.of}: puentes de Hijos de Pedro López: rebaje de ${REBAJE_PUENTES / 10} cm detrás en el contorno y orejas sin ollaos; revisarlo.`);
+    if (puentes) out.avisos.push(`${el.of}: ${i.recogeAtras}: rebaje de ${rebajePuentes(el) / 10} cm detrás en el contorno y orejas sin ollaos; revisarlo.`);
     for (let u = 0; u < (i.cantidad || 1); u++) {
       const L = letras?.get(el)?.[u] ?? '';
       const c = contorno(el, marcasHombro, rebajeLado, marcasAtras);
@@ -543,7 +559,7 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], 
 function cabezasLona(el) {
   const i = el.input, r = el.result, f = forma(i);
   const hecha = r.lonaHecha, del = r.panoDelantero, tra = r.panoTrasero;
-  const puentes = PUENTES_HPL.test(i.recogeAtras ?? '');
+  const puentes = PUENTES_CON_CORTE.test(i.recogeAtras ?? '');
   // El perfil de cada cabeza: la lona hecha + 2 (el remolque + 3, lo que da la web sin recoger), con el ancho de
   // delante o el de detrás (más ancho detrás en Hijos de Pedro López: 1345 con 1330 delante en AR2605078). Lo que
   // el paño tenga de más son orejas, delante o detrás (goma, ganchos, velcro, puentes…).

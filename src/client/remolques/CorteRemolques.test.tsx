@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import AR2604800 from '../../remolques/corte/__fixtures__/AR2604800.json';
 import AR2605132 from '../../remolques/corte/__fixtures__/AR2605132.json';
 import { crearCorteRemolques } from '../../remolques/corte/archivos.js';
-import { CorteRemolquesVista, escribirPlanoCorte, type VistaCorteRemolques } from './CorteRemolques';
+import { avisoCorteAMano, CorteRemolquesVista, escribirPlanoCorte, type VistaCorteRemolques } from './CorteRemolques';
 
 // La vista que da el servidor (la misma función que usa la ruta /corte), sin escribir nada.
 const { vista } = crearCorteRemolques({ ajustes: async () => ({}), oda: { disponible: false } });
@@ -24,13 +24,22 @@ describe('el corte de lona del pedido de remolques', () => {
   });
 
   it('dice qué lona se corta a mano y por qué', () => {
-    // Los puentes de ESVA aún no tienen corte (los de Hijos de Pedro López sí).
+    // Los puentes laterales aún no tienen corte (ESVA y los de Hijos de Pedro López sí).
     const pedido = structuredClone(AR2604800);
-    pedido.elementos[0].input.recogeAtras = 'PUENTES ESVA';
+    pedido.elementos[0].input.recogeAtras = 'PUENTES LATERALES';
     const html = pintar(pedido);
     expect(html).toContain('se corta a mano');
     expect(html).toContain('recogida con puentes');
     expect(html).not.toContain('corte-material');
+  });
+
+  it('la barra de arriba solo avisa cuando no hay nada que cortar a máquina', () => {
+    const aMano = [{ nombre: 'AR2605321', material: 'LONA', motivo: '0233493 201×131: recogida con puentes', elementos: ['0233493'] }];
+    const corte = { nombre: 'LONA', material: 'LONA', largo: 100, refuerzos: false, elementos: [], avisos: [], entidades: { lineas: [], textos: [], circulos: [], arcos: [] } };
+    expect(avisoCorteAMano({ cortes: [], aMano })).toBe('Se corta a mano: 0233493 201×131: recogida con puentes');
+    expect(avisoCorteAMano({ cortes: [corte], aMano })).toBeNull();
+    expect(avisoCorteAMano({ cortes: [], aMano: [] })).toBeNull();
+    expect(avisoCorteAMano(null)).toBeNull();
   });
 });
 

@@ -20,6 +20,7 @@ import { PestanasElementos } from './PestanasElementos';
 import { pantallaGanchos, ResultadosBaqueton, ResultadosGanado, ResultadosLona } from './Resultados';
 import { rotuloElemento } from './rotulo';
 import { VistaPreviaPdf } from './VistaPreviaPdf';
+import { avisoCorteAMano } from './CorteRemolques';
 import { entradaCorte, useVistaCorteRemolques, VistaPreviaCorte } from './VistaPreviaCorte';
 import { BotonesFlujoCorte, esperaAlCorte, useFlujoCorteDwg } from '../flujoCorteDwg';
 import { faltaParaPdf } from './vistaPrevia';
@@ -119,6 +120,7 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
     cuerpo: () => JSON.parse(entrada) as Record<string, unknown>, aplica: Boolean(vistaCorte.actual?.datos?.cortes.length),
     falta: bloqueoCorte, usuario, notify, askForConfirmation, activo: accionesVisibles && lineas.length > 0 });
   const esperaCorte = esperaAlCorte(flujo.paso);
+  const avisoAMano = bloqueoCorte ? null : avisoCorteAMano(vistaCorte.actual?.datos);
   const [derecha, setDerecha] = React.useState<'dibujo' | 'corte'>('dibujo');
   const elementoFluido=useContenidoFluido<HTMLElement>(String(versionActiva));
   const dibujoFluido=useContenidoFluido(derecha);
@@ -135,6 +137,7 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
         onClick={() => void ws.guardarBorrador()}>
         <FilePen aria-hidden="true" />{ws.guardandoBorrador ? 'Guardando…' : 'Guardar borrador'}
       </button>
+      {avisoAMano && <span className="flujo-corte-paso" role="status" title={avisoAMano}>{avisoAMano}</span>}
       <BotonesFlujoCorte flujo={flujo} ocupado={ws.guardando} />
       <button type="button" className="primary-button rem-guardar-boton"
         disabled={lineas.length === 0 || Boolean(faltaPdf) || ws.guardando || ws.guardandoBorrador || Boolean(ws.bloqueoParams.motivo) || Boolean(esperaCorte)}
