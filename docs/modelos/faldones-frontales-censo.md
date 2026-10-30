@@ -4,6 +4,8 @@ Avance del **30/10/2026** del [estudio de faldones de fachada](./faldones-fronta
 
 **Revisión técnica posterior:** se ha completado el [cotejo de piezas y versiones](./faldones-frontales-revision-tecnica.md) de los 80 documentos con OF de la familia, 86 páginas. De los 11 montajes genéricos, ocho se separan y tres siguen sin acreditar; las dos incidencias de identidad tienen decisión de exclusión por alcance o falta de identidad actual. Este censo y su JSON conservan el cruce inicial, actualizado mediante esa revisión sin alterar el origen comercial.
 
+**Confección e intermedios:** la [ampliación posterior](./faldones-frontales-confeccion.md) contrasta el subconjunto de 56 líneas de intermedios/cambios —incluidas E001–E008— con 59 libros, sus bloques por OF y 23 escaneos completos. Conserva estados sin corte acreditado, suplementos fijos, estructuras sin tela y la línea de cambios de Cortina separada. El censo comercial original no se altera ni sus líneas se vuelven a sumar.
+
 La fuente es el exportado entregado por Iván el29/10/2026, SHA-256 `40d38990125fa55bf6f392f7164976a6ca97a5c3ed58667f4f10d2fe369817f9`. El análisis es local y conserva los identificadores originales de línea RPS, sin conexiones a bases ni lectura de credenciales. Los PDF y escaneos compartidos se abrieron en solo lectura; copias, texto, OCR y vistas quedan en `tmp/faldones-frontales/`.
 
 ## Qué contiene cada registro
@@ -90,7 +92,7 @@ Las medidas de esta tabla son **nominales de la línea comercial**, no cortes va
 
 La fase comercial queda trazada por línea y la totalidad de los118 candidatos tiene resultado de cruce. La [revisión técnica posterior](./faldones-frontales-revision-tecnica.md) ya distingue piezas y páginas de los 80 documentos vinculados a la familia y conserva los límites por versión. Los 121 enlaces de líneas comerciales pueden incluir más de un PDF o una página con OF heredada: ni la coincidencia ni el cotejo documental aprueban automáticamente una medida de corte.
 
-Queda ampliar la matriz de confección y corte dentro de grupos comparables y contrastar los cambios de tela/intermedios sin PDF de su OF. De los 11 montajes revisados, tres requieren la confirmación de Iván conservada como Q-FF05; los otros ocho se separan. Q-FF01–Q-FF04 mantienen sus preguntas de confección y versiones en la [lista de dudas](./dudas-abiertas.md#faldones-laterales-y-frontales--estudio-iniciado-el-29102026). No se ha implementado ni cargado ningún cálculo nuevo.
+La [ampliación de confección](./faldones-frontales-confeccion.md) ya contrasta el subconjunto de intermedios/cambios mediante libros y escaneos, con matriz de 12 casos y límites para los cortes no recuperables. Queda aprobar las reglas generales y completar las equivalencias/consumos de componentes no acreditados. De los 11 montajes revisados, tres requieren la confirmación de Iván conservada como Q-FF05; los otros ocho se separan. Q-FF01–Q-FF04 mantienen sus preguntas en la [lista de dudas](./dudas-abiertas.md#faldones-laterales-y-frontales--estudio-iniciado-el-29102026). No se ha implementado ni cargado ningún cálculo nuevo.
 
 ## Comprobaciones del censo
 

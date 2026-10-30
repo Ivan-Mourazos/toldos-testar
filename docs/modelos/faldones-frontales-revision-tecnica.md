@@ -2,6 +2,8 @@
 
 Revisión del **30/10/2026**, posterior al [censo comercial](./faldones-frontales-censo.md). Se han revisado visualmente las **86 páginas de los 80 PDF** que el cruce relacionaba con OF de FALDON/CAMBIOTELAFALDON. También se han revisado completos **16 escaneos de pedido, 59 páginas**, para resolver montajes, identidades y tres discrepancias concretas. El [JSON de revisión](./faldones-frontales-revision-tecnica.json) conserva la decisión por página, piezas, OF, línea RPS, fuentes y huellas.
 
+**Ampliación posterior:** la [matriz de confección e intermedios](./faldones-frontales-confeccion.md) ya contrasta 56 líneas de intermedios/cambios mediante 59 libros y 23 escaneos completos, e incorpora C186 / AR2600316. Sus datos y reservas guardadas complementan este informe; no reescriben sus recuentos ni aprueban una fórmula general.
+
 Esta fase termina el cotejo documental de esos 80 vínculos. **No aprueba una fórmula general de corte ni demuestra fabricación física o consumo.** Los 11 montajes genéricos tienen ahora ocho decisiones de separación y tres exclusiones provisionales por falta de acreditación. Las dos incidencias de identidad tienen decisión de alcance, sin corregir sus cajetines por parecido. El censo inicial sigue siendo una fotografía comercial; esta revisión se aplica como complemento, sin reescribir el origen.
 
 ## Cobertura y límites de la comprobación
@@ -118,7 +120,7 @@ Estos son requisitos respaldados por los casos, no valores habituales aprobados:
 
 ## Qué queda abierto y qué no se ha cambiado
 
-Se mantiene el alcance de fachada, con intermedios como grupo separado y escenarios fuera. Los 5 conjuntos mixtos y los 7 cierres a riel de la clasificación inicial tampoco quedan admitidos por esta revisión: conservan su clasificación anterior. C186 y los cambios de tela/intermedios sin PDF de su OF requieren su contraste propio.
+Se mantiene el alcance de fachada, con intermedios como grupo separado y escenarios fuera. Los 5 conjuntos mixtos y los 7 cierres a riel de la clasificación inicial tampoco quedan admitidos por esta revisión: conservan su clasificación anterior. El contraste propio de C186 y del subconjunto de intermedios/cambios se completa en la [ampliación de confección](./faldones-frontales-confeccion.md), conservando las muestras físicas y cortes no acreditados como límites expresos.
 
 Q-FF01–Q-FF04 conservan sus preguntas de confección, tira inferior, reforma y altura de ventana. Q-FF05 se limita a los tres montajes que la documentación consultada no identifica. Los límites históricos de C062 —velcro por confirmar—, C084 —ollaos según muestra—, C120 —medidas discrepantes— y C216 —DWG no localizado— quedan en cada registro; no se rellenan por costumbre.
 
