@@ -148,10 +148,10 @@ era de tamaño real; la imagen de 1.653×2.338 píxeles ocupa 595×841 puntos de
 Bajo esa hipótesis de escala, el ajuste da R93,127 mm para la raya exterior, R76,475 para la interior y
 R84,204 para la línea media. La separación mediana es 16,508 mm: diámetro aparente del tubo, no espesor
 de su pared. Los ajustes no son perfectamente concéntricos y el radio exterior varía de 88,347 a 94,265 mm
-según el tramo utilizado. Hay que comprobar la escala con una medida testigo.
+según el tramo utilizado.
 
-La raya interior está a **0,090 mm** del radio terminado repetido en los diez pedidos. Esa coincidencia
-justifica mostrarla como **candidata**, pero no demuestra por sí sola qué borde manda para la lona. El
+La raya interior está a **0,090 mm** del radio terminado repetido en los diez pedidos. **Iván lo decide el
+30/10/2026: en los caballos de Cal se usa ese radio, 76,385 mm terminado y 86,385 mm de corte.** El
 [PNG de la extracción](../../tmp/ganado-medidas/curva-orientativa.png) conserva las dos rayas superpuestas
 al escaneo; `radio-carton.json` contiene los ajustes y sus errores.
 
@@ -186,7 +186,6 @@ indicando origen y si se mide sobre terminado o corte. También pedido, línea, 
 
 Las dudas que afectan a este pedido son concretas:
 
-- Una medida comprobada del cartón o del tubo para validar la escala y elegir el radio de apoyo.
 - Qué medida manda para cerrar los 28,507 mm de diferencia en el largo.
 - Dónde empieza y termina la puerta MFI, cuánto mide la ventana y sus solapas, y los acabados de cada borde.
 - Si las alturas se miden hasta la intersección teórica del agua o hasta la tangencia real de la curva.
