@@ -138,8 +138,8 @@ No se ha usado como norma el R8 citado para los remolques normales de Cal.
 
 Fuente: [pedido escaneado](../../tmp/ganado-medidas/fuentes/hoja-entrada.pdf), páginas 3 y 4, y GET de RPS
 guardado en `rps-entrada.json`. Se confirma cliente 016573, una unidad, PVC 580 gris 7037 y salida 05/11/2026.
-Iván aclara: **atrás 67+10; delante 57+10; aguas de 10 y caída adicional de 10 cm en el morro**. Es un solo
-caso, no dos alternativas de altura.
+Iván aclara: **57 en la punta del morro y en los laterales; 67 en el centro, donde el morro une con el
+contorno; el contorno cae 10 cm hacia los lados**. Es un solo caso, no dos alternativas de altura.
 
 La curva adjunta existe en la página 4. Iván identifica las rayas como los dos bordes del tubo. El cartón
 era de tamaño real; la imagen de 1.653×2.338 píxeles ocupa 595×841 puntos del PDF, aproximadamente A4 a
@@ -150,19 +150,20 @@ R84,204 para la línea media. La separación mediana es 16,508 mm: diámetro apa
 de su pared. Los ajustes no son perfectamente concéntricos y el radio exterior varía de 88,347 a 94,265 mm
 según el tramo utilizado.
 
-La raya interior está a **0,090 mm** del radio terminado repetido en los diez pedidos. **Iván lo decide el
-30/10/2026: en los caballos de Cal se usa ese radio, 76,385 mm terminado y 86,385 mm de corte.** El
+La raya interior está a **0,090 mm** del radio terminado repetido en los diez pedidos. Iván indica el
+30/10/2026 que la lona coge el **lado exterior del tubo** (raya exterior, R93,127), aunque los diez pedidos anteriores
+llevan R76,385: **la diferencia de 1,7 cm está sin aclarar**. El
 [PNG de la extracción](../../tmp/ganado-medidas/curva-orientativa.png) conserva las dos rayas superpuestas
 al escaneo; `radio-carton.json` contiene los ajustes y sus errores.
 
-Con esa curva candidata, sin añadir todavía holguras ni acabados:
+Con el radio exterior, sin añadir todavía holguras ni acabados:
 
 | Pieza propuesta | Geometría terminada, cm |
 |---|---|
-| Cuerpo recto | 210 × 290,36 de contorno calculado |
-| Morro | Envolvente aproximada 121,99 × 266,82; usar su contorno, no este rectángulo |
-| Frente | Envolvente 54 × 67, con curva y ventana pendientes de revisar |
-| Trasero | Envolvente 160 × 77; confirmar cómo se integra el fruncido |
+| Cuerpo recto | 210 × 269,3 de contorno calculado |
+| Morro | Envolvente aproximada 116,41 × 253,09; usar su contorno, no este rectángulo |
+| Frente | Envolvente 54 × 57, con curva y ventana pendientes de revisar |
+| Trasero | Envolvente 160 × 67; confirmar cómo se integra el fruncido |
 | Puerta MFI, solapas y tapa | Sin dimensionar: faltan medidas y posición |
 
 La hoja da 210 recto y 102 de diagonal. Con anchos 160/54 resulta una proyección del morro de 87,149 cm y
