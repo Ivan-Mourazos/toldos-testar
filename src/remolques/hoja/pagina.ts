@@ -24,6 +24,7 @@ export interface CabeceraHoja {
   fecha: string;
 }
 export interface FilaPosiciones { nombre: string; posiciones: number[] }
+export type NivelVistas = 0 | 1 | 2;
 export interface TablaPosiciones { titulo: string; columnas: number; filas: FilaPosiciones[] }
 export interface PaginaHojaDatos extends DatosHoja {
   /** La versión del elemento (10, 11…): identifica la hoja. */
@@ -42,6 +43,20 @@ export interface PaginaHojaDatos extends DatosHoja {
 /** 12 columnas como la hoja de siempre; más si algún lado lleva más (la vieja cortaba en 12). */
 export const COLUMNAS_MINIMAS = 12;
 const columnas = (filas: FilaPosiciones[]) => Math.max(COLUMNAS_MINIMAS, ...filas.map((f) => f.posiciones.length));
+
+/** Las columnas que caben en el A4 con cifras como 1357,5 (a 7 pt); con más, la tabla sigue debajo en otro tramo. */
+export const COLUMNAS_POR_TRAMO = 20;
+export interface TramoTabla { inicio: number; columnas: number; filas: FilaPosiciones[] }
+
+/** Una tabla corta va entera; una larga, a tramos con la numeración seguida y solo los lados que llegan a cada tramo. */
+export function tramosTabla(tabla: TablaPosiciones): TramoTabla[] {
+  if (tabla.columnas <= COLUMNAS_POR_TRAMO) return [{ inicio: 0, columnas: tabla.columnas, filas: tabla.filas }];
+  const tramos: TramoTabla[] = [];
+  for (let inicio = 0; inicio < tabla.columnas; inicio += COLUMNAS_POR_TRAMO) {
+    tramos.push({ inicio, columnas: COLUMNAS_POR_TRAMO, filas: tabla.filas.filter((f) => f.posiciones.length > inicio) });
+  }
+  return tramos;
+}
 const LADOS_TABLA: Lado[] = ["laterales", "atras", "delante"];
 
 export function fechaEs(fecha: string): string {
@@ -98,6 +113,16 @@ export function tablaGanchos(input: LonaInput | BaquetonInput): TablaPosiciones 
   const alReves = input.ganchosAlReves ?? sinReves();
   const filas = LADOS_TABLA.map((lado) => ({ nombre: NOMBRE_GANCHOS[lado][alReves[lado] ? 1 : 0], posiciones: ganchos[lado] }));
   return { titulo: "GANCHOS · SOBRE EL REMOLQUE, COMO VIENEN EN EL PEDIDO", columnas: columnas(filas), filas };
+}
+
+/** Lo que ocupan en la hoja la tabla de ganchos y cada tramo de más, y lo que libera encoger las vistas una vez. */
+const ALTO_TABLA_GANCHOS_MM = 20, ALTO_TRAMO_MM = 8.5, ALTO_LIBERADO_MM = 24;
+
+/** Con tabla de ganchos o tablas a tramos no cabe todo: 0 = vistas normales, 1 = pequeñas, 2 = mínimas. */
+export function nivelVistas(pagina: Pick<PaginaHojaDatos, "ganchos" | "ollaos">): NivelVistas {
+  const tramos = tramosTabla(pagina.ollaos).length - 1 + (pagina.ganchos ? tramosTabla(pagina.ganchos).length - 1 : 0);
+  const alto = (pagina.ganchos ? ALTO_TABLA_GANCHOS_MM : 0) + tramos * ALTO_TRAMO_MM;
+  return alto === 0 ? 0 : alto <= ALTO_LIBERADO_MM ? 1 : 2;
 }
 
 export function paginaHoja(elemento: ElementoHoja, indice: number, total: number, params: CalcParams, revisadoPor = ""): PaginaHojaDatos {

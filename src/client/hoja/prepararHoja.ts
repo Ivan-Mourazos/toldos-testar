@@ -1,6 +1,6 @@
 import { construirEscena } from '../../remolques/escena/index.ts';
 import type { ElementoEscena } from '../../remolques/escena/tipos.ts';
-import { paginaHoja, type PaginaHojaDatos } from '../../remolques/hoja/pagina.ts';
+import { nivelVistas, paginaHoja, type PaginaHojaDatos } from '../../remolques/hoja/pagina.ts';
 import type { DatosHojaPedido } from '../../remolques/hoja/tipos.ts';
 import { VISTAS_HOJA, type CapturaVista, type Capturador, type VistaHoja } from '../remolques/render/captura';
 import { aPixeles, NOTA_VISTA_MM, tamanoVista } from './medidas';
@@ -24,7 +24,7 @@ export function prepararHoja(datos: DatosHojaPedido, capturador: Capturador): Ho
     if (!escena) return { pagina, vistas: null };
     const vistas = {} as Record<VistaHoja, CapturaVista>;
     for (const vista of VISTAS_HOJA) {
-      const { ancho, alto } = tamanoVista(vista, pagina.ganchos != null);
+      const { ancho, alto } = tamanoVista(vista, nivelVistas(pagina));
       const reserva = conNota(pagina, vista) ? aPixeles(NOTA_VISTA_MM) : 0;
       vistas[vista] = capturador.capturar(escena, vista, aPixeles(ancho), aPixeles(alto), reserva);
     }

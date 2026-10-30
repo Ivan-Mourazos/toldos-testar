@@ -1,6 +1,6 @@
 import React from 'react';
 import { lineasObservaciones } from '../../remolques/hoja/observaciones.ts';
-import type { PaginaHojaDatos, TablaPosiciones } from '../../remolques/hoja/pagina.ts';
+import { nivelVistas, tramosTabla, type NivelVistas, type PaginaHojaDatos, type TablaPosiciones } from '../../remolques/hoja/pagina.ts';
 import type { CapturaVista, VistaHoja } from '../remolques/render/captura';
 import { CapaCotasHoja } from './CapaCotasHoja';
 import { DibujoGanado } from '../remolques/DibujoGanado';
@@ -25,8 +25,8 @@ function DatoCabecera({ etiqueta, valor }: { etiqueta: string; valor: string }) 
   return <div className="hoja-cab-dato"><span>{etiqueta}</span><strong>{valor}</strong></div>;
 }
 
-function Vista({ vista, captura, conGanchos, nota }: { vista: VistaHoja; captura: CapturaVista | null; conGanchos: boolean; nota: string | null }) {
-  const { ancho, alto } = tamanoVista(vista, conGanchos);
+function Vista({ vista, captura, nivel, nota }: { vista: VistaHoja; captura: CapturaVista | null; nivel: NivelVistas; nota: string | null }) {
+  const { ancho, alto } = tamanoVista(vista, nivel);
   return (
     // El nombre va encima del recuadro, fuera: dentro pisaba los rótulos DELANTE / DETRÁS.
     <figure className={`hoja-vista hoja-vista-${vista}`} style={{ width: `${ancho}mm` }}>
@@ -46,40 +46,44 @@ function Vista({ vista, captura, conGanchos, nota }: { vista: VistaHoja; captura
 }
 
 function Tabla({ tabla }: { tabla: TablaPosiciones }) {
-  const columnas = Array.from({ length: tabla.columnas }, (_, i) => i);
   return (
-    <section className="hoja-tabla-bloque">
+    <section className={`hoja-tabla-bloque${tabla.columnas > 16 ? ' a-tramos' : ''}`}>
       <span className="hoja-rotulo">{tabla.titulo}</span>
-      <table className="hoja-tabla">
-        <thead>
-          <tr>
-            <th className="hoja-tabla-nombre" />
-            {columnas.map((i) => <th key={i}>{i + 1}</th>)}
-            <th className="hoja-tabla-total">TOTAL</th>
-          </tr>
-        </thead>
-        <tbody>
-          {tabla.filas.map((fila) => (
-            <tr key={fila.nombre}>
-              <td className="hoja-tabla-nombre">{fila.nombre}</td>
-              {columnas.map((i) => <td key={i}>{fila.posiciones[i] == null ? '' : fmt(fila.posiciones[i])}</td>)}
-              <td className="hoja-tabla-total">{fila.posiciones.length}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {tramosTabla(tabla).map((tramo) => {
+        const columnas = Array.from({ length: tramo.columnas }, (_, i) => tramo.inicio + i);
+        return (
+          <table key={tramo.inicio} className="hoja-tabla">
+            <thead>
+              <tr>
+                <th className="hoja-tabla-nombre" />
+                {columnas.map((i) => <th key={i}>{i + 1}</th>)}
+                <th className="hoja-tabla-total">TOTAL</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tramo.filas.map((fila) => (
+                <tr key={fila.nombre}>
+                  <td className="hoja-tabla-nombre">{fila.nombre}</td>
+                  {columnas.map((i) => <td key={i}>{fila.posiciones[i] == null ? '' : fmt(fila.posiciones[i])}</td>)}
+                  <td className="hoja-tabla-total">{fila.posiciones.length}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        );
+      })}
     </section>
   );
 }
 
 export function PaginaHoja({ pagina, vistas }: { pagina: PaginaHojaDatos; vistas: Record<VistaHoja, CapturaVista> | null }) {
   const { cabecera } = pagina;
-  const conGanchos = pagina.ganchos != null;
+  const nivel = nivelVistas(pagina);
   const nota = (v: VistaHoja) => (v === 'delante' ? pagina.notasVistas?.delante : v === 'detras' ? pagina.notasVistas?.detras : null) ?? null;
-  const vista = (v: VistaHoja) => <Vista vista={v} captura={vistas?.[v] ?? null} conGanchos={conGanchos} nota={nota(v)} />;
+  const vista = (v: VistaHoja) => <Vista vista={v} captura={vistas?.[v] ?? null} nivel={nivel} nota={nota(v)} />;
   const observaciones = lineasObservaciones(pagina.observaciones === '—' ? '' : pagina.observaciones);
   return (
-    <article className={`hoja-pagina${conGanchos ? ' con-ganchos' : ''}`} data-titulo={pagina.titulo}>
+    <article className={`hoja-pagina${['', ' con-ganchos', ' vistas-minimas'][nivel]}`} data-titulo={pagina.titulo}>
       <header className="hoja-cabecera">
         <div className="hoja-logo"><img src="/logo-tgm-transparent.png" alt="TGM" /></div>
         <div>

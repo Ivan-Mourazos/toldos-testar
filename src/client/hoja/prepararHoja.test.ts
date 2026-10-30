@@ -29,7 +29,7 @@ describe('prepararHoja', () => {
     const hojas = prepararHoja(prepararPedidoHoja(muestras.varios, DEFAULT_PARAMS), capturador);
     expect(hojas.map((h) => h.pagina.titulo)).toEqual(['REMOLQUE · 1 DE 3', 'BAQUETÓN · 2 DE 3', 'REMOLQUE · 3 DE 3']);
     expect(llamadas).toHaveLength(15);
-    const { ancho, alto } = tamanoVista('lateral', false);
+    const { ancho, alto } = tamanoVista('lateral', 0);
     expect(llamadas[4]).toEqual(['lateral', aPixeles(ancho), aPixeles(alto)]);
     expect(Object.keys(hojas[0].vistas!)).toEqual(['tres-cuartos', 'tres-cuartos-detras', 'delante', 'detras', 'lateral']);
   });
@@ -38,7 +38,7 @@ describe('prepararHoja', () => {
     const { capturador, llamadas } = capturadorFalso();
     const [hoja] = prepararHoja(prepararPedidoHoja(muestras['segun-ganchos'], DEFAULT_PARAMS), capturador);
     expect(hoja.pagina.ganchos).not.toBeNull();
-    expect(llamadas[0]).toEqual(['tres-cuartos', aPixeles(tamanoVista('tres-cuartos', true).ancho), aPixeles(tamanoVista('tres-cuartos', true).alto)]);
+    expect(llamadas[0]).toEqual(['tres-cuartos', aPixeles(tamanoVista('tres-cuartos', 1).ancho), aPixeles(tamanoVista('tres-cuartos', 1).alto)]);
   });
 
   it('la vista de delante y la de detrás de una lona dejan al pie la franja de su recogida; el baquetón no', () => {

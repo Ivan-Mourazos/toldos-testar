@@ -120,8 +120,9 @@ export function cierresLona(
     delante: ganchosDeCara(ganchos.filter((g) => g.lado === "delante").map((g) => g.punto)),
     atras: ganchosDeCara(ganchos.filter((g) => g.lado === "atras").map((g) => g.punto)),
   };
-  // Puentes y ganchos corazón van a lo alto con el paso de los ollaos del elemento.
-  const paso = input.pasoOllaos > 0 ? input.pasoOllaos : params.pasoOllaosDefecto;
+  // Puentes y ganchos corazón van a lo alto de las cabezas, con su paso de ollaos.
+  const pasoCabezas = input.pasoOllaosCabezas ?? input.pasoOllaos;
+  const paso = pasoCabezas > 0 ? pasoCabezas : params.pasoOllaosDefecto;
   const esquinas: Array<{ esquina: Esquina; nombre: string; perfil: Perfil2D; z: number; lado: -1 | 1; hacia: Vec3; cara: "delante" | "atras" }> = [
     { esquina: "delante-izquierda", nombre: input.recogeDelante, perfil: cuerpo.perfilDelante, z: cuerpo.largo, lado: -1, hacia: [0, 0, -1], cara: "delante" },
     { esquina: "delante-derecha", nombre: input.recogeDelante, perfil: cuerpo.perfilDelante, z: cuerpo.largo, lado: 1, hacia: [0, 0, -1], cara: "delante" },

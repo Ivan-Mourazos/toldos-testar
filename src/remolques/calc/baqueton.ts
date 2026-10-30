@@ -13,6 +13,8 @@ export interface BaquetonInput {
   baquetonDetras?: number | null;
   modoOllaos: ModoOllaos;
   pasoOllaos: number;
+  /** Paso de delante y atrás; en pedidos anteriores se usa `pasoOllaos`. */
+  pasoOllaosCabezas?: number;
   /** Distancia del primer y último ollao al borde; por defecto la de los parámetros. */
   primerOllao?: number;
   ollaosManuales: { laterales: number[]; atras: number[]; delante: number[] };
@@ -63,7 +65,7 @@ export function calcBaqueton(input: BaquetonInput, params: CalcParams): Baqueton
     ancho: r1(input.ancho + params.baquetonDemasiaFinal + cli.extraAnchoFinal),
   };
 
-  const ollaos = calcOllaos(remolqueHecho.largo, remolqueHecho.ancho, input.pasoOllaos, params, input.primerOllao);
+  const ollaos = calcOllaos(remolqueHecho.largo, remolqueHecho.ancho, input.pasoOllaos, params, input.primerOllao, undefined, input.pasoOllaosCabezas);
   const segunGanchos = input.modoOllaos === "SEGUN GANCHOS"
     ? ollaosSegunGanchos({
         ganchos: input.ganchos ?? sinPosiciones(),

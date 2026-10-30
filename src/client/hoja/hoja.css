@@ -96,6 +96,9 @@ body {
   height: 113mm;
 }
 .con-ganchos .hoja-cuerpo { height: 89mm; }
+.vistas-minimas .hoja-cuerpo { height: 81mm; }
+.vistas-minimas .hoja-tabla th,
+.vistas-minimas .hoja-tabla td { font-size: 6.5pt; line-height: 1.1; padding-bottom: 0.1mm; padding-top: 0.1mm; }
 .hoja-columna { border-right: 0.2mm solid var(--filete); overflow: hidden; padding-right: 3mm; }
 .hoja-grupo { margin-bottom: 3mm; }
 .hoja-grupo dl { margin: 0; }
@@ -169,6 +172,8 @@ body {
   table-layout: fixed;
   width: 100%;
 }
+.hoja-tabla + .hoja-tabla { border-top: 0; }
+.a-tramos .hoja-tabla td { font-size: 7pt; padding: 0.6mm 0.2mm; }
 .hoja-tabla th,
 .hoja-tabla td {
   border-right: 0.2mm solid var(--filete);

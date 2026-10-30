@@ -30,10 +30,20 @@ describe("calcOllaos", () => {
     expect(calcOllaos(100, 100, 0, DEFAULT_PARAMS).largo.posiciones).toEqual([]);
   });
 
-  it("tope de 12 posiciones", () => {
+  it("calcula todas las posiciones aunque haya más de 12", () => {
     const res = calcOllaos(1000, 0, 35, DEFAULT_PARAMS);
     expect(res.largo.n).toBe(30);
-    expect(res.largo.posiciones).toHaveLength(12);
+    expect(res.largo.posiciones).toHaveLength(30);
+    expect(res.largo.posiciones.at(-1)).toBe(997.5);
+  });
+
+  it("reparte las dos cabezas con su propio paso, también con ancho trasero distinto", () => {
+    const res = calcOllaos(1000, 200, 35, DEFAULT_PARAMS, 2.5, 250, 20);
+    expect(res.largo.n).toBe(30);
+    expect(res.ancho.n).toBe(11);
+    expect(res.anchoAtras.n).toBe(14);
+    expect(res.ancho.posiciones.at(-1)).toBe(197.5);
+    expect(res.anchoAtras.posiciones.at(-1)).toBe(247.5);
   });
 
   it("primer ollao indicado por planteamiento (ej. 2,7)", () => {

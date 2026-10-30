@@ -63,6 +63,8 @@ export interface LonaInput {
   rotulacion: boolean | null;
   modoOllaos: ModoOllaos;
   pasoOllaos: number;
+  /** Paso de delante y atrás; en pedidos anteriores se usa `pasoOllaos`. */
+  pasoOllaosCabezas?: number;
   /** Distancia del primer y último ollao al borde; por defecto la de los parámetros. */
   primerOllao?: number;
   ollaosManuales: { laterales: number[]; atras: number[]; delante: number[] };
@@ -210,7 +212,7 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
 
   const ollaos = calcOllaos(
     lonaHecha.largo, lonaHecha.ancho, input.pasoOllaos, params,
-    input.primerOllao, lonaHecha.anchoAtras,
+    input.primerOllao, lonaHecha.anchoAtras, input.pasoOllaosCabezas,
   );
   const segunGanchos = input.modoOllaos === "SEGUN GANCHOS"
     ? ollaosSegunGanchos({

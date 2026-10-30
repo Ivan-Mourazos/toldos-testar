@@ -11,7 +11,7 @@
 
 const ROLLO = 2500, BORDE_OLLAO = 40, EMPATE = 20;
 const r1 = (v) => Math.round(v * 10) / 10;
-// Todas las posiciones: la web guarda como mucho 12 por lado en «REPARTIDOS»; con n y paso se completan.
+// Todas las posiciones: los pedidos guardados antes del 30/10/2026 traen como mucho 12 por lado en «REPARTIDOS»; con n y paso se completan.
 const completas = (eje, guardadas) => (eje && eje.n > guardadas.length ? Array.from({ length: eje.n }, (_, i) => r1(guardadas[0] + eje.dist * i)) : guardadas);
 
 // Una pieza de baquetón sin girar: x = largo, delante a la izquierda y detrás a la derecha (Iván,

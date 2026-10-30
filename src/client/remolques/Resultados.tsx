@@ -3,7 +3,7 @@ import type { LonaResult } from '../../remolques/calc/lona.ts';
 import type { BaquetonResult } from '../../remolques/calc/baqueton.ts';
 import type { GanadoResult } from '../../remolques/calc/ganado.ts';
 import { sinPosiciones, type ModoOllaos } from '../../remolques/calc/ollaos.ts';
-import { avisosGanchos, MAX_GANCHOS_POR_LADO, sinReves } from '../../remolques/calc/ganchos.ts';
+import { avisosGanchos, sinReves } from '../../remolques/calc/ganchos.ts';
 import { InputDecimal } from './InputDecimal';
 
 // Resultados del cálculo, los de `Resultados.tsx` de la web de remolques: tarjetas de datos,
@@ -25,12 +25,13 @@ const filas: Array<{ clave: ClaveReparto; nombre: string }> = [
   { clave: 'atras', nombre: 'ATRÁS · IZQUIERDA A DERECHA' },
   { clave: 'delante', nombre: 'DELANTE · IZQUIERDA A DERECHA' },
 ];
-const HUECOS = Array.from({ length: 12 }, (_, i) => i);
-const HUECOS_GANCHOS = Array.from({ length: MAX_GANCHOS_POR_LADO }, (_, i) => i);
+const huecosReparto = (reparto: RepartoOllaos) => Array.from({ length: Math.max(12, ...filas.map(({ clave }) => reparto[clave].length)) }, (_, i) => i);
+/** Las casillas de un lado: las de siempre y, al completarlas, una más. */
+const casillas = (minimo: number, ocupadas: number) => Array.from({ length: Math.max(minimo, ocupadas + 1) }, (_, i) => i);
 
 /** Cambia una casilla de una lista de posiciones: vaciarla la quita y no se saltan huecos.
  *  Devuelve null si el valor no vale (y entonces no se cambia nada). */
-function cambiarPosicion(lista: number[], indice: number, valor: number | null, maximo: number): number[] | null {
+function cambiarPosicion(lista: number[], indice: number, valor: number | null): number[] | null {
   const siguiente = [...lista];
   if (valor === null) {
     if (indice < siguiente.length) siguiente.splice(indice, 1);
@@ -38,7 +39,7 @@ function cambiarPosicion(lista: number[], indice: number, valor: number | null, 
     if (!Number.isFinite(valor) || valor <= 0 || indice > siguiente.length) return null;
     siguiente[indice] = valor;
   }
-  return siguiente.slice(0, maximo);
+  return siguiente;
 }
 
 export interface GanchosPantalla {
@@ -79,13 +80,14 @@ function Dato({ label, valor }: { label: string; valor: string }) {
 }
 
 function TablaReparto({ reparto }: { reparto: RepartoOllaos }) {
+  const huecos = huecosReparto(reparto);
   return (
     <div className="rem-tabla-caja scroll-thin">
       <table className="rem-tabla">
         <thead>
           <tr>
             <th scope="col">Reparto de ollaos</th>
-            {HUECOS.map((i) => <th key={i} scope="col">{i + 1}</th>)}
+            {huecos.map((i) => <th key={i} scope="col">{i + 1}</th>)}
             <th scope="col">Total</th>
           </tr>
         </thead>
@@ -95,7 +97,7 @@ function TablaReparto({ reparto }: { reparto: RepartoOllaos }) {
             return (
               <tr key={clave}>
                 <th scope="row">{nombre}</th>
-                {HUECOS.map((i) => <td key={i}>{posiciones[i] != null ? fmt(posiciones[i]) : '–'}</td>)}
+                {huecos.map((i) => <td key={i}>{posiciones[i] != null ? fmt(posiciones[i]) : '–'}</td>)}
                 <td className="rem-tabla-total">{posiciones.length}</td>
               </tr>
             );
@@ -112,7 +114,7 @@ function EditorOllaos({ reparto, error, onChange }: {
   onChange: (reparto: RepartoOllaos) => void;
 }) {
   const cambiar = (clave: ClaveReparto, indice: number, valor: number | null) => {
-    const siguiente = cambiarPosicion(reparto[clave], indice, valor, 12);
+    const siguiente = cambiarPosicion(reparto[clave], indice, valor);
     if (siguiente) onChange({ ...reparto, [clave]: siguiente });
   };
 
@@ -120,7 +122,7 @@ function EditorOllaos({ reparto, error, onChange }: {
     <div className={`rem-ollaos-editor${error ? ' is-invalido' : ''}`} data-campo-grupo="ollaosManuales">
       <header>
         <h4>Ollaos a medida</h4>
-        <span>Posiciones desde el origen · cm</span>
+        <span>Posiciones desde el origen · cm · Se añaden casillas al completar</span>
       </header>
       {filas.map(({ clave, nombre }) => {
         const posiciones = reparto[clave];
@@ -131,7 +133,7 @@ function EditorOllaos({ reparto, error, onChange }: {
               <span>{posiciones.length} {posiciones.length === 1 ? 'ollao' : 'ollaos'}</span>
             </div>
             <div className="rem-ollaos-casillas">
-              {HUECOS.map((indice) => (
+              {casillas(12, posiciones.length).map((indice) => (
                 <label key={indice}>
                   <span>{indice + 1}</span>
                   <InputDecimal
@@ -177,7 +179,7 @@ function EditorGanchos({ ganchos, alReves, error, onChange }: GanchosPantalla) {
               </label>
             </div>
             <div className="rem-ollaos-casillas">
-              {HUECOS_GANCHOS.map((indice) => (
+              {casillas(11, posiciones.length).map((indice) => (
                 <label key={indice}>
                   <span>{indice + 1}</span>
                   <InputDecimal
@@ -187,7 +189,7 @@ function EditorGanchos({ ganchos, alReves, error, onChange }: GanchosPantalla) {
                     disabled={indice > posiciones.length}
                     value={posiciones[indice]}
                     onValor={(valor) => {
-                      const siguiente = cambiarPosicion(posiciones, indice, valor, MAX_GANCHOS_POR_LADO);
+                      const siguiente = cambiarPosicion(posiciones, indice, valor);
                       if (siguiente) onChange({ ...ganchos, [clave]: siguiente }, alReves);
                     }}
                   />

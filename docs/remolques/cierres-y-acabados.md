@@ -68,6 +68,21 @@ Además (publicaciones de TGM en `lonaspararemolque`, fotos IMG_3930 a IMG_3935)
 - **Trasera abierta**: la lona de atrás se enrolla hacia arriba y se ata con cintas
   (IMG_3935).
 
+## Ollaos repartidos y a medida
+
+Iván, 30/10/2026: el número de ollaos es dinámico, sin el antiguo tope de 12 posiciones.
+En «A medida» aparece otra casilla al completar las anteriores. El reparto automático
+calcula todas las posiciones hasta el último ollao y la tabla permite desplazarse para verlas.
+El dibujo y la hoja de taller reciben el reparto completo: en la hoja, una tabla de más de
+20 columnas sigue debajo en otro tramo, con la numeración seguida, para que las cifras se lean.
+Los ganchos de un pedido tampoco tienen tope (el de 11 venía de esos 12). El paso mínimo es de
+1 cm, para que una errata no pida miles de ollaos.
+
+En lonas y baquetones, los repartidos tienen un **paso para los laterales** y otro
+**para las cabezas** (delante y atrás). Los pedidos anteriores, que solo guardaban un
+paso, lo usan en ambos grupos hasta que se edite. Cada cabeza sigue repartiéndose sobre
+su propio ancho hecho, también si el remolque es distinto detrás.
+
 ## Pedidos con medidas de ganchos
 
 Algunos pedidos traen las posiciones de los **ganchos** del remolque en vez de las de los

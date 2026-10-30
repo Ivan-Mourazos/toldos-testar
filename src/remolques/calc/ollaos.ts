@@ -13,8 +13,11 @@ export const sinPosiciones = (): RepartoLados => ({ laterales: [], atras: [], de
 export interface EjeOllaos { n: number; dist: number; posiciones: number[] }
 export interface OllaosResult { largo: EjeOllaos; ancho: EjeOllaos; anchoAtras: EjeOllaos }
 
+/** Sin tope de posiciones, una errata como «0,01» pediría 100.000 ollaos y colgaría la pantalla. */
+export const PASO_MINIMO_OLLAOS = 1;
+
 function eje(medida: number, paso: number, params: CalcParams, primerOllao?: number): EjeOllaos {
-  if (!(medida > 0) || !(paso > 0)) return { n: 0, dist: 0, posiciones: [] };
+  if (!Number.isFinite(medida) || !Number.isFinite(paso) || !(medida > 0) || paso < PASO_MINIMO_OLLAOS) return { n: 0, dist: 0, posiciones: [] };
   const primero = primerOllao ?? params.primerOllao;
   const ultimo = medida - primero;
   const recorrido = ultimo - primero;
@@ -27,7 +30,7 @@ function eje(medida: number, paso: number, params: CalcParams, primerOllao?: num
   const distanciaExacta = recorrido / intervalos;
   const n = intervalos + 1;
   const posiciones = Array.from(
-    { length: Math.min(n, params.maxPosicionesOllaos) },
+    { length: n },
     (_, indice) => excelRound(primero + distanciaExacta * indice, 1),
   );
   const dist = excelRound(distanciaExacta, 1);
@@ -40,13 +43,15 @@ export function calcOllaos(
   primerOllao?: number,
   /** Ancho trasero hecho (remolque sesgado); si falta, igual al delantero. */
   medidaAnchoAtras?: number,
+  /** Paso de las cabezas; ausente = el mismo que en los laterales. */
+  pasoCabezas: number = paso,
 ): OllaosResult {
-  const ancho = eje(medidaAncho, paso, params, primerOllao);
+  const ancho = eje(medidaAncho, pasoCabezas, params, primerOllao);
   return {
     largo: eje(medidaLargo, paso, params, primerOllao),
     ancho,
     anchoAtras: medidaAnchoAtras != null && medidaAnchoAtras !== medidaAncho
-      ? eje(medidaAnchoAtras, paso, params, primerOllao)
+      ? eje(medidaAnchoAtras, pasoCabezas, params, primerOllao)
       : ancho,
   };
 }

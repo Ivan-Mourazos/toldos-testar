@@ -10,7 +10,7 @@ import type { ElementoPedidoHoja } from "./tipos.ts";
 
 export interface CasoFixture { caso: string; tipo: TipoPlanteamiento; input: LonaInput | BaquetonInput }
 
-export const NOMBRES_MUESTRAS = ["lona-ventana", "baqueton", "segun-ganchos", "bastilla", "perfiles", "varios", "sesgado", "cremallera"] as const;
+export const NOMBRES_MUESTRAS = ["lona-ventana", "baqueton", "segun-ganchos", "bastilla", "perfiles", "varios", "sesgado", "cremallera", "ollaos-largos"] as const;
 export type NombreMuestra = (typeof NOMBRES_MUESTRAS)[number];
 
 const OBSERVACIONES_LARGAS = "REFORZAR LAS ESQUINAS DE DETRÁS CON DOBLE COSTURA. EL CLIENTE QUIERE LA ROTULACIÓN "
@@ -39,6 +39,19 @@ export function muestrasHoja(casos: CasoFixture[]): Record<NombreMuestra, Elemen
   return {
     // TIPO 03 de 200 × 121 con ventana de 50 × 35 y recogida con goma detrás.
     "lona-ventana": [copia(casos, "lona-02", "AR.26.99990", "10")],
+    // El semirremolque más largo: los laterales pasan de 30 ollaos y las cifras llevan decimales de cuatro dígitos.
+    // La segunda hoja es la peor: el mismo largo con los ganchos del pedido, las dos tablas a tramos.
+    "ollaos-largos": [
+      copia(casos, "lona-02", "AR.26.99999", "10", {
+        largo: 1360, ventana: false, modoOllaos: "REPARTIDOS", pasoOllaos: 35, pasoOllaosCabezas: 20,
+      }),
+      copia(casos, "lona-02", "AR.26.99999", "20", {
+        largo: 1360, ventana: false, modoOllaos: "SEGUN GANCHOS",
+        ganchos: { laterales: Array.from({ length: 24 }, (_, i) => 20 + 57 * i), atras: [10, 60, 111], delante: [11, 61, 111] },
+        ganchosAlReves: { laterales: false, atras: false, delante: false },
+        ollaosExtremos: true,
+      }),
+    ],
     "baqueton": [copia(casos, "baqueton-01", "AR.26.99991", "10")],
     // La misma lona, recta y sin ventana, con los ganchos del pedido y delante medido al revés:
     // la hoja más llena, y con un cliente de nombre largo.

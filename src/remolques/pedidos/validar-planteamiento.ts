@@ -2,7 +2,7 @@ import { contornoAutomatico, contornoSesgado, type LonaInput } from "../calc/lon
 import type { BaquetonInput } from "../calc/baqueton.ts";
 import { esModeloGanado, type GanadoInput } from "../calc/ganado.ts";
 import { erroresGanchos, medidasRemolque } from "../calc/ganchos.ts";
-import { sinPosiciones } from "../calc/ollaos.ts";
+import { PASO_MINIMO_OLLAOS, sinPosiciones } from "../calc/ollaos.ts";
 
 export interface ErrorPlanteamiento {
   campo: string;
@@ -10,6 +10,7 @@ export interface ErrorPlanteamiento {
 }
 
 const positivo = (valor: number | null | undefined) => Number.isFinite(valor) && Number(valor) > 0;
+const pasoValido = (valor: number | null | undefined) => Number.isFinite(valor) && Number(valor) >= PASO_MINIMO_OLLAOS;
 
 /** El remolque de ganado se distingue por su modelo de plantilla (`ganado`), igual que el baquetón por `baqueton`. */
 export const esGanado = (input: LonaInput | BaquetonInput | GanadoInput): input is GanadoInput => "ganado" in input;
@@ -94,7 +95,8 @@ export function erroresPlanteamiento(input: LonaInput | BaquetonInput | GanadoIn
   agregar(input.rotulacion == null, "rotulacion", "Indica si lleva rotulación.");
 
   if (input.modoOllaos === "REPARTIDOS") {
-    agregar(!positivo(input.pasoOllaos), "pasoOllaos", "El paso de ollaos debe ser mayor que cero.");
+    agregar(!pasoValido(input.pasoOllaos), "pasoOllaos", `El paso de ollaos de los laterales debe ser de al menos ${PASO_MINIMO_OLLAOS} cm.`);
+    agregar(!pasoValido(input.pasoOllaosCabezas ?? input.pasoOllaos), "pasoOllaosCabezas", `El paso de ollaos de las cabezas debe ser de al menos ${PASO_MINIMO_OLLAOS} cm.`);
     agregar(
       !Number.isFinite(input.primerOllao) || Number(input.primerOllao) < 0,
       "primerOllao",

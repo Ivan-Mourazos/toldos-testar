@@ -1,3 +1,4 @@
+import type { NivelVistas } from '../../remolques/hoja/pagina.ts';
 import type { VistaHoja } from '../remolques/render/captura';
 
 // Tamaños de la hoja de taller, en milímetros de papel (A4 apaisado). hoja.css usa los mismos
@@ -41,6 +42,15 @@ const CON_GANCHOS: Record<VistaHoja, MedidaMm> = {
   lateral: { ancho: 101, alto: 35 },
 };
 
-export function tamanoVista(vista: VistaHoja, conGanchos: boolean): MedidaMm {
-  return (conGanchos ? CON_GANCHOS : NORMAL)[vista];
+/** Con las dos tablas a tramos (hoja.css: `.vistas-minimas`). */
+const MINIMAS: Record<VistaHoja, MedidaMm> = {
+  'tres-cuartos': { ancho: 104, alto: 40 },
+  'tres-cuartos-detras': { ancho: 104, alto: 40 },
+  delante: { ancho: 52, alto: 31 },
+  detras: { ancho: 52, alto: 31 },
+  lateral: { ancho: 101, alto: 31 },
+};
+
+export function tamanoVista(vista: VistaHoja, nivel: NivelVistas): MedidaMm {
+  return [NORMAL, CON_GANCHOS, MINIMAS][nivel][vista];
 }

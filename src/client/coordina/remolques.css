@@ -670,6 +670,18 @@
 .rem-tabla tbody th { color: var(--text-muted); font-size: 10px; font-weight: 700; }
 .rem-tabla td { color: var(--text); }
 .rem-tabla-total { font-weight: 700; }
+/* Al desplazar un reparto largo, el lado y su total siguen a la vista. */
+.rem-tabla thead th:first-child,
+.rem-tabla tbody th {
+  left: 0;
+  min-width: 10.5rem;
+  position: sticky;
+  z-index: 1;
+}
+.rem-tabla thead th:last-child,
+.rem-tabla-total { position: sticky; right: 0; }
+.rem-tabla tbody th,
+.rem-tabla-total { background: var(--surface); }
 
 .rem-ollaos-editor {
   background: var(--surface);

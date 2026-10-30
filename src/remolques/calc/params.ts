@@ -34,6 +34,7 @@ export interface CalcParams {
   ajusteContornoCurva: number;
   pasoOllaosDefecto: number;
   primerOllao: number;
+  /** Campo histórico de los parámetros guardados; ya no limita las posiciones. */
   maxPosicionesOllaos: number;
   baquetonDemasiaLargoCostura: number;
   baquetonDemasiaAnchoCostura: number;

@@ -11,10 +11,6 @@ export type Lado = keyof RepartoLados;
 export const LADOS: Lado[] = ["laterales", "atras", "delante"];
 export const NOMBRE_LADO: Record<Lado, string> = { laterales: "laterales", atras: "atrás", delante: "delante" };
 
-/** Once ganchos dan diez ollaos entre ellos y, con los dos extremos, los doce que caben en la
- *  tabla de ollaos y en la hoja de taller. */
-export const MAX_GANCHOS_POR_LADO = 11;
-
 export type LadosAlReves = Record<Lado, boolean>;
 export const sinReves = (): LadosAlReves => ({ laterales: false, atras: false, delante: false });
 

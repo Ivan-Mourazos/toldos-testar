@@ -216,12 +216,15 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
 
       <PasoFormulario numero={4} titulo="Ajustes finales" columnas={4}>
         <div className="rem-banda rem-span-4">
-          <CampoSelect name="modoOllaos" delCliente={dc('modoOllaos')} label="Distribución de ollaos" span={2} value={input.modoOllaos} opciones={MODOS_OLLAOS}
+          <CampoSelect name="modoOllaos" delCliente={dc('modoOllaos')} label="Distribución de ollaos" span={input.modoOllaos === 'REPARTIDOS' ? 4 : 2} value={input.modoOllaos} opciones={MODOS_OLLAOS}
             sinElegir="Elige el reparto" error={errores.modoOllaos}
             onChange={(v) => set('modoOllaos', v as LonaInput['modoOllaos'])} />
           {input.modoOllaos === 'REPARTIDOS' ? (
             <>
-              <CampoNum name="pasoOllaos" error={errores.pasoOllaos} label="Paso" value={input.pasoOllaos} onChange={(v) => set('pasoOllaos', v)} />
+              <CampoNum name="pasoOllaos" error={errores.pasoOllaos} label="Paso laterales" value={input.pasoOllaos}
+                onChange={(v) => onChange({ ...input, pasoOllaos: v, pasoOllaosCabezas: input.pasoOllaosCabezas ?? input.pasoOllaos })} />
+              <CampoNum name="pasoOllaosCabezas" error={errores.pasoOllaosCabezas} label="Paso cabezas" value={input.pasoOllaosCabezas ?? input.pasoOllaos}
+                onChange={(v) => set('pasoOllaosCabezas', v)} />
               <CampoNum name="primerOllao" error={errores.primerOllao} label="Primer ollao" value={input.primerOllao ?? DEFAULT_PARAMS.primerOllao}
                 onChange={(v) => set('primerOllao', v)} />
             </>
