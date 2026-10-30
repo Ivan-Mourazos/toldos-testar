@@ -3,6 +3,7 @@ import path from 'node:path';
 import { generarCorteLona } from './domain/corteLona/index.js';
 import { archivoCorte } from './domain/corteLona/opcionesArchivo.js';
 import { corteLonaPendiente } from './corteLonaEstado.js';
+import { authorNames } from './reviewRules.js';
 import { resolveDirectoryTemplate, sanitizeOrderCode, writeFileAtomic } from './workflow.js';
 
 export function exigirCorteAlDia(order, corteLona) {
@@ -21,7 +22,11 @@ const segmento = value => Array.from(String(value || '')).filter(c => c.charCode
 export const CARPETA_TECNICO = {
   'IVÁN': 'Ivan.Sanchez', 'ADRIÁN': 'Adrian.Quinteiro', 'ÁNGEL': 'Angel', 'ALBERTO': 'Alberto', 'JAIME': 'Jaime', 'TAMARA': 'Tamara',
 };
-const carpetaTecnico = (tecnico) => CARPETA_TECNICO[String(tecnico ?? '').trim().toUpperCase()] ?? segmento(tecnico);
+// Un pedido cogido por un compañero lleva los dos autores («ANA / LUIS»): la carpeta es la del último, el que lo lleva.
+const carpetaTecnico = (tecnico) => {
+  const autor = authorNames(tecnico).at(-1) ?? '';
+  return CARPETA_TECNICO[autor.toUpperCase()] ?? segmento(autor);
+};
 
 export function carpetaCorte(template, order) {
   if (!template) throw new Error('Configura las carpetas del corte de lona antes de escribir sus archivos.');

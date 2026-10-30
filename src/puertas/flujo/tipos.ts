@@ -59,6 +59,8 @@ export interface CorteConfirmado {
   filename: string;
   /** El DWG en la carpeta del año, el que abre el revisor. */
   plano: string;
+  /** La huella de los datos del pedido con que salió este corte. */
+  datos?: string;
 }
 
 /** Lo que lista Pedidos: el pedido sin las puertas. */

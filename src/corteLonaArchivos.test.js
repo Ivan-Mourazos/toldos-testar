@@ -133,6 +133,9 @@ describe('Reglas y salidas del corte', () => {
     expect(carpetaCorte(plantilla, { orderCode: 'AR2605158', technician: 'IVÁN' })).toBe(path.resolve('tmp/BOT/Pendientes/Ivan.Sanchez'));
     expect(carpetaCorte(plantilla, { orderCode: 'AR2605158', technician: 'ADRIÁN' })).toBe(path.resolve('tmp/BOT/Pendientes/Adrian.Quinteiro'));
     expect(carpetaCorte(plantilla, { orderCode: 'AR2605158', technician: 'ÁNGEL' })).toBe(path.resolve('tmp/BOT/Pendientes/Angel'));
+    // Cogido por un compañero, la carpeta es la de quien lo lleva ahora.
+    expect(carpetaCorte(plantilla, { orderCode: 'AR2605158', technician: 'ÁNGEL / IVÁN' })).toBe(path.resolve('tmp/BOT/Pendientes/Ivan.Sanchez'));
+    expect(carpetaCorte(plantilla, { orderCode: 'AR2605158', technician: 'IVÁN / LUIS' })).toBe(path.resolve('tmp/BOT/Pendientes/LUIS'));
   });
   it('evita colisiones entre telas de igual código con distinto ancho y no permite rutas en el técnico', async () => {
     const otro = structuredClone(order);

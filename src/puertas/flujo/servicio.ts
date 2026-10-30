@@ -1,7 +1,7 @@
 import { mkdir, stat } from "node:fs/promises";
 import path from "node:path";
 import { enviarCorte as enviarCorteCompartido } from "../../corteEnvios.js";
-import { crearFlujoDwg, ultimaAprobacion } from "../../flujoDwg/flujo.ts";
+import { aprobacionDeTodas, crearFlujoDwg, huellaDatos } from "../../flujoDwg/flujo.ts";
 import { conRevisor, htmlPresentaciones, sinDibujarEnPdf } from "../../flujoDwg/planoDxf.js";
 import { writeFileAtomic } from "../../workflow.js";
 import { normalizarNumeroPedido } from "../../remolques/pedidos/numero-pedido.ts";
@@ -58,6 +58,9 @@ export interface DependenciasPedidosPuertas {
   registrar?: (mensaje: string) => void;
   ahora?: () => Date;
 }
+
+/** Los datos de las puertas de los que sale el corte, para comprobarlos desde cualquier PC al guardar. */
+const datosCorte = (pedido: { elementos: { input: unknown }[] }) => huellaDatos(pedido.elementos.map((e) => e.input));
 
 async function existeFichero(fichero: string): Promise<boolean> {
   try {
@@ -195,7 +198,7 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
       const pedido = crearPedidoPuertas({ pedido: enviado, cabecera, autoria, existente, ahora: ahora() });
       // Flujo del DWG (fase 2): solo con el corte confirmado y sin cambios; el borrador pasa a la carpeta del año, donde lo abre
       // el revisor, y la web ya no genera el plano.
-      const desdeBorrador = await flujo.alGuardar({ orderCode, technician: autoria.technician, confirmOverwrite: c.confirmOverwrite === true });
+      const desdeBorrador = await flujo.alGuardar({ orderCode, technician: autoria.technician, confirmOverwrite: c.confirmOverwrite === true, datos: datosCorte(enviado) });
       if (desdeBorrador && "respuesta" in desdeBorrador) return desdeBorrador.respuesta;
       if (desdeBorrador) {
         await desdeBorrador.escribir();
@@ -242,7 +245,8 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
       const cabecera = validarCabeceraPuertas((c.pedido as { cabecera?: unknown }).cabecera ?? {}, ahora().slice(0, 10));
       const borrador = { ...enviado, orderCode, summary: { customer: cabecera.cliente || cabecera.clienteRps?.nombre || "", technician: autor,
         orderDate: cabecera.fecha } } as unknown as PedidoPuertasGuardado;
-      return await flujo.borrador({ orderCode, regenerar: c.regenerar === true, revisado: (await deps.almacen.obtener(orderCode))?.corteConfirmado?.plano,
+      const confirmado = (await deps.almacen.obtener(orderCode))?.corteConfirmado;
+      return await flujo.borrador({ orderCode, regenerar: c.regenerar === true, revisado: confirmado?.plano, datos: datosCorte(enviado), datosRevisado: confirmado?.datos,
         preparar: (carpeta) => deps.plano!.preparar(borrador, "", carpeta) });
     } finally {
       ocupados.delete(orderCode);
@@ -362,7 +366,7 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
       if (pedido.corteConfirmado) {
         // Pasado a revisión en CoordinaOT y aprobado otra vez después del cambio: sale sin preguntar.
         const ofs = uniqueOfs(elementosAprobacion(pedido));
-        const aprobadoEn = ultimaAprobacion(await deps.coordina.statusOf(ofs, { fresh: true }), ofs);
+        const aprobadoEn = aprobacionDeTodas(await deps.coordina.statusOf(ofs, { fresh: true }), ofs);
         const comprobado = await flujo.antesDeMandar(pedido.corteConfirmado, c.aceptarCambioCorte === true, usuario, aprobadoEn);
         if ("respuesta" in comprobado) return comprobado.respuesta;
         ({ dwg, nota } = comprobado);

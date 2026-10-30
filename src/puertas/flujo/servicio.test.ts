@@ -257,6 +257,23 @@ describe('corte confirmado desde el borrador', () => {
       huella: (confirmado.cuerpo as { confirmado: { huella: string } }).confirmado.huella });
   });
 
+  it('corregir sin cambios sigue desde el DWG revisado; con otras medidas no deja guardarlo con el DWG viejo', async () => {
+    await abrir();
+    await confirmar();
+    await guardar();
+    const comoEstaba = pedidoParaEditar(await flujo.obtener('AR2605134'));
+    expect((await flujo.borradorCorte({ pedido: comoEstaba, savedBy: 'IVÁN' })).cuerpo).toMatchObject({ existente: true });
+    await confirmar();
+    expect((await guardar({ pedido: comoEstaba, confirmOverwrite: true })).status).toBe(200);
+    const cambiado = pedidoPantalla({ frente: pedidoPantalla().elementos[0].input.frente + 100 });
+    expect((await flujo.borradorCorte({ pedido: cambiado, savedBy: 'IVÁN' })).cuerpo).toMatchObject({ existente: true });
+    await confirmar();
+    await expect(guardar({ pedido: cambiado, confirmOverwrite: true })).rejects.toMatchObject({ statusCode: 409, message: expect.stringContaining('Generar de nuevo') });
+    expect((await flujo.borradorCorte({ pedido: cambiado, savedBy: 'IVÁN', regenerar: true })).cuerpo).toMatchObject({ existente: false });
+    await confirmar();
+    expect((await guardar({ pedido: cambiado, confirmOverwrite: true })).status).toBe(200);
+  });
+
   it('si el borrador cambia después de confirmarlo, hay que volver a confirmarlo', async () => {
     await abrir();
     await confirmar();

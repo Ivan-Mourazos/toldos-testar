@@ -101,6 +101,25 @@ describe('corte confirmado desde el borrador', () => {
     expect((await servicio.obtener('AR2605132')).corteConfirmado).toMatchObject({ por: 'IVÁN', plano: enAnio() });
   });
 
+  it('corregir sin cambios sigue desde el DWG revisado; con otras medidas no deja guardarlo con el DWG viejo', async () => {
+    await abrir();
+    await confirmar();
+    await guardar();
+    const guardado = await servicio.obtener('AR2605132');
+    const comoEstaba = { elementos: guardado.elementos, params: guardado.params };
+    expect((await abrir(comoEstaba)).cuerpo).toMatchObject({ existente: true });
+    await confirmar();
+    expect((await guardar({ ...comoEstaba, confirmOverwrite: true })).status).toBe(200);
+    const cambiado = structuredClone(guardado.elementos);
+    (cambiado[0].input as { largo: number }).largo += 10;
+    expect((await abrir({ elementos: cambiado })).cuerpo).toMatchObject({ existente: true });
+    await confirmar();
+    await expect(guardar({ elementos: cambiado, confirmOverwrite: true })).rejects.toMatchObject({ statusCode: 409, message: expect.stringContaining('Generar de nuevo') });
+    expect((await abrir({ elementos: cambiado, regenerar: true })).cuerpo).toMatchObject({ existente: false });
+    await confirmar();
+    expect((await guardar({ elementos: cambiado, confirmOverwrite: true })).status).toBe(200);
+  });
+
   it('si el borrador cambia después de confirmarlo, o tiene líneas fuera de los recuadros, no se guarda', async () => {
     await abrir();
     await confirmar();

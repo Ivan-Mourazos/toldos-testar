@@ -1,11 +1,11 @@
-import { afterEach, beforeEach, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { pedidoVariasTelas } from '../domain/corteLona/fixtures/variasTelas.js';
 import { generarCorteLona } from '../domain/corteLona/index.js';
 import { archivoCorte } from '../domain/corteLona/opcionesArchivo.js';
 import { crearAlmacenConfirmaciones } from './confirmaciones.js';
-import { crearFlujoDwg, planosDe, type FicheroPlano } from './flujo.ts';
+import { aprobacionDeTodas, crearFlujoDwg, huellaDatos, planosDe, type FicheroPlano } from './flujo.ts';
 
 // Varios planos por pedido (toldos de varias telas, 25/10/2026): se abren, se confirman, se guardan y se mandan juntos.
 
@@ -99,4 +99,61 @@ it('en la revisión, «Abrir corte» da el enlace de cada DWG revisado en la car
   expect(ficheros[0].url).toMatch(/^tgm-pedidos:\/\/open\?kind=cad&path=/);
   await fs.rm(guardado.corteConfirmado.plano);
   await expect(conRed.enlacesRevisado(guardado.corteConfirmado)).rejects.toMatchObject({ statusCode: 409 });
+});
+
+// Corregir un pedido desde otro PC: la pantalla no sabe con qué datos se abrió el corte, el servidor sí.
+it('no deja guardar si los datos del pedido ya no son los del borrador, aunque el DWG siga confirmado', async () => {
+  await flujo.borrador({ orderCode: 'AR2600096', preparar, datos: 'ancho-300' });
+  await flujo.confirmar('AR2600096', 'IVÁN');
+  await expect(flujo.alGuardar({ orderCode: 'AR2600096', technician: 'IVÁN', confirmOverwrite: false, datos: 'ancho-320' }))
+    .rejects.toMatchObject({ statusCode: 409, message: expect.stringContaining('Generar de nuevo') });
+  await flujo.borrador({ orderCode: 'AR2600096', preparar, datos: 'ancho-320', regenerar: true });
+  await flujo.confirmar('AR2600096', 'IVÁN');
+  const guardado = await flujo.alGuardar({ orderCode: 'AR2600096', technician: 'IVÁN', confirmOverwrite: false, datos: 'ancho-320' });
+  if (!guardado || 'respuesta' in guardado) throw new Error('debería poder guardarse');
+  expect(guardado.corteConfirmado.datos).toBe('ancho-320');
+});
+
+it('el borrador que ya había conserva sus datos: abrirlo con otros no lo da por bueno', async () => {
+  await flujo.borrador({ orderCode: 'AR2600096', preparar, datos: 'ancho-300' });
+  await flujo.borrador({ orderCode: 'AR2600096', preparar, datos: 'ancho-320' });
+  await flujo.confirmar('AR2600096', 'IVÁN');
+  await expect(flujo.alGuardar({ orderCode: 'AR2600096', technician: 'IVÁN', confirmOverwrite: false, datos: 'ancho-320' })).rejects.toMatchObject({ statusCode: 409 });
+});
+
+it('al corregir, el DWG revisado lleva los datos con que se revisó, no los de la pantalla', async () => {
+  await flujo.borrador({ orderCode: 'AR2600096', preparar, datos: 'ancho-300' });
+  await flujo.confirmar('AR2600096', 'IVÁN');
+  const guardado = await flujo.alGuardar({ orderCode: 'AR2600096', technician: 'IVÁN', confirmOverwrite: false, datos: 'ancho-300' });
+  if (!guardado || 'respuesta' in guardado) throw new Error('debería poder guardarse');
+  await guardado.escribir();
+  await guardado.limpiar();
+  const { corteConfirmado } = guardado;
+  await flujo.borrador({ orderCode: 'AR2600096', preparar, datos: 'ancho-320', revisado: planosDe(corteConfirmado).map((p) => p.plano), datosRevisado: corteConfirmado.datos });
+  await flujo.confirmar('AR2600096', 'IVÁN');
+  await expect(flujo.alGuardar({ orderCode: 'AR2600096', technician: 'IVÁN', confirmOverwrite: true, datos: 'ancho-320' })).rejects.toMatchObject({ statusCode: 409 });
+  expect(await flujo.alGuardar({ orderCode: 'AR2600096', technician: 'IVÁN', confirmOverwrite: true, datos: 'ancho-300' })).toHaveProperty('corteConfirmado');
+});
+
+it('un pedido anterior a este aviso, sin datos apuntados, se guarda como siempre', async () => {
+  await flujo.borrador({ orderCode: 'AR2600096', preparar });
+  await flujo.confirmar('AR2600096', 'IVÁN');
+  expect(await flujo.alGuardar({ orderCode: 'AR2600096', technician: 'IVÁN', confirmOverwrite: false, datos: 'ancho-320' })).toHaveProperty('corteConfirmado');
+});
+
+it('la huella de los datos no depende del orden de los campos', () => {
+  expect(huellaDatos({ b: 1, a: [{ d: 2, c: undefined }] })).toBe(huellaDatos({ a: [{ d: 2 }], b: 1 }));
+  expect(huellaDatos({ a: 1 })).not.toBe(huellaDatos({ a: 2 }));
+});
+
+describe('aprobación después del último cambio', () => {
+  const aprobada = (actualizado: string) => ({ estado: 'aprobada', actualizado });
+  it('con varias OF vale la más antigua: aprobar una sola no cubre a la otra', () => {
+    const estado = { ofs: { A: aprobada('2026-10-30T10:00:00Z'), B: aprobada('2026-10-30T12:00:00Z') } };
+    expect(aprobacionDeTodas(estado, ['A', 'B'])).toBe('2026-10-30T10:00:00Z');
+  });
+  it('si alguna OF no está aprobada, no hay aprobación de todas', () => {
+    expect(aprobacionDeTodas({ ofs: { A: aprobada('2026-10-30T12:00:00Z'), B: { estado: 'en_revision', actualizado: '2026-10-30T13:00:00Z' } } }, ['A', 'B'])).toBeNull();
+    expect(aprobacionDeTodas({ ofs: {} }, [])).toBeNull();
+  });
 });

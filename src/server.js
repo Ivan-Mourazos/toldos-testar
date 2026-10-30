@@ -11,7 +11,8 @@ import { registrarRutaPuertas } from './puertas/rutas.js';
 import { crearPlanoPuertas } from './puertas/flujo/archivos.ts';
 import { crearServicioPedidosPuertas } from './puertas/flujo/servicio.ts';
 import { crearAlmacenConfirmaciones } from './flujoDwg/confirmaciones.js';
-import { crearFlujoDwg, planosDe, ultimaAprobacion } from './flujoDwg/flujo.ts';
+import { firmasCorteLona } from './corteLonaEstado.js';
+import { aprobacionDeTodas, crearFlujoDwg, huellaDatos, planosDe } from './flujoDwg/flujo.ts';
 import { conRevisor, htmlPresentaciones, sinDibujarEnPdf } from './flujoDwg/planoDxf.js';
 import { conHojasDelante } from './flujoDwg/unirPdf.js';
 import { SUBCARPETA_PUERTAS, TIPO_PEDIDO_PUERTAS } from './puertas/flujo/tipos.ts';
@@ -309,6 +310,9 @@ function pedidoToldosDeLaPantalla(body) {
   return { order: { ...raw, orderCode, technician: raw.technician || savedBy }, orderCode, savedBy };
 }
 
+// Los datos de los que sale el corte de toldos, para comprobarlos desde cualquier PC al guardar.
+const datosCorteToldos = (corteLona) => huellaDatos(firmasCorteLona(corteLona));
+
 // Flujo del DWG, fase 1: los planos del corte de la pantalla en la carpeta de borradores y el enlace para abrirlos en ZWCAD.
 app.post('/api/corte-lona/borrador', async (req, res, next) => {
   let lockKey = '';
@@ -320,7 +324,7 @@ app.post('/api/corte-lona/borrador', async (req, res, next) => {
     let existente = null;
     try { existente = await workflowStore.getReview(orderCode); } catch { existente = null; }
     const { status, cuerpo } = await flujoToldos.borrador({
-      orderCode, regenerar: req.body?.regenerar === true,
+      orderCode, regenerar: req.body?.regenerar === true, datos: datosCorteToldos(req.body?.corteLona), datosRevisado: existente?.corteConfirmado?.datos,
       revisado: existente?.corteConfirmado ? planosDe(existente.corteConfirmado).map((p) => p.plano) : undefined,
       preparar: async (carpeta) => {
         const salida = await prepararArchivosCorte({ order, corteLona: req.body?.corteLona, settings: await workflowStore.getSettings(), oda, tipo: 'plano', carpeta });
@@ -382,7 +386,7 @@ registrarRutasEnviosCorte(app, {
     if (!review.corteConfirmado) return null;
     // Pasado a revisión en CoordinaOT y aprobado otra vez después del cambio: sale sin preguntar.
     const ofs = uniqueOfs(review.order.awnings.map((a) => ({ of: String(a?.of || '') })));
-    const aprobadoEn = ultimaAprobacion(await coordina.statusOf(ofs, { fresh: true }), ofs);
+    const aprobadoEn = aprobacionDeTodas(await coordina.statusOf(ofs, { fresh: true }), ofs);
     const comprobado = await flujoToldos.antesDeMandar(review.corteConfirmado, cuerpo.aceptarCambioCorte === true, usuario, aprobadoEn);
     if ('respuesta' in comprobado) return comprobado;
     return { nota: comprobado.nota, archivos: [{ type: 'corte-lona', filename: `${review.orderCode}.dxf`, savedPath: '', contents: Buffer.from(comprobado.dwg.dxf, 'latin1') }] };
@@ -1184,7 +1188,7 @@ app.post('/api/reviews', async (req, res, next) => {
     // Flujo del DWG (fase 2): con corte de lona, solo con el corte confirmado y sin cambios; los borradores pasan a la carpeta
     // del año, donde los abre el revisor, y la web ya no genera el plano.
     const desdeBorrador = review.corteLona?.toldos?.length
-      ? await flujoToldos.alGuardar({ orderCode, technician: order.technician, confirmOverwrite: req.body?.confirmPlanoOverwrite === true })
+      ? await flujoToldos.alGuardar({ orderCode, technician: order.technician, confirmOverwrite: req.body?.confirmPlanoOverwrite === true, datos: datosCorteToldos(review.corteLona) })
       : null;
     if (desdeBorrador && 'respuesta' in desdeBorrador) {
       const { existing, error } = desdeBorrador.respuesta.cuerpo;

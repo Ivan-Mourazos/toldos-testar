@@ -34,6 +34,8 @@ export interface CorteConfirmado {
   plano: string;
   /** Con varios planos (toldos de varias telas), todos; `filename` y `plano` son el primero. */
   planos?: Array<{ filename: string; plano: string }>;
+  /** La huella de los datos del pedido con que salió este corte. Falta en los guardados antes del 30/10/2026. */
+  datos?: string;
 }
 
 type Confirmacion = { huella: string; por: string; fecha: string; filename: string; ficheros?: string[] };
@@ -95,11 +97,27 @@ async function ultimoCambio(confirmado: CorteConfirmado) {
   return ultimo;
 }
 
-/** La última aprobación de las OF del pedido en CoordinaOT (`actualizado` de las aprobadas), o null. */
-export function ultimaAprobacion(estado: { ofs?: Record<string, { estado?: string; actualizado?: string | null }> } | null | undefined, ofs: string[]) {
+/** Desde cuándo están aprobadas todas las OF del pedido en CoordinaOT (la aprobación más antigua), o null si falta alguna. */
+export function aprobacionDeTodas(estado: { ofs?: Record<string, { estado?: string; actualizado?: string | null }> } | null | undefined, ofs: string[]) {
   const fechas = ofs.map((of) => estado?.ofs?.[of]).filter((e) => e?.estado === "aprobada" && e.actualizado).map((e) => e!.actualizado!);
-  return fechas.sort().at(-1) ?? null;
+  return ofs.length && fechas.length === ofs.length ? fechas.sort()[0] : null;
 }
+
+/** Los datos de un pedido en una huella, sin que importe el orden de sus campos. */
+export function huellaDatos(valor: unknown) {
+  const estable = (v: unknown): string => {
+    if (Array.isArray(v)) return `[${v.map(estable).join(",")}]`;
+    if (v && typeof v === "object") {
+      const o = v as Record<string, unknown>;
+      return `{${Object.keys(o).filter((k) => o[k] !== undefined).sort().map((k) => `${JSON.stringify(k)}:${estable(o[k])}`).join(",")}}`;
+    }
+    return JSON.stringify(v) ?? "null";
+  };
+  return createHash("sha256").update(estable(valor)).digest("hex");
+}
+
+/** Dónde se apunta con qué datos se creó el borrador, junto a las confirmaciones (no es una confirmación: no lleva autor). */
+const claveDatos = (orderCode: string) => `${orderCode}-datos`;
 
 /** Todos los planos de un corte confirmado. */
 export const planosDe = (c: CorteConfirmado) => c.planos?.length ? c.planos : [{ filename: c.filename, plano: c.plano }];
@@ -160,13 +178,16 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
    * Fase 1: el plano tal como está en pantalla, en la carpeta de borradores, para abrirlo en ZWCAD y perfilarlo. Si ya hay
    * uno, no se pisa: se abre el que hay, salvo que el autor pida generarlo de nuevo. Al corregir un pedido con el corte
    * confirmado, se sigue desde el DWG revisado (`revisado`). Devuelve el enlace `tgm-pedidos:` con su ruta de red, y con
-   * varios planos, el de cada uno en `ficheros`.
+   * varios planos, el de cada uno en `ficheros`. Se apunta con qué `datos` del pedido sale el borrador (los del DWG revisado,
+   * `datosRevisado`, si se sigue desde él), para que `alGuardar` lo compruebe desde cualquier PC.
    */
-  async function borrador({ orderCode, preparar, regenerar = false, revisado }: {
+  async function borrador({ orderCode, preparar, regenerar = false, revisado, datos, datosRevisado }: {
     orderCode: string;
     preparar: (carpeta: string) => Promise<{ fichero?: FicheroPlano | null; ficheros?: FicheroPlano[]; avisos: string[] }>;
     regenerar?: boolean;
     revisado?: string | string[];
+    datos?: string;
+    datosRevisado?: string;
   }): Promise<Respuesta> {
     const ajustes = await deps.ajustes();
     if (!ajustes.productionEnabled) throw new ErrorFlujoDwg("Modo simulación: no se ha escrito el borrador del corte.", 403);
@@ -186,6 +207,11 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
     };
     const respuesta = (nombres: string[], extra: object) =>
       ({ status: 200, cuerpo: { ok: true, ...extra, ...enlace(nombres[0]), ...(nombres.length > 1 ? { ficheros: nombres.map(enlace) } : {}), avisos } });
+    const apuntarDatos = async (huella?: string) => {
+      if (!deps.confirmaciones) return;
+      if (huella) await deps.confirmaciones.guardar(claveDatos(orderCode), { huella, por: "", fecha: ahora(), filename: "" });
+      else await deps.confirmaciones.borrar(claveDatos(orderCode));
+    };
     let existentes = await borradoresDe(carpeta, orderCode);
     const revisados = Array.isArray(revisado) ? revisado : revisado ? [revisado] : [];
     if (!existentes.length && !regenerar && revisados.length) {
@@ -194,6 +220,7 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
       for (const r of presentes) await deps.escribir({ filename: path.basename(r), savedPath: path.join(carpeta, path.basename(r)), contenido: await readFile(r) });
       if (presentes.length) {
         avisos.push(presentes.length > 1 ? "Son los DWG que se guardaron para revisión." : "Es el DWG que se guardó para revisión.");
+        await apuntarDatos(datosRevisado);
         existentes = await borradoresDe(carpeta, orderCode);
       }
     }
@@ -206,6 +233,7 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
       registrar(`Pedido ${orderCode}: no se pudo escribir el borrador del corte: ${(error as Error).message}`);
       throw new ErrorFlujoDwg(motivoPlano(error, ficheros.map((f) => f.filename).join(" · ")), 500);
     }
+    await apuntarDatos(datos);
     return respuesta(ficheros.map((f) => f.filename), { existente: false, sustituido: existentes.length > 0 });
   }
 
@@ -230,8 +258,10 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
    * Fase 2, al guardar para revisión: solo con el corte confirmado y sin cambios desde entonces. Devuelve la pregunta si el
    * plano ya está en la carpeta del año, o cómo terminar: `escribir` lo deja en su carpeta (antes de guardar el pedido) y
    * `limpiar` quita el borrador y su confirmación (después). Null si el flujo no está en marcha: todo como antes.
+   * `datos`: la huella de los datos que se guardan. Si no son aquellos con los que salió el borrador, no se guarda: el DWG
+   * sería de otras medidas. Un borrador sin datos apuntados (anterior a este aviso) no se comprueba.
    */
-  async function alGuardar({ orderCode, technician, confirmOverwrite }: { orderCode: string; technician: string; confirmOverwrite: boolean }):
+  async function alGuardar({ orderCode, technician, confirmOverwrite, datos }: { orderCode: string; technician: string; confirmOverwrite: boolean; datos?: string }):
     Promise<null | { respuesta: Respuesta } | { corteConfirmado: CorteConfirmado; escribir: () => Promise<void>; limpiar: () => Promise<string[]> }> {
     const ajustes = await deps.ajustes();
     if (!activo(ajustes)) return null;
@@ -244,6 +274,10 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
     if (leido.error) throw new ErrorFlujoDwg(leido.error, 409);
     if (leido.huella !== confirmacion.huella) {
       throw new ErrorFlujoDwg("El borrador del corte ha cambiado desde que lo confirmaste: revísalo y vuelve a pulsar «Confirmar corte».", 409);
+    }
+    const apuntados = await deps.confirmaciones!.leer(claveDatos(orderCode));
+    if (datos && apuntados && apuntados.huella !== datos) {
+      throw new ErrorFlujoDwg("Los datos del pedido han cambiado desde que se creó este corte: el DWG no los lleva. Pulsa «Abrir corte» y «Generar de nuevo», revísalo y confírmalo. Si el DWG tenía cambios hechos en ZWCAD, habrá que repetirlos.", 409);
     }
     if (!ajustes.corteLonaPlanoDirectory) throw new ErrorFlujoDwg("Falta la carpeta de planos del corte en Configuración.", 409);
     const carpeta = carpetaCorte(ajustes.corteLonaPlanoDirectory, { orderCode, technician });
@@ -258,7 +292,7 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
     }
     return {
       corteConfirmado: { huella: confirmacion.huella, por: confirmacion.por, fecha: confirmacion.fecha, filename: planos[0].filename, plano: planos[0].plano,
-        ...(planos.length > 1 ? { planos: planos.map(({ filename, plano }) => ({ filename, plano })) } : {}) },
+        ...(planos.length > 1 ? { planos: planos.map(({ filename, plano }) => ({ filename, plano })) } : {}), ...(datos ? { datos } : {}) },
       async escribir() {
         for (const p of planos) {
           try {
@@ -273,6 +307,7 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
         try {
           for (const p of planos) await rm(p.ruta, { force: true });
           await deps.confirmaciones!.borrar(orderCode);
+          await deps.confirmaciones!.borrar(claveDatos(orderCode));
           return [];
         } catch (error) {
           registrar(`Pedido ${orderCode}: no se pudo quitar el borrador: ${(error as Error).message}`);

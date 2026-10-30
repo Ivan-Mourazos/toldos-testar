@@ -56,6 +56,9 @@ export function corteLonaPendiente(order, corteLona) {
   });
 }
 
+/** La firma de cada toldo: lo mismo en el corte de la pantalla que en el guardado en la revisión. */
+export const firmasCorteLona = (corteLona) => (corteLona?.toldos ?? []).map(({ clave, letra, firma }) => [clave, letra, firma].map((v) => String(v || '')));
+
 /** Solo metadatos del contrato; los DXF y la geometría nunca se incrustan en la revisión. */
 export function copiarEstadoCorteLona(estado) {
   if (estado == null) return null;

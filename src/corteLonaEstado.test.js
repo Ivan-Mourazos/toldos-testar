@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import revision from './domain/corteLona/fixtures/revision-AR2604784.json' with { type: 'json' };
 import { generarCorteLona } from './domain/corteLona/index.js';
-import { crearEstadoCorteLona, corteLonaPendiente, firmaToldo } from './corteLonaEstado.js';
+import { copiarEstadoCorteLona, crearEstadoCorteLona, corteLonaPendiente, firmaToldo, firmasCorteLona } from './corteLonaEstado.js';
 import { createReviewPackage, extractReviewPackageFromPdf } from './workflow.js';
 import { buildOrderReviewPdf } from './domain/reviewPdf.js';
 import { calculateOrder } from './domain/rules.js';
@@ -13,6 +13,12 @@ const generar = (pedido = order, ajustes = {}) => crearEstadoCorteLona(pedido, {
 });
 
 describe('Estado guardado del corte de lona', () => {
+  it('las firmas del corte de la pantalla y del guardado en la revisión son las mismas', () => {
+    const estado = generar();
+    expect(firmasCorteLona(estado).length).toBeGreaterThan(0);
+    expect(firmasCorteLona(copiarEstadoCorteLona(estado))).toEqual(firmasCorteLona(estado));
+  });
+
   it('firma estable con claves y ajustes equivalentes, sensible a medidas, tela, bamba y ajustes', () => {
     const firma = firmaToldo(order, 0, {});
     expect(firmaToldo({ ...order }, 0, { empate: 'horizontal' })).toBe(firma);

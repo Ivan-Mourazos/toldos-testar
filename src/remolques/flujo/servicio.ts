@@ -1,7 +1,7 @@
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { enviarCorte as enviarCorteCompartido } from "../../corteEnvios.js";
-import { crearFlujoDwg, ultimaAprobacion, type AjustesFlujoDwg, type ConfirmacionesCorte } from "../../flujoDwg/flujo.ts";
+import { aprobacionDeTodas, crearFlujoDwg, huellaDatos, type AjustesFlujoDwg, type ConfirmacionesCorte } from "../../flujoDwg/flujo.ts";
 import {
   approvalReviewers, coordinaAuthor, ELEMENT_NOUNS, generateFilesDecision, generationBlock, reviewAuthorship, saveReviewDecision, uniqueOfs,
 } from "../../reviewRules.js";
@@ -207,6 +207,9 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     return { datos, orderCode: codigoPedido(datos.elementos[0].input.cabecera.numeroPedido) };
   }
 
+  /** Los datos de los que sale el corte, para comprobarlos desde cualquier PC al guardar. De la cabecera solo cuenta la OF, que va en el corte. */
+  const datosCorte = (datos: DatosHojaPedido) => huellaDatos(datos.elementos.map(({ input }) => ({ ...input, cabecera: input.cabecera.ordenFabricacion })));
+
   /**
    * Flujo del DWG, fase 1: el plano del corte tal como está en pantalla, en la carpeta de borradores, para abrirlo en ZWCAD.
    * Si ya hay uno, se abre el que hay, salvo que el autor pida generarlo de nuevo (`regenerar`).
@@ -223,7 +226,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       const existente = await deps.almacen.obtener(orderCode);
       const pedido = crearPedidoRemolques({ datos, autoria: { technician: datos.elementos[0].input.cabecera.realizadoPor || autor, reviewer: "" },
         existente, ahora: ahora(), clienteRps: validarClienteRps(c.clienteRps) });
-      return await flujo.borrador({ orderCode, regenerar: c.regenerar === true, revisado: existente?.corteConfirmado?.plano,
+      return await flujo.borrador({ orderCode, regenerar: c.regenerar === true, revisado: existente?.corteConfirmado?.plano, datos: datosCorte(datos), datosRevisado: existente?.corteConfirmado?.datos,
         preparar: async (carpeta) => {
           const { ficheros, avisos } = await deps.corte!.preparar(pedido, carpeta);
           const plano = ficheros.find((fichero) => fichero.type === "plano-corte-lona") ?? null;
@@ -321,7 +324,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       // el revisor, y la web ya no genera el plano.
       // Sin corte de lona (todo a mano), no hay plano que confirmar.
       const conCorteLona = Boolean(deps.corte && (deps.corte.vista(pedido) as { cortes?: unknown[] } | null)?.cortes?.length);
-      const desdeBorrador = conCorteLona ? await flujo.alGuardar({ orderCode, technician: autoria.technician, confirmOverwrite: c.confirmOverwrite === true }) : null;
+      const desdeBorrador = conCorteLona ? await flujo.alGuardar({ orderCode, technician: autoria.technician, confirmOverwrite: c.confirmOverwrite === true, datos: datosCorte(datos) }) : null;
       if (desdeBorrador && "respuesta" in desdeBorrador) return desdeBorrador.respuesta;
       if (desdeBorrador) {
         await desdeBorrador.escribir();
@@ -539,7 +542,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       if (pedido.corteConfirmado) {
         // Pasado a revisión en CoordinaOT y aprobado otra vez después del cambio: sale sin preguntar.
         const ofs = uniqueOfs(elementosAprobacion(pedido));
-        const aprobadoEn = ultimaAprobacion(await deps.coordina.statusOf(ofs, { fresh: true }), ofs);
+        const aprobadoEn = aprobacionDeTodas(await deps.coordina.statusOf(ofs, { fresh: true }), ofs);
         const comprobado = await flujo.antesDeMandar(pedido.corteConfirmado, c.aceptarCambioCorte === true, usuario, aprobadoEn);
         if ("respuesta" in comprobado) return comprobado.respuesta;
         nota = comprobado.nota;
