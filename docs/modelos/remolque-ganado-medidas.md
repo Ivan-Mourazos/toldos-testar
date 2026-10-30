@@ -187,7 +187,8 @@ indicando origen y si se mide sobre terminado o corte. También pedido, línea, 
 Las dudas que afectan a este pedido son concretas:
 
 - Qué medida manda para cerrar los 28,507 mm de diferencia en el largo.
-- Dónde empieza y termina la puerta MFI, cuánto mide la ventana y sus solapas, y los acabados de cada borde.
+- Puerta, ventana, solapas y acabados: Iván indica que se hacen como dicen las observaciones del pedido. Las de
+  AR.26.05319 dan cremallera MFI hasta arriba y fruncido con goma o cuerda de 8 mm, pero no la medida de la ventana.
 - Si las alturas se miden hasta la intersección teórica del agua o hasta la tangencia real de la curva.
 
 Para dar por válido el método general falta resolver los seis fallos reservados y asociar las bandas aún
