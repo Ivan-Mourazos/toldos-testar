@@ -3,6 +3,7 @@
   "revisionAnterior": "b81ee05",
   "indice": "./faldones-frontales-indice.json",
   "ampliacionPosterior": {"fichero":"./faldones-frontales-casos-ivan.json","tratamiento":"Este JSON conserva la fotografía inicial anterior al exportado. Las resoluciones posteriores acreditan C206/C237 y corrigen C018/C019 como frontales nuevos OF0213964; aplicar esa ampliación para el estado acumulado."},
+  "crucePosterior": {"fichero":"./faldones-frontales-censo.json","fecha":"2026-10-30","tratamiento":"Los118 restantes ya tienen coincidencias por página/OF y resoluciones de alcance. El cruce comercial no admite automáticamente medidas, versiones ni reglas numéricas."},
   "alcance": "Clasificación documental de los266 candidatos, con texto completo y OCR ya disponible; no sustituye al histórico de ventas ni acredita unidades fabricadas.",
   "metodo": "Lectura de todas las páginas de cada candidato; búsqueda de contexto, revisión de casos ambiguos y escaneos seleccionados. Cada decisión conserva evidencia o apoyo identificado. La forma y el OCR no deciden por sí solos.",
   "limites": [

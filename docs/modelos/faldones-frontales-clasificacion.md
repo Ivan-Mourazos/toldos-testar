@@ -4,6 +4,8 @@ Ampliación del **29/10/2026** del [expediente](./faldones-frontales.md). Se ha 
 
 **Actualización posterior al exportado de ventas:** este informe y su JSON conservan la clasificación inicial de10 documentos de fachada y120 compatibles pendientes. La [ampliación V08/V09](./faldones-frontales-casos-ivan.md) acredita C206 y C237: el acumulado pasa a12 y118, respectivamente. También corrige C018/C019 como **frontales nuevos, OF0213964**, separándolos del cambio de tela de otra línea, OF0213960. Las resoluciones y sus fuentes se conservan en el [JSON posterior](./faldones-frontales-casos-ivan.json).
 
+**Cruce del30/10/2026:** los118 restantes ya tienen resultado por página/OF en el [censo comercial](./faldones-frontales-censo.md):80 coinciden con OF de la familia,1 con intermedio,35 con otros artículos y2 mantienen incidencias de identidad. Esto actualiza el trabajo pendiente descrito más abajo, sin reescribir la fotografía inicial ni admitir automáticamente reglas numéricas.
+
 El resultado por documento, sus motivos, evidencia y fuentes P01–P14 están en [faldones-frontales-clasificacion.json](./faldones-frontales-clasificacion.json). Los identificadores **C001–C266** enlazan con el [índice documental](./faldones-frontales-indice.json); su orden se conserva. La muestra técnica V01–V07 mantiene sus medidas y sus fuentes. Esta clasificación no incorpora reglas a la web.
 
 ## 1. Resultado y significado de cada grupo

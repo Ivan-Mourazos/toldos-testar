@@ -1,6 +1,6 @@
 # Faldones laterales y frontales de toldo de fachada
 
-Estudio iniciado el **29/10/2026**, por encargo de Iván. La muestra técnica comprende nueve pedidos originales contrastados, con **15 laterales y 7 frontales**, más una reforma vinculada al original. **Clasificación documental de 2025–2026:** los266 candidatos del barrido de8.011 PDF tienen decisión y evidencia, con las resoluciones posteriores de V08/V09. Se ha recibido el exportado de ventas y comprobado su alcance comercial; todavía falta cerrar el cruce completo por pieza/OF y las reglas generales de corte o reserva.
+Estudio iniciado el **29/10/2026**, actualizado el **30/10/2026**, por encargo de Iván. La muestra técnica comprende nueve pedidos originales contrastados, con **15 laterales y7 frontales**, más una reforma vinculada al original. El [censo por línea y cruce documental](./faldones-frontales-censo.md) conserva219 líneas de los tres códigos principales y13 adicionales con otra codificación, y cruza los118 documentos que quedaban pendientes. Falta cotejar pieza y versión de los nuevos vínculos antes de ampliar las reglas numéricas de corte o reserva.
 
 **Confirmación de Iván, 29/10/2026 (OT-FF01):** los faldones de acrílico también se plantean a veces. El estudio debe recoger esos planteamientos y conservar su material. La muestra actual de acrílico no acredita qué proporción se plantea: al ampliar el histórico se distinguirán pedidos con planteamiento localizado y pedidos sin él localizado, sin excluir estos últimos por faltar DWG, DXF o PDF.
 
@@ -11,7 +11,7 @@ Estudio iniciado el **29/10/2026**, por encargo de Iván. La muestra técnica co
 - Documentación técnica, toma de medidas, despiece preliminar y propuesta de datos de entrada. La aplicación no se ha modificado.
 - Fuentes compartidas abiertas en solo lectura; conversiones, extracción y renders en `tmp/faldones-frontales/`. Sin conexiones directas a bases, SQL propio ni credenciales. Catálogo y pertenencia de OF consultados mediante GET de la web; sin escrituras en el servidor o carpetas de red.
 - Evidencia duradera: [fase inicial](./faldones-frontales-evidencias.json), [ampliación con fuentes y casos](./faldones-frontales-ampliacion.json), [índice documental](./faldones-frontales-indice.json) y [clasificación razonada](./faldones-frontales-clasificacion.md), con rutas originales, SHA-256, páginas utilizadas y límites. No se incorporan copias de documentos comerciales ni datos bancarios al expediente.
-- Exportado de ventas recibido y verificado: fuente F48 de la [ampliación de los ejemplos de Iván](./faldones-frontales-casos-ivan.md). Los casos de2023 sirven como antecedentes técnicos, no para afirmar vigencia general. El siguiente paso es cerrar el cruce por línea/OF de los grupos pendientes, conservando también las ventas sin plano localizado.
+- Exportado de ventas recibido y verificado: fuente F48 de la [ampliación de los ejemplos de Iván](./faldones-frontales-casos-ivan.md). El [censo trazable](./faldones-frontales-censo.json) conserva líneas, documentos y coincidencias por página/OF, incluidas ventas sin plano localizado. Los casos de2023 sirven como antecedentes técnicos, no para afirmar vigencia general. El siguiente paso es validar pieza, montaje y revisión antes de extraer medidas de los nuevos vínculos.
 
 ## 2. Fuentes y límites
 
@@ -253,17 +253,17 @@ Se han comprobado por script: cobertura única de las3.199 páginas en ambas ori
 
 ## 19. Trabajo pendiente para cerrar el estudio
 
-1. Completar el censo por línea/OF sobre el exportado ya recibido, separando nuevo, cambio de tela, reforma y montaje; revisar también los casos codificados como notas o artículos genéricos, sin sumarlos a ciegas. No eliminar acrílicos sin plano localizado.
-2. Resolver el vínculo de los118 documentos compatibles pendientes tras acreditar C206/C237; separar piezas y OF de los5 conjuntos mixtos y el alcance de los7 cierres a riel. La lectura documental de los266 está hecha; no convertir sus recuentos en pedidos ni unidades.
+1. Ampliar el censo a más actuaciones genéricas y reformas cuando se acredite su alcance. Ya están trazadas219 líneas de códigos principales y13 adicionales; se separan sus grupos y se conservan los acrílicos sin plano localizado.
+2. Cotejar pieza y revisión de los80 documentos con OF de la familia y el documento de intermedio detectados entre los118 antes pendientes. El cruce también separa35 de otros artículos y2 con identidad no resuelta. Completar los11 montajes genéricos aún no acreditados y separar los5 conjuntos mixtos/7 cierres a riel de la clasificación inicial. Los recuentos documentales no equivalen a pedidos ni unidades.
 3. Recuperar para cada grupo escaneo, DWG/planteamiento y DXF cuando existan; completar intermedios y cambios de tela dentro del alcance de fachada. Mamparas y zócalos se estudian como condicionantes del faldón, sin ampliar el producto a otros cerramientos ni escenarios.
 4. Contrastar por script todos los casos recuperables, distinguiendo instalación, hecho, corte, marcado y reserva. Resolver Q-FF01/Q-FF02 antes de fijar aumentos y valores habituales; aclarar la reforma Q-FF03 y la altura de ventana Q-FF04 sin propagarlas a un cálculo general.
 5. Completar códigos y consumos de despiece, equivalencias de tubo y compatibilidad de soportes. Preparar después propuesta de cálculo, ficha y dibujo; la implementación tendrá sus propias pruebas.
 
-**Estado:** exportado recibido y dos casos nuevos contrastados, sin cambios de producción ni carga. Quedan pendientes el cierre del censo por línea/OF, los vínculos no acreditados y las reglas generales de confección y reserva.
+**Estado:** censo por código y cruce documental trazados, sin cambios de producción ni carga. Quedan pendientes el cotejo técnico de los nuevos vínculos, los montajes/identidades no acreditados y las reglas generales de confección y reserva.
 
-## 20. Clasificación de los 266 candidatos
+## 20. Clasificación de los266 candidatos y evolución
 
-En la clasificación inicial se leyeron las **752 páginas** de los candidatos y se contrastaron **49 páginas de planos** y **24 páginas de14 escaneos de apoyo**. El [informe de clasificación](./faldones-frontales-clasificacion.md) y su [evidencia inicial por documento](./faldones-frontales-clasificacion.json) conservan esa fotografía anterior al exportado. Las [resoluciones posteriores](./faldones-frontales-casos-ivan.json) acreditan C206/C237 y corrigen el tipo de actuación de C018/C019. La tabla siguiente incorpora esas dos admisiones. C001–C266 son identificadores documentales, no fichas ni unidades de producción.
+En la clasificación inicial se leyeron las **752 páginas** de los candidatos y se contrastaron **49 páginas de planos** y **24 páginas de14 escaneos de apoyo**. El [informe de clasificación](./faldones-frontales-clasificacion.md) y su [evidencia inicial por documento](./faldones-frontales-clasificacion.json) conservan esa fotografía anterior al exportado. Las [resoluciones posteriores](./faldones-frontales-casos-ivan.json) acreditan C206/C237 y corrigen el tipo de actuación de C018/C019. La tabla siguiente conserva el estado tras esas dos admisiones, **antes del cruce comercial del30/10**: la sección23 desglosa los118 que entonces quedaban pendientes. C001–C266 son identificadores documentales, no fichas ni unidades de producción.
 
 | Resultado | Documentos |
 | --- | ---: |
@@ -308,3 +308,13 @@ El [contraste detallado de Vita-K y O Lugar](./faldones-frontales-casos-ivan.md)
 - **V09 · AR2602384:** lateral A OF0228556 y frontal B OF0228555, con solapa independiente OF0228560. Frontal hecho337×204 y patrón342×214; ventana297×109. El lateral lleva ET superior, velcro suave derecho anterior y tira con ollaos abajo, sin inventar sus posiciones. El transparente conjunto510,6×113 se cuenta una vez aunque figure en los dos PDF.
 - **Diferencia conservada:** la ventana manuscrita130 pasa a109 en ambos planos y en el DWG. Q-FF04 pregunta por esa decisión; no se introduce un descuento de21. Las cotas de una anotación posterior de julio no se adjudican a la solapa de mayo.
 - **Corrección AR2500865:** C018/C019 son frontales nuevos, línea5 / OF0213964. El cambio de tela enrollable es otra línea y otra OF,0213960. Se corrige la atribución previa del tipo de trabajo y se mantienen A/B como piezas distintas.
+
+## 23. Censo por línea y cruce del30/10/2026
+
+El [informe de censo](./faldones-frontales-censo.md) y su [JSON por línea/documento](./faldones-frontales-censo.json) consolidan219 líneas principales,296 PDF /393 páginas y13 líneas adicionales con otra codificación. Se conservan cliente/código, UUID de línea, pedido, cantidad comercial, OF y todas sus coincidencias por página. **121 líneas** tienen alguna OF coincidente en los PDF;85 tienen PDF del pedido sin esa coincidencia y13 no tienen PDF publicado localizado. La falta de OF/plano no elimina una venta.
+
+Los118 candidatos antes pendientes quedan cruzados: **80 con OF de FALDON/CAMBIOTELAFALDON,1 de intermedio,35 de otros artículos y2 sin identidad de OF resuelta**. De los35 de otros artículos,21 se separan como estructura/pérgola/recogida de aguas,3 acreditan fachada con otra codificación y11 no acreditan todavía el montaje. Los dos problemas de identidad son C068 (OF impresa0216658 frente a0216648 del pedido) y C158 (cajetín sin pedido/OF). No se corrigen números por parecido.
+
+Se revisaron15 escaneos adicionales,29 páginas, y22 páginas de planos indicadas en el censo; no se suman automáticamente a los recuentos visuales de fases previas porque hay documentos revisados otra vez. La consulta por artículo exacto perdía cambios de tela a intermedios/lateral, un suplemento frontal y notas sin OF; E001–E013 los conservan aparte. C128/C183 muestran además faldones incluidos en otra codificación, sin inventar nuevas líneas ni cantidades físicas.
+
+El cruce comercial no valida medidas de corte. Se conservaron también dos ejemplos que impiden equiparar cantidad y fabricación: AR2603035 advierte de posible no fabricación de pies/faldones en una nota de otra OF del pedido; AR2505170 mantiene una rectificación registrada con OF finalizada aunque la nota dice que no hay que hacer nada.

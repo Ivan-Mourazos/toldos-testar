@@ -49,7 +49,7 @@ Estados de la revisión: pendiente / en curso / con dudas / verificado para un a
 
 | Producto | Estado y evidencia | Siguiente paso |
 | --- | --- | --- |
-| Faldones laterales y frontales de toldo de fachada | [Expediente](./faldones-frontales.md), [índice](./faldones-frontales-indice.json), [clasificación inicial](./faldones-frontales-clasificacion.md) y [ejemplos de Iván V08/V09](./faldones-frontales-casos-ivan.md), actualizados el29/10/2026. Muestra V01–V09 de22 piezas; exportado recibido,219 líneas de tres códigos comerciales y296 PDF recuperados. Separados escenarios y otros productos; intermedios en grupo propio | Completar el cruce por página/OF de118 documentos compatibles,5 conjuntos mixtos y7 cierres a riel; acreditar corte/reserva y resolver Q-FF01/Q-FF02/Q-FF03/Q-FF04. Sin implementación |
+| Faldones laterales y frontales de toldo de fachada | [Expediente](./faldones-frontales.md), [censo comercial](./faldones-frontales-censo.md), [índice](./faldones-frontales-indice.json) y [ejemplos V08/V09](./faldones-frontales-casos-ivan.md), actualizados el30/10/2026. Muestra V01–V09 de22 piezas;219 líneas principales y13 adicionales trazadas,296 PDF y118 candidatos cruzados por página/OF. Escenarios fuera; intermedios separados | Cotejar pieza y revisión de80 vínculos con la familia; completar11 montajes genéricos y2 identidades pendientes,5 conjuntos mixtos y7 cierres a riel. Acreditar corte/reserva y resolver Q-FF01/Q-FF02/Q-FF03/Q-FF04. Sin implementación |
 
 ## Lotes propuestos, de menor a mayor alcance
 
