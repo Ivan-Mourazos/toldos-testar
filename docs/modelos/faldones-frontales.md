@@ -1,6 +1,6 @@
 # Faldones laterales y frontales de toldo de fachada
 
-Estudio iniciado el **29/10/2026**, actualizado el **30/10/2026**, por encargo de Iván. La muestra técnica comprende nueve pedidos originales contrastados, con **15 laterales y7 frontales**, más una reforma vinculada al original. El [censo por línea y cruce documental](./faldones-frontales-censo.md) conserva219 líneas de los tres códigos principales y13 adicionales con otra codificación, y cruza los118 documentos que quedaban pendientes. Falta cotejar pieza y versión de los nuevos vínculos antes de ampliar las reglas numéricas de corte o reserva.
+Estudio iniciado el **29/10/2026**, actualizado el **30/10/2026**, por encargo de Iván. La muestra técnica V01–V09 comprende nueve pedidos originales contrastados, con **15 laterales y 7 frontales**, más una reforma vinculada al original. El [censo por línea y cruce documental](./faldones-frontales-censo.md) conserva 219 líneas de los tres códigos principales y 13 adicionales. La [revisión técnica posterior](./faldones-frontales-revision-tecnica.md) coteja las 86 páginas de los 80 nuevos vínculos con OF de la familia y resuelve el alcance de los 11 montajes y las dos identidades hasta donde permiten sus fuentes. No amplía todavía las reglas generales de corte o reserva.
 
 **Confirmación de Iván, 29/10/2026 (OT-FF01):** los faldones de acrílico también se plantean a veces. El estudio debe recoger esos planteamientos y conservar su material. La muestra actual de acrílico no acredita qué proporción se plantea: al ampliar el histórico se distinguirán pedidos con planteamiento localizado y pedidos sin él localizado, sin excluir estos últimos por faltar DWG, DXF o PDF.
 
@@ -254,12 +254,12 @@ Se han comprobado por script: cobertura única de las3.199 páginas en ambas ori
 ## 19. Trabajo pendiente para cerrar el estudio
 
 1. Ampliar el censo a más actuaciones genéricas y reformas cuando se acredite su alcance. Ya están trazadas219 líneas de códigos principales y13 adicionales; se separan sus grupos y se conservan los acrílicos sin plano localizado.
-2. Cotejar pieza y revisión de los80 documentos con OF de la familia y el documento de intermedio detectados entre los118 antes pendientes. El cruce también separa35 de otros artículos y2 con identidad no resuelta. Completar los11 montajes genéricos aún no acreditados y separar los5 conjuntos mixtos/7 cierres a riel de la clasificación inicial. Los recuentos documentales no equivalen a pedidos ni unidades.
+2. El cotejo de pieza y página de los 80 documentos con OF de la familia está terminado en la sección24. De los 11 montajes genéricos, ocho se separan y tres quedan sin acreditar, fuera de las reglas; las dos incidencias de identidad tienen decisión de exclusión sin corregir números. Completar el documento de intermedio C186 dentro de su grupo propio. Los 5 conjuntos mixtos y 7 cierres a riel conservan su clasificación anterior, separados de estas reglas. Los recuentos documentales no equivalen a pedidos ni unidades.
 3. Recuperar para cada grupo escaneo, DWG/planteamiento y DXF cuando existan; completar intermedios y cambios de tela dentro del alcance de fachada. Mamparas y zócalos se estudian como condicionantes del faldón, sin ampliar el producto a otros cerramientos ni escenarios.
 4. Contrastar por script todos los casos recuperables, distinguiendo instalación, hecho, corte, marcado y reserva. Resolver Q-FF01/Q-FF02 antes de fijar aumentos y valores habituales; aclarar la reforma Q-FF03 y la altura de ventana Q-FF04 sin propagarlas a un cálculo general.
 5. Completar códigos y consumos de despiece, equivalencias de tubo y compatibilidad de soportes. Preparar después propuesta de cálculo, ficha y dibujo; la implementación tendrá sus propias pruebas.
 
-**Estado:** censo por código y cruce documental trazados, sin cambios de producción ni carga. Quedan pendientes el cotejo técnico de los nuevos vínculos, los montajes/identidades no acreditados y las reglas generales de confección y reserva.
+**Estado:** censo comercial y cotejo de piezas/versiones de los 80 nuevos vínculos terminados. Quedan pendientes las reglas generales de confección y reserva, el grupo de intermedios/cambios de tela sin plano y las tres confirmaciones de montaje Q-FF05. Se conservan los límites históricos por pieza sin dar por validadas todas sus cotas. Sin cambios de producción ni carga.
 
 ## 20. Clasificación de los266 candidatos y evolución
 
@@ -294,7 +294,7 @@ Iván ha entregado el exportado F48, de29/10/2026 a21:34:55 UTC, SHA-256 `40d389
 
 Los dos primeros códigos suman181 líneas,139 pedidos distintos y298 unidades comerciales. Los pedidos por código se solapan; no sumar133+10+38 como pedidos únicos. La cantidad comercial no demuestra que una pieza se fabricase: hay notas de actuaciones que finalmente no se hacen y revisiones que deben conservarse aparte.
 
-Se han recuperado y leído texto/OCR de **296 PDF /393 páginas** de156 de esos169 pedidos, incluyendo198 PDF adicionales a los98 que ya tenían contexto recuperado. Sus huellas se han contrastado con el inventario anterior, sin errores de lectura. Es **cobertura documental por pedido**, no prueba de que todos esos PDF sean de faldones: pueden pertenecer al toldo, mampara u otra OF. Falta consolidar el vínculo por página/OF y resolver revisiones.
+Se han recuperado y leído texto/OCR de **296 PDF /393 páginas** de156 de esos169 pedidos, incluyendo198 PDF adicionales a los98 que ya tenían contexto recuperado. Sus huellas se han contrastado con el inventario anterior, sin errores de lectura. Es **cobertura documental por pedido**, no prueba de que todos esos PDF sean de faldones: pueden pertenecer al toldo, mampara u otra OF. El cruce de la sección23 conserva el vínculo por página/OF; la revisión posterior de la sección24 distingue piezas y versiones en los 80 candidatos vinculados a la familia.
 
 En el inventario publicado no se localizaron PDF de13 de los169 pedidos: AR2500776, AR2501585, AR2501697, AR2502069, AR2502499, AR2503861, AR2602111, AR2602836, AR2603103, AR2603253, AR2603345, AR2604620 yAR2604755. Se mantienen en ventas; no se declara que carezcan de planteamiento en cualquier soporte. **AR2502499, línea3, FALDON, cantidad1, tampoco tiene OF en el exportado.**
 
@@ -315,6 +315,22 @@ El [informe de censo](./faldones-frontales-censo.md) y su [JSON por línea/docum
 
 Los118 candidatos antes pendientes quedan cruzados: **80 con OF de FALDON/CAMBIOTELAFALDON,1 de intermedio,35 de otros artículos y2 sin identidad de OF resuelta**. De los35 de otros artículos,21 se separan como estructura/pérgola/recogida de aguas,3 acreditan fachada con otra codificación y11 no acreditan todavía el montaje. Los dos problemas de identidad son C068 (OF impresa0216658 frente a0216648 del pedido) y C158 (cajetín sin pedido/OF). No se corrigen números por parecido.
 
+Ese es el estado del cruce inicial conservado en su JSON. La revisión posterior de la sección24 decide el alcance de las dos incidencias de identidad y reduce a tres los montajes sin acreditar; no modifica sus números ni reescribe el origen comercial.
+
 Se revisaron15 escaneos adicionales,29 páginas, y22 páginas de planos indicadas en el censo; no se suman automáticamente a los recuentos visuales de fases previas porque hay documentos revisados otra vez. La consulta por artículo exacto perdía cambios de tela a intermedios/lateral, un suplemento frontal y notas sin OF; E001–E013 los conservan aparte. C128/C183 muestran además faldones incluidos en otra codificación, sin inventar nuevas líneas ni cantidades físicas.
 
 El cruce comercial no valida medidas de corte. Se conservaron también dos ejemplos que impiden equiparar cantidad y fabricación: AR2603035 advierte de posible no fabricación de pies/faldones en una nota de otra OF del pedido; AR2505170 mantiene una rectificación registrada con OF finalizada aunque la nota dice que no hay que hacer nada.
+
+## 24. Cotejo técnico de los 80 vínculos, montajes e identidades
+
+El [informe de revisión técnica](./faldones-frontales-revision-tecnica.md) y su [evidencia por página](./faldones-frontales-revision-tecnica.json) registran las **86 páginas de los 80 PDF**, de 64 pedidos, y **16 escaneos completos / 59 páginas**. Se buscaron DWG de 77 pedidos: 76 recuperados y convertidos localmente con ODA; no localizado AR2601631 / C216 en las dos rutas consultadas. Los 21 bloques DIMENSION cotejados de cinco casos acreditan esas cotas de detalle/patrón, sin declarar validado todo el corte de los archivos recuperados.
+
+Las principales precisiones son:
+
+- **Piezas y OF:** C027 contiene cuatro paños en una OF; C115 separa p1 de otra OF/artículo y p2 del faldón; C238 p2 es solo tubo. C070 desarrolla una unidad comercial de frontal en dos paños; C191/C192 desarrollan marcos por bandas. No contar páginas, letras o componentes como unidades fabricadas. El informe conserva también las correspondencias de conjuntos con cajetín VARIAS y anidados repetidos.
+- **Versiones:** C077 / AR2502681 tiene una oferta con ventana y una hoja posterior de 25/08/2025 que escribe «VENTANA NO», coherente con el plano opaco. C060 / AR2502085 conserva el rótulo contradictorio «3 ollados», pero el escaneo y los diagramas muestran 4+5 puntos y piden 9 mordazas. C120 / AR2504200 sigue con venta 273×135 frente a plano 281×221; el escaneo desvaído no acredita el cambio y se excluye de reglas numéricas.
+- **Montajes:** ocho de los 11 genéricos quedan con Cortina, estructura o fijación directa independiente. C053 / AR2501946, C163 / AR2505788 y C255 / AR2604299 no identifican el montaje en las fuentes consultadas; Q-FF05 pregunta si colgaban de un toldo. Mientras tanto no se admiten sus medidas como regla de fachada.
+- **Identidad y alcance:** C068 se acredita como lonas interiores decorativas, fuera de esta familia. Su OF impresa también aparece así en ATTRIB del DXF y no se corrige por la distinta OF comercial. C158 queda como referencia PORTANOVA sin pedido/OF acreditados para el expediente actual de Jimena Rocha; no se le trasladan las medidas u OF del cierre de porche actual.
+- **Confección:** los cinco contrastes conservan diferencias de ancho/alto de +8/+10, +9/+10,5, +5/+10 y +9/+12, según caso y remates escritos; el quinto está excluido de reglas por discrepancia comercial. Refuerzan la necesidad de distinguir borde, material, cara, componentes y versión. No fijan una fórmula general ni cierran Q-FF01.
+
+La revisión documental de estos vínculos queda completada con sus exclusiones y límites expresos. El siguiente contraste se centra en grupos de confección comparables y componentes/reserva, manteniendo intermedios separados. No se ha implementado ni cargado ningún cambio en la web.

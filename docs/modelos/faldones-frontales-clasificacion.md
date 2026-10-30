@@ -6,6 +6,8 @@ Ampliación del **29/10/2026** del [expediente](./faldones-frontales.md). Se ha 
 
 **Cruce del30/10/2026:** los118 restantes ya tienen resultado por página/OF en el [censo comercial](./faldones-frontales-censo.md):80 coinciden con OF de la familia,1 con intermedio,35 con otros artículos y2 mantienen incidencias de identidad. Esto actualiza el trabajo pendiente descrito más abajo, sin reescribir la fotografía inicial ni admitir automáticamente reglas numéricas.
 
+**Cotejo técnico posterior:** la [revisión de piezas y versiones](./faldones-frontales-revision-tecnica.md) cubre las 86 páginas de los 80 vínculos con OF de la familia y revisa completos 16 escaneos. Ocho de los 11 montajes genéricos se separan; tres quedan sin acreditar. C068 se identifica como lonas interiores y C158 se excluye como referencia sin identidad actual, sin corregir sus OF. El JSON inicial de esta clasificación se conserva como fotografía anterior a esos contrastes.
+
 El resultado por documento, sus motivos, evidencia y fuentes P01–P14 están en [faldones-frontales-clasificacion.json](./faldones-frontales-clasificacion.json). Los identificadores **C001–C266** enlazan con el [índice documental](./faldones-frontales-indice.json); su orden se conserva. La muestra técnica V01–V07 mantiene sus medidas y sus fuentes. Esta clasificación no incorpora reglas a la web.
 
 ## 1. Resultado y significado de cada grupo

@@ -2,6 +2,8 @@
 
 Avance del **30/10/2026** del [estudio de faldones de fachada](./faldones-frontales.md). El [censo trazable](./faldones-frontales-censo.json) contiene todas las líneas de los tres códigos seleccionados, sus documentos encontrados y el resultado del cruce de los118 candidatos que quedaban pendientes después de V08/V09. Prioridad: laterales y frontales de toldo de fachada; intermedios en grupo propio; escenarios fuera del alcance.
 
+**Revisión técnica posterior:** se ha completado el [cotejo de piezas y versiones](./faldones-frontales-revision-tecnica.md) de los 80 documentos con OF de la familia, 86 páginas. De los 11 montajes genéricos, ocho se separan y tres siguen sin acreditar; las dos incidencias de identidad tienen decisión de exclusión por alcance o falta de identidad actual. Este censo y su JSON conservan el cruce inicial, actualizado mediante esa revisión sin alterar el origen comercial.
+
 La fuente es el exportado entregado por Iván el29/10/2026, SHA-256 `40d38990125fa55bf6f392f7164976a6ca97a5c3ed58667f4f10d2fe369817f9`. El análisis es local y conserva los identificadores originales de línea RPS, sin conexiones a bases ni lectura de credenciales. Los PDF y escaneos compartidos se abrieron en solo lectura; copias, texto, OCR y vistas quedan en `tmp/faldones-frontales/`.
 
 ## Qué contiene cada registro
@@ -84,11 +86,11 @@ El código comercial por sí solo pierde trabajos reales. Se conservan13 líneas
 
 Las medidas de esta tabla son **nominales de la línea comercial**, no cortes validados. C128/C183 se conservan como actuaciones documentadas dentro de otra codificación y no generan líneas ficticias. El abono AR2503714 por error en precio de faldones tampoco se interpreta como una unidad física negativa.
 
-## Próximo contraste técnico
+## Contraste técnico posterior y trabajo restante
 
-La fase comercial queda trazada por línea y la totalidad de los118 candidatos tiene resultado de cruce. Falta revisar pieza, cajetín vigente y contorno de los80 documentos vinculados a la familia antes de obtener reglas numéricas. Los121 enlaces de líneas comerciales pueden incluir más de un PDF o una página con OF heredada: se mantienen esas relaciones para revisarlas, sin elegir una versión automáticamente.
+La fase comercial queda trazada por línea y la totalidad de los118 candidatos tiene resultado de cruce. La [revisión técnica posterior](./faldones-frontales-revision-tecnica.md) ya distingue piezas y páginas de los 80 documentos vinculados a la familia y conserva los límites por versión. Los 121 enlaces de líneas comerciales pueden incluir más de un PDF o una página con OF heredada: ni la coincidencia ni el cotejo documental aprueban automáticamente una medida de corte.
 
-Después hay que ampliar la matriz de confección y corte dentro de grupos comparables, completar los11 montajes genéricos pendientes y contrastar los cambios de tela/intermedios sin PDF de su OF. Las preguntas técnicas Q-FF01–Q-FF04 siguen en la [lista de dudas](./dudas-abiertas.md#faldones-laterales-y-frontales--estudio-iniciado-el-29102026). No se ha implementado ni cargado ningún cálculo nuevo.
+Queda ampliar la matriz de confección y corte dentro de grupos comparables y contrastar los cambios de tela/intermedios sin PDF de su OF. De los 11 montajes revisados, tres requieren la confirmación de Iván conservada como Q-FF05; los otros ocho se separan. Q-FF01–Q-FF04 mantienen sus preguntas de confección y versiones en la [lista de dudas](./dudas-abiertas.md#faldones-laterales-y-frontales--estudio-iniciado-el-29102026). No se ha implementado ni cargado ningún cálculo nuevo.
 
 ## Comprobaciones del censo
 
