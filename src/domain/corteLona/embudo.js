@@ -22,7 +22,7 @@ export function geometriaEmbudo(raw) {
 /** Piezas con contorno propio en mm. Su caja completa, incluidos los arcos, gobierna el anidado. */
 export function piezasEmbudo({ embudo, letra = 'A' }) {
   const e = normalizeEmbudo(embudo), g = geometriaEmbudo(e), labels = etiquetasEmbudo(e);
-  const bastilla = (boca) => e[`remate${boca}`] === 'BASTILLA' ? e[`bastilla${boca}`] * 10 : 0;
+  const bastilla = (boca) => ({ BASTILLA: e[`bastilla${boca}`], 'ENTRADA CINTA': ENTRADA_CINTA_CM })[e[`remate${boca}`]] * 10 || 0;
   const refuerzo = (boca) => e[`remate${boca}`] === 'REFUERZO 10';
   const textos = [labels.cierre, labels.arriba, labels.abajo, ...labels.cinta, 'DERECHO'];
   if (g.mayorAbajo) textos.push('BOCA MAYOR ABAJO');

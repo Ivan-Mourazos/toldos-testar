@@ -110,6 +110,13 @@ describe('Embudo de descarga · dibujos de oficina del 28/10/2026', () => {
     expect(p.geometria.arcos.filter(a => a.capa === 'ROTULADOR').map(a => a.r)).toEqual([g.radioExterior * 10 - 90, g.radioInterior * 10 + 45]);
   });
 
+  it('la entrada de cinta del cónico suma sus 6 cm y lleva su raya, como en el recto', () => {
+    const entrada = { ...conico, remateArriba: 'ENTRADA CINTA', remateAbajo: 'NADA' };
+    const g = geometriaEmbudo(entrada), [p] = piezasEmbudo({ embudo: entrada });
+    expect(p.geometria.arcos.filter(a => a.capa === 'DISCO1').map(a => a.r)).toEqual([g.radioExterior * 10 + 60, g.radioInterior * 10]);
+    expect(p.geometria.arcos.filter(a => a.capa === 'ROTULADOR').map(a => a.r)).toEqual([g.radioExterior * 10 - 60]);
+  });
+
   it('permite boca mayor abajo, advierte en el plano y dibuja el alzado invertido', () => {
     const entrada = { ...conico, contornoArriba: 76, contornoAbajo: 88 };
     const r = generarCorteLona(pedido(entrada, 1), { ofStockSacos: '2600001' });
