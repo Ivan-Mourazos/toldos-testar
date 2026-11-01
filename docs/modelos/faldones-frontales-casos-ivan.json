@@ -1,0 +1,89 @@
+{
+  "fecha": "2026-10-29",
+  "expediente": "./faldones-frontales-casos-ivan.md",
+  "unidades": {"cotas": "cm", "transparente": "micras"},
+  "alcance": "Dos ejemplos de faldón nuevo confirmados por Iván; lectura de fuentes originales, sin cálculo ni carga en producción. Intermedios separados; escenarios fuera del alcance.",
+  "fuentes": [
+    {"id":"F41","fichero":"//192.168.0.128/Oftecnica/Oficina Tecnica/2026/AR2601308.dwg","sha256":"ffb91be3fe5e85012803efb51f51cdb865dd9be981787c78131e0fd7d5f07a76","lectura":"Conversión local ODA a DXF; textos y cotas DIMENSION; sin escrituras en origen"},
+    {"id":"F42","fichero":"//192.168.0.128/RPS/VENTAS/PEDIDOS/2026/AR.26.01308.pdf","sha256":"ea5b921bb79434ee97ff7ccd652ca45d8326e3c2b1dca0a87536228d37f9e536","paginasTotales":6,"paginasVisuales":[1,2,3,4,5,6],"paginasMedicionUsadas":[2,3]},
+    {"id":"F43","fichero":"//192.168.0.128/RPS/VENTAS/PLANTEAMIENTOS/2026/AR.26.01308-20.pdf","sha256":"0278fe6e097d796636b8a54dd02ed7c44f0a2f4f4be9cf5de0d230316c2c3316","paginasVisuales":[1],"documentoIndice":"C206","of":"0226602","fechaPlano":"2026-05-18"},
+    {"id":"F44","fichero":"//192.168.0.128/Oftecnica/Oficina Tecnica/2026/AR2602384.dwg","sha256":"fa7c158f023752f01f9fb42a3d745fc7974d09f25838b661e5a96689aafbee69","lectura":"Conversión local ODA a DXF; textos y cotas DIMENSION; sin escrituras en origen"},
+    {"id":"F45","fichero":"//192.168.0.128/RPS/VENTAS/PEDIDOS/2026/AR.26.02384.pdf","sha256":"b555dd5000d5d9fd22e7a83d2a32d46e21c11be01c9c4f8a611c173673f784bc","paginasTotales":6,"paginasVisuales":[1,2,3,4,5,6],"paginasMedicionUsadas":[2],"limite":"p3/4 contienen otros laterales/intermedio; p5 es anotación de julio, no se atribuye al plano de mayo"},
+    {"id":"F46","fichero":"//192.168.0.128/RPS/VENTAS/PLANTEAMIENTOS/2026/AR.26.02384-10.pdf","sha256":"9f59be7ba5b899c868f95af6f36f7fa9336259463c82b00aea3151dba747009e","paginasVisuales":[1],"hojaImpresa":"01-02","of":"0228556","fechaPlano":"2026-05-28"},
+    {"id":"F47","fichero":"//192.168.0.128/RPS/VENTAS/PLANTEAMIENTOS/2026/AR.26.02384-11.pdf","sha256":"aff467cbbaa82393727dfa452fa8e5bd340cb55f07e165489e03feb8b6ccdd65","paginasVisuales":[1],"hojaImpresa":"02-02","documentoIndice":"C237","of":"0228555","fechaPlano":"2026-05-28"},
+    {"id":"F48","ficheroLocal":"tmp/faldones-frontales/exportaciones/historico-faldones-2025-2026-2026-10-29T21-34-55-206Z.json","bytes":1821113,"sha256":"40d38990125fa55bf6f392f7164976a6ca97a5c3ed58667f4f10d2fe369817f9","exportado":"2026-10-29T21:34:55.206Z","lectura":"Exportado ejecutado y entregado por Iván; análisis local, sin nueva conexión a bases ni lectura de credenciales"}
+  ],
+  "confirmaciones": [
+    {"id":"OT-FF02","origen":"Conversación con Iván, 29/10/2026, imágenes aportadas","contenido":"AR.26.01308 es un pedido de faldón nuevo; el planteamiento corresponde al ejemplo. AR.26.02384, con lateral y frontal, es un ejemplo más normal."},
+    {"id":"OT-FF03","origen":"Conversación con Iván, 29/10/2026","contenido":"Solo faldones y frontales de toldo de fachada; intermedios incluidos pero prioridad en faldones. Lonas de escenario aparte."}
+  ],
+  "coberturaExportado": {
+    "fuente":"F48","pedidosContexto":530,"lineasContexto":1917,
+    "porArticulo":[
+      {"articulo":"FALDON","lineas":171,"pedidos":133,"cantidadComercial":285},
+      {"articulo":"CAMBIOTELAFALDON","lineas":10,"pedidos":10,"cantidadComercial":13},
+      {"articulo":"FALDONINTERMEDIO","lineas":38,"pedidos":38,"cantidadComercial":50}
+    ],
+    "unionTresCodigos":{"lineas":219,"pedidos":169,"cantidadComercial":348},
+    "unionNuevosYCambios":{"lineas":181,"pedidos":139,"cantidadComercial":298},
+    "contextoPdfRecuperado":{"documentos":296,"paginas":393,"pedidos":156,"erroresLectura":0,"esVinculoPorPiezaOFCompleto":false},
+    "pedidosSinPdfPublicadoLocalizado":["AR2500776","AR2501585","AR2501697","AR2502069","AR2502499","AR2503861","AR2602111","AR2602836","AR2603103","AR2603253","AR2603345","AR2604620","AR2604755"],
+    "lineaSinOF":{"pedido":"AR.25.02499","linea":3,"articulo":"FALDON","cantidadComercial":1},
+    "historicoTecnico":{"registros":30,"puertas":28,"remolques":2,"faldones":0},
+    "limite":"Censo por tres códigos exactos; faltan aliases genéricos, reformas y actuaciones sin fabricación confirmada. Un PDF del pedido no se admite sin comprobar su pieza/OF."
+  },
+  "casos": [
+    {
+      "id":"V08","pedido":"AR.26.01308","cliente":{"codigo":"028833","nombre":"MAHOU, S.A.","referencia":"Vita-K"},
+      "fuentes":["F41","F42","F43","F48"],
+      "lineaRps":{"id":"9960952b-3dc1-494d-9f9b-c8a0d6f4243b","numero":2,"articulo":"FALDON","of":"0226602","cantidadComercial":2},
+      "tipoTrabajo":"nuevo","materialPrincipal":"acrílico negro","materialVentanas":"transparente650 micras","rotulacion":false,
+      "piezas": [
+        {"letra":"A","variante":"lateral","cantidad":1,"anchoDetalle":127,"alturasPosterioresAcotadas":[145,149],"alturaAnteriorAcotada":107.8,"franjaInferiorAcotada":4,"escalon":{"ancho":11,"aDistanciaSuperior":95},"cotasEsquina":[12,3,13],"patronAcrilicoRotulado":[135,163.1],"remates":["ET superior","ET inferior","BN4 en verticales"],"refuerzo":{"zona":"atrás","material":"PVC","ancho":10,"motivo":"por si es necesario hacer algún corte"},"fijacionesInferiores":{"mordazas":2,"identificadorMordazaEnNota":"25","cinta":{"color":"negra","largo":50},"abatibles":2,"posicionesAcreditadas":false}},
+        {"letra":"B","variante":"lateral","cantidad":1,"anchoDetalle":126,"alturasPosterioresAcotadas":[152,156],"alturaAnteriorAcotada":115.7,"franjaInferiorAcotada":4,"cotasEsquina":[12,3,13],"patronAcrilicoRotulado":[134,170],"caraPatron":"REVÉS","remates":["ET superior","ET inferior","BN4 en verticales"],"fijacionesInferiores":{"mordazas":2,"identificadorMordazaEnNota":"25","cinta":{"color":"negra","largo":50},"abatibles":2,"posicionesAcreditadas":false}}
+      ],
+      "transparenteConjunto":{"cajaRotulada":[170,120.6],"piezas":["A","B"],"forma":"inclinada","empate":2,"esReservaDeRolloAcreditada":false},
+      "limites":["El croquis izquierdo tachado en F42 p2 no es una tercera pieza; p3 aporta el otro lateral.","Cotas del detalle, toma de medidas y patrón de corte se conservan por separado.","La petición de ollaos y la solución con mordazas no se suman como herrajes adicionales confirmados.","El refuerzo posterior de10 se acredita solo en A."]
+    },
+    {
+      "id":"V09","pedido":"AR.26.02384","cliente":{"codigo":"028833","nombre":"MAHOU, S.A.","referencia":"Cervecería O Lugar"},
+      "fuentes":["F44","F45","F46","F47","F48"],"tipoTrabajo":"nuevo","materialPrincipal":"acrílico negro","materialVentanas":"transparente650 micras",
+      "piezas": [
+        {"letra":"A","variante":"lateral","cantidad":1,"of":"0228556","lineaRps":{"id":"659d5046-c179-4e18-8a12-7b3d75ecda15","numero":4,"articulo":"FALDON","cantidadComercial":1},"anchoDetalle":245.6,"alturaPosterior":309,"alturaAnterior":207.5,"cotaAdicionalAnterior":3,"alturaAnteriorConAdicional":210.5,"cotasEsquina":[12,3,13],"ventana":{"altoVisible":109,"anchoVisibleDerivado":205.6,"margenesLaterales":[20,20],"desdeReferenciaInferiorAnterior":70},"remates":["ET superior inclinado","BN1 y velcro suave derecho en anterior","BN4 posterior","BN4 inferior","tira con oreja y ollaos abajo; cota16"],"refuerzo":"esquina superior posterior","ollaos":{"numero":null,"posiciones":null},"patronAcrilicoRotulado":[327.1,250.6]},
+        {"letra":"B","variante":"frontal","cantidad":1,"of":"0228555","lineaRps":{"id":"5acc86c0-6bae-4028-8559-4946f5399648","numero":3,"articulo":"FALDON","cantidadComercial":1},"hecho":[337,204],"ventana":{"anchoVisibleDerivado":297,"altoVisible":109,"margenesLaterales":[20,20],"desdeArriba":25,"desdeAbajo":70},"remates":["ET superior","ET inferior","BN4 izquierdo","BN4 inferior","BN1 y velcro suave derecho en borde derecho"],"cotaDetalleInferior":16,"patronAcrilicoRotulado":[342,214],"diferenciaObservadaPatron":[5,10]}
+      ],
+      "transparenteConjunto":{"cajaRotulada":[510.6,113],"piezas":["B","A"],"empate":2,"repetidoEnAmbosPdf":true,"vecesContado":1,"esReservaDeRolloAcreditada":false},
+      "otrosComponentesRps": [
+        {"linea":7,"articulo":"SOLAPACONVELCROS","of":"0228560","cantidadComercial":1,"descripcionTecnica":"Independiente, unión de frontal y lateral, acrílico negro; hoja p2 pide velcro por ambos lados","corteAcreditado":false},
+        {"linea":8,"articulo":"FALDONINTERMEDIO","of":"0228561","cantidadComercial":1,"medidaComercial":[66,265],"nota":"FAI JOSÉ DIRECTAMENTE","corteAcreditado":false,"grupo":"intermedios"},
+        {"linea":9,"articulo":"FALDON","of":"0228557","cantidadComercial":2,"medidaComercial":[312,269.5],"nota":"FAI JOSÉ","corteAcreditado":false,"grupo":"otros laterales del mismo pedido"}
+      ],
+      "diferenciaFuente":{"duda":"Q-FF04","altoVentanaHojaVisita":130,"altoVentanaPlanoyDwg":109,"tratamiento":"Conservar ambos estados; se estudia el corte dibujado, sin crear descuento habitual de21"},
+      "limites":["Las medidas de la solapa12×200 de F45 p5 corresponden a una anotación posterior de julio; no se atribuyen al plano de mayo.","Las otras dos unidades laterales y el intermedio no se declaran técnicamente contrastados por revisar A/B.","Las demasías observadas no se generalizan ni la caja de aprovechamiento se toma como consumo real."]
+    }
+  ],
+  "cotejosCad": [
+    {"fuente":"F41","toleranciaRotulacion":0.051,"cotas":{"*D5":127,"*D6":95,"*D7":145,"*D15":126,"*D16":152,"*D18":156,"*D19":115.7,"*D28":11,"*D30":149,"*D33":170,"*D34":170,"*D35":134,"*D38":120.6,"*D39":163.1,"*D40":135,"*D41":107.8}},
+    {"fuente":"F44","toleranciaRotulacion":0.051,"cotas":{"*D26":245.6,"*D28":109,"*D29":207.5,"*D30":3,"*D31":210.5,"*D32":16,"*D33":309,"*D39":337,"*D40":16,"*D41":204,"*D42":109,"*D43":25,"*D44":70,"*D47":327.1,"*D48":250.6,"*D49":214,"*D50":342,"*D51":113,"*D52":510.6}}
+  ],
+  "comprobaciones": [
+    {"id":"K01","caso":"V08","operacion":"145+4","esperado":149},
+    {"id":"K02","caso":"V08","operacion":"152+4","esperado":156},
+    {"id":"K03","caso":"V08","operacion":"2+2","concepto":"mordazas de los dos laterales","esperado":4},
+    {"id":"K04","caso":"V09","operacion":"207.5+3","esperado":210.5},
+    {"id":"K05","caso":"V09","operacion":"25+109+70","esperado":204},
+    {"id":"K06","caso":"V09","operacion":"337-20-20","esperado":297},
+    {"id":"K07","caso":"V09","operacion":"245.6-20-20","esperado":205.6},
+    {"id":"K08","caso":"V09","operacion":"109+2+2","esperado":113},
+    {"id":"K09","caso":"V09","operacion":"(297+2+2)+(205.6+2+2)","esperado":510.6},
+    {"id":"K10","caso":"V09","operacion":"342-337","esperado":5},
+    {"id":"K11","caso":"V09","operacion":"214-204","esperado":10}
+  ],
+  "resolucionesClasificacionPrevia": [
+    {"documentos":["C018","C019"],"pedido":"AR.25.00865","grupo":"fachada-documentada","correccion":"Son dos frontales nuevos, FALDON línea5 OF0213964 cantidad2; no el cambio de tela enrollable de línea2 OF0213960 cantidad1.","fuente":"F48","preservar":"Son piezas A/B distintas; no deduplicar por OCR idéntico"},
+    {"documentos":["C206"],"grupoAnterior":"cierre-compatible-por-confirmar","grupo":"fachada-documentada","caso":"V08","fuentes":["F41","F42","F43","F48"]},
+    {"documentos":["C237"],"grupoAnterior":"cierre-compatible-por-confirmar","grupo":"fachada-documentada","caso":"V09","fuentes":["F44","F45","F47","F48"]}
+  ],
+  "gruposAcumulados266":{"otra-familia":100,"taller-metal":19,"cierre-compatible-por-confirmar":118,"fachada-documentada":12,"cierre-de-estructura-o-mixto":5,"cierre-a-riel":7,"referencia-sin-planteamiento":3,"rectificacion-fachada":2},
+  "admisionReglasGenerales": false
+}

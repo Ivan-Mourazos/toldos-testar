@@ -1,0 +1,79 @@
+{
+  "fecha": "2026-10-29",
+  "codigo": "001795",
+  "cliente": "REMOLQUES Y CARAVANAS MALLON, S. L.",
+  "fichero": "//192.168.0.128/Oftecnica/Oficina Tecnica/DIBUJOS/REMOLQUES/MALLON.dwg",
+  "sha256": "eaf479c986ff93334ad9ebb5246f37c305e33cb4305b47647d3e32f8e5079c5b",
+  "criterio": "Referencias de lona alta rotuladas con largo × ancho × alto. Se comprueban las cotas del borde hecho, las dos piezas de cabeza y los centros de los círculos. No sustituyen una medida con histórico completo ni se extienden al baquetón o a medidas próximas.",
+  "cabezas": "La pieza cerrada es delante; la pieza con orejas es detrás. Posiciones sobre el ancho del cuerpo hecho: se excluyen las marcas exteriores de las orejas, que pertenecen a la recogida. No se usa el ancho de corte ni el contorno desarrollado del cuerpo.",
+  "laterales": "El borde superior está rotulado ATRÁS; se miden las diferencias de coordenada Y hacia abajo y se multiplican por 100. En RL16/RL18/RL20 hay además un círculo a 2 cm, sin cota de reparto: se conserva. RL23 incluye el círculo acotado a 199 cm y otro justo en el borde (0 cm), por lo que queda pendiente. Se conserva el patrón asimétrico con sus puntas; no se impone un paso uniforme.",
+  "comprobaciones": [
+    {
+      "referencia": "RL14",
+      "tipo": "lona",
+      "largo": 138,
+      "ancho": 108,
+      "alto": 62,
+      "hechoLargo": 139,
+      "hechoAncho": 109,
+      "origenLateralCad": [272.6938942482803, 163.4069623408719],
+      "origenDelanteCad": [269.2820441305081, 161.9934497714915],
+      "origenAtrasCad": [270.7966255030976, 161.9934497714915],
+      "ollaos": {"delante": [4, 37.5, 71.5, 105], "atras": [4, 37.5, 71.5, 105], "laterales": [10, 33, 56, 84, 105, 134]}
+    },
+    {
+      "referencia": "RL16",
+      "tipo": "lona",
+      "largo": 158,
+      "ancho": 118,
+      "alto": 72,
+      "hechoLargo": 159,
+      "hechoAncho": 119,
+      "origenLateralCad": [280.272348738406, 159.7540089370856],
+      "origenDelanteCad": [269.2820441305081, 158.0189336368318],
+      "origenAtrasCad": [270.8966255030975, 158.0189336368318],
+      "ollaos": {"delante": [4, 38, 81, 115], "atras": [4, 38, 81, 115], "laterales": [2, 13, 31, 70, 90, 128, 148]}
+    },
+    {
+      "referencia": "RL18",
+      "tipo": "lona",
+      "largo": 178,
+      "ancho": 118,
+      "alto": 72,
+      "hechoLargo": 179,
+      "hechoAncho": 119,
+      "origenLateralCad": [277.0955259577544, 159.9540089370856],
+      "origenDelanteCad": [269.2820441305081, 158.0189336368318],
+      "origenAtrasCad": [270.8966255030975, 158.0189336368318],
+      "ollaos": {"delante": [4, 38, 81, 115], "atras": [4, 38, 81, 115], "laterales": [2, 13, 37, 73, 107, 145, 174]}
+    },
+    {
+      "referencia": "RL20",
+      "tipo": "lona",
+      "largo": 199,
+      "ancho": 118,
+      "alto": 72,
+      "hechoLargo": 200,
+      "hechoAncho": 119,
+      "origenLateralCad": [273.7674071116721, 159.9716940409107],
+      "origenDelanteCad": [269.2820441305081, 158.0189336368318],
+      "origenAtrasCad": [270.8966255030975, 158.0189336368318],
+      "ollaos": {"delante": [4, 38, 81, 115], "atras": [4, 38, 81, 115], "laterales": [2, 13, 41, 83, 118, 162, 195]}
+    },
+    {
+      "referencia": "RL23",
+      "cargar": false,
+      "motivo": "Hay un círculo a 0 cm en el borde trasero. Falta confirmar si es un ollao o una marca sobrante; no se elimina ni se desplaza por conjetura.",
+      "tipo": "lona",
+      "largo": 229,
+      "ancho": 139.5,
+      "alto": 72,
+      "hechoLargo": 230,
+      "hechoAncho": 140.5,
+      "origenLateralCad": [273.7674071116721, 155.8525717628619],
+      "origenDelanteCad": [268.8570441305081, 153.8998113587829],
+      "origenAtrasCad": [270.6866255030976, 153.8998113587829],
+      "ollaos": {"delante": [4, 30.5, 55, 85.5, 110, 136.5], "atras": [4, 30.5, 55, 85.5, 110, 136.5], "laterales": [0, 13, 30, 58, 78, 105, 125, 152, 172, 199, 219]}
+    }
+  ]
+}

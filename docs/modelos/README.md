@@ -45,6 +45,12 @@ Estados de la revisión: pendiente / en curso / con dudas / verificado para un a
 | ANTICA | Antica / ANTICA · fabricación TGM | [Expediente](./antica.md) · [Fuentes y consumos](./antica-fuentes.json) | En curso: parámetros, manivela y acero nominal incorporados; 118 OF y compras contrastadas. 25/09: varilla y kit de motor según el consumo de las 39 OF del Antica habitual (sin el proyecto de Madrid). [28 preguntas para el encargado](./antica-preguntas-taller.md), en lenguaje claro; kits, escuadras y variantes aún pendientes. No cerrar modelo |
 | CAMBIO ANTICA | Cambio antica / CAMBIO DE TELA A TOLDO ANTICA | [Evidencia de trabajos de tela](../excel-fabric-jobs-evidence.md) · [Expediente](./cambio-antica.md) | Terminado salvo dudas (23/09): se vende como CAMTELTOL y en los libros es "CAMBIO TELA" con +65; el validador ya los reconoce. AR2600921 igual que el libro; formulario y PDF revisados (pletina del soporte fijo al final de la lona). 25/09: la caída es la medida de la tela vieja tal cual, más lo que se sume en la tarjeta (Q-CA01 hecha; Q-CA02 sin objeto) |
 
+## Estudios de productos pendientes de incorporar al catálogo
+
+| Producto | Estado y evidencia | Siguiente paso |
+| --- | --- | --- |
+| Faldones laterales y frontales de toldo de fachada | [Expediente](./faldones-frontales.md), [censo](./faldones-frontales-censo.md), [revisión técnica](./faldones-frontales-revision-tecnica.md) y [matriz de confección/intermedios](./faldones-frontales-confeccion.md), actualizados el 30/10/2026. Censo de 219 líneas principales y 13 adicionales; 80 vínculos cotejados. Ampliación de 56 líneas / 53 pedidos: 59 libros, 38 bloques por OF, 23 escaneos completos y matriz de 12 casos. Se conservan exclusiones, versiones y medidas condicionadas. Escenarios fuera; intermedios separados | Aprobar reglas generales por remate/material y acreditar equivalencias/consumos de componentes; resolver Q-FF01/Q-FF02/Q-FF03/Q-FF04 y los tres montajes Q-FF05. Las reservas guardadas en libros no acreditan consumo del servidor. Sin implementación |
+
 ## Lotes propuestos, de menor a mayor alcance
 
 | Lote | Modelos | Objetivo y evidencia de salida |
