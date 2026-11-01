@@ -133,3 +133,20 @@ de alcanzar el límite. Evidencia de páginas en `antes/` y `despues/`; cifras c
 El medidor usa el punto interno `_fragment` de pdfkit para recibir las líneas ya partidas.
 Está cubierto por las pruebas del adaptador; una actualización de pdfkit exige repetir el
 contraste. La base completa de pdfkit sigue generándose para el respaldo, como en las fases 1 y 2.
+
+## Segunda pasada (el agente se quedó sin créditos; lo ha resumido el coordinador)
+
+Medición limpia, 20 peticiones por caso sin nada más en marcha (`tmp/ui-audit/dibujos-html/segunda-pasada/`, `medicion.json`):
+
+| Caso | `main`, mediana / máximo | SVG, mediana / máximo |
+| --- | ---: | ---: |
+| Arzúa | 1,19 s / 1,26 s | 1,25 s / 1,34 s |
+| Cuatro modelos | 1,73 s / 1,80 s | 1,93 s / 1,96 s |
+
+El pico de 3,39 s no se repite: las 20 peticiones bajan de 2 s. La primera tras arrancar tarda unos 2,5 s con o sin SVG. Margen con cuatro modelos: unos 40 ms hasta el límite.
+
+Desplazamiento de rótulos en los 175 casos: 1.545 rótulos, 0 textos distintos, peor caso 0,26 pt (menos de 0,1 mm en papel).
+
+**Sin hacer:** miniaturas de Parámetros, pasada HTTP completa con `DIBUJOS_HTML=0`, prueba en Linux y revisión de fuentes (`scripts/comprobar-fuentes-dibujos.mjs` quedó a medias).
+
+Este contraste demuestra que el SVG es igual al dibujo de pdfkit, no que ese dibujo sea correcto para cada configuración.

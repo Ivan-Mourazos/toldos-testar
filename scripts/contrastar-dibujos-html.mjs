@@ -122,8 +122,12 @@ try {
       ctx.putImageData(imagen, 0, 0);
       const desplazamientos = antes.posiciones.map((p, n) => {
         const q = despues.posiciones[n];
-        return p.text === q?.text ? Math.max(Math.abs(p.x - q.x), Math.abs(p.y - q.y), Math.abs(p.width - q.width), Math.abs(p.height - q.height)) : null;
+        return p.text === q?.text ? { texto: p.text, dx: q.x - p.x, dy: q.y - p.y,
+          origenPt: Math.hypot(q.x - p.x, q.y - p.y), anchoPt: q.width - p.width, altoPt: q.height - p.height } : null;
       });
+      const posicionesCasadas = desplazamientos.every(d => d !== null) && antes.posiciones.length === despues.posiciones.length;
+      const peor = posicionesCasadas ? desplazamientos.reduce((a, b) => a.origenPt >= b.origenPt ? a : b,
+        { texto: '', dx: 0, dy: 0, origenPt: 0, anchoPt: 0, altoPt: 0 }) : null;
       await Promise.all([
         fs.writeFile(path.join(salida, `${muestra.id}-pdfkit.png`), antes.canvas.toBuffer('image/png')),
         fs.writeFile(path.join(salida, `${muestra.id}-svg.png`), despues.canvas.toBuffer('image/png')),
@@ -131,7 +135,9 @@ try {
       ]);
       resultados.push({ id: muestra.id, diagram: muestra.diagram, diferenciaMedia: suma / (ancho * alto),
         porcentajePixeles: distintos / (ancho * alto) * 100, textoIgual: antes.textos === despues.textos,
-        desplazamientoMaximoPt: desplazamientos.some(d => d === null) ? null : Math.max(0, ...desplazamientos),
+        desplazamientoMaximoPt: peor?.origenPt ?? null,
+        desplazamientoMaximoMm: peor ? peor.origenPt * 25.4 / 72 : null,
+        peorRotulo: peor, rotulos: desplazamientos,
         textoPdfkit: antes.textos, textoSvg: despues.textos });
     }
     await page.unroute('**/api/hoja-telas/contraste');
@@ -144,8 +150,10 @@ await fs.writeFile(path.join(salida, 'informe.html'), `<!doctype html><html lang
 <style>body{font:16px Arial;margin:24px}article{break-inside:avoid;border-top:1px solid #999}img{width:242px;height:300px}figure{display:inline-block;margin:6px}figcaption{text-align:center}</style>
 <h1>Contraste pdfkit / SVG · ${resultados.length} casos · 216 ppp</h1>
 <p>La diferencia media mide niveles RGB (0–255). Píxeles cuenta diferencias mayores de 32. El orden es pdfkit, SVG, diferencia.</p>
-${resultados.map(r => `<article><h2>${escapar(r.id)}</h2><p>Diferencia media ${r.diferenciaMedia.toFixed(3)}; píxeles ${r.porcentajePixeles.toFixed(3)} %; texto ${r.textoIgual ? 'igual' : 'REVISAR'}</p>
+${resultados.map(r => `<article><h2>${escapar(r.id)}</h2><p>Diferencia media ${r.diferenciaMedia.toFixed(3)}; píxeles ${r.porcentajePixeles.toFixed(3)} %; texto ${r.textoIgual ? 'igual' : 'REVISAR'}; desplazamiento máximo ${r.desplazamientoMaximoMm?.toFixed(4) ?? 'SIN CASAR'} mm</p>
 ${['pdfkit', 'svg', 'diferencia'].map(tipo => `<figure><img src="${r.id}-${tipo}.png"><figcaption>${tipo}</figcaption></figure>`).join('')}
 ${r.textoIgual ? '' : `<pre>${escapar(r.textoPdfkit)}\n${escapar(r.textoSvg)}</pre>`}</article>`).join('')}</html>`);
 console.log(JSON.stringify({ casos: resultados.length, textosDistintos: resultados.filter(r => !r.textoIgual).length,
+  posicionesSinCasar: resultados.filter(r => r.desplazamientoMaximoPt === null).map(r => r.id),
+  peorDesplazamiento: resultados.reduce((a, b) => (a.desplazamientoMaximoPt ?? 0) >= (b.desplazamientoMaximoPt ?? 0) ? a : b),
   diferenciaMaxima: Math.max(...resultados.map(r => r.diferenciaMedia)), salida }));
