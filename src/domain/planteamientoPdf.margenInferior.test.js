@@ -7,3 +7,9 @@ test('GENERAL sin bamba deja sitio para el descendente de la cota inferior', () 
   expect(cota).toBeDefined();
   expect(cota.attrs.y + cota.attrs.fontSize * 0.3).toBeLessThanOrEqual(svg.height);
 });
+
+// AR2603932-2 y AR2604955-10: también sin bamba hay varilla blanca abajo.
+test('GENERAL sin bamba identifica la varilla de su borde inferior', () => {
+  const svg = buildFabricDiagramSvg({ diagram: 'GENERAL', awning: { model: 'PUNTO RECTO', valanceHeight: 0 } });
+  expect(svg.nodes.some(n => n.text === 'VARILLA BLANCA')).toBe(true);
+});

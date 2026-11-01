@@ -1826,6 +1826,9 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
   drawFabricDimension(doc, frameX + frameW + 10, bottomSeamY, frameY + frameH, formatInstructionMeasure(hems.bottomHemCm), 'right');
   if (valance.hasValance) {
     doc.rect(frameX, frameY + frameH - 4, frameW, 4).fillAndStroke(colors.paper, '#4f6e63');
+  } else {
+    // Sin bamba, la varilla sigue en el paño (AR2603932-2 y AR2604955-10).
+    drawDiagramText(doc, loadLabel, frameX + 18, frameY + frameH - 22, frameW - 36);
   }
 
   if (valance.hasValance) {

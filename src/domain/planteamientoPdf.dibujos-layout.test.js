@@ -143,7 +143,7 @@ test.each(Object.keys(bodies))('%s: el cuerpo aprovecha el espacio de la miniatu
 
 test('Toldo con velcro: varilla arriba y pieza A de bamba debajo, como la imagen girada del maestro', async () => {
   await inspect({ model: 'IRIS', fabricDiagramOverride: 'TOLDO-VELCRO', valanceHeight: 20 }, ({ items, top, bottom }) => {
-    const upper = items.find(item => item.str === 'VARILLA NEGRA (5,09) EN PVC');
+    const upper = items.find(item => item.str === 'VARILLA NEGRA (4,5) EN PVC');
     const white = items.find(item => item.str === 'VARILLA BLANCA (5,5)');
     const piece = items.find(item => item.str === 'A');
     expect(Math.abs(upper.transform[1]), 'la varilla negra va horizontal arriba').toBeLessThan(0.1);

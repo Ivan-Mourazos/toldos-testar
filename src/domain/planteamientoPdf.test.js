@@ -1566,7 +1566,7 @@ describe('maqueta única del planteamiento de telas', () => {
     expect(rod).toContain('B.N(4)');
     expect(rod).not.toContain('PARA ENROLLAR EN TUBO');
     expect(riveted).toContain('REMACHADO · B.N.(4,5)');
-    expect(riveted).not.toContain('VARILLA NEGRA (5,09) EN PVC');
+    expect(riveted).not.toContain('VARILLA NEGRA (4,5) EN PVC');
   });
 
   test('con bamba en otra tela, el paño total es la suma ya hecha, no "a + b"', async () => {
