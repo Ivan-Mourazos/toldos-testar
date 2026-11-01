@@ -1795,7 +1795,7 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
   const valanceGap = h * 0.10;
   const valanceH = h * 0.11;
   // La bamba conserva su canto inferior: se reserva su sitio antes de ampliar el cuerpo.
-  const frameH = h * 0.965 - (frameY - y) - (valance.hasValance ? valanceGap + valanceH : h * 0.025);
+  const frameH = h * 0.965 - (frameY - y) - (valance.hasValance ? valanceGap + valanceH : h * 0.045);
   doc.rect(frameX, frameY, frameW, frameH).strokeColor('#202020').lineWidth(1).stroke();
   const topFoldY = frameY + 40;
   const topSeamY = frameY + 5;
