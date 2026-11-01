@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useState } from 'react';
-import { Building2, Caravan, DoorOpen, Store, Warehouse } from 'lucide-react';
+import { Building2, Filter, Caravan, DoorOpen, Store, Warehouse } from 'lucide-react';
 
 const LoteSabado = lazy(() => import('../combursa/LoteSabado'));
 export const COMBURSA_DISPONIBLE = true;
@@ -23,7 +23,7 @@ export function guardarProducto(producto: Producto, storage: Storage | null = wi
 export type ResumenPedido = { numero: string; elementos: number };
 
 // `puertas` false: puertas en pausa en el servidor (ENABLE_PUERTAS), sin pestaña.
-export function SelectorProducto({ producto, onChange, pedidos, inicio = false, disabled = false, puertas = true, transicion }: { producto: Producto; onChange: (producto: Producto) => void; pedidos?: Partial<Record<Producto, ResumenPedido>>; inicio?: boolean; disabled?: boolean; puertas?: boolean; transicion?: Producto | null }) {
+export function SelectorProducto({ onEmbudos, embudos = false, producto, onChange, pedidos, inicio = false, disabled = false, puertas = true, transicion }: { onEmbudos?: () => void; embudos?: boolean; producto: Producto; onChange: (producto: Producto) => void; pedidos?: Partial<Record<Producto, ResumenPedido>>; inicio?: boolean; disabled?: boolean; puertas?: boolean; transicion?: Producto | null }) {
   const [combursaAbierta, setCombursaAbierta] = useState(false);
   const detalle = (tipo: Producto) => {
     const pedido = pedidos?.[tipo];
@@ -54,6 +54,10 @@ export function SelectorProducto({ producto, onChange, pedidos, inicio = false, 
             <span className={`inicio-tarjeta-estado${enCurso ? ' is-en-curso' : ''}`}>{enCurso ? `Seguir con ${detalle(tipo)}` : 'Sin empezar'}</span>
           </button>;
         })}
+        {onEmbudos && <button type="button" disabled={disabled} aria-label="Embudos" className="inicio-tarjeta" onClick={onEmbudos}>
+          <span className="inicio-tarjeta-icono"><Filter aria-hidden="true" /></span><strong>Embudos</strong>
+          <span className="inicio-tarjeta-lleva">Bocas de descarga · cónicos y rectos</span><span className="inicio-tarjeta-estado">Preparar pedido</span>
+        </button>}
         <button type="button" disabled={!COMBURSA_DISPONIBLE || disabled} aria-label="COMBURSA" title="Preparar el lote del sábado" className="inicio-tarjeta" onClick={() => setCombursaAbierta(true)}>
           <span className="inicio-tarjeta-icono"><Building2 aria-hidden="true" /></span>
           <strong>COMBURSA</strong>
@@ -67,7 +71,7 @@ export function SelectorProducto({ producto, onChange, pedidos, inicio = false, 
   return (
     <div className="producto-contexto">
     <div className="tira-3d producto-selector" role="group" aria-label="Producto">
-      <button type="button" disabled={disabled} aria-label="Toldos" title={detalle('toldos')} className={!inicio && producto === 'toldos' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={inicio ? undefined : producto === 'toldos'} onClick={() => onChange('toldos')}>
+      <button type="button" disabled={disabled} aria-label="Toldos" title={detalle('toldos')} className={!inicio && !embudos && producto === 'toldos' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={inicio ? undefined : !embudos && producto === 'toldos'} onClick={() => onChange('toldos')}>
         Toldos
       </button>
       <button type="button" disabled={disabled} aria-label="Remolques" title={detalle('remolques')} className={!inicio && producto === 'remolques' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={inicio ? undefined : producto === 'remolques'} onClick={() => onChange('remolques')}>
@@ -77,6 +81,7 @@ export function SelectorProducto({ producto, onChange, pedidos, inicio = false, 
         Puertas
       </button>}
       {puertas && <button type="button" disabled={disabled} aria-label="System Dock" title={detalle('systemdock')} className={producto === 'systemdock' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={producto === 'systemdock'} onClick={() => onChange('systemdock')}>System Dock</button>}
+      {onEmbudos && <button type="button" disabled={disabled} aria-label="Embudos" className={embudos ? 'pestana pestana-activa' : 'pestana'} aria-pressed={embudos} onClick={onEmbudos}>Embudos</button>}
     </div>
     </div>
   );

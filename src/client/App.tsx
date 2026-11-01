@@ -99,8 +99,11 @@ export default function App() {
   // Si la web se abre con un pedido en la dirección, el buscador ya lo trae escrito (ver el
   // efecto de `pedidoDeEnlace` más abajo, que es quien lo busca).
   const [numeroBusqueda, setNumeroBusqueda] = useState<string | null>(() => pedidoDeEnlace(window.location.search));
+  const [entradaEmbudos, setEntradaEmbudos] = useState(false);
+  const soloEmbudos = draft.awnings.length > 0 && draft.awnings.every(a => a.model === 'EMBUDO');
   const [editorPedidoAbierto, setEditorPedidoAbierto] = useState(false);
   function chooseProducto(next: Producto) {
+    setEntradaEmbudos(false);
     setEditorPedidoAbierto(true);
     setNumeroBusqueda(null);
     setProducto(next);
@@ -112,7 +115,7 @@ export default function App() {
   async function empezarModelo(valor: ModeloInicio) {
     if(valor.producto==='toldos') {
       if((draft.orderCode||draft.customer||draft.fabric||draft.notes||draft.awnings.length) && await askForConfirmation({
-        title:'Empezar otro pedido de Toldos', message:'Se sustituirá el pedido a medias de Toldos por uno nuevo con el modelo elegido.',
+        title:'Empezar otro pedido', message:'Se sustituirá el pedido a medias por uno nuevo con el producto elegido.',
         confirmLabel:'Empezar pedido',cancelLabel:'Conservar formulario',tone:'warning',
       })!=='confirm') return;
       draft.resetDraft();
@@ -121,6 +124,7 @@ export default function App() {
       setCorrigiendo(null);setAutofill(null);setReturnNote(null);setFormularioAntiguo(null);
     } else setModeloInicio({id:Date.now(),valor});
     chooseProducto(valor.producto);
+    setEntradaEmbudos(valor.producto === 'toldos' && valor.modelo === 'EMBUDO');
   }
   const [working, setWorking] = useState<'review' | 'preview' | 'draft' | null>(null);
   const [previewUrl, setPreviewUrl] = useState('');
@@ -803,7 +807,7 @@ export default function App() {
           <div className="workspace-heading">
             {activeTab !== 'order' && <h2>{viewTitle}</h2>}
             {activeTab === 'order' && <button type="button" className="ghost-button order-entry-back" data-cambio-fluido disabled={Boolean(working) || autofillLoading} onClick={() => { setNumeroBusqueda(''); setEditorPedidoAbierto(false); }}><ArrowLeft aria-hidden="true" />Buscar otro pedido</button>}
-            {activeTab === 'order' && <SelectorProducto puertas={puertasActivas} producto={producto} onChange={chooseProducto} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques, puertas: resumenPuertas, systemdock: resumenSystemDock }} />}
+            {activeTab === 'order' && <SelectorProducto embudos={producto === 'toldos' && (entradaEmbudos || soloEmbudos)} onEmbudos={() => { if (soloEmbudos) chooseProducto('toldos'); else void empezarModelo({producto:'toldos',modelo:'EMBUDO',workType:'FABRIC_ONLY'}); }} puertas={puertasActivas} producto={producto} onChange={next => { if (next === 'toldos' && (entradaEmbudos || soloEmbudos)) { setNumeroBusqueda(''); setEditorPedidoAbierto(false); } else chooseProducto(next); }} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques, puertas: resumenPuertas, systemdock: resumenSystemDock }} />}
             {/* La versión de los parámetros, en una línea junto al título (Iván, 25/09/2026). */}
             {activeTab === 'parameters' && (enFichasClientes
               ? null
@@ -877,6 +881,7 @@ export default function App() {
           {activeTab === 'order' && editorPedidoAbierto && producto === 'toldos' && (
             <fieldset className="order-form-fieldset" disabled={working === 'review'} aria-busy={working === 'review'}>
               <OrderView
+                modoEmbudos={entradaEmbudos || soloEmbudos}
                 availableModelNames={catalog?.models.map((model) => model.code) ?? []}
                 orderCode={draft.orderCode}
                 customer={draft.customer}

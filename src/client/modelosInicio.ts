@@ -21,7 +21,7 @@ export function modelosInicio(categoria: CategoriaConModelos, disponibles: strin
   let grupos: GrupoModelos[];
   if (categoria === 'toldos') {
     grupos = ([['Toldos completos', fullAwningModelNames, 'FULL_AWNING'], ['Solo tela', fabricOnlyModelNames, 'FABRIC_ONLY']] as const).map(([nombre, modelos, workType]) => ({
-      nombre, modelos: modelos.filter(m=>disponibles.includes(m)).map(modelo=>({nombre:controlLabel(modelo),valor:{producto:'toldos',modelo,workType}})),
+      nombre, modelos: modelos.filter(m=>m !== 'EMBUDO' && disponibles.includes(m)).map(modelo=>({nombre:controlLabel(modelo),valor:{producto:'toldos',modelo,workType}})),
     }));
   } else if (categoria === 'puertas') {
     grupos = [{nombre:'Modelos',modelos:(['PUERTAPLE','PUERTAUTO','PUERTAENR'] as const).map(modelo=>({nombre:MODELOS_PUERTAS[modelo],valor:{producto:'puertas',modelo}}))}];

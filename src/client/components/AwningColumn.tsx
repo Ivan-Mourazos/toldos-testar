@@ -374,7 +374,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           en Parámetros y en «Añadir toldo»; aquí solo ocupaba sitio (Iván, 25/09/2026). */}
       <header className="awning-column-header">
         <span className="awning-column-heading">
-          <span className="awning-column-tag">{`${fabricOnly ? 'TELA' : 'TOLDO'} ${awningLetter(index)}`}</span>
+          <span className="awning-column-tag">{`${awning.model === 'EMBUDO' ? 'EMBUDO' : fabricOnly ? 'TELA' : 'TOLDO'} ${awningLetter(index)}`}</span>
           {!readOnly && onChangeModel
             ? (
               <button type="button" className="awning-model-title awning-model-change" title="Cambiar el modelo: sigue en el mismo puesto" aria-label={`Cambiar el modelo del ${fabricOnly ? 'trabajo' : 'toldo'} ${awningLetter(index)}: ${controlLabel(awning.model)}`} onClick={() => onChangeModel(awning.id)}>

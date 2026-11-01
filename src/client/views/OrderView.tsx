@@ -19,6 +19,7 @@ import { awningLetter } from '../../domain/awningCompleteness.js';
 import { controlLabel } from '../components/controlLabels';
 
 export function OrderView({
+  modoEmbudos = false,
   availableModelNames,
   orderCode,
   knownOfs = null,
@@ -53,6 +54,7 @@ export function OrderView({
   onConfirm,
   onNotify
 }: {
+  modoEmbudos?: boolean;
   availableModelNames: string[];
   orderCode: string;
   knownOfs?: string[] | null;
@@ -95,6 +97,7 @@ export function OrderView({
   // Avisos de la tela (al cambiar «Por toldo» o elegir una propuesta).
   onNotify?: Notify;
 }) {
+  const embudos = modoEmbudos || (awnings.length > 0 && awnings.every(a => a.model === 'EMBUDO'));
   const [pickerType, setPickerType] = useState<Awning['workType'] | null>(null);
   // Con un elemento elegido, el selector cambia su modelo en vez de añadir uno nuevo.
   const [changingAwningId, setChangingAwningId] = useState<string | null>(null);
@@ -178,7 +181,8 @@ export function OrderView({
             customer={customer}
             orderDate={orderDate}
             fabric={fabric}
-            onlyPvc={awnings.length > 0 && awnings.every(a => a.model === 'EMBUDO')}
+            onlyPvc={embudos}
+            elemento={embudos ? 'embudo' : 'toldo'}
             sameFabric={sameFabric}
             notes={notes}
             onNotesChange={setNotes}
@@ -195,24 +199,26 @@ export function OrderView({
       {(awnings.length > 0 || !readOnly) && <section className="awnings-section order-elements-section">
         <div className="section-header">
           <div>
-            <h2>Elementos del pedido</h2>
-            <span>{awnings.length ? `${awnings.length} ${awnings.length === 1 ? 'elemento' : 'elementos'} · orden A, B, C…` : 'Añade el primer toldo o trabajo de tela.'}</span>
+            <h2>{embudos ? 'Embudos del pedido' : 'Elementos del pedido'}</h2>
+            <span>{awnings.length ? `${awnings.length} ${awnings.length === 1 ? 'elemento' : 'elementos'} · orden A, B, C…` : embudos ? 'Añade el primer embudo.' : 'Añade el primer toldo o trabajo de tela.'}</span>
             {!readOnly && <OrderProgress total={awnings.length} ready={statuses.filter(status => status.kind === 'ok').length} />}
           </div>
           {/* Antes eran una fila entera en la cabecera del pedido (espaciado, 25/09/2026). */}
           {!readOnly && (
             <div className="order-add-actions">
+              {embudos ? <button type="button" className="ghost-button" onClick={() => addAwning('FABRIC_ONLY', 'EMBUDO')}>Añadir embudo</button> : <>
               <button type="button" className="ghost-button" onClick={() => setPickerType('FULL_AWNING')}>
                 <Layers3 aria-hidden="true" />Añadir toldo
               </button>
               <button type="button" className="ghost-button" onClick={() => setPickerType('FABRIC_ONLY')}>
                 <Scissors aria-hidden="true" />Añadir trabajo de tela
               </button>
+            </>}
             </div>
           )}
         </div>
 
-        {!readOnly && awnings.length === 0 && <OrderEmptyState title="Añade el primer elemento del pedido">Busca el pedido arriba, o usa «Añadir toldo» / «Añadir trabajo de tela» para empezar a mano.</OrderEmptyState>}
+        {!readOnly && awnings.length === 0 && <OrderEmptyState title={embudos ? "Añade el primer embudo" : "Añade el primer elemento del pedido"}>{embudos ? "Usa «Añadir embudo» para continuar el pedido." : "Busca el pedido arriba, o usa «Añadir toldo» / «Añadir trabajo de tela» para empezar a mano."}</OrderEmptyState>}
         {awnings.length > 0 && <AwningBlocks
           awnings={awnings}
           reading={readOnly}
@@ -236,7 +242,7 @@ export function OrderView({
               onDuplicate={duplicateAwning}
               onRemove={removeAwning}
               onOpenPanel={setPanelAwningId}
-              onChangeModel={openModelChange}
+              onChangeModel={embudos ? undefined : openModelChange}
             />
           )}
         />}

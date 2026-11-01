@@ -19,6 +19,7 @@ type Props = {
 // entera a 1280×720, con una marca de completo o de pendiente que se explica al pasar
 // el ratón (o al llegar con el teclado).
 export function ModelPickerDialog({ workType, models, onSelect, onClose, cambio }: Props) {
+  models = models.filter(model => model !== 'EMBUDO');
   const fabricOnly = workType === 'FABRIC_ONLY';
   const families = groupModelsByFamily(models);
   const anyPending = models.some((model) => !modelReadiness(model).ready);

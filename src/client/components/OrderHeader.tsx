@@ -20,6 +20,7 @@ type Props = {
   // Metros que el pedido pide de la tela común, para compararlos con su stock.
   fabricNeedMl?: number;
   onlyPvc?: boolean;
+  elemento?: 'toldo' | 'embudo';
   readOnly?: boolean;
 };
 
@@ -60,18 +61,18 @@ export function OrderHeader(props: Props) {
                   creer que había una elegida (F4). */}
               {props.sameFabric
                 ? <FabricCombobox label="Referencia" value={props.fabric} onlyPvc={props.onlyPvc} onChange={(v) => props.set({ fabric: v })} />
-                : <div className="field order-fabric-per-awning-field"><span>Referencia</span><p className="order-fabric-per-awning-value">Tela por toldo · se elige en cada tarjeta</p></div>}
+                : <div className="field order-fabric-per-awning-field"><span>Referencia</span><p className="order-fabric-per-awning-value">Tela por {props.elemento ?? 'toldo'} · se elige en cada tarjeta</p></div>}
               {/* En lectura no se puede cambiar: el interruptor sobra y solo se indica si
                   cada toldo lleva su propia tela. */}
               {props.readOnly
-                ? !props.sameFabric && <span className="order-fabric-per-awning-note">Tela por toldo</span>
+                ? !props.sameFabric && <span className="order-fabric-per-awning-note">Tela por {props.elemento ?? 'toldo'}</span>
                 : <label className="order-fabric-per-awning">
                   <input
                     type="checkbox"
                     checked={!props.sameFabric}
                     onChange={(event) => props.set({ sameFabric: !event.target.checked })}
                   />
-                  <span>Por toldo</span>
+                  <span>Por {props.elemento ?? 'toldo'}</span>
                 </label>}
             </div>
             {props.sameFabric && !props.readOnly && props.fabric && <div className="order-fabric-common-meta">

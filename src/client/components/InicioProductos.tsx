@@ -54,6 +54,6 @@ export function InicioProductos({ producto, onChange, onModelo, pedidos, puertas
           <span>{modelo.nombre}{modelo.proximamente&&<small>Próximamente</small>}</span>
         </button>)}</div>
       </section>):<p className="cat-vacio" role="status">No hay modelos con ese nombre.</p>}
-    </section>:<SelectorProducto inicio transicion={anterior} puertas={puertas} disabled={disabled} producto={producto} pedidos={pedidos} onChange={next=>next==='systemdock'?onChange(next):cambiar(next)}/>}
+    </section>:<SelectorProducto onEmbudos={() => onModelo({producto:'toldos',modelo:'EMBUDO',workType:'FABRIC_ONLY'})} inicio transicion={anterior} puertas={puertas} disabled={disabled} producto={producto} pedidos={pedidos} onChange={next=>next==='systemdock'?onChange(next):cambiar(next)}/>}
   </div>;
 }
