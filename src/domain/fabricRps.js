@@ -10,11 +10,14 @@ export function inferRollWidth(code, unitCode = '') {
 export function inferFabricDetails({ description = '', subfamily = '' }) {
   const text = String(description || '').trim().toUpperCase();
   let material = String(subfamily || '').trim();
-  if (/\bACR[IÍ]LIC[AO]\b/.test(text)) material = /\bRESINAD[OA]\b/.test(text) ? 'ACR RES' : 'ACR';
-  else if (/\bSOLTIS\s+(86|92|96|99)\b/.test(text)) material = text.match(/\bSOLTIS\s+(86|92|96|99)\b/)[0];
-  else if (/\bPVC\b/.test(text)) material = 'PLASTICA (LONA)';
-  else if (/\bCRISTAL\b/.test(text)) material = 'CRISTAL';
-  else if (/\bREJILLA\b/.test(text)) material = 'REJILLA';
+  // «PLASTICA (LONA)» decide el corte y los embudos, y eso lo dice solo la subfamilia de RPS: el
+  // texto no sirve («SCREEN SIN PVC» no es PVC, y las rejillas de esa subfamilia sí se cortan).
+  if (material.toUpperCase() !== 'PLASTICA (LONA)') {
+    if (/\bACR[IÍ]LIC[AO]\b/.test(text)) material = /\bRESINAD[OA]\b/.test(text) ? 'ACR RES' : 'ACR';
+    else if (/\bSOLTIS\s+(86|92|96|99)\b/.test(text)) material = text.match(/\bSOLTIS\s+(86|92|96|99)\b/)[0];
+    else if (/\bCRISTAL\b/.test(text)) material = 'CRISTAL';
+    else if (/\bREJILLA\b/.test(text)) material = 'REJILLA';
+  }
   // Solo el tramo delimitado para el color. No se intenta partir descripciones
   // libres: sus números pueden ser referencias, gramajes o tratamientos.
   const candidate = text.split(':')[1]?.trim() || '';

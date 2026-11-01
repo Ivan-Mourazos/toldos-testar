@@ -11,7 +11,9 @@ export function regenerateFabrics(rows, previous, at = new Date()) {
     const row = byCode.get(fabric.code);
     const saved = { ...fabric };
     delete saved.inactive;
-    return { ...saved, width: row ? inferRollWidth(row.code, row.unitCode) : inferRollWidth(fabric.code),
+    // El ancho de una tela que ya estaba no se toca: un pedido guardado solo con su nombre lo
+    // recalcularía distinto. Si no coincide con su código, se anota como duda (Q-TELA03).
+    return { ...saved, width: fabric.width ?? (row ? inferRollWidth(row.code, row.unitCode) : inferRollWidth(fabric.code)),
       ...(isInactive(row) ? { inactive: true } : {}) };
   });
   const known = new Set(previous.map((fabric) => fabric.code));

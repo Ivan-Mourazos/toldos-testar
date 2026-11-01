@@ -36,6 +36,21 @@ describe('catálogo completo de RPS', () => {
     expect(regenerateFabrics(rows, result, new Date('2026-11-01T00:00:00Z'))).toEqual(result);
   });
 
+  it('la lona de PVC la dice la subfamilia de RPS, no la descripción', () => {
+    const decide = (description, subfamily) => inferFabricDetails({ description, subfamily }).material;
+    expect(decide('LONA CALIDAD SCREEN SIN PVC IGNIFUGO', 'DECORACION TEJIDOS')).toBe('DECORACION TEJIDOS');
+    expect(decide('LONA BLACK OUT PVC 420 GR.', 'DECORACION TEJIDOS')).toBe('DECORACION TEJIDOS');
+    expect(decide('REJILLA-REDE 227 (2ª) 270GR', 'PLASTICA (LONA)')).toBe('PLASTICA (LONA)');
+    expect(resolveFabric('SCRSPVC').material).not.toBe('PLASTICA (LONA)');
+    expect(resolveFabric('NET').material).toBe('PLASTICA (LONA)');
+  });
+
+  it('no cambia el ancho de una tela que ya estaba en el catálogo', () => {
+    const previa = [{ code: 'SOLTIS86BEIGP177', width: 267, material: 'SOLTIS 86', color: 'BEIGE', description: 'S' }];
+    const filas = [{ code: 'SOLTIS86BEIGP177', description: 'S', unitCode: 'ML177' }];
+    expect(regenerateFabrics(filas, previa, new Date('2026-11-01'))[0].width).toBe(267);
+  });
+
   it('no interpreta gramos, referencias ni tratamientos como colores', () => {
     expect(inferFabricDetails({ description: 'LONA SOLTIS 92 M1', subfamily: 'DECORACION TEJIDOS' })).toEqual({ material: 'SOLTIS 92', color: '' });
     expect(inferFabricDetails({ description: 'LONA ACRILICA MASACRIL 300 :SHELL 1469 :120 AN' })).toEqual({ material: 'ACR', color: 'SHELL 1469' });
