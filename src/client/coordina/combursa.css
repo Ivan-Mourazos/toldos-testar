@@ -1,0 +1,71 @@
+/* Combursa usa las piezas compartidas de Pedidos y el marco de CoordinaOT.
+   El diálogo nativo conserva el foco dentro de esta pantalla de trabajo. */
+.combursa-dialogo { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: var(--hero-fondo, var(--bg)); color: var(--text); }
+.combursa-dialogo::backdrop { background: var(--bg); }
+.combursa-pagina { box-sizing: border-box; max-width: 1860px; height: 100%; margin: auto; padding: 16px 24px; display: flex; flex-direction: column; gap: 12px; }
+.combursa-cabecera { display: flex; align-items: center; justify-content: space-between; padding: 0 0 8px; }
+.combursa-cliente { color: var(--text-muted); font-size: 11px; font-weight: 600; letter-spacing: .08em; }
+.combursa-cabecera h1 { margin: 2px 0; font-size: 22px; }
+.combursa-cabecera p { margin: 0; font-size: 12px; color: var(--text-muted); }
+.combursa-dialogo .ghost-button, .combursa-dialogo .primary-button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; font: inherit; font-size: 12px; padding: 8px 14px; }
+.combursa-pasos { display: flex; gap: 24px; list-style: none; margin: 0; padding: 0; font-size: 12px; color: var(--text-muted); }
+.combursa-pasos li { display: flex; gap: 6px; align-items: center; }
+.combursa-pasos span { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--surface-2); }
+.combursa-pasos [aria-current], .combursa-pasos .completado { color: var(--accent-text); font-weight: 600; }
+.combursa-pasos [aria-current] span { background: var(--tgm-yellow); color: var(--tgm-black); }
+.combursa-fecha { display: flex; gap: 12px; align-items: center; padding: 10px 14px; border-radius: var(--radius); }
+.combursa-fecha label { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; }
+.combursa-fecha input { width: 150px; padding: 7px 10px; }
+.combursa-fecha p { margin: 0 0 0 auto; color: var(--text-muted); font-size: 12px; }
+.combursa-dialogo input { border: 1px solid var(--control-border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font: inherit; }
+.combursa-resumen { display: flex; gap: 24px; }
+.combursa-dialogo .combursa-resumen > div.glass-panel { display: flex; align-items: center; gap: 8px; background: transparent; border: 0; box-shadow: none; }
+.combursa-resumen svg { width: 16px; color: var(--text-muted); }
+.combursa-resumen strong { font-size: 18px; font-variant-numeric: tabular-nums; }
+.combursa-resumen span { color: var(--text-muted); font-size: 12px; }
+.combursa-vistas { display: flex; align-self: start; gap: 4px; padding: 4px; border-radius: var(--radius); }
+.combursa-vistas button { padding: 7px 14px; font: inherit; font-size: 12px; border-radius: var(--radius-sm); border: 0; background: transparent; color: var(--text); }
+.combursa-contenido { flex: 1; min-height: 120px; overflow: auto; }
+.combursa-listado { border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; max-height: 100%; }
+.combursa-listado > header { padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.combursa-listado h2, .combursa-corte h2 { margin: 0; font-size: 15px; }
+.combursa-listado > header span { color: var(--text-muted); font-size: 12px; }
+.combursa-tabla-scroll { overflow: auto; }
+.combursa-listado table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+.combursa-listado th { position: sticky; top: 0; text-align: left; background: var(--surface-2); color: var(--text-muted); z-index: 1; font-size: 11px; }
+.combursa-listado td, .combursa-listado th { padding: 7px 8px; border-top: 1px solid var(--border); vertical-align: top; overflow-wrap: anywhere; }
+.combursa-lineas th:nth-child(1) { width: 10%; } .combursa-lineas th:nth-child(2) { width: 9%; } .combursa-lineas th:nth-child(3) { width: 23%; }
+.combursa-lineas th:nth-child(4) { width: 6%; } .combursa-lineas th:nth-child(5) { width: 7%; } .combursa-lineas th:nth-child(6) { width: 13%; }
+.combursa-lineas th:nth-child(7) { width: 16%; } .combursa-lineas th:nth-child(8) { width: 7%; } .combursa-lineas th:nth-child(9) { width: 9%; }
+.combursa-cortador th:nth-child(1) { width: 7%; } .combursa-cortador th:nth-child(2) { width: 24%; } .combursa-cortador th:nth-child(3) { width: 9%; }
+.combursa-cortador th:nth-child(4) { width: 48%; } .combursa-cortador th:nth-child(5) { width: 12%; }
+.combursa-listado small, .combursa-acciones small { display: block; color: var(--text-muted); margin-top: 3px; font-size: 11px; }
+.combursa-referencia, .combursa-numero { font-variant-numeric: tabular-nums; font-weight: 600; }
+.combursa-validado { color: var(--tramo-holgado); font-weight: 600; }
+.combursa-manual, .combursa-listado summary { color: var(--tramo-trabajo); }
+.combursa-listado details p { margin: 6px 0; }
+.combursa-dialogo input.combursa-palet { box-sizing: border-box; width: 100%; min-width: 48px; padding: 4px; text-align: center; }
+.combursa-suelta { display: flex; gap: 4px; align-items: center; font-size: 11px; }
+.combursa-suelta input { accent-color: var(--color-brand-600); }
+.combursa-ayuda { color: var(--text-muted); margin: 4px 0; font-size: 12px; }
+.combursa-programas { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 12px; margin-top: 12px; }
+.combursa-programas article { border-radius: var(--radius); padding: 12px; min-width: 0; }
+.combursa-programas header { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; }
+.combursa-programas footer { color: var(--text-muted); font-size: 11px; }
+.combursa-ampliar { display: block; width: 100%; border: 0; border-radius: var(--radius-sm); background: var(--surface-2); color: var(--text-muted); margin: 8px 0; padding: 8px; font: inherit; font-size: 11px; cursor: zoom-in; }
+.combursa-ampliar svg { display: block; width: 100%; height: 132px; }
+.combursa-dialogo svg :is(line, circle, path) { vector-effect: non-scaling-stroke; }
+.combursa-ampliar svg :is(line, circle, path), .combursa-ampliacion svg :is(line, circle, path) { stroke-width: 1.2px; }
+.combursa-ampliacion { width: min(1100px, 90vw); max-height: 90vh; box-sizing: border-box; padding: 20px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); }
+.combursa-ampliacion::backdrop { background: var(--glass-shadow); }
+.combursa-ampliacion header { display: flex; justify-content: space-between; align-items: center; }
+.combursa-ampliacion h2 { font-size: 18px; }
+.combursa-ampliacion svg { display: block; width: 100%; height: 60vh; }
+.combursa-ampliacion p { font-size: 12px; color: var(--text-muted); }
+.combursa-acciones { display: flex; gap: 8px; padding: 10px 14px; border-radius: var(--radius); align-items: center; }
+.combursa-acciones > div { flex: 1; min-width: 0; font-size: 12px; }
+.combursa-acciones small { overflow-wrap: anywhere; }
+.combursa-aviso { border-left: 3px solid var(--tramo-trabajo); background: var(--surface); padding: 8px 12px; font-size: 12px; margin: 0; }
+.combursa-vacio { text-align: center; padding: 40px 20px; border-radius: var(--radius); color: var(--text-muted); }
+.combursa-vacio h2 { font-size: 20px; color: var(--text); }
+.combursa-dialogo .glass-header, .combursa-dialogo .glass-panel { backdrop-filter: none; }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { Programa } from './tipos';
 
 const color = (capa: string) => capa === 'CUTTER' ? 'var(--tramo-holgado)' : capa === 'ROTULADOR' ? 'var(--color-brand-700)' : 'var(--text)';
@@ -10,12 +10,20 @@ const piezas = (p: Programa) => p.tipo === 'canalon'
   : `${p.panos} ${p.panos === 1 ? 'paño' : 'paños'}`;
 
 export function VistaCorte({ programas }: { programas: Programa[] }) {
-  return <section className="combursa-corte" aria-label="Vista del corte">
+  const [ampliado, setAmpliado] = useState<Programa | null>(null);
+  return <><section className="combursa-corte" aria-label="Vista del corte">
     <h2>Vista del corte</h2>
     <p className="combursa-ayuda">Cada conjunto se dibuja una vez. El cortador sigue su repetición. Las líneas a mano quedan fuera.</p>
     <div className="combursa-programas">{programas.map((p, i) => <article className="glass-panel" key={`${p.codigo}-${i}`}>
       <header><strong>{p.codigo}</strong><span>{piezas(p)} × {numero(p.repeticiones)}</span></header>
-      <svg role="img" aria-label={`Corte ${p.codigo}, ${piezas(p)} por ${p.repeticiones}`} viewBox={`-40 -40 ${p.largoMm + 80} ${p.anchoOcupadoMm + 80}`}>
+      <button type="button" className="combursa-ampliar" aria-label={"Ampliar corte " + p.codigo + ", programa " + (i + 1)} onClick={() => setAmpliado(p)}><Dibujo programa={p} /><span>Ampliar dibujo</span></button>
+      <footer>{numero(p.largoMm)} × {numero(p.anchoOcupadoMm)} mm · orillo sin cortar</footer>
+    </article>)}</div>
+  </section>{ampliado && <Ampliacion programa={ampliado} onCerrar={() => setAmpliado(null)} />}</>;
+}
+
+function Dibujo({ programa: p }: { programa: Programa }) {
+  return (<svg role="img" aria-label={`Corte ${p.codigo}, ${piezas(p)} por ${p.repeticiones}`} viewBox={`-40 -40 ${p.largoMm + 80} ${p.anchoOcupadoMm + 80}`}>
         <g transform={`translate(0 ${p.anchoOcupadoMm}) scale(1 -1)`} fill="none" strokeWidth="3" vectorEffect="non-scaling-stroke">
           {p.entidades.lineas.map((l, j) => <line key={`l${j}`} stroke={color(l.capa)} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} />)}
           {p.entidades.circulos.map((c, j) => <circle key={`c${j}`} stroke={color(c.capa)} cx={c.x} cy={c.y} r={c.r} />)}
@@ -25,8 +33,20 @@ export function VistaCorte({ programas }: { programas: Programa[] }) {
             return <path key={`a${j}`} stroke={color(a.capa)} d={`M${punto(a.desde)} A${a.r},${a.r} 0 ${((a.hasta - a.desde + 360) % 360) > 180 ? 1 : 0},1 ${punto(a.hasta)}`} />;
           })}
         </g>
-      </svg>
-      <footer>{numero(p.largoMm)} × {numero(p.anchoOcupadoMm)} mm · orillo sin cortar</footer>
-    </article>)}</div>
-  </section>;
+      </svg>);
+}
+
+function Ampliacion({ programa, onCerrar }: { programa: Programa; onCerrar: () => void }) {
+  const dialogo = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const anterior = document.activeElement as HTMLElement | null;
+    const modal = dialogo.current;
+    modal?.showModal();
+    return () => { modal?.close(); anterior?.focus(); };
+  }, []);
+  return <dialog ref={dialogo} className="combursa-ampliacion" aria-label={"Corte ampliado " + programa.codigo} onCancel={e => { e.preventDefault(); e.stopPropagation(); onCerrar(); }}>
+    <header><h2>{programa.codigo} · {piezas(programa)} × {numero(programa.repeticiones)}</h2><button type="button" className="ghost-button" autoFocus onClick={onCerrar}>Cerrar ampliación</button></header>
+    <Dibujo programa={programa} />
+    <p>{numero(programa.largoMm)} × {numero(programa.anchoOcupadoMm)} mm · orillo sin cortar</p>
+  </dialog>;
 }
