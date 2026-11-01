@@ -1,0 +1,20 @@
+/* En Windows se conserva Segoe UI, como pdfkit. En Linux pdfkit usa Helvetica: estas
+   fuentes métricamente compatibles ya vienen con pdfjs, incluida su licencia. */
+@font-face {
+  font-family: ToldosHelvetica;
+  src: url('../../../../node_modules/pdfjs-dist/standard_fonts/LiberationSans-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: ToldosHelvetica;
+  src: url('../../../../node_modules/pdfjs-dist/standard_fonts/LiberationSans-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+@font-face {
+  font-family: ToldosHelvetica;
+  src: url('../../../../node_modules/pdfjs-dist/standard_fonts/LiberationSans-Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+}

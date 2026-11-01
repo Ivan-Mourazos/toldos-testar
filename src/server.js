@@ -169,6 +169,7 @@ async function presentacionesPdf(html) {
 const fichasHojaTelas = crearAlmacenFichas({ duracionMs: 60_000 });
 const impresoraHojaTelas = crearImpresoraHojaTelas({
   telas: config.telasHtml,
+  dibujos: config.dibujosHtml,
   estructura: config.estructuraHtml,
   fichas: fichasHojaTelas,
   servicio: servicioPdfRemolques,
