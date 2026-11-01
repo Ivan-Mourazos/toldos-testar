@@ -32,7 +32,7 @@ puerta ni inventar terminado o acabado. Fuentes y contraste por script en [remol
 
 ## SYSTEM DOCK · lonas perimetrales (23/10/2026)
 
-Estudio de 44 pedidos de lonas; ocho pedidos escaneados y sus planteamientos y DWG revisados. Todavía no hay modelo implementado. Evidencia y discrepancias en [system-dock.md](./system-dock.md).
+Estudio de 44 pedidos de lonas; ocho pedidos escaneados y sus planteamientos y DWG revisados. El modelo ya está en la web, junto con Puertas. Evidencia y discrepancias en [system-dock.md](./system-dock.md).
 
 | Código | Pregunta | Situación mientras no se conteste |
 | --- | --- | --- |
