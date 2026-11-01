@@ -1004,9 +1004,14 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
 // Lleva al campo que falta: el que tiene la misma etiqueta (regla del nombre único) o, si
 // no, el primero marcado. La tela es del pedido y está arriba, en su buscador.
 function focusMissingField(origin: HTMLElement, item: { field: string; label: string }) {
+  const card = origin.closest('.awning-column');
   const target = item.field === 'fabric'
     ? document.querySelector<HTMLElement>('.order-header .fabric-combobox input')
-    : findMissingControl(origin.closest('.awning-column'), item.label);
+    : item.field === 'fabricRollWidth'
+      ? card?.querySelector<HTMLElement>('[data-fabric-width="primary"] input[type="number"]') || document.querySelector<HTMLElement>('.order-header [data-fabric-width="primary"] input[type="number"]')
+      : item.field === 'valanceRollWidth'
+        ? card?.querySelector<HTMLElement>('[data-fabric-width="valance"] input[type="number"]')
+        : findMissingControl(card, item.label);
   if (!target) return;
   target.scrollIntoView({ behavior: 'smooth', block: 'center' });
   target.focus({ preventScroll: true });

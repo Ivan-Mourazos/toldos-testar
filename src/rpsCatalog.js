@@ -1,6 +1,7 @@
 import sql from 'mssql';
 import { config } from './config.js';
 import { rankFabricMatches } from './domain/fabricSearch.js';
+import { inferRollWidth, inferFabricDetails } from './domain/fabricRps.js';
 
 let poolPromise;
 let fabricCache = null;
@@ -202,6 +203,7 @@ async function loadRpsFabrics() {
       code: String(row.code || '').trim(),
       description: String(row.description || '').trim(),
       width: inferRollWidth(row.code, row.unitCode),
+      ...inferFabricDetails(row),
       family: String(row.family || '').trim(),
       subfamily: String(row.subfamily || '').trim()
     }));
@@ -221,13 +223,6 @@ export async function closeRpsCatalog() {
   const pool = await poolPromise.catch(() => null);
   poolPromise = null;
   if (pool) await pool.close();
-}
-
-function inferRollWidth(code, unitCode) {
-  const codeMatch = /P(\d{2,3})$/i.exec(String(code || '').trim());
-  if (codeMatch) return Number(codeMatch[1]);
-  const unitMatch = /ML(\d{2,3})/i.exec(String(unitCode || '').trim());
-  return unitMatch ? Number(unitMatch[1]) : 120;
 }
 
 function normalizeOrderCode(value) {

@@ -1,14 +1,15 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Check, Search, X } from 'lucide-react';
-import { fabricSelectionLabel, serializeFabricSelection } from '../../domain/fabricCatalog.js';
+import { fabricSelectionLabel, resolveFabric, serializeFabricSelection } from '../../domain/fabricCatalog.js';
 import { useFloatingMenu } from '../hooks/useFloatingMenu';
 import { ReadPair, useReadMode } from './ReadMode';
+import { NumberField } from './NumberField';
 
 type FabricOption = {
   code: string;
   description: string;
-  width: number;
+  width: number | null;
   material?: string;
   family?: string;
   subfamily?: string;
@@ -86,7 +87,13 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
     }
   }
 
-  if (reading) return <ReadPair label={label} value={value ? fabricSelectionLabel(value) : readEmptyAs} />;
+  const selectedFabric = resolveFabric(value);
+  const needsRollWidth = selectedFabric && !resolveFabric(selectedFabric.code)?.width;
+  const widthLabel = label === 'Tela bamba' ? 'Ancho de rollo de bamba (cm)' : 'Ancho de rollo (cm)';
+  if (reading) return <>
+    <ReadPair label={label} value={value ? fabricSelectionLabel(value) : readEmptyAs} />
+    {needsRollWidth && <ReadPair label={widthLabel} value={selectedFabric.width ? selectedFabric.width.toLocaleString('es-ES') : 'Sin indicar'} />}
+  </>;
 
   function choose(option: FabricOption) {
     setTyped(false);
@@ -107,7 +114,7 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
   const unchosen = typed && !value && Boolean(query.trim());
 
   return (
-    <div ref={rootRef} className={`field fabric-combobox${open ? ' is-open' : ''}${disabled ? ' is-disabled' : ''}${missing || (unchosen && !open) ? ' is-missing' : ''}`}>
+    <div ref={rootRef} data-fabric-width={label === 'Tela bamba' ? 'valance' : 'primary'} className={`field fabric-combobox${open ? ' is-open' : ''}${disabled ? ' is-disabled' : ''}${missing || (unchosen && !open) ? ' is-missing' : ''}`}>
       <span id={labelId}>{label}</span>
       {/* En solo lectura (Revisión) la tela se lee entera: dentro del buscador se cortaba
           a "ACRI…" y el revisor no podía comprobarla. */}
@@ -159,6 +166,12 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
         )}
       </div>}
       {unchosen && !open && <small className="fabric-unchosen-note" role="status">Sin elegir: pulsa una tela de la lista</small>}
+      {needsRollWidth && <>
+        {!selectedFabric.width && <small className="fabric-unchosen-note" role="alert">Ancho de rollo desconocido. Indícalo para poder calcular.</small>}
+        {disabled ? <ReadPair label={widthLabel} value={selectedFabric.width ? selectedFabric.width.toLocaleString('es-ES') : 'Sin indicar'} /> : <NumberField
+          label={widthLabel} value={selectedFabric.width} min={0.1} step={0.1} missing={!selectedFabric.width}
+          onChange={(width) => onChange(serializeFabricSelection({ ...selectedFabric, width }))} />}
+      </>}
       {open && createPortal(
         <div ref={menuRef} id={listId} className="fabric-options fabric-options-portal" style={menuStyle} role="listbox">
           {loading && <div className="fabric-option-state">Buscando en RPSNext…</div>}
@@ -166,7 +179,7 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
           {!loading && options.map((option) => (
             <button key={option.code} type="button" className="fabric-option" role="option" onClick={() => choose(option)}>
               <span><strong>{option.code}</strong><small>{option.description}</small></span>
-              <span className="fabric-option-meta">{option.width} cm<Check aria-hidden="true" /></span>
+              <span className="fabric-option-meta">{option.width ? `${option.width.toLocaleString('es-ES')} cm` : 'Ancho sin indicar'}<Check aria-hidden="true" /></span>
             </button>
           ))}
         </div>,

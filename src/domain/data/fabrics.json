@@ -459,7 +459,8 @@
     "description": "ACR DERBY",
     "width": 120,
     "material": "ACR",
-    "color": "DERBY"
+    "color": "DERBY",
+    "inactive": true
   },
   {
     "code": "ACRDOC001P120",
@@ -1115,7 +1116,7 @@
   {
     "code": "ACRRES2296P153",
     "description": "ACR RESIN AVENA",
-    "width": 120,
+    "width": 153,
     "material": "ACR RES",
     "color": "AVENA"
   },
@@ -1124,7 +1125,8 @@
     "description": "ACR RESIN AZUL",
     "width": 120,
     "material": "ACR RES",
-    "color": "AZUL"
+    "color": "AZUL",
+    "inactive": true
   },
   {
     "code": "ACRRES2038P120",
@@ -1171,14 +1173,14 @@
   {
     "code": "ACRRESMRROP153",
     "description": "ACR RESIN MARRON",
-    "width": 120,
+    "width": 153,
     "material": "ACR RES",
     "color": "MARRON"
   },
   {
     "code": "ACRRES2050P153",
     "description": "ACR RESIN NARANJA",
-    "width": 120,
+    "width": 153,
     "material": "ACR RES",
     "color": "NARANJA"
   },
@@ -1192,14 +1194,14 @@
   {
     "code": "ACRRES2979P153",
     "description": "ACR RESIN PERLA",
-    "width": 120,
+    "width": 153,
     "material": "ACR RES",
     "color": "PERLA"
   },
   {
     "code": "ACRRESRIOJP153",
     "description": "ACR RESIN RIOJA",
-    "width": 120,
+    "width": 153,
     "material": "ACR RES",
     "color": "RIOJA"
   },
@@ -1220,7 +1222,7 @@
   {
     "code": "ACRRES2821P153",
     "description": "ACR RESIN SILVER",
-    "width": 120,
+    "width": 153,
     "material": "ACR RES",
     "color": "SILVER"
   },
@@ -1234,7 +1236,7 @@
   {
     "code": "ACRRESVAINP153",
     "description": "ACR RESIN VAINILLA",
-    "width": 120,
+    "width": 153,
     "material": "ACR RES",
     "color": "VAINILLA"
   },
@@ -1612,16 +1614,18 @@
   {
     "code": "CRISTATP140650",
     "description": "CRISTAL TRANSP 650 MICRAS",
-    "width": 140,
+    "width": null,
     "material": "CRISTAL",
-    "color": "TRANSP"
+    "color": "TRANSP",
+    "inactive": true
   },
   {
     "code": "PLASCHP200300",
     "description": "PLASTICO CON HILO",
-    "width": 200,
+    "width": null,
     "material": "CRISTAL",
-    "color": "CON HILO"
+    "color": "CON HILO",
+    "inactive": true
   },
   {
     "code": "ALPHAAM03P250",
@@ -1677,28 +1681,32 @@
     "description": "PVC 580 CREMA",
     "width": 250,
     "material": "PVC 580",
-    "color": "CREMA"
+    "color": "CREMA",
+    "inactive": true
   },
   {
     "code": "STPLUSGR37P250",
     "description": "PVC 580 GRIS 7037",
     "width": 250,
     "material": "PVC 580",
-    "color": "GRIS 096"
+    "color": "GRIS 096",
+    "inactive": true
   },
   {
     "code": "STPLUSGR38P250",
     "description": "PVC 580 GRIS 7038",
     "width": 250,
     "material": "PVC 580",
-    "color": "GRIS 095"
+    "color": "GRIS 095",
+    "inactive": true
   },
   {
     "code": "STPLUSMA13P250",
     "description": "PVC 580 MARFIL",
     "width": 250,
     "material": "PVC 580",
-    "color": "MARFIL"
+    "color": "MARFIL",
+    "inactive": true
   },
   {
     "code": "ALPHAMR04P250",
@@ -1726,14 +1734,16 @@
     "description": "PVC 580 PLATA",
     "width": 250,
     "material": "PVC 580",
-    "color": "PLATA"
+    "color": "PLATA",
+    "inactive": true
   },
   {
     "code": "STPLUSRO02P250",
     "description": "PVC 580 ROJO",
     "width": 250,
     "material": "PVC 580",
-    "color": "ROJO"
+    "color": "ROJO",
+    "inactive": true
   },
   {
     "code": "ALPHAVE26P250",
@@ -1754,7 +1764,8 @@
     "description": "PVC 650 AMARILLO 1021",
     "width": 250,
     "material": "",
-    "color": "AMARILLO 1021"
+    "color": "AMARILLO 1021",
+    "inactive": true
   },
   {
     "code": "G650AZ15P250",
@@ -1768,7 +1779,8 @@
     "description": "PVC 650 AZUL 5032",
     "width": 250,
     "material": "",
-    "color": "AZUL 5032"
+    "color": "AZUL 5032",
+    "inactive": true
   },
   {
     "code": "G650AZEUP250",
@@ -1780,9 +1792,10 @@
   {
     "code": "LAC640AZ15P300",
     "description": "PVC 650 AZUL EUROPA",
-    "width": 250,
+    "width": 300,
     "material": "PVC 650",
-    "color": "AZUL EUROPA"
+    "color": "AZUL EUROPA",
+    "inactive": true
   },
   {
     "code": "LAC640BL10P250",
@@ -1810,7 +1823,8 @@
     "description": "PVC 650 GRIS  7001",
     "width": 250,
     "material": "PVC 650",
-    "color": "GRIS  7001"
+    "color": "GRIS  7001",
+    "inactive": true
   },
   {
     "code": "G650GR38P250",
@@ -1824,7 +1838,8 @@
     "description": "PVC 650 GRIS 7024",
     "width": 250,
     "material": "PVC 650",
-    "color": "GRIS 7024"
+    "color": "GRIS 7024",
+    "inactive": true
   },
   {
     "code": "G650GR30P250",
@@ -1845,14 +1860,16 @@
     "description": "PVC 650 GRIS 7060",
     "width": 250,
     "material": "PVC 650",
-    "color": "GRIS 7060"
+    "color": "GRIS 7060",
+    "inactive": true
   },
   {
     "code": "B8000GRALP250",
     "description": "PVC 650 GRIS ALUMINIO",
     "width": 250,
     "material": "PVC 650",
-    "color": "GRIS ALUMINIO"
+    "color": "GRIS ALUMINIO",
+    "inactive": true
   },
   {
     "code": "GAMAM2AM03P250",
@@ -1936,28 +1953,32 @@
     "description": "PVC 650 MARFIL",
     "width": 250,
     "material": "PVC 650",
-    "color": "MARFIL"
+    "color": "MARFIL",
+    "inactive": true
   },
   {
     "code": "B8000MR17P250",
     "description": "PVC 650 MARRON",
     "width": 250,
     "material": "PVC 650",
-    "color": "MARRON"
+    "color": "MARRON",
+    "inactive": true
   },
   {
     "code": "B8000NARJP250",
     "description": "PVC 650 NARANJA",
     "width": 250,
     "material": "PVC 650",
-    "color": "NARANJA"
+    "color": "NARANJA",
+    "inactive": true
   },
   {
     "code": "LAC640NA04P300",
     "description": "PVC 650 NARANJA",
-    "width": 250,
+    "width": 300,
     "material": "PVC 650",
-    "color": "NARANJA RAL"
+    "color": "NARANJA RAL",
+    "inactive": true
   },
   {
     "code": "G650NEGRP250",
@@ -1969,16 +1990,18 @@
   {
     "code": "LAC640NE05P300",
     "description": "PVC 650 NEGRO",
-    "width": 250,
+    "width": 300,
     "material": "PVC 650",
-    "color": "NEGRO"
+    "color": "NEGRO",
+    "inactive": true
   },
   {
     "code": "G650ROJOP250",
     "description": "PVC 650 ROJO",
     "width": 250,
     "material": "PVC 650",
-    "color": "ROJO"
+    "color": "ROJO",
+    "inactive": true
   },
   {
     "code": "G650VA23P250",
@@ -1990,7 +2013,7 @@
   {
     "code": "G650VE26P300",
     "description": "PVC 650 VERDE 6026",
-    "width": 250,
+    "width": 300,
     "material": "PVC 650",
     "color": "VERDE 6026"
   },
@@ -1999,33 +2022,35 @@
     "description": "SEDOSOL 500 MARRON",
     "width": 300,
     "material": "SEDOSOL 500",
-    "color": "MARRON"
+    "color": "MARRON",
+    "inactive": true
   },
   {
     "code": "SOLTIS86BEIGP177",
     "description": "SOLTIS 86 BEIGE",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 86",
     "color": "BEIGE"
   },
   {
     "code": "SOLTIS86BLANP177",
     "description": "SOLTIS 86 BLANCO",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 86",
-    "color": "BLANCO"
+    "color": "BLANCO",
+    "inactive": true
   },
   {
     "code": "SOLTIS86NEGRP270",
     "description": "SOLTIS 86 NEGRO",
-    "width": 267,
+    "width": 270,
     "material": "SOLTIS 86",
     "color": "NEGRO"
   },
   {
     "code": "SOLTIS86SALMP177",
     "description": "SOLTIS 86 SALMON",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 86",
     "color": "SALMON"
   },
@@ -2041,84 +2066,91 @@
     "description": "SOLTIS 92  BEIGE-ARENA",
     "width": 267,
     "material": "SOLTIS 92",
-    "color": "BEIGE-ARENA"
+    "color": "BEIGE-ARENA",
+    "inactive": true
   },
   {
     "code": "SOLTIS9250HAP177",
     "description": "SOLTIS 92  HABANA",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
-    "color": "HABANA"
+    "color": "HABANA",
+    "inactive": true
   },
   {
     "code": "SOLTIS920268P177",
     "description": "SOLTIS 92 50268",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
     "color": ""
   },
   {
     "code": "SOLTIS92AMCLP177",
     "description": "SOLTIS 92 AMARILLO LIMON",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
-    "color": "AMARILLO LIMON"
+    "color": "AMARILLO LIMON",
+    "inactive": true
   },
   {
     "code": "SOLTIS92ARENP177",
     "description": "SOLTIS 92 ARENA",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
-    "color": "ARENA"
+    "color": "ARENA",
+    "inactive": true
   },
   {
     "code": "SOLTIS92AZULP177",
     "description": "SOLTIS 92 AZUL",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
-    "color": "AZUL"
+    "color": "AZUL",
+    "inactive": true
   },
   {
     "code": "SOLTIS92CAFEP177",
     "description": "SOLTIS 92 CAFÉ",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
     "color": "CAFE"
   },
   {
     "code": "SOLTIS92GRMEP177",
     "description": "SOLTIS 92 GRIS MEDIO",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
-    "color": "GRIS MEDIO"
+    "color": "GRIS MEDIO",
+    "inactive": true
   },
   {
     "code": "SOLTIS92GROSP177",
     "description": "SOLTIS 92 GRIS OSCURO",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
     "color": "GRIS OSCURO"
   },
   {
     "code": "SOLTIS92MRROP177",
     "description": "SOLTIS 92 MARRON",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
     "color": "MARRON"
   },
   {
     "code": "SOLTIS92NEGRP177",
     "description": "SOLTIS 92 NEGRO",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
     "color": "NEGRO"
   },
   {
     "code": "SOLTIS92NUBP177",
     "description": "SOLTIS 92 NUBE",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
-    "color": "NUBE"
+    "color": "NUBE",
+    "inactive": true
   },
   {
     "code": "SOLTIS92PL/BP267",
@@ -2130,28 +2162,28 @@
   {
     "code": "SOLTIS92ROJOP177",
     "description": "SOLTIS 92 ROJO",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
     "color": "ROJO"
   },
   {
     "code": "SOLTIS922821P177",
     "description": "SOLTIS 92 SILVER",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
     "color": "SILVER"
   },
   {
     "code": "SOLTIS92VECLP177",
     "description": "SOLTIS 92 VERDE",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
     "color": "VERDE"
   },
   {
     "code": "SOLTIS92VEMAP177",
     "description": "SOLTIS 92 VERDE MANZANA",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
     "color": "VERDE MANZANA"
   },
@@ -2202,19 +2234,21 @@
     "description": "SOLTIS 99 ARENA",
     "width": 267,
     "material": "SOLTIS 99",
-    "color": "ARENA"
+    "color": "ARENA",
+    "inactive": true
   },
   {
     "code": "SOLTIS99AZREP177",
     "description": "SOLTIS 99 AZUL REAL",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 99",
-    "color": "AZUL REAL"
+    "color": "AZUL REAL",
+    "inactive": true
   },
   {
     "code": "SOLTIS99BLANP177",
     "description": "SOLTIS 99 BLANCO",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 99",
     "color": "BLANCO"
   },
@@ -2223,40 +2257,41 @@
     "description": "SOLTIS 99 BLANCO",
     "width": 267,
     "material": "SOLTIS 99",
-    "color": "BLANCO"
+    "color": "BLANCO",
+    "inactive": true
   },
   {
     "code": "SOLTIS99CRCLP177",
     "description": "SOLTIS 99 CREMA CLARO",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 99",
     "color": "CREMA CLARO"
   },
   {
     "code": "SOLTIS99GRCLP270",
     "description": "SOLTIS 99 GRIS CLARO",
-    "width": 267,
+    "width": 270,
     "material": "SOLTIS 99",
     "color": "GRIS CLARO"
   },
   {
     "code": "SOLTIS99GROSP177",
     "description": "SOLTIS 99 GRIS OSCURO",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 99",
     "color": "GRIS OSCURO"
   },
   {
     "code": "SOLTIS99NATUP177",
     "description": "SOLTIS 99 NATURAL",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 99",
     "color": "NATURAL"
   },
   {
     "code": "SOLTIS99SALMP177",
     "description": "SOLTIS 99 SALMON",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 99",
     "color": "SALMON"
   },
@@ -2273,5 +2308,6039 @@
     "width": 120,
     "material": "ACR",
     "color": "ROJO"
+  },
+  {
+    "code": "4539GRCLP152",
+    "description": "LONA 4539 F VIDRIO-POLIURETANO 455GR M-0:GRIS:P152",
+    "width": 152,
+    "material": "ESPECIALES",
+    "color": "GRIS"
+  },
+  {
+    "code": "4591ALU",
+    "description": "LONA 4591 FIBRAVIDRIO FIBREGLASS",
+    "width": 150,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "4591ALUALUMP150",
+    "description": "LONA 4591 FIBRAVIDRIO FIBREGLASS 500GR. :ALUMINIO :150 AN",
+    "width": 150,
+    "material": "PLASTICA (LONA)",
+    "color": "ALUMINIO"
+  },
+  {
+    "code": "824",
+    "description": "LONA ALGODON 824 CAQUI MILITAR",
+    "width": null,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "824VEKAP150",
+    "description": "LONA ALG 824 CAQUI MILITAR:VERDE KAKI-OTAN :150 AN",
+    "width": 150,
+    "material": "ESPECIALES",
+    "color": "VERDE KAKI-OTAN"
+  },
+  {
+    "code": "824VEKAP163",
+    "description": "LONA ALGODON 824 CAQUI MILITAR  : KAKI-OTAN :163",
+    "width": 163,
+    "material": "ESPECIALES",
+    "color": "KAKI-OTAN"
+  },
+  {
+    "code": "824VEKAP200",
+    "description": "LONA ALG. 824 CAQUI MILITAR:VERDE KAKI-OTAN:200 AN",
+    "width": 200,
+    "material": "ESPECIALES",
+    "color": "VERDE KAKI-OTAN"
+  },
+  {
+    "code": "826",
+    "description": "LONA ALGODON 826 MILITAR (ASIENTOS)",
+    "width": null,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "826VEKAP150",
+    "description": "LONA ALG 826 MILITAR (ASIENTOS) :VERDE KAKI: 150AN",
+    "width": 150,
+    "material": "ESPECIALES",
+    "color": "VERDE KAKI"
+  },
+  {
+    "code": "860",
+    "description": "LONA 860 ALG 525",
+    "width": 150,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "860AZCLP150",
+    "description": "LONA 860 ALG 525:AZUL CLARO:150 AN",
+    "width": 150,
+    "material": "ESPECIALES",
+    "color": "AZUL CLARO"
+  },
+  {
+    "code": "860NARJP150",
+    "description": "LONA 860 ALG 525  :NARANJA :150 AN",
+    "width": 150,
+    "material": "ESPECIALES",
+    "color": "NARANJA"
+  },
+  {
+    "code": "860VECLP150",
+    "description": "LONA 860 ALG 525  :VERDE CLARO :150 AN",
+    "width": 150,
+    "material": "ESPECIALES",
+    "color": "VERDE CLARO"
+  },
+  {
+    "code": "860VEKAP150",
+    "description": "LONA 860 ALG 525:VERDE KAKI-OTAN:150 AN",
+    "width": 150,
+    "material": "ESPECIALES",
+    "color": "VERDE KAKI-OTAN"
+  },
+  {
+    "code": "ACLIGHT",
+    "description": "LONA ACRILICA MASACRIL LIGHT",
+    "width": null,
+    "material": "ACR",
+    "color": ""
+  },
+  {
+    "code": "ACLIGHT214370P",
+    "description": "LONA ACRILICA MASACRIL LIGHT :MARFIL:70 AN",
+    "width": 70,
+    "material": "ACR",
+    "color": "MARFIL"
+  },
+  {
+    "code": "ACLIGHT2143P70",
+    "description": "LONA ACRILICA MASACRIL LIGHT :MARFIL :70 AN",
+    "width": 70,
+    "material": "ACR",
+    "color": "MARFIL"
+  },
+  {
+    "code": "ACLIGHT2143P90",
+    "description": "LONA ACRILICA MASACRIL LIGHT :MARFIL :90 AN",
+    "width": 90,
+    "material": "ACR",
+    "color": "MARFIL"
+  },
+  {
+    "code": "ACLIGHT2143P92",
+    "description": "LONA ACRILICA MASACRIL LIGHT :MARFIL :92 AN",
+    "width": 92,
+    "material": "ACR",
+    "color": "MARFIL"
+  },
+  {
+    "code": "ACMOSAIK",
+    "description": "LONA ACRILICA MASACRIL MOSAIK",
+    "width": 120,
+    "material": "ACR",
+    "color": ""
+  },
+  {
+    "code": "ACMOSAIK20193P120",
+    "description": "LONA ACRILICA MASACRIL MOSAIK:20193 EMPORIO:120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": ""
+  },
+  {
+    "code": "ACOLCHA",
+    "description": "ACOLCHADO",
+    "width": 150,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "ACRDOC",
+    "description": "LONA ACRILICO DOCRIL",
+    "width": 120,
+    "material": "ACR",
+    "color": ""
+  },
+  {
+    "code": "ACRDOC003P120",
+    "description": "LONA ACRILICO DOCRIL :COLOR 003 AMARILLO :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "003 AMARILLO"
+  },
+  {
+    "code": "ACRDOC00431P120",
+    "description": "LONA ACRILICO DOCRIL:DOCRIL 00431:120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "DOCRIL 00431"
+  },
+  {
+    "code": "ACRDOC039P120",
+    "description": "LONA ACRILICO DOCRIL :COLOR 039 NEGRO :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "039 NEGRO"
+  },
+  {
+    "code": "ACRDOC041P120",
+    "description": "LONA ACRILICO DOCRIL:DOCRIL 041 - SILVER:120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "DOCRIL 041 - SILVER"
+  },
+  {
+    "code": "ACRDOC042P120",
+    "description": "LONA ACRILICO DOCRIL :COLOR 042 CREMA :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "042 CREMA"
+  },
+  {
+    "code": "ACRDOC085P153",
+    "description": "LONA ACRILICO DOCRIL :COLOR 085 SEDA :153 AN",
+    "width": 153,
+    "material": "ACR",
+    "color": "085 SEDA"
+  },
+  {
+    "code": "ACRDOC160DP120",
+    "description": "LONA ACRILICO DOCRIL :COLOR 160 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "160"
+  },
+  {
+    "code": "ACRDOC2024P120",
+    "description": "LONA ACRILICO DOCRIL:ANIS COLOR 064:120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "ANIS COLOR 064"
+  },
+  {
+    "code": "ACRDOC80P120",
+    "description": "LONA ACRILICO DOCRIL :COLOR 80 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "80"
+  },
+  {
+    "code": "ACRILDEAMVEP120",
+    "description": "LONA ACRILICA DESCATALOGADA :AMARILLO-VERDE :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "AMARILLO-VERDE"
+  },
+  {
+    "code": "ACRILDENAROP100",
+    "description": "LONA ACRILICA DESCATALOGADA :NARANJA-ROJO :100 AN",
+    "width": 100,
+    "material": "ACR",
+    "color": "NARANJA-ROJO"
+  },
+  {
+    "code": "ACRILI",
+    "description": "LONA ACRILICA MASACRIL 300",
+    "width": 120,
+    "material": "ACR",
+    "color": ""
+  },
+  {
+    "code": "ACRILI1060P153",
+    "description": "LONA ACRILICA MASACRIL 300 :CARBON 1060 :153AN",
+    "width": 153,
+    "material": "ACR",
+    "color": "CARBON 1060"
+  },
+  {
+    "code": "ACRILI1452P120",
+    "description": "LONA ACRILICA MASACRIL 300:TRAVIATA 1452:120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "TRAVIATA 1452"
+  },
+  {
+    "code": "ACRILI1470P153",
+    "description": "LONA ACRILICA MASACRIL 300 :TOAST 1470 :153 AN",
+    "width": 153,
+    "material": "ACR",
+    "color": "TOAST 1470"
+  },
+  {
+    "code": "ACRILI1477P120",
+    "description": "LONA ACRILICA MASACRIL 300 :1477 LAGOON X :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": ""
+  },
+  {
+    "code": "ACRILI1478P120",
+    "description": "LONA ACRILICA MASACRIL 300 :1478 CARBON X :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": ""
+  },
+  {
+    "code": "ACRILI1483P120",
+    "description": "LONA ACRILICA MASACRIL 300 :TIJUANA 1483 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "TIJUANA 1483"
+  },
+  {
+    "code": "ACRILI1484P120",
+    "description": "LONA ACRILICA MASACRIL 300:JALISCO:120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "JALISCO"
+  },
+  {
+    "code": "ACRILI2018P200",
+    "description": "LONA ACRILICA MASACRIL 300:AZUL 2018 :200 AN",
+    "width": 200,
+    "material": "ACR",
+    "color": "AZUL 2018"
+  },
+  {
+    "code": "ACRILI2023P120",
+    "description": "LONA ACRILICA MASACRIL 300 :ALASKA 2023 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "ALASKA 2023"
+  },
+  {
+    "code": "ACRILI2038P153",
+    "description": "LONA ACRILICA MASACRIL 300:BEIGE:153AN",
+    "width": 153,
+    "material": "ACR",
+    "color": "BEIGE"
+  },
+  {
+    "code": "ACRILI2063P120",
+    "description": "LONA ACRILICA MASACRIL 300 :CAPRI 2063 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "CAPRI 2063"
+  },
+  {
+    "code": "ACRILI2103P120",
+    "description": "LONA ACRILICA MASACRIL 300 :GRIS N 2103 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "GRIS N 2103"
+  },
+  {
+    "code": "ACRILI2116P120",
+    "description": "LONA ACRILICA MASACRIL 300 :BOMBAY 2116 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "BOMBAY 2116"
+  },
+  {
+    "code": "ACRILI2118P120",
+    "description": "LONA ACRILICA MASACRIL 300 :LILA 2118 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "LILA 2118"
+  },
+  {
+    "code": "ACRILI2120P120",
+    "description": "LONA ACRILICA MASACRIL 300 :KENIA :120",
+    "width": 120,
+    "material": "ACR",
+    "color": "KENIA"
+  },
+  {
+    "code": "ACRILI2129P120",
+    "description": "LONA ACRILICA MASACRIL 300 :TURKIS 2129 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "TURKIS 2129"
+  },
+  {
+    "code": "ACRILI2141P120",
+    "description": "LONA ACRILICA MASCRIL 300 :MAIZ 2141 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "MAIZ 2141"
+  },
+  {
+    "code": "ACRILI2143P153",
+    "description": "LONA ACRILICA MASACRIL 300 :MARFIL :153 AN",
+    "width": 153,
+    "material": "ACR",
+    "color": "MARFIL"
+  },
+  {
+    "code": "ACRILI2148P120",
+    "description": "LONA ACRILICA MASACRIL 300 :MARRON-BEIGE 2148 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "MARRON-BEIGE 2148"
+  },
+  {
+    "code": "ACRILI2151P120",
+    "description": "LONA ACRILICA MASACRIL 300 :MEXICO 2151 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "MEXICO 2151"
+  },
+  {
+    "code": "ACRILI2170P153",
+    "description": "LONA ACRILICA MASACRIL 300 :NEGRO :153 AN",
+    "width": 153,
+    "material": "ACR",
+    "color": "NEGRO"
+  },
+  {
+    "code": "ACRILI2170P200",
+    "description": "LONA ACRILICA MASACRIL 300 :NEGRO 2170 :200 AN",
+    "width": 200,
+    "material": "ACR",
+    "color": "NEGRO 2170"
+  },
+  {
+    "code": "ACRILI2191P120",
+    "description": "LONA ACRILICA MASACRIL 300 :ORLANDO 2191 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "ORLANDO 2191"
+  },
+  {
+    "code": "ACRILI2201P120",
+    "description": "LONA ACRILICA MASACRIL 300:PERU 2201:120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "PERU 2201"
+  },
+  {
+    "code": "ACRILI2221P120",
+    "description": "LONA ACRILICA MASACRIL 300 :SALMON 2221 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "SALMON 2221"
+  },
+  {
+    "code": "ACRILI2223P120",
+    "description": "LONA ACRILICA MASACRIL 300 :SIENA :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "SIENA"
+  },
+  {
+    "code": "ACRILI2228P120",
+    "description": "LONA ACRILICA MASACRIL 300 :TEIDE 2228 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "TEIDE 2228"
+  },
+  {
+    "code": "ACRILI2231P120",
+    "description": "LONA ACRILICA MASACRIL 300 :TAMESIS 2231 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "TAMESIS 2231"
+  },
+  {
+    "code": "ACRILI2233P120",
+    "description": "LONA ACRILICA MASACRIL 300 :TOPACIO 2233 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "TOPACIO 2233"
+  },
+  {
+    "code": "ACRILI2245P240",
+    "description": "LONA ACRILICA MASACRIL 300:VERDE BOTELLA 2177:240 AN",
+    "width": 240,
+    "material": "ACR",
+    "color": "VERDE BOTELLA 2177"
+  },
+  {
+    "code": "ACRILI2247P120",
+    "description": "LONA ACRILICA MASACRIL 300 :MUSGO 2247 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "MUSGO 2247"
+  },
+  {
+    "code": "ACRILI2249P120",
+    "description": "LONA ACRILICA MASACRIL 300 :VERDE X 2249 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "VERDE X 2249"
+  },
+  {
+    "code": "ACRILI2359P120",
+    "description": "LONA ACRILICA MASACRIL 300 :AZUL REAL N 2359 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "AZUL REAL N 2359"
+  },
+  {
+    "code": "ACRILI2360P120",
+    "description": "LONA ACRILICA MASACRIL 300 :AZUL REAL X 2360 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "AZUL REAL X 2360"
+  },
+  {
+    "code": "ACRILI2433P153",
+    "description": "LONA ACRILICA MASACRIL 300 :ACQUAMARINA 2433 :153 AN",
+    "width": 153,
+    "material": "ACR",
+    "color": "ACQUAMARINA 2433"
+  },
+  {
+    "code": "ACRILI2564P120",
+    "description": "LONA ACRILICA MASACRIL 300 :CURAÇAO 2564 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "CURAÇAO 2564"
+  },
+  {
+    "code": "ACRILI2565P120",
+    "description": "LONA ACRILICA MASACRIL 300 :TAHITI 2565 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "TAHITI 2565"
+  },
+  {
+    "code": "ACRILI2566P120",
+    "description": "LONA ACRILICA MASACRIL 300 :HAWAI 2566 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "HAWAI 2566"
+  },
+  {
+    "code": "ACRILI2567P120",
+    "description": "LONA ACRILICA MASACRIL 300 :SAMOA 2567 :120",
+    "width": 120,
+    "material": "ACR",
+    "color": "SAMOA 2567"
+  },
+  {
+    "code": "ACRILI2574P120",
+    "description": "LONA ACRILICA MASACRIL 300 :PISCIS 2574 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "PISCIS 2574"
+  },
+  {
+    "code": "ACRILI2599P120",
+    "description": "LONA ACRILICA MASACRIL 300 :HIERBA 2599 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "HIERBA 2599"
+  },
+  {
+    "code": "ACRILI2612P240",
+    "description": "LONA ACRILICA MASACRIL 300:2612 INDIGO:240 AN",
+    "width": 240,
+    "material": "ACR",
+    "color": ""
+  },
+  {
+    "code": "ACRILI2641P120",
+    "description": "LONA ACRILICA MASACRIL 300 :OCRE X :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "OCRE X"
+  },
+  {
+    "code": "ACRILI2681P120",
+    "description": "LONA ACRILICA MASACRIL 300 :INTEGRAL X :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "INTEGRAL X"
+  },
+  {
+    "code": "ACRILI2808P120",
+    "description": "LONA ACRILICA MASACRIL 300 :GEMINIS 2808 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "GEMINIS 2808"
+  },
+  {
+    "code": "ACRILI2828P153",
+    "description": "LONA ACRILICA MASACRIL 300 :INDIGO 2828 :153 AN",
+    "width": 153,
+    "material": "ACR",
+    "color": "INDIGO 2828"
+  },
+  {
+    "code": "ACRILI2838P120",
+    "description": "LONA ACRILICA MASACRIL 300 :TEXAS 2238 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "TEXAS 2238"
+  },
+  {
+    "code": "ACRILI2921P120",
+    "description": "LONA ACRILICA MASACRIL 300 :BALMORAL 2921 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "BALMORAL 2921"
+  },
+  {
+    "code": "ACRILI2929P120",
+    "description": "LONA ACRILICA MASACRIL 300 :WINDSOR 2929 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "WINDSOR 2929"
+  },
+  {
+    "code": "ACRILI2930P120",
+    "description": "LONA ACRILICA MASACRIL 300 :YORK 2930 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "YORK 2930"
+  },
+  {
+    "code": "ACRILI2962P120",
+    "description": "LONA ACRILICA MASACRIL 300 :PATUM 2962 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "PATUM 2962"
+  },
+  {
+    "code": "ACRILI2964P120",
+    "description": "LONA ACRILICA MASACRIL 300 :COLONIA 2964 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "COLONIA 2964"
+  },
+  {
+    "code": "ACRILI2979P153",
+    "description": "LONA ACRILICA MASACRIL 300 :PERLA 2979 :153 AN",
+    "width": 153,
+    "material": "ACR",
+    "color": "PERLA 2979"
+  },
+  {
+    "code": "ACRILI3001P120",
+    "description": "LONA ACRILICA MASACRIL 300 :MIEL 3001 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "MIEL 3001"
+  },
+  {
+    "code": "ACRILI3027P120",
+    "description": "LONA ACRILICA MASACRIL 300:TRECKING 3027:120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "TRECKING 3027"
+  },
+  {
+    "code": "ACRILI3580P120",
+    "description": "LONA ACRILICA MASACRIL 300 :TWEED AVENA 3580 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "TWEED AVENA 3580"
+  },
+  {
+    "code": "ACRILI3602P153",
+    "description": "LONA ACRILICA MASACRIL 300 :GRAFITO 3602 :153 AN",
+    "width": 153,
+    "material": "ACR",
+    "color": "GRAFITO 3602"
+  },
+  {
+    "code": "ACRILI3605P153",
+    "description": "LONA ACRILICA MASACRIL 300 :PIEDRA 3605 :153 AN",
+    "width": 153,
+    "material": "ACR",
+    "color": "PIEDRA 3605"
+  },
+  {
+    "code": "ACRILI8488P153",
+    "description": "LONA ACRILICA MASACRIL 300 :ANTRACITA :153AN",
+    "width": 153,
+    "material": "ACR",
+    "color": "ANTRACITA"
+  },
+  {
+    "code": "ACRILI8573P120",
+    "description": "LONA ACRILICA MASACRIL 300 :TWEED VERDE :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "TWEED VERDE"
+  },
+  {
+    "code": "ACRILI8645P153",
+    "description": "LONA ACRILICA MASACRIL 300 :TERRACOTA 8645 :153AN",
+    "width": 153,
+    "material": "ACR",
+    "color": "TERRACOTA 8645"
+  },
+  {
+    "code": "ACRILI8645P200",
+    "description": "LONA ACRILICA MASACRIL 300 :TERRACOTA 8645 :200 AN",
+    "width": 200,
+    "material": "ACR",
+    "color": "TERRACOTA 8645"
+  },
+  {
+    "code": "ACRILIDESC",
+    "description": "LONA ACRILICA MASACRIL DESCATALOGADA",
+    "width": 120,
+    "material": "ACR",
+    "color": ""
+  },
+  {
+    "code": "ACRILIVISOP153",
+    "description": "LONA ACRILICA MASACRIL 300 :VISON 2266 :153AN",
+    "width": 153,
+    "material": "ACR",
+    "color": "VISON 2266"
+  },
+  {
+    "code": "ACRIPVC",
+    "description": "LONA ACRILICA MASACRIL PVC DUO 520Gr.",
+    "width": 204,
+    "material": "ACR",
+    "color": ""
+  },
+  {
+    "code": "ACRIPVC3429P204",
+    "description": "LONA ACRILICA MASACRIL PVC DUO 520Gr. :ADMIRAL/GRIS 3429 :204 AN",
+    "width": 204,
+    "material": "ACR",
+    "color": "ADMIRAL/GRIS 3429"
+  },
+  {
+    "code": "ACRIPVC3482P204",
+    "description": "LONA ACRILICA MASACRIL PVC DUO 520Gr. :BOTELLA 3482 :204 AN",
+    "width": 204,
+    "material": "ACR",
+    "color": "BOTELLA 3482"
+  },
+  {
+    "code": "ACRIPVC3484P204",
+    "description": "LONA ACRILICA MASACRIL PVC DUO 520Gr. :NEGRO/GRIS 3483 :204 AN",
+    "width": 204,
+    "material": "ACR",
+    "color": "NEGRO/GRIS 3483"
+  },
+  {
+    "code": "ACRIPVCAN/GRISP204",
+    "description": "LONA ACRILICA MASACRIL PVC DUO 520Gr.:ANTRACITA/GRIS 3484:204 AN",
+    "width": 204,
+    "material": "ACR",
+    "color": "ANTRACITA/GRIS 3484"
+  },
+  {
+    "code": "ACRIPVCAZMAP204",
+    "description": "LONA ACRILICA MASACRIL PVC DUO 520Gr. :MARINO 3427 :204 AN",
+    "width": 204,
+    "material": "ACR",
+    "color": "MARINO 3427"
+  },
+  {
+    "code": "ACRIPVCGRANP204",
+    "description": "LONA ACRILICA MASACRIL PVC DUO 520Gr. :GRANATE 3423 :204 AN",
+    "width": 204,
+    "material": "ACR",
+    "color": "GRANATE 3423"
+  },
+  {
+    "code": "ACRIPVCMARFP204",
+    "description": "LONA ACRILICA MASACRIL PVC DUO 520Gr.:MARFIL 3481:204 AN",
+    "width": 204,
+    "material": "ACR",
+    "color": "MARFIL 3481"
+  },
+  {
+    "code": "ACRIPVCSILP204",
+    "description": "LONA ACRILICA MASACRIL PVC DUO 520Gr. :SILVER 3480 :204 AN",
+    "width": 204,
+    "material": "ACR",
+    "color": "SILVER 3480"
+  },
+  {
+    "code": "ACRISAT",
+    "description": "LONA ACRILICA SATTLER 290 GR/M2",
+    "width": 120,
+    "material": "ACR",
+    "color": ""
+  },
+  {
+    "code": "ACRISAT14397P120",
+    "description": "LONA ACRILICA SATTLER 290 GR/M2 :314397 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": ""
+  },
+  {
+    "code": "ACRISAT15399P120",
+    "description": "LONA ACRILICA SATTLER 290 GR/M2 :315399 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": ""
+  },
+  {
+    "code": "ACRPLUS",
+    "description": "LONA ACRILICA MASACRIL PLUS  360G/M²",
+    "width": 120,
+    "material": "ACR",
+    "color": ""
+  },
+  {
+    "code": "ACRPLUS2861P120",
+    "description": "LONA ACRILICA MASACRIL PLUS  360G/M²:2861 BLANCO:120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": ""
+  },
+  {
+    "code": "ACRPLUS2996P120",
+    "description": "LONA ACRILICA MASACRIL 360G/M² PLUS :MARFIL 2996 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "MARFIL 2996"
+  },
+  {
+    "code": "ACRRES",
+    "description": "LONA ACRILICA RESINADO 330",
+    "width": 153,
+    "material": "ACR RES",
+    "color": ""
+  },
+  {
+    "code": "ACRRES1470P153",
+    "description": "LONA ACRILICA RESINADO 330 :TOAST 1470 :153 AN",
+    "width": 153,
+    "material": "ACR RES",
+    "color": "TOAST 1470"
+  },
+  {
+    "code": "ACRRES1480P153",
+    "description": "LONA ACRILICA RESINADO 330 :APRICOT 1480 :153 AN",
+    "width": 153,
+    "material": "ACR RES",
+    "color": "APRICOT 1480"
+  },
+  {
+    "code": "ACRRES2013P153",
+    "description": "LONA ACRILICA RESINADO 330 :AMARILLO 8634 :153 AN",
+    "width": 153,
+    "material": "ACR RES",
+    "color": "AMARILLO 8634"
+  },
+  {
+    "code": "ACRRES2018P200",
+    "description": "LONA ACRILICA RESINADO 330:AZUL:200 AN",
+    "width": 200,
+    "material": "ACR RES",
+    "color": "AZUL"
+  },
+  {
+    "code": "ACRRES2038P200",
+    "description": "LONA ACRILICA RESINADO 330 :BEIGE 8765 :200 AN",
+    "width": 200,
+    "material": "ACR RES",
+    "color": "BEIGE 8765"
+  },
+  {
+    "code": "ACRRES2051P153",
+    "description": "LONA ACRILICA RESINADO 330 :ADMIRAL 2449 :153 AN",
+    "width": 153,
+    "material": "ACR RES",
+    "color": "ADMIRAL 2449"
+  },
+  {
+    "code": "ACRRES2065P153",
+    "description": "LONA ACRILICA RESINADO 330 :TEJA 8733 :153 AN",
+    "width": 153,
+    "material": "ACR RES",
+    "color": "TEJA 8733"
+  },
+  {
+    "code": "ACRRES2145P153",
+    "description": "LONA ACRILICA RESINADO 330 :MARINO 2413 :153AN",
+    "width": 153,
+    "material": "ACR RES",
+    "color": "MARINO 2413"
+  },
+  {
+    "code": "ACRRES2226P120",
+    "description": "LONA ACRILICA RESINADO 330:SIROCO 2075:120 AN",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "SIROCO 2075"
+  },
+  {
+    "code": "ACRRES2242P153",
+    "description": "LONA ACRILICA RESINADO 330 :VERDE 8280 :153AN",
+    "width": 153,
+    "material": "ACR RES",
+    "color": "VERDE 8280"
+  },
+  {
+    "code": "ACRRES2250P153",
+    "description": "LONA ACRILICA RESINADO 330 :VISON 2452 :153 AN",
+    "width": 153,
+    "material": "ACR RES",
+    "color": "VISON 2452"
+  },
+  {
+    "code": "ACRRES2316P120",
+    "description": "LONA ACRILICA RESINADO 330 :CAFE 2422 :120 AN",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "CAFE 2422"
+  },
+  {
+    "code": "ACRRES2403P153",
+    "description": "LONA ACRILICA RESINADO 330 :BEIGE 2403 :153 AN",
+    "width": 153,
+    "material": "ACR RES",
+    "color": "BEIGE 2403"
+  },
+  {
+    "code": "ACRRES2421P153",
+    "description": "LONA ACRILICA RESINADO 330 :GRIS 2421 :153 AN",
+    "width": 153,
+    "material": "ACR RES",
+    "color": "GRIS 2421"
+  },
+  {
+    "code": "ACRRES2596P153",
+    "description": "LONA ACRILICA RESINADO 330 :SEDA 2453 :153 AN",
+    "width": 153,
+    "material": "ACR RES",
+    "color": "SEDA 2453"
+  },
+  {
+    "code": "ACRRES2710P153",
+    "description": "LONA ACRILICA RESINADO 330 :ESP.TWEED VERDE 2710 :153 AN",
+    "width": 153,
+    "material": "ACR RES",
+    "color": "ESP.TWEED VERDE 2710"
+  },
+  {
+    "code": "ACRRES2718P153",
+    "description": "LONA ACRILICA RESINADO 330 :TWEED ROJO 2718 :153 AN",
+    "width": 153,
+    "material": "ACR RES",
+    "color": "TWEED ROJO 2718"
+  },
+  {
+    "code": "ACRRES2746P153",
+    "description": "LONA ACRILICA RESINADO 330:INDIGO 2746:153AN",
+    "width": 153,
+    "material": "ACR RES",
+    "color": "INDIGO 2746"
+  },
+  {
+    "code": "ACRRES3601P120",
+    "description": "LONA ACRILICA RESINADO 330 :COCO 3601 :120 AN",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "COCO 3601"
+  },
+  {
+    "code": "ACRRES3605P153",
+    "description": "LONA ACRILICA RESINADO 330:PIEDRA 3599:153AN",
+    "width": 153,
+    "material": "ACR RES",
+    "color": "PIEDRA 3599"
+  },
+  {
+    "code": "ACRRES8266P120",
+    "description": "LONA ACRILICA RESINADO 330:AZUL 8266:120 AN",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "AZUL 8266"
+  },
+  {
+    "code": "ACRRES8488P153",
+    "description": "LONA ACRILICA RESINADO 330 :ANTRACITA 2461 :153AN",
+    "width": 153,
+    "material": "ACR RES",
+    "color": "ANTRACITA 2461"
+  },
+  {
+    "code": "ACRRESAZMAP200",
+    "description": "LONA ACRILICA RESINADO 330 :MARINO 8725 :200 AN",
+    "width": 200,
+    "material": "ACR RES",
+    "color": "MARINO 8725"
+  },
+  {
+    "code": "ACRRESAZREP120",
+    "description": "LONA ACRILICA RESINADO 330 :AZUL REAL 8276 :120 AN",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "AZUL REAL 8276"
+  },
+  {
+    "code": "ACRRESAZREP153",
+    "description": "LONA ACRILICA RESINADO 330 :AZUL REAL 2423 :153 AN",
+    "width": 153,
+    "material": "ACR RES",
+    "color": "AZUL REAL 2423"
+  },
+  {
+    "code": "ACRRESAZULP153",
+    "description": "LONA ACRILICA RESINADO 330 :AZUL 2401 :153 AN",
+    "width": 153,
+    "material": "ACR RES",
+    "color": "AZUL 2401"
+  },
+  {
+    "code": "ACRRESBLANP153",
+    "description": "LONA ACRILICA RESINADO 330 :BLANCO 2405 :153 AN",
+    "width": 153,
+    "material": "ACR RES",
+    "color": "BLANCO 2405"
+  },
+  {
+    "code": "ACRRESGRANP153",
+    "description": "LONA ACRILICA RESINADO 330 :GRANATE 2407 :153 AN",
+    "width": 153,
+    "material": "ACR RES",
+    "color": "GRANATE 2407"
+  },
+  {
+    "code": "ACRRESGRANP200",
+    "description": "LONA ACRILICA RESINADO 330 :GRANATE 8723 :200 AN",
+    "width": 200,
+    "material": "ACR RES",
+    "color": "GRANATE 8723"
+  },
+  {
+    "code": "ACRRESMARFP153",
+    "description": "LONA ACRILICA RESINADO 330 :MARFIL 2411 :153 AN",
+    "width": 153,
+    "material": "ACR RES",
+    "color": "MARFIL 2411"
+  },
+  {
+    "code": "ACRRESNEGRP150",
+    "description": "LONA ACRILICA RESINADO 330 :NEGRO:150 AN (RECASENS)",
+    "width": 150,
+    "material": "ACR RES",
+    "color": "NEGRO"
+  },
+  {
+    "code": "ACRRESNEGRP153",
+    "description": "LONA ACRILICA RESINADO :NEGRO 2881 :153 AN",
+    "width": 153,
+    "material": "ACR RES",
+    "color": "NEGRO 2881"
+  },
+  {
+    "code": "ACRRESNEGRP200",
+    "description": "LONA ACRILICA RESINADO 330 :NEGRO 8726 :200 AN",
+    "width": 200,
+    "material": "ACR RES",
+    "color": "NEGRO 8726"
+  },
+  {
+    "code": "ACRRESROJOP153",
+    "description": "LONA ACRILICA RESINADO 330 :ROJO 2419 :153AN",
+    "width": 153,
+    "material": "ACR RES",
+    "color": "ROJO 2419"
+  },
+  {
+    "code": "ACRRESSR8287P120",
+    "description": "LONA ACRILICA RESINADO 330 :LEO 8287 :120 AN",
+    "width": 120,
+    "material": "ACR RES",
+    "color": "LEO 8287"
+  },
+  {
+    "code": "ACRRESVEBOP153",
+    "description": "LONA ACRILICA RESINADO 330 :VERDE BOTELLA 2488 :153 AN",
+    "width": 153,
+    "material": "ACR RES",
+    "color": "VERDE BOTELLA 2488"
+  },
+  {
+    "code": "ACTANDEM",
+    "description": "LONA ACRILICA MASACRIL TANDEM",
+    "width": 120,
+    "material": "ACR",
+    "color": ""
+  },
+  {
+    "code": "ACTANDEM8443P120",
+    "description": "LONA ACRILICA MASACRIL TANDEM:8443 MARFIL:120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": ""
+  },
+  {
+    "code": "ACTANDEM8444P120",
+    "description": "LONA ACRILICA MASACRIL TANDEM:8444 INTEGRAL:120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": ""
+  },
+  {
+    "code": "ACTANDEM8453P120",
+    "description": "LONA ACRILICA MASACRIL TANDEM:INTEGRAL 8453 5X5:120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "INTEGRAL 8453 5X5"
+  },
+  {
+    "code": "ACTANDEM8456P120",
+    "description": "LONA ACRILICA MASACRIL TANDEM :BOTELLA 5X5 8456 :120 AN",
+    "width": 120,
+    "material": "ACR",
+    "color": "BOTELLA 5X5 8456"
+  },
+  {
+    "code": "AIRTEXGT7533",
+    "description": "LONA VALMEX AIRTEX GT 7533 ACRILATO L1/1 IG M0",
+    "width": 320,
+    "material": "PLASTICA I.D",
+    "color": ""
+  },
+  {
+    "code": "AIRTEXGT7533P320",
+    "description": "LONA VALMEX AIRTEX GT 7533 ACRILATO L1/1 IG M0 :320 CM",
+    "width": 320,
+    "material": "PLASTICA I.D",
+    "color": ""
+  },
+  {
+    "code": "ALPHA",
+    "description": "LONA ALPHA 1L 580 g/m²",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "ALPHABL03P250",
+    "description": "LONA ALPHA 1L 580 g/m² :BLANCO 9003 :250 AN (580)",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO 9003"
+  },
+  {
+    "code": "ALPHABL03P300",
+    "description": "LONA ALPHA 1L 580 g/m² :BLANCO 9003 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO 9003"
+  },
+  {
+    "code": "ALPHABURDP250",
+    "description": "LONA ALPHA 1L 580 g/m² :BURDEOS 3C-596 :250 AN (580)",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "BURDEOS 3C-596"
+  },
+  {
+    "code": "ALPHACR14P250",
+    "description": "LONA ALPHA 1L 580 g/m²:CREMA RA1014:250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "CREMA RA1014"
+  },
+  {
+    "code": "ALPHARO02P250",
+    "description": "LONA ALPHA 1L 580 g/m²:ROJO RAL3002:250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "ROJO RAL3002"
+  },
+  {
+    "code": "ALPHAVE24P250",
+    "description": "LONA ALPHA 1L 580 g/m² :VERDE 6024 :250 AN (580)",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE 6024"
+  },
+  {
+    "code": "ALU190",
+    "description": "LONA ALUMINIO 190 MICRAS-0,19MM  UV",
+    "width": null,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "ALU190P180",
+    "description": "LONA ALUMINIO 190 MICRAS-0,19MM  UV  :180 AN",
+    "width": 180,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "ALUMIFIBRE",
+    "description": "LONA  ALUMINIZED FIBREGLASS OTEGO 500GR/M²",
+    "width": 100,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "APOLORBLANP150",
+    "description": "LONA APOLO R RESINAPU+FLUOROCARBONO :BLANCO :150 (lumaespa)",
+    "width": 150,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO"
+  },
+  {
+    "code": "B6000P",
+    "description": "LONA B6000 PANAMA 2L 900",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "B6000PGROSP300",
+    "description": "LONA B6000 PANAMA 2L 900:(PARECIDO 7016) GRIS OSCURO 7340: 300AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "(PARECIDO 7016) GRIS OSCURO 7340"
+  },
+  {
+    "code": "B6000PMR17P300",
+    "description": "LONA B6000 PANAMA 2L 900 :MARRON RAL8017 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "MARRON RAL8017"
+  },
+  {
+    "code": "B6000PPLATP300",
+    "description": "LONA B6000 PANAMA 2L 900 :PLATA (9006) :300 AN (neumaticos Soledad)",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "PLATA (9006)"
+  },
+  {
+    "code": "B6353",
+    "description": "LONA B6353 1450GR/M2",
+    "width": 250,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "B6353GRIS250CM",
+    "description": "LONA B6353 1450GR/M2: GRIS 7024: 250 CM",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS 7024"
+  },
+  {
+    "code": "B8103SY",
+    "description": "LONA B8103SY (ASIA) 650 GR. IGNIFUGA M2",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "B8103SYBLANP250",
+    "description": "LONA B8103SY (ASIA) 650 GR. IGNIFUGA M2 :BLANCO :250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO"
+  },
+  {
+    "code": "B8122P/NP300",
+    "description": "LONA B8122 2L 680 M2 :PLATA/NEGRO :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "PLATA/NEGRO"
+  },
+  {
+    "code": "B9060",
+    "description": "LONA B9060 1L 900GRS (PURINES)",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "B9060GRISP300",
+    "description": "LONA B9060 1L 900GRS (PURINES) :GRIS 7264 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS 7264"
+  },
+  {
+    "code": "B9060VEBO300C",
+    "description": "LONA B9060 1L 900GRS (PURINES):VERDE 6158: 300 CM",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE 6158"
+  },
+  {
+    "code": "BACKLIB5",
+    "description": "LONA BACKLIT RETRO BLANCA  510-580 GR",
+    "width": null,
+    "material": "PLASTICA I.D",
+    "color": ""
+  },
+  {
+    "code": "BACKLIB5BLIMP320",
+    "description": "LONA BACKLIT RETRO BLANCA  510-580 GR :320 CM",
+    "width": 320,
+    "material": "PLASTICA I.D",
+    "color": ""
+  },
+  {
+    "code": "BATYLIAWNEGRP270",
+    "description": "LONA BATYLINE AW 600 GR B1 :NEGRO :270 AN",
+    "width": 270,
+    "material": "PLASTICA (LONA)",
+    "color": "NEGRO"
+  },
+  {
+    "code": "BERNIA",
+    "description": "LONA BERNIA  210GR IGN M1",
+    "width": 280,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "BERNIACREMP280",
+    "description": "LONA BERNIA  210GR IGN M1  :CREMA :280 AN",
+    "width": 280,
+    "material": "ESPECIALES",
+    "color": "CREMA"
+  },
+  {
+    "code": "BERNIACRUDP300",
+    "description": "LONA BERNIA  210GR IGN M1  :CRUDO  :300 (BE-200)",
+    "width": 300,
+    "material": "ESPECIALES",
+    "color": "CRUDO"
+  },
+  {
+    "code": "BIFOSCBLANP300",
+    "description": "LONA BISFOC  720G  FRM1 :BLANCO  :300 AN",
+    "width": 300,
+    "material": "ESPECIALES",
+    "color": "BLANCO"
+  },
+  {
+    "code": "BLACK3",
+    "description": "LONA OPACA (BLACK OUT) POLIESTER 330 GR.",
+    "width": 250,
+    "material": "DECORACION TEJIDOS",
+    "color": ""
+  },
+  {
+    "code": "BLACK3MARFP250",
+    "description": "LONA OPACA (BLACK OUT) POLIESTER 330 GR.:MARFIL IVORY-03:250 AN",
+    "width": 250,
+    "material": "DECORACION TEJIDOS",
+    "color": "MARFIL IVORY-03"
+  },
+  {
+    "code": "BLACK3MARFP300",
+    "description": "LONA OPACA (BLACK OUT) POLIESTER 330 GR.:MARFIL IVORY-03:300 AN",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "MARFIL IVORY-03"
+  },
+  {
+    "code": "BLACKO",
+    "description": "LONA BLACK OUT PVC 420 GR.",
+    "width": 200,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "BLACKOBLANP300",
+    "description": "LONA BLACK OUT PVC 420 GR.:BLANCO :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO"
+  },
+  {
+    "code": "BLACKOBLLIP250",
+    "description": "LONA BLACK OUT PVC 420 GR.:BLANCO/LINO:250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO/LINO"
+  },
+  {
+    "code": "BLACKOBURDP183",
+    "description": "LONA BLACK OUT PVC 420 GR.:BURDEOS :183 AN",
+    "width": 183,
+    "material": "PLASTICA (LONA)",
+    "color": "BURDEOS"
+  },
+  {
+    "code": "BLACKOGRCLP300",
+    "description": "LONA BLACKOUT PVC 420 GR.:GRIS CLARO :300 CM",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS CLARO"
+  },
+  {
+    "code": "BLACKS",
+    "description": "LONA BLACK OUT Q-SHADE M1 407gr.",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": ""
+  },
+  {
+    "code": "BLACKSCRUDP183",
+    "description": "LONA BLACK OUT Q-SHADE M1 407gr.:604 CRUDO :183 AN",
+    "width": 183,
+    "material": "DECORACION TEJIDOS",
+    "color": ""
+  },
+  {
+    "code": "BLACKSGRCLP183",
+    "description": "LONA BLACK OUT Q-SHADE M1 407gr.:606 GRIS CLARO :183 AN",
+    "width": 183,
+    "material": "DECORACION TEJIDOS",
+    "color": ""
+  },
+  {
+    "code": "BLACKSGRCLP300",
+    "description": "LONA BLACK OUT Q-SHADE M1 407gr.:GRIS CLARO :300 AN",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "GRIS CLARO"
+  },
+  {
+    "code": "BLOCK68",
+    "description": "LONA BLOCKOUT OPACA 700g \"Opak X\"",
+    "width": null,
+    "material": "PLASTICA I.D",
+    "color": ""
+  },
+  {
+    "code": "BLOCK68BLIMP110",
+    "description": "LONA BLOCKOUT OPACA 700g \"Opak X\" :BLANCO I.D :110 CM",
+    "width": 110,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "BLOCK68BLIMP160",
+    "description": "LONA BLOCKOUT OPACA 700g \"Opak X\" :BLANCO I.D :160 CM",
+    "width": 160,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "BLOCKO",
+    "description": "LONA BLOCKOUT OPACA 710g \"Opakjet\"",
+    "width": null,
+    "material": "PLASTICA I.D",
+    "color": ""
+  },
+  {
+    "code": "BLOCKOBLIMP137",
+    "description": "LONA BLOCKOUT OPACA 710g \"Opakjet\" :BLANCO I.D :137 AN",
+    "width": 137,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "BLOCKOBLIMP250",
+    "description": "LONA BLOCKOUT OPACA 710g \"Opakjet\" :BLANCO I.D :250 AN",
+    "width": 250,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "BLOCKOBLIMP320",
+    "description": "LONA BLOCKOUT OPACA 710g \"Opakjet\" :BLANCO I.D :320 AN",
+    "width": 320,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "BURBUJ",
+    "description": "LONA BURBUJAS CON RAFIA",
+    "width": 200,
+    "material": "RAFIA",
+    "color": ""
+  },
+  {
+    "code": "BURBUJAZULP200",
+    "description": "LONA BURBUJAS CON RAFIA :AZUL :200 AN",
+    "width": 200,
+    "material": "RAFIA",
+    "color": "AZUL"
+  },
+  {
+    "code": "BURBUJAZULP205",
+    "description": "LONA BURBUJAS CON RAFIA :AZUL :205 AN",
+    "width": 205,
+    "material": "RAFIA",
+    "color": "AZUL"
+  },
+  {
+    "code": "C2325",
+    "description": "LONA C2325 L2 325",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "C2325AZCLP300",
+    "description": "LONA C2325 L2 325 :AZUL CLARO :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL CLARO"
+  },
+  {
+    "code": "CAPRI",
+    "description": "LONA CAPRI POLIAMADA + PVC 300GR",
+    "width": 150,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "CAPRIMARP150",
+    "description": "LONA CAPRI POLIAMADA + PVC 300GR :MARINO :150 AN",
+    "width": 150,
+    "material": "PLASTICA (LONA)",
+    "color": "MARINO"
+  },
+  {
+    "code": "CAPRINEGROP150",
+    "description": "LONA CAPRI POLIAMADA + PVC 300GR :NEGRO :150 AN",
+    "width": 150,
+    "material": "PLASTICA (LONA)",
+    "color": "NEGRO"
+  },
+  {
+    "code": "CLASSFR",
+    "description": "LONA CLASS FR M2 SATINADA 640g/m²",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "CLASSFRGR35P250",
+    "description": "LONA CLASS FR M2 SATINADA 640g/m² :GRIS RAL7035 :250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS RAL7035"
+  },
+  {
+    "code": "CLASSFRMA15P250",
+    "description": "LONA CLASS FR M2 SATINADA 640g/m² :CHAMPAGNE RAL1015 :250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "CHAMPAGNE RAL1015"
+  },
+  {
+    "code": "CORDUR33",
+    "description": "LONA CORDURA 300-330 GR",
+    "width": 160,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "CORDUR33NEGRP160",
+    "description": "LONA CORDURA 300-330 GR :NEGRO:160 (1P POLIURETAN)",
+    "width": 160,
+    "material": "PLASTICA (LONA)",
+    "color": "NEGRO"
+  },
+  {
+    "code": "CORDUR500",
+    "description": "LONA CORDURA 260GR CAMUFLADO ARIDO",
+    "width": 150,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "CORDUR500P150",
+    "description": "LONA CORDURA 500 260GR CAMUFLADO ARIDO :150 AN",
+    "width": 150,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "COVER",
+    "description": "LONA COVER 1 L 650 GR",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "COVERVECRP250",
+    "description": "LONA COVER 1 L 650 GR :VERDE/CREMA :250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE/CREMA"
+  },
+  {
+    "code": "COVEVECRP300",
+    "description": "LONA PISCINA BICOLOR 2 L 650g/m² :VERDE/CREMA :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE/CREMA"
+  },
+  {
+    "code": "CU",
+    "description": "CUERO",
+    "width": null,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "CUMRRO15CM150C",
+    "description": "CUERO  :MARRON :15 CM :150 CM",
+    "width": null,
+    "material": "ESPECIALES",
+    "color": "MARRON"
+  },
+  {
+    "code": "CUMRRO6CM5CM",
+    "description": "CUERO :MARRON:6 CM:5CM",
+    "width": null,
+    "material": "ESPECIALES",
+    "color": "MARRON"
+  },
+  {
+    "code": "D2360",
+    "description": "LONA D2360 2L 360 G/M² (embarcaciones)",
+    "width": 218,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "D2360GR16P218",
+    "description": "LONA D2360 2L 360 G/M² (embarcaciones):GRIS 7016 ref. 7185:218 AN",
+    "width": 218,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS 7016 REF. 7185"
+  },
+  {
+    "code": "DECO",
+    "description": "TEXTIL100% POLI DECOPRINT SKIN 145G",
+    "width": 152,
+    "material": "TÉXTIL",
+    "color": ""
+  },
+  {
+    "code": "DECOBLIMP152",
+    "description": "TEXTIL100% POLI DECOPRINT SKIN 145G:BLANC :152 AN",
+    "width": 152,
+    "material": "TÉXTIL",
+    "color": "BLANC"
+  },
+  {
+    "code": "FILTROUVTRANP183",
+    "description": "LONA FILTRO U.V :TRANSPARENTE :183 AN",
+    "width": 183,
+    "material": "DECORACION TEJIDOS",
+    "color": "TRANSPARENTE"
+  },
+  {
+    "code": "FLEXLIGHT6002",
+    "description": "LONA FLEXLIGHT 6002 M2 SATINADA 630g/m²",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "FLEXLIGHT6002ARENP300",
+    "description": "LONA FLEXLIGHT 6002 M2 SATINADA 630g/m²:SABLE - ARENA 6002-320201 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "SABLE - ARENA 6002-320201"
+  },
+  {
+    "code": "FLEXLIGHT6002BEOSP300",
+    "description": "LONA FLEXLIGHT 6002 M2 SATINADA 630g/m²:BEIGE OSCURO 6002-320329:300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "BEIGE OSCURO 6002-320329"
+  },
+  {
+    "code": "FLEXLIGHT6002BLANP300",
+    "description": "LONA FLEXLIGHT 6002 M2 SATINADA 630g/m²:BLANCO 6002-320183 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO 6002-320183"
+  },
+  {
+    "code": "FLEXLIGHT6002MRROP300",
+    "description": "LONA FLEXLIGHT 6002 M2 SATINADA 630g/m²:MARRON ARCILLA 6002-320331:300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "MARRON ARCILLA 6002-320331"
+  },
+  {
+    "code": "FLEXLIGHT6002O",
+    "description": "LONA FLEXLIGHT 6002 M2 SATINADA OPACA 630g/m²",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "FLEXLIGHT6002OVAINP300",
+    "description": "LONA FLEXLIGHT 6002 M2 SATINADA OPACA 630g/m²:VAINILLA 6002-320211:300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "VAINILLA 6002-320211"
+  },
+  {
+    "code": "FLEXLIGHT6002TAUPP300",
+    "description": "LONA FLEXLIGHT 6002 M2 SATINADA 630g/m²:TAUPE 6002-320165:300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "TAUPE 6002-320165"
+  },
+  {
+    "code": "FLEXLIGHT6002VAINP300",
+    "description": "LONA FLEXLIGHT 6002 M2 SATINADA 630g/m²:VAINILLA 6002-310387:300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "VAINILLA 6002-310387"
+  },
+  {
+    "code": "FLEXLIGHT6002VEOSP300",
+    "description": "LONA FLEXLIGHT 6002 M2 SATINADA 630g/m²:VERDE 6002-320330:300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE 6002-320330"
+  },
+  {
+    "code": "FROFUM",
+    "description": "LONA FRONT FUNDIDA 1L 500-510G BLANCO I.D.",
+    "width": 110,
+    "material": "PLASTICA I.D",
+    "color": ""
+  },
+  {
+    "code": "FROFUMMATEP106",
+    "description": "LONA FRONT FUNDIDA 1L 500-510G BLANCO I.D.:MATE:106 AN",
+    "width": 106,
+    "material": "PLASTICA I.D",
+    "color": "MATE"
+  },
+  {
+    "code": "FROFUMMATEP110",
+    "description": "LONA FRONT FUNDIDA 1L 500-510G BLANCO I.D. :MATE :110 AN",
+    "width": 110,
+    "material": "PLASTICA I.D",
+    "color": "MATE"
+  },
+  {
+    "code": "FROFUMMATEP160",
+    "description": "LONA FRONT FUNDIDA 1L 500-510G BLANCO I.D. :MATE :160 AN",
+    "width": 160,
+    "material": "PLASTICA I.D",
+    "color": "MATE"
+  },
+  {
+    "code": "FROFUMMATEP250",
+    "description": "LONA FRONT FUNDIDA 1L 500-510G BLANCO I.D. :MATE :250 AN",
+    "width": 250,
+    "material": "PLASTICA I.D",
+    "color": "MATE"
+  },
+  {
+    "code": "FROFUMMATEP320",
+    "description": "LONA FRONT FUNDIDA 1L 500-510G BLANCO I.D. :MATE :320 AN",
+    "width": 320,
+    "material": "PLASTICA I.D",
+    "color": "MATE"
+  },
+  {
+    "code": "FROFUNMATEP320",
+    "description": "LONA FRONT FUNDIDA 1L 500-510G BLANCO I.D :MATE :320 AN (peza)",
+    "width": 320,
+    "material": "PLASTICA I.D",
+    "color": "MATE"
+  },
+  {
+    "code": "FRON456",
+    "description": "LONA FRONTLIT 456 500GR M2",
+    "width": 270,
+    "material": "PLASTICA I.D",
+    "color": ""
+  },
+  {
+    "code": "FRON456BLIMP270",
+    "description": "LONA FRONTLIT 456 500GR M2 :BLANCO I.D :270 AN",
+    "width": 270,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "FRON7615",
+    "description": "LONA FRONTLIT B7615 -B7613 450G/m2 IGN B1-M2 ULTRA MATE",
+    "width": 250,
+    "material": "PLASTICA I.D",
+    "color": ""
+  },
+  {
+    "code": "FRON7615BLANP250",
+    "description": "LONA FRONTLIT B7615 -B7613 450G/m2 IGN B1-M2 ULTRA MATE:BLANCO :250 AN",
+    "width": 250,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO"
+  },
+  {
+    "code": "FRON7615BLANP320",
+    "description": "LONA FRONTLIT B7615 -B7613 450G/m2 IGN B1-M2 ULTRA MATE:BLANCO :320 AN",
+    "width": 320,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO"
+  },
+  {
+    "code": "FRON7945",
+    "description": "LONA FRONTLIT B7945 450G/m2 IGN M1 SATIN",
+    "width": 320,
+    "material": "PLASTICA I.D",
+    "color": ""
+  },
+  {
+    "code": "FRON7945BLIMP250",
+    "description": "LONA FRONTLIT B7945 450G/m2 IGN M1 SATIN :BLANCO :250CM",
+    "width": 250,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO"
+  },
+  {
+    "code": "FRON7978",
+    "description": "LONA FRONTLIT 7978 510 GR-IGN B1 (M2)",
+    "width": 250,
+    "material": "PLASTICA I.D",
+    "color": ""
+  },
+  {
+    "code": "FRON7978BLIMP185",
+    "description": "LONA FRONTLIT 7978 510 GR-IGN B1 (M2) :B.ID:185CM",
+    "width": 185,
+    "material": "PLASTICA I.D",
+    "color": "B.ID"
+  },
+  {
+    "code": "FRON7978BLIMP230",
+    "description": "LONA FRONTLIT 7978 510 GR-IGN B1 (M2) :BLANCO I.D :230 AN",
+    "width": 230,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "FRON7978BLIMP320",
+    "description": "LONA FRONTLIT 7978 510 GR-IGN B1 (M2) :BLANCO I.D :320 AN",
+    "width": 320,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "FRONTL",
+    "description": "LONA FRONTLIT 475 2L 520",
+    "width": null,
+    "material": "PLASTICA I.D",
+    "color": ""
+  },
+  {
+    "code": "FRONTLBLIMP320",
+    "description": "LONA FRONTLIT 475 2L 520 :BLANCO I.D :320 AN",
+    "width": 320,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "FRONTVIEW",
+    "description": "FRONTSIDE VIEW 381 (malla microperforada) 550 g/m² M1:",
+    "width": 267,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "FRONTVIEWGRISP267",
+    "description": "FRONTSIDE VIEW 381 (malla microperforada) 550 g/m² M1: :GRIS CAMBIANTE 381-3121:267CM ANCHO",
+    "width": 267,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "FRONTVIEWMETALP267",
+    "description": "FRONTSIDE VIEW 381 (malla microperforada) 550 g/m² M1: :METAL AMARTILLADO :267 ANCHO",
+    "width": 267,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "G650",
+    "description": "LONA G650 2L 650",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "G650AM18P250",
+    "description": "LONA G650 2L 650 :AMARILLO RAL 1018 :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "AMARILLO RAL 1018"
+  },
+  {
+    "code": "G650ARENP250",
+    "description": "LONA G650 2L 650 :ARENA 938 :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "ARENA 938"
+  },
+  {
+    "code": "G650AZEUP300",
+    "description": "LONA G650 2L 650 :AZUL EUROPA 95 :300AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL EUROPA 95"
+  },
+  {
+    "code": "G650GR37P300",
+    "description": "LONA G650 2L 650 :GRIS RAL 7037 :300AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS RAL 7037"
+  },
+  {
+    "code": "G650MARFP250",
+    "description": "LONA G650 2L 650:MARFIL 928 - M5723:250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "MARFIL 928 - M5723"
+  },
+  {
+    "code": "G650MRROP250",
+    "description": "LONA G650 2L 650 :MARRON 204 :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "MARRON 204"
+  },
+  {
+    "code": "G650NA04P250",
+    "description": "LONA G650 2L 650 :NARANJA RAL 2004 :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "NARANJA RAL 2004"
+  },
+  {
+    "code": "G650PLATP250",
+    "description": "LONA G650 2L 650 :PLATA M5741:250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "PLATA M5741"
+  },
+  {
+    "code": "G650RO02P250",
+    "description": "LONA G650 2L 650 :ROJO RAL3002 :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "ROJO RAL3002"
+  },
+  {
+    "code": "G650ROJOP270",
+    "description": "LONA G650 2L 650 :ROJO P12030 :270AN",
+    "width": 270,
+    "material": "PLASTICA (LONA)",
+    "color": "ROJO P12030"
+  },
+  {
+    "code": "G650VE24P250",
+    "description": "LONA G650 2L 650 :VERDE RAL 6024 :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE RAL 6024"
+  },
+  {
+    "code": "G650VE26P250",
+    "description": "LONA G650 2L 650 :VERDE RAL 6026 :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE RAL 6026"
+  },
+  {
+    "code": "GAM12ADR",
+    "description": "LONA GAMMA-12E ADR 930 2L",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "GAM12ADRAZ13P300",
+    "description": "LONA GAMMA-12E ADR 930 2L :AZUL RAL5013 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL RAL5013"
+  },
+  {
+    "code": "GAM12FRC",
+    "description": "LONA GAMMA-12 FRc 950 2L M2",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "GAM12FRCGR30P300",
+    "description": "LONA GAMMA-12 FRc 950 2L M2:GRIS RAL7030:300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS RAL7030"
+  },
+  {
+    "code": "GAM2IR",
+    "description": "LONA GAMMA 2 MATE I.R. AUTOEX. NOC 8305331603504 2 L",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "GAM2IRVEKA150C",
+    "description": "LONA GAMMA 2 MATE I.R. AUTOEX. NOC 8305331603504 2 L:VERDE KAKI-OTAN:150 CM",
+    "width": 150,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE KAKI-OTAN"
+  },
+  {
+    "code": "GAMA12",
+    "description": "LONA GAMMA12 L2 930",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "GAMA12AM18P300",
+    "description": "LONA GAMMA12 L2 930 :AMARILLO RAL1018 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "AMARILLO RAL1018"
+  },
+  {
+    "code": "GAMAM2",
+    "description": "LONA GAMMA2 IGN.M2 (T2) 620",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "GAMAM2AZ15P300",
+    "description": "LONA GAMMA2 IGN.M2 620 :AZUL RAL5015 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL RAL5015"
+  },
+  {
+    "code": "GAMAM2BURDP250",
+    "description": "LONA GAMMA2 IGN.M2 620 :BURDEOS 3C-596 :250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "BURDEOS 3C-596"
+  },
+  {
+    "code": "GAMAM2MR04P250",
+    "description": "LONA GAMMA2 IGN.M2 620 :MARRON - 204MC :250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "MARRON - 204MC"
+  },
+  {
+    "code": "GAMAM2NA04P250",
+    "description": "LONA GAMMA2 IGN.M2 620 :NARANJA RAL2004 :250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "NARANJA RAL2004"
+  },
+  {
+    "code": "GAMAM2VERDP250",
+    "description": "LONA GAMMA2 IGN.M2 620 :VERDE M3610 :250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE M3610"
+  },
+  {
+    "code": "GAMAM2VIOLP250",
+    "description": "LONA GAMMA2 IGN.M2 620 :M3550 VIOLETA 32 C-057 :250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "M3550 VIOLETA 32 C-057"
+  },
+  {
+    "code": "GAMMA16",
+    "description": "LONA GAMMA16 L2 95 ESPUMADO 2 MM",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "GAMMA16AZEUP250",
+    "description": "LONA GAMMA16 L2 95 ESPUMADO 2MM :AZUL EUROPA :250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL EUROPA"
+  },
+  {
+    "code": "GAMMA16BLANP250",
+    "description": "LONA GAMMA16 L2 95 ESPUMADO 5MM :BLANCO :250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO"
+  },
+  {
+    "code": "GAVINA",
+    "description": "LONA GAVINA 2L 340G",
+    "width": 150,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "GAVINA3VERDP150",
+    "description": "LONA GAVINA 35 :VERDE 7150 :150 AN",
+    "width": 150,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE 7150"
+  },
+  {
+    "code": "GAVINANARJP150",
+    "description": "LONA GAVINA 2L 340G :NARANJA :150 AN",
+    "width": 150,
+    "material": "PLASTICA (LONA)",
+    "color": "NARANJA"
+  },
+  {
+    "code": "GREGAL",
+    "description": "LONA GREGAL 340GR/M² 100%POLYESTER FR M1",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": ""
+  },
+  {
+    "code": "GREGALNEGRP300",
+    "description": "LONA GREGAL 340GR/M² 100%POLYESTER FR M1:NEGRO CHE-89 :300 AN",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "NEGRO CHE-89"
+  },
+  {
+    "code": "IKA",
+    "description": "LONA CALIDAD IKA",
+    "width": 215,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "IKAVECLP215",
+    "description": "LONA CALIDAD IKA  :VERDE CLARO :215 ANCHO",
+    "width": 215,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE CLARO"
+  },
+  {
+    "code": "INSECT",
+    "description": "LONA INSECT PROOF 16X10",
+    "width": 150,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "INSECTCRISP150",
+    "description": "LONA INSECT PROOF 16X10:COLOR CRISTAL :150 AN",
+    "width": 150,
+    "material": "CRISTAL",
+    "color": "CRISTAL"
+  },
+  {
+    "code": "JET520",
+    "description": "LONA JET 520 FR. B-S2, d0 (M1) 550 GR",
+    "width": 270,
+    "material": "PLASTICA I.D",
+    "color": ""
+  },
+  {
+    "code": "JET520BLANP320",
+    "description": "LONA JET 520 FR. B-S2, d0 (M1) 550 GR :BLANCO :320 AN",
+    "width": 320,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO"
+  },
+  {
+    "code": "KARLON",
+    "description": "LONA KARLON ALGODON 470  GR",
+    "width": null,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "KARLONVEKAP150",
+    "description": "LONA KARLON ALGODON 470GR :VERDE KAKI-OTAN :150 AN",
+    "width": 150,
+    "material": "ESPECIALES",
+    "color": "VERDE KAKI-OTAN"
+  },
+  {
+    "code": "LAC640",
+    "description": "LONA LAC640 2L 640GR",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "LAC640BL10P300",
+    "description": "LONA LAC640 2L 640GR :BLANCO RAL9010 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO RAL9010"
+  },
+  {
+    "code": "LAC640GR16P300",
+    "description": "LONA LAC640 2L 640GR :GRIS 7705 (RAL 7016) :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS 7705 (RAL 7016)"
+  },
+  {
+    "code": "LAC640GR24P300",
+    "description": "LONA LAC640 2L 640GR :GRIS RAL7024 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS RAL7024"
+  },
+  {
+    "code": "LAC640VAINP300",
+    "description": "LONA LAC640 2L 640GR:VAINILLA 7462 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "VAINILLA 7462"
+  },
+  {
+    "code": "LAC650",
+    "description": "LONA LAC650 IGN.M2 680",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "LAC650AM03P300",
+    "description": "LONA LAC650 IGN.M2 680 :AMARILLO RAL1003:300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "AMARILLO RAL1003"
+  },
+  {
+    "code": "LAC650BLANP300",
+    "description": "LONA LAC650 IGN.M2 680 :BLANCO RAL9010 867 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO RAL9010 867"
+  },
+  {
+    "code": "LAC650CAFEP300",
+    "description": "LONA LAC650 IGN.M2 680 :CAFE 7409 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "CAFE 7409"
+  },
+  {
+    "code": "LAC650GR40P300",
+    "description": "LONA LAC650 IGN.M2 680 :GRIS RAL7040 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS RAL7040"
+  },
+  {
+    "code": "LAC650GRIS300C",
+    "description": "LONA LAC650 IGN.M2 680 :GRIS 654 :300 CM",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS 654"
+  },
+  {
+    "code": "LAC650GRISP300",
+    "description": "LONA LAC650 IGN.M2 680 :GRIS 939 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS 939"
+  },
+  {
+    "code": "LAC650MR17P300",
+    "description": "LONA LAC650 IGN.M2 680 :MARRON 887 RAL8017 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "MARRON 887 RAL8017"
+  },
+  {
+    "code": "LAC650VE26P300",
+    "description": "LONA LAC650 IGN.M2 680 :VERDE RAL6026:300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE RAL6026"
+  },
+  {
+    "code": "LAC650VIOLP300",
+    "description": "LONA LAC650 IGN.M2 680 :VIOLETA 7500:300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "VIOLETA 7500"
+  },
+  {
+    "code": "LAC900",
+    "description": "LONA LAC900 2L 900G",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "LAC9007491P300",
+    "description": "LONA LAC900 2L 900G :VERDE 7491 :300AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE 7491"
+  },
+  {
+    "code": "LAC900AM03P300",
+    "description": "LONA LAC900 2L 900G :AMARILLO 7456 RAL1003 :300AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "AMARILLO 7456 RAL1003"
+  },
+  {
+    "code": "LAC900AZ02P300",
+    "description": "LONA LAC900 2L 900G :AZUL 7290 RAL5002 :300AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL 7290 RAL5002"
+  },
+  {
+    "code": "LAC900AZ03P300",
+    "description": "LONA LAC900 2L 900G:AZUL RAL5003:300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL RAL5003"
+  },
+  {
+    "code": "LAC900AZ10P300",
+    "description": "LONA LAC900 2L 900G :AZUL 7307 RAL5010 :300AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL 7307 RAL5010"
+  },
+  {
+    "code": "LAC900AZ13P300",
+    "description": "LONA LAC900 2L 900G :AZUL 7309 RAL5013 :300AN (azul cortizo)",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL 7309 RAL5013"
+  },
+  {
+    "code": "LAC900AZCLP300",
+    "description": "LONA LAC900 2L 900G :AZUL CLARO 7450 RAL5015 :300AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL CLARO 7450 RAL5015"
+  },
+  {
+    "code": "LAC900AZEUP300",
+    "description": "LONA LAC900 2L 900G :AZUL EUROPA 941 :300AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL EUROPA 941"
+  },
+  {
+    "code": "LAC900BLANP300",
+    "description": "LONA LAC900 2L 900G :BLANCO 7455 RAL9016 :300AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO 7455 RAL9016"
+  },
+  {
+    "code": "LAC900GR38P300",
+    "description": "LONA LAC900 2L 900G :GRIS CLARO 7374 RAL7038 :300AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS CLARO 7374 RAL7038"
+  },
+  {
+    "code": "LAC900GROSP300",
+    "description": "LONA LAC900 2L 900G :GRIS OSCURO 7196 RAL7037 :300AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS OSCURO 7196 RAL7037"
+  },
+  {
+    "code": "LAC900MA15P300",
+    "description": "LONA LAC900 2L 900G :MARFIL 7458  RAL1015 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "MARFIL 7458  RAL1015"
+  },
+  {
+    "code": "LAC900NARJP300",
+    "description": "LONA LAC900 2L 900G :NARANJA 7444 RAL2004 :300AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "NARANJA 7444 RAL2004"
+  },
+  {
+    "code": "LAC900NE05P300",
+    "description": "LONA LAC900 2L 900G :NEGRO 810 RAL9005 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "NEGRO 810 RAL9005"
+  },
+  {
+    "code": "LAC900PL06P300",
+    "description": "LONA LAC900 2L  900G :PLATA RAL 9006 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "PLATA RAL 9006"
+  },
+  {
+    "code": "LAC900RO02P300",
+    "description": "LONA LAC900 2L 900G :ROJO 7446 RAL3002 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "ROJO 7446 RAL3002"
+  },
+  {
+    "code": "LAC900RO20P300",
+    "description": "LONA LAC900 2L 900G :ROJO 7447 RAL3020 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "ROJO 7447 RAL3020"
+  },
+  {
+    "code": "LAC900VE18P300",
+    "description": "LONA LAC900 2L 900G :VERDE 7452 RAL6018 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE 7452 RAL6018"
+  },
+  {
+    "code": "LAC900VE26P300",
+    "description": "LONA LAC900 2L 900G :VERDE 995 RAL6026 :300AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE 995 RAL6026"
+  },
+  {
+    "code": "LAURAAMCLP300",
+    "description": "LONA LAURA (visillo) :AMARILLO CLARO :300 AN",
+    "width": 300,
+    "material": "ESPECIALES",
+    "color": "AMARILLO CLARO"
+  },
+  {
+    "code": "LEMANS",
+    "description": "LONA LEMANS 2L 400",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "LEMANSBLANP150",
+    "description": "LONA LEMANS 2L 400 :BLANCO :150 AN",
+    "width": 150,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO"
+  },
+  {
+    "code": "LEMANSGRCLP150",
+    "description": "LONA LEMANS 2L 400 :GRIS CLARO :150 AN",
+    "width": 150,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS CLARO"
+  },
+  {
+    "code": "LEMANSNARJP150",
+    "description": "LONA LEMANS 2L 400 :NARANJA :150 AN",
+    "width": 150,
+    "material": "PLASTICA (LONA)",
+    "color": "NARANJA"
+  },
+  {
+    "code": "LEMANSRO20P150",
+    "description": "LONA LEMANS 2L 400 :ROJO RAL3020 :150 AN",
+    "width": 150,
+    "material": "PLASTICA (LONA)",
+    "color": "ROJO RAL3020"
+  },
+  {
+    "code": "LEMANSVE26P150",
+    "description": "LONA LEMANS 2L 400 :VERDE RAL6026 :150 AN",
+    "width": 150,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE RAL6026"
+  },
+  {
+    "code": "LEMANSVEKAP150",
+    "description": "LONA LEMANS 2L 400 :VERDE KAKI-OTAN :150 AN",
+    "width": 150,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE KAKI-OTAN"
+  },
+  {
+    "code": "LO2ª9",
+    "description": "LONA 2ª CALIDAD 900 GR",
+    "width": null,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": ""
+  },
+  {
+    "code": "LO2ª9AM03P300",
+    "description": "LONA 2ª CALIDAD 900 GR :AMARILLO RAL1003 :300 AN",
+    "width": 300,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "AMARILLO RAL1003"
+  },
+  {
+    "code": "LO2ª9AZ13P300",
+    "description": "LONA 2ª CALIDAD 900 GR:AZUL RAL5013:300 AN",
+    "width": 300,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "AZUL RAL5013"
+  },
+  {
+    "code": "LO2ª9AZOSP300",
+    "description": "LONA 2ª CALIDAD 900 GR:AZUL OSCURO:300 AN",
+    "width": 300,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "AZUL OSCURO"
+  },
+  {
+    "code": "LO2ª9BLANP230",
+    "description": "LONA 2ª CALIDAD 900 GR:BLANCO :230cm AN",
+    "width": 230,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "BLANCO"
+  },
+  {
+    "code": "LO2ª9BLANP300",
+    "description": "LONA 2ª CALIDAD 900 GR :BLANCO  :300 AN",
+    "width": 300,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "BLANCO"
+  },
+  {
+    "code": "LO2ª9NEGRP300",
+    "description": "LONA 2ª CALIDAD 900 GR :NEGRO :300 AN",
+    "width": 300,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "NEGRO"
+  },
+  {
+    "code": "LO2ª9VE26P300",
+    "description": "LONA 2ª CALIDAD 900 GR:VERDE RAL6026:300 AN",
+    "width": 300,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "VERDE RAL6026"
+  },
+  {
+    "code": "LO2ªC",
+    "description": "LONA 2ª CALIDAD 500-700G",
+    "width": 250,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": ""
+  },
+  {
+    "code": "LO2ªCAM03P250",
+    "description": "LONA 2ª CALIDAD 500-700G :AMARILLO 1003 :250 AN",
+    "width": 250,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "AMARILLO 1003"
+  },
+  {
+    "code": "LO2ªCARENP250",
+    "description": "LONA 2ª CALIDAD 500-700G:ARENA :250 AN",
+    "width": 250,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "ARENA"
+  },
+  {
+    "code": "LO2ªCAZ/NEP220",
+    "description": "LONA 2ª CALIDAD 500-700G:AZUL/NEGRO:220 AN",
+    "width": 220,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "AZUL/NEGRO"
+  },
+  {
+    "code": "LO2ªCAZCLP250",
+    "description": "LONA 2ª CALIDAD 500-700G  :AZUL CLARO :250 AN",
+    "width": 250,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "AZUL CLARO"
+  },
+  {
+    "code": "LO2ªCAZCLP300",
+    "description": "LONA 2ª CALIDAD 500-700G:AZUL CLARO:300 AN",
+    "width": 300,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "AZUL CLARO"
+  },
+  {
+    "code": "LO2ªCAZCLP320",
+    "description": "LONA 2ª CALIDAD 500-700G :AZUL CLARO :320 AN",
+    "width": 320,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "AZUL CLARO"
+  },
+  {
+    "code": "LO2ªCAZEUP250",
+    "description": "LONA 2ª CALIDAD 500-700G :AZUL EUROPA :250 AN",
+    "width": 250,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "AZUL EUROPA"
+  },
+  {
+    "code": "LO2ªCAZEUP300",
+    "description": "LONA 2ª CALIDAD500-700G:AZUL EUROPA :300 AN",
+    "width": 300,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "AZUL EUROPA"
+  },
+  {
+    "code": "LO2ªCAZOSP250",
+    "description": "LONA 2ª CALIDAD 500-700G :AZUL OSCURO :250 AN",
+    "width": 250,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "AZUL OSCURO"
+  },
+  {
+    "code": "LO2ªCAZOSP320",
+    "description": "LONA 2ª CALIDAD 500-700G :AZUL OSCURO :320 AN",
+    "width": 320,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "AZUL OSCURO"
+  },
+  {
+    "code": "LO2ªCAZULP250",
+    "description": "LONA 2ª CALIDAD500-700G :AZUL :250 AN",
+    "width": 250,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "AZUL"
+  },
+  {
+    "code": "LO2ªCBEIGP250",
+    "description": "LONA 2ª CALIDAD 500-700G :BEIGE :250 AN",
+    "width": 250,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "BEIGE"
+  },
+  {
+    "code": "LO2ªCBEIGP300",
+    "description": "LONA 2ª CALIDAD 500-700G:BEIGE:300 AN",
+    "width": 300,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "BEIGE"
+  },
+  {
+    "code": "LO2ªCBLANP100",
+    "description": "LONA 2ª CALIDAD500-700G :BLANCO  :100 AN",
+    "width": 100,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "BLANCO"
+  },
+  {
+    "code": "LO2ªCBLANP220",
+    "description": "LONA 2ª CALIDAD 500-700G:BLANCO :220 AN",
+    "width": 220,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "BLANCO"
+  },
+  {
+    "code": "LO2ªCBLANP250",
+    "description": "LONA 2ª CALIDAD500-700G :BLANCO  :250 AN",
+    "width": 250,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "BLANCO"
+  },
+  {
+    "code": "LO2ªCBLANP270",
+    "description": "LONA 2ª CALIDAD 500-700G :BLANCO :270 AN",
+    "width": 270,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "BLANCO"
+  },
+  {
+    "code": "LO2ªCBLANP300",
+    "description": "LONA 2ª CALIDAD 500-700G:BLANCO  :300 AN",
+    "width": 300,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "BLANCO"
+  },
+  {
+    "code": "LO2ªCBLANP320",
+    "description": "LONA 2ª CALIDAD 500-700G  :BLANCO  :320 AN",
+    "width": 320,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "BLANCO"
+  },
+  {
+    "code": "LO2ªCBURDP250",
+    "description": "LONA 2ª CALIDAD 500-700G :BURDEOS :250 AN",
+    "width": 250,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "BURDEOS"
+  },
+  {
+    "code": "LO2ªCCREMP250",
+    "description": "LONA 2ª CALIDAD500-700G  :CREMA :250 AN",
+    "width": 250,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "CREMA"
+  },
+  {
+    "code": "LO2ªCG/BEP250",
+    "description": "LONA 2ª CALIDAD 500-700G :GRIS/BEIG :250 AN",
+    "width": 250,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "GRIS/BEIG"
+  },
+  {
+    "code": "LO2ªCGR37P220",
+    "description": "LONA 2ª CALIDAD 500-700G:GRIS RAL7037:220 AN",
+    "width": 220,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "GRIS RAL7037"
+  },
+  {
+    "code": "LO2ªCGRALP250",
+    "description": "LONA 2ª CALIDAD 500-700G:GRIS ALUMINIO:250 AN",
+    "width": 250,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "GRIS ALUMINIO"
+  },
+  {
+    "code": "LO2ªCGRCLP250",
+    "description": "LONA 2ª CALIDAD 500-700G :GRIS CLARO :250 AN",
+    "width": 250,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "GRIS CLARO"
+  },
+  {
+    "code": "LO2ªCGRCLP320",
+    "description": "LONA 2ª CALIDAD 500-700G:GRIS CLARO:320 AN",
+    "width": 320,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "GRIS CLARO"
+  },
+  {
+    "code": "LO2ªCGRMEP250",
+    "description": "LONA 2ª CALIDAD500-700G  :GRIS MEDIO :250 AN",
+    "width": 250,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "GRIS MEDIO"
+  },
+  {
+    "code": "LO2ªCGROSP250",
+    "description": "LONA 2ª CALIDAD 500-700G :GRIS OSCURO :250 AN",
+    "width": 250,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "GRIS OSCURO"
+  },
+  {
+    "code": "LO2ªCGROSP300",
+    "description": "LONA 2ª CALIDAD 500-700G :GRIS OSCURO :300 AN",
+    "width": 300,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "GRIS OSCURO"
+  },
+  {
+    "code": "LO2ªCMARFP250",
+    "description": "LONA 2ª CALIDAD 500-700G :MARFIL :250 AN",
+    "width": 250,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "MARFIL"
+  },
+  {
+    "code": "LO2ªCMARFP300",
+    "description": "LONA 2ª CALIDAD 500-700G :MARFIL :300 AN",
+    "width": 300,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "MARFIL"
+  },
+  {
+    "code": "LO2ªCMR17P250",
+    "description": "LONA 2ª CALIDAD 500-700G  :MARRON RAL8017 :250 AN",
+    "width": 250,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "MARRON RAL8017"
+  },
+  {
+    "code": "LO2ªCNEGRP204",
+    "description": "LONA 2ª CALIDAD 500-700G :NEGRO :204 AN",
+    "width": 204,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "NEGRO"
+  },
+  {
+    "code": "LO2ªCNEGRP250",
+    "description": "LONA 2ª CALIDAD 500-700G :NEGRO :250 AN",
+    "width": 250,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "NEGRO"
+  },
+  {
+    "code": "LO2ªCNEGRP300",
+    "description": "LONA 2ª CALIDAD 500-700G :NEGRO :300 AN",
+    "width": 300,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "NEGRO"
+  },
+  {
+    "code": "LO2ªCO",
+    "description": "LONA 2ª CALIDAD OPACA",
+    "width": null,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": ""
+  },
+  {
+    "code": "LO2ªCOBLANP300",
+    "description": "LONA 2ª CALIDAD OPACA :BLANCO  :300 AN",
+    "width": 300,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "BLANCO"
+  },
+  {
+    "code": "LO2ªCROJOP250",
+    "description": "LONA 2ª CALIDAD 500-700G :ROJO :250 AN",
+    "width": 250,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "ROJO"
+  },
+  {
+    "code": "LO2ªCROJOP300",
+    "description": "LONA 2ª CALIDAD 500-700G :ROJO :300 AN",
+    "width": 300,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "ROJO"
+  },
+  {
+    "code": "LO2ªCVAINP250",
+    "description": "LONA 2ª CALIDAD 500-700G :VAINILLA :250 AN",
+    "width": 250,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "VAINILLA"
+  },
+  {
+    "code": "LO2ªCVECLP250",
+    "description": "LONA 2ª CALIDAD 500-700G :VERDE CLARO :250 AN",
+    "width": 250,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "VERDE CLARO"
+  },
+  {
+    "code": "LO2ªCVEOSP250",
+    "description": "LONA 2ª CALIDAD 500-700G:VERDE OSCURO:250 AN",
+    "width": 250,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "VERDE OSCURO"
+  },
+  {
+    "code": "LO2ªCVEOSP300",
+    "description": "LONA 2ª CALIDAD 500-700G :VERDE OSCURO :300 AN",
+    "width": 300,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "VERDE OSCURO"
+  },
+  {
+    "code": "LO2ªCVEOSP320",
+    "description": "LONA 2ª CALIDAD 500-800G :VERDE OSCURO :320 AN",
+    "width": 320,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "VERDE OSCURO"
+  },
+  {
+    "code": "LO2ªCVERDP250",
+    "description": "LONA 2ª CALIDAD 500-700G :VERDE :250 AN",
+    "width": 250,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "VERDE"
+  },
+  {
+    "code": "LO2ªCVERDP300",
+    "description": "LONA 2ª CALIDAD 500-700G :VERDE :300 AN",
+    "width": 300,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "VERDE"
+  },
+  {
+    "code": "LO2ªO",
+    "description": "LONA 2ª CALIDAD OPACA",
+    "width": 150,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": ""
+  },
+  {
+    "code": "LO2ªOBLANP150",
+    "description": "LONA 2ª CALIDAD OPACA  :BLANCO  :150 AN",
+    "width": 150,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "BLANCO"
+  },
+  {
+    "code": "LOMI2ª",
+    "description": "LONA MICROPERFORADA 2ª CALIDAD",
+    "width": null,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": ""
+  },
+  {
+    "code": "LOMI2ªBLANP270",
+    "description": "LONA MICROPERFORADA 2ª CALIDAD :BLANCO :270 AN",
+    "width": 270,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "BLANCO"
+  },
+  {
+    "code": "LOMI2ªVERDP300",
+    "description": "LONA MICROPERFORADA 2ª CALIDAD :VERDE:300 AN",
+    "width": 300,
+    "material": "PLASTICA 2ª CALIDAD",
+    "color": "VERDE"
+  },
+  {
+    "code": "LONAL",
+    "description": "LONA DE ALGODON (especial)",
+    "width": 105,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "LONALCRUDP105",
+    "description": "LONA DE ALGODON (especial) :CRUDO  :105 AN",
+    "width": 105,
+    "material": "ESPECIALES",
+    "color": "CRUDO"
+  },
+  {
+    "code": "LONALMARFP280",
+    "description": "LONA DE ALGODON (especial):MARFIL:280 AN",
+    "width": 280,
+    "material": "ESPECIALES",
+    "color": "MARFIL"
+  },
+  {
+    "code": "LONDRES",
+    "description": "LONA DE ALGODON LONDRES",
+    "width": null,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "LONDRESP165",
+    "description": "LONA DE ALGODON LONDRES:165 AN",
+    "width": 165,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "MALLSOMRESM2",
+    "description": "MALLA DE SOMBREO RESTOS (M2)",
+    "width": null,
+    "material": "",
+    "color": ""
+  },
+  {
+    "code": "MAMOS6",
+    "description": "MALLA MOSQUITERA 6X6",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "MAMOS6VERDP300",
+    "description": "MALLA MOSQUITERA 6X6 :VERDE :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE"
+  },
+  {
+    "code": "MAMOS6VERDP350",
+    "description": "MALLA MOSQUITERA 6X6 :VERDE :350AN",
+    "width": 350,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE"
+  },
+  {
+    "code": "MANTI161",
+    "description": "MALLA ANTITIRPIS 16X10",
+    "width": 100,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "MANTI161TRANP100",
+    "description": "MALLA ANTITIRPIS 16X10 :TRANSPARENTE :100 AN",
+    "width": 100,
+    "material": "PLASTICA (LONA)",
+    "color": "TRANSPARENTE"
+  },
+  {
+    "code": "MANTI20",
+    "description": "MALLA ANTITRIPS 20X10",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "MANTI20TRANP500",
+    "description": "MALLA ANTITRIPS 20X10 :TRANSPARENTE :500 AN",
+    "width": 500,
+    "material": "PLASTICA (LONA)",
+    "color": "TRANSPARENTE"
+  },
+  {
+    "code": "MCUBRES",
+    "description": "LONA MALLA CUBRESUELOS",
+    "width": 200,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "MCUBRESNG/VRP325",
+    "description": "LONA MALLA CUBRESUELOS :NEGRO/VERDE :325 AN",
+    "width": 325,
+    "material": "ESPECIALES",
+    "color": "NEGRO/VERDE"
+  },
+  {
+    "code": "MCUBRESNG/VRP400",
+    "description": "LONA MALLA CUBRESUELOS:NEGRO/VERDE:400 AN",
+    "width": 400,
+    "material": "ESPECIALES",
+    "color": "NEGRO/VERDE"
+  },
+  {
+    "code": "MESHCLBLIMP250",
+    "description": "LONA MESH 390 GR  C/LINER :BLANCO I.D :250 AN",
+    "width": 250,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "MESHCLBLIMP320",
+    "description": "LONA MESH 390 GR  C/LINER :BLANCO I.D :320 AN",
+    "width": 320,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "MESHM1",
+    "description": "LONA MESH FR. M1 340 GR",
+    "width": 270,
+    "material": "PLASTICA I.D",
+    "color": ""
+  },
+  {
+    "code": "MESHM1BLIMP250",
+    "description": "LONA MESH FR. M1 340 GR :BLANCO I.D :250 AN",
+    "width": 250,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "MESHM1BLIMP320",
+    "description": "LONA MESH FR. M1 340 GR :BLANCO I.D :320 AN",
+    "width": 320,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "MESHSL",
+    "description": "LONA MESH 390GR S/LINER",
+    "width": null,
+    "material": "PLASTICA I.D",
+    "color": ""
+  },
+  {
+    "code": "MESHSLBLIMP130",
+    "description": "LONA MESH 390GR S/LINER :BLANCO I.D :130 AN",
+    "width": 130,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "MESHSLBLIMP160",
+    "description": "LONA MESH 390GR S/LINER :BLANCO I.D:160 AN",
+    "width": 160,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "MESHSLBLIMP190",
+    "description": "LONA MESH 390GR S/LINER :BLANCO I.D :190 AN",
+    "width": 190,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "MESHSLBLIMP230",
+    "description": "LONA MESH 390GR S/LINER :BLANCO I.D :230 AN",
+    "width": 230,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "MESHSLBLIMP250",
+    "description": "LONA MESH 390GR S/LINER :BLANCO I.D :250 AN",
+    "width": 250,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "MESHSLBLIMP320",
+    "description": "LONA MESH 390GR S/LINER :BLANCO I.D :320 AN",
+    "width": 320,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "MMOSFIBRA",
+    "description": "MALLA MOSQUITERA FIBRA DE VIDRIO 1,5X3M",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "MMOSFIBRAV",
+    "description": "MALLA MOSQUITERA FIBRA DE VIDRIO",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "MMOSFIBRAVGRCLP300",
+    "description": "MALLA MOSQUITERA FIBRA DE VIDRIO:GRIS CLARO:300 AN (m²)",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS CLARO"
+  },
+  {
+    "code": "MONZA",
+    "description": "LONA MONZA 1L 580g/m²",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "MONZAAM03P250",
+    "description": "LONA MONZA 1L 580g/m² :AMARILLO RAL1003 :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "AMARILLO RAL1003"
+  },
+  {
+    "code": "MONZAAVENP250",
+    "description": "LONA MONZA 1L 580g/m²:AVENA 66955 :250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "AVENA 66955"
+  },
+  {
+    "code": "MONZAAZ15P250",
+    "description": "LONA MONZA 1L 580g/m² :AZUL RAL5015 :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL RAL5015"
+  },
+  {
+    "code": "MONZABLANP250",
+    "description": "LONA MONZA 1L 580g/m² :BLANCO :250AN (580)",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO"
+  },
+  {
+    "code": "MONZABLANP300",
+    "description": "LONA MONZA 1L 580g/m² :BLANCO :300AN (580)",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO"
+  },
+  {
+    "code": "MONZABU05P250",
+    "description": "LONA MONZA 1L 580g/m² :BURDEOS RAL3005 :250AN (580)",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "BURDEOS RAL3005"
+  },
+  {
+    "code": "MONZAGR37P250",
+    "description": "LONA MONZA 1L 580g/m² :GRIS RAL7037 :250AN (580)",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS RAL7037"
+  },
+  {
+    "code": "MONZAGR38P250",
+    "description": "LONA MONZA 1L 580g/m² :GRIS RAL7038 :250AN (580)",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS RAL7038"
+  },
+  {
+    "code": "MONZAMA13P250",
+    "description": "LONA MONZA 1L 580g/m² :MARFIL RAL1013 :250AN (580)",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "MARFIL RAL1013"
+  },
+  {
+    "code": "MONZANEGRP250",
+    "description": "LONA MONZA 1L 580g/m² :NEGRO RAL9005: 250AN (580)",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "NEGRO RAL9005"
+  },
+  {
+    "code": "MONZARO20P250",
+    "description": "LONA MONZA 1L 580g/m² :ROJO RAL3020 :250AN (580)",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "ROJO RAL3020"
+  },
+  {
+    "code": "MONZARO20P300",
+    "description": "LONA MONZA 1L 580g/m² :ROJO RAL3020 :300AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "ROJO RAL3020"
+  },
+  {
+    "code": "MOQU",
+    "description": "MOQUETA 100%POLIPROPILENO",
+    "width": null,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "MOQUNEGRP200",
+    "description": "MOQUETA 100%POLIPROPILENO  :NEGRO :200 AN",
+    "width": 200,
+    "material": "ESPECIALES",
+    "color": "NEGRO"
+  },
+  {
+    "code": "MSOMBR",
+    "description": "LONA MALLA SOMBREO 80-90%",
+    "width": 200,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "MSOMBRVERDP200",
+    "description": "LONA MALLA SOMBREO 80-90% :VERDE :200 AN",
+    "width": 200,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE"
+  },
+  {
+    "code": "MSOMBRVERDP300",
+    "description": "LONA MALLA SOMBREO  :VERDE :300 AN",
+    "width": 300,
+    "material": "RAFIA",
+    "color": "VERDE"
+  },
+  {
+    "code": "MUCA200",
+    "description": "LONA  ACONYL 200/2 2+1 (G.5MM)",
+    "width": 204,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "MUCA200NEGROP200",
+    "description": "LONA  ACONYL 200/2 2+1 (G.5MM) :NEGRO :200 AN",
+    "width": 200,
+    "material": "PLASTICA (LONA)",
+    "color": "NEGRO"
+  },
+  {
+    "code": "MUCA76",
+    "description": "LONA MUELLE CARGA 7806 (G.2MM)",
+    "width": 204,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "MUCA76NEGRP120",
+    "description": "LONA MUELLE CARGA 7806 (G.2MM) :NEGRO MATE :120 AN",
+    "width": 120,
+    "material": "PLASTICA (LONA)",
+    "color": "NEGRO MATE"
+  },
+  {
+    "code": "MUCA76NEGRP204",
+    "description": "LONA MUELLE CARGA 7806 (G.2MM) :NEGRO MATE :204 AN",
+    "width": 204,
+    "material": "PLASTICA (LONA)",
+    "color": "NEGRO MATE"
+  },
+  {
+    "code": "MUCA76NEGRP210",
+    "description": "LONA MUELLE CARGA 7806 (G.2MM) :NEGRO MATE :210 AN",
+    "width": 210,
+    "material": "PLASTICA (LONA)",
+    "color": "NEGRO MATE"
+  },
+  {
+    "code": "MUCA78",
+    "description": "LONA MUELLE CARGA 780-3800 (G.3MM)",
+    "width": 160,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "MUCA78NEGROP160",
+    "description": "LONA MUELLE CARGA 7808-3800 (G.3MM) :NEGRO :160 AN",
+    "width": 160,
+    "material": "PLASTICA (LONA)",
+    "color": "NEGRO"
+  },
+  {
+    "code": "NET",
+    "description": "LONA REJILLA NET 220GR/M²",
+    "width": 200,
+    "material": "REJILLA",
+    "color": ""
+  },
+  {
+    "code": "NS86",
+    "description": "LONA NS86 2L 630 g/m²",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "NS865",
+    "description": "LONA NS86 2L 650 g/m²",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "NS865BLANP300",
+    "description": "LONA NS86 2L 630 g/m²  :BLANCO :300 AN (580)",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO"
+  },
+  {
+    "code": "NS86AZ15P250",
+    "description": "LONA NS86 2L 630 g/m² :AZUL CLARO (SIMILAR 5015):250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL CLARO (SIMILAR 5015)"
+  },
+  {
+    "code": "NS86AZEUP250",
+    "description": "LONA NS86 2L 630 g/m²  :  AZUL EUROPA:250 AN (580)",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL EUROPA"
+  },
+  {
+    "code": "NS86B1",
+    "description": "LONA  NS86 2L 630 g/m² IGNIFUGA B1 T2",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "NS86B16",
+    "description": "LONA  NS86 2L 650 g/m² IGNIFUGA B1",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "NS86B16P/NP250",
+    "description": "LONA  NS86 2L 650 g/m² IGNIFUGA B1:PLATA/NEGRO:250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "PLATA/NEGRO"
+  },
+  {
+    "code": "NS86B1BLANP250",
+    "description": "LONA  NS86 2L 630 g/m² IGNIFUGA B1 T2:BLANCO :250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO"
+  },
+  {
+    "code": "NS86B1NEGRP250",
+    "description": "LONA  NS86 2L 630 g/m² IGNIFUGA B1 T2:NEGRO:250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "NEGRO"
+  },
+  {
+    "code": "NS86BLANP250",
+    "description": "LONA NS86 2L 630 g/m²  :BLANCO :250 AN (580)",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO"
+  },
+  {
+    "code": "NS86CR15P250",
+    "description": "LONA NS86 2L 630 g/m² :CREMA 1015 :250 AN (580)",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "CREMA 1015"
+  },
+  {
+    "code": "NS86GR37P250",
+    "description": "LONA NS86 2L 630 g/m²  :GRIS 7037:250 AN (580)",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS 7037"
+  },
+  {
+    "code": "NS86GR38P250",
+    "description": "LONA NS86 2L 630 g/m² :GRIS CLARO 7038 :250 AN (580)",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS CLARO 7038"
+  },
+  {
+    "code": "NS86MA13P250",
+    "description": "LONA NS86 2L 630 g/m² :MARFIL RAL1013 :250 AN (580)",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "MARFIL RAL1013"
+  },
+  {
+    "code": "NS86NARJP250",
+    "description": "LONA NS86 2L 630 g/m² :NARANJA COR/3000:250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "NARANJA COR/3000"
+  },
+  {
+    "code": "NS86NEGRP250",
+    "description": "LONA NS86 2L 630 g/m² :NEGRO :250 AN (580)",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "NEGRO"
+  },
+  {
+    "code": "NS86P",
+    "description": "LONA PISCINA NS86 1L 630 g/m²",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "NS86PAZ/NEP250",
+    "description": "LONA PISCINA NS86 1L 630 g/m² :AZUL/NEGRO :250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL/NEGRO"
+  },
+  {
+    "code": "NS86ROJOP250",
+    "description": "LONA NS86 2L 630 g/m² :ROJO :250 AN (580)",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "ROJO"
+  },
+  {
+    "code": "NS86VE26P250",
+    "description": "LONA NS86 2L 630 g/m² :VERDE COR/704 (SIMILAR 6026): 250 AN  (580)",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE COR/704 (SIMILAR 6026)"
+  },
+  {
+    "code": "OPACN203",
+    "description": "LONA N203 OPAC 700GR/M² IGNIFUGO CLASE 1",
+    "width": 240,
+    "material": "DECORACION TEJIDOS",
+    "color": ""
+  },
+  {
+    "code": "OPACN203BLLIP240",
+    "description": "LONA N203 OPAC 700GR/M² IGNIFUGO CLASE 1:BLANCO/LINO:240 AN",
+    "width": 240,
+    "material": "DECORACION TEJIDOS",
+    "color": "BLANCO/LINO"
+  },
+  {
+    "code": "ORION",
+    "description": "LONA ORION 1L 500",
+    "width": null,
+    "material": "ELASTICAS (LONAS)",
+    "color": ""
+  },
+  {
+    "code": "ORIONAMCLP150",
+    "description": "LONA ORION 1L 500:AMARILLO CLARO 6115:150 AN",
+    "width": 150,
+    "material": "ELASTICAS (LONAS)",
+    "color": "AMARILLO CLARO 6115"
+  },
+  {
+    "code": "ORIONARENP150",
+    "description": "LONA ORION 1L 500 :ARENA 4241:150 AN",
+    "width": 150,
+    "material": "ELASTICAS (LONAS)",
+    "color": "ARENA 4241"
+  },
+  {
+    "code": "ORIONAZCLP150",
+    "description": "LONA ORION 1L 500:AZUL CLARO 8075 :150 AN",
+    "width": 150,
+    "material": "ELASTICAS (LONAS)",
+    "color": "AZUL CLARO 8075"
+  },
+  {
+    "code": "ORIONMRROP150",
+    "description": "LONA ORION 1L 500:MARRON 4242:150 AN",
+    "width": 150,
+    "material": "ELASTICAS (LONAS)",
+    "color": "MARRON 4242"
+  },
+  {
+    "code": "ORIONNARJP150",
+    "description": "LONA ORION 1L 500:NARANJA 5199 :150 AN",
+    "width": 150,
+    "material": "ELASTICAS (LONAS)",
+    "color": "NARANJA 5199"
+  },
+  {
+    "code": "ORIONROJOP150",
+    "description": "LONA ORION 1L 500:ROJO 5152:150 AN",
+    "width": 150,
+    "material": "ELASTICAS (LONAS)",
+    "color": "ROJO 5152"
+  },
+  {
+    "code": "ORIONSALMP150",
+    "description": "LONA ORION 1L 500:SALMON 5201:150 AN",
+    "width": 150,
+    "material": "ELASTICAS (LONAS)",
+    "color": "SALMON 5201"
+  },
+  {
+    "code": "ORIONVEOSP150",
+    "description": "LONA ORION 1L 500:VERDE OSCURO 7304:150 AN",
+    "width": 150,
+    "material": "ELASTICAS (LONAS)",
+    "color": "VERDE OSCURO 7304"
+  },
+  {
+    "code": "PANADERO",
+    "description": "LONA ALGODON PANADERO",
+    "width": 60,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "PANADEROCRUDP60",
+    "description": "LONA ALGODON PANADERO :CRUDO  :60 AN",
+    "width": 60,
+    "material": "ESPECIALES",
+    "color": "CRUDO"
+  },
+  {
+    "code": "PANADEROCRUDP70",
+    "description": "LONA ALGODON PANADERO :CRUDO  :70 AN",
+    "width": 70,
+    "material": "ESPECIALES",
+    "color": "CRUDO"
+  },
+  {
+    "code": "PANAIG",
+    "description": "LONA PANAMA IGN.M2 900",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "PANAIGBLANP300",
+    "description": "LONA PANAMA IGN.M2 900 :BLANCO :300AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO"
+  },
+  {
+    "code": "PANAIGGR16P300",
+    "description": "LONA PANAMA IGN.M2 900 :GRIS RAL7016 :300AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS RAL7016"
+  },
+  {
+    "code": "PANAIGNA04P300",
+    "description": "LONA PANAMA IGN.M2 900 :NARANJA RAL2004 :300AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "NARANJA RAL2004"
+  },
+  {
+    "code": "PANAIGRO20P300",
+    "description": "LONA PANAMA IGN.M2 900 :ROJO RAL3002 :300AN (6479)",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "ROJO RAL3002"
+  },
+  {
+    "code": "PANAMA",
+    "description": "LONA PANAMA 900",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "PANAMAAM03P300",
+    "description": "LONA PANAMA 900 :AMARILLO RAL1003 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "AMARILLO RAL1003"
+  },
+  {
+    "code": "PANAMAAZ02P300",
+    "description": "LONA PANAMA 900 :AZUL RAL5002 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL RAL5002"
+  },
+  {
+    "code": "PANAMAAZ10P300",
+    "description": "LONA PANAMA 900 :AZUL RAL5010 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL RAL5010"
+  },
+  {
+    "code": "PANAMAAZ13P300",
+    "description": "LONA PANAMA 900 :AZUL RAL5013 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL RAL5013"
+  },
+  {
+    "code": "PANAMAAZ15P300",
+    "description": "LONA PANAMA 900 :AZUL RAL5015 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL RAL5015"
+  },
+  {
+    "code": "PANAMABL16P300",
+    "description": "LONA PANAMA 900 :BLANCO RAL9016 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO RAL9016"
+  },
+  {
+    "code": "PANAMACA15P300",
+    "description": "LONA PANAMA 900:CHAMPAGNE RAL 1015:300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "CHAMPAGNE RAL 1015"
+  },
+  {
+    "code": "PANAMAGR16P300",
+    "description": "LONA PANAMA 900:GRIS 7016:300 AN ref. 60093",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS 7016"
+  },
+  {
+    "code": "PANAMAGR35P300",
+    "description": "LONA PANAMA 900 :GRIS RAL7035 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS RAL7035"
+  },
+  {
+    "code": "PANAMAGR37P300",
+    "description": "LONA PANAMA 900 :GRIS OSCURO RAL7037 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS OSCURO RAL7037"
+  },
+  {
+    "code": "PANAMAGR38P300",
+    "description": "LONA PANAMA 900 :GRIS CLARO RAL7038 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS CLARO RAL7038"
+  },
+  {
+    "code": "PANAMAMR14P300",
+    "description": "LONA PANAMA 900 :MARRON RAL8014 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "MARRON RAL8014"
+  },
+  {
+    "code": "PANAMANA04P300",
+    "description": "LONA PANAMA 900 :NARANJA RAL2004 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "NARANJA RAL2004"
+  },
+  {
+    "code": "PANAMANE05P300",
+    "description": "LONA PANAMA 900 :NEGRO RAL9005 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "NEGRO RAL9005"
+  },
+  {
+    "code": "PANAMARO02P300",
+    "description": "LONA PANAMA 900 :ROJO RAL3002 (RUBI) :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "ROJO RAL3002 (RUBI)"
+  },
+  {
+    "code": "PANAMAVE26P300",
+    "description": "LONA PANAMA 900 :VERDE RAL6026 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE RAL6026"
+  },
+  {
+    "code": "PANAMAVEGAP300",
+    "description": "LONA PANAMA 900 :VERDE GALICIA :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE GALICIA"
+  },
+  {
+    "code": "PANOIL",
+    "description": "LONA PAN-14 OIL BOOM 1450GR",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "PANOILNARJP205",
+    "description": "LONA PAN-14 OIL BOOM 1450GR :NARANJA:205 AN",
+    "width": 205,
+    "material": "PLASTICA (LONA)",
+    "color": "NARANJA"
+  },
+  {
+    "code": "PLAST880",
+    "description": "LONA PLASTEL 8800 TE62 620 2L MATE",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "PLAST880NEGRP204",
+    "description": "LONA PLASTEL 8800 TE62 620 2L MATE :NEGRO :204 AN",
+    "width": 204,
+    "material": "PLASTICA (LONA)",
+    "color": "NEGRO"
+  },
+  {
+    "code": "PLAST880ROJOP204",
+    "description": "LONA PLASTEL 8800 TE62 620 2L MATE:ROJO 370:204 AN",
+    "width": 204,
+    "material": "PLASTICA (LONA)",
+    "color": "ROJO 370"
+  },
+  {
+    "code": "PLAST881",
+    "description": "LONA PLASTEL BOAT 8817 5340",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "PLAST881GRISP218",
+    "description": "LONA PLASTEL BOAT 8817 5340 :GRIS 785785 :218 AN",
+    "width": 218,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS 785785"
+  },
+  {
+    "code": "POLIAR",
+    "description": "LONA POLIAR 2L 630",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "POLIARAZULP180",
+    "description": "LONA POLIAR 2L 630 :AZUL :180 AN",
+    "width": 180,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL"
+  },
+  {
+    "code": "POLIARROJOP180",
+    "description": "LONA POLIAR 2L 630 :ROJO 316 :180 AN",
+    "width": 180,
+    "material": "PLASTICA (LONA)",
+    "color": "ROJO 316"
+  },
+  {
+    "code": "POLY05",
+    "description": "LONA POLYMAR 8205 5L 680",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "POLY05AM03P250",
+    "description": "LONA POLYMAR 8205 5L 680 :AMARILLO 148 RAL1003 :250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "AMARILLO 148 RAL1003"
+  },
+  {
+    "code": "POLY50",
+    "description": "LONA POLYMAR 8250 5241 1L 620 (580)",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "POLY50AM03P250",
+    "description": "LONA POLYMAR 8250 5241 1L 620 (580):AMARILLO119 (similar 1003):250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "AMARILLO119 (SIMILAR 1003)"
+  },
+  {
+    "code": "POLY50NEGRO250C",
+    "description": "LONA POLYMAR 8250 5241 1L 620 :NEGRO 905 RAL9005 :250 CM (580)",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "NEGRO 905 RAL9005"
+  },
+  {
+    "code": "POLY7022",
+    "description": "LONA POLYMAR 7022 GR3MM 1300 FR (ESPUMA)",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "POLY7022BLANP300",
+    "description": "LONA POLYMAR 7022 GR3MM 1300 FR (ESPUMA) :BLANCO :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO"
+  },
+  {
+    "code": "POLY7022GRMEP300",
+    "description": "LONA POLYMAR 7022 GR3MM 1300 FR (ESPUMA) :GRIS 705705 :300AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS 705705"
+  },
+  {
+    "code": "POLYPR56",
+    "description": "LONA POLYMAR PRINT 8556-5945 2L 900",
+    "width": null,
+    "material": "PLASTICA I.D",
+    "color": ""
+  },
+  {
+    "code": "POLYPR56BLIMP300",
+    "description": "LONA POLYMAR PRINT 8556-5945 2L 900 :BLANCO I.D :300 AN",
+    "width": 300,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "POLYPR56BLIMP320",
+    "description": "LONA POLYMAR PRINT 8556-5945 2L 900:BLANCO I.D:320 AN",
+    "width": 320,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "POLYTR",
+    "description": "LONA POLYMAR TRAFFIC 8556-5240 2L 900",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "POLYTRNA08P300",
+    "description": "LONA POLYMAR TRAFFIC 8556-5240 2L 900:NARANJA RAL2008 (221221):300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "NARANJA RAL2008 (221221)"
+  },
+  {
+    "code": "POLYTRVE24P300",
+    "description": "LONA POLYMAR TRAFFIC 8556-5240 2L 900:602 VERDE RAL6024:300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "PORTM1",
+    "description": "LONA PORT IGN.M1 470",
+    "width": 220,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "PORTM1BLANP220",
+    "description": "LONA PORT IGN.M1 470 :BLANCO :220 AN",
+    "width": 220,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO"
+  },
+  {
+    "code": "PPGEMINI",
+    "description": "POLIPIEL GEMINI",
+    "width": 140,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "PPGEMINIAZOSP140",
+    "description": "POLIPIEL GEMINI :AZUL OSCURO:140 AN",
+    "width": 140,
+    "material": "ESPECIALES",
+    "color": "AZUL OSCURO"
+  },
+  {
+    "code": "PPGEMINIGRISP140",
+    "description": "POLIPIEL GEMINI :GRIS:140 AN",
+    "width": 140,
+    "material": "ESPECIALES",
+    "color": "GRIS"
+  },
+  {
+    "code": "PPGEMININEGRP140",
+    "description": "POLIPIEL GEMINI :NEGRO:140 AN",
+    "width": 140,
+    "material": "ESPECIALES",
+    "color": "NEGRO"
+  },
+  {
+    "code": "PPGEMINIROJOP140",
+    "description": "POLIPIEL GEMINI :ROJO:140 AN",
+    "width": 140,
+    "material": "ESPECIALES",
+    "color": "ROJO"
+  },
+  {
+    "code": "PRE402",
+    "description": "LONA PRECONTRAINT 402 490GR 2L",
+    "width": 267,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "PRE402TRANSP267",
+    "description": "LONA PRECONTRAINT 402 490GR 2L :1399 TRANSLUCIDO :267 AN",
+    "width": 267,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "PRE501",
+    "description": "LONA PRECONTRAINT 501 530 IGN M1",
+    "width": 180,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "PRE501BLANP270",
+    "description": "LONA PRECONTRAINT 501 530 IGN M1 :BLANCO :270CM",
+    "width": 270,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO"
+  },
+  {
+    "code": "PRE602O",
+    "description": "LONA SOLTIS (antes PRECONTRAINT) 622 OPACO BR. 750 M2",
+    "width": 180,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "PRE602OBLANP267",
+    "description": "LONA SOLTIS (antes PRECONTRAINT) 622 OPACO BR. 750M2 :BLANCO :267 ANCHO",
+    "width": 267,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO"
+  },
+  {
+    "code": "PRE602OMARFP267",
+    "description": "LONA SOLTIS (antes PRECONTRAINT) 622 OPACO 750M2 :MARFIL :267 AN",
+    "width": 267,
+    "material": "PLASTICA (LONA)",
+    "color": "MARFIL"
+  },
+  {
+    "code": "PRE622",
+    "description": "LONA SOLTIS (antes PRECONTRAINT) 622 OPACO MATE 750 M2",
+    "width": 180,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "PRE622MARFP267",
+    "description": "LONA SOLTIS (antes PRECONTRAINT) 622 OPACO MATE 750GRS :MARFIL :267",
+    "width": 267,
+    "material": "PLASTICA (LONA)",
+    "color": "MARFIL"
+  },
+  {
+    "code": "PRE702O",
+    "description": "LONA PRECONTRAINT 702 S2 OPACO 830 M2",
+    "width": 180,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "RAFIA",
+    "description": "LONA RAFIA 2 L 190",
+    "width": null,
+    "material": "RAFIA",
+    "color": ""
+  },
+  {
+    "code": "RAFIAAZCLP200",
+    "description": "LONA RAFIA 2 L 190 :AZUL CLARO :200 AN",
+    "width": 200,
+    "material": "RAFIA",
+    "color": "AZUL CLARO"
+  },
+  {
+    "code": "RAFIABLANP200",
+    "description": "LONA RAFIA 2 L 190 :BLANCO  :200 AN",
+    "width": 200,
+    "material": "RAFIA",
+    "color": "BLANCO"
+  },
+  {
+    "code": "RALLYE",
+    "description": "LONA RALLYE MATE 670g/m²",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "RALLYEAZ05P250",
+    "description": "LONA RALLYE MATE 670g/m² :AZUL RAL5005 :250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL RAL5005"
+  },
+  {
+    "code": "RALLYEGR37P250",
+    "description": "LONA RALLYE MATE 670g/m² :GRIS OSCURO RAL7037 :250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS OSCURO RAL7037"
+  },
+  {
+    "code": "RALLYEVE05P250",
+    "description": "LONA RALLYE MATE 670g/m² :MUSGO RAL6005 :250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "MUSGO RAL6005"
+  },
+  {
+    "code": "RE2ªVE26P300",
+    "description": "REJILLA DE 2ª CALIDAD :VERDE RAL6026 :300 AN",
+    "width": 300,
+    "material": "REJILLA",
+    "color": "VERDE RAL6026"
+  },
+  {
+    "code": "RECACRIL",
+    "description": "LONA RECACRIL",
+    "width": 120,
+    "material": "ACRÍLICAS",
+    "color": ""
+  },
+  {
+    "code": "RECACRIL017P120",
+    "description": "LONA RECACRIL:R-017 BLANCO/NEGRO:120 AN",
+    "width": 120,
+    "material": "ACRÍLICAS",
+    "color": "R-017 BLANCO/NEGRO"
+  },
+  {
+    "code": "RECACRIL138P120",
+    "description": "LONA RECACRIL :NUBE 138 :120 AN",
+    "width": 120,
+    "material": "ACRÍLICAS",
+    "color": "NUBE 138"
+  },
+  {
+    "code": "RECACRIL164P120",
+    "description": "LONA RECACRIL : ANTRACITA R164 :120 AN",
+    "width": 120,
+    "material": "ACRÍLICAS",
+    "color": "ANTRACITA R164"
+  },
+  {
+    "code": "RECACRIL317P120",
+    "description": "LONA RECACRIL:R-317 NATURAL:120 AN",
+    "width": 120,
+    "material": "ACRÍLICAS",
+    "color": "R-317 NATURAL"
+  },
+  {
+    "code": "RECACRIL466P120",
+    "description": "LONA RECACRIL :SIRIA 466 :120 AN",
+    "width": 120,
+    "material": "ACRÍLICAS",
+    "color": "SIRIA 466"
+  },
+  {
+    "code": "RECACRIL554P120",
+    "description": "LONA RECACRIL :AMARILLO R554 :120 AN",
+    "width": 120,
+    "material": "ACRÍLICAS",
+    "color": "AMARILLO R554"
+  },
+  {
+    "code": "RECACRIL737P120",
+    "description": "LONA RECACRIL :MEDITERRANEO 737 :120 AN",
+    "width": 120,
+    "material": "ACRÍLICAS",
+    "color": "MEDITERRANEO 737"
+  },
+  {
+    "code": "RECACRIL808P120",
+    "description": "LONA RECACRIL:R-808 OROTAVA:120 AN",
+    "width": 120,
+    "material": "ACRÍLICAS",
+    "color": "R-808 OROTAVA"
+  },
+  {
+    "code": "RECACRIL812 P120",
+    "description": "LONA RECACRIL :INCA R812 :120 AN",
+    "width": 120,
+    "material": "ACRÍLICAS",
+    "color": "INCA R812"
+  },
+  {
+    "code": "RECACRIL841P120",
+    "description": "LONA RECACRIL :ALCUDIA 841 :120 AN",
+    "width": 120,
+    "material": "ACRÍLICAS",
+    "color": "ALCUDIA 841"
+  },
+  {
+    "code": "RECACRILAMARP120",
+    "description": "LONA RECACRIL :AMARILLO :120 AN",
+    "width": 120,
+    "material": "ACRÍLICAS",
+    "color": "AMARILLO"
+  },
+  {
+    "code": "RECACRILBEIGP120",
+    "description": "LONA RECACRIL :BEIGE R100 :120 AN",
+    "width": 120,
+    "material": "ACRÍLICAS",
+    "color": "BEIGE R100"
+  },
+  {
+    "code": "RECACRILBLANP152",
+    "description": "LONA RECACRIL :BLANCO WHITE 099 :152 AN",
+    "width": 152,
+    "material": "ACRÍLICAS",
+    "color": "BLANCO WHITE 099"
+  },
+  {
+    "code": "RECACRILCRUDP120",
+    "description": "LONA RECACRIL:CRUDO R117:120 AN",
+    "width": 120,
+    "material": "ACRÍLICAS",
+    "color": "CRUDO R117"
+  },
+  {
+    "code": "RECACRILGRISP120",
+    "description": "LONA RECACRIL :GRIS R161 :120 AN",
+    "width": 120,
+    "material": "ACRÍLICAS",
+    "color": "GRIS R161"
+  },
+  {
+    "code": "RECACRILMARFP120",
+    "description": "LONA RECACRIL:MARFIL R 217:120 AN",
+    "width": 120,
+    "material": "ACRÍLICAS",
+    "color": "MARFIL R 217"
+  },
+  {
+    "code": "RECACRILMRROP120",
+    "description": "LONA RECACRIL :CAFE R156 :120 AN",
+    "width": 120,
+    "material": "ACRÍLICAS",
+    "color": "CAFE R156"
+  },
+  {
+    "code": "RECACRILSILP120",
+    "description": "LONA RECACRIL :PLATA - SILVER R186 :120 AN",
+    "width": 120,
+    "material": "ACRÍLICAS",
+    "color": "PLATA - SILVER R186"
+  },
+  {
+    "code": "RECACRILVEMUP120",
+    "description": "LONA RECACRIL :VERDE BOTELLA R102 :120 AN",
+    "width": 120,
+    "material": "ACRÍLICAS",
+    "color": "VERDE BOTELLA R102"
+  },
+  {
+    "code": "RECOVEAZCLP220",
+    "description": "LONA RECOVER 1L 620 :AZUL CLARO :220 AN",
+    "width": 220,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL CLARO"
+  },
+  {
+    "code": "RECOVEAZCLP250",
+    "description": "LONA RECOVER 1L 620 :AZUL CLARO :250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL CLARO"
+  },
+  {
+    "code": "RECSC4",
+    "description": "LONA RECSCREEN 4000P 430G C-1 AP1%",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": ""
+  },
+  {
+    "code": "RECSC4BLLIP300",
+    "description": "LONA RECSCREEN 4000P 475G C-1 AP1% :BLANCO/LINO :300CM",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "BLANCO/LINO"
+  },
+  {
+    "code": "RECSC4BLPEP300",
+    "description": "LONA RECSCREEN 4000P 430G C-1 AP1% :BLANCO/PERLA :300CM",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "BLANCO/PERLA"
+  },
+  {
+    "code": "RECSC4BLSAP300",
+    "description": "LONA RECSCREEN 4000P 430G C-1 AP1%:BLANCO/SABLE R-002 :300 AN",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "BLANCO/SABLE R-002"
+  },
+  {
+    "code": "RECSC4LILIP300",
+    "description": "LONA RECSCREEN 4000P 475G C-1 AP1% :LINO/LINO :300CM",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "LINO/LINO"
+  },
+  {
+    "code": "RECSC4PEPEP300",
+    "description": "LONA RECSCREEN 4000P 475G C-1 AP1% :PERLA/PERLA :300CM",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "PERLA/PERLA"
+  },
+  {
+    "code": "RECSC5",
+    "description": "LONA RECSCREEM 5000P 500G M2",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": ""
+  },
+  {
+    "code": "RECSC5BLANP300",
+    "description": "LONA RECSCREEM 5000P 500G M2 :000 BLANCO/BLANCO R000 :300CM",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": ""
+  },
+  {
+    "code": "RECSC5BLGIP300",
+    "description": "LONA RECSCREEM 5000P 500G M2 :BLANCO/GRIS PERLA R-004 :300 AN",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "BLANCO/GRIS PERLA R-004"
+  },
+  {
+    "code": "RECSC5BLGOP300",
+    "description": "LONA RECSCREEM 5000P 500G M2 :BLANCO/GRIS OSCURO R-005 :300AN",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "BLANCO/GRIS OSCURO R-005"
+  },
+  {
+    "code": "RECSC5BLLIP300",
+    "description": "LONA RECSCREEN 5000P 500G C-1 AP10% :001 BLANCO/LINO :300CM",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": ""
+  },
+  {
+    "code": "RECSC5LILIP300",
+    "description": "LONA RECSCREEM 5000P 500G M2 :LINO/LINO :300CM",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "LINO/LINO"
+  },
+  {
+    "code": "RECSC5PEPEP300",
+    "description": "LONA RECSCREEM 5000P 500G M2:PERLA/PERLA:300 AN",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "PERLA/PERLA"
+  },
+  {
+    "code": "RECSCR3",
+    "description": "LONA RECSCREEN 3500P 395G C-1 AP5%",
+    "width": 250,
+    "material": "DECORACION TEJIDOS",
+    "color": ""
+  },
+  {
+    "code": "RECSCR3B/PLP300",
+    "description": "LONA RECSCREEN 3500P 395G C-1 AP5%:BLANC/GRIS PLATA R008:300",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "BLANC/GRIS PLATA R008"
+  },
+  {
+    "code": "RECSCR3BLANP300",
+    "description": "LONA RECSCREEN 3500P 415G C-1 AP5% :BLANCO :300CM",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "BLANCO"
+  },
+  {
+    "code": "RECSCR3BLLIP300",
+    "description": "LONA RECSCREEN 3500P 415G C-1 AP5% :BLANCO/LINO :300CM",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "BLANCO/LINO"
+  },
+  {
+    "code": "RECSCR3BLSAP300",
+    "description": "LONA RECSCREEN 3500P 395G C-1 AP5% :BLANCO/SABLE :300CM",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "BLANCO/SABLE"
+  },
+  {
+    "code": "RECSCR3LILIP300",
+    "description": "LONA RECSCREEN 3500P 415G C-1 AP5% :LINO/LINO :300CM",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "LINO/LINO"
+  },
+  {
+    "code": "RECSCR3NEGRP300",
+    "description": "LONA RECSCREEN 3500P 395G C-1 AP5% :NEGRO r-300 :300CM",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "NEGRO R-300"
+  },
+  {
+    "code": "RECSCR3PEPEP300",
+    "description": "LONA RECSCREEN 3500P 395G C-1 AP5% :PERLA/PERLA :300CM",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "PERLA/PERLA"
+  },
+  {
+    "code": "RECSCR6",
+    "description": "LONA RECSCREEN 6000P 610G C-1 AP2%",
+    "width": null,
+    "material": "DECORACION TEJIDOS",
+    "color": ""
+  },
+  {
+    "code": "RECSCR6AN/ANP300",
+    "description": "LONA RECSCREEN 6000P 610G C-1 AP2%:ANTRACITA/ANTRACITA:300 AN",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "ANTRACITA/ANTRACITA"
+  },
+  {
+    "code": "RECSCR6BLANP300",
+    "description": "LONA RECSCREEN 6000P 610G C-1 AP2% :BLANCO/BLANCO :300CM",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "BLANCO/BLANCO"
+  },
+  {
+    "code": "RECSCR6BLGIP300",
+    "description": "LONA RECSCREEN 6000P 610G C-1 AP2% :BLANCO/PERLA :300CM",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "BLANCO/PERLA"
+  },
+  {
+    "code": "RECSCR6GRSAP300",
+    "description": "LONA RECSCREEN 6000 650G CL1 AP.3% :GRIS OSCURO/SABLE 502 :300CM",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "GRIS OSCURO/SABLE 502"
+  },
+  {
+    "code": "RECSCR6LILIP300",
+    "description": "LONA RECSCREEN 6000P 650G CL1 AP.3% :LINO/LINO :300CM",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "LINO/LINO"
+  },
+  {
+    "code": "RECSCR6NEGRP300",
+    "description": "LONA RECSCREEN 6000P 610G C-1 AP2% :NEGRO :300CM",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "NEGRO"
+  },
+  {
+    "code": "RECSCR7BLANP300",
+    "description": "LONA RECSCREEN 7000P 440G C-1 AP.3% :BLANCO:300",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "BLANCO"
+  },
+  {
+    "code": "RECSCR7BLLIP300",
+    "description": "LONA RECSCREEN 7000P 465G CL1 AP.3%:BLANCO/LINO:300 AN",
+    "width": 300,
+    "material": "DECORACION TEJIDOS",
+    "color": "BLANCO/LINO"
+  },
+  {
+    "code": "REDE",
+    "description": "REJILLA-REDE (2ª) 250GR",
+    "width": 210,
+    "material": "REJILLA",
+    "color": ""
+  },
+  {
+    "code": "REDE227",
+    "description": "REJILLA-REDE 227 (2ª) 270GR",
+    "width": null,
+    "material": "REJILLA",
+    "color": ""
+  },
+  {
+    "code": "REDE227AZCLP210",
+    "description": "REJILLA-REDE 227 (2ª) 270GR :AZUL CLARO :210 AN",
+    "width": 210,
+    "material": "REJILLA",
+    "color": "AZUL CLARO"
+  },
+  {
+    "code": "REDE227BLANP210",
+    "description": "REJILLA-REDE 227 (2ª) 270GR :BLANCO :210 AN",
+    "width": 210,
+    "material": "REJILLA",
+    "color": "BLANCO"
+  },
+  {
+    "code": "REDE227VEOSP210",
+    "description": "REJILLA-REDE 227 (2ª) 270GR :VERDE OSCURO :210 AN",
+    "width": 210,
+    "material": "REJILLA",
+    "color": "VERDE OSCURO"
+  },
+  {
+    "code": "REDENEGROP210",
+    "description": "REJILLA-REDE (2ª) 250GR :NEGRO:210 ANCHO",
+    "width": 210,
+    "material": "REJILLA",
+    "color": "NEGRO"
+  },
+  {
+    "code": "RELAX",
+    "description": "LONA TEXTILE RELAX 520GR/M² M1",
+    "width": 210,
+    "material": "DECORACION TEJIDOS",
+    "color": ""
+  },
+  {
+    "code": "RELAXBLANP210",
+    "description": "LONA TEXTILE RELAX 520GR/M² M1:BLANCO 7855 :210 ANCHO",
+    "width": 210,
+    "material": "DECORACION TEJIDOS",
+    "color": "BLANCO 7855"
+  },
+  {
+    "code": "RELAXVISOP210",
+    "description": "LONA TEXTILE RELAX 520GR/M² M1:VISON 7851:210CM ANCHO",
+    "width": 210,
+    "material": "DECORACION TEJIDOS",
+    "color": "VISON 7851"
+  },
+  {
+    "code": "RENOTE",
+    "description": "LONA RENO TERCIOPELO IGN M1 380 GR",
+    "width": 145,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "RENOTENEGRP145",
+    "description": "LONA RENO TERCIOPELO IGN M1 380 GR :NEGRO :145 AN",
+    "width": 145,
+    "material": "ESPECIALES",
+    "color": "NEGRO"
+  },
+  {
+    "code": "RENOTETEJAP145",
+    "description": "LONA RENO TERCIOPELO IGN M1 380 GR :TEJA :145 AN",
+    "width": 145,
+    "material": "ESPECIALES",
+    "color": "TEJA"
+  },
+  {
+    "code": "RESALG",
+    "description": "RESTO LONA  OTROS (ALGOGON)",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "RESTOACRILICO",
+    "description": "RESTO ACRILICO",
+    "width": 120,
+    "material": "ACR",
+    "color": ""
+  },
+  {
+    "code": "RESTOAPROVECHABLE",
+    "description": "RESTO GRANDE DE LONA DETALLES EN NUM. SERIE",
+    "width": null,
+    "material": "",
+    "color": ""
+  },
+  {
+    "code": "RESTOBIGBAG",
+    "description": "RESTOS LONA EN BIG BAG",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "RESTOBIGBAGPVC580G",
+    "description": "RESTOS LONA EN BIG BAG:PVC:580GRAMOS",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": "PVC"
+  },
+  {
+    "code": "RESTOBIGBAGPVC900G",
+    "description": "RESTOS LONA EN BIG BAG:PVC:900GRAMOS",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": "PVC"
+  },
+  {
+    "code": "RESTOBIGBAGPVCINTG",
+    "description": "RESTOS LONA EN BIG BAG:PVC:GRAMAJE INTERMEDIO",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": "PVC"
+  },
+  {
+    "code": "RESTOCORDUR33NEG",
+    "description": "RESTO LONA CORDURA300-330GR:NEGRO:160(1P POLIURET)",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": "NEGRO"
+  },
+  {
+    "code": "RESTOCUERO",
+    "description": "RESTO CUERO",
+    "width": null,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "RESTOLONA900",
+    "description": "RESTO LONA PLASTICA 900 G",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "RESTOLONA900AZEU",
+    "description": "RESTO LONA PLASTICA 900 G :AZUL EUROPA 941",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL EUROPA 941"
+  },
+  {
+    "code": "RESTOLONA900NEGR",
+    "description": "RESTO LONA PLASTICA 900 G :NEGRO",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": "NEGRO"
+  },
+  {
+    "code": "RESTOLOPAC",
+    "description": "RESTO LONA OPACA",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "RESTOLOPACBLAN",
+    "description": "RESTO LONA OPACA  :BLANCO",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO"
+  },
+  {
+    "code": "RESTOMUELLEC",
+    "description": "RESTO LONA MUELLE DE CARGA",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "RESTOMUELLEC1,2",
+    "description": "RESTO LONA MUELLE DE CARGA :1,2 MM",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "RESTOMUELLEC2MM",
+    "description": "RESTO LONA MUELLE DE CARGA :2MM",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "RESTOMUELLEC3MM",
+    "description": "RESTO LONA MUELLE DE CARGA :3MM",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "RESTOPANA",
+    "description": "RESTO LONA PANADEROS",
+    "width": null,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "RESTOPVC",
+    "description": "RESTO LONA PVC",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "RESTOSOLTIS",
+    "description": "RESTO LONA SOLTIS",
+    "width": null,
+    "material": "DECORACION TEJIDOS",
+    "color": ""
+  },
+  {
+    "code": "RESTOSPLASTEL",
+    "description": "RESTO LONA PLASTEL",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "RETR45GROSP220",
+    "description": "PVC RETROILUMINABLE 425-450G :GRIS OSCURO :220 AN",
+    "width": 220,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS OSCURO"
+  },
+  {
+    "code": "ROMA",
+    "description": "LONA ROMA 60%ALG 40%ACR. 280 GR",
+    "width": 280,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "ROMABLANP280",
+    "description": "LONA ROMA 60%ALG 40%ACR. 280 GR :BLANCO  :280 AN",
+    "width": 280,
+    "material": "ESPECIALES",
+    "color": "BLANCO"
+  },
+  {
+    "code": "ROND",
+    "description": "LONA RONDA 235GR IGN M2",
+    "width": 280,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "RONDGRCLP280",
+    "description": "LONA RONDA 235GR IGN M2 :GRIS CLARO :280 AN",
+    "width": 280,
+    "material": "ESPECIALES",
+    "color": "GRIS CLARO"
+  },
+  {
+    "code": "RONDMARFP280",
+    "description": "LONA RONDA 235GR IGN M2 :MARFIL :280 AN",
+    "width": 280,
+    "material": "ESPECIALES",
+    "color": "MARFIL"
+  },
+  {
+    "code": "RONDNEGROP300",
+    "description": "LONA RONDA 235GR IGN M2:NEGRO:300 AN",
+    "width": 300,
+    "material": "ESPECIALES",
+    "color": "NEGRO"
+  },
+  {
+    "code": "RONDNEGRP280",
+    "description": "LONA RONDA 235GR IGN M2 :NEGRO :280 AN",
+    "width": 280,
+    "material": "ESPECIALES",
+    "color": "NEGRO"
+  },
+  {
+    "code": "S2000E",
+    "description": "REJILLA SEDOCROM 2000 435GR/M²",
+    "width": null,
+    "material": "REJILLA",
+    "color": ""
+  },
+  {
+    "code": "S2000EAZ15P300",
+    "description": "REJILLA SEDOCROM 2000 435GR/M² :AZUL 5015 :300 AN (ESPECIAL)",
+    "width": 300,
+    "material": "REJILLA",
+    "color": "AZUL 5015"
+  },
+  {
+    "code": "S2000EBLANP300",
+    "description": "REJILLA SEDOCROM 2000 435GR/M² :BLANCO :300 AN (ESPECIAL)",
+    "width": 300,
+    "material": "REJILLA",
+    "color": "BLANCO"
+  },
+  {
+    "code": "S2000EGR30P300",
+    "description": "REJILLA SEDOCROM 2000 435GR/M²:GRIS RAL7030:300 AN (ESPECIAL)",
+    "width": 300,
+    "material": "REJILLA",
+    "color": "GRIS RAL7030"
+  },
+  {
+    "code": "S2000ENEGRP300",
+    "description": "REJILLA SEDOCROM 2000 435GR/M² :NEGRO :300 AN (ESPECIAL)",
+    "width": 300,
+    "material": "REJILLA",
+    "color": "NEGRO"
+  },
+  {
+    "code": "S2000FR",
+    "description": "REJILLA SEDOCROM 2000 FR 435GR/M² (ESPECIAL IGNIFUGA)",
+    "width": null,
+    "material": "REJILLA",
+    "color": ""
+  },
+  {
+    "code": "S2000FRGR30P300",
+    "description": "REJILLA SEDOCROM 2000 FR 435GR/M² (ESPECIAL IGNIFUGA):GRIS RAL7030:300 AN",
+    "width": 300,
+    "material": "REJILLA",
+    "color": "GRIS RAL7030"
+  },
+  {
+    "code": "SABA",
+    "description": "LONA SABA 130 GR IGN M1",
+    "width": 280,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "SABABEIGP300",
+    "description": "LONA SABA 130 GR IGN M1 :BEIGE (SA-202) :300 AN",
+    "width": 300,
+    "material": "ESPECIALES",
+    "color": "BEIGE (SA-202)"
+  },
+  {
+    "code": "SABABLANP280",
+    "description": "LONA SABA 130 GR IGN M1 :BLANCO  :280 AN",
+    "width": 280,
+    "material": "ESPECIALES",
+    "color": "BLANCO"
+  },
+  {
+    "code": "SABABLANP300",
+    "description": "LONA SABA 130 GR IGN M1 :BLANCO  :300 AN",
+    "width": 300,
+    "material": "ESPECIALES",
+    "color": "BLANCO"
+  },
+  {
+    "code": "SCRIM15",
+    "description": "LONA POLYMAR SCRIM 7915 5300 2L 295",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "SCRIM15VERDP250",
+    "description": "LONA POLYMAR SCRIM 7915 5300 2L 295 :VERDE 682 :250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE 682"
+  },
+  {
+    "code": "SCRIM15VERDP320",
+    "description": "LONA POLYMAR SCRIM 7915 5300 2L 295 :VERDE 682 :320 AN",
+    "width": 320,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE 682"
+  },
+  {
+    "code": "SCRSPVC",
+    "description": "LONA CALIDAD SCREEN SIN PVC IGNIFUGO",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "SCRSPVCBLANP300",
+    "description": "LONA CALIDAD SCREEN SIN PVC IGNIFUGO:BLANCO :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO"
+  },
+  {
+    "code": "SEDO3",
+    "description": "REJILLA SEDOCROM 3005 220G (2ª)",
+    "width": 150,
+    "material": "REJILLA",
+    "color": ""
+  },
+  {
+    "code": "SEDO3AZ15P150",
+    "description": "REJILLA SEDOCROM 3005 220G (2ª) :AZUL 5015 :150 AN",
+    "width": 150,
+    "material": "REJILLA",
+    "color": "AZUL 5015"
+  },
+  {
+    "code": "SEDO3NEGROP150",
+    "description": "REJILLA SEDOCROM 3005 220G (2ª):NEGRO:150 AN",
+    "width": 150,
+    "material": "REJILLA",
+    "color": "NEGRO"
+  },
+  {
+    "code": "SEDO3NEGRP300",
+    "description": "REJILLA SEDOCROM 3005 220G (2ª) :NEGRO :300 AN",
+    "width": 300,
+    "material": "REJILLA",
+    "color": "NEGRO"
+  },
+  {
+    "code": "SEDOCR",
+    "description": "REJILLA SEDOCROM 1000 320 (3ª)",
+    "width": 150,
+    "material": "REJILLA",
+    "color": ""
+  },
+  {
+    "code": "SEDOCRAZ15P300",
+    "description": "REJILLA SEDOCROM 1000 320 (3ª) :AZUL 5015 :300 AN",
+    "width": 300,
+    "material": "REJILLA",
+    "color": "AZUL 5015"
+  },
+  {
+    "code": "SEDOCRBLANP300",
+    "description": "REJILLA SEDOCROM 1000 320 (3ª) :BLANCO :300 AN",
+    "width": 300,
+    "material": "REJILLA",
+    "color": "BLANCO"
+  },
+  {
+    "code": "SEDOCRGR30P300",
+    "description": "REJILLA SEDOCROM 1000 320 (3ª) :GRIS 7030 :300 AN",
+    "width": 300,
+    "material": "REJILLA",
+    "color": "GRIS 7030"
+  },
+  {
+    "code": "SEDOCRP",
+    "description": "REJILLA SEDOCROM 1000 PLUS (1ª) 600GR",
+    "width": 300,
+    "material": "REJILLA",
+    "color": ""
+  },
+  {
+    "code": "SEDOCRPGR30P300",
+    "description": "REJILLA SEDOCROM 1000 PLUS (1ª) 600GR:GRIS 7030 (M5546):300 AN",
+    "width": 300,
+    "material": "REJILLA",
+    "color": "GRIS 7030 (M5546)"
+  },
+  {
+    "code": "SEDOCRPVE26P300",
+    "description": "REJILLA SEDOCROM 1000 PLUS (1ª) 600GR :VERDE 6026 :300CM",
+    "width": 300,
+    "material": "REJILLA",
+    "color": "VERDE 6026"
+  },
+  {
+    "code": "SEDOSOL",
+    "description": "LONA SEDOSOL 500G L2 MATE M2",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "SEDOSOLNEGRP300",
+    "description": "LONA SEDOSOL 500G L2 MATE M2 :NEGRO :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "NEGRO"
+  },
+  {
+    "code": "SIGNUM",
+    "description": "LONA SIGNUM SCREEN LIBRE PVC M1 185GRS:",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "SIGNUMBLANP300",
+    "description": "LONA SIGNUM SCREEN LIBRE PVC M1 185GRS::BLANCO 77302/77048 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "SKAY5E",
+    "description": "SKAY 5 ESTRELLAS",
+    "width": 140,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "SKAY5EBLANP140",
+    "description": "SKAY 5 ESTRELLAS :BLANCO  :140 AN",
+    "width": 140,
+    "material": "ESPECIALES",
+    "color": "BLANCO"
+  },
+  {
+    "code": "SKAY5EMRROP140",
+    "description": "SKAY 5 ESTRELLAS :MARRON :140 AN",
+    "width": 140,
+    "material": "ESPECIALES",
+    "color": "MARRON"
+  },
+  {
+    "code": "SKAY5ENEGRP140",
+    "description": "SKAY 5 ESTRELLAS :NEGRO :140 AN",
+    "width": 140,
+    "material": "ESPECIALES",
+    "color": "NEGRO"
+  },
+  {
+    "code": "SLFLAG",
+    "description": "LONA SOLVENTFLAG CS M1 110",
+    "width": null,
+    "material": "TÉXTIL",
+    "color": ""
+  },
+  {
+    "code": "SLFLAGBLIM1372",
+    "description": "LONA SOLVENTFLAG CS M1 110:BLANCO I.D:137,2 AN",
+    "width": 137.2,
+    "material": "TÉXTIL",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "SLFLAGBLIM1524",
+    "description": "LONA SOLVENTFLAG CS M1 110:BLANCO I.D:152,4 AN",
+    "width": 152.4,
+    "material": "TÉXTIL",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "SLFLAP",
+    "description": "LONA SOLVENTEX TCS FLAG PLUS B1",
+    "width": 320,
+    "material": "TÉXTIL",
+    "color": ""
+  },
+  {
+    "code": "SLFLAPBLIMP320",
+    "description": "LONA SOLVENTEX TCS FLAG PLUS B1 :BLANCO I.D :320 A",
+    "width": 320,
+    "material": "TÉXTIL",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "SOLTIS502",
+    "description": "LONA SOLTIS PROOF 502 M2 SATINADA 570g/m²",
+    "width": 180,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "SOLTIS502ARENP180",
+    "description": "LONA SOLTIS PROOF 502 M2 SATINADA 570g/m²:ARENA 502v2-8861C :180 AN",
+    "width": 180,
+    "material": "PLASTICA (LONA)",
+    "color": "ARENA 502V2-8861C"
+  },
+  {
+    "code": "SOLTIS502AZ0SP180",
+    "description": "LONA SOLTIS PROOF 502 M2 SATINADA 570g/m²:AZUL OSCURO 502V2-50673C:180 AN",
+    "width": 180,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL OSCURO 502V2-50673C"
+  },
+  {
+    "code": "SOLTIS502AZMAP180",
+    "description": "LONA SOLTIS PROOF 502 M2 SATINADA 570g/m²:AZUL MARINO 502V2-1125C:180 AN",
+    "width": 180,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL MARINO 502V2-1125C"
+  },
+  {
+    "code": "SOLTIS502AZOSP180",
+    "description": "LONA SOLTIS PROOF 502 M2 SATINADA 570g/m²:AZUL NOCHE 502V2-2161C :180 AN",
+    "width": 180,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL NOCHE 502V2-2161C"
+  },
+  {
+    "code": "SOLTIS502BURDP180",
+    "description": "LONA SOLTIS PROOF 502 M2 SATINADA 570g/m²:BURDEOS 502V2-8284C:180 AN",
+    "width": 180,
+    "material": "PLASTICA (LONA)",
+    "color": "BURDEOS 502V2-8284C"
+  },
+  {
+    "code": "SOLTIS502CAFEP180",
+    "description": "LONA SOLTIS PROOF 502 M2 SATINADA 570g/m²:CAÑAMO 502V2-50265C:180 AN",
+    "width": 180,
+    "material": "PLASTICA (LONA)",
+    "color": "CAÑAMO 502V2-50265C"
+  },
+  {
+    "code": "SOLTIS502CAPUCP180",
+    "description": "LONA SOLTIS PROOF 502 M2 SATINADA 570g/m²:CAPUCHINO 502V2-2141C:180 AN",
+    "width": 180,
+    "material": "PLASTICA (LONA)",
+    "color": "CAPUCHINO 502V2-2141C"
+  },
+  {
+    "code": "SOLTIS502CELP180",
+    "description": "LONA SOLTIS PROOF 502 M2 SATINADA 570g/m²:CELADÓN 502V2-20675C:180 AN",
+    "width": 180,
+    "material": "PLASTICA (LONA)",
+    "color": "CELADÓN 502V2-20675C"
+  },
+  {
+    "code": "SOLTIS502FRAP180",
+    "description": "LONA SOLTIS PROOF 502 M2 SATINADA 570g/m²:FRAMBUESA 502V2-2150C:180 AN",
+    "width": 180,
+    "material": "PLASTICA (LONA)",
+    "color": "FRAMBUESA 502V2-2150C"
+  },
+  {
+    "code": "SOLTIS502MELP180",
+    "description": "LONA SOLTIS PROOF 502 M2 SATINADA 570g/m²:502V3-51974C MELOCOTON:180 AN",
+    "width": 180,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "SOLTIS502PIMIENTAP180",
+    "description": "LONA SOLTIS PROOF 502 M2 SATINADA 570g/m²:PIMIENTA 502V2-2012C:180 AN",
+    "width": 180,
+    "material": "PLASTICA (LONA)",
+    "color": "PIMIENTA 502V2-2012C"
+  },
+  {
+    "code": "SOLTIS502VEBOP180",
+    "description": "LONA SOLTIS PROOF 502 M2 SATINADA 570g/m²:VERDE BOTELLA 502V2-2156C:180 AN",
+    "width": 180,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE BOTELLA 502V2-2156C"
+  },
+  {
+    "code": "SOLTIS502VEHIP180",
+    "description": "LONA SOLTIS PROOF 502 M2 SATINADA 570g/m²:VERDE TENIS 8056C:180 AN",
+    "width": 180,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE TENIS 8056C"
+  },
+  {
+    "code": "SOLTIS502VEMUP180",
+    "description": "LONA SOLTIS PROOF 502 M2 SATINADA 570g/m²:VERDE MUSGO 502V2-2158C:180 AN (descatalogado)",
+    "width": 180,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE MUSGO 502V2-2158C"
+  },
+  {
+    "code": "SOLTIS502VEPRP180",
+    "description": "LONA SOLTIS PROOF 502 M2 SATINADA 570g/m²:VERDE PRIMAVERA 502V3-51332C:180 AN",
+    "width": 180,
+    "material": "PLASTICA (LONA)",
+    "color": "VERDE PRIMAVERA 502V3-51332C"
+  },
+  {
+    "code": "SOLTIS862046P267",
+    "description": "LONA SOLTIS 86: 2046 :267CM",
+    "width": 267,
+    "material": "SOLTIS 86",
+    "color": ""
+  },
+  {
+    "code": "SOLTIS88",
+    "description": "LONA SOLTIS HARMONY 88 M1, 360GR",
+    "width": 267,
+    "material": "DECORACION TEJIDOS",
+    "color": ""
+  },
+  {
+    "code": "SOLTIS880333P177",
+    "description": "LONA SOLTIS HARMONY 88 M1, 360GR:BAMBU 50333:177 AN",
+    "width": 177,
+    "material": "DECORACION TEJIDOS",
+    "color": "BAMBU 50333"
+  },
+  {
+    "code": "SOLTIS882175P267",
+    "description": "LONA SOLTIS 88 M1, 360GR: 2175 CHAMPAGNE: 267CM ANCHO",
+    "width": 267,
+    "material": "DECORACION TEJIDOS",
+    "color": ""
+  },
+  {
+    "code": "SOLTIS88NEGRP267",
+    "description": "LONA SOLTIS HARMONY 88 M1, 360GR:NEGRO 88-2053:267 ANCHO",
+    "width": 267,
+    "material": "DECORACION TEJIDOS",
+    "color": "NEGRO 88-2053"
+  },
+  {
+    "code": "SOLTIS90AMARP180",
+    "description": "LONA SOLTIS AIR 90 :AMARILLO 1360 :180 AN",
+    "width": 180,
+    "material": "DECORACION TEJIDOS",
+    "color": "AMARILLO 1360"
+  },
+  {
+    "code": "SOLTIS90AMOSP180",
+    "description": "LONA SOLTIS AIR 90 :AMARILLO HUEVO 1107 :180 AN",
+    "width": 180,
+    "material": "DECORACION TEJIDOS",
+    "color": "AMARILLO HUEVO 1107"
+  },
+  {
+    "code": "SOLTIS90ARENP180",
+    "description": "LONA SOLTIS AIR 90 :ARENA 1004 :180 AN",
+    "width": 180,
+    "material": "DECORACION TEJIDOS",
+    "color": "ARENA 1004"
+  },
+  {
+    "code": "SOLTIS90BEIGP180",
+    "description": "LONA SOLTIS AIR 90 :BEIGE 1361 :180 AN",
+    "width": 180,
+    "material": "DECORACION TEJIDOS",
+    "color": "BEIGE 1361"
+  },
+  {
+    "code": "SOLTIS90BLANP180",
+    "description": "LONA SOLTIS AIR 90 :BLANCO 1044 :180 AN",
+    "width": 180,
+    "material": "DECORACION TEJIDOS",
+    "color": "BLANCO 1044"
+  },
+  {
+    "code": "SOLTIS90GRANP180",
+    "description": "LONA SOLTIS AIR 90 :GRANATE 1356 :180 AN",
+    "width": 180,
+    "material": "DECORACION TEJIDOS",
+    "color": "GRANATE 1356"
+  },
+  {
+    "code": "SOLTIS90MARFP180",
+    "description": "LONA SOLTIS AIR 90 :MARFIL 1003 :180 AN",
+    "width": 180,
+    "material": "DECORACION TEJIDOS",
+    "color": "MARFIL 1003"
+  },
+  {
+    "code": "SOLTIS90RIOJP180",
+    "description": "LONA SOLTIS AIR 90 :RIOJA 1015 :180 AN",
+    "width": 180,
+    "material": "DECORACION TEJIDOS",
+    "color": "RIOJA 1015"
+  },
+  {
+    "code": "SOLTIS90VEBOP180",
+    "description": "LONA SOLTIS AIR 90 :VERDE BOTELLA 1112 :180 AN",
+    "width": 180,
+    "material": "DECORACION TEJIDOS",
+    "color": "VERDE BOTELLA 1112"
+  },
+  {
+    "code": "SOLTIS90VEOSP180",
+    "description": "LONA SOLTIS AIR 90 :VERDE OSCURO 1355 :180 AN",
+    "width": 180,
+    "material": "DECORACION TEJIDOS",
+    "color": "VERDE OSCURO 1355"
+  },
+  {
+    "code": "SOLTIS92",
+    "description": "LONA SOLTIS 92 M1",
+    "width": 177,
+    "material": "SOLTIS 92",
+    "color": ""
+  },
+  {
+    "code": "SOLTIS922044P267",
+    "description": "LONA SOLTIS 92 M1:2044 BLANCO:267 ANCHO",
+    "width": 267,
+    "material": "SOLTIS 92",
+    "color": ""
+  },
+  {
+    "code": "SOLTIS922157P177",
+    "description": "LONA SOLTIS 92 M1:2157 ANIS:177 AN",
+    "width": 177,
+    "material": "SOLTIS 92",
+    "color": ""
+  },
+  {
+    "code": "SOLTIS922160P177",
+    "description": "LONA SOLTIS 92 M1:2160 AZUL LAGO:177 AN",
+    "width": 177,
+    "material": "SOLTIS 92",
+    "color": ""
+  },
+  {
+    "code": "SOLTIS922166P177",
+    "description": "LONA SOLTIS 92 M1 :2166 GIRASOL:177 AN",
+    "width": 177,
+    "material": "SOLTIS 92",
+    "color": ""
+  },
+  {
+    "code": "SOLTIS9251182P177",
+    "description": "LONA SOLTIS 92 M1:51182 DEEP BLUE:177 AN",
+    "width": 177,
+    "material": "SOLTIS 92",
+    "color": ""
+  },
+  {
+    "code": "SOLTIS928204P177",
+    "description": "LONA SOLTIS 92 :8204 NARANJA :177 AN",
+    "width": 177,
+    "material": "SOLTIS 92",
+    "color": ""
+  },
+  {
+    "code": "SOLTIS92CAFEP267",
+    "description": "LONA SOLTIS 92 M1: BRONCE 2043 :267 ANCHO",
+    "width": 267,
+    "material": "SOLTIS 92",
+    "color": "BRONCE 2043"
+  },
+  {
+    "code": "SOLTIS92COBRP177",
+    "description": "LONA SOLTIS 92 :COBRE 50-50274:177 AN",
+    "width": 177,
+    "material": "SOLTIS 92",
+    "color": "COBRE 50-50274"
+  },
+  {
+    "code": "SOLTIS92CREMP267",
+    "description": "LONA SOLTIS 92 :CAÑAMO 50265 :267CM",
+    "width": 267,
+    "material": "SOLTIS 92",
+    "color": "CAÑAMO 50265"
+  },
+  {
+    "code": "SOLTIS92GROSP267",
+    "description": "LONA SOLTIS 92:GRIS ANTRACITA 2047:267 ANCHO",
+    "width": 267,
+    "material": "SOLTIS 92",
+    "color": "GRIS ANTRACITA 2047"
+  },
+  {
+    "code": "SOLTIS92VEHIP177",
+    "description": "LONA SOLTIS 92: 8056 VERDE TENIS:177 AN",
+    "width": 177,
+    "material": "SOLTIS 92",
+    "color": ""
+  },
+  {
+    "code": "SOLTIS96",
+    "description": "LONA SOLTIS 96 M2, 400GR",
+    "width": 267,
+    "material": "SOLTIS 96",
+    "color": ""
+  },
+  {
+    "code": "SOLTIS960261P267",
+    "description": "LONA SOLTIS 96 M2, 400GR :CARAMELO 50261 :267AN",
+    "width": 267,
+    "material": "SOLTIS 96",
+    "color": "CARAMELO 50261"
+  },
+  {
+    "code": "SOLTIS96AMHUP267",
+    "description": "LONA SOLTIS 96 M2, 400GR :AMAR HUEVO 2166-7136 :267AN",
+    "width": 267,
+    "material": "SOLTIS 96",
+    "color": "AMAR HUEVO 2166-7136"
+  },
+  {
+    "code": "SOLTIS96AZULP267",
+    "description": "LONA SOLTIS 96 M2, 400GR :AZUL NOCHE 2161 :267AN",
+    "width": 267,
+    "material": "SOLTIS 96",
+    "color": "AZUL NOCHE 2161"
+  },
+  {
+    "code": "SOLTIS96BRONP267",
+    "description": "LONA SOLTIS 96 M2, 400GR :BRONCE 2043 :267AN",
+    "width": 267,
+    "material": "SOLTIS 96",
+    "color": "BRONCE 2043"
+  },
+  {
+    "code": "SOLTIS96CITRIP267",
+    "description": "LONA SOLTIS 96 M2, 400GR :CITRICO 50846 :267 ANCHO",
+    "width": 267,
+    "material": "SOLTIS 96",
+    "color": "CITRICO 50846"
+  },
+  {
+    "code": "SOLTIS96GRCLP267",
+    "description": "LONA SOLTIS 96 M2, 400GR: GRIS CLARO BOULDER 96-2171 :267AN",
+    "width": 267,
+    "material": "SOLTIS 96",
+    "color": "GRIS CLARO BOULDER 96-2171"
+  },
+  {
+    "code": "SOLTIS96GROSP267",
+    "description": "LONA SOLTIS 96 M2, 400GR :ANTRACITA 2047 :267AN",
+    "width": 267,
+    "material": "SOLTIS 96",
+    "color": "ANTRACITA 2047"
+  },
+  {
+    "code": "SOLTIS96JUNP267",
+    "description": "LONA SOLTIS 96 M2, 400GR:96-50849 JUNGLE:267 ANCHO",
+    "width": 267,
+    "material": "SOLTIS 96",
+    "color": ""
+  },
+  {
+    "code": "SOLTIS96NARJP267",
+    "description": "LONA SOLTIS 96 M2, 400GR :NARANJA 8204 - 7140 :267AN",
+    "width": 267,
+    "material": "SOLTIS 96",
+    "color": "NARANJA 8204 - 7140"
+  },
+  {
+    "code": "SOLTIS96NEGRP120",
+    "description": "LONA SOLTIS 96 M2, 400GR:NEGRO 8450:120 AN",
+    "width": 120,
+    "material": "SOLTIS 96",
+    "color": "NEGRO 8450"
+  },
+  {
+    "code": "SOLTIS96NUBP267",
+    "description": "LONA SOLTIS 96 M2, 400GR :NUBE 50272 :267CM",
+    "width": 267,
+    "material": "SOLTIS 96",
+    "color": "NUBE 50272"
+  },
+  {
+    "code": "SOLTIS96P844P267",
+    "description": "LONA SOLTIS 96 M2, 400GR :PLATINO 50844 :267AN",
+    "width": 267,
+    "material": "SOLTIS 96",
+    "color": "PLATINO 50844"
+  },
+  {
+    "code": "SOLTIS96PULP267",
+    "description": "LONA SOLTIS 96 M2, 400GR :ACAPULCO 50847 :267AN",
+    "width": 267,
+    "material": "SOLTIS 96",
+    "color": "ACAPULCO 50847"
+  },
+  {
+    "code": "SOLTIS96RIOJP267",
+    "description": "LONA SOLTIS 96 M2, 400GR :RIOJA 8255 :267AN",
+    "width": 267,
+    "material": "SOLTIS 96",
+    "color": "RIOJA 8255"
+  },
+  {
+    "code": "SOLTIS96T848P267",
+    "description": "LONA SOLTIS 96 M2, 400GR:TILO 96-50848:267 ANCHO",
+    "width": 267,
+    "material": "SOLTIS 96",
+    "color": "TILO 96-50848"
+  },
+  {
+    "code": "SOLTIS96TOPOP267",
+    "description": "LONA SOLTIS 96 M2, 400GR :TOPO 50850 :267AN",
+    "width": 267,
+    "material": "SOLTIS 96",
+    "color": "TOPO 50850"
+  },
+  {
+    "code": "SOLTIS99",
+    "description": "LONA SOLTIS 99",
+    "width": null,
+    "material": "SOLTIS 99",
+    "color": ""
+  },
+  {
+    "code": "SOLTIS9950303P267",
+    "description": "LONA SOLTIS 99 : CUARZO 99-50303:267 ANCHO",
+    "width": 267,
+    "material": "SOLTIS 99",
+    "color": "CUARZO 99-50303"
+  },
+  {
+    "code": "SOLTIS99ARENP177",
+    "description": "LONA SOLTIS 99 :ARENA 2056 :177 AN",
+    "width": 177,
+    "material": "SOLTIS 99",
+    "color": "ARENA 2056"
+  },
+  {
+    "code": "SOLTIS99CANAP177",
+    "description": "LONA SOLTIS 99 MASTER :CAÑAMO 99-50287 :177 AN",
+    "width": 177,
+    "material": "SOLTIS 99",
+    "color": "CAÑAMO 99-50287"
+  },
+  {
+    "code": "SOLTIS99ESPUP177",
+    "description": "LONA SOLTIS 99 :ESPUMA 50284 :177 AN",
+    "width": 177,
+    "material": "SOLTIS 99",
+    "color": "ESPUMA 50284"
+  },
+  {
+    "code": "SOLTIS99NEGROP177",
+    "description": "LONA SOLTIS 99 : 52115 NEGRO/BLANCO:177 AN",
+    "width": 177,
+    "material": "SOLTIS 99",
+    "color": ""
+  },
+  {
+    "code": "STPLUS",
+    "description": "LONA STARPLUS 1L 610",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "STPLUSMA13P300",
+    "description": "LONA STARPLUS 1L 610 :MARFIL 1013 :300 AN  (580)",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "MARFIL 1013"
+  },
+  {
+    "code": "SUBLOCK",
+    "description": "LONA SUNBLOCK 850GRS M2 (CLIENTE)",
+    "width": 300,
+    "material": "PLASTICA I.D",
+    "color": ""
+  },
+  {
+    "code": "SUBLOCKGRISP300",
+    "description": "LONA SUNBLOCK 850GRS M2 (CLIENTE):GRIS 0654:300 AN",
+    "width": 300,
+    "material": "PLASTICA I.D",
+    "color": "GRIS 0654"
+  },
+  {
+    "code": "SUNBLOC",
+    "description": "LONA SUNBLOCK (una cara siempre blanca) OPACA 340g M1",
+    "width": 245,
+    "material": "PLASTICA I.D",
+    "color": ""
+  },
+  {
+    "code": "SUNBLOCBLANP245",
+    "description": "LONA SUNBLOCK (una cara siempre blanca) OPACA 340g M1:BLANCO :245 CM",
+    "width": 245,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO"
+  },
+  {
+    "code": "SUNBLOCKBLANP245",
+    "description": "LONA SUNBLOCK DS (mismo color dos caras) OPACA 340g M1:BLANCO 77068 :245 CM",
+    "width": 245,
+    "material": "PLASTICA I.D",
+    "color": "BLANCO 77068"
+  },
+  {
+    "code": "SUPERT1001P250",
+    "description": "LONA SUPERTRANS L2 670 :BEIGE RAL 1001 :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "BEIGE RAL 1001"
+  },
+  {
+    "code": "SUPERTAZ13P250",
+    "description": "LONA SUPERTRANS L2 670 :MARINO RAL5013 :250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "MARINO RAL5013"
+  },
+  {
+    "code": "SUPERTBU05P250",
+    "description": "LONA SUPERTRANS L2 670 :BURDEOS RAL3005 ref 6441:250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "BURDEOS RAL3005 REF 6441"
+  },
+  {
+    "code": "SUPERTFR",
+    "description": "LONA SUPERTRANS FR T2 L2 670",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "TAPALUZ",
+    "description": "LONA TAPALUZ 250GR OCULTACION C-1",
+    "width": null,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "TAPALUZ825P290",
+    "description": "LONA TAPALUZ 250GR OCULT.C1:TAP825 BERENJENA:290AN",
+    "width": 290,
+    "material": "ESPECIALES",
+    "color": "TAP825 BERENJENA"
+  },
+  {
+    "code": "TAPALUZNEGRP295",
+    "description": "LONA TAPALUZ FR 250GR OCULTACION C-1:NEGRO:P295",
+    "width": 295,
+    "material": "ESPECIALES",
+    "color": "NEGRO"
+  },
+  {
+    "code": "TENT",
+    "description": "LONA TENT IGNIFUGO M2 2L 630 g/m²",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "TENTALU",
+    "description": "LONA TENTALU 650 GR/M2 IGM2",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "TENTALUP/NP250",
+    "description": "LONA TENTALU 650 GR/M2 IGM2 :PLATA/NEGRO :250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "PLATA/NEGRO"
+  },
+  {
+    "code": "TENTNEGRP250",
+    "description": "LONA TENT IGNIFUGO M2 2L 630 g/m² :NEGRO:250 AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "NEGRO"
+  },
+  {
+    "code": "TEX100",
+    "description": "LONA TEXLAR 1000 2L 600",
+    "width": null,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "TEX100AMCLP160",
+    "description": "LONA TEXLAR 1000 2L 600  :AMARILLO CLARO :160 AN",
+    "width": 160,
+    "material": "PLASTICA (LONA)",
+    "color": "AMARILLO CLARO"
+  },
+  {
+    "code": "TEXADH",
+    "description": "TEXTIL ADHESIVO ____GR. IGN",
+    "width": null,
+    "material": "TÉXTIL",
+    "color": ""
+  },
+  {
+    "code": "TEXADHBLIMP127",
+    "description": "TEXTIL ADHESIVO ____GR. IGN    :BLANCO I.D :127 AN",
+    "width": 127,
+    "material": "TÉXTIL",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "TEXILIFEAZEUP300",
+    "description": "LONA TEXILIFE 670 GR MATE-ATOXICO :AZUL EUROPA :300CM",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "AZUL EUROPA"
+  },
+  {
+    "code": "TEXSDECT",
+    "description": "TEXTIL SUBLIMACION DECOTEX    GR",
+    "width": 250,
+    "material": "TÉXTIL",
+    "color": ""
+  },
+  {
+    "code": "TEXSDECTBLIMP253",
+    "description": "TEXTIL SUBLIMACION DECOTEX    GR :BLANCO I.D :253",
+    "width": 253,
+    "material": "TÉXTIL",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "TEXSUBLO",
+    "description": "TEXTIL SUBLIMACION BLOCKOUT",
+    "width": 180,
+    "material": "TÉXTIL",
+    "color": ""
+  },
+  {
+    "code": "TEXSUBLOBLIMP180",
+    "description": "TEXTIL SUBLIMACION BLOCKOUT  :BLANCO I.D :180 AN",
+    "width": 180,
+    "material": "TÉXTIL",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "TEXSUBLOBLIMP250",
+    "description": "TEXTIL SUBLIMACION BLOCKOUT  :BLANCO I.D :250 AN",
+    "width": 250,
+    "material": "TÉXTIL",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "TEXSUBLOBLIMP300",
+    "description": "TEXTIL SUBLIMACION BLOCKOUT  :BLANCO I.D :300 AN",
+    "width": 300,
+    "material": "TÉXTIL",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "TEXSUFLA",
+    "description": "TEXTIL SUBLIMACION FLAG TREVIRA",
+    "width": null,
+    "material": "TÉXTIL",
+    "color": ""
+  },
+  {
+    "code": "TEXSUFLABLIMP150",
+    "description": "TEXTIL SUBLIMACION FLAG TREVIRA  :BLANCO I.D :150",
+    "width": 150,
+    "material": "TÉXTIL",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "TEXSUFLABLIMP152",
+    "description": "TEXTIL SUBLIMACION FLAG TREVIRA  :BLANCO I.D :152",
+    "width": 152,
+    "material": "TÉXTIL",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "TEXSUFLABLIMP160",
+    "description": "TEXTIL SUBLIMACION FLAG TREVIRA:(AZ):BL. I.D:160",
+    "width": 160,
+    "material": "TÉXTIL",
+    "color": "(AZ)"
+  },
+  {
+    "code": "TEXSUFLABLIMP180",
+    "description": "TEXTIL SUBLIMACION FLAGTREVIRA : BLAN. (AZU):180",
+    "width": 180,
+    "material": "TÉXTIL",
+    "color": "BLAN. (AZU)"
+  },
+  {
+    "code": "TEXSUFLABLIMP250",
+    "description": "TEXTIL SUBLIMACION FLAG TREVIRA (AZ):BLA I.D:250",
+    "width": 250,
+    "material": "TÉXTIL",
+    "color": "BLA I.D"
+  },
+  {
+    "code": "TEXSUFLN",
+    "description": "TEXTIL SUBLIMACION FLAG NAUTILUS FR 100",
+    "width": 310,
+    "material": "TÉXTIL",
+    "color": ""
+  },
+  {
+    "code": "TEXSUFLNBLIMP253",
+    "description": "TEXTIL SUBLIMACION FLAG NAUTILUS FR 100 :B.I: P253",
+    "width": 253,
+    "material": "TÉXTIL",
+    "color": "B.I"
+  },
+  {
+    "code": "TEXSUTEN",
+    "description": "TEXTIL SUBLIMACION TENT",
+    "width": null,
+    "material": "TÉXTIL",
+    "color": ""
+  },
+  {
+    "code": "TEXSUTENBLIMP152",
+    "description": "TEXTIL SUBLIMACION TENT  :BLANCO I.D :152 AN",
+    "width": 152,
+    "material": "TÉXTIL",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "TEXSUTENBLIMP250",
+    "description": "TEXTIL SUBLIMACION TENT  :BLANCO I.D :250 AN",
+    "width": 250,
+    "material": "TÉXTIL",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "TEXSUWAL",
+    "description": "TEXTIL SUBLIMACION WALL PAPER",
+    "width": null,
+    "material": "TÉXTIL",
+    "color": ""
+  },
+  {
+    "code": "TEXSUWALBLIMP106",
+    "description": "TEXTIL SUBLIMACION WALL PAPER  :BLANCO I.D :106 AN",
+    "width": 106,
+    "material": "TÉXTIL",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "TEXTIBA",
+    "description": "LONA TEXTIL BANNER DISPLAY 300 D",
+    "width": null,
+    "material": "TÉXTIL",
+    "color": ""
+  },
+  {
+    "code": "TEXTIBABLIMP152",
+    "description": "LONA TEXTIL BANNER DISPLAY 300 D:BLANCO I.D:152 CM",
+    "width": 152,
+    "material": "TÉXTIL",
+    "color": "BLANCO I.D"
+  },
+  {
+    "code": "TOPFR",
+    "description": "LONA TOP FR M1 310 Gr.",
+    "width": 153,
+    "material": "ACRÍLICAS",
+    "color": ""
+  },
+  {
+    "code": "TOPFR8985P153",
+    "description": "LONA TOP FR M1 310 Gr. :BEIGE 8985 :153 AN",
+    "width": 153,
+    "material": "ACRÍLICAS",
+    "color": "BEIGE 8985"
+  },
+  {
+    "code": "TOPFR8988P153",
+    "description": "LONA TOP FR M1 310 Gr. :MARFIL 8988 :153 AN",
+    "width": 153,
+    "material": "ACRÍLICAS",
+    "color": "MARFIL 8988"
+  },
+  {
+    "code": "TOPFR8990P153",
+    "description": "LONA TOP FR M1 310 Gr. :NEGRO 8990 :153 AN",
+    "width": 153,
+    "material": "ACRÍLICAS",
+    "color": "NEGRO 8990"
+  },
+  {
+    "code": "TOPFRBLANP153",
+    "description": "LONA TOP FR M1 310 Gr. :BLANCO 8980 :153 AN",
+    "width": 153,
+    "material": "ACRÍLICAS",
+    "color": "BLANCO 8980"
+  },
+  {
+    "code": "TPU",
+    "description": "TPU 300MY MATE",
+    "width": 120,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "TPUBLANP120",
+    "description": "TPU 300MY MATE:BLANCO :120 AN",
+    "width": 120,
+    "material": "ESPECIALES",
+    "color": "BLANCO"
+  },
+  {
+    "code": "TPUNEGROP120",
+    "description": "TPU 300MY MATE:NEGRO:120 AN",
+    "width": 120,
+    "material": "ESPECIALES",
+    "color": "NEGRO"
+  },
+  {
+    "code": "TRENDL",
+    "description": "LONA TREND LIGHT 2L 650GR M2",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "TRENDLGRATP300",
+    "description": "LONA TREND LIGHT 2L 650GR M2 :GRIS ANTRACITA 6918 :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "GRIS ANTRACITA 6918"
+  },
+  {
+    "code": "TYVEK",
+    "description": "TEXTIL TYVEK 190GRAMOS 2473L",
+    "width": 120,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "TYVEKBLANP150",
+    "description": "TEXTIL TYVEK 190GRAMOS 2473L:BLANCO :150 AN",
+    "width": 150,
+    "material": "ESPECIALES",
+    "color": "BLANCO"
+  },
+  {
+    "code": "TYVEKL2473",
+    "description": "LONA TYVEK STYLE 2473 L 185 GR",
+    "width": 153,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "TYVEKL2473P153",
+    "description": "LONA TYVEK STYLE 2473 L 185 GR :153AN",
+    "width": 153,
+    "material": "ESPECIALES",
+    "color": ""
+  },
+  {
+    "code": "UNILAC",
+    "description": "LONA UNILAC 2L 540GR",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "UNILACBLANP300",
+    "description": "LONA UNILAC 2L 540GR :BLANCO :300 AN",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": "BLANCO"
+  },
+  {
+    "code": "UNITEXFR",
+    "description": "LONA UNITEX FR M1460 g/m²",
+    "width": 300,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "UNITEXFRGRCLP305",
+    "description": "LONA UNITEX FR M1460 g/m²:LIGHT GREY-002:305CM ANCHO",
+    "width": 305,
+    "material": "PLASTICA (LONA)",
+    "color": "LIGHT GREY-002"
+  },
+  {
+    "code": "VALMEX7311",
+    "description": "LONA VALMEX 7311 5340 1450grs/m² 1,2MM",
+    "width": 150,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "VALMEX7311AMARP150",
+    "description": "LONA VALMEX 7311 5340 1450grs/m² 1,2MM:AMARILLO 104 :150 AN",
+    "width": 150,
+    "material": "PLASTICA (LONA)",
+    "color": "AMARILLO 104"
+  },
+  {
+    "code": "VALMEX7311NEGROP150",
+    "description": "LONA VALMEX 7311 5340 1450grs/m² 1,2MM:NEGRO:150 AN",
+    "width": 150,
+    "material": "PLASTICA (LONA)",
+    "color": "NEGRO"
+  },
+  {
+    "code": "VIPFR",
+    "description": "LONA VIP-FR  2L M2 580GR",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "VIPFRA1215P250",
+    "description": "LONA VIP-FR  2L M2 580GR :AMARILLO PANT 1215 :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": "AMARILLO PANT 1215"
+  },
+  {
+    "code": "VIPFRAM03P250",
+    "description": "LONA VIP-FR  2L M2 580GR :66656 AMARILLO RAL1003 :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "VIPFRAVENP250",
+    "description": "LONA VIP-FR  2L M2 580GR :66678 AVENA :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "VIPFRAZ02P250",
+    "description": "LONA VIP-FR  2L M2 580GR :66664 AZUL OSCURO RAL 5002 :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "VIPFRBE88P250",
+    "description": "LONA VIP-FR  2L M2 580GR :66653 BEIGE :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "VIPFRBLANP250",
+    "description": "LONA VIP-FR  2L M2 580GR :66651 BLANCO :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "VIPFRFUCSP250",
+    "description": "LONA VIP-FR  2L M2 580GR :66662 FUCSIA RAL 4006 :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "VIPFRGR16P250",
+    "description": "LONA VIP-FR  2L M2 580GR :66306 GRIS ANTRACITA RAL 7016 :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "VIPFRGR37P250",
+    "description": "LONA VIP-FR  2L M2 580GR :66671 GRIS OSCURO RAL 7037 :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "VIPFRGR38P250",
+    "description": "LONA VIP-FR  2L M2 580GR :60179 GRIS CLARO RAL 7038 :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "VIPFRGR47P250",
+    "description": "LONA VIP-FR  2L M2 580GR :66670 SILVER RAL 7047 :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "VIPFRMR14P250",
+    "description": "LONA VIP-FR  2L M2 580GR :66682 MARRON RAL8014 :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "VIPFRNA04P250",
+    "description": "LONA VIP-FR  2L M2 580GR :66658 NARANJA RAL 2004 :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "VIPFRNE05P250",
+    "description": "LONA VIP-FR  2L M2 580GR :66674 NEGRO RAL 9005 :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "VIPFRRO02P250",
+    "description": "LONA VIP-FR  2L M2 580GR :66659 ROJO RAL 3002 :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "VIPFRVE01P250",
+    "description": "LONA VIP-FR  2L M2 580GR :66667 VERDE RAL 6001:250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "VIPFRVE05P250",
+    "description": "LONA VIP-FR  2L M2 580GR :66669 MUSGO RAL 6005 :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
+  },
+  {
+    "code": "VIPFRVE18P250",
+    "description": "LONA VIP-FR  2L M2 580GR :66675 VERDE CLARO RAL 6018 :250AN",
+    "width": 250,
+    "material": "PLASTICA (LONA)",
+    "color": ""
   }
 ]
