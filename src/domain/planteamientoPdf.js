@@ -1956,7 +1956,7 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
   const cambioCortina = String(awning.model || '').trim().toUpperCase() === 'CAMBIO CORTINA';
   drawDiagramText(
     doc,
-    spec.riveted ? 'REMACHADO · B.N.(4,5)' : cambioCortina ? 'VARILLA BLANCA (5,5)' : spec.generalCurtain ? 'VARILLA NEGRA O BLANCA' : 'VARILLA NEGRA (5,09) EN PVC',
+    spec.riveted ? 'REMACHADO · B.N.(4,5)' : cambioCortina ? 'VARILLA BLANCA (5,5)' : spec.generalCurtain ? 'VARILLA NEGRA O BLANCA' : 'VARILLA NEGRA (4,5) EN PVC',
     frameX - 8,
     frameY - 13,
     frameW + 16
@@ -2275,7 +2275,7 @@ function drawToldoVelcroDiagram(doc, x, y, w, h, awning = {}) {
   doc.rect(panelX, panelY, panelW, h * 0.02).fillAndStroke('#edf3f0', '#4f6e63');
   doc.rect(panelX, panelY + panelH - h * 0.02, panelW, h * 0.02).fillAndStroke('#edf3f0', '#4f6e63');
   drawCurtainSideFinishes(doc, panelX, panelY, panelW, panelH, { finish: 'VELCRO' });
-  drawDiagramText(doc, 'VARILLA NEGRA (5,09) EN PVC', panelX, panelY - h * 0.045, panelW);
+  drawDiagramText(doc, 'VARILLA NEGRA (4,5) EN PVC', panelX, panelY - h * 0.045, panelW);
   drawDiagramText(doc, 'VARILLA BLANCA (5,5)', panelX, panelY + panelH + h * 0.03, panelW);
 
   const valanceY = panelY + panelH + h * 0.11;

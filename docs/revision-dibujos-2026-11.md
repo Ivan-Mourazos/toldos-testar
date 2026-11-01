@@ -1,6 +1,8 @@
 # Revisión de dibujos de confección · noviembre de 2026
 
-Estado provisional. La revisión no acredita la confección de las 72 variantes. Se ha hecho inventario completo, lectura de expedientes, inspección del trazado, generación de 219 muestras (72 variantes y HERA, tres tamaños) y revisión de sus siete hojas de contacto. «Sin evidencia» significa que falta contraste de fabricación suficiente, aunque el dibujo quepa y coincida con pdfkit.
+Segunda pasada en curso con los88 pedidos nuevos y adjuntos de taller leídos de RPS en solo lectura. No se repiten mediciones: la serie de2,198s queda excluida de cualquier conclusión de rendimiento por indicación del coordinador.
+
+Primera pasada: la revisión no acredita la confección de las 72 variantes. Se ha hecho inventario completo, lectura de expedientes, inspección del trazado, generación de 219 muestras (72 variantes y HERA, tres tamaños) y revisión de sus siete hojas de contacto. «Sin evidencia» significa que falta contraste de fabricación suficiente, aunque el dibujo quepa y coincida con pdfkit.
 
 ## Evidencias reproducibles
 
@@ -44,83 +46,9 @@ Los estados «corregido» de la tabla solo acreditan esta reparación de encaje.
 
 No se afirma que GENERAL fuera un olvido para todos los modelos, ni que sea correcto para todos. No se ha encontrado documentación de una decisión individual de Iván para los once modelos de toldo anteriores. Se conserva la selección mientras falte evidencia.
 
-## Tabla completa por variante
+## Inventario inicial por variante (sustituido por la revisión por dibujo)
 
-| Modelo | Variante | Dibujo efectivo | Estado | Evidencia y límite |
-| --- | --- | --- | --- | --- |
-| ARZUA PRO | General | GENERAL | corregido | [Expediente](modelos/arzua-pro.md). Solo encaje sin bamba; confección sin acreditar. Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| ARZUA PRO | Toldo con velcro | TOLDO-VELCRO | sin evidencia | [Expediente](modelos/arzua-pro.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| CAMBIO CORTINA | Con ventana | CORTINA-VENTANA | sin evidencia | [Expediente](modelos/cambio-cortina.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| CAMBIO CORTINA | Con ventana · velcro | CORTINA-VENTANA-VELCRO | sin evidencia | [Expediente](modelos/cambio-cortina.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| CAMBIO CORTINA | Con ventana · ET abajo | CORTINA-TUBO-VENTANA | sin evidencia | [Expediente](modelos/cambio-cortina.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| CAMBIO CORTINA | Sin ventana | CORTINA-SIN-VENTANA | sin evidencia | [Expediente](modelos/cambio-cortina.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| CAMBIO CORTINA | Sin ventana · velcro | CORTINA-VELCRO | sin evidencia | [Expediente](modelos/cambio-cortina.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| CAMBIO CORTINA | Sin ventana · ET abajo | CORTINA-TUBO | sin evidencia | [Expediente](modelos/cambio-cortina.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| CAMBIO CORTINA | Con ventana · velcro · ET abajo | CORTINA-VENTANA-VELCRO | sin evidencia | [Expediente](modelos/cambio-cortina.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| CAMBIO CORTINA | Sin ventana · velcro · ET abajo | CORTINA-VELCRO | sin evidencia | [Expediente](modelos/cambio-cortina.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| CAMBIO TELA | General | GENERAL | corregido | [Expediente](modelos/cambio-tela.md). Solo encaje sin bamba; confección sin acreditar. Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| CAMBIO TELA | Toldo con velcro | TOLDO-VELCRO | sin evidencia | [Expediente](modelos/cambio-tela.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| CORTINA | Con ventana | CORTINA-VENTANA | sin evidencia | [Expediente](modelos/cortina.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| CORTINA | Con ventana · velcro | CORTINA-VENTANA-VELCRO | sin evidencia | [Expediente](modelos/cortina.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| CORTINA | Con ventana · ET abajo | CORTINA-TUBO-VENTANA | sin evidencia | [Expediente](modelos/cortina.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| CORTINA | Sin ventana | CORTINA-SIN-VENTANA | sin evidencia | [Expediente](modelos/cortina.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| CORTINA | Sin ventana · velcro | CORTINA-VELCRO | sin evidencia | [Expediente](modelos/cortina.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| CORTINA | Sin ventana · ET abajo | CORTINA-TUBO | sin evidencia | [Expediente](modelos/cortina.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| CORTINA | Con ventana · velcro · ET abajo | CORTINA-VENTANA-VELCRO | sin evidencia | [Expediente](modelos/cortina.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| CORTINA | Sin ventana · velcro · ET abajo | CORTINA-VELCRO | sin evidencia | [Expediente](modelos/cortina.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| ELECTRA | Con ventana | CORTINA-VENTANA | sin evidencia | [Expediente](modelos/verticales.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| ELECTRA | Con ventana · velcro | CORTINA-VENTANA-VELCRO | sin evidencia | [Expediente](modelos/verticales.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| ELECTRA | Con ventana · tubo | CORTINA-TUBO-VENTANA | sin evidencia | [Expediente](modelos/verticales.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| ELECTRA | Sin ventana | CORTINA-SIN-VENTANA | sin evidencia | [Expediente](modelos/verticales.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| ELECTRA | Sin ventana · velcro | CORTINA-VELCRO | sin evidencia | [Expediente](modelos/verticales.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| ELECTRA | Sin ventana · tubo | CORTINA-TUBO | sin evidencia | [Expediente](modelos/verticales.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| IRIS | IRIS 110 CON COFRE | IRIS | sin evidencia | [Expediente](modelos/iris.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| IRIS | IRIS 110 SIN COFRE | IRIS | sin evidencia | [Expediente](modelos/iris.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| IRIS | IRIS 130 CON COFRE | IRIS | sin evidencia | [Expediente](modelos/iris.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| IRIS | IRIS 130 SIN COFRE | IRIS | sin evidencia | [Expediente](modelos/iris.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| IRIS | IRIS 150 CON COFRE | IRIS | sin evidencia | [Expediente](modelos/iris.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| IRIS | Toldo con velcro | TOLDO-VELCRO | sin evidencia | [Expediente](modelos/iris.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| SELENA | Sin ventana | CORTINA-SIN-VENTANA | sin evidencia | [Expediente](modelos/selena.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| SELENA | Con ventana | CORTINA-VENTANA | sin evidencia | [Expediente](modelos/selena.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| ENROLLABLE | General | ENROLLABLE | sin evidencia | [Expediente](modelos/enrollable.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| ENROLLABLE | Cambio enrollable | CAMBIO ENROLLABLE | sin evidencia | [Expediente](modelos/enrollable.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| GALICIA | General | GENERAL | corregido | [Expediente](modelos/galicia.md). Solo encaje sin bamba; confección sin acreditar. Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| GALICIA | Toldo con velcro | TOLDO-VELCRO | sin evidencia | [Expediente](modelos/galicia.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| HERA | Hera | HERA | sin evidencia | [Expediente](modelos/hera.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| AMBAR BOX | General | GENERAL | corregido | [Expediente](modelos/cofres.md). Solo encaje sin bamba; confección sin acreditar. Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| AMBAR BOX | Toldo con velcro | TOLDO-VELCRO | sin evidencia | [Expediente](modelos/cofres.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| AGATA BOX | General | GENERAL | corregido | [Expediente](modelos/cofres.md). Solo encaje sin bamba; confección sin acreditar. Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| AGATA BOX | Toldo con velcro | TOLDO-VELCRO | sin evidencia | [Expediente](modelos/cofres.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| MAXISCREEM | General | GENERAL | corregido | [Expediente](modelos/verticales.md). Solo encaje sin bamba; confección sin acreditar. Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| MAXISCREEM | Toldo con velcro | TOLDO-VELCRO | sin evidencia | [Expediente](modelos/verticales.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| MONOBLOCK 350 | General | GENERAL | corregido | [Expediente](modelos/monoblock-350.md). Solo encaje sin bamba; confección sin acreditar. Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| MONOBLOCK 350 | Toldo con velcro | TOLDO-VELCRO | sin evidencia | [Expediente](modelos/monoblock-350.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| PUNTO RECTO | General | GENERAL | corregido | [Expediente](modelos/punto-recto.md). Solo encaje sin bamba; confección sin acreditar. Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| PUNTO RECTO | Toldo con velcro | TOLDO-VELCRO | sin evidencia | [Expediente](modelos/punto-recto.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| ANTICA | TUBO 50X30 CONTRAPESO | ANTICA | sin evidencia | [Expediente](modelos/antica.md). Expediente: geometría no homologada; no acreditar confección por el render. |
-| ANTICA | TUBO 50X30 SIN BAMBA | ANTICA | sin evidencia | [Expediente](modelos/antica.md). Expediente: geometría no homologada; no acreditar confección por el render. |
-| ANTICA | TUBO 30X10 CON BAMBA | ANTICA | sin evidencia | [Expediente](modelos/antica.md). Expediente: geometría no homologada; no acreditar confección por el render. |
-| ANTICA | ENTRADA TUBO Ø33 MM | ANTICA | sin evidencia | [Expediente](modelos/antica.md). Expediente: geometría no homologada; no acreditar confección por el render. |
-| ANTICA | ENTRADA TUBO Ø42 MM | ANTICA | sin evidencia | [Expediente](modelos/antica.md). Expediente: geometría no homologada; no acreditar confección por el render. |
-| ANTICA | SOPORTE FIJO 3 AGUJEROS | ANTICA | sin evidencia | [Expediente](modelos/antica.md). Expediente: geometría no homologada; no acreditar confección por el render. |
-| CUARZO BOX | General | GENERAL | corregido | [Expediente](modelos/cofres.md). Solo encaje sin bamba; confección sin acreditar. Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| CUARZO BOX | Toldo con velcro | TOLDO-VELCRO | sin evidencia | [Expediente](modelos/cofres.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| PERLA BOX | General | GENERAL | corregido | [Expediente](modelos/cofres.md). Solo encaje sin bamba; confección sin acreditar. Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| PERLA BOX | Toldo con velcro | TOLDO-VELCRO | sin evidencia | [Expediente](modelos/cofres.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| CORAL BOX | General | GENERAL | corregido | [Expediente](modelos/cofres.md). Solo encaje sin bamba; confección sin acreditar. Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| CORAL BOX | Toldo con velcro | TOLDO-VELCRO | sin evidencia | [Expediente](modelos/cofres.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| XACOBEO | General | GENERAL | corregido | [Expediente](modelos/xacobeo.md). Solo encaje sin bamba; confección sin acreditar. Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| XACOBEO | Toldo con velcro | TOLDO-VELCRO | sin evidencia | [Expediente](modelos/xacobeo.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| BAMBALINA | General | BAMBALINA | sin evidencia | [Expediente](modelos/bambalina.md). Varilla y bastillas confirmadas; ondas pendientes de contraste OT. |
-| BAMBALINA | Suplemento | SUPLEMENTO | sin evidencia | [Expediente](modelos/bambalina.md). Varilla y bastillas confirmadas; ondas pendientes de contraste OT. |
-| CAMBIO ANTICA | TUBO 50X30 CONTRAPESO | ANTICA | sin evidencia | [Expediente](modelos/cambio-antica.md). Expediente: geometría no homologada; no acreditar confección por el render. |
-| CAMBIO ANTICA | TUBO 50X30 SIN BAMBA | ANTICA | sin evidencia | [Expediente](modelos/cambio-antica.md). Expediente: geometría no homologada; no acreditar confección por el render. |
-| CAMBIO ANTICA | TUBO 30X10 CON BAMBA | ANTICA | sin evidencia | [Expediente](modelos/cambio-antica.md). Expediente: geometría no homologada; no acreditar confección por el render. |
-| CAMBIO ANTICA | ENTRADA TUBO Ø33 MM | ANTICA | sin evidencia | [Expediente](modelos/cambio-antica.md). Expediente: geometría no homologada; no acreditar confección por el render. |
-| CAMBIO ANTICA | ENTRADA TUBO Ø42 MM | ANTICA | sin evidencia | [Expediente](modelos/cambio-antica.md). Expediente: geometría no homologada; no acreditar confección por el render. |
-| CAMBIO ANTICA | SOPORTE FIJO 3 AGUJEROS | ANTICA | sin evidencia | [Expediente](modelos/cambio-antica.md). Expediente: geometría no homologada; no acreditar confección por el render. |
-| SOLAPAS | General | SOLAPAS | sin evidencia | [Expediente](modelos/cortina-pvc-corte.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
-| EMBUDO | General | GENERAL | duda | [Expediente](modelos/embudo.md). Pasa a planteamiento desde CAD por indicación de Iván. No se cambia el flujo. |
+Las72 filas iniciales se conservan en variantes.json; se retiran de este informe porque repetían la misma limitación. La segunda pasada se organiza por los29 trazados compartidos.
 
 HERA es una fila adicional: webDrawingVariants lo marca sin dibujo de web, aunque la hoja de telas sí usa su esquema de cara interior. No se oculta esta diferencia del catálogo.
 
@@ -163,3 +91,9 @@ Falta vincular varios planos de pedidos reales por cada variante de toldo, inspe
 - pnpm lint: aprobado.
 - pnpm exec vitest run --maxWorkers=2: 340 ficheros, 4567 pruebas aprobadas (281,03s). Registro completo en revision/vitest.log.
 - HTTP aislada4344 con DIBUJOS_HTML=0: POST /api/planteamiento responde200, PDF de dos páginas con las instrucciones de confección. Las72 miniaturas responden200 y entregan PDF; miniaturas-http.json y http-dibujos-html-0.pdf. No se migran las miniaturas a SVG. No hay push, cambio de rama ni despliegue. Se integró origin/main en dibujos-html según el encargo.
+
+## Segunda pasada · corrección de la varilla negra
+
+AR2605116-2.pdf p3, AR2605193-2.pdf p1 y AR2605244-1.pdf p1 rotulan VARILLA NEGRA (4,5). Son planos CAD de corte de tres pedidos distintos, no la miniatura heredada. La hoja de telas de esos mismos pedidos aún decía5,09. Se cambia exclusivamente el rótulo a4,5 en drawCurtainDiagram y drawToldoVelcroDiagram. La referencia reservada ya es VARILLAVAINANEG5, descrita como4,5MM en cortinaRules.js; no cambia cálculo ni reserva. Dos regresiones rojas antes y verdes después. Evidencia renderizada en tmp/ui-audit/dibujos-html/revision/taller/CORTINA-*.png.
+
+La tabla definitiva por29 dibujos y el contraste de pedidos están en preparación. Se han localizado81 adjuntos PDF de taller (189páginas), además de los88 escaneos comerciales; la carpeta ARZUA incluye realmente varios MONOBLOCK350 y una capota que queda fuera del catálogo de toldos.
