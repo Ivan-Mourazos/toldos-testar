@@ -250,7 +250,7 @@ html[data-estilo="hero"]:root #root .order-search-ayuda { color: var(--hero-text
 
 html[data-estilo="hero"]:root #root .inicio-productos { display: grid; gap: 14px; }
 html[data-estilo="hero"]:root #root .inicio-productos .producto-etiqueta { color: var(--hero-texto-suave); font-size: 14px; font-weight: 600; text-align: center; }
-html[data-estilo="hero"]:root #root .inicio-tarjetas { display: grid; gap: 12px; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+html[data-estilo="hero"]:root #root .inicio-tarjetas { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
 html[data-estilo="hero"]:root #root .inicio-tarjeta {
   align-content: start;
   align-items: flex-start;
