@@ -22,7 +22,7 @@ import { calculateSolapas } from './solapasRules.js';
 import { calculateEmbudo } from './embudoRules.js';
 import { normalizeOrder } from './validation.js';
 import { getRequiredDimensions } from './modelBehavior.js';
-import { awningLetter, describeMissing, getMissingFields } from './awningCompleteness.js';
+import { awningLetter, describeMissing, getMissingFields, getMissingFabricWidths } from './awningCompleteness.js';
 import { applyLegacyRpsFabricReservation } from './legacyRpsReservation.js';
 import { withRpsCodes } from './rpsIrregularCodes.js';
 import { beginRuleOverrides, finishRuleOverrides } from './ruleOverrides.js';
@@ -125,6 +125,16 @@ export function calculateOrder(payload) {
       continue;
     }
 
+    // Antes de llamar a cualquier modelo: sus 120 históricos nunca deben suplir
+    // el ancho desconocido de una selección nueva (tampoco el de otra bamba).
+    const unknownWidths = getMissingFabricWidths(awning, order);
+    if (unknownWidths.length) {
+      diagnostics.push({ level: 'error', awningId: awning.id, awningIndex, missingFields: unknownWidths,
+        message: `Toldo ${awningLetter(awningIndex)} (${awning.model}, OF ${awning.of}): falta ${describeMissing(unknownWidths)}.` });
+      ofs.push({ awningId: awning.id, awningIndex, of: awning.of, description: buildAwningDescription(awning),
+        materials: [], despiece: null, calculation: { valid: false, fabricDrop: undefined, missingFields: unknownWidths } });
+      continue;
+    }
     const invalidUnits = !Number.isInteger(Number(awning.units)) || Number(awning.units) < 1;
     const calculationAwning = invalidUnits ? { ...awning, units: 1 } : awning;
     const modified = Boolean(calculationAwning.reglasModificadas);

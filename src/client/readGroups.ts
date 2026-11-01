@@ -17,6 +17,7 @@ export const READ_GROUPS: Array<{ id: ReadGroupId; title: string }> = [
 
 // Las etiquetas tal cual las pinta AwningColumn.
 const byLabel: Record<string, ReadGroupId> = {
+  'Ancho de rollo (cm)': 'tela', 'Ancho de rollo de bamba (cm)': 'tela',
   // Medidas (Frente y Salida cambian de nombre en Antica, Selena y Electra)
   OF: 'medidas', Frente: 'medidas', 'Frente tela terminada': 'medidas', 'Frente de tela': 'medidas',
   Salida: 'medidas', Caída: 'medidas', 'Caída tela terminada': 'medidas', 'Caída de tela': 'medidas', 'Salida base': 'medidas', 'Salida brazo': 'medidas',

@@ -1,5 +1,6 @@
 import fabrics from './data/fabrics.json' with { type: 'json' };
 import { rankFabricMatches } from './fabricSearch.js';
+import { inferRollWidth } from './fabricRps.js';
 
 const fabricsByName = new Map();
 const fabricsByCode = new Map();
@@ -20,6 +21,7 @@ export function resolveFabric(selection) {
       ? {
         ...catalogFabric,
         ...encoded,
+        width: encoded.width ?? catalogFabric.width,
         material: encoded.material || catalogFabric.material || '',
         color: encoded.color || catalogFabric.color || ''
       }
@@ -35,7 +37,7 @@ export function serializeFabricSelection(fabric) {
   if (!fabric?.code) return '';
   return [
     fabric.code,
-    Number(fabric.width) || inferRollWidth(fabric.code),
+    positiveWidth(fabric.width) ?? inferRollWidth(fabric.code, fabric.unitCode) ?? '',
     fabric.description || fabric.code,
     fabric.material || fabric.subfamily || ''
   ].join('|||');
@@ -46,7 +48,7 @@ export function parseFabricSelection(value) {
   if (parts.length < 3 || !parts[0]) return null;
   return {
     code: parts[0].trim().toUpperCase(),
-    width: Number(parts[1]) || inferRollWidth(parts[0]),
+    width: positiveWidth(parts[1]) ?? inferRollWidth(parts[0]),
     description: parts[2].trim() || parts[0].trim().toUpperCase(),
     material: parts[3]?.trim() || '',
     color: ''
@@ -65,17 +67,17 @@ export function fabricSelectionLabel(value) {
   const fabric = resolveFabric(value);
   if (!fabric) return String(value || '');
   const catalogFabric = fabricsByCode.get(normalize(fabric.code));
-  const shortName = catalogFabric ? [catalogFabric.material, catalogFabric.color].filter(Boolean).join(' ') : '';
+  const shortName = catalogFabric?.color ? [catalogFabric.material, catalogFabric.color].filter(Boolean).join(' ') : '';
   return `${fabric.code} · ${shortName || fabric.description}`;
 }
 
 export function searchStaticFabrics(query = '', limit = 25) {
-  return rankFabricMatches(fabrics, query, limit);
+  return rankFabricMatches(fabrics.filter((fabric) => !fabric.inactive), query, limit);
 }
 
-function inferRollWidth(code) {
-  const match = /P(\d{2,3})$/i.exec(String(code || '').trim());
-  return match ? Number(match[1]) : 120;
+function positiveWidth(value) {
+  const width = Number(value);
+  return Number.isFinite(width) && width > 0 ? width : null;
 }
 
 function normalize(value) {

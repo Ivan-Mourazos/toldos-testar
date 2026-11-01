@@ -115,7 +115,7 @@ describe('fabricSelectionLabel con la selección de cuatro partes que produce se
   });
 
   it('cae en la descripción completa, no en la subfamilia sola, cuando el código no está en el catálogo', () => {
-    expect(fabricSelectionLabel('SOLTIS96NUBP267|||267|||SOLTIS 96 NUBE|||SOLTIS 96'))
-      .toBe('SOLTIS96NUBP267 · SOLTIS 96 NUBE');
+    expect(fabricSelectionLabel('FUERACATALOGO267|||267|||SOLTIS 96 NUBE|||SOLTIS 96'))
+      .toBe('FUERACATALOGO267 · SOLTIS 96 NUBE');
   });
 });
