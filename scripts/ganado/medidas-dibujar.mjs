@@ -7,7 +7,7 @@ const canvas=canvasLocal();
 const colores={tinta:'#243442',azul:'#176f8b',rojo:'#c35437',gris:'#657986'};
 function lienzo(titulo,subtitulo,w=1800,h=1050){const c=canvas.createCanvas(w,h),g=c.getContext('2d');g.fillStyle='#f6f4ee';g.fillRect(0,0,w,h);g.fillStyle=colores.tinta;g.font='bold 32px sans-serif';g.fillText(titulo,45,55);g.font='21px sans-serif';g.fillText(subtitulo,45,92);return {c,g};}
 function transformar(ps,b){const xs=ps.map(p=>p[0]),ys=ps.map(p=>p[1]),x0=Math.min(...xs),y0=Math.min(...ys),x1=Math.max(...xs),y1=Math.max(...ys),s=Math.min(b.w/(x1-x0||1),b.h/(y1-y0||1));return p=>[b.x+(p[0]-x0)*s+(b.w-(x1-x0)*s)/2,b.y+b.h-(p[1]-y0)*s-(b.h-(y1-y0)*s)/2];}
-function linea(g,ps,T,color=colores.azul,cerrada=false,width=2){g.strokeStyle=color;g.lineWidth=width;g.beginPath();ps.forEach((p,i)=>{const [x,y]=T(p);i?g.lineTo(x,y):g.moveTo(x,y);});if(cerrada)g.closePath();g.stroke();}
+function linea(g,ps,T,color=colores.azul,cerrada=false,width=2){g.strokeStyle=color;g.lineWidth=width;g.beginPath();ps.forEach((p,i)=>{const [x,y]=T(p);if(i)g.lineTo(x,y);else g.moveTo(x,y);});if(cerrada)g.closePath();g.stroke();}
 const iso=([x,y,z])=>[x*.7+y*.72,-x*.24+y*.25+z];
 function morro3d(g,a,b,box,largo=0){
  const atras=largo?a.map(([x,y,z])=>[x-largo,y,z]):null,ps=[...a,...b,...(atras??[])].map(iso),T=transformar(ps,box);

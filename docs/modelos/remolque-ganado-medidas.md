@@ -163,7 +163,7 @@ validar primero los dos pedidos. No se han cambiado `src/`, la web ni los ficher
 Para repetir este ensayo, solo Node y las copias locales:
 
 ```text
-node --test scripts/ganado/corte-completo-geometria.test.mjs scripts/ganado/medidas-geometria.test.mjs
+node --test scripts/ganado/corte-completo-geometria.node-test.mjs scripts/ganado/medidas-geometria.node-test.mjs
 node scripts/ganado/corte-completo.mjs --comprobar
 ```
 
@@ -367,7 +367,7 @@ y el de los arcos de una cabeza no lo sustituyen.
 Desde la raíz del worktree, con Node y las copias locales ya incluidas en `tmp/ganado-medidas/`:
 
 ```text
-node --test scripts/ganado/medidas-geometria.test.mjs
+node --test scripts/ganado/medidas-geometria.node-test.mjs
 node scripts/ganado/desarrollar-medidas.mjs --comprobar
 node scripts/ganado/medidas-curva.mjs
 node scripts/ganado/medidas-radio.mjs
