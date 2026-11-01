@@ -11,6 +11,12 @@ Estado provisional. La revisión no acredita la confección de las 72 variantes.
 - Regenerar: `node scripts/revisar-dibujos-confeccion.mjs` y `node scripts/capturar-revision-dibujos.mjs`. Las fuentes se leen de la copia local del proyecto original; `FUENTES_TOLDOS` permite indicar otra carpeta tmp. Solo se escribe dentro de tmp del worktree.
 - Capturas claras/oscuras a 1280×720 y 1600×1000 y hojas de contacto en esa carpeta. No se ha modificado ninguna pantalla de la aplicación.
 
+## Pedidos y manuales de la carpeta pdfs
+
+Se han leído los15 PDF locales de la carpeta indicada y renderizado las12 páginas de los siete PDF de pedidos. Evidencias: pdfs-fuentes.json y pedidos-reales-contacto.png. AR2603289, AR2603298, AR2603315 y AR2603420 muestran GENERAL en Galicia; AR2603332 lo muestra en Arzúa. Es evidencia adicional para conservar esa selección, sin convertir estos casos en una homologación de todos los remates. El pedido3298 incluye también Cortina con ventana y una tapa con velcro específica: no se generaliza esa tapa. Los PDF de pedidos son escaneos sin texto útil, por lo que no se da por ausencia un rótulo que el extractor no devuelve.
+
+El manual COMPLET-PRO350 de fabricación rev2.1, página6, documenta descuentos de tejido y perfiles; no basta para confirmar por sí solo los2,5/33,5/3,3/4cm del patrón. Los manuales de instalación y el Monobloc2016 son fuentes con alcance propio: no se sustituyen las decisiones más recientes del expediente por un manual antiguo. catalogo-dibujos-modelos.pdf y cabeceras-revisor.pdf son muestras generadas por la aplicación, no pedidos de fabricación independientes.
+
 ## Corrección común: GENERAL sin bamba
 
 El rótulo de bastilla lateral «3,3» alcanzaba y=301,70 pt en un recuadro de 300 pt, medido con getBBox y la matriz de transformación del SVG. Base tipográfica y=299,70 pt. Se reduce 6 pt el cuerpo cuando no hay bamba para conservar la cota completa. El cambio está en drawGeneralDiagram, por lo que afecta igual a SVG y pdfkit. No cambia medidas de confección, cálculo ni reserva. La prueba de regresión falla antes de la corrección y pasa después.
@@ -30,7 +36,7 @@ Los estados «corregido» de la tabla solo acreditan esta reparación de encaje.
 | Punto Recto | punto-recto.md | GENERAL conservado por falta de evidencia de confección específica |
 | Ámbar Box | cofres.md | GENERAL conservado; piezas y reserva no prueban el acabado del dibujo |
 | Ágata Box | cofres.md | GENERAL conservado en el catálogo. Falta contrastar confección por submodelo, no solo el dibujo general |
-| Maxiscreem / Diana | verticales.md, rps-maxiscreem-evidence.md | GENERAL conservado. No se ha demostrado que el patrón actual sea suficiente para variantes de cofre/cable/guía |
+| Maxiscreem / Diana | verticales.md, expediente de consumo citado por verticales.md | GENERAL conservado. No se ha demostrado que el patrón actual sea suficiente para variantes de cofre/cable/guía |
 | Cuarzo Box | cofres.md | GENERAL conservado; varilla blanca documentada, resto del patrón sin homologar |
 | Perla Box | cofres.md | GENERAL conservado; varillas negra y blanca documentadas, no todo el patrón |
 | Coral Box | cofres.md | GENERAL conservado; misma limitación |
@@ -113,14 +119,14 @@ No se afirma que GENERAL fuera un olvido para todos los modelos, ni que sea corr
 | CAMBIO ANTICA | ENTRADA TUBO Ø33 MM | ANTICA | sin evidencia | [Expediente](modelos/cambio-antica.md). Expediente: geometría no homologada; no acreditar confección por el render. |
 | CAMBIO ANTICA | ENTRADA TUBO Ø42 MM | ANTICA | sin evidencia | [Expediente](modelos/cambio-antica.md). Expediente: geometría no homologada; no acreditar confección por el render. |
 | CAMBIO ANTICA | SOPORTE FIJO 3 AGUJEROS | ANTICA | sin evidencia | [Expediente](modelos/cambio-antica.md). Expediente: geometría no homologada; no acreditar confección por el render. |
-| SOLAPAS | General | SOLAPAS | sin evidencia | [Expediente](modelos/cofres.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
+| SOLAPAS | General | SOLAPAS | sin evidencia | [Expediente](modelos/cortina-pvc-corte.md). Expediente consultado; falta acreditar todos los remates del dibujo con varios planos de fabricación identificados. |
 | EMBUDO | General | GENERAL | duda | [Expediente](modelos/embudo.md). Pasa a planteamiento desde CAD por indicación de Iván. No se cambia el flujo. |
 
 HERA es una fila adicional: webDrawingVariants lo marca sin dibujo de web, aunque la hoja de telas sí usa su esquema de cara interior. No se oculta esta diferencia del catálogo.
 
 ## Embudo: presentaciones CAD para Iván
 
-Índice: `tmp/ui-audit/dibujos-html/revision/embudos/index.html`. Se leen **50 DXF de oficina** de la copia local `toldos-testar/tmp/embudos/dxfs`, sin escribir allí. Inventario completo con SHA-256 y nombres de presentaciones en `inventario-oficina.json`. Se conserva el HTML de todas sus presentaciones. Los restos de otros pedidos en el espacio modelo no cuentan como nuevos casos de fabricación.
+Índice: `tmp/ui-audit/dibujos-html/revision/embudos/index.html`. Se leen **50 DXF de oficina** de la copia local `toldos-testar/tmp/embudos/dxfs`, sin escribir allí. Inventario completo con SHA-256 y nombres de presentaciones en `inventario-oficina.json`. Se conserva el HTML de todas sus presentaciones. En los siete originales seleccionados, DIN A3 puede estar vacío: el dibujo está en la segunda presentación A4 (imágenes *-oficina-2.png). AR2605215 conserva en el cajetín el pedido anterior AR2600734; no se cuenta como diseño independiente. Los restos de otros pedidos en el espacio modelo no cuentan como nuevos casos de fabricación.
 
 Se han generado HTML, DXF, PDF e imágenes con el flujo real `generarCorteLona`: usa piezasEmbudo, dibujoCorte, dibujarPlano y escribirDxfPlano; después htmlPresentaciones, el mismo lector/proyector del flujo CAD. No es un dibujo reconstruido para la auditoría.
 
@@ -138,7 +144,9 @@ El análisis heredado registra al menos 13 cónicos, pero incluye copias fuera d
 
 **Problemas pendientes del plano:** cinta corta de mordaza fija12 frente a30 en varios originales (AR2500699, AR2501759 y AR2601252). El campo largoCinta solo gobierna la cinta larga. No hay un campo que conserve los30 del tramo corto; no se añade a escondidas ni se cambia el cálculo. Las presentaciones de ejemplo1252 se entregan con esa diferencia visible, no como aprobadas.
 
-**Para pasar el planteamiento de Embudo a CAD como Puertas:** reutilizar las presentaciones existentes del DXF, renderizarlas a PDF por el servicio de flujoDwg y agregarlas al planteamiento conservando OF, adjunto editable y respaldo. Decidir si se quiere una presentación por cuerpo/refuerzo o por embudo con el corte común: hoy la hoja EMBUDO A lleva alzado y corte anidado, mientras Puertas delega en escritores específicos por familia/pieza. Al activar el flujo se debería excluir el Embudo de la hoja de telas (incluido su GENERAL y las instrucciones de toldo) y conservar su información en las presentaciones CAD. Hay que probar pedidos mixtos, varias OF y repeticiones antes de activar la exclusión. **Este cambio de flujo no está implementado**, conforme a la instrucción de Iván.
+**Flujo CAD que ya existe:** corteReadiness.js ya admite EMBUDO. En server.js, al generar con corteConfirmado, se llama a flujoToldos.planosDelDwg, htmlPresentaciones y presentacionesPdf; se anteponen esas páginas y sinHojaTelas excluye las letras incluidas en el CAD. Si falla, vuelve el planteamiento completo con aviso. Por tanto no hace falta inventar otra canalización: falta validar el recorrido confirmado específicamente con Embudo y decidir la distribución de sus piezas. La vista previa sin corte confirmado continúa mostrando GENERAL.
+
+**Para completar el planteamiento de Embudo desde CAD como Puertas:** reutilizar las presentaciones existentes del DXF, renderizarlas a PDF por el servicio de flujoDwg y agregarlas al planteamiento conservando OF, adjunto editable y respaldo. Decidir si se quiere una presentación por cuerpo/refuerzo o por embudo con el corte común: hoy la hoja EMBUDO A lleva alzado y corte anidado, mientras Puertas delega en escritores específicos por familia/pieza. Al activar el flujo se debería excluir el Embudo de la hoja de telas (incluido su GENERAL y las instrucciones de toldo) y conservar su información en las presentaciones CAD. Hay que probar pedidos mixtos, varias OF y repeticiones antes de activar la exclusión. **Este cambio de flujo no está implementado**, conforme a la instrucción de Iván.
 
 ## Pendiente para cerrar la revisión de fabricación
 
@@ -146,4 +154,12 @@ Falta vincular varios planos de pedidos reales por cada variante de toldo, inspe
 
 ## Comprobaciones de esta revisión
 
-En curso; se actualizará al terminar. No hay push, cambio de rama ni despliegue. Se integró origin/main en dibujos-html según el encargo.
+- Prueba de regresión y pruebas de dibujos/Embudo: 96 aprobadas.
+- pnpm typecheck: aprobado.
+- pnpm exec vite build: aprobado; avisos existentes de chunks grandes.
+- Después de corregir: 219 muestras, cero cajas de texto fuera y cero cruces de texto detectados por el barrido. Antes había 13 variantes GENERAL con la cota fuera, incluida la selección conservada de Embudo.
+- scripts/comprobar-fuentes-dibujos.mjs: aprobado en Windows; descargadas y embebidas regular, negrita y cursiva Liberation Sans. No demuestra salida en Linux.
+- Medición HTTP: 20 peticiones por caso en aislada4342, health verificado (simulationMode=true, fileWritesEnabled=false). Arzúa: mediana1234,68ms, máximo1334,14ms. Cuatro modelos: mediana1943,02ms, máximo2198,13ms; siete de20 superan2s. Calentamientos2340,50/2229,81ms. No cumple el límite estricto. Al principio coincidió con la cola final de las pruebas específicas; se conserva toda la serie, sin descartar esos datos ni atribuir causalidad a los6pt de encaje. Evidencia: tmp/ui-audit/dibujos-html/segunda-pasada/revision-svg/.
+- pnpm lint: aprobado.
+- pnpm exec vitest run --maxWorkers=2: 340 ficheros, 4567 pruebas aprobadas (281,03s). Registro completo en revision/vitest.log.
+- HTTP aislada4344 con DIBUJOS_HTML=0: POST /api/planteamiento responde200, PDF de dos páginas con las instrucciones de confección. Las72 miniaturas responden200 y entregan PDF; miniaturas-http.json y http-dibujos-html-0.pdf. No se migran las miniaturas a SVG. No hay push, cambio de rama ni despliegue. Se integró origin/main en dibujos-html según el encargo.
