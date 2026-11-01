@@ -27,7 +27,7 @@ const windowDimensions = [
 // campos. Antes salía en el orden de las comprobaciones ("OF · tela · dispositivo ·
 // tubo de carga · frente…"). Lo que no está en la lista va al final, en su orden.
 const fillOrder = [
-  'fabric', 'of', 'width', 'projection', 'cambioTelaExtraCm', 'valanceHeight', 'valanceCurve', 'remate', 'remateColor',
+  'fabric', 'fabricRollWidth', 'valanceRollWidth', 'of', 'width', 'projection', 'cambioTelaExtraCm', 'valanceHeight', 'valanceCurve', 'remate', 'remateColor',
   'submodel', 'irisFrontTop', 'irisExitLeft', 'irisBoxShape', 'anticaVariant', 'anticaSupportHeight', 'electraSupport', 'armCount', 'tubeLoad',
   'heraChainColor', 'height', 'heraJoin', 'heraTopFinish', 'heraBottomFinish', 'heraInteriorFace',
   'curtainHasWindow', 'curtainFinish', ...windowDimensions.map(([field]) => field),
@@ -62,6 +62,20 @@ const placementRequired = new Set(['AGATA BOX', 'AMBAR BOX', 'ELECTRA', 'IRIS', 
 // HERA y Selena llevan su propia comprobación de tela.
 const fabricOwnCheck = new Set(['HERA', 'SELENA']);
 
+// Se comprueba también antes de entrar en las reglas de cálculo. No hace falta
+// volver a validar todos los demás campos para saber si falta una anchura.
+export function getMissingFabricWidths(awning, order) {
+  if (!order) return [];
+  const missing = [];
+  const irisGlass = awning.model === 'IRIS' && awning.irisGlassCurtain === true;
+  const fabric = resolveFabric(order.sameFabric !== false ? order.fabric : awning.fabric);
+  if (!irisGlass && fabric && !(Number.isFinite(fabric.width) && fabric.width > 0)) missing.push({ field: 'fabricRollWidth', label: 'ancho de rollo' });
+  const hasValance = awning.model === 'BAMBALINA' || Number(awning.valanceHeight) > 0;
+  const valance = hasValance && resolveFabric(awning.valanceFabric);
+  if (valance && !(Number.isFinite(valance.width) && valance.width > 0)) missing.push({ field: 'valanceRollWidth', label: 'ancho de rollo de bamba' });
+  return missing;
+}
+
 // `order` (opcional) trae la tela del pedido: con "misma tela" la tela no está en
 // el toldo. Sin `order` no se comprueba la tela.
 /**
@@ -92,6 +106,7 @@ export function getMissingFields(awning, order = null) {
   // ponía "FALTA · rotulación" y el cálculo "falta tela y dispositivo" (pedido 4611).
   // Un Iris de cristal no lleva lona (Iván, 07/10/2026, AR2604748).
   const irisGlass = model === 'IRIS' && awning.irisGlassCurtain === true;
+  for (const { field, label } of getMissingFabricWidths(awning, order)) add(field, label);
   if (order && fields.workType === 'FULL_AWNING' && !fabricOwnCheck.has(model) && !irisGlass) {
     const fabric = order.sameFabric !== false ? order.fabric : awning.fabric;
     // Un texto que no es una tela del catálogo (escrito sin elegir opción) tampoco vale.
