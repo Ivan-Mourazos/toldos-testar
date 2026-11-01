@@ -12,6 +12,16 @@ Actualizado el 25/09/2026:
 
 Cómo se decide cada respuesta: primero, el manual del fabricante (el de Oficina Técnica o, si no está, el de la web del fabricante); después, el maestro de RPS (qué piezas existen y cuáles están de baja); y por último, lo que de verdad se gasta en las OF. En el expediente de cada modelo se anota en qué se apoya cada decisión.
 
+## Caballos por medidas · Talleres Cal (01/11/2026)
+
+Son las dudas que impiden sacar el corte de AR.26.05319, línea 3. Mientras tanto, la web no calcula estos remolques y **ese pedido se hace a mano**. Fuentes y contraste por script en [remolque-ganado-medidas.md](./remolque-ganado-medidas.md).
+
+**Q-GAN02.** AR.25.00389 (OF 0213084, «curva de Remolcar», con croquis a mano) no sale con las reglas que sí cuadran en el gemelo AR.25.06052: el cuerpo falla hasta 28 mm, la curva 7 mm y 15 de 21 ollaos no coinciden. ¿Tuvo algo especial ese pedido? Hay que preguntárselo a quien lo dibujó. Sin aclararlo, las reglas salen de un solo pedido y no se pueden dar por generales.
+
+**Q-GAN03.** ¿Qué radio lleva la lona del 5319: el exterior del arco, **R93,1**, o **R76,4**, el de los diez pedidos anteriores de Cal, que coincide con la raya interior del cartón? Iván entiende que la lona va por el lado exterior del tubo, pero esos pedidos no lo confirman. Se aclara midiendo una lona real ya hecha.
+
+**Q-GAN04.** ¿La ventana del 5319 es de **50 × 35** con tapa de **53 × 38**, como en el gemelo? Son las medidas de ese otro pedido; en la hoja del 5319 no están confirmadas.
+
 ## Remolcar estándar · remolque de ganado (29/10/2026)
 
 **Q-GAN01.** En el corte real de AR2601847 hay dos piezas de **98 × 32** y **34,5 × 56** de corte que no
