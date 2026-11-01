@@ -222,10 +222,10 @@ Respuestas de Iván. «Pendiente» quiere decir que la web todavía no lo aplica
 
 | Código | Duda | Tratamiento mientras tanto |
 | --- | --- | --- |
-| Q-EMB01 | ¿Cómo se indica la longitud de la cinta corta de la mordaza? Barcala (AR2503676, AR2600734, AR2605215) lleva 12 cm; AR2500699, AR2501759 y AR2601252 indican 30 cm. La tarjeta solo pide el largo de la cinta larga | La web sigue rotulando 12 cm para el tramo corto; no reproduce los 30 cm de esos pedidos. Las presentaciones de revisión señalan la diferencia y no se consideran aprobadas para confección. El planteamiento desde CAD queda pendiente de decidir al verlas; no cambia aún la hoja de telas |
+| Q-EMB01 | ¿Cómo se indica la longitud de la cinta corta de la mordaza? Barcala (AR2503676, AR2600734, AR2605215) lleva 12 cm; AR2500699, AR2501759 y AR2601252 indican 30 cm. La tarjeta solo pide el largo de la cinta larga | **Contestada** (Iván, 02/11/2026): el tamaño de la cinta lo da el pedido. La web debe pedir también el largo de la cinta corta |
 
 ## Dibujos de confección · acabados laterales · 01/11/2026
 
 | Código | Duda | Tratamiento mientras tanto |
 | --- | --- | --- |
-| Q-DIB01 | ¿Cómo se elige AL CORTE o BASTILLA en las lonas técnicas? Los planos AR2603932 (Punto Recto, Soltis96), AR2604955 (Electra, rejilla) y AR2602210 (Maxiscreen, Recscreen350P) piden AL CORTE, pero la plantilla GENERAL dice BASTILLA. ¿Depende del tejido, del modelo o se indica por pedido? | La web conserva BASTILLA en GENERAL: esos especiales necesitan su plano de confección. No se cambia el corte ni la reserva, ni se considera aprobada la plantilla para esos tres trabajos. Contraste visual e inventario en el informe de revisión de dibujos de noviembre |
+| Q-DIB01 | ¿Cómo se elige AL CORTE o BASTILLA en las lonas técnicas? Los planos AR2603932 (Punto Recto, Soltis96), AR2604955 (Electra, rejilla) y AR2602210 (Maxiscreen, Recscreen350P) piden AL CORTE, pero la plantilla GENERAL dice BASTILLA. ¿Depende del tejido, del modelo o se indica por pedido? | **Contestada** (Iván, 02/11/2026): depende del pedido y de la tela. La web debe dejar elegir bastilla o al corte en cada pedido |
