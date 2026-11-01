@@ -17,6 +17,7 @@ import { buildIrisSquaringView } from './irisSquaringView.js';
 import { getIrisWindow } from './irisWindow.js';
 import { resolveConfiguredDrawing } from './drawingParameters.js';
 import { shortFabricName } from './fabricShortName.js';
+import { crearLienzoSvg } from './dibujoSvg.js';
 
 const { PDFDocument: PDFLibDocument } = pdfLib;
 
@@ -59,7 +60,7 @@ const fonts = hasEmbeddedFonts
 // `htmlStructure` y `htmlFabric` en falso dejan ese tipo de página con pdfkit.
 // Si algo falla se avisa con `onSheetError(error, hoja)` (hoja null si no es de una sola hoja)
 // y esas páginas salen con pdfkit como siempre: el PDF no se queda nunca sin hacer.
-export async function buildOrderPlanteamientoPdf({ order, calculation, review = null, onlyAwningId = null, renderSheets = null, htmlStructure = true, htmlFabric = true, onSheetError = null, sinHojaTelas = null }) {
+export async function buildOrderPlanteamientoPdf({ order, calculation, review = null, onlyAwningId = null, renderSheets = null, htmlStructure = true, htmlFabric = true, htmlDiagrams = false, onSheetError = null, sinHojaTelas = null }) {
   const withPdfkit = async () => (await buildPdfkitPlanteamiento({ order, calculation, review, onlyAwningId, attachReview: true, sinHojaTelas })).pdf;
   if (!renderSheets || (!htmlStructure && !htmlFabric)) return withPdfkit();
   let structureSheets;
@@ -85,6 +86,18 @@ export async function buildOrderPlanteamientoPdf({ order, calculation, review = 
   });
   const drawings = fabricSheets.map((sheet) => {
     const { diagram, diagramAwning, diagramCalculation } = plan.fabricPages[sheet.planIndex];
+    if (htmlDiagrams) {
+      try {
+        const svg = buildFabricDiagramSvg({ diagram, awning: diagramAwning, calculation: diagramCalculation });
+        if (svg) {
+          sheet.diagramSvg = svg;
+          return Promise.resolve({ drawing: null });
+        }
+      } catch (error) {
+        // El resto de la hoja sigue en HTML; solo este dibujo vuelve a pdfkit.
+        notifySheetError(onSheetError, error, sheet);
+      }
+    }
     return buildFabricDiagramBoxPdf({ diagram, awning: diagramAwning, calculation: diagramCalculation })
       .then((drawing) => ({ drawing }), (error) => ({ error }));
   });
@@ -1243,6 +1256,31 @@ function drawFabricDiagram(doc, x, y, w, h, diagram, awning, calculation) {
 
 /** Medidas del toldo de ejemplo de las miniaturas (frente de tela y caída, en cm). */
 export const PREVIEW_CALCULATION = Object.freeze({ fabricWidth: 400, fabricDrop: 275 });
+
+// Lista cerrada: una variante nueva sigue saliendo con pdfkit hasta contrastar su SVG.
+export const SVG_FABRIC_DIAGRAMS = Object.freeze([
+  'GENERAL', 'CAMBIO-TELA', 'TOLDO-VELCRO', 'CAMBIO ENROLLABLE', 'SUPLEMENTO', 'SOLAPAS', 'EMBUDO',
+  'ENROLLABLE', 'BAMBALINA', 'ANTICA', 'AMBAR', 'AGATA', 'MAXISCREEN', 'IRIS', 'HERA',
+  'ARZUA', 'GALICIA', 'XACOBEO', 'MONOBLOCK', 'PUNTO-RECTO', 'CUARZO', 'PERLA', 'CORAL',
+  'CORTINA-SIN-VENTANA', 'CORTINA-VENTANA', 'CORTINA-VELCRO', 'CORTINA-VENTANA-VELCRO',
+  'CORTINA-TUBO', 'CORTINA-TUBO-VENTANA'
+]);
+
+/** Geometría compartida con el respaldo, sin generar ni incrustar un PDF de dibujo. */
+export function buildFabricDiagramSvg({ diagram, awning = {}, calculation = PREVIEW_CALCULATION }) {
+  if (awning.fabricImage || !SVG_FABRIC_DIAGRAMS.includes(diagram)) return null;
+  const medidor = new PDFDocument({ autoFirstPage: false, margin: 0 });
+  registerFonts(medidor);
+  medidor.addPage({ size: [242, 500], margin: 0 });
+  const fuentes = Object.fromEntries(Object.entries(fonts).map(([tipo, nombre]) => [nombre, {
+    family: hasEmbeddedFonts ? 'Segoe UI' : 'ToldosHelvetica',
+    weight: tipo === 'bold' || (!hasEmbeddedFonts && tipo === 'semibold') ? 700 : tipo === 'semibold' ? 600 : 400,
+    style: tipo === 'italic' ? 'italic' : 'normal'
+  }]));
+  const lienzo = crearLienzoSvg(medidor, fuentes);
+  drawFabricDiagram(lienzo, 0, 0, 242, 300, diagram, awning, calculation);
+  return lienzo.resultado();
+}
 
 /**
  * Una hoja pequeña con el título y el dibujo de la web de un toldo de ejemplo, como en la hoja de

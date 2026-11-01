@@ -23,6 +23,7 @@ export const FALLO_LENTO_MS = 10_000;
 export function crearImpresoraHojaTelas({
   telas,
   estructura,
+  dibujos = true,
   fichas,
   servicio,
   url,
@@ -81,7 +82,7 @@ export function crearImpresoraHojaTelas({
       registrar(`Hoja en HTML del pedido ${codigoPedido || 'sin código'} (${cual}): sale la de pdfkit. ${motivo}`);
     }
 
-    return { renderSheets, onSheetError, htmlStructure: Boolean(estructura), htmlFabric: Boolean(telas) };
+    return { renderSheets, onSheetError, htmlStructure: Boolean(estructura), htmlFabric: Boolean(telas), htmlDiagrams: Boolean(dibujos) };
   }
 
   return { opciones };

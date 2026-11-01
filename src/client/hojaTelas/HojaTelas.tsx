@@ -7,6 +7,8 @@ import {
 } from './ayudasHoja';
 import { NotasTela, repartirNotasTela } from './NotasTela';
 import { HojaEstructura } from './HojaEstructura';
+import { DibujoConfeccion, esperarFuentesDibujo } from './dibujos/DibujoConfeccion';
+import './dibujos/fuentes.css';
 import type { FilaHojaTelas, HojaPlanteamiento, HojaTelasDatos } from './tipos';
 
 // Página de telas A4 apaisada del planteamiento de toldos, impresa por Chromium en el servidor.
@@ -145,8 +147,10 @@ function PrimeraPagina({ datos, lineas }: { datos: HojaTelasDatos; lineas: strin
       <div className="telas-exterior" style={sitio(MARGEN, EXTERIOR_Y, ANCHO - MARGEN * 2, EXTERIOR_PIE - EXTERIOR_Y)} />
 
       <Celda x={36} y={123} w={242} h={21} clase="telas-negrita telas-centro telas-dibujo-titulo" minima={9}>{datos.diagramTitle}</Celda>
-      {/* Vacío a propósito: el servidor encaja aquí el dibujo de confección de pdfkit. */}
-      <div className="telas-dibujo" style={{ left: '36pt', top: '149pt', width: '242pt', height: '300pt' }}></div>
+      {/* Sin SVG el servidor encaja aquí el dibujo de pdfkit, incluidas las imágenes del taller. */}
+      <div className="telas-dibujo" style={{ left: '36pt', top: '149pt', width: '242pt', height: '300pt' }}>
+        {datos.diagramSvg && <DibujoConfeccion datos={datos.diagramSvg} />}
+      </div>
       {datos.notes.trim() && (
         <NotasTela x={NOTAS_X} y={NOTAS_Y} w={NOTAS_W} h={NOTAS_PIE - NOTAS_Y} titulo="OBSERVACIONES"
           filas={lineas ?? datos.notes.trim().split('\n')} />
@@ -200,7 +204,7 @@ export function HojaTelas({ datos, onLista, onError }: {
 
   useEffect(() => {
     let vigente = true;
-    esperarLetra().then(() => {
+    Promise.all([esperarLetra(), esperarFuentesDibujo(datos.diagramSvg)]).then(() => {
       if (!vigente || !raiz.current) return;
       ajustarUnaLinea(raiz.current);
       ajustarDosLineas(raiz.current);
