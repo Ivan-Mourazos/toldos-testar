@@ -40,5 +40,18 @@ try {
   const hojas=page.locator('section');
   for(let i=0;i<await hojas.count();i++) await hojas.nth(i).screenshot({path:`${out}/embudos/${c.pedido}-${tipo}-${i+1}.png`});
  }
+ // Contraste de contenido: colores y dos tamaños de escritorio, con imágenes de altura estable.
+ await page.goto(pathToFileURL(`${out}/contraste-pedidos.html`).href);
+ await page.evaluate(()=>document.fonts.ready);
+ for(const [width,height] of [[1280,720],[1600,1000]]) for(const colorScheme of ['light','dark']) {
+  await page.setViewportSize({width,height});await page.emulateMedia({colorScheme});
+  await page.screenshot({path:`${out}/contraste-${width}-${height}-${colorScheme}.png`});
+ }
+ await page.setViewportSize({width:1600,height:1000});await page.emulateMedia({colorScheme:'light'});
+ for(const id of ['cortina-ventana-5193','cortina-velcro-4890','solapas-rectas-4890','antica-30-3374']) {
+  const articulo=page.locator('#'+id);await articulo.scrollIntoViewIfNeeded();
+  await articulo.locator('img').evaluate(async img=>{await img.decode();});
+  await articulo.screenshot({path:`${out}/contraste-${id}.png`});
+ }
  console.log(JSON.stringify({variantes:n,fuera:incidencias.filter(v=>v.casos.some(c=>c.fuera.length)).map(v=>v.variante),solapes:incidencias.filter(v=>v.casos.some(c=>c.solapes.length)).map(v=>v.variante)}));
 } finally { await browser.close(); }

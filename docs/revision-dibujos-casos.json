@@ -1,0 +1,601 @@
+[
+  {
+    "id": "general-arzua-4541",
+    "pedido": "AR2604541",
+    "original": "taller/ARZUA-AR.26.04541-1-p2.png",
+    "diagrama": "GENERAL",
+    "entrada": {
+      "model": "ARZUA PRO",
+      "width": 210,
+      "projection": 200,
+      "valanceHeight": 20,
+      "valanceCurve": "RECTA",
+      "armConfiguration": "CROSSED",
+      "device": "MAQ. EXTERIOR",
+      "machineSide": "M.F.DER"
+    },
+    "corte": {
+      "fabricWidth": 197.6,
+      "fabricDrop": 265
+    },
+    "visto": "Patrón GENERAL, frente, caída, 2,5 arriba, 33,5 de entrada, 3,3 lateral, 4 abajo, doble varilla blanca y bamba20. Los brazos cruzados no convierten el patrón en dibujo de estructura."
+  },
+  {
+    "id": "general-monoblock-3850",
+    "pedido": "AR2603850",
+    "original": "taller/ARZUA-AR.26.03850-10-p2.png",
+    "diagrama": "GENERAL",
+    "entrada": {
+      "model": "MONOBLOCK 350",
+      "width": 500,
+      "projection": 225,
+      "valanceHeight": 25,
+      "valanceCurve": "RECTA",
+      "device": "MAQUINA",
+      "machineSide": "M.F.IZQ"
+    },
+    "corte": {
+      "fabricWidth": 485.8,
+      "fabricDrop": 295
+    },
+    "visto": "El documento comercial lo llama Arzúa Monobloc; el despiece dice MONOBLOCK350. GENERAL y bamba25, varilla superior negra o blanca, entrada al tubo, bastillas y blanca inferior."
+  },
+  {
+    "id": "general-cambio-5262",
+    "pedido": "AR2605262",
+    "original": "taller/CAMBIO_TELA-AR.26.05262-1-p1.png",
+    "diagrama": "GENERAL",
+    "entrada": {
+      "model": "CAMBIO TELA",
+      "width": 493,
+      "projection": 225,
+      "valanceHeight": 25,
+      "valanceCurve": "RECTA"
+    },
+    "corte": {
+      "fabricWidth": 493,
+      "fabricDrop": 295
+    },
+    "visto": "CAMBIO DE TELA conserva patrón GENERAL. Bamba25, dos varillas blancas; etiquetas 2,5/33,5/3,3/4. Se lee PARA ENROLLAR EN TUBO."
+  },
+  {
+    "id": "general-cambio-5271",
+    "pedido": "AR2605271",
+    "original": "taller/CAMBIO_TELA-AR.26.05271-1-p1.png",
+    "diagrama": "GENERAL",
+    "entrada": {
+      "model": "CAMBIO TELA",
+      "width": 142,
+      "projection": 175,
+      "valanceHeight": 20,
+      "valanceCurve": "RECTA"
+    },
+    "corte": {
+      "fabricWidth": 142,
+      "fabricDrop": 240
+    },
+    "visto": "Dos telas142 y221,5 del mismo corte240, bamba20; observación de centrar costura en A. El patrón no debe convertir esa costura particular en una regla para todos."
+  },
+  {
+    "id": "general-perla-5110",
+    "pedido": "AR2605110",
+    "original": "taller/ELECTRA-AR.26.05110-1-p4.png",
+    "diagrama": "GENERAL",
+    "entrada": {
+      "model": "PERLA BOX",
+      "width": 450,
+      "projection": 175,
+      "valanceHeight": 0,
+      "device": "MOTOR",
+      "machineSide": "M.F.DER"
+    },
+    "corte": {
+      "fabricWidth": 430.8,
+      "fabricDrop": 215
+    },
+    "visto": "Perla sin bamba comparte pedido con Electra. Patrón GENERAL. No se justifica seleccionar el esquema de estructura PERLA por existir en el código."
+  },
+  {
+    "id": "general-punto-3932",
+    "pedido": "AR2603932",
+    "original": "taller/PUNTO_RECTO-AR.26.03932-2-p1.png",
+    "diagrama": "GENERAL",
+    "entrada": {
+      "model": "PUNTO RECTO",
+      "width": 560,
+      "projection": 120,
+      "valanceHeight": 0,
+      "device": "MOTOR",
+      "machineSide": "M.F.IZQ"
+    },
+    "corte": {
+      "fabricWidth": 549,
+      "fabricDrop": 229.7
+    },
+    "visto": "CAD: varilla negra4,5 arriba, blanca5,5 abajo y laterales AL CORTE en Soltis96. GENERAL tiene bastillas: no se homologa el acabado lateral de este especial. Se corrige la omisión del nombre de la varilla inferior."
+  },
+  {
+    "id": "cortina-ventana-5116",
+    "pedido": "AR2605116",
+    "original": "taller/CORTINA-AR.26.05116-2-p3.png",
+    "diagrama": "CORTINA-VENTANA",
+    "entrada": {
+      "model": "CORTINA",
+      "width": 500,
+      "projection": 284,
+      "valanceHeight": 20,
+      "valanceCurve": "RECTA",
+      "curtainHasWindow": true,
+      "curtainFinish": "NORMAL",
+      "curtainBottomFinish": "TUBO DE CARGA",
+      "curtainWindowCorner": 100,
+      "curtainWindowFloorHeight": 75,
+      "curtainWindowReference": "SUELO",
+      "curtainWindowHeight": 137
+    },
+    "corte": {
+      "fabricWidth": 488,
+      "fabricDrop": 349
+    },
+    "visto": "CAD B: 488 de frente, esquina100, cristal137 y57 hasta varilla; bamba20 aparte, doble varilla blanca5,5 y BN3; lados BN4. Varilla negra4,5 contradice el5,09 de la hoja de telas del mismo pedido."
+  },
+  {
+    "id": "cortina-ventana-5193",
+    "pedido": "AR2605193",
+    "original": "taller/CORTINA-AR.26.05193-2-p1.png",
+    "diagrama": "CORTINA-VENTANA",
+    "entrada": {
+      "model": "CORTINA",
+      "width": 312,
+      "projection": 250,
+      "valanceHeight": 15,
+      "valanceCurve": "RECTA",
+      "curtainHasWindow": true,
+      "curtainFinish": "NORMAL",
+      "curtainBottomFinish": "TUBO DE CARGA",
+      "curtainWindowCorner": 20,
+      "curtainWindowFloorHeight": 75,
+      "curtainWindowReference": "SUELO",
+      "curtainWindowHeight": 137
+    },
+    "corte": {
+      "fabricWidth": 300,
+      "fabricDrop": 310
+    },
+    "visto": "Tres unidades de frente300, cristal137, esquinas20 y57 hasta varilla. CAD rotula4,5 negra,5,5 blanca y BN4/BN3; confirma la corrección del diámetro con otro pedido. El137 se transcribe del histórico: Iván fijó después máximo136 para cristal140 con solapes2+2 (§10 del expediente). No se propone restaurar137 como habitual."
+  },
+  {
+    "id": "cortina-ventana-5244",
+    "pedido": "AR2605244",
+    "original": "taller/CORTINA-AR.26.05244-1-p1.png",
+    "diagrama": "CORTINA-VENTANA",
+    "entrada": {
+      "model": "CORTINA",
+      "width": 412,
+      "projection": 185,
+      "valanceHeight": 0,
+      "curtainHasWindow": true,
+      "curtainFinish": "NORMAL",
+      "curtainBottomFinish": "TUBO DE CARGA",
+      "curtainWindowCorner": 10,
+      "curtainWindowFloorHeight": 20,
+      "curtainWindowReference": "TUBO DE CARGA",
+      "curtainWindowHeight": 136
+    },
+    "corte": {
+      "fabricWidth": 400,
+      "fabricDrop": 225
+    },
+    "visto": "CAD: paño A400, B393, sin bamba, esquina10, ventana136 y20 hasta varilla. Negra4,5 y blanca5,5. Las referencias tubo/suelo se mantienen distintas: no se resta18 a los20 medidos desde tubo."
+  },
+  {
+    "id": "cortina-sin-5239",
+    "pedido": "AR2605239",
+    "original": "taller/CORTINA-AR.26.05239-1-p5.png",
+    "diagrama": "CORTINA-SIN-VENTANA",
+    "entrada": {
+      "model": "CORTINA",
+      "width": 223,
+      "projection": 115,
+      "valanceHeight": 10,
+      "valanceCurve": "RECTA",
+      "curtainHasWindow": false,
+      "curtainFinish": "NORMAL",
+      "curtainBottomFinish": "TUBO DE CARGA"
+    },
+    "corte": {
+      "fabricWidth": 211,
+      "fabricDrop": 170
+    },
+    "visto": "Paños sin ventana; arriba varilla negra o blanca y PARA ENROLLAR EN TUBO, lateral bastilla, blanca5,5 y bamba10 con BN3. La fila de datos no lleva ventana inexistente."
+  },
+  {
+    "id": "cortina-sin-4890",
+    "pedido": "AR2604890",
+    "original": "taller/SOLAPAS-AR.26.04890-1-p20.png",
+    "diagrama": "CORTINA-SIN-VENTANA",
+    "entrada": {
+      "model": "CORTINA",
+      "width": 580,
+      "projection": 425,
+      "valanceHeight": 20,
+      "valanceCurve": "RECTA",
+      "curtainHasWindow": false,
+      "curtainFinish": "NORMAL",
+      "curtainBottomFinish": "TUBO DE CARGA"
+    },
+    "corte": {
+      "fabricWidth": 568,
+      "fabricDrop": 490
+    },
+    "visto": "Segunda muestra sin ventana y bamba20. CAD separa otros paños con velcro de estos normales. Confirma que no se deben dibujar bandas de velcro en todos los toldos de la OF."
+  },
+  {
+    "id": "cortina-velcro-4890",
+    "pedido": "AR2604890",
+    "original": "taller/SOLAPAS-AR.26.04890-10-p1.png",
+    "diagrama": "CORTINA-VELCRO",
+    "entrada": {
+      "model": "CORTINA",
+      "width": 440,
+      "projection": 400,
+      "valanceHeight": 20,
+      "valanceCurve": "RECTA",
+      "curtainHasWindow": false,
+      "curtainFinish": "VELCRO",
+      "curtainBottomFinish": "TUBO DE CARGA",
+      "curtainVelcroHeight": 390,
+      "curtainVelcroType": "SUAVE",
+      "curtainVelcroSide": "POR REVÉS",
+      "curtainVelcroColor": "NEGRO",
+      "curtainVelcroWidth": 5
+    },
+    "corte": {
+      "fabricWidth": 428,
+      "fabricDrop": 465
+    },
+    "visto": "CAD A-C: velcro SUAVE5 NEGRO POR REVÉS después de bastilla, altura390. La hoja de telas antigua dice408: se suministra390 explícito tal como permite la tarjeta, sin cambiar el cálculo por defecto. CAD negra4,5 y bamba20 con BN4 particular (la web conserva BN3). La decisión de Iván del22/10 (cortina-pvc-corte.md §10) confirma que BN4 abajo fue un error de aquel plano; BN3 en web es correcto y se conserva."
+  },
+  {
+    "id": "cortina-ventana-velcro-4562",
+    "pedido": "AR2604562",
+    "original": "taller/SOLAPAS-AR.26.04562-2-p1.png",
+    "diagrama": "CORTINA-VENTANA-VELCRO",
+    "entrada": {
+      "model": "CORTINA",
+      "width": 461,
+      "projection": 245,
+      "valanceHeight": 20,
+      "valanceCurve": "RECTA",
+      "curtainHasWindow": true,
+      "curtainFinish": "VELCRO",
+      "curtainBottomFinish": "TUBO DE CARGA",
+      "curtainWindowCorner": 50,
+      "curtainWindowFloorHeight": 90,
+      "curtainWindowReference": "SUELO",
+      "curtainWindowHeight": 120,
+      "curtainVelcroHeight": 233,
+      "curtainVelcroType": "SUAVE",
+      "curtainVelcroSide": "POR DERECHO",
+      "curtainVelcroColor": "BLANCO",
+      "curtainVelcroWidth": 5
+    },
+    "corte": {
+      "fabricWidth": 449,
+      "fabricDrop": 310
+    },
+    "visto": "CAD con ventana y velcro5 blanco suave por derecho. Altura de banda233 en CAD frente a235 en hoja anterior: se conserva la diferencia, sin retocar el cálculo. Laterales BN4 y bamba20; ventana120 y72 respecto a varilla en hoja."
+  },
+  {
+    "id": "enrollable-6340",
+    "pedido": "AR2506340",
+    "original": "extra/ENROLLABLE-AR.25.06340-2-p1.png",
+    "diagrama": "ENROLLABLE",
+    "entrada": {
+      "model": "ENROLLABLE",
+      "width": 60,
+      "valanceHeight": 0,
+      "units": 2
+    },
+    "corte": {
+      "fabricWidth": 60,
+      "fabricDrop": 375
+    },
+    "visto": "Dos piezas de frente60 y corte375. Varilla plana arriba, entrada de pletina30×6 abajo con refuerzo PVC por dentro; lados al corte. Se compara el corte documentado, sin inferir de él una salida de pedido."
+  },
+  {
+    "id": "cambio-enrollable-1123",
+    "pedido": "AR2501123",
+    "original": "extra/ENROLLABLE-AR.25.01123-2-p1.png",
+    "diagrama": "CAMBIO ENROLLABLE",
+    "entrada": {
+      "model": "ENROLLABLE",
+      "width": 52,
+      "fabricDiagramOverride": "CAMBIO ENROLLABLE",
+      "valanceHeight": 0,
+      "units": 2
+    },
+    "corte": {
+      "fabricWidth": 52,
+      "fabricDrop": 325
+    },
+    "visto": "Dos piezas de52×325. Plana por revés a continuación de screen redonda; entrada pletina30×6 y refuerzo interior, lados al corte. La web conserva ese dibujo especial."
+  },
+  {
+    "id": "cambio-enrollable-2302",
+    "pedido": "AR2602302",
+    "original": "extra/ENROLLABLE-AR.26.02302-2-p1.png",
+    "diagrama": "CAMBIO ENROLLABLE",
+    "entrada": {
+      "model": "ENROLLABLE",
+      "width": 60,
+      "fabricDiagramOverride": "CAMBIO ENROLLABLE",
+      "valanceHeight": 0,
+      "units": 3
+    },
+    "corte": {
+      "fabricWidth": 60,
+      "fabricDrop": 375
+    },
+    "visto": "Tres piezas60×375; arriba screen redonda y plana por revés, pero abajo entrada de tubo5×2cm en vez de pletina30×6. Es un especial explícito, no base para cambiar el enrollable de todos."
+  },
+  {
+    "id": "toldo-velcro-6340",
+    "pedido": "AR2506340",
+    "original": "extra/ENROLLABLE-AR.25.06340-1-p3.png",
+    "diagrama": "TOLDO-VELCRO",
+    "entrada": {
+      "model": "CAMBIO TELA",
+      "width": 487,
+      "projection": 350,
+      "valanceHeight": 25,
+      "valanceCurve": "RECTA",
+      "valanceFabric": "ACR BOTELLA",
+      "fabricDiagramOverride": "TOLDO-VELCRO"
+    },
+    "corte": {
+      "fabricWidth": 487,
+      "fabricDrop": 390
+    },
+    "visto": "Patrón TOLDO-VELCRO con bandas laterales, negra arriba, dos blancas abajo, bamba A separada en otra tela y BN3. El rótulo antiguo5,09 se corrige con la evidencia CAD de varilla negra4,5; no se homologa altura de banda antigua−10."
+  },
+  {
+    "id": "bamba-normal-4987",
+    "pedido": "AR2604987",
+    "original": "taller/BAMBALINA-AR.26.04987-1-p1.png",
+    "diagrama": "BAMBALINA",
+    "entrada": {
+      "model": "BAMBALINA",
+      "width": 394,
+      "valanceHeight": 25,
+      "valanceCurve": "NORMAL"
+    },
+    "corte": {
+      "fabricWidth": 394,
+      "fabricDrop": 30
+    },
+    "visto": "Bamba independiente25 terminada,30 corte, curvaNORMAL, blanca arriba y bastillas laterales; remate vainilla o blanco indicado en observaciones."
+  },
+  {
+    "id": "bamba-normal-5268",
+    "pedido": "AR2605268",
+    "original": "taller/BAMBALINA-AR.26.05268-1-p1.png",
+    "diagrama": "BAMBALINA",
+    "entrada": {
+      "model": "BAMBALINA",
+      "width": 488.5,
+      "valanceHeight": 21,
+      "valanceCurve": "NORMAL"
+    },
+    "corte": {
+      "fabricWidth": 488.5,
+      "fabricDrop": 26
+    },
+    "visto": "Hoja de taller actualizada a488,5×21 terminada y26 al corte. Comercial pedía20 y curvas de franjas25; no se impone esa petición anterior sobre el21 del planteamiento ni se modifica la onda estándar por un solo croquis."
+  },
+  {
+    "id": "bamba-extrasuave-5270",
+    "pedido": "AR2605270",
+    "original": "taller/BAMBALINA-AR.26.05270-1-p1.png",
+    "diagrama": "BAMBALINA",
+    "entrada": {
+      "model": "BAMBALINA",
+      "width": 257,
+      "valanceHeight": 30,
+      "valanceCurve": "EXTRASUAVE"
+    },
+    "corte": {
+      "fabricWidth": 257,
+      "fabricDrop": 35
+    },
+    "visto": "Bamba30 terminada,35 al corte y curvaEXTRASUAVE; remate azul marino particular. Es rectificación del pedido4916, no dos fabricaciones independientes para validar la curva."
+  },
+  {
+    "id": "antica-50-2673",
+    "pedido": "AR2602673",
+    "original": "taller/ANTICA-AR.26.02673-1-p3.png",
+    "diagrama": "ANTICA",
+    "entrada": {
+      "model": "ANTICA",
+      "width": 244.5,
+      "projection": 110,
+      "valanceHeight": 0,
+      "anticaVariant": "TUBO 50X30 SIN BAMBA"
+    },
+    "corte": {
+      "fabricWidth": 232.5,
+      "fabricDrop": 225.56
+    },
+    "visto": "Dos paños232,5/230,5, entrada de tubo50×30 y sin bamba. El soporte de techo de tres agujeros no equivale a la variante de pletina fija."
+  },
+  {
+    "id": "antica-50-4488",
+    "pedido": "AR2604488",
+    "original": "taller/ANTICA-AR.26.04488-1-p3.png",
+    "diagrama": "ANTICA",
+    "entrada": {
+      "model": "ANTICA",
+      "width": 645,
+      "projection": 50,
+      "valanceHeight": 0,
+      "anticaVariant": "TUBO 50X30 SIN BAMBA"
+    },
+    "corte": {
+      "fabricWidth": 633,
+      "fabricDrop": 151
+    },
+    "visto": "Paños633/369,4; entrada50×30 y sin bamba. Despiece140,7 frente a fila151 del mismo PDF: se registra diferencia histórica de cálculo, no se corrige ni reserva nada."
+  },
+  {
+    "id": "antica-30-3374",
+    "pedido": "AR2603374",
+    "original": "taller/ANTICA-AR.26.03374-1-p3.png",
+    "diagrama": "ANTICA",
+    "entrada": {
+      "model": "ANTICA",
+      "width": 212,
+      "projection": 50,
+      "valanceHeight": 25,
+      "anticaVariant": "TUBO 30X10 CON BAMBA"
+    },
+    "corte": {
+      "fabricWidth": 200,
+      "fabricDrop": 342.22
+    },
+    "visto": "El original dibuja entrada30×10 y faldón vertical de bamba25, con tramo vertical especial y corte342,22. La web identifica30×10 pero su esquema lateral termina en el tubo y remite la bamba al bloque; no se considera representación completa de este caso."
+  },
+  {
+    "id": "hera-derecho-3165",
+    "pedido": "AR2603165",
+    "original": "extra/HERA-AR.26.03165-1-p1.png",
+    "diagrama": "HERA",
+    "entrada": {
+      "model": "HERA",
+      "submodel": "HERA 56 MAQUINA",
+      "heraInteriorFace": "DERECHO"
+    },
+    "corte": {
+      "fabricWidth": 344,
+      "fabricDrop": 235
+    },
+    "visto": "Plano: derecho hacia interior del local, tubo por el otro lado, macarrónscreen arriba, blanca abajo y laterales al corte. El esquema web acredita orientación; remates y medidas van en cada fila, no en el esquema."
+  },
+  {
+    "id": "hera-derecho-3535",
+    "pedido": "AR2603535",
+    "original": "extra/HERA-AR.26.03535-1-p1.png",
+    "diagrama": "HERA",
+    "entrada": {
+      "model": "HERA",
+      "submodel": "HERA 56 MAQUINA",
+      "heraInteriorFace": "DERECHO"
+    },
+    "corte": {
+      "fabricWidth": 162.5,
+      "fabricDrop": 174
+    },
+    "visto": "Segundo pedido con derecho interior, dos unidades y misma orientación de tubo; plano sin aumentos para escuadrar. No se extrapola a revés interior ni a pletina inferior."
+  },
+  {
+    "id": "iris-cristal-4748",
+    "pedido": "AR2604748",
+    "original": "taller/IRIS-AR.26.04748-10-p1.png",
+    "diagrama": "IRIS",
+    "entrada": {
+      "model": "IRIS",
+      "submodel": "IRIS 110 CON COFRE",
+      "irisAssumeSquare": false,
+      "irisFrontTop": 253.5,
+      "irisFrontBottom": 253.4,
+      "irisExitLeft": 220.2,
+      "irisExitRight": 220.1,
+      "irisDiagonal1": 335.8,
+      "irisDiagonal2": 336.2,
+      "irisGuideType": "COMPENSADORA"
+    },
+    "corte": {
+      "fabricWidth": 243.9,
+      "fabricDrop": 245.1,
+      "guideLeftLength": 208.2,
+      "guideRightLength": 208.1
+    },
+    "visto": "La hoja de telas usa escuadrado253,5/253,4, diagonales335,8/336,2 y guías208,2/208,1; el CAD además pide todo cristal, dos piezas, blanca5,5 arriba y abajo, chaflán5 y cremallera por revés. No se añade varilla8 universal: contradice este pedido de cristal."
+  },
+  {
+    "id": "solapas-rectas-4890",
+    "pedido": "AR2604890",
+    "original": "taller/SOLAPAS-AR.26.04890-10-p5.png",
+    "diagrama": "SOLAPAS",
+    "entrada": {
+      "model": "SOLAPAS",
+      "bastilla": false,
+      "solapas": [
+        {
+          "nombre": "AB",
+          "largo": 390,
+          "ancho": 28,
+          "velcroTipo": "BRAVO",
+          "velcroAncho": 5,
+          "velcroColor": "NEGRO",
+          "velcroLado": "POR DERECHO"
+        },
+        {
+          "nombre": "BC",
+          "largo": 390,
+          "ancho": 38,
+          "velcroTipo": "BRAVO",
+          "velcroAncho": 5,
+          "velcroColor": "NEGRO",
+          "velcroLado": "POR DERECHO"
+        },
+        {
+          "nombre": "CD",
+          "largo": 390,
+          "ancho": 28,
+          "velcroTipo": "BRAVO",
+          "velcroAncho": 5,
+          "velcroColor": "NEGRO",
+          "velcroLado": "POR DERECHO"
+        },
+        {
+          "nombre": "JK",
+          "largo": 411,
+          "ancho": 28,
+          "velcroTipo": "BRAVO",
+          "velcroAncho": 5,
+          "velcroColor": "NEGRO",
+          "velcroLado": "POR DERECHO"
+        },
+        {
+          "nombre": "KL",
+          "largo": 411,
+          "ancho": 38,
+          "velcroTipo": "BRAVO",
+          "velcroAncho": 5,
+          "velcroColor": "NEGRO",
+          "velcroLado": "POR DERECHO"
+        },
+        {
+          "nombre": "LM",
+          "largo": 422,
+          "ancho": 28,
+          "velcroTipo": "BRAVO",
+          "velcroAncho": 5,
+          "velcroColor": "NEGRO",
+          "velcroLado": "POR DERECHO"
+        }
+      ]
+    },
+    "corte": {},
+    "visto": "Seis rectángulos al corte, velcro bravo5 negro por derecho. El esquema identifica seis solapas y ambos velcros; las dimensiones individuales siguen en el bloque. No sustituye al alzado acotado de cada pieza."
+  },
+  {
+    "id": "solapa-escalonada-4304",
+    "pedido": "AR2604304",
+    "original": "taller/SOLAPAS-AR.26.04304-10-p1.png",
+    "diagrama": "SOLAPAS",
+    "entrada": null,
+    "corte": {},
+    "visto": "Pieza escalonada:250 de largo; ancho30 arriba y19 abajo, cambio a121,5; velcro bravo5 interior y pisado19. No se puede introducir como rectángulo ni como oblicua de lados rectos. Se muestra el original sin inventar una entrada web equivalente; necesita plano especial."
+  }
+]
