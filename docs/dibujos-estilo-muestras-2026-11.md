@@ -1,5 +1,7 @@
 # Muestras de estilo de confección · 02/11/2026
 
+> Histórico de la propuesta. Iván aprobó extenderla con correcciones; véase [la entrega final](dibujos-estilo-final-2026-11.md). Los generadores actuales reproducen la entrega final. Las imágenes originales de esta propuesta se conservan en `tmp/ui-audit/dibujos-estilo/muestras/`.
+
 La propuesta se entrega para que Iván elija antes de extenderla. La aplicación mantiene el estilo anterior. `estiloTecnico: true` solo se admite en los generadores SVG y PDF de muestras para GENERAL, CORTINA-VENTANA, TOLDO-VELCRO y ANTICA. La superficie común `superficiePlanoTecnico` admite tanto pdfkit como el lienzo SVG, sin cambiar coordenadas ni medidas de fabricación.
 
 - Laterales: selector Bastilla / Al corte en los toldos con GENERAL. Bastilla por defecto en altas y pedidos antiguos, normalización de servidor y borrador. Las hojas se agrupan por acabado para no mezclar instrucciones. Se rotula en ambos lados.
