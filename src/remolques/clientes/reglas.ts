@@ -182,6 +182,7 @@ function comprobarMedidas(medidas: unknown, mal: (texto: string) => void) {
       if (!positivo(hecha.largo) || !positivo(hecha.ancho)
         || (hecha.anchoAtras !== undefined && !positivo(hecha.anchoAtras))) mal(`${n}: la lona hecha de referencia necesita largo y ancho mayores que 0`);
     }
+    if (medida.hechaDudosa !== undefined && !esTexto(medida.hechaDudosa)) mal(`${n}: el motivo de referencia dudosa tiene que ser un texto`);
     const lados = LADOS_OLLAOS.map((lado) => ollaos[lado]);
     if (!lados.every((p) => Array.isArray(p) && p.every(positivo))) {
       mal(`${n}: las posiciones de los ollaos tienen que ser números mayores que 0`);

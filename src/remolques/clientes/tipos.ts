@@ -29,7 +29,7 @@ export interface VentanaFicha {
 /**
  * Una medida habitual: el largo × ancho del remolque (lo que se teclea) y las posiciones de los
  * ollaos medidas sobre la lona hecha: laterales de atrás a delante; cabezas de izquierda a derecha.
- * La medida exacta se imprime tal cual; las propuestas para otras medidas se adaptan por lado.
+ * Se usan tal cual si coincide su lona hecha; las demás se proponen adaptadas por lado.
  */
 export interface MedidaHabitual {
   tipo: TipoPlanteamiento;
@@ -37,6 +37,8 @@ export interface MedidaHabitual {
   ancho: number;
   /** Medidas hechas sobre las que se tomaron estos ollaos. */
   hecha?: { largo: number; ancho: number; anchoAtras?: number };
+  /** Sin referencia acreditada: no se aplica la referencia general ni se inventan posiciones. */
+  hechaDudosa?: string;
   ollaos: RepartoLados;
 }
 

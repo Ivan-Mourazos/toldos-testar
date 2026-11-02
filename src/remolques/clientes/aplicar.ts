@@ -27,7 +27,13 @@ function conOllaosDeFicha<T extends LonaInput | BaquetonInput>(input: T, ficha: 
   if (input.modoOllaos !== "") return input;
   const propuesta = propuestaOllaos(ficha, tipo, input, params);
   const siguiente = conOllaos(input, propuesta?.ollaos ?? null, campos, ficha.ollaosRepartidos);
-  return propuesta?.origenes.length ? { ...siguiente, ollaosAdaptados: { origenes: propuesta.origenes, hecha: hechaParaOllaos(tipo, input, params) } } : siguiente;
+  if (!propuesta || (!propuesta.origenes.length && !propuesta.sinAdaptar)) return siguiente;
+  if (propuesta.sinAdaptar) campos.push("ollaosAdaptados");
+  return { ...siguiente, ollaosAdaptados: {
+    origenes: propuesta.origenes, hecha: hechaParaOllaos(tipo, input, params),
+    ...(propuesta.referencia ? { referencia: propuesta.referencia } : {}),
+    ...(propuesta.sinAdaptar ? { sinAdaptar: propuesta.sinAdaptar } : {}),
+  } };
 }
 
 function conObservaciones(actual: string, nuevas: readonly string[], campos: string[]): string {

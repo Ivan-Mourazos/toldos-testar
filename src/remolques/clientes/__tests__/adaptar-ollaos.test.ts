@@ -21,22 +21,22 @@ describe("propuestas de ollaos cercanos", () => {
     for (const p of [[], [10], [10, 10], [50, 10], [10, NaN], [10, 110]]) expect(adaptarPosiciones(p, 100, 101)).toBeNull();
     expect(adaptarPosiciones([10, 90], 100, 15)).toBeNull();
   });
-  it("la exacta manda aun con siempre repartidos y otra demasía", () => {
+  it("siempre repartidos impide adaptar una exacta con otra demasía", () => {
     const p = propuestaOllaos({ ...ficha, ollaosRepartidos: true }, "lona", { ...input, largo: 200, ancho: 130 }, DEFAULT_PARAMS);
-    expect(p).toEqual({ ollaos: medida.ollaos, origenes: [] });
+    expect(p).toBeNull();
   });
   it("usa una cercana por lado, con su medida hecha original y con aviso", () => {
     const p = propuestaOllaos(ficha, "lona", input, DEFAULT_PARAMS)!;
-    expect(p.ollaos.delante).toEqual([10, 43.3, 66.4, 89.6, 123]);
+    expect(p.ollaos!.delante).toEqual([10, 43.3, 66.4, 89.6, 123]);
     expect(p.origenes).toEqual(["200×130"]);
     const linea = aplicarFichaAlImportar({ tipo: "lona", version: "10", input: { ...input, demasiaLonaHecha: undefined } }, ficha);
     expect(linea.input).toMatchObject({ modoOllaos: "SEGUN SE INDICA", ollaosAdaptados: { origenes: ["200×130"] } });
     expect(ficha.medidas).toEqual([medida]);
   });
-  it("no toma medidas lejanas, de otro tipo ni fuentes sin referencia de una demasía especial", () => {
+  it("no toma medidas lejanas, de otro tipo ni fuentes con referencia dudosa", () => {
     expect(propuestaOllaos(ficha, "lona", { ...input, largo: 260, ancho: 160 }, DEFAULT_PARAMS)).toBeNull();
     expect(propuestaOllaos(ficha, "baqueton", input, DEFAULT_PARAMS)).toBeNull();
-    expect(propuestaOllaos({ ...ficha, medidas: [{ ...medida, hecha: undefined }] }, "lona", input, DEFAULT_PARAMS)).toBeNull();
+    expect(propuestaOllaos({ ...ficha, medidas: [{ ...medida, hecha: undefined, hechaDudosa: "Sin fecha ni corte de origen" }] }, "lona", input, DEFAULT_PARAMS)).toBeNull();
     expect(propuestaOllaos(ficha, "lona", { ...input, largo: 0, ancho: 0 }, DEFAULT_PARAMS)).toBeNull();
   });
   it("siempre repartidos tiene prioridad sobre cualquier propuesta", () => {
@@ -44,9 +44,9 @@ describe("propuestas de ollaos cercanos", () => {
   });
   it("el ancho de detrás se adapta por separado y los vacíos siguen vacíos", () => {
     const p = propuestaOllaos(ficha, "lona", { ...input, anchoAtras: 132 }, DEFAULT_PARAMS)!;
-    expect(p.ollaos.atras.at(-1)).toBe(124);
-    expect(p.ollaos.delante.at(-1)).toBe(123);
+    expect(p.ollaos!.atras.at(-1)).toBe(124);
+    expect(p.ollaos!.delante.at(-1)).toBe(123);
     const parcial = { ...ficha, medidas: [{ ...medida, ollaos: { ...medida.ollaos, atras: [] } }] };
-    expect(propuestaOllaos(parcial, "lona", input, DEFAULT_PARAMS)!.ollaos.atras).toEqual([]);
+    expect(propuestaOllaos(parcial, "lona", input, DEFAULT_PARAMS)!.ollaos!.atras).toEqual([]);
   });
 });
