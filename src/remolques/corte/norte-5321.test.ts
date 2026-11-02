@@ -67,7 +67,16 @@ describe('AR2605321: paños y orejas de NORTE', () => {
     expect(JSON.stringify(a)).toBe(JSON.stringify(b));
     const piezas = (i: LonaInput) => piezasLona({ input: i, result: calcLona(i, DEFAULT_PARAMS), paramsSnapshot: DEFAULT_PARAMS });
     expect(JSON.stringify(piezas(sin))).toBe(JSON.stringify(piezas(uno)));
-    expect(piezas(sin).t.p.rot).toContainEqual([100, 35, 100, 55]);
+    // Puentes ESVA sin dato en la recogida: marcas a 10 de la hecha también con +1 (Iván, 02/11/2026: «siempre 10 y 10»).
+    const t = piezas(sin).t.p, bordeHecha = (t.w - 1320) / 2;
+    expect(t.rot).toContainEqual([bordeHecha + 100, 35, bordeHecha + 100, 55]);
+  });
+
+  it('con la recogida normal PUENTES ESVA ya salen las marcas a 10 de la hecha (sin recogida propia)', () => {
+    const p = piezasLona({ input, result: calcLona(input, DEFAULT_PARAMS), paramsSnapshot: DEFAULT_PARAMS });
+    expect(p.oreja + 10).toBe(100);
+    expect(p.t.p.rot).toContainEqual([200, 35, 200, 55]);
+    expect(p.t.p.rot).toContainEqual([1330, 35, 1330, 55]);
   });
 
   it('valida la distancia opcional en parámetros y fichas, sin modificar las recogidas antiguas', () => {

@@ -34,6 +34,13 @@ const completas = (eje, guardadas) => (eje && eje.n > guardadas.length ? Array.f
 const PUENTES_CON_CORTE = /PUENTES (HIJOS DE PEDRO LOPEZ|ESVA)/;
 // Lo que el techo del contorno queda más corto que los lados, detrás: la demasía configurada de esa recogida.
 export const rebajePuentes = (el) => findRecogida(el.paramsSnapshot, el.input.recogeAtras).lateralSoloDelante * 10;
+// Marcas de las orejas de los puentes, en cm desde la lona hecha hacia dentro. Lo que diga la recogida; si no
+// lo dice, ESVA lleva siempre 10 y 10 (Iván, 02/11/2026; seis DXF de NORTE) y los de HPL siguen como siempre.
+export function marcaOrejaPuentes(params, recogida) {
+  const configurada = params?.recogidas?.find((r) => r.nombre === recogida)?.marcaOrejaDesdeHecha;
+  if (configurada != null) return configurada;
+  return /PUENTES ESVA/.test(recogida ?? '') ? 10 : undefined;
+}
 // Holgura a cada lado del contorno en trapecio: las piezas de al lado no se pegan del todo, para que la máquina
 // no corte a menos de 1 cm de una raya ya cortada (Iván, 20/10/2026; a mano, de 8 a 12 mm).
 const HOLGURA_TRAPECIO = 10;
@@ -612,7 +619,7 @@ function cabezasLona(el) {
   const ventana = i.ventana && i.ventanaAncho > 0 && i.ventanaAlto > 0 ? [i.ventanaAncho * 10, i.ventanaAlto * 10] : null;
   const d = cabeza(f, anchoPerfil, del.alto * 10, orejaDelante, ollaosDel, hecha.ancho, ventana, /CREMALLERA/.test(i.recogeDelante ?? ''));
   const t = cabeza(f, anchoPerfilTra, tra.alto * 10, oreja, ollaosAtr, hecha.anchoAtras ?? hecha.ancho, null, /CREMALLERA/.test(i.recogeAtras ?? ''), puentes && oreja > 0,
-    puentes && oreja > 0 ? findRecogida(el.paramsSnapshot, i.recogeAtras).marcaOrejaDesdeHecha : undefined);
+    puentes && oreja > 0 ? marcaOrejaPuentes(el.paramsSnapshot, i.recogeAtras) : undefined);
   // Marcas del hombro en cada punta del contorno, solo si esa cabeza cierra con orejas (Iván, 21/10/2026: «solo
   // se hacen si el paño cierra con oreja o similar»; si no, solo la del centro, como a mano en AR2605088 con
   // cremallera), a la altura de su oreja: delante la del delantero y detrás la del trasero (AR2605158: 81,5 con

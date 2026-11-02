@@ -5,7 +5,7 @@
 import { cruz, medidasRefuerzo, piezaBaqueton } from './baqueton.js';
 import { dibujoGanado } from '../ganado/dibujo.ts';
 import { MODELOS_GANADO } from '../calc/ganado.ts';
-import { aguasArquilladas, DOBLEZ_BASTILLA, esquinasChaflan, piezasLona } from './lonaAlta.js';
+import { aguasArquilladas, DOBLEZ_BASTILLA, esquinasChaflan, marcaOrejaPuentes, piezasLona } from './lonaAlta.js';
 import { escribirDxfPlano, separacionCorte } from '../../domain/corteLona/presentacion.js';
 
 const ORIGEN_M = 100;   // como en toldos: lejos del origen del CAD
@@ -178,7 +178,7 @@ function confeccionLona(L, el, X, Y, letras = ['']) {
   pintar(L, P.t.p, enPlano(xTra, Y));
   rosaCabeza(L, P.f, P.oreja, P.anchoPerfilTra, Ht * 10, enPlano(xTra, Y));
   const eT = escaleraCabeza(P.ollaos.atras.length);
-  orejas(xTra, Wt, o, P.t.altoOreja, eT.bajan, P.puentes ? el.paramsSnapshot?.recogidas.find(r => r.nombre === i.recogeAtras)?.marcaOrejaDesdeHecha : undefined);
+  orejas(xTra, Wt, o, P.t.altoOreja, eT.bajan, P.puentes ? marcaOrejaPuentes(el.paramsSnapshot, i.recogeAtras) : undefined);
   L.cota('cotas', xTra + o + 1, Y, xTra + Wt - o - 1, Y, hecha.anchoAtras ?? hecha.ancho, -12 - eT.bajan);
   L.cota('vent-pre-noimpr', xTra, Y, xTra + Wt, Y, Wt, -26 - eT.bajan);
   if (Ht !== H) {

@@ -48,3 +48,7 @@ Pruebas del caso escritas antes del cambio: reproducían los fallos de paños, o
 Las **34 huellas SHA-256** de cálculos y cortes completos de los fixtures de corte coinciden byte a byte antes/después. Fixtures y pruebas de paridad intactos. Instancia aislada 4420, simulador 4430: `/api/health` confirma `simulationMode: true`, `fileWritesEnabled: false`; sin errores de página.
 
 Tipos y build correctos con pnpm 12.5.1 directo; lint correcto. Batería completa: **354 archivos y 4.663 pruebas**, todos correctos; después de añadir las cotas explícitas de las marcas se repitieron las 47 pruebas de corte/caso/script. Solo queda el aviso habitual de tamaño de bloques de Vite. Corepack inicialmente puso otra versión de pnpm en el subproceso; se resolvió usando el ejecutable 12.5.1 instalado, sin cambiar dependencias. No se ha verificado fabricación física ni el DWG real de AR2605321, ni se ha aplicado la configuración en el servidor.
+
+## Cambio del 02/11/2026: marcas a 10 en la recogida normal
+
+Iván: «¿no es 10 y 10 siempre?». La recogida normal `PUENTES ESVA` (usada por NORTE y por INDUSTRIAS EDUARDO ROMAY) pone ya las marcas a 10 cm de la lona hecha sin necesidad de `marcaOrejaDesdeHecha`; el campo sigue sirviendo para indicar otra distancia. Los puentes de Hijos de Pedro López conservan sus marcas de siempre. Ya no hace falta la recogida propia `PUENTES ESVA NORTE` ni aplicar `scripts/ensayar-norte-orejas.mjs`.
