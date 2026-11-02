@@ -24,9 +24,9 @@ try{
   const id=await articulo.getAttribute('id');await articulo.locator('figure').first().screenshot({path:`${out}/${id}.png`});
  }
  for(const [width,height]of [[1280,720],[1600,1000]])for(const colorScheme of ['light','dark']){await page.setViewportSize({width,height});await page.emulateMedia({colorScheme});await page.screenshot({path:`${out}/pagina-${width}-${height}-${colorScheme}.png`});}
- await page.setViewportSize({width:2000,height:3200});await page.emulateMedia({colorScheme:'light'});
+ await page.setViewportSize({width:2000,height:1});await page.emulateMedia({colorScheme:'light'});
  const casos=JSON.parse(fs.readFileSync(`${out}/casos.json`));
- await page.setContent(`<style>body{margin:0;background:#fff;display:grid;grid-template-columns:repeat(5,400px)}img{width:400px;display:block}</style>${casos.map(c=>`<img src="${pathToFileURL(`${out}/${c.id}.png`)}">`).join('')}`);
+ await page.setContent(`<style>body{margin:0;background:#fff;display:grid;grid-template-columns:repeat(5,400px);grid-auto-rows:max-content;align-content:start;align-items:start}img{width:400px;display:block}</style>${casos.map(c=>`<img src="${pathToFileURL(`${out}/${c.id}.png`)}">`).join('')}`);
  await page.locator('img').evaluateAll(imgs=>Promise.all(imgs.map(img=>img.decode())));await page.screenshot({path:`${out}/contacto.png`,fullPage:true});
  const resumen={catalogo:catalogo.length,final:final.length,fuera:[...catalogo,...final].filter(c=>c.fuera.length),solapes:[...catalogo,...final].filter(c=>c.solapes.length),colores:[...catalogo,...final].filter(c=>c.colores.length)};
  fs.writeFileSync(`${out}/resumen.json`,JSON.stringify(resumen,null,2));console.log(JSON.stringify(resumen));
