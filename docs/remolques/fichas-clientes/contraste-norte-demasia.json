@@ -1,0 +1,1003 @@
+{
+  "fechaEstudio": "2026-11-02",
+  "pedidosInventariados": 86,
+  "criterio": "Solo lonas altas de pedidos con una línea, cabeza inequívoca y DXF exacto. Fecha de fabricación: mtime del DXF. Longitud solo con dos laterales iguales y bordes reconocidos.",
+  "resumen": [
+    {
+      "periodo": 1,
+      "lonas": 21,
+      "demasiasObservadas": {
+        "0": 1,
+        "1": 20
+      },
+      "pruebasCercanas": 9,
+      "dentro05": 2,
+      "pruebasReglaFinal": 1,
+      "finalesDentro05": 1,
+      "finalesMismoNumero": 1
+    },
+    {
+      "periodo": 1.5,
+      "lonas": 1,
+      "demasiasObservadas": {
+        "1.5": 1
+      },
+      "pruebasCercanas": 1,
+      "dentro05": 0,
+      "pruebasReglaFinal": 1,
+      "finalesDentro05": 0,
+      "finalesMismoNumero": 1
+    },
+    {
+      "periodo": 2,
+      "lonas": 4,
+      "demasiasObservadas": {
+        "2": 4
+      },
+      "pruebasCercanas": 2,
+      "dentro05": 2,
+      "pruebasReglaFinal": 4,
+      "finalesDentro05": 4,
+      "finalesMismoNumero": 4
+    }
+  ],
+  "mediciones": [
+    {
+      "pedido": "AR2302111",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2023/ARCHIVOS DXF - MAQUINA NUEVA/AR2302111.dxf",
+      "sha256": "31f0d2cb00999f92716f2d532a53053a0290f6e34972ebd4f747edb477e4ad14",
+      "fecha": "2023-04-25",
+      "fechaCorte": "2023-04-28T09:25:26.004Z",
+      "largo": 160,
+      "ancho": 120,
+      "alto": 80,
+      "esperado": 1,
+      "periodoPorPedido": 1,
+      "demasiaAncho": 1,
+      "largoCorteCabeza": 123,
+      "realCabeza": [
+        10,
+        40.2,
+        80.8,
+        111
+      ]
+    },
+    {
+      "pedido": "AR2302141",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2023/ARCHIVOS DXF - MAQUINA NUEVA/AR2302141.dxf",
+      "sha256": "3b1c0fffc0fc60016171c6dae14c8ae082cb96a480bc5e523f9c9cbf0029840b",
+      "fecha": "2023-04-26",
+      "fechaCorte": "2023-04-28T10:54:43.508Z",
+      "largo": 240,
+      "ancho": 140,
+      "alto": 70,
+      "esperado": 1,
+      "periodoPorPedido": 1,
+      "demasiaAncho": 1,
+      "largoCorteCabeza": 143,
+      "realCabeza": [
+        10,
+        45.3,
+        95.7,
+        131
+      ]
+    },
+    {
+      "pedido": "AR2306580",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2023/ARCHIVOS DXF - MAQUINA NUEVA/ar2306580.dxf",
+      "sha256": "9aa9ebe9adb9a07dbae9a1aa8bfeeb6bd97609a8eb7444c67f7e2f23448a8e14",
+      "fecha": "2023-11-27",
+      "fechaCorte": "2023-11-29T09:05:50.076Z",
+      "largo": 200,
+      "ancho": 120,
+      "alto": 80,
+      "esperado": 1,
+      "periodoPorPedido": 1,
+      "demasiaAncho": 1,
+      "largoCorteCabeza": 123,
+      "realCabeza": [
+        10,
+        40.2,
+        80.8,
+        111
+      ]
+    },
+    {
+      "pedido": "AR2400730",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2024/ARCHIVOS DXF - MAQUINA NUEVA/AR2400730.dxf",
+      "sha256": "d95b98971e6136a426611f61549b612802c3c428182f6a04ddf9503343746efc",
+      "fecha": "2024-02-14",
+      "fechaCorte": "2024-02-19T06:11:59.453Z",
+      "largo": 151,
+      "ancho": 100,
+      "alto": 45,
+      "esperado": 1,
+      "periodoPorPedido": 1,
+      "demasiaAncho": 1,
+      "lateral": {
+        "medida": 173,
+        "demasiaGeometrica": 1,
+        "posiciones": [
+          10,
+          54,
+          98,
+          142
+        ]
+      },
+      "largoCorteCabeza": 103,
+      "realCabeza": [
+        10,
+        37,
+        64,
+        91
+      ]
+    },
+    {
+      "pedido": "AR2401226",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2024/ARCHIVOS DXF - MAQUINA NUEVA/AR2401226.dxf",
+      "sha256": "20f1585dffa5837f8ce7f81f18a3a253e5899625fdd6f822815afc9356728eb9",
+      "fecha": "2024-03-08",
+      "fechaCorte": "2024-03-11T12:02:49.451Z",
+      "largo": 225,
+      "ancho": 150,
+      "alto": 70,
+      "esperado": 1,
+      "periodoPorPedido": 1,
+      "demasiaAncho": 1,
+      "largoCorteCabeza": 153,
+      "realCabeza": [
+        10,
+        50.3,
+        100.8,
+        141
+      ]
+    },
+    {
+      "pedido": "AR2401819",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2024/ARCHIVOS DXF - MAQUINA NUEVA/AR2401819.dxf",
+      "sha256": "87cca6a2fb983d7d57c674db81504661d0bf968c3fa7f119398e2080088e4a26",
+      "fecha": "2024-04-10",
+      "fechaCorte": "2024-04-15T10:46:29.890Z",
+      "largo": 400,
+      "ancho": 193,
+      "alto": 87,
+      "esperado": 1,
+      "periodoPorPedido": 1,
+      "demasiaAncho": 1,
+      "largoCorteCabeza": 214,
+      "realCabeza": [
+        10,
+        46.7,
+        97,
+        147.3,
+        184
+      ]
+    },
+    {
+      "pedido": "AR2402200",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2024/ARCHIVOS DXF - MAQUINA NUEVA/AR2402200.dxf",
+      "sha256": "4b7962aeff2b1d67721e81def6ca363a49e2e9223511ce744857115ae3523d60",
+      "fecha": "2024-04-25",
+      "fechaCorte": "2024-04-29T05:45:52.072Z",
+      "largo": 300,
+      "ancho": 180,
+      "alto": 75,
+      "esperado": 1,
+      "periodoPorPedido": 1,
+      "demasiaAncho": 1,
+      "largoCorteCabeza": 183,
+      "realCabeza": [
+        10,
+        50.3,
+        90.5,
+        130.7,
+        171
+      ]
+    },
+    {
+      "pedido": "AR2403085",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2024/ARCHIVOS DXF - MAQUINA NUEVA/AR2403085.dxf",
+      "sha256": "84e73fc8904c71f8730811a8a65d31fa3517187708c01d518e775850ee10b112",
+      "fecha": "2024-05-30",
+      "fechaCorte": "2024-06-03T12:21:29.614Z",
+      "largo": 250,
+      "ancho": 150,
+      "alto": 115,
+      "esperado": 1,
+      "periodoPorPedido": 1,
+      "demasiaAncho": 1,
+      "largoCorteCabeza": 153,
+      "realCabeza": [
+        10,
+        53.7,
+        97.3,
+        141
+      ]
+    },
+    {
+      "pedido": "AR2404307",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2024/ARCHIVOS DXF - MAQUINA NUEVA/AR2404307.dxf",
+      "sha256": "8b7253831456e80dff9e870cd8a97d5a8446f7a5f8bb809f43f5474bf8b54be4",
+      "fecha": "2024-07-26",
+      "fechaCorte": "2024-07-31T06:32:20.337Z",
+      "largo": 250,
+      "ancho": 150,
+      "alto": 70,
+      "esperado": 1,
+      "periodoPorPedido": 1,
+      "demasiaAncho": 1,
+      "largoCorteCabeza": 153,
+      "realCabeza": [
+        10,
+        50.3,
+        100.8,
+        141
+      ]
+    },
+    {
+      "pedido": "AR2405634",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2024/ARCHIVOS DXF - MAQUINA NUEVA/AR2405634.dxf",
+      "sha256": "91ae366d51985d529d563ccf097bc6b065b24b585b1e07d2d8ec4212a4c051b0",
+      "fecha": "2024-10-03",
+      "fechaCorte": "2024-10-09T11:25:43.299Z",
+      "largo": 250,
+      "ancho": 150,
+      "alto": 95,
+      "esperado": 1,
+      "periodoPorPedido": 1,
+      "demasiaAncho": 1,
+      "largoCorteCabeza": 153,
+      "realCabeza": [
+        10,
+        50.2,
+        100.7,
+        141
+      ]
+    },
+    {
+      "pedido": "AR2406296",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2024/ARCHIVOS DXF - MAQUINA NUEVA/AR2406296.dxf",
+      "sha256": "bf286a421bfac9302f15d593b70ef5a86f8fda93ac4f67fa3a03dc2be2965bde",
+      "fecha": "2024-11-08",
+      "fechaCorte": "2024-11-13T07:20:30.969Z",
+      "largo": 250,
+      "ancho": 150,
+      "alto": 72,
+      "esperado": 1,
+      "periodoPorPedido": 1,
+      "demasiaAncho": 1,
+      "largoCorteCabeza": 153,
+      "realCabeza": [
+        10,
+        50.3,
+        100.8,
+        141
+      ]
+    },
+    {
+      "pedido": "AR2501137",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2025/ARCHIVOS DXF - MAQUINA NUEVA/AR2501137.dxf",
+      "sha256": "f92fbf153ee6cde21e1cef0293cdae098fe7fe0d636ac376e371a128ca42b5de",
+      "fecha": "2025-03-12",
+      "fechaCorte": "2025-03-13T13:27:02.487Z",
+      "largo": 225,
+      "ancho": 130,
+      "alto": 80,
+      "esperado": 1,
+      "periodoPorPedido": 1,
+      "demasiaAncho": 1,
+      "lateral": {
+        "medida": 247,
+        "demasiaGeometrica": 1,
+        "posiciones": [
+          10,
+          47,
+          114,
+          179.5,
+          215
+        ]
+      },
+      "largoCorteCabeza": 133,
+      "realCabeza": [
+        10,
+        42.7,
+        88.2,
+        121
+      ]
+    },
+    {
+      "pedido": "AR2502225",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2025/ARCHIVOS DXF - MAQUINA NUEVA/AR2502225.dxf",
+      "sha256": "0e7297691cb8763dd73dfe970dfb2755f156699cc61f119ef890f33939e70926",
+      "fecha": "2025-05-06",
+      "fechaCorte": "2025-05-09T08:36:44.121Z",
+      "largo": 412,
+      "ancho": 195,
+      "alto": 112,
+      "esperado": 1,
+      "periodoPorPedido": 1,
+      "demasiaAncho": 0,
+      "largoCorteCabeza": 215,
+      "realCabeza": [
+        10,
+        46.7,
+        97.5,
+        148.3,
+        185
+      ],
+      "contrasteReglaFinal": {
+        "fuente": "AR2401819",
+        "ancho": 193,
+        "demasia": 1,
+        "pred": [
+          10,
+          46.9,
+          97.5,
+          148.1,
+          185
+        ],
+        "error": 0.20000000000001705,
+        "dentro05": true,
+        "cambioMedida": true
+      }
+    },
+    {
+      "pedido": "AR2502805",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2025/ARCHIVOS DXF - MAQUINA NUEVA/AR2502805.dxf",
+      "sha256": "88874d4ffa7aa86a21ae478d7a8c884f5a39017b342d3f3cb4d46d96931f26a5",
+      "fecha": "2025-05-29",
+      "fechaCorte": "2025-06-02T09:21:32.339Z",
+      "largo": 225,
+      "ancho": 130,
+      "alto": 70,
+      "esperado": 1,
+      "periodoPorPedido": 1,
+      "demasiaAncho": 1,
+      "lateral": {
+        "medida": 247,
+        "demasiaGeometrica": 1,
+        "posiciones": [
+          10,
+          47,
+          114,
+          179.5,
+          215
+        ]
+      },
+      "largoCorteCabeza": 133,
+      "realCabeza": [
+        10,
+        42.7,
+        88.2,
+        121
+      ]
+    },
+    {
+      "pedido": "AR2503685",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2025/ARCHIVOS DXF - MAQUINA NUEVA/AR2503685.dxf",
+      "sha256": "9dd4e31206eded1b320a369a03ebb249c57951c7b45818e651964c551298e075",
+      "fecha": "2025-07-10",
+      "fechaCorte": "2025-07-15T07:05:11.438Z",
+      "largo": 180,
+      "ancho": 120,
+      "alto": 70,
+      "esperado": 1,
+      "periodoPorPedido": 1,
+      "demasiaAncho": 1,
+      "largoCorteCabeza": 141,
+      "realCabeza": [
+        10,
+        40.2,
+        80.7,
+        111
+      ]
+    },
+    {
+      "pedido": "AR2504797",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2025/ARCHIVOS DXF - MAQUINA NUEVA/AR2504797.dxf",
+      "sha256": "f7fa009a0be9483a68809890b881bfe9b6fe1685ce0681a4b486a3bf7c585f57",
+      "fecha": "2025-09-12",
+      "fechaCorte": "2025-09-15T11:23:41.833Z",
+      "largo": 250,
+      "ancho": 150,
+      "alto": 70,
+      "esperado": 1,
+      "periodoPorPedido": 1,
+      "demasiaAncho": 1,
+      "largoCorteCabeza": 153,
+      "realCabeza": [
+        10,
+        47.8,
+        103.2,
+        141
+      ]
+    },
+    {
+      "pedido": "AR2505254",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2025/ARCHIVOS DXF - MAQUINA NUEVA/AR2505254.dxf",
+      "sha256": "170ca3c0774d3a23cbd79aea59d9861555a8b5ca2c200ef6008c62d1785564e0",
+      "fecha": "2025-10-08",
+      "fechaCorte": "2025-10-10T08:54:55.839Z",
+      "largo": 200,
+      "ancho": 120,
+      "alto": 110,
+      "esperado": 1,
+      "periodoPorPedido": 1,
+      "demasiaAncho": 1,
+      "lateral": {
+        "medida": 222,
+        "demasiaGeometrica": 1,
+        "posiciones": [
+          10,
+          40.1,
+          80.4,
+          120.6,
+          160.9,
+          191
+        ]
+      },
+      "largoCorteCabeza": 123,
+      "realCabeza": [
+        10,
+        33.5,
+        60.5,
+        87.5,
+        111
+      ]
+    },
+    {
+      "pedido": "AR2505455",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2025/ARCHIVOS DXF - MAQUINA NUEVA/AR2505455.dxf",
+      "sha256": "bcddd6f61aca12cb2052c859dd10cf383f79c93725b4c2dec82554b2df866e37",
+      "fecha": "2025-10-20",
+      "fechaCorte": "2025-10-22T11:18:22.387Z",
+      "largo": 250,
+      "ancho": 150,
+      "alto": 50,
+      "esperado": 1,
+      "periodoPorPedido": 1,
+      "demasiaAncho": 1,
+      "largoCorteCabeza": 153,
+      "realCabeza": [
+        10,
+        47.7,
+        103.3,
+        141
+      ]
+    },
+    {
+      "pedido": "AR2600255",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2026/ARCHIVOS DXF - MAQUINA NUEVA/AR2600255.dxf",
+      "sha256": "2f9872216d8097c0d9c36e3878ec6b12d6864501e5034d9c4d943e91ff44b978",
+      "fecha": "2026-01-23",
+      "fechaCorte": "2026-01-28T10:06:02.227Z",
+      "largo": 310,
+      "ancho": 164,
+      "alto": 72,
+      "esperado": 1,
+      "periodoPorPedido": 1,
+      "demasiaAncho": 1,
+      "largoCorteCabeza": 167,
+      "realCabeza": [
+        12.6,
+        52.5,
+        112.5,
+        152.4
+      ]
+    },
+    {
+      "pedido": "AR2600750",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2026/ARCHIVOS DXF - MAQUINA NUEVA/AR2600750.dxf",
+      "sha256": "d9949a82fef310ea9d1eee7405a54c1553c53ae786ad0d01fbb0da1cbb20c2f2",
+      "fecha": "2026-02-24",
+      "fechaCorte": "2026-02-26T12:11:31.265Z",
+      "largo": 230,
+      "ancho": 140,
+      "alto": 80,
+      "esperado": 1,
+      "periodoPorPedido": 1,
+      "demasiaAncho": 1,
+      "largoCorteCabeza": 143,
+      "realCabeza": [
+        10,
+        45.3,
+        95.7,
+        131
+      ]
+    },
+    {
+      "pedido": "AR2600853",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2026/ARCHIVOS DXF - MAQUINA NUEVA/AR2600853.dxf",
+      "sha256": "f6e1effaf03d43fbadb65d3cb5792b770d99c8ef8359b03be088ef6373108880",
+      "fecha": "2026-03-03",
+      "fechaCorte": "2026-03-05T10:20:09.925Z",
+      "largo": 200,
+      "ancho": 130,
+      "alto": 70,
+      "esperado": 1,
+      "periodoPorPedido": 1,
+      "demasiaAncho": 1,
+      "largoCorteCabeza": 133,
+      "realCabeza": [
+        10,
+        42.7,
+        88.2,
+        121
+      ]
+    },
+    {
+      "pedido": "AR2601144",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2026/ARCHIVOS DXF - MAQUINA NUEVA/AR2601144.dxf",
+      "sha256": "a3382e973ecf3916fffa608be88c2df800b6f25e285f6ef90fc7faca0fb99331",
+      "fecha": "2026-03-18",
+      "fechaCorte": "2026-03-23T13:47:22.736Z",
+      "largo": 303,
+      "ancho": 160,
+      "alto": 70,
+      "esperado": 1.5,
+      "periodoPorPedido": 1.5,
+      "demasiaAncho": 1.5,
+      "largoCorteCabeza": 181.5,
+      "realCabeza": [
+        11,
+        51.2,
+        111.1,
+        151.3
+      ],
+      "contrasteReglaFinal": {
+        "fuente": "AR2600255",
+        "ancho": 164,
+        "demasia": 1,
+        "pred": [
+          12.6,
+          51.5,
+          110,
+          148.9
+        ],
+        "error": 2.4000000000000057,
+        "dentro05": false,
+        "cambioMedida": true
+      }
+    },
+    {
+      "pedido": "AR2602338",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2026/ARCHIVOS DXF - MAQUINA NUEVA/AR2602338.dxf",
+      "sha256": "0a49a3d81f4a8556d56c52d9434095f7c5a15733071f3eb51f490653b549dfba",
+      "fecha": "2026-05-18",
+      "fechaCorte": "2026-05-20T12:26:10.338Z",
+      "largo": 210,
+      "ancho": 130,
+      "alto": 70,
+      "esperado": 2,
+      "periodoPorPedido": 1.5,
+      "demasiaAncho": 2,
+      "largoCorteCabeza": 134,
+      "realCabeza": [
+        10,
+        42.7,
+        89.2,
+        122
+      ],
+      "contrasteReglaFinal": {
+        "fuente": "AR2600853",
+        "ancho": 130,
+        "demasia": 1,
+        "pred": [
+          10,
+          43,
+          88.9,
+          122
+        ],
+        "error": 0.29999999999999716,
+        "dentro05": true,
+        "cambioMedida": false
+      }
+    },
+    {
+      "pedido": "AR2602661",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2026/ARCHIVOS DXF - MAQUINA NUEVA/AR2602661.dxf",
+      "sha256": "ade34f8fca4de8ee8b6b14f9fe83ff405b0658914ef7ef6caf043095e71b1b5b",
+      "fecha": "2026-06-03",
+      "fechaCorte": "2026-06-08T07:04:42.250Z",
+      "largo": 250,
+      "ancho": 150,
+      "alto": 70,
+      "esperado": 2,
+      "periodoPorPedido": 2,
+      "demasiaAncho": 2,
+      "largoCorteCabeza": 154,
+      "realCabeza": [
+        10,
+        48.2,
+        104.3,
+        142
+      ],
+      "contrasteReglaFinal": {
+        "fuente": "AR2505455",
+        "ancho": 150,
+        "demasia": 1,
+        "pred": [
+          10,
+          48,
+          104,
+          142
+        ],
+        "error": 0.29999999999999716,
+        "dentro05": true,
+        "cambioMedida": false
+      }
+    },
+    {
+      "pedido": "AR2603557",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2026/ARCHIVOS DXF - MAQUINA NUEVA/AR2603557.dxf",
+      "sha256": "1b03ae30936e63d9ab3f4269d5cef9a7d96efe4e25d5d049b4d43f5d4dd59737",
+      "fecha": "2026-07-15",
+      "fechaCorte": "2026-07-20T10:30:12.328Z",
+      "largo": 275,
+      "ancho": 150,
+      "alto": 96,
+      "esperado": 2,
+      "periodoPorPedido": 2,
+      "demasiaAncho": 2,
+      "largoCorteCabeza": 172,
+      "realCabeza": [
+        10,
+        48.3,
+        103.8,
+        142
+      ],
+      "contrasteReglaFinal": {
+        "fuente": "AR2505455",
+        "ancho": 150,
+        "demasia": 1,
+        "pred": [
+          10,
+          48,
+          104,
+          142
+        ],
+        "error": 0.29999999999999716,
+        "dentro05": true,
+        "cambioMedida": false
+      }
+    },
+    {
+      "pedido": "AR2604701",
+      "fichero": "//192.168.0.128/Oftecnica/maqcorte/2026/ARCHIVOS DXF - MAQUINA NUEVA/AR2604701.dxf",
+      "sha256": "5e8b2bc5a57c2551e7feab34b47582f60af2cef43a0c2f4c4e263b4c4fa1cbac",
+      "fecha": "2026-09-21",
+      "fechaCorte": "2026-09-23T06:57:40.863Z",
+      "largo": 225,
+      "ancho": 130,
+      "alto": 70,
+      "esperado": 2,
+      "periodoPorPedido": 2,
+      "demasiaAncho": 2,
+      "lateral": {
+        "medida": 248,
+        "demasiaGeometrica": 2,
+        "posiciones": [
+          10.5,
+          47.5,
+          114.5,
+          180,
+          215.5
+        ]
+      },
+      "largoCorteCabeza": 134,
+      "realCabeza": [
+        10,
+        43.2,
+        88.7,
+        122
+      ],
+      "contrasteReglaFinal": {
+        "fuente": "AR2600853",
+        "ancho": 130,
+        "demasia": 1,
+        "pred": [
+          10,
+          43,
+          88.9,
+          122
+        ],
+        "error": 0.20000000000000284,
+        "dentro05": true,
+        "cambioMedida": false
+      },
+      "contrasteLateral": {
+        "fuente": "AR2502805",
+        "pred": [
+          10,
+          47.2,
+          114.5,
+          180.3,
+          216
+        ],
+        "error": 0.5,
+        "dentro05": true
+      }
+    }
+  ],
+  "descartes": [
+    {
+      "pedido": "AR2300127",
+      "motivo": "Sin DXF exacto"
+    },
+    {
+      "pedido": "AR2300248",
+      "motivo": "Sin DXF exacto"
+    },
+    {
+      "pedido": "AR2301607",
+      "motivo": "Sin DXF exacto"
+    },
+    {
+      "pedido": "AR2301954",
+      "motivo": "Sin DXF exacto"
+    },
+    {
+      "pedido": "AR2303168",
+      "largo": 250,
+      "ancho": 140,
+      "alto": 720,
+      "motivo": "Cabeza no identificada sin ambigüedad"
+    },
+    {
+      "pedido": "AR2303850",
+      "largo": 280,
+      "ancho": 162,
+      "alto": 70,
+      "motivo": "Cabeza no identificada sin ambigüedad"
+    },
+    {
+      "pedido": "AR2304187",
+      "motivo": "Sin lona alta identificable"
+    },
+    {
+      "pedido": "AR2304285",
+      "largo": 180,
+      "ancho": 120,
+      "alto": 70,
+      "motivo": "Cabeza no identificada sin ambigüedad"
+    },
+    {
+      "pedido": "AR2304422",
+      "motivo": "Varias líneas: no asignar cabezas de otra pieza"
+    },
+    {
+      "pedido": "AR2304613",
+      "largo": 286,
+      "ancho": 150,
+      "alto": 65,
+      "motivo": "Cabeza no identificada sin ambigüedad"
+    },
+    {
+      "pedido": "AR2304876",
+      "motivo": "Sin DXF exacto"
+    },
+    {
+      "pedido": "AR2305432",
+      "motivo": "Varias líneas: no asignar cabezas de otra pieza"
+    },
+    {
+      "pedido": "AR2305903",
+      "motivo": "Varias líneas: no asignar cabezas de otra pieza"
+    },
+    {
+      "pedido": "AR2306535",
+      "largo": 225,
+      "ancho": 170,
+      "alto": 140,
+      "motivo": "Cabeza no identificada sin ambigüedad"
+    },
+    {
+      "pedido": "AR2306726",
+      "motivo": "Sin lona alta identificable"
+    },
+    {
+      "pedido": "AR2306870",
+      "motivo": "Sin DXF exacto"
+    },
+    {
+      "pedido": "AR2306985",
+      "motivo": "Sin DXF exacto"
+    },
+    {
+      "pedido": "AR2400680",
+      "largo": 271,
+      "ancho": 181,
+      "alto": 90,
+      "motivo": "Cabeza no identificada sin ambigüedad"
+    },
+    {
+      "pedido": "AR2400792",
+      "largo": 400,
+      "ancho": 190,
+      "alto": 98,
+      "motivo": "Cabeza no identificada sin ambigüedad"
+    },
+    {
+      "pedido": "AR2401158",
+      "motivo": "Sin DXF exacto"
+    },
+    {
+      "pedido": "AR2401347",
+      "motivo": "Sin DXF exacto"
+    },
+    {
+      "pedido": "AR2401917",
+      "motivo": "Varias líneas: no asignar cabezas de otra pieza"
+    },
+    {
+      "pedido": "AR2402205",
+      "motivo": "Sin DXF exacto"
+    },
+    {
+      "pedido": "AR2402693",
+      "motivo": "Sin DXF exacto"
+    },
+    {
+      "pedido": "AR2402778",
+      "motivo": "Varias líneas: no asignar cabezas de otra pieza"
+    },
+    {
+      "pedido": "AR2404101",
+      "largo": 280,
+      "ancho": 160,
+      "alto": 50,
+      "motivo": "Cabeza no identificada sin ambigüedad"
+    },
+    {
+      "pedido": "AR2404154",
+      "motivo": "Sin lona alta identificable"
+    },
+    {
+      "pedido": "AR2404582",
+      "motivo": "Sin lona alta identificable"
+    },
+    {
+      "pedido": "AR2404808",
+      "motivo": "Sin lona alta identificable"
+    },
+    {
+      "pedido": "AR2404827",
+      "motivo": "Sin lona alta identificable"
+    },
+    {
+      "pedido": "AR2405116",
+      "motivo": "Varias líneas: no asignar cabezas de otra pieza"
+    },
+    {
+      "pedido": "AR2405707",
+      "largo": 250,
+      "ancho": 150,
+      "alto": 72,
+      "motivo": "Cabeza no identificada sin ambigüedad"
+    },
+    {
+      "pedido": "AR2406114",
+      "motivo": "Varias líneas: no asignar cabezas de otra pieza"
+    },
+    {
+      "pedido": "AR2406559",
+      "motivo": "Sin DXF exacto"
+    },
+    {
+      "pedido": "AR2406590",
+      "motivo": "Sin lona alta identificable"
+    },
+    {
+      "pedido": "AR2406880",
+      "motivo": "Sin lona alta identificable"
+    },
+    {
+      "pedido": "AR2500229",
+      "motivo": "Sin lona alta identificable"
+    },
+    {
+      "pedido": "AR2500391",
+      "motivo": "Varias líneas: no asignar cabezas de otra pieza"
+    },
+    {
+      "pedido": "AR2500503",
+      "motivo": "Sin DXF exacto"
+    },
+    {
+      "pedido": "AR2500829",
+      "motivo": "Varias líneas: no asignar cabezas de otra pieza"
+    },
+    {
+      "pedido": "AR2501277",
+      "motivo": "Sin lona alta identificable"
+    },
+    {
+      "pedido": "AR2501405",
+      "motivo": "Sin DXF exacto"
+    },
+    {
+      "pedido": "AR2501670",
+      "motivo": "Sin lona alta identificable"
+    },
+    {
+      "pedido": "AR2502117",
+      "motivo": "Varias líneas: no asignar cabezas de otra pieza"
+    },
+    {
+      "pedido": "AR2503180",
+      "motivo": "Varias líneas: no asignar cabezas de otra pieza"
+    },
+    {
+      "pedido": "AR2503492",
+      "motivo": "Varias líneas: no asignar cabezas de otra pieza"
+    },
+    {
+      "pedido": "AR2503505",
+      "motivo": "Sin lona alta identificable"
+    },
+    {
+      "pedido": "AR2503748",
+      "motivo": "Sin DXF exacto"
+    },
+    {
+      "pedido": "AR2503798",
+      "motivo": "Sin lona alta identificable"
+    },
+    {
+      "pedido": "AR2504111",
+      "largo": 150,
+      "ancho": 110,
+      "alto": 70,
+      "motivo": "Cabeza no identificada sin ambigüedad"
+    },
+    {
+      "pedido": "AR2505110",
+      "motivo": "Varias líneas: no asignar cabezas de otra pieza"
+    },
+    {
+      "pedido": "AR2505532",
+      "motivo": "Sin DXF exacto"
+    },
+    {
+      "pedido": "AR2505724",
+      "motivo": "Varias líneas: no asignar cabezas de otra pieza"
+    },
+    {
+      "pedido": "AR2506302",
+      "largo": 250,
+      "ancho": 150,
+      "alto": 70,
+      "motivo": "Cabeza no identificada sin ambigüedad"
+    },
+    {
+      "pedido": "AR2600222",
+      "largo": 250,
+      "ancho": 150,
+      "alto": 130,
+      "motivo": "Cabeza no identificada sin ambigüedad"
+    },
+    {
+      "pedido": "AR2600406",
+      "motivo": "Varias líneas: no asignar cabezas de otra pieza"
+    },
+    {
+      "pedido": "AR2600792",
+      "motivo": "Sin lona alta identificable"
+    },
+    {
+      "pedido": "AR2600965",
+      "largo": 225,
+      "ancho": 150,
+      "alto": 80,
+      "motivo": "Cabeza no identificada sin ambigüedad"
+    },
+    {
+      "pedido": "AR2603671",
+      "motivo": "Varias líneas: no asignar cabezas de otra pieza"
+    },
+    {
+      "pedido": "AR2603988",
+      "motivo": "Varias líneas: no asignar cabezas de otra pieza"
+    }
+  ]
+}
