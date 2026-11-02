@@ -188,3 +188,18 @@ export function getEstablishedProjections(modelCode) {
   if (code === 'AGATA BOX') return agataBoxEstablishedProjections;
   return null;
 }
+
+export function getFabricPatternDiagram(awning = {}, cadDiagram = getAwningDiagram(awning)) {
+  const model = String(awning.model || '').trim().toUpperCase();
+  const override = normalizeFabricDiagramOverride(model, awning.fabricDiagramOverride);
+  if (override) return override;
+  if (model.startsWith('HERA')) return 'HERA';
+  if (model.includes('CORTINA') || cadDiagram.startsWith('CORTINA')) return cadDiagram;
+  if (model === 'SOLAPAS') return 'SOLAPAS';
+  if (model === 'ENROLLABLE') return 'ENROLLABLE';
+  if (model === 'BAMBALINA') return 'BAMBALINA';
+  if (model.includes('ANTICA')) return 'ANTICA';
+  if (model === 'IRIS') return 'IRIS';
+  return 'GENERAL';
+}
+

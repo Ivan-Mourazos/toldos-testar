@@ -192,6 +192,7 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
       : '',
     solapas: model === 'SOLAPAS' ? normalizeSolapas(awning?.solapas, awning?.bastilla) : [],
     ...(model === 'EMBUDO' ? { embudo: normalizeEmbudo(awning?.embudo) } : {}),
+    sideFinish: awning?.sideFinish === 'AL CORTE' ? 'AL CORTE' : 'BASTILLA',
     bastilla: model === 'SOLAPAS' && awning?.bastilla === true,
     curtainFabricWidthDiscountCm: nullableNumber(awning?.curtainFabricWidthDiscountCm),
     curtainRollTubeDiscountCm: nullableNumber(awning?.curtainRollTubeDiscountCm),

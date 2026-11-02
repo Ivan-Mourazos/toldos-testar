@@ -53,6 +53,7 @@ export type EmbudoConfiguration = {
   sujecion: string;
   anchoCinta: number | null;
   largoCinta: number | null;
+  largoCintaCorta?: number | null;
 };
 
 export type Awning = {
@@ -134,6 +135,7 @@ export type Awning = {
   curtainVelcroWidth?: number | null;
   curtainVelcroHeight?: number | null;
   bastilla?: boolean;
+  sideFinish?: 'BASTILLA' | 'AL CORTE';
   solapas?: SolapaItem[];
   embudo?: EmbudoConfiguration;
   curtainFabricWidthDiscountCm: number | null;

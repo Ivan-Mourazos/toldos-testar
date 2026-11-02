@@ -32,7 +32,8 @@ export function embudoConfigurationFields({ awning, update, missing }: Props) {
       allowEmpty={false} onChange={sujecion => commit({ sujecion })} />
     {e.sujecion !== 'NINGUNA' && <>
       {medida('anchoCinta', 'Ancho de cinta (mm)')}
-      {medida('largoCinta', 'Largo de cinta (cm)')}
+      {medida('largoCinta', 'Largo de cinta larga (cm)')}
+      {e.forma === 'CÓNICO' && e.sujecion === 'MORDAZA' && medida('largoCintaCorta', 'Largo de cinta corta (cm)')}
     </>}
   </>;
 }

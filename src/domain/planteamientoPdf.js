@@ -10,14 +10,14 @@ import { formatNumber } from './math.js';
 import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { structureNotes } from './structureNotes.js';
 import { resolveFabric } from './fabricCatalog.js';
-import { getAwningDiagram, isFabricOnlyModel, isVerticalAwningModel, normalizeFabricDiagramOverride } from './modelBehavior.js';
+import { getFabricPatternDiagram, getAwningDiagram, isFabricOnlyModel, isVerticalAwningModel, normalizeFabricDiagramOverride } from './modelBehavior.js';
 import { normalizeAnticaVariant, resolveAnticaRoundEntry } from './anticaRules.js';
 import { irisHasCassette, normalizeIrisGuideType } from './irisParameters.js';
 import { buildIrisSquaringView } from './irisSquaringView.js';
 import { getIrisWindow } from './irisWindow.js';
 import { resolveConfiguredDrawing } from './drawingParameters.js';
 import { shortFabricName } from './fabricShortName.js';
-import { crearLienzoSvg } from './dibujoSvg.js';
+import { crearLienzoSvg, superficiePlanoTecnico } from './dibujoSvg.js';
 
 const { PDFDocument: PDFLibDocument } = pdfLib;
 
@@ -352,19 +352,7 @@ export function buildPlanteamientoPlan(order, calculation, { onlyAwningId = null
   return { structureEntries, fabricPages };
 }
 
-export function getFabricPatternDiagram(awning = {}, cadDiagram = getAwningDiagram(awning)) {
-  const model = String(awning.model || '').trim().toUpperCase();
-  const override = normalizeFabricDiagramOverride(model, awning.fabricDiagramOverride);
-  if (override) return override;
-  if (model.startsWith('HERA')) return 'HERA';
-  if (model.includes('CORTINA') || cadDiagram.startsWith('CORTINA')) return cadDiagram;
-  if (model === 'SOLAPAS') return 'SOLAPAS';
-  if (model === 'ENROLLABLE') return 'ENROLLABLE';
-  if (model === 'BAMBALINA') return 'BAMBALINA';
-  if (model.includes('ANTICA')) return 'ANTICA';
-  if (model === 'IRIS') return 'IRIS';
-  return 'GENERAL';
-}
+export { getFabricPatternDiagram } from './modelBehavior.js';
 
 // Los dibujos que rotulan medidas no pueden agrupar entradas de distinto corte:
 // el rótulo sería correcto solo para la primera. Cada uno declara aquí qué medidas
@@ -397,6 +385,7 @@ function fabricDiagramGroupKey(diagram, awning) {
   if (!hasWindow) {
     return [
       diagram,
+      diagram === 'GENERAL' ? awning.sideFinish || 'BASTILLA' : '',
       isCurtain ? normalizeCurtainConfiguration(awning).curtainBottomFinish : '',
       ['SELENA', 'ELECTRA'].includes(awning.model) ? awning.model : '',
       isCurtain || ['GENERAL', 'TOLDO-VELCRO', 'BAMBALINA', 'SUPLEMENTO'].includes(diagram) ? valance : '',
@@ -1258,6 +1247,8 @@ function drawFabricDiagram(doc, x, y, w, h, diagram, awning, calculation) {
 export const PREVIEW_CALCULATION = Object.freeze({ fabricWidth: 400, fabricDrop: 275 });
 
 // Lista cerrada: una variante nueva sigue saliendo con pdfkit hasta contrastar su SVG.
+const MUESTRAS_ESTILO = ['GENERAL', 'CORTINA-VENTANA', 'TOLDO-VELCRO', 'ANTICA'];
+
 export const SVG_FABRIC_DIAGRAMS = Object.freeze([
   'GENERAL', 'CAMBIO-TELA', 'TOLDO-VELCRO', 'CAMBIO ENROLLABLE', 'SUPLEMENTO', 'SOLAPAS', 'EMBUDO',
   'ENROLLABLE', 'BAMBALINA', 'ANTICA', 'AMBAR', 'AGATA', 'MAXISCREEN', 'IRIS', 'HERA',
@@ -1267,7 +1258,7 @@ export const SVG_FABRIC_DIAGRAMS = Object.freeze([
 ]);
 
 /** Geometría compartida con el respaldo, sin generar ni incrustar un PDF de dibujo. */
-export function buildFabricDiagramSvg({ diagram, awning = {}, calculation = PREVIEW_CALCULATION }) {
+export function buildFabricDiagramSvg({ diagram, awning = {}, calculation = PREVIEW_CALCULATION, estiloTecnico = false }) {
   if (awning.fabricImage || !SVG_FABRIC_DIAGRAMS.includes(diagram)) return null;
   const medidor = new PDFDocument({ autoFirstPage: false, margin: 0 });
   registerFonts(medidor);
@@ -1278,7 +1269,7 @@ export function buildFabricDiagramSvg({ diagram, awning = {}, calculation = PREV
     style: tipo === 'italic' ? 'italic' : 'normal'
   }]));
   const lienzo = crearLienzoSvg(medidor, fuentes);
-  drawFabricDiagram(lienzo, 0, 0, 242, 300, diagram, awning, calculation);
+  drawFabricDiagram(estiloTecnico && MUESTRAS_ESTILO.includes(diagram) ? superficiePlanoTecnico(lienzo) : lienzo, 0, 0, 242, 300, diagram, awning, calculation);
   return lienzo.resultado();
 }
 
@@ -1308,9 +1299,9 @@ export async function buildFabricDiagramPreviewPdf({ awning, calculation = PREVI
 
 // El dibujo de confección solo, del tamaño exacto de su recuadro: el servidor lo encaja en la
 // página de telas impresa desde HTML (fase 1). Mismo código de dibujo que la página de pdfkit.
-export async function buildFabricDiagramBoxPdf({ diagram, awning, calculation }) {
+export async function buildFabricDiagramBoxPdf({ diagram, awning, calculation, estiloTecnico = false }) {
   return buildDiagramBoxPdf(FABRIC_SHEET_DIAGRAM_BOX, (doc, width, height) => {
-    drawFabricDiagram(doc, 0, 0, width, height, diagram, awning, calculation);
+    drawFabricDiagram(estiloTecnico && MUESTRAS_ESTILO.includes(diagram) ? superficiePlanoTecnico(doc) : doc, 0, 0, width, height, diagram, awning, calculation);
   });
 }
 
@@ -1782,7 +1773,7 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
   const badge = valance.hasValance
     ? `${valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'} · ${formatInstructionMeasure(valance.height)} CM`
     : 'SIN BAMBA';
-  if (!options.legacy) {
+  if (!options.legacy && (!doc.planoTecnico || valance.separate)) {
     doc.roundedRect(x + 38, y + 38, w - 76, 14, 4)
       .fillAndStroke(valance.hasValance ? '#fff4cc' : '#edf2f1', valance.hasValance ? '#d2a116' : '#6d827d');
     doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(diagramText(6.2))
@@ -1817,8 +1808,8 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
     .text('VARILLA NEGRA O BLANCA', frameX, frameY - 13, { width: frameW, align: 'center' })
     .text(rollLabel, frameX, frameY + 13, { width: frameW, align: 'center' });
   drawVerticalArrow(doc, frameX + frameW / 2, frameY - 4, frameY + 1, 'down');
-  drawBastillaCallout(doc, frameX + sideSeamInset, frameY + frameH * 0.6, 'left');
-  drawBastillaCallout(doc, frameX + frameW - sideSeamInset, frameY + frameH * 0.6, 'right');
+  drawBastillaCallout(doc, frameX + sideSeamInset, frameY + frameH * 0.6, 'left', awning.sideFinish);
+  drawBastillaCallout(doc, frameX + frameW - sideSeamInset, frameY + frameH * 0.6, 'right', awning.sideFinish);
   drawRotatedDiagramText(doc, 'CAÍDA', frameX + frameW + 15, frameY + frameH / 2, Math.max(56, frameH - 70));
   drawFabricDimension(doc, frameX - 10, frameY, topSeamY, formatInstructionMeasure(hems.topHemCm), 'left');
   drawFabricDimension(doc, frameX + frameW + 10, frameY, topFoldY, formatInstructionMeasure(hems.topBastillaCm), 'right');
@@ -1879,7 +1870,7 @@ function drawHorizontalDimension(doc, startX, endX, y, label) {
     .text(label, center - labelW / 2, y - 8.5, { width: labelW, align: 'center' });
 }
 
-function drawBastillaCallout(doc, seamX, y, side) {
+function drawBastillaCallout(doc, seamX, y, side, finish = 'BASTILLA') {
   const pointingLeft = side === 'left';
   // El texto va debajo de la flecha, en dos líneas, para no pisarla.
   const textX = pointingLeft ? seamX + 3 : seamX - 75;
@@ -1888,7 +1879,7 @@ function drawBastillaCallout(doc, seamX, y, side) {
   doc.strokeColor('#0a4f22').lineWidth(0.7).moveTo(arrowStart, y).lineTo(arrowEnd, y).stroke();
   drawArrowHead(doc, arrowEnd, y, pointingLeft ? 'left' : 'right');
   doc.fillColor('#0a4f22').font(fonts.semibold).fontSize(diagramText(5.4))
-    .text('BASTILLA\nCOSIDA O SOLDADA', textX, y + 4, { width: 72, align: pointingLeft ? 'left' : 'right' });
+    .text(finish === 'AL CORTE' ? 'AL CORTE' : 'BASTILLA\nCOSIDA O SOLDADA', textX, y + 4, { width: 72, align: pointingLeft ? 'left' : 'right' });
 }
 
 function drawVerticalArrow(doc, x, startY, endY, direction) {
@@ -1936,10 +1927,12 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
   const badge = spec.hasValance
     ? `${spec.separateValance ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'} · ${formatInstructionMeasure(spec.valanceHeight)} CM`
     : 'SIN BAMBA';
+  if (!doc.planoTecnico || spec.separateValance) {
   doc.roundedRect(x + w * 0.12, y + h * 0.025, w * 0.76, h * 0.047, 4)
     .fillAndStroke(spec.hasValance ? '#fff4cc' : '#edf2f1', spec.hasValance ? '#d2a116' : '#6d827d');
   doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(diagramText(5.2))
     .text(badge, x + w * 0.14, y + h * 0.038, { width: w * 0.72, align: 'center' });
+  }
 
   const frameX = x + w * 0.12;
   const frameY = y + h * 0.14;
@@ -2232,6 +2225,7 @@ function drawValancePanel(doc, x, y, w, h, spec, options = {}) {
   if (options.topLabel) {
     drawDiagramText(doc, options.topLabel, x, y - 11, w);
   }
+  if (doc.planoTecnico) options = { ...options, bodyLabel: `${spec.separate ? 'BAMBA SEPARADA' : 'BAMBA'}${options.bodyLabel?.includes(curve) ? ` · ${curve}` : ''}`, measurement: ` · ${formatInstructionMeasure(spec.height)} CM` };
   const measurement = options.measurement !== undefined
     ? options.measurement
     : spec?.height > 0 ? ` · ${formatInstructionMeasure(spec.height)} CM` : '';
@@ -2263,10 +2257,13 @@ function drawToldoVelcroDiagram(doc, x, y, w, h, awning = {}) {
   const badge = valance.hasValance
     ? `${valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'} · ${formatInstructionMeasure(valance.height)} CM`
     : 'SIN BAMBA';
+  if (!doc.planoTecnico || valance.separate) {
   doc.roundedRect(x + w * 0.12, y + h * 0.035, w * 0.76, h * 0.05, 4)
     .fillAndStroke(valance.hasValance ? '#fff4cc' : '#edf2f1', valance.hasValance ? '#d2a116' : '#6d827d');
   doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(diagramText(5.1))
     .text(badge, x + w * 0.14, y + h * 0.048, { width: w * 0.72, align: 'center' });
+
+  }
 
   // IMAGENES, TOLDO-VELCRO: la imagen original está girada 270° en la plantilla.
   // Varilla negra arriba, velcro a los lados y la pieza A (bamba) bajo el cuerpo.
@@ -2287,12 +2284,14 @@ function drawToldoVelcroDiagram(doc, x, y, w, h, awning = {}) {
     drawValancePanel(doc, panelX, valanceY, panelW, valanceH, valance, {
       bodyLabel: valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'
     });
-  } else {
+  } else if (!doc.planoTecnico) {
     doc.rect(panelX, valanceY, panelW, valanceH).fillAndStroke('#fbfcfc', '#4f6e63');
     doc.rect(panelX, valanceY, panelW, h * 0.02).fillAndStroke('#edf3f0', '#4f6e63');
   }
+  if (!doc.planoTecnico || valance.hasValance) {
   drawDiagramText(doc, 'A', panelX + (valance.hasValance ? 4 : (panelW - 18) / 2), valanceY + valanceH * 0.35, 18);
   drawDiagramText(doc, 'B.N(3)', panelX, valanceY + valanceH + h * 0.01, panelW);
+  }
 
   if (valance.hasValance) {
     if (!valance.separate) {
