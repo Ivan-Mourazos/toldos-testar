@@ -807,7 +807,7 @@ export default function App() {
           <div className="workspace-heading">
             {activeTab !== 'order' && <h2>{viewTitle}</h2>}
             {activeTab === 'order' && <button type="button" className="ghost-button order-entry-back" data-cambio-fluido disabled={Boolean(working) || autofillLoading} onClick={() => { setNumeroBusqueda(''); setEditorPedidoAbierto(false); }}><ArrowLeft aria-hidden="true" />Buscar otro pedido</button>}
-            {activeTab === 'order' && <SelectorProducto embudos={producto === 'toldos' && (entradaEmbudos || soloEmbudos)} onEmbudos={() => { if (soloEmbudos) chooseProducto('toldos'); else void empezarModelo({producto:'toldos',modelo:'EMBUDO',workType:'FABRIC_ONLY'}); }} puertas={puertasActivas} producto={producto} onChange={next => { if (next === 'toldos' && (entradaEmbudos || soloEmbudos)) { setNumeroBusqueda(''); setEditorPedidoAbierto(false); } else chooseProducto(next); }} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques, puertas: resumenPuertas, systemdock: resumenSystemDock }} />}
+            {activeTab === 'order' && <SelectorProducto embudos={producto === 'toldos' && (entradaEmbudos || soloEmbudos)} puertas={puertasActivas} producto={producto} onChange={chooseProducto} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques, puertas: resumenPuertas, systemdock: resumenSystemDock }} />}
             {/* La versión de los parámetros, en una línea junto al título (Iván, 25/09/2026). */}
             {activeTab === 'parameters' && (enFichasClientes
               ? null
@@ -844,7 +844,7 @@ export default function App() {
         <div className="workspace-content" ref={contenidoFluido}>
           {activeTab === 'order' && !editorPedidoAbierto && <section className="order-entry" aria-label="Inicio del pedido">
             <OrderSearch number={numeroBusqueda ?? ''} onChange={setNumeroBusqueda} loading={autofillLoading} onSearch={() => void autofillOrder(numeroBusqueda ?? '')} />
-            <InicioProductos disponibles={catalog?.models.map(m=>m.code)??[]} puertas={puertasActivas} disabled={autofillLoading} producto={producto} onChange={chooseProducto} onModelo={m=>void empezarModelo(m)} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques, puertas: resumenPuertas, systemdock: resumenSystemDock }} />
+            <InicioProductos embudos={entradaEmbudos || soloEmbudos} disponibles={catalog?.models.map(m=>m.code)??[]} puertas={puertasActivas} disabled={autofillLoading} producto={producto} onChange={chooseProducto} onModelo={m=>void empezarModelo(m)} pedidos={{ toldos: { numero: draft.orderCode, elementos: draft.awnings.length }, remolques: resumenRemolques, puertas: resumenPuertas, systemdock: resumenSystemDock }} />
             {pendingCount > 0 && <button type="button" className="ghost-button inicio-pendientes" onClick={() => irAPestana('reviews')}>
               <span className="inicio-pendientes-numero">{pendingCount}</span>{pendingCount === 1 ? 'pedido espera revisión' : 'pedidos esperan revisión'}
             </button>}

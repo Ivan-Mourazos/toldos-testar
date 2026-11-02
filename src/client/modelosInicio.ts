@@ -6,20 +6,29 @@ import type { LineaPedido } from '../remolques/workspace/lineas.ts';
 import { controlLabel } from './components/controlLabels';
 
 export const GANADO_DISPONIBLE = true;
-export type CategoriaConModelos = 'toldos' | 'puertas' | 'remolques';
+export type CategoriaConModelos = 'toldos' | 'puertas' | 'remolques' | 'estandar';
 export type ModeloInicio =
   | { producto: 'toldos'; modelo: string; workType: 'FULL_AWNING' | 'FABRIC_ONLY' }
   | { producto: 'puertas'; modelo: Exclude<ModeloPuerta, 'SYSTEMDOCK'> }
   | { producto: 'remolques'; modelo: 'lona' | 'baqueton' | 'ganado' };
-export type OpcionModelo = { nombre: string; valor?: ModeloInicio; proximamente?: boolean };
+export type OpcionModelo = { nombre: string; valor?: ModeloInicio; accion?: 'combursa' | 'systemdock'; proximamente?: boolean };
 export type GrupoModelos = { nombre: string; modelos: OpcionModelo[] };
+
+// Añadir un pedido estándar consiste en añadir su entrada a esta lista.
+const estandar: OpcionModelo[] = [
+  {nombre:'COMBURSA',accion:'combursa'},
+  {nombre:'Embudos',valor:{producto:'toldos',modelo:'EMBUDO',workType:'FABRIC_ONLY'}},
+  {nombre:'System Dock',accion:'systemdock'},
+];
 
 const ordenar = (modelos: OpcionModelo[]) => modelos.sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
 const normalizar = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('es');
 
 export function modelosInicio(categoria: CategoriaConModelos, disponibles: string[], busqueda = ''): GrupoModelos[] {
   let grupos: GrupoModelos[];
-  if (categoria === 'toldos') {
+  if (categoria === 'estandar') {
+    grupos = [{nombre:'Pedidos estándar',modelos:estandar}];
+  } else if (categoria === 'toldos') {
     grupos = ([['Toldos completos', fullAwningModelNames, 'FULL_AWNING'], ['Solo tela', fabricOnlyModelNames, 'FABRIC_ONLY']] as const).map(([nombre, modelos, workType]) => ({
       nombre, modelos: modelos.filter(m=>m !== 'EMBUDO' && disponibles.includes(m)).map(modelo=>({nombre:controlLabel(modelo),valor:{producto:'toldos',modelo,workType}})),
     }));

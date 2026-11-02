@@ -1,8 +1,6 @@
-import React, { lazy, Suspense, useState } from 'react';
-import { Building2, Filter, Caravan, DoorOpen, Store, Warehouse } from 'lucide-react';
-
-const LoteSabado = lazy(() => import('../combursa/LoteSabado'));
-export const COMBURSA_DISPONIBLE = true;
+import React from 'react';
+import { Boxes, Caravan, DoorOpen, Store } from 'lucide-react';
+import type { CategoriaConModelos } from '../modelosInicio';
 
 export type Producto = 'toldos' | 'remolques' | 'puertas' | 'systemdock';
 
@@ -17,72 +15,35 @@ export function guardarProducto(producto: Producto, storage: Storage | null = wi
   try { storage?.setItem(PRODUCTO_KEY, producto); } catch { /* sin almacenamiento: dura hasta recargar */ }
 }
 
-// Selector «Toldos | Remolques» de Nuevo pedido: la tira de pestañas de CoordinaOT
-// (`tira-3d`), con la elegida hundida en dorado (`pestana-activa`). Remolques dejó de estar
-// «en pruebas» el 02/10/2026 (Iván): hace todo lo que hacía la web vieja.
-export type ResumenPedido = { numero: string; elementos: number };
 
-// `puertas` false: puertas en pausa en el servidor (ENABLE_PUERTAS), sin pestaña.
-export function SelectorProducto({ onEmbudos, embudos = false, producto, onChange, pedidos, inicio = false, disabled = false, puertas = true, transicion }: { onEmbudos?: () => void; embudos?: boolean; producto: Producto; onChange: (producto: Producto) => void; pedidos?: Partial<Record<Producto, ResumenPedido>>; inicio?: boolean; disabled?: boolean; puertas?: boolean; transicion?: Producto | null }) {
-  const [combursaAbierta, setCombursaAbierta] = useState(false);
-  const detalle = (tipo: Producto) => {
-    const pedido = pedidos?.[tipo];
-    return pedido?.numero.trim() || pedido?.elementos
-      ? `${pedido.numero.trim() || 'Sin número'} · ${pedido.elementos} ${pedido.elementos === 1 ? 'elemento' : 'elementos'}`
-      : 'Sin empezar';
-  };
-  // En la pantalla de inicio, una tarjeta por producto con lo que lleva y el borrador que haya a medias (Iván, 26/10/2026:
-  // «rediseña la página principal»).
-  if (inicio) {
-    const tarjetas: Array<[Producto, string, string, React.ReactNode]> = [
-      ['toldos', 'Toldos', 'Brazos, cortinas, cofres y trabajos de tela', <Store key="i" aria-hidden="true" />],
-      ['remolques', 'Remolques', 'Lonas y baquetones, con el corte', <Caravan key="i" aria-hidden="true" />],
-      ...(puertas ? [
-        ['puertas', 'Puertas', 'Enrollables, apilables y autorreparables', <DoorOpen key="i" aria-hidden="true" />] as [Producto, string, string, React.ReactNode],
-        ['systemdock', 'System Dock', 'Lonas perimetrales de muelle de carga', <Warehouse key="i" aria-hidden="true" />] as [Producto, string, string, React.ReactNode],
-      ] : []),
-    ];
-    return <div className="producto-contexto inicio-productos">
-      <span className="producto-etiqueta">O empieza uno en blanco</span>
-      <div className="inicio-tarjetas" role="group" aria-label="Producto">
-        {tarjetas.map(([tipo, nombre, lleva, icono]) => {
-          const enCurso = detalle(tipo) !== 'Sin empezar';
-          return <button type="button" key={tipo} data-producto={tipo} style={transicion===tipo?{viewTransitionName:'categoria-inicio'}:undefined} disabled={disabled} aria-label={nombre} className="inicio-tarjeta" onClick={() => onChange(tipo)}>
-            <span className="inicio-tarjeta-icono">{icono}</span>
-            <strong>{nombre}</strong>
-            <span className="inicio-tarjeta-lleva">{lleva}</span>
-            <span className={`inicio-tarjeta-estado${enCurso ? ' is-en-curso' : ''}`}>{enCurso ? `Seguir con ${detalle(tipo)}` : 'Sin empezar'}</span>
-          </button>;
-        })}
-        {onEmbudos && <button type="button" disabled={disabled} aria-label="Embudos" className="inicio-tarjeta" onClick={onEmbudos}>
-          <span className="inicio-tarjeta-icono"><Filter aria-hidden="true" /></span><strong>Embudos</strong>
-          <span className="inicio-tarjeta-lleva">Bocas de descarga · cónicos y rectos</span><span className="inicio-tarjeta-estado">Preparar pedido</span>
-        </button>}
-        <button type="button" disabled={!COMBURSA_DISPONIBLE || disabled} aria-label="COMBURSA" title="Preparar el lote del sábado" className="inicio-tarjeta" onClick={() => setCombursaAbierta(true)}>
-          <span className="inicio-tarjeta-icono"><Building2 aria-hidden="true" /></span>
-          <strong>COMBURSA</strong>
-          <span className="inicio-tarjeta-lleva">Lotes del sábado de ASSA ABLOY</span>
-          <span className="inicio-tarjeta-estado">Preparar lote</span>
-        </button>
-      </div>
-      {combursaAbierta && <Suspense fallback={<p role="status">Abriendo el lote…</p>}><LoteSabado onCerrar={() => setCombursaAbierta(false)} /></Suspense>}
-    </div>;
-  }
-  return (
-    <div className="producto-contexto">
-    <div className="tira-3d producto-selector" role="group" aria-label="Producto">
-      <button type="button" disabled={disabled} aria-label="Toldos" title={detalle('toldos')} className={!inicio && !embudos && producto === 'toldos' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={inicio ? undefined : !embudos && producto === 'toldos'} onClick={() => onChange('toldos')}>
-        Toldos
-      </button>
-      <button type="button" disabled={disabled} aria-label="Remolques" title={detalle('remolques')} className={!inicio && producto === 'remolques' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={inicio ? undefined : producto === 'remolques'} onClick={() => onChange('remolques')}>
-        Remolques
-      </button>
-      {puertas && <button type="button" disabled={disabled} aria-label="Puertas" title={detalle('puertas')} className={!inicio && producto === 'puertas' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={inicio ? undefined : producto === 'puertas'} onClick={() => onChange('puertas')}>
-        Puertas
-      </button>}
-      {puertas && <button type="button" disabled={disabled} aria-label="System Dock" title={detalle('systemdock')} className={producto === 'systemdock' ? 'pestana pestana-activa' : 'pestana'} aria-pressed={producto === 'systemdock'} onClick={() => onChange('systemdock')}>System Dock</button>}
-      {onEmbudos && <button type="button" disabled={disabled} aria-label="Embudos" className={embudos ? 'pestana pestana-activa' : 'pestana'} aria-pressed={embudos} onClick={onEmbudos}>Embudos</button>}
+export type ResumenPedido = { numero: string; elementos: number };
+const nombres = {toldos:'Toldos',remolques:'Remolques',puertas:'Puertas',systemdock:'System Dock'};
+
+/** La categoría se elige en el inicio; dentro del pedido solo se indica el trabajo actual. */
+export function SelectorProducto({ producto, pedidos, inicio = false, disabled = false, puertas = true, transicion, onCategoria, embudos = false }: {
+  producto: Producto; onChange: (producto: Producto) => void; pedidos?: Partial<Record<Producto, ResumenPedido>>;
+  inicio?: boolean; disabled?: boolean; puertas?: boolean; transicion?: CategoriaConModelos | null;
+  onCategoria?: (categoria: CategoriaConModelos) => void; embudos?: boolean;
+}) {
+  if (!inicio) return <h2>{embudos?'Embudos':nombres[producto]}{pedidos?.[producto]?.numero.trim() ? ' · '+pedidos[producto]!.numero.trim() : ''}</h2>;
+  const tarjetas: Array<[CategoriaConModelos,string,string,React.ReactNode]> = [
+    ['toldos','Toldos','Brazos, cortinas, cofres y trabajos de tela',<Store key="i" aria-hidden="true"/>],
+    ['remolques','Remolques','Lonas y baquetones, con el corte',<Caravan key="i" aria-hidden="true"/>],
+    ...(puertas ? [['puertas','Puertas','Enrollables, apilables y autorreparables',<DoorOpen key="i" aria-hidden="true"/>] as [CategoriaConModelos,string,string,React.ReactNode]] : []),
+    ['estandar','Estándar','COMBURSA, Embudos y System Dock',<Boxes key="i" aria-hidden="true"/>],
+  ];
+  return <div className="producto-contexto inicio-productos">
+    <span className="producto-etiqueta">O empieza uno en blanco</span>
+    <div className="inicio-tarjetas" role="group" aria-label="Producto">
+      {tarjetas.map(([tipo,nombre,lleva,icono])=>{
+        const pedido=tipo==='estandar'?undefined:pedidos?.[tipo];
+        const enCurso=pedido && (pedido.numero.trim()||pedido.elementos);
+        return <button type="button" key={tipo} data-producto={tipo} style={transicion===tipo?{viewTransitionName:'categoria-inicio'}:undefined} disabled={disabled} aria-label={nombre} className="inicio-tarjeta" onClick={()=>onCategoria?.(tipo)}>
+          <span className="inicio-tarjeta-icono">{icono}</span><strong>{nombre}</strong>
+          <span className="inicio-tarjeta-lleva">{lleva}</span>
+          <span className={`inicio-tarjeta-estado${enCurso?' is-en-curso':''}`}>{enCurso?`Seguir con ${pedido.numero.trim()||'Sin número'} · ${pedido.elementos} ${pedido.elementos===1?'elemento':'elementos'}`:'Elegir modelo'}</span>
+        </button>;
+      })}
     </div>
-    </div>
-  );
+  </div>;
 }

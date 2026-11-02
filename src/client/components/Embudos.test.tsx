@@ -8,9 +8,11 @@ import { sanitizeAwning } from '../hooks/useDraft';
 import { createAwning } from '../constants';
 const nada = () => undefined;
 describe('entrada propia de Embudos', () => {
-  it('ofrece Embudos al mismo nivel que los productos', () => {
+  it('ofrece Embudos dentro de Estándar', () => {
     const html = renderToStaticMarkup(<InicioProductos producto="toldos" onChange={nada} onModelo={nada} pedidos={{}} puertas disabled={false} disponibles={['EMBUDO']} />);
-    expect(html).toContain('aria-label="Embudos"');
+    expect(html).not.toContain('aria-label="Embudos"');
+    expect(html).toContain('aria-label="Estándar"');
+    expect(modelosInicio('estandar', [], 'embudos')[0].modelos[0].valor).toMatchObject({producto:'toldos',modelo:'EMBUDO'});
     expect(html).toContain('inicio-tarjeta');
   });
   it('no ofrece EMBUDO al buscar ni añadir modelos de Toldos', () => {
