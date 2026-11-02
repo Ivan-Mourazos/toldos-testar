@@ -53,6 +53,7 @@ export type EmbudoConfiguration = {
   sujecion: string;
   anchoCinta: number | null;
   largoCinta: number | null;
+  largoCintaCorta?: number | null;
 };
 
 export type Awning = {

@@ -16,7 +16,8 @@ export function normalizeEmbudo(raw = {}) {
     bastillaArriba: e.bastillaArriba === undefined ? 10 : numero(e.bastillaArriba),
     bastillaAbajo: e.bastillaAbajo === undefined ? 10 : numero(e.bastillaAbajo),
     sujecion: String(e.sujecion ?? 'MORDAZA').trim().toUpperCase(),
-    anchoCinta: e.anchoCinta === undefined ? 25 : numero(e.anchoCinta), largoCinta: numero(e.largoCinta)
+    anchoCinta: e.anchoCinta === undefined ? 25 : numero(e.anchoCinta), largoCinta: numero(e.largoCinta),
+    largoCintaCorta: e.largoCintaCorta === undefined ? 12 : numero(e.largoCintaCorta)
   };
 }
 
@@ -37,6 +38,7 @@ export function embudoIssues(raw = {}) {
   if (!SUJECIONES_EMBUDO.includes(e.sujecion)) add('sujecion', 'sujeción');
   if (e.sujecion !== 'NINGUNA') {
     if (!(e.anchoCinta > 0)) add('anchoCinta', 'ancho de cinta (mm)');
+    if (e.forma === 'CÓNICO' && e.sujecion === 'MORDAZA' && !(e.largoCintaCorta > 0)) add('largoCintaCorta', 'largo de cinta corta (cm)');
     if (!(e.largoCinta > 0)) add('largoCinta', 'largo de cinta (cm)');
   }
   return out;
@@ -51,7 +53,7 @@ export function etiquetasEmbudo(raw = {}) {
   const cinta = e.sujecion === 'NINGUNA' ? [] : e.forma === 'RECTO'
     ? [`${e.sujecion} (${n(e.anchoCinta)}) CON CINTA DE ${n(e.largoCinta)} CM METIDA EN ENTRADA`]
     : [`CINTA (${n(e.anchoCinta)}) BLANCA DE ${n(e.largoCinta)} CM`,
-      e.sujecion === 'MORDAZA' ? `MORDAZA(${n(e.anchoCinta)}) CON CINTA DE 12 CM` : `${e.sujecion} (${n(e.anchoCinta)})`];
+      e.sujecion === 'MORDAZA' ? `MORDAZA(${n(e.anchoCinta)}) CON CINTA DE ${n(e.largoCintaCorta)} CM` : `${e.sujecion} (${n(e.anchoCinta)})`];
   return { arriba: remate('Arriba'), abajo: remate('Abajo'), cierre: `CERRAR ${n(e.cierre)} CM`, cinta };
 }
 
