@@ -21,7 +21,7 @@ describe('Bambalina para taller', () => {
   test.each([[0, 30], [5, 35], [8, 38]])('el corte del dibujo respeta el remate global %s', async (extra, expected) => {
     const [text] = await pages({ ...baseOrder, parameters: { fabricJobs: { valanceExtraCm: extra } } });
     expect(text).toContain('CORTE ' + expected + ' CM');
-    expect(text).toContain('ALTO TERMINADO');
+    expect(text).toContain('BAMBA · 30 CM');
     expect(text).toContain('VARILLA BLANCA');
     expect(text).toContain('BASTILLA');
   });
@@ -29,7 +29,7 @@ describe('Bambalina para taller', () => {
     const [text] = await pages({ ...baseOrder, awnings: [{ ...baseAwning, reglasModificadas: true, fabricJobValanceExtraCm: 12, fabricJobWidthAdjustmentCm: -2 }] });
     expect(text).toContain('CORTE 42 CM');
     expect(text).toContain('298,0');
-    expect(text).toContain('ALTO TERMINADO 30 CM');
+    expect(text).toContain('BAMBA · 30 CM');
   });
   test('dos bambalinas de misma curva conservan su material y corte propios', async () => {
     const order = { ...baseOrder, sameFabric: false, awnings: [

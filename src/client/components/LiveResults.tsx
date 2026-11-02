@@ -109,7 +109,7 @@ export function StructureSheet({ block, awning, onUpdate, onEditingChange }: { b
   );
 }
 
-// Planteamiento de tela de un solo toldo: su fila y la bamba separada. Lo usa el panel
+// Planteamiento de tela de un solo toldo: su fila y la bamba en otra tela. Lo usa el panel
 // «Despiece y dibujo»; la imagen propia se pone encima del dibujo (FabricImageEditor).
 export function FabricSheet({ block, awning }: { block: OfBlock; awning?: Awning }) {
   return <FabricTable><FabricRows block={block} index={0} awning={awning} /></FabricTable>;
@@ -147,7 +147,7 @@ function FabricRows({ block, index, awning }: { block: OfBlock; index: number; a
           <td><strong>Bambalina</strong><small>tejido independiente</small></td>
           <td>{block.of || '-'}</td><td className="code">{calc.valanceFabricCode}</td>
           <td className="num">{formatDecimal(calc.valanceFabricWidth ?? calc.fabricWidth)} cm</td><td className="num">{formatDecimal(calc.valanceDrop)} cm</td><td className="num">{calc.valanceFabricPanels || '-'}</td><td className="num"><strong>{formatDecimal(calc.valanceFabricMl)} ml</strong></td>
-          <td>Bamba separada de {formatDecimal(awning?.valanceHeight)} cm</td>
+          <td>Bamba en otra tela de {formatDecimal(awning?.valanceHeight)} cm</td>
         </tr>
       )}
     </>

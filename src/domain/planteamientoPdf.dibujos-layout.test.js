@@ -46,11 +46,15 @@ test.each([true, false].flatMap(structure => irisMeasures.map(measures => ({ str
       operators.fnArray.forEach((operation, index) => {
         if (operation === OPS.setFillRGBColor) {
           fill = operators.argsArray[index][0];
-          if (fill === '#29474d') darkLabels += 1;
+          if (fill === (structure ? '#29474d' : '#000000')) darkLabels += 1;
         }
-        if (operation === OPS.constructPath && fill === '#fff8df') panels.push(operators.argsArray[index][2]);
+        if (operation === OPS.constructPath && fill === (structure ? '#fff8df' : '#ffffff')) {
+          const bounds = operators.argsArray[index][2];
+          // En telas el marco y las máscaras son blancos: se excluye el marco completo.
+          if (structure || bounds[2] - bounds[0] < 241) panels.push(bounds);
+        }
       });
-      const [left, top, right, bottom] = panels[0];
+      const [left, top, right, bottom] = panels.reduce((a,b)=>(b[2]-b[0])*(b[3]-b[1])>(a[2]-a[0])*(a[3]-a[1])?b:a);
       const diagonals = items.filter(item => /^D[12] /.test(item.str));
       expect(diagonals).toHaveLength(2);
       const intersects = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
@@ -63,8 +67,8 @@ test.each([true, false].flatMap(structure => irisMeasures.map(measures => ({ str
         for (const title of items.filter(item => /^TOLDO|×/.test(item.str))) expect(intersects(bounds, box(title))).toBe(false);
       }
       expect(intersects(box(diagonals[0]), box(diagonals[1]))).toBe(false);
-      expect(darkLabels, 'gris oscuro para las dos cotas').toBeGreaterThanOrEqual(2);
-      expect(panels.filter(panel => panel[2] - panel[0] < (right - left) * 0.8).length, 'fondo crema bajo cada cota').toBeGreaterThanOrEqual(2);
+      expect(darkLabels, 'tinta de las cotas: oscuro en estructura, negro en telas').toBeGreaterThanOrEqual(2);
+      expect(panels.filter(panel => panel[2] - panel[0] < (right - left) * 0.8).length, 'máscara bajo cada cota: crema en estructura, blanca en telas').toBeGreaterThanOrEqual(2);
       if (structure) expect(bottom - top, 'el hueco aprovecha el alto del recuadro').toBeGreaterThan(measures.irisAssumeSquare ? 80 : 65);
     }, { structure, fabricBox: !structure, calculation: { guideLeftLength: 208, guideRightLength: 208 } });
   }
@@ -118,11 +122,11 @@ test.each([[363, 450], [484, 300]])('el recuadro %s × %s conserva la proporció
 });
 
 // El Iris dibuja el escuadrado con las proporciones del hueco (Iván, 08/10/2026): el toldo, en
-// amarillo, llena el ancho o el alto según sea más ancho o más alto.
+// blanco en confección, llena el ancho o el alto según sea más ancho o más alto.
 const bodies = {
-  CORTINA: { fill: '#fbfcfc', fits: panel => panel.width >= 242 * 0.7 && panel.height >= 300 * 0.53 },
-  'CAMBIO CORTINA': { fill: '#fbfcfc', fits: panel => panel.width >= 242 * 0.7 && panel.height >= 300 * 0.53 },
-  IRIS: { fill: '#fff8df', fits: panel => panel.width >= 242 * 0.6 || panel.height >= 300 * 0.5 }
+  CORTINA: { fill: '#ffffff', fits: panel => panel.width >= 242 * 0.7 && panel.height >= 300 * 0.53 },
+  'CAMBIO CORTINA': { fill: '#ffffff', fits: panel => panel.width >= 242 * 0.7 && panel.height >= 300 * 0.53 },
+  IRIS: { fill: '#ffffff', fits: panel => panel.width >= 242 * 0.6 || panel.height >= 300 * 0.5 }
 };
 test.each(Object.keys(bodies))('%s: el cuerpo aprovecha el espacio de la miniatura', async model => {
   const variant = webDrawingVariants(model).find(item => item.webDrawing);

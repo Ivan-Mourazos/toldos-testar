@@ -36,7 +36,7 @@ for(const {code} of models) for(const v of webDrawingVariants(code)) {
     casos.push({nombre,awning,diagram,calculation,calculoReal:!!calc?.valid,datos});
   }
   const estado='ensayo de espacio';
-  const motivo='La evidencia de fabricación y las correcciones están en el informe por29 dibujos y en contraste-pedidos.html. Este ensayo no homologa remates ni cálculos fuera de rango.';
+  const motivo='La evidencia de fabricación y las correcciones están en el informe de revisión de dibujos y en contraste-pedidos.html. Este ensayo no homologa remates ni cálculos fuera de rango.';
   const r={id,model:code,variante:v.id,label:v.label,estado,motivo,fuente,webDrawing:v.webDrawing,casos};
   variantes.push(r);
   fs.writeFileSync(`${out}/${id}.html`,`<!doctype html><meta charset="utf-8"><title>${esc(code)} ${esc(v.label)}</title>${estilo}<article><h1>${esc(code)} · ${esc(v.label)}</h1><p>${estado}: ${esc(motivo)}</p><p>Fuente: ${fuente}. Casos pequeño/extremo: prueba de espacio, pueden estar fuera de límites de fabricación.</p>${casos.map(c=>`<figure>${svgHtml(c.datos)}<figcaption>${c.nombre} · ${c.diagram} · ${c.calculoReal?'cálculo del motor':'medidas simuladas para probar espacio'}</figcaption><pre>${esc(JSON.stringify({frente:c.awning.width,salida:c.awning.projection,bamba:c.awning.valanceHeight,frenteTela:c.calculation.fabricWidth,caidaTela:c.calculation.fabricDrop,ventana:c.awning.curtainHasWindow,laterales:c.awning.curtainFinish,abajo:c.awning.curtainBottomFinish},null,2))}</pre></figure>`).join('')}</article>`);

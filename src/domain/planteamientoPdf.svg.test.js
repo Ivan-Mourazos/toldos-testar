@@ -21,7 +21,7 @@ test.each(variantes)('el catálogo completo prepara SVG: $awning.model / $id', (
   expect(svg.nodes.every(n => n.tag === 'path' || n.tag === 'text')).toBe(true);
 });
 
-test.each(SVG_FABRIC_DIAGRAMS)('también los esquemas específicos conservados: %s', (diagram) => {
+test.each(SVG_FABRIC_DIAGRAMS)('los trazados de confección conservados: %s', (diagram) => {
   const svg = buildFabricDiagramSvg({ diagram, awning: { model: 'CAMBIO TELA', width: 400, projection: 250 } });
   expect(svg.nodes.length).toBeGreaterThan(5);
 });
@@ -51,8 +51,8 @@ test('al apagar dibujos SVG sigue encajándose el dibujo de pdfkit', async () =>
   expect((await pageTexts(pdf)).at(-1)).toMatch(/BASTILLA|VARILLA/);
 });
 
-test('una variante aún no migrada y una imagen del taller quedan en pdfkit', () => {
-  expect(buildFabricDiagramSvg({ diagram: 'FUTURO' })).toBeNull();
+test('un identificador desconocido usa GENERAL y una imagen del taller queda en pdfkit', () => {
+  expect(buildFabricDiagramSvg({ diagram: 'FUTURO' })).toEqual(buildFabricDiagramSvg({ diagram: 'GENERAL' }));
   expect(buildFabricDiagramSvg({ diagram: 'GENERAL', awning: { fabricImage: 'imagen' } })).toBeNull();
 });
 

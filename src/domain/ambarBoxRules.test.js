@@ -144,7 +144,7 @@ describe('Ámbar Box', () => {
       expect.objectContaining({ code: 'ACRILI2143P120', quantity: 9.6 }),
       expect.objectContaining({ code: 'ACRILI2143P120', quantity: 0.75, description: expect.stringContaining('BAMBA') })
     ]));
-    expect(result.description).toContain('bambalina separada de 25 cm');
+    expect(result.description).toContain('bambalina en otra tela de 25 cm');
     expect(result.description).not.toContain('bambalina incluida');
   });
 

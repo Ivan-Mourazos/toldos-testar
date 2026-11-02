@@ -286,7 +286,7 @@ function buildDescription(awning, calculation) {
   const valance = Math.max(0, Number(awning.valanceHeight) || 0);
   const valanceText = valance > 0
     ? calculation.separateValance
-      ? ` · bambalina separada de ${valance + 5} cm, hecha de ${valance} cm`
+      ? ` · bambalina en otra tela de ${valance + 5} cm, hecha de ${valance} cm`
       : ` · bambalina incluida de ${valance + 5} cm, hecha de ${valance} cm`
     : '';
   const verticalText = isVerticalDropArmMode(calculation.dropArmMode)

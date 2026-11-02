@@ -165,7 +165,7 @@ describe('PUNTO RECTO contra hoja y reservas reales', () => {
       expect.objectContaining({ code: 'ACRILI1533P120', quantity: 8.4 }),
       expect.objectContaining({ code: 'ACRILI2143P120', quantity: 0.9, description: expect.stringContaining('BAMBA') })
     ]));
-    expect(ofBlock.description).toContain('bambalina separada de 30 cm');
+    expect(ofBlock.description).toContain('bambalina en otra tela de 30 cm');
     expect(ofBlock.description).not.toContain('bambalina incluida');
   });
 
