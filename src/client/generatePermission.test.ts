@@ -78,6 +78,13 @@ describe('puedeCorregir — «Corregir» solo para el autor: devuelto o sin empe
     expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', { disponible: true, ofs: {} })).toBe(true);
     expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'JAIME', porRevisar)).toBe(false);
   });
+  it('el autor sigue trabajando en ella (pendiente o en curso): el autor sí, otro no (AR2605346)', () => {
+    const enCurso = { disponible: true, ofs: { '0233602': { estado: 'en_curso', autor: 'tamara' } } };
+    const una = [{ letter: 'A', of: '0233602' }];
+    expect(puedeCorregir('PENDING_REVIEW', una, 'TAMARA', 'TAMARA', enCurso)).toBe(true);
+    expect(puedeCorregir('PENDING_REVIEW', una, 'TAMARA', 'IVÁN', enCurso)).toBe(false);
+    expect(puedeCorregir('PENDING_REVIEW', una, 'TAMARA', 'TAMARA', { disponible: true, ofs: { '0233602': { estado: 'pendiente' } } })).toBe(true);
+  });
   it('en revisión, aprobado (aunque sea en parte), generado o sin CoordinaOT: no', () => {
     expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', coordina('en_revision'))).toBe(false);
     expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', coordina('por_revisar'))).toBe(false);
