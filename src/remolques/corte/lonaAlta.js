@@ -392,7 +392,8 @@ function maxrects(piezas, orden, giros = []) {
     const p = piezas[k];
     let mejor = null;
     const cabe = (g) => (g ? p.w : p.h) <= ROLLO + 0.01;
-    const opciones = giros[k] != null && cabe(giros[k]) ? [giros[k]] : [0, -90];
+    const permitidos = p.girosPermitidos ?? [0, -90];
+    const opciones = giros[k] != null && permitidos.includes(giros[k]) && cabe(giros[k]) ? [giros[k]] : permitidos;
     for (const giro of opciones) {
       const w = giro ? p.h : p.w, h = giro ? p.w : p.h;
       if (h > ROLLO + 0.01) continue;
@@ -409,7 +410,7 @@ function maxrects(piezas, orden, giros = []) {
   return { sitios, largo: Math.max(...sitios.map((s) => s.x + s.w)), libres };
 }
 
-function colocarTodo(piezas, intentos = 400) {
+export function colocarTodo(piezas, intentos = 400, probarRebajes = true) {
   const idx = piezas.map((_, k) => k);
   const area = (k) => piezas[k].w * piezas[k].h;
   const mayor = (k) => Math.max(piezas[k].w, piezas[k].h), menor = (k) => Math.min(piezas[k].w, piezas[k].h);
@@ -432,7 +433,7 @@ function colocarTodo(piezas, intentos = 400) {
   if (!mejor) return null;
   // Encima, el colocador «Tetris» de puertas y toldos (Iván, 23/10/2026: «el tetris hay que aplicarlo a todo»): parte
   // de la mejor colocación por huecos y solo la cambia si gasta menos largo o deja menos ancho ocupado.
-  const busqueda = piezas.map((p, k) => ({ id: String(k), formas: [{ w: p.w, h: p.h, girada: false }, { w: p.h, h: p.w, girada: true }]
+  const busqueda = piezas.map((p, k) => ({ id: String(k), formas: (p.girosPermitidos ?? [0, -90]).map(giro => ({ w: giro ? p.h : p.w, h: giro ? p.w : p.h, girada: giro !== 0 }))
     .filter((f) => f.h <= ROLLO + 0.01) }));
   const inicial = mejor.sitios.map((s, k) => ({ id: String(k), x: s.x, y: s.y, w: s.w, h: s.h, girada: s.giro !== 0 }));
   const sitios = new Array(piezas.length);
@@ -440,7 +441,43 @@ function colocarTodo(piezas, intentos = 400) {
     sitios[Number(r.id)] = { x: r.x, y: r.y, w: r.w, h: r.h, giro: r.girada ? -90 : 0, derecha: r.x + r.w };
   }
   const libres = sitios.reduce((l, s) => partir(l, s), [{ x: 0, y: 0, w: 1e9, h: ROLLO }]);
-  return { sitios, largo: Math.max(...sitios.map((s) => s.x + s.w)), libres };
+  const rectangular = { sitios, largo: Math.max(...sitios.map((s) => s.x + s.w)), libres };
+  return probarRebajes ? colocarEnRebajes(piezas, rectangular, intentos) : rectangular;
+}
+
+// El Tetris común coloca rectángulos. Para aprovechar el hueco de los puentes se le ofrece también
+// el conjunto contorno + pieza encajada como una envolvente; después se recuperan sus dos posiciones.
+// El fondo comparte la misma línea de corte y junto a las pestañas quedan al menos 10 mm, como en
+// el contorno en trapecio. Solo se acepta un ahorro estricto: a igual largo se conserva el corte anterior.
+function colocarEnRebajes(piezas, inicial, intentos) {
+  let mejor = inicial;
+  for (let c = 0; c < piezas.length; c++) {
+    const contorno = piezas[c], g = contorno.geo;
+    if (!g?.reb || g.B !== g.Bt || g.H !== contorno.h || g.A !== contorno.w
+      || !(contorno.girosPermitidos ?? [0, -90]).includes(0)) continue;
+    const hueco = contorno.h - 2 * (g.rebajeLado + HOLGURA_TRAPECIO);
+    for (let k = 0; k < piezas.length; k++) {
+      if (k === c || piezas[k].geo) continue;
+      const p = piezas[k];
+      for (const giro of p.girosPermitidos ?? [0, -90]) {
+        const w = giro ? p.h : p.w, h = giro ? p.w : p.h;
+        if (h > hueco + 0.01) continue;
+        const x = contorno.w - g.reb, y = (contorno.h - h) / 2;
+        const grupo = { w: Math.max(contorno.w, x + w), h: contorno.h, girosPermitidos: [0] };
+        if (grupo.w >= mejor.largo - 0.01) continue;
+        const indices = piezas.map((_, i) => i).filter(i => i !== c && i !== k);
+        const prueba = colocarTodo([grupo, ...indices.map(i => piezas[i])], intentos, false);
+        if (!prueba || prueba.largo >= mejor.largo - 0.01) continue;
+        const origen = prueba.sitios[0], sitios = new Array(piezas.length);
+        sitios[c] = { x: origen.x, y: origen.y, w: contorno.w, h: contorno.h, giro: 0, derecha: origen.x + contorno.w };
+        sitios[k] = { x: origen.x + x, y: origen.y + y, w, h, giro, derecha: origen.x + x + w };
+        indices.forEach((i, n) => { sitios[i] = prueba.sitios[n + 1]; });
+        // Los huecos libres conservan reservada toda la envolvente: las tapas nunca pisan el conjunto.
+        mejor = { sitios, largo: prueba.largo, libres: prueba.libres };
+      }
+    }
+  }
+  return mejor;
 }
 
 // `letras`: Map elemento → letra de cada unidad (solo si el corte lleva más de un remolque). `extras`: otras
