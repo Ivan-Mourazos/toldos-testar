@@ -1,5 +1,7 @@
 # Demasía por cliente y propuestas de ollaos
 
+> Actualización posterior: la regla de medidas exactas y el ensayo de referencias de NORTE se sustituyen por [ollaos-medida-exacta.md](ollaos-medida-exacta.md). El resto de este documento describe el trabajo anterior.
+
 Trabajo local del 02/11/2026, rama `ficha-demasia-ollaos`. Implementación: commit `1eecfd5` (`feat(remolques): conserva demasías por cliente`). Sin push ni despliegue. `main` ya estaba integrado al comenzar.
 
 La ficha permite indicar una demasía actual para las lonas altas; vacío conserva la general. Se copia al `LonaInput` al importar, y el cálculo usa ese valor en la lona hecha y el contorno automático, incluido «Usar calculado». Corte, plano, hoja y dibujo consumen ese mismo resultado. Un 201 × 131 con demasía 2 da 203 × 133. Los pedidos guardados conservan la entrada y sus parámetros; abrirlos no vuelve a aplicar la ficha. Las pruebas de paridad y sus fixtures no se han modificado.
