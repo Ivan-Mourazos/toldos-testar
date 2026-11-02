@@ -127,6 +127,9 @@ function comprobarOpcionales(
     if (recogida.panoTraseroConAnchoDelante !== undefined && typeof recogida.panoTraseroConAnchoDelante !== "boolean") {
       mal("la recogida propia: «paño trasero con el ancho de delante» es sí o no");
     }
+    if (recogida.marcaOrejaDesdeHecha !== undefined && !noNegativo(recogida.marcaOrejaDesdeHecha)) {
+      mal("la recogida propia: la marca desde la lona hecha tiene que ser un número no negativo");
+    }
   }
   for (const [lado, texto] of [["recogeDelante", "de delante"], ["recogeAtras", "de detrás"]] as const) {
     const valor = f[lado];

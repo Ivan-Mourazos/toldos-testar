@@ -157,6 +157,9 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
   const anchoAtras = (input.anchoAtras ?? 0) > 0 ? input.anchoAtras! : input.ancho;
   const altoAtras = input.altoAtras > 0 ? input.altoAtras : input.altoDelante;
   const demasia = input.demasiaLonaHecha ?? params.demasiaLonaHecha;
+  // Las demasías de las recogidas ya incluyen la general. Solo añadimos lo que cambia
+  // la ficha: los paños crecen lo mismo que la lona hecha, sin ensanchar las orejas.
+  const deltaDemasia = demasia - params.demasiaLonaHecha;
   const lonaHecha = {
     largo: r1(input.largo + demasia),
     ancho: r1(input.ancho + demasia),
@@ -171,7 +174,7 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
   // Sin contorno escrito (vacío o cero), el que calcula la web; el escrito a mano manda.
   const contornoNuevo = (input.contorno ?? 0) > 0
     ? input.contorno!
-    : contornoAutomatico(input, params.demasiaLonaHecha) ?? 0;
+    : contornoAutomatico(input, demasia) ?? 0;
   const contornoIntroducido = usaContornoLegacy
     ? r1(Math.max(contornoLegacy - ajuste, 0))
     : contornoNuevo;
@@ -185,11 +188,11 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
   const sesgada = contornoSesgado(input);
   const contornoAtrasIntroducido = (input.contornoAtras ?? 0) > 0
     ? input.contornoAtras!
-    : sesgada ? contornoAutomatico(input, params.demasiaLonaHecha, true) ?? 0 : 0;
+    : sesgada ? contornoAutomatico(input, demasia, true) ?? 0 : 0;
   const contornoAtrasAjustado = contornoAtrasIntroducido > 0 ? r1(contornoAtrasIntroducido + ajuste) : 0;
 
   const panoDelantero: Pano = {
-    ancho: r1(input.ancho + recDel.delante),
+    ancho: r1(input.ancho + recDel.delante + deltaDemasia),
     alto: r1(input.altoDelante + params.demasiaAlto),
     etiqueta: "PAÑO DELANTERO",
   };
@@ -198,7 +201,7 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
   // CAD de Iván del 30/09/2026): su paño trasero se mide con el ancho de delante.
   const anchoPanoTrasero = recAtr.panoTraseroConAnchoDelante ? input.ancho : anchoAtras;
   const panoTrasero: Pano = {
-    ancho: r1(anchoPanoTrasero + demasiaTrasera),
+    ancho: r1(anchoPanoTrasero + demasiaTrasera + deltaDemasia),
     alto: r1(altoAtras + params.demasiaAlto),
     etiqueta: "PAÑO TRASERO",
   };
@@ -209,7 +212,7 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
   const panoContorno: Pano | null =
     contornoAjustado > 0
       ? {
-          ancho: r1(input.largo + demasiaContorno + recDel.lateralSoloDelante + recAtr.lateralSoloAtras),
+          ancho: r1(input.largo + demasiaContorno + recDel.lateralSoloDelante + recAtr.lateralSoloAtras + deltaDemasia),
           alto: contornoAjustado,
           etiqueta: "PAÑO CONTORNO",
           ...(sesgada && contornoAtrasAjustado > 0 ? { altoAtras: contornoAtrasAjustado } : {}),

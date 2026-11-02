@@ -4,6 +4,9 @@ export interface Recogida {
   atras: number;
   lateralSoloAtras: number;
   lateralSoloDelante: number;
+  /** Marca de los puentes hacia dentro desde el borde de la lona hecha, en cm.
+   *  Ausente conserva las marcas históricas, a 1 cm del perfil de corte. */
+  marcaOrejaDesdeHecha?: number;
   /** El paño trasero se mide con el ancho de DELANTE aunque el remolque sea más ancho detrás:
    *  su demasía ya lleva esa diferencia. Solo los puentes de Hijos de Pedro López (CAD de
    *  Iván, 30/09/2026: 130 delante, 131,5 detrás y paño trasero 130 + 42,5 = 172,5). */

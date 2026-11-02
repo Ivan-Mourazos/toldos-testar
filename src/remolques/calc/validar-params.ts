@@ -101,6 +101,9 @@ export function validarParams(
       if (rec?.panoTraseroConAnchoDelante !== undefined && typeof rec.panoTraseroConAnchoDelante !== "boolean") {
         errores.push(`recogida «${rec?.nombre ?? i + 1}»: «panoTraseroConAnchoDelante» debe ser sí o no`);
       }
+      if (rec?.marcaOrejaDesdeHecha !== undefined && (!esNumero(rec.marcaOrejaDesdeHecha) || rec.marcaOrejaDesdeHecha < 0)) {
+        errores.push(`recogida «${rec?.nombre ?? i + 1}»: la marca desde la lona hecha debe ser un número no negativo`);
+      }
     });
   }
   const clientes = p.clientesBaqueton;

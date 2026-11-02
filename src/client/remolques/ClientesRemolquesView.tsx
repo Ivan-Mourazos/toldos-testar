@@ -240,6 +240,7 @@ function FichaEditor({ ficha, recogidasGenerales, onChange, onQuitar }: {
           {([['delante', 'Delante (cm)'], ['atras', 'Detrás (cm)'], ['lateralSoloAtras', 'Extra lateral solo detrás (cm)'], ['lateralSoloDelante', 'Extra lateral solo delante (cm)']] as const).map(([campo, label]) => (
             <CampoNumFicha key={campo} label={label} value={propia[campo]} onChange={(v) => cambiarPropia({ [campo]: v ?? 0 })} />
           ))}
+          <CampoNumFicha label="Marca desde la lona hecha (cm)" value={propia.marcaOrejaDesdeHecha ?? null} onChange={(v) => cambiarPropia({ marcaOrejaDesdeHecha: v ?? undefined })} />
         </div>
         <small className="clientes-remolques-ayuda">{AVISO_RENOMBRAR}</small>
         <label className="remolques-parameter-check"><input type="checkbox" checked={propia.panoTraseroConAnchoDelante ?? false} onChange={(e) => cambiarPropia({ panoTraseroConAnchoDelante: e.target.checked })} /><span>Paño trasero con el ancho de delante</span></label>

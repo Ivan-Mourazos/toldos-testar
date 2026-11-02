@@ -131,7 +131,7 @@ export function aguasArquilladas(f, w, h) {
 
 // Cabeza: perfil de ancho `w` (sin orejas) y alto `h`, con orejas de `oreja` mm a cada lado. `puentes`: las
 // orejas son de los puentes de Hijos de Pedro López (sin ollaos, con sus marcas).
-function cabeza(f, w, h, oreja, ollaos, hecha, ventana, cremallera = false, puentes = false) {
+function cabeza(f, w, h, oreja, ollaos, hecha, ventana, cremallera = false, puentes = false, marcaDesdeHecha) {
   const W = w + 2 * oreja, p = pieza(W, h);
   const ag = f.tipo === 'TIPO 03' ? aguasArquilladas(f, w, h) : null;
   const ch = f.tipo === 'TIPO 04' ? esquinasChaflan(f, w, h) : null;
@@ -181,7 +181,10 @@ function cabeza(f, w, h, oreja, ollaos, hecha, ventana, cremallera = false, puen
   if (oreja && !puentes) for (const d of [45, 115]) if (d < oreja) p.ollaos.push([d, BORDE], [W - d, BORDE]);
   // Puentes de HPL: las orejas sin ollaos y, a 1 cm por dentro de cada lado del perfil, una marca abajo (de 3,5
   // a 5,5 cm) y otra bajo el alto de la oreja (AR2605078).
-  if (oreja && puentes) for (const x of [x0 + 10, x1 - 10]) { marca(p, x, 35, x, 55); marca(p, x, altoOreja - 20, x, altoOreja); }
+  // NORTE: 10 cm hacia dentro desde la hecha (Iván, 02/11/2026; seis DXF contrastados).
+  // La recogida propia lo indica; sin ese dato se conserva el corte histórico de HPL.
+  const distanciaMarca = marcaDesdeHecha == null ? 10 : (w - hecha * 10) / 2 + marcaDesdeHecha * 10;
+  if (oreja && puentes) for (const x of [x0 + distanciaMarca, x1 - distanciaMarca]) { marca(p, x, 35, x, 55); marca(p, x, altoOreja - 20, x, altoOreja); }
   // Marca del centro arriba.
   marca(p, x0 + w / 2, h - 10, x0 + w / 2, h - 25);
   // Lo que tiene encima cada punto del perfil: el borde de arriba, la pendiente de las aguas o la curva del arquillado.
@@ -571,7 +574,8 @@ function cabezasLona(el) {
   const ollaosAtr = i.modoOllaos === 'REPARTIDOS' ? completas(r.ollaos.anchoAtras ?? r.ollaos.ancho, r.reparto.atras) : r.reparto.atras;
   const ventana = i.ventana && i.ventanaAncho > 0 && i.ventanaAlto > 0 ? [i.ventanaAncho * 10, i.ventanaAlto * 10] : null;
   const d = cabeza(f, anchoPerfil, del.alto * 10, orejaDelante, ollaosDel, hecha.ancho, ventana, /CREMALLERA/.test(i.recogeDelante ?? ''));
-  const t = cabeza(f, anchoPerfilTra, tra.alto * 10, oreja, ollaosAtr, hecha.anchoAtras ?? hecha.ancho, null, /CREMALLERA/.test(i.recogeAtras ?? ''), puentes && oreja > 0);
+  const t = cabeza(f, anchoPerfilTra, tra.alto * 10, oreja, ollaosAtr, hecha.anchoAtras ?? hecha.ancho, null, /CREMALLERA/.test(i.recogeAtras ?? ''), puentes && oreja > 0,
+    puentes && oreja > 0 ? findRecogida(el.paramsSnapshot, i.recogeAtras).marcaOrejaDesdeHecha : undefined);
   // Marcas del hombro en cada punta del contorno, solo si esa cabeza cierra con orejas (Iván, 21/10/2026: «solo
   // se hacen si el paño cierra con oreja o similar»; si no, solo la del centro, como a mano en AR2605088 con
   // cremallera), a la altura de su oreja: delante la del delantero y detrás la del trasero (AR2605158: 81,5 con

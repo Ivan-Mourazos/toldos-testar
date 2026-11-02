@@ -134,11 +134,20 @@ function confeccionLona(L, el, X, Y, letras = ['']) {
 
   // Las orejas de una cabeza (si cierra con goma, ganchos…): su línea de referencia, su ancho terminado abajo y
   // su alto de corte al lado.
-  const orejas = (x0, ancho, oreja, alto, bajan) => {
+  const orejas = (x0, ancho, oreja, alto, bajan, marcaDesdeHecha) => {
     if (!oreja) return;
     for (const xo of [30, ancho * 10 - 30]) { const [a, b] = enPlano(x0, Y)(xo, 35), [c, d] = enPlano(x0, Y)(xo, alto); L.g.polilineas.push({ capa: 'referencias', puntos: [[a, b], [c, d]], cerrada: false }); }
-    L.cota('cotas', x0 + 3, Y, x0 + oreja + 1, Y, oreja - 2, -12 - bajan);
-    L.cota('cotas', x0 + ancho - oreja - 1, Y, x0 + ancho - 3, Y, oreja - 2, -12 - bajan);
+    if (marcaDesdeHecha != null) {
+      // NORTE: desde el borde exterior hasta la hecha y desde esta hasta la marca (10 + 10).
+      const margen = oreja + 1;
+      L.cota('cotas', x0, Y, x0 + margen, Y, margen, -12 - bajan);
+      L.cota('cotas', x0 + margen, Y, x0 + margen + marcaDesdeHecha, Y, marcaDesdeHecha, -24 - bajan);
+      L.cota('cotas', x0 + ancho - margen, Y, x0 + ancho, Y, margen, -12 - bajan);
+      L.cota('cotas', x0 + ancho - margen - marcaDesdeHecha, Y, x0 + ancho - margen, Y, marcaDesdeHecha, -24 - bajan);
+    } else {
+      L.cota('cotas', x0 + 3, Y, x0 + oreja + 1, Y, oreja - 2, -12 - bajan);
+      L.cota('cotas', x0 + ancho - oreja - 1, Y, x0 + ancho - 3, Y, oreja - 2, -12 - bajan);
+    }
     L.cota('vent-pre-noimpr', x0 + ancho, Y, x0 + ancho, Y + alto / 10, r1(alto / 10), 12);
   };
 
@@ -169,7 +178,7 @@ function confeccionLona(L, el, X, Y, letras = ['']) {
   pintar(L, P.t.p, enPlano(xTra, Y));
   rosaCabeza(L, P.f, P.oreja, P.anchoPerfilTra, Ht * 10, enPlano(xTra, Y));
   const eT = escaleraCabeza(P.ollaos.atras.length);
-  orejas(xTra, Wt, o, P.t.altoOreja, eT.bajan);
+  orejas(xTra, Wt, o, P.t.altoOreja, eT.bajan, P.puentes ? el.paramsSnapshot?.recogidas.find(r => r.nombre === i.recogeAtras)?.marcaOrejaDesdeHecha : undefined);
   L.cota('cotas', xTra + o + 1, Y, xTra + Wt - o - 1, Y, hecha.anchoAtras ?? hecha.ancho, -12 - eT.bajan);
   L.cota('vent-pre-noimpr', xTra, Y, xTra + Wt, Y, Wt, -26 - eT.bajan);
   if (Ht !== H) {
