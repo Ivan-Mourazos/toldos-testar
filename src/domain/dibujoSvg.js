@@ -124,3 +124,26 @@ class LienzoSvg {
     return { width: 242, height: 300, nodes: this.nodes };
   }
 }
+
+// Propuesta optativa para SVG y pdfkit: no cambia las coordenadas ni los datos del pedido.
+export function superficiePlanoTecnico(superficie) {
+  const rojo = color => ['#a3241c', '#9a2a22', '#b0453c'].includes(String(color).toLowerCase());
+  const trazo = color => rojo(color) ? '#a3241c' : '#000000';
+  const relleno = color => color === '#eef5f9' ? '#f2f2f2' : ['#000000', '#000', '#0a4f22', '#24513b'].includes(String(color).toLowerCase()) ? '#000000' : '#ffffff';
+  let proxy;
+  proxy = new Proxy(superficie, { get(target, key) {
+    if (key === 'planoTecnico') return true;
+    const valor = target[key];
+    if (typeof valor !== 'function') return valor;
+    return (...args) => {
+      if (key === 'fillColor') args[0] = '#000000';
+      if (key === 'strokeColor') args[0] = trazo(args[0]);
+      if (key === 'fill' && args.length) args[0] = relleno(args[0]);
+      if (key === 'fillAndStroke') args = [relleno(args[0]), trazo(args[1] ?? args[0])];
+      if (key === 'fontSize') args[0] = 7.2;
+      const result = valor.apply(target, args);
+      return result === target ? proxy : result;
+    };
+  } });
+  return proxy;
+}
