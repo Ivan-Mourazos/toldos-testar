@@ -513,7 +513,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           {/* En su propia línea: dentro del campo alargaba la fila y bajaba Frente y Salida. */}
           {!readOnly && isOfOutsideOrder(awning.of, knownOfs) && <p className="field-hint-warn awning-row-warn" role="status">La OF {awning.of} no pertenece al pedido en RPS.</p>}
           <TextField label="OF" missing={isMissing('of')} value={awning.of} onChange={(of) => update({ of: of.trim() })} />
-          {getFabricPatternDiagram(awning) === 'GENERAL' && <SelectField label="Laterales" value={awning.sideFinish ?? 'BASTILLA'}
+          {awning.model !== 'EMBUDO' && getFabricPatternDiagram(awning) === 'GENERAL' && <SelectField label="Laterales" value={awning.sideFinish ?? 'BASTILLA'}
             options={['BASTILLA', 'AL CORTE']} optionLabel={value => value === 'AL CORTE' ? 'Al corte' : 'Bastilla'}
             allowEmpty={false} onChange={value => update({ sideFinish: value as Awning['sideFinish'] })} />}
           {awning.model === 'SOLAPAS' && solapasConfigurationFields({ awning, update, missing: isMissing, reading: readOnly })}
