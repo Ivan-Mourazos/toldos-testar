@@ -28,13 +28,15 @@ export interface VentanaFicha {
 
 /**
  * Una medida habitual: el largo × ancho del remolque (lo que se teclea) y las posiciones de los
- * ollaos de cada lado medidas sobre la lona hecha, de izquierda a derecha, como en el CAD. Se
- * guardan e imprimen tal cual, sin ajustarlas.
+ * ollaos medidas sobre la lona hecha: laterales de atrás a delante; cabezas de izquierda a derecha.
+ * La medida exacta se imprime tal cual; las propuestas para otras medidas se adaptan por lado.
  */
 export interface MedidaHabitual {
   tipo: TipoPlanteamiento;
   largo: number;
   ancho: number;
+  /** Medidas hechas sobre las que se tomaron estos ollaos. */
+  hecha?: { largo: number; ancho: number; anchoAtras?: number };
   ollaos: RepartoLados;
 }
 
@@ -60,6 +62,8 @@ export interface FichaCliente {
   material?: string;
   /** Cuántos cm es más ancho el remolque detrás: pone el ancho de detrás («Detrás distinto»). */
   sesgoDetras?: number;
+  /** Demasía actual de sus lonas altas; vacío = la general. Se copia al importar el pedido. */
+  demasiaLonaHecha?: number;
   /** Cremallera del 9: sale como observación en las lonas. */
   cremallera?: boolean;
   /** Sus ollaos van siempre repartidos (su plantilla dice «OLLAOS REPARTIDOS»), salvo una medida habitual exacta. */

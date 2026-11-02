@@ -3,6 +3,8 @@ import type { LonaInput } from "../calc/lona.ts";
 import type { RepartoLados } from "../calc/ollaos.ts";
 import type { TipoPlanteamiento } from "../store/types.ts";
 import type { LineaPedido } from "../workspace/lineas.ts";
+import { DEFAULT_PARAMS, type CalcParams } from "../calc/params.ts";
+import { hechaParaOllaos, propuestaOllaos } from "./adaptar-ollaos.ts";
 import { CAMPOS_PERFIL } from "./reglas.ts";
 import type { FichaCliente, MarcaDelCliente, MedidaHabitual } from "./tipos.ts";
 
@@ -20,25 +22,13 @@ export function medidaHabitual(ficha: FichaCliente, tipo: TipoPlanteamiento, lar
   return ficha.medidas?.find((m) => m.tipo === tipo && m.largo === largo && m.ancho === ancho) ?? null;
 }
 
-/**
- * Los ollaos de la ficha para un largo × ancho: la medida exacta si está; si no, cada lado de su medida suelta
- * (Iván, 21/10/2026: «es lo mismo 200 × 120 que 200 × 150»): los laterales de una medida con el mismo largo y
- * delante y atrás de una con el mismo ancho. El lado que no se sepa queda vacío para teclearlo.
- */
-export function ollaosHabituales(ficha: FichaCliente, tipo: TipoPlanteamiento, largo: number, ancho: number): RepartoLados | null {
-  const exacta = medidaHabitual(ficha, tipo, largo, ancho);
-  if (exacta) return exacta.ollaos;
-  const delTipo = (ficha.medidas ?? []).filter((m) => m.tipo === tipo);
-  const lat = delTipo.find((m) => m.largo === largo && m.ollaos.laterales.length > 0);
-  const cab = delTipo.find((m) => m.ancho === ancho && (m.ollaos.delante.length > 0 || m.ollaos.atras.length > 0));
-  if (!lat && !cab) return null;
-  return { laterales: lat?.ollaos.laterales ?? [], atras: cab?.ollaos.atras ?? [], delante: cab?.ollaos.delante ?? [] };
+/** Lo calculado se copia al pedido; ni abrirlo ni cambiar la ficha vuelven a adaptar sus ollaos. */
+function conOllaosDeFicha<T extends LonaInput | BaquetonInput>(input: T, ficha: FichaCliente, tipo: TipoPlanteamiento, campos: string[], params: CalcParams): T {
+  if (input.modoOllaos !== "") return input;
+  const propuesta = propuestaOllaos(ficha, tipo, input, params);
+  const siguiente = conOllaos(input, propuesta?.ollaos ?? null, campos, ficha.ollaosRepartidos);
+  return propuesta?.origenes.length ? { ...siguiente, ollaosAdaptados: { origenes: propuesta.origenes, hecha: hechaParaOllaos(tipo, input, params) } } : siguiente;
 }
-
-/** Con «siempre repartidos» solo cuenta la medida exacta: una medida suelta dejaría un lado sin ollaos. */
-const ollaosDeFicha = (ficha: FichaCliente, tipo: TipoPlanteamiento, largo: number, ancho: number) => (ficha.ollaosRepartidos
-  ? medidaHabitual(ficha, tipo, largo, ancho)?.ollaos ?? null
-  : ollaosHabituales(ficha, tipo, largo, ancho));
 
 function conObservaciones(actual: string, nuevas: readonly string[], campos: string[]): string {
   const lineas = lineasDe(actual);
@@ -64,8 +54,12 @@ function conOllaos<T extends LonaInput | BaquetonInput>(input: T, ollaos: Repart
   };
 }
 
-function aplicarLona(entrada: LonaInput, ficha: FichaCliente, campos: string[]): LonaInput {
+function aplicarLona(entrada: LonaInput, ficha: FichaCliente, campos: string[], params: CalcParams): LonaInput {
   let input: LonaInput = { ...entrada };
+  if (ficha.demasiaLonaHecha !== undefined && input.demasiaLonaHecha === undefined) {
+    input.demasiaLonaHecha = ficha.demasiaLonaHecha;
+    campos.push("demasiaLonaHecha");
+  }
   const perfil = ficha.perfil;
   if (perfil && input.tipoPerfil === "") {
     input.tipoPerfil = perfil.tipoPerfil;
@@ -121,12 +115,12 @@ function aplicarLona(entrada: LonaInput, ficha: FichaCliente, campos: string[]):
     input.anchoAtras = r1(input.ancho + ficha.sesgoDetras);
     campos.push("anchoAtras");
   }
-  input = conOllaos(input, ollaosDeFicha(ficha, "lona", input.largo, input.ancho), campos, ficha.ollaosRepartidos);
+  input = conOllaosDeFicha(input, ficha, "lona", campos, params);
   const fijas = [...(ficha.cremallera ? [LINEA_CREMALLERA] : []), ...(ficha.observaciones ?? [])];
   return { ...input, observaciones: conObservaciones(input.observaciones, fijas, campos) };
 }
 
-function aplicarBaqueton(entrada: BaquetonInput, ficha: FichaCliente, campos: string[]): BaquetonInput {
+function aplicarBaqueton(entrada: BaquetonInput, ficha: FichaCliente, campos: string[], params: CalcParams): BaquetonInput {
   let input: BaquetonInput = { ...entrada };
   if (ficha.extrasBaqueton && input.clienteEspecifico === "GENERAL") {
     input.clienteEspecifico = ficha.nombre;
@@ -140,23 +134,23 @@ function aplicarBaqueton(entrada: BaquetonInput, ficha: FichaCliente, campos: st
     input.material = ficha.material;
     campos.push("material");
   }
-  input = conOllaos(input, ollaosDeFicha(ficha, "baqueton", input.largo, input.ancho), campos, ficha.ollaosRepartidos);
+  input = conOllaosDeFicha(input, ficha, "baqueton", campos, params);
   return { ...input, observaciones: conObservaciones(input.observaciones, ficha.observaciones ?? [], campos) };
 }
 
 /** La ficha sobre un elemento recién creado desde RPS: solo rellena lo vacío y marca lo que pone. */
-export function aplicarFichaAlImportar(linea: LineaPedido, ficha: FichaCliente): LineaPedido {
+export function aplicarFichaAlImportar(linea: LineaPedido, ficha: FichaCliente, params: CalcParams = DEFAULT_PARAMS): LineaPedido {
   // Las fichas de cliente son de lonas y baquetones; el de ganado trae todo de su plantilla.
   if (linea.tipo === "ganado") return linea;
   const campos: string[] = [];
   const input = linea.tipo === "lona"
-    ? aplicarLona(linea.input as LonaInput, ficha, campos)
-    : aplicarBaqueton(linea.input as BaquetonInput, ficha, campos);
+    ? aplicarLona(linea.input as LonaInput, ficha, campos, params)
+    : aplicarBaqueton(linea.input as BaquetonInput, ficha, campos, params);
   return campos.length > 0 ? { ...linea, input, delCliente: { ficha: ficha.nombre, campos } } : linea;
 }
 
-export function aplicarFichaALineas(lineas: LineaPedido[], ficha: FichaCliente | null): LineaPedido[] {
-  return ficha ? lineas.map((linea) => aplicarFichaAlImportar(linea, ficha)) : lineas;
+export function aplicarFichaALineas(lineas: LineaPedido[], ficha: FichaCliente | null, params: CalcParams = DEFAULT_PARAMS): LineaPedido[] {
+  return ficha ? lineas.map((linea) => aplicarFichaAlImportar(linea, ficha, params)) : lineas;
 }
 
 /** Tras un cambio del técnico, la marca pierde los campos que ya no tienen el valor de la ficha. */

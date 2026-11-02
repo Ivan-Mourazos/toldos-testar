@@ -62,10 +62,10 @@ describe("fichaConCambios", () => {
     const conMedidas: FichaCliente = { ...BASE, medidas: [{ tipo: "lona", largo: 200, ancho: 120, ollaos: { delante: [1], atras: [], laterales: [] } }, otra] };
     const elemento = conOllaos({ recogeDelante: "GOMA" });
     const nueva = fichaConCambios(conMedidas, elemento, ["medida"], DEFAULT_PARAMS);
-    expect(nueva.medidas).toEqual([{ tipo: "lona", largo: 200, ancho: 120, ollaos: OLLAOS }, otra]);
+    expect(nueva.medidas).toEqual([{ tipo: "lona", largo: 200, ancho: 120, ollaos: OLLAOS, hecha: { largo: 201, ancho: 121, anchoAtras: 121 } }, otra]);
     expect(nueva.recogeDelante).toBeUndefined();
     expect(fichaConCambios(BASE, elemento, ["recogeDelante"], DEFAULT_PARAMS)).toEqual({ ...BASE, recogeDelante: "GOMA" });
-    expect(fichaConCambios(BASE, elemento, ["medida"], DEFAULT_PARAMS).medidas).toEqual([{ tipo: "lona", largo: 200, ancho: 120, ollaos: OLLAOS }]);
+    expect(fichaConCambios(BASE, elemento, ["medida"], DEFAULT_PARAMS).medidas).toEqual([{ tipo: "lona", largo: 200, ancho: 120, ollaos: OLLAOS, hecha: { largo: 201, ancho: 121, anchoAtras: 121 } }]);
   });
 
   it("los extras de otro cliente pasan a la ficha", () => {

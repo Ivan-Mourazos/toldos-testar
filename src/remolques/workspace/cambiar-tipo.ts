@@ -1,5 +1,6 @@
 import type { BaquetonInput } from "../calc/baqueton.ts";
 import type { LonaInput } from "../calc/lona.ts";
+import { DEFAULT_PARAMS, type CalcParams } from "../calc/params.ts";
 import { aplicarFichaAlImportar } from "../clientes/aplicar.ts";
 import type { FichaCliente } from "../clientes/tipos.ts";
 import { emptyBaqueton, emptyLona } from "../entradas-vacias.ts";
@@ -13,7 +14,7 @@ import type { LineaPedido } from "./lineas.ts";
 
 export type TipoCambiable = "lona" | "baqueton";
 
-export function cambiarTipoLinea(linea: LineaPedido, nuevo: TipoCambiable, ficha: FichaCliente | null): LineaPedido {
+export function cambiarTipoLinea(linea: LineaPedido, nuevo: TipoCambiable, ficha: FichaCliente | null, params: CalcParams = DEFAULT_PARAMS): LineaPedido {
   if (linea.tipo === nuevo || linea.tipo === "ganado") return linea;
   const antes = linea.input as LonaInput | BaquetonInput;
   const comun = {
@@ -24,5 +25,5 @@ export function cambiarTipoLinea(linea: LineaPedido, nuevo: TipoCambiable, ficha
     ? { ...emptyLona(), ...comun, altoDelante: (antes as BaquetonInput).baqueton, altoAtras: (antes as BaquetonInput).baqueton }
     : { ...emptyBaqueton(), ...comun, baqueton: (antes as LonaInput).altoDelante };
   const cambiada: LineaPedido = { ...linea, tipo: nuevo, input, snapshotSvg: null, delCliente: undefined };
-  return ficha ? aplicarFichaAlImportar(cambiada, ficha) : cambiada;
+  return ficha ? aplicarFichaAlImportar(cambiada, ficha, params) : cambiada;
 }

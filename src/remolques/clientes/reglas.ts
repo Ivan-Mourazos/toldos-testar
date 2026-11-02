@@ -146,6 +146,7 @@ function comprobarOpcionales(
     }
   }
   if (f.material !== undefined && !esTexto(f.material)) mal("el material tiene que ser un texto");
+  if (f.demasiaLonaHecha !== undefined && !noNegativo(f.demasiaLonaHecha)) mal("la demasía de lona hecha tiene que ser un número mayor o igual que 0");
   if (f.sesgoDetras !== undefined && !positivo(f.sesgoDetras)) mal("el sesgo detrás tiene que ser un número mayor que 0");
   if (f.extrasBaqueton !== undefined) {
     const extras = esObjeto(f.extrasBaqueton) ? f.extrasBaqueton : {};
@@ -176,6 +177,11 @@ function comprobarMedidas(medidas: unknown, mal: (texto: string) => void) {
       vistas.add(clave);
     }
     const ollaos = esObjeto(medida.ollaos) ? medida.ollaos : {};
+    if (medida.hecha !== undefined) {
+      const hecha = esObjeto(medida.hecha) ? medida.hecha : {};
+      if (!positivo(hecha.largo) || !positivo(hecha.ancho)
+        || (hecha.anchoAtras !== undefined && !positivo(hecha.anchoAtras))) mal(`${n}: la lona hecha de referencia necesita largo y ancho mayores que 0`);
+    }
     const lados = LADOS_OLLAOS.map((lado) => ollaos[lado]);
     if (!lados.every((p) => Array.isArray(p) && p.every(positivo))) {
       mal(`${n}: las posiciones de los ollaos tienen que ser números mayores que 0`);

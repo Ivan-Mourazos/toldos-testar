@@ -256,6 +256,7 @@ function FichaEditor({ ficha, recogidasGenerales, onChange, onQuitar }: {
         <SelectField label="Rotulación" value={deSiNo(ficha.rotulacion)} options={SI_NO} onChange={(v) => onChange({ rotulacion: aSiNo(v) })} />
         <TextField label="Material" value={ficha.material ?? ''} onChange={(material) => onChange({ material })} />
         <CampoNumFicha label="Sesgo detrás (cm más ancho atrás)" value={ficha.sesgoDetras ?? null} onChange={(v) => onChange({ sesgoDetras: numero(v) })} />
+        <CampoNumFicha label="Demasía de lona hecha (cm)" value={ficha.demasiaLonaHecha ?? null} onChange={(v) => onChange({ demasiaLonaHecha: v ?? undefined })} />
         <SelectField label="Cremallera del 9" value={deSiNo(ficha.cremallera)} options={SI_NO} onChange={(v) => onChange({ cremallera: aSiNo(v) })} />
         <SelectField label="Ollaos siempre repartidos" value={deSiNo(ficha.ollaosRepartidos)} options={SI_NO} onChange={(v) => onChange({ ollaosRepartidos: aSiNo(v) })} />
       </div>
@@ -272,13 +273,16 @@ function FichaEditor({ ficha, recogidasGenerales, onChange, onQuitar }: {
     <ParameterBand number="06" title="Observaciones fijas" description="Salen siempre en sus planteamientos, una por línea.">
       <label><span>Observaciones · una por línea</span><textarea rows={Math.max(2, ficha.observaciones?.length ?? 0)} value={(ficha.observaciones ?? []).join('\n')} onChange={(e) => onChange({ observaciones: e.target.value ? e.target.value.split('\n') : undefined })} /></label>
     </ParameterBand>
-    <ParameterBand number="07" title="Medidas habituales" description="Largo × ancho del remolque (lo que se teclea) y las posiciones de los ollaos de cada lado sobre la lona hecha, de izquierda a derecha, como en el CAD. Se imprimen tal cual.">
+    <ParameterBand number="07" title="Medidas habituales" description="Largo × ancho del remolque y posiciones sobre la lona hecha: laterales de atrás a delante; cabezas de izquierda a derecha. La medida exacta manda. Si falta, la web propone adaptar cada lado desde una medida a un máximo de 5 cm y del 5 %.">
       <div className="remolques-parameter-rows">
         {medidas.map((m, i) => <section key={i} className="remolques-parameter-row bloque-3d-hundido" aria-label={`Medida ${i + 1}`}>
           <div className="parameter-grid remolques-parameter-grid">
             <SelectField label="Elemento" value={m.tipo === 'lona' ? 'Lona' : 'Baquetón'} options={['Lona', 'Baquetón']} onChange={(v) => cambiarMedida(i, { tipo: v === 'Lona' ? 'lona' : 'baqueton' })} />
             <CampoNumFicha label="Largo (cm)" value={m.largo || null} onChange={(v) => cambiarMedida(i, { largo: v ?? 0 })} />
             <CampoNumFicha label="Ancho (cm)" value={m.ancho || null} onChange={(v) => cambiarMedida(i, { ancho: v ?? 0 })} />
+            <CampoNumFicha label="Largo hecho de referencia (cm)" value={m.hecha?.largo ?? null} onChange={(v) => cambiarMedida(i, { hecha: v == null && !m.hecha?.ancho ? undefined : { largo: v ?? 0, ancho: m.hecha?.ancho ?? 0, ...(m.hecha?.anchoAtras ? { anchoAtras: m.hecha.anchoAtras } : {}) } })} />
+            <CampoNumFicha label="Ancho hecho de referencia (cm)" value={m.hecha?.ancho ?? null} onChange={(v) => cambiarMedida(i, { hecha: v == null && !m.hecha?.largo ? undefined : { largo: m.hecha?.largo ?? 0, ancho: v ?? 0, ...(m.hecha?.anchoAtras ? { anchoAtras: m.hecha.anchoAtras } : {}) } })} />
+            <CampoNumFicha label="Ancho hecho detrás de referencia (cm)" value={m.hecha?.anchoAtras ?? null} onChange={(v) => cambiarMedida(i, { hecha: { largo: m.hecha?.largo ?? 0, ancho: m.hecha?.ancho ?? 0, anchoAtras: v ?? undefined } })} />
           </div>
           <div className="clientes-remolques-ollaos">
             {LADOS.map(([lado, nombre]) => (

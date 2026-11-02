@@ -509,9 +509,9 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
         avisar('info', 'No se pudieron leer las fichas de cliente: el elemento cambia sin ellas.');
       }
     }
-    despachar({ tipo: 'LINEA_ANADIDA', linea: cambiarTipoLinea(linea, nuevo, ficha) });
+    despachar({ tipo: 'LINEA_ANADIDA', linea: cambiarTipoLinea(linea, nuevo, ficha, params) });
     avisar('exito', `${rotulo} pasa a ${destino}.${ficha ? ` Con la ficha de ${ficha.nombre}.` : ''} Revisa lo que falta.`);
-  }, [avisar, confirmar, lineas, rps.pedido]);
+  }, [avisar, confirmar, lineas, params, rps.pedido]);
 
   /** Las bobinas hacen falta para proponer la de RPS; si aún no han llegado, se piden ya. */
   const asegurarMateriales = useCallback(async () => {
@@ -630,7 +630,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
       params,
       realizadoPor: usuario,
       importadoEn: new Date().toISOString(),
-    }), ficha);
+    }), ficha, params);
     const conFicha = notaFicha(ficha, deRps);
     const actuales = estadoRef.current.lineas;
     const revisar = pedido.lineas.filter((linea) => linea.requiereRevision).length;

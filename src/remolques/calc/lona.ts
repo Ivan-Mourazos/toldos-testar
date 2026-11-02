@@ -3,6 +3,7 @@ import { excelRound } from "./redondeo.ts";
 import { ajusteContorno, findRecogida, type CalcParams, type TipoPerfil } from "./params.ts";
 import { calcOllaos, sinPosiciones, type ModoOllaos, type OllaosResult, type RepartoLados } from "./ollaos.ts";
 import { ollaosSegunGanchos, sinReves, type LadosAlReves } from "./ganchos.ts";
+import type { OllaosAdaptados } from "../clientes/adaptar-ollaos.ts";
 
 // El paño trasero usa la columna DELANTE de la recogida, igual que el Excel
 // (G11 y RPS D7). Confirmado por Iván el 2026-07-17: es el comportamiento
@@ -19,6 +20,8 @@ export interface CabeceraInput {
 export interface LonaInput {
   cabecera: CabeceraInput;
   cantidad: number; largo: number; ancho: number;
+  /** Valor de la ficha al crear el elemento; se conserva con el pedido. Ausente = sus parámetros. */
+  demasiaLonaHecha?: number;
   /** Ancho trasero si el remolque va sesgado; 0 o ausente = igual al delantero. */
   anchoAtras?: number;
   altoDelante: number; altoAtras: number;
@@ -68,6 +71,8 @@ export interface LonaInput {
   /** Distancia del primer y último ollao al borde; por defecto la de los parámetros. */
   primerOllao?: number;
   ollaosManuales: { laterales: number[]; atras: number[]; delante: number[] };
+  /** Propuesta copiada de la ficha; se conserva con el pedido y solo el técnico decide guardarla. */
+  ollaosAdaptados?: OllaosAdaptados;
   /** Con «SEGUN GANCHOS»: posiciones de los ganchos sobre el remolque, con el convenio de los ollaos. */
   ganchos?: RepartoLados;
   /** Lados que el pedido mide desde el otro extremo. */
@@ -130,14 +135,14 @@ export function contornoSesgado(
  */
 export function contornoAutomatico(
   input: Pick<LonaInput, "tipoPerfil" | "ancho" | "anchoAtras" | "altoDelante" | "altoAtras" | "aguas" | "radioCumbrera"
-    | "radioHombro" | "radioEsquina" | "chaflan" | "radioChaflanAbajo" | "radioChaflanArriba">,
+    | "radioHombro" | "radioEsquina" | "chaflan" | "radioChaflanAbajo" | "radioChaflanArriba" | "demasiaLonaHecha">,
   demasiaLonaHecha: number,
   atras = false,
 ): number | null {
   const ancho = atras && (input.anchoAtras ?? 0) > 0 ? input.anchoAtras! : input.ancho;
   const alto = atras && input.altoAtras > 0 ? input.altoAtras : input.altoDelante;
   const valor = contornoCalculado(input.tipoPerfil, {
-    ancho: ancho + demasiaLonaHecha, alto,
+    ancho: ancho + (input.demasiaLonaHecha ?? demasiaLonaHecha), alto,
     aguas: input.aguas, radioCumbrera: input.radioCumbrera, radioHombro: input.radioHombro,
     radioEsquina: input.radioEsquina, chaflan: input.chaflan,
     radioChaflanAbajo: input.radioChaflanAbajo, radioChaflanArriba: input.radioChaflanArriba,
@@ -151,10 +156,11 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
 
   const anchoAtras = (input.anchoAtras ?? 0) > 0 ? input.anchoAtras! : input.ancho;
   const altoAtras = input.altoAtras > 0 ? input.altoAtras : input.altoDelante;
+  const demasia = input.demasiaLonaHecha ?? params.demasiaLonaHecha;
   const lonaHecha = {
-    largo: r1(input.largo + params.demasiaLonaHecha),
-    ancho: r1(input.ancho + params.demasiaLonaHecha),
-    anchoAtras: r1(anchoAtras + params.demasiaLonaHecha),
+    largo: r1(input.largo + demasia),
+    ancho: r1(input.ancho + demasia),
+    anchoAtras: r1(anchoAtras + demasia),
   };
 
   const ajuste = ajusteContorno(params, input.tipoPerfil, {

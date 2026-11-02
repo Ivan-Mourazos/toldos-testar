@@ -6,6 +6,7 @@ import { CampoMaterial, CampoNum, CampoSelect, CampoSiNo, CampoTexto, MarcaDelCl
 import { ObservationLines } from '../components/ObservationLines';
 import { avanzarConIntro } from '../avanzarConIntro';
 import { MODOS_OLLAOS, opcionesConEtiqueta } from './opciones';
+import { AvisoOllaosAdaptados } from './AvisoOllaosAdaptados';
 
 // Formulario del baquetón: los mismos campos, opciones y avisos que el de la web de remolques
 // (`FormularioBaqueton.tsx`). Sin «Realizado por»: lo pone «Soy» al crear la línea. El reparto del
@@ -78,6 +79,7 @@ export function FormularioBaqueton({ input, materiales, params, errores = {}, me
           value={input.rotulacion} onChange={(v) => set('rotulacion', v)} />
         <CampoMaterial span={4} delCliente={dc('material')} value={input.material} opciones={materiales} error={errores.material}
           metrosTela={metrosTela} onChange={(v) => set('material', v)} />
+        <AvisoOllaosAdaptados propuesta={input.ollaosAdaptados} modo={input.modoOllaos} />
         <div className="rem-banda rem-span-4">
           <CampoSelect name="modoOllaos" delCliente={dc('modoOllaos')} label="Distribución de ollaos" span={input.modoOllaos === 'REPARTIDOS' ? 4 : 2} value={input.modoOllaos} opciones={MODOS_OLLAOS}
             sinElegir="Elige el reparto" error={errores.modoOllaos}

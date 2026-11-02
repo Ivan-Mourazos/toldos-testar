@@ -72,11 +72,13 @@ describe("aplicarFichaAlImportar · lona", () => {
     const mezcla = aplicarFichaAlImportar(deRps({ largo: 200, ancho: 150 }), ficha).input as LonaInput;
     expect(mezcla.modoOllaos).toBe("SEGUN SE INDICA");
     expect(mezcla.ollaosManuales).toEqual({ laterales: MEDIDA.ollaos.laterales, delante: [3, 75, 147], atras: [3, 147] });
-    // Solo el largo conocido: los laterales; delante y atrás quedan para teclearlos (la web los pide antes de guardar).
+    // El ancho a un cm del conocido se adapta y queda marcado como propuesta.
     const soloLargo = aplicarFichaAlImportar(deRps({ ancho: 121 }), ficha).input as LonaInput;
-    expect(soloLargo.ollaosManuales).toEqual({ laterales: MEDIDA.ollaos.laterales, delante: [], atras: [] });
-    // Ni el largo ni el ancho: nada.
-    expect((aplicarFichaAlImportar(deRps({ largo: 201, ancho: 121 }), ficha).input as LonaInput).modoOllaos).toBe("");
+    expect(soloLargo.ollaosManuales.laterales).toEqual(MEDIDA.ollaos.laterales);
+    expect(soloLargo.ollaosAdaptados?.origenes).toEqual(["200×120"]);
+    expect(soloLargo.ollaosManuales.atras.at(-1)).toBe(119.5);
+    // Fuera del límite de cercanía de ambos ejes: nada.
+    expect((aplicarFichaAlImportar(deRps({ largo: 280, ancho: 180 }), ficha).input as LonaInput).modoOllaos).toBe("");
   });
 
   it("el sesgo pone el ancho de detrás", () => {

@@ -3,6 +3,7 @@ import { findClienteBaqueton, type CalcParams } from "./params.ts";
 import { calcOllaos, sinPosiciones, type ModoOllaos, type OllaosResult, type RepartoLados } from "./ollaos.ts";
 import { ollaosSegunGanchos, sinReves, type LadosAlReves } from "./ganchos.ts";
 import type { CabeceraInput } from "./lona.ts";
+import type { OllaosAdaptados } from "../clientes/adaptar-ollaos.ts";
 
 export interface BaquetonInput {
   cabecera: CabeceraInput;
@@ -18,6 +19,7 @@ export interface BaquetonInput {
   /** Distancia del primer y último ollao al borde; por defecto la de los parámetros. */
   primerOllao?: number;
   ollaosManuales: { laterales: number[]; atras: number[]; delante: number[] };
+  ollaosAdaptados?: OllaosAdaptados;
   /** Con «SEGUN GANCHOS»: posiciones de los ganchos sobre el remolque, con el convenio de los ollaos. */
   ganchos?: RepartoLados;
   /** Lados que el pedido mide desde el otro extremo. */

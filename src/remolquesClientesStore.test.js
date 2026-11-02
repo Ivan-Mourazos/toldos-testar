@@ -177,7 +177,7 @@ describe('desde un pedido', () => {
   it('crea la ficha si el cliente no tiene, y guarda solo lo marcado', async () => {
     const s = store();
     const { ficha, snapshot } = await s.desdePedido({ ...pedido, updatedBy: 'JAIME', cliente: { codigo: '009999', nombre: 'TALLERES CAL' }, elemento: LONA, claves: ['medida'] });
-    expect(ficha).toEqual({ id: 'talleres-cal', nombre: 'TALLERES CAL', codigosRps: ['009999'], version: 1, medidas: [{ tipo: 'lona', largo: 200, ancho: 120, ollaos: LONA.input.ollaosManuales }] });
+    expect(ficha).toEqual({ id: 'talleres-cal', nombre: 'TALLERES CAL', codigosRps: ['009999'], version: 1, medidas: [{ tipo: 'lona', largo: 200, ancho: 120, ollaos: LONA.input.ollaosManuales, hecha: { largo: 201, ancho: 121, anchoAtras: 121 } }] });
     expect(snapshot.fichas).toHaveLength(4);
     expect(await s.history('talleres-cal')).toMatchObject([{ version: 1, motivo: 'Desde el pedido AR.26.04286', resumen: ['Ficha creada'], updatedBy: 'JAIME' }]);
   });

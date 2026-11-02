@@ -10,6 +10,7 @@ import {
 import { ObservationLines } from '../components/ObservationLines';
 import { avanzarConIntro } from '../avanzarConIntro';
 import { MODOS_OLLAOS, opcionesConEtiqueta } from './opciones';
+import { AvisoOllaosAdaptados } from './AvisoOllaosAdaptados';
 
 // Formulario de la lona de remolque: los mismos campos, opciones, orden y avisos que el de la
 // web de remolques (`FormularioLona.tsx`). Sin «Realizado por»: lo pone «Soy» al crear la línea.
@@ -215,6 +216,7 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
       </PasoFormulario>
 
       <PasoFormulario numero={4} titulo="Ajustes finales" columnas={4}>
+        <AvisoOllaosAdaptados propuesta={input.ollaosAdaptados} modo={input.modoOllaos} />
         <div className="rem-banda rem-span-4">
           <CampoSelect name="modoOllaos" delCliente={dc('modoOllaos')} label="Distribución de ollaos" span={input.modoOllaos === 'REPARTIDOS' ? 4 : 2} value={input.modoOllaos} opciones={MODOS_OLLAOS}
             sinElegir="Elige el reparto" error={errores.modoOllaos}
