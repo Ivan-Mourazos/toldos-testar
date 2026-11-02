@@ -39,7 +39,7 @@ import { SettingsView } from './views/SettingsView';
 import { NotificationCenter, useNotifications } from './components/NotificationCenter';
 import { todayIso } from './constants';
 import { readCurrentUser, saveCurrentUser } from './currentUser';
-import { destinoDeEnlace, pedidoDeEnlace, revisionDeEnlace, sinPedidoEnEnlace } from './enlacePedido';
+import { MENSAJE_PEDIDO_RECIBIDO, destinoDeEnlace, origenDeCoordina, pedidoDeEnlace, pedidoDeMensaje, revisionDeEnlace, sinPedidoEnEnlace, type PedidoDeCoordina } from './enlacePedido';
 import { WhoAreYouDialog } from './components/WhoAreYouDialog';
 import { personaDe, tintaSobre } from './personas';
 import { stampAuthorship } from './authorship';
@@ -50,7 +50,7 @@ import type { Borrador, BorradorRemolques } from '../borradores/tipos.ts';
 import type { ModoCarga } from './remolques/guardarPedido';
 import type { PedidoPuertasGuardado } from '../puertas/flujo/tipos.ts';
 import { mirarFueraDeToldos, type ModoCargaPuertas, type PuertasRps } from './puertas/guardarPuertas';
-import { RemolquesView } from './remolques/RemolquesView';
+import { RemolquesView, type ControlRemolques } from './remolques/RemolquesView';
 import { PuertasView } from './puertas/PuertasView';
 import { esPedidoMixto, productoDeElementos } from '../puertas/producto.ts';
 import { RemolquesParametersView } from './remolques/RemolquesParametersView';
@@ -451,16 +451,105 @@ export default function App() {
     if (!numero) return;
     // Si ya está guardado en Pedidos, se abre allí, como con «Revisar», sin cargarlo en Nuevo pedido.
     // Si no, se busca: fuera del efecto, porque la búsqueda cambia estado nada más empezar («Buscando…»).
-    void destinoDeEnlace(numero).then((destino) => {
-      if (destino === 'revisar') {
-        setNumeroBusqueda(null);
-        setRevisarAlCargar(numero);
-        setActiveTab('reviews');
-      } else void autofillOrder(numero);
-    });
+    irAlPedido({ numero, modo: 'pedido' });
     // Solo al cargar: `autofillOrder` cambia en cada pintado y no debe relanzar la búsqueda.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  function irAlPedido({ numero, modo }: PedidoDeCoordina) {
+    const abrirEnPedidos = () => {
+      setNumeroBusqueda(null);
+      setRevisarAlCargar(numero);
+      setActiveTab('reviews');
+    };
+    if (modo === 'revisar') {
+      abrirEnPedidos();
+      return;
+    }
+    void destinoDeEnlace(numero).then((destino) => {
+      if (destino === 'revisar') abrirEnPedidos();
+      else void autofillOrder(numero);
+    });
+  }
+
+  // El botón de CoordinaOT con esta pestaña ya abierta (Iván, 02/11/2026): llega el pedido sin
+  // recargar y, si hay un pedido a medias, se pregunta qué hacer con él.
+  const controlRemolques = useRef<ControlRemolques | null>(null);
+  const [pedidoPendiente, setPedidoPendiente] = useState<{ id: number; pedido: PedidoDeCoordina } | null>(null);
+  const pedidoAtendido = useRef<number | null>(null);
+
+  // Una a la vez: un segundo clic con la pregunta abierta no abre otra.
+  const atendiendoCoordina = useRef(false);
+  async function liberarYAbrir(pedido: PedidoDeCoordina) {
+    if (atendiendoCoordina.current) return;
+    atendiendoCoordina.current = true;
+    try {
+      const remolques = controlRemolques.current;
+      const toldosConDatos = Boolean(
+        draft.orderCode || draft.customer || draft.fabric
+        || draft.awnings.some((awning) => awning.model || awning.of || awning.width || awning.projection),
+      );
+      const delante = [
+        ...(toldosConDatos ? [{
+          numero: draft.orderCode.trim(),
+          guardar: saveDraftToServer,
+          limpiar: async () => {
+            draft.resetDraft();
+            ruleSettings.restoreParameters();
+            setAutofill(null);
+            setReturnNote(null);
+            setCorrigiendo(null);
+          },
+        }] : []),
+        ...(remolques?.hayDatos() ? [{ numero: remolques.numeroPedido().trim(), guardar: remolques.guardarBorrador, limpiar: remolques.limpiar }] : []),
+      ];
+      const mismoPedido = (numero: string) => numero.replace(/[.\s-]/g, '').toUpperCase() === pedido.numero;
+      for (const trabajo of delante) {
+        if (pedido.modo === 'pedido' && mismoPedido(trabajo.numero)) return;
+        const respuesta = await askForConfirmation({
+          title: `Abrir el pedido ${pedido.numero}`,
+          message: `Tienes ${trabajo.numero ? `el pedido ${trabajo.numero}` : 'un pedido sin número'} a medias. ¿Qué quieres hacer con él?`,
+          confirmLabel: 'Guardar borrador y abrir',
+          alternativeLabel: 'Limpiar y abrir',
+          cancelLabel: 'Cancelar',
+          tone: 'warning',
+        });
+        if (respuesta === 'confirm') {
+          if (!await trabajo.guardar()) return;
+        } else if (respuesta === 'alternative') {
+          await trabajo.limpiar();
+        } else return;
+      }
+      setPedidoPendiente({ id: Date.now(), pedido });
+    } finally {
+      atendiendoCoordina.current = false;
+    }
+  }
+
+  const liberarYAbrirActual = useRef(liberarYAbrir);
+  useEffect(() => {
+    liberarYAbrirActual.current = liberarYAbrir;
+  });
+  useEffect(() => {
+    const alRecibir = (evento: MessageEvent) => {
+      if (!origenDeCoordina(evento.origin)) return;
+      const pedido = pedidoDeMensaje(evento.data);
+      if (!pedido) return;
+      (evento.source as Window | null)?.postMessage({ tipo: MENSAJE_PEDIDO_RECIBIDO }, evento.origin);
+      void liberarYAbrirActual.current(pedido);
+    };
+    window.addEventListener('message', alRecibir);
+    return () => window.removeEventListener('message', alRecibir);
+  }, []);
+
+  // En un pintado aparte: abrir tiene que ver el formulario ya vacío, no el de antes de limpiarlo.
+  useEffect(() => {
+    if (!pedidoPendiente || pedidoAtendido.current === pedidoPendiente.id) return;
+    pedidoAtendido.current = pedidoPendiente.id;
+    irAlPedido(pedidoPendiente.pedido);
+    // `irAlPedido` cambia en cada pintado y no debe relanzarlo.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pedidoPendiente]);
 
   function updateOrderCode(value: string) {
     draft.setOrderCode(value);
@@ -657,16 +746,16 @@ export default function App() {
 
   // «Guardar borrador» (diseño 01/10/2026): el pedido a medias, aunque no tenga toldos ni esté
   // calculado, queda en el servidor para seguirlo desde cualquier puesto. Pide número y «Soy».
-  async function saveDraftToServer() {
+  async function saveDraftToServer(): Promise<boolean> {
     const orderCode = draft.orderCode.trim();
     if (!orderCode) {
       notify('Indica el número de pedido para guardar el borrador.', { tone: 'warning', title: 'Falta el número' });
-      return;
+      return false;
     }
     if (!currentUser) {
       setChoosingUser(true);
       notify('Elige quién eres en «Soy» antes de guardar el borrador.', { tone: 'warning' });
-      return;
+      return false;
     }
     autofillSeq.current += 1;
     setAutofillLoading(false);
@@ -679,7 +768,7 @@ export default function App() {
       });
       if (!result.ok) {
         if (result.mensaje) notify(result.mensaje, { tone: 'error' });
-        return;
+        return false;
       }
       setReviewRefresh((value) => value + 1);
       // Si mientras tanto el técnico ha cambiado de pedido, el formulario no se toca.
@@ -691,6 +780,7 @@ export default function App() {
         ruleSettings.restoreParameters();
       }
       notify(`Borrador guardado: ${result.borrador.orderCode}.`, { tone: 'success', title: 'Borrador guardado' });
+      return true;
     } finally {
       setWorking(null);
     }
@@ -935,7 +1025,7 @@ export default function App() {
           </div>}
           {remolquesMontado && (
             <div className="remolques-pantalla" hidden={activeTab !== 'order' || !editorPedidoAbierto || producto !== 'remolques'}>
-              <RemolquesView usuario={currentUser} notify={notify} askForConfirmation={askForConfirmation} pedidoSolicitado={pedidoSolicitado} limpiarSolicitado={limpiarRemolques}
+              <RemolquesView controlRef={controlRemolques} usuario={currentUser} notify={notify} askForConfirmation={askForConfirmation} pedidoSolicitado={pedidoSolicitado} limpiarSolicitado={limpiarRemolques}
                 modeloInicialSolicitado={modeloInicio?.valor.producto==='remolques'?{id:modeloInicio.id,tipo:modeloInicio.valor.modelo}:null}
                 accionesDestino={accionesPedido} accionesVisibles={activeTab === 'order' && editorPedidoAbierto && producto === 'remolques'} onResumenChange={setResumenRemolques}
                 onLimpiar={() => setLimpiarRemolques((n) => n + 1)}

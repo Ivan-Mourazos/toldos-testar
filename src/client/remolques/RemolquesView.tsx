@@ -34,12 +34,21 @@ import { TITULO_BORRADOR_EN_CORRECCION } from '../borradores';
 // Nuevo pedido de remolques (fase 2a de la unificación): cabecera, importación de RPS,
 // pestañas de elementos y, debajo, el editor del elemento activo: el formulario a la izquierda
 // (con «Listo» / «Falta: …» debajo) y, a la derecha, el render 3D o el dibujo de siempre y los resultados.
-export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolicitado, limpiarSolicitado = 0, pedidoGuardadoSolicitado, onGuardado, borradorSolicitado, onAbrirBorradorToldos, accionesDestino, accionesVisibles = true, onResumenChange, onLimpiar, modeloInicialSolicitado }: {
+/** Lo que App necesita de esta pantalla para cambiar de pedido sin perder lo que haya en ella. */
+export type ControlRemolques = {
+  hayDatos: () => boolean;
+  numeroPedido: () => string;
+  guardarBorrador: () => Promise<boolean>;
+  limpiar: () => Promise<void>;
+};
+
+export function RemolquesView({ controlRef, usuario, notify, askForConfirmation, pedidoSolicitado, limpiarSolicitado = 0, pedidoGuardadoSolicitado, onGuardado, borradorSolicitado, onAbrirBorradorToldos, accionesDestino, accionesVisibles = true, onResumenChange, onLimpiar, modeloInicialSolicitado }: {
   modeloInicialSolicitado?:{id:number;tipo:'lona'|'baqueton'|'ganado'}|null;
   usuario: string;
   notify: Notify;
   askForConfirmation: AskForConfirmation;
   /** Pedido que Toldos manda abrir aquí («Abrir en Remolques»); `id` distingue una petición de la siguiente. */
+  controlRef?: React.RefObject<ControlRemolques | null>;
   pedidoSolicitado?: { numero: string; id: number; pedidoRps?: PedidoRps } | null;
   /** Contador de pulsaciones de «Limpiar» (el botón está en la barra de la página): cada subida pide limpiar el formulario. */
   limpiarSolicitado?: number;
@@ -57,6 +66,18 @@ export function RemolquesView({ usuario, notify, askForConfirmation, pedidoSolic
   onLimpiar?: () => void;
 }) {
   const ws = useRemolques({ usuario, notify, askForConfirmation, onGuardado, onAbrirBorradorToldos });
+  const { hayDatos, guardarBorrador, limpiarFormulario: limpiarPantalla } = ws;
+  const numeroActual = ws.estado.numeroPedido;
+  React.useEffect(() => {
+    if (!controlRef) return undefined;
+    controlRef.current = {
+      hayDatos,
+      numeroPedido: () => numeroActual,
+      guardarBorrador,
+      limpiar: () => limpiarPantalla({ preguntar: false }),
+    };
+    return () => { controlRef.current = null; };
+  }, [controlRef, guardarBorrador, hayDatos, limpiarPantalla, numeroActual]);
   const ultimoModelo=React.useRef<number|null>(null);
   const { empezarConTipo }=ws;
   React.useEffect(()=>{

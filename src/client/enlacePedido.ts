@@ -35,6 +35,42 @@ export function sinPedidoEnEnlace(href: string): string {
   return `${url.pathname}${url.search}${url.hash}`;
 }
 
+/** Lo que manda CoordinaOT a una pestaña ya abierta, y la respuesta para que sepa que se ha recibido. */
+export const MENSAJE_ABRIR_PEDIDO = 'coordina:abrir-pedido';
+export const MENSAJE_PEDIDO_RECIBIDO = 'planteamientos:pedido-recibido';
+
+export type PedidoDeCoordina = { numero: string; modo: 'pedido' | 'revisar' };
+
+/** Solo CoordinaOT puede pedir que se abra un pedido; en pruebas, la máquina local. */
+export function origenDeCoordina(origen: string): boolean {
+  try {
+    const { protocol, hostname, port } = new URL(origen);
+    if (protocol !== 'http:' && protocol !== 'https:') return false;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') return true;
+    return hostname === 'coordina' || hostname === 'coordina.toldosgomez.local'
+      || (hostname === '192.168.0.90' && port === '4300');
+  } catch {
+    return false;
+  }
+}
+
+/** El pedido que trae un mensaje, ya comprobado con las mismas reglas que la dirección. */
+export function pedidoDeMensaje(datos: unknown): PedidoDeCoordina | null {
+  if (typeof datos !== 'object' || datos === null) return null;
+  const { tipo, url } = datos as { tipo?: unknown; url?: unknown };
+  if (tipo !== MENSAJE_ABRIR_PEDIDO || typeof url !== 'string') return null;
+  let busqueda: string;
+  try {
+    busqueda = new URL(url).search;
+  } catch {
+    return null;
+  }
+  const revisar = revisionDeEnlace(busqueda);
+  if (revisar) return { numero: revisar, modo: 'revisar' };
+  const numero = pedidoDeEnlace(busqueda);
+  return numero ? { numero, modo: 'pedido' } : null;
+}
+
 /**
  * Adónde lleva `?pedido=` (Iván, 21/10/2026): CoordinaOT enseña «Plantear» aunque el pedido ya esté guardado
  * aquí, y entonces se cargaba en Nuevo pedido al revisar y se quedaba allí. Si ya está en Pedidos (toldos,

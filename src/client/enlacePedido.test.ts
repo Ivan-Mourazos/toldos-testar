@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { destinoDeEnlace, pedidoDeEnlace, revisionDeEnlace, sinPedidoEnEnlace } from './enlacePedido';
+import { MENSAJE_ABRIR_PEDIDO, destinoDeEnlace, origenDeCoordina, pedidoDeEnlace, pedidoDeMensaje, revisionDeEnlace, sinPedidoEnEnlace } from './enlacePedido';
 
 describe('pedidoDeEnlace', () => {
   it('saca el número de pedido de la dirección', () => {
@@ -17,6 +17,33 @@ describe('pedidoDeEnlace', () => {
     expect(pedidoDeEnlace('?pedido=hola')).toBeNull();
     expect(pedidoDeEnlace('?pedido=AR26')).toBeNull();
     expect(pedidoDeEnlace('?otra=AR2604351')).toBeNull();
+  });
+});
+
+describe('mensajes de CoordinaOT', () => {
+  const mensaje = (url: unknown) => ({ tipo: MENSAJE_ABRIR_PEDIDO, url });
+
+  it('saca el pedido y si es para plantear o para revisar', () => {
+    expect(pedidoDeMensaje(mensaje('http://x:4400/?pedido=AR2604351'))).toEqual({ numero: 'AR2604351', modo: 'pedido' });
+    expect(pedidoDeMensaje(mensaje('http://x:4400/?revisar=AR2604351'))).toEqual({ numero: 'AR2604351', modo: 'revisar' });
+  });
+
+  it('ignora lo que no sea un pedido válido', () => {
+    expect(pedidoDeMensaje(null)).toBeNull();
+    expect(pedidoDeMensaje('hola')).toBeNull();
+    expect(pedidoDeMensaje({ tipo: 'otro', url: 'http://x/?pedido=AR2604351' })).toBeNull();
+    expect(pedidoDeMensaje(mensaje(7))).toBeNull();
+    expect(pedidoDeMensaje(mensaje('no es una dirección'))).toBeNull();
+    expect(pedidoDeMensaje(mensaje('http://x:4400/?pedido=hola'))).toBeNull();
+  });
+
+  it('solo atiende a CoordinaOT', () => {
+    expect(origenDeCoordina('http://coordina')).toBe(true);
+    expect(origenDeCoordina('http://coordina.toldosgomez.local')).toBe(true);
+    expect(origenDeCoordina('http://192.168.0.90:4300')).toBe(true);
+    expect(origenDeCoordina('http://192.168.0.90:4100')).toBe(false);
+    expect(origenDeCoordina('http://coordina.ejemplo.com')).toBe(false);
+    expect(origenDeCoordina('null')).toBe(false);
   });
 });
 

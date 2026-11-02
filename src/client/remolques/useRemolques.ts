@@ -778,10 +778,13 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
    * borrador del navegador de ese pedido. Con datos, pregunta antes (como en toldos). Primero se
    * vacía la cola de escritura: si no, el guardado pendiente lo volvería a escribir.
    */
-  const limpiarFormulario = useCallback(async () => {
+  const hayDatos = useCallback(() => {
     const actual = estadoRef.current;
-    const hayDatos = Boolean(actual.numeroPedido.trim() || actual.cliente.trim() || actual.lineas.length > 0);
-    if (hayDatos) {
+    return Boolean(actual.numeroPedido.trim() || actual.cliente.trim() || actual.lineas.length > 0);
+  }, []);
+
+  const limpiarFormulario = useCallback(async ({ preguntar = true }: { preguntar?: boolean } = {}) => {
+    if (preguntar && hayDatos()) {
       const respuesta = await confirmar({
         title: 'Limpiar el formulario',
         message: 'Se borrarán todos los datos del pedido actual, con sus elementos y el borrador guardado en este navegador. Esta acción no elimina los archivos que ya estén guardados.',
@@ -797,8 +800,8 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
     limpiarBorradores(almacen, estadoRef.current.numeroPedido);
     setParamsGuardados(null);
     despachar({ tipo: 'PEDIDO_LIMPIADO' });
-    avisar('exito', 'El formulario está listo para un pedido nuevo.');
-  }, [almacen, avisar, confirmar]);
+    if (preguntar) avisar('exito', 'El formulario está listo para un pedido nuevo.');
+  }, [almacen, avisar, confirmar, hayDatos]);
 
   /**
    * «Guardar para revisión» (fase 5): solo con todos los elementos completos. Si el pedido ya está en
@@ -954,15 +957,16 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
    * borrador del navegador de ese pedido, como tras «Guardar para revisión». No espera a los
    * parámetros comunes: el borrador lleva las líneas, no los resultados.
    */
-  const guardarBorrador = useCallback(async () => {
+  /** Devuelve si la pantalla ha quedado libre: guardado y limpio. */
+  const guardarBorrador = useCallback(async (): Promise<boolean> => {
     const actual = estadoRef.current;
     if (!actual.numeroPedido.trim()) {
       notificar.current.notify('Indica el número de pedido para guardar el borrador.', { tone: 'warning', title: 'Falta el número' });
-      return;
+      return false;
     }
     if (!usuario) {
       notificar.current.notify('Elige quién eres en «Soy» antes de guardar el borrador.', { tone: 'warning' });
-      return;
+      return false;
     }
     setGuardandoBorrador(true);
     try {
@@ -973,12 +977,12 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
       });
       if (!resultado.ok) {
         if (resultado.mensaje) avisar('error', resultado.mensaje);
-        return;
+        return false;
       }
       alGuardar.current?.();
       if (!pantallaSigueIgual(estadoRef.current, actual)) {
         notificar.current.notify(`El borrador de ${resultado.borrador.orderCode} se ha guardado, pero la pantalla ha cambiado mientras tanto y se conserva tal cual.`, { tone: 'info', title: 'Borrador guardado' });
-        return;
+        return false;
       }
       consultaEnCurso.current?.abort();
       consultaEnEspera.current = null;
@@ -987,6 +991,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
       setParamsGuardados(null);
       despachar({ tipo: 'PEDIDO_LIMPIADO' });
       notificar.current.notify(`Borrador guardado: ${resultado.borrador.orderCode}.`, { tone: 'success', title: 'Borrador guardado' });
+      return true;
     } finally {
       setGuardandoBorrador(false);
     }
@@ -1110,6 +1115,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
     nuevaLinea,
     obtenerDatosPedido,
     abrirPedido,
+    hayDatos,
     limpiarFormulario,
     guardarParaRevision,
     cargarPedidoGuardado,
