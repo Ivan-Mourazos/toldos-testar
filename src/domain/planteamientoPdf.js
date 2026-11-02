@@ -10,7 +10,7 @@ import { formatNumber } from './math.js';
 import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { structureNotes } from './structureNotes.js';
 import { resolveFabric } from './fabricCatalog.js';
-import { getAwningDiagram, isFabricOnlyModel, isVerticalAwningModel, normalizeFabricDiagramOverride } from './modelBehavior.js';
+import { getFabricPatternDiagram, getAwningDiagram, isFabricOnlyModel, isVerticalAwningModel, normalizeFabricDiagramOverride } from './modelBehavior.js';
 import { normalizeAnticaVariant, resolveAnticaRoundEntry } from './anticaRules.js';
 import { irisHasCassette, normalizeIrisGuideType } from './irisParameters.js';
 import { buildIrisSquaringView } from './irisSquaringView.js';
@@ -352,19 +352,7 @@ export function buildPlanteamientoPlan(order, calculation, { onlyAwningId = null
   return { structureEntries, fabricPages };
 }
 
-export function getFabricPatternDiagram(awning = {}, cadDiagram = getAwningDiagram(awning)) {
-  const model = String(awning.model || '').trim().toUpperCase();
-  const override = normalizeFabricDiagramOverride(model, awning.fabricDiagramOverride);
-  if (override) return override;
-  if (model.startsWith('HERA')) return 'HERA';
-  if (model.includes('CORTINA') || cadDiagram.startsWith('CORTINA')) return cadDiagram;
-  if (model === 'SOLAPAS') return 'SOLAPAS';
-  if (model === 'ENROLLABLE') return 'ENROLLABLE';
-  if (model === 'BAMBALINA') return 'BAMBALINA';
-  if (model.includes('ANTICA')) return 'ANTICA';
-  if (model === 'IRIS') return 'IRIS';
-  return 'GENERAL';
-}
+export { getFabricPatternDiagram } from './modelBehavior.js';
 
 // Los dibujos que rotulan medidas no pueden agrupar entradas de distinto corte:
 // el rótulo sería correcto solo para la primera. Cada uno declara aquí qué medidas
@@ -397,6 +385,7 @@ function fabricDiagramGroupKey(diagram, awning) {
   if (!hasWindow) {
     return [
       diagram,
+      diagram === 'GENERAL' ? awning.sideFinish || 'BASTILLA' : '',
       isCurtain ? normalizeCurtainConfiguration(awning).curtainBottomFinish : '',
       ['SELENA', 'ELECTRA'].includes(awning.model) ? awning.model : '',
       isCurtain || ['GENERAL', 'TOLDO-VELCRO', 'BAMBALINA', 'SUPLEMENTO'].includes(diagram) ? valance : '',
@@ -1817,8 +1806,8 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
     .text('VARILLA NEGRA O BLANCA', frameX, frameY - 13, { width: frameW, align: 'center' })
     .text(rollLabel, frameX, frameY + 13, { width: frameW, align: 'center' });
   drawVerticalArrow(doc, frameX + frameW / 2, frameY - 4, frameY + 1, 'down');
-  drawBastillaCallout(doc, frameX + sideSeamInset, frameY + frameH * 0.6, 'left');
-  drawBastillaCallout(doc, frameX + frameW - sideSeamInset, frameY + frameH * 0.6, 'right');
+  drawBastillaCallout(doc, frameX + sideSeamInset, frameY + frameH * 0.6, 'left', awning.sideFinish);
+  drawBastillaCallout(doc, frameX + frameW - sideSeamInset, frameY + frameH * 0.6, 'right', awning.sideFinish);
   drawRotatedDiagramText(doc, 'CAÍDA', frameX + frameW + 15, frameY + frameH / 2, Math.max(56, frameH - 70));
   drawFabricDimension(doc, frameX - 10, frameY, topSeamY, formatInstructionMeasure(hems.topHemCm), 'left');
   drawFabricDimension(doc, frameX + frameW + 10, frameY, topFoldY, formatInstructionMeasure(hems.topBastillaCm), 'right');
@@ -1879,7 +1868,7 @@ function drawHorizontalDimension(doc, startX, endX, y, label) {
     .text(label, center - labelW / 2, y - 8.5, { width: labelW, align: 'center' });
 }
 
-function drawBastillaCallout(doc, seamX, y, side) {
+function drawBastillaCallout(doc, seamX, y, side, finish = 'BASTILLA') {
   const pointingLeft = side === 'left';
   // El texto va debajo de la flecha, en dos líneas, para no pisarla.
   const textX = pointingLeft ? seamX + 3 : seamX - 75;
@@ -1888,7 +1877,7 @@ function drawBastillaCallout(doc, seamX, y, side) {
   doc.strokeColor('#0a4f22').lineWidth(0.7).moveTo(arrowStart, y).lineTo(arrowEnd, y).stroke();
   drawArrowHead(doc, arrowEnd, y, pointingLeft ? 'left' : 'right');
   doc.fillColor('#0a4f22').font(fonts.semibold).fontSize(diagramText(5.4))
-    .text('BASTILLA\nCOSIDA O SOLDADA', textX, y + 4, { width: 72, align: pointingLeft ? 'left' : 'right' });
+    .text(finish === 'AL CORTE' ? 'AL CORTE' : 'BASTILLA\nCOSIDA O SOLDADA', textX, y + 4, { width: 72, align: pointingLeft ? 'left' : 'right' });
 }
 
 function drawVerticalArrow(doc, x, startY, endY, direction) {

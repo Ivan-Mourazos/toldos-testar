@@ -88,6 +88,7 @@ export function createAwning(workType: Awning['workType'] = 'FULL_AWNING'): Awni
     curtainVelcroColor: 'BLANCO',
     curtainVelcroWidth: 5,
     curtainVelcroHeight: null,
+    sideFinish: 'BASTILLA',
     bastilla: false,
     solapas: [],
     curtainFabricWidthDiscountCm: null,

@@ -137,6 +137,7 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   base.curtainTopFinish = base.model === 'CAMBIO CORTINA'
     ? old.curtainTopFinish === 'REMACHADO' ? 'REMACHADO' : 'VARILLA'
     : '';
+  base.sideFinish = old.sideFinish === 'AL CORTE' ? 'AL CORTE' : 'BASTILLA';
   base.bastilla = base.model === 'SOLAPAS' && old.bastilla === true;
   base.embudo = base.model === 'EMBUDO' ? normalizeEmbudo(old.embudo) : undefined;
   base.solapas = base.model === 'SOLAPAS'
