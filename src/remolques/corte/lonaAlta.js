@@ -352,21 +352,25 @@ export function contornoConTiraEntera(c, n = 1, pre = '') {
   return { grande, tira };
 }
 
-// Coloca una pieza: `giro` 0 (tal cual) o -90 (la base pasa a la izquierda, como en AR2605120).
+// Coloca una pieza: `giro` 0 (tal cual), -90 (la base pasa a la izquierda, como en AR2605120) o -180 (boca
+// abajo: solo la pieza encajada en el rebaje de un contorno girado, Iván 02/11/2026, AR2605321).
 function colocar(p, x, y, giro) {
-  const t = giro ? (u, v) => [x + v, y + p.w - u] : (u, v) => [x + u, y + v];
+  const media = giro === -180;
+  const t = media ? (u, v) => [x + p.w - u, y + p.h - v] : giro ? (u, v) => [x + v, y + p.w - u] : (u, v) => [x + u, y + v];
+  const grados = media ? 180 : giro ? 90 : 0;
   const lineas = p.lineas.map(([a, b, c, d]) => [...t(a, b), ...t(c, d)]);
   const rot = p.rot.map(([a, b, c, d]) => [...t(a, b), ...t(c, d)]);
   const ollaos = p.ollaos.map(([a, b]) => t(a, b));
-  const arcos = p.arcos.map((a) => { const [cx, cy] = t(a.x, a.y); return { x: cx, y: cy, r: a.r, desde: (a.desde - (giro ? 90 : 0) + 360) % 360, hasta: (a.hasta - (giro ? 90 : 0) + 360) % 360 || 360 }; });
+  const arcos = p.arcos.map((a) => { const [cx, cy] = t(a.x, a.y); return { x: cx, y: cy, r: a.r, desde: (a.desde - grados + 360) % 360, hasta: (a.hasta - grados + 360) % 360 || 360 }; });
   const numeros = (p.numeros ?? []).map(([a, b, n, g, tipo]) => {
     // El rótulo de esquina se ancla por su esquina de abajo a la izquierda; girada la pieza, esa esquina es otra.
-    const [nx, ny] = tipo === 'esquina' && giro ? t(a + 10, b) : t(a, b);
-    return { capa: 'ROTULADOR', x: nx, y: ny, h: 10, valor: n, giro: (g + (giro ? 270 : 0)) % 360, centrado: tipo !== 'esquina', literal: tipo !== 'esquina' };
+    const [nx, ny] = tipo === 'esquina' && media ? t(a + 10, b + 10) : tipo === 'esquina' && giro ? t(a + 10, b) : t(a, b);
+    return { capa: 'ROTULADOR', x: nx, y: ny, h: 10, valor: n, giro: (g + 360 - grados) % 360, centrado: tipo !== 'esquina', literal: tipo !== 'esquina' };
   });
   // Textos grandes en un sitio fijo de la pieza (la OF en el cuerpo del remolque de ganado).
-  const textos = (p.textos ?? []).map((tx) => { const [x1, y1] = t(tx.x, tx.y); return { capa: 'texto', x: x1, y: y1, h: tx.h, valor: tx.valor, centrado: true, ...(giro ? { giro: 270 } : {}) }; });
-  return { lineas, rot, ollaos, arcos, numeros, textos, ancho: giro ? p.h : p.w, alto: giro ? p.w : p.h };
+  const textos = (p.textos ?? []).map((tx) => { const [x1, y1] = t(tx.x, tx.y); return { capa: 'texto', x: x1, y: y1, h: tx.h, valor: tx.valor, centrado: true, ...(grados ? { giro: 360 - grados } : {}) }; });
+  const tumbada = giro && !media;
+  return { lineas, rot, ollaos, arcos, numeros, textos, ancho: tumbada ? p.h : p.w, alto: tumbada ? p.w : p.h };
 }
 
 // Colocación (Iván, 20/10/2026: «se debe aprovechar el paño lo máximo posible»): todas las piezas de la lona
@@ -470,14 +474,27 @@ function colocarEnRebajes(piezas, inicial, intentos) {
         const w = giro ? p.h : p.w, h = giro ? p.w : p.h;
         if (h > hueco + 0.01) continue;
         const x = contorno.w - g.reb, y = (contorno.h - h) / 2;
-        const grupo = { w: Math.max(contorno.w, x + w), h: contorno.h, girosPermitidos: [0] };
-        if (grupo.w >= mejor.largo - 0.01) continue;
+        // El conjunto también se puede girar entero (Iván, 02/11/2026, AR2605321: 239,7 en vez de 249,5), si el
+        // contorno y la pieza admiten giro: la pieza sin girar pasa a -90 y la tumbada queda boca abajo (-180).
+        const admite = (q, a) => (q.girosPermitidos ?? [0, -90]).includes(a);
+        const rotable = admite(contorno, -90) && admite(p, -90);
+        const grupo = { w: Math.max(contorno.w, x + w), h: contorno.h, girosPermitidos: rotable ? [0, -90] : [0] };
+        if (Math.min(grupo.w, rotable ? grupo.h : Infinity) >= mejor.largo - 0.01) continue;
         const indices = piezas.map((_, i) => i).filter(i => i !== c && i !== k);
         const prueba = colocarTodo([grupo, ...indices.map(i => piezas[i])], intentos, false);
         if (!prueba || prueba.largo >= mejor.largo - 0.01) continue;
         const origen = prueba.sitios[0], sitios = new Array(piezas.length);
-        sitios[c] = { x: origen.x, y: origen.y, w: contorno.w, h: contorno.h, giro: 0, derecha: origen.x + contorno.w };
-        sitios[k] = { x: origen.x + x, y: origen.y + y, w, h, giro, derecha: origen.x + x + w };
+        if (origen.giro) {
+          // Giro -90 de `colocar`: (u, v) → (X + v, Y + ancho − u). El contorno y la pieza giran con el conjunto.
+          const X = origen.x, Y = origen.y, gw = grupo.w;
+          sitios[c] = { x: X, y: Y + gw - contorno.w, w: contorno.h, h: contorno.w, giro: -90, derecha: X + contorno.h };
+          sitios[k] = giro
+            ? { x: X + y, y: Y + gw - x - p.h, w: p.w, h: p.h, giro: -180, derecha: X + y + p.w }
+            : { x: X + y, y: Y + gw - x - p.w, w: p.h, h: p.w, giro: -90, derecha: X + y + p.h };
+        } else {
+          sitios[c] = { x: origen.x, y: origen.y, w: contorno.w, h: contorno.h, giro: 0, derecha: origen.x + contorno.w };
+          sitios[k] = { x: origen.x + x, y: origen.y + y, w, h, giro, derecha: origen.x + x + w };
+        }
         indices.forEach((i, n) => { sitios[i] = prueba.sitios[n + 1]; });
         // Los huecos libres conservan reservada toda la envolvente: las tapas nunca pisan el conjunto.
         mejor = { sitios, largo: prueba.largo, libres: prueba.libres };

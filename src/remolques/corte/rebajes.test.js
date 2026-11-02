@@ -12,17 +12,22 @@ const trasero = { w: 1530, h: 445 };
 const piezas = [contorno, delantero, trasero];
 
 describe('aprovechar el rebaje del contorno', () => {
-  it('AR2605321: mete el delantero entre las pestañas y ahorra 19 cm', () => {
+  it('AR2605321: mete el delantero entre las pestañas y gira el conjunto (268,5 → 239,7)', () => {
     const antes = colocarTodo(piezas, 400, false);
     const despues = colocarTodo(piezas);
     expect(antes.largo).toBe(2685);
-    expect(despues.largo).toBe(2495);
+    // Iván, 02/11/2026: «¿por qué no lo gira?». Girado el conjunto entero, el largo es el ancho del contorno.
+    expect(despues.largo).toBe(2397);
     const [c, d] = despues.sitios;
-    expect(c.giro).toBe(0);
-    expect(d.giro).toBe(-90);
-    expect(d.x).toBe(c.x + contorno.w - 190);
-    expect(d.y - c.y).toBeGreaterThanOrEqual(224.2 + 10);
-    expect(d.y + d.h).toBeLessThanOrEqual(c.y + contorno.h - 224.2 - 10);
+    expect(c.giro).toBe(-90);
+    expect(d.giro).toBe(-180);
+    // El delantero sigue en el hueco del rebaje: girado el contorno, el rebaje es la franja de 190 de su borde de
+    // abajo; el delantero solo pisa esa franja y el resto sobresale por fuera del contorno.
+    expect(d.y).toBeLessThan(c.y);
+    expect(d.y + d.h).toBeGreaterThan(c.y);
+    expect(d.y + d.h).toBeLessThanOrEqual(c.y + 190 + 0.01);
+    expect(d.x - c.x).toBeGreaterThanOrEqual(224.2 + 10);
+    expect(d.x + d.w).toBeLessThanOrEqual(c.x + contorno.h - 224.2 - 10);
     for (const s of despues.sitios) {
       expect(s.y).toBeGreaterThanOrEqual(0);
       expect(s.y + s.h).toBeLessThanOrEqual(2500);
@@ -53,7 +58,7 @@ describe('aprovechar el rebaje del contorno', () => {
     const corte = generarCorteRemolques({ orderCode: 'AR2605321', params, elementos: [{ tipo: 'lona', input, result, paramsSnapshot: params }] });
     expect(corte.aMano).toEqual([]);
     expect(corte.cortes).toHaveLength(1);
-    expect(corte.cortes[0].largo).toBe(2495);
+    expect(corte.cortes[0].largo).toBe(2397);
     expect(corte.cortes[0].avisos.join(' ')).not.toMatch(/empate|TIRA ENTERA/);
     const cotas = registrosDxf(corte.archivo.plano.dxf).filter(r => r.tipo === 'DIMENSION').map(r => numero(r,42));
     expect(cotas.filter(v => Math.abs(v - 10) < 0.001)).toHaveLength(4);
