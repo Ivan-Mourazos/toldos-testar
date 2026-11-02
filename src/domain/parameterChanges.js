@@ -55,7 +55,7 @@ export const PARAMETER_LABELS = {
   profileStockLength: 'Largo del perfil',
   supportBaseStartWidth: 'Inicio de soportes',
   supportBaseStepWidth: 'Paso entre soportes',
-  anticaSeparateValanceAllowanceCm: 'Margen de la bamba separada de Antica',
+  anticaSeparateValanceAllowanceCm: 'Margen de la bamba en otra tela de Antica',
   dropAllowanceByModel: 'Margen de caída'
 };
 

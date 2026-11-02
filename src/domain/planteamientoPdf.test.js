@@ -188,7 +188,7 @@ describe('datos del planteamiento de telas', () => {
     expect(detail.instruction).toContain('MARGEN 40CM');
   });
 
-  test('una bamba de tejido distinto se marca como NO INCLUIDA y muestra su tejido', () => {
+  test('una bamba de tejido distinto se marca como OTRA TELA y muestra su tejido', () => {
     const detail = buildFabricLineDetail(
       {
         model: 'ARZUA PRO',
@@ -201,7 +201,7 @@ describe('datos del planteamiento de telas', () => {
       }
     );
 
-    expect(detail.instruction).toBe('BAMBA NO INCLUIDA DE 30CM, HECHA DE 25CM - LONA ACRÍLICA AZUL');
+    expect(detail.instruction).toBe('BAMBA DE 30CM, HECHA DE 25CM · OTRA TELA - LONA ACRÍLICA AZUL');
     expect(detail.instruction).not.toContain('BAMBALINA INCLUIDA');
   });
 
@@ -711,10 +711,10 @@ describe('buildOrderPlanteamientoPdf', () => {
         if (operators.fnArray[i] === OPS.restore) matrix = matrices.pop();
         if (operators.fnArray[i] === OPS.transform) matrix = Util.transform(matrix, operators.argsArray[i]);
         if (operators.fnArray[i] === OPS.setStrokeRGBColor) strokeColor = operators.argsArray[i][0];
-        if (operators.fnArray[i] === OPS.constructPath && ['#4f6e63', '#bfd2ca'].includes(strokeColor)) {
-          // Solo los trazos largos: el soporte fijo dibuja su eje con el mismo verde.
+        if (operators.fnArray[i] === OPS.constructPath && strokeColor === '#000000') {
+          // Solo los trazos largos y diagonales de lona: la confección se imprime en negro.
           const bounds = operators.argsArray[i][2];
-          if (bounds[2] - bounds[0] > 40) {
+          if (bounds[2] - bounds[0] > 40 && bounds[2] - bounds[0] < 220 && bounds[3] - bounds[1] > 40) {
             const corners = [[bounds[0], bounds[1]], [bounds[2], bounds[1]], [bounds[0], bounds[3]], [bounds[2], bounds[3]]]
               .map(point => { Util.applyTransform(point, matrix); return point; });
             fabricLines.push([Math.min(...corners.map(point => point[0])), 0, Math.max(...corners.map(point => point[0])), Math.max(...corners.map(point => page.view[3] - point[1]))]);
@@ -909,7 +909,8 @@ describe('buildOrderPlanteamientoPdf', () => {
     const text = content.items.map((item) => item.str).join(' ');
 
     expect(text).toContain('E.T. Ø40');
-    expect(text).toContain('SIN BAMBA');
+    // Permanece en DATOS BÁSICOS; desaparece el distintivo duplicado del dibujo.
+    expect(text.match(/SIN BAMBA/g)).toHaveLength(1);
     expect(text).not.toContain('VARILLA BLANCA (5,5)');
   });
 

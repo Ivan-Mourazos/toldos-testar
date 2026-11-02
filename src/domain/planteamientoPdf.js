@@ -1233,6 +1233,7 @@ function buildFabricRowInstruction(line, lines, order) {
 function drawFabricDiagram(doc, x, y, w, h, diagram, awning, calculation) {
   // Las imágenes del taller mantienen su encaje propio, sin girarlas ni redibujarlas.
   if (awning?.fabricImage) return drawCustomFabricImage(doc, x, y, w, h, awning.fabricImage);
+  doc = superficiePlanoTecnico(doc);
   // Coordenadas normalizadas: el dibujo, las letras y las cotas escalan juntos con el recuadro.
   // Así las mismas proporciones sirven en la hoja de telas y en cualquier miniatura.
   const scale = Math.min(w / 242, h / 300);
@@ -1247,8 +1248,6 @@ function drawFabricDiagram(doc, x, y, w, h, diagram, awning, calculation) {
 export const PREVIEW_CALCULATION = Object.freeze({ fabricWidth: 400, fabricDrop: 275 });
 
 // Lista cerrada: una variante nueva sigue saliendo con pdfkit hasta contrastar su SVG.
-const MUESTRAS_ESTILO = ['GENERAL', 'CORTINA-VENTANA', 'TOLDO-VELCRO', 'ANTICA'];
-
 export const SVG_FABRIC_DIAGRAMS = Object.freeze([
   'GENERAL', 'CAMBIO-TELA', 'TOLDO-VELCRO', 'CAMBIO ENROLLABLE', 'SUPLEMENTO', 'SOLAPAS', 'EMBUDO',
   'ENROLLABLE', 'BAMBALINA', 'ANTICA', 'AMBAR', 'AGATA', 'MAXISCREEN', 'IRIS', 'HERA',
@@ -1258,7 +1257,7 @@ export const SVG_FABRIC_DIAGRAMS = Object.freeze([
 ]);
 
 /** Geometría compartida con el respaldo, sin generar ni incrustar un PDF de dibujo. */
-export function buildFabricDiagramSvg({ diagram, awning = {}, calculation = PREVIEW_CALCULATION, estiloTecnico = false }) {
+export function buildFabricDiagramSvg({ diagram, awning = {}, calculation = PREVIEW_CALCULATION }) {
   if (awning.fabricImage || !SVG_FABRIC_DIAGRAMS.includes(diagram)) return null;
   const medidor = new PDFDocument({ autoFirstPage: false, margin: 0 });
   registerFonts(medidor);
@@ -1269,7 +1268,7 @@ export function buildFabricDiagramSvg({ diagram, awning = {}, calculation = PREV
     style: tipo === 'italic' ? 'italic' : 'normal'
   }]));
   const lienzo = crearLienzoSvg(medidor, fuentes);
-  drawFabricDiagram(estiloTecnico && MUESTRAS_ESTILO.includes(diagram) ? superficiePlanoTecnico(lienzo) : lienzo, 0, 0, 242, 300, diagram, awning, calculation);
+  drawFabricDiagram(lienzo, 0, 0, 242, 300, diagram, awning, calculation);
   return lienzo.resultado();
 }
 
@@ -1289,7 +1288,7 @@ export async function buildFabricDiagramPreviewPdf({ awning, calculation = PREVI
     const diagram = getFabricPatternDiagram(web);
     doc.addPage({ size: [width + 16, height + 85], margin: 0 });
     doc.rect(0, 0, doc.page.width, doc.page.height).fill(colors.paper);
-    drawCell(doc, 8, 8, width, 21, fabricDiagramHeading(diagram, [web]), {
+    drawCell(superficiePlanoTecnico(doc), 8, 8, width, 21, fabricDiagramHeading(diagram, [web]), {
       bold: true, size: 12, minSize: 9, fit: true, align: 'center', fill: colors.paper
     });
     drawFabricDiagram(doc, 8, 35, width, height, diagram, web, calculation);
@@ -1299,9 +1298,9 @@ export async function buildFabricDiagramPreviewPdf({ awning, calculation = PREVI
 
 // El dibujo de confección solo, del tamaño exacto de su recuadro: el servidor lo encaja en la
 // página de telas impresa desde HTML (fase 1). Mismo código de dibujo que la página de pdfkit.
-export async function buildFabricDiagramBoxPdf({ diagram, awning, calculation, estiloTecnico = false }) {
+export async function buildFabricDiagramBoxPdf({ diagram, awning, calculation }) {
   return buildDiagramBoxPdf(FABRIC_SHEET_DIAGRAM_BOX, (doc, width, height) => {
-    drawFabricDiagram(estiloTecnico && MUESTRAS_ESTILO.includes(diagram) ? superficiePlanoTecnico(doc) : doc, 0, 0, width, height, diagram, awning, calculation);
+    drawFabricDiagram(doc, 0, 0, width, height, diagram, awning, calculation);
   });
 }
 
@@ -1770,16 +1769,6 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
   if (title) doc.fillColor(colors.ink).font(fonts.bold).fontSize(diagramText(10)).text(title, x + 8, y + 8, { width: w - 16, align: 'center' });
   drawHorizontalDimension(doc, x + w * 0.1, x + w * 0.9, y + h * (options.legacy ? 0.075 : 0.12), 'FRENTE TELA');
 
-  const badge = valance.hasValance
-    ? `${valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'} · ${formatInstructionMeasure(valance.height)} CM`
-    : 'SIN BAMBA';
-  if (!options.legacy && (!doc.planoTecnico || valance.separate)) {
-    doc.roundedRect(x + 38, y + 38, w - 76, 14, 4)
-      .fillAndStroke(valance.hasValance ? '#fff4cc' : '#edf2f1', valance.hasValance ? '#d2a116' : '#6d827d');
-    doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(diagramText(6.2))
-      .text(badge, x + 42, y + 40.5, { width: w - 84, align: 'center' });
-  }
-
   const frameX = x + w * 0.145;
   const frameY = y + h * (options.legacy ? 0.13 : 0.24);
   const frameW = w * 0.71;
@@ -1824,13 +1813,11 @@ function drawGeneralDiagram(doc, x, y, w, h, options = {}, awning = {}) {
 
   if (valance.hasValance) {
     const valanceY = frameY + frameH + valanceGap;
-    if (!valance.separate) {
-      doc.moveTo(frameX, frameY + frameH).lineTo(frameX, valanceY)
-        .moveTo(frameX + frameW, frameY + frameH).lineTo(frameX + frameW, valanceY)
-        .strokeColor('#4f6e63').lineWidth(0.7).stroke();
-    }
+    doc.moveTo(frameX, frameY + frameH).lineTo(frameX, valanceY)
+      .moveTo(frameX + frameW, frameY + frameH).lineTo(frameX + frameW, valanceY)
+      .strokeColor('#4f6e63').lineWidth(0.7).stroke();
     drawValancePanel(doc, frameX, valanceY, frameW, valanceH, valance, {
-      bodyLabel: `${valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'} · ${valance.curve}`,
+      bodyLabel: bambaDiagramLabel(valance), curveLabel: true,
       measurement: '',
       topSeamColor: '#a3241c'
     });
@@ -1924,16 +1911,6 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
   // El nombre completo va en la cabecera de la página (fabricDiagramHeading).
   roundedBox(doc, x, y, w, h, 3, colors.paper, colors.line);
 
-  const badge = spec.hasValance
-    ? `${spec.separateValance ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'} · ${formatInstructionMeasure(spec.valanceHeight)} CM`
-    : 'SIN BAMBA';
-  if (!doc.planoTecnico || spec.separateValance) {
-  doc.roundedRect(x + w * 0.12, y + h * 0.025, w * 0.76, h * 0.047, 4)
-    .fillAndStroke(spec.hasValance ? '#fff4cc' : '#edf2f1', spec.hasValance ? '#d2a116' : '#6d827d');
-  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(diagramText(5.2))
-    .text(badge, x + w * 0.14, y + h * 0.038, { width: w * 0.72, align: 'center' });
-  }
-
   const frameX = x + w * 0.12;
   const frameY = y + h * 0.14;
   const frameW = w * 0.76;
@@ -2008,15 +1985,13 @@ function drawCurtainDiagram(doc, x, y, w, h, diagram, awning) {
   }
 
   if (spec.hasValance) {
-    // En el maestro la bamba es otra pieza: varilla blanca arriba y B.N(3) abajo.
+    // La bamba continúa el cuerpo: varilla blanca arriba y B.N(3) abajo.
     // Con la letra de la página de telas, las dos varillas necesitan 11 de separación.
     const valanceY = bottomY + valanceGap;
     if (spec.curtainPieces) drawDiagramText(doc, 'VARILLA BLANCA (5,5)', frameX, bottomY + 14, frameW);
-    if (!spec.separateValance) {
-      doc.moveTo(frameX + 9, bottomY).lineTo(frameX + 9, valanceY)
-        .moveTo(frameX + frameW - 9, bottomY).lineTo(frameX + frameW - 9, valanceY)
-        .strokeColor('#4f6e63').lineWidth(0.65).stroke();
-    }
+    doc.moveTo(frameX + 9, bottomY).lineTo(frameX + 9, valanceY)
+      .moveTo(frameX + frameW - 9, bottomY).lineTo(frameX + frameW - 9, valanceY)
+      .strokeColor('#4f6e63').lineWidth(0.65).stroke();
     drawCurtainValancePiece(doc, frameX, valanceY, frameW, spec);
     if (spec.curtainPieces) drawDiagramText(doc, 'B.N(3)', frameX, valanceY + 28, frameW);
   }
@@ -2171,7 +2146,7 @@ function drawVerticalCurtainMeasure(doc, x, startY, endY, measure) {
 
 function drawCurtainValancePiece(doc, x, y, w, spec) {
   drawValancePanel(doc, x, y, w, 25, spec.valance, {
-    bodyLabel: spec.separateValance ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'
+    bodyLabel: bambaDiagramLabel(spec.valance)
   });
 }
 
@@ -2184,8 +2159,13 @@ export function buildValanceDiagramSpec(awning = {}) {
     hasValance,
     height,
     separate: hasValance && !standalone && Boolean(String(awning.valanceFabric || '').trim()),
-    standalone
+    standalone,
+    otherFabric: Boolean(String(awning.valanceFabric || '').trim())
   };
+}
+
+function bambaDiagramLabel(spec) {
+  return `BAMBA · ${formatInstructionMeasure(spec.height)} CM${spec.otherFabric ? ' · OTRA TELA' : ''}`;
 }
 
 function drawValancePanel(doc, x, y, w, h, spec, options = {}) {
@@ -2225,7 +2205,7 @@ function drawValancePanel(doc, x, y, w, h, spec, options = {}) {
   if (options.topLabel) {
     drawDiagramText(doc, options.topLabel, x, y - 11, w);
   }
-  if (doc.planoTecnico) options = { ...options, bodyLabel: `${spec.separate ? 'BAMBA SEPARADA' : 'BAMBA'}${options.bodyLabel?.includes(curve) ? ` · ${curve}` : ''}`, measurement: ` · ${formatInstructionMeasure(spec.height)} CM` };
+  if (!options.bodyLabel || options.bodyLabel.startsWith('BAMBA')) options = { ...options, bodyLabel: options.bodyLabel || bambaDiagramLabel(spec), measurement: options.curveLabel ? ` · ${curve}` : '' };
   const measurement = options.measurement !== undefined
     ? options.measurement
     : spec?.height > 0 ? ` · ${formatInstructionMeasure(spec.height)} CM` : '';
@@ -2254,17 +2234,6 @@ function drawCurtainDataRow(doc, x, y, w, label, measure) {
 function drawToldoVelcroDiagram(doc, x, y, w, h, awning = {}) {
   const valance = buildValanceDiagramSpec(awning);
   drawDiagramShell(doc, x, y, w, h);
-  const badge = valance.hasValance
-    ? `${valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'} · ${formatInstructionMeasure(valance.height)} CM`
-    : 'SIN BAMBA';
-  if (!doc.planoTecnico || valance.separate) {
-  doc.roundedRect(x + w * 0.12, y + h * 0.035, w * 0.76, h * 0.05, 4)
-    .fillAndStroke(valance.hasValance ? '#fff4cc' : '#edf2f1', valance.hasValance ? '#d2a116' : '#6d827d');
-  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(diagramText(5.1))
-    .text(badge, x + w * 0.14, y + h * 0.048, { width: w * 0.72, align: 'center' });
-
-  }
-
   // IMAGENES, TOLDO-VELCRO: la imagen original está girada 270° en la plantilla.
   // Varilla negra arriba, velcro a los lados y la pieza A (bamba) bajo el cuerpo.
   const panelX = x + w * 0.12;
@@ -2278,27 +2247,17 @@ function drawToldoVelcroDiagram(doc, x, y, w, h, awning = {}) {
   drawDiagramText(doc, 'VARILLA NEGRA (4,5) EN PVC', panelX, panelY - h * 0.045, panelW);
   drawDiagramText(doc, 'VARILLA BLANCA (5,5)', panelX, panelY + panelH + h * 0.03, panelW);
 
-  const valanceY = panelY + panelH + h * 0.11;
-  const valanceH = h * 0.087;
   if (valance.hasValance) {
+    const valanceY = panelY + panelH + h * 0.11;
+    const valanceH = h * 0.087;
     drawValancePanel(doc, panelX, valanceY, panelW, valanceH, valance, {
-      bodyLabel: valance.separate ? 'BAMBA SEPARADA' : 'BAMBALINA INCLUIDA'
+      bodyLabel: bambaDiagramLabel(valance)
     });
-  } else if (!doc.planoTecnico) {
-    doc.rect(panelX, valanceY, panelW, valanceH).fillAndStroke('#fbfcfc', '#4f6e63');
-    doc.rect(panelX, valanceY, panelW, h * 0.02).fillAndStroke('#edf3f0', '#4f6e63');
-  }
-  if (!doc.planoTecnico || valance.hasValance) {
-  drawDiagramText(doc, 'A', panelX + (valance.hasValance ? 4 : (panelW - 18) / 2), valanceY + valanceH * 0.35, 18);
-  drawDiagramText(doc, 'B.N(3)', panelX, valanceY + valanceH + h * 0.01, panelW);
-  }
-
-  if (valance.hasValance) {
-    if (!valance.separate) {
-      doc.moveTo(panelX + 8, panelY + panelH).lineTo(panelX + 8, valanceY)
-        .moveTo(panelX + panelW - 8, panelY + panelH).lineTo(panelX + panelW - 8, valanceY)
-        .strokeColor('#4f6e63').lineWidth(0.65).stroke();
-    }
+    drawDiagramText(doc, 'A', panelX + 4, valanceY + valanceH * 0.35, 18);
+    drawDiagramText(doc, 'B.N(3)', panelX, valanceY + valanceH + h * 0.01, panelW);
+    doc.moveTo(panelX + 8, panelY + panelH).lineTo(panelX + 8, valanceY)
+      .moveTo(panelX + panelW - 8, panelY + panelH).lineTo(panelX + panelW - 8, valanceY)
+      .strokeColor('#4f6e63').lineWidth(0.65).stroke();
   }
 }
 
@@ -2356,9 +2315,6 @@ function drawSupplementDiagram(doc, x, y, w, h, awning = {}) {
   const valance = buildValanceDiagramSpec({ ...awning, model: 'BAMBALINA' });
   const supplement = buildSupplementSpec(awning);
   drawDiagramShell(doc, x, y, w, h);
-  doc.roundedRect(x + w * 0.12, y + h * 0.05, w * 0.76, h * 0.05, 4).fillAndStroke('#fff4cc', '#d2a116');
-  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(diagramText(5.1))
-    .text(`CURVA ${valance.curve} · ALTO ${formatInstructionMeasure(valance.height)} CM`, x + w * 0.14, y + h * 0.064, { width: w * 0.72, align: 'center' });
 
   const stripX = x + w * 0.14;
   const stripY = y + h * 0.145;
@@ -2369,10 +2325,10 @@ function drawSupplementDiagram(doc, x, y, w, h, awning = {}) {
   // El suplemento va detrás, así que se dibuja primero y la bambalina lo tapa.
   doc.rect(stripX, stripY, stripW, stripH).fillAndStroke('#fbfcfc', '#4f6e63');
   doc.fillColor(colors.grayDark).font(fonts.semibold).fontSize(diagramText(5.4))
-    .text('SUPLEMENTO POR DETRÁS', stripX + 8, stripY + stripH - 16, { width: stripW - 16, align: 'center' });
+    .text('SUPLEMENTO POR DETRÁS', stripX + 8, stripY + stripH - 16, { width: stripW - 8, align: 'center' });
   drawValanceOverSupplement(doc, stripX, stripY, stripW, joinY, valance.curve);
   doc.fillColor(colors.inkSoft).font(fonts.bold).fontSize(diagramText(6.4))
-    .text('BAMBALINA', stripX + 8, stripY + 6, { width: stripW - 16, align: 'center' });
+    .text(`${bambaDiagramLabel(valance)} · ${valance.curve}`, stripX + 4, stripY + 4, { width: stripW - 16, align: 'center' });
   // La línea de sujeción solo existe si hay sujeción: sin ella marcaría un canto
   // sin decir cuál, que es lo que se quiere evitar.
   if (supplement.fastening) {
@@ -2480,16 +2436,13 @@ function drawRollerDiagram(doc, x, y, w, h, calculation = {}) {
 function drawValanceDiagram(doc, x, y, w, h, awning = {}, calculation = {}) {
   const valance = buildValanceDiagramSpec({ ...awning, model: 'BAMBALINA' });
   drawDiagramShell(doc, x, y, w, h);
-  doc.roundedRect(x + w * 0.12, y + h * 0.035, w * 0.76, h * 0.063, 4).fillAndStroke('#fff4cc', '#d2a116');
-  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(8.5)
-    .text(`ALTO TERMINADO ${formatInstructionMeasure(valance.height)} CM`, x + w * 0.14, y + h * 0.052, { width: w * 0.72, align: 'center' });
   const stripX = x + w * 0.10;
   const stripY = y + h * 0.17;
   const stripW = w * 0.80;
   const stripH = h * 0.63;
   drawValancePanel(doc, stripX, stripY, stripW, stripH, valance, {
     topLabel: 'VARILLA BLANCA',
-    bodyLabel: `TELA · CORTE ${formatInstructionMeasure(calculation.fabricDrop)} CM`,
+    bodyLabel: `${bambaDiagramLabel(valance)} · CORTE ${formatInstructionMeasure(calculation.fabricDrop)} CM`,
     measurement: ''
   });
   drawRotatedDiagramText(doc, 'BASTILLA', stripX - 10, stripY + stripH / 2, stripH - 18);
@@ -2538,10 +2491,6 @@ function drawAnticaDiagram(doc, x, y, w, h, awning = {}) {
       .stroke();
     doc.circle(tubeX, tubeY, radius - 2).fillAndStroke(colors.paper, colors.ink);
     drawSideLabel(doc, `ENTRADA TUBO Ø${roundEntry.diameterMm} MM`, endX - 136, endY + 27, 130);
-    if (Number(awning.valanceHeight) > 0) {
-      const valanceText = awning.valanceFabric ? 'BAMBA SEPARADA' : 'BAMBA INTEGRADA';
-      drawSideLabel(doc, valanceText, endX - 138, fabricBottomY + 5, 132);
-    }
   } else {
     doc.rect(endX - 8, endY - 3, 16, tube === '30x10' ? 8 : 13).fillAndStroke(colors.paper, colors.ink);
     // F-A01: en 50×30 el rótulo cruzaba la lona (PDF de 300 × 200); queda bajo ambas líneas.
@@ -2561,6 +2510,10 @@ function drawAnticaDiagram(doc, x, y, w, h, awning = {}) {
     drawSideLabel(doc, 'ENTRADA PLETINA 25x4', endX - 115, endY + 24, 110);
   }
 
+  if (Number(awning.valanceHeight) > 0) {
+    doc.moveTo(endX + 8, endY + 10).lineTo(endX + 8, y + h * 0.86).strokeColor(colors.ink).lineWidth(0.8).stroke();
+    drawDiagramText(doc, bambaDiagramLabel(buildValanceDiagramSpec(awning)), x + w * 0.10, y + h * 0.89, w * 0.80);
+  }
   drawDiagramText(doc, 'FRENTE TELA', x + w * 0.12, y + h * 0.04, w * 0.76);
   doc.fillColor(colors.grayDark).font(fonts.italic).fontSize(diagramText(5.8))
     .text('MEDIDAS Y BAMBA SEGÚN EL BLOQUE DE CADA TOLDO', x + w * 0.10, y + h * 0.96, { width: w * 0.80, align: 'center' });
@@ -2778,7 +2731,7 @@ export function buildFabricLineDetail(awning = {}, calculation = {}) {
         calculation.valanceFabricDescription
       ));
       instructionParts.push(
-        `BAMBA NO INCLUIDA DE ${formatInstructionMeasure(height + 5)}CM, HECHA DE ${formatInstructionMeasure(height)}CM${valanceFabric ? ` - ${valanceFabric}` : ''}`
+        `BAMBA DE ${formatInstructionMeasure(height + 5)}CM, HECHA DE ${formatInstructionMeasure(height)}CM · OTRA TELA${valanceFabric ? ` - ${valanceFabric}` : ''}`
       );
     } else if (model === 'CAMBIO ANTICA' || model === 'ANTICA') {
       instructionParts.push(`BAMBA DE ${formatInstructionMeasure(height)}CM`);
@@ -3156,9 +3109,18 @@ function value(input) {
 
 function drawCustomFabricImage(doc, x, y, w, h, input) {
   const image = normalizeFabricImage(input);
+  doc.save();
   try {
+    // La luminosidad sobre fondo blanco elimina el color de imágenes importadas sin alterar el archivo guardado.
+    doc.rect(x, y, w, h).fill('#ffffff');
+    if (!doc.page.ext_gstates.ConfeccionGris) {
+      const gris = doc.ref({ Type: 'ExtGState', BM: 'Luminosity' });
+      gris.end();
+      doc.page.ext_gstates.ConfeccionGris = gris;
+    }
+    doc.addContent('/ConfeccionGris gs');
     doc.image(Buffer.from(image.split(',')[1], 'base64'), x + 4, y + 4, { fit: [w - 8, h - 8], align: 'center', valign: 'center' });
   } catch {
     throw new Error('No se pudo incluir la imagen del planteamiento. Importa una imagen PNG o JPG válida.');
-  }
+  } finally { doc.restore(); }
 }

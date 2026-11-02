@@ -125,19 +125,17 @@ class LienzoSvg {
   }
 }
 
-// Propuesta optativa para SVG y pdfkit: no cambia las coordenadas ni los datos del pedido.
+// Estilo de confección para SVG y pdfkit. Solo se aplica al entrar en el dibujo de telas.
 export function superficiePlanoTecnico(superficie) {
-  const rojo = color => ['#a3241c', '#9a2a22', '#b0453c'].includes(String(color).toLowerCase());
-  const trazo = color => rojo(color) ? '#a3241c' : '#000000';
-  const relleno = color => color === '#eef5f9' ? '#f2f2f2' : ['#000000', '#000', '#0a4f22', '#24513b'].includes(String(color).toLowerCase()) ? '#000000' : '#ffffff';
+  const trazo = () => '#000000';
+  const relleno = color => ['#eef5f9', '#e7f1f6'].includes(color) ? '#f2f2f2' : ['#000000', '#000', '#0a4f22', '#24513b', '#9a2a22', '#a3241c', '#b0453c', '#8a4f48'].includes(String(color).toLowerCase()) ? '#000000' : '#ffffff';
   let proxy;
   proxy = new Proxy(superficie, { get(target, key) {
-    if (key === 'planoTecnico') return true;
     const valor = target[key];
     if (typeof valor !== 'function') return valor;
     return (...args) => {
       if (key === 'fillColor') args[0] = '#000000';
-      if (key === 'strokeColor') args[0] = trazo(args[0]);
+      if (key === 'strokeColor' || (key === 'stroke' && args.length)) args[0] = trazo();
       if (key === 'fill' && args.length) args[0] = relleno(args[0]);
       if (key === 'fillAndStroke') args = [relleno(args[0]), trazo(args[1] ?? args[0])];
       if (key === 'fontSize') args[0] = 7.2;

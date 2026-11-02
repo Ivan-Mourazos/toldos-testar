@@ -2,7 +2,7 @@ import { test, expect } from 'vitest';
 import { readFile } from 'node:fs/promises';
 import { normalizeFabricImage } from './fabricImage.js';
 import { normalizeOrder } from './validation.js';
-import { buildPlanteamientoPlan, buildOrderPlanteamientoPdf } from './planteamientoPdf.js';
+import { buildPlanteamientoPlan, buildOrderPlanteamientoPdf, buildFabricDiagramBoxPdf } from './planteamientoPdf.js';
 const image = 'data:image/png;base64,' + (await readFile(new URL('./assets/tgm-logo.png', import.meta.url))).toString('base64');
 const awning = { id: 'a', model: 'ANTICA', of: '123', units: 1, width: 300, projection: 80, fabricImage: image };
 const order = { orderCode: 'PRUEBA', awnings: [awning, { ...awning, id: 'b', of: '124', fabricImage: null }] };
@@ -30,4 +30,27 @@ test('incrusta la imagen tanto en tela normal como en Hera', async () => {
 test('una imagen corrupta produce un error explícito al generar', async () => {
   const invalid = { ...order, awnings: [{ ...awning, fabricImage: 'data:image/png;base64,AAAA' }] };
   await expect(buildOrderPlanteamientoPdf({ order: invalid, calculation })).rejects.toThrow('No se pudo incluir');
+});
+
+test('la imagen importada se imprime por luminosidad sin modificar el original', async () => {
+  const { getDocument, OPS } = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  const buffer = await buildFabricDiagramBoxPdf({diagram:'GENERAL',awning,calculation:{}});
+  const tarea=getDocument({data:new Uint8Array(buffer)});
+  try {
+    const pdf=await tarea.promise;const ops=await(await pdf.getPage(pdf.numPages)).getOperatorList();
+    expect(ops.fnArray.some((fn,i)=>fn===OPS.setGState && ops.argsArray[i][0].some(([key,value])=>key==='BM'&&value==='luminosity'))).toBe(true);
+    const page=await pdf.getPage(1),viewport=page.getViewport({scale:1});
+    const lienzo=pdf.canvasFactory.create(Math.ceil(viewport.width),Math.ceil(viewport.height));
+    try {
+      await page.render({canvasContext:lienzo.context,viewport}).promise;
+      const pixels=lienzo.context.getImageData(0,0,lienzo.canvas.width,lienzo.canvas.height).data;
+      let oscuros=0;
+      for(let i=0;i<pixels.length;i+=4){
+        expect(Math.max(pixels[i],pixels[i+1],pixels[i+2])-Math.min(pixels[i],pixels[i+1],pixels[i+2])).toBeLessThanOrEqual(1);
+        if(pixels[i]<200)oscuros++;
+      }
+      expect(oscuros).toBeGreaterThan(100);
+    } finally { pdf.canvasFactory.destroy(lienzo); }
+    expect(awning.fabricImage).toBe(image);
+  } finally {await tarea.destroy();}
 });
