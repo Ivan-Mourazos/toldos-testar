@@ -250,6 +250,7 @@ export function escribirDxfPlano(plano, cabecera) {
       if (v) {
         return [encuadrar(t, v)];
       }
+      if (plano.soloVentanasDeclaradas && id > 1) return [];
     }
     return [t];
   });
@@ -326,7 +327,7 @@ export function escribirDxfPlano(plano, cabecera) {
   const zd = d ? { x0: Math.min(zt.x0, d.x0), y0: Math.min(zt.y0, d.y0), x1: Math.max(zt.x1, d.x1), y1: Math.max(zt.y1, d.y1) } : zt;
   const zc = plano.zonas.corteReal ?? plano.zonas.corte;
   const [mx, my] = margenRecuadro(zd, zc), [ya, yb] = [Math.min(zd.y0, zc.y0) - my, Math.max(zd.y1, zc.y1) + my];
-  for (const [nombre, z] of [['DIBUJO', zd], ['CORTE', zc]]) {
+  for (const [nombre, z] of plano.recuadros ?? [['DIBUJO', zd], ['CORTE', zc]]) {
     const [x0, y0, x1, y1] = [z.x0 - mx, ya, z.x1 + mx, yb];
     modelo += ent('LWPOLYLINE', 'RECUADROS', 'AcDbPolyline', ` 90\n     4\n 70\n     1\n 43\n${n(Math.min(mx, my) / 50)}\n${[[x0, y0], [x1, y0], [x1, y1], [x0, y1]].map(([x, y]) => ` 10\n${n(x)}\n 20\n${n(y)}\n`).join('')}`);
     // El nombre, encima y por fuera; tan alto como el margen de arriba, sin pasar del ancho del recuadro.
