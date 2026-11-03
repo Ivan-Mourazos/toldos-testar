@@ -30,9 +30,21 @@ Los datos salen por script de los originales: `node scripts/ganado/extraer-econo
 
 ## Pendiente
 
-- Ferrodeza, Talleres Cal, caballos y los que van por medidas: más adelante.
+- Ferrodeza y los demás por medidas: pendientes. Cal ya tiene cálculo, plano y corte sin puerta; el 5319 mantiene la puerta MFI pendiente. Ver [estudio de Cal](./remolque-ganado-medidas.md).
 - Por confirmar con Iván: si «arcos comprobados» tiene que bloquear el guardado.
-- Identificar las dos piezas del corte del estándar que no tienen dibujo de confección y confirmar sus acabados (Q-GAN01).
+- Q-GAN01: imagen revisada; la correspondencia de los dos rectángulos sigue sin acreditarse (Q-GAN06). Las zonas diagonales ya eran del morro y el paño con ventana era el frente.
+
+## Revisión del plano de Iván · 03/11/2026
+
+La imagen confirma los acabados de las dos zonas diagonales del morro, el frente (47 × 71 de hecho,
+51,5 × 73 de corte, ventana 30 × 50) y las correas por dentro después de enfundar el cuerpo. Se corrige
+la orientación de esas medidas en la tabla y se añaden las correas al dibujo compartido. Se conservan
+los ollaos del original. No se cambia la geometría de corte del estándar.
+
+Los rectángulos sueltos de 98 × 32 y 34,5 × 56 no coinciden en forma ni en tamaño con esas zonas.
+El bot extraído tiene cero marcas de ollao en el interior de ambos. La imagen no acredita qué son;
+no se les atribuye velcro ni ollaos de otra pieza. El detalle numérico está en
+[el informe de Cal](./remolque-ganado-medidas.md), y la pregunta concreta en Q-GAN06.
 
 ## Comparación capa a capa con lo hecho a mano (27/10/2026)
 

@@ -121,7 +121,7 @@ export function LecturaPedidoRemolques({ pedido, versionInicial }: {
           </div>
           <div className="rem-editor-derecha">
             {ganado && resGanado ? <>
-              <DibujoGanado modelo={ganado.ganado} cantidad={ganado.cantidad} />
+              <DibujoGanado modelo={ganado.ganado} medidas={ganado.medidasCal} cantidad={ganado.cantidad} />
               <ResultadosGanado res={resGanado} cantidad={ganado.cantidad} />
             </> : elemento && <>
               <DibujoElemento elemento={elemento} params={params} />

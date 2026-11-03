@@ -875,6 +875,7 @@
    Con los tokens, en claro y en oscuro: corte en el color del texto, terminado en rosa y marcas en rojo,
    como en el plano. */
 .gan-dibujo-nota { color: var(--text-muted); font-size: 12px; margin: 0; }
+.gan-dibujo > .gan-vistas { display: inline-flex; flex-direction: row; align-self: flex-start; gap: 4px; }
 .gan-svg { display: block; flex: 1 1 auto; min-height: 16rem; padding: 0.5rem; width: 100%; }
 .gan-svg line, .gan-svg path, .gan-svg circle { fill: none; stroke-linecap: round; vector-effect: non-scaling-stroke; }
 .gan-svg .gan-corte { stroke: var(--text); stroke-width: 1.2; }

@@ -1,6 +1,140 @@
 # Caballos por medidas: levantar el morro y desarrollarlo
 
-Estudio de Oficina Técnica, 30/10/2026. **La web no se ha cambiado. La propuesta no sirve para cortar.**
+## Estado de la implementación · 03/11/2026
+
+La web incorpora **Caballos Cal por medidas**: formulario, desarrollo del morro desde las dos
+secciones, cuerpo, frente, ventana adaptada y tapa, ollaos, hoja y plano. El corte sin puerta se genera
+con las reglas del gemelo. **El AR.26.05319 sigue sin corte completo: falta definir su puerta MFI.**
+Se puede revisar su desarrollo y la colocación de las piezas calculadas; no se exporta a producción
+un juego al que le falta la puerta. Las salidas de revisión del script llevan PARCIAL / NO CORTAR.
+
+### Reglas aplicadas
+
+- Q-GAN03: radio introducido por el exterior; **9,5 cm en el 5319**, sin sustituirlo por los R76,385
+  históricos ni por el ajuste de un escaneo. El gemelo conserva su R8 documentado; no se le impone R9,5.
+- Lona hecha: +1 cm a anchos, recto y diagonal, desde DEFAULT_PARAMS; +1,5 al contorno.
+  Se conservan las medidas, sin escalar para forzar un largo comercial.
+- Altos independientes de lateral y aguas en las dos secciones: 57+10 atrás y 57+0 delante en el
+  5319; 70+5 en ambas secciones del gemelo. Se miden hasta la intersección teórica, como el estudio.
+- Acabados del gemelo: 3,5 cm por bajo; 1 en las uniones; añadido trasero de fruncido editable
+  (5 cm en el ejemplo). No se deducen reglas del 00389 especial ni se añade un trasero independiente.
+- Ventana centrada: 50 × 35 si cabe bajo la tangencia, con 5 cm de separación superior. Si falta
+  espacio se limita el ancho al frente y el alto al espacio bajo esa referencia. Tapa +3 en cada dimensión.
+- Cinco cuerdas por redondeo del desarrollo; cabeza de corte con sus arcos exactos. Pantalla, hoja,
+  plano y script usan el mismo generador. Las cajas del morro son envolventes, no piezas rectangulares.
+- Ollaos: gemelo al paso pedido; en el 5319 se conservan 30 / 55 / 94 / 126 / 157 / 193 desde atrás,
+  cuatro por diagonal y tres delante. No se igualan los dos repartos.
+- Colocación conservadora de piezas enteras en rollo de 250, con giro rígido cuando hace falta.
+  No se crean empates. Si una pieza no cabe entera se deja a mano. No es un anidado optimizado.
+
+### Comprobación del cálculo actual (cm)
+
+| Caso | Largo hecho | Radio exterior | Cuerpo de corte | Morro de corte, envolvente | Frente de corte | Ventana / tapa | Ollaos |
+|---|---:|---:|---|---|---|---|---|
+| Gemelo AR.25.06052 | 259,687 | 8 | 202 × 333,69 | 116,24 × 293,27 | 63 × 79,51 | 50 × 35 / 53 × 38 | 14 + 8 + 3 |
+| AR.26.05319, línea 3, OF 0233492 | 299,318 | 9,5 | 217 × 278,66 | 120,94 × 261,24 | 57 × 61,5 | 50 × 35 / 53 × 38 | 12 + 8 + 3 |
+
+Son resultados del cálculo, **no un contraste nuevo contra originales**. Sigue documentada la
+diferencia de 1,824 mm entre la generatriz 3D y el plano del gemelo. No se retoca la geometría para ocultarla.
+El cálculo da 3,133 mm menos que 260 en el gemelo y 6,824 mm menos que 300 en el 5319; no se ha aprobado
+una tolerancia de fabricación. La medida de fruncido del 5319 se propone como en el gemelo y es editable.
+
+### Contraste histórico repetido con las copias repuestas
+
+Las copias locales del estudio y su manifiesto ya están en tmp/ganado-medidas y tmp/dxf-estudio/ganado.
+Se ha repetido el contraste con los scripts compartidos con la web, sin consultar RPS ni escribir
+en la red. El manifiesto amplía la lista a **19 pedidos de Cal**, excluido **AR2500389** por Q-GAN02.
+
+| Pedido documentado de Cal | Desarrollo desde 3D en esta ejecución | Bot local |
+|---|---|---|
+| AR2300359 | Sin pareja 3D | No |
+| AR2300375 | Sin pareja 3D | No |
+| AR2306364 | Falta la copia CAD | No |
+| AR2306796 | Sin pareja 3D | Sí |
+| AR2401371 | Falta la copia CAD | No |
+| AR2401732 | Sin correspondencia acreditada | Sí |
+| AR2401758 | Sin pareja 3D | Sí |
+| AR2403952 | Falta la copia CAD | No |
+| AR2405130 | Sin pareja 3D | Sí |
+| AR2405338 | Sin pareja 3D | Sí |
+| AR2405521 | Sin pareja 3D | Sí |
+| AR2406732 | Falta la copia CAD | No |
+| AR2502712 | Sin pareja 3D | Sí |
+| AR2505898 | Sin pareja 3D | Sí |
+| AR2506052 | No cuadra: 1,406 mm en vértices y 1,824 mm en longitudes | Sí |
+| AR2506199 | Sin pareja 3D | Sí |
+| AR2601124 | Sin pareja 3D | Sí |
+| AR2601621 | Sin pareja 3D | Sí |
+| AR2605157 | Sin pareja 3D | Sí |
+
+Faltan cuatro CAD y seis cortes del bot. «Sin pareja 3D» y «sin correspondencia acreditada»
+no cuentan como aciertos ni como errores de fabricación. La lectura de una banda 3D, por sí sola,
+tampoco acredita los acabados ni el corte completo de cada pedido. Las huellas y diferencias quedan
+en [CONTRASTE.md](../../tmp/ganado-cal/CONTRASTE.md) y contraste.json.
+
+El corte completo del gemelo se compara además por pieza, en ambos sentidos, con tolerancia de 1 mm:
+cuerpo, frente y tapa cuadran; **el morro no cuadra**. Sus tramos tienen hasta 1,494 mm de diferencia,
+los ollaos hasta 1,045 mm y las marcas hasta 0,606 mm. No se retoca la geometría para igualarlo;
+falta confirmar con Iván qué diferencia admite el taller.
+
+Repetición sin red ni dependencias nuevas:
+
+```text
+node scripts/ganado/contrastar-cal.mjs --comprobar
+node scripts/ganado/contrastar-cal.mjs --fuentes tmp/ganado-medidas/fuentes --comprobar
+```
+
+El código **2** indica contraste incompleto (incluido CAD o bot ausente); el código **1**, diferencias
+con todas las fuentes presentes. La ejecución actual devuelve **2**. Los ficheros
+quedan en tmp/ganado-cal: CONTRASTE.md, contraste.json, DXF/plano del gemelo y DXF/plano PARCIAL del 5319.
+Un desarrollo leído de CAD se informa como tal; el script no afirma que eso valide todo el corte.
+
+### Q-GAN01: qué identifica la imagen y qué no
+
+Se ha abierto la imagen completa del plano de Iván, AR2601847-plano-ivan.png:
+
+| Zona visible | Correspondencia acreditada en la plantilla | Comprobación |
+|---|---|---|
+| Trapecios con 101 / 105, 32, 10, 7,5, 5, 5,5, 3 y 113,5 | Dos zonas diagonales del morro ya dibujado | Conservan B.N.(3), ollaos, velcro suave al revés y «mandar contrario» |
+| Paño 47 / 51,5 × 71 / 73, ventana 30 × 50 | Frente ya dibujado | Tabla corregida a 47 de ancho × 71 de alto; corte 51,5 × 73; B.N.(3) + ollaos |
+| Cuerpo, ollaos 20 / 59 / 98 / 137 / 176 | Cuerpo ya dibujado | Se añaden «correas por dentro después de enfundar» en pantalla, hoja y plano; se conserva el reparto del bot |
+| Rectángulo del bot x=2925…3905, y=0…320 mm | Corte 98 × 32 | **Cero marcas de ollao dentro**; no es ninguno de los trapecios dibujados |
+| Rectángulo del bot x=2825…3170, y=1420…1980 mm | Corte 34,5 × 56 | **Cero marcas de ollao dentro**; no es el frente de 51,5 × 73 |
+
+La imagen no demuestra el destino de esos dos rectángulos ni su relación con los trapecios.
+**No se les asigna nombre, velcro ni ollaos de otra pieza.** Se conserva su corte y el detalle sin
+confección; Q-GAN06 pide señalarlos directamente sobre el corte. El tamaño total del corte de la
+imagen (464,8) tampoco coincide con los 473,5 del bot extraído, que contiene tiras de stock.
+No se cambian ni el corte de producción de AR2601847 ni los datos extraídos originales.
+
+### Evidencia visual y comprobaciones
+
+Capturas revisadas en tmp/ui-audit/ganado-cal/: pantalla, dibujo/plano y corte parcial del 5319,
+en claro y oscuro a 1280 × 720 y 1600 × 1000. Las tres hojas (5319, gemelo y 1847) se imprimen en
+una sola página A4, con window.hojaLista=true; sus PNG y PDF quedan en esa misma carpeta.
+La revisión del navegador usa solo la instancia aislada 4480; health confirma simulationMode=true y
+fileWritesEnabled=false. No hay .env en el worktree y DB_SERVER apunta al localhost sin credenciales.
+
+Pruebas del cálculo y la integración: radio, desniveles, largo sin forzar, adaptación de ventana,
+tapa, ollaos manuales, rechazo de medidas imposibles y de puerta incompleta, conservación de arcos
+y salida de gemelo por corte/plano/hoja. Con las copias repuestas, las **12 pruebas Node** del estudio
+pasan, incluida la deducción de reglas desde AR2506052.dxf. El contraste nuevo del bot se detalla arriba.
+No se ha convertido a DWG.
+
+La batería completa registrada termina con **357 ficheros y 4.680 pruebas aprobadas**.
+El lint final también pasa. Tras retomar la tarea se repiten tipos y compilación para cubrir
+el último ajuste visual; registros y estado final en [CIERRE.md](../../tmp/ganado-cal/CIERRE.md).
+Se renuevan las doce capturas de pantalla, confección y corte con movimiento reducido para
+evitar que las transiciones queden superpuestas en la evidencia. El navegador no registra errores.
+
+El cierre de la instancia aislada heredada queda pendiente: Windows deniega detener sus
+procesos. La última comprobación de 4480 mantiene simulationMode=true y fileWritesEnabled=false.
+
+## Estudio histórico · 30/10/2026
+
+Lo que sigue conserva los resultados y las limitaciones del estudio anterior a esta implementación.
+
+
 
 El script ya construye dos perfiles en 3D y abre su unión por triángulos. En la muestra reservada coinciden
 **cinco pedidos y una plantilla**, con un error máximo de **0,684 mm** en los vértices. Otros seis casos

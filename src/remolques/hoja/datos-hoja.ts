@@ -162,12 +162,14 @@ export function hojaGanado(i: GanadoInput, r: GanadoResult): CuerpoHoja {
   // En el estándar los acabados y las dos piezas sin confección se leen en el dibujo acotado.
   // La columna resume las medidas; duplicar allí esas notas largas no cabe en el A4.
   const estandar = i.ganado === "REMOLCAR_ESTANDAR";
+  const cal = i.ganado === "CAL_MEDIDAS";
+  const parcial = cal && i.medidasCal?.puerta !== 'NINGUNA';
   const piezasColumna = estandar ? r.piezas.filter((p) => !p.nombre.startsWith("Pieza del corte sin dibujo")) : r.piezas;
   return {
     banda: [
-      { titulo: "MODELO", lineas: [oRaya(r.modelo)], notas: ["SEGÚN PLANTILLA DE LA OFICINA"] },
-      { titulo: "JUEGOS A CORTAR", lineas: [cantidad === 1 ? "1 JUEGO" : `1 JUEGO · X${cantidad}`], notas: cantidad > 1 ? [`EL CORTADOR LO REPITE ${cantidad} VECES`] : [] },
-      { titulo: "LARGO DE ROLLO", lineas: [`${fmt(r.largoJuego)} CM POR JUEGO`], notas: [`OCUPA ${fmt(r.anchoJuego)} DE ANCHO`] },
+      { titulo: "MODELO", lineas: [oRaya(r.modelo)], notas: [i.ganado === "CAL_MEDIDAS" ? "POR MEDIDAS · EXTERIOR DEL ARCO" : "SEGÚN PLANTILLA DE LA OFICINA"] },
+      { titulo: parcial ? "PIEZAS CALCULADAS" : "JUEGOS A CORTAR", lineas: [cantidad === 1 ? "1 JUEGO" : `1 JUEGO · X${cantidad}`], notas: parcial ? ['PARCIAL · FALTA LA PUERTA'] : cantidad > 1 ? [`EL CORTADOR LO REPITE ${cantidad} VECES`] : [] },
+      { titulo: parcial ? "LARGO PARCIAL DE ROLLO" : "LARGO DE ROLLO", lineas: [`${fmt(r.largoJuego)} CM POR JUEGO`], notas: [`OCUPA ${fmt(r.anchoJuego)} DE ANCHO`] },
     ],
     grupos: [
       {
@@ -175,13 +177,19 @@ export function hojaGanado(i: GanadoInput, r: GanadoResult): CuerpoHoja {
         datos: piezasColumna.map((p) => ({
           etiqueta: p.nombre.toUpperCase(),
           valores: estandar ? [p.corte ? `CORTE ${p.corte}` : `HECHO ${p.hecho}`]
-            : [p.hecho && `HECHO ${p.hecho}`, p.corte && `CORTE ${p.corte}`, p.acabado.toUpperCase()].filter(Boolean),
+            : [p.hecho && `HECHO ${p.hecho}`, p.corte && `CORTE ${p.corte}`, !cal && p.acabado.toUpperCase()].filter(Boolean) as string[],
         })),
       },
       ...(estandar ? [{
         titulo: "PIEZAS DEL CORTE SIN DIBUJO DE CONFECCIÓN",
         datos: r.piezas.filter((p) => p.nombre.startsWith("Pieza del corte sin dibujo")).map((p, k) => ({ etiqueta: `CORTE ${k + 1}`, valores: [p.corte] })),
       }] : []),
+      ...(cal ? [{ titulo: "ACABADOS DE CAL", datos: [
+        { etiqueta: "CUERPO", valores: [`B.N.(3) EN LOS BAJOS; ${fmt(i.medidasCal?.fruncir ?? 0)} PARA FRUNCIR ATRÁS; COSTURA 1 DELANTE`] },
+        { etiqueta: "MORRO", valores: ['B.N.(3) EN DIAGONALES; COSTURA 1 EN UNIONES'] },
+        { etiqueta: "FRENTE", valores: ['B.N.(3) ABAJO; COSTURA 1 EN LA UNIÓN'] },
+        ...(parcial ? [{ etiqueta: "PUERTA", valores: [`FALTA DEFINIR ${i.medidasCal?.puerta} · CORTE COMPLETO A MANO`] }] : []),
+      ] }] : []),
       { titulo: "ACABADOS", datos: [{ etiqueta: "ARCOS COMPROBADOS", valores: [i.arcosComprobados ? "SÍ" : "NO · COMPROBAR ANTES DE CORTAR"] }] },
     ],
     material: oRaya(i.material),
