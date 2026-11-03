@@ -1,5 +1,19 @@
 # Dudas abiertas
 
+## Puertas y tramos de ARAUJO · 03/11/2026
+
+Contraste y límites en [puertas-araujo.md](./puertas-araujo.md). El CAD del pedido que se está planteando no se usa como referencia; en el 5365 solo valen hoja y RPS.
+
+| Código | Pregunta para Iván / taller | Qué hace la web mientras tanto |
+| --- | --- | --- |
+| Q-AR01 | En el 4373 tus canutillos se marcan a 6,5 y cada tramo suma 7,15 al alto; en 5333, 4292 y 2391 se marcan a 7 y suman 7,4. ¿Cuándo toca cada acabado? Además, los cuatro altos del 4373 suman 284,6 de corte, pero el conjunto está acotado 283,6. ¿Qué cota manda? | Dos perfiles explícitos, sin deducirlos del frente. El 5365 usa el de 7 por el 4713 y los antecedentes de bolsas/tramos. Con el de 6,5 se mantienen las piezas individuales observadas, no se fuerza la cota del conjunto. |
+| Q-AR02 | El anagrama del 5365 mide 20 de ancho y está a 15 del lado derecho, visto por el derecho. ¿A qué altura se coloca y qué arte se utiliza? La hoja no lo acota. | Sale como nota con esas dos medidas y la orientación. No se inventa alto, posición vertical ni recorte. Se avisa de comprobarlo antes de rotular; no cambia el corte de lona. |
+| Q-AR03 | El 5733 tiene cuatro tramos de 475 × 92,5 con una bolsa soldada intermedia y otros extremos diferentes. El corte antiguo mide 99,7, 49,5 y 36,5; el último alto de la hoja es 21, aunque RPS escribe 34. ¿Qué demasía y remate se usan en cada extremo y cuál es el alto válido? | La confección nueva solo cubre los dos canutillos de sus perfiles y la continua sencilla. No se usa H + 7,4 para copiar estas piezas especiales ni se ofrecen como antecedente automático. |
+| Q-AR04 | El plano del 2986 escribe OF 0229533 y RPS asigna 0229535. ¿Es solo un rótulo del plano sin actualizar? | Al traer de RPS conserva 0229535; no copia la OF de la plantilla. El despiece de 134 × 287,4, entradas de 12 y bolsa de 35,4 se contrasta por la hoja y la geometría. |
+| Q-AR05 | En las impresas 2406217, 2504664 y 2506255 quedan cadenas y cortes de distintas revisiones (260,4/330,4; 311,7/315,7; 300/300,4). ¿Cuáles son sus medidas finales de impresión y de confección? | No se toman esas diferencias como una demasía general. La continua sencilla solo calcula el alto terminado que confirme el técnico y las entradas que este indique. Las plegables grandes con cintas, empates o bolsa integrada requieren su propio estudio. |
+| Q-AR06 | ¿Qué anchos reales de rollo usamos en ARAUJO para la lona de 900 g, el transparente y la bolsa amarilla? ¿Se debe conservar siempre el frente sin giro en la lona impresa? | Anchos editables, inicialmente 300/140/300 heredados del configurador. El anidado permite giro y bloquea una pieza que no cabe. Antes de fabricar una impresa se comprueban rollo y orientación; no se deducen del ancho ocupado por un corte histórico. |
+
+
 Preguntas para Iván (Oficina Técnica) y el taller. Aquí solo están las que hacen falta para que la web funcione y los pedidos salgan bien: qué pieza lleva cada toldo, cuántas y de qué medida. Cada pregunta dice qué hace la web mientras tanto y por qué importa. El código del final (Q-…) enlaza con el expediente del modelo.
 
 Actualizado el 30/09/2026: **el taller contestó 16 dudas** (Q-G01, Q-G02, Q-G03, Q-M03, Q-AG01, Q-AG02, Q-CO04, Q-CO05, Q-E02, Q-E03, Q-D01, Q-PR01, Q-PR02, Q-PR03, Q-PR04 y Q-A06). Iván cerró además Q-T01 (la consignación va aparte). Q-CO05 y Q-E02 se cierran: no hay medida, el taller decide y lo normal es el Ø78. Queda a medias Q-CO04 (qué Maestria va según el tamaño). Q-E01 se cierra según lo que se gasta. **Hecho en la web el 30/09/2026:** Q-G02, Q-G03, Q-AG01, Q-AG02, Q-E03, Q-D01, Q-PR01, Q-PR02, Q-PR04 y Q-A06. Ya no queda ninguna pregunta abierta de «Todos los modelos». Están en [Contestadas el 30/09/2026](#contestadas-el-30092026), con lo que cambia en la web.
