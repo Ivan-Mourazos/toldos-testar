@@ -67,11 +67,12 @@ export function ConfigurarAraujo({p,cambiar,corte,derecha,letra}:{p:Puerta;cambi
           </div><div className="puerta-campos">{(['arriba','abajo'] as const).map(k=><React.Fragment key={k}>
             <SelectField label={`Extremo ${k} pieza ${i+1}`} value={t[k]?.tipo??'canutillo'} options={['canutillo','et']} optionLabel={v=>v==='et'?'E.T. · Bolsa soldada':'Canutillo · Varilla blanca'} onChange={v=>tramo(i,{[k]:v==='et'?{tipo:'et',ancho:0}:{tipo:'canutillo'}})}/>
             {t[k]?.tipo==='et'&&<Numero titulo={`Ancho E.T. ${k} pieza ${i+1} (cm)`} valor={t[k].ancho} cambiar={v=>tramo(i,{[k]:{tipo:'et',ancho:v}})}/>}
-          </React.Fragment>)}</div><label className="puerta-casilla"><input type="checkbox" checked={Boolean(t.rotulacion)} onChange={e=>tramo(i,{rotulacion:e.target.checked?{texto:`Anagrama ${ficha.nombre}`,ancho:0,desdeDerecha:0}:undefined})}/>Rotulación por el derecho · pieza {i+1}</label>
+          </React.Fragment>)}</div><label className="puerta-casilla"><input type="checkbox" checked={Boolean(t.rotulacion)} onChange={e=>tramo(i,{rotulacion:e.target.checked?{texto:`Anagrama ${ficha.nombre}`,ancho:0,desdeDerecha:0,...ficha.rotulacion}:undefined})}/>Rotulación por el derecho · pieza {i+1}</label>
           {t.rotulacion&&<>
             <div className="puerta-campos"><Texto titulo={`Texto de rotulación pieza ${i+1}`} valor={t.rotulacion.texto} cambiar={v=>tramo(i,{rotulacion:{...t.rotulacion!,texto:v}})}/><Numero titulo={`Ancho de rotulación pieza ${i+1} (cm)`} valor={t.rotulacion.ancho} cambiar={v=>tramo(i,{rotulacion:{...t.rotulacion!,ancho:v}})}/><Numero titulo={`Desde derecha por el derecho pieza ${i+1} (cm)`} valor={t.rotulacion.desdeDerecha} cambiar={v=>tramo(i,{rotulacion:{...t.rotulacion!,desdeDerecha:v}})}/>
+              <Numero titulo={`Alto desde el bajo pieza ${i+1} (cm)`} valor={t.rotulacion.desdeBajo??8} cambiar={v=>tramo(i,{rotulacion:{...t.rotulacion!,desdeBajo:v,centrada:false}})}/>
             </div>
-            <p className="puerta-ayuda">Anagrama habitual de Araujo: copia su ancho y la distancia al borde derecho. No genera ningún corte de máquina.</p>
+            <p className="puerta-ayuda">Anagrama habitual de Araujo: copia su ancho, la distancia al borde derecho y el alto desde el bajo (8 cm por defecto). No genera ningún corte de máquina.</p>
           </>}
           <button type="button" className="ghost-button" onClick={()=>tramos(a.tramos.filter((_,j)=>i!==j))}>Quitar pieza {i+1}</button></fieldset>)}
           <button type="button" className="ghost-button" onClick={()=>tramos([...a.tramos,{...nuevoTramoAraujo(),frente:p.frente}])}>Añadir tramo</button>{' '}
@@ -85,7 +86,7 @@ export function ConfigurarAraujo({p,cambiar,corte,derecha,letra}:{p:Puerta;cambi
           </fieldset>)}
         </>}
         {pestana==='entradas'&&<>
-          <p className="puerta-ayuda">E.T. intermedias: bolsa soldada aparte. Copia el ancho y el eje desde el bajo terminado de cada pieza. «Dejar huecos» es una indicación de soldadura; no recorta la lona.</p>
+          <p className="puerta-ayuda">E.T. intermedias: copia el ancho y el eje desde el bajo terminado de cada pieza. Se conservan sus marcas y referencias; no se cortan tiras de E.T. «Dejar huecos» es una indicación de soldadura; no recorta la lona.</p>
           {a.tramos.map((t,i)=><fieldset key={i}><legend>E.T. intermedias de pieza {i+1}</legend>
             {(t.entradas??[]).map((e,j)=><fieldset key={j}><legend>E.T. {j+1}</legend><div className="puerta-campos">
               {(['altura','ancho','huecoLibre'] as const).map(k=><Numero key={k} titulo={`${k==='altura'?'Eje desde el bajo':k==='ancho'?'Ancho E.T.':'Dejar huecos'} pieza ${i+1} E.T. ${j+1} (cm)`} valor={e[k]??0} cambiar={v=>tramo(i,{entradas:t.entradas!.map((q,n)=>n===j?{...q,[k]:k==='huecoLibre'&&!v?undefined:v}:q)})}/>)}
@@ -94,8 +95,8 @@ export function ConfigurarAraujo({p,cambiar,corte,derecha,letra}:{p:Puerta;cambi
           </fieldset>)}
           {a.forma==='continua'&&p.entradas.length>0&&<>
 
-          <p className="puerta-ayuda">Entradas soldadas sobre el cuerpo continuo. Introduce su largo, alto de corte y eje desde el bajo terminado. No se proponen recortes ni empates.</p>
-          {p.entradas.map((e,i)=><fieldset key={i}><legend>Entrada {i+1}</legend><div className="puerta-campos">{(['altura','largo','alto'] as const).map(k=><Numero key={k} titulo={`${k==='altura'?'Eje desde el bajo':k==='largo'?'Largo':'Alto de corte'} entrada ${i+1} (cm)`} valor={e[k]} cambiar={v=>set('entradas',p.entradas.map((e,j)=>i===j?{...e,[k]:v}:e))}/>)}</div><button type="button" className="ghost-button" onClick={()=>set('entradas',p.entradas.filter((_,j)=>i!==j))}>Quitar entrada {i+1}</button></fieldset>)}
+          <p className="puerta-ayuda">Entradas soldadas sobre el cuerpo continuo. Introduce su largo, ancho de E.T. y eje desde el bajo terminado. No se proponen recortes ni empates.</p>
+          {p.entradas.map((e,i)=><fieldset key={i}><legend>Entrada {i+1}</legend><div className="puerta-campos">{(['altura','largo','alto'] as const).map(k=><Numero key={k} titulo={`${k==='altura'?'Eje desde el bajo':k==='largo'?'Largo':'Ancho E.T.'} entrada ${i+1} (cm)`} valor={e[k]} cambiar={v=>set('entradas',p.entradas.map((e,j)=>i===j?{...e,[k]:v}:e))}/>)}</div><button type="button" className="ghost-button" onClick={()=>set('entradas',p.entradas.filter((_,j)=>i!==j))}>Quitar entrada {i+1}</button></fieldset>)}
           </>}
         </>}
         {pestana==='texto'&&<div className="puerta-campos"><label className="field puerta-campo puerta-campo-ancho"><span>Texto del pedido · {p.articuloOrigen||'sin artículo RPS'}</span><textarea aria-label="Texto del pedido" value={p.observaciones} onChange={e=>set('observaciones',e.target.value)}/></label><label className="field puerta-campo puerta-campo-ancho"><span>Nota en el plano</span><textarea aria-label="Nota en el plano" value={p.notaPlano??''} onChange={e=>set('notaPlano',e.target.value)}/></label></div>}

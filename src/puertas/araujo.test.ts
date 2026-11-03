@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { calcularPuerta } from './calcular.ts';
 import { generarCortePuertas } from './corte.ts';
@@ -19,20 +20,70 @@ describe('ARAUJO, tramos y bolsas con canutillo', () => {
     const p=araujo5733(),r=calcularPuerta(p);
     expect(r.avisos.filter(a=>a.nivel==='error')).toEqual([]);
     expect(r.piezas.map(x=>[x.clase,x.ancho,x.alto,x.cantidad])).toEqual([
-      ['pano',475,99.9,4],['entrada',475,13,4],['pano',475,49.7,1],['pano',475,36.7,1],
+      ['pano',475,99.9,4],['pano',475,49.7,1],['pano',475,36.7,1],
     ]);
     expect(r.piezas.filter(x=>x.clase==='pano').map(x=>x.of)).toEqual(['0222632','0222633','0222634']);
-    expect(r.piezas[3].material).toBe('LAC900 AMARILLO');
+    expect(r.piezas[2].material).toBe('LAC900 AMARILLO');
     expect(r.piezas[0].marcas.map(m=>m[1])).toEqual([7,92.9,35.2]);
-    expect(r.piezas[2].marcas.map(m=>m[1])).toEqual([24,42.7]);
-    expect(r.piezas[3].marcas.map(m=>m[1])).toEqual([24,29.7]);
+    expect(r.piezas[1].marcas.map(m=>m[1])).toEqual([24,42.7]);
+    expect(r.piezas[2].marcas.map(m=>m[1])).toEqual([24,29.7]);
     const g=geometriaAlzado(p,r),pie=g.grupos![1],rect=pie.find(f=>f.tipo==='rect')!;
     const y=rect.tipo==='rect'?rect.y:0;
     const refs=pie.filter(f=>f.tipo==='linea'&&f.clase==='puerta-referencia').map(f=>f.tipo==='linea'?f.y1-y:0);
     expect(refs[0]).toBeCloseTo(3.7);expect(refs[1]).toBeCloseTo(37.7);
     expect(g.formas.filter(f=>f.tipo==='texto').flatMap(f=>f.tipo==='texto'?f.lineas:[]).join(' ')).toContain('DEJAR HUECOS 9');
-    expect(generarCortePuertas(pedido(p)).archivo).not.toBeNull();
+    const vista=generarCortePuertas(pedido(p));
+    expect(vista.archivo).not.toBeNull();
+    expect(r.piezas.reduce((s,x)=>s+x.cantidad,0)).toBe(6);
+    expect(r.piezas.reduce((s,x)=>s+x.ancho*x.alto*x.cantidad,0)).toBeCloseTo(230850);
+    expect(vista.cortes.flatMap(c=>c.colocadas)).toHaveLength(6);
+    expect(vista.archivo!.entidades.textos.some(t=>/\bET\b/.test(t.valor))).toBe(false);
     expect(leerPedidoPuertas(pedido(p))).toEqual(pedido(p));
+  });
+  it.each(['tramo','continua'])('las E.T. intermedias de %s y ambos extremos solo preparan el cuerpo, sin piezas ni consumo propios',forma=>{
+    const p=araujo5733(),t=p.araujo!.tramos[0];
+    p.araujo!.tramos=[t];t.arriba={tipo:'et',ancho:12};t.abajo={tipo:'et',ancho:12};
+    if(forma==='continua'){
+      p.araujo!.forma='continua';t.entradas=[];
+      p.entradas=[{altura:38,alto:13,largo:475,diametro:30,huecos:[]}];
+    }
+    const r=calcularPuerta(p),vista=generarCortePuertas(pedido(p));
+    expect(r.avisos.filter(a=>a.nivel==='error')).toEqual([]);
+    expect(r.piezas).toHaveLength(1);
+    expect(r.piezas[0]).toMatchObject({clase:'pano',ancho:475,alto:116.5,cantidad:4});
+    expect(r.piezas[0].marcas.map(m=>m[1])).toEqual([24,92.5,43.5]);
+    expect(vista.cortes.flatMap(c=>c.colocadas)).toHaveLength(4);
+    expect(vista.archivo).not.toBeNull();
+    expect(vista.archivo!.entidades.textos.some(t=>/\bET\b/.test(t.valor))).toBe(false);
+  });
+  it('5365 conserva exactamente cálculo y DXF del bot al retirar las E.T. y simplificar el plano',()=>{
+    const p=araujo5365(),doc=pedido(p);
+    const valores=[JSON.stringify(calcularPuerta(p)),generarCortePuertas(doc).archivo!.dxf];
+    expect(valores.map(x=>createHash('sha256').update(x).digest('hex'))).toEqual([
+      '9c0334ba14b36fc630c77164a78490687c495c34754fbae9fd943de266e4ede8',
+      '6548d48a34deede74a329e847ac5c1556fda0704fdf2102390d10094759cc5be',
+    ]);
+  });
+  it('rótulos de Iván: identificador dentro, X4 aparte, OF y REVÉS una vez por OF, remates breves y sin notas de soldadura añadidas',()=>{
+    const p=araujo5733(),g=geometriaAlzado(p,calcularPuerta(p));
+    const textos=g.formas.filter(f=>f.tipo==='texto').flatMap(f=>f.tipo==='texto'?f.lineas:[]);
+    for(const t of ['A1','A2','A3','X4','VARILLA BLANCA (5,5 mm)','E.T. (DEJAR HUECOS 9)','E.T.'])expect(textos).toContain(t);
+    expect(textos.join(' ')).not.toMatch(/TRAMO 1|UD\.|CANUTILLO ·|EJE A|SOLDADA ALTA FRECUENCIA|BOLSA SOLDADA/);
+    const contorno=g.grupos![0].find(f=>f.tipo==='rect')!;
+    const identificador=g.grupos![0].find(f=>f.tipo==='texto'&&f.lineas[0]==='A1')!;
+    if(contorno.tipo==='rect'&&identificador.tipo==='texto')expect(identificador.y).toBeGreaterThan(contorno.y);
+    const normal=geometriaAlzado(araujo5365(),calcularPuerta(araujo5365())).formas.filter(f=>f.tipo==='texto').flatMap(f=>f.tipo==='texto'?f.lineas:[]);
+    expect(normal.filter(t=>t==='0233643')).toHaveLength(1);
+    expect(normal.filter(t=>t==='REVÉS')).toHaveLength(1);
+    const modelo=geometriaAlzado(araujo5365(),calcularPuerta(araujo5365())).grupos!;
+    const corte=modelo[0].find(f=>f.tipo==='cota'&&f.valor===102.4)!;
+    const terminado=modelo[0].find(f=>f.tipo==='cota'&&f.valor===95)!;
+    if(corte.tipo==='cota'&&terminado.tipo==='cota'){
+      expect(corte.linea).toBeLessThan(terminado.linea);expect(terminado.linea).toBeLessThan(0);
+    }
+    expect(modelo[0].filter(f=>f.tipo==='cota'&&f.valor===7)).toHaveLength(2);
+    expect(modelo[2]).toContainEqual(expect.objectContaining({tipo:'cota',valor:8}));
+    expect(modelo[3]).toContainEqual(expect.objectContaining({tipo:'texto',lineas:['A']}));
   });
   it('rechaza E.T. sin ancho, marcas cruzadas y entradas fuera, solapadas o que invaden ventanas',()=>{
     for(const parche of [{abajo:{tipo:'et',ancho:0}},{arriba:{tipo:'et',ancho:150}},
@@ -63,9 +114,9 @@ describe('ARAUJO, tramos y bolsas con canutillo', () => {
     expect(cuerpo.alto).toBe(corte);
     expect(cuerpo.marcas[1][1]).toBeCloseTo(alto+0.4);
   });
-  it('el anagrama habitual solo pide ancho y derecho; los rollos de Araujo están confirmados',()=>{
+  it('el anagrama habitual conserva ancho, derecho y la cota de 8 desde el bajo del modelo de Iván',()=>{
     const p=araujo5365();
-    expect(p.araujo!.tramos[2].rotulacion).toEqual({texto:'ANAGRAMA J. ARAUJO',ancho:20,desdeDerecha:15});
+    expect(p.araujo!.tramos[2].rotulacion).toEqual({texto:'ANAGRAMA J. ARAUJO',ancho:20,desdeDerecha:15,desdeBajo:8});
     expect(calcularPuerta(p).avisos).toEqual([]);
     expect(geometriaAlzado(p,calcularPuerta(p)).formas.filter(f=>f.tipo==='texto').flatMap(f=>f.tipo==='texto'?f.lineas:[]).join(' ')).not.toMatch(/8 del bajo|pendientes de comprobar/);
   });
@@ -74,7 +125,7 @@ describe('ARAUJO, tramos y bolsas con canutillo', () => {
     const p=araujo5365(),g=geometriaAlzado(p,calcularPuerta(p)),pieza=g.grupos![0];
     const contorno=pieza.find(f=>f.tipo==='rect')!;
     const y=contorno.tipo==='rect'?contorno.y:0;
-    expect(pieza.filter(f=>f.tipo==='linea'&&f.clase==='puerta-marca').map(f=>f.tipo==='linea'?f.y1-y:0)).toEqual([7,95.4]);
+    expect(pieza.filter(f=>f.tipo==='linea'&&f.clase==='puerta-marca').map(f=>f.tipo==='linea'?Number((f.y1-y).toFixed(8)):0)).toEqual([7,95.4]);
     const referencias=pieza.filter(f=>f.tipo==='linea'&&f.clase==='puerta-referencia').map(f=>f.tipo==='linea'?f.y1-y:0);
     expect(referencias[0]).toBeCloseTo(3.7);expect(referencias[1]).toBeCloseTo(98.7);
     const bot=generarCortePuertas(pedido(p)).archivo!;
@@ -103,7 +154,7 @@ describe('ARAUJO, tramos y bolsas con canutillo', () => {
     const p=araujo5365(),t=p.araujo!.tramos[2];
     t.rotulacion={...t.rotulacion!,desdeBajo:8,dosCaras:false};
     expect(calcularPuerta(p).avisos.filter(a=>a.nivel==='error')).toEqual([]);
-    expect(geometriaAlzado(p,calcularPuerta(p)).formas.filter(f=>f.tipo==='texto').map(f=>f.tipo==='texto'?f.lineas.join(' '):'').join(' ')).toContain('8 del bajo');
+    expect(geometriaAlzado(p,calcularPuerta(p)).formas).toContainEqual(expect.objectContaining({tipo:'cota',valor:8}));
     const original=cortes(p);
     t.rotulacion.dosCaras=true;
     expect(cortes(p)).toEqual(original);
@@ -115,9 +166,9 @@ describe('ARAUJO, tramos y bolsas con canutillo', () => {
   it('5365: deja sitio para la letra de cota CAD entre canutillo, cadena de ventanas y frente siguiente',()=>{
     const p=araujo5365(),g=geometriaAlzado(p,calcularPuerta(p)),ventanas=g.grupos![1],siguiente=g.grupos![2];
     const cadena=ventanas.filter(f=>f.tipo==='cota'&&[39,44].includes(f.valor));
-    const notas=ventanas.filter(f=>f.tipo==='texto'&&f.lineas[0].startsWith('CANUTILLO'));
+    const notas=ventanas.filter(f=>f.tipo==='texto'&&f.lineas[0].startsWith('VARILLA BLANCA'));
     const bajo=Math.max(...notas.map(f=>f.tipo==='texto'?f.y:0));
-    expect(Math.min(...cadena.map(f=>f.tipo==='cota'?f.linea:Infinity))-bajo).toBeGreaterThan(30);
+    expect(bajo-Math.max(...cadena.map(f=>f.tipo==='cota'?f.linea:0))).toBeGreaterThan(30);
     const frente=siguiente.find(f=>f.tipo==='cota'&&f.valor===307)!;
     expect((frente.tipo==='cota'?frente.linea:0)-Math.max(...cadena.map(f=>f.tipo==='cota'?f.linea:0))).toBeGreaterThan(30);
   });
@@ -139,6 +190,20 @@ describe('ARAUJO, tramos y bolsas con canutillo', () => {
   it('4713: cantidades por tramo y bolsa, sin multiplicar toda la puerta por dos', () => {
     const p = araujo5365(); p.araujo!.tramos = [{ ...tramoAraujo(307,95), ventanas: [ventanaAraujo(44),ventanaAraujo(173)] }, tramoAraujo(307,100,2),tramoAraujo(299.5,28,2,'bolsa')];
     expect(cortes(p)).toEqual([['pano',307,102.4,1],['cristal',94,39,1],['cristal',94,39,1],['pano',307,107.4,2],['saco',299.5,35.4,2]]);
+    const vista=generarCortePuertas(pedido(p));
+    expect(vista.cortes.flatMap(c=>c.colocadas).filter(t=>t.pieza.clase==='pano')).toHaveLength(3);
+    expect(vista.cortes.flatMap(c=>c.colocadas).find(t=>t.pieza.clase==='saco')!.pieza.multiplicador).toBe(2);
+    const textos=geometriaAlzado(p,calcularPuerta(p)).grupos!.map(g=>g.filter(f=>f.tipo==='texto').flatMap(f=>f.tipo==='texto'?f.lineas:[]));
+    expect(textos.map(t=>t.find(s=>/^X\d+$/.test(s)))).toEqual(['X1','X2','X2']);
+    expect(calcularPuerta(p).piezas.filter(x=>x.clase==='pano').reduce((s,x)=>s+x.ancho*x.alto*x.cantidad,0)).toBeCloseTo(307*(102.4+107.4*2));
+    expect(vista.cortes.flatMap(c=>c.colocadas).filter(t=>t.pieza.clase==='pano').reduce((s,t)=>s+t.pieza.ancho*t.pieza.alto,0)).toBeCloseTo(307*(102.4+107.4*2));
+    // Mismo frente y ventanas del 4713, repitiendo dos veces el tramo con las dos ventanas.
+    p.araujo!.tramos[0].cantidad=2;
+    const repetido=generarCortePuertas(pedido(p));
+    expect(repetido.cortes.flatMap(c=>c.colocadas).filter(t=>t.pieza.clase==='pano')).toHaveLength(4);
+    expect(repetido.cortes.flatMap(c=>c.colocadas).find(t=>t.pieza.clase==='cristal')!.pieza.multiplicador).toBe(4);
+    expect(repetido.resultados[0].piezas.filter(x=>x.clase==='cristal').reduce((s,x)=>s+x.cantidad,0)).toBe(4);
+    expect(repetido.resultados[0].piezas.filter(x=>x.clase==='cristal').reduce((s,x)=>s+x.ancho*x.alto*x.cantidad,0)).toBe(94*39*4);
   });
   it('COMB de 6,5: regla de Iván con referencia a 3,45; el 4373 histórico llevaba 0,25 más de corte', () => {
     const p = araujo5365(); p.araujo!.perfil = '6,5'; p.araujo!.tramos = [{ ...tramoAraujo(540,69,2), ventanas: [79,225,371].map(x=>ventanaAraujo(x,19.5,90,30)) }, tramoAraujo(540,65),tramoAraujo(540,53)];
@@ -149,11 +214,16 @@ describe('ARAUJO, tramos y bolsas con canutillo', () => {
     const referencia=g.grupos![0].find(f=>f.tipo==='linea'&&f.clase==='puerta-referencia')!;
     expect((referencia.tipo==='linea'?referencia.y1:0)-(contorno.tipo==='rect'?contorno.y:0)).toBeCloseTo(3.45);
     expect(r.piezas.filter(x=>x.clase==='cristal').map(x=>[x.ancho,x.alto,x.cantidad])).toEqual([[94,34,2],[94,34,2],[94,34,2]]);
+    const vista=generarCortePuertas(pedido(p));
+    expect(vista.cortes.flatMap(c=>c.colocadas).filter(t=>t.pieza.clase==='pano')).toHaveLength(4);
+    expect(vista.cortes.flatMap(c=>c.colocadas).find(t=>t.pieza.clase==='cristal')!.pieza.multiplicador).toBe(6);
+    expect(vista.cortes.flatMap(c=>c.colocadas).filter(t=>t.pieza.clase==='pano').reduce((s,t)=>s+t.pieza.ancho*t.pieza.alto,0)).toBeCloseTo(540*(75.9*2+71.9+59.9));
+    expect(geometriaAlzado(p,r).grupos![0]).toContainEqual(expect.objectContaining({tipo:'texto',lineas:['X2']}));
   });
   it('2986: cuerpo continuo de 134 × 287,4, dos entradas de 12 y bolsa separada', () => {
     const p = araujo5365(); p.modelo='PUERTAPLE'; p.color='BLANCO'; p.araujo!.forma='continua';p.araujo!.tramos=[tramoAraujo(134,280),tramoAraujo(126.5,28,1,'bolsa')];
     p.entradas=[70,140].map(altura=>({altura,diametro:30,largo:134,alto:12,huecos:[]}));
-    expect(cortes(p)).toEqual([['pano',134,287.4,1],['saco',126.5,35.4,1],['entrada',134,12,1],['entrada',134,12,1]]);
+    expect(cortes(p)).toEqual([['pano',134,287.4,1],['saco',126.5,35.4,1]]);
     expect(calcularPuerta(p).piezas[0].marcas.map(m=>m[1])).toEqual([7,280.4,67.7,137.7]);
     expect(geometriaAlzado(p,calcularPuerta(p)).grupos![0].filter(f=>f.tipo==='linea'&&f.clase==='puerta-marca')).toHaveLength(4);
   });
@@ -195,7 +265,7 @@ describe('ARAUJO, tramos y bolsas con canutillo', () => {
     // Dos huecos y una muestra de cristal repetida ×2, como el corte común de puertas.
     expect(r.archivo!.entidades.arcos.filter(a=>a.capa==='CUTTER')).toHaveLength(12);
     const dxf=escribirPlanoPuertas({pedido:p,cabecera:{cliente:'J. ARAUJO S.L.',tecnico:'IVÁN',revisor:'',fecha:'2026-11-03'}});
-    for(const t of ['0233643','VARILLA BLANCA','ANAGRAMA J. ARAUJO','DISCO1','DIMENSION'])expect(dxf).toContain(t);
+    for(const t of ['0233643','VARILLA BLANCA','ROTULACI','DISCO1','DIMENSION'])expect(dxf).toContain(t);
     expect(r.archivo!.dxf).not.toContain('ANAGRAMA');
   });
   it('RPS 5365 conserva cadena, cliente y OF; bolsa y ventanas requieren hoja', () => {

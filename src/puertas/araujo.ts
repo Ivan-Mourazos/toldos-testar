@@ -34,7 +34,7 @@ export function calcularAraujo(p: Puerta): ResultadoPuerta {
   if (!perfil || !a.tramos.length) { aviso('TRAMOS', 'Añade los tramos o bolsas y elige un perfil de canutillo comprobado.'); return r; }
   if(perfil.aviso)aviso('PERFIL_COMB',perfil.aviso,'aviso');
   if (a.forma === 'continua' && a.tramos.filter(t => t.tipo === 'tramo').length !== 1) aviso('CONTINUA', 'La lona continua lleva un único cuerpo con su alto total, más las bolsas separadas.');
-  if (a.forma === 'sueltos' && p.entradas.length) aviso('ENTRADAS', 'Los tramos sueltos ya llevan sus dos canutillos. Quita las entradas intermedias de la lona continua.');
+  if (a.forma === 'sueltos' && p.entradas.length) aviso('ENTRADAS', 'Las entradas de la lona continua deben revisarse al pasar a tramos sueltos. Indica las E.T. intermedias en su tramo.');
   if (/REJILLA|MOSQUITERA|MALLA/i.test(p.observaciones)) aviso('MATERIAL_ESPECIAL', 'El material especial necesita su propio planteamiento: este corte está contrastado para lona de PVC.');
   function pieza(nombre: string, clase: PiezaPuerta['clase'], ancho: number, alto: number, cantidad: number, bolsa = false): PiezaPuerta {
     return { id: `araujo-${piezas.length}-${nombre}`, nombre, clase, ancho: n(ancho), alto: n(alto), cantidad: cantidad * p.cantidad,
@@ -71,9 +71,8 @@ export function calcularAraujo(p: Puerta): ResultadoPuerta {
         ||t.ventanas.some(v=>v.y-2<e.altura+e.ancho/2&&v.y+v.alto+2>e.altura-e.ancho/2)){
         aviso('ENTRADA',nombre+', E.T. '+(j+1)+': revisa eje, ancho y separación de extremos, ventanas y otras E.T.');continue;
       }
-      const et=pieza(nombre+' · E.T. '+(j+1),'entrada',t.frente,e.ancho,t.cantidad,bolsa);et.of=x.of;if(t.material?.trim())et.material=t.material.trim();
-      if(Math.min(et.ancho,et.alto)>et.rollo)aviso('NO_CABE',nombre+': la E.T. no cabe en el rollo.');
-      piezas.push(et);x.marcas.push([margen,y,n(t.frente-margen),y]);
+      // Iván: en Araujo las E.T. no se cortan; solo se prepara su posición sobre el tramo.
+      x.marcas.push([margen,y,n(t.frente-margen),y]);
     }
     for (const [j, v] of t.ventanas.entries()) {
       const campos = [v.x,v.y,v.ancho,v.alto,v.radio,v.radioCristal];
@@ -99,15 +98,10 @@ export function calcularAraujo(p: Puerta): ResultadoPuerta {
   if (a.forma === 'continua') {
     const cuerpo = a.tramos.find(t=>t.tipo==='tramo');
     for (const [i,e] of p.entradas.entries()) {
-      if (!cuerpo || !positivo(e.alto) || !positivo(e.largo) || !Number.isFinite(e.altura) || e.altura <= 0 || e.altura >= cuerpo.alto || e.huecos.length) { aviso('ENTRADA', `Entrada ${i+1}: indica eje, largo y alto de corte comprobados; los recortes especiales necesitan estudio.`); continue; }
-      if(Math.min(e.alto,e.largo)>p.rollo)aviso('NO_CABE',`Entrada ${i+1}: no cabe en el rollo de lona.`);
+      if (!cuerpo || !positivo(e.alto) || !positivo(e.largo) || !Number.isFinite(e.altura) || e.altura <= 0 || e.altura >= cuerpo.alto || e.huecos.length) { aviso('ENTRADA', `Entrada ${i+1}: indica eje, largo y ancho de E.T. comprobados; los recortes especiales necesitan estudio.`); continue; }
       if(p.entradas.slice(0,i).some(t=>Math.abs(t.altura-e.altura)<(t.alto+e.alto)/2))aviso('ENTRADA',`Entrada ${i+1}: se solapa con otra entrada.`);
       if((cuerpo.entradas??[]).some(q=>Math.abs(q.altura-e.altura)<(q.ancho+e.alto)/2))aviso('ENTRADA',`Entrada ${i+1}: se solapa con otra E.T. del cuerpo.`);
       if(cuerpo.ventanas.some(v=>v.y-2<e.altura+e.alto/2&&v.y+v.alto+2>e.altura-e.alto/2))aviso('ENTRADA',`Entrada ${i+1}: invade un cristal del cuerpo.`);
-      const entrada=pieza(`Entrada ${i+1}`, 'entrada', e.largo, e.alto, cuerpo.cantidad);
-      if(cuerpo.of?.trim())entrada.of=cuerpo.of.trim();
-      if(cuerpo.material?.trim())entrada.material=cuerpo.material.trim();
-      piezas.push(entrada);
       const cuerpoCorte = piezas.find(x=>x.clase==='pano');
       const m=medidasTramoAraujo(cuerpo,perfil);
       const y = n(e.altura + m.abajo.referencia - e.alto/2);
