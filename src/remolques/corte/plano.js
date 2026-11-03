@@ -90,8 +90,11 @@ function rosaCabeza(L, f, x0, w, h, t) {
     if (e.radioArriba > i) { arco(x0 + e.arriba.cx, e.arriba.cy, e.radioArriba - i, 90, 135); arco(x0 + w - e.arriba.cx, e.arriba.cy, e.radioArriba - i, 45, 90); }
     return;
   }
+  // Recto con aguas: las pendientes de dentro van paralelas a las del corte, a 1 cm medido en perpendicular, como
+  // en el arquillado (TIPO 03). Bajar la esquina 1 cm en vertical la dejaba ~2 mm más separada (AR2605358, Iván).
+  const m = ag / (w / 2), sec = Math.hypot(1, m);
   const pts = f.tipo === 'TIPO 02'
-    ? [[x0 + i, base], [x0 + i, h - ag - i], [x0 + w / 2, h - i], [x0 + w - i, h - ag - i], [x0 + w - i, base]]
+    ? [[x0 + i, base], [x0 + i, h - ag + i * m - i * sec], [x0 + w / 2, h - i * sec], [x0 + w - i, h - ag + i * m - i * sec], [x0 + w - i, base]]
     : [[x0 + i, base], [x0 + i, h - i], [x0 + w - i, h - i], [x0 + w - i, base]];
   L.g.polilineas.push({ capa: 'referencias', puntos: pts.map(([a, b]) => t(a, b)), cerrada: true });
 }
