@@ -23,6 +23,14 @@ Cómo se decide cada respuesta: primero, el manual del fabricante (el de Oficina
 - **Q-TELA02:** `CRISTATP140650` es cristal, `PLASCHP200300` plastel y `SOLTIS92AVENP267` Soltis: son lonas y siguen valiendo.
 - **Q-FF01:** depende del caso. **Q-FF02:** depende del remate. Los faldones siguen a mano.
 - **Q-DP01 a Q-DP07:** si se gastan siempre, se reservan; antes hay que comprobar en RPS que de verdad se consumen y con qué configuración.
+  - Comprobado el 03/11/2026 en RPS (consumo imputado de las OF de toldos desde 2025, `tmp/qdp/consumo.mjs`). **Ninguna se gasta siempre, así que no se añade ninguna a la reserva:**
+  - Q-DP01 Cuarzo (Storbox 250, 28 OF): no hay barra de carga suelta; va en el kit de perfiles `PSBOX250…` (19 de 28).
+  - Q-DP02 terminales: Ámbar/Microbox 0 de 22, Perla/Storbox S-300 1 de 197, Coral/Storbox 400 0 de 49. Vienen con el cofre.
+  - Q-DP03 Electra (27 OF): puente abatible (pletina y anilla inox) en 6 y regleta Zamak en 4, todas «con cofre, sin guía» (de 11); ninguna «sin cofre, con guía». No es fijo ni en esa configuración.
+  - Q-DP04 cadenas de cortina: 42 de 69 en «cortina enrollable para escenario con motor» y 2 de 225 en la universal. Van según el pedido, no siempre.
+  - Q-DP05 Xacobeo: rueda LT50 nunca; rueda Hipro Ø68 en 1 de 27 (motor).
+  - Q-DP06 tornillería y taco de máquina: nunca se imputan. Se quedan fuera, como hasta ahora.
+  - Q-DP07 Iris (46 OF): la pletina terminal en 34 (ya se reserva); el perfil terminal vertical ZIP en 6. No hay compensador SWBS imputado.
 - **Q-I10:** se queda como está (aviso a partir de 2 cm). **Q-I11:** el comercial puede dar la medida desde suelo o desde tubo, como en las cortinas; la web deja elegir.
 - **Laterales «Al corte»:** van tal cual la medida rematada; con bastilla llevan el aumento de la bastilla.
 - **Bamba de la cortina en la hoja de telas:** debe poner la real del corte.
