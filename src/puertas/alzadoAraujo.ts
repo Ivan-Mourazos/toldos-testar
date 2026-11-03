@@ -30,8 +30,8 @@ export function alzadoAraujo(p: Puerta, letra: string): GeometriaAlzado {
       cota(v.x,vy,v.x+v.ancho,vy,vy-base,v.ancho);
       cota(v.x,vy,v.x,vy+v.alto,v.x-base,v.alto);
       const anterior=j?ventanas[j-1].x+ventanas[j-1].ancho:0;
-      cota(anterior,y+h,v.x,y+h,y+h+base*3,v.x-anterior);
-      if(j===ventanas.length-1)cota(v.x+v.ancho,y+h,w,y+h,y+h+base*3,w-v.x-v.ancho);
+      cota(anterior,y+h,v.x,y+h,y+h+base*4,v.x-anterior);
+      if(j===ventanas.length-1)cota(v.x+v.ancho,y+h,w,y+h,y+h+base*4,w-v.x-v.ancho);
       cota(v.x,vy+v.alto,v.x,y+d+t.alto,v.x+base*3,v.y);
     }
     if(a.forma==='continua'&&t.tipo==='tramo')for(const e of p.entradas){
