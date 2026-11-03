@@ -9,12 +9,67 @@ import { geometriaAlzado } from './alzado.ts';
 import { elegirPerfilAraujo } from './araujo.ts';
 import { nuevaPuertaDeCliente } from './nuevaPuertaCliente.ts';
 import { registrosDxf, numero, valor } from '../domain/corteLona/dxfTestHelpers.js';
-import { araujo5365, tramoAraujo, ventanaAraujo } from './__fixtures__/araujo.ts';
+import { araujo5365, araujo5733, tramoAraujo, ventanaAraujo } from './__fixtures__/araujo.ts';
 import type { PedidoPuertas, Puerta } from './tipos.ts';
 
 const pedido = (p: Puerta): PedidoPuertas => ({ schemaVersion: 1, kind: 'puertas', orderCode: 'AR2605365', elementos: [{ id: 'a', input: p }] });
 const cortes = (p: Puerta) => calcularPuerta(p).piezas.map(x => [x.clase, x.ancho, x.alto, x.cantidad]);
 describe('ARAUJO, tramos y bolsas con canutillo', () => {
+  it('5733: medidas de hoja y E.T. de 13/12; conserva las rayas de máquina y las referencias del plano',()=>{
+    const p=araujo5733(),r=calcularPuerta(p);
+    expect(r.avisos.filter(a=>a.nivel==='error')).toEqual([]);
+    expect(r.piezas.map(x=>[x.clase,x.ancho,x.alto,x.cantidad])).toEqual([
+      ['pano',475,99.9,4],['entrada',475,13,4],['pano',475,49.7,1],['pano',475,36.7,1],
+    ]);
+    expect(r.piezas.filter(x=>x.clase==='pano').map(x=>x.of)).toEqual(['0222632','0222633','0222634']);
+    expect(r.piezas[3].material).toBe('LAC900 AMARILLO');
+    expect(r.piezas[0].marcas.map(m=>m[1])).toEqual([7,92.9,35.2]);
+    expect(r.piezas[2].marcas.map(m=>m[1])).toEqual([24,42.7]);
+    expect(r.piezas[3].marcas.map(m=>m[1])).toEqual([24,29.7]);
+    const g=geometriaAlzado(p,r),pie=g.grupos![1],rect=pie.find(f=>f.tipo==='rect')!;
+    const y=rect.tipo==='rect'?rect.y:0;
+    const refs=pie.filter(f=>f.tipo==='linea'&&f.clase==='puerta-referencia').map(f=>f.tipo==='linea'?f.y1-y:0);
+    expect(refs[0]).toBeCloseTo(3.7);expect(refs[1]).toBeCloseTo(37.7);
+    expect(g.formas.filter(f=>f.tipo==='texto').flatMap(f=>f.tipo==='texto'?f.lineas:[]).join(' ')).toContain('DEJAR HUECOS 9');
+    expect(generarCortePuertas(pedido(p)).archivo).not.toBeNull();
+    expect(leerPedidoPuertas(pedido(p))).toEqual(pedido(p));
+  });
+  it('rechaza E.T. sin ancho, marcas cruzadas y entradas fuera, solapadas o que invaden ventanas',()=>{
+    for(const parche of [{abajo:{tipo:'et',ancho:0}},{arriba:{tipo:'et',ancho:150}},
+      {entradas:[{altura:2,ancho:13}]},{entradas:[{altura:38,ancho:13},{altura:39,ancho:12}]},
+      {entradas:[{altura:38,ancho:13}],ventanas:[ventanaAraujo(44,30)]}]){
+      const p=araujo5733();Object.assign(p.araujo!.tramos[0],parche);
+      expect(generarCortePuertas(pedido(p)).archivo).toBeNull();
+    }
+    for(const parche of [{arriba:{tipo:'otro',ancho:12}},{entradas:[{altura:'38',ancho:13}]},{abajo:{tipo:'et',ancho:Infinity}}]){
+      const p=araujo5733();Object.assign(p.araujo!.tramos[0],parche);
+      expect(()=>leerPedidoPuertas(pedido(p))).toThrow();
+    }
+  });
+  it('impresa 5656: cuerpo de 269,5 con corte 276,9 sin girar; 6255 necesita estudiar el empate del cuerpo de 307,4',()=>{
+    const p=araujo5365();p.color='BLANCO';p.araujo!.forma='continua';p.araujo!.corteTrasImprimir=true;
+    p.araujo!.tramos=[tramoAraujo(157,269.5)];p.entradas=[70,140].map(altura=>({altura,alto:12,largo:157,diametro:30,huecos:[]}));
+    const r=generarCortePuertas(pedido(p));
+    expect(r.archivo).not.toBeNull();
+    expect(r.resultados[0].piezas[0]).toMatchObject({ancho:157,alto:276.9,sinGiro:true});
+    expect(r.cortes.flatMap(c=>c.colocadas).filter(c=>c.pieza.clase==='pano').every(c=>!c.girada)).toBe(true);
+    p.araujo!.tramos=[tramoAraujo(147,300)];
+    expect(generarCortePuertas(pedido(p)).archivo).toBeNull();
+    expect(calcularPuerta(p).avisos).toContainEqual(expect.objectContaining({codigo:'IMPRESA_EMPATE'}));
+  });
+  it.each([[130,260,267.4],[155,330,337.4],[185,263,270.4]])('impresas 6217/3254: %s × %s, el corte %s incluye los 7 hasta el borde que la cota a marca no mide',(frente,alto,corte)=>{
+    const p=araujo5365();p.araujo!.forma='continua';p.araujo!.tramos=[tramoAraujo(frente,alto)];
+    const cuerpo=calcularPuerta(p).piezas[0];
+    expect(cuerpo.alto).toBe(corte);
+    expect(cuerpo.marcas[1][1]).toBeCloseTo(alto+0.4);
+  });
+  it('el anagrama habitual solo pide ancho y derecho; los rollos de Araujo están confirmados',()=>{
+    const p=araujo5365();
+    expect(p.araujo!.tramos[2].rotulacion).toEqual({texto:'ANAGRAMA J. ARAUJO',ancho:20,desdeDerecha:15});
+    expect(calcularPuerta(p).avisos).toEqual([]);
+    expect(geometriaAlzado(p,calcularPuerta(p)).formas.filter(f=>f.tipo==='texto').flatMap(f=>f.tipo==='texto'?f.lineas:[]).join(' ')).not.toMatch(/8 del bajo|pendientes de comprobar/);
+  });
+
   it('los DXF distinguen rotulador rojo a 7 del corte y referencia magenta a 3,7, exclusiva del plano',()=>{
     const p=araujo5365(),g=geometriaAlzado(p,calcularPuerta(p)),pieza=g.grupos![0];
     const contorno=pieza.find(f=>f.tipo==='rect')!;
@@ -100,6 +155,7 @@ describe('ARAUJO, tramos y bolsas con canutillo', () => {
     p.entradas=[70,140].map(altura=>({altura,diametro:30,largo:134,alto:12,huecos:[]}));
     expect(cortes(p)).toEqual([['pano',134,287.4,1],['saco',126.5,35.4,1],['entrada',134,12,1],['entrada',134,12,1]]);
     expect(calcularPuerta(p).piezas[0].marcas.map(m=>m[1])).toEqual([7,280.4,67.7,137.7]);
+    expect(geometriaAlzado(p,calcularPuerta(p)).grupos![0].filter(f=>f.tipo==='linea'&&f.clase==='puerta-marca')).toHaveLength(4);
   });
   it('4292 y las dos OF de 2391 conservan medidas propias de bolsa y altos de cada tramo', () => {
     for(const [frente,altos,bolsa] of [[178,[140,90,80],170.5],[301,[157,100,90],293.5],[412,[160,70,75,95],404.5]] as const){

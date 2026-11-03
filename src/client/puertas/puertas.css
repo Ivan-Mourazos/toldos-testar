@@ -80,6 +80,7 @@
 .puerta-cutter { stroke:var(--tramo-holgado); stroke-width:1.2; fill:none; }
 .puerta-pano { fill:var(--surface); stroke:var(--text); stroke-width:0.8; }
 .puerta-referencia { fill:none; stroke:var(--tramo-holgado); stroke-width:0.6; }
+.puerta-eje { fill:none; stroke:var(--tramo-ajustado); stroke-width:0.6; stroke-dasharray:3 2; }
 .puerta-marca { fill:none; stroke:var(--tramo-ajustado); stroke-width:0.7; }
 .puerta-ventana { fill:var(--surface); stroke:var(--text); stroke-width:0.8; }
 .puerta-cutter-texto { color:var(--tramo-holgado); }

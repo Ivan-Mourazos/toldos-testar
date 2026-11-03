@@ -40,10 +40,15 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
     if(p.araujo!==undefined) {
       const a=p.araujo;
       if(!objeto(a)||!['sueltos','continua'].includes(a.forma as string)||typeof a.perfil!=='string'||!Object.hasOwn(fichaDePuerta(p as unknown as Puerta).perfiles,a.perfil)||!lista(a.tramos,50))return error();
+      if(a.corteTrasImprimir!==undefined&&typeof a.corteTrasImprimir!=='boolean')return error();
       let total=0;
       for(const t of a.tramos) {
         if(!objeto(t)||!['tramo','bolsa'].includes(t.tipo as string)||!cotas(t,['frente','alto','cantidad'])||!lista(t.ventanas,100)||!t.ventanas.every(v=>hueco(v)&&cotas(v,['radioCristal'])))return error();
         if(!Number.isInteger(t.cantidad)||(t.cantidad as number)<1||(t.cantidad as number)>50)return error();
+        if(t.of!==undefined&&(typeof t.of!=='string'||t.of.length>100))return error();
+        if(t.material!==undefined&&(typeof t.material!=='string'||t.material.length>200))return error();
+        for(const k of ['arriba','abajo'])if(t[k]!==undefined&&(!objeto(t[k])||!['canutillo','et'].includes(t[k].tipo as string)||t[k].tipo==='et'&&!cotas(t[k],['ancho'])))return error();
+        if(t.entradas!==undefined&&(!lista(t.entradas,100)||!t.entradas.every(e=>cotas(e,['altura','ancho'])&&objeto(e)&&(e.huecoLibre===undefined||cotas(e,['huecoLibre'])))))return error();
         total+=(t.cantidad as number)*(p.cantidad as number);
         if(t.rotulacion!==undefined&&(!objeto(t.rotulacion)||typeof t.rotulacion.texto!=='string'||t.rotulacion.texto.length>200||!cotas(t.rotulacion,['ancho','desdeDerecha'])))return error();
         if(objeto(t.rotulacion)){

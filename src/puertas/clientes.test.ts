@@ -20,7 +20,7 @@ describe('fichas de clientes de Puertas',()=>{
  it('cada cliente tiene unidades, rollos, tipos y rótulos propios; el desconocido va a General',()=>{
   expect(fichasClientesPuertas.map(f=>f.id)).toEqual(expect.arrayContaining(['araujo','general','portanova']));
   expect(fichaPorCodigo('001336')).toMatchObject({id:'portanova',unidadHoja:'cm',rollos:{rollo:300,rolloCristal:140,rolloSaco:300},rotulos:{espaciador:'ESPACIADOR ESPECIAL PORTANOVA'}});
-  expect(fichaPorCodigo('000460')).toMatchObject({id:'araujo',unidadHoja:'mm',perfiles:{'7':{marca:7,aumento:7.4},'6,5':{marca:6.5,aumento:6.9}}});
+  expect(fichaPorCodigo('000460')).toMatchObject({id:'araujo',nombre:'Araujo',unidadHoja:'mm',rollosConfirmados:true,rollos:{rollo:300,rolloCristal:140,rolloSaco:300},perfiles:{'7':{marca:7,aumento:7.4},'6,5':{marca:6.5,aumento:6.9}}});
   expect(fichaPorCodigo('999999')).toMatchObject({id:'general',habilitado:false});
  });
  it('crea los cuatro tipos de ARAUJO y conserva la denominación plegable de Portanova sin otra fórmula',()=>{

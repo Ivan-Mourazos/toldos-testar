@@ -1,4 +1,5 @@
 import type { FormaAlzado, GeometriaAlzado } from './alzado.ts';
+import { medidasTramoAraujo } from './araujo.ts';
 import { fichaDePuerta } from './clientes.ts';
 import type { Puerta } from './tipos.ts';
 
@@ -18,10 +19,10 @@ export function alzadoAraujo(p: Puerta, letra: string): GeometriaAlzado {
   for(const [i,t] of tramos.entries()){
     const indiceForma=formas.length;
     const inicio=y-base*7;
-    const h=t.alto+perfil.aumento,d=perfil.aumento/2,w=t.frente;
+    const m=medidasTramoAraujo(t,perfil),h=m.alto,d=m.arriba.referencia,w=t.frente;
     formas.push({tipo:'rect',clase:'puerta-pano',x:0,y,ancho:w,alto:h});
     for(const yy of [y+d,y+d+t.alto])formas.push({tipo:'linea',clase:'puerta-referencia',x1:0,y1:yy,x2:w,y2:yy});
-    for(const yy of [y+perfil.marca,y+h-perfil.marca])formas.push({tipo:'linea',clase:'puerta-marca',x1:p.margenMarcas,y1:yy,x2:w-p.margenMarcas,y2:yy});
+    for(const yy of [y+m.arriba.marca,y+h-m.abajo.marca])formas.push({tipo:'linea',clase:'puerta-marca',x1:p.margenMarcas,y1:yy,x2:w-p.margenMarcas,y2:yy});
     const ventanas=[...t.ventanas].sort((a,b)=>a.x-b.x);
     for(const [j,v] of ventanas.entries()){
       const vy=y+d+t.alto-v.y-v.alto;
@@ -37,29 +38,38 @@ export function alzadoAraujo(p: Puerta, letra: string): GeometriaAlzado {
     }
     if(a.forma==='continua'&&t.tipo==='tramo')for(const e of p.entradas){
       const yy=y+d+t.alto-e.altura;
-      formas.push({tipo:'linea',clase:'puerta-referencia',x1:0,y1:yy,x2:w,y2:yy});
+      formas.push({tipo:'linea',clase:'puerta-eje',x1:0,y1:yy,x2:w,y2:yy},
+        {tipo:'linea',clase:'puerta-marca',x1:p.margenMarcas,y1:yy+e.alto/2,x2:w-p.margenMarcas,y2:yy+e.alto/2});
       texto(`E.T. ${e.alto.toLocaleString('es-ES')} cm · eje a ${e.altura.toLocaleString('es-ES')} del bajo`,w/2,yy-base);
     }
+    for(const e of t.entradas??[]){
+      const yy=y+d+t.alto-e.altura;
+      formas.push({tipo:'linea',clase:'puerta-eje',x1:0,y1:yy,x2:w,y2:yy},
+        {tipo:'linea',clase:'puerta-marca',x1:p.margenMarcas,y1:yy+e.ancho/2,x2:w-p.margenMarcas,y2:yy+e.ancho/2});
+      texto('E.T. '+e.ancho.toLocaleString('es-ES')+' · EJE A '+e.altura.toLocaleString('es-ES')+' DEL BAJO'+(e.huecoLibre?' · DEJAR HUECOS '+e.huecoLibre.toLocaleString('es-ES'):''),w/2,yy-base);
+    }
     const nombre=t.tipo==='bolsa'?'BOLSA':a.forma==='continua'?'CUERPO CONTINUO':`TRAMO ${i+1}`;
-    texto(`${letra}${i+1} · ${nombre} · ${t.cantidad*p.cantidad} ud. · ${p.of||'SIN OF'} · REVÉS`,0,y-base*3,'start');
-    texto('CANUTILLO · VARILLA BLANCA Ø5,5 mm',w/2,y-base);
-    texto('CANUTILLO · VARILLA BLANCA Ø5,5 mm',w/2,y+h+base*1.7);
+    texto(`${letra}${i+1} · ${nombre} · ${t.cantidad*p.cantidad} ud. · ${t.of||p.of||'SIN OF'} · REVÉS`,0,y-base*3,'start');
+    const remate=(e:typeof t.arriba)=>e?.tipo==='et'?'E.T. '+e.ancho.toLocaleString('es-ES')+' · BOLSA SOLDADA':'CANUTILLO · VARILLA BLANCA Ø5,5 mm';
+    texto(remate(t.arriba),w/2,y-base);
+    texto(remate(t.abajo),w/2,y+h+base*1.7);
     cota(0,y,w,y,y-base*5,w);
     cota(w,y+d,w,y+d+t.alto,w+base*4,t.alto);
     cota(0,y,0,y+h,-base*5,h);
-    cota(w,y,w,y+perfil.marca,w+base*8,perfil.marca);
+    cota(w,y,w,y+m.arriba.marca,w+base*8,m.arriba.marca);
+    if(t.abajo?.tipo==='et')cota(w,y+h-m.abajo.marca,w,y+h,w+base*12,m.abajo.marca);
     for(const [x,giro]of [[-base,-90],[w+base,90]])formas.push({tipo:'texto',x,y:y+h/2,lineas:['AL CORTE'],ancla:'middle',tamano:base,giro});
     y+=h+base*4;
     if(t.rotulacion){
       texto(`${t.rotulacion.texto} · ancho ${t.rotulacion.ancho.toLocaleString('es-ES')} · a ${t.rotulacion.desdeDerecha.toLocaleString('es-ES')} del lado derecho, visto por el derecho`,0,y,'start',base*.85);
       const vertical=t.rotulacion.centrada?'Centrada en el alto':t.rotulacion.desdeBajo!==undefined?`A ${t.rotulacion.desdeBajo.toLocaleString('es-ES')} del bajo`:'';
-      texto(vertical?`${vertical} · ${t.rotulacion.dosCaras?'ambas caras':'solo por el derecho'}. Alto y arte pendientes de comprobar; no se cortan.`:'Altura y arte de rotulación pendientes de comprobar; no se cortan.',0,y+base*1.7,'start',base*.85);y+=base*4;
+      if(vertical)texto(`${vertical} · ${t.rotulacion.dosCaras?'ambas caras':'solo por el derecho'}. ANAGRAMA HABITUAL.`,0,y+base*1.7,'start',base*.85);y+=base*4;
     }
     y+=base*(ventanas.length?14:6);
-    vistas.push({nombre:`Pieza ${i+1} · ${t.tipo==='bolsa'?'bolsa':'tramo'}`,xMin:-margen,yMin:inicio,ancho:F+margen*2.8,alto:y-inicio-base*2});
+    vistas.push({nombre:`Pieza ${i+1} · ${t.tipo==='bolsa'?'bolsa':'tramo'}`,xMin:-margen,yMin:inicio,ancho:F+margen*(t.abajo?.tipo==='et'?3.2:2.8),alto:y-inicio-base*2});
     grupos.push(formas.slice(indiceForma));
   }
   if(p.notaPlano?.trim()){texto(p.notaPlano.trim(),0,y,'start');y+=base*4;}
   if(!tramos.length)texto('Completa los tramos y bolsas del pedido.',0,y,'start');
-  return {formas,vista:{xMin:-margen,yMin:-base*2,ancho:F+margen*2.8,alto:y+base*3},vistas,grupos,letraBase:base,F,H:y};
+  return {formas,vista:{xMin:-margen,yMin:-base*2,ancho:F+margen*(tramos.some(t=>t.abajo?.tipo==='et')?3.2:2.8),alto:y+base*3},vistas,grupos,letraBase:base,F,H:y};
 }

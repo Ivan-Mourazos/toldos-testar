@@ -258,7 +258,7 @@ function empaquetar(grupo: PiezaPuerta[], rollo: number, nueva: (p: PiezaPuerta)
       const opciones = [
         { w: mm(p.ancho), h: mm(p.alto), g: false },
         { w: mm(p.alto), h: mm(p.ancho), g: true },
-      ].filter(t => t.h <= rollo && (!t.g || !conservarFrente(p) || mm(p.alto) > rollo));
+      ].filter(t => t.h <= rollo && (!p.sinGiro || !t.g) && (!t.g || !conservarFrente(p) || mm(p.alto) > rollo));
       const viables = columnas
         .flatMap((columna, i) =>
           opciones
@@ -338,7 +338,7 @@ function colocar(
 ): CortePuertas[] {
   const grupos = new Map<string, PiezaPuerta[]>();
   for (const p of piezas) {
-    if (![p.rollo, p.ancho, p.alto].every(Number.isFinite) || p.rollo <= 0 || p.ancho <= 0 || p.alto <= 0 || Math.min(p.ancho, p.alto) > p.rollo) {
+    if (![p.rollo, p.ancho, p.alto].every(Number.isFinite) || p.rollo <= 0 || p.ancho <= 0 || p.alto <= 0 || Math.min(p.ancho, p.alto) > p.rollo || p.sinGiro && p.alto > p.rollo) {
       continue;
     }
     const k = JSON.stringify([p.material, p.rollo]);
@@ -428,7 +428,7 @@ function colocar(
     const piezasBusqueda = sitios.map((s, i) => ({ id: String(i), simetria: s.t.pieza.clase === 'pano' && esEnrollable(s.t.pieza.id) ? s.t.pieza.id : '', formas: [
       { w: mm(s.t.pieza.ancho), h: mm(s.t.pieza.alto), girada: false },
       { w: mm(s.t.pieza.alto), h: mm(s.t.pieza.ancho), girada: true },
-    ].filter(f => f.h <= rollo && (!f.girada || s.t.pieza.clase !== 'pano' || !esAutorreparable(s.t.pieza.id) || mm(s.t.pieza.alto) > rollo)) }));
+    ].filter(f => f.h <= rollo && (!s.t.pieza.sinGiro || !f.girada) && (!f.girada || s.t.pieza.clase !== 'pano' || !esAutorreparable(s.t.pieza.id) || mm(s.t.pieza.alto) > rollo)) }));
     const valida = (rs: RectanguloCorte[]) => rs.every((a, i) => rs.slice(i + 1).every(b => {
       const pa = sitios[Number(a.id)].t.pieza, pb = sitios[Number(b.id)].t.pieza;
       // Los paños que comparten columna conservan el orden del alzado, con Y hacia arriba.

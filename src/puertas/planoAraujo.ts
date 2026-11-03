@@ -7,7 +7,7 @@ import { lienzoAMetros, origenCorte, sumarLienzo, type LienzoEnrollable } from '
 import type { CortePuertas, PedidoPuertas, Punto } from './tipos.ts';
 
 const vacio=():LienzoEnrollable=>({lineas:[],polilineas:[],textos:[],cotas:[],inserciones:[],sombreados:[],arcos:[],circulos:[]});
-const capa=(clase:string)=>clase.includes('marca')?'ROTULADOR':clase.includes('referencia')?'referencias':clase.includes('cristal')?'corte (vent)':clase.includes('ventana')?'curv':'DISCO1';
+const capa=(clase:string)=>clase.includes('marca')?'ROTULADOR':clase.includes('referencia')?'referencias':clase.includes('eje')?'ejes':clase.includes('cristal')?'corte (vent)':clase.includes('ventana')?'curv':'DISCO1';
 function rect(l:LienzoEnrollable,c:string,x:number,y:number,w:number,h:number,r=0){
   if(!r){l.polilineas.push({capa:c,puntos:[[x,y],[x+w,y],[x+w,y+h],[x,y+h]],cerrada:true});return;}
   const b=Math.tan(Math.PI/8);
@@ -42,7 +42,7 @@ export function escribirPlanoAraujo(pedido:PedidoPuertas,cortes:CortePuertas[],c
   }
   const zona={x0:-70,y0:yc+60,x1:wc+40,y1:100},[ox,oy]=origenCorte(za,zona);
   const zc={x0:ox+zona.x0/100,y0:oy+zona.y0/100,x1:ox+zona.x1/100,y1:oy+zona.y1/100};
-  const ofs=[...new Set(pedido.elementos.map(e=>e.input.of.trim()).filter(Boolean))];
+  const ofs=[...new Set(pedido.elementos.flatMap(e=>[e.input.of.trim(),...e.input.araujo?.tramos.map(t=>t.of?.trim()??'')??[]]).filter(Boolean))];
   return escribirDxfPlano({...lienzoAMetros(l,100,100),corte:lienzoAMetros(lc,ox,oy),zonas:{toldos:za,corte:zc}},
     {pedido:pedido.orderCode,of:ofs.length>1?'VARIAS':ofs[0]??'',cliente:textoSeguro(cabecera.cliente),tecnico:textoSeguro(cabecera.tecnico),revisor:textoSeguro(cabecera.revisor),
       fecha:cabecera.fecha,pagina:'1/1',material:[...new Set(cortes.map(c=>textoSeguro(c.material)))].join(' / '),subtitulo:'MEDIDAS EN CM · ARAUJO · TRAMOS Y BOLSAS'}).dxf;

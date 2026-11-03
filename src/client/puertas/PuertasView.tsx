@@ -533,7 +533,7 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
     <section className="puerta-cabecera order-header panel rem-cabecera"><div className="order-header-group order-header-general"><h3>Datos del pedido</h3><div className="order-header-grid">
       <div className="puerta-pedido"><label className="field puerta-campo"><span>Número de pedido</span><input aria-label={`Número de pedido de ${nombre}`} value={pedido.orderCode} placeholder="AR2600000" onChange={e=>setPedido({...pedido,orderCode:e.target.value})}/></label>
       <button type="button" className="ghost-button" disabled={trayendo || !pedido.orderCode.trim()} onClick={() => void traerDeRps()}>{trayendo ? 'Consultando…' : 'Traer de RPS'}</button>
-      </div><label className="field puerta-campo"><span>Cliente</span><input aria-label={`Cliente de ${nombre}`} value={pedido.cabecera.cliente} onChange={e=>cabecera({cliente:e.target.value,clienteRps:undefined})}/></label>
+      </div><label className="field puerta-campo"><span>Cliente</span><input aria-label={`Cliente de ${nombre}`} value={pedido.cabecera.cliente.replace(/ARAUJO/g,'Araujo').replace(/PORTANOVA/g,'Portanova')} onChange={e=>cabecera({cliente:e.target.value,clienteRps:undefined})}/></label>
       <label className="field puerta-campo"><span>Fecha</span><input type="date" aria-label={`Fecha del pedido de ${nombre}`} value={pedido.cabecera.fecha} onChange={e=>cabecera({fecha:e.target.value})}/></label>
     </div></div>
     </section>
