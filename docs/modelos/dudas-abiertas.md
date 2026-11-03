@@ -54,6 +54,10 @@ La web calcula las piezas sin puerta por medidas, con radio exterior y ventana a
 
 **Q-GAN07 (03/11).** El gemelo tiene una unión de 908,624 mm en 3D y 906,800 en el plano: diferencia de 1,824 mm. El contraste repetido con el bot da hasta 1,494 mm en el corte del morro y 1,045 mm en sus ollaos. ¿Qué diferencia admite el taller en este desarrollo? La web conserva las longitudes de los triángulos, sin retocar puntos para igualar el dibujo antiguo. Las copias del estudio ya están repuestas; siguen faltando cuatro CAD y seis cortes del bot de los 19 pedidos de Cal del manifiesto.
 
+**Q-GAN08 (03/11).** ¿Los altos se miden hasta el cruce teórico del lateral y las aguas o hasta donde empieza la curva? El cálculo usa el cruce teórico del estudio; falta confirmar que es la referencia con la que se toman las medidas en taller.
+
+**Q-GAN09 (03/11).** En los ollaos laterales del 5319, ¿qué posiciones concretas pide la nota «2 esq»? El reparto manual conserva 30 / 55 / 94 / 126 / 157 / 193 desde atrás; no añade posiciones sin dimensionar a partir de esa nota. El pedido sigue sin corte completo por la puerta pendiente.
+
 ## Remolcar estándar · remolque de ganado (29/10/2026)
 
 **Q-GAN01 (contestada el 03/11, ver «Contestadas el 03/11/2026»).** En el corte real de AR2601847 hay dos piezas de **98 × 32** y **34,5 × 56** de corte que no

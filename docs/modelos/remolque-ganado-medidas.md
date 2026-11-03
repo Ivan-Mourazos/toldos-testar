@@ -121,9 +121,10 @@ y salida de gemelo por corte/plano/hoja. Con las copias repuestas, las **12 prue
 pasan, incluida la deducción de reglas desde AR2506052.dxf. El contraste nuevo del bot se detalla arriba.
 No se ha convertido a DWG.
 
-La batería completa registrada termina con **357 ficheros y 4.680 pruebas aprobadas**.
-El lint final también pasa. Tras retomar la tarea se repiten tipos y compilación para cubrir
-el último ajuste visual; registros y estado final en [CIERRE.md](../../tmp/ganado-cal/CIERRE.md).
+Tras confirmar los cambios y rebasar sin conflictos sobre origin/main, pasan **358 ficheros y
+4.681 pruebas** con pnpm exec vitest run --maxWorkers=2. También pasan pnpm typecheck,
+pnpm lint y pnpm exec vite build. Registros y dudas para Iván en
+[INFORME-COORDINADOR.md](../../tmp/ganado-cal/INFORME-COORDINADOR.md).
 Se renuevan las doce capturas de pantalla, confección y corte con movimiento reducido para
 evitar que las transiciones queden superpuestas en la evidencia. El navegador no registra errores.
 
