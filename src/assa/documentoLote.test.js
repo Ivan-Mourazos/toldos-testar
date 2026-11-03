@@ -4,6 +4,7 @@ import { planoDelLote } from './archivos.js';
 import { maquetarLote } from './documentoLote.js';
 import { leerPlanoTexto, presentacionesDxf } from '../flujoDwg/planoDxf.js';
 import { corteDelPlano, entidadesBot } from '../flujoDwg/corteDwg.js';
+import { anchoArial } from '../domain/corteLona/texto.js';
 
 const linea = { IDOrderLine: 'a', CodOrder: 'AR.26.05234', NumLine: 1, CodArticle: 'H0K420102-0021', descripcion: 'NH3800 NT600',
   cantidad: 18, of_: '0233342', entregaSolicitada: '2026-11-07' };
@@ -31,4 +32,11 @@ it('pagina los pedidos en celdas iguales, sin escalar dibujos ni cambiar el cort
   expect(doc.hojasPedido.flatMap(h => h.lineas)).toEqual([1, 2, 3, 4, 5, 6, 7]);
   expect(doc.zonaCorte.x1).toBeLessThan(doc.zonaCortador.x0);
   expect(doc.hojasPedido.every(h => h.zona.y0 > doc.zonaCorte.y1)).toBe(true);
+});
+
+it('el encuadre abarca los rótulos completos y no solo su punto de inserción', () => {
+  const l = lote();
+  l.entidades.textos.push({ capa: 'texto', x: 30000, y: 5000, h: 3000, valor: 'PALET 5 y 6' });
+  const d = maquetarLote(l);
+  expect(d.zonaCorte.x1).toBeGreaterThanOrEqual(30 + anchoArial('PALET 5 y 6', 3));
 });

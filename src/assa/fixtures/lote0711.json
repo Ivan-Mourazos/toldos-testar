@@ -1,0 +1,328 @@
+[
+  {
+    "CodOrder": "AR.26.05111",
+    "NumLine": 1,
+    "CodArticle": "H0K420150-0087",
+    "descripcion": "LONA ENVOLVENTE CON VIERTEAGU. NT600 NB3250 NH3280",
+    "cantidad": 34,
+    "of_": "0233154",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05111/1",
+    "palets": [
+      4
+    ]
+  },
+  {
+    "CodOrder": "AR.26.05111",
+    "NumLine": 2,
+    "CodArticle": "H0K420150-0091",
+    "descripcion": "ABDECKPLANE MIT REGENRINNE NT600 NB3450 NH3680 SCH",
+    "cantidad": 20,
+    "of_": "0233155",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05111/2",
+    "palets": [
+      4
+    ]
+  },
+  {
+    "CodOrder": "AR.26.05111",
+    "NumLine": 3,
+    "CodArticle": "H0K430172-0001",
+    "descripcion": "ABDECKPLANE MIT REGENRINNE NT=900 NB=3450 NH=3600",
+    "cantidad": 1,
+    "of_": "0233156",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05111/3",
+    "palets": [
+      3
+    ]
+  },
+  {
+    "CodOrder": "AR.26.05142",
+    "NumLine": 1,
+    "CodArticle": "H0K420102-0017",
+    "descripcion": "ABDECKPLANE SEITENTEIL NH=3400-200 NT=600 SCHWARZ",
+    "cantidad": 2,
+    "of_": "0233206",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05142/1",
+    "palets": [
+      3
+    ]
+  },
+  {
+    "CodOrder": "AR.26.05142",
+    "NumLine": 2,
+    "CodArticle": "H0K420148-0104",
+    "descripcion": "LONA ENVOLVENTE NB3450 NH3480 NT600-5",
+    "cantidad": 1,
+    "of_": "0233207",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05142/2",
+    "palets": [
+      3
+    ]
+  },
+  {
+    "CodOrder": "AR.26.05142",
+    "NumLine": 3,
+    "CodArticle": "H0K410129-0117",
+    "descripcion": "TOP CURTAIN TWP TWB300XTWT250X2000",
+    "cantidad": 27,
+    "of_": "0233208",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05142/3",
+    "palets": [
+      3
+    ]
+  },
+  {
+    "CodOrder": "AR.26.05142",
+    "NumLine": 4,
+    "CodArticle": "H0K410130-0175",
+    "descripcion": "PLANE SC SEITLICH WB300XWT250XH2300 PARKING GUIDE WHITE/STANDARD (750mm)",
+    "cantidad": 54,
+    "of_": "0233209",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05142/4",
+    "palets": [
+      5,
+      6
+    ]
+  },
+  {
+    "CodOrder": "AR.26.05234",
+    "NumLine": 1,
+    "CodArticle": "H0K420102-0021",
+    "descripcion": "ABDECKPLANE SEITENTEIL NH=3800-200 NT=600 SCHWARZ",
+    "cantidad": 18,
+    "of_": "0233342",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05234/1",
+    "palets": [
+      1
+    ]
+  },
+  {
+    "CodOrder": "AR.26.05234",
+    "NumLine": 2,
+    "CodArticle": "H0K420148-0105",
+    "descripcion": "LONA ENVOLVENTE NB=3450-8 NK=3680 NT=600-5 SCHWARZ",
+    "cantidad": 2,
+    "of_": "0233344",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05234/2",
+    "palets": [
+      4
+    ]
+  },
+  {
+    "CodOrder": "AR.26.05234",
+    "NumLine": 3,
+    "CodArticle": "H0K420150-0090",
+    "descripcion": "ABDECKPLANE MIT REGENRINNE NT600NB3450NH3480 SCHWA",
+    "cantidad": 60,
+    "of_": "0233345",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05234/3",
+    "palets": [
+      1
+    ]
+  },
+  {
+    "CodOrder": "AR.26.05234",
+    "NumLine": 4,
+    "CodArticle": "H0K430125-0002",
+    "descripcion": "DACHPLANE NB=3450+3 NT=600+25 SCHWARZ",
+    "cantidad": 5,
+    "of_": "0233346",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05234/4",
+    "palets": [
+      4
+    ]
+  },
+  {
+    "CodOrder": "AR.26.05234",
+    "NumLine": 5,
+    "CodArticle": "H0K430127-0002",
+    "descripcion": "DACHPL. REGENR. NT=600 NB=3450",
+    "cantidad": 5,
+    "of_": "0233347",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05234/5",
+    "palets": [
+      4
+    ]
+  },
+  {
+    "CodOrder": "AR.26.05234",
+    "NumLine": 6,
+    "CodArticle": "H0K430127-0014",
+    "descripcion": "DACHPLANE MIT REGENRINNE NT600 NB3500 SCHWARZ",
+    "cantidad": 3,
+    "of_": "0233348",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05234/6",
+    "palets": [
+      4
+    ]
+  },
+  {
+    "CodOrder": "AR.26.05240",
+    "NumLine": 1,
+    "CodArticle": "H0K420102-0022",
+    "descripcion": "ABDECKPLANE SEITENTEIL NH=4400-200 NT=600 SCHWARZ",
+    "cantidad": 2,
+    "of_": "0233351",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05240/1",
+    "palets": [
+      4
+    ]
+  },
+  {
+    "CodOrder": "AR.26.05240",
+    "NumLine": 2,
+    "CodArticle": "H0K420102-0089",
+    "descripcion": "ABDECKPLANE SEITENTEIL NH=4200-200 NT=900 SCHWARZ",
+    "cantidad": 2,
+    "of_": "0233352",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05240/2",
+    "palets": [
+      4
+    ]
+  },
+  {
+    "CodOrder": "AR.26.05240",
+    "NumLine": 3,
+    "CodArticle": "H0K420148-0040",
+    "descripcion": "ABDECKPLANE NB=3250-8 NH=3400 NT=900-5",
+    "cantidad": 1,
+    "of_": "0233353",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05240/3",
+    "palets": [
+      4
+    ]
+  },
+  {
+    "CodOrder": "AR.26.05240",
+    "NumLine": 4,
+    "CodArticle": "0K420148-0116",
+    "descripcion": "CLADDING NW3250 NH3480 NT600 CONFIGURATION",
+    "cantidad": 3,
+    "of_": "0233354",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05240/4",
+    "palets": [
+      2
+    ]
+  },
+  {
+    "CodOrder": "AR.26.05240",
+    "NumLine": 5,
+    "CodArticle": "H0K420150-0021",
+    "descripcion": "ABDECKPLANE MIT REGENRINNE NT=600 NB=3250 NH=3400",
+    "cantidad": 5,
+    "of_": "0233355",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05240/5",
+    "palets": [
+      4
+    ]
+  },
+  {
+    "CodOrder": "AR.26.05240",
+    "NumLine": 6,
+    "CodArticle": "H0K420150-0090",
+    "descripcion": "ABDECKPLANE MIT REGENRINNE NT600NB3450NH3480 SCHWA",
+    "cantidad": 60,
+    "of_": "0233356",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05240/6",
+    "palets": [
+      2
+    ]
+  },
+  {
+    "CodOrder": "AR.26.05240",
+    "NumLine": 7,
+    "CodArticle": "H0K430129-0002",
+    "descripcion": "DACHPL.REGENR.KOMPL.NT=900 NB=3450 SCHWARZ",
+    "cantidad": 1,
+    "of_": "0233357",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05240/7",
+    "palets": [
+      3
+    ]
+  },
+  {
+    "CodOrder": "AR.26.05240",
+    "NumLine": 8,
+    "CodArticle": "H0K430172-0005",
+    "descripcion": "ABDECKPLANE MIT REGENRINNE NT=900 NB=3250 NH=3200 ",
+    "cantidad": 1,
+    "of_": "0233358",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05240/8",
+    "palets": [
+      2
+    ]
+  },
+  {
+    "CodOrder": "AR.26.05240",
+    "NumLine": 9,
+    "CodArticle": "H0K430172-0031",
+    "descripcion": "ABDECKPLANE MIT REGENRINNE NT=900 NB=3250 NH=3480",
+    "cantidad": 1,
+    "of_": "0233359",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05240/9",
+    "palets": [
+      4
+    ]
+  },
+  {
+    "CodOrder": "AR.26.05240",
+    "NumLine": 10,
+    "CodArticle": "H0K430172-0034",
+    "descripcion": "LONA ENVOLVENTE CON VIERTEAGUA NT900 NB3450 NH3480",
+    "cantidad": 4,
+    "of_": "0233360",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05240/10",
+    "palets": [
+      2
+    ]
+  },
+  {
+    "CodOrder": "AR.26.05263",
+    "NumLine": 1,
+    "CodArticle": "H0K410170-0001",
+    "descripcion": "PLANE RIGHT SCHUPPEN/REINFORCED 2MM H=2600 SWB FRONT=400 SWB=300, SWT=300 PKG 750MM, SIMILAR DRAW. OK410173 BUT WITH SWB FRONT AND SWB REAR",
+    "cantidad": 1,
+    "of_": "0233400",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05263/1",
+    "palets": [
+      3
+    ]
+  },
+  {
+    "CodOrder": "AR.26.05263",
+    "NumLine": 2,
+    "CodArticle": "H0K410171-0001",
+    "descripcion": "PLANE LEFT SCHUPOEN/REINFORCED 2MM H=2600 SWB FRONT=400 SWB REAR=300 SWT=300 PKG STD 750MM, SIMILAR DRAW. OK410172BUT WITH SWB FRONT AND SWB REAR.",
+    "cantidad": 1,
+    "of_": "0233401",
+    "entregaSolicitada": "2026-11-07",
+    "IDOrderLine": "AR.26.05263/2",
+    "palets": [
+      4
+    ]
+  }
+]

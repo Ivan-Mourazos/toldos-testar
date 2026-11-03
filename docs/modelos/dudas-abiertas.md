@@ -38,6 +38,38 @@ Cómo se decide cada respuesta: primero, el manual del fabricante (el de Oficina
 - **Q-FF04:** en AR2602384 la ventana se dejó en 109 para que tuviera sitio la entrada de tubo (E.T.) de arriba.
 - **Q-FF05:** son cierres independientes, colgados de un tubo en una estructura (foto de Iván: pérgola con parra), no de un toldo. Si llevan mordazas o algo parecido, es para ir sujetos a algún sitio.
 
+## COMBURSA · lote 07-11 (03/11/2026)
+
+El DWG completo se conserva como revisión de oficina para las 25 líneas exactas del lote. No se han
+inventado reglas para las referencias a mano ni se ha cambiado el envío al bot. Evidencia, capturas y
+detalle en [assa-combursa-lote-0711.md](./assa-combursa-lote-0711.md).
+
+**Q-AS0711-01.** En la 420102-0021 del palet 1 aparece una pareja de tres alturas con «x3» y, a su
+derecha, otras pilas de tres y de una unidad. RPS pide 18. ¿Son alternativas de preparación o hay que
+cortar también esas sueltas? Mientras tanto, la web conserva todos los dibujos y rótulos del definitivo,
+pero no da por demostradas 22 unidades ni las convierte en stock.
+
+**Q-AS0711-02.** La 410130-0175, 54 unidades de AR.26.05142/4, está bajo «PALET 5 y 6». ¿Cuántas
+van en cada uno? Mientras tanto, el documento mantiene «5 y 6», sin repartirlas por la mitad. El campo
+manual de palet de la pantalla sigue admitiendo un solo número; el reparto doble está en la revisión de oficina.
+
+**Q-AS0711-03.** En las cortinas y los accesorios de lona de 1, 2 y 3 mm, ¿qué cantidad de cada pieza
+corresponde a una unidad y qué repetición se aplica al juego? Por ejemplo, la superior 410129-0117 lleva
+«X8» para un pedido de 27. Mientras tanto, el papel nuevo muestra las cantidades de RPS y los rótulos
+de repetición por separado: no afirma que ocho dibujos sean ocho cortinas ni inventa la cuenta restante.
+
+**Q-AS0711-04.** Para cerrar el largo real de rollo del lote completo, falta saber qué alternativas de
+corte se usan y qué repeticiones/materiales corresponden a los juegos manuales. Mientras tanto, se
+conserva la colocación exacta de oficina; la web solo puede sumar de forma certificada los programas
+automáticos de sus 16 líneas, 786,975 m. Esa suma parcial no es el consumo total del lote.
+
+**Q-AS0711-05.** Siguen sin regla automática contrastada 410129-0117, 410130-0175, 420102-0021,
+420148-0040, 430129-0002, 430172-0005, 430172-0034, 410170-0001 y 410171-0001. ¿Qué juego completo
+debe conservarse como plantilla para futuros pedidos, incluidos materiales y cantidades? Mientras tanto,
+el 07-11 reproduce sus dibujos exactos; si cambian referencia, descripción, cantidad, OF, palet o la opción
+de sueltas, se retira esa revisión y se mantienen las comprobaciones normales. No se habilitan referencias
+nuevas solo por haber copiado su dibujo.
+
 ## Caballos por medidas · Talleres Cal (01/11/2026)
 
 Son las dudas que impiden sacar el corte de AR.26.05319, línea 3. Mientras tanto, la web no calcula estos remolques y **ese pedido se hace a mano**. Fuentes y contraste por script en [remolque-ganado-medidas.md](./remolque-ganado-medidas.md).

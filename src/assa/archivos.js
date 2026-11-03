@@ -9,14 +9,15 @@ import { crearAlmacenConfirmaciones } from '../flujoDwg/confirmaciones.js';
 import { writeFileAtomic } from '../workflow.js';
 import { rutaParaTgmPedidos } from '../flujoDwg/rutaPc.js';
 import { escribirDocumentoLote } from './documentoLote.js';
+import { revisionOficinaDelLote } from './revisionesOficina.js';
 
 export const CARPETA_PRUEBAS_ASSA = '\\\\192.168.0.128\\Oftecnica\\Oficina Tecnica\\DXF PRUEBAS WEB';
 const error = mensaje => Object.assign(new Error(mensaje), { statusCode: 409 });
 const huella = dato => createHash('sha256').update(JSON.stringify(dato)).digest('hex');
 
 /** Documento de oficina completo; el corte se mantiene en su recuadro independiente. */
-export function planoDelLote(lote) {
-  return escribirDocumentoLote(lote);
+export function planoDelLote(lote, { usarRevisionOficina = true } = {}) {
+  return escribirDocumentoLote(lote, usarRevisionOficina ? revisionOficinaDelLote(lote) : null);
 }
 
 export function crearServicioLotes({ carpeta = path.resolve('tmp/combursa'), oda = { disponible: false }, leer = leerLoteRps, preparar = prepararLote } = {}) {
@@ -31,7 +32,8 @@ export function crearServicioLotes({ carpeta = path.resolve('tmp/combursa'), oda
     if (typeof palets !== 'object' || Array.isArray(palets) || Object.values(palets).some(v => !Number.isSafeInteger(v) || v < 1 || v > 99)) throw error('El palet de cada línea debe ser un número del 1 al 99.');
     const lote = preparar(input.fecha, lineas, sueltas, undefined, { palets });
     const ordenadas = o => Object.entries(o).sort(([a], [b]) => a.localeCompare(b));
-    const firma = huella({ lineas, sueltas: ordenadas(sueltas), palets: ordenadas(palets), version: 2 });
+    const firma = huella({ lineas, sueltas: ordenadas(sueltas), palets: ordenadas(palets), version: 3,
+      revisionOficina: revisionOficinaDelLote(lote)?.sha256Dxf ?? null });
     const raiz = path.join(base, 'COMBURSA', input.fecha.slice(0, 4));
     const borradores = path.join(raiz, 'Borradores'), interno = path.join(raiz, 'Registro');
     const manifest = path.join(interno, input.fecha + '.json');
@@ -70,9 +72,11 @@ export function crearServicioLotes({ carpeta = path.resolve('tmp/combursa'), oda
       if (!ctx.lote.paletsCompletos) throw error('Pon el palet de todas las líneas del corte antes de abrirlo.');
       if (!oda.disponible) throw error('Configura ODA para preparar y abrir el DWG del lote.');
       const respuesta = await ctx.flujo.borrador({ orderCode: ctx.lote.nombre, regenerar: input.regenerar === true,
-        preparar: async carpeta => ({ avisos: ctx.lote.aMano ? [`${ctx.lote.aMano} líneas a mano: no están incluidas en este corte.`] : [],
+        preparar: async carpeta => ({ avisos: ctx.lote.aMano ? [revisionOficinaDelLote(ctx.lote)
+          ? `El DWG conserva la revisión de oficina. ${ctx.lote.aMano} líneas siguen sin regla automática de corte.`
+          : `${ctx.lote.aMano} líneas a mano: no están incluidas en este corte.`] : [],
           fichero: { filename: ctx.lote.nombre + '.dwg', savedPath: path.join(carpeta, ctx.lote.nombre + '.dwg'),
-            contenido: await oda.convertir(Buffer.from(planoDelLote(ctx.lote), 'latin1')) } }) });
+            contenido: await oda.convertir(Buffer.from(planoDelLote(ctx.lote), 'utf8')) } }) });
       if (!respuesta.cuerpo.existente) {
         await ctx.confirmaciones.borrar(ctx.lote.nombre);
         await guardar(ctx.manifest, { firma: ctx.firma, reparto: ctx.lote.reparto, fecha: input.fecha });

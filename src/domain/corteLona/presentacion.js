@@ -183,6 +183,11 @@ export function escribirDxfPlano(plano, cabecera) {
     const pv = plano.presentacion?.ventanas;
     const v = pv ? { ...pv, 2: { ...pv[2], z: h.zona } }
       : { 2: encuadre(h.zona, r.toldo), ...Object.fromEntries(rc.ventanas.map(({ z, r: rv }, k) => [3 + k, encuadre(z, rv, true, !!r.girado)])) };
+    if (pv && plano.ajustarVentanaALaZona) {
+      const p = pv[2];
+      v[2] = encuadre(h.zona, { x0: p.centro[0] - p.ancho / 2, x1: p.centro[0] + p.ancho / 2,
+        y0: p.centro[1] - p.alto / 2, y1: p.centro[1] + p.alto / 2 });
+    }
     if (plano.corteGirable) for (const id of Object.keys(v)) if (v[id].z === zNormal || v[id].z === zc) v[id] = { ...v[id], girable: true };
     return v;
   };

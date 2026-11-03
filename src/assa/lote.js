@@ -113,7 +113,7 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados = cata
     return { palet: p0.palet ?? null, referencia: canalon ? p0.codigo : validadas.find(l => l.codigo === p0.codigo)?.CodArticle ?? p0.codigo,
       referencias: canalon ? p0.referencias : undefined, unidades, como, pedidas, cuadra: unidades === pedidas };
   }).sort((a, b) => (a.palet ?? 1e9) - (b.palet ?? 1e9) || String(a.referencia).localeCompare(String(b.referencia)));
-  return { nombre, fecha, lineas: lineas.map(({ calculo: _calculo, ...l }) => l), programas, reparto, entidades, cortador,
+  return { nombre, fecha, sueltas: { ...sueltas }, lineas: lineas.map(({ calculo: _calculo, ...l }) => l), programas, reparto, entidades, cortador,
     avisos: sinPalet ? [`Falta el palet de ${sinPalet} ${sinPalet === 1 ? 'línea' : 'líneas'}: ponlo del correo de Producción.`] : [],
     paletsCompletos: !sinPalet,
     totalUnidades: lineas.reduce((n, l) => n + Number(l.cantidad || 0), 0),
