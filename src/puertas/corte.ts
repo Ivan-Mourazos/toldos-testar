@@ -506,7 +506,7 @@ export function generarCortePuertas(
     while(indice>0) { indice--;letra=String.fromCharCode(65+indice%26)+letra;indice=Math.floor(indice/26); }
     const panos = r.piezas.filter(p => p.clase === 'pano');
     // El cálculo recorre apilables y autorreparables desde abajo; en el plano de taller A1 va arriba.
-    if (pedido.elementos[idxPuerta].input.modelo !== 'PUERTAENR') panos.reverse();
+    if (pedido.elementos[idxPuerta].input.modelo !== 'PUERTAENR' && !pedido.elementos[idxPuerta].input.araujo) panos.reverse();
     panos.forEach((p, i) => codigosPano.set(p.id, `${letra}${i + 1}`));
     for (const pieza of r.piezas) {
       if (pieza.clase !== 'pano') codigosPano.set(pieza.id, letra);
@@ -517,7 +517,7 @@ export function generarCortePuertas(
   const sinOf = pedido.elementos
     .filter(e => !e.input.of.trim() || e.input.of.trim().toUpperCase() === 'SIN OF')
     .map(e => e.id);
-  const enrollables = pedido.elementos.filter(e => e.input.modelo === 'PUERTAENR').map(e => `${e.id}:`);
+  const enrollables = pedido.elementos.filter(e => e.input.modelo === 'PUERTAENR' && !e.input.araujo).map(e => `${e.id}:`);
   const esEnrollable = (idPieza: string) => enrollables.some(prefijo => idPieza.startsWith(prefijo));
   const autorreparables = pedido.elementos.filter(e => e.input.modelo === 'PUERTAUTO').map(e => `${e.id}:`);
   const esAutorreparable = (idPieza: string) => autorreparables.some(prefijo => idPieza.startsWith(prefijo));

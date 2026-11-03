@@ -1,5 +1,6 @@
 import { MODELOS_PUERTAS, nuevaPuerta } from './calcular.ts';
 import { REGLAS_SYSTEM_DOCK } from './systemDock.ts';
+import { araujoDesdeRps } from './araujoRps.ts';
 import type { ModeloPuerta, Puerta } from './tipos.ts';
 
 /** SYSTEM DOCK, S.L. en RPS: sus líneas «LONA PERIMETRAL …» son lonas de abrigo de muelle (docs/modelos/system-dock.md). */
@@ -24,6 +25,10 @@ export function puertasDesdeRps(lineas: LineaPuertaRps[], { clienteCodigo = '' }
   const avisos: string[] = [];
   for (const l of lineas) {
     const articulo = l.articulo.trim().toUpperCase();
+    if(clienteCodigo.trim()==='000460') {
+      const p=araujoDesdeRps(l);
+      if(p) { puertas.push(p);avisos.push('ARAUJO: comprueba en la hoja si son tramos sueltos o lona continua, cantidades, bolsas, perfil de canutillo, ventanas y rollos. RPS solo propone lo escrito.');continue; }
+    }
     const sd = lonaSystemDock(l, clienteCodigo);
     if (sd) { puertas.push(sd); continue; }
     if (!articulo.startsWith('PUERTA')) continue;

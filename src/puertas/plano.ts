@@ -1,4 +1,5 @@
 import { generarCortePuertas } from './corte.ts';
+import { escribirPlanoAraujo } from './planoAraujo.ts';
 import { escribirPlanoEnrollables } from './planoEnrollable.ts';
 import { escribirPlanoTaller } from './planoTaller.ts';
 import { escribirPlanoSystemDock } from './planoSystemDock.ts';
@@ -11,6 +12,7 @@ export function escribirPlanoPuertas({ pedido, cabecera, ofStockSacos }: {
   cabecera: { cliente: string; tecnico: string; revisor: string; fecha: string };
 }): string {
   const { cortes } = generarCortePuertas(pedido, { ofStockSacos });
+  if (pedido.elementos.some(e => e.input.araujo)) return escribirPlanoAraujo(pedido,cortes,cabecera);
   if (pedido.elementos.length && pedido.elementos.every(e => e.input.modelo === 'SYSTEMDOCK')) {
     return escribirPlanoSystemDock(pedido, cortes, cabecera);
   }

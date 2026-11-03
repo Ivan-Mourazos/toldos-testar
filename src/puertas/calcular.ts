@@ -4,6 +4,7 @@ import { repartirPanos, type RepartoPanos } from './empates.ts';
 import { marcasBolsillo } from './bolsillo.ts';
 import { numerarBorde } from './unionesCorte.ts';
 import { calcularSystemDock } from './systemDock.ts';
+import { calcularAraujo } from './araujo.ts';
 import { ventanalesEnrollable } from './ventanalesEnrollable.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
 import { bajoDobleSaco, desnivelSuelo, espejarPieza, inclinarSaco, pestanaDerecha, sacoApilable, sacoPuerta, sacoUtil } from './saco.ts';
@@ -41,6 +42,7 @@ export function huecosEntrada(largo: number, diametro: 30 | 42, cintas: number[]
 const seCruzan = (a: Hueco, b: Hueco) => a.x < b.x + b.ancho - 0.001 && b.x < a.x + a.ancho - 0.001 && a.y < b.y + b.alto - 0.001 && b.y < a.y + a.alto - 0.001;
 
 export function calcularPuerta(p: Puerta): ResultadoPuerta {
+  if (p.araujo) return calcularAraujo(p);
   if (p.modelo === 'SYSTEMDOCK') return calcularSystemDock(p);
   const piezas: PiezaPuerta[] = [], avisos: AvisoPuerta[] = [];
   const aviso = (codigo: string, texto: string, nivel: 'error' | 'aviso' = 'error') => { if (!avisos.some(a => a.codigo === codigo && a.texto === texto)) avisos.push({ codigo, texto, nivel }); };

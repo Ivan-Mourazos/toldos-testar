@@ -12,9 +12,22 @@ export interface Ventana extends Hueco {
 }
 export interface Entrada { altura: number; diametro: 30 | 42; largo: number; alto: number; huecos: Hueco[] }
 export interface MedidasBolsillo { distancia:number; ancho:number; lado:'izquierdo'|'derecho'; altoSuperior:number|null }
+/** ARAUJO: medidas terminadas en cm, por el revés; cada bolsa conserva su propio frente. */
+export interface TramoAraujo {
+  tipo: 'tramo' | 'bolsa'; frente: number; alto: number; cantidad: number;
+  ventanas: Ventana[];
+  rotulacion?: { texto: string; ancho: number; desdeDerecha: number };
+}
+export interface ConfiguracionAraujo {
+  forma: 'sueltos' | 'continua';
+  /** Dos perfiles observados; el de 6,5 solo se aplica si se confirma expresamente. */
+  perfil: '7' | '6,5';
+  tramos: TramoAraujo[];
+}
 export interface Puerta {
   modelo: ModeloPuerta;
-  articuloOrigen: ModeloPuerta | '';
+  articuloOrigen: ModeloPuerta | 'PUERTAPLET' | 'PUERTAPLETRA' | 'PUERTAPLETRAM' | '';
+  araujo?: ConfiguracionAraujo;
   frente: number;
   alto: number;
   of: string;

@@ -16,6 +16,8 @@ import { guardarPuertasParaRevision, pedidoDesdeGuardado, pedidoDesdeRps, type M
 import { InputDecimal } from '../remolques/InputDecimal';
 import type { ResumenPedido } from '../remolques/SelectorProducto';
 import { AlzadoPuerta } from './AlzadoPuerta';
+import { ConfigurarAraujo } from './ConfigurarAraujo';
+import { nuevoTramoAraujo } from '../../puertas/araujo.ts';
 import { CorteResumen, useVistaCortePuertas } from './VistaCortePuertas';
 import { useFlujoCorte } from './flujoCorte';
 import { BotonesFlujoCorte, esperaAlCorte } from '../flujoCorteDwg';
@@ -59,6 +61,7 @@ function Configurar({p,cambiar,corte,derecha='alzado',letra='A'}:{p:Puerta;cambi
   const [pestana,setPestana]=useState<PestanaPuerta>('puerta');
   const formularioFluido=useContenidoFluido<HTMLElement>(pestana);
   const dibujoFluido=useContenidoFluido(derecha);
+  if(p.araujo)return <ConfigurarAraujo p={p} cambiar={cambiar} corte={corte} derecha={derecha} letra={letra}/>;
   // System Dock: una lona rectangular; sin cristal, saco, tubos ni ventanas (src/puertas/systemDock.ts).
   const sd=p.modelo==='SYSTEMDOCK';
   const set=<K extends keyof Puerta>(k:K,v:Puerta[K])=>cambiar({...p,[k]:v});
@@ -95,6 +98,7 @@ function Configurar({p,cambiar,corte,derecha='alzado',letra='A'}:{p:Puerta;cambi
           <label className="puerta-campo"><span>OF</span><input aria-label={sd?'OF de lona':'OF de puerta'} value={p.of} placeholder="SIN OF" onChange={e=>set('of',e.target.value)}/></label>
           <Numero titulo={sd?'Cantidad de lonas iguales':'Cantidad de puertas iguales'} valor={p.cantidad} cambiar={v=>set('cantidad',v??0)}/>
           {!sd&&<SelectField label="Modelo de puerta" value={p.modelo} options={Object.keys(MODELOS_PUERTAS).filter(v=>v!=='SYSTEMDOCK')} optionLabel={v=>MODELOS_PUERTAS[v as ModeloPuerta]} onChange={v=>cambiar({...p,modelo:v as ModeloPuerta,entradas:[],ventanas:[],confirmada:false,ventanasConfirmadas:false})}/>}
+          {['PUERTAENR','PUERTAPLE'].includes(p.modelo)&&<SelectField label="Confección" value="portanova" options={['portanova','araujo']} optionLabel={v=>v==='araujo'?'ARAUJO · tramos y bolsas':'Portanova · puerta completa'} onChange={v=>{if(v==='araujo')cambiar({...p,entradas:[],ventanas:[],confirmada:false,ventanasConfirmadas:false,materialSaco:'LAC900 AMARILLO',araujo:{forma:'sueltos',perfil:'7',tramos:[{...nuevoTramoAraujo(),frente:p.frente,alto:p.alto}]}});}}/>}
           <Numero titulo={sd?'Largo de la lona (cm)':'Frente (cm)'} valor={p.frente||null} cambiar={v=>set('frente',v??0)}/>
           {!(p.modelo==='PUERTAPLE'&&p.apilable.sueloInclinado)&&<Numero titulo={sd?'Ancho de la lona (cm)':'Alto (cm)'} valor={p.alto||null} cambiar={v=>set('alto',v??0)}/>}
           <label className="puerta-campo"><span>{sd?'Color':'Color / RAL'}</span><input aria-label={sd?'Color de lona':'Color de puerta'} value={p.color} placeholder={sd?'Negro':'Azul 5002'} onChange={e=>set('color',e.target.value)}/></label>

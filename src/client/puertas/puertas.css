@@ -32,7 +32,7 @@
 .puerta-casilla input { width:16px; height:16px; flex-shrink:0; }
 .puerta-casilla input:focus-visible { outline:2px solid var(--focus-ring); outline-offset:2px; }
 .puerta-derecha { position:sticky; top:18px; }
-.puerta-alzado svg { width:100%; height:calc(100vh - 190px); min-height:400px; display:block; margin:10px 0; background:var(--zone); border-radius:6px; }
+.puerta-alzado > svg { width:100%; height:calc(100vh - 190px); min-height:400px; display:block; margin:10px 0; background:var(--zone); border-radius:6px; }
 .puerta-alzado svg text { fill:var(--text); font-family:Arial,sans-serif; font-size:var(--puerta-letra,10px); }
 .puerta-alzado svg .puerta-cota-texto { font-size:calc(var(--puerta-letra,10px) * 0.85); fill:var(--text-muted); }
 .puerta-alzado svg .puerta-texto-cabecera { font-size:calc(var(--puerta-letra,10px) * 0.9); font-weight:600; }
@@ -78,6 +78,10 @@
 .puerta-piezas table { width:100%; border-collapse:collapse; font-size:12px; }
 .puerta-piezas td, .puerta-piezas th { padding:9px; border-bottom:1px solid var(--border); text-align:left; }
 .puerta-cutter { stroke:var(--tramo-holgado); stroke-width:1.2; fill:none; }
+.puerta-pano { fill:var(--surface); stroke:var(--text); stroke-width:0.8; }
+.puerta-referencia { fill:none; stroke:var(--tramo-holgado); stroke-width:0.6; }
+.puerta-marca { fill:none; stroke:var(--tramo-ajustado); stroke-width:0.7; }
+.puerta-ventana { fill:var(--surface); stroke:var(--text); stroke-width:0.8; }
 .puerta-cutter-texto { color:var(--tramo-holgado); }
 .puerta-corte-dibujo { height:auto; max-height:330px; min-height:140px; }
 .puerta-corte-desplazamiento { overflow:auto; max-height:520px; }
@@ -132,7 +136,7 @@
 .puerta-pestanas { display:flex; flex-wrap:wrap; margin:0 0 12px; }
 .puerta-derecha { position:sticky; top:12px; height:calc(100vh - 120px); display:flex; flex-direction:column; gap:10px; min-height:0; }
 .puerta-derecha > .puerta-alzado, .puerta-derecha > .puerta-corte-resumen { flex:1; min-height:0; display:flex; flex-direction:column; overflow:auto; }
-.puerta-derecha .puerta-alzado svg { flex:1; height:auto; min-height:300px; }
+.puerta-derecha .puerta-alzado > svg { flex:1; height:auto; min-height:300px; }
 .puerta-derecha .puerta-avisos { flex:none; max-height:24vh; overflow:auto; }
 
 
@@ -140,9 +144,9 @@
 .puerta-vistas { margin-left:auto; display:inline-flex; }
 .systemdock-pantalla .puerta-derecha { position:static; height:auto; max-height:none; overflow:visible; }
 .systemdock-pantalla .puerta-derecha > :is(.puerta-alzado,.puerta-corte-resumen) { flex:none; overflow:visible; }
-.systemdock-pantalla .puerta-alzado svg { flex:none; width:100%; height:auto; min-height:0; }
+.systemdock-pantalla .puerta-alzado > svg { flex:none; width:100%; height:auto; min-height:0; }
 .systemdock-pantalla .puerta-corte-dibujo { width:100%; height:auto; min-height:0; max-height:none; }
 .systemdock-pantalla .puerta-derecha .puerta-avisos { max-height:none; overflow:visible; }
 /* Revisión en Pedidos: una puerta o lona cada vez con pestañas, y el alzado del tamaño de la pieza (Iván, 26/10/2026). */
 .puerta-planteamiento-pestanas { display:inline-flex; flex-wrap:wrap; align-self:flex-start; margin:4px 0 10px; }
-.puerta-planteamiento .puerta-alzado svg { height:auto; max-height:calc(100vh - 300px); min-height:0; }
+.puerta-planteamiento .puerta-alzado > svg { height:auto; max-height:calc(100vh - 300px); min-height:0; }
