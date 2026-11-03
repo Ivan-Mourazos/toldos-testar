@@ -59,13 +59,13 @@ El DXF común conserva los huecos y las curvas en CUTTER; los tramos rectos del 
 
 ### Rotulación y bolsa
 
-El alzado se plantea por el **revés** y la posición de rotulación se describe por el **derecho**. Iván, 03/11/2026: se indica el ancho del anagrama habitual y su distancia al borde derecho. El formulario no propone 8 cm desde el bajo ni pide arte o alto del logo; no crea ningún recorte de máquina. Las referencias verticales que ya estuvieran guardadas siguen leyéndose. Q-AR02 contestada; contraste ampliado al final del expediente.
+El alzado se plantea por el **revés** y la posición de rotulación se describe por el **derecho**. Iván, 03/11/2026: se indica el ancho del anagrama habitual y su distancia al borde derecho. El modelo exacto del 4292 aportado después por Iván fija el campo «Alto desde el bajo», inicialmente 8 cm, con su cota. No se pide el arte o la altura física del logo ni se crea ningún recorte de máquina. Las referencias verticales que ya estuvieran guardadas siguen leyéndose. Q-AR02 contestada; contraste ampliado al final del expediente.
 
 La bolsa es otra pieza rectangular, con su propio frente, alto y cantidad. No se sustituye por el saco con pestaña de Portanova. No se deduce siempre F − 7,5: el 5365 pide **440 × 30**, aunque sus tramos son de 307. El 3688 demuestra bolsas sueltas de 430 × 30 y 440 × 30; ambas cortan a 37,4 de alto. También hay bolsas de 28 que cortan a 35,4.
 
 ### Plegable continua comprobada
 
-AR2602986 demuestra que `140 + 70 + 70` no siempre significa tres piezas: la hoja lleva una lona continua de **134 × 280**, canutillos en los extremos y dos bolsas soldadas intermedias de tubo Ø30. Cuerpo de corte **134 × 287,4**, entradas de **134 × 12** cada una y bolsa amarilla de **126,5 × 35,4**. La oficina agrupa las dos entradas en una muestra de 24,01; la web conserva dos piezas nominales de 12.
+AR2602986 demuestra que `140 + 70 + 70` no siempre significa tres piezas: la hoja lleva una lona continua de **134 × 280**, canutillos en los extremos y dos bolsas soldadas intermedias de tubo Ø30. Cuerpo de corte **134 × 287,4**, entradas de **134 × 12** cada una y bolsa amarilla de **126,5 × 35,4**. La oficina dibuja las entradas en una muestra de 24,01. Iván aclara después: las E.T. no se cortan; la web conserva sus marcas y referencias sobre el cuerpo, sin piezas, cantidades ni consumo de E.T.
 
 Con ejes a 70 y 140 desde el bajo terminado, las rayas del cuerpo se sitúan a `eje + 3,7 − 12/2`: **67,7 y 137,7 desde el corte inferior**, como el plano. La web permite introducir esas entradas y solo esa clase de cuerpo continuo rectangular que cabe entero. No inventa reparto, recortes para cintas ni altos de entradas a partir del artículo PUERTAPLE. Se debe indicar la impresión y el barniz en la nota del plano. El CAD de este antecedente escribe OF 0229533 y RPS 0229535; se conserva la OF de RPS al traerlo (Q-AR04).
 
@@ -86,7 +86,7 @@ Medidas de corte en cm. «Coincide» se refiere a esas medidas nominales, no a i
 | AR2603688, OF 0230793 | Dos bolsas diferentes: 430 × 30 y 440 × 30 | Ambas de 37,4; alternativa de corte de pieza/restos | Dos filas independientes; no 2 conjuntos de 2 bolsas |
 | AR2600776, OF 0225577 | 255 × 100 con ventanas y 255 × 90 liso | 107,4 / 97,4; cristal 94 × 39 | Configurable como dos tramos; RPS dice «diferentes medidas» y no inventa cuáles |
 | AR2600512, OF 0225032 | Tramo amarillo 480 × 30 | 480 × 37,4, marcas 7 | Coincide; sin puerta ficticia |
-| AR2505733, OF 0222632/33/34 | 4 tramos de 475 × 92,5 con E.T. intermedia de 13; pies de 34 azul y 21 amarillo, E.T. inferior de 12 | Cortes 99,7 / 49,5 / 36,5; referencias superiores a 3,5 | Web 99,9 / 49,7 / 36,7: conserva los 3,7 confirmados para el canutillo. Referencia inferior E.T. a 12 y rotulador a 24. Cuatro E.T. de 475 × 13 aparte. Q-AR03 contestada |
+| AR2505733, OF 0222632/33/34 | 4 tramos de 475 × 92,5 con E.T. intermedia de 13; pies de 34 azul y 21 amarillo, E.T. inferior de 12 | Cortes 99,7 / 49,5 / 36,5; referencias superiores a 3,5 | Web 99,9 / 49,7 / 36,7: conserva los 3,7 confirmados para el canutillo. Referencia inferior E.T. a 12 y rotulador a 24. E.T. de 13 solo como marcas y referencias, sin piezas de corte. Q-AR03 contestada |
 
 Exploración adicional de cotas propias, disponible por fichero en `evidencia-cad.json`:
 
@@ -163,7 +163,7 @@ Iván señaló la plantilla `ARAUJO.dwg` de `DIBUJOS\PUERTAS`, modificada el **1
 | --- | --- | --- |
 | COMB y Panamá | COMB: 59 → 66,15 y 47,5 → 54,65 en esa plantilla, rotulador a 6,5 (`21EEF`–`21F2C`). Panamá: 95 → 102,4 y bolsa 28 → 35,4 (`2AE4F`, `2B675`). Hay además ejemplos normales de 7 en el resto de la zona | La respuesta posterior de Iván prevalece: habitual 7 para todos; COMB manual con referencia a 3,45, rotulador a 6,5 y corte H + 6,9. El desfase histórico de 0,25 queda anotado, sin trasladarlo al remate habitual |
 | Material | Nota `24C10`: normalmente LAC 900; si es PVC Panamá 900 g ignífugo lo especifican | Se conserva el material del pedido. El material no cambia automáticamente el perfil |
-| Cuño y caras | Nota `21F7F`: 8 cm desde abajo, una cara salvo petición de las dos, distancia desde derecha variable. El ejemplo corto incorpora «en medio de la altura» (`2399F`). Notas `2C8DD` y `36834`: cuño por el derecho; puerta por el revés | Iván posteriormente pide solo ancho y distancia al derecho para el anagrama habitual. Se retira la propuesta automática de 8; las referencias ya guardadas se conservan |
+| Cuño y caras | Nota `21F7F`: 8 cm desde abajo, una cara salvo petición de las dos, distancia desde derecha variable. El ejemplo corto incorpora «en medio de la altura» (`2399F`). Notas `2C8DD` y `36834`: cuño por el derecho; puerta por el revés | El modelo exacto del 4292 confirmado después por Iván mantiene ancho, distancia al derecho y alto desde el bajo, inicialmente 8, con sus cotas |
 | Extremo con doblez | Los ejemplos «CON DOBLEZ» muestran una preparación superior de 4 y otra inferior de 7: 190 → 195,4 y 195 → 200,4 (`23A34`–`23A6D`). Hay otros detalles de soldar 5/soldar 2, cortes por el derecho y pasos de cintas sin retirar lona | El doblez de 4 es distinto al canutillo y a la E.T.; no se confunden. El 5733 se resuelve por sus propios extremos y la respuesta posterior de Iván |
 | Impresión digital | Ejemplo **AR2203254**: cadena 108/80/75, ancho 185; cota total 263; la cota 263,4 llega al rotulador superior, el contorno mide 270,4; bolsa 177,5 × 35,4; muestra de dos ET de 24,0107 (`2DD88`, `2DD94`, `2DD9D`). Son referencias y extremos propios | El contorno de 270,4 responde a los mismos dos canutillos de 7. La lectura anterior confundía la marca superior con el borde; véase el contraste ampliado |
 | Rollos y giro | No se han encontrado notas de ancho de rollo ni una instrucción general que fije la orientación de impresión | Iván confirma 300/140/300 como valores por defecto. La orientación posterior a imprimir se contrasta con los 5656 y 6255; el reparto de cuerpos mayores sigue pendiente |
@@ -197,7 +197,7 @@ También hay dibujos sin nombre de cliente (`1412.dwg`, `AR1406234.dwg`, `AR2205
 
 ## Respuestas de Iván y contraste ampliado · 03/11/2026
 
-**Q-AR02 contestada.** Se revisaron las hojas de 4292 y las dos OF de 2391: el anagrama tiene ancho 20 y distancia al derecho 15, sin cota de alto ni posición vertical. El plano de 6245 sí conserva una referencia vertical de **8**; también existe en NUEVO/REV2. No se afirma que nunca se acotara en oficina: es una convención anterior, que no se convierte en un dato obligatorio del cliente. Se aplica la indicación más reciente de Iván: anagrama habitual, ancho y distancia al borde derecho. El 5365 se regenera sin altura inventada ni aviso sobre arte pendiente.
+**Q-AR02 contestada.** Se revisaron las hojas de 4292 y las dos OF de 2391: el anagrama tiene ancho 20 y distancia al derecho 15, sin cota de alto ni posición vertical. El plano de 6245 sí conserva una referencia vertical de **8**; también existe en NUEVO/REV2. No se afirma que nunca se acotara en oficina: es una convención anterior, que no se convierte en un dato obligatorio del cliente. La captura posterior modelo-plano-ivan-4292.png es la instrucción vigente: anagrama habitual, ancho, distancia al borde derecho y alto desde el bajo, por defecto 8 y editable. La cota 8 vuelve al plano; no se inventa la altura física del logo ni se pide el arte.
 
 **Q-AR03 contestada: E.T. es bolsa soldada.** La hoja 5733 identifica bolsa soldada de 130 mm en medio de los cuatro cuerpos y de 120 mm en los pies. Mandan sus 21 cm para la pieza amarilla; los 34 de esa línea RPS son un error. Cada tramo permite elegir arriba/abajo canutillo o E.T., con el ancho de su pedido; las E.T. intermedias tienen eje desde el bajo terminado. OF y material pueden ser distintos en cada tramo.
 
@@ -207,11 +207,11 @@ Medición del DXF original 5733: coordenadas de modelo en metros y distancias en
 | --- | --- | --- |
 | `3683E`, `3683F`, `36844` | Corte inferior −59,7150521; rotulador −59,6450521; referencia −59,6780521 | Canutillo: 7 al rotulador, 3,7 a referencia |
 | `3688D`, `3688E`, `36846` | Corte superior −58,7180521; rotulador −58,7880521; referencia −58,7530521 | El dibujo antiguo tiene 3,5 a la referencia superior. Se conservan los 3,7 actuales; diferencia de 2 mm, sin trasladarla a otras piezas |
-| `368B9`, `368BA` | Eje −59,2980521, marca −59,3630521 | Eje a 38 del bajo terminado, tira de 13, marca 6,5 por debajo del eje: 35,2 desde el corte inferior |
+| `368B9`, `368BA` | Eje −59,2980521, marca −59,3630521 | Eje a 38 del bajo terminado, E.T. de 13 sin corte propio, marca 6,5 por debajo del eje: 35,2 desde el corte inferior |
 | `36916`, `36A18`, `36A19` | Referencia inferior −60,4523735686; corte −60,5723735686; rotulador −60,3323735686 | E.T. inferior de 12: referencia a 12 y rotulador a 24 del corte. El ancho no se duplica en el alto de corte |
 | `36A4F`, `36A5D`, `36A5E` | Referencia amarilla −61,1298601782; corte −61,2498601782; rotulador −61,0098601782 | La misma E.T. inferior de 12 en la pieza de 21 |
 
-Corte nominal nuevo: **475 × 99,9, cantidad 4**, E.T. separadas **475 × 13, cantidad 4**; pie azul **475 × 49,7**, pie amarillo **475 × 36,7**. Sus OF son 0222632/33/34. El plano antiguo mide 99,7/49,5/36,5 por la referencia superior de 3,5. Se anota «SOLDADA ALTA FRECUENCIA · EMPATE 2 CM» y «E.T. · DEJAR HUECOS 9». Este último es un espacio que se deja al soldar, no una serie de recortes inventados para el bot. Las capas nuevas siguen siendo DISCO1 blanco, ROTULADOR rojo y referencias magenta solo en el plano.
+Corte nominal nuevo: **475 × 99,9, cantidad 4**, sin piezas de E.T.; pie azul **475 × 49,7**, pie amarillo **475 × 36,7**. Sus OF son 0222632/33/34. El plano antiguo mide 99,7/49,5/36,5 por la referencia superior de 3,5. Se anota «EMPATE: 2 CM» como en los antecedentes de Iván y «E.T. (DEJAR HUECOS 9)». No se copia la nota SOLDADA ALTA FRECUENCIA de otro técnico. Este último es un espacio que se deja al soldar, no una serie de recortes inventados para el bot. Las capas nuevas siguen siendo DISCO1 blanco, ROTULADOR rojo y referencias magenta solo en el plano.
 
 Se buscó BOLSA SOLDADA, E.T. y ENTRADA en las 1.329 líneas RPS. La expresión BOLSA SOLDADA no aparece literalmente: RPS suele decir ENTRADAS DE TUBO. No se puede deducir de ese texto si la entrada divide paños o va soldada sobre un cuerpo. El contraste de E.T. intermedias se amplía con 2986 (12), 6255 (12), 5656 (12) y 3254 (dos de 12), además del 5733 (13). Las cintas y empates de las plegables grandes siguen fuera del cuerpo sencillo.
 
@@ -228,6 +228,25 @@ Se buscó BOLSA SOLDADA, E.T. y ENTRADA en las 1.329 líneas RPS. La expresión 
 
 AR2505761 solo tiene hoja local: no se encontró su DWG, por lo que no se atribuyen medidas a su presentación. El archivo local llamado AR2502986 contiene una presentación **R2502986 de otro cliente**, una pieza de toldo de Julio Domínguez Antelo; se descarta como evidencia de Araujo. La referencia de puertas 2986 contrastada es AR2602986.
 
-**Q-AR06 contestada para rollos.** Iván confirma **300 / 140 / 300**: mismo tipo de lona que Portanova, como valores normales editables en la ficha de Araujo. No son provisionales. Los planos de 6255 y 5656 identifican LONA ID 300 ANCHO y conservan el alto atravesado en ese ancho. La opción manual «Cortar el cuerpo después de imprimir» impide que el anidado gire ese cuerpo y lo separa del material de las E.T. sin imprimir; no añade demasías de impresión sin evidencia. Si el cuerpo no cabe entero en ese sentido, se bloquea el corte y queda únicamente la pregunta concreta sobre su cabecera/empate en Q-AR06. No se aplica esa orientación automáticamente por encontrar IMPRESA en RPS.
+**Q-AR06 contestada para rollos.** Iván confirma **300 / 140 / 300**: mismo tipo de lona que Portanova, como valores normales editables en la ficha de Araujo. No son provisionales. Los planos de 6255 y 5656 identifican LONA ID 300 ANCHO y conservan el alto atravesado en ese ancho. La opción manual «Cortar el cuerpo después de imprimir» impide que el anidado gire ese cuerpo sin generar piezas de E.T.; no añade demasías de impresión sin evidencia. Si el cuerpo no cabe entero en ese sentido, se bloquea el corte y queda únicamente la pregunta concreta sobre su cabecera/empate en Q-AR06. No se aplica esa orientación automáticamente por encontrar IMPRESA en RPS.
 
 En pantalla: Araujo, Portanova, General y los tipos con mayúscula inicial. Los planos, DXF y cajetines conservan los textos en mayúsculas del taller.
+
+
+## Corrección de E.T. y modelo exacto del plano · 03/11/2026
+
+Iván: «en las puertas de Araujo no se cortan E.T.». Prevalece sobre la lectura anterior de las muestras dibujadas en CAD: ninguna E.T. intermedia genera pieza de corte, ni por tramo ni en las entradas de documentos guardados de continua. No hay tira, cantidad ni consumo propio en el bot. Los extremos E.T. siguen siendo remates del propio cuerpo, con su aumento y sus líneas. En el 5733 quedan seis piezas de lona (cuatro cuerpos y dos pies); desaparecen las cuatro tiras de 475 × 13. Sus rayas, referencias, eje a 38, ancho 13 y «DEJAR HUECOS 9» permanecen en el alzado.
+
+La captura tmp/araujo/modelo-plano-ivan-4292.png fija la presentación. Se compararon texto a texto las presentaciones de 5333, 4373, 4292, 2986 y las dos del 2391, todas de Iván. Inventario con posiciones y capturas en tmp/araujo/rotulos-ivan/.
+
+| Rótulo | Evidencia de Iván | Aplicación |
+| --- | --- | --- |
+| A1, A2, A3 y bolsa A | 2391: identificaciones dentro de las piezas y compartidas con el corte | Se añaden discretas; sin TRAMO, UD. ni cabeceras largas |
+| X1 / X2 | 5333, 4292 y 2391: cantidad grande junto al tramo; 4373: X6 del cristal | Cantidad por tramo editable, Xn en el alzado y repetición real en el anidado. Bolsas y cristales iguales conservan sus muestras con multiplicador |
+| OF y REVÉS | 4292 y 2391: centro del primer tramo; no repetidos en todas las piezas | Solo primer tramo; la rotulación por derecho se indica allí cuando existe. El corte conserva la OF de cada pieza |
+| VARILLA BLANCA (5,5 mm), AL CORTE | 5333, 4292, 2986 y 2391: arriba/abajo y ambos laterales | Se copian esos textos, sin añadir CANUTILLO ni símbolos o explicaciones redundantes |
+| E.T. y sus cotas | 2986: E.T., ancho 12 y marcas de posición; TUBO Ø30 en sus ejes | Rótulo breve E.T.; ancho y eje acotados, sin frase larga de medidas. El 5733 conserva DEJAR HUECOS 9 solicitado para esa pieza |
+| ROTULACIÓN, 8 y 15 | Captura exacta del 4292, además del 2391 | Alto desde el bajo editable, inicialmente 8; cotas de alto, ancho y distancia al derecho |
+| Soldadura / empate | No hay SOLDADA ALTA FRECUENCIA en los cinco. EMPATE: 2 CM aparece en 5333, 4292 y 2986 | Se retira aquella nota automática del 5733 y queda EMPATE: 2 CM |
+
+Las dos cotas verticales de cada tramo van a la izquierda: corte por fuera y terminado por dentro. A la derecha se acotan los extremos (7 y 7 con canutillos) y se coloca Xn. Frente sobre el último tramo y sobre la bolsa, como en la captura. Las ventanas llevan ancho, huecos laterales, alto y distancia al bajo dentro del dibujo; el 39 del 5365 queda entre ventanas y separado de la varilla y del frente siguiente. La bolsa conserva AMARILLO y su letra. El corte y el cálculo del 5365 mantienen sus huellas anteriores; su plano cambia únicamente al adoptar esta presentación.
