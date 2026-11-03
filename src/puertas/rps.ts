@@ -1,6 +1,7 @@
-import { MODELOS_PUERTAS, nuevaPuerta } from './calcular.ts';
+import { nuevaPuerta } from './calcular.ts';
 import { REGLAS_SYSTEM_DOCK } from './systemDock.ts';
 import { araujoDesdeRps } from './araujoRps.ts';
+import { fichaPorCodigo } from './clientes.ts';
 import type { ModeloPuerta, Puerta } from './tipos.ts';
 
 /** SYSTEM DOCK, S.L. en RPS: sus líneas «LONA PERIMETRAL …» son lonas de abrigo de muelle (docs/modelos/system-dock.md). */
@@ -23,16 +24,19 @@ const numero = (texto: string) => Number(texto.replace(',', '.'));
 export function puertasDesdeRps(lineas: LineaPuertaRps[], { clienteCodigo = '' }: { clienteCodigo?: string } = {}): { puertas: Puerta[]; avisos: string[] } {
   const puertas: Puerta[] = [];
   const avisos: string[] = [];
+  const ficha=fichaPorCodigo(clienteCodigo);
   for (const l of lineas) {
     const articulo = l.articulo.trim().toUpperCase();
-    if(clienteCodigo.trim()==='000460') {
-      const p=araujoDesdeRps(l);
-      if(p) { puertas.push(p);avisos.push('ARAUJO: comprueba en la hoja si son tramos sueltos o lona continua, cantidades, bolsas, perfil de canutillo, ventanas y rollos. RPS solo propone lo escrito.');continue; }
+    if(ficha.calculo==='araujo') {
+      const p=araujoDesdeRps(l,ficha);
+      if(p) { puertas.push(p);avisos.push(`${ficha.nombre}: comprueba en la hoja si son tramos sueltos o lona continua, cantidades, bolsas, perfil de canutillo, ventanas y rollos. RPS solo propone lo escrito.`);continue; }
+      if(articulo.startsWith('PUERTA')){avisos.push(`La ficha de ${ficha.nombre} no permite el artículo ${articulo}.`);continue;}
     }
     const sd = lonaSystemDock(l, clienteCodigo);
     if (sd) { puertas.push(sd); continue; }
     if (!articulo.startsWith('PUERTA')) continue;
-    if (!Object.hasOwn(MODELOS_PUERTAS, articulo)) {
+    const tipo=ficha.tipos.find(t=>t.id===ficha.articulos[articulo]);
+    if (!tipo) {
       avisos.push(`Línea ${articulo} (tramo o pieza suelta): no es una puerta completa, se hace aparte.`);
       continue;
     }
@@ -41,7 +45,8 @@ export function puertasDesdeRps(lineas: LineaPuertaRps[], { clienteCodigo = '' }
     const color = /COLOR\s+([A-ZÁÉÍÓÚÑ]+(?:\s+[A-ZÁÉÍÓÚÑ]+)*\s+\d{4})/i.exec(texto);
     const cantidad = Number.isInteger(l.cantidad) && l.cantidad >= 1 && l.cantidad <= 50 ? l.cantidad : 1;
     puertas.push({
-      ...nuevaPuerta(articulo as ModeloPuerta),
+      ...nuevaPuerta(tipo.modelo),
+      clientePuertas:ficha.id,tipoPuerta:tipo.id,...ficha.rollos,
       articuloOrigen: articulo as ModeloPuerta,
       frente: medidas ? numero(medidas[1]) : 0,
       alto: medidas ? numero(medidas[2]) : 0,

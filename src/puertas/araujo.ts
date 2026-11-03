@@ -1,18 +1,24 @@
 import type { AvisoPuerta, PiezaPuerta, Puerta, ResultadoPuerta, TramoAraujo } from './tipos.ts';
+import { fichaPorId, fichaDePuerta } from './clientes.ts';
 
 export const ARTICULOS_TRAMOS_ARAUJO = ['PUERTAPLET', 'PUERTAPLETRA', 'PUERTAPLETRAM'] as const;
-/** Medidas observadas, sin interpolar entre perfiles (docs/modelos/puertas-araujo.md). */
-export const PERFILES_ARAUJO = { '7': { aumento: 7.4, marca: 7 }, '6,5': { aumento: 7.15, marca: 6.5 } } as const;
+/** Perfiles confirmados por Iván (03/11/2026); el habitual es el de 7. */
+export const PERFILES_ARAUJO = fichaPorId('araujo')!.perfiles;
 export const nuevoTramoAraujo = (tipo: TramoAraujo['tipo'] = 'tramo'): TramoAraujo =>
   ({ tipo, frente: 0, alto: 0, cantidad: 1, ventanas: [] });
 const n = (x: number) => Math.round(x * 10000) / 10000;
+
+export function elegirPerfilAraujo(p:Puerta,perfil:string):Puerta {
+  if(!p.araujo||!Object.hasOwn(fichaDePuerta(p).perfiles,perfil))throw new Error('Elige un perfil de canutillo de la ficha del cliente.');
+  return {...p,confirmada:false,ventanasConfirmadas:false,araujo:{...p.araujo,perfil}};
+}
 const positivo = (x: number) => Number.isFinite(x) && x > 0 && x <= 3000;
 
 export function calcularAraujo(p: Puerta): ResultadoPuerta {
   const piezas: PiezaPuerta[] = [], avisos: AvisoPuerta[] = [];
   const r: ResultadoPuerta = { version: 1, piezas, avisos, alternativasSaco: null, empates: [], uniones: [], bolsillo: null };
   const aviso = (codigo: string, texto: string, nivel: AvisoPuerta['nivel'] = 'error') => avisos.push({ codigo, texto, nivel });
-  const a = p.araujo!, perfil = PERFILES_ARAUJO[a.perfil];
+  const a = p.araujo!, perfil = fichaDePuerta(p).perfiles[a.perfil];
   if (!p.confirmada || !p.ventanasConfirmadas) aviso('CONFIRMACION', 'Comprueba en la hoja los tramos, las bolsas, las ventanas y el perfil de canutillo; después marca «Confirmado con el dibujo».');
   if (!['PUERTAENR', 'PUERTAPLE'].includes(p.modelo)) aviso('MODELO', 'El planteamiento de ARAUJO sirve para enrollables, plegables y sus tramos o bolsas.');
   if (!p.of.trim() || p.of.trim().toUpperCase() === 'SIN OF') aviso('SIN_OF', 'Falta la OF para guardar archivos.', 'aviso');
@@ -20,6 +26,7 @@ export function calcularAraujo(p: Puerta): ResultadoPuerta {
   if (!p.material.trim() || !p.color.trim()) aviso('MATERIAL', 'Faltan el material o el color de la lona.');
   if (![p.rollo, p.rolloCristal, p.rolloSaco].every(positivo)) aviso('ROLLO', 'Completa los anchos reales de los rollos de lona, transparente y bolsa.');
   if (!perfil || !a.tramos.length) { aviso('TRAMOS', 'Añade los tramos o bolsas y elige un perfil de canutillo comprobado.'); return r; }
+  if(perfil.aviso)aviso('PERFIL_COMB',perfil.aviso,'aviso');
   if (a.forma === 'continua' && a.tramos.filter(t => t.tipo === 'tramo').length !== 1) aviso('CONTINUA', 'La lona continua lleva un único cuerpo con su alto total, más las bolsas separadas.');
   if (a.forma === 'sueltos' && p.entradas.length) aviso('ENTRADAS', 'Los tramos sueltos ya llevan sus dos canutillos. Quita las entradas intermedias de la lona continua.');
   if (/REJILLA|MOSQUITERA|MALLA/i.test(p.observaciones)) aviso('MATERIAL_ESPECIAL', 'El material especial necesita su propio planteamiento: este corte está contrastado para lona de PVC.');
@@ -57,7 +64,8 @@ export function calcularAraujo(p: Puerta): ResultadoPuerta {
     }
     if (t.rotulacion) {
       if (!positivo(t.rotulacion.ancho) || t.rotulacion.desdeDerecha < 0 || !Number.isFinite(t.rotulacion.desdeDerecha) || t.rotulacion.ancho+t.rotulacion.desdeDerecha > t.frente || !t.rotulacion.texto.trim()) aviso('ROTULACION', `${nombre}: revisa el ancho y la distancia de la rotulación por el derecho.`);
-      aviso('ROTULACION_ALTURA', `${nombre}: rotulación por el derecho; la altura y el arte se comprueban antes de rotular. No crea cortes.`, 'aviso');
+      if(!t.rotulacion.centrada&&t.rotulacion.desdeBajo!==undefined&&(!Number.isFinite(t.rotulacion.desdeBajo)||t.rotulacion.desdeBajo<0||t.rotulacion.desdeBajo>=t.alto))aviso('ROTULACION',`${nombre}: la distancia de rotulación al bajo debe quedar dentro de la pieza.`);
+      aviso('ROTULACION_ALTURA', `${nombre}: rotulación por el derecho; ${t.rotulacion.desdeBajo!==undefined||t.rotulacion.centrada?'el arte y el alto del anagrama':'la posición vertical y el arte'} se comprueban antes de rotular. No crea cortes.`, 'aviso');
     }
   }
   if (unidades > 100) aviso('CANTIDAD', 'Como máximo se calculan 100 tramos y bolsas por conjunto de corte.');

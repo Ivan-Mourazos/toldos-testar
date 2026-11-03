@@ -5,12 +5,67 @@ import { leerPedidoPuertas } from './pedido.ts';
 import { escribirPlanoPuertas } from './plano.ts';
 import { puertasDesdeRps } from './rps.ts';
 import { corteDelPlano } from '../flujoDwg/corteDwg.js';
+import { geometriaAlzado } from './alzado.ts';
+import { elegirPerfilAraujo } from './araujo.ts';
+import { nuevaPuertaDeCliente } from './nuevaPuertaCliente.ts';
+import { registrosDxf, numero, valor } from '../domain/corteLona/dxfTestHelpers.js';
 import { araujo5365, tramoAraujo, ventanaAraujo } from './__fixtures__/araujo.ts';
 import type { PedidoPuertas, Puerta } from './tipos.ts';
 
 const pedido = (p: Puerta): PedidoPuertas => ({ schemaVersion: 1, kind: 'puertas', orderCode: 'AR2605365', elementos: [{ id: 'a', input: p }] });
 const cortes = (p: Puerta) => calcularPuerta(p).piezas.map(x => [x.clase, x.ancho, x.alto, x.cantidad]);
 describe('ARAUJO, tramos y bolsas con canutillo', () => {
+  it('los DXF distinguen rotulador rojo a 7 del corte y referencia magenta a 3,7, exclusiva del plano',()=>{
+    const p=araujo5365(),g=geometriaAlzado(p,calcularPuerta(p)),pieza=g.grupos![0];
+    const contorno=pieza.find(f=>f.tipo==='rect')!;
+    const y=contorno.tipo==='rect'?contorno.y:0;
+    expect(pieza.filter(f=>f.tipo==='linea'&&f.clase==='puerta-marca').map(f=>f.tipo==='linea'?f.y1-y:0)).toEqual([7,95.4]);
+    const referencias=pieza.filter(f=>f.tipo==='linea'&&f.clase==='puerta-referencia').map(f=>f.tipo==='linea'?f.y1-y:0);
+    expect(referencias[0]).toBeCloseTo(3.7);expect(referencias[1]).toBeCloseTo(98.7);
+    const bot=generarCortePuertas(pedido(p)).archivo!;
+    expect(bot.entidades.lineas.some(l=>l.capa==='referencias')).toBe(false);
+    const plano=escribirPlanoPuertas({pedido:pedido(p),cabecera:{cliente:'ARAUJO',tecnico:'IVÁN',revisor:'',fecha:'2026-11-03'}});
+    for(const dxf of [bot.dxf,plano]){
+      const capas=registrosDxf(dxf,'TABLES').filter(r=>r.tipo==='LAYER');
+      expect(numero(capas.find(r=>valor(r,2)==='ROTULADOR')!,62)).toBe(1);
+    }
+    const capas=registrosDxf(plano,'TABLES').filter(r=>r.tipo==='LAYER');
+    expect(numero(capas.find(r=>valor(r,2)==='referencias')!,62)).toBe(6);
+  });
+  it('Iván fija 7 por defecto para todos los pedidos; COMB de 6,5 queda como elección manual',()=>{
+    const p=nuevaPuertaDeCliente('araujo','enrollable-tramos');
+    expect(p.araujo).toMatchObject({perfil:'7'});
+    const pendiente=araujo5365();
+    expect(generarCortePuertas(pedido(pendiente)).archivo).not.toBeNull();
+    for(const perfil of ['7','6,5']){
+      const elegido=elegirPerfilAraujo(pendiente,perfil);
+      expect(elegido).toMatchObject({confirmada:false,ventanasConfirmadas:false,araujo:{perfil}});
+      expect(generarCortePuertas(pedido({...elegido,confirmada:true,ventanasConfirmadas:true})).archivo).not.toBeNull();
+    }
+    expect(()=>elegirPerfilAraujo(pendiente,'desconocido')).toThrow();
+  });
+  it('la rotulación puede llevar la referencia de 8 cm por el derecho sin inventar el arte ni su alto',()=>{
+    const p=araujo5365(),t=p.araujo!.tramos[2];
+    t.rotulacion={...t.rotulacion!,desdeBajo:8,dosCaras:false};
+    expect(calcularPuerta(p).avisos.filter(a=>a.nivel==='error')).toEqual([]);
+    expect(geometriaAlzado(p,calcularPuerta(p)).formas.filter(f=>f.tipo==='texto').map(f=>f.tipo==='texto'?f.lineas.join(' '):'').join(' ')).toContain('8 del bajo');
+    const original=cortes(p);
+    t.rotulacion.dosCaras=true;
+    expect(cortes(p)).toEqual(original);
+    t.rotulacion.desdeBajo=101;
+    expect(calcularPuerta(p).avisos).toContainEqual(expect.objectContaining({codigo:'ROTULACION',nivel:'error'}));
+    t.rotulacion.dosCaras='sí' as never;
+    expect(()=>leerPedidoPuertas(pedido(p))).toThrow();
+  });
+  it('5365: deja sitio para la letra de cota CAD entre canutillo, cadena de ventanas y frente siguiente',()=>{
+    const p=araujo5365(),g=geometriaAlzado(p,calcularPuerta(p)),ventanas=g.grupos![1],siguiente=g.grupos![2];
+    const cadena=ventanas.filter(f=>f.tipo==='cota'&&[39,44].includes(f.valor));
+    const notas=ventanas.filter(f=>f.tipo==='texto'&&f.lineas[0].startsWith('CANUTILLO'));
+    const bajo=Math.max(...notas.map(f=>f.tipo==='texto'?f.y:0));
+    expect(Math.min(...cadena.map(f=>f.tipo==='cota'?f.linea:Infinity))-bajo).toBeGreaterThan(30);
+    const frente=siguiente.find(f=>f.tipo==='cota'&&f.valor===307)!;
+    expect((frente.tipo==='cota'?frente.linea:0)-Math.max(...cadena.map(f=>f.tipo==='cota'?f.linea:0))).toBeGreaterThan(30);
+  });
   it('5365: tres tramos independientes, dos cristales y bolsa de 440; sin saco Portanova', () => {
     expect(cortes(araujo5365())).toEqual([
       ['pano', 307, 102.4, 1], ['pano', 307, 102.4, 1], ['cristal', 94, 39, 1], ['cristal', 94, 39, 1],
@@ -30,10 +85,14 @@ describe('ARAUJO, tramos y bolsas con canutillo', () => {
     const p = araujo5365(); p.araujo!.tramos = [{ ...tramoAraujo(307,95), ventanas: [ventanaAraujo(44),ventanaAraujo(173)] }, tramoAraujo(307,100,2),tramoAraujo(299.5,28,2,'bolsa')];
     expect(cortes(p)).toEqual([['pano',307,102.4,1],['cristal',94,39,1],['cristal',94,39,1],['pano',307,107.4,2],['saco',299.5,35.4,2]]);
   });
-  it('4373: perfil confirmado de 6,5, dos tramos de 69 y cristal de 94 × 34', () => {
+  it('COMB de 6,5: regla de Iván con referencia a 3,45; el 4373 histórico llevaba 0,25 más de corte', () => {
     const p = araujo5365(); p.araujo!.perfil = '6,5'; p.araujo!.tramos = [{ ...tramoAraujo(540,69,2), ventanas: [79,225,371].map(x=>ventanaAraujo(x,19.5,90,30)) }, tramoAraujo(540,65),tramoAraujo(540,53)];
     const r = calcularPuerta(p);
-    expect(r.piezas.filter(x=>x.clase==='pano').map(x=>[x.ancho,x.alto,x.cantidad])).toEqual([[540,76.15,2],[540,72.15,1],[540,60.15,1]]);
+    expect(r.piezas.filter(x=>x.clase==='pano').map(x=>[x.ancho,x.alto,x.cantidad])).toEqual([[540,75.9,2],[540,71.9,1],[540,59.9,1]]);
+    expect(r.piezas[0].marcas[0][1]).toBe(6.5);
+    const g=geometriaAlzado(p,r),contorno=g.grupos![0].find(f=>f.tipo==='rect')!;
+    const referencia=g.grupos![0].find(f=>f.tipo==='linea'&&f.clase==='puerta-referencia')!;
+    expect((referencia.tipo==='linea'?referencia.y1:0)-(contorno.tipo==='rect'?contorno.y:0)).toBeCloseTo(3.45);
     expect(r.piezas.filter(x=>x.clase==='cristal').map(x=>[x.ancho,x.alto,x.cantidad])).toEqual([[94,34,2],[94,34,2],[94,34,2]]);
   });
   it('2986: cuerpo continuo de 134 × 287,4, dos entradas de 12 y bolsa separada', () => {

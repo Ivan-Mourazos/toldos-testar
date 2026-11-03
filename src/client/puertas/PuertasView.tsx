@@ -17,7 +17,8 @@ import { InputDecimal } from '../remolques/InputDecimal';
 import type { ResumenPedido } from '../remolques/SelectorProducto';
 import { AlzadoPuerta } from './AlzadoPuerta';
 import { ConfigurarAraujo } from './ConfigurarAraujo';
-import { nuevoTramoAraujo } from '../../puertas/araujo.ts';
+import { fichaDePuerta, fichaPorCodigo, fichaPorId, tipoDePuerta } from '../../puertas/clientes.ts';
+import { cambiarTipoDelCliente, nuevaPuertaDeCliente, otraPuertaDelCliente } from '../../puertas/nuevaPuertaCliente.ts';
 import { CorteResumen, useVistaCortePuertas } from './VistaCortePuertas';
 import { useFlujoCorte } from './flujoCorte';
 import { BotonesFlujoCorte, esperaAlCorte } from '../flujoCorteDwg';
@@ -61,6 +62,8 @@ function Configurar({p,cambiar,corte,derecha='alzado',letra='A'}:{p:Puerta;cambi
   const [pestana,setPestana]=useState<PestanaPuerta>('puerta');
   const formularioFluido=useContenidoFluido<HTMLElement>(pestana);
   const dibujoFluido=useContenidoFluido(derecha);
+  const ficha=fichaDePuerta(p);
+  if(p.clientePuertas&&!ficha.habilitado)return <section className="puerta-config panel panel-vidrio" aria-label="Cliente sin reglas de confección"><h2>{ficha.nombre} · confección pendiente</h2><p className="puerta-ayuda">{ficha.aviso}</p><p className="puerta-ayuda">Artículo {p.articuloOrigen||'sin indicar'} · OF {p.of||'SIN OF'} · {num(p.frente)} × {num(p.alto)} cm</p><p className="puerta-ayuda">{p.observaciones}</p></section>;
   if(p.araujo)return <ConfigurarAraujo p={p} cambiar={cambiar} corte={corte} derecha={derecha} letra={letra}/>;
   // System Dock: una lona rectangular; sin cristal, saco, tubos ni ventanas (src/puertas/systemDock.ts).
   const sd=p.modelo==='SYSTEMDOCK';
@@ -88,7 +91,7 @@ function Configurar({p,cambiar,corte,derecha='alzado',letra='A'}:{p:Puerta;cambi
   return <>
     <div className="puerta-config-alzado">
       <section ref={formularioFluido} className="puerta-config panel panel-vidrio" aria-label={sd?'Configurador de System Dock':'Configurador de puerta'}>
-        <header><h2>Configurador</h2><span>{sd?'System Dock · lona perimetral':'Portanova'} · medidas en cm</span></header>
+        <header><h2>Configurador</h2><span>{sd?'System Dock · lona perimetral':ficha.nombre} · medidas en cm</span></header>
         {!sd&&<div className="tira-3d puerta-pestanas" role="tablist" aria-label="Partes de la puerta">{pestanas.map(([k,t])=><button type="button" role="tab" key={k} aria-selected={activa===k}
           className={`pestana ${activa===k?'pestana-activa':''}`} onClick={()=>setPestana(k)}>{t}</button>)}</div>}
         {ver('puerta')&&<>
@@ -97,8 +100,7 @@ function Configurar({p,cambiar,corte,derecha='alzado',letra='A'}:{p:Puerta;cambi
               después el modelo, las medidas y el color. Material y rollos, que casi no cambian, en «Materiales y rollos». */}
           <label className="puerta-campo"><span>OF</span><input aria-label={sd?'OF de lona':'OF de puerta'} value={p.of} placeholder="SIN OF" onChange={e=>set('of',e.target.value)}/></label>
           <Numero titulo={sd?'Cantidad de lonas iguales':'Cantidad de puertas iguales'} valor={p.cantidad} cambiar={v=>set('cantidad',v??0)}/>
-          {!sd&&<SelectField label="Modelo de puerta" value={p.modelo} options={Object.keys(MODELOS_PUERTAS).filter(v=>v!=='SYSTEMDOCK')} optionLabel={v=>MODELOS_PUERTAS[v as ModeloPuerta]} onChange={v=>cambiar({...p,modelo:v as ModeloPuerta,entradas:[],ventanas:[],confirmada:false,ventanasConfirmadas:false})}/>}
-          {['PUERTAENR','PUERTAPLE'].includes(p.modelo)&&<SelectField label="Confección" value="portanova" options={['portanova','araujo']} optionLabel={v=>v==='araujo'?'ARAUJO · tramos y bolsas':'Portanova · puerta completa'} onChange={v=>{if(v==='araujo')cambiar({...p,entradas:[],ventanas:[],confirmada:false,ventanasConfirmadas:false,materialSaco:'LAC900 AMARILLO',araujo:{forma:'sueltos',perfil:'7',tramos:[{...nuevoTramoAraujo(),frente:p.frente,alto:p.alto}]}});}}/>}
+          {!sd&&(p.clientePuertas?<SelectField label="Tipo de puerta" value={tipoDePuerta(p).id} options={ficha.tipos.map(t=>t.id)} optionLabel={v=>ficha.tipos.find(t=>t.id===v)?.nombre??''} onChange={v=>cambiar(cambiarTipoDelCliente(p,v))}/>:<SelectField label="Modelo de puerta" value={p.modelo} options={Object.keys(MODELOS_PUERTAS).filter(v=>v!=='SYSTEMDOCK')} optionLabel={v=>MODELOS_PUERTAS[v as ModeloPuerta]} onChange={v=>cambiar({...p,modelo:v as ModeloPuerta,entradas:[],ventanas:[],confirmada:false,ventanasConfirmadas:false})}/>)}
           <Numero titulo={sd?'Largo de la lona (cm)':'Frente (cm)'} valor={p.frente||null} cambiar={v=>set('frente',v??0)}/>
           {!(p.modelo==='PUERTAPLE'&&p.apilable.sueloInclinado)&&<Numero titulo={sd?'Ancho de la lona (cm)':'Alto (cm)'} valor={p.alto||null} cambiar={v=>set('alto',v??0)}/>}
           <label className="puerta-campo"><span>{sd?'Color':'Color / RAL'}</span><input aria-label={sd?'Color de lona':'Color de puerta'} value={p.color} placeholder={sd?'Negro':'Azul 5002'} onChange={e=>set('color',e.target.value)}/></label>
@@ -377,11 +379,11 @@ function FilasVentanas({cambiar}:{cambiar:(v:Ventana[])=>void}) {
 }
 const hoy = () => new Date().toISOString().slice(0, 10);
 const nuevaLona = (): Puerta => ({ ...nuevaPuerta('SYSTEMDOCK'), material: REGLAS_SYSTEM_DOCK.material, color: REGLAS_SYSTEM_DOCK.color, rollo: REGLAS_SYSTEM_DOCK.rollo, ventanasConfirmadas: true });
-const pedidoVacio = (producto: 'puertas' | 'systemdock'): PedidoPantallaPuertas => ({ schemaVersion: 1, kind: 'puertas', orderCode: '', cabecera: { cliente: '', fecha: hoy() }, elementos: [{ id: 'puerta-1', input: producto === 'systemdock' ? nuevaLona() : nuevaPuerta() }] });
+const pedidoVacio = (producto: 'puertas' | 'systemdock', origen?:Puerta): PedidoPantallaPuertas => ({ schemaVersion: 1, kind: 'puertas', orderCode: '', cabecera: { cliente: '', fecha: hoy() }, elementos: [{ id: 'puerta-1', input: producto === 'systemdock' ? nuevaLona() : origen?otraPuertaDelCliente(origen):nuevaPuerta() }] });
 const tieneDatos = (p: PedidoPantallaPuertas) => Boolean(p.orderCode.trim() || p.cabecera.cliente.trim() || p.elementos.some(e => e.input.frente || e.input.alto || e.input.of));
 
 export function PuertasView({ producto = 'puertas', activo, onResumenChange, usuario, notify, askForConfirmation, accionesDestino, accionesVisibles = true, pedidoGuardadoSolicitado, pedidoRpsSolicitado, onGuardado, modeloInicialSolicitado }: {
-  modeloInicialSolicitado?: {id:number;modelo:Exclude<ModeloPuerta,'SYSTEMDOCK'>}|null;
+  modeloInicialSolicitado?: {id:number;modelo:Exclude<ModeloPuerta,'SYSTEMDOCK'>;cliente?:string;tipo?:string}|null;
   producto?: 'puertas' | 'systemdock';
   activo: boolean;
   onResumenChange: (r: ResumenPedido) => void;
@@ -415,7 +417,8 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
     ultimoModelo.current=modeloInicialSolicitado.id;
     void (async()=>{
       if(tieneDatos(pedido)&&await askForConfirmation({title:'Empezar otro pedido de Puertas',message:'Se sustituirá el pedido a medias de Puertas por uno nuevo con el modelo elegido.',confirmLabel:'Empezar pedido',cancelLabel:'Conservar formulario',tone:'warning'})!=='confirm')return;
-      setPedido({...pedidoVacio('puertas'),elementos:[{id:uid(),input:nuevaPuerta(modeloInicialSolicitado.modelo)}]});
+      const ficha=modeloInicialSolicitado.cliente?fichaPorId(modeloInicialSolicitado.cliente):undefined;
+      setPedido({...pedidoVacio('puertas'),...(ficha?{cabecera:{cliente:ficha.nombre,fecha:hoy(),clienteRps:{codigo:ficha.codigoRps,nombre:ficha.nombre}}}:{}),elementos:[{id:uid(),input:ficha&&modeloInicialSolicitado.tipo?nuevaPuertaDeCliente(ficha.id,modeloInicialSolicitado.tipo):nuevaPuerta(modeloInicialSolicitado.modelo)}]});
       setIndice(0);
     })();
   },[modeloInicialSolicitado,pedido,askForConfirmation]);
@@ -477,6 +480,10 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
       }
       const sinPuertas = !pedido.elementos.some(e => e.input.frente || e.input.alto || e.input.of);
       if (puertas.length && sinPuertas) { cargarDeRps(datos.pedido, pedido.orderCode); return; }
+      if (puertas.length && pedido.elementos.some(e => fichaDePuerta(e.input).id !== fichaPorCodigo(cliente.codigo).id)) {
+        if (await askForConfirmation({title:'Traer el pedido de otro cliente',message:'El cliente de RPS tiene otra ficha de confección. Se sustituirá el formulario por las puertas de ese pedido para aplicar sus reglas.',confirmLabel:'Traer pedido',cancelLabel:'Conservar formulario',tone:'warning'}) === 'confirm') cargarDeRps(datos.pedido,pedido.orderCode);
+        return;
+      }
       cabecera({ cliente: cliente.nombre, fecha: fecha || pedido.cabecera.fecha, clienteRps: { codigo: cliente.codigo, nombre: cliente.nombre } });
     } catch (error) {
       notify(error instanceof Error ? error.message : 'No se pudo consultar RPS.', { tone: 'error' });
@@ -492,7 +499,7 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
       if (await guardarPuertasParaRevision({ pedido, usuario, preguntar: askForConfirmation, notify })) {
         onGuardado?.();
         void flujo.refrescar();
-        setPedido(pedidoVacio(producto));
+        setPedido(pedidoVacio(producto,pedido.elementos[0]?.input));
         setIndice(0);
       }
     } catch {
@@ -505,7 +512,7 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
   async function limpiar() {
     if (tieneDatos(pedido) && await askForConfirmation({ title: `Limpiar ${nombre}`, message: 'Se borrarán los elementos y los datos de esta pantalla.',
       confirmLabel: 'Limpiar', cancelLabel: 'Conservar', tone: 'warning' }) !== 'confirm') return;
-    setPedido(pedidoVacio(producto));
+    setPedido(pedidoVacio(producto,pedido.elementos[0]?.input));
     setIndice(0);
   }
 
@@ -530,7 +537,7 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
       <label className="field puerta-campo"><span>Fecha</span><input type="date" aria-label={`Fecha del pedido de ${nombre}`} value={pedido.cabecera.fecha} onChange={e=>cabecera({fecha:e.target.value})}/></label>
     </div></div>
     </section>
-    <div className="puerta-selector"><div className="tira-3d" role="group" aria-label={sd?'Lonas del pedido':'Puertas del pedido'}>{pedido.elementos.map((e,i)=><button type="button" key={e.id} className={`pestana ${indice===i?'pestana-activa':''}`} aria-pressed={indice===i} onClick={()=>setIndice(i)}>{e.input.modelo==='SYSTEMDOCK'?'Lona':'Puerta'} {i+1} · {e.input.of||'SIN OF'}</button>)}</div><button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:[...pedido.elementos,{id:uid(),input:sd?nuevaLona():nuevaPuerta()}]});setIndice(pedido.elementos.length);}}><Plus size={16}/>{sd?'Añadir lona':'Añadir puerta'}</button>{pedido.elementos.length>1&&<button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:pedido.elementos.filter((_,i)=>i!==indice)});setIndice(Math.max(0,indice-1));}}><Trash2 size={16}/>{sd?'Quitar lona':'Quitar puerta'}</button>}
+    <div className="puerta-selector"><div className="tira-3d" role="group" aria-label={sd?'Lonas del pedido':'Puertas del pedido'}>{pedido.elementos.map((e,i)=><button type="button" key={e.id} className={`pestana ${indice===i?'pestana-activa':''}`} aria-pressed={indice===i} onClick={()=>setIndice(i)}>{e.input.modelo==='SYSTEMDOCK'?'Lona':'Puerta'} {i+1} · {e.input.of||'SIN OF'}</button>)}</div><button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:[...pedido.elementos,{id:uid(),input:sd?nuevaLona():otraPuertaDelCliente(pedido.elementos[0].input)}]});setIndice(pedido.elementos.length);}}><Plus size={16}/>{sd?'Añadir lona':'Añadir puerta'}</button>{pedido.elementos.length>1&&<button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:pedido.elementos.filter((_,i)=>i!==indice)});setIndice(Math.max(0,indice-1));}}><Trash2 size={16}/>{sd?'Quitar lona':'Quitar puerta'}</button>}
     {/* Alzado / Corte en la línea de las puertas o lonas, a la derecha (Iván, 27/10/2026). */}
     <div className="tira-3d puerta-vistas" role="group" aria-label="Ver junto al configurador">{(['alzado','corte'] as const).map(v=><button type="button" key={v} className={`pestana ${derecha===v?'pestana-activa':''}`} aria-pressed={derecha===v} onClick={()=>setDerecha(v)}>{v==='alzado'?'Alzado':'Corte'}</button>)}</div>
     </div>

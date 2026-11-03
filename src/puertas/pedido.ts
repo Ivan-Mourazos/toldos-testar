@@ -1,6 +1,7 @@
-import type { PedidoPuertas } from './tipos.ts';
+import type { PedidoPuertas, Puerta } from './tipos.ts';
 import { MODELOS_PUERTAS, nuevaPuerta } from './calcular.ts';
 import { ARTICULOS_TRAMOS_ARAUJO } from './araujo.ts';
+import { fichaPorId, fichaDePuerta } from './clientes.ts';
 
 /** Valida el documento del configurador sin leer pedidos, parámetros ni servicios externos. */
 export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
@@ -15,6 +16,12 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
     if(!objeto(e) || typeof e.id!=='string' || e.id.length>100 || !e.id || ids.has(e.id) || !objeto(e.input)) return error();
     ids.add(e.id);
     const p=e.input;
+    if(p.clientePuertas!==undefined){
+      if(typeof p.clientePuertas!=='string'||!fichaPorId(p.clientePuertas))return error();
+      const tipo=fichaPorId(p.clientePuertas)!.tipos.find(t=>t.id===p.tipoPuerta);
+      if(!tipo||tipo.modelo!==p.modelo||tipo.forma&&(!objeto(p.araujo)||tipo.forma!==p.araujo.forma))return error();
+      if((fichaPorId(p.clientePuertas)!.calculo==='araujo')!==Boolean(p.araujo))return error();
+    }else if(p.tipoPuerta!==undefined)return error();
     if(typeof p.modelo!=='string' || !Object.hasOwn(MODELOS_PUERTAS,p.modelo)) return error();
     if(p.articuloOrigen!=='' && (typeof p.articuloOrigen!=='string'||!Object.hasOwn(MODELOS_PUERTAS,p.articuloOrigen)&&!(ARTICULOS_TRAMOS_ARAUJO as readonly string[]).includes(p.articuloOrigen)))return error();
     if(p.notaPlano!==undefined && (typeof p.notaPlano!=='string' || p.notaPlano.length>1000)) return error();
@@ -32,13 +39,18 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
     const hueco=(x:unknown)=>cotas(x,['x','y','ancho','alto','radio']);
     if(p.araujo!==undefined) {
       const a=p.araujo;
-      if(!objeto(a)||!['sueltos','continua'].includes(a.forma as string)||!['7','6,5'].includes(a.perfil as string)||!lista(a.tramos,50))return error();
+      if(!objeto(a)||!['sueltos','continua'].includes(a.forma as string)||typeof a.perfil!=='string'||!Object.hasOwn(fichaDePuerta(p as unknown as Puerta).perfiles,a.perfil)||!lista(a.tramos,50))return error();
       let total=0;
       for(const t of a.tramos) {
         if(!objeto(t)||!['tramo','bolsa'].includes(t.tipo as string)||!cotas(t,['frente','alto','cantidad'])||!lista(t.ventanas,100)||!t.ventanas.every(v=>hueco(v)&&cotas(v,['radioCristal'])))return error();
         if(!Number.isInteger(t.cantidad)||(t.cantidad as number)<1||(t.cantidad as number)>50)return error();
         total+=(t.cantidad as number)*(p.cantidad as number);
         if(t.rotulacion!==undefined&&(!objeto(t.rotulacion)||typeof t.rotulacion.texto!=='string'||t.rotulacion.texto.length>200||!cotas(t.rotulacion,['ancho','desdeDerecha'])))return error();
+        if(objeto(t.rotulacion)){
+          const rotulacion=t.rotulacion;
+          if(rotulacion.desdeBajo!==undefined&&!cotas(rotulacion,['desdeBajo']))return error();
+          if(['centrada','dosCaras'].some(k=>rotulacion[k]!==undefined&&typeof rotulacion[k]!=='boolean'))return error();
+        }
       }
       if(total>100)return error();
     }

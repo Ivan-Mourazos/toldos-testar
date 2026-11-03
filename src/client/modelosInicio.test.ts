@@ -16,7 +16,9 @@ describe('modelos al empezar un pedido', () => {
   });
   it('filtra sin distinguir tildes, ordena y no ofrece System Dock como puerta', () => {
     const modelos = modelosInicio('puertas',[])[0].modelos;
-    expect(modelos.map(m=>m.nombre)).toEqual(['Apilable','Autorreparable','Enrollable']);
+    expect(modelos.map(m=>m.nombre)).toEqual(['Apilable','Autorreparable','Enrollable','Plegable']);
+    expect(modelos[0].valor).toMatchObject({cliente:'portanova',tipo:'apilable'});
+    expect(modelosInicio('puertas',[],'','araujo')[0].modelos.map(m=>m.nombre)).toEqual(['Bolsa','Enrollable de tramos','Plegable continua','Tramos sueltos']);
     expect(modelosInicio('toldos',['ARZUA PRO'],'arzua')[0].modelos[0].nombre).toBe('Arzúa Pro');
     expect(modelosInicio('puertas',[],'dock')).toEqual([]);
   });

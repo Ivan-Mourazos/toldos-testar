@@ -1,10 +1,11 @@
 // Estudio reproducible de ARAUJO. Solo SELECT; los resultados y los hashes se escriben en tmp/araujo/.
-// node scripts/estudiar-araujo.mjs [--local] [--cad]
+// node scripts/estudiar-araujo.mjs [--local] [--cad] [--plantilla]
 // --local recalcula sin SQL a partir de la consulta conservada; --cad inventaría las copias locales históricas.
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import sql from 'mssql';
 import { registrosDxf, valor } from '../src/domain/corteLona/dxfTestHelpers.js';
+import { limpiarTextoDxf, textoDxf } from '../src/flujoDwg/planoDxf.js';
 
 const dir='tmp/araujo';
 fs.mkdirSync(dir,{recursive:true});
@@ -53,4 +54,13 @@ if(process.argv.includes('--cad')){
     textosSingulares:d.rs.filter(r=>['TEXT','MTEXT'].includes(r.tipo)&&cuentas.get(clave(r))<=2).map(r=>({x:Number(valor(r,10)),y:Number(valor(r,20)),texto:valor(r,1)??''}))}));
   fs.writeFileSync(`${dir}/evidencia-cad.json`,JSON.stringify(evidencia,null,2));
   console.log(`${evidencia.length} DXF históricos inventariados; 5365 excluido. Hashes, cotas y textos singulares en ${dir}/evidencia-cad.json`);
+}
+if(process.argv.includes('--plantilla')){
+  const archivo=`${dir}/plantilla/ARAUJO.dxf`,contenido=fs.readFileSync(archivo);
+  const rs=registrosDxf(textoDxf(contenido)).filter(r=>valor(r,67)!=='1');
+  const evidencia={archivo,sha256:crypto.createHash('sha256').update(contenido).digest('hex'),
+    textos:rs.filter(r=>['TEXT','MTEXT','ATTRIB'].includes(r.tipo)).map(r=>({id:valor(r,5),x:Number(valor(r,10)),y:Number(valor(r,20)),texto:limpiarTextoDxf(r.pares.filter(([c])=>c===1||c===3).map(([,s])=>s).join(''))})),
+    cotas:rs.filter(r=>r.tipo==='DIMENSION').map(r=>({id:valor(r,5),capa:valor(r,8),x:Number(valor(r,10)),y:Number(valor(r,20)),medida:Number(valor(r,42)),rotulo:valor(r,1)??''}))};
+  fs.writeFileSync(`${dir}/plantilla/evidencia.json`,JSON.stringify(evidencia,null,2));
+  console.log(`Plantilla ARAUJO: ${evidencia.textos.length} textos y ${evidencia.cotas.length} cotas inventariados. Las revisiones se contrastan por su zona, no por frecuencia.`);
 }

@@ -2,11 +2,12 @@ import { nuevaPuerta } from './calcular.ts';
 import { ARTICULOS_TRAMOS_ARAUJO, nuevoTramoAraujo } from './araujo.ts';
 import type { LineaPuertaRps } from './rps.ts';
 import type { Puerta, TramoAraujo } from './tipos.ts';
+import { fichaPorId, type FichaClientePuertas } from './clientes.ts';
 
 /** Solo propone lo que está escrito. Ni ventanas, ni bolsas ausentes, ni medidas de un pedido anterior. */
-export function araujoDesdeRps(l: LineaPuertaRps): Puerta | null {
+export function araujoDesdeRps(l: LineaPuertaRps, ficha:FichaClientePuertas=fichaPorId('araujo')!): Puerta | null {
   const art=l.articulo.trim().toUpperCase();
-  if(!['PUERTAENR','PUERTAPLE',...ARTICULOS_TRAMOS_ARAUJO].includes(art))return null;
+  if(!Object.hasOwn(ficha.articulos,art))return null;
   const texto=`${l.descripcion} ${l.comentario}`.replace(/\s+/g,' ').trim();
   const num=(s:string)=>Number(s.replace(',','.'));
   const numero='(\\d+(?:[.,]\\d+)?)';
@@ -28,10 +29,16 @@ export function araujoDesdeRps(l: LineaPuertaRps): Puerta | null {
   }
   if(!tramos.length)tramos.push(nuevoTramoAraujo(/BOLSA|SACO/i.test(texto)?'bolsa':'tramo'));
   const color=[...texto.matchAll(/COLOR\s+(AZUL|VERDE|GRIS|ROJO|NARANJA|NEGRO|BLANCO|AMARILL[OA])(?:\s+(\d{4}))?/gi)].at(-1);
-  const modelo=art==='PUERTAENR'?'PUERTAENR':'PUERTAPLE';
-  return {...nuevaPuerta(modelo),articuloOrigen:art as Puerta['articuloOrigen'],of:l.of.trim(),
+  const tipo=ficha.tipos.find(t=>tramos.every(t=>t.tipo==='bolsa')?t.piezaInicial==='bolsa':t.id===ficha.articulos[art]);
+  if(!tipo)return null;
+  const forma=tipo.forma??'sueltos';
+  const cuerpos=tramos.filter(t=>t.tipo==='tramo');
+  const piezas=forma==='continua'&&cuerpos.length>1&&cuerpos.every(t=>t.frente===cuerpos[0].frente&&t.cantidad===1)
+    ? [{...cuerpos[0],alto:cuerpos.reduce((s,t)=>s+t.alto,0)},...tramos.filter(t=>t.tipo==='bolsa')]:tramos;
+  return {...nuevaPuerta(tipo.modelo),articuloOrigen:art as Puerta['articuloOrigen'],of:l.of.trim(),
+    clientePuertas:ficha.id,tipoPuerta:tipo.id,...ficha.rollos,
     frente:tramos[0].frente,alto:tramos.filter(t=>t.tipo==='tramo').reduce((s,t)=>s+t.alto*t.cantidad,0),
     cantidad:/DIFERENTES MEDIDAS/i.test(texto)?1:Number.isInteger(l.cantidad)&&l.cantidad>=1&&l.cantidad<=50?l.cantidad:1,
     color:color?`${color[1].toUpperCase()}${color[2]?' '+color[2]:''}`:'',materialSaco:'LAC900 AMARILLO',
-    observaciones:l.comentario.trim(),araujo:{forma:'sueltos',perfil:'7',tramos}};
+    observaciones:l.comentario.trim(),araujo:{forma,perfil:ficha.perfilInicial??Object.keys(ficha.perfiles)[0],tramos:piezas}};
 }

@@ -10,6 +10,6 @@ export function araujo5365(): Puerta {
     materialSaco: 'LAC900 AMARILLO', confirmada: true, ventanasConfirmadas: true,
     araujo: { forma: 'sueltos', perfil: '7', tramos: [tramoAraujo(307, 95),
       { ...tramoAraujo(307, 95), ventanas: [ventanaAraujo(44), ventanaAraujo(173)] },
-      { ...tramoAraujo(307, 100), rotulacion: { texto: 'ANAGRAMA J. ARAUJO', ancho: 20, desdeDerecha: 15 } },
+      { ...tramoAraujo(307, 100), rotulacion: { texto: 'ANAGRAMA J. ARAUJO', ancho: 20, desdeDerecha: 15, desdeBajo: 8, dosCaras: false } },
       tramoAraujo(440, 30, 1, 'bolsa')] } };
 }

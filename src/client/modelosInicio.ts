@@ -1,5 +1,5 @@
 import { fabricOnlyModelNames, fullAwningModelNames } from '../domain/modelBehavior.js';
-import { MODELOS_PUERTAS } from '../puertas/calcular.ts';
+import { fichaPorId } from '../puertas/clientes.ts';
 import type { ModeloPuerta } from '../puertas/tipos.ts';
 import { emptyBaqueton, emptyGanado, emptyLona } from '../remolques/entradas-vacias.ts';
 import type { LineaPedido } from '../remolques/workspace/lineas.ts';
@@ -9,7 +9,7 @@ export const GANADO_DISPONIBLE = true;
 export type CategoriaConModelos = 'toldos' | 'puertas' | 'remolques' | 'estandar';
 export type ModeloInicio =
   | { producto: 'toldos'; modelo: string; workType: 'FULL_AWNING' | 'FABRIC_ONLY' }
-  | { producto: 'puertas'; modelo: Exclude<ModeloPuerta, 'SYSTEMDOCK'> }
+  | { producto: 'puertas'; modelo: Exclude<ModeloPuerta, 'SYSTEMDOCK'>; cliente: string; tipo: string }
   | { producto: 'remolques'; modelo: 'lona' | 'baqueton' | 'ganado' };
 export type OpcionModelo = { nombre: string; valor?: ModeloInicio; accion?: 'combursa' | 'systemdock'; proximamente?: boolean };
 export type GrupoModelos = { nombre: string; modelos: OpcionModelo[] };
@@ -24,7 +24,7 @@ const estandar: OpcionModelo[] = [
 const ordenar = (modelos: OpcionModelo[]) => modelos.sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
 const normalizar = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('es');
 
-export function modelosInicio(categoria: CategoriaConModelos, disponibles: string[], busqueda = ''): GrupoModelos[] {
+export function modelosInicio(categoria: CategoriaConModelos, disponibles: string[], busqueda = '', clientePuertas = 'portanova'): GrupoModelos[] {
   let grupos: GrupoModelos[];
   if (categoria === 'estandar') {
     grupos = [{nombre:'Pedidos estándar',modelos:estandar}];
@@ -33,7 +33,8 @@ export function modelosInicio(categoria: CategoriaConModelos, disponibles: strin
       nombre, modelos: modelos.filter(m=>m !== 'EMBUDO' && disponibles.includes(m)).map(modelo=>({nombre:controlLabel(modelo),valor:{producto:'toldos',modelo,workType}})),
     }));
   } else if (categoria === 'puertas') {
-    grupos = [{nombre:'Modelos',modelos:(['PUERTAPLE','PUERTAUTO','PUERTAENR'] as const).map(modelo=>({nombre:MODELOS_PUERTAS[modelo],valor:{producto:'puertas',modelo}}))}];
+    const ficha=fichaPorId(clientePuertas)!;
+    grupos = [{nombre:'Tipos de puerta',modelos:ficha.tipos.map(t=>({nombre:t.nombre,proximamente:!ficha.habilitado,valor:{producto:'puertas',modelo:t.modelo,cliente:ficha.id,tipo:t.id}}))}];
   } else {
     grupos = [{nombre:'Tipos de elemento',modelos:[
       {nombre:'Remolque',valor:{producto:'remolques',modelo:'lona'}},

@@ -1,10 +1,10 @@
 import type { FormaAlzado, GeometriaAlzado } from './alzado.ts';
-import { PERFILES_ARAUJO } from './araujo.ts';
+import { fichaDePuerta } from './clientes.ts';
 import type { Puerta } from './tipos.ts';
 
 /** Alzado por el revés. La rotulación se describe por el derecho, sin inventar su altura o dibujar un logo. */
 export function alzadoAraujo(p: Puerta, letra: string): GeometriaAlzado {
-  const a=p.araujo!, perfil=PERFILES_ARAUJO[a.perfil], formas:FormaAlzado[]=[];
+  const a=p.araujo!, perfil=fichaDePuerta(p).perfiles[a.perfil], formas:FormaAlzado[]=[];
   const tramos=a.tramos.filter(t=>t.frente>0&&t.alto>0);
   const F=Math.max(100,...tramos.map(t=>t.frente)), base=Math.max(4,F/60), margen=base*8;
   const vistas:NonNullable<GeometriaAlzado['vistas']>=[];
@@ -17,7 +17,7 @@ export function alzadoAraujo(p: Puerta, letra: string): GeometriaAlzado {
   };
   for(const [i,t] of tramos.entries()){
     const indiceForma=formas.length;
-    const inicio=y-base*6;
+    const inicio=y-base*7;
     const h=t.alto+perfil.aumento,d=perfil.aumento/2,w=t.frente;
     formas.push({tipo:'rect',clase:'puerta-pano',x:0,y,ancho:w,alto:h});
     for(const yy of [y+d,y+d+t.alto])formas.push({tipo:'linea',clase:'puerta-referencia',x1:0,y1:yy,x2:w,y2:yy});
@@ -30,8 +30,9 @@ export function alzadoAraujo(p: Puerta, letra: string): GeometriaAlzado {
       cota(v.x,vy,v.x+v.ancho,vy,vy-base,v.ancho);
       cota(v.x,vy,v.x,vy+v.alto,v.x-base,v.alto);
       const anterior=j?ventanas[j-1].x+ventanas[j-1].ancho:0;
-      cota(anterior,y+h,v.x,y+h,y+h+base*4,v.x-anterior);
-      if(j===ventanas.length-1)cota(v.x+v.ancho,y+h,w,y+h,y+h+base*4,w-v.x-v.ancho);
+      // XERAL usa una letra de CAD mayor que la del SVG: reserva una franja para la cadena.
+      cota(anterior,y+h,v.x,y+h,y+h+base*7,v.x-anterior);
+      if(j===ventanas.length-1)cota(v.x+v.ancho,y+h,w,y+h,y+h+base*7,w-v.x-v.ancho);
       cota(v.x,vy+v.alto,v.x,y+d+t.alto,v.x+base*3,v.y);
     }
     if(a.forma==='continua'&&t.tipo==='tramo')for(const e of p.entradas){
@@ -51,9 +52,10 @@ export function alzadoAraujo(p: Puerta, letra: string): GeometriaAlzado {
     y+=h+base*4;
     if(t.rotulacion){
       texto(`${t.rotulacion.texto} · ancho ${t.rotulacion.ancho.toLocaleString('es-ES')} · a ${t.rotulacion.desdeDerecha.toLocaleString('es-ES')} del lado derecho, visto por el derecho`,0,y,'start',base*.85);
-      texto('Altura y arte de rotulación pendientes de comprobar; no se cortan.',0,y+base*1.7,'start',base*.85);y+=base*4;
+      const vertical=t.rotulacion.centrada?'Centrada en el alto':t.rotulacion.desdeBajo!==undefined?`A ${t.rotulacion.desdeBajo.toLocaleString('es-ES')} del bajo`:'';
+      texto(vertical?`${vertical} · ${t.rotulacion.dosCaras?'ambas caras':'solo por el derecho'}. Alto y arte pendientes de comprobar; no se cortan.`:'Altura y arte de rotulación pendientes de comprobar; no se cortan.',0,y+base*1.7,'start',base*.85);y+=base*4;
     }
-    y+=base*6;
+    y+=base*(ventanas.length?14:6);
     vistas.push({nombre:`Pieza ${i+1} · ${t.tipo==='bolsa'?'bolsa':'tramo'}`,xMin:-margen,yMin:inicio,ancho:F+margen*2.8,alto:y-inicio-base*2});
     grupos.push(formas.slice(indiceForma));
   }

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { calcularPuerta } from '../../puertas/calcular.ts';
-import { nuevoTramoAraujo, PERFILES_ARAUJO } from '../../puertas/araujo.ts';
+import { elegirPerfilAraujo, nuevoTramoAraujo } from '../../puertas/araujo.ts';
+import { fichaDePuerta, tipoDePuerta } from '../../puertas/clientes.ts';
+import { cambiarTipoDelCliente } from '../../puertas/nuevaPuertaCliente.ts';
 import type { Puerta, TramoAraujo, Ventana } from '../../puertas/tipos.ts';
 import { SelectField } from '../components/SelectField';
 import { InputDecimal } from '../remolques/InputDecimal';
@@ -16,6 +18,7 @@ function Texto({titulo,valor,cambiar}:{titulo:string;valor:string;cambiar:(v:str
 export function ConfigurarAraujo({p,cambiar,corte,derecha,letra}:{p:Puerta;cambiar:(p:Puerta)=>void;corte?:React.ReactNode;derecha:'alzado'|'corte';letra:string}){
   const [pestana,setPestana]=useState('datos');
   const a=p.araujo!,resultado=calcularPuerta(p);
+  const ficha=fichaDePuerta(p),perfiles=ficha.perfiles;
   const set=<K extends keyof Puerta>(k:K,v:Puerta[K])=>cambiar({...p,[k]:v});
   function tramos(ts:TramoAraujo[]){cambiar({...p,frente:ts[0]?.frente??0,alto:ts.filter(t=>t.tipo==='tramo').reduce((s,t)=>s+t.alto*t.cantidad,0),araujo:{...a,tramos:ts}});}
   const tramo=(i:number,parche:Partial<TramoAraujo>)=>tramos(a.tramos.map((t,j)=>i===j?{...t,...parche}:t));
@@ -24,21 +27,21 @@ export function ConfigurarAraujo({p,cambiar,corte,derecha,letra}:{p:Puerta;cambi
   return <>
     <div className="puerta-config-alzado">
       <section className="puerta-config panel panel-vidrio" aria-label="Configurador de ARAUJO">
-        <header><h2>Configurador</h2><span>ARAUJO · medidas en cm</span></header>
+        <header><h2>Configurador</h2><span>{ficha.nombre} · hoja en {ficha.unidadHoja} · medidas en cm</span></header>
         <div className="tira-3d puerta-pestanas" role="tablist" aria-label="Partes de ARAUJO">{tabs.map(([k,t])=><button type="button" role="tab" key={k} aria-selected={pestana===k} className={`pestana ${pestana===k?'pestana-activa':''}`} onClick={()=>setPestana(k)}>{t}</button>)}</div>
         {pestana==='datos'&&<>
           <div className="puerta-campos">
             <Texto titulo="OF de puerta" valor={p.of} cambiar={v=>set('of',v)}/>
             <Numero titulo="Cantidad de conjuntos iguales" valor={p.cantidad} cambiar={v=>set('cantidad',v)}/>
-            <SelectField label="Modelo de puerta" value={p.modelo} options={['PUERTAENR','PUERTAPLE']} optionLabel={v=>v==='PUERTAENR'?'Enrollable':'Plegable'} onChange={v=>set('modelo',v as Puerta['modelo'])}/>
-            <SelectField label="Confección" value="araujo" options={['portanova','araujo']} optionLabel={v=>v==='araujo'?'ARAUJO · tramos y bolsas':'Portanova · puerta completa'} onChange={v=>{if(v==='portanova'){const {araujo:omitido,...resto}=p;void omitido;cambiar({...resto,confirmada:false,ventanasConfirmadas:false});}}}/>
+            <SelectField label="Tipo de puerta" value={tipoDePuerta(p).id} options={ficha.tipos.map(t=>t.id)} optionLabel={v=>ficha.tipos.find(t=>t.id===v)?.nombre??''} onChange={v=>cambiar(cambiarTipoDelCliente(p,v))}/>
             <Texto titulo="Color de puerta" valor={p.color} cambiar={v=>set('color',v)}/>
-            <SelectField label="Forma de la lona" value={a.forma} options={['sueltos','continua']} optionLabel={v=>v==='sueltos'?'Tramos separados':'Lona continua'} onChange={v=>cambiar({...p,confirmada:false,ventanasConfirmadas:false,araujo:{...a,forma:v as typeof a.forma}})}/>
           </div>
           <p className="puerta-ayuda">Una fila por medida. Cada tramo o bolsa lleva su propia cantidad. Comprueba en la hoja si las entradas separan piezas o van soldadas sobre una lona continua.</p>
           <fieldset><legend>Canutillos de los extremos</legend>
-            <SelectField label="Perfil de canutillo comprobado" value={a.perfil} options={['7','6,5']} optionLabel={v=>v==='7'?'Marcas de 7 cm · aumento de 7,4 cm':'Marcas de 6,5 cm · aumento de 7,15 cm'} onChange={v=>cambiar({...p,confirmada:false,ventanasConfirmadas:false,araujo:{...a,perfil:v as typeof a.perfil}})}/>
-            <p className="puerta-ayuda">Dos canutillos con varilla blanca de 5,5 mm; laterales al corte. Si la hoja pide otro acabado, queda pendiente de estudiar.</p>
+            <SelectField label="Perfil de canutillo comprobado" value={a.perfil} options={Object.keys(perfiles)} optionLabel={v=>perfiles[v]?`${perfiles[v].nombre??'Canutillo'} · canutillo de ${num(perfiles[v].marca)} cm`:''} onChange={v=>cambiar(elegirPerfilAraujo(p,v))}/>
+            <p className="puerta-ayuda">Introduce las medidas del cliente. El canutillo de 7 cm es el habitual, también en LAC 900; COMB de 6,5 se elige a mano. La línea de rotulador va a {num(perfiles[a.perfil].marca)} cm del corte y la referencia de lona terminada, a {num(perfiles[a.perfil].aumento/2)} cm, solo en el plano.</p>
+            <p className="puerta-ayuda">{ficha.remates}. Si la hoja pide otro acabado, queda pendiente de estudiar.</p>
+            {!ficha.rollosConfirmados&&<p className="puerta-ayuda">Comprueba los anchos reales en «Materiales y rollos» antes de generar el corte.</p>}
           </fieldset>
           <details><summary>Materiales y rollos</summary><div className="puerta-campos">
             <Texto titulo="Material de lona" valor={p.material} cambiar={v=>set('material',v)}/><Numero titulo="Rollo de lona (cm)" valor={p.rollo} cambiar={v=>set('rollo',v)}/>
@@ -52,13 +55,20 @@ export function ConfigurarAraujo({p,cambiar,corte,derecha,letra}:{p:Puerta;cambi
           {a.forma==='continua'&&a.tramos.filter(t=>t.tipo==='tramo').length>1&&<><p className="puerta-ayuda">Para una lona continua, deja un cuerpo con el alto total. Las entradas intermedias se ponen en «Entradas».</p><button type="button" className="ghost-button" disabled={a.tramos.some(t=>t.tipo==='tramo'&&(t.cantidad!==1||t.ventanas.length>0||t.rotulacion||t.frente!==a.tramos.find(x=>x.tipo==='tramo')?.frente))} onClick={()=>{
             const cuerpos=a.tramos.filter(t=>t.tipo==='tramo');tramos([{...cuerpos[0],alto:cuerpos.reduce((s,t)=>s+t.alto,0)},...a.tramos.filter(t=>t.tipo==='bolsa')]);
           }}>Unir los altos en un cuerpo continuo</button></>}
-          {a.tramos.map((t,i)=><fieldset key={i}><legend>{t.tipo==='bolsa'?'Bolsa':'Tramo'} {i+1} · corte {num(t.frente)} × {num(t.alto+PERFILES_ARAUJO[a.perfil].aumento)} cm</legend><div className="puerta-campos">
+          {a.tramos.map((t,i)=><fieldset key={i}><legend>{t.tipo==='bolsa'?'Bolsa':'Tramo'} {i+1} · corte {num(t.frente)} × {num(t.alto+perfiles[a.perfil].aumento)} cm</legend><div className="puerta-campos">
             <SelectField label={`Tipo de pieza ${i+1}`} value={t.tipo} options={['tramo','bolsa']} optionLabel={v=>v==='bolsa'?'Bolsa':'Tramo de lona'} onChange={v=>tramo(i,{tipo:v as TramoAraujo['tipo']})}/>
             <Numero titulo={`Frente pieza ${i+1} (cm)`} valor={t.frente} cambiar={v=>tramo(i,{frente:v})}/>
             <Numero titulo={`Alto terminado pieza ${i+1} (cm)`} valor={t.alto} cambiar={v=>tramo(i,{alto:v})}/>
             <Numero titulo={`Cantidad pieza ${i+1}`} valor={t.cantidad} cambiar={v=>tramo(i,{cantidad:v})}/>
-          </div><label className="puerta-casilla"><input type="checkbox" checked={Boolean(t.rotulacion)} onChange={e=>tramo(i,{rotulacion:e.target.checked?{texto:'ANAGRAMA J. ARAUJO',ancho:0,desdeDerecha:0}:undefined})}/>Rotulación por el derecho · pieza {i+1}</label>
-          {t.rotulacion&&<div className="puerta-campos"><Texto titulo={`Texto de rotulación pieza ${i+1}`} valor={t.rotulacion.texto} cambiar={v=>tramo(i,{rotulacion:{...t.rotulacion!,texto:v}})}/><Numero titulo={`Ancho de rotulación pieza ${i+1} (cm)`} valor={t.rotulacion.ancho} cambiar={v=>tramo(i,{rotulacion:{...t.rotulacion!,ancho:v}})}/><Numero titulo={`Desde derecha por el derecho pieza ${i+1} (cm)`} valor={t.rotulacion.desdeDerecha} cambiar={v=>tramo(i,{rotulacion:{...t.rotulacion!,desdeDerecha:v}})}/></div>}
+          </div><label className="puerta-casilla"><input type="checkbox" checked={Boolean(t.rotulacion)} onChange={e=>tramo(i,{rotulacion:e.target.checked?{texto:`ANAGRAMA ${ficha.nombre}`,ancho:0,desdeDerecha:0,...ficha.rotulacion}:undefined})}/>Rotulación por el derecho · pieza {i+1}</label>
+          {t.rotulacion&&<>
+            <div className="puerta-campos"><Texto titulo={`Texto de rotulación pieza ${i+1}`} valor={t.rotulacion.texto} cambiar={v=>tramo(i,{rotulacion:{...t.rotulacion!,texto:v}})}/><Numero titulo={`Ancho de rotulación pieza ${i+1} (cm)`} valor={t.rotulacion.ancho} cambiar={v=>tramo(i,{rotulacion:{...t.rotulacion!,ancho:v}})}/><Numero titulo={`Desde derecha por el derecho pieza ${i+1} (cm)`} valor={t.rotulacion.desdeDerecha} cambiar={v=>tramo(i,{rotulacion:{...t.rotulacion!,desdeDerecha:v}})}/>
+              {!t.rotulacion.centrada&&<Numero titulo={`Desde el bajo de rotulación pieza ${i+1} (cm)`} valor={t.rotulacion.desdeBajo??0} cambiar={v=>tramo(i,{rotulacion:{...t.rotulacion!,desdeBajo:v}})}/>}
+            </div>
+            <label className="puerta-casilla"><input type="checkbox" checked={Boolean(t.rotulacion.centrada)} onChange={e=>tramo(i,{rotulacion:{...t.rotulacion!,centrada:e.target.checked}})}/>Centrar rotulación en el alto · pieza {i+1}</label>
+            <label className="puerta-casilla"><input type="checkbox" checked={Boolean(t.rotulacion.dosCaras)} onChange={e=>tramo(i,{rotulacion:{...t.rotulacion!,dosCaras:e.target.checked}})}/>Rotular las dos caras · pieza {i+1}</label>
+            <p className="puerta-ayuda">La plantilla propone 8 cm del bajo y una cara; algunas piezas cortas van centradas. Comprueba la posición con el pedido. El arte y el alto del anagrama se revisan antes de rotular.</p>
+          </>}
           <button type="button" className="ghost-button" onClick={()=>tramos(a.tramos.filter((_,j)=>i!==j))}>Quitar pieza {i+1}</button></fieldset>)}
           <button type="button" className="ghost-button" onClick={()=>tramos([...a.tramos,{...nuevoTramoAraujo(),frente:p.frente}])}>Añadir tramo</button>{' '}
           <button type="button" className="ghost-button" onClick={()=>tramos([...a.tramos,nuevoTramoAraujo('bolsa')])}>Añadir bolsa</button>

@@ -16,15 +16,18 @@ export interface MedidasBolsillo { distancia:number; ancho:number; lado:'izquier
 export interface TramoAraujo {
   tipo: 'tramo' | 'bolsa'; frente: number; alto: number; cantidad: number;
   ventanas: Ventana[];
-  rotulacion?: { texto: string; ancho: number; desdeDerecha: number };
+  rotulacion?: { texto: string; ancho: number; desdeDerecha: number; desdeBajo?: number; centrada?: boolean; dosCaras?: boolean };
 }
 export interface ConfiguracionAraujo {
   forma: 'sueltos' | 'continua';
   /** Dos perfiles observados; el de 6,5 solo se aplica si se confirma expresamente. */
-  perfil: '7' | '6,5';
+  perfil: string;
   tramos: TramoAraujo[];
 }
 export interface Puerta {
+  /** Opcionales: los documentos anteriores conservan su interpretación y sus bytes. */
+  clientePuertas?: string;
+  tipoPuerta?: string;
   modelo: ModeloPuerta;
   articuloOrigen: ModeloPuerta | 'PUERTAPLET' | 'PUERTAPLETRA' | 'PUERTAPLETRAM' | '';
   araujo?: ConfiguracionAraujo;
