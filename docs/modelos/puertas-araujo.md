@@ -47,7 +47,7 @@ Los «canutillos» de las hojas se dibujan en oficina con **VARILLA BLANCA (5,5 
 
 La plantilla identifica como COMB el canutillo de **6,5**. Iván precisó sus medidas el 03/11/2026: referencia magenta a **3,45** del corte y rotulador **3,05** más allá, a **6,5**; la regla de corte es **H + 6,9**. El 4373 histórico cortó H + 7,15, es decir, **0,25 más**; esta diferencia solo se consulta si se vuelve a usar COMB. Se conserva como opción manual con ese aviso. **Iván, 03/11/2026:** «no tengo claro por qué hay 6,5 o 7, pero vamos a dejar los 7; es mejor que tenga ese margen». Por tanto **7 es el valor inicial para todos los pedidos ARAUJO, incluido LAC 900 azul 5002**, sin deducirlo del material ni bloquear la confirmación. Q-AR01 queda contestada para el remate habitual. La cota aislada de conjunto de 4373 no impone una corrección al corte nuevo.
 
-La web permite cambiar el perfil a mano y pide confirmar el dibujo del pedido. No aplica estos dos perfiles a extremos diferentes, bolsillos integrados, cintas o sacos de plegables grandes.
+La web permite cambiar el perfil a mano y pide confirmar el dibujo del pedido. Cada extremo puede ser canutillo o E.T. de bolsa soldada; no se deducen cintas ni sacos de plegables grandes.
 
 ### Ventanas
 
@@ -59,7 +59,7 @@ El DXF común conserva los huecos y las curvas en CUTTER; los tramos rectos del 
 
 ### Rotulación y bolsa
 
-El alzado se plantea por el **revés** y la posición de rotulación se describe por el **derecho**. La plantilla vigente propone **8 cm desde el bajo y una cara**, salvo que el pedido pida las dos. También contiene una pieza corta con el cuño centrado en el alto. La web propone los 8 cm, permite editar la distancia, centrarlo o pedir ambas caras, y conserva texto, ancho y distancia lateral. **No inventa el alto del anagrama ni su arte y no crea un recorte del logo.** Q-AR02 solo conserva lo que falta para rotular.
+El alzado se plantea por el **revés** y la posición de rotulación se describe por el **derecho**. Iván, 03/11/2026: se indica el ancho del anagrama habitual y su distancia al borde derecho. El formulario no propone 8 cm desde el bajo ni pide arte o alto del logo; no crea ningún recorte de máquina. Las referencias verticales que ya estuvieran guardadas siguen leyéndose. Q-AR02 contestada; contraste ampliado al final del expediente.
 
 La bolsa es otra pieza rectangular, con su propio frente, alto y cantidad. No se sustituye por el saco con pestaña de Portanova. No se deduce siempre F − 7,5: el 5365 pide **440 × 30**, aunque sus tramos son de 307. El 3688 demuestra bolsas sueltas de 430 × 30 y 440 × 30; ambas cortan a 37,4 de alto. También hay bolsas de 28 que cortan a 35,4.
 
@@ -86,7 +86,7 @@ Medidas de corte en cm. «Coincide» se refiere a esas medidas nominales, no a i
 | AR2603688, OF 0230793 | Dos bolsas diferentes: 430 × 30 y 440 × 30 | Ambas de 37,4; alternativa de corte de pieza/restos | Dos filas independientes; no 2 conjuntos de 2 bolsas |
 | AR2600776, OF 0225577 | 255 × 100 con ventanas y 255 × 90 liso | 107,4 / 97,4; cristal 94 × 39 | Configurable como dos tramos; RPS dice «diferentes medidas» y no inventa cuáles |
 | AR2600512, OF 0225032 | Tramo amarillo 480 × 30 | 480 × 37,4, marcas 7 | Coincide; sin puerta ficticia |
-| AR2505733, OF 0222632/33/34 | 4 tramos de 475 × 92,5 con entrada intermedia; otros extremos diferentes | 99,7; piezas de 49,5 y 36,5; entradas y acabados distintos | **No se aplica H + 7,4 automáticamente**: Q-AR03. No está dentro de los dos perfiles implementados |
+| AR2505733, OF 0222632/33/34 | 4 tramos de 475 × 92,5 con E.T. intermedia de 13; pies de 34 azul y 21 amarillo, E.T. inferior de 12 | Cortes 99,7 / 49,5 / 36,5; referencias superiores a 3,5 | Web 99,9 / 49,7 / 36,7: conserva los 3,7 confirmados para el canutillo. Referencia inferior E.T. a 12 y rotulador a 24. Cuatro E.T. de 475 × 13 aparte. Q-AR03 contestada |
 
 Exploración adicional de cotas propias, disponible por fichero en `evidencia-cad.json`:
 
@@ -102,7 +102,7 @@ Exploración adicional de cotas propias, disponible por fichero en `evidencia-ca
 | AR2602928 | Frente 151; altos 124/90/80 → 131,4/97,4/87,4; bolsa 143,5 × 35,4 y cristal 94 × 39 |
 | AR2506130 | Dos configuraciones del mismo pedido: una cabecera 122,5 y otra 120; el CAD conserva ambas. No se mezclan cantidades/versiones |
 | AR2403533; AR2501193; AR2501526 | Plegables impresas continuas: alturas totales 250/300/280 y entradas de unos 12; las cotas repetidas de bolsa son 35,4. AR2501526 confirma cuerpo 287,4 y dos ET de 12 |
-| AR2406217; AR2504664; AR2506255 | Revisiones y diferencias de longitud/cadena en lonas impresas: 260,4/330,4; 311,7/315,7; 300/300,4, respectivamente. No se usan para inventar demasías, Q-AR05 |
+| AR2406217; AR2504664; AR2506255 | Mandan sus presentaciones. Las cotas 260,4 / 330,4 / 300,4 llegan a una marca, no al borde de corte. El 4664 tiene doblez superior de 4. Contraste ampliado de impresas al final; Q-AR05 contestada |
 | AR2404939 | Tramo de reposición con ventanas, corte 461,01 × 130,4 para alto 123; figuras y OF diferentes dentro del mismo archivo, se separan |
 | AR2600252; AR2601995 | Plegables grandes con cintas/entradas de 13, empates y bolsas integradas; son otro acabado, **no cubierto por la lona continua sencilla**. Los mismos pedidos incluyen enrollables/tramos de alto +7,4 |
 | AR2505761 | Hoja y RPS de puerta impresa; DWG no disponible. No sirve para afirmar una medida de corte de oficina |
@@ -125,7 +125,7 @@ Los huecos de corte empiezan en X 44 y 173, Y **33,7** desde el borde de corte. 
 
 Se reutiliza el anidado común de puertas, agrupando por material y ancho de rollo. Con los rollos iniciales de 300/140/300, el azul necesita **614 de largo**, con los dos tramos de 102,4 en una columna y el de 107,4 en la otra; la bolsa amarilla ocupa 440 de largo en otro material. Se permiten giros. Los cristales van agrupados como muestras de restos; la cota de la muestra no es consumo de dos cristales anidados. La oficina del 4713 usa también dos columnas de frente 307 (614 nominales), con 209,8 de ancho ocupado porque allí hay dos tramos de 107,4, frente a 204,8 del 5365. El orden concreto lo optimiza el anidado; no se copia la posición del CAD histórico.
 
-Los anchos de rollo deben comprobarse para el material real de ARAUJO: 300/140/300 son los valores iniciales heredados del configurador, no una deducción de sus planos. Q-AR06.
+Iván confirma 300/140/300 como rollos habituales de Araujo, editables para el material real. La única parte pendiente de Q-AR06 es el reparto de las impresas que superan el ancho disponible.
 
 El alzado muestra cada tramo separado, contorno, terminado, canutillos, marcas, ventanas, cantidades, OF y nota de rotulación por el derecho. El plano usa cotas DIMENSION editables y las capas de oficina; el resumen de corte conserva las entidades del bot, con sus curvas, giros y multiplicadores. Las diferencias de presentación respecto a la oficina son identificaciones uniformes por pieza, nota literal del anagrama sin inventar su altura y anidado común; no se afirma paridad gráfica de todo el histórico.
 
@@ -163,10 +163,10 @@ Iván señaló la plantilla `ARAUJO.dwg` de `DIBUJOS\PUERTAS`, modificada el **1
 | --- | --- | --- |
 | COMB y Panamá | COMB: 59 → 66,15 y 47,5 → 54,65 en esa plantilla, rotulador a 6,5 (`21EEF`–`21F2C`). Panamá: 95 → 102,4 y bolsa 28 → 35,4 (`2AE4F`, `2B675`). Hay además ejemplos normales de 7 en el resto de la zona | La respuesta posterior de Iván prevalece: habitual 7 para todos; COMB manual con referencia a 3,45, rotulador a 6,5 y corte H + 6,9. El desfase histórico de 0,25 queda anotado, sin trasladarlo al remate habitual |
 | Material | Nota `24C10`: normalmente LAC 900; si es PVC Panamá 900 g ignífugo lo especifican | Se conserva el material del pedido. El material no cambia automáticamente el perfil |
-| Cuño y caras | Nota `21F7F`: 8 cm desde abajo, una cara salvo petición de las dos, distancia desde derecha variable. El ejemplo corto incorpora «en medio de la altura» (`2399F`). Notas `2C8DD` y `36834`: cuño por el derecho; puerta por el revés | 8 cm propuestos y editables, opción centrada y dos caras. La posición no fija el arte ni el alto real del anagrama; no hay un rectángulo ficticio de corte |
-| Extremo con doblez | Los ejemplos «CON DOBLEZ» muestran una preparación superior de 4 y otra inferior de 7: 190 → 195,4 y 195 → 200,4 (`23A34`–`23A6D`). Hay otros detalles de soldar 5/soldar 2, cortes por el derecho y pasos de cintas sin retirar lona | Son acabados distintos a dos canutillos. No se permite deducir de ellos un despiece del 5733 ni añadirlos al cuerpo continuo sencillo |
-| Impresión digital | Ejemplo **AR2203254**: cadena 108/80/75, ancho 185; cota total 263, corte de cuerpo 263,4; bolsa 177,5 × 35,4; muestra de dos ET de 24,0107 (`2DD88`, `2DD94`, `2DD9D`). Son referencias y extremos propios | Confirma que no toda impresa usa el cuerpo del 2986. Se mantiene el alcance del cuerpo continuo sencillo ya contrastado; no se inventa una regla universal de impresión ni se copia un corte de otra revisión |
-| Rollos y giro | No se han encontrado notas de ancho de rollo ni una instrucción general que fije la orientación de impresión | Se mantienen anchos editables y se deja Q-AR06 abierta. Un ancho ocupado en el dibujo no prueba el ancho del rollo |
+| Cuño y caras | Nota `21F7F`: 8 cm desde abajo, una cara salvo petición de las dos, distancia desde derecha variable. El ejemplo corto incorpora «en medio de la altura» (`2399F`). Notas `2C8DD` y `36834`: cuño por el derecho; puerta por el revés | Iván posteriormente pide solo ancho y distancia al derecho para el anagrama habitual. Se retira la propuesta automática de 8; las referencias ya guardadas se conservan |
+| Extremo con doblez | Los ejemplos «CON DOBLEZ» muestran una preparación superior de 4 y otra inferior de 7: 190 → 195,4 y 195 → 200,4 (`23A34`–`23A6D`). Hay otros detalles de soldar 5/soldar 2, cortes por el derecho y pasos de cintas sin retirar lona | El doblez de 4 es distinto al canutillo y a la E.T.; no se confunden. El 5733 se resuelve por sus propios extremos y la respuesta posterior de Iván |
+| Impresión digital | Ejemplo **AR2203254**: cadena 108/80/75, ancho 185; cota total 263; la cota 263,4 llega al rotulador superior, el contorno mide 270,4; bolsa 177,5 × 35,4; muestra de dos ET de 24,0107 (`2DD88`, `2DD94`, `2DD9D`). Son referencias y extremos propios | El contorno de 270,4 responde a los mismos dos canutillos de 7. La lectura anterior confundía la marca superior con el borde; véase el contraste ampliado |
+| Rollos y giro | No se han encontrado notas de ancho de rollo ni una instrucción general que fije la orientación de impresión | Iván confirma 300/140/300 como valores por defecto. La orientación posterior a imprimir se contrasta con los 5656 y 6255; el reparto de cuerpos mayores sigue pendiente |
 
 ### Contraste de las dos líneas del canutillo
 
@@ -194,3 +194,40 @@ La salida de la web conserva los nombres de máquina comunes: `DISCO1` blanco 7 
 Plantillas **antiguas**, sin implementar como fichas de puertas: **ALMAGAL** (solo `ALMAGAL.bak`, 2017; no hay DWG con ese nombre), **DICOMA ALZURIA (NAVE NOVA)** (2015), **ESTEFAN OREIRO** (2015), **INDUSTRIAS SANTA PAU** (2023), **JOSE CARLOS GARCIA** (2014), **OPERIS** (2016), **STAC (SISTEMAS TECNICOS)** (2015), **SYSTEM DOCK** (DWG de 2026 y `SYSTEM DOCK2.bak` de 2016), **TENZAMATIC** (2026) y **VILLAR MATO** (2025). La lona perimetral de System Dock sigue siendo otro producto de la web; este inventario no cambia sus reglas.
 
 También hay dibujos sin nombre de cliente (`1412.dwg`, `AR1406234.dwg`, `AR2205194.dwg`, `B.dwg`, `Dibujo6.dwg`) y copias de seguridad de pedidos. No se les asigna un cliente por el nombre del archivo.
+
+## Respuestas de Iván y contraste ampliado · 03/11/2026
+
+**Q-AR02 contestada.** Se revisaron las hojas de 4292 y las dos OF de 2391: el anagrama tiene ancho 20 y distancia al derecho 15, sin cota de alto ni posición vertical. El plano de 6245 sí conserva una referencia vertical de **8**; también existe en NUEVO/REV2. No se afirma que nunca se acotara en oficina: es una convención anterior, que no se convierte en un dato obligatorio del cliente. Se aplica la indicación más reciente de Iván: anagrama habitual, ancho y distancia al borde derecho. El 5365 se regenera sin altura inventada ni aviso sobre arte pendiente.
+
+**Q-AR03 contestada: E.T. es bolsa soldada.** La hoja 5733 identifica bolsa soldada de 130 mm en medio de los cuatro cuerpos y de 120 mm en los pies. Mandan sus 21 cm para la pieza amarilla; los 34 de esa línea RPS son un error. Cada tramo permite elegir arriba/abajo canutillo o E.T., con el ancho de su pedido; las E.T. intermedias tienen eje desde el bajo terminado. OF y material pueden ser distintos en cada tramo.
+
+Medición del DXF original 5733: coordenadas de modelo en metros y distancias entre líneas en cm.
+
+| Entidades | Qué se ha medido | Regla aplicada |
+| --- | --- | --- |
+| `3683E`, `3683F`, `36844` | Corte inferior −59,7150521; rotulador −59,6450521; referencia −59,6780521 | Canutillo: 7 al rotulador, 3,7 a referencia |
+| `3688D`, `3688E`, `36846` | Corte superior −58,7180521; rotulador −58,7880521; referencia −58,7530521 | El dibujo antiguo tiene 3,5 a la referencia superior. Se conservan los 3,7 actuales; diferencia de 2 mm, sin trasladarla a otras piezas |
+| `368B9`, `368BA` | Eje −59,2980521, marca −59,3630521 | Eje a 38 del bajo terminado, tira de 13, marca 6,5 por debajo del eje: 35,2 desde el corte inferior |
+| `36916`, `36A18`, `36A19` | Referencia inferior −60,4523735686; corte −60,5723735686; rotulador −60,3323735686 | E.T. inferior de 12: referencia a 12 y rotulador a 24 del corte. El ancho no se duplica en el alto de corte |
+| `36A4F`, `36A5D`, `36A5E` | Referencia amarilla −61,1298601782; corte −61,2498601782; rotulador −61,0098601782 | La misma E.T. inferior de 12 en la pieza de 21 |
+
+Corte nominal nuevo: **475 × 99,9, cantidad 4**, E.T. separadas **475 × 13, cantidad 4**; pie azul **475 × 49,7**, pie amarillo **475 × 36,7**. Sus OF son 0222632/33/34. El plano antiguo mide 99,7/49,5/36,5 por la referencia superior de 3,5. Se anota «SOLDADA ALTA FRECUENCIA · EMPATE 2 CM» y «E.T. · DEJAR HUECOS 9». Este último es un espacio que se deja al soldar, no una serie de recortes inventados para el bot. Las capas nuevas siguen siendo DISCO1 blanco, ROTULADOR rojo y referencias magenta solo en el plano.
+
+Se buscó BOLSA SOLDADA, E.T. y ENTRADA en las 1.329 líneas RPS. La expresión BOLSA SOLDADA no aparece literalmente: RPS suele decir ENTRADAS DE TUBO. No se puede deducir de ese texto si la entrada divide paños o va soldada sobre un cuerpo. El contraste de E.T. intermedias se amplía con 2986 (12), 6255 (12), 5656 (12) y 3254 (dos de 12), además del 5733 (13). Las cintas y empates de las plegables grandes siguen fuera del cuerpo sencillo.
+
+**Q-AR05 contestada: mandan las PRESENTACIONES.** Iván confirma que las diferencias pequeñas son errores de milímetros. Se han renderizado las presentaciones de los originales, no solo el espacio modelo; imágenes locales en `tmp/araujo/tercera/`. Además había una lectura equivocada que no era un error de fabricación: una cota hasta la marca no equivale al alto de corte.
+
+| Impresa | Presentación y contorno real | Consecuencia |
+| --- | --- | --- |
+| AR2203254 | Cliente 108 + 80 + 75 = 263. La cota roja 263,4 va desde el corte inferior hasta el rotulador superior; faltan los 7 hasta el borde. Contorno **270,4**, dos E.T. de 12 y bolsa 177,5 × 35,4 | No tiene una demasía especial de 0,4; comparte los dos canutillos habituales |
+| AR2406217 | Presentaciones de cuerpos de **260 y 330**. Cotas a marca 260,4 y 330,4; contornos **267,4 y 337,4**. Las cadenas de RPS no sustituyen esas presentaciones | No confundir la longitud hasta el rotulador con el contorno. El cuerpo grande necesita revisar su reparto |
+| AR2504664 | Presentación de frente 154, cadena 156/76/76 y preparación superior **DOBLEZ 4**, distinta de dos canutillos. El mismo archivo conserva preparaciones de corte diferentes, 311,7/315,7 | No extrapolar el extremo de doblez al canutillo ni a una E.T.; no está modelado por esos dos remates |
+| AR2506255 | Frente 147, alto terminado **300**, contorno nominal **307,4**. Zona LONA ID 300 ANCHO: cuerpo de **300** y otra agrupación de **33,4 = 9,4 + 12 + 12** | Se han medido el cuerpo y la agrupación. Interpretar 9,4 como cabecera con empate de 2 reconstruye 307,4, pero esa regla de reparto sigue pendiente de confirmar |
+| AR2505656 | Frente 157, cadena **129,5 + 70 + 70 = 269,5**. Contorno **276,9**, cota a marca 269,9. Zona LONA ID 300 ANCHO: caja de **288,9** con una línea DISCO1 a 12 del extremo y otra tira de 12 aparte | 288,9 contiene cuerpo 276,9 y una E.T. de 12 contigua; no es una nueva demasía del cuerpo. Dos E.T. de 12 en total |
+| AR2602986 | Frente 134, cuerpo terminado 280, corte **287,4**, dos E.T. de 12 y bolsa 126,5 × 35,4 | Confirma el cuerpo continuo sencillo; la rotulación de OF del CAD no reemplaza la de RPS |
+
+AR2505761 solo tiene hoja local: no se encontró su DWG, por lo que no se atribuyen medidas a su presentación. El archivo local llamado AR2502986 contiene una presentación **R2502986 de otro cliente**, una pieza de toldo de Julio Domínguez Antelo; se descarta como evidencia de Araujo. La referencia de puertas 2986 contrastada es AR2602986.
+
+**Q-AR06 contestada para rollos.** Iván confirma **300 / 140 / 300**: mismo tipo de lona que Portanova, como valores normales editables en la ficha de Araujo. No son provisionales. Los planos de 6255 y 5656 identifican LONA ID 300 ANCHO y conservan el alto atravesado en ese ancho. La opción manual «Cortar el cuerpo después de imprimir» impide que el anidado gire ese cuerpo y lo separa del material de las E.T. sin imprimir; no añade demasías de impresión sin evidencia. Si el cuerpo no cabe entero en ese sentido, se bloquea el corte y queda únicamente la pregunta concreta sobre su cabecera/empate en Q-AR06. No se aplica esa orientación automáticamente por encontrar IMPRESA en RPS.
+
+En pantalla: Araujo, Portanova, General y los tipos con mayúscula inicial. Los planos, DXF y cajetines conservan los textos en mayúsculas del taller.
