@@ -189,8 +189,8 @@ export function conRevisor(dxf, revisor) {
  * Las presentaciones en una página HTML, una A4 apaisada por hoja, para que Chromium la pase a PDF. Avisa con
  * `window.hojaLista` cuando está pintada, como la hoja de taller de remolques.
  */
-export function htmlPresentaciones(src, titulo = 'Presentaciones') {
-  const paginas = presentacionesDxf(src).map(p => `<section class="hoja" aria-label="${esc(p.nombre)}">${svgPrimitivas(p.primitivas, { ancho: '297mm', alto: '210mm', trazo: .2 })}</section>`);
+export function htmlPresentaciones(src, titulo = 'Presentaciones', nombres = null) {
+  const paginas = presentacionesDxf(src).filter(p => !nombres || nombres.includes(p.nombre)).map(p => `<section class="hoja" aria-label="${esc(p.nombre)}">${svgPrimitivas(p.primitivas, { ancho: '297mm', alto: '210mm', trazo: .2 })}</section>`);
   return `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>${esc(titulo)}</title><style>@page{size:A4 landscape;margin:0}html,body{margin:0;background:#fff}.hoja{width:297mm;height:210mm;overflow:hidden;break-after:page}.hoja:last-child{break-after:auto}svg{display:block}</style></head><body>${paginas.join('')}<script>window.hojaLista=true</script></body></html>`;
 }
 export function cajaPrimitiva(p) {

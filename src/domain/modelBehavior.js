@@ -191,6 +191,7 @@ export function getEstablishedProjections(modelCode) {
 
 export function getFabricPatternDiagram(awning = {}, cadDiagram = getAwningDiagram(awning)) {
   const model = String(awning.model || '').trim().toUpperCase();
+  if (model === 'EMBUDO') return 'EMBUDO';
   const override = normalizeFabricDiagramOverride(model, awning.fabricDiagramOverride);
   if (override) return override;
   if (model.startsWith('HERA')) return 'HERA';

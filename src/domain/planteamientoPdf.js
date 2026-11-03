@@ -1,3 +1,4 @@
+import { planteamientoConEmbudoCad } from './embudoPlanteamientoCad.js';
 import { normalizeFabricImage } from './fabricImage.js';
 import { configuredCurtainVelcroHeight, curtainWindowDrawingHeight, formatCurtainVelcroLabel, isConfiguredCurtain, normalizeCurtainConfiguration } from './curtainConfiguration.js';
 import { formatSolapaVelcroLabels, normalizeSolapas } from './solapasRules.js';
@@ -60,7 +61,11 @@ const fonts = hasEmbeddedFonts
 // `htmlStructure` y `htmlFabric` en falso dejan ese tipo de página con pdfkit.
 // Si algo falla se avisa con `onSheetError(error, hoja)` (hoja null si no es de una sola hoja)
 // y esas páginas salen con pdfkit como siempre: el PDF no se queda nunca sin hacer.
-export async function buildOrderPlanteamientoPdf({ order, calculation, review = null, onlyAwningId = null, renderSheets = null, htmlStructure = true, htmlFabric = true, htmlDiagrams = false, onSheetError = null, sinHojaTelas = null }) {
+export async function buildOrderPlanteamientoPdf(opciones) {
+  return planteamientoConEmbudoCad(opciones, buildWebPlanteamientoPdf);
+}
+
+async function buildWebPlanteamientoPdf({ order, calculation, review = null, onlyAwningId = null, renderSheets = null, htmlStructure = true, htmlFabric = true, htmlDiagrams = false, onSheetError = null, sinHojaTelas = null }) {
   const withPdfkit = async () => (await buildPdfkitPlanteamiento({ order, calculation, review, onlyAwningId, attachReview: true, sinHojaTelas })).pdf;
   if (!renderSheets || (!htmlStructure && !htmlFabric)) return withPdfkit();
   let structureSheets;
@@ -334,6 +339,7 @@ export function buildPlanteamientoPlan(order, calculation, { onlyAwningId = null
     const diagram = getFabricPatternDiagram(entry.awning, cadDiagram);
     const groupKey = JSON.stringify([
       fabricDiagramGroupKey(diagram, entry.awning),
+      diagram === 'EMBUDO' ? normalizeEmbudo(entry.awning.embudo) : null,
       normalizeFabricImage(entry.awning.fabricImage),
       measuredDiagramKey(diagram, entry.ofBlock?.calculation)
     ]);

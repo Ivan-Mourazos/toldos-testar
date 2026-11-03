@@ -1394,6 +1394,7 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
     }
     const enElCad = new Set((updated.corteLona?.toldos ?? []).filter((t) => !t.manual).map((t) => t.letra));
     pdfTarget.contents = await buildOrderPlanteamientoPdf({ order: updated.order, calculation, review: updated, ...opcionesHojaTelas({ codigoPedido: updated.order.orderCode }),
+      ...(updated.corteConfirmado ? { cadEmbudo: null } : {}),
       ...(cad.length ? { sinHojaTelas: (_toldo, indice) => enElCad.has(awningLetter(indice)) } : {}) });
     if (cad.length) pdfTarget.contents = await conHojasDelante(pdfTarget.contents, cad);
     const conCad = cad.length > 0;
@@ -1708,7 +1709,8 @@ async function hojaRemolquesPdf(datos) {
  * `sigueEsperando` solo en la vista previa: si el cliente la aborta, sus hojas no ocupan Chromium.
  */
 function opcionesHojaTelas({ codigoPedido, sigueEsperando } = {}) {
-  return impresoraHojaTelas.opciones({ codigoPedido, sigueEsperando });
+  return { ...impresoraHojaTelas.opciones({ codigoPedido, sigueEsperando }),
+    cadEmbudo: { render: presentacionesPdf, ofStockSacos } };
 }
 
 function enviarPdf(res, pdf, nombre) {

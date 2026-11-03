@@ -80,7 +80,7 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
       ajustes: ajustes[toldo.id] ?? ajustes[toldo.of] ?? ajustes[letra] ?? {},
       ...(toldo.model === 'CORTINA' || toldo.model === 'CAMBIO CORTINA' ? { cortina: datosCortina(toldo) } : {}),
       ...(toldo.model === 'SOLAPAS' ? { solapas: datosSolapas(toldo) } : {}),
-      ...(toldo.model === 'EMBUDO' ? { embudo: normalizeEmbudo(toldo.embudo) } : {})
+      ...(toldo.model === 'EMBUDO' ? { embudo: normalizeEmbudo(toldo.embudo), notas: [orden.notes, toldo.fabricNotes].filter(Boolean).join('\n') } : {})
     };
     let cristal = [];
     if (t.cortina) {
