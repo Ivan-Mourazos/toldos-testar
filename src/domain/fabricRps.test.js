@@ -45,10 +45,21 @@ describe('catálogo completo de RPS', () => {
     expect(resolveFabric('NET').material).toBe('PLASTICA (LONA)');
   });
 
-  it('no cambia el ancho de una tela que ya estaba en el catálogo', () => {
-    const previa = [{ code: 'SOLTIS86BEIGP177', width: 267, material: 'SOLTIS 86', color: 'BEIGE', description: 'S' }];
+  it('el ancho lo manda el código de RPS, y una tela que no sale en la foto no se da de baja (Q-TELA02/03)', () => {
+    const previa = [
+      { code: 'SOLTIS86BEIGP177', width: 267, material: 'SOLTIS 86', color: 'BEIGE', description: 'S' },
+      { code: 'CRISTATP140650', width: 140, material: 'CRISTAL', color: '', description: 'C' }
+    ];
     const filas = [{ code: 'SOLTIS86BEIGP177', description: 'S', unitCode: 'ML177' }];
-    expect(regenerateFabrics(filas, previa, new Date('2026-11-01'))[0].width).toBe(267);
+    const [soltis, cristal] = regenerateFabrics(filas, previa, new Date('2026-11-01'));
+    expect(soltis.width).toBe(177);
+    expect(cristal.inactive).toBeUndefined();
+    expect(cristal.width).toBe(140);
+  });
+  it('las tres lonas de otra familia siguen en la búsqueda (Q-TELA02)', () => {
+    for (const code of ['CRISTATP140650', 'PLASCHP200300', 'SOLTIS92AVENP267']) {
+      expect(searchStaticFabrics(code, 100).some((fabric) => fabric.code === code)).toBe(true);
+    }
   });
 
   it('no interpreta gramos, referencias ni tratamientos como colores', () => {

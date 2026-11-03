@@ -6,15 +6,17 @@ const catalogUrl = new URL('../src/domain/data/fabrics.json', import.meta.url);
 
 export function regenerateFabrics(rows, previous, at = new Date()) {
   const byCode = new Map(rows.map((row) => [row.code.trim().toUpperCase(), row]));
-  const isInactive = (row) => !row || Boolean(row.inactiveDate && new Date(row.inactiveDate) <= at);
+  const isInactive = (row) => Boolean(row?.inactiveDate && new Date(row.inactiveDate) <= at);
   const result = previous.map((fabric) => {
     const row = byCode.get(fabric.code);
     const saved = { ...fabric };
     delete saved.inactive;
-    // El ancho de una tela que ya estaba no se toca: un pedido guardado solo con su nombre lo
-    // recalcularía distinto. Si no coincide con su código, se anota como duda (Q-TELA03).
-    return { ...saved, width: fabric.width ?? (row ? inferRollWidth(row.code, row.unitCode) : inferRollWidth(fabric.code)),
-      ...(isInactive(row) ? { inactive: true } : {}) };
+    // Manda el ancho del código de RPS (Iván, 03/11/2026, Q-TELA03: «en principio en el RPS debería estar
+    // bien»); el anterior solo queda si el código no lo dice. Una tela que no sale en la foto (puede estar
+    // en otra familia, Q-TELA02) conserva lo que tenía: solo una baja con fecha la quita de la búsqueda.
+    const anchoRps = row ? inferRollWidth(row.code, row.unitCode) : inferRollWidth(fabric.code);
+    const baja = row ? isInactive(row) : Boolean(fabric.inactive);
+    return { ...saved, width: anchoRps ?? fabric.width ?? null, ...(baja ? { inactive: true } : {}) };
   });
   const known = new Set(previous.map((fabric) => fabric.code));
   for (const row of rows) {

@@ -1116,7 +1116,7 @@
   {
     "code": "ACRRES2296P153",
     "description": "ACR RESIN AVENA",
-    "width": 120,
+    "width": 153,
     "material": "ACR RES",
     "color": "AVENA"
   },
@@ -1173,14 +1173,14 @@
   {
     "code": "ACRRESMRROP153",
     "description": "ACR RESIN MARRON",
-    "width": 120,
+    "width": 153,
     "material": "ACR RES",
     "color": "MARRON"
   },
   {
     "code": "ACRRES2050P153",
     "description": "ACR RESIN NARANJA",
-    "width": 120,
+    "width": 153,
     "material": "ACR RES",
     "color": "NARANJA"
   },
@@ -1194,14 +1194,14 @@
   {
     "code": "ACRRES2979P153",
     "description": "ACR RESIN PERLA",
-    "width": 120,
+    "width": 153,
     "material": "ACR RES",
     "color": "PERLA"
   },
   {
     "code": "ACRRESRIOJP153",
     "description": "ACR RESIN RIOJA",
-    "width": 120,
+    "width": 153,
     "material": "ACR RES",
     "color": "RIOJA"
   },
@@ -1222,7 +1222,7 @@
   {
     "code": "ACRRES2821P153",
     "description": "ACR RESIN SILVER",
-    "width": 120,
+    "width": 153,
     "material": "ACR RES",
     "color": "SILVER"
   },
@@ -1236,7 +1236,7 @@
   {
     "code": "ACRRESVAINP153",
     "description": "ACR RESIN VAINILLA",
-    "width": 120,
+    "width": 153,
     "material": "ACR RES",
     "color": "VAINILLA"
   },
@@ -1616,16 +1616,14 @@
     "description": "CRISTAL TRANSP 650 MICRAS",
     "width": 140,
     "material": "CRISTAL",
-    "color": "TRANSP",
-    "inactive": true
+    "color": "TRANSP"
   },
   {
     "code": "PLASCHP200300",
     "description": "PLASTICO CON HILO",
     "width": 200,
     "material": "CRISTAL",
-    "color": "CON HILO",
-    "inactive": true
+    "color": "CON HILO"
   },
   {
     "code": "ALPHAAM03P250",
@@ -1792,7 +1790,7 @@
   {
     "code": "LAC640AZ15P300",
     "description": "PVC 650 AZUL EUROPA",
-    "width": 250,
+    "width": 300,
     "material": "PVC 650",
     "color": "AZUL EUROPA",
     "inactive": true
@@ -1975,7 +1973,7 @@
   {
     "code": "LAC640NA04P300",
     "description": "PVC 650 NARANJA",
-    "width": 250,
+    "width": 300,
     "material": "PVC 650",
     "color": "NARANJA RAL",
     "inactive": true
@@ -1990,7 +1988,7 @@
   {
     "code": "LAC640NE05P300",
     "description": "PVC 650 NEGRO",
-    "width": 250,
+    "width": 300,
     "material": "PVC 650",
     "color": "NEGRO",
     "inactive": true
@@ -2013,7 +2011,7 @@
   {
     "code": "G650VE26P300",
     "description": "PVC 650 VERDE 6026",
-    "width": 250,
+    "width": 300,
     "material": "PVC 650",
     "color": "VERDE 6026"
   },
@@ -2028,14 +2026,14 @@
   {
     "code": "SOLTIS86BEIGP177",
     "description": "SOLTIS 86 BEIGE",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 86",
     "color": "BEIGE"
   },
   {
     "code": "SOLTIS86BLANP177",
     "description": "SOLTIS 86 BLANCO",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 86",
     "color": "BLANCO",
     "inactive": true
@@ -2043,14 +2041,14 @@
   {
     "code": "SOLTIS86NEGRP270",
     "description": "SOLTIS 86 NEGRO",
-    "width": 267,
+    "width": 270,
     "material": "SOLTIS 86",
     "color": "NEGRO"
   },
   {
     "code": "SOLTIS86SALMP177",
     "description": "SOLTIS 86 SALMON",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 86",
     "color": "SALMON"
   },
@@ -2066,13 +2064,12 @@
     "description": "SOLTIS 92  BEIGE-ARENA",
     "width": 267,
     "material": "SOLTIS 92",
-    "color": "BEIGE-ARENA",
-    "inactive": true
+    "color": "BEIGE-ARENA"
   },
   {
     "code": "SOLTIS9250HAP177",
     "description": "SOLTIS 92  HABANA",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
     "color": "HABANA",
     "inactive": true
@@ -2080,14 +2077,14 @@
   {
     "code": "SOLTIS920268P177",
     "description": "SOLTIS 92 50268",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
     "color": ""
   },
   {
     "code": "SOLTIS92AMCLP177",
     "description": "SOLTIS 92 AMARILLO LIMON",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
     "color": "AMARILLO LIMON",
     "inactive": true
@@ -2095,7 +2092,7 @@
   {
     "code": "SOLTIS92ARENP177",
     "description": "SOLTIS 92 ARENA",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
     "color": "ARENA",
     "inactive": true
@@ -2103,7 +2100,7 @@
   {
     "code": "SOLTIS92AZULP177",
     "description": "SOLTIS 92 AZUL",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
     "color": "AZUL",
     "inactive": true
@@ -2111,14 +2108,14 @@
   {
     "code": "SOLTIS92CAFEP177",
     "description": "SOLTIS 92 CAFÉ",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
     "color": "CAFE"
   },
   {
     "code": "SOLTIS92GRMEP177",
     "description": "SOLTIS 92 GRIS MEDIO",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
     "color": "GRIS MEDIO",
     "inactive": true
@@ -2126,28 +2123,28 @@
   {
     "code": "SOLTIS92GROSP177",
     "description": "SOLTIS 92 GRIS OSCURO",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
     "color": "GRIS OSCURO"
   },
   {
     "code": "SOLTIS92MRROP177",
     "description": "SOLTIS 92 MARRON",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
     "color": "MARRON"
   },
   {
     "code": "SOLTIS92NEGRP177",
     "description": "SOLTIS 92 NEGRO",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
     "color": "NEGRO"
   },
   {
     "code": "SOLTIS92NUBP177",
     "description": "SOLTIS 92 NUBE",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
     "color": "NUBE",
     "inactive": true
@@ -2162,28 +2159,28 @@
   {
     "code": "SOLTIS92ROJOP177",
     "description": "SOLTIS 92 ROJO",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
     "color": "ROJO"
   },
   {
     "code": "SOLTIS922821P177",
     "description": "SOLTIS 92 SILVER",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
     "color": "SILVER"
   },
   {
     "code": "SOLTIS92VECLP177",
     "description": "SOLTIS 92 VERDE",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
     "color": "VERDE"
   },
   {
     "code": "SOLTIS92VEMAP177",
     "description": "SOLTIS 92 VERDE MANZANA",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 92",
     "color": "VERDE MANZANA"
   },
@@ -2240,7 +2237,7 @@
   {
     "code": "SOLTIS99AZREP177",
     "description": "SOLTIS 99 AZUL REAL",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 99",
     "color": "AZUL REAL",
     "inactive": true
@@ -2248,7 +2245,7 @@
   {
     "code": "SOLTIS99BLANP177",
     "description": "SOLTIS 99 BLANCO",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 99",
     "color": "BLANCO"
   },
@@ -2263,35 +2260,35 @@
   {
     "code": "SOLTIS99CRCLP177",
     "description": "SOLTIS 99 CREMA CLARO",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 99",
     "color": "CREMA CLARO"
   },
   {
     "code": "SOLTIS99GRCLP270",
     "description": "SOLTIS 99 GRIS CLARO",
-    "width": 267,
+    "width": 270,
     "material": "SOLTIS 99",
     "color": "GRIS CLARO"
   },
   {
     "code": "SOLTIS99GROSP177",
     "description": "SOLTIS 99 GRIS OSCURO",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 99",
     "color": "GRIS OSCURO"
   },
   {
     "code": "SOLTIS99NATUP177",
     "description": "SOLTIS 99 NATURAL",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 99",
     "color": "NATURAL"
   },
   {
     "code": "SOLTIS99SALMP177",
     "description": "SOLTIS 99 SALMON",
-    "width": 267,
+    "width": 177,
     "material": "SOLTIS 99",
     "color": "SALMON"
   },

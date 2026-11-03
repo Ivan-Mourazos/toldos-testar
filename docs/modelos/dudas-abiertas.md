@@ -12,19 +12,34 @@ Actualizado el 25/09/2026:
 
 Cómo se decide cada respuesta: primero, el manual del fabricante (el de Oficina Técnica o, si no está, el de la web del fabricante); después, el maestro de RPS (qué piezas existen y cuáles están de baja); y por último, lo que de verdad se gasta en las OF. En el expediente de cada modelo se anota en qué se apoya cada decisión.
 
+## Contestadas el 03/11/2026 (Iván)
+
+- **Q-GAN03:** la lona va por el **exterior** del arco. Comprobado a mano en el 5319: se le dio radio 9,5.
+- **Q-GAN04:** la ventana se adapta al espacio del frente. Si cabe la estándar de TGM, **50 × 35**, se pone esa.
+- **Q-GAN02:** AR.25.00389 era especial: llevaba atrás para fruncir la goma y **no tenía paño trasero**. No sirve para fijar reglas.
+- **Q-GAN01:** las dos piezas del AR2601847 están en el plano de la oficina (BN(3) + ollaos + velcro suave por el revés, «mandar contrario»; y el paño de 47/51,5 × 71/73 con ventana 30 × 50 y BN(3) + ollaos). Imagen: `tmp/ganado-cal/AR2601847-plano-ivan.png`.
+- **Q-TELA03:** en principio, RPS está bien: Soltis 267; PVC 250 o 300; acrílico 120 o 153. Puede haber del mismo color en los dos anchos. Manda el código de RPS.
+- **Q-TELA01:** el ancho a veces viene en la referencia; si no, se pide en el pedido.
+- **Q-TELA02:** `CRISTATP140650` es cristal, `PLASCHP200300` plastel y `SOLTIS92AVENP267` Soltis: son lonas y siguen valiendo.
+- **Q-FF01:** depende del caso. **Q-FF02:** depende del remate. Los faldones siguen a mano.
+- **Q-DP01 a Q-DP07:** si se gastan siempre, se reservan; antes hay que comprobar en RPS que de verdad se consumen y con qué configuración.
+- **Q-I10:** se queda como está (aviso a partir de 2 cm). **Q-I11:** el comercial puede dar la medida desde suelo o desde tubo, como en las cortinas; la web deja elegir.
+- **Laterales «Al corte»:** van tal cual la medida rematada; con bastilla llevan el aumento de la bastilla.
+- **Bamba de la cortina en la hoja de telas:** debe poner la real del corte.
+
 ## Caballos por medidas · Talleres Cal (01/11/2026)
 
 Son las dudas que impiden sacar el corte de AR.26.05319, línea 3. Mientras tanto, la web no calcula estos remolques y **ese pedido se hace a mano**. Fuentes y contraste por script en [remolque-ganado-medidas.md](./remolque-ganado-medidas.md).
 
-**Q-GAN02.** AR.25.00389 (OF 0213084, «curva de Remolcar», con croquis a mano) no sale con las reglas que sí cuadran en el gemelo AR.25.06052: el cuerpo falla hasta 28 mm, la curva 7 mm y 15 de 21 ollaos no coinciden. ¿Tuvo algo especial ese pedido? Hay que preguntárselo a quien lo dibujó. Sin aclararlo, las reglas salen de un solo pedido y no se pueden dar por generales.
+**Q-GAN02 (contestada el 03/11, ver «Contestadas el 03/11/2026»).** AR.25.00389 (OF 0213084, «curva de Remolcar», con croquis a mano) no sale con las reglas que sí cuadran en el gemelo AR.25.06052: el cuerpo falla hasta 28 mm, la curva 7 mm y 15 de 21 ollaos no coinciden. ¿Tuvo algo especial ese pedido? Hay que preguntárselo a quien lo dibujó. Sin aclararlo, las reglas salen de un solo pedido y no se pueden dar por generales.
 
-**Q-GAN03.** ¿Qué radio lleva la lona del 5319: el exterior del arco, **R93,1**, o **R76,4**, el de los diez pedidos anteriores de Cal, que coincide con la raya interior del cartón? Iván entiende que la lona va por el lado exterior del tubo, pero esos pedidos no lo confirman. Se aclara midiendo una lona real ya hecha.
+**Q-GAN03 (contestada el 03/11, ver «Contestadas el 03/11/2026»).** ¿Qué radio lleva la lona del 5319: el exterior del arco, **R93,1**, o **R76,4**, el de los diez pedidos anteriores de Cal, que coincide con la raya interior del cartón? Iván entiende que la lona va por el lado exterior del tubo, pero esos pedidos no lo confirman. Se aclara midiendo una lona real ya hecha.
 
-**Q-GAN04.** ¿La ventana del 5319 es de **50 × 35** con tapa de **53 × 38**, como en el gemelo? Son las medidas de ese otro pedido; en la hoja del 5319 no están confirmadas.
+**Q-GAN04 (contestada el 03/11, ver «Contestadas el 03/11/2026»).** ¿La ventana del 5319 es de **50 × 35** con tapa de **53 × 38**, como en el gemelo? Son las medidas de ese otro pedido; en la hoja del 5319 no están confirmadas.
 
 ## Remolcar estándar · remolque de ganado (29/10/2026)
 
-**Q-GAN01.** En el corte real de AR2601847 hay dos piezas de **98 × 32** y **34,5 × 56** de corte que no
+**Q-GAN01 (contestada el 03/11, ver «Contestadas el 03/11/2026»).** En el corte real de AR2601847 hay dos piezas de **98 × 32** y **34,5 × 56** de corte que no
 tienen dibujo de confección identificado en la zona de t163. ¿Qué son esas dos piezas y llevan ollaos o
 algún acabado? Mientras tanto, el bot conserva exactamente el corte real y la pantalla, el plano y la hoja
 las muestran como «Pieza del corte sin dibujo de confección», con su medida de corte, sin darles nombre de
@@ -72,13 +87,13 @@ Añadidas el 03/10/2026, al comparar en los 17 modelos lo que sale en el despiec
 
 | Código | Modelo | Pieza del despiece | Por qué importa |
 | --- | --- | --- | --- |
-| Q-DP01 | Cuarzo Box | Barra de carga Storbox 250 | Si no viene con el cofre, falta en la reserva |
-| Q-DP02 | Ámbar, Perla y Coral Box | Juego de terminales | En el Arzúa y el Xacobeo los terminales sí se reservan |
-| Q-DP03 | Electra | Cadenillas inox, puentes abatibles y regleta Zamack | En la Cortina el puente y la regleta sí llevan referencia |
-| Q-DP04 | Cortina | Cadenillas inox | Sale siempre con «—» en la referencia |
-| Q-DP05 | Xacobeo | Rueda motriz LT50, con la referencia `ADAPTADORESTUBO70` | Tiene referencia en el despiece pero no se reserva |
-| Q-DP06 | Arzúa, Galicia, Xacobeo, Punto Recto, cofres y Antica | Kit de tornillos de máquina y taco de nylon | Tornillería menuda: seguramente no se reserva a propósito, falta confirmarlo |
-| Q-DP07 | Iris | Tubo de carga (el perfil terminal de abajo) y el terminal compensador SWBS | Se cortan a medida y salen en el despiece, pero no hay ninguna referencia reservada para ellos: solo la pletina del lastre, los tapones y la goma |
+| Q-DP01 (contestada el 03/11) | Cuarzo Box | Barra de carga Storbox 250 | Si no viene con el cofre, falta en la reserva |
+| Q-DP02 (contestada el 03/11) | Ámbar, Perla y Coral Box | Juego de terminales | En el Arzúa y el Xacobeo los terminales sí se reservan |
+| Q-DP03 (contestada el 03/11) | Electra | Cadenillas inox, puentes abatibles y regleta Zamack | En la Cortina el puente y la regleta sí llevan referencia |
+| Q-DP04 (contestada el 03/11) | Cortina | Cadenillas inox | Sale siempre con «—» en la referencia |
+| Q-DP05 (contestada el 03/11) | Xacobeo | Rueda motriz LT50, con la referencia `ADAPTADORESTUBO70` | Tiene referencia en el despiece pero no se reserva |
+| Q-DP06 (contestada el 03/11) | Arzúa, Galicia, Xacobeo, Punto Recto, cofres y Antica | Kit de tornillos de máquina y taco de nylon | Tornillería menuda: seguramente no se reserva a propósito, falta confirmarlo |
+| Q-DP07 (contestada el 03/11) | Iris | Tubo de carga (el perfil terminal de abajo) y el terminal compensador SWBS | Se cortan a medida y salen en el despiece, pero no hay ninguna referencia reservada para ellos: solo la pletina del lastre, los tapones y la goma |
 
 Lo que sí se arregla sin preguntar (03/10/2026): el despiece del Iris y el del HERA salen de las piezas que ya se reservan; el Xacobeo pone en el despiece las referencias de tapones y terminales que ya reserva; y el Ágata Box añade al despiece los dos kits de patines.
 
@@ -89,8 +104,8 @@ Del pedido AR2604748: el primer Iris con motor solar (Somfy RS100 Solar IO 15/12
 | Código | Pregunta | Qué hace la web mientras tanto |
 | --- | --- | --- |
 | Q-I09 | ¿Qué adaptación lleva el motor solar RS100 en el tubo de 70 del Iris? El único solar anterior fue un HERA, con el kit Swift de 56 | Reserva la misma que con el Sunilus: casquillo para motor 50 ZIP, rueda motriz y soporte Hipro |
-| Q-I10 | ¿Cuánto se admite entre el frente inferior medido y el que dan las salidas y las diagonales? Ninguna guía de Oficina Técnica lo dice en cifras | Más de 2 cm es error («las seis medidas no cuadran»). Se cambia en los parámetros del Iris (`squaringToleranceCm`) |
-| Q-I11 | Ventana del Iris: ¿se mide desde suelo o desde tubo de carga, y se descuentan también 18 cm desde suelo? Iván, 22/10/2026: hay que preguntarlo a taller; de inicio igual que la cortina | Se elige suelo o tubo. Desde suelo descuenta 18 cm para dibujar; desde tubo conserva la medida. La ventana va de borde a borde, con alto inicial 140 cm editable. La lona descuenta ese alto y el cristal reserva tantas piezas de 140 cm como hagan falta, con aviso de empate si supera 140 |
+| Q-I10 (contestada el 03/11) | ¿Cuánto se admite entre el frente inferior medido y el que dan las salidas y las diagonales? Ninguna guía de Oficina Técnica lo dice en cifras | Más de 2 cm es error («las seis medidas no cuadran»). Se cambia en los parámetros del Iris (`squaringToleranceCm`) |
+| Q-I11 (contestada el 03/11) | Ventana del Iris: ¿se mide desde suelo o desde tubo de carga, y se descuentan también 18 cm desde suelo? Iván, 22/10/2026: hay que preguntarlo a taller; de inicio igual que la cortina | Se elige suelo o tubo. Desde suelo descuenta 18 cm para dibujar; desde tubo conserva la medida. La ventana va de borde a borde, con alto inicial 140 cm editable. La lona descuenta ese alto y el cristal reserva tantas piezas de 140 cm como hagan falta, con aviso de empate si supera 140 |
 
 ## Clásicos
 
@@ -204,8 +219,8 @@ Respuestas de Iván. «Pendiente» quiere decir que la web todavía no lo aplica
 
 | Código | Duda y muestra para decidir | Tratamiento mientras tanto |
 | --- | --- | --- |
-| Q-FF01 | ¿Qué aumentos y reglas de esquina se aplican hoy por bastilla, entrada de tubo, fleje, tira, solapa, cara y material? La [matriz de confección](./faldones-frontales-confeccion.md) concreta 12 casos: entre ellos AR2600316 tiene 320×60 hechos y 329×73 de patrón con BN4,5 y dos ET, mientras otros paños con ET tienen diferencias de 10, 10,5 o 12 en ese eje | Se conservan referencias, remates, material y versiones por caso. Las diferencias observadas no se dividen ni promedian para inventar márgenes por borde; no se trasladan a faldones los aumentos de los bloques ENROLLABLE o CAMBIO TELA |
-| Q-FF02 | La instrucción de medición describe la tira inferior a 15 cm; AR2601947 la pide y dibuja a 20 cm. ¿Los 15 cm siguen como habitual editable o ha cambiado el criterio general? | Prevalece la posición explícita del pedido; sin nuevo valor obligatorio |
+| Q-FF01 (contestada el 03/11) | ¿Qué aumentos y reglas de esquina se aplican hoy por bastilla, entrada de tubo, fleje, tira, solapa, cara y material? La [matriz de confección](./faldones-frontales-confeccion.md) concreta 12 casos: entre ellos AR2600316 tiene 320×60 hechos y 329×73 de patrón con BN4,5 y dos ET, mientras otros paños con ET tienen diferencias de 10, 10,5 o 12 en ese eje | Se conservan referencias, remates, material y versiones por caso. Las diferencias observadas no se dividen ni promedian para inventar márgenes por borde; no se trasladan a faldones los aumentos de los bloques ENROLLABLE o CAMBIO TELA |
+| Q-FF02 (contestada el 03/11) | La instrucción de medición describe la tira inferior a 15 cm; AR2601947 la pide y dibuja a 20 cm. ¿Los 15 cm siguen como habitual editable o ha cambiado el criterio general? | Prevalece la posición explícita del pedido; sin nuevo valor obligatorio |
 | Q-FF03 | AR2601656 reforma el frontal de AR2600872. Se pide «aumentar a porta 35 cm para a dereita»; el original tiene puerta de120 a165 del borde y el plano reformado conserva120 y la sitúa a200. ¿Se debía desplazar o ensanchar la abertura? | Conservar original, petición y revisión separados; sin interpretación automática ni recuento como nueva fabricación. Evidencia R01 del expediente |
 | Q-FF04 | En AR2602384 (O Lugar), la hoja de visita p2 pide ventana de130 de alto en lateral y frontal; ambos planos de28/05 y el DWG la dejan en109. ¿Se ajustó para conservar25 arriba y70 abajo dentro del frontal de204 y alinear las ventanas, o hubo otra indicación? | Se conservan130 como petición y109 como diseño dibujado; no crear un descuento habitual de21. Caso V09 y fuentes F44–F48 de la ampliación de ejemplos |
 | Q-FF05 | Tras revisar escaneos completos y DWG, ¿estos trabajos colgaban de un toldo de fachada o eran cierres independientes? AR2501946, Jesús Barreiro, lona verde 347×212; AR2505788, Antonio Orois, 230×218; AR2604299, Fernando Mayo, dos paños grises con ventana | Consultado a Iván, sin respuesta registrada. Los tres quedan fuera de las reglas de faldón hasta acreditar el montaje. La [revisión técnica](./faldones-frontales-revision-tecnica.md) conserva la evidencia y separa los otros ocho montajes revisados |
@@ -214,9 +229,9 @@ Respuestas de Iván. «Pendiente» quiere decir que la web todavía no lo aplica
 
 | Código | Duda | Tratamiento mientras tanto |
 | --- | --- | --- |
-| Q-TELA01 | ¿Qué ancho real tienen las 76 referencias activas cuyo código y unidad no lo indican? Lista completa en el [informe del catálogo](../telas-rps-2026-11-01.md) | Ancho desconocido. La selección exige indicar el ancho de rollo antes de calcular; no se aplica 120 por defecto. Se conserva el ancho explícito de pedidos anteriores |
-| Q-TELA02 | `CRISTATP140650`, `PLASCHP200300` y `SOLTIS92AVENP267` no aparecen en la foto de familia LONA. ¿Siguen siendo referencias utilizables para reservas? | Se conservan para abrir pedidos antiguos y quedan fuera de la búsqueda local. La foto de una sola familia no permite distinguir un cambio de familia de una baja |
-| Q-TELA03 | En 37 telas el ancho del catálogo no coincide con el de su código: 7 ACR RES (120 / P153), 4 LAC640/G650 (250 / P300), 24 Soltis (267 / P177) y 2 Soltis (267 / P270). ¿Cuál es el real? | Con RPS disponible, la web usa el del código, como hasta ahora. El catálogo no se cambia: un pedido guardado solo con el nombre de la tela calcularía distinto al abrirlo |
+| Q-TELA01 (contestada el 03/11) | ¿Qué ancho real tienen las 76 referencias activas cuyo código y unidad no lo indican? Lista completa en el [informe del catálogo](../telas-rps-2026-11-01.md) | Ancho desconocido. La selección exige indicar el ancho de rollo antes de calcular; no se aplica 120 por defecto. Se conserva el ancho explícito de pedidos anteriores |
+| Q-TELA02 (contestada el 03/11) | `CRISTATP140650`, `PLASCHP200300` y `SOLTIS92AVENP267` no aparecen en la foto de familia LONA. ¿Siguen siendo referencias utilizables para reservas? | Se conservan para abrir pedidos antiguos y quedan fuera de la búsqueda local. La foto de una sola familia no permite distinguir un cambio de familia de una baja |
+| Q-TELA03 (contestada el 03/11) | En 37 telas el ancho del catálogo no coincide con el de su código: 7 ACR RES (120 / P153), 4 LAC640/G650 (250 / P300), 24 Soltis (267 / P177) y 2 Soltis (267 / P270). ¿Cuál es el real? | Con RPS disponible, la web usa el del código, como hasta ahora. El catálogo no se cambia: un pedido guardado solo con el nombre de la tela calcularía distinto al abrirlo |
 
 ## Dibujos de confección · Embudo · 01/11/2026
 
