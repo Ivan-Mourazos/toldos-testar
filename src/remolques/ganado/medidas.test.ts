@@ -2,6 +2,19 @@ import { describe, expect, it } from 'vitest';
 import { calcularMedidasCal, MEDIDAS_CAL_5319, MEDIDAS_CAL_GEMELO } from './medidas.ts';
 
 describe('Caballos por medidas de Cal', () => {
+  it('respeta una ventana indicada en el pedido y amplía la tapa 3 cm', () => {
+    const g = calcularMedidasCal({ ...MEDIDAS_CAL_5319, ventanaMedidas: { ancho: 35, alto: 45 } });
+    expect(g.ventana).toEqual({ ancho: 35, alto: 45 });
+    const tapa = g.piezas.find(p => p.nombre === 'Tapa ventana')!;
+    expect(tapa.contorno[2]).toEqual([380, 480]);
+  });
+
+  it('avisa si la ventana indicada no cabe, sin recortar sus medidas', () => {
+    for (const ventanaMedidas of [{ ancho: 80, alto: 35 }, { ancho: 35, alto: 60 }, { ancho: 0, alto: 35 }]) {
+      expect(() => calcularMedidasCal({ ...MEDIDAS_CAL_5319, ventanaMedidas })).toThrow(/ventana/i);
+    }
+  });
+
   it('conserva recto y diagonal con el centímetro de lona hecha del gemelo', () => {
     const r = calcularMedidasCal(MEDIDAS_CAL_GEMELO);
     expect(r.proyeccion).toBeCloseTo(636.867, 3);

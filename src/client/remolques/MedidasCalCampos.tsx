@@ -23,6 +23,14 @@ export function MedidasCalCampos({ value, error, onChange }: { value?: MedidasCa
       opciones={[{ value: 'CUERDA', label: 'Cuerda fruncida' }, { value: 'GOMA', label: 'Goma fruncida' }]}
       onChange={v => set('recogidaAtras', v as MedidasCal['recogidaAtras'])} />
     <CampoSiNo name="ventanaCal" label="Ventana delantera" value={m.ventana} onChange={v => set('ventana', v)} />
+    {m.ventana && <>
+      <CampoSiNo name="ventanaPedidoCal" label="Medida de ventana en pedido" value={Boolean(m.ventanaMedidas)}
+        onChange={v => set('ventanaMedidas', v ? { ancho: 50, alto: 35 } : undefined)} />
+      {m.ventanaMedidas && <>
+        <CampoNum name="anchoVentanaCal" label="Ancho de ventana del pedido" value={m.ventanaMedidas.ancho} onChange={v => set('ventanaMedidas', { ...m.ventanaMedidas!, ancho: v })} />
+        <CampoNum name="altoVentanaCal" label="Alto de ventana del pedido" value={m.ventanaMedidas.alto} onChange={v => set('ventanaMedidas', { ...m.ventanaMedidas!, alto: v })} />
+      </>}
+    </>}
     <CampoSiNo name="refuerzoMfdCal" label="Refuerzo MFD de Cal" value={m.refuerzoMfd ?? false} onChange={v => set('refuerzoMfd', v)} />
     <CampoSelect name="puertaCal" label="Puerta lateral" value={m.puerta} opciones={[
       { value: 'NINGUNA', label: 'Sin puerta' }, { value: 'MFI', label: 'MFI' }, { value: 'MFD', label: 'MFD' },
@@ -42,7 +50,7 @@ export function MedidasCalCampos({ value, error, onChange }: { value?: MedidasCa
           set('laterales', v.trim() ? v.split(';').filter(x => x.trim()).map(x => Number(x.trim().replace(',', '.'))) : []);
         }} />
     </label>
-    <p className="gan-dibujo-nota rem-span-4">Sin posiciones manuales, se reparten al paso indicado. Ventana estándar 50 × 35 si cabe; se adapta al espacio bajo la curva. La puerta de la diagonal va integrada en el morro, sin solapas; las demás puertas necesitan definir su confección.</p>
+    <p className="gan-dibujo-nota rem-span-4">Sin posiciones manuales, se reparten al paso indicado. Ventana estándar 50 × 35 si cabe; se adapta al espacio bajo la curva, salvo medida indicada en el pedido. La puerta de la diagonal va integrada en el morro, sin solapas; las demás puertas necesitan definir su confección.</p>
     {error && <p className="gan-aviso rem-span-4" role="alert">{error}</p>}
   </PasoFormulario>;
 }

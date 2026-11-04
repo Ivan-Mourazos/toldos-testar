@@ -38,7 +38,16 @@ export function generarCal(h,r){
  frente.marcas.push(linea([m.frente/2,m.altoB+m.aguasB],[m.frente/2,m.altoB+m.aguasB-r.largoMarca]));
  if(h.laterales?.length) cuerpo.ollaos=[r.dentroOllao,C-r.dentroOllao].flatMap(y=>h.laterales.map(x=>circulo([x,y],r.radioOllao)));
  const piezas=[cuerpo,morro,frente]; let ventana=null;
- if(h.ventana){const top=frente.zTangencia-r.ventana.separacionTangencia,W=Math.min(r.ventana.ancho,m.frente),H=Math.min(r.ventana.alto,top); if(H<=0)throw Error("No queda espacio para la ventana bajo la curva"); ventana={ancho:W/10,alto:H/10};frente.marcas.push(...poligono([[m.frente/2-W/2,top-H],[m.frente/2+W/2,top-H],[m.frente/2+W/2,top],[m.frente/2-W/2,top]]));const tapa=[[0,0],[(W+30),0],[(W+30),(H+30)],[0,(H+30)]];piezas.push({nombre:'Tapa ventana',corte:poligono(tapa),contorno:tapa,marcas:[],ollaos:[]});}
+ if(h.ventana){
+  const top=frente.zTangencia-r.ventana.separacionTangencia;
+  const W=h.ventanaMedidas?.ancho??Math.min(r.ventana.ancho,m.frente),H=h.ventanaMedidas?.alto??Math.min(r.ventana.alto,top);
+  if(H<=0)throw Error('No queda espacio para la ventana bajo la curva');
+  if(W>m.frente||H>top)throw Error('La ventana indicada en el pedido no cabe en el frente.');
+  ventana={ancho:W/10,alto:H/10};
+  frente.marcas.push(...poligono([[m.frente/2-W/2,top-H],[m.frente/2+W/2,top-H],[m.frente/2+W/2,top],[m.frente/2-W/2,top]]));
+  const tapa=[[0,0],[W+30,0],[W+30,H+30],[0,H+30]];
+  piezas.push({nombre:'Tapa ventana',corte:poligono(tapa),contorno:tapa,marcas:[],ollaos:[]});
+ }
  if(h.refuerzoMfd){
   const refuerzo=colocarRefuerzoMfd(a[0],b[0]);
   morro.marcas.push(...poligono(refuerzo));

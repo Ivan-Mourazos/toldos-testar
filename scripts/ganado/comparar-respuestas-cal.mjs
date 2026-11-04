@@ -4,6 +4,7 @@ import crypto from 'node:crypto';
 import { leerDxf, vertices, bulges, punto } from './medidas-dxf.mjs';
 import { linea, arco, circulo, transformarPrimitiva, puntosPrimitiva, distanciaPrimitiva, contiene } from '../../src/remolques/ganado/geometriaPlana.js';
 import { calcularMedidasCal, MEDIDAS_CAL_5319 } from '../../src/remolques/ganado/medidas.ts';
+import './ollaos-cal.mjs';
 
 const dir = 'tmp/ganado-cal/salida';
 const cad = 'tmp/ganado-cal/fuentes/dxf/AR2605319.dxf';
@@ -46,6 +47,7 @@ const pares=[
 ];
 const medidas=ps=>[0,1].map(k=>Math.max(...ps.map(p=>p[k]))-Math.min(...ps.map(p=>p[k])));
 const filas=[];
+const auditoriaOllaos=JSON.parse(fs.readFileSync(dir+'/ollaos-posicion.json'));
 for(const [nombre,id,transform] of pares){
  const p=g.piezas.find(p=>p.nombre===nombre),real=primitivas(get(id));
  let T=transform;
@@ -60,8 +62,9 @@ for(const [nombre,id,transform] of pares){
  }
  const corte=contraste(p.corte.map(q=>transformarPrimitiva(q,T)),real);
  const errorCorte=Math.max(corte.idaMm,corte.vueltaMm),cuerpoAceptado=nombre==='Cuerpo'&&errorCorte<=1.629;
- filas.push({pieza:nombre,capa:'DISCO1 / corte',estado:errorCorte<(nombre==='Morro'?1.5:.01)?'coincide':cuerpoAceptado?'corregido':'pendiente',...corte,
+ filas.push({pieza:nombre,capa:'DISCO1 / corte',estado:errorCorte<(nombre==='Morro'?1.5:.01)?'coincide':cuerpoAceptado||nombre==='Tapa ventana'?'corregido':'pendiente',...corte,
   ...(nombre==='Morro'?{nota:'Contorno dentro de 1,5 mm; sin cambiar las longitudes del levantamiento.'}:{}),
+  ...(nombre==='Tapa ventana'?{nota:'Q-GAN12 contestada: tapa estándar 53 × 38, salvo ventana de pedido. La del CAD es otra medida.'}:{}),
   ...(cuerpoAceptado?{nota:'Corregidos lateral 67 + aguas 10 y bajo 3. Resultado exacto 297,6628 cm; diferencia 1,628 mm aceptada expresamente por el coordinador el 04/11. Sin redondear.'}:{}),
   envolventeCalculadaMm:medidas(p.contorno),envolventeOficinaMm:medidas(ps(id)),referencia:id});
  if(transform){
@@ -71,17 +74,20 @@ for(const [nombre,id,transform] of pares){
    ['ROTULADOR · marcas',nombre==='Morro'?p.marcas.slice(0,2):p.marcas,nombre==='Morro'?['151AE','151AF'].flatMap(id=>primitivas(get(id))):candidatas.filter(q=>q.tipo!=='ollao')],
   ]){
    const resultado=contraste(web.map(q=>transformarPrimitiva(q,T)),ref);
-   filas.push({pieza:nombre,capa,estado:Math.max(resultado.idaMm,resultado.vueltaMm)<.01?'coincide':nombre==='Cuerpo'&&capa.includes('ollaos')?'corregido':'pendiente',...resultado,referencia:id,
+   filas.push({pieza:nombre,capa,estado:Math.max(resultado.idaMm,resultado.vueltaMm)<.01?'coincide':capa.includes('marcas')||nombre==='Cuerpo'&&capa.includes('ollaos')?'corregido':'pendiente',...resultado,referencia:id,
     ...(nombre==='Cuerpo'&&capa.includes('ollaos')?{nota:'Mandan las posiciones confirmadas 126 / 157 / 193; el CAD marca 127 / 158 / 194. La cota transversal conserva la diferencia de 1,628 mm del paño.'}:{}),
-    ...(nombre==='Cuerpo'&&capa.includes('marcas')?{nota:'El CAD marca una línea completa de fruncido; el generador conserva señales cortas en sus extremos. La diferencia de cobertura no es un desplazamiento de 1,4 m de la posición del fruncido.'}:{}),
-    ...(nombre==='Morro'&&capa.includes('marcas')?{nota:'Marcas centrales: 20 mm del gemelo frente a 30 mm en el 5319; las cremalleras y el refuerzo se comparan aparte.'}:{}),
+    ...(nombre==='Cuerpo'&&capa.includes('marcas')?{nota:'Iván confirma las marcas cortas de 20 mm. El CAD marca una línea completa de fruncido; la diferencia de cobertura no es un desplazamiento de 1,4 m.'}:{}),
+    ...(nombre==='Morro'&&capa.includes('marcas')?{nota:'Q-GAN13 contestada: Iván confirma 20 mm, aunque el CAD dibuja 30. Cremalleras y refuerzo se comparan aparte.'}:{}),
+    ...(nombre==='Frente'&&capa.includes('marcas')?{nota:'Q-GAN12 contestada: estándar 50 × 35 si cabe, salvo otra medida indicada en pedido. El CAD conserva otra ventana.'}:{}),
+    ...(nombre==='Morro'&&capa.includes('ollaos')?{nota:'CAD desalineado: matriz a 34,914186° frente a diagonal de 34,977791°. Retranqueo CAD 9,972 → 8,884 mm. Web a 10 exactos; ver OLLAOS-POSICION.md. Pendiente corregir el dibujo de oficina, sin copiar su error.'}:{}),
    });
   }
  }
 }
 filas.push({pieza:'Puerta MFI',capa:'vent-pre-noimpr → ROTULADOR',estado:'corregido',referencia:'1185C / 1185D',nota:'Integrada en la diagonal de 103; dos cremalleras a 4 de los extremos, sin solapas. Con el frente 57 + 10, su alto llega a 50,3459 cm, como los 50,35 del CAD.'},
  {pieza:'Cuerpo',capa:'ROTULADOR · reparto confirmado',estado:'corregido',nota:'2,5 / 10 / 30 / 55 / 94 / 126 / 157 / 193 desde atrás. El CAD da 127 / 158 / 194 en las últimas tres.'},
- {pieza:'Ventana y tapa',capa:'ROTULADOR / DISCO1',estado:'pendiente',nota:'Q-GAN12: el plano CAD girado tiene 45 × 35 / 48 × 38; orientado según el 3D son ventana 35 ancho × 45 alto y tapa 38 × 48, ventana a 8 del bajo. Se conserva la regla confirmada 50 × 35 / 53 × 38 hasta aclararlo.'});
+ {pieza:'Ventana y tapa',capa:'ROTULADOR / DISCO1',estado:'corregido',nota:'Q-GAN12 contestada: estándar 50 × 35, tapa 53 × 38, salvo medida de pedido editable. La ventana distinta del CAD no manda sobre esa regla.'},
+ {pieza:'Morro · posición geométrica de ollaos',capa:'ROTULADOR',estado:auditoriaOllaos.filas.every(f=>f.errorWebMm<=.1)?'coincide':'pendiente',idaMm:Math.max(...auditoriaOllaos.filas.map(f=>f.errorWebMm)),nota:'Cumple 0,1 mm respecto a su propia diagonal: retranqueo 10; desde extremos 25, reparto exacto de 980 en tres pasos. Igual con 4/5/12/32 divisiones de curva. CAD con error de matriz documentado.'});
 // Las dos manos son simétricas en el desarrollo; se alinea la MFI con su diagonal propia.
 const mitad=morro.terminado.length/2,[Ai,Bi]=ps('EBFE'),Tpuerta=rigido(morro.terminado[mitad-1],morro.terminado[mitad],Ai,Bi);
 const cremallera=contraste(morro.marcas.slice(-2).map(q=>transformarPrimitiva(q,Tpuerta)),['1185C','1185D'].flatMap(id=>primitivas(get(id))));
@@ -118,5 +124,5 @@ const informe={fecha:'2026-11-04',fuentes,AR2601847:resumen1847,AR2605319:filas,
 fs.writeFileSync(dir+'/comparacion-capas.json',JSON.stringify(informe,(_,v)=>typeof v==='number'&&!Number.isFinite(v)?'sin correspondencia':v,2));
 const fmt=x=>x==null?'—':Number.isFinite(x)?x.toLocaleString('es-ES',{maximumFractionDigits:3}):'sin correspondencia';
 const tabla=xs=>'| Pieza | Capa | Estado | Diferencia máxima ida / vuelta (mm) | Referencia / observación |\n|---|---|---|---|---|\n'+xs.map(r=>`| ${r.pieza} | ${r.capa} | ${r.estado} | ${fmt(r.idaMm)} / ${fmt(r.vueltaMm)} | ${r.nota??r.referencia??''} |`).join('\n');
-fs.writeFileSync(dir+'/COMPARACION-CAPAS.md','# Levantamiento de Cal · 04/11/2026\n\n'+informe.alcance+'\n\n## AR2601847\n\n'+tabla(resumen1847)+'\n\n## AR2605319 · OF 0233492\n\n'+tabla(filas)+'\n\n## AR2605331 · Metales Jaifer · sin curva\n\n'+tabla(resumen5331)+'\n\nCuerpo CAD 217 × 297,5 cm frente al cálculo exacto corregido 217 × 297,6628. Iván confirma el aumento solo al cuerpo que envuelve: una vez al recorrido transversal, mediante la regla común de remolques. El morro conserva desarrollo y remates. El CAD pudo redondearse; la web no redondea. El perfil 3D del cuerpo es 67 + 10; el frente, 57 + 10: aguas transversales de 10 en ambos y caída longitudinal de 10 entre cumbreras (77 → 67). El 5331 sin curva da 288 de corte, sin aumento. Morro 5319: contorno dentro de 1,5 mm; ollaos hasta aproximadamente 1,24 mm, por encima del nominal de 1 mm, sin mover los puntos para esconderlo. Ventana pendiente Q-GAN12. Ver `../levantamiento/ANTES-DESPUES.md` y `RECORRIDOS.md` para fórmula y contraste con siete pedidos / dieciséis perfiles reales.\n');
+fs.writeFileSync(dir+'/COMPARACION-CAPAS.md','# Levantamiento de Cal · 04/11/2026\n\n'+informe.alcance+'\n\n## AR2601847\n\n'+tabla(resumen1847)+'\n\n## AR2605319 · OF 0233492\n\n'+tabla(filas)+'\n\n## AR2605331 · Metales Jaifer · sin curva\n\n'+tabla(resumen5331)+'\n\nCuerpo CAD 217 × 297,5 cm frente al cálculo exacto 217 × 297,6628. Aumento solo al cuerpo que envuelve, una vez al recorrido transversal mediante la regla común de remolques; morro con su desarrollo y remates. Sin redondear. Cuerpo 67 + 10; frente 57 + 10; caída entre cumbreras 77 → 67. El 5331 sin curva conserva corte 288. Q-GAN12/13 contestadas: ventana estándar salvo medida de pedido y marcas cortas de 20 mm confirmadas. Los ollaos web cumplen 0,1 mm en su propio borde. El CAD tiene su matriz desviada 0,063604°: error local máximo 1,115709 mm; el contraste global de 1,240189 también incluye la diferencia del contorno MFI aceptada. No se reproduce ese error del CAD; véase `OLLAOS-POSICION.md`. Fórmula y siete pedidos / dieciséis perfiles: `../levantamiento/ANTES-DESPUES.md` y `RECORRIDOS.md`.\n');
 console.log('Comparación por capas en '+dir+'/COMPARACION-CAPAS.md');

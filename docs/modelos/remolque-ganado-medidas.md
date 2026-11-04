@@ -1,5 +1,42 @@
 # Caballos por medidas: levantar el morro y desarrollarlo
 
+## Cierre de ventana, marcas y ollaos · 04/11/2026
+
+Q-GAN12 contestada: Iván confirma **50 × 35, tapa 53 × 38**, si cabe, salvo otra medida
+expresa en pedido. Se conserva la estándar del 5319 y se permite introducir ancho y alto
+de la ventana del pedido. La tapa añade 3 cm en ambas medidas; si la ventana indicada no
+cabe, se avisa sin alterar sus cotas. La adaptación de la estándar conserva su regla.
+
+Q-GAN13 contestada: «valen de 20». Las marcas cortas de fruncido y las centrales de
+**20 mm** de la web quedan confirmadas. No se copian la línea completa ni los 30 del CAD.
+Para los ollaos Iván exige posición exacta, comprobada a **0,1 mm**.
+
+La auditoría independiente demuestra que la matriz de ollaos del **CAD** no es paralela
+a sus diagonales **EC00/EBFE** ni a las diagonales de corte de **EC0D**:
+
+| Referencia | Ángulo de diagonal | Ángulo de matriz | Diferencia |
+| --- | --- | --- | --- |
+| MFD · EC00 | −34,977791° | −34,914186° | 0,063604° |
+| MFI · EBFE | 34,977791° | 34,914186° | 0,063604° |
+
+El paso CAD mide correctamente **326,666667 mm**, pero avanza en dirección incorrecta:
+los centros quedan a **9,972241 / 9,609608 / 9,246974 / 8,884340 mm** de la diagonal,
+en lugar de 10 constantes. Error local máximo **1,115709 mm**, repetido en ambas manos
+por los bloques **15138/15144–15146** y **13E53/13E65–13E6B**. No se afirma que el dibujo
+se hiciera a mano: lo acreditado es el ángulo incorrecto de la matriz.
+
+La web ya usa la diagonal desarrollada real para situar cada centro, a **10 mm normales**
+y **25 / 351,666667 / 678,333333 / 1005 mm** desde su extremo. Cumple 0,1 mm con
+**4, 5, 12 y 32** divisiones de curva. No hay redondeo ni reparto sobre la poligonal del
+arco en esos bordes rectos. No se desplazan sus centros para copiar el error del CAD.
+El máximo anterior de 1,240189 mm incluía además la diferencia de contorno MFI aceptada
+en el desarrollo: **0,442337 mm** en el extremo. Se separan ambas causas en el contraste.
+
+Repetición: `node scripts/ganado/ollaos-cal.mjs`, o el contraste por capas, que la ejecuta.
+Evidencia completa por centro, entidad y resolución en `tmp/ganado-cal/salida/OLLAOS-POSICION.md`
+y `ollaos-posicion.json`. La tabla conserva la discrepancia del CAD como pendiente del
+dibujo de oficina; la posición geométrica de los ocho ollaos web figura como coincidente.
+
 ## Levantamiento 3D contrastado · 04/11/2026
 
 Este apartado sustituye los valores provisionales del 5319 del contraste anterior.
@@ -62,18 +99,18 @@ bordes de referencia coinciden con el desarrollo dentro de **0,017 mm**. La tabl
 este contraste geométrico de sus remates particulares (ENFUNDAR(1), puerta, velcro, correas
 y ventana 40 ancho × 50 alto), que no se incorporan a la ficha Cal como regla general.
 
-La ventana EC13 está en un plano girado: sus 45 × 35 equivalen a **35 ancho × 45 alto**
+En el primer contraste, la ventana EC13 está en un plano girado: sus 45 × 35 equivalen a **35 ancho × 45 alto**
 en el frente levantado, a **8 cm del bajo**; la tapa EC14 queda 38 × 48. La regla confirmada
-de 50 × 35, tapa 53 × 38, sigue sin reproducirla tras corregir el frente: **Q-GAN12**.
-Se conserva esa regla hasta aclararlo. La imagen orientada permite revisar la pregunta en
+de 50 × 35, tapa 53 × 38, no reproduce esa otra ventana del CAD: **Q-GAN12**, ya resuelta
+en el cierre superior a favor de la estándar salvo medida de pedido. La imagen orientada queda en
 `tmp/ganado-cal/levantamiento/AR2605319-ventana-orientada.png`.
 
 Se corrige además el reflejo de la pieza suelta del **refuerzo MFD**: ahora conserva la
 orientación del cuadrilátero 10EE7, además de sus medidas; su marca 10EE4 ya estaba bien
 colocada. Ambas coinciden con el CAD. El frente coincide en corte y ollaos. El morro queda
 a 1,264 mm de contorno; los ollaos llegan a 1,240 mm, por encima del nominal de 1 mm.
-Siguen visibles las diferencias de marcas (línea de fruncido completa frente a señales
-cortas; marcas centrales a 30 frente a 20 mm), recogidas en **Q-GAN13**.
+Las diferencias de marcas (línea de fruncido completa frente a señales cortas; marcas
+centrales a 30 frente a 20 mm) motivaron **Q-GAN13**, ya contestada en el cierre superior.
 
 Las salidas DWG, DXF del bot, plano DXF, hoja PDF y PNG se regeneran en
 `tmp/ganado-cal/salida/`, junto a `COMPARACION-CAPAS.md` (coincide / corregido / pendiente).

@@ -21,6 +21,8 @@ export interface MedidasCal {
   divisionesCurva?: number;
   pasoOllaos: number;
   ventana: boolean;
+  /** Medida expresamente indicada en el pedido, en cm; ausente usa la estándar adaptada. */
+  ventanaMedidas?: { ancho: number; alto: number };
   puerta: 'NINGUNA' | 'MFI' | 'MFD';
   /** Desde atrás, sobre el recto terminado. Vacío: reparto al paso indicado. */
   laterales: number[];
@@ -80,6 +82,7 @@ export interface DesarrolloCal {
 
 export function calcularMedidasCal(m: MedidasCal): DesarrolloCal {
   if (!m) throw Error('Faltan las medidas de Cal.');
+  if (m.ventanaMedidas && [m.ventanaMedidas.ancho, m.ventanaMedidas.alto].some(n => !Number.isFinite(n) || n <= 0)) throw Error('Las medidas de la ventana del pedido deben ser mayores que cero.');
   if (m.margenBajo !== undefined && (!Number.isFinite(m.margenBajo) || m.margenBajo < 0)) throw Error('El añadido de corte en los bajos no puede ser negativo.');
   if (m.divisionesCurva !== undefined && (!Number.isInteger(m.divisionesCurva) || m.divisionesCurva < 2 || m.divisionesCurva > 64)) throw Error('Indica de 2 a 64 divisiones por curva.');
   if (m.recogidaAtras !== undefined && !['CUERDA', 'GOMA'].includes(m.recogidaAtras)) throw Error('Elige cuerda o goma para fruncir atrás.');
@@ -103,7 +106,8 @@ export function calcularMedidasCal(m: MedidasCal): DesarrolloCal {
   const h = { ...m, ...Object.fromEntries(
     ['recto', 'ancho', 'frente', 'diagonal', 'alto', 'altoFrente', 'aguas', 'aguasFrente', 'radio', 'fruncir', 'pasoOllaos']
       .map(k => [k, (m[k as keyof MedidasCal] as number) * 10]),
-  ), laterales: m.laterales.map(x => x * 10), puertaMorro: m.puertaMorro ? { separacionBorde: m.puertaMorro.separacionBorde * 10 } : undefined };
+  ), laterales: m.laterales.map(x => x * 10), puertaMorro: m.puertaMorro ? { separacionBorde: m.puertaMorro.separacionBorde * 10 } : undefined,
+    ventanaMedidas: m.ventanaMedidas ? { ancho: m.ventanaMedidas.ancho * 10, alto: m.ventanaMedidas.alto * 10 } : undefined };
   // Acabados medidos en el gemelo (18F73→18F74, 18F5D→18F60). No proceden del 00389 especial.
   const r = {
     lonaHecha: DEFAULT_PARAMS.demasiaLonaHecha * 10,
