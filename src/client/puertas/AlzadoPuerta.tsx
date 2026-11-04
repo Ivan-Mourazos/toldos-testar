@@ -94,7 +94,7 @@ export function AlzadoPuerta({ puerta: p, resultado, letra = 'A' }: { puerta: Pu
           {p.clientePuertas||p.araujo?tipoDePuerta(p).nombre:MODELOS_PUERTAS[p.modelo]} · {p.of || 'SIN OF'}
         </span>
       </header>
-      <p>Medidas terminadas · cm · {p.araujo?'vista por el revés':'vista de frente'}</p>
+      <p>Medidas terminadas · cm · {p.araujo||p.santapau?'vista por el revés':'vista de frente'}</p>
       {vistas&&vistas.length>1&&<SelectField label="Ampliar pieza del alzado" value={seleccion} options={['todas',...vistas.map((_,i)=>String(i))]} optionLabel={v=>v==='todas'?'Todas las piezas':vistas[Number(v)].nombre} onChange={setPieza}/>}
       <svg
         role="img"

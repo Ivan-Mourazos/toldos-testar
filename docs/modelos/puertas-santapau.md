@@ -68,3 +68,17 @@ No sirve reutilizar su confección enrollable: Portanova une ventanales entre ej
 - 5363, solo hoja/RPS: dos197 × 340 (OF0233644) y una216 × 340 (OF0233645); roja3002 M2; V135, h60; tubos59/120/210; derecho cerrado, refuerzos8, logo dos caras y diagonales. Verificar la transcripción de 1950/1350 de la mirilla y del eje1200 con la hoja original antes de fabricar.
 
 Los rollos iniciales son propuestas de 300/140/300, editables y señalados para revisión: el anidado histórico acota 297–299,5 de ancho útil en varias muestras, sin acreditar el ancho comercial de todo material. No se reservan materiales en RPS.
+
+## Validación y cierre del encargo
+
+La ficha aparece en **Puertas → Santa Pau → Enrollable**. «Traer de RPS» se ha probado contra RPS real, solo con SELECT, tanto por API como pulsando el botón: 4815 carga las OF0232635/0232636 y 5363 carga OF0233644 (dos de197×340) y OF0233645 (una de216×340), color rojo3002 y lona ignífuga M2. Tubos y mirilla quedan pendientes de transcribir, sin rellenarlos por suposición. La API de vista previa de ambos ejemplos responde200 sin errores de cálculo; evidencia en `tmp/santapau/api-verificada.json`.
+
+Pruebas primero: los casos de Santa Pau fallaron usando el cálculo anterior y pasaron después de incorporar su confección. Tras rebasar sobre `origin/main` (450660b, corrección de bolsas y anagrama de Araujo), pasan **364 ficheros y 4.750 pruebas** con dos trabajadores, incluido el conjunto de huellas de documento, cálculo, bot y plano de Portanova y las pruebas Araujo. Pasan también **typecheck, lint y Vite build**. En este equipo se ejecuta pnpm12.5.1 a través de `corepack pnpm`; la compilación se deja en `tmp/santapau/build/` para mantener la evidencia dentro de tmp. Informes `vitest-final.log` y `vite-final.log`.
+
+Se han revisado las ocho capturas de Mirilla y tubos / Confección, claro y oscuro, a1280×720 y1600×1000, en `tmp/ui-audit/puertas-santapau/`, además de la carga real de RPS. Sin errores de JavaScript ni desbordamiento horizontal. La vista se identifica por el revés y muestra el margen cero expresamente.
+
+`tmp/santapau/salida/` contiene, para **AR2604815 y AR2605363**, el DWG2018 (cabecera AC1032 comprobada), DXF del bot, DXF del plano, PNG de presentación del papel, pedido JSON y contraste de piezas/diferencias. Se han abierto y revisado ambos PNG. El corte usa el anidado común; las letras, cantidades y OF corresponden a cada puerta. El 4815 conserva la diferencia documentada de127,5 propuestos frente a130 del corte histórico. El 5363 se rotula como propuesta desde hoja/RPS.
+
+Las preguntas **Q-SP01–Q-SP06** están reunidas en `dudas-abiertas.md`: bajo y posibles incorporaciones de E.T.; aumento del cristal; corte de refuerzos; medidas/posición del logo; rollos útiles; lado cerrado habitual. Quedan visibles como propuestas o notas donde afectan al trabajo; no se fabrican piezas de refuerzo ni un logo de tamaño inventado.
+
+La instancia aislada4480 y su Coordina simulado4490 se han cerrado y se ha comprobado que ambos puertos dejan de responder. Rama `puertas-santapau`, cambios guardados en commits en castellano, rebasada y **sin push**.
