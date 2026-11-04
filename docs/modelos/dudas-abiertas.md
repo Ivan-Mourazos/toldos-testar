@@ -32,6 +32,21 @@ Revisión del AR2605385 contra 33 OF desde 2023, con prioridad a 2025–2026. [T
 | Q-AG05 | ¿Cuándo lleva soporte inferior SOIN el Open y cuántos juegos lleva cada variante? Open 717 y 730 gastan 5 juegos, pero 555 y 575 no gastan ninguno; 775 tampoco. El semicofre 1145 gastó solo 1 juego y el 800 gastó 5. | Añade SOIN en cofre y conserva el de semicofre, junto a SOTL, con la cantidad provisional de soportes de perfil que ya calculaba. En el 5385 son 4 juegos de inferior. No añade SOIN a todos los Open sin conocer la condición. |
 | Q-AG06 | ¿Cuándo se usa el terminal de regulación fina TERRF en vez de TERMI? En los últimos cofres, abril de 2026 lleva TERMI y julio TERRF, ambos con tres brazos Onyx. Con salida 300 hay TERMI en semicofre; con 350 hay TERRF y con 400 aparecen las dos familias. En Open hay además TERMIUNIV, TERMINEVO y sobrantes de juegos que el consumo no explica. | Mantiene TERMI, un juego por dos brazos y un suelto si son tres; falta confirmar la familia que corresponde al 5385. El lado del suelto se elige con el brazo; si no se indica, decide el taller y se reserva derecho. Lo que no existe en el lacado se reserva blanco para lacar, como las demás piezas. |
 
+## Recogidas de ganado y caballos · estudio 04/11/2026
+
+Evidencia, pedidos terminados y propuesta sin programar en
+[ganado-recogidas.md](./ganado-recogidas.md). Las medidas de Cal ya confirmadas se mantienen;
+no se trasladan por defecto a otros clientes ni a recogidas distintas.
+
+| Código | Pregunta para Iván / taller | Qué se propone mientras tanto |
+| --- | --- | --- |
+| Q-GANR01 | Fuera del 5319, ¿cuándo cambia el añadido de 5 cm para fruncir? En los Cal 1124/1621 se repite, con goma de 8 y salida de 1 m por lado; otros dibujos dicen goma de 6. ¿Qué diámetro y cuánto sobrante se deja si el pedido no lo indica? | Separar goma fruncida, cuerda fruncida y goma pasada por ollaos. Conservar los casos acreditados; no asignar 5 cm, un diámetro ni una longitud a todos los clientes. |
+| Q-GANR02 | En la recogida trasera con velcro del 1412, ¿qué parte lleva bravo y cuál suave, y por qué cara? ¿Se repiten sus orejas de 13 cm por lado en otros pedidos o se toman del modelo de cada cliente? | El plano acredita velcro blanco de 5 y trasero terminado de 151 frente a corte de 177 de ancho. Falta fijar la pareja y saber cuándo se repite esa geometría; no copiar el +27 de lona convencional sin comprobarlo. |
+| Q-GANR03 | ¿Los puentes normales llevan la oreja por abajo y solo se hacen por arriba cuando lo pide el pedido? ¿Qué cambia en el corte en cada caso? En el 4709 el plano pedía arriba y volvió a rectificar porque se hizo abajo. | Elegir la orientación por zona y pedido. No usar una única forma para todos los puentes ni quitar automáticamente los ollaos de la puerta. |
+| Q-GANR04 | ¿Qué es y dónde se cose la tira de 95 × 8,5 del 4709: parte de los puentes de la puerta, un refuerzo u otro remate? ¿Lleva doblez o alguna marca propia? | Conservarla identificada como pieza observada del corte, sin convertirla en una tira genérica de puentes hasta conocer su función. |
+| Q-GANR05 | Para las correas de recoger del 4038, ¿qué ancho, largo y cantidad se ponen en cada zona? ¿Son cintas o hebillas de cuero compradas, o se cortan tiras de lona? | El plano sitúa marcas a 28 de los extremos señalados y la hoja pide hebillas de cuero. No inventar piezas de lona ni consumos comerciales a partir de esas rayas. |
+| Q-GANR06 | En el reparto final del 4709, el lateral MFD dice «143 - 51 - 171»: ¿ese 51 es 151? ¿Qué corte corresponde a la versión final con los 24 ollaos añadidos? | Mantener separadas la nota final, el plano anterior y el bot archivado. No producir una nueva versión suponiendo la cifra ni mezclando revisiones. |
+
 ## Cal: seguimiento del levantamiento 3D · 04/11/2026
 
 Contraste reproducible y referencias en [remolque-ganado-medidas.md](./remolque-ganado-medidas.md).
