@@ -8,11 +8,28 @@ import { centroLibre } from './unionesCorte.ts';
 import { piezaSinMargenes } from './escuadrado.ts';
 import { colocacionSantaPau } from './colocacionSantaPau.ts';
 import { rotulosSantaPau } from './rotulosSantaPau.ts';
+import { cajaLinea, componerRotulo } from './rotulosAraujo.ts';
+import { recortar } from './corteEnPlano.ts';
 import { buscarColocacion, huecosLibres, PRESUPUESTO_TETRIS, type PresupuestoCorte, type RectanguloCorte } from '../domain/corteLona/colocacionTetris.ts';
 import type { CortePuertas, EntidadesPuertas, Hueco, PedidoPuertas, PiezaPuerta, Punto, VistaPuertas } from './tipos.ts';
 
 const vacias = (): EntidadesPuertas => ({ lineas: [], textos: [], arcos: [], circulos: [] });
 const mm = (x: number) => Math.round(x * 10000) / 1000;
+
+/** Recorta la curva por el borde del paño impreso conservando arcos reales, también si el centro cae fuera. */
+function arcosEnPano(cx:number,cy:number,r:number,desde:number,w:number,h:number) {
+  const hasta=desde+90,cortes=[desde,hasta];
+  for(const [d,seno] of [[-cx/r,false],[(w-cx)/r,false],[-cy/r,true],[(h-cy)/r,true]] as const){
+    if(Math.abs(d)>1)continue;
+    const a=(seno?Math.asin(d):Math.acos(d))*180/Math.PI;
+    for(const g of [a,seno?180-a:-a])for(const vuelta of [-360,0,360])if(g+vuelta>desde&&g+vuelta<hasta)cortes.push(g+vuelta);
+  }
+  cortes.sort((a,b)=>a-b);
+  return cortes.slice(1).flatMap((b,i)=>{
+    const a=cortes[i],g=(a+b)/2*Math.PI/180,x=cx+r*Math.cos(g),y=cy+r*Math.sin(g);
+    return b-a>1e-6&&x>=-1e-6&&x<=w+1e-6&&y>=-1e-6&&y<=h+1e-6?[[a,b]]:[];
+  });
+}
 
 /** Une tramos colineales y elimina cortes sobre los orillos, como remolques/corte. */
 /** Alto del título de cada material en el corte (mm): el mismo en la lona, el cristal y el saco (Iván, 26/10/2026). */
@@ -104,9 +121,10 @@ function rotulosPieza(
   codigoPano?: string,
   columnas = false,
   reves = false,
+  araujo = false,
 ) {
   if (pieza.margenEscuadrado) {
-    rotulosPieza(entidades, piezaSinMargenes(pieza), x + (girada ? 0 : 10), y + (girada ? 10 : 0), girada, codigoPano, columnas, reves);
+    rotulosPieza(entidades, piezaSinMargenes(pieza), x + (girada ? 0 : 10), y + (girada ? 10 : 0), girada, codigoPano, columnas, reves, araujo);
     return;
   }
   const wMm = girada ? mm(pieza.alto) : mm(pieza.ancho);
@@ -122,6 +140,21 @@ function rotulosPieza(
   const of = (pieza.of.trim() || 'SIN OF').toUpperCase();
   const clase = pieza.clase === 'pano' ? etiquetaClasePieza(pieza, codigoPano)
     : `${codigoPano ?? ''} · ${etiquetaClasePieza(pieza)}`;
+  if(araujo){
+    const lineas=[clase.toUpperCase(),of,...reves&&pieza.clase==='pano'?['REVÉS']:[],
+      ...(pieza.multiplicador??1)>1?['X'+pieza.multiplicador]:[]];
+    const obstaculos=[...pieza.marcas.map(([a,b,c,d])=>cajaLinea(a,b,c,d,1.5)),
+      ...pieza.huecos.map(q=>({x:q.x-2,y:q.y-2,ancho:q.ancho+4,alto:q.alto+4})),
+      ...pieza.impresionAraujo?.entradas.map(e=>({x:0,y:e.y-e.ancho/2-2,ancho:pieza.ancho,alto:e.ancho+4}))??[]];
+    const rotulos=componerRotulo(lineas,{x:2,y:2,ancho:pieza.ancho-4,alto:pieza.alto-4},obstaculos,pieza.clase==='pano'?30:20);
+    const sumaY=Math.min(...rotulos.map(r=>r.y))+Math.max(...rotulos.map(r=>r.y));
+    // El cálculo usa Y hacia arriba; invertir el bloque conserva el orden de lectura de la columna.
+    for(const r of rotulos){
+      const v=sumaY-r.y;
+      entidades.textos.push({capa:'texto',valor:r.valor,x:x+mm(girada?pieza.alto-v:r.x),y:y+mm(girada?r.x:v),h:mm(r.tamano),giro:girada?90:0,centrado:true});
+    }
+    return;
+  }
   // La E.T. que va dentro del paño, rotulada en su franja como las sueltas (Iván, 23/10/2026).
   for (const e of pieza.entradasIncorporadas ?? []) {
     const valor = `${/^[A-Z]+/.exec(codigoPano ?? '')?.[0] ?? ''} · ET ${e.tubo}`.replace(/^ · /, '');
@@ -197,9 +230,15 @@ function dibujarPieza(
   codigoPano?: string,
   columnas = false,
   reves = false,
+  araujo = false,
 ) {
   const transformar = ([a, b]: Punto): Punto => (girada ? [x + mm(pieza.alto - b), y + mm(a)] : [x + mm(a), y + mm(b)]);
   const linea = (capa: string, a: Punto, b: Punto) => {
+    if(pieza.impresionAraujo){
+      const r=recortar([...a,...b],{x0:0,y0:0,x1:pieza.ancho,y1:pieza.alto},0);
+      if(!r)return;
+      a=[r[0],r[1]];b=[r[2],r[3]];
+    }
     const [x1, y1] = transformar(a);
     const [x2, y2] = transformar(b);
     entidades.lineas.push({ capa, x1, y1, x2, y2 });
@@ -227,13 +266,14 @@ function dibujarPieza(
       ]) {
         if (izquierda && (desde === 90 || desde === 180) || derecha && (desde === 0 || desde === 270)) continue;
         const [px, py] = transformar([cx, cy]);
-        entidades.arcos.push({
+        const tramos=pieza.impresionAraujo?arcosEnPano(cx,cy,r,desde,pieza.ancho,pieza.alto):[[desde,desde+90]];
+        for(const [inicio,fin] of tramos)entidades.arcos.push({
           capa: 'CUTTER',
           x: px,
           y: py,
           r: mm(r),
-          desde: (desde + (girada ? 90 : 0)) % 360,
-          hasta: (desde + 90 + (girada ? 90 : 0)) % 360,
+          desde: (inicio + (girada ? 90 : 0)) % 360,
+          hasta: (fin + (girada ? 90 : 0)) % 360,
         });
       }
     }
@@ -263,7 +303,7 @@ function dibujarPieza(
       const [tx,ty]=transformar([t.x,t.y]);
       entidades.textos.push({capa:'texto',valor:t.valor,x:tx,y:ty,h:mm(t.h),centrado:true,giro:girada?90:0});
     }
-  }else rotulosPieza(entidades, pieza, x, y, girada, codigoPano, columnas, reves);
+  }else rotulosPieza(entidades, pieza, x, y, girada, codigoPano, columnas, reves, araujo);
 }
 
 // `alLado`: la pieza va a la derecha de la anterior, en su misma fila, sin subir la columna.
@@ -356,6 +396,7 @@ function colocar(
   esAutorreparable: (idPieza: string) => boolean,
   presupuesto: PresupuestoCorte,
   ofStock?: string,
+  esAraujo: (id: string) => boolean = () => false,
 ): CortePuertas[] {
   const grupos = new Map<string, PiezaPuerta[]>();
   for (const p of piezas) {
@@ -488,7 +529,7 @@ function colocar(
     const primerPano = seleccionadas.find(s => s.t.pieza.clase === 'pano');
     for (const s of seleccionadas) {
       colocadas.push({ pieza: s.t.pieza, x: s.x, y: s.y, girada: s.t.girada });
-      dibujarPieza(entidades, s.t.pieza, s.x, s.y, s.t.girada, codigosPano.get(s.t.pieza.id), !esEnrollable(s.t.pieza.id), s === primerPano);
+      dibujarPieza(entidades, s.t.pieza, s.x, s.y, s.t.girada, codigosPano.get(s.t.pieza.id), !esEnrollable(s.t.pieza.id), s === primerPano, esAraujo(s.t.pieza.id));
     }
     // Solo en la lona de la puerta (la de los paños) y en el corte principal: no en el transparente ni en el saco.
     if (ofStock && opcion === 'principal' && grupo.some(p => p.clase === 'pano')) {
@@ -539,7 +580,9 @@ export function generarCortePuertas(
     const panos = r.piezas.filter(p => p.clase === 'pano' || pedido.elementos[idxPuerta].input.araujo && p.clase === 'saco');
     // El cálculo recorre apilables y autorreparables desde abajo; en el plano de taller A1 va arriba.
     if (pedido.elementos[idxPuerta].input.modelo !== 'PUERTAENR' && !pedido.elementos[idxPuerta].input.araujo) panos.reverse();
-    panos.forEach((p, i) => codigosPano.set(p.id, `${letra}${i + 1}`));
+    panos.forEach((p, i) => codigosPano.set(p.id, p.impresionAraujo
+      ? `${letra}${p.impresionAraujo.tramo+1}${p.impresionAraujo.partes>1?'.'+p.impresionAraujo.parte:''}`
+      : `${letra}${pedido.elementos[idxPuerta].input.araujo?.corteTrasImprimir&&p.clase==='saco'?Number(/(\d+)$/.exec(p.nombre)?.[1]??i+1):i+1}`));
     for (const pieza of r.piezas) {
       if (!codigosPano.has(pieza.id)) codigosPano.set(pieza.id, letra);
     }
@@ -551,6 +594,8 @@ export function generarCortePuertas(
     .map(e => e.id);
   const enrollables = pedido.elementos.filter(e => e.input.modelo === 'PUERTAENR' && !e.input.araujo).map(e => `${e.id}:`);
   const esEnrollable = (idPieza: string) => enrollables.some(prefijo => idPieza.startsWith(prefijo));
+  const araujos=pedido.elementos.filter(e=>e.input.araujo).map(e=>e.id+':');
+  const esAraujo=(id:string)=>araujos.some(prefijo=>id.startsWith(prefijo));
   const autorreparables = pedido.elementos.filter(e => e.input.modelo === 'PUERTAUTO').map(e => `${e.id}:`);
   const esAutorreparable = (idPieza: string) => autorreparables.some(prefijo => idPieza.startsWith(prefijo));
   // El saco inclinado se corta con su lado largo recto con el rollo (Iván, 23/10/2026, AR2605035).
@@ -564,7 +609,7 @@ export function generarCortePuertas(
   const deSystemDock = new Set(systemDock.map(l => l.pieza.id));
   const cortes = [
     ...cortarSystemDock(systemDock).map(c => { fusionarCortesPuertas(c.entidades, c.anchoRollo); return c; }),
-    ...colocar(principal.filter(p => !deSystemDock.has(p.id)), 'principal', codigosPano, esEnrollable, esAutorreparable, presupuesto, ofStockSacos),
+    ...colocar(principal.filter(p => !deSystemDock.has(p.id)), 'principal', codigosPano, esEnrollable, esAutorreparable, presupuesto, ofStockSacos, esAraujo),
     ...colocar(entero, 'saco-entero', codigosPano, esEnrollable, esAutorreparable, presupuesto),
     ...colocar(partido, 'saco-partido', codigosPano, esEnrollable, esAutorreparable, presupuesto),
   ];

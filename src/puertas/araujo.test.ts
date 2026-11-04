@@ -11,7 +11,7 @@ import { geometriaAlzado } from './alzado.ts';
 import { elegirPerfilAraujo } from './araujo.ts';
 import { nuevaPuertaDeCliente } from './nuevaPuertaCliente.ts';
 import { registrosDxf, numero, valor } from '../domain/corteLona/dxfTestHelpers.js';
-import { araujo5365, araujo5733, tramoAraujo, ventanaAraujo } from './__fixtures__/araujo.ts';
+import { araujo5365, araujo5733, araujo6255, tramoAraujo, ventanaAraujo } from './__fixtures__/araujo.ts';
 import type { PedidoPuertas, Puerta } from './tipos.ts';
 
 const pedido = (p: Puerta): PedidoPuertas => ({ schemaVersion: 1, kind: 'puertas', orderCode: 'AR2605365', elementos: [{ id: 'a', input: p }] });
@@ -113,22 +113,49 @@ describe('ARAUJO, tramos y bolsas con canutillo', () => {
       expect(()=>leerPedidoPuertas(pedido(p))).toThrow();
     }
   });
-  it('impresa 5656: cuerpo de 269,5 con corte 276,9 sin girar; 6255 necesita estudiar el empate del cuerpo de 307,4',()=>{
+  it('impresa 5656 conserva el cuerpo entero; 6255 reparte a 300 y suma 2 al paño superior',()=>{
     const p=araujo5365();p.color='BLANCO';p.araujo!.forma='continua';p.araujo!.corteTrasImprimir=true;
     p.araujo!.tramos=[tramoAraujo(157,269.5)];p.entradas=[70,140].map(altura=>({altura,alto:12,largo:157,diametro:30,huecos:[]}));
     const r=generarCortePuertas(pedido(p));
     expect(r.archivo).not.toBeNull();
     expect(r.resultados[0].piezas[0]).toMatchObject({ancho:157,alto:276.9,sinGiro:true});
     expect(r.cortes.flatMap(c=>c.colocadas).filter(c=>c.pieza.clase==='pano').every(c=>!c.girada)).toBe(true);
-    p.araujo!.tramos=[tramoAraujo(147,300)];
-    expect(generarCortePuertas(pedido(p)).archivo).toBeNull();
-    expect(calcularPuerta(p).avisos).toContainEqual(expect.objectContaining({codigo:'IMPRESA_EMPATE'}));
+    const q=araujo6255(),v=generarCortePuertas(pedido(q));
+    expect(v.avisos.filter(a=>a.nivel==='error')).toEqual([]);
+    expect(v.archivo).not.toBeNull();
+    const cuerpos=v.resultados[0].piezas.filter(p=>p.clase==='pano');
+    expect(cuerpos.map(p=>[p.ancho,p.alto,p.sinGiro])).toEqual([[147,300,true],[147,9.4,true]]);
+    expect(cuerpos.map(p=>p.marcas.map(m=>m[1]))).toEqual([[7,72.7,162.7],[2.4,2]]);
+    expect(cuerpos.map(p=>p.impresionAraujo?.desdeBajo)).toEqual([0,298]);
+    expect(cuerpos.reduce((s,p)=>s+p.ancho*p.alto,0)).toBeCloseTo(147*(307.4+2));
+    expect(v.cortes.flatMap(c=>c.colocadas).filter(c=>c.pieza.clase==='pano').every(c=>!c.girada)).toBe(true);
+    expect(v.resultados[0].piezas.some(p=>p.clase==='entrada')).toBe(false);
+    const plano=escribirPlanoPuertas({pedido:pedido(q),cabecera:{cliente:'ARAUJO',tecnico:'IVÁN',revisor:'',fecha:'2026-11-04'}});
+    const dimensiones=registrosDxf(plano).filter(e=>e.tipo==='DIMENSION');
+    for(const medida of [72.7,162.7,9.4])expect(dimensiones.filter(e=>Math.abs(numero(e,42)-medida)<1e-5)).toHaveLength(1);
+    expect(dimensiones.filter(e=>Math.abs(numero(e,42)-12)<1e-5)).toHaveLength(4);
+    expect(registrosDxf(v.archivo!.dxf).some(e=>e.tipo==='DIMENSION')).toBe(false);
   });
   it.each([[130,260,267.4],[155,330,337.4],[185,263,270.4]])('impresas 6217/3254: %s × %s, el corte %s incluye los 7 hasta el borde que la cota a marca no mide',(frente,alto,corte)=>{
     const p=araujo5365();p.araujo!.forma='continua';p.araujo!.tramos=[tramoAraujo(frente,alto)];
     const cuerpo=calcularPuerta(p).piezas[0];
     expect(cuerpo.alto).toBe(corte);
     expect(cuerpo.marcas[1][1]).toBeCloseTo(alto+0.4);
+  });
+  it('impresas: cada rollo superior añade 2, sin trasladar ni perder las ventanas que cruzan el empate',()=>{
+    const p=araujo6255();p.araujo!.tramos=[{...tramoAraujo(147,630),ventanas:[ventanaAraujo(20,280)]}];
+    p.entradas=[];
+    const v=generarCortePuertas(pedido(p));
+    expect(v.avisos.filter(a=>a.nivel==='error')).toEqual([]);
+    const panos=v.resultados[0].piezas.filter(p=>p.clase==='pano');
+    expect(panos.map(p=>p.alto)).toEqual([300,300,41.4]);
+    expect(panos.map(p=>p.impresionAraujo?.desdeBajo)).toEqual([0,298,596]);
+    expect(panos.slice(0,2).map(p=>p.huecos[0].y+p.impresionAraujo!.desdeBajo)).toEqual([283.7,283.7]);
+    for(const c of v.cortes)for(const t of c.colocadas.filter(t=>t.pieza.clase==='pano')){
+      const dentro=(x:number,y:number)=>x>=t.x-.01&&x<=t.x+t.pieza.ancho*10+.01&&y>=t.y-.01&&y<=t.y+t.pieza.alto*10+.01;
+      const cutter=c.entidades.lineas.filter(l=>l.capa==='CUTTER'&&dentro((l.x1+l.x2)/2,(l.y1+l.y2)/2));
+      cutter.forEach(l=>{expect(dentro(l.x1,l.y1)).toBe(true);expect(dentro(l.x2,l.y2)).toBe(true);});
+    }
   });
   it('el anagrama habitual conserva ancho, derecho y la cota de 8 desde el bajo del modelo de Iván',()=>{
     const p=araujo5365();
