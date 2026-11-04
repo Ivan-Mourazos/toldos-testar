@@ -42,7 +42,7 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
   const grupos = [];
   for (const t of datos.toldos) {
     const g = grupos.at(-1);
-    if (g && tamano([...g, t]) <= TAMANO_HOJA) g.push(t); else grupos.push([t]);
+    if (g && !t.embudo && !g.some(p => p.embudo) && tamano([...g, t]) <= TAMANO_HOJA) g.push(t); else grupos.push([t]);
   }
   let escalaTexto = 1;
   const ajustar = (valor, h, max) => (max ? Math.min(h * escalaTexto, max / anchoArial(valor, 1)) : h * escalaTexto);
@@ -504,8 +504,20 @@ function alzadoEmbudo(t, x0, { linea, P, texto, cota }) {
   texto(`CONTORNO ${n(c2)} CM · ${etiquetas.abajo}`, cx, -14, 6, 0, 'texto', w + 90);
   texto(`${t.letra} · ${t.of} · X${t.unidades}`, cx, e.alto + 48, 9, 0, 'texto', w + 90);
   const notas = ['DERECHO', etiquetas.cierre, ...etiquetas.cinta,
+    ...(e.forma === 'RECTO' && [e.remateArriba, e.remateAbajo].some(r => ['BASTILLA', 'REFUERZO 10'].includes(r)) ? ['BASTILLAS HACIA EL DERECHO'] : []),
     ...(c2 > e.contornoArriba ? ['BOCA MAYOR ABAJO'] : [])];
   notas.forEach((v, i) => texto(v, x0 + w + 70, e.alto - i * 15, 5, 0, 'texto', 125));
+  // Las observaciones siguen en el CAD cuando este sustituye la hoja de telas.
+  const comentarios = [];
+  for (const parrafo of String(t.notas || '').split(/\r?\n/).filter(Boolean)) {
+    let renglon = '';
+    for (const palabra of parrafo.split(/\s+/)) {
+      if (renglon && anchoArial(`${renglon} ${palabra}`, 5) > w + 110) { comentarios.push(renglon); renglon = ''; }
+      renglon = [renglon, palabra].filter(Boolean).join(' ');
+    }
+    if (renglon) comentarios.push(renglon);
+  }
+  comentarios.forEach((v, i) => texto(v, x0 + (w + 140) / 2, e.alto + 75 + (comentarios.length - i) * 10, 5, 0, 'texto', w + 110));
   return w + 140;
 }
 

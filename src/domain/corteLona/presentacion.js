@@ -111,13 +111,16 @@ export function escribirDxfPlano(plano, cabecera) {
   };
   const enFilaEn = (r, girado = false) => zonasCorte.length > 1 && escalaCortes(r, true, girado) > escalaCortes(r, false, girado);
   const tamCortes = (r, girado = false) => escalaCortes(r, enFilaEn(r, girado), girado);
-  const repartir = (zt) => {
+  const repartir = (zt, embudo = false) => {
     const repartos = [];
     // Debajo: el corte a la izquierda del cajetín; el toldo encima de los dos.
     for (let h = 25; h <= A4.y1 - A4.y0 - TITULO_CORTE - 60; h += 0.5) {
       const corte = { x0: A4.x0, y0: A4.y0, x1: esquina.x0, y1: A4.y0 + h };
       const y0 = Math.max(corte.y1 + TITULO_CORTE, esquina.y1);
-      repartos.push({ zc: zNormal, corte, toldo: { x0: A4.x0, y0, x1: A4.x1, y1: A4.y1 }, raya: [[A4.x0, y0 - 2], [A4.x1, y0 - 2]] });
+      const debajo = { zc: zNormal, corte, toldo: { x0: A4.x0, y0, x1: A4.x1, y1: A4.y1 }, raya: [[A4.x0, y0 - 2], [A4.x1, y0 - 2]] };
+      repartos.push(debajo);
+      // El embudo ocupa poco alzado: el corte largo se lee mejor acostado debajo. Solo gira la ventana.
+      if (embudo) repartos.push({ ...debajo, corte: { ...corte }, toldo: { ...debajo.toldo }, girado: true });
     }
     // Al lado: el corte a la derecha, encima del cajetín; el toldo a la izquierda, hasta abajo si no lo pisa.
     for (let w = 60; w <= A4.x1 - A4.x0 - 100; w += 0.5) {
@@ -136,7 +139,7 @@ export function escribirDxfPlano(plano, cabecera) {
     const mejor = (a, b) => nota(b) > nota(a) + 1e-9 || (nota(b) > nota(a) - 1e-9 && tamCortes(b.corte, b.girado) > tamCortes(a.corte, a.girado) + 1e-9);
     // El dibujo al máximo, con el corte a no menos del 80 % de su mejor escala (Iván, 28/10/2026, AR2605035).
     const mejorCorte = Math.max(...repartos.map((r) => tamCortes(r.corte, r.girado)));
-    const validos = repartos.filter((r) => tamCortes(r.corte, r.girado) >= 0.8 * mejorCorte);
+    const validos = repartos.filter((r) => tamCortes(r.corte, r.girado) >= (embudo ? 0.9 : 0.8) * mejorCorte);
     const masDibujo = (a, b) => escala(zt, b.toldo) > escala(zt, a.toldo) + 1e-9 || (escala(zt, b.toldo) > escala(zt, a.toldo) - 1e-9 && mejor(a, b));
     const reparto = validos.reduce((a, b) => (masDibujo(a, b) ? b : a));
     const zc = reparto.zc;
@@ -148,7 +151,7 @@ export function escribirDxfPlano(plano, cabecera) {
     if (rc.x0 === A4.x0) rc.y1 = rc.y0 + Math.max(25, altoUsado);
     else rc.y0 = rc.y1 - altoUsado;
     // El corte girado, pegado al lado derecho; lo que sobra de su columna es para la puerta.
-    if (girado) {
+    if (girado && rc.x0 !== A4.x0) {
       const anchos = anchosDe(true), anchoUsado = enFila ? suma(anchos) * ec + huecos : Math.max(...anchos) * ec;
       rc.x0 = Math.max(rc.x0, A4.x1 - anchoUsado);
       reparto.toldo = libre({ x0: A4.x0, y0: A4.y0, x1: rc.x0 - 4, y1: A4.y1 });
@@ -168,7 +171,7 @@ export function escribirDxfPlano(plano, cabecera) {
     }
     return { reparto, zc, rc };
   };
-  const repartos = hojas.map((h) => repartir(h.zona));
+  const repartos = hojas.map((h) => repartir(h.zona, /^EMBUDO /.test(h.nombre)));
   const { reparto } = repartos[0];
   // La ventana, con la proporción justa de lo que enseña, para que no asome nada vecino del modelo; el corte, arriba a
   // la izquierda de su sitio (su título va encima) y, si va girado, con la vista girada.

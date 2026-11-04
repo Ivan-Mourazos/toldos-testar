@@ -70,6 +70,18 @@ el 07-11 reproduce sus dibujos exactos; si cambian referencia, descripción, can
 de sueltas, se retira esa revisión y se mantienen las comprobaciones normales. No se habilitan referencias
 nuevas solo por haber copiado su dibujo.
 
+## Embudo · contraste del planteamiento CAD (03/11/2026)
+
+La cinta corta ya la indica el pedido: **Q-EMB01 sigue contestada**, con 12 cm por defecto. No se cambia esa decisión. Contraste de los 50 originales y alcance de cada pedido en [embudo-planteamiento-cad.md](./embudo-planteamiento-cad.md).
+
+| Código | Duda para Iván | Qué hace la web mientras tanto |
+| --- | --- | --- |
+| Q-EMB02 | AR2602793: el corte mide 79 × 165, pero alto 150 + entrada de cinta de 6 + B.N (10) suman 166. ¿La bastilla de ese pedido era de 9 o el corte se quedó corto? | Mantiene la regla confirmada de cada remate: con esos datos corta 79 × 166. No copia los 165 como regla. |
+| Q-EMB03 | AR2500699 y AR2501759: hay una raya a 10 cm en la boca superior, pero solo aparece tira de refuerzo abajo. ¿La raya superior tiene otra función o falta su tira en el dibujo? | Solo añade las tiras y marcas de los remates elegidos en el pedido. No añade una tira superior por ver esa raya. |
+| Q-EMB04 | AR2601582 lleva dos cintas negras, dos mordazas y separación de 10 cm. La tarjeta actual representa una sujeción y no pide color ni posición de varias cintas. ¿Qué datos deben pedirse para esta disposición? | Ese pedido queda fuera de los ejemplos homologados. La presentación conserva las observaciones escritas, pero no representa automáticamente esas cintas. |
+| Q-EMB05 | AR2601252 dibuja dos notas REF.(10), mientras la referencia de Nutrimentos era refuerzo solo abajo; en el anidado no se identifican todas las tiras que resultarían de reforzar ambas bocas. ¿Ese pedido llevaba realmente refuerzo arriba? | Los dos remates los decide el pedido. No se deducen del cliente ni se toma ese anidado como aprobado. |
+| Q-EMB06 | AR2602675: las presentaciones dicen altos de 80 y 100, pero sus arcos de corte conservan los radios del embudo de 70. ¿Cuál fue el corte que se fabricó? | Calcula los desarrollos con los altos introducidos y deja este original como duda; no cambia la fórmula para copiar esos arcos. |
+
 ## Caballos por medidas · Talleres Cal (01/11/2026)
 
 Son las dudas que impiden sacar el corte de AR.26.05319, línea 3. Mientras tanto, la web no calcula estos remolques y **ese pedido se hace a mano**. Fuentes y contraste por script en [remolque-ganado-medidas.md](./remolque-ganado-medidas.md).
