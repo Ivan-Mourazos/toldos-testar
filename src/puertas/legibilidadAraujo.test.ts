@@ -65,7 +65,8 @@ beforeAll(async()=>{
   await fs.mkdir(temporal,{recursive:true});
   const anteriores={TEMP:process.env.TEMP,TMP:process.env.TMP,TMPDIR:process.env.TMPDIR};
   Object.assign(process.env,{TEMP:temporal,TMP:temporal,TMPDIR:temporal});
-  const navegador=await chromium.launch();
+  const registro=path.join(temporal,'chromium.log');
+  const navegador=await chromium.launch({args:['--log-file='+registro],env:{...process.env,CHROME_LOG_FILE:registro}});
   try{
     const pagina=await navegador.newPage();
     const medidas=await pagina.evaluate(valores=>{
