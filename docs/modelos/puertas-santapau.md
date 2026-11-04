@@ -121,3 +121,5 @@ Corregidos tamaño y posición de cotas/rótulos del5363 y su correspondencia co
 Por la revisión posterior de Iván se sustituyen los símbolos estirados por los contornos de franja de cada alzado aprobado (5363 A/B y4815 A/B), con su anchura, inclinación, separación y recorte. Los textos se centran y dimensionan en su hueco libre, incluidos los del corte. El SVG conserva el hueco de los números de cota y centra el bloque completo de las notas. La vista incluye la última cota del faldón.
 
 El [informe por capas](./puertas-santapau-capas.md) recoge la tabla antes/después y las comprobaciones automáticas de cajas, líneas y recortes en las cuatro hojas, el bot y el navegador. Las diagonales solo son representación de impresión: no se añaden cortes ni marcas al bot. Rebase inicial sobrecb9630d; las reglas nuevas del escuadrado de apilables no cambian la confección de Santa Pau.
+
+Cierre de esta revisión: **4.902 pruebas en377 ficheros**, typecheck, lint y build correctos sobre el cambiofed9ca9. Cero solapes, cruces con líneas y textos recortados en las hojas y en las cajas reales del SVG. DWG2018, DXF del bot y PNG regenerados. Instancia4482/4492 cerrada. Sin push.
