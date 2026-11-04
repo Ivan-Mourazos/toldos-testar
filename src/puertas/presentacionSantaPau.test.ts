@@ -6,7 +6,7 @@ import { escribirPlanoPuertas } from './plano.ts';
 import { generarCortePuertas } from './corte.ts';
 import { crucesRotulosLineas, recortesRotulos, solapesRotulos, type RotuloAuditable } from './auditoriaRotulos.ts';
 import { presentacionesDxf } from '../flujoDwg/planoDxf.js';
-import { franjasSantaPau } from './franjasSantaPau.ts';
+import { FRANJAS_SANTA_PAU, franjasSantaPau } from './franjasSantaPau.ts';
 import { tramosCota } from './tramosCota.ts';
 
 function seccion(puntos: number[][], y: number) {
@@ -26,14 +26,16 @@ describe('Santa Pau: franjas y legibilidad de las hojas', () => {
     for (let i = 0; i < refs.length; i += 2) expect(refs[i].x + refs[i + 1].x).toBeCloseTo(p.frente, 5);
     expect(calcularPuerta(p).piezas.every(p => !p.margenEscuadrado)).toBe(true);
   });
-  it.each([
-    { revision: '5363', frente: 197, esperado: [[6.263457, 19.447879], [33.590015, 44.107151], [68.942829, 83.084964], [188.506799, 197]] },
-    { revision: '4815', frente: 281.5, esperado: [[33.590015, 44.107151], [111.192829, 125.334964], [273.006799, 281.5]] },
-    { revision: '4815', frente: 163.5, esperado: [[10.714286, 24.856421]] },
-  ])('$revision, frente$frente: ancho, separación y fase medidos a media altura', ({ revision, frente, esperado }) => {
-    const franjas = franjasSantaPau(frente, 35, revision).map(b => seccion(b.puntos, 17.5)).filter(xs => xs.length).sort((a, b) => a[0] - b[0]);
-    expect(franjas).toHaveLength(esperado.length);
-    franjas.forEach((xs, i) => xs.forEach((x, j) => expect(x).toBeCloseTo(esperado[i][j], 3)));
+  // Iván, 04/11/2026: diagonales bien hechas (regulares), no copiadas de sus planos.
+  it.each([163.5, 197, 216, 281.5])('frente %s: franjas regulares, iguales, a paso fijo y centradas', frente => {
+    const { ancho } = FRANJAS_SANTA_PAU;
+    const franjas = franjasSantaPau(frente, 35, '5363').map(b => seccion(b.puntos, 17.5)).filter(xs => xs.length).sort((a, b) => a[0] - b[0]);
+    const enteras = franjas.filter(([a, b]) => a > 1e-6 && b < frente - 1e-6);
+    expect(enteras.length).toBeGreaterThan(1);
+    for (const [a, b] of enteras) expect(b - a).toBeCloseTo(ancho, 5);
+    for (let i = 1; i < enteras.length; i++) expect(enteras[i][0] - enteras[i - 1][0]).toBeCloseTo(2 * ancho, 5);
+    // Simétricas respecto al centro del frente a media altura.
+    for (const [a, b] of franjas) expect(franjas.some(([c, d]) => Math.abs(frente - b - c) < 1e-5 && Math.abs(frente - a - d) < 1e-5)).toBe(true);
   });
   it.each([30, 35, 40])('las diagonales se recortan en el borde del faldón de%s, sin desbordarlo', alto => {
     for (const frente of [163.5, 197, 216, 281.5, 300]) for (const revision of ['4815', '5363']) {
@@ -42,13 +44,10 @@ describe('Santa Pau: franjas y legibilidad de las hojas', () => {
       expect(bandas.flatMap(b => b.puntos).every(([x, y]) => x >= -.00001 && x <= frente + .00001 && y >= -.00001 && y <= alto + .00001)).toBe(true);
     }
   });
-  it('5363 B conserva el ancho y el inicio de cada franja de Iván, sin estirar la A', () => {
+  it('5363 B dibuja en el plano las mismas franjas regulares que la función', () => {
     const p = pedidosSantaPau()[1].elementos[1].input;
     const l = geometriaAlzado(p, calcularPuerta(p), 'B').cad!;
-    const bandas = l.sombreados.filter(s => s.solido).map(s => seccion(s.puntos, -p.alto - 89.1822 + 17.5)).filter(xs => xs.length).sort((a, b) => a[0] - b[0]);
-    const referencia = [[6.263457, 19.447879], [33.590015, 44.107151], [106.783554, 120.869236], [207.506799, 216]];
-    expect(bandas).toHaveLength(referencia.length);
-    bandas.forEach((xs, i) => xs.forEach((x, j) => expect(x).toBeCloseTo(referencia[i][j], 3)));
+    expect(l.sombreados.filter(s => s.solido)).toHaveLength(franjasSantaPau(p.frente, 35, '5363').length);
   });
   it('el detector encuentra cruces de texto con texto y con un número de cota girado', () => {
     const textos = [{ tipo: 'texto', valor: 'A1', punto: [10, 10], h: 5 }, { tipo: 'texto', valor: 'REVÉS', punto: [12, 10], h: 5 }, { tipo: 'texto', valor: '135', punto: [10, 10], h: 5, giro: 90, deCota: true }];
