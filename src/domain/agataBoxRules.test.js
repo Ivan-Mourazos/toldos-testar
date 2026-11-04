@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { calculateAgataBox, calculateAgataProfileSupportCount, calculateAgataSupportCount } from './agataBoxRules.js';
 import { defaultAgataBoxParameters } from './agataBoxParameters.js';
+import { calculateOrder } from './rules.js';
+import { normalizeReservation } from './validation.js';
 
 const baseOrder = {
   sameFabric: true,
@@ -198,11 +200,77 @@ describe('Ágata Box', () => {
     expect(result.despiece.rows).toContainEqual(expect.objectContaining({ name: 'CASQUILLO MAQUINA EJE 50MM Ø78', reference: 'CASMAQEJE5078MM' }));
   });
 
-  it('calcula los soportes observados en producción', () => {
+  it('conserva las cantidades provisionales de soportes hasta resolver Q-AG04', () => {
     expect(calculateAgataProfileSupportCount(650)).toBe(4);
     expect(calculateAgataProfileSupportCount(1145)).toBe(7);
     expect(calculateAgataSupportCount({ width: 717, minimumLine: 693.9, armCount: 3, parameters: defaultAgataBoxParameters })).toBe(5);
     expect(calculateAgataSupportCount({ width: 1040, minimumLine: 668.6, armCount: 4, parameters: defaultAgataBoxParameters })).toBe(10);
+  });
+
+  // RPS, 04/11/2026: 0227173 (650 × 200, techo, tres brazos) consume
+  // SOFT + SOTE y SOIN + SOTL. El terminal es un juego y un derecho suelto.
+  it('incluye las familias que conviven en el cofre de techo 0227173', () => {
+    const result = calculateAgataBox({ order: baseOrder, awning: {
+      ...baseAwning, of: '0227173', width: 650, projection: 200, submodel: 'COFRE', placement: 'TECHO', looseSide: 'DERECHO'
+    } });
+    expect(result.materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'SOFTMODULBL16' }),
+      expect.objectContaining({ code: 'SOTEMODULBLAN' }),
+      expect.objectContaining({ code: 'SOTLMODULBL16' }),
+      expect.objectContaining({ code: 'SOINMODUBL16', quantity: 4 }),
+      expect.objectContaining({ code: 'TERMIMODULBL16', quantity: 1 }),
+      expect.objectContaining({ code: 'TERMIMODULDBL16', quantity: 1 })
+    ]));
+  });
+
+  it('el semicofre 0217750 conserva el soporte inferior y añade el de tejadillo/lira', () => {
+    const result = calculateAgataBox({ order: baseOrder, awning: {
+      ...baseAwning, of: '0217750', width: 800, projection: 300, submodel: 'SEMIOPEN'
+    } });
+    expect(result.materials).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'SOINMODUBL16', quantity: 5 }),
+      expect.objectContaining({ code: 'SOTLMODULBL16' })
+    ]));
+    expect(result.materials.some(m => m.code.startsWith('SOTEMODUL'))).toBe(false);
+  });
+
+  it.each([['IZQUIERDO', 'I'], ['DERECHO', 'D'], ['', 'D']])('completa el terminal de tres brazos: %s', (looseSide, side) => {
+    const result = calculateAgataBox({ order: baseOrder, awning: { ...baseAwning, looseSide, units: 2 } });
+    expect(result.materials).toContainEqual(expect.objectContaining({ code: `TERMIMODUL${side}BL16`, quantity: 2 }));
+    const row = result.despiece.rows.find(r => r.reference === `TERMIMODUL${side}BL16`);
+    expect(row?.units).toBe(2);
+    expect(row?.name).toContain(looseSide || 'LADO A ELEGIR EN TALLER');
+  });
+
+  it.each([2, 4])('con %i brazos reserva terminales por juegos, sin suelto', armCount => {
+    const result = calculateAgataBox({ order: baseOrder, awning: { ...baseAwning, width: armCount === 2 ? 575 : 1005, armCount } });
+    expect(result.calculation.valid).toBe(true);
+    expect(result.materials.filter(m => m.code.startsWith('TERMIMODUL'))).toEqual([
+      expect.objectContaining({ code: 'TERMIMODULBL16', quantity: armCount / 2 })
+    ]);
+  });
+
+  it.each([1, 2])('AR2605385: soportes y terminal coinciden en despiece y reserva (%i unidades)', units => {
+    const order = { ...baseOrder, orderCode: 'AR2605385', awnings: [{
+      ...baseAwning, of: '0233696', width: 724, projection: 300, valanceHeight: 0, rotFabric: 'NO', machineSide: 'DERECHA',
+      submodel: 'COFRE', placement: 'TECHO', structureColor: 'Negro grafito mate 9011-9111', units
+    }] };
+    const result = calculateOrder(order);
+    const block = result.ofs[0];
+    expect(block.calculation.valid).toBe(true);
+    // No hay SOTE mate ni terminal suelto mate en RPS: blancos para lacar (Q-A02).
+    const expected = {
+      SOFTMODULNEM1: 6 * units, SOTEMODULBLAN: 6 * units,
+      SOTLMODULNEM1: 4 * units, SOINMODUNEM1: 4 * units,
+      SOBMODULNEM1: units, SOBDMODULBL16: units,
+      TERMIMODULNEM1: units, TERMIMODULDBL16: units
+    };
+    const reservation = normalizeReservation({ orderCode: order.orderCode, ofs: result.ofs });
+    for (const [code, quantity] of Object.entries(expected)) {
+      expect(reservation.ofs[0].materials.filter(m => m.code === code).reduce((s,m) => s + m.quantity, 0), code).toBe(quantity);
+      expect(block.despiece.rows.filter(r => r.reference === code).reduce((s,r) => s + r.units, 0), code).toBe(quantity);
+    }
+    expect(block.despiece.rows.find(r => r.reference === 'SOTEMODULBLAN')?.name).toContain('MANDAR A LACAR');
   });
   // AR2605385 (Iván, 04/11/2026): un solo perfil posterior y un solo inferior, como la lira. En las 11
   // OF desde 2024 se gasta 1 barra de cada uno hasta 700 de frente y 2 si es más largo.

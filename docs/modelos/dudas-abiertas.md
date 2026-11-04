@@ -22,6 +22,16 @@ Actualizado el 25/09/2026:
 
 Cómo se decide cada respuesta: primero, el manual del fabricante (el de Oficina Técnica o, si no está, el de la web del fabricante); después, el maestro de RPS (qué piezas existen y cuáles están de baja); y por último, lo que de verdad se gasta en las OF. En el expediente de cada modelo se anota en qué se apoya cada decisión.
 
+## Ágata Box: soportes y terminal (04/11/2026)
+
+Revisión del AR2605385 contra 33 OF desde 2023, con prioridad a 2025–2026. [Tabla por OF y decisiones](./agata-soportes-consumo.md). Techo lleva frontal más techo: corregido. Cofre y semicofre recientes llevan inferior más tejadillo/lira: corregido. Tres brazos necesitan también el terminal suelto: corregido, con el mismo lado que el brazo.
+
+| Código | Pregunta | Qué hace la web mientras tanto |
+| --- | --- | --- |
+| Q-AG04 | ¿Cuántos **juegos y sueltos** de SOFT/SOTE y SOTL hay que pedir según frente y brazos? En 2026, 650×200 de techo gastó 3 juegos de cada soporte de montaje; 555×400 gastó 2 juegos y un suelto; 717×400 frontal gastó 4 juegos. La última OF de cofre reúne dos toldos de 684 y 690 y gastó 7 juegos frontales: no sabemos cómo se reparten. No basta con dividir la fórmula actual entre dos. | Conserva las cantidades de la fórmula anterior, también con el candado; **no quedan validadas por esta revisión**. En el 5385 siguen saliendo 6 juegos frontales más 6 de techo y 4 de tejadillo/lira. No se ha demostrado que sean las cantidades correctas. Hace falta fijar la tabla de juegos y sueltos, sobre todo para 724×300 con tres brazos. |
+| Q-AG05 | ¿Cuándo lleva soporte inferior SOIN el Open y cuántos juegos lleva cada variante? Open 717 y 730 gastan 5 juegos, pero 555 y 575 no gastan ninguno; 775 tampoco. El semicofre 1145 gastó solo 1 juego y el 800 gastó 5. | Añade SOIN en cofre y conserva el de semicofre, junto a SOTL, con la cantidad provisional de soportes de perfil que ya calculaba. En el 5385 son 4 juegos de inferior. No añade SOIN a todos los Open sin conocer la condición. |
+| Q-AG06 | ¿Cuándo se usa el terminal de regulación fina TERRF en vez de TERMI? En los últimos cofres, abril de 2026 lleva TERMI y julio TERRF, ambos con tres brazos Onyx. Con salida 300 hay TERMI en semicofre; con 350 hay TERRF y con 400 aparecen las dos familias. En Open hay además TERMIUNIV, TERMINEVO y sobrantes de juegos que el consumo no explica. | Mantiene TERMI, un juego por dos brazos y un suelto si son tres; falta confirmar la familia que corresponde al 5385. El lado del suelto se elige con el brazo; si no se indica, decide el taller y se reserva derecho. Lo que no existe en el lacado se reserva blanco para lacar, como las demás piezas. |
+
 ## Contestadas el 03/11/2026 (Iván)
 
 - **Q-GAN03:** la lona va por el **exterior** del arco. Comprobado a mano en el 5319: se le dio radio 9,5.

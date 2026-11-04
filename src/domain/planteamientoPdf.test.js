@@ -1054,7 +1054,7 @@ describe('buildOrderPlanteamientoPdf', () => {
     // transform[5] MAYOR.
     const agataOrder = buildAgataBoxTwentyRowOrder();
     const agataCalculation = calculateOrder(agataOrder);
-    expect(agataCalculation.ofs[0].despiece.rows).toHaveLength(26);
+    expect(agataCalculation.ofs[0].despiece.rows).toHaveLength(27);
     const agataBuffer = await buildOrderPlanteamientoPdf({ order: agataOrder, calculation: agataCalculation });
     const agataDocument = await getDocument({ data: new Uint8Array(agataBuffer) }).promise;
     const agataPage = await agataDocument.getPage(1);
@@ -1067,7 +1067,7 @@ describe('buildOrderPlanteamientoPdf', () => {
     expect(arzuaAccessoriesLabel.transform[5]).toBeGreaterThan(agataAccessoriesLabel.transform[5]);
   });
 
-  test('Ágata Box con sus veintiséis filas de despiece y el mando (el máximo real) las imprime todas', async () => {
+  test('Ágata Box con sus veintisiete filas de despiece y el mando las imprime todas', async () => {
     const order = buildAgataBoxTwentyRowOrder();
     const calculation = calculateOrder(order);
     const despieceRows = calculation.ofs[0].despiece.rows;
@@ -1075,7 +1075,7 @@ describe('buildOrderPlanteamientoPdf', () => {
     // Esta es justo la invariante que generaliza drawDespieceTable: con las veinte
     // filas que antes venían fijas, la tabla debe seguir imprimiéndolas todas y el
     // resto del layout (bloques de abajo) no debe perder ni recortar ninguna.
-    expect(despieceRows).toHaveLength(26);
+    expect(despieceRows).toHaveLength(27);
 
     const buffer = await buildOrderPlanteamientoPdf({ order, calculation });
     const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
@@ -1295,14 +1295,14 @@ describe('buildOrderPlanteamientoPdf', () => {
     return order;
   }
 
-  test('ÁGATA BOX COFRE/MOTOR con colocación TECHO imprime sus veintiséis filas y el mando en una hoja', async () => {
+  test('ÁGATA BOX COFRE/MOTOR con TECHO imprime sus veintiocho filas y el mando en una hoja', async () => {
     const order = buildAgataBoxTechoOrder();
     const calculation = calculateOrder(order);
     const despieceRows = calculation.ofs[0].despiece.rows;
 
-    // Desde el 23/09/2026 el Ágata con cofre y motor reserva lo que se consume y tiene
-    // 24 filas, 26 con los patines desde el 03/10 y una más del mando (con TECHO, el soporte de techo sustituye al frontal): todas en la hoja.
-    expect(despieceRows).toHaveLength(26);
+    // Techo y frontal van juntos; inferior y tejadillo/lira también. Este caso de
+    // dos brazos llega a 28 filas, incluido el mando: todas en la hoja.
+    expect(despieceRows).toHaveLength(28);
 
     const items = await paginaUno(order, calculation);
     const text = items.map((item) => item.str).join(' ');
@@ -1310,7 +1310,32 @@ describe('buildOrderPlanteamientoPdf', () => {
       expect(text).toContain(referencia);
     }
     // Ésta es justo la fila que el bucle fijo de veinte descartaba en silencio.
-    expect(text).toContain('SOTEMODULBL16');
+    expect(text).toContain('SOTEMODULBLAN');
+    expect(text).toContain('SOFTMODULBL16');
+    expect(text).toContain('SOINMODUBL16');
+  });
+
+  test('AR2605385 imprime todos los soportes y el terminal suelto, también con continuación', async () => {
+    const order = buildAgataBoxTechoOrder();
+    order.orderCode = 'AR2605385';
+    Object.assign(order.awnings[0], {
+      of: '0233696', width: 724, projection: 300, armCount: 3,
+      structureColor: 'Negro grafito mate 9011-9111'
+    });
+    const calculation = calculateOrder(order);
+    const buffer = await buildOrderPlanteamientoPdf({ order, calculation });
+    const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
+    const texts = [];
+    for (let n = 1; n <= document.numPages; n++) {
+      const page = await document.getPage(n);
+      texts.push((await page.getTextContent()).items.map(item => item.str).join(' '));
+    }
+    const text = texts.join(' ');
+    for (const row of calculation.ofs[0].despiece.rows) {
+      if (row.reference) expect(text, row.reference).toContain(row.reference);
+    }
+    expect(text).toContain('TERMIMODULDBL16');
+    expect(text).toContain('SOINMODUNEM1');
   });
 
   test('el ELECTRA con su despiece completo (banda ajustada) conserva la medida de guías al recortar', async () => {

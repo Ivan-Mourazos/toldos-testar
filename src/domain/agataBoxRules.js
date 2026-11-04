@@ -185,15 +185,13 @@ function buildMaterials(context) {
   const { awning, device, placement, submodel, lacado, fabric, separateValance, armCount, supportCount, profileSupportCount, bars, motorPower, fabricMl } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const suffix = lacado.suffix;
-  // Consumo real de 24 OF desde 2024: soportes y brazos van por JUEGOS (un juego por
-  // cada dos brazos y un suelto si son tres), los soportes a pared o techo son los
-  // frontales SOFTMODUL (se reservaban como soportes de brazo) y el cofre lleva tapas.
+  // Brazos y soportes de brazo: un juego por cada dos brazos y un suelto si son tres.
   const armSets = Math.floor(armCount / 2);
   const varillaMl = Math.ceil(Number(context.lengths.loadBarLength) || 0) / 100;
   const materials = [
     line(colored('SOBMODUL', suffix), armSets * units, 'JUEGO SOPORTES DE BRAZO ÁGATA BOX'),
     armCount % 2 ? line(colored(`SOB${looseSideLetter(awning.looseSide) || 'D'}MODUL`, suffix), units, looseSideName('SOPORTE BRAZO ÁGATA BOX', looseSideLetter(awning.looseSide) || 'D', looseSideLetter(awning.looseSide))) : null,
-    line(colored(placement === 'TECHO' ? 'SOTEMODUL' : 'SOFTMODUL', suffix), supportCount * units, placement === 'TECHO' ? 'SOPORTE TECHO ÁGATA BOX' : 'SOPORTE FRONTAL ÁGATA BOX'),
+    ...mountingSupportLines(placement, suffix, supportCount * units),
     ...barLines(bars.roll, (length) => `TURA80HG${length}C`, units, 'TUBO DE ENROLLE P801'),
     line(tipBushing('P801').code, units, tipBushing('P801').description),
     ...barLines(bars.load, (length) => coloredStock(loadBarPrefix(submodel), suffix, length), units, `BARRA DE CARGA ÁGATA ${submodel}`),
@@ -201,7 +199,7 @@ function buildMaterials(context) {
     line(colored(boxCapPrefix(submodel), suffix), units, 'TAPAS ÁGATA BOX'),
     ...barLines(bars.square, (length) => coloredStock('TUBHI442', suffix, length), units, 'BARRA CUADRADA 40x40x2'),
     ...onyxArmLines(suffix, awning.projection, armCount, units, awning.looseSide).map((item) => line(item.code, item.quantity, item.description)),
-    line(colored('TERMIMODUL', suffix), armSets * units, 'JUEGO TERMINAL ÁGATA BOX'),
+    ...terminalLines(awning, suffix, armCount, units),
     // Varillas al largo de la barra: con la variante abierta la blanca va doble.
     line('VARILLAVAINANEG5', round1(varillaMl * units), 'VARILLA VAINA NEGRA 4,5MM'),
     line('VARILLAVAINARBLA', round1((submodel === 'OPEN' ? 2 : 1) * varillaMl * units), 'VARILLA VAINA RIGIDA 5,5 BLANCA'),
@@ -219,7 +217,7 @@ function buildMaterials(context) {
       // Un solo perfil posterior: en las 11 OF desde 2024 se gasta como la lira (1 barra hasta 700,
       // 2 si es más largo). La fila «sellador» con la misma referencia lo duplicaba (Iván, 04/11/2026).
       ...barLines(bars.back, (length) => coloredStock('PRPMODUL', suffix, length), units, 'PERFIL POSTERIOR ÁGATA BOX'),
-      line(colored(submodel === 'COFRE' ? 'SOTLMODUL' : 'SOINMODU', suffix), profileSupportCount * units, 'SOPORTES DE CIERRE ÁGATA BOX')
+      ...enclosureSupportLines(suffix, profileSupportCount * units)
     );
   }
   // El perfil inferior también va una vez: 736 y 743 de frente gastaron 2 barras, no 4 (04/11/2026).
@@ -265,7 +263,7 @@ function buildDespiece(context) {
   const pushBars = (num, name, list, code, perAwning, length) => barLines(list, code, perAwning, name).forEach((item) => push(num, name, item.code, item.quantity, length));
   push(1, 'JUEGO SOPORTES DE BRAZO ÁGATA BOX', colored('SOBMODUL', suffix), Math.floor(armCount / 2) * units);
   if (armCount % 2) push(1, looseSideName('SOPORTE BRAZO ÁGATA BOX', looseSideLetter(awning.looseSide) || 'D', looseSideLetter(awning.looseSide)), colored(`SOB${looseSideLetter(awning.looseSide) || 'D'}MODUL`, suffix), units);
-  push(1, placement === 'TECHO' ? 'SOPORTE TECHO ÁGATA BOX' : 'SOPORTE FRONTAL ÁGATA BOX', colored(placement === 'TECHO' ? 'SOTEMODUL' : 'SOFTMODUL', suffix), supportCount * units);
+  mountingSupportLines(placement, suffix, supportCount * units).forEach(item => push(1, item.description, item.code, item.quantity));
   pushBars(2, 'TUBO DE ENROLLE P801', bars.roll, (length) => `TURA80HG${length}C`, units, lengths.rollTubeLength);
   push(3, 'CASQUILLO PUNTA', tipBushing('P801').code, units);
   push(4, device === 'MAQUINA' ? 'CASQUILLO MAQUINA EJE 50MM Ø78' : 'SOPORTE UNIVERSAL HIPRO', device === 'MAQUINA' ? 'CASMAQEJE5078MM' : 'SOPORTEUNVHIPRO', units);
@@ -274,7 +272,7 @@ function buildDespiece(context) {
   push(5, 'TAPAS BARRA DE CARGA ÁGATA BOX', colored(submodel === 'COFRE' ? 'TAPAPFMODUL' : 'TARONDMOD', suffix), units);
   push(5, 'TAPAS ÁGATA BOX', colored(boxCapPrefix(submodel), suffix), units);
   onyxArmLines(suffix, awning.projection, armCount, units, awning.looseSide).forEach((item) => push(7, item.description, item.code, item.quantity, awning.projection));
-  push(7, 'JUEGO TERMINAL ÁGATA BOX', colored('TERMIMODUL', suffix), Math.floor(armCount / 2) * units);
+  terminalLines(awning, suffix, armCount, units).forEach(item => push(7, item.description, item.code, item.quantity));
   // Los patines se reservan desde el 30/09/2026 y desde el 03/10 salen también en el despiece.
   patinLines(suffix, units).forEach((item) => push(8, item.description, item.code, item.quantity));
   if (device === 'MOTOR') {
@@ -293,7 +291,7 @@ function buildDespiece(context) {
     pushBars(14, 'PERFIL TEJADILLO ÁGATA BOX', bars.roof, (length) => coloredStock('PRTMODUL', suffix, length), units, lengths.enclosureLength);
     pushBars(15, 'PROTECTOR LONA TEJADILLO', bars.roofProtector, (length) => coloredStock('PRPLMODUL', suffix, length), units, lengths.enclosureLength);
     pushBars(16, 'PERFIL POSTERIOR ÁGATA BOX', bars.back, (length) => coloredStock('PRPMODUL', suffix, length), units, lengths.enclosureLength);
-    push(18, 'SOPORTES DE CIERRE ÁGATA BOX', colored(submodel === 'COFRE' ? 'SOTLMODUL' : 'SOINMODU', suffix), profileSupportCount * units);
+    enclosureSupportLines(suffix, profileSupportCount * units).forEach(item => push(18, item.description, item.code, item.quantity));
   }
   push(19, 'JUEGO SOPORTE PUNTA MÁQUINA ÁGATA BOX', colored('SOMPMODUL', suffix), units);
   if (submodel === 'COFRE') pushBars(20, 'PERFIL INFERIOR ÁGATA BOX', bars.bottom, (length) => coloredStock('PRIMODUL', suffix, length), units, lengths.enclosureLength);
@@ -313,6 +311,35 @@ function buildDespiece(context) {
 // PRCOMODUL y PRSCMODUL no se consumen nunca.
 function loadBarPrefix(submodel) {
   return submodel === 'COFRE' ? 'PRMODUL' : 'PRROMODUL';
+}
+
+// En las cinco OF con SOTE desde 2023 también se consume SOFT. El blanco de techo
+// es BLAN, no BL16 (maestro RPS, 04/11/2026). Cantidades pendientes: Q-AG04.
+function mountingSupportLines(placement, suffix, quantity) {
+  const lines = [line(colored('SOFTMODUL', suffix), quantity, 'JUEGO SOPORTE FRONTAL ÁGATA BOX')];
+  if (placement === 'TECHO') lines.push(line(colored('SOTEMODUL', suffix === 'BL16' ? 'BLAN' : suffix), quantity, 'JUEGO SOPORTE TECHO ÁGATA BOX'));
+  return lines;
+}
+
+// Los 11 cofres con consumo desde 2023 llevan SOIN y SOTL juntos; también los dos
+// semicofres recientes. En Open no hay una condición clara (Q-AG05).
+function enclosureSupportLines(suffix, quantity) {
+  return [
+    line(colored('SOTLMODUL', suffix), quantity, 'JUEGO SOPORTE TEJADILLO/LIRA ÁGATA BOX'),
+    line(colored('SOINMODU', suffix), quantity, 'JUEGO SOPORTE INFERIOR ÁGATA BOX')
+  ];
+}
+
+// 0227173, 0222144 y 0217750: con tres brazos, juego y terminal suelto. La elección
+// entre TERMI y TERRF no se deduce de fecha, salida o brazos Onyx (Q-AG06).
+function terminalLines(awning, suffix, armCount, units) {
+  const lines = [line(colored('TERMIMODUL', suffix), Math.floor(armCount / 2) * units, 'JUEGO TERMINAL ÁGATA BOX')];
+  if (armCount % 2) {
+    const chosen = looseSideLetter(awning.looseSide);
+    const side = chosen || 'D';
+    lines.push(line(colored(`TERMIMODUL${side}`, suffix), units, looseSideName('TERMINAL ÁGATA BOX', side, chosen)));
+  }
+  return lines;
 }
 
 function boxCapPrefix(submodel) {
