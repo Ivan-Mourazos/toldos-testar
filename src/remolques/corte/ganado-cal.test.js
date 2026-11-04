@@ -39,6 +39,8 @@ describe('Cálculo, corte y plano de Cal por medidas', () => {
     expect(r.aMano).toEqual([]);
     expect(piezaGanado(e).textos.some(t => t.valor.includes('Refuerzo MFD'))).toBe(true);
     expect(e.result.metrosTela).toBeGreaterThan(0);
+    expect(e.result.piezas.find(p => p.nombre === 'Cuerpo').acabado).toContain('cuerda fruncida');
+    expect(hojaGanado(e.input, e.result).grupos.find(g => g.titulo === 'ACABADOS DE CAL').datos[0].valores.join(' ')).toContain('CUERDA');
     expect(hojaGanado(e.input, e.result).banda[1].notas).toEqual([]);
     expect(e.result.piezas).toHaveLength(5);
     const p = juegoCorteCal(MEDIDAS_CAL_5319);

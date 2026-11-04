@@ -16,6 +16,9 @@ export function MedidasCalCampos({ value, error, onChange }: { value?: MedidasCa
   return <PasoFormulario titulo="Medidas de Cal (cm)" columnas={4}>
     <p className="gan-dibujo-nota rem-span-4">Altos hasta la intersección teórica del lateral y las aguas. Radio por el exterior del arco. El cálculo añade 1 cm de lona hecha a anchos, recto y diagonal.</p>
     {CAMPOS.map(([k, label]) => <CampoNum key={k} name={k} label={label} value={m[k]} onChange={v => set(k, v)} />)}
+    <CampoSelect name="recogidaAtrasCal" label="Fruncido de atrás" value={m.recogidaAtras ?? ''} sinElegir="Según pedido"
+      opciones={[{ value: 'CUERDA', label: 'Cuerda fruncida' }, { value: 'GOMA', label: 'Goma fruncida' }]}
+      onChange={v => set('recogidaAtras', v as MedidasCal['recogidaAtras'])} />
     <CampoSiNo name="ventanaCal" label="Ventana delantera" value={m.ventana} onChange={v => set('ventana', v)} />
     <CampoSiNo name="refuerzoMfdCal" label="Refuerzo MFD de Cal" value={m.refuerzoMfd ?? false} onChange={v => set('refuerzoMfd', v)} />
     <CampoSelect name="puertaCal" label="Puerta lateral" value={m.puerta} opciones={[

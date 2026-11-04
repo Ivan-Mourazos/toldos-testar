@@ -21,11 +21,11 @@ fs.mkdirSync(temporal, { recursive: true });
 const oda = crearOdaConverter({ executable: process.env.ODA_FILE_CONVERTER || 'C:/Users/ivan.sanchez/tools/oda/ODAFileConverter.exe',
   tempRoot: temporal, env: { TEMP: temporal, TMP: temporal } });
 const resumen = [];
-for (const [id, modelo, medidasCal, of, cliente] of [
-  ['AR2601847', 'REMOLCAR_ESTANDAR', undefined, '0227492', 'REMOLCAR'],
-  ['AR2605319', 'CAL_MEDIDAS', MEDIDAS_CAL_5319, '0233492', 'TALLERES CAL'],
+for (const [id, modelo, medidasCal, of, cliente, material] of [
+  ['AR2601847', 'REMOLCAR_ESTANDAR', undefined, '0227492', 'REMOLCAR', 'LONA NS86 2L 630 g/m² :GRIS CLARO 7038 :250 AN (580)'],
+  ['AR2605319', 'CAL_MEDIDAS', MEDIDAS_CAL_5319, '0233492', 'TALLERES CAL', 'LONA PVC 580 GRIS 7037 :250 AN (580)'],
 ]) {
-  const input = { ...emptyGanado(modelo), medidasCal, material: 'LONA PVC 580 GRIS 7037 :250 AN (580)', arcosComprobados: true };
+  const input = { ...emptyGanado(modelo), medidasCal, material, arcosComprobados: true };
   input.cabecera = { ...input.cabecera, numeroPedido: id, ordenFabricacion: of, cliente, realizadoPor: 'IVÁN' };
   const e = { tipo: 'ganado', version: '10', of, input, result: calcGanado(input), paramsSnapshot: DEFAULT_PARAMS };
   const pedido = { orderCode: id, summary: { customer: cliente, technician: 'IVÁN' }, elementos: [e], params: DEFAULT_PARAMS };

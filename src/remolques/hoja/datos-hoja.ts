@@ -183,7 +183,9 @@ export function hojaGanado(i: GanadoInput, r: GanadoResult): CuerpoHoja {
       ...(estandar ? [{ titulo: 'STOCK', datos: [{ etiqueta: 'REFUERZOS', valores: r.piezas
         .filter(p => p.nombre.toLowerCase().includes('stock')).map(p => `${p.nombre.startsWith('T.O.') ? 'T.O. / REF. 20' : 'REF. 16,5'}: ${p.corte}`) }] }] : []),
       ...(cal ? [{ titulo: "ACABADOS DE CAL", datos: [
-        { etiqueta: "CUERPO", valores: [`B.N.(3); FRUNCIR ${fmt(i.medidasCal?.fruncir ?? 0)} ATRÁS`, 'COSTURA 1 DELANTE'] },
+        { etiqueta: "CUERPO", valores: i.medidasCal?.recogidaAtras
+          ? [`FRUNCIDO ${fmt(i.medidasCal.fruncir)} · ${i.medidasCal.recogidaAtras}`, 'B.N.(3); COSTURA 1']
+          : [`B.N.(3); FRUNCIR ${fmt(i.medidasCal?.fruncir ?? 0)} ATRÁS`, 'COSTURA 1 DELANTE'] },
         { etiqueta: "MORRO", valores: ['B.N.(3); UNIONES 1'] },
         { etiqueta: "FRENTE", valores: ['B.N.(3); UNIÓN 1'] },
         ...(!parcial && i.medidasCal?.puertaMorro && i.medidasCal.puerta !== 'NINGUNA' ? [{ etiqueta: `PUERTA ${i.medidasCal.puerta}`, valores: ['EN DIAGONAL DEL MORRO', `CREMALLERAS A ${fmt(i.medidasCal.puertaMorro.separacionBorde)}`, 'SIN SOLAPAS'] }] : []),

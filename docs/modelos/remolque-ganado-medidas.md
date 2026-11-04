@@ -11,6 +11,8 @@ Este apartado actualiza el estado del 03/11 conservado debajo como historial.
   un rectángulo de 161 cm. Las cremalleras se marcan a 4 cm de los extremos de la diagonal,
   hasta la tangencia del lateral delantero (1185C/1185D del CAD). Con los altos aprobados
   del ejemplo, ese tramo mide 47,5 cm; en el CAD con otras aguas mide 50,35 cm.
+  La recogida de atrás se elige como cuerda o goma: el 5319 lleva **cuerda fruncida** y
+  el gemelo, goma. El acabado aparece expresamente en pantalla, hoja y plano.
 - Q-GAN06: AR2601847, **98 × 32: Hueco de puerta; 34,5 × 56: Tapa de ventana**.
   Los nombres aparecen en pantalla, hoja, plano y bot; se conservan los cortes originales.
 - Q-GAN07: aceptado el contraste histórico del gemelo, **1,5 mm contorno y 1 mm ollaos**.
@@ -70,6 +72,7 @@ node scripts/ganado/comparar-respuestas-cal.mjs
 La generación de hojas exige la instancia aislada 4560 y Playwright; la de DWG requiere ODA
 (ruta configurable con `ODA_FILE_CONVERTER`). El contraste histórico devuelve 2 por las fuentes
 históricas que siguen ausentes, aunque el gemelo esté aceptado. No indica un fallo del 1847.
+El ejemplo del 1847 conserva el material gris claro **7038** de su pedido; el 5319 usa gris **7037**.
 
 ## Estado de la implementación · 03/11/2026 (histórico)
 

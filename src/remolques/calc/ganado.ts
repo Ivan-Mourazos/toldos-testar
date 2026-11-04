@@ -105,7 +105,7 @@ export function calcGanado(input: GanadoInput): GanadoResult {
         modelo: MODELOS_GANADO.CAL_MEDIDAS.nombre,
         incompleto: g.pendientes.length > 0,
         piezas: g.piezas.map(p => ({ nombre: p.nombre, hecho: p.terminado ? medidaPiezaCal(p, true) : '', corte: medidaPiezaCal(p),
-          acabado: p.nombre === 'Cuerpo' ? `B.N.(3) + ollaos en los bajos; ${input.medidasCal!.fruncir.toLocaleString('es-ES')} para fruncir atrás; costura 1 delante`
+          acabado: p.nombre === 'Cuerpo' ? `B.N.(3) + ollaos en los bajos; ${input.medidasCal!.recogidaAtras === 'CUERDA' ? 'cuerda fruncida; ' : input.medidasCal!.recogidaAtras === 'GOMA' ? 'goma fruncida; ' : ''}${input.medidasCal!.fruncir.toLocaleString('es-ES')} para fruncir atrás; costura 1 delante`
             : p.nombre === 'Morro' ? 'B.N.(3) + ollaos en diagonales; costura 1 en uniones'
               : p.nombre === 'Frente' ? 'B.N.(3) + ollaos abajo; costura 1 alrededor de la unión'
                 : p.nombre === 'Refuerzo MFD' ? 'Refuerzo de Cal en la diagonal MFD; pieza independiente, posición marcada en el morro' : '3 cm más que la ventana en cada dimensión' })),

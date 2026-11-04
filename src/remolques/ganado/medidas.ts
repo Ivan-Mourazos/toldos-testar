@@ -14,6 +14,7 @@ export interface MedidasCal {
   /** Radio exterior de apoyo de la lona, medido en el arco. */
   radio: number;
   fruncir: number;
+  recogidaAtras?: 'CUERDA' | 'GOMA';
   pasoOllaos: number;
   ventana: boolean;
   puerta: 'NINGUNA' | 'MFI' | 'MFD';
@@ -37,6 +38,7 @@ export const MEDIDAS_CAL_GEMELO: MedidasCal = {
   recto: 195, ancho: 190, frente: 60, diagonal: 90, alto: 70, altoFrente: 70,
   aguas: 5, aguasFrente: 5, radio: 8, fruncir: 5, pasoOllaos: 30,
   ventana: true, puerta: 'NINGUNA', laterales: [],
+  recogidaAtras: 'GOMA',
 };
 export const MEDIDAS_CAL_5319: MedidasCal = {
   recto: 210, ancho: 160, frente: 54, diagonal: 102, alto: 57, altoFrente: 57,
@@ -45,6 +47,7 @@ export const MEDIDAS_CAL_5319: MedidasCal = {
   diagonalOllaos: 4, frenteOllaos: 3,
   refuerzoMfd: true,
   puertaMorro: { separacionBorde: 4 },
+  recogidaAtras: 'CUERDA',
 };
 
 export type PuntoCal = [number, number];
@@ -72,6 +75,7 @@ export interface DesarrolloCal {
 
 export function calcularMedidasCal(m: MedidasCal): DesarrolloCal {
   if (!m) throw Error('Faltan las medidas de Cal.');
+  if (m.recogidaAtras !== undefined && !['CUERDA', 'GOMA'].includes(m.recogidaAtras)) throw Error('Elige cuerda o goma para fruncir atrás.');
   if (m.refuerzoMfd !== undefined && typeof m.refuerzoMfd !== 'boolean') throw Error('Indica sí o no para el refuerzo MFD.');
   if (m.puertaMorro && (!Number.isFinite(m.puertaMorro.separacionBorde) || m.puertaMorro.separacionBorde <= 0)) throw Error('La separación de las cremalleras debe ser mayor que cero.');
   for (const k of ['recto', 'ancho', 'frente', 'diagonal', 'alto', 'altoFrente', 'radio', 'pasoOllaos'] as const) {

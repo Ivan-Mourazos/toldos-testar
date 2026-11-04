@@ -77,7 +77,7 @@ export function dibujoCal(m: MedidasCal): Dibujo {
   });
   const notas = [
     `Lona por el exterior del arco · R${m.radio.toLocaleString('es-ES')} · medidas en cm`,
-    'Bajos B.N.(3) + ollaos · costura 1 · fruncido atrás ' + m.fruncir.toLocaleString('es-ES'),
+    'Bajos B.N.(3) + ollaos · costura 1 · ' + (m.recogidaAtras === 'CUERDA' ? 'cuerda fruncida' : m.recogidaAtras === 'GOMA' ? 'goma fruncida' : 'fruncido') + ' atrás ' + m.fruncir.toLocaleString('es-ES'),
     ...(g.ventana ? [`Ventana ${g.ventana.ancho.toLocaleString('es-ES')} × ${g.ventana.alto.toLocaleString('es-ES')} · 5 bajo tangencia`] : []),
     ...(g.puerta ? [`Puerta ${g.puerta.lado} en diagonal ${g.puerta.ancho.toLocaleString('es-ES', { maximumFractionDigits: 2 })} · cremalleras a ${g.puerta.separacionBorde.toLocaleString('es-ES')} · sin solapas`] : []),
     ...(m.refuerzoMfd ? ['Refuerzo MFD de Cal · pieza aparte y posición marcada en el morro'] : []),
