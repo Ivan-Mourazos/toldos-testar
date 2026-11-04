@@ -1,5 +1,15 @@
 # Dudas abiertas
 
+## Puertas y tramos de ARAUJO · 03/11/2026
+
+Contraste y límites en [puertas-araujo.md](./puertas-araujo.md). El CAD del pedido que se está planteando no se usa como referencia; en el 5365 solo valen hoja y RPS.
+
+| Código | Pregunta para Iván / taller | Qué hace la web mientras tanto |
+| --- | --- | --- |
+| Q-AR01 · solo COMB | Si se vuelve a usar el canutillo de 6,5: el 4373 se cortó 0,25 cm más largo que la regla que acabas de dar. ¿Se necesita ese cuarto de centímetro en ese remate? | El habitual de 7 está contestado y es el predeterminado para todos los pedidos. COMB se elige a mano: referencia a 3,45, rotulador a 6,5 y corte según esa regla; el aviso aparece solo al elegir COMB. |
+| Q-AR06 · reparto impreso | Cuando el cuerpo impreso supera los 300 cm, ¿dónde se separa la cabecera y cómo se coloca el empate? En el 6255 se ven un cuerpo de 300 y una cabecera de 9,4 junto a dos indicaciones E.T. de 12 del CAD (que no son piezas a cortar); el plano indica empate de 2. ¿Se repite ese reparto o se decide con cada impresión? | Rollos 300/140/300 confirmados. Se puede elegir cortar después de imprimir: conserva la orientación, con el alto atravesado en el rollo. Si no cabe entero, se bloquea ese corte hasta comprobar el reparto; no se gira el dibujo ni se inventa un empate. |
+
+
 Preguntas para Iván (Oficina Técnica) y el taller. Aquí solo están las que hacen falta para que la web funcione y los pedidos salgan bien: qué pieza lleva cada toldo, cuántas y de qué medida. Cada pregunta dice qué hace la web mientras tanto y por qué importa. El código del final (Q-…) enlaza con el expediente del modelo.
 
 Actualizado el 30/09/2026: **el taller contestó 16 dudas** (Q-G01, Q-G02, Q-G03, Q-M03, Q-AG01, Q-AG02, Q-CO04, Q-CO05, Q-E02, Q-E03, Q-D01, Q-PR01, Q-PR02, Q-PR03, Q-PR04 y Q-A06). Iván cerró además Q-T01 (la consignación va aparte). Q-CO05 y Q-E02 se cierran: no hay medida, el taller decide y lo normal es el Ø78. Queda a medias Q-CO04 (qué Maestria va según el tamaño). Q-E01 se cierra según lo que se gasta. **Hecho en la web el 30/09/2026:** Q-G02, Q-G03, Q-AG01, Q-AG02, Q-E03, Q-D01, Q-PR01, Q-PR02, Q-PR04 y Q-A06. Ya no queda ninguna pregunta abierta de «Todos los modelos». Están en [Contestadas el 30/09/2026](#contestadas-el-30092026), con lo que cambia en la web.

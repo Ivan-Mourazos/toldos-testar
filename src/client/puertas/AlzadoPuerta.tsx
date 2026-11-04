@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { SelectField } from '../components/SelectField';
 import { MODELOS_PUERTAS } from '../../puertas/calcular.ts';
+import { tipoDePuerta } from '../../puertas/clientes.ts';
 import { esVertical, geometriaAlzado, numAlzado, textoCota, type CotaAlzado, type FormaAlzado, type TextoAlzado } from '../../puertas/alzado.ts';
 import type { Puerta, ResultadoPuerta } from '../../puertas/tipos.ts';
 
@@ -78,20 +80,25 @@ function Forma({ f }: { f: FormaAlzado }) {
 }
 
 export function AlzadoPuerta({ puerta: p, resultado, letra = 'A' }: { puerta: Puerta; resultado: ResultadoPuerta; letra?: string }) {
+  const [pieza,setPieza]=useState('todas');
   if(p.modelo==='SYSTEMDOCK'&&!(p.frente>0&&p.alto>0)) return <section className="puerta-alzado panel panel-vidrio" aria-label="Alzado de la lona"><h2>Alzado</h2><p>Completa el largo y el ancho de la lona para ver sus medidas reales.</p></section>;
-  const { formas, vista, letraBase, F, H } = geometriaAlzado(p, resultado, letra);
+  const { formas: todas, grupos, vista: conjunto, vistas, letraBase, F, H } = geometriaAlzado(p, resultado, letra);
+  const seleccion=pieza!=='todas'&&vistas?.[Number(pieza)]?pieza:'todas';
+  const vista=seleccion==='todas'?conjunto:vistas![Number(seleccion)];
+  const formas=seleccion==='todas'?todas:grupos?.[Number(seleccion)]??todas;
   return (
     <section className="puerta-alzado panel panel-vidrio" aria-label={p.modelo==='SYSTEMDOCK'?'Alzado de la lona':'Alzado de la puerta'}>
       <header>
         <h2>Alzado</h2>
         <span>
-          {MODELOS_PUERTAS[p.modelo]} · {p.of || 'SIN OF'}
+          {p.clientePuertas||p.araujo?tipoDePuerta(p).nombre:MODELOS_PUERTAS[p.modelo]} · {p.of || 'SIN OF'}
         </span>
       </header>
-      <p>Medidas terminadas · cm · vista de frente</p>
+      <p>Medidas terminadas · cm · {p.araujo?'vista por el revés':'vista de frente'}</p>
+      {vistas&&vistas.length>1&&<SelectField label="Ampliar pieza del alzado" value={seleccion} options={['todas',...vistas.map((_,i)=>String(i))]} optionLabel={v=>v==='todas'?'Todas las piezas':vistas[Number(v)].nombre} onChange={setPieza}/>}
       <svg
         role="img"
-        aria-label={`Alzado ${MODELOS_PUERTAS[p.modelo]} ${numAlzado(F)} por ${numAlzado(H)} centímetros`}
+        aria-label={`Alzado ${p.clientePuertas||p.araujo?tipoDePuerta(p).nombre:MODELOS_PUERTAS[p.modelo]} ${numAlzado(F)} por ${numAlzado(H)} centímetros`}
         style={{ '--puerta-letra': `${letraBase}px`, ...(p.modelo==='SYSTEMDOCK'?{aspectRatio:`${vista.ancho} / ${vista.alto}`}:{}) } as React.CSSProperties}
         viewBox={`${vista.xMin} ${vista.yMin} ${vista.ancho} ${vista.alto}`}
       >

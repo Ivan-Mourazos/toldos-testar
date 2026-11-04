@@ -1,0 +1,21 @@
+{
+  "id": "general",
+  "nombre": "General",
+  "codigoRps": "",
+  "unidadHoja": "cm",
+  "habilitado": false,
+  "calculo": "pendiente",
+  "aviso": "Este cliente todavía no tiene reglas de confección contrastadas. Se pueden consultar sus datos de RPS, pero el cálculo, el plano y el corte quedan pendientes de definir su ficha.",
+  "rollos": { "rollo": 300, "rolloCristal": 140, "rolloSaco": 300 },
+  "rollosConfirmados": false,
+  "remates": "Pendientes de contrastar con Oficina Técnica",
+  "perfiles": {},
+  "rotulos": { "espaciador": "", "cremallera": "", "plantilla": "general" },
+  "tipos": [
+    { "id": "enrollable", "nombre": "Enrollable", "modelo": "PUERTAENR" },
+    { "id": "plegable", "nombre": "Plegable", "modelo": "PUERTAPLE" },
+    { "id": "apilable", "nombre": "Apilable", "modelo": "PUERTAPLE" },
+    { "id": "autorreparable", "nombre": "Autorreparable", "modelo": "PUERTAUTO" }
+  ],
+  "articulos": { "PUERTAENR": "enrollable", "PUERTAPLE": "apilable", "PUERTAUTO": "autorreparable" }
+}

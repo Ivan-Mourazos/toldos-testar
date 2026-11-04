@@ -4,6 +4,7 @@ import { alturasTubos, calcularPuerta } from './calcular.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
 import { fusionarCortesPuertas, SEPARACION_EXTRA_FILAS, TITULO_MATERIAL_MM } from './corte.ts';
 import { esClientePortanova } from './clientePortanova.ts';
+import { fichaDePuerta } from './clientes.ts';
 import { bajoDobleSaco, desnivelSuelo, pestanaDerecha, rotuloSaco, sacoApilable, sacoPuerta, sacoUtil } from './saco.ts';
 import { corteEnPlano, entidadesDePieza, textosFuera } from './corteEnPlano.ts';
 import { bloqueFlechaEnrollable, dibujarAlzadoEnrollable, ENTRE_PUERTAS, hojasPuertas, lienzoAMetros, origenCorte, sumarLienzo, type LienzoEnrollable } from './planoEnrollable.ts';
@@ -299,9 +300,9 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
     if (p.autorreparable.espaciadorCentral) {
       const f = l.inserciones.at(-1)!; f.y = centro + Math.min(45, (H - 44) / 4);
     }
-    for (const [x, giro] of [[-10, 270], [F + 10, 90]]) texto(l, 'CREMALLERA ESPECIAL PORTANOVA', x, centro, h, giro);
+    for (const [x, giro] of [[-10, 270], [F + 10, 90]]) texto(l, fichaDePuerta(p).rotulos.cremallera, x, centro, h, giro);
     for (const [x, giro] of [[d + 7, 270], [F - d - 7, 90], ...(p.autorreparable.espaciadorCentral ? [[F / 2 - 8, 90]] : [])])
-      texto(l, 'ESPACIADOR ESPECIAL PORTANOVA', x, centro, h, giro);
+      texto(l, fichaDePuerta(p).rotulos.espaciador, x, centro, h, giro);
     cota(l, 0, -H * .75, d, -H * .75, -H * .75, 'XERAL 5');
     cota(l, F - d, -H * .75, F, -H * .75, -H * .75, 'XERAL 5');
     cota(l, 0, -20, 0, -30, -15, 'XERAL 5');

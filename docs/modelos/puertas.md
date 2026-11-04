@@ -2,6 +2,8 @@
 
 Reglas de confección vigentes a 21/10/2026. Las respuestas de Iván, incluidas las recibidas durante este encargo, prevalecen sobre los cortes históricos. Todas las medidas de este expediente y del configurador están en centímetros; los diámetros de tubo y el DXF del bot están en milímetros.
 
+Desde el 03/11/2026 se entra por «Puertas → cliente → tipo». Las fichas de `src/puertas/clientes/` separan Portanova (001336), ARAUJO (000460) y General. Portanova añade el nombre Plegable al mismo cálculo `PUERTAPLE`, sin modificar sus fórmulas. Los documentos guardados anteriores mantienen documento, cálculo, corte y plano; las pruebas de compatibilidad cubren AR2605246, AR2605220 y AR2605035. General está deshabilitado hasta contrastar sus reglas. El expediente de ARAUJO y el README de las fichas describen la incorporación de clientes.
+
 ## Alcance y fuentes
 
 Tres modelos genéricos: enrollable (`PUERTAENR`), apilable (`PUERTAPLE`) y autorreparable (`PUERTAUTO`). El técnico mira el dibujo del cliente y configura cada puerta y su OF; la web no interpreta pedidos escaneados ni deduce tubos, cintas o ventanas por el frente. Se pueden configurar varias puertas del mismo pedido, con cantidades de puertas iguales confirmadas por el técnico.

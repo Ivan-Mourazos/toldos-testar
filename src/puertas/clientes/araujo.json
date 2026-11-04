@@ -1,0 +1,22 @@
+{
+  "id": "araujo",
+  "nombre": "Araujo",
+  "codigoRps": "000460",
+  "unidadHoja": "mm",
+  "habilitado": true,
+  "calculo": "araujo",
+  "rollos": { "rollo": 300, "rolloCristal": 140, "rolloSaco": 300 },
+  "rollosConfirmados": true,
+  "remates": "Canutillos con varilla blanca de 5,5 mm o E.T. de bolsa soldada según la hoja; laterales al corte",
+  "perfiles": { "7": { "nombre": "Panamá", "aumento": 7.4, "marca": 7 }, "6,5": { "nombre": "COMB", "aumento": 6.9, "marca": 6.5, "aviso": "Antes de usar COMB, comprueba el corte con Oficina Técnica: el antecedente 4373 tenía 0,25 cm más." } },
+  "perfilInicial": "7",
+  "rotulacion": { "desdeBajo": 8, "dosCaras": false },
+  "rotulos": { "espaciador": "", "cremallera": "", "plantilla": "general" },
+  "tipos": [
+    { "id": "enrollable-tramos", "nombre": "Enrollable de tramos", "modelo": "PUERTAENR", "forma": "sueltos", "piezaInicial": "tramo" },
+    { "id": "plegable-continua", "nombre": "Plegable continua", "modelo": "PUERTAPLE", "forma": "continua", "piezaInicial": "tramo" },
+    { "id": "tramos", "nombre": "Tramos sueltos", "modelo": "PUERTAPLE", "forma": "sueltos", "piezaInicial": "tramo" },
+    { "id": "bolsa", "nombre": "Bolsa", "modelo": "PUERTAPLE", "forma": "sueltos", "piezaInicial": "bolsa" }
+  ],
+  "articulos": { "PUERTAENR": "enrollable-tramos", "PUERTAPLE": "plegable-continua", "PUERTAPLET": "tramos", "PUERTAPLETRA": "tramos", "PUERTAPLETRAM": "tramos" }
+}

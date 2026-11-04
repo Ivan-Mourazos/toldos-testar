@@ -1012,7 +1012,7 @@ export default function App() {
 
           {puertasActivas && puertasMontado && <div hidden={activeTab !== 'order' || !editorPedidoAbierto || producto !== 'puertas'}>
             <PuertasView activo={activeTab === 'order' && editorPedidoAbierto && producto === 'puertas'} onResumenChange={setResumenPuertas}
-              modeloInicialSolicitado={modeloInicio?.valor.producto==='puertas'?{id:modeloInicio.id,modelo:modeloInicio.valor.modelo}:null}
+              modeloInicialSolicitado={modeloInicio?.valor.producto==='puertas'?{id:modeloInicio.id,modelo:modeloInicio.valor.modelo,cliente:modeloInicio.valor.cliente,tipo:modeloInicio.valor.tipo}:null}
               usuario={currentUser} notify={notify} askForConfirmation={askForConfirmation}
               accionesDestino={accionesPedido} accionesVisibles={activeTab === 'order' && editorPedidoAbierto && producto === 'puertas'}
               pedidoGuardadoSolicitado={pedidoPuertasSolicitado} pedidoRpsSolicitado={pedidoPuertasRps} onGuardado={() => setReviewRefresh((value) => value + 1)} />

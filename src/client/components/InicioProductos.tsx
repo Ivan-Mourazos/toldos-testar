@@ -4,6 +4,7 @@ import { ArrowLeft, Caravan, DoorOpen, Search, Store, Boxes } from 'lucide-react
 import { SelectorProducto, type Producto, type ResumenPedido } from '../remolques/SelectorProducto';
 import { modelosInicio, type CategoriaConModelos, type ModeloInicio } from '../modelosInicio';
 import '../coordina/modelos-inicio.css';
+import { fichaPorId, fichasClientesPuertas } from '../../puertas/clientes.ts';
 
 const LoteSabado = lazy(() => import('../combursa/LoteSabado'));
 
@@ -19,12 +20,13 @@ export function InicioProductos({ producto, onChange, onModelo, pedidos, puertas
   const [categoria,setCategoria] = useState<CategoriaConModelos|null>(null);
   const [anterior,setAnterior] = useState<CategoriaConModelos|null>(null);
   const [busqueda,setBusqueda] = useState('');
+  const [clientePuertas,setClientePuertas] = useState<string|null>(null);
   const raiz=useRef<HTMLDivElement>(null), buscador=useRef<HTMLInputElement>(null);
   const animando=useRef(false);
 
   function cambiar(next:CategoriaConModelos|null) {
     if (animando.current) return;
-    const actualizar=()=>flushSync(()=>{setCategoria(next);setBusqueda('');if(next)setAnterior(next);});
+    const actualizar=()=>flushSync(()=>{setCategoria(next);setClientePuertas(null);setBusqueda('');if(next)setAnterior(next);});
     const foco=()=>next?buscador.current?.focus():raiz.current?.querySelector<HTMLButtonElement>(`[data-producto="${anterior}"]`)?.focus();
     if (!document.startViewTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {actualizar();foco();return;}
     if(next) {
@@ -37,22 +39,28 @@ export function InicioProductos({ producto, onChange, onModelo, pedidos, puertas
     void transicion.finished.catch(()=>undefined).finally(()=>{animando.current=false;foco();});
   }
 
-  const grupos=categoria?modelosInicio(categoria,disponibles,busqueda):[];
+  const eligiendoCliente=categoria==='puertas'&&!clientePuertas;
+  const ficha=clientePuertas?fichaPorId(clientePuertas):undefined;
+  const grupos=categoria&&!eligiendoCliente?modelosInicio(categoria,disponibles,busqueda,clientePuertas??'portanova'):[];
   const Icono=categoria?iconos[categoria]:Store;
   const resumen=categoria && categoria!=='estandar'?pedidos[categoria]:undefined;
   let posicion=0;
   return <div ref={raiz} className="inicio-categorias" onKeyDown={e=>{if(e.key==='Escape'&&categoria){e.preventDefault();cambiar(null);}}}>
     {categoria?<section className="cat-panel" aria-label={`Modelos de ${nombres[categoria]}`} style={{viewTransitionName:'categoria-inicio'}}>
       <header className="cat-cabecera">
-        <button className="cat-volver" type="button" onClick={()=>cambiar(null)}><ArrowLeft size={16} aria-hidden="true"/>Categorías</button>
-        <h2 className="cat-titulo"><span className="inicio-tarjeta-icono"><Icono size={20} aria-hidden="true"/></span>{nombres[categoria]}</h2>
-        <label className="cat-buscar"><Search size={17} aria-hidden="true"/><input ref={buscador} type="search" aria-label="Buscar modelo" placeholder="Buscar modelo…" value={busqueda} onChange={e=>setBusqueda(e.target.value)}/></label>
+        <button className="cat-volver" type="button" onClick={()=>{if(categoria==='puertas'&&clientePuertas){setClientePuertas(null);setBusqueda('');}else cambiar(null);}}><ArrowLeft size={16} aria-hidden="true"/>{categoria==='puertas'&&clientePuertas?'Clientes':'Categorías'}</button>
+        <h2 className="cat-titulo"><span className="inicio-tarjeta-icono"><Icono size={20} aria-hidden="true"/></span>{nombres[categoria]}{ficha?` · ${ficha.nombre}`:''}</h2>
+        <label className="cat-buscar"><Search size={17} aria-hidden="true"/><input ref={buscador} type="search" aria-label={eligiendoCliente?'Buscar cliente':'Buscar modelo'} placeholder={eligiendoCliente?'Buscar cliente…':'Buscar tipo…'} value={busqueda} onChange={e=>setBusqueda(e.target.value)}/></label>
       </header>
       {(resumen?.numero.trim()||resumen?.elementos)?<button className="ghost-button cat-seguir" type="button" data-cambio-fluido onClick={()=>onChange(categoria as Producto)}>Seguir con {resumen.numero||'el pedido a medias'} · {resumen.elementos} elementos</button>:null}
       {categoria==='estandar' && (['toldos','systemdock'] as const).map(tipo=>{
         const pedido=tipo==='toldos'&&!embudos?undefined:pedidos[tipo];
         return pedido && (pedido.numero.trim()||pedido.elementos) ? <button key={tipo} className="ghost-button cat-seguir" type="button" data-cambio-fluido onClick={()=>onChange(tipo)}>Seguir con {tipo==='systemdock'?'System Dock':'Embudos'} · {pedido.numero||'el pedido a medias'} · {pedido.elementos} {pedido.elementos===1?'elemento':'elementos'}</button> : null;
       })}
+      {eligiendoCliente?<section aria-label="Clientes de Puertas"><h3 className="cat-sec">Elige el cliente</h3><div className="cat-rejilla">{fichasClientesPuertas.filter(f=>f.nombre.toLocaleLowerCase('es').includes(busqueda.toLocaleLowerCase('es'))).map(f=><button type="button" className="cat-modelo" key={f.id} aria-label={f.nombre} disabled={disabled} onClick={()=>{setClientePuertas(f.id);setBusqueda('');}}>
+        <span className="cat-iniciales" aria-hidden="true">{f.nombre.slice(0,2).toUpperCase()}</span><span>{f.nombre}<small>{f.codigoRps?`RPS ${f.codigoRps} · hoja en ${f.unidadHoja}`:'Otros clientes · reglas pendientes'}</small></span>
+      </button>)}</div></section>:<>
+      {ficha&&!ficha.habilitado&&<p className="cat-vacio" role="status">{ficha.aviso}</p>}
       {grupos.length?grupos.map(grupo=><section key={grupo.nombre} aria-label={grupo.nombre}>
         <h3 className="cat-sec">{grupo.nombre}</h3>
         <div className="cat-rejilla">{grupo.modelos.map(modelo=><button type="button" className="cat-modelo" data-cambio-fluido key={modelo.nombre} disabled={modelo.proximamente||(!modelo.valor&&!modelo.accion)||disabled||(modelo.accion==='systemdock'&&!puertas)}
@@ -61,6 +69,7 @@ export function InicioProductos({ producto, onChange, onModelo, pedidos, puertas
           <span>{modelo.nombre}{modelo.proximamente&&<small>Próximamente</small>}</span>
         </button>)}</div>
       </section>):<p className="cat-vacio" role="status">No hay modelos con ese nombre.</p>}
+      </>}
     </section>:<SelectorProducto inicio transicion={anterior} puertas={puertas} disabled={disabled} producto={producto} pedidos={pedidos} onChange={onChange} onCategoria={cambiar}/>}
     {combursaAbierta && <Suspense fallback={<p role="status">Abriendo el lote…</p>}><LoteSabado onCerrar={()=>setCombursaAbierta(false)}/></Suspense>}
   </div>;

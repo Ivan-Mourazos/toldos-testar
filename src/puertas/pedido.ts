@@ -1,5 +1,7 @@
-import type { PedidoPuertas } from './tipos.ts';
+import type { PedidoPuertas, Puerta } from './tipos.ts';
 import { MODELOS_PUERTAS, nuevaPuerta } from './calcular.ts';
+import { ARTICULOS_TRAMOS_ARAUJO } from './araujo.ts';
+import { fichaPorId, fichaDePuerta } from './clientes.ts';
 
 /** Valida el documento del configurador sin leer pedidos, parámetros ni servicios externos. */
 export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
@@ -14,8 +16,14 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
     if(!objeto(e) || typeof e.id!=='string' || e.id.length>100 || !e.id || ids.has(e.id) || !objeto(e.input)) return error();
     ids.add(e.id);
     const p=e.input;
+    if(p.clientePuertas!==undefined){
+      if(typeof p.clientePuertas!=='string'||!fichaPorId(p.clientePuertas))return error();
+      const tipo=fichaPorId(p.clientePuertas)!.tipos.find(t=>t.id===p.tipoPuerta);
+      if(!tipo||tipo.modelo!==p.modelo||tipo.forma&&(!objeto(p.araujo)||tipo.forma!==p.araujo.forma))return error();
+      if((fichaPorId(p.clientePuertas)!.calculo==='araujo')!==Boolean(p.araujo))return error();
+    }else if(p.tipoPuerta!==undefined)return error();
     if(typeof p.modelo!=='string' || !Object.hasOwn(MODELOS_PUERTAS,p.modelo)) return error();
-    if(p.articuloOrigen!=='' && (typeof p.articuloOrigen!=='string'||!Object.hasOwn(MODELOS_PUERTAS,p.articuloOrigen)))return error();
+    if(p.articuloOrigen!=='' && (typeof p.articuloOrigen!=='string'||!Object.hasOwn(MODELOS_PUERTAS,p.articuloOrigen)&&!(ARTICULOS_TRAMOS_ARAUJO as readonly string[]).includes(p.articuloOrigen)))return error();
     if(p.notaPlano!==undefined && (typeof p.notaPlano!=='string' || p.notaPlano.length>1000)) return error();
     const plantilla=nuevaPuerta();
     for(const k of Object.keys(plantilla) as Array<keyof typeof plantilla>) {
@@ -29,6 +37,28 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
     const numeros=(x:unknown,max=100)=>lista(x,max) && x.every(n=>typeof n==='number' && Number.isFinite(n) && Math.abs(n)<=3000);
     const cotas=(x:unknown,claves:string[])=>objeto(x) && claves.every(k=>typeof x[k]==='number' && Number.isFinite(x[k]) && Math.abs(x[k] as number)<=3000);
     const hueco=(x:unknown)=>cotas(x,['x','y','ancho','alto','radio']);
+    if(p.araujo!==undefined) {
+      const a=p.araujo;
+      if(!objeto(a)||!['sueltos','continua'].includes(a.forma as string)||typeof a.perfil!=='string'||!Object.hasOwn(fichaDePuerta(p as unknown as Puerta).perfiles,a.perfil)||!lista(a.tramos,50))return error();
+      if(a.corteTrasImprimir!==undefined&&typeof a.corteTrasImprimir!=='boolean')return error();
+      let total=0;
+      for(const t of a.tramos) {
+        if(!objeto(t)||!['tramo','bolsa'].includes(t.tipo as string)||!cotas(t,['frente','alto','cantidad'])||!lista(t.ventanas,100)||!t.ventanas.every(v=>hueco(v)&&cotas(v,['radioCristal'])))return error();
+        if(!Number.isInteger(t.cantidad)||(t.cantidad as number)<1||(t.cantidad as number)>50)return error();
+        if(t.of!==undefined&&(typeof t.of!=='string'||t.of.length>100))return error();
+        if(t.material!==undefined&&(typeof t.material!=='string'||t.material.length>200))return error();
+        for(const k of ['arriba','abajo'])if(t[k]!==undefined&&(!objeto(t[k])||!['canutillo','et'].includes(t[k].tipo as string)||t[k].tipo==='et'&&!cotas(t[k],['ancho'])))return error();
+        if(t.entradas!==undefined&&(!lista(t.entradas,100)||!t.entradas.every(e=>cotas(e,['altura','ancho'])&&objeto(e)&&(e.huecoLibre===undefined||cotas(e,['huecoLibre'])))))return error();
+        total+=(t.cantidad as number)*(p.cantidad as number);
+        if(t.rotulacion!==undefined&&(!objeto(t.rotulacion)||typeof t.rotulacion.texto!=='string'||t.rotulacion.texto.length>200||!cotas(t.rotulacion,['ancho','desdeDerecha'])))return error();
+        if(objeto(t.rotulacion)){
+          const rotulacion=t.rotulacion;
+          if(rotulacion.desdeBajo!==undefined&&!cotas(rotulacion,['desdeBajo']))return error();
+          if(['centrada','dosCaras'].some(k=>rotulacion[k]!==undefined&&typeof rotulacion[k]!=='boolean'))return error();
+        }
+      }
+      if(total>100)return error();
+    }
     if(!objeto(p.medidasBolsillo)||!cotas(p.medidasBolsillo,['distancia','ancho'])||!['izquierdo','derecho'].includes(p.medidasBolsillo.lado as string)||(p.medidasBolsillo.altoSuperior!==null&&!cotas(p.medidasBolsillo,['altoSuperior']))) return error();
     if(!lista(p.entradas,100) || !lista(p.ventanas) || !p.ventanas.every(v=>hueco(v) && cotas(v,['radioCristal']) && ((v as {tramo?:unknown}).tramo===undefined || Number.isInteger((v as {tramo?:unknown}).tramo) && ((v as {tramo:number}).tramo>=1)))) return error();
     if(!p.entradas.every(t=>objeto(t) && cotas(t,['altura','largo','alto','diametro']) && (t.diametro===30||t.diametro===42) && lista(t.huecos,100) && t.huecos.every(hueco))) return error();

@@ -1,0 +1,20 @@
+{
+  "id": "portanova",
+  "nombre": "Portanova",
+  "codigoRps": "001336",
+  "unidadHoja": "cm",
+  "habilitado": true,
+  "calculo": "portanova",
+  "rollos": { "rollo": 300, "rolloCristal": 140, "rolloSaco": 300 },
+  "rollosConfirmados": true,
+  "remates": "Saco del pedido, entradas y empates según el modelo confirmado",
+  "perfiles": {},
+  "rotulos": { "espaciador": "ESPACIADOR ESPECIAL PORTANOVA", "cremallera": "CREMALLERA ESPECIAL PORTANOVA", "plantilla": "portanova" },
+  "tipos": [
+    { "id": "enrollable", "nombre": "Enrollable", "modelo": "PUERTAENR" },
+    { "id": "plegable", "nombre": "Plegable", "modelo": "PUERTAPLE" },
+    { "id": "apilable", "nombre": "Apilable", "modelo": "PUERTAPLE" },
+    { "id": "autorreparable", "nombre": "Autorreparable", "modelo": "PUERTAUTO" }
+  ],
+  "articulos": { "PUERTAENR": "enrollable", "PUERTAPLE": "apilable", "PUERTAUTO": "autorreparable" }
+}

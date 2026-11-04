@@ -1,4 +1,5 @@
 import { alturasTubos } from './calcular.ts';
+import { alzadoAraujo } from './alzadoAraujo.ts';
 import { colocarTextosPuerta } from './textosPlano.ts';
 import { desnivelSuelo, pestanaDerecha, rotuloSaco, sacoPuerta } from './saco.ts';
 import { medidaSystemDock, REGLAS_SYSTEM_DOCK } from './systemDock.ts';
@@ -58,6 +59,9 @@ export interface GeometriaAlzado {
   /** Frente y alto con que se ha dibujado (400 si faltan). */
   F: number;
   H: number;
+  /** ARAUJO: ampliar cada pieza para leer las cotas de varios tramos separados. */
+  vistas?: Array<{ nombre: string; xMin: number; yMin: number; ancho: number; alto: number }>;
+  grupos?: FormaAlzado[][];
 }
 
 export const numAlzado = (x: number) => x.toLocaleString('es-ES', { maximumFractionDigits: 2 });
@@ -68,6 +72,7 @@ export const textoCota = (c: CotaAlzado) => `${c.prefijo ? `${c.prefijo} ` : ''}
 export const esVertical = (c: Pick<CotaAlzado, 'x1' | 'x2' | 'y1' | 'y2'>) => Math.abs(c.x1 - c.x2) < 1e-9 && Math.abs(c.y1 - c.y2) > 1e-9;
 
 export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = 'A'): GeometriaAlzado {
+  if (p.araujo) return alzadoAraujo(p, letra);
   if (p.modelo === 'SYSTEMDOCK') return alzadoSystemDock(p);
   const F = p.frente > 0 ? p.frente : 400;
   const H = p.alto > 0 ? p.alto : 400;
