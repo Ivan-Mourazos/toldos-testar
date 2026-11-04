@@ -30,7 +30,7 @@ export function SelectorProducto({ producto, pedidos, inicio = false, disabled =
     ['toldos','Toldos','Brazos, cortinas, cofres y trabajos de tela',<Store key="i" aria-hidden="true"/>],
     ['remolques','Remolques','Lonas y baquetones, con el corte',<Caravan key="i" aria-hidden="true"/>],
     ...(puertas ? [['puertas','Puertas','Enrollables, apilables y autorreparables',<DoorOpen key="i" aria-hidden="true"/>] as [CategoriaConModelos,string,string,React.ReactNode]] : []),
-    ['estandar','Estándar','COMBURSA, Embudos y System Dock',<Boxes key="i" aria-hidden="true"/>],
+    ['estandar','Estándar','Combursa, Embudos y System Dock',<Boxes key="i" aria-hidden="true"/>],
   ];
   return <div className="producto-contexto inicio-productos">
     <span className="producto-etiqueta">O empieza uno en blanco</span>

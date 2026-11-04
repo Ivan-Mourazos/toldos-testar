@@ -1,3 +1,4 @@
+import { lacadoLabel } from './lacados.js';
 import { tipBushing } from './tipBushing.js';
 import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { formatNumber } from './math.js';
@@ -119,7 +120,7 @@ export function calculateGalicia({ order, awning }) {
   if (armMissing) {
     diagnostics.push({
       level: 'error', awningId: awning.id,
-      message: `GALICIA no válido: no hay brazo Onyx de ${formatNumber(awning.projection)} cm${armCount === 3 ? ' suelto' : ''} en ${lacado.name}.`
+      message: `GALICIA no válido: no hay brazo Onyx de ${formatNumber(awning.projection)} cm${armCount === 3 ? ' suelto' : ''} en ${lacadoLabel(lacado.name)}.`
     });
   }
 

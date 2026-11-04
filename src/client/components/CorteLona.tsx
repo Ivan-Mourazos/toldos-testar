@@ -119,7 +119,7 @@ export const CorteLona = forwardRef<CorteLonaControl, {
             if (!Number.isFinite(valor) || valor < 0) { e.target.value = numero(a[campo] ?? 0); return; }
             if (valor !== a[campo]) cambiar(clave, { [campo]: valor });
           }} /></label>)}
-          <label>Varilla de arriba<select aria-label="Varilla de arriba" value={a.varillaArriba || (t.workType === 'FULL_AWNING' ? 'VARILLA NEGRA (4,5)' : 'VARILLA BLANCA (5,5)')} onChange={e => cambiar(clave, { varillaArriba: e.target.value })}><option>VARILLA NEGRA (4,5)</option><option>VARILLA BLANCA (5,5)</option></select></label>
+          <label>Varilla de arriba<select aria-label="Varilla de arriba" value={a.varillaArriba || (t.workType === 'FULL_AWNING' ? 'VARILLA NEGRA (4,5)' : 'VARILLA BLANCA (5,5)')} onChange={e => cambiar(clave, { varillaArriba: e.target.value })}><option value="VARILLA NEGRA (4,5)">Varilla negra (4,5)</option><option value="VARILLA BLANCA (5,5)">Varilla blanca (5,5)</option></select></label>
           <label>Tira en vertical<select aria-label="Tira en vertical" value={estado?.ajustes[clave]?.tiraPartida === undefined ? 'auto' : a.tiraPartida ? 'partida' : 'entera'} onChange={e => cambiar(clave, { tiraPartida: e.target.value === 'auto' ? undefined : e.target.value === 'partida' })}><option value="auto">Automática</option><option value="entera">Entera</option><option value="partida">Partida</option></select></label>
         </fieldset>;
       })}

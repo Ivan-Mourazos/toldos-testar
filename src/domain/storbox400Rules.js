@@ -1,3 +1,4 @@
+import { lacadoLabel } from './lacados.js';
 import { effectiveOverride } from './ruleOverrides.js';
 import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { tipBushing } from './tipBushing.js';
@@ -107,7 +108,7 @@ function calculateBox({ order, awning }, config) {
   const rollStockLength = shortestBar(P801_TUBE_LENGTHS, rollTubeLength);
   const availabilityIssue = structureColor
     ? boxProfileIssue(config.model, lacado.suffix, lacado.name, neededLength)
-      || (!onyxArmExists(lacado.suffix, awning.projection) ? `${config.model} no válido: no hay brazo Onyx de ${awning.projection} cm en ${lacado.name}.` : null)
+      || (!onyxArmExists(lacado.suffix, awning.projection) ? `${config.model} no válido: no hay brazo Onyx de ${awning.projection} cm en ${lacadoLabel(lacado.name)}.` : null)
     : null;
   const automaticMotorPower = resolveBoxMotorPower(awning.projection, parameters);
   const motorPower = effectiveMotorPower(awning, automaticMotorPower);

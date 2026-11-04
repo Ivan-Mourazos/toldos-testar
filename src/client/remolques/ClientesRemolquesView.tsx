@@ -1,3 +1,4 @@
+import { controlLabel } from '../components/controlLabels';
 import React, { useState } from 'react';
 import { Plus, Save, Trash2, Undo2 } from 'lucide-react';
 import { PERFILES, type Recogida, type TipoPerfil } from '../../remolques/calc/params.ts';
@@ -146,7 +147,7 @@ export function ClientesRemolquesView({ fichas, guardadas = fichas, pendientes =
           <TextField label="Buscar cliente o código" value={busca} onChange={setBusca} />
           {visibles.map((f) => (
             <button key={f.id} type="button" className={f.id === ficha?.id ? 'tecla-3d is-active bloque-3d-hundido' : 'tecla-3d'} aria-current={f.id === ficha?.id ? 'true' : undefined} onClick={() => setElegida(f.id)}>
-              <strong>{f.nombre || 'Sin nombre'}</strong>
+              <strong>{controlLabel(f.nombre) || 'Sin nombre'}</strong>
               <small>{f.codigosRps.length ? f.codigosRps.join(' · ') : 'Sin código de RPS'}</small>
               {pendientes.includes(f.id) && <small className="clientes-remolques-pendiente">Cambios sin guardar</small>}
             </button>
@@ -210,7 +211,7 @@ function FichaEditor({ ficha, recogidasGenerales, onChange, onQuitar }: {
   return <>
     <ParameterBand number="01" title="Cliente" description="El nombre que se ve y sus códigos de cliente de RPS. Un código solo puede estar en una ficha.">
       <div className="parameter-grid remolques-parameter-grid">
-        <TextField label="Nombre" value={ficha.nombre} onChange={(nombre) => onChange({ nombre })} />
+        <TextField label="Nombre" value={controlLabel(ficha.nombre)} onChange={(nombre) => onChange({ nombre })} />
         <CampoAlSalir key={ficha.codigosRps.join(',')} label="Códigos de RPS" ayuda="Separados por comas" errorLectura={ERROR_CODIGOS} valor={ficha.codigosRps.join(', ')} leer={leerCodigos} onChange={(codigosRps) => onChange({ codigosRps })} />
         <SelectField label="Trabajo habitual" value={ficha.trabajo === 'lona' ? 'Lona' : ficha.trabajo === 'baqueton' ? 'Baquetón' : NADA} options={[NADA, 'Lona', 'Baquetón']}
           onChange={(v) => onChange({ trabajo: v === 'Lona' ? 'lona' : v === 'Baquetón' ? 'baqueton' : undefined })} />
@@ -229,14 +230,14 @@ function FichaEditor({ ficha, recogidasGenerales, onChange, onQuitar }: {
     </ParameterBand>
     <ParameterBand number="03" title="Recogidas" description="Las de Parámetros o la propia del cliente.">
       <div className="parameter-grid remolques-parameter-grid">
-        <SelectField label="Recogida delante" value={ficha.recogeDelante ?? NADA} options={recogidas} onChange={(v) => onChange({ recogeDelante: v === NADA ? undefined : v })} />
-        <SelectField label="Recogida detrás" value={ficha.recogeAtras ?? NADA} options={recogidas} onChange={(v) => onChange({ recogeAtras: v === NADA ? undefined : v })} />
+        <SelectField label="Recogida delante" value={ficha.recogeDelante ?? NADA} options={recogidas} optionLabel={controlLabel} onChange={(v) => onChange({ recogeDelante: v === NADA ? undefined : v })} />
+        <SelectField label="Recogida detrás" value={ficha.recogeAtras ?? NADA} options={recogidas} optionLabel={controlLabel} onChange={(v) => onChange({ recogeAtras: v === NADA ? undefined : v })} />
         <SelectField label="Bastilla de enfundar" value={deSiNo(ficha.bastillaEnfundar)} options={SI_NO} onChange={(v) => onChange({ bastillaEnfundar: aSiNo(v) })} />
       </div>
       <label className="remolques-parameter-check"><input type="checkbox" checked={Boolean(propia)} onChange={(e) => onChange({ recogidaPropia: e.target.checked ? recogidaVacia(`PUENTES ${ficha.nombre}`.trim()) : undefined })} /><span>Recogida propia del cliente</span></label>
       {propia && <section className="remolques-parameter-row bloque-3d-hundido" aria-label="Recogida propia">
         <div className="parameter-grid remolques-parameter-grid">
-          <TextField label="Nombre de la recogida" value={propia.nombre} onChange={(nombre) => cambiarPropia({ nombre })} />
+          <TextField label="Nombre de la recogida" value={controlLabel(propia.nombre)} onChange={(nombre) => cambiarPropia({ nombre })} />
           {([['delante', 'Delante (cm)'], ['atras', 'Detrás (cm)'], ['lateralSoloAtras', 'Extra lateral solo detrás (cm)'], ['lateralSoloDelante', 'Extra lateral solo delante (cm)']] as const).map(([campo, label]) => (
             <CampoNumFicha key={campo} label={label} value={propia[campo]} onChange={(v) => cambiarPropia({ [campo]: v ?? 0 })} />
           ))}

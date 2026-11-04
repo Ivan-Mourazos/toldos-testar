@@ -1,3 +1,4 @@
+import { lacadoLabel } from './lacados.js';
 import { effectiveOverride, isOverridden } from './ruleOverrides.js';
 import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { tipBushing } from './tipBushing.js';
@@ -74,7 +75,7 @@ export function calculateAmbarBox({ order, awning }) {
   // están de baja) y el brazo PRT-07 tampoco existe en todas las salidas.
   const availabilityIssue = structureColor
     ? boxProfileIssue('AMBAR BOX', lacado.suffix, lacado.name, structureLength)
-      || (!puntoRectoArmCode(lacado.suffix, awning.projection) ? `ÁMBAR BOX no válido: no hay brazo PRT-07 de ${awning.projection} cm en ${lacado.name}.` : null)
+      || (!puntoRectoArmCode(lacado.suffix, awning.projection) ? `ÁMBAR BOX no válido: no hay brazo PRT-07 de ${awning.projection} cm en ${lacadoLabel(lacado.name)}.` : null)
     : null;
   // Tubo P701: el más corto que llegue (Q-A06); antes, siempre el de 600.
   const rollStockLength = shortestBar(P701_TUBE_LENGTHS, rollTubeLength);

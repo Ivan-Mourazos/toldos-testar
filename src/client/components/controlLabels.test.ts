@@ -1,7 +1,15 @@
 import { describe, expect, test } from 'vitest';
-import { controlLabel, legacyModelName, rpsModelName } from './controlLabels';
+import { controlLabel, diagnosticLabel, legacyModelName, rpsModelName } from './controlLabels';
 
 describe('nombres de modelo contrastados con RPS', () => {
+  test('los avisos muestran modelos y dispositivos sin alterar referencias ni descripciones de tela', () => {
+    expect(diagnosticLabel('ÁGATA BOX no válido con MOTOR y PRT-07.')).toBe('Ágata Box no válido con motor y PRT-07.');
+    const literal = 'Tela no encontrada en el catálogo: "HERA BLANCO".';
+    expect(diagnosticLabel(literal)).toBe(literal);
+  });
+  test.each([['E.T. PLATANERO', 'E.T. platanero'], ['PARED CON SATE', 'Pared con SATE'], ['IVAN / JAIME', 'Iván / Jaime']])('%s conserva siglas y nombres', (value, label) => {
+    expect(controlLabel(value)).toBe(label);
+  });
   test.each([
     ['ARZUA PRO', 'Arzúa Pro', 'AROND-350 (LLAZA)'],
     ['GALICIA', 'Galicia', 'MODELO GALICIA'],
@@ -15,8 +23,8 @@ describe('nombres de modelo contrastados con RPS', () => {
     ['ENROLLABLE', 'Enrollable', 'LONA PARA PUERTA ENROLLABLE'],
     ['BAMBALINA', 'Bambalina', 'BAMBALINA NUEVA'],
     ['SOLAPAS', 'Solapas', 'SOLAPA CON VELCRO PARA TOLDOS CORTINA'],
-    ['CAMBIO ANTICA', 'Cambio antica', 'CAMBIO DE TELA A TOLDO ANTICA'],
-    ['HERA', 'HERA', 'SCREEN ROLL-SYSTEM'],
+    ['CAMBIO ANTICA', 'Cambio Antica', 'CAMBIO DE TELA A TOLDO ANTICA'],
+    ['HERA', 'Hera', 'SCREEN ROLL-SYSTEM'],
     ['SELENA', 'Selena', 'STOR-21 (LLAZA)'],
     ['IRIS', 'Iris', 'SCREENY (BAT)'],
     ['ANTICA', 'Antica', 'ANTICA'],
@@ -37,7 +45,7 @@ describe('nombres de modelo contrastados con RPS', () => {
     (model) => expect(legacyModelName(model)).toBe('')
   );
 
-  test.each([['AMBAR BOX', 'MICROBOX'], ['MAXISCREEM', 'MAXISSCREEN'], ['ARZUA PRO', 'AROND-350 (LLAZA)']])(
+  test.each([['AMBAR BOX', 'Microbox'], ['MAXISCREEM', 'Maxiscreen'], ['ARZUA PRO', 'Arond-350 (Llaza)']])(
     '%s, que cambió de nombre, sí lo muestra',
     (model, before) => expect(legacyModelName(model)).toBe(before)
   );

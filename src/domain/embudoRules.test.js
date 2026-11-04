@@ -87,7 +87,7 @@ describe('Embudo de descarga · dibujos de oficina del 28/10/2026', () => {
   it('exige las medidas, el largo de cinta y PVC; contornos iguales necesitan RECTO', () => {
     expect(embudoIssues({})).not.toHaveLength(0);
     expect(embudoIssues({ ...conico, largoCinta: null }).map(i => i.field)).toContain('embudo_largoCinta');
-    expect(() => piezasEmbudo({ embudo: { ...conico, contornoAbajo: 88 } })).toThrow(/RECTO/);
+    expect(() => piezasEmbudo({ embudo: { ...conico, contornoAbajo: 88 } })).toThrow(/recto/);
     expect(calculateOrder({ ...pedido(), fabric: 'inexistente' }).ofs[0].calculation.valid).toBe(false);
     expect(calculateOrder(pedido(conico, 1.5)).ofs[0].calculation.valid).toBe(false);
   });

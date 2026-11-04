@@ -1,3 +1,4 @@
+import { lacadoLabel } from './lacados.js';
 // Lo que existe de verdad en RPS para los cofres y el Xacobeo, consultado con
 // InactiveDate el 23/09/2026. Sin esto la reserva componía códigos inexistentes (el
 // Ámbar negro, con perfil, tapas y soportes de baja; el Ágata negro con cofre, sin
@@ -65,8 +66,8 @@ export function pickEvo70Length(suffix, needed) {
 
 export function evo70Issue(suffix, lacadoName, needed) {
   const available = evo70Lengths[String(suffix || '')];
-  if (!available) return `XACOBEO no se fabrica en ${lacadoName}: no hay perfil EVO 70 en ese lacado.`;
-  if (!available.some((length) => length >= needed)) return `XACOBEO no válido: en ${lacadoName} el perfil EVO 70 solo existe de ${available.join(', ')} cm.`;
+  if (!available) return `XACOBEO no se fabrica en ${lacadoLabel(lacadoName)}: no hay perfil EVO 70 en ese lacado.`;
+  if (!available.some((length) => length >= needed)) return `XACOBEO no válido: en ${lacadoLabel(lacadoName)} el perfil EVO 70 solo existe de ${available.join(', ')} cm.`;
   return null;
 }
 
@@ -118,9 +119,9 @@ export function pickBoxProfileLength(model, suffix, needed) {
 
 export function boxProfileIssue(model, suffix, lacadoName, needed) {
   const available = boxProfileLengths(model, suffix);
-  if (!available) return `${model} no se fabrica en ${lacadoName}: no hay perfil en ese lacado.`;
+  if (!available) return `${model} no se fabrica en ${lacadoLabel(lacadoName)}: no hay perfil en ese lacado.`;
   if (!available.some((length) => length >= needed)) {
-    return `${model} no válido: en ${lacadoName} el perfil solo existe de ${available.join(', ')} cm y hacen falta ${Math.round(needed * 10) / 10}.`;
+    return `${model} no válido: en ${lacadoLabel(lacadoName)} el perfil solo existe de ${available.join(', ')} cm y hacen falta ${Math.round(needed * 10) / 10}.`;
   }
   return null;
 }
@@ -128,7 +129,7 @@ export function boxProfileIssue(model, suffix, lacadoName, needed) {
 export function agataLacadoIssue(submodel, suffix, lacadoName) {
   const allowed = agataCapsBySubmodel[submodel];
   return allowed && !allowed.includes(String(suffix || ''))
-    ? `ÁGATA BOX ${submodel} no se fabrica en ${lacadoName}: no hay tapas ni perfiles de esa variante en ese lacado.`
+    ? `ÁGATA BOX ${submodel} no se fabrica en ${lacadoLabel(lacadoName)}: no hay tapas ni perfiles de esa variante en ese lacado.`
     : null;
 }
 

@@ -5,7 +5,10 @@
 const etiquetasConocidas: Record<string, string> = {
   NO: "No",
   "GANCHOS CORAZON": "Ganchos corazón",
-  "PUENTES ESVA": "Puentes ESVA",
+  "PUENTES ESVA": "Puentes Esva",
+  "PUENTES LATERALES": "Puentes laterales",
+  "AYALA": "Ayala",
+  "GENERAL WOLDER": "General Wolder",
   "PUENTES HIJOS DE PEDRO LOPEZ": "Puentes Hijos de Pedro López",
   "HIJOS DE PEDRO LOPEZ": "Hijos de Pedro López",
 };

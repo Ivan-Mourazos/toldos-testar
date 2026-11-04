@@ -590,11 +590,11 @@ function ElectraParametersView({ parameters, selectedModel, onUpdate, onReset }:
 
       <ParameterBand number="02" title="Descuentos según soporte" description="Tabla interna de Electra y descuentos de Cortina para el soporte Maxiscreen. Todos los valores se descuentan en centímetros.">
         <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Soporte</th><th>Pieza</th>{devices.map((device) => <th key={device}>{deviceHeader(device)}</th>)}</tr></thead>
-          <tbody>{supports.flatMap((support) => supportPieces.map(([field, label], index) => <tr key={`${support}-${field}`}><td>{index === 0 ? support : ''}</td><td>{label}</td>{devices.map((device) => <td key={device}><input aria-label={`ELECTRA ${support} ${label} ${device}`} type="number" min="0" step="0.1" value={parameters.supportDiscounts[support][device][field]} onChange={(event) => updateSupportDiscount(support, device, field, Number(event.target.value))} /></td>)}</tr>))}</tbody>
+          <tbody>{supports.flatMap((support) => supportPieces.map(([field, label], index) => <tr key={`${support}-${field}`}><td>{index === 0 ? controlLabel(support) : ''}</td><td>{label}</td>{devices.map((device) => <td key={device}><input aria-label={`ELECTRA ${support} ${label} ${device}`} type="number" min="0" step="0.1" value={parameters.supportDiscounts[support][device][field]} onChange={(event) => updateSupportDiscount(support, device, field, Number(event.target.value))} /></td>)}</tr>))}</tbody>
         </table></div>
       </ParameterBand>
 
-      <ParameterBand number="03" title="Configuración con cofre" description="Descuentos recuperados de los planteamientos Electra con cofre que reutilizan la estructura MAXISCREEM.">
+      <ParameterBand number="03" title="Configuración con cofre" description="Descuentos recuperados de los planteamientos Electra con cofre que reutilizan la estructura Maxiscreen.">
         <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Pieza</th>{devices.map((device) => <th key={device}>{deviceHeader(device)}</th>)}</tr></thead>
           <tbody>{cofrePieces.map(([field, label]) => <tr key={field}><td>{label}</td>{devices.map((device) => <td key={device}><input aria-label={`ELECTRA cofre ${label} ${device}`} type="number" min="0" step="0.1" value={parameters.cofreDiscounts[device][field]} onChange={(event) => updateCofreDiscount(device, field, Number(event.target.value))} /></td>)}</tr>)}</tbody>
         </table></div>
@@ -661,7 +661,7 @@ function Monoblock350ParametersView({ parameters, selectedModel, onUpdate, onRes
         <ParameterNote>La barra Univers 280 se descuenta {MONOBLOCK_UNIVERS_LESS_CM} cm menos que la EVO 80, porque la EVO lleva tapas más grandes.</ParameterNote>
       </ParameterBand>
 
-      <ParameterBand number="03" title="Rangos por salida y brazos" description="Frentes mínimos, máximos y motor automático, del catálogo MONOBLOC-350 actual de Llaza (brazos Onyx), que es el documento más reciente del modelo.">
+      <ParameterBand number="03" title="Rangos por salida y brazos" description="Frentes mínimos, máximos y motor automático, del catálogo Monobloc-350 actual de Llaza (brazos Onyx), que es el documento más reciente del modelo.">
         <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines monoblock-ranges-table"><thead><tr><th>Salida</th>{[2, 3, 4].map((arms) => <th key={arms}>{arms} brazos · mín/máx · motor</th>)}</tr></thead>
           <tbody>{parameters.dimensionalRules.map((row) => <tr key={row.projection}><td className="num">{row.projection}</td>{([2, 3, 4] as const).map((arms) => <td key={arms}><div className="parameter-inline-fields"><input aria-label={`MONOBLOCK ${row.projection} ${arms} mínimo`} type="number" min="1" value={row.values[arms].minimum} onChange={(event) => updateRule(row.projection, arms, 'minimum', Number(event.target.value))} /><input aria-label={`MONOBLOCK ${row.projection} ${arms} máximo`} type="number" min="1" value={row.values[arms].maximum} onChange={(event) => updateRule(row.projection, arms, 'maximum', Number(event.target.value))} /><input aria-label={`MONOBLOCK ${row.projection} ${arms} motor`} value={row.values[arms].motorPower} onChange={(event) => updateRule(row.projection, arms, 'motorPower', event.target.value)} /></div></td>)}</tr>)}</tbody>
         </table></div>
@@ -978,7 +978,7 @@ function BoxParametersView({ parameters, selectedModel, onUpdate, onReset }: Box
         </table></div>
       </ParameterBand>
 
-      <ParameterBand number="03" title="Líneas mínimas y motor" description="Frente mínimo y potencia SUNEA por salida.">
+      <ParameterBand number="03" title="Líneas mínimas y motor" description="Frente mínimo y potencia Sunea por salida.">
         <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Salida</th>{boxDevices.map((device) => <th key={device}>{deviceHeader(device)}</th>)}<th>Potencia del motor</th></tr></thead>
           <tbody>{parameters.minimumLineByProjection.map((row) => <tr key={row.projection}><td className="num">{row.projection}</td>{boxDevices.map((device) => <td key={device}><input aria-label={`${selectedModel} salida ${row.projection} ${device}`} type="number" min="1" value={row.values[device]} onChange={(event) => updateMinimum(row.projection, device, Number(event.target.value))} /></td>)}<td><input aria-label={`${selectedModel} motor salida ${row.projection}`} type="number" min="1" value={parameters.motorPowerByProjection.find((item) => item.projection === row.projection)?.power || ''} onChange={(event) => updatePower(row.projection, Number(event.target.value))} /></td></tr>)}</tbody>
         </table></div>
@@ -1064,7 +1064,7 @@ function AgataBoxParametersView({ parameters, selectedModel, onUpdate, onReset }
 
       <ParameterBand number="03" title="Descuentos dimensionales" description="Centímetros descontados al frente por variante y accionamiento.">
         <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Variante</th><th>Pieza</th>{devices.map((device) => <th key={device}>{deviceHeader(device)}</th>)}</tr></thead>
-          <tbody>{variants.flatMap((variant) => discountRows.map(([piece, label], index) => <tr key={`${variant}-${piece}`}><td>{index === 0 ? variant : ''}</td><td>{label}</td>{devices.map((device) => <td key={device}><input aria-label={`ÁGATA ${variant} ${label} ${device}`} type="number" min="0" step="0.1" value={parameters.discounts[variant][device][piece]} onChange={(event) => updateDiscount(variant, device, piece, Number(event.target.value))} /></td>)}</tr>))}</tbody>
+          <tbody>{variants.flatMap((variant) => discountRows.map(([piece, label], index) => <tr key={`${variant}-${piece}`}><td>{index === 0 ? controlLabel(variant) : ''}</td><td>{label}</td>{devices.map((device) => <td key={device}><input aria-label={`ÁGATA ${variant} ${label} ${device}`} type="number" min="0" step="0.1" value={parameters.discounts[variant][device][piece]} onChange={(event) => updateDiscount(variant, device, piece, Number(event.target.value))} /></td>)}</tr>))}</tbody>
         </table></div>
       </ParameterBand>
     </ParameterSheet>

@@ -22,7 +22,7 @@ export function LoQueSaleHoy({ model, drawings }: { model: string; drawings: Dra
             ? <MiniaturaDibujo model={model} variant={variant.id} label={label} />
             : <div className="drawing-today-none">La hoja de Hera es una tabla por toldo: la web no dibuja la confección.</div>}
           <strong>{label}</strong>
-          {replacementLines(automaticDrawingsForVariant(variant, drawings)).map((line) => <small key={line}>{line}</small>)}
+          {replacementLines(automaticDrawingsForVariant(variant, drawings), controlLabel).map((line) => <small key={line}>{line}</small>)}
         </li>;
       })}
     </ul>

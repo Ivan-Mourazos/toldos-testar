@@ -172,7 +172,7 @@ export function ReviewOrderDetail({
           <div className="review-production-summary">
             <Factory aria-hidden="true" />
             <span>
-              <strong>Archivos generados{review.order.technician || review.production.createdBy ? ` por ${review.order.technician || review.production.createdBy}, autor del pedido` : ''}</strong>
+              <strong>Archivos generados{review.order.technician || review.production.createdBy ? ` por ${controlLabel(review.order.technician || review.production.createdBy)}, autor del pedido` : ''}</strong>
               <small>{formatDateTime(review.production.createdAt)} · abre el PDF o descarga cada reserva directamente.</small>
             </span>
           </div>

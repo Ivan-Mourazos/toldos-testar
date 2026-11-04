@@ -1,3 +1,4 @@
+import { controlLabel } from '../components/controlLabels';
 import React from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { type CalcParams } from '../../remolques/calc/params';
@@ -39,7 +40,7 @@ export function RemolquesParametersView({ parameters: p, onUpdate, onReset, disa
         <div className="remolques-parameter-rows">
           {p.recogidas.map((row, i) => <section className="remolques-parameter-row bloque-3d-hundido" key={i} aria-label={`Recogida ${row.nombre || i + 1}`}>
             <div className="remolques-parameter-row-heading">
-              {row.nombre === 'NO' ? <strong>NO</strong> : <TextField label="Nombre de recogida" value={row.nombre} onChange={(nombre) => onUpdate({ recogidas: p.recogidas.map((r, index) => index === i ? { ...r, nombre } : r) })} />}
+              {row.nombre === 'NO' ? <strong>No</strong> : <TextField label="Nombre de recogida" value={controlLabel(row.nombre)} onChange={(nombre) => onUpdate({ recogidas: p.recogidas.map((r, index) => index === i ? { ...r, nombre } : r) })} />}
               {row.nombre !== 'NO' && <button type="button" className="ghost-button" aria-label={`Quitar recogida ${row.nombre || i + 1}`} onClick={() => onUpdate({ recogidas: p.recogidas.filter((_, index) => index !== i) })}><Trash2 aria-hidden="true" />Quitar</button>}
             </div>
             <div className="parameter-grid remolques-parameter-grid">

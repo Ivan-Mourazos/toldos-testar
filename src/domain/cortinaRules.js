@@ -1,3 +1,4 @@
+import { lacadoLabel } from './lacados.js';
 import { effectiveOverride, noteOverride } from './ruleOverrides.js';
 import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { curtainBottomAllowanceCm, curtainConfigurationError, curtainFabricAdjustmentCm } from './curtainConfiguration.js';
@@ -132,7 +133,7 @@ export function calculateCortina({ order, awning }) {
   if (missingFields.length) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `CORTINA incompleta en OF ${awning.of}: falta ${missingFields.join(' y ')}.` });
   } else if (selena && !armCode) {
-    diagnostics.push({ level: 'error', awningId: awning.id, message: `SELENA no válida: no hay brazos Stor-21 en ${lacado.name}.` });
+    diagnostics.push({ level: 'error', awningId: awning.id, message: `SELENA no válida: no hay brazos Stor-21 en ${lacadoLabel(lacado.name)}.` });
   } else if (!stockLength || !profileStockLength) {
     const piece = !stockLength ? `el tubo de ${rollTubeLength}` : `el perfil de ${structureLength}`;
     diagnostics.push({ level: 'error', awningId: awning.id, message: `CORTINA no válida: ningún largo de stock admite ${piece} cm en este lacado.` });

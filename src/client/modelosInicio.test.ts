@@ -3,7 +3,7 @@ import { modelosInicio, primeraLineaInicio } from './modelosInicio';
 
 describe('modelos al empezar un pedido', () => {
   it('agrupa los pedidos estándar y permite buscarlos', () => {
-    expect(modelosInicio('estandar', [])[0].modelos.map(m=>m.nombre)).toEqual(['COMBURSA','Embudos','System Dock']);
+    expect(modelosInicio('estandar', [])[0].modelos.map(m=>m.nombre)).toEqual(['Combursa','Embudos','System Dock']);
     expect(modelosInicio('estandar', [], 'estándar')).toEqual([]);
     expect(modelosInicio('estandar', [], 'dock')[0].modelos[0]).toMatchObject({accion:'systemdock'});
     expect(modelosInicio('estandar', [], 'embudos')[0].modelos[0].valor).toMatchObject({producto:'toldos',modelo:'EMBUDO'});

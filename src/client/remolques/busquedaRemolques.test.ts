@@ -92,7 +92,7 @@ describe('textos de la lista', () => {
     expect(textoMedidas(fila())).toBe('190 × 136,5 × 103 cm');
     expect(textoMedidas(fila({ tipo: 'baqueton', alto: null, largo: 260, ancho: 160 }))).toBe('260 × 160 cm');
     expect(textoRecogidas(fila())).toBe('No / Cremallera');
-    expect(textoRecogidas(fila({ recogeDelante: '', recogeAtras: 'PUENTES ESVA' }))).toBe('— / Puentes ESVA');
+    expect(textoRecogidas(fila({ recogeDelante: '', recogeAtras: 'PUENTES ESVA' }))).toBe('— / Puentes Esva');
     expect(textoRecogidas(fila({ tipo: 'baqueton', recogeDelante: '', recogeAtras: '' }))).toBe('—');
     expect(fechaCorta('2025-12-01')).toBe('01/12/2025');
     expect(fechaCorta('')).toBe('—');

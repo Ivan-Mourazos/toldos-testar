@@ -29,7 +29,7 @@ export function embudoIssues(raw = {}) {
     ...(e.forma === 'CÓNICO' ? [['contornoAbajo', 'contorno de abajo (cm)']] : [])]) {
     if (!(e[f] > 0)) add(f, label);
   }
-  if (e.forma === 'CÓNICO' && e.contornoArriba > 0 && e.contornoArriba === e.contornoAbajo) add('contornoAbajo', 'contornos distintos en CÓNICO; para iguales elige RECTO');
+  if (e.forma === 'CÓNICO' && e.contornoArriba > 0 && e.contornoArriba === e.contornoAbajo) add('contornoAbajo', 'contornos distintos en cónico; para iguales elige recto');
   if (!(e.cierre >= 0) || e.cierre == null) add('cierre', 'cierre (cm)');
   for (const boca of ['Arriba', 'Abajo']) {
     if (!REMATES_EMBUDO.includes(e[`remate${boca}`])) add(`remate${boca}`, `remate de ${boca.toLowerCase()}`);

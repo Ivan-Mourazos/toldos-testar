@@ -155,7 +155,7 @@ export function BuscadorRemolques({ estado, onEstado, onVolver, onAbrir, onToast
               onChange={(evento) => cambiar({ cliente: evento.target.value })} />
             <datalist id="buscador-clientes">
               {opciones.clientes.map(({ nombre, codigos }) => (
-                <option key={nombre} value={nombre} label={codigos.length ? `${nombre} · RPS ${codigos.join(', ')}` : undefined} />
+                <option key={nombre} value={etiquetaOpcion(nombre)} label={codigos.length ? `${etiquetaOpcion(nombre)} · RPS ${codigos.join(', ')}` : undefined} />
               ))}
             </datalist>
           </label>
@@ -174,7 +174,7 @@ export function BuscadorRemolques({ estado, onEstado, onVolver, onAbrir, onToast
             onCambio={(ladoRecogida) => cambiar({ ladoRecogida })} />
           <label className="buscador-campo">
             <span className="buscador-rotulo">Material</span>
-            <input type="text" autoComplete="off" value={formulario.material} placeholder="ALPHA, 7038…" onChange={(evento) => cambiar({ material: evento.target.value })} />
+            <input type="text" autoComplete="off" value={formulario.material} placeholder="Alpha, 7038…" onChange={(evento) => cambiar({ material: evento.target.value })} />
           </label>
           <div className="buscador-fechas">
             <label className="buscador-campo">

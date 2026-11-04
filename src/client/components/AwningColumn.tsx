@@ -23,7 +23,7 @@ import { ObservationLines } from './ObservationLines';
 import { ReadModeContext } from './ReadMode';
 import type { AwningStatus } from '../awningBlocks';
 import { structureNotes as getStructureNotes } from '../../domain/structureNotes.js';
-import { controlLabel } from './controlLabels';
+import { controlLabel, diagnosticLabel } from './controlLabels';
 import { suggestedGaliciaArmCount } from '../../domain/galiciaParameters.js';
 import { suggestedPuntoRectoArmCount } from '../../domain/puntoRectoParameters.js';
 import { ambarPlacementGroup } from '../../domain/ambarBoxParameters.js';
@@ -728,7 +728,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                   setShowGaliciaPrompt(false);
                   update({ armConfiguration: value === 'CRUZADOS' ? 'CROSSED' : 'STANDARD', ...(value === 'CRUZADOS' ? { armCount: 2, supportSystem: 'ARZUA', tubeLoad: 'TUBO DE CARGA EVO 80' } : {}) });
                 }} />
-                {awning.armConfiguration === 'CROSSED' && <p className="awning-note">Brazos cruzados: dos brazos, kit en el soporte izquierdo, inclinación máxima 30°. Kit inferior para EVO 80.</p>}
+                {awning.armConfiguration === 'CROSSED' && <p className="awning-note">Brazos cruzados: dos brazos, kit en el soporte izquierdo, inclinación máxima 30°. Kit inferior para Evo 80.</p>}
                 {awning.armConfiguration === 'CROSSED' && <SelectField label="Terminales · confirmar con taller" value={awning.crossedAdditionalTerminals === true ? 'JUEGO ADICIONAL' : awning.crossedAdditionalTerminals === false ? 'SOLO LOS DEL KIT' : ''} options={['SOLO LOS DEL KIT', 'JUEGO ADICIONAL']} placeholder="Pendiente de confirmar…" onChange={(value) => update({ crossedAdditionalTerminals: value === 'JUEGO ADICIONAL' ? true : value === 'SOLO LOS DEL KIT' ? false : null })} />}
               </>}
               <SegmentedField
@@ -745,7 +745,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               )}
               {fields.arzua && showGaliciaPrompt && !readOnly && (
                 <div className="model-switch-prompt" role="alert">
-                  <div><strong>3 brazos es el modelo GALICIA</strong><span>Se conservarán la OF y las medidas.</span></div>
+                  <div><strong>3 brazos es el modelo Galicia</strong><span>Se conservarán la OF y las medidas.</span></div>
                   <button type="button" onClick={changeToGalicia}>Cambiar modelo<ArrowRight aria-hidden="true" /></button>
                 </div>
               )}
@@ -997,7 +997,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           {listedDiagnostics.map((item, index) => (
             <li key={index} className={item.level === 'error' ? 'is-error' : 'is-pending'}>
               {item.level === 'error' ? <CircleAlert aria-hidden="true" /> : <AlertTriangle aria-hidden="true" />}
-              <span>{withoutAwningPrefix(item.message)}</span>
+              <span>{diagnosticLabel(withoutAwningPrefix(item.message))}</span>
             </li>
           ))}
         </ul>

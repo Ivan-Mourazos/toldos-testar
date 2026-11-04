@@ -17,10 +17,10 @@ const acciones: AccionesFichas = {
 describe('Parámetros › Remolques › Clientes', () => {
   it('lista las fichas y abre la primera con su recogida propia y sus extras', () => {
     const html = renderToStaticMarkup(<ClientesRemolquesView fichas={fichas} recogidasGenerales={recogidas} acciones={acciones} />);
-    for (const nombre of ['HIJOS DE PEDRO LOPEZ', 'AYALA', 'GENERAL WOLDER']) expect(html).toContain(nombre);
+    for (const nombre of ['Hijos de Pedro López', 'Ayala', 'General Wolder']) expect(html).toContain(nombre);
     expect(html).toContain('036662 · 048286');
     expect(html).toContain('aria-label="Ficha de HIJOS DE PEDRO LOPEZ"');
-    expect(html).toContain('value="PUENTES HIJOS DE PEDRO LOPEZ"');
+    expect(html).toContain('value="Puentes Hijos de Pedro López"');
     expect(html).toContain('Paño trasero con el ancho de delante');
     expect(html).toContain('ABIERTO EN LA PARTE TRASERA (REFORZAR)');
     expect(html).toContain('Añadir ficha');

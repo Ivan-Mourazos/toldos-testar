@@ -89,12 +89,12 @@ export function AnticaRuleReference() {
 export function HeraRuleReference() {
   return <>
     <Band id="01" title="Descuentos y aumentos" description="F = frente; C = caída indicada; A = altura de instalación. Todas las medidas en cm.">
-      <Table label="Reglas HERA por variante" columns={['Variante', 'Frente de tela', 'Caída de tela', 'Tubo', 'Longitud de cadena']} rows={Object.entries(HERA_RULES).map(([variant, rule]) => [controlLabel(variant), 'F − ' + number(rule.fabricWidthDiscountCm), 'C + ' + number(rule.fabricDropAllowanceCm), 'F − ' + number(rule.rollTubeDiscountCm), rule.chainHeightDiscountCm === null ? 'No lleva' : '(A − ' + number(rule.chainHeightDiscountCm) + ') × 2'])} />
+      <Table label="Reglas Hera por variante" columns={['Variante', 'Frente de tela', 'Caída de tela', 'Tubo', 'Longitud de cadena']} rows={Object.entries(HERA_RULES).map(([variant, rule]) => [controlLabel(variant), 'F − ' + number(rule.fabricWidthDiscountCm), 'C + ' + number(rule.fabricDropAllowanceCm), 'F − ' + number(rule.rollTubeDiscountCm), rule.chainHeightDiscountCm === null ? 'No lleva' : '(A − ' + number(rule.chainHeightDiscountCm) + ') × 2'])} />
       <ParameterNote>Cadena siempre sin empalme. El anillo cerrado mide la mitad de la cadena calculada.</ParameterNote>
       <ParameterNote>Se reserva un anillo por toldo si el color coincide con una medida de catálogo; si no, consultar con compras.</ParameterNote>
     </Band>
     <Band id="02" title="Confección y empates" description="Se aplican después de obtener las medidas de tela de la tabla superior.">
-      <Table label="Confección HERA" columns={['Concepto', 'Aplicación']} rows={[
+      <Table label="Confección Hera" columns={['Concepto', 'Aplicación']} rows={[
         ['Bastillas en acrílico', '+' + number(HERA_FABRIC_ALLOWANCES.acrylicSideHemCm) + ' cm a cada lado del frente.'],
         ['Empate', '+' + number(HERA_FABRIC_ALLOWANCES.joinCm) + ' cm por unión.'],
         ['Escuadrado con empate', '+' + number(HERA_FABRIC_ALLOWANCES.squaringEachEndCm) + ' cm en cada extremo del largo de paño.'],
@@ -124,7 +124,7 @@ export function IrisRuleReference() {
       <div className="parameter-grid parameter-grid-3"><SelectField label="Variante Iris" value={submodel} options={irisSubmodels} onChange={setSubmodel} /><SelectField label="Guía Iris" value={guideType} options={irisGuideTypes} onChange={setGuideType} /><SelectField label="Dispositivo Iris" value={device} options={irisDevices} onChange={setDevice} /></div>
       <label className="rule-reference-toggle"><input type="checkbox" checked={windBlock} onChange={e => setWindBlock(e.target.checked)} />Sistema de bloqueo de viento SWBS</label>
       {!cuts ? <p role="status" className="rule-reference-warning">Esta combinación no tiene tabla de descuentos y la web no la admite como configuración estándar.</p> : <>
-        {cuts.unverified && <p className="rule-reference-warning">IRIS 130 sin cofre: descuentos basados en históricos; pendiente de tabla del fabricante.</p>}
+        {cuts.unverified && <p className="rule-reference-warning">Iris 130 sin cofre: descuentos basados en históricos; pendiente de tabla del fabricante.</p>}
         {irisSeriesOf(submodel) === '110' && guideType === 'COMPENSADORA' && device === 'MAQUINA' && !windBlock && <p className="rule-reference-warning">Descuento de tela de 9,7 cm pendiente de aclarar con OT: existe una anotación «NON DESCONTAR» en la evidencia original. Aquí se muestra el valor que aplica actualmente la web.</p>}
         <Table label="Descuentos Iris seleccionados" columns={['Pieza', 'Descuento', 'Medida de partida']} rows={[
           ['Tela', discount('fabric'), 'Frente del toldo'], ['Cofre', irisHasCassette(submodel, guideType) ? discount('box') : 'No lleva', 'Frente; con compensadora, frente superior si es el mayor'],

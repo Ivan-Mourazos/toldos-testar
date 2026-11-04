@@ -1,3 +1,4 @@
+import { controlLabel } from '../components/controlLabels';
 import React, { useEffect, useState } from 'react';
 import { History } from 'lucide-react';
 import { resumenCambios } from '../../remolques/clientes/diferencias.ts';
@@ -10,7 +11,7 @@ const formatDate = (value: string) => (value ? new Date(value).toLocaleString('e
 /** La línea de arriba del historial: la versión y quién y cuándo la guardó. */
 export function resumenHistorial(version: number, ultima: EntradaHistorialFicha | undefined): string {
   if (!ultima) return `Versión ${version}`;
-  return [`Versión ${version}`, ultima.updatedBy, formatDate(ultima.updatedAt)].filter(Boolean).join(' · ');
+  return [`Versión ${version}`, controlLabel(ultima.updatedBy), formatDate(ultima.updatedAt)].filter(Boolean).join(' · ');
 }
 
 /**
@@ -45,7 +46,7 @@ export function HistorialFicha({ fichaId, version, guardada, onCargar }: {
               <li key={`${e.updatedAt}-${i}`}>
                 <div>
                   <strong>{e.version ? `Versión ${e.version}` : 'Antes del guardado por ficha'}</strong>
-                  <span>{[formatDate(e.updatedAt), e.updatedBy].filter(Boolean).join(' · ')}</span>
+                  <span>{[formatDate(e.updatedAt), controlLabel(e.updatedBy)].filter(Boolean).join(' · ')}</span>
                   {e.motivo && <span>{e.motivo}</span>}
                   {e.resumen.map((linea) => <small key={linea}>{linea}</small>)}
                 </div>

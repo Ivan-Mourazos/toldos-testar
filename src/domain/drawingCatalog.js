@@ -100,9 +100,9 @@ export function drawingConditionShownValue(model, condition) {
 }
 
 /** «Accionamiento = MOTOR y Confección = VELCRO». */
-export function drawingConditionsText(conditions) {
+export function drawingConditionsText(conditions, formatValue = (value) => value) {
   return conditions
-    .map((condition) => `${drawingConditionLabels[condition.field] ?? condition.field} = ${drawingConditionValueLabel(condition.value)}`)
+    .map((condition) => `${drawingConditionLabels[condition.field] ?? condition.field} = ${formatValue(drawingConditionValueLabel(condition.value))}`)
     .join(' y ');
 }
 
@@ -185,7 +185,7 @@ export function automaticDrawingsForVariant(variant, input) {
 }
 
 /** Lo de arriba en frases, hasta el primero que sustituye siempre. */
-export function replacementLines(replacements) {
+export function replacementLines(replacements, formatValue = (value) => value) {
   if (!replacements.length) return ['Sale el de la web.'];
   const lines = [];
   for (const replacement of replacements) {
@@ -193,7 +193,7 @@ export function replacementLines(replacements) {
       lines.push(`«${replacement.name}» lo sustituye siempre.`);
       return lines;
     }
-    lines.push(`«${replacement.name}» lo sustituye cuando ${drawingConditionsText(replacement.pending)}.`);
+    lines.push(`«${replacement.name}» lo sustituye cuando ${drawingConditionsText(replacement.pending, formatValue)}.`);
   }
   lines.push('Si no, sale el de la web.');
   return lines;

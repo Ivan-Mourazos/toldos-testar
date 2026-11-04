@@ -1,3 +1,4 @@
+import { lacadoLabel } from './lacados.js';
 import { effectiveOverride, isOverridden } from './ruleOverrides.js';
 import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { tipBushing } from './tipBushing.js';
@@ -122,7 +123,7 @@ export function calculatePuntoRecto({ order, awning }) {
   } else if (overMaximum && !modified) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `PUNTO RECTO no válido: frente ${awning.width} cm supera el máximo estándar de ${parameters.standardMaxWidth} cm.` });
   } else if (!armCode) {
-    diagnostics.push({ level: 'error', awningId: awning.id, message: `PUNTO RECTO no válido: no hay brazo PRT-07 de ${formatNumber(awning.projection)} cm en ${lacado.name}.` });
+    diagnostics.push({ level: 'error', awningId: awning.id, message: `PUNTO RECTO no válido: no hay brazo PRT-07 de ${formatNumber(awning.projection)} cm en ${lacadoLabel(lacado.name)}.` });
   } else if (!stockLength || !profileStockLength) {
     const piece = !stockLength ? `el tubo de ${rollTubeLength}` : `el perfil de ${loadBarLength}`;
     diagnostics.push({ level: 'error', awningId: awning.id, message: `PUNTO RECTO no válido: ningún largo de stock admite ${piece} cm en este lacado.` });

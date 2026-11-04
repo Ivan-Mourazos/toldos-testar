@@ -77,7 +77,7 @@ export default function LoteSabado({ onCerrar }: { onCerrar: () => void }) {
     <dialog ref={dialogo} className="combursa-dialogo" aria-labelledby="combursa-titulo" onCancel={e => { e.preventDefault(); if (!ocupado) onCerrar(); }}>
       <div className="combursa-pagina">
         <header className="glass-header combursa-cabecera">
-          <div><span className="combursa-cliente">COMBURSA · ASSA ABLOY</span><h1 id="combursa-titulo">Lote del sábado</h1><p>Pedidos de RPS, piezas y corte en un solo lote.</p></div>
+          <div><span className="combursa-cliente">Combursa · Assa Abloy</span><h1 id="combursa-titulo">Lote del sábado</h1><p>Pedidos de RPS, piezas y corte en un solo lote.</p></div>
           <button className="ghost-button" type="button" disabled={ocupado} onClick={onCerrar}><ArrowLeft size={16} aria-hidden="true" /> Volver</button>
         </header>
         <ol className="combursa-pasos" aria-label="Pasos del lote">
@@ -89,11 +89,11 @@ export default function LoteSabado({ onCerrar }: { onCerrar: () => void }) {
         <form className="glass-panel combursa-fecha" onSubmit={e => { e.preventDefault(); void cargar(); }}>
           <label><CalendarDays size={17} aria-hidden="true" /> Sábado de entrega<input type="date" value={fecha} disabled={ocupado} required onChange={e => { setFecha(e.target.value); setLote(null); setSueltas({}); setPalets({}); invalidar(); }} /></label>
           <button className="ghost-button" type="submit" disabled={ocupado}>{ocupado ? 'Preparando…' : 'Leer lote de RPS'}</button>
-          <p>Referencias ASSA · entrega del sábado</p>
+          <p>Referencias Assa · entrega del sábado</p>
         </form>
         {error && <p role="alert" className="combursa-aviso">{error}</p>}
         {lote ? <>
-          {lote.avisos.map(aviso => <p className="combursa-aviso" role="status" key={aviso}>{aviso}</p>)}
+          {lote.avisos.map(aviso => <p className="combursa-aviso" role="status" key={aviso}>{aviso.replaceAll('PLASTEL', 'Plastel')}</p>)}
           <div className="combursa-resumen">
             <div className="glass-panel"><Layers aria-hidden="true" /><strong>{numero(lote.totalUnidades)}</strong><span>unidades pedidas · {lote.lineas.length} líneas</span></div>
             <div className="glass-panel"><Scissors aria-hidden="true" /><strong>{validas}</strong><span>líneas validadas para el corte</span></div>
@@ -106,7 +106,7 @@ export default function LoteSabado({ onCerrar }: { onCerrar: () => void }) {
           </nav>
           <div className="combursa-contenido" aria-busy={ocupado}>
           {vista === 'lineas' && <section className="glass-panel combursa-listado" aria-label="Líneas del lote">
-            <header><h2>{lote.nombre}</h2><span>Rollo PLASTEL 204 · sin giros ni empates</span></header>
+            <header><h2>{lote.nombre.replace(/^LOTE /, 'Lote ')}</h2><span>Rollo Plastel 204 · sin giros ni empates</span></header>
             {!lote.lineas.length ? <p>No hay líneas de ASSA con esta fecha de entrega.</p> : <div className="combursa-tabla-scroll"><table className="combursa-lineas">
               <thead><tr><th>Pedido / línea</th><th>Referencia</th><th>Descripción / corte en mm</th><th>Cantidad</th><th>OF</th><th>Comentario</th><th>Estado</th><th>Palet</th><th>Cortar</th></tr></thead>
               <tbody>{lote.lineas.map(l => <tr key={l.IDOrderLine}>
@@ -114,7 +114,7 @@ export default function LoteSabado({ onCerrar }: { onCerrar: () => void }) {
                 <td className="combursa-referencia">{l.CodArticle}</td>
                 <td>{l.descripcion}{l.corteMm && <small>{l.corteMm.map(numero).join(' × ')} mm</small>}{l.avisos.map(a => <small className="combursa-nota" key={a}>{a}</small>)}</td>
                 <td className="combursa-numero">{numero(l.cantidad)}</td><td>{l.of_ || 'Sin OF'}</td><td>{l.comentarioLinea || '—'}</td>
-                <td>{l.estado === 'validado' ? <span className="combursa-validado">Validado</span> : <><strong className="combursa-manual">A mano</strong><small>{l.motivos[0]}</small>{l.motivos.length > 1 && <details><summary>Ver motivos</summary>{l.motivos.slice(1).map(m => <p key={m}>{m}</p>)}</details>}</>}</td>
+                <td>{l.estado === 'validado' ? <span className="combursa-validado">Validado</span> : <><strong className="combursa-manual">A mano</strong><small>{l.motivos[0]?.replaceAll('PLASTEL', 'Plastel')}</small>{l.motivos.length > 1 && <details><summary>Ver motivos</summary>{l.motivos.slice(1).map(m => <p key={m}>{m.replaceAll('PLASTEL', 'Plastel')}</p>)}</details>}</>}</td>
                 <td><input className="combursa-palet" type="number" min={1} max={99} step={1} inputMode="numeric" disabled={ocupado}
                   defaultValue={palets[l.IDOrderLine] ?? ''} key={`${l.IDOrderLine}-${palets[l.IDOrderLine] ?? ''}`} aria-label={`Palet de ${l.CodArticle} ${l.CodOrder} línea ${l.NumLine ?? '—'}`}
                   onBlur={e => { const v = Number(e.target.value); if (e.target.value === '' ? palets[l.IDOrderLine] === undefined : v === palets[l.IDOrderLine]) return; void cargar(sueltas, conPalet(l, e.target.value === '' ? null : v)); }} /></td>

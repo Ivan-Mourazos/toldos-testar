@@ -1,3 +1,4 @@
+import { lacadoLabel } from './lacados.js';
 import { tipBushing } from './tipBushing.js';
 import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { formatNumber } from './math.js';
@@ -152,7 +153,7 @@ export function calculateArzuaPro({ order, awning }) {
     diagnostics.push({
       level: 'error',
       awningId: awning.id,
-      message: `ARZUA PRO no válido: no hay brazo Onyx de ${formatNumber(awning.projection)} cm en ${lacado.name}.`
+      message: `ARZUA PRO no válido: no hay brazo Onyx de ${formatNumber(awning.projection)} cm en ${lacadoLabel(lacado.name)}.`
     });
   }
   if (stockUnavailable) {
@@ -164,7 +165,7 @@ export function calculateArzuaPro({ order, awning }) {
       message: rollStockLength === null
         ? `ARZUA PRO no válido: el tubo de enrolle mide ${formatNumber(rollTubeLength)} cm y el P801 más largo es de ${P801_TUBE_LENGTHS.at(-1)} cm.`
         : evoTube && activeProfileLengths('PEVO80', colorSuffix).length
-          ? `ARZUA PRO no válido: la barra mide ${formatNumber(length)} cm y en ${lacado.name} el EVO 80 solo existe de ${activeProfileLengths('PEVO80', colorSuffix).join(', ')} cm. Prueba con Univers 280 u otro lacado.`
+          ? `ARZUA PRO no válido: la barra mide ${formatNumber(length)} cm y en ${lacadoLabel(lacado.name)} el EVO 80 solo existe de ${activeProfileLengths('PEVO80', colorSuffix).join(', ')} cm. Prueba con Univers 280 u otro lacado.`
           : `ARZUA PRO no válido: no hay barra de carga de ${formatNumber(length)} cm en RPS.`
     });
   }

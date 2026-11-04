@@ -1,3 +1,4 @@
+import { lacadoLabel } from './lacados.js';
 import { effectiveOverride } from './ruleOverrides.js';
 import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { tipBushing } from './tipBushing.js';
@@ -124,8 +125,8 @@ export function calculateMonoblock350({ order, awning }) {
 
   if (fabricSelection && !fabric) diagnostics.push({ level: 'error', awningId: awning.id, message: `Tela no encontrada en el catálogo: "${fabricSelection}".` });
   if (valanceFabricSelection && valance > 0 && !valanceFabric) diagnostics.push({ level: 'error', awningId: awning.id, message: `Tela de bamba no encontrada en el catálogo: "${valanceFabricSelection}".` });
-  if (armMissing) diagnostics.push({ level: 'error', awningId: awning.id, message: `MONOBLOCK 350 no válido: no hay brazo Onyx de ${formatNumber(awning.projection)} cm${armCount % 2 === 1 ? ' suelto' : ''} en ${lacado.name}.` });
-  if (stockUnavailable) diagnostics.push({ level: 'error', awningId: awning.id, message: `MONOBLOCK 350 no válido: no hay barra de carga en ${lacado.name} para ${formatNumber(loadBarLength)} cm.` });
+  if (armMissing) diagnostics.push({ level: 'error', awningId: awning.id, message: `MONOBLOCK 350 no válido: no hay brazo Onyx de ${formatNumber(awning.projection)} cm${armCount % 2 === 1 ? ' suelto' : ''} en ${lacadoLabel(lacado.name)}.` });
+  if (stockUnavailable) diagnostics.push({ level: 'error', awningId: awning.id, message: `MONOBLOCK 350 no válido: no hay barra de carga en ${lacadoLabel(lacado.name)} para ${formatNumber(loadBarLength)} cm.` });
   if (missingFields.length) {
     diagnostics.push({ level: 'error', awningId: awning.id, message: `MONOBLOCK 350 incompleto en OF ${awning.of}: falta ${missingFields.join(' y ')}.` });
   } else if (standardRuleMissing && !modified) {

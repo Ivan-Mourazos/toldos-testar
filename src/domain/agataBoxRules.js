@@ -1,3 +1,4 @@
+import { lacadoLabel } from './lacados.js';
 import { effectiveOverride, isOverridden } from './ruleOverrides.js';
 import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { tipBushing } from './tipBushing.js';
@@ -85,7 +86,7 @@ export function calculateAgataBox({ order, awning }) {
   const availabilityIssue = structureColor && submodel
     ? agataLacadoIssue(submodel, lacado.suffix, lacado.name)
       || (!onyxArmExists(lacado.suffix, awning.projection) || (armCount % 2 === 1 && !galiciaSingleArmExists(lacado.suffix, awning.projection))
-        ? `ÁGATA BOX no válido: no hay brazo Onyx de ${awning.projection} cm${armCount % 2 === 1 ? ' suelto' : ''} en ${lacado.name}.` : null)
+        ? `ÁGATA BOX no válido: no hay brazo Onyx de ${awning.projection} cm${armCount % 2 === 1 ? ' suelto' : ''} en ${lacadoLabel(lacado.name)}.` : null)
     : null;
   const profileSupportCount = calculateAgataProfileSupportCount(awning.width);
   const automaticMotorPower = resolveAgataMotorPower(awning.projection, armCount, parameters);

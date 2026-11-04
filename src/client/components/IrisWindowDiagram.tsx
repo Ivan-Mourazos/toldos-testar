@@ -23,17 +23,17 @@ export function IrisWindowDiagram({ awning }: { awning: Awning }) {
         <path d="M90 211H350" strokeDasharray="4 3" />
       </g>
       <g fill="var(--text)" fontSize="11" fontFamily="var(--font-sans), sans-serif" textAnchor="middle">
-        <text x="220" y="14">VENTANA DE BORDE A BORDE</text>
-        <text x="220" y={26 + top + height / 2 + 4}>CRISTAL</text>
-        {top > 19 && <text x="220" y={26 + top / 2 + 4} fill="var(--color-brand-900)">LONA</text>}
-        {180 - bottom > 19 && <text x="220" y={26 + bottom + (180 - bottom) / 2 + 4} fill="var(--color-brand-900)">LONA</text>}
+        <text x="220" y="14">Ventana de borde a borde</text>
+        <text x="220" y={26 + top + height / 2 + 4}>Cristal</text>
+        {top > 19 && <text x="220" y={26 + top / 2 + 4} fill="var(--color-brand-900)">Lona</text>}
+        {180 - bottom > 19 && <text x="220" y={26 + bottom + (180 - bottom) / 2 + 4} fill="var(--color-brand-900)">Lona</text>}
         <text transform={`translate(377 ${26 + top + height / 2}) rotate(90)`}>
           Alto {window.height ? `${cm(window.height)} cm` : 'por indicar'}
         </text>
         <text transform={`translate(69 ${26 + bottom + (180 - bottom) / 2}) rotate(-90)`}>
           Tubo {window.floor > 0 ? `${cm(window.floor)} cm` : 'por indicar'}
         </text>
-        <text x="220" y="232">TUBO DE CARGA</text>
+        <text x="220" y="232">Tubo de carga</text>
       </g>
     </svg>
     <figcaption className="curtain-field-hint">{window.valid

@@ -5,7 +5,7 @@ import type { Awning, Calculation, CalculationState } from '../types';
 import { StructureEditor } from './StructureEditor';
 import { formatDecimal } from '../constants';
 import { isVerticalAwningModel } from '../../domain/modelBehavior.js';
-import { controlLabel, legacyModelName } from './controlLabels';
+import { controlLabel, legacyModelName, diagnosticLabel } from './controlLabels';
 import { formatSummary, groupMaterialRows, planningSummary } from '../awningPanel';
 import { requestAwningFocus } from '../awningFocus';
 
@@ -64,7 +64,7 @@ export function LiveResults({ calculation, state, awnings }: Props) {
         <ul className="diagnostics-list">
           {orderDiagnostics.map((item, index) => (
             <li key={`${item.message}-${index}`} className={item.level === 'error' ? 'badge-danger' : 'badge-warn'}>
-              <AlertCircle aria-hidden="true" />{item.message}
+              <AlertCircle aria-hidden="true" />{diagnosticLabel(item.message)}
             </li>
           ))}
           {awningSummaries.map((summary) => (
@@ -177,7 +177,7 @@ function FabricIndication({ awning, calculation }: { awning?: Awning; calculatio
   return (
     <>
       <small>{tube} · {chain}</small>
-      {calculation.chainRingLength != null && <small>Anillo cerrado: {formatDecimal(calculation.chainRingLength)} cm · {awning?.heraChainColor || 'Color pendiente'} · {calculation.chainRingCode || 'Referencia pendiente'}</small>}
+      {calculation.chainRingLength != null && <small>Anillo cerrado: {formatDecimal(calculation.chainRingLength)} cm · {awning?.heraChainColor ? controlLabel(awning.heraChainColor) : 'Color pendiente'} · {calculation.chainRingCode || 'Referencia pendiente'}</small>}
       <small>Empate: {join ? controlLabel(join) : 'Sin indicar'}</small>
       {calculation.specialTubeRequired && <small>Tubo especial · cambiar presupuesto</small>}
     </>

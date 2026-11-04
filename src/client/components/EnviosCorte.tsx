@@ -1,3 +1,4 @@
+import { controlLabel } from './controlLabels';
 import React, { useState } from 'react';
 import { Download, FileText, FolderDown, Send } from 'lucide-react';
 import type { EnvioCorte } from '../../corteEnviosTipos';
@@ -11,7 +12,7 @@ export function HistorialEnvios({ envios = [], motivo }: { envios?: EnvioCorte[]
   return <div className="corte-envios">
     {motivo && <p className="corte-ayuda">{motivo}</p>}
     {envios.length > 0 && <div className="corte-envios-historial" role="status"><strong>Envíos del corte</strong>
-      <ul>{envios.map((e) => <li key={e.id}><span>{new Date(e.fecha).toLocaleString('es-ES')} · {e.usuario} · {e.destino === 'bot' ? 'Bot' : 'DXFs'}{e.parcial ? ' · Envío incompleto: revisarlo antes de repetir' : ''}{e.nota ? ` · ${e.nota}` : ''}</span><small title={e.carpeta}>{carpetaLegible(e.carpeta)} · {e.archivos.map((a) => a.filename).join(' · ')}</small></li>)}</ul>
+      <ul>{envios.map((e) => <li key={e.id}><span>{new Date(e.fecha).toLocaleString('es-ES')} · {controlLabel(e.usuario)} · {e.destino === 'bot' ? 'Bot' : 'DXFs'}{e.parcial ? ' · Envío incompleto: revisarlo antes de repetir' : ''}{e.nota ? ` · ${e.nota}` : ''}</span><small title={e.carpeta}>{carpetaLegible(e.carpeta)} · {e.archivos.map((a) => a.filename).join(' · ')}</small></li>)}</ul>
     </div>}
   </div>;
 }
@@ -135,7 +136,7 @@ export function EnviosCorte({ ruta, usuario, permitido, motivo, ocupado = false,
     </div>
     {!permitido && motivo && <p className="corte-ayuda">{motivo}</p>}
     {registros.length > 0 && <div className="corte-envios-historial" role="status"><strong>Envíos del corte</strong>
-      <ul>{registros.map((e) => <li key={e.id}><span>{new Date(e.fecha).toLocaleString('es-ES')} · {e.usuario} · {e.destino === 'bot' ? 'Bot' : 'DXFs'}{e.parcial ? ' · Envío incompleto: revisarlo antes de repetir' : ''}{e.nota ? ` · ${e.nota}` : ''}</span><small title={e.carpeta}>{carpetaLegible(e.carpeta)} · {e.archivos.map((a) => a.filename).join(' · ')}</small></li>)}</ul>
+      <ul>{registros.map((e) => <li key={e.id}><span>{new Date(e.fecha).toLocaleString('es-ES')} · {controlLabel(e.usuario)} · {e.destino === 'bot' ? 'Bot' : 'DXFs'}{e.parcial ? ' · Envío incompleto: revisarlo antes de repetir' : ''}{e.nota ? ` · ${e.nota}` : ''}</span><small title={e.carpeta}>{carpetaLegible(e.carpeta)} · {e.archivos.map((a) => a.filename).join(' · ')}</small></li>)}</ul>
     </div>}
   </div>;
 }

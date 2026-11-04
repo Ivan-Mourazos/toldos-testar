@@ -1,3 +1,4 @@
+import { controlLabel } from './components/controlLabels';
 import React, { useEffect, useState } from 'react';
 import { CheckCircle2, FolderOpen } from 'lucide-react';
 import { abrirCorteDwg, confirmarCorteDwg } from './abrirCorte';
@@ -50,7 +51,7 @@ export function textoPaso(p: Paso): string {
     case 'datos-cambiados': return 'Datos cambiados: abre el corte y «Generar de nuevo»';
     case 'confirmar': return '2 · Revisa en ZWCAD y confirma';
     case 'tocado': return 'DWG cambiado: vuelve a confirmar';
-    case 'guardar': return `3 · Confirmado por ${p.por}: guarda`;
+    case 'guardar': return `3 · Confirmado por ${controlLabel(p.por)}: guarda`;
   }
 }
 

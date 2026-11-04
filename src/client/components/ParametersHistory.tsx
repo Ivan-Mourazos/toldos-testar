@@ -1,3 +1,4 @@
+import { controlLabel } from './controlLabels';
 import React, { useEffect, useState } from 'react';
 import { History } from 'lucide-react';
 import { pageScopes } from '../../domain/parameterScopes.js';
@@ -61,7 +62,7 @@ function SharedHistory({ version, onLoadVersion, endpoint, labels }: { version: 
   const latest = entries?.[0];
   const summary = version === 0
     ? 'Parámetros del código: nadie los ha cambiado todavía'
-    : `Versión ${version}${latest ? ` · ${latest.updatedBy} · ${formatDate(latest.updatedAt)} · ${latest.reason}` : ''}`;
+    : `Versión ${version}${latest ? ` · ${controlLabel(latest.updatedBy)} · ${formatDate(latest.updatedAt)} · ${latest.reason}` : ''}`;
   return (
     <details className="parameters-history">
       <summary title={summary}>
@@ -75,7 +76,7 @@ function SharedHistory({ version, onLoadVersion, endpoint, labels }: { version: 
               <li key={entry.version}>
                 <div>
                   <strong>Versión {entry.version}</strong>
-                  <span>{formatDate(entry.updatedAt)} · {entry.updatedBy}</span>
+                  <span>{formatDate(entry.updatedAt)} · {controlLabel(entry.updatedBy)}</span>
                   <span>{entry.reason}</span>
                   <small>{entry.changedSections.map((key) => labels[key] || key).join(', ')}</small>
                 </div>
@@ -120,7 +121,7 @@ function ModelHistory() {
   const latest = entries?.[0];
   const summary = version === 0 && !latest
     ? `${nombreAmbito(modelo)}: valores del código, nadie los ha cambiado todavía`
-    : [`${nombreAmbito(modelo)} · versión ${version}`, latest?.updatedBy, latest ? formatDate(latest.updatedAt) : ''].filter(Boolean).join(' · ');
+    : [`${nombreAmbito(modelo)} · versión ${version}`, controlLabel(latest?.updatedBy), latest ? formatDate(latest.updatedAt) : ''].filter(Boolean).join(' · ');
   return (
     <details className="parameters-history">
       <summary title={summary}>
@@ -134,7 +135,7 @@ function ModelHistory() {
               <li key={`${entry.ambito}-${entry.versionAmbito}-${index}`}>
                 <div>
                   <strong>{nombreAmbito(entry.ambito)} · versión {entry.versionAmbito}</strong>
-                  <span>{[formatDate(entry.updatedAt), entry.updatedBy].filter(Boolean).join(' · ')}</span>
+                  <span>{[formatDate(entry.updatedAt), controlLabel(entry.updatedBy)].filter(Boolean).join(' · ')}</span>
                   {entry.motivo && <span>{entry.motivo}</span>}
                   {entry.resumen.map((linea) => <small key={linea}>{linea}</small>)}
                 </div>

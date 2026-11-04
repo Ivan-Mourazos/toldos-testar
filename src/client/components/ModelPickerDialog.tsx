@@ -57,7 +57,7 @@ export function ModelPickerDialog({ workType, models, onSelect, onClose, cambio 
         <div className="model-picker-columns" style={{ gridTemplateColumns: `repeat(${families.length}, minmax(0, 1fr))` }}>
           {families.map(({ family, models: group }) => (
             <section className="model-picker-family" key={family || 'sin-familia'}>
-              {family && <h3 className="model-picker-family-title">{family}</h3>}
+              {family && <h3 className="model-picker-family-title">{controlLabel(family)}</h3>}
               <ul className="model-picker-list">
                 {group.map((model: string) => {
                   const { ready } = modelReadiness(model);

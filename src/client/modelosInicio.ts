@@ -16,7 +16,7 @@ export type GrupoModelos = { nombre: string; modelos: OpcionModelo[] };
 
 // Añadir un pedido estándar consiste en añadir su entrada a esta lista.
 const estandar: OpcionModelo[] = [
-  {nombre:'COMBURSA',accion:'combursa'},
+  {nombre:'Combursa',accion:'combursa'},
   {nombre:'Embudos',valor:{producto:'toldos',modelo:'EMBUDO',workType:'FABRIC_ONLY'}},
   {nombre:'System Dock',accion:'systemdock'},
 ];
