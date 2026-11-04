@@ -113,25 +113,35 @@ export const lacadoCatalog = Object.freeze(groups.flatMap(([group, colors]) => c
 
 export const lacadoNames = lacadoCatalog.map(item => item.name);
 
+// El cálculo consulta el color en cada pieza y en los barridos de modelos. Se
+// normalizan las claves una vez, sin recorrer todo el catálogo en cada consulta.
+const catalogByName = new Map(lacadoCatalog.map(item => [normalize(item.name), item]));
+const catalogBySuffix = new Map(lacadoCatalog.filter(item => item.lacado.suffix).map(item => [item.lacado.suffix, item]));
+const legacyByName = new Map(table.map(item => [normalize(item.name), item]));
+const legacyWithoutCode = new Map();
+for (const item of table) {
+  if (!legacyWithoutCode.has(stripCode(item.name))) legacyWithoutCode.set(stripCode(item.name), item);
+}
+
 function findLacado(name) {
   const clean = normalize(name);
-  const catalog = lacadoCatalog.find(item => normalize(item.name) === clean);
+  const catalog = catalogByName.get(clean);
   if (catalog) return catalog.lacado;
-  const exact = table.find(item => normalize(item.name) === clean);
+  const exact = legacyByName.get(clean);
   if (exact) return exact;
-  return clean ? table.find(item => stripCode(item.name) === clean) : undefined;
+  return clean ? legacyWithoutCode.get(clean) : undefined;
 }
 
 export function lacadoLabel(name) {
   if (!name) return '';
   const lacado = findLacado(name);
-  const entry = lacado && lacadoCatalog.find(item => item.lacado.suffix === lacado.suffix
-    && (lacado.suffix || item.lacado.name === lacado.name || (lacado.name === 'LACADO ESPECIAL' && item.group === '')));
+  const entry = lacado && (lacado.suffix ? catalogBySuffix.get(lacado.suffix)
+    : catalogByName.get(normalize(lacado.name === 'LACADO ESPECIAL' ? 'Lacado especial (RAL)' : lacado.name)));
   return entry?.name || String(name);
 }
 
 export function lacadoGroup(name) {
-  return lacadoCatalog.find(item => item.name === lacadoLabel(name))?.group || '';
+  return catalogByName.get(normalize(lacadoLabel(name)))?.group || '';
 }
 
 export function lacadoPrintName(name) {
