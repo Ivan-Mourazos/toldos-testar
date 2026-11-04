@@ -67,7 +67,7 @@ function etiquetaClasePieza(pieza: PiezaPuerta, codigoPano?: string): string {
     if (/trasera/i.test(pieza.nombre)) return 'ET TRASERA';
     return 'ET';
   }
-  if (pieza.clase === 'saco') return pieza.sacoDiagonalesAmarillas ? 'SACO AMARILLO/NEGRO' : 'SACO';
+  if (pieza.clase === 'saco') return pieza.nombre.startsWith('Bolsa ') ? 'BOLSA' : pieza.sacoDiagonalesAmarillas ? 'SACO AMARILLO/NEGRO' : 'SACO';
   return 'CRISTAL';
 }
 
@@ -504,12 +504,12 @@ export function generarCortePuertas(
   resultados.forEach((r, idxPuerta) => {
     let indice=idxPuerta+1,letra='';
     while(indice>0) { indice--;letra=String.fromCharCode(65+indice%26)+letra;indice=Math.floor(indice/26); }
-    const panos = r.piezas.filter(p => p.clase === 'pano');
+    const panos = r.piezas.filter(p => p.clase === 'pano' || pedido.elementos[idxPuerta].input.araujo && p.clase === 'saco');
     // El cálculo recorre apilables y autorreparables desde abajo; en el plano de taller A1 va arriba.
     if (pedido.elementos[idxPuerta].input.modelo !== 'PUERTAENR' && !pedido.elementos[idxPuerta].input.araujo) panos.reverse();
     panos.forEach((p, i) => codigosPano.set(p.id, `${letra}${i + 1}`));
     for (const pieza of r.piezas) {
-      if (pieza.clase !== 'pano') codigosPano.set(pieza.id, letra);
+      if (!codigosPano.has(pieza.id)) codigosPano.set(pieza.id, letra);
     }
     for (const pieza of [...r.alternativasSaco?.entero ?? [], ...r.alternativasSaco?.partido ?? []]) codigosPano.set(pieza.id, letra);
   });

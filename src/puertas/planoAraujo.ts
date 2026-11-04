@@ -22,7 +22,7 @@ export function escribirPlanoAraujo(pedido:PedidoPuertas,cortes:CortePuertas[],c
       if(f.tipo==='rect')rect(l,capa(f.clase),f.x,dy-f.y-f.alto,f.ancho,f.alto,f.radio);
       else if(f.tipo==='linea')l.lineas.push({capa:capa(f.clase),x1:f.x1,x2:f.x2,y1:dy-f.y1,y2:dy-f.y2});
       else if(f.tipo==='texto')l.textos.push({capa:'texto',valor:textoSeguro(f.lineas.join(' · ')),x:f.x,y:dy-f.y,h:f.tamano??g.letraBase,centrado:f.ancla==='middle',...(f.ancla==='end'?{ancla:6}:{}),giro:-(f.giro??0)});
-      else if(f.tipo==='cota')l.cotas.push({capa:'cotas',estilo:f.estilo??'XERAL',x1:f.x1,x2:f.x2,y1:dy-f.y1,y2:dy-f.y2,d:f.x1===f.x2?f.linea:dy-f.linea,giro:f.x1===f.x2?90:0,valor:f.valor});
+      else if(f.tipo==='cota')l.cotas.push({capa:'cotas',estilo:f.estilo??'XERAL',x1:f.x1,x2:f.x2,y1:dy-f.y1,y2:dy-f.y2,d:f.x1===f.x2?f.linea:dy-f.linea,giro:f.x1===f.x2?90:0,valor:f.valor,...(f.texto.fijar?{posicionTexto:[f.texto.x,dy-f.texto.y] as Punto}:{})});
       else l.polilineas.push({capa:capa(f.clase),puntos:f.puntos.map(([x,y]):Punto=>[x,dy-y]),cerrada:f.tipo==='poligono'});
     }
     izquierda=Math.min(izquierda,g.vista.xMin);ancho=Math.max(ancho,g.vista.xMin+g.vista.ancho);dy-=g.vista.alto+50;

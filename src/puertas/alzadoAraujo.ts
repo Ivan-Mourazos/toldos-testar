@@ -1,4 +1,5 @@
-import type { FormaAlzado, GeometriaAlzado } from './alzado.ts';
+import type { CotaAlzado, FormaAlzado, GeometriaAlzado } from './alzado.ts';
+import { anchoArial } from '../domain/corteLona/texto.js';
 import { medidasTramoAraujo } from './araujo.ts';
 import { fichaDePuerta } from './clientes.ts';
 import type { Puerta } from './tipos.ts';
@@ -13,9 +14,11 @@ export function alzadoAraujo(p: Puerta, letra: string): GeometriaAlzado {
   const texto=(s:string,x:number,y:number,tamano=base,ancla:'start'|'middle'|'end'='middle')=>formas.push({tipo:'texto',x,y,lineas:[s],ancla,tamano});
   const cota=(x1:number,y1:number,x2:number,y2:number,linea:number,valor:number)=>{
     const vertical=x1===x2;
-    formas.push({tipo:'cota',x1,y1,x2,y2,linea,valor,marcas:base/3,estilo:'XERAL',texto:{x:vertical?linea-base:(x1+x2)/2,y:vertical?(y1+y2)/2:linea-base/2,ancla:'middle',giro:vertical?-90:0}});
+    const forma:CotaAlzado={tipo:'cota',x1,y1,x2,y2,linea,valor,marcas:base/3,estilo:'XERAL',texto:{x:vertical?linea-base:(x1+x2)/2,y:vertical?(y1+y2)/2:linea-base/2,ancla:'middle',giro:vertical?-90:0}};
+    formas.push(forma);return forma;
   };
-  let y=base*8,indiceTramo=0;
+  let y=base*8;
+  const primerTramo=tramos.findIndex(t=>t.tipo==='tramo');
   const ultimoTramo=tramos.reduce((ultimo,t,i)=>t.tipo==='tramo'?i:ultimo,-1);
   for(const [i,t] of tramos.entries()){
     const inicio=y-base*8,indiceForma=formas.length;
@@ -47,11 +50,11 @@ export function alzadoAraujo(p: Puerta, letra: string): GeometriaAlzado {
       cota(w,yy-e.ancho/2,w,yy+e.ancho/2,w+base*4,e.ancho);
       cota(0,yy,0,y+d+t.alto,-base*12,e.altura);
     }
-    const codigo=t.tipo==='bolsa'?letra:letra+(++indiceTramo);
+    const codigo=letra+(i+1);
     let libres:Array<[number,number]>=[[y+m.arriba.marca+base/4,y+h-m.abajo.marca-base/4]];
     for(const [b0,b1]of obstaculos)libres=libres.flatMap(([u,v])=>b1<=u||b0>=v?[[u,v]]:[[u,Math.min(v,b0)],[Math.max(u,b1),v]].filter(([a,b])=>b>a)) as Array<[number,number]>;
     const [u,v]=libres.sort((a,b)=>(b[1]-b[0])-(a[1]-a[0]))[0]??[y+m.arriba.marca,y+h-m.abajo.marca];
-    const centro=(u+v)/2,primero=t.tipo==='tramo'&&indiceTramo===1;
+    const centro=(u+v)/2,primero=i===primerTramo;
     if(primero){
       const lineas=[t.of||p.of||'SIN OF','REVÉS',...tramos.some(t=>t.rotulacion)?['ROTULACIÓN','POR DERECHO']:[]];
       const tamano=Math.min(base*2,Math.max(base*.7,(v-u)/(lineas.length*1.5)));
@@ -73,8 +76,10 @@ export function alzadoAraujo(p: Puerta, letra: string): GeometriaAlzado {
     if(t.rotulacion){
       const r=t.rotulacion,bajo=r.centrada?t.alto/2:r.desdeBajo??8;
       const yy=y+d+t.alto-bajo,x=w-r.desdeDerecha;
-      texto('ROTULACIÓN',x-r.ancho-base,yy-base,base,'end');
-      cota(x,yy,x,y+d+t.alto,x-r.ancho-base,bajo);
+      const rotuloX=x-r.ancho-base;
+      texto('ROTULACIÓN',rotuloX,yy-base,base,'end');
+      const altura=cota(x,yy,x,y+d+t.alto,rotuloX-anchoArial('ROTULACIÓN',base)-base*2,bajo);
+      altura.texto={...altura.texto,y:yy-base,fijar:true};
       cota(x,yy,w,yy,yy,r.desdeDerecha);
       cota(x-r.ancho,yy,x,yy,yy-base*4,r.ancho);
     }

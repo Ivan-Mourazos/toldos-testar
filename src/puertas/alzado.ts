@@ -47,7 +47,8 @@ export interface CotaAlzado {
   marcas: number;
   /** Estilo real del plano: las cadenas pequeñas no dependen de la longitud medida. */
   estilo?: 'XERA 15' | 'XERAL' | 'XERAL 5';
-  texto: { x: number; y: number; ancla: 'start' | 'middle' | 'end'; giro?: number; clase?: string };
+  /** `fijar` conserva en el DWG esta posición de texto fuera de una cota corta. */
+  texto: { x: number; y: number; ancla: 'start' | 'middle' | 'end'; giro?: number; clase?: string; fijar?: boolean };
 }
 export type FormaAlzado = RectAlzado | LineaAlzado | PoligonoAlzado | PolilineaAlzado | TextoAlzado | CotaAlzado;
 

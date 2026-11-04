@@ -417,6 +417,7 @@ const comaCota = (v) => String(Math.round(v * 10) / 10).replace('.', ',');
  * en `d` (la y si es horizontal, la x si es vertical). `valor` en cm: si no es lo que mide, va escrito.
  * Con `alineada`, la cota va paralela a los dos puntos y mide su distancia real (el lado diagonal del saco con
  * suelo inclinado; Iván, 23/10/2026); su línea va a `desvio` metros, a la izquierda de 1 → 2.
+ * `posicionTexto` permite sacar el número de una cota corta sin reducir su letra ni cambiar la medida.
  */
 function cotaDxf(c, numero, nuevo, ent) {
   const e = ESTILOS_COTA[c.estilo] ?? ESTILOS_COTA.XERAL;
@@ -450,17 +451,17 @@ function cotaDxf(c, numero, nuevo, ent) {
   }
   // Línea de cota cortada por el texto si cabe; si no, entera y el texto encima.
   const medio = (a + b) / 2, ancho = anchoArial(texto, e.texto) + 2 * e.hueco;
-  const cabe = ancho < b - a - 2 * e.flecha;
+  const cabe = !c.posicionTexto && ancho < b - a - 2 * e.flecha;
   if (cabe) cuerpo += linea(xy(a + e.flecha, c.d), xy(medio - ancho / 2, c.d)) + linea(xy(medio + ancho / 2, c.d), xy(b - e.flecha, c.d));
   else cuerpo += linea(xy(a + e.flecha, c.d), xy(b - e.flecha, c.d));
   const tt = cabe ? c.d : c.d + (v ? -1 : 1) * e.texto * 0.8;
-  const [tx, ty] = xy(medio, tt);
+  const [tx, ty] = c.posicionTexto ?? xy(medio, tt);
   cuerpo += dentro('MTEXT', 'AcDbMText', ` 10\n${n(tx)}\n 20\n${n(ty)}\n 30\n0.0\n 40\n${n(e.texto)}\n 41\n0.0\n 71\n     5\n 72\n     1\n  1\n${texto}\n  7\nXERAL\n 11\n${c.alineada ? n(ux) : v ? '0.0' : '1.0'}\n 21\n${c.alineada ? n(uy) : v ? (c.textoGirado ? '-1.0' : '1.0') : '0.0'}\n 31\n0.0\n 73\n     1\n 44\n1.0\n`);
   const bloque = `  0\nBLOCK\n  5\n${nuevo()}\n330\n${registro}\n100\nAcDbEntity\n  8\n0\n100\nAcDbBlockBegin\n  2\n${nombre}\n 70\n     1\n 10\n0.0\n 20\n0.0\n 30\n0.0\n  3\n${nombre}\n  1\n\n`
     + cuerpo + `  0\nENDBLK\n  5\n${nuevo()}\n330\n${registro}\n100\nAcDbEntity\n  8\n0\n100\nAcDbBlockEnd\n`;
   const [dx, dy] = xy(s2, c.d);
   const override = c.rotulo == null && texto === comaCota(mide) ? '' : `  1\n${texto}\n`;
-  const entidad = ent('DIMENSION', c.capa, 'AcDbDimension', `280\n     0\n  2\n${nombre}\n 10\n${n(dx)}\n 20\n${n(dy)}\n 30\n0.0\n 11\n${n(tx)}\n 21\n${n(ty)}\n 31\n0.0\n 70\n    ${c.alineada ? 33 : 32}\n 71\n     5\n 42\n${n(mide)}\n${override}${c.textoGirado ? ' 53\n180.0\n' : ''}  3\n${c.estilo ?? 'XERAL'}\n100\nAcDbAlignedDimension\n 13\n${n(c.x1)}\n 23\n${n(c.y1)}\n 33\n0.0\n 14\n${n(c.x2)}\n 24\n${n(c.y2)}\n 34\n0.0\n${c.alineada ? '' : `${v ? ' 50\n90.0\n' : ''}100\nAcDbRotatedDimension\n`}`);
+  const entidad = ent('DIMENSION', c.capa, 'AcDbDimension', `280\n     0\n  2\n${nombre}\n 10\n${n(dx)}\n 20\n${n(dy)}\n 30\n0.0\n 11\n${n(tx)}\n 21\n${n(ty)}\n 31\n0.0\n 70\n    ${(c.alineada ? 33 : 32) + (c.posicionTexto ? 128 : 0)}\n 71\n     5\n 42\n${n(mide)}\n${override}${c.textoGirado ? ' 53\n180.0\n' : ''}  3\n${c.estilo ?? 'XERAL'}\n100\nAcDbAlignedDimension\n 13\n${n(c.x1)}\n 23\n${n(c.y1)}\n 33\n0.0\n 14\n${n(c.x2)}\n 24\n${n(c.y2)}\n 34\n0.0\n${c.alineada ? '' : `${v ? ' 50\n90.0\n' : ''}100\nAcDbRotatedDimension\n`}`);
   const registroTabla = `  0\nBLOCK_RECORD\n  5\n${registro}\n330\n1\n100\nAcDbSymbolTableRecord\n100\nAcDbBlockTableRecord\n  2\n${nombre}\n340\n0\n 70\n     0\n280\n     1\n281\n     0\n`;
   return { entidad, bloque, registro: registroTabla };
 }

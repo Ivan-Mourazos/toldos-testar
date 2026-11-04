@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { anchoArial } from '../domain/corteLona/texto.js';
 import { describe, expect, it } from 'vitest';
 import { calcularPuerta } from './calcular.ts';
 import { generarCortePuertas } from './corte.ts';
@@ -56,13 +57,28 @@ describe('ARAUJO, tramos y bolsas con canutillo', () => {
     expect(vista.archivo).not.toBeNull();
     expect(vista.archivo!.entidades.textos.some(t=>/\bET\b/.test(t.valor))).toBe(false);
   });
-  it('5365 conserva exactamente cálculo y DXF del bot al retirar las E.T. y simplificar el plano',()=>{
+  it('5365 conserva el cálculo al corregir los rótulos del plano y del bot',()=>{
     const p=araujo5365(),doc=pedido(p);
-    const valores=[JSON.stringify(calcularPuerta(p)),generarCortePuertas(doc).archivo!.dxf];
+    const valores=[JSON.stringify(calcularPuerta(p))];
     expect(valores.map(x=>createHash('sha256').update(x).digest('hex'))).toEqual([
       '9c0334ba14b36fc630c77164a78490687c495c34754fbae9fd943de266e4ede8',
-      '6548d48a34deede74a329e847ac5c1556fda0704fdf2102390d10094759cc5be',
     ]);
+    const vista=generarCortePuertas(doc);
+    expect(vista.archivo!.entidades.textos.map(t=>t.valor)).toContain('A4 · BOLSA');
+    expect(vista.archivo!.entidades.textos.some(t=>/SACO/.test(t.valor))).toBe(false);
+    const plano=escribirPlanoPuertas({pedido:doc,cabecera:{cliente:'ARAUJO',tecnico:'IVÁN',revisor:'',fecha:'2026-11-04'}});
+    const textos=registrosDxf(plano).filter(r=>r.tipo==='TEXT'||r.tipo==='MTEXT').map(r=>valor(r,1));
+    expect(textos).toContain('A4');
+    expect(textos).toContain('A4 · BOLSA');
+  });
+  it('numera también las bolsas intercaladas igual en el alzado y en el corte',()=>{
+    const p=araujo5365(),bolsa=p.araujo!.tramos[3];
+    p.araujo!.tramos=[bolsa,...p.araujo!.tramos.slice(0,2),{...bolsa}];
+    const g=geometriaAlzado(p,calcularPuerta(p));
+    g.grupos!.forEach((grupo,i)=>expect(grupo).toContainEqual(expect.objectContaining({tipo:'texto',lineas:['A'+(i+1)]})));
+    const textos=generarCortePuertas(pedido(p)).archivo!.entidades.textos.map(t=>t.valor);
+    expect(textos).toContain('A1 · BOLSA');expect(textos).toContain('A4 · BOLSA');
+    expect(textos).toContain('A2');expect(textos).toContain('A3');
   });
   it('rótulos de Iván: identificador dentro, X4 aparte, OF y REVÉS una vez por OF, remates breves y sin notas de soldadura añadidas',()=>{
     const p=araujo5733(),g=geometriaAlzado(p,calcularPuerta(p));
@@ -83,7 +99,7 @@ describe('ARAUJO, tramos y bolsas con canutillo', () => {
     }
     expect(modelo[0].filter(f=>f.tipo==='cota'&&f.valor===7)).toHaveLength(2);
     expect(modelo[2]).toContainEqual(expect.objectContaining({tipo:'cota',valor:8}));
-    expect(modelo[3]).toContainEqual(expect.objectContaining({tipo:'texto',lineas:['A']}));
+    expect(modelo[3]).toContainEqual(expect.objectContaining({tipo:'texto',lineas:['A4']}));
   });
   it('rechaza E.T. sin ancho, marcas cruzadas y entradas fuera, solapadas o que invaden ventanas',()=>{
     for(const parche of [{abajo:{tipo:'et',ancho:0}},{arriba:{tipo:'et',ancho:150}},
@@ -119,6 +135,26 @@ describe('ARAUJO, tramos y bolsas con canutillo', () => {
     expect(p.araujo!.tramos[2].rotulacion).toEqual({texto:'ANAGRAMA J. ARAUJO',ancho:20,desdeDerecha:15,desdeBajo:8});
     expect(calcularPuerta(p).avisos).toEqual([]);
     expect(geometriaAlzado(p,calcularPuerta(p)).formas.filter(f=>f.tipo==='texto').flatMap(f=>f.tipo==='texto'?f.lineas:[]).join(' ')).not.toMatch(/8 del bajo|pendientes de comprobar/);
+  });
+  it('la cota 8 queda a la izquierda de ROTULACIÓN, con el tamaño de las demás cotas y el 15 al borde derecho',()=>{
+    const p=araujo5365(),g=geometriaAlzado(p,calcularPuerta(p));
+    const grupo=g.grupos![2],rotulo=grupo.find(f=>f.tipo==='texto'&&f.lineas[0]==='ROTULACIÓN')!;
+    const alto=grupo.find(f=>f.tipo==='cota'&&f.valor===8)!;
+    const derecho=grupo.find(f=>f.tipo==='cota'&&f.valor===15)!;
+    const contorno=grupo.find(f=>f.tipo==='rect')!;
+    if(rotulo.tipo!=='texto'||alto.tipo!=='cota'||derecho.tipo!=='cota'||contorno.tipo!=='rect')throw Error('Faltan las cotas del anagrama');
+    const anchoTexto=anchoArial(rotulo.lineas[0],rotulo.tamano!);
+    expect(alto.linea).toBeLessThan(rotulo.x-anchoTexto-g.letraBase);
+    expect(alto.texto.y).toBeLessThan(Math.min(alto.y1,alto.y2));
+    expect(derecho.x2).toBe(contorno.x+contorno.ancho);
+    expect(derecho.x2-derecho.x1).toBe(15);
+    const plano=escribirPlanoPuertas({pedido:pedido(p),cabecera:{cliente:'ARAUJO',tecnico:'IVÁN',revisor:'',fecha:'2026-11-04'}});
+    const cotas=registrosDxf(plano,'BLOCKS').filter(r=>r.tipo==='MTEXT');
+    expect(numero(cotas.find(r=>valor(r,1)==='8')!,40)).toBe(0.1);
+    expect(numero(cotas.find(r=>valor(r,1)==='8')!,40)).toBe(numero(cotas.find(r=>valor(r,1)==='15')!,40));
+    const dimension=registrosDxf(plano).find(r=>r.tipo==='DIMENSION'&&Math.abs(numero(r,42)-8)<1e-6)!;
+    expect(numero(dimension,21)).toBeGreaterThan(Math.max(numero(dimension,23),numero(dimension,24)));
+    expect(numero(dimension,70)&128).toBe(128);
   });
 
   it('los DXF distinguen rotulador rojo a 7 del corte y referencia magenta a 3,7, exclusiva del plano',()=>{
