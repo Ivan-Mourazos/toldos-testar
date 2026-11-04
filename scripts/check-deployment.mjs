@@ -203,7 +203,7 @@ async function checkEcosystem() {
       watch: false,
       wait_ready: true,
       kill_timeout: 15000,
-      max_memory_restart: '768M'
+      max_memory_restart: '2G'
     };
 
     for (const [key, value] of Object.entries(expected)) {

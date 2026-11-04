@@ -16,7 +16,7 @@ module.exports = {
       listen_timeout: 15000,
       kill_timeout: 15000,
       restart_delay: 3000,
-      max_memory_restart: '768M',
+      max_memory_restart: '2G',
       env: {
         NODE_ENV: 'production',
         ENABLE_HERA: 'true',
