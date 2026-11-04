@@ -1,5 +1,6 @@
 import type { FormaAlzado, GeometriaAlzado } from './alzado.ts';
 import type { Puerta, ResultadoPuerta } from './tipos.ts';
+import { REGLAS_SANTA_PAU } from './santapau.ts';
 
 /** Las referencias terminadas y las piezas de corte comparten las mismas coordenadas. */
 export function alzadoSantaPau(p:Puerta,r:ResultadoPuerta,letra:string):GeometriaAlzado{
@@ -15,7 +16,7 @@ export function alzadoSantaPau(p:Puerta,r:ResultadoPuerta,letra:string):Geometri
   rect('puerta-pano',0,H-origen-pano.alto,F,pano.alto);
   for(const [x1,y1,x2,y2]of pano.marcas)linea('puerta-marca',x1,H-origen-y1,x2,H-origen-y2);
   const desde=H-origen-pano.alto,hasta=H-origen;
-  const obstaculos=[...p.entradas.map(e=>H-e.altura),H-12.5,H-17.5].filter(y=>y>desde&&y<hasta).sort((a,b)=>a-b);
+  const obstaculos=[...p.entradas.map(e=>H-e.altura),H-10,H-15].filter(y=>y>desde&&y<hasta).sort((a,b)=>a-b);
   const puntos=[desde,...obstaculos,hasta];
   const libre=puntos.slice(1).map((y,i)=>[puntos[i]+9,y-9]).reduce((a,b)=>b[1]-b[0]>a[1]-a[0]?b:a);
   const centro=(libre[0]+libre[1])/2;
@@ -37,7 +38,8 @@ export function alzadoSantaPau(p:Puerta,r:ResultadoPuerta,letra:string):Geometri
   cota(0,H,0,H-e.altura,-18-i*14);
   texto('5 CM (HUECOS)',e.largo*.7,H-e.altura-10,3);
   if(s.refuerzos){
-   rect('puerta-referencia',0,H-e.altura-4.5,8,9);rect('puerta-referencia',e.largo-8,H-e.altura-4.5,8,9);
+   const ancho=s.anchoRefuerzo??REGLAS_SANTA_PAU.anchoRefuerzo;
+   rect('puerta-referencia',0,H-e.altura-4.5,ancho,e.alto);rect('puerta-referencia',e.largo-ancho,H-e.altura-4.5,ancho,e.alto);
    for(const x of [0,e.largo]){
     const sentido=x===0?1:-1;
     texto('REFUERZO EN E.T.',x+sentido*35,H-e.altura+14,3);

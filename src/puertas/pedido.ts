@@ -40,7 +40,8 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
     const hueco=(x:unknown)=>cotas(x,['x','y','ancho','alto','radio']);
     if(p.santapau!==undefined){
       const s=p.santapau;
-      if(p.clientePuertas!=='santapau'||!objeto(s)||!cotas(s,['aumentoBajo','altoFaldon'])||!['izquierda','derecha','sin confirmar'].includes(s.ladoCerrado as string)||typeof s.refuerzos!=='boolean'||typeof s.logoDosCaras!=='boolean')return error();
+      if(p.clientePuertas!=='santapau'||!objeto(s)||!cotas(s,['aumentoBajo','altoFaldon'])||!['izquierda','derecha','sin confirmar'].includes(s.ladoCerrado as string)||typeof s.refuerzos!=='boolean')return error();
+      if(s.anchoRefuerzo!==undefined&&!cotas(s,['anchoRefuerzo']))return error();
     }
     if(p.araujo!==undefined) {
       const a=p.araujo;

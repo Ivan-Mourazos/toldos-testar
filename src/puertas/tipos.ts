@@ -35,7 +35,8 @@ export interface ConfiguracionAraujo {
 }
 export interface Puerta {
   /** Santa Pau: los bordes visibles de mirilla van en ventanas; ejes de tubo en entradas. */
-  santapau?: { aumentoBajo: number; altoFaldon: number; ladoCerrado: 'izquierda'|'derecha'|'sin confirmar'; refuerzos: boolean; logoDosCaras: boolean };
+  santapau?: { /** Conservado al leer borradores iniciales; la regla confirmada aplica siempre +5. */
+    aumentoBajo: number; altoFaldon: number; ladoCerrado: 'izquierda'|'derecha'|'sin confirmar'; refuerzos: boolean; anchoRefuerzo?: number };
   /** Opcionales: los documentos anteriores conservan su interpretación y sus bytes. */
   clientePuertas?: string;
   tipoPuerta?: string;
@@ -91,7 +92,7 @@ export interface AvisoPuerta { codigo: string; nivel: 'error' | 'aviso'; texto: 
 export interface PiezaPuerta {
   id: string;
   nombre: string;
-  clase: 'pano' | 'entrada' | 'cristal' | 'cacho' | 'saco';
+  clase: 'pano' | 'entrada' | 'cristal' | 'cacho' | 'saco' | 'refuerzo';
   ancho: number;
   alto: number;
   cantidad: number;

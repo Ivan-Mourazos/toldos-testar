@@ -373,13 +373,13 @@ Respuestas de Iván. «Pendiente» quiere decir que la web todavía no lo aplica
 
 ## Puertas · Santa Pau · 04/11/2026
 
-Preguntas reunidas para Iván, después de medir los 14 fabricados. [Tabla completa, piezas y comparación con Portanova](./puertas-santapau.md).
+**Las seis contestadas por Iván el 04/11/2026.** Criterio general: «no te fíes mucho de los pedidos antiguos porque se han hecho cambios; fíate de los últimos como el mío». Manda el **corte del4815**, suyo; los antiguos solo sirven de apoyo. [Tabla completa, piezas y comparación con Portanova](./puertas-santapau.md).
 
 | Código | Duda en lenguaje llano | Tratamiento mientras tanto |
 | --- | --- | --- |
-| Q-SP01 | ¿El bajo actual lleva 2,5 cm de más? 11 de 19 puertas medidas, incluidas 8 de 9 de 2024–2026, lo dibujan así. 4404 lleva 5; en 2023 hay 5, 16 y 17,5. En 4815 el alzado deja 127,5 de paño inferior pero el corte tiene 130. En 5055 el inferior está dividido en 89,5 y 67 y no coincide con el alzado. ¿Qué explica esas diferencias y cuándo se incorpora una E.T. en lugar de cortarla suelta? | Por instrucción del encargo se propone la mayoría: bajo +2,5 editable y tiras independientes de 9. Se conservan las diferencias en la tabla; no se copian ni se crean empates automáticos por suposición |
-| Q-SP02 | ¿El cristal que va de lado a lado debe tener 1 cm más por cada lado? 4815 corta F+2 y alto visible+4; en anteriores aparece F+1 (4404, 5658) o F+3,3 (2196 y varios de 2024). Algunas cotas escritas de mirilla tampoco coinciden con lo dibujado (1326, 2858, 2958 y 4404) | Se aplica el reciente 4815: F+2; con márgenes se mantiene el ejemplo 5055: hueco+4 y cachos de margen+1. Se transcriben los bordes visibles del pedido, no los de una plantilla antigua |
-| Q-SP03 | Los refuerzos de los extremos de las E.T. miden 8 cm de largo en 4815 y 5363. ¿De cuánto se cortan de alto y se cortan aparte o se preparan de restos? | Se dibujan y rotulan ambos extremos; no se inventa una pieza de corte de 8×9 ni otra altura |
-| Q-SP04 | ¿De qué tamaño va el logo DISP y a qué distancia de los bordes? La hoja pide dos caras pero no da cotas de colocación | Se indica «LOGO DISP A DOS CARAS» como trabajo pendiente de rotulación; sin vector ni ubicación inventados |
-| Q-SP05 | ¿Qué ancho útil de rollo se usa hoy para cada lona, transparente y faldón? Los anidados acotan entre 297 y 299,5, pero no acreditan el rollo comercial ni el del material rojo M2 de 5363 | Propuestas 300/140/300 editables, con aviso explícito y confirmación de rollos por el técnico |
-| Q-SP06 | ¿El lado cerrado de las E.T. es siempre el derecho mirando por el revés? 4815 señala pisar 1 cm a la derecha; 5363 pide derecho cerrado e izquierdo preparado para cerrarlo después de introducir el tubo | El lado empieza sin confirmar. Se exige elegirlo para generar el bot; los dos ejemplos se generan con derecho por su hoja/plano |
+| Q-SP01 · Contestada | Aumento del paño inferior y E.T. | **Iván, 04/11:** «haz exactamente lo del CORTE del 4815», no la mayoría histórica ni el alzado. Bajo **+5 cm**: inferiores130, no127,5. E.T. **sueltas de9**. Propuesta +2,5 retirada, también al calcular los borradores iniciales |
+| Q-SP02 · Contestada | Aumentos del cristal | **Iván, 04/11:** «como el 4815». Se mantiene cristal de lado a lado **F+2 por h+4**, sin trasladar los aumentos de pedidos antiguos |
+| Q-SP03 · Contestada | Corte y cantidad de refuerzos | **Iván, 04/11:** «SÍ se cortan: de ancho el que indica el pedido (8 en 4815/5363) y de alto como la E.T. (9 en este caso)». **Dos por E.T.**, misma lona/color; piezas reales en bot, plano y consumo. Con tres E.T.: seis de8×9 por puerta |
+| Q-SP04 · Contestada | Logos | **Iván, 04/11:** «los logos no los marcamos nosotros». Se retiran campo, aviso, nota y marca de logo de la pantalla, plano y corte |
+| Q-SP05 · Contestada | Rollos | **Iván, 04/11:** «iguales al resto, 300/140/300 por defecto sin aviso de provisional». Valores iniciales confirmados y editables |
+| Q-SP06 · Contestada | Lado cerrado | **Iván, 04/11:** «mejor elegir». Elección obligatoria por pedido, mirando por el revés; sin elegir no se genera el bot |

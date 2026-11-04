@@ -30,17 +30,23 @@ describe('Santa Pau: confección contrastada con varios fabricados',()=>{
   expect(textos).toContainEqual(expect.objectContaining({lineas:['VELCRO(5) BRAVO REVÉS AL CORTE'],y:p.alto+35+p.santapau!.altoFaldon+8}));
   const dxf=escribirPlanoPuertas({pedido,cabecera:{cliente:'SANTA PAU',tecnico:'IVÁN',revisor:'',fecha:'04/11/2026'}});
   expect(dxf).not.toMatch(/CONTRASTE 4815|BAJO PROPUESTO|CORTE HISTÓRICO|POR CONFIRMAR|PROPUESTA DESDE HOJA/);
-  expect(calcularPuerta(p).avisos).toContainEqual(expect.objectContaining({codigo:'LOGO',nivel:'aviso'}));
+  expect(calcularPuerta(p).avisos.some(a=>['LOGO','REFUERZOS','ROLLOS_REVISAR'].includes(a.codigo))).toBe(false);
   expect(calcularPuerta(p).avisos).toContainEqual(expect.objectContaining({codigo:'NOTA_REVISION',texto:p.notaPlano,nivel:'aviso'}));
  });
  it('ofrece ficha propia y no hereda saco ni reglas Portanova',()=>{
   expect(fichaPorCodigo('038661')).toMatchObject({id:'santapau',nombre:'Santa Pau',calculo:'santapau',unidadHoja:'mm'});
-  expect(nuevaPuertaDeCliente('santapau','enrollable').santapau).toMatchObject({aumentoBajo:2.5,altoFaldon:35,ladoCerrado:'sin confirmar'});
+  expect(nuevaPuertaDeCliente('santapau','enrollable').santapau).toMatchObject({aumentoBajo:5,altoFaldon:35,ladoCerrado:'sin confirmar',anchoRefuerzo:8});
+  expect(fichaPorCodigo('038661')).toMatchObject({rollosConfirmados:true,rollos:{rollo:300,rolloCristal:140,rolloSaco:300}});
+  expect(nuevaPuertaDeCliente('santapau','enrollable').santapau).not.toHaveProperty('logoDosCaras');
  });
- it.each([[281.5,400,219],[163.5,350,169]])('4815: F%s H%s; conserva superior y propone inferior mayoritario', (f,h,superior)=>{
+ it.each([[281.5,400,219],[163.5,350,169]])('4815: F%s H%s; manda su corte con inferior de130 y refuerzos', (f,h,superior)=>{
   const r=calcularPuerta(caso(f,h));
   expect(r.avisos.filter(a=>a.nivel==='error')).toEqual([]);
-  expect(r.piezas.filter(p=>p.clase==='pano').map(p=>[p.ancho,p.alto])).toEqual([[f,superior],[f,127.5]]);
+  expect(r.piezas.filter(p=>p.clase==='pano').map(p=>[p.ancho,p.alto])).toEqual([[f,superior],[f,130]]);
+  expect(r.piezas.find(p=>p.nombre==='Paño inferior')!.marcas.map(m=>m[1])).toEqual([15,20,59.5,121.5]);
+  const refuerzos=r.piezas.filter(p=>p.clase==='refuerzo');
+  expect(refuerzos.every(p=>p.ancho===8&&p.alto===9&&p.material==='LAC900 BLANCO')).toBe(true);
+  expect(refuerzos.reduce((s,p)=>s+p.cantidad,0)).toBe(6);
   expect(r.piezas.find(p=>p.clase==='cristal')).toMatchObject({ancho:f+2,alto:64});
   expect(r.piezas.filter(p=>p.clase==='entrada')).toHaveLength(3);
   expect(r.piezas.filter(p=>p.clase==='entrada').every(p=>p.alto===9&&p.huecos.length===0)).toBe(true);
@@ -49,9 +55,32 @@ describe('Santa Pau: confección contrastada con varios fabricados',()=>{
  it('5055: mirilla con márgenes y cachos 21×54; no mezcla ejes con bordes',()=>{
   const p=caso(260.5,390);p.ventanas=[{x:20,y:145,ancho:220.5,alto:50,radio:0,radioCristal:0}];p.entradas=[60,132.5,205].map(altura=>({...p.entradas[0],altura}));
   const r=calcularPuerta(p);
-  expect(r.piezas.filter(x=>x.clase==='pano').map(x=>x.alto)).toEqual([199,147.5]);
+  expect(r.piezas.filter(x=>x.clase==='pano').map(x=>x.alto)).toEqual([199,150]);
   expect(r.piezas.find(x=>x.clase==='cristal')).toMatchObject({ancho:224.5,alto:54});
   expect(r.piezas.find(x=>x.clase==='cacho')).toMatchObject({ancho:21,alto:54,cantidad:2});
+ });
+ it('un borrador inicial con +2,5 y logo se calcula con la respuesta de Iván',()=>{
+  const p=caso();p.santapau.aumentoBajo=2.5;
+  const legado={...p,santapau:{...p.santapau,logoDosCaras:true}};
+  const r=calcularPuerta(legado);
+  expect(r.piezas.find(x=>x.nombre==='Paño inferior')).toMatchObject({alto:130,origenAlzado:[0,-5]});
+  expect(r.avisos.some(a=>/LOGO|ROLLOS_REVISAR|REFUERZOS/.test(a.codigo))).toBe(false);
+ });
+ it('el ancho de refuerzo viene del pedido y el bot corta seis por puerta con su consumo',()=>{
+  const p=caso();p.cantidad=2;p.santapau.anchoRefuerzo=10;
+  const pedido:PedidoPuertas={schemaVersion:1,kind:'puertas',orderCode:'AR2604815',elementos:[{id:'a',input:p}]};
+  const con=generarCortePuertas(pedido);
+  const refuerzos=con.cortes.flatMap(c=>c.colocadas).filter(t=>t.pieza.clase==='refuerzo');
+  expect(refuerzos).toHaveLength(12);
+  expect(refuerzos.every(t=>t.pieza.ancho===10&&t.pieza.alto===9)).toBe(true);
+  expect(refuerzos.reduce((s,t)=>s+t.pieza.ancho*t.pieza.alto,0)).toBe(1080);
+  expect(con.archivo!.dxf).toContain('REFUERZO');
+  expect(con.archivo!.entidades.textos.some(t=>/LOGO|DISP/.test(t.valor))).toBe(false);
+  const sin=generarCortePuertas({...pedido,elementos:[{id:'a',input:{...p,santapau:{...p.santapau,refuerzos:false}}}]});
+  const area=(vista:typeof con)=>vista.resultados.flatMap(r=>r.piezas).reduce((s,x)=>s+x.ancho*x.alto*x.cantidad,0);
+  expect(area(con)-area(sin)).toBe(1080);
+  p.santapau.anchoRefuerzo=0;
+  expect(generarCortePuertas(pedido).archivo).toBeNull();
  });
  it('RPS identifica 038661, cantidades y rojo3002 sin completar tubos ni mirillas',()=>{
   const {puertas}=puertasDesdeRps([{articulo:'PUERTAENR',cantidad:2,of:'0233644',descripcion:'LONA PARA PUERTA ENROLLABLE',comentario:'DE MEDIDAS 197 CM X 340 CM, COLOR ROJO 3002'}],{clienteCodigo:'038661'});

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { calcularPuerta } from '../../puertas/calcular.ts';
+import { REGLAS_SANTA_PAU } from '../../puertas/santapau.ts';
 import type { Puerta } from '../../puertas/tipos.ts';
 import { SelectField } from '../components/SelectField';
 import { InputDecimal } from '../remolques/InputDecimal';
@@ -48,15 +49,14 @@ export function ConfigurarSantaPau({p,cambiar,corte,derecha,letra}:{p:Puerta;cam
     </>}
     {tab==='remates'&&<>
      <div className="puerta-campos">
-      <Numero titulo="Aumento del paño bajo el bajo terminado (cm)" valor={s.aumentoBajo} cambiar={aumentoBajo=>remate({aumentoBajo})}/>
       <Numero titulo="Alto de corte del faldón (cm)" valor={s.altoFaldon} cambiar={altoFaldon=>remate({altoFaldon})}/>
       <SelectField label="Lado cerrado de las E.T. por el revés" value={s.ladoCerrado} options={['sin confirmar','izquierda','derecha']} optionLabel={v=>v==='sin confirmar'?'Sin confirmar':v==='derecha'?'Derecha':'Izquierda'} onChange={ladoCerrado=>remate({ladoCerrado:ladoCerrado as typeof s.ladoCerrado})}/>
      </div>
-     <p className="puerta-ayuda">Propuesta del bajo: 2,5 cm, mayoritaria en los fabricados. El corte de 4815 difiere de su alzado; comprueba el remate antes de fabricar.</p>
-     <label className="puerta-casilla"><input type="checkbox" checked={s.refuerzos} onChange={e=>remate({refuerzos:e.target.checked})}/>Refuerzo de 8 cm en ambos extremos de todas las E.T.</label>
-     <label className="puerta-casilla"><input type="checkbox" checked={s.logoDosCaras} onChange={e=>remate({logoDosCaras:e.target.checked})}/>Logo DISP a dos caras (tamaño y colocación por confirmar)</label>
+     <p className="puerta-ayuda">Bajo del paño: +5 cm, como el corte del 4815.</p>
+     <label className="puerta-casilla"><input type="checkbox" checked={s.refuerzos} onChange={e=>remate({refuerzos:e.target.checked})}/>Refuerzos en ambos extremos de todas las E.T.</label>
+     {s.refuerzos&&<Numero titulo="Ancho de corte del refuerzo (cm)" valor={s.anchoRefuerzo??REGLAS_SANTA_PAU.anchoRefuerzo} cambiar={anchoRefuerzo=>remate({anchoRefuerzo})}/>}
      <label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.sacoDiagonalesAmarillas)} onChange={e=>patch({sacoDiagonalesAmarillas:e.target.checked})}/>Franja negra/amarilla en el faldón (impresión digital)</label>
-     <p className="puerta-ayuda">Los refuerzos se señalan en el plano; su alto de corte queda pendiente de confirmar. El logo se indica como trabajo de rotulación.</p>
+     <p className="puerta-ayuda">Se cortan dos refuerzos por E.T., del ancho del pedido y del mismo alto que la entrada (9 cm).</p>
     </>}
     {tab==='materiales'&&<div className="puerta-campos">
      {texto('Material de lona','material')}{texto('Material transparente','materialCristal')}{texto('Material del faldón','materialSaco')}

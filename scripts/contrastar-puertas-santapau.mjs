@@ -27,7 +27,7 @@ try{
   await fs.writeFile(`${base}.dwg`,dwg);
   await page.setContent(`<body style="margin:0;background:white">${svgPrimitivas(proyectarPagina(leerPlanoTexto(plano)))}</body>`);
   await page.screenshot({path:`${base}-presentacion.png`});
-  await fs.writeFile(`${base}-contraste.json`,JSON.stringify({avisos:corte.avisos,piezas:corte.resultados.map(r=>r.piezas.map(p=>({nombre:p.nombre,ancho:p.ancho,alto:p.alto,cantidad:p.cantidad}))),diferenciasOficina:pedido.orderCode==='AR2604815'?['Inferiores127,5 cm con regla mayoritaria; corte histórico130.','Cristales, superiores, E.T.9 y faldones35 contrastados con el fabricado.']:['Pedido pendiente: no hay plano de oficina; propuesta desde hoja y RPS.']},null,2));
+  await fs.writeFile(`${base}-contraste.json`,JSON.stringify({avisos:corte.avisos,piezas:corte.resultados.map(r=>r.piezas.map(p=>({nombre:p.nombre,clase:p.clase,ancho:p.ancho,alto:p.alto,cantidad:p.cantidad}))),consumo:corte.cortes.map(c=>({material:c.material,anchoRolloMm:c.anchoRollo,largoMm:c.largo,areaPiezasCm2:c.colocadas.reduce((s,t)=>s+t.pieza.ancho*t.pieza.alto*(t.pieza.multiplicador??1),0)})),diferenciasOficina:pedido.orderCode==='AR2604815'?['Antes: inferiores127,5; ahora130, como el corte de Iván.','Se cortan12 refuerzos de8×9 en total; E.T. sueltas de9, cristales, superiores y faldones conservan sus medidas.']:['Pedido pendiente: hoja y RPS con reglas confirmadas por Iván desde el corte4815.','Se cortan18 refuerzos de8×9 para las tres puertas.']},null,2));
   console.log(`${pedido.orderCode}: DWG, DXF bot y presentación PNG en ${dir}`);
  }
 }finally{await browser.close();}
