@@ -105,3 +105,9 @@ Se han contrastado textos y posiciones de AR2604815, AR2505055, AR2504404 y AR25
 | Refuerzos | Ninguna pieza de corte | **12 piezas de8×9** en total |
 
 El área nominal de lona del cuerpo aumenta1.112,5 cm² por los dos inferiores y864 cm² por los refuerzos: **1.976,5 cm² (0,19765 m²)** más. El anidado incluye cada refuerzo, aunque pueda aprovechar huecos existentes sin aumentar el largo de rollo.
+
+### Contraste final del5363 y presentaciones · 04/11/2026
+
+El [informe por capas](./puertas-santapau-capas.md) recoge la revisión posterior del5363, que pasa a ser la referencia actual, la colocación comparada con el anidado común y las dos hojas por pedido. Se conservan bloques, arcos, tramas, solapes, cotas y detalle lateral; los textos de estudio quedan fuera del taller. El corte normalizado del5363 tiene cero segmentos faltantes o sobrantes y sus tres señales circulares coinciden con el original. Las cuatro presentaciones y las ocho capturas de pantalla están revisadas.
+
+Validación de esta revisión: **369 ficheros y4.828 pruebas**, typecheck, lint y build correctos. Cambios guardados en la rama, sin push. **La instancia heredada sigue abierta en4480/4490:** Windows deniega detener sus procesos tras el cambio de cuenta; salud verificada en simulación y sin escritura habilitada. El informe conserva los detalles y la única duda pendiente, Q-SP07.

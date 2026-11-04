@@ -56,7 +56,7 @@ try{
   out.puertas[letra]={conteos:{ivan:contar(grupos.ivan),web:contar(grupos.web)},ivan:grupos.ivan,web:grupos.web,exactas:[...a.keys()].filter(k=>b.has(k)).length,faltaGeometriaExacta:[...a].filter(([k])=>!b.has(k)).map(([,p])=>p),sobraGeometriaExacta:[...b].filter(([k])=>!a.has(k)).map(([,p])=>p)};
   await pareja(`${letra}-conjunto`,dibujos.ivan,dibujos.web,zona);
   for(const capa of [...new Set([...grupos.ivan,...grupos.web].map(p=>alias(p.capa)))])await pareja(`${letra}-${capa.replace(/[^\w-]/g,'_')}`,dibujos.ivan.filter(p=>alias(p.capa)===capa),dibujos.web.filter(p=>alias(p.capa)===capa),zona,`${letra} · capa ${capa}`);
-  for(const [nombre,y0,y1]of [['et-superior',195,235],['mirilla',110,205],['bajo',-110,40]])await pareja(`${letra}-${nombre}`,dibujos.ivan.filter(p=>enZona(p,{...zona,y0,y1})),dibujos.web.filter(p=>enZona(p,{...zona,y0,y1})),{...zona,y0,y1});
+  for(const [nombre,y0,y1]of [['et-superior',195,235],['mirilla',110,205],['bajo',-125,40]])await pareja(`${letra}-${nombre}`,dibujos.ivan.filter(p=>enZona(p,{...zona,y0,y1})),dibujos.web.filter(p=>enZona(p,{...zona,y0,y1})),{...zona,y0,y1});
  }
  for(const [f,d]of Object.entries(fuentes)){
   out.papel[f]={entidades:d.papel,capas:[...d.capas],ventanas:d.ventanas};
