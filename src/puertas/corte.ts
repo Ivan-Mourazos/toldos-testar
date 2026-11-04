@@ -5,6 +5,7 @@ import { calcularPuerta } from './calcular.ts';
 import { cortarSystemDock, medidaSystemDock } from './systemDock.ts';
 import { enderezarSaco, invertirPanoInclinado } from './saco.ts';
 import { centroLibre } from './unionesCorte.ts';
+import { piezaSinMargenes } from './escuadrado.ts';
 import { buscarColocacion, huecosLibres, PRESUPUESTO_TETRIS, type PresupuestoCorte, type RectanguloCorte } from '../domain/corteLona/colocacionTetris.ts';
 import type { CortePuertas, EntidadesPuertas, Hueco, PedidoPuertas, PiezaPuerta, Punto, VistaPuertas } from './tipos.ts';
 
@@ -97,6 +98,10 @@ function rotulosPieza(
   columnas = false,
   reves = false,
 ) {
+  if (pieza.margenEscuadrado) {
+    rotulosPieza(entidades, piezaSinMargenes(pieza), x + (girada ? 0 : 10), y + (girada ? 10 : 0), girada, codigoPano, columnas, reves);
+    return;
+  }
   const wMm = girada ? mm(pieza.alto) : mm(pieza.ancho);
   const hMm = girada ? mm(pieza.ancho) : mm(pieza.alto);
   // El texto sigue el frente de confección; solo gira cuando gira la pieza en el rollo.

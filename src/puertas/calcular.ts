@@ -8,6 +8,7 @@ import { calcularAraujo } from './araujo.ts';
 import { fichaDePuerta } from './clientes.ts';
 import { ventanalesEnrollable } from './ventanalesEnrollable.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
+import { ensancharPieza, huecosSinEscuadrado, llevaEscuadrado } from './escuadrado.ts';
 import { bajoDobleSaco, desnivelSuelo, espejarPieza, inclinarSaco, pestanaDerecha, sacoApilable, sacoPuerta, sacoUtil } from './saco.ts';
 
 export const MODELOS_PUERTAS: Record<ModeloPuerta, string> = { PUERTAENR: 'Enrollable', PUERTAPLE: 'Apilable', PUERTAUTO: 'Autorreparable', SYSTEMDOCK: 'System Dock' };
@@ -68,9 +69,10 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
   if (p.modelo === 'PUERTAPLE' && /enrollable|varilla\s+superior/i.test(p.observaciones)) aviso('TEXTO_MODELO', 'El texto del pedido habla de enrollable o de varilla superior: comprueba en el dibujo que es apilable.', 'aviso');
   if (/rejilla|mosquitera|antivand[aá]lica|franja corrida|recambio/i.test(p.observaciones)) aviso('FUERA_FASE', 'El texto del pedido pide algo que la web todavía no despieza (rejilla, mosquitera, antivandálica…): hazlo a mano.');
   if (avisos.some(a => ['MEDIDAS', 'CANTIDAD'].includes(a.codigo))) return r;
-  const ancho = p.frente + (p.modelo === 'PUERTAPLE' && p.frente > 600 ? 2 : 0);
+  const escuadrado = llevaEscuadrado(p);
+  const ancho = p.frente + (!escuadrado && p.modelo === 'PUERTAPLE' && p.frente > 600 ? 2 : 0);
   const lateral = (ancho - p.frente) / 2;
-  if (lateral) aviso('ESCUADRADO', 'Frente mayor de 6 m: se añade 1 cm por cada lado para escuadrar.', 'aviso');
+  if (lateral || escuadrado) aviso('ESCUADRADO', 'Frente mayor de 6 m: se añade 1 cm por cada lado para escuadrar.', 'aviso');
   const lona = `${p.material.trim()} ${p.color.trim()}`.trim();
   function pieza(nombre: string, clase: PiezaPuerta['clase'], w: number, h: number, material = lona, rollo = p.rollo, cantidad = 1): PiezaPuerta {
     return { id: `${clase}-${piezas.length}-${nombre}`, nombre, clase, ancho: n(w), alto: n(h), material, rollo, cantidad: cantidad * p.cantidad,
@@ -81,7 +83,7 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
   // su lado derecho es simétrico respecto al frente. Si la E.T. es más larga que el frente (apilables de más
   // de 6 m: 1 cm por lado para escuadrar), se pasan a la E.T. sumando esa mitad. Sin esto, en el AR2605391
   // (864, E.T. 866) la cinta de la izquierda quedaba a 29 del borde de la E.T. y la de la derecha a 31.
-  const huecosET = (e: Entrada): Hueco[] => e.huecos.map(h => {
+  const huecosET = (e: Entrada): Hueco[] => escuadrado ? huecosSinEscuadrado(e, p.frente) : e.huecos.map(h => {
     const extremo = h.x <= 1.01 ? 'izquierda' as const : h.x + h.ancho >= e.largo - 1.01 ? 'derecha' as const : null;
     return extremo ? { ...h, abierto: extremo } : { ...h, x: n(h.x + desfaseCintas(e, p.frente)) };
   });
@@ -128,7 +130,7 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
   }
   function entrada(e: Entrada, i: number) {
     const alto=p.modelo==='PUERTAENR'?REGLAS_ENROLLABLE.corteEntrada:e.alto;
-    const x = agregar(pieza(`Entrada de tubo ${i + 1}`, 'entrada', e.largo, alto));
+    const x = agregar(pieza(`Entrada de tubo ${i + 1}`, 'entrada', e.largo - (escuadrado ? 2 : 0), alto));
     x.huecos = huecosET(e);
     x.origenAlzado = [0, e.altura - alto / 2];
   }
@@ -378,6 +380,7 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     }
   }
   const todas = [...piezas,...(r.alternativasSaco?.entero??[]),...(r.alternativasSaco?.partido??[])];
+  if (escuadrado) todas.forEach(ensancharPieza);
   if(!Number.isFinite(p.margenMarcas)||p.margenMarcas<0||2*p.margenMarcas>=ancho)aviso('MARCAS','Revisa el margen de las marcas respecto al borde.');
   for (const x of todas) {
     if (!positivo(x.ancho) || !positivo(x.alto)) aviso('PIEZA',`${x.nombre}: las medidas de corte deben ser positivas.`);

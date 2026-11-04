@@ -1,6 +1,7 @@
 import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { alturasTubos, calcularPuerta, desfaseCintas } from './calcular.ts';
+import { huecosSinEscuadrado, llevaEscuadrado } from './escuadrado.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
 import { fusionarCortesPuertas, SEPARACION_EXTRA_FILAS, TITULO_MATERIAL_MM } from './corte.ts';
 import { esClientePortanova } from './clientePortanova.ts';
@@ -66,10 +67,10 @@ function huecosEnPuerta(e: { largo: number; huecos: Hueco[] }, F: number): Hueco
   return e.huecos.map(h => (h.x <= 1.01 || h.x + h.ancho >= e.largo - 1.01) ? { ...h, x: h.x - d } : { ...h });
 }
 
-function huecoEntrada(l: Lienzo, h: Hueco, eje: number, altoEntrada: number, F: number) {
+function huecoEntrada(l: Lienzo, h: Hueco, eje: number, altoEntrada: number, F: number, cerrado = false) {
   const y = eje - altoEntrada / 2 + h.y, r = Math.min(h.radio, h.ancho / 2, h.alto / 2), b = Math.tan(Math.PI / 8);
   // Los huecos laterales se abren hacia fuera; no se cierra ese lado en el alzado.
-  if (h.x <= 1.01 || h.x + h.ancho >= F - 1.01) {
+  if (!cerrado && (h.x <= 1.01 || h.x + h.ancho >= F - 1.01)) {
     const izq = h.x <= 1.01, x = izq ? h.x : h.x + h.ancho, signo = izq ? 1 : -1;
     l.polilineas.push({ capa: 'CUTTER', cerrada: false,
       puntos: [[x, y + h.alto], [x + signo * (h.ancho - r), y + h.alto], [x + signo * h.ancho, y + h.alto - r],
@@ -105,8 +106,9 @@ function dibujarSaco(l: Lienzo, p: Puerta, letraPuerta = '') {
   const w = doble ? p.frente - 6 : p.frente, h = doble ? 37 : sacoPuerta(p).corte;
   const pestaña = ple ? doble ? 12 : 10 : 0, hp = ple ? doble ? 14 : sacoApilable(p).altoPestana : 0;
   const ys = -p.alto - (ple ? 49.0879644349 : 40);
-  contorno(l, 'referencias', pestaña ? [[0, ys], [w, ys], [w, ys - h], [0, ys - h], [0, ys - 2 - hp],
-    [-pestaña, ys - 2 - hp], [-pestaña, ys - 2], [0, ys - 2]] : [[0, ys], [w, ys], [w, ys - h], [0, ys - h]]);
+  const margen = llevaEscuadrado(p) ? 1 : 0;
+  contorno(l, 'referencias', pestaña ? [[0, ys], [w + margen, ys], [w + margen, ys - h], [0, ys - h], [0, ys - 2 - hp],
+    [-pestaña - margen, ys - 2 - hp], [-pestaña - margen, ys - 2], [0, ys - 2]] : [[0 - margen, ys], [w + margen, ys], [w + margen, ys - h], [0 - margen, ys - h]]);
   for (const y of [ys - 2, ys - h / 2, ys - h + 2]) linea(l, 'vent-pre-noimpr', 0, y, w, y);
   const sombrear = (x: number, y: number, ancho: number, alto: number, solido: boolean) => {
     const puntos = rect(l, 'referencia-1', x, y, ancho, alto); l.sombreados.push({ capa: 'referencia-1', puntos, solido });
@@ -206,11 +208,12 @@ function dibujarSaco(l: Lienzo, p: Puerta, letraPuerta = '') {
 export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = false): { lienzo: Lienzo; zona: Zona } {
   if (p.modelo === 'PUERTAENR') return dibujarAlzadoEnrollable(p, letra, identificar);
   const l = vacio(), F = p.frente, H = p.alto, ple = p.modelo === 'PUERTAPLE', r = calcularPuerta(p);
+  const escuadrado = llevaEscuadrado(p), margen = escuadrado ? 1 : 0;
   const desnivel = desnivelSuelo(p), altoDerecho = H-desnivel;
   // El paño arranca en el rematado del saco; el doble saco, más abajo, porque el de 80 sale del propio paño.
   const hSaco = sacoPuerta(p).rematado, bajoDoble = ple && p.apilable.doble ? bajoDobleSaco(p) : 0;
   const arriba = ple ? p.apilable.bolsillo / 2 : 3.5;
-  rect(l, 'DISCO1', 0, -H + (ple && p.apilable.doble ? bajoDoble : hSaco), F, H - hSaco + arriba + (ple && p.apilable.doble ? hSaco - bajoDoble : 0));
+  rect(l, 'DISCO1', 0 - margen, -H + (ple && p.apilable.doble ? bajoDoble : hSaco), F + 2 * margen, H - hSaco + arriba + (ple && p.apilable.doble ? hSaco - bajoDoble : 0));
   for (const y of [0, -H]) linea(l, 'referencias', 0, y, F, y);
   const tubos = ple ? alturasTubos(p) : [], obstaculos: Array<[number, number]> = [];
   // La autorreparable también marca dónde se suelda el saco, 2 cm por encima del bajo del paño, como la enrollable
@@ -235,7 +238,7 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
       flecha(l, F / 2, y - a / 2, 180, -1);
       texto(l, `E.T Ø${e.diametro} mm`, F / 2, y, Math.min(8, a * .65));
       cota(l, 0, y - a / 2, 0, y + a / 2, -14);
-      for (const h of huecosEnPuerta(e, F)) huecoEntrada(l, h, y, a, F);
+      for (const h of escuadrado ? huecosSinEscuadrado(e, F) : huecosEnPuerta(e, F)) huecoEntrada(l, h, y, a, F, escuadrado);
       obstaculos.push([y - a / 2, y + a / 2]);
     }
     const hitos = [0, ...tubos, H];
@@ -245,7 +248,7 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
     texto(l, 'AL CORTE', F + 7, -p.apilable.cabecera / 2, 8, 90);
     if (p.entradas.some(e => e.huecos.length > 2)) {
       const i = p.entradas.findIndex(e => e.huecos.length > 2), e = p.entradas[i], y = -H + tubos[i];
-      const hs = huecosEnPuerta(e, F).sort((a, b) => a.x - b.x), hitos = [0, hs[0].x + hs[0].ancho,
+      const hs = (escuadrado ? huecosSinEscuadrado(e, F) : huecosEnPuerta(e, F)).sort((a, b) => a.x - b.x), hitos = [0, hs[0].x + hs[0].ancho,
         ...hs.slice(1, -1).flatMap(h => [h.x, h.x + h.ancho]), hs.at(-1)!.x, F];
       hitos.slice(1).forEach((x, j) => {
         // Los huecos iguales interiores comparten la cota de ancho de los dos extremos.
@@ -318,7 +321,7 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
     obstaculos.push([-30, 0]);
   }
   for (const u of r.uniones) {
-    for (const signo of [-1, 1]) linea(l, ple ? 'DISCO1' : 'referencia-1', 0, -H + u.altura + signo * u.solape / 2, F, -H + u.altura + signo * u.solape / 2);
+    for (const signo of [-1, 1]) linea(l, ple ? 'DISCO1' : 'referencia-1', 0 - margen, -H + u.altura + signo * u.solape / 2, F + margen, -H + u.altura + signo * u.solape / 2);
     if (!u.tubo) {
       const y = -H + u.altura + u.solape / 2;
       linea(l, 'ROTULADOR', 0, y, F, y);

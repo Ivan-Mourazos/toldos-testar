@@ -1,4 +1,5 @@
 import { alturasTubos, desfaseCintas } from './calcular.ts';
+import { huecosSinEscuadrado, llevaEscuadrado } from './escuadrado.ts';
 import { alzadoAraujo } from './alzadoAraujo.ts';
 import { colocarTextosPuerta } from './textosPlano.ts';
 import { desnivelSuelo, pestanaDerecha, rotuloSaco, sacoPuerta } from './saco.ts';
@@ -81,6 +82,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   const enr = p.modelo === 'PUERTAENR';
   const ple = p.modelo === 'PUERTAPLE';
   const auto = p.modelo === 'PUERTAUTO';
+  const margen = llevaEscuadrado(p) ? 1 : 0;
   const formas: FormaAlzado[] = [];
   const rect = (clase: string, x: number, y: number, ancho: number, alto: number, radio?: number) =>
     formas.push({ tipo: 'rect', clase, x, y, ancho, alto, ...(radio ? { radio } : {}) });
@@ -160,7 +162,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
 
   // Contorno general de la puerta
   if (desnivel) formas.push({tipo:'poligono',clase:'puerta-lona',puntos:[[0,0],[F,0],[F,altoDerecho],[0,H]]});
-  else rect('puerta-lona', 0, 0, F, H);
+  else rect('puerta-lona', 0 - margen, 0, F + margen * 2, H);
 
   // Cabecera según modelo
   if (enr || auto) {
@@ -168,7 +170,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
     texto('VARILLA NEGRA (4,5)', F / 2, -10, 'middle', 'puerta-texto-cabecera');
   }
   if (ple) {
-    rect('puerta-entrada-alzado', 0, 0, F, p.apilable.bolsillo);
+    rect('puerta-entrada-alzado', 0 - margen, 0, F + margen * 2, p.apilable.bolsillo);
     cota({ x1: F, y1: 0, x2: F, y2: p.apilable.bolsillo, linea: F + 16, valor: p.apilable.bolsillo,
       estilo: 'XERAL 5', marcas: 3, texto: { x: F + 20, y: p.apilable.bolsillo / 2, ancla: 'start' } });
   }
@@ -235,7 +237,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
 
   // Bandas de entrada de tubo (enrollable y apilable) y sus cotas de alto a la izquierda
   for (const b of bandasIzquierda) {
-    rect('puerta-entrada-alzado', 0, b.y - b.alto / 2, F, b.alto);
+    rect('puerta-entrada-alzado', 0 - margen, b.y - b.alto / 2, F + margen * 2, b.alto);
     linea('puerta-tubo', 0, b.y, F, b.y);
     cota({ x1: -12, y1: b.y - b.alto / 2, x2: -12, y2: b.y + b.alto / 2, linea: -12, valor: b.alto, estilo: enr ? 'XERAL 5' : 'XERAL', marcas: 4, texto: { x: -18, y: b.y + 3, ancla: 'end' } });
     marca(b.y + b.alto / 2, -1);
@@ -276,8 +278,9 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
       // sobresale 1 cm); las cintas ya se miden desde el borde de la puerta (AR2605391), salvo que la E.T. sea
       // del largo del frente, como en el AR2605036, donde se dibujaban con el mismo cm de menos.
       const corrimiento = ple && F > 600 ? 1 : 0;
-      const enPuerta = (h: Hueco) => h.x <= 1.01 || h.x + h.ancho >= e.largo - 1.01
-        ? h.x - corrimiento : h.x - corrimiento + desfaseCintas(e, F);
+      const enPuerta = (h: Hueco) => llevaEscuadrado(p) ? huecosSinEscuadrado({ ...e, huecos: [h] }, F)[0].x
+        : h.x <= 1.01 || h.x + h.ancho >= e.largo - 1.01
+          ? h.x - corrimiento : h.x - corrimiento + desfaseCintas(e, F);
       for (const h of e.huecos) rect('puerta-hueco-alzado', enPuerta(h), yEje + altoE / 2 - h.y - h.alto, h.ancho, h.alto, h.radio);
       // Cadena completa de las cintas: extremos a 6, huecos y separaciones, como AR2605036.
       if (ple && e.huecos.length > 2 && i === p.entradas.findIndex(t => t.huecos.length > 2)) {
@@ -378,8 +381,8 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   formas.push({
     tipo: 'poligono', clase: 'puerta-saco-pieza',
     puntos: pestanaSaco > 0
-      ? [[0, y0], [wSaco, y0], [wSaco, y1], [0, y1], [0, y0 + altoPestana], [-pestanaSaco, y0 + altoPestana], [-pestanaSaco, y0]]
-      : [[0, y0], [wSaco, y0], [wSaco, y1], [0, y1]],
+      ? [[0, y0], [wSaco + margen, y0], [wSaco + margen, y1], [0, y1], [0, y0 + altoPestana], [-pestanaSaco - margen, y0 + altoPestana], [-pestanaSaco - margen, y0]]
+      : [[0 - margen, y0], [wSaco + margen, y0], [wSaco + margen, y1], [0 - margen, y1]],
   });
   linea('puerta-cota', 0, y0 + hCorteSaco / 2, wSaco, y0 + hCorteSaco / 2, '5 3');
   if (enr && p.enrollable.sacoPartido) linea('puerta-empate', wSaco / 2, y0, wSaco / 2, y1);

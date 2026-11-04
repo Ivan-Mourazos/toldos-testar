@@ -57,6 +57,16 @@ El corte empieza a 11 del borde terminado inferior con saco de 80 y a 12 con sac
 
 Con F > 600 se añade **1 por cada lado** a los paños y se muestra el aviso, aunque algún corte antiguo lo olvidase. Las ventanas se trasladan ese centímetro dentro del paño de corte; su posición terminada no cambia.
 
+**Escuadrado, aclaración de Iván (04/11/2026, AR2605391, frente 864 y E.T. 866):** se calcula
+toda la confección en coordenadas de puerta (0 a F) antes de añadir el centímetro de lona a cada
+lado. Ventanas, cintas, marcas, bolsillo, empates, mininúmeros y rótulos conservan sus posiciones
+y tamaños. En el bot, su X local suma 1; se ensanchan los paños, las E.T. y cada pieza de saco
+(también las mitades y el envoltorio), sin ensanchar cristales. Los recortes extremos que estaban
+a 1–6 del borde de la puerta quedan **cerrados a 2–7 del borde de la lona**, con sus cuatro radios.
+El plano dibuja el contorno entre −1 y F + 1 y conserva las cotas exteriores entre 0 y F.
+Las E.T. guardadas del largo del frente mantienen su confección anterior: AR2605036 mide
+620 de frente y 620 de E.T. y se conserva íntegro, junto con las puertas de hasta 600 y los otros modelos.
+
 Los huecos laterales propuestos son 5 × 7,5 para Ø30 y 5 × 9,5 para Ø42, a 1 del borde. Para cintas se proponen 12 × 7,5 o 12 × 9,5. El técnico escribe sus posiciones X y los tubos afectados. Hay un botón de propuesta de tubos impares desde abajo, que debe aplicarse expresamente; no existe una tabla por frente. Todo hueco se puede modificar.
 
 Las ventanas se pueden introducir una a una o por filas de columnas iguales. Tienen posición desde izquierda y desde abajo, dimensiones y radios de hueco y cristal. El cristal suma 4 por dimensión, 2 por lado. Las curvas del hueco van a CUTTER; los tramos rectos del cristal van a DISCO1 y sus curvas a CUTTER.

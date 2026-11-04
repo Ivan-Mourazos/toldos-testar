@@ -113,6 +113,8 @@ export interface PiezaPuerta {
   entradasIncorporadas?: Array<{ tubo: number; y: number; alto: number }>;
   /** Origen de la pieza en el alzado, en cm desde el bajo terminado. */
   origenAlzado?: Punto;
+  /** Margen añadido después de confeccionar; los rótulos conservan las posiciones de la puerta. */
+  margenEscuadrado?: number;
 }
 export interface ResultadoPuerta {
   version: 1;
