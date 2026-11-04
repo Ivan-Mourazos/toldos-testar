@@ -4,6 +4,10 @@ import {linea,arco,circulo,poligono,offsetPoligono,d} from './geometriaPlana.js'
 import {colocarRefuerzoMfd,REFUERZO_MFD_CAL} from './refuerzoCal.js';
 function cabeza(m,r){
  const w=m.frente,h=m.altoB,a=m.aguasB,R=m.radioB,s=r.costura,b=r.bastilla;
+ if(!R){
+  const base=a?[[0,0],[0,h],[w/2,h+a],[w,h],[w,0]]:[[0,0],[0,h],[w,h],[w,0]],ps=offsetPoligono(base,base.map((_,i)=>i===base.length-1?b:s));
+  return {nombre:'Frente',corte:poligono(ps),contorno:ps,marcas:[],ollaos:[],zTangencia:h};
+ }
  const ang=Math.atan2(a,w/2),giro=Math.PI/2-ang,t=R*Math.tan(giro/2),z=h-t;
  const cl=[R,z],cr=[w-R,z],rr=R+s;
  const q=[R-rr*Math.sin(ang),z+rr*Math.cos(ang)],cima=[w/2,h+a+s/Math.cos(ang)];

@@ -1,5 +1,5 @@
 import { generarCal } from './generarCal.js';
-import { DEFAULT_PARAMS } from '../calc/params.ts';
+import { ajusteContorno, DEFAULT_PARAMS } from '../calc/params.ts';
 
 /** Medidas en cm, hasta la intersección teórica del lateral y las aguas. */
 export interface MedidasCal {
@@ -11,7 +11,7 @@ export interface MedidasCal {
   altoFrente: number;
   aguas: number;
   aguasFrente: number;
-  /** Radio exterior de apoyo de la lona, medido en el arco. */
+  /** Radio exterior de apoyo de la lona; 0 si el perfil no tiene curvas. */
   radio: number;
   fruncir: number;
   recogidaAtras?: 'CUERDA' | 'GOMA';
@@ -85,10 +85,10 @@ export function calcularMedidasCal(m: MedidasCal): DesarrolloCal {
   if (m.recogidaAtras !== undefined && !['CUERDA', 'GOMA'].includes(m.recogidaAtras)) throw Error('Elige cuerda o goma para fruncir atrás.');
   if (m.refuerzoMfd !== undefined && typeof m.refuerzoMfd !== 'boolean') throw Error('Indica sí o no para el refuerzo MFD.');
   if (m.puertaMorro && (!Number.isFinite(m.puertaMorro.separacionBorde) || m.puertaMorro.separacionBorde <= 0)) throw Error('La separación de las cremalleras debe ser mayor que cero.');
-  for (const k of ['recto', 'ancho', 'frente', 'diagonal', 'alto', 'altoFrente', 'radio', 'pasoOllaos'] as const) {
+  for (const k of ['recto', 'ancho', 'frente', 'diagonal', 'alto', 'altoFrente', 'pasoOllaos'] as const) {
     if (!Number.isFinite(m[k]) || m[k] <= 0) throw Error(`Revisa ${k}: tiene que ser mayor que cero.`);
   }
-  for (const k of ['aguas', 'aguasFrente', 'fruncir'] as const) {
+  for (const k of ['aguas', 'aguasFrente', 'fruncir', 'radio'] as const) {
     if (!Number.isFinite(m[k]) || m[k] < 0) throw Error(`Revisa ${k}: no puede ser negativo.`);
   }
   if (Math.max(m.recto, m.diagonal, m.frente) / m.pasoOllaos > 1000 || m.laterales?.length > 1000) throw Error('Demasiados ollaos: revisa el paso y las medidas.');
@@ -107,7 +107,8 @@ export function calcularMedidasCal(m: MedidasCal): DesarrolloCal {
   // Acabados medidos en el gemelo (18F73→18F74, 18F5D→18F60). No proceden del 00389 especial.
   const r = {
     lonaHecha: DEFAULT_PARAMS.demasiaLonaHecha * 10,
-    holguraContorno: DEFAULT_PARAMS.ajusteContornoCurva * 10,
+    // Misma regla que remolques: aumento una vez al paño que envuelve; bajos aparte.
+    holguraContorno: (ajusteContorno(DEFAULT_PARAMS, m.radio > 0 ? (m.aguas > 0 ? 'TIPO 03' : 'TIPO 05') : (m.aguas > 0 ? 'TIPO 02' : 'TIPO 01')) - DEFAULT_PARAMS.ajusteContornoBase) * 10,
     costura: 10, bastilla: (m.margenBajo ?? DEFAULT_PARAMS.ajusteContornoBase / 2) * 10, fruncir: 50, pasos: 5,
     inicioOllao: 25, dentroOllao: 10, radioOllao: 2.5,
     largoMarca: 20, marcaAtras: 50, repartoFrente: 350,

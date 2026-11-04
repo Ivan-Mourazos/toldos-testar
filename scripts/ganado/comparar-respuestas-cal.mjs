@@ -95,12 +95,28 @@ const resumen1847=[
  {pieza:'Juego completo',capa:'ROTULADOR · marcas',estado:estandar.marcasCoincidentes===estandar.marcasReales?'coincide':'pendiente',nota:`${estandar.marcasCoincidentes}/${estandar.marcasReales} marcas`},
  {pieza:'Hueco de puerta / tapa de ventana',capa:'texto',estado:'corregido',nota:'98 × 32 y 34,5 × 56 nombrados en sus posiciones originales, sin añadir acabados.'},
 ];
+// 5331 es otro cliente: contrasta la geometría común, sin imponerle los remates de Cal.
+const es5331=leerDxf('tmp/ganado-cal/AR2605331.dxf').entidades;
+const get5331=id=>{const e=es5331.find(e=>e.id===id);if(!e)throw Error('Falta 5331 '+id);return e;};
+const medida5331={...MEDIDAS_CAL_5319,recto:200,ancho:151,frente:61,diagonal:98,alto:65,altoFrente:65,aguas:0,aguasFrente:0,radio:0,margenBajo:3,laterales:[],refuerzoMfd:false,puerta:'NINGUNA',puertaMorro:undefined};
+const g5331=calcularMedidasCal(medida5331),m5331=g5331.piezas[1];
+const [A5331,B5331]=vertices(get5331('16E97')).map(p=>p.slice(0,2).map(x=>x*1000));
+const T5331=rigido(m5331.terminado[1],m5331.terminado[3],A5331,B5331);
+const borde5331=m5331.terminado.map((p,i,ps)=>linea(T5331(p),T5331(ps[(i+1)%ps.length])));
+const desarrollo5331=contraste(borde5331,['16E97','16E98','16EA4','16EA6','16EA7','16EA8','16EA9','16EAA'].flatMap(id=>primitivas(get5331(id))));
+const [c5331,d5331]=vertices(get5331('16F8F')),corte5331=Math.hypot(...d5331.map((x,k)=>x-c5331[k]))*1000;
+const resumen5331=[
+ {pieza:'Cuerpo · recorrido 3D',capa:'referencias',estado:Math.abs(g5331.desarrolloCuerpo.total-2820)<1e-6?'coincide':'pendiente',nota:'16EC6 + 16ECA + 16EC7: 650 + 1520 + 650 = 2820 mm. Hoja: sin curva, alto 65 y ancho 151 + 1.'},
+ {pieza:'Cuerpo · contorno de corte',capa:'DISCO1',estado:Math.abs(g5331.desarrolloCuerpo.corte-corte5331)<.2?'coincide':'pendiente',idaMm:Math.abs(g5331.desarrolloCuerpo.corte-corte5331),nota:'16F8F / 16F9B: 2880 mm, dos bajos de 30; aumento de curva 0. No se compara el ancho y sus remates de otro cliente.'},
+ {pieza:'Morro · desarrollo geométrico',capa:'referencias',estado:Math.max(desarrollo5331.idaMm,desarrollo5331.vueltaMm)<.2?'coincide':'pendiente',...desarrollo5331,nota:'8 bordes de oficina, sin curva ni aguas: desarrollo automático desde ancho 152, frente 62, diagonal 99 y altos 65. Diferencias inferiores a 0,2 mm.'},
+ {pieza:'Remates, puerta y ventana de Metales Jaifer',capa:'DISCO1 / ROTULADOR / texto',estado:'pendiente',nota:'La hoja pide puerta MFI, ventana 40 ancho × 50 alto y otros repartos; el CAD indica ENFUNDAR(1), velcro y correas. Este caso contrasta el levantamiento común; no se atribuye paridad completa de sus acabados a la ficha Cal.'},
+];
 const hash=f=>crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
-const fuentes=[cad,'tmp/ganado-cal/fuentes/dwg/AR2605319.dwg','tmp/ganado-cal/fuentes/AR2605319-bot.dxf',estandar.origen].map(ruta=>({ruta,sha256:hash(ruta)}));
-const informe={fecha:'2026-11-04',fuentes,AR2601847:resumen1847,AR2605319:filas,
+const fuentes=[cad,'tmp/ganado-cal/fuentes/dwg/AR2605319.dwg','tmp/ganado-cal/fuentes/AR2605319-bot.dxf',estandar.origen,'tmp/ganado-cal/AR2605331.dwg','tmp/ganado-cal/AR2605331.dxf','tmp/ganado-cal/AR.26.05331.pdf'].map(ruta=>({ruta,sha256:hash(ruta)}));
+const informe={fecha:'2026-11-04',fuentes,AR2601847:resumen1847,AR2605319:filas,AR2605331:resumen5331,
  alcance:'5319: comparación de piezas calculadas con confección y corte de oficina por transformaciones rígidas; el bot histórico contiene también OF 0233490/0233491, no se atribuyen a la 0233492. La generación completa no afirma paridad con esa revisión de oficina. 1847: cotejo completo del bot en ambos sentidos a 0,2 mm.'};
 fs.writeFileSync(dir+'/comparacion-capas.json',JSON.stringify(informe,(_,v)=>typeof v==='number'&&!Number.isFinite(v)?'sin correspondencia':v,2));
 const fmt=x=>x==null?'—':Number.isFinite(x)?x.toLocaleString('es-ES',{maximumFractionDigits:3}):'sin correspondencia';
 const tabla=xs=>'| Pieza | Capa | Estado | Diferencia máxima ida / vuelta (mm) | Referencia / observación |\n|---|---|---|---|---|\n'+xs.map(r=>`| ${r.pieza} | ${r.capa} | ${r.estado} | ${fmt(r.idaMm)} / ${fmt(r.vueltaMm)} | ${r.nota??r.referencia??''} |`).join('\n');
-fs.writeFileSync(dir+'/COMPARACION-CAPAS.md','# Levantamiento de Cal · 04/11/2026\n\n'+informe.alcance+'\n\n## AR2601847\n\n'+tabla(resumen1847)+'\n\n## AR2605319 · OF 0233492\n\n'+tabla(filas)+'\n\nCuerpo CAD 217 × 297,5 cm frente al cálculo exacto corregido 217 × 297,6628. Se acepta expresamente la diferencia de 1,628 mm y no se programa un redondeo. El perfil 3D del cuerpo es 67 + 10; el frente, 57 + 10. Morro: contorno dentro de 1,5 mm; ollaos hasta aproximadamente 1,24 mm, por encima del nominal de 1 mm, sin mover los puntos para esconderlo. Ventana pendiente Q-GAN12. Ver `../levantamiento/ANTES-DESPUES.md` y `RECORRIDOS.md` para fórmula y contraste con seis pedidos / trece perfiles reales.\n');
+fs.writeFileSync(dir+'/COMPARACION-CAPAS.md','# Levantamiento de Cal · 04/11/2026\n\n'+informe.alcance+'\n\n## AR2601847\n\n'+tabla(resumen1847)+'\n\n## AR2605319 · OF 0233492\n\n'+tabla(filas)+'\n\n## AR2605331 · Metales Jaifer · sin curva\n\n'+tabla(resumen5331)+'\n\nCuerpo CAD 217 × 297,5 cm frente al cálculo exacto corregido 217 × 297,6628. Iván confirma el aumento solo al cuerpo que envuelve: una vez al recorrido transversal, mediante la regla común de remolques. El morro conserva desarrollo y remates. El CAD pudo redondearse; la web no redondea. El perfil 3D del cuerpo es 67 + 10; el frente, 57 + 10: aguas transversales de 10 en ambos y caída longitudinal de 10 entre cumbreras (77 → 67). El 5331 sin curva da 288 de corte, sin aumento. Morro 5319: contorno dentro de 1,5 mm; ollaos hasta aproximadamente 1,24 mm, por encima del nominal de 1 mm, sin mover los puntos para esconderlo. Ventana pendiente Q-GAN12. Ver `../levantamiento/ANTES-DESPUES.md` y `RECORRIDOS.md` para fórmula y contraste con siete pedidos / dieciséis perfiles reales.\n');
 console.log('Comparación por capas en '+dir+'/COMPARACION-CAPAS.md');

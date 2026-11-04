@@ -70,7 +70,7 @@ describe('Caballos por medidas de Cal', () => {
   });
 
   it('rechaza datos incompletos, diagonales imposibles y ollaos fuera del cuerpo', () => {
-    for (const cambio of [{ radio: 0 }, { diagonal: 1 }, { recto: NaN }, { laterales: [220] }, { alto: -1 }, { aguas: Infinity }]) {
+    for (const cambio of [{ radio: -1 }, { diagonal: 1 }, { recto: NaN }, { laterales: [220] }, { alto: -1 }, { aguas: Infinity }]) {
       expect(() => calcularMedidasCal({ ...MEDIDAS_CAL_5319, ...cambio })).toThrow();
     }
   });

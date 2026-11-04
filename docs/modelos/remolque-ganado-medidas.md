@@ -25,21 +25,42 @@ corte = recorrido + holgura + 2*bajo
 | AR2605319 | 278,6628 | 297,6628 | 297,5 | 290,1628 |
 | AR2506052, gemelo | 333,6890 | 333,6890 | 333,69 | 325,1890 |
 | AR2601847 | 282,5 | 282,5 | 282,5 | 273,8319 |
+| AR2605331, sin curva | no admitía radio 0 | 288 | 288 | 282 |
 
 El cuerpo 3D **10EF3** del 5319 suma 117,2142 cm de laterales, 145,4517 de aguas
 y 27,4969 de arcos. Se añaden 1,5 de holgura y 6 de bajos: **297,6628 cm** exactos.
 La diferencia con EC3C (297,5) es **1,628 mm**, aceptada expresamente en esta conversación;
-no amplía la tolerancia general ni introduce redondeos. Q-GAN11 pregunta por la práctica de
-redondeo del taller. El frente **10EF2** confirma 57 + 10; la puerta integrada llega ahora
+no amplía la tolerancia general ni introduce redondeos. Iván cierra Q-GAN11: el CAD pudo
+redondearse, pero no lo asegura; la web mantiene el valor exacto. Confirma que el aumento
+va **solo al cuerpo que da la vuelta**, una vez al recorrido transversal, mediante
+`ajusteContorno` y el parámetro común de remolques. **El morro no lleva ese aumento**:
+conserva su desarrollo y sus remates. El levantamiento 3D y ambos desarrollos se obtienen
+automáticamente de las medidas del pedido, sin introducir puntos ni longitudes calculadas.
+El frente **10EF2** confirma 57 + 10; la puerta integrada llega ahora
 a **50,3459 cm**, como los 50,35 del CAD. El morro de este pedido divide cada curva en
 cuatro tramos, frente a cinco en el gemelo; esa división es editable y no cambia el arco
 real usado para el cuerpo. El bajo también es editable, con 3,5 cm por defecto general.
 
-Trece perfiles de seis pedidos (5319, gemelo 6052, 1847, 5060, 4281 y 5892) reproducen la
+Dieciséis perfiles de siete pedidos (5319, 5331, gemelo 6052, 1847, 5060, 4281 y 5892) reproducen la
 misma fórmula dentro de 0,000001 mm. El 1847 conserva su plantilla validada de 282,5;
 su desarrollo teórico con holgura y bajos da 282,3319, sin convertir esa diferencia en
 una regla de confección. Los recorridos y referencias están en
 `tmp/ganado-cal/levantamiento/RECORRIDOS.md` y `ANTES-DESPUES.md`.
+
+El 5319 tiene aguas transversales de **10 cm en ambas secciones** y caída longitudinal
+de **10 cm entre cumbreras (77 → 67)**. Las generatrices y la triangulación espacial del
+morro incluyen ese desnivel: proyección 88,3176 y generatriz de cumbrera 88,8819 cm.
+No se aplana el morro a una altura única ni se eliminan sus aguas. Las pruebas comprueban
+esas coordenadas, además del contraste completo del contorno desarrollado contra su CAD.
+
+El 5331 es **Metales Jaifer**, no Talleres Cal. La hoja marca SIN curva; su levantamiento
+16EC6 + 16ECA + 16EC7 suma **65 + 152 + 65 = 282 cm**. El corte 16F8F/16F9B mide
+**288 cm**: dos bajos de 3 y **cero aumento por curva**, mediante la misma función de
+remolques para perfiles rectos. La web admite radio 0, con o sin aguas, sin inventar arcos.
+El morro se levanta automáticamente desde anchos 152/62, diagonal 99 y altos 65; sus ocho
+bordes de referencia coinciden con el desarrollo dentro de **0,017 mm**. La tabla separa
+este contraste geométrico de sus remates particulares (ENFUNDAR(1), puerta, velcro, correas
+y ventana 40 ancho × 50 alto), que no se incorporan a la ficha Cal como regla general.
 
 La ventana EC13 está en un plano girado: sus 45 × 35 equivalen a **35 ancho × 45 alto**
 en el frente levantado, a **8 cm del bajo**; la tapa EC14 queda 38 × 48. La regla confirmada

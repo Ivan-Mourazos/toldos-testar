@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { desglosePerfil } from './geometria.js';
+import { construirMorro, desglosePerfil } from './geometria.js';
 
 // Longitudes independientes: suma de LINE / ARC originales, incluidas sus normales 3D.
 const casos = [
@@ -13,6 +13,18 @@ const casos = [
   ['4281 cuerpo · 18363', 1560, 780, 180, 100, 3111.594134],
 ] as const;
 describe('Recorrido por el exterior del arco, desde los levantamientos reales', () => {
+  it('incluye aguas transversales y caída longitudinal del morro 3D del 5319', () => {
+    const m = construirMorro({ ancho: 1610, frente: 550, diagonal: 1030, largoCuerpo: 2110,
+      altoA: 670, altoB: 570, aguasA: 100, aguasB: 100, radioA: 95, radioB: 95, pasos: 4 });
+    const k = (m.perfilA.length - 1) / 2;
+    expect(m.perfilA[k]).toEqual([0, 805, 770]);
+    expect(m.perfilB[k][1]).toBeCloseTo(805, 6);
+    expect(m.perfilB[k][2]).toBeCloseTo(670, 6);
+    expect(m.proyeccion).toBeCloseTo(883.1760866, 6);
+    // Generatriz de la cumbrera: incluye el desnivel real de 100 mm entre secciones.
+    expect(Math.hypot(...m.perfilB[k].map((x: number, i: number) => x - m.perfilA[k][i]))).toBeCloseTo(888.8194417, 6);
+  });
+
   it.each(casos)('%s', (_, ancho, alto, aguas, radio, total) => {
     const d = desglosePerfil({ ancho, alto, aguas, radio });
     expect(d.total).toBeCloseTo(total, 3);

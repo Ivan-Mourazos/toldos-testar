@@ -10,6 +10,7 @@ import { calcularMedidasCal, MEDIDAS_CAL_5319, MEDIDAS_CAL_GEMELO } from '../../
 import { CORTE_ESTANDAR } from '../../src/remolques/ganado/estandarDatos.ts';
 const dir='tmp/ganado-cal/levantamiento';fs.mkdirSync(dir,{recursive:true});
 const fuentes=[['AR2605319','tmp/ganado-cal/fuentes/dxf/AR2605319.dxf'],
+ ['AR2605331','tmp/ganado-cal/AR2605331.dxf'],
  ...['AR2506052','AR2601847','AR2605060','AR2604281','AR2505892'].map(id=>[id,`tmp/ganado-medidas/fuentes/dxf/${id}.dxf`])];
 const distancia=(a,b)=>Math.hypot(...a.map((x,k)=>x-b[k]));
 const informe=[];
@@ -20,7 +21,7 @@ for(const [id,f] of fuentes){
   const rectas=p.segmentos.filter(s=>!s.curva),arcos=p.segmentos.filter(s=>s.curva);
   const laterales=rectas.filter(s=>Math.abs(s.a[1]-s.b[1])<1e-7),aguas=rectas.filter(s=>!laterales.includes(s));
   const q=aguas[0],pendiente=Math.abs((q.b[2]-q.a[2])/(q.b[1]-q.a[1]));
-  const ancho=p.caja[1][1]-p.caja[1][0],agua=ancho/2*pendiente,alto=cima-base-agua,radio=p.radios[0];
+  const ancho=p.caja[1][1]-p.caja[1][0],agua=ancho/2*pendiente,alto=cima-base-agua,radio=p.radios[0]??0;
   const sum=ss=>ss.reduce((s,t)=>s+(t.curva?distancia(t.u,[0,0,0])*Math.abs(t.ang):distancia(t.a,t.b)),0)*1000;
   const medido=sum(p.segmentos),calculado=contornoPerfil({ancho:ancho*1000,alto:alto*1000,aguas:agua*1000,radio:radio*1000});
   const fila={id:p.id,anchoMm:ancho*1000,altoLateralMm:alto*1000,aguasMm:agua*1000,radioMm:radio*1000,
@@ -74,7 +75,7 @@ function dibujarVentana(perfiles,es){
  fs.writeFileSync(path.join(dir,'AR2605319-ventana-orientada.png'),c.toBuffer('image/png'));
 }
 fs.writeFileSync(path.join(dir,'recorridos.json'),JSON.stringify(informe,null,2));
-const fmt=n=>n.toLocaleString('es-ES',{maximumFractionDigits:4});
+const fmt=n=>n==null?'—':n.toLocaleString('es-ES',{maximumFractionDigits:4});
 const filas=informe.flatMap(c=>c.perfiles.map(p=>`| ${c.id} | ${p.id} | ${fmt(p.anchoMm/10)} | ${fmt(p.altoLateralMm/10)} + ${fmt(p.aguasMm/10)} | ${fmt(p.lateralesMm)} + ${fmt(p.aguasRectasMm)} + ${fmt(p.arcosMm)} | ${fmt(p.recorrido3dMm)} | ${fmt(p.errorMm)} |`));
 fs.writeFileSync(path.join(dir,'RECORRIDOS.md'),'# Recorrido real de las secciones 3D\n\nRectas por distancia euclídea espacial; arcos por radio × barrido en radianes.\n\n| Pedido | Entidad | Ancho cm | Lateral + aguas cm | Laterales + aguas + arcos mm | Total mm | Diferencia con fórmula mm |\n|---|---|---|---|---|---|---|\n'+filas.join('\n')+'\n');
 const antes5319=calcularMedidasCal({...MEDIDAS_CAL_5319,alto:57,aguasFrente:0,margenBajo:3.5,divisionesCurva:5}).desarrolloCuerpo.corte/10;
@@ -84,6 +85,7 @@ const comparacion=[
  {id:'AR2605319',antesCm:antes5319,despuesCm:nuevo5319.corte/10,cadCm:297.5,recorrido3dCm:nuevo5319.total/10,holguraCm:nuevo5319.holgura/10,bajosCm:nuevo5319.bastillas/10},
  {id:'AR2506052',antesCm:gemelo.corte/10,despuesCm:gemelo.corte/10,cadCm:333.69,recorrido3dCm:gemelo.total/10,holguraCm:gemelo.holgura/10,bajosCm:gemelo.bastillas/10},
  {id:'AR2601847',antesCm:(CORTE_ESTANDAR.cuerpo.x1-CORTE_ESTANDAR.cuerpo.x0)/10,despuesCm:(CORTE_ESTANDAR.cuerpo.x1-CORTE_ESTANDAR.cuerpo.x0)/10,cadCm:282.5,recorrido3dCm:cuerpo1847.recorrido3dMm/10,holguraCm:1.5,bajosCm:7,formulaDesde3dCm:cuerpo1847.recorrido3dMm/10+8.5,nota:'Conserva su corte de plantilla; el 3D deja una diferencia de confección de 1,681 mm.'},
+ {id:'AR2605331',antesCm:null,despuesCm:calcularMedidasCal({...MEDIDAS_CAL_5319,recto:200,ancho:151,frente:61,diagonal:98,alto:65,altoFrente:65,aguas:0,aguasFrente:0,radio:0,margenBajo:3,laterales:[],refuerzoMfd:false,puerta:'NINGUNA',puertaMorro:undefined}).desarrolloCuerpo.corte/10,cadCm:288,recorrido3dCm:282,holguraCm:0,bajosCm:6},
 ];
 fs.writeFileSync(path.join(dir,'antes-despues.json'),JSON.stringify(comparacion,null,2));
 fs.writeFileSync(path.join(dir,'ANTES-DESPUES.md'),'# Paño del cuerpo: antes / después\n\nFórmula: 2(H−t) + 2(√((W/2)²+A²)−t) + 2Rθ + holgura + 2b.\nθ = π/2 − atan2(A,W/2); t = R tan(θ/2). Altos hasta el cruce teórico.\n\n| Pedido | Antes cm | Después cm | CAD cm | Recorrido 3D cm | Holgura cm | Dos bajos cm |\n|---|---|---|---|---|---|---|\n'+comparacion.map(c=>`| ${c.id} | ${fmt(c.antesCm)} | ${fmt(c.despuesCm)} | ${fmt(c.cadCm)} | ${fmt(c.recorrido3dCm)} | ${fmt(c.holguraCm)} | ${fmt(c.bajosCm)} |`).join('\n')+'\n\n5319: se conserva el resultado exacto 297,6628, con 1,628 mm respecto al CAD; aceptación expresa del coordinador el 04/11. No hay redondeo a 0,5 cm. El 1847 conserva su plantilla de 282,5; su fórmula desde el perfil 3D da 282,3319, diferencia observada de confección que no se convierte en una constante.\n');
