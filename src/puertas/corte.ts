@@ -68,7 +68,11 @@ function etiquetaClasePieza(pieza: PiezaPuerta, codigoPano?: string): string {
     if (/trasera/i.test(pieza.nombre)) return 'ET TRASERA';
     return 'ET';
   }
-  if (pieza.clase === 'saco') return pieza.nombre.startsWith('Bolsa ') ? 'BOLSA' : pieza.sacoDiagonalesAmarillas ? 'SACO AMARILLO/NEGRO' : 'SACO';
+  if (pieza.clase === 'saco') {
+    if (pieza.nombre.startsWith('Bolsa ')) return 'BOLSA';
+    const nombre=pieza.nombre==='Faldón'?'FALDÓN':'SACO';
+    return pieza.sacoDiagonalesAmarillas ? `${nombre} AMARILLO/NEGRO` : nombre;
+  }
   return 'CRISTAL';
 }
 

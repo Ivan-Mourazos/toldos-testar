@@ -17,6 +17,7 @@ import { InputDecimal } from '../remolques/InputDecimal';
 import type { ResumenPedido } from '../remolques/SelectorProducto';
 import { AlzadoPuerta } from './AlzadoPuerta';
 import { ConfigurarAraujo } from './ConfigurarAraujo';
+import { ConfigurarSantaPau } from './ConfigurarSantaPau';
 import { fichaDePuerta, fichaPorCodigo, fichaPorId, tipoDePuerta } from '../../puertas/clientes.ts';
 import { cambiarTipoDelCliente, nuevaPuertaDeCliente, otraPuertaDelCliente } from '../../puertas/nuevaPuertaCliente.ts';
 import { CorteResumen, useVistaCortePuertas } from './VistaCortePuertas';
@@ -65,6 +66,7 @@ function Configurar({p,cambiar,corte,derecha='alzado',letra='A'}:{p:Puerta;cambi
   const ficha=fichaDePuerta(p);
   if(p.clientePuertas&&!ficha.habilitado)return <section className="puerta-config panel panel-vidrio" aria-label="Cliente sin reglas de confección"><h2>{ficha.nombre} · confección pendiente</h2><p className="puerta-ayuda">{ficha.aviso}</p><p className="puerta-ayuda">Artículo {p.articuloOrigen||'sin indicar'} · OF {p.of||'SIN OF'} · {num(p.frente)} × {num(p.alto)} cm</p><p className="puerta-ayuda">{p.observaciones}</p></section>;
   if(p.araujo)return <ConfigurarAraujo p={p} cambiar={cambiar} corte={corte} derecha={derecha} letra={letra}/>;
+  if(p.santapau)return <ConfigurarSantaPau p={p} cambiar={cambiar} corte={corte} derecha={derecha} letra={letra}/>;
   // System Dock: una lona rectangular; sin cristal, saco, tubos ni ventanas (src/puertas/systemDock.ts).
   const sd=p.modelo==='SYSTEMDOCK';
   const set=<K extends keyof Puerta>(k:K,v:Puerta[K])=>cambiar({...p,[k]:v});
@@ -533,7 +535,7 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
     <section className="puerta-cabecera order-header panel rem-cabecera"><div className="order-header-group order-header-general"><h3>Datos del pedido</h3><div className="order-header-grid">
       <div className="puerta-pedido"><label className="field puerta-campo"><span>Número de pedido</span><input aria-label={`Número de pedido de ${nombre}`} value={pedido.orderCode} placeholder="AR2600000" onChange={e=>setPedido({...pedido,orderCode:e.target.value})}/></label>
       <button type="button" className="ghost-button" disabled={trayendo || !pedido.orderCode.trim()} onClick={() => void traerDeRps()}>{trayendo ? 'Consultando…' : 'Traer de RPS'}</button>
-      </div><label className="field puerta-campo"><span>Cliente</span><input aria-label={`Cliente de ${nombre}`} value={pedido.cabecera.cliente.replace(/ARAUJO/g,'Araujo').replace(/PORTANOVA/g,'Portanova')} onChange={e=>cabecera({cliente:e.target.value,clienteRps:undefined})}/></label>
+      </div><label className="field puerta-campo"><span>Cliente</span><input aria-label={`Cliente de ${nombre}`} value={pedido.cabecera.cliente.replace(/DISTRIBUCIONS INDUSTRIALS SANTA PAU,?\s*S\.?L\.?/g,'Santa Pau').replace(/SANTA PAU/g,'Santa Pau').replace(/ARAUJO/g,'Araujo').replace(/PORTANOVA/g,'Portanova')} onChange={e=>cabecera({cliente:e.target.value,clienteRps:undefined})}/></label>
       <label className="field puerta-campo"><span>Fecha</span><input type="date" aria-label={`Fecha del pedido de ${nombre}`} value={pedido.cabecera.fecha} onChange={e=>cabecera({fecha:e.target.value})}/></label>
     </div></div>
     </section>

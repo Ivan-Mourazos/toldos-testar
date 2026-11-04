@@ -2,6 +2,7 @@ import { nuevaPuerta } from './calcular.ts';
 import { REGLAS_SYSTEM_DOCK } from './systemDock.ts';
 import { araujoDesdeRps } from './araujoRps.ts';
 import { fichaPorCodigo } from './clientes.ts';
+import { nuevaPuertaDeCliente } from './nuevaPuertaCliente.ts';
 import type { ModeloPuerta, Puerta } from './tipos.ts';
 
 /** SYSTEM DOCK, S.L. en RPS: sus líneas «LONA PERIMETRAL …» son lonas de abrigo de muelle (docs/modelos/system-dock.md). */
@@ -45,15 +46,16 @@ export function puertasDesdeRps(lineas: LineaPuertaRps[], { clienteCodigo = '' }
     const color = /COLOR\s+([A-ZÁÉÍÓÚÑ]+(?:\s+[A-ZÁÉÍÓÚÑ]+)*\s+\d{4})/i.exec(texto);
     const cantidad = Number.isInteger(l.cantidad) && l.cantidad >= 1 && l.cantidad <= 50 ? l.cantidad : 1;
     puertas.push({
-      ...nuevaPuerta(tipo.modelo),
+      ...(ficha.calculo==='santapau'?nuevaPuertaDeCliente(ficha.id,tipo.id):nuevaPuerta(tipo.modelo)),
       clientePuertas:ficha.id,tipoPuerta:tipo.id,...ficha.rollos,
       articuloOrigen: articulo as ModeloPuerta,
       frente: medidas ? numero(medidas[1]) : 0,
       alto: medidas ? numero(medidas[2]) : 0,
-      color: color ? color[1].toUpperCase() : '',
+      color: color ? color[1].toUpperCase() : ficha.calculo==='santapau'?(/COLOR\s+(BLANC[OA]|ROJ[OA]|VERDE|AZUL|GRIS|NEGRO|AMARILL[OA])\b/i.exec(texto)?.[1].toUpperCase()??''):'',
       cantidad,
       of: l.of.trim(),
       observaciones: l.comentario.trim(),
+      ...(ficha.calculo==='santapau'&&/IGN[IÍ]FUGA?\s+M2/i.test(texto)?{material:'LAC900 IGNÍFUGA M2'}:{}),
     });
   }
   return { puertas, avisos };

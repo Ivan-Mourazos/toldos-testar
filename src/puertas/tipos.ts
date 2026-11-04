@@ -34,6 +34,8 @@ export interface ConfiguracionAraujo {
   tramos: TramoAraujo[];
 }
 export interface Puerta {
+  /** Santa Pau: los bordes visibles de mirilla van en ventanas; ejes de tubo en entradas. */
+  santapau?: { aumentoBajo: number; altoFaldon: number; ladoCerrado: 'izquierda'|'derecha'|'sin confirmar'; refuerzos: boolean; logoDosCaras: boolean };
   /** Opcionales: los documentos anteriores conservan su interpretación y sus bytes. */
   clientePuertas?: string;
   tipoPuerta?: string;

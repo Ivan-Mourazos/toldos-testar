@@ -6,7 +6,7 @@ export interface TipoPuertaCliente {
 }
 export interface FichaClientePuertas {
   id: string; nombre: string; codigoRps: string; unidadHoja: 'cm'|'mm'; habilitado: boolean;
-  calculo: 'portanova'|'araujo'|'pendiente'; aviso?: string;
+  calculo: 'portanova'|'araujo'|'santapau'|'pendiente'; aviso?: string;
   rollos: { rollo: number; rolloCristal: number; rolloSaco: number }; rollosConfirmados: boolean;
   remates: string; perfiles: Record<string,{aumento:number;marca:number;nombre?:string;aviso?:string}>;
   perfilInicial?: string;
@@ -24,7 +24,7 @@ const archivos:Record<string,unknown>=typeof process!=='undefined'&&typeof proce
   ? archivosNode() : import.meta.glob('./clientes/*.json',{eager:true,import:'default'});
 function validar(valor:unknown):FichaClientePuertas {
   const f=valor as FichaClientePuertas;
-  if(!f||!f.id||!f.nombre||typeof f.codigoRps!=='string'||!['cm','mm'].includes(f.unidadHoja)||typeof f.habilitado!=='boolean'||!['portanova','araujo','pendiente'].includes(f.calculo)
+  if(!f||!f.id||!f.nombre||typeof f.codigoRps!=='string'||!['cm','mm'].includes(f.unidadHoja)||typeof f.habilitado!=='boolean'||!['portanova','araujo','santapau','pendiente'].includes(f.calculo)
     ||!f.rollos||!Object.values(f.rollos).every(n=>Number.isFinite(n)&&n>0)||!f.rotulos||!f.perfiles||!Array.isArray(f.tipos)||!f.tipos.length||!f.articulos
     ||f.tipos.some(t=>!t.id||!t.nombre||!['PUERTAENR','PUERTAPLE','PUERTAUTO'].includes(t.modelo))||Object.values(f.articulos).some(t=>!f.tipos.some(x=>x.id===t)))throw new Error('Ficha de cliente de Puertas inválida. Revisa src/puertas/clientes/.');
   return f;

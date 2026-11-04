@@ -1,6 +1,7 @@
 import { alturasTubos, desfaseCintas } from './calcular.ts';
 import { huecosSinEscuadrado, llevaEscuadrado } from './escuadrado.ts';
 import { alzadoAraujo } from './alzadoAraujo.ts';
+import { alzadoSantaPau } from './alzadoSantaPau.ts';
 import { colocarTextosPuerta } from './textosPlano.ts';
 import { desnivelSuelo, pestanaDerecha, rotuloSaco, sacoPuerta } from './saco.ts';
 import { medidaSystemDock, REGLAS_SYSTEM_DOCK } from './systemDock.ts';
@@ -74,6 +75,7 @@ export const textoCota = (c: CotaAlzado) => `${c.prefijo ? `${c.prefijo} ` : ''}
 export const esVertical = (c: Pick<CotaAlzado, 'x1' | 'x2' | 'y1' | 'y2'>) => Math.abs(c.x1 - c.x2) < 1e-9 && Math.abs(c.y1 - c.y2) > 1e-9;
 
 export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = 'A'): GeometriaAlzado {
+  if (p.santapau) return alzadoSantaPau(p,resultado,letra);
   if (p.araujo) return alzadoAraujo(p, letra);
   if (p.modelo === 'SYSTEMDOCK') return alzadoSystemDock(p);
   const F = p.frente > 0 ? p.frente : 400;

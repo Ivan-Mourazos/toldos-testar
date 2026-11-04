@@ -14,7 +14,7 @@ function rect(l:LienzoEnrollable,c:string,x:number,y:number,w:number,h:number,r=
   l.polilineas.push({capa:c,cerrada:true,puntos:[[x+r,y],[x+w-r,y],[x+w,y+r],[x+w,y+h-r],[x+w-r,y+h],[x+r,y+h],[x,y+h-r],[x,y+r]],curvas:[0,b,0,b,0,b,0,b]});
 }
 /** Plano de oficina y corte recibido del anidado común: las curvas y marcas proceden de las mismas medidas. */
-export function escribirPlanoAraujo(pedido:PedidoPuertas,cortes:CortePuertas[],cabecera:{cliente:string;tecnico:string;revisor:string;fecha:string}):string{
+export function escribirPlanoAraujo(pedido:PedidoPuertas,cortes:CortePuertas[],cabecera:{cliente:string;tecnico:string;revisor:string;fecha:string},subtitulo='MEDIDAS EN CM · ARAUJO · TRAMOS Y BOLSAS'):string{
   const l=vacio();let dy=0,ancho=0,izquierda=0;
   for(const [i,e] of pedido.elementos.entries()){
     const g=geometriaAlzado(e.input,calcularPuerta(e.input),String.fromCharCode(65+i));
@@ -45,5 +45,5 @@ export function escribirPlanoAraujo(pedido:PedidoPuertas,cortes:CortePuertas[],c
   const ofs=[...new Set(pedido.elementos.flatMap(e=>[e.input.of.trim(),...e.input.araujo?.tramos.map(t=>t.of?.trim()??'')??[]]).filter(Boolean))];
   return escribirDxfPlano({...lienzoAMetros(l,100,100),corte:lienzoAMetros(lc,ox,oy),zonas:{toldos:za,corte:zc}},
     {pedido:pedido.orderCode,of:ofs.length>1?'VARIAS':ofs[0]??'',cliente:textoSeguro(cabecera.cliente),tecnico:textoSeguro(cabecera.tecnico),revisor:textoSeguro(cabecera.revisor),
-      fecha:cabecera.fecha,pagina:'1/1',material:[...new Set(cortes.map(c=>textoSeguro(c.material)))].join(' / '),subtitulo:'MEDIDAS EN CM · ARAUJO · TRAMOS Y BOLSAS'}).dxf;
+      fecha:cabecera.fecha,pagina:'1/1',material:[...new Set(cortes.map(c=>textoSeguro(c.material)))].join(' / '),subtitulo}).dxf;
 }

@@ -21,6 +21,7 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
       const tipo=fichaPorId(p.clientePuertas)!.tipos.find(t=>t.id===p.tipoPuerta);
       if(!tipo||tipo.modelo!==p.modelo||tipo.forma&&(!objeto(p.araujo)||tipo.forma!==p.araujo.forma))return error();
       if((fichaPorId(p.clientePuertas)!.calculo==='araujo')!==Boolean(p.araujo))return error();
+      if((fichaPorId(p.clientePuertas)!.calculo==='santapau')!==Boolean(p.santapau))return error();
     }else if(p.tipoPuerta!==undefined)return error();
     if(typeof p.modelo!=='string' || !Object.hasOwn(MODELOS_PUERTAS,p.modelo)) return error();
     if(p.articuloOrigen!=='' && (typeof p.articuloOrigen!=='string'||!Object.hasOwn(MODELOS_PUERTAS,p.articuloOrigen)&&!(ARTICULOS_TRAMOS_ARAUJO as readonly string[]).includes(p.articuloOrigen)))return error();
@@ -37,6 +38,10 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
     const numeros=(x:unknown,max=100)=>lista(x,max) && x.every(n=>typeof n==='number' && Number.isFinite(n) && Math.abs(n)<=3000);
     const cotas=(x:unknown,claves:string[])=>objeto(x) && claves.every(k=>typeof x[k]==='number' && Number.isFinite(x[k]) && Math.abs(x[k] as number)<=3000);
     const hueco=(x:unknown)=>cotas(x,['x','y','ancho','alto','radio']);
+    if(p.santapau!==undefined){
+      const s=p.santapau;
+      if(p.clientePuertas!=='santapau'||!objeto(s)||!cotas(s,['aumentoBajo','altoFaldon'])||!['izquierda','derecha','sin confirmar'].includes(s.ladoCerrado as string)||typeof s.refuerzos!=='boolean'||typeof s.logoDosCaras!=='boolean')return error();
+    }
     if(p.araujo!==undefined) {
       const a=p.araujo;
       if(!objeto(a)||!['sueltos','continua'].includes(a.forma as string)||typeof a.perfil!=='string'||!Object.hasOwn(fichaDePuerta(p as unknown as Puerta).perfiles,a.perfil)||!lista(a.tramos,50))return error();

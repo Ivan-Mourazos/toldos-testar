@@ -1,0 +1,15 @@
+{
+  "id": "santapau",
+  "nombre": "Santa Pau",
+  "codigoRps": "038661",
+  "unidadHoja": "mm",
+  "habilitado": true,
+  "calculo": "santapau",
+  "rollos": { "rollo": 300, "rolloCristal": 140, "rolloSaco": 300 },
+  "rollosConfirmados": false,
+  "remates": "Macarrón de 5,5 mm, E.T. sueltas de 9 cm y faldón rectangular de 35 cm. Revisa bajo, lado cerrado y rollos con la hoja.",
+  "perfiles": {},
+  "rotulos": { "espaciador": "", "cremallera": "", "plantilla": "general" },
+  "tipos": [{ "id": "enrollable", "nombre": "Enrollable", "modelo": "PUERTAENR" }],
+  "articulos": { "PUERTAENR": "enrollable" }
+}
