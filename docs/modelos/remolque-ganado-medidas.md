@@ -1,6 +1,77 @@
 # Caballos por medidas: levantar el morro y desarrollarlo
 
-## Estado de la implementación · 03/11/2026
+## Respuestas de Iván · 04/11/2026
+
+Este apartado actualiza el estado del 03/11 conservado debajo como historial.
+
+- Q-GAN05 y aclaración Q-GAN10: **161 cm es el ancho trasero (160 + 1)**; la puerta va
+  en la **diagonal del morro de 103 cm**, como en el CAD. «Non leva solapas neste caso»,
+  cuerda fruncida atrás y cremalleras unidas al morro «a 4 cm do borde». Fruncido **5 cm**,
+  editable. Se quita el bloqueo del 5319: la puerta está integrada en el morro y no añade
+  un rectángulo de 161 cm. Las cremalleras se marcan a 4 cm de los extremos de la diagonal,
+  hasta la tangencia del lateral delantero (1185C/1185D del CAD). Con los altos aprobados
+  del ejemplo, ese tramo mide 47,5 cm; en el CAD con otras aguas mide 50,35 cm.
+- Q-GAN06: AR2601847, **98 × 32: Hueco de puerta; 34,5 × 56: Tapa de ventana**.
+  Los nombres aparecen en pantalla, hoja, plano y bot; se conservan los cortes originales.
+- Q-GAN07: aceptado el contraste histórico del gemelo, **1,5 mm contorno y 1 mm ollaos**.
+  Se mantienen las diferencias sin corregir geometría. El máximo real de ollaos es 1,044907723 mm:
+  la aceptación expresa del contraste no se presenta como cumplimiento matemático de 1 mm.
+- Q-GAN08: altos hasta el cruce teórico de lateral y aguas, confirmado.
+- Q-GAN09: **2,5 / 10 / 30 / 55 / 94 / 126 / 157 / 193 cm desde atrás**, en los dos laterales
+  del ejemplo 5319. El CAD posterior conserva 127 / 158 / 194; mandan las posiciones confirmadas.
+
+### Refuerzo específico MFD de Talleres Cal
+
+El DWG de oficina del 5319 se copia a `tmp/ganado-cal/fuentes/dwg/` y se convierte localmente
+con ODA. Su marca **10EE4**, nota **10EE6 (REFORZAR)** y pieza de corte **10EE7** acreditan
+la forma, posición y existencia de una pieza independiente. No es un rectángulo regular:
+sus lados miden **54,601 / 193,886 / 53,742 / 197,810 mm**. El vértice próximo a la cabeza
+está a **26,713 mm** del extremo delantero de la diagonal MFD, proyectado sobre ella.
+Se conserva el cuadrilátero exacto, sin añadir márgenes que el CAD no acredita.
+
+La misma forma se encuentra en diez pedidos Cal previos (excluido el 00389 especial):
+AR2605157, AR2601621, AR2601124, AR2506199, AR2502712, AR2405521, AR2405130,
+AR2401758, AR2306796 y AR2300359. Ejemplos identificados: **18B41/18B70** del 5157,
+**160C4/160F3** del 1621 y **EE40/EE6E** del 2405130. Algunas revisiones antiguas
+modifican el corte aproximadamente 1 mm; se usa la pareja exacta del 5319.
+
+La opción **Refuerzo MFD de caballos Cal** se guarda en la ficha del cliente y se propone
+solo en Cal por medidas al importar. Se puede cambiar en cada pedido; se respeta un No
+explícito. La posición se marca en el morro y la pieza sale aparte en el rollo. El ejemplo
+5319 la activa; los demás modelos no la reciben.
+
+### Nuevo contraste del propio 5319
+
+El CAD recién localizado contiene diferencias con las medidas ya confirmadas del ejemplo:
+cuerpo terminado **211 × 291,5**, corte **217 × 297,5 cm**, frente con alto central **67 cm**
+y ventana **45 × 35**, frente a la versión por medidas de la web (altos 57+10 y 57+0,
+ventana confirmada anteriormente 50 × 35). Se anotan en la tabla de contraste; no se cambia
+la entrada aprobada para copiar otra revisión del dibujo. El refuerzo sí tiene correspondencia
+acreditada. Los ficheros generados y la comparación por capa quedan en `tmp/ganado-cal/salida/`.
+
+Comprobación del 04/11: **368 ficheros y 4.821 pruebas Vitest**, typecheck, lint y Vite build
+correctos; también pasan las 14 pruebas Node del estudio y de la aceptación del gemelo.
+Las hojas del 5319 y 1847 caben en una página. Capturas revisadas en claro y oscuro, a
+1280 × 720 y 1600 × 1000, en `tmp/ui-audit/ganado-cal-respuestas/`, sin errores de navegador.
+La instancia 4560 confirma `simulationMode=true` y `fileWritesEnabled=false`.
+Los dos DWG se han vuelto a convertir a DXF: conservan capas, recuentos y envolventes
+a 0,001 de la unidad del plano; detalle en `salida/verificacion-dwg.json`.
+
+Repetición desde las copias locales:
+
+```text
+node --test scripts/ganado/aceptacion-cal.node-test.mjs scripts/ganado/corte-completo-geometria.node-test.mjs scripts/ganado/medidas-geometria.node-test.mjs
+node scripts/ganado/contrastar-estandar.mjs
+node scripts/ganado/contrastar-cal.mjs --comprobar
+node scripts/ganado/generar-respuestas-cal.mjs --hojas
+node scripts/ganado/comparar-respuestas-cal.mjs
+```
+
+La generación de hojas exige la instancia aislada 4560 y Playwright; la de DWG requiere ODA
+(ruta configurable con `ODA_FILE_CONVERTER`). El contraste histórico devuelve 2 por las fuentes
+históricas que siguen ausentes, aunque el gemelo esté aceptado. No indica un fallo del 1847.
+
+## Estado de la implementación · 03/11/2026 (histórico)
 
 La web incorpora **Caballos Cal por medidas**: formulario, desarrollo del morro desde las dos
 secciones, cuerpo, frente, ventana adaptada y tapa, ollaos, hoja y plano. El corte sin puerta se genera

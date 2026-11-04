@@ -47,6 +47,7 @@ export interface GanadoResult {
   anchoJuego: number;
   metrosTela: number;
   notas: string[];
+  incompleto?: boolean;
 }
 
 export interface FichaModeloGanado {
@@ -102,16 +103,19 @@ export function calcGanado(input: GanadoInput): GanadoResult {
       const fmt = (x: number) => (x / 10).toLocaleString('es-ES', { maximumFractionDigits: 2 });
       return {
         modelo: MODELOS_GANADO.CAL_MEDIDAS.nombre,
+        incompleto: g.pendientes.length > 0,
         piezas: g.piezas.map(p => ({ nombre: p.nombre, hecho: p.terminado ? medidaPiezaCal(p, true) : '', corte: medidaPiezaCal(p),
           acabado: p.nombre === 'Cuerpo' ? `B.N.(3) + ollaos en los bajos; ${input.medidasCal!.fruncir.toLocaleString('es-ES')} para fruncir atrás; costura 1 delante`
             : p.nombre === 'Morro' ? 'B.N.(3) + ollaos en diagonales; costura 1 en uniones'
-              : p.nombre === 'Frente' ? 'B.N.(3) + ollaos abajo; costura 1 alrededor de la unión' : '3 cm más que la ventana en cada dimensión' })),
+              : p.nombre === 'Frente' ? 'B.N.(3) + ollaos abajo; costura 1 alrededor de la unión'
+                : p.nombre === 'Refuerzo MFD' ? 'Refuerzo de Cal en la diagonal MFD; pieza independiente, posición marcada en el morro' : '3 cm más que la ventana en cada dimensión' })),
         largoJuego: excelRound(c.w / 10, 2), anchoJuego: excelRound(c.h / 10, 2),
         metrosTela: g.pendientes.length ? 0 : excelRound(cantidad * c.w / 1000, 2),
         notas: [
           `Lona hecha: ${fmt(g.largoHecho)} de largo, sin forzar el total comercial. Radio exterior ${input.medidasCal.radio.toLocaleString('es-ES')}.`,
           'Colocación por piezas enteras en rollo de 250. Las medidas del morro son su envolvente; se corta su contorno.',
           ...(g.ventana ? [`Ventana ${g.ventana.ancho.toLocaleString('es-ES')} × ${g.ventana.alto.toLocaleString('es-ES')}; estándar 50 × 35 si cabe.`] : []),
+          ...(g.puerta ? [`Puerta ${g.puerta.lado} en la diagonal del morro, sin solapas; cremalleras a ${g.puerta.separacionBorde.toLocaleString('es-ES')} cm de los extremos.`] : []),
           'El gemelo conserva una diferencia histórica de 1,824 mm entre una generatriz 3D y el plano de oficina; el cálculo no la corrige.',
           ...(!input.arcosComprobados ? ['Comprueba los arcos del remolque antes de cortar.'] : []),
           ...g.pendientes,

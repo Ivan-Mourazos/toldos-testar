@@ -138,7 +138,7 @@ function comprobarOpcionales(
       && (generales.has(normalizarNombre(valor)) || (propia !== "" && normalizarNombre(valor) === normalizarNombre(propia)));
     if (!existe) mal(`la recogida ${texto} «${String(valor)}» no existe`);
   }
-  for (const campo of ["bastillaEnfundar", "rotulacion", "cremallera", "ollaosRepartidos"] as const) {
+  for (const campo of ["bastillaEnfundar", "rotulacion", "cremallera", "ollaosRepartidos", "refuerzoMfdCal"] as const) {
     if (f[campo] !== undefined && typeof f[campo] !== "boolean") mal(`«${campo}» es sí o no`);
   }
   if (f.ventana !== undefined) {

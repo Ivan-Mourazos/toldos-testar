@@ -1,6 +1,7 @@
 // Reglas del gemelo AR.25.06052; datos de entrada en mm. Sin lectura de archivos.
 import {construirMorro,contornoPerfil,perfil} from './geometria.js';
 import {linea,arco,circulo,poligono,offsetPoligono,d} from './geometriaPlana.js';
+import {colocarRefuerzoMfd,REFUERZO_MFD_CAL} from './refuerzoCal.js';
 function cabeza(m,r){
  const w=m.frente,h=m.altoB,a=m.aguasB,R=m.radioB,s=r.costura,b=r.bastilla;
  const ang=Math.atan2(a,w/2),giro=Math.PI/2-ang,t=R*Math.tan(giro/2),z=h-t;
@@ -34,5 +35,25 @@ export function generarCal(h,r){
  if(h.laterales?.length) cuerpo.ollaos=[r.dentroOllao,C-r.dentroOllao].flatMap(y=>h.laterales.map(x=>circulo([x,y],r.radioOllao)));
  const piezas=[cuerpo,morro,frente]; let ventana=null;
  if(h.ventana){const top=frente.zTangencia-r.ventana.separacionTangencia,W=Math.min(r.ventana.ancho,m.frente),H=Math.min(r.ventana.alto,top); if(H<=0)throw Error("No queda espacio para la ventana bajo la curva"); ventana={ancho:W/10,alto:H/10};frente.marcas.push(...poligono([[m.frente/2-W/2,top-H],[m.frente/2+W/2,top-H],[m.frente/2+W/2,top],[m.frente/2-W/2,top]]));const tapa=[[0,0],[(W+30),0],[(W+30),(H+30)],[0,(H+30)]];piezas.push({nombre:'Tapa ventana',corte:poligono(tapa),contorno:tapa,marcas:[],ollaos:[]});}
- return {ventana,hoja:h,medidas:m,largoHecho:m.largoCuerpo+modelo.proyeccion,proyeccion:modelo.proyeccion,piezas,perfilA:modelo.perfilA,perfilB:modelo.perfilB};
+ if(h.refuerzoMfd){
+  const refuerzo=colocarRefuerzoMfd(a[0],b[0]);
+  morro.marcas.push(...poligono(refuerzo));
+  // La pieza suelta se orienta con su lado largo horizontal; la marca conserva su posición.
+  const pieza=REFUERZO_MFD_CAL.map(([x,y])=>[-x,y]);
+  piezas.push({nombre:'Refuerzo MFD',corte:poligono(pieza),contorno:pieza,marcas:[],ollaos:[]});
+ }
+ let puerta=null;
+ if(h.puerta!=='NINGUNA'&&h.puertaMorro){
+  // 5319, 1185C/1185D: dos cremalleras a 4 de los extremos de la diagonal,
+  // hasta la tangencia del lateral delantero. La puerta forma parte del morro.
+  const i=h.puerta==='MFI'?a.length-1:0,j=i?i-1:1,p=a[i],q=b[i],L=d(p,q),sep=h.puertaMorro.separacionBorde;
+  if(2*sep>=L)throw Error('No queda ancho entre las cremalleras de la puerta.');
+  const v=q.map((x,k)=>(x-p[k])/L),subida=b[j].map((x,k)=>x-q[k]);
+  for(const distancia of [sep,L-sep]){
+   const inicio=p.map((x,k)=>x+v[k]*distancia);
+   morro.marcas.push(linea(inicio,inicio.map((x,k)=>x+subida[k])));
+  }
+  puerta={lado:h.puerta,ancho:L/10,alto:d(q,b[j])/10,separacionBorde:sep/10};
+ }
+ return {ventana,puerta,hoja:h,medidas:m,largoHecho:m.largoCuerpo+modelo.proyeccion,proyeccion:modelo.proyeccion,piezas,perfilA:modelo.perfilA,perfilB:modelo.perfilB};
 }

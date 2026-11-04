@@ -6,6 +6,7 @@ import { CORTE_ECONOMICO } from '../ganado/economicoDatos.ts';
 import { CORTE_ESTANDAR } from '../ganado/estandarDatos.ts';
 import { calcularMedidasCal } from '../ganado/medidas.ts';
 import { juegoCorteCal } from '../ganado/salidasCal.ts';
+import { RECTANGULOS_ESTANDAR_PENDIENTES } from '../ganado/estandarConfeccion.ts';
 
 /** Iván, 27/10/2026: en el económico, los ollaos a 4,5 cm del borde de corte, como en sus cortes a mano. */
 export const OLLAO_AL_BORDE = 45;
@@ -51,6 +52,9 @@ export function piezaGanado(el) {
   const cx = (c.cuerpo.x0 + c.cuerpo.x1) / 2, cy = (c.cuerpo.y0 + c.cuerpo.y1) / 2;
   p.textos = [
     ...(c.textos ?? []),
+    ...(el.input.ganado === 'REMOLCAR_ESTANDAR' ? RECTANGULOS_ESTANDAR_PENDIENTES.map(r => ({
+      x: (r.x0 + r.x1) / 2, y: (r.y0 + r.y1) / 2, h: 40, valor: r.nombre,
+    })) : []),
     { x: cx, y: cy + 200, h: 150, valor: el.of },
     ...(cantidad > 1 ? [{ x: cx, y: cy - 250, h: 150, valor: `X${cantidad}` }] : []),
   ];

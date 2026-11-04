@@ -30,20 +30,21 @@ describe('Cálculo, corte y plano de Cal por medidas', () => {
     expect(dibujoCal(MEDIDAS_CAL_GEMELO).circulos).toHaveLength(25);
   });
 
-  it('el 5319 enseña las piezas calculadas y no exporta un corte sin su puerta', () => {
+  it('el 5319 exporta el juego completo con puerta en la diagonal y refuerzo MFD', () => {
     const e = elemento(MEDIDAS_CAL_5319, 'AR2605319', '0233492');
     expect(erroresPlanteamiento(e.input)).toEqual([]);
-    expect(soportadaGanado(e)).toMatch(/puerta MFI/);
+    expect(soportadaGanado(e)).toBeNull();
     const r = generarCorteRemolques({ ...base, orderCode: 'AR2605319', elementos: [e] });
-    expect(r.archivo).toBeNull();
-    expect(r.aMano[0].motivo).toMatch(/puerta MFI/);
-    expect(() => piezaGanado(e)).toThrow(/puerta MFI/);
-    expect(e.result.metrosTela).toBe(0);
-    expect(e.result.piezas).toHaveLength(4);
+    expect(r.archivo).not.toBeNull();
+    expect(r.aMano).toEqual([]);
+    expect(piezaGanado(e).textos.some(t => t.valor.includes('Refuerzo MFD'))).toBe(true);
+    expect(e.result.metrosTela).toBeGreaterThan(0);
+    expect(hojaGanado(e.input, e.result).banda[1].notas).toEqual([]);
+    expect(e.result.piezas).toHaveLength(5);
     const p = juegoCorteCal(MEDIDAS_CAL_5319);
     expect(p.h).toBeLessThanOrEqual(2500);
     expect(p.arcos.map(a => a.r)).toEqual([105, 105]);
-    expect(p.ollaos).toHaveLength(23);
+    expect(p.ollaos).toHaveLength(27);
   });
 
   it('bloquea las medidas inválidas en guardado y corte y mantiene legible el resultado', () => {
@@ -57,6 +58,15 @@ describe('Cálculo, corte y plano de Cal por medidas', () => {
 describe('Plano de Iván del AR2601847', () => {
   it('conserva los dos rectángulos del bot sin trasladarles los acabados de los trapecios', () => {
     expect(RECTANGULOS_ESTANDAR_PENDIENTES.map(p => [(p.x1-p.x0)/10, (p.y1-p.y0)/10, p.ollaos])).toEqual([[98, 32, 0], [34.5, 56, 0]]);
+    expect(RECTANGULOS_ESTANDAR_PENDIENTES.map(p => p.nombre)).toEqual(['Hueco de puerta', 'Tapa de ventana']);
+    expect(PIEZAS_ESTANDAR_CONFECCION.find(p => p.nombre === 'Hueco de puerta')).toMatchObject({ corte: '98 × 32', acabado: '' });
+    const e = { ...elemento(MEDIDAS_CAL_GEMELO), input: { ...emptyGanado('REMOLCAR_ESTANDAR'), material: 'LONA PVC 580 GRIS 7037 :250 AN (580)' } };
+    e.result = calcGanado(e.input);
+    const r = generarCorteRemolques({ ...base, orderCode: 'AR2601847', elementos: [e] });
+    for (const nombre of ['Hueco de puerta', 'Tapa de ventana']) {
+      expect(r.archivo.plano.dxf.includes(nombre)).toBe(true);
+      expect(r.archivo.dxf.includes(nombre.toUpperCase())).toBe(true);
+    }
     expect(PIEZAS_ESTANDAR_CONFECCION.find(p => p.nombre === 'Frente')).toMatchObject({ hecho: '47 de ancho × 71 de alto; ventana de 30 × 50', corte: '51,5 × 73' });
     expect(PIEZAS_ESTANDAR_CONFECCION.find(p => p.nombre === 'Cuerpo').acabado).toContain('correas por dentro después de enfundar');
   });

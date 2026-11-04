@@ -259,6 +259,7 @@ function FichaEditor({ ficha, recogidasGenerales, onChange, onQuitar }: {
         <CampoNumFicha label="Sesgo detrás (cm más ancho atrás)" value={ficha.sesgoDetras ?? null} onChange={(v) => onChange({ sesgoDetras: numero(v) })} />
         <CampoNumFicha label="Demasía de lona hecha (cm)" value={ficha.demasiaLonaHecha ?? null} onChange={(v) => onChange({ demasiaLonaHecha: v ?? undefined })} />
         <SelectField label="Cremallera del 9" value={deSiNo(ficha.cremallera)} options={SI_NO} onChange={(v) => onChange({ cremallera: aSiNo(v) })} />
+        <SelectField label="Refuerzo MFD de caballos Cal" value={deSiNo(ficha.refuerzoMfdCal)} options={SI_NO} onChange={(v) => onChange({ refuerzoMfdCal: aSiNo(v) })} />
         <SelectField label="Ollaos siempre repartidos" value={deSiNo(ficha.ollaosRepartidos)} options={SI_NO} onChange={(v) => onChange({ ollaosRepartidos: aSiNo(v) })} />
       </div>
     </ParameterBand>

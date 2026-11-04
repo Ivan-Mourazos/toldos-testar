@@ -21,7 +21,17 @@ export interface MedidasCal {
   laterales: number[];
   diagonalOllaos?: number;
   frenteOllaos?: number;
+  /** Pieza y posición históricas de Talleres Cal, diagonal de mano fija derecha. */
+  refuerzoMfd?: boolean;
+  /** Puerta integrada en la diagonal del morro, sin solapas independientes. */
+  puertaMorro?: { separacionBorde: number };
 }
+
+export const MEDIDAS_CAL_VACIAS: MedidasCal = {
+  recto: 0, ancho: 0, frente: 0, diagonal: 0, alto: 0, altoFrente: 0,
+  aguas: 0, aguasFrente: 0, radio: 0, fruncir: 5, pasoOllaos: 30,
+  ventana: true, puerta: 'NINGUNA', laterales: [],
+};
 
 export const MEDIDAS_CAL_GEMELO: MedidasCal = {
   recto: 195, ancho: 190, frente: 60, diagonal: 90, alto: 70, altoFrente: 70,
@@ -31,8 +41,10 @@ export const MEDIDAS_CAL_GEMELO: MedidasCal = {
 export const MEDIDAS_CAL_5319: MedidasCal = {
   recto: 210, ancho: 160, frente: 54, diagonal: 102, alto: 57, altoFrente: 57,
   aguas: 10, aguasFrente: 0, radio: 9.5, fruncir: 5, pasoOllaos: 35,
-  ventana: true, puerta: 'MFI', laterales: [30, 55, 94, 126, 157, 193],
+  ventana: true, puerta: 'MFI', laterales: [2.5, 10, 30, 55, 94, 126, 157, 193],
   diagonalOllaos: 4, frenteOllaos: 3,
+  refuerzoMfd: true,
+  puertaMorro: { separacionBorde: 4 },
 };
 
 export type PuntoCal = [number, number];
@@ -55,10 +67,13 @@ export interface DesarrolloCal {
   ventana: { ancho: number; alto: number } | null;
   medidas: { radioA: number; radioB: number; altoA: number; altoB: number; aguasA: number; aguasB: number };
   pendientes: string[];
+  puerta: { lado: 'MFI' | 'MFD'; ancho: number; alto: number; separacionBorde: number } | null;
 }
 
 export function calcularMedidasCal(m: MedidasCal): DesarrolloCal {
   if (!m) throw Error('Faltan las medidas de Cal.');
+  if (m.refuerzoMfd !== undefined && typeof m.refuerzoMfd !== 'boolean') throw Error('Indica sí o no para el refuerzo MFD.');
+  if (m.puertaMorro && (!Number.isFinite(m.puertaMorro.separacionBorde) || m.puertaMorro.separacionBorde <= 0)) throw Error('La separación de las cremalleras debe ser mayor que cero.');
   for (const k of ['recto', 'ancho', 'frente', 'diagonal', 'alto', 'altoFrente', 'radio', 'pasoOllaos'] as const) {
     if (!Number.isFinite(m[k]) || m[k] <= 0) throw Error(`Revisa ${k}: tiene que ser mayor que cero.`);
   }
@@ -77,7 +92,7 @@ export function calcularMedidasCal(m: MedidasCal): DesarrolloCal {
   const h = { ...m, ...Object.fromEntries(
     ['recto', 'ancho', 'frente', 'diagonal', 'alto', 'altoFrente', 'aguas', 'aguasFrente', 'radio', 'fruncir', 'pasoOllaos']
       .map(k => [k, (m[k as keyof MedidasCal] as number) * 10]),
-  ), laterales: m.laterales.map(x => x * 10) };
+  ), laterales: m.laterales.map(x => x * 10), puertaMorro: m.puertaMorro ? { separacionBorde: m.puertaMorro.separacionBorde * 10 } : undefined };
   // Acabados medidos en el gemelo (18F73→18F74, 18F5D→18F60). No proceden del 00389 especial.
   const r = {
     lonaHecha: DEFAULT_PARAMS.demasiaLonaHecha * 10,
@@ -88,7 +103,7 @@ export function calcularMedidasCal(m: MedidasCal): DesarrolloCal {
     ventana: { ancho: 500, alto: 350, separacionTangencia: 50 },
   };
   const g = generarCal(h, r) as unknown as DesarrolloCal;
-  return { ...g, pendientes: m.puerta === 'NINGUNA' ? [] : [
+  return { ...g, pendientes: m.puerta === 'NINGUNA' || m.puertaMorro ? [] : [
     `Falta definir la puerta ${m.puerta}: ancho terminado, cremallera hasta arriba, solapas y su unión con el morro. El dibujo muestra cuerpo, morro y frente; el corte completo queda a mano.`,
   ] };
 }

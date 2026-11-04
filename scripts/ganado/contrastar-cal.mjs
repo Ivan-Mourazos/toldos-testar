@@ -14,6 +14,7 @@ import { DEFAULT_PARAMS } from '../../src/remolques/calc/params.ts';
 import { RECTANGULOS_ESTANDAR_PENDIENTES } from '../../src/remolques/ganado/estandarConfeccion.ts';
 import { compararFuente } from './medidas-cad.mjs';
 import { hojas, leerReglas, comprobarCaso } from './corte-completo.mjs';
+import { aceptarGemeloCal } from './aceptacion-cal.mjs';
 
 const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const salida = path.join(raiz, 'tmp/ganado-cal');
@@ -47,7 +48,8 @@ const historico = [...ids].sort().map(id => {
 let corteGemelo;
 try {
   const r = comprobarCaso(hojas[0],leerReglas());
-  corteGemelo = { estado:r.cuadra?'cuadra':'NO CUADRA', fuente:r.fuenteBot, sha256Bot:r.sha256Bot,
+  const aceptacion = aceptarGemeloCal(r.piezas);
+  corteGemelo = { estado:aceptacion.aceptado?'ACEPTADO POR IVÁN':r.cuadra?'cuadra':'NO CUADRA', aceptacion, fuente:r.fuenteBot, sha256Bot:r.sha256Bot,
     piezas:r.piezas.map(p=>({nombre:p.nombre,cuadra:p.cuadra,contraste:p.contraste})) };
 } catch(e) { corteGemelo = { estado:'NO COMPROBADO: '+e.message }; }
 
@@ -82,14 +84,14 @@ const casos = [
     piezas:g.piezas.map(p => ({ nombre:p.nombre,corte:medidaPiezaCal(p),ollaos:p.ollaos.length })),
     pendientes:g.pendientes, exportacionCompleta:!!produccion.archivo };
 });
-const informe = { fecha:'2026-11-03', alcance:'Contraste desde copias locales del archivo: desarrollo de todos los Cal del manifiesto salvo el 00389 y corte completo del gemelo. Los casos sin correspondencia no se cuentan como aciertos; el desarrollo no acredita por sí solo los acabados de cada pedido.',
+const informe = { fecha:'2026-11-04', alcance:'Contraste desde copias locales del archivo: desarrollo de todos los Cal del manifiesto salvo el 00389 y corte completo del gemelo. Los casos sin correspondencia no se cuentan como aciertos; el desarrollo no acredita por sí solo los acabados de cada pedido.',
   manifiestoDisponible:fs.existsSync(manifiesto), excluido:'AR2500389 (Q-GAN02)', historico, corteGemelo, casos,
-  estandar:{ rectangulos:RECTANGULOS_ESTANDAR_PENDIENTES, conclusion:'La imagen de Iván muestra el morro y el frente ya identificados; no permite atribuir nombre ni acabados a estos dos rectángulos.' } };
+  estandar:{ rectangulos:RECTANGULOS_ESTANDAR_PENDIENTES, conclusion:'Q-GAN06, Iván 04/11/2026: 98 × 32 es el hueco de puerta; 34,5 × 56 es la tapa de ventana. Sin añadir acabados no confirmados.' } };
 guardar('contraste.json', informe);
 const fmt=x=>x==null?'—':x.toLocaleString('es-ES',{maximumFractionDigits:3});
 const tabla = '| Pedido | Desarrollo desde 3D | Vértices ida / vuelta (mm) | Longitudes (mm) | Bot local |\n|---|---|---|---|---|\n' + historico.map(r => `| ${r.id} | ${r.estado} | ${fmt(r.mejor?.errorIdaMm)} / ${fmt(r.mejor?.errorVueltaMm)} | ${fmt(r.mejor?.errorLongitudesMm)} | ${r.botDisponible?'Sí':'No'} |`).join('\n');
 const filasGemelo=corteGemelo.piezas?.map(p=>{const n=k=>{const c=p.contraste[k];return `${c.ida.cuadran}/${c.ida.total} · ${c.vuelta.cuadran}/${c.vuelta.total}; máx. ${fmt(Math.max(c.ida.max,c.vuelta.max))} mm`;};return `| ${p.nombre} | ${n('tramos')} | ${n('arcos')} | ${n('ollaos')} | ${n('marcas')} | ${p.cuadra?'Cuadra':'NO CUADRA'} |`;}).join('\n')??corteGemelo.estado;
-guardar('CONTRASTE.md', '# Cal por medidas · 03/11/2026\n\n' + informe.alcance + '\n\n' + tabla + '\n\n## Corte del gemelo, ida / vuelta\n\n| Pieza | Tramos | Arcos | Ollaos | Marcas | Resultado |\n|---|---|---|---|---|---|\n'+filasGemelo+'\n\nEl 00389 queda excluido. Ver `contraste.json` para el cálculo del gemelo y el 5319 y las huellas de todas las fuentes locales. El 5319 conserva la puerta pendiente y solo produce archivos de revisión rotulados PARCIAL.\n');
+guardar('CONTRASTE.md', '# Cal por medidas · 04/11/2026\n\n' + informe.alcance + '\n\n' + tabla + '\n\n## Corte del gemelo, ida / vuelta\n\n| Pieza | Tramos | Arcos | Ollaos | Marcas | Resultado geométrico a 1 mm |\n|---|---|---|---|---|---|\n'+filasGemelo+'\n\nAceptación de taller: '+corteGemelo.estado+'. '+(corteGemelo.aceptacion?.excepcionHistorica??'')+'\n\nEl 00389 queda excluido. Ver `contraste.json` para el cálculo del gemelo y el 5319 y las huellas de todas las fuentes locales. La exportación completa de cada caso se indica expresamente en ese JSON.\n');
 console.log(tabla);
 console.log(JSON.stringify({ casos, manifiestoDisponible:informe.manifiestoDisponible },null,2));
 if (process.argv.includes('--comprobar')) {
