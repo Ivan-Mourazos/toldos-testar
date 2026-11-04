@@ -33,7 +33,12 @@ export function SelectField({ label, value, options, onChange, placeholder, allo
   const listboxId = useId();
   const visibleOptions = allowEmpty ? ['', ...options.filter(Boolean)] : options;
   const selectedIndex = visibleOptions.indexOf(value);
-  const menuStyle = useFloatingMenu(open, triggerRef, { maxHeight: optionGroup ? 360 : 236, preferredWidth: optionGroup ? 390 : 0 });
+  // La lista se ensancha hasta que quepa la opción más larga, sin cortar los nombres (Iván,
+  // 04/11/2026: «Negro intenso textura 9005-9405» salía cortado). Unos 7,5 px por letra.
+  const textoMasLargo = visibleOptions.reduce((max, option) => Math.max(max, (option ? optionLabel?.(option) ?? option : emptyOptionLabel).length), 0);
+  const anchoOpciones = Math.min(440, Math.ceil(textoMasLargo * 7.5) + 64);
+  const listaLarga = optionGroup || visibleOptions.length > 12;
+  const menuStyle = useFloatingMenu(open, triggerRef, { maxHeight: listaLarga ? 360 : 236, preferredWidth: optionGroup ? Math.max(390, anchoOpciones) : anchoOpciones });
   const sections: { group: string; entries: { option: string; index: number }[] }[] = [];
   visibleOptions.forEach((option, index) => {
     const group = option ? optionGroup?.(option) || '' : '';
