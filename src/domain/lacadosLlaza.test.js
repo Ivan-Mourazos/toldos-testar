@@ -111,6 +111,15 @@ describe('catálogo Llaza 2026', () => {
     expect(resolveLacadoCode('BONYXPTM150C', 'PTM')).toEqual({ code: 'BONYXPTM150C', painted: false });
   });
 
+  test('el sablé permite el Perla con su perfil de 600 y sus soportes vigentes en RPS', () => {
+    const payload = order('Gris 150 sablé textura');
+    Object.assign(payload.awnings[0], { model: 'PERLA BOX', projection: 150, device: 'MAQUINA', crankHeight: 150, hasValance: false, valanceHeight: 0 });
+    const [of] = calculateOrder(payload).ofs;
+    expect(of.calculation.valid).toBe(true);
+    expect(of.materials).toContainEqual(expect.objectContaining({ code: 'PRBOXS300PTM600C' }));
+    expect(of.materials).toContainEqual(expect.objectContaining({ code: 'SOSTORBS300PTM' }));
+  });
+
   test.each(['Gris sombra textura 7022-7422', 'Antracita metálico DB703'])('%s se trata como el lacado especial', (name) => {
     expect(resolveLacado(name).suffix).toBe('');
     const special = calculateOrder(order('LACADO ESPECIAL'));
