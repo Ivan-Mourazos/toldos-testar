@@ -137,7 +137,7 @@ function ModelHistory() {
                   <strong>{nombreAmbito(entry.ambito)} · versión {entry.versionAmbito}</strong>
                   <span>{[formatDate(entry.updatedAt), controlLabel(entry.updatedBy)].filter(Boolean).join(' · ')}</span>
                   {entry.motivo && <span>{entry.motivo}</span>}
-                  {entry.resumen.map((linea) => <small key={linea}>{linea}</small>)}
+                  {entry.resumen.map((linea) => <small key={linea}>{linea.replace(/TUBO DE CARGA (EVO 80|UNIVERS 280)/g, (_texto, tubo: string) => `Tubo de carga ${controlLabel(tubo)}`)}</small>)}
                 </div>
                 {entry.versionAmbito !== (estado.shared.modelos[entry.ambito]?.version ?? 0) && (
                   <button className="ghost-button" type="button" onClick={() => cargarVersionModelo(entry.ambito, entry.overrides)}>Cargar esta versión</button>
