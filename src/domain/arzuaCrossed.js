@@ -1,3 +1,5 @@
+import { isKnownLacado, resolveLacado } from './lacados.js';
+
 // Llaza Tarifa Nacional 2026, páginas impresas 264–266 (PDF 266–268).
 export const crossedMinimumLines = [
   [150, 140, 145], [175, 153, 158], [200, 165, 170],
@@ -25,13 +27,10 @@ export const crossedProfileByFinish = Object.freeze({
 });
 
 export function resolveCrossedKit(color) {
-  const finish = {
-    BLANCO: 'BL16',
-    'NEGRO (R-09011)': 'NE11', NEGRO: 'NE11',
-    'BURDEOS (R-03005)': 'BU05', BURDEOS: 'BU05',
-    'GRIS 7012': 'GR12', 'GRIS 7016': 'GR16', 'ANTRACITA (RAL 7016)': 'GR16'
-  }[String(color || '').trim().toUpperCase().replace(/\s+/g, ' ')];
-  return crossedKitByFinish[finish] || null;
+  // El color desconocido cae en blanco en el cálculo general, pero no acredita
+  // una equivalencia de compra para un kit cruzado.
+  if (!isKnownLacado(color)) return null;
+  return crossedKitByFinish[resolveLacado(color).suffix] || null;
 }
 
 // La lona más limitada de la tabla de Llaza: por debajo, cualquier lona vale.

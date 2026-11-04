@@ -4,6 +4,7 @@ import { configuredCurtainVelcroHeight, curtainWindowDrawingHeight, formatCurtai
 import { formatSolapaVelcroLabels, normalizeSolapas } from './solapasRules.js';
 import { normalizeEmbudo, etiquetasEmbudo } from './embudoConfiguration.js';
 import PDFDocument from 'pdfkit';
+import { lacadoPrintName } from './lacados.js';
 import pdfLib from 'pdf-lib';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -613,7 +614,7 @@ function drawStructureSide(doc, x, y, w, { order, awning, calc }) {
       ...(hera.placement ? [['COLOC. TOLD.', hera.placement]] : [])
     ], 11);
   } else drawMiniTable(doc, x, y + 123, w, 'DETALLES', [
-    ['LACADO', awning.structureColor || order.structureColor],
+      ['LACADO', lacadoPrintName(awning.structureColor || order.structureColor)],
     ['DISPOSIT.', awning.device],
     [String(awning.device || '').toUpperCase() === 'MOTOR' ? 'POS. MOTOR' : 'COLOC. MAQ.', awning.machineSide],
     ['COLOC. TOLD.', awning.placement],
@@ -958,7 +959,7 @@ export function buildStructureSheetPages({ order: fullOrder, calculation, onlyAw
         ...(hera.side ? [['LADO MANDO', hera.side]] : []),
         ...(hera.placement ? [['COLOCACIÓN TOLDO', hera.placement]] : [])
       ] : [
-        ['LACADO', dash(awning.structureColor || order.structureColor)],
+      ['LACADO', dash(lacadoPrintName(awning.structureColor || order.structureColor))],
         ['DISPOSITIVO', dash(awning.device)],
         [motor ? 'POSICIÓN MOTOR' : 'COLOCACIÓN MÁQUINA', dash(awning.machineSide)],
         ['COLOCACIÓN TOLDO', dash(awning.placement)],

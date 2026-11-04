@@ -319,3 +319,13 @@ Respuestas de Iván. «Pendiente» quiere decir que la web todavía no lo aplica
 | Código | Duda | Tratamiento mientras tanto |
 | --- | --- | --- |
 | Q-DIB01 | ¿Cómo se elige AL CORTE o BASTILLA en las lonas técnicas? Los planos AR2603932 (Punto Recto, Soltis96), AR2604955 (Electra, rejilla) y AR2602210 (Maxiscreen, Recscreen350P) piden AL CORTE, pero la plantilla GENERAL dice BASTILLA. ¿Depende del tejido, del modelo o se indica por pedido? | **Contestada** (Iván, 02/11/2026): depende del pedido y de la tela. La web debe dejar elegir bastilla o al corte en cada pedido |
+
+## Lacados Llaza 2026 · 04/11/2026
+
+[Correspondencia, artículos y comprobaciones](../lacados-llaza-2026.md).
+
+| Código | Duda | Tratamiento mientras tanto |
+| --- | --- | --- |
+| Q-LAC01 | ¿Qué sufijo vigente debe usarse para gris sombra textura 7022-7422 y DB703? No hay artículos identificados del primero; los 18 AN03 / 99703 del segundo están de baja | Ambos aparecen en la tarifa y se ofrecen con sufijo vacío, como el lacado especial; se conserva la reserva en blanco/bruto para lacar y las restricciones de cada modelo. No se usan referencias de baja |
+| Q-LAC02 | ¿Se mantienen los diez colores fuera de la tarifa? Azul mate 5004-5104, aluminio blanco 9006-99006, blanco mate 9003, gris antracita mate 7016, marrón 8002/8007/8019, pardo 8019, plata anodizado 537 y verde 6009. ¿Qué acabado tienen los que no indican brillo/mate? | Se conservan en «Otros colores (fuera de la tarifa Llaza)», sin inventar el acabado. MR19/PA19 y BL06/PL06/BT06 siguen separados por tener sufijos distintos; el informe detalla sus piezas y usos |
+| Q-LAC03 | Algunas descripciones NM05 dicen 9005-9105; la tarifa y el nombre histórico de la web dicen 9005-9405. ¿Es 9105 una errata del maestro? | Se muestra negro intenso textura 9005-9405 y se conserva NM05. No se añade 9105 como equivalencia confirmada |

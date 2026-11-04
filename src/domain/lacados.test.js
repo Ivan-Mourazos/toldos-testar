@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { resolveLacado, crankSuffix, machineCode, lacadoNames } from './lacados.js';
+import { resolveLacado, crankSuffix, machineCode, lacadoNames, lacadoLabel } from './lacados.js';
 
 describe('lacados', () => {
   test('mapa completo de sufijos', () => {
@@ -14,7 +14,7 @@ describe('lacados', () => {
     expect(resolveLacado('BURDEOS (R-03005)').suffix).toBe('BU05');
     // Iván, 08/10/2026 (AR2604748): el negro 9005 brillo, además del mate 9005-9405.
     expect(resolveLacado('NEGRO 9005')).toMatchObject({ suffix: 'NE05', crank: 'NEGRA' });
-    expect(lacadoNames).toEqual(expect.arrayContaining(['NEGRO 9005', 'NEGRO MATE 9005-9405']));
+    expect(lacadoNames).toEqual(expect.arrayContaining(['Negro intenso brillo 9005', 'Negro intenso textura 9005-9405']));
     expect(resolveLacado('LACADO ESPECIAL').suffix).toBe('');
   });
 
@@ -44,17 +44,17 @@ describe('lacados', () => {
   });
 
   test('lista canónica para el desplegable', () => {
-    expect(lacadoNames).toHaveLength(35);
-    expect(lacadoNames).toContain('ANTRACITA (RAL 7016)');
+    expect(lacadoNames).toHaveLength(38);
+    expect(lacadoNames).toContain('Gris antracita brillo 7016');
     expect(resolveLacado('ANTRACITA (RAL 7016)')).toMatchObject({ suffix: 'GR16', crank: 'NEGRA' });
-    expect(lacadoNames).toContain('BLANCO');
-    expect(lacadoNames).toContain('LACADO ESPECIAL');
-    expect(lacadoNames).toContain('GRIS 7016');
+    expect(lacadoNames).toContain('Blanco tráfico brillo 9016');
+    expect(lacadoNames).toContain('Lacado especial (RAL)');
+    expect(lacadoLabel('GRIS 7016')).toBe('Gris antracita brillo 7016');
   });
 
-  // Iván, 08/10/2026: por orden alfabético y con los colores que tienen piezas lacadas en RPS.
-  test('el desplegable va por orden alfabético', () => {
-    expect(lacadoNames).toEqual([...lacadoNames].sort((a, b) => a.localeCompare(b, 'es')));
+  test('el desplegable empieza por el precio base y termina por el lacado especial', () => {
+    expect(lacadoNames[0]).toBe('Blanco tráfico brillo 9016');
+    expect(lacadoNames.at(-1)).toBe('Lacado especial (RAL)');
   });
 
   test('colores añadidos el 08/10/2026, con su sufijo de RPS y su manivela', () => {
@@ -78,7 +78,7 @@ describe('lacados', () => {
       'VERDE 6009': ['VE09', 'NEGRA']
     };
     for (const [name, [suffix, crank]] of Object.entries(added)) {
-      expect(lacadoNames).toContain(name);
+      expect(lacadoNames).toContain(lacadoLabel(name));
       expect(resolveLacado(name)).toMatchObject({ name, suffix, crank });
     }
   });
