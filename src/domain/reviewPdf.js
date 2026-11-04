@@ -1,4 +1,5 @@
 import PDFDocument from 'pdfkit';
+import { lacadoPrintName } from './lacados.js';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { buildReviewSheetEntries, fabricLabel, reviewDisplayValue } from './reviewSheetEntries.js';
@@ -200,7 +201,7 @@ function drawFields(doc, fields, x, y, width) {
 function drawFormField(doc, field, x, y, width) {
   doc.fillColor(colors.muted).font('Helvetica-Bold').fontSize(6.5).text(field.label, x, y, { width, ellipsis: true });
   doc.roundedRect(x, y + 10, width, 24, 4).fillAndStroke(colors.field, colors.line);
-  const value = reviewDisplayValue(field.value);
+  const value = field.label === 'Lacado' ? lacadoPrintName(field.value) : reviewDisplayValue(field.value);
   let size = 8.5;
   doc.font('Helvetica').fontSize(size);
   while (size > 6.5 && doc.widthOfString(value) > width - 14) { size -= 0.5; doc.fontSize(size); }

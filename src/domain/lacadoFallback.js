@@ -19,7 +19,7 @@ const whiteSuffixes = ['BL16', 'BL10', 'BLAN', 'BL06'];
  */
 export function resolveLacadoCode(code, suffix) {
   const clean = String(code || '').toUpperCase();
-  if (!clean || whiteSuffixes.includes(suffix) || existing.has(clean)) return { code: clean || code, painted: false };
+  if (!clean || (whiteSuffixes.includes(suffix) && suffix !== 'BL10') || existing.has(clean)) return { code: clean || code, painted: false };
   // Con el sufijo, la familia es lo que va delante. El lacado especial no tiene sufijo
   // (BONYX150C): la familia es el prefijo conocido más largo y el color se inserta tras él.
   let head = '';
@@ -45,8 +45,9 @@ export function withLacadoFallback(result, { awning, order }) {
   const lacadoName = awning?.structureColor || order?.structureColor || '';
   const lacado = resolveLacado(lacadoName);
   const { suffix } = lacado;
-  // Sin sufijo solo está el lacado especial; un nombre desconocido cae en blanco.
-  if (whiteSuffixes.includes(suffix) || (!suffix && lacado.name !== 'LACADO ESPECIAL')) return result;
+  // BL10 (9010) también necesita blanco 9016 si la pieza no existe en 9010.
+  // Todos los colores sin sufijo siguen el tratamiento del lacado especial.
+  if (whiteSuffixes.includes(suffix) && suffix !== 'BL10') return result;
   const painted = new Set();
   const swap = (code) => {
     const resolved = resolveLacadoCode(code, suffix);

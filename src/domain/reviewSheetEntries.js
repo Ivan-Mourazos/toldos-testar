@@ -10,6 +10,7 @@ import {
 import { normalizeDropArmMode, supportsVerticalDropArm } from './dropArmMode.js';
 import { formatCurtainVelcroLabel } from './curtainConfiguration.js';
 import { normalizeSolapas } from './solapasRules.js';
+import { lacadoLabel } from './lacados.js';
 import { normalizeEmbudo, etiquetasEmbudo } from './embudoConfiguration.js';
 
 const legacyModelNames = {
@@ -129,7 +130,7 @@ export function buildReviewSheetEntries(order, calculation) {
     if (awning.model === 'ANTICA' && (awning.anticaVariant === 'SOPORTE FIJO 3 AGUJEROS' || roundAnticaEntry)) {
       addField(cardFields, 'Altura soporte-brazo', measure(awning.anticaSupportHeight), true);
     }
-    if (fields.requiresStructureColor) addField(cardFields, 'Lacado', awning.structureColor || order.structureColor || 'SIN INDICAR', true);
+    if (fields.requiresStructureColor) addField(cardFields, 'Lacado', lacadoLabel(awning.structureColor || order.structureColor) || 'SIN INDICAR', true);
     if (fields.requiresRotFabric && !standaloneValance) addField(cardFields, 'Rotulación tela', yesNo(awning.rotFabric), true);
     if (hasValance) addField(cardFields, 'Rotulación bamba', yesNo(awning.rotValance), true);
 

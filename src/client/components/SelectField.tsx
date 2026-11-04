@@ -17,9 +17,10 @@ type Props = {
   missing?: boolean;
   /** Texto de cada opción (por defecto, controlLabel); con '' da el de la opción vacía de la lista. */
   optionLabel?: (value: string) => string;
+  optionGroup?: (value: string) => string;
 };
 
-export function SelectField({ label, value, options, onChange, placeholder, allowEmpty = false, emptyLabel, missing = false, optionLabel }: Props) {
+export function SelectField({ label, value, options, onChange, placeholder, allowEmpty = false, emptyLabel, missing = false, optionLabel, optionGroup }: Props) {
   const labelOf = (option: string) => (optionLabel ? optionLabel(option) : controlLabel(option));
   const emptyOptionLabel = optionLabel?.('') || emptyLabel || 'No indicado';
   const reading = useReadMode();
@@ -32,7 +33,17 @@ export function SelectField({ label, value, options, onChange, placeholder, allo
   const listboxId = useId();
   const visibleOptions = allowEmpty ? ['', ...options.filter(Boolean)] : options;
   const selectedIndex = visibleOptions.indexOf(value);
-  const menuStyle = useFloatingMenu(open, triggerRef, { maxHeight: 236 });
+  const menuStyle = useFloatingMenu(open, triggerRef, { maxHeight: optionGroup ? 360 : 236, preferredWidth: optionGroup ? 390 : 0 });
+  const sections: { group: string; entries: { option: string; index: number }[] }[] = [];
+  visibleOptions.forEach((option, index) => {
+    const group = option ? optionGroup?.(option) || '' : '';
+    if (!sections.length || sections[sections.length - 1].group !== group) sections.push({ group, entries: [] });
+    sections[sections.length - 1].entries.push({ option, index });
+  });
+
+  useEffect(() => {
+    if (open) menuRef.current?.querySelector('[data-active="true"]')?.scrollIntoView({ block: 'nearest' });
+  }, [open, activeIndex]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -82,7 +93,7 @@ export function SelectField({ label, value, options, onChange, placeholder, allo
       setActiveIndex(0);
     } else if (event.key === 'End' && open) {
       event.preventDefault();
-      setActiveIndex(options.length - 1);
+      setActiveIndex(visibleOptions.length - 1);
     } else if ((event.key === 'Enter' || event.key === ' ') && open) {
       event.preventDefault();
       choose(visibleOptions[activeIndex]);
@@ -115,20 +126,26 @@ export function SelectField({ label, value, options, onChange, placeholder, allo
 
       {open && createPortal(
         <div ref={menuRef} id={listboxId} className="select-options select-options-portal" style={menuStyle} role="listbox" aria-labelledby={labelId}>
-          {visibleOptions.map((option, index) => (
-            <button
-              key={option || '__empty'}
-              type="button"
-              className={`select-option${option === value ? ' is-selected' : ''}${index === activeIndex ? ' is-active' : ''}`}
-              role="option"
-              aria-selected={option === value}
-              title={option ? labelOf(option) : emptyOptionLabel}
-              onMouseEnter={() => setActiveIndex(index)}
-              onClick={() => choose(option)}
-            >
-              <span>{option ? labelOf(option) : emptyOptionLabel}</span>
-              {option === value && <Check aria-hidden="true" />}
-            </button>
+          {sections.map(({ group, entries }, sectionIndex) => (
+            <div key={sectionIndex} role={group ? 'group' : undefined} aria-label={group || undefined}>
+              {group && <div className="select-group-label">{group}</div>}
+              {entries.map(({ option, index }) => (
+                <button
+                  key={option || '__empty'}
+                  type="button"
+                  className={`select-option${option === value ? ' is-selected' : ''}${index === activeIndex ? ' is-active' : ''}`}
+                  role="option"
+                  aria-selected={option === value}
+                  data-active={index === activeIndex || undefined}
+                  title={option ? labelOf(option) : emptyOptionLabel}
+                  onMouseEnter={() => setActiveIndex(index)}
+                  onClick={() => choose(option)}
+                >
+                  <span>{option ? labelOf(option) : emptyOptionLabel}</span>
+                  {option === value && <Check aria-hidden="true" />}
+                </button>
+              ))}
+            </div>
           ))}
         </div>,
         document.body

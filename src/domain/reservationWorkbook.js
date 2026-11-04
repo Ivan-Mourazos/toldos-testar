@@ -1,4 +1,5 @@
 import ExcelJS from 'exceljs';
+import { lacadoPrintName } from './lacados.js';
 import { roundQuantity } from './math.js';
 import { needsValanceFinish, normalizeValanceFinish } from './modelBehavior.js';
 import { collectFabricMaterialKeys, roundFabricMeters } from './reservationFabrics.js';
@@ -45,7 +46,7 @@ export async function buildOrderArchiveWorkbook(reservation, order = null) {
       ['REMATE', summarizeRemate(order.awnings) || order.remate || ''],
       ['CURVA BAMBA', summarizeAwningField(order.awnings, 'valanceCurve', 'SEGUN TOLDO')],
       ['TELA BAMBA', summarizeValanceFabric(order.awnings)],
-      ['LACADO', summarizeAwningField(order.awnings, 'structureColor', 'SEGUN TOLDO') || order.structureColor || ''],
+      ['LACADO', summarizeAwningField((order.awnings || []).map(awning => ({ ...awning, structureColor: lacadoPrintName(awning.structureColor) })), 'structureColor', 'SEGUN TOLDO') || lacadoPrintName(order.structureColor)],
       ['ROTULACION TELA', summarizeAwningField(order.awnings, 'rotFabric', 'SEGUN TOLDO') || order.rotTela || ''],
       ['ROTULACION BAMBA', summarizeAwningField(order.awnings, 'rotValance', 'SEGUN TOLDO') || order.rotBamba || '']
     ];

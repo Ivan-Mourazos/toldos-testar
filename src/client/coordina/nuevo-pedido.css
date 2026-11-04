@@ -202,6 +202,12 @@ input[type="radio"] { accent-color: var(--color-brand-400); }
 }
 .select-option.is-selected.is-active { background: var(--opcion-resaltada); }
 .select-option > svg { color: var(--accent-text); }
+.select-group-label {
+  padding: 10px 8px 5px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
 .fabric-option-meta { color: var(--accent-text); }
 
 /* ── Botones ──

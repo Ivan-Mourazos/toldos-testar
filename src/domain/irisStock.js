@@ -49,6 +49,7 @@ const caps = Object.freeze({
 // lacado especial) no tiene perfil lacado de BAT: va en bruto.
 const lacadoColors = Object.freeze({
   BL16: ['BLAN', 'BL10'],
+  BL10: ['BLAN', 'BL10'],
   NE11: ['NEGR', 'NE05'],
   NE05: ['NEGR', 'NE05'],
   // Lacados añadidos el 08/10/2026 que BAT tiene con el mismo código.

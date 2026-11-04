@@ -59,7 +59,7 @@ describe('buildStructureSheetPages', () => {
     const [sheet] = sheets([arzua()]);
     expect(sheet.partida).toEqual([['FRENTE', '337'], ['SALIDA TOLDO', '225'], ['UNIDADES', '1']]);
     expect(sheet.valid).toBe(true);
-    expect(sheet.detalles).toEqual([['LACADO', 'BLANCO'], ['DISPOSITIVO', 'MOTOR'], ['POSICIÓN MOTOR', 'M.F.DER'], ['COLOCACIÓN TOLDO', 'FRONTAL']]);
+    expect(sheet.detalles).toEqual([['LACADO', 'BLANCO TRÁFICO BRILLO 9016'], ['DISPOSITIVO', 'MOTOR'], ['POSICIÓN MOTOR', 'M.F.DER'], ['COLOCACIÓN TOLDO', 'FRONTAL']]);
     expect(sheet.tela).toEqual([['TELA', '326,2'], ['SALIDA PAÑO', '300'], ['PAÑO', '9,0 ML']]);
     expect(sheet.notes).toBe('');
   });
