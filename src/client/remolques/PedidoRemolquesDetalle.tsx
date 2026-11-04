@@ -1,3 +1,4 @@
+import { solicitarGeneracion } from '../reintentarGeneracion';
 import React, { useEffect, useState } from 'react';
 import { CopyPlus, ExternalLink, Factory, FileSearch, FileText, PencilLine, Scissors } from 'lucide-react';
 import { formOptions } from '../../domain/modelBehavior.js';
@@ -219,12 +220,12 @@ export function PedidoRemolquesDetalle({ orderCode, refreshKey, currentUser, onB
     let confirmOverwrite = false;
     try {
       for (;;) {
-        const respuesta = await fetch(`/api/remolques/pedidos/${encodeURIComponent(codigo)}/generar`, {
+        const { respuesta, datos } = await solicitarGeneracion(`/api/remolques/pedidos/${encodeURIComponent(codigo)}/generar`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ confirmOverwrite }),
-        });
-        const datos = await respuesta.json().catch(() => ({})) as { error?: string; needsConfirmation?: boolean; existing?: string[]; unchanged?: boolean; nombre?: string };
+        }, async (respuesta) => ({ respuesta, datos: await respuesta.json() as { error?: string; needsConfirmation?: boolean; existing?: string[]; unchanged?: boolean; nombre?: string } }),
+        () => onToast('Reintentando…', { tone: 'info' }));
         if (respuesta.status === 409 && datos.needsConfirmation && !confirmOverwrite) {
           const eleccion = await onConfirm({
             title: 'Sustituir archivos existentes',

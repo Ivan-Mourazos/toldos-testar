@@ -1,3 +1,4 @@
+import { crearCierreHttp } from './cierreHttp.js';
 import compression from 'compression';
 import express from 'express';
 import fs from 'node:fs/promises';
@@ -146,6 +147,8 @@ const deploymentFeatures = {
 };
 
 const app = express();
+const cierreHttp = crearCierreHttp();
+app.use(cierreHttp.middleware);
 const coordina = createCoordinaClient({ url: config.coordinaUrl, key: config.coordinaClave });
 const generationLocks = new Set();
 // Hoja de taller de remolques (fase 4): los datos de cada PDF esperan aquí, en memoria y un
@@ -1602,6 +1605,7 @@ let shutdownStarted = false;
 async function shutdown(signal) {
   if (shutdownStarted) return;
   shutdownStarted = true;
+  cierreHttp.iniciar();
   console.log(`${signal} recibido: cerrando Toldos Testar…`);
 
   const forceTimer = setTimeout(() => {
@@ -1622,6 +1626,7 @@ async function shutdown(signal) {
   try {
     await new Promise((resolve, reject) => {
       server.close((error) => (error ? reject(error) : resolve()));
+      server.closeIdleConnections?.();
     });
   } catch (error) {
     closeErrors.push(error);

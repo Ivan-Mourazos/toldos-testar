@@ -1,3 +1,4 @@
+import { solicitarGeneracion } from '../reintentarGeneracion';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useContenidoFluido } from '../hooks/useContenidoFluido';
 import { transicionPedido } from '../transicionPedido';
@@ -271,15 +272,15 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
     let confirmOverwrite = false;
     try {
       while (true) {
-        const response = await fetch(`/api/reviews/${encodeURIComponent(targetCode)}/generate-files`, {
+        const { response, data } = await solicitarGeneracion(`/api/reviews/${encodeURIComponent(targetCode)}/generate-files`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             includeNonAcrylicFabrics,
             confirmOverwrite
           })
-        });
-        const data = await response.json();
+        }, async (response) => ({ response, data: await response.json() }),
+        () => onToast('Reintentando…', { tone: 'info' }));
 
         if (response.status === 409 && data.needsFabricConfirmation) {
           const fabrics = (data.fabrics || []).map((fabric: { code: string; description: string; ofs?: string[] }) =>

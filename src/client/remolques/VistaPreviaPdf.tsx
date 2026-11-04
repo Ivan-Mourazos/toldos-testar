@@ -1,3 +1,4 @@
+import { solicitarGeneracion } from '../reintentarGeneracion';
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Eye, X } from 'lucide-react';
@@ -70,15 +71,17 @@ export function VistaPreviaPdf({ lineas, params, origen, bloqueo, notify, label 
     peticion.current = cuerpo;
     setPreparando(true);
     try {
-      const respuesta = await fetch(peticionPdf.url, { ...peticionPdf.init, signal: senal });
-      if (!respuesta.ok) {
+      const { respuesta, blob, error } = await solicitarGeneracion(peticionPdf.url, { ...peticionPdf.init, signal: senal }, async (respuesta) => {
+        if (respuesta.ok) return { respuesta, blob: await respuesta.blob(), error: '' };
         const datos = await respuesta.json().catch(() => ({})) as { error?: string };
-        if (guarda.current.vigente(numero)) notify(datos.error || 'No se pudo preparar la vista previa del PDF.', { tone: 'error' });
+        return { respuesta, blob: null, error: datos.error };
+      }, () => notify('Reintentando…', { tone: 'info' }));
+      if (!respuesta.ok) {
+        if (guarda.current.vigente(numero)) notify(error || 'No se pudo preparar la vista previa del PDF.', { tone: 'error' });
         return;
       }
-      const blob = await respuesta.blob();
       // Llegó tarde (cerrado, desmontado o pedido cambiado): no se abre ni se guarda nada.
-      if (!guarda.current.vigente(numero)) return;
+      if (!guarda.current.vigente(numero) || !blob) return;
       setUrl(URL.createObjectURL(blob));
     } catch {
       if (guarda.current.vigente(numero)) notify('No se pudo preparar la vista previa del PDF.', { tone: 'error' });
