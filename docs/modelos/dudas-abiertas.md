@@ -32,6 +32,33 @@ Revisión del AR2605385 contra 33 OF desde 2023, con prioridad a 2025–2026. [T
 | Q-AG05 | ¿Cuándo lleva soporte inferior SOIN el Open y cuántos juegos lleva cada variante? Open 717 y 730 gastan 5 juegos, pero 555 y 575 no gastan ninguno; 775 tampoco. El semicofre 1145 gastó solo 1 juego y el 800 gastó 5. | Añade SOIN en cofre y conserva el de semicofre, junto a SOTL, con la cantidad provisional de soportes de perfil que ya calculaba. En el 5385 son 4 juegos de inferior. No añade SOIN a todos los Open sin conocer la condición. |
 | Q-AG06 | ¿Cuándo se usa el terminal de regulación fina TERRF en vez de TERMI? En los últimos cofres, abril de 2026 lleva TERMI y julio TERRF, ambos con tres brazos Onyx. Con salida 300 hay TERMI en semicofre; con 350 hay TERRF y con 400 aparecen las dos familias. En Open hay además TERMIUNIV, TERMINEVO y sobrantes de juegos que el consumo no explica. | Mantiene TERMI, un juego por dos brazos y un suelto si son tres; falta confirmar la familia que corresponde al 5385. El lado del suelto se elige con el brazo; si no se indica, decide el taller y se reserva derecho. Lo que no existe en el lacado se reserva blanco para lacar, como las demás piezas. |
 
+## Recogidas de ganado y caballos · estudio 04/11/2026
+
+Evidencia, pedidos terminados y propuesta sin programar en
+[ganado-recogidas.md](./ganado-recogidas.md). Las medidas de Cal ya confirmadas se mantienen;
+las respuestas siguientes fijan las reglas de la propuesta. Sigue siendo un estudio,
+sin cambios en la aplicación. **01, 02, 03, 05 y 06 contestadas; solo 04 abierta.**
+
+| Código | Pregunta para Iván / taller | Qué se propone mientras tanto |
+| --- | --- | --- |
+| Q-GANR01 · contestada por Iván, 04/11 | Goma fruncida: si el pedido no indica nada, **se añaden los 5 cm y la marca**; editable si el pedido dice otra cosa. | Proponer 5 y marca por defecto para goma fruncida. Separar goma/cuerda fruncidas de goma por ollaos. El diámetro y sobrante observados siguen siendo los de cada pedido. |
+| Q-GANR02 · contestada por Iván, 04/11 | **BRAVO siempre en las tapas, por el REVÉS; SUAVES por el DERECHO.** Orejas comprobadas: el 1412 tiene **10 útiles + 3 de BN por lado**, no 13 útiles: 151 → 171 acabado → 177 corte. | Proponer **10 cm útiles por defecto**, editables y con remates aparte. El 4709 tiene referencia acabada 161 + 10 + 10; el 4038, corte 162 + 10 + 10 y marca 10 dentro, como el 10 + 10 de lona. Medición y contraste NORTE en el expediente. |
+| Q-GANR03 · contestada por Iván, 04/11 | Puentes: «exacto, normalmente va como en el rectificado; se hizo mal en un inicio». **El 4709 RECTIFICADO es la referencia buena; la primera versión fue un error.** | Tomar la oreja y orientación del rectificado como referencia normal. Se corrige la interpretación inicial del estudio; no tomar el primer PDF como versión definitiva ni quitar los ollaos de puerta por analogía. |
+| Q-GANR04 | ¿Qué es y dónde se cose la tira de 95 × 8,5 del 4709: parte de los puentes de la puerta, un refuerzo u otro remate? ¿Lleva doblez o alguna marca propia? | Está en el **corte del bot**, DISCO1 **16B0/16B1/16B2**, y en la preparación de corte del DWG, no identificada como pieza suelta acotada en el PDF de 29/09. [Imagen señalada](../../tmp/ganado-recogidas/senalar-4709-tira.png). No convertirla en tira genérica sin conocer su función. |
+| Q-GANR05 · contestada por Iván, 04/11 | Las correas del 4038 son **HEBILLAS compradas**. En el planteamiento se dibujan como **rectángulos pequeños rosas**, no solo texto. El ejemplo de Iván, **AR2605331**, tiene cuatro de **2 × 10 cm**, capa **`referencia-1`**, color PorCapa **ACI 11**, con texto **«CORREAS DE RECOLLER»**. | **Solo plano**, según zona y posición del pedido; sin piezas de lona ni marcas en el corte del bot. [Imagen y posiciones medidas](./ganado-recogidas.md#cómo-dibujar-las-hebillas-ejemplo-de-iván-ar2605331). Los 2 × 10 describen el símbolo, no una medida de corte comercial. |
+| Q-GANR06 · contestada por Iván, 04/11 | El **«51» es una errata de la nota final del 4709**: el lateral MFD debe decir **«143 - 151 - 171»**. | Usar **151** en ese reparto. La [imagen de la nota original](../../tmp/ganado-recogidas/senalar-4709-nota.png) conserva el literal de la entidad **27045**, capa **`vent-pre-noimpr`**, para mantener la evidencia de la errata. Las revisiones del plano y del bot siguen identificadas por separado. |
+
+## Cal: seguimiento del levantamiento 3D · 04/11/2026
+
+Contraste reproducible y referencias en [remolque-ganado-medidas.md](./remolque-ganado-medidas.md).
+Q-GAN05–09 permanecen contestadas; estas preguntas no reabren sus respuestas.
+
+| Código | Pregunta concreta | Qué hace la web mientras tanto |
+| --- | --- | --- |
+| Q-GAN11 · contestada por Iván, 04/11 | «Cuando ya se tiene la medida del contorno gracias al desarrollo, se hace la lona del contorno de la medida + 1,5 cm». Va SOLO al cuerpo que da la vuelta, no al morro. Sobre el CAD: «A lo mejor se redondeó, no lo sé». | Calcula automáticamente el levantamiento 3D y el desarrollo desde las medidas. Usa `ajusteContorno` y el parámetro común de remolques, una sola vez al recorrido transversal del cuerpo. Morro sin ese aumento. Mantiene 297,6628, sin redondear; CAD 297,5 posiblemente redondeado. |
+| Q-GAN12 · contestada por Iván, 04/11 | «Si coge la nuestra, ponemos la nuestra, salvo indicar otra en pedido». | Estándar **50 × 35**, tapa **53 × 38**, si cabe. Una medida distinta indicada en pedido se introduce en campos editables; se respeta y avisa si no cabe, sin recortarla. El 5319 conserva la estándar. |
+| Q-GAN13 · contestada por Iván, 04/11 | Marcas: «valen de 20», se mantienen cortas. Ollaos: «hay que ponerlos bien»; no se acepta el desvío, precisión **0,1 mm**. | La web mantiene las marcas de 20 mm. Sus ocho ollaos cumplen 0,1 mm respecto a sus diagonales: retranqueo 10 mm y centros a 25 / 351,666667 / 678,333333 / 1005. El CAD tiene la matriz girada **0,063604°** respecto a sus propios bordes: retranqueo 9,972 → 8,884 mm, error máximo local **1,115709 mm**. No se copia ese error. Evidencia por entidad en `tmp/ganado-cal/salida/OLLAOS-POSICION.md`; queda por corregir el dibujo de oficina. |
+
 ## Contestadas el 03/11/2026 (Iván)
 
 - **Q-GAN03:** la lona va por el **exterior** del arco. Comprobado a mano en el 5319: se le dio radio 9,5.
@@ -104,7 +131,7 @@ La cinta corta ya la indica el pedido: **Q-EMB01 sigue contestada**, con 12 cm p
 
 ## Caballos por medidas · Talleres Cal (01/11/2026)
 
-La web calcula las piezas sin puerta por medidas, con radio exterior y ventana adaptada. **AR.26.05319, línea 3, sigue a mano para el corte completo**: falta definir su puerta MFI. Fuentes y contraste por script en [remolque-ganado-medidas.md](./remolque-ganado-medidas.md).
+La web calcula las piezas por medidas, con radio exterior y ventana adaptada. **AR.26.05319, línea 3, ya tiene juego completo**, puerta MFI integrada en el morro y refuerzo MFD opcional. Fuentes y contraste por script en [remolque-ganado-medidas.md](./remolque-ganado-medidas.md).
 
 **Q-GAN02 (contestada el 03/11, ver «Contestadas el 03/11/2026»).** AR.25.00389 (OF 0213084, «curva de Remolcar», con croquis a mano) no sale con las reglas que sí cuadran en el gemelo AR.25.06052: el cuerpo falla hasta 28 mm, la curva 7 mm y 15 de 21 ollaos no coinciden. ¿Tuvo algo especial ese pedido? Hay que preguntárselo a quien lo dibujó. Sin aclararlo, las reglas salen de un solo pedido y no se pueden dar por generales.
 
@@ -112,15 +139,19 @@ La web calcula las piezas sin puerta por medidas, con radio exterior y ventana a
 
 **Q-GAN04 (contestada el 03/11, ver «Contestadas el 03/11/2026»).** ¿La ventana del 5319 es de **50 × 35** con tapa de **53 × 38**, como en el gemelo? Son las medidas de ese otro pedido; en la hoja del 5319 no están confirmadas.
 
-**Q-GAN05 (03/11).** En el 5319, «da la medida la diagonal» y «cremallera MFI hasta arriba»: ¿qué ancho terminado lleva la puerta, cuánto llevan las solapas y dónde se une la cremallera con el morro? La web muestra las demás piezas, pero no exporta el corte completo de ese pedido. El fruncido se propone de 5 cm como en el gemelo y se puede cambiar: ¿es esa también la medida del 5319?
+**Q-GAN05 (contestada por Iván, 04/11/2026; aclaración confirmada Q-GAN10).** Los **161 cm son el ancho TRASERO** (160 + 1). La puerta va en la **DIAGONAL DEL MORRO, de 103 cm**, como en su CAD. «Non leva solapas neste caso»; atrás va cuerda fruncida y la puerta con cremalleras, unidas al morro «a 4 cm do borde». Fruncido del 5319: **5 cm**, sigue editable. Se quita el bloqueo del caso confirmado; la puerta forma parte del morro, sin añadir un rectángulo independiente.
 
-**Q-GAN06 (03/11, seguimiento de Q-GAN01).** Iván, en la imagen los trapecios ya son las zonas del morro y el paño con ventana es el frente de 51,5 × 73 de corte. Los dos rectángulos del bot miden 98 × 32 y 34,5 × 56 y no tienen marcas de ollao dentro. ¿Puedes señalar sobre el corte qué es cada rectángulo y a qué pieza del dibujo corresponde? Hasta entonces conservan su corte, sin darles acabados de otra pieza.
+**Q-GAN06 (contestada por Iván, 04/11/2026; seguimiento de Q-GAN01).** El rectángulo **98 × 32 es el HUECO DE PUERTA** y el **34,5 × 56 la TAPA DE VENTANA** de AR2601847. Se nombran en pantalla, hoja, plano y corte, conservando sus posiciones y sin inventar acabados ni ollaos.
 
-**Q-GAN07 (03/11).** El gemelo tiene una unión de 908,624 mm en 3D y 906,800 en el plano: diferencia de 1,824 mm. El contraste repetido con el bot da hasta 1,494 mm en el corte del morro y 1,045 mm en sus ollaos. ¿Qué diferencia admite el taller en este desarrollo? La web conserva las longitudes de los triángulos, sin retocar puntos para igualar el dibujo antiguo. Las copias del estudio ya están repuestas; siguen faltando cuatro CAD y seis cortes del bot de los 19 pedidos de Cal del manifiesto.
+**Q-GAN07 (contestada por Iván, 04/11/2026).** Morro: «vale la diferencia de **1,5 mm en contorno y 1 mm en ollaos**»; el contraste del gemelo se da por bueno con esas tolerancias. Se conservan las diferencias sin mover puntos. El máximo observado de ollaos es **1,044907723 mm**: su aceptación expresa pertenece a este contraste histórico y no amplía la tolerancia nominal general de 1 mm. Siguen faltando cuatro CAD y seis cortes del bot de los 19 pedidos históricos.
 
-**Q-GAN08 (03/11).** ¿Los altos se miden hasta el cruce teórico del lateral y las aguas o hasta donde empieza la curva? El cálculo usa el cruce teórico del estudio; falta confirmar que es la referencia con la que se toman las medidas en taller.
+**Q-GAN08 (contestada por Iván, 04/11/2026).** Los altos «se miden hasta el punto donde se cruzarían el lateral y las aguas». Se confirma la referencia que ya usa el cálculo.
 
-**Q-GAN09 (03/11).** En los ollaos laterales del 5319, ¿qué posiciones concretas pide la nota «2 esq»? El reparto manual conserva 30 / 55 / 94 / 126 / 157 / 193 desde atrás; no añade posiciones sin dimensionar a partir de esa nota. El pedido sigue sin corte completo por la puerta pendiente.
+**Q-GAN09 (contestada por Iván, 04/11/2026).** «2 esq» son **OLLAOS: a 2,5 y a 10 cm de la esquina**, y después las medidas dadas por el cliente: **30 / 55 / 94 / 126 / 157 / 193 desde atrás**. El ejemplo 5319 incorpora las ocho posiciones en cada lateral; no sustituye 126 / 157 / 193 por los 127 / 158 / 194 del CAD localizado después.
+
+**Q-GAN10 (contestada por Iván, 04/11/2026; aclaración del ancho de Q-GAN05).** «Los 161 cm son el ancho TRASERO (160 + 1); la puerta va en la DIAGONAL DEL MORRO, de 103 cm, como en su CAD. Sin solapas, cremalleras unidas al morro a 4 cm del borde, cuerda fruncida atrás (5 cm).» Las entidades 1185C/1185D sitúan las dos cremalleras a 4 cm de los extremos de la diagonal; llegan a la tangencia del lateral delantero. La web marca esa posición sobre el morro calculado.
+
+Refuerzo MFD del 5319: localizado como **marca 10EE4 y corte 10EE7**, con nota REFORZAR 10EE6. Se repite su cuadrilátero en diez pedidos Cal anteriores, por ejemplo AR2605157 18B41/18B70 y AR2601621 160C4/160F3. Se incorpora como pieza independiente y marca de posición, opcional en las medidas y en la ficha del cliente; no se regulariza su forma histórica.
 
 ## Remolcar estándar · remolque de ganado (29/10/2026)
 

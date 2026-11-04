@@ -1,6 +1,197 @@
 # Caballos por medidas: levantar el morro y desarrollarlo
 
-## Estado de la implementación · 03/11/2026
+## Cierre de ventana, marcas y ollaos · 04/11/2026
+
+Q-GAN12 contestada: Iván confirma **50 × 35, tapa 53 × 38**, si cabe, salvo otra medida
+expresa en pedido. Se conserva la estándar del 5319 y se permite introducir ancho y alto
+de la ventana del pedido. La tapa añade 3 cm en ambas medidas; si la ventana indicada no
+cabe, se avisa sin alterar sus cotas. La adaptación de la estándar conserva su regla.
+
+Q-GAN13 contestada: «valen de 20». Las marcas cortas de fruncido y las centrales de
+**20 mm** de la web quedan confirmadas. No se copian la línea completa ni los 30 del CAD.
+Para los ollaos Iván exige posición exacta, comprobada a **0,1 mm**.
+
+La auditoría independiente demuestra que la matriz de ollaos del **CAD** no es paralela
+a sus diagonales **EC00/EBFE** ni a las diagonales de corte de **EC0D**:
+
+| Referencia | Ángulo de diagonal | Ángulo de matriz | Diferencia |
+| --- | --- | --- | --- |
+| MFD · EC00 | −34,977791° | −34,914186° | 0,063604° |
+| MFI · EBFE | 34,977791° | 34,914186° | 0,063604° |
+
+El paso CAD mide correctamente **326,666667 mm**, pero avanza en dirección incorrecta:
+los centros quedan a **9,972241 / 9,609608 / 9,246974 / 8,884340 mm** de la diagonal,
+en lugar de 10 constantes. Error local máximo **1,115709 mm**, repetido en ambas manos
+por los bloques **15138/15144–15146** y **13E53/13E65–13E6B**. No se afirma que el dibujo
+se hiciera a mano: lo acreditado es el ángulo incorrecto de la matriz.
+
+La web ya usa la diagonal desarrollada real para situar cada centro, a **10 mm normales**
+y **25 / 351,666667 / 678,333333 / 1005 mm** desde su extremo. Cumple 0,1 mm con
+**4, 5, 12 y 32** divisiones de curva. No hay redondeo ni reparto sobre la poligonal del
+arco en esos bordes rectos. No se desplazan sus centros para copiar el error del CAD.
+El máximo anterior de 1,240189 mm incluía además la diferencia de contorno MFI aceptada
+en el desarrollo: **0,442337 mm** en el extremo. Se separan ambas causas en el contraste.
+
+Repetición: `node scripts/ganado/ollaos-cal.mjs`, o el contraste por capas, que la ejecuta.
+Evidencia completa por centro, entidad y resolución en `tmp/ganado-cal/salida/OLLAOS-POSICION.md`
+y `ollaos-posicion.json`. La tabla conserva la discrepancia del CAD como pendiente del
+dibujo de oficina; la posición geométrica de los ocho ollaos web figura como coincidente.
+
+## Levantamiento 3D contrastado · 04/11/2026
+
+Este apartado sustituye los valores provisionales del 5319 del contraste anterior.
+El original de oficina se ha consultado en solo lectura y su SHA-256 coincide con la copia
+de `tmp/ganado-cal/fuentes/dwg/AR2605319.dwg`. El análisis de los perfiles 3D, sus normales,
+arcos y generatrices queda reproducible con `node scripts/ganado/levantamiento-cal.mjs`.
+No se deduce el recorrido de una proyección plana ni de cuerdas que sustituyan los arcos.
+
+El cálculo ya usaba longitud de arco real por el exterior. Los errores eran de entrada:
+el cuerpo del 5319 lleva **67 + 10 cm**, el frente **57 + 10 cm** y cada bajo añade
+**3 cm**, frente a los anteriores 57 + 10, 57 + 0 y 3,5 respectivamente. Los altos se
+miden hasta el cruce teórico, no hasta la tangencia. Para ancho W, alto H, aguas A y radio R:
+
+```text
+theta = pi/2 - atan2(A, W/2)
+t = R * tan(theta/2)
+recorrido = 2(H-t) + 2(hypot(W/2,A)-t) + 2R*theta
+corte = recorrido + holgura + 2*bajo
+```
+
+| Pedido | Corte anterior cm | Corte actual cm | Corte CAD cm | Recorrido 3D cm |
+| --- | --- | --- | --- | --- |
+| AR2605319 | 278,6628 | 297,6628 | 297,5 | 290,1628 |
+| AR2506052, gemelo | 333,6890 | 333,6890 | 333,69 | 325,1890 |
+| AR2601847 | 282,5 | 282,5 | 282,5 | 273,8319 |
+| AR2605331, sin curva | no admitía radio 0 | 288 | 288 | 282 |
+
+El cuerpo 3D **10EF3** del 5319 suma 117,2142 cm de laterales, 145,4517 de aguas
+y 27,4969 de arcos. Se añaden 1,5 de holgura y 6 de bajos: **297,6628 cm** exactos.
+La diferencia con EC3C (297,5) es **1,628 mm**, aceptada expresamente en esta conversación;
+no amplía la tolerancia general ni introduce redondeos. Iván cierra Q-GAN11: el CAD pudo
+redondearse, pero no lo asegura; la web mantiene el valor exacto. Confirma que el aumento
+va **solo al cuerpo que da la vuelta**, una vez al recorrido transversal, mediante
+`ajusteContorno` y el parámetro común de remolques. **El morro no lleva ese aumento**:
+conserva su desarrollo y sus remates. El levantamiento 3D y ambos desarrollos se obtienen
+automáticamente de las medidas del pedido, sin introducir puntos ni longitudes calculadas.
+El frente **10EF2** confirma 57 + 10; la puerta integrada llega ahora
+a **50,3459 cm**, como los 50,35 del CAD. El morro de este pedido divide cada curva en
+cuatro tramos, frente a cinco en el gemelo; esa división es editable y no cambia el arco
+real usado para el cuerpo. El bajo también es editable, con 3,5 cm por defecto general.
+
+Dieciséis perfiles de siete pedidos (5319, 5331, gemelo 6052, 1847, 5060, 4281 y 5892) reproducen la
+misma fórmula dentro de 0,000001 mm. El 1847 conserva su plantilla validada de 282,5;
+su desarrollo teórico con holgura y bajos da 282,3319, sin convertir esa diferencia en
+una regla de confección. Los recorridos y referencias están en
+`tmp/ganado-cal/levantamiento/RECORRIDOS.md` y `ANTES-DESPUES.md`.
+
+El 5319 tiene aguas transversales de **10 cm en ambas secciones** y caída longitudinal
+de **10 cm entre cumbreras (77 → 67)**. Las generatrices y la triangulación espacial del
+morro incluyen ese desnivel: proyección 88,3176 y generatriz de cumbrera 88,8819 cm.
+No se aplana el morro a una altura única ni se eliminan sus aguas. Las pruebas comprueban
+esas coordenadas, además del contraste completo del contorno desarrollado contra su CAD.
+
+El 5331 es **Metales Jaifer**, no Talleres Cal. La hoja marca SIN curva; su levantamiento
+16EC6 + 16ECA + 16EC7 suma **65 + 152 + 65 = 282 cm**. El corte 16F8F/16F9B mide
+**288 cm**: dos bajos de 3 y **cero aumento por curva**, mediante la misma función de
+remolques para perfiles rectos. La web admite radio 0, con o sin aguas, sin inventar arcos.
+El morro se levanta automáticamente desde anchos 152/62, diagonal 99 y altos 65; sus ocho
+bordes de referencia coinciden con el desarrollo dentro de **0,017 mm**. La tabla separa
+este contraste geométrico de sus remates particulares (ENFUNDAR(1), puerta, velcro, correas
+y ventana 40 ancho × 50 alto), que no se incorporan a la ficha Cal como regla general.
+
+En el primer contraste, la ventana EC13 está en un plano girado: sus 45 × 35 equivalen a **35 ancho × 45 alto**
+en el frente levantado, a **8 cm del bajo**; la tapa EC14 queda 38 × 48. La regla confirmada
+de 50 × 35, tapa 53 × 38, no reproduce esa otra ventana del CAD: **Q-GAN12**, ya resuelta
+en el cierre superior a favor de la estándar salvo medida de pedido. La imagen orientada queda en
+`tmp/ganado-cal/levantamiento/AR2605319-ventana-orientada.png`.
+
+Se corrige además el reflejo de la pieza suelta del **refuerzo MFD**: ahora conserva la
+orientación del cuadrilátero 10EE7, además de sus medidas; su marca 10EE4 ya estaba bien
+colocada. Ambas coinciden con el CAD. El frente coincide en corte y ollaos. El morro queda
+a 1,264 mm de contorno; los ollaos llegan a 1,240 mm, por encima del nominal de 1 mm.
+Las diferencias de marcas (línea de fruncido completa frente a señales cortas; marcas
+centrales a 30 frente a 20 mm) motivaron **Q-GAN13**, ya contestada en el cierre superior.
+
+Las salidas DWG, DXF del bot, plano DXF, hoja PDF y PNG se regeneran en
+`tmp/ganado-cal/salida/`, junto a `COMPARACION-CAPAS.md` (coincide / corregido / pendiente).
+La hoja usa un dibujo mayor, con cuerpo y morro en paralelo y piezas menores al lado;
+las notas de confección permanecen en la columna de datos.
+
+## Respuestas de Iván · 04/11/2026
+
+Este apartado actualiza el estado del 03/11 conservado debajo como historial.
+
+- Q-GAN05 y aclaración Q-GAN10: **161 cm es el ancho trasero (160 + 1)**; la puerta va
+  en la **diagonal del morro de 103 cm**, como en el CAD. «Non leva solapas neste caso»,
+  cuerda fruncida atrás y cremalleras unidas al morro «a 4 cm do borde». Fruncido **5 cm**,
+  editable. Se quita el bloqueo del 5319: la puerta está integrada en el morro y no añade
+  un rectángulo de 161 cm. Las cremalleras se marcan a 4 cm de los extremos de la diagonal,
+  hasta la tangencia del lateral delantero (1185C/1185D del CAD). Con los altos aprobados
+  corregidos del ejemplo, ese tramo mide 50,3459 cm; el CAD anota 50,35 cm.
+  La recogida de atrás se elige como cuerda o goma: el 5319 lleva **cuerda fruncida** y
+  el gemelo, goma. El acabado aparece expresamente en pantalla, hoja y plano.
+- Q-GAN06: AR2601847, **98 × 32: Hueco de puerta; 34,5 × 56: Tapa de ventana**.
+  Los nombres aparecen en pantalla, hoja, plano y bot; se conservan los cortes originales.
+- Q-GAN07: aceptado el contraste histórico del gemelo, **1,5 mm contorno y 1 mm ollaos**.
+  Se mantienen las diferencias sin corregir geometría. El máximo real de ollaos es 1,044907723 mm:
+  la aceptación expresa del contraste no se presenta como cumplimiento matemático de 1 mm.
+- Q-GAN08: altos hasta el cruce teórico de lateral y aguas, confirmado.
+- Q-GAN09: **2,5 / 10 / 30 / 55 / 94 / 126 / 157 / 193 cm desde atrás**, en los dos laterales
+  del ejemplo 5319. El CAD posterior conserva 127 / 158 / 194; mandan las posiciones confirmadas.
+
+### Refuerzo específico MFD de Talleres Cal
+
+El DWG de oficina del 5319 se copia a `tmp/ganado-cal/fuentes/dwg/` y se convierte localmente
+con ODA. Su marca **10EE4**, nota **10EE6 (REFORZAR)** y pieza de corte **10EE7** acreditan
+la forma, posición y existencia de una pieza independiente. No es un rectángulo regular:
+sus lados miden **54,601 / 193,886 / 53,742 / 197,810 mm**. El vértice próximo a la cabeza
+está a **26,713 mm** del extremo delantero de la diagonal MFD, proyectado sobre ella.
+Se conserva el cuadrilátero exacto, sin añadir márgenes que el CAD no acredita.
+
+La misma forma se encuentra en diez pedidos Cal previos (excluido el 00389 especial):
+AR2605157, AR2601621, AR2601124, AR2506199, AR2502712, AR2405521, AR2405130,
+AR2401758, AR2306796 y AR2300359. Ejemplos identificados: **18B41/18B70** del 5157,
+**160C4/160F3** del 1621 y **EE40/EE6E** del 2405130. Algunas revisiones antiguas
+modifican el corte aproximadamente 1 mm; se usa la pareja exacta del 5319.
+
+La opción **Refuerzo MFD de caballos Cal** se guarda en la ficha del cliente y se propone
+solo en Cal por medidas al importar. Se puede cambiar en cada pedido; se respeta un No
+explícito. La posición se marca en el morro y la pieza sale aparte en el rollo. El ejemplo
+5319 la activa; los demás modelos no la reciben.
+
+### Primer contraste del propio 5319 (histórico, sustituido por el levantamiento 3D)
+
+El CAD recién localizado contiene diferencias con las medidas ya confirmadas del ejemplo:
+cuerpo terminado **211 × 291,5**, corte **217 × 297,5 cm**, frente con alto central **67 cm**
+y ventana **45 × 35**, frente a la versión por medidas de la web (altos 57+10 y 57+0,
+ventana confirmada anteriormente 50 × 35). Se anotan en la tabla de contraste; no se cambia
+la entrada aprobada para copiar otra revisión del dibujo. El refuerzo sí tiene correspondencia
+acreditada. Los ficheros generados y la comparación por capa quedan en `tmp/ganado-cal/salida/`.
+
+Comprobación del 04/11: **368 ficheros y 4.821 pruebas Vitest**, typecheck, lint y Vite build
+correctos; también pasan las 14 pruebas Node del estudio y de la aceptación del gemelo.
+Las hojas del 5319 y 1847 caben en una página. Capturas revisadas en claro y oscuro, a
+1280 × 720 y 1600 × 1000, en `tmp/ui-audit/ganado-cal-respuestas/`, sin errores de navegador.
+La instancia 4560 confirma `simulationMode=true` y `fileWritesEnabled=false`.
+Los dos DWG se han vuelto a convertir a DXF: conservan capas, recuentos y envolventes
+a 0,001 de la unidad del plano; detalle en `salida/verificacion-dwg.json`.
+
+Repetición desde las copias locales:
+
+```text
+node --test scripts/ganado/aceptacion-cal.node-test.mjs scripts/ganado/corte-completo-geometria.node-test.mjs scripts/ganado/medidas-geometria.node-test.mjs
+node scripts/ganado/contrastar-estandar.mjs
+node scripts/ganado/contrastar-cal.mjs --comprobar
+node scripts/ganado/generar-respuestas-cal.mjs --hojas
+node scripts/ganado/comparar-respuestas-cal.mjs
+```
+
+La generación de hojas exige la instancia aislada 4560 y Playwright; la de DWG requiere ODA
+(ruta configurable con `ODA_FILE_CONVERTER`). El contraste histórico devuelve 2 por las fuentes
+históricas que siguen ausentes, aunque el gemelo esté aceptado. No indica un fallo del 1847.
+El ejemplo del 1847 conserva el material gris claro **7038** de su pedido; el 5319 usa gris **7037**.
+
+## Estado de la implementación · 03/11/2026 (histórico)
 
 La web incorpora **Caballos Cal por medidas**: formulario, desarrollo del morro desde las dos
 secciones, cuerpo, frente, ventana adaptada y tapa, ollaos, hoja y plano. El corte sin puerta se genera

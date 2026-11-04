@@ -83,7 +83,7 @@ export function PaginaHoja({ pagina, vistas }: { pagina: PaginaHojaDatos; vistas
   const vista = (v: VistaHoja) => <Vista vista={v} captura={vistas?.[v] ?? null} nivel={nivel} nota={nota(v)} />;
   const observaciones = lineasObservaciones(pagina.observaciones === '—' ? '' : pagina.observaciones);
   return (
-    <article className={`hoja-pagina${['', ' con-ganchos', ' vistas-minimas'][nivel]}`} data-titulo={pagina.titulo}>
+    <article className={`hoja-pagina${['', ' con-ganchos', ' vistas-minimas'][nivel]}${pagina.ganado ? ' hoja-ganado' : ''}`} data-titulo={pagina.titulo}>
       <header className="hoja-cabecera">
         <div className="hoja-logo"><img src="/logo-tgm-transparent.png" alt="TGM" /></div>
         <div>

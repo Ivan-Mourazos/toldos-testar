@@ -66,7 +66,6 @@ export function extraerSecciones(f) {
     if (!list.some(t => (distancia(t.a, s.a) < EPS && distancia(t.b, s.b) < EPS || distancia(t.a, s.b) < EPS && distancia(t.b, s.a) < EPS) && t.curva === s.curva)) list.push({ ...s, id: e.id, capa: e.capa });
   }
   for (let segmentos of planos.values()) {
-    if (!segmentos.some(s => s.curva)) continue;
     // Las cuerdas auxiliares de un arco no son un segundo perfil. Conservar el
     // ARC evita sustituirlo por el camino de mayor número de líneas auxiliares.
     segmentos = segmentos.filter(s => s.curva || !segmentos.some(a => { if (!a.curva) return false; const t = parametro(a, s.a), u = parametro(a, s.b); return t != null && u != null && t >= -EPS && t <= 1 + EPS && u >= -EPS && u <= 1 + EPS; }));
@@ -77,7 +76,8 @@ export function extraerSecciones(f) {
       if (vistos.has(i)) continue;
       const cola = [i], grupo = [];
       while (cola.length) { const j = cola.pop(); if (vistos.has(j)) continue; vistos.add(j); grupo.push(j); for (const p of [segmentos[j].a, segmentos[j].b]) cola.push(...(ady.get(clave(p)) ?? []).filter(x => !vistos.has(x))); }
-      if (grupo.length < 4 || grupo.length > 24 || grupo.filter(j => segmentos[j].curva).length < 2) continue;
+      const curvas = grupo.filter(j => segmentos[j].curva).length;
+      if (grupo.length < 3 || grupo.length > 24 || curvas === 1) continue;
       const ps = grupo.flatMap(j => [segmentos[j].a, segmentos[j].b]), c = limites(ps);
       const extremos = [...ady.keys()].filter(k => ady.get(k).some(j => grupo.includes(j)) && ady.get(k).filter(j => grupo.includes(j)).length === 1).map(k => { const s = segmentos[ady.get(k)[0]]; return clave(s.a) === k ? s.a : s.b; });
       const abajo = extremos.filter(p => p[2] - c[2][0] < 0.005).sort((a, b) => a[1] - b[1]);
@@ -85,7 +85,7 @@ export function extraerSecciones(f) {
       let mejor = null;
       function recorrer(p, camino, usados) {
         if (camino.length > 24) return;
-        if (camino.length >= 4 && distancia(p, abajo.at(-1)) < EPS) { if (!mejor || camino.length > mejor.length) mejor = camino; return; }
+        if (camino.length >= 3 && distancia(p, abajo.at(-1)) < EPS) { if (!mejor || camino.length > mejor.length) mejor = camino; return; }
         for (const j of ady.get(clave(p)) ?? []) {
           if (usados.has(j) || !grupo.includes(j)) continue;
           const s = distancia(segmentos[j].a, p) < EPS ? segmentos[j] : invertir(segmentos[j]);
@@ -93,7 +93,7 @@ export function extraerSecciones(f) {
         }
       }
       recorrer(abajo[0], [], new Set());
-      if (mejor?.filter(s => s.curva).length >= 2 && c[1][1] - c[1][0] > 0.2 && c[2][1] - c[2][0] > 0.1) perfiles.push({ id: mejor.map(s => s.id).join('+'), capa: [...new Set(mejor.map(s => s.capa))].join('/'), segmentos: mejor, caja: c, origen: 'líneas y arcos' });
+      if (mejor && c[1][1] - c[1][0] > 0.2 && c[2][1] - c[2][0] > 0.1) perfiles.push({ id: mejor.map(s => s.id).join('+'), capa: [...new Set(mejor.map(s => s.capa))].join('/'), segmentos: mejor, caja: c, origen: 'líneas y arcos' });
     }
   }
   const lineas = es.filter(e => e.t === 'LINE' && !e.bloque).map(e => ({ id: e.id, ps: vertices(e) }));

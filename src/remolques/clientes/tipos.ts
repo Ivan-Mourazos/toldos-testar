@@ -68,6 +68,8 @@ export interface FichaCliente {
   demasiaLonaHecha?: number;
   /** Cremallera del 9: sale como observación en las lonas. */
   cremallera?: boolean;
+  /** Caballos Cal: pieza de refuerzo en la diagonal MFD; opcional por pedido. */
+  refuerzoMfdCal?: boolean;
   /** Sus ollaos van siempre repartidos (su plantilla dice «OLLAOS REPARTIDOS»), salvo una medida habitual exacta. */
   ollaosRepartidos?: boolean;
   extrasBaqueton?: ExtrasBaqueton;

@@ -1,8 +1,13 @@
 // Reglas del gemelo AR.25.06052; datos de entrada en mm. Sin lectura de archivos.
-import {construirMorro,contornoPerfil,perfil} from './geometria.js';
+import {construirMorro,desglosePerfil,perfil} from './geometria.js';
 import {linea,arco,circulo,poligono,offsetPoligono,d} from './geometriaPlana.js';
+import {colocarRefuerzoMfd,REFUERZO_MFD_CAL} from './refuerzoCal.js';
 function cabeza(m,r){
  const w=m.frente,h=m.altoB,a=m.aguasB,R=m.radioB,s=r.costura,b=r.bastilla;
+ if(!R){
+  const base=a?[[0,0],[0,h],[w/2,h+a],[w,h],[w,0]]:[[0,0],[0,h],[w,h],[w,0]],ps=offsetPoligono(base,base.map((_,i)=>i===base.length-1?b:s));
+  return {nombre:'Frente',corte:poligono(ps),contorno:ps,marcas:[],ollaos:[],zTangencia:h};
+ }
  const ang=Math.atan2(a,w/2),giro=Math.PI/2-ang,t=R*Math.tan(giro/2),z=h-t;
  const cl=[R,z],cr=[w-R,z],rr=R+s;
  const q=[R-rr*Math.sin(ang),z+rr*Math.cos(ang)],cima=[w/2,h+a+s/Math.cos(ang)];
@@ -17,8 +22,8 @@ function repartir(a,b,paso,r){
  return Array.from({length:n+1},(_,i)=>circulo(a.map((x,k)=>x+v[k]*(r.inicioOllao+i*(largo-2*r.inicioOllao)/n)),r.radioOllao));
 }
 export function generarCal(h,r){
- const m={ancho:h.ancho+r.lonaHecha,frente:h.frente+r.lonaHecha,diagonal:h.diagonal+r.lonaHecha,largoCuerpo:h.recto+r.lonaHecha,altoA:h.alto,altoB:h.altoFrente,aguasA:h.aguas,aguasB:h.aguasFrente,radioA:h.radio,radioB:h.radio,pasos:r.pasos};
- const modelo=construirMorro(m),{a,b}=modelo.desarrollo,L=m.largoCuerpo,C=contornoPerfil({ancho:m.ancho,alto:m.altoA,aguas:m.aguasA,radio:m.radioA})+r.holguraContorno;
+ const m={ancho:h.ancho+r.lonaHecha,frente:h.frente+r.lonaHecha,diagonal:h.diagonal+r.lonaHecha,largoCuerpo:h.recto+r.lonaHecha,altoA:h.alto,altoB:h.altoFrente,aguasA:h.aguas,aguasB:h.aguasFrente,radioA:h.radio,radioB:h.radio,pasos:h.divisionesCurva??r.pasos};
+ const modelo=construirMorro(m),{a,b}=modelo.desarrollo,L=m.largoCuerpo,recorrido=desglosePerfil({ancho:m.ancho,alto:m.altoA,aguas:m.aguasA,radio:m.radioA}),C=recorrido.total+r.holguraContorno;
  const atras=h.fruncir??r.fruncir;
  const body=[[-atras,-r.bastilla],[L+r.costura,-r.bastilla],[L+r.costura,C+r.bastilla],[-atras,C+r.bastilla]];
  const cuerpo={terminado:[[0,0],[L,0],[L,C],[0,C]],nombre:'Cuerpo',corte:poligono(body),contorno:body,ollaos:[...repartir([0,r.dentroOllao],[L,r.dentroOllao],h.pasoOllaos,r),...repartir([0,C-r.dentroOllao],[L,C-r.dentroOllao],h.pasoOllaos,r)],marcas:[linea([r.marcaAtras,0],[r.marcaAtras,r.largoMarca]),linea([r.marcaAtras,C-r.largoMarca],[r.marcaAtras,C]),linea([L,C/2],[L-r.largoMarca,C/2])]};
@@ -33,6 +38,35 @@ export function generarCal(h,r){
  frente.marcas.push(linea([m.frente/2,m.altoB+m.aguasB],[m.frente/2,m.altoB+m.aguasB-r.largoMarca]));
  if(h.laterales?.length) cuerpo.ollaos=[r.dentroOllao,C-r.dentroOllao].flatMap(y=>h.laterales.map(x=>circulo([x,y],r.radioOllao)));
  const piezas=[cuerpo,morro,frente]; let ventana=null;
- if(h.ventana){const top=frente.zTangencia-r.ventana.separacionTangencia,W=Math.min(r.ventana.ancho,m.frente),H=Math.min(r.ventana.alto,top); if(H<=0)throw Error("No queda espacio para la ventana bajo la curva"); ventana={ancho:W/10,alto:H/10};frente.marcas.push(...poligono([[m.frente/2-W/2,top-H],[m.frente/2+W/2,top-H],[m.frente/2+W/2,top],[m.frente/2-W/2,top]]));const tapa=[[0,0],[(W+30),0],[(W+30),(H+30)],[0,(H+30)]];piezas.push({nombre:'Tapa ventana',corte:poligono(tapa),contorno:tapa,marcas:[],ollaos:[]});}
- return {ventana,hoja:h,medidas:m,largoHecho:m.largoCuerpo+modelo.proyeccion,proyeccion:modelo.proyeccion,piezas,perfilA:modelo.perfilA,perfilB:modelo.perfilB};
+ if(h.ventana){
+  const top=frente.zTangencia-r.ventana.separacionTangencia;
+  const W=h.ventanaMedidas?.ancho??Math.min(r.ventana.ancho,m.frente),H=h.ventanaMedidas?.alto??Math.min(r.ventana.alto,top);
+  if(H<=0)throw Error('No queda espacio para la ventana bajo la curva');
+  if(W>m.frente||H>top)throw Error('La ventana indicada en el pedido no cabe en el frente.');
+  ventana={ancho:W/10,alto:H/10};
+  frente.marcas.push(...poligono([[m.frente/2-W/2,top-H],[m.frente/2+W/2,top-H],[m.frente/2+W/2,top],[m.frente/2-W/2,top]]));
+  const tapa=[[0,0],[W+30,0],[W+30,H+30],[0,H+30]];
+  piezas.push({nombre:'Tapa ventana',corte:poligono(tapa),contorno:tapa,marcas:[],ollaos:[]});
+ }
+ if(h.refuerzoMfd){
+  const refuerzo=colocarRefuerzoMfd(a[0],b[0]);
+  morro.marcas.push(...poligono(refuerzo));
+  // La pieza suelta se orienta con su lado largo horizontal; la marca conserva su posición.
+  const pieza=REFUERZO_MFD_CAL.map(([x,y])=>[x,y]);
+  piezas.push({nombre:'Refuerzo MFD',corte:poligono(pieza),contorno:pieza,marcas:[],ollaos:[]});
+ }
+ let puerta=null;
+ if(h.puerta!=='NINGUNA'&&h.puertaMorro){
+  // 5319, 1185C/1185D: dos cremalleras a 4 de los extremos de la diagonal,
+  // hasta la tangencia del lateral delantero. La puerta forma parte del morro.
+  const i=h.puerta==='MFI'?a.length-1:0,j=i?i-1:1,p=a[i],q=b[i],L=d(p,q),sep=h.puertaMorro.separacionBorde;
+  if(2*sep>=L)throw Error('No queda ancho entre las cremalleras de la puerta.');
+  const v=q.map((x,k)=>(x-p[k])/L),subida=b[j].map((x,k)=>x-q[k]);
+  for(const distancia of [sep,L-sep]){
+   const inicio=p.map((x,k)=>x+v[k]*distancia);
+   morro.marcas.push(linea(inicio,inicio.map((x,k)=>x+subida[k])));
+  }
+  puerta={lado:h.puerta,ancho:L/10,alto:d(q,b[j])/10,separacionBorde:sep/10};
+ }
+ return {ventana,puerta,hoja:h,medidas:m,desarrolloCuerpo:{...recorrido,holgura:r.holguraContorno,bastillas:2*r.bastilla,corte:C+2*r.bastilla},largoHecho:m.largoCuerpo+modelo.proyeccion,proyeccion:modelo.proyeccion,piezas,perfilA:modelo.perfilA,perfilB:modelo.perfilB};
 }

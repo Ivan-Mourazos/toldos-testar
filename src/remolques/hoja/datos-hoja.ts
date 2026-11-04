@@ -159,12 +159,12 @@ export function hojaBaqueton(i: BaquetonInput, r: BaquetonResult): CuerpoHoja {
 /** El de ganado: el modelo y sus piezas, de la plantilla; el dibujo de confección va a la derecha. */
 export function hojaGanado(i: GanadoInput, r: GanadoResult): CuerpoHoja {
   const cantidad = Math.max(1, Math.round(i.cantidad || 1));
-  // En el estándar los acabados y las dos piezas sin confección se leen en el dibujo acotado.
+  // En el estándar los acabados se leen en el dibujo acotado.
   // La columna resume las medidas; duplicar allí esas notas largas no cabe en el A4.
   const estandar = i.ganado === "REMOLCAR_ESTANDAR";
   const cal = i.ganado === "CAL_MEDIDAS";
-  const parcial = cal && i.medidasCal?.puerta !== 'NINGUNA';
-  const piezasColumna = estandar ? r.piezas.filter((p) => !p.nombre.startsWith("Pieza del corte sin dibujo")) : r.piezas;
+  const parcial = cal && r.incompleto;
+  const piezasColumna = estandar ? r.piezas.filter(p => !p.nombre.toLowerCase().includes('stock')) : r.piezas;
   return {
     banda: [
       { titulo: "MODELO", lineas: [oRaya(r.modelo)], notas: [i.ganado === "CAL_MEDIDAS" ? "POR MEDIDAS · EXTERIOR DEL ARCO" : "SEGÚN PLANTILLA DE LA OFICINA"] },
@@ -180,14 +180,15 @@ export function hojaGanado(i: GanadoInput, r: GanadoResult): CuerpoHoja {
             : [p.hecho && `HECHO ${p.hecho}`, p.corte && `CORTE ${p.corte}`, !cal && p.acabado.toUpperCase()].filter(Boolean) as string[],
         })),
       },
-      ...(estandar ? [{
-        titulo: "PIEZAS DEL CORTE SIN DIBUJO DE CONFECCIÓN",
-        datos: r.piezas.filter((p) => p.nombre.startsWith("Pieza del corte sin dibujo")).map((p, k) => ({ etiqueta: `CORTE ${k + 1}`, valores: [p.corte] })),
-      }] : []),
+      ...(estandar ? [{ titulo: 'STOCK', datos: [{ etiqueta: 'REFUERZOS', valores: r.piezas
+        .filter(p => p.nombre.toLowerCase().includes('stock')).map(p => `${p.nombre.startsWith('T.O.') ? 'T.O. / REF. 20' : 'REF. 16,5'}: ${p.corte}`) }] }] : []),
       ...(cal ? [{ titulo: "ACABADOS DE CAL", datos: [
-        { etiqueta: "CUERPO", valores: [`B.N.(3) EN LOS BAJOS; ${fmt(i.medidasCal?.fruncir ?? 0)} PARA FRUNCIR ATRÁS; COSTURA 1 DELANTE`] },
-        { etiqueta: "MORRO", valores: ['B.N.(3) EN DIAGONALES; COSTURA 1 EN UNIONES'] },
-        { etiqueta: "FRENTE", valores: ['B.N.(3) ABAJO; COSTURA 1 EN LA UNIÓN'] },
+        { etiqueta: "CUERPO", valores: i.medidasCal?.recogidaAtras
+          ? [`FRUNCIDO ${fmt(i.medidasCal.fruncir)} · ${i.medidasCal.recogidaAtras}`, 'B.N.(3); COSTURA 1']
+          : [`B.N.(3); FRUNCIR ${fmt(i.medidasCal?.fruncir ?? 0)} ATRÁS`, 'COSTURA 1 DELANTE'] },
+        { etiqueta: "MORRO", valores: ['B.N.(3); UNIONES 1'] },
+        { etiqueta: "FRENTE", valores: ['B.N.(3); UNIÓN 1'] },
+        ...(!parcial && i.medidasCal?.puertaMorro && i.medidasCal.puerta !== 'NINGUNA' ? [{ etiqueta: `PUERTA ${i.medidasCal.puerta}`, valores: ['EN DIAGONAL DEL MORRO', `CREMALLERAS A ${fmt(i.medidasCal.puertaMorro.separacionBorde)}`, 'SIN SOLAPAS'] }] : []),
         ...(parcial ? [{ etiqueta: "PUERTA", valores: [`FALTA DEFINIR ${i.medidasCal?.puerta} · CORTE COMPLETO A MANO`] }] : []),
       ] }] : []),
       { titulo: "ACABADOS", datos: [{ etiqueta: "ARCOS COMPROBADOS", valores: [i.arcosComprobados ? "SÍ" : "NO · COMPROBAR ANTES DE CORTAR"] }] },

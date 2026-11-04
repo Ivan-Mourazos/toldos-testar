@@ -42,10 +42,10 @@ function acercarAlBorde(c: { capa: string; x: number; y: number; r: number }, bo
   return { ...c, x: c.x + (mejor.px - c.x) * k, y: c.y + (mejor.py - c.y) * k };
 }
 
-export function dibujoGanado(modelo: string, medidas?: MedidasCal): DibujoGanado | null {
+export function dibujoGanado(modelo: string, medidas?: MedidasCal, paraHoja = false): DibujoGanado | null {
   if (modelo === 'CAL_MEDIDAS') {
     if (!medidas) return null;
-    try { return dibujoCal(medidas); } catch { return null; }
+    try { return dibujoCal(medidas, paraHoja); } catch { return null; }
   }
   const d = (PLANTILLAS as Record<string, DibujoGanado>)[modelo];
   if (!d) return null;

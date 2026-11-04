@@ -1,4 +1,6 @@
 import type { BaquetonInput } from "../calc/baqueton.ts";
+import type { GanadoInput } from "../calc/ganado.ts";
+import { MEDIDAS_CAL_VACIAS } from "../ganado/medidas.ts";
 import type { LonaInput } from "../calc/lona.ts";
 import type { RepartoLados } from "../calc/ollaos.ts";
 import type { TipoPlanteamiento } from "../store/types.ts";
@@ -146,8 +148,12 @@ function aplicarBaqueton(entrada: BaquetonInput, ficha: FichaCliente, campos: st
 
 /** La ficha sobre un elemento recién creado desde RPS: solo rellena lo vacío y marca lo que pone. */
 export function aplicarFichaAlImportar(linea: LineaPedido, ficha: FichaCliente, params: CalcParams = DEFAULT_PARAMS): LineaPedido {
-  // Las fichas de cliente son de lonas y baquetones; el de ganado trae todo de su plantilla.
-  if (linea.tipo === "ganado") return linea;
+  if (linea.tipo === "ganado") {
+    const input = linea.input as GanadoInput;
+    if (input.ganado !== 'CAL_MEDIDAS' || ficha.refuerzoMfdCal === undefined || input.medidasCal?.refuerzoMfd !== undefined) return linea;
+    return { ...linea, input: { ...input, medidasCal: { ...(input.medidasCal ?? MEDIDAS_CAL_VACIAS), refuerzoMfd: ficha.refuerzoMfdCal } },
+      delCliente: { ficha: ficha.nombre, campos: ['medidasCal'] } };
+  }
   const campos: string[] = [];
   const input = linea.tipo === "lona"
     ? aplicarLona(linea.input as LonaInput, ficha, campos, params)

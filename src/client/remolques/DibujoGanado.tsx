@@ -19,7 +19,7 @@ function tramoCurvo(x1: number, y1: number, x2: number, y2: number, curva: numbe
 
 export function DibujoGanado({ modelo, medidas, cantidad = 1, compacto = false }: { modelo: string; medidas?: MedidasCal; cantidad?: number; compacto?: boolean }) {
   const [corte, setCorte] = useState(false);
-  let d = dibujoGanado(modelo, medidas);
+  let d = dibujoGanado(modelo, medidas, compacto);
   if (d && modelo === 'CAL_MEDIDAS' && medidas && corte && !compacto) {
     try { d = dibujoCorteCal(medidas); } catch { /* El resultado explica si una pieza no cabe en el rollo. */ }
   }

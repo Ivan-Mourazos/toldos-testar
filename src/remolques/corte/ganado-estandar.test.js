@@ -26,9 +26,9 @@ describe('Remolcar estándar 300 × 160, AR2601847', () => {
     expect(e.input).toMatchObject({ largo: 300, ancho: 160 });
     expect(e.result).toMatchObject({ modelo: 'Remolcar estándar 300 × 160', largoJuego: 473.5, anchoJuego: 250, metrosTela: 9.47 });
     expect(e.result.piezas.map((p) => p.nombre)).toEqual(expect.arrayContaining(['Cuerpo', 'Trasero', 'Frente', 'Zona en cuña']));
-    const sinDibujo = e.result.piezas.filter((p) => p.nombre.startsWith('Pieza del corte sin dibujo'));
-    expect(sinDibujo.map((p) => p.corte)).toEqual(['98 × 32', '34,5 × 56']);
-    expect(sinDibujo.every((p) => p.hecho === '' && p.acabado === '')).toBe(true);
+    const identificadas = e.result.piezas.filter((p) => ['Hueco de puerta', 'Tapa de ventana'].includes(p.nombre));
+    expect(identificadas.map((p) => p.corte)).toEqual(['98 × 32', '34,5 × 56']);
+    expect(identificadas.every((p) => p.hecho === '' && p.acabado === '')).toBe(true);
   });
 
   it('conserva las 48 rectas, los 4 arcos, los 35 ollaos y las 8 marcas originales, sin mover los de la puerta', () => {
@@ -57,9 +57,12 @@ describe('Remolcar estándar 300 × 160, AR2601847', () => {
     const hoja = hojaGanado(e.input, e.result);
     const piezas = hoja.grupos[0].datos;
     expect(piezas).toHaveLength(6);
+    expect(piezas.map(p => p.etiqueta)).toContain('HUECO DE PUERTA');
+    expect(piezas.map(p => p.etiqueta)).toContain('TAPA DE VENTANA');
+    expect(hoja.grupos.find(g => g.titulo === 'STOCK').datos[0].valores).toHaveLength(2);
     expect(piezas.find((p) => p.etiqueta === 'CUERPO')?.valores).toEqual(['CORTE 198 × 282,5']);
     expect(piezas.some((p) => p.etiqueta.includes('SIN DIBUJO'))).toBe(false);
-    expect(dibujoGanado('REMOLCAR_ESTANDAR').textos.map((t) => t.valor)).toEqual(expect.arrayContaining(['de confección (98 × 32)', 'de confección (34,5 × 56)']));
+    expect(dibujoGanado('REMOLCAR_ESTANDAR').textos.map((t) => t.valor)).toEqual(expect.arrayContaining(['Hueco de puerta', 'Tapa de ventana']));
   });
 
   it('genera el corte del bot y el plano de confección del estándar con X2', () => {
