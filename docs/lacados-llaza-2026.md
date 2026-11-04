@@ -48,7 +48,9 @@ Las identidades históricas (sufijo y manivela) se conservan. Solo se unifica el
 | Corten óxido textura | CORTEN OXIDO 516 | O516 | Negra | 60 / 17 | BART25O516200C — JGO BRAZOS ART 250 :CORTEN OXIDO 516:200 CM |
 | Negro intenso brillo 9005 | NEGRO 9005 | NE05 | Negra | 13 / 8 | PECORSU1NE05700C — PERFIL COFRE INFERIOR REDONDO 110 :NEGRO 9005 :700CM |
 
-## Colores fuera de tarifa: pendientes de decisión de Iván
+## Colores fuera de tarifa
+
+Decidido por Iván (04/11/2026): «dejamos los lacados como están ahora». Los diez siguen en la lista.
 
 | Nombre visible | Nombre anterior / alias | Sufijo RPS | Manivela | Activos / usados desde 2025 | Ejemplo RPS |
 | --- | --- | --- | --- | --- | --- |

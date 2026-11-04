@@ -24,6 +24,8 @@ Cómo se decide cada respuesta: primero, el manual del fabricante (el de Oficina
 
 ## Ágata Box: soportes y terminal (04/11/2026)
 
+**Q-AG04 a Q-AG06 cerradas (Iván, 04/11/2026): «Ágata, dejamos como lo hace ahora mismo».** Se mantienen las cantidades actuales de soportes, el terminal TERMI y el SOIN solo en cofre y semicofre; no se pregunta más.
+
 Revisión del AR2605385 contra 33 OF desde 2023, con prioridad a 2025–2026. [Tabla por OF y decisiones](./agata-soportes-consumo.md). Techo lleva frontal más techo: corregido. Cofre y semicofre recientes llevan inferior más tejadillo/lira: corregido. Tres brazos necesitan también el terminal suelto: corregido, con el mismo lado que el brazo.
 
 | Código | Pregunta | Qué hace la web mientras tanto |
