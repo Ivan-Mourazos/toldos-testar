@@ -15,6 +15,8 @@ const raiz=path.resolve('tmp/santapau/capas'),dir=path.join(raiz,pedido,fase);aw
 const fuentes={ivan:leerPlanoDxf(`tmp/santapau/dxf/${pedido}.dxf`),web:leerPlanoDxf(`tmp/santapau/salida/${pedido}-plano.dxf`)};
 const nuevo=fuentes.web.modelo.some(p=>p.tipo==='arco'&&p.capa==='texto');
 const scopes=codigo==='4815'?{ivan:{A:[230.922112930609,4.036474216380333,281.5,400],B:[231.512112930609,-4.633900199184072,163.5,350]},web:{A:[100,96,281.5,400],B:[100,nuevo?90.3:90.5,163.5,350]}}:{ivan:{A:[231.344612930609,4.036474216380333,197,340],B:[231.249612930609,-3.02413352166302,216,340]},web:{A:[100,96.6,197,340],B:[100,nuevo?91:91.2,216,340]}};
+// El origen de la segunda puerta depende del alto real de la vista, no de una separación fija.
+for(const letra of ['A','B']){const [x,,F,H]=scopes.web[letra];const c=fuentes.web.modelo.find(p=>p.tipo==='cota'&&Math.abs(p.medida-H)<.001&&Math.abs(p.a[0]-x-F/100)<.001);if(c)scopes.web[letra][1]=Math.min(c.a[1],c.b[1]);}
 const alias=c=>['DISCO1','cortes - lona','corte'].includes(c)?'corte':c==='ROTULADOR'?'marca':c;
 const n=v=>Math.round(v*100)/100,pt=p=>p.map(n),normal=s=>s.normalize('NFD').replace(/\p{Diacritic}/gu,'').toUpperCase().replace(/[^A-Z0-9]/g,'');
 function clave(p){
@@ -46,17 +48,17 @@ try{
  for(const letra of ['A','B']){
   const grupos={},dibujos={};
   for(const [f,d]of Object.entries(fuentes)){
-   const [x,y,F,H]=scopes[f][letra],zona={x0:x-.85,x1:x+F/100+1,y0:y-1.2,y1:y+H/100+.45};
+   const [x,y,F,H]=scopes[f][letra],zona={x0:x-.85,x1:x+F/100+1,y0:y-1.6,y1:y+H/100+.45};
    grupos[f]=d.modelo.filter(p=>!p.deCota&&enZona(p,zona)).map(p=>({...transformarPrimitiva(p,(a,b)=>[(a-x)*100,(b-y)*100],100),imprimible:d.imprime(p)}));
    dibujos[f]=d.modelo.filter(p=>d.imprime(p)&&enZona(p,zona)).map(p=>transformarPrimitiva(p,(a,b)=>[(a-x)*100,(b-y)*100],100));
   }
-  const [,,F,H]=scopes.ivan[letra],zona={x0:-85,x1:F+100,y0:-120,y1:H+45};
+  const [,,F,H]=scopes.ivan[letra],zona={x0:-85,x1:F+100,y0:-160,y1:H+45};
   const visibles=f=>grupos[f].filter(p=>p.imprimible);
   const a=new Map(visibles('ivan').map(p=>[clave(p),p])),b=new Map(visibles('web').map(p=>[clave(p),p]));
   out.puertas[letra]={conteos:{ivan:contar(grupos.ivan),web:contar(grupos.web)},ivan:grupos.ivan,web:grupos.web,exactas:[...a.keys()].filter(k=>b.has(k)).length,faltaGeometriaExacta:[...a].filter(([k])=>!b.has(k)).map(([,p])=>p),sobraGeometriaExacta:[...b].filter(([k])=>!a.has(k)).map(([,p])=>p)};
   await pareja(`${letra}-conjunto`,dibujos.ivan,dibujos.web,zona);
   for(const capa of [...new Set([...grupos.ivan,...grupos.web].map(p=>alias(p.capa)))])await pareja(`${letra}-${capa.replace(/[^\w-]/g,'_')}`,dibujos.ivan.filter(p=>alias(p.capa)===capa),dibujos.web.filter(p=>alias(p.capa)===capa),zona,`${letra} · capa ${capa}`);
-  for(const [nombre,y0,y1]of [['et-superior',195,235],['mirilla',110,205],['bajo',-125,40]])await pareja(`${letra}-${nombre}`,dibujos.ivan.filter(p=>enZona(p,{...zona,y0,y1})),dibujos.web.filter(p=>enZona(p,{...zona,y0,y1})),{...zona,y0,y1});
+  for(const [nombre,y0,y1]of [['et-superior',195,235],['mirilla',110,205],['bajo',-160,40]])await pareja(`${letra}-${nombre}`,dibujos.ivan.filter(p=>enZona(p,{...zona,y0,y1})),dibujos.web.filter(p=>enZona(p,{...zona,y0,y1})),{...zona,y0,y1});
  }
  for(const [f,d]of Object.entries(fuentes)){
   out.papel[f]={entidades:d.papel,capas:[...d.capas],ventanas:d.ventanas};

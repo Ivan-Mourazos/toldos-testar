@@ -278,7 +278,13 @@ export function dibujarCorte(cortes: CortePuertas[], _pedido: PedidoPuertas): { 
         // Del mismo tamaño que el título de la lona, aunque la fila sea corta (Iván, 26/10/2026).
         const alto = TITULO_MATERIAL_MM / 10;
         let x = xMuestra;
-        for (const a of fuera) {
+        const santaPau=_pedido.elementos.every(e=>e.input.santapau);
+        if(santaPau&&fuera.length){
+          const anchoFila=fila.reduce((s,m)=>s+m.t.pieza.ancho,0)+80*(fila.length-1);
+          const valor=fuera.map(a=>a.valor).join(' · ');
+          l.textos.push({capa:'texto',valor,x:xMuestra+anchoFila/2,y:techo+25,h:Math.min(alto,(anchoFila-12)/anchoArial(valor,1)),ancla:5});
+        }
+        for (const a of santaPau?[]:fuera) {
           l.textos.push({ capa: a.capa, valor: a.valor, x, y: techo + (p.clase === 'saco' ? 11.6223 : 5.5194), h: alto, ...(a.literal ? { literal: true } : {}) });
           x += anchoArial(`${a.valor}    `, alto);
         }

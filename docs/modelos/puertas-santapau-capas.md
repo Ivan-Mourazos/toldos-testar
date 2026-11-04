@@ -88,3 +88,30 @@ El SVG web conserva ahora el anclaje vertical y el tamaño de letra de las cotas
 Salidas regeneradas en `tmp/santapau/salida/`; capturas lado a lado e inventario en `tmp/santapau/capas/AR2605363/despues/` y `AR2604815/despues/`. Las hojas `revision-*.png` reúnen todas las capturas para su revisión visual. Capturas web de esta segunda comprobación en `tmp/ui-audit/puertas-santapau-continuacion/`, claro/oscuro y1280×720/1600×1000. La instancia propia usa4482/4492 porque4480/4490 estaban ocupados al empezar; el estado heredado se describe arriba.
 
 Tras rebasar sobre **69cf03c**, pasan **369 ficheros y4.831 pruebas**, typecheck, lint y Vite build (salida en tmp/santapau/build). Informes continuacion-*-final.log en tmp/santapau/. La reconversión de los DWG generados conserva las46 cotas del4815 y50 del5363, incluidos sus detalles y cortes. El bot5363 conserva los tres círculos y cero segmentos faltantes/sobrantes a0,15 mm. Evidencias: continuacion-verificacion.json y continuacion-manifiesto.json. Se han comprobado cerrados **4480/4490 y4482/4492**; los procesos propios y el simulado heredado pudieron detenerse con la cuenta de ejecución normal. Estado en continuacion-cierre.json. Sin push.
+
+## Diagonales y centrado · revisión del04/11/2026
+
+Indicación posterior de Iván: mejorar las diagonales y dejar todos los rótulos centrados, bien colocados, visibles y grandes, sin pisar otros textos ni líneas. Esta revisión sustituye los símbolos normalizados y las posiciones de letra de las revisiones anteriores.
+
+**Diagonales:** se han medido los contornos SOLID del5363 A y B por separado, en sus capas referencias y cortes - lona: no tienen la misma fase ni separación. Se conservan también los contornos propios del4815 A/B. Se han comparado vértices, lados inclinados, secciones al inicio/mitad/final, anchos de banda, huecos y recortes del borde. No se fuerza un ángulo regular que el dibujo aprobado no tiene. El error máximo de contorno tras exportar a DXF es inferior a0,001 mm en los cuatro alzados.
+
+| Elemento | Antes | Después |
+|---|---|---|
+| Franjas5363 A | Muestra A correcta | Contorno conservado |
+| Franjas5363 B | A estirada; desviación gráfica máxima333,546 mm | Contorno B propio; desviación máxima0,000495 mm |
+| Franjas4815 A | Muestra5363 estirada; desviación gráfica430,602 mm | Contornos4815; desviación máxima0,000495 mm |
+| Franjas4815 B | Cuatro bandas en vez de una | Una banda, con su inicio y final originales; desviación máxima0,000270 mm |
+| A1/A2/B1/B2, REVÉS, OF y cantidad | Tamaños y desplazamientos fijos | Bloques centrados en el hueco libre de cada paño, dimensionados por ancho y alto disponibles |
+| E.T., velcros y refuerzos | Notas descentradas; algunos cruces con cristal/cotas | Notas al centro y llamadas simétricas, con espacio propio |
+| Cotas | Números próximos y línea continua bajo el número en el SVG | Separación de cadenas, números mayores donde caben y hueco real en la línea del SVG |
+| Nota de soldadura | Bloque desigual o de tres líneas | Dos líneas equilibradas centradas bajo la puerta; párrafos MTEXT válidos en DWG |
+| Rótulos del corte | Letra de tamaño fijo | Letra ampliada al hueco libre, también en paños girados, cristal y faldón; títulos de material centrados |
+| Última cota del faldón en la web | Podía cortarse en el borde de la vista | Encuadre inferior ampliado; número completo |
+
+Para otros frentes se usa la referencia de su revisión más próxima: se trasladan los contornos, manteniendo sus lados, y se recortan al borde; no se estiran. Es una representación del faldón, no una regla nueva de impresión. En el corte del faldón de Iván no hay diagonales: sigue rectangular. El DXF del bot conserva exactamente todas sus líneas y círculos; no se ha convertido ninguna franja en cuchilla ni rotulador.
+
+**Prueba automática de visibilidad:** se calculan las cajas de todos los textos y números DIMENSION de cada presentación, con su ancla, giro, ancho de letra, párrafos y ventana. Se detectan cruces entre cajas, cruces con líneas de confección/cota y textos recortados. Las cuatro hojas dan cero en los tres controles. El control del bot también pasa, incluyendo los paños girados. Una comprobación independiente con las cajas reales de48 textos del navegador da cero solapes, cruces y recortes en claro/oscuro y1280×720/1600×1000. Se prueba además que los rótulos principales usan el centro de su pieza y los refuerzos se disponen simétricos.
+
+Se ha rebasado primero sobre **cb9630d**, conservando los imports y la confección del escuadrado de apilables. Pasan las pruebas dirigidas de compatibilidad/escuadrado y Santa Pau conserva sus medidas, marcas, cantidad,18/12 refuerzos y colocaciones de664/548,5 cm. No se alteran las pruebas ni fixtures de paridad de remolques.
+
+Evidencia reproducible: `scripts/auditar-presentacion-santapau.mjs` lee los DXF regenerados y el inventario por capas, conserva el antes y compara franjas, rótulos y geometría del bot. Produce la tabla `tmp/santapau/diagonales-centrado/antes-despues.md`, medidas/ángulos/vértices en `comparacion.json`, capturas Iván/antes/después y las cuatro hojas antes/después. Los DWG, DXF del bot/plano y PNG definitivos están en `tmp/santapau/salida/`. `scripts/auditar-ui-santapau.mjs` requiere la instancia aislada y guarda la auditoría DOM y las capturas en `tmp/ui-audit/santapau-diagonales-centrado/`. Todos los rótulos anteriores se conservan, comprobados como multiconjunto; solo cambian posiciones, tamaño y párrafos.

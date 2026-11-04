@@ -115,3 +115,9 @@ Validación de esta revisión: **369 ficheros y4.828 pruebas**, typecheck, lint 
 ### Cierre de la segunda comprobación · 04/11/2026
 
 Corregidos tamaño y posición de cotas/rótulos del5363 y su correspondencia con el SVG web; B lleva X1, verificado en el DWG. El informe por capas conserva la tabla final y las diferencias gráficas normalizadas. Rebase sobre69cf03c; **4.831 pruebas en369 ficheros**, typecheck, lint y build correctos. DWG, DXF del bot y ambas presentaciones PNG regenerados para4815 y5363. Puertos4480/4490/4482/4492 cerrados, comprobado por petición HTTP. Sin push.
+
+### Diagonales, centrado y lectura de taller · 04/11/2026
+
+Por la revisión posterior de Iván se sustituyen los símbolos estirados por los contornos de franja de cada alzado aprobado (5363 A/B y4815 A/B), con su anchura, inclinación, separación y recorte. Los textos se centran y dimensionan en su hueco libre, incluidos los del corte. El SVG conserva el hueco de los números de cota y centra el bloque completo de las notas. La vista incluye la última cota del faldón.
+
+El [informe por capas](./puertas-santapau-capas.md) recoge la tabla antes/después y las comprobaciones automáticas de cajas, líneas y recortes en las cuatro hojas, el bot y el navegador. Las diagonales solo son representación de impresión: no se añaden cortes ni marcas al bot. Rebase inicial sobrecb9630d; las reglas nuevas del escuadrado de apilables no cambian la confección de Santa Pau.

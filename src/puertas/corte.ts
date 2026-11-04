@@ -568,6 +568,10 @@ export function generarCortePuertas(
     ...colocar(entero, 'saco-entero', codigosPano, esEnrollable, esAutorreparable, presupuesto),
     ...colocar(partido, 'saco-partido', codigosPano, esEnrollable, esAutorreparable, presupuesto),
   ];
+  // El título de Santa Pau queda centrado sobre su rollo, sin tocar cortes ni marcas.
+  if(pedido.elementos.every(e=>e.input.santapau))for(const c of cortes)for(const t of c.entidades.textos.filter(t=>!t.centrado)){
+    t.x=c.largo/2;t.centrado=true;t.h=Math.min(TITULO_MATERIAL_MM,(c.largo-120)/anchoArial(t.valor,1));
+  }
   let archivo = null;
   if (!sinOf.length && !avisos.some(a => a.nivel === 'error') && pedido.orderCode.trim() && cortes.length) {
     const entidades = vacias();

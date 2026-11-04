@@ -1,6 +1,8 @@
 import type { LienzoEnrollable } from './planoEnrollable.ts';
 import type { Puerta, Punto, ResultadoPuerta } from './tipos.ts';
 import { aumentoSantaPau, REGLAS_SANTA_PAU, revisionSantaPau } from './santapau.ts';
+import { franjasSantaPau } from './franjasSantaPau.ts';
+import { centrarSantaPau } from './centrarSantaPau.ts';
 import { anchoArial } from '../domain/corteLona/texto.js';
 
 const vacio=():LienzoEnrollable=>({lineas:[],polilineas:[],textos:[],cotas:[],inserciones:[],sombreados:[],arcos:[],circulos:[]});
@@ -87,13 +89,13 @@ export function dibujoSantaPau(p:Puerta,r:ResultadoPuerta,letra:string):LienzoEn
  // Símbolo gráfico de material tomado del 5363 revisado, ajustado a la caja.
  // No define el paso de impresión ni añade cortes o marcas al bot.
  if(p.sacoDiagonalesAmarillas){
-  const muestras=[[[0,9.6943],[0,0],[4.4479,0],[34.4479,35],[20.3057,35]],[[83.9428,35],[53.9428,0],[68.085,0],[98.085,35]],[[174.1485,0],[188.2906,0],[197,8.7094],[197,27.8515]],[[48.59,35],[18.59,0],[32.7322,0],[55.4822,35]]];
-  muestras.forEach((ps,i)=>l.sombreados.push({capa:i===2?'cortes - lona':'referencias',puntos:ps.map(([x,a]):Punto=>[x*F/197,y(bajoFaldon+a*s.altoFaldon/35)]),solido:true,color:2}));
+  for(const franja of franjasSantaPau(F,s.altoFaldon,revisionSantaPau(s)))l.sombreados.push({...franja,puntos:franja.puntos.map(([x,a]):Punto=>[x,y(bajoFaldon+a)]),solido:true,color:2});
  }
  texto(bravo,F/2+(actual?66.0558:0),bajoFaldon-(actual?.642:8),Math.min(actual?7:5.5,(F-16)/anchoArial(bravo,1)),actual?3:5);
  cota(0,bajoFaldon,0,bajoFaldon+s.altoFaldon,-13.0315);
  cota(0,bajoFaldon,F,bajoFaldon,bajoFaldon-(actual?15.2848:23.2848),'XERA 15');
  cota(0,H,F,H,H+21.0627,actual?'XERAL 14':'XERA 15');cota(F,0,F,H,F+44.8002,actual?'XERAL 14':'XERA 15',actual?[F+44.8002,H*.5984321]:undefined);
+ centrarSantaPau(l,p,r,letra);
  return l;
 }
 
@@ -106,6 +108,6 @@ export function detalleSantaPau(altoFaldon=35):LienzoEnrollable{
  for(const bajo of [135.8644,4.5344])l.polilineas.push({capa:'referencias',cerrada:true,puntos:[[35.1692,bajo],[36.2305,bajo],[36.2305,bajo+25],[35.1692,bajo+25]]});
  l.arcos.push({capa:'corte',x:38.1692,y:112.2837,r:3,desde:180,hasta:22.2158});
  for(const [y1,y2,rotulo,d]of [[160.8644,135.8644,'5',26.3677],[135.8644,109.2819,'5',26.3677],[109.2819,82.6994,'5',26.3677],[160.8644,4.5344,altoFaldon.toLocaleString('es-ES'),14.7167]] as const)l.cotas.push({capa:'cotas',estilo:'XERAL',x1:36.2305,x2:36.2305,y1,y2,giro:90,d,valor:Math.abs(y2-y1),rotulo});
- for(const [valor,x,y]of [['VELCRO SUAVE',98.745,147.6019],['SOLDADURA 2CM',105.6342,133.1725],['ET',58.0095,117.7538],['VELCRO BRAVO',98.745,16.2719]] as const)l.textos.push({capa:'texto',valor,x,y,h:5.67,ancla:3});
+ for(const [valor,y]of [['VELCRO SUAVE',147.6019],['SOLDADURA 2CM',133.1725],['ET',117.7538],['VELCRO BRAVO',16.2719]] as const)l.textos.push({capa:'texto',valor,x:85,y,h:Math.min(7,90/anchoArial(valor,1)),ancla:5});
  return l;
 }

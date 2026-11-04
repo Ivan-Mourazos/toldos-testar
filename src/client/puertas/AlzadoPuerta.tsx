@@ -4,6 +4,7 @@ import { MODELOS_PUERTAS } from '../../puertas/calcular.ts';
 import { tipoDePuerta } from '../../puertas/clientes.ts';
 import { esVertical, geometriaAlzado, numAlzado, textoCota, type CotaAlzado, type FormaAlzado, type TextoAlzado } from '../../puertas/alzado.ts';
 import type { Puerta, ResultadoPuerta } from '../../puertas/tipos.ts';
+import { tramosCota } from '../../puertas/tramosCota.ts';
 
 // Pinta el alzado de src/puertas/alzado.ts: el mismo dibujo que sale en el plano DWG.
 
@@ -13,7 +14,7 @@ function Texto({ t }: { t: TextoAlzado }) {
   const texto = (
     <text
       x={t.x}
-      y={t.y}
+      y={t.y - (t.alineacionVertical === 'middle' && t.taller ? (t.lineas.length - 1) * (t.tamano ?? 10) * .6 : 0)}
       textAnchor={t.ancla === 'start' ? undefined : t.ancla}
       className={t.clase}
       dominantBaseline={t.alineacionVertical}
@@ -47,7 +48,7 @@ function Cota({ c }: { c: CotaAlzado }) {
   const t = c.texto;
   return (
     <g>
-      {linea(a, c.linea, b, c.linea)}
+      {tramosCota(c).map(([u, w], i) => <React.Fragment key={i}>{linea(u, c.linea, w, c.linea)}</React.Fragment>)}
       {c.marcas > 0 && linea(a, c.linea - c.marcas, a, c.linea + c.marcas)}
       {c.marcas > 0 && linea(b, c.linea - c.marcas, b, c.linea + c.marcas)}
       <text
