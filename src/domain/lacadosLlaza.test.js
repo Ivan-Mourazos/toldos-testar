@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { lacadoCatalog, lacadoLabel, lacadoPrintName, resolveLacado } from './lacados.js';
+import { lacadoCatalog, lacadoLabel, lacadoNames, lacadoPrintName, resolveLacado } from './lacados.js';
 import { resolveLacadoCode } from './lacadoFallback.js';
 import { calculateOrder } from './rules.js';
 import { resolveCrossedKit } from './arzuaCrossed.js';
@@ -64,6 +64,12 @@ describe('catálogo Llaza 2026', () => {
     const before = calculateOrder(order(old));
     const after = calculateOrder(order(name));
     expect(after.ofs.map(o => [o.materials, o.calculation, o.despiece])).toEqual(before.ofs.map(o => [o.materials, o.calculation, o.despiece]));
+  });
+  test('el desplegable va por orden alfabético, sin grupos, con el especial al final', () => {
+    const sinEspecial = lacadoNames.slice(0, -1);
+    expect(sinEspecial).toEqual([...sinEspecial].sort((a, b) => a.localeCompare(b, 'es')));
+    expect(lacadoNames.at(-1)).toBe('Lacado especial (RAL)');
+    expect(lacadoNames).toHaveLength(38);
   });
   test('27 colores en sus tres grupos, más especial y los otros colores', () => {
     expect(lacadoCatalog.filter(c => c.group === 'Precio base')).toHaveLength(1);

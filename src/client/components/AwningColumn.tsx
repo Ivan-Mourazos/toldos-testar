@@ -15,7 +15,7 @@ import { AwningFormBody } from './AwningFormBody';
 import { avanzarConIntro } from '../avanzarConIntro';
 import { isConfiguredCurtain } from '../../domain/curtainConfiguration.js';
 import { SelectField } from './SelectField';
-import { lacadoGroup, lacadoLabel } from '../../domain/lacados.js';
+import { lacadoLabel } from '../../domain/lacados.js';
 import { SegmentedField } from './SegmentedField';
 import { FabricCombobox } from './FabricCombobox';
 import { FabricStockLine } from './FabricStockLine';
@@ -786,7 +786,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
             </div>
           )}
           {(fields.requiresStructureColor || fields.requiresRotFabric || hasValance) && <div className="awning-finish-row awning-wide-field">
-                {fields.requiresStructureColor && <SelectField label="Lacado" missing={isMissing('structureColor')} value={lacadoLabel(awning.structureColor)} options={formOptions.lacados} optionLabel={lacadoLabel} optionGroup={lacadoGroup} placeholder="Elegir…" allowEmpty emptyLabel="Sin indicar" onChange={(structureColor) => update({ structureColor })} />}
+                {fields.requiresStructureColor && <SelectField label="Lacado" missing={isMissing('structureColor')} value={lacadoLabel(awning.structureColor)} options={formOptions.lacados} optionLabel={lacadoLabel} placeholder="Elegir…" allowEmpty emptyLabel="Sin indicar" onChange={(structureColor) => update({ structureColor })} />}
             {fields.requiresRotFabric && !standaloneValance && <SegmentedField label="Rotulación tela" missing={isMissing('rotFabric')} value={awning.rotFabric} options={formOptions.rotulacion} onChange={(rotFabric) => update({ rotFabric })} />}
             {hasValance && <SegmentedField label="Rotulación bamba" missing={isMissing('rotValance')} value={awning.rotValance} options={formOptions.rotulacion} onChange={(rotValance) => update({ rotValance })} />}
           </div>}

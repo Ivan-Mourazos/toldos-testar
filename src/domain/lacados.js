@@ -111,7 +111,13 @@ export const lacadoCatalog = Object.freeze(groups.flatMap(([group, colors]) => c
   }) });
 })));
 
-export const lacadoNames = lacadoCatalog.map(item => item.name);
+// El desplegable, una sola lista por orden alfabético, con el lacado especial al final: los
+// grupos de la tarifa confundían al elegir (Iván, 04/11/2026). El grupo queda solo como dato.
+const ESPECIAL = 'Lacado especial (RAL)';
+export const lacadoNames = [
+  ...lacadoCatalog.map(item => item.name).filter(name => name !== ESPECIAL).sort((a, b) => a.localeCompare(b, 'es')),
+  ESPECIAL
+];
 
 // El cálculo consulta el color en cada pieza y en los barridos de modelos. Se
 // normalizan las claves una vez, sin recorrer todo el catálogo en cada consulta.

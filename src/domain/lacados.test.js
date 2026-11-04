@@ -52,8 +52,8 @@ describe('lacados', () => {
     expect(lacadoLabel('GRIS 7016')).toBe('Gris antracita brillo 7016');
   });
 
-  test('el desplegable empieza por el precio base y termina por el lacado especial', () => {
-    expect(lacadoNames[0]).toBe('Blanco tráfico brillo 9016');
+  test('el desplegable va por orden alfabético y termina por el lacado especial', () => {
+    expect(lacadoNames[0]).toBe('Aluminio blanco 9006-99006');
     expect(lacadoNames.at(-1)).toBe('Lacado especial (RAL)');
   });
 
