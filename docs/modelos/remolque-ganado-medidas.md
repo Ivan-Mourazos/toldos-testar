@@ -1,5 +1,64 @@
 # Caballos por medidas: levantar el morro y desarrollarlo
 
+## Levantamiento 3D contrastado · 04/11/2026
+
+Este apartado sustituye los valores provisionales del 5319 del contraste anterior.
+El original de oficina se ha consultado en solo lectura y su SHA-256 coincide con la copia
+de `tmp/ganado-cal/fuentes/dwg/AR2605319.dwg`. El análisis de los perfiles 3D, sus normales,
+arcos y generatrices queda reproducible con `node scripts/ganado/levantamiento-cal.mjs`.
+No se deduce el recorrido de una proyección plana ni de cuerdas que sustituyan los arcos.
+
+El cálculo ya usaba longitud de arco real por el exterior. Los errores eran de entrada:
+el cuerpo del 5319 lleva **67 + 10 cm**, el frente **57 + 10 cm** y cada bajo añade
+**3 cm**, frente a los anteriores 57 + 10, 57 + 0 y 3,5 respectivamente. Los altos se
+miden hasta el cruce teórico, no hasta la tangencia. Para ancho W, alto H, aguas A y radio R:
+
+```text
+theta = pi/2 - atan2(A, W/2)
+t = R * tan(theta/2)
+recorrido = 2(H-t) + 2(hypot(W/2,A)-t) + 2R*theta
+corte = recorrido + holgura + 2*bajo
+```
+
+| Pedido | Corte anterior cm | Corte actual cm | Corte CAD cm | Recorrido 3D cm |
+| --- | --- | --- | --- | --- |
+| AR2605319 | 278,6628 | 297,6628 | 297,5 | 290,1628 |
+| AR2506052, gemelo | 333,6890 | 333,6890 | 333,69 | 325,1890 |
+| AR2601847 | 282,5 | 282,5 | 282,5 | 273,8319 |
+
+El cuerpo 3D **10EF3** del 5319 suma 117,2142 cm de laterales, 145,4517 de aguas
+y 27,4969 de arcos. Se añaden 1,5 de holgura y 6 de bajos: **297,6628 cm** exactos.
+La diferencia con EC3C (297,5) es **1,628 mm**, aceptada expresamente en esta conversación;
+no amplía la tolerancia general ni introduce redondeos. Q-GAN11 pregunta por la práctica de
+redondeo del taller. El frente **10EF2** confirma 57 + 10; la puerta integrada llega ahora
+a **50,3459 cm**, como los 50,35 del CAD. El morro de este pedido divide cada curva en
+cuatro tramos, frente a cinco en el gemelo; esa división es editable y no cambia el arco
+real usado para el cuerpo. El bajo también es editable, con 3,5 cm por defecto general.
+
+Trece perfiles de seis pedidos (5319, gemelo 6052, 1847, 5060, 4281 y 5892) reproducen la
+misma fórmula dentro de 0,000001 mm. El 1847 conserva su plantilla validada de 282,5;
+su desarrollo teórico con holgura y bajos da 282,3319, sin convertir esa diferencia en
+una regla de confección. Los recorridos y referencias están en
+`tmp/ganado-cal/levantamiento/RECORRIDOS.md` y `ANTES-DESPUES.md`.
+
+La ventana EC13 está en un plano girado: sus 45 × 35 equivalen a **35 ancho × 45 alto**
+en el frente levantado, a **8 cm del bajo**; la tapa EC14 queda 38 × 48. La regla confirmada
+de 50 × 35, tapa 53 × 38, sigue sin reproducirla tras corregir el frente: **Q-GAN12**.
+Se conserva esa regla hasta aclararlo. La imagen orientada permite revisar la pregunta en
+`tmp/ganado-cal/levantamiento/AR2605319-ventana-orientada.png`.
+
+Se corrige además el reflejo de la pieza suelta del **refuerzo MFD**: ahora conserva la
+orientación del cuadrilátero 10EE7, además de sus medidas; su marca 10EE4 ya estaba bien
+colocada. Ambas coinciden con el CAD. El frente coincide en corte y ollaos. El morro queda
+a 1,264 mm de contorno; los ollaos llegan a 1,240 mm, por encima del nominal de 1 mm.
+Siguen visibles las diferencias de marcas (línea de fruncido completa frente a señales
+cortas; marcas centrales a 30 frente a 20 mm), recogidas en **Q-GAN13**.
+
+Las salidas DWG, DXF del bot, plano DXF, hoja PDF y PNG se regeneran en
+`tmp/ganado-cal/salida/`, junto a `COMPARACION-CAPAS.md` (coincide / corregido / pendiente).
+La hoja usa un dibujo mayor, con cuerpo y morro en paralelo y piezas menores al lado;
+las notas de confección permanecen en la columna de datos.
+
 ## Respuestas de Iván · 04/11/2026
 
 Este apartado actualiza el estado del 03/11 conservado debajo como historial.
@@ -10,7 +69,7 @@ Este apartado actualiza el estado del 03/11 conservado debajo como historial.
   editable. Se quita el bloqueo del 5319: la puerta está integrada en el morro y no añade
   un rectángulo de 161 cm. Las cremalleras se marcan a 4 cm de los extremos de la diagonal,
   hasta la tangencia del lateral delantero (1185C/1185D del CAD). Con los altos aprobados
-  del ejemplo, ese tramo mide 47,5 cm; en el CAD con otras aguas mide 50,35 cm.
+  corregidos del ejemplo, ese tramo mide 50,3459 cm; el CAD anota 50,35 cm.
   La recogida de atrás se elige como cuerda o goma: el 5319 lleva **cuerda fruncida** y
   el gemelo, goma. El acabado aparece expresamente en pantalla, hoja y plano.
 - Q-GAN06: AR2601847, **98 × 32: Hueco de puerta; 34,5 × 56: Tapa de ventana**.
@@ -42,7 +101,7 @@ solo en Cal por medidas al importar. Se puede cambiar en cada pedido; se respeta
 explícito. La posición se marca en el morro y la pieza sale aparte en el rollo. El ejemplo
 5319 la activa; los demás modelos no la reciben.
 
-### Nuevo contraste del propio 5319
+### Primer contraste del propio 5319 (histórico, sustituido por el levantamiento 3D)
 
 El CAD recién localizado contiene diferencias con las medidas ya confirmadas del ejemplo:
 cuerpo terminado **211 × 291,5**, corte **217 × 297,5 cm**, frente con alto central **67 cm**

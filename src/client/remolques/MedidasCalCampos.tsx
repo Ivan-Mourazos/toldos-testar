@@ -1,5 +1,6 @@
 import React from 'react';
 import { MEDIDAS_CAL_VACIAS, type MedidasCal } from '../../remolques/ganado/medidas.ts';
+import { DEFAULT_PARAMS } from '../../remolques/calc/params.ts';
 import { CampoNum, CampoSelect, CampoSiNo, PasoFormulario } from './Campos';
 
 export const MEDIDAS_VACIAS = MEDIDAS_CAL_VACIAS;
@@ -16,6 +17,8 @@ export function MedidasCalCampos({ value, error, onChange }: { value?: MedidasCa
   return <PasoFormulario titulo="Medidas de Cal (cm)" columnas={4}>
     <p className="gan-dibujo-nota rem-span-4">Altos hasta la intersección teórica del lateral y las aguas. Radio por el exterior del arco. El cálculo añade 1 cm de lona hecha a anchos, recto y diagonal.</p>
     {CAMPOS.map(([k, label]) => <CampoNum key={k} name={k} label={label} value={m[k]} onChange={v => set(k, v)} />)}
+    <CampoNum name="margenBajoCal" label="Añadido de corte por bajo" value={m.margenBajo ?? DEFAULT_PARAMS.ajusteContornoBase / 2} onChange={v => set('margenBajo', v)} />
+    <CampoNum name="divisionesCurvaCal" label="Divisiones por curva del morro" value={m.divisionesCurva ?? 5} onChange={v => set('divisionesCurva', v)} />
     <CampoSelect name="recogidaAtrasCal" label="Fruncido de atrás" value={m.recogidaAtras ?? ''} sinElegir="Según pedido"
       opciones={[{ value: 'CUERDA', label: 'Cuerda fruncida' }, { value: 'GOMA', label: 'Goma fruncida' }]}
       onChange={v => set('recogidaAtras', v as MedidasCal['recogidaAtras'])} />

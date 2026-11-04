@@ -43,7 +43,7 @@ export function juegoCorteCal(m: MedidasCal, of = '', cantidad = 1) {
 }
 
 /** El mismo contorno y los mismos centros para pantalla, hoja y plano. En cm. */
-export function dibujoCal(m: MedidasCal): Dibujo {
+export function dibujoCal(m: MedidasCal, paraHoja = false): Dibujo {
   const g: DesarrolloCal = calcularMedidasCal(m);
   const d: Dibujo = { ancho: 0, alto: 0, lineas: [], polilineas: [], arcos: [], circulos: [], textos: [], cotas: [] };
   let x = 0, y = 0, fila = 0;
@@ -62,7 +62,11 @@ export function dibujoCal(m: MedidasCal): Dibujo {
     }
   };
   g.piezas.forEach((p, i) => {
-    if (i === 2) { x = 0; y += fila + 55; fila = 0; }
+    if (i === 2) {
+      if (paraHoja) y = 0;
+      else { x = 0; y += fila + 55; fila = 0; }
+    }
+    if (paraHoja && i > 2) y += (limites(g.piezas[i - 1].contorno).h / 10) + 45;
     const b = limites(p.contorno), w = b.w / 10, h = b.h / 10;
     const T = ([a, c]: PuntoCal): PuntoCal => [x + (a - b.x) / 10, y + (c - b.y) / 10];
     for (const q of p.corte) primitiva(q, 'DISCO1', T);
@@ -73,7 +77,8 @@ export function dibujoCal(m: MedidasCal): Dibujo {
       { x1: x + w, y1: y, x2: x + w, y2: y + h, valor: h, giro: 90, d: x + w + 10 });
     d.ancho = Math.max(d.ancho, x + w + 20);
     d.alto = Math.max(d.alto, y + h + 25);
-    fila = Math.max(fila, h); x += w + 45;
+    fila = Math.max(fila, h);
+    if (!paraHoja || i < 2) x += w + 45;
   });
   const notas = [
     `Lona por el exterior del arco · R${m.radio.toLocaleString('es-ES')} · medidas en cm`,
@@ -83,7 +88,8 @@ export function dibujoCal(m: MedidasCal): Dibujo {
     ...(m.refuerzoMfd ? ['Refuerzo MFD de Cal · pieza aparte y posición marcada en el morro'] : []),
     ...(g.pendientes.length ? ['PARCIAL · FALTA DEFINIR LA PUERTA · CORTE COMPLETO A MANO'] : []),
   ];
-  for (const nota of notas) { d.alto += 10; d.textos.push({ valor: nota, x: d.ancho / 2, y: d.alto, h: 6.5, giro: 0 }); }
+  // En papel, los acabados ya están a la izquierda; se conservan el radio y los avisos pendientes.
+  for (const nota of paraHoja ? notas.filter((n, i) => i === 0 || n.startsWith('PARCIAL')) : notas) { d.alto += 10; d.textos.push({ valor: nota, x: d.ancho / 2, y: d.alto, h: 6.5, giro: 0 }); }
   return d;
 }
 

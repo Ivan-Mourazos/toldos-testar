@@ -75,9 +75,15 @@ export function perfil({ ancho, alto, aguas, radio, pasos = 12 }) {
   return [...mitad, ...mitad.slice(0, -1).toReversed().map(([y, z]) => [ancho - y, z])];
 }
 
-export function contornoPerfil({ancho,alto,aguas,radio}) {
+/** Recorrido por el exterior: dos laterales, dos aguas rectas y dos arcos tangentes. */
+export function desglosePerfil({ancho,alto,aguas,radio}) {
   const ang=Math.atan2(aguas,ancho/2),giro=Math.PI/2-ang,t=radio*Math.tan(giro/2);
-  return 2*alto+2*Math.hypot(ancho/2,aguas)-4*t+2*radio*giro;
+  const laterales=2*(alto-t),rectasAguas=2*(Math.hypot(ancho/2,aguas)-t),curvas=2*radio*giro;
+  return {laterales,aguas:rectasAguas,curvas,total:laterales+rectasAguas+curvas};
+}
+
+export function contornoPerfil(m) {
+  return desglosePerfil(m).total;
 }
 
 export function construirMorro(m) {

@@ -32,6 +32,17 @@ Revisión del AR2605385 contra 33 OF desde 2023, con prioridad a 2025–2026. [T
 | Q-AG05 | ¿Cuándo lleva soporte inferior SOIN el Open y cuántos juegos lleva cada variante? Open 717 y 730 gastan 5 juegos, pero 555 y 575 no gastan ninguno; 775 tampoco. El semicofre 1145 gastó solo 1 juego y el 800 gastó 5. | Añade SOIN en cofre y conserva el de semicofre, junto a SOTL, con la cantidad provisional de soportes de perfil que ya calculaba. En el 5385 son 4 juegos de inferior. No añade SOIN a todos los Open sin conocer la condición. |
 | Q-AG06 | ¿Cuándo se usa el terminal de regulación fina TERRF en vez de TERMI? En los últimos cofres, abril de 2026 lleva TERMI y julio TERRF, ambos con tres brazos Onyx. Con salida 300 hay TERMI en semicofre; con 350 hay TERRF y con 400 aparecen las dos familias. En Open hay además TERMIUNIV, TERMINEVO y sobrantes de juegos que el consumo no explica. | Mantiene TERMI, un juego por dos brazos y un suelto si son tres; falta confirmar la familia que corresponde al 5385. El lado del suelto se elige con el brazo; si no se indica, decide el taller y se reserva derecho. Lo que no existe en el lacado se reserva blanco para lacar, como las demás piezas. |
 
+## Cal: seguimiento del levantamiento 3D · 04/11/2026
+
+Contraste reproducible y referencias en [remolque-ganado-medidas.md](./remolque-ganado-medidas.md).
+Q-GAN05–09 permanecen contestadas; estas preguntas no reabren sus respuestas.
+
+| Código | Pregunta concreta | Qué hace la web mientras tanto |
+| --- | --- | --- |
+| Q-GAN11 | ¿Se redondean los cortes al medio centímetro? El perfil 3D 10EF3 del 5319 suma 290,1628; con holgura 1,5 y dos bajos de 3 da 297,6628, frente a 297,5 de EC3C. | Mantiene la fórmula exacta y muestra 297,66. El coordinador acepta expresamente el residuo de 1,628 mm de este caso; no se inventa redondeo ni se amplían las tolerancias generales. |
+| Q-GAN12 | Con el frente ya corregido a 57 + 10, ¿el 5319 debe llevar la ventana específica de EC13, **35 ancho × 45 alto a 8 cm del bajo**, con tapa EC14 **38 × 48**, o la estándar confirmada **50 × 35 / tapa 53 × 38**? Las cotas 45 × 35 / 48 × 38 del plano están giradas 90° respecto al frente 3D. | Conserva la regla estándar confirmada; genera las salidas y señala la diferencia. Imagen orientada: `tmp/ganado-cal/levantamiento/AR2605319-ventana-orientada.png`. |
+| Q-GAN13 | ¿El 5319 necesita línea completa de fruncido y marcas centrales del morro a 30 mm, como ese CAD, o las señales cortas y los 20 mm del gemelo? Sus ollaos del morro difieren hasta 1,240 mm, superando el nominal de 1 mm: ¿se acepta este contraste? | Conserva las marcas del generador y el reparto confirmado, sin desplazar puntos para encubrir diferencias; tabla por capas con estado pendiente. |
+
 ## Contestadas el 03/11/2026 (Iván)
 
 - **Q-GAN03:** la lona va por el **exterior** del arco. Comprobado a mano en el 5319: se le dio radio 9,5.

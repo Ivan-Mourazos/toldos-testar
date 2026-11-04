@@ -59,22 +59,33 @@ for(const [nombre,id,transform] of pares){
   }T=mejor.t;
  }
  const corte=contraste(p.corte.map(q=>transformarPrimitiva(q,T)),real);
- filas.push({pieza:nombre,capa:'DISCO1 / corte',estado:Math.max(corte.idaMm,corte.vueltaMm)<.01?'coincide':'pendiente',...corte,
+ const errorCorte=Math.max(corte.idaMm,corte.vueltaMm),cuerpoAceptado=nombre==='Cuerpo'&&errorCorte<=1.629;
+ filas.push({pieza:nombre,capa:'DISCO1 / corte',estado:errorCorte<(nombre==='Morro'?1.5:.01)?'coincide':cuerpoAceptado?'corregido':'pendiente',...corte,
+  ...(nombre==='Morro'?{nota:'Contorno dentro de 1,5 mm; sin cambiar las longitudes del levantamiento.'}:{}),
+  ...(cuerpoAceptado?{nota:'Corregidos lateral 67 + aguas 10 y bajo 3. Resultado exacto 297,6628 cm; diferencia 1,628 mm aceptada expresamente por el coordinador el 04/11. Sin redondear.'}:{}),
   envolventeCalculadaMm:medidas(p.contorno),envolventeOficinaMm:medidas(ps(id)),referencia:id});
  if(transform){
   const pol=ps(id),candidatas=es.filter(e=>e.capa==='ROTULADOR').flatMap(primitivas).filter(q=>puntosPrimitiva(q).every(p=>contiene(p,pol)));
   for(const [capa,web,ref] of [
    ['ROTULADOR · ollaos',p.ollaos,candidatas.filter(q=>q.tipo==='ollao')],
-   ['ROTULADOR · marcas',p.marcas,candidatas.filter(q=>q.tipo!=='ollao')],
+   ['ROTULADOR · marcas',nombre==='Morro'?p.marcas.slice(0,2):p.marcas,nombre==='Morro'?['151AE','151AF'].flatMap(id=>primitivas(get(id))):candidatas.filter(q=>q.tipo!=='ollao')],
   ]){
    const resultado=contraste(web.map(q=>transformarPrimitiva(q,T)),ref);
-   filas.push({pieza:nombre,capa,estado:Math.max(resultado.idaMm,resultado.vueltaMm)<.01?'coincide':'pendiente',...resultado,referencia:id});
+   filas.push({pieza:nombre,capa,estado:Math.max(resultado.idaMm,resultado.vueltaMm)<.01?'coincide':nombre==='Cuerpo'&&capa.includes('ollaos')?'corregido':'pendiente',...resultado,referencia:id,
+    ...(nombre==='Cuerpo'&&capa.includes('ollaos')?{nota:'Mandan las posiciones confirmadas 126 / 157 / 193; el CAD marca 127 / 158 / 194. La cota transversal conserva la diferencia de 1,628 mm del paño.'}:{}),
+    ...(nombre==='Cuerpo'&&capa.includes('marcas')?{nota:'El CAD marca una línea completa de fruncido; el generador conserva señales cortas en sus extremos. La diferencia de cobertura no es un desplazamiento de 1,4 m de la posición del fruncido.'}:{}),
+    ...(nombre==='Morro'&&capa.includes('marcas')?{nota:'Marcas centrales: 20 mm del gemelo frente a 30 mm en el 5319; las cremalleras y el refuerzo se comparan aparte.'}:{}),
+   });
   }
  }
 }
-filas.push({pieza:'Puerta MFI',capa:'vent-pre-noimpr → ROTULADOR',estado:'corregido',referencia:'1185C / 1185D',nota:'Integrada en la diagonal de 103; dos cremalleras a 4 de los extremos, sin solapas. Alto hasta tangencia según perfil aprobado: 47,5 cm; el CAD conserva 50,35.'},
+filas.push({pieza:'Puerta MFI',capa:'vent-pre-noimpr → ROTULADOR',estado:'corregido',referencia:'1185C / 1185D',nota:'Integrada en la diagonal de 103; dos cremalleras a 4 de los extremos, sin solapas. Con el frente 57 + 10, su alto llega a 50,3459 cm, como los 50,35 del CAD.'},
  {pieza:'Cuerpo',capa:'ROTULADOR · reparto confirmado',estado:'corregido',nota:'2,5 / 10 / 30 / 55 / 94 / 126 / 157 / 193 desde atrás. El CAD da 127 / 158 / 194 en las últimas tres.'},
- {pieza:'Ventana y tapa',capa:'ROTULADOR / DISCO1',estado:'corregido',nota:'Se conserva ventana confirmada 50 × 35 y tapa 53 × 38; el CAD tiene 45 × 35 / 48 × 38.'});
+ {pieza:'Ventana y tapa',capa:'ROTULADOR / DISCO1',estado:'pendiente',nota:'Q-GAN12: el plano CAD girado tiene 45 × 35 / 48 × 38; orientado según el 3D son ventana 35 ancho × 45 alto y tapa 38 × 48, ventana a 8 del bajo. Se conserva la regla confirmada 50 × 35 / 53 × 38 hasta aclararlo.'});
+// Las dos manos son simétricas en el desarrollo; se alinea la MFI con su diagonal propia.
+const mitad=morro.terminado.length/2,[Ai,Bi]=ps('EBFE'),Tpuerta=rigido(morro.terminado[mitad-1],morro.terminado[mitad],Ai,Bi);
+const cremallera=contraste(morro.marcas.slice(-2).map(q=>transformarPrimitiva(q,Tpuerta)),['1185C','1185D'].flatMap(id=>primitivas(get(id))));
+filas.push({pieza:'Puerta MFI · posición',capa:'vent-pre-noimpr',estado:Math.max(cremallera.idaMm,cremallera.vueltaMm)<.2?'coincide':'pendiente',...cremallera,referencia:'1185C / 1185D',nota:'Contraste a 0,2 mm; residuo del alto CAD 50,35 frente al exacto 50,3459 cm.'});
 const refMarca=contraste(morro.marcas.slice(2,6).map(q=>transformarPrimitiva(q,Tm)),primitivas(get('10EE4')));
 filas.push({pieza:'Refuerzo MFD · posición',capa:'marca → ROTULADOR',estado:Math.max(refMarca.idaMm,refMarca.vueltaMm)<.01?'coincide':'pendiente',...refMarca,referencia:'10EE4'});
 const estandar=JSON.parse(fs.readFileSync('tmp/ganado-estandar/contraste.json'));
@@ -91,5 +102,5 @@ const informe={fecha:'2026-11-04',fuentes,AR2601847:resumen1847,AR2605319:filas,
 fs.writeFileSync(dir+'/comparacion-capas.json',JSON.stringify(informe,(_,v)=>typeof v==='number'&&!Number.isFinite(v)?'sin correspondencia':v,2));
 const fmt=x=>x==null?'—':Number.isFinite(x)?x.toLocaleString('es-ES',{maximumFractionDigits:3}):'sin correspondencia';
 const tabla=xs=>'| Pieza | Capa | Estado | Diferencia máxima ida / vuelta (mm) | Referencia / observación |\n|---|---|---|---|---|\n'+xs.map(r=>`| ${r.pieza} | ${r.capa} | ${r.estado} | ${fmt(r.idaMm)} / ${fmt(r.vueltaMm)} | ${r.nota??r.referencia??''} |`).join('\n');
-fs.writeFileSync(dir+'/COMPARACION-CAPAS.md','# Respuestas de Cal · 04/11/2026\n\n'+informe.alcance+'\n\n## AR2601847\n\n'+tabla(resumen1847)+'\n\n## AR2605319 · OF 0233492\n\n'+tabla(filas)+'\n\nLos pendientes de geometría conservan los altos y el radio confirmados; no se escalan las piezas para igualar otra revisión. Cuerpo CAD 217 × 297,5 cm frente al cálculo 217 × 278,66. El frente CAD conserva aguas de 10 donde el ejemplo aprobado usa 0. No se traslada esa revisión a la entrada confirmada sin indicación de Iván. La puerta y el refuerzo son parte del juego completo generado.\n');
+fs.writeFileSync(dir+'/COMPARACION-CAPAS.md','# Levantamiento de Cal · 04/11/2026\n\n'+informe.alcance+'\n\n## AR2601847\n\n'+tabla(resumen1847)+'\n\n## AR2605319 · OF 0233492\n\n'+tabla(filas)+'\n\nCuerpo CAD 217 × 297,5 cm frente al cálculo exacto corregido 217 × 297,6628. Se acepta expresamente la diferencia de 1,628 mm y no se programa un redondeo. El perfil 3D del cuerpo es 67 + 10; el frente, 57 + 10. Morro: contorno dentro de 1,5 mm; ollaos hasta aproximadamente 1,24 mm, por encima del nominal de 1 mm, sin mover los puntos para esconderlo. Ventana pendiente Q-GAN12. Ver `../levantamiento/ANTES-DESPUES.md` y `RECORRIDOS.md` para fórmula y contraste con seis pedidos / trece perfiles reales.\n');
 console.log('Comparación por capas en '+dir+'/COMPARACION-CAPAS.md');

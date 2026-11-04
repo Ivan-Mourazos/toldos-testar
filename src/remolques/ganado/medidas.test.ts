@@ -15,8 +15,8 @@ describe('Caballos por medidas de Cal', () => {
     const r = calcularMedidasCal(MEDIDAS_CAL_5319);
     expect(r.medidas.radioA).toBe(95);
     expect(r.medidas.radioB).toBe(95);
-    expect(r.medidas.altoA + r.medidas.aguasA).toBe(670);
-    expect(r.medidas.altoB + r.medidas.aguasB).toBe(570);
+    expect(r.medidas.altoA + r.medidas.aguasA).toBe(770);
+    expect(r.medidas.altoB + r.medidas.aguasB).toBe(670);
     expect(r.largoHecho).toBeCloseTo(2993.176, 3);
     expect(r.ventana).toEqual({ ancho: 50, alto: 35 });
     expect(r.piezas[0].ollaos).toHaveLength(16);
@@ -33,12 +33,23 @@ describe('Caballos por medidas de Cal', () => {
     expect(morro.corte).toEqual(sin.piezas[1].corte);
     expect(con.piezas.length).toBe(sin.piezas.length);
     expect(marcas.every(p => p.tipo === 'tramo')).toBe(true);
-    expect(con.puerta!.alto).toBeCloseTo(47.5);
+    expect(con.puerta!.alto).toBeCloseTo(50.345940986);
     const ps = morro.terminado!, n = ps.length / 2, a = ps[n - 1], b = ps[n];
     if (marcas[0].tipo !== 'tramo' || marcas[1].tipo !== 'tramo') throw Error('Faltan cremalleras');
     expect(Math.hypot(marcas[0].a[0] - a[0], marcas[0].a[1] - a[1])).toBeCloseTo(40);
     expect(Math.hypot(marcas[1].a[0] - b[0], marcas[1].a[1] - b[1])).toBeCloseTo(40);
     expect(calcularMedidasCal({ ...MEDIDAS_CAL_5319, puertaMorro: undefined }).pendientes.join(' ')).toMatch(/puerta MFI/);
+  });
+
+  it('calcula el paño del 5319 desde el 3D y conserva visible la diferencia del acabado CAD', () => {
+    const r = calcularMedidasCal(MEDIDAS_CAL_5319);
+    expect(r.desarrolloCuerpo.total).toBeCloseTo(2901.628124, 3);
+    expect(r.desarrolloCuerpo.bastillas).toBe(60);
+    expect(r.desarrolloCuerpo.corte).toBeCloseTo(2976.628124, 3);
+    expect(r.desarrolloCuerpo.corte - 2975).toBeCloseTo(1.628124, 3);
+    const distinto = calcularMedidasCal({ ...MEDIDAS_CAL_5319, margenBajo: 3.5 });
+    expect(distinto.desarrolloCuerpo.corte - r.desarrolloCuerpo.corte).toBe(10);
+    expect(calcularMedidasCal(MEDIDAS_CAL_GEMELO).desarrolloCuerpo.corte).toBeCloseTo(3336.889742, 3);
   });
 
   it('mantiene los 5 cm de fruncido confirmados, editables sin mover el terminado', () => {
@@ -71,6 +82,8 @@ describe('Caballos por medidas de Cal', () => {
     expect(ref).toBeDefined();
     expect(ref.ollaos).toEqual([]);
     expect(ref.corte).toHaveLength(4);
+    // El corte 10EE7 y su marca 10EE4 tienen este sentido; no se espeja la pieza suelta.
+    expect(ref.contorno.reduce((s, p, i, ps) => s + p[0] * ps[(i + 1) % ps.length][1] - p[1] * ps[(i + 1) % ps.length][0], 0)).toBeLessThan(0);
     const largos = ref.contorno.map((p, i, ps) => Math.hypot(p[0] - ps[(i + 1) % ps.length][0], p[1] - ps[(i + 1) % ps.length][1]));
     expect(largos.map(x => Math.round(x * 100) / 100)).toEqual([54.6, 193.89, 53.74, 197.81]);
     expect(con.piezas[1].marcas.length - sin.piezas[1].marcas.length).toBe(4);

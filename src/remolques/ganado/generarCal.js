@@ -1,5 +1,5 @@
 // Reglas del gemelo AR.25.06052; datos de entrada en mm. Sin lectura de archivos.
-import {construirMorro,contornoPerfil,perfil} from './geometria.js';
+import {construirMorro,desglosePerfil,perfil} from './geometria.js';
 import {linea,arco,circulo,poligono,offsetPoligono,d} from './geometriaPlana.js';
 import {colocarRefuerzoMfd,REFUERZO_MFD_CAL} from './refuerzoCal.js';
 function cabeza(m,r){
@@ -18,8 +18,8 @@ function repartir(a,b,paso,r){
  return Array.from({length:n+1},(_,i)=>circulo(a.map((x,k)=>x+v[k]*(r.inicioOllao+i*(largo-2*r.inicioOllao)/n)),r.radioOllao));
 }
 export function generarCal(h,r){
- const m={ancho:h.ancho+r.lonaHecha,frente:h.frente+r.lonaHecha,diagonal:h.diagonal+r.lonaHecha,largoCuerpo:h.recto+r.lonaHecha,altoA:h.alto,altoB:h.altoFrente,aguasA:h.aguas,aguasB:h.aguasFrente,radioA:h.radio,radioB:h.radio,pasos:r.pasos};
- const modelo=construirMorro(m),{a,b}=modelo.desarrollo,L=m.largoCuerpo,C=contornoPerfil({ancho:m.ancho,alto:m.altoA,aguas:m.aguasA,radio:m.radioA})+r.holguraContorno;
+ const m={ancho:h.ancho+r.lonaHecha,frente:h.frente+r.lonaHecha,diagonal:h.diagonal+r.lonaHecha,largoCuerpo:h.recto+r.lonaHecha,altoA:h.alto,altoB:h.altoFrente,aguasA:h.aguas,aguasB:h.aguasFrente,radioA:h.radio,radioB:h.radio,pasos:h.divisionesCurva??r.pasos};
+ const modelo=construirMorro(m),{a,b}=modelo.desarrollo,L=m.largoCuerpo,recorrido=desglosePerfil({ancho:m.ancho,alto:m.altoA,aguas:m.aguasA,radio:m.radioA}),C=recorrido.total+r.holguraContorno;
  const atras=h.fruncir??r.fruncir;
  const body=[[-atras,-r.bastilla],[L+r.costura,-r.bastilla],[L+r.costura,C+r.bastilla],[-atras,C+r.bastilla]];
  const cuerpo={terminado:[[0,0],[L,0],[L,C],[0,C]],nombre:'Cuerpo',corte:poligono(body),contorno:body,ollaos:[...repartir([0,r.dentroOllao],[L,r.dentroOllao],h.pasoOllaos,r),...repartir([0,C-r.dentroOllao],[L,C-r.dentroOllao],h.pasoOllaos,r)],marcas:[linea([r.marcaAtras,0],[r.marcaAtras,r.largoMarca]),linea([r.marcaAtras,C-r.largoMarca],[r.marcaAtras,C]),linea([L,C/2],[L-r.largoMarca,C/2])]};
@@ -39,7 +39,7 @@ export function generarCal(h,r){
   const refuerzo=colocarRefuerzoMfd(a[0],b[0]);
   morro.marcas.push(...poligono(refuerzo));
   // La pieza suelta se orienta con su lado largo horizontal; la marca conserva su posición.
-  const pieza=REFUERZO_MFD_CAL.map(([x,y])=>[-x,y]);
+  const pieza=REFUERZO_MFD_CAL.map(([x,y])=>[x,y]);
   piezas.push({nombre:'Refuerzo MFD',corte:poligono(pieza),contorno:pieza,marcas:[],ollaos:[]});
  }
  let puerta=null;
@@ -55,5 +55,5 @@ export function generarCal(h,r){
   }
   puerta={lado:h.puerta,ancho:L/10,alto:d(q,b[j])/10,separacionBorde:sep/10};
  }
- return {ventana,puerta,hoja:h,medidas:m,largoHecho:m.largoCuerpo+modelo.proyeccion,proyeccion:modelo.proyeccion,piezas,perfilA:modelo.perfilA,perfilB:modelo.perfilB};
+ return {ventana,puerta,hoja:h,medidas:m,desarrolloCuerpo:{...recorrido,holgura:r.holguraContorno,bastillas:2*r.bastilla,corte:C+2*r.bastilla},largoHecho:m.largoCuerpo+modelo.proyeccion,proyeccion:modelo.proyeccion,piezas,perfilA:modelo.perfilA,perfilB:modelo.perfilB};
 }
