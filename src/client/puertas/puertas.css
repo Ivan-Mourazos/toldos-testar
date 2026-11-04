@@ -79,6 +79,7 @@
 .puerta-piezas td, .puerta-piezas th { padding:9px; border-bottom:1px solid var(--border); text-align:left; }
 .puerta-cutter { stroke:var(--tramo-holgado); stroke-width:1.2; fill:none; }
 .puerta-pano { fill:var(--surface); stroke:var(--text); stroke-width:0.8; }
+.puerta-franja-amarilla { fill:#c4bd00; stroke:none; }
 .puerta-referencia { fill:none; stroke:var(--tramo-holgado); stroke-width:0.6; }
 .puerta-eje { fill:none; stroke:var(--tramo-ajustado); stroke-width:0.6; stroke-dasharray:3 2; }
 .puerta-marca { fill:none; stroke:var(--tramo-ajustado); stroke-width:0.7; }

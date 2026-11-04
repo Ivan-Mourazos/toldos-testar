@@ -35,7 +35,8 @@ export interface ConfiguracionAraujo {
 }
 export interface Puerta {
   /** Santa Pau: los bordes visibles de mirilla van en ventanas; ejes de tubo en entradas. */
-  santapau?: { /** Conservado al leer borradores iniciales; la regla confirmada aplica siempre +5. */
+  santapau?: { /** Sin revisión, se conserva el corte anterior si el documento guardó +5. */
+    revision?: '4815' | '5363';
     aumentoBajo: number; altoFaldon: number; ladoCerrado: 'izquierda'|'derecha'|'sin confirmar'; refuerzos: boolean; anchoRefuerzo?: number };
   /** Opcionales: los documentos anteriores conservan su interpretación y sus bytes. */
   clientePuertas?: string;
@@ -106,6 +107,8 @@ export interface PiezaPuerta {
   contorno: Punto[];
   radio: number;
   marcas: Segmento[];
+    /** Señal circular de rotulador, sin agujero ni corte (Santa Pau). */
+    circulosMarca?: Array<{x:number;y:number;r:number}>;
   textos: Array<{x:number;y:number;valor:string}>;
   huecos: Hueco[];
   /** Cristales iguales: se dibujan una vez con «Xn» dentro, porque se cortan de restos. */

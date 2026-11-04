@@ -6,6 +6,8 @@ import { cortarSystemDock, medidaSystemDock } from './systemDock.ts';
 import { enderezarSaco, invertirPanoInclinado } from './saco.ts';
 import { centroLibre } from './unionesCorte.ts';
 import { piezaSinMargenes } from './escuadrado.ts';
+import { colocacionSantaPau } from './colocacionSantaPau.ts';
+import { rotulosSantaPau } from './rotulosSantaPau.ts';
 import { buscarColocacion, huecosLibres, PRESUPUESTO_TETRIS, type PresupuestoCorte, type RectanguloCorte } from '../domain/corteLona/colocacionTetris.ts';
 import type { CortePuertas, EntidadesPuertas, Hueco, PedidoPuertas, PiezaPuerta, Punto, VistaPuertas } from './tipos.ts';
 
@@ -239,6 +241,10 @@ function dibujarPieza(
   if (pieza.radio > 0) redondeado({ x: 0, y: 0, ancho: pieza.ancho, alto: pieza.alto, radio: pieza.radio }, false);
   else pieza.contorno.forEach((p, i) => linea('DISCO1', p, pieza.contorno[(i + 1) % pieza.contorno.length]));
   for (const [a, b, c, d] of pieza.marcas) linea('ROTULADOR', [a, b], [c, d]);
+  for(const c of pieza.circulosMarca??[]){
+    const [cx,cy]=transformar([c.x,c.y]);
+    entidades.circulos.push({capa:'ROTULADOR',x:cx,y:cy,r:mm(c.r)});
+  }
   for (const texto of pieza.textos) {
     const [tx, ty] = transformar([texto.x, texto.y]);
     entidades.textos.push({ capa: 'ROTULADOR', x: tx, y: ty, h: 32, giro: girada ? 90 : 0, valor: texto.valor, centrado: true });
@@ -252,7 +258,12 @@ function dibujarPieza(
       valor: `${letra}${u.numero}`, centrado: true, literal: true });
   }
   pieza.huecos.forEach(h => redondeado(h, true));
-  rotulosPieza(entidades, pieza, x, y, girada, codigoPano, columnas, reves);
+  if(pieza.id.includes(':santapau-')){
+    for(const t of rotulosSantaPau(pieza,codigoPano??'A')){
+      const [tx,ty]=transformar([t.x,t.y]);
+      entidades.textos.push({capa:'texto',valor:t.valor,x:tx,y:ty,h:mm(t.h),centrado:true,giro:girada?90:0});
+    }
+  }else rotulosPieza(entidades, pieza, x, y, girada, codigoPano, columnas, reves);
 }
 
 // `alLado`: la pieza va a la derecha de la anterior, en su misma fila, sin subir la columna.
@@ -357,6 +368,15 @@ function colocar(
     grupos.set(k, g);
   }
   return [...grupos.values()].map(grupoOriginal => {
+    const santa=colocacionSantaPau(grupoOriginal);
+    let corteSanta:CortePuertas|null=null;
+    if(santa){
+      const entidades=vacias(),rollo=mm(grupoOriginal[0].rollo);
+      for(const t of santa)dibujarPieza(entidades,t.pieza,t.x,t.y,t.girada,codigosPano.get(t.pieza.id));
+      entidades.textos.push({capa:'texto',valor:grupoOriginal[0].material,x:0,y:rollo+250,h:TITULO_MATERIAL_MM});
+      fusionarCortesPuertas(entidades,rollo);
+      corteSanta={material:grupoOriginal[0].material,anchoRollo:rollo,largo:Math.max(...santa.map(t=>t.x+mm(t.girada?t.pieza.alto:t.pieza.ancho))),opcion,entidades,colocadas:santa};
+    }
     // Los cristales iguales no se colocan uno a uno: se dibuja uno con cuántos son, porque se cortan de
     // restos (Iván, 21/10/2026; en los cortes hechos, «X2», «X3»… dentro de la pieza).
     const grupo: PiezaPuerta[] = [];
@@ -482,7 +502,9 @@ function colocar(
           ? 'SACO ENTERO · ALTERNATIVA'
           : 'SACO EN DOS';
     const enrollable = grupo.every(p => esEnrollable(p.id));
-    const rotuloMaterial = !enrollable && opcion === 'principal' ? grupo[0].material : `${grupo[0].material} · ${titulo}`;
+    const rotuloMaterial = grupo.every(p=>p.id.includes(':santapau-'))
+      ? grupo[0].clase==='saco'&&grupo[0].sacoDiagonalesAmarillas?'SACO 900 GR AMARILLO/NEGRO':grupo[0].material
+      : !enrollable && opcion === 'principal' ? grupo[0].material : `${grupo[0].material} · ${titulo}`;
     entidades.textos.push(
       // El título de cada material, grande y del mismo tamaño en la lona, el cristal y el saco (Iván, 26/10/2026).
       { capa: 'texto', x: 0, y: rollo + 250, h: TITULO_MATERIAL_MM, valor: rotuloMaterial },
@@ -491,9 +513,9 @@ function colocar(
     // Sacos y cristales, en todas las puertas, sin «REVÉS» y con el borde del orillo cortado (Iván, 26/10/2026: lo
     // corrigió a mano en AR2605035 y lo pidió también en las enrollables). En la lona de los paños, el REVÉS sigue y el
     // orillo no se corta.
-    if (enrollable && primerPano) entidades.textos.push({ capa: 'texto', x: 0, y: rollo + 110, h: 80, valor: 'REVÉS' });
+    if (enrollable && primerPano && !grupo.every(p=>p.id.includes(':santapau-'))) entidades.textos.push({ capa: 'texto', x: 0, y: rollo + 110, h: 80, valor: 'REVÉS' });
     fusionarCortesPuertas(entidades, primerPano ? rollo : undefined);
-    return { material: grupo[0].material, anchoRollo: rollo, largo, opcion, entidades, colocadas };
+    return corteSanta&&corteSanta.largo<=largo?corteSanta:{ material: grupo[0].material, anchoRollo: rollo, largo, opcion, entidades, colocadas };
   });
 }
 

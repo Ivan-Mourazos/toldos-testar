@@ -373,13 +373,14 @@ Respuestas de Iván. «Pendiente» quiere decir que la web todavía no lo aplica
 
 ## Puertas · Santa Pau · 04/11/2026
 
-**Las seis contestadas por Iván el 04/11/2026.** Criterio general: «no te fíes mucho de los pedidos antiguos porque se han hecho cambios; fíate de los últimos como el mío». Manda el **corte del4815**, suyo; los antiguos solo sirven de apoyo. [Tabla completa, piezas y comparación con Portanova](./puertas-santapau.md).
+**Q-SP01–06 contestadas por Iván el 04/11/2026; Q-SP07 pendiente.** Criterio general: «no te fíes mucho de los pedidos antiguos porque se han hecho cambios; fíate de los últimos como el mío». La referencia actual es el **5363 corregido por Iván**, recibido después del contraste del4815. El4815 conserva su corte anterior. [Tabla completa, piezas y comparación con Portanova](./puertas-santapau.md), [contraste por capas y revisión actual](./puertas-santapau-capas.md).
 
 | Código | Duda en lenguaje llano | Tratamiento mientras tanto |
 | --- | --- | --- |
-| Q-SP01 · Contestada | Aumento del paño inferior y E.T. | **Iván, 04/11:** «haz exactamente lo del CORTE del 4815», no la mayoría histórica ni el alzado. Bajo **+5 cm**: inferiores130, no127,5. E.T. **sueltas de9**. Propuesta +2,5 retirada, también al calcular los borradores iniciales |
+| Q-SP01 · Contestada | Aumento del paño inferior y E.T. | **Iván, 04/11, primera respuesta:** «haz exactamente lo del CORTE del 4815»: bajo **+5 cm**, inferiores130. **Revisión posterior:** manda el5363 corregido, bajo **+2,5 cm**, inferiores137,5. Se guarda la revisión por pedido; los documentos sin revisión con aumento5 conservan el4815. E.T. **sueltas de9** en ambos |
 | Q-SP02 · Contestada | Aumentos del cristal | **Iván, 04/11:** «como el 4815». Se mantiene cristal de lado a lado **F+2 por h+4**, sin trasladar los aumentos de pedidos antiguos |
 | Q-SP03 · Contestada | Corte y cantidad de refuerzos | **Iván, 04/11:** «SÍ se cortan: de ancho el que indica el pedido (8 en 4815/5363) y de alto como la E.T. (9 en este caso)». **Dos por E.T.**, misma lona/color; piezas reales en bot, plano y consumo. Con tres E.T.: seis de8×9 por puerta |
 | Q-SP04 · Contestada | Logos | **Iván, 04/11:** «los logos no los marcamos nosotros». Se retiran campo, aviso, nota y marca de logo de la pantalla, plano y corte |
 | Q-SP05 · Contestada | Rollos | **Iván, 04/11:** «iguales al resto, 300/140/300 por defecto sin aviso de provisional». Valores iniciales confirmados y editables |
 | Q-SP06 · Contestada | Lado cerrado | **Iván, 04/11:** «mejor elegir». Elección obligatoria por pedido, mirando por el revés; sin elegir no se genera el bot |
+| Q-SP07 · Pendiente | El alzado B del5363 corregido pone X2, pero la hoja y RPS indican una puerta de216×340, OF0233645. ¿Es un rótulo copiado? | Se genera **B×1**, tanto en bot como en plano y consumo; A×2, OF0233644. No se duplica la B por ese rótulo |

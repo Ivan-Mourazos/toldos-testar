@@ -53,7 +53,7 @@ export function escribirDxfPlano(plano, cabecera) {
       .replace(/(\n140\n)[^\n]+/, `$1${e.texto}`).replace(/(\n 41\n)[^\n]+/, `$1${e.flecha}`), 1);
   }
 
-  const capasNuevas = CAPAS_BOT.filter((c) => !new RegExp(`\\n  2\\n${c.nombre}\\n`).test(src));
+  const capasNuevas = [...CAPAS_BOT, ...(plano.capas ?? [])].filter((c) => !new RegExp(`\\n  2\\n${c.nombre}\\n`).test(src));
   const registros = capasNuevas.map((c) => `  0\nLAYER\n  5\n${nuevo()}\n330\n2\n100\nAcDbSymbolTableRecord\n100\nAcDbLayerTableRecord\n  2\n${c.nombre}\n 70\n     0\n 62\n${String(c.color).padStart(6)}\n  6\nContinuous\n${c.imprimir === false ? '290\n     0\n' : ''}370\n    -3\n390\nF\n`).join('');
   if (registros) src = insertarEnTabla(src, 'LAYER', registros, capasNuevas.length);
 
@@ -308,7 +308,8 @@ export function escribirDxfPlano(plano, cabecera) {
     modelo += ent('INSERT', b.capa, 'AcDbBlockReference', `  2\n${b.nombre}\n 10\n${n(b.x)}\n 20\n${n(b.y)}\n 30\n0.0\n 41\n${n(b.sx ?? 1)}\n 42\n1.0\n 43\n1.0\n 50\n${n(b.giro ?? 0)}\n`);
   }
   for (const s of [...(plano.sombreados ?? []), ...(corte.sombreados ?? [])]) {
-    modelo += ent('HATCH', s.capa, 'AcDbHatch', sombreadoDxf(s, n));
+    const entidad = ent('HATCH', s.capa, 'AcDbHatch', sombreadoDxf(s, n));
+    modelo += s.color == null ? entidad : entidad.replace('100\nAcDbHatch', ` 62\n${s.color}\n100\nAcDbHatch`);
   }
   // Remolques: arcos (esquinas redondeadas, en grados y antihorario) y círculos (ollaos).
   for (const a of [...(plano.arcos ?? []), ...(corte.arcos ?? [])]) {
@@ -469,10 +470,10 @@ function cotaDxf(c, numero, nuevo, ent) {
 // Contorno de polilínea independiente, sin referencias a handles de otra copia del DWG.
 // El patrón ANGLE y su paso son los del velcro de la plantilla de puertas de la oficina.
 function sombreadoDxf(s, n) {
-  const patron = s.solido ? '' : ' 52\n0.0\n 41\n0.001\n 77\n     0\n 78\n     2\n'
+  const patron = s.solido ? '' : s.patron === 'ANSI31' ? ' 52\n0.0\n 41\n0.005\n 77\n     0\n 78\n     1\n 53\n45.0\n 43\n0.0\n 44\n0.0\n 45\n-0.0112253201513364\n 46\n0.0112253201513364\n 79\n     0\n' : ' 52\n0.0\n 41\n0.001\n 77\n     0\n 78\n     2\n'
     + ' 53\n0.0\n 43\n0.0\n 44\n0.0\n 45\n0.0\n 46\n0.006985\n 79\n     2\n 49\n0.00508\n 49\n-0.001905\n'
     + ' 53\n90.0\n 43\n0.0\n 44\n0.0\n 45\n-0.006985\n 46\n0.0\n 79\n     2\n 49\n0.00508\n 49\n-0.001905\n';
-  return ` 10\n0.0\n 20\n0.0\n 30\n0.0\n210\n0.0\n220\n0.0\n230\n1.0\n  2\n${s.solido ? 'SOLID' : 'ANGLE'}\n 70\n${s.solido ? '     1' : '     0'}\n 71\n     0\n 91\n     1\n 92\n     2\n 72\n     0\n 73\n     1\n 93\n${s.puntos.length}\n${s.puntos.map(([x, y]) => ` 10\n${n(x)}\n 20\n${n(y)}\n`).join('')} 97\n     0\n 75\n     0\n 76\n     1\n${patron} 98\n     0\n`;
+  return ` 10\n0.0\n 20\n0.0\n 30\n0.0\n210\n0.0\n220\n0.0\n230\n1.0\n  2\n${s.solido ? 'SOLID' : s.patron ?? 'ANGLE'}\n 70\n${s.solido ? '     1' : '     0'}\n 71\n     0\n 91\n     1\n 92\n     2\n 72\n     0\n 73\n     1\n 93\n${s.puntos.length}\n${s.puntos.map(([x, y]) => ` 10\n${n(x)}\n 20\n${n(y)}\n`).join('')} 97\n     0\n 75\n     0\n 76\n     1\n${patron} 98\n     0\n`;
 }
 
 // Cambia el primer valor de un código de grupo dentro de una entidad.

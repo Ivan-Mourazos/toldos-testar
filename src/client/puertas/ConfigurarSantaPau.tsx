@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { calcularPuerta } from '../../puertas/calcular.ts';
-import { REGLAS_SANTA_PAU } from '../../puertas/santapau.ts';
+import { aumentoSantaPau, REGLAS_SANTA_PAU, revisionSantaPau } from '../../puertas/santapau.ts';
 import type { Puerta } from '../../puertas/tipos.ts';
 import { SelectField } from '../components/SelectField';
 import { InputDecimal } from '../remolques/InputDecimal';
@@ -52,7 +52,8 @@ export function ConfigurarSantaPau({p,cambiar,corte,derecha,letra}:{p:Puerta;cam
       <Numero titulo="Alto de corte del faldón (cm)" valor={s.altoFaldon} cambiar={altoFaldon=>remate({altoFaldon})}/>
       <SelectField label="Lado cerrado de las E.T. por el revés" value={s.ladoCerrado} options={['sin confirmar','izquierda','derecha']} optionLabel={v=>v==='sin confirmar'?'Sin confirmar':v==='derecha'?'Derecha':'Izquierda'} onChange={ladoCerrado=>remate({ladoCerrado:ladoCerrado as typeof s.ladoCerrado})}/>
      </div>
-     <p className="puerta-ayuda">Bajo del paño: +5 cm, como el corte del 4815.</p>
+      <SelectField label="Confección del bajo" value={revisionSantaPau(s)} options={['5363','4815']} optionLabel={v=>v==='5363'?'Actual · bajo +2,5 cm':'Anterior · bajo +5 cm'} onChange={v=>remate({revision:v as '4815'|'5363',aumentoBajo:v==='4815'?5:2.5})}/>
+      <p className="puerta-ayuda">Bajo del paño: +{num(aumentoSantaPau(s))} cm. Comprueba la confección del pedido.</p>
      <label className="puerta-casilla"><input type="checkbox" checked={s.refuerzos} onChange={e=>remate({refuerzos:e.target.checked})}/>Refuerzos en ambos extremos de todas las E.T.</label>
      {s.refuerzos&&<Numero titulo="Ancho de corte del refuerzo (cm)" valor={s.anchoRefuerzo??REGLAS_SANTA_PAU.anchoRefuerzo} cambiar={anchoRefuerzo=>remate({anchoRefuerzo})}/>}
      <label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.sacoDiagonalesAmarillas)} onChange={e=>patch({sacoDiagonalesAmarillas:e.target.checked})}/>Franja negra/amarilla en el faldón (impresión digital)</label>

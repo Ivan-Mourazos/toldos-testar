@@ -2,7 +2,7 @@
 
 Estudio del 04/11/2026. Cliente: DISTRIBUCIONS INDUSTRIALS SANTA PAU, S.L. La pantalla dice Santa Pau; plano y cajetín, SANTA PAU. Hoja en mm, configurador en cm y bot en mm.
 
-**Reglas confirmadas por Iván, 04/11/2026:** «no te fíes mucho de los pedidos antiguos porque se han hecho cambios; fíate de los últimos como el mío». Manda el **CORTE del4815**, suyo, por encima de su alzado y de la mayoría histórica. Las seis preguntas Q-SP están contestadas: bajo +5, E.T. sueltas de9, cristal del4815, refuerzos que se cortan, sin intervención en logos, rollos300/140/300 y lado cerrado a elegir.
+**Referencia actual, 04/11/2026: AR2605363 corregido por Iván.** Sustituye al4815 como criterio actual por su indicación posterior: bajo **+2,5**, inferiores137,5, tubo central121 y flecha superior en la marca de E.T. El4815 conserva su corte anterior con bajo+5 e inferiores130. Se guarda la revisión por pedido. Se mantienen las respuestas Q-SP02–06: cristal, E.T. sueltas de9, refuerzos que se cortan, sin intervención en logos, rollos300/140/300 y lado cerrado a elegir. [Contraste completo por capas, corte y presentaciones](./puertas-santapau-capas.md). La única duda pendiente es Q-SP07, el X2 del alzado B frente a su cantidad1 en hoja/RPS.
 
 ## Fuentes y alcance
 
@@ -10,7 +10,7 @@ Se han convertido las copias de **14 DWG fabricados de 2023–2026** y la planti
 
 `tmp/santapau/medidas.mjs` conserva cotas con sus puntos de extensión y aristas; `rectangulos.mjs` mide las separaciones del anidado. Sus JSON permiten repetir las mediciones sin red. Los PNG `*-oficina.png` son recortes del modelo, no del papel. La consulta SELECT del cliente devuelve **76 líneas PUERTA**, con los pedidos y OF; sus textos están en `rps-4815.txt` y `rps-5363.txt`. No se modifica RPS ni la red.
 
-**AR2605363 solo aporta hoja y RPS. No tiene plano de oficina y no es evidencia de confección.** Se genera con las reglas estudiadas, sin utilizar ningún CAD del pedido en curso.
+Después del primer estudio se recibió **AR2605363.dwg corregido por Iván**. Su copia local, convertida con ODA, es la referencia principal del contraste de confección. Hoja y RPS siguen determinando las OF, materiales y cantidades. No se modifica el original.
 
 ## Medición del bajo y las entradas
 
@@ -34,7 +34,7 @@ El aumento se mide desde la referencia de bajo terminado, extremo de la cota H, 
 | AR2301689 A/B/C | 5 / 5 / 5 | Inferiores 150, borde 145; tiras independientes de 9. Faldón antiguo 30 |
 | AR2300417 A/B | 16 / 16 | Inferiores 151 / 146; bordes 135 / 130. Tiras de 9; revisiones antiguas del remate |
 
-El estudio inicial contó11 de19 alzados con +2,5, pero **Iván descartó esa mayoría como regla vigente**. Se aplica **+5 del corte del4815**, también al calcular borradores anteriores que guardasen2,5. La tabla conserva el contraste histórico como apoyo. Las E.T. se cortan sueltas de9, sin incorporar ninguna ni proponer empates de Portanova. Si un paño no cabe, requiere estudio del técnico.
+El estudio inicial contó11 de19 alzados con+2,5, pero **Iván descartó usar la mayoría histórica como regla**. Primero indicó el corte4815 (+5) y después el5363 corregido (+2,5). La revisión5363 es la inicial para nuevos pedidos; la4815 permanece disponible y los documentos sin revisión que guardaron5 conservan su corte. La tabla conserva el contraste histórico como apoyo. Las E.T. se cortan sueltas de9, sin incorporar ninguna ni proponer empates de Portanova. Si un paño no cabe, requiere estudio del técnico.
 
 ## Piezas y confección implementable
 
@@ -43,7 +43,7 @@ F = frente; H = alto; V = bajo visible de mirilla desde el bajo terminado; h = a
 | Pieza | Corte en cm |
 | --- | --- |
 | Paño superior | F × (H − V − h + 4) |
-| Paño inferior | F × (V + 5), como el corte del4815; no editable por mayoría histórica |
+| Paño inferior | F × (V + 2,5), revisión actual5363; F × (V + 5) en la revisión anterior4815 |
 | Cristal con mirilla de lado a lado | (F + 2) × (h + 4), según 4815: 283,5 / 165,5 × 64 |
 | Cristal con márgenes | (F − 2m + 4) × (h + 4), como 5055: 224,5 × 54 para F260,5, m20 y h50 |
 | Cachos laterales si m > 0 | Dos de (m + 1) × (h + 4), como 5055: 21 × 54 |
@@ -53,9 +53,9 @@ F = frente; H = alto; V = bajo visible de mirilla desde el bajo terminado; h = a
 
 Cabecera: +4 y marca a 7 del corte superior; se rotula **MACARRÓN (5,5 MM)**, como los fabricados. Las E.T. llevan marca en el paño a eje −4,5; encima de la mirilla el 4815 la lleva al lado opuesto, eje +4,5. Se identifica ese caso por quedar por encima de la mirilla. No se intercambian cotas de mirilla por ejes de tubo.
 
-En el bajo mandan las marcas del **corte** del4815:15 y20 desde el borde cortado del paño inferior (10 y15 sobre el bajo terminado con aumento5), no las del alzado antiguo. Las marcas de E.T. del inferior quedan a59,5 y121,5 desde ese borde. En el faldón se conserva la marca a5 del corte. Notas: velcro suave de5 al revés; bravo de5 al revés del faldón, soldar2. No se genera una pestaña de saco Portanova ni su saco útil de120.
+En el bajo mandan las marcas del **corte**:15 y20 desde el borde cortado del paño inferior, en ambas revisiones. Las marcas de E.T. del inferior quedan a57 y119 desde ese borde en5363, y59,5 y121,5 en4815. Se conservan tres flechas y una señal circular por puerta. La flecha superior del5363 va hacia abajo en la E.T.; la del corte4815 está en la cabecera. El faldón lleva su velcro en el alzado, sin raya en su corte. Notas: velcro suave de5 al revés; bravo de5 al revés del faldón, soldar2. No se genera una pestaña de saco Portanova ni su saco útil de120.
 
-**E.T. cerradas:** 4815 pide tubos planos 30×10 y un lado cerrado de lona; el plano indica pisar 1 cm ese lado. El 5363 precisa derecho cerrado e izquierdo preparado para cerrar después de introducir el tubo. El lado se exige al técnico; no se deduce para todos los pedidos. El cierre se marca en la tira, sin recortar una abertura.
+**E.T. cerradas:** 4815 pide tubos planos30×10 y un lado cerrado de lona; el plano indica pisar1 cm ese lado. El5363 precisa derecho cerrado e izquierdo preparado para cerrar después de introducir el tubo. El lado se exige al técnico; no se deduce para todos los pedidos. El cierre se indica en el alzado: las tiras de corte no llevan raya de cierre ni abertura.
 
 **Refuerzos:** Iván confirma que **sí se cortan**, del ancho indicado en el pedido y del mismo alto que la E.T. En4815/5363 son8×9, misma lona/color del cuerpo, dos por E.T. Se dibujan en el alzado y se añaden como piezas reales de clase `refuerzo` al anidado, al DXF del bot y al consumo:12 en4815 (dos puertas),18 en5363 (tres puertas). El ancho es editable; el alto procede de la entrada. Un ancho inválido impide generar.
 
@@ -63,12 +63,12 @@ En el bajo mandan las marcas del **corte** del4815:15 y20 desde el borde cortado
 
 ## Comparación con Portanova
 
-No sirve reutilizar su confección enrollable: Portanova une ventanales entre ejes, corta E.T. de8, usa cabecera +3,5 y saco con pestaña (con saco útil de120,30 de corte y6,5 de pestaña). Santa Pau trabaja con bordes visibles de mirilla, +4 arriba, **+5 abajo**, E.T. de9, refuerzos de corte y faldón independiente de35. Se reutilizan únicamente ficha, sobre de pedido, anidado, capas de corte y escritor CAD común. Las huellas de Portanova y los casos Araujo deben seguir pasando.
+No sirve reutilizar su confección enrollable: Portanova une ventanales entre ejes, corta E.T. de8, usa cabecera+3,5 y saco con pestaña (con saco útil de120,30 de corte y6,5 de pestaña). Santa Pau trabaja con bordes visibles de mirilla, +4 arriba, **+2,5 abajo en5363 (+5 en4815)**, E.T. de9, refuerzos de corte y faldón independiente de35. Se reutilizan ficha, sobre de pedido, anidado, capas de corte y escritor CAD común. Las huellas de Portanova y los casos Araujo deben seguir pasando.
 
 ## Casos a generar
 
 - 4815:281,5×400 (OF0232635) y163,5×350 (OF0232636); mirilla de lado a lado, V125,h60; tubos59/121/210; blanca900, diagonales y seis refuerzos de8×9 por puerta. Inferiores130 como el corte de oficina; superiores219 /169.
-- 5363, solo hoja/RPS:dos197×340 (OF0233644) y una216×340 (OF0233645); roja3002 M2; V135,h60; tubos59/120/210; derecho cerrado, diagonales y seis refuerzos de8×9 por puerta. Inferiores140; superiores149. Se aplican las reglas confirmadas del4815 sin usar CAD del pedido en curso.
+- 5363 corregido:dos197×340 (OF0233644) y una216×340 (OF0233645); roja3002 M2; V135,h60; tubos59/121/210; derecho cerrado, diagonales y seis refuerzos de8×9 por puerta. **Inferiores137,5; superiores149**. Se conserva la colocación de oficina de664 cm, con18 refuerzos. Dos presentaciones, cada una con su OF y alzado ampliado.
 
 Rollos **300/140/300** confirmados por Iván, «iguales al resto», editables y **sin aviso de provisional**. No se reservan materiales en RPS.
 
@@ -80,7 +80,7 @@ Pruebas primero: los casos de Santa Pau fallaron usando el cálculo anterior y p
 
 Se han revisado las ocho capturas de Mirilla y tubos / Confección, claro y oscuro, a1280×720 y1600×1000, en `tmp/ui-audit/puertas-santapau/`, además de la carga real de RPS. Sin errores de JavaScript ni desbordamiento horizontal. La vista se identifica por el revés y muestra el margen cero expresamente.
 
-`tmp/santapau/salida/` contiene, para **AR2604815 y AR2605363**, DWG2018 (cabecera AC1032 comprobada), DXF del bot, DXF del plano, PNG del papel, pedido JSON y contraste con medidas y consumo. Las letras, cantidades y OF corresponden a cada puerta. El4815 aplica inferiores130 y añade los12 refuerzos; el5363 aplica inferiores140 y18 refuerzos. El estudio y la procedencia de las reglas quedan fuera del plano de taller.
+`tmp/santapau/salida/` contiene, para **AR2604815 y AR2605363**, DWG2018 (cabecera AC1032 comprobada), DXF del bot, DXF del plano, PNG de las dos presentaciones, pedido JSON y contraste con medidas y consumo. Las letras, cantidades y OF corresponden a cada puerta. El4815 aplica inferiores130 y12 refuerzos; el5363 corregido aplica inferiores137,5 y18 refuerzos. El estudio y la procedencia de las reglas quedan fuera del plano de taller.
 
 Las seis **Q-SP01–Q-SP06 están contestadas** en `dudas-abiertas.md`, con las frases de Iván del04/11. Se retiran los avisos provisionales, las dudas de refuerzo y el aviso de logo; se mantiene la elección obligatoria del lado cerrado.
 

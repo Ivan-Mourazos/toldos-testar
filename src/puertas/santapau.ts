@@ -2,12 +2,14 @@ import type { AvisoPuerta, PiezaPuerta, Puerta, ResultadoPuerta } from './tipos.
 
 const n=(x:number)=>Math.round(x*10000)/10000;
 const positivo=(x:number)=>Number.isFinite(x)&&x>0&&x<=3000;
-/** Iván, 04/11/2026: manda el corte del 4815, también para los borradores iniciales. */
-export const REGLAS_SANTA_PAU={aumentoBajo:5,anchoRefuerzo:8,altoEntrada:9} as const;
+/** Iván, 04/11/2026: el 5363 corregido es la referencia actual; el 4815 se conserva. */
+export const REGLAS_SANTA_PAU={aumentoBajo:2.5,anchoRefuerzo:8,altoEntrada:9} as const;
+export const revisionSantaPau=(s:NonNullable<Puerta['santapau']>)=>s.revision??(s.aumentoBajo===5?'4815':'5363');
+export const aumentoSantaPau=(s:NonNullable<Puerta['santapau']>)=>revisionSantaPau(s)==='4815'?5:2.5;
 /** Bordes visibles de la mirilla, independientes de los ejes de los tubos (expediente Santa Pau). */
 export function medidasSantaPau(p:Puerta){
  const v=p.ventanas[0];
- return {v,superior:v?p.alto-v.y-v.alto+4:0,inferior:v?v.y+REGLAS_SANTA_PAU.aumentoBajo:0};
+ return {v,superior:v?p.alto-v.y-v.alto+4:0,inferior:v?v.y+aumentoSantaPau(p.santapau!):0};
 }
 export function calcularSantaPau(p:Puerta):ResultadoPuerta{
  const piezas:PiezaPuerta[]=[],avisos:AvisoPuerta[]=[];
@@ -24,7 +26,7 @@ export function calcularSantaPau(p:Puerta):ResultadoPuerta{
  if(!s||!positivo(s.altoFaldon)){
   aviso('REMATES','Revisa el alto de corte del faldón.');return r;
  }
- const aumentoBajo=REGLAS_SANTA_PAU.aumentoBajo,anchoRefuerzo=s.anchoRefuerzo??REGLAS_SANTA_PAU.anchoRefuerzo;
+ const aumentoBajo=aumentoSantaPau(s),anchoRefuerzo=s.anchoRefuerzo??REGLAS_SANTA_PAU.anchoRefuerzo;
  const refuerzoValido=positivo(anchoRefuerzo)&&p.entradas.every(e=>2*anchoRefuerzo<=e.largo);
  if(s.refuerzos&&!refuerzoValido)aviso('REFUERZO_MEDIDAS','Indica el ancho de refuerzo del pedido; los dos extremos deben caber en cada E.T.');
  if(!['izquierda','derecha'].includes(s.ladoCerrado))aviso('CIERRE_ET','Indica qué lado de las E.T. va cerrado, mirando por el revés.');
@@ -46,9 +48,18 @@ export function calcularSantaPau(p:Puerta):ResultadoPuerta{
  const m=p.margenMarcas;
  if(!Number.isFinite(m)||m<0||m*2>=p.frente)aviso('MARGEN','Revisa el margen de las marcas al borde.');
  const marcar=(x:PiezaPuerta,y:number)=>{if(y>=0&&y<=x.alto)x.marcas.push([m,n(y),n(x.ancho-m),n(y)]);};
+ const flecha=(pano:PiezaPuerta,y:number,sentido=1)=>{
+  const x=pano.ancho/2,base=n(y+sentido),punta=n(y+sentido*2.53205);
+  pano.marcas.push([x,y,x,base],[n(x-.8),base,n(x+.8),base],[n(x-.8),base,x,punta],[x,punta,n(x+.8),base]);
+ };
  marcar(arriba,superior-7);
+ // En su CORTE la flecha superior está en la marca a7 del corte de arriba.
+ // El alzado de oficina la tiene en la E.T.; se conservan ambos dibujos tal cual.
+ if(revisionSantaPau(s)==='4815')flecha(arriba,superior-7);
  // Corte del 4815: velcros a15 y20 del borde cortado, sin trasladar las cotas del alzado antiguo.
  marcar(abajo,15);marcar(abajo,20);
+ abajo.marcas.push([p.frente/2,20,p.frente/2,16.74],[n(p.frente/2-.73),17.47,p.frente/2,16.74],[p.frente/2,16.74,n(p.frente/2+.73),17.47]);
+ abajo.circulosMarca=[{x:p.frente/2,y:17.47,r:.73}];
  if(!p.entradas.length)aviso('ENTRADAS','Transcribe los ejes de tubo de la hoja, desde el bajo terminado.');
  for(const [i,e]of p.entradas.entries()){
   if(!positivo(e.altura)||e.altura>=p.alto-7||!positivo(e.largo)||e.largo>p.frente+.01||e.alto!==9||e.huecos.length||p.entradas.slice(0,i).some(t=>Math.abs(t.altura-e.altura)<9)){
@@ -58,19 +69,17 @@ export function calcularSantaPau(p:Puerta):ResultadoPuerta{
   if(e.altura+4.5>v.y+.5&&e.altura-4.5<v.y+v.alto-.5){aviso('ENTRADA',`E.T. ${i+1}: invade la mirilla. Revisa sus cotas.`);continue;}
   const superior=e.altura>v.y+v.alto;
   const pano=superior?arriba:abajo;
-  marcar(pano,e.altura+(superior?4.5:-4.5)-(pano.origenAlzado?.[1]??0));
+  const marca=n(e.altura+(superior?4.5:-4.5)-(pano.origenAlzado?.[1]??0));
+  marcar(pano,marca);if(!superior||revisionSantaPau(s)==='5363')flecha(pano,marca,superior?-1:1);
   const et=pieza(`Entrada de tubo ${i+1}`,'entrada',e.largo,9);
   et.origenAlzado=[0,e.altura-4.5];
-  if(s.ladoCerrado!=='sin confirmar'){
-   const x=s.ladoCerrado==='derecha'?e.largo-1:1;
-   et.marcas.push([x,1,x,8]);
-  }
+  // El cierre se indica en el alzado. Las E.T. sueltas del corte4815 no llevan esa raya.
   if(s.refuerzos&&refuerzoValido)pieza(`Refuerzos de E.T. ${i+1}`,'refuerzo',anchoRefuerzo,e.alto,2);
  }
  pieza('Cristal de mirilla','cristal',v.x===0?p.frente+2:v.ancho+4,v.alto+4,1,p.materialCristal,p.rolloCristal);
  if(v.x>0)pieza('Cachos laterales','cacho',v.x+1,v.alto+4,2);
  const faldon=pieza('Faldón','saco',p.frente,s.altoFaldon,1,p.materialSaco,p.rolloSaco);
- marcar(faldon,5);
+ // El velcro del faldón se representa en el alzado, sin marca en su corte4815.
  if(p.sacoDiagonalesAmarillas)faldon.sacoDiagonalesAmarillas=true;
  if(p.notaPlano?.trim())aviso('NOTA_REVISION',p.notaPlano.trim(),'aviso');
  return r;

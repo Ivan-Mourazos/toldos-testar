@@ -1,63 +1,31 @@
 import type { FormaAlzado, GeometriaAlzado } from './alzado.ts';
-import type { Puerta, ResultadoPuerta } from './tipos.ts';
-import { REGLAS_SANTA_PAU } from './santapau.ts';
+import { detalleSantaPau, dibujoSantaPau } from './dibujoSantaPau.ts';
+import { sumarLienzo } from './lienzo.ts';
+import type { Puerta, Punto, ResultadoPuerta } from './tipos.ts';
+import { anchoArial } from '../domain/corteLona/texto.js';
 
-/** Las referencias terminadas y las piezas de corte comparten las mismas coordenadas. */
+/** Vista previa del mismo lienzo CAD. Solo el SVG aproxima los arcos por segmentos. */
 export function alzadoSantaPau(p:Puerta,r:ResultadoPuerta,letra:string):GeometriaAlzado{
- const F=p.frente||300,H=p.alto||400,s=p.santapau!,v=p.ventanas[0];
- const formas:FormaAlzado[]=[];
- const rect=(clase:string,x:number,y:number,ancho:number,alto:number)=>formas.push({tipo:'rect',clase,x,y,ancho,alto});
- const linea=(clase:string,x1:number,y1:number,x2:number,y2:number)=>formas.push({tipo:'linea',clase,x1,y1,x2,y2});
- const texto=(valor:string,x:number,y:number,tamano=6,giro=0)=>formas.push({tipo:'texto',x,y,tamano,lineas:[valor],ancla:'middle',...(giro?{giro}:{})});
- const cota=(x1:number,y1:number,x2:number,y2:number,linea:number)=>formas.push({tipo:'cota',x1,y1,x2,y2,linea,valor:Math.hypot(x2-x1,y2-y1),marcas:2,texto:{x:x1===x2?linea-3:(x1+x2)/2,y:x1===x2?(y1+y2)/2:linea-3,ancla:'middle',...(x1===x2?{giro:-90}:{})}});
- const panos=r.piezas.filter(x=>x.clase==='pano');
- for(const [i,pano]of panos.entries()){
-  const origen=pano.origenAlzado?.[1]??0;
-  rect('puerta-pano',0,H-origen-pano.alto,F,pano.alto);
-  for(const [x1,y1,x2,y2]of pano.marcas)linea('puerta-marca',x1,H-origen-y1,x2,H-origen-y2);
-  const desde=H-origen-pano.alto,hasta=H-origen;
-  const obstaculos=[...p.entradas.map(e=>H-e.altura),H-10,H-15].filter(y=>y>desde&&y<hasta).sort((a,b)=>a-b);
-  const puntos=[desde,...obstaculos,hasta];
-  const libre=puntos.slice(1).map((y,i)=>[puntos[i]+9,y-9]).reduce((a,b)=>b[1]-b[0]>a[1]-a[0]?b:a);
-  const centro=(libre[0]+libre[1])/2;
-  texto(`${letra}${i+1}`,F/2,centro,12);
-  if(i===0){texto(`REVÉS · ${p.of||'SIN OF'}${p.cantidad>1?' · X'+p.cantidad:''}`,F/2,centro+18,8);}
+ const F=p.frente||300,H=p.alto||400,cad=dibujoSantaPau(p,r,letra),formas:FormaAlzado[]=[];
+ sumarLienzo(cad,detalleSantaPau(p.santapau!.altoFaldon),F+105,-H+110);
+ const clase=(c:string)=>c==='marca'?'puerta-marca':c==='corte (vent)'?'puerta-cristal':['referencias','referencia-1','ejes','borrar'].includes(c)?'puerta-referencia':'puerta-pano';
+ const puntos=(ps:Punto[]):Punto[]=>ps.map(([x,y])=>[x,-y]);
+ for(const t of cad.polilineas)formas.push({tipo:'polilinea',clase:clase(t.capa),puntos:puntos([...t.puntos,...t.cerrada?[t.puntos[0]]:[]])});
+ for(const t of cad.lineas)formas.push({tipo:'linea',clase:clase(t.capa),x1:t.x1,y1:-t.y1,x2:t.x2,y2:-t.y2,...(['ejes','borrar'].includes(t.capa)?{trazos:'3 2'}:{})});
+ for(const t of cad.textos){
+  const lineas=[''];for(const palabra of t.valor.split(' ')){const i=lineas.length-1,nueva=`${lineas[i]}${lineas[i]?' ':''}${palabra}`;if(t.ancho&&lineas[i]&&anchoArial(nueva,t.h)>t.ancho)lineas.push(palabra);else lineas[i]=nueva;}
+  formas.push({tipo:'texto',x:t.x,y:-t.y,tamano:t.h,lineas,ancla:[3,6,9].includes(t.ancla??5)?'end':[1,4,7].includes(t.ancla??5)?'start':'middle',giro:-(t.giro??0),...(lineas.length>1?{taller:{guia:null}}:{})});
  }
- linea('puerta-referencia',0,0,F,0);linea('puerta-referencia',0,H,F,H);
- texto('MACARRÓN (5,5 MM)',F/2,-16,7);
- texto('AL CORTE',-4,Math.min(70,H/4),4,-90);
- texto('AL CORTE',F+4,Math.min(70,H/4),4,-90);
- if(v){
-  rect('puerta-cristal',v.x,H-v.y-v.alto,v.ancho,v.alto);
-  texto(v.x>0?'VENTANA':letra,F/2,H-v.y-v.alto/2,7);
-  cota(F,H,F,H-v.y,F+15);cota(F,H,F,H-v.y-v.alto,F+30);
-  if(v.x>0){cota(0,H-v.y-v.alto/2,v.x,H-v.y-v.alto/2,H-v.y-v.alto-10);}
+ for(const t of cad.cotas){const vertical=t.giro===90;formas.push({tipo:'cota',x1:t.x1,y1:-t.y1,x2:t.x2,y2:-t.y2,linea:vertical?t.d:-t.d,valor:t.valor,rotulo:t.rotulo,marcas:2,estilo:t.estilo as 'XERAL',texto:{x:t.posicionTexto?.[0]??(vertical?t.d-3:(t.x1+t.x2)/2),y:t.posicionTexto?-t.posicionTexto[1]:vertical?-(t.y1+t.y2)/2:-t.d-3,ancla:'middle',...(vertical?{giro:-90}:{})}});}
+ for(const b of cad.inserciones){const sy=b.giro===180?-1:1;formas.push({tipo:'polilinea',clase:'puerta-marca',puntos:[[0,0],[0,1],[.8,1],[0,2.53205],[-.8,1],[0,1]].map(([x,y]):Punto=>[b.x+x,-b.y+y*sy])});}
+ for(const a of [...cad.arcos,...cad.circulos.map(c=>({...c,desde:0,hasta:360}))]){
+  const hasta=a.hasta<a.desde?a.hasta+360:a.hasta;
+  formas.push({tipo:'polilinea',clase:a.capa==='marca'?'puerta-marca':'puerta-referencia',puntos:Array.from({length:33},(_,i):Punto=>{const r=(a.desde+(hasta-a.desde)*i/32)*Math.PI/180;return[a.x+a.r*Math.cos(r),-a.y-a.r*Math.sin(r)];})});
  }
- for(const [i,e]of p.entradas.entries()){
-  rect('puerta-referencia',0,H-e.altura-4.5,e.largo,9);
-  cota(0,H,0,H-e.altura,-18-i*14);
-  texto('5 CM (HUECOS)',e.largo*.7,H-e.altura-10,3);
-  if(s.refuerzos){
-   const ancho=s.anchoRefuerzo??REGLAS_SANTA_PAU.anchoRefuerzo;
-   rect('puerta-referencia',0,H-e.altura-4.5,ancho,e.alto);rect('puerta-referencia',e.largo-ancho,H-e.altura-4.5,ancho,e.alto);
-   for(const x of [0,e.largo]){
-    const sentido=x===0?1:-1;
-    texto('REFUERZO EN E.T.',x+sentido*35,H-e.altura+14,3);
-    linea('puerta-referencia',x+sentido*4,H-e.altura+4.5,x+sentido*18,H-e.altura+10);
-   }
-  }
+ for(const t of cad.sombreados){
+  if(t.solido){formas.push({tipo:'poligono',clase:'puerta-franja-amarilla',puntos:puntos(t.puntos)});continue;}
+  const xs=t.puntos.map(a=>a[0]),ys=t.puntos.map(a=>-a[1]),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  for(let x=x0-(y1-y0);x<x1;x+=1.5875){const a=Math.max(x0,x),b=Math.min(x1,x+y1-y0);formas.push({tipo:'linea',clase:'puerta-referencia',x1:a,y1:y1-(a-x),x2:b,y2:y1-(b-x)});}
  }
- // Rótulos junto al remate, como los fabricados; las notas de revisión se quedan en pantalla.
- if(s.ladoCerrado!=='sin confirmar')texto('DE ESTE LADO PISAR LAS E.T. 1 CM',s.ladoCerrado==='derecha'?F+68:-68,H-95,4,-90);
- texto('VELCRO(5) SUAVE SOLDADO REVÉS',F*.65,H-20,3.5);
- texto('E.T. SOLDADA 2 CM (5,5 CM HUECOS)',F*.65,H+6,3.5);
- texto('SOLDAR POR EL DERECHO A LA MISMA ALTURA QUE LA PARTE DE ARRIBA EL VELCRO',F/2,H+21,3);
- const faldonY=H+35;
- rect('puerta-pano',0,faldonY,F,s.altoFaldon);
- linea('puerta-marca',0,faldonY+s.altoFaldon-5,F,faldonY+s.altoFaldon-5);
- texto(letra,F/2,faldonY+s.altoFaldon/2,8);
- texto('VELCRO(5) BRAVO REVÉS AL CORTE',F*.65,faldonY+s.altoFaldon+8,3.5);
- cota(0,faldonY,0,faldonY+s.altoFaldon,-18);
- cota(0,0,F,0,-35);cota(F,0,F,H,F+50);
- return {formas,vista:{xMin:-90,yMin:-50,ancho:F+170,alto:H+115+s.altoFaldon},letraBase:7,F,H};
+ return {cad,formas,vista:{xMin:-85,yMin:-45,ancho:F+320,alto:H+170},letraBase:7,F,H};
 }

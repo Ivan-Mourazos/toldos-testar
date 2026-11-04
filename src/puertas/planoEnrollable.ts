@@ -10,6 +10,8 @@ import { presentacionPortanova, VENTANA_CORTE_PORTANOVA } from './plantillaPorta
 import { SEPARACION_EXTRA_FILAS, TITULO_MATERIAL_MM } from './corte.ts';
 import { corteEnPlano, entidadesDePieza, textosFuera } from './corteEnPlano.ts';
 import type { CortePuertas, EntidadesPuertas, PedidoPuertas, Puerta, Punto } from './tipos.ts';
+import { sumarLienzo } from './lienzo.ts';
+export { sumarLienzo } from './lienzo.ts';
 
 // Referencia: AR2605134 de Iván, 22/10/2026 (mano3). Dibujo en cm, con el origen en la
 // esquina superior izquierda terminada; la presentación y el cajetín web siguen en mm.
@@ -23,7 +25,7 @@ export interface LienzoEnrollable {
   cotas: Array<{ capa: string; estilo: string; x1: number; y1: number; x2: number; y2: number; giro: number; d: number; valor: number; rotulo?: string;
     alineada?: boolean; desvio?: number; posicionTexto?: Punto }>;
   inserciones: Array<{ capa: string; nombre: string; x: number; y: number; giro?: number; sx?: number }>;
-  sombreados: Array<{ capa: string; puntos: Punto[]; solido: boolean }>;
+  sombreados: Array<{ capa: string; puntos: Punto[]; solido: boolean; patron?: 'ANSI31' | 'ANGLE'; color?: number }>;
   arcos: Array<{ capa: string; x: number; y: number; r: number; desde: number; hasta: number }>;
   circulos: Array<{ capa: string; x: number; y: number; r: number }>;
 }
@@ -228,16 +230,6 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSac
   return { lienzo: l, zona: { x0: -65, x1: F + 70, y0: ys - hs - 60 - (lineas.length - 1) * hNota * 1.4, y1: 40 } };
 }
 
-export function sumarLienzo(destino: Lienzo, origen: Lienzo, dx = 0, dy = 0) {
-  destino.lineas.push(...origen.lineas.map(t => ({ ...t, x1: t.x1 + dx, y1: t.y1 + dy, x2: t.x2 + dx, y2: t.y2 + dy })));
-  destino.polilineas.push(...origen.polilineas.map(t => ({ ...t, puntos: t.puntos.map(([x, y]): Punto => [x + dx, y + dy]) })));
-  destino.textos.push(...origen.textos.map(t => ({ ...t, x: t.x + dx, y: t.y + dy })));
-  destino.cotas.push(...origen.cotas.map(t => ({ ...t, x1: t.x1 + dx, y1: t.y1 + dy, x2: t.x2 + dx, y2: t.y2 + dy, d: t.d + (t.giro ? dx : dy) })));
-  destino.inserciones.push(...origen.inserciones.map(t => ({ ...t, x: t.x + dx, y: t.y + dy })));
-  destino.sombreados.push(...origen.sombreados.map(t => ({ ...t, puntos: t.puntos.map(([x, y]): Punto => [x + dx, y + dy]) })));
-  destino.arcos.push(...origen.arcos.map(t => ({ ...t, x: t.x + dx, y: t.y + dy })));
-  destino.circulos.push(...origen.circulos.map(t => ({ ...t, x: t.x + dx, y: t.y + dy })));
-}
 
 const unicos = (v: string[]) => [...new Set(v.filter(Boolean))];
 // Cotas del corte más grandes, para que se lean al imprimir sin pisar las piezas (Iván, 22/10/2026).
@@ -254,7 +246,7 @@ function sumar(l: Lienzo, e: EntidadesPuertas, dx = 0, dy = 0) {
   l.circulos.push(...e.circulos.map(a => ({ ...a, x: a.x + dx, y: a.y + dy })));
   l.textos.push(...e.textos.map(a => ({ ...a, x: a.x + dx, y: a.y + dy })));
 }
-function dibujarCorte(cortes: CortePuertas[], _pedido: PedidoPuertas): { lienzo: Lienzo; zona: Zona } {
+export function dibujarCorte(cortes: CortePuertas[], _pedido: PedidoPuertas): { lienzo: Lienzo; zona: Zona } {
   const l = vacio(); let techo = 0, anchoMax = 250;
   const muestras = new Map<string, { c: CortePuertas; t: CortePuertas['colocadas'][number] }>();
   // Los sacos de stock que rellenan la lona sobrante no son piezas de la puerta: se ven solo dentro de su rollo.

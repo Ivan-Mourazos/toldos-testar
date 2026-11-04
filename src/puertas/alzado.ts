@@ -8,6 +8,7 @@ import { medidaSystemDock, REGLAS_SYSTEM_DOCK } from './systemDock.ts';
 import { ventanalesEnrollable } from './ventanalesEnrollable.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
 import type { Hueco, Puerta, Punto, ResultadoPuerta } from './tipos.ts';
+import type { LienzoEnrollable } from './planoEnrollable.ts';
 
 // El alzado de una puerta como dibujo puro, en cm y con la y hacia abajo (como el SVG): lo pinta la pantalla
 // (AlzadoPuerta.tsx) y lo pasa al plano DWG src/puertas/plano.ts, así lo que se revisa en la web es lo que
@@ -44,6 +45,8 @@ export interface CotaAlzado {
   y2: number;
   linea: number;
   valor: number;
+  /** Rótulo de un detalle esquemático de oficina, que no es un patrón de corte. */
+  rotulo?: string;
   prefijo?: string;
   sufijo?: string;
   marcas: number;
@@ -55,6 +58,8 @@ export interface CotaAlzado {
 export type FormaAlzado = RectAlzado | LineaAlzado | PoligonoAlzado | PolilineaAlzado | TextoAlzado | CotaAlzado;
 
 export interface GeometriaAlzado {
+  /** Santa Pau conserva entidades CAD de oficina (bloques, arcos y tramas). */
+  cad?: LienzoEnrollable;
   formas: FormaAlzado[];
   vista: { xMin: number; yMin: number; ancho: number; alto: number };
   /** La letra base del dibujo (cm), la que usa el CSS para los textos sin tamaño. */
@@ -70,7 +75,7 @@ export interface GeometriaAlzado {
 export const numAlzado = (x: number) => x.toLocaleString('es-ES', { maximumFractionDigits: 2 });
 
 /** Lo que se lee en una cota: «D 60», «172 cm», «7,5». */
-export const textoCota = (c: CotaAlzado) => `${c.prefijo ? `${c.prefijo} ` : ''}${numAlzado(c.valor)}${c.sufijo ?? ''}`;
+export const textoCota = (c: CotaAlzado) => c.rotulo ?? `${c.prefijo ? `${c.prefijo} ` : ''}${numAlzado(c.valor)}${c.sufijo ?? ''}`;
 
 export const esVertical = (c: Pick<CotaAlzado, 'x1' | 'x2' | 'y1' | 'y2'>) => Math.abs(c.x1 - c.x2) < 1e-9 && Math.abs(c.y1 - c.y2) > 1e-9;
 

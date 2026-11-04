@@ -5,9 +5,9 @@ import type { PedidoPuertas, Puerta } from '../tipos.ts';
 function puerta(frente:number,alto:number,of:string,cantidad:number,nuevo:boolean):Puerta{
  const p=nuevaPuertaDeCliente('santapau','enrollable');
  return {...p,frente,alto,of,cantidad,color:nuevo?'ROJO 3002':'BLANCO',material:nuevo?'LAC900 IGNÍFUGA M2':'LAC900',confirmada:true,ventanasConfirmadas:true,
-  santapau:{...p.santapau!,ladoCerrado:'derecha'},
+  santapau:{...p.santapau!,revision:nuevo?'5363':'4815',aumentoBajo:nuevo?2.5:5,ladoCerrado:'derecha'},
   ventanas:[{x:0,y:nuevo?135:125,ancho:frente,alto:60,radio:0,radioCristal:0}],
-  entradas:[59,nuevo?120:121,210].map(altura=>({altura,diametro:30,largo:frente,alto:9,huecos:[]}))};
+  entradas:[59,121,210].map(altura=>({altura,diametro:30,largo:frente,alto:9,huecos:[]}))};
 }
 export function pedidosSantaPau():PedidoPuertas[]{
  return [

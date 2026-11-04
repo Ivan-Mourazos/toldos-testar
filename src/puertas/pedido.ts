@@ -42,6 +42,7 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
       const s=p.santapau;
       if(p.clientePuertas!=='santapau'||!objeto(s)||!cotas(s,['aumentoBajo','altoFaldon'])||!['izquierda','derecha','sin confirmar'].includes(s.ladoCerrado as string)||typeof s.refuerzos!=='boolean')return error();
       if(s.anchoRefuerzo!==undefined&&!cotas(s,['anchoRefuerzo']))return error();
+        if(s.revision!==undefined&&!['4815','5363'].includes(s.revision as string))return error();
     }
     if(p.araujo!==undefined) {
       const a=p.araujo;
