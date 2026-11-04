@@ -56,7 +56,7 @@ En el bajo se conservan las posiciones observadas del velcro: 12,5 y 17,5 sobre 
 
 **Refuerzos:** 4815 y 5363 piden 8 cm en los extremos de todas las E.T., misma lona/color. Se dibujan y rotulan ambos extremos en el alzado, pero no se inventa un alto de corte ni se generan piezas de refuerzo sin confirmación (Q-SP03).
 
-**Franja y faldón:** negro/amarillo significa impresión de diagonales sobre faldón, no tubo ni saco con pestaña. Se conserva el material negro y la instrucción de impresión; se puede desmarcar según pedido. El logo DISP a dos caras se indica en el alzado y en las instrucciones; no se inventan tamaño, posición acotada ni vector del logotipo (Q-SP04).
+**Franja y faldón:** negro/amarillo significa impresión de diagonales sobre faldón, no tubo ni saco con pestaña. Se conserva el material negro y la instrucción de impresión; se puede desmarcar según pedido. El logo DISP a dos caras se indica en los avisos de pantalla; no se inventan tamaño, posición acotada ni vector del logotipo (Q-SP04).
 
 ## Comparación con Portanova
 
@@ -77,8 +77,14 @@ Pruebas primero: los casos de Santa Pau fallaron usando el cálculo anterior y p
 
 Se han revisado las ocho capturas de Mirilla y tubos / Confección, claro y oscuro, a1280×720 y1600×1000, en `tmp/ui-audit/puertas-santapau/`, además de la carga real de RPS. Sin errores de JavaScript ni desbordamiento horizontal. La vista se identifica por el revés y muestra el margen cero expresamente.
 
-`tmp/santapau/salida/` contiene, para **AR2604815 y AR2605363**, el DWG2018 (cabecera AC1032 comprobada), DXF del bot, DXF del plano, PNG de presentación del papel, pedido JSON y contraste de piezas/diferencias. Se han abierto y revisado ambos PNG. El corte usa el anidado común; las letras, cantidades y OF corresponden a cada puerta. El 4815 conserva la diferencia documentada de127,5 propuestos frente a130 del corte histórico. El 5363 se rotula como propuesta desde hoja/RPS.
+`tmp/santapau/salida/` contiene, para **AR2604815 y AR2605363**, el DWG2018 (cabecera AC1032 comprobada), DXF del bot, DXF del plano, PNG de presentación del papel, pedido JSON y contraste de piezas/diferencias. Se han abierto y revisado ambos PNG. El corte usa el anidado común; las letras, cantidades y OF corresponden a cada puerta. El 4815 conserva la diferencia documentada de127,5 propuestos frente a130 del corte histórico. La condición de propuesta del 5363 queda en este expediente y en el JSON de contraste, fuera del plano de taller.
 
 Las preguntas **Q-SP01–Q-SP06** están reunidas en `dudas-abiertas.md`: bajo y posibles incorporaciones de E.T.; aumento del cristal; corte de refuerzos; medidas/posición del logo; rollos útiles; lado cerrado habitual. Quedan visibles como propuestas o notas donde afectan al trabajo; no se fabrican piezas de refuerzo ni un logo de tamaño inventado.
 
 La instancia aislada4480 y su Coordina simulado4490 se han cerrado y se ha comprobado que ambos puertos dejan de responder. Rama `puertas-santapau`, cambios guardados en commits en castellano, rebasada y **sin push**.
+
+### Revisión de rótulos del taller · 04/11/2026
+
+Por revisión del coordinador, se elimina el bloque de notas bajo cada alzado: contraste, propuestas, dudas, logo pendiente y texto general de confección. Tampoco se imprime `notaPlano` en Santa Pau: el campo se presenta como «Nota para revisión» y se muestra en los avisos, para que los documentos anteriores no vuelvan a introducir las notas de estudio en el CAD.
+
+Se han contrastado textos y posiciones de AR2604815, AR2505055, AR2504404 y AR2502196: macarrón sobre cabecera; AL CORTE a los lados; 5 CM (HUECOS) junto a cada E.T.; REFUERZO EN E.T. junto a sus extremos; pisado de 1 cm en el lateral cerrado; velcro suave y E.T. soldada en el bajo; indicación de soldar por el derecho debajo del bajo y velcro bravo bajo el faldón. Se mantienen las identificaciones A1/A2/B1/B2, REVÉS, OF y cantidad; mirilla y faldón se identifican por su letra como el 4815. Sin cambios de piezas ni medidas de corte. Las dudas Q-SP continúan en el expediente y en la pantalla.

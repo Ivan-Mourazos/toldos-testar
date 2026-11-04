@@ -68,5 +68,6 @@ export function calcularSantaPau(p:Puerta):ResultadoPuerta{
  if(p.sacoDiagonalesAmarillas)faldon.sacoDiagonalesAmarillas=true;
  if(s.refuerzos)aviso('REFUERZOS','Refuerzos de 8 cm en ambos extremos de todas las E.T.; falta confirmar su alto de corte. Se señalan en el plano, sin piezas inventadas.','aviso');
  if(s.logoDosCaras)aviso('LOGO','Logo DISP a dos caras: confirma tamaño y colocación antes de rotular.','aviso');
+ if(p.notaPlano?.trim())aviso('NOTA_REVISION',p.notaPlano.trim(),'aviso');
  return r;
 }

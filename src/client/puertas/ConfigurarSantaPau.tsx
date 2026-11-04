@@ -62,7 +62,7 @@ export function ConfigurarSantaPau({p,cambiar,corte,derecha,letra}:{p:Puerta;cam
      {texto('Material de lona','material')}{texto('Material transparente','materialCristal')}{texto('Material del faldón','materialSaco')}
      <Numero titulo="Rollo de lona (cm)" valor={p.rollo} cambiar={rollo=>patch({rollo})}/>
      <Numero titulo="Rollo transparente (cm)" valor={p.rolloCristal} cambiar={rolloCristal=>patch({rolloCristal})}/>
-     <Numero titulo="Rollo de faldón (cm)" valor={p.rolloSaco} cambiar={rolloSaco=>patch({rolloSaco})}/>{texto('Nota para el plano','notaPlano')}
+     <Numero titulo="Rollo de faldón (cm)" valor={p.rolloSaco} cambiar={rolloSaco=>patch({rolloSaco})}/>{texto('Nota para revisión','notaPlano')}
     </div>}
     <label className="puerta-casilla"><input type="checkbox" checked={p.confirmada&&p.ventanasConfirmadas} onChange={e=>cambiar({...p,confirmada:e.target.checked,ventanasConfirmadas:e.target.checked})}/>Confirmado con el dibujo y los rollos reales</label>
    </section>

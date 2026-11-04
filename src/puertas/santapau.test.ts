@@ -6,6 +6,8 @@ import { puertasDesdeRps } from './rps.ts';
 import { leerPedidoPuertas } from './pedido.ts';
 import { generarCortePuertas } from './corte.ts';
 import { escribirPlanoPuertas } from './plano.ts';
+import { geometriaAlzado } from './alzado.ts';
+import { pedidosSantaPau } from './__fixtures__/santapau.ts';
 import type { PedidoPuertas, Puerta } from './tipos.ts';
 
 function caso(frente=281.5,alto=400):Puerta & {santapau:NonNullable<Puerta['santapau']>}{
@@ -16,6 +18,21 @@ function caso(frente=281.5,alto=400):Puerta & {santapau:NonNullable<Puerta['sant
   entradas:[59,121,210].map(altura=>({altura,largo:frente,alto:9,diametro:30 as const,huecos:[]}))};
 }
 describe('Santa Pau: confección contrastada con varios fabricados',()=>{
+ it.each(pedidosSantaPau())('$orderCode: el taller recibe solo rótulos de oficina, sin el estudio ni las dudas',pedido=>{
+  const p=pedido.elementos[0].input;
+  p.notaPlano='CONTRASTE 4815 · BAJO PROPUESTO +2,5; CORTE HISTÓRICO +5';
+  const g=geometriaAlzado(p,calcularPuerta(p));
+  const textos=g.formas.filter(f=>f.tipo==='texto');
+  expect(textos.some(t=>t.lineas.some(s=>/CONTRASTE|PROPUEST|HISTÓRICO|POR CONFIRMAR|SANTA PAU|LOGO DISP|IMPRESIÓN DIGITAL|SUELTAS DE 9/i.test(s)))).toBe(false);
+  expect(textos).toContainEqual(expect.objectContaining({lineas:['A1']}));
+  expect(textos).toContainEqual(expect.objectContaining({lineas:['A2']}));
+  expect(textos).toContainEqual(expect.objectContaining({lineas:['VELCRO(5) SUAVE SOLDADO REVÉS'],y:p.alto-20}));
+  expect(textos).toContainEqual(expect.objectContaining({lineas:['VELCRO(5) BRAVO REVÉS AL CORTE'],y:p.alto+35+p.santapau!.altoFaldon+8}));
+  const dxf=escribirPlanoPuertas({pedido,cabecera:{cliente:'SANTA PAU',tecnico:'IVÁN',revisor:'',fecha:'04/11/2026'}});
+  expect(dxf).not.toMatch(/CONTRASTE 4815|BAJO PROPUESTO|CORTE HISTÓRICO|POR CONFIRMAR|PROPUESTA DESDE HOJA/);
+  expect(calcularPuerta(p).avisos).toContainEqual(expect.objectContaining({codigo:'LOGO',nivel:'aviso'}));
+  expect(calcularPuerta(p).avisos).toContainEqual(expect.objectContaining({codigo:'NOTA_REVISION',texto:p.notaPlano,nivel:'aviso'}));
+ });
  it('ofrece ficha propia y no hereda saco ni reglas Portanova',()=>{
   expect(fichaPorCodigo('038661')).toMatchObject({id:'santapau',nombre:'Santa Pau',calculo:'santapau',unidadHoja:'mm'});
   expect(nuevaPuertaDeCliente('santapau','enrollable').santapau).toMatchObject({aumentoBajo:2.5,altoFaldon:35,ladoCerrado:'sin confirmar'});

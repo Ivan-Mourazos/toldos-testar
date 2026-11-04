@@ -7,8 +7,7 @@ function puerta(frente:number,alto:number,of:string,cantidad:number,nuevo:boolea
  return {...p,frente,alto,of,cantidad,color:nuevo?'ROJO 3002':'BLANCO',material:nuevo?'LAC900 IGNÍFUGA M2':'LAC900',confirmada:true,ventanasConfirmadas:true,
   santapau:{...p.santapau!,ladoCerrado:'derecha'},
   ventanas:[{x:0,y:nuevo?135:125,ancho:frente,alto:60,radio:0,radioCristal:0}],
-  entradas:[59,nuevo?120:121,210].map(altura=>({altura,diametro:30,largo:frente,alto:9,huecos:[]})),
-  notaPlano:nuevo?'PROPUESTA DESDE HOJA Y RPS · REVISAR DUDAS ANTES DE FABRICAR':'CONTRASTE 4815 · BAJO PROPUESTO +2,5; CORTE HISTÓRICO +5'};
+  entradas:[59,nuevo?120:121,210].map(altura=>({altura,diametro:30,largo:frente,alto:9,huecos:[]}))};
 }
 export function pedidosSantaPau():PedidoPuertas[]{
  return [
