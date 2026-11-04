@@ -1,5 +1,7 @@
-import { describe, expect, it } from 'vitest';
-import { anchoArial } from '../domain/corteLona/texto.js';
+import { beforeAll, describe, expect, it } from 'vitest';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { chromium } from 'playwright';
 import { leerPlanoTexto, presentacionesDxf } from '../flujoDwg/planoDxf.js';
 import { generarCortePuertas } from './corte.ts';
 import { escribirPlanoPuertas } from './plano.ts';
@@ -12,12 +14,19 @@ type Punto = [number,number];
 interface Primitiva {tipo:string; capa:string; valor?:string; punto?:Punto; a?:Punto; b?:Punto; h?:number; giro?:number; ancla?:number; r?:number; desde?:number; hasta?:number;espacio?:string;
   recorte?:{centro:Punto;ancho:number;alto:number}}
 interface Caja {x0:number; x1:number; y0:number; y1:number; nombre:string}
+interface MedidaLetra {ancho:number;izquierda:number;derecha:number;ascenso:number;descenso:number}
+const medidasLetra=new Map<string,MedidaLetra>();
 
 function cajaTexto(p:Primitiva):Caja {
-  const h=p.h!,w=anchoArial(p.valor!,h),[x,y]=p.punto!,g=(p.giro??0)*Math.PI/180;
+  const m=medidasLetra.get(p.valor!);
+  if(!m)throw Error('Texto sin medir en Arial: '+p.valor);
+  const h=p.h!,w=m.ancho*h,[x,y]=p.punto!,g=(p.giro??0)*Math.PI/180;
   const col=((p.ancla??5)-1)%3,fila=Math.floor(((p.ancla??5)-1)/3);
-  const x0=col===0?0:col===1?-w/2:-w,y0=fila===0?-h:fila===1?-h/2:0;
-  const pts=[[x0,y0],[x0+w,y0],[x0,y0+h],[x0+w,y0+h]].map(([a,b])=>[x+a*Math.cos(g)-b*Math.sin(g),y+a*Math.sin(g)+b*Math.cos(g)]);
+  // El SVG coloca la base a 0,36 h del centro; h es la mayúscula CAD, no la caja de tinta.
+  // Canvas incluye las tildes y lo que bajan las comas y los paréntesis, también en las cotas.
+  const inicio=col===0?0:col===1?-w/2:-w,base=fila===0?-h:fila===1?-h*.36:0;
+  const x0=inicio-m.izquierda*h,x1=inicio+m.derecha*h,y0=base-m.descenso*h,y1=base+m.ascenso*h;
+  const pts=[[x0,y0],[x1,y0],[x0,y1],[x1,y1]].map(([a,b])=>[x+a*Math.cos(g)-b*Math.sin(g),y+a*Math.sin(g)+b*Math.cos(g)]);
   return {x0:Math.min(...pts.map(p=>p[0])),x1:Math.max(...pts.map(p=>p[0])),y0:Math.min(...pts.map(p=>p[1])),y1:Math.max(...pts.map(p=>p[1])),nombre:p.valor!};
 }
 function cruza(a:Punto,b:Punto,c:Caja) {
@@ -44,7 +53,37 @@ export function solapes(primitivas:Primitiva[]) {
   return errores;
 }
 const casos={5365:[araujo5365()],5733:[araujo5733()],4292:[araujo4292()],4373:[araujo4373()],2391:araujo2391(),6255:[araujo6255()]};
+beforeAll(async()=>{
+  const textos=new Set(['PRUEBA','OTRO','VARILLA BLANCA (5,5 MM)','139,5']);
+  for(const [codigo,inputs]of Object.entries(casos)){
+    const pedido:PedidoPuertas={schemaVersion:1,kind:'puertas',orderCode:'AR260'+codigo,elementos:inputs.map((input,i)=>({id:'p'+i,input}))};
+    const corte=generarCortePuertas(pedido);
+    const dxf=escribirPlanoPuertas({pedido,cabecera:{cliente:'ARAUJO',tecnico:'IVÁN',revisor:'',fecha:'2026-11-04'}});
+    for(const src of [corte.archivo!.dxf,dxf])for(const p of leerPlanoTexto(src).modelo)if(p.tipo==='texto')textos.add(p.valor);
+  }
+  const temporal=path.resolve('tmp/araujo/salida-legible/pruebas-letra');
+  await fs.mkdir(temporal,{recursive:true});
+  const anteriores={TEMP:process.env.TEMP,TMP:process.env.TMP,TMPDIR:process.env.TMPDIR};
+  Object.assign(process.env,{TEMP:temporal,TMP:temporal,TMPDIR:temporal});
+  const navegador=await chromium.launch();
+  try{
+    const pagina=await navegador.newPage();
+    const medidas=await pagina.evaluate(valores=>{
+      const c=document.createElement('canvas').getContext('2d')!;c.font='1000px Arial';
+      return valores.map(s=>{const m=c.measureText(s);return [s,{ancho:m.width/716,izquierda:m.actualBoundingBoxLeft/716,derecha:m.actualBoundingBoxRight/716,ascenso:m.actualBoundingBoxAscent/716,descenso:m.actualBoundingBoxDescent/716}] as const;});
+    },[...textos]);
+    for(const [s,m]of medidas)medidasLetra.set(s,m);
+  }finally{
+    await navegador.close();
+    for(const [k,v]of Object.entries(anteriores))if(v===undefined)delete process.env[k];else process.env[k]=v;
+  }
+},60000);
 describe('Legibilidad de los planos ARAUJO y su corte',()=>{
+  it('detecta el remate de una pieza contra la cota del frente siguiente aunque sus alturas nominales no se crucen',()=>{
+    const rod:Primitiva={tipo:'texto',capa:'texto',valor:'VARILLA BLANCA (5,5 MM)',punto:[0,0],h:5,giro:0,ancla:5};
+    const frente:Primitiva={tipo:'texto',capa:'cotas',valor:'139,5',punto:[0,-5],h:5,giro:0,ancla:5};
+    expect(solapes([rod,frente])).toContain('VARILLA BLANCA (5,5 MM) / 139,5');
+  });
   it('el detector encuentra texto contra texto, línea y arco, también girados',()=>{
     const t:Primitiva={tipo:'texto',capa:'texto',valor:'PRUEBA',punto:[0,0],h:10,giro:90,ancla:5};
     expect(solapes([t,{...t,valor:'OTRO'}])).toContain('PRUEBA / OTRO');

@@ -17,8 +17,8 @@ const casos = [
   ['apilable600', () => ({ ...apilable(), frente: 600 }), '9279ae19053a5106dcecc4b92936dab9289efa0927c5c12caf888e3440d4064d'],
   ['enrollable', puerta4638, 'b3f0040ff87496f9683a68a498164bbc44a073d153d81b6233430c785cb4d623'],
   ['autorreparable', autorreparable, '779d5a40a1b0c5003f86cc7513a939f4c823a694f482e2110ca0df4701ea8248'],
-  ['araujo5365', araujo5365, 'b9aa45fad1304c729546c3e59c613202419dd61e737b6d160a18eca2c645facf'],
-  ['araujo5733', araujo5733, '30d5bb0031cab37230b36b56ac70b2e10c2d42a7af42949cafc2550508474c00'],
+  ['araujo5365', araujo5365, '03b9bc58af363e9050beddf120226ff3cde437f70115f86a2c3159c78c75e4a1'],
+  ['araujo5733', araujo5733, 'db9bb8c779fc383d4978db2c72ab2999061c526604c4790e075c13e6c7744a34'],
 ] as const;
 
 describe('el escuadrado del 5391 conserva las demás confecciones', () => {

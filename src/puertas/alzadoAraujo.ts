@@ -2,7 +2,7 @@ import type { CotaAlzado, FormaAlzado, GeometriaAlzado } from './alzado.ts';
 import { anchoArial } from '../domain/corteLona/texto.js';
 import { medidasTramoAraujo } from './araujo.ts';
 import { fichaDePuerta } from './clientes.ts';
-import { cajaRotulo, colocarCotasAraujo, componerRotulo, encajarRotulo, obstaculosAlzado } from './rotulosAraujo.ts';
+import { cajaRotulo, colocarCotasAraujo, componerRotulo, encajarRotuloGirado, obstaculosAlzado } from './rotulosAraujo.ts';
 import type { Puerta } from './tipos.ts';
 
 /** Modelo de Iván: 4292, con identificaciones discretas como en el 2391. Medidas en cm. */
@@ -73,14 +73,14 @@ export function alzadoAraujo(p: Puerta, letra: string): GeometriaAlzado {
     colocarCotasAraujo(grupo,base);
     // Los laterales se ajustan al hueco entre las líneas auxiliares de las cotas.
     for(const [x,giro]of [[-base*1.5,-90],[w+base*1.5,90]]){
-      const limites={x:y+1,y:x-base*.5,ancho:h-2,alto:base};
-      const obstaculos=obstaculosAlzado(grupo).map(b=>({x:b.y,y:b.x,ancho:b.alto,alto:b.ancho}));
+      const limites={x:x-base*.5,y:y+1,ancho:base,alto:h-2};
+      const obstaculos=obstaculosAlzado(grupo);
       for(const f of grupo)if(f.tipo==='cota'){
         const b=cajaRotulo(num(f.valor),f.texto.x,f.texto.y,base,f.texto.giro);
-        obstaculos.push({x:b.y,y:b.x,ancho:b.alto,alto:b.ancho});
+        obstaculos.push(b);
       }
-      const sitio=encajarRotulo(['AL CORTE'],limites,obstaculos,base);
-      if(sitio)formas.push({tipo:'texto',x:sitio.y,y:sitio.x,lineas:['AL CORTE'],ancla:'middle',tamano:sitio.tamano,giro});
+      const sitio=encajarRotuloGirado('AL CORTE',limites,obstaculos,base,giro);
+      if(sitio)formas.push({tipo:'texto',x:sitio.x,y:sitio.y,lineas:['AL CORTE'],ancla:'middle',tamano:sitio.tamano,giro});
     }
     const lineas=[...i===primerTramo?[t.of||p.of||'SIN OF','REVÉS',...tramos.some(t=>t.rotulacion)?['ROTULACIÓN','POR DERECHO']:[]]:[],codigo,
       .../AMARILLO/i.test(t.material??(t.tipo==='bolsa'?p.materialSaco:p.color))?['AMARILLO']:[]];
@@ -95,7 +95,15 @@ export function alzadoAraujo(p: Puerta, letra: string): GeometriaAlzado {
     const xMax=Math.max(...cajas.map(c=>c.x+c.ancho))+base,yMax=Math.max(...cajas.map(c=>c.y+c.alto))+base;
     vistas.push({nombre:'Pieza '+(i+1)+' · '+(t.tipo==='bolsa'?'bolsa':'tramo'),xMin,yMin,ancho:xMax-xMin,alto:yMax-yMin});
     grupos.push(finales);
-    y+=h+base*(i+1===ultimoTramo||siguiente?.tipo==='bolsa'?10:6);
+    // La siguiente pieza empieza después de toda la tinta de esta y de sus propias anotaciones superiores.
+    // Así el remate inferior no comparte franja con el frente de la pieza siguiente.
+    if(siguiente){
+      const tieneFrente=i+1===ultimoTramo||siguiente.tipo==='bolsa';
+      const remateSiguiente=remate(siguiente.arriba),letra=Math.min(base,siguiente.frente*.88/anchoArial(remateSiguiente.toUpperCase(),1));
+      const reserva=Math.max(-cajaRotulo(remateSiguiente,0,-base*2,letra).y,
+        tieneFrente?-cajaRotulo(num(siguiente.frente),0,-base*7,base).y:0);
+      y=yMax+reserva+base*.5;
+    }else y=yMax+base*2;
   }
   if(p.notaPlano?.trim()){texto(p.notaPlano.trim(),0,y,base,'start');y+=base*4;}
   if(!tramos.length)texto('Completa los tramos y bolsas del pedido.',0,y);

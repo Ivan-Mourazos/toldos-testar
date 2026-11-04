@@ -147,10 +147,9 @@ function rotulosPieza(
       ...pieza.huecos.map(q=>({x:q.x-2,y:q.y-2,ancho:q.ancho+4,alto:q.alto+4})),
       ...pieza.impresionAraujo?.entradas.map(e=>({x:0,y:e.y-e.ancho/2-2,ancho:pieza.ancho,alto:e.ancho+4}))??[]];
     const rotulos=componerRotulo(lineas,{x:2,y:2,ancho:pieza.ancho-4,alto:pieza.alto-4},obstaculos,pieza.clase==='pano'?30:20);
-    const sumaY=Math.min(...rotulos.map(r=>r.y))+Math.max(...rotulos.map(r=>r.y));
     // El cálculo usa Y hacia arriba; invertir el bloque conserva el orden de lectura de la columna.
     for(const r of rotulos){
-      const v=sumaY-r.y;
+      const v=2*r.centroY-r.y;
       entidades.textos.push({capa:'texto',valor:r.valor,x:x+mm(girada?pieza.alto-v:r.x),y:y+mm(girada?r.x:v),h:mm(r.tamano),giro:girada?90:0,centrado:true});
     }
     return;
