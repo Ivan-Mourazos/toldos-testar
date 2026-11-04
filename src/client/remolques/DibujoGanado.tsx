@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { dibujoGanado } from '../../remolques/ganado/dibujo.ts';
+import type { MedidasCal } from '../../remolques/ganado/medidas.ts';
+import { dibujoCorteCal } from '../../remolques/ganado/salidasCal.ts';
 
 // El dibujo de confección de un remolque de ganado: el de su plantilla de la oficina, igual que en el plano
 // (corte, terminado, ollaos según su modelo, notas y cotas). No tiene 3D: no se calcula por medidas.
@@ -15,19 +17,27 @@ function tramoCurvo(x1: number, y1: number, x2: number, y2: number, curva: numbe
   return `A ${radio} ${radio} 0 ${Math.abs(theta) > Math.PI ? 1 : 0} ${curva > 0 ? 1 : 0} ${x2} ${-y2}`;
 }
 
-export function DibujoGanado({ modelo, cantidad = 1, compacto = false }: { modelo: string; cantidad?: number; compacto?: boolean }) {
-  const d = dibujoGanado(modelo);
-  if (!d) return <p className="rem-vacio-resultado">Elige el modelo para ver su dibujo de confección.</p>;
+export function DibujoGanado({ modelo, medidas, cantidad = 1, compacto = false }: { modelo: string; medidas?: MedidasCal; cantidad?: number; compacto?: boolean }) {
+  const [corte, setCorte] = useState(false);
+  let d = dibujoGanado(modelo, medidas);
+  if (d && modelo === 'CAL_MEDIDAS' && medidas && corte && !compacto) {
+    try { d = dibujoCorteCal(medidas); } catch { /* El resultado explica si una pieza no cabe en el rollo. */ }
+  }
+  if (!d) return <p className="rem-vacio-resultado">{modelo === 'CAL_MEDIDAS' ? 'Completa las medidas para ver el desarrollo de Cal.' : 'Elige el modelo para ver su dibujo de confección.'}</p>;
   const margen = 24;
   // En el SVG la y va hacia abajo: se dibuja con −y.
   const caja = `${-margen} ${-(d.alto + margen)} ${d.ancho + 2 * margen} ${d.alto + 2 * margen}`;
   return (
     <section className={`rem-dibujo gan-dibujo${compacto ? ' is-compacto' : ''}`} aria-label="Dibujo de confección del remolque de ganado">
       <header className="rem-dibujo-cabecera">
-        <p className="rem-dibujo-etiqueta">Dibujo de confección</p>
+        <p className="rem-dibujo-etiqueta">{corte && modelo === 'CAL_MEDIDAS' && !compacto ? 'Corte de las piezas calculadas' : 'Dibujo de confección'}</p>
         <span className="rem-dibujo-separador" aria-hidden="true" />
-        <p className="gan-dibujo-nota">Plantilla de la oficina · medidas en cm{cantidad > 1 ? ` · X${cantidad}` : ''}</p>
+        <p className="gan-dibujo-nota">{modelo === 'CAL_MEDIDAS' ? 'Desarrollo por medidas · exterior del arco' : 'Plantilla de la oficina'} · medidas en cm{cantidad > 1 ? ` · X${cantidad}` : ''}</p>
       </header>
+      {modelo === 'CAL_MEDIDAS' && !compacto && <div className="tira-3d gan-vistas" role="group" aria-label="Vista del desarrollo de Cal">
+        <button type="button" className={`pestana${!corte ? ' pestana-activa' : ''}`} aria-pressed={!corte} onClick={() => setCorte(false)}>Confección</button>
+        <button type="button" className={`pestana${corte ? ' pestana-activa' : ''}`} aria-pressed={corte} onClick={() => setCorte(true)}>Corte calculado</button>
+      </div>}
       <svg className="gan-svg" viewBox={caja} role="img" aria-label="Piezas del remolque con sus cotas">
         {d.lineas.map((l, i) => <line key={`l${i}`} className={CLASES[l.capa]} x1={l.x1} y1={-l.y1} x2={l.x2} y2={-l.y2} />)}
         {d.polilineas.map((p, i) => {

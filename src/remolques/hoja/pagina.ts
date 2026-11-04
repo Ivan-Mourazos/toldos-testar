@@ -37,7 +37,7 @@ export interface PaginaHojaDatos extends DatosHoja {
    *  30/09/2026). null en el baquetón, que no lleva. */
   notasVistas: { delante: string; detras: string } | null;
   /** Remolque de ganado: su modelo y cantidad, para pintar el dibujo de la plantilla en vez de las vistas. */
-  ganado?: { modelo: string; cantidad: number };
+  ganado?: { modelo: string; cantidad: number; medidasCal?: import("../ganado/medidas.ts").MedidasCal };
 }
 
 /** 12 columnas como la hoja de siempre; más si algún lado lleva más (la vieja cortaba en 12). */
@@ -136,7 +136,7 @@ export function paginaHoja(elemento: ElementoHoja, indice: number, total: number
       ollaos: { titulo: "OLLAOS · LOS DEL DIBUJO DE CONFECCIÓN", columnas: COLUMNAS_MINIMAS, filas: [] },
       ganchos: null,
       notasVistas: null,
-      ganado: { modelo: elemento.input.ganado, cantidad: elemento.input.cantidad },
+      ganado: { modelo: elemento.input.ganado, cantidad: elemento.input.cantidad, medidasCal: elemento.input.medidasCal },
     };
   }
   return {

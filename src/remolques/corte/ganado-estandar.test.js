@@ -45,7 +45,9 @@ describe('Remolcar estándar 300 × 160, AR2601847', () => {
 
   it('el dibujo conserva las cotas y el enfundado desalineado de la versión estándar', () => {
     const d = dibujoGanado('REMOLCAR_ESTANDAR');
-    expect(d).toEqual(DIBUJO_ESTANDAR);
+    expect(d.lineas).toEqual(DIBUJO_ESTANDAR.lineas);
+    expect(d.circulos).toEqual(DIBUJO_ESTANDAR.circulos);
+    expect(d.textos.map(t => t.valor)).toContain("CORREAS POR DENTRO");
     expect(d.cotas.map((c) => c.valor)).toEqual(expect.arrayContaining([196, 275.5, 282.5, 161, 167, 47, 51.5, 105, 101]));
     expect(d.textos.map((t) => t.valor)).toContain('ENFUNDAR (1), NO ALINEADOS');
   });

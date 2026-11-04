@@ -1,13 +1,16 @@
 import { excelRound } from "./redondeo.ts";
 import type { CabeceraInput } from "./lona.ts";
 import { CORTE_ECONOMICO } from "../ganado/economicoDatos.ts";
-import { CORTE_ESTANDAR, PIEZAS_ESTANDAR } from "../ganado/estandarDatos.ts";
+import { CORTE_ESTANDAR } from "../ganado/estandarDatos.ts";
+import { PIEZAS_ESTANDAR_CONFECCION } from "../ganado/estandarConfeccion.ts";
+import { calcularMedidasCal, type MedidasCal } from "../ganado/medidas.ts";
+import { juegoCorteCal, medidaPiezaCal } from "../ganado/salidasCal.ts";
 
 // Remolques de ganado y caballos con plantilla (docs/modelos/remolque-ganado.md). No se calculan por
 // medidas: cada modelo trae su dibujo de confección y su corte, sacados de los originales de la oficina.
 
 /** Modelos con plantilla. Iván, 23/10/2026: el económico de Remolcar es el de la versión «por medidas». */
-export type ModeloGanado = "REMOLCAR_ECONOMICO" | "REMOLCAR_ESTANDAR";
+export type ModeloGanado = "REMOLCAR_ECONOMICO" | "REMOLCAR_ESTANDAR" | "CAL_MEDIDAS";
 
 export interface GanadoInput {
   cabecera: CabeceraInput;
@@ -24,6 +27,7 @@ export interface GanadoInput {
   arcosComprobados: boolean;
   material: string;
   observaciones: string;
+  medidasCal?: MedidasCal;
 }
 
 export interface PiezaGanado {
@@ -57,6 +61,10 @@ export interface FichaModeloGanado {
 }
 
 export const MODELOS_GANADO: Record<ModeloGanado, FichaModeloGanado> = {
+  CAL_MEDIDAS: {
+    nombre: "Caballos Cal por medidas", cliente: "TALLERES CAL", largo: 0, ancho: 0,
+    fuente: "Medidas de los arcos; lona por el exterior. Acabados del gemelo AR.25.06052.", piezas: [],
+  },
   REMOLCAR_ECONOMICO: {
     nombre: "Remolcar económico 300 × 150",
     cliente: "REMOLCAR",
@@ -78,7 +86,7 @@ export const MODELOS_GANADO: Record<ModeloGanado, FichaModeloGanado> = {
     largo: 300,
     ancho: 160,
     fuente: "REMOLQUE 300X160 ESTANDAR.dwg, versión con puerta lateral de AR2601847; corte como en el pedido.",
-    piezas: PIEZAS_ESTANDAR,
+    piezas: PIEZAS_ESTANDAR_CONFECCION,
   },
 };
 
@@ -86,6 +94,34 @@ export const esModeloGanado = (valor: unknown): valor is ModeloGanado =>
   typeof valor === "string" && Object.hasOwn(MODELOS_GANADO, valor);
 
 export function calcGanado(input: GanadoInput): GanadoResult {
+  if (input.ganado === "CAL_MEDIDAS") {
+    try {
+      if (!input.medidasCal) throw Error("Introduce las medidas del remolque de Cal.");
+      const g = calcularMedidasCal(input.medidasCal), c = juegoCorteCal(input.medidasCal);
+      const cantidad = Math.max(1, Math.round(input.cantidad || 1));
+      const fmt = (x: number) => (x / 10).toLocaleString('es-ES', { maximumFractionDigits: 2 });
+      return {
+        modelo: MODELOS_GANADO.CAL_MEDIDAS.nombre,
+        piezas: g.piezas.map(p => ({ nombre: p.nombre, hecho: p.terminado ? medidaPiezaCal(p, true) : '', corte: medidaPiezaCal(p),
+          acabado: p.nombre === 'Cuerpo' ? `B.N.(3) + ollaos en los bajos; ${input.medidasCal!.fruncir.toLocaleString('es-ES')} para fruncir atrás; costura 1 delante`
+            : p.nombre === 'Morro' ? 'B.N.(3) + ollaos en diagonales; costura 1 en uniones'
+              : p.nombre === 'Frente' ? 'B.N.(3) + ollaos abajo; costura 1 alrededor de la unión' : '3 cm más que la ventana en cada dimensión' })),
+        largoJuego: excelRound(c.w / 10, 2), anchoJuego: excelRound(c.h / 10, 2),
+        metrosTela: g.pendientes.length ? 0 : excelRound(cantidad * c.w / 1000, 2),
+        notas: [
+          `Lona hecha: ${fmt(g.largoHecho)} de largo, sin forzar el total comercial. Radio exterior ${input.medidasCal.radio.toLocaleString('es-ES')}.`,
+          'Colocación por piezas enteras en rollo de 250. Las medidas del morro son su envolvente; se corta su contorno.',
+          ...(g.ventana ? [`Ventana ${g.ventana.ancho.toLocaleString('es-ES')} × ${g.ventana.alto.toLocaleString('es-ES')}; estándar 50 × 35 si cabe.`] : []),
+          'El gemelo conserva una diferencia histórica de 1,824 mm entre una generatriz 3D y el plano de oficina; el cálculo no la corrige.',
+          ...(!input.arcosComprobados ? ['Comprueba los arcos del remolque antes de cortar.'] : []),
+          ...g.pendientes,
+        ],
+      };
+    } catch (e) {
+      return { modelo: MODELOS_GANADO.CAL_MEDIDAS.nombre, piezas: [], largoJuego: 0, anchoJuego: 0, metrosTela: 0,
+        notas: [e instanceof Error ? e.message : 'Revisa las medidas de Cal.'] };
+    }
+  }
   const ficha = esModeloGanado(input.ganado) ? MODELOS_GANADO[input.ganado] : null;
   const cantidad = Math.max(1, Math.round(input.cantidad || 1));
   const corte = input.ganado === "REMOLCAR_ESTANDAR" ? CORTE_ESTANDAR : CORTE_ECONOMICO;

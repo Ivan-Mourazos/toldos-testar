@@ -4,6 +4,8 @@
 // «X2», «X3»…, que el cortador repite (AR2600752, cantidad 2).
 import { CORTE_ECONOMICO } from '../ganado/economicoDatos.ts';
 import { CORTE_ESTANDAR } from '../ganado/estandarDatos.ts';
+import { calcularMedidasCal } from '../ganado/medidas.ts';
+import { juegoCorteCal } from '../ganado/salidasCal.ts';
 
 /** Iván, 27/10/2026: en el económico, los ollaos a 4,5 cm del borde de corte, como en sus cortes a mano. */
 export const OLLAO_AL_BORDE = 45;
@@ -12,11 +14,24 @@ const r1 = (v) => Math.round(v * 10) / 10;
 
 /** Null si se sabe cortar; si no, el motivo para dejarlo a mano. */
 export function soportadaGanado(el) {
+  if (el.input?.ganado === 'CAL_MEDIDAS') {
+    try {
+      const g = calcularMedidasCal(el.input.medidasCal);
+      if (g.pendientes.length) return g.pendientes.join(' ');
+      juegoCorteCal(el.input.medidasCal);
+      return null;
+    } catch (e) { return `Cal por medidas: ${e.message}; cortarlo a mano`; }
+  }
   return PLANTILLAS[el.input?.ganado] ? null : 'remolque de ganado sin plantilla de corte: cortarlo a mano';
 }
 
 /** El juego de piezas en mm, con el orillo abajo (y = 0), en el formato de las piezas de lonaAlta.js. */
 export function piezaGanado(el) {
+  if (el.input.ganado === 'CAL_MEDIDAS') {
+    const motivo = soportadaGanado(el);
+    if (motivo) throw Error(motivo);
+    return juegoCorteCal(el.input.medidasCal, el.of, Math.max(1, Math.round(el.input.cantidad || 1)));
+  }
   const c = PLANTILLAS[el.input.ganado];
   const cantidad = Math.max(1, Math.round(el.input.cantidad || 1));
   // Las piezas que van contra el orillo no llevan corte abajo; si el colocador las sube, sí: la raya del orillo

@@ -293,7 +293,7 @@ export function RemolquesView({ controlRef, usuario, notify, askForConfirmation,
                   el mismo que el del pedido guardado abierto en Pedidos). */}
               {derecha === 'corte' ? <VistaPreviaCorte vista={vistaCorte} /> : <>
               {lineaActiva.tipo === 'ganado'
-                ? <DibujoGanado modelo={ws.gan.ganado} cantidad={ws.gan.cantidad} />
+                ? <DibujoGanado modelo={ws.gan.ganado} medidas={ws.gan.medidasCal} cantidad={ws.gan.cantidad} />
                 : <DibujoElemento params={params} elemento={lineaActiva.tipo === 'lona'
                   ? { tipo: 'lona', input: lona, res: resLona }
                   : { tipo: 'baqueton', input: baq, res: resBaq }} />}

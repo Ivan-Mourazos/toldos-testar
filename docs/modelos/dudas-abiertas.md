@@ -84,13 +84,23 @@ La cinta corta ya la indica el pedido: **Q-EMB01 sigue contestada**, con 12 cm p
 
 ## Caballos por medidas · Talleres Cal (01/11/2026)
 
-Son las dudas que impiden sacar el corte de AR.26.05319, línea 3. Mientras tanto, la web no calcula estos remolques y **ese pedido se hace a mano**. Fuentes y contraste por script en [remolque-ganado-medidas.md](./remolque-ganado-medidas.md).
+La web calcula las piezas sin puerta por medidas, con radio exterior y ventana adaptada. **AR.26.05319, línea 3, sigue a mano para el corte completo**: falta definir su puerta MFI. Fuentes y contraste por script en [remolque-ganado-medidas.md](./remolque-ganado-medidas.md).
 
 **Q-GAN02 (contestada el 03/11, ver «Contestadas el 03/11/2026»).** AR.25.00389 (OF 0213084, «curva de Remolcar», con croquis a mano) no sale con las reglas que sí cuadran en el gemelo AR.25.06052: el cuerpo falla hasta 28 mm, la curva 7 mm y 15 de 21 ollaos no coinciden. ¿Tuvo algo especial ese pedido? Hay que preguntárselo a quien lo dibujó. Sin aclararlo, las reglas salen de un solo pedido y no se pueden dar por generales.
 
 **Q-GAN03 (contestada el 03/11, ver «Contestadas el 03/11/2026»).** ¿Qué radio lleva la lona del 5319: el exterior del arco, **R93,1**, o **R76,4**, el de los diez pedidos anteriores de Cal, que coincide con la raya interior del cartón? Iván entiende que la lona va por el lado exterior del tubo, pero esos pedidos no lo confirman. Se aclara midiendo una lona real ya hecha.
 
 **Q-GAN04 (contestada el 03/11, ver «Contestadas el 03/11/2026»).** ¿La ventana del 5319 es de **50 × 35** con tapa de **53 × 38**, como en el gemelo? Son las medidas de ese otro pedido; en la hoja del 5319 no están confirmadas.
+
+**Q-GAN05 (03/11).** En el 5319, «da la medida la diagonal» y «cremallera MFI hasta arriba»: ¿qué ancho terminado lleva la puerta, cuánto llevan las solapas y dónde se une la cremallera con el morro? La web muestra las demás piezas, pero no exporta el corte completo de ese pedido. El fruncido se propone de 5 cm como en el gemelo y se puede cambiar: ¿es esa también la medida del 5319?
+
+**Q-GAN06 (03/11, seguimiento de Q-GAN01).** Iván, en la imagen los trapecios ya son las zonas del morro y el paño con ventana es el frente de 51,5 × 73 de corte. Los dos rectángulos del bot miden 98 × 32 y 34,5 × 56 y no tienen marcas de ollao dentro. ¿Puedes señalar sobre el corte qué es cada rectángulo y a qué pieza del dibujo corresponde? Hasta entonces conservan su corte, sin darles acabados de otra pieza.
+
+**Q-GAN07 (03/11).** El gemelo tiene una unión de 908,624 mm en 3D y 906,800 en el plano: diferencia de 1,824 mm. El contraste repetido con el bot da hasta 1,494 mm en el corte del morro y 1,045 mm en sus ollaos. ¿Qué diferencia admite el taller en este desarrollo? La web conserva las longitudes de los triángulos, sin retocar puntos para igualar el dibujo antiguo. Las copias del estudio ya están repuestas; siguen faltando cuatro CAD y seis cortes del bot de los 19 pedidos de Cal del manifiesto.
+
+**Q-GAN08 (03/11).** ¿Los altos se miden hasta el cruce teórico del lateral y las aguas o hasta donde empieza la curva? El cálculo usa el cruce teórico del estudio; falta confirmar que es la referencia con la que se toman las medidas en taller.
+
+**Q-GAN09 (03/11).** En los ollaos laterales del 5319, ¿qué posiciones concretas pide la nota «2 esq»? El reparto manual conserva 30 / 55 / 94 / 126 / 157 / 193 desde atrás; no añade posiciones sin dimensionar a partir de esa nota. El pedido sigue sin corte completo por la puerta pendiente.
 
 ## Remolcar estándar · remolque de ganado (29/10/2026)
 

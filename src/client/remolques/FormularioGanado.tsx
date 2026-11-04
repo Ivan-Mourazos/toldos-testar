@@ -4,6 +4,7 @@ import type { Material } from '../../remolques/calc/materiales-seed.ts';
 import { CampoMaterial, CampoNum, CampoSelect, CampoSiNo, CampoTexto, PasoFormulario } from './Campos';
 import { ObservationLines } from '../components/ObservationLines';
 import { avanzarConIntro } from '../avanzarConIntro';
+import { MedidasCalCampos } from './MedidasCalCampos';
 
 // Formulario del remolque de ganado: no se miden piezas, salen de la plantilla del modelo
 // (docs/modelos/remolque-ganado.md). Se elige el modelo y se ponen la O.F., la cantidad y el material.
@@ -47,6 +48,11 @@ export function FormularioGanado({ input, materiales, errores = {}, metrosTela =
           sinElegir="Elige el modelo" error={errores.ganado} onChange={elegirModelo} />
         {ficha && <p className="gan-dibujo-nota rem-span-4">{ficha.fuente}</p>}
       </PasoFormulario>
+
+      {input.ganado === 'CAL_MEDIDAS' && <MedidasCalCampos value={input.medidasCal} error={errores.medidasCal} onChange={m => {
+        const q = m.diagonal ** 2 - ((m.ancho - m.frente) / 2) ** 2;
+        onChange({ ...input, medidasCal: m, ancho: m.ancho, largo: q > 0 ? Math.round((m.recto + Math.sqrt(q)) * 10) / 10 : m.recto });
+      }} />}
 
       <PasoFormulario numero={2} titulo="Material y comprobación" columnas={4}>
         <CampoMaterial span={4} value={input.material} opciones={materiales} error={errores.material}

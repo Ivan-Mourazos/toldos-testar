@@ -1,13 +1,14 @@
 // Estudio local: calcula desde la hoja; el bot solo se abre para el contraste.
 // Las selecciones por identificador documentan qué pieza se ha leído, no medidas.
 import fs from 'node:fs';
+import {generarCal} from '../../src/remolques/ganado/generarCal.js';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {leerDxf,vertices,bulges,texto,punto} from './medidas-dxf.mjs';
 import {extraerSecciones,ajustar,compararFuente} from './medidas-cad.mjs';
-import {construirMorro,contornoPerfil,distancia} from './medidas-geometria.mjs';
+import {contornoPerfil,distancia} from './medidas-geometria.mjs';
 import {canvasLocal,raiz,salida,guardar,hash} from './medidas-fuentes.mjs';
-import {linea,arco,circulo,poligono,offsetPoligono,compararPrimitivas,puntosPrimitiva,transformarPrimitiva,contiene,d} from './corte-completo-geometria.mjs';
+import {linea,arco,circulo,compararPrimitivas,puntosPrimitiva,transformarPrimitiva,contiene,d} from './corte-completo-geometria.mjs';
 
 const archivo=(tipo,id)=>path.join(salida,'fuentes',tipo,id+'.dxf');
 export const hojas=[
@@ -73,39 +74,9 @@ export function leerReglas(){
    criterio:'Se deduce del gemelo antes del contraste del reservado; no hay coeficientes derivados del bot ni del corte de AR2500389.'}};
 }
 
-function cabeza(m,r){
- const w=m.frente,h=m.altoB,a=m.aguasB,R=m.radioB,s=r.costura,b=r.bastilla;
- const ang=Math.atan2(a,w/2),giro=Math.PI/2-ang,t=R*Math.tan(giro/2),z=h-t;
- const cl=[R,z],cr=[w-R,z],rr=R+s;
- const q=[R-rr*Math.sin(ang),z+rr*Math.cos(ang)],cima=[w/2,h+a+s/Math.cos(ang)];
- const ps=[[-s,-b],[-s,z],q,cima,[w-q[0],q[1]],[w+s,z],[w+s,-b]];
- const ss=[linea(ps[0],ps[1]),arco(cl,rr,Math.PI,-giro),linea(ps[2],ps[3]),linea(ps[3],ps[4]),arco(cr,rr,Math.PI/2-ang,-giro),linea(ps[5],ps[6]),linea(ps[6],ps[0])];
- // Si no hay aguas, las dos rectas de techo son una misma recta.
- if(!a)ss.splice(2,2,linea(ps[2],ps[4]));
- return {nombre:'Frente',corte:ss,contorno:ps,marcas:[],ollaos:[],zTangencia:z};
-}
-function repartir(a,b,paso,r){
- const largo=d(a,b),n=Math.max(1,Math.round((largo-2*r.inicioOllao)/paso)),v=b.map((x,i)=>(x-a[i])/largo);
- return Array.from({length:n+1},(_,i)=>circulo(a.map((x,k)=>x+v[k]*(r.inicioOllao+i*(largo-2*r.inicioOllao)/n)),r.radioOllao));
-}
+// El contraste histórico aplica el mismo generador que la web.
 export function generar(h,r){
- const m={ancho:h.ancho+r.lonaHecha,frente:h.frente+r.lonaHecha,diagonal:h.diagonal+r.lonaHecha,largoCuerpo:h.recto+r.lonaHecha,altoA:h.alto,altoB:h.alto,aguasA:h.aguas,aguasB:h.aguas,radioA:h.curva==='Remolcar'?r.radioRemolcar:r.radio,radioB:h.curva==='Remolcar'?r.radioRemolcar:r.radio,pasos:r.pasos};
- const modelo=construirMorro(m),{a,b}=modelo.desarrollo,L=m.largoCuerpo,C=contornoPerfil({ancho:m.ancho,alto:m.altoA,aguas:m.aguasA,radio:m.radioA})+r.holguraContorno;
- const atras=h.fruncir??r.fruncir;
- const body=[[-atras,-r.bastilla],[L+r.costura,-r.bastilla],[L+r.costura,C+r.bastilla],[-atras,C+r.bastilla]];
- const cuerpo={nombre:'Cuerpo',corte:poligono(body),contorno:body,ollaos:[...repartir([0,r.dentroOllao],[L,r.dentroOllao],h.pasoOllaos,r),...repartir([0,C-r.dentroOllao],[L,C-r.dentroOllao],h.pasoOllaos,r)],marcas:[linea([r.marcaAtras,0],[r.marcaAtras,r.largoMarca]),linea([r.marcaAtras,C-r.largoMarca],[r.marcaAtras,C]),linea([L,C/2],[L-r.largoMarca,C/2])]};
- const contorno=[...a,...b.toReversed()],margenes=contorno.map((_,i)=>i===a.length-1||i===contorno.length-1?r.bastilla:r.costura),offset=offsetPoligono(contorno,margenes),centro=(a.length-1)/2;
- const interp=(p,q,l)=>p.map((x,i)=>x+(q[i]-x)*l/d(p,q));
- const morro={nombre:'Morro',corte:poligono(offset),contorno:offset,marcas:[linea(a[centro],interp(a[centro],b[centro],r.largoMarca)),linea(b[centro],interp(b[centro],a[centro],r.largoMarca))],ollaos:[]};
- for(const i of [0,a.length-1]){
-  const p=a[i],q=b[i],v=q.map((x,k)=>(x-p[k])/d(p,q)),n=[-v[1],v[0]],signo=i===0?-1:1;
-  const u=p.map((x,k)=>x+n[k]*r.dentroOllao*signo),v2=q.map((x,k)=>x+n[k]*r.dentroOllao*signo);morro.ollaos.push(...repartir(u,v2,h.pasoOllaos,r));
- }
- const frente=cabeza(m,r);frente.ollaos=repartir([0,r.dentroOllao],[m.frente,r.dentroOllao],r.repartoFrente,r);
- frente.marcas.push(linea([m.frente/2,m.altoB+m.aguasB],[m.frente/2,m.altoB+m.aguasB-r.largoMarca]));
- const piezas=[cuerpo,morro,frente];
- if(h.ventana){const W=r.ventana.ancho,H=r.ventana.alto,top=frente.zTangencia-r.ventana.separacionTangencia;frente.marcas.push(...poligono([[m.frente/2-W/2,top-H],[m.frente/2+W/2,top-H],[m.frente/2+W/2,top],[m.frente/2-W/2,top]]));const tapa=[[0,0],[r.tapa.ancho,0],[r.tapa.ancho,r.tapa.alto],[0,r.tapa.alto]];piezas.push({nombre:'Tapa ventana',corte:poligono(tapa),contorno:tapa,marcas:[],ollaos:[]});}
- return {hoja:h,medidas:m,largoHecho:m.largoCuerpo+modelo.proyeccion,proyeccion:modelo.proyeccion,piezas,perfilA:modelo.perfilA,perfilB:modelo.perfilB};
+ return generarCal({...h,altoFrente:h.alto,aguasFrente:h.aguas,radio:h.curva==='Remolcar'?r.radioRemolcar:r.radio},r);
 }
 
 // Referencias: solo identificadores de las entidades reales. El borde de inicio
@@ -181,7 +152,7 @@ function dibujarResultado(h,piezas){
  fs.writeFileSync(path.join(salida,h.id+'-corte-superpuesto.png'),c.toBuffer('image/png'));
 }
 
-function comprobarCaso(h,r){
+export function comprobarCaso(h,r){
  const gen=generar(h,r),ref=referencias(h),piezas=[];
  for(const g of gen.piezas){const real=ref.piezas.find(p=>p.nombre===g.nombre),aj=colocar(g,real),transform=ps=>ps.map(p=>transformarPrimitiva(p,aj.T));const calculado={corte:transform(g.corte),marcas:transform(g.marcas),ollaos:transform(g.ollaos)};
   // Se aparta solo el segmento que coincide con el borde inicial del material.

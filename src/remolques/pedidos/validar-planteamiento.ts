@@ -1,6 +1,7 @@
 import { contornoAutomatico, contornoSesgado, type LonaInput } from "../calc/lona.ts";
 import type { BaquetonInput } from "../calc/baqueton.ts";
 import { esModeloGanado, type GanadoInput } from "../calc/ganado.ts";
+import { calcularMedidasCal } from "../ganado/medidas.ts";
 import { erroresGanchos, medidasRemolque } from "../calc/ganchos.ts";
 import { PASO_MINIMO_OLLAOS, sinPosiciones } from "../calc/ollaos.ts";
 
@@ -25,6 +26,12 @@ export function erroresPlanteamiento(input: LonaInput | BaquetonInput | GanadoIn
   agregar(!positivo(input.cantidad), "cantidad", "La cantidad debe ser mayor que cero.");
   // El de ganado trae sus piezas de la plantilla: solo hace falta el modelo y el material.
   if (esGanado(input)) {
+    if (input.ganado === 'CAL_MEDIDAS') {
+      try {
+        if (!input.medidasCal) throw Error('Introduce las medidas de Cal.');
+        calcularMedidasCal(input.medidasCal);
+      } catch (e) { agregar(true, 'medidasCal', e instanceof Error ? e.message : 'Revisa las medidas de Cal.'); }
+    }
     agregar(!esModeloGanado(input.ganado), "ganado", "Elige el modelo del remolque de ganado.");
     agregar(!input.material.trim(), "material", "Selecciona o escribe el material.");
     return errores;

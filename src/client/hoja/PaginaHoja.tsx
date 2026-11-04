@@ -150,7 +150,7 @@ export function PaginaHoja({ pagina, vistas }: { pagina: PaginaHojaDatos; vistas
         </div>
         {/* El de ganado no tiene vistas 3D: el dibujo de confección de su plantilla. */}
         {pagina.ganado ? (
-          <div className="hoja-dibujo hoja-dibujo-ganado"><DibujoGanado modelo={pagina.ganado.modelo} cantidad={pagina.ganado.cantidad} compacto /></div>
+          <div className="hoja-dibujo hoja-dibujo-ganado"><DibujoGanado modelo={pagina.ganado.modelo} medidas={pagina.ganado.medidasCal} cantidad={pagina.ganado.cantidad} compacto /></div>
         ) : (
           <div className="hoja-dibujo">
             <div className="hoja-fila">{vista('tres-cuartos')}{vista('tres-cuartos-detras')}</div>

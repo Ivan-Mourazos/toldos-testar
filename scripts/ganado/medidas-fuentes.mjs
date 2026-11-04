@@ -6,16 +6,25 @@ import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 export const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-export const base = process.env.GANADO_ESTUDIO ?? 'C:/Users/ivan.sanchez/Documents/Proyectos DEV/toldos-testar/tmp/dxf-estudio/ganado';
+const estudioLocal = path.join(raiz, 'tmp/dxf-estudio/ganado');
+export const base = process.env.GANADO_ESTUDIO ?? (fs.existsSync(estudioLocal) ? estudioLocal : 'C:/Users/ivan.sanchez/Documents/Proyectos DEV/toldos-testar/tmp/dxf-estudio/ganado');
 export const salida = path.join(raiz, 'tmp/ganado-medidas');
 export const hash = f => crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
 export function guardar(nombre, datos) { fs.mkdirSync(salida, { recursive: true }); fs.writeFileSync(path.join(salida, nombre), typeof datos === 'string' ? datos : JSON.stringify(datos, null, 2)); }
 export function fuentes() {
   const ps = JSON.parse(fs.readFileSync(fs.existsSync(path.join(salida,'fuentes/pedidos-base.json'))?path.join(salida,'fuentes/pedidos-base.json'):path.join(base, 'pedidos.json'))).pedidos;
   const local=path.join(salida,'fuentes-plantillas.json');
-  const ts = JSON.parse(fs.readFileSync(fs.existsSync(local)?local:path.join(base, 'plantillas/fuentes.json')));
+  // Los manifiestos archivados conservan rutas del checkout anterior. Primero las copias locales;
+  // las referencias al original quedan como procedencia, no como destino de escritura.
+  const ts = JSON.parse(fs.readFileSync(fs.existsSync(local)?local:path.join(base, 'plantillas/fuentes.json'))).map(t=>{
+    const dxf=path.join(salida,'fuentes/plantillas/dxf',t.id+'.dxf'),alternativo=path.join(base,'plantillas/dxf',t.id+'.dxf');
+    return {...t,dxf:fs.existsSync(dxf)?dxf:fs.existsSync(alternativo)?alternativo:t.dxf};
+  });
   const fsn = path.join(salida, 'fuentes-red.json');
-  const nuevas = fs.existsSync(fsn) ? JSON.parse(fs.readFileSync(fsn)).fuentes.filter(x => x.dxf && fs.existsSync(x.dxf)) : [];
+  const nuevas = fs.existsSync(fsn) ? JSON.parse(fs.readFileSync(fsn)).fuentes.map(x=>{
+    const dxf=path.join(salida,'fuentes/dxf',x.id+'.dxf'),bot=path.join(salida,'fuentes/bot',x.id+'.dxf');
+    return {...x,dxf:fs.existsSync(dxf)?dxf:x.dxf,...(fs.existsSync(bot)?{bot}:{})};
+  }).filter(x => x.dxf && fs.existsSync(x.dxf)) : [];
   const pedidos = fs.readdirSync(path.join(base, 'dwg-dxf')).filter(f => /\.dxf$/i.test(f)).map(f => {
     const id = path.basename(f, '.dxf'); const p = ps.find(p => p.pedido === id);
     return { id, clase: 'pedido', cliente: p?.cliente, dxf: path.join(base, 'dwg-dxf', f), original: p?.fuentes?.dwg?.ruta ?? p?.fuentes?.dwg?.original ?? path.join(base, 'originales', id + '.dwg'), bot: path.join(base, 'originales', id + '-bot.dxf') };
