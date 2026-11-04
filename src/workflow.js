@@ -458,10 +458,19 @@ export function createWorkflowStore({ settingsFile, defaults }) {
     return reviewPath;
   }
 
+  // Solo se comparten peticiones en marcha: al terminar se relee la carpeta en la próxima consulta.
+  const listadosEnCurso = new Map();
   async function listReviews(year = new Date().getFullYear()) {
     const settings = await getSettings();
     if (!settings.reviewDirectory) return [];
     const directory = resolveDirectoryTemplate(settings.reviewDirectory, year);
+    if (listadosEnCurso.has(directory)) return listadosEnCurso.get(directory);
+    const pendiente = listarCarpeta(directory).finally(() => listadosEnCurso.delete(directory));
+    listadosEnCurso.set(directory, pendiente);
+    return pendiente;
+  }
+
+  async function listarCarpeta(directory) {
     let names;
     try {
       names = await fs.readdir(directory);
@@ -473,21 +482,28 @@ export function createWorkflowStore({ settingsFile, defaults }) {
     const pdfCodes = new Set(pdfNames.map((name) => name.slice(0, -REVIEW_FILE_SUFFIX.length).toUpperCase()));
     const legacyNames = names.filter((name) => name.toLowerCase().endsWith(LEGACY_REVIEW_FILE_SUFFIX)
       && !pdfCodes.has(name.slice(0, -LEGACY_REVIEW_FILE_SUFFIX.length).toUpperCase()));
-    const reviews = await Promise.all([...pdfNames, ...legacyNames]
-      .map(async (name) => {
+    const archivos = [...pdfNames, ...legacyNames];
+    const reviews = [];
+    let siguiente = 0;
+    // Cada PDF se lee entero y PDF.js duplica sus bytes. No abrir toda la bandeja a la vez:
+    // con cientos de pedidos disparaba la memoria externa aunque el heap fuese pequeño.
+    async function leerSiguiente() {
+      while (siguiente < archivos.length) {
+        const name = archivos[siguiente++];
         try {
           const filePath = path.join(directory, name);
           const review = name.toLowerCase().endsWith(REVIEW_FILE_SUFFIX)
             ? await extractReviewPackageFromPdf(await fs.readFile(filePath))
             : JSON.parse(await fs.readFile(filePath, 'utf8'));
-          return reviewSummary(review);
+          reviews.push(reviewSummary(review));
         } catch (error) {
           if (error.code !== NOT_EDITABLE_REVIEW_PDF) {
             console.error(`No se pudo leer ${name}:`, error.message);
           }
-          return null;
         }
-      }));
+      }
+    }
+    await Promise.all([leerSiguiente(), leerSiguiente()]);
     return reviews.filter(Boolean).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   }
 
