@@ -32,7 +32,7 @@ L = segmentos de línea (las polilíneas se descomponen); B = INSERT; A = ARC/CI
 |4815 A / B|Símbolo de franja|4H /1H|4H /4H|La B usa el símbolo actual; es indicación de material, no paso ni patrón de impresión |
 |5363 A / B|cotas|17 /17|17 /17|0 /0: F,H,V,V+h,59/121/210,35,F del faldón,seis8,F+2,64 |
 |4815 A / B|cotas|15 /15|15 /15|0 /0: se conserva su versión sin las dos cotas interiores nuevas del cristal |
-|5363 A / B|texto|23T /23T +6A +12L de guías cada una|23T /22T +6A +12L|0 relevante; la B no recibe el X2 copiado del alzado de Iván (Q-SP07) |
+|5363 A / B|texto|23T /23T +6A +12L de guías cada una|23T /23T +6A +12L|0 /0; B recibe X1, verificado de nuevo en el DWG local (Q-SP07 cerrada) |
 |4815 A / B|texto|22T cada una +6A +12L|22T cada una +6A +12L|0 /0; rótulos de oficina, en mayúsculas, recolocados en el hueco libre |
 |Ambos, cada hoja|Detalle lateral E.T./velcros|4L, dos rectángulos4L,1 arco,4 cotas rotuladas,4T|Las mismas entidades; detalle junto a cada puerta|0 /0; dibujo esquemático, no patrón de corte |
 |5363 · corte de lona, todas las piezas|cortes-lona /corte → DISCO1|Paños6, E.T.9, refuerzos18|Las mismas piezas y posición de columnas;664 cm|**0 segmentos faltantes /0 sobrantes**, cobertura geométrica con tolerancia0,15 mm, sin contar duplicados |
@@ -57,7 +57,7 @@ L = segmentos de línea (las polilíneas se descomponen); B = INSERT; A = ARC/CI
 
 `node scripts/contrastar-capas-santapau.mjs despues 5363` (y4815) genera inventario completo, huellas SHA256, diferencias entidad a entidad, capturas de todas las capas por puerta, recortes de mirilla, E.T. y bajo, detalle lateral, comparación del papel y corte normalizado por cada copia A/B. Salida: `tmp/santapau/capas/AR2605363/despues/` y `AR2604815/despues/`. Las carpetas `antes/` conservan las omisiones iniciales; el inventario bruto no confunde igualdad de número de entidades con igualdad de geometría.
 
-Pruebas TDD en `capasSantaPau.test.ts`: entidades nativas, cotas con anclas y texto junto a cada refuerzo, flechas/círculos del bot, medidas actuales, inventario físico sin solapamientos ni salida de rollo y dos presentaciones con sus OF. Se mantienen las pruebas de compatibilidad de Portanova y Araujo. Q-SP01–06 conservan el historial de respuestas; solo queda Q-SP07, sobre X2 en la B de un pedido de una unidad.
+Pruebas TDD en `capasSantaPau.test.ts`: entidades nativas, cotas con anclas y texto junto a cada refuerzo, flechas/círculos del bot, medidas actuales, inventario físico sin solapamientos ni salida de rollo y dos presentaciones con sus OF. Se mantienen las pruebas de compatibilidad de Portanova y Araujo. Q-SP01–06 conservan el historial de respuestas; Q-SP07 queda cerrada: la reconversión del DWG local demuestra X1 en B, igual que su cantidad en hoja/RPS.
 
 ## Comprobación final de esta revisión
 
@@ -66,3 +66,23 @@ Los dos DWG regenerados tienen cabecera AC1032 (2018) y los cálculos no produce
 Pasan **369 ficheros y4.828 pruebas**, typecheck, lint y compilación, incluidas las33 pruebas específicas de Santa Pau/clientes y la compatibilidad de Portanova/Araujo. Informes en `tmp/santapau/*capas-rebase.log` y `vitest-capas-afectadas.log`. La rama se rebasó sobre26e9c3c, conservando las secciones de lacados y Santa Pau del expediente; sin push. `origin/main` avanzó después a69cf03c (anchura de desplegables); ese cambio posterior no forma parte de esta validación.
 
 **Estado de la instancia tras el cambio de cuenta:** la aislada heredada sigue respondiendo en4480 y su simulado en4490 (procesos28468 y17972). `/api/health` confirma `simulationMode: true` y `fileWritesEnabled: false`. Windows deniega detener ambos procesos, incluso con ejecución elevada; no se ha podido confirmar su cierre. Las pruebas y los generadores escriben sus evidencias en `tmp/`.
+
+## Segunda comprobación del5363 · rótulos y escala
+
+La reconversión de la copia local de AR2605363.dwg demuestra **X1 en B**, no X2. Se corrige la transcripción del informe anterior y se añade X1 al alzado web. Hay23 textos por alzado en ambas fuentes, incluidas sus cantidades; no cambia ninguna pieza ni consumo.
+
+| Capa / función | Está en Iván | Faltaba o sobraba en la web | Estado tras esta comprobación |
+|---|---|---|---|
+| cortes - lona / corte | Paños, E.T., faldón y refuerzos | Ninguna pieza; duplicados del original ya documentados | Coincide el corte físico |
+| corte (vent) | Cristal199/218×64 | Nada | Coincide |
+| marca / ROTULADOR | Marcas, tres flechas y círculo por puerta | Nada | Coincide; cero segmentos faltantes/sobrantes a0,15 mm |
+| ejes / borrar | Tres ejes y tres bordes de E.T. | Nada | Coincide |
+| referencias / referencia-1 | Bajo terminado, cabecera, velcros y seis refuerzos | Nada de confección | Coincide; símbolo de diagonales ajustado al ancho, sin convertirlo en patrón de impresión |
+| cotas |17 por alzado, con anclas en bordes de mirilla, ejes y refuerzos | Letra interior de15 en vez de10; cotas centrales demasiado bajas | Corregido: interiores10, generales14 y cotas centrales a140,2814 desde el bajo terminado |
+| texto | Cantidad, identificaciones, REVÉS, OF y notas | Faltaba X1 en B; letra del cristal y nota central desplazadas; velcro separado de su borde | Corregido: X1, nota central debajo del eje121, identificación del cristal debajo de su cota y velcro junto a su borde |
+| detalle lateral | Velcros, soldadura y E.T.; cotas esquemáticas5/5/5/35 | Nada | Coincide |
+| vent-pre-noimpr / recuadros | Auxiliares de oficina | No deben imprimirse ni cortarse | Coincide su función |
+
+El SVG web conserva ahora el anclaje vertical y el tamaño de letra de las cotas del lienzo CAD. Las pruebas de regresión verifican la posición de la nota central y del cristal, X1, las cotas de los refuerzos, el tamaño de los números en el DXF y la representación web del velcro. El4815 conserva su revisión física anterior; la tipografía y el símbolo de diagonales de esa revisión siguen teniendo las diferencias de presentación ya documentadas.
+
+Salidas regeneradas en `tmp/santapau/salida/`; capturas lado a lado e inventario en `tmp/santapau/capas/AR2605363/despues/` y `AR2604815/despues/`. Las hojas `revision-*.png` reúnen todas las capturas para su revisión visual. Capturas web de esta segunda comprobación en `tmp/ui-audit/puertas-santapau-continuacion/`, claro/oscuro y1280×720/1600×1000. La instancia propia usa4482/4492 porque4480/4490 estaban ocupados al empezar; el estado heredado se describe arriba.

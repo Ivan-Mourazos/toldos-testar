@@ -14,9 +14,9 @@ export function alzadoSantaPau(p:Puerta,r:ResultadoPuerta,letra:string):Geometri
  for(const t of cad.lineas)formas.push({tipo:'linea',clase:clase(t.capa),x1:t.x1,y1:-t.y1,x2:t.x2,y2:-t.y2,...(['ejes','borrar'].includes(t.capa)?{trazos:'3 2'}:{})});
  for(const t of cad.textos){
   const lineas=[''];for(const palabra of t.valor.split(' ')){const i=lineas.length-1,nueva=`${lineas[i]}${lineas[i]?' ':''}${palabra}`;if(t.ancho&&lineas[i]&&anchoArial(nueva,t.h)>t.ancho)lineas.push(palabra);else lineas[i]=nueva;}
-  formas.push({tipo:'texto',x:t.x,y:-t.y,tamano:t.h,lineas,ancla:[3,6,9].includes(t.ancla??5)?'end':[1,4,7].includes(t.ancla??5)?'start':'middle',giro:-(t.giro??0),...(lineas.length>1?{taller:{guia:null}}:{})});
+  formas.push({tipo:'texto',x:t.x,y:-t.y,tamano:t.h,lineas,alineacionVertical:(t.ancla??5)<=3?'hanging':(t.ancla??5)<=6?'middle':'auto',ancla:[3,6,9].includes(t.ancla??5)?'end':[1,4,7].includes(t.ancla??5)?'start':'middle',giro:-(t.giro??0),...(lineas.length>1?{taller:{guia:null}}:{})});
  }
- for(const t of cad.cotas){const vertical=t.giro===90;formas.push({tipo:'cota',x1:t.x1,y1:-t.y1,x2:t.x2,y2:-t.y2,linea:vertical?t.d:-t.d,valor:t.valor,rotulo:t.rotulo,marcas:2,estilo:t.estilo as 'XERAL',texto:{x:t.posicionTexto?.[0]??(vertical?t.d-3:(t.x1+t.x2)/2),y:t.posicionTexto?-t.posicionTexto[1]:vertical?-(t.y1+t.y2)/2:-t.d-3,ancla:'middle',...(vertical?{giro:-90}:{})}});}
+ for(const t of cad.cotas){const vertical=t.giro===90;formas.push({tipo:'cota',x1:t.x1,y1:-t.y1,x2:t.x2,y2:-t.y2,linea:vertical?t.d:-t.d,valor:t.valor,rotulo:t.rotulo,marcas:2,estilo:t.estilo as 'XERAL',tamanoTexto:t.estilo==='XERAL 14'?14:t.estilo==='XERA 15'?15:10,texto:{x:t.posicionTexto?.[0]??(vertical?t.d-3:(t.x1+t.x2)/2),y:t.posicionTexto?-t.posicionTexto[1]:vertical?-(t.y1+t.y2)/2:-t.d-3,ancla:'middle',...(vertical?{giro:-90}:{})}});}
  for(const b of cad.inserciones){const sy=b.giro===180?-1:1;formas.push({tipo:'polilinea',clase:'puerta-marca',puntos:[[0,0],[0,1],[.8,1],[0,2.53205],[-.8,1],[0,1]].map(([x,y]):Punto=>[b.x+x,-b.y+y*sy])});}
  for(const a of [...cad.arcos,...cad.circulos.map(c=>({...c,desde:0,hasta:360}))]){
   const hasta=a.hasta<a.desde?a.hasta+360:a.hasta;

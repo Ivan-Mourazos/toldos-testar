@@ -373,7 +373,7 @@ Respuestas de Iván. «Pendiente» quiere decir que la web todavía no lo aplica
 
 ## Puertas · Santa Pau · 04/11/2026
 
-**Q-SP01–06 contestadas por Iván el 04/11/2026; Q-SP07 pendiente.** Criterio general: «no te fíes mucho de los pedidos antiguos porque se han hecho cambios; fíate de los últimos como el mío». La referencia actual es el **5363 corregido por Iván**, recibido después del contraste del4815. El4815 conserva su corte anterior. [Tabla completa, piezas y comparación con Portanova](./puertas-santapau.md), [contraste por capas y revisión actual](./puertas-santapau-capas.md).
+**Q-SP01–06 contestadas por Iván el 04/11/2026; Q-SP07 cerrada al releer el DWG.** Criterio general: «no te fíes mucho de los pedidos antiguos porque se han hecho cambios; fíate de los últimos como el mío». La referencia actual es el **5363 corregido por Iván**, recibido después del contraste del4815. El4815 conserva su corte anterior. [Tabla completa, piezas y comparación con Portanova](./puertas-santapau.md), [contraste por capas y revisión actual](./puertas-santapau-capas.md).
 
 | Código | Duda en lenguaje llano | Tratamiento mientras tanto |
 | --- | --- | --- |
@@ -383,4 +383,4 @@ Respuestas de Iván. «Pendiente» quiere decir que la web todavía no lo aplica
 | Q-SP04 · Contestada | Logos | **Iván, 04/11:** «los logos no los marcamos nosotros». Se retiran campo, aviso, nota y marca de logo de la pantalla, plano y corte |
 | Q-SP05 · Contestada | Rollos | **Iván, 04/11:** «iguales al resto, 300/140/300 por defecto sin aviso de provisional». Valores iniciales confirmados y editables |
 | Q-SP06 · Contestada | Lado cerrado | **Iván, 04/11:** «mejor elegir». Elección obligatoria por pedido, mirando por el revés; sin elegir no se genera el bot |
-| Q-SP07 · Pendiente | El alzado B del5363 corregido pone X2, pero la hoja y RPS indican una puerta de216×340, OF0233645. ¿Es un rótulo copiado? | Se genera **B×1**, tanto en bot como en plano y consumo; A×2, OF0233644. No se duplica la B por ese rótulo |
+| Q-SP07 · Cerrada por comprobación | El informe anterior atribuía X2 al alzado B del5363. La reconversión de la copia local del DWG y sus entidades muestran **X1**, igual que hoja y RPS | **B×1**, OF0233645, también rotulada X1 en el alzado. A×2, OF0233644. No queda una contradicción de cantidad |

@@ -26,8 +26,9 @@ describe('Santa Pau: confección contrastada con varios fabricados',()=>{
   expect(textos.some(t=>t.lineas.some(s=>/CONTRASTE|PROPUEST|HISTÓRICO|POR CONFIRMAR|SANTA PAU|LOGO DISP|IMPRESIÓN DIGITAL|SUELTAS DE 9/i.test(s)))).toBe(false);
   expect(textos).toContainEqual(expect.objectContaining({lineas:['A1']}));
   expect(textos).toContainEqual(expect.objectContaining({lineas:['A2']}));
-  expect(textos).toContainEqual(expect.objectContaining({lineas:['VELCRO(5) SUAVE SOLDADO REVÉS'],y:expect.closeTo(p.alto-26.95,8)}));
-  expect(textos).toContainEqual(expect.objectContaining({lineas:['VELCRO(5) BRAVO REVÉS AL CORTE'],y:expect.closeTo(p.alto+54.1822+p.santapau!.altoFaldon+8,8)}));
+  const actual=p.santapau!.revision==='5363';
+  expect(textos).toContainEqual(expect.objectContaining({lineas:[actual?'velcro(5) suave soldado reves':'VELCRO(5) SUAVE SOLDADO REVÉS'],y:expect.closeTo(p.alto-(actual?26.947:26.95),8)}));
+  expect(textos).toContainEqual(expect.objectContaining({lineas:[actual?'velcro(5) bravo reves al corte':'VELCRO(5) BRAVO REVÉS AL CORTE'],y:expect.closeTo(p.alto+54.1822+p.santapau!.altoFaldon+(actual?.642:8),8)}));
   const dxf=escribirPlanoPuertas({pedido,cabecera:{cliente:'SANTA PAU',tecnico:'IVÁN',revisor:'',fecha:'04/11/2026'}});
   expect(dxf).not.toMatch(/CONTRASTE 4815|BAJO PROPUESTO|CORTE HISTÓRICO|POR CONFIRMAR|PROPUESTA DESDE HOJA/);
   expect(calcularPuerta(p).avisos.some(a=>['LOGO','REFUERZOS','ROLLOS_REVISAR'].includes(a.codigo))).toBe(false);

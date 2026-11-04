@@ -1,7 +1,7 @@
 import { nuevaPuertaDeCliente } from '../nuevaPuertaCliente.ts';
 import type { PedidoPuertas, Puerta } from '../tipos.ts';
 
-/** 4815 fabricado: hoja y corte; 5363 pendiente: exclusivamente hoja y RPS. */
+/** 4815 fabricado y5363 corregido por Iván: hoja, RPS y sus respectivos cortes. */
 function puerta(frente:number,alto:number,of:string,cantidad:number,nuevo:boolean):Puerta{
  const p=nuevaPuertaDeCliente('santapau','enrollable');
  return {...p,frente,alto,of,cantidad,color:nuevo?'ROJO 3002':'BLANCO',material:nuevo?'LAC900 IGNÍFUGA M2':'LAC900',confirmada:true,ventanasConfirmadas:true,

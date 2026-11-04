@@ -16,6 +16,7 @@ function Texto({ t }: { t: TextoAlzado }) {
       y={t.y}
       textAnchor={t.ancla === 'start' ? undefined : t.ancla}
       className={t.clase}
+      dominantBaseline={t.alineacionVertical}
       style={t.tamano ? { fontSize: `${t.tamano}px` } : undefined}
       transform={t.giro ? `rotate(${t.giro} ${t.x} ${t.y})` : undefined}
     >
@@ -54,6 +55,8 @@ function Cota({ c }: { c: CotaAlzado }) {
         y={t.y}
         textAnchor={t.ancla === 'start' ? undefined : t.ancla}
         className={t.clase}
+        style={c.tamanoTexto ? { fontSize: `${c.tamanoTexto}px` } : undefined}
+        dominantBaseline={c.tamanoTexto ? 'middle' : undefined}
         transform={t.giro ? `rotate(${t.giro} ${t.x} ${t.y})` : undefined}
       >
         {textoCota(c)}

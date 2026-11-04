@@ -27,6 +27,8 @@ export interface TextoAlzado {
   ancla: 'start' | 'middle' | 'end';
   /** Solo los textos de taller lo llevan (los demás, la letra del CSS). */
   tamano?: number;
+  /** Ancla vertical del texto CAD cuando se conserva su lienzo. */
+  alineacionVertical?: 'hanging' | 'middle' | 'auto';
   /** Grados como en el SVG (−90: se lee de abajo arriba). */
   giro?: number;
   /** Texto de taller: va en su grupo, con su línea guía si está fuera de la puerta. */
@@ -51,7 +53,8 @@ export interface CotaAlzado {
   sufijo?: string;
   marcas: number;
   /** Estilo real del plano: las cadenas pequeñas no dependen de la longitud medida. */
-  estilo?: 'XERA 15' | 'XERAL' | 'XERAL 5';
+  estilo?: 'XERA 15' | 'XERAL' | 'XERAL 5' | 'XERAL 14';
+  tamanoTexto?: number;
   /** `fijar` conserva en el DWG esta posición de texto fuera de una cota corta. */
   texto: { x: number; y: number; ancla: 'start' | 'middle' | 'end'; giro?: number; clase?: string; fijar?: boolean };
 }

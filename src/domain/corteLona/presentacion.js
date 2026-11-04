@@ -406,6 +406,7 @@ function anadirHojas(src, hojas, papelHojas, PAPEL, nuevo) {
 const SEPARA_COTA = 0.05;
 const ESTILOS_COTA = {
   XERAL: { texto: 0.1, flecha: 0.025, prolonga: 0.0175, hueco: 0.003 },
+  'XERAL 14': { texto: 0.14, flecha: 0.025, prolonga: 0.0175, hueco: 0.003, copiaDe: 'XERAL' },
   'XERAL 5': { texto: 0.05, flecha: 0.015, prolonga: 0.0175, hueco: 0.003 },
   'XERAL 15': { texto: 0.15, flecha: 0.025, prolonga: 0.0175, hueco: 0.003 },
   'XERA 15': { texto: 0.15, flecha: 0.025, prolonga: 0.0175, hueco: 0.003 },

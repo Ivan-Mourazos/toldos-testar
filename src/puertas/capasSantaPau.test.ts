@@ -53,6 +53,30 @@ describe('Santa Pau: entidades de confección del 4815 de Iván',()=>{
   expect(superior.marcas).toContainEqual([98.5,19.5,98.5,18.5]);
   expect(superior.marcas.some(m=>m[0]===m[2]&&m[1]===142)).toBe(false);
  });
+
+ it.each(pedidosSantaPau()[1].elementos)('$id: rótulos y cotas del5363 quedan del mismo lado de la pieza que en Iván',({input:p})=>{
+  const letra=p.frente===197?'A':'B',l=geometriaAlzado(p,calcularPuerta(p),letra).cad!,y=(a:number)=>a-p.alto;
+  // DWG5363: la nota central queda debajo del eje121, junto a los refuerzos.
+  const notas=l.textos.filter(t=>t.valor==='5 CM (HUECOS)').map(t=>t.y).sort((a,b)=>a-b);
+  for(const [i,valor]of [70.8083,115.3621,222.5349].entries())expect(notas[i]).toBeCloseTo(y(valor),3);
+  expect(l.textos.some(t=>t.valor==='X'+p.cantidad)).toBe(true);
+  const mirilla=l.textos.find(t=>t.valor===letra)!;
+  expect(mirilla.y).toBeCloseTo(y(148.7068),3);
+  expect(mirilla.ancla).toBe(8);
+  const formas=geometriaAlzado(p,calcularPuerta(p),letra).formas;
+  expect(formas).toContainEqual(expect.objectContaining({tipo:'texto',lineas:['velcro(5) bravo reves al corte'],alineacionVertical:'hanging'}));
+  expect(formas).toContainEqual(expect.objectContaining({tipo:'cota',valor:135,tamanoTexto:10}));
+  const centrales=l.cotas.filter(c=>c.valor===8&&Math.abs(c.y1-y(125.5))<.001);
+  expect(centrales).toHaveLength(2);
+  expect(centrales.every(c=>Math.abs(c.d-y(140.2814))<.001)).toBe(true);
+ });
+ it('el DXF conserva la letra de10 cm en las cotas interiores del5363, sin juntar135 y195',()=>{
+  const pedido=pedidosSantaPau()[1];
+  const d=leerPlanoTexto(escribirPlanoPuertas({pedido,cabecera:{cliente:'SANTA PAU',tecnico:'IVÁN',revisor:'',fecha:'04/11/2026'}})) as {modelo:Array<{tipo:string;deCota:boolean;valor:string;h:number}>};
+  const textos=d.modelo.filter(p=>p.deCota&&p.tipo==='texto'&&['135','195','59','121','210'].includes(p.valor));
+  expect(textos).toHaveLength(10);
+  expect(textos.every(t=>Math.abs(t.h-.1)<.00001)).toBe(true);
+ });
  it('5363: como máximo664 de lona; todos los paños, nueve E.T. y18 refuerzos caben sin solaparse',()=>{
   const c=generarCortePuertas(pedidosSantaPau()[1]).cortes.find(c=>c.colocadas.some(t=>t.pieza.clase==='pano'))!;
   expect(c.largo).toBeLessThanOrEqual(6640);

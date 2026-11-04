@@ -20,7 +20,7 @@ export function dibujoSantaPau(p:Puerta,r:ResultadoPuerta,letra:string):LienzoEn
  };
  const trama=(puntos:Punto[],patron:'ANSI31'|'ANGLE')=>l.sombreados.push({capa:'referencia-1',puntos,solido:false,patron});
  const texto=(valor:string,x:number,altura:number,h=7,ancla=5,giro=0)=>l.textos.push({capa:'texto',valor,x,y:y(altura),h,ancla,giro});
- const cota=(x1:number,y1:number,x2:number,y2:number,d:number,estilo='XERAL',posicionTexto?:Punto)=>l.cotas.push({capa:'cotas',estilo,x1,y1:y(y1),x2,y2:y(y2),giro:x1===x2?90:0,d:x1===x2?d:y(d),valor:Math.hypot(x2-x1,y2-y1),...(posicionTexto?{posicionTexto:[posicionTexto[0],y(posicionTexto[1])] as Punto}:{})});
+ const cota=(x1:number,y1:number,x2:number,y2:number,d:number,estilo='XERAL',posicionTexto?:Punto)=>l.cotas.push({capa:'cotas',estilo:actual&&estilo==='XERA 15'?'XERAL':estilo,x1,y1:y(y1),x2,y2:y(y2),giro:x1===x2?90:0,d:x1===x2?d:y(d),valor:Math.hypot(x2-x1,y2-y1),...(posicionTexto?{posicionTexto:[posicionTexto[0],y(posicionTexto[1])] as Punto}:{})});
  for(const [i,pano]of r.piezas.filter(a=>a.clase==='pano').entries()){
   const base=pano.origenAlzado?.[1]??0;
   rect('cortes - lona',0,base,F,pano.alto);
@@ -28,8 +28,8 @@ export function dibujoSantaPau(p:Puerta,r:ResultadoPuerta,letra:string):LienzoEn
   const cortes=[base,...[...p.entradas.map(e=>e.altura),10,15,26.95].filter(a=>a>base&&a<base+pano.alto),base+pano.alto].sort((a,b)=>a-b);
   const [a,b]=cortes.slice(1).map((t,j)=>[cortes[j]+10,t-10]).reduce((u,v)=>v[1]-v[0]>u[1]-u[0]?v:u);
   const h=Math.min(i===0&&actual?18:20,F/8,(b-a)/(i===0?6:2)),centro=(a+b)/2;
-  texto(`${letra}${i+1}`,F/2,centro+(!i&&actual?h/2:0),h);
-  if(!i){texto('REVÉS',F/2,centro+h*(actual?-1:1.5),h);texto(p.of||'SIN OF',F/2,centro-h*(actual?2.5:1.5),h);if(p.cantidad>1)texto(`X${p.cantidad}`,F/2,centro+h*(actual?2:3),h);}
+  texto(`${letra}${i+1}`,F/2,centro+(actual?h*(i?-7.7916/20:9.1294/18):0),h,actual?8:5);
+  if(!i){texto('REVÉS',F/2,centro+(actual?-h*18.4873/18:h*1.5),h,actual?8:5);texto(p.of||'SIN OF',F/2,centro-(actual?h*46.7826/18:h*1.5),h,actual?8:5);if(actual||p.cantidad>1)texto(`X${p.cantidad}`,F/2,centro+(actual?h*35.3033/18:h*3),h,actual?8:5);}
  }
  for(const altura of [0,5,H])linea('referencias',0,altura,F,altura);
  // Las dos marcas del velcro quedan a 15 y 20 desde el corte inferior de +5.
@@ -43,7 +43,7 @@ export function dibujoSantaPau(p:Puerta,r:ResultadoPuerta,letra:string):LienzoEn
   const margen=v.x>0?v.x:0;
   rect('corte (vent)',margen?margen-2:-1,v.y-2,margen?v.ancho+4:F+2,v.alto+4);
   if(margen){rect('cortes - lona',-1,v.y-2,margen+1,v.alto+4);rect('cortes - lona',F-margen,v.y-2,margen+1,v.alto+4);}
-  texto(letra,F/2,v.y+v.alto/2,20);
+  texto(letra,F/2,v.y+v.alto/2-(actual?16.2932:0),20,actual?8:5);
   cota(F,0,F,v.y,F+11.9672,'XERA 15');cota(F,0,F,v.y+v.alto,F+25.079,'XERA 15');
   if(actual){
    cota(margen?margen-2:-1,v.y+v.alto+2,margen?margen+v.ancho+2:F+1,v.y+v.alto+2,v.y+v.alto-13.188,'XERAL');
@@ -58,13 +58,15 @@ export function dibujoSantaPau(p:Puerta,r:ResultadoPuerta,letra:string):LienzoEn
   l.inserciones.push({capa:'marca',nombre:'FLECHA2',x:e.largo/2,y:y(marca),giro:superior?0:180,sx:-1});
   const indice=p.entradas.indexOf(e),distancias=[-8.5057,-17.9231,-32.2877];
   cota(0,0,0,e.altura,distancias[indice]??-32.2877-(indice-2)*14,'XERA 15');
-  texto('5 CM (HUECOS)',e.largo/2+25.26,e.altura+(superior?12.53:11.81),5,3);
+  // La nota de la E.T. pegada a la mirilla queda debajo; las otras dos, encima.
+  const juntoMirilla=actual&&!superior&&Boolean(v&&v.y-e.altura<20);
+  texto('5 CM (HUECOS)',e.largo/2+(actual?(juntoMirilla?29.2628:superior?25.2558:31.2954):25.26),e.altura+(juntoMirilla?-5.6379:superior?12.5349:11.8083),5,3);
   if(!s.refuerzos)continue;
   for(const derecha of [false,true]){
    const x=derecha?e.largo-ancho:0;
    trama(caja(x,e.altura-4.5,ancho,e.alto),'ANSI31');
    linea('referencia-1',derecha?x:x+ancho,e.altura-4.5,derecha?x:x+ancho,e.altura+4.5);
-   cota(x,e.altura+4.5,x+ancho,e.altura+4.5,e.altura+9.2696,'XERAL',[derecha?e.largo-10.6858:9.5067,e.altura+17.6253]);
+   cota(x,e.altura+4.5,x+ancho,e.altura+4.5,e.altura+(juntoMirilla?19.2814:9.2696),'XERAL',[derecha?e.largo-(juntoMirilla?8.8031:10.6858):9.5067,e.altura+(juntoMirilla?(derecha?28.7456:27.6371):17.6253)]);
    const margenTexto=actual?60.7849:74.8098;
    texto('REFUERZO EN E.T.',derecha?e.largo-margenTexto:margenTexto,e.altura-6.0625,actual?4:5,derecha?1:3);
    const cx=derecha?e.largo-8.692085:8.692085;
@@ -74,8 +76,8 @@ export function dibujoSantaPau(p:Puerta,r:ResultadoPuerta,letra:string):LienzoEn
    linea('texto',espejo(4.901),e.altura-5.909,espejo(7.22),e.altura-6.434);
   }
  }
- const suave='VELCRO(5) SUAVE SOLDADO REVÉS',bravo='VELCRO(5) BRAVO REVÉS AL CORTE';
- texto(suave,F/2,26.95,Math.min(7,(F-16)/anchoArial(suave,1)));
+ const suave=actual?'velcro(5) suave soldado reves':'VELCRO(5) SUAVE SOLDADO REVÉS',bravo=actual?'velcro(5) bravo reves al corte':'VELCRO(5) BRAVO REVÉS AL CORTE';
+ texto(suave,F/2+(actual?68.392:0),actual?26.947:26.95,Math.min(7,(F-16)/anchoArial(suave,1)),actual?3:5);
  texto('ET SOLDADA 2 CM (5.5 CM HUECOS)',F/2+65.11,-4.93,4.64,3);
  l.textos.push({capa:'texto',valor:'SOLDAR POR EL DERECHO A LA MISMA ALTURA QUE LA PARTE DE ARRIBA EL VELCRO',x:F/2-150.99,y:y(-32.16),h:7,ancla:1,ancho:310});
  if(s.ladoCerrado!=='sin confirmar')texto('DE ESTE LADO PISAR LAS E.T. 1 CM',s.ladoCerrado==='derecha'?F+59.34:-59.34,Math.min(actual?51.7681:87.45,H/4),10,1,90);
@@ -88,10 +90,10 @@ export function dibujoSantaPau(p:Puerta,r:ResultadoPuerta,letra:string):LienzoEn
   const muestras=[[[0,9.6943],[0,0],[4.4479,0],[34.4479,35],[20.3057,35]],[[83.9428,35],[53.9428,0],[68.085,0],[98.085,35]],[[174.1485,0],[188.2906,0],[197,8.7094],[197,27.8515]],[[48.59,35],[18.59,0],[32.7322,0],[55.4822,35]]];
   muestras.forEach((ps,i)=>l.sombreados.push({capa:i===2?'cortes - lona':'referencias',puntos:ps.map(([x,a]):Punto=>[x*F/197,y(bajoFaldon+a*s.altoFaldon/35)]),solido:true,color:2}));
  }
- texto(bravo,F/2,bajoFaldon-8,Math.min(5.5,(F-16)/anchoArial(bravo,1)));
+ texto(bravo,F/2+(actual?66.0558:0),bajoFaldon-(actual?.642:8),Math.min(actual?7:5.5,(F-16)/anchoArial(bravo,1)),actual?3:5);
  cota(0,bajoFaldon,0,bajoFaldon+s.altoFaldon,-13.0315);
- cota(0,bajoFaldon,F,bajoFaldon,bajoFaldon-23.2848,'XERA 15');
- cota(0,H,F,H,H+21.0627,'XERA 15');cota(F,0,F,H,F+44.8002,'XERA 15');
+ cota(0,bajoFaldon,F,bajoFaldon,bajoFaldon-(actual?15.2848:23.2848),'XERA 15');
+ cota(0,H,F,H,H+21.0627,actual?'XERAL 14':'XERA 15');cota(F,0,F,H,F+44.8002,actual?'XERAL 14':'XERA 15',actual?[F+44.8002,H*.5984321]:undefined);
  return l;
 }
 
