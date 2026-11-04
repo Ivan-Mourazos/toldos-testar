@@ -111,3 +111,7 @@ El área nominal de lona del cuerpo aumenta1.112,5 cm² por los dos inferiores y
 El [informe por capas](./puertas-santapau-capas.md) recoge la revisión posterior del5363, que pasa a ser la referencia actual, la colocación comparada con el anidado común y las dos hojas por pedido. Se conservan bloques, arcos, tramas, solapes, cotas y detalle lateral; los textos de estudio quedan fuera del taller. El corte normalizado del5363 tiene cero segmentos faltantes o sobrantes y sus tres señales circulares coinciden con el original. Las cuatro presentaciones y las ocho capturas de pantalla están revisadas.
 
 Validación de esta revisión: **369 ficheros y4.828 pruebas**, typecheck, lint y build correctos. Cambios guardados en la rama, sin push. **La instancia heredada sigue abierta en4480/4490:** Windows deniega detener sus procesos tras el cambio de cuenta; salud verificada en simulación y sin escritura habilitada. El informe conserva los detalles del cierre de esa revisión. Q-SP07 se ha cerrado después al reconvertir el DWG: B lleva X1.
+
+### Cierre de la segunda comprobación · 04/11/2026
+
+Corregidos tamaño y posición de cotas/rótulos del5363 y su correspondencia con el SVG web; B lleva X1, verificado en el DWG. El informe por capas conserva la tabla final y las diferencias gráficas normalizadas. Rebase sobre69cf03c; **4.831 pruebas en369 ficheros**, typecheck, lint y build correctos. DWG, DXF del bot y ambas presentaciones PNG regenerados para4815 y5363. Puertos4480/4490/4482/4492 cerrados, comprobado por petición HTTP. Sin push.
