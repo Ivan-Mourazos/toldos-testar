@@ -204,4 +204,18 @@ describe('Ágata Box', () => {
     expect(calculateAgataSupportCount({ width: 717, minimumLine: 693.9, armCount: 3, parameters: defaultAgataBoxParameters })).toBe(5);
     expect(calculateAgataSupportCount({ width: 1040, minimumLine: 668.6, armCount: 4, parameters: defaultAgataBoxParameters })).toBe(10);
   });
+  // AR2605385 (Iván, 04/11/2026): un solo perfil posterior y un solo inferior, como la lira. En las 11
+  // OF desde 2024 se gasta 1 barra de cada uno hasta 700 de frente y 2 si es más largo.
+  it('cofre de 724: posterior e inferior van una vez, sin la fila «sellador» repetida', () => {
+    const awning = { ...baseAwning, width: 724, projection: 300, submodel: 'COFRE', placement: 'TECHO', structureColor: 'NEGRO GRAFITO MATE 9011-9111' };
+    const result = calculateAgataBox({ order: baseOrder, awning });
+    const filas = result.despiece.rows;
+    expect(filas.some((f) => /SELLADOR/.test(f.name))).toBe(false);
+    const total = (prefijo) => filas.filter((f) => f.reference?.startsWith(prefijo)).reduce((s, f) => s + f.units, 0);
+    expect(total('PRPMODUL')).toBe(total('PRLMODUL'));
+    expect(total('PRIMODUL')).toBe(total('PRLMODUL'));
+    const reserva = (prefijo) => result.materials.filter((m) => m.code?.startsWith(prefijo)).reduce((s, m) => s + m.quantity, 0);
+    expect(reserva('PRPMODUL')).toBe(reserva('PRLMODUL'));
+    expect(reserva('PRIMODUL')).toBe(reserva('PRLMODUL'));
+  });
 });

@@ -216,11 +216,14 @@ function buildMaterials(context) {
     materials.push(
       ...barLines(bars.roof, (length) => coloredStock('PRTMODUL', suffix, length), units, 'PERFIL TEJADILLO ÁGATA BOX'),
       ...barLines(bars.roofProtector, (length) => coloredStock('PRPLMODUL', suffix, length), units, 'PROTECTOR LONA TEJADILLO'),
-      ...barLines(bars.back, (length) => coloredStock('PRPMODUL', suffix, length), 2 * units, 'PERFIL POSTERIOR Y SELLADOR ÁGATA BOX'),
+      // Un solo perfil posterior: en las 11 OF desde 2024 se gasta como la lira (1 barra hasta 700,
+      // 2 si es más largo). La fila «sellador» con la misma referencia lo duplicaba (Iván, 04/11/2026).
+      ...barLines(bars.back, (length) => coloredStock('PRPMODUL', suffix, length), units, 'PERFIL POSTERIOR ÁGATA BOX'),
       line(colored(submodel === 'COFRE' ? 'SOTLMODUL' : 'SOINMODU', suffix), profileSupportCount * units, 'SOPORTES DE CIERRE ÁGATA BOX')
     );
   }
-  if (submodel === 'COFRE') materials.push(...barLines(bars.bottom, (length) => coloredStock('PRIMODUL', suffix, length), 2 * units, 'PERFIL INFERIOR ÁGATA BOX'));
+  // El perfil inferior también va una vez: 736 y 743 de frente gastaron 2 barras, no 4 (04/11/2026).
+  if (submodel === 'COFRE') materials.push(...barLines(bars.bottom, (length) => coloredStock('PRIMODUL', suffix, length), units, 'PERFIL INFERIOR ÁGATA BOX'));
 
   if (device === 'MOTOR') {
     const remote = resolveMotorRemote(awning.sensor);
@@ -290,11 +293,10 @@ function buildDespiece(context) {
     pushBars(14, 'PERFIL TEJADILLO ÁGATA BOX', bars.roof, (length) => coloredStock('PRTMODUL', suffix, length), units, lengths.enclosureLength);
     pushBars(15, 'PROTECTOR LONA TEJADILLO', bars.roofProtector, (length) => coloredStock('PRPLMODUL', suffix, length), units, lengths.enclosureLength);
     pushBars(16, 'PERFIL POSTERIOR ÁGATA BOX', bars.back, (length) => coloredStock('PRPMODUL', suffix, length), units, lengths.enclosureLength);
-    pushBars(17, 'PERFIL SELLADOR ÁGATA BOX', bars.back, (length) => coloredStock('PRPMODUL', suffix, length), units, lengths.enclosureLength);
     push(18, 'SOPORTES DE CIERRE ÁGATA BOX', colored(submodel === 'COFRE' ? 'SOTLMODUL' : 'SOINMODU', suffix), profileSupportCount * units);
   }
   push(19, 'JUEGO SOPORTE PUNTA MÁQUINA ÁGATA BOX', colored('SOMPMODUL', suffix), units);
-  if (submodel === 'COFRE') pushBars(20, 'PERFIL INFERIOR ÁGATA BOX', bars.bottom, (length) => coloredStock('PRIMODUL', suffix, length), 2 * units, lengths.enclosureLength);
+  if (submodel === 'COFRE') pushBars(20, 'PERFIL INFERIOR ÁGATA BOX', bars.bottom, (length) => coloredStock('PRIMODUL', suffix, length), units, lengths.enclosureLength);
   if (device === 'MOTOR') {
     // Mando y sensor, como en los demás modelos: la hoja los pone en ELEMENTOS ACCESORIOS.
     const remote = resolveMotorRemote(awning.sensor);

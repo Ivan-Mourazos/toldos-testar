@@ -1054,7 +1054,7 @@ describe('buildOrderPlanteamientoPdf', () => {
     // transform[5] MAYOR.
     const agataOrder = buildAgataBoxTwentyRowOrder();
     const agataCalculation = calculateOrder(agataOrder);
-    expect(agataCalculation.ofs[0].despiece.rows).toHaveLength(27);
+    expect(agataCalculation.ofs[0].despiece.rows).toHaveLength(26);
     const agataBuffer = await buildOrderPlanteamientoPdf({ order: agataOrder, calculation: agataCalculation });
     const agataDocument = await getDocument({ data: new Uint8Array(agataBuffer) }).promise;
     const agataPage = await agataDocument.getPage(1);
@@ -1075,7 +1075,7 @@ describe('buildOrderPlanteamientoPdf', () => {
     // Esta es justo la invariante que generaliza drawDespieceTable: con las veinte
     // filas que antes venían fijas, la tabla debe seguir imprimiéndolas todas y el
     // resto del layout (bloques de abajo) no debe perder ni recortar ninguna.
-    expect(despieceRows).toHaveLength(27);
+    expect(despieceRows).toHaveLength(26);
 
     const buffer = await buildOrderPlanteamientoPdf({ order, calculation });
     const document = await getDocument({ data: new Uint8Array(buffer) }).promise;
@@ -1302,7 +1302,7 @@ describe('buildOrderPlanteamientoPdf', () => {
 
     // Desde el 23/09/2026 el Ágata con cofre y motor reserva lo que se consume y tiene
     // 24 filas, 26 con los patines desde el 03/10 y una más del mando (con TECHO, el soporte de techo sustituye al frontal): todas en la hoja.
-    expect(despieceRows).toHaveLength(27);
+    expect(despieceRows).toHaveLength(26);
 
     const items = await paginaUno(order, calculation);
     const text = items.map((item) => item.str).join(' ');
