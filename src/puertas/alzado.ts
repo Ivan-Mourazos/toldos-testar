@@ -1,11 +1,11 @@
-import { alturasTubos } from './calcular.ts';
+import { alturasTubos, desfaseCintas } from './calcular.ts';
 import { alzadoAraujo } from './alzadoAraujo.ts';
 import { colocarTextosPuerta } from './textosPlano.ts';
 import { desnivelSuelo, pestanaDerecha, rotuloSaco, sacoPuerta } from './saco.ts';
 import { medidaSystemDock, REGLAS_SYSTEM_DOCK } from './systemDock.ts';
 import { ventanalesEnrollable } from './ventanalesEnrollable.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
-import type { Puerta, Punto, ResultadoPuerta } from './tipos.ts';
+import type { Hueco, Puerta, Punto, ResultadoPuerta } from './tipos.ts';
 
 // El alzado de una puerta como dibujo puro, en cm y con la y hacia abajo (como el SVG): lo pinta la pantalla
 // (AlzadoPuerta.tsx) y lo pasa al plano DWG src/puertas/plano.ts, así lo que se revisa en la web es lo que
@@ -272,10 +272,16 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
       if (enr && (p.enrollable.sinEtArriba && Math.abs(yEje - T) < .01
         || p.enrollable.sinEtAbajo && Math.abs(yEje - ejesVentanal.at(-1)!) < .01)) return;
       const altoE = enr ? 7.5 : e.alto || (e.diametro === 42 ? 13.5 : 12);
-      for (const h of e.huecos) rect('puerta-hueco-alzado', h.x - (ple && F > 600 ? 1 : 0), yEje + altoE / 2 - h.y - h.alto, h.ancho, h.alto, h.radio);
+      // Cada hueco en coordenadas de la puerta. Los extremos están en la E.T. (que en apilables de más de 6 m
+      // sobresale 1 cm); las cintas ya se miden desde el borde de la puerta (AR2605391), salvo que la E.T. sea
+      // del largo del frente, como en el AR2605036, donde se dibujaban con el mismo cm de menos.
+      const corrimiento = ple && F > 600 ? 1 : 0;
+      const enPuerta = (h: Hueco) => h.x <= 1.01 || h.x + h.ancho >= e.largo - 1.01
+        ? h.x - corrimiento : h.x - corrimiento + desfaseCintas(e, F);
+      for (const h of e.huecos) rect('puerta-hueco-alzado', enPuerta(h), yEje + altoE / 2 - h.y - h.alto, h.ancho, h.alto, h.radio);
       // Cadena completa de las cintas: extremos a 6, huecos y separaciones, como AR2605036.
       if (ple && e.huecos.length > 2 && i === p.entradas.findIndex(t => t.huecos.length > 2)) {
-        const hs = [...e.huecos].sort((a, b) => a.x - b.x);
+        const hs = [...e.huecos].map(h => ({ ...h, x: enPuerta(h) })).sort((a, b) => a.x - b.x);
         const hitos = [0, hs[0].x + hs[0].ancho, ...hs.slice(1, -1).flatMap(h => [h.x, h.x + h.ancho]), hs.at(-1)!.x, F];
         const y = yEje - 15;
         hitos.slice(1).forEach((x, j) => {

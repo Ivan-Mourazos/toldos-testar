@@ -1,0 +1,530 @@
+{
+ "modelo": "PUERTAPLE",
+ "articuloOrigen": "PUERTAPLE",
+ "frente": 864,
+ "alto": 597,
+ "of": "0233715",
+ "cantidad": 1,
+ "margenMarcas": 1.5,
+ "confirmada": true,
+ "ventanasConfirmadas": true,
+ "bolsillo": false,
+ "medidasBolsillo": {
+  "distancia": 0,
+  "ancho": 0,
+  "lado": "izquierdo",
+  "altoSuperior": null
+ },
+ "material": "LAC900",
+ "color": "AZUL 5010",
+ "materialCristal": "TRANSP. 1000MI",
+ "materialSaco": "LAC900 NEGRO",
+ "sacoDiagonalesAmarillas": false,
+ "rollo": 300,
+ "rolloCristal": 140,
+ "rolloSaco": 300,
+ "observaciones": "",
+ "entradas": [
+  {
+   "diametro": 42,
+   "largo": 866,
+   "alto": 13.5,
+   "huecos": [
+    {
+     "x": 1,
+     "y": 2,
+     "ancho": 5,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 860,
+     "y": 2,
+     "ancho": 5,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 29,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 228,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 426,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 624,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 823,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    }
+   ],
+   "altura": 36
+  },
+  {
+   "diametro": 42,
+   "largo": 866,
+   "alto": 13.5,
+   "huecos": [
+    {
+     "x": 1,
+     "y": 2,
+     "ancho": 5,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 860,
+     "y": 2,
+     "ancho": 5,
+     "alto": 9.5,
+     "radio": 0.5
+    }
+   ],
+   "altura": 90
+  },
+  {
+   "diametro": 42,
+   "largo": 866,
+   "alto": 13.5,
+   "huecos": [
+    {
+     "x": 1,
+     "y": 2,
+     "ancho": 5,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 860,
+     "y": 2,
+     "ancho": 5,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 29,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 228,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 426,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 624,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 823,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    }
+   ],
+   "altura": 144
+  },
+  {
+   "diametro": 42,
+   "largo": 866,
+   "alto": 13.5,
+   "huecos": [
+    {
+     "x": 1,
+     "y": 2,
+     "ancho": 5,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 860,
+     "y": 2,
+     "ancho": 5,
+     "alto": 9.5,
+     "radio": 0.5
+    }
+   ],
+   "altura": 198
+  },
+  {
+   "diametro": 42,
+   "largo": 866,
+   "alto": 13.5,
+   "huecos": [
+    {
+     "x": 1,
+     "y": 2,
+     "ancho": 5,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 860,
+     "y": 2,
+     "ancho": 5,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 29,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 228,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 426,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 624,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 823,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    }
+   ],
+   "altura": 252
+  },
+  {
+   "diametro": 42,
+   "largo": 866,
+   "alto": 13.5,
+   "huecos": [
+    {
+     "x": 1,
+     "y": 2,
+     "ancho": 5,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 860,
+     "y": 2,
+     "ancho": 5,
+     "alto": 9.5,
+     "radio": 0.5
+    }
+   ],
+   "altura": 306
+  },
+  {
+   "diametro": 42,
+   "largo": 866,
+   "alto": 13.5,
+   "huecos": [
+    {
+     "x": 1,
+     "y": 2,
+     "ancho": 5,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 860,
+     "y": 2,
+     "ancho": 5,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 29,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 228,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 426,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 624,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 823,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    }
+   ],
+   "altura": 360
+  },
+  {
+   "diametro": 42,
+   "largo": 866,
+   "alto": 13.5,
+   "huecos": [
+    {
+     "x": 1,
+     "y": 2,
+     "ancho": 5,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 860,
+     "y": 2,
+     "ancho": 5,
+     "alto": 9.5,
+     "radio": 0.5
+    }
+   ],
+   "altura": 414
+  },
+  {
+   "diametro": 42,
+   "largo": 866,
+   "alto": 13.5,
+   "huecos": [
+    {
+     "x": 1,
+     "y": 2,
+     "ancho": 5,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 860,
+     "y": 2,
+     "ancho": 5,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 29,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 228,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 426,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 624,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 823,
+     "y": 2,
+     "ancho": 12,
+     "alto": 9.5,
+     "radio": 0.5
+    }
+   ],
+   "altura": 468
+  },
+  {
+   "diametro": 42,
+   "largo": 866,
+   "alto": 13.5,
+   "huecos": [
+    {
+     "x": 1,
+     "y": 2,
+     "ancho": 5,
+     "alto": 9.5,
+     "radio": 0.5
+    },
+    {
+     "x": 860,
+     "y": 2,
+     "ancho": 5,
+     "alto": 9.5,
+     "radio": 0.5
+    }
+   ],
+   "altura": 522
+  }
+ ],
+ "ventanas": [
+  {
+   "x": 55,
+   "y": 100,
+   "ancho": 160,
+   "alto": 34,
+   "radio": 2,
+   "radioCristal": 4,
+   "tramo": 2
+  },
+  {
+   "x": 253,
+   "y": 100,
+   "ancho": 160,
+   "alto": 34,
+   "radio": 2,
+   "radioCristal": 4,
+   "tramo": 2
+  },
+  {
+   "x": 451,
+   "y": 100,
+   "ancho": 160,
+   "alto": 34,
+   "radio": 2,
+   "radioCristal": 4,
+   "tramo": 2
+  },
+  {
+   "x": 649,
+   "y": 100,
+   "ancho": 160,
+   "alto": 34,
+   "radio": 2,
+   "radioCristal": 4,
+   "tramo": 2
+  },
+  {
+   "x": 55,
+   "y": 154,
+   "ancho": 160,
+   "alto": 34,
+   "radio": 2,
+   "radioCristal": 4,
+   "tramo": 3
+  },
+  {
+   "x": 253,
+   "y": 154,
+   "ancho": 160,
+   "alto": 34,
+   "radio": 2,
+   "radioCristal": 4,
+   "tramo": 3
+  },
+  {
+   "x": 451,
+   "y": 154,
+   "ancho": 160,
+   "alto": 34,
+   "radio": 2,
+   "radioCristal": 4,
+   "tramo": 3
+  },
+  {
+   "x": 649,
+   "y": 154,
+   "ancho": 160,
+   "alto": 34,
+   "radio": 2,
+   "radioCristal": 4,
+   "tramo": 3
+  }
+ ],
+ "enrollable": {
+  "T": 0,
+  "D": 60,
+  "margen": 0,
+  "empates": [],
+  "saco": 120
+ },
+ "apilable": {
+  "pie": 36,
+  "pasos": [
+   54,
+   54,
+   54,
+   54,
+   54,
+   54,
+   54,
+   54,
+   54
+  ],
+  "cabecera": 75,
+  "bolsillo": 24,
+  "saco": 80,
+  "doble": false,
+  "empates": null
+ },
+ "autorreparable": {
+  "empates": [],
+  "saco": 120
+ },
+ "clientePuertas": "portanova",
+ "tipoPuerta": "apilable"
+}

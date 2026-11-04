@@ -1,6 +1,6 @@
 import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
-import { alturasTubos, calcularPuerta } from './calcular.ts';
+import { alturasTubos, calcularPuerta, desfaseCintas } from './calcular.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
 import { fusionarCortesPuertas, SEPARACION_EXTRA_FILAS, TITULO_MATERIAL_MM } from './corte.ts';
 import { esClientePortanova } from './clientePortanova.ts';
@@ -56,6 +56,14 @@ function redondeado(l: Lienzo, capa: string, x: number, y: number, w: number, h:
   const r = Math.min(radio, w / 2, h / 2), b = Math.tan(Math.PI / 8);
   l.polilineas.push({ capa, cerrada: true, puntos: [[x + r, y], [x + w - r, y], [x + w, y + r], [x + w, y + h - r],
     [x + w - r, y + h], [x + r, y + h], [x, y + h - r], [x, y + r]], curvas: [0, b, 0, b, 0, b, 0, b] });
+}
+
+/** Huecos de una E.T. en coordenadas de la puerta (0 a F). Si la E.T. sobresale del frente (apilables de más de
+ * 6 m, 1 cm por lado), los de los extremos se corren ese cm; las cintas ya se miden desde el borde de la puerta.
+ * AR2605391 (Iván, 04/11/2026): la muesca del extremo derecho salía 1 cm fuera y la cadena daba 25 y 4 en vez de 23 y 6. */
+function huecosEnPuerta(e: { largo: number; huecos: Hueco[] }, F: number): Hueco[] {
+  const d = desfaseCintas(e, F);
+  return e.huecos.map(h => (h.x <= 1.01 || h.x + h.ancho >= e.largo - 1.01) ? { ...h, x: h.x - d } : { ...h });
 }
 
 function huecoEntrada(l: Lienzo, h: Hueco, eje: number, altoEntrada: number, F: number) {
@@ -227,7 +235,7 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
       flecha(l, F / 2, y - a / 2, 180, -1);
       texto(l, `E.T Ø${e.diametro} mm`, F / 2, y, Math.min(8, a * .65));
       cota(l, 0, y - a / 2, 0, y + a / 2, -14);
-      for (const h of e.huecos) huecoEntrada(l, h, y, a, F);
+      for (const h of huecosEnPuerta(e, F)) huecoEntrada(l, h, y, a, F);
       obstaculos.push([y - a / 2, y + a / 2]);
     }
     const hitos = [0, ...tubos, H];
@@ -237,7 +245,7 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
     texto(l, 'AL CORTE', F + 7, -p.apilable.cabecera / 2, 8, 90);
     if (p.entradas.some(e => e.huecos.length > 2)) {
       const i = p.entradas.findIndex(e => e.huecos.length > 2), e = p.entradas[i], y = -H + tubos[i];
-      const hs = [...e.huecos].sort((a, b) => a.x - b.x), hitos = [0, hs[0].x + hs[0].ancho,
+      const hs = huecosEnPuerta(e, F).sort((a, b) => a.x - b.x), hitos = [0, hs[0].x + hs[0].ancho,
         ...hs.slice(1, -1).flatMap(h => [h.x, h.x + h.ancho]), hs.at(-1)!.x, F];
       hitos.slice(1).forEach((x, j) => {
         // Los huecos iguales interiores comparten la cota de ancho de los dos extremos.

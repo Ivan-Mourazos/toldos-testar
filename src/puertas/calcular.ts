@@ -24,6 +24,12 @@ export function nuevaPuerta(modelo: ModeloPuerta = 'PUERTAENR'): Puerta {
     apilable: { pie: 0, pasos: [], cabecera: 0, bolsillo: 24, saco: null, doble: false, empates: null },
     autorreparable: { empates: [], saco: 120 } };
 }
+/** Lo que sobresale la E.T. por cada lado del frente (apilables de más de 6 m: 1 cm). Las cintas se miden desde
+ * el borde de la puerta; en la E.T. van desplazadas esta cantidad. */
+export function desfaseCintas(e: Pick<Entrada, 'largo'>, frente: number): number {
+  const d = (e.largo - frente) / 2;
+  return Number.isFinite(d) && d > 0 && d < 5 ? n(d) : 0;
+}
 export function alturasTubos(p: Puerta): number[] {
   let y = p.apilable.pie;
   return [y, ...p.apilable.pasos.map(paso => (y = n(y + paso)))];
@@ -71,9 +77,14 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       of: p.of.trim() || 'SIN OF', radio: 0, contorno: [[0,0],[n(w),0],[n(w),n(h)],[0,n(h)]], marcas: [], textos: [], huecos: [] };
   }
   const agregar = (x: PiezaPuerta) => { piezas.push(x); return x; };
-  const huecosET = (e: Entrada): Hueco[] => e.huecos.map(h => ({ ...h,
-    ...(h.x <= 1.01 ? { abierto: 'izquierda' as const }
-      : h.x + h.ancho >= e.largo - 1.01 ? { abierto: 'derecha' as const } : {}) }));
+  // Las cintas (recortes centrales) se escriben desde el borde de la puerta, como en el dibujo del cliente, y
+  // su lado derecho es simétrico respecto al frente. Si la E.T. es más larga que el frente (apilables de más
+  // de 6 m: 1 cm por lado para escuadrar), se pasan a la E.T. sumando esa mitad. Sin esto, en el AR2605391
+  // (864, E.T. 866) la cinta de la izquierda quedaba a 29 del borde de la E.T. y la de la derecha a 31.
+  const huecosET = (e: Entrada): Hueco[] => e.huecos.map(h => {
+    const extremo = h.x <= 1.01 ? 'izquierda' as const : h.x + h.ancho >= e.largo - 1.01 ? 'derecha' as const : null;
+    return extremo ? { ...h, abierto: extremo } : { ...h, x: n(h.x + desfaseCintas(e, p.frente)) };
+  });
   function marca(x:PiezaPuerta,y:number,direccion?:1|-1) {
     y=n(y); const m=p.margenMarcas;
     if(y<0||y>x.alto) return;
