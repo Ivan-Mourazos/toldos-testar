@@ -37,7 +37,7 @@ Revisión del AR2605385 contra 33 OF desde 2023, con prioridad a 2025–2026. [T
 Evidencia, pedidos terminados y propuesta sin programar en
 [ganado-recogidas.md](./ganado-recogidas.md). Las medidas de Cal ya confirmadas se mantienen;
 las respuestas siguientes fijan las reglas de la propuesta. Sigue siendo un estudio,
-sin cambios en la aplicación. **01, 02, 03 y 05 contestadas; 04 y 06 abiertas.**
+sin cambios en la aplicación. **01, 02, 03, 05 y 06 contestadas; solo 04 abierta.**
 
 | Código | Pregunta para Iván / taller | Qué se propone mientras tanto |
 | --- | --- | --- |
@@ -46,7 +46,7 @@ sin cambios en la aplicación. **01, 02, 03 y 05 contestadas; 04 y 06 abiertas.*
 | Q-GANR03 · contestada por Iván, 04/11 | Puentes: «exacto, normalmente va como en el rectificado; se hizo mal en un inicio». **El 4709 RECTIFICADO es la referencia buena; la primera versión fue un error.** | Tomar la oreja y orientación del rectificado como referencia normal. Se corrige la interpretación inicial del estudio; no tomar el primer PDF como versión definitiva ni quitar los ollaos de puerta por analogía. |
 | Q-GANR04 | ¿Qué es y dónde se cose la tira de 95 × 8,5 del 4709: parte de los puentes de la puerta, un refuerzo u otro remate? ¿Lleva doblez o alguna marca propia? | Está en el **corte del bot**, DISCO1 **16B0/16B1/16B2**, y en la preparación de corte del DWG, no identificada como pieza suelta acotada en el PDF de 29/09. [Imagen señalada](../../tmp/ganado-recogidas/senalar-4709-tira.png). No convertirla en tira genérica sin conocer su función. |
 | Q-GANR05 · contestada por Iván, 04/11 | Las correas del 4038 son **HEBILLAS compradas**. En el planteamiento se dibujan como **rectángulos pequeños rosas**, no solo texto. El ejemplo de Iván, **AR2605331**, tiene cuatro de **2 × 10 cm**, capa **`referencia-1`**, color PorCapa **ACI 11**, con texto **«CORREAS DE RECOLLER»**. | **Solo plano**, según zona y posición del pedido; sin piezas de lona ni marcas en el corte del bot. [Imagen y posiciones medidas](./ganado-recogidas.md#cómo-dibujar-las-hebillas-ejemplo-de-iván-ar2605331). Los 2 × 10 describen el símbolo, no una medida de corte comercial. |
-| Q-GANR06 | En el reparto final del 4709, el lateral MFD dice «143 - 51 - 171»: ¿ese 51 es 151? ¿Qué corte corresponde a la versión final con los 24 ollaos añadidos? | La cifra está en la **nota final 27045 del DWG**, capa **`vent-pre-noimpr`**, no en el PDF de 29/09 que está revisando Iván. [Nota señalada](../../tmp/ganado-recogidas/senalar-4709-nota.png). Conservar el literal y las revisiones separadas; no suponer la cifra. |
+| Q-GANR06 · contestada por Iván, 04/11 | El **«51» es una errata de la nota final del 4709**: el lateral MFD debe decir **«143 - 151 - 171»**. | Usar **151** en ese reparto. La [imagen de la nota original](../../tmp/ganado-recogidas/senalar-4709-nota.png) conserva el literal de la entidad **27045**, capa **`vent-pre-noimpr`**, para mantener la evidencia de la errata. Las revisiones del plano y del bot siguen identificadas por separado. |
 
 ## Cal: seguimiento del levantamiento 3D · 04/11/2026
 

@@ -4,8 +4,8 @@ Estudio del **04/11/2026**, sin cambios en la aplicación. Estado previo limpio 
 propio, commit `aacb955`; el `paseo.json` ajeno no se ha tocado. Medidas en **cm**, salvo
 diámetros y mediciones CAD expresamente indicados en mm.
 
-Respuestas de Iván del **04/11/2026** incorporadas: **Q-GANR01, 02, 03 y 05
-contestadas**. Siguen abiertas **04 y 06**, con imágenes que señalan su procedencia.
+Respuestas de Iván del **04/11/2026** incorporadas: **Q-GANR01, 02, 03, 05 y 06
+contestadas**. Solo sigue abierta **04**, con imagen que señala su procedencia.
 Este seguimiento sigue siendo documental; no cambia los valores de la aplicación.
 
 La propuesta es distinguir **cómo cierra cada paño** de **cómo se mantiene enrollado**.
@@ -204,7 +204,7 @@ Las envolventes son límites de la pieza, no sustituyen su silueta. En el bot el
 comparte corte con otras franjas y el morro aparece colocado de otra forma. No se declara
 paridad completa entre el bot archivado y la última revisión anotada del DWG.
 
-**Dónde están las dos dudas que no aparecen en el PDF de 29/09:**
+**Localización de la tira y de la errata en archivos distintos del PDF de 29/09:**
 
 - **Q-GANR04, tira:** [imagen señalada](../../tmp/ganado-recogidas/senalar-4709-tira.png)
   del **corte del bot**, `fuentes/AR2604709-bot.DXF`, capa **DISCO1**. Sus tres bordes
@@ -212,12 +212,14 @@ paridad completa entre el bot archivado y la última revisión anotada del DWG.
   el borde contiguo. También está en la preparación de corte del DWG, **22003** y
   duplicados **32E32/32E88**. No es una pieza suelta identificada y acotada en ese PDF.
   Sigue pendiente saber qué es, dónde se cose y qué remate lleva.
-- **Q-GANR06, cifra:** [nota señalada](../../tmp/ganado-recogidas/senalar-4709-nota.png)
+- **Q-GANR06, contestada:** [nota original señalada](../../tmp/ganado-recogidas/senalar-4709-nota.png)
   de **`fuentes/AR2604709-dwg.dwg`**, convertida a `fuentes/AR2604709.dxf`, entidad
   **27045**, capa **`vent-pre-noimpr`**. Es la nota final de devolución y ollaos,
   no el reparto impreso del PDF. El lateral MFD dice literalmente **«143 - 51 - 171»**;
-  se conserva el 51 sin sustituirlo por 151. Sigue pendiente confirmar esa cifra y
-  qué corte incorpora la última rectificación.
+  **Iván confirma que el 51 es una errata y debe ser 151**. El reparto correcto en
+  ese tramo es **«143 - 151 - 171»**. La imagen conserva el texto original como
+  evidencia; la medida a usar es 151. Las revisiones del plano y del bot se mantienen
+  identificadas por separado.
 
 Son vistas generadas a partir de los vectores y del texto de cada archivo, con recuadro
 y flecha rojos; cada imagen identifica su fuente para no mezclar versiones.
@@ -308,7 +310,7 @@ comerciales deben figurar como materiales/acabados, no como falsas piezas de lon
    último, fijar antes la revisión final de puerta y reparto. Para lo no documentado,
    conservar aviso y revisión manual en lugar de producir un corte supuesto.
 
-Las respuestas y las dos preguntas pendientes (**Q-GANR04 y 06**) están en
+Las respuestas y la única pregunta pendiente (**Q-GANR04**) están en
 [dudas-abiertas.md](./dudas-abiertas.md). No se ha programado esta propuesta.
 
 ## Reproducción y límites del estudio
