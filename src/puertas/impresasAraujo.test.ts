@@ -13,6 +13,51 @@ import { entidadesDePieza } from './corteEnPlano.ts';
 
 const pedido=(inputs:Puerta[]):PedidoPuertas=>({schemaVersion:1,kind:'puertas',orderCode:'AR2506255',elementos:inputs.map((input,i)=>({id:'p'+i,input}))});
 describe('Correcciones de Iván: marcas y piezas independientes de Araujo',()=>{
+  it('6255: la marca superior no lleva cota de 7 ni rótulo de E.T.; conserva la cota inferior de 7',()=>{
+    const p=araujo6255(),g=geometriaAlzado(p,calcularPuerta(p)).grupos![0];
+    const cuerpo=g.find(f=>f.tipo==='rect')!;
+    if(cuerpo.tipo!=='rect')throw Error('Falta el cuerpo');
+    const siete=g.filter(f=>f.tipo==='cota').filter(f=>f.valor===7);
+    expect(siete).toHaveLength(1);
+    expect(siete[0].y2).toBeCloseTo(cuerpo.y+cuerpo.alto);
+    expect(g.filter(f=>f.tipo==='texto'&&f.lineas[0]==='E.T.')).toHaveLength(2);
+  });
+  it('2391: bolsas y cristales en dos filas, de A a B, con 80 cm entre muestras y dos cotas por pieza',()=>{
+    const doc=pedido(araujo2391());
+    const dxf=escribirPlanoPuertas({pedido:doc,cabecera:{cliente:'ARAUJO',tecnico:'IVÁN',revisor:'',fecha:'2026-11-05'}});
+    const registros=registrosDxf(dxf),cotas=registros.filter(r=>r.tipo==='DIMENSION'&&valor(r,3)==='XERA 20');
+    const filas=[[[293.5,35.4,0],[404.5,35.4,0]],[[94,39,4],[386,49,4]]];
+    const techos:number[]=[];
+    for(const fila of filas){
+      const anchos=fila.map(([ancho])=>cotas.find(r=>Math.abs(numero(r,42)-ancho)<1e-6)!);
+      anchos.forEach(r=>expect(r).toBeDefined());
+      expect(numero(anchos[1],13)-numero(anchos[0],14)).toBeCloseTo(.8,5);
+      const arriba=fila.map(([,alto,radio],i)=>numero(anchos[i],23)+(alto-radio)/100);
+      expect(arriba[0]).toBeCloseTo(arriba[1],5);techos.push(arriba[0]);
+      fila.forEach(([,alto,radio],i)=>{
+        const ancho=anchos[i],x=numero(ancho,13),y=numero(ancho,23);
+        // El escritor ancla las auxiliares de los cristales redondeados al inicio de sus tramos rectos.
+        const altura=cotas.find(r=>Math.abs(numero(r,42)-alto)<1e-6&&Math.abs(numero(r,13)-x-radio/100)<1e-6&&Math.abs(numero(r,23)-y+radio/100)<1e-6);
+        expect(altura).toBeDefined();
+        expect(numero(altura!,10)).toBeLessThan(x);
+        expect(numero(ancho,20)).toBeLessThan(y);
+      });
+    }
+    expect(Math.abs(techos[0]-techos[1])).toBeGreaterThan(1);
+    for(const material of ['LAC900 AMARILLO','TRANSP. 1000MI'])
+      expect(registros.filter(r=>r.tipo==='MTEXT'&&valor(r,8)==='texto'&&valor(r,1)===material)).toHaveLength(1);
+  });
+  it.each([
+    ['5365',araujo5365,'95f07300beba1202e4090f7a0b31c5ba4a98b360aba65ab5754125c70f8f9ffa'],
+    ['5733',araujo5733,'8a4024f0892c18541777bbde037231cf3f694e92706aee3ca2c56e05078bd4ec'],
+    ['4292',araujo4292,'481760a6a7ca878bb35759b99628b8b24551be7762bc8ee3fee59c0a6ce81582'],
+    ['4373',araujo4373,'22bc254bd5706c7ba774f991ed04bb14734f5c3dd3360b0aab330d3667952a45'],
+    ['2391',araujo2391,'6a4d929766cc29095885f8297cab165e3ae0255840a248f692fe0b09acfa1b4a'],
+    ['6255',araujo6255,'a436b75b9385c97763d7e9526645df94076f2e1c1268b118785962a88835beca'],
+  ] as const)('%s: el resultado completo y el DXF del bot conservan la huella de b8c23c3',(_codigo,crear,huella)=>{
+    const doc=pedido([crear()].flat());
+    expect(createHash('sha256').update(JSON.stringify(generarCortePuertas(doc))).digest('hex')).toBe(huella);
+  });
   it('6255: las cotas izquierdas miden del corte inferior a las marcas rojas y la cadena derecha une marcas',()=>{
     const p=araujo6255(),g=geometriaAlzado(p,calcularPuerta(p)).grupos![0];
     const rect=g.find(f=>f.tipo==='rect')!;

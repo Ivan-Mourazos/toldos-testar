@@ -3,7 +3,8 @@ import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { geometriaAlzado } from './alzado.ts';
 import { calcularPuerta } from './calcular.ts';
 import { cotasImpresionAraujo, esImpresionAraujo, presentarImpresionAraujo } from './cotasImpresionAraujo.ts';
-import { corteEnPlano, textosFuera } from './corteEnPlano.ts';
+import { corteEnPlano, entidadesDePieza, textosFuera } from './corteEnPlano.ts';
+import { ENTRE_MUESTRAS } from './planoTaller.ts';
 import { bloqueFlechaEnrollable, dibujarCorte, hojasPuertas, lienzoAMetros, origenCorte, sumarLienzo, type LienzoEnrollable } from './planoEnrollable.ts';
 import type { CortePuertas, PedidoPuertas, Punto } from './tipos.ts';
 
@@ -13,6 +14,18 @@ function rect(l:LienzoEnrollable,c:string,x:number,y:number,w:number,h:number,r=
   if(!r){l.polilineas.push({capa:c,puntos:[[x,y],[x+w,y],[x+w,y+h],[x,y+h]],cerrada:true});return;}
   const b=Math.tan(Math.PI/8);
   l.polilineas.push({capa:c,cerrada:true,puntos:[[x+r,y],[x+w-r,y],[x+w,y+r],[x+w,y+h-r],[x+w-r,y+h],[x+r,y+h],[x,y+h-r],[x,y+r]],curvas:[0,b,0,b,0,b,0,b]});
+}
+/** Cada material auxiliar ocupa una fila de muestras; los cortes originales del bot se conservan. */
+function filasCorte(cortes:CortePuertas[],pedido:PedidoPuertas):CortePuertas[][] {
+  const filas:CortePuertas[][]=[];
+  for(const c of cortes){
+    const clase=c.colocadas[0]?.pieza.clase;
+    const muestra=pedido.elementos.length>1&&['saco','cristal'].includes(clase)&&c.colocadas.every(t=>t.pieza.clase===clase);
+    const fila=muestra?filas.find(f=>f[0].material===c.material&&f[0].anchoRollo===c.anchoRollo&&f[0].opcion===c.opcion
+      &&f[0].colocadas.every(t=>t.pieza.clase===clase)):undefined;
+    if(fila)fila.push(c);else filas.push([c]);
+  }
+  return filas;
 }
 /** Plano de oficina y corte recibido del anidado común: las curvas y marcas proceden de las mismas medidas. */
 export function escribirPlanoAraujo(pedido:PedidoPuertas,cortes:CortePuertas[],cabecera:{cliente:string;tecnico:string;revisor:string;fecha:string},subtitulo='MEDIDAS EN CM · ARAUJO · TRAMOS Y BOLSAS'):string{
@@ -40,7 +53,27 @@ export function escribirPlanoAraujo(pedido:PedidoPuertas,cortes:CortePuertas[],c
   const za={x0:100+izquierda/100,y0:100+dy/100,x1:100+ancho/100,y1:101};
   const lc=vacio();let yc=0,wc=0;
   const zonasCorte:Array<{x0:number;y0:number;x1:number;y1:number}>=[];
-  for(const original of cortes){
+  for(const fila of filasCorte(cortes,pedido)){
+    if(fila.length>1){
+      const orden=(id:string)=>pedido.elementos.findIndex(e=>id.startsWith(e.id+':'));
+      const muestras=fila.flatMap(c=>c.colocadas.map(t=>({c,t}))).sort((a,b)=>orden(a.t.pieza.id)-orden(b.t.pieza.id));
+      const techo=yc;let x=0,fondo=techo;
+      for(const {c,t} of muestras){
+        const p=t.pieza,y=techo-p.alto;
+        // Igual que la rama muestra de Portanova: rayas locales del bot, sin volver a cortar ni rotular.
+        sumarLienzo(lc,{...vacio(),...entidadesDePieza(c,t)},x,y);
+        lc.cotas.push({capa:'cotas',estilo:'XERA 20',x1:x,y1:y,x2:x+p.ancho,y2:y,d:y-30,giro:0,valor:p.ancho},
+          {capa:'cotas',estilo:'XERA 20',x1:x,y1:y,x2:x,y2:techo,d:x-35,giro:90,valor:p.alto});
+        x+=p.ancho+ENTRE_MUESTRAS;fondo=Math.min(fondo,y);
+      }
+      const anchoFila=x-ENTRE_MUESTRAS,titulo=textoSeguro(fila[0].material),hTitulo=Math.max(10,Math.min(20,anchoFila/10));
+      lc.textos.push({capa:'texto',valor:titulo,x:anchoFila/2,y:techo+30,h:hTitulo,centrado:true});
+      zonasCorte.push({x0:Math.min(-75,anchoFila/2-anchoArial(titulo,hTitulo)/2-5),y0:fondo-80,
+        x1:Math.max(anchoFila+40,anchoFila/2+anchoArial(titulo,hTitulo)/2+5),y1:techo+50});
+      wc=Math.max(wc,anchoFila);yc=fondo-140;
+      continue;
+    }
+    const original=fila[0];
     const c=presentarImpresionAraujo(original),impresa=esImpresionAraujo(c);
     const ocupado=Math.max(0,...c.colocadas.map(t=>t.y/10+(t.girada?t.pieza.ancho:t.pieza.alto)));
     yc-=ocupado;

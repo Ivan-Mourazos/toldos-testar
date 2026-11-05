@@ -67,7 +67,7 @@ export function alzadoAraujo(p: Puerta, letra: string): GeometriaAlzado {
       cota(0,y+d,0,y+d+t.alto,-base*6,t.alto);
       cota(0,y,0,y+h,-base*10,h);
     }
-    cota(w,y,w,y+m.arriba.marca,w+base*4,m.arriba.marca);
+    if(!impresa||t.arriba?.tipo==='et')cota(w,y,w,y+m.arriba.marca,w+base*4,m.arriba.marca);
     cota(w,y+h-m.abajo.marca,w,y+h,w+base*4,m.abajo.marca);
     if(t.rotulacion){
       const r=t.rotulacion,bajo=r.centrada?t.alto/2:r.desdeBajo??8;

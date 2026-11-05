@@ -22,7 +22,7 @@ const linea = (l: Lienzo, capa: string, x1: number, y1: number, x2: number, y2: 
 const texto = (l: Lienzo, valor: string, x: number, y: number, h: number, giro = 0, capa = 'texto') =>
   l.textos.push({ capa, valor: capa === 'ROTULADOR' ? valor : textoSeguro(valor), x, y, h, centrado: true, giro });
 /** Cm entre sacos o cristales de la misma fila del corte: sitio para la cota de la derecha del saco partido. */
-const ENTRE_MUESTRAS = 80;
+export const ENTRE_MUESTRAS = 80;
 // El material de cada fila del corte, grande (Iván, 24/10/2026): hasta 20 cm, a lo ancho de la fila.
 function sumarEntidades(l: Lienzo, e: EntidadesPuertas, dx = 0, dy = 0) {
   l.lineas.push(...e.lineas.map(a => ({ ...a, x1: a.x1 + dx, x2: a.x2 + dx, y1: a.y1 + dy, y2: a.y2 + dy })));
