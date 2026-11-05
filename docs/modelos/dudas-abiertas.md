@@ -93,16 +93,16 @@ El DWG completo se conserva como revisión de oficina para las 25 líneas exacta
 inventado reglas para las referencias a mano ni se ha cambiado el envío al bot. Evidencia, capturas y
 detalle en [assa-combursa-lote-0711.md](./assa-combursa-lote-0711.md).
 
-**Q-AS0711-01.** En la 420102-0021 del palet 1 aparece una pareja de tres alturas con «x3» y, a su
+**Q-AS0711-01 · contestada (Tamara, 05/11/2026): «sí, se cortan todas»** (también las sueltas).  En la 420102-0021 del palet 1 aparece una pareja de tres alturas con «x3» y, a su
 derecha, otras pilas de tres y de una unidad. RPS pide 18. ¿Son alternativas de preparación o hay que
 cortar también esas sueltas? Mientras tanto, la web conserva todos los dibujos y rótulos del definitivo,
 pero no da por demostradas 22 unidades ni las convierte en stock.
 
-**Q-AS0711-02.** La 410130-0175, 54 unidades de AR.26.05142/4, está bajo «PALET 5 y 6». ¿Cuántas
+**Q-AS0711-02 · contestada (Tamara, 05/11/2026): «hay que mirar cómo se distribuye en RPS»**: el reparto entre palet 5 y 6 sale de RPS (pendiente de leerlo de ahí).  La 410130-0175, 54 unidades de AR.26.05142/4, está bajo «PALET 5 y 6». ¿Cuántas
 van en cada uno? Mientras tanto, el documento mantiene «5 y 6», sin repartirlas por la mitad. El campo
 manual de palet de la pantalla sigue admitiendo un solo número; el reparto doble está en la revisión de oficina.
 
-**Q-AS0711-03.** En las cortinas y los accesorios de lona de 1, 2 y 3 mm, ¿qué cantidad de cada pieza
+**Q-AS0711-03 · sigue abierta (Tamara, 05/11/2026: «ni idea»).**  En las cortinas y los accesorios de lona de 1, 2 y 3 mm, ¿qué cantidad de cada pieza
 corresponde a una unidad y qué repetición se aplica al juego? Por ejemplo, la superior 410129-0117 lleva
 «X8» para un pedido de 27. Mientras tanto, el papel nuevo muestra las cantidades de RPS y los rótulos
 de repetición por separado: no afirma que ocho dibujos sean ocho cortinas ni inventa la cuenta restante.
