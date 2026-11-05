@@ -14,8 +14,8 @@ import { buildOrderReviewPdf } from '../src/domain/reviewPdf.js';
 // PORT=4316 FAKE_COORDINA_PORT=4326 ISOLATED_DIR="$PWD/tmp/flujo-editable-instancia"
 // bash .claude/skills/running-toldos-testar/start-isolated.sh
 const base = process.env.TOLDOS_ISOLATED_URL || 'http://127.0.0.1:4316';
-const dir = path.resolve('tmp/flujo-editable-instancia');
-const shots = path.resolve('tmp/ui-audit/flujo-editable-fix');
+const dir = path.resolve(process.env.TOLDOS_ISOLATED_DIR || 'tmp/flujo-editable-instancia');
+const shots = path.resolve(process.env.TOLDOS_SCREENSHOTS_DIR || 'tmp/ui-audit/flujo-editable-fix');
 const request = async (url, body, method = 'POST') => {
   const r = await fetch(base + url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   return { status: r.status, data: await r.json() };
@@ -149,6 +149,7 @@ try {
     assert.equal(await page.getByRole('button', { name: /Confirmar corte|Corte confirmado/ }).count(), 0);
     await shot('pedido-botones');
     await page.getByRole('button', { name: 'Corregir', exact: true }).click();
+    await page.getByRole('button', { name: 'Editar pedido', exact: true }).click();
     const abrir = page.getByRole('button', { name: 'Abrir para corregir', exact: true });
     if (await abrir.isVisible()) await abrir.click();
     await page.getByText(/Ya está aprobado en CoordinaOT; estos cambios no los ha revisado nadie/).waitFor();
@@ -182,6 +183,7 @@ try {
     await seed(saved);
     await page.reload(); await abrirPedido();
     await page.getByRole('button', { name: 'Corregir', exact: true }).click();
+    await page.getByRole('button', { name: 'Editar pedido', exact: true }).click();
     if (await abrir.isVisible()) await abrir.click();
     await page.waitForTimeout(1500);
     await page.getByRole('button', { name: 'Guardar para revisión', exact: true }).click();
@@ -236,6 +238,7 @@ try {
     await page.reload(); await page.getByRole('button', { name: /^Pedidos/ }).first().click();
     await row.getByRole('button', { name: order.orderCode, exact: true }).click();
     await page.getByRole('button', { name: 'Corregir', exact: true }).click();
+    await page.getByRole('button', { name: 'Editar pedido', exact: true }).click();
     if (await abrir.isVisible()) await abrir.click();
     const aviso = page.getByText(/Ya está aprobado en CoordinaOT; estos cambios no los ha revisado nadie/);
     await aviso.waitFor(); assert.match(await aviso.innerText(), new RegExp(a)); assert.ok(!(await aviso.innerText()).includes(c));
