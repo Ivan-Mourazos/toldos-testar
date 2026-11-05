@@ -39,7 +39,7 @@ export function startFakeCoordina({ port = 0, key = defaultKey } = {}) {
       return send(res, 200, { ofs: ofs.map((of) => {
         const item = { of, estado: 'aprobada', nota: '', actualizado: null, ...states[of] };
         // Como CoordinaOT: el revisor solo viene con la OF aprobada (por defecto «jaime»).
-        return { ...item, revisor: item.estado === 'aprobada' ? (states[of]?.revisor ?? 'jaime') : '' };
+        return { ...item, revisor: item.estado === 'aprobada' || item.estado === 'pasada' ? (states[of]?.revisor ?? 'jaime') : '' };
       }) });
     }
     send(res, 404, { error: 'No existe' });
