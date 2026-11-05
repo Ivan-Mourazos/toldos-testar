@@ -121,7 +121,7 @@ export function pendingGroups<T extends PedidoBandeja>(pending: T[], status: Coo
   return pendingGroupOrder
     .map((group) => ({ ...group, reviews: pending.filter((review) => {
       const elementos = reviewAwnings(review);
-      const estado = productoDe(review) === 'toldos' && generarToldosPermitido(elementos, status) === null ? 'aprobado' : coordinaGroup(elementos, status);
+      const estado = generarToldosPermitido(elementos, status) === null ? 'aprobado' : coordinaGroup(elementos, status);
       return estado === group.key;
     }) }))
     .filter((group) => group.reviews.length > 0);

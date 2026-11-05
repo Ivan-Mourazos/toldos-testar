@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CopyPlus, DoorOpen, Factory, FileDown, FileSearch, PencilLine, Scissors } from 'lucide-react';
+import { CopyPlus, DoorOpen, Factory, FileSearch, Scissors } from 'lucide-react';
 import { formOptions } from '../../domain/modelBehavior.js';
 import { calcularPuerta, MODELOS_PUERTAS } from '../../puertas/calcular.ts';
 import { elementosAprobacion } from '../../puertas/flujo/pedido.ts';
@@ -8,7 +8,11 @@ import { productoDeElementos } from '../../puertas/producto.ts';
 import type { VistaPuertas } from '../../puertas/tipos.ts';
 import { normalizeOf, reviewerName } from '../../reviewRules.js';
 import { CabeceraDocumento, DocumentosPedido } from '../components/DocumentosPedido';
-import { BotonAbrirCorteRevisado } from '../flujoCorteDwg';
+import { AccionesPedido, CabeceraPedidoGuardado } from '../components/AccionesPedido';
+import { useCortePedidoEditable } from '../useCortePedidoEditable';
+import { faltaParaAbrir } from './flujoCorte';
+import { abrirCorteGuardado, preguntarCambioCorte } from '../toldosEditable';
+import { aprobadaOPasada } from '../../toldosEditable.js';
 import { EnviosCorte, HistorialEnvios } from '../components/EnviosCorte';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { controlLabel } from '../components/controlLabels';
@@ -23,7 +27,7 @@ import '../coordina/corte-lona.css';
 import './puertas.css';
 
 // Un pedido de puertas abierto desde Pedidos (fase 2, 22/10/2026), con las acciones de toldos y remolques:
-// «Corregir» (el autor, si se lo devolvieron), «Generar archivos» (el autor, con todo aprobado en CoordinaOT)
+// «Corregir» (cualquier técnico) y «Generar archivos» (con todo aprobado o pasado en CoordinaOT)
 // y, debajo, los dos bloques: el planteamiento (el alzado de cada puerta, lo mismo que va al plano DWG) y el
 // corte con sus botones.
 
@@ -34,51 +38,14 @@ function fechaHora(valor: string) {
   return Number.isNaN(fecha.getTime()) ? valor : new Intl.DateTimeFormat('es-ES', { dateStyle: 'short', timeStyle: 'short' }).format(fecha);
 }
 
-/** Escribe el plano para revisar; si ya está en su carpeta, pregunta antes de sustituirlo. */
-async function guardarPlano(ruta: string, preguntar: AskForConfirmation, notify: Notify) {
-  let confirmOverwrite = false;
-  for (;;) {
-    const respuesta = await fetch(`${ruta}/plano`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirmOverwrite }) });
-    const datos = await respuesta.json().catch(() => ({})) as { error?: string; existing?: string[]; plano?: { files: Array<{ filename: string }>; avisos: string[] } | null };
-    if (respuesta.status === 409 && datos.existing?.length && !confirmOverwrite) {
-      const eleccion = await preguntar({ title: 'Plano del pedido', message: `El plano ${datos.existing.join(' · ')} ya está en su carpeta. ¿Sustituirlo por el de la web?`,
-        confirmLabel: 'Sustituir plano', cancelLabel: 'Conservar el actual', tone: 'warning' });
-      if (eleccion !== 'confirm') return;
-      confirmOverwrite = true;
-      continue;
-    }
-    if (!respuesta.ok) throw new Error(datos.error || 'No se pudo guardar el plano.');
-    const planos = datos.plano?.files.map((fichero) => fichero.filename) ?? [];
-    const avisos = datos.plano?.avisos ?? [];
-    notify(planos.length ? `Plano guardado para revisar: ${planos.join(' · ')}.${avisos.length ? ` ${avisos.join(' ')}` : ''}` : avisos.join(' ') || 'No se ha escrito el plano.',
-      { tone: planos.length ? 'success' : 'warning', title: 'Plano del pedido' });
-    return;
-  }
-}
-
-function PlanteamientoPuertas({ pedido, ruta, generado, notify, onConfirm }: {
-  pedido: PedidoPuertasGuardado; ruta: string; generado: boolean; notify: Notify; onConfirm: AskForConfirmation;
-}) {
-  const [guardando, setGuardando] = useState(false);
+function PlanteamientoPuertas({ pedido }: { pedido: PedidoPuertasGuardado }) {
   const [indice, setIndice] = useState(0);
   const elegido = pedido.elementos[Math.min(indice, pedido.elementos.length - 1)];
   const letras = elementosAprobacion(pedido).map((item) => item.letter);
   const alzadoFluido = useContenidoFluido(String(indice));
-  async function guardar() {
-    setGuardando(true);
-    try { await guardarPlano(ruta, onConfirm, notify); }
-    catch (error) { notify(error instanceof Error ? error.message : 'No se pudo guardar el plano.', { tone: 'error' }); }
-    finally { setGuardando(false); }
-  }
   return (
     <section className="corte-lona panel bloque-3d puerta-planteamiento" aria-label="Planteamiento">
-      <CabeceraDocumento titulo="Planteamiento" icono={<DoorOpen aria-hidden="true" />}>
-        {!generado && (
-          <button className="ghost-button boton-3d" type="button" disabled={guardando} onClick={() => void guardar()}>
-            <FileDown aria-hidden="true" />{guardando ? 'Guardando plano…' : 'Guardar plano para revisar'}
-          </button>
-        )}
-      </CabeceraDocumento>
+      <CabeceraDocumento titulo="Planteamiento" icono={<DoorOpen aria-hidden="true" />} />
       <p className="corte-ayuda">Lo mismo que va al plano DWG: el alzado de cada elemento con sus cotas y textos. El plano sale al guardar para revisión.</p>
       {/* Una puerta o lona cada vez, con pestañas (Iván, 26/10/2026: «no quiero que salgan todas las puertas una debajo
           de otra»), y el dibujo del tamaño de la pieza, sin hueco. */}
@@ -132,7 +99,7 @@ function CortePuertasGuardado({ ruta, version, historial, systemDock = false }: 
 function FilaPuerta({ letra, puerta, coordina }: { letra: string; puerta: PedidoPuertasGuardado['elementos'][number]['input']; coordina: CoordinaStatus | null }) {
   const of = normalizeOf(puerta.of ?? '');
   const enCoordina = coordina?.disponible && of ? coordina.ofs?.[of] : undefined;
-  const aprobadoPor = enCoordina?.estado === 'aprobada' && enCoordina.revisor ? reviewerName(enCoordina.revisor, formOptions.tecnicos as string[]) : '';
+  const aprobadoPor = aprobadaOPasada(enCoordina?.estado) && enCoordina?.revisor ? reviewerName(enCoordina.revisor, formOptions.tecnicos as string[]) : '';
   return (
     <li className="rem-pedido-elemento bloque-3d">
       <strong className="rem-pedido-letra">{letra}</strong>
@@ -165,6 +132,8 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
   const ofs = pedido ? elementosAprobacion(pedido).map((item) => item.of) : [];
   const { status: coordina } = useCoordinaStatus(ofs, Boolean(pedido));
   const ruta = `/api/puertas/pedidos/${encodeURIComponent(orderCode)}`;
+  const corte = useCortePedidoEditable({ tipo: 'puertas', pedido, cuerpo: { pedido }, falta: pedido ? faltaParaAbrir(pedido) : 'Cargando el pedido…',
+    usuario: currentUser, notify: onToast, preguntar: onConfirm, onChanged });
 
   useEffect(() => {
     let cancelado = false;
@@ -193,10 +162,16 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
     if (inicial !== 'confirm') return;
     setGenerando(true);
     let confirmOverwrite = false;
+    let aceptarHuellaCorte: string | undefined;
     try {
       for (;;) {
-        const respuesta = await fetch(`${ruta}/generar`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirmOverwrite }) });
-        const datos = await respuesta.json().catch(() => ({})) as { error?: string; needsConfirmation?: boolean; existing?: string[]; unchanged?: boolean; saved?: Array<{ filename: string }>; avisos?: string[] };
+        const respuesta = await fetch(`${ruta}/generar`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirmOverwrite, aceptarHuellaCorte, savedBy: currentUser }) });
+        const datos = await respuesta.json().catch(() => ({})) as { error?: string; cambioCorte?: boolean; huella?: string; needsConfirmation?: boolean; existing?: string[]; unchanged?: boolean; saved?: Array<{ filename: string }>; avisos?: string[] };
+        if (respuesta.status === 409 && datos.cambioCorte) {
+          if (!await preguntarCambioCorte(onConfirm, () => abrirCorteGuardado(`${ruta}/corte-dwg`))) return;
+          aceptarHuellaCorte = datos.huella;
+          continue;
+        }
         if (respuesta.status === 409 && datos.needsConfirmation && !confirmOverwrite) {
           const eleccion = await onConfirm({
             title: 'Sustituir el plano de revisión',
@@ -237,39 +212,27 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
     pedido.summary.customer || 'Sin cliente',
     pedido.summary.orderDate && `pedido del ${pedido.summary.orderDate.split('-').reverse().join('/')}`,
     pedido.summary.technician && `autor ${controlLabel(pedido.summary.technician)}`,
-    pedido.updatedAt && `guardado ${fechaHora(pedido.updatedAt)}`,
+    pedido.updatedAt && `guardado ${fechaHora(pedido.updatedAt)}${pedido.updatedBy ? ` por ${controlLabel(pedido.updatedBy)}` : ''}`,
   ].filter(Boolean).join(' · ');
 
   return (
     <section className="review-reader rem-pedido-guardado" aria-label={`Pedido de ${productoDeElementos(pedido.elementos)==='systemdock'?'System Dock':'puertas'} ${pedido.orderCode}`}>
-      <header className="review-reader-header">
-        {volver}
-        <div className="review-reader-title">
-          <h2>{pedido.orderCode}<span className="orders-kind-tag familia-tag is-puertas">{productoDeElementos(pedido.elementos)==='systemdock'?'System Dock':'Puerta'}</span></h2>
-          <small>{datos}</small>
-        </div>
-        <div className="review-reader-actions">
-          {pedido.corteConfirmado && <BotonAbrirCorteRevisado ruta={`${ruta}/corte-dwg`} notify={onToast} />}
-          {!generado && corregible && <button className="ghost-button boton-3d" type="button" disabled={generando} onClick={() => onCorregir(pedido)}><PencilLine aria-hidden="true" />Corregir</button>}
-          {/* Arriba, solo el paso que toca (Iván, 26/10/2026: «hay que revisar qué botones son necesarios o sobran»). Con el
-              corte del DWG confirmado, «Mandar corte al bot» deja el pedido generado; sin él, «Generar archivos». Lo que se
-              usa poco (guardar o descargar el DXF, rehacer el PDF, reutilizar datos), en «Más». */}
-          {!generado && !pedido.corteConfirmado && allowed && <button className="primary-button boton-3d review-generate-button" type="button" disabled={generando} onClick={() => void generar()}>
-            <Factory aria-hidden="true" />{generando ? 'Generando…' : 'Generar archivos'}
-          </button>}
-          <EnviosCorte key={ruta} barra ruta={`${ruta}/corte`} usuario={currentUser} permitido={permisoCorte.allowed} motivo={permisoCorte.note}
-            ocupado={generando} envios={pedido.enviosCorte} descarga={`${ruta}/corte/dxf`} conPdf notify={onToast} preguntar={onConfirm} onEnviado={onChanged}
-            mas={generado ? <button type="button" role="menuitem" className="menu-mas-item" onClick={() => onReutilizar(pedido)}><CopyPlus size={16} aria-hidden="true" />Reutilizar datos</button> : null} />
-          {!generado && !permisoCorte.allowed && (note || permisoCorte.note) && <span className="review-generate-note">{note || permisoCorte.note}</span>}
-        </div>
-      </header>
+      <CabeceraPedidoGuardado volver={volver} titulo={<>{pedido.orderCode}<span className="orders-kind-tag familia-tag is-puertas">{productoDeElementos(pedido.elementos)==='systemdock'?'System Dock':'Puerta'}</span></>}
+        datos={datos} corteNoRegenerado={pedido.corteNoRegenerado} corteSimulado={pedido.corteSimulado}
+        acciones={<AccionesPedido generado={generado} ocupado={generando || corte.ocupado} enviando={generando} editandoPermitido={corregible}
+          onEditar={() => onCorregir(pedido)} elementos={elementosAprobacion(pedido)} coordina={coordina} preguntar={onConfirm}
+          abrir={corte.abrir} regenerar={currentUser ? () => void corte.regenerar() : undefined} generar={() => void generar()}
+          generarPermitido={allowed} motivoGenerar={note} envios={<EnviosCorte key={ruta} barra ruta={`${ruta}/corte`} usuario={currentUser}
+            permitido={permisoCorte.allowed && Boolean(currentUser.trim())} motivo={permisoCorte.note} ocupado={generando || corte.ocupado} envios={pedido.enviosCorte}
+            descarga={`${ruta}/corte/dxf`} conPdf notify={onToast} preguntar={onConfirm} onEnviado={onChanged}
+            mas={generado ? <button type="button" role="menuitem" className="menu-mas-item" onClick={() => onReutilizar(pedido)}><CopyPlus size={16} aria-hidden="true" />Reutilizar datos</button> : null} />} />} />
 
       {generado && pedido.production && (
         <div className="review-production-block bloque-3d" role="status">
           <div className="review-production-summary">
             <Factory aria-hidden="true" />
             <span>
-              <strong>{`Archivos generados${pedido.production.createdBy ? ` por ${controlLabel(pedido.production.createdBy)}, autor del pedido` : ''}`}</strong>
+              <strong>{`Archivos generados${pedido.production.createdBy ? ` por ${controlLabel(pedido.production.createdBy)}` : ''}`}</strong>
               <small>{`${fechaHora(pedido.production.createdAt)}${pedido.reviewedBy ? ` · revisado por ${controlLabel(pedido.reviewedBy)}` : ''}`}</small>
             </span>
           </div>
@@ -289,7 +252,7 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
       </ul>
 
       <DocumentosPedido
-        planteamiento={<PlanteamientoPuertas pedido={pedido} ruta={ruta} generado={generado || Boolean(pedido.corteConfirmado)} notify={onToast} onConfirm={onConfirm} />}
+        planteamiento={<PlanteamientoPuertas pedido={pedido} />}
         corte={<CortePuertasGuardado ruta={ruta} version={pedido.updatedAt} systemDock={productoDeElementos(pedido.elementos)==='systemdock'}
           historial={<HistorialEnvios envios={pedido.enviosCorte} />} />} />
     </section>

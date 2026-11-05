@@ -41,7 +41,9 @@ import { cambiarTipoLinea, type TipoCambiable } from '../../remolques/workspace/
 import { clienteDeLinea } from './guardarEnFicha';
 import { decidirFicha, notaFicha, preguntaSugerencia } from './fichaAlObtener';
 import { AVISO_FICHAS_ILEGIBLES, guardarDesdePedido, leerFichas, nombreClienteRps } from './fichasClientes';
-import { escribirPlanoCorte, type PlanoCorte } from './CorteRemolques';
+import type { PlanoCorte } from './CorteRemolques';
+import { guardarToldosEditable } from '../toldosEditable';
+import { abrirCorteDwg } from '../abrirCorte';
 import { primeraLineaInicio } from '../modelosInicio';
 
 /** Pausa sin cambios tras la que se escriben los borradores en el navegador. */
@@ -805,7 +807,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
 
   /**
    * «Guardar para revisión» (fase 5): solo con todos los elementos completos. Si el pedido ya está en
-   * Pedidos, pregunta antes de sustituirlo. Guardado, la pantalla queda para un pedido nuevo y se
+   * Pedidos, se aplican las decisiones comunes de mantener o regenerar el corte. Guardado, la pantalla queda para un pedido nuevo y se
    * borra el borrador del navegador de ese pedido, como en toldos.
    */
   const guardarParaRevision = useCallback(async () => {
@@ -823,42 +825,11 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
     }
     setGuardando(true);
     try {
-      let confirmOverwrite = false;
-      for (;;) {
-        const respuesta = await fetch('/api/remolques/pedidos', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(cuerpoGuardar(actual.lineas, params, usuario, confirmOverwrite)),
-        });
-        const datos = await respuesta.json().catch(() => ({})) as {
-          needsConfirmation?: boolean; error?: string; review?: { orderCode: string };
-          planoCorte?: PlanoCorte; motivo?: string;
-        };
-        // Solo «ya está guardado» pregunta; los demás 409 (se está generando, se está guardando, es
-        // de toldos, ya se produjo) son un aviso de error con el texto del servidor.
-        if (respuesta.status === 409 && datos.needsConfirmation && !confirmOverwrite) {
-          // Flujo del DWG: el plano ya está en su carpeta del año y se sustituiría por el borrador confirmado.
-          const eleccion = await confirmar(datos.motivo === 'plano' ? {
-            title: 'Plano del corte',
-            message: datos.error || 'El plano ya está en su carpeta del año: se sustituirá por el borrador con el corte confirmado.',
-            confirmLabel: 'Sustituir plano y guardar',
-            cancelLabel: 'Cancelar',
-            tone: 'warning',
-          } : {
-            title: `Actualizar ${actual.numeroPedido}`,
-            message: 'Este pedido ya está guardado en Pedidos. Si continúas, se sustituirá por los datos de esta pantalla.',
-            confirmLabel: 'Actualizar pedido',
-            cancelLabel: 'Conservar el actual',
-            tone: 'warning',
-          });
-          if (eleccion !== 'confirm') return;
-          confirmOverwrite = true;
-          continue;
-        }
-        if (!respuesta.ok) {
-          avisar('error', datos.error || 'No se pudo guardar el pedido para revisión.');
-          return;
-        }
+        const cuerpo = cuerpoGuardar(actual.lineas, params, usuario, true);
+        const datos = await guardarToldosEditable(cuerpo, confirmar,
+          () => abrirCorteDwg({ ruta: '/api/remolques/borrador-corte', orderCode: actual.numeroPedido, cuerpo, usuario, preguntar: confirmar,
+            notify: notificar.current.notify, editable: true }), '/api/remolques/pedidos');
+        if (!datos) return;
         alGuardar.current?.();
         if (!pantallaSigueIgual(estadoRef.current, actual)) {
           // Mientras se guardaba se cambió o cargó otro pedido: la pantalla no se toca.
@@ -872,20 +843,8 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
         despachar({ tipo: 'PEDIDO_LIMPIADO' });
         // Como en toldos: se dice qué plano del corte ha quedado para revisar y lo que hay que mirar. Si el
         // plano ya estaba en su carpeta, el pedido queda guardado igual y se pregunta antes de sustituirlo.
-        let planoCorte = datos.planoCorte ?? null;
+        const planoCorte: PlanoCorte | null = datos.planoCorte ?? null;
         const codigo = datos.review?.orderCode ?? actual.numeroPedido;
-        const existentes = planoCorte?.existentes ?? [];
-        if (existentes.length) {
-          const avisos = planoCorte?.avisos ?? [];
-          try {
-            const sustituido = await escribirPlanoCorte(`/api/remolques/pedidos/${encodeURIComponent(codigo)}`, existentes, confirmar);
-            planoCorte = sustituido === 'conservado'
-              ? { files: [], avisos: [...avisos, `Se conserva el plano que ya estaba: ${existentes.join(' · ')}.`] }
-              : sustituido;
-          } catch (error) {
-            planoCorte = { files: [], avisos: [...avisos, error instanceof Error ? error.message : 'No se pudo guardar el plano del corte.'] };
-          }
-        }
         const planos = planoCorte?.files.map((fichero) => fichero.filename) ?? [];
         const avisosCorte = planoCorte?.avisos ?? [];
         notificar.current.notify(
@@ -893,9 +852,8 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
           { tone: 'success', title: 'Guardado para revisión' },
         );
         return;
-      }
-    } catch {
-      avisar('error', 'No se pudo guardar el pedido para revisión.');
+    } catch (error) {
+      avisar('error', error instanceof Error ? error.message : 'No se pudo guardar el pedido para revisión.');
     } finally {
       setGuardando(false);
     }

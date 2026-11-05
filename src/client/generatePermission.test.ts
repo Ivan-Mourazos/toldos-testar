@@ -63,47 +63,48 @@ describe('generateState', () => {
   });
 });
 
-describe('puedeCorregir — puertas y remolques conservan el permiso anterior hasta la fase 2', () => {
+// Fase 2: la edición libre se extiende a puertas y remolques, incluso sin CoordinaOT.
+describe('puedeCorregir — cualquier técnico, salvo pedidos generados', () => {
   const elementos = [{ letter: 'A', of: '0230194' }, { letter: 'B', of: '0230195' }];
   const coordina = (estado: string) => ({ disponible: true, ofs: { '0230194': { estado: 'aprobada' }, '0230195': { estado } } });
   it('devuelto y autor: sí', () => {
     expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', coordina('devuelta'))).toBe(true);
   });
-  it('devuelto pero lo abre otro: no', () => {
-    expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'JAIME', coordina('devuelta'))).toBe(false);
+  it('devuelto y lo abre otro: sí', () => {
+    expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'JAIME', coordina('devuelta'))).toBe(true);
   });
-  it('nadie lo ha empezado a revisar (sin tarea o por revisar): el autor sí, otro no', () => {
+  it('sin tarea o por revisar: cualquier técnico edita', () => {
     const porRevisar = { disponible: true, ofs: { '0230194': { estado: 'por_revisar' } } };
     expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', porRevisar)).toBe(true);
     expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', { disponible: true, ofs: {} })).toBe(true);
-    expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'JAIME', porRevisar)).toBe(false);
+    expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'JAIME', porRevisar)).toBe(true);
   });
-  it('el autor sigue trabajando en ella (pendiente o en curso): el autor sí, otro no (AR2605346)', () => {
+  it('pendiente o en curso: cualquier técnico edita (AR2605346)', () => {
     const enCurso = { disponible: true, ofs: { '0233602': { estado: 'en_curso', autor: 'tamara' } } };
     const una = [{ letter: 'A', of: '0233602' }];
     expect(puedeCorregir('PENDING_REVIEW', una, 'TAMARA', 'TAMARA', enCurso)).toBe(true);
-    expect(puedeCorregir('PENDING_REVIEW', una, 'TAMARA', 'IVÁN', enCurso)).toBe(false);
+    expect(puedeCorregir('PENDING_REVIEW', una, 'TAMARA', 'IVÁN', enCurso)).toBe(true);
     expect(puedeCorregir('PENDING_REVIEW', una, 'TAMARA', 'TAMARA', { disponible: true, ofs: { '0233602': { estado: 'pendiente' } } })).toBe(true);
   });
-  it('en revisión, aprobado (aunque sea en parte), generado o sin CoordinaOT: no', () => {
-    expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', coordina('en_revision'))).toBe(false);
-    expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', coordina('por_revisar'))).toBe(false);
-    expect(puedeCorregir('APPROVED', elementos, 'IVÁN', 'IVÁN', coordina('aprobada'))).toBe(false);
+  it('en revisión, aprobado o sin CoordinaOT: sí; generado: no', () => {
+    expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', coordina('en_revision'))).toBe(true);
+    expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', coordina('por_revisar'))).toBe(true);
+    expect(puedeCorregir('APPROVED', elementos, 'IVÁN', 'IVÁN', coordina('aprobada'))).toBe(true);
     expect(puedeCorregir('PRODUCED', elementos, 'IVÁN', 'IVÁN', coordina('devuelta'))).toBe(false);
-    expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', null)).toBe(false);
-    expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', { disponible: false })).toBe(false);
+    expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', null)).toBe(true);
+    expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', { disponible: false })).toBe(true);
   });
   it('pedido antiguo sin autor y devuelto: lo puede corregir cualquiera', () => {
     expect(puedeCorregir('PENDING_REVIEW', elementos, '', 'JAIME', coordina('devuelta'))).toBe(true);
   });
 });
 
-describe('«Coger»: edición anterior en otros productos y generación libre en toldos', () => {
+describe('«Coger» no limita la edición ni la generación en ningún producto', () => {
   const elementos = [{ letter: 'A', of: '0230194' }];
   const cogido = (estado: string) => ({ disponible: true, ofs: { '0230194': { estado, autor: 'luis' } } });
-  it('quien lo coge corrige en los otros productos; en toldos ambos generan si está aprobado', () => {
+  it('ambos corrigen y ambos generan si está aprobado', () => {
     expect(puedeCorregir('PENDING_REVIEW', elementos, 'ANA', 'LUIS', cogido('devuelta'))).toBe(true);
-    expect(puedeCorregir('PENDING_REVIEW', elementos, 'ANA', 'ANA', cogido('devuelta'))).toBe(false);
+    expect(puedeCorregir('PENDING_REVIEW', elementos, 'ANA', 'ANA', cogido('devuelta'))).toBe(true);
     expect(generateState(review('ANA', ['0230194']), 'LUIS', cogido('aprobada'))).toEqual({ allowed: true, note: '' });
     expect(generateState(review('ANA', ['0230194']), 'ANA', cogido('aprobada')).allowed).toBe(true);
   });

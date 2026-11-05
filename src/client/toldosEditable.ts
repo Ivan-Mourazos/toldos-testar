@@ -1,4 +1,24 @@
 import type { AskForConfirmation } from './components/NotificationCenter';
+import type { CoordinaStatus } from './types';
+import { avisoAprobacionToldos } from '../toldosEditable.js';
+import { normalizeOf } from '../reviewRules.js';
+
+/** La misma decisión en las fichas de toldos, puertas y remolques, antes de guardar o escribir. */
+export async function regenerarCortePedido(preguntar: AskForConfirmation, guardar: () => void | Promise<void>) {
+  if (await preguntar({ title: 'Regenerar corte', message: 'Se perderán los retoques de ZWCAD. El corte nuevo se guardará con el pedido.',
+    confirmLabel: 'Sí, regenerar', cancelLabel: 'Cancelar', tone: 'warning' }) === 'confirm') await guardar();
+}
+
+/** La edición sigue disponible mientras carga CoordinaOT, pero no se pierde el aviso por pulsar pronto. */
+export async function avisoParaEditar(elementos: { of: string }[], estado: CoordinaStatus | null) {
+  if (estado) return avisoAprobacionToldos(elementos, estado);
+  try {
+    const ofs = [...new Set(elementos.map(e => normalizeOf(e.of)).filter(Boolean))].join(',');
+    if (!ofs) return '';
+    const respuesta = await fetch(`/api/coordina/ofs?ofs=${encodeURIComponent(ofs)}`);
+    return respuesta.ok ? avisoAprobacionToldos(elementos, await respuesta.json()) : '';
+  } catch { return ''; }
+}
 
 export async function preguntarCambioCorte(preguntar: AskForConfirmation, abrir: () => Promise<unknown>) {
   const choice = await preguntar({ title: 'El corte tiene cambios desde la última vez', amplio: true,
@@ -10,9 +30,14 @@ export async function preguntarCambioCorte(preguntar: AskForConfirmation, abrir:
 
 /** Abre lo que hay sin regenerarlo ni aceptar su huella. */
 export async function abrirCorteToldos(orderCode: string, cuerpo?: Record<string, unknown>) {
-  const respuesta = cuerpo ? await fetch('/api/corte-lona/borrador', {
+  return abrirCorteGuardado(cuerpo ? '/api/corte-lona/borrador' : `/api/reviews/${encodeURIComponent(orderCode)}/corte-dwg`, cuerpo);
+}
+
+/** Los tres productos devuelven la lista de ficheros del plano, no un enlace suelto. */
+export async function abrirCorteGuardado(ruta: string, cuerpo?: Record<string, unknown>) {
+  const respuesta = cuerpo ? await fetch(ruta, {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cuerpo) })
-    : await fetch(`/api/reviews/${encodeURIComponent(orderCode)}/corte-dwg`, { cache: 'no-store' });
+    : await fetch(ruta, { cache: 'no-store' });
   const datos = await respuesta.json();
   if (!respuesta.ok) throw new Error(datos.error || 'No se pudo abrir el corte.');
   const ficheros: { url: string }[] = datos.ficheros || (datos.url ? [{ url: datos.url }] : []);
@@ -24,10 +49,10 @@ export async function abrirCorteToldos(orderCode: string, cuerpo?: Record<string
 }
 
 /** Cada reintento conserva las decisiones del técnico y la huella que ha visto. */
-export async function guardarToldosEditable(cuerpo: Record<string, unknown>, preguntar: AskForConfirmation, abrir: () => Promise<unknown>) {
+export async function guardarToldosEditable(cuerpo: Record<string, unknown>, preguntar: AskForConfirmation, abrir: () => Promise<unknown>, ruta = '/api/reviews') {
   const entrada = { ...cuerpo };
   while (true) {
-    const respuesta = await fetch('/api/reviews', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entrada) });
+    const respuesta = await fetch(ruta, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entrada) });
     const datos = await respuesta.json();
     if (respuesta.status === 409 && datos.needsRegenerateConfirmation) {
       const choice = await preguntar({ title: 'Este pedido ya tiene corte', amplio: true,

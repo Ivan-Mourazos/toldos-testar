@@ -22,7 +22,7 @@ import { fichaDePuerta, fichaPorCodigo, fichaPorId, tipoDePuerta } from '../../p
 import { cambiarTipoDelCliente, nuevaPuertaDeCliente, otraPuertaDelCliente } from '../../puertas/nuevaPuertaCliente.ts';
 import { CorteResumen, useVistaCortePuertas } from './VistaCortePuertas';
 import { useFlujoCorte } from './flujoCorte';
-import { BotonesFlujoCorte, esperaAlCorte } from '../flujoCorteDwg';
+import { BotonesFlujoCorte } from '../flujoCorteDwg';
 import { cintasDesdeFila, ejesDesdeTramos, leerCadena } from './cadenaDibujo';
 import { avanzarConIntro } from '../avanzarConIntro';
 import { uid } from '../constants';
@@ -523,8 +523,8 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
       <button className="ghost-button clear-form-button" type="button" disabled={guardando} onClick={() => void limpiar()}><Eraser aria-hidden="true" />Limpiar</button>
       {/* El flujo del corte, aquí arriba y en orden: cada botón se habilita cuando toca (Iván, 26/10/2026). */}
       <BotonesFlujoCorte flujo={flujo} ocupado={guardando} />
-      <button type="button" className="primary-button" disabled={guardando || !pedido.orderCode.trim() || Boolean(esperaAlCorte(flujo.paso))} aria-busy={guardando}
-        title={!pedido.orderCode.trim() ? 'Escribe el número de pedido.' : esperaAlCorte(flujo.paso) ?? undefined} onClick={() => void guardar()}>
+      <button type="button" className="primary-button" disabled={guardando || !pedido.orderCode.trim()} aria-busy={guardando}
+        title={!pedido.orderCode.trim() ? 'Escribe el número de pedido.' : undefined} onClick={() => void guardar()}>
         <Save aria-hidden="true" />{guardando ? 'Guardando…' : 'Guardar para revisión'}
       </button>
     </OrderActions>

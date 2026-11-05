@@ -200,7 +200,7 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
                 // La nota de devolución, si CoordinaOT la tiene devuelta: una vez por OF (ver notasDevolucion).
                 const devolucion = notas[item.letter];
                 // Quién aprobó en CoordinaOT; es el que quedará de revisor al generar.
-                const approvedBy = (returned?.estado === 'aprobada' || (productoDe(review) === 'toldos' && aprobadaOPasada(returned?.estado))) && returned?.revisor ? reviewerName(returned.revisor, formOptions.tecnicos as string[]) : '';
+                const approvedBy = aprobadaOPasada(returned?.estado) && returned?.revisor ? reviewerName(returned.revisor, formOptions.tecnicos as string[]) : '';
                 return (
                 <li key={item.letter} className={`is-${item.state}`}>
                   <AwningChip item={item} coordinaStatus={coordinaStatus} toldos={productoDe(review) === 'toldos'} />
@@ -324,9 +324,9 @@ function ModelTags({ models, producto, borrador = false }: { models?: string[]; 
   );
 }
 
-function coordinaOf(item: AwningItem, coordinaStatus: CoordinaStatus | null, toldos = false) {
+function coordinaOf(item: AwningItem, coordinaStatus: CoordinaStatus | null, _toldos = false) {
   const estado = coordinaStatus?.disponible ? coordinaStatus.ofs?.[normalizeOf(item.of)]?.estado : undefined;
-  return toldos && estado === 'pasada' ? 'aprobada' : estado;
+  return estado === 'pasada' ? 'aprobada' : estado;
 }
 
 function AwningChip({ item, group, coordinaStatus, toldos = false }: { item: AwningItem; group?: { label: string; items: AwningItem[] }; coordinaStatus: CoordinaStatus | null; toldos?: boolean }) {

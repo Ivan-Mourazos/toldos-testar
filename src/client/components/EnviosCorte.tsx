@@ -111,7 +111,7 @@ export function EnviosCorte({ ruta, usuario, permitido, motivo, ocupado = false,
   if (barra) {
     const mandado = registros.some((e) => e.destino === 'bot' && !e.parcial);
     return <>
-      {permitido && !mandado && <button type="button" className="primary-button boton-3d" disabled={ocupado || trabajando} aria-busy={trabajando}
+      {permitido && !mandado && <button type="button" className="ghost-button boton-3d" disabled={ocupado || trabajando} aria-busy={trabajando}
         onClick={() => void enviar('bot')}><Send size={16} aria-hidden="true" />{trabajando ? 'Mandando…' : 'Mandar corte al bot'}</button>}
       <MenuMas>
         {permitido && mandado && <button type="button" role="menuitem" className="menu-mas-item" disabled={ocupado || trabajando}

@@ -70,7 +70,7 @@ export function textoPaso(p: Paso): string {
 }
 
 /** Si «Guardar para revisión» tiene que esperar al corte (con el motivo para el título del botón), o null si puede guardar. */
-export const esperaAlCorte = (p: Paso) => (p.paso === 'sin-flujo' || p.paso === 'guardar' ? null : textoPaso(p));
+export const esperaAlCorte = (p: Paso, editable = false) => (editable || p.paso === 'sin-flujo' || p.paso === 'guardar' ? null : textoPaso(p));
 
 /**
  * El estado del corte de un pedido y sus acciones. `base` es la ruta del borrador de cada producto (`…/borrador-corte` o
@@ -128,7 +128,7 @@ export function useFlujoCorteDwg({ base, codigo: codigoBruto, entrada, cuerpo, a
   async function abrir() {
     setOcupado(true);
     try {
-      await abrirCorteDwg({ ruta: base, orderCode: codigoBruto, cuerpo: cuerpo(), usuario, preguntar: askForConfirmation, notify,
+      await abrirCorteDwg({ ruta: base, orderCode: codigoBruto, cuerpo: cuerpo(), usuario, preguntar: askForConfirmation, notify, editable,
         // El que había conserva sus datos; uno nuevo lleva los de la pantalla.
         alAbrir: tipo => { if (tipo !== 'existente' || abiertoCon === null) { escribir(base, codigo, entrada); setAbierto({ codigo, valor: entrada }); } } });
     } finally { setOcupado(false); await refrescar(); }

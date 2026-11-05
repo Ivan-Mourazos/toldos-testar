@@ -61,7 +61,7 @@ export async function escribirPlanoCorte(ruta: string, existentes: string[], pre
 const ROLLO = 2500;
 const metros = (mm: number) => (mm / 1000).toLocaleString('es-ES', { maximumFractionDigits: 2 });
 
-export function CorteRemolques({ ruta, version, generado = false, notify, onConfirm, acciones }: { ruta: string; version: string; generado?: boolean; notify: Notify; onConfirm: AskForConfirmation; acciones?: React.ReactNode }) {
+export function CorteRemolques({ ruta, version, generado = false, notify, onConfirm, acciones, onVista }: { ruta: string; version: string; generado?: boolean; notify: Notify; onConfirm: AskForConfirmation; acciones?: React.ReactNode; onVista?: (vista: VistaCorteRemolques) => void }) {
   // El resultado lleva para qué pedido y versión es: si cambian, se ve «Calculando…» hasta el nuevo.
   const clave = `${ruta}|${version}`;
   const [leido, setLeido] = useState<{ clave: string; datos?: VistaCorteRemolques; error?: string } | null>(null);
@@ -74,10 +74,10 @@ export function CorteRemolques({ ruta, version, generado = false, notify, onConf
         if (!respuesta.ok) throw new Error(datos.error || 'No se pudo calcular el corte de lona.');
         return datos as VistaCorteRemolques;
       })
-      .then((datos) => { if (!cancelado) setLeido({ clave, datos }); })
+      .then((datos) => { if (!cancelado) { setLeido({ clave, datos }); onVista?.(datos); } })
       .catch((error) => { if (!cancelado) setLeido({ clave, error: error instanceof Error ? error.message : 'No se pudo calcular el corte de lona.' }); });
     return () => { cancelado = true; };
-  }, [ruta, clave]);
+  }, [ruta, clave, onVista]);
 
   const [guardandoPlano, setGuardandoPlano] = useState(false);
   // El plano del corte para revisarlo antes de aprobar (también sale al guardar para revisión).

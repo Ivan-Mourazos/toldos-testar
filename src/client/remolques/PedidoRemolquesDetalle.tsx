@@ -1,6 +1,6 @@
 import { solicitarGeneracion } from '../reintentarGeneracion';
-import React, { useEffect, useState } from 'react';
-import { CopyPlus, ExternalLink, Factory, FileSearch, FileText, PencilLine, Scissors } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { CopyPlus, ExternalLink, Factory, FileSearch, FileText, Scissors } from 'lucide-react';
 import { formOptions } from '../../domain/modelBehavior.js';
 import { elementosAprobacion, modeloElemento } from '../../remolques/flujo/pedido.ts';
 import type { ElementoGuardado, PedidoRemolques } from '../../remolques/flujo/tipos.ts';
@@ -9,18 +9,21 @@ import type { AskForConfirmation, Notify } from '../components/NotificationCente
 import { controlLabel } from '../components/controlLabels';
 import { useCoordinaStatus } from '../hooks/useCoordinaStatus';
 import type { CoordinaStatus } from '../types';
-import { CorteRemolques } from './CorteRemolques';
-import { estadoGenerarRemolques, ficherosPrevistos } from './generarPedido';
+import { CorteRemolques, type VistaCorteRemolques } from './CorteRemolques';
+import { estadoGenerarRemolques, ficherosPrevistos, opcionesCorteRemolques } from './generarPedido';
 import { puedeCorregir } from '../generatePermission';
 import { LecturaPedidoRemolques } from './LecturaPedidoRemolques';
 import { formatearNumeroEs } from './numeroEs';
 import { DocumentosPedido } from '../components/DocumentosPedido';
 import { PlanteamientoPedido } from '../components/PlanteamientoPedido';
 import { EnviosCorte, HistorialEnvios } from '../components/EnviosCorte';
-import { BotonAbrirCorteRevisado } from '../flujoCorteDwg';
+import { AccionesPedido, CabeceraPedidoGuardado } from '../components/AccionesPedido';
+import { useCortePedidoEditable } from '../useCortePedidoEditable';
+import { aprobadaOPasada } from '../../toldosEditable.js';
+import { abrirCorteGuardado, preguntarCambioCorte } from '../toldosEditable';
 
 // Un pedido de remolques abierto desde Pedidos (fase 5), con las acciones del de toldos: ver la
-// hoja, «Corregir», «Generar archivos» (solo el autor, con todo aprobado en CoordinaOT) y, ya
+// hoja, «Corregir», «Generar archivos» (con todo aprobado o pasado en CoordinaOT) y, ya
 // generado, abrir su PDF y «Reutilizar datos». Debajo de la lista de elementos, el pedido entero en
 // solo lectura (LecturaPedidoRemolques), como el formulario de lectura de los toldos.
 
@@ -35,7 +38,7 @@ const nombreElemento = (elemento: ElementoGuardado) => (elemento.tipo === 'lona'
 function FilaElemento({ elemento, letra, coordina }: { elemento: ElementoGuardado; letra: string; coordina: CoordinaStatus | null }) {
   const of = normalizeOf(elemento.input.cabecera.ordenFabricacion ?? '');
   const enCoordina = coordina?.disponible && of ? coordina.ofs?.[of] : undefined;
-  const aprobadoPor = enCoordina?.estado === 'aprobada' && enCoordina.revisor
+  const aprobadoPor = aprobadaOPasada(enCoordina?.estado) && enCoordina?.revisor
     ? reviewerName(enCoordina.revisor, formOptions.tecnicos as string[])
     : '';
   return (
@@ -72,6 +75,14 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
   /** El texto del botón de volver: «← Buscar remolques» si se abrió desde el buscador. */
   textoVolver?: string;
 }) {
+  const claveCorte = `${pedido?.orderCode}|${pedido?.updatedAt}`;
+  const [vistaCorte, setVistaCorte] = useState<{ clave: string; datos: VistaCorteRemolques } | null>(null);
+  const recibirVista = useCallback((datos: VistaCorteRemolques) => setVistaCorte({ clave: claveCorte, datos }), [claveCorte]);
+  const opcionesCorte = pedido ? opcionesCorteRemolques(pedido, vistaCorte?.clave === claveCorte ? vistaCorte.datos : undefined)
+    : { falta: 'Cargando el pedido…', aplica: false };
+  const corte = useCortePedidoEditable({ tipo: 'remolques', pedido, cuerpo: { elementos: pedido?.elementos, params: pedido?.params, clienteRps: pedido?.clienteRps },
+    ...opcionesCorte,
+    usuario: currentUser, notify, preguntar: onConfirm, onChanged: onEnviado });
   const volver = <button type="button" className="ghost-button boton-3d reviews-back-button" onClick={onBack}>{textoVolver}</button>;
   if (cargando) {
     return <section className="review-reader">{volver}<div className="review-empty"><FileSearch aria-hidden="true" />Cargando el pedido…</div></section>;
@@ -81,7 +92,7 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
   }
   const generado = pedido.status === 'PRODUCED';
   const { allowed, note } = estadoGenerarRemolques(pedido, currentUser, coordina);
-  // «Corregir», como en CoordinaOT: solo devuelto y para su autor (Iván, 21/10/2026).
+  // Cualquier técnico edita; el aviso de aprobación se muestra desde la barra común.
   const corregible = puedeCorregir(pedido.status, elementosAprobacion(pedido), pedido.summary.technician || '', currentUser, coordina);
   const permisoCorte = estadoGenerarRemolques({ ...pedido, status: generado ? 'PENDING_REVIEW' : pedido.status }, currentUser, coordina);
   const ruta = `/api/remolques/pedidos/${encodeURIComponent(pedido.orderCode)}`;
@@ -90,39 +101,27 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
     pedido.summary.customer || 'Sin cliente',
     pedido.summary.orderDate && `pedido del ${pedido.summary.orderDate.split('-').reverse().join('/')}`,
     pedido.summary.technician && `autor ${controlLabel(pedido.summary.technician)}`,
-    pedido.updatedAt && `guardado ${fechaHora(pedido.updatedAt)}`,
+    pedido.updatedAt && `guardado ${fechaHora(pedido.updatedAt)}${pedido.updatedBy ? ` por ${controlLabel(pedido.updatedBy)}` : ''}`,
   ].filter(Boolean).join(' · ');
 
   return (
     <section className="review-reader rem-pedido-guardado" aria-label={`Pedido de remolques ${pedido.orderCode}`}>
-      <header className="review-reader-header">
-        {volver}
-        <div className="review-reader-title">
-          <h2>{pedido.orderCode}<span className="orders-kind-tag familia-tag is-remolques">Remolque</span></h2>
-          <small>{datos}</small>
-        </div>
-        <div className="review-reader-actions">
-          {pedido.corteConfirmado && <BotonAbrirCorteRevisado ruta={`${ruta}/corte-dwg`} notify={notify} />}
-          {!generado && corregible && <button className="ghost-button boton-3d" type="button" disabled={generando} onClick={onCorregir}>
-            <PencilLine aria-hidden="true" />Corregir
-          </button>}
-          {/* Arriba, solo el paso que toca; lo que se usa poco, en «Más» (Iván, 26/10/2026). */}
-          {!generado && allowed && <button className="primary-button boton-3d review-generate-button" type="button" disabled={generando} onClick={onGenerar}>
-            <Factory aria-hidden="true" />{generando ? 'Generando…' : 'Generar archivos'}
-          </button>}
-          <EnviosCorte key={ruta} barra ruta={`${ruta}/corte`} usuario={currentUser} permitido={permisoCorte.allowed}
-            motivo={permisoCorte.note} ocupado={generando} envios={pedido.enviosCorte} descarga={`${ruta}/corte/dxf`} notify={notify} preguntar={onConfirm} onEnviado={onEnviado}
+      <CabeceraPedidoGuardado volver={volver} titulo={<>{pedido.orderCode}<span className="orders-kind-tag familia-tag is-remolques">Remolque</span></>}
+        datos={datos} corteNoRegenerado={pedido.corteNoRegenerado} corteSimulado={pedido.corteSimulado}
+        acciones={<AccionesPedido generado={generado} ocupado={generando || corte.ocupado} enviando={generando} editandoPermitido={corregible}
+          onEditar={onCorregir} elementos={elementosAprobacion(pedido)} coordina={coordina} preguntar={onConfirm} abrir={corte.abrir}
+          regenerar={currentUser && corte.abrir ? () => void corte.regenerar() : undefined} generar={onGenerar} generarPermitido={allowed} motivoGenerar={note}
+          envios={opcionesCorte.aplica ? <EnviosCorte key={ruta} barra ruta={`${ruta}/corte`} usuario={currentUser} permitido={permisoCorte.allowed && Boolean(currentUser.trim())}
+            motivo={permisoCorte.note} ocupado={generando || corte.ocupado} envios={pedido.enviosCorte} descarga={`${ruta}/corte/dxf`} notify={notify} preguntar={onConfirm} onEnviado={onEnviado}
             mas={generado ? <button type="button" role="menuitem" className="menu-mas-item" onClick={onReutilizar}><CopyPlus size={16} aria-hidden="true" />Reutilizar datos</button> : null} />
-          {!generado && !allowed && note && <span className="review-generate-note">{note}</span>}
-        </div>
-      </header>
+            : generado ? <button type="button" className="ghost-button boton-3d" onClick={onReutilizar}><CopyPlus aria-hidden="true" />Reutilizar datos</button> : null} />} />
 
       {generado && pedido.production && (
         <div className="review-production-block bloque-3d" role="status">
           <div className="review-production-summary">
             <Factory aria-hidden="true" />
             <span>
-              <strong>{`Archivos generados${pedido.production.createdBy ? ` por ${controlLabel(pedido.production.createdBy)}, autor del pedido` : ''}`}</strong>
+              <strong>{`Archivos generados${pedido.production.createdBy ? ` por ${controlLabel(pedido.production.createdBy)}` : ''}`}</strong>
               <small>{`${fechaHora(pedido.production.createdAt)}${pedido.reviewedBy ? ` · revisado por ${controlLabel(pedido.reviewedBy)}` : ''}`}</small>
             </span>
           </div>
@@ -158,7 +157,7 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
 
       {/* Debajo de los datos (Iván, 20/10/2026). Se vuelve a calcular si el pedido cambia (guardado o generado). */}
       <DocumentosPedido planteamiento={<PlanteamientoPedido origen={`${ruta}/vista-previa`} version={pedido.updatedAt} />}
-        corte={<CorteRemolques ruta={ruta} version={pedido.updatedAt} generado={generado || Boolean(pedido.corteConfirmado)} notify={notify} onConfirm={onConfirm}
+        corte={<CorteRemolques ruta={ruta} version={pedido.updatedAt} generado notify={notify} onConfirm={onConfirm} onVista={recibirVista}
         acciones={<HistorialEnvios envios={pedido.enviosCorte} />} />} />
     </section>
   );
@@ -218,14 +217,20 @@ export function PedidoRemolquesDetalle({ orderCode, refreshKey, currentUser, onB
     if (inicial !== 'confirm') return;
     setGenerando(true);
     let confirmOverwrite = false;
+    let aceptarHuellaCorte: string | undefined;
     try {
       for (;;) {
         const { respuesta, datos } = await solicitarGeneracion(`/api/remolques/pedidos/${encodeURIComponent(codigo)}/generar`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ confirmOverwrite }),
-        }, async (respuesta) => ({ respuesta, datos: await respuesta.json() as { error?: string; needsConfirmation?: boolean; existing?: string[]; unchanged?: boolean; nombre?: string } }),
+          body: JSON.stringify({ confirmOverwrite, aceptarHuellaCorte, savedBy: currentUser }),
+        }, async (respuesta) => ({ respuesta, datos: await respuesta.json() as { error?: string; cambioCorte?: boolean; huella?: string; needsConfirmation?: boolean; existing?: string[]; unchanged?: boolean; nombre?: string } }),
         () => onToast('Reintentando…', { tone: 'info' }));
+        if (respuesta.status === 409 && datos.cambioCorte) {
+          if (!await preguntarCambioCorte(onConfirm, () => abrirCorteGuardado(`/api/remolques/pedidos/${encodeURIComponent(codigo)}/corte-dwg`))) return;
+          aceptarHuellaCorte = datos.huella;
+          continue;
+        }
         if (respuesta.status === 409 && datos.needsConfirmation && !confirmOverwrite) {
           const eleccion = await onConfirm({
             title: 'Sustituir archivos existentes',

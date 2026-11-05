@@ -36,24 +36,25 @@ describe('el pedido de remolques abierto en Pedidos', () => {
     expect(html).not.toContain('Vista previa del PDF');
     const cabecera = html.match(/<header class="corte-cabecera[^"]*">(?:(?!<\/header>)[\s\S])*<h2>Corte<\/h2>([\s\S]*?)<\/header>/)?.[0] ?? '';
     expect(cabecera).toContain('<h2>Corte</h2>');
-    expect(cabecera).toContain('Guardar plano para revisar');
+    expect(cabecera).not.toContain('Guardar plano para revisar');
   });
-  it('pendiente y aprobado: cada elemento con su OF y quién lo aprobó, y «Generar archivos» encendido para el autor; sin «Corregir»', () => {
+  it('pendiente y aprobado: muestra la OF, el revisor y las acciones comunes de editar y generar', () => {
     const html = pintar({});
     expect(html).toContain('Remolque · Arquillado con aguas');
     expect(html).toContain('Baquetón');
     expect(html).toContain('OF 0231780');
     expect(html).toContain('Aprobado por Jaime');
-    // Aprobado no se corrige: «Corregir» solo si CoordinaOT lo devolvió (Iván, 21/10/2026).
-    expect(html).not.toContain('Corregir');
+    // Fase 2: un aprobado también se edita, con aviso al entrar.
+    expect(html).toContain('Corregir');
     expect(html).toContain('Generar archivos');
     expect(html).not.toMatch(/review-generate-button" type="button" disabled=""/);
   });
 
-  it('otro técnico no ve «Generar archivos», pero sí por qué', () => {
+  it('otro técnico también puede generar cuando todas las OF están aprobadas', () => {
     const html = pintar({ currentUser: 'JAIME' });
-    expect(html).not.toContain('review-generate-button');
-    expect(html).toContain('Lo genera el autor (Iván)');
+    expect(html).toContain('review-generate-button');
+    expect(html).not.toContain('Lo genera el autor');
+    expect(html).toContain('Mandar corte al bot');
   });
 
   it('devuelto en CoordinaOT: la nota en su elemento', () => {
@@ -61,8 +62,8 @@ describe('el pedido de remolques abierto en Pedidos', () => {
     expect(html).toContain('Falta cota del alto');
     expect(html).toContain('Sin aprobar en CoordinaOT: A (0231780) devuelta.');
     expect(html).toContain('Corregir');
-    // Devuelto, pero lo abre otro técnico: no es suyo corregirlo.
-    expect(pintar({ currentUser: 'JAIME', coordina: { disponible: true, ofs: { '0231780': { estado: 'devuelta', nota: 'x' } } } })).not.toContain('Corregir');
+    // Fase 2: también lo corrige un compañero.
+    expect(pintar({ currentUser: 'JAIME', coordina: { disponible: true, ofs: { '0231780': { estado: 'devuelta', nota: 'x' } } } })).toContain('Corregir');
   });
 
   it('generado: sin «Generar archivos», con el PDF, quién lo revisó y «Reutilizar datos»', () => {
@@ -107,7 +108,8 @@ describe('el pedido de remolques abierto en Pedidos, en solo lectura', () => {
     expect(html).toContain('aria-label="Pedido de remolques en solo lectura"');
     // El corte de lona, debajo de los datos (Iván, 20/10/2026), con su botón para guardar el plano.
     expect(html.indexOf('aria-label="Corte"')).toBeGreaterThan(html.indexOf('aria-label="Pedido de remolques en solo lectura"'));
-    expect(html).toContain('Guardar plano para revisar');
+    // El plano se regenera desde la barra común y se guarda con el pedido, sin un segundo botón.
+    expect(html).not.toContain('Guardar plano para revisar');
     // Las pestañas de la pantalla de Remolques, para cambiar de elemento y nada más.
     expect(html).toContain('A · Remolque 200×121');
     expect(html).toContain('B · Baquetón 260×160');

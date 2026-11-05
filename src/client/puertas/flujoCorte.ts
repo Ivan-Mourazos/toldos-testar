@@ -18,5 +18,5 @@ export function useFlujoCorte({ pedido, usuario, notify, askForConfirmation, act
   pedido: PedidoPuertas; usuario: string; notify: Notify; askForConfirmation: AskForConfirmation; activo: boolean;
 }) {
   return useFlujoCorteDwg({ base: '/api/puertas/borrador-corte', codigo: pedido.orderCode, entrada: JSON.stringify(pedido.elementos),
-    cuerpo: () => ({ pedido }), falta: faltaParaAbrir(pedido), usuario, notify, askForConfirmation, activo });
+    cuerpo: () => ({ pedido }), falta: faltaParaAbrir(pedido), usuario, notify, askForConfirmation, activo, editable: true });
 }

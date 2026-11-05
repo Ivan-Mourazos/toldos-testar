@@ -139,8 +139,8 @@ export function RemolquesView({ controlRef, usuario, notify, askForConfirmation,
   const vistaCorte = useVistaCorteRemolques(lineas.length ? entrada : '', lineas.length ? bloqueoCorte : 'Añade un elemento');
   const flujo = useFlujoCorteDwg({ base: '/api/remolques/borrador-corte', codigo: numeroPedido, entrada,
     cuerpo: () => JSON.parse(entrada) as Record<string, unknown>, aplica: Boolean(vistaCorte.actual?.datos?.cortes.length),
-    falta: bloqueoCorte, usuario, notify, askForConfirmation, activo: accionesVisibles && lineas.length > 0 });
-  const esperaCorte = esperaAlCorte(flujo.paso);
+    falta: bloqueoCorte, usuario, notify, askForConfirmation, activo: accionesVisibles && lineas.length > 0, editable: true });
+  const esperaCorte = esperaAlCorte(flujo.paso, true);
   const avisoAMano = bloqueoCorte ? null : avisoCorteAMano(vistaCorte.actual?.datos);
   const [derecha, setDerecha] = React.useState<'dibujo' | 'corte'>('dibujo');
   const elementoFluido=useContenidoFluido<HTMLElement>(String(versionActiva));

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { CopyPlus, Download, ExternalLink, Factory, FileSearch, FileSpreadsheet, FileText, PencilLine, RefreshCw } from 'lucide-react';
+import { CopyPlus, Download, ExternalLink, Factory, FileSearch, FileSpreadsheet, FileText } from 'lucide-react';
 import type { Calculation, CoordinaStatus, ReviewPackage, RuleParameters } from '../types';
 import type { EstadoCorte } from '../corteLona';
 import { OrderView } from '../views/OrderView';
@@ -10,8 +10,7 @@ import { PlanteamientoPedido } from './PlanteamientoPedido';
 import { controlLabel } from './controlLabels';
 import { generateState, puedeCorregir } from '../generatePermission';
 import { awningLetter } from '../../domain/awningCompleteness.js';
-import { CORTE_NO_REGENERADO } from '../../toldosEditable.js';
-import { isCurrentAuthor } from '../../reviewRules.js';
+import { AccionesPedido, CabeceraPedidoGuardado } from './AccionesPedido';
 import { EnviosCorte, HistorialEnvios } from './EnviosCorte';
 import type { AskForConfirmation, Notify } from './NotificationCenter';
 
@@ -19,7 +18,7 @@ const noop = () => undefined;
 
 // Pedido abierto (rediseño 24/09/2026): ya no se aprueba ni se devuelve desde aquí (lo
 // hace CoordinaOT). Un solo desplazamiento: ver el PDF, corregir, generar archivos y enviar
-// el corte con sus botones propios (solo puede el autor, con aprobación comprobada).
+// el corte con sus botones propios, con aprobación comprobada.
 export function ReviewOrderDetail({
   review,
   parameters,
@@ -69,7 +68,6 @@ export function ReviewOrderDetail({
   const [generandoCorte, setGenerandoCorte] = useState(false);
   const estadoCorte = review?.corteLona ?? null;
   const autorDelCorte = Boolean(review && order && review.status !== 'PRODUCED' && onGuardarCorte && currentUser);
-  const corteSinGenerar = faltaCorte === 'Corte viejo: genéralo de nuevo' || faltaCorte === 'Genera el corte de lona';
   const conFlujoCorte = autorDelCorte && Boolean(review && toldosConCorte(review.order).length > 0)
     && !review?.corteConfirmado;
   const flujoCorte = useFlujoCorteDwg({ base: '/api/corte-lona/borrador', codigo: review?.orderCode ?? '',
@@ -112,16 +110,12 @@ export function ReviewOrderDetail({
   const corregible = puedeCorregir(review.status, (order.awnings || []).map((a, i) => ({ letter: awningLetter(i), of: String(a.of || '') })),
     order.technician || '', currentUser, coordinaStatus, true);
   const cortePermitido = generateState({ ...review, status: isProduced ? 'PENDING_REVIEW' : review.status }, currentUser, coordinaStatus);
-  // Los envíos del bot conservan su permiso actual hasta la fase de reenvíos.
-  const puedeEnviar = isCurrentAuthor(currentUser, order.technician || '', order.awnings.map((a, i) => ({ letter: awningLetter(i), of: String(a.of || '') })), coordinaStatus);
+  const puedeEnviar = Boolean(currentUser.trim());
   const conCorteLona = toldosConCorte(review.order).length > 0;
   const pdfIndex = review.production?.files.findIndex(file => file.type === 'pdf') ?? -1;
   const pdfGenerado = isProduced && pdfIndex >= 0;
 
   async function regenerarCorte() {
-    const choice = await onConfirm({ title: 'Regenerar corte', message: 'Se perderán los retoques de ZWCAD. El corte nuevo se guardará con el pedido.',
-      confirmLabel: 'Sí, regenerar', cancelLabel: 'Cancelar', tone: 'warning' });
-    if (choice !== 'confirm') return;
     setGenerandoCorte(true);
     try { await onGuardarCorte?.(estadoCorte); }
     finally { setGenerandoCorte(false); }
@@ -129,43 +123,26 @@ export function ReviewOrderDetail({
 
   return (
     <section className="review-reader" aria-label={`Datos de revisión de ${review.orderCode}`}>
-      <header className="review-reader-header">
-        {backButton}
-        <div className="review-reader-title">
-          <h2>{review.orderCode}</h2>
-          <small>{[
+      <CabeceraPedidoGuardado volver={backButton} titulo={review.orderCode} datos={[
             review.summary.customer || 'Sin cliente',
             review.order.orderDate && `pedido del ${review.order.orderDate.split('-').reverse().join('/')}`,
             review.order.technician && `autor ${controlLabel(review.order.technician)}`,
             review.updatedAt && `guardado ${formatDateTime(review.updatedAt)}${review.updatedBy ? ` por ${controlLabel(review.updatedBy)}` : ''}`
-          ].filter(Boolean).join(' · ')}</small>
-        </div>
-        <div className="review-reader-actions">
-          {review.corteConfirmado && !conFlujoCorte && <BotonAbrirCorteRevisado ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-dwg`} notify={notify} />}
-          {!isProduced && corregible && <button className="ghost-button boton-3d" type="button" disabled={disabled} onClick={onEdit}>
-            <PencilLine aria-hidden="true" />Corregir
-          </button>}
-          {/* Arriba, solo el paso que toca; lo que se usa poco, en «Más» (Iván, 26/10/2026). */}
-          {!isProduced && canGenerate && <button className="primary-button boton-3d review-generate-button" type="button" disabled={disabled || generandoCorte} onClick={onGenerate}>
-            <Factory aria-hidden="true" />{generating ? 'Generando…' : 'Generar archivos'}
-          </button>}
-          {conFlujoCorte && <BotonesFlujoCorte flujo={flujoCorte} ocupado={disabled || generandoCorte} />}
-          {autorDelCorte && conCorteLona && <button type="button" className="ghost-button boton-3d" disabled={disabled || generandoCorte}
-            onClick={() => void regenerarCorte()}>
-            <RefreshCw aria-hidden="true" />{generandoCorte ? 'Guardando corte…' : corteSinGenerar ? 'Generar corte' : 'Regenerar corte'}
-          </button>}
-          {conCorteLona
+          ].filter(Boolean).join(' · ')} corteNoRegenerado={review.corteNoRegenerado} corteSimulado={review.corteSimulado}
+        acciones={<AccionesPedido generado={isProduced} ocupado={disabled || generandoCorte} enviando={generating} editandoPermitido={corregible}
+          onEditar={onEdit} elementos={order.awnings.map(a => ({ of: String(a.of || '') }))} coordina={coordinaStatus} preguntar={onConfirm}
+          abrir={review.corteConfirmado && !conFlujoCorte
+            ? <BotonAbrirCorteRevisado ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-dwg`} notify={notify} />
+            : conFlujoCorte ? <BotonesFlujoCorte flujo={flujoCorte} ocupado={disabled || generandoCorte} /> : null}
+          regenerar={autorDelCorte && conCorteLona ? () => void regenerarCorte() : undefined}
+          generar={onGenerate} generarPermitido={canGenerate} motivoGenerar={generateNote}
+          envios={conCorteLona
             ? <EnviosCorte barra ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona`} usuario={currentUser}
               permitido={puedeEnviar && cortePermitido.allowed && (Boolean(review.corteConfirmado) || !faltaCorte)} motivo={faltaCorte ?? cortePermitido.note}
               ocupado={disabled || generandoCorte} envios={review.enviosCorte} notify={notify} preguntar={onConfirm}
               descarga={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona/dxf`}
               mas={produced ? <button type="button" role="menuitem" className="menu-mas-item" disabled={disabled} onClick={onReuse}><CopyPlus size={16} aria-hidden="true" />Reutilizar datos</button> : null} />
-            : produced && <button className="ghost-button boton-3d review-reuse-button" type="button" disabled={disabled} onClick={onReuse}><CopyPlus aria-hidden="true" />Reutilizar datos</button>}
-          {!isProduced && !canGenerate && generateNote && <span className="review-generate-note">{generateNote}</span>}
-        </div>
-      </header>
-      {review.corteNoRegenerado && <p role="status" className="review-state-note aviso-flujo-editable">{CORTE_NO_REGENERADO}</p>}
-      {review.corteSimulado && <p role="status" className="review-state-note aviso-flujo-editable">Corte calculado en simulación; no se ha escrito ningún plano.</p>}
+            : produced && <button className="ghost-button boton-3d review-reuse-button" type="button" disabled={disabled} onClick={onReuse}><CopyPlus aria-hidden="true" />Reutilizar datos</button>} />} />
 
       {produced && review.production && (
         <div className="review-production-block bloque-3d" role="status">
