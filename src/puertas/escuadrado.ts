@@ -6,11 +6,13 @@ export const llevaEscuadrado = (p: Puerta): boolean => !p.araujo && p.modelo ===
 
 /** Los extremos se guardan desde la E.T.; las cintas, desde la puerta. */
 export function huecosSinEscuadrado(e: Entrada, frente: number): Hueco[] {
+  // Los recortes de los extremos conservan su forma (abiertos hacia el borde, sin cortar ese lado): solo se
+  // corren con la lona. Iván, 05/11/2026 (AR2605391): al quitarles «abierto» salían rectángulos cerrados.
   return e.huecos.map(h => {
-    const derecha = h.x + h.ancho >= e.largo - 1.01;
-    const cerrado = { ...h };
-    delete cerrado.abierto;
-    return { ...cerrado, x: derecha ? h.x - (e.largo - frente) : h.x };
+    const izquierda = h.x <= 1.01, derecha = h.x + h.ancho >= e.largo - 1.01;
+    const hueco = { ...h, x: derecha ? h.x - (e.largo - frente) : h.x };
+    delete hueco.abierto;
+    return izquierda ? { ...hueco, abierto: 'izquierda' as const } : derecha ? { ...hueco, abierto: 'derecha' as const } : hueco;
   });
 }
 

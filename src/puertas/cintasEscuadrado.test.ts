@@ -25,17 +25,18 @@ describe('cintas de una apilable de más de 6 m (E.T. 2 cm más larga que el fre
     }
   });
 
-  it('conserva los recortes de los extremos a 1–6 de la puerta y 2–7 de la lona, cerrados', () => {
+  // Iván, 05/11/2026: misma forma que en una puerta normal (abiertos hacia el borde), solo corridos 1 cm.
+  it('conserva los recortes de los extremos a 1–6 de la puerta y 2–7 de la lona, abiertos como siempre', () => {
     const r = calcularPuerta(p);
     for (const pieza of r.piezas.filter(x => x.huecos.some(h => h.ancho === 5))) {
       const extremos = pieza.huecos.filter(h => h.ancho === 5);
       expect(extremos.map(h => h.x)).toEqual([2, 859]);
-      expect(extremos.every(h => !h.abierto)).toBe(true);
+      expect(extremos.map(h => h.abierto)).toEqual(['izquierda', 'derecha']);
       expect(pieza.ancho - extremos[1].x - extremos[1].ancho).toBe(2);
     }
     const { lienzo } = dibujarAlzadoTaller(p, 'A');
-    const recortes = lienzo.polilineas.filter(x => x.capa === 'CUTTER');
-    expect(recortes.every(x => x.cerrada)).toBe(true);
+    const recortes = lienzo.polilineas.filter(x => x.capa === 'CUTTER' && !x.cerrada);
+    expect(recortes).toHaveLength(20);
     expect(Math.min(...recortes[0].puntos.map(q => q[0]))).toBe(1);
     expect(Math.max(...recortes[1].puntos.map(q => q[0]))).toBe(863);
     expect(lienzo.cotas.some(c => c.x1 === 0 && c.x2 === 6)).toBe(true);
@@ -71,11 +72,11 @@ describe('cintas de una apilable de más de 6 m (E.T. 2 cm más larga que el fre
     expect(s.partido[1].unionesCorte?.[0].x).toBe(2);
   });
 
-  it('el bot corta las cuatro esquinas de cada recorte extremo', () => {
+  it('el bot redondea solo las esquinas interiores de los recortes extremos, como en una puerta normal', () => {
     const corte = generarCortePuertas(pedidoDe('AR2605391', p));
     const arcos = corte.cortes.flatMap(c => c.entidades.arcos).filter(a => a.capa === 'CUTTER' && a.r === 5);
-    // Diez entradas con dos extremos y cinco entradas con cinco cintas: 45 recortes, cuatro radios cada uno.
-    expect(arcos).toHaveLength(180);
+    // 20 extremos abiertos con dos radios cada uno y 25 cintas con cuatro: 40 + 100.
+    expect(arcos).toHaveLength(140);
   });
 
   it('el bot rotula sobre el frente nominal, también cuando gira una pieza en el rollo', () => {

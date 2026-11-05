@@ -238,7 +238,7 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
       flecha(l, F / 2, y - a / 2, 180, -1);
       texto(l, `E.T Ø${e.diametro} mm`, F / 2, y, Math.min(8, a * .65));
       cota(l, 0, y - a / 2, 0, y + a / 2, -14);
-      for (const h of escuadrado ? huecosSinEscuadrado(e, F) : huecosEnPuerta(e, F)) huecoEntrada(l, h, y, a, F, escuadrado);
+      for (const h of escuadrado ? huecosSinEscuadrado(e, F) : huecosEnPuerta(e, F)) huecoEntrada(l, h, y, a, F);
       obstaculos.push([y - a / 2, y + a / 2]);
     }
     const hitos = [0, ...tubos, H];
