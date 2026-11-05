@@ -6,7 +6,7 @@ import { normalizeEmbudo, etiquetasEmbudo } from './embudoConfiguration.js';
 import PDFDocument from 'pdfkit';
 import { lacadoPrintName } from './lacados.js';
 import pdfLib from 'pdf-lib';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { formatNumber } from './math.js';
 import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
@@ -24,6 +24,25 @@ import { crearLienzoSvg, superficiePlanoTecnico } from './dibujoSvg.js';
 const { PDFDocument: PDFLibDocument } = pdfLib;
 
 const tgmLogoPath = fileURLToPath(new URL('./assets/tgm-logo.png', import.meta.url));
+// Hojas fijas que acompañan al despiece de un modelo, en A5 vertical detrás de todas sus páginas de estructura
+// (Iván, 05/11/2026: «cuando haya un pedido de Cuarzo Box, este PDF se debe imprimir siempre con el pedido»). Es la de
+// oficina: DIBUJOS/TOLDOS/MK MANUALES TECNICOS LLAZA…/1.8_STORBOX_250_COFRE_CASSETTE_TECH/Recorte tapas con piezas especiales.pdf
+const HOJAS_DEL_MODELO = { 'CUARZO BOX': new URL('./data/hojas/cuarzo-recorte-tapas.pdf', import.meta.url) };
+let hojasCargadas;
+const hojaDelModelo = (model) => {
+  const url = HOJAS_DEL_MODELO[String(model || '').trim().toUpperCase()];
+  if (!url) return null;
+  hojasCargadas ??= new Map();
+  if (!hojasCargadas.has(url.href)) hojasCargadas.set(url.href, readFileSync(url));
+  return hojasCargadas.get(url.href);
+};
+/** Dibuja cada hoja fija en su página A5 reservada (la que deja pdfkit en blanco detrás del despiece). */
+async function ponerHojasDelModelo(out, paginas) {
+  for (const { page, hoja } of paginas) {
+    const [embebida] = await out.embedPdf(hoja);
+    page.drawPage(embebida, { x: 0, y: 0, width: page.getWidth(), height: page.getHeight() });
+  }
+}
 
 const colors = {
   ink: '#10282d',
@@ -67,7 +86,13 @@ export async function buildOrderPlanteamientoPdf(opciones) {
 }
 
 async function buildWebPlanteamientoPdf({ order, calculation, review = null, onlyAwningId = null, renderSheets = null, htmlStructure = true, htmlFabric = true, htmlDiagrams = false, onSheetError = null, sinHojaTelas = null }) {
-  const withPdfkit = async () => (await buildPdfkitPlanteamiento({ order, calculation, review, onlyAwningId, attachReview: true, sinHojaTelas })).pdf;
+  const withPdfkit = async () => {
+    const { pdf, modelSheets } = await buildPdfkitPlanteamiento({ order, calculation, review, onlyAwningId, attachReview: true, sinHojaTelas });
+    if (!modelSheets.length) return pdf;
+    const doc = await PDFLibDocument.load(pdf);
+    await ponerHojasDelModelo(doc, modelSheets.map(({ index, hoja }) => ({ page: doc.getPage(index), hoja })));
+    return Buffer.from(await doc.save());
+  };
   if (!renderSheets || (!htmlStructure && !htmlFabric)) return withPdfkit();
   let structureSheets;
   let fabricSheets;
@@ -81,7 +106,7 @@ async function buildWebPlanteamientoPdf({ order, calculation, review = null, onl
   const sheets = [...structureSheets, ...fabricSheets];
   if (sheets.length === 0) return withPdfkit();
 
-  const { pdf: base, structureRanges, fabricRanges } = await buildPdfkitPlanteamiento({ order, calculation, review, onlyAwningId, attachReview: false, sinHojaTelas });
+  const { pdf: base, structureRanges, fabricRanges, modelSheets } = await buildPdfkitPlanteamiento({ order, calculation, review, onlyAwningId, attachReview: false, sinHojaTelas });
   const plan = buildPlanteamientoPlan(order, calculation, { onlyAwningId, sinHojaTelas });
   // Los dibujos se hacen mientras Chromium imprime; el que falle deja su hoja con pdfkit.
   const structureDrawings = structureSheets.map((sheet) => {
@@ -137,7 +162,7 @@ async function buildWebPlanteamientoPdf({ order, calculation, review = null, onl
   });
   // Si la unión falla por lo que sea, el PDF entero sale con pdfkit como siempre.
   try {
-    return await mergeSheets({ order, review, base, printed: printed.sheet, replacements });
+    return await mergeSheets({ order, review, base, printed: printed.sheet, replacements, modelSheets });
   } catch (error) {
     notifySheetError(onSheetError, error, null);
     return withPdfkit();
@@ -175,7 +200,7 @@ function notifySheetError(callback, error, sheet) {
 // Recorre las páginas de pdfkit y, donde empieza un tramo sustituido, pone las páginas impresas
 // de esa hoja y se salta el tramo. `replacements`: { range: { start, end }, indices, drawing }
 // (indices = sus páginas en `printed`; drawing = el dibujo de telas o del escuadrado IRIS).
-async function mergeSheets({ order, review, base, printed, replacements }) {
+async function mergeSheets({ order, review, base, printed, replacements, modelSheets = [] }) {
   const out = await PDFLibDocument.create();
   out.setTitle(`${order.orderCode || 'Pedido'}-1`);
   out.setSubject('Planteamiento de estructuras y telas');
@@ -209,6 +234,8 @@ async function mergeSheets({ order, review, base, printed, replacements }) {
   for (const slot of slots) {
     if (!slot.replacement) {
       out.addPage(keptPages.get(slot.index));
+      const hoja = modelSheets.find((sheet) => sheet.index === slot.index)?.hoja;
+      if (hoja) await ponerHojasDelModelo(out, [{ page: keptPages.get(slot.index), hoja }]);
       continue;
     }
     const { indices, drawing, box = FABRIC_SHEET_DIAGRAM_BOX, drawingPages = 1 } = slot.replacement;
@@ -253,9 +280,11 @@ function buildPdfkitPlanteamiento({ order: fullOrder, calculation, review, onlyA
     let pageCount = 0;
     const structureRanges = [];
     const fabricRanges = [];
+    // Páginas A5 que se rellenan después con la hoja fija de su modelo (pdfkit no incrusta PDF).
+    const modelSheets = [];
     doc.on('pageAdded', () => { pageCount += 1; });
     doc.on('data', (chunk) => chunks.push(chunk));
-    doc.on('end', () => resolve({ pdf: Buffer.concat(chunks), structureRanges, fabricRanges }));
+    doc.on('end', () => resolve({ pdf: Buffer.concat(chunks), structureRanges, fabricRanges, modelSheets }));
     doc.on('error', reject);
 
     const plan = buildPlanteamientoPlan(fullOrder, calculation, { onlyAwningId, sinHojaTelas });
@@ -289,6 +318,12 @@ function buildPdfkitPlanteamiento({ order: fullOrder, calculation, review, onlyA
         }
       }
       structureRanges[structureIndex] = { start, end: pageCount };
+      // Detrás de la última página del despiece y de sus continuaciones, aunque ocupe varias hojas.
+      const hoja = hojaDelModelo(awning.model);
+      if (hoja) {
+        doc.addPage({ size: 'A5', layout: 'portrait', margin: 0 });
+        modelSheets.push({ index: pageCount - 1, hoja });
+      }
     });
 
     const fabricTotals = summarizeFabricPage(plan.fabricPages.flatMap(({ entries }) => entries.map(toFabricLine)));
