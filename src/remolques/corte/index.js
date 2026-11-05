@@ -102,7 +102,10 @@ export function generarCorteRemolques(pedido) {
   const cortes = [], aMano = [];
   // El nombre que pide el bot (BOT/Pendientes/Instrucions.txt: «formato AR2600000»).
   const nombre = codigo;
-  const cortadas = { lonas: [], baquetones: [], ganados: [], refuerzos: false };
+  const cortadas = { lonas: [], baquetones: [], ganados: [] };
+  // Refuerzos de esquina, por baquetón: lo que diga su casilla; sin marcar, sí para PAMILAKAN (Iván, 05/11/2026:
+  // «es mejor incluirlo en el formulario en vez de deducirlo»; un «sin refuerzos» en las observaciones los ponía).
+  const llevaRefuerzos = (e) => e.input.refuerzosEsquinas ?? /PAMILAKAN/.test(cliente);
   for (const [material, els] of porLona) {
     const lonas = els.filter((e) => e.tipo !== 'baqueton' && e.tipo !== 'ganado'), baqs = els.filter((e) => e.tipo === 'baqueton');
     const ganados = els.filter((e) => e.tipo === 'ganado');
@@ -111,15 +114,15 @@ export function generarCorteRemolques(pedido) {
       aMano.push({ nombre, material, motivo: fuera.map(([e, m]) => `${e.of} ${e.input.largo}×${e.input.ancho}: ${m}`).join('; '), elementos: els.map((e) => e.of) });
       continue;
     }
-    const refuerzos = baqs.length > 0 && (/PAMILAKAN/.test(cliente) || baqs.some((e) => /REFUER|REFORZ/i.test(e.input.observaciones ?? '')));
+    const refuerzos = baqs.some(llevaRefuerzos);
     const conLetras = letras.size ? letras : null;
     // Con lonas altas, los baquetones que caben en el rollo se colocan con ellas por huecos (como a mano en
     // AR2605088: las cabezas encima de los baquetones); los que llevan empate van detrás, como siempre.
     const juntos = lonas.length ? baqs.filter((e) => cabeEnRollo(e, params)) : [];
     const aparte = baqs.filter((e) => !juntos.includes(e));
     // El juego del remolque de ganado se coloca con las lonas, como una pieza más.
-    const extras = [...ganados.map(piezaGanado), ...juntos.flatMap((e) => piezasBaqueton(e, params, letras.get(e) ?? [], refuerzos, marcarBaquetones))];
-    const cb = aparte.length ? cortarBaquetones(codigo, aparte, params, refuerzos, letras, marcarBaquetones) : { lineas: [], marcas: [], textos: [], avisos: [], largo: 0 };
+    const extras = [...ganados.map(piezaGanado), ...juntos.flatMap((e) => piezasBaqueton(e, params, letras.get(e) ?? [], llevaRefuerzos(e), marcarBaquetones))];
+    const cb = aparte.length ? cortarBaquetones(codigo, aparte, params, llevaRefuerzos, letras, marcarBaquetones) : { lineas: [], marcas: [], textos: [], avisos: [], largo: 0 };
     const sinLonas = { lineas: [], rot: [], ollaos: [], arcos: [], textos: [], avisos: [], largo: 0, conTira: false, apartes: [] };
     const conTira = lonas.length || ganados.length ? cortarLonasAltas(lonas, 0, conLetras, extras, marcarLonas) : sinLonas;
     // Con un contorno que no cabe en el rollo, dos opciones en el mismo DXF, y el técnico de la máquina elige (Iván,
@@ -165,14 +168,13 @@ export function generarCorteRemolques(pedido) {
     cortadas.lonas.push(...lonas);
     cortadas.baquetones.push(...baqs);
     cortadas.ganados.push(...ganados);
-    cortadas.refuerzos ||= refuerzos;
   }
   if (!cortes.length) return { cortes, aMano, archivo: null };
   // Plano para revisar, en metros (Iván, 20/10/2026): el dibujo de confección de cada lona alta y de cada
   // baquetón, con sus cotas, y los cortes, sobre la presentación A4.
   const plano = {
     dxf: escribirPlanoRemolques({
-      pedido, lonas: cortadas.lonas, baquetones: cortadas.baquetones, ganados: cortadas.ganados, params, refuerzos: cortadas.refuerzos,
+      pedido, lonas: cortadas.lonas, baquetones: cortadas.baquetones, ganados: cortadas.ganados, params, refuerzos: llevaRefuerzos,
       letras: letras.size ? letras : null,
       cortes: cortes.map((c) => ({ entidades: c.entidades, material: c.materialCorto, largo: c.largo, opcion: c.opcion, apartes: c.apartes })),
     }),

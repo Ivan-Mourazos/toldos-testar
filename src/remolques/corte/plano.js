@@ -379,7 +379,7 @@ export function escribirPlanoRemolques({ pedido, lonas, baquetones = [], ganados
   if (baquetones.length) {
     let x = 30 + 4 * 6, alto = 0;
     for (const el of baquetones) {
-      const d = confeccionBaqueton(L, el, params, x, y + 60, letras?.get(el) ?? [''], refuerzos);
+      const d = confeccionBaqueton(L, el, params, x, y + 60, letras?.get(el) ?? [''], typeof refuerzos === 'function' ? refuerzos(el) : refuerzos);
       x += d.ancho + 80;
       alto = Math.max(alto, d.alto);
     }

@@ -266,7 +266,7 @@ export function RemolquesView({ controlRef, usuario, notify, askForConfirmation,
                   onChange={ws.cambiarInput} onCampoTocado={ws.marcarCampoTocado} />
               ) : (
                 <FormularioBaqueton input={baq} materiales={ws.materiales} params={params} errores={ws.erroresVisibles}
-                  metrosTela={ws.medidasSuficientes ? resBaq.metrosTela : 0}
+                  metrosTela={ws.medidasSuficientes ? resBaq.metrosTela : 0} refuerzosPorDefecto={/PAMILAKAN/i.test(cliente ?? '')}
                   delCliente={lineaActiva.delCliente?.campos}
                   onChange={ws.cambiarInput} onCampoTocado={ws.marcarCampoTocado} />
               )}

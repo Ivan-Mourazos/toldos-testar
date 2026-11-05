@@ -18,7 +18,7 @@ const MODOS_CAIDA = [
   { value: 'MEDIDA', label: 'Medida diferente' },
 ];
 
-export function FormularioBaqueton({ input, materiales, params, errores = {}, metrosTela = 0, delCliente = [], onChange, onCampoTocado }: {
+export function FormularioBaqueton({ input, materiales, params, errores = {}, metrosTela = 0, delCliente = [], refuerzosPorDefecto = false, onChange, onCampoTocado }: {
   input: BaquetonInput;
   materiales: Material[];
   params?: CalcParams;
@@ -29,6 +29,8 @@ export function FormularioBaqueton({ input, materiales, params, errores = {}, me
   onCampoTocado?: (campo: string) => void;
   /** Campos que puso la ficha del cliente (marca «del cliente»). */
   delCliente?: readonly string[];
+  /** Refuerzos de esquina si el baquetón no lo dice (PAMILAKAN: sí). */
+  refuerzosPorDefecto?: boolean;
 }) {
   const dc = (campo: string) => delCliente.includes(campo);
   const CLIENTES = opcionesConEtiqueta((params ?? DEFAULT_PARAMS).clientesBaqueton.map((c) => c.nombre));
@@ -105,6 +107,12 @@ export function FormularioBaqueton({ input, materiales, params, errores = {}, me
           ) : (
             <p className="rem-nota rem-span-2">Introduce las posiciones exactas en el apartado de ollaos del resultado.</p>
           )}
+        </div>
+        {/* Refuerzos de esquina: se marcan aquí y no se deducen de las observaciones (Iván, 05/11/2026: un
+            «sin refuerzos» los ponía). Sin tocar, sí para PAMILAKAN. */}
+        <div className="rem-span-2">
+          <CampoSiNo name="refuerzosEsquinas" label="Refuerzos en esquinas" value={input.refuerzosEsquinas ?? refuerzosPorDefecto}
+            onChange={(v) => set('refuerzosEsquinas', v)} />
         </div>
         {/* Por líneas, como las observaciones de tela de los toldos (Iván, 30/09/2026); se guardan en un
             solo texto, una línea por renglón. Solo aquí: el dibujo ya no tiene su propia casilla. */}

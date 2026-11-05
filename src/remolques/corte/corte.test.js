@@ -190,6 +190,22 @@ describe('generarCorteRemolques', () => {
     expect(enPlano).toHaveLength(4);
   });
 
+  // Iván, 05/11/2026: los refuerzos se marcan en el formulario de cada baquetón; las observaciones ya no deciden
+  // (un «sin refuerzos» los ponía). Sin marcar, PAMILAKAN sí y el resto no.
+  it('los refuerzos los decide la casilla de cada baquetón, no las observaciones', () => {
+    const conTexto = (pedido) => generarCorteRemolques(pedido).cortes[0].entidades.textos.filter((t) => t.valor === 'REFUERZOS EN ESQUINAS, SIN MARCAR').length;
+    const sinRefuerzos = structuredClone(AR2605071);
+    for (const e of sinRefuerzos.elementos) e.input.observaciones = 'SIN REFUERZOS';
+    expect(conTexto(sinRefuerzos)).toBe(0);
+    const uno = structuredClone(AR2605071);
+    uno.elementos[0].input.refuerzosEsquinas = true;
+    // Un baquetón de dos unidades: el texto en cada una.
+    expect(conTexto(uno)).toBe(2);
+    const pamilakanSin = structuredClone(AR2604802);
+    for (const e of pamilakanSin.elementos) e.input.refuerzosEsquinas = false;
+    expect(generarCorteRemolques(pamilakanSin).cortes[0].refuerzos).toBe(false);
+  });
+
   it('la lona alta con bastilla de enfundar lleva las marcas del doblez, como a mano (AR2604990, PAMILAKAN)', () => {
     const { cortes: [c], archivo } = generarCorteRemolques(AR2604990);
     const rot = c.entidades.lineas.filter((l) => l.capa === 'ROTULADOR');

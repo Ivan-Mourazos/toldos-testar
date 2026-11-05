@@ -7,7 +7,7 @@
 //   resto detrás: el empate, siempre en la parte de atrás).
 // - Ollaos: círculo de ROTULADOR r 2,5 a 40 mm del borde, en las posiciones que guardó el técnico
 //   (laterales de atrás a delante; delante y detrás de izquierda a derecha).
-// - Refuerzos de esquina (PAMILAKAN o si la observación lo pide): ver medidasRefuerzo.
+// - Refuerzos de esquina (la casilla del baquetón; sin marcar, PAMILAKAN): ver medidasRefuerzo.
 
 const ROLLO = 2500, BORDE_OLLAO = 40, EMPATE = 20;
 const r1 = (v) => Math.round(v * 10) / 10;
@@ -106,6 +106,7 @@ export function piezasBaqueton(el, params, letras = [], refuerzos = false, marca
 }
 
 // Los baquetones de una misma lona, uno al lado de otro. `letras`: Map elemento → letra de cada unidad.
+// `refuerzos`: sí/no para todos, o una función que lo dice para cada baquetón.
 export function cortarBaquetones(pedido, elementos, params, refuerzos, letras = new Map(), marcar = true) {
   const segs = [], marcas = [], textos = [], avisos = [];
   const giro = (pt, girada, dx) => (girada ? [dx + pt[1], pt[0]] : [dx + pt[0], pt[1]]);
@@ -113,6 +114,7 @@ export function cortarBaquetones(pedido, elementos, params, refuerzos, letras = 
   const sueltos = [];
   for (const el of elementos) {
     const pz = piezaBaqueton(el, params);
+    const conRefuerzos = typeof refuerzos === 'function' ? refuerzos(el) : refuerzos;
     const cabe = (v) => v <= ROLLO;
     for (let u = 0; u < (el.input.cantidad || 1); u++) {
       const L = letras.get(el)?.[u] ?? '';
@@ -121,7 +123,7 @@ export function cortarBaquetones(pedido, elementos, params, refuerzos, letras = 
         const ancho = girada ? pz.A : pz.L;
         for (const [a, b] of cruz(pz.L, pz.A, pz.eI, pz.eR, pz.eb)) segs.push([giro(a, girada, x), giro(b, girada, x)]);
         for (const o of pz.ollaos) marcas.push(giro(o, girada, x));
-        if (refuerzos) {
+        if (conRefuerzos) {
           const { enEsquina, lado, brazo } = medidasRefuerzo(pz);
           if (enEsquina) {
             for (const [cx, cy, sx, sy] of [[pz.eI, pz.eb, -1, -1], [pz.L - pz.eR, pz.eb, 1, -1], [pz.eI, pz.A - pz.eb, -1, 1], [pz.L - pz.eR, pz.A - pz.eb, 1, 1]]) {
@@ -140,7 +142,7 @@ export function cortarBaquetones(pedido, elementos, params, refuerzos, letras = 
         centro.forEach((v, n) => textos.push({ capa: 'texto', x: x + ancho / 2, y: alto / 2 + 90 * (centro.length - 1) - 180 * n, h: 100, valor: v, centrado: true }));
         // Rótulo de esquina: dentro de la solapa de abajo, a 1,5 cm del borde, junto a la esquina de la izquierda.
         if (L && marcar) textos.push({ capa: 'ROTULADOR', ...(girada ? { x: x + pz.eb + 15, y: 15 } : { x: x + pz.eI + 15, y: 15 }), h: 10, valor: `${L}1` });
-        if (refuerzos) textos.push({ capa: 'texto', x: x + ancho / 2, y: alto / 2 - 300, h: Math.min(100, (ancho - 200) / 20), valor: 'REFUERZOS EN ESQUINAS, SIN MARCAR', centrado: true });
+        if (conRefuerzos) textos.push({ capa: 'texto', x: x + ancho / 2, y: alto / 2 - 300, h: Math.min(100, (ancho - 200) / 20), valor: 'REFUERZOS EN ESQUINAS, SIN MARCAR', centrado: true });
         x += ancho;
       } else {
         // Empate horizontal: el ancho va a lo largo del rollo y el largo se parte en 250 + resto (+ 2 cm).

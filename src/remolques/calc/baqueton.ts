@@ -28,6 +28,8 @@ export interface BaquetonInput {
   ollaosExtremos?: boolean;
   /** Solo se indica si va rotulado. null = sin elegir. */
   rotulacion: boolean | null;
+  /** Refuerzos de esquina. Sin marcar: sí para PAMILAKAN, no para el resto. */
+  refuerzosEsquinas?: boolean;
   material: string; observaciones: string;
 }
 

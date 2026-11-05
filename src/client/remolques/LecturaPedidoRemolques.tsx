@@ -111,7 +111,7 @@ export function LecturaPedidoRemolques({ pedido, versionInicial }: {
                     onChange={nada} />
                 ) : elemento && (
                   <FormularioBaqueton key={linea.version} input={elemento.input} materiales={[]} params={params}
-                    onChange={nada} />
+                    refuerzosPorDefecto={/PAMILAKAN/i.test(pedido.clienteRps?.nombre ?? '')} onChange={nada} />
                 )}
               </fieldset>
             </ReadModeContext.Provider>
