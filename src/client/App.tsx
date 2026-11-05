@@ -30,7 +30,7 @@ import { OrderView } from './views/OrderView';
 import { CorteLona, toldosConCorte } from './components/CorteLona';
 import { BotonesFlujoCorte, useFlujoCorteDwg } from './flujoCorteDwg';
 import { abrirCorteToldos, guardarToldosEditable } from './toldosEditable';
-import { AVISO_APROBADO, generarToldosPermitido } from '../toldosEditable.js';
+import { autoriaToldos, avisoAprobacionToldos } from '../toldosEditable.js';
 import { useCoordinaStatus } from './hooks/useCoordinaStatus';
 import './coordina/flujo-editable.css';
 import { ParametersView, type VistaRemolques } from './views/ParametersView';
@@ -46,7 +46,6 @@ import { readCurrentUser, saveCurrentUser } from './currentUser';
 import { MENSAJE_PEDIDO_RECIBIDO, destinoDeEnlace, origenDeCoordina, pedidoDeEnlace, pedidoDeMensaje, revisionDeEnlace, sinPedidoEnEnlace, type PedidoDeCoordina } from './enlacePedido';
 import { WhoAreYouDialog } from './components/WhoAreYouDialog';
 import { personaDe, tintaSobre } from './personas';
-import { stampAuthorship } from './authorship';
 import { usePendingReviews } from './hooks/usePendingReviews';
 import { buscarBorradorAlObtener, contenidoBorradorToldos, guardarBorradorPreguntando, TITULO_BORRADOR_EN_CORRECCION } from './borradores';
 import type { PedidoRemolques } from '../remolques/flujo/tipos.ts';
@@ -568,7 +567,7 @@ export default function App() {
   orderCodeRef.current = currentOrderCode;
   const enCorreccion = corrigiendo !== null && corrigiendo === currentOrderCode;
   const { status: aprobacionEdicion } = useCoordinaStatus(draft.awnings.map(a => String(a.of || '')), enCorreccion);
-  const avisoAprobado = enCorreccion && generarToldosPermitido(draft.awnings.map((a, i) => ({ letter: String(i + 1), of: String(a.of || '') })), aprobacionEdicion) === null;
+  const avisoAprobado = enCorreccion ? avisoAprobacionToldos(draft.awnings, aprobacionEdicion) : '';
   useEffect(() => {
     // Con el pedido vacío no se pregunta: la lista guardada deja de coincidir con él y
     // `knownOfs` queda en null sin tocar el estado.
@@ -638,7 +637,7 @@ export default function App() {
   }
 
   function currentOrderPayload() {
-    const authorship = stampAuthorship({ technician: draft.technician, reviewer: draft.reviewer }, currentUser);
+    const authorship = autoriaToldos(draft, currentUser, aprobacionEdicion, formOptions.tecnicos);
     return {
       orderCode: draft.orderCode,
       customer: draft.customer,
@@ -938,7 +937,7 @@ export default function App() {
             </div>
           )}
           {activeTab === 'order' && editorPedidoAbierto && producto === 'toldos' && avisoAprobado && (
-            <div className="review-state-note order-return-note aviso-flujo-editable" role="status">{AVISO_APROBADO}</div>
+            <div className="review-state-note order-return-note aviso-flujo-editable" role="status">{avisoAprobado}</div>
           )}
           {activeTab === 'order' && editorPedidoAbierto && producto === 'toldos' && returnNote && (
             <div className="review-state-note is-returned order-return-note" role="status">

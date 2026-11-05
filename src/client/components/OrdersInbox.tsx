@@ -9,7 +9,7 @@ import { controlLabel } from './controlLabels';
 import type { ResumenBorrador } from '../../borradores/tipos.ts';
 import { formOptions } from '../../domain/modelBehavior.js';
 import { authorNames } from '../../reviewRules.js';
-import { CORTE_NO_REGENERADO } from '../../toldosEditable.js';
+import { aprobadaOPasada, CORTE_NO_REGENERADO } from '../../toldosEditable.js';
 import { COORDINA_NOT_CONFIGURED_MOTIVO, normalizeOf, reviewerName } from '../../reviewRules.js';
 
 type AwningItem = NonNullable<PedidoBandeja['summary']['awningList']>[number];
@@ -186,7 +186,7 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
         {withDate && <span className="orders-date">{formatListDate(review.updatedAt)}</span>}
         <span className="orders-awnings">
           {awnings?.length
-            ? collapseAwnings(awnings, (item) => `${item.state}|${coordinaOf(item, coordinaStatus) ?? ''}`).map((group) => <AwningChip key={group.items[0].letter} item={group.items[0]} group={group} coordinaStatus={coordinaStatus} />)
+            ? collapseAwnings(awnings, (item) => `${item.state}|${coordinaOf(item, coordinaStatus, productoDe(review) === 'toldos') ?? ''}`).map((group) => <AwningChip key={group.items[0].letter} item={group.items[0]} group={group} coordinaStatus={coordinaStatus} toldos={productoDe(review) === 'toldos'} />)
             : <span className="orders-models">{review.summary.awnings} {review.summary.awnings === 1 ? 'elemento' : 'elementos'}</span>}
         </span>
       </div>
@@ -200,10 +200,10 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
                 // La nota de devolución, si CoordinaOT la tiene devuelta: una vez por OF (ver notasDevolucion).
                 const devolucion = notas[item.letter];
                 // Quién aprobó en CoordinaOT; es el que quedará de revisor al generar.
-                const approvedBy = returned?.estado === 'aprobada' && returned.revisor ? reviewerName(returned.revisor, formOptions.tecnicos as string[]) : '';
+                const approvedBy = (returned?.estado === 'aprobada' || (productoDe(review) === 'toldos' && aprobadaOPasada(returned?.estado))) && returned?.revisor ? reviewerName(returned.revisor, formOptions.tecnicos as string[]) : '';
                 return (
                 <li key={item.letter} className={`is-${item.state}`}>
-                  <AwningChip item={item} coordinaStatus={coordinaStatus} />
+                  <AwningChip item={item} coordinaStatus={coordinaStatus} toldos={productoDe(review) === 'toldos'} />
                   <strong>{controlLabel(item.model)}</strong>
                   <span>OF {item.of || '—'}</span>
                   {/* Solo si hay avisos (Iván, 02/10/2026: «Sin avisos» repetido en cada OF sobraba). */}
@@ -324,13 +324,14 @@ function ModelTags({ models, producto, borrador = false }: { models?: string[]; 
   );
 }
 
-function coordinaOf(item: AwningItem, coordinaStatus: CoordinaStatus | null) {
-  return coordinaStatus?.disponible ? coordinaStatus.ofs?.[normalizeOf(item.of)]?.estado : undefined;
+function coordinaOf(item: AwningItem, coordinaStatus: CoordinaStatus | null, toldos = false) {
+  const estado = coordinaStatus?.disponible ? coordinaStatus.ofs?.[normalizeOf(item.of)]?.estado : undefined;
+  return toldos && estado === 'pasada' ? 'aprobada' : estado;
 }
 
-function AwningChip({ item, group, coordinaStatus }: { item: AwningItem; group?: { label: string; items: AwningItem[] }; coordinaStatus: CoordinaStatus | null }) {
+function AwningChip({ item, group, coordinaStatus, toldos = false }: { item: AwningItem; group?: { label: string; items: AwningItem[] }; coordinaStatus: CoordinaStatus | null; toldos?: boolean }) {
   const label = item.state === 'ok' ? 'correcto' : item.state === 'warn' ? 'con aviso' : 'con errores';
-  const coordina = coordinaOf(item, coordinaStatus);
+  const coordina = coordinaOf(item, coordinaStatus, toldos);
   // Un solo signo claro por toldo: si el cálculo está bien y CoordinaOT tiene marca, solo se
   // enseña la de CoordinaOT (evita «✓ ✓» o «✓ ↩», que parecen contradecirse). Con aviso o
   // error se mantiene el icono del cálculo y se añade la marca de CoordinaOT.

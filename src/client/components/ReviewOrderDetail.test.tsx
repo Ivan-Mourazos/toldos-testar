@@ -20,6 +20,13 @@ const pintar = (review: ReviewPackage, currentUser = 'JAIME') => renderToStaticM
 );
 
 describe('los documentos del pedido de toldos', () => {
+  it('un corte marcado no muestra éxito verde en su bloque', () => {
+    const review = { ...pedido('PVC|||250|||LONA PVC|||PLASTICA (LONA)'), corteNoRegenerado: true,
+      corteConfirmado: { por: 'ANA', fecha: '', filename: 'corte.dwg' } };
+    const html = pintar(review);
+    expect(html).not.toContain('Corte guardado en ZWCAD');
+    expect(html).toContain('corte-estado is-viejo');
+  });
   it('muestra la marca del corte conservado y el último técnico que guardó', () => {
     const review = { ...pedido('ACRILI2018P120'), corteNoRegenerado: true, updatedBy: 'JAIME', updatedAt: '2026-11-05T12:00:00Z' };
     const html = pintar(review);

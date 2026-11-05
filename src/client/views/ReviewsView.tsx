@@ -186,7 +186,7 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
 
   // El autor genera en el detalle el corte que falta o está viejo (Iván, 21/10/2026): se vuelve a guardar el
   // pedido tal cual, con el corte nuevo y su plano, sin pasar por «Corregir».
-  async function guardarCorte(review: ReviewPackage, corteLona: EstadoCorte): Promise<void> {
+  async function guardarCorte(review: ReviewPackage, corteLona: EstadoCorte | null): Promise<void> {
     setWorking(true);
     try {
       const cuerpo = { order: review.order, corteLona, confirmOverwrite: true, decisionCorte: 'regenerar', savedBy: currentUser };
@@ -402,7 +402,7 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
             onGenerate={() => void generateSelected()}
             notify={onToast}
             onConfirm={onConfirm}
-            onGuardarCorte={(estado) => { if (selectedReview) void guardarCorte(selectedReview, estado); }}
+            onGuardarCorte={(estado) => selectedReview ? guardarCorte(selectedReview, estado) : undefined}
           />
         )}
       <div hidden={Boolean(selectedCode||selectedRemolques||selectedPuertas||buscadorAbierto)}>

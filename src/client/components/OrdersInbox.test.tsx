@@ -12,6 +12,15 @@ const fila = (orderCode: string, extra: Record<string, unknown> = {}) => ({
 }) as unknown as PedidoBandeja;
 
 describe('Pedidos con toldos y remolques', () => {
+  it('la OF pasada de toldos se muestra aprobada en su chip', () => {
+    const review = fila('AR2600096', { summary: { customer: 'Cliente', models: ['GALICIA'], ofs: ['0231780'], awnings: 1,
+      awningList: [{ letter: 'A', of: '0231780', model: 'GALICIA', state: 'ok', notes: [] }] } });
+    const html = renderToStaticMarkup(<OrdersInbox pending={[review]} history={[]} currentUser="IVÁN" pendingLoading={false}
+      historyLoading={false} year={2026} onYear={() => undefined} onOpen={() => undefined}
+      coordinaStatus={{ disponible: true, ofs: { '0231780': { estado: 'pasada', revisor: 'jaime' } } }} />);
+    expect(html).toContain('aria-label="aprobada en CoordinaOT"');
+    expect(html).not.toContain('aria-label="en revisión en CoordinaOT"');
+  });
   it('cada fila con su etiqueta, el filtro de tipo y la columna «Elementos»', () => {
     const html = renderToStaticMarkup(
       <OrdersInbox

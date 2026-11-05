@@ -60,6 +60,8 @@ export interface DependenciasFlujoDwg {
   ajustes: () => Promise<AjustesFlujoDwg>;
   /** El plano de una carpeta en DXF (el DWG pasado por ODA). Sin él, el flujo no está en marcha. */
   leer?: (ruta: string) => Promise<string>;
+  /** Lee los bytes recién calculados sin tener que publicarlos antes en una carpeta. */
+  leerContenido?: (fichero: FicheroPlano) => Promise<string>;
   /** Escribe un plano en su carpeta (creándola si falta). */
   escribir: (fichero: FicheroPlano) => Promise<void>;
   confirmaciones?: ConfirmacionesCorte;
@@ -346,6 +348,62 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
   }
 
   /** El DWG guardado manda. Mantener permite guardar datos sin aceptar todavía el corte. */
+  async function prepararRegeneracion({ orderCode, technician, usuario, datos, preparar, revisado }: {
+    orderCode: string; technician: string; usuario: string; datos?: string; revisado?: CorteConfirmado;
+    preparar: (carpeta: string) => Promise<{ ficheros: FicheroPlano[]; avisos: string[] }>;
+  }) {
+    const ajustes = await deps.ajustes();
+    if (!deps.editable || !ajustes.productionEnabled) throw new ErrorFlujoDwg('La escritura del corte no está activada.', 403);
+    if (!ajustes.corteLonaPlanoDirectory) throw new ErrorFlujoDwg('Falta la carpeta de planos del corte en Configuración.', 409);
+    const carpeta = carpetaCorte(ajustes.corteLonaPlanoDirectory, { orderCode, technician });
+    const preparado = await preparar(carpeta);
+    if (!preparado.ficheros.length) throw new ErrorFlujoDwg(preparado.avisos.at(-1) || 'No se pudo preparar el corte.', 409);
+    const ficheros = preparado.ficheros;
+    const huellas = [];
+    for (const f of ficheros) {
+      const dxf = deps.leerContenido ? await deps.leerContenido(f) : Buffer.from(f.contenido).toString('utf8');
+      const corte = corteDelPlano(dxf);
+      if (corte.error) throw new ErrorFlujoDwg(corte.error, 409);
+      if (entidadesBot(corte.entidades).noConvertibles.length) throw new ErrorFlujoDwg('El corte calculado contiene objetos que no se pueden mandar al bot (bloques, sombreados…).', 409);
+      huellas.push(corte.huella!);
+    }
+    const planos = ficheros.map(f => ({ filename: f.filename, plano: f.savedPath }));
+    const corteConfirmado: CorteConfirmado = { huella: huellaJunta(huellas), por: usuario, fecha: ahora(), ...planos[0], planos, datos };
+    const anteriores = new Map<string, Buffer | null>();
+    async function deshacer() {
+      for (const [ruta, contenido] of anteriores) {
+        if (contenido === null) await rm(ruta, { force: true });
+        else await deps.escribir({ filename: path.basename(ruta), savedPath: ruta, contenido });
+      }
+      anteriores.clear();
+    }
+    return { corteConfirmado, avisos: preparado.avisos, deshacer,
+      async escribir() {
+        // La preparación y todas las preguntas han terminado antes de sustituir el primer plano.
+        for (const f of ficheros) {
+          try { anteriores.set(f.savedPath, await readFile(f.savedPath)); }
+          catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; anteriores.set(f.savedPath, null); }
+        }
+        try { for (const f of ficheros) await deps.escribir(f); }
+        catch (error) { await deshacer(); throw error; }
+      },
+      async limpiar() {
+        anteriores.clear();
+        try {
+          // Los borradores y planos obsoletos se retiran solo después de guardar el pedido.
+          const borradores = ajustes.corteBorradoresDirectory ? await borradoresDe(ajustes.corteBorradoresDirectory, orderCode) : [];
+          const obsoletos = revisado ? planosDe(revisado).filter(p => !planos.some(n => n.plano === p.plano)) : [];
+          const sobrantes = [...borradores.map(b => b.ruta), ...obsoletos.map(p => p.plano)]
+            .filter(ruta => !planos.some(p => p.plano === ruta));
+          for (const ruta of sobrantes) await rm(ruta, { force: true });
+          await deps.confirmaciones?.borrar(orderCode);
+          await deps.confirmaciones?.borrar(claveDatos(orderCode));
+          return [] as string[];
+        } catch { return ['El corte nuevo está guardado, pero no se pudieron quitar todos los planos anteriores.']; }
+      } };
+  }
+
+  /** El corte existente se comprueba sin modificar sus archivos hasta que se guarda. */
   async function alGuardarEditable({ orderCode, technician, datos, revisado, aceptarHuella, mantener, usuario, pendienteAceptacion }: {
     orderCode: string; technician: string; datos?: string; revisado?: CorteConfirmado; aceptarHuella?: string; mantener: boolean; usuario?: string;
     pendienteAceptacion: boolean;
@@ -363,18 +421,20 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
     if (!mantener && (cambiados || pendienteAceptacion) && aceptarHuella !== dwg.huella) return { respuesta: preguntaHuella(dwg.huella) };
     const carpeta = ajustes.corteLonaPlanoDirectory ? carpetaCorte(ajustes.corteLonaPlanoDirectory, { orderCode, technician }) : '';
     if (borradores.length && !carpeta) throw new ErrorFlujoDwg('Falta la carpeta de planos del corte en Configuración.', 409);
-    const destinos = fuentes.map(p => ({ ...p, destino: borradores.length ? path.join(carpeta, p.filename) : p.plano }));
+    const destinos = fuentes.map(p => ({ ...p, destino: borradores.length && ajustes.productionEnabled ? path.join(carpeta, p.filename) : p.plano }));
     const corteConfirmado: CorteConfirmado = { ...temporal,
       ...(!mantener ? { huella: dwg.huella, por: cambiados || pendienteAceptacion ? usuario || technician : temporal.por, fecha: cambiados || pendienteAceptacion ? ahora() : temporal.fecha } : {}),
       plano: destinos[0].destino, planos: destinos.map(p => ({ filename: p.filename, plano: p.destino })),
       datos: mantener ? revisado?.datos : datos };
     return { corteConfirmado,
       async escribir() {
+        if (!ajustes.productionEnabled) return;
         for (const p of destinos) if (p.plano !== p.destino) {
           await deps.escribir({ filename: p.filename, savedPath: p.destino, contenido: await readFile(p.plano) });
         }
       },
       async limpiar() {
+        if (!ajustes.productionEnabled) return [] as string[];
         try {
           for (const b of borradores) await rm(b.ruta, { force: true });
           await deps.confirmaciones!.borrar(orderCode);
@@ -496,11 +556,11 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
       for (const b of borradores) if ((await stat(b.ruta)).mtimeMs > limite) cambiadoTrasConfirmar = true;
     }
     return { activo: true as const, borrador: borradores.length > 0, ficheros: borradores.map((b) => b.filename),
-      ...(deps.editable ? { datos: (await deps.confirmaciones!.leer(claveDatos(orderCode)))?.huella } : {}),
+      ...(deps.editable ? { datos: (await deps.confirmaciones!.leer(claveDatos(orderCode)))?.huella, simulacion: !ajustes.productionEnabled } : {}),
       confirmado: confirmacion ? { por: confirmacion.por, fecha: confirmacion.fecha } : null, cambiadoTrasConfirmar };
   }
 
-  return { activo, borrador, confirmar, estado, alGuardar, corteDelDwg, planosDelDwg, enlacesRevisado, antesDeMandar, aceptarActual };
+  return { activo, borrador, confirmar, estado, alGuardar, prepararRegeneracion, corteDelDwg, planosDelDwg, enlacesRevisado, antesDeMandar, aceptarActual };
 }
 
 type Linea = { capa: string; x1: number; y1: number; x2: number; y2: number };

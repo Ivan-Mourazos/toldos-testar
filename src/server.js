@@ -14,7 +14,7 @@ import { crearServicioPedidosPuertas } from './puertas/flujo/servicio.ts';
 import { crearAlmacenConfirmaciones } from './flujoDwg/confirmaciones.js';
 import { firmasCorteLona, corteLonaPendiente, crearEstadoCorteLona } from './corteLonaEstado.js';
 import { generarCorteLona } from './domain/corteLona/index.js';
-import { decisionRegenerar, generarToldosPermitido } from './toldosEditable.js';
+import { aprobacionToldos, autoriaToldos, decisionRegenerar, generarToldosPermitido } from './toldosEditable.js';
 import { aprobacionDeTodas, crearFlujoDwg, huellaDatos, planosDe } from './flujoDwg/flujo.ts';
 import { conRevisor, htmlPresentaciones, sinDibujarEnPdf } from './flujoDwg/planoDxf.js';
 import { conHojasDelante } from './flujoDwg/unirPdf.js';
@@ -94,7 +94,7 @@ import {
   workflowReadiness,
   writeFileAtomic
 } from './workflow.js';
-import { generateFilesDecision, approvalReviewers, reviewAuthorship, saveReviewDecision, uniqueOfs } from './reviewRules.js';
+import { generateFilesDecision, approvalReviewers, saveReviewDecision, uniqueOfs } from './reviewRules.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -285,6 +285,11 @@ app.get('/favicon.ico', (_req, res) => res.redirect(308, '/favicon.png'));
 // para abrirlo en ZWCAD, «Confirmar corte», al guardar para revisión pasa a la carpeta del año y el bot sale del DWG revisado.
 const flujoToldos = crearFlujoDwg({
   editable: true,
+  async leerContenido(fichero) {
+    if (!fichero.filename.toLowerCase().endsWith('.dwg')) return Buffer.from(fichero.contenido).toString('utf8');
+    if (!oda.disponible) throw new Error('ODA no está disponible: no se puede leer el DWG del corte.');
+    return Buffer.from(await oda.convertir(fichero.contenido, { desde: 'dwg', hasta: 'dxf' })).toString('utf8');
+  },
   ajustes: () => workflowStore.getSettings(),
   async leer(ruta) {
     const contenido = await fs.readFile(ruta);
@@ -351,7 +356,18 @@ app.post('/api/corte-lona/borrador', async (req, res, next) => {
 app.get('/api/corte-lona/borrador/estado', async (req, res, next) => {
   try {
     const codigo = String(req.query?.orderCode ?? '').trim();
-    res.set('Cache-Control', 'no-store').json(codigo ? await flujoToldos.estado(sanitizeOrderCode(codigo)) : { activo: false });
+    const estado = codigo ? await flujoToldos.estado(sanitizeOrderCode(codigo)) : { activo: false };
+    let revisado = false;
+    let corteSimulado = false;
+    if (estado.activo) {
+      try {
+        const review = await workflowStore.getReview(sanitizeOrderCode(codigo));
+        revisado = Boolean(review.corteConfirmado);
+        corteSimulado = review.corteSimulado === true;
+      }
+      catch (error) { if (error.code !== 'ENOENT') throw error; }
+    }
+    res.set('Cache-Control', 'no-store').json({ ...estado, revisado, corteSimulado });
   } catch (error) {
     next(error);
   }
@@ -1175,19 +1191,15 @@ app.post('/api/reviews', async (req, res, next) => {
       return;
     }
 
-    // Se conserva al autor original y se apunta a quien guarda, sin depender de CoordinaOT.
+    // Quien guarda queda en updatedBy; el cajetín recoge solo revisores de CoordinaOT.
     const savedBy = typeof req.body?.savedBy === 'string' ? req.body.savedBy.trim() : '';
     if (!formOptions.tecnicos.includes(savedBy)) throw httpError(400, 'Elige quién eres en «Soy» antes de guardar.');
-    const authorship = reviewAuthorship({
-      existingTechnician: existing?.order?.technician,
-      existingReviewer: existing?.order?.reviewer,
-      technician: rawOrder?.technician,
-      reviewer: rawOrder?.reviewer,
-      savedBy: req.body?.savedBy,
-    });
+    const estadoRevision = await coordina.statusOf(uniqueOfs(normalizedOrder.awnings));
+    const authorship = autoriaToldos({ ...rawOrder, technician: existing?.order?.technician || savedBy }, savedBy, estadoRevision, formOptions.tecnicos);
     const order = structuredClone({ ...rawOrder, orderCode, ...authorship });
     const calculation = await calculateConfiguredOrder(order);
     const review = createReviewPackage({ order, calculation, existing, corteLona: req.body?.corteLona, savedBy });
+    review.corteSimulado = existing?.corteSimulado === true;
     const ajustesCorte = await workflowStore.getSettings();
     const estadoDwg = await flujoToldos.estado(orderCode);
     const hayCorte = Boolean(existing?.corteConfirmado || existing?.corteLona || estadoDwg.borrador);
@@ -1212,19 +1224,27 @@ app.post('/api/reviews', async (req, res, next) => {
       review.corteNoRegenerado = false;
     }
     if (!mantener && !existing?.corteConfirmado) exigirCorteAlDia(order, review.corteLona);
-    if (estadoDwg.activo && !mantener && review.corteLona?.toldos?.length && ((decisionCorte === 'regenerar' && (!req.body?.aceptarHuellaCorte || estadoDwg.datos !== datosCorteToldos(review.corteLona))) || (!estadoDwg.borrador && !existing?.corteConfirmado))) {
-      await flujoToldos.borrador({ orderCode, regenerar: decisionCorte === 'regenerar', datos: datosCorteToldos(review.corteLona),
+    const generarPlano = !mantener && review.corteLona?.toldos?.length
+      && (decisionCorte === 'regenerar' || (!estadoDwg.borrador && !existing?.corteConfirmado));
+    let desdeBorrador = null;
+    if (generarPlano && ajustesCorte.productionEnabled) {
+      desdeBorrador = await flujoToldos.prepararRegeneracion({ orderCode, technician: order.technician, usuario: savedBy,
+        datos: datosCorteToldos(review.corteLona), revisado: existing?.corteConfirmado,
         preparar: async carpeta => {
           const salida = await prepararArchivosCorte({ order, corteLona: review.corteLona, settings: ajustesCorte, oda, tipo: 'plano', carpeta });
           return { ficheros: salida.files.map(f => ({ filename: f.filename, savedPath: f.savedPath, contenido: f.contents })), avisos: salida.avisos };
         } });
-    }
-    // El DWG guardado manda: aceptar su huella permite pasar a revisión sin Confirmar corte.
-    const desdeBorrador = review.corteLona?.toldos?.length && (estadoDwg.borrador || existing?.corteConfirmado || !mantener)
-      ? await flujoToldos.alGuardar({ orderCode, technician: order.technician, usuario: savedBy,
+      review.corteSimulado = false;
+    } else if (generarPlano) {
+      // Se guarda el cálculo, pero no se atribuye un DWG nuevo a archivos anteriores.
+      delete review.corteConfirmado;
+      review.corteSimulado = true;
+      review.corteNoRegenerado = false;
+    } else if (review.corteLona?.toldos?.length && (estadoDwg.borrador || existing?.corteConfirmado || !mantener)) {
+      desdeBorrador = await flujoToldos.alGuardar({ orderCode, technician: order.technician, usuario: savedBy,
         confirmOverwrite: req.body?.confirmPlanoOverwrite === true, datos: datosCorteToldos(review.corteLona),
-        revisado: existing?.corteConfirmado, aceptarHuella: req.body?.aceptarHuellaCorte, mantener, pendienteAceptacion: review.corteNoRegenerado })
-      : null;
+        revisado: existing?.corteConfirmado, aceptarHuella: req.body?.aceptarHuellaCorte, mantener, pendienteAceptacion: review.corteNoRegenerado });
+    }
     if (desdeBorrador && 'respuesta' in desdeBorrador) {
       if (desdeBorrador.respuesta.cuerpo.cambioCorte) return res.status(409).json(desdeBorrador.respuesta.cuerpo);
       const { existing, error } = desdeBorrador.respuesta.cuerpo;
@@ -1232,10 +1252,12 @@ app.post('/api/reviews', async (req, res, next) => {
     }
     let planosCorte;
     if (desdeBorrador) {
-      await desdeBorrador.escribir();
       review.corteConfirmado = desdeBorrador.corteConfirmado;
+      review.corteSimulado = false;
       if (!mantener) review.corteNoRegenerado = false;
-      planosCorte = { files: planosDe(review.corteConfirmado).map((p) => ({ type: 'plano-corte-lona', filename: p.filename, savedPath: p.plano, writtenAt: new Date().toISOString() })), avisos: [] };
+      planosCorte = { files: planosDe(review.corteConfirmado).map((p) => ({ type: 'plano-corte-lona', filename: p.filename, savedPath: p.plano, writtenAt: new Date().toISOString() })), avisos: desdeBorrador.avisos || [] };
+    } else if (generarPlano) {
+      planosCorte = { files: [], avisos: ['Modo simulación: el corte está calculado; no se ha escrito ningún plano.'] };
     } else if (mantener) {
       planosCorte = existing?.planosCorte || { files: [], avisos: [] };
     } else {
@@ -1246,7 +1268,14 @@ app.post('/api/reviews', async (req, res, next) => {
     }
     review.planosCorte = planosCorte;
     const pdf = await buildOrderReviewPdf({ order, calculation, review });
-    const savedPath = await workflowStore.saveReview(review, pdf);
+    let savedPath;
+    try {
+      if (desdeBorrador) await desdeBorrador.escribir();
+      savedPath = await workflowStore.saveReview(review, pdf);
+    } catch (error) {
+      await desdeBorrador?.deshacer?.();
+      throw error;
+    }
     if (desdeBorrador) planosCorte.avisos.push(...await desdeBorrador.limpiar());
     // Pasado a revisión, su borrador sobra (diseño 01/10/2026). Si no se puede borrar, se apunta
     // y el pedido queda guardado igual.
@@ -1351,7 +1380,7 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
         await workflowStore.saveReview(review, await buildOrderReviewPdf({ order: review.order, calculation, review }));
       }
     }
-    const reviewer = approvalReviewers(approvalAwnings, approval, formOptions.tecnicos);
+    const reviewer = approvalReviewers(approvalAwnings, aprobacionToldos(approval), formOptions.tecnicos);
 
     const calculation = await calculateConfiguredOrder(order);
     const blockingDiagnostics = calculation.diagnostics.filter((item) => item.level === 'error' || item.level === 'pending');
@@ -1416,10 +1445,8 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
     });
     // Quien aprobó en CoordinaOT queda como revisor del pedido antes de dibujar el PDF, para
     // que «REVISOR:» del planteamiento definitivo salga relleno sin que nadie lo teclee.
-    if (reviewer) {
-      updated.order = { ...updated.order, reviewer };
-      updated.reviewedBy = reviewer;
-    }
+    updated.order = { ...updated.order, reviewer };
+    updated.reviewedBy = reviewer;
     const pdfTarget = targets.find((target) => target.type === 'pdf');
     // Flujo del DWG, fase 4 (Iván, 25/10/2026): con el corte confirmado, el -1.pdf lleva delante las presentaciones de los DWG
     // revisados, con el revisor en el cajetín, y del planteamiento solo lo que se imprime: los toldos que van en el CAD (PVC con

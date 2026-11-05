@@ -13,6 +13,9 @@ import type { AskForConfirmation, Notify } from './components/NotificationCenter
 export interface EstadoCorteServidor {
   activo: boolean;
   borrador?: boolean;
+  revisado?: boolean;
+  simulacion?: boolean;
+  corteSimulado?: boolean;
   confirmado?: { por: string; fecha: string } | null;
   cambiadoTrasConfirmar?: boolean;
 }
@@ -40,6 +43,17 @@ export function pasoCorte(estado: EstadoCorteServidor | null, falta: string | nu
   if (!estado.confirmado) return { paso: 'confirmar' };
   if (estado.cambiadoTrasConfirmar) return { paso: 'tocado' };
   return { paso: 'guardar', por: estado.confirmado.por };
+}
+
+/** Abrir un plano existente no necesita recalcularlo; crear uno sí exige datos completos. */
+export function pasoCorteEditable(estado: EstadoCorteServidor | null, falta: string | null): Paso {
+  if (!estado?.activo) return { paso: 'sin-flujo' };
+  if (estado.corteSimulado) return { paso: 'incompleto', motivo: 'El corte se calculó en simulación: regénéralo para abrir el plano.' };
+  if (!estado.borrador && !estado.revisado) {
+    if (falta) return { paso: 'incompleto', motivo: falta };
+    if (estado.simulacion) return { paso: 'incompleto', motivo: 'Modo simulación: no se ha escrito el plano del corte.' };
+  }
+  return { paso: 'guardar', por: '' };
 }
 
 /** Qué decir en la barra según el paso: el siguiente botón y por qué los otros esperan. */
@@ -109,7 +123,7 @@ export function useFlujoCorteDwg({ base, codigo: codigoBruto, entrada, cuerpo, a
 
   // Sin saber con qué datos se abrió (otro PC, otro navegador), no se da por cambiado.
   const datosCambiados = Boolean(estado?.borrador && abiertoCon !== null && abiertoCon !== entrada);
-  const paso = aplica ? (editable && estado?.activo ? { paso: 'guardar' as const, por: '' } : pasoCorte(estado, falta, datosCambiados)) : { paso: 'sin-flujo' as const };
+  const paso = aplica ? (editable ? pasoCorteEditable(estado, falta) : pasoCorte(estado, falta, datosCambiados)) : { paso: 'sin-flujo' as const };
 
   async function abrir() {
     setOcupado(true);

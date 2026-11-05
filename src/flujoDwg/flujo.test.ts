@@ -12,6 +12,7 @@ import { aprobacionDeTodas, crearFlujoDwg, huellaDatos, planosDe, type FicheroPl
 let raiz: string;
 let flujo: ReturnType<typeof crearFlujoDwg>;
 let editable: ReturnType<typeof crearFlujoDwg>;
+let produccion: boolean;
 const pedido = { ...pedidoVariasTelas(), orderCode: 'AR2600096' };
 // generarCorteLona es JS: sus tipos inferidos no llevan las opciones ni los planos de cristal (`incluidoEn`).
 const resultado = (generarCorteLona as (o: unknown, opciones: unknown) => unknown)(pedido, { ofStockSacos: '0230811' }) as {
@@ -22,6 +23,7 @@ const lineas = (t: string) => (t.match(/\nLINE\r?\n/g) ?? []).length;
 beforeEach(async () => {
   await fs.mkdir(path.resolve('tmp'), { recursive: true });
   raiz = await fs.mkdtemp(path.resolve('tmp/flujo-dwg-'));
+  produccion = true;
   flujo = crearFlujoDwg({
     ajustes: async () => ({ productionEnabled: true, corteBorradoresDirectory: path.join(raiz, 'borradores'),
       corteBorradoresRed: String.raw`\\toldosgomez.local\DFS_POL\oftecnica\BORRADORES CORTE`, corteLonaPlanoDirectory: path.join(raiz, '{YYYY}') }),
@@ -31,7 +33,7 @@ beforeEach(async () => {
   });
   editable = crearFlujoDwg({
     editable: true,
-    ajustes: async () => ({ productionEnabled: true, corteBorradoresDirectory: path.join(raiz, 'borradores'),
+    ajustes: async () => ({ productionEnabled: produccion, corteBorradoresDirectory: path.join(raiz, 'borradores'),
       corteBorradoresRed: String.raw`\\toldosgomez.local\DFS_POL\oftecnica\BORRADORES CORTE`, corteLonaPlanoDirectory: path.join(raiz, '{YYYY}') }),
     leer: ruta => fs.readFile(ruta, 'utf8'),
     escribir: async f => { await fs.mkdir(path.dirname(f.savedPath), { recursive: true }); await fs.writeFile(f.savedPath, f.contenido); },
@@ -44,6 +46,44 @@ const preparar = async (carpeta: string) => ({ avisos: [] as string[], ficheros:
   .map((p, i): FicheroPlano => ({ filename: nombres[i], savedPath: path.join(carpeta, nombres[i]), contenido: Buffer.from(p!.dxf, 'utf8') })) });
 
 describe('toldos: aceptación al pasar a revisión, sin Confirmar corte', () => {
+  it('en simulación mantener o aceptar no mueve ni borra el borrador existente', async () => {
+    await editable.borrador({ orderCode: pedido.orderCode, preparar });
+    const ruta = path.join(raiz, 'borradores', nombres[0]);
+    const antes = await fs.readFile(ruta);
+    produccion = false;
+    const guardado = await editable.alGuardar({ orderCode: pedido.orderCode, technician: 'ANA', confirmOverwrite: true, mantener: true });
+    if (!guardado || 'respuesta' in guardado) throw new Error('debe poder guardar en simulación');
+    await guardado.escribir(); await guardado.limpiar();
+    expect(guardado.corteConfirmado.plano).toBe(ruta);
+    expect(await fs.readFile(ruta)).toEqual(antes);
+    await expect(fs.stat(path.join(raiz, '2026'))).rejects.toMatchObject({ code: 'ENOENT' });
+  });
+  it('restaura los retoques previos si falla el guardado después de publicar el corte nuevo', async () => {
+    const carpeta = path.join(raiz, '2026');
+    await fs.mkdir(carpeta, { recursive: true });
+    const ruta = path.join(carpeta, nombres[0]);
+    await fs.writeFile(ruta, 'retoques previos de ZWCAD');
+    const nuevo = await editable.prepararRegeneracion({ orderCode: pedido.orderCode, technician: 'ANA', usuario: 'IVÁN', preparar });
+    expect(await fs.readFile(ruta, 'utf8')).toBe('retoques previos de ZWCAD');
+    await nuevo.escribir();
+    expect(await fs.readFile(ruta, 'utf8')).not.toBe('retoques previos de ZWCAD');
+    await nuevo.deshacer();
+    expect(await fs.readFile(ruta, 'utf8')).toBe('retoques previos de ZWCAD');
+  });
+  it('prepara la regeneración sin tocar disco ni pedir aceptar cambios ajenos; puede deshacerse si falla guardar', async () => {
+    await editable.borrador({ orderCode: pedido.orderCode, preparar });
+    const antes = await fs.readFile(path.join(raiz, 'borradores', nombres[0]));
+    const nuevo = await editable.prepararRegeneracion({ orderCode: pedido.orderCode, technician: 'ANA', usuario: 'IVÁN', datos: 'nuevos', preparar });
+    expect(await fs.readFile(path.join(raiz, 'borradores', nombres[0]))).toEqual(antes);
+    expect(nuevo.corteConfirmado.huella).not.toBe('');
+    expect(nuevo.corteConfirmado.por).toBe('IVÁN');
+    await expect(fs.stat(nuevo.corteConfirmado.plano)).rejects.toMatchObject({ code: 'ENOENT' });
+    await nuevo.escribir();
+    expect((await editable.aceptarActual(nuevo.corteConfirmado, undefined, 'IVÁN'))).toHaveProperty('dwg');
+    await nuevo.deshacer();
+    await expect(fs.stat(nuevo.corteConfirmado.plano)).rejects.toMatchObject({ code: 'ENOENT' });
+    expect(await fs.readFile(path.join(raiz, 'borradores', nombres[0]))).toEqual(antes);
+  });
   it('abre el borrador aunque los datos actuales ya no permitan recalcularlo', async () => {
     await editable.borrador({ orderCode: pedido.orderCode, preparar });
     const abierto = await editable.borrador({ orderCode: pedido.orderCode,

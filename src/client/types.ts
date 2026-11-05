@@ -734,6 +734,7 @@ export type CoordinaStatus = {
 
 export type ReviewSummary = {
   corteNoRegenerado?: boolean;
+  corteSimulado?: boolean;
   updatedBy?: string;
   enviosCorte?: import('../corteEnviosTipos').EnvioCorte[];
   corteLona?: import('./corteLona').EstadoCorte | null;
