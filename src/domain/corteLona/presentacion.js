@@ -248,7 +248,13 @@ export function escribirDxfPlano(plano, cabecera) {
     // El cajetín viejo de la plantilla, con sus atributos, sale siempre: lo sustituye el CAJETIN TGM.
     if (/\n {2}5\n([0-9A-F]+)\n/.exec(t)[1] === viejo) return [];
     if (['ATTRIB', 'SEQEND'].includes(tipo) && new RegExp(`\\n330\\n${viejo}\\n`).test(t)) return [];
-    if (plano.plantilla && tipo === 'MTEXT' && /MATERIALES/.test(t)) return [poner(t, '1', plano.materiales)];
+    if (plano.plantilla && tipo === 'MTEXT' && /MATERIALES/.test(t)) {
+      // El bloque crece hacia abajo, hacia las notas: con más de 4 líneas la letra baja para que ocupe lo mismo
+      // que 4 (Iván, 05/11/2026: con 5 materiales la última línea pisaba la primera nota).
+      const lineas = plano.materiales.split('\\P').length, alto = Number(/\n 40\n([^\n]+)/.exec(t)?.[1]) || 3;
+      const r = poner(t, '1', plano.materiales);
+      return [lineas > 4 ? poner(r, '40', n(alto * 4 / lineas)) : r];
+    }
     if (tipo === 'ACAD_TABLE') return [];
     if (!plano.plantilla && tipo === 'MTEXT' && /MATERIALES/.test(t)) return [];
     if (tipo === 'TEXT' && /EMPATE:/.test(t)) return [];

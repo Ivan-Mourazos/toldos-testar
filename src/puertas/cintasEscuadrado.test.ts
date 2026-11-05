@@ -64,7 +64,8 @@ describe('cintas de una apilable de más de 6 m (E.T. 2 cm más larga que el fre
     expect(lienzo.cotas.some(c => c.x1 === 0 && c.x2 === 864 && c.valor === 864)).toBe(true);
     // Iván, 05/11/2026: se anota también el corte real, con 1 cm más por lado.
     expect(lienzo.cotas.some(c => c.x1 === -1 && c.x2 === 865)).toBe(true);
-    expect(lienzo.textos.some(t => t.valor.startsWith('PUERTA 864 · CORTE 866'))).toBe(true);
+    // Bien grande (Iván, 05/11/2026).
+    expect(lienzo.textos.find(t => t.valor.startsWith('PUERTA 864 · CORTE 866'))!.h).toBeGreaterThanOrEqual(19);
   });
 
   it('cada mitad de saco añade sus dos márgenes sin mover los mininúmeros', () => {

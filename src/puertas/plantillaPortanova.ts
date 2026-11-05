@@ -58,7 +58,7 @@ function moverDetalle(src: string, dx: number, dy: number) {
 /** Hoja fija de la oficina: solo se rellenan los campos y se encuadran alzado y corte. */
 export function presentacionPortanova(pedido: PedidoPuertas,
   cabecera: { cliente: string; tecnico: string; revisor: string; fecha: string },
-  zonas: { toldos: Zona; corte: Zona }, altoVistaCorte?: number) {
+  zonas: { toldos: Zona; corte: Zona }, altoVistaCorte?: number, tramosCorte?: Array<{ zona: Zona; papel: Zona }>) {
   plantilla ??= readFileSync(new URL('./plantillas/portanova.dxf', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
   const puertas = pedido.elementos.map(e => e.input);
   // Como los planos de la oficina (AR2604904): el cristal solo si la puerta lo lleva, y el saco que va a impresión
@@ -86,6 +86,10 @@ export function presentacionPortanova(pedido: PedidoPuertas,
     presentacion: { ventanas: {
       2: ventana(zonas.toldos, [84.8917052, 104.9631513], 153.7829813, 193.8383777),
       4: { ...ventana(zonas.corte, VENTANA_CORTE_PORTANOVA.centro, VENTANA_CORTE_PORTANOVA.ancho, VENTANA_CORTE_PORTANOVA.alto), altoVista: altoVistaCorte },
+      // El corte repartido en tramos, uno debajo de otro (Iván, 05/11/2026): la 4 enseña el primero; la 7, la 8… el resto.
+      ...Object.fromEntries((tramosCorte ?? []).map((t, i) => [i ? 6 + i : 4, {
+        ...ventana(t.zona, [(t.papel.x0 + t.papel.x1) / 2, (t.papel.y0 + t.papel.y1) / 2] as Punto,
+          t.papel.x1 - t.papel.x0, t.papel.y1 - t.papel.y0), altoVista: t.zona.y1 - t.zona.y0 }])),
     }, textos: [] },
   };
 }

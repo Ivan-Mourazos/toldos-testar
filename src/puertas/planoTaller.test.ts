@@ -128,6 +128,22 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
     const materiales = registrosDxf(escribirPlanoPuertas({ pedido: pedidoDe('AR2604904', p), cabecera }))
       .find(r => r.tipo === 'MTEXT' && valor(r, 67) === '1' && /^MATERIALES/.test(valor(r, 1) ?? ''))!;
     expect(valor(materiales, 1)).toBe('MATERIALES:\\PLAC 900 BLANCO 9016\\PLAC 900 AMARILLO/NEGRO');
+    expect(Number(valor(materiales, 40))).toBe(3);
+  });
+
+  // Iván, 05/11/2026 (AR2605391): con 5 materiales la última línea pisaba la primera nota.
+  it('MATERIALES con más de 4 líneas baja la letra para no llegar a las notas', () => {
+    const base = puertaPlanoReal('AR2604904');
+    const pedido = { ...pedidoDe('AR2604904', base), elementos: ['AZUL 5010', 'ROJO 3020', 'VERDE 6005'].map((color, i) => ({
+      ...pedidoDe('AR2604904', base).elementos[0], input: { ...base, color, of: `029000${i}` } })) };
+    const materiales = registrosDxf(escribirPlanoPuertas({ pedido, cabecera }))
+      .filter(r => r.tipo === 'MTEXT' && valor(r, 67) === '1' && /^MATERIALES/.test(valor(r, 1) ?? ''));
+    expect(materiales.length).toBeGreaterThan(0);
+    for (const m of materiales) {
+      const lineas = valor(m, 1)!.split('\\P').length;
+      expect(lineas).toBe(5);
+      expect(Number(valor(m, 40)) * lineas).toBeCloseTo(12, 6);
+    }
   });
 
   // 28/10/2026: la tabla de capas lleva CUTTER, DISCO2 y taladro con los colores del bot (las entidades no cambian).
