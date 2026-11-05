@@ -277,7 +277,8 @@ function buildPdfkitPlanteamiento({ order: fullOrder, calculation, review, onlyA
         };
         let remaining = drawStructurePage(doc, {
           order, awning, ofBlock: pageBlock, index,
-          continuation: pages > 1 ? ' · ' + (page + 1) + '/' + pages : '',
+          // Iván, 05/11/2026: que se vea que el despiece sigue en la hoja siguiente.
+          continuation: pages > 1 ? ' · ' + (page + 1) + '/' + pages + (page < pages - 1 ? ' · EL DESPIECE SIGUE EN LA HOJA SIGUIENTE' : '') : '',
           showNotes: page === pages - 1
         });
         while (remaining) {

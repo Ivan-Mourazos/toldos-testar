@@ -98,17 +98,18 @@ describe('ARZUA PRO despiece', () => {
     }));
 
     const despiece = result.ofs[0].despiece;
+    // Arriba las piezas con largo (Iván, 05/11/2026).
     expect(despiece.rows.map((row) => row.name)).toEqual([
-      'JUEGO SOPORTE AROND',
       'TUBO DE ENROLLE P801',
+      'TUBO DE CARGA UNIVERS 280',
+      'JUEGO DE BRAZOS ONYX',
+      'MANIVELA LUXE NEGRA 200',
+      'JUEGO SOPORTE AROND',
       'CASQUILLO PUNTA',
       'CASQUILLO EJE 63MM Ø78',
-      'TUBO DE CARGA UNIVERS 280',
       'KIT TAPONES UNIVERS 280',
-      'JUEGO DE BRAZOS ONYX',
       'JUEGO DE TERMINALES',
       'MÁQUINA MB-11 L-120 NEGRA',
-      'MANIVELA LUXE NEGRA 200',
       'KIT DE TORNILLOS MAQUINA'
     ]);
     expect(despiece.rows.find((row) => row.name === 'JUEGO DE TERMINALES').reference).toBe('TERMINEVONE11');
@@ -610,7 +611,7 @@ describe('ARZUA PRO contra pedidos reales (RPS exacto)', () => {
     expect(ofBlock.despiece.rows).toEqual(expect.arrayContaining([
       expect.objectContaining({ name: 'TUBO DE ENROLLE P801', reference: 'TURA80HG400C', length: 327.2 }),
       expect.objectContaining({ name: 'TUBO DE CARGA EVO 80', reference: 'PEVO80BL16500C', length: 327.2 }),
-      expect.objectContaining({ num: 5, name: 'KIT TAPONES EVO 80', reference: 'TAPONEVO8BL16', units: 1 }),
+      expect.objectContaining({ name: 'KIT TAPONES EVO 80', reference: 'TAPONEVO8BL16', units: 1 }),
       expect.objectContaining({ name: 'MANDO SITUO 1 IO PURE', reference: 'SITUOIO1PURE', units: 1 })
     ]));
     // Numeración correlativa: a motor no hay casquillo de máquina y el mando va el último.
@@ -1500,7 +1501,7 @@ describe('CORTINA contra planteamientos y RPSNext', () => {
       expect.objectContaining({ code: 'SOPMAXSCRBL16', quantity: 1 })
     ]));
     expect(ofBlock.materials.some((item) => item.code === 'SOPUNI3AGUBL16')).toBe(false);
-    expect(ofBlock.despiece.rows[0]).toMatchObject({
+    expect(ofBlock.despiece.rows.find((row) => row.reference === 'SOPMAXSCRBL16')).toMatchObject({
       name: 'JGO. SOPORTE MAXISCREEM', reference: 'SOPMAXSCRBL16', units: 1
     });
     expect(ofBlock.description).toContain('soporte Maxiscreem');

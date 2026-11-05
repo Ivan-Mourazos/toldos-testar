@@ -252,7 +252,9 @@ export function repartirDespiece(datos: HojaEstructuraDatos, altoNotas = NOTAS_T
       ? { x: MARGEN, y: Math.min(notasY, NOTAS_PIE), w: IZQUIERDA_W, h: Math.max(0, Math.min(NOTAS_PIE - notasY, conNotas ? altoNotas : Infinity)) }
       : { x: DERECHA_X, y: NOTAS_DERECHA_Y, w: DERECHA_W, h: Math.min(altoNotas, NOTAS_PIE - NOTAS_DERECHA_Y) };
     const pie = total > 1 ? `${datos.footer} · ${pagina + 1}/${total}` : datos.footer;
-    return { filas, alto, ultima, accesorios, accesoriosY, anclajeY, anclaje, notas, pie };
+    // Iván, 05/11/2026: que se vea que el despiece no acaba en esta hoja.
+    const sigue = ultima ? '' : `EL DESPIECE SIGUE EN LA HOJA SIGUIENTE (${pagina + 1}/${total})`;
+    return { filas, alto, ultima, accesorios, accesoriosY, anclajeY, anclaje, notas, pie, sigue };
   });
 }
 
@@ -267,6 +269,7 @@ function Pagina({ datos, pagina, lineas }: {
     <section className="estructura-pagina">
       <Cabecera cabecera={datos.header} />
       <Despiece filas={filas} alto={alto} />
+      {pagina.sigue && <Barra x={TABLA_X} y={accesoriosY} w={TABLA_W} texto={pagina.sigue} />}
       {ultima && (
         <div className="estructura-filas" style={{ fontSize: pt(letraFila(alto)) }}>
           {accesorios.map((fila, indice) => <FilaSuelta key={indice} fila={fila} y={accesoriosY + BARRA_H + indice * alto} alto={alto} accesorio />)}

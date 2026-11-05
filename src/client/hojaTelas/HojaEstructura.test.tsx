@@ -216,3 +216,13 @@ describe('HojasTelas con hojas de los dos tipos', () => {
     expect(selectores).toEqual(['.telas-pagina, .estructura-pagina', '.telas-pagina, .estructura-pagina']);
   });
 });
+
+// Iván, 05/11/2026: con un despiece largo, que se vea que sigue en otra hoja.
+describe('despiece en varias hojas', () => {
+  it('avisa en cada hoja que no es la última de que el despiece sigue', () => {
+    const largo = { ...ejemplo, notes: '', despiece: Array.from({ length: 30 }, (_, i) => pieza(i + 1, `PIEZA ${i + 1}`, `REF${i + 1}`)), rowsPerPage: 28 };
+    const paginas = repartirDespiece(largo);
+    expect(paginas.map((p) => p.sigue)).toEqual(['EL DESPIECE SIGUE EN LA HOJA SIGUIENTE (1/2)', '']);
+    expect(renderToStaticMarkup(<HojaEstructura datos={largo} onLista={() => {}} onError={() => {}} />)).toContain('EL DESPIECE SIGUE EN LA HOJA SIGUIENTE (1/2)');
+  });
+});

@@ -223,7 +223,7 @@ describe('SELENA · soporte (Iván, 22/09/2026)', () => {
     expect(maxiscreem.ofs[0].calculation.curtainSupport).toBe('MAXISCREEM');
     expect(maxiscreem.ofs[0].materials.map((item) => item.code)).toContain('SOPMAXSCRBL16');
     expect(maxiscreem.ofs[0].materials.map((item) => item.code)).not.toContain('SOPUNI3AGUBL16');
-    expect(maxiscreem.ofs[0].despiece.rows[0]).toMatchObject({ name: 'JGO. SOPORTE MAXISCREEM' });
+    expect(maxiscreem.ofs[0].despiece.rows).toContainEqual(expect.objectContaining({ name: 'JGO. SOPORTE MAXISCREEM' }));
   });
 });
 

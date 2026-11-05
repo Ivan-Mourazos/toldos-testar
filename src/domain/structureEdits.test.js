@@ -19,7 +19,8 @@ function edit(order, change) {
 test('sustituye artículo y cantidad sin duplicar la reserva; mantiene la tela', () => {
   const order = fixture();
   const original = calculateOrder(order).ofs[0];
-  const old = original.despiece.rows[0].reference;
+  // El editor conserva el orden del modelo; el despiece sale ordenado con las piezas con largo arriba.
+  const old = original.structureEditor.rows[0].reference;
   const calc = edit(order, (rows) => { Object.assign(rows[0], { reference: 'NUEVO', name: 'SOPORTE NUEVO', units: 2, reservationQuantity: 2 }); });
   expect(calc.ofs[0].materials.some((row) => row.code === old)).toBe(false);
   expect(calc.ofs[0].materials.find((row) => row.code === 'NUEVO').quantity).toBe(2);
@@ -30,13 +31,13 @@ test('sustituye artículo y cantidad sin duplicar la reserva; mantiene la tela',
 test('corte, borrado y piezas añadidas llegan al PDF y a la reserva', async () => {
   const order = fixture();
   const original = calculateOrder(order).ofs[0];
-  const removed = original.despiece.rows[0].reference;
+  const removed = original.structureEditor.rows[0].reference;
   const calc = edit(order, (rows) => {
     rows.shift(); rows[0].length = 333;
     for (let i = 0; i < 25; i++) rows.push({ id: 'added:' + i, num: 30 + i, name: 'PIEZA EXTRA ' + i, reference: 'EXTRA' + i, units: 1, length: null, reservationQuantity: 1, unitCode: 'UD', kind: 'piece' });
   });
   expect(calc.ofs[0].materials.some((row) => row.code === removed)).toBe(false);
-  expect(calc.ofs[0].materials.find((row) => row.code === original.despiece.rows[1].reference).quantity).toBe(1);
+  expect(calc.ofs[0].materials.find((row) => row.code === original.structureEditor.rows[1].reference).quantity).toBe(1);
   const pdf = await buildOrderPlanteamientoPdf({ order, calculation: calc });
   const doc = await getDocument({ data: new Uint8Array(pdf) }).promise;
   expect(doc.numPages).toBeGreaterThan(2);
@@ -66,7 +67,7 @@ test('Antica admite cuatro brazos y permite reservar brazos y manivela de otro c
 test('guardar/reabrir conserva cambios y cambiar medidas exige revisión', () => {
   const order = fixture(); edit(order, (rows) => { rows[0].name = 'SOPORTE ESPECIAL'; });
   const reloaded = JSON.parse(JSON.stringify(order));
-  expect(calculateOrder(reloaded).ofs[0].despiece.rows[0].name).toBe('SOPORTE ESPECIAL');
+  expect(calculateOrder(reloaded).ofs[0].despiece.rows.some((row) => row.name === 'SOPORTE ESPECIAL')).toBe(true);
   reloaded.awnings[0].width = 460;
   const stale = calculateOrder(reloaded);
   expect(stale.ofs[0].structureEditor.stale).toBe(true);

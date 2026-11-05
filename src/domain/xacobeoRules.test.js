@@ -41,7 +41,7 @@ describe('XACOBEO contra hoja XAC y RPS final', () => {
 
     expect(ofBlock.calculation).toMatchObject({
       model: 'XACOBEO', valid: true, minimumLine: 287,
-      // Lona según el manual ART 250 (Q-X01, 25/09/2026): 365 − 11,9. El libro cortaba 352,5.
+      // Lona según el manual ART 250 (Q-X01, 25/09/2026): 365 − 11,9. El libro cortaba 352,5.
       fabricWidth: 353.1, fabricDrop: 325, fabricPanels: 4, fabricMl: 13,
       rollTubeLength: 354.1, structureLength: 355.1, stockLength: 700
     });
@@ -93,7 +93,7 @@ describe('XACOBEO contra hoja XAC y RPS final', () => {
       { code: 'SITUOIO1PURE', quantity: 1 },
       { code: 'ACRILI2013P120', quantity: 5.46 }
     ]);
-    expect(ofBlock.despiece.rows).toContainEqual(expect.objectContaining({ num: 12, reference: 'ADAPTADORESTUBO70', units: 0 }));
+    expect(ofBlock.despiece.rows).toContainEqual(expect.objectContaining({ reference: 'ADAPTADORESTUBO70', units: 0 }));
   });
 
   test('máquina interior usa descuentos y casquillo propios', () => {

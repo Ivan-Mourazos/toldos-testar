@@ -27,6 +27,7 @@ import { applyLegacyRpsFabricReservation } from './legacyRpsReservation.js';
 import { withRpsCodes } from './rpsIrregularCodes.js';
 import { beginRuleOverrides, finishRuleOverrides } from './ruleOverrides.js';
 import { withLacadoFallback } from './lacadoFallback.js';
+import { orderDespieceByLength } from './despieceOrder.js';
 import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { formatNumber } from './math.js';
 
@@ -198,7 +199,7 @@ export function calculateOrder(payload) {
       of: result.of,
       description: result.description || buildAwningDescription(awning),
       materials: result.materials || [],
-      despiece: result.despiece || null,
+      despiece: orderDespieceByLength(result.despiece) || null,
       structureEditor: result.structureEditor,
       calculation: result.calculation
     });

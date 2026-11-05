@@ -246,7 +246,7 @@ describe('Antica TGM: piezas compradas y fabricación propia', () => {
   });
   test('un largo no homologado se puede revisar sin inventar referencia', () => {
     const result = calculateOrder(payload({ crankHeight: 300 }));
-    expect(result.ofs[0].despiece.rows.find(r => r.num === 10).reference).toBeNull();
+    expect(result.ofs[0].structureEditor.rows.find(r => r.num === 10).reference).toBeNull();
     expect(result.diagnostics.some(d => d.message.includes('manivela sin correspondencia'))).toBe(true);
   });
   test('el motor no reserva manivela aunque conserve el campo de color', () => {
@@ -274,7 +274,7 @@ describe('Antica: materia prima con cortes nominales de OT', () => {
   });
   test('sin bamba no añade contrapeso y 30x10 usa pletina, sin añadir tubo 50x30', () => {
     const noValance = calculateOrder(payload({ anticaVariant: 'TUBO 50X30 SIN BAMBA', valanceHeight: 0 })).ofs[0];
-    expect(noValance.despiece.rows.some(r => r.num === 12)).toBe(false);
+    expect(noValance.structureEditor.rows.some(r => r.num === 12)).toBe(false);
     const flat = calculateOrder(payload({ anticaVariant: 'TUBO 30X10 CON BAMBA', width: 312, projection: 60 })).ofs[0];
     expect(flat.structureEditor.rows.find(r => r.num === 5)).toMatchObject({ reference: 'PLEAC30MM10', reservationQuantity: 0.5 });
     expect(buildFinalRows([flat]).find(r => r.code === 'PLEAC30MM10').quantity).toBe(0.7);

@@ -97,7 +97,8 @@ describe('reglas HERA', () => {
       ['MACALENGUSCREN43', 1.59], ['VARILLAVAINARBLA', 1.59]
     ]);
     // Desde el 03/10/2026 lleva despiece: lo reservado menos la tela, el macarrón y la varilla.
-    expect(ofBlock.despiece.rows.map((row) => row.reference)).toEqual(ofBlock.materials.slice(1, 9).map((line) => line.code));
+    // Con las piezas con largo arriba (Iván, 05/11/2026): tubo y perfil de contrapeso primero.
+    expect(ofBlock.despiece.rows.map((row) => row.reference)).toEqual(['SCRTUBO53600C', 'SCRPECBLAN600C', 'SCRKITSW4350BLAN', 'SCRADPSWIFBLAN', 'SCRECONTRCADBLAN', 'SCRUNICADBLAN', 'SCRTAPINFBLANDCH', 'SCRTAPINFBLANIZQ']);
     // El aviso de «completar en CAD» se quitó el 03/10/2026: la web ya hace el planteamiento entero.
     expect(result.diagnostics.some((item) => item.message.includes('CAD'))).toBe(false);
   });
@@ -312,13 +313,14 @@ describe('HERA: despiece del planteamiento', () => {
   test('con cadena y varilla blanca: kit, adaptadores, tubo, contrapeso, uniones, perfil y tapones; el anillo, en accesorios', () => {
     const result = hera({ width: 348.5, projection: 210, height: 250, units: 2, heraJoin: 'VERTICAL' });
     expect(result.ofs[0].calculation).toMatchObject({ valid: true, rollTubeLength: 344.8, fabricWidth: 344, chainRingCode: 'SCRANILBLAN150C' });
+    // Arriba las piezas con largo (Iván, 05/11/2026).
     expect(resumen(result)).toEqual([
+      ['TUBO DE ENROLLE', 'SCRTUBO53600C', 2, 344.8],
+      ['PERFIL DE CONTRAPESO', 'SCRPECBLAN600C', 2, 344],
       ['KIT MECANISMO SWIFT 43-56', 'SCRKITSW4350BLAN', 2, null],
       ['ADAPTADOR SWIFT', 'SCRADPSWIFBLAN', 4, null],
-      ['TUBO DE ENROLLE', 'SCRTUBO53600C', 2, 344.8],
       ['CONTRAPESO DE CADENA', 'SCRECONTRCADBLAN', 2, null],
       ['UNIÓN DE CADENA', 'SCRUNICADBLAN', 4, null],
-      ['PERFIL DE CONTRAPESO', 'SCRPECBLAN600C', 2, 344],
       ['TAPÓN INFERIOR DERECHO', 'SCRTAPINFBLANDCH', 2, null],
       ['TAPÓN INFERIOR IZQUIERDO', 'SCRTAPINFBLANIZQ', 2, null],
       ['ANILLO DE CADENA BLANCO 150 CM', 'SCRANILBLAN150C', 2, null]
@@ -333,12 +335,12 @@ describe('HERA: despiece del planteamiento', () => {
   test('a motor y con pletina: un adaptador, rueda LT50, el motor y la pletina; el mando, en accesorios', () => {
     const result = hera({ submodel: 'HERA 56 MOTOR', width: 270, projection: 200, height: 0, heraBottomFinish: 'PLETINA', heraChainColor: 'NEGRO' });
     expect(resumen(result)).toEqual([
+      ['TUBO DE ENROLLE', 'SCRTUBO53600C', 1, result.ofs[0].calculation.rollTubeLength],
+      ['PLETINA', 'PLA4NEGR25MM635C', 1, result.ofs[0].calculation.fabricWidth],
       ['KIT MECANISMO SWIFT 43-56', 'SCRKITSW4350NEGR', 1, null],
       ['ADAPTADOR SWIFT', 'SCRADPSWIFNEGR', 1, null],
-      ['TUBO DE ENROLLE', 'SCRTUBO53600C', 1, result.ofs[0].calculation.rollTubeLength],
       ['RUEDA LT50', 'RUEDAAPLT5053', 1, null],
       ['MOTOR SOMFY SUNILUS 6/17 IO', 'SUNILUSIO6//17', 1, null],
-      ['PLETINA', 'PLA4NEGR25MM635C', 1, result.ofs[0].calculation.fabricWidth],
       ['MANDO SITUO 1 IO PURE', 'SITUOIO1PURE', 1, null]
     ]);
     expect(filas(result).filter((row) => row.accessory).map((row) => row.reference)).toEqual(['SITUOIO1PURE']);
@@ -346,16 +348,14 @@ describe('HERA: despiece del planteamiento', () => {
 
   test('HERA 43: su kit y su tubo, sin adaptador', () => {
     const result = hera({ submodel: 'HERA 43 MAQUINA', height: 220 });
-    expect(resumen(result).slice(0, 2)).toEqual([
-      ['KIT MECANISMO SWIFT 43', 'SCRKITSW43BLAN', 1, null],
-      ['TUBO DE ENROLLE', 'SCRTUBO43P600CM', 1, result.ofs[0].calculation.rollTubeLength]
-    ]);
+    expect(resumen(result)[0]).toEqual(['TUBO DE ENROLLE', 'SCRTUBO43P600CM', 1, result.ofs[0].calculation.rollTubeLength]);
+    expect(resumen(result)).toContainEqual(['KIT MECANISMO SWIFT 43', 'SCRKITSW43BLAN', 1, null]);
   });
 
   test('con E.T. platanero no sale nada abajo, y sin anillo de referencia exacta no hay fila de anillo', () => {
     const result = hera({ heraBottomFinish: 'E.T. PLATANERO', height: 233 });
     expect(result.ofs[0].calculation.chainRingCode).toBe('');
-    expect(filas(result).map((row) => row.reference)).toEqual(['SCRKITSW4350BLAN', 'SCRADPSWIFBLAN', 'SCRTUBO53600C', 'SCRECONTRCADBLAN', 'SCRUNICADBLAN']);
+    expect(filas(result).map((row) => row.reference)).toEqual(['SCRTUBO53600C', 'SCRKITSW4350BLAN', 'SCRADPSWIFBLAN', 'SCRECONTRCADBLAN', 'SCRUNICADBLAN']);
   });
 
   test.each([

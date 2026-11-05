@@ -62,7 +62,7 @@ describe('la hoja de estructura del HERA en HTML', () => {
     const [hoja] = hojas([maquina({ units: 2 })]);
     expect(hoja.accessories).toEqual([{ name: 'ANILLO DE CADENA BLANCO 150 CM', reference: 'SCRANILBLAN150C', units: '2' }]);
     expect(hoja.despiece.map(({ reference }) => reference)).toEqual([
-      'SCRKITSW4350BLAN', 'SCRADPSWIFBLAN', 'SCRTUBO53600C', 'SCRECONTRCADBLAN', 'SCRUNICADBLAN', 'SCRPECBLAN600C', 'SCRTAPINFBLANDCH', 'SCRTAPINFBLANIZQ'
+      'SCRTUBO53600C', 'SCRPECBLAN600C', 'SCRKITSW4350BLAN', 'SCRADPSWIFBLAN', 'SCRECONTRCADBLAN', 'SCRUNICADBLAN', 'SCRTAPINFBLANDCH', 'SCRTAPINFBLANIZQ'
     ]);
     expect(hoja.despiece.find(({ name }) => name === 'TUBO DE ENROLLE')).toMatchObject({ units: '2', length: '159,8', bold: true });
     expect(hoja.despiece.map(({ num }) => num)).toEqual(['1', '2', '3', '4', '5', '6', '7', '8']);
