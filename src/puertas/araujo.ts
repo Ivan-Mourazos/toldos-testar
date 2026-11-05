@@ -54,8 +54,10 @@ export function calcularAraujo(p: Puerta): ResultadoPuerta {
     const x = pieza(nombre, bolsa ? 'saco' : 'pano', t.frente, medidas.alto, t.cantidad, bolsa);
     if(t.of?.trim())x.of=t.of.trim();
     if(t.material?.trim())x.material=t.material.trim();
-    if(a.corteTrasImprimir&&!bolsa){
-      x.sinGiro=true;x.material+=' · Impresa';
+    if(a.corteTrasImprimir){
+      x.sinGiro=true;
+      if(bolsa)x.bolsaImpresaAraujo=true;
+      if(!bolsa)x.material+=' · Impresa';
     }
     if(medidas.arriba.marca+medidas.abajo.marca>=x.alto)aviso('EXTREMO',nombre+': las marcas de los extremos se cruzan; revisa alto y ancho de E.T.');
     if (Math.min(x.ancho, x.alto) > x.rollo && !(a.corteTrasImprimir&&!bolsa)) aviso('NO_CABE', `${nombre}: no cabe en el rollo; hace falta estudiar su reparto antes de cortar.`);

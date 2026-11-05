@@ -398,13 +398,16 @@ function colocar(
   esAraujo: (id: string) => boolean = () => false,
 ): CortePuertas[] {
   const grupos = new Map<string, PiezaPuerta[]>();
+  const variasPuertasAraujo=new Set(piezas.filter(p=>esAraujo(p.id)).map(p=>p.id.split(':')[0])).size>1;
   for (const p of piezas) {
     if (![p.rollo, p.ancho, p.alto].every(Number.isFinite) || p.rollo <= 0 || p.ancho <= 0 || p.alto <= 0 || Math.min(p.ancho, p.alto) > p.rollo || p.sinGiro && p.alto > p.rollo) {
       continue;
     }
-    const k = JSON.stringify([p.material, p.rollo]);
+    // Las muestras auxiliares de Araujo pertenecen a su puerta, aunque compartan material y OF.
+    const puertaMuestra=esAraujo(p.id)&&(p.clase==='cristal'||p.clase==='saco')?p.id.split(':')[0]:'';
+    const k = JSON.stringify([p.material, p.rollo, puertaMuestra]);
     const g = grupos.get(k) ?? [];
-    g.push(p);
+    g.push(puertaMuestra&&variasPuertasAraujo&&p.alto<=p.rollo?{...p,sinGiro:true}:p);
     grupos.set(k, g);
   }
   return [...grupos.values()].map(grupoOriginal => {

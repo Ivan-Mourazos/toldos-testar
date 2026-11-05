@@ -40,23 +40,33 @@ export function alzadoAraujo(p: Puerta, letra: string): GeometriaAlzado {
       cota(v.x,vy+v.alto,v.x,y+d+t.alto,v.x+v.ancho/2,v.y);
     }
     const entradas=[...(t.entradas??[]),...a.forma==='continua'&&t.tipo==='tramo'?p.entradas.map(e=>({altura:e.altura,ancho:e.alto})):[]];
-    for(const e of entradas){
+    const impresa=Boolean(a.corteTrasImprimir&&t.tipo==='tramo');
+    for(const [j,e] of entradas.entries()){
       const yy=y+d+t.alto-e.altura;
       formas.push({tipo:'linea',clase:'puerta-eje',x1:0,y1:yy,x2:w,y2:yy},
         {tipo:'linea',clase:'puerta-marca',x1:p.margenMarcas,y1:yy+e.ancho/2,x2:w-p.margenMarcas,y2:yy+e.ancho/2});
       texto('E.T.'+('huecoLibre' in e&&e.huecoLibre?' (DEJAR HUECOS '+num(e.huecoLibre as number)+')':''),w/2,yy-base,Math.min(base,w*.85/anchoArial('E.T. (DEJAR HUECOS 9)',1)));
       cota(w,yy-e.ancho/2,w,yy+e.ancho/2,w+base*4,e.ancho);
-      cota(0,yy,0,y+d+t.alto,-base*4,e.altura);
+      if(impresa)cota(0,yy+e.ancho/2,0,y+h,-base*(4+j*4),h-(yy+e.ancho/2-y));
+      else cota(0,yy,0,y+d+t.alto,-base*4,e.altura);
     }
     const codigo=letra+(i+1);
-    texto('X'+t.cantidad*p.cantidad,w+base*9,y+h/2,base*2);
+    texto('X'+t.cantidad*p.cantidad,w+base*(impresa?22:9),y+h/2,base*2);
     const remate=(e:typeof t.arriba)=>e?.tipo==='et'?'E.T.':'VARILLA BLANCA (5,5 mm)';
     const tamanoRemate=Math.min(base,w*.88/anchoArial(remate(t.arriba).toUpperCase(),1));
     texto(remate(t.arriba),w/2,y-base*2,tamanoRemate);
     texto(remate(t.abajo),w/2,y+h+base*2,tamanoRemate);
     if(i===ultimoTramo||t.tipo==='bolsa')cota(0,y,w,y,y-base*6,w);
-    cota(0,y+d,0,y+d+t.alto,-base*6,t.alto);
-    cota(0,y,0,y+h,-base*10,h);
+    if(impresa){
+      // La marca superior y las E.T. se miden desde el corte inferior, como la raya roja de máquina.
+      cota(0,y+m.arriba.marca,0,y+h,-base*(8+entradas.length*4),h-m.arriba.marca);
+      const marcas=[y+m.arriba.marca,...entradas.map(e=>y+d+t.alto-e.altura+e.ancho/2).sort((a,b)=>a-b),y+h-m.abajo.marca];
+      for(let j=1;j<marcas.length;j++)cota(w,marcas[j-1],w,marcas[j],w+base*10,Math.round((marcas[j]-marcas[j-1])*10000)/10000);
+      cota(w,y+d,w,y+d+t.alto,w+base*16,t.alto);
+    }else{
+      cota(0,y+d,0,y+d+t.alto,-base*6,t.alto);
+      cota(0,y,0,y+h,-base*10,h);
+    }
     cota(w,y,w,y+m.arriba.marca,w+base*4,m.arriba.marca);
     cota(w,y+h-m.abajo.marca,w,y+h,w+base*4,m.abajo.marca);
     if(t.rotulacion){

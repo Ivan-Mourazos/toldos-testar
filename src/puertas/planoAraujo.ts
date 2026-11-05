@@ -2,7 +2,7 @@ import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { geometriaAlzado } from './alzado.ts';
 import { calcularPuerta } from './calcular.ts';
-import { cotasImpresionAraujo } from './cotasImpresionAraujo.ts';
+import { cotasImpresionAraujo, esImpresionAraujo, presentarImpresionAraujo } from './cotasImpresionAraujo.ts';
 import { corteEnPlano, textosFuera } from './corteEnPlano.ts';
 import { bloqueFlechaEnrollable, dibujarCorte, hojasPuertas, lienzoAMetros, origenCorte, sumarLienzo, type LienzoEnrollable } from './planoEnrollable.ts';
 import type { CortePuertas, PedidoPuertas, Punto } from './tipos.ts';
@@ -16,11 +16,12 @@ function rect(l:LienzoEnrollable,c:string,x:number,y:number,w:number,h:number,r=
 }
 /** Plano de oficina y corte recibido del anidado común: las curvas y marcas proceden de las mismas medidas. */
 export function escribirPlanoAraujo(pedido:PedidoPuertas,cortes:CortePuertas[],cabecera:{cliente:string;tecnico:string;revisor:string;fecha:string},subtitulo='MEDIDAS EN CM · ARAUJO · TRAMOS Y BOLSAS'):string{
-  const l=vacio();let dy=0,ancho=0,izquierda=0;
+  const l=vacio();let dy=0,ancho=0,izquierda=0,bajoAnterior=0;
   const zonasPuertas:Array<{x0:number;y0:number;x1:number;y1:number}>=[];
   const hojas:Array<{nombre:string;zona:{x0:number;y0:number;x1:number;y1:number};cajetin:{HOJA:string;OF:string}}>=[];
   for(const [i,e] of pedido.elementos.entries()){
     const g=geometriaAlzado(e.input,calcularPuerta(e.input),String.fromCharCode(65+i));
+    if(i>0&&e.input.araujo)dy=bajoAnterior+g.vista.yMin-180;
     const ofsPuerta=[...new Set([e.input.of,...e.input.araujo?.tramos.map(t=>t.of)??[]].filter(Boolean))];
     hojas.push({nombre:String.fromCharCode(65+i),zona:{x0:100+g.vista.xMin/100,x1:100+(g.vista.xMin+g.vista.ancho)/100,
       y0:100+(dy-g.vista.yMin-g.vista.alto)/100,y1:100+(dy-g.vista.yMin)/100},cajetin:{HOJA:(i+1)+'/'+pedido.elementos.length,OF:ofsPuerta.length>1?'VARIAS':e.input.of}});
@@ -33,12 +34,14 @@ export function escribirPlanoAraujo(pedido:PedidoPuertas,cortes:CortePuertas[],c
       else l.polilineas.push({capa:capa(f.clase),puntos:f.puntos.map(([x,y]):Punto=>[x,dy-y]),cerrada:f.tipo==='poligono'});
     }
     zonasPuertas.push({x0:100+g.vista.xMin/100,x1:100+(g.vista.xMin+g.vista.ancho)/100,y0:100+(dy-g.vista.yMin-g.vista.alto)/100,y1:100+(dy-g.vista.yMin)/100});
+    bajoAnterior=dy-g.vista.yMin-g.vista.alto;
     izquierda=Math.min(izquierda,g.vista.xMin);ancho=Math.max(ancho,g.vista.xMin+g.vista.ancho);dy-=g.vista.alto+50;
   }
   const za={x0:100+izquierda/100,y0:100+dy/100,x1:100+ancho/100,y1:101};
   const lc=vacio();let yc=0,wc=0;
   const zonasCorte:Array<{x0:number;y0:number;x1:number;y1:number}>=[];
-  for(const c of cortes){
+  for(const original of cortes){
+    const c=presentarImpresionAraujo(original),impresa=esImpresionAraujo(c);
     const ocupado=Math.max(0,...c.colocadas.map(t=>t.y/10+(t.girada?t.pieza.ancho:t.pieza.alto)));
     yc-=ocupado;
     const fuera=textosFuera(c);
@@ -47,9 +50,9 @@ export function escribirPlanoAraujo(pedido:PedidoPuertas,cortes:CortePuertas[],c
     cotasImpresionAraujo(lc,c,yc);
     const titulo=textoSeguro(c.material),hTitulo=Math.max(10,Math.min(20,c.largo/100));
     lc.textos.push({capa:'texto',valor:titulo,x:c.largo/20,y:yc+ocupado+30,h:hTitulo,centrado:true});
-    lc.cotas.push({capa:'cotas',estilo:'XERA 20',x1:0,y1:yc,x2:c.largo/10,y2:yc,d:yc-45,giro:0,valor:c.largo/10,posicionTexto:[c.largo/20,yc-65]},
+    if(!impresa)lc.cotas.push({capa:'cotas',estilo:'XERA 20',x1:0,y1:yc,x2:c.largo/10,y2:yc,d:yc-45,giro:0,valor:c.largo/10,posicionTexto:[c.largo/20,yc-65]},
       {capa:'cotas',estilo:'XERA 20',x1:0,y1:yc,x2:0,y2:yc+ocupado,d:-35,giro:90,valor:ocupado});
-    zonasCorte.push({x0:Math.min(-75,c.largo/20-anchoArial(titulo,hTitulo)/2-5),y0:yc-80,
+    zonasCorte.push({x0:Math.min(impresa?Math.min(-100,...lc.cotas.filter(q=>q.giro===90).map(q=>q.d-15)):-75,c.largo/20-anchoArial(titulo,hTitulo)/2-5),y0:yc-80,
       x1:Math.max(c.largo/10+40,c.largo/20+anchoArial(titulo,hTitulo)/2+5),y1:yc+ocupado+50});
     wc=Math.max(wc,c.largo/10);yc-=140;
   }

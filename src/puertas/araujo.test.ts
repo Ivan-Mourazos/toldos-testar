@@ -132,7 +132,9 @@ describe('ARAUJO, tramos y bolsas con canutillo', () => {
     expect(v.resultados[0].piezas.some(p=>p.clase==='entrada')).toBe(false);
     const plano=escribirPlanoPuertas({pedido:pedido(q),cabecera:{cliente:'ARAUJO',tecnico:'IVÁN',revisor:'',fecha:'2026-11-04'}});
     const dimensiones=registrosDxf(plano).filter(e=>e.tipo==='DIMENSION');
-    for(const medida of [72.7,162.7,9.4])expect(dimensiones.filter(e=>Math.abs(numero(e,42)-medida)<1e-5)).toHaveLength(1);
+    // Las distancias a las marcas aparecen tanto en el alzado como fuera de la pieza de corte.
+    for(const medida of [72.7,162.7])expect(dimensiones.filter(e=>Math.abs(numero(e,42)-medida)<1e-5)).toHaveLength(2);
+    expect(dimensiones.filter(e=>Math.abs(numero(e,42)-9.4)<1e-5)).toHaveLength(1);
     expect(dimensiones.filter(e=>Math.abs(numero(e,42)-12)<1e-5)).toHaveLength(4);
     expect(registrosDxf(v.archivo!.dxf).some(e=>e.tipo==='DIMENSION')).toBe(false);
   });
