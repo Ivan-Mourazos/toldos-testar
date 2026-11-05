@@ -104,6 +104,11 @@ export interface PiezaPuerta {
   sacoDiagonalesAmarillas?: boolean;
   /** El alto cruza el rollo en el corte posterior a la impresión; no se gira para ahorrar lona. */
   sinGiro?: boolean;
+  /** Bolsa de una impresa Araujo: muestra horizontal independiente en oficina. */
+  bolsaImpresaAraujo?: boolean;
+  /** ARAUJO impresa: origen del paño desde el corte inferior del cuerpo, antes de repartir el rollo. */
+  impresionAraujo?: {tramo:number;parte:number;partes:number;desdeBajo:number;empate:number;
+    entradas:Array<{y:number;ancho:number;altura:number}>};
   contorno: Punto[];
   radio: number;
   marcas: Segmento[];

@@ -132,7 +132,7 @@ export function escribirDxfPlano(plano, cabecera) {
       // El corte largo, girado contra el lado derecho, si así el dibujo sale más grande (dibujo alto); con un dibujo
       // alargado gana el corte debajo (Iván, 28/10/2026, AR2605035; «el criterio debe ser igual» en todos los cortes).
       // Solo se gira la vista; el corte, sus textos y sus cotas no cambian en el modelo.
-      repartos.push({ zc: zNormal, corte: { ...corte }, toldo: { ...toldo }, raya: [[corte.x0 - 2, desde], [corte.x0 - 2, A4.y1]], girado: true });
+      if(plano.girarCorte !== false)repartos.push({ zc: zNormal, corte: { ...corte }, toldo: { ...toldo }, raya: [[corte.x0 - 2, desde], [corte.x0 - 2, A4.y1]], girado: true });
     }
     // Lo más grande posible el toldo y, con eso, los cortes (Iván, 27/10/2026: «cubrir el máximo de papel»).
     const nota = (r) => Math.min(escala(zt, r.toldo), 1.5 * tamCortes(r.corte, r.girado));
@@ -464,12 +464,12 @@ function cotaDxf(c, numero, nuevo, ent) {
   else cuerpo += linea(xy(a + e.flecha, c.d), xy(b - e.flecha, c.d));
   const tt = cabe ? c.d : c.d + (v ? -1 : 1) * e.texto * 0.8;
   const [tx, ty] = c.posicionTexto ?? xy(medio, tt);
-  cuerpo += dentro('MTEXT', 'AcDbMText', ` 10\n${n(tx)}\n 20\n${n(ty)}\n 30\n0.0\n 40\n${n(e.texto)}\n 41\n0.0\n 71\n     5\n 72\n     1\n  1\n${texto}\n  7\nXERAL\n 11\n${c.alineada ? n(ux) : v ? '0.0' : '1.0'}\n 21\n${c.alineada ? n(uy) : v ? (c.textoGirado ? '-1.0' : '1.0') : '0.0'}\n 31\n0.0\n 73\n     1\n 44\n1.0\n`);
+  cuerpo += dentro('MTEXT', 'AcDbMText', ` 10\n${n(tx)}\n 20\n${n(ty)}\n 30\n0.0\n 40\n${n(e.texto)}\n 41\n0.0\n 71\n     5\n 72\n     1\n  1\n${texto}\n  7\nXERAL\n 11\n${c.textoHorizontal ? '1.0' : c.alineada ? n(ux) : v ? '0.0' : '1.0'}\n 21\n${c.textoHorizontal ? '0.0' : c.alineada ? n(uy) : v ? (c.textoGirado ? '-1.0' : '1.0') : '0.0'}\n 31\n0.0\n 73\n     1\n 44\n1.0\n`);
   const bloque = `  0\nBLOCK\n  5\n${nuevo()}\n330\n${registro}\n100\nAcDbEntity\n  8\n0\n100\nAcDbBlockBegin\n  2\n${nombre}\n 70\n     1\n 10\n0.0\n 20\n0.0\n 30\n0.0\n  3\n${nombre}\n  1\n\n`
     + cuerpo + `  0\nENDBLK\n  5\n${nuevo()}\n330\n${registro}\n100\nAcDbEntity\n  8\n0\n100\nAcDbBlockEnd\n`;
   const [dx, dy] = xy(s2, c.d);
   const override = c.rotulo == null && texto === comaCota(mide) ? '' : `  1\n${texto}\n`;
-  const entidad = ent('DIMENSION', c.capa, 'AcDbDimension', `280\n     0\n  2\n${nombre}\n 10\n${n(dx)}\n 20\n${n(dy)}\n 30\n0.0\n 11\n${n(tx)}\n 21\n${n(ty)}\n 31\n0.0\n 70\n    ${(c.alineada ? 33 : 32) + (c.posicionTexto ? 128 : 0)}\n 71\n     5\n 42\n${n(mide)}\n${override}${c.textoGirado ? ' 53\n180.0\n' : ''}  3\n${c.estilo ?? 'XERAL'}\n100\nAcDbAlignedDimension\n 13\n${n(c.x1)}\n 23\n${n(c.y1)}\n 33\n0.0\n 14\n${n(c.x2)}\n 24\n${n(c.y2)}\n 34\n0.0\n${c.alineada ? '' : `${v ? ' 50\n90.0\n' : ''}100\nAcDbRotatedDimension\n`}`);
+  const entidad = ent('DIMENSION', c.capa, 'AcDbDimension', `280\n     0\n  2\n${nombre}\n 10\n${n(dx)}\n 20\n${n(dy)}\n 30\n0.0\n 11\n${n(tx)}\n 21\n${n(ty)}\n 31\n0.0\n 70\n    ${(c.alineada ? 33 : 32) + (c.posicionTexto ? 128 : 0)}\n 71\n     5\n 42\n${n(mide)}\n${override}${c.textoHorizontal ? ' 53\n270.0\n' : c.textoGirado ? ' 53\n180.0\n' : ''}  3\n${c.estilo ?? 'XERAL'}\n100\nAcDbAlignedDimension\n 13\n${n(c.x1)}\n 23\n${n(c.y1)}\n 33\n0.0\n 14\n${n(c.x2)}\n 24\n${n(c.y2)}\n 34\n0.0\n${c.alineada ? '' : `${v ? ' 50\n90.0\n' : ''}100\nAcDbRotatedDimension\n`}`);
   const registroTabla = `  0\nBLOCK_RECORD\n  5\n${registro}\n330\n1\n100\nAcDbSymbolTableRecord\n100\nAcDbBlockTableRecord\n  2\n${nombre}\n340\n0\n 70\n     0\n280\n     1\n281\n     0\n`;
   return { entidad, bloque, registro: registroTabla };
 }

@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import type { CortePuertas, PedidoPuertas, VistaPuertas } from '../../puertas/tipos.ts';
+import { presentarImpresionAraujo } from '../../puertas/cotasImpresionAraujo.ts';
 import '../coordina/corte-lona.css';
 
 /** `ajustado`: solo lo que ocupan las piezas, sin el resto del rollo ni el título (el resumen junto al alzado). */
-export function DibujoCortePuertas({corte:c,zoom=1,ajustado=false}:{corte:CortePuertas;zoom?:number;ajustado?:boolean}) {
+export function DibujoCortePuertas({corte,zoom=1,ajustado=false}:{corte:CortePuertas;zoom?:number;ajustado?:boolean}) {
+  const c=presentarImpresionAraujo(corte);
   const alto=c.anchoRollo+430;
   const techo=Math.max(0,...c.colocadas.map(p=>p.y+10*(p.girada?p.pieza.ancho:p.pieza.alto)));
   return <svg role="img" aria-label={`Corte ${c.material}`} className="corte-dibujo puerta-corte-dibujo" style={zoom>1?{width:`${zoom*100}%`,maxHeight:'none'}:undefined} viewBox={ajustado?`-20 ${-techo-20} ${c.largo+40} ${techo+40}`:zoom>1?`0 ${-techo} ${c.largo} ${techo}`:`-100 ${-alto} ${c.largo+200} ${alto+100}`}>

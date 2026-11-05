@@ -31,6 +31,7 @@ export function calcularAraujo(p: Puerta): ResultadoPuerta {
   if (!Number.isInteger(p.cantidad) || p.cantidad < 1 || p.cantidad > 50) aviso('CANTIDAD', 'La cantidad de conjuntos debe estar entre 1 y 50.');
   if (!p.material.trim() || !p.color.trim()) aviso('MATERIAL', 'Faltan el material o el color de la lona.');
   if (![p.rollo, p.rolloCristal, p.rolloSaco].every(positivo)) aviso('ROLLO', 'Completa los anchos reales de los rollos de lona, transparente y bolsa.');
+  if(a.corteTrasImprimir&&p.rollo<=2)aviso('ROLLO','El rollo de impresión debe dejar espacio para el empate de 2 cm.');
   if (!perfil || !a.tramos.length) { aviso('TRAMOS', 'Añade los tramos o bolsas y elige un perfil de canutillo comprobado.'); return r; }
   if(perfil.aviso)aviso('PERFIL_COMB',perfil.aviso,'aviso');
   if (a.forma === 'continua' && a.tramos.filter(t => t.tipo === 'tramo').length !== 1) aviso('CONTINUA', 'La lona continua lleva un único cuerpo con su alto total, más las bolsas separadas.');
@@ -53,12 +54,13 @@ export function calcularAraujo(p: Puerta): ResultadoPuerta {
     const x = pieza(nombre, bolsa ? 'saco' : 'pano', t.frente, medidas.alto, t.cantidad, bolsa);
     if(t.of?.trim())x.of=t.of.trim();
     if(t.material?.trim())x.material=t.material.trim();
-    if(a.corteTrasImprimir&&!bolsa){
-      x.sinGiro=true;x.material+=' · Impresa';
-      if(x.alto>x.rollo)aviso('IMPRESA_EMPATE',nombre+': el alto no cabe atravesado en el rollo después de imprimir. Oficina Técnica debe comprobar el reparto y el empate de esta presentación.');
+    if(a.corteTrasImprimir){
+      x.sinGiro=true;
+      if(bolsa)x.bolsaImpresaAraujo=true;
+      if(!bolsa)x.material+=' · Impresa';
     }
     if(medidas.arriba.marca+medidas.abajo.marca>=x.alto)aviso('EXTREMO',nombre+': las marcas de los extremos se cruzan; revisa alto y ancho de E.T.');
-    if (Math.min(x.ancho, x.alto) > x.rollo) aviso('NO_CABE', `${nombre}: no cabe en el rollo; hace falta estudiar su reparto antes de cortar.`);
+    if (Math.min(x.ancho, x.alto) > x.rollo && !(a.corteTrasImprimir&&!bolsa)) aviso('NO_CABE', `${nombre}: no cabe en el rollo; hace falta estudiar su reparto antes de cortar.`);
     const margen = p.margenMarcas;
     if (!Number.isFinite(margen) || margen < 0 || margen * 2 >= t.frente) aviso('MARGEN', `${nombre}: revisa el margen de las marcas.`);
     x.marcas = [[margen, medidas.abajo.marca, n(t.frente - margen), medidas.abajo.marca], [margen, n(x.alto - medidas.arriba.marca), n(t.frente - margen), n(x.alto - medidas.arriba.marca)]];
@@ -108,6 +110,31 @@ export function calcularAraujo(p: Puerta): ResultadoPuerta {
       if (y < m.abajo.marca || y + e.alto > m.alto-m.arriba.marca) aviso('ENTRADA', `Entrada ${i+1}: invade un canutillo de los extremos.`);
       cuerpoCorte?.marcas.push([p.margenMarcas,y,cuerpo.frente-p.margenMarcas,y]);
     }
+  }
+  if(a.corteTrasImprimir&&positivo(p.rollo)&&p.rollo>2){
+    const repartidas=piezas.flatMap(x=>{
+      if(x.clase!=='pano')return [x];
+      const tramo=Number(/(\d+)$/.exec(x.nombre)?.[1]??1)-1,t=a.tramos[tramo],m=medidasTramoAraujo(t,perfil);
+      const entradas=[...(t.entradas??[]).map(e=>({altura:e.altura,ancho:e.ancho})),
+        ...a.forma==='continua'?p.entradas.map(e=>({altura:e.altura,ancho:e.alto})):[]]
+        .map(e=>({...e,y:n(m.abajo.referencia+e.altura)}));
+      const bandas:Array<{desde:number;hasta:number;empate:number}>=[];
+      let hasta=0;
+      while(hasta<x.alto-1e-6){
+        const empate=bandas.length?2:0,desde=hasta-empate;
+        hasta=n(Math.min(x.alto,desde+x.rollo));
+        bandas.push({desde,hasta,empate});
+      }
+      return bandas.map((b,i):PiezaPuerta=>{
+        const alto=n(b.hasta-b.desde),marcas=x.marcas.filter(m=>m[1]>=b.desde&&m[1]<=b.hasta).map(([a,y,c,z]):[number,number,number,number]=>[a,n(y-b.desde),c,n(z-b.desde)]);
+        if(b.empate)marcas.push([p.margenMarcas,b.empate,x.ancho-p.margenMarcas,b.empate]);
+        return {...x,id:bandas.length>1?x.id+'-pano-'+(i+1):x.id,nombre:bandas.length>1?x.nombre+' · Paño '+(i+1)+'/'+bandas.length:x.nombre,
+          alto,contorno:[[0,0],[x.ancho,0],[x.ancho,alto],[0,alto]],marcas,
+          huecos:x.huecos.filter(q=>q.y<b.hasta&&q.y+q.alto>b.desde).map(q=>({...q,y:n(q.y-b.desde)})),
+          impresionAraujo:{tramo,parte:i+1,partes:bandas.length,desdeBajo:b.desde,empate:b.empate,entradas:entradas.filter(e=>e.y>=b.desde&&e.y<=b.hasta).map(e=>({...e,y:n(e.y-b.desde)}))}};
+      });
+    });
+    piezas.splice(0,piezas.length,...repartidas);
   }
   return r;
 }

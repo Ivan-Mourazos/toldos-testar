@@ -44,7 +44,7 @@ export function ConfigurarAraujo({p,cambiar,corte,derecha,letra}:{p:Puerta;cambi
             {!ficha.rollosConfirmados&&<p className="puerta-ayuda">Comprueba los anchos reales en «Materiales y rollos» antes de generar el corte.</p>}
           </fieldset>
           <label className="puerta-casilla"><input type="checkbox" checked={Boolean(a.corteTrasImprimir)} onChange={e=>cambiar({...p,confirmada:false,ventanasConfirmadas:false,araujo:{...a,corteTrasImprimir:e.target.checked}})}/>Cortar el cuerpo después de imprimir</label>
-          {a.corteTrasImprimir&&<p className="puerta-ayuda">El alto del cuerpo cruza el rollo y se conserva la orientación de la impresión. Si no cabe entero, hay que comprobar el reparto y el empate con Oficina Técnica.</p>}
+          {a.corteTrasImprimir&&<p className="puerta-ayuda">El alto del cuerpo cruza el rollo y se conserva la orientación de la impresión. Si supera el rollo, se reparte en paños y el superior lleva 2 cm más para soldar. El plano acota las entradas también en el corte.</p>}
           <details><summary>Materiales y rollos</summary><div className="puerta-campos">
             <Texto titulo="Material de lona" valor={p.material} cambiar={v=>set('material',v)}/><Numero titulo="Rollo de lona (cm)" valor={p.rollo} cambiar={v=>set('rollo',v)}/>
             <Texto titulo="Material transparente" valor={p.materialCristal} cambiar={v=>set('materialCristal',v)}/><Numero titulo="Rollo transparente (cm)" valor={p.rolloCristal} cambiar={v=>set('rolloCristal',v)}/>

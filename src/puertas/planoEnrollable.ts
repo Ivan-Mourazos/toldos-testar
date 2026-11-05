@@ -23,7 +23,7 @@ export interface LienzoEnrollable {
   textos: Texto[];
   /** `alineada`: paralela a sus dos puntos, con la línea a `desvio` (a la izquierda de 1 → 2), como el saco inclinado. */
   cotas: Array<{ capa: string; estilo: string; x1: number; y1: number; x2: number; y2: number; giro: number; d: number; valor: number; rotulo?: string;
-    alineada?: boolean; desvio?: number; posicionTexto?: Punto }>;
+    alineada?: boolean; desvio?: number; posicionTexto?: Punto; textoHorizontal?: boolean }>;
   inserciones: Array<{ capa: string; nombre: string; x: number; y: number; giro?: number; sx?: number }>;
   sombreados: Array<{ capa: string; puntos: Punto[]; solido: boolean; patron?: 'ANSI31' | 'ANGLE'; color?: number }>;
   arcos: Array<{ capa: string; x: number; y: number; r: number; desde: number; hasta: number }>;

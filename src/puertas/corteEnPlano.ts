@@ -19,7 +19,7 @@ export function corteEnPlano(c: CortePuertas, yc: number): EntidadesPuertas {
 }
 
 /** Un segmento recortado a la caja (Liang–Barsky); nada si queda fuera o se reduce a un punto. */
-function recortar([x1, y1, x2, y2]: number[], caja: { x0: number; y0: number; x1: number; y1: number }, tol = 0.01) {
+export function recortar([x1, y1, x2, y2]: number[], caja: { x0: number; y0: number; x1: number; y1: number }, tol = 0.01) {
   const [dx, dy] = [x2 - x1, y2 - y1];
   let [t0, t1] = [0, 1];
   for (const [p, q] of [[-dx, x1 - caja.x0 + tol], [dx, caja.x1 + tol - x1], [-dy, y1 - caja.y0 + tol], [dy, caja.y1 + tol - y1]]) {

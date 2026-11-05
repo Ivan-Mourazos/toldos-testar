@@ -10,15 +10,16 @@ import { tramosCota } from '../../puertas/tramosCota.ts';
 
 const puntos = (ps: [number, number][]) => ps.map(([x, y]) => `${x},${y}`).join(' ');
 
-function Texto({ t }: { t: TextoAlzado }) {
+function Texto({ t, araujo }: { t: TextoAlzado; araujo:boolean }) {
   const texto = (
     <text
       x={t.x}
       y={t.y - (t.alineacionVertical === 'middle' && t.taller ? (t.lineas.length - 1) * (t.tamano ?? 10) * .6 : 0)}
+      dy={araujo?(t.tamano??5)*.36:undefined}
       textAnchor={t.ancla === 'start' ? undefined : t.ancla}
       className={t.clase}
       dominantBaseline={t.alineacionVertical}
-      style={t.tamano ? { fontSize: `${t.tamano}px` } : undefined}
+      style={t.tamano ? { fontSize: `${t.tamano/(araujo ? .716 : 1)}px` } : undefined}
       transform={t.giro ? `rotate(${t.giro} ${t.x} ${t.y})` : undefined}
     >
       {t.taller
@@ -40,23 +41,27 @@ function Texto({ t }: { t: TextoAlzado }) {
   );
 }
 
-function Cota({ c }: { c: CotaAlzado }) {
+function Cota({ c, araujo }: { c: CotaAlzado; araujo:boolean }) {
   const v = esVertical(c);
   const [a, b] = v ? [c.y1, c.y2] : [c.x1, c.x2];
   const linea = (s1: number, t1: number, s2: number, t2: number) =>
     v ? <line className="puerta-cota" x1={t1} x2={t2} y1={s1} y2={s2} /> : <line className="puerta-cota" x1={s1} x2={s2} y1={t1} y2={t2} />;
   const t = c.texto;
+  const h=c.estilo==='XERAL 5'?5:10;
   return (
     <g>
       {tramosCota(c).map(([u, w], i) => <React.Fragment key={i}>{linea(u, c.linea, w, c.linea)}</React.Fragment>)}
       {c.marcas > 0 && linea(a, c.linea - c.marcas, a, c.linea + c.marcas)}
       {c.marcas > 0 && linea(b, c.linea - c.marcas, b, c.linea + c.marcas)}
+      {araujo&&[[a,v?c.x1:c.y1],[b,v?c.x2:c.y2]].map(([s,p],i)=>Math.abs(c.linea-p)>5
+        ?<React.Fragment key={i}>{linea(s,p+Math.sign(c.linea-p)*5,s,c.linea+Math.sign(c.linea-p)*1.75)}</React.Fragment>:null)}
       <text
         x={t.x}
         y={t.y}
+        dy={araujo?h*.36:undefined}
+        style={araujo?{fontSize:`${h/.716}px`}:c.tamanoTexto?{fontSize:`${c.tamanoTexto}px`}:undefined}
         textAnchor={t.ancla === 'start' ? undefined : t.ancla}
         className={t.clase}
-        style={c.tamanoTexto ? { fontSize: `${c.tamanoTexto}px` } : undefined}
         dominantBaseline={c.tamanoTexto ? 'middle' : undefined}
         transform={t.giro ? `rotate(${t.giro} ${t.x} ${t.y})` : undefined}
       >
@@ -66,7 +71,7 @@ function Cota({ c }: { c: CotaAlzado }) {
   );
 }
 
-function Forma({ f }: { f: FormaAlzado }) {
+function Forma({ f, araujo }: { f: FormaAlzado; araujo:boolean }) {
   switch (f.tipo) {
     case 'rect':
       return <rect className={f.clase} x={f.x} y={f.y} width={f.ancho} height={f.alto} rx={f.radio} />;
@@ -77,9 +82,9 @@ function Forma({ f }: { f: FormaAlzado }) {
     case 'polilinea':
       return <polyline className={f.clase} points={puntos(f.puntos)} />;
     case 'texto':
-      return <Texto t={f} />;
+      return <Texto t={f} araujo={araujo} />;
     case 'cota':
-      return <Cota c={f} />;
+      return <Cota c={f} araujo={araujo} />;
   }
 }
 
@@ -107,7 +112,7 @@ export function AlzadoPuerta({ puerta: p, resultado, letra = 'A' }: { puerta: Pu
         viewBox={`${vista.xMin} ${vista.yMin} ${vista.ancho} ${vista.alto}`}
       >
         {formas.map((f, i) => (
-          <Forma key={i} f={f} />
+          <Forma key={i} f={f} araujo={Boolean(p.araujo)} />
         ))}
       </svg>
       <small>{p.modelo==='SYSTEMDOCK'?'Compara las medidas y el texto con el pedido del cliente.':'Compara tubos, huecos, ventanal y textos de taller con el dibujo del cliente.'}</small>
