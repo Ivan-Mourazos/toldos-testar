@@ -75,5 +75,10 @@ export function crearCorteRemolques({ ajustes, oda }) {
     return [{ filename: `${resultado.archivo.nombre}.dxf`, contents: Buffer.from(resultado.archivo.dxf, 'latin1') }];
   }
 
-  return { preparar, prepararDxf, escribir, vista, leer };
+  async function leerContenido({ filename, contenido }) {
+    if (!filename.toLowerCase().endsWith('.dwg')) return Buffer.from(contenido).toString('utf8');
+    return Buffer.from(await oda.convertir(contenido, { desde: 'dwg', hasta: 'dxf' })).toString('utf8');
+  }
+
+  return { preparar, prepararDxf, escribir, vista, leer, leerContenido };
 }

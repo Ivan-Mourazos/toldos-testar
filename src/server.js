@@ -1361,6 +1361,7 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
 
     const order = normalizeOrder(review.order);
     assertDeploymentModelsEnabled(order, deploymentFeatures);
+    if (review.corteSimulado) throw httpError(409, 'El corte se calculó en simulación: regenera el corte para escribir el plano antes de generar archivos.');
     if (!review.corteConfirmado) exigirCorteAlDia(order, review.corteLona);
 
     // Solo se genera lo que CoordinaOT ha aprobado, OF por OF, preguntando en el momento.

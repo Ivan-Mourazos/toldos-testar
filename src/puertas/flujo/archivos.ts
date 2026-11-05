@@ -54,6 +54,11 @@ export function crearPlanoPuertas({ ajustes, oda, ofStockSacos }: {
     },
 
     // Flujo del DWG: el plano tal como está en su carpeta (quizá cambiado en ZWCAD), en DXF para leer su corte.
+    async leerContenido({ filename, contenido }) {
+      if (!filename.toLowerCase().endsWith('.dwg')) return Buffer.from(contenido).toString('utf8');
+      return Buffer.from(await oda.convertir(contenido, { desde: 'dwg', hasta: 'dxf' })).toString('utf8');
+    },
+
     async leer(ruta) {
       const contenido = await fs.readFile(ruta);
       if (!ruta.toLowerCase().endsWith(".dwg")) return contenido.toString("utf8");

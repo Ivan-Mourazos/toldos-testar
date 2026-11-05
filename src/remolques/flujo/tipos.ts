@@ -99,6 +99,9 @@ export interface PedidoRemolques {
   updatedAt: string;
   /** El autor: quien lo guardó la primera vez. */
   createdBy: string;
+  updatedBy?: string;
+  corteNoRegenerado?: boolean;
+  corteSimulado?: boolean;
   reviewedAt: string | null;
   /** Quien aprobó en CoordinaOT (se apunta al generar). */
   reviewedBy: string;

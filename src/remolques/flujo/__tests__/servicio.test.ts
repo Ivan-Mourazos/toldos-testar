@@ -156,7 +156,7 @@ describe("guardar para revisión", () => {
     expect(r.status).toBe(200);
     expect(r.cuerpo).toMatchObject({
       ok: true, overwritten: false,
-      review: { orderCode: "AR2604286", kind: "remolques", status: "PENDING_REVIEW", summary: { technician: "IVÁN", reviewer: "", ofs: ["0231780", "0231781"] } },
+      review: { orderCode: "AR2604286", kind: "remolques", status: "PENDING_REVIEW", summary: { technician: "IVÁN", reviewer: "JAIME", ofs: ["0231780", "0231781"] } },
     });
     expect((await servicio.listar(2026)).reviews.map((p) => p.orderCode)).toEqual(["AR2604286"]);
     expect((await servicio.listar(2025)).reviews).toEqual([]);
@@ -164,12 +164,11 @@ describe("guardar para revisión", () => {
     expect(pedido.elementos.map((e) => e.input.cabecera.realizadoPor)).toEqual(["IVÁN", "IVÁN"]);
   });
 
-  it("si ya está, pide confirmar; quien lo vuelve a guardar queda de revisor y el autor no cambia", async () => {
+  // Fase 2: guardar no es revisar ni requiere confirmar la sustitución del pedido.
+  it("actualiza sin confirmar; el revisor sale de CoordinaOT y el autor no cambia", async () => {
     const { servicio } = montar();
     await guardar(servicio);
-    expect(await guardar(servicio, { savedBy: "JAIME" })).toEqual({
-      status: 409, cuerpo: { needsConfirmation: true, existing: ["AR2604286"], error: "Este pedido ya está guardado en Pedidos." },
-    });
+    expect((await guardar(servicio, { savedBy: "JAIME" })).status).toBe(200);
     const r = await guardar(servicio, { savedBy: "JAIME", confirmOverwrite: true });
     expect(r.cuerpo).toMatchObject({ overwritten: true, review: { summary: { technician: "IVÁN", reviewer: "JAIME" } } });
   });
@@ -313,7 +312,7 @@ describe("generar archivos", () => {
         { type: "pdf", filename: "AR2604286.pdf", savedPath: pdfOficina },
       ],
     });
-    expect(llamadas.coordina).toEqual([{ ofs: ["0231780", "0231781"], fresh: true }]);
+    expect(llamadas.coordina).toEqual([{ ofs: ["0231780", "0231781"], fresh: undefined }, { ofs: ["0231780", "0231781"], fresh: true }]);
     expect(llamadas.pdf[0].revisadoPor).toBe("JAIME");
     expect(llamadas.pdf[0].elementos.map((e) => e.version)).toEqual(["10", "11"]);
     const plan = readFileSync(pdfPlan);

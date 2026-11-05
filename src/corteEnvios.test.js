@@ -81,17 +81,18 @@ describe('Envío común del corte, independiente de generar archivos', () => {
     expect(preparar).not.toHaveBeenCalled();
     expect(await fs.readdir(raiz)).toEqual([]);
   });
-  it('sin OF, con corte viejo, sin autor válido o en simulación no escribe ni registra', async () => {
+  it('sin OF, con corte viejo, sin «Soy» o en simulación no escribe ni registra', async () => {
     await expect(enviarCorte({ ...entrada, elementos: [{ letter: 'A', of: '' }] })).rejects.toThrow(/OF/);
     await expect(enviarCorte({ ...entrada, comprobarCorte: () => { throw new Error('El corte está viejo'); } })).rejects.toThrow(/viejo/);
     await expect(enviarCorte({ ...entrada, usuario: '' })).rejects.toThrow(/Soy/);
-    await expect(enviarCorte({ ...entrada, usuario: 'JAIME' })).rejects.toThrow(/autor/);
-    // Si Jaime lo ha cogido en CoordinaOT es él quien manda el corte, y no el autor original (Iván, 23/10/2026).
-    const cogido = { statusOf: vi.fn(async () => ({ disponible: true, ofs: { '0232568': { estado: 'aprobada', autor: 'jaime' } } })) };
-    await expect(enviarCorte({ ...entrada, coordina: cogido })).rejects.toThrow('autor (JAIME)');
     await expect(enviarCorte({ ...entrada, settings: { productionEnabled: false } })).rejects.toThrow(/simulación/);
     expect(guardar).not.toHaveBeenCalled();
     expect(await fs.readdir(raiz)).toEqual([]);
+  });
+  it.each(['aprobada', 'pasada'])('un compañero envía con la OF %s; el autor de CoordinaOT no limita las acciones', async estado => {
+    const coordina = { statusOf: vi.fn(async () => ({ disponible: true, ofs: { '0232568': { estado, autor: 'ana' } } })) };
+    expect((await enviarCorte({ ...entrada, usuario: 'JAIME', coordina })).status).toBe(200);
+    expect(guardar).toHaveBeenCalledWith(expect.objectContaining({ enviosCorte: [expect.objectContaining({ usuario: 'JAIME' })] }));
   });
   it('avisa si el DXF salió pero falló el registro, para evitar repetirlo por error', async () => {
     guardar.mockRejectedValue(new Error('sin permiso'));

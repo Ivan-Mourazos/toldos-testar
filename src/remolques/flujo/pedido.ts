@@ -117,7 +117,7 @@ export function crearPedidoRemolques({ datos, autoria, existente, ahora, cliente
   const numeroPedido = datos.elementos[0].input.cabecera.numeroPedido.trim();
   const elementos = datos.elementos.map((e) => conCabecera(
     { version: e.version, tipo: e.tipo, input: e.input, result: e.result, paramsSnapshot: datos.params },
-    { realizadoPor: autoria.technician },
+    { realizadoPor: autoria.technician, revision: autoria.reviewer },
   ));
   return {
     schemaVersion: ESQUEMA_PEDIDO_REMOLQUES,

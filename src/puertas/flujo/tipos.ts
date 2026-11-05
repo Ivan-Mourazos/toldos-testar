@@ -31,6 +31,9 @@ export interface ProduccionPuertas {
 }
 
 export interface PedidoPuertasGuardado extends Omit<PedidoPuertas, "summary"> {
+  updatedBy?: string;
+  corteNoRegenerado?: boolean;
+  corteSimulado?: boolean;
   /** El número tal como se escribió (AR.26.05134). */
   numeroPedido: string;
   cabecera: CabeceraPuertas;

@@ -32,7 +32,7 @@ beforeEach(async () => {
   const ajustes = async () => ({ productionEnabled: true, corteLonaBotDirectory: path.join(raiz, 'bot/{TECNICO}'),
     corteLonaPlanoDirectory: path.join(raiz, 'planos'), corteLonaDxfDirectory: path.join(raiz, '{YYYY}/DXFs'),
     remolquesPlanteamientosDirectory: path.join(raiz, 'pdf'), remolquesOficinaTecnicaDirectory: path.join(raiz, '{YYYY}/oficina'),
-    corteBorradoresDirectory: borradores ? path.join(raiz, 'borradores') : '', corteBorradoresRed: borradores ? String.raw`\\toldosgomez.local\DFS_POL\oftecnica\BORRADORES CORTE` : '' });
+    corteBorradoresDirectory: borradores ? path.join(raiz, 'borradores') : '', corteBorradoresRed: borradores ? String.raw`\\toldosgomez.local\DFS_POL\oftecnica\borradores` : '' });
   servicio = crearServicioPedidosRemolques({ almacen, ajustes, parametros: async () => fixture.params,
     coordina: { statusOf: async (ofs) => ({ disponible: true, ofs: Object.fromEntries(ofs.map((of) => [of, { estado: 'aprobada', revisor: 'DAVID', actualizado: aprobadoEn }])) }) },
     tecnicos: ['IVÁN', 'DAVID'], hacerPdf: async () => { const pdf = await pdfLib.PDFDocument.create(); pdf.addPage(); return pdf.save(); },
@@ -58,7 +58,7 @@ async function dibujar(fichero: string, fuera = false) {
 }
 
 describe('borrador del corte', () => {
-  const red = String.raw`\\toldosgomez.local\DFS_POL\oftecnica\BORRADORES CORTE\AR2605132.dxf`;
+  const red = String.raw`\\toldosgomez.local\DFS_POL\oftecnica\borradores\AR2605132.dxf`;
   it('escribe el plano de la pantalla en la carpeta de borradores y da el enlace tgm-pedidos', async () => {
     const { status, cuerpo } = await abrir();
     expect(status).toBe(200);
@@ -87,13 +87,13 @@ describe('borrador del corte', () => {
 });
 
 describe('corte confirmado desde el borrador', () => {
-  it('sin confirmar no se guarda para revisión; confirmado, el borrador pasa a la carpeta del año', async () => {
-    await expect(guardar()).rejects.toMatchObject({ statusCode: 409, message: expect.stringContaining('Confirmar corte') });
+  // Fase 2 editable: se acepta la huella al guardar, sin el paso «Confirmar corte».
+  it('sin confirmar pregunta por la huella; aceptado, el borrador pasa a la carpeta del año', async () => {
     await abrir();
-    const confirmado = await confirmar();
-    expect(confirmado).toMatchObject({ status: 200, cuerpo: { confirmado: { por: 'IVÁN', filename: 'AR2605132.dxf' } } });
+    const pregunta = (await guardar()).cuerpo as { huella: string };
+    expect(pregunta).toMatchObject({ cambioCorte: true });
     const contenido = await fs.readFile(borrador(), 'latin1');
-    const { status, cuerpo } = await guardar();
+    const { status, cuerpo } = await guardar({ aceptarHuellaCorte: pregunta.huella });
     expect(status).toBe(200);
     expect(cuerpo).toMatchObject({ planoCorte: { files: [{ type: 'plano-corte-lona', filename: 'AR2605132.dxf', savedPath: enAnio() }], avisos: [] } });
     expect(await fs.readFile(enAnio(), 'latin1')).toBe(contenido);
@@ -101,30 +101,26 @@ describe('corte confirmado desde el borrador', () => {
     expect((await servicio.obtener('AR2605132')).corteConfirmado).toMatchObject({ por: 'IVÁN', plano: enAnio() });
   });
 
-  it('corregir sin cambios sigue desde el DWG revisado; con otras medidas no deja guardarlo con el DWG viejo', async () => {
+  it('corregir sin cambios sigue desde el DWG; con otras medidas pregunta si regenerarlo', async () => {
     await abrir();
     await confirmar();
     await guardar();
     const guardado = await servicio.obtener('AR2605132');
     const comoEstaba = { elementos: guardado.elementos, params: guardado.params };
     expect((await abrir(comoEstaba)).cuerpo).toMatchObject({ existente: true });
-    await confirmar();
     expect((await guardar({ ...comoEstaba, confirmOverwrite: true })).status).toBe(200);
     const cambiado = structuredClone(guardado.elementos);
     (cambiado[0].input as { largo: number }).largo += 10;
     expect((await abrir({ elementos: cambiado })).cuerpo).toMatchObject({ existente: true });
-    await confirmar();
-    await expect(guardar({ elementos: cambiado, confirmOverwrite: true })).rejects.toMatchObject({ statusCode: 409, message: expect.stringContaining('Generar de nuevo') });
-    expect((await abrir({ elementos: cambiado, regenerar: true })).cuerpo).toMatchObject({ existente: false });
-    await confirmar();
-    expect((await guardar({ elementos: cambiado, confirmOverwrite: true })).status).toBe(200);
+    expect((await guardar({ elementos: cambiado })).cuerpo).toMatchObject({ needsRegenerateConfirmation: true });
+    expect((await guardar({ elementos: cambiado, decisionCorte: 'regenerar' })).status).toBe(200);
   });
 
   it('si el borrador cambia después de confirmarlo, o tiene líneas fuera de los recuadros, no se guarda', async () => {
     await abrir();
     await confirmar();
     await dibujar(borrador());
-    await expect(guardar()).rejects.toMatchObject({ statusCode: 409, message: expect.stringContaining('ha cambiado') });
+    expect((await guardar()).cuerpo).toMatchObject({ cambioCorte: true });
     await dibujar(borrador(), true);
     expect(await confirmar()).toMatchObject({ status: 409, cuerpo: { fuera: 1 } });
   });
@@ -134,9 +130,9 @@ describe('corte confirmado desde el borrador', () => {
     await fs.writeFile(enAnio(), 'HECHO A MANO');
     await abrir();
     await confirmar();
-    expect((await guardar()).cuerpo).toMatchObject({ needsConfirmation: true, motivo: 'plano', existing: ['AR2605132.dxf'] });
+    expect((await guardar()).cuerpo).toMatchObject({ needsPlanoConfirmation: true, existing: ['AR2605132.dxf'] });
     expect(await fs.readFile(enAnio(), 'utf8')).toBe('HECHO A MANO');
-    expect((await guardar({ confirmOverwrite: true })).status).toBe(200);
+    expect((await guardar({ confirmPlanoOverwrite: true })).status).toBe(200);
   });
 
   it('«Guardar plano para revisar» no pisa el DWG revisado, y al corregir «Abrir corte» sigue desde él', async () => {
@@ -146,8 +142,8 @@ describe('corte confirmado desde el borrador', () => {
     await fs.writeFile(enAnio(), 'CAMBIADO POR EL REVISOR');
     await expect(servicio.planoCorte('AR2605132', { confirmOverwrite: true })).rejects.toMatchObject({ statusCode: 409 });
     expect(await fs.readFile(enAnio(), 'utf8')).toBe('CAMBIADO POR EL REVISOR');
-    expect((await abrir()).cuerpo).toMatchObject({ existente: true, avisos: expect.arrayContaining([expect.stringContaining('revisión')]) });
-    expect(await fs.readFile(borrador(), 'utf8')).toBe('CAMBIADO POR EL REVISOR');
+    expect((await abrir()).cuerpo).toMatchObject({ existente: true });
+    await expect(fs.stat(borrador())).rejects.toMatchObject({ code: 'ENOENT' });
   });
 
   it('el DXF del bot sale del DWG revisado; si cambió después de revisarlo se pregunta y queda la nota', async () => {

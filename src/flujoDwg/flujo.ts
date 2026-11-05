@@ -426,14 +426,27 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
       ...(!mantener ? { huella: dwg.huella, por: cambiados || pendienteAceptacion ? usuario || technician : temporal.por, fecha: cambiados || pendienteAceptacion ? ahora() : temporal.fecha } : {}),
       plano: destinos[0].destino, planos: destinos.map(p => ({ filename: p.filename, plano: p.destino })),
       datos: mantener ? revisado?.datos : datos };
-    return { corteConfirmado,
+    const anteriores = new Map<string, Buffer | null>();
+    async function deshacer() {
+      for (const [ruta, contenido] of anteriores) {
+        if (contenido === null) await rm(ruta, { force: true });
+        else await deps.escribir({ filename: path.basename(ruta), savedPath: ruta, contenido });
+      }
+      anteriores.clear();
+    }
+    return { corteConfirmado, deshacer,
       async escribir() {
         if (!ajustes.productionEnabled) return;
-        for (const p of destinos) if (p.plano !== p.destino) {
-          await deps.escribir({ filename: p.filename, savedPath: p.destino, contenido: await readFile(p.plano) });
-        }
+        try {
+          for (const p of destinos) if (p.plano !== p.destino) {
+            try { anteriores.set(p.destino, await readFile(p.destino)); }
+            catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; anteriores.set(p.destino, null); }
+            await deps.escribir({ filename: p.filename, savedPath: p.destino, contenido: await readFile(p.plano) });
+          }
+        } catch (error) { await deshacer(); throw error; }
       },
       async limpiar() {
+        anteriores.clear();
         if (!ajustes.productionEnabled) return [] as string[];
         try {
           for (const b of borradores) await rm(b.ruta, { force: true });
