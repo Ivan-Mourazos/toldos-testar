@@ -14,6 +14,8 @@ export type NotifyOptions = {
 };
 
 export type ConfirmOptions = {
+  /** Deja espacio a decisiones con etiquetas largas, sin recortarlas. */
+  amplio?: boolean;
   title: string;
   message: string;
   confirmLabel?: string;
@@ -318,7 +320,7 @@ function ConfirmationDialog({ dialog, onResolve }: { dialog: ActiveDialog; onRes
     <div className="confirmation-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onResolve('dismiss'); }}>
       <section
         ref={dialogRef}
-        className={`confirmation-dialog confirmation-${tone}${dialog.alternativeLabel ? ' is-tres-salidas' : ''}`}
+        className={`confirmation-dialog confirmation-${tone}${dialog.alternativeLabel ? ' is-tres-salidas' : ''}${dialog.amplio ? ' is-amplio' : ''}`}
       >
         <button type="button" className="confirmation-close boton-3d" onClick={() => onResolve('dismiss')} aria-label="Cerrar diálogo"><X aria-hidden="true" /></button>
         <div className="confirmation-heading">

@@ -733,6 +733,8 @@ export type CoordinaStatus = {
 };
 
 export type ReviewSummary = {
+  corteNoRegenerado?: boolean;
+  updatedBy?: string;
   enviosCorte?: import('../corteEnviosTipos').EnvioCorte[];
   corteLona?: import('./corteLona').EstadoCorte | null;
   corteLonaEstado?: 'hecho' | 'falta' | 'viejo';

@@ -1,0 +1,15 @@
+/* Avisos de toldos: los colores y superficies vienen de CoordinaOT. */
+.aviso-flujo-editable {
+  padding: 12px 14px;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--tramo-ajustado);
+}
+.orders-customer .corte-lista {
+  white-space: normal;
+  line-height: 1.35;
+}
+.confirmation-dialog.is-tres-salidas.is-amplio {
+  max-width: 46rem;
+}

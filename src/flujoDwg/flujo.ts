@@ -55,6 +55,8 @@ export interface AjustesFlujoDwg {
 }
 
 export interface DependenciasFlujoDwg {
+  /** Fase 1 del plan editable: solo toldos; los demás conservan su flujo. */
+  editable?: boolean;
   ajustes: () => Promise<AjustesFlujoDwg>;
   /** El plano de una carpeta en DXF (el DWG pasado por ODA). Sin él, el flujo no está en marcha. */
   leer?: (ruta: string) => Promise<string>;
@@ -190,11 +192,32 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
     datosRevisado?: string;
   }): Promise<Respuesta> {
     const ajustes = await deps.ajustes();
-    if (!ajustes.productionEnabled) throw new ErrorFlujoDwg("Modo simulación: no se ha escrito el borrador del corte.", 403);
+    if (!deps.editable && !ajustes.productionEnabled) throw new ErrorFlujoDwg("Modo simulación: no se ha escrito el borrador del corte.", 403);
     if (!ajustes.corteBorradoresDirectory || !ajustes.corteBorradoresRed) {
       throw new ErrorFlujoDwg("Falta la carpeta de borradores del corte en Configuración (la del servidor y la de red).", 409);
     }
     const carpeta = ajustes.corteBorradoresDirectory;
+    // En toldos abrir lo que ya hay no recalcula ni exige que los datos sigan iguales.
+    // El revisado se abre en su carpeta: no se crea una segunda copia que pueda quedar atrás.
+    if (deps.editable && !regenerar) {
+      const existentes = await borradoresDe(carpeta, orderCode);
+      const revisados = Array.isArray(revisado) ? revisado : revisado ? [revisado] : [];
+      if (existentes.length || revisados.length) {
+        let ficheros;
+        if (existentes.length) {
+          const red = rutaParaTgmPedidos(ajustes.corteBorradoresRed).replace(/[\\/]+$/, '');
+          ficheros = existentes.map(b => {
+            const ruta = `${red}\\${b.filename}`;
+            return { filename: b.filename, ruta, url: `tgm-pedidos://open?kind=cad&path=${encodeURIComponent(ruta)}` };
+          });
+        } else {
+          const planos = revisados.map(plano => ({ filename: path.basename(plano), plano }));
+          ficheros = (await enlacesRevisado({ huella: '', por: '', fecha: '', ...planos[0], planos })).ficheros;
+        }
+        return { status: 200, cuerpo: { ok: true, existente: true, ...ficheros[0], ficheros, avisos: [] } };
+      }
+    }
+    if (!ajustes.productionEnabled) throw new ErrorFlujoDwg("Modo simulación: no se ha escrito el borrador del corte.", 403);
     const preparado = await preparar(carpeta);
     const { avisos } = preparado;
     const ficheros = preparado.ficheros ?? (preparado.fichero ? [preparado.fichero] : []);
@@ -261,10 +284,15 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
    * `datos`: la huella de los datos que se guardan. Si no son aquellos con los que salió el borrador, no se guarda: el DWG
    * sería de otras medidas. Un borrador sin datos apuntados (anterior a este aviso) no se comprueba.
    */
-  async function alGuardar({ orderCode, technician, confirmOverwrite, datos }: { orderCode: string; technician: string; confirmOverwrite: boolean; datos?: string }):
+  async function alGuardar({ orderCode, technician, confirmOverwrite, datos, revisado, aceptarHuella, mantener = false, usuario, pendienteAceptacion = false }: {
+    orderCode: string; technician: string; confirmOverwrite: boolean; datos?: string; revisado?: CorteConfirmado;
+    aceptarHuella?: string; mantener?: boolean; usuario?: string;
+    pendienteAceptacion?: boolean;
+  }):
     Promise<null | { respuesta: Respuesta } | { corteConfirmado: CorteConfirmado; escribir: () => Promise<void>; limpiar: () => Promise<string[]> }> {
     const ajustes = await deps.ajustes();
     if (!activo(ajustes)) return null;
+    if (deps.editable) return alGuardarEditable({ orderCode, technician, datos, revisado, aceptarHuella, mantener, usuario, pendienteAceptacion });
     const borradores = await borradoresDe(ajustes.corteBorradoresDirectory!, orderCode);
     const confirmacion = await deps.confirmaciones!.leer(orderCode);
     if (!borradores.length || !confirmacion) {
@@ -315,6 +343,58 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
         }
       },
     };
+  }
+
+  /** El DWG guardado manda. Mantener permite guardar datos sin aceptar todavía el corte. */
+  async function alGuardarEditable({ orderCode, technician, datos, revisado, aceptarHuella, mantener, usuario, pendienteAceptacion }: {
+    orderCode: string; technician: string; datos?: string; revisado?: CorteConfirmado; aceptarHuella?: string; mantener: boolean; usuario?: string;
+    pendienteAceptacion: boolean;
+  }) {
+    const ajustes = await deps.ajustes();
+    const borradores = await borradoresDe(ajustes.corteBorradoresDirectory!, orderCode);
+    if (!borradores.length && !revisado) throw new ErrorFlujoDwg('Abre o genera el corte antes de guardar para revisión.', 409);
+    const aceptado = borradores.length ? await deps.confirmaciones!.leer(orderCode) : revisado;
+    const fuentes = borradores.length ? borradores.map(b => ({ filename: b.filename, plano: b.ruta })) : planosDe(revisado!);
+    const temporal: CorteConfirmado = { huella: aceptado?.huella ?? '', por: aceptado?.por ?? '', fecha: aceptado?.fecha ?? '',
+      filename: fuentes[0].filename, plano: fuentes[0].plano, planos: fuentes };
+    // También comprueba bloques y sombreados, antes de aceptar o escribir nada.
+    const dwg = await corteDelDwg(temporal);
+    const cambiados = dwg.huella !== temporal.huella;
+    if (!mantener && (cambiados || pendienteAceptacion) && aceptarHuella !== dwg.huella) return { respuesta: preguntaHuella(dwg.huella) };
+    const carpeta = ajustes.corteLonaPlanoDirectory ? carpetaCorte(ajustes.corteLonaPlanoDirectory, { orderCode, technician }) : '';
+    if (borradores.length && !carpeta) throw new ErrorFlujoDwg('Falta la carpeta de planos del corte en Configuración.', 409);
+    const destinos = fuentes.map(p => ({ ...p, destino: borradores.length ? path.join(carpeta, p.filename) : p.plano }));
+    const corteConfirmado: CorteConfirmado = { ...temporal,
+      ...(!mantener ? { huella: dwg.huella, por: cambiados || pendienteAceptacion ? usuario || technician : temporal.por, fecha: cambiados || pendienteAceptacion ? ahora() : temporal.fecha } : {}),
+      plano: destinos[0].destino, planos: destinos.map(p => ({ filename: p.filename, plano: p.destino })),
+      datos: mantener ? revisado?.datos : datos };
+    return { corteConfirmado,
+      async escribir() {
+        for (const p of destinos) if (p.plano !== p.destino) {
+          await deps.escribir({ filename: p.filename, savedPath: p.destino, contenido: await readFile(p.plano) });
+        }
+      },
+      async limpiar() {
+        try {
+          for (const b of borradores) await rm(b.ruta, { force: true });
+          await deps.confirmaciones!.borrar(orderCode);
+          await deps.confirmaciones!.borrar(claveDatos(orderCode));
+          return [] as string[];
+        } catch {
+          return ['El corte está guardado, pero no se pudo quitar su borrador.'];
+        }
+      } };
+  }
+
+  const preguntaHuella = (huella: string): Respuesta => ({ status: 409, cuerpo: { cambioCorte: true, huella,
+    error: 'El corte tiene cambios desde la última vez' } });
+
+  /** Aceptación explícita por huella: una aprobación en CoordinaOT no acepta el DWG. */
+  async function aceptarActual(confirmado: CorteConfirmado, huella: string | undefined, usuario: string, forzar = false) {
+    const dwg = await corteDelDwg(confirmado);
+    if ((forzar || dwg.huella !== confirmado.huella) && huella !== dwg.huella) return { respuesta: preguntaHuella(dwg.huella) };
+    return { corteConfirmado: { ...confirmado, huella: dwg.huella,
+      ...(huella === dwg.huella ? { por: usuario, fecha: ahora() } : {}) }, dwg };
   }
 
   /**
@@ -416,10 +496,11 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
       for (const b of borradores) if ((await stat(b.ruta)).mtimeMs > limite) cambiadoTrasConfirmar = true;
     }
     return { activo: true as const, borrador: borradores.length > 0, ficheros: borradores.map((b) => b.filename),
+      ...(deps.editable ? { datos: (await deps.confirmaciones!.leer(claveDatos(orderCode)))?.huella } : {}),
       confirmado: confirmacion ? { por: confirmacion.por, fecha: confirmacion.fecha } : null, cambiadoTrasConfirmar };
   }
 
-  return { activo, borrador, confirmar, estado, alGuardar, corteDelDwg, planosDelDwg, enlacesRevisado, antesDeMandar };
+  return { activo, borrador, confirmar, estado, alGuardar, corteDelDwg, planosDelDwg, enlacesRevisado, antesDeMandar, aceptarActual };
 }
 
 type Linea = { capa: string; x1: number; y1: number; x2: number; y2: number };

@@ -2,6 +2,7 @@ import type { CoordinaStatus, PedidoBandeja } from './types';
 import type { ResumenBorrador } from '../borradores/tipos.ts';
 import { productoDeModelos } from '../puertas/producto.ts';
 import { authorNames, coordinaGroup, isPendingGeneration, normalizeOf } from '../reviewRules.js';
+import { generarToldosPermitido } from '../toldosEditable.js';
 
 // Bandeja de Pedidos (diseño 24/09/2026, apartado 4): pendientes de generar (todo lo
 // guardado y no generado, venga del estado que venga) e historial (generados).
@@ -118,7 +119,11 @@ export function reviewAwnings(review: PedidoBandeja) {
 
 export function pendingGroups<T extends PedidoBandeja>(pending: T[], status: CoordinaStatus | null) {
   return pendingGroupOrder
-    .map((group) => ({ ...group, reviews: pending.filter((review) => coordinaGroup(reviewAwnings(review), status) === group.key) }))
+    .map((group) => ({ ...group, reviews: pending.filter((review) => {
+      const elementos = reviewAwnings(review);
+      const estado = productoDe(review) === 'toldos' && generarToldosPermitido(elementos, status) === null ? 'aprobado' : coordinaGroup(elementos, status);
+      return estado === group.key;
+    }) }))
     .filter((group) => group.reviews.length > 0);
 }
 

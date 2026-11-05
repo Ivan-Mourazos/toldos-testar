@@ -12,6 +12,7 @@ import { ReviewOrderDetail } from '../components/ReviewOrderDetail';
 import { OrdersInbox } from '../components/OrdersInbox';
 import { useCoordinaStatus } from '../hooks/useCoordinaStatus';
 import { generateState } from '../generatePermission';
+import { abrirCorteToldos, guardarToldosEditable, preguntarCambioCorte } from '../toldosEditable';
 import { leerPedidosDelAnio } from '../hooks/listaPedidos';
 import { productoDe } from '../ordersInbox';
 import { PedidoRemolquesDetalle } from '../remolques/PedidoRemolquesDetalle';
@@ -185,19 +186,12 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
 
   // El autor genera en el detalle el corte que falta o está viejo (Iván, 21/10/2026): se vuelve a guardar el
   // pedido tal cual, con el corte nuevo y su plano, sin pasar por «Corregir».
-  async function guardarCorte(review: ReviewPackage, corteLona: EstadoCorte, confirmPlanoOverwrite = false): Promise<void> {
+  async function guardarCorte(review: ReviewPackage, corteLona: EstadoCorte): Promise<void> {
     setWorking(true);
     try {
-      const response = await fetch('/api/reviews', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order: review.order, corteLona, confirmOverwrite: true, confirmPlanoOverwrite, savedBy: currentUser }) });
-      const data = await response.json();
-      if (response.status === 409 && data.needsPlanoConfirmation) {
-        const choice = await onConfirm({ title: 'El plano del corte ya existe', message: 'El plano de este pedido ya está en su carpeta. ¿Sustituirlo por el de la web?',
-          confirmLabel: 'Sustituir plano', cancelLabel: 'Conservar el actual', tone: 'warning', details: data.existing });
-        if (choice === 'confirm') await guardarCorte(review, corteLona, true);
-        return;
-      }
-      if (!response.ok) throw new Error(data.error || 'No se pudo guardar el corte.');
+      const cuerpo = { order: review.order, corteLona, confirmOverwrite: true, decisionCorte: 'regenerar', savedBy: currentUser };
+      const data = await guardarToldosEditable(cuerpo, onConfirm, () => abrirCorteToldos(review.orderCode, cuerpo));
+      if (!data) return;
       onToast(`Corte guardado en ${review.orderCode}.`, { tone: 'success' });
       onChanged();
     } catch (error) {
@@ -270,6 +264,7 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
     setGenerating(true);
     let includeNonAcrylicFabrics: boolean | null = null;
     let confirmOverwrite = false;
+    let aceptarHuellaCorte: string | undefined;
     try {
       while (true) {
         const { response, data } = await solicitarGeneracion(`/api/reviews/${encodeURIComponent(targetCode)}/generate-files`, {
@@ -277,10 +272,18 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             includeNonAcrylicFabrics,
-            confirmOverwrite
+            confirmOverwrite,
+            aceptarHuellaCorte,
+            savedBy: currentUser
           })
         }, async (response) => ({ response, data: await response.json() }),
         () => onToast('Reintentando…', { tone: 'info' }));
+
+        if (response.status === 409 && data.cambioCorte) {
+          if (!await preguntarCambioCorte(onConfirm, () => abrirCorteToldos(targetCode))) return;
+          aceptarHuellaCorte = data.huella;
+          continue;
+        }
 
         if (response.status === 409 && data.needsFabricConfirmation) {
           const fabrics = (data.fabrics || []).map((fabric: { code: string; description: string; ofs?: string[] }) =>

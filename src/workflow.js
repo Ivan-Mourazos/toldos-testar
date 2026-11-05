@@ -255,7 +255,7 @@ export function reviewFilename(orderCode) {
   return `${sanitizeOrderCode(orderCode)}${REVIEW_FILE_SUFFIX}`;
 }
 
-export function createReviewPackage({ order, calculation, existing = null, corteLona, now = new Date().toISOString() }) {
+export function createReviewPackage({ order, calculation, existing = null, corteLona, savedBy = '', now = new Date().toISOString() }) {
   const orderCode = sanitizeOrderCode(order.orderCode);
   const ofs = Array.from(new Set(calculation.ofs.map((item) => item.of).filter(Boolean)));
   const models = Array.from(new Set(order.awnings.map((item) => item.model).filter(Boolean)));
@@ -266,12 +266,15 @@ export function createReviewPackage({ order, calculation, existing = null, corte
     status: 'PENDING_REVIEW',
     createdAt: existing?.createdAt || now,
     updatedAt: now,
-    createdBy: order.technician || existing?.createdBy || '',
+    createdBy: existing?.createdBy || order.technician || '',
+    updatedBy: savedBy || order.technician || '',
     reviewedAt: null,
     reviewedBy: '',
     reviewNote: '',
     production: null,
     enviosCorte: structuredClone(existing?.enviosCorte || []),
+    ...(existing?.corteConfirmado ? { corteConfirmado: structuredClone(existing.corteConfirmado) } : {}),
+    corteNoRegenerado: existing?.corteNoRegenerado === true,
     corteLona: copiarEstadoCorteLona(corteLona === undefined ? existing?.corteLona : corteLona),
     summary: {
       customer: order.customer || '',

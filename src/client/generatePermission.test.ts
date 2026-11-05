@@ -2,16 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { canGenerateReview, generateState, puedeCorregir } from './generatePermission';
 import { COORDINA_UNAVAILABLE } from '../reviewRules.js';
 
-describe('canGenerateReview — el permiso de generar (autor sí, otros no)', () => {
+describe('canGenerateReview — fase 1 editable: generar no depende del autor', () => {
   it('el autor puede generar', () => {
     expect(canGenerateReview('PENDING_REVIEW', 'IVÁN', 'IVÁN')).toBe(true);
     expect(canGenerateReview('APPROVED', 'IVÁN', 'IVÁN')).toBe(true);
     expect(canGenerateReview('CHANGES_REQUESTED', 'IVÁN', 'IVÁN')).toBe(true);
   });
 
-  it('otro técnico no puede generar', () => {
-    expect(canGenerateReview('PENDING_REVIEW', 'IVÁN', 'ÁNGEL')).toBe(false);
-    expect(canGenerateReview('APPROVED', 'IVÁN', 'ÁNGEL')).toBe(false);
+  it('otro técnico también puede generar; la aprobación se comprueba aparte', () => {
+    expect(canGenerateReview('PENDING_REVIEW', 'IVÁN', 'ÁNGEL')).toBe(true);
+    expect(canGenerateReview('APPROVED', 'IVÁN', 'ÁNGEL')).toBe(true);
   });
 
   it('ya generado (PRODUCED), nadie puede volver a generar, ni el autor', () => {
@@ -41,8 +41,8 @@ describe('generateState', () => {
   it('el autor con todo aprobado puede', () => {
     expect(generateState(review('IVÁN', ['0230194']), 'IVÁN', aprobado)).toEqual({ allowed: true, note: '' });
   });
-  it('otro usuario no, aunque esté aprobado', () => {
-    expect(generateState(review('ÁNGEL', ['0230194']), 'IVÁN', aprobado)).toEqual({ allowed: false, note: 'Lo genera el autor (Ángel)' });
+  it('otro usuario también, si está aprobado (plan del 05/11)', () => {
+    expect(generateState(review('ÁNGEL', ['0230194']), 'IVÁN', aprobado)).toEqual({ allowed: true, note: '' });
   });
   it('sin aprobar, dice qué falta', () => {
     expect(generateState(review('IVÁN', ['0230194']), 'IVÁN', { disponible: true, ofs: { '0230194': { estado: 'en_revision' } } }))
@@ -63,7 +63,7 @@ describe('generateState', () => {
   });
 });
 
-describe('puedeCorregir — «Corregir» solo para el autor: devuelto o sin empezar a revisar (Iván, 21/10/2026)', () => {
+describe('puedeCorregir — puertas y remolques conservan el permiso anterior hasta la fase 2', () => {
   const elementos = [{ letter: 'A', of: '0230194' }, { letter: 'B', of: '0230195' }];
   const coordina = (estado: string) => ({ disponible: true, ofs: { '0230194': { estado: 'aprobada' }, '0230195': { estado } } });
   it('devuelto y autor: sí', () => {
@@ -98,18 +98,18 @@ describe('puedeCorregir — «Corregir» solo para el autor: devuelto o sin empe
   });
 });
 
-describe('«Coger» en CoordinaOT: manda el autor que lleva las OF (Iván, 23/10/2026)', () => {
+describe('«Coger»: edición anterior en otros productos y generación libre en toldos', () => {
   const elementos = [{ letter: 'A', of: '0230194' }];
   const cogido = (estado: string) => ({ disponible: true, ofs: { '0230194': { estado, autor: 'luis' } } });
-  it('quien lo coge corrige y genera; el autor original ya no', () => {
+  it('quien lo coge corrige en los otros productos; en toldos ambos generan si está aprobado', () => {
     expect(puedeCorregir('PENDING_REVIEW', elementos, 'ANA', 'LUIS', cogido('devuelta'))).toBe(true);
     expect(puedeCorregir('PENDING_REVIEW', elementos, 'ANA', 'ANA', cogido('devuelta'))).toBe(false);
     expect(generateState(review('ANA', ['0230194']), 'LUIS', cogido('aprobada'))).toEqual({ allowed: true, note: '' });
-    expect(generateState(review('ANA', ['0230194']), 'ANA', cogido('aprobada')).note).toBe('Lo genera el autor (Luis)');
+    expect(generateState(review('ANA', ['0230194']), 'ANA', cogido('aprobada')).allowed).toBe(true);
   });
   it('sin CoordinaOT manda el último técnico guardado («ANA / LUIS»)', () => {
     const sin = { disponible: false };
     expect(generateState(review('ANA / LUIS', ['0230194']), 'LUIS', sin).allowed).toBe(false); // falta la aprobación
-    expect(generateState(review('ANA / LUIS', ['0230194']), 'ANA', sin).note).toBe('Lo genera el autor (Luis)');
+    expect(generateState(review('ANA / LUIS', ['0230194']), 'ANA', sin).note).toBe(COORDINA_UNAVAILABLE);
   });
 });

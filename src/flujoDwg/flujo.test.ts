@@ -11,6 +11,7 @@ import { aprobacionDeTodas, crearFlujoDwg, huellaDatos, planosDe, type FicheroPl
 
 let raiz: string;
 let flujo: ReturnType<typeof crearFlujoDwg>;
+let editable: ReturnType<typeof crearFlujoDwg>;
 const pedido = { ...pedidoVariasTelas(), orderCode: 'AR2600096' };
 // generarCorteLona es JS: sus tipos inferidos no llevan las opciones ni los planos de cristal (`incluidoEn`).
 const resultado = (generarCorteLona as (o: unknown, opciones: unknown) => unknown)(pedido, { ofStockSacos: '0230811' }) as {
@@ -28,11 +29,57 @@ beforeEach(async () => {
     escribir: async (f) => { await fs.mkdir(path.dirname(f.savedPath), { recursive: true }); await fs.writeFile(f.savedPath, f.contenido); },
     confirmaciones: crearAlmacenConfirmaciones({ carpeta: async () => path.join(raiz, 'confirmados') }),
   });
+  editable = crearFlujoDwg({
+    editable: true,
+    ajustes: async () => ({ productionEnabled: true, corteBorradoresDirectory: path.join(raiz, 'borradores'),
+      corteBorradoresRed: String.raw`\\toldosgomez.local\DFS_POL\oftecnica\BORRADORES CORTE`, corteLonaPlanoDirectory: path.join(raiz, '{YYYY}') }),
+    leer: ruta => fs.readFile(ruta, 'utf8'),
+    escribir: async f => { await fs.mkdir(path.dirname(f.savedPath), { recursive: true }); await fs.writeFile(f.savedPath, f.contenido); },
+    confirmaciones: crearAlmacenConfirmaciones({ carpeta: async () => path.join(raiz, 'confirmados') }),
+  });
 });
 afterEach(async () => { await fs.rm(raiz, { recursive: true, force: true }); });
 
 const preparar = async (carpeta: string) => ({ avisos: [] as string[], ficheros: resultado.plano.filter((p) => p && !p.incluidoEn)
   .map((p, i): FicheroPlano => ({ filename: nombres[i], savedPath: path.join(carpeta, nombres[i]), contenido: Buffer.from(p!.dxf, 'utf8') })) });
+
+describe('toldos: aceptación al pasar a revisión, sin Confirmar corte', () => {
+  it('abre el borrador aunque los datos actuales ya no permitan recalcularlo', async () => {
+    await editable.borrador({ orderCode: pedido.orderCode, preparar });
+    const abierto = await editable.borrador({ orderCode: pedido.orderCode,
+      preparar: async () => { throw new Error('No debe recalcular al abrir'); } });
+    expect(abierto.cuerpo).toMatchObject({ existente: true, ficheros: nombres.map(filename => ({ filename })) });
+  });
+  it('pregunta la primera vez, aceptar guarda la huella, sin cambios sigue y otro cambio vuelve a preguntar', async () => {
+    await editable.borrador({ orderCode: pedido.orderCode, preparar, datos: 'antes' });
+    const pregunta = await editable.alGuardar({ orderCode: pedido.orderCode, technician: 'IVÁN', confirmOverwrite: true, datos: 'ahora' });
+    if (!pregunta || !('respuesta' in pregunta)) throw new Error('debe preguntar');
+    const { huella } = pregunta.respuesta.cuerpo as { huella: string };
+    expect(pregunta.respuesta.cuerpo).toMatchObject({ cambioCorte: true });
+    const guardado = await editable.alGuardar({ orderCode: pedido.orderCode, technician: 'ANA', usuario: 'IVÁN', confirmOverwrite: true, datos: 'ahora', aceptarHuella: huella });
+    if (!guardado || 'respuesta' in guardado) throw new Error('debe guardar');
+    expect(guardado.corteConfirmado).toMatchObject({ huella, por: 'IVÁN', datos: 'ahora' });
+    await guardado.escribir(); await guardado.limpiar();
+    expect(await editable.aceptarActual(guardado.corteConfirmado, undefined, 'ANA')).toHaveProperty('dwg');
+    expect(await editable.alGuardar({ orderCode: pedido.orderCode, technician: 'ANA', confirmOverwrite: true,
+      revisado: guardado.corteConfirmado, pendienteAceptacion: true })).toHaveProperty('respuesta');
+    const aceptadoSinRegenerar = await editable.alGuardar({ orderCode: pedido.orderCode, technician: 'ANA', confirmOverwrite: true,
+      revisado: guardado.corteConfirmado, pendienteAceptacion: true, aceptarHuella: huella });
+    expect(aceptadoSinRegenerar).toMatchObject({ corteConfirmado: { huella, por: 'ANA' } });
+    expect(await editable.aceptarActual({ ...guardado.corteConfirmado, huella: 'otra' }, undefined, 'ANA')).toHaveProperty('respuesta');
+    expect(await editable.aceptarActual({ ...guardado.corteConfirmado, huella: 'otra' }, huella, 'ANA')).toMatchObject({ corteConfirmado: { huella, por: 'ANA' } });
+    // Una aceptación vieja no autoriza una huella distinta, aunque llegue por otra petición.
+    expect(await editable.aceptarActual({ ...guardado.corteConfirmado, huella: 'otra' }, 'vieja', 'ANA')).toHaveProperty('respuesta');
+  });
+  it('mantener deja guardar aunque cambiaron los datos y conserva la aceptación pendiente', async () => {
+    await editable.borrador({ orderCode: pedido.orderCode, preparar, datos: 'antes' });
+    const guardado = await editable.alGuardar({ orderCode: pedido.orderCode, technician: 'IVÁN', confirmOverwrite: true, datos: 'ahora', mantener: true });
+    if (!guardado || 'respuesta' in guardado) throw new Error('debe guardar sin regenerar');
+    expect(guardado.corteConfirmado.huella).toBe('');
+    await guardado.escribir();
+    expect(await editable.aceptarActual(guardado.corteConfirmado, undefined, 'IVÁN', true)).toHaveProperty('respuesta');
+  });
+});
 
 it('abre los dos planos, los confirma juntos, los pasa a la carpeta del año y el bot lleva las dos telas', async () => {
   const abierto = await flujo.borrador({ orderCode: 'AR2600096', preparar });

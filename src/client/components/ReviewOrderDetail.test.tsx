@@ -20,6 +20,12 @@ const pintar = (review: ReviewPackage, currentUser = 'JAIME') => renderToStaticM
 );
 
 describe('los documentos del pedido de toldos', () => {
+  it('muestra la marca del corte conservado y el último técnico que guardó', () => {
+    const review = { ...pedido('ACRILI2018P120'), corteNoRegenerado: true, updatedBy: 'JAIME', updatedAt: '2026-11-05T12:00:00Z' };
+    const html = pintar(review);
+    expect(html).toContain('El corte no está regenerado con los últimos datos');
+    expect(html).toContain('por Jaime');
+  });
   it.each(['IVÁN', 'JAIME'])('muestra planteamiento y corte debajo de los datos para %s', (usuario) => {
     const html = pintar(pedido('PVC|||250|||LONA PVC|||PLASTICA (LONA)'), usuario);
     expect(html.indexOf('aria-label="Planteamiento"')).toBeGreaterThan(html.indexOf('Formulario del pedido en solo lectura'));
@@ -33,7 +39,8 @@ describe('los documentos del pedido de toldos', () => {
     expect(html).not.toContain('Mandar corte al bot');
     expect(html.match(/Abrir en grande/g)).toHaveLength(1);
     expect(html).not.toContain('>Vista previa<');
-    expect(html.includes('>Corregir<')).toBe(usuario === 'IVÁN');
+    // Fase 1 editable (05/11): cualquier usuario de oficina corrige.
+    expect(html.includes('>Corregir<')).toBe(true);
     // «Generar corte» ya no va abajo del corte (Iván, 29/10/2026): sale arriba cuando la comprobación dice que falta o
     // está viejo, y en este pintado estático aún se está comprobando.
     expect(html).not.toContain('>Generar corte<');

@@ -10,6 +10,7 @@ import { PlanteamientoPedido } from './PlanteamientoPedido';
 import { controlLabel } from './controlLabels';
 import { generateState, puedeCorregir } from '../generatePermission';
 import { awningLetter } from '../../domain/awningCompleteness.js';
+import { CORTE_NO_REGENERADO } from '../../toldosEditable.js';
 import { isCurrentAuthor } from '../../reviewRules.js';
 import { EnviosCorte, HistorialEnvios } from './EnviosCorte';
 import type { AskForConfirmation, Notify } from './NotificationCenter';
@@ -64,9 +65,7 @@ export function ReviewOrderDetail({
   // Lo que le falta al corte de lona para poder mandarlo (null: al día); lo dice el bloque del corte (CorteLona).
   const [faltaCorte, setFaltaCorte] = useState<string | null>('Comprobando el corte…');
 
-  // Corte viejo en un pedido guardado (Iván, 29/10/2026: «solo tiene la opción de abajo de generar corte, pero no hay un
-  // botón de confirmar corte»): su autor lo genera arriba, lo abre en ZWCAD, lo confirma y lo guarda, como en un pedido
-  // nuevo. El corte generado queda pendiente hasta «Guardar corte»: sin el DWG confirmado el servidor no lo guarda.
+  // El corte nuevo queda pendiente hasta Guardar corte; ahí se acepta su huella.
   const corteRef = useRef<CorteLonaControl>(null);
   const [pendiente, setPendiente] = useState<{ clave: string; estado: EstadoCorte } | null>(null);
   const [generandoCorte, setGenerandoCorte] = useState(false);
@@ -74,15 +73,14 @@ export function ReviewOrderDetail({
   const claveCorte = review ? `${review.orderCode}|${review.updatedAt ?? ''}` : '';
   const corteNuevo = pendiente && pendiente.clave === claveCorte ? pendiente.estado : null;
   const estadoCorte = corteNuevo ?? review?.corteLona ?? null;
-  const autorDelCorte = Boolean(review && order && review.status !== 'PRODUCED' && onGuardarCorte && isCurrentAuthor(currentUser, order.technician || '',
-    (order.awnings || []).map((a, i) => ({ letter: awningLetter(i), of: String(a.of || '') })), coordinaStatus));
+  const autorDelCorte = Boolean(review && order && review.status !== 'PRODUCED' && onGuardarCorte && currentUser);
   const corteSinGenerar = faltaCorte === 'Corte viejo: genéralo de nuevo' || faltaCorte === 'Genera el corte de lona';
   const conFlujoCorte = autorDelCorte && Boolean(review && toldosConCorte(review.order).length > 0)
     && (Boolean(corteNuevo) || corteSinGenerar || !review?.corteConfirmado);
   const flujoCorte = useFlujoCorteDwg({ base: '/api/corte-lona/borrador', codigo: review?.orderCode ?? '',
     entrada: JSON.stringify({ order: review?.order ?? null, corteLona: estadoCorte }),
     cuerpo: () => ({ order: review?.order, corteLona: estadoCorte }), aplica: conFlujoCorte, falta: faltaCorte, usuario: currentUser,
-    notify, askForConfirmation: onConfirm, activo: conFlujoCorte });
+    notify, askForConfirmation: onConfirm, activo: conFlujoCorte, editable: true });
 
   useEffect(() => {
     if (!order) return undefined;
@@ -113,12 +111,14 @@ export function ReviewOrderDetail({
   // Para hacer otro parecido está «Reutilizar datos» en el bloque de archivos.
   const isProduced = review.status === 'PRODUCED';
   const produced = isProduced && Boolean(review.production);
-  // El botón depende del autor y de que CoordinaOT haya aprobado todas las OF.
+  // CoordinaOT solo decide si todas las OF permiten generar; no importa el autor.
   const { allowed: canGenerate, note: generateNote } = generateState(review, currentUser, coordinaStatus);
-  // «Corregir», como en CoordinaOT: solo devuelto y para su autor (Iván, 21/10/2026).
+  // Cualquier usuario de oficina puede corregir, salvo los pedidos ya generados.
   const corregible = puedeCorregir(review.status, (order.awnings || []).map((a, i) => ({ letter: awningLetter(i), of: String(a.of || '') })),
-    order.technician || '', currentUser, coordinaStatus);
+    order.technician || '', currentUser, coordinaStatus, true);
   const cortePermitido = generateState({ ...review, status: isProduced ? 'PENDING_REVIEW' : review.status }, currentUser, coordinaStatus);
+  // Los envíos del bot conservan su permiso actual hasta la fase de reenvíos.
+  const puedeEnviar = isCurrentAuthor(currentUser, order.technician || '', order.awnings.map((a, i) => ({ letter: awningLetter(i), of: String(a.of || '') })), coordinaStatus);
   const conCorteLona = toldosConCorte(review.order).length > 0;
   const pdfIndex = review.production?.files.findIndex(file => file.type === 'pdf') ?? -1;
   const pdfGenerado = isProduced && pdfIndex >= 0;
@@ -133,11 +133,11 @@ export function ReviewOrderDetail({
             review.summary.customer || 'Sin cliente',
             review.order.orderDate && `pedido del ${review.order.orderDate.split('-').reverse().join('/')}`,
             review.order.technician && `autor ${controlLabel(review.order.technician)}`,
-            review.updatedAt && `guardado ${formatDateTime(review.updatedAt)}`
+            review.updatedAt && `guardado ${formatDateTime(review.updatedAt)}${review.updatedBy ? ` por ${controlLabel(review.updatedBy)}` : ''}`
           ].filter(Boolean).join(' · ')}</small>
         </div>
         <div className="review-reader-actions">
-          {review.corteConfirmado && <BotonAbrirCorteRevisado ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-dwg`} notify={notify} />}
+          {review.corteConfirmado && !conFlujoCorte && <BotonAbrirCorteRevisado ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-dwg`} notify={notify} />}
           {!isProduced && corregible && <button className="ghost-button boton-3d" type="button" disabled={disabled} onClick={onEdit}>
             <PencilLine aria-hidden="true" />Corregir
           </button>}
@@ -146,19 +146,25 @@ export function ReviewOrderDetail({
             <Factory aria-hidden="true" />{generating ? 'Generando…' : 'Generar archivos'}
           </button>}
           {conFlujoCorte && corteSinGenerar && <button className="primary-button boton-3d" type="button" disabled={disabled || generandoCorte}
-            title="Genera el corte con los datos del pedido; después ábrelo en ZWCAD y confírmalo" onClick={() => corteRef.current?.generar()}>
+            title="Genera el corte con los datos del pedido" onClick={() => corteRef.current?.generar()}>
             <RefreshCw aria-hidden="true" />{generandoCorte ? 'Generando corte…' : 'Generar corte'}
           </button>}
           {conFlujoCorte && !corteSinGenerar && <BotonesFlujoCorte flujo={flujoCorte} ocupado={disabled} />}
+          {autorDelCorte && conCorteLona && !corteSinGenerar && !corteNuevo && <button type="button" className="ghost-button boton-3d" disabled={disabled || generandoCorte}
+            onClick={async () => {
+              const choice = await onConfirm({ title: 'Regenerar corte', message: 'Se perderán los retoques de ZWCAD al guardar el corte nuevo.',
+                confirmLabel: 'Sí, regenerar', cancelLabel: 'Cancelar', tone: 'warning' });
+              if (choice === 'confirm') corteRef.current?.generar();
+            }}><RefreshCw aria-hidden="true" />Regenerar corte</button>}
           {/* Sin carpeta de borradores (sin-flujo) el servidor guarda como antes, sin DWG. */}
-          {conFlujoCorte && estadoCorte && (flujoCorte.paso.paso === 'guardar' || (flujoCorte.paso.paso === 'sin-flujo' && corteNuevo))
+          {conFlujoCorte && estadoCorte && corteNuevo
             && <button className="primary-button boton-3d" type="button" disabled={disabled}
-            title="Guarda el pedido con el corte confirmado en ZWCAD" onClick={() => onGuardarCorte?.(estadoCorte)}>
+            title="Guarda el pedido con el corte nuevo" onClick={() => onGuardarCorte?.(estadoCorte)}>
             <Save aria-hidden="true" />Guardar corte
           </button>}
           {conCorteLona
             ? <EnviosCorte barra ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona`} usuario={currentUser}
-              permitido={cortePermitido.allowed && !faltaCorte && !corteNuevo} motivo={faltaCorte ?? (corteNuevo ? 'Guarda el corte nuevo antes de mandarlo' : cortePermitido.note)}
+              permitido={puedeEnviar && cortePermitido.allowed && (Boolean(review.corteConfirmado) || !faltaCorte) && !corteNuevo} motivo={faltaCorte ?? (corteNuevo ? 'Guarda el corte nuevo antes de mandarlo' : cortePermitido.note)}
               ocupado={disabled} envios={review.enviosCorte} notify={notify} preguntar={onConfirm}
               descarga={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona/dxf`}
               mas={produced ? <button type="button" role="menuitem" className="menu-mas-item" disabled={disabled} onClick={onReuse}><CopyPlus size={16} aria-hidden="true" />Reutilizar datos</button> : null} />
@@ -166,13 +172,14 @@ export function ReviewOrderDetail({
           {!isProduced && !canGenerate && generateNote && <span className="review-generate-note">{generateNote}</span>}
         </div>
       </header>
+      {review.corteNoRegenerado && <p role="status" className="review-state-note aviso-flujo-editable">{CORTE_NO_REGENERADO}</p>}
 
       {produced && review.production && (
         <div className="review-production-block bloque-3d" role="status">
           <div className="review-production-summary">
             <Factory aria-hidden="true" />
             <span>
-              <strong>Archivos generados{review.order.technician || review.production.createdBy ? ` por ${controlLabel(review.order.technician || review.production.createdBy)}, autor del pedido` : ''}</strong>
+              <strong>Archivos generados{review.production.createdBy ? ` por ${controlLabel(review.production.createdBy)}` : ''}</strong>
               <small>{formatDateTime(review.production.createdAt)} · abre el PDF o descarga cada reserva directamente.</small>
             </span>
           </div>
@@ -227,9 +234,9 @@ export function ReviewOrderDetail({
         cuerpo={pdfGenerado ? undefined : JSON.stringify({ order: review.order.parameters ? review.order : { ...review.order, parameters: reviewParameters } })}
         version={review.updatedAt} />}
         corte={<CorteLona key={review.orderCode} ref={corteRef} order={review.order} estado={estadoCorte} reviewCode={review.orderCode}
+        dwgGuardado={Boolean(review.corteConfirmado)}
         generarArriba={autorDelCorte} local={Boolean(corteNuevo)} onGenerando={setGenerandoCorte}
-        regenerable={!isProduced && Boolean(onGuardarCorte) && isCurrentAuthor(currentUser, order.technician || '',
-          (order.awnings || []).map((a, i) => ({ letter: awningLetter(i), of: String(a.of || '') })), coordinaStatus)}
+        regenerable={autorDelCorte}
         onGenerated={(estado) => setPendiente({ clave: claveCorte, estado })}
         onListo={setFaltaCorte} />} />
       <HistorialEnvios envios={review.enviosCorte} />

@@ -33,7 +33,9 @@ export const CorteLona = forwardRef<CorteLonaControl, {
   acciones?: (alDia: boolean) => React.ReactNode;
   onListo?: (falta: string | null) => void;
   generarArriba?: boolean; local?: boolean; onGenerando?: (generando: boolean) => void;
-}>(function CorteLona({ order, estado, onGenerated, reviewCode, acciones, regenerable = false, onListo, generarArriba = false, local = false, onGenerando }, ref) {
+  /** En toldos guardados manda el DWG, también cuando se aceptó sin regenerarlo. */
+  dwgGuardado?: boolean;
+}>(function CorteLona({ order, estado, onGenerated, reviewCode, acciones, regenerable = false, onListo, generarArriba = false, local = false, onGenerando, dwgGuardado = false }, ref) {
   const toldos = toldosConCorte(order);
   const entrada = JSON.stringify(order);
   const [vista, setVista] = useState<{ entrada: string; datos: CorteRespuesta } | null>(null);
@@ -70,7 +72,8 @@ export const CorteLona = forwardRef<CorteLonaControl, {
   const datos = vista?.entrada === entrada ? vista.datos : null;
   const sinOf = toldos.some(({ t }) => !t.of?.trim());
   const pendientes = comprobacion?.entrada === entrada ? comprobacion.pendientes : estado ? null : toldos.map(({ letra }) => ({ letra, motivo: 'sinGenerar' as const }));
-  const estadoVisible = pendientes?.some(p => p.motivo === 'viejo') ? 'viejo' : pendientes?.length || !estado ? 'falta' : 'hecho';
+  const enDwg = Boolean(reviewCode && dwgGuardado && !local);
+  const estadoVisible = enDwg ? 'hecho' : pendientes?.some(p => p.motivo === 'viejo') ? 'viejo' : pendientes?.length || !estado ? 'falta' : 'hecho';
   const falta = sinOf ? 'Falta la OF de algún toldo' : estadoVisible === 'viejo' ? 'Corte viejo: genéralo de nuevo' : estadoVisible === 'falta' ? 'Genera el corte de lona' : null;
   useEffect(() => { if (requerido) onListo?.(falta); }, [falta, requerido, onListo]);
 
@@ -97,13 +100,14 @@ export const CorteLona = forwardRef<CorteLonaControl, {
 
   return <section className="corte-lona panel bloque-3d" aria-label={reviewCode ? 'Corte' : 'Corte de lona'} aria-busy={generando}>
     <CabeceraDocumento titulo={reviewCode ? 'Corte' : 'Corte de lona'} icono={<Scissors aria-hidden="true" />}>
-      <span className={`corte-estado is-${sinOf ? 'aviso' : estadoVisible}`} role="status">{!sinOf && estadoVisible === 'hecho' && <CheckCircle2 size={16} aria-hidden="true" />}{sinOf ? 'Vista previa · falta la OF' : pendientes === null ? 'Comprobando el corte…' : textoEstadoCorte(estadoVisible)}</span>
+      <span className={`corte-estado is-${sinOf ? 'aviso' : estadoVisible}`} role="status">{!sinOf && estadoVisible === 'hecho' && <CheckCircle2 size={16} aria-hidden="true" />}{sinOf ? 'Vista previa · falta la OF' : enDwg ? 'Corte guardado en ZWCAD' : pendientes === null ? 'Comprobando el corte…' : textoEstadoCorte(estadoVisible)}</span>
       {!generarArriba && (!reviewCode || (regenerable && pendientes !== null && estadoVisible !== 'hecho')) && <button className="primary-button boton-3d" type="button" disabled={generando} onClick={() => void generar()}><RefreshCw size={16} aria-hidden="true" />{generando ? 'Generando corte…' : 'Generar corte'}</button>}
       {acciones?.(Boolean(datos && pendientes?.length === 0))}
     </CabeceraDocumento>
     <p className="corte-ayuda">PVC · piezas y marcas de confección, agrupadas por tela</p>
+    {enDwg && <p className="corte-ayuda">El corte válido es el guardado en ZWCAD. Esta vista no incluye sus retoques.</p>}
     {error && <p role="alert" className="corte-aviso">{error}</p>}
-    {pendientes && pendientes.length > 0 && <p className="corte-aviso">{pendientes.map(p => `Toldo ${p.letra}: ${p.motivo === 'viejo' ? 'corte viejo' : 'falta generar el corte'}`).join(' · ')}</p>}
+    {!enDwg && pendientes && pendientes.length > 0 && <p className="corte-aviso">{pendientes.map(p => `Toldo ${p.letra}: ${p.motivo === 'viejo' ? 'corte viejo' : 'falta generar el corte'}`).join(' · ')}</p>}
     {!datos && estado?.toldos.some(t => t.manual) && <ul className="corte-avisos">{estado.toldos.filter(t => t.manual).map(t => <li key={t.clave}>Toldo {t.letra}, OF {t.of}: {t.motivoManual}</li>)}</ul>}
     {!reviewCode && toldos.some(({ t }) => t.model !== 'EMBUDO') && <details className="corte-ajustes"><summary>Ajustes por toldo · se regenera al cambiar</summary>
       {toldos.filter(({ t }) => t.model !== 'EMBUDO').map(({ t, letra }) => {

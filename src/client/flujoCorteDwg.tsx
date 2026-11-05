@@ -63,9 +63,10 @@ export const esperaAlCorte = (p: Paso) => (p.paso === 'sin-flujo' || p.paso === 
  * `/api/corte-lona/borrador`), con `/estado` y `/confirmar` debajo. `aplica`: el pedido lleva corte (en toldos y remolques,
  * solo con lona de corte). `entrada`: los datos de la pantalla, para saber si cambiaron después de abrir el corte.
  */
-export function useFlujoCorteDwg({ base, codigo: codigoBruto, entrada, cuerpo, aplica = true, falta, usuario, notify, askForConfirmation, activo }: {
+export function useFlujoCorteDwg({ base, codigo: codigoBruto, entrada, cuerpo, aplica = true, falta, usuario, notify, askForConfirmation, activo, editable = false }: {
   base: string; codigo: string; entrada: string; cuerpo: () => Record<string, unknown>; aplica?: boolean; falta: string | null;
   usuario: string; notify: Notify; askForConfirmation: AskForConfirmation; activo: boolean;
+  editable?: boolean;
 }) {
   const codigo = codigoBruto.trim().toUpperCase();
   // Cada respuesta va con su pedido: la de otro número, o la que llega tarde, no cuenta.
@@ -108,7 +109,7 @@ export function useFlujoCorteDwg({ base, codigo: codigoBruto, entrada, cuerpo, a
 
   // Sin saber con qué datos se abrió (otro PC, otro navegador), no se da por cambiado.
   const datosCambiados = Boolean(estado?.borrador && abiertoCon !== null && abiertoCon !== entrada);
-  const paso = aplica ? pasoCorte(estado, falta, datosCambiados) : { paso: 'sin-flujo' as const };
+  const paso = aplica ? (editable && estado?.activo ? { paso: 'guardar' as const, por: '' } : pasoCorte(estado, falta, datosCambiados)) : { paso: 'sin-flujo' as const };
 
   async function abrir() {
     setOcupado(true);
@@ -123,7 +124,7 @@ export function useFlujoCorteDwg({ base, codigo: codigoBruto, entrada, cuerpo, a
     try { await confirmarCorteDwg({ ruta: `${base}/confirmar`, orderCode: codigoBruto, usuario, notify }); }
     finally { setOcupado(false); await refrescar(); }
   }
-  return { paso, ocupado, abrir, confirmar, refrescar };
+  return { paso, ocupado, abrir, confirmar, refrescar, editable };
 }
 
 export type FlujoCorteDwg = ReturnType<typeof useFlujoCorteDwg>;
@@ -134,15 +135,15 @@ export function BotonesFlujoCorte({ flujo, ocupado = false }: { flujo: FlujoCort
   if (paso.paso === 'sin-flujo') return null;
   const confirmable = ['confirmar', 'tocado', 'guardar'].includes(paso.paso);
   return <>
-    <span className="flujo-corte-paso" role="status" title={textoPaso(paso)}>{textoPaso(paso)}</span>
+    {!flujo.editable && <span className="flujo-corte-paso" role="status" title={textoPaso(paso)}>{textoPaso(paso)}</span>}
     <button type="button" className="ghost-button" disabled={flujo.ocupado || ocupado || paso.paso === 'incompleto'}
       title={paso.paso === 'incompleto' ? paso.motivo : 'Deja el plano en la carpeta de borradores y lo abre en ZWCAD'} onClick={() => void flujo.abrir()}>
       <FolderOpen aria-hidden="true" />{flujo.ocupado ? 'Un momento…' : 'Abrir corte'}
     </button>
-    <button type="button" className="ghost-button" disabled={flujo.ocupado || ocupado || !confirmable}
+    {!flujo.editable && <button type="button" className="ghost-button" disabled={flujo.ocupado || ocupado || !confirmable}
       title={confirmable ? 'Lee el borrador tal como quedó en ZWCAD y lo da por bueno' : textoPaso(paso)} onClick={() => void flujo.confirmar()}>
       <CheckCircle2 aria-hidden="true" />{paso.paso === 'guardar' ? 'Corte confirmado' : 'Confirmar corte'}
-    </button>
+    </button>}
   </>;
 }
 

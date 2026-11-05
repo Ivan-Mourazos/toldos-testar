@@ -12,7 +12,9 @@ import { registrarRutaPuertas } from './puertas/rutas.js';
 import { crearPlanoPuertas } from './puertas/flujo/archivos.ts';
 import { crearServicioPedidosPuertas } from './puertas/flujo/servicio.ts';
 import { crearAlmacenConfirmaciones } from './flujoDwg/confirmaciones.js';
-import { firmasCorteLona } from './corteLonaEstado.js';
+import { firmasCorteLona, corteLonaPendiente, crearEstadoCorteLona } from './corteLonaEstado.js';
+import { generarCorteLona } from './domain/corteLona/index.js';
+import { decisionRegenerar, generarToldosPermitido } from './toldosEditable.js';
 import { aprobacionDeTodas, crearFlujoDwg, huellaDatos, planosDe } from './flujoDwg/flujo.ts';
 import { conRevisor, htmlPresentaciones, sinDibujarEnPdf } from './flujoDwg/planoDxf.js';
 import { conHojasDelante } from './flujoDwg/unirPdf.js';
@@ -92,7 +94,7 @@ import {
   workflowReadiness,
   writeFileAtomic
 } from './workflow.js';
-import { coordinaAuthor, generateFilesDecision, generationBlock, approvalReviewers, reviewAuthorship, saveReviewDecision, uniqueOfs } from './reviewRules.js';
+import { generateFilesDecision, approvalReviewers, reviewAuthorship, saveReviewDecision, uniqueOfs } from './reviewRules.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -282,6 +284,7 @@ app.get('/favicon.ico', (_req, res) => res.redirect(308, '/favicon.png'));
 // Flujo del DWG en toldos (plan del 24/10/2026), como en puertas y remolques: un plano por tela, en la carpeta de borradores
 // para abrirlo en ZWCAD, «Confirmar corte», al guardar para revisión pasa a la carpeta del año y el bot sale del DWG revisado.
 const flujoToldos = crearFlujoDwg({
+  editable: true,
   ajustes: () => workflowStore.getSettings(),
   async leer(ruta) {
     const contenido = await fs.readFile(ruta);
@@ -1172,29 +1175,58 @@ app.post('/api/reviews', async (req, res, next) => {
       return;
     }
 
-    // El autor no cambia al corregir (diseño 24/09/2026, apartado 2): se decide aquí
-    // con el pedido guardado delante, no solo con lo que mande el navegador. Si un compañero lo ha cogido en
-    // CoordinaOT, el autor que lleva sus OF (Iván, 23/10/2026).
-    const ofsGuardadas = (existing?.order?.awnings || []).map((awning) => ({ of: String(awning?.of || '') }));
-    const currentAuthor = existing ? coordinaAuthor(ofsGuardadas, await coordina.statusOf(uniqueOfs(ofsGuardadas))) : '';
+    // Se conserva al autor original y se apunta a quien guarda, sin depender de CoordinaOT.
+    const savedBy = typeof req.body?.savedBy === 'string' ? req.body.savedBy.trim() : '';
+    if (!formOptions.tecnicos.includes(savedBy)) throw httpError(400, 'Elige quién eres en «Soy» antes de guardar.');
     const authorship = reviewAuthorship({
       existingTechnician: existing?.order?.technician,
       existingReviewer: existing?.order?.reviewer,
       technician: rawOrder?.technician,
       reviewer: rawOrder?.reviewer,
       savedBy: req.body?.savedBy,
-      currentAuthor
     });
     const order = structuredClone({ ...rawOrder, orderCode, ...authorship });
     const calculation = await calculateConfiguredOrder(order);
-    const review = createReviewPackage({ order, calculation, existing, corteLona: req.body?.corteLona });
-    exigirCorteAlDia(order, review.corteLona);
-    // Flujo del DWG (fase 2): con corte de lona, solo con el corte confirmado y sin cambios; los borradores pasan a la carpeta
-    // del año, donde los abre el revisor, y la web ya no genera el plano.
-    const desdeBorrador = review.corteLona?.toldos?.length
-      ? await flujoToldos.alGuardar({ orderCode, technician: order.technician, confirmOverwrite: req.body?.confirmPlanoOverwrite === true, datos: datosCorteToldos(review.corteLona) })
+    const review = createReviewPackage({ order, calculation, existing, corteLona: req.body?.corteLona, savedBy });
+    const ajustesCorte = await workflowStore.getSettings();
+    const estadoDwg = await flujoToldos.estado(orderCode);
+    const hayCorte = Boolean(existing?.corteConfirmado || existing?.corteLona || estadoDwg.borrador);
+    const cambio = decisionRegenerar(existing ? { ...existing, order: normalizeOrder(existing.order) } : null,
+      normalizeOrder(order), hayCorte, req.body?.decisionCorte,
+      Boolean(existing?.corteLona) && datosCorteToldos(existing.corteLona) !== datosCorteToldos(review.corteLona));
+    // Un pedido nuevo con borrador solo pregunta si el formulario dejó atrás su corte.
+    const decisionCorte = !existing && !corteLonaPendiente(order, review.corteLona).length ? 'seguir' : cambio;
+    if (decisionCorte === 'preguntar') return res.status(409).json({ needsRegenerateConfirmation: true });
+    const regeneradoConDatos = estadoDwg.borrador && estadoDwg.datos === datosCorteToldos(review.corteLona) && !corteLonaPendiente(order, review.corteLona).length;
+    if (regeneradoConDatos) review.corteNoRegenerado = false;
+    const mantener = decisionCorte === 'mantener';
+    if (mantener) {
+      review.corteNoRegenerado = true;
+      review.corteLona = existing?.corteLona || review.corteLona;
+    }
+    if (decisionCorte === 'regenerar') {
+      const ajustes = review.corteLona?.ajustes || {};
+      const stock = await ofStockSacos();
+      const resultado = generarCorteLona(order, { ajustes, ofStockSacos: stock.of });
+      review.corteLona = crearEstadoCorteLona(order, { ajustes, resultado, ofStockSacos: stock.of });
+      review.corteNoRegenerado = false;
+    }
+    if (!mantener && !existing?.corteConfirmado) exigirCorteAlDia(order, review.corteLona);
+    if (estadoDwg.activo && !mantener && review.corteLona?.toldos?.length && ((decisionCorte === 'regenerar' && (!req.body?.aceptarHuellaCorte || estadoDwg.datos !== datosCorteToldos(review.corteLona))) || (!estadoDwg.borrador && !existing?.corteConfirmado))) {
+      await flujoToldos.borrador({ orderCode, regenerar: decisionCorte === 'regenerar', datos: datosCorteToldos(review.corteLona),
+        preparar: async carpeta => {
+          const salida = await prepararArchivosCorte({ order, corteLona: review.corteLona, settings: ajustesCorte, oda, tipo: 'plano', carpeta });
+          return { ficheros: salida.files.map(f => ({ filename: f.filename, savedPath: f.savedPath, contenido: f.contents })), avisos: salida.avisos };
+        } });
+    }
+    // El DWG guardado manda: aceptar su huella permite pasar a revisión sin Confirmar corte.
+    const desdeBorrador = review.corteLona?.toldos?.length && (estadoDwg.borrador || existing?.corteConfirmado || !mantener)
+      ? await flujoToldos.alGuardar({ orderCode, technician: order.technician, usuario: savedBy,
+        confirmOverwrite: req.body?.confirmPlanoOverwrite === true, datos: datosCorteToldos(review.corteLona),
+        revisado: existing?.corteConfirmado, aceptarHuella: req.body?.aceptarHuellaCorte, mantener, pendienteAceptacion: review.corteNoRegenerado })
       : null;
     if (desdeBorrador && 'respuesta' in desdeBorrador) {
+      if (desdeBorrador.respuesta.cuerpo.cambioCorte) return res.status(409).json(desdeBorrador.respuesta.cuerpo);
       const { existing, error } = desdeBorrador.respuesta.cuerpo;
       return res.status(409).json({ needsPlanoConfirmation: true, motivo: 'plano', existing, error });
     }
@@ -1202,7 +1234,10 @@ app.post('/api/reviews', async (req, res, next) => {
     if (desdeBorrador) {
       await desdeBorrador.escribir();
       review.corteConfirmado = desdeBorrador.corteConfirmado;
+      if (!mantener) review.corteNoRegenerado = false;
       planosCorte = { files: planosDe(review.corteConfirmado).map((p) => ({ type: 'plano-corte-lona', filename: p.filename, savedPath: p.plano, writtenAt: new Date().toISOString() })), avisos: [] };
+    } else if (mantener) {
+      planosCorte = existing?.planosCorte || { files: [], avisos: [] };
     } else {
       planosCorte = await escribirPlanosCorte({ order, corteLona: review.corteLona, settings: await workflowStore.getSettings(), oda, confirmOverwrite: req.body?.confirmPlanoOverwrite === true });
       if (planosCorte.existentes?.length) {
@@ -1297,14 +1332,25 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
 
     const order = normalizeOrder(review.order);
     assertDeploymentModelsEnabled(order, deploymentFeatures);
-    exigirCorteAlDia(order, review.corteLona);
+    if (!review.corteConfirmado) exigirCorteAlDia(order, review.corteLona);
 
     // Solo se genera lo que CoordinaOT ha aprobado, OF por OF, preguntando en el momento.
     // Si CoordinaOT no responde, no se genera (diseño 29/09/2026, opción A).
     const approvalAwnings = order.awnings.map((awning, index) => ({ letter: awningLetter(index), of: awning.of }));
     const approval = await coordina.statusOf(uniqueOfs(approvalAwnings), { fresh: true });
-    const approvalBlock = generationBlock(approvalAwnings, approval);
+    const approvalBlock = generarToldosPermitido(approvalAwnings, approval);
     if (approvalBlock) throw httpError(approval.disponible ? 409 : 503, approvalBlock);
+    if (review.corteConfirmado) {
+      const aceptacion = await flujoToldos.aceptarActual(review.corteConfirmado, req.body?.aceptarHuellaCorte,
+        req.body?.savedBy || review.updatedBy || review.createdBy, review.corteNoRegenerado === true);
+      if ('respuesta' in aceptacion) return res.status(409).json(aceptacion.respuesta.cuerpo);
+      review.corteConfirmado = aceptacion.corteConfirmado;
+      review.corteNoRegenerado = false;
+      if (req.body?.aceptarHuellaCorte) {
+        const calculation = await calculateConfiguredOrder(review.order);
+        await workflowStore.saveReview(review, await buildOrderReviewPdf({ order: review.order, calculation, review }));
+      }
+    }
     const reviewer = approvalReviewers(approvalAwnings, approval, formOptions.tecnicos);
 
     const calculation = await calculateConfiguredOrder(order);
@@ -1364,7 +1410,7 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
       overwritten: target.exists
     }));
     const updated = markReviewFilesGenerated(review, {
-      generatedBy: review.order?.technician || review.createdBy,
+      generatedBy: req.body?.savedBy || review.updatedBy || review.order?.technician || review.createdBy,
       files: saved.map(({ type, of, filename, savedPath }) => ({ type, of, filename, savedPath })),
       excludedNonAcrylicFabrics
     });

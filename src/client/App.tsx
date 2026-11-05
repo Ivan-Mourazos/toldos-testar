@@ -28,7 +28,11 @@ import { PdfPreviewViewer } from './components/PdfPreviewViewer';
 import { controlLabel } from './components/controlLabels';
 import { OrderView } from './views/OrderView';
 import { CorteLona, toldosConCorte } from './components/CorteLona';
-import { BotonesFlujoCorte, esperaAlCorte, useFlujoCorteDwg } from './flujoCorteDwg';
+import { BotonesFlujoCorte, useFlujoCorteDwg } from './flujoCorteDwg';
+import { abrirCorteToldos, guardarToldosEditable } from './toldosEditable';
+import { AVISO_APROBADO, generarToldosPermitido } from '../toldosEditable.js';
+import { useCoordinaStatus } from './hooks/useCoordinaStatus';
+import './coordina/flujo-editable.css';
 import { ParametersView, type VistaRemolques } from './views/ParametersView';
 import { useParameters, type SaveDraftResult } from './hooks/useParameters';
 import { ParametersSaveBar } from './components/ParametersSaveBar';
@@ -563,6 +567,8 @@ export default function App() {
   const currentOrderCode = draft.orderCode.trim();
   orderCodeRef.current = currentOrderCode;
   const enCorreccion = corrigiendo !== null && corrigiendo === currentOrderCode;
+  const { status: aprobacionEdicion } = useCoordinaStatus(draft.awnings.map(a => String(a.of || '')), enCorreccion);
+  const avisoAprobado = enCorreccion && generarToldosPermitido(draft.awnings.map((a, i) => ({ letter: String(i + 1), of: String(a.of || '') })), aprobacionEdicion) === null;
   useEffect(() => {
     // Con el pedido vacío no se pregunta: la lista guardada deja de coincidir con él y
     // `knownOfs` queda en null sin tocar el estado.
@@ -674,7 +680,7 @@ export default function App() {
     else notify(result.message || 'No se pudieron guardar los parámetros.', { tone: 'error' });
   }
 
-  async function saveForReview(confirmOverwrite = false, confirmIncomplete = false, confirmPlanoOverwrite = false) {
+  async function saveForReview() {
     const incomplete = incompleteAwningLines(draft.awnings, { fabric: draft.fabric, sameFabric: draft.sameFabric });
     // Sin ningún toldo calculado no se manda a revisar (Iván, 01/10/2026): saldría en «Por
     // revisar» sin despiece ni reserva. Para dejar un pedido a medias, el borrador.
@@ -682,7 +688,7 @@ export default function App() {
       notify(incomplete.length ? incomplete.join('. ') : 'Añade al menos un toldo antes de guardarlo para revisión.', { tone: 'warning', title: 'Faltan datos' });
       return;
     }
-    if (incomplete.length && !confirmIncomplete) {
+    if (incomplete.length) {
       const choice = await askForConfirmation({
         title: 'Hay elementos sin completar',
         message: 'Se puede guardar como borrador para revisión, pero no se podrán generar los archivos definitivos hasta completarlos.',
@@ -699,36 +705,9 @@ export default function App() {
     }
     setWorking('review');
     try {
-      const response = await fetch('/api/reviews', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order: currentOrderPayload(), corteLona: draft.corteLona, confirmOverwrite, confirmPlanoOverwrite, savedBy: currentUser })
-      });
-      const data = await response.json();
-      if (response.status === 409 && data.needsPlanoConfirmation) {
-        const choice = await askForConfirmation({ title: 'El plano del corte ya existe',
-          // Flujo del DWG: se sustituye por el borrador con el corte confirmado (el servidor lo explica).
-          message: data.motivo === 'plano' ? data.error : 'El plano de este pedido ya está en su carpeta. ¿Sustituirlo por el de la web?',
-          confirmLabel: 'Sustituir plano', cancelLabel: 'Conservar el actual', tone: 'warning', details: data.existing });
-        if (choice === 'confirm') await saveForReview(confirmOverwrite, true, true);
-        return;
-      }
-      if (response.status === 409 && data.needsConfirmation) {
-        const choice = await askForConfirmation({
-          title: `Actualizar ${draft.orderCode}`,
-          message: 'Este pedido ya está guardado en Pedidos. Si continúas, el PDF actual se sustituirá por los datos del formulario.',
-          confirmLabel: 'Actualizar pedido',
-          cancelLabel: 'Conservar el actual',
-          tone: 'warning',
-          details: data.existing
-        });
-        if (choice === 'confirm') await saveForReview(true, true);
-        return;
-      }
-      if (!response.ok) {
-        notify(data.error || 'No se pudo guardar el pedido para revisión.', { tone: 'error' });
-        return;
-      }
+      const cuerpo = { order: currentOrderPayload(), corteLona: draft.corteLona, savedBy: currentUser, confirmOverwrite: enCorreccion };
+      const data = await guardarToldosEditable(cuerpo, askForConfirmation, () => abrirCorteToldos(draft.orderCode, cuerpo));
+      if (!data) return;
       setReviewRefresh((value) => value + 1);
       setReturnNote(null);
       setCorrigiendo(null);
@@ -737,8 +716,8 @@ export default function App() {
       ruleSettings.restoreParameters();
       const planos = data.planosCorte?.files?.map((f: { savedPath: string }) => f.savedPath) || [];
       notify(`Guardado en Pedidos para revisión: ${data.review.orderCode}.pdf${planos.length ? `. Plano del corte: ${planos.join(' · ')}` : ''}${data.planosCorte?.avisos?.length ? `. ${data.planosCorte.avisos.join(' ')}` : ''}`, { tone: 'success', title: 'Guardado para revisión' });
-    } catch {
-      notify('No se pudo guardar el pedido para revisión.', { tone: 'error' });
+    } catch (error) {
+      notify(error instanceof Error ? error.message : 'No se pudo guardar el pedido para revisión.', { tone: 'error' });
     } finally {
       setWorking(null);
     }
@@ -858,8 +837,7 @@ export default function App() {
     entrada: JSON.stringify({ order: pedidoToldos, corteLona: draft.corteLona ?? null }),
     cuerpo: () => ({ order: pedidoToldos, corteLona: draft.corteLona }), aplica: toldosConCorte(pedidoToldos).length > 0,
     falta: faltaCorteLona, usuario: currentUser, notify, askForConfirmation,
-    activo: activeTab === 'order' && editorPedidoAbierto && producto === 'toldos' });
-  const esperaCorteToldos = esperaAlCorte(corteToldos.paso);
+    activo: activeTab === 'order' && editorPedidoAbierto && producto === 'toldos', editable: true });
 
   return (
     <main className={`app-shell${activeTab === 'order' ? ' is-new-order' : ''}`}>
@@ -921,8 +899,8 @@ export default function App() {
                 {working === 'draft' ? 'Guardando…' : 'Guardar borrador'}
               </button>
               <BotonesFlujoCorte flujo={corteToldos} ocupado={Boolean(working)} />
-              <button className="primary-button" type="button" disabled={Boolean(working) || calculationState === 'validating' || draft.awnings.length === 0 || Boolean(esperaCorteToldos)}
-                title={esperaCorteToldos ?? undefined} onClick={() => void saveForReview()}>
+              <button className="primary-button" type="button" disabled={Boolean(working) || calculationState === 'validating' || draft.awnings.length === 0}
+                onClick={() => void saveForReview()}>
                 <Save aria-hidden="true" />
                 {working === 'review' ? 'Guardando…' : 'Guardar para revisión'}
               </button>
@@ -958,6 +936,9 @@ export default function App() {
                 }}>Empezar de cero</button>
               </span>
             </div>
+          )}
+          {activeTab === 'order' && editorPedidoAbierto && producto === 'toldos' && avisoAprobado && (
+            <div className="review-state-note order-return-note aviso-flujo-editable" role="status">{AVISO_APROBADO}</div>
           )}
           {activeTab === 'order' && editorPedidoAbierto && producto === 'toldos' && returnNote && (
             <div className="review-state-note is-returned order-return-note" role="status">

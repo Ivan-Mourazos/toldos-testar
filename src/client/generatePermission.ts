@@ -1,7 +1,7 @@
-import { coordinaGroup, currentAuthorName, generationBlock, isCurrentAuthor, isPendingGeneration, normalizeOf } from '../reviewRules.js';
+import { coordinaGroup, isCurrentAuthor, isPendingGeneration, normalizeOf } from '../reviewRules.js';
 import { awningLetter } from '../domain/awningCompleteness.js';
-import { controlLabel } from './components/controlLabels';
 import type { CoordinaStatus, ReviewPackage } from './types';
+import { generarToldosPermitido } from '../toldosEditable.js';
 
 // Quién puede generar los archivos (revisión Task 6, corrección): CoordinaOT ya aprueba
 // y devuelve, así que aquí solo hace falta saber si puede generar. La regla es una sola
@@ -12,38 +12,32 @@ import type { CoordinaStatus, ReviewPackage } from './types';
 //   misma regla que el servidor (isPendingGeneration, src/reviewRules.js).
 // - Pedido histórico sin autor (order.technician vacío): cualquiera puede generarlo,
 //   porque no hay a quién exigírselo.
-// - Si tiene autor: solo el autor.
-export function canGenerateReview(status: string, technician: string, currentUser: string) {
-  if (!isPendingGeneration(status)) return false;
-  if (!technician) return true;
-  return currentUser === technician;
+// El autor queda en el historial; generar ya no depende de quién lo guardó.
+export function canGenerateReview(status: string, _technician: string, _currentUser: string) {
+  return isPendingGeneration(status);
 }
 
-// Botón «Generar archivos» del pedido abierto (diseño 29/09/2026): además de ser el
-// autor, CoordinaOT tiene que haber aprobado todas las OF. La nota dice por qué no, para
-// que el autor no tenga que adivinar ni confirmar a mano que está aprobado.
-export function generateState(review: Pick<ReviewPackage, 'status' | 'order'>, currentUser: string, status: CoordinaStatus | null) {
+// Toldos: cualquiera genera cuando todas las OF están aprobadas o pasadas en CoordinaOT.
+export function generateState(review: Pick<ReviewPackage, 'status' | 'order'>, _currentUser: string, status: CoordinaStatus | null) {
   if (review.status === 'PRODUCED' || !isPendingGeneration(review.status)) return { allowed: false, note: '' };
   const awnings = (review.order.awnings || []).map((awning, index) => ({ letter: awningLetter(index), of: String(awning.of || '') }));
-  // El autor que manda es el de CoordinaOT si un compañero lo ha cogido (Iván, 23/10/2026).
-  if (!isCurrentAuthor(currentUser, review.order.technician, awnings, status)) {
-    return { allowed: false, note: `Lo genera el autor (${controlLabel(currentAuthorName(review.order.technician, awnings, status, []))})` };
-  }
   if (!status) return { allowed: false, note: 'Comprobando la aprobación en CoordinaOT…' };
-  const block = generationBlock(awnings, status);
+  const block = generarToldosPermitido(awnings, status);
   return block ? { allowed: false, note: block } : { allowed: true, note: '' };
 }
 
 const SIN_EMPEZAR_A_REVISAR = new Set(['sin_estado', 'pendiente', 'en_curso', 'por_revisar']);
 
 /**
- * «Corregir», sincronizado con CoordinaOT y solo para el autor (Iván, 21/10/2026), que es quien lo lleva en CoordinaOT
+ * Puertas y remolques mantienen su permiso anterior; toldos activa la edición libre.
+ * Permiso anterior: sincronizado con CoordinaOT y solo para el autor, que es quien lo lleva en CoordinaOT
  * si un compañero lo ha cogido (23/10/2026): si CoordinaOT lo ha devuelto,
  * o si todavía nadie lo ha empezado a revisar (sin tarea, «pendiente», «en curso» o «por revisar»). «Pendiente» y
  * «en curso» son el autor trabajando todavía en ella: Tamara no podía seguir con AR2605346 (Iván, 02/11/2026).
  * Con el revisor ya en ello, aprobado o generado, no: para mirarlo están el detalle y la vista previa.
  */
-export function puedeCorregir(status: string, elementos: { letter: string; of: string }[], autor: string, usuario: string, coordina: CoordinaStatus | null) {
+export function puedeCorregir(status: string, elementos: { letter: string; of: string }[], autor: string, usuario: string, coordina: CoordinaStatus | null, toldosEditable = false) {
+  if (toldosEditable) return status !== 'PRODUCED' && Boolean(usuario.trim());
   if (status === 'PRODUCED' || !coordina?.disponible) return false;
   if (!isCurrentAuthor(usuario, autor, elementos, coordina)) return false;
   if (coordinaGroup(elementos, coordina) === 'devuelto') return true;
