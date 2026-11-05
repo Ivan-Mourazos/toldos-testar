@@ -357,6 +357,12 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
   const central = !ple && p.autorreparable.espaciadorCentral;
   limites.slice(1).forEach((y, i) => rotulos(l, p, `${letra}${i + 1}`, central ? F * .75 : F / 2, y, limites[i], central ? F / 2 - 20 : F, obstaculos, i === 0));
   cota(l, 0, arriba, F, arriba, arriba + 25, ple ? 'XERA 15' : 'XERAL');
+  if (escuadrado) {
+    // Iván, 05/11/2026: anotar la medida de la puerta y la del corte real (1 cm más por lado para escuadrar).
+    cota(l, -margen, arriba, F + margen, arriba, arriba + 45, 'XERA 15');
+    texto(l, `PUERTA ${F.toLocaleString('es-ES')} · CORTE ${(F + 2 * margen).toLocaleString('es-ES')} (1 CM MÁS POR LADO PARA ESCUADRAR)`,
+      F / 2, arriba + 62, Math.min(8, F / 60));
+  }
   cota(l, 0, 0, 0, -H, -40, ple ? 'XERA 15' : 'XERAL');
   cota(l, F, -H, F, -H + (ple ? hSaco : hSaco + 2), F + 12, 'XERAL 5');
   // Con el suelo inclinado, paralelo al bajo de la puerta (Iván, 23/10/2026, AR2605035).
