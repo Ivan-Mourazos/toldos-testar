@@ -171,7 +171,9 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     motorPower: model === 'ELECTRA'
       ? normalizeElectraMotorPower(device, awning?.motorPower)
       : cleanText(awning?.motorPower || 'AUTOMÁTICO').toUpperCase(),
-    sensor: cleanText(awning?.sensor).toUpperCase(),
+    // Ágata Box: con interruptor lleva el Orea WT y no lleva mando (Iván, 05/11/2026).
+    motorControl: model === 'AGATA BOX' && cleanText(awning?.motorControl).toUpperCase() === 'INTERRUPTOR' ? 'INTERRUPTOR' : '',
+    sensor: model === 'AGATA BOX' && cleanText(awning?.motorControl).toUpperCase() === 'INTERRUPTOR' ? '' : cleanText(awning?.sensor).toUpperCase(),
     machineSide: cleanText(awning?.machineSide).toUpperCase(),
     crankHeight: numberOrDefault(awning?.crankHeight, 0),
     anticaCrankColor: model === 'ANTICA' ? cleanText(awning?.anticaCrankColor || 'AUTOMÁTICO').toUpperCase() : '',

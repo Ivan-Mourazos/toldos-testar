@@ -1334,7 +1334,7 @@ describe('buildOrderPlanteamientoPdf', () => {
     for (const row of calculation.ofs[0].despiece.rows) {
       if (row.reference) expect(text, row.reference).toContain(row.reference);
     }
-    expect(text).toContain('TERMIMODULDBL16');
+    expect(text).toContain('TERMIMODULDNEM1');
     expect(text).toContain('SOINMODUNEM1');
   });
 

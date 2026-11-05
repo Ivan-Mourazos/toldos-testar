@@ -69,8 +69,9 @@ describe('Arzúa Pro: tubo y barra de carga, cada uno el suyo (Q-A06)', () => {
 });
 
 describe('Ágata Box: patines en un color que ya no existe', () => {
-  // Q-AG01 + Q-A02: los patines de gris 7016 están de baja desde 2023; van en blanco a lacar.
-  test('gris 7016: patines blancos y aviso de lacar', () => {
+  // Q-AG01: los patines de gris 7016 están de baja desde 2023. El Ágata no se manda a lacar: se piden en el color
+  // (Iván, 05/11/2026).
+  test('gris 7016: patines en su color y aviso de pedirlos', () => {
     const result = calculateOrder({
       orderCode: 'AR-TEST', customer: 'TEST', technician: 'IVÁN', fabric: 'ACR VISON', structureColor: 'GRIS 7016',
       awnings: [{
@@ -81,8 +82,9 @@ describe('Ágata Box: patines en un color que ya no existe', () => {
       }]
     });
     const codes = result.ofs[0].materials.map((line) => line.code);
-    expect(codes).toEqual(expect.arrayContaining(['PABMODULBL16', 'PASBMODULBL16']));
-    expect(codes).not.toContain('PABMODULGR16');
-    expect(result.diagnostics.some((item) => /lacar fuera: .*PABMODULBL16/.test(item.message))).toBe(true);
+    expect(codes).toEqual(expect.arrayContaining(['PABMODULGR16', 'PASBMODULGR16']));
+    expect(codes).not.toContain('PABMODULBL16');
+    expect(result.diagnostics.some((item) => /hay que pedirlas: .*PABMODULGR16/.test(item.message))).toBe(true);
+    expect(result.diagnostics.some((item) => /lacar fuera/.test(item.message))).toBe(false);
   });
 });

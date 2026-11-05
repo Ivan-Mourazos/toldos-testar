@@ -17,7 +17,7 @@ const orden = [
   'Terminales · confirmar con taller', 'Nº de brazos', 'Nº brazos', 'Lado del brazo suelto', 'Tubo de carga', 'Soporte', 'Tipo de soporte', 'Para capota',
   'Tipo de guía', 'Fijación de la guía', 'Forma del cofre', 'Secur Wind Block', 'Telón', 'Lacado',
   'Ventana', 'Confección', 'Laterales', 'Abajo', 'Cara del velcro', 'Lado del velcro', 'Color del velcro', 'Ancho velcro (cm)', 'Alto velcro (cm)', 'Arriba', 'Confección solapas',
-  'Dispositivo', 'Color cadena', 'Altura instalación', 'Color mecanismos', 'Motor', 'Motor Electra', 'Sensor', 'Posición motor', 'Lado máquina', 'Color manivela', 'Altura manivela',
+  'Dispositivo', 'Color cadena', 'Altura instalación', 'Color mecanismos', 'Motor', 'Motor Electra', 'Accionamiento', 'Sensor', 'Posición motor', 'Lado máquina', 'Color manivela', 'Altura manivela',
   'Colocación', 'Tipo de pared', 'Dibujo de confección',
   'Sujeción del suplemento', 'Indicar sujeción', 'Distancia entre broches (cm)', 'Solape sobre la onda (cm)',
   'Remate inferior', 'Indicar remate', 'Bastilla de unión (cm)', 'Bastilla lateral (cm)', 'Bastilla inferior (cm)',

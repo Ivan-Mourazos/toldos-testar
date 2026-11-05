@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { calculateAgataBox, calculateAgataProfileSupportCount, calculateAgataSupportCount } from './agataBoxRules.js';
+import { agataMinimumTorque, agataMotorForTorque } from './agataMotorTable.js';
 import { defaultAgataBoxParameters } from './agataBoxParameters.js';
 import { calculateOrder } from './rules.js';
 import { normalizeReservation } from './validation.js';
@@ -23,7 +24,7 @@ describe('Ágata Box', () => {
   it('reproduce el Ágata Open 717x400 de producción', () => {
     const result = calculateAgataBox({ order: baseOrder, awning: baseAwning });
     expect(result.calculation).toMatchObject({
-      valid: true, submodel: 'OPEN', armCount: 3, supportCount: 5,
+      valid: true, submodel: 'OPEN', armCount: 3, supportCount: 4,
       fabricWidth: 704, fabricDrop: 470, fabricMl: 32.9,
       rollTubeLength: 705, squareBarLength: 713.2, loadBarLength: 706,
       diffuserLength: 702.8, liraLength: 709.1, motorPower: '85/17'
@@ -41,7 +42,7 @@ describe('Ágata Box', () => {
       awning: { ...baseAwning, width: 575, device: 'MAQUINA', armCount: 2, crankHeight: 200 }
     });
     expect(result.calculation).toMatchObject({
-      valid: true, supportCount: 4, fabricWidth: 560.8, fabricDrop: 470,
+      valid: true, supportCount: 2, fabricWidth: 560.8, fabricDrop: 470,
       rollTubeLength: 561.8, squareBarLength: 571.2, loadBarLength: 564,
       diffuserLength: 560.8, liraLength: 562.5, motorPower: ''
     });
@@ -57,7 +58,8 @@ describe('Ágata Box', () => {
       awning: { ...baseAwning, width: 650, projection: 200, valanceHeight: 0, submodel: 'COFRE' }
     });
     expect(result.calculation).toMatchObject({
-      valid: true, submodel: 'COFRE', supportCount: 6, profileSupportCount: 4,
+      // Regla del taller (05/11/2026): 3 brazos y más de 6 m, 8 soportes = 4 juegos. La OF 0227173 gastó 3.
+      valid: true, submodel: 'COFRE', supportCount: 4, profileSupportCount: 4,
       fabricWidth: 637, fabricDrop: 240, rollTubeLength: 638, // sin bamba, sin los 5 cm de remate
       enclosureLength: 642.1, motorPower: '55/17'
     });
@@ -72,7 +74,7 @@ describe('Ágata Box', () => {
       awning: { ...baseAwning, width: 1145, projection: 350, submodel: 'SEMICLOSE', armCount: 4 }
     });
     expect(result.calculation).toMatchObject({
-      valid: true, submodel: 'SEMI', supportCount: 11, profileSupportCount: 7,
+      valid: true, submodel: 'SEMI', supportCount: 5, profileSupportCount: 7,
       fabricWidth: 1132, fabricDrop: 420, motorPower: '100/12'
     });
     // El semicofre lleva la barra redonda ROND-80 y sus tapas (PRSCMODUL no se consume).
@@ -172,8 +174,36 @@ describe('Ágata Box', () => {
       expect(motor, submodel).toMatchObject({ code: 'SUNEAIO85//17', description: 'MOTOR SOMFY SUNEA 85/17 IO' });
       expect(result.materials.some((line) => /SUNILUS/.test(line.code + line.description)), submodel).toBe(false);
       const row = result.despiece.rows.find((item) => item.reference === 'SUNEAIO85//17');
-      expect(row?.name, submodel).toBe('MOTOR SOMFY SUNEA 85/17 IO');
+      // 717 × 400 con tres brazos: 85 Nm en la tarifa Llaza 2026.
+      expect(row?.name, submodel).toBe('MOTOR SOMFY SUNEA 85/17 IO · PAR MÍN. 85 NM');
     }
+  });
+
+  // Iván, 05/11/2026: el motor sale del par mínimo de la tarifa Llaza 2026 por brazos, salida y línea.
+  it('elige el motor por el par mínimo de Llaza', () => {
+    expect(agataMinimumTorque({ submodel: 'COFRE', armCount: 2, projection: 250, width: 450 })).toBe(40);
+    expect(agataMinimumTorque({ submodel: 'COFRE', armCount: 3, projection: 200, width: 650 })).toBe(50);
+    expect(agataMinimumTorque({ submodel: 'SEMI', armCount: 4, projection: 300, width: 1100 })).toBe(100);
+    // Open con dos brazos: líneas cortas sombreadas (pág. 153).
+    expect(agataMinimumTorque({ submodel: 'OPEN', armCount: 2, projection: 250, width: 200 })).toBe(35);
+    expect(agataMinimumTorque({ submodel: 'COFRE', armCount: 2, projection: 250, width: 200 })).toBe(40);
+    // Entre medidas, la siguiente de la tabla.
+    expect(agataMinimumTorque({ submodel: 'COFRE', armCount: 3, projection: 225, width: 620 })).toBe(70);
+    expect(agataMotorForTorque(50)).toBe(55);
+    expect(agataMotorForTorque(30)).toBe(35);
+    expect(agataMotorForTorque(25, 'INTERRUPTOR')).toBe(25);
+    expect(agataMotorForTorque(100, 'INTERRUPTOR')).toBe(120);
+    const motor = (awning) => calculateAgataBox({ order: baseOrder, awning: { ...baseAwning, ...awning } }).materials.find((l) => /^(SUNEAIO|OREAWT)/.test(l.code))?.code;
+    expect(motor({ width: 450, projection: 250, armCount: 2, submodel: 'COFRE' })).toBe('SUNEAIO40//17');
+  });
+
+  it('con interruptor lleva el Orea WT, sin mando ni sensor', () => {
+    const result = calculateAgataBox({ order: baseOrder, awning: { ...baseAwning, motorControl: 'INTERRUPTOR', sensor: 'VIENTO-SOL' } });
+    const codes = result.materials.map((l) => l.code);
+    expect(codes).toContain('OREAWT85//17');
+    expect(codes.some((c) => /^SUNEA|SITUO|EOLIS|SUNIS/.test(c))).toBe(false);
+    expect(result.despiece.rows.find((r) => r.reference === 'OREAWT85//17')?.name).toBe('MOTOR SOMFY OREA 85/17 WT · PAR MÍN. 85 NM');
+    expect(result.calculation).toMatchObject({ motorControl: 'INTERRUPTOR', minimumTorque: 85, motorPower: '85/17' });
   });
 
   it('cada potencia de la tabla tiene su Sunea de RPS', () => {
@@ -200,11 +230,15 @@ describe('Ágata Box', () => {
     expect(result.despiece.rows).toContainEqual(expect.objectContaining({ name: 'CASQUILLO MAQUINA EJE 50MM Ø78', reference: 'CASMAQEJE5078MM' }));
   });
 
-  it('conserva las cantidades provisionales de soportes hasta resolver Q-AG04', () => {
+  it('soportes: dos por brazo y dos más con más de 6 m; dos por juego (taller, 05/11/2026)', () => {
     expect(calculateAgataProfileSupportCount(650)).toBe(4);
     expect(calculateAgataProfileSupportCount(1145)).toBe(7);
-    expect(calculateAgataSupportCount({ width: 717, minimumLine: 693.9, armCount: 3, parameters: defaultAgataBoxParameters })).toBe(5);
-    expect(calculateAgataSupportCount({ width: 1040, minimumLine: 668.6, armCount: 4, parameters: defaultAgataBoxParameters })).toBe(10);
+    expect(calculateAgataSupportCount({ width: 717, armCount: 3, parameters: defaultAgataBoxParameters })).toBe(4);
+    expect(calculateAgataSupportCount({ width: 650, armCount: 2, parameters: defaultAgataBoxParameters })).toBe(3);
+    expect(calculateAgataSupportCount({ width: 650, armCount: 3, parameters: defaultAgataBoxParameters })).toBe(4);
+    expect(calculateAgataSupportCount({ width: 600, armCount: 2, parameters: defaultAgataBoxParameters })).toBe(2);
+    expect(calculateAgataSupportCount({ width: 555, armCount: 3, parameters: defaultAgataBoxParameters })).toBe(3);
+    expect(calculateAgataSupportCount({ width: 1040, armCount: 4, parameters: defaultAgataBoxParameters })).toBe(5);
   });
 
   // RPS, 04/11/2026: 0227173 (650 × 200, techo, tres brazos) consume
@@ -258,19 +292,20 @@ describe('Ágata Box', () => {
     const result = calculateOrder(order);
     const block = result.ofs[0];
     expect(block.calculation.valid).toBe(true);
-    // No hay SOTE mate ni terminal suelto mate en RPS: blancos para lacar (Q-A02).
+    // No hay SOTE mate ni terminal suelto mate en RPS: el Ágata no se laca, se piden en el color (Iván, 05/11/2026).
     const expected = {
-      SOFTMODULNEM1: 6 * units, SOTEMODULBLAN: 6 * units,
+      SOFTMODULNEM1: 4 * units, SOTEMODULNEM1: 4 * units,
       SOTLMODULNEM1: 4 * units, SOINMODUNEM1: 4 * units,
-      SOBMODULNEM1: units, SOBDMODULBL16: units,
-      TERMIMODULNEM1: units, TERMIMODULDBL16: units
+      SOBMODULNEM1: units, SOBDMODULNEM1: units,
+      TERMIMODULNEM1: units, TERMIMODULDNEM1: units
     };
     const reservation = normalizeReservation({ orderCode: order.orderCode, ofs: result.ofs });
     for (const [code, quantity] of Object.entries(expected)) {
       expect(reservation.ofs[0].materials.filter(m => m.code === code).reduce((s,m) => s + m.quantity, 0), code).toBe(quantity);
       expect(block.despiece.rows.filter(r => r.reference === code).reduce((s,r) => s + r.units, 0), code).toBe(quantity);
     }
-    expect(block.despiece.rows.find(r => r.reference === 'SOTEMODULBLAN')?.name).toContain('MANDAR A LACAR');
+    expect(block.despiece.rows.find(r => r.reference === 'SOTEMODULNEM1')?.name).toContain('PEDIR EN EL COLOR');
+    expect(block.despiece.rows.some(r => /MANDAR A LACAR/.test(r.name))).toBe(false);
   });
   // AR2605385 (Iván, 04/11/2026): un solo perfil posterior y un solo inferior, como la lira. En las 11
   // OF desde 2024 se gasta 1 barra de cada uno hasta 700 de frente y 2 si es más largo.

@@ -1015,14 +1015,6 @@ function AgataBoxParametersView({ parameters, selectedModel, onUpdate, onReset }
     });
   }
 
-  function updateMotor(projection: number, arms: 2 | 3 | 4, value: number) {
-    onUpdate({
-      motorPowerByProjection: parameters.motorPowerByProjection.map((row) => row.projection === projection
-        ? { ...row, values: { ...row.values, [arms]: value } }
-        : row)
-    });
-  }
-
   function updateDiscount(variant: AgataRuleVariant, device: AgataDevice, piece: keyof AgataPieceDiscounts, value: number) {
     onUpdate({
       discounts: {
@@ -1056,9 +1048,9 @@ function AgataBoxParametersView({ parameters, selectedModel, onUpdate, onReset }
         <ParameterNote>{BAR_LENGTH_NOTE}</ParameterNote>
       </ParameterBand>
 
-      <ParameterBand number="02" title="Líneas mínimas y motor" description="Frente mínimo por salida, dispositivo y número de brazos.">
-        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Salida</th>{devices.flatMap((device) => ([2, 3, 4] as const).map((arms) => <th key={`${device}-${arms}`}>{device === 'MAQUINA' ? 'Máq.' : 'Motor'} · {arms}B</th>))}{([2, 3, 4] as const).map((arms) => <th key={`motor-${arms}`}>Nm · {arms}B</th>)}</tr></thead>
-          <tbody>{parameters.minimumLineByProjection.map((row) => <tr key={row.projection}><td className="num">{row.projection}</td>{devices.flatMap((device) => ([2, 3, 4] as const).map((arms) => <td key={`${device}-${arms}`}><input aria-label={`ÁGATA mínimo ${row.projection} ${device} ${arms} brazos`} type="number" min="1" step="0.1" value={row.values[device][arms]} onChange={(event) => updateMinimum(row.projection, device, arms, Number(event.target.value))} /></td>))}{([2, 3, 4] as const).map((arms) => <td key={`power-${arms}`}><input aria-label={`ÁGATA motor ${row.projection} ${arms} brazos`} type="number" min="1" value={parameters.motorPowerByProjection.find((item) => item.projection === row.projection)?.values[arms] || ''} onChange={(event) => updateMotor(row.projection, arms, Number(event.target.value))} /></td>)}</tr>)}</tbody>
+      <ParameterBand number="02" title="Líneas mínimas" description="Frente mínimo por salida, dispositivo y número de brazos. El motor sale del par mínimo de la tarifa Llaza 2026 por brazos, salida y frente.">
+        <div className="parameter-table-wrap"><table className="parameter-table parameter-table-lines"><thead><tr><th>Salida</th>{devices.flatMap((device) => ([2, 3, 4] as const).map((arms) => <th key={`${device}-${arms}`}>{device === 'MAQUINA' ? 'Máq.' : 'Motor'} · {arms}B</th>))}</tr></thead>
+          <tbody>{parameters.minimumLineByProjection.map((row) => <tr key={row.projection}><td className="num">{row.projection}</td>{devices.flatMap((device) => ([2, 3, 4] as const).map((arms) => <td key={`${device}-${arms}`}><input aria-label={`ÁGATA mínimo ${row.projection} ${device} ${arms} brazos`} type="number" min="1" step="0.1" value={row.values[device][arms]} onChange={(event) => updateMinimum(row.projection, device, arms, Number(event.target.value))} /></td>))}</tr>)}</tbody>
         </table></div>
       </ParameterBand>
 

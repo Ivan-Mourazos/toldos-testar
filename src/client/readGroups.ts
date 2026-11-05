@@ -61,7 +61,7 @@ const byLabel: Record<string, ReadGroupId> = {
   'Descuento perfil de cofre (cm)': 'estructura', 'Descuento guía sobre caída (cm)': 'estructura',
   'Ajuste de frente (cm)': 'estructura', 'Margen de caída (cm)': 'estructura', 'Remate de bamba (cm)': 'estructura',
   // Accionamiento («Motor» es el de la excepción técnica)
-  Dispositivo: 'accionamiento', 'Motor Electra': 'accionamiento', Motor: 'accionamiento', Sensor: 'accionamiento',
+  Dispositivo: 'accionamiento', 'Motor Electra': 'accionamiento', Motor: 'accionamiento', Accionamiento: 'accionamiento', Sensor: 'accionamiento',
   'Posición motor': 'accionamiento', 'Lado máquina': 'accionamiento', 'Color manivela': 'accionamiento',
   'Altura manivela': 'accionamiento',
   // Colocación y tela

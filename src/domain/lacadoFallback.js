@@ -48,6 +48,9 @@ export function withLacadoFallback(result, { awning, order }) {
   // BL10 (9010) también necesita blanco 9016 si la pieza no existe en 9010.
   // Todos los colores sin sufijo siguen el tratamiento del lacado especial.
   if (whiteSuffixes.includes(suffix) && suffix !== 'BL10') return result;
+  // El Ágata Box no se manda a lacar: lo que no está en ese color se pide al fabricante en el color (Iván, 05/11/2026).
+  // Se reserva la referencia del color y el despiece y el aviso dicen que hay que pedirla.
+  if (awning?.model === 'AGATA BOX') return withAgataToOrder(result, { awning, lacadoName, suffix });
   const painted = new Set();
   const swap = (code) => {
     const resolved = resolveLacadoCode(code, suffix);
@@ -74,4 +77,20 @@ export function withLacadoFallback(result, { awning, order }) {
     }
   ];
   return { ...result, materials, despiece, diagnostics, paintedCodes: [...painted] };
+}
+
+function withAgataToOrder(result, { awning, lacadoName, suffix }) {
+  const toOrder = new Set();
+  const missing = (code) => resolveLacadoCode(code, suffix).painted;
+  for (const line of result.materials || []) if (missing(line.code)) toOrder.add(String(line.code).toUpperCase());
+  if (!toOrder.size) return result;
+  const despiece = result.despiece
+    ? { ...result.despiece, rows: (result.despiece.rows || []).map((row) =>
+      row.reference && toOrder.has(String(row.reference).toUpperCase()) ? { ...row, name: `${row.name} · PEDIR EN EL COLOR` } : row) }
+    : result.despiece;
+  const diagnostics = [...(result.diagnostics || []), {
+    level: 'warn', awningId: awning.id,
+    message: `Ágata Box en ${lacadoName}: estas piezas no están en RPS en ese color y hay que pedirlas: ${[...toOrder].join(', ')}.`
+  }];
+  return { ...result, despiece, diagnostics, orderedCodes: [...toOrder] };
 }

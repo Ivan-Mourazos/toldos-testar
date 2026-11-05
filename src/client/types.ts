@@ -104,6 +104,8 @@ export type Awning = {
   destination: string;
   supportSystem: string;
   motorPower: string;
+  /** Ágata Box: RADIO (Sunea IO, por defecto) o INTERRUPTOR (Orea WT, sin mando). */
+  motorControl?: string;
   submodel: string;
   sensor: string;
   machineSide: string;

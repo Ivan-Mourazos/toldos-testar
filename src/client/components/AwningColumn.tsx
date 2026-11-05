@@ -232,6 +232,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
   const ambarGroup = ambarPlacementGroup(awning.placement);
   const agataDevice = boxDevice;
   const agataVariant = normalizeAgataSubmodel(awning.submodel) || 'OPEN';
+  const agataControl = awning.motorControl === 'INTERRUPTOR' ? 'INTERRUPTOR' : 'RADIO';
   const agataArmCount = Number(awning.armCount) || suggestedAgataArmCount(awning.width);
   // Con brazos impares va un brazo y un soporte sueltos: su lado es opcional (Q-A04).
   const looseSideArms = awning.model === 'GALICIA' ? Number(awning.armCount) || suggestedGaliciaArmCount(awning.width, parameters.galicia)
@@ -845,7 +846,9 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               {fields.device && <SelectField label="Dispositivo" missing={isMissing('device')} value={awning.device} options={fields.deviceOptions} placeholder="Elegir…" onChange={updateDevice} />}
               {isElectra && electraDevice === 'MOTOR' && <SelectField label="Motor Electra" missing={isMissing('motorPower')} value={awning.motorPower} options={electraMotors.map(({ value }) => value)} placeholder="Obligatorio · elegir motor…" onChange={(motorPower) => update({ motorPower })} />}
               {isIrisMotor && <SelectField label="Motor" value={chosenMotor(awning, irisMotorPowers, irisDefaultMotor(irisSeriesOf(awning.submodel)))} options={irisMotorPowers} optionLabel={screenMotorLabel} placeholder="Elegir motor…" onChange={(motorPower) => update({ motorPower })} />}
-              {fields.sensor && <SelectField label="Sensor" value={awning.sensor} options={formOptions.sensores.map((s) => s.sensor)} placeholder="Elegir…" onChange={(sensor) => update({ sensor })} />}
+              {/* Iván, 05/11/2026: siempre Sunea IO; con interruptor, el Orea WT y sin mando ni sensor. */}
+              {isAgataBox && agataDevice === 'MOTOR' && <SegmentedField label="Accionamiento" value={agataControl === 'INTERRUPTOR' ? 'Interruptor' : 'Radio'} options={['Radio', 'Interruptor']} onChange={(value) => update({ motorControl: value === 'Interruptor' ? 'INTERRUPTOR' : 'RADIO', motorPower: '' })} />}
+              {fields.sensor && !(isAgataBox && agataControl === 'INTERRUPTOR') && <SelectField label="Sensor" value={awning.sensor} options={formOptions.sensores.map((s) => s.sensor)} placeholder="Elegir…" onChange={(sensor) => update({ sensor })} />}
               {fields.motorLocation && <SelectField label="Posición motor" missing={isMissing('machineSide')} value={awning.machineSide} options={formOptions.localizacionesMaquina} placeholder="Elegir…" onChange={(machineSide) => update({ machineSide })} />}
               {fields.machineLocation && <SelectField label="Lado máquina" missing={isMissing('machineSide')} value={awning.machineSide} options={formOptions.localizacionesMaquina} placeholder="Elegir…" onChange={(machineSide) => update({ machineSide })} />}
               {isFullAntica && fields.crankHeight && <SelectField label="Color manivela" value={awning.anticaCrankColor || 'AUTOMÁTICO'} options={['AUTOMÁTICO', 'BLANCA', 'NEGRA']} onChange={(v) => update({ anticaCrankColor: v as Awning['anticaCrankColor'] })} />}
@@ -952,11 +955,11 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               </>}
               {isAgataBox && <>
                 <NumberField label="Frente mínimo (cm)" value={awning.agataMinimumLineCm} min={0} step={0.1} onChange={(agataMinimumLineCm) => update({ agataMinimumLineCm })} />
-                <NumberField label="Nº de soportes" value={awning.agataSupportCount} min={1} step={1} onChange={(agataSupportCount) => update({ agataSupportCount })} />
+                <NumberField label="Juegos de soportes" value={awning.agataSupportCount} min={1} step={1} onChange={(agataSupportCount) => update({ agataSupportCount })} />
                 <NumberField label="Descuento frente tela (cm)" value={awning.agataFabricWidthDiscountCm} min={0} step={0.1} onChange={(agataFabricWidthDiscountCm) => update({ agataFabricWidthDiscountCm })} />
                 <NumberField label="Descuento tubo enrollamiento (cm)" value={awning.agataRollDiscountCm} min={0} step={0.1} onChange={(agataRollDiscountCm) => update({ agataRollDiscountCm })} />
                 <NumberField label="Margen caída tela (cm)" value={awning.agataFabricDropAllowanceCm} min={0} step={0.5} onChange={(agataFabricDropAllowanceCm) => update({ agataFabricDropAllowanceCm })} />
-                {agataDevice === 'MOTOR' && <SegmentedField label="Motor" value={awning.motorPower === '100/17' ? '100/12' : awning.motorPower || 'AUTOMÁTICO'} options={['AUTOMÁTICO', '35/17', '40/17', '55/17', '70/17', '85/17', '100/12']} onChange={(motorPower) => update({ motorPower })} />}
+                {agataDevice === 'MOTOR' && <SegmentedField label="Motor" value={awning.motorPower === '100/17' ? '100/12' : awning.motorPower || 'AUTOMÁTICO'} options={agataControl === 'INTERRUPTOR' ? ['AUTOMÁTICO', '25/17', '35/17', '40/17', '55/17', '70/17', '85/17', '120/12'] : ['AUTOMÁTICO', '35/17', '40/17', '55/17', '70/17', '85/17', '100/12', '120/12']} onChange={(motorPower) => update({ motorPower })} />}
               </>}
               {simpleFabricJob && <>
                 <NumberField label="Ajuste de frente (cm)" value={awning.fabricJobWidthAdjustmentCm} step={0.1} onChange={(fabricJobWidthAdjustmentCm) => update({ fabricJobWidthAdjustmentCm })} />

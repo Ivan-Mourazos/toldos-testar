@@ -9,6 +9,7 @@ import { calculateFabricUsage } from './fabricMath.js';
 import { crankSuffix, machineCode, resolveLacado } from './lacados.js';
 import behaviorData from './data/modelBehavior.json' with { type: 'json' };
 import { resolveMotorRemote } from './motorAccessories.js';
+import { agataMinimumTorque, agataMotorForTorque } from './agataMotorTable.js';
 import { galiciaSingleArmExists, looseSideLetter, looseSideName, onyxArmLines } from './galiciaSupportPieces.js';
 import { onyxArmExists } from './arzuaAvailability.js';
 import { agataLacadoIssue } from './boxAvailability.js';
@@ -17,7 +18,6 @@ import {
   normalizeAgataBoxParameters,
   normalizeAgataSubmodel,
   resolveAgataMinimumLine,
-  resolveAgataMotorPower,
   suggestedAgataArmCount
 } from './agataBoxParameters.js';
 import {
@@ -42,7 +42,7 @@ export function calculateAgataBox({ order, awning }) {
   const modified = Boolean(awning.reglasModificadas);
   const standardMinimumLine = resolveAgataMinimumLine(awning.projection, device, armCount, parameters);
   const minimumLine = effectiveNumber(awning, 'agataMinimumLineCm', standardMinimumLine);
-  const standardSupportCount = calculateAgataSupportCount({ width: awning.width, minimumLine, armCount, parameters });
+  const standardSupportCount = calculateAgataSupportCount({ width: awning.width, armCount, parameters });
   const supportCount = Math.max(1, Math.round(effectiveNumber(awning, 'agataSupportCount', standardSupportCount)));
   const diagnostics = [];
   const missingFields = [];
@@ -89,7 +89,10 @@ export function calculateAgataBox({ order, awning }) {
         ? `ÁGATA BOX no válido: no hay brazo Onyx de ${awning.projection} cm${armCount % 2 === 1 ? ' suelto' : ''} en ${lacadoLabel(lacado.name)}.` : null)
     : null;
   const profileSupportCount = calculateAgataProfileSupportCount(awning.width);
-  const automaticMotorPower = resolveAgataMotorPower(awning.projection, armCount, parameters);
+  // Motor por el par mínimo de la tarifa Llaza 2026 (brazos, salida y línea); Sunea IO, u Orea WT con interruptor.
+  const motorControl = normalizeMotorControl(awning.motorControl);
+  const minimumTorque = agataMinimumTorque({ submodel, armCount, projection: awning.projection, width: awning.width });
+  const automaticMotorPower = agataMotorForTorque(minimumTorque, motorControl);
   const motorPower = resolveMotorPower(awning.motorPower, automaticMotorPower);
   const fabricUsage = calculateFabricUsage({
     width: fabricWidth,
@@ -138,7 +141,7 @@ export function calculateAgataBox({ order, awning }) {
 
   const context = {
     awning, device, placement, submodel, lacado, fabric, separateValance, armCount, supportCount, profileSupportCount,
-    rollStockLength, profileStockLength, bars, motorPower, fabricMl: fabricUsage.ml,
+    rollStockLength, profileStockLength, bars, motorPower, motorControl, minimumTorque, fabricMl: fabricUsage.ml,
     lengths: { rollTubeLength, squareBarLength, loadBarLength, diffuserLength, liraLength, protectorLength, enclosureLength }
   };
   return {
@@ -156,6 +159,7 @@ export function calculateAgataBox({ order, awning }) {
       ...separateValanceCalculation(separateValance),
       structureLength: loadBarLength, rollTubeLength, stockLength: profileStockLength,
       profileStockLength, rollStockLength, motorPower: device === 'MOTOR' ? motorLabel(motorPower) : '',
+      motorControl: device === 'MOTOR' ? motorControl : '', minimumTorque: device === 'MOTOR' ? minimumTorque : 0,
       armCount, requiredArmCount, supportCount, profileSupportCount, submodel,
       squareBarLength, loadBarLength, diffuserLength, liraLength, protectorLength, enclosureLength,
       agataMinimumLineCm: minimumLine,
@@ -171,19 +175,18 @@ export function calculateAgataProfileSupportCount(width) {
   return Math.max(1, Math.min(7, Math.ceil((Math.max(0, Number(width) || 0) - 300) / 150) + 1));
 }
 
-export function calculateAgataSupportCount({ width, minimumLine, armCount, parameters }) {
+// Taller, 05/11/2026: dos soportes por brazo y, con más de 6 m de frente, dos más. Cada juego (SOFT, SOTE)
+// trae dos soportes: 650×200 con dos brazos gastó 3 juegos y 717×400 con tres, 4 (Q-AG04).
+// El límite es «Inicio de soportes» de los parámetros (600 cm).
+export function calculateAgataSupportCount({ width, armCount, parameters }) {
   const front = Math.max(0, Number(width) || 0);
   const arms = Math.max(2, Math.min(4, Number(armCount) || 2));
-  const base = Math.max(1, Math.ceil((front - parameters.supportBaseStartWidth) / parameters.supportBaseStepWidth));
-  const corner = front > Number(minimumLine || 0) + 30 ? 1 : 0;
-  const armSupports = (arms - 2) * 2;
-  const clearSpan = front - (arms - 2) * (Number(minimumLine || 0) / arms);
-  const intermediate = clearSpan < 400 ? 1 : 2;
-  return base + corner + armSupports + intermediate;
+  const soportes = arms * 2 + (front > Number(parameters?.supportBaseStartWidth ?? 600) ? 2 : 0);
+  return soportes / 2;
 }
 
 function buildMaterials(context) {
-  const { awning, device, placement, submodel, lacado, fabric, separateValance, armCount, supportCount, profileSupportCount, bars, motorPower, fabricMl } = context;
+  const { awning, device, placement, submodel, lacado, fabric, separateValance, armCount, supportCount, profileSupportCount, bars, motorPower, motorControl, fabricMl } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const suffix = lacado.suffix;
   // Brazos y soportes de brazo: un juego por cada dos brazos y un suelto si son tres.
@@ -225,19 +228,22 @@ function buildMaterials(context) {
   if (submodel === 'COFRE') materials.push(...barLines(bars.bottom, (length) => coloredStock('PRIMODUL', suffix, length), units, 'PERFIL INFERIOR ÁGATA BOX'));
 
   if (device === 'MOTOR') {
-    const remote = resolveMotorRemote(awning.sensor);
-    // Taller, 30/09/2026 (Q-AG02): motor siempre Sunea, también en el Open y sin cofre. Va con
-    // la rueda Ø78, la corona LT60 a Ø78 (11 OF) y el kit de tornillos del motor (10 OF).
+    // Taller, 30/09/2026 (Q-AG02): motor siempre Sunea, también en el Open y sin cofre; con interruptor, el Orea WT
+    // (Iván, 05/11/2026), sin mando ni sensor. Va con la rueda Ø78, la corona LT60 a Ø78 (11 OF) y el kit de
+    // tornillos del motor (10 OF).
     materials.push(
-      line(motorCode(motorPower), units, `MOTOR SOMFY SUNEA ${motorLabel(motorPower)} IO`),
+      line(motorCode(motorPower, motorControl), units, motorName(motorPower, motorControl)),
       line('RUEDAMOT78', units, 'RUEDA MOTRIZ Ø78'),
       line('CORONALT60DESC', units, 'CORONA ADAPTADA LT60 A Ø78'),
       line('SOPORTEUNVHIPRO', units, 'SOPORTE UNIVERSAL HIPRO'),
-      line('KITTORMODUL', units, 'KIT TORNILLOS FIJACION MOTOR MODULBOX'),
-      { ...line(remote.code, units, remote.description), aggregation: 'max' }
+      line('KITTORMODUL', units, 'KIT TORNILLOS FIJACION MOTOR MODULBOX')
     );
-    const sensor = sensorMaterial(awning.sensor);
-    if (sensor) materials.push({ ...sensor, quantity: units, aggregation: 'max' });
+    if (motorControl === 'RADIO') {
+      const remote = resolveMotorRemote(awning.sensor);
+      materials.push({ ...line(remote.code, units, remote.description), aggregation: 'max' });
+      const sensor = sensorMaterial(awning.sensor);
+      if (sensor) materials.push({ ...sensor, quantity: units, aggregation: 'max' });
+    }
   } else {
     const height = Math.max(0, Number(awning.crankHeight) || 0);
     materials.push(
@@ -255,7 +261,7 @@ function buildMaterials(context) {
 }
 
 function buildDespiece(context) {
-  const { awning, device, placement, submodel, lacado, armCount, supportCount, profileSupportCount, bars, motorPower, lengths } = context;
+  const { awning, device, placement, submodel, lacado, armCount, supportCount, profileSupportCount, bars, motorPower, motorControl, minimumTorque, lengths } = context;
   const units = Math.max(1, Number(awning.units) || 1);
   const suffix = lacado.suffix;
   const rows = [];
@@ -278,7 +284,8 @@ function buildDespiece(context) {
   patinLines(suffix, units).forEach((item) => push(8, item.description, item.code, item.quantity));
   if (device === 'MOTOR') {
     push(9, 'RUEDA MOTRIZ Ø78', 'RUEDAMOT78', units);
-    push(10, `MOTOR SOMFY SUNEA ${motorLabel(motorPower)} IO`, motorCode(motorPower), units);
+    // El par mínimo de la tarifa Llaza, para que el taller vea por qué va ese motor (Iván, 05/11/2026).
+    push(10, `${motorName(motorPower, motorControl)}${minimumTorque ? ` · PAR MÍN. ${minimumTorque} NM` : ''}`, motorCode(motorPower, motorControl), units);
     push(11, 'CORONA ADAPTADA LT60 A Ø78', 'CORONALT60DESC', units);
     push(11, 'KIT TORNILLOS FIJACION MOTOR MODULBOX', 'KITTORMODUL', units);
   } else {
@@ -296,8 +303,8 @@ function buildDespiece(context) {
   }
   push(19, 'JUEGO SOPORTE PUNTA MÁQUINA ÁGATA BOX', colored('SOMPMODUL', suffix), units);
   if (submodel === 'COFRE') pushBars(20, 'PERFIL INFERIOR ÁGATA BOX', bars.bottom, (length) => coloredStock('PRIMODUL', suffix, length), units, lengths.enclosureLength);
-  if (device === 'MOTOR') {
-    // Mando y sensor, como en los demás modelos: la hoja los pone en ELEMENTOS ACCESORIOS.
+  if (device === 'MOTOR' && motorControl === 'RADIO') {
+    // Mando y sensor, como en los demás modelos: la hoja los pone en ELEMENTOS ACCESORIOS. Con interruptor no van.
     const remote = resolveMotorRemote(awning.sensor);
     push(21, remote.description, remote.code, units);
     const sensor = sensorMaterial(awning.sensor);
@@ -358,7 +365,7 @@ function coloredStock(prefix, suffix, stockLength) {
 }
 
 // Barras de cada perfil del Ágata para su corte (Q-A06). Con un color sin ese perfil se
-// toman los largos del blanco, que va a lacar.
+// toman los largos del blanco; la pieza se pide en el color (el Ágata no se manda a lacar, 05/11/2026).
 function agataBars(suffix, lengths, submodel) {
   const colored = (prefix, cut) => barsForCut(profileLengthsOrWhite(prefix, suffix), cut);
   const closed = submodel !== 'OPEN';
@@ -385,7 +392,7 @@ function barLines(list, code, perAwning, description) {
 // Taller, 30/09/2026 (Q-AG01): patines siempre, de codo (KIT PATINES BRAZO) y de horquilla
 // (KIT PATINES SOPORTE BRAZO). Se consumen dos juegos de cada por toldo (9 de las 11 OF
 // con patines desde 2023). En RPS solo siguen vivos el blanco y el negro (el de codo negro
-// es PABMODULNEGR); los demás colores están de baja desde 2023 y van en blanco a lacar.
+// es PABMODULNEGR); los demás colores están de baja desde 2023 y se piden en el color (05/11/2026).
 function patinLines(suffix, units) {
   const elbow = suffix === 'NE11' ? 'PABMODULNEGR' : colored('PABMODUL', suffix);
   return [
@@ -409,7 +416,11 @@ function joinKitLines(width, units) {
 // El Sunea de 50, 100 y 120 solo existe a 12 rpm: SUNEAIO100//17 no está en RPS.
 const motorSpeedByPower = Object.freeze({ 50: 12, 100: 12, 120: 12 });
 function motorLabel(power) { return `${power}/${motorSpeedByPower[power] || 17}`; }
-function motorCode(power) { return `SUNEAIO${motorLabel(power).replace('/', '//')}`; }
+function motorCode(power, control = 'RADIO') { return `${control === 'INTERRUPTOR' ? 'OREAWT' : 'SUNEAIO'}${motorLabel(power).replace('/', '//')}`; }
+function motorName(power, control = 'RADIO') {
+  return control === 'INTERRUPTOR' ? `MOTOR SOMFY OREA ${motorLabel(power)} WT` : `MOTOR SOMFY SUNEA ${motorLabel(power)} IO`;
+}
+function normalizeMotorControl(value) { return String(value || '').trim().toUpperCase() === 'INTERRUPTOR' ? 'INTERRUPTOR' : 'RADIO'; }
 
 function resolveMotorPower(value, fallback) {
   const parsed = Number(String(value || '').match(/\d+/)?.[0]);
