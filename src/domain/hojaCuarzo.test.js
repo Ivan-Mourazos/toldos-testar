@@ -53,3 +53,28 @@ describe('hoja de las tapas del Cuarzo Box', () => {
     expect((await paginas(order)).some(esHoja)).toBe(false);
   });
 });
+
+// En producción la estructura y las telas se imprimen con Chromium y se unen con las páginas de pdfkit: la hoja de las
+// tapas tiene que seguir detrás de la estructura impresa.
+describe('hoja de las tapas con las hojas impresas en HTML', () => {
+  test('va detrás de la estructura impresa', async () => {
+    const pdfLib = await import('pdf-lib');
+    const renderSheets = async (hojas) => {
+      const doc = await pdfLib.PDFDocument.create();
+      const font = await doc.embedFont(pdfLib.StandardFonts.Helvetica);
+      for (const hoja of hojas) {
+        const page = doc.addPage(hoja.kind === 'estructura' ? [595, 420] : [842, 595]);
+        page.drawText(hoja.kind === 'estructura' ? 'ESTRUCTURA IMPRESA' : 'TELAS IMPRESAS', { x: 40, y: 200, size: 20, font });
+      }
+      return { pdf: Buffer.from(await doc.save()), pageCounts: hojas.map(() => 1) };
+    };
+    const order = pedido([cuarzo()]);
+    const pdf = await buildOrderPlanteamientoPdf({ order, calculation: calculateOrder(order), renderSheets, htmlStructure: true, htmlFabric: true });
+    const doc = await getDocument({ data: new Uint8Array(pdf) }).promise;
+    const textos = [];
+    for (let n = 1; n <= doc.numPages; n++) textos.push((await (await doc.getPage(n)).getTextContent()).items.map((i) => i.str).join(' '));
+    const i = textos.findIndex((t) => /Tapas aluminio/.test(t));
+    expect(textos[i - 1]).toContain('ESTRUCTURA IMPRESA');
+    expect(textos.filter((t) => /Tapas aluminio/.test(t))).toHaveLength(1);
+  });
+});
