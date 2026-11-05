@@ -39,8 +39,13 @@ programar**):
   al volver a generar la web dice qué materiales cambian respecto a lo subido, para ajustar la reserva a mano.
 - Desaparece la necesidad del «_2». Los «_2» que ya existen se siguen abriendo.
 
-Dudas abiertas: ¿una OF ya generada se puede volver a generar en una entrega nueva (corrección), o solo OF nuevas?
-¿El corte de la entrega 2 es un DWG aparte o el mismo DWG con un recuadro más?
+Decidido (05/11/2026, Iván: «continúa con el resto», con la opción prudente; se puede cambiar tras probarlo):
+- Una OF ya generada **sí** se puede volver a generar en una entrega nueva, como corrección: la web avisa de qué
+  materiales cambian respecto a lo ya subido a RPS para ajustar la reserva a mano.
+- El corte de la entrega 2 va en su **propio DWG** (`AR2603626-2.dwg`) y sus propios DXF, sin tocar los de la
+  entrega 1, que pueden estar ya cortados.
+
+La fase 1 (toldos) está en `main` desde el 05/11/2026 (0185488), revisada por Claude y por Argon.
 
 ## Arreglos sueltos
 
