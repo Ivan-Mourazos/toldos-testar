@@ -68,6 +68,9 @@ export interface Puerta {
   entradas: Entrada[];
   ventanas: Ventana[];
   enrollable: { T: number; D: number; margen: number; sacoPartido?:boolean;
+    /** Puerta enrollable ciega, sin ventanal (Iván, 06/11/2026, AR2605429): un solo paño del saco a la cabecera,
+     * sin cristal ni cachos; T, D y margen no cuentan. */
+    sinVentanal?: boolean;
     /** Sin E.T. encima: T llega al borde del paño y no hay marcas de esa E.T.
      * El cristal y los cachos solapan 2 cm con el paño. Sin el campo, con E.T. como siempre. */
     sinEtArriba?: boolean;

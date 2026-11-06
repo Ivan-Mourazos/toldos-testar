@@ -145,21 +145,26 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     const e = p.enrollable, ventanales=ventanalesEnrollable(p);
     const altoVentanales=ventanales.reduce((s,v)=>s+v.D,0), s = sacoPuerta(p), origenInferior = s.rematado;
     // La E.T. que no lleva el ventanal, arriba o abajo (Iván, 27/10/2026, AR2605247): ni se corta ni se marca.
-    const etVentanal=(t:Entrada)=>Boolean(e.sinEtArriba)&&Math.abs(t.altura-(p.alto-e.T))<.01
-      ||Boolean(e.sinEtAbajo)&&Math.abs(t.altura-(p.alto-e.T-altoVentanales))<.01;
+    const ciega=Boolean(e.sinVentanal);
+    const etVentanal=(t:Entrada)=>!ciega&&(Boolean(e.sinEtArriba)&&Math.abs(t.altura-(p.alto-e.T))<.01
+      ||Boolean(e.sinEtAbajo)&&Math.abs(t.altura-(p.alto-e.T-altoVentanales))<.01);
     // El paño inferior arranca en el rematado del saco, lo libre (13 con el de 120), y acaba donde siempre; el saco
     // sube 2 más para la soldadura (Iván, 24/10/2026).
     const bordeSuperior = p.alto - e.T - (e.sinEtArriba ? 0 : 3.75);
     const bordeInferior = p.alto - e.T - altoVentanales + (e.sinEtAbajo ? 0 : 3.75);
     const inferior = n(bordeInferior - origenInferior);
-    if (!positivo(e.T) || ventanales.some(v=>!positivo(v.D)||v.altoVisible<=0||!positivo(v.margen)||2*v.margen>=p.frente) || e.T + altoVentanales >= p.alto) aviso('VENTANAL', 'Revisa T, las cotas de los ventanales y los márgenes laterales.');
+    if (!ciega && (!positivo(e.T) || ventanales.some(v=>!positivo(v.D)||v.altoVisible<=0||!positivo(v.margen)||2*v.margen>=p.frente) || e.T + altoVentanales >= p.alto)) aviso('VENTANAL', 'Revisa T, las cotas de los ventanales y los márgenes laterales.');
     const incorporadas=new Set<number>();
-    for (const [nombre,h,origen] of [['superior',p.alto+3.5-bordeSuperior,bordeSuperior],['inferior',inferior,origenInferior]] as const) {
+    // Sin ventanal, un solo paño del rematado del saco a la cabecera (Iván, 06/11/2026, AR2605429).
+    const panos=ciega
+      ? [['inferior',n(p.alto+3.5-origenInferior),origenInferior]] as const
+      : [['superior',p.alto+3.5-bordeSuperior,bordeSuperior],['inferior',inferior,origenInferior]] as const;
+    for (const [nombre,h,origen] of panos) {
       const manual=e.empates.filter(u=>u.pano===nombre);
       const tubos=p.entradas.map((t,i)=>({eje:t.altura-origen,solape:REGLAS_ENROLLABLE.solapeEntrada,tubo:i+1})).filter(t=>!etVentanal(p.entradas[t.tubo-1]));
       const plan=repartirPanos({desde:0,hasta:h,frente:ancho,rollo:p.rollo,tubos,normal:true,indicados:manual.length?manual.map(u=>({eje:u.altura,solape:u.solape,tubo:u.tubo})):undefined});
       const antes=paneles.length;
-      reparto(plan,`Paño ${nombre}`);
+      reparto(plan,ciega?'Paño':`Paño ${nombre}`);
       r.uniones.push(...plan.uniones.map(u=>({altura:u.eje+origen,solape:u.solape,tubo:u.tubo})));
       plan.uniones.forEach(u=>{if(u.tubo)incorporadas.add(u.tubo);});
       // El origen del tramo se conserva también para el alzado y las ventanas de la futura ficha.
@@ -169,11 +174,13 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       const marcarEn=(y:number,dir?:1|-1)=>{const panel=grupo.find(t=>y>=t.desde&&y<=t.hasta);if(panel)marca(panel.pieza,y-panel.desde,dir);};
       // Sin E.T., ninguna raya en ese borde; se conservan la varilla y la soldadura del saco.
       if(nombre==='inferior'||!e.sinEtArriba) marcarEn(origen+(nombre==='superior'?7.5:2),nombre==='superior'?-1:undefined);
-      if(nombre==='superior'||!e.sinEtAbajo) marcarEn(origen+h-(nombre==='superior'?7:7.5),nombre==='inferior'?1:undefined);
+      // Sin ventanal, la raya de arriba es la de la cabecera, como en el paño superior.
+      if(ciega) marcarEn(origen+h-7);
+      else if(nombre==='superior'||!e.sinEtAbajo) marcarEn(origen+h-(nombre==='superior'?7:7.5),nombre==='inferior'?1:undefined);
       for(const [i,t] of p.entradas.entries()) {
         if(plan.uniones.some(u=>u.tubo===i+1)||etVentanal(t))continue;
         const y=t.altura-REGLAS_ENROLLABLE.solapeEntrada/2;
-        if(y>origen+7.5 && y<origen+h-(nombre==='superior'?7:7.5)-.001)marcarEn(y,1);
+        if(y>origen+7.5 && y<origen+h-(nombre==='superior'||ciega?7:7.5)-.001)marcarEn(y,1);
       }
     }
     if(ventanales.length===1) {

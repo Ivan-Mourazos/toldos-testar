@@ -4,7 +4,10 @@ import type { Puerta } from './tipos.ts';
  * El cristal y los cachos solapan 2 cm con ese paño; la E.T. conserva 7,5 cm de dibujo y 8 de corte.
  */
 export function ventanalesEnrollable(p: Puerta) {
-  const e = p.enrollable, vs = [{ D: e.D, margen: e.margen }, ...e.ventanales ?? []];
+  const e = p.enrollable;
+  // Puerta ciega: sin ventanales (ni cristal, ni cachos, ni paños partidos por ellos).
+  if (e.sinVentanal) return [];
+  const vs = [{ D: e.D, margen: e.margen }, ...e.ventanales ?? []];
   let desde = e.T;
   return vs.map((v, i) => {
     const hasta = desde + v.D, etArriba = !(i === 0 && e.sinEtArriba), etAbajo = !(i === vs.length - 1 && e.sinEtAbajo);

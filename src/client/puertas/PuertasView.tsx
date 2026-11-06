@@ -122,7 +122,10 @@ function Configurar({p,cambiar,corte,derecha='alzado',letra='A'}:{p:Puerta;cambi
       </div>}</fieldset>
         </>}
         {ver('estructura')&&<>
-        {p.modelo==='PUERTAENR'&&<fieldset><legend>Ventanal superior</legend><div className="puerta-campos">
+        {p.modelo==='PUERTAENR'&&<fieldset><legend>Ventanal</legend>
+          {/* Iván, 06/11/2026 (AR2605429): enrollable ciega, sin ventanal. */}
+          <label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.enrollable.sinVentanal)} onChange={e=>set('enrollable',{...p.enrollable,sinVentanal:e.target.checked})}/>Sin ventanal: puerta ciega, un solo paño del saco a la cabecera</label>
+          {!p.enrollable.sinVentanal&&<><div className="puerta-campos">
           <Numero titulo={p.enrollable.sinEtArriba?'T · desde arriba al borde del paño (cm)':'T · desde arriba al eje (cm)'} valor={p.enrollable.T||null} cambiar={v=>set('enrollable',{...p.enrollable,T:v??0})}/>
           <Numero titulo={p.enrollable.sinEtArriba?(p.enrollable.sinEtAbajo&&!p.enrollable.ventanales?.length?'D · entre bordes de paño (cm)':'D · del borde del paño al eje (cm)'):p.enrollable.sinEtAbajo&&!p.enrollable.ventanales?.length?'D · del eje al borde del paño (cm)':'D · entre ejes (cm)'} valor={p.enrollable.D} cambiar={v=>set('enrollable',{...p.enrollable,D:v??0})}/>
           <Numero titulo="Margen lateral m (cm)" valor={p.enrollable.margen||null} cambiar={v=>set('enrollable',{...p.enrollable,margen:v??0})}/>
@@ -136,7 +139,7 @@ function Configurar({p,cambiar,corte,derecha='alzado',letra='A'}:{p:Puerta;cambi
             <button type="button" className="ghost-button" onClick={()=>set('enrollable',{...p.enrollable,ventanales:p.enrollable.ventanales!.filter((_,j)=>j!==i)})}>Quitar ventanal {i+2}</button>
           </div></fieldset>)}
           <button type="button" className="ghost-button" disabled={(p.enrollable.ventanales?.length??0)>=99} onClick={()=>set('enrollable',{...p.enrollable,ventanales:[...p.enrollable.ventanales??[],{D:0,margen:0}]})}>Añadir ventanal debajo</button>
-          {Boolean(p.enrollable.ventanales?.length)&&<p className="puerta-ayuda">Ventanales consecutivos: comparten el eje intermedio. Se cortan sus cachos por separado y dos entradas entre ventanales, una por delante y otra por detrás. Indica las cotas del dibujo para cada uno.</p>}
+          {Boolean(p.enrollable.ventanales?.length)&&<p className="puerta-ayuda">Ventanales consecutivos: comparten el eje intermedio. Se cortan sus cachos por separado y dos entradas entre ventanales, una por delante y otra por detrás. Indica las cotas del dibujo para cada uno.</p>}</>}
           <div className="puerta-campos"><TramosET p={p} cambiar={cambiar}/></div>
           <p className="puerta-ayuda">Paño inferior: {propuestaInferior>0?`${num(propuestaInferior)} cm`:'pendiente de medidas'} </p></fieldset>}
         {p.modelo==='PUERTAPLE'&&<fieldset><legend>Tubos</legend>

@@ -112,7 +112,8 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
     formas.push({ tipo: 'texto', x, y, tamano, lineas: [valor], ancla: 'middle', taller: { guia: guia ?? null } });
 
   const tubos = ple ? alturasTubos(p) : p.entradas.map(t => t.altura);
-  const T = enr && p.enrollable.T > 0 ? p.enrollable.T : 0;
+  // Sin ventanal (puerta ciega), como si no hubiera T: un solo paño.
+  const T = enr && p.enrollable.T > 0 && !p.enrollable.sinVentanal ? p.enrollable.T : 0;
   const ventanales = enr && T > 0 ? ventanalesEnrollable(p) : [];
   const ejesVentanal = [T];
   for (const v of ventanales) ejesVentanal.push(ejesVentanal.at(-1)! + v.D);
@@ -412,7 +413,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
     texto: { x: -6, y: y1 + 13, ancla: 'end' } });
   nota(enr ? 'COSER VELCRO DERECHO DE 3 SUAVE' : ple ? 'COSER VELCRO DERECHO DE 5 SUAVE' : 'VELCRO SUAVE REVÉS DE 3',
     wSaco / 2, y1 + 25, altoVelcro, [wSaco * 0.2, y1 + 20, 4.5, y1]);
-  if (enr) {
+  if (enr && !p.enrollable?.sinVentanal) {
     formas.push({ tipo: 'texto', x: F / 2, y: y1 + 46, tamano: 7.5, ancla: 'middle',
       lineas: ['LOS CACHOS DE LOS LATERALES DEL CRISTAL', 'VAN 1CM MÁS GRANDE PARA DESPUÉS ESCUADRARLO'], taller: { guia: null } });
   }

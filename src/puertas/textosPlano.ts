@@ -130,7 +130,7 @@ export function plantillaTextosPuerta(p: Puerta, resultado: ResultadoPuerta = ca
   const grande = p.modelo === 'PUERTAUTO' ? 25 : p.modelo === 'PUERTAPLE' ? 20 : F >= 400 ? 30 : 20;
   const tubos = p.modelo === 'PUERTAPLE' ? alturasTubos(p) : p.entradas.map(e => e.altura);
   const techo = Math.min(H, ...tubos.filter(y => y < H && y > 0).map(y => H - y),
-    ...(p.modelo === 'PUERTAENR' && p.enrollable.T > 0 ? [p.enrollable.T] : []));
+    ...(p.modelo === 'PUERTAENR' && p.enrollable.T > 0 && !p.enrollable.sinVentanal ? [p.enrollable.T] : []));
   const lateral = (id: string, texto: string, x: number, y: number, tamano: number) => add(id, texto, x, y, tamano, undefined, -90);
 
   // Alturas y distribución de AR2604638/4725 y AR2605036; las cajas libres adaptan la plantilla a cada pedido.
@@ -232,7 +232,7 @@ export function colocarTextosPuerta(p: Puerta, resultado?: ResultadoPuerta): Tex
   const H = p.alto;
 
   const ventanas: CajaTexto[] =
-    p.modelo === 'PUERTAENR' && p.enrollable.T > 0
+    p.modelo === 'PUERTAENR' && p.enrollable.T > 0 && !p.enrollable.sinVentanal
       ? [{ x: 0, y: p.enrollable.T - 4, ancho: F,
           alto: [p.enrollable.D, ...p.enrollable.ventanales?.map(v => v.D) ?? []].reduce((s, h) => s + h, 0) + 8 }]
       : p.ventanas.map(v => ({

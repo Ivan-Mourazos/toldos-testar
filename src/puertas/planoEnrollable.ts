@@ -75,7 +75,7 @@ function huecoRotulo(abajo: number, arriba: number, obstaculos: number[], margen
 }
 
 export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSaco = false): { lienzo: Lienzo; zona: Zona } {
-  const l = vacio(), F = p.frente, H = p.alto, T = p.enrollable.T;
+  const l = vacio(), F = p.frente, H = p.alto, T = p.enrollable.sinVentanal ? 0 : p.enrollable.T;
   const r = calcularPuerta(p), saco = sacoPuerta(p), bajo = saco.rematado, hs = saco.corte, hp = saco.altoPestana;
   const ventanales = T > 0 ? ventanalesEnrollable(p) : [];
   const ejes: number[] = ventanales.length ? [T] : [];
@@ -187,7 +187,8 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSac
     else actual += (actual ? ' ' : '') + palabra;
   }
   if (actual) lineas.push(actual);
-  lineas.forEach((v, i) => texto(l, v, F / 2, ys - hs - 48 - i * hNota * 1.4, hNota, { centrado: true }));
+  // Una puerta ciega no lleva cristal: sin la nota de sus cachos.
+  if (!p.enrollable.sinVentanal) lineas.forEach((v, i) => texto(l, v, F / 2, ys - hs - 48 - i * hNota * 1.4, hNota, { centrado: true }));
 
   // Los empates y bolsillos configurados conservan sus marcas; nunca crean una pieza nueva.
   for (const u of r.uniones) {
