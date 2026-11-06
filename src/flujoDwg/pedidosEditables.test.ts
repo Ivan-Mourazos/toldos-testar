@@ -61,7 +61,8 @@ async function preparar(tipo: 'puertas' | 'remolques', conPdf = false) {
   return { servicio, cuerpo, obtener, codigo, raiz, produccion: (v: boolean) => { produccion = v; }, estado: (v: string) => { estado = v; }, fallar: () => { fallaGuardado = true; }, desconectar: () => { disponible = false; }, sinBorradores: () => { conBorradores = false; } };
 }
 
-describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido editable', tipo => {
+// Integración con archivos y PDF reales: el límite no mide rendimiento del servicio.
+describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido editable', { timeout: 15_000 }, tipo => {
   it('guardar un generado sin cambiar sus datos no abre una entrega vacía ni toca archivos', async () => {
     const t = await preparar(tipo);
     await t.servicio.guardar(t.cuerpo());

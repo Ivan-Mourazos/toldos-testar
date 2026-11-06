@@ -1244,7 +1244,7 @@ app.post('/api/reviews', async (req, res, next) => {
     if (existing?.status === 'PRODUCED' && !ofsEntrega(review).length) return res.json({ ok: true, unchanged: true, review: existing });
     const avisoEntrada = avisoEntradaEntrega(review, existing, req.body);
     if (avisoEntrada) return res.status(409).json(avisoEntrada);
-    // El histórico ya está congelado en entregas: ninguna operación del corte recibe el plano anterior.
+    // Las correcciones parten del corte de su entrega; una entrega nueva prepara otro plano.
     if (existing?.status === 'PRODUCED' && !review.entregas.some(e => e.numero === review.entregaActual)) existing = null;
     else if (existing) existing = { ...existing, ...review.entregas.find(e => e.numero === review.entregaActual)?.instantanea, corteConfirmado: review.corteConfirmado ?? existing.corteConfirmado };
     const order = normalizeOrder(pedidoEntrega(review).order);

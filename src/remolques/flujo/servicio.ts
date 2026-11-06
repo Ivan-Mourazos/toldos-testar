@@ -326,7 +326,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
         throw new ErrorPedidoRemolques(`${orderCode} ya está guardado como pedido de toldos: un pedido es de toldos o de remolques. Revisa el número.`, 409);
       }
       const existente = await deps.almacen.obtener(orderCode);
-      // Corregir abre otra entrega; los archivos generados quedan en su historial.
+      // Las OF nuevas abren otra entrega; las correcciones conservan su número.
       const decision = saveReviewDecision(existente, true);
       if (decision.action === "refuse") throw new ErrorPedidoRemolques(decision.error, decision.statusCode);
       const aprobacion = datos.elementos.map((e, i) => ({ letter: String(i + 1), of: e.input.cabecera.ordenFabricacion || '' }));

@@ -48,7 +48,7 @@ export function ElegirDestinoEntrega({ ruta, codigo, preguntar, cancelar, genera
       const existente = datos.existentes.find(e => e.numero === destino.numero);
       const nombre = /^AR(\d{2})(\d{5})/.exec(codigo);
       const pdf = nombre ? `AR.${nombre[1]}.${nombre[2]}-${destino.numero}.pdf` : `${codigo}-${destino.numero}.pdf`;
-      const eleccion = await preguntar({ title: `Sustituir la entrega ${destino.numero}`, message: `Se sustituirá ${pdf} y sus archivos de corte. Las reservas de las OF de este pedido se volverán a subir y RPS sustituirá las suyas.`,
+      const eleccion = await preguntar({ title: `Sustituir la entrega ${destino.numero}`, message: `Se sustituirá ${pdf} y sus archivos de corte. Las reservas de las OF de esta entrega se volverán a subir y RPS sustituirá las suyas.`,
         details: [...new Set([pdf, `${codigo}-${destino.numero}.dwg / .dxf`, ...(existente?.archivos.map(a => a.filename) ?? [])])], confirmLabel: 'Sí, sustituir archivos', cancelLabel: 'Cancelar', tone: 'danger' });
       if (eleccion !== 'confirm') { cancelar(); return; }
     }

@@ -216,7 +216,8 @@ try {
     const previo = await request(generarRuta, { savedBy: 'IVÁN', includeNonAcrylicFabrics: true, confirmOverwrite: true });
     assert.ok(previo.data.needsEntregaConfirmation, JSON.stringify(previo.data));
     await abrir();
-    await page.getByRole('button', { name: 'Generar archivos', exact: true }).click();
+    // El simulado acaba de aprobar la OF: la caché dura 30 s y la ficha consulta cada minuto.
+    await page.getByRole('button', { name: 'Generar archivos', exact: true }).click({ timeout: 90_000 });
     await page.getByRole('dialog').getByText(`Sustituir -${primeraN}`, { exact: true }).waitFor();
     assert.equal(await page.getByRole('radio', { name: `Nuevo: -${segundaN + 1}`, exact: true }).isDisabled(), true);
     const renumerar = await request(generarRuta, { savedBy: 'IVÁN', confirmarEntrega: true,

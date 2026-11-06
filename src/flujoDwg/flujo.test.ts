@@ -45,7 +45,8 @@ afterEach(async () => { await fs.rm(raiz, { recursive: true, force: true }); });
 const preparar = async (carpeta: string) => ({ avisos: [] as string[], ficheros: resultado.plano.filter((p) => p && !p.incluidoEn)
   .map((p, i): FicheroPlano => ({ filename: nombres[i], savedPath: path.join(carpeta, nombres[i]), contenido: Buffer.from(p!.dxf, 'utf8') })) });
 
-describe('toldos: aceptación al pasar a revisión, sin Confirmar corte', () => {
+// Estos recorridos escriben y restauran varios planos: con seis trabajadores en Windows pueden superar 5 s.
+describe('toldos: aceptación al pasar a revisión, sin Confirmar corte', { timeout: 15_000 }, () => {
   it('en simulación mantener o aceptar no mueve ni borra el borrador existente', async () => {
     await editable.borrador({ orderCode: pedido.orderCode, preparar });
     const ruta = path.join(raiz, 'borradores', nombres[0]);

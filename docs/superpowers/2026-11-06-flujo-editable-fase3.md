@@ -125,6 +125,8 @@ Conserva fechas, autor, archivos y corte, marcado legacy. Leer no reescribe
 pedidos. Los códigos `_2`, `_12` existentes se abren igual. La conversión
 RPS conserva un sufijo válido: `AR2603626_2-1.pdf` pasa a
 `AR.26.03626-2-1.pdf`, sin acabar en un guion vacío.
+El catálogo reconoce también ese nombre como entrega del pedido `_2`,
+sin atribuírselo al pedido base.
 
 ## PDF recuperables y bot
 
@@ -147,9 +149,15 @@ lectura de RPS, destino ocupado, sustitución, mezcla parcial y tela nueva.
 También se comprueban las dos generaciones de un pedido mixto, la elección
 de sustituir un número menor, los históricos con adjunto y los `_2`.
 
-Pendiente de consignar aquí los resultados finales de TypeScript, ESLint,
-Vitest completo con seis trabajadores y Vite. No está `pnpm` en PATH;
-se ejecutan sus mismos binarios locales:
+Verificación final del 06/11/2026:
+
+- TypeScript: correcto, sin errores.
+- ESLint completo: correcto, sin errores.
+- Vitest con seis trabajadores: 396 archivos y 5090 pruebas correctas.
+- Vite: compilación correcta. Conserva el aviso de paquetes mayores de 500 kB.
+- Playwright: los doce recorridos completos correctos y sin errores de pantalla.
+
+No está `pnpm` en PATH; se ejecutaron sus mismos binarios locales:
 
 ```text
 node node_modules/typescript/bin/tsc --noEmit
@@ -158,24 +166,45 @@ node node_modules/vitest/vitest.mjs run --maxWorkers=6
 node node_modules/vite/bin/vite.js build
 ```
 
-TEMP y TMP de las pruebas apuntan a `tmp/test-temp/`. Una pasada intermedia
-completa tuvo un fallo en una prueba previa del flujo del DWG; pasó aislada
-sin cambiarla ni aumentar límites. Se repite el conjunto con el servidor y
-el navegador detenidos.
+TEMP y TMP de las pruebas apuntan a `tmp/test-temp/`. La primera pasada
+completa de esta continuación terminó con 5087 pruebas correctas y tres
+agotamientos del límite predeterminado de 5 s, en dos grupos de integración
+que escriben, leen y restauran planos. La prueba de regeneración volvió a
+agotar ese límite al ejecutarla aparte mientras terminaba la suite.
+Esos dos grupos tienen ahora 15 s; conservan todas sus aserciones. Los
+límites particulares de 20 o 30 s y el resto de la suite no cambian.
+La repetición final pasó con el servidor y el navegador detenidos.
 
 Recorrido reproducible: `scripts/test-entregas-numeracion-e2e.mjs`. Solo
-usa 4314/4324, comprueba simulationMode=true y fileWritesEnabled=false,
+usa 4312/4322, comprueba simulationMode=true y fileWritesEnabled=false,
 verifica que las rutas estén bajo tmp y devuelve productionEnabled a false.
 No se toca el .90, no se hacen escrituras SQL ni salidas reales del taller.
+La aprobación del simulado cambia durante el recorrido: al volver a corregir,
+la prueba espera al refresco de la ficha, que consulta cada minuto; la caché
+del servidor dura 30 s. No se modifica ese comportamiento de la aplicación.
 
-La matriz final será de tres productos, claro/oscuro y 1280×720/1600×1000:
+La matriz final pasó en las doce combinaciones de tres productos,
+claro/oscuro y 1280×720/1600×1000:
 entrada parcial, entrega nueva, archivos anteriores intactos byte por byte,
 PDF con solo las OF de la entrega y adjunto completo, corrección en su mismo
 número, cancelación del selector y de la sustitución, retoque del corte y
 reenvío al bot sin rehacer PDF. Capturas y evidencias:
 
-- `tmp/ui-audit/flujo-editable-fase3b/capturas/`
-- `tmp/ui-audit/flujo-editable-fase3b/contactos/`
-- `tmp/ui-audit/flujo-editable-fase3b/resultados.json`
+- `tmp/ui-audit/fase3/capturas/` (120 capturas).
+- `tmp/ui-audit/fase3/contactos/` (las tres hojas completas revisadas).
+- `tmp/ui-audit/fase3/resultados.json` (los doce recorridos correctos).
 
-Pendiente de registrar la inspección visual final.
+Se revisaron las 120 capturas en sus hojas de contacto y los selectores a
+tamaño completo: tablas legibles, diálogo y botones dentro de la ventana en
+ambos tamaños y temas. Al corregir se ve el número original seleccionado y
+los demás destinos deshabilitados con su explicación. La sustitución pide
+confirmación y el reenvío avisa de que no se puede saber si el corte anterior
+ya se cortó. Los recorridos no registraron errores JavaScript de pantalla.
+
+Los casos añadidos en esta continuación fallaron antes de corregirlos:
+impedir renumerar correcciones por API y en pantalla, y reconocer históricos
+RPS de pedidos `_2`. Las OF nuevas siguen permitiendo elegir otro destino;
+una corrección posterior conserva el destino en el que se generaron.
+
+No quedan dudas nuevas de numeración. Los PDF antiguos sin adjunto no
+permiten conocer sus OF ni modelos; el listado mantiene «Excel antiguo».
