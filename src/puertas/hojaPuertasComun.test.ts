@@ -49,3 +49,17 @@ describe('la misma hoja y el mismo corte para todas las puertas', () => {
     expect(rayas.some(r => numero(r, 20) === 83)).toBe(true);
   });
 });
+
+describe('el bloque de junto al cajetín de Portanova', () => {
+  it('MATERIALES, IMPORTANTE y NOTAS DE CONFECCIÓN ordenados, sin los textos sueltos de la plantilla', () => {
+    const dxf = escribirPlanoPuertas({ pedido: pedidoDe('AR2600001', puerta4638()), cabecera, ofStockSacos: '0230811' });
+    const papel = registrosDxf(dxf).filter(r => r.tipo === 'MTEXT' && valor(r, 67) === '1').map(r => valor(r, 1) ?? '');
+    for (const titulo of ['IMPORTANTE', 'NOTAS DE CONFECCIÓN']) expect(papel).toContain(titulo);
+    expect(papel.filter(t => t.startsWith('MATERIALES: '))).toEqual(['MATERIALES: TRANSP. 1000MI  ·  LAC 900 AZUL 5002  ·  LAC 900 NEGRO']);
+    // Las notas viejas de la plantilla ya no están, ni en la hoja ni en el modelo.
+    expect(dxf.includes('NO PONER NUNCA LAS ETIQUETAS')).toBe(false);
+    const notas = papel.find(t => t.startsWith('· SACO NEGRO (900 GR) ABAJO'))!;
+    expect(notas.split('\\P')).toHaveLength(5);
+    expect(registrosDxf(dxf).some(r => r.tipo === 'VIEWPORT' && numero(r, 69) === 3)).toBe(false);
+  });
+});

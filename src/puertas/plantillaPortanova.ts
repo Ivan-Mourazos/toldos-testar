@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { ANCHO_CAJETIN } from '../domain/corteLona/cajetin.js';
-import { textoSeguro } from '../domain/corteLona/texto.js';
+import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { calcularPuerta } from './calcular.ts';
 import type { PedidoPuertas, Punto } from './tipos.ts';
 
@@ -71,6 +71,66 @@ function moverDetalle(src: string, dx: number, dy: number) {
 }
 
 /** Hoja fija de la oficina: solo se rellenan los campos y se encuadran alzado y corte. */
+/** Las notas de taller de la plantilla de Portanova, con su texto de siempre (Iván: «siempre la misma, notas y todo»). */
+const NOTAS_PORTANOVA = [
+  'SACO NEGRO (900 GR) ABAJO, SOLDADO ENCIMA DE LA SOLDADURA DE LA E.T.',
+  'SACO INFERIOR: SUBIR LA TEMPERATURA DE REFRIGERACIÓN AL SOLDAR.',
+  'ELECTRODO DE 2 EN TODO (VENTANAS INTERIORES CON CURVA: 2 DE AUMENTO ALREDEDOR).',
+  'BOLSILLO 30 X 17 CM (900 GR) CON SOPLETE EN EL SACO NEGRO, 1 CM BAJO LA E.T. INTERIOR.',
+  'NUNCA PONER LAS ETIQUETAS EN LA LONA.',
+];
+const AVISO_ET_PORTANOVA = 'E.T. INTERIORES DE LAS ENROLLABLES: DE 5 CM (NUNCA MENOS) A 5,5 CM COMO MÁXIMO. SOLDAR CON ELECTRODO DE 2 CM.';
+type TextoPapel = { x: number; y: number; h: number; ancho: number; valor: string; capa?: string };
+/** Salto de línea dentro de un texto de la hoja (la presentación lo pasa a \P del MTEXT). */
+const SALTO = String.fromCharCode(10);
+/** Cuántas líneas ocupa un texto con ese ancho y esa letra (Arial). */
+function lineasDe(valor: string, h: number, ancho: number) {
+  let n = 1, actual = '';
+  for (const palabra of valor.split(' ')) {
+    if (actual && anchoArial(`${actual} ${palabra}`, h) > ancho) { n++; actual = palabra; } else actual += (actual ? ' ' : '') + palabra;
+  }
+  return n;
+}
+/**
+ * El bloque de junto al cajetín, ordenado (Iván, 06/11/2026: «que quede todo más profesional»): arriba MATERIALES a la
+ * izquierda y el aviso de las E.T. en un recuadro a la derecha; debajo las notas, todas iguales; abajo el detalle del
+ * saco y el cajetín, que no se mueven. Medidas en mm de papel.
+ */
+export function bloqueNotasPortanova(materiales: string[]) {
+  // Iván, 06/11/2026: compacto y legible en papel. Arriba MATERIALES en una línea y las notas a todo lo ancho; abajo, el
+  // detalle del saco ocupando su hueco entero y el aviso de las E.T. del ancho del cajetín, apoyado encima de él.
+  const X0 = 164, X1 = 289.1, ARRIBA = 79.5, MEDIO = 289.1 - ANCHO_CAJETIN * ESCALA_CAJETIN, CAJETIN = 27.6;
+  const textos: TextoPapel[] = [], lineas: Punto[][] = [];
+  const hTitulo = 2.6, salto = hTitulo * 1.9, util = (X1 - X0) * .92;
+  const lista = `MATERIALES: ${materiales.join('  ·  ')}`;
+  const hMaterial = [2.4, 2.2, 2, 1.8, 1.6].find(h => lineasDe(lista, h, util) === 1) ?? 1.6;
+  const lineasMat = lineasDe(lista, hMaterial, util);
+  textos.push({ x: X0, y: ARRIBA, h: hMaterial, ancho: X1 - X0, valor: lista });
+  let y = ARRIBA - lineasMat * hMaterial * 1.3 - 1.5;
+  lineas.push([[X0, y], [X1, y]]);
+  y -= 2;
+  // Las notas: con su letra, hasta 2,3 mm; el interlineado real del MTEXT es 1,3 veces la letra.
+  const notas = NOTAS_PORTANOVA.map(v => `· ${v}`);
+  const hNota = [2.3, 2.2, 2.1, 2, 1.9, 1.8].find(h => notas.reduce((s, v) => s + lineasDe(v, h, util), 0) <= notas.length) ?? 1.8;
+  const lineasNotas = notas.reduce((s, v) => s + lineasDe(v, hNota, util), 0);
+  textos.push({ x: X0, y, h: hTitulo, ancho: X1 - X0, valor: 'NOTAS DE CONFECCIÓN' });
+  textos.push({ x: X0, y: y - salto, h: hNota, ancho: X1 - X0, valor: notas.join(SALTO) });
+  y -= salto + lineasNotas * hNota * 1.3 + 1.5;
+  lineas.push([[X0, y], [X1, y]]);
+  // El aviso, apoyado en el cajetín y de su mismo ancho.
+  const anchoAviso = X1 - MEDIO - 4, hAviso = 2.1;
+  const altoAviso = salto + lineasDe(AVISO_ET_PORTANOVA, hAviso, anchoAviso * .92) * hAviso * 1.3 + 1.5;
+  const techoAviso = CAJETIN + altoAviso;
+  textos.push({ x: MEDIO + 2, y: techoAviso - 1.5, h: hTitulo, ancho: anchoAviso, valor: 'IMPORTANTE', capa: 'referencias' });
+  textos.push({ x: MEDIO + 2, y: techoAviso - 1.5 - salto, h: hAviso, ancho: anchoAviso, valor: AVISO_ET_PORTANOVA, capa: 'referencias' });
+  lineas.push([[MEDIO, CAJETIN], [MEDIO, techoAviso], [X1, techoAviso], [X1, CAJETIN]]);
+  // El detalle del saco, en todo el hueco de abajo a la izquierda.
+  const detalle = { x0: X0 - 3, x1: MEDIO - 2, y0: 9, y1: y - 1.5 };
+  return { textos, lineas, detalle, // Las notas viejas de la plantilla, que están en el modelo junto al detalle, salen: van arriba, reescritas.
+    quitarTextos: ['MATERIALES', 'LAS ENTRADAS DE TUBO INTERIORES', 'ABAJO SACO NEGRO', 'PARA SOLDAR EL SACO INFERIOR',
+      'UTILIZAR EN TODO EL', 'BOLSILLO CORTADO', 'NO PONER NUNCA LAS ETIQUETAS', 'LAS E.T DE'], quitarVentanas: [3] };
+}
+
 export function presentacionPortanova(pedido: PedidoPuertas,
   cabecera: { cliente: string; tecnico: string; revisor: string; fecha: string },
   zonas: { toldos: Zona; corte: Zona }, altoVistaCorte?: number, tramosCorte?: Array<{ zona: Zona; papel: Zona }>,
@@ -90,8 +150,10 @@ export function presentacionPortanova(pedido: PedidoPuertas,
   const ventana = (z: Zona, centro: Punto, ancho: number, alto: number) => ({ z, centro, ancho, alto });
   // El detalle, 3 m por debajo de las puertas y alineado a su izquierda; el recuadro DIBUJO lo encierra también.
   const [dx, dy] = [zonas.toldos.x0 - CAJA_DETALLE.x0, zonas.toldos.y0 - 3 - CAJA_DETALLE.y1];
+  const detalleModelo = { x0: CAJA_DETALLE.x0 + dx, x1: CAJA_DETALLE.x1 + dx, y0: CAJA_DETALLE.y0 + dy, y1: CAJA_DETALLE.y1 + dy };
+  const bloque = bloqueNotasPortanova(materiales);
   return {
-    detalle: { x0: CAJA_DETALLE.x0 + dx, x1: CAJA_DETALLE.x1 + dx, y0: CAJA_DETALLE.y0 + dy, y1: CAJA_DETALLE.y1 + dy },
+    detalle: detalleModelo,
     plantilla: moverDetalle(plantilla, dx, dy).replaceAll('ENRROLLABLES', 'ENROLLABLES').replace('TIENES QUE IR', 'TIENEN QUE IR').replace('CM.SOLDAR', 'CM. SOLDAR')
       // Iván, 23/10/2026: el cajetín se comía texto. La nota del bolsillo, un poco más estrecha para que quepa en
       // el marco, y el aviso de las E.T. 1 mm más arriba, separado del cajetín.
@@ -108,8 +170,15 @@ export function presentacionPortanova(pedido: PedidoPuertas,
       ...Object.fromEntries((tramosCorte ?? []).map((t, i) => [i ? 6 + i : 4, {
         ...ventana(t.zona, [(t.papel.x0 + t.papel.x1) / 2, (t.papel.y0 + t.papel.y1) / 2] as Punto,
           t.papel.x1 - t.papel.x0, t.papel.y1 - t.papel.y0), altoVista: t.zona.y1 - t.zona.y0 }])),
-    }, textos: [],
+      // El detalle del saco, en el hueco que le deja el bloque de notas (Iván, 06/11/2026).
+      5: (() => {
+        // A la medida del detalle (sin las notas viejas de debajo) y centrado en su hueco.
+        const z = { ...detalleModelo, y0: detalleModelo.y0 + .75, x1: detalleModelo.x1 + .45 }, R = bloque.detalle;
+        const k = Math.min((R.x1 - R.x0) / (z.x1 - z.x0), (R.y1 - R.y0) / (z.y1 - z.y0));
+        return ventana(z, centro(R), (z.x1 - z.x0) * k, (z.y1 - z.y0) * k);
+      })(),
+    }, textos: bloque.textos, quitarTextos: bloque.quitarTextos, quitarVentanas: bloque.quitarVentanas,
     // La raya entre el dibujo (ventana 2) y el corte, como en las demás hojas, sin llegar al marco (Iván, 06/11/2026).
-    lineas: sitio.rayas },
+    lineas: [...sitio.rayas, ...bloque.lineas] },
   };
 }

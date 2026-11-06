@@ -44,10 +44,10 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
 
   it('conserva las instrucciones, las notas y el detalle sin títulos ni observaciones de RPS', () => {
     const dxf = plano();
-    for (const texto of ['MATERIALES:', 'TRANSP. 1000MI', 'LAC 900 AZUL 5002', 'LAC 900 NEGRO',
-      'SOLDAR SACO Y E.T EN LA MISMA SOLDADURA', 'BOLSILLO NEGRO', '1 CM',
-      'LAS ENTRADAS DE TUBO INTERIORES DE LAS PUERTAS ENROLLABLES TIENEN QUE IR DE 5 CM.',
-      'NO PONER NUNCA LAS ETIQUETAS EN LA PROPIA LONA', 'AL CORTE', 'COSER VELCRO', '0233175']) expect(dxf.includes(texto), texto).toBe(true);
+    for (const texto of ['MATERIALES', 'TRANSP. 1000MI', 'LAC 900 AZUL 5002', 'LAC 900 NEGRO',
+      'SOLDAR SACO Y E.T EN LA MISMA SOLDADURA', 'BOLSILLO NEGRO', '1 CM', 'IMPORTANTE', 'NOTAS DE CONFECCIÓN',
+      'E.T. INTERIORES DE LAS ENROLLABLES: DE 5 CM (NUNCA MENOS) A 5,5 CM COMO MÁXIMO.',
+      'NUNCA PONER LAS ETIQUETAS EN LA LONA', 'AL CORTE', 'COSER VELCRO', '0233175']) expect(dxf.includes(texto), texto).toBe(true);
     for (const texto of ['PUERTA A ·', 'CORTE ·', 'OBSERVACIÓN RPS']) expect(dxf.includes(texto), texto).toBe(false);
     // La nota de la raya del pie, que faltaba (Iván, 24/10/2026).
     for (const texto of ['CERRAR E.T', '2 CM MÁXIMO']) expect(dxf.includes(texto), texto).toBe(true);
@@ -59,11 +59,12 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
     for (const texto of ['X3', 'A1', 'A2', 'REVÉS', '0233175']) expect(alzado.some(r => valor(r, 1) === texto)).toBe(true);
   });
 
-  it('conserva las cinco ventanas de Portanova, con el alzado a la izquierda y el corte a la derecha', () => {
+  it('conserva las ventanas de Portanova, con el alzado a la izquierda y el corte a la derecha', () => {
     const vistas = registrosDxf(plano()).filter(r => r.tipo === 'VIEWPORT' && numero(r, 69) > 1);
     const izquierda = vistas.find(r => numero(r, 69) === 2)!;
     const derecha = vistas.find(r => numero(r, 69) === 4)!;
-    expect(vistas).toHaveLength(5);
+    // Desde el 06/11/2026 las notas van como textos de la hoja y no por la ventana 3 de la plantilla.
+    expect(vistas.map(r => numero(r, 69)).sort()).toEqual([2, 4, 5, 6]);
     // Desde el 06/11/2026 la ventana se ajusta al dibujo, para que no se cuele nada de al lado: crece en un sentido.
     expect(Math.max(numero(izquierda, 40) / 153.78, numero(izquierda, 41) / 193.84)).toBeGreaterThan(.99);
     expect(numero(izquierda, 10)).toBeLessThan(100);
@@ -72,10 +73,9 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
     const plantilla = registrosDxf(readFileSync(new URL('./plantillas/portanova.dxf', import.meta.url), 'utf8'));
     // Las ventanas del detalle del saco siguen al detalle, que va dentro del recuadro DIBUJO (23/10/2026): solo cambia su vista.
     const sinVista = (r?: { pares: unknown }) => (r?.pares as Array<[number, string]>).filter(([k]) => ![12, 22].includes(k));
-    for (const id of [3, 5, 6]) expect(sinVista(vistas.find(r => numero(r, 69) === id))).toEqual(sinVista(plantilla.find(r => r.tipo === 'VIEWPORT' && numero(r, 69) === id)));
+    // La 5 (el detalle del saco) se agranda en su hueco desde el 06/11/2026; la 6 sigue como la plantilla.
+    for (const id of [6]) expect(sinVista(vistas.find(r => numero(r, 69) === id))).toEqual(sinVista(plantilla.find(r => r.tipo === 'VIEWPORT' && numero(r, 69) === id)));
     const desplazamiento = (id: number) => [12, 22].map(k => numero(vistas.find(r => numero(r, 69) === id)!, k) - numero(plantilla.find(r => r.tipo === 'VIEWPORT' && numero(r, 69) === id)!, k));
-    expect(desplazamiento(3)[0]).toBeCloseTo(desplazamiento(5)[0], 6);
-    expect(desplazamiento(3)[1]).toBeCloseTo(desplazamiento(5)[1], 6);
     expect(desplazamiento(6)).toEqual([0, 0]);
     const atributos = registrosDxf(plano()).filter(r => r.tipo === 'ATTRIB');
     for (const [tag, dato] of [['PEDIDO', 'AR2605134'], ['OF', '0233175'], ['CLIENTE', 'PORTANOVA'], ['TECNICO', 'IVÁN'], ['REVISOR', 'DAVID'], ['FECHA', '22/10/26']]) {
@@ -99,9 +99,10 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
 
   it('MATERIALES abajo, junto a las notas, y el corte arriba con cotas que se leen al imprimir (Iván, 22/10/2026)', () => {
     const ent = registrosDxf(plano());
-    const materiales = ent.find(r => r.tipo === 'MTEXT' && valor(r, 67) === '1' && /^MATERIALES/.test(valor(r, 1) ?? ''))!;
-    expect(numero(materiales, 10)).toBeCloseTo(162.526, 2);
-    expect(numero(materiales, 20)).toBeCloseTo(77.012, 2);
+    // El bloque ordenado del 06/11/2026: las notas arriba y MATERIALES debajo, a la izquierda, encima del detalle.
+    const materiales = ent.find(r => r.tipo === 'MTEXT' && valor(r, 67) === '1' && /^MATERIALES: /.test(valor(r, 1) ?? ''))!;
+    expect(numero(materiales, 10)).toBeCloseTo(164, 2);
+    expect(numero(materiales, 20)).toBeCloseTo(79.5, 2);
     const vista = ent.find(r => r.tipo === 'VIEWPORT' && numero(r, 69) === 4)!;
     expect(numero(vista, 20) - numero(vista, 41) / 2).toBeGreaterThanOrEqual(79.9);
     expect(numero(vista, 20) + numero(vista, 41) / 2).toBeCloseTo(201.882, 2);
@@ -202,7 +203,7 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
         && !([11, 21].includes(k) && r.tipo === 'MTEXT'))
         .map(([k, v]) => [k, numero(r, 10) > 150 && [10, 11, 12, 13, 14].includes(k) && !(k === 11 && r.tipo === 'MTEXT') ? (Number(v) - 100).toFixed(6) : v]) }));
     expect(geometria(propio)).toEqual(geometria(anterior));
-    expect(registrosDxf(propio).filter(r => r.tipo === 'VIEWPORT' && numero(r, 69) > 1)).toHaveLength(5);
+    expect(registrosDxf(propio).filter(r => r.tipo === 'VIEWPORT' && numero(r, 69) > 1)).toHaveLength(4);
   });
   it('AR2605134 de otro cliente lleva la hoja web con el cajetín de la oficina y el nuevo dibujo de enrollable', () => {
     const dxf = escribirPlanoPuertas({ pedido: pedidoDe('AR2605134', puerta()), cabecera: { ...cabecera, cliente: 'OTRO CLIENTE' } });

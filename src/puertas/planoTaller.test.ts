@@ -125,10 +125,10 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
 
   it('MATERIALES como AR2604904: sin cristal si la puerta no lo lleva y el saco de impresión como AMARILLO/NEGRO', () => {
     const p = { ...puertaPlanoReal('AR2604904'), sacoDiagonalesAmarillas: true };
-    const materiales = registrosDxf(escribirPlanoPuertas({ pedido: pedidoDe('AR2604904', p), cabecera }))
-      .find(r => r.tipo === 'MTEXT' && valor(r, 67) === '1' && /^MATERIALES/.test(valor(r, 1) ?? ''))!;
-    expect(valor(materiales, 1)).toBe('MATERIALES:\\PLAC 900 BLANCO 9016\\PLAC 900 AMARILLO/NEGRO');
-    expect(Number(valor(materiales, 40))).toBe(3);
+    const textos = registrosDxf(escribirPlanoPuertas({ pedido: pedidoDe('AR2604904', p), cabecera })).filter(r => r.tipo === 'MTEXT' && valor(r, 67) === '1');
+    // Desde el 06/11/2026, en una línea arriba del bloque de notas.
+    const materiales = textos.find(r => /^MATERIALES: /.test(valor(r, 1) ?? ''))!;
+    expect(valor(materiales, 1)).toBe('MATERIALES: LAC 900 BLANCO 9016  ·  LAC 900 AMARILLO/NEGRO');
   });
 
   // Iván, 05/11/2026 (AR2605391): con 5 materiales la última línea pisaba la primera nota.
@@ -136,13 +136,14 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
     const base = puertaPlanoReal('AR2604904');
     const pedido = { ...pedidoDe('AR2604904', base), elementos: ['AZUL 5010', 'ROJO 3020', 'VERDE 6005'].map((color, i) => ({
       ...pedidoDe('AR2604904', base).elementos[0], input: { ...base, color, of: `029000${i}` } })) };
-    const materiales = registrosDxf(escribirPlanoPuertas({ pedido, cabecera }))
-      .filter(r => r.tipo === 'MTEXT' && valor(r, 67) === '1' && /^MATERIALES/.test(valor(r, 1) ?? ''));
-    expect(materiales.length).toBeGreaterThan(0);
-    for (const m of materiales) {
-      const lineas = valor(m, 1)!.split('\\P').length;
-      expect(lineas).toBe(5);
-      expect(Number(valor(m, 40)) * lineas).toBeCloseTo(12, 6);
+    // Desde el 06/11/2026 la lista va debajo del título MATERIALES y baja la letra para no pasar del aviso.
+    const textos = registrosDxf(escribirPlanoPuertas({ pedido, cabecera })).filter(r => r.tipo === 'MTEXT' && valor(r, 67) === '1');
+    const listas = textos.filter(r => /^MATERIALES: /.test(valor(r, 1) ?? ''));
+    expect(listas.length).toBeGreaterThan(0);
+    for (const m of listas) {
+      expect(valor(m, 1)!.split('  ·  ')).toHaveLength(4);
+      // En una línea: con muchos materiales la letra baja.
+      expect(Number(valor(m, 40))).toBeLessThan(2.4);
     }
   });
 
@@ -159,8 +160,8 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
       .filter(r => r.tipo !== 'DIMENSION' && !(r.tipo === 'LINE' && valor(r, 8) === 'cotas')).map(r => ({ tipo: r.tipo,
         pares: (r.pares as Array<[number, string]>).filter(([k]) => ![5, 330].includes(k)) }));
     expect(createHash('sha256').update(JSON.stringify(entidades)).digest('hex'))
-      .toBe('28b52a9a66969377bda380d446697cf371d4a4991043f1f3fddc1120a21451f6');
+      .toBe('da11d0ea0c9b77e9ca63815ff03caefc8dbdce18468ba25f214659db76055488');
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido: pedidoDe('AR2605134', p), cabecera })).digest('hex'))
-      .toBe('b514dd25d2df96694faf952c5fda95662ffab73556aeb519dfd30f1d4727783c');
+      .toBe('7df4bdd9d19e5195594d5de1b7f00c05694e046f68a7a22089893859716ad3c3');
   });
 });

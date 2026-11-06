@@ -248,6 +248,10 @@ export function escribirDxfPlano(plano, cabecera) {
     // El cajetín viejo de la plantilla, con sus atributos, sale siempre: lo sustituye el CAJETIN TGM.
     if (/\n {2}5\n([0-9A-F]+)\n/.exec(t)[1] === viejo) return [];
     if (['ATTRIB', 'SEQEND'].includes(tipo) && new RegExp(`\\n330\\n${viejo}\\n`).test(t)) return [];
+    // Una presentación propia puede quitar textos y ventanas de la plantilla para colocarlos a su manera (Portanova,
+    // notas junto al cajetín, 06/11/2026).
+    if (['TEXT', 'MTEXT'].includes(tipo) && (plano.presentacion?.quitarTextos ?? []).some((v) => t.includes(v))) return [];
+    if (tipo === 'VIEWPORT' && (plano.presentacion?.quitarVentanas ?? []).includes(Number(/\n 69\n\s*(\d+)/.exec(t)?.[1]))) return [];
     if (plano.plantilla && tipo === 'MTEXT' && /MATERIALES/.test(t)) {
       // El bloque crece hacia abajo, hacia las notas: con más de 4 líneas la letra baja para que ocupe lo mismo
       // que 4 (Iván, 05/11/2026: con 5 materiales la última línea pisaba la primera nota).

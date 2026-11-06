@@ -32,7 +32,8 @@ describe('escribirPlanoPuertas', () => {
     expect(ent.some(r => r.tipo === 'LINE' && valor(r, 8) === 'DISCO1' && numero(r, 20) > 95)).toBe(true);
     expect(ent.filter(r => r.tipo === 'LINE' && valor(r, 8) === 'DISCO1').length).toBeGreaterThan(4);
     expect(dxf.includes('PUERTA A ·')).toBe(false);
-    expect(dxf.includes('MATERIALES:')).toBe(true);
+    // Desde el 06/11/2026 el bloque de junto al cajetín se ordena en MATERIALES, IMPORTANTE y NOTAS DE CONFECCIÓN.
+    for (const titulo of ['MATERIALES', 'IMPORTANTE', 'NOTAS DE CONFECCIÓN']) expect(dxf.includes(titulo), titulo).toBe(true);
   });
 
   it('varias puertas, con nota en el plano y cantidad, sin pisarse', () => {
