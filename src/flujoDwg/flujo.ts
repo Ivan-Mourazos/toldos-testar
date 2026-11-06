@@ -36,6 +36,7 @@ export interface CorteConfirmado {
   planos?: Array<{ filename: string; plano: string }>;
   /** La huella de los datos del pedido con que salió este corte. Falta en los guardados antes del 30/10/2026. */
   datos?: string;
+  aceptadoSinRegenerar?: { por: string; fecha: string; pedidoActualizadoEn: string };
 }
 
 type Confirmacion = { huella: string; por: string; fecha: string; filename: string; ficheros?: string[] };
@@ -130,8 +131,9 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
   const registrar = deps.registrar ?? ((mensaje: string) => console.error(mensaje));
   const ahora = () => (deps.ahora ?? (() => new Date()))().toISOString();
 
-  /** En marcha cuando la carpeta de borradores está en Configuración y el servidor sabe leer el plano. Sin ella, todo como antes. */
-  const activo = (a: AjustesFlujoDwg) => Boolean(a.corteBorradoresDirectory && a.corteBorradoresRed && deps.leer && deps.confirmaciones);
+  /** El flujo editable también sigue el plano del año sin exigir una carpeta de borradores. */
+  const activo = (a: AjustesFlujoDwg) => Boolean(deps.leer && (deps.editable && a.corteLonaPlanoDirectory
+    || a.corteBorradoresDirectory && a.corteBorradoresRed && deps.confirmaciones));
 
   /**
    * Los borradores del pedido en su carpeta: `AR….dwg` o, con varios planos, `AR… (…).dwg`; DXF si faltaba ODA al crearlos
@@ -195,14 +197,14 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
   }): Promise<Respuesta> {
     const ajustes = await deps.ajustes();
     if (!deps.editable && !ajustes.productionEnabled) throw new ErrorFlujoDwg("Modo simulación: no se ha escrito el borrador del corte.", 403);
-    if (!ajustes.corteBorradoresDirectory || !ajustes.corteBorradoresRed) {
+    if ((!ajustes.corteBorradoresDirectory || !ajustes.corteBorradoresRed) && !(deps.editable && revisado && !regenerar)) {
       throw new ErrorFlujoDwg("Falta la carpeta de borradores del corte en Configuración (la del servidor y la de red).", 409);
     }
-    const carpeta = ajustes.corteBorradoresDirectory;
+    const carpeta = ajustes.corteBorradoresDirectory!;
     // En toldos abrir lo que ya hay no recalcula ni exige que los datos sigan iguales.
     // El revisado se abre en su carpeta: no se crea una segunda copia que pueda quedar atrás.
     if (deps.editable && !regenerar) {
-      const existentes = await borradoresDe(carpeta, orderCode);
+      const existentes = carpeta ? await borradoresDe(carpeta, orderCode) : [];
       const revisados = Array.isArray(revisado) ? revisado : revisado ? [revisado] : [];
       if (existentes.length || revisados.length) {
         let ficheros;
@@ -269,7 +271,7 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
   async function confirmar(orderCode: string, autor: string): Promise<Respuesta> {
     const ajustes = await deps.ajustes();
     if (!activo(ajustes)) throw new ErrorFlujoDwg("Falta la carpeta de borradores del corte en Configuración.", 409);
-    const borradores = await borradoresDe(ajustes.corteBorradoresDirectory!, orderCode);
+    const borradores = ajustes.corteBorradoresDirectory ? await borradoresDe(ajustes.corteBorradoresDirectory, orderCode) : [];
     if (!borradores.length) throw new ErrorFlujoDwg(`No hay borrador del corte de ${orderCode}: pulsa «Abrir corte» para crearlo.`, 409);
     const leido = await leerCortes(borradores);
     if (leido.error) return { status: 409, cuerpo: { error: leido.error, fuera: leido.fuera } };
@@ -295,7 +297,7 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
     const ajustes = await deps.ajustes();
     if (!activo(ajustes)) return null;
     if (deps.editable) return alGuardarEditable({ orderCode, technician, datos, revisado, aceptarHuella, mantener, usuario, pendienteAceptacion });
-    const borradores = await borradoresDe(ajustes.corteBorradoresDirectory!, orderCode);
+    const borradores = ajustes.corteBorradoresDirectory ? await borradoresDe(ajustes.corteBorradoresDirectory, orderCode) : [];
     const confirmacion = await deps.confirmaciones!.leer(orderCode);
     if (!borradores.length || !confirmacion) {
       throw new ErrorFlujoDwg("Antes de guardar para revisión, abre el corte («Abrir corte»), revísalo en ZWCAD y pulsa «Confirmar corte».", 409);
@@ -409,9 +411,9 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
     pendienteAceptacion: boolean;
   }) {
     const ajustes = await deps.ajustes();
-    const borradores = await borradoresDe(ajustes.corteBorradoresDirectory!, orderCode);
+    const borradores = ajustes.corteBorradoresDirectory ? await borradoresDe(ajustes.corteBorradoresDirectory, orderCode) : [];
     if (!borradores.length && !revisado) throw new ErrorFlujoDwg('Abre o genera el corte antes de guardar para revisión.', 409);
-    const aceptado = borradores.length ? await deps.confirmaciones!.leer(orderCode) : revisado;
+    const aceptado = borradores.length ? await deps.confirmaciones?.leer(orderCode) : revisado;
     const fuentes = borradores.length ? borradores.map(b => ({ filename: b.filename, plano: b.ruta })) : planosDe(revisado!);
     const temporal: CorteConfirmado = { huella: aceptado?.huella ?? '', por: aceptado?.por ?? '', fecha: aceptado?.fecha ?? '',
       filename: fuentes[0].filename, plano: fuentes[0].plano, planos: fuentes };
@@ -450,8 +452,8 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
         if (!ajustes.productionEnabled) return [] as string[];
         try {
           for (const b of borradores) await rm(b.ruta, { force: true });
-          await deps.confirmaciones!.borrar(orderCode);
-          await deps.confirmaciones!.borrar(claveDatos(orderCode));
+          await deps.confirmaciones?.borrar(orderCode);
+          await deps.confirmaciones?.borrar(claveDatos(orderCode));
           return [] as string[];
         } catch {
           return ['El corte está guardado, pero no se pudo quitar su borrador.'];
@@ -561,15 +563,16 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
   async function estado(orderCode: string) {
     const ajustes = await deps.ajustes();
     if (!activo(ajustes)) return { activo: false as const };
-    const borradores = await borradoresDe(ajustes.corteBorradoresDirectory!, orderCode);
-    const confirmacion = borradores.length ? await deps.confirmaciones!.leer(orderCode) : null;
+    const borradores = ajustes.corteBorradoresDirectory ? await borradoresDe(ajustes.corteBorradoresDirectory, orderCode) : [];
+    const confirmacion = borradores.length ? await deps.confirmaciones?.leer(orderCode) : null;
     let cambiadoTrasConfirmar = false;
     if (confirmacion) {
       const limite = Date.parse(confirmacion.fecha) + 60_000;
       for (const b of borradores) if ((await stat(b.ruta)).mtimeMs > limite) cambiadoTrasConfirmar = true;
     }
     return { activo: true as const, borrador: borradores.length > 0, ficheros: borradores.map((b) => b.filename),
-      ...(deps.editable ? { datos: (await deps.confirmaciones!.leer(claveDatos(orderCode)))?.huella, simulacion: !ajustes.productionEnabled } : {}),
+      ...(deps.editable ? { datos: (await deps.confirmaciones?.leer(claveDatos(orderCode)))?.huella, simulacion: !ajustes.productionEnabled,
+        sinCarpetaBorradores: !ajustes.corteBorradoresDirectory || !ajustes.corteBorradoresRed } : {}),
       confirmado: confirmacion ? { por: confirmacion.por, fecha: confirmacion.fecha } : null, cambiadoTrasConfirmar };
   }
 

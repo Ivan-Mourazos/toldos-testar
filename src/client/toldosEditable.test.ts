@@ -22,7 +22,7 @@ describe('permisos de toldos editables', () => {
   });
   it('no abre como nuevo un plano viejo después de regenerar en simulación', () => {
     expect(pasoCorteEditable({ activo: true, borrador: true, corteSimulado: true }, null))
-      .toEqual({ paso: 'incompleto', motivo: 'El corte se calculó en simulación: regénéralo para abrir el plano.' });
+      .toMatchObject({ paso: 'incompleto', motivo: expect.stringContaining('no hay DWG') });
   });
   it.each(['PENDING_REVIEW', 'CHANGES_REQUESTED', 'APPROVED'])('cualquier compañero edita en %s sin CoordinaOT', status => {
     expect(puedeCorregir(status, [], 'ANA', 'IVÁN', null, true)).toBe(true);

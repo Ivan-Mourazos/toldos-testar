@@ -5,6 +5,7 @@ import type { EnvioCorte } from '../../corteEnviosTipos';
 import type { AskForConfirmation, Notify } from './NotificationCenter';
 import { carpetaLegible, mensajeEnvio } from './enviosCorteTexto';
 import { MenuMas } from './MenuMas';
+import { decidirCortePendiente } from '../toldosEditable';
 
 /** El historial de envíos del corte, en el bloque del corte de la revisión (los botones van arriba). */
 export function HistorialEnvios({ envios = [], motivo }: { envios?: EnvioCorte[]; motivo?: string }) {
@@ -18,7 +19,7 @@ export function HistorialEnvios({ envios = [], motivo }: { envios?: EnvioCorte[]
 }
 
 /** Las mismas acciones y preguntas para todos los productos que envíen un corte. */
-export function EnviosCorte({ ruta, usuario, permitido, motivo, ocupado = false, envios = [], descarga, conPdf = false, notify, preguntar, barra = false, mas, onEnviado }: {
+export function EnviosCorte({ ruta, usuario, permitido, motivo, ocupado = false, envios = [], descarga, conPdf = false, notify, preguntar, barra = false, mas, onEnviado, guardado }: {
   ruta: string; usuario: string; permitido: boolean; motivo?: string; ocupado?: boolean; envios?: EnvioCorte[];
   descarga?: string;
   /** El producto saca el PDF de las presentaciones al mandar al bot (puertas): ya mandado, «Volver a mandar el corte» y «Rehacer el PDF». */
@@ -30,6 +31,7 @@ export function EnviosCorte({ ruta, usuario, permitido, motivo, ocupado = false,
   mas?: React.ReactNode;
   /** Tras mandar o guardar: para que la revisión vuelva a leer el pedido (y su historial de envíos). */
   onEnviado?: () => void;
+  guardado?: { ruta: string; cuerpo: Record<string, unknown>; usuario: string };
 }) {
   const [trabajando, setTrabajando] = useState(false);
   const [historial, setHistorial] = useState<EnvioCorte[] | null>(null);
@@ -41,10 +43,17 @@ export function EnviosCorte({ ruta, usuario, permitido, motivo, ocupado = false,
         message: sinPdf ? 'Se lee el DWG tal como está ahora y el corte vuelve al bot. El PDF no se toca. ¿Seguro?' : 'El corte irá al bot y se cortará. ¿Seguro?',
         confirmLabel: sinPdf ? 'Volver a mandar el corte' : 'Mandar corte al bot', cancelLabel: 'Cancelar', tone: 'danger' }) !== 'confirm') return;
       let confirmOverwrite = false, aceptarCambioCorte = false, pdfModo: 'sustituir' | 'siguiente' | undefined;
+      let aceptarCorteNoRegenerado: string | undefined;
       for (;;) {
         const res = await fetch(`${ruta}/enviar`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ usuario, destino, confirmBot: destino === 'bot', confirmOverwrite, aceptarCambioCorte, pdfModo, sinPdf }) });
+          body: JSON.stringify({ usuario, destino, confirmBot: destino === 'bot', confirmOverwrite, aceptarCambioCorte, aceptarCorteNoRegenerado, pdfModo, sinPdf }) });
         const datos = await res.json();
+        if (res.status === 409 && datos.corteNoRegenerado && guardado) {
+          const permiso = await decidirCortePendiente(datos, preguntar, guardado, onEnviado);
+          if (permiso === null) return;
+          aceptarCorteNoRegenerado = permiso || undefined;
+          continue;
+        }
         // Flujo del DWG, fase 4: ya hay un PDF de presentaciones de este pedido que no hizo la web.
         if (res.status === 409 && datos.pdfExiste && !pdfModo) {
           const eleccion = await preguntar({ title: 'PDF de las presentaciones', message: datos.error || 'Ya hay un PDF de este pedido.',

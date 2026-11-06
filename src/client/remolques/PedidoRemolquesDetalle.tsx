@@ -20,7 +20,7 @@ import { EnviosCorte, HistorialEnvios } from '../components/EnviosCorte';
 import { AccionesPedido, CabeceraPedidoGuardado } from '../components/AccionesPedido';
 import { useCortePedidoEditable } from '../useCortePedidoEditable';
 import { aprobadaOPasada } from '../../toldosEditable.js';
-import { abrirCorteGuardado, preguntarCambioCorte } from '../toldosEditable';
+import { abrirCorteGuardado, preguntarCambioCorte, decidirCortePendiente, type CortePendiente } from '../toldosEditable';
 
 // Un pedido de remolques abierto desde Pedidos (fase 5), con las acciones del de toldos: ver la
 // hoja, «Corregir», «Generar archivos» (con todo aprobado o pasado en CoordinaOT) y, ya
@@ -113,6 +113,7 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
           regenerar={currentUser && corte.abrir ? () => void corte.regenerar() : undefined} generar={onGenerar} generarPermitido={allowed} motivoGenerar={note}
           envios={opcionesCorte.aplica ? <EnviosCorte key={ruta} barra ruta={`${ruta}/corte`} usuario={currentUser} permitido={permisoCorte.allowed && Boolean(currentUser.trim())}
             motivo={permisoCorte.note} ocupado={generando || corte.ocupado} envios={pedido.enviosCorte} descarga={`${ruta}/corte/dxf`} notify={notify} preguntar={onConfirm} onEnviado={onEnviado}
+            guardado={{ ruta: '/api/remolques/pedidos', cuerpo: { elementos: pedido.elementos, params: pedido.params, clienteRps: pedido.clienteRps }, usuario: currentUser }}
             mas={generado ? <button type="button" role="menuitem" className="menu-mas-item" onClick={onReutilizar}><CopyPlus size={16} aria-hidden="true" />Reutilizar datos</button> : null} />
             : generado ? <button type="button" className="ghost-button boton-3d" onClick={onReutilizar}><CopyPlus aria-hidden="true" />Reutilizar datos</button> : null} />} />
 
@@ -218,14 +219,21 @@ export function PedidoRemolquesDetalle({ orderCode, refreshKey, currentUser, onB
     setGenerando(true);
     let confirmOverwrite = false;
     let aceptarHuellaCorte: string | undefined;
+    let aceptarCorteNoRegenerado: string | undefined;
     try {
       for (;;) {
         const { respuesta, datos } = await solicitarGeneracion(`/api/remolques/pedidos/${encodeURIComponent(codigo)}/generar`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ confirmOverwrite, aceptarHuellaCorte, savedBy: currentUser }),
-        }, async (respuesta) => ({ respuesta, datos: await respuesta.json() as { error?: string; cambioCorte?: boolean; huella?: string; needsConfirmation?: boolean; existing?: string[]; unchanged?: boolean; nombre?: string } }),
+          body: JSON.stringify({ confirmOverwrite, aceptarHuellaCorte, aceptarCorteNoRegenerado, savedBy: currentUser }),
+        }, async (respuesta) => ({ respuesta, datos: await respuesta.json() as CortePendiente & { error?: string; cambioCorte?: boolean; huella?: string; needsConfirmation?: boolean; existing?: string[]; unchanged?: boolean; nombre?: string } }),
         () => onToast('Reintentando…', { tone: 'info' }));
+        if (respuesta.status === 409 && datos.corteNoRegenerado) {
+          const permiso = await decidirCortePendiente(datos, onConfirm, { ruta: '/api/remolques/pedidos', cuerpo: { elementos: pedido.elementos, params: pedido.params, clienteRps: pedido.clienteRps }, usuario: currentUser }, onChanged);
+          if (permiso === null) return;
+          aceptarCorteNoRegenerado = permiso || undefined;
+          continue;
+        }
         if (respuesta.status === 409 && datos.cambioCorte) {
           if (!await preguntarCambioCorte(onConfirm, () => abrirCorteGuardado(`/api/remolques/pedidos/${encodeURIComponent(codigo)}/corte-dwg`))) return;
           aceptarHuellaCorte = datos.huella;

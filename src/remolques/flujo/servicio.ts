@@ -3,6 +3,7 @@ import path from "node:path";
 import { enviarCorte as enviarCorteCompartido } from "../../corteEnvios.js";
 import { aprobacionDeTodas, crearFlujoDwg, huellaDatos, type AjustesFlujoDwg, type ConfirmacionesCorte } from "../../flujoDwg/flujo.ts";
 import { prepararGuardadoEditable, type DecisionCorteEditable } from "../../flujoDwg/guardarEditable.ts";
+import { comprobarCorteNoRegenerado } from "../../flujoDwg/salidaEditable.ts";
 import { aprobacionToldos } from "../../toldosEditable.js";
 import {
   approvalReviewers, ELEMENT_NOUNS, generateFilesDecision, generationBlock, saveReviewDecision, uniqueOfs,
@@ -388,13 +389,16 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       const bloqueo = generationBlock(aprobacion, estado, ELEMENT_NOUNS);
       if (bloqueo) throw new ErrorPedidoRemolques(bloqueo, estado.disponible ? 409 : 503);
       const revisor = approvalReviewers(aprobacion, estado, deps.tecnicos);
+      const salida = await comprobarCorteNoRegenerado(flujo, pedido, (cuerpo ?? {}) as { aceptarCorteNoRegenerado?: unknown },
+        (cuerpo as { savedBy?: string } | null)?.savedBy || pedido.updatedBy || pedido.summary.technician);
+      if ('respuesta' in salida) return salida.respuesta;
+      Object.assign(pedido, salida.pedido);
       if (pedido.corteConfirmado) {
         const entrada = (cuerpo ?? {}) as { aceptarHuellaCorte?: string; savedBy?: string };
         const aceptado = await flujo.aceptarActual(pedido.corteConfirmado, entrada.aceptarHuellaCorte, entrada.savedBy || pedido.updatedBy || pedido.summary.technician, Boolean(pedido.corteNoRegenerado));
         if (aceptado.respuesta) return aceptado.respuesta;
         pedido.corteConfirmado = aceptado.corteConfirmado;
         pedido.corteNoRegenerado = false;
-        if (entrada.aceptarHuellaCorte) await deps.almacen.guardar(pedido);
       }
 
       // Si ya hay un PDF de este pedido, se pregunta antes de hacer el nuevo.
@@ -552,15 +556,18 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     if (ocupados.has(orderCode)) return { status: 409, cuerpo: { error: MENSAJE_GUARDANDO } };
     ocupados.set(orderCode, "generando");
     try {
-      const c = (cuerpo ?? {}) as { usuario?: unknown; destino?: unknown; confirmBot?: unknown; confirmOverwrite?: unknown; aceptarCambioCorte?: unknown };
+      const c = (cuerpo ?? {}) as { usuario?: unknown; destino?: unknown; confirmBot?: unknown; confirmOverwrite?: unknown; aceptarCambioCorte?: unknown; aceptarCorteNoRegenerado?: unknown };
       const usuario = typeof c.usuario === "string" ? c.usuario.trim() : "";
       if (!deps.tecnicos.includes(usuario)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de mandar o guardar el corte.");
       if (!deps.corte?.prepararDxf) throw new ErrorPedidoRemolques("El corte de lona no está disponible.", 404);
       const pedido = await obtener(orderCode);
       exigirOfsCorte(pedido);
+      const salida = await comprobarCorteNoRegenerado(flujo, pedido, c, usuario);
+      if ('respuesta' in salida) return salida.respuesta;
+      Object.assign(pedido, salida.pedido);
       const calculado = pedidoCalculado(pedido);
       // Si el corte del DWG ya no es el que se confirmó (y revisó), se pregunta antes de mandarlo.
-      let nota = "";
+      let nota = salida.nota;
       let preparar = () => deps.corte!.prepararDxf!(calculado);
       if (pedido.corteConfirmado) {
         // Pasado a revisión en CoordinaOT y aprobado otra vez después del cambio: sale sin preguntar.
@@ -568,7 +575,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
         const aprobadoEn = aprobacionDeTodas(await deps.coordina.statusOf(ofs, { fresh: true }), ofs);
         const comprobado = await flujo.antesDeMandar(pedido.corteConfirmado, c.aceptarCambioCorte === true, usuario, aprobadoEn);
         if ("respuesta" in comprobado) return comprobado.respuesta;
-        nota = comprobado.nota;
+        nota = [nota, comprobado.nota].filter(Boolean).join(' ');
         const contents = Buffer.from(comprobado.dwg.dxf, "latin1");
         preparar = () => [{ filename: `${orderCode}.dxf`, contents }];
       }

@@ -132,8 +132,8 @@ export function coordinaGroup(awnings, status) {
 
 // Cómo se llama lo que lleva OF en los avisos de «Generar archivos»: los toldos de un pedido de
 // toldos o los elementos (remolques y baquetones) de uno de remolques (fase 5).
-export const AWNING_NOUNS = { one: 'toldo', many: 'toldos', none: 'El pedido no tiene toldos.' };
-export const ELEMENT_NOUNS = { one: 'elemento', many: 'elementos', none: 'El pedido no tiene elementos.' };
+export const AWNING_NOUNS = { one: 'toldo', many: 'toldos', none: 'El pedido no tiene toldos.', femenino: false };
+export const ELEMENT_NOUNS = { one: 'elemento', many: 'elementos', none: 'El pedido no tiene elementos.', femenino: false };
 
 /**
  * Por qué no se puede generar todavía, en castellano llano; null si se puede.
@@ -141,9 +141,14 @@ export const ELEMENT_NOUNS = { one: 'elemento', many: 'elementos', none: 'El ped
  */
 export function generationBlock(awnings, status, nouns = AWNING_NOUNS) {
   if (awnings.length === 0) return nouns.none;
-  const withoutOf = awnings.filter((awning) => !normalizeOf(awning.of)).map((awning) => awning.letter);
-  if (withoutOf.length === 1) return `Falta la OF en el ${nouns.one} ${withoutOf[0]}.`;
-  if (withoutOf.length > 1) return `Falta la OF en los ${nouns.many} ${withoutOf.join(', ')}.`;
+  const sinOf = awnings.filter((awning) => !normalizeOf(awning.of));
+  const withoutOf = sinOf.map((awning) => awning.letter);
+  const nombres = new Set(sinOf.map(a => a.nombre).filter(Boolean));
+  if (nombres.size > 1) return `Falta la OF en ${sinOf.map(a => `${a.nombre || nouns.one} ${a.letter}`).join(', ')}.`;
+  const one = sinOf[0]?.nombre || nouns.one;
+  const many = sinOf[0]?.nombrePlural || nouns.many;
+  if (withoutOf.length === 1) return `Falta la OF en ${nouns.femenino ? 'la' : 'el'} ${one} ${withoutOf[0]}.`;
+  if (withoutOf.length > 1) return `Falta la OF en ${nouns.femenino ? 'las' : 'los'} ${many} ${withoutOf.join(', ')}.`;
   if (!status?.disponible) return status?.motivo === COORDINA_NOT_CONFIGURED_MOTIVO ? COORDINA_NOT_CONFIGURED : COORDINA_UNAVAILABLE;
   const notApproved = awnings.filter((awning) => coordinaState(status, awning.of) !== 'aprobada');
   if (notApproved.length === 0) return null;

@@ -16,6 +16,7 @@ import { firmasCorteLona, corteLonaPendiente, crearEstadoCorteLona } from './cor
 import { generarCorteLona } from './domain/corteLona/index.js';
 import { aprobacionToldos, autoriaToldos, decisionRegenerar, generarToldosPermitido } from './toldosEditable.js';
 import { aprobacionDeTodas, crearFlujoDwg, huellaDatos, planosDe } from './flujoDwg/flujo.ts';
+import { comprobarCorteNoRegenerado } from './flujoDwg/salidaEditable.ts';
 import { conRevisor, htmlPresentaciones, sinDibujarEnPdf } from './flujoDwg/planoDxf.js';
 import { conHojasDelante } from './flujoDwg/unirPdf.js';
 import { SUBCARPETA_PUERTAS, TIPO_PEDIDO_PUERTAS } from './puertas/flujo/tipos.ts';
@@ -406,13 +407,16 @@ registrarRutasEnviosCorte(app, {
     settings: await workflowStore.getSettings(), tipo: 'bot', soloContenido: true })).files,
   // Flujo del DWG, fase 3: con el corte confirmado, el DXF sale del DWG revisado; si cambió después, se pregunta.
   desdeDwg: async (review, cuerpo, usuario) => {
+    const salida = await comprobarCorteNoRegenerado(flujoToldos, review, cuerpo, usuario);
+    if ('respuesta' in salida) return salida;
+    Object.assign(review, salida.pedido);
     if (!review.corteConfirmado) return null;
     // Pasado a revisión en CoordinaOT y aprobado otra vez después del cambio: sale sin preguntar.
     const ofs = uniqueOfs(review.order.awnings.map((a) => ({ of: String(a?.of || '') })));
     const aprobadoEn = aprobacionDeTodas(await coordina.statusOf(ofs, { fresh: true }), ofs);
     const comprobado = await flujoToldos.antesDeMandar(review.corteConfirmado, cuerpo.aceptarCambioCorte === true, usuario, aprobadoEn);
     if ('respuesta' in comprobado) return comprobado;
-    return { nota: comprobado.nota, archivos: [{ type: 'corte-lona', filename: `${review.orderCode}.dxf`, savedPath: '', contents: Buffer.from(comprobado.dwg.dxf, 'latin1') }] };
+    return { nota: [salida.nota, comprobado.nota].filter(Boolean).join(' '), archivos: [{ type: 'corte-lona', filename: `${review.orderCode}.dxf`, savedPath: '', contents: Buffer.from(comprobado.dwg.dxf, 'latin1') }] };
   },
   guardar: async (review) => {
     const calculation = await calculateConfiguredOrder(review.order);
@@ -1370,16 +1374,15 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
     const approval = await coordina.statusOf(uniqueOfs(approvalAwnings), { fresh: true });
     const approvalBlock = generarToldosPermitido(approvalAwnings, approval);
     if (approvalBlock) throw httpError(approval.disponible ? 409 : 503, approvalBlock);
+    const salida = await comprobarCorteNoRegenerado(flujoToldos, review, req.body ?? {}, req.body?.savedBy || review.updatedBy || review.createdBy);
+    if ('respuesta' in salida) return res.status(salida.respuesta.status).json(salida.respuesta.cuerpo);
+    Object.assign(review, salida.pedido);
     if (review.corteConfirmado) {
       const aceptacion = await flujoToldos.aceptarActual(review.corteConfirmado, req.body?.aceptarHuellaCorte,
         req.body?.savedBy || review.updatedBy || review.createdBy, review.corteNoRegenerado === true);
       if ('respuesta' in aceptacion) return res.status(409).json(aceptacion.respuesta.cuerpo);
       review.corteConfirmado = aceptacion.corteConfirmado;
       review.corteNoRegenerado = false;
-      if (req.body?.aceptarHuellaCorte) {
-        const calculation = await calculateConfiguredOrder(review.order);
-        await workflowStore.saveReview(review, await buildOrderReviewPdf({ order: review.order, calculation, review }));
-      }
     }
     const reviewer = approvalReviewers(approvalAwnings, aprobacionToldos(approval), formOptions.tecnicos);
 

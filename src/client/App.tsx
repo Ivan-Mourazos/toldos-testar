@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { debePreguntarAlCorregir } from './correccionPedido';
 import { useContenidoFluido } from './hooks/useContenidoFluido';
 import {
   Eraser,
@@ -594,7 +595,7 @@ export default function App() {
       draft.orderCode || draft.customer || draft.fabric || draft.notes
       || draft.awnings.some((awning) => awning.model || awning.of || awning.width || awning.projection)
     );
-    if (hasDraftData) {
+    if (debePreguntarAlCorregir(draft.orderCode, review.orderCode, hasDraftData && draft.hayCambiosSinGuardar())) {
       const choice = await askForConfirmation({
         title: `Corregir ${review.orderCode}`,
         message: 'Los datos que haya ahora en Nuevo pedido se sustituirán por los de este pedido. Los archivos ya guardados no se modificarán hasta que vuelvas a guardar.',
@@ -604,7 +605,7 @@ export default function App() {
       });
       if (choice !== 'confirm') return;
     }
-    draft.loadOrder({ ...review.order, corteLona: review.corteLona });
+    draft.loadOrder({ ...review.order, corteLona: review.corteLona }, { guardado: true });
     setAutofill(null);
     setCorrigiendo(review.orderCode);
     setReturnNote(review.status === 'CHANGES_REQUESTED' && review.reviewNote
@@ -679,7 +680,7 @@ export default function App() {
     else notify(result.message || 'No se pudieron guardar los parámetros.', { tone: 'error' });
   }
 
-  async function saveForReview() {
+  async function saveForReview(regenerar = false) {
     const incomplete = incompleteAwningLines(draft.awnings, { fabric: draft.fabric, sameFabric: draft.sameFabric });
     // Sin ningún toldo calculado no se manda a revisar (Iván, 01/10/2026): saldría en «Por
     // revisar» sin despiece ni reserva. Para dejar un pedido a medias, el borrador.
@@ -704,10 +705,18 @@ export default function App() {
     }
     setWorking('review');
     try {
-      const cuerpo = { order: currentOrderPayload(), corteLona: draft.corteLona, savedBy: currentUser, confirmOverwrite: enCorreccion };
+      const cuerpo = { order: currentOrderPayload(), corteLona: draft.corteLona, savedBy: currentUser, confirmOverwrite: enCorreccion || regenerar,
+        ...(regenerar ? { decisionCorte: 'regenerar' } : {}) };
       const data = await guardarToldosEditable(cuerpo, askForConfirmation, () => abrirCorteToldos(draft.orderCode, cuerpo));
       if (!data) return;
       setReviewRefresh((value) => value + 1);
+      if (regenerar) {
+        draft.loadOrder({ ...data.review.order, corteLona: data.review.corteLona }, { guardado: true });
+        setCorrigiendo(data.review.orderCode);
+        await corteToldos.refrescar();
+        notify('Pedido guardado y corte regenerado.', { tone: 'success' });
+        return;
+      }
       setReturnNote(null);
       setCorrigiendo(null);
       draft.resetDraft();
@@ -897,7 +906,7 @@ export default function App() {
                 <FilePen aria-hidden="true" />
                 {working === 'draft' ? 'Guardando…' : 'Guardar borrador'}
               </button>
-              <BotonesFlujoCorte flujo={corteToldos} ocupado={Boolean(working)} />
+              <BotonesFlujoCorte flujo={corteToldos} ocupado={Boolean(working)} regenerar={() => saveForReview(true)} />
               <button className="primary-button" type="button" disabled={Boolean(working) || calculationState === 'validating' || draft.awnings.length === 0}
                 onClick={() => void saveForReview()}>
                 <Save aria-hidden="true" />

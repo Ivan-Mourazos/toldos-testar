@@ -1,6 +1,7 @@
 import { controlLabel } from './components/controlLabels';
 import React, { useEffect, useState } from 'react';
-import { CheckCircle2, FolderOpen } from 'lucide-react';
+import { CheckCircle2, FolderOpen, RefreshCw } from 'lucide-react';
+import { regenerarCortePedido } from './toldosEditable';
 import { abrirCorteDwg, confirmarCorteDwg } from './abrirCorte';
 import type { AskForConfirmation, Notify } from './components/NotificationCenter';
 
@@ -16,6 +17,7 @@ export interface EstadoCorteServidor {
   revisado?: boolean;
   simulacion?: boolean;
   corteSimulado?: boolean;
+  sinCarpetaBorradores?: boolean;
   confirmado?: { por: string; fecha: string } | null;
   cambiadoTrasConfirmar?: boolean;
 }
@@ -45,13 +47,15 @@ export function pasoCorte(estado: EstadoCorteServidor | null, falta: string | nu
   return { paso: 'guardar', por: estado.confirmado.por };
 }
 
-/** Abrir un plano existente no necesita recalcularlo; crear uno sí exige datos completos. */
+/** El editor explica por qué no puede abrir un plano con los datos actuales. */
 export function pasoCorteEditable(estado: EstadoCorteServidor | null, falta: string | null): Paso {
   if (!estado?.activo) return { paso: 'sin-flujo' };
-  if (estado.corteSimulado) return { paso: 'incompleto', motivo: 'El corte se calculó en simulación: regénéralo para abrir el plano.' };
+  if (falta) return { paso: 'incompleto', motivo: falta };
+  if (estado.corteSimulado) return { paso: 'incompleto', motivo: 'Modo simulación: no hay DWG del corte. Regenerar calcula y guarda el pedido sin escribir el plano.' };
   if (!estado.borrador && !estado.revisado) {
     if (falta) return { paso: 'incompleto', motivo: falta };
     if (estado.simulacion) return { paso: 'incompleto', motivo: 'Modo simulación: no se ha escrito el plano del corte.' };
+    if (estado.sinCarpetaBorradores) return { paso: 'incompleto', motivo: 'No hay plano del corte. Regenera el corte para guardarlo con el pedido.' };
   }
   return { paso: 'guardar', por: '' };
 }
@@ -138,13 +142,13 @@ export function useFlujoCorteDwg({ base, codigo: codigoBruto, entrada, cuerpo, a
     try { await confirmarCorteDwg({ ruta: `${base}/confirmar`, orderCode: codigoBruto, usuario, notify }); }
     finally { setOcupado(false); await refrescar(); }
   }
-  return { paso, ocupado, abrir, confirmar, refrescar, editable };
+  return { paso, ocupado, abrir, confirmar, refrescar, editable, falta, usuario, preguntar: askForConfirmation };
 }
 
 export type FlujoCorteDwg = ReturnType<typeof useFlujoCorteDwg>;
 
 /** El paso y los botones «Abrir corte» y «Confirmar corte», para la barra de arriba, junto a «Guardar para revisión». */
-export function BotonesFlujoCorte({ flujo, ocupado = false }: { flujo: FlujoCorteDwg; ocupado?: boolean }) {
+export function BotonesFlujoCorte({ flujo, ocupado = false, regenerar }: { flujo: FlujoCorteDwg; ocupado?: boolean; regenerar?: () => void | Promise<void> }) {
   const { paso } = flujo;
   if (paso.paso === 'sin-flujo') return null;
   const confirmable = ['confirmar', 'tocado', 'guardar'].includes(paso.paso);
@@ -154,6 +158,9 @@ export function BotonesFlujoCorte({ flujo, ocupado = false }: { flujo: FlujoCort
       title={paso.paso === 'incompleto' ? paso.motivo : 'Deja el plano en la carpeta de borradores y lo abre en ZWCAD'} onClick={() => void flujo.abrir()}>
       <FolderOpen aria-hidden="true" />{flujo.ocupado ? 'Un momento…' : 'Abrir corte'}
     </button>
+    {flujo.editable && regenerar && <button type="button" className="ghost-button boton-3d" disabled={ocupado || flujo.ocupado || Boolean(flujo.falta) || !flujo.usuario}
+      title={flujo.falta ?? (!flujo.usuario ? 'Elige quién eres en «Soy».' : 'Guarda el pedido y regenera su corte con los datos actuales')}
+      onClick={() => void regenerarCortePedido(flujo.preguntar, regenerar)}><RefreshCw aria-hidden="true" />Regenerar corte</button>}
     {!flujo.editable && <button type="button" className="ghost-button" disabled={flujo.ocupado || ocupado || !confirmable}
       title={confirmable ? 'Lee el borrador tal como quedó en ZWCAD y lo da por bueno' : textoPaso(paso)} onClick={() => void flujo.confirmar()}>
       <CheckCircle2 aria-hidden="true" />{paso.paso === 'guardar' ? 'Corte confirmado' : 'Confirmar corte'}

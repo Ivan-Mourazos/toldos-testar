@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { debePreguntarAlCorregir } from '../correccionPedido';
+import { apuntarFormularioGuardado, leerFormularioGuardado } from '../formularioGuardado';
 import { createPortal } from 'react-dom';
 import { Eraser, Plus, Save, Trash2 } from 'lucide-react';
 import { alturasTubos, calcularPuerta, huecosEntrada, MODELOS_PUERTAS, nuevaPuerta, yEnTramo } from '../../puertas/calcular.ts';
@@ -405,6 +407,7 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
   const sd = producto === 'systemdock';
   const nombre = sd ? 'System Dock' : 'Puertas';
   const [pedido, setPedido] = useState<PedidoPantallaPuertas>(() => pedidoVacio(producto));
+  const formularioGuardado = useRef(leerFormularioGuardado('puertas'));
   const [indice, setIndice] = useState(0);
   const elementoFluido=useContenidoFluido(String(indice));
   const vistaCorte = useVistaCortePuertas(pedido, activo);
@@ -431,9 +434,12 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
     ultimoSolicitado.current = pedidoGuardadoSolicitado.id;
     const { pedido: guardado, modo } = pedidoGuardadoSolicitado;
     void (async () => {
-      if (tieneDatos(pedido) && await askForConfirmation({ title: `Abrir ${guardado.orderCode} en ${nombre}`,
+      if ((modo === 'reutilizar' ? tieneDatos(pedido) : debePreguntarAlCorregir(pedido.orderCode, guardado.orderCode,
+        tieneDatos(pedido) && JSON.stringify(pedido) !== formularioGuardado.current)) && await askForConfirmation({ title: `Abrir ${guardado.orderCode} en ${nombre}`,
         message: `Se sustituirá lo que hay ahora en ${nombre} por el pedido guardado.`, confirmLabel: 'Abrir pedido', cancelLabel: 'Conservar pantalla', tone: 'warning' }) !== 'confirm') return;
-      setPedido(pedidoDesdeGuardado(guardado, modo, hoy()));
+      const cargado = pedidoDesdeGuardado(guardado, modo, hoy());
+      formularioGuardado.current = apuntarFormularioGuardado('puertas', modo === 'corregir' ? JSON.stringify(cargado) : null);
+      setPedido(cargado);
       setIndice(0);
       notify(modo === 'corregir' ? `Pedido ${guardado.orderCode} cargado para corregirlo.` : `Datos de ${guardado.orderCode} cargados.`,
         { tone: 'info', title: modo === 'corregir' ? 'Modo de corrección' : 'Datos reutilizados' });
@@ -494,14 +500,15 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
     }
   }
 
-  async function guardar() {
+  async function guardar(regenerar = false) {
     if (!usuario) { notify('Elige quién eres en «Soy» antes de guardar.', { tone: 'warning' }); return; }
     setGuardando(true);
     try {
-      if (await guardarPuertasParaRevision({ pedido, usuario, preguntar: askForConfirmation, notify })) {
+      if (await guardarPuertasParaRevision({ pedido, usuario, preguntar: askForConfirmation, notify, regenerar })) {
         onGuardado?.();
         void flujo.refrescar();
-        setPedido(pedidoVacio(producto,pedido.elementos[0]?.input));
+        formularioGuardado.current = apuntarFormularioGuardado('puertas', JSON.stringify(pedido));
+        if (!regenerar) setPedido(pedidoVacio(producto,pedido.elementos[0]?.input));
         setIndice(0);
       }
     } catch {
@@ -522,7 +529,7 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
     <OrderActions hidden={!accionesVisibles}>
       <button className="ghost-button clear-form-button" type="button" disabled={guardando} onClick={() => void limpiar()}><Eraser aria-hidden="true" />Limpiar</button>
       {/* El flujo del corte, aquí arriba y en orden: cada botón se habilita cuando toca (Iván, 26/10/2026). */}
-      <BotonesFlujoCorte flujo={flujo} ocupado={guardando} />
+      <BotonesFlujoCorte flujo={flujo} ocupado={guardando} regenerar={() => guardar(true)} />
       <button type="button" className="primary-button" disabled={guardando || !pedido.orderCode.trim()} aria-busy={guardando}
         title={!pedido.orderCode.trim() ? 'Escribe el número de pedido.' : undefined} onClick={() => void guardar()}>
         <Save aria-hidden="true" />{guardando ? 'Guardando…' : 'Guardar para revisión'}

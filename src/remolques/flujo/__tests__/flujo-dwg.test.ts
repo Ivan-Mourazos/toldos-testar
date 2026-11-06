@@ -75,14 +75,14 @@ describe('borrador del corte', () => {
     expect(await fs.readFile(borrador(), 'utf8')).toBe('CAMBIADO EN ZWCAD');
     expect((await abrir({ regenerar: true })).cuerpo).toMatchObject({ existente: false, sustituido: true });
   });
-  it('sin «Soy» o sin la carpeta de borradores no escribe nada; sin ella se guarda como antes', async () => {
+  it('abrir un borrador exige Soy y carpeta; guardar sin borradores conserva el acceso al plano', async () => {
     await expect(abrir({ savedBy: '' })).rejects.toMatchObject({ message: expect.stringContaining('Soy') });
     borradores = false;
     await expect(abrir()).rejects.toMatchObject({ message: expect.stringContaining('borradores') });
     const { status, cuerpo } = await guardar();
     expect(status).toBe(200);
     expect(cuerpo).toMatchObject({ planoCorte: { files: [{ filename: 'AR2605132.dxf', savedPath: enAnio() }] } });
-    expect((await servicio.obtener('AR2605132')).corteConfirmado).toBeUndefined();
+    expect((await servicio.obtener('AR2605132')).corteConfirmado).toMatchObject({ plano: enAnio(), por: 'IVÁN' });
   });
 });
 

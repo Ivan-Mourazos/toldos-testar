@@ -361,7 +361,7 @@ describe("generar archivos", () => {
     expect(existsSync(m.pdfPlan)).toBe(false);
   });
 
-  it("sin OF en un elemento lo dice como elemento", async () => {
+  it("sin OF identifica el baquetón que falta", async () => {
     const { servicio, interna } = montar();
     await guardar(servicio);
     // También se protegen pedidos antiguos guardados antes de exigir la OF al guardar.
@@ -369,7 +369,7 @@ describe("generar archivos", () => {
     const antiguo = JSON.parse(readFileSync(ruta, "utf8"));
     antiguo.elementos[1].input.cabecera.ordenFabricacion = "";
     writeFileSync(ruta, JSON.stringify(antiguo));
-    expect(await falla(servicio.generar("AR2604286", {}))).toEqual([409, "Falta la OF en el elemento B."]);
+    expect(await falla(servicio.generar("AR2604286", {}))).toEqual([409, "Falta la OF en el baquetón B."]);
   });
 
   it("si un PDF ya está en las carpetas, pregunta antes de hacer nada y sustituye solo confirmando", async () => {

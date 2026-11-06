@@ -3,6 +3,25 @@ import type { CoordinaStatus } from './types';
 import { avisoAprobacionToldos } from '../toldosEditable.js';
 import { normalizeOf } from '../reviewRules.js';
 
+export interface CortePendiente { corteNoRegenerado?: boolean; tokenCorte?: string; sinPlano?: boolean }
+
+/** El permiso sirve solo para la versión del pedido y del plano que ha visto el técnico. */
+export async function decidirCortePendiente(datos: CortePendiente, preguntar: AskForConfirmation,
+  guardado: { ruta: string; cuerpo: Record<string, unknown>; usuario: string }, alRegenerar?: () => void): Promise<string | null> {
+  const eleccion = await preguntar({ title: 'El corte no está regenerado con los últimos datos', amplio: true,
+    message: datos.sinPlano ? 'No hay un plano guardado. Regenera el corte antes de continuar.'
+      : 'Puedes regenerarlo con los datos actuales o usar este corte igualmente. Quedará apuntado quién lo acepta y cuándo.',
+    confirmLabel: 'Regenerar', alternativeLabel: datos.sinPlano ? undefined : 'Usar este corte igualmente',
+    alternativeTone: 'neutral', cancelLabel: 'Cancelar', tone: 'warning' });
+  if (eleccion === 'alternative' && !datos.sinPlano) return datos.tokenCorte ?? null;
+  if (eleccion !== 'confirm') return null;
+  const resultado = await guardarToldosEditable({ ...guardado.cuerpo, savedBy: guardado.usuario, decisionCorte: 'regenerar', confirmOverwrite: true },
+    preguntar, async () => {}, guardado.ruta);
+  if (!resultado) return null;
+  alRegenerar?.();
+  return '';
+}
+
 /** La misma decisión en las fichas de toldos, puertas y remolques, antes de guardar o escribir. */
 export async function regenerarCortePedido(preguntar: AskForConfirmation, guardar: () => void | Promise<void>) {
   if (await preguntar({ title: 'Regenerar corte', message: 'Se perderán los retoques de ZWCAD. El corte nuevo se guardará con el pedido.',

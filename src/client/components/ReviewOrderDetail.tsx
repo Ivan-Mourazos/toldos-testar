@@ -33,7 +33,8 @@ export function ReviewOrderDetail({
   onGenerate,
   notify = noop,
   onConfirm = async () => 'cancel',
-  onGuardarCorte
+  onGuardarCorte,
+  onChanged
 }: {
   review: ReviewPackage | null;
   parameters: RuleParameters;
@@ -49,6 +50,7 @@ export function ReviewOrderDetail({
   notify?: Notify;
   onConfirm?: AskForConfirmation;
   onGuardarCorte?: (estado: EstadoCorte | null) => Promise<void> | void;
+  onChanged?: () => void;
 }) {
   const availableModels = useMemo(
     () => Array.from(new Set(review?.order.awnings.map((awning) => awning.model).filter(Boolean) || [])),
@@ -140,6 +142,8 @@ export function ReviewOrderDetail({
             ? <EnviosCorte barra ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona`} usuario={currentUser}
               permitido={puedeEnviar && cortePermitido.allowed && (Boolean(review.corteConfirmado) || !faltaCorte)} motivo={faltaCorte ?? cortePermitido.note}
               ocupado={disabled || generandoCorte} envios={review.enviosCorte} notify={notify} preguntar={onConfirm}
+              guardado={{ ruta: '/api/reviews', cuerpo: { order: review.order, corteLona: review.corteLona }, usuario: currentUser }}
+              onEnviado={onChanged}
               descarga={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona/dxf`}
               mas={produced ? <button type="button" role="menuitem" className="menu-mas-item" disabled={disabled} onClick={onReuse}><CopyPlus size={16} aria-hidden="true" />Reutilizar datos</button> : null} />
             : produced && <button className="ghost-button boton-3d review-reuse-button" type="button" disabled={disabled} onClick={onReuse}><CopyPlus aria-hidden="true" />Reutilizar datos</button>} />} />

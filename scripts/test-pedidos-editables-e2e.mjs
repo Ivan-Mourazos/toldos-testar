@@ -10,8 +10,8 @@ import { carpetaCorte } from '../src/corteLonaArchivos.js';
 
 // Siempre contra una instancia aislada propia. Las comprobaciones con escritura se limitan a sus carpetas en tmp/.
 const base = process.env.TOLDOS_ISOLATED_URL || 'http://127.0.0.1:4314';
-const dir = path.resolve('tmp/flujo-editable-fase2-instancia');
-const shots = path.resolve('tmp/ui-audit/flujo-editable-fase2');
+const dir = path.resolve(process.env.TOLDOS_ISOLATED_DIR || 'tmp/flujo-editable-fase2-instancia');
+const shots = path.resolve(process.env.TOLDOS_SCREENSHOTS_DIR || 'tmp/ui-audit/flujo-editable-fase2');
 const health = await fetch(`${base}/api/health`).then(r => r.json());
 assert.equal(health.simulationMode, true); assert.equal(health.fileWritesEnabled, false);
 const settingsData = await fetch(`${base}/api/workflow/settings`).then(r => r.json());
@@ -89,8 +89,8 @@ try {
     await request('/api/workflow/settings', { ...settings, productionEnabled: true }, 'PUT');
     await request(ruta, { ...changed, savedBy: 'IVÁN', decisionCorte: 'mantener' });
     r = await request(`${detalle}/generar`, { savedBy: 'IVÁN', confirmOverwrite: true });
-    assert.equal(r.data.cambioCorte, true, JSON.stringify(r));
-    r = await request(`${detalle}/generar`, { savedBy: 'IVÁN', confirmOverwrite: true, aceptarHuellaCorte: r.data.huella });
+    assert.equal(r.data.corteNoRegenerado, true, JSON.stringify(r));
+    r = await request(`${detalle}/generar`, { savedBy: 'IVÁN', confirmOverwrite: true, aceptarCorteNoRegenerado: r.data.tokenCorte });
     assert.equal(r.status, 200, JSON.stringify(r));
     const generado = await fetch(base + detalle).then(r => r.json());
     assert.equal(generado.status, 'PRODUCED'); assert.equal(generado.corteNoRegenerado, false);
@@ -153,7 +153,7 @@ try {
       await request('/api/workflow/settings', { ...settings, productionEnabled: true }, 'PUT');
       await page.getByRole('button', { name: 'Generar archivos', exact: true }).click();
       await page.getByRole('button', { name: 'Sí, generar archivos', exact: true }).click();
-      await page.getByRole('button', { name: 'Aceptar', exact: true }).waitFor(); await shot('cambios-huella');
+      await page.getByRole('button', { name: 'Usar este corte igualmente', exact: true }).waitFor(); await shot('corte-pendiente-generar');
       const antesHuella = await hashes(); await page.getByRole('button', { name: 'Cancelar', exact: true }).click(); assert.equal(await hashes(), antesHuella);
       // Se comprueba el contrato real del enlace sin arrancar ZWCAD en el PC de pruebas.
       await page.route(`**${detalle}/corte-dwg`, async route => {
@@ -163,11 +163,16 @@ try {
         datos.ficheros = datos.ficheros.map(f => ({ ...f, url: `${base}/#corte-comprobado` }));
         await route.fulfill({ response: respuesta, json: datos });
       });
+      const conHuellaAjena = await fetch(base + detalle).then(r => r.json());
+      conHuellaAjena.corteNoRegenerado = false;
+      conHuellaAjena.corteConfirmado.huella = 'cambio de ZWCAD pendiente';
+      await almacen.guardar(conHuellaAjena);
+      const antesAbrir = await hashes();
       await page.getByRole('button', { name: 'Generar archivos', exact: true }).click();
       await page.getByRole('button', { name: 'Sí, generar archivos', exact: true }).click();
       await page.getByRole('button', { name: 'Abrir para comprobar', exact: true }).click();
       await page.waitForURL('**/#corte-comprobado');
-      assert.equal(await hashes(), antesHuella);
+      assert.equal(await hashes(), antesAbrir);
       await page.unroute(`**${detalle}/corte-dwg`);
       await page.evaluate(() => history.replaceState({}, '', '/'));
       // Regenerar desde el detalle no deja un corte intermedio ni dispara la pregunta de huella.

@@ -25,7 +25,7 @@ describe('estadoGenerarRemolques', () => {
 
   it('dice qué falta: la OF de un elemento o la aprobación', () => {
     expect(estadoGenerarRemolques(pedido({ elementos: [elemento('231780'), elemento('')] as never }), 'IVÁN', { disponible: true, ofs: {} }))
-      .toEqual({ allowed: false, note: 'Falta la OF en el elemento B.' });
+      .toEqual({ allowed: false, note: 'Falta la OF en el remolque B.' });
     expect(estadoGenerarRemolques(pedido(), 'IVÁN', { disponible: true, ofs: { '0231780': { estado: 'devuelta' }, '0231781': aprobada } }))
       .toEqual({ allowed: false, note: 'Sin aprobar en CoordinaOT: A (0231780) devuelta.' });
   });

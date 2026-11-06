@@ -22,9 +22,10 @@ async function preparar(tipo: 'puertas' | 'remolques') {
   await fs.mkdir(path.resolve('tmp'), { recursive: true });
   const raiz = await fs.mkdtemp(path.resolve('tmp/pedidos-editables-'));
   raices.push(raiz);
-  let produccion = true, estado = 'aprobada', fallaGuardado = false, disponible = true;
+  let produccion = true, estado = 'aprobada', fallaGuardado = false, disponible = true, conBorradores = true;
   const ajustes = async () => ({ productionEnabled: produccion, corteLonaPlanoDirectory: path.join(raiz, 'planos'),
-    corteBorradoresDirectory: path.join(raiz, 'borradores'), corteBorradoresRed: String.raw`\\toldosgomez.local\DFS_POL\oftecnica\borradores`,
+    corteBorradoresDirectory: conBorradores ? path.join(raiz, 'borradores') : '', corteBorradoresRed: conBorradores ? String.raw`\\toldosgomez.local\DFS_POL\oftecnica\borradores` : '',
+    corteLonaBotDirectory: path.join(raiz, 'bot'), corteLonaDxfDirectory: path.join(raiz, 'dxfs'),
     remolquesPlanteamientosDirectory: path.join(raiz, 'pdf'), remolquesOficinaTecnicaDirectory: path.join(raiz, 'oficina/{YYYY}') });
   await fs.mkdir(path.join(raiz, 'pdf'), { recursive: true });
   await fs.mkdir(path.join(raiz, 'oficina'), { recursive: true });
@@ -55,10 +56,52 @@ async function preparar(tipo: 'puertas' | 'remolques') {
     ? { pedido: { ...puerta, elementos: puerta.elementos.map(e => ({ ...e, input: { ...e.input, frente: cambio ? 210 : habitual.frente } })) } }
     : { elementos: remolque.elementos.map(e => ({ ...e, input: { ...e.input, largo: e.input.largo + (cambio ? 10 : 0) } })), params: remolque.params }), ...extra });
   const obtener = () => servicio.obtener(codigo);
-  return { servicio, cuerpo, obtener, codigo, raiz, produccion: (v: boolean) => { produccion = v; }, estado: (v: string) => { estado = v; }, fallar: () => { fallaGuardado = true; }, desconectar: () => { disponible = false; } };
+  return { servicio, cuerpo, obtener, codigo, raiz, produccion: (v: boolean) => { produccion = v; }, estado: (v: string) => { estado = v; }, fallar: () => { fallaGuardado = true; }, desconectar: () => { disponible = false; }, sinBorradores: () => { conBorradores = false; } };
 }
 
 describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido editable', tipo => {
+  it.each(['generar', 'bot'] as const)('con la marca activa, %s exige decidir antes de escribir y usar el corte queda registrado', async accion => {
+    const t = await preparar(tipo);
+    await t.servicio.guardar(t.cuerpo());
+    await t.servicio.guardar(t.cuerpo(true, { decisionCorte: 'mantener' }));
+    await fs.mkdir(path.join(t.raiz, 'bot'), { recursive: true });
+    const bytes = await fs.readFile((await t.obtener()).corteConfirmado!.plano);
+    const salir = (extra = {}) => accion === 'generar'
+      ? t.servicio.generar(t.codigo, { savedBy: 'IVÁN', confirmOverwrite: true, ...extra })
+      : t.servicio.enviarCorte(t.codigo, { usuario: 'IVÁN', destino: 'bot', confirmBot: true, ...extra });
+    const pregunta = await salir();
+    expect(pregunta).toMatchObject({ status: 409, cuerpo: { corteNoRegenerado: true, error: expect.stringContaining('El corte no está regenerado') } });
+    expect(await fs.readdir(path.join(t.raiz, 'bot'))).toEqual([]);
+    expect((await t.obtener()).corteNoRegenerado).toBe(true);
+    const token = (pregunta.cuerpo as { tokenCorte: string }).tokenCorte;
+    expect(typeof token).toBe('string');
+    expect((await salir({ aceptarCorteNoRegenerado: 'otra-version' })).status).toBe(409);
+    expect((await salir({ aceptarCorteNoRegenerado: token })).status).toBe(200);
+    const pedido = await t.obtener();
+    expect(pedido.corteNoRegenerado).toBe(false);
+    expect(pedido.corteConfirmado).toMatchObject({ por: 'IVÁN', aceptadoSinRegenerar: { por: 'IVÁN' } });
+    expect(await fs.readFile(pedido.corteConfirmado!.plano)).toEqual(bytes);
+    if (accion === 'generar' || tipo === 'puertas') expect(pedido.status).toBe('PRODUCED');
+  }, 20000);
+
+  it('sin carpeta de borradores, regenerar conserva la ficha del corte y su enlace', async () => {
+    const t = await preparar(tipo);
+    await t.servicio.guardar(t.cuerpo());
+    t.sinBorradores();
+    expect((await t.servicio.guardar(t.cuerpo(true, { decisionCorte: 'regenerar' }))).status).toBe(200);
+    expect((await t.obtener()).corteConfirmado?.huella).toBeTruthy();
+    expect(await t.servicio.estadoCorte(t.codigo)).toMatchObject({ revisado: true });
+  });
+
+  it('regenerar después de simular no vuelve a preguntar si se sustituye el plano', async () => {
+    const t = await preparar(tipo);
+    await t.servicio.guardar(t.cuerpo());
+    t.produccion(false);
+    await t.servicio.guardar(t.cuerpo(true, { decisionCorte: 'regenerar' }));
+    t.produccion(true);
+    expect((await t.servicio.guardar(t.cuerpo(true, { decisionCorte: 'regenerar' }))).status).toBe(200);
+    expect((await t.obtener()).corteConfirmado?.huella).toBeTruthy();
+  });
   it('otro técnico guarda sin sustituir ni convertirse en revisor; mantiene autor y apunta updatedBy', async () => {
     const t = await preparar(tipo);
     expect((await t.servicio.guardar(t.cuerpo())).status).toBe(200);
@@ -119,10 +162,10 @@ describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido 
     expect(await t.obtener()).toMatchObject({ corteNoRegenerado: true, corteConfirmado: { huella: original.huella } });
     expect(await fs.readFile(original.plano)).toEqual(bytes);
     expect((await t.servicio.listar(2026)).reviews[0]).toMatchObject({ corteNoRegenerado: true });
-    const pregunta = (await t.servicio.generar(t.codigo, { savedBy: 'IVÁN' })).cuerpo as { huella: string };
-    expect(pregunta).toMatchObject({ cambioCorte: true });
-    expect((await t.servicio.generar(t.codigo, { savedBy: 'IVÁN', aceptarHuellaCorte: pregunta.huella })).status).toBe(200);
-    expect(await t.obtener()).toMatchObject({ corteNoRegenerado: false, corteConfirmado: { huella: pregunta.huella } });
+    const pregunta = (await t.servicio.generar(t.codigo, { savedBy: 'IVÁN' })).cuerpo as { tokenCorte: string };
+    expect(pregunta).toMatchObject({ corteNoRegenerado: true });
+    expect((await t.servicio.generar(t.codigo, { savedBy: 'IVÁN', aceptarCorteNoRegenerado: pregunta.tokenCorte })).status).toBe(200);
+    expect(await t.obtener()).toMatchObject({ corteNoRegenerado: false, corteConfirmado: { huella: original.huella } });
   }, 20000);
 
   it('regenera, guarda y acepta de una vez; si falla el guardado restaura el plano', async () => {

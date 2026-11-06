@@ -45,6 +45,8 @@ import type { PlanoCorte } from './CorteRemolques';
 import { guardarToldosEditable } from '../toldosEditable';
 import { abrirCorteDwg } from '../abrirCorte';
 import { primeraLineaInicio } from '../modelosInicio';
+import { debePreguntarAlCorregir } from '../correccionPedido';
+import { apuntarFormularioGuardado, leerFormularioGuardado } from '../formularioGuardado';
 
 /** Pausa sin cambios tras la que se escriben los borradores en el navegador. */
 const PAUSA_GUARDADO_MS = 600;
@@ -52,6 +54,8 @@ const PAUSA_GUARDADO_MS = 600;
 // Fecha local, la misma que usa toldos: con `toISOString()` (UTC) entre las 00:00 y las 02:00 de
 // verano la cabecera y los elementos nuevos saldrían con la fecha de ayer.
 const hoy = todayIso;
+const firmaFormulario = (estado: Pick<EstadoRemolques, 'numeroPedido' | 'cliente' | 'fecha' | 'lineas'>) =>
+  JSON.stringify([estado.numeroPedido, estado.cliente, estado.fecha, estado.lineas.map(l => [l.tipo, l.version, l.input])]);
 
 // ── Estado ──────────────────────────────────────────────────────────────────
 // Por encima del reductor de `src/remolques/workspace/estado.ts` va lo que la cabecera de
@@ -284,6 +288,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
   // El estado de este momento para lo que corre tras esperar (la consulta a RPS, la pregunta):
   // decidir con el de cuando se lanzó podría crear elementos en un pedido que ya no es el abierto.
   const estadoRef = useRef(estado);
+  const formularioGuardado = useRef(leerFormularioGuardado('remolques'));
   useEffect(() => { estadoRef.current = estado; });
   // La consulta a RPS en curso: solo hay una, y se aborta al cambiar o limpiar el pedido.
   const consultaEnCurso = useRef<AbortController | null>(null);
@@ -810,7 +815,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
    * Pedidos, se aplican las decisiones comunes de mantener o regenerar el corte. Guardado, la pantalla queda para un pedido nuevo y se
    * borra el borrador del navegador de ese pedido, como en toldos.
    */
-  const guardarParaRevision = useCallback(async () => {
+  const guardarParaRevision = useCallback(async (regenerar = false) => {
     const actual = estadoRef.current;
     const estados = Object.fromEntries(actual.lineas.map((linea) => [linea.version, estadoLinea(linea)]));
     const falta = faltaParaPdf(actual.lineas, estados);
@@ -826,11 +831,16 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
     setGuardando(true);
     try {
         const cuerpo = cuerpoGuardar(actual.lineas, params, usuario, true);
-        const datos = await guardarToldosEditable(cuerpo, confirmar,
+        const datos = await guardarToldosEditable({ ...cuerpo, ...(regenerar ? { decisionCorte: 'regenerar', confirmOverwrite: true } : {}) }, confirmar,
           () => abrirCorteDwg({ ruta: '/api/remolques/borrador-corte', orderCode: actual.numeroPedido, cuerpo, usuario, preguntar: confirmar,
             notify: notificar.current.notify, editable: true }), '/api/remolques/pedidos');
         if (!datos) return;
         alGuardar.current?.();
+        if (regenerar) {
+          formularioGuardado.current = apuntarFormularioGuardado('remolques', firmaFormulario(actual));
+          notificar.current.notify('Pedido guardado y corte regenerado.', { tone: 'success' });
+          return;
+        }
         if (!pantallaSigueIgual(estadoRef.current, actual)) {
           // Mientras se guardaba se cambió o cargó otro pedido: la pantalla no se toca.
           notificar.current.notify(`El pedido ${datos.review?.orderCode ?? actual.numeroPedido} se ha guardado para revisión, pero la pantalla ha cambiado mientras tanto y se conserva tal cual.`, { tone: 'info', title: 'Guardado para revisión' });
@@ -867,7 +877,8 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
   const cargarPedidoGuardado = useCallback(async (pedido: PedidoRemolques, modo: ModoCarga) => {
     const actual = estadoRef.current;
     const hayDatos = Boolean(actual.numeroPedido.trim() || actual.cliente.trim() || actual.lineas.length > 0);
-    if (modo === 'reutilizar' || hayDatos) {
+    if (modo === 'reutilizar' || debePreguntarAlCorregir(actual.numeroPedido, pedido.numeroPedido,
+      hayDatos && firmaFormulario(actual) !== formularioGuardado.current)) {
       const respuesta = await confirmar(modo === 'corregir'
         ? {
             title: `Corregir ${pedido.orderCode}`,
@@ -896,13 +907,15 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
     pendienteRef.current = null;
     limpiarBorradores(almacen, pedido.numeroPedido);
     const fecha = modo === 'corregir' ? (pedido.summary.orderDate || hoy()) : hoy();
+    const lineas = lineasDesdePedidoGuardado(pedido, modo, usuario, fecha).map(l => conFecha(l, fecha));
+    formularioGuardado.current = apuntarFormularioGuardado('remolques', modo === 'corregir' ? firmaFormulario({ numeroPedido: pedido.numeroPedido, cliente: pedido.summary.customer, fecha, lineas }) : null);
     setParamsGuardados(modo === 'corregir' ? pedido.params : null);
     despachar({
       tipo: 'PEDIDO_CARGADO',
       numeroPedido: pedido.numeroPedido,
       cliente: pedido.summary.customer,
       fecha,
-      lineas: lineasDesdePedidoGuardado(pedido, modo, usuario, fecha),
+      lineas,
     });
     avisar(modo === 'corregir' ? 'info' : 'exito', modo === 'corregir'
       ? `Pedido ${pedido.orderCode} cargado para corregirlo, con los parámetros con que se guardó.`

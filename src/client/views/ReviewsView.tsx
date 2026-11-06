@@ -12,7 +12,7 @@ import { ReviewOrderDetail } from '../components/ReviewOrderDetail';
 import { OrdersInbox } from '../components/OrdersInbox';
 import { useCoordinaStatus } from '../hooks/useCoordinaStatus';
 import { generateState } from '../generatePermission';
-import { abrirCorteToldos, guardarToldosEditable, preguntarCambioCorte } from '../toldosEditable';
+import { abrirCorteToldos, guardarToldosEditable, preguntarCambioCorte, decidirCortePendiente } from '../toldosEditable';
 import { leerPedidosDelAnio } from '../hooks/listaPedidos';
 import { productoDe } from '../ordersInbox';
 import { PedidoRemolquesDetalle } from '../remolques/PedidoRemolquesDetalle';
@@ -265,6 +265,7 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
     let includeNonAcrylicFabrics: boolean | null = null;
     let confirmOverwrite = false;
     let aceptarHuellaCorte: string | undefined;
+    let aceptarCorteNoRegenerado: string | undefined;
     try {
       while (true) {
         const { response, data } = await solicitarGeneracion(`/api/reviews/${encodeURIComponent(targetCode)}/generate-files`, {
@@ -274,10 +275,19 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
             includeNonAcrylicFabrics,
             confirmOverwrite,
             aceptarHuellaCorte,
+            aceptarCorteNoRegenerado,
             savedBy: currentUser
           })
         }, async (response) => ({ response, data: await response.json() }),
         () => onToast('Reintentando…', { tone: 'info' }));
+
+        if (response.status === 409 && data.corteNoRegenerado) {
+          const permiso = await decidirCortePendiente(data, onConfirm, { ruta: '/api/reviews',
+            cuerpo: { order: selectedReview.order, corteLona: selectedReview.corteLona }, usuario: currentUser }, onChanged);
+          if (permiso === null) return;
+          aceptarCorteNoRegenerado = permiso || undefined;
+          continue;
+        }
 
         if (response.status === 409 && data.cambioCorte) {
           if (!await preguntarCambioCorte(onConfirm, () => abrirCorteToldos(targetCode))) return;
@@ -403,6 +413,7 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
             notify={onToast}
             onConfirm={onConfirm}
             onGuardarCorte={(estado) => selectedReview ? guardarCorte(selectedReview, estado) : undefined}
+            onChanged={onChanged}
           />
         )}
       <div hidden={Boolean(selectedCode||selectedRemolques||selectedPuertas||buscadorAbierto)}>

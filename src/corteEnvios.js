@@ -14,6 +14,8 @@ export async function enviarCorte({ pedido, order, settings, usuario, destino, c
   if (!settings.productionEnabled) throw fallo(403, 'Modo simulación: no se ha escrito ni enviado el corte.');
   if (!usuario) throw fallo(400, 'Elige quién eres en «Soy» antes de mandar o guardar el corte.');
   if (!['bot', 'dxfs'].includes(destino)) throw fallo(400, 'Indica un destino del corte: bot o dxfs.');
+  if (pedido.corteNoRegenerado) return { status: 409, cuerpo: { corteNoRegenerado: true,
+    error: 'El corte no está regenerado con los últimos datos' } };
   const estado = aprobacionToldos(await coordina.statusOf(uniqueOfs(elementos), { fresh: true }));
   await comprobarCorte();
   const bloqueo = generationBlock(elementos, estado, nombres);

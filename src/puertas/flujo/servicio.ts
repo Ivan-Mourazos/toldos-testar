@@ -4,6 +4,7 @@ import { enviarCorte as enviarCorteCompartido } from "../../corteEnvios.js";
 import { aprobacionDeTodas, crearFlujoDwg, huellaDatos } from "../../flujoDwg/flujo.ts";
 import { conRevisor, htmlPresentaciones, sinDibujarEnPdf } from "../../flujoDwg/planoDxf.js";
 import { prepararGuardadoEditable, type DecisionCorteEditable } from "../../flujoDwg/guardarEditable.ts";
+import { comprobarCorteNoRegenerado } from "../../flujoDwg/salidaEditable.ts";
 import { aprobacionToldos } from "../../toldosEditable.js";
 import { writeFileAtomic } from "../../workflow.js";
 import { normalizarNumeroPedido } from "../../remolques/pedidos/numero-pedido.ts";
@@ -17,7 +18,7 @@ import type { EstadoCoordina, Respuesta } from "../../remolques/flujo/servicio.t
 import { generarCortePuertas } from "../corte.ts";
 import { leerPedidoPuertas } from "../pedido.ts";
 import {
-  anioPedido, crearPedidoPuertas, PUERTA_NOUNS, elementosAprobacion, exigirOfsPuertas, marcarPedidoGenerado, puertasSinOf, resumenBandeja,
+  anioPedido, crearPedidoPuertas, nombresElementosPuertas, elementosAprobacion, exigirOfsPuertas, marcarPedidoGenerado, puertasSinOf, resumenBandeja,
   validarCabeceraPuertas,
 } from "./pedido.ts";
 import type { FicheroPlanoPuertas, PedidoPuertasGuardado, ResumenPedidoPuertas } from "./tipos.ts";
@@ -302,9 +303,13 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
       if (pedido.corteSimulado) throw new ErrorPedidoRemolques('El corte se calculó en simulación: regenera el corte para escribir el plano antes de generar archivos.', 409);
       const aprobacion = elementosAprobacion(pedido);
       const estado = aprobacionToldos(await deps.coordina.statusOf(uniqueOfs(aprobacion), { fresh: true }));
-      const bloqueo = generationBlock(aprobacion, estado, PUERTA_NOUNS);
+      const bloqueo = generationBlock(aprobacion, estado, nombresElementosPuertas(pedido));
       if (bloqueo) throw new ErrorPedidoRemolques(bloqueo, estado.disponible ? 409 : 503);
       const revisor = approvalReviewers(aprobacion, estado, deps.tecnicos);
+      const salida = await comprobarCorteNoRegenerado(flujo, pedido, (cuerpo ?? {}) as { aceptarCorteNoRegenerado?: unknown },
+        (cuerpo as { savedBy?: string } | null)?.savedBy || pedido.updatedBy || pedido.summary.technician);
+      if ('respuesta' in salida) return salida.respuesta;
+      Object.assign(pedido, salida.pedido);
       // Con el corte confirmado, el plano es el DWG revisado: no se rehace (perdería los cambios hechos en ZWCAD).
       const confirmado = pedido.corteConfirmado;
       if (confirmado) {
@@ -313,7 +318,6 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
         if (aceptado.respuesta) return aceptado.respuesta;
         pedido.corteConfirmado = aceptado.corteConfirmado;
         pedido.corteNoRegenerado = false;
-        if (entrada.aceptarHuellaCorte) await deps.almacen.guardar(pedido);
       }
       const plano: { files: FicheroPlanoPuertas[]; avisos: string[]; existentes?: string[] } | null = confirmado
         ? (await existeFichero(confirmado.plano)
@@ -372,13 +376,16 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
     if (ocupados.has(orderCode)) return { status: 409, cuerpo: { error: MENSAJE_OCUPADO } };
     ocupados.set(orderCode, "generando");
     try {
-      const c = (cuerpo ?? {}) as { usuario?: unknown; destino?: unknown; confirmBot?: unknown; confirmOverwrite?: unknown; aceptarCambioCorte?: unknown; pdfModo?: unknown; sinPdf?: unknown };
+      const c = (cuerpo ?? {}) as { usuario?: unknown; destino?: unknown; confirmBot?: unknown; confirmOverwrite?: unknown; aceptarCambioCorte?: unknown; aceptarCorteNoRegenerado?: unknown; pdfModo?: unknown; sinPdf?: unknown };
       const usuario = typeof c.usuario === "string" ? c.usuario.trim() : "";
       if (!deps.tecnicos.includes(usuario)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de mandar o guardar el corte.");
       const pedido = await obtener(orderCode);
       exigirOfsPuertas(pedido);
+      const salida = await comprobarCorteNoRegenerado(flujo, pedido, c, usuario);
+      if ('respuesta' in salida) return salida.respuesta;
+      Object.assign(pedido, salida.pedido);
       // Si el corte del DWG ya no es el que se confirmó (y revisó), se pregunta antes de mandarlo.
-      let nota = "";
+      let nota = salida.nota;
       let dwg: Awaited<ReturnType<typeof corteDelDwg>> | null = null;
       if (pedido.corteConfirmado) {
         // Pasado a revisión en CoordinaOT y aprobado otra vez después del cambio: sale sin preguntar.
@@ -386,7 +393,8 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
         const aprobadoEn = aprobacionDeTodas(await deps.coordina.statusOf(ofs, { fresh: true }), ofs);
         const comprobado = await flujo.antesDeMandar(pedido.corteConfirmado, c.aceptarCambioCorte === true, usuario, aprobadoEn);
         if ("respuesta" in comprobado) return comprobado.respuesta;
-        ({ dwg, nota } = comprobado);
+        dwg = comprobado.dwg;
+        nota = [nota, comprobado.nota].filter(Boolean).join(' ');
       }
       // Fase 4: al mandar al bot, las presentaciones del DWG revisado en PDF, en planteamientos como AR…-10.pdf (Iván,
       // 24/10/2026). Se mira antes de mandar nada: si ya hay uno que no hizo la web, se pregunta si es otra parte del pedido.
@@ -399,7 +407,7 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
       }
       const respuesta = await enviarCorteCompartido({ nota, pedido, order: { orderCode, technician: pedido.summary.technician }, settings: await deps.ajustes(),
         usuario, destino: c.destino, confirmBot: c.confirmBot === true, confirmOverwrite: c.confirmOverwrite === true,
-        elementos: elementosAprobacion(pedido), coordina: deps.coordina, nombres: PUERTA_NOUNS,
+        elementos: elementosAprobacion(pedido), coordina: deps.coordina, nombres: nombresElementosPuertas(pedido),
         comprobarCorte: () => {}, preparar: () => prepararDxf(pedido),
         guardarRegistro: (actualizado: PedidoPuertasGuardado) => deps.almacen.guardar(actualizado), ahora: reloj });
       // Con el corte del DWG confirmado, mandarlo al bot cierra el pedido: queda generado, sin «Generar archivos», que ya

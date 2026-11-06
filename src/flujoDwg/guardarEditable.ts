@@ -37,7 +37,7 @@ export async function prepararGuardadoEditable({ flujo, orderCode, technician, u
       aceptarHuella: typeof entrada.aceptarHuellaCorte === 'string' ? entrada.aceptarHuellaCorte : undefined });
   if (!accion || ('respuesta' in accion && accion.respuesta)) return accion;
   if (!('corteConfirmado' in accion) || !accion.corteConfirmado) return null;
-  if (!existente?.corteConfirmado && entrada.confirmPlanoOverwrite !== true &&
+  if (eleccion !== 'regenerar' && !existente?.corteConfirmado && entrada.confirmPlanoOverwrite !== true &&
       await existeFichero(accion.corteConfirmado.plano)) return { respuesta: { status: 409, cuerpo: {
     needsPlanoConfirmation: true, existing: [accion.corteConfirmado.filename], error: 'El plano del corte ya existe en la carpeta del año. ¿Sustituirlo?' } } };
   return { ...accion, metadata: { corteConfirmado: accion.corteConfirmado, corteSimulado: false,

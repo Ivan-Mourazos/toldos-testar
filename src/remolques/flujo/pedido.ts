@@ -65,8 +65,9 @@ const ofDe = (elemento: { input: LonaInput | BaquetonInput | GanadoInput }) => n
 const unicos = (valores: string[]) => [...new Set(valores.filter(Boolean))];
 
 /** Las letras y OF que se preguntan a CoordinaOT, en el orden del pedido (A, B…), como los toldos. */
-export function elementosAprobacion(pedido: Pick<PedidoRemolques, "elementos">): { letter: string; of: string }[] {
-  return pedido.elementos.map((elemento, indice) => ({ letter: awningLetter(indice), of: ofDe(elemento) }));
+export function elementosAprobacion(pedido: Pick<PedidoRemolques, "elementos">) {
+  return pedido.elementos.map((elemento, indice) => ({ letter: awningLetter(indice), of: ofDe(elemento),
+    nombre: elemento.tipo === 'baqueton' ? 'baquetón' : 'remolque', nombrePlural: elemento.tipo === 'baqueton' ? 'baquetones' : 'remolques' }));
 }
 
 export function resumenElementos(elementos: ElementoGuardado[]): ResumenElemento[] {

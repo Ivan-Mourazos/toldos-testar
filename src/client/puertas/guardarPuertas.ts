@@ -53,11 +53,11 @@ type Plano = { files: Array<{ filename: string }>; avisos: string[]; existentes?
  * Guarda con las mismas decisiones de corte que toldos y remolques, antes de modificar nada en disco.
  * true si se ha guardado.
  */
-export async function guardarPuertasParaRevision({ pedido, usuario, preguntar, notify }: {
-  pedido: PedidoPantallaPuertas; usuario: string; preguntar: AskForConfirmation; notify: Notify;
+export async function guardarPuertasParaRevision({ pedido, usuario, preguntar, notify, regenerar = false }: {
+  pedido: PedidoPantallaPuertas; usuario: string; preguntar: AskForConfirmation; notify: Notify; regenerar?: boolean;
 }): Promise<boolean> {
   try {
-    const datos = await guardarToldosEditable({ pedido, savedBy: usuario }, preguntar,
+    const datos = await guardarToldosEditable({ pedido, savedBy: usuario, ...(regenerar ? { decisionCorte: 'regenerar', confirmOverwrite: true } : {}) }, preguntar,
       () => abrirCorteDwg({ ruta: '/api/puertas/borrador-corte', orderCode: pedido.orderCode, cuerpo: { pedido }, usuario, preguntar, notify, editable: true }),
       '/api/puertas/pedidos');
     if (!datos) return false;

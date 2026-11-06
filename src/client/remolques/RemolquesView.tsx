@@ -134,11 +134,13 @@ export function RemolquesView({ controlRef, usuario, notify, askForConfirmation,
   // Solo comunica los datos del rótulo; el pedido y sus operaciones siguen en este editor.
   // El corte del pedido, calculado solo (pestaña «Corte» junto al dibujo), y su flujo con el DWG en la barra de arriba,
   // como en puertas: «Abrir corte», «Confirmar corte» y, con el corte confirmado, «Guardar para revisión».
-  const bloqueoCorte = ws.bloqueoParams.motivo ?? faltaPdf;
+  const faltaOfCorte = lineas.some(l => !l.input.cabecera.ordenFabricacion?.trim()
+    || l.input.cabecera.ordenFabricacion.trim().toUpperCase() === 'SIN OF');
+  const bloqueoCorte = faltaOfCorte ? 'Falta la OF de algún elemento' : ws.bloqueoParams.motivo ?? faltaPdf;
   const entrada = entradaCorte(lineas, params);
   const vistaCorte = useVistaCorteRemolques(lineas.length ? entrada : '', lineas.length ? bloqueoCorte : 'Añade un elemento');
   const flujo = useFlujoCorteDwg({ base: '/api/remolques/borrador-corte', codigo: numeroPedido, entrada,
-    cuerpo: () => JSON.parse(entrada) as Record<string, unknown>, aplica: Boolean(vistaCorte.actual?.datos?.cortes.length),
+    cuerpo: () => JSON.parse(entrada) as Record<string, unknown>, aplica: bloqueoCorte ? lineas.length > 0 : Boolean(vistaCorte.actual?.datos?.cortes.length),
     falta: bloqueoCorte, usuario, notify, askForConfirmation, activo: accionesVisibles && lineas.length > 0, editable: true });
   const esperaCorte = esperaAlCorte(flujo.paso, true);
   const avisoAMano = bloqueoCorte ? null : avisoCorteAMano(vistaCorte.actual?.datos);
@@ -159,7 +161,7 @@ export function RemolquesView({ controlRef, usuario, notify, askForConfirmation,
         <FilePen aria-hidden="true" />{ws.guardandoBorrador ? 'Guardando…' : 'Guardar borrador'}
       </button>
       {avisoAMano && <span className="flujo-corte-paso" role="status" title={avisoAMano}>{avisoAMano}</span>}
-      <BotonesFlujoCorte flujo={flujo} ocupado={ws.guardando} />
+      <BotonesFlujoCorte flujo={flujo} ocupado={ws.guardando} regenerar={async () => { await ws.guardarParaRevision(true); await flujo.refrescar(); }} />
       <button type="button" className="primary-button rem-guardar-boton"
         disabled={lineas.length === 0 || Boolean(faltaPdf) || ws.guardando || ws.guardandoBorrador || Boolean(ws.bloqueoParams.motivo) || Boolean(esperaCorte)}
         aria-busy={ws.guardando} title={ws.bloqueoParams.motivo ?? faltaPdf ?? esperaCorte ?? undefined}

@@ -1,4 +1,5 @@
 import { normalizeFabricImage } from '../../domain/fabricImage.js';
+import { apuntarFormularioGuardado, leerFormularioGuardado } from '../formularioGuardado';
 import { supportsFabricDropAdjustment } from '../../domain/fabricDropAdjustment.js';
 import { isConfiguredCurtain, normalizeCurtainConfiguration } from '../../domain/curtainConfiguration.js';
 import { createDefaultSolapa, normalizeSolapas } from '../../domain/solapasRules.js';
@@ -389,9 +390,16 @@ export function useDraft() {
 
   const abierto = useRef(false);
   const desdeBorrador = useRef(false);
+  const desdePedido = useRef(false);
+  const formularioGuardado = useRef(leerFormularioGuardado('toldos'));
+  function firmaFormulario() {
+    return JSON.stringify({ orderCode, customer, orderDate, technician, reviewer, fabric, sameFabric, remate, remateColor, structureColor, rotTela, rotBamba, notes, awnings, fabricProposals, confirmedFabricProposals, corteLona });
+  }
   useEffect(() => {
-    writeStoredDraft({ orderCode, customer, orderDate, technician, reviewer, fabric, sameFabric, remate, remateColor, structureColor, rotTela, rotBamba, notes, awnings, fabricProposals, confirmedFabricProposals, corteLona }, { alAbrir: !abierto.current });
+    const formulario = { orderCode, customer, orderDate, technician, reviewer, fabric, sameFabric, remate, remateColor, structureColor, rotTela, rotBamba, notes, awnings, fabricProposals, confirmedFabricProposals, corteLona };
+    writeStoredDraft(formulario, { alAbrir: !abierto.current });
     abierto.current = true;
+    if (desdePedido.current) { formularioGuardado.current = apuntarFormularioGuardado('toldos', JSON.stringify(formulario)); desdePedido.current = false; }
     if (desdeBorrador.current) {
       desdeBorrador.current = false;
       try { localStorage.setItem(claveBorradorAbierto, localStorage.getItem(storageKey) ?? ''); } catch { /* Sin almacenamiento no hay nada que se quede. */ }
@@ -452,7 +460,9 @@ export function useDraft() {
     loadOrder(buildReusableDraft(entry));
   }
 
-  function loadOrder(entry: DraftState, { borrador = false }: { borrador?: boolean } = {}) {
+  function loadOrder(entry: DraftState, { borrador = false, guardado = false }: { borrador?: boolean; guardado?: boolean } = {}) {
+    desdePedido.current = guardado;
+    formularioGuardado.current = apuntarFormularioGuardado('toldos', null);
     desdeBorrador.current = borrador;
     if (!borrador) { try { localStorage.removeItem(claveBorradorAbierto); } catch { /* Sin almacenamiento. */ } }
     setCorteLona(entry.corteLona || null);
@@ -524,7 +534,8 @@ export function useDraft() {
     removeAwning,
     reuseOrder,
     loadOrder,
-    resetDraft
+    resetDraft,
+    hayCambiosSinGuardar: () => firmaFormulario() !== formularioGuardado.current
   };
 }
 

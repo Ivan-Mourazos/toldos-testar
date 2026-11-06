@@ -11,7 +11,7 @@ import { CabeceraDocumento, DocumentosPedido } from '../components/DocumentosPed
 import { AccionesPedido, CabeceraPedidoGuardado } from '../components/AccionesPedido';
 import { useCortePedidoEditable } from '../useCortePedidoEditable';
 import { faltaParaAbrir } from './flujoCorte';
-import { abrirCorteGuardado, preguntarCambioCorte } from '../toldosEditable';
+import { abrirCorteGuardado, preguntarCambioCorte, decidirCortePendiente, type CortePendiente } from '../toldosEditable';
 import { aprobadaOPasada } from '../../toldosEditable.js';
 import { EnviosCorte, HistorialEnvios } from '../components/EnviosCorte';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
@@ -163,10 +163,17 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
     setGenerando(true);
     let confirmOverwrite = false;
     let aceptarHuellaCorte: string | undefined;
+    let aceptarCorteNoRegenerado: string | undefined;
     try {
       for (;;) {
-        const respuesta = await fetch(`${ruta}/generar`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirmOverwrite, aceptarHuellaCorte, savedBy: currentUser }) });
-        const datos = await respuesta.json().catch(() => ({})) as { error?: string; cambioCorte?: boolean; huella?: string; needsConfirmation?: boolean; existing?: string[]; unchanged?: boolean; saved?: Array<{ filename: string }>; avisos?: string[] };
+        const respuesta = await fetch(`${ruta}/generar`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirmOverwrite, aceptarHuellaCorte, aceptarCorteNoRegenerado, savedBy: currentUser }) });
+        const datos = await respuesta.json().catch(() => ({})) as CortePendiente & { error?: string; cambioCorte?: boolean; huella?: string; needsConfirmation?: boolean; existing?: string[]; unchanged?: boolean; saved?: Array<{ filename: string }>; avisos?: string[] };
+        if (respuesta.status === 409 && datos.corteNoRegenerado) {
+          const permiso = await decidirCortePendiente(datos, onConfirm, { ruta: '/api/puertas/pedidos', cuerpo: { pedido }, usuario: currentUser }, onChanged);
+          if (permiso === null) return;
+          aceptarCorteNoRegenerado = permiso || undefined;
+          continue;
+        }
         if (respuesta.status === 409 && datos.cambioCorte) {
           if (!await preguntarCambioCorte(onConfirm, () => abrirCorteGuardado(`${ruta}/corte-dwg`))) return;
           aceptarHuellaCorte = datos.huella;
@@ -217,7 +224,7 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
 
   return (
     <section className="review-reader rem-pedido-guardado" aria-label={`Pedido de ${productoDeElementos(pedido.elementos)==='systemdock'?'System Dock':'puertas'} ${pedido.orderCode}`}>
-      <CabeceraPedidoGuardado volver={volver} titulo={<>{pedido.orderCode}<span className="orders-kind-tag familia-tag is-puertas">{productoDeElementos(pedido.elementos)==='systemdock'?'System Dock':'Puerta'}</span></>}
+      <CabeceraPedidoGuardado volver={volver} titulo={<>{pedido.orderCode}<span className="orders-kind-tag familia-tag is-puertas">{productoDeElementos(pedido.elementos)==='systemdock'?'Lona System Dock':'Puerta'}</span></>}
         datos={datos} corteNoRegenerado={pedido.corteNoRegenerado} corteSimulado={pedido.corteSimulado}
         acciones={<AccionesPedido generado={generado} ocupado={generando || corte.ocupado} enviando={generando} editandoPermitido={corregible}
           onEditar={() => onCorregir(pedido)} elementos={elementosAprobacion(pedido)} coordina={coordina} preguntar={onConfirm}
@@ -225,6 +232,7 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
           generarPermitido={allowed} motivoGenerar={note} envios={<EnviosCorte key={ruta} barra ruta={`${ruta}/corte`} usuario={currentUser}
             permitido={permisoCorte.allowed && Boolean(currentUser.trim())} motivo={permisoCorte.note} ocupado={generando || corte.ocupado} envios={pedido.enviosCorte}
             descarga={`${ruta}/corte/dxf`} conPdf notify={onToast} preguntar={onConfirm} onEnviado={onChanged}
+            guardado={{ ruta: '/api/puertas/pedidos', cuerpo: { pedido }, usuario: currentUser }}
             mas={generado ? <button type="button" role="menuitem" className="menu-mas-item" onClick={() => onReutilizar(pedido)}><CopyPlus size={16} aria-hidden="true" />Reutilizar datos</button> : null} />} />} />
 
       {generado && pedido.production && (

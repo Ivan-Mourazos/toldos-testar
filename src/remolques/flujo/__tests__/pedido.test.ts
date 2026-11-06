@@ -54,7 +54,10 @@ describe("crearPedidoRemolques", () => {
 
 describe("lo que necesitan Pedidos, CoordinaOT y la hoja", () => {
   it("las letras y OF de cada elemento, en orden, con la OF en siete cifras", () => {
-    expect(elementosAprobacion(nuevo())).toEqual([{ letter: "A", of: "0231780" }, { letter: "B", of: "0231781" }]);
+    expect(elementosAprobacion(nuevo())).toEqual([
+      { letter: "A", of: "0231780", nombre: "remolque", nombrePlural: "remolques" },
+      { letter: "B", of: "0231781", nombre: "baquetón", nombrePlural: "baquetones" },
+    ]);
   });
 
   it("el resumen de la bandeja no lleva los elementos ni los parámetros y sí el estado de cada elemento", () => {

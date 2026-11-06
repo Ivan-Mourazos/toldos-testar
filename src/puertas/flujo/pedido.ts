@@ -14,7 +14,12 @@ import {
 // web. Las de autoría, estados y CoordinaOT son las de toldos (src/reviewRules.js), como en remolques.
 
 const OF_PROVISIONAL = "SIN OF";
-export const PUERTA_NOUNS = { one: "puerta", many: "puertas", none: "El pedido no tiene puertas." };
+export const PUERTA_NOUNS = { one: "puerta", many: "puertas", none: "El pedido no tiene puertas.", femenino: true };
+export function nombresElementosPuertas(pedido: Pick<PedidoPuertas, "elementos">) {
+  return pedido.elementos.length && pedido.elementos.every(e => e.input.modelo === 'SYSTEMDOCK')
+    ? { one: 'lona System Dock', many: 'lonas System Dock', none: 'El pedido no tiene lonas System Dock.', femenino: true }
+    : PUERTA_NOUNS;
+}
 const ofDe = (puerta: Puerta) => normalizeOf(puerta.of ?? "");
 const unicos = (valores: string[]) => [...new Set(valores.filter(Boolean))];
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
@@ -32,7 +37,8 @@ export function puertasSinOf(pedido: Pick<PedidoPuertas, "elementos">): string[]
 export function exigirOfsPuertas(pedido: Pick<PedidoPuertas, "elementos">) {
   const sinOf = puertasSinOf(pedido);
   if (sinOf.length) {
-    throw new ErrorPedidoRemolques(`Falta la OF de la puerta ${sinOf.join(", ")}: escríbela antes de guardar, descargar o enviar el corte.`, 409);
+    const nombres = nombresElementosPuertas(pedido);
+    throw new ErrorPedidoRemolques(`Falta la OF de ${sinOf.length === 1 ? `la ${nombres.one}` : `las ${nombres.many}`} ${sinOf.join(", ")}: escríbela antes de guardar, descargar o enviar el corte.`, 409);
   }
 }
 
