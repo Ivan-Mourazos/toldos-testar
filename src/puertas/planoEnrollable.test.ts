@@ -64,8 +64,8 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
     const izquierda = vistas.find(r => numero(r, 69) === 2)!;
     const derecha = vistas.find(r => numero(r, 69) === 4)!;
     expect(vistas).toHaveLength(5);
-    expect(numero(izquierda, 40)).toBeGreaterThan(140);
-    expect(numero(izquierda, 41)).toBeGreaterThan(170);
+    // Desde el 06/11/2026 la ventana se ajusta al dibujo, para que no se cuele nada de al lado: crece en un sentido.
+    expect(Math.max(numero(izquierda, 40) / 153.78, numero(izquierda, 41) / 193.84)).toBeGreaterThan(.99);
     expect(numero(izquierda, 10)).toBeLessThan(100);
     expect(numero(derecha, 10)).toBeGreaterThan(210);
     expect(numero(derecha, 20) - numero(derecha, 41) / 2).toBeGreaterThan(55);
@@ -180,12 +180,12 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
     // y los refuerzos centrados en su hueco con una raya a cada uno; sin los «a2» del saco partido en el dibujo
     // del saco (correcciones de Iván sobre AR2605035). Después, cotas verticales más juntas, nota BOLSILLO y
     // cajetín algo más pequeño (23/10/2026). Luego, presentación «PUERTA A», el corte en fila con la puerta y ventanas con la proporción justa. Después, el corte a la derecha y los recuadros DIBUJO y CORTE pegados, con margen del 20 %.
-    ['apilable', apilable, 'bcbb2eb0686e7fc3a5b40ac183ecc61ae7d852ee1829a08aa03870470ed34c11'],
+    ['apilable', apilable, 'eed1f27487e84d828aadbd9fb778148e1fe652751688b6d915a3885276a721c9'],
     // Tetris coloca las dos E.T. sobre los paños: baja de 711 a 700 cm sin cambiar el alzado.
     // 27/10/2026 (AR2605249): saco de 2 × (rematado + 2) y la raya de soldar el saco, 2 cm sobre el bajo del paño.
     // Se elimina la segunda raya del saco y las dos referencias fijas de la regla anterior (Iván, 27/10/2026).
     // Empates: una raya en el paño superior y flecha hacia el borde a media escala; abajo solo mininúmeros.
-    ['autorreparable', autorreparable, '7539aac6f8274c7e1049e60be940c9665581f382ae9450dac03666ed6dec43a1'],
+    ['autorreparable', autorreparable, '5d77a7f03fccdc608cbfbf41bf304dfb5ce5239dba2b9c70b148cb015efe52d4'],
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {
     const pedido = { ...pedidoDe('AR2600001', crear()), cabecera: { clienteRps: { codigo: '009999' } } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido, cabecera })).digest('hex')).toBe(hash);

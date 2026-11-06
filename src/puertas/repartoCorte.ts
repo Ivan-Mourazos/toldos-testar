@@ -60,7 +60,9 @@ export function repartirCorte(zona: Zona, filas: FilaCorte[], ventana: Zona): Tr
   let arriba = ventana.y1;
   return elegida.tramos.map(z => {
     const w = (z.x1 - z.x0) * elegida.escala, h = (z.y1 - z.y0) * elegida.escala;
-    const papel = { x0: ventana.x0, x1: ventana.x0 + w, y1: arriba, y0: arriba - h };
+    // Cada tramo, centrado a lo ancho en el sitio del corte (Iván, 06/11/2026).
+    const x0 = ventana.x0 + (anchoV - w) / 2;
+    const papel = { x0, x1: x0 + w, y1: arriba, y0: arriba - h };
     arriba = papel.y0 - ENTRE_TRAMOS;
     return { zona: z, papel };
   });

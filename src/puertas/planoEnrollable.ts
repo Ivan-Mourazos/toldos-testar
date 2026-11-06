@@ -1,16 +1,13 @@
-import { escribirDxfPlano, separacionCorte } from '../domain/corteLona/presentacion.js';
+import { separacionCorte } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { calcularPuerta } from './calcular.ts';
-import { esClientePortanova } from './clientePortanova.ts';
 import { rotuloSaco, sacoPuerta, sacoUtil } from './saco.ts';
 import { anclarCotas } from './cotasPuertas.ts';
 import { notaPlanoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
-import { presentacionPortanova, VENTANA_CORTE_PORTANOVA } from './plantillaPortanova.ts';
 import { SEPARACION_EXTRA_FILAS, TITULO_MATERIAL_MM } from './corte.ts';
 import { corteEnPlano, entidadesDePieza, textosFuera } from './corteEnPlano.ts';
 import type { CortePuertas, EntidadesPuertas, PedidoPuertas, Puerta, Punto } from './tipos.ts';
-import { sumarLienzo } from './lienzo.ts';
 export { sumarLienzo } from './lienzo.ts';
 
 // Referencia: AR2605134 de Iván, 22/10/2026 (mano3). Dibujo en cm, con el origen en la
@@ -235,7 +232,6 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSac
 }
 
 
-const unicos = (v: string[]) => [...new Set(v.filter(Boolean))];
 // Cotas del corte más grandes, para que se lean al imprimir sin pisar las piezas (Iván, 22/10/2026).
 const CORTE_COTAS = 'XERA 20';
 
@@ -355,7 +351,6 @@ export function lienzoAMetros(l: Lienzo, ox: number, oy: number) {
     circulos: l.circulos.map(a => ({ ...a, x: ox + a.x / 100, y: oy + a.y / 100, r: a.r / 100 })),
   };
 }
-const zonaM = (z: Zona, ox: number, oy: number): Zona => ({ x0: ox + z.x0 / 100, x1: ox + z.x1 / 100, y0: oy + z.y0 / 100, y1: oy + z.y1 / 100 });
 
 /**
  * Origen del corte en el modelo (m): a la derecha de las puertas, alineado arriba con ellas y con los recuadros pegados,
@@ -376,39 +371,3 @@ export function hojasPuertas(pedido: PedidoPuertas, zonas: Zona[]) {
   }));
 }
 
-export function escribirPlanoEnrollables(pedido: PedidoPuertas, cortes: CortePuertas[], cabecera: { cliente: string; tecnico: string; revisor: string; fecha: string }): string {
-  const l = vacio(); let cursor = 0, y0 = 0, y1 = 0;
-  const zonasPuertas: Zona[] = [];
-  for (const [i, e] of pedido.elementos.entries()) {
-    const { lienzo, zona } = dibujarAlzadoEnrollable(e.input, String.fromCharCode(65 + i), pedido.elementos.length > 1);
-    const dx = i ? cursor - zona.x0 : 0;
-    sumarLienzo(l, lienzo, dx); cursor = dx + zona.x1 + ENTRE_PUERTAS;
-    y0 = Math.min(y0, zona.y0); y1 = Math.max(y1, zona.y1);
-    zonasPuertas.push({ x0: i ? dx + zona.x0 : -65, x1: dx + zona.x1, y0: zona.y0, y1: zona.y1 });
-  }
-  const za = zonaM({ x0: -65, y0, x1: cursor - ENTRE_PUERTAS, y1 }, 100, 100);
-  const corte = dibujarCorte(cortes, pedido);
-  const [ox, oy] = origenCorte(za, corte.zona);
-  let zc = zonaM(corte.zona, ox, oy), altoVistaCorte: number | undefined;
-  const corteReal = zc;
-  const portanova = esClientePortanova(pedido, cabecera.cliente);
-  if (portanova) {
-    // El corte, lo más grande que quepa y pegado arriba: debajo queda MATERIALES (Iván, 22/10/2026).
-    const proporcion = VENTANA_CORTE_PORTANOVA.alto / VENTANA_CORTE_PORTANOVA.ancho;
-    altoVistaCorte = Math.max(zc.y1 - zc.y0, (zc.x1 - zc.x0) * proporcion);
-    const cx = (zc.x0 + zc.x1) / 2, ancho = altoVistaCorte / proporcion;
-    zc = { x0: cx - ancho / 2, x1: cx + ancho / 2, y0: zc.y1 - altoVistaCorte, y1: zc.y1 };
-  }
-  const puertas = pedido.elementos.map(e => e.input);
-  const fecha = cabecera.fecha.split('-').reverse().map((v, i) => i === 2 ? v.slice(2) : v).join('/');
-  return escribirDxfPlano({ ...lienzoAMetros(l, 100, 100), corte: lienzoAMetros(corte.lienzo, ox, oy), zonas: { toldos: za, corte: zc, corteReal }, corteDerecho: true,
-    corteGirable: true, hojas: hojasPuertas(pedido, zonasPuertas.map(z => zonaM(z, 100, 100))),
-    bloques: [bloqueFlechaEnrollable],
-    ...(portanova ? presentacionPortanova(pedido, cabecera, { toldos: za, corte: zc }, altoVistaCorte) : {}),
-  }, {
-    pedido: pedido.orderCode, of: unicos(puertas.map(p => p.of)).join(' / '), cliente: textoSeguro(cabecera.cliente),
-    tecnico: textoSeguro(cabecera.tecnico), revisor: textoSeguro(cabecera.revisor),
-    fecha, pagina: '1/1',
-    material: textoSeguro(unicos(puertas.map(p => `${p.material} ${p.color}`)).join(' / ')), subtitulo: 'MEDIDAS EN CM · PUERTA DE LONA',
-  }).dxf;
-}

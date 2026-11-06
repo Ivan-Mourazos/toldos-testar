@@ -13,11 +13,11 @@ const hash = (x: unknown) => createHash('sha256').update(typeof x === 'string' ?
 // 06/11/2026: el corte de las puertas sin «· CORTE» y con «CORTAR POR EL REVÉS» (Iván, AR2605429).
 // ARAUJO: actualizadas con la colocación legible del 04/11; el cálculo y las rayas del bot se conservan.
 const casos = [
-  ['5036', () => puertaPlanoReal('AR2605036'), '480e4a512eb7fc020ed0c1ed5b77587e4df4bebaa4e97fbec86f3a1cc489ce03'],
-  ['apilable300', apilable, '9e8f2053cf2de2958fe84c6a23b965a7cca2d9d09dd82a3aee4ebdd09271bc68'],
-  ['apilable600', () => ({ ...apilable(), frente: 600 }), '0f196f78b1125fd4e028d95cdda1676c745990b8afe0a3d48e41c963b0f448d2'],
-  ['enrollable', puerta4638, '63127fd170070e2d15f8991fde8d92d5a848eaf93c6602fc9569161424c709a5'],
-  ['autorreparable', autorreparable, 'e5c452ab24aad6cc590e48d1d4bf1275468b52af3d24087336bdaf6548a43477'],
+  ['5036', () => puertaPlanoReal('AR2605036'), '695a334f459471c49469e9bcd2338d02a67c6da123c14fdd924138b8718c7837'],
+  ['apilable300', apilable, '969d8b9e13edb988fff3aa1f40670d9bb91149c68e6468e47895766e2b7314b7'],
+  ['apilable600', () => ({ ...apilable(), frente: 600 }), '255928675d1f035c8d591f20aa605aa45c311ce990be9d169100906b8b5035d6'],
+  ['enrollable', puerta4638, '126c87945822aec3e46c330ffbdc5d78d2a22e05dc95f871c5543a1e3c51a737'],
+  ['autorreparable', autorreparable, 'aecd5f0ec78d75d55724e569df79108cfe7fa7f097d9a4c80e6c5005c172a896'],
   ['araujo5365', araujo5365, '03b9bc58af363e9050beddf120226ff3cde437f70115f86a2c3159c78c75e4a1'],
   ['araujo5733', araujo5733, 'db9bb8c779fc383d4978db2c72ab2999061c526604c4790e075c13e6c7744a34'],
 ] as const;

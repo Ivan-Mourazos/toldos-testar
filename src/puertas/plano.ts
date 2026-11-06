@@ -1,6 +1,5 @@
 import { generarCortePuertas } from './corte.ts';
 import { escribirPlanoAraujo } from './planoAraujo.ts';
-import { escribirPlanoEnrollables } from './planoEnrollable.ts';
 import { escribirPlanoTaller } from './planoTaller.ts';
 import { escribirPlanoSystemDock } from './planoSystemDock.ts';
 import type { PedidoPuertas } from './tipos.ts';
@@ -17,8 +16,6 @@ export function escribirPlanoPuertas({ pedido, cabecera, ofStockSacos }: {
   if (pedido.elementos.length && pedido.elementos.every(e => e.input.modelo === 'SYSTEMDOCK')) {
     return escribirPlanoSystemDock(pedido, cortes, cabecera);
   }
-  if (pedido.elementos.length && pedido.elementos.every(e => e.input.modelo === 'PUERTAENR')) {
-    return escribirPlanoEnrollables(pedido, cortes, cabecera);
-  }
+  // Enrollables, apilables y autorreparables, con la misma hoja y el mismo corte (Iván, 06/11/2026).
   return escribirPlanoTaller(pedido, cortes, cabecera);
 }

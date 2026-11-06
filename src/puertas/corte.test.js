@@ -156,7 +156,8 @@ describe('Corte de puertas', () => {
     const r=generarCortePuertas(p);
     const entidades=r.cortes.flatMap(c=>c.entidades.arcos);
     expect(entidades.filter(a=>a.capa==='CUTTER')).toHaveLength(8);
-    const lineas=r.cortes.flatMap(c=>c.entidades.lineas.map(l=>JSON.stringify([c.material,l])));
+    // Por corte: el saco entero y su alternativa en dos son cortes distintos y pueden compartir una raya (06/11/2026).
+    const lineas=r.cortes.flatMap(c=>c.entidades.lineas.map(l=>JSON.stringify([c.material,c.opcion,l])));
     expect(new Set(lineas).size).toBe(lineas.length);
     expect(r.archivo?.dxf).toContain('ROTULADOR');
   });

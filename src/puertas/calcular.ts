@@ -358,6 +358,16 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     agregar(pieza('Entrada de tubo','entrada',p.frente+11,21));
     agregar(pieza('Entrada de tubo','entrada',p.frente+11,21));
     agregar(pieza(`Saco de ${sacoUtil(p) ?? 120}`,'saco',p.frente,s.corte,p.materialSaco,p.rolloSaco));
+    // Como en las demás puertas, de alternativa el saco en dos, con 1 cm más cada mitad para soldarlas (Iván, 06/11/2026:
+    // «no puede ser que unas pongan el saco de una manera y otras no»).
+    {
+      const mitad=p.frente/2+1;
+      const izquierda=pieza('Saco partido · izquierda','saco',mitad,s.corte,p.materialSaco,p.rolloSaco);
+      const derecha=pieza('Saco partido · derecha','saco',mitad,s.corte,p.materialSaco,p.rolloSaco);
+      numerarBorde(izquierda,++numeroUnion,'derecha');
+      numerarBorde(derecha,numeroUnion,'izquierda');
+      r.alternativasSaco={entero:[],partido:[izquierda,derecha]};
+    }
   }
   for (const [i,v] of p.ventanas.entries()) {
     if (p.modelo === 'PUERTAENR') { aviso('VENTANA_MODELO','El ventanal sencillo ya define el cristal: las ventanas individuales requieren otro perfil.'); break; }

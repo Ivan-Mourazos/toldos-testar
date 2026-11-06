@@ -10,6 +10,21 @@ const ESCALA_CAJETIN = 0.74;
 const unicos = (xs: string[]) => [...new Set(xs.filter(Boolean))];
 /** Ventana del corte, en mm de papel: arriba hasta el marco y abajo hasta MATERIALES, que Iván bajó junto a las notas (22/10/2026). */
 export const VENTANA_CORTE_PORTANOVA = { centro: [225.3602038, 140.9411701] as Punto, ancho: 127.4184910, alto: 121.8823402 };
+const ventanaEnZona = (v: { centro: Punto; ancho: number; alto: number }): Zona =>
+  ({ x0: v.centro[0] - v.ancho / 2, x1: v.centro[0] + v.ancho / 2, y0: v.centro[1] - v.alto / 2, y1: v.centro[1] + v.alto / 2 });
+export type DisposicionPortanova = 'lado' | 'arriba';
+/**
+ * Dónde van el dibujo y el corte en la hoja (mm de papel). «lado»: el dibujo a la izquierda y el corte arriba a la
+ * derecha, como la plantilla. «arriba»: para puertas muy anchas, el dibujo centrado arriba a todo lo ancho y el corte
+ * abajo a la izquierda; las notas, MATERIALES y el cajetín siguen abajo a la derecha (Iván, 06/11/2026).
+ */
+export const DISPOSICIONES_PORTANOVA: Record<DisposicionPortanova, { dibujo: Zona; corte: Zona; rayas: Punto[][] }> = {
+  lado: { dibujo: ventanaEnZona({ centro: [84.8917052, 104.9631513], ancho: 153.7829813, alto: 193.8383777 }),
+    corte: ventanaEnZona(VENTANA_CORTE_PORTANOVA), rayas: [[[160.5, 16], [160.5, 194]]] },
+  arriba: { dibujo: { x0: 9, x1: 288, y0: 86, y1: 201.88 }, corte: { x0: 9, x1: 157, y0: 9, y1: 80 },
+    // La raya entre el dibujo y lo de abajo, y otra entre el corte y los textos (Iván, 06/11/2026).
+    rayas: [[[16, 83], [281, 83]], [[160.5, 16], [160.5, 78]]] },
+};
 
 /** Lo que la plantilla trae en el modelo: el detalle del saco, que enseñan las ventanas 3 y 5. */
 const DETALLE = { x0: 133, y0: 3, x1: 136, y1: 7 };
@@ -58,7 +73,10 @@ function moverDetalle(src: string, dx: number, dy: number) {
 /** Hoja fija de la oficina: solo se rellenan los campos y se encuadran alzado y corte. */
 export function presentacionPortanova(pedido: PedidoPuertas,
   cabecera: { cliente: string; tecnico: string; revisor: string; fecha: string },
-  zonas: { toldos: Zona; corte: Zona }, altoVistaCorte?: number, tramosCorte?: Array<{ zona: Zona; papel: Zona }>) {
+  zonas: { toldos: Zona; corte: Zona }, altoVistaCorte?: number, tramosCorte?: Array<{ zona: Zona; papel: Zona }>,
+  disposicion: DisposicionPortanova = 'lado', ventanaCorte?: Zona) {
+  const sitio = { ...DISPOSICIONES_PORTANOVA[disposicion], ...(ventanaCorte ? { corte: ventanaCorte } : {}) };
+  const centro = (z: Zona): Punto => [(z.x0 + z.x1) / 2, (z.y0 + z.y1) / 2];
   plantilla ??= readFileSync(new URL('./plantillas/portanova.dxf', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
   const puertas = pedido.elementos.map(e => e.input);
   // Como los planos de la oficina (AR2604904): el cristal solo si la puerta lo lleva, y el saco que va a impresión
@@ -84,14 +102,14 @@ export function presentacionPortanova(pedido: PedidoPuertas,
     // del saco ni el aviso de las E.T. (Iván, 22/10/2026: «así unificamos diseño»).
     cajetin: { sitio: [289.1 - ANCHO_CAJETIN * ESCALA_CAJETIN, 8] as Punto, escala: ESCALA_CAJETIN },
     presentacion: { ventanas: {
-      2: ventana(zonas.toldos, [84.8917052, 104.9631513], 153.7829813, 193.8383777),
-      4: { ...ventana(zonas.corte, VENTANA_CORTE_PORTANOVA.centro, VENTANA_CORTE_PORTANOVA.ancho, VENTANA_CORTE_PORTANOVA.alto), altoVista: altoVistaCorte },
+      2: ventana(zonas.toldos, centro(sitio.dibujo), sitio.dibujo.x1 - sitio.dibujo.x0, sitio.dibujo.y1 - sitio.dibujo.y0),
+      4: { ...ventana(zonas.corte, centro(sitio.corte), sitio.corte.x1 - sitio.corte.x0, sitio.corte.y1 - sitio.corte.y0), altoVista: altoVistaCorte },
       // El corte repartido en tramos, uno debajo de otro (Iván, 05/11/2026): la 4 enseña el primero; la 7, la 8… el resto.
       ...Object.fromEntries((tramosCorte ?? []).map((t, i) => [i ? 6 + i : 4, {
         ...ventana(t.zona, [(t.papel.x0 + t.papel.x1) / 2, (t.papel.y0 + t.papel.y1) / 2] as Punto,
           t.papel.x1 - t.papel.x0, t.papel.y1 - t.papel.y0), altoVista: t.zona.y1 - t.zona.y0 }])),
     }, textos: [],
-    // La raya entre el dibujo (ventana 2) y el corte, como en las demás hojas, sin llegar al marco arriba ni abajo (Iván, 06/11/2026).
-    lineas: [[[160.5, 16], [160.5, 194]]] },
+    // La raya entre el dibujo (ventana 2) y el corte, como en las demás hojas, sin llegar al marco (Iván, 06/11/2026).
+    lineas: sitio.rayas },
   };
 }

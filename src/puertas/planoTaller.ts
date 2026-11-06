@@ -9,7 +9,7 @@ import { fichaDePuerta } from './clientes.ts';
 import { bajoDobleSaco, desnivelSuelo, pestanaDerecha, rotuloSaco, sacoApilable, sacoPuerta, sacoUtil } from './saco.ts';
 import { corteEnPlano, entidadesDePieza, textosFuera } from './corteEnPlano.ts';
 import { bloqueFlechaEnrollable, dibujarAlzadoEnrollable, ENTRE_PUERTAS, hojasPuertas, lienzoAMetros, origenCorte, sumarLienzo, type LienzoEnrollable } from './planoEnrollable.ts';
-import { presentacionPortanova, VENTANA_CORTE_PORTANOVA } from './plantillaPortanova.ts';
+import { DISPOSICIONES_PORTANOVA, presentacionPortanova, type DisposicionPortanova } from './plantillaPortanova.ts';
 import type { CortePuertas, EntidadesPuertas, Hueco, PedidoPuertas, PiezaPuerta, Puerta, Punto } from './tipos.ts';
 
 // Alzados de oficina, separados del SVG del configurador. Referencias locales:
@@ -437,17 +437,25 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
   return { lienzo: l, zona: { x0: izquierdaZona, x1: F + (desnivel ? 100 : 82), y0: abajo, y1: arriba + 50 } };
 }
 
-function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { lienzo: Lienzo; zona: Zona; filas: FilaCorte[] } {
+function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas, anchoMuestras = Infinity): { lienzo: Lienzo; zona: Zona; filas: FilaCorte[] } {
   const l = vacio(); let techo = 0, anchoMax = 250;
   const filas: FilaCorte[] = [];
+  // El mismo corte para todas las puertas (Iván, 06/11/2026: «el criterio de colocación y los textos iguales en todas»):
+  // primero el saco entero, luego el saco en dos, el cristal y, al final, la lona.
   const prioridad = (c: CortePuertas) => c.colocadas.every(t => t.pieza.clase === 'saco') ? 0
     : c.colocadas.every(t => t.pieza.clase === 'cristal') ? 1 : 2;
+  const ordenOpcion = (c: CortePuertas) => ['principal', 'saco-entero', 'saco-partido'].indexOf(c.opcion);
+  const puertaDe = (p: PiezaPuerta) => p.id.split(':')[0];
+  // El saco entero de cada puerta, para acotar el saco en dos con su largo ya empatado (Iván, 24/10/2026, AR2605035).
+  const sacoEntero = (puerta: string) => cortes.filter(x => x.opcion !== 'saco-partido').flatMap(x => x.colocadas)
+    .find(t => t.pieza.clase === 'saco' && !t.pieza.id.startsWith('stock-') && puertaDe(t.pieza) === puerta)?.pieza.ancho;
   // Iván, 06/11/2026: las muestras (sacos, alternativas, cristal) una al lado de otra si caben en el largo del corte de
   // la lona: así ocupan menos alto. Si no caben, debajo, como antes.
   const esMuestra = (c: CortePuertas) => c.colocadas.every(t => ['saco', 'cristal'].includes(t.pieza.clase));
-  const limite = Math.max(0, ...cortes.filter(c => !esMuestra(c)).map(c => c.largo / 10));
+  // Con el corte en tramos, las muestras caben en el primero: si no, pasan a otra línea (AR2605035, 4 puertas).
+  const limite = Math.min(anchoMuestras, Math.max(0, ...cortes.filter(c => !esMuestra(c)).map(c => c.largo / 10)) || Infinity);
   let banda: { x: number; techo: number; fondo: number } | null = null;
-  for (const c of [...cortes].sort((a, b) => prioridad(a) - prioridad(b))) {
+  for (const c of [...cortes].sort((a, b) => prioridad(a) - prioridad(b) || ordenOpcion(a) - ordenOpcion(b))) {
     const muestra = esMuestra(c);
     if (!muestra) banda = null;
     if (muestra) {
@@ -458,7 +466,6 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
       const lista = [...unicas.values()].map((p, i) => ({ p, i })).sort((a, b) => orden(a.p) - orden(b.p) || a.i - b.i).map(x => x.p);
       // Con varias puertas, los sacos y los cristales en la misma fila, hacia la derecha (Iván, 23/10/2026, AR2605035);
       // las dos mitades de un saco partido, juntas una encima de otra.
-      const puertaDe = (p: (typeof lista)[number]) => p.id.split(':')[0];
       const grupos: Array<typeof lista> = [];
       for (const p of lista) {
         const g = grupos.at(-1);
@@ -469,44 +476,53 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
       const ancho = Math.max(anchoGrupos, anchoTitulo);
       if (!banda || banda.x + ancho > limite) banda = { x: 0, techo, fondo: techo };
       const t0 = banda.techo, x0 = banda.x;
-      let xo = 0, fondo = t0;
-      for (const g of grupos) {
-        const dibujo = vacio(); let arriba = t0;
+      let xo = 0, fondo = t0, linea = t0, largoFila = 0;
+      // Lo que ocupa cada muestra a lo largo, para poder partir el corte en tramos entre ellas; el título, entero.
+      const ocupa: Array<[number, number]> = [];
+      for (const [k, g] of grupos.entries()) {
+        const anchoGrupo = Math.max(...g.map(p => p.ancho));
+        if (xo && xo + anchoGrupo > limite) { linea = fondo - 75; xo = 0; }
+        const dibujo = vacio(); let arriba = linea;
         // Saco partido: las dos mitades se acotan como un saco, con su alto y el largo ya empatado, el del saco entero
         // de esa puerta (Iván, 24/10/2026, AR2605035); el rótulo, en una sola mitad.
-        const entero = g.length > 1 ? cortes.find(x => x.opcion === 'saco-entero')?.colocadas.find(t => puertaDe(t.pieza) === puertaDe(g[0]))?.pieza.ancho : undefined;
+        const entero = g.length > 1 ? sacoEntero(puertaDe(g[0])) ?? Math.max(...g.map(q => q.ancho)) : undefined;
         for (const [i, p] of g.entries()) {
           const y = arriba - p.alto;
           // Lo del bot dentro de la pieza (Iván, 24/10/2026, flujo del DWG: el corte del plano es el que se manda): rayas,
           // radios, marcas, mininúmeros y sus textos.
-          sumarEntidades(dibujo, entidadesDePieza(c, c.colocadas.find(t => t.pieza.id === p.id)!), 0, y);
+          const dentro = entidadesDePieza(c, c.colocadas.find(t => t.pieza.id === p.id)!);
+          // El cristal, en azul, como en el plano a mano de AR2605134 (el color no va al bot: solo cuenta la capa).
+          if (p.clase === 'cristal') dentro.lineas = dentro.lineas.map(a => (a.capa === 'DISCO1' ? { ...a, color: 5 } : a));
+          sumarEntidades(dibujo, dentro, 0, y);
           const anterior = g[i - 1], siguiente = g[i + 1];
           // Encima de la fila, grandes, los textos del bot que no son de ninguna pieza (el título del material, REVÉS…).
-          if (!xo && !i) rotuloFila(dibujo, textosFuera(c), t0 + 15);
+          if (!k && !i) rotuloFila(dibujo, textosFuera(c), t0 + 15);
           if (entero) {
             // El alto, de las dos mitades juntas (Iván, 24/10/2026).
             if (!siguiente) {
               const largo = Math.max(...g.map(q => q.ancho));
-              cota(dibujo, 0, y, 0, t0, -35, 'XERA 20');
+              cota(dibujo, 0, y, 0, linea, -35, 'XERA 20');
               dibujo.cotas.push({ capa: 'cotas', estilo: 'XERA 20', x1: 0, y1: y, x2: largo, y2: y, d: y - 30, giro: 0, valor: entero });
             }
             arriba = y;
             continue;
           }
-          cota(dibujo, 0, y, p.ancho, y, siguiente ? t0 + 35 : y - 30, 'XERA 20');
+          cota(dibujo, 0, y, p.ancho, y, siguiente ? linea + 35 : y - 30, 'XERA 20');
           // Las dos mitades pegadas: la cota de la segunda, a su derecha, para que no se pisen (AR2605035).
           if (anterior) cota(dibujo, p.ancho, y, p.ancho, arriba, p.ancho + 40, 'XERA 20');
-          else if (!xo) cota(dibujo, 0, y, 0, t0, -35, 'XERA 20');
+          else if (!xo) cota(dibujo, 0, y, 0, linea, -35, 'XERA 20');
           arriba = y;
         }
         sumarLienzo(l, dibujo, x0 + xo);
-        xo += Math.max(...g.map(p => p.ancho)) + ENTRE_MUESTRAS; fondo = Math.min(fondo, arriba);
+        ocupa.push([x0 + xo - (xo ? 5 : 40), x0 + xo + anchoGrupo + (g.length > 1 ? 45 : 5)]);
+        xo += anchoGrupo + ENTRE_MUESTRAS; fondo = Math.min(fondo, arriba); largoFila = Math.max(largoFila, xo - ENTRE_MUESTRAS);
       }
       if (c.opcion === 'saco-partido') fusionarCortesPuertas(l);
       // 40 cm más entre filas que antes (Iván, 26/10/2026: «no dejes tan agrupado el corte… sin pasarse»).
-      anchoMax = Math.max(anchoMax, x0 + xo - ENTRE_MUESTRAS, x0 + anchoTitulo);
-      filas.push({ y0: fondo - 50, y1: t0 + 40, piezas: [[x0 - 40, x0 + xo - ENTRE_MUESTRAS + 45]] });
-      banda.fondo = Math.min(banda.fondo, fondo); banda.x += ancho + ENTRE_MUESTRAS * 2;
+      anchoMax = Math.max(anchoMax, x0 + largoFila, x0 + anchoTitulo);
+      ocupa[0] = [ocupa[0][0], Math.max(ocupa[0][1], x0 + anchoTitulo)];
+      filas.push({ y0: fondo - 50, y1: t0 + 40, piezas: ocupa });
+      banda.fondo = Math.min(banda.fondo, fondo); banda.x += Math.max(largoFila, anchoTitulo) + ENTRE_MUESTRAS * 2;
       techo = banda.fondo - 95 - SEPARACION_EXTRA_FILAS;
       continue;
     }
@@ -536,7 +552,8 @@ export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[
     izquierda = Math.min(izquierda,dx+d.zona.x0);
     let suelo = d.zona.y0;
     // Solo la nota que el técnico quiera ver en el plano; el texto de RPS sobraba (Iván, 23/10/2026).
-    if (e.input.notaPlano?.trim()) {
+    // En las enrollables la nota va en su alzado (la de los cachos, de serie con ventanal).
+    if (e.input.modelo !== 'PUERTAENR' && e.input.notaPlano?.trim()) {
       let actual = '';
       const lineas: string[] = [], ancho = d.zona.x1 - d.zona.x0;
       for (const palabra of textoSeguro(`OBSERVACIONES: ${e.input.notaPlano}`).split(/\s+/)) {
@@ -551,25 +568,64 @@ export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[
     zonasPuertas.push({ x0: dx + d.zona.x0, x1: dx + d.zona.x1, y0: suelo, y1: d.zona.y1 });
   }
   const zonaM = (z: Zona, x: number, y: number): Zona => ({ x0: x + z.x0 / 100, x1: x + z.x1 / 100, y0: y + z.y0 / 100, y1: y + z.y1 / 100 });
-  const za = zonaM({ x0: izquierda, x1: cursor - ENTRE_PUERTAS, y0: abajo, y1: arriba }, 100, 100), corte = dibujarCorteTaller(cortes, pedido);
+  const za = zonaM({ x0: izquierda, x1: cursor - ENTRE_PUERTAS, y0: abajo, y1: arriba }, 100, 100);
+  const portanova = esClientePortanova(pedido, cabecera.cliente);
+  // El corte para una ventana de la hoja: si va en tramos, las muestras se recolocan dentro del primero para no impedir
+  // partir la lona (06/11/2026). Si las muestras son más anchas que la lona, se prueba con ellas dentro de su largo.
+  const corteEn = (ventana: Zona) => {
+    let c = dibujarCorteTaller(cortes, pedido), t = repartirCorte(c.zona, c.filas, ventana);
+    const largo = Math.max(0, ...cortes.filter(x => !x.colocadas.every(p => ['saco', 'cristal'].includes(p.pieza.clase))).map(x => x.largo / 10));
+    const ancho = t.length > 1 ? t[0].zona.x1 - t[0].zona.x0 - 40
+      : largo > 0 ? (() => { const p = dibujarCorteTaller(cortes, pedido, Math.max(250, largo / 3)), q = repartirCorte(p.zona, p.filas, ventana);
+        return q.length > 1 ? q[0].zona.x1 - q[0].zona.x0 - 40 : 0; })() : 0;
+    if (ancho > 0) { c = dibujarCorteTaller(cortes, pedido, Math.max(250, ancho)); t = repartirCorte(c.zona, c.filas, ventana); }
+    return { corte: c, tramos: t };
+  };
+  const escala = (z: Zona, r: Zona) => Math.min((r.x1 - r.x0) / (z.x1 - z.x0), (r.y1 - r.y0) / (z.y1 - z.y0));
+  const escalaCorte = (o: ReturnType<typeof corteEn>, r: Zona) => o.tramos.length > 1
+    ? (o.tramos[0].papel.x1 - o.tramos[0].papel.x0) / (o.tramos[0].zona.x1 - o.tramos[0].zona.x0)
+    : Math.max(escala(o.corte.zona, r), escala({ x0: 0, x1: o.corte.zona.y1 - o.corte.zona.y0, y0: 0, y1: o.corte.zona.x1 - o.corte.zona.x0 }, r));
+  // Puerta muy ancha: el dibujo arriba a todo lo ancho y el corte abajo (Iván, 06/11/2026).
+  let disposicion: DisposicionPortanova = 'lado';
+  let elegido = portanova ? corteEn(DISPOSICIONES_PORTANOVA.lado.corte) : { corte: dibujarCorteTaller(cortes, pedido), tramos: [] };
+  if (portanova) {
+    const arriba = corteEn(DISPOSICIONES_PORTANOVA.arriba.corte);
+    const { lado: L, arriba: A } = DISPOSICIONES_PORTANOVA;
+    // Cada hoja enseña una puerta: se decide con la zona de cada una, no con todas juntas.
+    const zonasHoja = zonasPuertas.map(z => zonaM(z, 100, 100));
+    // El dibujo manda en el taller: arriba si crece al menos un 25 % y el corte conserva al menos el 55 % de su tamaño.
+    if (zonasHoja.every(z => escala(z, A.dibujo) > 1.25 * escala(z, L.dibujo)) && escalaCorte(arriba, A.corte) >= 0.55 * escalaCorte(elegido, L.corte)) {
+      disposicion = 'arriba'; elegido = arriba;
+    }
+  }
+  const corte = elegido.corte;
   const [ox, oy] = origenCorte(za, corte.zona);
   let zc = zonaM(corte.zona, ox, oy), altoVista: number | undefined, tramosCorte: Array<{ zona: Zona; papel: Zona }> | undefined;
+  let ventanaCorte: Zona | undefined;
   const corteReal = zc;
-  const portanova = esClientePortanova(pedido, cabecera.cliente);
-  if (portanova) {
-    const proporcion = VENTANA_CORTE_PORTANOVA.alto / VENTANA_CORTE_PORTANOVA.ancho;
+  if (portanova && elegido.tramos.length <= 1) {
+    // Cada ventana a la medida de lo que enseña, para que no se cuele nada de al lado (Iván, 06/11/2026). El corte, pegado
+    // arriba: abajo a la izquierda en «arriba»; centrado a lo ancho en «lado». Girado si así se ve más grande.
+    const R = DISPOSICIONES_PORTANOVA[disposicion].corte, w = zc.x1 - zc.x0, h = zc.y1 - zc.y0;
+    const recto = escala(zc, R), girado = Math.min((R.x1 - R.x0) / h, (R.y1 - R.y0) / w);
+    const [vw, vh] = girado > 1.02 * recto ? [h * girado, w * girado] : [w * recto, h * recto];
+    const x0 = disposicion === 'arriba' ? R.x0 : (R.x0 + R.x1 - vw) / 2;
+    ventanaCorte = { x0, x1: x0 + vw, y0: R.y1 - vh, y1: R.y1 };
+    altoVista = h;
+  } else if (portanova) {
+    const ventana = DISPOSICIONES_PORTANOVA[disposicion].corte;
+    const proporcion = (ventana.y1 - ventana.y0) / (ventana.x1 - ventana.x0);
     altoVista = Math.max(zc.y1 - zc.y0, (zc.x1 - zc.x0) * proporcion);
     const cx = (zc.x0 + zc.x1) / 2;
     zc = { x0: cx - altoVista / proporcion / 2, x1: cx + altoVista / proporcion / 2, y0: zc.y1 - altoVista, y1: zc.y1 };
-    const V = VENTANA_CORTE_PORTANOVA;
-    const tramos = repartirCorte(corte.zona, corte.filas, { x0: V.centro[0] - V.ancho / 2, x1: V.centro[0] + V.ancho / 2, y0: V.centro[1] - V.alto / 2, y1: V.centro[1] + V.alto / 2 });
-    if (tramos.length > 1) tramosCorte = tramos.map(t => ({ zona: zonaM(t.zona, ox, oy), papel: t.papel }));
+    if (elegido.tramos.length > 1) tramosCorte = elegido.tramos.map(t => ({ zona: zonaM(t.zona, ox, oy), papel: t.papel }));
   }
   const unicos = (xs: string[]) => [...new Set(xs.filter(Boolean))].join(' / '), ps = pedido.elementos.map(e => e.input);
   return escribirDxfPlano({ ...lienzoAMetros(l, 100, 100), corte: lienzoAMetros(corte.lienzo, ox, oy), zonas: { toldos: za, corte: zc, corteReal }, corteDerecho: true,
     corteGirable: true, hojas: hojasPuertas(pedido, zonasPuertas.map(z => zonaM(z, 100, 100))),
+    ...(portanova ? { ajustarVentanaALaZona: true } : {}),
     bloques: [bloqueFlechaEnrollable], coloresModelo: { ejes: 23, borrar: 40, curv: 3, 'corte (vent)': 5 },
-    ...(portanova ? presentacionPortanova(pedido, cabecera, { toldos: za, corte: zc }, altoVista, tramosCorte) : {}),
+    ...(portanova ? presentacionPortanova(pedido, cabecera, { toldos: za, corte: zc }, altoVista, tramosCorte, disposicion, ventanaCorte) : {}),
   }, { pedido: pedido.orderCode, of: unicos(ps.map(p => p.of)), cliente: textoSeguro(cabecera.cliente), tecnico: textoSeguro(cabecera.tecnico),
     revisor: textoSeguro(cabecera.revisor), fecha: cabecera.fecha.split('-').reverse().map((v, i) => i === 2 ? v.slice(2) : v).join('/'), pagina: '1/1',
     material: textoSeguro(unicos(ps.map(p => `${p.material} ${p.color}`))), subtitulo: 'MEDIDAS EN CM · PUERTA DE LONA' }).dxf;

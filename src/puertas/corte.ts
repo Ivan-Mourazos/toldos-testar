@@ -548,7 +548,9 @@ function colocar(
     const primerPano = seleccionadas.find(s => s.t.pieza.clase === 'pano');
     for (const s of seleccionadas) {
       colocadas.push({ pieza: s.t.pieza, x: s.x, y: s.y, girada: s.t.girada });
-      dibujarPieza(entidades, s.t.pieza, s.x, s.y, s.t.girada, codigosPano.get(s.t.pieza.id), !esEnrollable(s.t.pieza.id), s === primerPano, esAraujo(s.t.pieza.id));
+      dibujarPieza(entidades, s.t.pieza, s.x, s.y, s.t.girada, codigosPano.get(s.t.pieza.id), !esEnrollable(s.t.pieza.id),
+        // Sin REVÉS en las piezas: lo dice el título del material, «CORTAR POR EL REVÉS», en todas las puertas (Iván, 06/11/2026).
+        s === primerPano && esAraujo(s.t.pieza.id), esAraujo(s.t.pieza.id));
     }
     // Solo en la lona de la puerta (la de los paños) y en el corte principal: no en el transparente ni en el saco.
     if (ofStock && opcion === 'principal' && grupo.some(p => p.clase === 'pano')) {
@@ -559,7 +561,7 @@ function colocar(
       opcion === 'principal'
         ? 'CORTE'
         : opcion === 'saco-entero'
-          ? 'SACO ENTERO · ALTERNATIVA'
+          ? 'SACO ENTERO'
           : 'SACO EN DOS';
     // Sacos y cristales, en todas las puertas, sin «REVÉS» y con el borde del orillo cortado (Iván, 26/10/2026). La lona de
     // los paños se corta por el revés: va en el mismo renglón que el material y del mismo tamaño, porque es muy
@@ -640,6 +642,11 @@ export function generarCortePuertas(
   // El título de Santa Pau queda centrado sobre su rollo, sin tocar cortes ni marcas.
   if(pedido.elementos.every(e=>e.input.santapau))for(const c of cortes)for(const t of c.entidades.textos.filter(t=>!t.centrado)){
     t.x=c.largo/2;t.centrado=true;t.h=Math.min(TITULO_MATERIAL_MM,(c.largo-120)/anchoArial(t.valor,1));
+  }
+  // Con el saco en dos de alternativa, el saco entero se rotula igual en todas las puertas (Iván, 06/11/2026).
+  if (partido.length) for (const c of cortes.filter(c => c.opcion === 'principal' && c.colocadas.length && c.colocadas.every(t => t.pieza.clase === 'saco'))) {
+    const t = c.entidades.textos.find(t => t.h === TITULO_MATERIAL_MM && t.valor === c.material);
+    if (t) t.valor = `${t.valor} · SACO ENTERO`;
   }
   let archivo = null;
   if (!sinOf.length && !avisos.some(a => a.nivel === 'error') && pedido.orderCode.trim() && cortes.length) {
