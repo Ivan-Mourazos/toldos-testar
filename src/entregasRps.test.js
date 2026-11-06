@@ -55,3 +55,13 @@ it('una corrección solo puede sustituir su número aunque se elija otro destino
   expect(await aplicarDestino(corregido, {}, { destinoEntrega: { numero: 10, modo: 'sustituir' }, confirmarEntrega: true }))
     .toMatchObject({ pedido: { entregaActual: 10, ofsSeleccionadas: ['0230001'] } });
 });
+
+it('reconoce en RPS el sufijo de un pedido _2 sin mezclarlo con el pedido base', async () => {
+  await fs.mkdir(raiz, { recursive: true });
+  await fs.writeFile(path.join(raiz, 'AR.26.03626-2-1.pdf'), 'histórico del pedido _2');
+  const pedido = { orderCode: 'AR2603626_2', kind: 'toldos-testar-review', order: { awnings: [] } };
+  const ajustes = { rpsPlanteamientosDirectory: raiz };
+  expect(await catalogoEntregas(pedido, ajustes)).toMatchObject({ siguiente: 2, existentes: [{ numero: 1 }] });
+  expect(await catalogoEntregas({ ...pedido, orderCode: 'AR2603626' }, ajustes))
+    .toMatchObject({ siguiente: 1, existentes: [] });
+});

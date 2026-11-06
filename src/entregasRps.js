@@ -4,7 +4,7 @@ import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { entregasPedido, inicioSerie, pasosEntrega, seleccionarEntrega, siguienteNumero, ofsEntrega, numeroEntrega } from './entregas.js';
 
 const resolver = (ruta, codigo) => ruta.replaceAll('{YYYY}', `20${/^AR(\d{2})/i.exec(codigo)?.[1] ?? String(new Date().getFullYear()).slice(-2)}`).replaceAll('{PEDIDO}', codigo);
-const normalizar = codigo => codigo.replaceAll('.', '').toUpperCase();
+const normalizar = codigo => codigo.replaceAll('.', '').replace(/_(\d+)$/, '-$1').toUpperCase();
 
 async function datosPdf(bytes) {
   const tarea = getDocument({ data: new Uint8Array(bytes), verbosity: 0 });
