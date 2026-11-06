@@ -14,7 +14,7 @@ describe('entregas comunes a toldos, puertas y remolques', () => {
     expect(entregasPedido(antiguo)).toMatchObject([{ numero: 1, fecha: 'ayer', autor: 'ANA', ofs: ['0230001'], legacy: true }]);
     expect(antiguo).not.toHaveProperty('entregas');
     const siguiente = abrirEntrega(base, antiguo);
-    expect(siguiente.entregaActual).toBe(2);
+    expect(siguiente.entregaActual).toBe(1);
     expect(siguiente.entregas[0].archivos[0].filename).toBe('antiguo.pdf');
   });
   it('separa las OF nuevas de las anteriores y congela los datos de cada entrega', () => {

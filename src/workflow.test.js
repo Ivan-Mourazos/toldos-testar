@@ -56,7 +56,7 @@ describe('flujo de revisión y producción', () => {
     const recuperado = await extractReviewPackageFromPdf(pdf);
     expect(recuperado).toMatchObject({ kind: 'toldos-testar-review', orderCode: order.orderCode || 'SIN-PEDIDO', order });
   });
-  it('leer un pedido anterior _2 no lo reescribe y su próxima corrección abre la entrega 2', async () => {
+  it('leer un pedido anterior _2 no lo reescribe y corregir conserva la entrega 1', async () => {
     const raiz = await fs.mkdtemp(path.resolve('tmp/entregas-antiguas-'));
     temporaryDirectories.push(raiz);
     const order = { orderCode: 'AR2603626_2', awnings: [{ id: 'A', of: '0230001', model: 'BAMBALINA', units: 1, width: 300, projection: 100 }] };
@@ -71,7 +71,7 @@ describe('flujo de revisión y producción', () => {
     expect(await fs.readFile(fichero, 'utf8')).toBe(bytes);
     expect(await fs.readdir(raiz)).toEqual([`${order.orderCode}.toldos.json`]);
     const corregido = createReviewPackage({ order: { ...order, awnings: [{ ...order.awnings[0], width: 310 }] }, calculation: { ofs: [{ of: '0230001' }], diagnostics: [] }, existing: leido });
-    expect(corregido).toMatchObject({ entregaActual: 2, orderCode: 'AR2603626_2' });
+    expect(corregido).toMatchObject({ entregaActual: 1, orderCode: 'AR2603626_2' });
     expect(corregido.entregas[0].archivos).toEqual(previo.production.files);
   });
   it('abre la copia inmutable de una reserva de entrega antes de buscar la bandeja de RPS', () => {

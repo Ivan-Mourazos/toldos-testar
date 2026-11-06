@@ -1,4 +1,5 @@
-import { codigoCorteEditable, abrirEntrega, avisoMateriales, codigoEntrega, ofsEntrega, pedidoEntrega } from './entregas.js';
+import { catalogoEntregas, numerarEntrega, aplicarDestino, necesitaPrepararDestino } from './entregasRps.js';
+import { avisoEntradaEntrega, codigoCorteEditable, abrirEntrega, codigoEntrega, ofsEntrega, pedidoEntrega } from './entregas.js';
 import { materialesReserva } from './materialesEntrega.js';
 import { adjuntarPedido } from './adjuntosPedido.js';
 import { leerPdfParaActualizarDatos } from './workflow.js';
@@ -340,9 +341,9 @@ app.post('/api/corte-lona/borrador', async (req, res, next) => {
     lockKey = orderCode;
     let existente = null;
     try { existente = await workflowStore.getReview(orderCode); } catch { existente = null; }
-    const entrega = abrirEntrega({ orderCode, order, status: 'PENDING_REVIEW' }, existente);
+    const entrega = await numerarEntrega(abrirEntrega({ kind: 'toldos-testar-review', orderCode, order, status: 'PENDING_REVIEW' }, existente), await workflowStore.getSettings());
     const actual = pedidoEntrega(entrega).order;
-    if (existente?.status === 'PRODUCED') existente = null;
+    if (existente?.status === 'PRODUCED' && !entrega.entregas.some(e => e.numero === entrega.entregaActual)) existente = null;
     let corteLona = req.body?.corteLona;
     if (entrega.entregas.length) {
       const stock = await ofStockSacos();
@@ -984,6 +985,10 @@ app.post('/api/remolques/pedidos/:orderCode/plano-corte', rutaRemolques(async (r
   res.status(status).json(cuerpo);
 }));
 
+app.get('/api/remolques/pedidos/:orderCode/destinos-entrega', rutaRemolques(async (req, res) => {
+  res.set('Cache-Control', 'no-store').json(await catalogoEntregas(await pedidosRemolques.obtener(req.params.orderCode), await workflowStore.getSettings()));
+}));
+
 app.post('/api/remolques/pedidos/:orderCode/generar', rutaRemolques(async (req, res) => {
   const { status, cuerpo } = await pedidosRemolques.generar(req.params.orderCode, req.body);
   res.status(status).json(cuerpo);
@@ -1073,6 +1078,10 @@ app.post('/api/puertas/pedidos/:orderCode/plano', rutaRemolques(async (req, res)
   res.status(status).json(cuerpo);
 }));
 
+app.get('/api/puertas/pedidos/:orderCode/destinos-entrega', rutaRemolques(async (req, res) => {
+  res.set('Cache-Control', 'no-store').json(await catalogoEntregas(await pedidosPuertas.obtener(req.params.orderCode), await workflowStore.getSettings()));
+}));
+
 app.post('/api/puertas/pedidos/:orderCode/generar', rutaRemolques(async (req, res) => {
   const { status, cuerpo } = await pedidosPuertas.generar(req.params.orderCode, req.body);
   res.status(status).json(cuerpo);
@@ -1134,6 +1143,11 @@ app.get('/api/reviews', async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+});
+
+app.get('/api/reviews/:orderCode/destinos-entrega', async (req, res, next) => {
+  try { res.set('Cache-Control', 'no-store').json(await catalogoEntregas(await workflowStore.getReview(req.params.orderCode), await workflowStore.getSettings())); }
+  catch (e) { next(e); }
 });
 
 app.get('/api/reviews/:orderCode', async (req, res, next) => {
@@ -1201,7 +1215,7 @@ app.post('/api/reviews', async (req, res, next) => {
       if (error.code !== 'ENOENT') throw error;
     }
 
-    const decision = saveReviewDecision(existing, req.body?.confirmOverwrite === true);
+    const decision = saveReviewDecision(existing, existing?.status === 'PRODUCED' || req.body?.confirmOverwrite === true);
     if (decision.action === 'refuse') throw httpError(decision.statusCode, decision.error);
     if (decision.action === 'confirm') {
       res.status(409).json({
@@ -1219,10 +1233,20 @@ app.post('/api/reviews', async (req, res, next) => {
     const authorship = autoriaToldos({ ...rawOrder, technician: existing?.order?.technician || savedBy }, savedBy, estadoRevision, formOptions.tecnicos);
     const completo = structuredClone({ ...rawOrder, orderCode, ...authorship });
     const calculation = await calculateConfiguredOrder(completo);
-    const review = createReviewPackage({ order: completo, calculation, existing, corteLona: req.body?.corteLona, savedBy });
+    let review = await numerarEntrega(createReviewPackage({ order: completo, calculation, existing, corteLona: req.body?.corteLona, savedBy }), await workflowStore.getSettings());
+    if (req.body?.destinoEntrega) {
+      const destino = await aplicarDestino(review, await workflowStore.getSettings(), req.body);
+      if (destino.respuesta) return res.status(destino.respuesta.status).json(destino.respuesta.cuerpo);
+      review = destino.pedido;
+      if (existing?.entregaActual !== review.entregaActual) { delete review.corteConfirmado; existing = null; }
+    }
+    review.entregaPorPreparar = false;
     if (existing?.status === 'PRODUCED' && !ofsEntrega(review).length) return res.json({ ok: true, unchanged: true, review: existing });
+    const avisoEntrada = avisoEntradaEntrega(review, existing, req.body);
+    if (avisoEntrada) return res.status(409).json(avisoEntrada);
     // El histórico ya está congelado en entregas: ninguna operación del corte recibe el plano anterior.
-    if (existing?.status === 'PRODUCED') existing = null;
+    if (existing?.status === 'PRODUCED' && !review.entregas.some(e => e.numero === review.entregaActual)) existing = null;
+    else if (existing) existing = { ...existing, ...review.entregas.find(e => e.numero === review.entregaActual)?.instantanea, corteConfirmado: review.corteConfirmado ?? existing.corteConfirmado };
     const order = normalizeOrder(pedidoEntrega(review).order);
     const codigoCorte = codigoEntrega(review);
     if (review.entregas.length && ofsEntrega(review).length) {
@@ -1298,7 +1322,7 @@ app.post('/api/reviews', async (req, res, next) => {
       }
     }
     review.planosCorte = planosCorte;
-    const pdf = await buildOrderReviewPdf({ order, calculation, review });
+    const pdf = await buildOrderReviewPdf({ order, calculation: await calculateConfiguredOrder(order), review });
     let savedPath;
     try {
       if (desdeBorrador) await desdeBorrador.escribir();
@@ -1382,7 +1406,12 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
     // por Configuración. Si alguna sigue sin llegar, se sigue igual: el fallo lo dirá su paso.
     await waitForDirectories([settings.reviewDirectory, settings.planteamientosDirectory, settings.rpsUploadDirectory].map(directoryTemplateRoot));
 
-    const review = await workflowStore.getReview(req.params.orderCode);
+    let review = await workflowStore.getReview(req.params.orderCode);
+    if (review.status === 'PRODUCED') return res.json({ ok: true, review, unchanged: true, saved: review.production?.files || [] });
+    const destino = await aplicarDestino(review, settings, req.body);
+    if (destino.respuesta) return res.status(destino.respuesta.status).json(destino.respuesta.cuerpo);
+    if (necesitaPrepararDestino(review, destino.pedido)) return res.status(409).json({ needsPrepararEntrega: true });
+    review = destino.pedido;
     const decision = generateFilesDecision(review.status);
     if (decision.action === 'unchanged') {
       res.json({ ok: true, review, unchanged: true, saved: review.production?.files || [] });
@@ -1436,8 +1465,6 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
     }
 
     const materiales = materialesReserva(reservation);
-    const aviso = avisoMateriales(review, materiales, req.body?.aceptarMateriales);
-    if (aviso) return res.status(409).json(aviso);
     const cleanOrder = sanitizeOrderCode(codigoEntrega(review));
     const rpsDirectory = resolveDirectoryTemplate(settings.rpsUploadDirectory, cleanOrder);
     const pdfDirectory = resolveDirectoryTemplate(settings.planteamientosDirectory, cleanOrder);
@@ -1492,9 +1519,9 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
     // presentaciones fallan, el planteamiento sale entero, como siempre, y se avisa.
     const avisos = [];
     let cad = [];
-    if (updated.corteConfirmado) {
+    if (review.corteConfirmado) {
       try {
-        for (const plano of await flujoToldos.planosDelDwg(updated.corteConfirmado)) {
+        for (const plano of await flujoToldos.planosDelDwg(review.corteConfirmado)) {
           cad.push(await presentacionesPdf(htmlPresentaciones(conRevisor(plano, reviewer || ''), cleanOrder)));
           // Si el DWG lleva algo que el PDF no sabe dibujar, se avisa (Iván, 26/10/2026).
           const faltan = Object.entries(sinDibujarEnPdf(plano)).map(([tipo, cuantas]) => `${cuantas} ${tipo}`);
@@ -1506,7 +1533,7 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
         avisos.push(`${cleanOrder}-1.pdf se ha guardado sin las presentaciones del CAD (con la hoja de telas de la web): ${error.message}`);
       }
     }
-    const enElCad = new Set((updated.corteLona?.toldos ?? []).filter((t) => !t.manual).map((t) => t.letra));
+    const enElCad = new Set((review.corteLona?.toldos ?? []).filter((t) => !t.manual).map((t) => t.letra));
     pdfTarget.contents = await buildOrderPlanteamientoPdf({ order: { ...order, orderCode: cleanOrder, reviewer }, calculation, review: updated, ...opcionesHojaTelas({ codigoPedido: cleanOrder }),
       ...(updated.corteConfirmado ? { cadEmbudo: null } : {}),
       ...(cad.length ? { sinHojaTelas: (_toldo, indice) => enElCad.has(awningLetter(indice)) } : {}) });

@@ -1,4 +1,5 @@
-import { confirmarMateriales, type AvisoMateriales } from '../materialesEntrega';
+import { guardarToldosEditable } from '../toldosEditable';
+import type { DestinoEntrega } from '../../entregasTipos';
 import { pedidoEntrega } from '../../entregas.js';
 import { solicitarGeneracion } from '../reintentarGeneracion';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -67,7 +68,7 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
   onBack: () => void;
   onCorregir: () => void;
   onReutilizar: () => void;
-  onGenerar: () => void;
+  onGenerar: (destino?: DestinoEntrega) => void;
   /** Tras mandar o guardar el corte: volver a leer el pedido. */
   onEnviado?: () => void;
   notify: Notify;
@@ -112,7 +113,7 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
         datos={datos} corteNoRegenerado={pedido.corteNoRegenerado} corteSimulado={pedido.corteSimulado}
         acciones={<AccionesPedido generado={generado} ocupado={generando || corte.ocupado} enviando={generando} editandoPermitido={corregible}
           onEditar={onCorregir} elementos={elementosAprobacion(pedido)} coordina={coordina} preguntar={onConfirm} abrir={corte.abrir}
-          regenerar={currentUser && corte.abrir ? () => void corte.regenerar() : undefined} generar={onGenerar} generarPermitido={allowed} motivoGenerar={note}
+          regenerar={currentUser && corte.abrir ? () => void corte.regenerar() : undefined} codigo={pedido.orderCode} rutaDestinos={`${ruta}/destinos-entrega`} generar={onGenerar} generarPermitido={allowed} motivoGenerar={note}
           envios={opcionesCorte.aplica ? <EnviosCorte key={ruta} barra ruta={`${ruta}/corte`} usuario={currentUser} permitido={permisoCorte.allowed && Boolean(currentUser.trim())}
             motivo={permisoCorte.note} ocupado={generando || corte.ocupado} envios={pedido.enviosCorte} entrega={pedido.entregaActual} descarga={`${ruta}/corte/dxf`} notify={notify} preguntar={onConfirm} onEnviado={onEnviado}
             guardado={{ ruta: '/api/remolques/pedidos', cuerpo: { elementos: pedido.elementos, params: pedido.params, clienteRps: pedido.clienteRps }, usuario: currentUser }}
@@ -206,10 +207,10 @@ export function PedidoRemolquesDetalle({ orderCode, refreshKey, currentUser, onB
     return () => { cancelado = true; };
   }, [orderCode, refreshKey, onToast]);
 
-  async function generar() {
+  async function generar(destinoEntrega?: DestinoEntrega) {
     if (!pedido || !estadoGenerarRemolques(pedido, currentUser, coordina).allowed) return;
     const codigo = pedido.orderCode;
-    const inicial = await onConfirm({
+    const inicial = destinoEntrega ? 'confirm' : await onConfirm({
       title: `Generar archivos de ${codigo}`,
       message: 'CoordinaOT ya lo ha aprobado. Se guardará la hoja de taller, con quién la revisó y los datos del pedido dentro, en las dos carpetas de remolques.',
       details: ficherosPrevistos(pedido),
@@ -219,21 +220,20 @@ export function PedidoRemolquesDetalle({ orderCode, refreshKey, currentUser, onB
     });
     if (inicial !== 'confirm') return;
     setGenerando(true);
-    let confirmOverwrite = false;
+    let confirmOverwrite = destinoEntrega?.modo === 'sustituir';
     let aceptarHuellaCorte: string | undefined;
     let aceptarCorteNoRegenerado: string | undefined;
-    let aceptarMateriales: string | undefined;
     try {
       for (;;) {
         const { respuesta, datos } = await solicitarGeneracion(`/api/remolques/pedidos/${encodeURIComponent(codigo)}/generar`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ confirmOverwrite, aceptarHuellaCorte, aceptarCorteNoRegenerado, aceptarMateriales, savedBy: currentUser }),
-        }, async (respuesta) => ({ respuesta, datos: await respuesta.json() as CortePendiente & AvisoMateriales & { needsMaterialConfirmation?: boolean; error?: string; cambioCorte?: boolean; huella?: string; needsConfirmation?: boolean; existing?: string[]; unchanged?: boolean; nombre?: string } }),
+          body: JSON.stringify({ destinoEntrega, confirmarEntrega: Boolean(destinoEntrega), confirmOverwrite, aceptarHuellaCorte, aceptarCorteNoRegenerado, savedBy: currentUser }),
+        }, async (respuesta) => ({ respuesta, datos: await respuesta.json() as CortePendiente & { needsPrepararEntrega?: boolean; error?: string; cambioCorte?: boolean; huella?: string; needsConfirmation?: boolean; existing?: string[]; unchanged?: boolean; nombre?: string } }),
         () => onToast('Reintentando…', { tone: 'info' }));
-        if (respuesta.status === 409 && datos.needsMaterialConfirmation) {
-          if (!await confirmarMateriales(datos, onConfirm)) return;
-          aceptarMateriales = datos.huellaMateriales;
+        if (respuesta.status === 409 && datos.needsPrepararEntrega) {
+          const preparado = await guardarToldosEditable({ ...{ elementos: pedido.elementos.map(e => ({ version: e.version, tipo: e.tipo, input: e.input })), params: pedido.params, clienteRps: pedido.clienteRps }, destinoEntrega, confirmarEntrega: true, confirmarEntradaEntrega: true, savedBy: currentUser, confirmOverwrite: true, confirmPlanoOverwrite: true, decisionCorte: 'regenerar' }, onConfirm, async () => {}, '/api/remolques/pedidos');
+          if (!preparado) return;
           continue;
         }
         if (respuesta.status === 409 && datos.corteNoRegenerado) {
@@ -288,7 +288,7 @@ export function PedidoRemolquesDetalle({ orderCode, refreshKey, currentUser, onB
       onBack={onBack}
       onCorregir={() => { if (pedido) onCorregir(pedido); }}
       onReutilizar={() => { if (pedido) onReutilizar(pedido); }}
-      onGenerar={() => void generar()}
+      onGenerar={d => void generar(d)}
       onEnviado={onChanged}
       notify={onToast}
       onConfirm={onConfirm}

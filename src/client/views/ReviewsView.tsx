@@ -1,5 +1,5 @@
+import type { DestinoEntrega } from '../../entregasTipos';
 import { codigoEntrega, ofsEntrega } from '../../entregas.js';
-import { confirmarMateriales } from '../materialesEntrega';
 import { solicitarGeneracion } from '../reintentarGeneracion';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useContenidoFluido } from '../hooks/useContenidoFluido';
@@ -250,10 +250,10 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
     }
   }
 
-  async function generateSelected() {
+  async function generateSelected(destinoEntrega?: DestinoEntrega) {
     if (!selectedReview || !generateState(selectedReview, currentUser, detailCoordina).allowed) return;
     const targetCode = selectedReview.orderCode;
-    const initialChoice = await onConfirm({
+    const initialChoice = destinoEntrega ? 'confirm' : await onConfirm({
       title: `Generar archivos de ${targetCode}`,
       message: 'CoordinaOT ya lo ha aprobado. Se guardará el PDF de esta entrega en Planteamientos y una reserva por cada OF de la entrega en Subida de material.',
       details: [`${selectedReview.entregaActual ? codigoEntrega(selectedReview) : `${targetCode}-1`}.pdf`, ...ofsEntrega(selectedReview).map((of: string) => `${of}.xls`)],
@@ -265,29 +265,28 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
 
     setGenerating(true);
     let includeNonAcrylicFabrics: boolean | null = null;
-    let confirmOverwrite = false;
+    let confirmOverwrite = destinoEntrega?.modo === 'sustituir';
     let aceptarHuellaCorte: string | undefined;
     let aceptarCorteNoRegenerado: string | undefined;
-    let aceptarMateriales: string | undefined;
     try {
       while (true) {
         const { response, data } = await solicitarGeneracion(`/api/reviews/${encodeURIComponent(targetCode)}/generate-files`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            destinoEntrega, confirmarEntrega: Boolean(destinoEntrega),
             includeNonAcrylicFabrics,
             confirmOverwrite,
             aceptarHuellaCorte,
             aceptarCorteNoRegenerado,
-            aceptarMateriales,
             savedBy: currentUser
           })
         }, async (response) => ({ response, data: await response.json() }),
         () => onToast('Reintentando…', { tone: 'info' }));
 
-        if (response.status === 409 && data.needsMaterialConfirmation) {
-          if (!await confirmarMateriales(data, onConfirm)) return;
-          aceptarMateriales = data.huellaMateriales;
+        if (response.status === 409 && data.needsPrepararEntrega) {
+          const preparado = await guardarToldosEditable({ ...{ order: selectedReview.order, corteLona: selectedReview.corteLona }, destinoEntrega, confirmarEntrega: true, confirmarEntradaEntrega: true, savedBy: currentUser, confirmOverwrite: true, confirmPlanoOverwrite: true, decisionCorte: 'regenerar' }, onConfirm, async () => {}, '/api/reviews');
+          if (!preparado) return;
           continue;
         }
         if (response.status === 409 && data.corteNoRegenerado) {
@@ -418,7 +417,7 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
             onBack={volverALista}
             onEdit={() => void openSelected()}
             onReuse={() => void reuseSelected()}
-            onGenerate={() => void generateSelected()}
+            onGenerate={d => void generateSelected(d)}
             notify={onToast}
             onConfirm={onConfirm}
             onGuardarCorte={(estado) => selectedReview ? guardarCorte(selectedReview, estado) : undefined}

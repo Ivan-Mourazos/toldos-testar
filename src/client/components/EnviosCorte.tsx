@@ -6,7 +6,6 @@ import type { AskForConfirmation, Notify } from './NotificationCenter';
 import { carpetaLegible, mensajeEnvio } from './enviosCorteTexto';
 import { MenuMas } from './MenuMas';
 import { decidirCortePendiente } from '../toldosEditable';
-import { confirmarMateriales } from '../materialesEntrega';
 
 /** El historial de envíos del corte, en el bloque del corte de la revisión (los botones van arriba). */
 export function HistorialEnvios({ envios = [], motivo }: { envios?: EnvioCorte[]; motivo?: string }) {
@@ -47,16 +46,10 @@ export function EnviosCorte({ ruta, usuario, permitido, motivo, ocupado = false,
         confirmLabel: sinPdf ? 'Volver a mandar el corte' : 'Mandar corte al bot', cancelLabel: 'Cancelar', tone: 'danger' }) !== 'confirm') return;
       let confirmOverwrite = false, aceptarCambioCorte = false, pdfModo: 'sustituir' | 'siguiente' | undefined;
       let aceptarCorteNoRegenerado: string | undefined;
-      let aceptarMateriales: string | undefined;
       for (;;) {
         const res = await fetch(`${ruta}/enviar`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ usuario, destino, confirmBot: destino === 'bot', confirmOverwrite, aceptarCambioCorte, aceptarCorteNoRegenerado, aceptarMateriales, pdfModo, sinPdf }) });
+          body: JSON.stringify({ usuario, destino, confirmBot: destino === 'bot', confirmOverwrite, aceptarCambioCorte, aceptarCorteNoRegenerado, pdfModo, sinPdf }) });
         const datos = await res.json();
-        if (res.status === 409 && datos.needsMaterialConfirmation) {
-          if (!await confirmarMateriales(datos, preguntar)) return;
-          aceptarMateriales = datos.huellaMateriales;
-          continue;
-        }
         if (res.status === 409 && datos.corteNoRegenerado && guardado) {
           const permiso = await decidirCortePendiente(datos, preguntar, guardado, onEnviado);
           if (permiso === null) return;

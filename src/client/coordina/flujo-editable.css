@@ -18,3 +18,11 @@
 .entregas-pedido table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; }
 .entregas-pedido th, .entregas-pedido td { padding: 6px 12px 6px 0; vertical-align: top; border-bottom: 1px solid var(--border); }
 .entrega-archivo { display: block; overflow-wrap: anywhere; }
+.destino-entrega { width: min(58rem, calc(100vw - 64px)); max-height: calc(100vh - 48px); overflow: auto; padding: 24px; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+.destino-entrega::backdrop { background: #0008; }
+.destino-entrega h2 { margin-top: 0; }
+.destino-entrega table { width: 100%; border-collapse: collapse; text-align: left; }
+.destino-entrega th, .destino-entrega td { padding: 8px; border-bottom: 1px solid var(--border); }
+.destino-entrega fieldset { margin-block: 16px; border: 1px solid var(--border); border-radius: 8px; }
+.destino-entrega label { display: inline-flex; gap: 8px; align-items: center; padding: 10px 16px 10px 0; }
+.destino-entrega footer { display: flex; justify-content: flex-end; gap: 12px; }

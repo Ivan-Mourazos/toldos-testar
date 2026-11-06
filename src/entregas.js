@@ -39,7 +39,8 @@ function archivosEntrega(p) {
 export function entregasPedido(p) {
   if (Array.isArray(p?.entregas)) return p.entregas;
   if (p?.status !== 'PRODUCED' || !p.production) return [];
-  return [{ numero: 1, fecha: p.production.createdAt, autor: p.production.createdBy,
+  const numero = p.presentacionesPdf?.numero ?? Number((p.production.files ?? []).map(f => /-(\d+)\.pdf$/i.exec(f.filename)?.[1]).find(Boolean) ?? inicioSerie(p));
+  return [{ numero, fecha: p.production.createdAt, autor: p.production.createdBy,
     ofs: [...new Set(elementos(p).map(ofElemento).filter(Boolean))], archivos: archivosEntrega(p),
     datos: datosPorOf(p), instantanea: instantanea(p), materiales: null, legacy: true,
     ...(p.corteConfirmado ? { corteConfirmado: structuredClone(p.corteConfirmado) } : {}) }];
@@ -48,30 +49,91 @@ export function entregasPedido(p) {
 /** @template T @param {T} pedido @param {any} existente @returns {T & {entregas: any[], entregaActual: number}} */
 export function abrirEntrega(pedido, existente = null) {
   const entregas = structuredClone(entregasPedido(existente));
-  return { ...pedido, entregas, entregaActual: existente?.status === 'PRODUCED'
-    ? Math.max(0, ...entregas.map(e => e.numero)) + 1 : existente?.entregaActual ?? Math.max(0, ...entregas.map(e => e.numero)) + 1 };
+  const completo = mezclarPedido(pedido, existente);
+  const p = { ...completo, entregas, siguienteEntrega: existente?.siguienteEntrega,
+    ...(completo.summary ? { summary: { ...completo.summary, awnings: elementos(completo).length,
+      ofs: [...new Set(elementos(completo).map(ofElemento).filter(Boolean))],
+      models: [...new Set([...(existente?.summary?.models ?? []), ...(completo.summary.models ?? [])])] } } : {}) };
+  const paso = pasosEntrega(p)[0];
+  const numero = paso?.numero ?? existente?.entregaActual ?? inicioSerie(p);
+  const anterior = entregas.find(e => e.numero === numero) ?? (existente?.status !== 'PRODUCED' && existente?.entregaActual === numero ? existente : null);
+  return { ...p, entregaActual: numero,
+    ...(anterior?.corteConfirmado ? { corteConfirmado: structuredClone(anterior.corteConfirmado) } : {}) };
+}
+
+export const inicioSerie = p => /puertas|remolques/.test(p?.kind ?? '') ? 10 : 1;
+export const perteneceSerie = (p, n) => Number.isInteger(n) && n >= inicioSerie(p);
+export function siguienteNumero(p, numeros = []) {
+  return Math.max(inicioSerie(p) - 1, ...(numeros.filter(n => perteneceSerie(p, n))), ...entregasPedido(p).map(e => e.numero).filter(n => perteneceSerie(p, n))) + 1;
+}
+
+/** Una entrada parcial conserva las OF de las entregas anteriores. */
+export function mezclarPedido(p, existente) {
+  if (!existente || !entregasPedido(existente).length) return p;
+  const recibidas = new Set(elementos(p).map(ofElemento));
+  const conservar = elementos(existente).filter(e => !recibidas.has(ofElemento(e)));
+  if (!conservar.length) return p;
+  const nuevos = p.order?.fabric && p.order.fabric !== existente.order?.fabric
+    ? p.order.awnings.map(e => ({ ...e, fabric: e.fabric || p.order.fabric })) : p.order?.awnings;
+  return p.order ? { ...p, order: { ...existente.order, awnings: [...structuredClone(conservar), ...nuevos] } }
+    : { ...p, ...(existente.params ? { params: existente.params } : {}), ...(existente.cabecera ? { cabecera: existente.cabecera } : {}), elementos: [...structuredClone(conservar), ...p.elementos] };
+}
+
+export function pasosEntrega(p) {
+  const entregas = ordenGeneracion(p);
+  const anteriores = Object.assign({}, ...entregas.map(e => e.datos));
+  const cambios = Object.entries(datosPorOf(p)).filter(([of, datos]) => anteriores[of] !== datos).map(([of]) => of);
+  const pasos = [];
+  for (const of of cambios) {
+    const anterior = entregas.findLast(e => e.ofs.includes(of));
+    const numero = anterior?.numero ?? Math.max(p.siguienteEntrega ?? 0, siguienteNumero(p));
+    let paso = pasos.find(e => e.numero === numero);
+    if (!paso) { paso = { numero, modo: anterior ? 'sustituir' : 'nuevo', ofs: [], cambiadas: [] }; pasos.push(paso); }
+    paso.cambiadas.push(of);
+    paso.ofs = [...new Set([...(anterior?.ofs ?? []), ...paso.cambiadas])];
+  }
+  return pasos.sort((a, b) => (a.modo === 'nuevo') - (b.modo === 'nuevo') || a.numero - b.numero);
+}
+
+const ordenGeneracion = p => entregasPedido(p).map((e, i) => ({ e, orden: e.ordenGeneracion ?? i + 1 }))
+  .sort((a, b) => a.orden - b.orden).map(({ e }) => e);
+
+export function seleccionarEntrega(p, destino) {
+  const paso = pasosEntrega(p)[0];
+  const anterior = entregasPedido(p).find(e => e.numero === destino.numero);
+  return { ...p, entregaActual: destino.numero, destinoEntrega: destino,
+    ofsSeleccionadas: [...new Set([...(anterior?.ofs ?? []), ...(paso?.ofs ?? ofsEntrega(p))])] };
+}
+
+export function avisoEntradaEntrega(p, existente, entrada) {
+  if (!entregasPedido(existente).length || entrada?.confirmarEntradaEntrega === true) return null;
+  const anteriores = entregasPedido(existente).map(e => `entrega ${e.numero} (OF ${e.ofs.join(', ')})`).join('; ');
+  const pasos = pasosEntrega(p);
+  const mensaje = pasos.map(e => e.modo === 'nuevo' ? `Las OF nuevas irán en la entrega ${e.numero}.` : `Las OF coincidentes se tratarán como corrección de la entrega ${e.numero}.`).join(' ');
+  return { needsEntradaEntregaConfirmation: true, error: `Este pedido ya tiene la ${anteriores}. ${mensaje} Se guardará en el mismo pedido.` };
 }
 
 /** Una OF es indivisible: si cambia un elemento, salen todos los de esa OF. */
 export function ofsEntrega(p) {
   const entregas = entregasPedido(p);
-  if (p.status === 'PRODUCED' && entregas.length) return entregas.at(-1).ofs;
-  const anteriores = Object.assign({}, ...entregas.map(e => e.datos));
-  return Object.entries(datosPorOf(p)).filter(([of, datos]) => anteriores[of] !== datos).map(([of]) => of);
+  if (p.ofsSeleccionadas) return p.ofsSeleccionadas;
+  if (p.status === 'PRODUCED' && entregas.length) return (entregas.find(e => e.numero === p.entregaActual) ?? entregas.at(-1)).ofs;
+  return pasosEntrega(p)[0]?.ofs ?? [];
 }
 
 export function numeroEntrega(p) {
-  return p.entregaActual ?? (p.status === 'PRODUCED' ? entregasPedido(p).at(-1)?.numero ?? 1 : entregasPedido(p).length + 1);
+  return p.entregaActual ?? (p.status === 'PRODUCED' ? entregasPedido(p).at(-1)?.numero ?? inicioSerie(p) : pasosEntrega(p)[0]?.numero ?? inicioSerie(p));
 }
 
 export function codigoEntrega(p) {
-  if (!p.entregaActual || (p.status === 'PRODUCED' && entregasPedido(p).at(-1)?.legacy)) return p.orderCode;
+  const actual = entregasPedido(p).find(e => e.numero === p.entregaActual) ?? entregasPedido(p).at(-1);
+  if (!p.entregaActual || (p.status === 'PRODUCED' && actual?.legacy)) return p.orderCode;
   return `${p.orderCode}-${numeroEntrega(p)}`;
 }
 
-/** El editor de un generado prepara el próximo corte; la ficha abre el de la entrega terminada. */
-export function codigoCorteEditable(p, codigo) {
-  return !p ? `${codigo}-1` : p.status === 'PRODUCED' ? `${p.orderCode}-${numeroEntrega(p) + 1}` : codigoEntrega(p);
+/** Corregir conserva el número; solo las OF nuevas preparan otro corte. */
+export function codigoCorteEditable(p, codigo, inicio = 1) {
+  return !p ? `${codigo}-${inicio}` : `${p.orderCode}-${numeroEntrega(p)}`;
 }
 
 /** Mantiene la clave del pedido; solo los adaptadores de salida piden el código numerado. */
@@ -89,11 +151,20 @@ export function cerrarEntrega(p, materiales = []) {
   const numero = numeroEntrega(p);
   const ofs = ofsEntrega({ ...p, status: 'PENDING_REVIEW' });
   const datos = datosPorOf(p);
-  const entrega = { numero, fecha: p.production.createdAt, autor: p.production.createdBy, ofs, ...(!p.entregaActual ? { legacy: true } : {}),
+  const entrega = { numero, ordenGeneracion: Math.max(0, ...historial.map((e, i) => e.ordenGeneracion ?? i + 1)) + 1,
+    fecha: p.production.createdAt, autor: p.production.createdBy, ofs, ...(!p.entregaActual ? { legacy: true } : {}),
     archivos: archivosEntrega(p), datos: Object.fromEntries(ofs.map(of => [of, datos[of]])),
     instantanea: instantanea(pedidoEntrega({ ...p, status: 'PENDING_REVIEW' })), materiales: structuredClone(materiales),
     ...(p.corteConfirmado ? { corteConfirmado: structuredClone(p.corteConfirmado) } : {}) };
-  return { ...p, entregas: [...historial, entrega] };
+  const anterior = historial.find(e => e.numero === numero);
+  entrega.destino = p.destinoEntrega ?? { numero, modo: anterior ? 'sustituir' : 'nuevo' };
+  entrega.revisiones = [...(anterior?.revisiones ?? []), ...(anterior ? [{ fecha: anterior.fecha, autor: anterior.autor, archivos: anterior.archivos, destino: anterior.destino }] : [])];
+  const actualizado = { ...p, entregas: [...historial.filter(e => e.numero !== numero), entrega].sort((a, b) => a.numero - b.numero) };
+  delete actualizado.ofsSeleccionadas;
+  delete actualizado.destinoEntrega;
+  const pendiente = pasosEntrega(actualizado)[0];
+  if (pendiente) return { ...actualizado, status: 'PENDING_REVIEW', entregaActual: pendiente.numero, entregaPorPreparar: true, corteConfirmado: undefined, corteNoRegenerado: false };
+  return actualizado;
 }
 
 export function cambiosMateriales(p, materiales) {
@@ -122,12 +193,4 @@ export function cambiosMateriales(p, materiales) {
     }
   }
   return cambios;
-}
-
-/** Confirmación ligada al contenido y a la versión guardada; no acepta un aviso de otra corrección. */
-export function avisoMateriales(p, materiales, aceptado) {
-  const cambios = cambiosMateriales(p, materiales);
-  const huella = JSON.stringify([p.updatedAt, numeroEntrega(p), cambios]);
-  return cambios.length && aceptado !== huella ? { needsMaterialConfirmation: true, cambiosMateriales: cambios, huellaMateriales: huella,
-    error: 'Esta entrega corrige OF ya generadas. Ajusta su reserva a mano con estos cambios; la web no escribe en RPS.' } : null;
 }

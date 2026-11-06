@@ -73,6 +73,11 @@ export async function guardarToldosEditable(cuerpo: Record<string, unknown>, pre
   while (true) {
     const respuesta = await fetch(ruta, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entrada) });
     const datos = await respuesta.json();
+    if (respuesta.status === 409 && datos.needsEntradaEntregaConfirmation) {
+      if (await preguntar({ title: 'Continuar el pedido existente', message: datos.error, confirmLabel: 'Continuar en este pedido', cancelLabel: 'Cancelar', tone: 'warning' }) !== 'confirm') return null;
+      entrada.confirmarEntradaEntrega = true;
+      continue;
+    }
     if (respuesta.status === 409 && datos.needsRegenerateConfirmation) {
       const choice = await preguntar({ title: 'Este pedido ya tiene corte', amplio: true,
         message: 'Has cambiado datos y este pedido ya tiene corte. ¿Generar el corte de nuevo?',

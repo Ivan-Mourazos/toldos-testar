@@ -1,0 +1,41 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { afterEach, expect, it } from 'vitest';
+import { catalogoEntregas, aplicarDestino } from './entregasRps.js';
+import { numerarEntrega } from './entregasRps.js';
+import { abrirEntrega, cerrarEntrega } from './entregas.js';
+import { adjuntarPedido } from './adjuntosPedido.js';
+import pdfLib from 'pdf-lib';
+const raiz = path.resolve('tmp/entregas-rps-test');
+afterEach(() => fs.rm(raiz, { recursive: true, force: true }));
+it('lee ambas series de RPS y no modifica los históricos', async () => {
+  const carpeta = path.join(raiz, '2026');
+  await fs.mkdir(carpeta, { recursive: true });
+  for (const n of [1, 10, 11]) await fs.writeFile(path.join(carpeta, `AR.26.03626-${n}.pdf`), 'histórico');
+  const base = { orderCode: 'AR2603626', kind: 'toldos-testar-review', order: { awnings: [] } };
+  const ajustes = { rpsPlanteamientosDirectory: path.join(raiz, '{YYYY}') };
+  expect(await catalogoEntregas(base, ajustes)).toMatchObject({ siguiente: 2, existentes: [{ numero: 1, origen: 'Excel antiguo' }] });
+  const pvc = await catalogoEntregas({ ...base, kind: 'puertas' }, ajustes);
+  expect(pvc.siguiente).toBe(12);
+  expect(pvc.existentes.map(e => e.numero)).toEqual([10, 11]);
+  expect(await fs.readFile(path.join(carpeta, 'AR.26.03626-10.pdf'), 'utf8')).toBe('histórico');
+});
+it('rechaza un destino nuevo ocupado y exige confirmar una sustitución', async () => {
+  const p = { orderCode: 'AR2603626', kind: 'remolques', elementos: [], entregas: [{ numero: 10, ofs: [], archivos: [], datos: {} }] };
+  expect((await aplicarDestino(p, {}, { destinoEntrega: { numero: 10, modo: 'nuevo' } })).respuesta.status).toBe(409);
+  expect((await aplicarDestino(p, {}, { destinoEntrega: { numero: 10, modo: 'sustituir' } })).respuesta.cuerpo.needsEntregaConfirmation).toBe(true);
+  const resultado = await aplicarDestino(p, {}, { destinoEntrega: { numero: 10, modo: 'sustituir' }, confirmarEntrega: true });
+  expect(resultado.pedido.entregaActual).toBe(10);
+});
+it('reconoce las OF del adjunto de un -10 anterior a la copia local', async () => {
+  const base = { kind: 'puertas', orderCode: 'AR2603626', status: 'PENDING_REVIEW', elementos: [{ id: 'A', input: { of: '230001', frente: 200, modelo: 'PUERTAENR' } }] };
+  const guardado = cerrarEntrega({ ...abrirEntrega(base), status: 'PRODUCED', production: { createdAt: '2026-11-06', createdBy: 'IVÁN', files: [{ filename: 'AR2603626-10.pdf' }] } });
+  const pdf = await pdfLib.PDFDocument.create(); pdf.addPage();
+  await fs.mkdir(raiz, { recursive: true });
+  await fs.writeFile(path.join(raiz, 'AR.26.03626-10.pdf'), await adjuntarPedido(await pdf.save(), guardado, 'puertas'));
+  const p = await numerarEntrega(abrirEntrega({ ...base, elementos: [{ ...base.elementos[0], input: { ...base.elementos[0].input, frente: 210 } }] }), { rpsPlanteamientosDirectory: raiz });
+  expect(p.entregaActual).toBe(10);
+  expect(p.entregas[0].ofs).toEqual(['0230001']);
+  const catalogo = await catalogoEntregas(p, { rpsPlanteamientosDirectory: raiz });
+  expect(catalogo.recomendado).toMatchObject({ numero: 10, modo: 'sustituir' });
+});

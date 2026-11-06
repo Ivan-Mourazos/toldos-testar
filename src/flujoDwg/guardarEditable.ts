@@ -25,7 +25,7 @@ export async function prepararGuardadoEditable({ flujo, orderCode, technician, u
   if (cambiado && eleccion !== 'mantener' && eleccion !== 'regenerar') return { respuesta: { status: 409,
     cuerpo: { needsRegenerateConfirmation: true, error: 'Has cambiado datos y este pedido ya tiene corte. ¿Generar el corte de nuevo?' } } };
   const regenerar = eleccion === 'regenerar' || !hayCorte;
-  if (regenerar && !produccion) return { metadata: { corteSimulado: true, corteNoRegenerado: false } as CorteEditable,
+  if (regenerar && !produccion) return { metadata: { corteConfirmado: undefined, corteSimulado: true, corteNoRegenerado: false } as CorteEditable,
     avisos: ['Modo simulación: no se ha escrito el plano del corte.'], escribir: async () => {}, deshacer: async () => {}, limpiar: async () => [] as string[] };
   if (!regenerar && existente?.corteSimulado && !existente.corteConfirmado && !estado.borrador) return {
     metadata: { corteSimulado: true, corteNoRegenerado: cambiado || Boolean(existente.corteNoRegenerado) } as CorteEditable,

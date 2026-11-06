@@ -1,3 +1,5 @@
+import { guardarToldosEditable } from '../toldosEditable';
+import type { DestinoEntrega } from '../../entregasTipos';
 import { pedidoEntrega } from '../../entregas.js';
 import React, { useEffect, useState } from 'react';
 import { CopyPlus, DoorOpen, Factory, FileSearch, FileText, Scissors } from 'lucide-react';
@@ -26,7 +28,6 @@ import { estadoGenerarPuertas } from './generarPuertas';
 import { DibujoCortePuertas } from './VistaCortePuertas';
 import '../coordina/corte-lona.css';
 import './puertas.css';
-import { confirmarMateriales, type AvisoMateriales } from '../materialesEntrega';
 
 // Un pedido de puertas abierto desde Pedidos (fase 2, 22/10/2026), con las acciones de toldos y remolques:
 // «Corregir» (cualquier técnico) y «Generar archivos» (con todo aprobado o pasado en CoordinaOT)
@@ -154,26 +155,25 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
     return () => { cancelado = true; };
   }, [ruta, orderCode, refreshKey, onToast]);
 
-  async function generar() {
+  async function generar(destinoEntrega?: DestinoEntrega) {
     if (!pedido || !estadoGenerarPuertas(pedido, currentUser, coordina).allowed) return;
-    const inicial = await onConfirm({
+    const inicial = destinoEntrega ? 'confirm' : await onConfirm({
       title: `Generar archivos de ${pedido.orderCode}`,
       message: 'CoordinaOT ya lo ha aprobado. Se guardará el plano definitivo, con quién lo revisó en el cajetín, en la carpeta de planos.',
       confirmLabel: 'Sí, generar archivos', cancelLabel: 'Ahora no', tone: 'warning',
     });
     if (inicial !== 'confirm') return;
     setGenerando(true);
-    let confirmOverwrite = false;
+    let confirmOverwrite = destinoEntrega?.modo === 'sustituir';
     let aceptarHuellaCorte: string | undefined;
     let aceptarCorteNoRegenerado: string | undefined;
-    let aceptarMateriales: string | undefined;
     try {
       for (;;) {
-        const respuesta = await fetch(`${ruta}/generar`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirmOverwrite, aceptarHuellaCorte, aceptarCorteNoRegenerado, aceptarMateriales, savedBy: currentUser }) });
-        const datos = await respuesta.json().catch(() => ({})) as CortePendiente & AvisoMateriales & { needsMaterialConfirmation?: boolean; error?: string; cambioCorte?: boolean; huella?: string; needsConfirmation?: boolean; existing?: string[]; unchanged?: boolean; saved?: Array<{ filename: string }>; avisos?: string[] };
-        if (respuesta.status === 409 && datos.needsMaterialConfirmation) {
-          if (!await confirmarMateriales(datos, onConfirm)) return;
-          aceptarMateriales = datos.huellaMateriales;
+        const respuesta = await fetch(`${ruta}/generar`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ destinoEntrega, confirmarEntrega: Boolean(destinoEntrega), confirmOverwrite, aceptarHuellaCorte, aceptarCorteNoRegenerado, savedBy: currentUser }) });
+        const datos = await respuesta.json().catch(() => ({})) as CortePendiente & { needsPrepararEntrega?: boolean; error?: string; cambioCorte?: boolean; huella?: string; needsConfirmation?: boolean; existing?: string[]; unchanged?: boolean; saved?: Array<{ filename: string }>; avisos?: string[] };
+        if (respuesta.status === 409 && datos.needsPrepararEntrega) {
+          const preparado = await guardarToldosEditable({ ...{ pedido }, destinoEntrega, confirmarEntrega: true, confirmarEntradaEntrega: true, savedBy: currentUser, confirmOverwrite: true, confirmPlanoOverwrite: true, decisionCorte: 'regenerar' }, onConfirm, async () => {}, '/api/puertas/pedidos');
+          if (!preparado) return;
           continue;
         }
         if (respuesta.status === 409 && datos.corteNoRegenerado) {
@@ -237,7 +237,7 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
         datos={datos} corteNoRegenerado={pedido.corteNoRegenerado} corteSimulado={pedido.corteSimulado}
         acciones={<AccionesPedido generado={generado} ocupado={generando || corte.ocupado} enviando={generando} editandoPermitido={corregible}
           onEditar={() => onCorregir(pedido)} elementos={elementosAprobacion(pedido)} coordina={coordina} preguntar={onConfirm}
-          abrir={corte.abrir} regenerar={currentUser ? () => void corte.regenerar() : undefined} generar={() => void generar()}
+          abrir={corte.abrir} regenerar={currentUser && corte.abrir ? () => void corte.regenerar() : undefined} codigo={pedido.orderCode} rutaDestinos={`${ruta}/destinos-entrega`} generar={d => void generar(d)}
           generarPermitido={allowed} motivoGenerar={note} envios={<EnviosCorte key={ruta} barra ruta={`${ruta}/corte`} usuario={currentUser}
             permitido={permisoCorte.allowed && Boolean(currentUser.trim())} motivo={permisoCorte.note} ocupado={generando || corte.ocupado} envios={pedido.enviosCorte} entrega={pedido.entregaActual}
             descarga={`${ruta}/corte/dxf`} conPdf notify={onToast} preguntar={onConfirm} onEnviado={onChanged}

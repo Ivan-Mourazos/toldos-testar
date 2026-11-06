@@ -1,6 +1,7 @@
+import { numerarEntrega, aplicarDestino, necesitaPrepararDestino } from '../../entregasRps.js';
 import { mkdir, stat } from "node:fs/promises";
 import path from "node:path";
-import { codigoCorteEditable, avisoMateriales, cerrarEntrega, codigoEntrega, ofsEntrega, pedidoEntrega, numeroEntrega, abrirEntrega } from '../../entregas.js';
+import { avisoEntradaEntrega, codigoCorteEditable, cerrarEntrega, codigoEntrega, ofsEntrega, pedidoEntrega, numeroEntrega, abrirEntrega } from '../../entregas.js';
 import { materialesPuertas } from '../../materialesEntrega.js';
 import { adjuntarPedido } from '../../adjuntosPedido.js';
 import { enviarCorte as enviarCorteCompartido } from "../../corteEnvios.js";
@@ -50,7 +51,7 @@ export interface ConfirmacionesCorte {
 export interface DependenciasPedidosPuertas {
   almacen: AlmacenPedidos<PedidoPuertasGuardado>;
   ajustes: () => Promise<{ productionEnabled?: boolean; corteLonaBotDirectory?: string; corteLonaPlanoDirectory?: string; corteLonaDxfDirectory?: string;
-    corteBorradoresDirectory?: string; corteBorradoresRed?: string; remolquesPlanteamientosDirectory?: string; remolquesOficinaTecnicaDirectory?: string }>;
+    corteBorradoresDirectory?: string; corteBorradoresRed?: string; remolquesPlanteamientosDirectory?: string; remolquesOficinaTecnicaDirectory?: string; rpsPlanteamientosDirectory?: string; planteamientosDirectory?: string }>;
   coordina: { statusOf(ofs: string[], opciones?: { fresh?: boolean }): Promise<EstadoCoordina> };
   /** La lista de técnicos (la de «Soy»). */
   tecnicos: string[];
@@ -142,7 +143,7 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
     const codigo = typeof orderCode === "string" ? orderCode.trim() : "";
     if (!codigo) return { activo: false as const };
     const pedido = await deps.almacen.obtener(codigoPedido(codigo));
-    return { ...await flujo.estado(codigoCorteEditable(pedido, codigoPedido(codigo))), revisado: pedido?.status !== 'PRODUCED' && Boolean(pedido?.corteConfirmado), corteSimulado: pedido?.status !== 'PRODUCED' && Boolean(pedido?.corteSimulado) };
+    return { ...await flujo.estado(codigoCorteEditable(pedido, codigoPedido(codigo), 10)), revisado: pedido?.status !== 'PRODUCED' && Boolean(pedido?.corteConfirmado), corteSimulado: pedido?.status !== 'PRODUCED' && Boolean(pedido?.corteSimulado) };
   }
 
   /** «Abrir corte» en la revisión: el DWG revisado del pedido, en ZWCAD (Iván, 26/10/2026). */
@@ -159,7 +160,7 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
     if (!autor || !deps.tecnicos.includes(autor)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de confirmar el corte.");
     const codigo = codigoPedido(typeof c.orderCode === 'string' ? c.orderCode : '');
     const existente = await deps.almacen.obtener(codigo);
-    return flujo.confirmar(codigoCorteEditable(existente, codigo), autor);
+    return flujo.confirmar(codigoCorteEditable(existente, codigo, 10), autor);
   }
 
   async function guardar(cuerpo: unknown): Promise<Respuesta> {
@@ -195,9 +196,18 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
       const aprobacion = enviado.elementos.map((e, i) => ({ letter: String(i + 1), of: e.input.of }));
       const estado = aprobacionToldos(await deps.coordina.statusOf(uniqueOfs(aprobacion)));
       const autoria = { technician: existente?.summary.technician || salvador, reviewer: approvalReviewers(aprobacion, estado, deps.tecnicos) };
-      const pedido = { ...crearPedidoPuertas({ pedido: enviado, cabecera, autoria, existente, ahora: ahora() }), updatedBy: salvador };
+      let pedido = await numerarEntrega({ ...crearPedidoPuertas({ pedido: enviado, cabecera, autoria, existente, ahora: ahora() }), updatedBy: salvador }, await deps.ajustes());
+      if ((cuerpo as { destinoEntrega?: unknown })?.destinoEntrega) {
+        const destino = await aplicarDestino(pedido, await deps.ajustes(), cuerpo);
+        if (destino.respuesta) return destino.respuesta;
+        pedido = destino.pedido;
+        if (existente?.entregaActual !== pedido.entregaActual) delete pedido.corteConfirmado;
+      }
+      pedido.entregaPorPreparar = false;
       if (existente?.status === 'PRODUCED' && !ofsEntrega(pedido).length) return { status: 200, cuerpo: { ok: true, unchanged: true, review: resumenBandeja(existente) } };
-      const anteriorCorte = existente?.status === 'PRODUCED' ? null : existente;
+      const avisoEntrada = avisoEntradaEntrega(pedido, existente, c);
+      if (avisoEntrada) return { status: 409, cuerpo: avisoEntrada };
+      const anteriorCorte = existente?.status === 'PRODUCED' ? (pedido.entregas?.some((e: { numero: number }) => e.numero === pedido.entregaActual) ? { ...existente, corteConfirmado: pedido.corteConfirmado } : null) : existente;
       const desdeBorrador = deps.plano && ofsEntrega(pedido).length ? await prepararGuardadoEditable({ flujo, orderCode: codigoEntrega(pedido), technician: autoria.technician, usuario: salvador,
         datos: datosCorte(pedidoEntrega(pedido)), datosAnteriores: anteriorCorte ? datosCorte(pedidoEntrega(anteriorCorte)) : undefined, existente: anteriorCorte, entrada: c,
         cambiosPedido: existente ? huellaDatos({ cabecera: pedido.cabecera, elementos: pedido.elementos }) !== huellaDatos({ cabecera: existente.cabecera, elementos: existente.elementos }) : undefined,
@@ -260,9 +270,9 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
     try {
       const cabecera = validarCabeceraPuertas((c.pedido as { cabecera?: unknown }).cabecera ?? {}, ahora().slice(0, 10));
       const existente = await deps.almacen.obtener(orderCode);
-      const borrador = abrirEntrega({ ...enviado, orderCode, status: 'PENDING_REVIEW', cabecera, summary: { customer: cabecera.cliente || cabecera.clienteRps?.nombre || "", technician: autor,
-        orderDate: cabecera.fecha } } as unknown as PedidoPuertasGuardado, existente);
-      const confirmado = existente?.status === 'PRODUCED' ? undefined : existente?.corteConfirmado;
+      const borrador = await numerarEntrega(abrirEntrega({ ...enviado, orderCode, status: 'PENDING_REVIEW', cabecera, summary: { customer: cabecera.cliente || cabecera.clienteRps?.nombre || "", technician: autor,
+        orderDate: cabecera.fecha } } as unknown as PedidoPuertasGuardado, existente), await deps.ajustes());
+      const confirmado = borrador.corteConfirmado;
       return await flujo.borrador({ orderCode: codigoEntrega(borrador), regenerar: c.regenerar === true, revisado: confirmado?.plano, datos: datosCorte(pedidoEntrega(borrador)), datosRevisado: confirmado?.datos,
         preparar: (carpeta) => deps.plano!.preparar(pedidoEntrega(borrador, true), "", carpeta) });
     } finally {
@@ -303,7 +313,12 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
         throw new ErrorPedidoRemolques("La generación de archivos está desactivada en Configuración: no se ha generado nada.", 403);
       }
       if (!deps.plano) throw new ErrorPedidoRemolques("El plano de puertas no está disponible en este servidor.", 404);
-      const pedido = await obtener(orderCode);
+      let pedido = await obtener(orderCode);
+      if (pedido.status === 'PRODUCED') return { status: 200, cuerpo: { ok: true, unchanged: true, review: resumenBandeja(pedido), saved: pedido.production?.files ?? [] } };
+      const destinoEntrega = await aplicarDestino(pedido, await deps.ajustes(), cuerpo);
+      if (destinoEntrega.respuesta) return destinoEntrega.respuesta;
+      if (necesitaPrepararDestino(pedido, destinoEntrega.pedido)) return { status: 409, cuerpo: { needsPrepararEntrega: true } };
+      pedido = destinoEntrega.pedido;
       const decision = generateFilesDecision(pedido.status);
       if (decision.action === "unchanged") {
         return { status: 200, cuerpo: { ok: true, unchanged: true, review: resumenBandeja(pedido), saved: pedido.production?.files ?? [] } };
@@ -319,8 +334,6 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
       if (bloqueo) throw new ErrorPedidoRemolques(bloqueo, estado.disponible ? 409 : 503);
       const revisor = approvalReviewers(aprobacion, estado, deps.tecnicos);
       const materiales = materialesPuertas(generarCortePuertas({ ...actual, summary: undefined }).resultados);
-      const aviso = avisoMateriales(pedido, materiales, (cuerpo as { aceptarMateriales?: string } | null)?.aceptarMateriales);
-      if (aviso) return { status: 409, cuerpo: aviso };
       const salida = await comprobarCorteNoRegenerado(flujo, pedido, (cuerpo ?? {}) as { aceptarCorteNoRegenerado?: unknown },
         (cuerpo as { savedBy?: string } | null)?.savedBy || pedido.updatedBy || pedido.summary.technician);
       if ('respuesta' in salida) return salida.respuesta;
@@ -355,8 +368,8 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
         if (generado.production) generado.production.files.push(...await ficherosPdf(generado, destino));
         generado.presentacionesPdf = { numero: destino.numero, ruta: destino.ruta, fecha: ahora() };
         generado = cerrarEntrega(generado, materiales);
-        const fuente = generado.corteConfirmado ?? { filename: plano.files[0].filename, plano: plano.files[0].savedPath, huella: '', por: usuario || pedido.createdBy, fecha: ahora() };
-        await guardarPdf(generado, (await flujo.corteDelDwg(fuente)).plano, destino, false);
+        const fuente = pedido.corteConfirmado ?? { filename: plano.files[0].filename, plano: plano.files[0].savedPath, huella: '', por: usuario || pedido.createdBy, fecha: ahora() };
+        await guardarPdf({ ...generado, entregaActual: pedido.entregaActual, ofsSeleccionadas: ofsEntrega(pedido) } as PedidoPuertasGuardado, (await flujo.corteDelDwg(fuente)).plano, destino, false, generado);
       } else {
         generado = cerrarEntrega(generado, materiales);
       }
@@ -408,11 +421,6 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
       if (!deps.tecnicos.includes(usuario)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de mandar o guardar el corte.");
       const pedido = await obtener(orderCode);
       exigirOfsPuertas(pedido);
-      if (pedido.status !== 'PRODUCED') {
-        const materiales = materialesPuertas(generarCortePuertas({ ...pedidoEntrega(pedido), summary: undefined }).resultados);
-        const aviso = avisoMateriales(pedido, materiales, (cuerpo as { aceptarMateriales?: string } | null)?.aceptarMateriales);
-        if (aviso) return { status: 409, cuerpo: aviso };
-      }
       const salida = await comprobarCorteNoRegenerado(flujo, pedido, c, usuario);
       if ('respuesta' in salida) return salida.respuesta;
       Object.assign(pedido, salida.pedido);
@@ -478,10 +486,10 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
     return destinos.map(savedPath => ({ type: 'pdf' as const, filename: path.basename(savedPath), savedPath }));
   }
 
-  async function guardarPdf(pedido: PedidoPuertasGuardado, plano: string, pdf: { ruta: string; numero: number }, guardarEstado = true) {
+  async function guardarPdf(pedido: PedidoPuertasGuardado, plano: string, pdf: { ruta: string; numero: number }, guardarEstado = true, datosAdjuntos = pedido) {
     const aprobacion = elementosAprobacion(pedidoEntrega(pedido));
     const revisor = approvalReviewers(aprobacion, aprobacionToldos(await deps.coordina.statusOf(uniqueOfs(aprobacion))), deps.tecnicos);
-    const contenido = await adjuntarPedido(await deps.presentacionesPdf!(htmlPresentaciones(conRevisor(plano, revisor), codigoEntrega(pedido))), pedido, 'puertas');
+    const contenido = await adjuntarPedido(await deps.presentacionesPdf!(htmlPresentaciones(conRevisor(plano, revisor), codigoEntrega(pedido))), datosAdjuntos, 'puertas');
     await mkdir(path.dirname(pdf.ruta), { recursive: true });
     await writeFileAtomic(pdf.ruta, contenido);
     const oficina = (await deps.ajustes()).remolquesOficinaTecnicaDirectory;

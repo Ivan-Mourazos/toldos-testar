@@ -1,3 +1,4 @@
+import type { DestinoEntrega } from '../../entregasTipos';
 import React, { useEffect, useMemo, useState } from 'react';
 import { CopyPlus, Download, ExternalLink, Factory, FileSearch, FileSpreadsheet, FileText } from 'lucide-react';
 import type { Calculation, CoordinaStatus, ReviewPackage, RuleParameters } from '../types';
@@ -47,7 +48,7 @@ export function ReviewOrderDetail({
   onBack: () => void;
   onEdit: () => void;
   onReuse: () => void;
-  onGenerate: () => void;
+  onGenerate: (destino?: DestinoEntrega) => void;
   notify?: Notify;
   onConfirm?: AskForConfirmation;
   onGuardarCorte?: (estado: EstadoCorte | null) => Promise<void> | void;
@@ -137,7 +138,7 @@ export function ReviewOrderDetail({
             ? <BotonAbrirCorteRevisado ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-dwg`} notify={notify} />
             : conFlujoCorte ? <BotonesFlujoCorte flujo={flujoCorte} ocupado={disabled || generandoCorte} /> : null}
           regenerar={autorDelCorte && conCorteLona ? () => void regenerarCorte() : undefined}
-          generar={onGenerate} generarPermitido={canGenerate} motivoGenerar={generateNote}
+          codigo={review.orderCode} rutaDestinos={`/api/reviews/${encodeURIComponent(review.orderCode)}/destinos-entrega`} generar={onGenerate} generarPermitido={canGenerate} motivoGenerar={generateNote}
           envios={conCorteLona
             ? <EnviosCorte barra ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona`} usuario={currentUser}
               permitido={puedeEnviar && cortePermitido.allowed && (Boolean(review.corteConfirmado) || !faltaCorte)} motivo={faltaCorte ?? cortePermitido.note}

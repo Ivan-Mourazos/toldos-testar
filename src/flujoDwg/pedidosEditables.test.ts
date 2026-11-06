@@ -54,7 +54,7 @@ async function preparar(tipo: 'puertas' | 'remolques', conPdf = false) {
       parametros: async () => remolque.params, hacerPdf: async () => { const pdf = await pdfLib.PDFDocument.create(); pdf.addPage(); return pdf.save(); },
       corte: crearCorteRemolques({ ajustes, oda: { disponible: false } }) });
   const codigo = tipo === 'puertas' ? puerta.orderCode : remolque.orderCode;
-  const cuerpo = (cambio = false, extra = {}) => ({ savedBy: 'ANA', ...(tipo === 'puertas'
+  const cuerpo = (cambio = false, extra = {}) => ({ savedBy: 'ANA', confirmarEntradaEntrega: true, ...(tipo === 'puertas'
     ? { pedido: { ...puerta, elementos: puerta.elementos.map(e => ({ ...e, input: { ...e.input, frente: cambio ? 210 : habitual.frente } })) } }
     : { elementos: remolque.elementos.map(e => ({ ...e, input: { ...e.input, largo: e.input.largo + (cambio ? 10 : 0) } })), params: remolque.params }), ...extra });
   const obtener = () => servicio.obtener(codigo);
@@ -92,17 +92,17 @@ describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido 
         if (!contenido) throw new Error('El adjunto no contiene los datos del pedido');
         const datos = JSON.parse(Buffer.from(contenido).toString('utf8'));
         expect(datos.orderCode).toBe(t.codigo);
-        expect(datos.entregas[0]).toMatchObject({ numero: 1, autor: 'IVÁN' });
+        expect(datos.entregas[0]).toMatchObject({ numero: 10, autor: 'IVÁN' });
         expect(datos.elementos).toHaveLength(pedido.elementos.length);
       } finally { await tarea.destroy(); }
     }
   }, 20000);
-  it('genera dos entregas separadas y avisa de los materiales al corregir una OF ya generada', async () => {
+  it('genera OF nuevas en -11 y confirma sustituir -10 al corregir', async () => {
     const t = await preparar(tipo);
     await t.servicio.guardar(t.cuerpo());
     expect((await t.servicio.generar(t.codigo, { savedBy: 'IVÁN', confirmOverwrite: true })).status).toBe(200);
     const primera = await t.obtener();
-    expect(primera.entregas).toMatchObject([{ numero: 1, autor: 'IVÁN' }]);
+    expect(primera.entregas).toMatchObject([{ numero: 10, autor: 'IVÁN' }]);
     const originales = await Promise.all([primera.corteConfirmado!.plano, ...primera.production!.files.map(f => f.savedPath)].map(async ruta => ({ ruta, bytes: await fs.readFile(ruta) })));
     const cuerpo = t.cuerpo();
     if ('pedido' in cuerpo && cuerpo.pedido) {
@@ -116,22 +116,45 @@ describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido 
     }
     expect((await t.servicio.guardar(cuerpo)).status).toBe(200);
     const pendiente = await t.obtener();
-    expect(pendiente).toMatchObject({ entregaActual: 2, status: 'PENDING_REVIEW' });
-    expect(pendiente.corteConfirmado!.filename).toContain('-2');
+    expect(pendiente).toMatchObject({ entregaActual: 11, status: 'PENDING_REVIEW' });
+    expect(pendiente.corteConfirmado!.filename).toContain('-11');
     expect((await t.servicio.generar(t.codigo, { savedBy: 'IVÁN', confirmOverwrite: true })).status).toBe(200);
     const segunda = await t.obtener();
     expect(segunda.entregas).toHaveLength(2);
     expect(segunda.entregas![1].ofs).toEqual(['0239998']);
     for (const f of originales) expect(await fs.readFile(f.ruta)).toEqual(f.bytes);
-    const correccion = t.cuerpo(true);
+    const archivosSegunda = await Promise.all(segunda.entregas![1].archivos.filter(f => f.savedPath).map(async f => ({ ruta: f.savedPath!, bytes: await fs.readFile(f.savedPath!) })));
+    const correccion = t.cuerpo(true, { decisionCorte: 'regenerar' });
     expect((await t.servicio.guardar(correccion)).status).toBe(200);
     const aviso = await t.servicio.generar(t.codigo, { savedBy: 'IVÁN', confirmOverwrite: true });
-    expect(aviso).toMatchObject({ status: 409, cuerpo: { needsMaterialConfirmation: true, cambiosMateriales: expect.any(Array) } });
+    expect(aviso).toMatchObject({ status: 409, cuerpo: { needsEntregaConfirmation: true, entrega: 10 } });
     expect((await t.obtener()).status).toBe('PENDING_REVIEW');
-    const token = (aviso.cuerpo as { huellaMateriales: string }).huellaMateriales;
-    expect((await t.servicio.generar(t.codigo, { savedBy: 'IVÁN', confirmOverwrite: true, aceptarMateriales: token })).status).toBe(200);
-    expect((await t.obtener()).entregas).toHaveLength(3);
-    for (const f of originales) expect(await fs.readFile(f.ruta)).toEqual(f.bytes);
+    expect((await t.servicio.generar(t.codigo, { savedBy: 'IVÁN', confirmOverwrite: true, confirmarEntrega: true })).status).toBe(200);
+    expect((await t.obtener()).entregas).toHaveLength(2);
+    expect((await t.obtener()).entregas![0].revisiones).toHaveLength(1);
+    for (const f of archivosSegunda) expect(await fs.readFile(f.ruta)).toEqual(f.bytes);
+  }, 30000);
+  it('separa una corrección y una OF nueva en dos generaciones con sus propios cortes', async () => {
+    const t = await preparar(tipo, true);
+    await t.servicio.guardar(t.cuerpo());
+    await t.servicio.generar(t.codigo, { savedBy: 'IVÁN', confirmOverwrite: true });
+    const mixto = t.cuerpo(true, { decisionCorte: 'regenerar' });
+    if ('pedido' in mixto && mixto.pedido) {
+      const e = structuredClone(mixto.pedido.elementos[0]); e.id = 'nueva'; e.input.of = '0239998'; mixto.pedido.elementos.push(e);
+    } else if ('elementos' in mixto && mixto.elementos) {
+      const e = structuredClone(mixto.elementos[0]); e.version = 'nueva'; e.input.cabecera.ordenFabricacion = '0239998'; mixto.elementos.push(e);
+    }
+    expect((await t.servicio.guardar(mixto)).status).toBe(200);
+    expect((await t.obtener()).entregaActual).toBe(10);
+    expect((await t.servicio.generar(t.codigo, { savedBy: 'IVÁN', confirmOverwrite: true, confirmarEntrega: true })).status).toBe(200);
+    expect(await t.obtener()).toMatchObject({ status: 'PENDING_REVIEW', entregaActual: 11, entregaPorPreparar: true });
+    const primero = await t.obtener();
+    const archivos = await Promise.all(primero.production!.files.map(async f => ({ ruta: f.savedPath, bytes: await fs.readFile(f.savedPath) })));
+    expect((await t.servicio.generar(t.codigo, {})).cuerpo).toMatchObject({ needsPrepararEntrega: true });
+    expect((await t.servicio.guardar({ ...mixto, destinoEntrega: { numero: 11, modo: 'nuevo' }, confirmarEntrega: true })).status).toBe(200);
+    expect((await t.servicio.generar(t.codigo, { savedBy: 'IVÁN', confirmOverwrite: true })).status).toBe(200);
+    expect(await t.obtener()).toMatchObject({ status: 'PRODUCED', entregaActual: 11, entregas: [{ numero: 10 }, { numero: 11, ofs: ['0239998'] }] });
+    for (const f of archivos) expect(await fs.readFile(f.ruta)).toEqual(f.bytes);
   }, 30000);
   it.each(['generar', 'bot'] as const)('con la marca activa, %s exige decidir antes de escribir y usar el corte queda registrado', async accion => {
     const t = await preparar(tipo);
@@ -206,7 +229,7 @@ describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido 
 
   it('un plano ajeno pregunta antes de escribir o guardar; cancelar conserva todo', async () => {
     const t = await preparar(tipo);
-    const ruta = path.join(t.raiz, 'planos', `${t.codigo}-1.dxf`);
+    const ruta = path.join(t.raiz, 'planos', `${t.codigo}-10.dxf`);
     await fs.mkdir(path.dirname(ruta), { recursive: true });
     await fs.writeFile(ruta, 'Plano manual ajeno');
     expect((await t.servicio.guardar(t.cuerpo())).cuerpo).toMatchObject({ needsPlanoConfirmation: true });
@@ -320,7 +343,8 @@ describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido 
     t.estado('pasada');
     expect((await t.servicio.generar(t.codigo, { savedBy: 'IVÁN', confirmOverwrite: true })).status).toBe(200);
     expect(await t.obtener()).toMatchObject({ status: 'PRODUCED', reviewedBy: 'DAVID', production: { createdBy: 'IVÁN' } });
-    expect((await t.servicio.guardar(t.cuerpo(true))).status).toBe(200);
-    expect((await t.obtener()).entregaActual).toBe(2);
+    expect((await t.servicio.guardar(t.cuerpo(true))).cuerpo).toMatchObject({ needsRegenerateConfirmation: true });
+    expect((await t.servicio.guardar(t.cuerpo(true, { decisionCorte: 'regenerar' }))).status).toBe(200);
+    expect((await t.obtener()).entregaActual).toBe(10);
   });
 });
