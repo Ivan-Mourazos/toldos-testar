@@ -1,4 +1,5 @@
-import { link, mkdir, readdir, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { link, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { renombrarAtomico } from '../../renombrarAtomico.js';
 import path from "node:path";
 import { codigoPedido, ErrorPedidoRemolques } from "./pedido.ts";
 import { TIPO_PEDIDO_REMOLQUES, type PedidoRemolques } from "./tipos.ts";
@@ -93,7 +94,7 @@ export function crearAlmacenPedidos<T extends PedidoJson>({ carpeta, tipo, nombr
       const temporal = temporalDe(fichero);
       await writeFile(temporal, contenido(pedido), { flag: "wx" });
       try {
-        await rename(temporal, fichero);
+        await renombrarAtomico(temporal, fichero);
       } catch (error) {
         await rm(temporal, { force: true });
         throw error;

@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import { renombrarAtomico } from './renombrarAtomico.js';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
@@ -548,7 +549,7 @@ export async function writeFileAtomic(targetPath, contents) {
   const tmpPath = `${targetPath}.tmp-${process.pid}-${Date.now()}`;
   await fs.writeFile(tmpPath, contents);
   try {
-    await fs.rename(tmpPath, targetPath);
+    await renombrarAtomico(tmpPath, targetPath);
   } catch (error) {
     await fs.unlink(tmpPath).catch(() => {});
     throw error;
