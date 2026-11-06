@@ -91,10 +91,20 @@ function rotulos(l: Lienzo, p: Puerta, codigo: string, x: number, abajo: number,
   const valores = [...(cantidad && !cantidadSeparada ? [`X${p.cantidad}`] : []), codigo,
     ...((opciones.reves ?? primero) ? ['REVÉS'] : []), ...((opciones.of ?? primero) && p.of.trim() ? [p.of.trim()] : [])];
   const alto = Math.max(1, libre[1] - libre[0]);
-  const fila = p.modelo === 'PUERTAPLE' && valores.length > 1;
+  const tope = p.modelo === 'PUERTAUTO' ? 25 : 20;
+  // Iván, 06/11/2026: uno encima de otro y grandes, como en las enrollables, si hay sitio; en fila solo si así salen
+  // más grandes (paños bajos).
+  const apilados = [...(cantidad ? [`X${p.cantidad}`] : []), ...valores.filter(v => v !== `X${p.cantidad}`)];
+  const hApilados = Math.min(tope, alto / (apilados.length * 1.5 + .5), ...apilados.map(v => ancho * .82 / anchoArial(v, 1)));
   const columna = ancho / valores.length;
-  const h = Math.min(p.modelo === 'PUERTAUTO' ? 25 : 20, fila ? alto * (cantidadSeparada ? .3 : .65) : alto / (valores.length * 1.5 + .5),
-    ...valores.map(v => (fila ? columna : ancho) * .82 / anchoArial(v, 1)));
+  const hFila = p.modelo === 'PUERTAPLE' && valores.length > 1
+    ? Math.min(tope, alto * (cantidadSeparada ? .3 : .65), ...valores.map(v => columna * .82 / anchoArial(v, 1))) : 0;
+  const fila = hFila > hApilados;
+  if (!fila) {
+    apilados.forEach((v, i) => texto(l, v, x, (libre[0] + libre[1]) / 2 + ((apilados.length - 1) / 2 - i) * hApilados * 1.5, hApilados));
+    return;
+  }
+  const h = hFila;
   valores.forEach((v, i) => texto(l, v, fila ? x - ancho / 2 + columna * (i + .5) : x,
     (libre[0] + libre[1]) / 2 + (fila ? cantidadSeparada ? -h * .65 : 0 : ((valores.length - 1) / 2 - i) * h * 1.5), h));
   if (cantidadSeparada) texto(l, `X${p.cantidad}`, x, (libre[0] + libre[1]) / 2 + h * .8, h * .8);
@@ -432,8 +442,14 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
   const filas: FilaCorte[] = [];
   const prioridad = (c: CortePuertas) => c.colocadas.every(t => t.pieza.clase === 'saco') ? 0
     : c.colocadas.every(t => t.pieza.clase === 'cristal') ? 1 : 2;
+  // Iván, 06/11/2026: las muestras (sacos, alternativas, cristal) una al lado de otra si caben en el largo del corte de
+  // la lona: así ocupan menos alto. Si no caben, debajo, como antes.
+  const esMuestra = (c: CortePuertas) => c.colocadas.every(t => ['saco', 'cristal'].includes(t.pieza.clase));
+  const limite = Math.max(0, ...cortes.filter(c => !esMuestra(c)).map(c => c.largo / 10));
+  let banda: { x: number; techo: number; fondo: number } | null = null;
   for (const c of [...cortes].sort((a, b) => prioridad(a) - prioridad(b))) {
-    const muestra = c.colocadas.every(t => ['saco', 'cristal'].includes(t.pieza.clase));
+    const muestra = esMuestra(c);
+    if (!muestra) banda = null;
     if (muestra) {
       const unicas = new Map(c.colocadas.map(t => [t.pieza.id, t.pieza]));
       // Por orden de puerta, A, B, C… (Iván, 28/10/2026, AR2605035: salía la D primero); las mitades del saco partido,
@@ -448,9 +464,14 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
         const g = grupos.at(-1);
         if (c.opcion === 'saco-partido' && g && puertaDe(g[0]) === puertaDe(p)) g.push(p); else grupos.push([p]);
       }
-      let xo = 0, fondo = techo;
+      const anchoGrupos = grupos.reduce((s, g) => s + Math.max(...g.map(p => p.ancho)) + ENTRE_MUESTRAS, 0) - ENTRE_MUESTRAS;
+      const anchoTitulo = textosFuera(c).reduce((s, a) => s + anchoArial(`${a.valor}    `, TITULO_MATERIAL_MM / 10), 0);
+      const ancho = Math.max(anchoGrupos, anchoTitulo);
+      if (!banda || banda.x + ancho > limite) banda = { x: 0, techo, fondo: techo };
+      const t0 = banda.techo, x0 = banda.x;
+      let xo = 0, fondo = t0;
       for (const g of grupos) {
-        const dibujo = vacio(); let arriba = techo;
+        const dibujo = vacio(); let arriba = t0;
         // Saco partido: las dos mitades se acotan como un saco, con su alto y el largo ya empatado, el del saco entero
         // de esa puerta (Iván, 24/10/2026, AR2605035); el rótulo, en una sola mitad.
         const entero = g.length > 1 ? cortes.find(x => x.opcion === 'saco-entero')?.colocadas.find(t => puertaDe(t.pieza) === puertaDe(g[0]))?.pieza.ancho : undefined;
@@ -461,31 +482,32 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas): { li
           sumarEntidades(dibujo, entidadesDePieza(c, c.colocadas.find(t => t.pieza.id === p.id)!), 0, y);
           const anterior = g[i - 1], siguiente = g[i + 1];
           // Encima de la fila, grandes, los textos del bot que no son de ninguna pieza (el título del material, REVÉS…).
-          if (!xo && !i) rotuloFila(dibujo, textosFuera(c), techo + 15);
+          if (!xo && !i) rotuloFila(dibujo, textosFuera(c), t0 + 15);
           if (entero) {
             // El alto, de las dos mitades juntas (Iván, 24/10/2026).
             if (!siguiente) {
               const largo = Math.max(...g.map(q => q.ancho));
-              cota(dibujo, 0, y, 0, techo, -35, 'XERA 20');
+              cota(dibujo, 0, y, 0, t0, -35, 'XERA 20');
               dibujo.cotas.push({ capa: 'cotas', estilo: 'XERA 20', x1: 0, y1: y, x2: largo, y2: y, d: y - 30, giro: 0, valor: entero });
             }
             arriba = y;
             continue;
           }
-          cota(dibujo, 0, y, p.ancho, y, siguiente ? techo + 35 : y - 30, 'XERA 20');
+          cota(dibujo, 0, y, p.ancho, y, siguiente ? t0 + 35 : y - 30, 'XERA 20');
           // Las dos mitades pegadas: la cota de la segunda, a su derecha, para que no se pisen (AR2605035).
           if (anterior) cota(dibujo, p.ancho, y, p.ancho, arriba, p.ancho + 40, 'XERA 20');
-          else if (!xo) cota(dibujo, 0, y, 0, techo, -35, 'XERA 20');
+          else if (!xo) cota(dibujo, 0, y, 0, t0, -35, 'XERA 20');
           arriba = y;
         }
-        sumarLienzo(l, dibujo, xo);
+        sumarLienzo(l, dibujo, x0 + xo);
         xo += Math.max(...g.map(p => p.ancho)) + ENTRE_MUESTRAS; fondo = Math.min(fondo, arriba);
       }
       if (c.opcion === 'saco-partido') fusionarCortesPuertas(l);
       // 40 cm más entre filas que antes (Iván, 26/10/2026: «no dejes tan agrupado el corte… sin pasarse»).
-      anchoMax = Math.max(anchoMax, xo - ENTRE_MUESTRAS);
-      filas.push({ y0: fondo - 50, y1: techo + 40, piezas: [[-40, xo - ENTRE_MUESTRAS + 45]] });
-      techo = fondo - 95 - SEPARACION_EXTRA_FILAS;
+      anchoMax = Math.max(anchoMax, x0 + xo - ENTRE_MUESTRAS, x0 + anchoTitulo);
+      filas.push({ y0: fondo - 50, y1: t0 + 40, piezas: [[x0 - 40, x0 + xo - ENTRE_MUESTRAS + 45]] });
+      banda.fondo = Math.min(banda.fondo, fondo); banda.x += ancho + ENTRE_MUESTRAS * 2;
+      techo = banda.fondo - 95 - SEPARACION_EXTRA_FILAS;
       continue;
     }
     const yc = techo - c.anchoRollo / 10;

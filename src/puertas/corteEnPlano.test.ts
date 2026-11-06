@@ -44,10 +44,11 @@ describe('el saco de dos puertas iguales', () => {
   it('va una vez con «X2», en el bot y en el plano, como el cristal', () => {
     const pedido = pedidoDe('AR2600001', puerta4638(), { ...puerta4638(), of: '0239999', cantidad: 2 });
     const bot = generarCortePuertas(pedido, { ofStockSacos: '0230811' });
-    const sacos = bot.cortes.flatMap(c => c.colocadas).filter(t => t.pieza.clase === 'saco' && !t.pieza.id.startsWith('stock-'));
+    const sacos = bot.cortes.filter(c => c.opcion === 'principal').flatMap(c => c.colocadas).filter(t => t.pieza.clase === 'saco' && !t.pieza.id.startsWith('stock-'));
     expect(sacos.map(t => [t.pieza.of, t.pieza.multiplicador ?? 1])).toEqual([[puerta4638().of, 1], ['0239999', 2]]);
     const corte = corteDelPlano(escribirPlanoPuertas({ pedido, cabecera, ofStockSacos: '0230811' }));
-    expect(corte.entidades.filter(e => e.texto?.valor === 'B · SACO')).toHaveLength(1);
+    // Una vez el saco entero y una en cada mitad del saco en dos, la alternativa (06/11/2026).
+    expect(corte.entidades.filter(e => e.texto?.valor === 'B · SACO')).toHaveLength(3);
     expect(corte.entidades.filter(e => e.texto?.valor === 'X2').length).toBeGreaterThanOrEqual(2);
   });
 });

@@ -34,6 +34,8 @@ function arcosEnPano(cx:number,cy:number,r:number,desde:number,w:number,h:number
 /** Une tramos colineales y elimina cortes sobre los orillos, como remolques/corte. */
 /** Alto del título de cada material en el corte (mm): el mismo en la lona, el cristal y el saco (Iván, 26/10/2026). */
 export const TITULO_MATERIAL_MM = 200;
+/** Del renglón del material al de «CORTAR POR EL REVÉS», debajo (Iván, 06/11/2026). */
+export const RENGLON_TITULO_MM = 280;
 /** Espacio de más (cm) entre las filas del corte en el plano: lona, saco y cristal menos juntos (Iván, 26/10/2026). */
 export const SEPARACION_EXTRA_FILAS = 40;
 
@@ -190,6 +192,21 @@ function rotulosPieza(
       return [Math.max(libre[0], b0 + margenY), Math.min(libre[1], b1 - margenY)];
     });
     const h = Math.min(25, ...franjas.map(([u, v]) => (v - u) * .65), ...valores.map(v => w * .82 / anchoArial(v, 1)));
+    // Iván, 06/11/2026: en los paños rectos, uno encima de otro y grandes, como en las enrollables, si así salen
+    // más grandes que en fila.
+    const apilados = [clase, of, ...reves ? ['REVÉS'] : []];
+    const recto = !pieza.contorno || pieza.contorno.every(([u, v]) => (Math.abs(u) < .01 || Math.abs(u - pieza.ancho) < .01) && (Math.abs(v) < .01 || Math.abs(v - pieza.alto) < .01));
+    const hApilados = !recto ? 0 : Math.min(25, (libre[1] - libre[0]) * .82 / (apilados.length * 1.5 - .5),
+      ...apilados.map(v => (fin - inicio) * .82 / anchoArial(v, 1)));
+    if (hApilados > h) {
+      const cx = (inicio + fin) / 2, cy = (libre[0] + libre[1]) / 2;
+      apilados.forEach((valor, i) => {
+        const b = cy + ((apilados.length - 1) / 2 - i) * hApilados * 1.5;
+        entidades.textos.push({ capa: 'texto', x: x + mm(girada ? pieza.alto - b : cx), y: y + mm(girada ? cx : b),
+          h: mm(hApilados), valor, giro: girada ? 90 : 0, centrado: true });
+      });
+      return;
+    }
     valores.forEach((valor, i) => {
       const a = inicio + w * (i + .5), b = (franjas[i][0] + franjas[i][1]) / 2;
       entidades.textos.push({ capa: 'texto', x: x + mm(girada ? pieza.alto - b : a), y: y + mm(girada ? a : b),
@@ -544,19 +561,22 @@ function colocar(
         : opcion === 'saco-entero'
           ? 'SACO ENTERO · ALTERNATIVA'
           : 'SACO EN DOS';
-    const enrollable = grupo.every(p => esEnrollable(p.id));
-    const rotuloMaterial = grupo.every(p=>p.id.includes(':santapau-'))
+    // Sacos y cristales, en todas las puertas, sin «REVÉS» y con el borde del orillo cortado (Iván, 26/10/2026). La lona de
+    // los paños se corta por el revés: va en el mismo renglón que el material y del mismo tamaño, porque es muy
+    // importante y antes se veía poco (Iván, 06/11/2026). El corte principal no lleva «CORTE».
+    const santaPau = grupo.every(p=>p.id.includes(':santapau-'));
+    const porElReves = Boolean(primerPano) && !esAraujo(primerPano!.t.pieza.id) && !santaPau;
+    const rotuloMaterial = santaPau
       ? grupo[0].clase==='saco'&&grupo[0].sacoDiagonalesAmarillas?'SACO 900 GR AMARILLO/NEGRO':grupo[0].material
-      : !enrollable && opcion === 'principal' ? grupo[0].material : `${grupo[0].material} · ${titulo}`;
-    entidades.textos.push(
-      // El título de cada material, grande y del mismo tamaño en la lona, el cristal y el saco (Iván, 26/10/2026).
-      { capa: 'texto', x: 0, y: rollo + 250, h: TITULO_MATERIAL_MM, valor: rotuloMaterial },
-      // Las puertas se cortan siempre por el revés: se avisa al principio, como el DERECHO de remolques (Iván, 22/10/2026).
-    );
-    // Sacos y cristales, en todas las puertas, sin «REVÉS» y con el borde del orillo cortado (Iván, 26/10/2026: lo
-    // corrigió a mano en AR2605035 y lo pidió también en las enrollables). En la lona de los paños, el REVÉS sigue y el
-    // orillo no se corta.
-    if (enrollable && primerPano && !grupo.every(p=>p.id.includes(':santapau-'))) entidades.textos.push({ capa: 'texto', x: 0, y: rollo + 110, h: 80, valor: 'REVÉS' });
+      : [grupo[0].material, ...(opcion === 'principal' ? [] : [titulo])].join(' · ');
+    // El título de cada material, grande y del mismo tamaño en la lona, el cristal y el saco (Iván, 26/10/2026). Por
+    // dónde se corta, en su renglón debajo del material y del mismo tamaño (Iván, 06/11/2026).
+    // Pegado a lo que se corta y no al ancho entero del rollo: si las piezas no lo llenan, el título quedaba lejos
+    // (Iván, 06/11/2026). Cuenta también los sacos de stock que rellenan el rollo.
+    const ocupado = Math.min(rollo, Math.max(0, ...colocadas.map(t => t.y + mm(t.girada ? t.pieza.ancho : t.pieza.alto))));
+    const base = esAraujo(grupo[0].id) ? rollo + 250 : (ocupado || rollo) + 120;
+    entidades.textos.push({ capa: 'texto', x: 0, y: base + (porElReves ? RENGLON_TITULO_MM : 0), h: TITULO_MATERIAL_MM, valor: rotuloMaterial });
+    if (porElReves) entidades.textos.push({ capa: 'texto', x: 0, y: base, h: TITULO_MATERIAL_MM, valor: 'CORTAR POR EL REVÉS' });
     fusionarCortesPuertas(entidades, primerPano ? rollo : undefined);
     return corteSanta&&corteSanta.largo<=largo?corteSanta:{ material: grupo[0].material, anchoRollo: rollo, largo, opcion, entidades, colocadas };
   });
@@ -582,6 +602,8 @@ export function generarCortePuertas(
     const panos = r.piezas.filter(p => p.clase === 'pano' || pedido.elementos[idxPuerta].input.araujo && p.clase === 'saco');
     // El cálculo recorre apilables y autorreparables desde abajo; en el plano de taller A1 va arriba.
     if (pedido.elementos[idxPuerta].input.modelo !== 'PUERTAENR' && !pedido.elementos[idxPuerta].input.araujo) panos.reverse();
+    // Enrollables: también A1 arriba cuando un paño lleva empates, en el mismo orden que el alzado (Iván, 06/11/2026, AR2605429).
+    else if (!pedido.elementos[idxPuerta].input.araujo && panos.every(p => p.origenAlzado)) panos.sort((a, b) => b.origenAlzado![1] - a.origenAlzado![1]);
     panos.forEach((p, i) => codigosPano.set(p.id, p.impresionAraujo
       ? `${letra}${p.impresionAraujo.tramo+1}${p.impresionAraujo.partes>1?'.'+p.impresionAraujo.parte:''}`
       : `${letra}${pedido.elementos[idxPuerta].input.araujo?.corteTrasImprimir&&p.clase==='saco'?Number(/(\d+)$/.exec(p.nombre)?.[1]??i+1):i+1}`));

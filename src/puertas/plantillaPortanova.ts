@@ -90,6 +90,8 @@ export function presentacionPortanova(pedido: PedidoPuertas,
       ...Object.fromEntries((tramosCorte ?? []).map((t, i) => [i ? 6 + i : 4, {
         ...ventana(t.zona, [(t.papel.x0 + t.papel.x1) / 2, (t.papel.y0 + t.papel.y1) / 2] as Punto,
           t.papel.x1 - t.papel.x0, t.papel.y1 - t.papel.y0), altoVista: t.zona.y1 - t.zona.y0 }])),
-    }, textos: [] },
+    }, textos: [],
+    // La raya entre el dibujo (ventana 2) y el corte, como en las demás hojas, sin llegar al marco arriba ni abajo (Iván, 06/11/2026).
+    lineas: [[[160.5, 16], [160.5, 194]]] },
   };
 }

@@ -1,5 +1,11 @@
 import type { Puerta } from './tipos.ts';
 
+export const NOTA_CACHOS_CRISTAL = 'LOS CACHOS DE LOS LATERALES DEL CRISTAL VAN 1 CM MÁS GRANDE PARA DESPUÉS ESCUADRARLO';
+/** La nota del plano de una enrollable: la que escriba el técnico; si no ha escrito nada, la de los cachos, de serie
+ * con ventanal (Iván, 06/11/2026). Borrarla en el formulario la quita del plano. */
+export const notaPlanoEnrollable = (p: Puerta): string =>
+  p.notaPlano !== undefined ? p.notaPlano.trim() : p.enrollable.sinVentanal ? '' : NOTA_CACHOS_CRISTAL;
+
 /** Cotas desde cabecera: donde no hay E.T. se mide al borde del paño, donde la hay a su eje.
  * El cristal y los cachos solapan 2 cm con ese paño; la E.T. conserva 7,5 cm de dibujo y 8 de corte.
  */

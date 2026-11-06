@@ -10,13 +10,14 @@ import { araujo5365, araujo5733 } from './__fixtures__/araujo.ts';
 
 const hash = (x: unknown) => createHash('sha256').update(typeof x === 'string' ? x : JSON.stringify(x)).digest('hex');
 // Huellas de main 3f3428e: cálculo, alzado de pantalla, corte completo y DXF del plano.
+// 06/11/2026: el corte de las puertas sin «· CORTE» y con «CORTAR POR EL REVÉS» (Iván, AR2605429).
 // ARAUJO: actualizadas con la colocación legible del 04/11; el cálculo y las rayas del bot se conservan.
 const casos = [
-  ['5036', () => puertaPlanoReal('AR2605036'), '25a0a24ab3efa1a66c9f3d331a1fe07404ee2a088b9f044b90ca4bdd9bbe3d42'],
-  ['apilable300', apilable, 'c847c5c7c96f2b9835a29a8ba556b80445a3e90b885cd1c57c34e19744d24b92'],
-  ['apilable600', () => ({ ...apilable(), frente: 600 }), '9279ae19053a5106dcecc4b92936dab9289efa0927c5c12caf888e3440d4064d'],
-  ['enrollable', puerta4638, 'b3f0040ff87496f9683a68a498164bbc44a073d153d81b6233430c785cb4d623'],
-  ['autorreparable', autorreparable, '779d5a40a1b0c5003f86cc7513a939f4c823a694f482e2110ca0df4701ea8248'],
+  ['5036', () => puertaPlanoReal('AR2605036'), '480e4a512eb7fc020ed0c1ed5b77587e4df4bebaa4e97fbec86f3a1cc489ce03'],
+  ['apilable300', apilable, '9e8f2053cf2de2958fe84c6a23b965a7cca2d9d09dd82a3aee4ebdd09271bc68'],
+  ['apilable600', () => ({ ...apilable(), frente: 600 }), '0f196f78b1125fd4e028d95cdda1676c745990b8afe0a3d48e41c963b0f448d2'],
+  ['enrollable', puerta4638, '63127fd170070e2d15f8991fde8d92d5a848eaf93c6602fc9569161424c709a5'],
+  ['autorreparable', autorreparable, 'e5c452ab24aad6cc590e48d1d4bf1275468b52af3d24087336bdaf6548a43477'],
   ['araujo5365', araujo5365, '03b9bc58af363e9050beddf120226ff3cde437f70115f86a2c3159c78c75e4a1'],
   ['araujo5733', araujo5733, 'db9bb8c779fc383d4978db2c72ab2999061c526604c4790e075c13e6c7744a34'],
 ] as const;

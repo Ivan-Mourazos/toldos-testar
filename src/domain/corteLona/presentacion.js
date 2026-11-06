@@ -280,7 +280,9 @@ export function escribirDxfPlano(plano, cabecera) {
   // En el papel: título del corte y una raya fina entre el corte y el toldo.
   const papel = (tipo, color, sub, cuerpo, capa = 'texto') => `  0\n${tipo}\n  5\n${nuevo()}\n330\n${PAPEL}\n100\nAcDbEntity\n 67\n     1\n  8\n${capa}\n 62\n${String(color).padStart(6)}\n100\n${sub}\n${cuerpo}`;
   const textosPapel = (caj, { reparto: r, rc }) => plano.presentacion ? caj + plano.presentacion.textos.map(t =>
-    papel('MTEXT', 256, 'AcDbMText', ` 10\n${n(t.x)}\n 20\n${n(t.y)}\n 30\n0.0\n 40\n${n(t.h)}\n 41\n${n(t.ancho)}\n 71\n     1\n 72\n     1\n  1\n${t.valor.replaceAll('\n', '\\P')}\n  7\narial\n 73\n     1\n 44\n1.0\n`, t.capa ?? 'texto')).join('') : caj
+    papel('MTEXT', 256, 'AcDbMText', ` 10\n${n(t.x)}\n 20\n${n(t.y)}\n 30\n0.0\n 40\n${n(t.h)}\n 41\n${n(t.ancho)}\n 71\n     1\n 72\n     1\n  1\n${t.valor.replaceAll('\n', '\\P')}\n  7\narial\n 73\n     1\n 44\n1.0\n`, t.capa ?? 'texto')).join('')
+    // Las hojas con plantilla propia también llevan su raya entre el dibujo y el corte (Iván, 06/11/2026).
+    + (plano.presentacion.lineas ?? []).map(puntos => papel('LWPOLYLINE', 8, 'AcDbPolyline', ` 90\n     ${puntos.length}\n 70\n     0\n 43\n0.0\n${puntos.map(([x, y]) => ` 10\n${n(x)}\n 20\n${n(y)}\n`).join('')}`)).join('') : caj
     + papel('LWPOLYLINE', 8, 'AcDbPolyline', ` 90\n     2\n 70\n     0\n 43\n0.0\n${r.raya.map(([x, y]) => ` 10\n${n(x)}\n 20\n${n(y)}\n`).join('')}`)
     + papel('TEXT', 7, 'AcDbText', ` 10\n${n(rc.x0)}\n 20\n${n(rc.y1 + 2)}\n 30\n0.0\n 40\n${n(Math.min(2.2, (rc.x1 - rc.x0) / anchoArial(cabecera.tituloCorte || 'CORTE', 1)))}\n  1\n${cabecera.tituloCorte || 'CORTE'}\n  7\narial\n100\nAcDbText\n`);
   const insercion = textosPapel(cajetin, repartos[0]);

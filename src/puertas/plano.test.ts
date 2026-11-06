@@ -119,7 +119,9 @@ describe('orden de las muestras del corte', () => {
     }
     const filas = [...porFila.values()];
     expect(filas.length).toBeGreaterThan(0);
-    for (const f of filas) expect(f.sort((a: typeof f[number], b: typeof f[number]) => numero(a, 10) - numero(b, 10)).map((r: typeof f[number]) => (valor(r, 1) ?? '')[0])).toEqual(['A', 'B', 'C', 'D'].slice(0, f.length));
+    for (const f of filas) expect(f.sort((a: typeof f[number], b: typeof f[number]) => numero(a, 10) - numero(b, 10)).map((r: typeof f[number]) => (valor(r, 1) ?? '')[0])
+      // Las dos mitades del saco en dos van juntas (A, A, B, B…): cuenta el orden de las puertas (06/11/2026).
+      .filter((v: string, i: number, t: string[]) => v !== t[i - 1])).toEqual(['A', 'B', 'C', 'D'].slice(0, new Set(f.map((r: typeof f[number]) => (valor(r, 1) ?? '')[0])).size));
   });
 });
 

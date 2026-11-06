@@ -4,7 +4,7 @@ import { calcularPuerta } from './calcular.ts';
 import { esClientePortanova } from './clientePortanova.ts';
 import { rotuloSaco, sacoPuerta, sacoUtil } from './saco.ts';
 import { anclarCotas } from './cotasPuertas.ts';
-import { ventanalesEnrollable } from './ventanalesEnrollable.ts';
+import { notaPlanoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
 import { presentacionPortanova, VENTANA_CORTE_PORTANOVA } from './plantillaPortanova.ts';
 import { SEPARACION_EXTRA_FILAS, TITULO_MATERIAL_MM } from './corte.ts';
@@ -57,10 +57,13 @@ function identificar(l: Lienzo, p: Puerta, codigo: string, x: number, y: number,
   { giro = 0, cantidad = false, reves = false, of = false }: { giro?: number; cantidad?: boolean; reves?: boolean; of?: boolean } = {}) {
   // Iván, 22/10/2026: la cantidad, REVÉS y la OF van una vez, en el primer paño; los demás, solo su código.
   // «Si coge, se pone la OF también». La letra se limita al hueco libre, sin invadir las E.T.
-  const h = Math.min(20, ancho / 9, alto / 4);
+  // Iván, 06/11/2026: los A1, A2… siempre lo más grandes que quepan en su hueco (antes, un cuarto del hueco).
+  const base = [...(cantidad && p.cantidad > 1 ? [`X${p.cantidad}`] : []), codigo, ...(reves ? ['REVÉS'] : [])];
+  const altoDe = (n: number) => 1.5 * (n - 1) + 1.2;
+  const h = Math.min(20, ancho / 9, alto / altoDe(base.length));
   if (h < 3) return;
-  const conOf = of && p.of.trim() && alto >= h * 5.5 && anchoArial(p.of.trim(), h) <= ancho * .88;
-  const rotulos = [...(cantidad && p.cantidad > 1 ? [`X${p.cantidad}`] : []), codigo, ...(reves ? ['REVÉS'] : []), ...(conOf ? [p.of.trim()] : [])];
+  const conOf = of && p.of.trim() && alto >= h * altoDe(base.length + 1) && anchoArial(p.of.trim(), h) <= ancho * .88;
+  const rotulos = [...base, ...(conOf ? [p.of.trim()] : [])];
   rotulos.forEach((v, i) => {
     const d = ((rotulos.length - 1) / 2 - i) * h * 1.5;
     texto(l, v, x + (giro ? -d : 0), y + (giro ? 0 : d), h, { centrado: true, giro });
@@ -85,14 +88,18 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSac
   // el saco sube 2 más para soldar (Iván, 24/10/2026, AR2605220).
   const paños: Array<[number, number]> = ventanales.length
     ? [[-T - (p.enrollable.sinEtArriba ? 0 : 3.75), 3.5], [-H + bajo, -ejes.at(-1)! + (p.enrollable.sinEtAbajo ? 0 : 3.75)]] : [[-H + bajo, 3.5]];
-  paños.forEach(([abajo, arriba], i) => {
-    contorno(l, 'DISCO1', [[0, abajo], [F, abajo], [F, arriba], [0, arriba]]);
+  for (const [abajo, arriba] of paños) contorno(l, 'DISCO1', [[0, abajo], [F, abajo], [F, arriba], [0, arriba]]);
+  // Cada paño que se corta lleva su código, de arriba abajo como en el corte: con empates, A1, A2, A3… (Iván, 06/11/2026).
+  const piezasPano = r.piezas.filter(x => x.clase === 'pano' && x.origenAlzado).sort((a, b) => b.origenAlzado![1] - a.origenAlzado![1]);
+  const zonas: Array<[number, number]> = piezasPano.length ? piezasPano.map(x => [-H + x.origenAlzado![1], -H + x.origenAlzado![1] + x.alto]) : paños;
+  zonas.forEach(([abajo, arriba], i) => {
     const [a, b] = huecoRotulo(abajo, arriba, bandas.map(y => -y), 18);
     identificar(l, p, `${letra}${i + 1}`, F / 2, (a + b) / 2, F, b - a, { cantidad: i === 0, reves: i === 0, of: i === 0 });
   });
   linea(l, 'referencias', 0, 0, F, 0);
   linea(l, 'ROTULADOR', 0, -3.5, F, -3.5);
-  texto(l, 'VARILLA NEGRA (4,5)', F / 2 - 51.2490, 13.5486, 7, { ancla: 1 });
+  // Iván, 06/11/2026: los textos de una línea, centrados en la puerta, como el de soldar el saco.
+  texto(l, 'VARILLA NEGRA (4,5)', F / 2, 13.5486 - 3.5, 7, { centrado: true });
   for (const [i, v] of ventanales.entries()) {
     const t = ejes[i], m = v.margen, alto = v.altoCorte;
     // El cristal y los cachos son su corte completo: solapan 2 arriba y 2 abajo.
@@ -129,16 +136,19 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSac
     flecha(l, F / 2, yMarca, superior ? 0 : 180, segundo ? -1 : 1);
     if (!ejes.some(e => Math.abs(e - b) < .01)) linea(l, 'borrar', 0, -b + 3.75, F, -b + 3.75);
     cota(l, 0, -b - 3.75, 0, -b + 3.75, -9.15 + i, 'XERAL 5');
-    texto(l, '3 CM (HUECOS)', F / 2 - (superior ? 34.6534 : segundo ? 34.2446 : 33.6842), -b + (superior ? 14.7311 : segundo ? -7.59 : 14.187), 7, { ancla: 1 });
+    texto(l, '3 CM (HUECOS)', F / 2, -b + (superior ? 14.7311 : segundo ? -7.59 : 14.187) - 3.5, 7, { centrado: true });
   });
   linea(l, 'ROTULADOR', 0, -H + bajo + 2, F, -H + bajo + 2);
   linea(l, 'referencias', 0, -H, F, -H);
   linea(l, 'referencias', 0, -H, 0, -H + bajo + 2);
   linea(l, 'referencias', F, -H, F, -H + bajo);
-  texto(l, 'SOLDAR SACO NEGRO 2 CM MÁXIMO', 14.3553, -H + 1.6012, Math.min(7, F / 28));
-  texto(l, 'AL CORTE', -9.54, -T * .626, 7, { giro: 90, ancla: 1 });
-  texto(l, 'AL CORTE', F + 1.96, -T * .6386, 7, { giro: 90, ancla: 1 });
-  texto(l, 'DE ESTE LADO PISAR LAS E.T. 1 CM', F + 51.63, -H + 51.78, 10, { giro: 90, ancla: 1 });
+  texto(l, 'SOLDAR SACO NEGRO 2 CM MÁXIMO', F / 2, -H + 1.6012 + Math.min(7, F / 28) / 2, Math.min(7, F / 28), { centrado: true });
+  // Iván, 06/11/2026 (AR2605429): «AL CORTE» centrado en el paño de arriba (hasta el ventanal o la primera E.T.), como en
+  // las apilables; sin ventanal salía pegado arriba. «PISAR LAS E.T.», centrado en el alto de la puerta.
+  const techo = Math.min(H, ...(T > 0 ? [T] : []), ...p.entradas.map(e => H - e.altura).filter(y => y > 0 && y < H));
+  texto(l, 'AL CORTE', -6.04, -techo / 2, 7, { giro: 90, centrado: true });
+  texto(l, 'AL CORTE', F + 5.46, -techo / 2, 7, { giro: 90, centrado: true });
+  texto(l, 'DE ESTE LADO PISAR LAS E.T. 1 CM', F + 58, -H / 2, 10, { giro: 90, centrado: true });
   linea(l, 'texto', F + 12.17, -H - 5.32, F - .79, -H + 7.90);
   // La nota de la raya, que faltaba (Iván, 24/10/2026, AR2605220), como en las apilables.
   texto(l, 'CERRAR E.T', F + 38, -H - 11, 7, { centrado: true });
@@ -178,32 +188,25 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSac
     texto(l, valor, xVelcro, y, hVelcro, { ancla: 4 });
     linea(l, 'texto', xVelcro - 1.5, y, velcro[0], velcro[1]);
   }
-  const nota = 'LOS CACHOS DE LOS LATERALES DEL CRISTAL VAN 1 CM MÁS GRANDE PARA DESPUÉS ESCUADRARLO';
+  const nota = notaPlanoEnrollable(p);
   // Iván confirmó que el recorte de esta nota en su ventana era un descuido: debe leerse entera.
-  const palabras = nota.split(' '), lineas: string[] = []; let actual = '';
+  const palabras = nota.split(/\s+/).filter(Boolean), lineas: string[] = []; let actual = '';
   const hNota = Math.min(7.5, (F + 20) / 28);
   for (const palabra of palabras) {
     if (anchoArial(`${actual} ${palabra}`, hNota) > F + 100 && actual) { lineas.push(actual); actual = palabra; }
     else actual += (actual ? ' ' : '') + palabra;
   }
   if (actual) lineas.push(actual);
-  // Una puerta ciega no lleva cristal: sin la nota de sus cachos.
-  if (!p.enrollable.sinVentanal) lineas.forEach((v, i) => texto(l, v, F / 2, ys - hs - 48 - i * hNota * 1.4, hNota, { centrado: true }));
+  lineas.forEach((v, i) => texto(l, v, F / 2, ys - hs - 48 - i * hNota * 1.4, hNota, { centrado: true }));
 
   // Los empates y bolsillos configurados conservan sus marcas; nunca crean una pieza nueva.
-  for (const u of r.uniones) {
+  // Un empate en una E.T. se dibuja como la E.T., igual que en las apilables (Iván, 06/11/2026, AR2605429).
+  for (const u of r.uniones.filter(u => !u.tubo)) {
     linea(l, 'referencias', 0, -H + u.altura, F, -H + u.altura);
-    if (u.tubo) {
-      for (const s of [-1, 1]) {
-        const y = -H + u.altura + s * u.solape / 2;
-        linea(l, 'ROTULADOR', 0, y, F, y); flecha(l, F / 2, y, s < 0 ? 180 : 0);
-      }
-    } else {
-      const y = -H + u.altura + u.solape / 2;
-      linea(l, 'ROTULADOR', 0, y, F, y);
-      for (const [x1, y1, x2, y2] of flechaEmpate(F / 2, y, -1)) linea(l, 'ROTULADOR', x1, y1, x2, y2);
-    }
-    if (!u.tubo) texto(l, `EMPATE ${u.solape.toLocaleString('es-ES')} CM`, F / 2, -H + u.altura + 8, 5, { centrado: true });
+    const y = -H + u.altura + u.solape / 2;
+    linea(l, 'ROTULADOR', 0, y, F, y);
+    for (const [x1, y1, x2, y2] of flechaEmpate(F / 2, y, -1)) linea(l, 'ROTULADOR', x1, y1, x2, y2);
+    texto(l, `EMPATE ${u.solape.toLocaleString('es-ES')} CM`, F / 2, -H + u.altura + 8, 5, { centrado: true });
   }
   if (r.bolsillo) {
     const b = r.bolsillo;
@@ -259,22 +262,39 @@ export function dibujarCorte(cortes: CortePuertas[], _pedido: PedidoPuertas): { 
   // sacos y los cristales en la misma fila, hacia la derecha (Iván, 23/10/2026, AR2605035).
   const filas: Array<Array<{ c: CortePuertas; t: CortePuertas['colocadas'][number] }>> = [];
   // Por orden de puerta, A, B, C… (Iván, 28/10/2026, AR2605035: salía la D primero).
+  const opciones: Array<CortePuertas['opcion']> = ['principal', 'saco-entero', 'saco-partido'];
   const puerta = (m: { t: CortePuertas['colocadas'][number] }) => _pedido.elementos.findIndex(e => m.t.pieza.id.startsWith(`${e.id}:`));
-  for (const m of [...muestras.values()].sort((a, b) => (a.t.pieza.clase === 'saco' ? -1 : 1) - (b.t.pieza.clase === 'saco' ? -1 : 1) || puerta(a) - puerta(b))) {
+  for (const m of [...muestras.values()].sort((a, b) => (a.t.pieza.clase === 'saco' ? -1 : 1) - (b.t.pieza.clase === 'saco' ? -1 : 1) || opciones.indexOf(a.c.opcion) - opciones.indexOf(b.c.opcion) || puerta(a) - puerta(b))) {
     const fila = filas.at(-1);
-    if (fila?.[0].t.pieza.clase === m.t.pieza.clase) fila.push(m); else filas.push([m]);
+    // Cada alternativa del saco, en su fila con su título (Iván, 06/11/2026: se pisaban los títulos).
+    if (fila?.[0].t.pieza.clase === m.t.pieza.clase && fila[0].c.opcion === m.c.opcion) fila.push(m); else filas.push([m]);
   }
+  // Iván, 06/11/2026: las filas de muestras, una al lado de otra si caben en el largo del corte de la lona.
+  const limite = Math.max(0, ...cortes.filter(c => c.colocadas.some(t => !['saco', 'cristal'].includes(t.pieza.clase))).map(c => c.largo / 10));
+  let banda: { x: number; techo: number; fondo: number } | null = null;
   for (const fila of filas) {
-    let fondo = techo, xo = 0;
-    for (const { c, t } of fila) {
-      const p = t.pieza, y = techo - p.alto, xMuestra = -.8974 + xo;
+    const altoTitulo = TITULO_MATERIAL_MM / 10;
+    // Saco en dos: las dos mitades de cada puerta juntas, una encima de otra, como en las apilables (Iván, 06/11/2026).
+    const enDos = fila[0].c.opcion === 'saco-partido';
+    const juntaConAnterior = (i: number) => enDos && i > 0 && puerta(fila[i]) === puerta(fila[i - 1]);
+    const columnas: Array<typeof fila> = [];
+    fila.forEach((m, i) => { if (juntaConAnterior(i)) columnas.at(-1)!.push(m); else columnas.push([m]); });
+    const anchoFila = Math.max(columnas.reduce((s, g) => s + Math.max(...g.map(m => m.t.pieza.ancho)) + 80, 0) - 80,
+      [...new Set(fila.map(m => m.c))].flatMap(textosFuera).reduce((s, a) => s + anchoArial(`${a.valor}    `, altoTitulo), 0));
+    if (!banda || banda.x + anchoFila > limite) banda = { x: 0, techo, fondo: techo };
+    const t0 = banda.techo, x0 = banda.x;
+    let fondo = t0, xo = 0;
+    for (const [k, g] of columnas.entries()) {
+    let arriba = t0;
+    for (const [j, { c, t }] of g.entries()) {
+      const p = t.pieza, y = arriba - p.alto, xMuestra = -.8974 + x0 + xo;
       // El cristal, en azul, como en el plano a mano de AR2605134 (el color no va al bot: solo cuenta la capa).
       const pieza = entidadesDePieza(c, t);
       if (p.clase === 'cristal') pieza.lineas = pieza.lineas.map(a => (a.capa === 'DISCO1' ? { ...a, color: 5 } : a));
       sumar(l, pieza, xMuestra, y);
       // Encima de la fila, grandes (Iván, 24/10/2026: hasta 20 cm), los textos del bot que no son de ninguna pieza: el título
       // «MATERIAL · CORTE» y REVÉS, uno detrás de otro. Son los mismos que van al bot.
-      if (!xo) {
+      if (!k && !j) {
         const fuera = [...new Set(fila.map(m => m.c))].flatMap(textosFuera);
         // Del mismo tamaño que el título de la lona, aunque la fila sea corta (Iván, 26/10/2026).
         const alto = TITULO_MATERIAL_MM / 10;
@@ -283,20 +303,25 @@ export function dibujarCorte(cortes: CortePuertas[], _pedido: PedidoPuertas): { 
         if(santaPau&&fuera.length){
           const anchoFila=fila.reduce((s,m)=>s+m.t.pieza.ancho,0)+80*(fila.length-1);
           const valor=fuera.map(a=>a.valor).join(' · ');
-          l.textos.push({capa:'texto',valor,x:xMuestra+anchoFila/2,y:techo+25,h:Math.min(alto,(anchoFila-12)/anchoArial(valor,1)),ancla:5});
+          l.textos.push({capa:'texto',valor,x:xMuestra+anchoFila/2,y:t0+25,h:Math.min(alto,(anchoFila-12)/anchoArial(valor,1)),ancla:5});
         }
         for (const a of santaPau?[]:fuera) {
-          l.textos.push({ capa: a.capa, valor: a.valor, x, y: techo + (p.clase === 'saco' ? 11.6223 : 5.5194), h: alto, ...(a.literal ? { literal: true } : {}) });
+          l.textos.push({ capa: a.capa, valor: a.valor, x, y: t0 + (p.clase === 'saco' ? 11.6223 : 5.5194), h: alto, ...(a.literal ? { literal: true } : {}) });
           x += anchoArial(`${a.valor}    `, alto);
         }
       }
-      cota(l, xMuestra, y, xMuestra + p.ancho, y, y - (p.clase === 'saco' ? 24.8365 : 22.7381), CORTE_COTAS);
-      if (!xo) cota(l, xMuestra, y, xMuestra, techo, -35.1317, CORTE_COTAS);
-      fondo = Math.min(fondo, y); xo += p.ancho + 80;
-      anchoMax = Math.max(anchoMax, xo - 80);
+      // Las mitades juntas se acotan como un saco: el largo debajo de la última y el alto de las dos.
+      if (j === g.length - 1) cota(l, xMuestra, y, xMuestra + Math.max(...g.map(m => m.t.pieza.ancho)), y, y - (p.clase === 'saco' ? 24.8365 : 22.7381), CORTE_COTAS);
+      if (!xo && j === g.length - 1) cota(l, xMuestra, y, xMuestra, t0, -35.1317, CORTE_COTAS);
+      fondo = Math.min(fondo, y); arriba = y;
+    }
+    xo += Math.max(...g.map(m => m.t.pieza.ancho)) + 80;
+    anchoMax = Math.max(anchoMax, x0 + xo - 80);
     }
     // Separaciones de presentación medidas en AR2605134; no afectan al corte ni a sus piezas.
-    techo = fondo - (fila[0].t.pieza.clase === 'saco' ? 82.0735 : 92.3202) - SEPARACION_EXTRA_FILAS;
+    banda.fondo = Math.min(banda.fondo, fondo); banda.x += anchoFila + 160;
+    anchoMax = Math.max(anchoMax, x0 + anchoFila);
+    techo = banda.fondo - (fila[0].t.pieza.clase === 'saco' ? 82.0735 : 92.3202) - SEPARACION_EXTRA_FILAS;
   }
   for (const c of cortes.filter(c => c.colocadas.some(t => !['saco', 'cristal'].includes(t.pieza.clase)))) {
     const alto = c.anchoRollo / 10, yc = techo - alto;

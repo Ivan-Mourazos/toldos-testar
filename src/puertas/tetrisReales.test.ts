@@ -10,10 +10,15 @@ describe('Tetris contra todos los pedidos configurables de las fixtures', () => 
     const r = generarCortePuertas(p, { ofStockSacos: '0230811' });
     const previo = antes.pedidos.find(f => f.pedido === p.orderCode)!;
     const rebasado = revision.pedidos.find(f => f.pedido === p.orderCode)!;
-    expect(r.cortes).toHaveLength(previo.largos.length);
+    // Desde el 06/11/2026 las enrollables añaden al final la alternativa del saco en dos (Iván, AR2605429).
+    const nuevos = r.cortes.slice(previo.largos.length);
+    expect(nuevos.every(c => c.opcion === 'saco-partido')).toBe(true);
+    expect(r.cortes.length - nuevos.length).toBe(previo.largos.length);
     r.cortes.forEach((c, i) => {
-      expect(c.largo / 10).toBeLessThanOrEqual(previo.largos[i]);
-      expect(c.largo / 10).toBeLessThanOrEqual(rebasado.largos[i]);
+      if (i < previo.largos.length) {
+        expect(c.largo / 10).toBeLessThanOrEqual(previo.largos[i]);
+        expect(c.largo / 10).toBeLessThanOrEqual(rebasado.largos[i]);
+      }
       const rects = c.colocadas.map(s => ({ x: s.x, y: s.y, w: 10 * (s.girada ? s.pieza.alto : s.pieza.ancho), h: 10 * (s.girada ? s.pieza.ancho : s.pieza.alto) }));
       rects.forEach((a, j) => {
         expect(a.x).toBeGreaterThanOrEqual(0);

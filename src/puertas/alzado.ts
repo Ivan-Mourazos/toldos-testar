@@ -5,7 +5,7 @@ import { alzadoSantaPau } from './alzadoSantaPau.ts';
 import { colocarTextosPuerta } from './textosPlano.ts';
 import { desnivelSuelo, pestanaDerecha, rotuloSaco, sacoPuerta } from './saco.ts';
 import { medidaSystemDock, REGLAS_SYSTEM_DOCK } from './systemDock.ts';
-import { ventanalesEnrollable } from './ventanalesEnrollable.ts';
+import { NOTA_CACHOS_CRISTAL, notaPlanoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
 import type { Hueco, Puerta, Punto, ResultadoPuerta } from './tipos.ts';
 import type { LienzoEnrollable } from './planoEnrollable.ts';
@@ -413,9 +413,10 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
     texto: { x: -6, y: y1 + 13, ancla: 'end' } });
   nota(enr ? 'COSER VELCRO DERECHO DE 3 SUAVE' : ple ? 'COSER VELCRO DERECHO DE 5 SUAVE' : 'VELCRO SUAVE REVÉS DE 3',
     wSaco / 2, y1 + 25, altoVelcro, [wSaco * 0.2, y1 + 20, 4.5, y1]);
-  if (enr && !p.enrollable?.sinVentanal) {
+  const notaEnr = enr ? notaPlanoEnrollable(p) : '';
+  if (notaEnr) {
     formas.push({ tipo: 'texto', x: F / 2, y: y1 + 46, tamano: 7.5, ancla: 'middle',
-      lineas: ['LOS CACHOS DE LOS LATERALES DEL CRISTAL', 'VAN 1CM MÁS GRANDE PARA DESPUÉS ESCUADRARLO'], taller: { guia: null } });
+      lineas: notaEnr === NOTA_CACHOS_CRISTAL ? ['LOS CACHOS DE LOS LATERALES DEL CRISTAL', 'VAN 1CM MÁS GRANDE PARA DESPUÉS ESCUADRARLO'] : [notaEnr], taller: { guia: null } });
   }
   if (auto) nota('CREMALLERA SOLDADA HASTA MITAD DE SACO', F / 2, y1 + 47, Math.min(10, F / 32));
 

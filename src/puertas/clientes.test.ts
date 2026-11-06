@@ -11,10 +11,11 @@ import { puertasDesdeRps } from './rps.ts';
 
 const hash=(s:string)=>createHash('sha256').update(s).digest('hex');
 // Huellas obtenidas en b6303cf, antes de introducir las fichas. No se regeneran durante la prueba.
+// 06/11/2026: el bot y el plano cambian por el título del corte (sin «· CORTE», con «CORTAR POR EL REVÉS»); documento y cálculo, iguales. En las enrollables, textos de una línea centrados, A1/A2 grandes y AL CORTE centrado.
 const huellas:Record<string,string[]>={
- AR2605246:['f0f0a54c11d666661efcef82abf25657ae6c179f72b53d9a1d8a5a77d4f33912','b950cf07ae42f6eb13746e8a2ad6ed793c5b8fce2038622985e11ee7d19db131','aa215178836a3ac004a728f63b5bac6b98f1b74b713cd9f1e517228859e4dfd3','1e65f833fb93239b1bfef884c4fd49a1d5058d9fb4bdd29c2fc94c964f5d83de'],
- AR2605220:['2d3805fca845c43338af3ed41ae1383a2a9fd78b16c87736019930d3b76d2e33','dde695942fd7fd0ff728479db9bafcc23c76dacb9cac9d38001884440e7c307b','aa4b2c623dedad8760e5421732605f81825355cf0334a3b5582ed68bc769011c','e83568a26f54639aeae41ed7ca7fd238515af0b0419dcc11064f7adc9b869a5a'],
- AR2605035:['7a300790349ce58674f2b7412da91374b5ed904f67d19a24f7be7e9fd54ff932','911a03437a4721a0216fcdccac163e52e6f0a1b2732dbea03abf51dae39bfe35','57ebe4ed51a2000f2a9aede29dc15695caef08da06e497e2efeb064b6c66d765','9c04141298572216d657120f70fd38248e9ecdd8351c33d69e1b66b60228b21c'],
+ AR2605246:['f0f0a54c11d666661efcef82abf25657ae6c179f72b53d9a1d8a5a77d4f33912','09b72ae0c11a58bc51b7641162012d6b3d64c37748b7c86899c20e094d3012f1','9df03da2184ac5c7e041e3b5ebc75ba2922da49c3376e00575e1ea2a3ab4957c','e186e29e27d23f4560950f62b9aa24df1a196cd430d902fd0106d330ee38421f'],
+ AR2605220:['2d3805fca845c43338af3ed41ae1383a2a9fd78b16c87736019930d3b76d2e33','f404e03c7050d002944949bf369652a289a8ee31668bbfef6add86b62fada5c3','a36f67d684cba576e2d6c673fe80d219e1d2b980b82590d181a93ed16ff0ecb1','acb1f19749dada3b0509c660c1fab907ab62cbdaa9620dbb02c9a156593fdda9'],
+ AR2605035:['7a300790349ce58674f2b7412da91374b5ed904f67d19a24f7be7e9fd54ff932','911a03437a4721a0216fcdccac163e52e6f0a1b2732dbea03abf51dae39bfe35','33f5f495a47538db313db7b721b11cc595bc80214474c537c87a6dc39278cb6e','2b13fa6e637f7ec2f0f1ce7d99b3ecdca8063c9ea6450cfee82fc05037ff405b'],
 };
 describe('fichas de clientes de Puertas',()=>{
  it('cada cliente tiene unidades, rollos, tipos y rótulos propios; el desconocido va a General',()=>{

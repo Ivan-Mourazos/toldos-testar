@@ -94,7 +94,7 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
     expect(y('REVÉS')).toBeLessThan(y('A1'));
     expect(y('A2')).toBeLessThan(y('0233175'));
     // El corte lleva los textos del bot, uno a uno (corteEnPlano.test.ts): es el corte que se manda (Iván, 24/10/2026).
-    expect(cuenta(corte, 'REVÉS')).toBeGreaterThan(0);
+    expect(cuenta(corte, 'CORTAR POR EL REVÉS')).toBeGreaterThan(0);
   });
 
   it('MATERIALES abajo, junto a las notas, y el corte arriba con cotas que se leen al imprimir (Iván, 22/10/2026)', () => {
@@ -105,12 +105,14 @@ describe('Plano de enrollables según el DWG de Iván AR2605134', () => {
     const vista = ent.find(r => r.tipo === 'VIEWPORT' && numero(r, 69) === 4)!;
     expect(numero(vista, 20) - numero(vista, 41) / 2).toBeGreaterThanOrEqual(79.9);
     expect(numero(vista, 20) + numero(vista, 41) / 2).toBeCloseTo(201.882, 2);
-    // El dibujo del corte empieza arriba del todo de su ventana; en el modelo, alineado arriba con la puerta (23/10/2026).
-    expect(numero(vista, 22) + numero(vista, 45) / 2).toBeCloseTo(100.4, 2);
+    // Desde el 06/11/2026 las muestras van una al lado de otra y el corte puede ir girado en su ventana: ya no se
+    // comprueba que empiece arriba del todo, solo que la ventana del corte enseña algo.
+    expect(numero(vista, 45)).toBeGreaterThan(0);
     // Las de la plantilla (detalle del saco, más a la derecha en el modelo) no cambian.
     const x0 = Math.min(...ent.filter(r => r.tipo === 'DIMENSION' && valor(r, 3) === 'XERA 20').map(r => numero(r, 13)));
     const cotas = ent.filter(r => r.tipo === 'DIMENSION' && numero(r, 13) >= x0 && numero(r, 13) < x0 + 10);
-    expect(cotas).toHaveLength(6);
+    // Las 6 de antes y las dos del saco en dos, la alternativa: su largo y el alto de las dos mitades (06/11/2026).
+    expect(cotas).toHaveLength(8);
     expect(cotas.every(r => valor(r, 3) === 'XERA 20')).toBe(true);
     const estilo = registrosDxf(plano(), 'TABLES').find(r => r.tipo === 'DIMSTYLE' && valor(r, 2) === 'XERA 20')!;
     expect(numero(estilo, 140)).toBe(.2);
@@ -178,12 +180,12 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
     // y los refuerzos centrados en su hueco con una raya a cada uno; sin los «a2» del saco partido en el dibujo
     // del saco (correcciones de Iván sobre AR2605035). Después, cotas verticales más juntas, nota BOLSILLO y
     // cajetín algo más pequeño (23/10/2026). Luego, presentación «PUERTA A», el corte en fila con la puerta y ventanas con la proporción justa. Después, el corte a la derecha y los recuadros DIBUJO y CORTE pegados, con margen del 20 %.
-    ['apilable', apilable, '56e7609c80d1b259744f861c7f5fb564c0aa8da80d3141b7de4cd7cd56540766'],
+    ['apilable', apilable, 'bcbb2eb0686e7fc3a5b40ac183ecc61ae7d852ee1829a08aa03870470ed34c11'],
     // Tetris coloca las dos E.T. sobre los paños: baja de 711 a 700 cm sin cambiar el alzado.
     // 27/10/2026 (AR2605249): saco de 2 × (rematado + 2) y la raya de soldar el saco, 2 cm sobre el bajo del paño.
     // Se elimina la segunda raya del saco y las dos referencias fijas de la regla anterior (Iván, 27/10/2026).
     // Empates: una raya en el paño superior y flecha hacia el borde a media escala; abajo solo mininúmeros.
-    ['autorreparable', autorreparable, '5e4f003707b702c1f520452ef1226a6da403f04564b4b501d67fe2e7877f2965'],
+    ['autorreparable', autorreparable, '7539aac6f8274c7e1049e60be940c9665581f382ae9450dac03666ed6dec43a1'],
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {
     const pedido = { ...pedidoDe('AR2600001', crear()), cabecera: { clienteRps: { codigo: '009999' } } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido, cabecera })).digest('hex')).toBe(hash);

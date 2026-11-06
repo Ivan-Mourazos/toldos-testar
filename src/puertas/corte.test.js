@@ -96,7 +96,8 @@ describe('Corte de puertas', () => {
     expect(r.archivo?.dxf).toContain('AC1018');
     expect(r.archivo?.dxf).toContain('0232309');
     expect(r.archivo?.dxf).toMatch(/\r\nEOF\r\n/);
-    expect(r.cortes).toHaveLength(3);
+    // Lona, cristal y saco; y la alternativa del saco en dos (Iván, 06/11/2026).
+    expect(r.cortes).toHaveLength(4);
     for (const c of r.cortes) for (const x of c.colocadas) {
       expect(x.y).toBeGreaterThanOrEqual(0);
       expect(x.y + (x.girada ? x.pieza.ancho : x.pieza.alto)*10).toBeLessThanOrEqual(c.anchoRollo+0.01);
@@ -104,7 +105,7 @@ describe('Corte de puertas', () => {
     // Iván, 22/10/2026: las puertas se cortan siempre por el revés; va una vez al principio de cada material,
     // como el DERECHO de remolques, y no en cada pieza. Desde el 26/10/2026, solo en la lona de los paños: el saco y el
     // cristal, sin REVÉS (Iván).
-    expect(r.archivo?.entidades.textos.filter(x => x.valor === 'REVÉS' && !x.centrado)).toHaveLength(1);
+    expect(r.archivo?.entidades.textos.filter(x => x.valor === 'CORTAR POR EL REVÉS' && !x.centrado)).toHaveLength(1);
     expect(r.archivo?.entidades.textos.some(x => x.valor.includes('DERECHO'))).toBe(false);
     expect(r.archivo?.entidades.lineas.some(x => x.y1 > 4000)).toBe(true);
     const textosPieza = r.cortes.flatMap(c => c.entidades.textos).filter(t => t.centrado);

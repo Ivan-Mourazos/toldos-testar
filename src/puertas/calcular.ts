@@ -108,6 +108,8 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     x.origenAlzado = [-lateral, desde];
     paneles.push({ pieza: x, desde, hasta }); return x;
   }
+  // Apilables y enrollables: el empate en una E.T. va como en las apilables (Iván, 06/11/2026, AR2605429).
+  const etUne=p.modelo==='PUERTAPLE'||p.modelo==='PUERTAENR';
   function reparto(plan:RepartoPanos,nombre:string) {
     if(plan.error) aviso('EMPATE',plan.error);
     const numeros = plan.uniones.map(() => ++numeroUnion);
@@ -118,15 +120,15 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
         if(u.tubo) marca(x,u.solape,-1);
         else { marca(x,u.solape); x.marcas.push(...flechaEmpate(x.ancho/2,u.solape,-1)); }
         // Apilable: en un tubo la E.T. ya une los dos paños y no lleva mininúmeros (Iván, 23/10/2026, AR2605035).
-        if(!(u.tubo && p.modelo==='PUERTAPLE')) numerarBorde(x,numeros[t.unionInferior],'abajo');
+        if(!(u.tubo && etUne)) numerarBorde(x,numeros[t.unionInferior],'abajo');
       }
       if(t.unionSuperior!==undefined) {
         const u=plan.uniones[t.unionSuperior];
         // Iván, 27/10/2026: en los empates normales se marca solo el paño superior; abajo quedan los mininúmeros.
-        if(!(u.tubo && p.modelo==='PUERTAPLE')) numerarBorde(x,numeros[t.unionSuperior],'arriba');
+        if(!(u.tubo && etUne)) numerarBorde(x,numeros[t.unionSuperior],'arriba');
         if(u.tubo && p.entradas[u.tubo-1]) x.huecos.push(...huecosET(p.entradas[u.tubo-1]).map(h=>({...h,y:n(x.alto-u.solape+h.y)})));
         // Apilable: la E.T. que va dentro del paño se rotula en él, para que no parezca que falta (Iván, 23/10/2026).
-        if(u.tubo && p.modelo==='PUERTAPLE') (x.entradasIncorporadas??=[]).push({tubo:u.tubo,y:n(x.alto-u.solape/2),alto:u.solape});
+        if(u.tubo && etUne) (x.entradasIncorporadas??=[]).push({tubo:u.tubo,y:n(x.alto-u.solape/2),alto:u.solape});
       }
     }
   }
@@ -232,7 +234,17 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       const derecha=agregar(pieza('Saco partido · sin pestaña','saco',mitad,s.corte,p.materialSaco,p.rolloSaco));
       numerarBorde(izquierda,++numeroUnion,'derecha');
       numerarBorde(derecha,numeroUnion,'izquierda');
-    }else agregar(sacoConPestana(p.frente,s.corte,6.5,s.altoPestana,s.corte/2));
+    }else{
+      // El saco entero y, de alternativa, en dos mitades, por si aprovecha mejor el rollo, como en las apilables
+      // (Iván, 06/11/2026, AR2605429). Con «saco partido» marcado, solo las dos mitades.
+      const mitad=(p.frente+6.5+2)/2;
+      agregar(sacoConPestana(p.frente,s.corte,6.5,s.altoPestana,s.corte/2));
+      const izquierda=sacoConPestana(mitad-6.5,s.corte,6.5,s.altoPestana,s.corte/2,'Saco partido · con pestaña');
+      const derecha=pieza('Saco partido · sin pestaña','saco',mitad,s.corte,p.materialSaco,p.rolloSaco);
+      numerarBorde(izquierda,++numeroUnion,'derecha');
+      numerarBorde(derecha,numeroUnion,'izquierda');
+      r.alternativasSaco={entero:[],partido:[izquierda,derecha]};
+    }
     // Sin E.T. encima o debajo del ventanal, una entrada a esa altura no se corta: se avisa por si sobra en el pedido.
     if(p.entradas.some(etVentanal))aviso('ET_VENTANAL','Marcado sin E.T. en el ventanal, pero hay una entrada a esa altura: no se corta. Quítala del pedido si sobra.','aviso');
     p.entradas.forEach((t,i)=>{if(!incorporadas.has(i+1)&&!etVentanal(t))entrada(t,i);});

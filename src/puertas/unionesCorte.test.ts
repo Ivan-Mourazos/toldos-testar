@@ -24,15 +24,14 @@ describe('Identificación de las soldaduras del corte', () => {
     expect(c.entidades.textos.some(t => t.valor.startsWith('UNIÓN '))).toBe(false);
   });
 
-  it('la E.T. incorporada usa los mismos mininúmeros de 1 cm dentro del solape de 7,5', () => {
+  it('enrollable: el empate en una E.T. va como en las apilables, sin mininúmeros y con la E.T. rotulada (Iván, 06/11/2026)', () => {
     const p = base('PUERTAENR', 474, 700);
     p.enrollable = { T: 509, D: 60, margen: 11, empates: [] };
     p.entradas = [60, 131, 191, 441].map(altura => ({ altura, diametro: 30, largo: 474, alto: 8, huecos: [] }));
     const r = calcularPuerta(p), panos = r.piezas.filter(p => p.clase === 'pano');
-    expect(r.uniones[0].solape).toBe(7.5);
-    expect(panos.flatMap(p => p.unionesCorte ?? []).map(t => t.numero)).toEqual([1, 1, 1, 1]);
-    expect(panos[0].unionesCorte!.every(t => t.y === panos[0].alto - 1)).toBe(true);
-    expect(panos[1].unionesCorte!.every(t => t.y === 1)).toBe(true);
+    expect(r.uniones[0]).toMatchObject({ solape: 7.5, tubo: expect.any(Number) });
+    expect(panos.flatMap(p => p.unionesCorte ?? [])).toEqual([]);
+    expect(panos.flatMap(p => p.entradasIncorporadas ?? []).map(e => e.tubo)).toEqual([r.uniones[0].tubo]);
   });
 
   it('AR2604725: el saco partido también identifica las dos mitades que se sueldan', () => {
