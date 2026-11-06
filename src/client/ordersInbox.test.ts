@@ -97,6 +97,12 @@ describe('mergePendingReviews — pendientes del año actual y el anterior', () 
 });
 
 describe('pendingGroups según CoordinaOT', () => {
+  it('clasifica la entrega por sus OF, aunque una OF histórica esté devuelta', () => {
+    const p = review('AR2603626', 'PENDING_REVIEW', 'IVÁN', { ofsEntregaActual: ['0230002'],
+      summary: { awningList: [{ letter: 'A', of: '0230001' }, { letter: 'B', of: '0230002' }] } });
+    const grupos = pendingGroups([p], { disponible: true, ofs: { '0230001': { estado: 'devuelta' }, '0230002': { estado: 'pasada' } } });
+    expect(grupos.map(g => g.key)).toEqual(['aprobado']);
+  });
   const coordinaReview = (code: string, ofs: string[]) => ({
     orderCode: code,
     status: 'PENDING_REVIEW',

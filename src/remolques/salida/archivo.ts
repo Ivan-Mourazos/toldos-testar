@@ -44,6 +44,7 @@ export function destinosPdfRemolques(
   fecha: string,
   carpetas: Omit<CarpetasRemolques, "productionEnabled">,
   ahora = new Date(),
+  entrega?: number,
 ): { nombre: string; anio: number; destinos: [string, string]; raices: [string, string] } {
   const planteamientos = carpetas.remolquesPlanteamientosDirectory.trim();
   const oficina = carpetas.remolquesOficinaTecnicaDirectory.trim();
@@ -57,8 +58,9 @@ export function destinosPdfRemolques(
   if (!oficina.includes("{YYYY}")) {
     throw new ErrorArchivoPdf("La carpeta de oficina técnica de remolques debe llevar {YYYY}: el PDF va en <año>/PEDIDO.pdf.", 400, "RUTA_NO_VALIDA");
   }
-  const nombre = nombrePdf(numeroPedido);
-  if (!/^[A-Z0-9]+-10\.pdf$/.test(nombre) || nombre.startsWith("SIN-PEDIDO")) {
+  if (entrega !== undefined && (!Number.isSafeInteger(entrega) || entrega < 1)) throw new ErrorArchivoPdf('El número de entrega no es válido.', 400, 'PEDIDO_NO_VALIDO');
+  const nombre = entrega === undefined ? nombrePdf(numeroPedido) : `${nombrePdf(numeroPedido).replace(/-10\.pdf$/, '')}-${entrega}.pdf`;
+  if (!/^[A-Z0-9]+-\d+\.pdf$/.test(nombre) || nombre.startsWith("SIN-PEDIDO")) {
     throw new ErrorArchivoPdf("El número de pedido no es válido para archivar el PDF.", 400, "PEDIDO_NO_VALIDO");
   }
   const anio = anioDelPlanteamiento(numeroPedido, fecha, ahora);
@@ -66,7 +68,7 @@ export function destinosPdfRemolques(
   return {
     nombre,
     anio,
-    destinos: [path.join(conAnio(planteamientos), nombre), path.join(conAnio(oficina), nombre.replace(/-10\.pdf$/, ".pdf"))],
+    destinos: [path.join(conAnio(planteamientos), nombre), path.join(conAnio(oficina), entrega === undefined ? nombre.replace(/-10\.pdf$/, ".pdf") : nombre)],
     raices,
   };
 }
@@ -107,7 +109,7 @@ async function publicarSinSustituir(temporal: string, destino: string, contenido
 
 export async function archivarPdfRemolques(
   contenido: Uint8Array,
-  pedido: { numeroPedido: string; fecha: string },
+  pedido: { numeroPedido: string; fecha: string; entrega?: number },
   carpetas: CarpetasRemolques,
   opciones: { sustituir?: boolean; ahora?: Date } = {},
 ): Promise<{ nombre: string; anio: number; destinos: string[]; sustituido: boolean }> {
@@ -117,7 +119,7 @@ export async function archivarPdfRemolques(
   if (Buffer.from(contenido.subarray(0, 4)).toString("ascii") !== "%PDF") {
     throw new ErrorArchivoPdf("Lo que se iba a archivar no es un PDF.", 400, "NO_ES_PDF");
   }
-  const { nombre, anio, destinos, raices } = destinosPdfRemolques(pedido.numeroPedido, pedido.fecha, carpetas, opciones.ahora);
+  const { nombre, anio, destinos, raices } = destinosPdfRemolques(pedido.numeroPedido, pedido.fecha, carpetas, opciones.ahora, pedido.entrega);
   // Las raíces deben existir: no crear una carpeta local si falta el montaje de red.
   for (const raiz of raices) {
     try {

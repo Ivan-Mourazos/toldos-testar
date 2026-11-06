@@ -733,6 +733,9 @@ export type CoordinaStatus = {
 };
 
 export type ReviewSummary = {
+  ofsEntregaActual?: string[];
+  entregas?: import('../entregasTipos').EntregaPedido[];
+  entregaActual?: number;
   corteNoRegenerado?: boolean;
   corteSimulado?: boolean;
   updatedBy?: string;

@@ -8,7 +8,6 @@ import {
   isPendingGeneration,
   normalizeOf,
   NOT_GENERABLE_ERROR,
-  PRODUCED_SAVE_ERROR,
   approvalReviewers,
   reviewAuthorship,
   reviewerName,
@@ -53,11 +52,10 @@ describe('guardar sobre un pedido existente (ruta POST /api/reviews)', () => {
     expect(saveReviewDecision({ status: 'APPROVED' }, true)).toEqual({ action: 'save' });
   });
 
-  it('uno ya generado se rechaza con 409 aunque se confirme', () => {
-    const expected = { action: 'refuse', statusCode: 409, error: PRODUCED_SAVE_ERROR };
-    expect(saveReviewDecision({ status: 'PRODUCED' }, false)).toEqual(expected);
+  it('uno ya generado permite guardar la siguiente entrega', () => {
+    const expected = { action: 'save' };
+    expect(saveReviewDecision({ status: 'PRODUCED' }, false)).toEqual({ action: 'confirm' });
     expect(saveReviewDecision({ status: 'PRODUCED' }, true)).toEqual(expected);
-    expect(PRODUCED_SAVE_ERROR).toBe('Este pedido ya está generado. Cambia el número de pedido para guardarlo como uno nuevo.');
   });
 });
 

@@ -1,3 +1,4 @@
+import { abrirEntrega, ofsEntrega } from '../../entregas.js';
 import { awningLetter } from "../../domain/awningCompleteness.js";
 import { normalizeOf } from "../../reviewRules.js";
 import { codigoPedido, ErrorPedidoRemolques, validarClienteRps } from "../../remolques/flujo/pedido.ts";
@@ -89,13 +90,13 @@ export function crearPedidoPuertas({ pedido, cabecera, autoria, existente, ahora
   const numeroPedido = pedido.orderCode.trim();
   // «Corregir» no trae el cliente de RPS: se queda el que tenía.
   const conCliente = cabecera.clienteRps || !existente?.cabecera.clienteRps ? cabecera : { ...cabecera, clienteRps: existente.cabecera.clienteRps };
-  return {
-    schemaVersion: 1,
+  return abrirEntrega({
+    schemaVersion: 1 as const,
     kind: TIPO_PEDIDO_PUERTAS,
     orderCode: codigoPedido(numeroPedido),
     numeroPedido,
     cabecera: conCliente,
-    status: "PENDING_REVIEW",
+    status: "PENDING_REVIEW" as const,
     createdAt: existente?.createdAt ?? ahora,
     updatedAt: ahora,
     createdBy: existente?.createdBy || autoria.technician,
@@ -106,7 +107,7 @@ export function crearPedidoPuertas({ pedido, cabecera, autoria, existente, ahora
     enviosCorte: structuredClone(existente?.enviosCorte ?? []),
     summary: resumenPedido(pedido, conCliente, autoria),
     elementos: pedido.elementos.map(({ id, input }) => ({ id, input })),
-  };
+  }, existente);
 }
 
 /** Generado: PRODUCED, con su plano y el revisor de CoordinaOT (si no da ninguno, no se nombra a nadie). */
@@ -130,7 +131,7 @@ export function marcarPedidoGenerado(pedido: PedidoPuertasGuardado, { revisor, f
 export function resumenBandeja(pedido: PedidoPuertasGuardado): ResumenPedidoPuertas {
   const copia: Partial<PedidoPuertasGuardado> = { ...pedido };
   delete copia.elementos;
-  return { ...(copia as ResumenPedidoPuertas), summary: { ...pedido.summary, awningList: resumenElementos(pedido) } };
+  return { ...(copia as ResumenPedidoPuertas), ofsEntregaActual: ofsEntrega(pedido), summary: { ...pedido.summary, awningList: resumenElementos(pedido) } };
 }
 
 /** El año del pedido para Pedidos: las dos cifras tras «AR» o, si no, el de su fecha. */

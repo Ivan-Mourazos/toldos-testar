@@ -20,8 +20,8 @@ let aprobadoEn: string | null;
 let servicio: ReturnType<typeof crearServicioPedidosRemolques>;
 const pedido = structuredClone(fixture) as PedidoRemolques;
 const pantalla = (extra = {}) => ({ elementos: pedido.elementos, params: pedido.params, savedBy: 'IVÁN', ...extra });
-const borrador = () => path.join(raiz, 'borradores', 'AR2605132.dxf');
-const enAnio = () => path.join(raiz, 'planos', 'AR2605132.dxf');
+const borrador = () => path.join(raiz, 'borradores', 'AR2605132-1.dxf');
+const enAnio = () => path.join(raiz, 'planos', 'AR2605132-1.dxf');
 
 beforeEach(async () => {
   await fs.mkdir(path.resolve('tmp'), { recursive: true });
@@ -58,11 +58,11 @@ async function dibujar(fichero: string, fuera = false) {
 }
 
 describe('borrador del corte', () => {
-  const red = String.raw`\\toldosgomez.local\DFS_POL\oftecnica\borradores\AR2605132.dxf`;
+  const red = String.raw`\\toldosgomez.local\DFS_POL\oftecnica\borradores\AR2605132-1.dxf`;
   it('escribe el plano de la pantalla en la carpeta de borradores y da el enlace tgm-pedidos', async () => {
     const { status, cuerpo } = await abrir();
     expect(status).toBe(200);
-    expect(cuerpo).toMatchObject({ ok: true, existente: false, filename: 'AR2605132.dxf', ruta: red,
+    expect(cuerpo).toMatchObject({ ok: true, existente: false, filename: 'AR2605132-1.dxf', ruta: red,
       url: `tgm-pedidos://open?kind=cad&path=${encodeURIComponent(red)}` });
     expect(corteDelPlano(await fs.readFile(borrador(), 'latin1')).error).toBeNull();
     // No guarda el pedido: solo el borrador.
@@ -81,7 +81,7 @@ describe('borrador del corte', () => {
     await expect(abrir()).rejects.toMatchObject({ message: expect.stringContaining('borradores') });
     const { status, cuerpo } = await guardar();
     expect(status).toBe(200);
-    expect(cuerpo).toMatchObject({ planoCorte: { files: [{ filename: 'AR2605132.dxf', savedPath: enAnio() }] } });
+    expect(cuerpo).toMatchObject({ planoCorte: { files: [{ filename: 'AR2605132-1.dxf', savedPath: enAnio() }] } });
     expect((await servicio.obtener('AR2605132')).corteConfirmado).toMatchObject({ plano: enAnio(), por: 'IVÁN' });
   });
 });
@@ -95,7 +95,7 @@ describe('corte confirmado desde el borrador', () => {
     const contenido = await fs.readFile(borrador(), 'latin1');
     const { status, cuerpo } = await guardar({ aceptarHuellaCorte: pregunta.huella });
     expect(status).toBe(200);
-    expect(cuerpo).toMatchObject({ planoCorte: { files: [{ type: 'plano-corte-lona', filename: 'AR2605132.dxf', savedPath: enAnio() }], avisos: [] } });
+    expect(cuerpo).toMatchObject({ planoCorte: { files: [{ type: 'plano-corte-lona', filename: 'AR2605132-1.dxf', savedPath: enAnio() }], avisos: [] } });
     expect(await fs.readFile(enAnio(), 'latin1')).toBe(contenido);
     await expect(fs.stat(borrador())).rejects.toMatchObject({ code: 'ENOENT' });
     expect((await servicio.obtener('AR2605132')).corteConfirmado).toMatchObject({ por: 'IVÁN', plano: enAnio() });
@@ -130,7 +130,7 @@ describe('corte confirmado desde el borrador', () => {
     await fs.writeFile(enAnio(), 'HECHO A MANO');
     await abrir();
     await confirmar();
-    expect((await guardar()).cuerpo).toMatchObject({ needsPlanoConfirmation: true, existing: ['AR2605132.dxf'] });
+    expect((await guardar()).cuerpo).toMatchObject({ needsPlanoConfirmation: true, existing: ['AR2605132-1.dxf'] });
     expect(await fs.readFile(enAnio(), 'utf8')).toBe('HECHO A MANO');
     expect((await guardar({ confirmPlanoOverwrite: true })).status).toBe(200);
   });
@@ -163,7 +163,7 @@ describe('corte confirmado desde el borrador', () => {
     const conCambios = await enviar({ aceptarCambioCorte: true });
     expect(conCambios.status).toBe(200);
     expect((conCambios.cuerpo as { envio: { nota?: string } }).envio.nota).toContain('cambiado');
-    expect(lineas(await fs.readFile(path.join(raiz, '2026/DXFs/AR2605132.dxf'), 'latin1'))).toBe(lineas(web) + 1);
+    expect(lineas(await fs.readFile(path.join(raiz, '2026/DXFs/AR2605132-1.dxf'), 'latin1'))).toBe(lineas(web) + 1);
     // Pasado a revisión en CoordinaOT y aprobado otra vez: antes del último cambio del DWG, se pregunta; después, sale solo.
     aprobadoEn = new Date(Date.now() - 3_600_000).toISOString();
     expect(await enviar()).toMatchObject({ status: 409, cuerpo: { cambioCorte: true, error: expect.stringContaining('CoordinaOT') } });

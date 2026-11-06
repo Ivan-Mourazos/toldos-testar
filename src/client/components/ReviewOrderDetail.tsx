@@ -12,6 +12,7 @@ import { generateState, puedeCorregir } from '../generatePermission';
 import { awningLetter } from '../../domain/awningCompleteness.js';
 import { AccionesPedido, CabeceraPedidoGuardado } from './AccionesPedido';
 import { EnviosCorte, HistorialEnvios } from './EnviosCorte';
+import { pedidoEntrega } from '../../entregas.js';
 import type { AskForConfirmation, Notify } from './NotificationCenter';
 
 const noop = () => undefined;
@@ -102,16 +103,15 @@ export function ReviewOrderDetail({
     return <section className="review-reader">{backButton}<div className="review-empty"><FileSearch aria-hidden="true" />Selecciona un pedido para revisarlo.</div></section>;
   }
 
-  // Un pedido generado ya no se corrige ni se genera desde aquí: sus archivos ya salieron.
-  // Para hacer otro parecido está «Reutilizar datos» en el bloque de archivos.
+  // Corregir un generado prepara otra entrega; los archivos de la anterior siguen siendo históricos.
   const isProduced = review.status === 'PRODUCED';
   const produced = isProduced && Boolean(review.production);
   // CoordinaOT solo decide si todas las OF permiten generar; no importa el autor.
   const { allowed: canGenerate, note: generateNote } = generateState(review, currentUser, coordinaStatus);
-  // Cualquier usuario de oficina puede corregir, salvo los pedidos ya generados.
+  // Cualquier usuario de oficina puede corregir; CoordinaOT solo condiciona la salida.
   const corregible = puedeCorregir(review.status, (order.awnings || []).map((a, i) => ({ letter: awningLetter(i), of: String(a.of || '') })),
     order.technician || '', currentUser, coordinaStatus, true);
-  const cortePermitido = generateState({ ...review, status: isProduced ? 'PENDING_REVIEW' : review.status }, currentUser, coordinaStatus);
+  const cortePermitido = generateState(Object.assign({}, pedidoEntrega(review), { status: 'PENDING_REVIEW' as const, entregas: [] }), currentUser, coordinaStatus);
   const puedeEnviar = Boolean(currentUser.trim());
   const conCorteLona = toldosConCorte(review.order).length > 0;
   const pdfIndex = review.production?.files.findIndex(file => file.type === 'pdf') ?? -1;
@@ -125,7 +125,7 @@ export function ReviewOrderDetail({
 
   return (
     <section className="review-reader" aria-label={`Datos de revisión de ${review.orderCode}`}>
-      <CabeceraPedidoGuardado volver={backButton} titulo={review.orderCode} datos={[
+      <CabeceraPedidoGuardado pedido={review} volver={backButton} titulo={review.orderCode} datos={[
             review.summary.customer || 'Sin cliente',
             review.order.orderDate && `pedido del ${review.order.orderDate.split('-').reverse().join('/')}`,
             review.order.technician && `autor ${controlLabel(review.order.technician)}`,
@@ -141,7 +141,7 @@ export function ReviewOrderDetail({
           envios={conCorteLona
             ? <EnviosCorte barra ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona`} usuario={currentUser}
               permitido={puedeEnviar && cortePermitido.allowed && (Boolean(review.corteConfirmado) || !faltaCorte)} motivo={faltaCorte ?? cortePermitido.note}
-              ocupado={disabled || generandoCorte} envios={review.enviosCorte} notify={notify} preguntar={onConfirm}
+              ocupado={disabled || generandoCorte} envios={review.enviosCorte} entrega={review.entregaActual} notify={notify} preguntar={onConfirm}
               guardado={{ ruta: '/api/reviews', cuerpo: { order: review.order, corteLona: review.corteLona }, usuario: currentUser }}
               onEnviado={onChanged}
               descarga={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona/dxf`}
@@ -205,9 +205,9 @@ export function ReviewOrderDetail({
 
       <DocumentosPedido planteamiento={<PlanteamientoPedido
         origen={pdfGenerado ? `/api/reviews/${encodeURIComponent(review.orderCode)}/generated-files/${pdfIndex}` : '/api/planteamiento'}
-        cuerpo={pdfGenerado ? undefined : JSON.stringify({ order: review.order.parameters ? review.order : { ...review.order, parameters: reviewParameters } })}
+        cuerpo={pdfGenerado ? undefined : JSON.stringify({ order: { ...pedidoEntrega(review).order, parameters: reviewParameters } })}
         version={review.updatedAt} />}
-        corte={<CorteLona key={review.orderCode} order={review.order} estado={estadoCorte} reviewCode={review.orderCode}
+        corte={<CorteLona key={review.orderCode} order={pedidoEntrega(review).order} estado={estadoCorte} reviewCode={review.orderCode}
         dwgGuardado={Boolean(review.corteConfirmado && !review.corteNoRegenerado)}
         noRegenerado={review.corteNoRegenerado}
         generarArriba={autorDelCorte}

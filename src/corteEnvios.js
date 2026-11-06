@@ -5,6 +5,7 @@ import { carpetaCorte } from './corteLonaArchivos.js';
 import { AWNING_NOUNS, generationBlock, uniqueOfs } from './reviewRules.js';
 import { aprobacionToldos } from './toldosEditable.js';
 import { writeFileAtomic } from './workflow.js';
+import { numeroEntrega } from './entregas.js';
 
 const fallo = (codigo, mensaje) => Object.assign(new Error(mensaje), { statusCode: codigo });
 
@@ -21,7 +22,10 @@ export async function enviarCorte({ pedido, order, settings, usuario, destino, c
   const bloqueo = generationBlock(elementos, estado, nombres);
   if (bloqueo) throw fallo(estado.disponible ? 409 : 503, bloqueo);
   if (destino === 'bot' && !confirmBot) {
-    return { status: 409, cuerpo: { needsBotConfirmation: true, error: 'El corte irá al bot y se cortará. ¿Seguro?' } };
+    const anterior = pedido.enviosCorte?.some(e => e.destino === 'bot' && (e.entrega ?? 1) === numeroEntrega(pedido));
+    return { status: 409, cuerpo: { needsBotConfirmation: true, error: anterior
+      ? 'Este corte ya se mandó al bot. La web no puede saber si ya se cortó; se va a mandar otra vez. ¿Seguro?'
+      : 'El corte irá al bot y se cortará. ¿Seguro?' } };
   }
   const carpeta = carpetaCorte(destino === 'bot' ? settings.corteLonaBotDirectory : settings.corteLonaDxfDirectory, order);
   if (destino === 'bot') {
@@ -48,7 +52,8 @@ export async function enviarCorte({ pedido, order, settings, usuario, destino, c
   async function registrarSalida(parcial = false) {
     const fecha = ahora().toISOString();
     // `nota`: lo que hay que recordar del envío, p. ej. que el corte del DWG cambió después de revisarlo.
-    const envio = { id: randomUUID(), fecha, usuario, destino, carpeta, ...(parcial ? { parcial: true } : {}), ...(nota ? { nota } : {}),
+    const numero = (pedido.enviosCorte ?? []).filter(e => e.destino === destino).length + 1;
+    const envio = { id: randomUUID(), numero, entrega: numeroEntrega(pedido), fecha, usuario, destino, carpeta, ...(parcial ? { parcial: true } : {}), ...(nota ? { nota } : {}),
       archivos: escritos.map(({ filename, savedPath }) => ({ filename, savedPath })) };
     const actualizado = { ...pedido, updatedAt: fecha, enviosCorte: [...(pedido.enviosCorte || []), envio] };
     try { await guardarRegistro(actualizado); }

@@ -64,7 +64,7 @@ describe('generateState', () => {
 });
 
 // Fase 2: la edición libre se extiende a puertas y remolques, incluso sin CoordinaOT.
-describe('puedeCorregir — cualquier técnico, salvo pedidos generados', () => {
+describe('puedeCorregir — cualquier técnico, también pedidos generados', () => {
   const elementos = [{ letter: 'A', of: '0230194' }, { letter: 'B', of: '0230195' }];
   const coordina = (estado: string) => ({ disponible: true, ofs: { '0230194': { estado: 'aprobada' }, '0230195': { estado } } });
   it('devuelto y autor: sí', () => {
@@ -86,11 +86,11 @@ describe('puedeCorregir — cualquier técnico, salvo pedidos generados', () => 
     expect(puedeCorregir('PENDING_REVIEW', una, 'TAMARA', 'IVÁN', enCurso)).toBe(true);
     expect(puedeCorregir('PENDING_REVIEW', una, 'TAMARA', 'TAMARA', { disponible: true, ofs: { '0233602': { estado: 'pendiente' } } })).toBe(true);
   });
-  it('en revisión, aprobado o sin CoordinaOT: sí; generado: no', () => {
+  it('en revisión, aprobado o sin CoordinaOT: sí; generado: sí', () => {
     expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', coordina('en_revision'))).toBe(true);
     expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', coordina('por_revisar'))).toBe(true);
     expect(puedeCorregir('APPROVED', elementos, 'IVÁN', 'IVÁN', coordina('aprobada'))).toBe(true);
-    expect(puedeCorregir('PRODUCED', elementos, 'IVÁN', 'IVÁN', coordina('devuelta'))).toBe(false);
+    expect(puedeCorregir('PRODUCED', elementos, 'IVÁN', 'IVÁN', coordina('devuelta'))).toBe(true);
     expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', null)).toBe(true);
     expect(puedeCorregir('PENDING_REVIEW', elementos, 'IVÁN', 'IVÁN', { disponible: false })).toBe(true);
   });

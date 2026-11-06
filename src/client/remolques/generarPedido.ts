@@ -1,4 +1,6 @@
 import { ELEMENT_NOUNS, generationBlock, isPendingGeneration } from '../../reviewRules.js';
+import { pedidoEntrega } from '../../entregas.js';
+import { codigoEntrega } from '../../entregas.js';
 import { aprobacionToldos } from '../../toldosEditable.js';
 import { anioPedido, elementosAprobacion } from '../../remolques/flujo/pedido.ts';
 import type { PedidoRemolques } from '../../remolques/flujo/tipos.ts';
@@ -28,12 +30,16 @@ export function estadoGenerarRemolques(
 ): { allowed: boolean; note: string } {
   if (!isPendingGeneration(pedido.status)) return { allowed: false, note: '' };
   if (!estado) return { allowed: false, note: 'Comprobando la aprobación en CoordinaOT…' };
-  const bloqueo = generationBlock(elementosAprobacion(pedido), aprobacionToldos(estado), ELEMENT_NOUNS);
+  const bloqueo = generationBlock(elementosAprobacion(pedidoEntrega(pedido)), aprobacionToldos(estado), ELEMENT_NOUNS);
   return bloqueo ? { allowed: false, note: bloqueo } : { allowed: true, note: '' };
 }
 
 /** Los dos PDF que deja «Generar archivos», para la pregunta de antes. */
 export function ficherosPrevistos(pedido: Pick<PedidoRemolques, 'numeroPedido' | 'summary' | 'createdAt'>): string[] {
+  if ('entregaActual' in pedido && pedido.entregaActual) {
+    const nombre = `${codigoEntrega(pedido)}.pdf`;
+    return [`Planteamientos: ${nombre}`, `Oficina técnica: ${anioPedido(pedido)}/${nombre}`];
+  }
   const nombre = nombrePdf(pedido.numeroPedido);
   return [`Planteamientos: ${nombre}`, `Oficina técnica: ${anioPedido(pedido)}/${nombre.replace(/-10\.pdf$/, '.pdf')}`];
 }

@@ -73,7 +73,7 @@ describe('el pedido de remolques abierto en Pedidos', () => {
     });
     const html = pintar({ pedido: generado });
     expect(html).not.toContain('Generar archivos');
-    expect(html).not.toContain('Corregir');
+    expect(html).toContain('Corregir');
     // «Reutilizar datos» va en el menú «Más ⋯» de arriba.
     expect(html).toContain('aria-haspopup="menu"');
     expect(html).toContain('href="/api/remolques/pedidos/AR2604286/archivo"');

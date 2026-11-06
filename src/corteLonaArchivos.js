@@ -37,7 +37,7 @@ export function carpetaCorte(template, order) {
 
 /** Prepara todos los bytes antes de escribir; producción los añade a sus demás destinos. */
 // `carpeta`: el borrador del flujo del DWG, en la carpeta de borradores en vez de la de planos (sin año ni técnico).
-export async function prepararArchivosCorte({ order, corteLona, settings, oda, tipo, soloContenido = false, carpeta }) {
+export async function prepararArchivosCorte({ order, corteLona, settings, oda, tipo, soloContenido = false, carpeta, codigoSalida }) {
   if (!settings.productionEnabled) return { files: [], avisos: tipo === 'plano' && corteLona ? ['Modo simulación: no se ha escrito el plano del corte.'] : [] };
   exigirCorteAlDia(order, corteLona);
   if (!corteLona?.toldos?.length) return { files: [], avisos: [] };
@@ -48,8 +48,8 @@ export async function prepararArchivosCorte({ order, corteLona, settings, oda, t
     error.statusCode = 409;
     throw error;
   }
-  const directory = soloContenido ? '' : carpeta ?? carpetaCorte(tipo === 'plano' ? settings.corteLonaPlanoDirectory : settings.corteLonaBotDirectory, order);
-  const pedido = sanitizeOrderCode(order.orderCode);
+  const directory = soloContenido ? '' : carpeta ?? carpetaCorte(tipo === 'plano' ? settings.corteLonaPlanoDirectory : settings.corteLonaBotDirectory, { ...order, orderCode: codigoSalida || order.orderCode });
+  const pedido = sanitizeOrderCode(codigoSalida || order.orderCode);
   const avisos = [];
   const files = [];
   // El plano del cristal de una cortina es el de su lona (`incluidoEn`): se escribe una vez.

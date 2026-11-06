@@ -1,3 +1,4 @@
+import { codigoEntrega, pedidoEntrega } from './entregas.js';
 import { generarCorteLona } from './domain/corteLona/index.js';
 import { archivoCorte } from './domain/corteLona/opcionesArchivo.js';
 import { crearEstadoCorteLona, corteLonaPendiente } from './corteLonaEstado.js';
@@ -10,7 +11,7 @@ export function registrarRutasCorteLona(app, { workflowStore, ofStockSacos, oda,
     let order, ajustes, corteLona;
     if (guardado) {
       const review = await workflowStore.getReview(req.params.orderCode);
-      order = review.order;
+      order = pedidoEntrega(review).order;
       corteLona = review.corteLona || null;
       ajustes = corteLona?.ajustes || {};
     } else {
@@ -41,7 +42,7 @@ export function registrarRutasCorteLona(app, { workflowStore, ofStockSacos, oda,
         const review = await workflowStore.getReview(req.params.orderCode);
         if (review.corteConfirmado) {
           res.setHeader('Cache-Control', 'no-store');
-          return descargar(res, Buffer.from(await dxfDesdeDwg(review), 'latin1'), `${sanitizeOrderCode(review.orderCode)}.dxf`, 'application/dxf');
+          return descargar(res, Buffer.from(await dxfDesdeDwg(review), 'latin1'), `${sanitizeOrderCode(codigoEntrega(review))}.dxf`, 'application/dxf');
         }
       }
       const { order, resultado, corteLona, stock, pendientes } = await preparar(req, guardado);
@@ -59,7 +60,7 @@ export function registrarRutasCorteLona(app, { workflowStore, ofStockSacos, oda,
         throw error;
       }
       const datos = guardado ? req.query : req.body;
-      const pedido = sanitizeOrderCode(order.orderCode);
+      const pedido = guardado ? codigoEntrega(await workflowStore.getReview(req.params.orderCode)) : sanitizeOrderCode(order.orderCode);
       res.setHeader('X-Corte-Lona-Of-Stock', stock.of);
       res.setHeader('Cache-Control', 'no-store');
       if (tipo === 'dxf') {

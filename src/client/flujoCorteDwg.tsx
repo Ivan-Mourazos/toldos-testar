@@ -31,7 +31,7 @@ export type Paso =
   | { paso: 'tocado' }
   | { paso: 'guardar'; por: string };
 
-export const pedidoValido = (codigo: string) => /^AR\d{7}$/i.test(codigo.replace(/[.\s]/g, ''));
+export const pedidoValido = (codigo: string) => /^AR\d{7}(?:_\d+)?$/i.test(codigo.replace(/[.\s]/g, ''));
 const clave = (base: string, codigo: string) => `toldos-testar-corte-abierto:${base}:${codigo.toUpperCase()}`;
 const leer = (base: string, codigo: string) => { try { return localStorage.getItem(clave(base, codigo)); } catch { return null; } };
 const escribir = (base: string, codigo: string, valor: string) => { try { localStorage.setItem(clave(base, codigo), valor); } catch { /* sin almacén: solo esta vez */ } };

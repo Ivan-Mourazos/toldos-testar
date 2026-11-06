@@ -1,3 +1,4 @@
+import { abrirEntrega, ofsEntrega } from '../../entregas.js';
 import { awningLetter } from "../../domain/awningCompleteness.js";
 import { normalizeOf } from "../../reviewRules.js";
 import type { BaquetonInput } from "../calc/baqueton.ts";
@@ -120,12 +121,12 @@ export function crearPedidoRemolques({ datos, autoria, existente, ahora, cliente
     { version: e.version, tipo: e.tipo, input: e.input, result: e.result, paramsSnapshot: datos.params },
     { realizadoPor: autoria.technician, revision: autoria.reviewer },
   ));
-  return {
+  return abrirEntrega({
     schemaVersion: ESQUEMA_PEDIDO_REMOLQUES,
     kind: TIPO_PEDIDO_REMOLQUES,
     orderCode: codigoPedido(numeroPedido),
     numeroPedido,
-    status: "PENDING_REVIEW",
+    status: "PENDING_REVIEW" as const,
     createdAt: existente?.createdAt ?? ahora,
     updatedAt: ahora,
     createdBy: existente?.createdBy || autoria.technician,
@@ -138,7 +139,7 @@ export function crearPedidoRemolques({ datos, autoria, existente, ahora, cliente
     params: datos.params,
     elementos,
     ...(cliente ? { clienteRps: cliente } : {}),
-  };
+  }, existente);
 }
 
 /**
@@ -169,7 +170,7 @@ export function resumenBandeja(pedido: PedidoRemolques): ResumenPedidoRemolques 
   const copia: Partial<PedidoRemolques> = { ...pedido };
   delete copia.elementos;
   delete copia.params;
-  return { ...(copia as ResumenPedidoRemolques), summary: { ...pedido.summary, awningList: resumenElementos(pedido.elementos) } };
+  return { ...(copia as ResumenPedidoRemolques), ofsEntregaActual: ofsEntrega(pedido), summary: { ...pedido.summary, awningList: resumenElementos(pedido.elementos) } };
 }
 
 /** El año del pedido para Pedidos y «Generados»: las dos cifras tras «AR» o, si no, el de su fecha. */

@@ -14,11 +14,12 @@ import type { PedidoRemolques } from '../remolques/flujo/tipos.ts';
 import type { PedidoPuertasGuardado } from '../puertas/flujo/tipos.ts';
 import { crearAlmacenConfirmaciones } from './confirmaciones.js';
 import { corteDelPlano } from './corteDwg.js';
+import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 const raices: string[] = [];
 afterEach(async () => { for (const raiz of raices.splice(0)) await fs.rm(raiz, { recursive: true, force: true }); });
 
-async function preparar(tipo: 'puertas' | 'remolques') {
+async function preparar(tipo: 'puertas' | 'remolques', conPdf = false) {
   await fs.mkdir(path.resolve('tmp'), { recursive: true });
   const raiz = await fs.mkdtemp(path.resolve('tmp/pedidos-editables-'));
   raices.push(raiz);
@@ -47,6 +48,7 @@ async function preparar(tipo: 'puertas' | 'remolques') {
   almacen.guardar = async (pedido: never) => { if (fallaGuardado) throw new Error('Fallo al guardar'); return guardarReal(pedido); };
   const servicio = tipo === 'puertas'
     ? crearServicioPedidosPuertas({ ...comunes, almacen: almacen as ReturnType<typeof crearAlmacenPedidos<PedidoPuertasGuardado>>, otroProducto: async () => null,
+      ...(conPdf ? { presentacionesPdf: async () => { const pdf = await pdfLib.PDFDocument.create(); pdf.addPage(); return pdf.save(); } } : {}),
       plano: crearPlanoPuertas({ ajustes, oda: { disponible: false, convertir: async c => c } }) })
     : crearServicioPedidosRemolques({ ...comunes, almacen: almacen as ReturnType<typeof crearAlmacenPedidosRemolques>, esPedidoDeToldos: async () => false,
       parametros: async () => remolque.params, hacerPdf: async () => { const pdf = await pdfLib.PDFDocument.create(); pdf.addPage(); return pdf.save(); },
@@ -60,6 +62,77 @@ async function preparar(tipo: 'puertas' | 'remolques') {
 }
 
 describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido editable', tipo => {
+  it('guardar un generado sin cambiar sus datos no abre una entrega vacía ni toca archivos', async () => {
+    const t = await preparar(tipo);
+    await t.servicio.guardar(t.cuerpo());
+    await t.servicio.generar(t.codigo, { savedBy: 'IVÁN', confirmOverwrite: true });
+    const antes = await t.obtener();
+    const bytes = await fs.readFile(antes.corteConfirmado!.plano);
+    expect((await t.servicio.guardar(t.cuerpo())).cuerpo).toMatchObject({ unchanged: true });
+    expect(await t.obtener()).toEqual(antes);
+    expect(await fs.readFile(antes.corteConfirmado!.plano)).toEqual(bytes);
+  });
+  it('las dos copias del PDF llevan el pedido completo con su entrega y permiten recuperarlo', async () => {
+    const t = await preparar(tipo, true);
+    await t.servicio.guardar(t.cuerpo());
+    expect((await t.servicio.generar(t.codigo, { savedBy: 'IVÁN', confirmOverwrite: true })).status).toBe(200);
+    const pedido = await t.obtener();
+    const archivos = pedido.production!.files.filter(f => f.type === 'pdf');
+    expect(archivos).toHaveLength(2);
+    expect(await fs.readFile(archivos[0].savedPath)).toEqual(await fs.readFile(archivos[1].savedPath));
+    for (const f of archivos) {
+      const tarea = getDocument({ data: new Uint8Array(await fs.readFile(f.savedPath)) });
+      const doc = await tarea.promise;
+      try {
+        const adjuntos = await doc.getAttachments();
+        const entradas = (adjuntos instanceof Map ? [...adjuntos.entries()] : Object.entries(adjuntos ?? {})) as Array<[string, { filename: string; content?: Uint8Array }]>;
+        const encontrado = entradas.find(([, a]) => a.filename.endsWith(`.${tipo}.json`));
+        expect(encontrado).toBeTruthy();
+        const contenido = encontrado![1].content ?? await doc.getAttachmentContent(encontrado![0]);
+        if (!contenido) throw new Error('El adjunto no contiene los datos del pedido');
+        const datos = JSON.parse(Buffer.from(contenido).toString('utf8'));
+        expect(datos.orderCode).toBe(t.codigo);
+        expect(datos.entregas[0]).toMatchObject({ numero: 1, autor: 'IVÁN' });
+        expect(datos.elementos).toHaveLength(pedido.elementos.length);
+      } finally { await tarea.destroy(); }
+    }
+  }, 20000);
+  it('genera dos entregas separadas y avisa de los materiales al corregir una OF ya generada', async () => {
+    const t = await preparar(tipo);
+    await t.servicio.guardar(t.cuerpo());
+    expect((await t.servicio.generar(t.codigo, { savedBy: 'IVÁN', confirmOverwrite: true })).status).toBe(200);
+    const primera = await t.obtener();
+    expect(primera.entregas).toMatchObject([{ numero: 1, autor: 'IVÁN' }]);
+    const originales = await Promise.all([primera.corteConfirmado!.plano, ...primera.production!.files.map(f => f.savedPath)].map(async ruta => ({ ruta, bytes: await fs.readFile(ruta) })));
+    const cuerpo = t.cuerpo();
+    if ('pedido' in cuerpo && cuerpo.pedido) {
+      const e = structuredClone(cuerpo.pedido.elementos[0]);
+      e.id = 'nueva'; e.input.of = '0239998';
+      cuerpo.pedido.elementos.push(e);
+    } else if ('elementos' in cuerpo && cuerpo.elementos) {
+      const e = structuredClone(cuerpo.elementos[0]);
+      e.version = 'entrega-nueva'; e.input.cabecera.ordenFabricacion = '0239998';
+      cuerpo.elementos.push(e);
+    }
+    expect((await t.servicio.guardar(cuerpo)).status).toBe(200);
+    const pendiente = await t.obtener();
+    expect(pendiente).toMatchObject({ entregaActual: 2, status: 'PENDING_REVIEW' });
+    expect(pendiente.corteConfirmado!.filename).toContain('-2');
+    expect((await t.servicio.generar(t.codigo, { savedBy: 'IVÁN', confirmOverwrite: true })).status).toBe(200);
+    const segunda = await t.obtener();
+    expect(segunda.entregas).toHaveLength(2);
+    expect(segunda.entregas![1].ofs).toEqual(['0239998']);
+    for (const f of originales) expect(await fs.readFile(f.ruta)).toEqual(f.bytes);
+    const correccion = t.cuerpo(true);
+    expect((await t.servicio.guardar(correccion)).status).toBe(200);
+    const aviso = await t.servicio.generar(t.codigo, { savedBy: 'IVÁN', confirmOverwrite: true });
+    expect(aviso).toMatchObject({ status: 409, cuerpo: { needsMaterialConfirmation: true, cambiosMateriales: expect.any(Array) } });
+    expect((await t.obtener()).status).toBe('PENDING_REVIEW');
+    const token = (aviso.cuerpo as { huellaMateriales: string }).huellaMateriales;
+    expect((await t.servicio.generar(t.codigo, { savedBy: 'IVÁN', confirmOverwrite: true, aceptarMateriales: token })).status).toBe(200);
+    expect((await t.obtener()).entregas).toHaveLength(3);
+    for (const f of originales) expect(await fs.readFile(f.ruta)).toEqual(f.bytes);
+  }, 30000);
   it.each(['generar', 'bot'] as const)('con la marca activa, %s exige decidir antes de escribir y usar el corte queda registrado', async accion => {
     const t = await preparar(tipo);
     await t.servicio.guardar(t.cuerpo());
@@ -133,7 +206,7 @@ describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido 
 
   it('un plano ajeno pregunta antes de escribir o guardar; cancelar conserva todo', async () => {
     const t = await preparar(tipo);
-    const ruta = path.join(t.raiz, 'planos', `${t.codigo}.dxf`);
+    const ruta = path.join(t.raiz, 'planos', `${t.codigo}-1.dxf`);
     await fs.mkdir(path.dirname(ruta), { recursive: true });
     await fs.writeFile(ruta, 'Plano manual ajeno');
     expect((await t.servicio.guardar(t.cuerpo())).cuerpo).toMatchObject({ needsPlanoConfirmation: true });
@@ -247,6 +320,7 @@ describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido 
     t.estado('pasada');
     expect((await t.servicio.generar(t.codigo, { savedBy: 'IVÁN', confirmOverwrite: true })).status).toBe(200);
     expect(await t.obtener()).toMatchObject({ status: 'PRODUCED', reviewedBy: 'DAVID', production: { createdBy: 'IVÁN' } });
-    await expect(t.servicio.guardar(t.cuerpo())).rejects.toMatchObject({ statusCode: 409 });
+    expect((await t.servicio.guardar(t.cuerpo(true))).status).toBe(200);
+    expect((await t.obtener()).entregaActual).toBe(2);
   });
 });

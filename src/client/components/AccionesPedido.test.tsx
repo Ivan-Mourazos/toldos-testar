@@ -39,7 +39,7 @@ describe('acciones comunes de los pedidos', () => {
   it('editar es libre y el aviso parcial identifica las OF aprobadas y pasadas', () => {
     const estado = { disponible: true, ofs: { '0000123': { estado: 'pasada' }, '0000456': { estado: 'en_revision' } } };
     expect(puedeCorregir('APPROVED', [], 'ANA', 'IVÁN', null)).toBe(true);
-    expect(puedeCorregir('PRODUCED', [], 'ANA', 'IVÁN', null)).toBe(false);
+    expect(puedeCorregir('PRODUCED', [], 'ANA', 'IVÁN', null)).toBe(true);
     expect(avisoAprobacionToldos([{ of: '123' }, { of: '456' }], estado)).toContain('123');
     expect(avisoAprobacionToldos([{ of: '123' }, { of: '456' }], estado)).not.toContain('456');
   });

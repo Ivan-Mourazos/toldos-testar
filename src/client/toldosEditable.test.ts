@@ -31,8 +31,8 @@ describe('permisos de toldos editables', () => {
     const review = { status: 'APPROVED', order: { technician: 'ANA', awnings: [{ of: '1' }, { of: '2' }] } } as Parameters<typeof generateState>[0];
     expect(generateState(review, 'IVÁN', { disponible: true, ofs: { '0000001': { estado: 'aprobada' }, '0000002': { estado: 'pasada' } } }).allowed).toBe(true);
   });
-  it('un generado sigue sin corregirse y hace falta haber elegido Soy', () => {
-    expect(puedeCorregir('PRODUCED', [], 'ANA', 'IVÁN', null, true)).toBe(false);
+  it('un generado puede corregirse y hace falta haber elegido Soy', () => {
+    expect(puedeCorregir('PRODUCED', [], 'ANA', 'IVÁN', null, true)).toBe(true);
     expect(puedeCorregir('APPROVED', [], 'ANA', '', null, true)).toBe(false);
   });
 });

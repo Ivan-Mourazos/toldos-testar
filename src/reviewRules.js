@@ -27,15 +27,13 @@ export function generateFilesDecision(status) {
 }
 
 /**
- * Qué hace «Guardar» cuando ya hay un pedido con ese número. Uno generado no se pisa:
- * sus archivos ya salieron y la bandeja lo guarda como histórico.
+ * Guardar un generado abre otra entrega; sus archivos se conservan en el historial.
  * @param {{ status?: string } | null} existing
  * @param {boolean} confirmOverwrite
  * @returns {{ action: 'save' } | { action: 'confirm' } | { action: 'refuse', statusCode: number, error: string }}
  */
 export function saveReviewDecision(existing, confirmOverwrite) {
   if (!existing) return { action: 'save' };
-  if (existing.status === 'PRODUCED') return { action: 'refuse', statusCode: 409, error: PRODUCED_SAVE_ERROR };
   return confirmOverwrite ? { action: 'save' } : { action: 'confirm' };
 }
 

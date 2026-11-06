@@ -5,7 +5,7 @@ import revision from './domain/corteLona/fixtures/revision-AR2604784.json' with 
 import { generarCorteLona } from './domain/corteLona/index.js';
 import { crearEstadoCorteLona, corteLonaPendiente } from './corteLonaEstado.js';
 import { carpetaCorte, exigirCorteAlDia, prepararArchivosCorte, escribirPlanosCorte } from './corteLonaArchivos.js';
-import { defaultWorkflowSettings, normalizeWorkflowSettings, createReviewPackage, reviewSummary } from './workflow.js';
+import { defaultWorkflowSettings, normalizeWorkflowSettings, createReviewPackage, reviewSummary, markReviewFilesGenerated } from './workflow.js';
 import { calculateOrder } from './domain/rules.js';
 import { pedidoVariasTelas } from './domain/corteLona/fixtures/variasTelas.js';
 
@@ -14,6 +14,23 @@ const corteLona = crearEstadoCorteLona(order, { resultado: generarCorteLona(orde
 const oda = { disponible: false };
 
 describe('Reglas y salidas del corte', () => {
+  it('la bandeja comprueba solo el corte de la entrega en curso', () => {
+    const primera = markReviewFilesGenerated(createReviewPackage({ order, calculation: calculateOrder(order), corteLona }), { files: [] });
+    const nueva = { ...structuredClone(order.awnings[0]), id: 'nuevo', of: '0239998' };
+    const actual = { ...order, awnings: [nueva] };
+    const estado = crearEstadoCorteLona(actual, { resultado: generarCorteLona(actual, { ofStockSacos: '0230811' }), ofStockSacos: '0230811' });
+    const completo = { ...order, awnings: [...order.awnings, nueva] };
+    const segunda = createReviewPackage({ order: completo, calculation: calculateOrder(completo), existing: primera, corteLona: estado });
+    expect(reviewSummary(segunda).corteLonaEstado).toBe('hecho');
+  });
+  it('numera el archivo de la entrega sin invalidar las firmas del pedido', async () => {
+    const copia = structuredClone(order);
+    const salida = await prepararArchivosCorte({ order, corteLona, codigoSalida: `${order.orderCode}-2`,
+      settings: { productionEnabled: true, corteLonaBotDirectory: path.resolve('tmp/bot') }, tipo: 'bot', oda });
+    expect(salida.files[0].filename).toBe(`${order.orderCode}-2.dxf`);
+    expect(order).toEqual(copia);
+    expect(corteLonaPendiente(order, corteLona)).toEqual([]);
+  });
   it('conserva las dos plantillas de configuración, las valida y resume los estados de la bandeja', () => {
     const seed = { corteLonaBotDirectory: path.resolve('tmp/bot/{TECNICO}'), corteLonaPlanoDirectory: path.resolve('tmp/planos/{YYYY}/{PEDIDO}') };
     const settings = defaultWorkflowSettings(seed);

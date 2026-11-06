@@ -1,3 +1,5 @@
+import { codigoEntrega, ofsEntrega } from '../../entregas.js';
+import { confirmarMateriales } from '../materialesEntrega';
 import { solicitarGeneracion } from '../reintentarGeneracion';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useContenidoFluido } from '../hooks/useContenidoFluido';
@@ -253,8 +255,8 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
     const targetCode = selectedReview.orderCode;
     const initialChoice = await onConfirm({
       title: `Generar archivos de ${targetCode}`,
-      message: 'CoordinaOT ya lo ha aprobado. Se guardará el PDF definitivo en Planteamientos y un Excel de reserva por cada OF en Subida de material.',
-      details: [`${targetCode}-1.pdf`, ...selectedReview.summary.ofs.map((of) => `${of}.xls`)],
+      message: 'CoordinaOT ya lo ha aprobado. Se guardará el PDF de esta entrega en Planteamientos y una reserva por cada OF de la entrega en Subida de material.',
+      details: [`${selectedReview.entregaActual ? codigoEntrega(selectedReview) : `${targetCode}-1`}.pdf`, ...ofsEntrega(selectedReview).map((of: string) => `${of}.xls`)],
       confirmLabel: 'Sí, generar archivos',
       cancelLabel: 'Ahora no',
       tone: 'warning'
@@ -266,6 +268,7 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
     let confirmOverwrite = false;
     let aceptarHuellaCorte: string | undefined;
     let aceptarCorteNoRegenerado: string | undefined;
+    let aceptarMateriales: string | undefined;
     try {
       while (true) {
         const { response, data } = await solicitarGeneracion(`/api/reviews/${encodeURIComponent(targetCode)}/generate-files`, {
@@ -276,11 +279,17 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
             confirmOverwrite,
             aceptarHuellaCorte,
             aceptarCorteNoRegenerado,
+            aceptarMateriales,
             savedBy: currentUser
           })
         }, async (response) => ({ response, data: await response.json() }),
         () => onToast('Reintentando…', { tone: 'info' }));
 
+        if (response.status === 409 && data.needsMaterialConfirmation) {
+          if (!await confirmarMateriales(data, onConfirm)) return;
+          aceptarMateriales = data.huellaMateriales;
+          continue;
+        }
         if (response.status === 409 && data.corteNoRegenerado) {
           const permiso = await decidirCortePendiente(data, onConfirm, { ruta: '/api/reviews',
             cuerpo: { order: selectedReview.order, corteLona: selectedReview.corteLona }, usuario: currentUser }, onChanged);
@@ -337,7 +346,7 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
           return;
         }
         const rpsCount = (data.saved || []).filter((file: { type: string }) => file.type === 'rps').length;
-        onToast(`Guardado ${targetCode}-1.pdf${data.conCad ? ' (con las presentaciones del CAD)' : ''} y ${rpsCount} reservas de RPS.`, {
+        onToast(`Guardado ${codigoEntrega(selectedReview)}.pdf${data.conCad ? ' (con las presentaciones del CAD)' : ''} y ${rpsCount} reservas de RPS.`, {
           tone: 'success',
           title: 'Archivos generados'
         });

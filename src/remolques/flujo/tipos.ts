@@ -87,6 +87,9 @@ export interface OrigenMigracion {
 }
 
 export interface PedidoRemolques {
+  ofsEntregaActual?: string[];
+  entregas?: import('../../entregasTipos.ts').EntregaPedido[];
+  entregaActual?: number;
   enviosCorte?: import('../../corteEnviosTipos.ts').EnvioCorte[];
   schemaVersion: typeof ESQUEMA_PEDIDO_REMOLQUES;
   kind: typeof TIPO_PEDIDO_REMOLQUES;

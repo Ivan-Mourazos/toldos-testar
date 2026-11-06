@@ -23,6 +23,9 @@ import {
 } from './workflow.js';
 import { buildOrderReviewPdf } from './domain/reviewPdf.js';
 import { buildOrderPlanteamientoPdf } from './domain/planteamientoPdf.js';
+import { entregasPedido } from './entregas.js';
+import { leerPdfParaActualizarDatos } from './workflow.js';
+import pdfLib from 'pdf-lib';
 
 const temporaryDirectories = [];
 
@@ -32,6 +35,50 @@ afterEach(async () => {
 });
 
 describe('flujo de revisión y producción', () => {
+  it('registrar un reenvío conserva las páginas del PDF de la entrega, aunque la copia anual tenga otras OF', async () => {
+    const raiz = await fs.mkdtemp(path.resolve('tmp/entrega-pdf-registro-'));
+    temporaryDirectories.push(raiz);
+    const pdf = await pdfLib.PDFDocument.create(); pdf.addPage();
+    const definitivo = Buffer.from(await pdf.save());
+    const anual = await pdfLib.PDFDocument.create(); anual.addPage(); anual.addPage();
+    await fs.writeFile(path.join(raiz, 'AR2603626-2.pdf'), definitivo);
+    await fs.writeFile(path.join(raiz, 'AR2603626.pdf'), await anual.save());
+    const review = { status: 'PRODUCED', orderCode: 'AR2603626', production: { files: [{ type: 'pdf', filename: 'AR2603626-2.pdf' }] } };
+    const resultado = await leerPdfParaActualizarDatos(review, { planteamientosDirectory: raiz, reviewDirectory: raiz });
+    expect(resultado).toEqual(definitivo);
+    expect((await pdfLib.PDFDocument.load(resultado)).getPageCount()).toBe(1);
+  });
+  it.each(['AR2603626_2', ''])('el planteamiento conserva datos sin review, también en la vista previa sin número (%s)', async orderCode => {
+    const order = { orderCode, awnings: [{ id: 'A', of: '0230001', model: 'BAMBALINA', units: 1, width: 300, projection: 100 }] };
+    const calculation = { ofs: [{ of: '0230001', awningId: 'A', awningIndex: 0,
+      calculation: { valid: true, fabricWidth: 300, fabricDrop: 100, fabricMl: 3, fabricPanels: 1 }, despiece: { rows: [], anchoring: null } }] };
+    const pdf = await buildOrderPlanteamientoPdf({ order, calculation });
+    const recuperado = await extractReviewPackageFromPdf(pdf);
+    expect(recuperado).toMatchObject({ kind: 'toldos-testar-review', orderCode: order.orderCode || 'SIN-PEDIDO', order });
+  });
+  it('leer un pedido anterior _2 no lo reescribe y su próxima corrección abre la entrega 2', async () => {
+    const raiz = await fs.mkdtemp(path.resolve('tmp/entregas-antiguas-'));
+    temporaryDirectories.push(raiz);
+    const order = { orderCode: 'AR2603626_2', awnings: [{ id: 'A', of: '0230001', model: 'BAMBALINA', units: 1, width: 300, projection: 100 }] };
+    const previo = { kind: 'toldos-testar-review', orderCode: order.orderCode, status: 'PRODUCED', order,
+      production: { createdAt: '2026-11-05T08:00:00Z', createdBy: 'ANA', files: [{ type: 'pdf', filename: 'AR2603626_2-1.pdf' }] } };
+    const fichero = path.join(raiz, `${order.orderCode}.toldos.json`);
+    const bytes = `${JSON.stringify(previo, null, 1)}\n`;
+    await fs.writeFile(fichero, bytes);
+    const tienda = createWorkflowStore({ settingsFile: path.join(raiz, 'settings.json'), defaults: defaultWorkflowSettings({ reviewDirectory: raiz }) });
+    const leido = await tienda.getReview(order.orderCode);
+    expect(entregasPedido(leido)).toMatchObject([{ numero: 1, legacy: true, materiales: null }]);
+    expect(await fs.readFile(fichero, 'utf8')).toBe(bytes);
+    expect(await fs.readdir(raiz)).toEqual([`${order.orderCode}.toldos.json`]);
+    const corregido = createReviewPackage({ order: { ...order, awnings: [{ ...order.awnings[0], width: 310 }] }, calculation: { ofs: [{ of: '0230001' }], diagnostics: [] }, existing: leido });
+    expect(corregido).toMatchObject({ entregaActual: 2, orderCode: 'AR2603626_2' });
+    expect(corregido.entregas[0].archivos).toEqual(previo.production.files);
+  });
+  it('abre la copia inmutable de una reserva de entrega antes de buscar la bandeja de RPS', () => {
+    const review = { status: 'PRODUCED', orderCode: 'AR2603626', production: { files: [{ type: 'rps', filename: '0230001.xls', archivedFilename: 'AR2603626-2-0230001.xls' }] } };
+    const archivos = resolveGeneratedReviewFiles(review, { planteamientosDirectory: path.resolve('tmp/plan'), rpsUploadDirectory: path.resolve('tmp/rps') }, 0);
+    expect(archivos[0].savedPath).toBe(path.resolve('tmp/plan/AR2603626-2-0230001.xls'));
+  });
   it('puede reabrir desde la web el planteamiento definitivo guardado en la carpeta anual', async () => {
     const awning = { id: 'a', of: '0230001', model: 'BAMBALINA', units: 1, width: 300, projection: 100 };
     const order = { orderCode: 'AR2601234', awnings: [awning] };

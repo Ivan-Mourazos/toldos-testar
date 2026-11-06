@@ -1,3 +1,7 @@
+import { codigoCorteEditable, abrirEntrega, avisoMateriales, codigoEntrega, ofsEntrega, pedidoEntrega } from './entregas.js';
+import { materialesReserva } from './materialesEntrega.js';
+import { adjuntarPedido } from './adjuntosPedido.js';
+import { leerPdfParaActualizarDatos } from './workflow.js';
 import { crearCierreHttp } from './cierreHttp.js';
 import compression from 'compression';
 import express from 'express';
@@ -336,11 +340,20 @@ app.post('/api/corte-lona/borrador', async (req, res, next) => {
     lockKey = orderCode;
     let existente = null;
     try { existente = await workflowStore.getReview(orderCode); } catch { existente = null; }
+    const entrega = abrirEntrega({ orderCode, order, status: 'PENDING_REVIEW' }, existente);
+    const actual = pedidoEntrega(entrega).order;
+    if (existente?.status === 'PRODUCED') existente = null;
+    let corteLona = req.body?.corteLona;
+    if (entrega.entregas.length) {
+      const stock = await ofStockSacos();
+      const ajustes = corteLona?.ajustes || {};
+      corteLona = crearEstadoCorteLona(actual, { ajustes, resultado: generarCorteLona(actual, { ajustes, ofStockSacos: stock.of }), ofStockSacos: stock.of });
+    }
     const { status, cuerpo } = await flujoToldos.borrador({
-      orderCode, regenerar: req.body?.regenerar === true, datos: datosCorteToldos(req.body?.corteLona), datosRevisado: existente?.corteConfirmado?.datos,
+      orderCode: codigoEntrega(entrega), regenerar: req.body?.regenerar === true, datos: datosCorteToldos(corteLona), datosRevisado: existente?.corteConfirmado?.datos,
       revisado: existente?.corteConfirmado ? planosDe(existente.corteConfirmado).map((p) => p.plano) : undefined,
       preparar: async (carpeta) => {
-        const salida = await prepararArchivosCorte({ order, corteLona: req.body?.corteLona, settings: await workflowStore.getSettings(), oda, tipo: 'plano', carpeta });
+        const salida = await prepararArchivosCorte({ order: actual, codigoSalida: codigoEntrega(entrega), corteLona, settings: await workflowStore.getSettings(), oda, tipo: 'plano', carpeta });
         return { ficheros: salida.files.map((f) => ({ filename: f.filename, savedPath: f.savedPath, contenido: f.contents })),
           avisos: salida.files.length || salida.avisos.length ? salida.avisos : ['Este pedido no tiene corte de lona.'] };
       }
@@ -357,17 +370,12 @@ app.post('/api/corte-lona/borrador', async (req, res, next) => {
 app.get('/api/corte-lona/borrador/estado', async (req, res, next) => {
   try {
     const codigo = String(req.query?.orderCode ?? '').trim();
-    const estado = codigo ? await flujoToldos.estado(sanitizeOrderCode(codigo)) : { activo: false };
-    let revisado = false;
-    let corteSimulado = false;
-    if (estado.activo) {
-      try {
-        const review = await workflowStore.getReview(sanitizeOrderCode(codigo));
-        revisado = Boolean(review.corteConfirmado);
-        corteSimulado = review.corteSimulado === true;
-      }
-      catch (error) { if (error.code !== 'ENOENT') throw error; }
-    }
+    let review = null;
+    if (codigo) try { review = await workflowStore.getReview(sanitizeOrderCode(codigo)); }
+    catch (error) { if (error.code !== 'ENOENT') throw error; }
+    const estado = codigo ? await flujoToldos.estado(codigoCorteEditable(review, sanitizeOrderCode(codigo))) : { activo: false };
+    const revisado = review?.status !== 'PRODUCED' && Boolean(review?.corteConfirmado);
+    const corteSimulado = review?.status !== 'PRODUCED' && review?.corteSimulado === true;
     res.set('Cache-Control', 'no-store').json({ ...estado, revisado, corteSimulado });
   } catch (error) {
     next(error);
@@ -390,7 +398,10 @@ app.post('/api/corte-lona/borrador/confirmar', async (req, res, next) => {
   try {
     const savedBy = typeof req.body?.savedBy === 'string' ? req.body.savedBy.trim() : '';
     if (!formOptions.tecnicos.includes(savedBy)) throw httpError(400, 'Elige quién eres en «Soy» antes de confirmar el corte.');
-    const { status, cuerpo } = await flujoToldos.confirmar(sanitizeOrderCode(String(req.body?.orderCode ?? '')), savedBy);
+    const codigo = sanitizeOrderCode(String(req.body?.orderCode ?? ''));
+    let review = null;
+    try { review = await workflowStore.getReview(codigo); } catch (error) { if (error.code !== 'ENOENT') throw error; }
+    const { status, cuerpo } = await flujoToldos.confirmar(codigoCorteEditable(review, codigo), savedBy);
     res.status(status).json(cuerpo);
   } catch (error) {
     next(error);
@@ -400,10 +411,10 @@ app.post('/api/corte-lona/borrador/confirmar', async (req, res, next) => {
 registrarRutasEnviosCorte(app, {
   ruta: '/api/reviews/:orderCode/corte-lona', obtener: (codigo) => workflowStore.getReview(codigo),
   ajustes: () => workflowStore.getSettings(), coordina, tecnicos: formOptions.tecnicos, locks: generationLocks,
-  contexto: (review) => ({ order: review.order,
-    elementos: review.order.awnings.map((a, i) => ({ letter: awningLetter(i), of: a.of })),
-    comprobarCorte: () => exigirCorteAlDia(review.order, review.corteLona) }),
-  preparar: async (review) => (await prepararArchivosCorte({ order: review.order, corteLona: review.corteLona,
+  contexto: (review) => ({ order: { ...pedidoEntrega(review).order, orderCode: codigoEntrega(review) },
+    elementos: pedidoEntrega(review).order.awnings.map((a, i) => ({ letter: awningLetter(i), of: a.of })),
+    comprobarCorte: () => exigirCorteAlDia(pedidoEntrega(review).order, review.corteLona) }),
+  preparar: async (review) => (await prepararArchivosCorte({ order: pedidoEntrega(review).order, codigoSalida: codigoEntrega(review), corteLona: review.corteLona,
     settings: await workflowStore.getSettings(), tipo: 'bot', soloContenido: true })).files,
   // Flujo del DWG, fase 3: con el corte confirmado, el DXF sale del DWG revisado; si cambió después, se pregunta.
   desdeDwg: async (review, cuerpo, usuario) => {
@@ -412,17 +423,23 @@ registrarRutasEnviosCorte(app, {
     Object.assign(review, salida.pedido);
     if (!review.corteConfirmado) return null;
     // Pasado a revisión en CoordinaOT y aprobado otra vez después del cambio: sale sin preguntar.
-    const ofs = uniqueOfs(review.order.awnings.map((a) => ({ of: String(a?.of || '') })));
+    const ofs = uniqueOfs(pedidoEntrega(review).order.awnings.map((a) => ({ of: String(a?.of || '') })));
     const aprobadoEn = aprobacionDeTodas(await coordina.statusOf(ofs, { fresh: true }), ofs);
     const comprobado = await flujoToldos.antesDeMandar(review.corteConfirmado, cuerpo.aceptarCambioCorte === true, usuario, aprobadoEn);
     if ('respuesta' in comprobado) return comprobado;
-    return { nota: [salida.nota, comprobado.nota].filter(Boolean).join(' '), archivos: [{ type: 'corte-lona', filename: `${review.orderCode}.dxf`, savedPath: '', contents: Buffer.from(comprobado.dwg.dxf, 'latin1') }] };
+    return { nota: [salida.nota, comprobado.nota].filter(Boolean).join(' '), archivos: [{ type: 'corte-lona', filename: `${codigoEntrega(review)}.dxf`, savedPath: '', contents: Buffer.from(comprobado.dwg.dxf, 'latin1') }] };
   },
   guardar: async (review) => {
-    const calculation = await calculateConfiguredOrder(review.order);
-    const pdf = review.status === 'PRODUCED'
-      ? await buildOrderPlanteamientoPdf({ order: review.order, calculation, review, ...opcionesHojaTelas({ codigoPedido: review.orderCode }) })
-      : await buildOrderReviewPdf({ order: review.order, calculation, review });
+    const anterior = await leerPdfParaActualizarDatos(review, await workflowStore.getSettings());
+    let pdf;
+    if (anterior) pdf = await adjuntarPedido(anterior, review, 'toldos');
+    else {
+      const order = review.status === 'PRODUCED' ? pedidoEntrega(review).order : review.order;
+      const calculation = await calculateConfiguredOrder(order);
+      pdf = review.status === 'PRODUCED'
+        ? await buildOrderPlanteamientoPdf({ order, calculation, review, ...opcionesHojaTelas({ codigoPedido: review.orderCode }) })
+        : await buildOrderReviewPdf({ order, calculation, review });
+    }
     await workflowStore.saveReview(review, pdf);
   },
 });
@@ -1200,12 +1217,22 @@ app.post('/api/reviews', async (req, res, next) => {
     if (!formOptions.tecnicos.includes(savedBy)) throw httpError(400, 'Elige quién eres en «Soy» antes de guardar.');
     const estadoRevision = await coordina.statusOf(uniqueOfs(normalizedOrder.awnings));
     const authorship = autoriaToldos({ ...rawOrder, technician: existing?.order?.technician || savedBy }, savedBy, estadoRevision, formOptions.tecnicos);
-    const order = structuredClone({ ...rawOrder, orderCode, ...authorship });
-    const calculation = await calculateConfiguredOrder(order);
-    const review = createReviewPackage({ order, calculation, existing, corteLona: req.body?.corteLona, savedBy });
+    const completo = structuredClone({ ...rawOrder, orderCode, ...authorship });
+    const calculation = await calculateConfiguredOrder(completo);
+    const review = createReviewPackage({ order: completo, calculation, existing, corteLona: req.body?.corteLona, savedBy });
+    if (existing?.status === 'PRODUCED' && !ofsEntrega(review).length) return res.json({ ok: true, unchanged: true, review: existing });
+    // El histórico ya está congelado en entregas: ninguna operación del corte recibe el plano anterior.
+    if (existing?.status === 'PRODUCED') existing = null;
+    const order = normalizeOrder(pedidoEntrega(review).order);
+    const codigoCorte = codigoEntrega(review);
+    if (review.entregas.length && ofsEntrega(review).length) {
+      const ajustes = review.corteLona?.ajustes || {};
+      const stock = await ofStockSacos();
+      review.corteLona = crearEstadoCorteLona(order, { ajustes, resultado: generarCorteLona(order, { ajustes, ofStockSacos: stock.of }), ofStockSacos: stock.of });
+    }
     review.corteSimulado = existing?.corteSimulado === true;
     const ajustesCorte = await workflowStore.getSettings();
-    const estadoDwg = await flujoToldos.estado(orderCode);
+    const estadoDwg = await flujoToldos.estado(codigoCorte);
     const hayCorte = Boolean(existing?.corteConfirmado || existing?.corteLona || estadoDwg.borrador);
     const cambio = decisionRegenerar(existing ? { ...existing, order: normalizeOrder(existing.order) } : null,
       normalizeOrder(order), hayCorte, req.body?.decisionCorte,
@@ -1232,10 +1259,10 @@ app.post('/api/reviews', async (req, res, next) => {
       && (decisionCorte === 'regenerar' || (!estadoDwg.borrador && !existing?.corteConfirmado));
     let desdeBorrador = null;
     if (generarPlano && ajustesCorte.productionEnabled) {
-      desdeBorrador = await flujoToldos.prepararRegeneracion({ orderCode, technician: order.technician, usuario: savedBy,
+      desdeBorrador = await flujoToldos.prepararRegeneracion({ orderCode: codigoCorte, technician: order.technician, usuario: savedBy,
         datos: datosCorteToldos(review.corteLona), revisado: existing?.corteConfirmado,
         preparar: async carpeta => {
-          const salida = await prepararArchivosCorte({ order, corteLona: review.corteLona, settings: ajustesCorte, oda, tipo: 'plano', carpeta });
+          const salida = await prepararArchivosCorte({ order, codigoSalida: codigoCorte, corteLona: review.corteLona, settings: ajustesCorte, oda, tipo: 'plano', carpeta });
           return { ficheros: salida.files.map(f => ({ filename: f.filename, savedPath: f.savedPath, contenido: f.contents })), avisos: salida.avisos };
         } });
       review.corteSimulado = false;
@@ -1245,7 +1272,7 @@ app.post('/api/reviews', async (req, res, next) => {
       review.corteSimulado = true;
       review.corteNoRegenerado = false;
     } else if (review.corteLona?.toldos?.length && (estadoDwg.borrador || existing?.corteConfirmado || !mantener)) {
-      desdeBorrador = await flujoToldos.alGuardar({ orderCode, technician: order.technician, usuario: savedBy,
+      desdeBorrador = await flujoToldos.alGuardar({ orderCode: codigoCorte, technician: order.technician, usuario: savedBy,
         confirmOverwrite: req.body?.confirmPlanoOverwrite === true, datos: datosCorteToldos(review.corteLona),
         revisado: existing?.corteConfirmado, aceptarHuella: req.body?.aceptarHuellaCorte, mantener, pendienteAceptacion: review.corteNoRegenerado });
     }
@@ -1363,7 +1390,8 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
     }
     if (decision.action === 'refuse') throw httpError(decision.statusCode, decision.error);
 
-    const order = normalizeOrder(review.order);
+    if (!pedidoEntrega(review).order.awnings.length) throw httpError(409, 'No hay OF nuevas o cambiadas para esta entrega.');
+    const order = normalizeOrder(pedidoEntrega(review).order);
     assertDeploymentModelsEnabled(order, deploymentFeatures);
     if (review.corteSimulado) throw httpError(409, 'El corte se calculó en simulación: regenera el corte para escribir el plano antes de generar archivos.');
     if (!review.corteConfirmado) exigirCorteAlDia(order, review.corteLona);
@@ -1407,13 +1435,17 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
       reservation = excludeFabricCodes(reservation, excludedNonAcrylicFabrics);
     }
 
-    const cleanOrder = sanitizeOrderCode(order.orderCode);
+    const materiales = materialesReserva(reservation);
+    const aviso = avisoMateriales(review, materiales, req.body?.aceptarMateriales);
+    if (aviso) return res.status(409).json(aviso);
+    const cleanOrder = sanitizeOrderCode(codigoEntrega(review));
     const rpsDirectory = resolveDirectoryTemplate(settings.rpsUploadDirectory, cleanOrder);
     const pdfDirectory = resolveDirectoryTemplate(settings.planteamientosDirectory, cleanOrder);
     const targets = reservation.ofs.map((ofBlock) => ({
       type: 'rps',
       of: ofBlock.of,
       filename: `${sanitizeOf(ofBlock.of)}.xls`,
+      archivedFilename: `${cleanOrder}-${sanitizeOf(ofBlock.of)}.xls`,
       savedPath: path.join(rpsDirectory, `${sanitizeOf(ofBlock.of)}.xls`),
       build: () => buildOfWorkbook(ofBlock)
     }));
@@ -1421,8 +1453,8 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
     if (duplicated.length > 0) throw new Error(`Hay OFs duplicadas en la reserva: ${duplicated.join(', ')}.`);
     targets.push({
       type: 'pdf',
-      filename: `${cleanOrder}-1.pdf`,
-      savedPath: path.join(pdfDirectory, `${cleanOrder}-1.pdf`)
+      filename: `${review.entregaActual ? cleanOrder : `${cleanOrder}-1`}.pdf`,
+      savedPath: path.join(pdfDirectory, `${review.entregaActual ? cleanOrder : `${cleanOrder}-1`}.pdf`)
     });
 
     await Promise.all(targets.map(async (target) => {
@@ -1439,12 +1471,14 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
       type: target.type,
       of: target.of,
       filename: target.filename,
+      ...(target.archivedFilename ? { archivedFilename: target.archivedFilename } : {}),
       savedPath: target.savedPath,
       overwritten: target.exists
     }));
     const updated = markReviewFilesGenerated(review, {
       generatedBy: req.body?.savedBy || review.updatedBy || review.order?.technician || review.createdBy,
-      files: saved.map(({ type, of, filename, savedPath }) => ({ type, of, filename, savedPath })),
+      materiales,
+      files: saved.map(({ type, of, filename, savedPath, archivedFilename }) => ({ type, of, filename, savedPath, ...(archivedFilename ? { archivedFilename } : {}) })),
       excludedNonAcrylicFabrics
     });
     // Quien aprobó en CoordinaOT queda como revisor del pedido antes de dibujar el PDF, para
@@ -1473,15 +1507,17 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
       }
     }
     const enElCad = new Set((updated.corteLona?.toldos ?? []).filter((t) => !t.manual).map((t) => t.letra));
-    pdfTarget.contents = await buildOrderPlanteamientoPdf({ order: updated.order, calculation, review: updated, ...opcionesHojaTelas({ codigoPedido: updated.order.orderCode }),
+    pdfTarget.contents = await buildOrderPlanteamientoPdf({ order: { ...order, orderCode: cleanOrder, reviewer }, calculation, review: updated, ...opcionesHojaTelas({ codigoPedido: cleanOrder }),
       ...(updated.corteConfirmado ? { cadEmbudo: null } : {}),
       ...(cad.length ? { sinHojaTelas: (_toldo, indice) => enElCad.has(awningLetter(indice)) } : {}) });
     if (cad.length) pdfTarget.contents = await conHojasDelante(pdfTarget.contents, cad);
+    pdfTarget.contents = await adjuntarPedido(pdfTarget.contents, updated, 'toldos');
     const conCad = cad.length > 0;
 
     await Promise.all([fs.mkdir(rpsDirectory, { recursive: true }), fs.mkdir(pdfDirectory, { recursive: true })]);
     for (const target of targets) {
       await fs.mkdir(path.dirname(target.savedPath), { recursive: true });
+      if (target.archivedFilename) await writeFileAtomic(path.join(pdfDirectory, target.archivedFilename), target.contents);
       await writeFileAtomic(target.savedPath, target.contents);
     }
 

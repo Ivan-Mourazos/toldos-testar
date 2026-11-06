@@ -5,6 +5,8 @@ import { avisoParaEditar, regenerarCortePedido } from '../toldosEditable';
 import type { CoordinaStatus } from '../types';
 import type { AskForConfirmation } from './NotificationCenter';
 import '../coordina/flujo-editable.css';
+import { entregasPedido, numeroEntrega, ofsEntrega } from '../../entregas.js';
+import type { EntregaPedido } from '../../entregasTipos';
 
 /** El mismo orden y la misma barra para las tres familias de pedidos. */
 export function AccionesPedido({ generado, ocupado, editandoPermitido, onEditar, elementos, coordina, preguntar, abrir,
@@ -25,7 +27,7 @@ export function AccionesPedido({ generado, ocupado, editandoPermitido, onEditar,
     } finally { setConsultando(false); }
   }
   return <div className="review-reader-actions" aria-label="Acciones del pedido">
-    {!generado && editandoPermitido && <button className="ghost-button boton-3d" type="button" disabled={ocupado || consultando} onClick={() => void editar()}>
+    {editandoPermitido && <button className="ghost-button boton-3d" type="button" disabled={ocupado || consultando} onClick={() => void editar()}>
       <PencilLine aria-hidden="true" />Corregir
     </button>}
     {abrir}
@@ -42,13 +44,33 @@ export function AccionesPedido({ generado, ocupado, editandoPermitido, onEditar,
 }
 
 /** Marco de la ficha: cabecera, acciones y estado del corte iguales en todos los productos. */
-export function CabeceraPedidoGuardado({ volver, titulo, datos, acciones, corteNoRegenerado, corteSimulado }: {
+export function CabeceraPedidoGuardado({ volver, titulo, datos, acciones, corteNoRegenerado, corteSimulado, pedido }: {
   volver: React.ReactNode; titulo: React.ReactNode; datos: string; acciones: React.ReactNode;
   corteNoRegenerado?: boolean; corteSimulado?: boolean;
+  pedido?: { orderCode: string; status: string };
 }) {
   return <>
     <header className="review-reader-header">{volver}<div className="review-reader-title"><h2>{titulo}</h2><small>{datos}</small></div>{acciones}</header>
+    {pedido && <EntregasPedido pedido={pedido} />}
     {corteNoRegenerado && <p role="status" className="review-state-note aviso-flujo-editable">{CORTE_NO_REGENERADO}</p>}
     {corteSimulado && <p role="status" className="review-state-note aviso-flujo-editable">Corte calculado en simulación; no se ha escrito ningún plano.</p>}
   </>;
+}
+
+export function EntregasPedido({ pedido }: { pedido: { orderCode: string; status: string } }) {
+  const entregas = entregasPedido(pedido) as EntregaPedido[];
+  return <section className="entregas-pedido bloque-3d" aria-label="Entregas del pedido">
+    <strong>{`Entrega ${numeroEntrega(pedido)}${pedido.status === 'PRODUCED' ? ' · Generada' : ' · En curso'}`}</strong>
+    {pedido.status !== 'PRODUCED' && <p>{ofsEntrega(pedido).length ? `OF de esta entrega: ${ofsEntrega(pedido).join(', ')}` : 'No hay OF nuevas o cambiadas para generar.'}</p>}
+    {entregas.length > 0 && <table><thead><tr><th>Entrega</th><th>OF generadas</th><th>Fecha y autor</th><th>Archivos</th></tr></thead><tbody>
+      {entregas.map(e => <tr key={e.numero}><td>{e.numero}</td><td>{e.ofs.join(', ')}</td>
+        <td>{new Date(e.fecha).toLocaleString('es-ES')} · {e.autor || 'Sin autor registrado'}</td>
+        <td>{e.archivos.filter((a, i, todos) => todos.findIndex(b => (b.archivedFilename || b.filename) === (a.archivedFilename || a.filename)) === i).map((a, i) => {
+          const copias = e.archivos.filter(b => (b.archivedFilename || b.filename) === (a.archivedFilename || a.filename));
+          return <span className="entrega-archivo" key={i} title={copias.map(f => f.savedPath).join('\n')}>
+            {a.archivedFilename || a.filename}{copias.length > 1 ? ` · ${copias.length} copias` : ''}
+          </span>;
+        })}</td></tr>)}
+    </tbody></table>}
+  </section>;
 }

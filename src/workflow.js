@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import { abrirEntrega, cerrarEntrega, pedidoEntrega, ofsEntrega } from './entregas.js';
 import { renombrarAtomico } from './renombrarAtomico.js';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
@@ -260,7 +261,7 @@ export function createReviewPackage({ order, calculation, existing = null, corte
   const orderCode = sanitizeOrderCode(order.orderCode);
   const ofs = Array.from(new Set(calculation.ofs.map((item) => item.of).filter(Boolean)));
   const models = Array.from(new Set(order.awnings.map((item) => item.model).filter(Boolean)));
-  return {
+  return abrirEntrega({
     schemaVersion: 1,
     kind: 'toldos-testar-review',
     orderCode,
@@ -274,8 +275,8 @@ export function createReviewPackage({ order, calculation, existing = null, corte
     reviewNote: '',
     production: null,
     enviosCorte: structuredClone(existing?.enviosCorte || []),
-    ...(existing?.corteConfirmado ? { corteConfirmado: structuredClone(existing.corteConfirmado) } : {}),
-    corteNoRegenerado: existing?.corteNoRegenerado === true,
+    ...(existing?.status !== 'PRODUCED' && existing?.corteConfirmado ? { corteConfirmado: structuredClone(existing.corteConfirmado) } : {}),
+    corteNoRegenerado: existing?.status !== 'PRODUCED' && existing?.corteNoRegenerado === true,
     corteLona: copiarEstadoCorteLona(corteLona === undefined ? existing?.corteLona : corteLona),
     summary: {
       customer: order.customer || '',
@@ -288,19 +289,20 @@ export function createReviewPackage({ order, calculation, existing = null, corte
       diagnostics: calculation.diagnostics.length
     },
     order: structuredClone(order)
-  };
+  }, existing);
 }
 
 export function reviewSummary(review) {
-  const summary = { ...review };
+  const summary = { ...review, ofsEntregaActual: ofsEntrega(review) };
   delete summary.order;
   // Estado de cada toldo para la lista de Pedidos (28/09/2026). Se calcula desde el
   // pedido guardado; si no se puede, la lista enseña solo los modelos.
   try {
     const order = normalizeOrder(review.order);
-    const requiereCorte = order.awnings.some(t => corteReadiness(t.model).ready && resolveFabric(order.sameFabric ? order.fabric : t.fabric)?.material?.trim().toUpperCase() === 'PLASTICA (LONA)');
+    const actual = pedidoEntrega(review).order;
+    const requiereCorte = actual.awnings.some(t => corteReadiness(t.model).ready && resolveFabric(actual.sameFabric ? actual.fabric : t.fabric)?.material?.trim().toUpperCase() === 'PLASTICA (LONA)');
     if (requiereCorte) {
-      const pendientes = corteLonaPendiente(order, review.corteLona);
+      const pendientes = corteLonaPendiente(actual, review.corteLona);
       summary.corteLonaEstado = pendientes.some(p => p.motivo === 'viejo') ? 'viejo' : pendientes.length ? 'falta' : 'hecho';
     }
     summary.summary = { ...summary.summary, awningList: summarizeAwnings(order, calculateOrder(order)) };
@@ -338,8 +340,8 @@ export function markReviewApproved(review, { reviewer, note = '', now = new Date
 // "pendiente de generar" vive en reviewRules.js para que la use también la web.
 export { isPendingGeneration } from './reviewRules.js';
 
-export function markReviewFilesGenerated(review, { generatedBy = '', files, excludedNonAcrylicFabrics = [], now = new Date().toISOString() }) {
-  return {
+export function markReviewFilesGenerated(review, { generatedBy = '', files, materiales = [], excludedNonAcrylicFabrics = [], now = new Date().toISOString() }) {
+  return cerrarEntrega({
     ...review,
     status: 'PRODUCED',
     updatedAt: now,
@@ -349,7 +351,7 @@ export function markReviewFilesGenerated(review, { generatedBy = '', files, excl
       files,
       excludedNonAcrylicFabrics: structuredClone(excludedNonAcrylicFabrics)
     }
-  };
+  }, materiales);
 }
 
 export const markReviewProduced = markReviewFilesGenerated;
@@ -380,7 +382,10 @@ export function resolveGeneratedReviewFiles(review, settings, fileIndex) {
     savedPath: path.join(resolveDirectoryTemplate(directoryTemplate, review.orderCode), filename)
   };
   if (file.type === 'rps') {
+    const archivado = cleanText(file.archivedFilename);
+    if (archivado && (path.basename(archivado) !== archivado || !settings?.planteamientosDirectory)) throw new Error('El archivo generado solicitado no es válido.');
     return [
+      ...(archivado ? [{ ...original, source: 'entrega', savedPath: path.join(resolveDirectoryTemplate(settings.planteamientosDirectory, review.orderCode), archivado) }] : []),
       original,
       { ...original, source: 'processed', savedPath: path.join(resolveDirectoryTemplate(directoryTemplate, review.orderCode), 'procesados', filename) }
     ];
@@ -403,14 +408,26 @@ export function resolveGeneratedReviewFile(review, settings, fileIndex) {
   return resolveGeneratedReviewFiles(review, settings, fileIndex)[0];
 }
 
+/** Registrar un envío cambia los datos adjuntos; las páginas siguen siendo las de la entrega generada. */
+export async function leerPdfParaActualizarDatos(review, settings) {
+  const indice = review.production?.files?.findIndex(f => f.type === 'pdf') ?? -1;
+  const candidatos = review.status === 'PRODUCED' && indice >= 0 ? resolveGeneratedReviewFiles(review, settings, indice).map(f => f.savedPath) : [];
+  candidatos.push(buildReviewPath(settings.reviewDirectory, review.orderCode));
+  for (const ruta of candidatos) {
+    try { return await fs.readFile(ruta); }
+    catch (error) { if (error.code !== 'ENOENT') throw error; }
+  }
+  return null;
+}
+
 export function rpsPlanteamientoFilename(orderCode, filename) {
   const compact = sanitizeOrderCode(orderCode);
-  const match = /^([A-Z]+)(\d{2})(\d+)$/.exec(compact);
+  const match = /^([A-Z]+)(\d{2})(\d+)(?:_(\d+))?$/.exec(compact);
   if (!match) return filename;
   const suffix = filename.toUpperCase().startsWith(compact)
     ? filename.slice(compact.length)
     : '-1.pdf';
-  return `${match[1]}.${match[2]}.${match[3].padStart(5, '0')}${suffix}`;
+  return `${match[1]}.${match[2]}.${match[3].padStart(5, '0')}${match[4] ? `-${match[4]}` : ''}${suffix}`;
 }
 
 export function createWorkflowStore({ settingsFile, defaults }) {

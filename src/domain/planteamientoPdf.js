@@ -1,4 +1,5 @@
 import { planteamientoConEmbudoCad } from './embudoPlanteamientoCad.js';
+import { createReviewPackage } from '../workflow.js';
 import { normalizeFabricImage } from './fabricImage.js';
 import { configuredCurtainVelcroHeight, curtainWindowDrawingHeight, formatCurtainVelcroLabel, isConfiguredCurtain, normalizeCurtainConfiguration } from './curtainConfiguration.js';
 import { formatSolapaVelcroLabels, normalizeSolapas } from './solapasRules.js';
@@ -82,7 +83,16 @@ const fonts = hasEmbeddedFonts
 // Si algo falla se avisa con `onSheetError(error, hoja)` (hoja null si no es de una sola hoja)
 // y esas páginas salen con pdfkit como siempre: el PDF no se queda nunca sin hacer.
 export async function buildOrderPlanteamientoPdf(opciones) {
-  return planteamientoConEmbudoCad(opciones, buildWebPlanteamientoPdf);
+  // Los llamadores antiguos de exportación también deben dejar un pedido recuperable dentro.
+  let review = opciones.review;
+  if (!review) {
+    const codigo = String(opciones.order.orderCode ?? '').replace(/[^A-Z0-9_-]+/gi, '') || 'SIN-PEDIDO';
+    review = createReviewPackage({ order: { ...opciones.order, orderCode: codigo },
+      calculation: { ofs: opciones.calculation?.ofs ?? [], diagnostics: opciones.calculation?.diagnostics ?? [] } });
+    // La vista previa puede no tener número todavía; se recuperan exactamente sus datos de entrada.
+    review.order = structuredClone(opciones.order);
+  }
+  return planteamientoConEmbudoCad({ ...opciones, review }, buildWebPlanteamientoPdf);
 }
 
 async function buildWebPlanteamientoPdf({ order, calculation, review = null, onlyAwningId = null, renderSheets = null, htmlStructure = true, htmlFabric = true, htmlDiagrams = false, onSheetError = null, sinHojaTelas = null }) {

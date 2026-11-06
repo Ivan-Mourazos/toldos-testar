@@ -7,7 +7,7 @@ import type { BaquetonInput } from "../../calc/baqueton.ts";
 import type { LonaInput } from "../../calc/lona.ts";
 import { DEFAULT_PARAMS, type CalcParams } from "../../calc/params.ts";
 import type { DatosHojaPedido, ElementoPedidoHoja } from "../../hoja/tipos.ts";
-import { COORDINA_UNAVAILABLE, PRODUCED_SAVE_ERROR } from "../../../reviewRules.js";
+import { COORDINA_UNAVAILABLE } from "../../../reviewRules.js";
 import { leerDatosPedido } from "../adjunto.ts";
 import { crearAlmacenPedidosRemolques } from "../almacen.ts";
 import { ErrorPedidoRemolques } from "../pedido.ts";
@@ -23,7 +23,7 @@ vi.mock("node:fs/promises", async (importOriginal) => {
   return {
     ...original,
     stat: (async (ruta: Parameters<typeof original.stat>[0], ...resto: unknown[]) => {
-      if (sinAcceso.activo && String(ruta).endsWith("AR2604286.pdf")) throw Object.assign(new Error("EACCES"), { code: "EACCES" });
+      if (sinAcceso.activo && String(ruta).endsWith("AR2604286-1.pdf")) throw Object.assign(new Error("EACCES"), { code: "EACCES" });
       return (original.stat as (...a: unknown[]) => unknown)(ruta, ...resto);
     }) as typeof original.stat,
   };
@@ -111,8 +111,8 @@ function montar({ generacion = true, coordina = APROBADAS, toldos = [] as string
   return {
     servicio,
     llamadas,
-    pdfPlan: path.join(planteamientos, "AR2604286-10.pdf"),
-    pdfOficina: path.join(oficina, "2026", "AR2604286.pdf"),
+    pdfPlan: path.join(planteamientos, "AR2604286-1.pdf"),
+    pdfOficina: path.join(oficina, "2026", "AR2604286-1.pdf"),
     averias,
     oficina,
     interna: path.join(raiz, "interna"),
@@ -228,7 +228,8 @@ describe("guardar para revisión", () => {
       .toEqual([409, "AR2699999 ya está guardado como pedido de toldos: un pedido es de toldos o de remolques. Revisa el número."]);
     await guardar(servicio);
     await servicio.generar("AR2604286", {});
-    expect(await falla(guardar(servicio, { confirmOverwrite: true }))).toEqual([409, PRODUCED_SAVE_ERROR]);
+    expect((await guardar(servicio, { confirmOverwrite: true })).cuerpo).toMatchObject({ unchanged: true });
+    expect((await servicio.obtener("AR2604286")).entregaActual).toBe(1);
   });
 });
 
@@ -305,11 +306,11 @@ describe("generar archivos", () => {
     const r = await servicio.generar("AR2604286", {});
     expect(r.status).toBe(200);
     expect(r.cuerpo).toMatchObject({
-      ok: true, nombre: "AR2604286-10.pdf",
+      ok: true, nombre: "AR2604286-1.pdf",
       review: { status: "PRODUCED", reviewedBy: "JAIME" },
       saved: [
-        { type: "pdf", filename: "AR2604286-10.pdf", savedPath: pdfPlan },
-        { type: "pdf", filename: "AR2604286.pdf", savedPath: pdfOficina },
+        { type: "pdf", filename: "AR2604286-1.pdf", savedPath: pdfPlan },
+        { type: "pdf", filename: "AR2604286-1.pdf", savedPath: pdfOficina },
       ],
     });
     expect(llamadas.coordina).toEqual([{ ofs: ["0231780", "0231781"], fresh: undefined }, { ofs: ["0231780", "0231781"], fresh: true }]);
@@ -377,7 +378,7 @@ describe("generar archivos", () => {
     await guardar(servicio);
     mkdirSync(path.dirname(pdfOficina), { recursive: true });
     writeFileSync(pdfOficina, "%PDF-viejo");
-    expect(await servicio.generar("AR2604286", {})).toEqual({ status: 409, cuerpo: { needsConfirmation: true, existing: ["AR2604286.pdf"] } });
+    expect(await servicio.generar("AR2604286", {})).toEqual({ status: 409, cuerpo: { needsConfirmation: true, existing: ["AR2604286-1.pdf"] } });
     expect(llamadas.pdf).toHaveLength(0);
     expect((await servicio.generar("AR2604286", { confirmOverwrite: true })).status).toBe(200);
     expect(readFileSync(pdfOficina).equals(readFileSync(pdfPlan))).toBe(true);
@@ -623,7 +624,7 @@ describe("ver la hoja guardada y el PDF generado", () => {
     const propios: CalcParams = { ...DEFAULT_PARAMS, demasiaAlto: DEFAULT_PARAMS.demasiaAlto + 1 };
     await guardar(servicio, { params: propios });
     const { pdf, nombre } = await servicio.vistaPrevia("AR2604286");
-    expect(nombre).toBe("AR2604286-10.pdf");
+    expect(nombre).toBe("AR2604286-1.pdf");
     expect(Buffer.from(pdf).subarray(0, 4).toString("ascii")).toBe("%PDF");
     expect(llamadas.pdf[0].params.demasiaAlto).toBe(propios.demasiaAlto);
     expect(llamadas.pdf[0].revisadoPor).toBe("");
@@ -636,9 +637,9 @@ describe("ver la hoja guardada y el PDF generado", () => {
     await guardar(servicio);
     expect(await falla(servicio.archivo("AR2604286"))).toEqual([404, "Este pedido todavía no tiene archivos generados."]);
     await servicio.generar("AR2604286", {});
-    expect((await servicio.archivo("AR2604286")).nombre).toBe("AR2604286-10.pdf");
+    expect((await servicio.archivo("AR2604286")).nombre).toBe("AR2604286-1.pdf");
     rmSync(pdfPlan);
-    expect((await servicio.archivo("AR2604286")).nombre).toBe("AR2604286.pdf");
+    expect((await servicio.archivo("AR2604286")).nombre).toBe("AR2604286-1.pdf");
     rmSync(pdfOficina);
     expect(await falla(servicio.archivo("AR2604286"))).toEqual([404, "El PDF generado ya no está en sus carpetas de archivo."]);
   });

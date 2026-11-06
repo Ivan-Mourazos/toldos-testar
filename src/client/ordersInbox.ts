@@ -114,7 +114,8 @@ export const pendingGroupOrder = [
 ] as const;
 
 export function reviewAwnings(review: PedidoBandeja) {
-  return (review.summary.awningList || []).map((item) => ({ letter: item.letter, of: item.of }));
+  return (review.summary.awningList || []).filter(item => !review.ofsEntregaActual || review.ofsEntregaActual.includes(normalizeOf(item.of)))
+    .map((item) => ({ letter: item.letter, of: item.of }));
 }
 
 export function pendingGroups<T extends PedidoBandeja>(pending: T[], status: CoordinaStatus | null) {

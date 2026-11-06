@@ -1,5 +1,6 @@
+import { pedidoEntrega } from '../../entregas.js';
 import React, { useEffect, useState } from 'react';
-import { CopyPlus, DoorOpen, Factory, FileSearch, Scissors } from 'lucide-react';
+import { CopyPlus, DoorOpen, Factory, FileSearch, FileText, Scissors } from 'lucide-react';
 import { formOptions } from '../../domain/modelBehavior.js';
 import { calcularPuerta, MODELOS_PUERTAS } from '../../puertas/calcular.ts';
 import { elementosAprobacion } from '../../puertas/flujo/pedido.ts';
@@ -25,6 +26,7 @@ import { estadoGenerarPuertas } from './generarPuertas';
 import { DibujoCortePuertas } from './VistaCortePuertas';
 import '../coordina/corte-lona.css';
 import './puertas.css';
+import { confirmarMateriales, type AvisoMateriales } from '../materialesEntrega';
 
 // Un pedido de puertas abierto desde Pedidos (fase 2, 22/10/2026), con las acciones de toldos y remolques:
 // «Corregir» (cualquier técnico) y «Generar archivos» (con todo aprobado o pasado en CoordinaOT)
@@ -164,10 +166,16 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
     let confirmOverwrite = false;
     let aceptarHuellaCorte: string | undefined;
     let aceptarCorteNoRegenerado: string | undefined;
+    let aceptarMateriales: string | undefined;
     try {
       for (;;) {
-        const respuesta = await fetch(`${ruta}/generar`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirmOverwrite, aceptarHuellaCorte, aceptarCorteNoRegenerado, savedBy: currentUser }) });
-        const datos = await respuesta.json().catch(() => ({})) as CortePendiente & { error?: string; cambioCorte?: boolean; huella?: string; needsConfirmation?: boolean; existing?: string[]; unchanged?: boolean; saved?: Array<{ filename: string }>; avisos?: string[] };
+        const respuesta = await fetch(`${ruta}/generar`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirmOverwrite, aceptarHuellaCorte, aceptarCorteNoRegenerado, aceptarMateriales, savedBy: currentUser }) });
+        const datos = await respuesta.json().catch(() => ({})) as CortePendiente & AvisoMateriales & { needsMaterialConfirmation?: boolean; error?: string; cambioCorte?: boolean; huella?: string; needsConfirmation?: boolean; existing?: string[]; unchanged?: boolean; saved?: Array<{ filename: string }>; avisos?: string[] };
+        if (respuesta.status === 409 && datos.needsMaterialConfirmation) {
+          if (!await confirmarMateriales(datos, onConfirm)) return;
+          aceptarMateriales = datos.huellaMateriales;
+          continue;
+        }
         if (respuesta.status === 409 && datos.corteNoRegenerado) {
           const permiso = await decidirCortePendiente(datos, onConfirm, { ruta: '/api/puertas/pedidos', cuerpo: { pedido }, usuario: currentUser }, onChanged);
           if (permiso === null) return;
@@ -180,10 +188,11 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
           continue;
         }
         if (respuesta.status === 409 && datos.needsConfirmation && !confirmOverwrite) {
+          const esPdf = datos.existing?.some(nombre => nombre.toLowerCase().endsWith('.pdf'));
           const eleccion = await onConfirm({
-            title: 'Sustituir el plano de revisión',
-            message: 'El plano de revisión de este pedido ya está en su carpeta. Se sustituye por el definitivo, con el revisor en el cajetín. Si lo has retocado a mano, se perderán los cambios.',
-            details: datos.existing, confirmLabel: 'Sustituir plano', cancelLabel: 'Conservar el plano', tone: 'danger',
+            title: esPdf ? 'Sustituir el PDF de la entrega' : 'Sustituir el plano de revisión',
+            message: esPdf ? 'Ya existe un PDF de esta entrega. Comprueba si se puede sustituir.' : 'El plano de revisión de este pedido ya está en su carpeta. Se sustituye por el definitivo, con el revisor en el cajetín. Si lo has retocado a mano, se perderán los cambios.',
+            details: datos.existing, confirmLabel: esPdf ? 'Sustituir PDF' : 'Sustituir plano', cancelLabel: 'Conservar el actual', tone: 'danger',
           });
           if (eleccion !== 'confirm') return;
           confirmOverwrite = true;
@@ -213,7 +222,7 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
   const generado = pedido.status === 'PRODUCED';
   const { allowed, note } = estadoGenerarPuertas(pedido, currentUser, coordina);
   const corregible = puedeCorregir(pedido.status, elementosAprobacion(pedido), pedido.summary.technician || '', currentUser, coordina);
-  const permisoCorte = estadoGenerarPuertas({ ...pedido, status: generado ? 'PENDING_REVIEW' : pedido.status }, currentUser, coordina);
+  const permisoCorte = estadoGenerarPuertas(Object.assign({}, pedidoEntrega(pedido), { status: 'PENDING_REVIEW' as const, entregas: [] }), currentUser, coordina);
   const letras = elementosAprobacion(pedido).map((item) => item.letter);
   const datos = [
     pedido.summary.customer || 'Sin cliente',
@@ -224,13 +233,13 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
 
   return (
     <section className="review-reader rem-pedido-guardado" aria-label={`Pedido de ${productoDeElementos(pedido.elementos)==='systemdock'?'System Dock':'puertas'} ${pedido.orderCode}`}>
-      <CabeceraPedidoGuardado volver={volver} titulo={<>{pedido.orderCode}<span className="orders-kind-tag familia-tag is-puertas">{productoDeElementos(pedido.elementos)==='systemdock'?'Lona System Dock':'Puerta'}</span></>}
+      <CabeceraPedidoGuardado pedido={pedido} volver={volver} titulo={<>{pedido.orderCode}<span className="orders-kind-tag familia-tag is-puertas">{productoDeElementos(pedido.elementos)==='systemdock'?'Lona System Dock':'Puerta'}</span></>}
         datos={datos} corteNoRegenerado={pedido.corteNoRegenerado} corteSimulado={pedido.corteSimulado}
         acciones={<AccionesPedido generado={generado} ocupado={generando || corte.ocupado} enviando={generando} editandoPermitido={corregible}
           onEditar={() => onCorregir(pedido)} elementos={elementosAprobacion(pedido)} coordina={coordina} preguntar={onConfirm}
           abrir={corte.abrir} regenerar={currentUser ? () => void corte.regenerar() : undefined} generar={() => void generar()}
           generarPermitido={allowed} motivoGenerar={note} envios={<EnviosCorte key={ruta} barra ruta={`${ruta}/corte`} usuario={currentUser}
-            permitido={permisoCorte.allowed && Boolean(currentUser.trim())} motivo={permisoCorte.note} ocupado={generando || corte.ocupado} envios={pedido.enviosCorte}
+            permitido={permisoCorte.allowed && Boolean(currentUser.trim())} motivo={permisoCorte.note} ocupado={generando || corte.ocupado} envios={pedido.enviosCorte} entrega={pedido.entregaActual}
             descarga={`${ruta}/corte/dxf`} conPdf notify={onToast} preguntar={onConfirm} onEnviado={onChanged}
             guardado={{ ruta: '/api/puertas/pedidos', cuerpo: { pedido }, usuario: currentUser }}
             mas={generado ? <button type="button" role="menuitem" className="menu-mas-item" onClick={() => onReutilizar(pedido)}><CopyPlus size={16} aria-hidden="true" />Reutilizar datos</button> : null} />} />} />
@@ -245,10 +254,10 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
             </span>
           </div>
           <div className="review-generated-files">
-            {pedido.production.files.map((fichero) => (
+            {pedido.production.files.filter((f, i, todos) => f.type !== 'pdf' || todos.findIndex(a => a.type === 'pdf') === i).map((fichero) => (
               <span className="review-generated-file chip-3d" key={fichero.savedPath} title={fichero.savedPath}>
-                <span className="review-generated-file-icon"><DoorOpen aria-hidden="true" /></span>
-                <span><strong>{fichero.filename}</strong><small>Plano · oficina técnica</small></span>
+                <span className="review-generated-file-icon">{fichero.type === 'pdf' ? <FileText aria-hidden="true" /> : <DoorOpen aria-hidden="true" />}</span>
+                <span><strong>{fichero.filename}</strong><small>{fichero.type === 'pdf' ? 'Presentaciones PDF · planteamientos y carpeta anual' : 'Plano · oficina técnica'}</small></span>
               </span>
             ))}
           </div>

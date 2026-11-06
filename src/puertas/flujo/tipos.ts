@@ -27,10 +27,13 @@ export interface FicheroPlanoPuertas {
 export interface ProduccionPuertas {
   createdAt: string;
   createdBy: string;
-  files: FicheroPlanoPuertas[];
+  files: (FicheroPlanoPuertas | { type: 'pdf'; filename: string; savedPath: string })[];
 }
 
 export interface PedidoPuertasGuardado extends Omit<PedidoPuertas, "summary"> {
+  ofsEntregaActual?: string[];
+  entregas?: import('../../entregasTipos.ts').EntregaPedido[];
+  entregaActual?: number;
   updatedBy?: string;
   corteNoRegenerado?: boolean;
   corteSimulado?: boolean;

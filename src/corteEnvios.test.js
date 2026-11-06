@@ -64,6 +64,17 @@ describe('Envío común del corte, independiente de generar archivos', () => {
     expect(res).toMatchObject({ status: 409, cuerpo: { needsBotConfirmation: true } });
     expect(preparar).not.toHaveBeenCalled();
   });
+  it('avisa al repetir y registra el número de envío y la entrega sin alterar el anterior', async () => {
+    const anterior = { id: 'primero', numero: 1, entrega: 2, destino: 'bot', archivos: [] };
+    const pedido = { ...entrada.pedido, entregaActual: 2, enviosCorte: [anterior] };
+    const aviso = await enviarCorte({ ...entrada, pedido, destino: 'bot' });
+    expect(aviso).toMatchObject({ status: 409, cuerpo: { needsBotConfirmation: true, error: expect.stringContaining('no puede saber si ya se cortó') } });
+    await fs.mkdir(path.join(raiz, 'bot/Ivan.Sanchez'), { recursive: true });
+    const resultado = await enviarCorte({ ...entrada, pedido, destino: 'bot', confirmBot: true });
+    expect(resultado).toMatchObject({ status: 200, cuerpo: { envio: { numero: 2, entrega: 2 } } });
+    expect(guardar.mock.calls[0][0].enviosCorte[0]).toEqual(anterior);
+    expect(pedido.enviosCorte).toHaveLength(1);
+  });
   it.each(['bot', 'dxfs'])('pregunta antes de sustituir en %s y conserva el historial al confirmar', async (destino) => {
     const carpeta = path.join(raiz, destino === 'bot' ? 'bot/Ivan.Sanchez' : '2026/DXFs');
     await fs.mkdir(carpeta, { recursive: true });
