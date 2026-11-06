@@ -39,3 +39,19 @@ it('reconoce las OF del adjunto de un -10 anterior a la copia local', async () =
   const catalogo = await catalogoEntregas(p, { rpsPlanteamientosDirectory: raiz });
   expect(catalogo.recomendado).toMatchObject({ numero: 10, modo: 'sustituir' });
 });
+
+it('una corrección solo puede sustituir su número aunque se elija otro destino', async () => {
+  const base = { kind: 'puertas', orderCode: 'AR2603626', status: 'PENDING_REVIEW',
+    elementos: [{ input: { of: '230001', frente: 200 } }] };
+  const generado = cerrarEntrega({ ...abrirEntrega(base), status: 'PRODUCED',
+    production: { createdAt: '2026-11-06', createdBy: 'IVÁN', files: [] } });
+  const corregido = abrirEntrega({ ...base, elementos: [{ input: { of: '230001', frente: 210 } }] }, generado);
+  corregido.entregas.push({ numero: 11, ofs: ['0230002'], archivos: [], datos: {} });
+  for (const destinoEntrega of [{ numero: 12, modo: 'nuevo' }, { numero: 11, modo: 'sustituir' }]) {
+    expect(await aplicarDestino(corregido, {}, { destinoEntrega, confirmarEntrega: true })).toMatchObject({
+      respuesta: { status: 409, cuerpo: { error: expect.stringContaining('mismo número') } },
+    });
+  }
+  expect(await aplicarDestino(corregido, {}, { destinoEntrega: { numero: 10, modo: 'sustituir' }, confirmarEntrega: true }))
+    .toMatchObject({ pedido: { entregaActual: 10, ofsSeleccionadas: ['0230001'] } });
+});

@@ -9,6 +9,7 @@ export interface CatalogoEntregas {
 }
 
 export function OpcionesEntrega({ datos, destino, elegir }: { datos: CatalogoEntregas; destino: Destino; elegir: (d: Destino) => void }) {
+  const correccion = datos.pasos[0]?.modo === 'sustituir' ? datos.pasos[0] : null;
   return <>
     <p>Planteamientos que ya hay en RPS y en la web para este pedido:</p>
     {datos.existentes.length ? <table><thead><tr><th>Número</th><th>Fecha</th><th>OF y modelos</th></tr></thead><tbody>
@@ -16,9 +17,10 @@ export function OpcionesEntrega({ datos, destino, elegir }: { datos: CatalogoEnt
         <td>{e.origen === 'Excel antiguo' ? 'Excel antiguo' : [e.ofs.join(', '), e.modelos?.join(', ')].filter(Boolean).join(' · ') || 'Web · sin datos de OF'}</td></tr>)}
     </tbody></table> : <p>No hay planteamientos anteriores.</p>}
     {datos.pasos.length > 1 && <p className="aviso-flujo-editable">Hay varias entregas pendientes. Se generan en pasos separados: {datos.pasos.map(p => `-${p.numero} (OF ${p.ofs.join(', ')})`).join('; ')}. Después de este paso, el pedido seguirá pendiente.</p>}
+    {correccion && <p>Corregir OF ya generadas conserva el mismo número: sustituye -{correccion.numero}. Solo las OF nuevas pueden abrir otra entrega.</p>}
     <fieldset><legend>Destino de los archivos</legend>
-      <label><input type="radio" name="destino-entrega" checked={destino.modo === 'nuevo'} onChange={() => elegir({ numero: datos.siguiente, modo: 'nuevo' })} />Nuevo: -{datos.siguiente}</label>
-      {datos.existentes.map(e => <label key={e.numero}><input type="radio" name="destino-entrega" checked={destino.modo === 'sustituir' && destino.numero === e.numero} onChange={() => elegir({ numero: e.numero, modo: 'sustituir' })} />Sustituir -{e.numero}</label>)}
+      <label><input type="radio" name="destino-entrega" disabled={Boolean(correccion)} checked={destino.modo === 'nuevo'} onChange={() => elegir({ numero: datos.siguiente, modo: 'nuevo' })} />Nuevo: -{datos.siguiente}</label>
+      {datos.existentes.map(e => <label key={e.numero}><input type="radio" name="destino-entrega" disabled={Boolean(correccion && correccion.numero !== e.numero)} checked={destino.modo === 'sustituir' && destino.numero === e.numero} onChange={() => elegir({ numero: e.numero, modo: 'sustituir' })} />Sustituir -{e.numero}</label>)}
     </fieldset>
   </>;
 }

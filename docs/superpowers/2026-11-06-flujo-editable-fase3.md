@@ -75,6 +75,11 @@ número, fecha y, cuando se conocen, OF y modelos. Ofrece Nuevo: -N y
 Sustituir -X para cada entrega de la serie. Marca por defecto el destino
 de la regla o la elección ya preparada.
 
+Cuando el paso corrige OF ya generadas, solo queda habilitada la sustitución
+de su número original. El servidor rechaza también cualquier intento de
+crear otra entrega o de corregir en otro número, aunque llegue sin pasar
+por la pantalla. Las OF nuevas sí permiten elegir nuevo o sustituir.
+
 Sustituir exige una confirmación con el PDF, los archivos conocidos y el
 corte, y explica que RPS sustituirá las reservas de las OF que se vuelvan
 a subir. Cancelar el selector o la confirmación no genera ni guarda nada.

@@ -14,3 +14,12 @@ it('muestra históricos, datos conocidos y el destino recomendado sin generar', 
   expect(html).toContain('Excel antiguo');
   expect(html.match(/checked=""/g)).toHaveLength(1);
 });
+
+it('al corregir solo habilita sustituir el mismo número', () => {
+  const html = renderToStaticMarkup(<OpcionesEntrega datos={{ siguiente: 12,
+    recomendado: { numero: 10, modo: 'sustituir' }, pasos: [{ numero: 10, modo: 'sustituir', ofs: ['0230001'] }],
+    existentes: [10, 11].map(numero => ({ numero, ofs: [], origen: 'Web', archivos: [] })),
+  }} destino={{ numero: 10, modo: 'sustituir' }} elegir={() => {}} />);
+  expect(html.match(/disabled=""/g)).toHaveLength(2);
+  expect(html).toContain('mismo número');
+});

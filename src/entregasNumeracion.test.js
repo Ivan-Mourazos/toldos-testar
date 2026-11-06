@@ -54,14 +54,17 @@ describe('numeración por OF y sustituciones', () => {
     expect(codigoEntrega(p)).toBe('AR2603626-4');
     expect(cerrar(p).entregas[0].destino).toEqual({ numero: 4, modo: 'sustituir' });
   });
-  it('la sustitución elegida prevalece aunque su número sea menor que el anterior', () => {
+  it('las OF nuevas pueden ampliar un número menor y su corrección conserva ese destino', () => {
     const uno = cerrar(abrirEntrega(pedido([elemento('230001')])));
     const dos = cerrar(abrirEntrega(pedido([elemento('230001'), elemento('230002')]), uno));
-    const cambio = abrirEntrega(pedido([elemento('230001'), elemento('230002', 350)]), dos);
+    const cambio = abrirEntrega(pedido([elemento('230003')]), dos);
     const final = cerrar(seleccionarEntrega(cambio, { numero: 1, modo: 'sustituir' }));
     expect(final.status).toBe('PRODUCED');
     final.entregas[1].legacy = true;
     expect(codigoEntrega(final)).toBe('AR2603626-1');
     expect(ofsEntrega(abrirEntrega({ ...final, status: 'PENDING_REVIEW' }, final))).toEqual([]);
+    const correccion = abrirEntrega(pedido([elemento('230003', 350)]), final);
+    expect(correccion.entregaActual).toBe(1);
+    expect(ofsEntrega(correccion)).toEqual(['0230001', '0230003']);
   });
 });

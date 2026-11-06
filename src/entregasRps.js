@@ -69,6 +69,9 @@ export async function numerarEntrega(pedido, ajustes) {
 export async function aplicarDestino(pedido, ajustes, entrada) {
   const catalogo = await catalogoEntregas(pedido, ajustes);
   const destino = entrada?.destinoEntrega ?? { numero: catalogo.recomendado.numero, modo: catalogo.recomendado.modo };
+  const correccion = catalogo.pasos[0]?.modo === 'sustituir' ? catalogo.pasos[0] : null;
+  if (correccion && (destino.modo !== 'sustituir' || destino.numero !== correccion.numero)) return { respuesta: { status: 409, cuerpo: {
+    error: `Corregir OF ya generadas conserva el mismo número: sustituye la entrega ${correccion.numero}. Solo las OF nuevas pueden abrir otra entrega.` } } };
   const existente = catalogo.existentes.find(e => e.numero === destino.numero);
   if (!Number.isInteger(destino.numero) || destino.numero < inicioSerie(pedido) || !['nuevo', 'sustituir'].includes(destino.modo)
     || (destino.modo === 'nuevo' ? destino.numero !== catalogo.siguiente : !existente)) return { respuesta: { status: 409, cuerpo: { error: 'Los planteamientos han cambiado. Vuelve a elegir el destino de esta entrega.' } } };

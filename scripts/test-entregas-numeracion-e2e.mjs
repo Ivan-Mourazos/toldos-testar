@@ -13,9 +13,9 @@ import { ofsEntrega } from '../src/entregas.js';
 import { corteDelPlano } from '../src/flujoDwg/corteDwg.js';
 
 // Solo la aislada propia. También se comprueban las rutas antes de habilitar las salidas de prueba.
-const base = 'http://127.0.0.1:4314';
-const fake = 'http://127.0.0.1:4324';
-const audit = path.resolve('tmp/ui-audit/flujo-editable-fase3b');
+const base = 'http://127.0.0.1:4312';
+const fake = 'http://127.0.0.1:4322';
+const audit = path.resolve('tmp/ui-audit/fase3');
 const dir = path.join(audit, 'instancia');
 const capturas = path.join(audit, 'capturas');
 await fs.mkdir(capturas, { recursive: true });
@@ -218,6 +218,11 @@ try {
     await abrir();
     await page.getByRole('button', { name: 'Generar archivos', exact: true }).click();
     await page.getByRole('dialog').getByText(`Sustituir -${primeraN}`, { exact: true }).waitFor();
+    assert.equal(await page.getByRole('radio', { name: `Nuevo: -${segundaN + 1}`, exact: true }).isDisabled(), true);
+    const renumerar = await request(generarRuta, { savedBy: 'IVÁN', confirmarEntrega: true,
+      destinoEntrega: { numero: segundaN + 1, modo: 'nuevo' } });
+    assert.equal(renumerar.status, 409);
+    assert.match(renumerar.data.error, /mismo número/);
     await foto('selector-correccion');
     await page.getByRole('dialog').getByRole('button', { name: 'Generar archivos', exact: true }).click();
     await page.getByRole('heading', { name: `Sustituir la entrega ${primeraN}`, exact: true }).waitFor();
@@ -298,7 +303,8 @@ try {
   if (actualPagina) { await actualPagina.screenshot({ path: path.join(capturas, 'fallo.png') }); console.log((await actualPagina.locator('body').innerText()).slice(-6000)); }
   throw error;
 } finally {
-  await fs.writeFile(path.join(audit, 'resultados.json'), JSON.stringify(evidencias, null, 2));
+  const sufijo = [process.env.FAMILIA, process.env.TEMA, process.env.ANCHO].filter(Boolean).join('-');
+  await fs.writeFile(path.join(audit, `resultados${sufijo ? `-${sufijo}` : ''}.json`), JSON.stringify(evidencias, null, 2));
   await request('/api/workflow/settings', { ...settings, productionEnabled: false }, 'PUT');
   await browser.close();
 }
