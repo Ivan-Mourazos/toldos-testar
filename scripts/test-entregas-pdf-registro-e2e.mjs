@@ -5,7 +5,7 @@ import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { extractReviewPackageFromPdf } from '../src/workflow.js';
 
 // Reutiliza los pedidos de la matriz para comprobar también el registro de envíos sobre sus PDF.
-const base = 'http://127.0.0.1:4314';
+const base = `http://127.0.0.1:${process.env.E2E_PORT || 4314}`;
 const raiz = path.resolve('tmp/ui-audit/flujo-editable-fase3/instancia');
 const casos = JSON.parse(await fs.readFile('tmp/ui-audit/flujo-editable-fase3/resultados.json', 'utf8'));
 assert.equal(casos.length, 12, 'Primero debe completarse la matriz de entregas');

@@ -13,8 +13,8 @@ import { ofsEntrega } from '../src/entregas.js';
 import { corteDelPlano } from '../src/flujoDwg/corteDwg.js';
 
 // Solo la aislada propia. También se comprueban las rutas antes de habilitar las salidas de prueba.
-const base = 'http://127.0.0.1:4312';
-const fake = 'http://127.0.0.1:4322';
+const base = `http://127.0.0.1:${process.env.E2E_PORT || 4312}`;
+const fake = `http://127.0.0.1:${process.env.E2E_FAKE_PORT || 4322}`;
 const audit = path.resolve('tmp/ui-audit/fase3');
 const dir = path.join(audit, 'instancia');
 const capturas = path.join(audit, 'capturas');

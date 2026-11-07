@@ -13,8 +13,8 @@ import { ofsEntrega } from '../src/entregas.js';
 import { corteDelPlano } from '../src/flujoDwg/corteDwg.js';
 
 // Solo la aislada propia. También se comprueban las rutas antes de habilitar las salidas de prueba.
-const base = 'http://127.0.0.1:4314';
-const fake = 'http://127.0.0.1:4324';
+const base = `http://127.0.0.1:${process.env.E2E_PORT || 4314}`;
+const fake = `http://127.0.0.1:${process.env.E2E_FAKE_PORT || 4324}`;
 const audit = path.resolve('tmp/ui-audit/flujo-editable-fase3');
 const dir = path.join(audit, 'instancia');
 const capturas = path.join(audit, 'capturas');
@@ -73,6 +73,8 @@ try {
   let indice = 0;
   for (const tema of temas) for (const viewport of tamanos) for (const tipo of ['toldos', 'puertas', 'remolques']) {
     if (process.env.FAMILIA && process.env.FAMILIA !== tipo) continue;
+    // Toldos numeran -1, -2…; lo de PVC (puertas y remolques), -10, -11…
+    const n1 = tipo === 'toldos' ? 1 : 10, n2 = n1 + 1;
     await fetch(`${fake}/__reset`, { method: 'POST' });
     const codigo = `AR26${semilla + indice++}`;
     const of1 = `09${String(semilla + indice).padStart(5, '0')}`, of2 = `09${String(semilla + indice + 20).padStart(5, '0')}`;
@@ -108,6 +110,8 @@ try {
         const r = await request(ruta, { ...datos, ...extra });
         if (r.status === 409 && r.data.needsRegenerateConfirmation) { extra.decisionCorte = 'regenerar'; continue; }
         if (r.status === 409 && r.data.cambioCorte) { extra.aceptarHuellaCorte = r.data.huella; continue; }
+        // Como la pantalla: el aviso de que el pedido ya tiene entregas se acepta y se guarda en el mismo pedido.
+        if (r.status === 409 && r.data.needsEntradaEntregaConfirmation) { extra.confirmarEntradaEntrega = true; continue; }
         assert.equal(r.status, 200, JSON.stringify(r.data)); return r.data;
       }
       throw new Error('Demasiadas decisiones al guardar');
@@ -122,6 +126,11 @@ try {
     assert.equal(primera.entregas.length, 1);
     const rutasOriginales = [...new Set([primera.corteConfirmado?.plano, ...(primera.corteConfirmado?.planos ?? []).map(p => p.plano),
       ...primera.production.files.map(f => f.archivedFilename ? path.join(settings.planteamientosDirectory, f.archivedFilename) : f.savedPath)].filter(Boolean))];
+    const copiaArchivos = p => Promise.all([...new Set([p.corteConfirmado?.plano, ...(p.corteConfirmado?.planos ?? []).map(x => x.plano),
+      ...p.production.files.map(f => f.archivedFilename ? path.join(settings.planteamientosDirectory, f.archivedFilename) : f.savedPath)].filter(Boolean))]
+      .map(async ruta => ({ ruta, bytes: await fs.readFile(ruta) })));
+    // Comparar con Buffer.equals: el diff de assert.deepEqual en búferes grandes agota la memoria.
+    const igual = async f => (await fs.readFile(f.ruta)).equals(f.bytes);
     const originales = await Promise.all(rutasOriginales.map(async ruta => ({ ruta, bytes: await fs.readFile(ruta) })));
     const context = await browser.newContext({ viewport, reducedMotion: 'reduce' });
     await context.addInitScript(t => { localStorage.setItem('toldos-testar-usuario', 'IVÁN'); localStorage.setItem('toldos-tema', t); }, tema);
@@ -159,7 +168,7 @@ try {
     await fetch(`${fake}/__estado`, { method: 'POST', body: JSON.stringify({ ofs: { [of1]: { estado: 'en_revision' }, [of2]: { estado: 'pasada', revisor: 'jaime' } } }) });
     await abrir(); await foto('entrega-2-pendiente');
     await page.getByRole('button', { name: 'Generar archivos', exact: true }).click();
-    await page.getByRole('button', { name: 'Sí, generar archivos', exact: true }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Generar archivos', exact: true }).click();
     for (let intento = 0; intento < 20; intento++) {
       const boton = page.getByRole('button', { name: /Incluir en la reserva|Sustituir archivos|Sustituir plano/, exact: true });
       if (await boton.isVisible()) await boton.click();
@@ -168,11 +177,12 @@ try {
     }
     const segunda = await leer();
     assert.equal(segunda.status, 'PRODUCED'); assert.deepEqual(segunda.entregas[1].ofs, [of2]);
-    for (const f of originales) assert.deepEqual(await fs.readFile(f.ruta), f.bytes, `Se alteró entrega 1: ${f.ruta}`);
+    for (const f of originales) assert.ok(await igual(f), `Se alteró entrega 1: ${f.ruta}`);
+    const deEntrega2 = await copiaArchivos(segunda);
     const dxf = await fs.readFile(segunda.corteConfirmado.plano, 'utf8');
     assert.ok(dxf.includes(of2)); assert.ok(!dxf.includes(of1));
     for (const f of segunda.production.files.filter(f => f.type === 'pdf')) {
-      assert.match(f.filename, /-2\.pdf$/);
+      assert.ok(f.filename.endsWith(`-${n2}.pdf`), f.filename);
       const datos = await adjunto(f.savedPath, tipo);
       assert.equal(datos.entregas.length, 2);
       assert.deepEqual(datos.entregas[1].ofs, [of2]);
@@ -189,26 +199,30 @@ try {
     await campo.waitFor(); await campo.fill(tipo === 'remolques' ? String(cuerpo.elementos[0].input.largo + 10) : tipo === 'puertas' ? '215' : '710'); await campo.press('Tab');
     await page.getByRole('button', { name: 'Guardar para revisión', exact: true }).click();
     for (let intento = 0; intento < 20; intento++) {
-      const regenerar = page.getByRole('button', { name: /Sí, regenerar|Guardar igualmente/, exact: true });
+      const regenerar = page.getByRole('button', { name: /Sí, regenerar|Guardar igualmente|Continuar en este pedido/, exact: true });
       if (await regenerar.isVisible()) await regenerar.click();
       if ((await leer()).status !== 'PRODUCED') break;
       await page.waitForTimeout(300);
     }
     assert.equal((await leer()).status, 'PENDING_REVIEW');
-    // Renovar la caché de aprobación tras cambiar el simulado. El aviso impide escribir archivos.
-    const previo = await request(generarRuta, { savedBy: 'IVÁN', includeNonAcrylicFabrics: true, confirmOverwrite: true });
-    assert.ok(previo.data.needsMaterialConfirmation, JSON.stringify(previo.data));
+    // Corregir una OF ya generada conserva su número: no se puede abrir otra entrega.
+    const otraEntrega = await request(generarRuta, { savedBy: 'IVÁN', includeNonAcrylicFabrics: true, confirmOverwrite: true, destinoEntrega: { numero: 3, modo: 'nuevo' } });
+    assert.equal(otraEntrega.status, 409); assert.match(otraEntrega.data.error, /conserva el mismo número/);
+    // Desde el navegador: el destino propuesto es sustituir la entrega 1 y pide confirmación antes de escribir.
     await abrir();
     await page.getByRole('button', { name: 'Generar archivos', exact: true }).click();
-    await page.getByRole('button', { name: 'Sí, generar archivos', exact: true }).click();
-    if (tipo === 'toldos') await page.getByRole('button', { name: 'Incluir en la reserva', exact: true }).click();
-    await page.getByRole('heading', { name: 'Cambios de materiales de esta entrega', exact: true }).waitFor();
-    await foto('aviso-materiales');
-    await page.getByRole('button', { name: 'Cancelar', exact: true }).click();
-    assert.equal((await leer()).status, 'PENDING_REVIEW');
-    const aviso = await request(generarRuta, { savedBy: 'IVÁN', includeNonAcrylicFabrics: true, confirmOverwrite: true });
-    assert.ok(aviso.data.needsMaterialConfirmation);
-    await generar({ aceptarMateriales: aviso.data.huellaMateriales });
+    await page.getByRole('dialog').getByText(`Sustituir -${n1}`, { exact: true }).waitFor();
+    await foto('correccion-destino');
+    await page.getByRole('dialog').getByRole('button', { name: 'Generar archivos', exact: true }).click();
+    for (let intento = 0; intento < 20; intento++) {
+      const boton = page.getByRole('button', { name: /Incluir en la reserva|Sustituir archivos|Sustituir plano|Sí, sustituir archivos/, exact: true });
+      if (await boton.first().isVisible()) await boton.first().click();
+      if ((await leer()).status === 'PRODUCED') break;
+      await page.waitForTimeout(500);
+    }
+    const corregida = await leer();
+    assert.equal(corregida.status, 'PRODUCED'); assert.equal(corregida.entregas.length, 2, 'Corregir no abre otra entrega');
+    for (const f of corregida.production.files.filter(f => f.type === 'pdf')) assert.ok(f.filename.endsWith(`-${n1}.pdf`), f.filename);
     // Envíos reales al bot simulado: número correlativo, misma entrega y bytes del corte actual.
     const enviar = extra => request(envioRuta, { usuario: 'IVÁN', destino: 'bot', confirmBot: true, confirmOverwrite: true, sinPdf: true, ...extra });
     assert.equal((await enviar()).status, 200);
@@ -239,21 +253,23 @@ try {
     await sustituir.click();
     for (let intento = 0; intento < 25 && (await leer()).enviosCorte.length < 2; intento++) await page.waitForTimeout(300);
     const final = await leer();
-    assert.deepEqual(final.enviosCorte.map(e => [e.numero, e.entrega]), [[1, 3], [2, 3]]);
-    assert.match(final.enviosCorte[1].archivos[0].filename, /-3\.dxf$/);
-    assert.notDeepEqual(await fs.readFile(salidaBot), bytesBot, 'El reenvío debe incluir el retoque del corte actual');
-    for (const f of pdfActuales) assert.deepEqual(await fs.readFile(f.ruta), f.bytes, 'Reenviar el corte no rehace los PDF');
+    assert.deepEqual(final.enviosCorte.map(e => [e.numero, e.entrega]), [[1, n1], [2, n1]]);
+    assert.ok(final.enviosCorte[1].archivos[0].filename.endsWith(`-${n1}.dxf`), final.enviosCorte[1].archivos[0].filename);
+    assert.ok(!(await fs.readFile(salidaBot)).equals(bytesBot), 'El reenvío debe incluir el retoque del corte actual');
+    for (const f of pdfActuales) assert.ok(await igual(f), 'Reenviar el corte no rehace los PDF');
     if (tipo === 'toldos') {
       const anual = path.join(settings.reviewDirectory, `${codigo}.pdf`);
       assert.deepEqual(await paginasPdf(anual), await paginasPdf(final.production.files.find(f => f.type === 'pdf').savedPath));
       assert.equal((await adjunto(anual, tipo)).enviosCorte.length, 2);
     }
-    for (const f of originales) assert.deepEqual(await fs.readFile(f.ruta), f.bytes);
+    // Corregir sustituyó la entrega 1 y no tocó la entrega 2.
+    for (const f of deEntrega2.filter(f => !originales.some(o => o.ruta === f.ruta))) assert.ok(await igual(f), `Se alteró entrega 2: ${f.ruta}`);
+    assert.ok((await Promise.all(originales.map(igual))).includes(false), 'La corrección debe regenerar la entrega 1');
     await abrir(); await foto('historial-final');
     assert.deepEqual(errores, []);
     evidencias.push({ tipo, tema, viewport, codigo, entregas: final.entregas.map(e => ({ numero: e.numero, ofs: e.ofs, archivos: e.archivos })), envios: final.enviosCorte });
     await context.close(); actualPagina = null;
-    console.log(`${tipo}: entregas 1 → 2 → corrección 3, materiales, PDF y reenvío; ${tema} ${viewport.width}×${viewport.height}: correcto`);
+    console.log(`${tipo}: entregas 1 → 2 → corrección sustituye la 1, PDF y reenvío; ${tema} ${viewport.width}×${viewport.height}: correcto`);
   }
   // Las hojas de contacto contienen todas las capturas, sin cambiar los originales.
   const contactos = path.join(audit, 'contactos');
