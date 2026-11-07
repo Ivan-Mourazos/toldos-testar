@@ -4,6 +4,7 @@ import { ajusteContorno, findRecogida, type CalcParams, type TipoPerfil } from "
 import { calcOllaos, sinPosiciones, type ModoOllaos, type OllaosResult, type RepartoLados } from "./ollaos.ts";
 import { ollaosSegunGanchos, sinReves, type LadosAlReves } from "./ganchos.ts";
 import type { OllaosAdaptados } from "../clientes/adaptar-ollaos.ts";
+import { desarrolloContornoSoldado, type DesarrolloContornoSoldado } from "../geometry/aguas-soldadas.ts";
 
 // El paño trasero usa la columna DELANTE de la recogida, igual que el Excel
 // (G11 y RPS D7). Confirmado por Iván el 2026-07-17: es el comportamiento
@@ -27,6 +28,10 @@ export interface LonaInput {
   altoDelante: number; altoAtras: number;
   /** Caída desde la cumbrera hasta los hombros del perfil. */
   aguas?: number;
+  /** Ausente conserva las aguas hacia los laterales de los pedidos anteriores. */
+  direccionAguas?: "laterales" | "delante-atras";
+  /** Solape total entre el techo y cada lateral; por defecto 2 cm, confirmado por Iván. */
+  solapeSoldaduraLateral?: number;
   /** Radio del arco de cumbrera (TIPO 03); 0 = pico vivo. */
   radioCumbrera?: number;
   /** Radio de los hombros (TIPO 03); 0 = esquina viva. */
@@ -98,6 +103,8 @@ export interface LonaResult {
   contornoAtrasIntroducido?: number;
   contornoAtrasAjustado?: number;
   panoDelantero: Pano; panoTrasero: Pano; panoContorno: Pano | null;
+  /** Aguas hacia delante y atrás: un techo y dos laterales enteros con pico. */
+  contornoSoldado?: { techo: Pano; lateral: Pano; desarrollo: DesarrolloContornoSoldado };
   ollaos: OllaosResult;
   reparto: { laterales: number[]; atras: number[]; delante: number[] };
   /** Solo con «SEGUN GANCHOS»: los ganchos ya sobre la lona hecha, para dibujarlos. */
@@ -108,6 +115,24 @@ export interface LonaResult {
 }
 
 const r1 = (v: number) => excelRound(v, 1);
+
+export const aguasLongitudinales = (input: Pick<LonaInput, "tipoPerfil" | "direccionAguas">): boolean =>
+  input.tipoPerfil === "TIPO 02" && input.direccionAguas === "delante-atras";
+
+export const CONTORNO_LONGITUDINAL_PENDIENTE =
+  "El contorno lleva un techo y dos laterales enteros, unidos por soldadura en las líneas de bajada.";
+
+export const solapeSoldadura = (input: Pick<LonaInput, "solapeSoldaduraLateral">): number => input.solapeSoldaduraLateral ?? 2;
+
+export function errorContornoSoldado(input: LonaInput): string | null {
+  if (!aguasLongitudinales(input)) return null;
+  if (!Number.isFinite(solapeSoldadura(input)) || solapeSoldadura(input) <= 0) return "El solape de soldadura debe ser mayor que cero.";
+  if (((input.anchoAtras ?? 0) > 0 && input.anchoAtras !== input.ancho)
+    || (!input.traseraPorArriba && input.altoAtras > 0 && input.altoAtras !== input.altoDelante)) {
+    return "El contorno con soldaduras necesita el mismo ancho y alto delante y detrás. Revisa las medidas de detrás.";
+  }
+  return null;
+}
 
 /** El remolque cambia de delante a detrás: otro ancho u otro alto (cero o ausente = igual). */
 export function detrasDistinto(
@@ -135,10 +160,12 @@ export function contornoSesgado(
  */
 export function contornoAutomatico(
   input: Pick<LonaInput, "tipoPerfil" | "ancho" | "anchoAtras" | "altoDelante" | "altoAtras" | "aguas" | "radioCumbrera"
-    | "radioHombro" | "radioEsquina" | "chaflan" | "radioChaflanAbajo" | "radioChaflanArriba" | "demasiaLonaHecha">,
+    | "radioHombro" | "radioEsquina" | "chaflan" | "radioChaflanAbajo" | "radioChaflanArriba" | "demasiaLonaHecha" | "direccionAguas">,
   demasiaLonaHecha: number,
   atras = false,
 ): number | null {
+  // El contorno soldado tiene un techo y dos laterales: no se expresa con una sola medida.
+  if (aguasLongitudinales(input)) return null;
   const ancho = atras && (input.anchoAtras ?? 0) > 0 ? input.anchoAtras! : input.ancho;
   const alto = atras && input.altoAtras > 0 ? input.altoAtras : input.altoDelante;
   const valor = contornoCalculado(input.tipoPerfil, {
@@ -151,6 +178,7 @@ export function contornoAutomatico(
 }
 
 export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
+  const longitudinal = aguasLongitudinales(input);
   const recDel = findRecogida(params, input.recogeDelante);
   const recAtr = findRecogida(params, input.recogeAtras);
 
@@ -169,10 +197,10 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
   const ajuste = ajusteContorno(params, input.tipoPerfil, {
     abajo: input.radioChaflanAbajo, arriba: input.radioChaflanArriba,
   });
-  const contornoLegacy = Math.max(input.contornoScad ?? 0, 0);
+  const contornoLegacy = longitudinal ? 0 : Math.max(input.contornoScad ?? 0, 0);
   const usaContornoLegacy = input.contorno == null && contornoLegacy > 0;
   // Sin contorno escrito (vacío o cero), el que calcula la web; el escrito a mano manda.
-  const contornoNuevo = (input.contorno ?? 0) > 0
+  const contornoNuevo = longitudinal ? 0 : (input.contorno ?? 0) > 0
     ? input.contorno!
     : contornoAutomatico(input, demasia) ?? 0;
   const contornoIntroducido = usaContornoLegacy
@@ -185,7 +213,7 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
       : 0;
   // Distinto detrás, el contorno cambia de una punta a otra y el paño se corta en trapecio: la
   // medida de detrás lleva el mismo ajuste. Si no, no se añade nada y el resultado queda igual.
-  const sesgada = contornoSesgado(input);
+  const sesgada = !longitudinal && contornoSesgado(input);
   const contornoAtrasIntroducido = (input.contornoAtras ?? 0) > 0
     ? input.contornoAtras!
     : sesgada ? contornoAutomatico(input, demasia, true) ?? 0 : 0;
@@ -193,7 +221,7 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
 
   const panoDelantero: Pano = {
     ancho: r1(input.ancho + recDel.delante + deltaDemasia),
-    alto: r1(input.altoDelante + params.demasiaAlto),
+    alto: r1(input.altoDelante - (longitudinal ? input.aguas ?? 0 : 0) + params.demasiaAlto),
     etiqueta: "PAÑO DELANTERO",
   };
   const demasiaTrasera = USAR_COLUMNA_ATRAS ? recAtr.atras : recAtr.delante;
@@ -202,7 +230,7 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
   const anchoPanoTrasero = recAtr.panoTraseroConAnchoDelante ? input.ancho : anchoAtras;
   const panoTrasero: Pano = {
     ancho: r1(anchoPanoTrasero + demasiaTrasera + deltaDemasia),
-    alto: r1(altoAtras + params.demasiaAlto),
+    alto: r1(altoAtras - (longitudinal ? input.aguas ?? 0 : 0) + params.demasiaAlto),
     etiqueta: "PAÑO TRASERO",
   };
 
@@ -218,6 +246,23 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
           ...(sesgada && contornoAtrasAjustado > 0 ? { altoAtras: contornoAtrasAjustado } : {}),
         }
       : null;
+
+  let contornoSoldado: LonaResult["contornoSoldado"];
+  if (longitudinal && !errorContornoSoldado(input) && input.largo > 0 && input.ancho > 0
+    && (input.aguas ?? 0) > 0 && input.altoDelante > input.aguas!) {
+    const extraExtremos = (demasiaContorno + deltaDemasia - demasia) / 2;
+    const desarrollo = desarrolloContornoSoldado({
+      largo: lonaHecha.largo, ancho: lonaHecha.ancho, alto: input.altoDelante, aguas: input.aguas!,
+      solape: solapeSoldadura(input), bastilla: params.ajusteContornoBase / 2,
+      extraDelante: extraExtremos + recDel.lateralSoloDelante,
+      extraAtras: extraExtremos + recAtr.lateralSoloAtras,
+    });
+    contornoSoldado = {
+      desarrollo,
+      techo: { ancho: r1(desarrollo.techo.largoCorte), alto: r1(desarrollo.techo.anchoCorte), etiqueta: "PAÑO TECHO" },
+      lateral: { ancho: r1(desarrollo.lateral.anchoCorte), alto: r1(desarrollo.lateral.altoCorte), etiqueta: "PAÑO LATERAL" },
+    };
+  }
 
   const ollaos = calcOllaos(
     lonaHecha.largo, lonaHecha.ancho, input.pasoOllaos, params,
@@ -251,7 +296,10 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
             delante: ollaos.ancho.posiciones,
           };
 
-  const metrosTela = panoContorno
+  const largoIndividual = (p: Pano) => Math.min(...[p.alto <= 250 ? p.ancho : Infinity, p.ancho <= 250 ? p.alto : Infinity]);
+  const metrosSoldado = contornoSoldado ? input.cantidad * [panoDelantero, panoTrasero, contornoSoldado.techo, contornoSoldado.lateral, contornoSoldado.lateral]
+    .reduce((s, p) => s + largoIndividual(p), 0) / 100 : 0;
+  const metrosTela = contornoSoldado ? Number.isFinite(metrosSoldado) ? excelRound(metrosSoldado, 2) : 0 : panoContorno
     ? excelRound(
         (input.cantidad * (panoDelantero.ancho + panoTrasero.ancho + panoContorno.ancho)) / 100,
         2,
@@ -259,6 +307,8 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
     : 0;
 
   const notas: string[] = [];
+  if (contornoSoldado) notas.push(`Techo y laterales con soldadura de ${solapeSoldadura(input).toLocaleString("es-ES")} cm de solape, todo en el techo, que monta encima del lateral. Los dos laterales quedan enteros.`);
+  else if (longitudinal) notas.push(errorContornoSoldado(input) ?? "Completa las medidas para calcular el techo y los laterales soldados.");
   // Una recogida que ya no está en los parámetros (ficha renombrada o borrada, fichero roto) se calcula
   // como «NO»: se dice en el elemento para que no pase en silencio.
   for (const [lado, nombre] of [["delante", input.recogeDelante], ["detrás", input.recogeAtras]] as const) {
@@ -289,7 +339,7 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
   return {
     lonaHecha, contornoIntroducido, ajusteContorno: ajuste, contornoAjustado,
     ...(sesgada ? { contornoAtrasIntroducido, contornoAtrasAjustado } : {}),
-    panoDelantero, panoTrasero, panoContorno,
+    panoDelantero, panoTrasero, panoContorno, ...(contornoSoldado ? { contornoSoldado } : {}),
     ollaos, reparto, ...(segunGanchos ? { ganchos: segunGanchos.ganchos } : {}), metrosTela,
     recogeDelanteTexto: recDel.nombre,
     recogeAtrasTexto: recAtr.nombre,

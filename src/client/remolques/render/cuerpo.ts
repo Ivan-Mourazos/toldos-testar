@@ -32,7 +32,10 @@ function normales(perfil: Perfil2D): Perfil2D {
 
 export function geometriaContorno(c: CuerpoLona): THREE.BufferGeometry {
   const n = c.perfilDelante.length;
-  const filas = Math.max(2, Math.ceil(c.largo / TRAMO_Z) + 1);
+  // Una fila exacta en la mitad conserva el pico aunque el largo no sea múltiplo de TRAMO_Z.
+  const longitudinal = c.cumbreraTransversal != null;
+  const filas = longitudinal ? 2 * Math.max(1, Math.ceil(c.largo / (2 * TRAMO_Z))) + 1
+    : Math.max(2, Math.ceil(c.largo / TRAMO_Z) + 1);
   const s = longitudes(c.perfilDelante);
   const posiciones: number[] = [];
   const uvs: number[] = [];
@@ -44,11 +47,18 @@ export function geometriaContorno(c: CuerpoLona): THREE.BufferGeometry {
       x + (c.perfilDelante[i][0] - x) * t,
       y + (c.perfilDelante[i][1] - y) * t,
     ] as [number, number]);
+    if (longitudinal) {
+      const hA = c.perfilAtras[1][1], hD = c.perfilDelante[1][1];
+      const alto = t <= 0.5 ? hA + (c.cumbreraTransversal! - hA) * 2 * t
+        : c.cumbreraTransversal! + (hD - c.cumbreraTransversal!) * (2 * t - 1);
+      perfil[1][1] = alto;
+      perfil[n - 2][1] = alto;
+    }
     const ns = normales(perfil);
     for (let i = 0; i < n; i += 1) {
       // Las arrugas se apagan en las costuras (z = 0 y z = largo) y en el borde de abajo, que va sujeto.
       const altura = Math.min(perfil[i][1] / 20, 1);
-      const a = ARRUGA * Math.sin(Math.PI * t) * altura * Math.sin(z * 0.21 + s[i] * 0.09) * Math.sin(s[i] * 0.043 + 1.3);
+      const a = longitudinal ? 0 : ARRUGA * Math.sin(Math.PI * t) * altura * Math.sin(z * 0.21 + s[i] * 0.09) * Math.sin(s[i] * 0.043 + 1.3);
       posiciones.push(perfil[i][0] + ns[i][0] * a, perfil[i][1] + ns[i][1] * a, z);
       uvs.push(s[i], z);
     }
@@ -66,6 +76,12 @@ export function geometriaContorno(c: CuerpoLona): THREE.BufferGeometry {
   geo.setAttribute('position', new THREE.Float32BufferAttribute(posiciones, 3));
   geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
   geo.setIndex(indices);
+  if (longitudinal) {
+    const plana = geo.toNonIndexed();
+    geo.dispose();
+    plana.computeVertexNormals();
+    return plana;
+  }
   geo.computeVertexNormals();
   return geo;
 }
@@ -138,6 +154,19 @@ export function piezasCuerpo(c: CuerpoLona | CuerpoBaqueton): Pieza[] {
     { geometria: geometriaPano(trasero, 0), material: 'lona' },
     costura(c.perfilDelante, c.largo),
     costura(trasero, 0),
+    ...(c.cumbreraTransversal != null ? [1, c.perfilDelante.length - 2].map(k => ({
+      geometria: tuboPoligonal([
+        new THREE.Vector3(c.perfilAtras[k][0], c.perfilAtras[k][1], 0),
+        new THREE.Vector3((c.perfilDelante[k][0] + c.perfilAtras[k][0]) / 2, c.cumbreraTransversal!, c.largo / 2),
+        new THREE.Vector3(c.perfilDelante[k][0], c.perfilDelante[k][1], c.largo),
+      ], 0.18), material: 'lonaOscura' as const,
+    })) : []),
+    ...(c.cumbreraTransversal != null ? [{
+      geometria: tuboPoligonal([
+        new THREE.Vector3((c.perfilDelante[1][0] + c.perfilAtras[1][0]) / 2, c.cumbreraTransversal, c.largo / 2),
+        new THREE.Vector3((c.perfilDelante.at(-2)![0] + c.perfilAtras.at(-2)![0]) / 2, c.cumbreraTransversal, c.largo / 2),
+      ], 0.12), material: 'lonaOscura' as const,
+    }] : []),
     // El borde de abajo del paño trasero, que queda al aire por encima de la base.
     ...((c.traseraDesde ?? 0) > 0 ? [costura([trasero[0], trasero[trasero.length - 1]], 0)] : []),
     ...(c.bastilla > 0 ? piezasBastilla(c) : []),

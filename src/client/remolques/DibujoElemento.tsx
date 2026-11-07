@@ -16,7 +16,7 @@ export function DibujoElemento({ elemento, params }: { elemento: ElementoEscena;
         respaldo={(
           <Escena3D modo="lona" medidasHechas={res.lonaHecha} largo={lona.largo} ancho={lona.ancho} anchoAtras={lona.anchoAtras}
             altoDelante={lona.altoDelante} altoAtras={lona.traseraPorArriba ? 0 : lona.altoAtras}
-            aguas={lona.aguas} radioCumbrera={lona.radioCumbrera} radioHombro={lona.radioHombro}
+            aguas={lona.aguas} direccionAguas={lona.direccionAguas} radioCumbrera={lona.radioCumbrera} radioHombro={lona.radioHombro}
             radioEsquina={lona.radioEsquina} chaflan={lona.chaflan}
             radioChaflanAbajo={lona.radioChaflanAbajo} radioChaflanArriba={lona.radioChaflanArriba}
             ollaos={res.reparto}

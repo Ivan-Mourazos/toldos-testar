@@ -1,4 +1,4 @@
-import { contornoAutomatico, contornoSesgado, type LonaInput } from "../calc/lona.ts";
+import { aguasLongitudinales, errorContornoSoldado, contornoAutomatico, contornoSesgado, type LonaInput } from "../calc/lona.ts";
 import type { BaquetonInput } from "../calc/baqueton.ts";
 import { esModeloGanado, type GanadoInput } from "../calc/ganado.ts";
 import { calcularMedidasCal } from "../ganado/medidas.ts";
@@ -46,6 +46,10 @@ export function erroresPlanteamiento(input: LonaInput | BaquetonInput | GanadoIn
       agregar(input[campo] != null && !positivo(input[campo]), campo, "Introduce una caída de lona mayor que cero.");
     }
   } else {
+    const errorSoldadura = errorContornoSoldado(input);
+    agregar(Boolean(errorSoldadura), (input.solapeSoldaduraLateral ?? 2) <= 0 || !Number.isFinite(input.solapeSoldaduraLateral ?? 2) ? "solapeSoldaduraLateral" : "direccionAguas", errorSoldadura ?? "");
+    agregar(aguasLongitudinales(input) && (input.aguas ?? 0) >= Math.min(input.altoDelante, input.altoAtras > 0 ? input.altoAtras : input.altoDelante),
+      "aguas", "Las aguas deben ser menores que el alto del centro para dejar altura en los extremos.");
     agregar(!positivo(input.altoDelante), "altoDelante", "Introduce el alto delantero.");
     // Las decisiones propias de la lona, con el mismo criterio: mientras no se
     // elija el perfil no se sabe qué medidas hacen falta, y las comprobaciones
@@ -77,21 +81,21 @@ export function erroresPlanteamiento(input: LonaInput | BaquetonInput | GanadoIn
       "El ancho de la ventana debe ser menor que el ancho del remolque.",
     );
     agregar(
-      input.ventana === true && positivo(input.ventanaAlto) && Number(input.ventanaAlto) >= input.altoDelante,
+      input.ventana === true && positivo(input.ventanaAlto) && Number(input.ventanaAlto) >= input.altoDelante - (aguasLongitudinales(input) ? input.aguas ?? 0 : 0),
       "ventanaAlto",
       "El alto de la ventana debe ser menor que el alto delantero.",
     );
     // Sin escribir, la web lo calcula (Iván, 21/10/2026): solo se pide si no puede (perfil sin elegir o sin
     // el dato que lo define). La demasía de la lona hecha no cambia si se puede o no.
     agregar(
-      !positivo(input.contorno) && !positivo(input.contornoScad) && contornoAutomatico(input, 1) == null,
+      !aguasLongitudinales(input) && !positivo(input.contorno) && !positivo(input.contornoScad) && contornoAutomatico(input, 1) == null,
       "contorno",
       "Confirma el contorno de corte antes de guardar o generar el PDF.",
     );
     // Distinto detrás, el paño contorno se corta en trapecio y hace falta la medida de cada punta (no con
     // la trasera a la línea por arriba: entonces el contorno no cambia).
     agregar(
-      contornoSesgado(input) && !positivo(input.contornoAtras) && contornoAutomatico(input, 1, true) == null,
+      !aguasLongitudinales(input) && contornoSesgado(input) && !positivo(input.contornoAtras) && contornoAutomatico(input, 1, true) == null,
       "contornoAtras",
       "Confirma el contorno de corte de detrás antes de guardar o generar el PDF.",
     );

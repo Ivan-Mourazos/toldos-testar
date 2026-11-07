@@ -21,6 +21,7 @@
 // Fuera de esta versión (se cortan a mano): TIPO 04 y los demás puentes.
 
 import { findRecogida } from '../calc/params.ts';
+import { aguasLongitudinales } from '../calc/lona.ts';
 import { esquinaChaflan } from '../geometry/chaflan.ts';
 import { anchoArial } from '../../domain/corteLona/texto.js';
 import { buscarColocacion, PRESUPUESTO_TETRIS } from '../../domain/corteLona/colocacionTetris.ts';
@@ -47,6 +48,12 @@ const HOLGURA_TRAPECIO = 10;
 
 export function soportada(el) {
   const i = el.input, r = el.result;
+  if (aguasLongitudinales(i)) {
+    if (!r.contornoSoldado) return 'faltan medidas del contorno con soldaduras';
+    if (/PUENTES/.test(`${i.recogeDelante} ${i.recogeAtras}`)) return 'recogida con puentes en contorno soldado';
+    if ([r.contornoSoldado.techo, r.contornoSoldado.lateral].some(p => p.ancho * 10 > ROLLO && p.alto * 10 > ROLLO)) return 'alguna pieza del contorno soldado no cabe en el rollo';
+    return null;
+  }
   if (!['TIPO 01', 'TIPO 02', 'TIPO 03', 'TIPO 04', 'TIPO 05'].includes(i.tipoPerfil)) return `perfil ${i.tipoPerfil || 'sin elegir'}`;
   if (i.tipoPerfil === 'TIPO 04' && !((i.chaflan ?? 0) > 0)) return 'chaflán sin medida';
   if (/PUENTES/.test(i.recogeDelante ?? '') || (/PUENTES/.test(i.recogeAtras ?? '') && !PUENTES_CON_CORTE.test(i.recogeAtras))) return 'recogida con puentes';
@@ -80,7 +87,7 @@ const seg = (p, x1, y1, x2, y2) => p.lineas.push([x1, y1, x2, y2]);
 const marca = (p, x1, y1, x2, y2) => p.rot.push([x1, y1, x2, y2]);
 
 function forma(i) {
-  const tipo = i.tipoPerfil;
+  const tipo = aguasLongitudinales(i) ? 'TIPO 01' : i.tipoPerfil;
   const r = tipo === 'TIPO 05' ? ((i.radioEsquina ?? 0) + 1) * 10 : 0;
   const aguas = ['TIPO 02', 'TIPO 03'].includes(tipo) ? (i.aguas ?? 0) * 10 : 0;
   // Arquillado con aguas (TIPO 03): hombros de radio el de la web + 1 cm, como el arquillado (85 con 7,5, 92 con
@@ -515,13 +522,17 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], 
   const piezas = [], tapas = [], tirasEnteras = [];
   let union = 1; // número de la siguiente unión de empate (sin letras)
   for (const el of elementos) {
+    const longitudinal = aguasLongitudinales(el.input);
+    if (longitudinal && soportada(el)) throw Error(soportada(el));
     const i = el.input;
     const { d, t, ventana, marcasHombro, marcasAtras, rebajeLado, puentes } = cabezasLona(el);
     if (ventana) out.avisos.push(`${el.of}: ventana marcada con rotulador y su tapa de ${ventana[0] / 10 + 3} × ${ventana[1] / 10 + 3}; revisar la altura de la ventana.`);
     if (puentes) out.avisos.push(`${el.of}: ${i.recogeAtras}: rebaje de ${rebajePuentes(el) / 10} cm detrás en el contorno y orejas sin ollaos; revisarlo.`);
     for (let u = 0; u < (i.cantidad || 1); u++) {
       const L = letras?.get(el)?.[u] ?? '';
-      const c = contorno(el, marcasHombro, rebajeLado, marcasAtras);
+      const soldado = longitudinal ? piezasContornoSoldado(el, L ? 1 : union, L.toLowerCase()) : null;
+      if (soldado && !L) union += 2;
+      const c = soldado ? structuredClone(soldado.techo) : contorno(el, marcasHombro, rebajeLado, marcasAtras);
       const conEmpate = c.h > ROLLO && c.w > ROLLO;
       if (conEmpate) { out.conTira = true; out.altoTira = Math.max(out.altoTira, c.w - ROLLO + EMPATE); }
       const entera = conEmpate && tira !== 'empatada' ? contornoConTiraEntera(c, L ? 1 : union, L.toLowerCase()) : null;
@@ -531,6 +542,7 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], 
       const grande = rotular(entera ? entera.grande : emp ? emp.grande : c, L && `${L}1`, undefined, marcar);
       grande.contornoDe = el.of;
       piezas.push(grande, rotular(structuredClone(d.p), L && `${L}2`, undefined, marcar), rotular(structuredClone(t.p), L && `${L}3`, undefined, marcar));
+      if (soldado) soldado.laterales.forEach((p, k) => piezas.push(rotular(structuredClone(p), L && `${L}${k + 4}`, undefined, marcar)));
       if (emp) {
         // Las medias tiras no tienen dobladillo: su nombre va en medio de su borde de empate, a 0,5 cm, dentro de los
         // 2 cm que tapa la soldadura y lejos de los números de unión de las puntas. Empatadas son una sola pieza: B4-1 y
@@ -553,7 +565,7 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], 
       // hay tira empatada) y lleva «VENTANA» debajo de su nombre, o «VENT» si no cabe (Iván, 22/10/2026).
       if (ventana) {
         const tapa = pieza(ventana[0] + 30, ventana[1] + 30); seg(tapa, 0, 0, tapa.w, 0); seg(tapa, tapa.w, 0, tapa.w, tapa.h); seg(tapa, tapa.w, tapa.h, 0, tapa.h); seg(tapa, 0, tapa.h, 0, 0);
-        const nombre = L && `${L}${emp || entera ? 5 : 4}`;
+        const nombre = L && `${L}${soldado ? 6 : emp || entera ? 5 : 4}`;
         tapa.deRestos = `TAPA DE VENTANA ${ventana[0] / 10 + 3} × ${ventana[1] / 10 + 3}${L ? ` (${nombre})` : ''}`;
         tapa.subtitulo = anchoArial('VENTANA', 100) <= Math.min(tapa.w, tapa.h) * 0.9 ? 'VENTANA' : 'VENT';
         // Sin el nombre en rotulador: en la tapa no hace falta (Iván, 29/10/2026, AR2605291); en grande, sí.
@@ -657,8 +669,82 @@ export function piezasLona(el) {
   const i = el.input, r = el.result;
   const { marcasHombro, marcasAtras, rebajeLado, ollaosDel, ollaosAtr, ...resto } = cabezasLona(el);
   const lat = i.modoOllaos === 'REPARTIDOS' ? completas(r.ollaos.largo, r.reparto.laterales) : r.reparto.laterales;
-  const c = contorno(el, marcasHombro, rebajeLado, marcasAtras);
-  return { ...resto, c, ollaos: { delante: ollaosDel, atras: ollaosAtr, laterales: lat }, marcasHombro, marcasAtras, rebajeLado };
+  const soldado = aguasLongitudinales(i) ? piezasContornoSoldado(el) : null;
+  const c = soldado ? soldado.techo : contorno(el, marcasHombro, rebajeLado, marcasAtras);
+  return { ...resto, c, ...(soldado ? { soldado } : {}), ollaos: { delante: ollaosDel, atras: ollaosAtr, laterales: lat }, marcasHombro, marcasAtras, rebajeLado };
+}
+
+// Dos laterales enteros y un techo. El techo monta encima; el límite del solape se rotula en los laterales.
+function piezasContornoSoldado(el, n = 1, pre = '') {
+  const g = el.result.contornoSoldado?.desarrollo;
+  if (!g) throw Error('Faltan las medidas del contorno con soldaduras.');
+  const poligono = (puntos, w, h) => {
+    const p = pieza(w * 10, h * 10);
+    puntos.forEach(([x, y], k) => {
+      const [a, b] = puntos[(k + 1) % puntos.length];
+      seg(p, x * 10, y * 10, a * 10, b * 10);
+    });
+    return p;
+  };
+  const techo = poligono(g.techo.corte, g.techo.largoCorte, g.techo.anchoCorte);
+  const lateral = poligono(g.lateral.corte, g.lateral.anchoCorte, g.lateral.altoCorte);
+  // Iván, 06/11/2026: el techo monta encima del lateral, para que el agua escurra por fuera de la unión. La raya
+  // roja va en el lateral, a 2 cm de cada borde inclinado (hasta donde llega el techo), con 1,5 cm libres al
+  // principio y al final; el techo no lleva raya.
+  const [, , derecha, pico, izquierda] = g.lateral.corte.map(([x, y]) => [x * 10, y * 10]);
+  for (const [a, b] of [[izquierda, pico], [pico, derecha]]) {
+    const dx = b[0] - a[0], dy = b[1] - a[1], largo = Math.hypot(dx, dy), ux = dx / largo, uy = dy / largo;
+    const nx = uy * g.solape * 10, ny = -ux * g.solape * 10;
+    // Va por el derecho: no una raya entera, sino tres trozos de 2 cm (al principio, en el centro y al final),
+    // como las marcas de los puentes (Iván, 06/11/2026).
+    const en = (t) => [a[0] + nx + ux * t, a[1] + ny + uy * t];
+    for (const t of [15, largo / 2 - 10, largo - 35]) marca(lateral, ...en(t), ...en(t + 20));
+  }
+  const r = el.result;
+  const posiciones = el.input.modoOllaos === 'REPARTIDOS' ? completas(r.ollaos.largo, r.reparto.laterales) : r.reparto.laterales;
+  for (const pos of posiciones) lateral.ollaos.push([(g.lateral.desdeDelante + r.lonaHecha.largo - pos) * 10, BORDE]);
+  const laterales = [lateral, structuredClone(lateral)];
+  const { marcasHombro, marcasAtras } = cabezasLona(el);
+  if (el.input.bastillaEnfundar) {
+    marca(techo, 60, techo.h / 2, 75, techo.h / 2);
+    marca(techo, techo.w - 60, techo.h / 2, techo.w - 75, techo.h / 2);
+    for (const p of laterales) for (const x of [DOBLEZ_BASTILLA, p.w - DOBLEZ_BASTILLA]) marca(p, x, 35, x, 60);
+  } else {
+    marca(techo, 10, techo.h / 2, 25, techo.h / 2);
+    marca(techo, techo.w - 10, techo.h / 2, techo.w - 25, techo.h / 2);
+    for (const p of laterales) {
+      if (marcasHombro != null) marca(p, 10, marcasHombro, 25, marcasHombro);
+      if (marcasAtras != null) marca(p, p.w - 10, marcasAtras, p.w - 25, marcasAtras);
+    }
+  }
+  // Como en los empates habituales: números de 1 cm, repetidos en las dos piezas,
+  // dentro del solape. En el lateral siguen la pendiente, sin partir el paño.
+  const punta = 10, margen = g.solape * 10 / 2;
+  laterales.forEach((p, k) => {
+    const union = `${pre}${n + k}`, y = k ? techo.h - margen : margen;
+    numero(techo, punta, y, union); numero(techo, techo.w - punta, y, union);
+    const pico = g.lateral.corte[3].map(v => v * 10);
+    for (const extremo of [g.lateral.corte[4], g.lateral.corte[2]]) {
+      const [x0, y0] = extremo.map(v => v * 10);
+      const dx = pico[0] - x0, dy = pico[1] - y0, largo = Math.hypot(dx, dy);
+      const ux = dx / largo, uy = dy / largo, signo = Math.sign(dx);
+      numero(p, x0 + punta * ux + margen * uy * signo, y0 + punta * uy - margen * ux * signo,
+        union, Math.atan2(dy, Math.abs(dx)) * 180 / Math.PI * signo);
+    }
+  });
+  // El lateral del otro lado es el reflejo del primero: con recogidas distintas delante y detrás, su demasía
+  // y sus ollaos van en el extremo contrario (revisión de Claude, 06/11/2026).
+  const espejo = (p) => {
+    const W = p.w, x = (v) => W - v;
+    return { ...p,
+      lineas: p.lineas.map(([a, b, c, d]) => [x(a), b, x(c), d]),
+      rot: p.rot.map(([a, b, c, d]) => [x(a), b, x(c), d]),
+      ollaos: p.ollaos.map(([a, ...resto]) => [x(a), ...resto]),
+      numeros: p.numeros.map(([a, b, v, g = 0, ...resto]) => [x(a), b, v, -g, ...resto]),
+      arcos: p.arcos };
+  };
+  laterales[1] = espejo(laterales[1]);
+  return { techo, laterales };
 }
 
 export { ROLLO, R_OLLAO };

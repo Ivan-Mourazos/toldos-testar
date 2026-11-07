@@ -13,6 +13,7 @@ export function datosGeometriaPdf(input: LonaInput): string[] {
     case "TIPO 01":
       return ["PERFIL RECTO"];
     case "TIPO 02":
+      if (input.direccionAguas === "delante-atras") return [`AGUAS ${fmt(input.aguas)} CM HACIA DELANTE Y ATRÁS`, `SOLDADURA ${fmt(input.solapeSoldaduraLateral ?? 2)} CM · EL TECHO MONTA ENCIMA DEL LATERAL`];
       return [`AGUAS ${fmt(input.aguas)} CM`];
     case "TIPO 03":
       return [

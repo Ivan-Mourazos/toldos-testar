@@ -61,6 +61,8 @@ export interface CuerpoLona {
   largo: number;
   /** Alto del dobladillo de la bastilla de enfundar; 0 sin bastilla. */
   bastilla: number;
+  /** Cumbrera a mitad del largo, de lado a lado; cabezas rectangulares. */
+  cumbreraTransversal?: number;
   /** Con la trasera a la línea por arriba (AR2605158): a qué altura empieza el paño trasero, que es más
    *  corto por abajo que el remolque. Ausente = desde la base. */
   traseraDesde?: number;

@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1420" height="1160" viewBox="0 0 1420 1160" role="img" aria-labelledby="title desc">
+<title id="title">DESCARTADO: contorno entero con aguas hacia delante y atrás</title>
+<desc id="desc">Croquis geométrico propuesto: una sola pieza continua, con el techo en el centro y los dos laterales enteros. No hay cortes interiores ni uniones en mitad de los laterales. Lona hecha 245 por 144 centímetros, extremos a 80 y centro a 96. Techo desarrollado 247,08. Cada borde inferior lateral mide 245, dividido solo a efectos de medición en dos tramos de 122,5. Esta propuesta conserva las cotas principales pero necesita adaptación diagonal de la lona: no es un desarrollo isométrico validado ni incluye demasías de confección.</desc>
+<metadata>{"unidad":"cm","estado":"Propuesta de trazado continuo por cotas, pendiente de comprobar en lona","largoHecho":245,"anchoHecho":144,"altoExtremo":80,"altoCentro":96,"vertiente":123.54047919609185,"desarrolloTecho":247.0809583921837,"desfaseExtremos":2.0934843217751222,"proyeccionAltoExtremo":79.97260358019165,"envolvente":[247.0809583921837,336],"contorno":[[0,0],[2.0934843217751222,-79.97260358019165],[123.54047919609185,-96],[244.98747407040858,-79.97260358019165],[247.0809583921837,0],[247.0809583921837,144],[244.98747407040858,223.97260358019165],[123.54047919609185,240],[2.0934843217751222,223.97260358019165],[0,144]],"cortesInteriores":[],"unionesLaterales":[]}</metadata>
+<text x="710" y="1125" text-anchor="middle" style="font: bold 27px Arial;fill:#c00">DESCARTADO · NO FABRICAR · USAR TECHO Y LATERALES SOLDADOS</text>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M10 0 L0 5 L10 10 Z" fill="#303944"/></marker></defs>
+<style>
+text{font-family:Arial,sans-serif;fill:#22303b;font-size:18px}
+.title{font-size:31px;font-weight:700}
+.subtitle{font-size:20px;fill:#4e5d66}
+.small{font-size:16px;fill:#4e5d66}
+.label{font-size:17px;font-weight:700;letter-spacing:0.7px}
+.measure{font-size:18px;paint-order:stroke;stroke:#fff;stroke-width:6px;stroke-linejoin:round}
+.edge{fill:none;stroke:#273542;stroke-width:2.4;stroke-linejoin:round}
+.fold{stroke:#30708e;stroke-width:1.8;stroke-dasharray:9 6}
+.dim{stroke:#303944;stroke-width:1.2;marker-start:url(#arrow);marker-end:url(#arrow)}
+.ext{stroke:#9aa6ac;stroke-width:1}
+.note{font-size:20px;font-weight:700}
+</style>
+<rect width="1420" height="1160" fill="#fff"/>
+<text x="70" y="63" class="title" text-anchor="start">Contorno entero · aguas hacia delante y atrás</text>
+<text x="70" y="101" class="subtitle" text-anchor="start">Lona hecha 245 × 144 cm (+1 cm) · extremos 80 cm · centro 96 cm</text>
+<text x="70" y="134" class="small" text-anchor="start">Propuesta de trazado por cotas · un solo paño continuo · medidas en cm</text>
+<polygon points="165,455 169.606,279.06 436.789,243.8 703.972,279.06 708.578,455 708.578,771.8 703.972,947.74 436.789,983 169.606,947.74 165,771.8" fill="#edf0f1"/>
+<rect x="165" y="455" width="543.5781084628042" height="316.8" fill="#e0edf2"/>
+<polygon points="165,455 169.606,279.06 436.789,243.8 703.972,279.06 708.578,455 708.578,771.8 703.972,947.74 436.789,983 169.606,947.74 165,771.8" class="edge"/>
+<line x1="165" y1="455" x2="708.578" y2="455" class="fold"/>
+<line x1="165" y1="771.8" x2="708.578" y2="771.8" class="fold"/>
+<line x1="436.789" y1="455" x2="436.789" y2="771.8" class="fold"/>
+<text x="436.789" y="350" class="label" text-anchor="middle">LATERAL IZQUIERDO · ENTERO</text>
+<text x="436.789" y="383" class="small" text-anchor="middle">El borde inferior se extiende inclinado</text>
+<text x="300.8945" y="285" class="measure" text-anchor="middle">122,5</text>
+<text x="572.6835" y="285" class="measure" text-anchor="middle">122,5</text>
+<text x="144" y="370" class="measure" text-anchor="middle">80</text>
+<text x="731.578" y="370" class="measure" text-anchor="middle">80</text>
+<text x="436.789" y="219" class="small" text-anchor="middle">Centro del lateral · 96</text>
+<line x1="436.789" y1="227" x2="436.789" y2="243.8" class="ext"/>
+<text x="300.8945" y="555" class="label" text-anchor="middle">TECHO DELANTERO</text>
+<text x="572.6835" y="555" class="label" text-anchor="middle">TECHO TRASERO</text>
+<text x="300.8945" y="589" class="" text-anchor="middle">123,54 × 144</text>
+<text x="572.6835" y="589" class="" text-anchor="middle">123,54 × 144</text>
+<text x="455.789" y="650" class="small" text-anchor="middle">Cumbrera</text>
+<line x1="165" y1="716" x2="708.578" y2="716" class="dim"/><text x="436.789" y="706" class="measure" text-anchor="middle">Techo desarrollado 247,08</text>
+<line x1="757.578" y1="455" x2="757.578" y2="771.8" class="dim"/><text x="781.578" y="613.4" class="measure" text-anchor="middle">144</text>
+<text x="210" y="626" class="label" text-anchor="middle">DELANTE</text>
+<text x="757.578" y="681" class="label" text-anchor="middle">DETRÁS</text>
+<text x="436.789" y="885" class="label" text-anchor="middle">LATERAL DERECHO · ENTERO</text>
+<text x="436.789" y="919" class="small" text-anchor="middle">Borde inferior: 122,5 + 122,5 = 245</text>
+<text x="300.8945" y="980" class="measure" text-anchor="middle">122,5</text>
+<text x="572.6835" y="980" class="measure" text-anchor="middle">122,5</text>
+<line x1="165" y1="1055" x2="708.578" y2="1055" class="dim"/><text x="436.789" y="1045" class="measure" text-anchor="middle">Envolvente 247,08</text>
+<line x1="165" y1="971" x2="165" y2="1065" class="ext"/>
+<line x1="708.578" y1="971" x2="708.578" y2="1065" class="ext"/>
+<line x1="80" y1="243.8" x2="150" y2="243.8" class="ext"/>
+<line x1="80" y1="983" x2="150" y2="983" class="ext"/>
+<line x1="95" y1="243.8" x2="95" y2="983" class="dim"/>
+<text transform="translate(74 613.4) rotate(-90)" text-anchor="middle" class="measure">Envolvente 336</text>
+<text x="1080" y="191" class="label" text-anchor="middle">MONTADO · VISTA LATERAL</text>
+<polygon points="915,410 915,298 1086.5,275.6 1258,298 1258,410" fill="#edf0f1" class="edge"/>
+<line x1="890" y1="298" x2="890" y2="410" class="dim"/><text x="870" y="354" class="measure" text-anchor="middle">80</text>
+<line x1="1280" y1="298" x2="1280" y2="410" class="dim"/><text x="1302" y="354" class="measure" text-anchor="middle">80</text>
+<line x1="1086.5" y1="410" x2="1086.5" y2="275.6" class="dim"/><text x="1068.5" y="342.8" class="measure" text-anchor="middle">96</text>
+<line x1="915" y1="450" x2="1258" y2="450" class="dim"/><text x="1086.5" y="439" class="measure" text-anchor="middle">245</text>
+<line x1="1160" y1="275.6" x2="1160" y2="298" class="dim"/><text x="1188" y="286.8" class="measure" text-anchor="middle">16</text>
+<line x1="1086.5" y1="275.6" x2="1170" y2="275.6" class="ext"/>
+<text x="1085" y="515" class="label" text-anchor="middle">DELANTERO Y TRASERO SEPARADOS</text>
+<rect x="944" y="548" width="288" height="160" fill="#e0edf2" class="edge"/>
+<text x="1088" y="634" class="" text-anchor="middle">2 paños rectangulares</text>
+<line x1="944" y1="739" x2="1232" y2="739" class="dim"/><text x="1088" y="728" class="measure" text-anchor="middle">144</text>
+<line x1="1260" y1="548" x2="1260" y2="708" class="dim"/><text x="1284" y="628" class="measure" text-anchor="middle">80</text>
+<text x="900" y="810" class="note" text-anchor="start">Los laterales no se parten</text>
+<text x="900" y="851" class="" text-anchor="start">Paño continuo: laterales + techo</text>
+<text x="900" y="886" class="" text-anchor="start">Extremos del lateral desplazados 2,09 cm</text>
+<text x="900" y="921" class="" text-anchor="start">Las líneas azules son pliegues</text>
+<text x="900" y="974" class="small" text-anchor="start">El trazado conserva las cotas principales.</text>
+<text x="900" y="1001" class="small" text-anchor="start">La adaptación diagonal de la lona se</text>
+<text x="900" y="1028" class="small" text-anchor="start">comprueba antes de fijar el corte de taller.</text>
+<line x1="900" y1="1070" x2="940" y2="1070" class="fold"/>
+<text x="952" y="1076" class="small" text-anchor="start">Pliegue · no cortar</text>
+<text x="70" y="1135" class="small" text-anchor="start">Propuesta para comprobar en lona. Sin bastillas, orejas ni solapes. El aumento de 1 cm ya está incluido.</text>
+</svg>

@@ -233,6 +233,16 @@ Sus preguntas van aparte, en [la lista para el encargado](./antica-preguntas-tal
 
 ## Remolques
 
+**Q-R09 · Resuelta el 06/11/2026: recto con aguas hacia delante y atrás.** Iván
+confirma una soldadura donde baja cada lateral, con 2 cm de solape. Techo y dos
+laterales completos, sin partirlos por el centro; delantero y trasero separados.
+El techo monta encima del lateral, por el agua; marca roja en los laterales, a 2 cm
+del borde inclinado, hasta donde llega el techo (Iván, 06/11/2026).
+Se conservan confecciones, demasías y el aumento de 1 cm en largo y ancho.
+La propuesta de contorno continuo queda descartada. Pendiente únicamente la
+regla del rebaje de puentes en esta orientación; su corte automático queda bloqueado.
+[Expediente](./recto-aguas-delante-atras.md).
+
 Añadidas el 30/09/2026, al hacer el dibujo 3D. Cómo es cada cierre está en [cierres-y-acabados.md](../remolques/cierres-y-acabados.md).
 
 Contestadas el 20/10/2026, al revisar los DWG de PAMILAKAN para el corte (Iván: «Pamilakan las lonas altas son

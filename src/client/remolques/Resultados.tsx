@@ -286,13 +286,17 @@ export function ResultadosLona({ res, modoOllaos, primerOllao, errorOllaos, onOl
             ? `${fmt(res.lonaHecha.largo)} × ${fmt(res.lonaHecha.ancho)} del. / ${fmt(res.lonaHecha.anchoAtras)} tras.`
             : `${fmt(res.lonaHecha.largo)} × ${fmt(res.lonaHecha.ancho)}`}
         />
-        <Dato label={`Contorno corte (+${fmt(res.ajusteContorno)})`}
-          valor={!res.contornoAjustado ? '—' : sesgada ? contornoPuntas(res) : fmt(res.contornoAjustado)} />
+        {!res.contornoSoldado && <Dato label={`Contorno corte (+${fmt(res.ajusteContorno)})`}
+          valor={!res.contornoAjustado ? '—' : sesgada ? contornoPuntas(res) : fmt(res.contornoAjustado)} />}
         <Dato label="Paño delantero" valor={`${fmt(res.panoDelantero.ancho)} × ${fmt(res.panoDelantero.alto)}`} />
         <Dato label="Paño trasero" valor={`${fmt(res.panoTrasero.ancho)} × ${fmt(res.panoTrasero.alto)}`} />
-        <Dato label="Paño contorno" valor={!res.panoContorno ? '—' : sesgada
+        {res.contornoSoldado ? <>
+          <Dato label="Paño techo" valor={`${fmt(res.contornoSoldado.techo.ancho)} × ${fmt(res.contornoSoldado.techo.alto)}`} />
+          <Dato label="Laterales con pico (2)" valor={`${fmt(res.contornoSoldado.lateral.ancho)} × ${fmt(res.contornoSoldado.lateral.alto)}`} />
+          <Dato label="Solape soldadura" valor={`${fmt(res.contornoSoldado.desarrollo.solape)} cm`} />
+        </> : <Dato label="Paño contorno" valor={!res.panoContorno ? '—' : sesgada
           ? `${fmt(res.panoContorno.ancho)} × ${contornoPuntas(res)}`
-          : `${fmt(res.panoContorno.ancho)} × ${fmt(res.panoContorno.alto)}`} />
+          : `${fmt(res.panoContorno.ancho)} × ${fmt(res.panoContorno.alto)}`} />}
         <Dato label="Recoge delante" valor={res.recogeDelanteTexto} />
         <Dato label="Recoge atrás" valor={res.recogeAtrasTexto} />
         <Dato label="Metros de tela" valor={res.metrosTela > 0 ? `${fmt(res.metrosTela)} m` : '—'} />

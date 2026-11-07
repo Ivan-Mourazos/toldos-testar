@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { AskForConfirmation } from '../components/NotificationCenter';
-import { contornoAutomatico, type LonaInput } from '../../remolques/calc/lona.ts';
+import { aguasLongitudinales, CONTORNO_LONGITUDINAL_PENDIENTE, contornoAutomatico, solapeSoldadura, type LonaInput } from '../../remolques/calc/lona.ts';
 import type { Material } from '../../remolques/calc/materiales-seed.ts';
 import { ajusteContorno, DEFAULT_PARAMS, PERFILES, type CalcParams } from '../../remolques/calc/params.ts';
 import { CampoMaterial, CampoNum, CampoSelect, CampoSiNo, CampoTexto, MarcaDelCliente, PasoFormulario } from './Campos';
@@ -40,6 +40,7 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
 }) {
   const dc = (campo: string) => delCliente.includes(campo);
   const p = params ?? DEFAULT_PARAMS;
+  const longitudinal = aguasLongitudinales(input);
   const RECOGIDAS = opcionesConEtiqueta(p.recogidas.map((r) => r.nombre));
   const ajuste = ajusteContorno(p, input.tipoPerfil, {
     abajo: input.radioChaflanAbajo, arriba: input.radioChaflanArriba,
@@ -141,6 +142,16 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
         {['TIPO 02', 'TIPO 03'].includes(input.tipoPerfil) && (
           <CampoNum name="aguas" delCliente={dc('aguas')} error={errores.aguas} label="Aguas" value={input.aguas ?? 0} onChange={(v) => set('aguas', v)} />
         )}
+        {input.tipoPerfil === 'TIPO 02' && (
+          <CampoSelect name="direccionAguas" label="Aguas hacia" span={2} error={errores.direccionAguas} value={input.direccionAguas ?? 'laterales'}
+            opciones={[{ value: 'laterales', label: 'Los laterales' }, { value: 'delante-atras', label: 'Delante y atrás' }]}
+            onChange={(v) => set('direccionAguas', v as LonaInput['direccionAguas'])} />
+        )}
+        {longitudinal && <>
+          <CampoNum name="solapeSoldaduraLateral" label="Solape soldadura" error={errores.solapeSoldaduraLateral}
+            value={solapeSoldadura(input)} onChange={(v) => set('solapeSoldaduraLateral', v)} />
+          <p className="rem-nota rem-span-4" role="status">{CONTORNO_LONGITUDINAL_PENDIENTE} El techo monta encima del lateral: marca roja en los laterales, a {fmt(solapeSoldadura(input))} cm del borde.</p>
+        </>}
         {input.tipoPerfil === 'TIPO 04' && (
           <CampoNum name="chaflan" delCliente={dc('chaflan')} error={errores.chaflan} label="Chaflán · vértices"
             value={input.chaflan ?? 0} onChange={(v) => set('chaflan', v)} />
@@ -182,14 +193,15 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
         <CampoNum name="largo" error={errores.largo} label="Largo" value={input.largo} onChange={(v) => set('largo', v)} />
         <CampoNum name="ancho" error={errores.ancho} label="Ancho" value={input.ancho}
           onChange={(v) => onChange(conMedidaDelante(input, 'ancho', v, verDetras))} />
-        <CampoNum name="altoDelante" error={errores.altoDelante} label="Alto delante" value={input.altoDelante}
+        <CampoNum name="altoDelante" error={errores.altoDelante} label={longitudinal ? 'Alto centro' : 'Alto delante'} value={input.altoDelante}
           onChange={(v) => onChange(conMedidaDelante(input, 'altoDelante', v, verDetras))} />
-        <div className="rem-contorno">
+        {!longitudinal && <div className="rem-contorno">
           <CampoNum name="contorno" error={errores.contorno} label="Contorno" value={contornoVisible}
             onChange={(v) => onChange({ ...input, contorno: v, contornoScad: undefined })} />
           {botonCalculado(contornoEscrito, contornoVisible, contornoExacto,
             () => onChange({ ...input, contorno: undefined, contornoScad: undefined }))}
-        </div>
+        </div>}
+        {longitudinal && <p className="rem-nota rem-span-4">Delantero y trasero rectangulares. Con el mismo alto en ambos extremos: alto centro menos aguas.</p>}
         {/* Remolque más ancho (o más alto) detrás: sus medidas de detrás, con el contorno de esa
             punta, porque el paño contorno se corta en trapecio (CAD de Iván, 30/09/2026). La caja solo
             sale con ellas: el Sí / No suelto no necesita marco. */}
@@ -203,7 +215,7 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
                   el contorno no cambia y no hace falta su medida de detrás. */}
               <CampoSiNo name="traseraPorArriba" label="Trasera a la línea por arriba" value={input.traseraPorArriba ?? false}
                 onChange={(v) => onChange({ ...input, traseraPorArriba: v || undefined, ...(v ? { contornoAtras: undefined } : {}) })} />
-              {!input.traseraPorArriba && (
+              {!input.traseraPorArriba && !longitudinal && (
                 <div className="rem-contorno">
                   <CampoNum name="contornoAtras" error={errores.contornoAtras} label="Contorno detrás"
                     value={contornoAtrasVisible} onChange={(v) => set('contornoAtras', v)} />

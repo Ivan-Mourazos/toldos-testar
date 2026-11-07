@@ -1,4 +1,4 @@
-import type { LonaInput, LonaResult } from "../calc/lona.ts";
+import { aguasLongitudinales, type LonaInput, type LonaResult } from "../calc/lona.ts";
 import type { CalcParams, TipoPerfil } from "../calc/params.ts";
 import { colorBaseMaterial } from "../geometry/color-lona.ts";
 import { perfilForma, type PerfilOpts } from "../geometry/perfil.ts";
@@ -14,6 +14,7 @@ import { ventanaLona } from "./ventana.ts";
 export function lonaDibujable(input: LonaInput): boolean {
   if (!(input.largo > 0 && input.ancho > 0 && input.altoDelante > 0) || input.tipoPerfil === "") return false;
   if ((input.tipoPerfil === "TIPO 02" || input.tipoPerfil === "TIPO 03") && !((input.aguas ?? 0) > 0)) return false;
+  if (aguasLongitudinales(input) && (input.aguas ?? 0) >= Math.min(input.altoDelante, input.altoAtras > 0 ? input.altoAtras : input.altoDelante)) return false;
   if (input.tipoPerfil === "TIPO 04" && !((input.chaflan ?? 0) > 0)) return false;
   if (input.tipoPerfil === "TIPO 05" && !((input.radioEsquina ?? 0) > 0)) return false;
   return true;
@@ -35,7 +36,12 @@ function opcionesPerfil(input: LonaInput, ancho: number, alto: number): PerfilOp
 const centrar = (puntos: Perfil2D, ancho: number): Perfil2D => puntos.map(([x, y]) => [x - ancho / 2, y]);
 
 export function perfilesLona(input: LonaInput, wD: number, wA: number, hD: number, hA: number) {
-  const tipo = input.tipoPerfil as TipoPerfil;
+  const longitudinal = aguasLongitudinales(input);
+  const tipo = longitudinal ? "TIPO 01" : input.tipoPerfil as TipoPerfil;
+  if (longitudinal) {
+    hD -= input.aguas ?? 0;
+    hA -= input.aguas ?? 0;
+  }
   const delante = perfilForma(tipo, opcionesPerfil(input, wD, hD)).puntos;
   const calculadoAtras = perfilForma(tipo, opcionesPerfil(input, wA, hA)).puntos;
   // Las dos caras se emparejan punto a punto para tejer el contorno, como en el dibujo técnico:
@@ -62,6 +68,7 @@ export function escenaLona(input: LonaInput, res: LonaResult, params: CalcParams
   const cuerpo: CuerpoLona = {
     tipo: "lona", perfilDelante: perfiles.delante, perfilAtras: perfiles.atras, largo,
     bastilla: input.bastillaEnfundar ? BASTILLA : 0,
+    ...(aguasLongitudinales(input) ? { cumbreraTransversal: Math.max(hD, hA) } : {}),
     ...(traseraDesde > 0 ? { traseraDesde } : {}),
   };
   const anchoAtrasRemolque = (input.anchoAtras ?? 0) > 0 ? input.anchoAtras! : input.ancho;

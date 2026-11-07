@@ -57,6 +57,14 @@ export function cotasAguas(cuerpo: CuerpoLona, aguas: number, altos: { delante: 
   const L = cuerpo.largo;
   const wD = cuerpo.perfilDelante[cuerpo.perfilDelante.length - 1][0] * 2;
   const wA = cuerpo.perfilAtras[cuerpo.perfilAtras.length - 1][0] * 2;
+  if (cuerpo.cumbreraTransversal != null) {
+    const pico = cuerpo.cumbreraTransversal;
+    const x = Math.max(wD, wA) / 2 + S;
+    return [
+      { vistas: ["lateral"], desde: [x, 0, L / 2], hasta: [x, pico, L / 2], texto: fmt(pico) },
+      { vistas: ["lateral"], desde: [x, pico - aguas, L / 2 + 2 * S], hasta: [x, pico, L / 2 + 2 * S], texto: fmt(aguas) },
+    ];
+  }
   const hombro = (alto: number) => r1(alto - Math.min(aguas, alto));
   return [
     { vistas: ["delante"], desde: [wD / 2 + S, hombro(altos.delante), L], hasta: [wD / 2 + S, altos.delante, L], texto: fmt(aguas) },

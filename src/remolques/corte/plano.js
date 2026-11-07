@@ -122,6 +122,7 @@ function escaleraV(L, yb, x, posiciones) {
 // `letras`: las de las unidades de este elemento; varias iguales van en un solo dibujo (A1 · B1), como los baquetones.
 function confeccionLona(L, el, X, Y, letras = ['']) {
   const i = el.input, r = el.result, P = piezasLona(el);
+  if (P.soldado) return confeccionLonaSoldada(L, el, P, X, Y, letras);
   const del = r.panoDelantero, tra = r.panoTrasero, con = r.panoContorno, hecha = r.lonaHecha;
   // Ht: el trasero puede ser más corto (trasera a la línea por arriba, AR2605158).
   // B: lo que ocupa el contorno a lo ancho (en trapecio, lo de detrás más la holgura de cada lado).
@@ -249,6 +250,46 @@ function confeccionLona(L, el, X, Y, letras = ['']) {
     }
   }
   return { ancho: xCon + B - X, alto: Math.max(H, A) };
+}
+
+// Aguas hacia delante y atrás: cinco paños y ninguna partición en los laterales.
+function confeccionLonaSoldada(L, el, P, X, Y, letras) {
+  const g = el.result.contornoSoldado.desarrollo;
+  const techo = P.soldado.techo, laterales = P.soldado.laterales;
+  const reserva = 45 + 4 * P.ollaos.laterales.length;
+  const fila = reserva + Math.max(...laterales.map(p => p.h / 10)) + 85;
+  const xDel = X + techo.w / 10 + 60, xTra = xDel + P.d.p.w / 10 + 60;
+  const alto = fila + Math.max(techo.h, P.d.p.h, P.t.p.h) / 10;
+  const ancho = Math.max(xTra + P.t.p.w / 10 - X, (laterales[0].w + laterales[1].w) / 10 + 60);
+  const pintarPano = (p, x, y, nombre, n, nominal) => {
+    const t = (a, b) => [x + a / 10, y + b / 10];
+    pintar(L, p, t);
+    for (const [a, b, valor, giro] of p.numeros) {
+      const [px, py] = t(a, b);
+      L.g.textos.push({ capa: 'ROTULADOR', x: px, y: py, h: 1, valor, giro, centrado: true });
+    }
+    L.texto(`${letras.map(l => `${l || 'A'}${n}`).join(' · ')} · ${nombre}`, x + p.w / 20, y + p.h / 20, 7);
+    const posiciones = n >= 4 ? P.ollaos.laterales : n === 2 ? P.ollaos.delante : n === 3 ? P.ollaos.atras : [];
+    L.cota('vent-pre-noimpr', x, y, x + p.w / 10, y, r1(p.w / 10), -25 - 4 * posiciones.length);
+    L.cota('vent-pre-noimpr', x + p.w / 10, y, x + p.w / 10, y + p.h / 10, r1(p.h / 10), 18);
+    if (nominal) L.g.polilineas.push({ capa: 'referencias', puntos: nominal.map(([a, b]) => [x + a, y + b]), cerrada: true });
+    else rosaCabeza(L, P.f, n === 2 ? P.orejaDelante : P.oreja, n === 2 ? P.anchoPerfil : P.anchoPerfilTra, p.h, t);
+    if (n >= 4) {
+      const xb = x + g.lateral.desdeDelante + el.result.lonaHecha.largo;
+      [...posiciones].sort((a, b) => a - b).forEach((pos, k) => L.g.cotas.push({
+        capa: 'cotas', estilo: 'XERAL 5', x1: xb, y1: y + 4.5, x2: xb - pos, y2: y + 4.5,
+        giro: 0, d: y - 10.5 - 4 * k, valor: pos,
+      }));
+    } else if (n === 2 || n === 3) escaleraH(L, x + (n === 2 ? P.orejaDelante : P.oreja) / 10 + 1, y + 4.5, posiciones, true);
+  };
+  laterales.forEach((p, k) => pintarPano(p, X + k * (p.w / 10 + 60), Y + reserva, 'LATERAL ENTERO', k + 4, g.lateral.nominalEnCorte));
+  const m = g.margenSoldadura, d = g.techo.desdeDelante, s = g.techo.largoNominal, w = g.techo.anchoNominal;
+  pintarPano(techo, X, Y + fila, 'TECHO', 1, [[d, m], [d + s, m], [d + s, m + w], [d, m + w]]);
+  pintarPano(P.d.p, xDel, Y + fila, 'DELANTERO', 2);
+  pintarPano(P.t.p, xTra, Y + fila, 'TRASERO', 3);
+  L.texto(`EL TECHO MONTA ENCIMA DEL LATERAL HASTA LA MARCA ROJA · SOLAPE ${coma(g.solape)} CM`, X + ancho / 2, Y + alto + 18, 7);
+  L.texto(`LONA ALTA · AGUAS HACIA DELANTE Y ATRÁS · OF ${el.of}`, X + ancho / 2, Y + alto + 40, 10);
+  return { ancho: ancho + 35, alto: alto + 50 };
 }
 
 // Dibujo de confección de un baquetón (Iván, 20/10/2026; como AR2605071), en cm, igual que va en el corte:

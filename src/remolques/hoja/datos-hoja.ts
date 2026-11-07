@@ -1,4 +1,4 @@
-import type { LonaInput, LonaResult } from "../calc/lona.ts";
+import { aguasLongitudinales, type LonaInput, type LonaResult } from "../calc/lona.ts";
 import type { BaquetonInput, BaquetonResult } from "../calc/baqueton.ts";
 import type { GanadoInput, GanadoResult } from "../calc/ganado.ts";
 import type { PlanteamientoRecord, TipoPlanteamiento } from "../store/types.ts";
@@ -68,6 +68,10 @@ export function hojaLona(i: LonaInput, r: LonaResult): CuerpoHoja {
   const panos = [
     textoPanos(i.cantidad, r.panoDelantero.ancho, r.panoDelantero.alto),
     textoPanos(i.cantidad, r.panoTrasero.ancho, r.panoTrasero.alto),
+    ...(r.contornoSoldado ? [
+      `${textoPanos(i.cantidad, r.contornoSoldado.techo.ancho, r.contornoSoldado.techo.alto)} · TECHO`,
+      `${textoPanos(i.cantidad * 2, r.contornoSoldado.lateral.ancho, r.contornoSoldado.lateral.alto)} · LATERALES CON PICO`,
+    ] : []),
     ...(r.panoContorno
       ? [textoPanos(i.cantidad, r.panoContorno.ancho, contornoSesgado ? contornoPuntas(r) : r.panoContorno.alto)]
       : []),
@@ -79,17 +83,19 @@ export function hojaLona(i: LonaInput, r: LonaResult): CuerpoHoja {
         titulo: "MEDIDA LONA HECHA",
         lineas: [
           `${fmt(r.lonaHecha.largo)} × ${fmt(r.lonaHecha.ancho)}`,
-          altoAtras === i.altoDelante
+          ...(aguasLongitudinales(i)
+            ? [`ALTO CENTRO ${fmt(i.altoDelante)}`, `EXTREMOS ${fmt(i.altoDelante - (i.aguas ?? 0))}`]
+            : [altoAtras === i.altoDelante
             ? `ALTO ${fmt(i.altoDelante)}`
             : i.traseraPorArriba
               ? `ALTO ${fmt(i.altoDelante)} · TRASERA ${fmt(altoAtras)} A LA LÍNEA POR ARRIBA`
-              : `ALTO ${fmt(i.altoDelante)} DEL. / ${fmt(altoAtras)} TRAS.`,
+              : `ALTO ${fmt(i.altoDelante)} DEL. / ${fmt(altoAtras)} TRAS.`]),
         ],
         notas: sesgado ? [`ANCHO ${fmt(i.ancho)} DEL. / ${fmt(i.anchoAtras!)} TRAS.`] : [],
       },
       {
         titulo: "CONTORNO DE CORTE",
-        lineas: [!r.contornoAjustado ? "PENDIENTE" : contornoSesgado ? contornoPuntas(r) : fmt(r.contornoAjustado)],
+        lineas: [r.contornoSoldado ? "TECHO Y DOS LATERALES" : !r.contornoAjustado ? "PENDIENTE" : contornoSesgado ? contornoPuntas(r) : fmt(r.contornoAjustado)],
         notas: [],
       },
     ],
