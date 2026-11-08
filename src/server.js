@@ -1,5 +1,5 @@
 import { catalogoEntregas, numerarEntrega, aplicarDestino, necesitaPrepararDestino } from './entregasRps.js';
-import { avisoEntradaEntrega, codigoCorteEditable, abrirEntrega, codigoEntrega, ofsEntrega, pedidoEntrega } from './entregas.js';
+import { avisoEntradaEntrega, codigoCorteEditable, abrirEntrega, codigoAnual, codigoEntrega, ofsEntrega, pedidoEntrega } from './entregas.js';
 import { materialesReserva } from './materialesEntrega.js';
 import { adjuntarPedido } from './adjuntosPedido.js';
 import { leerPdfParaActualizarDatos } from './workflow.js';
@@ -351,10 +351,10 @@ app.post('/api/corte-lona/borrador', async (req, res, next) => {
       corteLona = crearEstadoCorteLona(actual, { ajustes, resultado: generarCorteLona(actual, { ajustes, ofStockSacos: stock.of }), ofStockSacos: stock.of });
     }
     const { status, cuerpo } = await flujoToldos.borrador({
-      orderCode: codigoEntrega(entrega), regenerar: req.body?.regenerar === true, datos: datosCorteToldos(corteLona), datosRevisado: existente?.corteConfirmado?.datos,
+      orderCode: codigoAnual(entrega), regenerar: req.body?.regenerar === true, datos: datosCorteToldos(corteLona), datosRevisado: existente?.corteConfirmado?.datos,
       revisado: existente?.corteConfirmado ? planosDe(existente.corteConfirmado).map((p) => p.plano) : undefined,
       preparar: async (carpeta) => {
-        const salida = await prepararArchivosCorte({ order: actual, codigoSalida: codigoEntrega(entrega), corteLona, settings: await workflowStore.getSettings(), oda, tipo: 'plano', carpeta });
+        const salida = await prepararArchivosCorte({ order: actual, codigoSalida: codigoAnual(entrega), corteLona, settings: await workflowStore.getSettings(), oda, tipo: 'plano', carpeta });
         return { ficheros: salida.files.map((f) => ({ filename: f.filename, savedPath: f.savedPath, contenido: f.contents })),
           avisos: salida.files.length || salida.avisos.length ? salida.avisos : ['Este pedido no tiene corte de lona.'] };
       }
@@ -1248,7 +1248,7 @@ app.post('/api/reviews', async (req, res, next) => {
     if (existing?.status === 'PRODUCED' && !review.entregas.some(e => e.numero === review.entregaActual)) existing = null;
     else if (existing) existing = { ...existing, ...review.entregas.find(e => e.numero === review.entregaActual)?.instantanea, corteConfirmado: review.corteConfirmado ?? existing.corteConfirmado };
     const order = normalizeOrder(pedidoEntrega(review).order);
-    const codigoCorte = codigoEntrega(review);
+    const codigoCorte = codigoAnual(review);
     if (review.entregas.length && ofsEntrega(review).length) {
       const ajustes = review.corteLona?.ajustes || {};
       const stock = await ofStockSacos();

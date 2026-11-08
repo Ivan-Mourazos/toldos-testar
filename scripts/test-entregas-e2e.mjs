@@ -124,6 +124,12 @@ try {
     await guardar(cuerpo);
     const primera = await generar();
     assert.equal(primera.entregas.length, 1);
+    for (const f of primera.production.files.filter(f => f.type === 'pdf')) {
+      const oficina = path.resolve(f.savedPath).startsWith(path.resolve(settings.remolquesOficinaTecnicaDirectory.replaceAll('{YYYY}', '2026')));
+      assert.equal(f.filename, oficina ? `${codigo}.pdf` : `${codigo}-${n1}.pdf`);
+    }
+    assert.ok(path.basename(primera.corteConfirmado.plano).startsWith(codigo));
+    assert.ok(!path.basename(primera.corteConfirmado.plano).startsWith(`${codigo}-${n1}`));
     const rutasOriginales = [...new Set([primera.corteConfirmado?.plano, ...(primera.corteConfirmado?.planos ?? []).map(p => p.plano),
       ...primera.production.files.map(f => f.archivedFilename ? path.join(settings.planteamientosDirectory, f.archivedFilename) : f.savedPath)].filter(Boolean))];
     const copiaArchivos = p => Promise.all([...new Set([p.corteConfirmado?.plano, ...(p.corteConfirmado?.planos ?? []).map(x => x.plano),
@@ -209,7 +215,11 @@ try {
     const otraEntrega = await request(generarRuta, { savedBy: 'IVÁN', includeNonAcrylicFabrics: true, confirmOverwrite: true, destinoEntrega: { numero: 3, modo: 'nuevo' } });
     assert.equal(otraEntrega.status, 409); assert.match(otraEntrega.data.error, /conserva el mismo número/);
     // Desde el navegador: el destino propuesto es sustituir la entrega 1 y pide confirmación antes de escribir.
+    // La web guarda en caché la aprobación de CoordinaOT: recargar hasta que vea el __reset.
     await abrir();
+    for (let intento = 0; intento < 30 && await page.getByRole('button', { name: 'Generar archivos', exact: true }).isDisabled(); intento++) {
+      await page.waitForTimeout(1000); await abrir();
+    }
     await page.getByRole('button', { name: 'Generar archivos', exact: true }).click();
     await page.getByRole('dialog').getByText(`Sustituir -${n1}`, { exact: true }).waitFor();
     await foto('correccion-destino');
@@ -222,7 +232,10 @@ try {
     }
     const corregida = await leer();
     assert.equal(corregida.status, 'PRODUCED'); assert.equal(corregida.entregas.length, 2, 'Corregir no abre otra entrega');
-    for (const f of corregida.production.files.filter(f => f.type === 'pdf')) assert.ok(f.filename.endsWith(`-${n1}.pdf`), f.filename);
+    for (const f of corregida.production.files.filter(f => f.type === 'pdf')) {
+      const oficina = path.resolve(f.savedPath).startsWith(path.resolve(settings.remolquesOficinaTecnicaDirectory.replaceAll('{YYYY}', '2026')));
+      assert.equal(f.filename, oficina ? `${codigo}.pdf` : `${codigo}-${n1}.pdf`);
+    }
     // Envíos reales al bot simulado: número correlativo, misma entrega y bytes del corte actual.
     const enviar = extra => request(envioRuta, { usuario: 'IVÁN', destino: 'bot', confirmBot: true, confirmOverwrite: true, sinPdf: true, ...extra });
     assert.equal((await enviar()).status, 200);

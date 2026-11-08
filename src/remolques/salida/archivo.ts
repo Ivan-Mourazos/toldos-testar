@@ -1,4 +1,5 @@
 import path from "node:path";
+import { codigoAnual } from '../../entregas.js';
 import { access, copyFile, link, mkdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import { constants } from "node:fs";
 import { anioDelPlanteamiento, nombrePdf } from "./nombre-pdf.ts";
@@ -68,7 +69,7 @@ export function destinosPdfRemolques(
   return {
     nombre,
     anio,
-    destinos: [path.join(conAnio(planteamientos), nombre), path.join(conAnio(oficina), entrega === undefined ? nombre.replace(/-10\.pdf$/, ".pdf") : nombre)],
+    destinos: [path.join(conAnio(planteamientos), nombre), path.join(conAnio(oficina), `${codigoAnual({ kind: 'remolques', orderCode: nombrePdf(numeroPedido).replace(/-10\.pdf$/, ''), entregaActual: entrega })}.pdf`)],
     raices,
   };
 }

@@ -40,6 +40,22 @@ const PDF = new Uint8Array([37, 80, 68, 70, 45, 49, 46, 55]);
 const PEDIDO = { numeroPedido: "ar.26.03632", fecha: "2025-12-20" };
 
 describe("dónde va el PDF", () => {
+  it.each([10, 11])('la entrega %s conserva su sufijo en planteamientos y solo la siguiente lo lleva en el año', entrega => {
+    const { planteamientos, oficina, carpetas } = preparar();
+    const salida = destinosPdfRemolques(PEDIDO.numeroPedido, PEDIDO.fecha, carpetas, undefined, entrega);
+    expect(salida.destinos).toEqual([
+      path.join(planteamientos, `AR2603632-${entrega}.pdf`),
+      path.join(oficina, '2026', entrega === 10 ? 'AR2603632.pdf' : 'AR2603632-11.pdf'),
+    ]);
+  });
+  it('corregir la primera entrega sustituye las mismas dos rutas', async () => {
+    const { oficina, carpetas } = preparar();
+    const pedido = { ...PEDIDO, entrega: 10 };
+    const primera = await archivarPdfRemolques(PDF, pedido, carpetas);
+    const corregida = await archivarPdfRemolques(PDF, pedido, carpetas, { sustituir: true });
+    expect(corregida.destinos).toEqual(primera.destinos);
+    expect(corregida.destinos[1]).toBe(path.join(oficina, '2026/AR2603632.pdf'));
+  });
   it("la raíz de una plantilla es lo que hay antes del año", () => {
     expect(raizPlantilla(path.join("/mnt", "oficina", "{YYYY}"))).toBe(path.join("/mnt", "oficina"));
     expect(raizPlantilla(path.join("/mnt", "planteamientos"))).toBe(path.join("/mnt", "planteamientos"));

@@ -5,7 +5,7 @@ import { carpetaCorte } from './corteLonaArchivos.js';
 import { AWNING_NOUNS, generationBlock, uniqueOfs } from './reviewRules.js';
 import { aprobacionToldos } from './toldosEditable.js';
 import { writeFileAtomic } from './workflow.js';
-import { numeroEntrega } from './entregas.js';
+import { codigoAnual, codigoEntrega, numeroEntrega } from './entregas.js';
 
 const fallo = (codigo, mensaje) => Object.assign(new Error(mensaje), { statusCode: codigo });
 
@@ -37,8 +37,14 @@ export async function enviarCorte({ pedido, order, settings, usuario, destino, c
   }
   const archivos = await preparar();
   if (!archivos.length) throw fallo(409, 'Este pedido no tiene un corte disponible para enviar.');
+  const codigoOrigen = codigoEntrega(pedido);
+  const codigoDestino = codigoAnual(pedido);
   const files = archivos.map(({ filename, contents }) => {
     if (path.basename(filename) !== filename || !filename.toLowerCase().endsWith('.dxf')) throw fallo(400, 'El nombre del DXF no es válido.');
+    // Solo la copia del año cambia de nombre; los bytes y el envío al bot se conservan.
+    if (destino === 'dxfs' && (filename === `${codigoOrigen}.dxf` || filename.startsWith(`${codigoOrigen} (`))) {
+      filename = codigoDestino + filename.slice(codigoOrigen.length);
+    }
     return { filename, contents, savedPath: path.join(carpeta, filename) };
   });
   if (new Set(files.map((f) => f.filename)).size !== files.length) throw fallo(400, 'Hay nombres de DXF repetidos: no se ha escrito nada.');

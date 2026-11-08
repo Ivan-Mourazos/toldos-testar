@@ -1,4 +1,4 @@
-import { codigoEntrega, pedidoEntrega } from './entregas.js';
+import { codigoAnual, codigoEntrega, pedidoEntrega } from './entregas.js';
 import { generarCorteLona } from './domain/corteLona/index.js';
 import { archivoCorte } from './domain/corteLona/opcionesArchivo.js';
 import { crearEstadoCorteLona, corteLonaPendiente } from './corteLonaEstado.js';
@@ -60,7 +60,8 @@ export function registrarRutasCorteLona(app, { workflowStore, ofStockSacos, oda,
         throw error;
       }
       const datos = guardado ? req.query : req.body;
-      const pedido = guardado ? codigoEntrega(await workflowStore.getReview(req.params.orderCode)) : sanitizeOrderCode(order.orderCode);
+      const review = guardado ? await workflowStore.getReview(req.params.orderCode) : null;
+      const pedido = guardado ? (tipo === 'plano' ? codigoAnual(review) : codigoEntrega(review)) : sanitizeOrderCode(order.orderCode);
       res.setHeader('X-Corte-Lona-Of-Stock', stock.of);
       res.setHeader('Cache-Control', 'no-store');
       if (tipo === 'dxf') {

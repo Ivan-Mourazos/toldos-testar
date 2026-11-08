@@ -74,9 +74,9 @@ describe('guardar para revisión', () => {
     expect(status).toBe(200);
     expect(cuerpo).toMatchObject({ ok: true, review: { orderCode: 'AR2605134', kind: 'puertas', status: 'PENDING_REVIEW',
       summary: { customer: 'PORTANOVA', orderDate: '2026-10-21', technician: 'IVÁN', ofs: ['0233175'], models: ['Enrollable'], awnings: 1 } },
-      plano: { files: [{ filename: 'AR2605134-10.dwg' }] } });
+      plano: { files: [{ filename: 'AR2605134.dwg' }] } });
     expect((cuerpo as { review: object }).review).not.toHaveProperty('elementos');
-    expect(escritos).toEqual(['AR2605134-10.dwg']);
+    expect(escritos).toEqual(['AR2605134.dwg']);
     const { reviews } = await servicio.listar(2026);
     expect(reviews.map((r) => r.orderCode)).toEqual(['AR2605134']);
     expect(reviews[0].summary.awningList).toEqual([{ letter: 'A', model: 'Enrollable', of: '0233175', state: 'ok', notes: [] }]);
@@ -100,7 +100,7 @@ describe('guardar para revisión', () => {
     expect((await servicio.guardar({ pedido: pedidoPantalla(), savedBy: 'IVÁN' })).status).toBe(200);
     const segunda = await servicio.guardar({ pedido: pedidoPantalla({ frente: 210 }), savedBy: 'DAVID', confirmOverwrite: true });
     // El plano ya estaba: se avisa y no se sustituye al volver a guardar.
-    expect(segunda.cuerpo).toMatchObject({ overwritten: true, plano: { files: [], existentes: ['AR2605134-10.dwg'] } });
+    expect(segunda.cuerpo).toMatchObject({ overwritten: true, plano: { files: [], existentes: ['AR2605134.dwg'] } });
     // El autor sigue siendo quien lo guardó primero.
     expect((await servicio.obtener('AR2605134')).summary.technician).toBe('IVÁN');
     expect((await servicio.planoRevision('AR2605134', {})).status).toBe(409);
@@ -125,11 +125,11 @@ describe('generar archivos', () => {
     aprobada = false;
     await expect(servicio.generar('AR2605134', {})).rejects.toMatchObject({ statusCode: 409 });
     aprobada = true;
-    expect((await servicio.generar('AR2605134', {})).cuerpo).toMatchObject({ needsConfirmation: true, existing: ['AR2605134-10.dwg'] });
+    expect((await servicio.generar('AR2605134', {})).cuerpo).toMatchObject({ needsConfirmation: true, existing: ['AR2605134.dwg'] });
     const { status, cuerpo } = await servicio.generar('AR2605134', { confirmOverwrite: true });
     expect(status).toBe(200);
-    expect(cuerpo).toMatchObject({ review: { status: 'PRODUCED', reviewedBy: 'DAVID' }, saved: [{ type: 'plano-puertas', filename: 'AR2605134-10.dwg' }] });
-    expect(await fs.readFile(path.join(raiz, 'planos/AR2605134-10.dwg'), 'utf8')).toBe('PLANO AR2605134-10 REVISOR DAVID');
+    expect(cuerpo).toMatchObject({ review: { status: 'PRODUCED', reviewedBy: 'DAVID' }, saved: [{ type: 'plano-puertas', filename: 'AR2605134.dwg' }] });
+    expect(await fs.readFile(path.join(raiz, 'planos/AR2605134.dwg'), 'utf8')).toBe('PLANO AR2605134 REVISOR DAVID');
     expect((await servicio.generar('AR2605134', {})).cuerpo).toMatchObject({ unchanged: true });
   });
 
@@ -158,7 +158,7 @@ describe('corte', () => {
     aprobada = true;
     expect((await servicio.enviarCorte('AR2605134', { usuario: 'DAVID', destino: 'dxfs' })).status).toBe(200);
     const pedido = await servicio.obtener('AR2605134');
-    expect(pedido.enviosCorte?.map((e) => e.archivos.map((a) => a.filename))).toEqual([['AR2605134-10.dxf']]);
+    expect(pedido.enviosCorte?.map((e) => e.archivos.map((a) => a.filename))).toEqual([['AR2605134.dxf']]);
     expect(pedido.enviosCorte?.[0].usuario).toBe('DAVID');
     // La carpeta del bot no la crea la web.
     await expect(servicio.enviarCorte('AR2605134', { usuario: 'IVÁN', destino: 'bot', confirmBot: true })).rejects.toThrow(/No existe la carpeta del bot/);
@@ -174,21 +174,21 @@ it('«Corregir» vuelve a la pantalla con lo guardado (número tal cual, cliente
 
 // Flujo del DWG, fase 1 (plan del 24/10/2026): el borrador del plano en su carpeta y el enlace para abrirlo en ZWCAD.
 describe('borrador del corte', () => {
-  const red = String.raw`\\toldosgomez.local\DFS_POL\oftecnica\BORRADORES CORTE\AR2605134-10.dwg`;
+  const red = String.raw`\\toldosgomez.local\DFS_POL\oftecnica\BORRADORES CORTE\AR2605134.dwg`;
   it('escribe el plano en la carpeta de borradores y da el enlace tgm-pedidos con su ruta de red', async () => {
     const { status, cuerpo } = await servicio.borradorCorte({ pedido: pedidoPantalla(), savedBy: 'IVÁN' });
     expect(status).toBe(200);
-    expect(cuerpo).toMatchObject({ ok: true, existente: false, filename: 'AR2605134-10.dwg', ruta: red,
+    expect(cuerpo).toMatchObject({ ok: true, existente: false, filename: 'AR2605134.dwg', ruta: red,
       url: `tgm-pedidos://open?kind=cad&path=${encodeURIComponent(red)}` });
-    expect(await fs.readFile(path.join(raiz, 'borradores', 'AR2605134-10.dwg'), 'utf8')).toBe('PLANO AR2605134-10 REVISOR ');
+    expect(await fs.readFile(path.join(raiz, 'borradores', 'AR2605134.dwg'), 'utf8')).toBe('PLANO AR2605134 REVISOR ');
   });
   it('si ya hay un borrador no lo pisa: lo abre, salvo que se pida generarlo de nuevo', async () => {
     await servicio.borradorCorte({ pedido: pedidoPantalla(), savedBy: 'IVÁN' });
-    await fs.writeFile(path.join(raiz, 'borradores', 'AR2605134-10.dwg'), 'CAMBIADO EN ZWCAD');
+    await fs.writeFile(path.join(raiz, 'borradores', 'AR2605134.dwg'), 'CAMBIADO EN ZWCAD');
     expect((await servicio.borradorCorte({ pedido: pedidoPantalla(), savedBy: 'IVÁN' })).cuerpo).toMatchObject({ existente: true, ruta: red });
-    expect(await fs.readFile(path.join(raiz, 'borradores', 'AR2605134-10.dwg'), 'utf8')).toBe('CAMBIADO EN ZWCAD');
+    expect(await fs.readFile(path.join(raiz, 'borradores', 'AR2605134.dwg'), 'utf8')).toBe('CAMBIADO EN ZWCAD');
     expect((await servicio.borradorCorte({ pedido: pedidoPantalla(), savedBy: 'IVÁN', regenerar: true })).cuerpo).toMatchObject({ existente: false, sustituido: true });
-    expect(await fs.readFile(path.join(raiz, 'borradores', 'AR2605134-10.dwg'), 'utf8')).toBe('PLANO AR2605134-10 REVISOR ');
+    expect(await fs.readFile(path.join(raiz, 'borradores', 'AR2605134.dwg'), 'utf8')).toBe('PLANO AR2605134 REVISOR ');
   });
   it('no escribe nada sin «Soy», en simulación, sin las carpetas o con comprobaciones pendientes', async () => {
     await expect(servicio.borradorCorte({ pedido: pedidoPantalla(), savedBy: '' })).rejects.toMatchObject({ message: expect.stringContaining('Soy') });
@@ -207,8 +207,8 @@ describe('borrador del corte', () => {
 describe('corte confirmado desde el borrador', () => {
   let flujo: ReturnType<typeof crearServicioPedidosPuertas>;
   let paginas: string[] = [], pdfFalla = false;
-  const borrador = () => path.join(raiz, 'borradores', 'AR2605134-10.dxf');
-  const enAnio = () => path.join(raiz, 'planos', 'AR2605134-10.dxf');
+  const borrador = () => path.join(raiz, 'borradores', 'AR2605134.dxf');
+  const enAnio = () => path.join(raiz, 'planos', 'AR2605134.dxf');
   beforeEach(async () => {
     paginas = [];
     pdfFalla = false;
@@ -250,11 +250,11 @@ describe('corte confirmado desde el borrador', () => {
   it('confirmado, guarda para revisión: el borrador pasa a la carpeta del año y el pedido apunta quién lo confirmó', async () => {
     await abrir();
     const confirmado = await confirmar();
-    expect(confirmado).toMatchObject({ status: 200, cuerpo: { ok: true, confirmado: { por: 'IVÁN', filename: 'AR2605134-10.dxf' } } });
+    expect(confirmado).toMatchObject({ status: 200, cuerpo: { ok: true, confirmado: { por: 'IVÁN', filename: 'AR2605134.dxf' } } });
     const contenido = await fs.readFile(borrador(), 'utf8');
     const { status, cuerpo } = await guardar();
     expect(status).toBe(200);
-    expect(cuerpo).toMatchObject({ plano: { files: [{ filename: 'AR2605134-10.dxf', savedPath: enAnio() }], avisos: [] } });
+    expect(cuerpo).toMatchObject({ plano: { files: [{ filename: 'AR2605134.dxf', savedPath: enAnio() }], avisos: [] } });
     expect(await fs.readFile(enAnio(), 'utf8')).toBe(contenido);
     await expect(fs.stat(borrador())).rejects.toMatchObject({ code: 'ENOENT' });
     expect((await flujo.obtener('AR2605134')).corteConfirmado).toMatchObject({ por: 'IVÁN', plano: enAnio(),
@@ -294,7 +294,7 @@ describe('corte confirmado desde el borrador', () => {
     await fs.writeFile(enAnio(), 'HECHO A MANO');
     await abrir();
     await confirmar();
-    expect((await guardar()).cuerpo).toMatchObject({ needsPlanoConfirmation: true, existing: ['AR2605134-10.dxf'] });
+    expect((await guardar()).cuerpo).toMatchObject({ needsPlanoConfirmation: true, existing: ['AR2605134.dxf'] });
     expect(await fs.readFile(enAnio(), 'utf8')).toBe('HECHO A MANO');
     expect((await guardar({ confirmPlanoOverwrite: true })).status).toBe(200);
     expect(await fs.readFile(enAnio(), 'utf8')).not.toBe('HECHO A MANO');
@@ -310,7 +310,7 @@ describe('corte confirmado desde el borrador', () => {
     const pregunta = (await flujo.generar('AR2605134', {})).cuerpo as { huella: string };
     const { status, cuerpo } = await flujo.generar('AR2605134', { aceptarHuellaCorte: pregunta.huella });
     expect(status).toBe(200);
-    expect(cuerpo).toMatchObject({ saved: expect.arrayContaining([{ type: 'plano-puertas', filename: 'AR2605134-10.dxf', savedPath: enAnio() }, expect.objectContaining({ type: 'pdf', filename: 'AR2605134-10.pdf' })]) });
+    expect(cuerpo).toMatchObject({ saved: expect.arrayContaining([{ type: 'plano-puertas', filename: 'AR2605134.dxf', savedPath: enAnio() }, expect.objectContaining({ type: 'pdf', filename: 'AR2605134-10.pdf' })]) });
     expect(await fs.readFile(enAnio(), 'utf8')).toBe(retocado);
   });
 
@@ -331,7 +331,7 @@ describe('corte confirmado desde el borrador', () => {
     await guardar();
     const enviar = (extra = {}) => flujo.enviarCorte('AR2605134', { usuario: 'IVÁN', destino: 'dxfs', confirmOverwrite: true, ...extra });
     expect((await enviar()).status).toBe(200);
-    const dxf = await fs.readFile(path.join(raiz, '2026/DXFs/AR2605134-10.dxf'), 'latin1');
+    const dxf = await fs.readFile(path.join(raiz, '2026/DXFs/AR2605134.dxf'), 'latin1');
     const capas = new Set([...dxf.matchAll(/\r?\n {2}8\r?\n([^\r\n]+)/g)].map((m) => m[1]));
     expect(dxf).toContain('AC1018');
     expect(capas.has('DISCO1')).toBe(true);
@@ -343,7 +343,7 @@ describe('corte confirmado desde el borrador', () => {
     const conCambios = await enviar({ aceptarCambioCorte: true });
     expect(conCambios.status).toBe(200);
     expect((conCambios.cuerpo as { envio: { nota?: string } }).envio.nota).toContain('cambiado');
-    const nuevo = await fs.readFile(path.join(raiz, '2026/DXFs/AR2605134-10.dxf'), 'latin1');
+    const nuevo = await fs.readFile(path.join(raiz, '2026/DXFs/AR2605134.dxf'), 'latin1');
     const lineas = (t: string) => (t.match(/\nLINE\r?\n/g) ?? []).length;
     expect(lineas(nuevo)).toBe(lineas(dxf) + 1);
   });

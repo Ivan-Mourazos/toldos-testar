@@ -25,6 +25,22 @@ beforeEach(async () => {
 afterEach(async () => { vi.restoreAllMocks(); await fs.rm(raiz, { recursive: true, force: true }); });
 
 describe('Envío común del corte, independiente de generar archivos', () => {
+  it.each(['toldos-testar-review', 'puertas', 'remolques'])('separa el nombre del bot y del año en %s y no pisa la primera entrega', async kind => {
+    const inicio = kind === 'toldos-testar-review' ? 1 : 10;
+    await fs.mkdir(path.join(raiz, 'bot/Ivan.Sanchez'), { recursive: true });
+    for (const numero of [inicio, inicio + 1, inicio]) {
+      const pedido = { ...entrada.pedido, kind, entregaActual: numero };
+      const nombreBot = `${pedido.orderCode}-${numero}.dxf`;
+      const nombreAnual = numero === inicio ? `${pedido.orderCode}.dxf` : nombreBot;
+      const preparar = async () => [{ filename: nombreBot, contents: Buffer.from(String(numero)) }];
+      for (const destino of ['dxfs', 'bot']) {
+        const r = await enviarCorte({ ...entrada, pedido, preparar, destino, confirmBot: true, confirmOverwrite: true });
+        expect(r.cuerpo.envio.archivos[0].filename).toBe(destino === 'bot' ? nombreBot : nombreAnual);
+      }
+    }
+    expect(await fs.readFile(path.join(raiz, '2026/DXFs/AR2604784.dxf'), 'utf8')).toBe(String(inicio));
+    expect(await fs.readFile(path.join(raiz, `2026/DXFs/AR2604784-${inicio + 1}.dxf`), 'utf8')).toBe(String(inicio + 1));
+  });
   it.each(['bot', 'dxfs'])('envía un solo DXF con las dos opciones de varias telas a %s (el técnico de la máquina elige)', async destino => {
     const order = { ...pedidoVariasTelas(), technician: 'IVÁN' };
     const corteLona = crearEstadoCorteLona(order, { resultado: generarCorteLona(order, { ofStockSacos: '0230811' }), ofStockSacos: '0230811' });

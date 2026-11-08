@@ -121,6 +121,12 @@ try {
     await guardar(cuerpo);
     const primera = await generar();
     assert.equal(primera.entregas.length, 1);
+    for (const f of primera.production.files.filter(f => f.type === 'pdf')) {
+      const oficina = path.resolve(f.savedPath).startsWith(path.resolve(settings.remolquesOficinaTecnicaDirectory.replaceAll('{YYYY}', '2026')));
+      assert.equal(f.filename, oficina ? `${codigo}.pdf` : `${codigo}-${primeraN}.pdf`);
+    }
+    assert.ok(path.basename(primera.corteConfirmado.plano).startsWith(codigo));
+    assert.ok(!path.basename(primera.corteConfirmado.plano).startsWith(`${codigo}-${primeraN}`));
     const rutasOriginales = [...new Set([primera.corteConfirmado?.plano, ...(primera.corteConfirmado?.planos ?? []).map(p => p.plano),
       ...primera.production.files.map(f => f.archivedFilename ? path.join(settings.planteamientosDirectory, f.archivedFilename) : f.savedPath)].filter(Boolean))];
     const originales = await Promise.all(rutasOriginales.map(async ruta => ({ ruta, bytes: await fs.readFile(ruta) })));
@@ -234,6 +240,10 @@ try {
     const trasCorreccion = await leer();
     assert.equal(trasCorreccion.entregas.length, 2);
     assert.equal(trasCorreccion.entregas[0].revisiones.length, 1);
+    for (const f of trasCorreccion.production.files.filter(f => f.type === 'pdf')) {
+      const oficina = path.resolve(f.savedPath).startsWith(path.resolve(settings.remolquesOficinaTecnicaDirectory.replaceAll('{YYYY}', '2026')));
+      assert.equal(f.filename, oficina ? `${codigo}.pdf` : `${codigo}-${primeraN}.pdf`);
+    }
     for (const f of antesCorreccion) assert.deepEqual(await fs.readFile(f.ruta), f.bytes, 'Corregir entrega 1 no modifica la entrega nueva');
     // Envíos reales al bot simulado: número correlativo, misma entrega y bytes del corte actual.
     const enviar = extra => request(envioRuta, { usuario: 'IVÁN', destino: 'bot', confirmBot: true, confirmOverwrite: true, sinPdf: true, ...extra });

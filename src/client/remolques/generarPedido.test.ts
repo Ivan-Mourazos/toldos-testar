@@ -39,6 +39,10 @@ describe('estadoGenerarRemolques', () => {
 });
 
 describe('ficherosPrevistos', () => {
+  it.each([10, 11, 10])('muestra el nombre anual de la entrega %s y su PDF numerado de planteamientos', entregaActual => {
+    expect(ficherosPrevistos(pedido({ kind: 'remolques', orderCode: 'AR2604286', numeroPedido: 'AR.26.04286', entregaActual })))
+      .toEqual([`Planteamientos: AR2604286-${entregaActual}.pdf`, `Oficina técnica: 2026/AR2604286${entregaActual === 10 ? '' : '-11'}.pdf`]);
+  });
   it('los dos PDF de siempre, con el año del pedido', () => {
     expect(ficherosPrevistos({ numeroPedido: 'AR.26.04286', summary: pedido().summary, createdAt: '2026-10-01T08:00:00.000Z' }))
       .toEqual(['Planteamientos: AR2604286-10.pdf', 'Oficina técnica: 2026/AR2604286.pdf']);

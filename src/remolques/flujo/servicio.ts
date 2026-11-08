@@ -1,7 +1,7 @@
 import { numerarEntrega, aplicarDestino, necesitaPrepararDestino } from '../../entregasRps.js';
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
-import { avisoEntradaEntrega, codigoCorteEditable, cerrarEntrega, codigoEntrega, ofsEntrega, pedidoEntrega, numeroEntrega } from '../../entregas.js';
+import { avisoEntradaEntrega, codigoCorteEditable, cerrarEntrega, codigoAnual, codigoEntrega, ofsEntrega, pedidoEntrega, numeroEntrega } from '../../entregas.js';
 import { materialesRemolques } from '../../materialesEntrega.js';
 import { enviarCorte as enviarCorteCompartido } from "../../corteEnvios.js";
 import { aprobacionDeTodas, crearFlujoDwg, huellaDatos, type AjustesFlujoDwg, type ConfirmacionesCorte } from "../../flujoDwg/flujo.ts";
@@ -232,7 +232,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     if (codigoExistente && c.regenerar !== true) {
       const pedido = await deps.almacen.obtener(codigoExistente);
       const revisado = pedido?.status === 'PRODUCED' ? undefined : pedido?.corteConfirmado;
-      const codigo = pedido ? codigoEntrega(pedido) : `${codigoExistente}-1`;
+      const codigo = codigoCorteEditable(pedido, codigoExistente);
       const estado = await flujo.estado(codigo);
       if (pedido?.status !== 'PRODUCED' && (revisado || (estado.activo && estado.borrador))) return flujo.borrador({ orderCode: codigo, revisado: revisado?.plano,
         preparar: async () => ({ fichero: null, avisos: [] }) });
@@ -246,9 +246,9 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       const pedido = await numerarEntrega(crearPedidoRemolques({ datos, autoria: { technician: datos.elementos[0].input.cabecera.realizadoPor || autor, reviewer: "" },
         existente, ahora: ahora(), clienteRps: validarClienteRps(c.clienteRps) }), await deps.ajustes());
       const confirmado = pedido.corteConfirmado;
-      return await flujo.borrador({ orderCode: codigoEntrega(pedido), regenerar: c.regenerar === true, revisado: confirmado?.plano, datos: datosCorte(pedidoEntrega(pedido)), datosRevisado: confirmado?.datos,
+      return await flujo.borrador({ orderCode: codigoAnual(pedido), regenerar: c.regenerar === true, revisado: confirmado?.plano, datos: datosCorte(pedidoEntrega(pedido)), datosRevisado: confirmado?.datos,
         preparar: async (carpeta) => {
-          const { ficheros, avisos } = await deps.corte!.preparar(pedidoEntrega(pedido, true), carpeta);
+          const { ficheros, avisos } = await deps.corte!.preparar(pedidoEntrega(pedido, 'anual'), carpeta);
           const plano = ficheros.find((fichero) => fichero.type === "plano-corte-lona") ?? null;
           return { fichero: plano, avisos: plano || avisos.length ? avisos : ["Este pedido no tiene corte de lona."] };
         } });
@@ -263,7 +263,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     const codigo = typeof orderCode === "string" ? orderCode.trim() : "";
     if (!codigo) return { activo: false as const };
     const pedido = await deps.almacen.obtener(codigoPedido(codigo));
-    return { ...await flujo.estado(codigoCorteEditable(pedido, codigoPedido(codigo), 10)), revisado: pedido?.status !== 'PRODUCED' && Boolean(pedido?.corteConfirmado), corteSimulado: pedido?.status !== 'PRODUCED' && Boolean(pedido?.corteSimulado) };
+    return { ...await flujo.estado(codigoCorteEditable(pedido, codigoPedido(codigo))), revisado: pedido?.status !== 'PRODUCED' && Boolean(pedido?.corteConfirmado), corteSimulado: pedido?.status !== 'PRODUCED' && Boolean(pedido?.corteSimulado) };
   }
 
   async function confirmarCorte(cuerpo: unknown): Promise<Respuesta> {
@@ -272,7 +272,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     if (!autor || !deps.tecnicos.includes(autor)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de confirmar el corte.");
     const codigo = codigoPedido(typeof c.orderCode === 'string' ? c.orderCode : '');
     const existente = await deps.almacen.obtener(codigo);
-    return flujo.confirmar(codigoCorteEditable(existente, codigo, 10), autor);
+    return flujo.confirmar(codigoCorteEditable(existente, codigo), autor);
   }
 
   /** «Abrir corte» en la revisión: el DWG revisado del pedido, en ZWCAD (Iván, 26/10/2026). */
@@ -347,14 +347,14 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       // el revisor, y la web ya no genera el plano.
       // Sin corte de lona (todo a mano), no hay plano que confirmar.
       const anteriorCorte = existente?.status === 'PRODUCED' ? (pedido.entregas?.some((e: { numero: number }) => e.numero === pedido.entregaActual) ? { ...existente, corteConfirmado: pedido.corteConfirmado } : null) : existente;
-      const estadoCorte = await flujo.estado(codigoEntrega(pedido));
+      const estadoCorte = await flujo.estado(codigoAnual(pedido));
       const conCorteLona = Boolean(ofsEntrega(pedido).length && deps.corte && ((deps.corte.vista(pedidoEntrega(pedido)) as { cortes?: unknown[] } | null)?.cortes?.length
         || anteriorCorte?.corteConfirmado || anteriorCorte?.corteSimulado || (estadoCorte.activo && estadoCorte.borrador)));
-      const desdeBorrador = conCorteLona ? await prepararGuardadoEditable({ flujo, orderCode: codigoEntrega(pedido), technician: autoria.technician, usuario: salvador,
+      const desdeBorrador = conCorteLona ? await prepararGuardadoEditable({ flujo, orderCode: codigoAnual(pedido), technician: autoria.technician, usuario: salvador,
         datos: datosCorte(pedidoEntrega(pedido)), datosAnteriores: anteriorCorte ? datosCorte(pedidoEntrega(anteriorCorte)) : undefined, existente: anteriorCorte, entrada: c,
         cambiosPedido: existente ? datosEdicion(pedido) !== datosEdicion(existente) : undefined,
         produccion: Boolean((await deps.ajustes()).productionEnabled), preparar: async carpeta => {
-          const preparado = await deps.corte!.preparar(pedidoEntrega(pedido, true), carpeta);
+          const preparado = await deps.corte!.preparar(pedidoEntrega(pedido, 'anual'), carpeta);
           return { ...preparado, ficheros: preparado.ficheros.filter(f => f.type === 'plano-corte-lona') };
         } }) : null;
       if (desdeBorrador && "respuesta" in desdeBorrador) return desdeBorrador.respuesta;
@@ -481,7 +481,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     exigirOfsCorte(pedido);
     if (!deps.corte) return null;
     if (!(await deps.ajustes()).productionEnabled) return { files: [], avisos: ["Modo simulación: no se ha escrito el plano del corte."] };
-    const { ficheros, avisos } = await prepararCorte(deps.corte, pedidoEntrega(pedido, true), registrar);
+    const { ficheros, avisos } = await prepararCorte(deps.corte, pedidoEntrega(pedido, 'anual'), registrar);
     const planos = ficheros.filter((fichero) => fichero.type === "plano-corte-lona");
     const yaEstan = (await Promise.all(planos.map((plano) => existeFichero(plano.savedPath))))
       .map((esta, indice) => (esta ? planos[indice].filename : ""))

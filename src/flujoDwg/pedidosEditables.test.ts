@@ -63,6 +63,45 @@ async function preparar(tipo: 'puertas' | 'remolques', conPdf = false) {
 
 // Integración con archivos y PDF reales: el límite no mide rendimiento del servicio.
 describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido editable', { timeout: 15_000 }, tipo => {
+  it('primera entrega y corrección sin sufijo en el año; segunda con sufijo y planteamientos siempre numerados', async () => {
+    const t = await preparar(tipo, true);
+    expect((await t.servicio.borradorCorte(t.cuerpo())).status).toBe(200);
+    expect(await t.servicio.estadoCorte(t.codigo)).toMatchObject({ borrador: true });
+    expect((await t.servicio.confirmarCorte({ orderCode: t.codigo, savedBy: 'ANA' })).status).toBe(200);
+    expect((await t.servicio.guardar(t.cuerpo())).status).toBe(200);
+    const generar = (numero: number, modo: 'nuevo' | 'sustituir') => t.servicio.generar(t.codigo, {
+      savedBy: 'IVÁN', confirmOverwrite: true, confirmarEntrega: true, destinoEntrega: { numero, modo },
+    });
+    const comprobar = async (numero: number) => {
+      const pedido = await t.obtener();
+      expect(pedido.entregaActual).toBe(numero);
+      const anual = numero === 10 ? t.codigo : `${t.codigo}-${numero}`;
+      expect(pedido.corteConfirmado!.filename).toBe(`${anual}.dxf`);
+      expect(pedido.production!.files.filter(f => f.type === 'pdf').map(f => f.savedPath)).toEqual([
+        path.join(t.raiz, 'pdf', `${t.codigo}-${numero}.pdf`),
+        path.join(t.raiz, 'oficina/2026', `${anual}.pdf`),
+      ]);
+      return Promise.all(pedido.production!.files.map(async f => ({ ruta: f.savedPath, bytes: await fs.readFile(f.savedPath) })));
+    };
+    expect((await generar(10, 'nuevo')).status).toBe(200);
+    const originales = await comprobar(10);
+    const entrada = t.cuerpo();
+    if ('pedido' in entrada && entrada.pedido) {
+      const nuevo = structuredClone(entrada.pedido.elementos[0]);
+      nuevo.id = 'nueva'; nuevo.input.of = '0999998'; entrada.pedido.elementos.push(nuevo);
+    } else if ('elementos' in entrada && entrada.elementos) {
+      const nuevo = structuredClone(entrada.elementos[0]);
+      nuevo.version = 'nueva'; nuevo.input.cabecera.version = 'nueva'; nuevo.input.cabecera.ordenFabricacion = '0999998'; entrada.elementos.push(nuevo);
+    }
+    expect((await t.servicio.guardar({ ...entrada, decisionCorte: 'regenerar' })).status).toBe(200);
+    expect((await generar(11, 'nuevo')).status).toBe(200);
+    const segunda = await comprobar(11);
+    for (const f of originales) expect(await fs.readFile(f.ruta)).toEqual(f.bytes);
+    expect((await t.servicio.guardar(t.cuerpo(true, { decisionCorte: 'regenerar' }))).status).toBe(200);
+    expect((await generar(10, 'sustituir')).status).toBe(200);
+    await comprobar(10);
+    for (const f of segunda) expect(await fs.readFile(f.ruta)).toEqual(f.bytes);
+  });
   it('guardar un generado sin cambiar sus datos no abre una entrega vacía ni toca archivos', async () => {
     const t = await preparar(tipo);
     await t.servicio.guardar(t.cuerpo());
@@ -230,7 +269,7 @@ describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido 
 
   it('un plano ajeno pregunta antes de escribir o guardar; cancelar conserva todo', async () => {
     const t = await preparar(tipo);
-    const ruta = path.join(t.raiz, 'planos', `${t.codigo}-10.dxf`);
+    const ruta = path.join(t.raiz, 'planos', `${t.codigo}.dxf`);
     await fs.mkdir(path.dirname(ruta), { recursive: true });
     await fs.writeFile(ruta, 'Plano manual ajeno');
     expect((await t.servicio.guardar(t.cuerpo())).cuerpo).toMatchObject({ needsPlanoConfirmation: true });

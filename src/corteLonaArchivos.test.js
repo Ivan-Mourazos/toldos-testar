@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { codigoAnual } from './entregas.js';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import revision from './domain/corteLona/fixtures/revision-AR2604784.json' with { type: 'json' };
@@ -14,6 +15,19 @@ const corteLona = crearEstadoCorteLona(order, { resultado: generarCorteLona(orde
 const oda = { disponible: false };
 
 describe('Reglas y salidas del corte', () => {
+  it.each([order, pedidoVariasTelas()])('el plano anual conserva tela y ancho, sin sufijo en la primera entrega ni su corrección', async order => {
+    const corteLona = crearEstadoCorteLona(order, { resultado: generarCorteLona(order, { ofStockSacos: '0230811' }), ofStockSacos: '0230811' });
+    for (const entregaActual of [1, 2, 1]) {
+      const codigoSalida = codigoAnual({ kind: 'toldos-testar-review', orderCode: order.orderCode, entregaActual });
+      const salida = await prepararArchivosCorte({ order, corteLona, codigoSalida, tipo: 'plano', oda,
+        settings: { productionEnabled: true, corteLonaPlanoDirectory: path.resolve('tmp/planos/{YYYY}') } });
+      expect(salida.files.length).toBeGreaterThan(0);
+      for (const f of salida.files) {
+        expect(f.filename.startsWith(entregaActual === 1 ? `${order.orderCode} (` : `${order.orderCode}-2 (`)).toBe(true);
+        expect(f.savedPath).toBe(path.resolve('tmp/planos/2026', f.filename));
+      }
+    }
+  });
   it('la bandeja comprueba solo el corte de la entrega en curso', () => {
     const primera = markReviewFilesGenerated(createReviewPackage({ order, calculation: calculateOrder(order), corteLona }), { files: [] });
     const nueva = { ...structuredClone(order.awnings[0]), id: 'nuevo', of: '0239998' };

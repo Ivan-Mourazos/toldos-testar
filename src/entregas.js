@@ -131,16 +131,21 @@ export function codigoEntrega(p) {
   return `${p.orderCode}-${numeroEntrega(p)}`;
 }
 
-/** Corregir conserva el número; solo las OF nuevas preparan otro corte. */
-export function codigoCorteEditable(p, codigo, inicio = 1) {
-  return !p ? `${codigo}-${inicio}` : `${p.orderCode}-${numeroEntrega(p)}`;
+/** En el año, la primera entrega conserva el nombre anterior a la numeración. */
+export function codigoAnual(p) {
+  return numeroEntrega(p) === inicioSerie(p) ? p.orderCode : codigoEntrega(p);
+}
+
+/** El borrador y el plano del año comparten clave, también antes de guardar el pedido. */
+export function codigoCorteEditable(p, codigo) {
+  return p ? codigoAnual(p) : codigo;
 }
 
 /** Mantiene la clave del pedido; solo los adaptadores de salida piden el código numerado. */
-/** @template T @param {T} p @returns {T} */
+/** @template T @param {T} p @param {boolean | 'anual'} [salida] @returns {T} */
 export function pedidoEntrega(p, salida = false) {
   const ofs = new Set(ofsEntrega(p));
-  const codigo = salida ? codigoEntrega(p) : p.orderCode;
+  const codigo = salida === 'anual' ? codigoAnual(p) : salida ? codigoEntrega(p) : p.orderCode;
   if (p.order) return { ...p, orderCode: codigo, order: { ...p.order, orderCode: codigo, awnings: p.order.awnings.filter(e => ofs.has(ofElemento(e))) } };
   return { ...p, orderCode: codigo, elementos: (p.elementos ?? []).filter(e => ofs.has(ofElemento(e))) };
 }

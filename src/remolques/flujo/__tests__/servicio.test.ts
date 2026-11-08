@@ -112,7 +112,7 @@ function montar({ generacion = true, coordina = APROBADAS, toldos = [] as string
     servicio,
     llamadas,
     pdfPlan: path.join(planteamientos, "AR2604286-10.pdf"),
-    pdfOficina: path.join(oficina, "2026", "AR2604286-10.pdf"),
+    pdfOficina: path.join(oficina, "2026", "AR2604286.pdf"),
     averias,
     oficina,
     interna: path.join(raiz, "interna"),
@@ -310,7 +310,7 @@ describe("generar archivos", () => {
       review: { status: "PRODUCED", reviewedBy: "JAIME" },
       saved: [
         { type: "pdf", filename: "AR2604286-10.pdf", savedPath: pdfPlan },
-        { type: "pdf", filename: "AR2604286-10.pdf", savedPath: pdfOficina },
+        { type: "pdf", filename: "AR2604286.pdf", savedPath: pdfOficina },
       ],
     });
     expect(llamadas.coordina).toEqual([{ ofs: ["0231780", "0231781"], fresh: undefined }, { ofs: ["0231780", "0231781"], fresh: true }]);
@@ -378,7 +378,7 @@ describe("generar archivos", () => {
     await guardar(servicio);
     mkdirSync(path.dirname(pdfOficina), { recursive: true });
     writeFileSync(pdfOficina, "%PDF-viejo");
-    expect(await servicio.generar("AR2604286", {})).toEqual({ status: 409, cuerpo: { needsConfirmation: true, existing: ["AR2604286-10.pdf"] } });
+    expect(await servicio.generar("AR2604286", {})).toEqual({ status: 409, cuerpo: { needsConfirmation: true, existing: ["AR2604286.pdf"] } });
     expect(llamadas.pdf).toHaveLength(0);
     expect((await servicio.generar("AR2604286", { confirmOverwrite: true })).status).toBe(200);
     expect(readFileSync(pdfOficina).equals(readFileSync(pdfPlan))).toBe(true);
@@ -639,7 +639,7 @@ describe("ver la hoja guardada y el PDF generado", () => {
     await servicio.generar("AR2604286", {});
     expect((await servicio.archivo("AR2604286")).nombre).toBe("AR2604286-10.pdf");
     rmSync(pdfPlan);
-    expect((await servicio.archivo("AR2604286")).nombre).toBe("AR2604286-10.pdf");
+    expect((await servicio.archivo("AR2604286")).nombre).toBe("AR2604286.pdf");
     rmSync(pdfOficina);
     expect(await falla(servicio.archivo("AR2604286"))).toEqual([404, "El PDF generado ya no está en sus carpetas de archivo."]);
   });

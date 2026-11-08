@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { abrirEntrega, cerrarEntrega, codigoEntrega, entregasPedido, ofsEntrega, pedidoEntrega, cambiosMateriales } from './entregas.js';
+import { abrirEntrega, cerrarEntrega, codigoAnual, codigoCorteEditable, codigoEntrega, entregasPedido, ofsEntrega, pedidoEntrega, cambiosMateriales } from './entregas.js';
 import { rpsPlanteamientoFilename } from './workflow.js';
 
 const toldo = (of, width = 300) => ({ id: of, of, model: 'BAMBALINA', width });
@@ -9,6 +9,26 @@ const finalizar = (p, materiales = []) => cerrarEntrega({ ...p, status: 'PRODUCE
   production: { createdAt: '2026-11-06T10:00:00Z', createdBy: 'IVÁN', files: [{ filename: `${codigoEntrega(p)}.pdf` }] } }, materiales);
 
 describe('entregas comunes a toldos, puertas y remolques', () => {
+  it.each(['toldos-testar-review', 'puertas', 'remolques'])('nombres anuales y de planteamientos de %s, incluidas correcciones y antiguos', kind => {
+    const p = { ...base, kind };
+    const inicio = kind === 'toldos-testar-review' ? 1 : 10;
+    const primera = abrirEntrega(p);
+    expect(codigoAnual(p)).toBe(base.orderCode);
+    expect(codigoAnual(primera)).toBe(base.orderCode);
+    expect(codigoEntrega(primera)).toBe(`${base.orderCode}-${inicio}`);
+    expect(pedidoEntrega(primera, 'anual').orderCode).toBe(base.orderCode);
+    const producida = finalizar(primera);
+    const segunda = abrirEntrega({ ...p, order: { ...p.order, awnings: [...p.order.awnings, toldo('230002')] } }, producida);
+    expect(codigoAnual(segunda)).toBe(`${base.orderCode}-${inicio + 1}`);
+    expect(codigoEntrega(segunda)).toBe(codigoAnual(segunda));
+    const corregida = abrirEntrega({ ...p, order: { ...p.order, awnings: [toldo('230001', 350)] } }, finalizar(segunda));
+    expect(codigoAnual(corregida)).toBe(base.orderCode);
+    expect(codigoEntrega(corregida)).toBe(`${base.orderCode}-${inicio}`);
+    for (const pedido of [primera, segunda, corregida]) expect(codigoCorteEditable(pedido, p.orderCode)).toBe(codigoAnual(pedido));
+    expect(codigoCorteEditable(null, p.orderCode)).toBe(p.orderCode);
+    const antiguo = { ...producida, entregaActual: undefined, entregas: undefined };
+    expect(codigoAnual(antiguo)).toBe(base.orderCode);
+  });
   it('migra el histórico al leer sin cambiar el original ni perder los _2', () => {
     const antiguo = { ...base, orderCode: 'AR2603626_2', status: 'PRODUCED', production: { createdAt: 'ayer', createdBy: 'ANA', files: [{ filename: 'antiguo.pdf' }] } };
     expect(entregasPedido(antiguo)).toMatchObject([{ numero: 1, fecha: 'ayer', autor: 'ANA', ofs: ['0230001'], legacy: true }]);
