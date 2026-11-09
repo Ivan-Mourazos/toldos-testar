@@ -136,6 +136,7 @@ Decidido por Iván el 07/10/2026 con el pedido AR2604748 (OF 0232537): Iris 110 
 
 - **Caída de la tela = caída del hueco + 25 cm** para el tubo de enrolle, en todas las series y accionamientos (Iván, 08/10/2026). Antes 40, 30 o 49,8, sacados de 55 toldos y pendientes de ratificar. La cremallera, que se reserva por la caída de la tela, baja igual.
 - **Entre paredes:** 3 mm a cada lado, 6 mm al frente, en todas las piezas horizontales (telón, cofre, tubo de enrolle, tubo de carga y lastre); no en las guías. Ya estaba así.
+- **Colocación y guía (Iván, 09/11/2026):** solo se elige la colocación. **Frontal** → guía **frontal** (antes «pared»). **Techo** o **entre paredes** → guía **entre paredes** (antes «techo»). Desaparece el selector «Fijación de la guía»; los pedidos y dibujos guardados con PARED/TECHO se leen como FRONTAL/ENTRE PAREDES y manda la colocación.
 - **Cremallera:** siempre la XL. Ya estaba así.
 
 ### Escuadra del hueco (08/10/2026)

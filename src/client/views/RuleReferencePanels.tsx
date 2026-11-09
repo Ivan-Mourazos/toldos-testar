@@ -129,9 +129,9 @@ export function IrisRuleReference() {
         <Table label="Descuentos Iris seleccionados" columns={['Pieza', 'Descuento', 'Medida de partida']} rows={[
           ['Tela', discount('fabric'), 'Frente del toldo'], ['Cofre', irisHasCassette(submodel, guideType) ? discount('box') : 'No lleva', 'Frente; con compensadora, frente superior si es el mayor'],
           ['Tubo de enrollamiento', discount('roll'), 'Frente del toldo'], ['Barra de carga', discount('loadBar'), 'Frente del toldo'], ['Contrapeso', discount('ballast'), 'Frente del toldo'],
-          ['Guía · pared / techo', discount('guideWall') + ' / ' + discount('guideCeiling'), 'Altura de cada lado'],
-          ['ZIP · pared / techo', discount('zipWall') + ' / ' + discount('zipCeiling'), 'Altura de cada lado'],
-          ['Compensador · pared / techo', discount('compensatorWall') + ' / ' + discount('compensatorCeiling'), 'Altura de cada lado'],
+          ['Guía · frontal / entre paredes', discount('guideWall') + ' / ' + discount('guideCeiling'), 'Altura de cada lado; frontal con colocación frontal, entre paredes con techo o entre paredes'],
+          ['ZIP · frontal / entre paredes', discount('zipWall') + ' / ' + discount('zipCeiling'), 'Altura de cada lado'],
+          ['Compensador · frontal / entre paredes', discount('compensatorWall') + ' / ' + discount('compensatorCeiling'), 'Altura de cada lado'],
           ['Terminal SWBS', discount('windBlockTerminal'), 'Frente del toldo']
         ]} />
         <p>Caída de tela = caída del hueco escuadrado + <strong>{number(getIrisFabricDropAllowance(params, irisSeriesOf(submodel), device))} cm</strong>. Entre paredes: descuento adicional de <strong>{number(params.betweenWallsDiscountCm)} cm</strong> en piezas horizontales.</p>

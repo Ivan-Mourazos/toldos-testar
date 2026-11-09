@@ -10,6 +10,7 @@ import {
   irisSeriesOf,
   normalizeIrisDevice,
   normalizeIrisGuideFixing,
+  irisGuideFixingForPlacement,
   normalizeIrisGuideType,
   normalizeIrisParameters,
   normalizeIrisSubmodel,
@@ -95,8 +96,15 @@ describe('parámetros IRIS', () => {
     expect(normalizeIrisGuideType('pequena')).toBe('PEQUEÑA');
     expect(normalizeIrisGuideType('pequeña')).toBe('PEQUEÑA');
     expect(normalizeIrisGuideType('ESTÁNDAR')).toBe('ESTÁNDAR');
-    expect(normalizeIrisGuideFixing('nicho')).toBe('PARED');
-    expect(normalizeIrisGuideFixing('TECHO')).toBe('TECHO');
+    expect(normalizeIrisGuideFixing('nicho')).toBe('FRONTAL');
+    expect(normalizeIrisGuideFixing('PARED')).toBe('FRONTAL');
+    expect(normalizeIrisGuideFixing('FRONTAL')).toBe('FRONTAL');
+    expect(normalizeIrisGuideFixing('TECHO')).toBe('ENTRE PAREDES');
+    expect(normalizeIrisGuideFixing('ENTRE PAREDES')).toBe('ENTRE PAREDES');
+    expect(irisGuideFixingForPlacement('FRONTAL')).toBe('FRONTAL');
+    expect(irisGuideFixingForPlacement('TECHO')).toBe('ENTRE PAREDES');
+    expect(irisGuideFixingForPlacement('ENTRE PAREDES')).toBe('ENTRE PAREDES');
+    expect(irisGuideFixingForPlacement('')).toBe('');
     expect(normalizeIrisDevice('máquina')).toBe('MAQUINA');
     expect(normalizeIrisDevice('MOTOR')).toBe('MOTOR');
     expect(irisSeriesOf('IRIS 130 CON COFRE')).toBe('130');

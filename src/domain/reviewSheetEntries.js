@@ -11,6 +11,7 @@ import { normalizeDropArmMode, supportsVerticalDropArm } from './dropArmMode.js'
 import { formatCurtainVelcroLabel } from './curtainConfiguration.js';
 import { normalizeSolapas } from './solapasRules.js';
 import { lacadoLabel } from './lacados.js';
+import { irisGuideFixingForPlacement } from './irisParameters.js';
 import { normalizeEmbudo, etiquetasEmbudo } from './embudoConfiguration.js';
 
 const legacyModelNames = {
@@ -76,7 +77,7 @@ export function buildReviewSheetEntries(order, calculation) {
         addField(cardFields, 'Caída escuadrada', measure(ofBlock.calculation.projection), true);
       }
       addField(cardFields, 'Tipo de guía', awning.irisGuideType, true);
-      addField(cardFields, 'Fijación de guía', awning.irisGuideFixing, true);
+      addField(cardFields, 'Fijación de guía', irisGuideFixingForPlacement(awning.placement), true);
       if (ofBlock?.calculation?.irisBoxShape) addField(cardFields, 'Forma del cofre', ofBlock.calculation.irisBoxShape, true);
     }
     if (supportsVerticalDropArm(awning.model)) {

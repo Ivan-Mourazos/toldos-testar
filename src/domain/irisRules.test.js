@@ -87,20 +87,35 @@ describe('IRIS · medidas de corte', () => {
       .toMatchObject({ rollTubeLength: 285.2, fabricWidth: 291 });
   });
 
-  test('la fijación de techo cambia solo las guías', () => {
-    expect(calculate({ irisGuideFixing: 'TECHO' }).calculation)
-      .toMatchObject({ guideLeftLength: 237.8, guideRightLength: 237.8, fabricWidth: 291 });
+  // Iván, 09/11/2026: solo se elige la colocación. Frontal lleva la guía frontal; techo y entre
+  // paredes llevan la guía entre paredes (la fila que antes se llamaba «techo»).
+  test('colocación a techo: guía entre paredes, que cambia solo las guías', () => {
+    expect(calculate({ placement: 'TECHO' }).calculation).toMatchObject({
+      guideLeftLength: 237.8, guideRightLength: 237.8, fabricWidth: 291, irisGuideFixing: 'ENTRE PAREDES'
+    });
   });
 
-  test('entre paredes descuenta 6 mm más en cada pieza horizontal, no en las guías', () => {
+  test('colocación frontal: guía frontal', () => {
+    expect(calculate({ placement: 'FRONTAL' }).calculation)
+      .toMatchObject({ guideLeftLength: 238, guideRightLength: 238, irisGuideFixing: 'FRONTAL' });
+  });
+
+  test('la fijación guardada en pedidos antiguos ya no manda: decide la colocación', () => {
+    expect(calculate({ placement: 'FRONTAL', irisGuideFixing: 'TECHO' }).calculation)
+      .toMatchObject({ guideLeftLength: 238, irisGuideFixing: 'FRONTAL' });
+    expect(calculate({ placement: 'ENTRE PAREDES', irisGuideFixing: 'PARED' }).calculation)
+      .toMatchObject({ guideLeftLength: 237.8, irisGuideFixing: 'ENTRE PAREDES' });
+  });
+
+  test('entre paredes descuenta 6 mm más (3 por lado) en cada pieza horizontal; la guía va entre paredes', () => {
     expect(calculate({ placement: 'ENTRE PAREDES' }).calculation).toMatchObject({
       fabricWidth: 290.4,
       boxProfileLength: 298,
       rollTubeLength: 283.6,
       loadBarLength: 286.2,
       ballastLength: 273.2,
-      guideLeftLength: 238,
-      guideRightLength: 238
+      guideLeftLength: 237.8,
+      guideRightLength: 237.8
     });
   });
 
@@ -179,7 +194,7 @@ describe('IRIS · diagnósticos', () => {
   });
 
   test('exige las medidas y la configuración', () => {
-    const result = calculate({ irisGuideFixing: '', irisExitLeft: 0 });
+    const result = calculate({ placement: '', irisExitLeft: 0 });
     expect(result.calculation.valid).toBe(false);
     expect(result.diagnostics.some((item) => item.level === 'error' && item.message.includes('falta'))).toBe(true);
   });

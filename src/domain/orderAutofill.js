@@ -603,7 +603,6 @@ function describePendingAwning(awning, index) {
     if (!positiveNumber(awning.irisFrontTop)) pending.push('frente superior');
     if (!positiveNumber(awning.irisExitLeft)) pending.push('salida izquierda');
     if (!awning.irisGuideType) pending.push('tipo de guía');
-    if (!awning.irisGuideFixing) pending.push('fijación de la guía');
     if (irisAsksBoxShape(awning) && !awning.irisBoxShape) pending.push('forma del cofre');
     if (!awning.irisGlassCurtain && awning.curtainHasWindow === null) pending.push('telón: lona, con ventana o cristal');
   }

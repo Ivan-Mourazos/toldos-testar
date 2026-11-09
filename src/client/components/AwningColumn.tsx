@@ -38,7 +38,7 @@ import { IrisWindowDiagram } from './IrisWindowDiagram';
 import { fabricDropSummary, supportsFabricDropAdjustment } from '../../domain/fabricDropAdjustment.js';
 import { isOfOutsideOrder } from '../../domain/orderOfCheck.js';
 import { electraHasCofre, electraHasGuide, electraMotors, getElectraDiscounts } from '../../domain/electraParameters.js';
-import { irisAsksBoxShape, irisBoxShapes, irisGuideFixings, irisGuideTypes, irisSeriesOf } from '../../domain/irisParameters.js';
+import { irisAsksBoxShape, irisBoxShapes, irisGuideTypes, irisSeriesOf } from '../../domain/irisParameters.js';
 import { chosenMotor, heraDefaultMotor, heraMotorPowers, irisDefaultMotor, irisMotorPowers, screenMotorLabel } from '../../domain/screenMotors.js';
 
 const sunilusLabel = (power: string) => `Sunilus IO ${power}`;
@@ -566,12 +566,6 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
                 value={awning.irisGuideType}
                 options={irisGuideTypes}
                 onChange={(value) => update({ irisGuideType: value as Awning['irisGuideType'] })}
-              />
-              <SelectField
-                label="Fijación de la guía"
-                value={awning.irisGuideFixing}
-                options={irisGuideFixings}
-                onChange={(value) => update({ irisGuideFixing: value as Awning['irisGuideFixing'] })}
               />
               {/* Solo con cofre y en el 110 y el 130: el 150 siempre lo lleva redondo. */}
               {irisAsksBoxShape(awning) && (

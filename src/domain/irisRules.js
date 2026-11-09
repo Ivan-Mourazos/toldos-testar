@@ -18,7 +18,7 @@ import {
   irisHasCassette,
   irisSeriesOf,
   normalizeIrisDevice,
-  normalizeIrisGuideFixing,
+  irisGuideFixingForPlacement,
   normalizeIrisGuideType,
   normalizeIrisParameters,
   normalizeIrisSubmodel,
@@ -30,7 +30,7 @@ export function calculateIris({ order, awning }) {
   const parameters = normalizeIrisParameters(order.parameters?.iris);
   const submodel = normalizeIrisSubmodel(awning.submodel);
   const guideType = normalizeIrisGuideType(awning.irisGuideType);
-  const guideFixing = normalizeIrisGuideFixing(awning.irisGuideFixing);
+  const guideFixing = irisGuideFixingForPlacement(awning.placement);
   const device = normalizeIrisDevice(awning.device);
   const windBlock = awning.irisWindBlock === true;
   const series = irisSeriesOf(submodel);
@@ -59,7 +59,8 @@ export function calculateIris({ order, awning }) {
   const extra = String(awning.placement || '').toUpperCase() === 'ENTRE PAREDES'
     ? parameters.betweenWallsDiscountCm
     : 0;
-  const onCeiling = guideFixing === 'TECHO';
+  // La fila «techo» de los descuentos es la guía entre paredes (Iván, 09/11/2026).
+  const onCeiling = guideFixing === 'ENTRE PAREDES';
   const guideDiscount = onCeiling ? cuts.guideCeiling : cuts.guideWall;
   const zipDiscount = onCeiling ? cuts.zipCeiling : cuts.zipWall;
   const compensatorDiscount = onCeiling ? cuts.compensatorCeiling : cuts.compensatorWall;
@@ -110,7 +111,6 @@ export function calculateIris({ order, awning }) {
   missingFields.push(...window.errors.map(item => item.label));
   if (!submodel) missingFields.push('submodelo');
   if (!guideType) missingFields.push('tipo de guía');
-  if (!guideFixing) missingFields.push('fijación de la guía');
   if (irisAsksBoxShape({ submodel, irisGuideType: guideType }) && !boxShape) missingFields.push('forma del cofre');
   if (!device) missingFields.push('accionamiento');
   if (!awning.placement) missingFields.push('colocación');

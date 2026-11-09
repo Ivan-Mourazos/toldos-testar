@@ -1,5 +1,6 @@
 import { normalizeFabricImage } from './fabricImage.js';
 import { normalizeModelName } from './modelNames.js';
+import { irisGuideFixingForPlacement, normalizeIrisGuideFixing } from './irisParameters.js';
 
 export const drawingConditionFields = [
   'device',
@@ -69,7 +70,9 @@ function normalizeDrawingVariant(input, index) {
 
 function normalizeCondition(input) {
   if (!input || typeof input !== 'object' || !conditionFieldSet.has(input.field)) return null;
-  return { field: input.field, value: clean(input.value) };
+  // Los dibujos guardados con PARED/TECHO pasan a FRONTAL/ENTRE PAREDES (Iván, 09/11/2026).
+  const value = input.field === 'irisGuideFixing' ? normalizeIrisGuideFixing(input.value) : clean(input.value);
+  return { field: input.field, value };
 }
 
 const usable = (variant) => variant.enabled && Boolean(variant.image);
@@ -113,7 +116,8 @@ export function resolveConfiguredDrawing(awning = {}, input = defaultDrawingPara
 }
 
 export function drawingConditionMatches(awning, condition) {
-  return Boolean(condition.value) && comparableDrawingValue(awning?.[condition.field]) === comparableDrawingValue(condition.value);
+  const actual = condition.field === 'irisGuideFixing' ? irisGuideFixingForPlacement(awning?.placement) : awning?.[condition.field];
+  return Boolean(condition.value) && comparableDrawingValue(actual) === comparableDrawingValue(condition.value);
 }
 
 /** Para comparar valores de condiciones: sin acentos, espacios de m\u00e1s ni may\u00fasculas; S\u00ed/No de los booleanos. */

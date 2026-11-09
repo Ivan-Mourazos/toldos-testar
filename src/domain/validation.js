@@ -18,7 +18,7 @@ import { normalizeFabricJobParameters, resolveCambioTelaExtraCm } from './fabric
 import { normalizeCortinaParameters } from './cortinaParameters.js';
 import { normalizeElectraMotor, normalizeElectraParameters, normalizeElectraSupport, normalizeElectraVariant } from './electraParameters.js';
 import {
-  normalizeIrisGuideFixing,
+  irisGuideFixingForPlacement,
   normalizeIrisBoxShape,
   normalizeIrisGuideType,
   normalizeIrisSubmodel
@@ -235,7 +235,8 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     // Ajuste de la caída de tela puesto en la tarjeta (Iván, 09/10/2026).
     fabricDropAdjustmentCm: fabricDropAdjustmentCm({ model, fabricDropAdjustmentCm: nullableNumber(awning?.fabricDropAdjustmentCm) ?? 0 }),
     irisGuideType: model === 'IRIS' ? normalizeIrisGuideType(awning?.irisGuideType) : '',
-    irisGuideFixing: model === 'IRIS' ? normalizeIrisGuideFixing(awning?.irisGuideFixing) : '',
+    // Sale de la colocación (Iván, 09/11/2026): frontal → FRONTAL; techo o entre paredes → ENTRE PAREDES.
+    irisGuideFixing: model === 'IRIS' ? irisGuideFixingForPlacement(awning?.placement) : '',
     irisBoxShape: model === 'IRIS' ? normalizeIrisBoxShape(awning?.irisBoxShape) : '',
     irisWindBlock: model === 'IRIS' && awning?.irisWindBlock === true,
     irisGlassCurtain: model === 'IRIS' && awning?.irisGlassCurtain === true,

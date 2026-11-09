@@ -24,7 +24,7 @@ export const irisSubmodels = [
 ];
 
 export const irisGuideTypes = ['ESTÁNDAR', 'PEQUEÑA', 'COMPENSADORA'];
-export const irisGuideFixings = ['PARED', 'TECHO'];
+export const irisGuideFixings = ['FRONTAL', 'ENTRE PAREDES'];
 // Forma del cofre: cambia el perfil inferior y las tapas (manual de BAT, piezas 11 y
 // 11/1). Taller, 24/09/2026: "sí cambia y se añade para cada modelo". El 150 solo
 // existe con cofre redondo.
@@ -177,10 +177,20 @@ export function normalizeIrisGuideType(value) {
   return '';
 }
 
+// Iván, 09/11/2026: la fijación de la guía ya no se elige; sale de la colocación. Frontal lleva la
+// guía frontal (la fila que antes se llamaba «pared»); techo y entre paredes llevan la guía entre
+// paredes (la que antes se llamaba «techo»). Los pedidos antiguos guardaban PARED/TECHO.
 export function normalizeIrisGuideFixing(value) {
   const clean = normalizeText(value);
-  if (clean.includes('TECHO')) return 'TECHO';
-  if (clean.includes('PARED') || clean.includes('NICHO')) return 'PARED';
+  if (clean.includes('ENTRE') || clean.includes('TECHO')) return 'ENTRE PAREDES';
+  if (clean.includes('FRONTAL') || clean.includes('PARED') || clean.includes('NICHO')) return 'FRONTAL';
+  return '';
+}
+
+export function irisGuideFixingForPlacement(placement) {
+  const clean = normalizeText(placement);
+  if (clean === 'FRONTAL') return 'FRONTAL';
+  if (clean === 'TECHO' || clean === 'ENTRE PAREDES') return 'ENTRE PAREDES';
   return '';
 }
 

@@ -177,7 +177,7 @@ export type Awning = {
   electraGuideDiscountCm: number | null;
   electraFabricDropAllowanceCm: number | null;
   irisGuideType: '' | 'ESTÁNDAR' | 'PEQUEÑA' | 'COMPENSADORA';
-  irisGuideFixing: '' | 'PARED' | 'TECHO';
+  irisGuideFixing: '' | 'FRONTAL' | 'ENTRE PAREDES';
   irisBoxShape: '' | 'REDONDO' | 'CUADRADO';
   irisWindBlock: boolean;
   irisGlassCurtain: boolean;
