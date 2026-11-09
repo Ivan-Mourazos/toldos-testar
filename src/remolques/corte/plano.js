@@ -406,7 +406,8 @@ function confeccionGanado(L, el, X, Y) {
     const [x1, y1] = t(c.x1, c.y1), [x2, y2] = t(c.x2, c.y2);
     const estilo = c.valor >= 25 ? 'XERAL' : 'XERAL 5';
     // Con dos decimales (105,15), escrito tal cual: la cota de la web redondea a uno.
-    const rotulo = Math.round(c.valor * 10) !== c.valor * 10 ? String(c.valor).replace('.', ',') : undefined;
+    // Las de Cal salen calculadas con todos los decimales (297,66281…): como mucho dos, como en sus notas.
+    const rotulo = Math.round(c.valor * 10) !== c.valor * 10 ? String(Math.round(c.valor * 100) / 100).replace('.', ',') : undefined;
     const comun = { capa: 'cotas', estilo, x1, y1, x2, y2, valor: c.valor, ...(rotulo ? { rotulo } : {}) };
     if (c.alineada) L.g.cotas.push({ ...comun, alineada: true, desvio: c.desvio });
     else L.g.cotas.push({ ...comun, giro: c.giro, d: c.d + (c.giro === 90 ? X : Y) });
