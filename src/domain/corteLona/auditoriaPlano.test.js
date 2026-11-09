@@ -6,6 +6,14 @@ const ventana = { id: 2, centro: [50, 50], ancho: 80, alto: 80, escala: 10 };
 const texto = (valor, x, y, h = 3) => ({ tipo: 'texto', valor, punto: [x, y], h, ancla: 5, espacio: 'ventana 2', recorte: ventana });
 
 describe('Auditor común de planos (mm de papel)', () => {
+  it('declara los mininúmeros de empate coincidentes sin exigir mover ROTULADOR', () => {
+    const t = { ...texto('a1', 50, 50), capa: 'ROTULADOR' };
+    const r = auditarHoja([t, { ...t, handle: 'SEGUNDO' }]);
+    expect(r.solapes).toEqual([]);
+    expect(r.duplicadosRotulador).toHaveLength(1);
+    expect(auditarHoja([t, { ...t, valor: 'a2' }]).solapes).toHaveLength(1);
+    expect(auditarHoja([t, { ...t, capa: 'texto' }]).solapes).toHaveLength(1);
+  });
   it('excluye los mininúmeros de máquina a petición, conservando sus líneas como obstáculos', () => {
     const ps = [{ ...texto('1', 50, 50, .1), capa: 'ROTULADOR' }, texto('NOTA', 30, 30),
       { tipo: 'raya', capa: 'DISCO1', a: [40, 50], b: [60, 50] },

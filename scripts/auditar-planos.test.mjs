@@ -9,4 +9,4 @@ it('genera los ocho modelos con corte y las demás familias desde fuentes locale
     expect(r.muestras.some(p => p.familia.includes(familia)), familia).toBe(true);
   expect(r.muestras.every(p => p.fuente && p.dxf.includes('AC1032'))).toBe(true);
   expect(r.excluidas.map(e => e.familia)).toContain('FALDONES');
-}, 30000);
+}, 120000); // Todo el corpus resuelve varias disposiciones A4 por plano; se ejecuta con seis trabajadores.

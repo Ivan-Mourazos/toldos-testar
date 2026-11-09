@@ -194,7 +194,13 @@ export function htmlPresentaciones(src, titulo = 'Presentaciones', nombres = nul
   return `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>${esc(titulo)}</title><style>@page{size:A4 landscape;margin:0}html,body{margin:0;background:#fff}.hoja{width:297mm;height:210mm;overflow:hidden;break-after:page}.hoja:last-child{break-after:auto}svg{display:block}</style></head><body>${paginas.join('')}<script>window.hojaLista=true</script></body></html>`;
 }
 export function cajaPrimitiva(p) {
-  const pts = p.puntos ?? (p.a ? [p.a, p.b] : p.punto ? [p.punto] : []);
+  let pts = p.puntos ?? (p.a ? [p.a, p.b] : p.punto ? [p.punto] : []);
+  if (p.r != null && p.punto) {
+    const normal = a => ((a % 360) + 360) % 360;
+    const desde = p.desde ?? 0, barrido = p.tipo === 'arco' ? normal(p.hasta - desde) || 360 : 360;
+    const angulos = [desde, desde + barrido, ...[0, 90, 180, 270].filter(a => normal(a - desde) <= barrido)];
+    pts = angulos.map(a => [p.punto[0] + p.r * Math.cos(a * Math.PI / 180), p.punto[1] + p.r * Math.sin(a * Math.PI / 180)]);
+  }
   return { x0: Math.min(...pts.map(q => q[0])), x1: Math.max(...pts.map(q => q[0])), y0: Math.min(...pts.map(q => q[1])), y1: Math.max(...pts.map(q => q[1])) };
 }
 export const enZona = (p, z) => { const b = cajaPrimitiva(p); return b.x1 >= z.x0 && b.x0 <= z.x1 && b.y1 >= z.y0 && b.y0 <= z.y1; };

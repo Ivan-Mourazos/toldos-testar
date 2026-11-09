@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { leerPlanoTexto, svgPrimitivas } from './planoDxf.js';
+import { leerPlanoTexto, svgPrimitivas, enZona, cajaPrimitiva } from './planoDxf.js';
+
+it('incluye el borde de un arco aunque su centro quede fuera de la ventana', () => {
+  const arco = { tipo: 'arco', punto: [0, 0], r: 10, desde: 0, hasta: 90 };
+  expect(enZona(arco, { x0: 9, x1: 11, y0: -1, y1: 1 })).toBe(true);
+  expect(enZona(arco, { x0: -11, x1: -9, y0: -1, y1: 1 })).toBe(false);
+  expect(cajaPrimitiva({ ...arco, desde: 270, hasta: 90 })).toMatchObject({ x1: 10, y0: -10, y1: 10 });
+  expect(cajaPrimitiva({ ...arco, hasta: 360 })).toEqual({ x0: -10, x1: 10, y0: -10, y1: 10 });
+});
 
 // Iván, 26/10/2026 (PDF de AR2605220): las notas de una línea salían partidas en columnas y encima de las demás, porque
 // el factor de anchura del TEXT (41) se tomaba como ancho de caja de un MTEXT.

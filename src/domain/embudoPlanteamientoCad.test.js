@@ -30,8 +30,9 @@ describe('Planteamiento de embudos desde las presentaciones CAD', () => {
     expect(render).toHaveBeenCalledTimes(1);
     expect(render.mock.calls[0][0]).toContain('aria-label="EMBUDO A"');
     expect(render.mock.calls[0][0]).toContain('0233311');
-    expect(render.mock.calls[0][0]).toContain('DOBLE COSTURA EN SOLDADURA');
-    expect(render.mock.calls[0][0]).toContain('COMPROBAR MUESTRA DEL CLIENTE');
+    const texto = render.mock.calls[0][0].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+    expect(texto).toContain('DOBLE COSTURA EN SOLDADURA');
+    expect(texto).toContain('COMPROBAR MUESTRA DEL CLIENTE');
     expect(await paginas(pdf)).toBe(1);
     expect((await extractReviewPackageFromPdf(pdf)).order).toEqual(order);
   });
@@ -121,10 +122,14 @@ describe('Planteamiento de embudos desde las presentaciones CAD', () => {
   });
 });
 
-it('el corte del embudo puede ir girado debajo para que sus rótulos se lean más grandes', () => {
+it('el corte del embudo comparte hoja, aprovecha el hueco y declara la ventana realmente escrita', () => {
   const r = generarCorteLona(pedido(), { ofStockSacos: '0230811' });
   const plano = r.plano[0];
-  expect(plano.ventanas[3].ancho).toBeGreaterThan(100);
-  expect(plano.reparto).toBe('debajo');
-  expect(plano.ventanas[3].centro[0] + plano.ventanas[3].ancho / 2).toBeLessThan(190);
+  expect(Math.max(plano.ventanas[3].ancho, plano.ventanas[3].alto)).toBeGreaterThan(100);
+  expect(['debajo', 'al lado']).toContain(plano.reparto);
+  expect(plano.ventanas[3].centro[0] + plano.ventanas[3].ancho / 2).toBeLessThan(288);
+  const c = plano.ventanas[3];
+  expect(c.centro[0] + c.ancho / 2 < 189 || c.centro[1] - c.alto / 2 > 42).toBe(true);
+  const escrita = presentacionesDxf(plano.dxf)[0].primitivas.find(p => p.recorte?.id === 3).recorte;
+  expect(escrita.centro[0]).toBeCloseTo(c.centro[0], 4); expect(escrita.ancho).toBeCloseTo(c.ancho, 4);
 });

@@ -67,12 +67,18 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
 
   let x = 0;
   const hojas = [];
+  const dibujos = [];
+  const cerrarDibujo = () => {
+    const d = dibujos.at(-1);
+    if (d) Object.assign(d, { x1: x - ENTRE_TOLDOS, T: T.slice(d.T), Q: Q.slice(d.Q) });
+  };
   const cerrarHoja = () => {
     const h = hojas.at(-1);
     if (h) Object.assign(h, { x1: x - ENTRE_TOLDOS, T: T.slice(h.T), Q: Q.slice(h.Q) });
   };
 
   for (const [i, t] of datos.toldos.entries()) {
+    cerrarDibujo();
     const g = grupos.find((ts) => ts[0] === t);
     if (g) {
       cerrarHoja();
@@ -80,6 +86,7 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
       escalaTexto = Math.min(1.3, Math.max(0.55, tamano(g) / 450));
       hojas.push({ toldos: g, x0: x, T: T.length, Q: Q.length });
     }
+    dibujos.push({ toldos: [t], x0: x, T: T.length, Q: Q.length });
     if (t.embudo) {
       x += alzadoEmbudo(t, x, { linea, P, texto, cota }) + ENTRE_TOLDOS;
       continue;
@@ -223,6 +230,7 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
     x += ancho + ENTRE_TOLDOS;
   }
   cerrarHoja();
+  cerrarDibujo();
   const arriba = (ts, qs) => Math.max(...ts.map((t) => t.y), ...qs.filter((q) => !q.giro).map((q) => q.d + 9)) + 20;
   const toldos = { x0: -60, y0: -30, x1: x - ENTRE_TOLDOS + 60, y1: arriba(T, Q) };
   // El corte, con los textos al tamaño de todo el pedido, como antes de las presentaciones por toldo.
@@ -333,13 +341,13 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
     zonas: { toldos: zona(toldos), corte: zona({ x0: zonaCorte.x0 + dx, x1: zonaCorte.x1 + dx, y0: zonaCorte.y0 + dy, y1: zonaCorte.y1 + dy }),
       cortes: zonasRollo.map((z) => zona({ x0: z.x0 + dx, x1: z.x1 + dx, y0: z.y0 + dy, y1: z.y1 + dy })) },
     // Cada presentación con su nombre («TOLDO A», «TOLDOS C, D + E») y sus OF en el cajetín; el corte, en todas.
-    hojas: hojas.map((h, i) => {
+    hojas: dibujos.map((h, i) => {
       const letras = [...new Set(h.toldos.map((t) => t.letra))];
       const tipo = h.toldos.every((t) => t.embudo) ? 'EMBUDO' : h.toldos.every((t) => t.solapas) ? 'SOLAPA' : h.toldos.every((t) => t.cortina) ? 'CORTINA' : 'TOLDO';
       return {
         nombre: letras.length === 1 ? `${tipo} ${letras[0]}` : `${tipo}S ${letras.slice(0, -1).join(', ')} + ${letras.at(-1)}`,
         zona: zona({ x0: h.x0 - 60, x1: h.x1 + 60, y0: -30, y1: arriba(h.T, h.Q) }),
-        cajetin: { OF: [...new Set(h.toldos.map((t) => t.of))].join(' / '), HOJA: `${i + 1}/${hojas.length}` }
+        cajetin: { OF: [...new Set(h.toldos.map((t) => t.of))].join(' / '), HOJA: `${i + 1}/${dibujos.length}` }
       };
     }),
     anchoRollo, usado,

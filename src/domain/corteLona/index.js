@@ -9,7 +9,7 @@ import { opcionesCorte, PRESUPUESTO_TETRIS } from './colocacion.js';
 import { dibujo } from './dibujoCorte.js';
 import { escribirDxf2004 } from './dxfCorte.js';
 import { dibujarPlano } from './plano.js';
-import { escribirDxfPlano } from './presentacion.js';
+import { escribirPlanoImpreso } from './planoImpreso.js';
 import { textoSeguro } from './texto.js';
 import { piezasCortina } from './cortina.js';
 import { configuredCurtainVelcroHeight, curtainWindowDrawingHeight, formatCurtainVelcroLabel, normalizeCurtainConfiguration } from '../curtainConfiguration.js';
@@ -150,7 +150,7 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
     }).map(([k, v]) => [k, textoSeguro(v)]));
     for (const h of geometria.hojas) h.cajetin.OF = textoSeguro(h.cajetin.OF);
     planos.push({ codigoTela: grupo.codigoTela, material: grupo.material, geometria,
-      ...escribirDxfPlano(geometria, datos), codificacion: 'utf8', cristales: cristales.map((c) => c.codigoTela) });
+      ...escribirPlanoImpreso(geometria, datos), codificacion: 'utf8', cristales: cristales.map((c) => c.codigoTela) });
   }
   calculados.forEach(({ grupo, cristal }, i) => {
     if (!cristal) return;

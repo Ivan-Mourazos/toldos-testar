@@ -77,13 +77,13 @@ describe('Del pedido guardado al corte de lona', () => {
         numero(e, 11) >= p.x + 1000 && numero(e, 11) <= p.x + p.ancho + 1000 &&
         numero(e, 21) >= p.y + 1000 && numero(e, 21) <= p.y + p.hueco + 1000)).toBe(true);
     }
-    // A y B se leen bien juntos; C, que es grande, va en su presentación. Cada una con sus OF y su hoja.
+    // Impresión A4: una presentación por dibujo, con su corte completo repetido.
     expect(salida.plano[0].geometria.hojas.map((h) => [h.nombre, h.cajetin.OF, h.cajetin.HOJA])).toEqual([
-      ['TOLDOS A + B', '0232568 / 0232569', '1/2'], ['TOLDO C', '0232570', '2/2']
+      ['TOLDO A', '0232568', '1/3'], ['TOLDO B', '0232569', '2/3'], ['TOLDO C', '0232570', '3/3']
     ]);
     const plano = salida.plano[0].dxf.replace(/\r\n/g, '\n');
-    for (const nombre of ['TOLDOS A + B', 'TOLDO C']) expect(plano).toContain(`AcDbLayout\n  1\n${nombre}\n`);
-    for (const of of ['0232568 / 0232569', '0232570']) expect(plano).toContain(of);
+    for (const nombre of ['TOLDO A', 'TOLDO B', 'TOLDO C']) expect(plano).toContain(`AcDbLayout\n  1\n${nombre}\n`);
+    for (const of of ['0232568', '0232569', '0232570']) expect(plano).toContain(of);
   });
   it('nombra la presentación de un solo toldo «TOLDO A»', () => {
     const plano = generar().plano[0];
@@ -346,7 +346,7 @@ describe('Del pedido guardado al corte de lona', () => {
     const normal = { ...order, awnings: [{ ...order.awnings[0], curtainFinish: 'NORMAL' }] };
     expect(franjas(normal)).toHaveLength(0);
     expect(generar(normal).plano[0].dxf).not.toContain('· VELCRO');
-  });
+  }, 20000);
 
   it('corta las 7 solapas de AR2604205 con empate en la oblicua D y avisa si lleva bastilla', () => {
     const velcro = { tipo: 'BRAVO', lado: 'POR REVÉS', color: 'BLANCO', anchoCm: 5 };

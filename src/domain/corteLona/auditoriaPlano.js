@@ -63,6 +63,15 @@ function segmentosArco(p) {
 /** Primitivas proyectadas por el lector común: h ya es la altura real en papel. */
 export function auditarHoja(primitivas, { cajetin = null, handlesCajetin = [], papel = { x0: 0, y0: 0, x1: 297, y1: 210 }, capasTextosExcluidas = [] } = {}) {
   const propios = new Set(handlesCajetin);
+  // En los empates ambos paños llevan el mismo mininúmero. Iván, 09/11: la coincidencia exacta es intencionada.
+  const vistos = new Set(), duplicadosRotulador = [];
+  const paraSolapes = primitivas.filter(p => {
+    if (p.tipo !== 'texto' || p.capa !== 'ROTULADOR') return true;
+    const clave = JSON.stringify([p.valor, p.punto, p.h, p.giro ?? 0, p.ancho ?? 0, p.ancla, p.recorte?.id]);
+    if (!vistos.has(clave)) { vistos.add(clave); return true; }
+    duplicadosRotulador.push({ texto: p.valor, posicionMm: p.punto, ventana: p.recorte?.id ?? null, handle: p.handle });
+    return false;
+  });
   const textos = primitivas.filter(p => p.tipo === 'texto' && p.valor?.trim()).map(p => ({ texto: p.valor, posicionMm: p.punto, alturaMm: p.h,
     ventana: p.recorte?.id ?? null, escalaMmPorMetro: p.recorte?.escala ?? null, cota: Boolean(p.deCota), handle: p.handle,
     caja: caja(p), cajetin: propios.has(p.handle), capa: p.capa }));
@@ -98,7 +107,7 @@ export function auditarHoja(primitivas, { cajetin = null, handlesCajetin = [], p
     maximoMm: textos.length ? Math.max(...textos.map(t => t.alturaMm)) : null,
     textosPequenos: textos.filter(t => !capasTextosExcluidas.includes(t.capa) && t.alturaMm < CRITERIOS.minimoTextoMm - 1e-6),
     textosGrandes: textos.filter(t => t.alturaMm > CRITERIOS.maximoTextoMm || t.alturaMm > (limitesGrandes.get(t.ventana) ?? Infinity)),
-    solapes: solapesRotulos(primitivas, CRITERIOS.toleranciaSolapeMm),
+    solapes: solapesRotulos(paraSolapes, CRITERIOS.toleranciaSolapeMm), duplicadosRotulador,
     cruces,
     recortes: recortesRotulos(primitivas, CRITERIOS.toleranciaRecorteMm),
     fueraPapel: textos.filter(t => t.caja && fuera(t.caja, papel)),

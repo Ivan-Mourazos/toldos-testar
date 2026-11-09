@@ -22,6 +22,8 @@ export default defineConfig({
     }
   },
   test: {
+    // La comprobación de varias maquetas A4 completas puede superar 5 s con seis trabajadores en Windows.
+    testTimeout: 30000,
     // Alineado con eslint.config.js: .claude/ y output/releases/ alojan worktrees de otras
     // ramas y tmp/ borradores locales; sus tests no son evidencia de main.
     exclude: ['**/node_modules/**', '**/dist/**', '.claude/**', 'output/**', 'tmp/**']

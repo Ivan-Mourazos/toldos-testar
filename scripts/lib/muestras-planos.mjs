@@ -9,6 +9,7 @@ import { emptyGanado } from '../../src/remolques/entradas-vacias.ts';
 import { calcGanado } from '../../src/remolques/calc/ganado.ts';
 import { MEDIDAS_CAL_5319, MEDIDAS_CAL_GEMELO } from '../../src/remolques/ganado/medidas.ts';
 import { escribirPlanoPuertas } from '../../src/puertas/plano.ts';
+import { generarCortePuertas } from '../../src/puertas/corte.ts';
 import { pedidoDe } from '../../src/puertas/__fixtures__/ejemplos.ts';
 import { puertaPlanoReal } from '../../src/puertas/__fixtures__/planosReales.ts';
 import { pedidosCompatibilidadClientes } from '../../src/puertas/__fixtures__/compatibilidadClientes.ts';
@@ -22,7 +23,7 @@ const leer = async ruta => JSON.parse(await fs.readFile(new URL('../../' + ruta,
 const opciones = { ofStockSacos: '0230811' }; // La misma OF de stock de las pruebas de corte; no se envía a ningún sitio.
 
 export async function generarMuestras() {
-  const muestras = [], excluidas = [], integridadRemolques = [];
+  const muestras = [], excluidas = [], integridadRemolques = [], integridadToldos = [], integridadPuertas = [];
   const registrar = async (familia, ejemplo, fuente, generar) => {
     try {
       const planos = await generar();
@@ -32,6 +33,8 @@ export async function generarMuestras() {
   };
   const toldo = order => {
     const r = generarCorteLona(order, opciones);
+    integridadToldos.push({ pedido: order.orderCode, modelos: r.modelos,
+      corte: createHash('sha256').update(JSON.stringify(r.cortes)).digest('hex') });
     if (!r.plano.length) throw Error(r.avisos.join('; ') || 'Sin plano');
     return r.plano.filter(Boolean).map(p => p.dxf);
   };
@@ -92,7 +95,12 @@ export async function generarMuestras() {
     const elemento = { tipo: 'ganado', version: '10', input, result: calcGanado(input), paramsSnapshot: base.params, of };
     return remolque({ ...base, orderCode: pedido, numeroPedido: pedido, elementos: [elemento] });
   });
-  const puerta = (pedido, cliente) => [escribirPlanoPuertas({ pedido, ...opciones, cabecera: { cliente, tecnico: 'IVÁN', revisor: '', fecha: '2026-11-05' } })];
+  const puerta = (pedido, cliente) => {
+    const r = generarCortePuertas(pedido, opciones);
+    integridadPuertas.push({ pedido: pedido.orderCode, corte: createHash('sha256').update(JSON.stringify(r.cortes)).digest('hex'),
+      archivo: createHash('sha256').update(JSON.stringify(r.archivo)).digest('hex') });
+    return [escribirPlanoPuertas({ pedido, ...opciones, cabecera: { cliente, tecnico: 'IVÁN', revisor: '', fecha: '2026-11-05' } })];
+  };
   for (const [tipo, id] of [['Enrollable', 'AR2604638'], ['Plegable', 'AR2605036'], ['Apilable', 'AR2604906'], ['Autorreparable', 'AR2604904']])
     await registrar(`Puertas / Portanova ${tipo}`, id, 'src/puertas/__fixtures__/planosReales.ts', () => puerta(pedidoDe(id, puertaPlanoReal(id)), 'PORTANOVA'));
   for (const p of pedidosCompatibilidadClientes()) await registrar('Puertas / Portanova compatibilidad', p.orderCode, 'src/puertas/__fixtures__/compatibilidadClientes.ts', () => puerta(p, 'PORTANOVA'));
@@ -112,5 +120,5 @@ export async function generarMuestras() {
   for (const familia of ['FALDONES', 'BAMBALINA independiente']) excluidas.push({ familia, motivo: 'Sin generador de plano A4 en corteReadiness; las bambalinas vinculadas al toldo sí se auditan', fuente: 'src/domain/corteReadiness.js' });
   const cubiertos = modelosConCorte.filter(m => muestras.some(p => p.familia === `Toldos / ${m}`));
   for (const m of modelosConCorte.filter(m => !cubiertos.includes(m))) if (!excluidas.some(e => e.familia === `Toldos / ${m}`)) excluidas.push({ familia: `Toldos / ${m}`, motivo: 'Sin ejemplo generado' });
-  return { muestras, excluidas, modelosConCorte: [...modelosConCorte], integridadRemolques };
+  return { muestras, excluidas, modelosConCorte: [...modelosConCorte], integridadRemolques, integridadToldos, integridadPuertas };
 }

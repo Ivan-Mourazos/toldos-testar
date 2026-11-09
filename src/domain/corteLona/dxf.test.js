@@ -164,8 +164,9 @@ describe('Plano de confección', () => {
       expect(numero(ventana, 20) + alto / 2).toBeLessThanOrEqual(199.9 + 0.000001);
       // Con la vista girada 90° (el corte sigue horizontal en el modelo), el alto de la ventana cubre el largo.
       const [zw, zh] = numero(ventana, 51) === 90 ? [z.y1 - z.y0, z.x1 - z.x0] : [z.x1 - z.x0, z.y1 - z.y0];
-      expect(numero(ventana, 45)).toBeGreaterThanOrEqual(zh);
-      expect(numero(ventana, 45) * ancho / alto).toBeGreaterThanOrEqual(zw);
+      // El DXF escribe seis decimales en metros; su redondeo puede restar menos de una micra.
+      expect(numero(ventana, 45)).toBeGreaterThanOrEqual(zh - 1e-6);
+      expect(numero(ventana, 45) * ancho / alto).toBeGreaterThanOrEqual(zw - 1e-6);
     }
   });
   it('muestra caída terminada sin sumar de nuevo el solape horizontal', () => {

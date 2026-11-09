@@ -4,6 +4,7 @@ import { generarCorteLona } from './index.js';
 import { calculateOrder } from '../rules.js';
 import { dibujo } from './dibujoCorte.js';
 import { registrosDxf, valor } from './dxfTestHelpers.js';
+import { auditarDxf } from './auditoriaPlano.js';
 
 const generar = (order, ajustes = {}) => generarCorteLona(order, { ofStockSacos: '0230811', ajustes });
 
@@ -67,10 +68,14 @@ describe('Correcciones de confección tras la revisión', () => {
     const titulo2 = textos.find(t => t.valor.startsWith('OPCIÓN 2'));
     // La cota del largo de la opción 1 (cota de verdad: su texto va centrado en la línea de cota).
     const cota1 = cotas.find(c => !c.giro && Math.round(c.valor * 10) === Math.round(cortes.conSacos[0].largo));
-    const debajo = cota1.d - ({ 'XERAL 15': 0.15, 'XERA 20': 0.2 }[cota1.estilo] ?? 0.1) / 2;
+    const debajo = cota1.d - (cota1.alturaTexto ?? ({ 'XERAL 15': 0.15, 'XERA 20': 0.2 }[cota1.estilo] ?? 0.1)) / 2;
     const aviso = textos.find(t => t.valor === 'CORTAR DE RESTOS');
-    expect(debajo - titulo2.y - titulo2.h).toBeGreaterThan(1.3);
-    expect(debajo - aviso.y - aviso.h).toBeGreaterThan(1.3);
+    expect(debajo - titulo2.y - titulo2.h).toBeGreaterThan(0);
+    expect(debajo - aviso.y - aviso.h).toBeGreaterThan(0);
+    // La distancia en metros cambia al ampliar las letras; se comprueba además la presentación real en papel.
+    for (const h of auditarDxf(plano[0].dxf, { capasTextosExcluidas: ['ROTULADOR'] }).hojas) {
+      expect(h.solapes).toEqual([]); expect(h.cruces).toEqual([]); expect(h.recortes).toEqual([]);
+    }
   });
   // Iván, 23/10/2026: más grandes, aunque pisen el rotulador, sin salirse de la pieza; la OF al lado del nombre.
   it.each([false, true])('rotula la tira a lo largo, con la OF al lado y dentro de la pieza (girada: %s)', (girada) => {
