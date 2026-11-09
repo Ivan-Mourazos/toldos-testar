@@ -410,8 +410,8 @@ describe('generarCorteRemolques', () => {
   it('las cotas de los ollaos de las cabezas van por debajo, para dejar sitio a los textos (AR2604800)', () => {
     // Iván, 21/10/2026: en AR2604800 (paños de 29,5 con 5 ollaos y una ventana de 14) la escalera tapaba el
     // rótulo y la ventana; mejor así siempre. Las cotas del ancho bajan lo que ocupa la escalera.
-    expect(escaleraCabeza(5)).toEqual({ abajo: true, bajan: 24, textoDesde: 4.5 });
-    expect(escaleraCabeza(4)).toMatchObject({ abajo: true, bajan: 20 });
+    expect(escaleraCabeza(5)).toEqual({ abajo: true, bajan: 34, textoDesde: 4.5 }); // 6 + 6,5 × 4 + 2: filas a 6,5 cm para no pisarse (09/11/2026)
+    expect(escaleraCabeza(4)).toMatchObject({ abajo: true, bajan: 27.5 });
   });
 
   it('el chaflán con hombros de Euro Remolque sale como a mano (AR2604263)', () => {

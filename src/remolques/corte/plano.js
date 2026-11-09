@@ -99,23 +99,27 @@ function rosaCabeza(L, f, x0, w, h, t) {
   L.g.polilineas.push({ capa: 'referencias', puntos: pts.map(([a, b]) => t(a, b)), cerrada: true });
 }
 
+// Separación entre filas de una escalera de cotas: la letra de XERAL 5 mide 5 cm; a 4 cm los números se pisaban
+// en el DWG (Iván, 09/11/2026: «sin pisar»).
+const PASO_ESCALERA = 6.5;
+
 // Escalera horizontal (cotas con línea base): todas desde x = xb (borde de la lona hecha) hasta cada ollao, a
-// la altura y; cada cota un escalón (4 cm) más arriba o, con `abajo`, por debajo de la pieza.
+// la altura y; cada cota un escalón (PASO_ESCALERA) más arriba o, con `abajo`, por debajo de la pieza.
 function escaleraH(L, xb, y, posiciones, abajo = false) {
   [...posiciones].sort((a, b) => a - b).forEach((p, k) => {
-    L.g.cotas.push({ capa: 'cotas', estilo: 'XERAL 5', x1: xb, y1: y, x2: xb + p, y2: y, giro: 0, d: abajo ? y - 10.5 - 4 * k : y + 6 + 4 * k, valor: p });
+    L.g.cotas.push({ capa: 'cotas', estilo: 'XERAL 5', x1: xb, y1: y, x2: xb + p, y2: y, giro: 0, d: abajo ? y - 10.5 - PASO_ESCALERA * k : y + 6 + PASO_ESCALERA * k, valor: p });
   });
 }
 // Las cotas de los ollaos de las cabezas, siempre por debajo de la pieza (Iván, 21/10/2026: hacia arriba tapaban
 // el rótulo y la ventana en AR2604800, «casi podrías poner así las cotas siempre»); las del ancho bajan con ellas
 // (`bajan` cm) y el rótulo queda libre desde la línea de los ollaos.
 export function escaleraCabeza(n) {
-  return { abajo: true, bajan: 6 + 4 * Math.max(n - 1, 0) + 2, textoDesde: 4.5 };
+  return { abajo: true, bajan: 6 + PASO_ESCALERA * Math.max(n - 1, 0) + 2, textoDesde: 4.5 };
 }
 // Escalera vertical (laterales del contorno): línea base en y = yb (arriba), ollaos en x; hacia la derecha.
 function escaleraV(L, yb, x, posiciones) {
   [...posiciones].sort((a, b) => a - b).forEach((p, k) => {
-    L.g.cotas.push({ capa: 'cotas', estilo: 'XERAL 5', x1: x, y1: yb, x2: x, y2: yb - p, giro: 90, d: x + 6 + 4 * k, valor: p });
+    L.g.cotas.push({ capa: 'cotas', estilo: 'XERAL 5', x1: x, y1: yb, x2: x, y2: yb - p, giro: 90, d: x + 6 + PASO_ESCALERA * k, valor: p });
   });
 }
 
@@ -175,7 +179,9 @@ function confeccionLona(L, el, X, Y, letras = ['']) {
     L.cota('cotas', xDel + vx0, Y + vy1 - 5, xDel + vx1, Y + vy1 - 5, P.ventana[0] / 10, 0, 4);
     // El alto, junto al lado izquierdo por fuera: por dentro, en una ventana baja, el texto se salía (AR2604800).
     L.cota('cotas', xDel + vx0, Y + vy0, xDel + vx0, Y + vy1, P.ventana[1] / 10, -4, 4);
-    L.texto(R(2), xDel + vx0 / 2 + 0.5, Y + (vy0 + vy1) / 2, 14);
+    // La letra, debajo de la ventana si cabe: a su izquierda pisaba la cota del alto de la ventana (AR2604412).
+    if (vy0 - eD.textoDesde >= 20) L.texto(R(2), xDel + (vx0 + vx1) / 2, Y + (eD.textoDesde + vy0) / 2 - 3, 14);
+    else L.texto(R(2), xDel + vx0 / 2 + 0.5, Y + (vy0 + vy1) / 2, 14);
   } else L.texto(R(2), xDel + W / 2, Y + (eD.textoDesde + H) / 2 - 3, 14);
 
   // Paño trasero (con orejas si recoge con goma).
@@ -278,7 +284,7 @@ function confeccionLonaSoldada(L, el, P, X, Y, letras) {
       const xb = x + g.lateral.desdeDelante + el.result.lonaHecha.largo;
       [...posiciones].sort((a, b) => a - b).forEach((pos, k) => L.g.cotas.push({
         capa: 'cotas', estilo: 'XERAL 5', x1: xb, y1: y + 4.5, x2: xb - pos, y2: y + 4.5,
-        giro: 0, d: y - 10.5 - 4 * k, valor: pos,
+        giro: 0, d: y - 10.5 - PASO_ESCALERA * k, valor: pos,
       }));
     } else if (n === 2 || n === 3) escaleraH(L, x + (n === 2 ? P.orejaDelante : P.oreja) / 10 + 1, y + 4.5, posiciones, true);
   };
@@ -335,13 +341,10 @@ function confeccionBaqueton(L, el, params, X, Y, letras, refuerzos) {
   }
 
   // Terminado: arriba baquetón | hecho | baquetón; a la izquierda, lo mismo en alto.
-  const arriba = Y + H + 10 - (y1 + b), izquierda = -(x0 - b - X) - 10;
+  const arriba = Y + H + 10 - (y1 + b);
   L.cota('cotas', x0 - b, y1 + b, x0, y1 + b, b, arriba, 6);
   L.cota('cotas', x0, y1 + b, x1, y1 + b, r.remolqueHecho.largo, arriba);
   L.cota('cotas', x1, y1 + b, x1 + b, y1 + b, b, arriba, 6);
-  L.cota('cotas', x0 - b, y0 - b, x0 - b, y0, b, izquierda, 6);
-  L.cota('cotas', x0 - b, y0, x0 - b, y1, r.remolqueHecho.ancho, izquierda);
-  L.cota('cotas', x0 - b, y1, x0 - b, y1 + b, b, izquierda, 6);
   // Corte: esquinas y paño abajo; esquinas y paño a la derecha.
   L.cota('vent-pre-noimpr', X, Y, X + pz.eI / 10, Y, pz.eI / 10, -12, 6);
   L.cota('vent-pre-noimpr', X + W - pz.eR / 10, Y, X + W, Y, pz.eR / 10, -12, 6);
@@ -360,23 +363,29 @@ function confeccionBaqueton(L, el, params, X, Y, letras, refuerzos) {
   const atr = repartidos ? marcas(r.ollaos.anchoAtras ?? r.ollaos.ancho, r.reparto.atras) : r.reparto.atras;
   const yo = Y + 4, xd = X + 4, xa = X + W - 4;
   [...lat].sort((a, c) => a - c).forEach((p, k) => {
-    L.g.cotas.push({ capa: 'cotas', estilo: 'XERAL 5', x1: x1, y1: yo, x2: x1 - p, y2: yo, giro: 0, d: Y - 40 - 4 * k, valor: p });
+    L.g.cotas.push({ capa: 'cotas', estilo: 'XERAL 5', x1: x1, y1: yo, x2: x1 - p, y2: yo, giro: 0, d: Y - 40 - PASO_ESCALERA * k, valor: p });
   });
   [...del].sort((a, c) => a - c).forEach((p, k) => {
-    L.g.cotas.push({ capa: 'cotas', estilo: 'XERAL 5', x1: xd, y1: y0, x2: xd, y2: y0 + p, giro: 90, d: X - 30 - 4 * k, valor: p });
+    L.g.cotas.push({ capa: 'cotas', estilo: 'XERAL 5', x1: xd, y1: y0, x2: xd, y2: y0 + p, giro: 90, d: X - 30 - PASO_ESCALERA * k, valor: p });
   });
   if (atr.join() !== del.join()) {
     [...atr].sort((a, c) => a - c).forEach((p, k) => {
-      L.g.cotas.push({ capa: 'cotas', estilo: 'XERAL 5', x1: xa, y1: y0, x2: xa, y2: y0 + p, giro: 90, d: X + W + 40 + 4 * k, valor: p });
+      L.g.cotas.push({ capa: 'cotas', estilo: 'XERAL 5', x1: xa, y1: y0, x2: xa, y2: y0 + p, giro: 90, d: X + W + 40 + PASO_ESCALERA * k, valor: p });
     });
   }
+  // El alto terminado, por fuera de la escalera de delante: si quedaba entre la pieza y la escalera, las líneas
+  // de los ollaos lo cruzaban (Iván, 09/11/2026: «sin pisar las cotas de ancho y largo»).
+  const izquierda = -(x0 - b - X) - 30 - PASO_ESCALERA * del.length - 4;
+  L.cota('cotas', x0 - b, y0 - b, x0 - b, y0, b, izquierda, 6);
+  L.cota('cotas', x0 - b, y0, x0 - b, y1, r.remolqueHecho.ancho, izquierda);
+  L.cota('cotas', x0 - b, y1, x0 - b, y1 + b, b, izquierda, 6);
   // Baquetón que no cabe en el rollo: empate de 2 cm, el paño entero desde delante (como en el corte).
   if (pz.L > 2500 && pz.A > 2500) {
     for (const xx of [X + 248, X + 250]) L.g.polilineas.push({ capa: 'ejes', puntos: [[xx, Y], [xx, Y + H]], cerrada: false });
     L.texto('EMPATE 2 CM', X + 249, Y + H + 8, 6, 0, 'cotas');
   }
-  const abajo = 40 + 4 * Math.max(lat.length - 1, 0) + 10;
-  return { ancho: W + 40 + (atr.join() !== del.join() ? 4 * atr.length : 0) + 30 + 4 * del.length, alto: H, abajo };
+  const abajo = 40 + PASO_ESCALERA * Math.max(lat.length - 1, 0) + 10;
+  return { ancho: W + 40 + (atr.join() !== del.join() ? PASO_ESCALERA * atr.length : 0) + 30 + PASO_ESCALERA * del.length + 12, alto: H, abajo };
 }
 
 // Dibujo de confección de un remolque de ganado (cm): el de su plantilla tal cual (piezas, notas y cotas), con
