@@ -25,7 +25,7 @@ beforeEach(async () => {
 afterEach(async () => { vi.restoreAllMocks(); await fs.rm(raiz, { recursive: true, force: true }); });
 
 describe('Envío común del corte, independiente de generar archivos', () => {
-  it.each(['toldos-testar-review', 'puertas', 'remolques'])('separa el nombre del bot y del año en %s y no pisa la primera entrega', async kind => {
+  it.each(['toldos-testar-review', 'puertas', 'remolques'])('al bot nunca va con sufijo; el año solo lo pone desde la segunda entrega, en %s (Iván, 09/11/2026)', async kind => {
     const inicio = kind === 'toldos-testar-review' ? 1 : 10;
     await fs.mkdir(path.join(raiz, 'bot/Ivan.Sanchez'), { recursive: true });
     for (const numero of [inicio, inicio + 1, inicio]) {
@@ -35,7 +35,7 @@ describe('Envío común del corte, independiente de generar archivos', () => {
       const preparar = async () => [{ filename: nombreBot, contents: Buffer.from(String(numero)) }];
       for (const destino of ['dxfs', 'bot']) {
         const r = await enviarCorte({ ...entrada, pedido, preparar, destino, confirmBot: true, confirmOverwrite: true });
-        expect(r.cuerpo.envio.archivos[0].filename).toBe(destino === 'bot' ? nombreBot : nombreAnual);
+        expect(r.cuerpo.envio.archivos[0].filename).toBe(destino === 'bot' ? `${pedido.orderCode}.dxf` : nombreAnual);
       }
     }
     expect(await fs.readFile(path.join(raiz, '2026/DXFs/AR2604784.dxf'), 'utf8')).toBe(String(inicio));

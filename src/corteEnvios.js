@@ -38,11 +38,13 @@ export async function enviarCorte({ pedido, order, settings, usuario, destino, c
   const archivos = await preparar();
   if (!archivos.length) throw fallo(409, 'Este pedido no tiene un corte disponible para enviar.');
   const codigoOrigen = codigoEntrega(pedido);
-  const codigoDestino = codigoAnual(pedido);
+  // Iván, 09/11/2026: «nunca va con sufijo al bot» (formato AR2600000; con -1/-10 el bot no lo procesaba).
+  // En la carpeta del año, la primera entrega sin sufijo y las siguientes con él.
+  const codigoDestino = destino === 'bot' ? pedido.orderCode : codigoAnual(pedido);
   const files = archivos.map(({ filename, contents }) => {
     if (path.basename(filename) !== filename || !filename.toLowerCase().endsWith('.dxf')) throw fallo(400, 'El nombre del DXF no es válido.');
-    // Solo la copia del año cambia de nombre; los bytes y el envío al bot se conservan.
-    if (destino === 'dxfs' && (filename === `${codigoOrigen}.dxf` || filename.startsWith(`${codigoOrigen} (`))) {
+    // Los bytes se conservan; solo cambia el nombre.
+    if (filename === `${codigoOrigen}.dxf` || filename.startsWith(`${codigoOrigen} (`)) {
       filename = codigoDestino + filename.slice(codigoOrigen.length);
     }
     return { filename, contents, savedPath: path.join(carpeta, filename) };

@@ -378,7 +378,7 @@ describe('corte confirmado desde el borrador', () => {
     expect(await fs.readFile(enAnio(), 'utf8')).toBe(contenido);
     expect((await alBot()).status).toBe(200);
     expect((await fs.readFile(pdf(10))).subarray(0, 4).toString()).toBe('%PDF');
-    expect(await fs.readdir(path.join(raiz, 'bot/Ivan.Sanchez'))).toEqual(['AR2605134-10.dxf']);
+    expect(await fs.readdir(path.join(raiz, 'bot/Ivan.Sanchez'))).toEqual(['AR2605134.dxf']);
     expect((await flujo.obtener('AR2605134')).status).toBe('PRODUCED');
   });
   it('al mandar al bot guarda las presentaciones en AR…-10.pdf, con el revisor; rehecho, lo sustituye sin preguntar', async () => {
@@ -446,6 +446,6 @@ describe('corte confirmado desde el borrador', () => {
     const { status, cuerpo } = await alBot();
     expect(status).toBe(200);
     expect(cuerpo).toMatchObject({ avisos: [expect.stringContaining('ya está en el bot')] });
-    expect(await fs.readdir(path.join(raiz, 'bot/Ivan.Sanchez'))).toEqual(['AR2605134-10.dxf']);
+    expect(await fs.readdir(path.join(raiz, 'bot/Ivan.Sanchez'))).toEqual(['AR2605134.dxf']);
   });
 });
