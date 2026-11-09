@@ -183,6 +183,8 @@ export function escribirDxfPlano(plano, cabecera) {
   // En una presentación propia (Portanova) la ventana 2 encuadra la zona de la hoja. `corteGirable` deja girar la
   // vista del corte 90° si así se ve más grande, sin girar el corte en el modelo (Iván, 23/10/2026).
   const ventanasDe = (h, { reparto: r, zc, rc }) => {
+    // Una hoja de ganado puede declarar sus propias ventanas de dibujo y corte.
+    if (h.ventanas) return h.ventanas;
     const pv = plano.presentacion?.ventanas;
     const v = pv ? { ...pv, 2: { ...pv[2], z: h.zona } }
       : { 2: encuadre(h.zona, r.toldo), ...Object.fromEntries(rc.ventanas.map(({ z, r: rv }, k) => [3 + k, encuadre(z, rv, true, !!r.girado)])) };
@@ -211,6 +213,15 @@ export function escribirDxfPlano(plano, cabecera) {
   };
   const encuadrar = (t, v) => {
     const z = v.z;
+    if (v.giro != null) {
+      let r = poner(t, '10', n(v.centro[0]));
+      r = poner(r, '20', n(v.centro[1]));
+      r = poner(r, '40', n(v.ancho)); r = poner(r, '41', n(v.alto));
+      r = poner(r, '12', n(0)); r = poner(r, '22', n(0));
+      r = poner(r, '17', n((z.x0 + z.x1) / 2)); r = poner(r, '27', n((z.y0 + z.y1) / 2));
+      r = poner(r, '51', n(v.giro));
+      return poner(r, '45', n(v.alto / v.escala));
+    }
     if (vaGirada(v)) {
       const zr = plano.zonas.corteReal ?? z, w = zr.x1 - zr.x0, alto = zr.y1 - zr.y0;
       {
@@ -283,13 +294,13 @@ export function escribirDxfPlano(plano, cabecera) {
   const entidades = [...procesar(trozos, ventanas), ...ventanasExtra(ventanas)];
   // En el papel: título del corte y una raya fina entre el corte y el toldo.
   const papel = (tipo, color, sub, cuerpo, capa = 'texto') => `  0\n${tipo}\n  5\n${nuevo()}\n330\n${PAPEL}\n100\nAcDbEntity\n 67\n     1\n  8\n${capa}\n 62\n${String(color).padStart(6)}\n100\n${sub}\n${cuerpo}`;
-  const textosPapel = (caj, { reparto: r, rc }) => plano.presentacion ? caj + plano.presentacion.textos.map(t =>
+  const textosPapel = (caj, { reparto: r, rc }, hoja) => plano.presentacion ? caj + (hoja?.textos ?? plano.presentacion.textos).map(t =>
     papel('MTEXT', 256, 'AcDbMText', ` 10\n${n(t.x)}\n 20\n${n(t.y)}\n 30\n0.0\n 40\n${n(t.h)}\n 41\n${n(t.ancho)}\n 71\n     1\n 72\n     1\n  1\n${t.valor.replaceAll('\n', '\\P')}\n  7\narial\n 73\n     1\n 44\n1.0\n`, t.capa ?? 'texto')).join('')
     // Las hojas con plantilla propia también llevan su raya entre el dibujo y el corte (Iván, 06/11/2026).
     + (plano.presentacion.lineas ?? []).map(puntos => papel('LWPOLYLINE', 8, 'AcDbPolyline', ` 90\n     ${puntos.length}\n 70\n     0\n 43\n0.0\n${puntos.map(([x, y]) => ` 10\n${n(x)}\n 20\n${n(y)}\n`).join('')}`)).join('') : caj
     + papel('LWPOLYLINE', 8, 'AcDbPolyline', ` 90\n     2\n 70\n     0\n 43\n0.0\n${r.raya.map(([x, y]) => ` 10\n${n(x)}\n 20\n${n(y)}\n`).join('')}`)
     + papel('TEXT', 7, 'AcDbText', ` 10\n${n(rc.x0)}\n 20\n${n(rc.y1 + 2)}\n 30\n0.0\n 40\n${n(Math.min(2.2, (rc.x1 - rc.x0) / anchoArial(cabecera.tituloCorte || 'CORTE', 1)))}\n  1\n${cabecera.tituloCorte || 'CORTE'}\n  7\narial\n100\nAcDbText\n`);
-  const insercion = textosPapel(cajetin, repartos[0]);
+  const insercion = textosPapel(cajetin, repartos[0], hojas[0]);
   // Las demás hojas: solo lo del papel de la plantilla, con sus ventanas y su cajetín.
   const sinReactores = (t) => t.replace(/102\n\{ACAD_[A-Z]+\n(?:3[36]0\n[0-9A-F]+\n)*102\n\}\n/g, '').replace(/\n360\n[0-9A-F]+\n/g, '\n');
   const handleDe = (t) => /\n {2}5\n([0-9A-F]+)\n/.exec(t)?.[1];
@@ -298,7 +309,7 @@ export function escribirDxfPlano(plano, cabecera) {
   const papelHojas = hojas.slice(1).map((h, i) => {
     const vs = ventanasDe(h, repartos[i + 1]);
     return procesar(trozos.filter(t => delPapel.has(handleDe(t))), vs).join('') + ventanasExtra(vs).join('')
-      + textosPapel(insertarCajetin(PAPEL, valoresCajetin(h)), repartos[i + 1]);
+      + textosPapel(insertarCajetin(PAPEL, valoresCajetin(h)), repartos[i + 1], h);
   });
 
   // Dibujo en el modelo.
@@ -434,7 +445,8 @@ const comaCota = (v) => String(Math.round(v * 10) / 10).replace('.', ',');
  * `posicionTexto` permite sacar el número de una cota corta sin reducir su letra ni cambiar la medida.
  */
 function cotaDxf(c, numero, nuevo, ent) {
-  const e = ESTILOS_COTA[c.estilo] ?? ESTILOS_COTA.XERAL;
+  const base = ESTILOS_COTA[c.estilo] ?? ESTILOS_COTA.XERAL;
+  const e = c.alturaTexto == null ? base : { ...base, texto: c.alturaTexto };
   const n = (v) => Number(v).toFixed(6);
   const v = c.giro === 90;
   const largo = Math.hypot(c.x2 - c.x1, c.y2 - c.y1), ux = (c.x2 - c.x1) / largo, uy = (c.y2 - c.y1) / largo;
@@ -464,12 +476,19 @@ function cotaDxf(c, numero, nuevo, ent) {
     cuerpo += dentro('SOLID', 'AcDbTrace', ` 10\n${n(p1[0])}\n 20\n${n(p1[1])}\n 30\n0.0\n 11\n${n(p2[0])}\n 21\n${n(p2[1])}\n 31\n0.0\n 12\n${n(p3[0])}\n 22\n${n(p3[1])}\n 32\n0.0\n 13\n${n(p3[0])}\n 23\n${n(p3[1])}\n 33\n0.0\n`);
   }
   // Línea de cota cortada por el texto si cabe; si no, entera y el texto encima.
-  const medio = (a + b) / 2, ancho = anchoArial(texto, e.texto) + 2 * e.hueco;
-  const cabe = !c.posicionTexto && ancho < b - a - 2 * e.flecha;
-  if (cabe) cuerpo += linea(xy(a + e.flecha, c.d), xy(medio - ancho / 2, c.d)) + linea(xy(medio + ancho / 2, c.d), xy(b - e.flecha, c.d));
+  const medio = (a + b) / 2, ancho = anchoArial(texto, e.texto) + 2 * e.hueco + (c.huecoTexto ? e.texto * 1.2 : 0);
+  const posicionS = !c.posicionTexto ? medio : c.alineada ? (c.posicionTexto[0] - c.x1) * ux + (c.posicionTexto[1] - c.y1) * uy : c.posicionTexto[v ? 1 : 0];
+  const posicionT = !c.posicionTexto ? c.d : c.alineada ? -(c.posicionTexto[0] - c.x1) * uy + (c.posicionTexto[1] - c.y1) * ux : c.posicionTexto[v ? 0 : 1];
+  const cabe = c.huecoTexto
+    ? Math.abs(posicionT - c.d) < 1e-5 && posicionS - ancho / 2 > a + e.flecha && posicionS + ancho / 2 < b - e.flecha
+    : !c.posicionTexto && ancho < b - a - 2 * e.flecha;
+  if (cabe) cuerpo += linea(xy(a + e.flecha, c.d), xy(posicionS - ancho / 2, c.d)) + linea(xy(posicionS + ancho / 2, c.d), xy(b - e.flecha, c.d));
   else cuerpo += linea(xy(a + e.flecha, c.d), xy(b - e.flecha, c.d));
   const tt = cabe ? c.d : c.d + (v ? -1 : 1) * e.texto * 0.8;
   const [tx, ty] = c.posicionTexto ?? xy(medio, tt);
+  if (c.enlaceTexto) {
+    if (Array.isArray(c.enlaceTexto)) cuerpo += linea(c.enlaceTexto[0], c.enlaceTexto[1]);
+  }
   cuerpo += dentro('MTEXT', 'AcDbMText', ` 10\n${n(tx)}\n 20\n${n(ty)}\n 30\n0.0\n 40\n${n(e.texto)}\n 41\n0.0\n 71\n     5\n 72\n     1\n  1\n${texto}\n  7\nXERAL\n 11\n${c.textoHorizontal ? '1.0' : c.alineada ? n(ux) : v ? '0.0' : '1.0'}\n 21\n${c.textoHorizontal ? '0.0' : c.alineada ? n(uy) : v ? (c.textoGirado ? '-1.0' : '1.0') : '0.0'}\n 31\n0.0\n 73\n     1\n 44\n1.0\n`);
   const bloque = `  0\nBLOCK\n  5\n${nuevo()}\n330\n${registro}\n100\nAcDbEntity\n  8\n0\n100\nAcDbBlockBegin\n  2\n${nombre}\n 70\n     1\n 10\n0.0\n 20\n0.0\n 30\n0.0\n  3\n${nombre}\n  1\n\n`
     + cuerpo + `  0\nENDBLK\n  5\n${nuevo()}\n330\n${registro}\n100\nAcDbEntity\n  8\n0\n100\nAcDbBlockEnd\n`;
@@ -477,7 +496,9 @@ function cotaDxf(c, numero, nuevo, ent) {
   const override = c.rotulo == null && texto === comaCota(mide) ? '' : `  1\n${texto}\n`;
   const entidad = ent('DIMENSION', c.capa, 'AcDbDimension', `280\n     0\n  2\n${nombre}\n 10\n${n(dx)}\n 20\n${n(dy)}\n 30\n0.0\n 11\n${n(tx)}\n 21\n${n(ty)}\n 31\n0.0\n 70\n    ${(c.alineada ? 33 : 32) + (c.posicionTexto ? 128 : 0)}\n 71\n     5\n 42\n${n(mide)}\n${override}${c.textoHorizontal ? ' 53\n270.0\n' : c.textoGirado ? ' 53\n180.0\n' : ''}  3\n${c.estilo ?? 'XERAL'}\n100\nAcDbAlignedDimension\n 13\n${n(c.x1)}\n 23\n${n(c.y1)}\n 33\n0.0\n 14\n${n(c.x2)}\n 24\n${n(c.y2)}\n 34\n0.0\n${c.alineada ? '' : `${v ? ' 50\n90.0\n' : ''}100\nAcDbRotatedDimension\n`}`);
   const registroTabla = `  0\nBLOCK_RECORD\n  5\n${registro}\n330\n1\n100\nAcDbSymbolTableRecord\n100\nAcDbBlockTableRecord\n  2\n${nombre}\n340\n0\n 70\n     0\n280\n     1\n281\n     0\n`;
-  return { entidad, bloque, registro: registroTabla };
+  // DIMTXT por entidad: el CAD conserva la altura al regenerar la cota, sin alterar su estilo compartido.
+  const altura = c.alturaTexto == null ? '' : `1001\nACAD\n1000\nDSTYLE\n1002\n{\n1070\n140\n1040\n${n(c.alturaTexto)}\n1002\n}\n`;
+  return { entidad: entidad + altura, bloque, registro: registroTabla };
 }
 
 // Contorno de polilínea independiente, sin referencias a handles de otra copia del DWG.

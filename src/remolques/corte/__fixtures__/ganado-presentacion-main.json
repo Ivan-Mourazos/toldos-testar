@@ -1,0 +1,366 @@
+{
+  "main": "eba659e",
+  "otras": [
+    {
+      "familia": "Toldos / ARZUA PRO",
+      "ejemplo": "AR2604784 adaptado como en index.test.js",
+      "dxf": "9ef8c7266ac9da02058e7aa69c56285d601732c8535a2a4604141231558499b5"
+    },
+    {
+      "familia": "Toldos / GALICIA",
+      "ejemplo": "AR2604784 adaptado como en index.test.js",
+      "dxf": "636494588d5bd35d7dc467a722e40599b633ef7802b42e6647e2208b6a4c0d31"
+    },
+    {
+      "familia": "Toldos / MONOBLOCK 350",
+      "ejemplo": "AR2604784 adaptado como en index.test.js",
+      "dxf": "5412774ea47bdf559790085a8d1746bddae73bb378436e0e759a2e0636d34115"
+    },
+    {
+      "familia": "Toldos / CAMBIO TELA",
+      "ejemplo": "AR2604784 adaptado como en index.test.js",
+      "dxf": "24998aca32576bb91748b38f9e7b22a58037cca9e1507e548c7ebe3c6e5a7862"
+    },
+    {
+      "familia": "Toldos / CORTINA",
+      "ejemplo": "AR2605193 con ventana y bambalina / material 1",
+      "dxf": "185bb2f43e14cc7f359c939297de45eff05dc4c679b7d90f5079499c72ae9ecd"
+    },
+    {
+      "familia": "Toldos / CORTINA",
+      "ejemplo": "AR2605193 con ventana y bambalina / material 2",
+      "dxf": "185bb2f43e14cc7f359c939297de45eff05dc4c679b7d90f5079499c72ae9ecd"
+    },
+    {
+      "familia": "Toldos / CAMBIO CORTINA",
+      "ejemplo": "AR2601829 varilla",
+      "dxf": "8d25810651542a4a2db0556b07c8a9b6fb7e66365b6ea36664503aaff9479522"
+    },
+    {
+      "familia": "Toldos / SOLAPAS",
+      "ejemplo": "AR2604205 siete solapas incluida oblicua",
+      "dxf": "be8074755bb58fd1bcb2c446294f456f88edae2603dac9fc7aa538c560653230"
+    },
+    {
+      "familia": "Toldos / EMBUDO",
+      "ejemplo": "AR2605215 conico",
+      "dxf": "f3b7f9bba28f9fd845cae2f4ef7ea1dede037294afb46a4dbdde7fbabc2948ae"
+    },
+    {
+      "familia": "Toldos / EMBUDO",
+      "ejemplo": "AR2600169 recto (vista previa sin OF)",
+      "dxf": "88f564b5750de65c9d31b4bbd2caa9f67beb2a9196ae03a2a52d951c8c45dad9"
+    },
+    {
+      "familia": "Toldos / BAMBALINAS",
+      "ejemplo": "Bamba separada por material / material 1",
+      "dxf": "4ebae8e599f91eb7aefeebd6472f737eb817846725e8b74194e7daf3615b9958"
+    },
+    {
+      "familia": "Toldos / BAMBALINAS",
+      "ejemplo": "Bamba separada por material / material 2",
+      "dxf": "77df29f9c5552660d16a8a90ff9cba9324d3cb60a86350cf7cee14d1d3827295"
+    },
+    {
+      "familia": "Remolques / rectos y aguas",
+      "ejemplo": "AR2604390",
+      "dxf": "92b681436c3be14833a5b4ad4e96f07cef9791ab4a5da3df52831020c41e3904"
+    },
+    {
+      "familia": "Remolques / rectos y aguas",
+      "ejemplo": "AR2604412",
+      "dxf": "082e3123411a60bcf54a44afa883e0b9acaba921207deebfce82c05eb3aebb21"
+    },
+    {
+      "familia": "Remolques / rectos y aguas",
+      "ejemplo": "AR2604800",
+      "dxf": "1e6e1ac4d288ff89e742303102362db4df1f6d2c4c9fd6cc31ae0d78019c1938"
+    },
+    {
+      "familia": "Remolques / rectos y aguas",
+      "ejemplo": "AR2604802",
+      "dxf": "94f3666b80197aac3362fafd5060bdb444dc086bf60d03fcccddf843aba8879e"
+    },
+    {
+      "familia": "Remolques / rectos y aguas",
+      "ejemplo": "AR2604990",
+      "dxf": "d39e13815b32b1acd01142e6b18c9e7aa20d3ed9825c0d091c9fdee534d61829"
+    },
+    {
+      "familia": "Remolques / rectos y aguas",
+      "ejemplo": "AR2605000",
+      "dxf": "56ceb1993281423229c8e985d732a93e626b5979b82e8d0a9dd7b35a0f2ab807"
+    },
+    {
+      "familia": "Remolques / rectos y aguas",
+      "ejemplo": "AR2605023",
+      "dxf": "99696c335ba835fe8e35493fdb3537e9b0f9452cb283afa232303be8c828b016"
+    },
+    {
+      "familia": "Remolques / rectos y aguas",
+      "ejemplo": "AR2605071",
+      "dxf": "691b0335a67cc9dd8011c193a0dc889e07b3d4bc182f9d1a25459f895b588fd8"
+    },
+    {
+      "familia": "Remolques / rectos y aguas",
+      "ejemplo": "AR2605078",
+      "dxf": "51dcb5371d7b437f3ce3cae43f65e107ee234ed7f20667cf458af220f62b15ed"
+    },
+    {
+      "familia": "Remolques / rectos y aguas",
+      "ejemplo": "AR2605079",
+      "dxf": "5234adb83a6818e08465cc9edf27358ddeb4934a944a7319d680b50445452921"
+    },
+    {
+      "familia": "Remolques / rectos y aguas",
+      "ejemplo": "AR2605088",
+      "dxf": "18c02c3a8c67d200568042f93a6dd3dfe39fffd96b68e0d702ee8144f3e5d798"
+    },
+    {
+      "familia": "Remolques / rectos y aguas",
+      "ejemplo": "AR2605120",
+      "dxf": "1117278dfac209e6c35cf1611347d0edd283d153e578b7a9edeaeab200879d17"
+    },
+    {
+      "familia": "Remolques / rectos y aguas",
+      "ejemplo": "AR2605129",
+      "dxf": "dbc614c0418766b05efc10e585ec9f59adc5d263866c0bc180b4a28ec08483ef"
+    },
+    {
+      "familia": "Remolques / rectos y aguas",
+      "ejemplo": "AR2605132",
+      "dxf": "56b950c0cf416a33cda5e92ae7b27232ded8d3f24d1716a1155ae282366f7f5d"
+    },
+    {
+      "familia": "Remolques / rectos y aguas",
+      "ejemplo": "AR2605158",
+      "dxf": "83716a46a7ab21cff7341a2a9c194b13febab29cb0fdfed84055ec1b806cc2e4"
+    },
+    {
+      "familia": "Remolques / rectos y aguas",
+      "ejemplo": "AR2605192",
+      "dxf": "3ad8016758b1bcfc50d1c751eec41a3608b6eb7c2a9182ea4f51bd611f353e7e"
+    },
+    {
+      "familia": "Puertas / Portanova Enrollable",
+      "ejemplo": "AR2604638",
+      "dxf": "9c997101bf41c51d7513da1c3fcf1e4f805002d643f3a7987c11d1cb77fb3a0c"
+    },
+    {
+      "familia": "Puertas / Portanova Plegable",
+      "ejemplo": "AR2605036",
+      "dxf": "83b3bf74982ee118cc17fde9876a103513ffa244954f82e266f85990d3f4adaf"
+    },
+    {
+      "familia": "Puertas / Portanova Apilable",
+      "ejemplo": "AR2604906",
+      "dxf": "3570a1a44c8fc5d057cebd055492997e87dd715e99494c3a6ac4d47c152367fe"
+    },
+    {
+      "familia": "Puertas / Portanova Autorreparable",
+      "ejemplo": "AR2604904",
+      "dxf": "96aa58fca53b157bda4eb670571160e2405b9c2b26fd2838e64c000cc7a1aafa"
+    },
+    {
+      "familia": "Puertas / Portanova compatibilidad",
+      "ejemplo": "AR2605246",
+      "dxf": "4c2a1e990f11492d5ff816af7ecf0267d484b13e2684af9b6f4fe1705c2d53d2"
+    },
+    {
+      "familia": "Puertas / Portanova compatibilidad",
+      "ejemplo": "AR2605220",
+      "dxf": "1ae05c31b05513a3be39ec100c073f2c7454d735d3ae7767429a71cdb9abb38a"
+    },
+    {
+      "familia": "Puertas / Portanova compatibilidad",
+      "ejemplo": "AR2605035",
+      "dxf": "999745830a46a5e3ef5af4dc6fe5accd7d7c9f5b6e117970f31926b10494d051"
+    },
+    {
+      "familia": "Puertas / Araujo",
+      "ejemplo": "AR2605365",
+      "dxf": "4d278a06788e7d79500ee0717a11844ef42a88f4b32b4703fae2e1b02cce7773"
+    },
+    {
+      "familia": "Puertas / Araujo",
+      "ejemplo": "AR2505733",
+      "dxf": "f59533a9602b97eaa86917cacdc37552e94efe984598058be833d8b9d42ccb60"
+    },
+    {
+      "familia": "Puertas / Araujo",
+      "ejemplo": "AR2604292",
+      "dxf": "202020c2548f67af2aabb0eb383804930034952342757fc393594dc2fc9aba29"
+    },
+    {
+      "familia": "Puertas / Araujo",
+      "ejemplo": "AR2604373",
+      "dxf": "cef2bf619926b9e57296c8088754db6086dd8f1259952606a7d1e78cdd6ddbb8"
+    },
+    {
+      "familia": "Puertas / Araujo",
+      "ejemplo": "AR2602391",
+      "dxf": "5a20a3b5eedf0149800246c23bd5095e69e7cc60e971a15276b39880e0484fcd"
+    },
+    {
+      "familia": "Puertas / Araujo",
+      "ejemplo": "AR2506255",
+      "dxf": "12b4464c5cedf159ce8e19909f2609f4403483e5ae5c71fed4a8dc9d69fb6870"
+    },
+    {
+      "familia": "Puertas / Santa Pau",
+      "ejemplo": "AR2604815",
+      "dxf": "13174281f475cf566b6818308895dcbc0595d0339a1119e769577fcfb6d52d51"
+    },
+    {
+      "familia": "Puertas / Santa Pau",
+      "ejemplo": "AR2605363",
+      "dxf": "70b34d7437e0211d779781ecb8cbec9e38b670d8cdbd2c9776a36cc19a2de738"
+    },
+    {
+      "familia": "Puertas / System Dock",
+      "ejemplo": "AR2604615",
+      "dxf": "acf49d5309b813376536d12c862baa3c7380e3ca728e1f54a7336aa6105b1deb"
+    },
+    {
+      "familia": "ASSA / lote",
+      "ejemplo": "2026-11-07 AR2605234",
+      "dxf": "06f60f477762d90dcbb4e7db50e611c2cfbf55bb49379f181665ee071dca1883"
+    }
+  ],
+  "ganado": [
+    {
+      "familia": "Remolques / ganado REMOLCAR_ECONOMICO",
+      "ejemplo": "AR2600752",
+      "geometria": "808efda94a79ef024d96ff709d3bded46f1f1a98d3182dabd42a193d666557b1",
+      "textosFijos": "ef9a7dcadd09bc2ed333524ae3006d23da97996e3ba8531ed5c8d117153a53c1",
+      "textos": "b720c6c51be6b5b9fc8b20fb99100832671129a248e6c2cad4fba10dfaece1be",
+      "cotas": "eeaeabbe672b6989ec207c8b10fbb21e718cf42cdbf26f7a59b50fc5fcb7c72d"
+    },
+    {
+      "familia": "Remolques / ganado REMOLCAR_ESTANDAR",
+      "ejemplo": "AR2601847",
+      "geometria": "4bd1fb95fa72e3eb289f79116c19d40da94003c18445dd6b4669df2c47806bd0",
+      "textosFijos": "43125edb5250e675ce80660cc2322d06ff8ce771d4be16b28e891388d12bb19a",
+      "textos": "93135d68812e1222a47cd4c2c47d98ce39885cb03f6588134fdc9716cd652104",
+      "cotas": "d5dc32e404536f1033ae55d242d13f6aec3b069af77b8165fd9eb9625c94cda8"
+    },
+    {
+      "familia": "Remolques / ganado CAL_MEDIDAS",
+      "ejemplo": "AR2506052",
+      "geometria": "e85c37593ca3e9dd81e35874fb74d0011ea5fdde5216bd39526ad0c02531e577",
+      "textosFijos": "05b15052a30c66b50d12ad908b93847fd62f1985ae66942b73e4a4c583966a18",
+      "textos": "46f4d76f527611ba25f2af293e095ccea644dc59a0f845b7c6836f4245b88f14",
+      "cotas": "4332da0275b5dc2e986080dd5f2294df950c1af14b2b27b9c57097eb967e079f"
+    },
+    {
+      "familia": "Remolques / ganado CAL_MEDIDAS",
+      "ejemplo": "AR2605319",
+      "geometria": "f55e25646ec6baf9c9bbf2b1b62482bcce1150347c366a0bf6da8cc9505fe700",
+      "textosFijos": "2032922fc620e05d772789548ab51be844adc2394c854646d8e1f6ef63986a97",
+      "textos": "e928f55d49342c6eb69c4630f9a39c2ba32301e3cadaf6f3d19bcbf88bc25f63",
+      "cotas": "1095f2dadd0518f34ce863266c4d1f9b0410d293bb4604e33e32f252cf565272"
+    }
+  ],
+  "integridadRemolques": [
+    {
+      "pedido": "AR2604390",
+      "bot": "3c8c5468092e3d1992b840383d1c6e6f27a63fe148984013e718a049f43d24c4",
+      "colocacion": "f11ec269544a61778261793aa9cd1bfcf4fe52659d6453c4dd4f5c4f56f6e8b9"
+    },
+    {
+      "pedido": "AR2604412",
+      "bot": "d6cd47de05a6c395571dae97d15ec636ee30571db245ceadf50f0a537d4ceb5c",
+      "colocacion": "319b3757c63798b10acec4d8611ee3f7f094df6ed970040e8763bf974ce9f4a7"
+    },
+    {
+      "pedido": "AR2604800",
+      "bot": "a487699a1bad280164ba04669a926006924c9187fa682b4ca8c4fd840baec092",
+      "colocacion": "2a05bf8cbe75864e78447bd40360c41f97444250202a220d59cd90c3b4ea4d49"
+    },
+    {
+      "pedido": "AR2604802",
+      "bot": "339ed0c31295ffc5dde2fe79759f2258b60d8e39df5bb3e8a3b71a283cb87d31",
+      "colocacion": "3e947c3d6495331942bab53e5da7aa46b55d42435a5eac29e862f884fc7d7355"
+    },
+    {
+      "pedido": "AR2604990",
+      "bot": "0fcf74424b3ebb3ab31f99207d2abe425a0eea4039b3eea2f7f42a8d36395629",
+      "colocacion": "5721bb404f3f5f5f8056ef19c219c93d0bdef9d16eaff9b306f356fd0664fdd4"
+    },
+    {
+      "pedido": "AR2605000",
+      "bot": "551a7d3cbbffedf0ff714de3bb674d640c70366fdaf26c57f57307a27298b720",
+      "colocacion": "bbc9a7fb49c627762c228797797f0ccaa04e5f2029cbe4916b2e8eddd8a01d3e"
+    },
+    {
+      "pedido": "AR2605023",
+      "bot": "391d6f4376834b328324f6a38a1d70479f5fa7b14ae84de2780d8545e48994b1",
+      "colocacion": "8de31eabb7d9e771b211b9cf1e10e885f210213869c8c10f8891281dd64d3628"
+    },
+    {
+      "pedido": "AR2605071",
+      "bot": "025d5b8ded263f55ebdade69a86cf2e2774e991f5d8158f60ec05be43db75042",
+      "colocacion": "99af6d39c28d97d9dec61842e1446eb9e4c929ef5903f8a4ee95340e8919b47a"
+    },
+    {
+      "pedido": "AR2605078",
+      "bot": "ed06727058dc28ac7f6677ce6e25d78e60d40c3f7c36cb4604f77408c73bedf7",
+      "colocacion": "25369a6e2ce0a26cf96dc74aa39252fd50abd8bb47e7bde50e18e4e1c3f329a1"
+    },
+    {
+      "pedido": "AR2605079",
+      "bot": "436eae63628adb48d37d3776c5dfd64b4d5267c9119ca5953bc7fd06349dc708",
+      "colocacion": "8b85bb4edee1ad5688ebd2b3cb60b1f10bff1d674dc2728477aea3fc7f3b2503"
+    },
+    {
+      "pedido": "AR2605088",
+      "bot": "8bfb8df7e4af4e3db7d22b242b753ba021e188d8f4e59e536505e0de91472969",
+      "colocacion": "9aba2e31888ae3606a07ca80b40ae4a98882f930c7aa256abbf76e4883d7cead"
+    },
+    {
+      "pedido": "AR2605120",
+      "bot": "8bb326dbe1ba218f1b4d65b24b81f4373e7155ab4cfbdbf88cb77e839c644ee1",
+      "colocacion": "224f36c5ec93ff51707aa058dc197952dc1fedad1af1d8347b963aa3459bf4de"
+    },
+    {
+      "pedido": "AR2605129",
+      "bot": "e247bc1d932f5989072092e551bf5d18d512cd09f4f7e201dc39fcfd0f41d9e6",
+      "colocacion": "e9310f3174f8a38eb8be3d154e9e6d267c98432f00454017a6e0e470153058dc"
+    },
+    {
+      "pedido": "AR2605132",
+      "bot": "22dcc48a87ce63d3d9c4ccc2898b9ea3d53742a5938b7b1821c41a9eacbfa8fa",
+      "colocacion": "385d9d76e75e3db93b2699a0731c82521c2140178ae51ff8324fc32a1e33b9ef"
+    },
+    {
+      "pedido": "AR2605158",
+      "bot": "7d0dfdd540bfbd9bca4328219547721be841bc6640776b26c82fa615a5d31a0c",
+      "colocacion": "ca78ae58f68f392da234ca7ae824596f2d376e1d26faef0d4a7bcb4a2d28b4be"
+    },
+    {
+      "pedido": "AR2605192",
+      "bot": "4baa6049d9da7255f37522b772c66be9cc68e3225d459385a3aaecb48656b792",
+      "colocacion": "71b665ff79fe0d63c41dfb9d84361cf476cebe4c59d967c65dfa451ec2d33890"
+    },
+    {
+      "pedido": "AR2600752",
+      "bot": "31aca3e524738d5684bc76eed3fdf3a918a34cc0ac23d70abed4f904ca794cec",
+      "colocacion": "536843e1a0a2f794524747b019598c7891ef673b195edd8a5fe292cf43bc81a2"
+    },
+    {
+      "pedido": "AR2601847",
+      "bot": "f4be54eb5d2a252623eb516f7f55a0c4bb98a3ad91b4f919431b7953b9e229de",
+      "colocacion": "f67d4468f12bf3a082b49c7fd2f67621bdc2555737c2db79cce00a9fcf508d7a"
+    },
+    {
+      "pedido": "AR2506052",
+      "bot": "237f35ab7e3cae78f454d7e7b5769414a642d3831b4213d583dc35b66ae37c60",
+      "colocacion": "8c4f447659e008df72fa5bcfedd7cbcfbca51e76597240e7e74ccbf36b953eb2"
+    },
+    {
+      "pedido": "AR2605319",
+      "bot": "e4c9d8dd54f34cd7f3fe9995069e34df15215d000fa64ea81eaa4beed980bd06",
+      "colocacion": "c6c3468d9fb56eedfce3b38ba0903f4668ccc4508f56d081506494ac449e4120"
+    }
+  ]
+}

@@ -7,6 +7,7 @@ import { dibujoGanado } from '../ganado/dibujo.ts';
 import { MODELOS_GANADO } from '../calc/ganado.ts';
 import { aguasArquilladas, DOBLEZ_BASTILLA, esquinasChaflan, marcaOrejaPuentes, piezasLona } from './lonaAlta.js';
 import { escribirDxfPlano, separacionCorte } from '../../domain/corteLona/presentacion.js';
+import { presentarGanadoA4 } from './presentacionGanado.js';
 
 const ORIGEN_M = 100;   // como en toldos: lejos del origen del CAD
 const r1 = (v) => Math.round(v * 10) / 10;
@@ -418,10 +419,14 @@ function confeccionGanado(L, el, X, Y) {
 // 20/10/2026).
 export function escribirPlanoRemolques({ pedido, lonas, baquetones = [], ganados = [], params = {}, refuerzos = false, letras, cortes }) {
   const L = lienzo();
+  const gruposGanado = [], gruposCorte = [];
+  const capturar = g => Object.fromEntries(Object.entries(g).map(([k, v]) => [k, v.length]));
   let y = 0, ancho = 0;
   // Los remolques de ganado, cada uno en su fila con el dibujo de su plantilla.
   for (const el of ganados) {
+    const desde = capturar(L.g);
     const d = confeccionGanado(L, el, 0, y);
+    gruposGanado.push({ desde, hasta: capturar(L.g), nombre: `GANADO · OF ${el.of}` });
     ancho = Math.max(ancho, d.ancho);
     y += d.alto + 120;
   }
@@ -447,7 +452,8 @@ export function escribirPlanoRemolques({ pedido, lonas, baquetones = [], ganados
   // bot (el primero arriba; Iván, 29/10/2026), cada uno con su material y sus cotas.
   const C = { lineas: [], polilineas: [], textos: [], arcos: [], circulos: [], cotas: [] };
   const cm = (v) => v / 10, FILA = 400;
-  cortes.forEach(({ entidades: corte, largo: largoRollo, apartes = [] }, k) => {
+  cortes.forEach(({ entidades: corte, largo: largoRollo, apartes = [], material }, k) => {
+    const desde = ganados.length ? capturar(C) : null;
     const yc = -900 - k * FILA;
     for (const l of corte.lineas) C.lineas.push({ capa: l.capa, x1: cm(l.x1), y1: yc + cm(l.y1), x2: cm(l.x2), y2: yc + cm(l.y2) });
     for (const t of corte.textos) C.textos.push({ ...t, valor: String(t.valor), x: cm(t.x), y: yc + cm(t.y), h: cm(t.h), centrado: Boolean(t.centrado) });
@@ -467,6 +473,7 @@ export function escribirPlanoRemolques({ pedido, lonas, baquetones = [], ganados
         { capa: 'cotas', estilo: cm(a.h) < 25 ? 'XERAL 5' : 'XERAL', x1: x2, y1: yc, x2, y2, giro: 90, d: x2 + 15, valor: cm(a.h) },
       );
     }
+    if (desde) gruposCorte.push({ desde, hasta: capturar(C), corte: true, nombre: `CORTE ${k + 1} · ${material}` });
   });
   const ycAbajo = -900 - (cortes.length - 1) * FILA;
   // La zona del corte cuenta también lo que ocupan los textos (el material de arriba no va centrado).
@@ -506,5 +513,12 @@ export function escribirPlanoRemolques({ pedido, lonas, baquetones = [], ganados
         ? `CORTE · ${material} · ROLLO DE 250 · DOS OPCIONES: ${cortes.map((c) => metros(c.largo)).join(' / ')}`
         : `CORTE · ${cortes.length} ${cortes.some((c) => c.opcion) ? 'CORTES' : 'LONAS'} · ROLLO DE 250 · ${cortes.map((c) => metros(c.largo)).join(' + ')}`,
   };
+  if (ganados.length) {
+    const grupos = [...gruposGanado, ...gruposCorte].map(g => {
+      const entidades = g.corte ? plano.corte : plano;
+      return { ...g, entidades: Object.fromEntries(Object.keys(g.desde).map(k => [k, entidades[k].slice(g.desde[k], g.hasta[k])])) };
+    });
+    presentarGanadoA4(plano, cabecera, grupos);
+  }
   return escribirDxfPlano(plano, cabecera).dxf;
 }

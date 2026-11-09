@@ -61,11 +61,11 @@ function segmentosArco(p) {
 }
 
 /** Primitivas proyectadas por el lector común: h ya es la altura real en papel. */
-export function auditarHoja(primitivas, { cajetin = null, handlesCajetin = [], papel = { x0: 0, y0: 0, x1: 297, y1: 210 } } = {}) {
+export function auditarHoja(primitivas, { cajetin = null, handlesCajetin = [], papel = { x0: 0, y0: 0, x1: 297, y1: 210 }, capasTextosExcluidas = [] } = {}) {
   const propios = new Set(handlesCajetin);
   const textos = primitivas.filter(p => p.tipo === 'texto' && p.valor?.trim()).map(p => ({ texto: p.valor, posicionMm: p.punto, alturaMm: p.h,
     ventana: p.recorte?.id ?? null, escalaMmPorMetro: p.recorte?.escala ?? null, cota: Boolean(p.deCota), handle: p.handle,
-    caja: caja(p), cajetin: propios.has(p.handle) }));
+    caja: caja(p), cajetin: propios.has(p.handle), capa: p.capa }));
   const ventanas = [...new Map(primitivas.filter(p => p.recorte).map(p => [p.recorte.id, p.recorte])).values()].map(v => {
     const ps = primitivas.filter(p => p.recorte?.id === v.id);
     const cajas = ps.map(caja).filter(Boolean);
@@ -84,6 +84,7 @@ export function auditarHoja(primitivas, { cajetin = null, handlesCajetin = [], p
   });
   // CUTTER y DISCO2 también son líneas de corte. Se conserva intacta la API histórica de Santa Pau.
   const paraCruces = primitivas.flatMap((p, i) => {
+    if (p.tipo === 'texto' && capasTextosExcluidas.includes(p.capa)) return [];
     const q = { ...p, handle: `${i}:${p.handle ?? ''}` };
     return p.tipo === 'arco' ? segmentosArco(q) : p.tipo === 'raya' && p.curva ? segmentosCurva(q) : [q];
   })
@@ -95,7 +96,7 @@ export function auditarHoja(primitivas, { cajetin = null, handlesCajetin = [], p
   })).values()];
   return { textos, minimoMm: textos.length ? Math.min(...textos.map(t => t.alturaMm)) : null,
     maximoMm: textos.length ? Math.max(...textos.map(t => t.alturaMm)) : null,
-    textosPequenos: textos.filter(t => t.alturaMm < CRITERIOS.minimoTextoMm - 1e-6),
+    textosPequenos: textos.filter(t => !capasTextosExcluidas.includes(t.capa) && t.alturaMm < CRITERIOS.minimoTextoMm - 1e-6),
     textosGrandes: textos.filter(t => t.alturaMm > CRITERIOS.maximoTextoMm || t.alturaMm > (limitesGrandes.get(t.ventana) ?? Infinity)),
     solapes: solapesRotulos(primitivas, CRITERIOS.toleranciaSolapeMm),
     cruces,
@@ -118,7 +119,7 @@ export function medirRecuadros(marcos, zonas) {
     margenEsperadoM: [mx, my], diferenciaAltosM, diferenciaTechosM, errores, marcos, zonas };
 }
 
-export function auditarDxf(dxf) {
+export function auditarDxf(dxf, { capasTextosExcluidas = [] } = {}) {
   const plano = leerPlanoTexto(dxf);
   const grupos = new Map();
   for (const p of plano.modelo.filter(p => p.capa === 'RECUADROS' && p.tipo === 'raya')) {
@@ -164,7 +165,7 @@ export function auditarDxf(dxf) {
       propios.push(...b.entidades.filter(r => r.tipo === 'ATTRIB' && ins.has(valor(r, 330))).map(r => valor(r, 5)));
     }
     const cajetin = caj ? { x0: caj.punto[0], y0: caj.punto[1], x1: caj.punto[0] + ANCHO_CAJETIN * caj.sx, y1: caj.punto[1] + ALTO_CAJETIN * caj.sy } : null;
-    return { nombre: h.nombre, cajetin, ...auditarHoja(primitivas, { cajetin, handlesCajetin: propios }) };
+    return { nombre: h.nombre, cajetin, ...auditarHoja(primitivas, { cajetin, handlesCajetin: propios, capasTextosExcluidas }) };
   });
   return { criterios: CRITERIOS, recuadros, textosFueraRecuadro, tiposNoInterpretados: sinDibujarEnPdf(dxf), hojas };
 }

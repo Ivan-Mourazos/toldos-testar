@@ -6,6 +6,15 @@ const ventana = { id: 2, centro: [50, 50], ancho: 80, alto: 80, escala: 10 };
 const texto = (valor, x, y, h = 3) => ({ tipo: 'texto', valor, punto: [x, y], h, ancla: 5, espacio: 'ventana 2', recorte: ventana });
 
 describe('Auditor común de planos (mm de papel)', () => {
+  it('excluye los mininúmeros de máquina a petición, conservando sus líneas como obstáculos', () => {
+    const ps = [{ ...texto('1', 50, 50, .1), capa: 'ROTULADOR' }, texto('NOTA', 30, 30),
+      { tipo: 'raya', capa: 'DISCO1', a: [40, 50], b: [60, 50] },
+      { tipo: 'raya', capa: 'ROTULADOR', a: [30, 20], b: [30, 40] }];
+    expect(auditarHoja(ps).textosPequenos).toHaveLength(1);
+    const r = auditarHoja(ps, { capasTextosExcluidas: ['ROTULADOR'] });
+    expect(r.textosPequenos).toEqual([]);
+    expect(r.cruces.map(c => c.texto)).toEqual(['NOTA']);
+  });
   it('acepta textos legibles separados y geometría centrada', () => {
     const r = auditarHoja([texto('A', 30, 60), texto('B', 70, 60), { tipo: 'raya', capa: 'DISCO1', a: [20, 20], b: [80, 80], recorte: ventana }]);
     expect(r.solapes).toEqual([]);

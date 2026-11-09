@@ -1,5 +1,6 @@
 // Solo fixtures y ejemplos ya contrastados del repositorio. No consulta servicios ni lee archivos de producción.
 import fs from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { generarCorteLona } from '../../src/domain/corteLona/index.js';
 import { modelosConCorte } from '../../src/domain/corteReadiness.js';
 import { pedidoVariasTelas } from '../../src/domain/corteLona/fixtures/variasTelas.js';
@@ -21,7 +22,7 @@ const leer = async ruta => JSON.parse(await fs.readFile(new URL('../../' + ruta,
 const opciones = { ofStockSacos: '0230811' }; // La misma OF de stock de las pruebas de corte; no se envía a ningún sitio.
 
 export async function generarMuestras() {
-  const muestras = [], excluidas = [];
+  const muestras = [], excluidas = [], integridadRemolques = [];
   const registrar = async (familia, ejemplo, fuente, generar) => {
     try {
       const planos = await generar();
@@ -68,11 +69,14 @@ export async function generarMuestras() {
   await registrar('Toldos / BAMBALINAS', 'Bamba separada por material', 'src/domain/corteLona/fixtures/variasTelas.js', () => toldo(pedidoVariasTelas()));
 
   const dir = 'src/remolques/corte/__fixtures__';
-  const archivos = (await fs.readdir(new URL('../../' + dir, import.meta.url))).filter(n => n.endsWith('.json')).sort();
+  const archivos = (await fs.readdir(new URL('../../' + dir, import.meta.url))).filter(n => /^AR\d+\.json$/.test(n)).sort();
   const base = await leer(`${dir}/AR2605071.json`);
   const remolque = order => {
     const r = generarCorteRemolques(order);
     if (!r.archivo?.plano?.dxf) throw Error(JSON.stringify(r.aMano ?? 'Sin plano'));
+    integridadRemolques.push({ pedido: order.orderCode,
+      bot: createHash('sha256').update(r.archivo.dxf).digest('hex'),
+      colocacion: createHash('sha256').update(JSON.stringify(r.cortes.map(c => ({ entidades: c.entidades, largo: c.largo })))).digest('hex') });
     return [r.archivo.plano.dxf];
   };
   for (const archivo of archivos) await registrar('Remolques / rectos y aguas', archivo.slice(0, -5), `${dir}/${archivo}`, async () => remolque(await leer(`${dir}/${archivo}`)));
@@ -108,5 +112,5 @@ export async function generarMuestras() {
   for (const familia of ['FALDONES', 'BAMBALINA independiente']) excluidas.push({ familia, motivo: 'Sin generador de plano A4 en corteReadiness; las bambalinas vinculadas al toldo sí se auditan', fuente: 'src/domain/corteReadiness.js' });
   const cubiertos = modelosConCorte.filter(m => muestras.some(p => p.familia === `Toldos / ${m}`));
   for (const m of modelosConCorte.filter(m => !cubiertos.includes(m))) if (!excluidas.some(e => e.familia === `Toldos / ${m}`)) excluidas.push({ familia: `Toldos / ${m}`, motivo: 'Sin ejemplo generado' });
-  return { muestras, excluidas, modelosConCorte: [...modelosConCorte] };
+  return { muestras, excluidas, modelosConCorte: [...modelosConCorte], integridadRemolques };
 }
