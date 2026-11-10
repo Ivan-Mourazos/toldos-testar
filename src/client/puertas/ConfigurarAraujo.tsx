@@ -15,7 +15,7 @@ function Numero({titulo,valor,cambiar,unidad='cm'}:{titulo:string;valor:number;u
 function Texto({titulo,valor,cambiar}:{titulo:string;valor:string;cambiar:(v:string)=>void}){
   return <label className="field puerta-campo"><span>{titulo}</span><input aria-label={titulo} value={valor} onChange={e=>cambiar(e.target.value)}/></label>;
 }
-export function ConfigurarAraujo({p,cambiar,corte,derecha,letra}:{p:Puerta;cambiar:(p:Puerta)=>void;corte?:React.ReactNode;derecha:'alzado'|'corte';letra:string}){
+export function ConfigurarAraujo({p,cambiar,corte,derecha,letra,vistas}:{p:Puerta;cambiar:(p:Puerta)=>void;corte?:React.ReactNode;derecha:'alzado'|'corte';letra:string;vistas?:React.ReactNode}){
   const [pestana,setPestana]=useState('datos');
   const a=p.araujo!,resultado=calcularPuerta(p);
   const ficha=fichaDePuerta(p),perfiles=ficha.perfiles;
@@ -103,7 +103,7 @@ export function ConfigurarAraujo({p,cambiar,corte,derecha,letra}:{p:Puerta;cambi
         <div className="puerta-confirmaciones"><label className="puerta-casilla"><input type="checkbox" checked={p.confirmada&&p.ventanasConfirmadas} onChange={e=>cambiar({...p,confirmada:e.target.checked,ventanasConfirmadas:e.target.checked})}/>Confirmado con el dibujo: tramos, bolsas, cantidades, canutillos y ventanas</label></div>
       </section>
       <div className="puerta-derecha">
-        {derecha==='corte'&&corte?corte:<AlzadoPuerta puerta={p} resultado={resultado} letra={letra}/>}
+        <div className="puerta-dibujo">{vistas}{derecha==='corte'&&corte?corte:<AlzadoPuerta puerta={p} resultado={resultado} letra={letra}/>}</div>
         <section className="puerta-avisos panel panel-vidrio" aria-label="Comprobaciones de puerta"><h2>Qué falta o revisar <span>{resultado.avisos.filter(a=>a.nivel==='error').length} pendientes</span></h2>{resultado.avisos.length?<ul>{resultado.avisos.map((a,i)=><li key={i} className={a.nivel==='error'?'es-error':''}>{textoMedidasMm(a.texto)}</li>)}</ul>:<p>Medidas comprobadas y coherentes.</p>}</section>
       </div>
     </div>

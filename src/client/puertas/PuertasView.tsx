@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { debePreguntarAlCorregir } from '../correccionPedido';
 import { apuntarFormularioGuardado, leerFormularioGuardado } from '../formularioGuardado';
 import { createPortal } from 'react-dom';
@@ -60,15 +60,15 @@ function Huecos({huecos,cambiar}:{huecos:Hueco[];cambiar:(h:Hueco[])=>void}) {
   </div>)}<button type="button" className="ghost-button" onClick={()=>cambiar([...huecos,{x:0,y:0,ancho:12,alto:7.5,radio:0.5}])}>Añadir hueco</button></div>;
 }
 type PestanaPuerta='puerta'|'estructura'|'entradas'|'ventanas'|'saco'|'texto';
-function Configurar({p,cambiar,corte,derecha='alzado',letra='A'}:{p:Puerta;cambiar:(p:Puerta)=>void;corte?:React.ReactNode;derecha?:'alzado'|'corte';letra?:string}) {
+function Configurar({p,cambiar,corte,derecha='alzado',letra='A',vistas}:{p:Puerta;cambiar:(p:Puerta)=>void;corte?:React.ReactNode;derecha?:'alzado'|'corte';letra?:string;vistas?:React.ReactNode}) {
   const resultado=calcularPuerta(p);
   const [pestana,setPestana]=useState<PestanaPuerta>('puerta');
   const formularioFluido=useContenidoFluido<HTMLElement>(pestana);
   const dibujoFluido=useContenidoFluido(derecha);
   const ficha=fichaDePuerta(p);
   if(p.clientePuertas&&!ficha.habilitado)return <section className="puerta-config panel panel-vidrio" aria-label="Cliente sin reglas de confección"><h2>{ficha.nombre} · confección pendiente</h2><p className="puerta-ayuda">{textoMedidasMm(ficha.aviso??'')}</p><p className="puerta-ayuda">Artículo {p.articuloOrigen||'sin indicar'} · OF {p.of||'SIN OF'} · {num(p.frente)} × {num(p.alto)} mm</p><p className="puerta-ayuda">{p.observaciones}</p></section>;
-  if(p.araujo)return <ConfigurarAraujo p={p} cambiar={cambiar} corte={corte} derecha={derecha} letra={letra}/>;
-  if(p.santapau)return <ConfigurarSantaPau p={p} cambiar={cambiar} corte={corte} derecha={derecha} letra={letra}/>;
+  if(p.araujo)return <ConfigurarAraujo p={p} cambiar={cambiar} corte={corte} derecha={derecha} letra={letra} vistas={vistas}/>;
+  if(p.santapau)return <ConfigurarSantaPau p={p} cambiar={cambiar} corte={corte} derecha={derecha} letra={letra} vistas={vistas}/>;
   // System Dock: una lona rectangular; sin cristal, saco, tubos ni ventanas (src/puertas/systemDock.ts).
   const sd=p.modelo==='SYSTEMDOCK';
   const set=<K extends keyof Puerta>(k:K,v:Puerta[K])=>cambiar({...p,[k]:v});
@@ -219,7 +219,8 @@ function Configurar({p,cambiar,corte,derecha='alzado',letra='A'}:{p:Puerta;cambi
       </section>
       {/* Lo que falta, junto al alzado: se ve sin bajar hasta el final (Iván, 25/10/2026). */}
       <div className="puerta-derecha" ref={dibujoFluido}>
-        {derecha==='corte'&&corte?corte:<AlzadoPuerta puerta={p} resultado={resultado} letra={letra}/>}
+        {/* El dibujo y su conmutador Alzado/Corte van juntos: el conmutador en la cabecera, sin tapar el dibujo. */}
+        <div className="puerta-dibujo">{vistas}{derecha==='corte'&&corte?corte:<AlzadoPuerta puerta={p} resultado={resultado} letra={letra}/>}</div>
         <section className="puerta-avisos panel panel-vidrio" aria-label="Comprobaciones de puerta">
           <h2>Qué falta o revisar <span>{resultado.avisos.filter(a=>a.nivel==='error').length} pendientes</span></h2>
           {resultado.avisos.length?<ul>{resultado.avisos.map((a,i)=><li key={i} className={a.nivel==='error'?'es-error':''}>{textoMedidasMm(a.texto)}</li>)}</ul>:<p>Todo listo: las medidas comprobadas son coherentes.</p>}
@@ -422,6 +423,41 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
   const [derecha, setDerecha] = useState<'alzado' | 'corte'>('alzado');
   const [guardando, setGuardando] = useState(false);
   const [trayendo, setTrayendo] = useState(false);
+  const espacio = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const zona = espacio.current;
+    if (!zona) return;
+    // Solo cambia el encuadre de la pantalla: el alzado compartido con el plano conserva sus medidas.
+    const encuadrar = () => {
+      const svg = zona.querySelector<SVGSVGElement>('.puerta-alzado > svg');
+      if (!svg) return;
+      const caja = svg.getBBox();
+      if (!(caja.width > 0 && caja.height > 0)) return;
+      const margen = Math.max(caja.width, caja.height) * .012;
+      svg.setAttribute('viewBox', `${caja.x - margen} ${caja.y - margen} ${caja.width + 2 * margen} ${caja.height + 2 * margen}`);
+    };
+    const ajustarAlto = () => {
+      const cabecera = document.querySelector('.cabecera')?.getBoundingClientRect().bottom ?? 64;
+      const dibujo = zona.querySelector('.puerta-alzado, .puerta-corte-resumen');
+      if (!dibujo) return;
+      zona.style.setProperty('--puerta-techo', `${cabecera + 12}px`);
+      const techo = Math.max(cabecera + 12, dibujo.getBoundingClientRect().top);
+      // Respeta también el espacio bajo el editor: al final de página el sticky termina en su contenedor.
+      const pie = Math.max(12, document.documentElement.scrollHeight - zona.getBoundingClientRect().bottom - window.scrollY);
+      zona.style.setProperty('--puerta-alto', `${Math.max(240, window.innerHeight - techo - pie)}px`);
+    };
+    encuadrar();
+    ajustarAlto();
+    const cambios = new MutationObserver(() => { encuadrar(); ajustarAlto(); });
+    cambios.observe(zona, { childList: true, subtree: true });
+    window.addEventListener('scroll', ajustarAlto, { passive: true });
+    window.addEventListener('resize', ajustarAlto);
+    return () => {
+      cambios.disconnect();
+      window.removeEventListener('scroll', ajustarAlto);
+      window.removeEventListener('resize', ajustarAlto);
+    };
+  }, [pedido, indice, derecha]);
   const ultimoSolicitado = useRef<number | null>(null);
   const ultimoModelo = useRef<number|null>(null);
   useEffect(()=>{
@@ -544,7 +580,7 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
     </OrderActions>
   );
 
-  return <div className={`puertas-pantalla${sd?' systemdock-pantalla':''}`} onKeyDown={avanzarConIntro}>
+  return <div ref={espacio} className={`puertas-pantalla puerta-editor${sd?' systemdock-pantalla':''}`} onKeyDown={avanzarConIntro}>
     {accionesDestino ? createPortal(acciones, accionesDestino) : acciones}
     <section className="puerta-cabecera order-header panel rem-cabecera"><div className="order-header-group order-header-general"><h3>Datos del pedido</h3><div className="order-header-grid">
       <div className="puerta-pedido"><label className="field puerta-campo"><span>Número de pedido</span><input aria-label={`Número de pedido de ${nombre}`} value={pedido.orderCode} placeholder="AR2600000" onChange={e=>setPedido({...pedido,orderCode:e.target.value})}/></label>
@@ -554,9 +590,9 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
     </div></div>
     </section>
     <div className="puerta-selector"><div className="tira-3d" role="group" aria-label={sd?'Lonas del pedido':'Puertas del pedido'}>{pedido.elementos.map((e,i)=><button type="button" key={e.id} className={`pestana ${indice===i?'pestana-activa':''}`} aria-pressed={indice===i} onClick={()=>setIndice(i)}>{e.input.modelo==='SYSTEMDOCK'?'Lona':'Puerta'} {i+1} · {e.input.of||'SIN OF'}</button>)}</div><button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:[...pedido.elementos,{id:uid(),input:sd?nuevaLona():otraPuertaDelCliente(pedido.elementos[0].input)}]});setIndice(pedido.elementos.length);}}><Plus size={16}/>{sd?'Añadir lona':'Añadir puerta'}</button>{pedido.elementos.length>1&&<button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:pedido.elementos.filter((_,i)=>i!==indice)});setIndice(Math.max(0,indice-1));}}><Trash2 size={16}/>{sd?'Quitar lona':'Quitar puerta'}</button>}
-    {/* Alzado / Corte en la línea de las puertas o lonas, a la derecha (Iván, 27/10/2026). */}
-    <div className="tira-3d puerta-vistas" role="group" aria-label="Ver junto al configurador">{(['alzado','corte'] as const).map(v=><button type="button" key={v} className={`pestana ${derecha===v?'pestana-activa':''}`} aria-pressed={derecha===v} onClick={()=>setDerecha(v)}>{v==='alzado'?'Alzado':'Corte'}</button>)}</div>
     </div>
-    <div ref={elementoFluido}><Configurar key={pedido.elementos[indice].id} p={pedido.elementos[indice].input} cambiar={p=>setPedido({...pedido,elementos:pedido.elementos.map((e,i)=>i===indice?{...e,input:p}:e)})} corte={<CorteResumen vista={vistaCorte}/>} derecha={derecha} letra={awningLetter(indice)}/></div>
+    {/* El conmutador va dentro de la columna del dibujo y lo acompaña al bajar por el formulario. */}
+    <div className="puerta-espacio" ref={elementoFluido}><Configurar key={pedido.elementos[indice].id} p={pedido.elementos[indice].input} cambiar={p=>setPedido({...pedido,elementos:pedido.elementos.map((e,i)=>i===indice?{...e,input:p}:e)})} corte={<CorteResumen vista={vistaCorte}/>} derecha={derecha} letra={awningLetter(indice)}
+      vistas={<div className="tira-3d puerta-vistas" role="group" aria-label="Ver junto al configurador">{(['alzado','corte'] as const).map(v=><button type="button" key={v} className={`pestana ${derecha===v?'pestana-activa':''}`} aria-pressed={derecha===v} onClick={()=>setDerecha(v)}>{v==='alzado'?'Alzado':'Corte'}</button>)}</div>}/></div>
   </div>;
 }

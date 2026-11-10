@@ -154,3 +154,42 @@ html:root #root .puerta-config .puerta-pestanas-ventanas > * { padding-inline:8p
 /* Revisión en Pedidos: una puerta o lona cada vez con pestañas, y el alzado del tamaño de la pieza (Iván, 26/10/2026). */
 .puerta-planteamiento-pestanas { display:inline-flex; flex-wrap:wrap; align-self:flex-start; margin:4px 0 10px; }
 .puerta-planteamiento .puerta-alzado > svg { height:auto; max-height:calc(100vh - 300px); min-height:0; }
+
+/* Fuera del editor (p. ej. Pedidos) la caja del dibujo no cambia nada. */
+.puerta-dibujo { display:contents; }
+.puerta-editor .puerta-dibujo .puerta-vistas ~ * header { min-height:40px; }
+
+/* Nuevo pedido: media pantalla para configurar y media para comparar el dibujo.
+   Las comprobaciones y las piezas continúan bajo los campos, sin restar alto al alzado. */
+.puerta-editor { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px 16px; align-items:start; position:relative; }
+.puerta-editor .puerta-espacio, .puerta-editor .puerta-config-alzado, .puerta-editor .puerta-derecha { display:contents; }
+.puerta-editor .puerta-cabecera { grid-column:1; grid-row:1; margin:0; }
+.puerta-editor .puerta-cabecera .order-header-grid { grid-template-columns:minmax(0,1fr) 9.5rem; gap:10px 12px; }
+.puerta-editor .puerta-pedido { grid-column:1 / -1; }
+.puerta-editor .puerta-selector { grid-column:1; grid-row:2; margin:0; gap:8px; }
+/* El conmutador, dentro de la columna del dibujo, en el hueco que deja la cabecera del panel. */
+html:root #root .puerta-editor .puerta-dibujo .puerta-vistas { position:absolute; top:8px; right:10px; margin:0; z-index:2; }
+.puerta-editor .puerta-config { grid-column:1; grid-row:3; min-width:0; }
+.puerta-editor .puerta-avisos { grid-column:1; grid-row:4; margin:0; max-height:none; overflow:visible; }
+.puerta-editor .puerta-piezas { grid-column:1; grid-row:5; margin:0; min-width:0; overflow-wrap:anywhere; }
+.puerta-editor .puerta-piezas :is(td,th) { padding:8px 6px; }
+.puerta-editor .puerta-piezas table { table-layout:fixed; }
+.puerta-editor .puerta-dibujo {
+  grid-column:2; grid-row:1 / span 5; position:sticky; top:var(--puerta-techo,76px); align-self:start;
+  height:var(--puerta-alto,calc(100dvh - 88px)); min-width:0; min-height:0; display:flex; flex-direction:column;
+}
+.puerta-editor .puerta-dibujo > :is(.puerta-alzado,.puerta-corte-resumen) {
+  flex:1; margin:0; max-height:none; min-width:0; min-height:0; display:flex; flex-direction:column; overflow:auto; padding:12px;
+}
+.puerta-editor .puerta-alzado header { margin-bottom:4px; padding-right:160px; flex-wrap:wrap; gap:4px 12px; }
+.puerta-editor .puerta-corte-resumen > h2 { padding-right:160px; min-height:40px; }
+.puerta-editor .puerta-alzado > :not(svg) { flex-shrink:0; }
+.puerta-editor .puerta-alzado > svg { flex:1; width:100%; height:0; min-height:0; margin:6px 0; aspect-ratio:auto; }
+.puerta-editor .puerta-observaciones-plano { max-height:4.5em; overflow:auto; }
+.puerta-editor .puerta-corte-resumen figure { flex:1 0 160px; min-height:0; display:flex; flex-direction:column; margin-top:12px; }
+.puerta-editor .puerta-corte-resumen figcaption { flex:none; }
+.puerta-editor .puerta-corte-resumen .puerta-corte-dibujo { flex:1; width:100%; height:0; min-height:0; max-height:none; margin:4px 0 0; }
+.puerta-editor .puerta-config header { flex-wrap:wrap; gap:4px 12px; }
+.puerta-editor .puerta-campos { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.puerta-editor .puerta-config .puerta-tubo-fila, .puerta-editor .puerta-config .puerta-ventana-fila { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.puerta-editor .segmented-control { flex-wrap:wrap; }

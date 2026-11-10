@@ -10,7 +10,7 @@ import { AlzadoPuerta } from './AlzadoPuerta';
 function Numero({titulo,valor,cambiar,unidad='cm'}:{titulo:string;valor:number;unidad?:UnidadPuerta;cambiar:(v:number)=>void}){
   return <NumeroPuerta titulo={titulo} valor={valor} unidad={unidad} cambiar={v=>cambiar(v??0)}/>;
 }
-export function ConfigurarSantaPau({p,cambiar,corte,derecha,letra}:{p:Puerta;cambiar:(p:Puerta)=>void;corte?:React.ReactNode;derecha:'alzado'|'corte';letra:string}){
+export function ConfigurarSantaPau({p,cambiar,corte,derecha,letra,vistas}:{p:Puerta;cambiar:(p:Puerta)=>void;corte?:React.ReactNode;derecha:'alzado'|'corte';letra:string;vistas?:React.ReactNode}){
  const [tab,setTab]=useState('datos');
  const s=p.santapau!,r=calcularPuerta(p),v=p.ventanas[0]??{x:0,y:0,ancho:p.frente,alto:60,radio:0,radioCristal:0};
  const patch=(q:Partial<Puerta>)=>cambiar({...p,...q,confirmada:false,ventanasConfirmadas:false});
@@ -68,7 +68,7 @@ export function ConfigurarSantaPau({p,cambiar,corte,derecha,letra}:{p:Puerta;cam
     <label className="puerta-casilla"><input type="checkbox" checked={p.confirmada&&p.ventanasConfirmadas} onChange={e=>cambiar({...p,confirmada:e.target.checked,ventanasConfirmadas:e.target.checked})}/>Confirmado con el dibujo y los rollos reales</label>
    </section>
    <div className="puerta-derecha">
-    {derecha==='corte'&&corte?corte:<AlzadoPuerta puerta={p} resultado={r} letra={letra}/>}
+    <div className="puerta-dibujo">{vistas}{derecha==='corte'&&corte?corte:<AlzadoPuerta puerta={p} resultado={r} letra={letra}/>}</div>
     <section className="puerta-avisos panel panel-vidrio" aria-label="Comprobaciones de puerta"><h2>Qué falta o revisar <span>{r.avisos.filter(a=>a.nivel==='error').length} pendientes</span></h2><ul>{r.avisos.map((a,i)=><li key={i} className={a.nivel==='error'?'es-error':''}>{textoMedidasMm(a.texto)}</li>)}</ul></section>
    </div>
   </div>
