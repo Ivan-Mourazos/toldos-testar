@@ -73,7 +73,7 @@ export interface CorteRemolques {
   preparar(pedido: PedidoRemolques, carpetaBorradores?: string): Promise<{ ficheros: ArchivoCorte[]; avisos: string[] }>;
   escribir(ficheros: ArchivoCorte[]): Promise<void>;
   /** El corte para verlo en pantalla: piezas, metros de rollo y avisos, sin los archivos. */
-  vista(pedido: PedidoRemolques): unknown;
+  vista(pedido: PedidoRemolques): unknown | Promise<unknown>;
   prepararDxf?(pedido: PedidoRemolques): { filename: string; contents: Uint8Array }[] | Promise<{ filename: string; contents: Uint8Array }[]>;
   /** Flujo del DWG: el plano de una carpeta en DXF (el DWG pasado por ODA). */
   leer?(ruta: string): Promise<string>;
@@ -636,7 +636,8 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       const entrada = (cuerpo ?? {}) as Record<string, unknown>;
       const pedido = await obtener(codigo);
       if (pedido.status === 'PRODUCED') return { status: 200, cuerpo: { ok: true, unchanged: true, mensaje: 'Este pedido ya está en producción.' } };
-      const conCorte = Boolean(deps.corte && ((deps.corte.vista(pedidoEntrega(pedido)) as { cortes?: unknown[] })?.cortes?.length || pedido.corteConfirmado));
+      // `vista` es asíncrona desde los sacos de stock (lee la OF de stock): sin esperarla no se veía el corte.
+      const conCorte = Boolean(deps.corte && ((await deps.corte.vista(pedidoEntrega(pedido)) as { cortes?: unknown[] } | null)?.cortes?.length || pedido.corteConfirmado));
       return await pasarAProduccion([
         { nombre: "PDF", preparar: () => generar(codigo, { ...entrada, soloPdf: false, confirmOverwrite: entrada.confirmPdfOverwrite === true }, true, true) },
         ...(conCorte ? [
