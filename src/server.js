@@ -31,6 +31,7 @@ import { registrarRutasCorteLona } from './corteLonaRoutes.js';
 import { registrarRutasAssa } from './assa/rutas.js';
 import { exigirCorteAlDia, escribirPlanosCorte, prepararArchivosCorte } from './corteLonaArchivos.js';
 import { registrarRutasEnviosCorte } from './corteEnviosRoutes.js';
+import { estadoBotCompartido } from './botEstado.js';
 import { createCoordinaClient } from './coordinaStatus.js';
 import { awningLetter } from './domain/awningCompleteness.js';
 import { getCatalog } from './domain/catalog.js';
@@ -444,6 +445,16 @@ const enviarCorteToldos = registrarRutasEnviosCorte(app, {
     }
     await workflowStore.saveReview(review, pdf);
   },
+});
+
+// Semáforo del bot de corte de la cabecera: solo lee la carpeta de pendientes.
+const consultarBot = estadoBotCompartido(async () => (await workflowStore.getSettings()).corteLonaBotDirectory);
+app.get('/api/bot/estado', async (_req, res, next) => {
+  try {
+    res.json(await consultarBot());
+  } catch (error) {
+    next(error);
+  }
 });
 
 app.get('/api/health', async (_req, res, next) => {

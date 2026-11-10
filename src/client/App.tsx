@@ -47,6 +47,7 @@ import { todayIso } from './constants';
 import { readCurrentUser, saveCurrentUser } from './currentUser';
 import { MENSAJE_PEDIDO_RECIBIDO, destinoDeEnlace, origenDeCoordina, pedidoDeEnlace, pedidoDeMensaje, revisionDeEnlace, sinPedidoEnEnlace, type PedidoDeCoordina } from './enlacePedido';
 import { WhoAreYouDialog } from './components/WhoAreYouDialog';
+import { SemaforoBot, useEstadoBot } from './components/SemaforoBot';
 import { personaDe, tintaSobre } from './personas';
 import { usePendingReviews } from './hooks/usePendingReviews';
 import { buscarBorradorAlObtener, contenidoBorradorToldos, guardarBorradorPreguntando, TITULO_BORRADOR_EN_CORRECCION } from './borradores';
@@ -189,6 +190,7 @@ export default function App() {
   // Pendientes de generar (año actual y anterior): alimentan la bandeja y el contador
   // «Pedidos · N» desde que carga la página, y se releen al guardar o generar.
   const pendingReviews = usePendingReviews(reviewRefresh, notify);
+  const estadoDelBot = useEstadoBot();
   const pendingCount = pendingReviews.reviews.length;
 
   const { calculation, calculationState } = useCalculation({
@@ -871,6 +873,7 @@ export default function App() {
           {/* Iván, 02/10/2026: fuera el enlace a la web vieja de remolques; se hacen en Nuevo pedido. */}
         </nav>
         <div className="cabecera-derecha">
+          <SemaforoBot bot={estadoDelBot} />
           <button type="button" className="cabecera-modo glass-chip" onClick={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))} aria-label={theme === 'dark' ? 'Pasar a modo claro' : 'Pasar a modo oscuro'} title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}>
             {theme === 'dark' ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
           </button>
