@@ -119,11 +119,7 @@ export function AlzadoPuerta({ puerta: p, resultado, letra = 'A' }: { puerta: Pu
         ))}
       </svg>
       <small>{p.modelo==='SYSTEMDOCK'?'Compara las medidas y el texto con el pedido del cliente.':'Compara tubos, huecos, ventanal y textos de taller con el dibujo del cliente.'}</small>
-      {p.observaciones.trim() && (
-        <p className="puerta-observaciones-plano" aria-label="Observaciones particulares del pedido">
-          <strong>Observaciones del pedido:</strong> {p.observaciones}
-        </p>
-      )}
+      {/* Iván, 10/11/2026: la descripción de la OF no hace falta junto al dibujo; sigue en la pestaña Texto. */}
     </section>
   );
 }
