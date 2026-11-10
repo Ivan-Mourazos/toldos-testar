@@ -201,7 +201,7 @@ export function OrderView({
           <div>
             <h2>{embudos ? 'Embudos del pedido' : 'Elementos del pedido'}</h2>
             <span>{awnings.length ? `${awnings.length} ${awnings.length === 1 ? 'elemento' : 'elementos'} · orden A, B, C…` : embudos ? 'Añade el primer embudo.' : 'Añade el primer toldo o trabajo de tela.'}</span>
-            {!readOnly && <OrderProgress total={awnings.length} ready={statuses.filter(status => status.kind === 'ok').length} />}
+            {!readOnly && <OrderProgress total={awnings.length} ready={statuses.filter(status => status.kind === 'ok' || status.kind === 'warn').length} avisos={statuses.filter(status => status.kind === 'warn').length} />}
           </div>
           {/* Antes eran una fila entera en la cabecera del pedido (espaciado, 25/09/2026). */}
           {!readOnly && (
