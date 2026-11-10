@@ -68,6 +68,8 @@ export interface Puerta {
   entradas: Entrada[];
   ventanas: Ventana[];
   enrollable: { T: number; D: number; margen: number; sacoPartido?:boolean;
+    /** Huecos individuales sobre paño continuo, como las ventanas de las apilables. */
+    ventanasPequenas?: boolean;
     /** Puerta enrollable ciega, sin ventanal (Iván, 06/11/2026, AR2605429): un solo paño del saco a la cabecera,
      * sin cristal ni cachos; T, D y margen no cuentan. */
     sinVentanal?: boolean;
@@ -129,6 +131,8 @@ export interface PiezaPuerta {
   origenAlzado?: Punto;
   /** Margen añadido después de confeccionar; los rótulos conservan las posiciones de la puerta. */
   margenEscuadrado?: number;
+  /** Paño de enrollable con ventanas pequeñas: rótulos en el hueco libre, como las apilables. */
+  rotulosEnHueco?: boolean;
 }
 export interface ResultadoPuerta {
   version: 1;

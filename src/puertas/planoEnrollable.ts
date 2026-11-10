@@ -3,7 +3,8 @@ import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { calcularPuerta } from './calcular.ts';
 import { rotuloSaco, sacoPuerta, sacoUtil } from './saco.ts';
 import { anclarCotas } from './cotasPuertas.ts';
-import { notaPlanoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
+import { notaPlanoEnrollable, panoContinuoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
+import { dibujarVentanasPlano } from './ventanasPlano.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
 import { SEPARACION_EXTRA_FILAS, TITULO_MATERIAL_MM } from './corte.ts';
 import { corteEnPlano, entidadesDePieza, textosFuera } from './corteEnPlano.ts';
@@ -75,7 +76,7 @@ function huecoRotulo(abajo: number, arriba: number, obstaculos: number[], margen
 }
 
 export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSaco = false): { lienzo: Lienzo; zona: Zona } {
-  const l = vacio(), F = p.frente, H = p.alto, T = p.enrollable.sinVentanal ? 0 : p.enrollable.T;
+  const l = vacio(), F = p.frente, H = p.alto, T = panoContinuoEnrollable(p) ? 0 : p.enrollable.T;
   const r = calcularPuerta(p), saco = sacoPuerta(p), bajo = saco.rematado, hs = saco.corte, hp = saco.altoPestana;
   const ventanales = T > 0 ? ventanalesEnrollable(p) : [];
   const ejes: number[] = ventanales.length ? [T] : [];
@@ -90,13 +91,15 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSac
   const piezasPano = r.piezas.filter(x => x.clase === 'pano' && x.origenAlzado).sort((a, b) => b.origenAlzado![1] - a.origenAlzado![1]);
   const zonas: Array<[number, number]> = piezasPano.length ? piezasPano.map(x => [-H + x.origenAlzado![1], -H + x.origenAlzado![1] + x.alto]) : paños;
   zonas.forEach(([abajo, arriba], i) => {
-    const [a, b] = huecoRotulo(abajo, arriba, bandas.map(y => -y), 18);
+    const [a, b] = huecoRotulo(abajo, arriba, [...bandas.map(y => -y),
+      ...p.enrollable.ventanasPequenas ? p.ventanas.flatMap(v => [-H + v.y - 3, -H + v.y + v.alto + 3]) : []], 18);
     identificar(l, p, `${letra}${i + 1}`, F / 2, (a + b) / 2, F, b - a, { cantidad: i === 0, reves: i === 0, of: i === 0 });
   });
   linea(l, 'referencias', 0, 0, F, 0);
   linea(l, 'ROTULADOR', 0, -3.5, F, -3.5);
   // Iván, 06/11/2026: los textos de una línea, centrados en la puerta, como el de soldar el saco.
   texto(l, 'VARILLA NEGRA (4,5)', F / 2, 13.5486 - 3.5, 7, { centrado: true });
+  if (p.enrollable.ventanasPequenas) dibujarVentanasPlano(l, p, letra, identificarSaco);
   for (const [i, v] of ventanales.entries()) {
     const t = ejes[i], m = v.margen, alto = v.altoCorte;
     // El cristal y los cachos son su corte completo: solapan 2 arriba y 2 abajo.

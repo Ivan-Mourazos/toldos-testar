@@ -136,6 +136,8 @@
 /* Dibujo fijo a la derecha con el alto de la pantalla y formulario por pestañas (Iván, 26/10/2026: «el dibujo
    siempre estático a la derecha de la pantalla con la altura de la pantalla»). */
 .puerta-pestanas { display:flex; flex-wrap:wrap; margin:0 0 12px; }
+/* Las seis pestañas de la enrollable con ventanas caben también a 1280 px. */
+html:root #root .puerta-config .puerta-pestanas-ventanas > * { padding-inline:8px; }
 .puerta-derecha { position:sticky; top:12px; height:calc(100vh - 120px); display:flex; flex-direction:column; gap:10px; min-height:0; }
 .puerta-derecha > .puerta-alzado, .puerta-derecha > .puerta-corte-resumen { flex:1; min-height:0; display:flex; flex-direction:column; overflow:auto; }
 .puerta-derecha .puerta-alzado > svg { flex:1; height:auto; min-height:300px; }

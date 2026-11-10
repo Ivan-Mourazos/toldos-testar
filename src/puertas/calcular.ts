@@ -7,7 +7,7 @@ import { calcularSystemDock } from './systemDock.ts';
 import { calcularAraujo } from './araujo.ts';
 import { calcularSantaPau } from './santapau.ts';
 import { fichaDePuerta } from './clientes.ts';
-import { ventanalesEnrollable } from './ventanalesEnrollable.ts';
+import { panoContinuoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
 import { ensancharPieza, huecosSinEscuadrado, llevaEscuadrado } from './escuadrado.ts';
 import { bajoDobleSaco, desnivelSuelo, espejarPieza, inclinarSaco, pestanaDerecha, sacoApilable, sacoPuerta, sacoUtil } from './saco.ts';
@@ -106,6 +106,7 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
   function panel(nombre: string, desde: number, hasta: number) {
     const x = agregar(pieza(nombre, 'pano', ancho, hasta - desde));
     x.origenAlzado = [-lateral, desde];
+    if (p.modelo === 'PUERTAENR' && p.enrollable.ventanasPequenas) x.rotulosEnHueco = true;
     paneles.push({ pieza: x, desde, hasta }); return x;
   }
   // Apilables y enrollables: el empate en una E.T. va como en las apilables (Iván, 06/11/2026, AR2605429).
@@ -147,7 +148,7 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     const e = p.enrollable, ventanales=ventanalesEnrollable(p);
     const altoVentanales=ventanales.reduce((s,v)=>s+v.D,0), s = sacoPuerta(p), origenInferior = s.rematado;
     // La E.T. que no lleva el ventanal, arriba o abajo (Iván, 27/10/2026, AR2605247): ni se corta ni se marca.
-    const ciega=Boolean(e.sinVentanal);
+    const ciega=panoContinuoEnrollable(p);
     const etVentanal=(t:Entrada)=>!ciega&&(Boolean(e.sinEtArriba)&&Math.abs(t.altura-(p.alto-e.T))<.01
       ||Boolean(e.sinEtAbajo)&&Math.abs(t.altura-(p.alto-e.T-altoVentanales))<.01);
     // El paño inferior arranca en el rematado del saco, lo libre (13 con el de 120), y acaba donde siempre; el saco
@@ -188,7 +189,7 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     if(ventanales.length===1) {
       agregar(pieza('Cristal del ventanal', 'cristal', p.frente-2*e.margen+4, ventanales[0].altoCorte, p.materialCristal,p.rolloCristal));
       agregar(pieza('Cachos laterales', 'cacho', e.margen+1,ventanales[0].altoCorte,lona,p.rollo,2));
-    } else {
+    } else if (ventanales.length > 1) {
       // AR2605065 (A) y AR2605038 (D): los cachos son piezas sueltas, no huecos de un paño entero.
       const separaciones:Array<{delantera:PiezaPuerta;trasera:PiezaPuerta}>=[];
       let eje=p.alto-e.T;
@@ -370,10 +371,16 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     }
   }
   for (const [i,v] of p.ventanas.entries()) {
-    if (p.modelo === 'PUERTAENR') { aviso('VENTANA_MODELO','El ventanal sencillo ya define el cristal: las ventanas individuales requieren otro perfil.'); break; }
+    if (p.modelo === 'PUERTAENR' && !p.enrollable.ventanasPequenas) { aviso('VENTANA_MODELO','Elige ventanas pequeñas para introducir huecos individuales en la enrollable.'); break; }
     if (v.x < 0 || v.x+v.ancho>p.frente || v.y<0 || v.y+v.alto>p.alto) aviso('VENTANA_FRENTE',`Ventana ${i+1}: no cabe dentro del frente o del alto.`);
     comprobarHueco(v,p.frente,p.alto,`Ventana ${i+1}`);
     if (p.ventanas.slice(0,i).some(o => seCruzan(o,v))) aviso('VENTANAS_SOLAPADAS',`Ventana ${i+1}: se solapa con otra ventana.`);
+    if (p.modelo === 'PUERTAENR') {
+      // El cristal solapa 2 cm: tampoco debe invadir las E.T., los empates o los remates.
+      const desde = v.y - 2, hasta = v.y + v.alto + 2;
+      if (p.entradas.some(e => desde < e.altura + 3.75 && hasta > e.altura - 3.75)) aviso('VENTANA_TUBOS',`Ventana ${i+1}: el cristal invade una entrada de tubo.`);
+      if (desde < sacoPuerta(p).rematado + 2 || hasta > p.alto - 3.5 || r.uniones.some(u => desde < u.altura + u.solape / 2 && hasta > u.altura - u.solape / 2)) aviso('VENTANA_EMPATE',`Ventana ${i+1}: el cristal invade un empate o un remate del paño.`);
+    }
     if (p.modelo === 'PUERTAPLE') {
       const alturas = alturasTubos(p);
       let inferior = -1;
@@ -387,6 +394,7 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
     const cristal = agregar(pieza(`Cristal ${i+1}`,'cristal',v.ancho+4,v.alto+4,p.materialCristal,p.rolloCristal));
     cristal.radio=v.radioCristal;
   }
+  if (p.modelo === 'PUERTAENR' && p.enrollable.ventanasPequenas && !p.ventanas.length) aviso('VENTANAS', 'Añade las ventanas pequeñas del dibujo o elige puerta ciega.');
   for (const [i,e] of p.entradas.entries()) {
     if (!positivo(e.largo) || !positivo(e.alto) || !Number.isFinite(e.altura) || e.altura<0 || e.altura>p.alto) aviso('ENTRADA',`Entrada ${i+1}: revisa largo, alto y cota.`);
     for (const [j,h] of e.huecos.entries()) {

@@ -130,7 +130,7 @@ export function plantillaTextosPuerta(p: Puerta, resultado: ResultadoPuerta = ca
   const grande = p.modelo === 'PUERTAUTO' ? 25 : p.modelo === 'PUERTAPLE' ? 20 : F >= 400 ? 30 : 20;
   const tubos = p.modelo === 'PUERTAPLE' ? alturasTubos(p) : p.entradas.map(e => e.altura);
   const techo = Math.min(H, ...tubos.filter(y => y < H && y > 0).map(y => H - y),
-    ...(p.modelo === 'PUERTAENR' && p.enrollable.T > 0 && !p.enrollable.sinVentanal ? [p.enrollable.T] : []));
+    ...(p.modelo === 'PUERTAENR' && p.enrollable.T > 0 && !p.enrollable.sinVentanal && !p.enrollable.ventanasPequenas ? [p.enrollable.T] : []));
   const lateral = (id: string, texto: string, x: number, y: number, tamano: number) => add(id, texto, x, y, tamano, undefined, -90);
 
   // Alturas y distribución de AR2604638/4725 y AR2605036; las cajas libres adaptan la plantilla a cada pedido.
@@ -141,20 +141,23 @@ export function plantillaTextosPuerta(p: Puerta, resultado: ResultadoPuerta = ca
 
   if (p.modelo === 'PUERTAENR') {
     const e = p.enrollable;
-    const T = e.T > 0 ? e.T : H * 0.35;
+    const T = e.ventanasPequenas ? 0 : e.T > 0 ? e.T : H * 0.35;
     add('pano-sup', 'A1', F / 2, techo * 0.23, grande);
     add('reves', 'REVÉS', F / 2, techo * 0.48, grande);
     add('of', of, F / 2, techo * 0.74, grande);
-    const vs = [{ D: e.D, margen: e.margen }, ...e.ventanales ?? []];
+    const vs = e.ventanasPequenas ? [] : [{ D: e.D, margen: e.margen }, ...e.ventanales ?? []];
     const fin = T + vs.reduce((s, v) => s + v.D, 0);
     const bajo = Math.min(H - 13, ...tubos.map(y => H - y).filter(y => y > fin + 4));
-    add('pano-inf', 'A2', F / 2, bajo - fin < 70 ? bajo - 15 : (fin + bajo) / 2, 20);
-    const ejes = [T];
+    if (e.ventanasPequenas) resultado.piezas.filter(x => x.clase === 'pano' && x.origenAlzado)
+      .sort((a, b) => b.origenAlzado![1] - a.origenAlzado![1]).slice(1)
+      .forEach((x, i) => add(`pano-${i + 2}`, `A${i + 2}`, F / 2, H - x.origenAlzado![1] - x.alto / 2, 20));
+    else add('pano-inf', 'A2', F / 2, bajo - fin < 70 ? bajo - 15 : (fin + bajo) / 2, 20);
+    const ejes = e.ventanasPequenas ? [] : [T];
     for (const v of vs) ejes.push(ejes.at(-1)! + v.D);
     for (const y of tubos.map(y => H - y)) if (!ejes.some(eje => Math.abs(eje - y) < 0.1)) ejes.push(y);
     ejes.filter(y => y > 0 && y < H - 13).forEach((y, i) => {
       // Sin E.T. encima del ventanal, su eje no lleva leyenda de E.T. (Iván, 27/10/2026, AR2605247).
-      if (e.sinEtArriba && i === 0 && y === T || e.sinEtAbajo && y === fin) return;
+      if (!e.ventanasPequenas && (e.sinEtArriba && i === 0 && y === T || e.sinEtAbajo && y === fin)) return;
       if (ejes.slice(1, vs.length).includes(y)) {
         // Entre dos cristales no hay hueco para una leyenda: llamada por fuera al borde de la E.T.
         anclas.push({ id: `et-${i}`, texto: '3 CM (HUECOS)', x: -85, y: y - 6, tamano: 7,
@@ -232,7 +235,7 @@ export function colocarTextosPuerta(p: Puerta, resultado?: ResultadoPuerta): Tex
   const H = p.alto;
 
   const ventanas: CajaTexto[] =
-    p.modelo === 'PUERTAENR' && p.enrollable.T > 0 && !p.enrollable.sinVentanal
+    p.modelo === 'PUERTAENR' && p.enrollable.T > 0 && !p.enrollable.sinVentanal && !p.enrollable.ventanasPequenas
       ? [{ x: 0, y: p.enrollable.T - 4, ancho: F,
           alto: [p.enrollable.D, ...p.enrollable.ventanales?.map(v => v.D) ?? []].reduce((s, h) => s + h, 0) + 8 }]
       : p.ventanas.map(v => ({

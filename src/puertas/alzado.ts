@@ -5,7 +5,7 @@ import { alzadoSantaPau } from './alzadoSantaPau.ts';
 import { colocarTextosPuerta } from './textosPlano.ts';
 import { desnivelSuelo, pestanaDerecha, rotuloSaco, sacoPuerta } from './saco.ts';
 import { medidaSystemDock, REGLAS_SYSTEM_DOCK } from './systemDock.ts';
-import { NOTA_CACHOS_CRISTAL, notaPlanoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
+import { NOTA_CACHOS_CRISTAL, notaPlanoEnrollable, panoContinuoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
 import type { Hueco, Puerta, Punto, ResultadoPuerta } from './tipos.ts';
 import type { LienzoEnrollable } from './planoEnrollable.ts';
@@ -113,7 +113,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
 
   const tubos = ple ? alturasTubos(p) : p.entradas.map(t => t.altura);
   // Sin ventanal (puerta ciega), como si no hubiera T: un solo paño.
-  const T = enr && p.enrollable.T > 0 && !p.enrollable.sinVentanal ? p.enrollable.T : 0;
+  const T = enr && p.enrollable.T > 0 && !panoContinuoEnrollable(p) ? p.enrollable.T : 0;
   const ventanales = enr && T > 0 ? ventanalesEnrollable(p) : [];
   const ejesVentanal = [T];
   for (const v of ventanales) ejesVentanal.push(ejesVentanal.at(-1)! + v.D);
@@ -223,7 +223,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   }
 
   // Ventanas individuales en apilable y autorreparable
-  if (!enr) {
+  if (!enr || p.enrollable.ventanasPequenas) {
     const filas = new Map<number, typeof p.ventanas>();
     for (const v of p.ventanas) {
       const fila = filas.get(v.y) ?? [];

@@ -1,4 +1,5 @@
 import { retocarPortanova } from './retoquesPortanova.js';
+import { dibujarVentanasPlano } from './ventanasPlano.ts';
 import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { alturasTubos, calcularPuerta, desfaseCintas } from './calcular.ts';
@@ -344,27 +345,8 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
     }
     obstaculos.push([-H + u.altura - 4, -H + u.altura + 15]);
   }
-  for (const v of p.ventanas) {
-    redondeado(l, 'curv', v.x, -H + v.y, v.ancho, v.alto, v.radio);
-    redondeado(l, 'corte (vent)', v.x - 2, -H + v.y - 2, v.ancho + 4, v.alto + 4, v.radioCristal);
-    obstaculos.push([-H + v.y - 3, -H + v.y + v.alto + 3]);
-    // La letra de su puerta en el cristal, arriba, lejos de las cotas que cruzan la ventana por el medio.
-    if (identificar) texto(l, letra, v.x + v.ancho / 2, -H + v.y + v.alto * .78, Math.min(8, v.alto * .25));
-  }
-  for (const y of new Set(p.ventanas.map(v => v.y))) {
-    const fila = p.ventanas.filter(v => v.y === y).sort((a, b) => a.x - b.x), ys = -H + y + fila[0].alto / 2;
-    const xs = [0, ...fila.flatMap(v => [v.x, v.x + v.ancho]), F];
-    xs.slice(1).forEach((x, i) => { if (x > xs[i]) cota(l, xs[i], ys, x, ys, ys, 'XERAL 5'); });
-    for (const [i, v] of fila.entries()) {
-      const extremo = i === fila.length - 1 || ple && i === 0;
-      if (extremo || v.alto !== fila[0].alto) cota(l, v.x + (i ? v.ancho - 12 : 12), -H + v.y,
-        v.x + (i ? v.ancho - 12 : 12), -H + v.y + v.alto, v.x + (i ? v.ancho - 12 : 12), 'XERAL 5');
-    }
-    if (!ple) {
-      const v = fila.at(-1)!, x = v.x + v.ancho - 8;
-      cota(l, x, -H, x, -H + v.y, x, 'XERAL 5');
-    }
-  }
+  dibujarVentanasPlano(l, p, letra, identificar);
+  for (const v of p.ventanas) obstaculos.push([-H + v.y - 3, -H + v.y + v.alto + 3]);
   const limites = [arriba, ...r.uniones.map(u => -H + u.altura).sort((a, b) => b - a), -H + hSaco];
   const central = !ple && p.autorreparable.espaciadorCentral;
   limites.slice(1).forEach((y, i) => rotulos(l, p, `${letra}${i + 1}`, central ? F * .75 : F / 2, y, limites[i], central ? F / 2 - 20 : F, obstaculos, i === 0));

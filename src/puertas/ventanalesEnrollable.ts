@@ -4,7 +4,10 @@ export const NOTA_CACHOS_CRISTAL = 'LOS CACHOS DE LOS LATERALES DEL CRISTAL VAN 
 /** La nota del plano de una enrollable: la que escriba el técnico; si no ha escrito nada, la de los cachos, de serie
  * con ventanal (Iván, 06/11/2026). Borrarla en el formulario la quita del plano. */
 export const notaPlanoEnrollable = (p: Puerta): string =>
-  p.notaPlano !== undefined ? p.notaPlano.trim() : p.enrollable.sinVentanal ? '' : NOTA_CACHOS_CRISTAL;
+  p.notaPlano !== undefined ? p.notaPlano.trim() : panoContinuoEnrollable(p) ? '' : NOTA_CACHOS_CRISTAL;
+
+/** Tanto la ciega como la de ventanas pequeñas conservan la lona entre las E.T. */
+export const panoContinuoEnrollable = (p: Puerta): boolean => Boolean(p.enrollable.sinVentanal || p.enrollable.ventanasPequenas);
 
 /** Cotas desde cabecera: donde no hay E.T. se mide al borde del paño, donde la hay a su eje.
  * El cristal y los cachos solapan 2 cm con ese paño; la E.T. conserva 7,5 cm de dibujo y 8 de corte.
@@ -12,7 +15,7 @@ export const notaPlanoEnrollable = (p: Puerta): string =>
 export function ventanalesEnrollable(p: Puerta) {
   const e = p.enrollable;
   // Puerta ciega: sin ventanales (ni cristal, ni cachos, ni paños partidos por ellos).
-  if (e.sinVentanal) return [];
+  if (panoContinuoEnrollable(p)) return [];
   const vs = [{ D: e.D, margen: e.margen }, ...e.ventanales ?? []];
   let desde = e.T;
   return vs.map((v, i) => {

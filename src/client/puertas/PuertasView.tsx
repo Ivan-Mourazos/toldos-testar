@@ -7,7 +7,7 @@ import { alturasTubos, calcularPuerta, huecosEntrada, MODELOS_PUERTAS, nuevaPuer
 import { awningLetter } from '../../domain/awningCompleteness.js';
 import type { PedidoPuertasGuardado } from '../../puertas/flujo/tipos.ts';
 import { REGLAS_SYSTEM_DOCK } from '../../puertas/systemDock.ts';
-import { notaPlanoEnrollable } from '../../puertas/ventanalesEnrollable.ts';
+import { notaPlanoEnrollable, panoContinuoEnrollable } from '../../puertas/ventanalesEnrollable.ts';
 import { esPedidoMixto, productoDeElementos } from '../../puertas/producto.ts';
 import { medidasSaco, sacoPuerta, sacoUtil } from '../../puertas/saco.ts';
 import type { Entrada, Hueco, ModeloPuerta, Puerta, Ventana } from '../../puertas/tipos.ts';
@@ -85,9 +85,9 @@ function Configurar({p,cambiar,corte,derecha='alzado',letra='A'}:{p:Puerta;cambi
   // Por pestañas, sin un scroll tan largo (Iván, 26/10/2026: «tener un scroll tan grande no es productivo»), en el orden
   // del pedido. El dibujo queda fijo a la derecha.
   const pestanas:Array<[PestanaPuerta,string]>=[['puerta',sd?'Lona':'Puerta'],
-    ...(sd?[]:[['estructura',p.modelo==='PUERTAPLE'?'Tubos':p.modelo==='PUERTAENR'?'Ventanal':'Cuerpo']] as Array<[PestanaPuerta,string]>),
+    ...(sd?[]:[['estructura',p.modelo==='PUERTAPLE'?'Tubos':p.modelo==='PUERTAENR'?'Cristal':'Cuerpo']] as Array<[PestanaPuerta,string]>),
     ...(p.modelo==='PUERTAPLE'||p.modelo==='PUERTAENR'?[['entradas','Entradas']] as Array<[PestanaPuerta,string]>:[]),
-    ...(p.modelo==='PUERTAPLE'||p.modelo==='PUERTAUTO'?[['ventanas','Ventanas']] as Array<[PestanaPuerta,string]>:[]),
+    ...(p.modelo==='PUERTAPLE'||p.modelo==='PUERTAUTO'||p.modelo==='PUERTAENR'&&p.enrollable.ventanasPequenas?[['ventanas','Ventanas']] as Array<[PestanaPuerta,string]>:[]),
     ...(sd?[]:[['saco','Saco y empates']] as Array<[PestanaPuerta,string]>),
     ['texto','Texto']];
   const activa=pestanas.some(([k])=>k===pestana)?pestana:'puerta';
@@ -97,7 +97,7 @@ function Configurar({p,cambiar,corte,derecha='alzado',letra='A'}:{p:Puerta;cambi
     <div className="puerta-config-alzado">
       <section ref={formularioFluido} className="puerta-config panel panel-vidrio" aria-label={sd?'Configurador de System Dock':'Configurador de puerta'}>
         <header><h2>Configurador</h2><span>{sd?'System Dock · lona perimetral':ficha.nombre} · medidas en cm</span></header>
-        {!sd&&<div className="tira-3d puerta-pestanas" role="tablist" aria-label="Partes de la puerta">{pestanas.map(([k,t])=><button type="button" role="tab" key={k} aria-selected={activa===k}
+        {!sd&&<div className={`tira-3d puerta-pestanas${p.modelo==='PUERTAENR'&&p.enrollable.ventanasPequenas?' puerta-pestanas-ventanas':''}`} role="tablist" aria-label="Partes de la puerta">{pestanas.map(([k,t])=><button type="button" role="tab" key={k} aria-selected={activa===k}
           className={`pestana ${activa===k?'pestana-activa':''}`} onClick={()=>setPestana(k)}>{t}</button>)}</div>}
         {ver('puerta')&&<>
         <div className="puerta-campos">
@@ -123,10 +123,13 @@ function Configurar({p,cambiar,corte,derecha='alzado',letra='A'}:{p:Puerta;cambi
       </div>}</fieldset>
         </>}
         {ver('estructura')&&<>
-        {p.modelo==='PUERTAENR'&&<fieldset><legend>Ventanal</legend>
-          {/* Iván, 06/11/2026 (AR2605429): enrollable ciega, sin ventanal. */}
-          <label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.enrollable.sinVentanal)} onChange={e=>set('enrollable',{...p.enrollable,sinVentanal:e.target.checked})}/>Sin ventanal: puerta ciega, un solo paño del saco a la cabecera</label>
-          {!p.enrollable.sinVentanal&&<><div className="puerta-campos">
+        {p.modelo==='PUERTAENR'&&<fieldset><legend>Ventanal o ventanas pequeñas</legend>
+          <SegmentedField label="Tipo de ventanas" value={p.enrollable.ventanasPequenas?'Ventanas pequeñas':p.enrollable.sinVentanal?'Puerta ciega':'Ventanal'} options={['Ventanal','Ventanas pequeñas','Puerta ciega']} onChange={v=>{
+            if(v===(p.enrollable.ventanasPequenas?'Ventanas pequeñas':p.enrollable.sinVentanal?'Puerta ciega':'Ventanal'))return;
+            cambiar({...p,ventanas:[],confirmada:false,ventanasConfirmadas:false,enrollable:{...p.enrollable,ventanasPequenas:v==='Ventanas pequeñas',sinVentanal:v==='Puerta ciega',empates:[]}});
+          }}/>
+          {p.enrollable.ventanasPequenas&&<p className="puerta-ayuda">Paño continuo con huecos individuales. Configura las filas, medidas y posiciones en «Ventanas». Cristal = hueco + 4 cm; radios editables.</p>}
+          {!panoContinuoEnrollable(p)&&<><div className="puerta-campos">
           <Numero titulo={p.enrollable.sinEtArriba?'T · desde arriba al borde del paño (cm)':'T · desde arriba al eje (cm)'} valor={p.enrollable.T||null} cambiar={v=>set('enrollable',{...p.enrollable,T:v??0})}/>
           <Numero titulo={p.enrollable.sinEtArriba?(p.enrollable.sinEtAbajo&&!p.enrollable.ventanales?.length?'D · entre bordes de paño (cm)':'D · del borde del paño al eje (cm)'):p.enrollable.sinEtAbajo&&!p.enrollable.ventanales?.length?'D · del eje al borde del paño (cm)':'D · entre ejes (cm)'} valor={p.enrollable.D} cambiar={v=>set('enrollable',{...p.enrollable,D:v??0})}/>
           <Numero titulo="Margen lateral m (cm)" valor={p.enrollable.margen||null} cambiar={v=>set('enrollable',{...p.enrollable,margen:v??0})}/>
@@ -142,7 +145,7 @@ function Configurar({p,cambiar,corte,derecha='alzado',letra='A'}:{p:Puerta;cambi
           <button type="button" className="ghost-button" disabled={(p.enrollable.ventanales?.length??0)>=99} onClick={()=>set('enrollable',{...p.enrollable,ventanales:[...p.enrollable.ventanales??[],{D:0,margen:0}]})}>Añadir ventanal debajo</button>
           {Boolean(p.enrollable.ventanales?.length)&&<p className="puerta-ayuda">Ventanales consecutivos: comparten el eje intermedio. Se cortan sus cachos por separado y dos entradas entre ventanales, una por delante y otra por detrás. Indica las cotas del dibujo para cada uno.</p>}</>}
           <div className="puerta-campos"><TramosET p={p} cambiar={cambiar}/></div>
-          <p className="puerta-ayuda">Paño inferior: {propuestaInferior>0?`${num(propuestaInferior)} cm`:'pendiente de medidas'} </p></fieldset>}
+          {!panoContinuoEnrollable(p)&&<p className="puerta-ayuda">Paño inferior: {propuestaInferior>0?`${num(propuestaInferior)} cm`:'pendiente de medidas'} </p>}</fieldset>}
         {p.modelo==='PUERTAPLE'&&<fieldset><legend>Tubos</legend>
           <label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.apilable.sueloInclinado)} onChange={e=>cadena({sueloInclinado:e.target.checked?{altoIzquierdo:p.alto,altoDerecho:p.alto}:undefined})}/>Suelo inclinado</label>
           {p.apilable.sueloInclinado&&<><div className="puerta-campos">
@@ -188,7 +191,8 @@ function Configurar({p,cambiar,corte,derecha='alzado',letra='A'}:{p:Puerta;cambi
       </>}
       {ver('ventanas')&&<>
       {p.modelo==='PUERTAPLE'&&<VentanasApilable p={p} cambiar={cambiar}/>}
-      {!sd&&p.modelo==='PUERTAUTO'&&<fieldset><legend>Ventanas individuales · {p.ventanas.length}</legend><p className="puerta-ayuda">Desde izquierda y desde abajo de la puerta terminada. Cristal = hueco + 4 cm en cada dimensión.</p>{p.ventanas.map((v,i)=><fieldset key={i}><legend>Ventana {i+1}</legend><div className="puerta-campos">{(['x','y','ancho','alto','radio','radioCristal'] as const).map(k=><Numero key={k} titulo={`${k==='x'?'Desde izquierda':k==='y'?'Desde abajo':k==='radioCristal'?'Radio cristal':k} ventana ${i+1}`} valor={v[k]} cambiar={n=>set('ventanas',p.ventanas.map((w,j)=>j===i?{...w,[k]:n??0}:w))}/>)}<button type="button" className="ghost-button" onClick={()=>set('ventanas',p.ventanas.filter((_,j)=>j!==i))}>Quitar ventana</button></div></fieldset>)}<button type="button" className="ghost-button" onClick={()=>set('ventanas',[...p.ventanas,{x:0,y:0,ancho:0,alto:0,radio:2,radioCristal:4}])}>Añadir ventana</button><FilasVentanas cambiar={v=>set('ventanas',[...p.ventanas,...v])}/></fieldset>}
+      {p.modelo==='PUERTAENR'&&p.enrollable.ventanasPequenas&&<fieldset><legend>Posición de las filas · desde el bajo terminado</legend><p className="puerta-ayuda">Según el plano del pedido. Las filas no se centran automáticamente entre entradas de tubo.</p><div className="puerta-campos">{[...new Set(p.ventanas.map(v=>v.y))].sort((a,b)=>a-b).map((y,i)=><Numero key={i} titulo={`Desde abajo fila ${i+1} (cm)`} valor={y} cambiar={n=>set('ventanas',p.ventanas.map(v=>v.y===y?{...v,y:n??0}:v))}/>)}</div></fieldset>}
+      {!sd&&(p.modelo==='PUERTAUTO'||p.modelo==='PUERTAENR'&&p.enrollable.ventanasPequenas)&&<fieldset><legend>Ventanas individuales · {p.ventanas.length}</legend><p className="puerta-ayuda">Desde izquierda y desde abajo de la puerta terminada. Cristal = hueco + 4 cm en cada dimensión.</p>{p.ventanas.map((v,i)=><fieldset key={i}><legend>Ventana {i+1}</legend><div className="puerta-campos">{(['x','y','ancho','alto','radio','radioCristal'] as const).map(k=><Numero key={k} titulo={`${k==='x'?'Desde izquierda':k==='y'?'Desde abajo':k==='radioCristal'?'Radio cristal':k} ventana ${i+1}`} valor={v[k]} cambiar={n=>set('ventanas',p.ventanas.map((w,j)=>j===i?{...w,[k]:n??0}:w))}/>)}<button type="button" className="ghost-button" onClick={()=>set('ventanas',p.ventanas.filter((_,j)=>j!==i))}>Quitar ventana</button></div></fieldset>)}<button type="button" className="ghost-button" onClick={()=>set('ventanas',[...p.ventanas,{x:0,y:0,ancho:0,alto:0,radio:2,radioCristal:4}])}>Añadir ventana</button><FilasVentanas cambiar={v=>set('ventanas',[...p.ventanas,...v])}/></fieldset>}
       </>}
       {ver('saco')&&<>
         {!sd&&<fieldset><legend>Saco</legend>
@@ -212,7 +216,7 @@ function Configurar({p,cambiar,corte,derecha='alzado',letra='A'}:{p:Puerta;cambi
         <div className="puerta-confirmaciones">
           <label className="puerta-casilla"><input type="checkbox" checked={p.confirmada&&(sd||p.ventanasConfirmadas)}
             onChange={e=>cambiar({...p,confirmada:e.target.checked,ventanasConfirmadas:sd||e.target.checked})}/>
-            {sd?'Confirmado con el pedido: medidas de la lona':`Confirmado con el dibujo: modelo, medidas y ${p.modelo==='PUERTAENR'?'ventanal':'ventanas (o puerta ciega)'}`}</label>
+            {sd?'Confirmado con el pedido: medidas de la lona':`Confirmado con el dibujo: modelo, medidas y ${p.modelo==='PUERTAENR'&&!panoContinuoEnrollable(p)?'ventanal':'ventanas (o puerta ciega)'}`}</label>
         </div>
       </section>
       {/* Lo que falta, junto al alzado: se ve sin bajar hasta el final (Iván, 25/10/2026). */}
@@ -233,16 +237,16 @@ function EmpatesEnrollable({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
   const editar=(i:number,parche:Partial<Puerta['enrollable']['empates'][number]>)=>set(valores.map((v,j)=>i===j?{...v,...parche}:v));
   return <fieldset><legend>Empates de enrollable · {valores.length?'reparto del técnico':'propuesta según rollo'}</legend><p className="puerta-ayuda">Se aprovecha la entrada más alta que cabe en el rollo. Si no hay una entrada viable, unión horizontal de 2 cm. Puedes indicar otro reparto.</p>
     {valores.map((u,i)=><fieldset key={i}><legend>Empate {i+1}</legend><div className="puerta-campos">
-      <SegmentedField label={`Paño de empate ${i+1}`} value={u.pano==='superior'?'Superior':'Inferior'} options={['Superior','Inferior']} onChange={v=>editar(i,{pano:v==='Superior'?'superior':'inferior',tubo:undefined})}/>
+      {!panoContinuoEnrollable(p)&&<SegmentedField label={`Paño de empate ${i+1}`} value={u.pano==='superior'?'Superior':'Inferior'} options={['Superior','Inferior']} onChange={v=>editar(i,{pano:v==='Superior'?'superior':'inferior',tubo:undefined})}/>}
       <SelectField label={`Tipo de unión ${i+1}`} value={u.tubo?.toString()??''} options={p.entradas.map((_,j)=>String(j+1))} allowEmpty emptyLabel="Horizontal · 2 cm" placeholder="Horizontal · 2 cm" optionLabel={v=>v?`En entrada ${v} · 7,5 cm`:'Horizontal · 2 cm'} onChange={v=>{
         const tubo=v?Number(v):undefined;
-        const origen=u.pano==='superior'?p.alto-p.enrollable.T-3.75:11;
+        const origen=u.pano==='superior'&&!panoContinuoEnrollable(p)?p.alto-p.enrollable.T-3.75:sacoPuerta(p).rematado;
         editar(i,tubo?{tubo,altura:p.entradas[tubo-1].altura-origen,solape:7.5}:{tubo:undefined,solape:2});
       }}/>
       <Numero titulo={`Altura desde el borde del paño · empate ${i+1}`} valor={u.altura} cambiar={v=>editar(i,{altura:v??0})}/>
       <button type="button" className="ghost-button" onClick={()=>set(valores.filter((_,j)=>i!==j))}>Quitar empate</button>
     </div></fieldset>)}
-    <button type="button" className="ghost-button" onClick={()=>set([...valores,{pano:'superior',altura:0,solape:2}])}>Añadir empate manual</button>
+    <button type="button" className="ghost-button" onClick={()=>set([...valores,{pano:panoContinuoEnrollable(p)?'inferior':'superior',altura:0,solape:2}])}>Añadir empate manual</button>
     {valores.length>0&&<button type="button" className="ghost-button" onClick={()=>set([])}>Usar propuesta del rollo</button>}
   </fieldset>;
 }

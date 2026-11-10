@@ -183,6 +183,15 @@ Iván contestó el 22/10/2026 las siete dudas del estudio ([cortina-pvc-corte.md
 | Q-CP02 | La raya «EMPATE EN HORIZONTAL» a 34 cm bajo el terminado de arriba, en los tres ejemplos: ¿es fija o depende del ancho del rollo? Iván, 22/10/2026: «no va siempre a esa medida, va a 2,50 desde abajo, que es el tamaño del paño» | **Contestada.** El paño de abajo es del ancho del rollo (250): la raya del empate va a 250 del corte de abajo y el paño de arriba lleva el resto más el solape. En los ejemplos estaba solo indicada |
 | Q-CP03 | E.T. Ø40: el rotulador va a 9 por encima del terminado (21 del corte), pero la nota dice «marcar 17 cm por el derecho» y hay otra raya a 17. ¿Cuál va en el DXF de la máquina? Iván, 22/10/2026: «la de 21; la de 17 es otra referencia para que por el otro lado de la lona sepan dónde soldar» | **Contestada.** En el DXF, rotulador a 21 del corte (9 sobre el terminado). En el plano también la raya de 17 en ejes con la nota «MARCAR 17 CM POR EL DERECHO (MEDIDA LONA CORTADA) Y SOLDAR» |
 
+## Portanova · enrollable con ventanas pequeñas · 10/11/2026
+
+Contraste en [puertas-portanova-ventanas.md](./puertas-portanova-ventanas.md). El AR2605470 está en curso; su CAD no se usa como regla. Iván confirma que el antecedente revisado AR2600650 contiene la misma puerta. Se toman sus posiciones medidas, sin aplicar una regla de centrado.
+
+| Código | Duda en lenguaje llano | Qué hace la web mientras tanto |
+| --- | --- | --- |
+| Q-PN-V01 · Contestada | ¿Hay que centrar las ventanas en el tramo de E.T.? | **Iván, 10/11/2026:** las de debajo no van centradas; las mueve en el corte si hace falta. Se toman 81 y 141 del AR2600650 revisado para el caso 5470. Cada fila tiene una altura editable desde el bajo; no hay una regla automática de centrado ni se deduce otra regla general. |
+| Q-PN-V02 | ¿Se mantienen siempre los radios de hueco 2 y cristal 4 cuando la hoja no los acota? Coinciden en los antecedentes revisados 650 y 945. | Se proponen 2 y 4 cm, como en las apilables; los dos radios son editables en cada ventana. El cristal suma 2 por cada lado. |
+
 ## Puertas · contestadas el 22/10/2026
 
 **Q-PU04 contestada por Iván el 22/10/2026, por la noche:** «sí, los refuerzos son

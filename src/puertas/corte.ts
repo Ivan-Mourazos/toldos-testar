@@ -164,7 +164,7 @@ function rotulosPieza(
     entidades.textos.push({ capa: 'texto', x: x + mm(girada ? pieza.alto - e.y : u), y: y + mm(girada ? u : e.y),
       h, valor, giro: girada ? 90 : 0, centrado: true });
   }
-  if (columnas && pieza.clase === 'pano') {
+  if ((columnas || pieza.rotulosEnHueco) && pieza.clase === 'pano') {
     const valores = [of, clase, ...reves ? ['REVÉS'] : []];
     const obstaculos = [...pieza.huecos.map(h => [h.y - 4, h.y + h.alto + 4]),
       ...pieza.marcas.filter(m => m[1] === m[3] && Math.abs(m[2] - m[0]) > pieza.ancho / 2).map(m => [m[1] - 4, m[1] + 4])];
