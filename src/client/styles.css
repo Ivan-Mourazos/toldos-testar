@@ -3431,3 +3431,28 @@ fieldset.order-strip { border: 0; margin: 0; min-inline-size: 0; padding: 0; }
 .flujo-corte-paso { font-size: 13px; color: var(--text-muted); max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* Pestañas «Dibujo» / «Corte del pedido» encima de la columna derecha (remolques y toldos). */
 .rem-corte-junto { padding: 0; }
+
+/* Aviso mientras llega un pedido de CoordinaOT (Iván, 10/11/2026: «parece que se queda trabado»). */
+.cargando-pedido {
+  align-items: center;
+  background: #174e54;
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(23, 78, 84, 0.28);
+  color: #fff;
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 8px;
+  left: 50%;
+  padding: 9px 18px;
+  position: fixed;
+  top: 14px;
+  transform: translateX(-50%);
+  z-index: 1000;
+  animation: notification-in .18s ease-out;
+}
+
+.cargando-pedido svg {
+  height: 16px;
+  width: 16px;
+}

@@ -22,6 +22,7 @@ import { useCalculation } from './hooks/useCalculation';
 import { TabButton } from './components/TabButton';
 import { OrderActions } from './components/OrderActions';
 import { OrderSearch } from './components/OrderSearch';
+import { CargandoPedido } from './components/CargandoPedido';
 import { normalizarNumeroPedidoRps } from '../remolques/rps/numero-pedido.ts';
 import type { PedidoRps } from '../remolques/rps/types.ts';
 import { incompleteAwningLines } from './incompleteAwnings';
@@ -87,6 +88,8 @@ export default function App() {
   // Con `?revisar=` (CoordinaOT, pedido ya mandado a revisión) se entra directamente en Pedidos,
   // y la bandeja abre ese pedido en cuanto lo tiene (ver `abrirAlCargar` en ReviewsView).
   const [revisarAlCargar, setRevisarAlCargar] = useState<string | null>(() => revisionDeEnlace(window.location.search));
+  // El pedido de CoordinaOT que se está cargando, para el aviso «Cargando…» (Iván, 10/11/2026: parecía trabado).
+  const [cargandoCoordina, setCargandoCoordina] = useState<string | null>(() => revisionDeEnlace(window.location.search));
   const [activeTab, setActiveTab] = useState<ActiveTab>(() => (revisarAlCargar ? 'reviews' : 'order'));
   // Toldos o Remolques en Nuevo pedido (diseño 30/09/2026, fase 2a). Remolques se monta la primera
   // vez que se elige y se queda montado (oculto) para no perder el pedido a medias al cambiar
@@ -461,6 +464,8 @@ export default function App() {
   }, []);
 
   function irAlPedido({ numero, modo }: PedidoDeCoordina) {
+    // Desde el clic hasta tenerlo cargado: en Pedidos lo quita `onAbiertoAlCargar`; al plantear, el final de la búsqueda.
+    setCargandoCoordina(numero);
     const abrirEnPedidos = () => {
       setNumeroBusqueda(null);
       setRevisarAlCargar(numero);
@@ -472,8 +477,8 @@ export default function App() {
     }
     void destinoDeEnlace(numero).then((destino) => {
       if (destino === 'revisar') abrirEnPedidos();
-      else void autofillOrder(numero);
-    });
+      else return autofillOrder(numero).finally(() => setCargandoCoordina(null));
+    }).catch(() => setCargandoCoordina(null));
   }
 
   // El botón de CoordinaOT con esta pestaña ya abierta (Iván, 02/11/2026): llega el pedido sin
@@ -852,6 +857,7 @@ export default function App() {
       {/* Cabecera como la de CoordinaOT (diseño 29/09/2026, estilo CoordinaOT): del color de
           la página, logo a la izquierda, pestañas como teclas sueltas y, a la derecha, el modo
           y «Soy» como su chip de usuario. Las clases salen de src/client/coordina/. */}
+      <CargandoPedido numero={cargandoCoordina} />
       <header className="cabecera glass-header">
         <div className="cabecera-logo">
           <img src="/logo-tgm-transparent.png" alt="TGM" />
@@ -1108,7 +1114,7 @@ export default function App() {
               onToast={notify}
               onConfirm={askForConfirmation}
               abrirAlCargar={revisarAlCargar}
-              onAbiertoAlCargar={() => setRevisarAlCargar(null)}
+              onAbiertoAlCargar={() => { setRevisarAlCargar(null); setCargandoCoordina(null); }}
             />
           )}
           {activeTab === 'settings' && (

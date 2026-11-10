@@ -137,7 +137,7 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
   useEffect(() => {
     if (!abrirAlCargar || pendingLoading || historyLoading || atendidoAlCargar.current === abrirAlCargar) return;
     atendidoAlCargar.current = abrirAlCargar;
-    const sinPuntos = (codigo: string) => codigo.replace(/[.s-]/g, '').toUpperCase();
+    const sinPuntos = (codigo: string) => codigo.replace(/[.\s-]/g, '').toUpperCase();
     const encontrado = [...pending, ...history].find((p) => sinPuntos(p.orderCode) === abrirAlCargar);
     queueMicrotask(() => {
       onAbiertoAlCargar?.();
