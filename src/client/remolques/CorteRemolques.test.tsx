@@ -8,11 +8,11 @@ import { avisoCorteAMano, CorteRemolquesVista, escribirPlanoCorte, type VistaCor
 
 // La vista que da el servidor (la misma función que usa la ruta /corte), sin escribir nada.
 const { vista } = crearCorteRemolques({ ajustes: async () => ({}), oda: { disponible: false } });
-const pintar = (pedido: unknown) => renderToStaticMarkup(<CorteRemolquesVista datos={vista(pedido) as VistaCorteRemolques} />);
+const pintar = async (pedido: unknown) => renderToStaticMarkup(<CorteRemolquesVista datos={await vista(pedido) as VistaCorteRemolques} />);
 
 describe('el corte de lona del pedido de remolques', () => {
-  it('enseña cada lona con sus metros de rollo, el dibujo, los avisos y las OF', () => {
-    const html = pintar(AR2605132);
+  it('enseña cada lona con sus metros de rollo, el dibujo, los avisos y las OF', async () => {
+    const html = await pintar(AR2605132);
     expect(html).toContain('LONA PVC 580 GRIS CLARO 7038');
     expect(html).toContain('AR2605132.dxf');
     expect(html).toMatch(/<b>8,03 m<\/b> de rollo/);
@@ -23,11 +23,11 @@ describe('el corte de lona del pedido de remolques', () => {
     expect(html).toMatch(/<circle /);
   });
 
-  it('dice qué lona se corta a mano y por qué', () => {
+  it('dice qué lona se corta a mano y por qué', async () => {
     // Los puentes laterales aún no tienen corte (ESVA y los de Hijos de Pedro López sí).
     const pedido = structuredClone(AR2604800);
     pedido.elementos[0].input.recogeAtras = 'PUENTES LATERALES';
-    const html = pintar(pedido);
+    const html = await pintar(pedido);
     expect(html).toContain('se corta a mano');
     expect(html).toContain('recogida con puentes');
     expect(html).not.toContain('corte-material');

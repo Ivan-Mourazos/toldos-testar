@@ -4,14 +4,19 @@ import { carpetaCorte } from '../../corteLonaArchivos.js';
 import { writeFileAtomic } from '../../workflow.js';
 import { generarCorteRemolques } from './index.js';
 import { elementosSinOf, exigirOfsCorte } from './of.js';
+import { OF_STOCK_POR_DEFECTO } from '../../ofStockSacos.js';
 
 // El plano se guarda para revisar. El DXF se prepara aparte para descargarlo o enviarlo con su botón.
-export function crearCorteRemolques({ ajustes, oda }) {
+export function crearCorteRemolques({ ajustes, oda, ofStockSacos = async () => ({ of: OF_STOCK_POR_DEFECTO, avisos: [] }) }) {
+  async function generar(pedido) {
+    const stock = await ofStockSacos();
+    return { ...generarCorteRemolques(pedido, { ofStockSacos: stock.of }), avisosStock: stock.avisos ?? [] };
+  }
   // Con `carpetaBorradores`, el borrador del flujo del DWG: en esa carpeta, sin año ni técnico.
   async function preparar(pedido, carpetaBorradores) {
     exigirOfsCorte(pedido);
-    const resultado = generarCorteRemolques(pedido);
-    const avisos = resultado.aMano.map((a) => `${a.nombre}: esta lona se corta a mano (${a.motivo}).`);
+    const resultado = await generar(pedido);
+    const avisos = [...resultado.avisosStock, ...resultado.aMano.map((a) => `${a.nombre}: esta lona se corta a mano (${a.motivo}).`)];
     if (!resultado.cortes.length) return { ficheros: [], avisos };
     const settings = carpetaBorradores ? {} : await ajustes();
     if (!carpetaBorradores && !settings.corteLonaPlanoDirectory) {
@@ -55,22 +60,23 @@ export function crearCorteRemolques({ ajustes, oda }) {
   }
 
   // Para la pantalla: lo que se va a cortar, sin los archivos (las entidades en mm, para dibujarlo).
-  function vista(pedido) {
-    const { cortes, aMano } = generarCorteRemolques(pedido);
+  async function vista(pedido) {
+    const { cortes, aMano, avisosStock } = await generar(pedido);
     return {
       sinOf: elementosSinOf(pedido),
-      avisos: elementosSinOf(pedido).map((letra) => `Elemento ${letra}: sin OF, es solo una vista previa; escribe la OF antes de guardarlo.`),
+      avisos: [...avisosStock, ...elementosSinOf(pedido).map((letra) => `Elemento ${letra}: sin OF, es solo una vista previa; escribe la OF antes de guardarlo.`)],
       cortes: cortes.map((c) => ({
         nombre: c.nombre, material: c.materialCorto, largo: c.largo, refuerzos: c.refuerzos, ...(c.opcion ? { opcion: c.opcion } : {}),
         elementos: c.elementos, avisos: c.avisos, entidades: c.entidades,
+        sacos: c.sacos,
       })),
       aMano: aMano.map(({ nombre, material, motivo, elementos }) => ({ nombre, material, motivo, elementos })),
     };
   }
 
-  function prepararDxf(pedido) {
+  async function prepararDxf(pedido) {
     exigirOfsCorte(pedido);
-    const resultado = generarCorteRemolques(pedido);
+    const resultado = await generar(pedido);
     if (!resultado.cortes.length || !resultado.archivo) throw Object.assign(new Error('Este pedido no tiene corte disponible.'), { statusCode: 409 });
     return [{ filename: `${resultado.archivo.nombre}.dxf`, contents: Buffer.from(resultado.archivo.dxf, 'latin1') }];
   }

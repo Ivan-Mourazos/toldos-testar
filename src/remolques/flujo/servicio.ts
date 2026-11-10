@@ -74,7 +74,7 @@ export interface CorteRemolques {
   escribir(ficheros: ArchivoCorte[]): Promise<void>;
   /** El corte para verlo en pantalla: piezas, metros de rollo y avisos, sin los archivos. */
   vista(pedido: PedidoRemolques): unknown;
-  prepararDxf?(pedido: PedidoRemolques): { filename: string; contents: Uint8Array }[];
+  prepararDxf?(pedido: PedidoRemolques): { filename: string; contents: Uint8Array }[] | Promise<{ filename: string; contents: Uint8Array }[]>;
   /** Flujo del DWG: el plano de una carpeta en DXF (el DWG pasado por ODA). */
   leer?(ruta: string): Promise<string>;
   leerContenido?(fichero: { filename: string; contenido: Uint8Array }): Promise<string>;
@@ -351,7 +351,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       // Sin corte de lona (todo a mano), no hay plano que confirmar.
       const anteriorCorte = existente?.status === 'PRODUCED' ? (pedido.entregas?.some((e: { numero: number }) => e.numero === pedido.entregaActual) ? { ...existente, corteConfirmado: pedido.corteConfirmado } : null) : existente;
       const estadoCorte = await flujo.estado(codigoAnual(pedido));
-      const conCorteLona = Boolean(ofsEntrega(pedido).length && deps.corte && ((deps.corte.vista(pedidoEntrega(pedido)) as { cortes?: unknown[] } | null)?.cortes?.length
+      const conCorteLona = Boolean(ofsEntrega(pedido).length && deps.corte && ((await deps.corte.vista(pedidoEntrega(pedido)) as { cortes?: unknown[] } | null)?.cortes?.length
         || anteriorCorte?.corteConfirmado || anteriorCorte?.corteSimulado || (estadoCorte.activo && estadoCorte.borrador)));
       const desdeBorrador = conCorteLona ? await prepararGuardadoEditable({ flujo, orderCode: codigoAnual(pedido), technician: autoria.technician, usuario: salvador,
         datos: datosCorte(pedidoEntrega(pedido)), datosAnteriores: anteriorCorte ? datosCorte(pedidoEntrega(anteriorCorte)) : undefined, existente: anteriorCorte, entrada: c,
@@ -589,7 +589,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     exigirOfsCorte(pedido);
     // Fase 3: con el corte confirmado, el DXF del bot sale del DWG revisado tal como está ahora.
     if (pedido.corteConfirmado) return { filename: `${codigoEntrega(pedido)}.dxf`, contents: Buffer.from((await flujo.corteDelDwg(pedido.corteConfirmado)).dxf, "latin1") };
-    return deps.corte.prepararDxf(pedidoCalculado(pedido))[0];
+    return (await deps.corte.prepararDxf(pedidoCalculado(pedido)))[0];
   }
 
   async function enviarCorte(orderCodeBruto: string, cuerpo: unknown, prepararSolo = false, bloqueado = false): Promise<Respuesta> {

@@ -153,7 +153,7 @@ describe('corte confirmado desde el borrador', () => {
     await guardar();
     const descargado = Buffer.from((await servicio.descargarCorte('AR2605132')).contents).toString('latin1');
     // Sin cambios, el corte del plano es el mismo que el que hacía la web.
-    const web = Buffer.from(crearCorteRemolques({ ajustes: async () => ({}), oda: { disponible: false } }).prepararDxf(pedido)[0].contents).toString('latin1');
+    const web = Buffer.from((await crearCorteRemolques({ ajustes: async () => ({}), oda: { disponible: false } }).prepararDxf(pedido))[0].contents).toString('latin1');
     const lineas = (t: string) => (t.match(/\nLINE\r?\n/g) ?? []).length;
     expect(lineas(descargado)).toBe(lineas(web));
     expect(descargado).not.toContain('RECUADROS');

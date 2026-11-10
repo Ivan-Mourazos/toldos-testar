@@ -229,7 +229,7 @@ const pedidosRemolques = crearServicioPedidosRemolques({
   // El buscador busca también por el nombre de una ficha (sus códigos de RPS).
   fichas: () => remolquesClientesStore.get(),
   // Al generar, también el corte de lona: DXF del bot y plano, en las carpetas del corte de toldos.
-  corte: crearCorteRemolques({ ajustes: () => workflowStore.getSettings(), oda }),
+  corte: crearCorteRemolques({ ajustes: () => workflowStore.getSettings(), oda, ofStockSacos }),
   // Flujo del DWG: los cortes confirmados, junto a los pedidos de remolques (carpeta interna, no la que ven los PC).
   confirmaciones: crearAlmacenConfirmaciones({ carpeta: async () => {
     const carpeta = (await workflowStore.getSettings()).remolquesRevisionDirectory;

@@ -26,7 +26,7 @@ describe('archivos del corte de remolques', () => {
     await corte.escribir(ficheros);
     expect(await fs.readdir(path.join(pendientes, 'Ivan.Sanchez'))).toEqual([]);
     expect(ficheros.map((f) => f.type)).toEqual(['plano-corte-lona']);
-    expect(corte.prepararDxf(AR2605132)[0].filename).toBe('AR2605132.dxf');
+    expect((await corte.prepararDxf(AR2605132))[0].filename).toBe('AR2605132.dxf');
   });
 
   it('el plano de revisión no depende de que exista la carpeta del bot', async () => {

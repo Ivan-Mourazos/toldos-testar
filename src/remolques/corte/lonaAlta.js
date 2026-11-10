@@ -518,7 +518,7 @@ function colocarEnRebajes(piezas, inicial, intentos) {
 // 22/10/2026) o «dentro» (entera y colocada con las demás piezas, para ver si cabe sin alargar el corte). Devuelve
 // también si algún contorno lleva tira (`conTira`) y las piezas que van aparte para cortar de restos (`apartes`).
 export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], marcar = true, tira = 'empatada') {
-  const out = { lineas: [], rot: [], ollaos: [], arcos: [], textos: [], avisos: [], conTira: false, altoTira: 0, apartes: [] };
+  const out = { lineas: [], rot: [], ollaos: [], arcos: [], textos: [], avisos: [], conTira: false, altoTira: 0, apartes: [], ocupadas: [] };
   const piezas = [], tapas = [], tirasEnteras = [];
   let union = 1; // número de la siguiente unión de empate (sin letras)
   for (const el of elementos) {
@@ -619,6 +619,9 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], 
     xAparte += w + 1500;
   }
   for (const [p, sitio] of [...piezas.map((p, k) => [p, pack.sitios[k]]), ...puestas]) {
+    // Reserva la envolvente completa, también de los juegos de ganado y de las piezas encajadas en rebajes.
+    // Las tapas y tiras de restos quedan fuera del largo consumido y no dan sitio para sacos de stock.
+    if (sitio.x + sitio.w <= pack.largo + 0.01) out.ocupadas.push({ x: x0 + sitio.x, y: sitio.y, ancho: sitio.w, hueco: sitio.h });
     const pc = colocar(p, x0 + sitio.x, sitio.y, sitio.giro);
     for (const k of ['lineas', 'rot', 'ollaos', 'arcos']) out[k].push(...pc[k]);
     out.textos.push(...pc.numeros, ...pc.textos);

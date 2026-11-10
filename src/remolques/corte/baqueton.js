@@ -109,6 +109,7 @@ export function piezasBaqueton(el, params, letras = [], refuerzos = false, marca
 // `refuerzos`: sí/no para todos, o una función que lo dice para cada baquetón.
 export function cortarBaquetones(pedido, elementos, params, refuerzos, letras = new Map(), marcar = true) {
   const segs = [], marcas = [], textos = [], avisos = [];
+  const ocupadas = [];
   const giro = (pt, girada, dx) => (girada ? [dx + pt[1], pt[0]] : [dx + pt[0], pt[1]]);
   let x = 0;
   const sueltos = [];
@@ -121,6 +122,7 @@ export function cortarBaquetones(pedido, elementos, params, refuerzos, letras = 
       if (cabe(pz.L) || cabe(pz.A)) {
         const girada = cabe(pz.L) && pz.L > 0;
         const ancho = girada ? pz.A : pz.L;
+        ocupadas.push({ x, y: 0, ancho, hueco: girada ? pz.L : pz.A });
         for (const [a, b] of cruz(pz.L, pz.A, pz.eI, pz.eR, pz.eb)) segs.push([giro(a, girada, x), giro(b, girada, x)]);
         for (const o of pz.ollaos) marcas.push(giro(o, girada, x));
         if (conRefuerzos) {
@@ -133,6 +135,7 @@ export function cortarBaquetones(pedido, elementos, params, refuerzos, letras = 
             // Sueltos: en fila encima del borde de arriba de la pieza (sin las esquinas), si caben; si no, aparte.
             const [desde, hasta, arriba] = girada ? [x + pz.eb, x + pz.A - pz.eb, pz.L] : [x + pz.eI, x + pz.L - pz.eR, pz.A];
             if (arriba + lado <= ROLLO && 4 * lado <= hasta - desde) {
+              ocupadas.push({ x: desde, y: arriba, ancho: 4 * lado, hueco: lado });
               for (let k = 0; k < 4; k++) segs.push(...refuerzoSuelto(desde + k * lado, arriba, lado, brazo, k % 2 === 1));
             } else sueltos.push({ lado, brazo });
           }
@@ -149,6 +152,7 @@ export function cortarBaquetones(pedido, elementos, params, refuerzos, letras = 
         const resto = pz.L - ROLLO + EMPATE;
         avisos.push(`${el.of}: lleva empate horizontal (paño de ${pz.L / 10} cm en 250 + ${resto / 10} cm). Revisarlo con cuidado.`);
         for (const [tramo, alto] of [['delante', ROLLO], ['detrás', resto]]) {
+          ocupadas.push({ x, y: 0, ancho: pz.A, hueco: alto });
           // y = 0 es la unión (orillo); la punta queda arriba. Detrás: la esquina de detrás arriba.
           const arriba = tramo === 'detrás' ? pz.eR : pz.eI;
           const p = [[0, 0], [pz.A, 0], [pz.A, alto - arriba], [pz.A - pz.eb, alto - arriba], [pz.A - pz.eb, alto], [pz.eb, alto], [pz.eb, alto - arriba], [0, alto - arriba]];
@@ -171,6 +175,7 @@ export function cortarBaquetones(pedido, elementos, params, refuerzos, letras = 
   }
   // Los que no caben encima de su pieza, detrás de todo, de cuatro en cuatro desde el orillo.
   for (const { lado, brazo } of sueltos) {
+    ocupadas.push({ x, y: 0, ancho: 4 * lado, hueco: lado });
     for (let k = 0; k < 4; k++) segs.push(...refuerzoSuelto(x + k * lado, 0, lado, brazo, k % 2 === 1));
     x += 4 * lado;
   }
@@ -184,5 +189,5 @@ export function cortarBaquetones(pedido, elementos, params, refuerzos, letras = 
     vistos.add(k);
     lineas.push({ capa: 'DISCO1', x1, y1, x2, y2 });
   }
-  return { lineas, marcas, textos, avisos, largo: x };
+  return { lineas, marcas, textos, avisos, largo: x, ocupadas };
 }

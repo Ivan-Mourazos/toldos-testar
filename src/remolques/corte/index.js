@@ -8,6 +8,7 @@ import { cabeEnRollo, cortarBaquetones, piezasBaqueton } from './baqueton.js';
 import { descripcionGanado, piezaGanado, soportadaGanado } from './ganado.js';
 import { cortarLonasAltas, soportada, R_OLLAO } from './lonaAlta.js';
 import { escribirPlanoRemolques } from './plano.js';
+import { sacosDeStock } from './sacos.js';
 
 const ROLLO = 2500;
 // Una tira de más de 30 cm de alto no se empata al medio (Iván, 29/10/2026, AR2605291): solo la tira entera.
@@ -78,7 +79,8 @@ const descripcion = (e) => (e.tipo === 'ganado' ? descripcionGanado(e) : e.tipo 
  * y `archivo`: siempre un solo DXF del bot y un solo plano por pedido (Iván, 20/10/2026: «siempre hay 1 dwg y
  * solo 1 dxf»); con dos colores, cada uno en su corte dentro del mismo DXF. Null si no hay nada que cortar.
  */
-export function generarCorteRemolques(pedido) {
+export function generarCorteRemolques(pedido, { ofStockSacos } = {}) {
+  if (ofStockSacos !== undefined && !/^\d{7}$/.test(String(ofStockSacos))) throw new Error('Indica la OF de stock de los sacos con sus siete cifras.');
   const codigo = pedido.orderCode;
   const params = pedido.params ?? pedido.elementos[0]?.paramsSnapshot ?? {};
   const cliente = `${pedido.summary?.customer ?? ''} ${pedido.clienteRps?.nombre ?? ''}`.toUpperCase();
@@ -122,8 +124,8 @@ export function generarCorteRemolques(pedido) {
     const aparte = baqs.filter((e) => !juntos.includes(e));
     // El juego del remolque de ganado se coloca con las lonas, como una pieza más.
     const extras = [...ganados.map(piezaGanado), ...juntos.flatMap((e) => piezasBaqueton(e, params, letras.get(e) ?? [], llevaRefuerzos(e), marcarBaquetones))];
-    const cb = aparte.length ? cortarBaquetones(codigo, aparte, params, llevaRefuerzos, letras, marcarBaquetones) : { lineas: [], marcas: [], textos: [], avisos: [], largo: 0 };
-    const sinLonas = { lineas: [], rot: [], ollaos: [], arcos: [], textos: [], avisos: [], largo: 0, conTira: false, apartes: [] };
+    const cb = aparte.length ? cortarBaquetones(codigo, aparte, params, llevaRefuerzos, letras, marcarBaquetones) : { lineas: [], marcas: [], textos: [], avisos: [], largo: 0, ocupadas: [] };
+    const sinLonas = { lineas: [], rot: [], ollaos: [], arcos: [], textos: [], avisos: [], largo: 0, conTira: false, apartes: [], ocupadas: [] };
     const conTira = lonas.length || ganados.length ? cortarLonasAltas(lonas, 0, conLetras, extras, marcarLonas) : sinLonas;
     // Con un contorno que no cabe en el rollo, dos opciones en el mismo DXF, y el técnico de la máquina elige (Iván,
     // 22/10/2026: «un corte con la tira puesta en el corte y otro con la tira entera»).
@@ -140,9 +142,12 @@ export function generarCorteRemolques(pedido) {
         : [[conTira, 'OPCIÓN 1 · TIRA EMPATADA EN DOS · ELEGIR SOLO UNA'], [entera, 'OPCIÓN 2 · TIRA ENTERA · ELEGIR SOLO UNA']];
     for (const [la, opcion] of opciones) {
       const dx = la.largo;
-      const lineas = fusionar([...la.lineas, ...cb.lineas.map((l) => [l.x1 + dx, l.y1, l.x2 + dx, l.y2])],
+      const ocupadas = [...la.ocupadas, ...cb.ocupadas.map(p => ({ ...p, x: p.x + dx }))];
+      // Las plantillas de ganado conservan su stock y su juego originales, sin completar sus huecos interiores.
+      const stock = sacosDeStock(ocupadas, ROLLO, lonas.length || baqs.length ? ofStockSacos : undefined);
+      const lineas = fusionar([...la.lineas, ...cb.lineas.map((l) => [l.x1 + dx, l.y1, l.x2 + dx, l.y2]), ...stock.lineas],
         la.apartes.filter((a) => a.tapa).map((a) => [a.x, a.x + a.w]));
-      const textos = [...la.textos, ...cb.textos.map((t) => ({ ...t, x: t.x + dx }))];
+      const textos = [...la.textos, ...cb.textos.map((t) => ({ ...t, x: t.x + dx })), ...stock.textos];
       const largo = la.largo + cb.largo;
       // Encima del corte: el material resumido y, debajo, «DERECHO» (por dónde se corta), una sola vez; con dos
       // opciones, la de cada corte encima de todo.
@@ -162,6 +167,7 @@ export function generarCorteRemolques(pedido) {
         elementos: els.map((e) => ({ of: e.of, descripcion: descripcion(e), cantidad: e.input.cantidad || 1 })),
         avisos: [...la.avisos, ...cb.avisos],
         apartes: la.apartes,
+        ocupadas, sacos: stock.sacos,
         entidades,
       });
     }
