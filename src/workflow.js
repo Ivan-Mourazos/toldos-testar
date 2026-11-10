@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { abrirEntrega, cerrarEntrega, pedidoEntrega, ofsEntrega } from './entregas.js';
-import { renombrarAtomico } from './renombrarAtomico.js';
+import { renombrarAtomico, renombrarConRespaldo } from './renombrarAtomico.js';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
@@ -562,11 +562,13 @@ export async function fileExists(target) {
   return fs.access(target).then(() => true, () => false);
 }
 
-export async function writeFileAtomic(targetPath, contents) {
+// Solo los planos activan la copia: tras un rechazo de SMB, apartar y publicar requiere dos renombrados.
+export async function writeFileAtomic(targetPath, contents, { conservarAnterior = false } = {}) {
   const tmpPath = `${targetPath}.tmp-${process.pid}-${Date.now()}`;
   await fs.writeFile(tmpPath, contents);
   try {
-    await renombrarAtomico(tmpPath, targetPath);
+    if (conservarAnterior) await renombrarConRespaldo(tmpPath, targetPath);
+    else await renombrarAtomico(tmpPath, targetPath);
   } catch (error) {
     await fs.unlink(tmpPath).catch(() => {});
     throw error;

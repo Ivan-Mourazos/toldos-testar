@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import pdfLib from 'pdf-lib';
@@ -10,20 +10,24 @@ import { crearServicioPedidosRemolques } from '../remolques/flujo/servicio.ts';
 import { crearCorteRemolques } from '../remolques/corte/archivos.js';
 import fixture from '../remolques/corte/__fixtures__/AR2605132.json';
 import habitual from '../puertas/__fixtures__/AR2605134.json';
+import { base, pedidoDe } from '../puertas/__fixtures__/ejemplos.ts';
 import type { PedidoRemolques } from '../remolques/flujo/tipos.ts';
 import type { PedidoPuertasGuardado } from '../puertas/flujo/tipos.ts';
+import type { Puerta } from '../puertas/tipos.ts';
 import { crearAlmacenConfirmaciones } from './confirmaciones.js';
 import { corteDelPlano } from './corteDwg.js';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 const raices: string[] = [];
-afterEach(async () => { for (const raiz of raices.splice(0)) await fs.rm(raiz, { recursive: true, force: true }); });
+afterEach(async () => { vi.restoreAllMocks(); for (const raiz of raices.splice(0)) await fs.rm(raiz, { recursive: true, force: true }); });
 
 async function preparar(tipo: 'puertas' | 'remolques', conPdf = false) {
   await fs.mkdir(path.resolve('tmp'), { recursive: true });
   const raiz = await fs.mkdtemp(path.resolve('tmp/pedidos-editables-'));
   raices.push(raiz);
   let produccion = true, estado = 'aprobada', fallaGuardado = false, disponible = true, conBorradores = true;
+  let falloPlano: NodeJS.ErrnoException | null = null;
+  let intentosPlano = 0;
   const ajustes = async () => ({ productionEnabled: produccion, corteLonaPlanoDirectory: path.join(raiz, 'planos'),
     corteBorradoresDirectory: conBorradores ? path.join(raiz, 'borradores') : '', corteBorradoresRed: conBorradores ? String.raw`\\toldosgomez.local\DFS_POL\oftecnica\borradores` : '',
     corteLonaBotDirectory: path.join(raiz, 'bot'), corteLonaDxfDirectory: path.join(raiz, 'dxfs'),
@@ -46,10 +50,17 @@ async function preparar(tipo: 'puertas' | 'remolques', conPdf = false) {
   const guardarReal = almacen.guardar.bind(almacen);
   // La prueba provoca un fallo después de escribir el plano para comprobar la restauración.
   almacen.guardar = async (pedido: never) => { if (fallaGuardado) throw new Error('Fallo al guardar'); return guardarReal(pedido); };
+  const plano = crearPlanoPuertas({ ajustes, oda: { disponible: false, convertir: async c => c } });
+  const escribirPlano = plano.escribir.bind(plano);
+  plano.escribir = async fichero => {
+    intentosPlano++;
+    if (falloPlano) throw falloPlano;
+    await escribirPlano(fichero);
+  };
   const servicio = tipo === 'puertas'
     ? crearServicioPedidosPuertas({ ...comunes, almacen: almacen as ReturnType<typeof crearAlmacenPedidos<PedidoPuertasGuardado>>, otroProducto: async () => null,
       ...(conPdf ? { presentacionesPdf: async () => { const pdf = await pdfLib.PDFDocument.create(); pdf.addPage(); return pdf.save(); } } : {}),
-      plano: crearPlanoPuertas({ ajustes, oda: { disponible: false, convertir: async c => c } }) })
+      plano })
     : crearServicioPedidosRemolques({ ...comunes, almacen: almacen as ReturnType<typeof crearAlmacenPedidosRemolques>, esPedidoDeToldos: async () => false,
       parametros: async () => remolque.params, hacerPdf: async () => { const pdf = await pdfLib.PDFDocument.create(); pdf.addPage(); return pdf.save(); },
       corte: crearCorteRemolques({ ajustes, oda: { disponible: false } }) });
@@ -58,11 +69,96 @@ async function preparar(tipo: 'puertas' | 'remolques', conPdf = false) {
     ? { pedido: { ...puerta, elementos: puerta.elementos.map(e => ({ ...e, input: { ...e.input, frente: cambio ? 210 : habitual.frente } })) } }
     : { elementos: remolque.elementos.map(e => ({ ...e, input: { ...e.input, largo: e.input.largo + (cambio ? 10 : 0) } })), params: remolque.params }), ...extra });
   const obtener = () => servicio.obtener(codigo);
-  return { servicio, cuerpo, obtener, codigo, raiz, produccion: (v: boolean) => { produccion = v; }, estado: (v: string) => { estado = v; }, fallar: () => { fallaGuardado = true; }, desconectar: () => { disponible = false; }, sinBorradores: () => { conBorradores = false; } };
+  return { servicio, cuerpo, obtener, codigo, raiz, produccion: (v: boolean) => { produccion = v; }, estado: (v: string) => { estado = v; }, fallar: () => { fallaGuardado = true; }, desconectar: () => { disponible = false; }, sinBorradores: () => { conBorradores = false; },
+    fallarPlano: (error: NodeJS.ErrnoException | null) => { falloPlano = error; intentosPlano = 0; }, intentosPlano: () => intentosPlano };
 }
+
+it.each(['EPERM', 'EACCES', 'EBUSY'])('al regenerar con %s explica el fallo y conserva el pedido y el plano', async code => {
+  const t = await preparar('puertas');
+  await t.servicio.guardar(t.cuerpo());
+  const antes = await t.obtener();
+  const bytes = await fs.readFile(antes.corteConfirmado!.plano);
+  t.fallarPlano(Object.assign(new Error('Fallo de escritura'), { code }));
+  await expect(t.servicio.guardar(t.cuerpo(true, { decisionCorte: 'regenerar' }))).rejects.toMatchObject({
+    statusCode: 500, message: expect.stringContaining(antes.corteConfirmado!.filename),
+  });
+  expect(await t.obtener()).toEqual(antes);
+  expect(await fs.readFile(antes.corteConfirmado!.plano)).toEqual(bytes);
+  expect(t.intentosPlano()).toBe(1);
+  t.fallarPlano(null);
+  expect((await t.servicio.guardar(t.cuerpo(true, { decisionCorte: 'regenerar' }))).status).toBe(200);
+});
+
+it('si falla publicar y restaurar el plano, el error del pedido indica dónde está conservado el anterior', async () => {
+  const t = await preparar('puertas');
+  await t.servicio.guardar(t.cuerpo());
+  const antes = await t.obtener();
+  const ruta = antes.corteConfirmado!.plano;
+  const bytes = await fs.readFile(ruta);
+  const renombrar = fs.rename.bind(fs);
+  vi.spyOn(fs, 'rename').mockImplementation(async (origen, destino) => {
+    if (destino === ruta) throw Object.assign(new Error('Destino bloqueado'), { code: 'EACCES' });
+    return renombrar(origen, destino);
+  });
+  await expect(t.servicio.guardar(t.cuerpo(true, { decisionCorte: 'regenerar' }))).rejects.toMatchObject({
+    statusCode: 500, message: expect.stringContaining('.anterior-'),
+  });
+  expect(await t.obtener()).toEqual(antes);
+  const carpeta = path.dirname(ruta);
+  const copias = (await fs.readdir(carpeta)).filter(n => n.includes('.anterior-'));
+  expect(copias).toHaveLength(1);
+  expect(await fs.readFile(path.join(carpeta, copias[0]))).toEqual(bytes);
+});
+
+it('regenera dos apilables al quitar una fila de ventanas de la segunda puerta', async () => {
+  const t = await preparar('puertas');
+  const puerta = base('PUERTAPLE', 580, 512);
+  puerta.apilable = { pie: 45, pasos: [58, 55, 58, 55, 58, 55, 58], cabecera: 70, bolsillo: 24, saco: 80, doble: false, empates: [5] };
+  puerta.entradas = [45, 103, 158, 216, 271, 329, 384, 442].map(altura => ({ altura, largo: 580, alto: 12, diametro: 30, huecos: [] }));
+  puerta.ventanas = [113, 171].flatMap(y => [54, 224, 394].map(x => ({ x, y, ancho: 132, alto: 35, radio: 2, radioCristal: 4 })));
+  const pedido = { ...pedidoDe(t.codigo, puerta, { ...structuredClone(puerta), of: '0233874' }), cabecera: { cliente: 'Portanova', fecha: '2026-11-10' } };
+  expect((await t.servicio.guardar({ pedido, savedBy: 'ANA' })).status).toBe(200);
+  const antes = await t.obtener();
+  const original = await fs.readFile(antes.corteConfirmado!.plano);
+  pedido.elementos[1].input.ventanas.splice(3);
+  expect((await t.servicio.guardar({ pedido, savedBy: 'ANA' })).cuerpo).toMatchObject({ needsRegenerateConfirmation: true });
+  expect(await fs.readFile(antes.corteConfirmado!.plano)).toEqual(original);
+  expect((await t.servicio.guardar({ pedido, savedBy: 'ANA', decisionCorte: 'regenerar' })).status).toBe(200);
+  const corregido = await t.obtener();
+  expect(corregido.elementos.map(e => (e.input as Puerta).ventanas.length)).toEqual([6, 3]);
+  expect(await fs.readFile(corregido.corteConfirmado!.plano)).not.toEqual(original);
+});
 
 // Integración con archivos y PDF reales: el límite no mide rendimiento del servicio.
 describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido editable', { timeout: 15_000 }, tipo => {
+  it.each([false, true])('si SMB rechaza sustituir el plano, lo sustituye sin dejar copias; fallo al guardar pedido: %s', async fallaPedido => {
+    const t = await preparar(tipo);
+    await t.servicio.guardar(t.cuerpo());
+    const antes = await t.obtener();
+    const ruta = antes.corteConfirmado!.plano;
+    const bytes = await fs.readFile(ruta);
+    const renombrar = fs.rename.bind(fs);
+    vi.spyOn(fs, 'rename').mockImplementation(async (origen, destino) => {
+      if (destino === ruta && String(origen).startsWith(`${ruta}.tmp-`) && await fs.stat(ruta).then(() => true, () => false)) {
+        throw Object.assign(new Error('SMB rechaza reemplazar el DWG'), { code: 'EACCES' });
+      }
+      return renombrar(origen, destino);
+    });
+    const guardar = () => t.servicio.guardar(t.cuerpo(true, { decisionCorte: 'regenerar' }));
+    if (fallaPedido) {
+      t.fallar();
+      await expect(guardar()).rejects.toThrow('Fallo al guardar');
+      expect(await t.obtener()).toEqual(antes);
+      expect(await fs.readFile(ruta)).toEqual(bytes);
+    } else {
+      expect((await guardar()).status).toBe(200);
+      expect(await fs.readFile(ruta)).not.toEqual(bytes);
+      expect((await t.obtener()).corteConfirmado!.datos).not.toBe(antes.corteConfirmado!.datos);
+    }
+    // Iván, 10/11/2026: sin carpeta «_anteriores» ni copias; el anterior se borra al terminar.
+    expect((await fs.readdir(path.dirname(ruta))).filter(n => n.includes('.anterior-'))).toEqual([]);
+  });
+
   it('primera entrega y corrección sin sufijo en el año; segunda con sufijo y planteamientos siempre numerados', async () => {
     const t = await preparar(tipo, true);
     expect((await t.servicio.borradorCorte(t.cuerpo())).status).toBe(200);

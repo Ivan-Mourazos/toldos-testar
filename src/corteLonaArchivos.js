@@ -85,7 +85,7 @@ export async function escribirPlanosCorte(input) {
   const files = [];
   for (const { contents, ...file } of salida.files) {
     await fs.mkdir(path.dirname(file.savedPath), { recursive: true });
-    await writeFileAtomic(file.savedPath, contents);
+    await writeFileAtomic(file.savedPath, contents, { conservarAnterior: true });
     files.push({ ...file, writtenAt: new Date().toISOString() });
   }
   return { files, avisos: salida.avisos };

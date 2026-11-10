@@ -305,7 +305,7 @@ const flujoToldos = crearFlujoDwg({
   },
   async escribir(fichero) {
     await fs.mkdir(path.dirname(fichero.savedPath), { recursive: true });
-    await writeFileAtomic(fichero.savedPath, fichero.contenido);
+    await writeFileAtomic(fichero.savedPath, fichero.contenido, { conservarAnterior: true });
   },
   // Junto a los pedidos de remolques (carpeta interna, no la que ven los PC), aparte de los de remolques y puertas.
   confirmaciones: crearAlmacenConfirmaciones({ carpeta: async () => {

@@ -63,7 +63,7 @@ export interface DependenciasFlujoDwg {
   leer?: (ruta: string) => Promise<string>;
   /** Lee los bytes recién calculados sin tener que publicarlos antes en una carpeta. */
   leerContenido?: (fichero: FicheroPlano) => Promise<string>;
-  /** Escribe un plano en su carpeta (creándola si falta). */
+  /** Publica el plano completo; si falla, conserva o restaura el anterior (creando la carpeta si falta). */
   escribir: (fichero: FicheroPlano) => Promise<void>;
   confirmaciones?: ConfirmacionesCorte;
   registrar?: (mensaje: string) => void;
@@ -83,12 +83,13 @@ export async function existeFichero(fichero: string): Promise<boolean> {
 
 /** Por qué no se pudo escribir un plano, en palabras de la oficina. */
 export function motivoPlano(error: unknown, nombre: string): string {
+  if (error instanceof Error && 'respaldo' in error) return error.message;
   const codigo = (error as NodeJS.ErrnoException).code;
   if (codigo === "EACCES" || codigo === "EPERM") {
-    return `No se pudo sustituir ${nombre}: el servidor no tiene permiso para cambiar el plano que hay (lo hizo otra persona). Bórralo o cámbiale el nombre y vuelve a intentarlo.`;
+    return `No se pudo sustituir ${nombre}: el servidor no tiene permiso para cambiar el plano o el archivo está bloqueado. Comprueba los permisos de la carpeta y que nadie tenga el plano abierto; después vuelve a guardar.`;
   }
   if (codigo === "EBUSY") return `No se pudo sustituir ${nombre}: está abierto (quizá en AutoCAD o ZWCAD). Ciérralo y vuelve a intentarlo.`;
-  return "No se pudo escribir el plano en su carpeta.";
+  return `No se pudo escribir ${nombre} en su carpeta. Comprueba que la carpeta está disponible y vuelve a guardar.`;
 }
 
 /** La huella de varios planos juntos; con uno, la suya (así no cambia la de los pedidos de un solo plano). */
@@ -372,25 +373,40 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
     const planos = ficheros.map(f => ({ filename: f.filename, plano: f.savedPath }));
     const corteConfirmado: CorteConfirmado = { huella: huellaJunta(huellas), por: usuario, fecha: ahora(), ...planos[0], planos, datos };
     const anteriores = new Map<string, Buffer | null>();
+    const escritos = new Set<string>();
     async function deshacer() {
       for (const [ruta, contenido] of anteriores) {
+        if (!escritos.has(ruta)) continue;
         if (contenido === null) await rm(ruta, { force: true });
         else await deps.escribir({ filename: path.basename(ruta), savedPath: ruta, contenido });
+        escritos.delete(ruta);
       }
       anteriores.clear();
     }
     return { corteConfirmado, avisos: preparado.avisos, deshacer,
       async escribir() {
         // La preparación y todas las preguntas han terminado antes de sustituir el primer plano.
-        for (const f of ficheros) {
-          try { anteriores.set(f.savedPath, await readFile(f.savedPath)); }
-          catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; anteriores.set(f.savedPath, null); }
+        let nombre = ficheros[0].filename;
+        try {
+          for (const f of ficheros) {
+            nombre = f.filename;
+            try { anteriores.set(f.savedPath, await readFile(f.savedPath)); }
+            catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; anteriores.set(f.savedPath, null); }
+          }
+          for (const f of ficheros) {
+            nombre = f.filename;
+            await deps.escribir(f);
+            escritos.add(f.savedPath);
+          }
+        } catch (error) {
+          registrar(`Pedido ${orderCode}: no se pudo regenerar ${nombre}: ${(error as Error).stack ?? String(error)}`);
+          await deshacer();
+          throw new ErrorFlujoDwg(motivoPlano(error, nombre), 500);
         }
-        try { for (const f of ficheros) await deps.escribir(f); }
-        catch (error) { await deshacer(); throw error; }
       },
       async limpiar() {
         anteriores.clear();
+        escritos.clear();
         try {
           // Los borradores y planos obsoletos se retiran solo después de guardar el pedido.
           const borradores = ajustes.corteBorradoresDirectory ? await borradoresDe(ajustes.corteBorradoresDirectory, orderCode) : [];
@@ -429,26 +445,37 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
       plano: destinos[0].destino, planos: destinos.map(p => ({ filename: p.filename, plano: p.destino })),
       datos: mantener ? revisado?.datos : datos };
     const anteriores = new Map<string, Buffer | null>();
+    const escritos = new Set<string>();
     async function deshacer() {
       for (const [ruta, contenido] of anteriores) {
+        if (!escritos.has(ruta)) continue;
         if (contenido === null) await rm(ruta, { force: true });
         else await deps.escribir({ filename: path.basename(ruta), savedPath: ruta, contenido });
+        escritos.delete(ruta);
       }
       anteriores.clear();
     }
     return { corteConfirmado, deshacer,
       async escribir() {
         if (!ajustes.productionEnabled) return;
+        let nombre = destinos[0].filename;
         try {
           for (const p of destinos) if (p.plano !== p.destino) {
+            nombre = p.filename;
             try { anteriores.set(p.destino, await readFile(p.destino)); }
             catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; anteriores.set(p.destino, null); }
             await deps.escribir({ filename: p.filename, savedPath: p.destino, contenido: await readFile(p.plano) });
+            escritos.add(p.destino);
           }
-        } catch (error) { await deshacer(); throw error; }
+        } catch (error) {
+          registrar(`Pedido ${orderCode}: no se pudo guardar ${nombre}: ${(error as Error).stack ?? String(error)}`);
+          await deshacer();
+          throw new ErrorFlujoDwg(motivoPlano(error, nombre), 500);
+        }
       },
       async limpiar() {
         anteriores.clear();
+        escritos.clear();
         if (!ajustes.productionEnabled) return [] as string[];
         try {
           for (const b of borradores) await rm(b.ruta, { force: true });

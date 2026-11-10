@@ -69,7 +69,7 @@ export function crearPlanoPuertas({ ajustes, oda, ofStockSacos }: {
     async escribir(fichero) {
       // La carpeta del año se crea si falta, como la de los planos de toldos y remolques.
       await fs.mkdir(path.dirname(fichero.savedPath), { recursive: true });
-      await writeFileAtomic(fichero.savedPath, fichero.contenido);
+      await writeFileAtomic(fichero.savedPath, fichero.contenido, { conservarAnterior: true });
     },
   };
 }

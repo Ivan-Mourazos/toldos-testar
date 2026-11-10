@@ -50,7 +50,7 @@ export function crearCorteRemolques({ ajustes, oda }) {
     for (const { type, savedPath, contenido } of ficheros) {
       // La del plano se crea si falta (p. ej. la del año); la del bot, nunca.
       if (type !== 'corte-lona') await fs.mkdir(path.dirname(savedPath), { recursive: true });
-      await writeFileAtomic(savedPath, contenido);
+      await writeFileAtomic(savedPath, contenido, { conservarAnterior: type !== 'corte-lona' });
     }
   }
 

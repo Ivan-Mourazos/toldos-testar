@@ -13,6 +13,7 @@ let raiz: string;
 let flujo: ReturnType<typeof crearFlujoDwg>;
 let editable: ReturnType<typeof crearFlujoDwg>;
 let produccion: boolean;
+let planoBloqueado: string;
 const pedido = { ...pedidoVariasTelas(), orderCode: 'AR2600096' };
 // generarCorteLona es JS: sus tipos inferidos no llevan las opciones ni los planos de cristal (`incluidoEn`).
 const resultado = (generarCorteLona as (o: unknown, opciones: unknown) => unknown)(pedido, { ofStockSacos: '0230811' }) as {
@@ -24,6 +25,7 @@ beforeEach(async () => {
   await fs.mkdir(path.resolve('tmp'), { recursive: true });
   raiz = await fs.mkdtemp(path.resolve('tmp/flujo-dwg-'));
   produccion = true;
+  planoBloqueado = '';
   flujo = crearFlujoDwg({
     ajustes: async () => ({ productionEnabled: true, corteBorradoresDirectory: path.join(raiz, 'borradores'),
       corteBorradoresRed: String.raw`\\toldosgomez.local\DFS_POL\oftecnica\BORRADORES CORTE`, corteLonaPlanoDirectory: path.join(raiz, '{YYYY}') }),
@@ -36,7 +38,10 @@ beforeEach(async () => {
     ajustes: async () => ({ productionEnabled: produccion, corteBorradoresDirectory: path.join(raiz, 'borradores'),
       corteBorradoresRed: String.raw`\\toldosgomez.local\DFS_POL\oftecnica\BORRADORES CORTE`, corteLonaPlanoDirectory: path.join(raiz, '{YYYY}') }),
     leer: ruta => fs.readFile(ruta, 'utf8'),
-    escribir: async f => { await fs.mkdir(path.dirname(f.savedPath), { recursive: true }); await fs.writeFile(f.savedPath, f.contenido); },
+    escribir: async f => {
+      if (f.filename === planoBloqueado) throw Object.assign(new Error('Plano bloqueado'), { code: 'EACCES' });
+      await fs.mkdir(path.dirname(f.savedPath), { recursive: true }); await fs.writeFile(f.savedPath, f.contenido);
+    },
     confirmaciones: crearAlmacenConfirmaciones({ carpeta: async () => path.join(raiz, 'confirmados') }),
   });
 });
@@ -47,6 +52,24 @@ const preparar = async (carpeta: string) => ({ avisos: [] as string[], ficheros:
 
 // Estos recorridos escriben y restauran varios planos: con seis trabajadores en Windows pueden superar 5 s.
 describe('toldos: aceptación al pasar a revisión, sin Confirmar corte', { timeout: 15_000 }, () => {
+  it.each(['regenerar', 'guardar'] as const)('%s: si falla el segundo plano restaura el primero y conserva los borradores', async accion => {
+    await editable.borrador({ orderCode: pedido.orderCode, preparar });
+    const carpeta = path.join(raiz, '2026');
+    await fs.mkdir(carpeta, { recursive: true });
+    for (const nombre of nombres) await fs.writeFile(path.join(carpeta, nombre), `Anterior: ${nombre}`);
+    const borradores = await Promise.all(nombres.map(n => fs.readFile(path.join(raiz, 'borradores', n))));
+    const preparado = accion === 'regenerar'
+      ? await editable.prepararRegeneracion({ orderCode: pedido.orderCode, technician: 'ANA', usuario: 'IVÁN', preparar })
+      : await editable.alGuardar({ orderCode: pedido.orderCode, technician: 'ANA', confirmOverwrite: true, mantener: true });
+    if (!preparado || 'respuesta' in preparado) throw new Error('Debe preparar la escritura');
+    planoBloqueado = nombres[1];
+    await expect(preparado.escribir()).rejects.toMatchObject({ statusCode: 500, message: expect.stringContaining(nombres[1]) });
+    for (const [i, nombre] of nombres.entries()) {
+      expect(await fs.readFile(path.join(carpeta, nombre), 'utf8')).toBe(`Anterior: ${nombre}`);
+      expect(await fs.readFile(path.join(raiz, 'borradores', nombre))).toEqual(borradores[i]);
+    }
+  });
+
   it('en simulación mantener o aceptar no mueve ni borra el borrador existente', async () => {
     await editable.borrador({ orderCode: pedido.orderCode, preparar });
     const ruta = path.join(raiz, 'borradores', nombres[0]);
