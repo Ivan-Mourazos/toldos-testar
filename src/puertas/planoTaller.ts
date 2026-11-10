@@ -1,3 +1,4 @@
+import { retocarPortanova } from './retoquesPortanova.js';
 import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { alturasTubos, calcularPuerta, desfaseCintas } from './calcular.ts';
@@ -621,7 +622,9 @@ export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[
     if (elegido.tramos.length > 1) tramosCorte = elegido.tramos.map(t => ({ zona: zonaM(t.zona, ox, oy), papel: t.papel }));
   }
   const unicos = (xs: string[]) => [...new Set(xs.filter(Boolean))].join(' / '), ps = pedido.elementos.map(e => e.input);
-  return escribirDxfPlano({ ...lienzoAMetros(l, 100, 100), corte: lienzoAMetros(corte.lienzo, ox, oy), zonas: { toldos: za, corte: zc, corteReal }, corteDerecho: true,
+  const escribir = (p: Parameters<typeof escribirDxfPlano>[0], c: Parameters<typeof escribirDxfPlano>[1]) => portanova
+    ? retocarPortanova(p, c) : escribirDxfPlano(p, c);
+  return escribir({ ...lienzoAMetros(l, 100, 100), corte: lienzoAMetros(corte.lienzo, ox, oy), zonas: { toldos: za, corte: zc, corteReal }, corteDerecho: true,
     corteGirable: true, hojas: hojasPuertas(pedido, zonasPuertas.map(z => zonaM(z, 100, 100))),
     ...(portanova ? { ajustarVentanaALaZona: true } : {}),
     bloques: [bloqueFlechaEnrollable], coloresModelo: { ejes: 23, borrar: 40, curv: 3, 'corte (vent)': 5 },

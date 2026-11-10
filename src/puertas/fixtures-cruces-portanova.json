@@ -1,0 +1,9 @@
+[
+  {"ejemplo":"AR2604638","hojas":[{"nombre":"PUERTA A","cantidad":9,"sha":"1036a7bac988dc58fc3046e2b78638c858eb3e3aad695f0535cf0fc5d457190b"}]},
+  {"ejemplo":"AR2605036","hojas":[{"nombre":"PUERTA A","cantidad":11,"sha":"0b9196139ed5a40a4b77c73969621e79f4685c1dbbdf7d1f06536b423c82fd33"}]},
+  {"ejemplo":"AR2604906","hojas":[{"nombre":"PUERTA A","cantidad":11,"sha":"bc7ccf3acd8d0fc8b79f57df25f2661fc7ff68cce64dedd8102021a6186cef69"}]},
+  {"ejemplo":"AR2604904","hojas":[{"nombre":"PUERTA A","cantidad":9,"sha":"77f98e5b2135b934947ff1ff588d2ab27b2bd76b28bc4a97128f9720e69125a8"}]},
+  {"ejemplo":"AR2605246","hojas":[{"nombre":"PUERTA A","cantidad":19,"sha":"d6de498d6fac5354e2dabbe78c18723938e83728db057ccb09840cd27ea4eef4"},{"nombre":"PUERTA B","cantidad":19,"sha":"4b7dc7f12458d4eba998c0f30a571b0c59d1d7979c2678afd0f8cbf722645d30"}]},
+  {"ejemplo":"AR2605220","hojas":[{"nombre":"PUERTA A","cantidad":7,"sha":"743e1873fdf39651bd68182ca7dd8e2127061f32892be141f91da5c6125aec21"}]},
+  {"ejemplo":"AR2605035","hojas":[{"nombre":"PUERTA A","cantidad":9,"sha":"6ce835496d2c940b15e9d9d4b12156ff3d2fb256d43f97c565eab42051dea27b"},{"nombre":"PUERTA B","cantidad":9,"sha":"92e2b582484c70af003375c803c71e9ca2a07bc966f0fb10dde1016c58f28362"},{"nombre":"PUERTA C","cantidad":9,"sha":"5692f594f6dcf50b4b7d1f592896fdfa2e509acfac128d3b86bcf3d3ab95305e"},{"nombre":"PUERTA D","cantidad":7,"sha":"283e93fb95e42a8ac912a874b577382f3fed144e90ebc2103b3dc4c3f5443eb7"}]}
+]

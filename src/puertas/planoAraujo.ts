@@ -1,4 +1,4 @@
-import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
+import { corregirRotulosPuertas } from './presentacionImpresion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { geometriaAlzado } from './alzado.ts';
 import { calcularPuerta } from './calcular.ts';
@@ -93,7 +93,7 @@ export function escribirPlanoAraujo(pedido:PedidoPuertas,cortes:CortePuertas[],c
   const zona=corteSanta?.zona??{x0:-70,y0:yc+60,x1:wc+40,y1:100},[ox,oy]=origenCorte(za,zona);
   const zc={x0:ox+zona.x0/100,y0:oy+zona.y0/100,x1:ox+zona.x1/100,y1:oy+zona.y1/100};
   const ofs=[...new Set(pedido.elementos.flatMap(e=>[e.input.of.trim(),...e.input.araujo?.tramos.map(t=>t.of?.trim()??'')??[]]).filter(Boolean))];
-  return escribirDxfPlano({...lienzoAMetros(l,100,100),corte:lienzoAMetros(corteSanta?.lienzo??lc,ox,oy),...(santaPau
+  return corregirRotulosPuertas({...lienzoAMetros(l,100,100),corte:lienzoAMetros(corteSanta?.lienzo??lc,ox,oy),...(santaPau
     ?{zonas:{toldos:za,corte:zc},hojas:hojasPuertas(pedido,zonasPuertas),bloques:[{...bloqueFlechaEnrollable,capa:'marca'}],capas:[{nombre:'cortes - lona',color:7},{nombre:'corte (vent)',color:5}]}
     :{hojas,girarCorte:false,zonas:{toldos:za,corte:zc,cortes:zonasCorte.map(z=>({x0:ox+z.x0/100,y0:oy+z.y0/100,x1:ox+z.x1/100,y1:oy+z.y1/100}))}})},
     {pedido:pedido.orderCode,of:ofs.length>1?'VARIAS':ofs[0]??'',cliente:textoSeguro(cabecera.cliente),tecnico:textoSeguro(cabecera.tecnico),revisor:textoSeguro(cabecera.revisor),

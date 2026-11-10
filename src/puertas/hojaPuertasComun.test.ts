@@ -44,7 +44,9 @@ describe('la misma hoja y el mismo corte para todas las puertas', () => {
     expect(numero(dibujo, 20) - numero(dibujo, 41) / 2).toBeGreaterThan(83);
     expect(Math.abs(numero(dibujo, 10) - 148.5)).toBeLessThan(1);
     expect(numero(corte, 20) + numero(corte, 41) / 2).toBeLessThan(83);
-    expect(numero(corte, 10) - numero(corte, 40) / 2).toBeCloseTo(9, 1);
+    // Ventana ajustada al contenido y centrada en su banda, sin pegarla al margen del papel.
+    expect(numero(corte, 10) - numero(corte, 40) / 2).toBeGreaterThanOrEqual(9);
+    expect(numero(corte, 10) + numero(corte, 40) / 2).toBeLessThanOrEqual(157);
     const rayas = registrosDxf(dxf).filter(r => r.tipo === 'LWPOLYLINE' && valor(r, 67) === '1' && valor(r, 90)?.trim() === '2');
     expect(rayas.some(r => numero(r, 20) === 83)).toBe(true);
   });

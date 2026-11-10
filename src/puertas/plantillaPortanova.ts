@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { ANCHO_CAJETIN } from '../domain/corteLona/cajetin.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { calcularPuerta } from './calcular.ts';
+import { separarNumeroCotaDetalle } from './presentacionImpresion.js';
 import type { PedidoPuertas, Punto } from './tipos.ts';
 
 type Zona = { x0: number; y0: number; x1: number; y1: number };
@@ -154,7 +155,7 @@ export function presentacionPortanova(pedido: PedidoPuertas,
   const bloque = bloqueNotasPortanova(materiales);
   return {
     detalle: detalleModelo,
-    plantilla: moverDetalle(plantilla, dx, dy).replaceAll('ENRROLLABLES', 'ENROLLABLES').replace('TIENES QUE IR', 'TIENEN QUE IR').replace('CM.SOLDAR', 'CM. SOLDAR')
+    plantilla: separarNumeroCotaDetalle(moverDetalle(plantilla, dx, dy)).replaceAll('ENRROLLABLES', 'ENROLLABLES').replace('TIENES QUE IR', 'TIENEN QUE IR').replace('CM.SOLDAR', 'CM. SOLDAR')
       // Iván, 23/10/2026: el cajetín se comía texto. La nota del bolsillo, un poco más estrecha para que quepa en
       // el marco, y el aviso de las E.T. 1 mm más arriba, separado del cajetín.
       .replace('E.T INTERIOR\n  7\n10 cm\n', 'E.T INTERIOR\n 41\n0.92\n  7\n10 cm\n')

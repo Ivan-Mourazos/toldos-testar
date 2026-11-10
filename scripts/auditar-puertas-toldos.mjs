@@ -32,9 +32,18 @@ for (const [i, m] of muestras.entries()) {
   if (!/^(Toldos|Puertas)/.test(m.familia)) { protegidos.push({ familia: m.familia, ejemplo: m.ejemplo, antes: hash(antesDxf), ahora: hash(m.dxf), identico: antesDxf === m.dxf }); continue; }
   const archivo = `pt-dxf/${String(i + 1).padStart(2, '0')}.dxf`;
   await fs.writeFile(new URL(archivo, raiz), m.dxf);
-  const cotas = dxf => leerPlanoTexto(dxf).modelo.filter(p => p.tipo === 'cota').map(({ handle: _handle, ...p }) => p);
+  const cotas = dxf => {
+    const cs = [];
+    for (const primitiva of leerPlanoTexto(dxf).modelo) {
+      const p = { ...primitiva }; delete p.handle;
+      if (p.tipo === 'cota') cs.push([p]);
+      else if (p.deCota) cs.at(-1)?.push(p);
+    }
+    return cs;
+  };
   const anteriores = cotas(antesDxf), actuales = cotas(m.dxf);
-  const cotasTocadas = actuales.flatMap((c, i) => JSON.stringify(c) === JSON.stringify(anteriores[i]) ? [] : [{ indice: i + 1, anterior: anteriores[i], ahora: c }]);
+  const cotasTocadas = actuales.flatMap((c, i) => JSON.stringify(c) === JSON.stringify(anteriores[i]) ? [] : [{ indice: i + 1, anterior: anteriores[i][0], ahora: c[0],
+    cambio: JSON.stringify(c[0]) === JSON.stringify(anteriores[i][0]) ? 'Hueco de la línea' : 'Posición del número' }]);
   planos.push({ familia: m.familia, ejemplo: m.ejemplo, archivo, antesArchivo: b.archivo, cotasTocadas, antes: medir(antesDxf), ahora: medir(m.dxf) });
 }
 await fs.writeFile(new URL('pt-resultado.json', raiz), JSON.stringify({ main: 'e74ba8f', planos, protegidos, excluidas, ...integridad }, null, 2) + '\n');
@@ -46,9 +55,9 @@ const tabla = ['| Familia / ejemplo | Antes: hojas · mín. D/C mm · S/C/R | Ah
   '| Presentación | Dibujo mm | Corte mm | S/C/R |', '|---|---:|---:|---|',
   ...planos.flatMap(p => p.ahora.hojas.map(h => `| ${p.familia} ${p.ejemplo} ${h.nombre} | ${f(h.dibujo)} | ${f(h.corte)} | ${h.solapes}/${h.cruces}/${h.recortes} |`))];
 tabla.push('', 'Cotas de puertas recolocadas (número correlativo en el modelo; puntos, medidas y estilos conservados):', '',
-  '| Pedido | Cota n.º | Valor | Estilo | Número antes → ahora (m del modelo) |', '|---|---:|---|---|---|',
+  '| Pedido | Cota n.º | Valor | Estilo | Número antes → ahora (m del modelo) | Cambio |', '|---|---:|---|---|---|---|',
   ...planos.filter(p => p.familia.startsWith('Puertas')).flatMap(p => p.cotasTocadas.map(c =>
-    `| ${p.ejemplo} | ${c.indice} | ${c.ahora.valor ?? f(c.ahora.medida)} | ${c.ahora.estilo} | ${c.anterior.texto.map(f).join('; ')} → ${c.ahora.texto.map(f).join('; ')} |`)), '',
+    `| ${p.ejemplo} | ${c.indice} | ${c.ahora.valor ?? f(c.ahora.medida)} | ${c.ahora.estilo} | ${c.anterior.texto.map(f).join('; ')} → ${c.ahora.texto.map(f).join('; ')} | ${c.cambio} |`)), '',
   'Excepciones intencionadas de ROTULADOR (entidades conservadas; parejas idénticas superpuestas excluidas de S):',
   ...planos.flatMap(p => p.ahora.auditoria.hojas.flatMap(h => h.duplicadosRotulador.map(t => `- ${p.ejemplo} ${h.nombre}: «${t.texto}», (${t.posicionMm.map(f).join('; ')}) mm.`))), '',
   'SHA-256 de las familias protegidas:', '', '| Familia / ejemplo | SHA main y actual (idénticos) |', '|---|---|',
@@ -56,12 +65,13 @@ tabla.push('', 'Cotas de puertas recolocadas (número correlativo en el modelo; 
 await fs.writeFile(new URL('pt-resumen.md', raiz), tabla.join('\n') + '\n');
 console.log(tabla.join('\n'));
 
-if (process.argv.includes('--png')) {
+if (process.argv.includes('--png') || process.argv.includes('--png-portanova')) {
   const { chromium } = await import('playwright');
   const browser = await chromium.launch();
   try {
     const page = await browser.newPage({ viewport: { width: 1700, height: 1200 } });
-    const pedidos = ['AR2605193', 'AR2604205', 'AR2605215', 'AR2605035', 'AR2604906', 'AR2506255', 'AR2605363', 'AR2604615'];
+    const pedidos = process.argv.includes('--png-portanova') ? planos.filter(p => p.familia.includes('Portanova')).map(p => p.ejemplo)
+      : ['AR2605193', 'AR2604205', 'AR2605215', 'AR2605035', 'AR2604906', 'AR2506255', 'AR2605363', 'AR2604615'];
     for (const pedido of pedidos) {
       const p = planos.find(p => p.ejemplo.includes(pedido));
       if (!p) throw Error(`Falta la muestra ${pedido}`);

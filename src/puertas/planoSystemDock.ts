@@ -1,6 +1,6 @@
-import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
+import { escribirPlanoImpreso } from '../domain/corteLona/planoImpreso.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
-import { lienzoAMetros, origenCorte, sumarLienzo, type LienzoEnrollable } from './planoEnrollable.ts';
+import { hojasPuertas, lienzoAMetros, origenCorte, sumarLienzo, type LienzoEnrollable } from './planoEnrollable.ts';
 import { medidaSystemDock, REGLAS_SYSTEM_DOCK } from './systemDock.ts';
 import type { CortePuertas, PedidoPuertas, Puerta } from './tipos.ts';
 
@@ -50,8 +50,10 @@ function dibujarCorte(cortes: CortePuertas[]): { lienzo: Lienzo; zona: Zona } {
 
 export function escribirPlanoSystemDock(pedido: PedidoPuertas, cortes: CortePuertas[], cabecera: { cliente: string; tecnico: string; revisor: string; fecha: string }) {
   const l = vacio(); let y = 0, ancho = 0;
+  const zonasPuertas: Zona[] = [];
   for (const e of pedido.elementos) {
     const h = dibujarAlzado(l, e.input, y - (e.input.alto + REGLAS_SYSTEM_DOCK.ancho));
+    zonasPuertas.push({ x0: -40, x1: e.input.frente + REGLAS_SYSTEM_DOCK.largo + 45, y0: y - h - 40, y1: y + (zonasPuertas.length ? 40 : 75) });
     y -= h + 70; ancho = Math.max(ancho, e.input.frente + REGLAS_SYSTEM_DOCK.largo);
   }
   // Arriba del todo, las unidades totales del pedido (Iván, 23/10/2026).
@@ -64,8 +66,9 @@ export function escribirPlanoSystemDock(pedido: PedidoPuertas, cortes: CortePuer
   const corte = dibujarCorte(cortes), [ox, oy] = origenCorte(za, corte.zona), zc = zonaM(corte.zona, ox, oy);
   const ofs = [...new Set(pedido.elementos.map(e => e.input.of.trim()).filter(Boolean))];
   const material = [...new Set(pedido.elementos.map(e => `${e.input.material} ${e.input.color}`.trim()))].join(' / ');
-  return escribirDxfPlano({ ...lienzoAMetros(alzados, 100, 100), corte: lienzoAMetros(corte.lienzo, ox, oy), zonas: { toldos: za, corte: zc } },
+  return escribirPlanoImpreso({ ...lienzoAMetros(alzados, 100, 100), corte: lienzoAMetros(corte.lienzo, ox, oy), zonas: { toldos: za, corte: zc },
+    hojas: hojasPuertas(pedido, zonasPuertas.map(z => zonaM(z, 100, 100))) },
     { pedido: pedido.orderCode, of: ofs.length > 1 ? 'VARIAS' : ofs[0] ?? '', cliente: textoSeguro(cabecera.cliente), tecnico: textoSeguro(cabecera.tecnico),
       revisor: textoSeguro(cabecera.revisor), fecha: cabecera.fecha.split('-').reverse().map((v, i) => i === 2 ? v.slice(2) : v).join('/'), pagina: '1/1',
-      material: textoSeguro(material), subtitulo: 'MEDIDAS EN CM · LONA PERIMETRAL' }).dxf;
+      material: textoSeguro(material), subtitulo: 'MEDIDAS EN CM · LONA PERIMETRAL' }, { familia: 'puertas', usarHojaCompleta: true }).dxf;
 }

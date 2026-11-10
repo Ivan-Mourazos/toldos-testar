@@ -10,12 +10,13 @@ import { cambiarTipoDelCliente, nuevaPuertaDeCliente, otraPuertaDelCliente } fro
 import { puertasDesdeRps } from './rps.ts';
 
 const hash=(s:string)=>createHash('sha256').update(s).digest('hex');
+// 09/11: solo se actualiza el cuarto SHA (presentación A4); los tres anteriores siguen siendo los de main.
 // Huellas obtenidas en b6303cf, antes de introducir las fichas. No se regeneran durante la prueba.
 // 06/11/2026: el bot y el plano cambian por el título del corte (sin «· CORTE», con «CORTAR POR EL REVÉS»); documento y cálculo, iguales. En las enrollables, textos de una línea centrados, A1/A2 grandes y AL CORTE centrado.
 const huellas:Record<string,string[]>={
- AR2605246:['f0f0a54c11d666661efcef82abf25657ae6c179f72b53d9a1d8a5a77d4f33912','09b72ae0c11a58bc51b7641162012d6b3d64c37748b7c86899c20e094d3012f1','56481f314f7d62c57fd2f2f27aadccd2ea5a51ec80bb3a953870ce0f197a995f','d2cd60e7613e37e23dcb5f048de20b1c488a9dd3ef25bccfd4b78b190b8c1c22'],
- AR2605220:['2d3805fca845c43338af3ed41ae1383a2a9fd78b16c87736019930d3b76d2e33','f404e03c7050d002944949bf369652a289a8ee31668bbfef6add86b62fada5c3','0ba4d0b0aa6483cbf592323d40a0a9833f1a360fd5c2c947a70330c38ef072d4','7cbe0d44e76e700c05d6d6474c5a20c3919149c367c1a0c8913ac1860fe7838a'],
- AR2605035:['7a300790349ce58674f2b7412da91374b5ed904f67d19a24f7be7e9fd54ff932','911a03437a4721a0216fcdccac163e52e6f0a1b2732dbea03abf51dae39bfe35','46cfc4612744c1fdfaac2ab4e09bc4600b40711254bc766e3c47307fe11dd7e6','f69975835075a544e21cc9c0d7508cbdf2d06493fb3ee29ab9cad66622b41723'],
+ AR2605246:['f0f0a54c11d666661efcef82abf25657ae6c179f72b53d9a1d8a5a77d4f33912','09b72ae0c11a58bc51b7641162012d6b3d64c37748b7c86899c20e094d3012f1','56481f314f7d62c57fd2f2f27aadccd2ea5a51ec80bb3a953870ce0f197a995f','34fadd0ff8a9424e76478c9456c8bb8d170ef98be46bc9f8e0ff0321548b716e'],
+ AR2605220:['2d3805fca845c43338af3ed41ae1383a2a9fd78b16c87736019930d3b76d2e33','f404e03c7050d002944949bf369652a289a8ee31668bbfef6add86b62fada5c3','0ba4d0b0aa6483cbf592323d40a0a9833f1a360fd5c2c947a70330c38ef072d4','492eb373e996a14727b94818e88d9c6631d7f21b3f02961e7d882813dab44672'],
+ AR2605035:['7a300790349ce58674f2b7412da91374b5ed904f67d19a24f7be7e9fd54ff932','911a03437a4721a0216fcdccac163e52e6f0a1b2732dbea03abf51dae39bfe35','46cfc4612744c1fdfaac2ab4e09bc4600b40711254bc766e3c47307fe11dd7e6','4efe9d8d09b387f1973cb960b67445464eace3cdae550a721f90ba43d8d096cc'],
 };
 describe('fichas de clientes de Puertas',()=>{
  it('cada cliente tiene unidades, rollos, tipos y rótulos propios; el desconocido va a General',()=>{
@@ -66,7 +67,7 @@ describe('fichas de clientes de Puertas',()=>{
   expect(cambiarTipoDelCliente(p,'plegable')).toMatchObject({modelo:'PUERTAPLE',entradas:p.entradas,ventanas:p.ventanas});
   expect(cambiarTipoDelCliente(p,'autorreparable')).toMatchObject({modelo:'PUERTAUTO',entradas:[],ventanas:[],confirmada:false,ventanasConfirmadas:false});
  });
- it.each(pedidosCompatibilidadClientes())('$orderCode abre y conserva documento, cálculo, bot y plano idénticos al commit anterior',pedido=>{
+ it.each(pedidosCompatibilidadClientes())('$orderCode abre y conserva documento, cálculo y bot idénticos; presentación A4 revisada',pedido=>{
   const p=leerPedidoPuertas(JSON.parse(JSON.stringify(pedido)));
   expect(fichaDePuerta(p.elementos[0].input).id).toBe('portanova');
   expect([hash(JSON.stringify(p)),hash(JSON.stringify(p.elementos.map(e=>calcularPuerta(e.input)))),
