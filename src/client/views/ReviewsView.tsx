@@ -386,6 +386,7 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
             elementoInicial={elementoRemolques}
             textoVolver={buscadorAbierto ? '← Buscar remolques' : undefined}
             onBack={() => { volverALista(); setElementoRemolques(undefined); }}
+            onProduccionTerminada={() => { setBuscadorAbierto(false); setElementoRemolques(undefined); volverALista(); }}
             onCorregir={onEditRemolques}
             onReutilizar={onReuseRemolques}
             onChanged={onChanged}

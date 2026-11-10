@@ -25,7 +25,8 @@ export function OpcionesEntrega({ datos, destino, elegir }: { datos: CatalogoEnt
   </>;
 }
 
-export function ElegirDestinoEntrega({ ruta, codigo, preguntar, cancelar, generar }: {
+export function ElegirDestinoEntrega({ ruta, codigo, preguntar, cancelar, generar, etiqueta = 'Generar archivos' }: {
+  etiqueta?: string;
   ruta: string; codigo: string; preguntar: import('./NotificationCenter').AskForConfirmation;
   cancelar: () => void; generar: (d: Destino) => void;
 }) {
@@ -55,8 +56,8 @@ export function ElegirDestinoEntrega({ ruta, codigo, preguntar, cancelar, genera
     generar(destino);
   }
   return <dialog ref={dialogo} className="destino-entrega bloque-3d" aria-labelledby="titulo-destino-entrega" onCancel={cancelar}>
-    <h2 id="titulo-destino-entrega">Generar archivos de {codigo}</h2>
+    <h2 id="titulo-destino-entrega">{etiqueta} · {codigo}</h2>
     {error ? <p role="alert">{error}</p> : datos && destino ? <OpcionesEntrega datos={datos} destino={destino} elegir={setDestino} /> : <p role="status">Consultando planteamientos…</p>}
-    <footer><button type="button" className="ghost-button boton-3d" onClick={cancelar}>Cancelar</button><button type="button" className="primary-button boton-3d" disabled={!destino || Boolean(error)} onClick={() => void confirmar()}>Generar archivos</button></footer>
+    <footer><button type="button" className="ghost-button boton-3d" onClick={cancelar}>Cancelar</button><button type="button" className="primary-button boton-3d" disabled={!destino || Boolean(error)} onClick={() => void confirmar()}>{etiqueta}</button></footer>
   </dialog>;
 }

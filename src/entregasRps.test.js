@@ -65,3 +65,17 @@ it('reconoce en RPS el sufijo de un pedido _2 sin mezclarlo con el pedido base',
   expect(await catalogoEntregas({ ...pedido, orderCode: 'AR2603626' }, ajustes))
     .toMatchObject({ siguiente: 1, existentes: [] });
 });
+
+it.each(['toldos-testar-review', 'remolques', 'puertas'])('el PDF separado de %s conserva la entrega en curso', async kind => {
+  await fs.mkdir(raiz, { recursive: true });
+  const numero = kind === 'toldos-testar-review' ? 1 : 10;
+  const filename = 'AR2603626-' + numero + '.pdf';
+  await fs.writeFile(path.join(raiz, filename), 'PDF de la entrega en curso');
+  const base = { kind, orderCode: 'AR2603626', status: 'PENDING_REVIEW', elementos: [{ input: { of: '230001', frente: 200 } }],
+    entregaActual: numero, entregas: [], destinoEntrega: { numero, modo: 'nuevo' }, production: { files: [{ type: 'pdf', filename }] } };
+  const datos = await catalogoEntregas(base, { planteamientosDirectory: raiz });
+  expect(datos.recomendado).toEqual({ numero, modo: 'sustituir' });
+  const destino = await aplicarDestino(base, { planteamientosDirectory: raiz }, { destinoEntrega: datos.recomendado, confirmarEntrega: true });
+  expect(destino.pedido.entregaActual).toBe(numero);
+  expect(destino.pedido.ofsSeleccionadas).toEqual(['0230001']);
+});

@@ -1,3 +1,4 @@
+import { ProduccionPedido } from '../components/ProduccionPedido';
 import { guardarToldosEditable } from '../toldosEditable';
 import type { DestinoEntrega } from '../../entregasTipos';
 import { pedidoEntrega } from '../../entregas.js';
@@ -19,7 +20,7 @@ import { LecturaPedidoRemolques } from './LecturaPedidoRemolques';
 import { formatearNumeroEs } from './numeroEs';
 import { DocumentosPedido } from '../components/DocumentosPedido';
 import { PlanteamientoPedido } from '../components/PlanteamientoPedido';
-import { EnviosCorte, HistorialEnvios } from '../components/EnviosCorte';
+import { HistorialEnvios } from '../components/EnviosCorte';
 import { AccionesPedido, CabeceraPedidoGuardado } from '../components/AccionesPedido';
 import { useCortePedidoEditable } from '../useCortePedidoEditable';
 import { aprobadaOPasada } from '../../toldosEditable.js';
@@ -59,12 +60,13 @@ function FilaElemento({ elemento, letra, coordina }: { elemento: ElementoGuardad
   );
 }
 
-export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, generando, onBack, onCorregir, onReutilizar, onGenerar, onEnviado, notify, onConfirm, elementoInicial, textoVolver = '← Pedidos' }: {
+export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, generando, onBack, onCorregir, onReutilizar, onGenerar, onEnviado, onProduccionTerminada, notify, onConfirm, elementoInicial, textoVolver = '← Pedidos' }: {
   pedido: PedidoRemolques | null;
   cargando: boolean;
   coordina: CoordinaStatus | null;
   currentUser: string;
   generando: boolean;
+  onProduccionTerminada?: () => void;
   onBack: () => void;
   onCorregir: () => void;
   onReutilizar: () => void;
@@ -114,11 +116,11 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
         acciones={<AccionesPedido generado={generado} ocupado={generando || corte.ocupado} enviando={generando} editandoPermitido={corregible}
           onEditar={onCorregir} elementos={elementosAprobacion(pedido)} coordina={coordina} preguntar={onConfirm} abrir={corte.abrir}
           regenerar={currentUser && corte.abrir ? () => void corte.regenerar() : undefined} codigo={pedido.orderCode} rutaDestinos={`${ruta}/destinos-entrega`} generar={onGenerar} generarPermitido={allowed} motivoGenerar={note}
-          envios={opcionesCorte.aplica ? <EnviosCorte key={ruta} barra ruta={`${ruta}/corte`} usuario={currentUser} permitido={permisoCorte.allowed && Boolean(currentUser.trim())}
-            motivo={permisoCorte.note} ocupado={generando || corte.ocupado} envios={pedido.enviosCorte} entrega={pedido.entregaActual} descarga={`${ruta}/corte/dxf`} notify={notify} preguntar={onConfirm} onEnviado={onEnviado}
+          produccion={<ProduccionPedido ruta={ruta} rutaPdf={ruta + '/generar'} rutaPlano={ruta + '/guardar-plano'} rutaCorte={opcionesCorte.aplica ? ruta + '/corte' : undefined}
+            tecnico={pedido.summary.technician || ''} codigo={pedido.orderCode} generado={generado} permitido={Boolean(currentUser.trim()) && (generado ? permisoCorte.allowed : allowed)} motivo={note}
+            ocupado={generando || corte.ocupado} usuario={currentUser} notify={notify} preguntar={onConfirm} onChanged={onEnviado} onVolver={onProduccionTerminada ?? onBack}
             guardado={{ ruta: '/api/remolques/pedidos', cuerpo: { elementos: pedido.elementos, params: pedido.params, clienteRps: pedido.clienteRps }, usuario: currentUser }}
-            mas={generado ? <button type="button" role="menuitem" className="menu-mas-item" onClick={onReutilizar}><CopyPlus size={16} aria-hidden="true" />Reutilizar datos</button> : null} />
-            : generado ? <button type="button" className="ghost-button boton-3d" onClick={onReutilizar}><CopyPlus aria-hidden="true" />Reutilizar datos</button> : null} />} />
+            mas={generado ? <button type="button" role="menuitem" className="menu-mas-item" onClick={onReutilizar}><CopyPlus size={16} aria-hidden="true" />Reutilizar datos</button> : null} />} />} />
 
       {generado && pedido.production && (
         <div className="review-production-block bloque-3d" role="status">
@@ -167,8 +169,9 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
   );
 }
 
-export function PedidoRemolquesDetalle({ orderCode, refreshKey, currentUser, onBack, onCorregir, onReutilizar, onChanged, onToast, onConfirm, elementoInicial, textoVolver, pedidoInicial }: {
+export function PedidoRemolquesDetalle({ orderCode, refreshKey, currentUser, onBack, onCorregir, onReutilizar, onChanged, onToast, onConfirm, elementoInicial, textoVolver, pedidoInicial, onProduccionTerminada }: {
   pedidoInicial?: PedidoRemolques;
+  onProduccionTerminada?: () => void;
   orderCode: string;
   refreshKey: number;
   currentUser: string;
@@ -294,6 +297,7 @@ export function PedidoRemolquesDetalle({ orderCode, refreshKey, currentUser, onB
       onConfirm={onConfirm}
       elementoInicial={elementoInicial}
       textoVolver={textoVolver}
+      onProduccionTerminada={onProduccionTerminada}
     />
   );
 }

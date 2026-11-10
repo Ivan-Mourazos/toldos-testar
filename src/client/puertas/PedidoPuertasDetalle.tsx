@@ -1,3 +1,4 @@
+import { ProduccionPedido } from '../components/ProduccionPedido';
 import { guardarToldosEditable } from '../toldosEditable';
 import type { DestinoEntrega } from '../../entregasTipos';
 import { pedidoEntrega } from '../../entregas.js';
@@ -16,7 +17,7 @@ import { useCortePedidoEditable } from '../useCortePedidoEditable';
 import { faltaParaAbrir } from './flujoCorte';
 import { abrirCorteGuardado, preguntarCambioCorte, decidirCortePendiente, type CortePendiente } from '../toldosEditable';
 import { aprobadaOPasada } from '../../toldosEditable.js';
-import { EnviosCorte, HistorialEnvios } from '../components/EnviosCorte';
+import { HistorialEnvios } from '../components/EnviosCorte';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { controlLabel } from '../components/controlLabels';
 import { puedeCorregir } from '../generatePermission';
@@ -238,12 +239,12 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
         acciones={<AccionesPedido generado={generado} ocupado={generando || corte.ocupado} enviando={generando} editandoPermitido={corregible}
           onEditar={() => onCorregir(pedido)} elementos={elementosAprobacion(pedido)} coordina={coordina} preguntar={onConfirm}
           abrir={corte.abrir} regenerar={currentUser && corte.abrir ? () => void corte.regenerar() : undefined} codigo={pedido.orderCode} rutaDestinos={`${ruta}/destinos-entrega`} generar={d => void generar(d)}
-          generarPermitido={allowed} motivoGenerar={note} envios={<EnviosCorte key={ruta} barra ruta={`${ruta}/corte`} usuario={currentUser}
-            permitido={permisoCorte.allowed && Boolean(currentUser.trim())} motivo={permisoCorte.note} ocupado={generando || corte.ocupado} envios={pedido.enviosCorte} entrega={pedido.entregaActual}
-            descarga={`${ruta}/corte/dxf`} conPdf notify={onToast} preguntar={onConfirm} onEnviado={onChanged}
+          generarPermitido={allowed} motivoGenerar={note}
+          produccion={<ProduccionPedido ruta={ruta} rutaPdf={ruta + '/pdf'} rutaPlano={ruta + '/guardar-plano'} rutaCorte={ruta + '/corte'}
+            tecnico={pedido.summary.technician || ''} codigo={pedido.orderCode} generado={generado} permitido={Boolean(currentUser.trim()) && (generado ? permisoCorte.allowed : allowed)} motivo={note}
+            ocupado={generando || corte.ocupado} usuario={currentUser} notify={onToast} preguntar={onConfirm} onChanged={onChanged} onVolver={onBack}
             guardado={{ ruta: '/api/puertas/pedidos', cuerpo: { pedido }, usuario: currentUser }}
             mas={generado ? <button type="button" role="menuitem" className="menu-mas-item" onClick={() => onReutilizar(pedido)}><CopyPlus size={16} aria-hidden="true" />Reutilizar datos</button> : null} />} />} />
-
       {generado && pedido.production && (
         <div className="review-production-block bloque-3d" role="status">
           <div className="review-production-summary">

@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { carpetaCorte } from './corteLonaArchivos.js';
+import { CARPETA_TECNICO, carpetaCorte } from './corteLonaArchivos.js';
 import { AWNING_NOUNS, generationBlock, uniqueOfs } from './reviewRules.js';
 import { aprobacionToldos } from './toldosEditable.js';
 import { writeFileAtomic } from './workflow.js';
@@ -11,7 +11,7 @@ const fallo = (codigo, mensaje) => Object.assign(new Error(mensaje), { statusCod
 
 /** Destinos y registro comunes a cualquier producto. Los adaptadores solo calculan el DXF y guardan el pedido. */
 export async function enviarCorte({ pedido, order, settings, usuario, destino, confirmBot = false, confirmOverwrite = false,
-  elementos, coordina, comprobarCorte, preparar, guardarRegistro, ahora = () => new Date(), nombres = AWNING_NOUNS, nota = '' }) {
+  elementos, coordina, comprobarCorte, preparar, guardarRegistro, obtenerActual = async () => pedido, tecnicoDestino, prepararSolo = false, ahora = () => new Date(), nombres = AWNING_NOUNS, nota = '' }) {
   if (!settings.productionEnabled) throw fallo(403, 'Modo simulación: no se ha escrito ni enviado el corte.');
   if (!usuario) throw fallo(400, 'Elige quién eres en «Soy» antes de mandar o guardar el corte.');
   if (!['bot', 'dxfs'].includes(destino)) throw fallo(400, 'Indica un destino del corte: bot o dxfs.');
@@ -27,7 +27,8 @@ export async function enviarCorte({ pedido, order, settings, usuario, destino, c
       ? 'Este corte ya se mandó al bot. La web no puede saber si ya se cortó; se va a mandar otra vez. ¿Seguro?'
       : 'El corte irá al bot y se cortará. ¿Seguro?' } };
   }
-  const carpeta = carpetaCorte(destino === 'bot' ? settings.corteLonaBotDirectory : settings.corteLonaDxfDirectory, order);
+  if (tecnicoDestino != null && !Object.hasOwn(CARPETA_TECNICO, tecnicoDestino)) throw fallo(400, 'Elige un técnico de destino de la tabla de carpetas.');
+  const carpeta = carpetaCorte(destino === 'bot' ? settings.corteLonaBotDirectory : settings.corteLonaDxfDirectory, destino === 'bot' && tecnicoDestino ? { ...order, technician: tecnicoDestino } : order);
   if (destino === 'bot') {
     const existe = await fs.stat(carpeta).then((s) => s.isDirectory(), (error) => {
       if (error.code !== 'ENOENT') throw error;
@@ -55,9 +56,13 @@ export async function enviarCorte({ pedido, order, settings, usuario, destino, c
     catch (error) { if (error.code !== 'ENOENT') throw error; return ''; }
   }))).filter(Boolean);
   if (existing.length && !confirmOverwrite) return { status: 409, cuerpo: { needsConfirmation: true, existing, carpeta } };
+  const ejecutar = async () => {
   if (destino === 'dxfs') await fs.mkdir(carpeta, { recursive: true });
   const escritos = [];
   async function registrarSalida(parcial = false) {
+    // El PDF puede haber actualizado el pedido después de preparar el envío.
+    // La aceptación pertenece al corte que acabamos de publicar y debe conservarse.
+    pedido = { ...await obtenerActual(), corteConfirmado: pedido.corteConfirmado, corteNoRegenerado: pedido.corteNoRegenerado };
     const fecha = ahora().toISOString();
     // `nota`: lo que hay que recordar del envío, p. ej. que el corte del DWG cambió después de revisarlo.
     const numero = (pedido.enviosCorte ?? []).filter(e => e.destino === destino).length + 1;
@@ -100,4 +105,6 @@ export async function enviarCorte({ pedido, order, settings, usuario, destino, c
     }
   }
   return registrarSalida();
+  };
+  return prepararSolo ? { status: 200, cuerpo: { ok: true }, ejecutar } : ejecutar();
 }

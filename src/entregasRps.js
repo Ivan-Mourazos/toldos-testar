@@ -49,8 +49,11 @@ export async function catalogoEntregas(pedido, ajustes) {
   const existentes = [...conocidos.values()].filter(e => inicioSerie(pedido) === 10 ? e.numero >= 10 : e.numero > 0).sort((a, b) => a.numero - b.numero);
   let siguiente = siguienteNumero(pedido, existentes.map(e => e.numero));
   while (ocupados.has(siguiente)) siguiente++;
-  const pasos = pasosEntrega({ ...pedido, siguienteEntrega: siguiente });
-  const recomendado = pedido.destinoEntrega ?? pasos[0] ?? { numero: pedido.entregaActual ?? siguiente, modo: 'nuevo', ofs: [] };
+  const numeroEnCurso = pedido.entregaActual;
+  const pdfEnCurso = pedido.status !== 'PRODUCED' && existentes.some(e => e.numero === numeroEnCurso) &&
+    (pedido.presentacionesPdf?.numero === numeroEnCurso || pedido.production?.files?.some(f => f.type === 'pdf' && f.filename.endsWith('-' + numeroEnCurso + '.pdf')));
+  const pasos = pasosEntrega({ ...pedido, siguienteEntrega: pdfEnCurso ? numeroEnCurso : siguiente });
+  const recomendado = (pdfEnCurso ? { numero: numeroEnCurso, modo: 'sustituir' } : pedido.destinoEntrega ?? pasos[0]) ?? { numero: pedido.entregaActual ?? siguiente, modo: 'nuevo', ofs: [] };
   return { existentes, siguiente, recomendado, pasos };
 }
 

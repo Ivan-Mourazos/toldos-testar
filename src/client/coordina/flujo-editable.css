@@ -26,3 +26,7 @@
 .destino-entrega fieldset { margin-block: 16px; border: 1px solid var(--border); border-radius: 8px; }
 .destino-entrega label { display: inline-flex; gap: 8px; align-items: center; padding: 10px 16px 10px 0; }
 .destino-entrega footer { display: flex; justify-content: flex-end; gap: 12px; }
+
+.destino-dxf { width: 36rem; }
+.destino-dxf label { display: block; padding-bottom: 6px; }
+.destino-dxf select { width: 100%; height: 40px; padding: 6px 10px; margin-bottom: 16px; color: var(--text); background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; font: inherit; line-height: 1.4; }

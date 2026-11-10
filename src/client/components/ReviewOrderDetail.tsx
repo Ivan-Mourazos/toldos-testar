@@ -1,3 +1,4 @@
+import { ProduccionPedido } from './ProduccionPedido';
 import type { DestinoEntrega } from '../../entregasTipos';
 import React, { useEffect, useMemo, useState } from 'react';
 import { CopyPlus, Download, ExternalLink, Factory, FileSearch, FileSpreadsheet, FileText } from 'lucide-react';
@@ -12,7 +13,7 @@ import { controlLabel } from './controlLabels';
 import { generateState, puedeCorregir } from '../generatePermission';
 import { awningLetter } from '../../domain/awningCompleteness.js';
 import { AccionesPedido, CabeceraPedidoGuardado } from './AccionesPedido';
-import { EnviosCorte, HistorialEnvios } from './EnviosCorte';
+import { HistorialEnvios } from './EnviosCorte';
 import { pedidoEntrega } from '../../entregas.js';
 import type { AskForConfirmation, Notify } from './NotificationCenter';
 
@@ -139,15 +140,12 @@ export function ReviewOrderDetail({
             : conFlujoCorte ? <BotonesFlujoCorte flujo={flujoCorte} ocupado={disabled || generandoCorte} /> : null}
           regenerar={autorDelCorte && conCorteLona ? () => void regenerarCorte() : undefined}
           codigo={review.orderCode} rutaDestinos={`/api/reviews/${encodeURIComponent(review.orderCode)}/destinos-entrega`} generar={onGenerate} generarPermitido={canGenerate} motivoGenerar={generateNote}
-          envios={conCorteLona
-            ? <EnviosCorte barra ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona`} usuario={currentUser}
-              permitido={puedeEnviar && cortePermitido.allowed && (Boolean(review.corteConfirmado) || !faltaCorte)} motivo={faltaCorte ?? cortePermitido.note}
-              ocupado={disabled || generandoCorte} envios={review.enviosCorte} entrega={review.entregaActual} notify={notify} preguntar={onConfirm}
-              guardado={{ ruta: '/api/reviews', cuerpo: { order: review.order, corteLona: review.corteLona }, usuario: currentUser }}
-              onEnviado={onChanged}
-              descarga={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona/dxf`}
-              mas={produced ? <button type="button" role="menuitem" className="menu-mas-item" disabled={disabled} onClick={onReuse}><CopyPlus size={16} aria-hidden="true" />Reutilizar datos</button> : null} />
-            : produced && <button className="ghost-button boton-3d review-reuse-button" type="button" disabled={disabled} onClick={onReuse}><CopyPlus aria-hidden="true" />Reutilizar datos</button>} />} />
+          produccion={<ProduccionPedido ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}`} rutaPdf={`/api/reviews/${encodeURIComponent(review.orderCode)}/generate-files`}
+            rutaPlano={`/api/reviews/${encodeURIComponent(review.orderCode)}/plano`} rutaCorte={conCorteLona ? `/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona` : undefined}
+            tecnico={order.technician || ''} codigo={review.orderCode} generado={isProduced} permitido={puedeEnviar && (isProduced ? cortePermitido.allowed : canGenerate)} motivo={generateNote}
+            ocupado={disabled || generandoCorte} usuario={currentUser} notify={notify} preguntar={onConfirm} onChanged={onChanged} onVolver={onBack}
+            guardado={{ ruta: '/api/reviews', cuerpo: { order: review.order, corteLona: review.corteLona }, usuario: currentUser }}
+            mas={produced ? <button type="button" role="menuitem" className="menu-mas-item" disabled={disabled} onClick={onReuse}><CopyPlus size={16} aria-hidden="true" />Reutilizar datos</button> : null} />} />} />
 
       {produced && review.production && (
         <div className="review-production-block bloque-3d" role="status">

@@ -46,7 +46,7 @@ describe('el pedido de remolques abierto en Pedidos', () => {
     expect(html).toContain('Aprobado por Jaime');
     // Fase 2: un aprobado también se edita, con aviso al entrar.
     expect(html).toContain('Corregir');
-    expect(html).toContain('Generar archivos');
+    expect(html).toContain('Pasar a producción');
     expect(html).not.toMatch(/review-generate-button" type="button" disabled=""/);
   });
 
@@ -54,7 +54,7 @@ describe('el pedido de remolques abierto en Pedidos', () => {
     const html = pintar({ currentUser: 'JAIME' });
     expect(html).toContain('review-generate-button');
     expect(html).not.toContain('Lo genera el autor');
-    expect(html).toContain('Mandar corte al bot');
+    expect(html).toContain('Hacer por separado');
   });
 
   it('devuelto en CoordinaOT: la nota en su elemento', () => {
@@ -72,7 +72,7 @@ describe('el pedido de remolques abierto en Pedidos', () => {
       ficheros: [{ type: 'pdf', filename: 'AR2604286-10.pdf', savedPath: '/p/AR2604286-10.pdf' }, { type: 'pdf', filename: 'AR2604286.pdf', savedPath: '/o/2026/AR2604286.pdf' }],
     });
     const html = pintar({ pedido: generado });
-    expect(html).not.toContain('Generar archivos');
+    expect(html).not.toContain('Pasar a producción');
     expect(html).toContain('Corregir');
     // «Reutilizar datos» va en el menú «Más ⋯» de arriba.
     expect(html).toContain('aria-haspopup="menu"');

@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import { CARPETA_TECNICO } from './corteTecnicos.js';
 import path from 'node:path';
 import { generarCorteLona } from './domain/corteLona/index.js';
 import { archivoCorte } from './domain/corteLona/opcionesArchivo.js';
@@ -19,9 +20,7 @@ const segmento = value => Array.from(String(value || '')).filter(c => c.charCode
 
 // Carpeta de cada técnico en BOT\Pendientes (Iván, 20/10/2026: «el autor que sea tiene su carpeta»), que se
 // llaman distinto que en la web. Un técnico que no esté aquí usa su nombre tal cual.
-export const CARPETA_TECNICO = {
-  'IVÁN': 'Ivan.Sanchez', 'ADRIÁN': 'Adrian.Quinteiro', 'ÁNGEL': 'Angel', 'ALBERTO': 'Alberto', 'JAIME': 'Jaime', 'TAMARA': 'Tamara',
-};
+export { CARPETA_TECNICO } from './corteTecnicos.js';
 // Un pedido cogido por un compañero lleva los dos autores («ANA / LUIS»): la carpeta es la del último, el que lo lleva.
 const carpetaTecnico = (tecnico) => {
   const autor = authorNames(tecnico).at(-1) ?? '';

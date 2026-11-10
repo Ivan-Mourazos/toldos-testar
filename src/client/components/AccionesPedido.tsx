@@ -12,7 +12,8 @@ import { ElegirDestinoEntrega } from './DestinoEntrega';
 
 /** El mismo orden y la misma barra para las tres familias de pedidos. */
 export function AccionesPedido({ generado, ocupado, editandoPermitido, onEditar, elementos, coordina, preguntar, abrir,
-  regenerar, generar, enviando, generarPermitido, motivoGenerar, envios, reutilizar, rutaDestinos, codigo }: {
+  regenerar, generar, enviando, generarPermitido, motivoGenerar, envios, reutilizar, rutaDestinos, codigo, produccion }: {
+  produccion?: React.ReactNode;
   generado: boolean; ocupado: boolean; editandoPermitido: boolean; onEditar: () => void;
   elementos: { of: string }[]; coordina: CoordinaStatus | null; preguntar: AskForConfirmation;
   abrir?: React.ReactNode; regenerar?: () => void; generar: (destino?: DestinoEntrega) => void; enviando?: boolean;
@@ -38,11 +39,11 @@ export function AccionesPedido({ generado, ocupado, editandoPermitido, onEditar,
     {!generado && regenerar && <button className="ghost-button boton-3d" type="button" disabled={ocupado} onClick={() => void regenerarCortePedido(preguntar, regenerar)}>
       <RefreshCw aria-hidden="true" />Regenerar corte
     </button>}
-    {!generado && <button className="primary-button boton-3d review-generate-button" type="button" disabled={ocupado || !generarPermitido}
+    {!produccion && !generado && <button className="primary-button boton-3d review-generate-button" type="button" disabled={ocupado || !generarPermitido}
       title={!generarPermitido ? motivoGenerar : undefined} onClick={() => rutaDestinos ? setEligiendo(true) : generar()}>
       <Factory aria-hidden="true" />{enviando ? 'Generando…' : 'Generar archivos'}
     </button>}
-    {envios}{generado && reutilizar}
+    {produccion}{envios}{generado && reutilizar}
     {eligiendo && rutaDestinos && <ElegirDestinoEntrega ruta={rutaDestinos} codigo={codigo ?? ''} preguntar={preguntar} cancelar={() => setEligiendo(false)} generar={d => { setEligiendo(false); generar(d); }} />}
     {!generado && !generarPermitido && motivoGenerar && <span className="review-generate-note">{motivoGenerar}</span>}
   </div>;

@@ -141,6 +141,7 @@ describe('corte confirmado desde el borrador', () => {
     await guardar();
     await fs.writeFile(enAnio(), 'CAMBIADO POR EL REVISOR');
     await expect(servicio.planoCorte('AR2605132', { confirmOverwrite: true })).rejects.toMatchObject({ statusCode: 409 });
+    expect(await servicio.guardarPlano('AR2605132', {})).toMatchObject({ status: 200, cuerpo: { mensaje: 'Plano revisado conservado en su carpeta.' } });
     expect(await fs.readFile(enAnio(), 'utf8')).toBe('CAMBIADO POR EL REVISOR');
     expect((await abrir()).cuerpo).toMatchObject({ existente: true });
     await expect(fs.stat(borrador())).rejects.toMatchObject({ code: 'ENOENT' });

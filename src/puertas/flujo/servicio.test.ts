@@ -307,6 +307,7 @@ describe('corte confirmado desde el borrador', () => {
     await dibujarEnBorrador(false, enAnio());
     const retocado = await fs.readFile(enAnio(), 'utf8');
     await expect(flujo.planoRevision('AR2605134', { confirmOverwrite: true })).rejects.toMatchObject({ statusCode: 409 });
+    expect(await flujo.guardarPlano('AR2605134', {})).toMatchObject({ status: 200, cuerpo: { mensaje: 'Plano revisado conservado en su carpeta.' } });
     const pregunta = (await flujo.generar('AR2605134', {})).cuerpo as { huella: string };
     const { status, cuerpo } = await flujo.generar('AR2605134', { aceptarHuellaCorte: pregunta.huella });
     expect(status).toBe(200);

@@ -1,3 +1,4 @@
+import { pasarAProduccion, prepararPlanoProduccion } from '../../produccion.js';
 import { numerarEntrega, aplicarDestino, necesitaPrepararDestino } from '../../entregasRps.js';
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
@@ -82,6 +83,8 @@ export interface CorteRemolques {
 export interface Respuesta {
   status: number;
   cuerpo: unknown;
+  ejecutar?: () => Promise<Respuesta>;
+  finalizar?: () => Promise<void>;
 }
 
 /** Los parámetros que manda la pantalla, comprobados como se guardan los de Parámetros. */
@@ -377,9 +380,9 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     }
   }
 
-  async function generar(orderCodeBruto: string, cuerpo: unknown): Promise<Respuesta> {
+  async function generar(orderCodeBruto: string, cuerpo: unknown, prepararSolo = false, bloqueado = false): Promise<Respuesta> {
     const orderCode = codigoPedido(orderCodeBruto);
-    const ocupado = ocupados.get(orderCode);
+    const ocupado = bloqueado ? undefined : ocupados.get(orderCode);
     if (ocupado === "generando") return { status: 409, cuerpo: { error: "Ya se están generando los archivos de este pedido." } };
     if (ocupado === "guardando") return { status: 409, cuerpo: { error: MENSAJE_GUARDANDO } };
     ocupados.set(orderCode, "generando");
@@ -390,13 +393,13 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
         throw new ErrorPedidoRemolques("La generación de archivos está desactivada en Configuración: no se ha generado nada.", 403);
       }
       let pedido = await obtener(orderCode);
-      if (pedido.status === 'PRODUCED') return { status: 200, cuerpo: { ok: true, unchanged: true, review: resumenBandeja(pedido), saved: pedido.production?.files ?? [] } };
-      const destinoEntrega = await aplicarDestino(pedido, await deps.ajustes(), cuerpo);
+      if (pedido.status === 'PRODUCED' && !(cuerpo as { soloPdf?: boolean })?.soloPdf) return { status: 200, cuerpo: { ok: true, unchanged: true, review: resumenBandeja(pedido), saved: pedido.production?.files ?? [] } };
+      const destinoEntrega = pedido.status === 'PRODUCED' ? { pedido, respuesta: undefined } : await aplicarDestino(pedido, await deps.ajustes(), cuerpo);
       if (destinoEntrega.respuesta) return destinoEntrega.respuesta;
       if (necesitaPrepararDestino(pedido, destinoEntrega.pedido)) return { status: 409, cuerpo: { needsPrepararEntrega: true } };
       pedido = destinoEntrega.pedido;
       const decision = generateFilesDecision(pedido.status);
-      if (decision.action === "unchanged") {
+      if (decision.action === "unchanged" && !(cuerpo as { soloPdf?: boolean })?.soloPdf) {
         return { status: 200, cuerpo: { ok: true, unchanged: true, review: resumenBandeja(pedido), saved: pedido.production?.files ?? [] } };
       }
       if (decision.action === "refuse") throw new ErrorPedidoRemolques(decision.error, decision.statusCode);
@@ -445,7 +448,12 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       const usuario = (cuerpo as { savedBy?: string } | null)?.savedBy;
       if (usuario && deps.tecnicos.includes(usuario) && generado.production) generado.production.createdBy = usuario;
       generado = cerrarEntrega(generado, materiales);
-      const pdf = await adjuntarDatosPedido(await deps.hacerPdf(datos), generado);
+      const pdf = await adjuntarDatosPedido(await deps.hacerPdf(datos), (cuerpo as { soloPdf?: boolean })?.soloPdf ? { ...pedido, production: generado.production } : generado);
+      const finalizar = async () => {
+        const actual = await obtener(orderCode);
+        await deps.almacen.guardar({ ...generado, enviosCorte: actual.enviosCorte });
+      };
+      const ejecutar = async (): Promise<Respuesta> => {
       try {
         await archivarPdfRemolques(pdf, { numeroPedido: pedido.numeroPedido, fecha: pedido.summary.orderDate, entrega: pedido.entregaActual ? numeroEntrega(pedido) : undefined }, ajustes, { sustituir: confirmar });
       } catch (error) {
@@ -457,7 +465,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       }
       // Primero los PDF y después el estado: si el archivo falla, el pedido sigue pendiente y se puede repetir.
       try {
-        await deps.almacen.guardar(generado);
+        await deps.almacen.guardar(prepararSolo || (cuerpo as { soloPdf?: boolean })?.soloPdf ? { ...pedido, production: generado.production } : generado);
       } catch (error) {
         console.error(`Pedido ${orderCode}: los PDF están archivados (${destinos.join(", ")}) pero no se pudo guardar el estado generado:`, error);
         throw new ErrorPedidoRemolques(
@@ -466,8 +474,10 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
         );
       }
       return { status: 200, cuerpo: { ok: true, review: resumenBandeja(generado), saved: ficheros, nombre, corte: generado.production?.corte ?? null } };
+      };
+      return prepararSolo ? { status: 200, cuerpo: { ok: true }, ejecutar, finalizar } : await ejecutar();
     } finally {
-      ocupados.delete(orderCode);
+      if (!bloqueado) ocupados.delete(orderCode);
     }
   }
 
@@ -582,12 +592,12 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     return deps.corte.prepararDxf(pedidoCalculado(pedido))[0];
   }
 
-  async function enviarCorte(orderCodeBruto: string, cuerpo: unknown): Promise<Respuesta> {
+  async function enviarCorte(orderCodeBruto: string, cuerpo: unknown, prepararSolo = false, bloqueado = false): Promise<Respuesta> {
     const orderCode = codigoPedido(orderCodeBruto);
-    if (ocupados.has(orderCode)) return { status: 409, cuerpo: { error: MENSAJE_GUARDANDO } };
+    if (!bloqueado && ocupados.has(orderCode)) return { status: 409, cuerpo: { error: MENSAJE_GUARDANDO } };
     ocupados.set(orderCode, "generando");
     try {
-      const c = (cuerpo ?? {}) as { usuario?: unknown; destino?: unknown; confirmBot?: unknown; confirmOverwrite?: unknown; aceptarCambioCorte?: unknown; aceptarCorteNoRegenerado?: unknown };
+      const c = (cuerpo ?? {}) as { usuario?: unknown; destino?: unknown; confirmBot?: unknown; confirmOverwrite?: unknown; aceptarCambioCorte?: unknown; aceptarCorteNoRegenerado?: unknown; tecnicoDestino?: string };
       const usuario = typeof c.usuario === "string" ? c.usuario.trim() : "";
       if (!deps.tecnicos.includes(usuario)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de mandar o guardar el corte.");
       if (!deps.corte?.prepararDxf) throw new ErrorPedidoRemolques("El corte de lona no está disponible.", 404);
@@ -611,12 +621,42 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
         preparar = () => [{ filename: `${codigoEntrega(pedido)}.dxf`, contents }];
       }
       return await enviarCorteCompartido({ nota, pedido, order: { orderCode: codigoEntrega(pedido), technician: pedido.summary.technician }, settings: await deps.ajustes(),
-        usuario, destino: c.destino, confirmBot: c.confirmBot === true, confirmOverwrite: c.confirmOverwrite === true,
+        usuario, destino: c.destino, tecnicoDestino: c.tecnicoDestino, prepararSolo, confirmBot: c.confirmBot === true, confirmOverwrite: c.confirmOverwrite === true,
         elementos: elementosAprobacion(pedidoEntrega(pedido)), coordina: deps.coordina, nombres: ELEMENT_NOUNS,
         comprobarCorte: () => {}, preparar,
-        guardarRegistro: (actualizado: PedidoRemolques) => deps.almacen.guardar(actualizado), ahora: reloj });
-    } finally { ocupados.delete(orderCode); }
+        obtenerActual: () => obtener(orderCode), guardarRegistro: (actualizado: PedidoRemolques) => deps.almacen.guardar(actualizado), ahora: reloj });
+    } finally { if (!bloqueado) ocupados.delete(orderCode); }
   }
 
-  return { listar, obtener, guardar, borradorCorte, confirmarCorte, estadoCorte, enlacesCorte, generar, vistaPrevia, archivo, buscar, corte, vistaPreviaCorte, planoCorte, enviarCorte, descargarCorte };
+  async function produccion(orderCodeBruto: string, cuerpo: unknown): Promise<Respuesta> {
+    const codigo = codigoPedido(orderCodeBruto);
+    if (ocupados.has(codigo)) return { status: 409, cuerpo: { error: MENSAJE_GUARDANDO } };
+    ocupados.set(codigo, "generando");
+    try {
+      const entrada = (cuerpo ?? {}) as Record<string, unknown>;
+      const pedido = await obtener(codigo);
+      if (pedido.status === 'PRODUCED') return { status: 200, cuerpo: { ok: true, unchanged: true, mensaje: 'Este pedido ya está en producción.' } };
+      const conCorte = Boolean(deps.corte && ((deps.corte.vista(pedidoEntrega(pedido)) as { cortes?: unknown[] })?.cortes?.length || pedido.corteConfirmado));
+      return await pasarAProduccion([
+        { nombre: "PDF", preparar: () => generar(codigo, { ...entrada, soloPdf: false, confirmOverwrite: entrada.confirmPdfOverwrite === true }, true, true) },
+        ...(conCorte ? [
+          { nombre: "Plano", preparar: () => prepararPlanoProduccion({ confirmado: pedido.corteConfirmado, confirmOverwrite: entrada.confirmPlanoOverwrite === true,
+            preparar: async () => { const p = await deps.corte!.preparar(pedidoEntrega(pedido, "anual")); return { ...p, ficheros: p.ficheros.filter(f => f.type === "plano-corte-lona") }; },
+            escribir: (ficheros: ArchivoCorte[]) => deps.corte!.escribir(ficheros) }) },
+          { nombre: "DXF al bot", preparar: () => enviarCorte(codigo, { ...entrada, usuario: entrada.savedBy, destino: "bot", confirmOverwrite: entrada.confirmDxfOverwrite === true }, true, true) },
+        ] : []),
+      ]);
+    } finally { ocupados.delete(codigo); }
+  }
+
+  async function guardarPlano(orderCode: string, cuerpo: unknown): Promise<Respuesta> {
+    const codigo = codigoPedido(orderCode);
+    if (ocupados.has(codigo)) return { status: 409, cuerpo: { error: MENSAJE_GUARDANDO } };
+    if (!(await deps.ajustes()).productionEnabled) throw new ErrorPedidoRemolques('La generación de archivos está desactivada.', 403);
+    const pedido = await obtener(codigo);
+    // El DWG revisado ya está guardado: conservarlo no debe perder los retoques de ZWCAD.
+    return pedido.corteConfirmado ? prepararPlanoProduccion({ confirmado: pedido.corteConfirmado }) : planoCorte(codigo, cuerpo);
+  }
+
+  return { guardarPlano, produccion, listar, obtener, guardar, borradorCorte, confirmarCorte, estadoCorte, enlacesCorte, generar, vistaPrevia, archivo, buscar, corte, vistaPreviaCorte, planoCorte, enviarCorte, descargarCorte };
 }

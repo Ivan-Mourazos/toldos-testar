@@ -141,3 +141,28 @@ describe('Envío común del corte, independiente de generar archivos', () => {
     expect(guardar).toHaveBeenCalledWith(expect.objectContaining({ enviosCorte: [expect.objectContaining({ parcial: true, archivos: [expect.objectContaining({ filename: 'primero.dxf' })] })] }));
   });
 });
+
+it('preparar un envío a otro técnico no escribe ni registra hasta ejecutar', async () => {
+  await fs.mkdir(path.join(raiz, 'bot/Angel'), { recursive: true });
+  const plan = await enviarCorte({ ...entrada, destino: 'bot', tecnicoDestino: 'ÁNGEL', confirmBot: true, prepararSolo: true });
+  expect(plan.status).toBe(200);
+  expect(await fs.readdir(path.join(raiz, 'bot/Angel'))).toEqual([]);
+  expect(guardar).not.toHaveBeenCalled();
+  await plan.ejecutar();
+  expect(await fs.readFile(path.join(raiz, 'bot/Angel/AR2604784.dxf'), 'utf8')).toBe('corte nuevo');
+  expect(guardar).toHaveBeenCalledWith(expect.objectContaining({ enviosCorte: [expect.objectContaining({ carpeta: path.join(raiz, 'bot/Angel') })] }));
+});
+it('rechaza un técnico de destino que no esté en la tabla', async () => {
+  await expect(enviarCorte({ ...entrada, destino: 'bot', tecnicoDestino: '../inventado', confirmBot: true })).rejects.toThrow(/técnico de destino/);
+  expect(guardar).not.toHaveBeenCalled();
+});
+
+it('al registrar conserva la aceptación del corte y los datos guardados tras preparar el PDF', async () => {
+  const corteConfirmado = { plano: 'revisado.dwg', aceptadoSinRegenerar: { por: 'IVÁN' } };
+  const actual = { ...entrada.pedido, corteNoRegenerado: true, production: { files: ['pedido.pdf'] }, enviosCorte: [{ id: 'anterior' }] };
+  const plan = await enviarCorte({ ...entrada, prepararSolo: true,
+    pedido: { ...entrada.pedido, corteNoRegenerado: false, corteConfirmado }, obtenerActual: async () => actual });
+  await plan.ejecutar();
+  expect(guardar).toHaveBeenCalledWith(expect.objectContaining({ corteNoRegenerado: false, corteConfirmado,
+    production: actual.production, enviosCorte: [actual.enviosCorte[0], expect.objectContaining({ destino: 'dxfs' })] }));
+});

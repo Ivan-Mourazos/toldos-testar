@@ -1,159 +1,57 @@
 import { controlLabel } from './controlLabels';
-import React, { useState } from 'react';
-import { Download, FileText, FolderDown, Send } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { EnvioCorte } from '../../corteEnviosTipos';
-import type { AskForConfirmation, Notify } from './NotificationCenter';
-import { carpetaLegible, mensajeEnvio } from './enviosCorteTexto';
-import { MenuMas } from './MenuMas';
-import { decidirCortePendiente } from '../toldosEditable';
+import { CARPETA_TECNICO } from '../../corteTecnicos.js';
+import { authorNames } from '../../reviewRules.js';
+import { carpetaLegible } from './enviosCorteTexto';
 
-/** El historial de envíos del corte, en el bloque del corte de la revisión (los botones van arriba). */
+/** El historial conserva el destino real y los nombres publicados. */
 export function HistorialEnvios({ envios = [], motivo }: { envios?: EnvioCorte[]; motivo?: string }) {
   if (!envios.length && !motivo) return null;
   return <div className="corte-envios">
     {motivo && <p className="corte-ayuda">{motivo}</p>}
     {envios.length > 0 && <div className="corte-envios-historial" role="status"><strong>Envíos del corte</strong>
-      <ul>{envios.map((e) => <li key={e.id}><span>{`Envío ${e.numero ?? envios.indexOf(e) + 1} · Entrega ${e.entrega ?? 1} · `}{new Date(e.fecha).toLocaleString('es-ES')} · {controlLabel(e.usuario)} · {e.destino === 'bot' ? 'Bot' : 'DXFs'}{e.parcial ? ' · Envío incompleto: revisarlo antes de repetir' : ''}{e.nota ? ` · ${e.nota}` : ''}</span><small title={e.carpeta}>{carpetaLegible(e.carpeta)} · {e.archivos.map((a) => a.filename).join(' · ')}</small></li>)}</ul>
+      <ul>{envios.map((e, i) => <li key={e.id}><span>{`Envío ${e.numero ?? i + 1} · Entrega ${e.entrega ?? 1} · `}{new Date(e.fecha).toLocaleString('es-ES')} · {controlLabel(e.usuario)} · {e.destino === 'bot' ? 'Bot' : 'DXFs'}{e.parcial ? ' · Envío incompleto: revisarlo antes de repetir' : ''}{e.nota ? ` · ${e.nota}` : ''}</span><small title={e.carpeta}>{carpetaLegible(e.carpeta)} · {e.archivos.map(a => a.filename).join(' · ')}</small></li>)}</ul>
     </div>}
   </div>;
 }
 
-/** Las mismas acciones y preguntas para todos los productos que envíen un corte. */
-export function EnviosCorte({ ruta, usuario, permitido, motivo, ocupado = false, envios = [], entrega = 1, descarga, conPdf = false, notify, preguntar, barra = false, mas, onEnviado, guardado }: {
-  ruta: string; usuario: string; permitido: boolean; motivo?: string; ocupado?: boolean; envios?: EnvioCorte[];
-  entrega?: number;
-  descarga?: string;
-  /** El producto saca el PDF de las presentaciones al mandar al bot (puertas): ya mandado, «Volver a mandar el corte» y «Rehacer el PDF». */
-  conPdf?: boolean;
-  notify: Notify; preguntar: AskForConfirmation;
-  /** En la barra de arriba de la revisión: el principal y «Más ⋯»; el historial lo pinta `HistorialEnvios` en el bloque del corte. */
-  barra?: boolean;
-  /** Más elementos para el menú «Más ⋯» (p. ej. «Reutilizar datos»). */
-  mas?: React.ReactNode;
-  /** Tras mandar o guardar: para que la revisión vuelva a leer el pedido (y su historial de envíos). */
-  onEnviado?: () => void;
-  guardado?: { ruta: string; cuerpo: Record<string, unknown>; usuario: string };
+export type DestinoDxf = 'bot' | 'dxfs' | 'descarga';
+export const DESTINOS_DXF = [
+  { valor: 'bot', etiqueta: 'Bot (carpeta del técnico)' },
+  { valor: 'dxfs', etiqueta: 'Carpeta DXFs del año' },
+  { valor: 'descarga', etiqueta: 'Descargar en mi PC' },
+] as const;
+
+export function SelectorDestinoDxf({ destino, elegir, tecnico, elegirTecnico, tecnicoPedido }: {
+  destino: DestinoDxf; elegir: (d: DestinoDxf) => void; tecnico: string; elegirTecnico: (t: string) => void; tecnicoPedido: string;
 }) {
-  const [trabajando, setTrabajando] = useState(false);
-  const [historial, setHistorial] = useState<EnvioCorte[] | null>(null);
-  async function enviar(destino: 'bot' | 'dxfs', sinPdf = false) {
-    if (trabajando || ocupado || !permitido) return;
-    setTrabajando(true);
-    try {
-      const anterior = (historial ?? envios).some(e => e.destino === 'bot' && (e.entrega ?? 1) === entrega);
-      if (destino === 'bot' && await preguntar({ title: anterior ? 'Volver a mandar el corte' : 'Mandar corte al bot',
-        message: anterior ? 'Se lee el corte actual de esta entrega. La web no puede saber si el anterior ya se cortó; se va a mandar otra vez. ¿Seguro?' : 'El corte irá al bot y se cortará. ¿Seguro?',
-        confirmLabel: sinPdf ? 'Volver a mandar el corte' : 'Mandar corte al bot', cancelLabel: 'Cancelar', tone: 'danger' }) !== 'confirm') return;
-      let confirmOverwrite = false, aceptarCambioCorte = false, pdfModo: 'sustituir' | 'siguiente' | undefined;
-      let aceptarCorteNoRegenerado: string | undefined;
-      for (;;) {
-        const res = await fetch(`${ruta}/enviar`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ usuario, destino, confirmBot: destino === 'bot', confirmOverwrite, aceptarCambioCorte, aceptarCorteNoRegenerado, pdfModo, sinPdf }) });
-        const datos = await res.json();
-        if (res.status === 409 && datos.corteNoRegenerado && guardado) {
-          const permiso = await decidirCortePendiente(datos, preguntar, guardado, onEnviado);
-          if (permiso === null) return;
-          aceptarCorteNoRegenerado = permiso || undefined;
-          continue;
-        }
-        // Flujo del DWG, fase 4: ya hay un PDF de presentaciones de este pedido que no hizo la web.
-        if (res.status === 409 && datos.needsConfirmation && datos.motivo === 'pdf') {
-          if (await preguntar({ title: 'El PDF de la entrega ya existe', message: datos.error,
-            details: datos.existing, confirmLabel: 'Sustituir PDF', cancelLabel: 'Conservar el actual', tone: 'warning' }) !== 'confirm') return;
-          pdfModo = 'sustituir';
-          continue;
-        }
-        if (res.status === 409 && datos.pdfExiste && !pdfModo) {
-          const eleccion = await preguntar({ title: 'PDF de las presentaciones', message: datos.error || 'Ya hay un PDF de este pedido.',
-            confirmLabel: `Otra parte: guardar como ${datos.siguiente}`, alternativeLabel: `Es lo mismo: sustituir ${datos.existente}`,
-            alternativeTone: 'neutral', cancelLabel: 'Cancelar', tone: 'warning' });
-          if (eleccion === 'confirm') pdfModo = 'siguiente';
-          else if (eleccion === 'alternative') pdfModo = 'sustituir';
-          else return;
-          continue;
-        }
-        // Flujo del DWG: el corte del DWG cambió después de confirmarlo y revisarlo.
-        if (res.status === 409 && datos.cambioCorte && !aceptarCambioCorte) {
-          if (await preguntar({ title: 'El corte ha cambiado', message: datos.error || 'El corte del DWG ha cambiado desde que se revisó.',
-            confirmLabel: 'Mandarlo con los cambios', cancelLabel: 'Cancelar', tone: 'warning' }) !== 'confirm') return;
-          aceptarCambioCorte = true;
-          continue;
-        }
-        if (res.status === 409 && datos.needsConfirmation && !confirmOverwrite) {
-          if (await preguntar({ title: 'El DXF ya existe', message: 'Ya hay un DXF de este pedido. ¿Quieres sustituirlo?',
-            details: [datos.carpeta, ...(datos.existing || [])].filter(Boolean), confirmLabel: 'Sustituir DXF', cancelLabel: 'Conservar el actual', tone: 'warning' }) !== 'confirm') return;
-          confirmOverwrite = true;
-          continue;
-        }
-        if (!res.ok) throw new Error(datos.error || 'No se pudo guardar el corte.');
-        setHistorial(datos.enviosCorte);
-        onEnviado?.();
-        const ultimo = (datos.enviosCorte as EnvioCorte[] | undefined)?.at(-1);
-        notify(ultimo ? mensajeEnvio(destino, ultimo.carpeta, ultimo.archivos.map((a) => a.filename)) : destino === 'bot' ? 'Corte mandado al bot.' : 'DXF guardado en DXFs.', { tone: 'success' });
-        if (datos.presentaciones?.filename) notify(`Presentaciones guardadas en PDF: ${datos.presentaciones.filename}.`, { tone: 'success', title: 'Presentaciones' });
-        for (const aviso of (datos.avisos as string[] | undefined) ?? []) notify(aviso, { tone: 'warning' });
-        return;
-      }
-    } catch (error) { notify(error instanceof Error ? error.message : 'No se pudo guardar el corte.', { tone: 'error' }); }
-    finally { setTrabajando(false); }
-  }
-  // «Rehacer el PDF» (Iván, 26/10/2026): solo las presentaciones del DWG actual, sin mandar nada al bot.
-  async function rehacerPdf() {
-    if (trabajando || ocupado) return;
-    setTrabajando(true);
-    try {
-      let pdfModo: 'sustituir' | 'siguiente' | undefined;
-      for (;;) {
-        const res = await fetch(`${ruta}/pdf`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ usuario, pdfModo }) });
-        const datos = await res.json();
-        if (res.status === 409 && datos.pdfExiste && !pdfModo) {
-          const eleccion = await preguntar({ title: 'PDF de las presentaciones', message: datos.error || 'Ya hay un PDF de este pedido.',
-            confirmLabel: `Otra parte: guardar como ${datos.siguiente}`, alternativeLabel: `Es lo mismo: sustituir ${datos.existente}`,
-            alternativeTone: 'neutral', cancelLabel: 'Cancelar', tone: 'warning' });
-          if (eleccion === 'confirm') pdfModo = 'siguiente'; else if (eleccion === 'alternative') pdfModo = 'sustituir'; else return;
-          continue;
-        }
-        if (!res.ok) throw new Error(datos.error || 'No se pudo hacer el PDF.');
-        notify(`PDF de las presentaciones rehecho: ${datos.presentaciones?.filename ?? ''}.`, { tone: 'success', title: 'Presentaciones' });
-        for (const aviso of (datos.avisos as string[] | undefined) ?? []) notify(aviso, { tone: 'warning' });
-        return;
-      }
-    } catch (error) { notify(error instanceof Error ? error.message : 'No se pudo hacer el PDF.', { tone: 'error' }); }
-    finally { setTrabajando(false); }
-  }
-  const registros = historial ?? envios;
-  const yaMandado = conPdf && registros.some((e) => e.destino === 'bot' && !e.parcial && (e.entrega ?? 1) === entrega);
-  // En la barra de arriba de la revisión (Iván, 26/10/2026): solo el paso que toca como botón principal; lo demás, en
-  // «Más ⋯». Ya mandado el corte, no hay principal: «Volver a mandar el corte» pasa al menú.
-  if (barra) {
-    const mandado = registros.some((e) => e.destino === 'bot' && !e.parcial && (e.entrega ?? 1) === entrega);
-    return <>
-      {permitido && !mandado && <button type="button" className="ghost-button boton-3d" disabled={ocupado || trabajando} aria-busy={trabajando}
-        onClick={() => void enviar('bot')}><Send size={16} aria-hidden="true" />{trabajando ? 'Mandando…' : 'Mandar corte al bot'}</button>}
-      <MenuMas>
-        {permitido && mandado && <button type="button" role="menuitem" className="menu-mas-item" disabled={ocupado || trabajando}
-          title="Lee el DWG tal como está ahora y manda solo el corte al bot" onClick={() => void enviar('bot', conPdf)}><Send size={16} aria-hidden="true" />Volver a mandar el corte</button>}
-        {yaMandado && <button type="button" role="menuitem" className="menu-mas-item" disabled={ocupado || trabajando}
-          title="Solo el PDF de las presentaciones, del DWG actual; no manda nada al bot" onClick={() => void rehacerPdf()}><FileText size={16} aria-hidden="true" />Rehacer el PDF</button>}
-        {permitido && <button type="button" role="menuitem" className="menu-mas-item" disabled={ocupado || trabajando}
-          onClick={() => void enviar('dxfs')}><FolderDown size={16} aria-hidden="true" />Guardar DXF en DXFs</button>}
-        {descarga && <a role="menuitem" className="menu-mas-item" href={descarga} download><Download size={16} aria-hidden="true" />Descargar DXF</a>}
-        {mas}
-      </MenuMas>
-    </>;
-  }
-  return <div className="corte-envios" aria-label="Envíos del corte" aria-busy={trabajando}>
-    <div className="corte-envios-acciones">
-      {yaMandado ? <>
-        <button type="button" className="primary-button boton-3d" disabled={!permitido || ocupado || trabajando} title={motivo ?? 'Lee el DWG tal como está ahora y manda solo el corte al bot; el PDF no se toca'} onClick={() => void enviar('bot', true)}><Send size={16} aria-hidden="true" />Volver a mandar el corte</button>
-        <button type="button" className="ghost-button boton-3d" disabled={ocupado || trabajando} title="Solo el PDF de las presentaciones, del DWG actual; no manda nada al bot" onClick={() => void rehacerPdf()}><FileText size={16} aria-hidden="true" />Rehacer el PDF</button>
-      </> : <button type="button" className="primary-button boton-3d" disabled={!permitido || ocupado || trabajando} title={motivo} onClick={() => void enviar('bot')}><Send size={16} aria-hidden="true" />Mandar corte al bot</button>}
-      <button type="button" className="ghost-button boton-3d" disabled={!permitido || ocupado || trabajando} title={motivo} onClick={() => void enviar('dxfs')}><FolderDown size={16} aria-hidden="true" />Guardar DXF en DXFs</button>
-      {descarga && <a className="ghost-button boton-3d" href={descarga} download><Download size={16} aria-hidden="true" />Descargar DXF</a>}
-    </div>
-    {!permitido && motivo && <p className="corte-ayuda">{motivo}</p>}
-    {registros.length > 0 && <div className="corte-envios-historial" role="status"><strong>Envíos del corte</strong>
-      <ul>{registros.map((e) => <li key={e.id}><span>{`Envío ${e.numero ?? envios.indexOf(e) + 1} · Entrega ${e.entrega ?? 1} · `}{new Date(e.fecha).toLocaleString('es-ES')} · {controlLabel(e.usuario)} · {e.destino === 'bot' ? 'Bot' : 'DXFs'}{e.parcial ? ' · Envío incompleto: revisarlo antes de repetir' : ''}{e.nota ? ` · ${e.nota}` : ''}</span><small title={e.carpeta}>{carpetaLegible(e.carpeta)} · {e.archivos.map((a) => a.filename).join(' · ')}</small></li>)}</ul>
-    </div>}
-  </div>;
+  return <>
+    <label htmlFor="destino-dxf">Destino del DXF</label>
+    <select id="destino-dxf" value={destino} onChange={e => elegir(e.target.value as DestinoDxf)}>
+      {DESTINOS_DXF.map(d => <option key={d.valor} value={d.valor}>{d.etiqueta}</option>)}
+    </select>
+    {destino === 'bot' && <><label htmlFor="tecnico-dxf">Carpeta del técnico</label><select id="tecnico-dxf" value={tecnico} onChange={e => elegirTecnico(e.target.value)}>
+      <option value="">Técnico del pedido · {controlLabel(tecnicoPedido)}</option>
+      {Object.entries(CARPETA_TECNICO).map(([nombre, carpeta]) => <option key={nombre} value={nombre}>{controlLabel(nombre)} · {carpeta}</option>)}
+    </select></>}
+  </>;
+}
+
+/** El destino y la carpeta se eligen antes de pedir permiso para cortar. */
+export function EnviosCorte({ tecnicoPedido, descarga, enviar, cancelar }: {
+  tecnicoPedido: string; descarga: string; enviar: (destino: 'bot' | 'dxfs', tecnico?: string) => void; cancelar: () => void;
+}) {
+  const dialogo = useRef<HTMLDialogElement>(null);
+  const [destino, elegir] = useState<DestinoDxf>('bot');
+  const [tecnico, elegirTecnico] = useState('');
+  useEffect(() => { dialogo.current?.showModal(); }, []);
+  return <dialog ref={dialogo} className="destino-entrega destino-dxf bloque-3d" aria-labelledby="titulo-destino-dxf" onCancel={cancelar}>
+    <h2 id="titulo-destino-dxf">DXF de corte</h2>
+    <SelectorDestinoDxf destino={destino} elegir={elegir} tecnico={tecnico} elegirTecnico={elegirTecnico} tecnicoPedido={authorNames(tecnicoPedido).at(-1) || tecnicoPedido} />
+    <footer><button type="button" className="ghost-button boton-3d" onClick={cancelar}>Cancelar</button>
+      {destino === 'descarga' ? <a className="primary-button boton-3d" href={descarga} download onClick={cancelar}>Descargar en mi PC</a>
+        : <button type="button" className="primary-button boton-3d" onClick={() => enviar(destino, tecnico || undefined)}>{destino === 'bot' ? 'Mandar al bot' : 'Guardar DXF'}</button>}
+    </footer>
+  </dialog>;
 }

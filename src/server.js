@@ -1,3 +1,4 @@
+import { pasarAProduccion, prepararPlanoProduccion } from './produccion.js';
 import { catalogoEntregas, numerarEntrega, aplicarDestino, necesitaPrepararDestino } from './entregasRps.js';
 import { avisoEntradaEntrega, codigoCorteEditable, abrirEntrega, codigoAnual, codigoEntrega, ofsEntrega, pedidoEntrega } from './entregas.js';
 import { materialesReserva } from './materialesEntrega.js';
@@ -409,7 +410,7 @@ app.post('/api/corte-lona/borrador/confirmar', async (req, res, next) => {
   }
 });
 
-registrarRutasEnviosCorte(app, {
+const enviarCorteToldos = registrarRutasEnviosCorte(app, {
   ruta: '/api/reviews/:orderCode/corte-lona', obtener: (codigo) => workflowStore.getReview(codigo),
   ajustes: () => workflowStore.getSettings(), coordina, tecnicos: formOptions.tecnicos, locks: generationLocks,
   contexto: (review) => ({ order: { ...pedidoEntrega(review).order, orderCode: codigoEntrega(review) },
@@ -1387,14 +1388,11 @@ app.post(['/api/reviews/:orderCode/mark-approved', '/api/reviews/:orderCode/appr
   }
 });
 
-app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
-  const lockKey = sanitizeOrderCode(req.params.orderCode);
-  if (generationLocks.has(lockKey)) {
-    res.status(409).json({ error: 'Ya se están generando los archivos de este pedido.' });
-    return;
-  }
-  generationLocks.add(lockKey);
+async function generarArchivosToldos(orderCode, cuerpo, prepararSolo = false) {
+  const req = { params: { orderCode }, body: cuerpo };
+  const res = { codigo: 200, status(codigo) { this.codigo = codigo; return this; }, json(cuerpo) { return { status: this.codigo, cuerpo }; } };
   try {
+
     const settings = await workflowStore.getSettings();
     const readiness = workflowReadiness(settings);
     if (!readiness.productionReady) {
@@ -1407,15 +1405,14 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
     await waitForDirectories([settings.reviewDirectory, settings.planteamientosDirectory, settings.rpsUploadDirectory].map(directoryTemplateRoot));
 
     let review = await workflowStore.getReview(req.params.orderCode);
-    if (review.status === 'PRODUCED') return res.json({ ok: true, review, unchanged: true, saved: review.production?.files || [] });
-    const destino = await aplicarDestino(review, settings, req.body);
+    if (review.status === 'PRODUCED' && !cuerpo.soloPdf) return res.json({ ok: true, review, unchanged: true, saved: review.production?.files || [] });
+    const destino = review.status === 'PRODUCED' ? { pedido: review } : await aplicarDestino(review, settings, req.body);
     if (destino.respuesta) return res.status(destino.respuesta.status).json(destino.respuesta.cuerpo);
     if (necesitaPrepararDestino(review, destino.pedido)) return res.status(409).json({ needsPrepararEntrega: true });
     review = destino.pedido;
     const decision = generateFilesDecision(review.status);
-    if (decision.action === 'unchanged') {
-      res.json({ ok: true, review, unchanged: true, saved: review.production?.files || [] });
-      return;
+    if (decision.action === 'unchanged' && !cuerpo.soloPdf) {
+      return res.json({ ok: true, review, unchanged: true, saved: review.production?.files || [] });
     }
     if (decision.action === 'refuse') throw httpError(decision.statusCode, decision.error);
 
@@ -1451,9 +1448,8 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
 
     const nonAcrylicFabrics = findNonAcrylicReservationFabrics(order, calculation);
     const hasNonAcrylicDecision = typeof req.body?.includeNonAcrylicFabrics === 'boolean';
-    if (nonAcrylicFabrics.length > 0 && !hasNonAcrylicDecision) {
-      res.status(409).json({ needsFabricConfirmation: true, fabrics: nonAcrylicFabrics });
-      return;
+    if (!cuerpo.soloPdf && nonAcrylicFabrics.length > 0 && !hasNonAcrylicDecision) {
+      return res.status(409).json({ needsFabricConfirmation: true, fabrics: nonAcrylicFabrics });
     }
 
     let reservation = normalizeReservation({ orderCode: order.orderCode, ofs: calculation.ofs });
@@ -1468,6 +1464,7 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
     const cleanOrder = sanitizeOrderCode(codigoEntrega(review));
     const rpsDirectory = resolveDirectoryTemplate(settings.rpsUploadDirectory, cleanOrder);
     const pdfDirectory = resolveDirectoryTemplate(settings.planteamientosDirectory, cleanOrder);
+    const pdfAnual = path.join(resolveDirectoryTemplate(settings.reviewDirectory, review.orderCode), `${codigoAnual(review)}.pdf`);
     const targets = reservation.ofs.map((ofBlock) => ({
       type: 'rps',
       of: ofBlock.of,
@@ -1476,6 +1473,7 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
       savedPath: path.join(rpsDirectory, `${sanitizeOf(ofBlock.of)}.xls`),
       build: () => buildOfWorkbook(ofBlock)
     }));
+    if (cuerpo.soloPdf) targets.splice(0);
     const duplicated = findDuplicatedFilenames(targets);
     if (duplicated.length > 0) throw new Error(`Hay OFs duplicadas en la reserva: ${duplicated.join(', ')}.`);
     targets.push({
@@ -1488,10 +1486,12 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
       if (target.build) target.contents = await target.build();
       target.exists = await fileExists(target.savedPath);
     }));
-    const existing = targets.filter((target) => target.exists).map((target) => target.filename);
+    const existing = [...new Set([
+      ...targets.filter((target) => target.exists).map((target) => target.filename),
+      ...(await fileExists(pdfAnual) ? [path.basename(pdfAnual)] : []),
+    ])];
     if (existing.length > 0 && req.body?.confirmOverwrite !== true) {
-      res.status(409).json({ needsConfirmation: true, existing });
-      return;
+      return res.status(409).json({ needsConfirmation: true, existing });
     }
 
     const saved = targets.map((target) => ({
@@ -1538,27 +1538,100 @@ app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
       ...(updated.corteConfirmado ? { cadEmbudo: null } : {}),
       ...(cad.length ? { sinHojaTelas: (_toldo, indice) => enElCad.has(awningLetter(indice)) } : {}) });
     if (cad.length) pdfTarget.contents = await conHojasDelante(pdfTarget.contents, cad);
-    pdfTarget.contents = await adjuntarPedido(pdfTarget.contents, updated, 'toldos');
+    pdfTarget.contents = await adjuntarPedido(pdfTarget.contents, cuerpo.soloPdf ? { ...review, production: updated.production } : updated, 'toldos');
     const conCad = cad.length > 0;
 
-    await Promise.all([fs.mkdir(rpsDirectory, { recursive: true }), fs.mkdir(pdfDirectory, { recursive: true })]);
-    for (const target of targets) {
-      await fs.mkdir(path.dirname(target.savedPath), { recursive: true });
-      if (target.archivedFilename) await writeFileAtomic(path.join(pdfDirectory, target.archivedFilename), target.contents);
-      await writeFileAtomic(target.savedPath, target.contents);
-    }
+    const finalizar = async () => {
+      const actual = await workflowStore.getReview(orderCode);
+      updated.enviosCorte = actual.enviosCorte;
+      await workflowStore.saveReview(updated, await adjuntarPedido(pdfTarget.contents, updated, 'toldos'));
+    };
+    const ejecutar = async () => {
+      const escritos = [];
+      try {
+        await Promise.all([fs.mkdir(rpsDirectory, { recursive: true }), fs.mkdir(pdfDirectory, { recursive: true })]);
+        for (const target of targets) {
+          await fs.mkdir(path.dirname(target.savedPath), { recursive: true });
+          if (target.archivedFilename) await writeFileAtomic(path.join(pdfDirectory, target.archivedFilename), target.contents);
+          await writeFileAtomic(target.savedPath, target.contents);
+          escritos.push(target.savedPath);
+        }
+        await fs.mkdir(path.dirname(pdfAnual), { recursive: true });
+        await writeFileAtomic(pdfAnual, pdfTarget.contents);
+        escritos.push(pdfAnual);
 
-    // Se guarda exactamente el mismo PDF en ambos destinos; solo cambia el
-    // nombre: PEDIDO-1.pdf en Planteamientos y PEDIDO.pdf en la carpeta anual.
-    await workflowStore.saveReview(updated, pdfTarget.contents);
-    res.json({ ok: true, review: updated, saved, excludedNonAcrylicFabrics, conCad, avisos });
+        // El PDF conserva las mismas páginas en ambos destinos y en la ficha editable.
+        const guardado = prepararSolo || cuerpo.soloPdf ? { ...review, production: updated.production } : updated;
+        await workflowStore.saveReview(guardado, await adjuntarPedido(pdfTarget.contents, guardado, 'toldos'));
+        return res.json({ ok: true, review: updated, saved, excludedNonAcrylicFabrics, conCad, avisos });
+      } catch (error) {
+        throw httpError(500, `${escritos.length ? `Archivos guardados: ${escritos.join(', ')}.` : 'No se ha guardado ningún archivo.'} No se completaron los PDF y las reservas: ${error.message}`);
+      }
+    };
+    return prepararSolo ? { status: 200, cuerpo: { ok: true }, ejecutar, finalizar } : await ejecutar();
   } catch (error) {
-    if (error.code === 'ENOENT') return next(httpError(404, 'No se encontró el pedido de revisión.'));
-    next(error);
-  } finally {
-    generationLocks.delete(lockKey);
+    if (error.code === 'ENOENT') throw httpError(404, 'No se encontró el pedido de revisión.');
+    throw error;
   }
+}
+
+app.post('/api/reviews/:orderCode/generate-files', async (req, res, next) => {
+  const clave = sanitizeOrderCode(req.params.orderCode);
+  if (generationLocks.has(clave)) return res.status(409).json({ error: 'Este pedido está ocupado.' });
+  generationLocks.add(clave);
+  try { const r = await generarArchivosToldos(clave, req.body ?? {}); res.status(r.status).json(r.cuerpo); }
+  catch (error) { next(error); }
+  finally { generationLocks.delete(clave); }
 });
+
+
+app.post('/api/reviews/:orderCode/produccion', async (req, res, next) => {
+  const codigo = sanitizeOrderCode(req.params.orderCode);
+  if (generationLocks.has(codigo)) return res.status(409).json({ error: 'Este pedido está ocupado.' });
+  generationLocks.add(codigo);
+  try {
+    const pedido = await workflowStore.getReview(codigo), entrada = req.body ?? {}, settings = await workflowStore.getSettings();
+    if (pedido.status === 'PRODUCED') return res.json({ ok: true, unchanged: true, mensaje: 'Este pedido ya está en producción.' });
+    const conCorte = Boolean(pedido.corteConfirmado || pedido.corteLona?.toldos?.length);
+    const r = await pasarAProduccion([
+      { nombre: 'PDF y reservas de RPS', preparar: () => generarArchivosToldos(codigo, { ...entrada, soloPdf: false, confirmOverwrite: entrada.confirmPdfOverwrite === true }, true) },
+      ...(conCorte ? [
+        { nombre: 'Plano', preparar: () => prepararPlanoProduccion({ confirmado: pedido.corteConfirmado, confirmOverwrite: entrada.confirmPlanoOverwrite === true,
+          preparar: async () => { const p = await prepararArchivosCorte({ order: pedidoEntrega(pedido).order, corteLona: pedido.corteLona, settings, oda, tipo: 'plano', codigoSalida: codigoAnual(pedido) }); return { ficheros: p.files, avisos: p.avisos }; },
+          escribir: async files => { for (const f of files) { await fs.mkdir(path.dirname(f.savedPath), { recursive: true }); await writeFileAtomic(f.savedPath, f.contents, { conservarAnterior: true }); } } }) },
+        { nombre: 'DXF al bot', preparar: () => enviarCorteToldos(codigo, { ...entrada, usuario: entrada.savedBy, destino: 'bot', confirmOverwrite: entrada.confirmDxfOverwrite === true }, true) },
+      ] : []),
+    ]);
+    res.status(r.status).json(r.cuerpo);
+  } catch (error) { next(error); }
+  finally { generationLocks.delete(codigo); }
+});
+app.post('/api/reviews/:orderCode/plano', async (req, res, next) => {
+  const codigo = sanitizeOrderCode(req.params.orderCode);
+  if (generationLocks.has(codigo)) return res.status(409).json({ error: 'Este pedido está ocupado.' });
+  generationLocks.add(codigo);
+  try {
+    const pedido = await workflowStore.getReview(codigo), settings = await workflowStore.getSettings();
+    if (!settings.productionEnabled) throw httpError(403, 'La generación de archivos está desactivada.');
+    const plan = await prepararPlanoProduccion({ confirmado: pedido.corteConfirmado, confirmOverwrite: req.body?.confirmOverwrite === true,
+      preparar: async () => { const p = await prepararArchivosCorte({ order: pedidoEntrega(pedido).order, corteLona: pedido.corteLona, settings, oda, tipo: 'plano', codigoSalida: codigoAnual(pedido) }); return { ficheros: p.files, avisos: p.avisos }; },
+      escribir: async files => { for (const f of files) { await fs.mkdir(path.dirname(f.savedPath), { recursive: true }); await writeFileAtomic(f.savedPath, f.contents, { conservarAnterior: true }); } } });
+    const r = plan.status === 200 && plan.ejecutar ? await plan.ejecutar() : plan;
+    res.status(r.status).json(r.cuerpo);
+  } catch (error) { next(error); }
+  finally { generationLocks.delete(codigo); }
+});
+for (const [familia, servicio] of [['remolques', pedidosRemolques], ['puertas', pedidosPuertas]]) {
+  app.post(`/api/${familia}/pedidos/:orderCode/guardar-plano`, rutaRemolques(async (req, res) => {
+    const r = await servicio.guardarPlano(req.params.orderCode, req.body); res.status(r.status).json(r.cuerpo);
+  }));
+  app.post(`/api/${familia}/pedidos/:orderCode/produccion`, rutaRemolques(async (req, res) => {
+    const r = await servicio.produccion(req.params.orderCode, req.body); res.status(r.status).json(r.cuerpo);
+  }));
+}
+app.post('/api/puertas/pedidos/:orderCode/pdf', rutaRemolques(async (req, res) => {
+  const r = await pedidosPuertas.pdfPedido(req.params.orderCode, req.body); res.status(r.status).json(r.cuerpo);
+}));
 
 app.post('/api/export/save', async (req, res, next) => {
   try {
