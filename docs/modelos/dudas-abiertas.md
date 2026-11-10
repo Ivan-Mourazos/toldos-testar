@@ -1,5 +1,13 @@
 # Dudas abiertas
 
+## Refuerzos de stock en remolques · 10/11/2026
+
+**Q-STOCK-R01:** ¿Queréis guardar también tiras de refuerzo de menos de 123 cm de largo?
+La menor que hemos podido medir cerrada en los cortes consultados es de 123 × 16,5 cm (AR2601123).
+Mientras no se confirme un largo menor, la web usa 123 cm como mínimo conservador, con anchos de corte
+de 20 o 16,5 cm y sin alargar el rollo. El mínimo se puede cambiar al generar el corte; no cambia ninguna
+plantilla de ganado. Evidencia y regla en [stock de remolques](../remolques-stock-refuerzos.md).
+
 ## Puertas y tramos de ARAUJO · 03/11/2026
 
 Contraste y límites en [puertas-araujo.md](./puertas-araujo.md). El CAD del pedido que se está planteando no se usa como referencia; en el 5365 solo valen hoja y RPS.

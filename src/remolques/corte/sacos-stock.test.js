@@ -52,7 +52,7 @@ describe('sacos de stock en remolques, contraste de varios pedidos reales', () =
         const [alto, ancho] = saco.medida.split('X').map(Number);
         expect(SACOS.some(([h, w]) => Math.abs(h - alto) <= 5 && Math.abs(w - ancho) <= 5)).toBe(true);
         expect(alto * ancho * 100).toBe(saco.ancho * saco.hueco);
-        expect(corte.entidades.textos.some(t => t.valor === saco.medida)).toBe(true);
+        expect(corte.entidades.textos.some(t => t.valor.includes(saco.medidaCatalogo) && t.valor.includes('STOCK'))).toBe(true);
       }
     });
     const registros = registrosDxf(despues.archivo.dxf);
@@ -60,17 +60,18 @@ describe('sacos de stock en remolques, contraste de varios pedidos reales', () =
     expect(registros.filter(e => e.tipo === 'TEXT' && valor(e, 8) === 'ROTULADOR' && valor(e, 1) !== 'ROTULADOR').every(e => numero(e, 40) === 10)).toBe(true);
   });
 
-  it('AR2604802: no añade ninguno si el sobrante es demasiado estrecho', () => {
+  it('AR2604802: el sobrante estrecho da refuerzos, pero no sacos', () => {
     const antes = generarCorteRemolques(baqueton);
     const despues = generarCorteRemolques(baqueton, stock);
     expect(despues.cortes[0].sacos).toEqual([]);
-    expect(despues.archivo.dxf).toBe(antes.archivo.dxf);
+    expect(despues.cortes[0].largo).toBe(antes.cortes[0].largo);
+    expect(despues.cortes[0].refuerzosStock.length).toBeGreaterThan(0);
   });
 
   it.each([a, c])('$orderCode: no alarga el corte optimizado para recuperar el saco del manual antiguo', pedido => {
     const despues = generarCorteRemolques(pedido, stock);
     expect(despues.cortes[0].sacos).toEqual([]);
-    expect(despues.archivo.dxf).toBe(generarCorteRemolques(pedido).archivo.dxf);
+    expect(despues.cortes[0].largo).toBe(generarCorteRemolques(pedido).cortes[0].largo);
   });
 
   it.each(SACOS)('reutiliza el saco de %i × %i del catálogo común si ese es el retal disponible', (alto, ancho) => {

@@ -44,6 +44,7 @@ describe('el stock de remolques no cambia los DXF de los otros cortes', () => {
     const pedido = { ...base, elementos: [{ tipo: 'ganado', input, result: calcGanado(input), paramsSnapshot: base.params }] };
     const resultado = generarCorteRemolques(pedido, stock);
     expect(resultado.cortes[0].sacos).toEqual([]);
+    expect(resultado.cortes[0].refuerzosStock).toEqual([]);
     expect(sha(resultado.archivo.dxf)).toBe(esperado);
   });
 

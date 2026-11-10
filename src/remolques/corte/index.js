@@ -9,6 +9,7 @@ import { descripcionGanado, piezaGanado, soportadaGanado } from './ganado.js';
 import { cortarLonasAltas, soportada, R_OLLAO } from './lonaAlta.js';
 import { escribirPlanoRemolques } from './plano.js';
 import { sacosDeStock } from './sacos.js';
+import { refuerzosDeStock } from './refuerzos.js';
 
 const ROLLO = 2500;
 // Una tira de más de 30 cm de alto no se empata al medio (Iván, 29/10/2026, AR2605291): solo la tira entera.
@@ -79,7 +80,7 @@ const descripcion = (e) => (e.tipo === 'ganado' ? descripcionGanado(e) : e.tipo 
  * y `archivo`: siempre un solo DXF del bot y un solo plano por pedido (Iván, 20/10/2026: «siempre hay 1 dwg y
  * solo 1 dxf»); con dos colores, cada uno en su corte dentro del mismo DXF. Null si no hay nada que cortar.
  */
-export function generarCorteRemolques(pedido, { ofStockSacos } = {}) {
+export function generarCorteRemolques(pedido, { ofStockSacos, largoMinimoRefuerzoMm } = {}) {
   if (ofStockSacos !== undefined && !/^\d{7}$/.test(String(ofStockSacos))) throw new Error('Indica la OF de stock de los sacos con sus siete cifras.');
   const codigo = pedido.orderCode;
   const params = pedido.params ?? pedido.elementos[0]?.paramsSnapshot ?? {};
@@ -145,9 +146,14 @@ export function generarCorteRemolques(pedido, { ofStockSacos } = {}) {
       const ocupadas = [...la.ocupadas, ...cb.ocupadas.map(p => ({ ...p, x: p.x + dx }))];
       // Las plantillas de ganado conservan su stock y su juego originales, sin completar sus huecos interiores.
       const stock = sacosDeStock(ocupadas, ROLLO, lonas.length || baqs.length ? ofStockSacos : undefined, la.largo + cb.largo);
-      const lineas = fusionar([...la.lineas, ...cb.lineas.map((l) => [l.x1 + dx, l.y1, l.x2 + dx, l.y2]), ...stock.lineas],
+      // Primero sacos; las tiras usan únicamente lo que queda, siempre a lo largo del rollo. El ganado
+      // conserva íntegro su stock histórico, también en pedidos que comparten lona con otras piezas.
+      const refStock = ofStockSacos && !ganados.length
+        ? refuerzosDeStock([...ocupadas, ...stock.sacos], la.largo + cb.largo, ROLLO, largoMinimoRefuerzoMm)
+        : { tiras: [], lineas: [], textos: [] };
+      const lineas = fusionar([...la.lineas, ...cb.lineas.map((l) => [l.x1 + dx, l.y1, l.x2 + dx, l.y2]), ...stock.lineas, ...refStock.lineas],
         la.apartes.filter((a) => a.tapa).map((a) => [a.x, a.x + a.w]));
-      const textos = [...la.textos, ...cb.textos.map((t) => ({ ...t, x: t.x + dx })), ...stock.textos];
+      const textos = [...la.textos, ...cb.textos.map((t) => ({ ...t, x: t.x + dx })), ...stock.textos, ...refStock.textos];
       const largo = la.largo + cb.largo;
       // Encima del corte: el material resumido y, debajo, «DERECHO» (por dónde se corta), una sola vez; con dos
       // opciones, la de cada corte encima de todo.
@@ -167,7 +173,7 @@ export function generarCorteRemolques(pedido, { ofStockSacos } = {}) {
         elementos: els.map((e) => ({ of: e.of, descripcion: descripcion(e), cantidad: e.input.cantidad || 1 })),
         avisos: [...la.avisos, ...cb.avisos],
         apartes: la.apartes,
-        ocupadas, sacos: stock.sacos,
+        ocupadas, sacos: stock.sacos, refuerzosStock: refStock.tiras,
         entidades,
       });
     }

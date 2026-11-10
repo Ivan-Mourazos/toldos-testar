@@ -1,5 +1,8 @@
 # Sacos de stock en el corte de remolques · 10/11/2026
 
+Ampliación posterior: [sacos nominales y tiras de refuerzo](./remolques-stock-refuerzos.md).
+Esa es la regla actual; este informe conserva la investigación y los resultados anteriores.
+
 El corte de remolques completa los retales rectangulares con los mismos sacos de stock de toldos y puertas.
 Primero se colocan todas las piezas del pedido; los sacos no cambian su colocación ni alargan el rollo.
 
