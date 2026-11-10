@@ -144,7 +144,7 @@ export function generarCorteRemolques(pedido, { ofStockSacos } = {}) {
       const dx = la.largo;
       const ocupadas = [...la.ocupadas, ...cb.ocupadas.map(p => ({ ...p, x: p.x + dx }))];
       // Las plantillas de ganado conservan su stock y su juego originales, sin completar sus huecos interiores.
-      const stock = sacosDeStock(ocupadas, ROLLO, lonas.length || baqs.length ? ofStockSacos : undefined);
+      const stock = sacosDeStock(ocupadas, ROLLO, lonas.length || baqs.length ? ofStockSacos : undefined, la.largo + cb.largo);
       const lineas = fusionar([...la.lineas, ...cb.lineas.map((l) => [l.x1 + dx, l.y1, l.x2 + dx, l.y2]), ...stock.lineas],
         la.apartes.filter((a) => a.tapa).map((a) => [a.x, a.x + a.w]));
       const textos = [...la.textos, ...cb.textos.map((t) => ({ ...t, x: t.x + dx })), ...stock.textos];
