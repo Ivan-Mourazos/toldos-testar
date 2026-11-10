@@ -21,6 +21,7 @@ import { HistorialEnvios } from '../components/EnviosCorte';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { controlLabel } from '../components/controlLabels';
 import { puedeCorregir } from '../generatePermission';
+import { medidaPuerta, numeroPuerta } from './medidasPuertas';
 import { useCoordinaStatus } from '../hooks/useCoordinaStatus';
 import { useContenidoFluido } from '../hooks/useContenidoFluido';
 import type { CoordinaStatus } from '../types';
@@ -35,7 +36,6 @@ import './puertas.css';
 // y, debajo, los dos bloques: el planteamiento (el alzado de cada puerta, lo mismo que va al plano DWG) y el
 // corte con sus botones.
 
-const num = (x: number) => x.toLocaleString('es-ES', { maximumFractionDigits: 2 });
 
 function fechaHora(valor: string) {
   const fecha = new Date(valor);
@@ -90,7 +90,7 @@ function CortePuertasGuardado({ ruta, version, historial, systemDock = false }: 
       {datos?.avisos.some((aviso) => aviso.nivel === 'error') && <p role="alert" className="corte-aviso">Hay medidas pendientes de corregir: el corte está incompleto.</p>}
       {datos?.cortes.map((c, i) => (
         <article className="corte-material" key={i}>
-          <header><h3>{c.material}</h3><span>{`Rollo de ${num(c.anchoRollo / 10)} cm · ${num(c.largo / 1000)} m`}</span></header>
+          <header><h3>{c.material}</h3><span>{`Rollo de ${numeroPuerta(c.anchoRollo)} mm · ${numeroPuerta(c.largo)} mm`}</span></header>
           {c.opcion !== 'principal' && <p className="corte-aviso">{c.opcion === 'saco-entero' ? 'Opción saco entero' : 'Opción saco en dos piezas'} · Alternativas de un mismo saco: elige una.</p>}
           <DibujoCortePuertas corte={c} />
           <small className="corte-leyenda"><span>DISCO1 · corte</span>{!systemDock&&<><span className="puerta-cutter-texto">CUTTER · huecos y curvas</span><span>ROTULADOR · marcas</span></>}</small>
@@ -108,7 +108,7 @@ function FilaPuerta({ letra, puerta, coordina }: { letra: string; puerta: Pedido
     <li className="rem-pedido-elemento bloque-3d">
       <strong className="rem-pedido-letra">{letra}</strong>
       <span>{`${puerta.modelo==='SYSTEMDOCK'?'Lona System Dock':`Puerta ${MODELOS_PUERTAS[puerta.modelo].toLowerCase()}`}${puerta.cantidad > 1 ? ` · ${puerta.cantidad} iguales` : ''}`}</span>
-      <span>{`${num(puerta.frente)} × ${num(puerta.alto)} cm`}</span>
+      <span>{`${medidaPuerta(puerta.frente)} × ${medidaPuerta(puerta.alto)} mm`}</span>
       <span>{`OF ${of || '—'}`}</span>
       <span className="rem-pedido-material" title={puerta.material}>{[puerta.material, puerta.color].filter(Boolean).join(' · ') || 'Sin material'}</span>
       {aprobadoPor && <span className="orders-detail-approved">{`Aprobado por ${controlLabel(aprobadoPor)}`}</span>}

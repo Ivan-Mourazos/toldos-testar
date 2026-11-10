@@ -2,6 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { cintasDesdeCotas, cintasSimetricas, leerCadena, ejesDesdeTramos, cintasDesdeFila } from './cadenaDibujo';
 
 describe('leerCadena', () => {
+  it('en pantalla todas las cotas son mm aunque parezcan cm por su tamaño', () => {
+    expect(leerCadena('10 20',30,'mm')).toEqual({pie:1,pasos:[],cabecera:2,enMm:true});
+    expect(ejesDesdeTramos('10 20',100,'mm')).toEqual({ejes:[1,3],enMm:true});
+    expect(cintasDesdeFila([12,120,20],300,12,'mm')).toMatchObject({enMm:true,xs:[1.2,286.8]});
+  });
   it('lee la fila de la hoja de Portanova en mm, de abajo arriba (AR2605035)', () => {
     expect(leerCadena('310 580 550 580 550 580 700', 0)).toEqual({ pie: 31, pasos: [58, 55, 58, 55, 58], cabecera: 70, enMm: true });
   });

@@ -185,11 +185,11 @@ Iván contestó el 22/10/2026 las siete dudas del estudio ([cortina-pvc-corte.md
 
 ## Portanova · enrollable con ventanas pequeñas · 10/11/2026
 
-Contraste en [puertas-portanova-ventanas.md](./puertas-portanova-ventanas.md). El AR2605470 está en curso; su CAD no se usa como regla. Iván confirma que el antecedente revisado AR2600650 contiene la misma puerta. Se toman sus posiciones medidas, sin aplicar una regla de centrado.
+Contraste en [puertas-portanova-ventanas.md](./puertas-portanova-ventanas.md). El AR2605470 está en curso; su CAD no se usa como regla. El antecedente AR2600650 contiene la misma puerta. Para ventanas nuevas prevalece la última indicación de Iván: colocarlas entre E.T., centradas en el tramo elegido; él ajusta después en el corte.
 
 | Código | Duda en lenguaje llano | Qué hace la web mientras tanto |
 | --- | --- | --- |
-| Q-PN-V01 · Contestada | ¿Hay que centrar las ventanas en el tramo de E.T.? | **Iván, 10/11/2026:** las de debajo no van centradas; las mueve en el corte si hace falta. Se toman 81 y 141 del AR2600650 revisado para el caso 5470. Cada fila tiene una altura editable desde el bajo; no hay una regla automática de centrado ni se deduce otra regla general. |
+| Q-PN-V01 · Contestada, criterio revisado | ¿Hay que centrar las ventanas en el tramo de E.T.? | **Última indicación de Iván, 10/11/2026:** «estas puertas debemos poner las ventanas entre E.T.s; después ya yo moveré en el corte si es necesario». Mismo bloque que las apilables: se elige el tramo y se centran entre sus ejes. Para el 5470, 75,5 y 141 cm (755 y 1410 mm en pantalla). Las ventanas antiguas sin tramo conservan su altura fija editable; no se migran los pedidos. |
 | Q-PN-V02 | ¿Se mantienen siempre los radios de hueco 2 y cristal 4 cuando la hoja no los acota? Coinciden en los antecedentes revisados 650 y 945. | Se proponen 2 y 4 cm, como en las apilables; los dos radios son editables en cada ventana. El cristal suma 2 por cada lado. |
 
 ## Puertas · contestadas el 22/10/2026

@@ -2,19 +2,22 @@ import React, { useState } from 'react';
 import { SelectField } from '../components/SelectField';
 import { MODELOS_PUERTAS } from '../../puertas/calcular.ts';
 import { tipoDePuerta } from '../../puertas/clientes.ts';
-import { esVertical, geometriaAlzado, numAlzado, textoCota, type CotaAlzado, type FormaAlzado, type TextoAlzado } from '../../puertas/alzado.ts';
+import { esVertical, geometriaAlzado, type CotaAlzado, type FormaAlzado, type TextoAlzado } from '../../puertas/alzado.ts';
 import type { Puerta, ResultadoPuerta } from '../../puertas/tipos.ts';
 import { tramosCota } from '../../puertas/tramosCota.ts';
+import { medidaPuerta } from './medidasPuertas';
+import { textoAlzadoMm, textoCotaMm } from './alzadoEnMm';
 
 // Pinta el alzado de src/puertas/alzado.ts: el mismo dibujo que sale en el plano DWG.
 
 const puntos = (ps: [number, number][]) => ps.map(([x, y]) => `${x},${y}`).join(' ');
 
 function Texto({ t, araujo }: { t: TextoAlzado; araujo:boolean }) {
+  const lineas=textoAlzadoMm(t.lineas.join('\n')).split('\n');
   const texto = (
     <text
       x={t.x}
-      y={t.y - (t.alineacionVertical === 'middle' && t.taller ? (t.lineas.length - 1) * (t.tamano ?? 10) * .6 : 0)}
+      y={t.y - (t.alineacionVertical === 'middle' && t.taller ? (lineas.length - 1) * (t.tamano ?? 10) * .6 : 0)}
       dy={araujo?(t.tamano??5)*.36:undefined}
       textAnchor={t.ancla === 'start' ? undefined : t.ancla}
       className={t.clase}
@@ -23,12 +26,12 @@ function Texto({ t, araujo }: { t: TextoAlzado; araujo:boolean }) {
       transform={t.giro ? `rotate(${t.giro} ${t.x} ${t.y})` : undefined}
     >
       {t.taller
-        ? t.lineas.map((linea, idx) => (
+        ? lineas.map((linea, idx) => (
             <tspan key={idx} x={t.x} dy={idx === 0 ? 0 : (t.tamano ?? 10) * 1.2}>
               {linea}
             </tspan>
           ))
-        : t.lineas[0]}
+        : lineas[0]}
     </text>
   );
   if (!t.taller) return texto;
@@ -65,7 +68,7 @@ function Cota({ c, araujo }: { c: CotaAlzado; araujo:boolean }) {
         dominantBaseline={c.tamanoTexto ? 'middle' : undefined}
         transform={t.giro ? `rotate(${t.giro} ${t.x} ${t.y})` : undefined}
       >
-        {textoCota(c)}
+        {textoCotaMm(c)}
       </text>
     </g>
   );
@@ -103,11 +106,11 @@ export function AlzadoPuerta({ puerta: p, resultado, letra = 'A' }: { puerta: Pu
           {p.clientePuertas||p.araujo?tipoDePuerta(p).nombre:MODELOS_PUERTAS[p.modelo]} · {p.of || 'SIN OF'}
         </span>
       </header>
-      <p>Medidas terminadas · cm · {p.araujo||p.santapau?'vista por el revés':'vista de frente'}</p>
+      <p>Medidas terminadas · mm · {p.araujo||p.santapau?'vista por el revés':'vista de frente'}</p>
       {vistas&&vistas.length>1&&<SelectField label="Ampliar pieza del alzado" value={seleccion} options={['todas',...vistas.map((_,i)=>String(i))]} optionLabel={v=>v==='todas'?'Todas las piezas':vistas[Number(v)].nombre} onChange={setPieza}/>}
       <svg
         role="img"
-        aria-label={`Alzado ${p.clientePuertas||p.araujo?tipoDePuerta(p).nombre:MODELOS_PUERTAS[p.modelo]} ${numAlzado(F)} por ${numAlzado(H)} centímetros`}
+        aria-label={`Alzado ${p.clientePuertas||p.araujo?tipoDePuerta(p).nombre:MODELOS_PUERTAS[p.modelo]} ${medidaPuerta(F)} por ${medidaPuerta(H)} milímetros`}
         style={{ '--puerta-letra': `${letraBase}px`, ...(p.modelo==='SYSTEMDOCK'?{aspectRatio:`${vista.ancho} / ${vista.alto}`}:{}) } as React.CSSProperties}
         viewBox={`${vista.xMin} ${vista.yMin} ${vista.ancho} ${vista.alto}`}
       >

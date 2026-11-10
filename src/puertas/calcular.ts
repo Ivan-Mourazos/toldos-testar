@@ -38,7 +38,7 @@ export function alturasTubos(p: Puerta): number[] {
 }
 /** Altura desde abajo de una ventana centrada en el tramo entre el tubo n y el n + 1, o null si ese tramo no existe. */
 export function yEnTramo(p: Puerta, tramo: number, alto: number): number | null {
-  const t = alturasTubos(p);
+  const t = p.modelo === 'PUERTAENR' ? p.entradas.map(e => e.altura) : alturasTubos(p);
   if (!Number.isInteger(tramo) || tramo < 1 || tramo >= t.length) return null;
   return n((t[tramo - 1] + t[tramo]) / 2 - alto / 2);
 }

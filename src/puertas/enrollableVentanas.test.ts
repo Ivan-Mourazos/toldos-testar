@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createHash } from 'node:crypto';
-import { calcularPuerta } from './calcular.ts';
+import { calcularPuerta, yEnTramo } from './calcular.ts';
 import { generarCortePuertas } from './corte.ts';
 import { geometriaAlzado } from './alzado.ts';
 import { dibujarAlzadoEnrollable } from './planoEnrollable.ts';
@@ -13,13 +13,25 @@ import { escribirPlanoPuertas } from './plano.ts';
 import huellas from './__fixtures__/sha-portanova-1734a4d.json';
 import { anchoArial } from '../domain/corteLona/texto.js';
 
+const centrada5470 = () => {
+  const p=enrollable5470();
+  return {...p,ventanas:p.ventanas.map((v,i)=>{const tramo=i<3?1:2;return {...v,tramo,y:yEnTramo(p,tramo,v.alto)!};})};
+};
+
 describe('Enrollable Portanova con ventanas pequeñas · AR2605470', () => {
+  it('centra las ventanas nuevas entre las E.T. de la enrollable, como las apilables', () => {
+    const p=enrollable5470();
+    expect(yEnTramo(p,1,40)).toBe(75.5);
+    expect(yEnTramo(p,2,40)).toBe(141);
+    expect(yEnTramo(p,0,40)).toBeNull();
+    expect(yEnTramo(p,5,40)).toBeNull();
+  });
   it('despieza seis huecos y cristales de 126 × 44 sobre un cuerpo continuo, sin cachos', () => {
-    const p = enrollable5470(), r = calcularPuerta(p);
+    const p = centrada5470(), r = calcularPuerta(p);
     expect(r.avisos.filter(a => a.nivel === 'error')).toEqual([]);
     expect(r.piezas.flatMap(x => x.huecos)).toHaveLength(6);
-    // Posiciones medidas del 650 revisado. La fila inferior NO está centrada entre las E.T. de 60 y 131.
-    expect([...new Set(p.ventanas.map(v => v.y))]).toEqual([81, 141]);
+    // Iván, 10/11/2026: se proponen centradas entre E.T.; él ajusta después en el corte.
+    expect([...new Set(p.ventanas.map(v => v.y))]).toEqual([75.5, 141]);
     expect(r.piezas.filter(x => x.clase === 'cristal').map(x => [x.ancho, x.alto, x.radio])).toEqual(Array(6).fill([126, 44, 4]));
     expect(r.piezas.some(x => x.clase === 'cacho')).toBe(false);
     expect(r.piezas.filter(x => x.clase === 'pano').reduce((s, x) => s + x.alto, 0)).toBe(532);
@@ -29,7 +41,7 @@ describe('Enrollable Portanova con ventanas pequeñas · AR2605470', () => {
   });
 
   it('dibuja y corta los huecos con CUTTER y el cristal con DISCO1 y CUTTER, agrupado X6', () => {
-    const p = enrollable5470(), vista = generarCortePuertas(pedidoDe('AR2605470', p));
+    const p = centrada5470(), vista = generarCortePuertas(pedidoDe('AR2605470', p));
     expect(vista.archivo?.dxf).toContain('EOF');
     const cristal = vista.cortes.find(c => c.material === p.materialCristal)!;
     expect(cristal.colocadas).toHaveLength(1);
@@ -41,6 +53,12 @@ describe('Enrollable Portanova con ventanas pequeñas · AR2605470', () => {
     expect(l.polilineas.filter(a => a.capa === 'curv')).toHaveLength(6);
     expect(l.polilineas.filter(a => a.capa === 'corte (vent)')).toHaveLength(6);
     expect(l.cotas.filter(c => c.valor === 122)).toHaveLength(6);
+    for(const y of [75.5,141]) {
+      expect(geometriaAlzado(p,calcularPuerta(p)).formas.filter(f=>f.tipo==='rect'&&f.clase==='puerta-cristal'&&f.y===530-y-40)).toHaveLength(3);
+      expect(l.polilineas.filter(f=>f.capa==='curv'&&Math.min(...f.puntos.map(q=>q[1]))===-530+y)).toHaveLength(3);
+    }
+    const r=calcularPuerta(p);
+    expect(r.piezas.filter(x=>x.clase==='pano').flatMap(x=>x.huecos.map(v=>v.y+x.origenAlzado![1])).sort((a,b)=>a-b)).toEqual([75.5,75.5,75.5,141,141,141]);
   });
 
   it('conserva la opción al guardar y rechaza valores mal formados', () => {
@@ -58,7 +76,7 @@ describe('Enrollable Portanova con ventanas pequeñas · AR2605470', () => {
     expect(calcularPuerta({ ...p, ventanas: [p.ventanas[0], p.ventanas[0]] }).avisos.some(a => a.codigo === 'VENTANAS_SOLAPADAS')).toBe(true);
   });
 
-  it('respeta la altura editada de la fila en el alzado, el plano y los huecos de corte', () => {
+  it('conserva y permite editar las alturas fijas antiguas en alzado, plano y corte', () => {
     const p = enrollable5470();
     p.ventanas = p.ventanas.map(v => v.y === 81 ? { ...v, y: 84 } : v);
     const r = calcularPuerta(p);

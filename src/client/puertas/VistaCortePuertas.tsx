@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import type { CortePuertas, PedidoPuertas, VistaPuertas } from '../../puertas/tipos.ts';
 import { presentarImpresionAraujo } from '../../puertas/cotasImpresionAraujo.ts';
 import '../coordina/corte-lona.css';
+import { textoMedidasMm } from './medidasPuertas';
 
 /** `ajustado`: solo lo que ocupan las piezas, sin el resto del rollo ni el título (el resumen junto al alzado). */
 export function DibujoCortePuertas({corte,zoom=1,ajustado=false}:{corte:CortePuertas;zoom?:number;ajustado?:boolean}) {
@@ -17,7 +18,7 @@ export function DibujoCortePuertas({corte,zoom=1,ajustado=false}:{corte:CortePue
       const x1=a.x+a.r*Math.cos(rad(a.hasta)),y1=-a.y-a.r*Math.sin(rad(a.hasta));
       return <path key={i} d={`M ${x0} ${y0} A ${a.r} ${a.r} 0 0 0 ${x1} ${y1}`} className={a.capa==='CUTTER'?'puerta-cutter':'corte-linea'} vectorEffect="non-scaling-stroke"/>;
     })}
-    {c.entidades.textos.map((t,i)=><text key={i} x={t.x} y={-t.y} fontSize={t.h} className={t.capa==='ROTULADOR'?'puerta-texto-rotulador':undefined} textAnchor={t.centrado?'middle':'start'} dominantBaseline={t.centrado?'central':'auto'} transform={t.giro?`rotate(${-t.giro} ${t.x} ${-t.y})`:undefined}>{t.valor}<title>{t.capa} · {t.valor} · {(t.h/10).toLocaleString('es-ES')} cm</title></text>)}
+    {c.entidades.textos.map((t,i)=><text key={i} x={t.x} y={-t.y} fontSize={t.h} className={t.capa==='ROTULADOR'?'puerta-texto-rotulador':undefined} textAnchor={t.centrado?'middle':'start'} dominantBaseline={t.centrado?'central':'auto'} transform={t.giro?`rotate(${-t.giro} ${t.x} ${-t.y})`:undefined}>{textoMedidasMm(t.valor)}<title>{t.capa} · {textoMedidasMm(t.valor)} · {t.h.toLocaleString('es-ES')} mm</title></text>)}
   </svg>;
 }
 type EstadoVista = {entrada:string;datos?:VistaPuertas;error?:string;cargando?:boolean};
@@ -59,7 +60,7 @@ export function CorteResumen({vista}:{vista:VistaCorte}) {
     {actual?.error&&<p role="alert" className="corte-aviso">{actual.error}</p>}
     {actual?.datos&&!actual.datos.cortes.length&&<p className="corte-ayuda">Completa las medidas y los anchos de rollo para colocar las piezas.</p>}
     {actual?.datos?.cortes.map((c,i)=><figure key={i}>
-      <figcaption>{c.material}{nombreOpcion(c)} · rollo {(c.anchoRollo/10).toLocaleString('es-ES')} · {(c.largo/1000).toLocaleString('es-ES',{maximumFractionDigits:2})} m</figcaption>
+      <figcaption>{c.material}{nombreOpcion(c)} · rollo {c.anchoRollo.toLocaleString('es-ES')} mm · {c.largo.toLocaleString('es-ES',{maximumFractionDigits:2})} mm</figcaption>
       <DibujoCortePuertas corte={c} ajustado/>
     </figure>)}
   </section>;

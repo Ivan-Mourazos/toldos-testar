@@ -1,10 +1,10 @@
 /** Lee la fila de cotas del dibujo tal como viene en la hoja de Portanova, de abajo arriba: pie, pasos y cabecera
  * (AR2605035: «310 580 550 580 550 580 700», en mm). Si la suma cuadra con el alto en cm, se toman como cm. */
-export function leerCadena(texto:string, alto:number): {pie:number;pasos:number[];cabecera:number;enMm:boolean}|null {
+export function leerCadena(texto:string, alto:number, unidad:'auto'|'mm'='auto'): {pie:number;pasos:number[];cabecera:number;enMm:boolean}|null {
   const valores=texto.trim().split(/[\s;]+/).filter(Boolean).map(x=>Number(x.replace(',','.')));
   if(valores.length<2||valores.some(v=>!Number.isFinite(v)||v<=0)) return null;
   const suma=valores.reduce((s,v)=>s+v,0);
-  const enMm=!(alto>0&&Math.abs(suma-alto)<Math.abs(suma/10-alto));
+  const enMm=unidad==='mm'||!(alto>0&&Math.abs(suma-alto)<Math.abs(suma/10-alto));
   const cm=valores.map(v=>Math.round((enMm?v/10:v)*100)/100);
   return {pie:cm[0],pasos:cm.slice(1,-1),cabecera:cm[cm.length-1],enMm};
 }
@@ -53,18 +53,18 @@ export function cintasDesdeCotas(mm: number[], frente: number, ancho = 12): { xs
  * tener que andar calculando las sumas para las posiciones»): del bajo al primer eje y de eje a eje. Si el último
  * tramo llega arriba (la suma da el alto), es la cabecera y no es un eje. En mm o en cm: si en cm la suma se pasa
  * del alto, son mm. Devuelve el eje de cada E.T. desde abajo, en cm. */
-export function ejesDesdeTramos(texto: string, alto: number): { ejes: number[]; enMm: boolean } | { error: string } {
+export function ejesDesdeTramos(texto: string, alto: number, unidad:'auto'|'mm'='auto'): { ejes: number[]; enMm: boolean } | { error: string } {
   const valores = texto.trim().split(/[\s;]+/).filter(Boolean).map((x) => Number(x.replace(',', '.')));
   if (!valores.length || valores.some((v) => !Number.isFinite(v) || v <= 0)) return { error: 'Escribe los tramos separados por espacios, de abajo arriba.' };
   if (!(alto > 0)) return { error: 'Pon antes el alto de la puerta.' };
   const suma = valores.reduce((s, v) => s + v, 0);
-  const enMm = suma > alto + 1;
+  const enMm = unidad==='mm'||suma > alto + 1;
   const cm = valores.map((v) => Math.round((enMm ? v / 10 : v) * 100) / 100);
   let eje = 0;
   const ejes = cm.map((v) => (eje = Math.round((eje + v) * 100) / 100));
   if (Math.abs(ejes[ejes.length - 1] - alto) <= 1) ejes.pop();
   if (!ejes.length) return { error: 'Solo hay un tramo hasta arriba: falta el del primer eje.' };
-  if (ejes[ejes.length - 1] >= alto) return { error: `Los tramos suman ${ejes[ejes.length - 1]} cm y la puerta mide ${alto}: revisa las cotas.` };
+  if (ejes[ejes.length - 1] >= alto) return { error: `Los tramos suman ${ejes[ejes.length - 1]} cm y la puerta mide ${alto} cm: revisa las cotas.` };
   return { ejes, enMm };
 }
 
@@ -74,10 +74,10 @@ export function ejesDesdeTramos(texto: string, alto: number): { ejes: number[]; 
  * al inicio del recorte del centro, ese recorte se añade; si llega al centro o se queda antes, solo se reflejan los
  * escritos. En mm, como el dibujo; si los recortes vienen como 12 (en cm), se toma todo en cm. Devuelve las X en cm.
  */
-export function cintasDesdeFila(valores: number[], frente: number, ancho = 12): { xs: number[]; enMm: boolean } | { error: string } {
+export function cintasDesdeFila(valores: number[], frente: number, ancho = 12, unidad:'auto'|'mm'='auto'): { xs: number[]; enMm: boolean } | { error: string } {
   if (!valores.length || valores.some((v) => !Number.isFinite(v) || v <= 0)) return { error: 'Escribe las cotas separadas por espacios, empezando por la izquierda.' };
   if (!(frente > 0)) return { error: 'Pon antes el frente: hace falta para la parte derecha.' };
-  const enMm = !valores.some((v) => Math.abs(v - ancho) < 0.05) || valores.some((v) => Math.abs(v - ancho * 10) < 0.5);
+  const enMm = unidad==='mm'||!valores.some((v) => Math.abs(v - ancho) < 0.05) || valores.some((v) => Math.abs(v - ancho * 10) < 0.5);
   const cm = valores.map((v) => (enMm ? v / 10 : v));
   const esRecorte = (v: number) => Math.abs(v - ancho) < 0.05;
   if (!cm.some(esRecorte)) return { error: `No hay ningún recorte de ${enMm ? ancho * 10 : ancho} en la fila: entre cota y cota va el recorte.` };
