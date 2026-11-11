@@ -37,4 +37,15 @@ describe('archivos del corte de remolques', () => {
     expect(avisos.join(' ')).not.toMatch(/carpeta del bot/);
     expect(await fs.readdir(pendientes)).toEqual([]);
   });
+
+  // Iván, 11/11/2026: «de principio en los cortes de remolques no vamos a aprovechar con cosas de stock».
+  it('de entrada no mete sacos ni tiras de stock en los huecos; queda apagado, no borrado', async () => {
+    const ajustes = async () => ({});
+    const stock = (cortes) => cortes.reduce((n, c) => n + c.sacos.length + c.refuerzosStock.length, 0);
+    const sin = await crearCorteRemolques({ ajustes, oda: { disponible: false } }).vista(AR2605132);
+    expect(stock(sin.cortes)).toBe(0);
+    expect(JSON.stringify(sin.cortes)).not.toMatch(/STOCK/);
+    const con = await crearCorteRemolques({ ajustes, oda: { disponible: false }, aprovecharStock: true }).vista(AR2605132);
+    expect(stock(con.cortes)).toBeGreaterThan(0);
+  });
 });

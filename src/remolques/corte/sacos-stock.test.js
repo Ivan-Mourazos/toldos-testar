@@ -93,9 +93,9 @@ describe('sacos de stock en remolques, contraste de varios pedidos reales', () =
     expect(() => generarCorteRemolques(a, { ofStockSacos: '123' })).toThrow(/siete cifras/);
   });
 
-  it('la vista, el plano y la descarga leen la misma OF de stock del servidor', async () => {
+  it('con el stock encendido, la vista, el plano y la descarga leen la misma OF de stock del servidor', async () => {
     const ofStockSacos = async () => ({ of: '1234567', avisos: ['Aviso de lectura del dibujo de stock.'] });
-    const corte = crearCorteRemolques({ ajustes: async () => ({}), oda: { disponible: false }, ofStockSacos });
+    const corte = crearCorteRemolques({ ajustes: async () => ({}), oda: { disponible: false }, ofStockSacos, aprovecharStock: true });
     const vista = await corte.vista(b);
     expect(vista.cortes[0].sacos.length).toBeGreaterThan(0);
     expect(vista.cortes[0].sacos.every(s => s.of === '1234567')).toBe(true);
