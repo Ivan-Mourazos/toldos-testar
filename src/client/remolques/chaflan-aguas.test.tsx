@@ -20,13 +20,14 @@ const input: LonaInput = { ...emptyLona(), largo: 250, ancho: 140, altoDelante: 
   radioChaflanAbajo: 7, radioChaflanArriba: 7, recogeDelante: 'NO', recogeAtras: 'NO' };
 
 describe('chaflán con aguas en las pantallas y las salidas', () => {
-  it('pide las medidas del pedido y muestra la demasía de la lona hecha', () => {
+  it('pide las medidas del pedido y dice que el plano no cambia en la lona hecha', () => {
     const html = renderToStaticMarkup(<FormularioLona input={input} materiales={[]} onChange={() => {}} />);
     expect(html).toContain('Cómo se mide');
     expect(html).toContain('Plano superior');
     expect(html).toContain('data-campo="aguas"');
     expect(html).not.toContain('data-campo="chaflan"');
-    expect(html).toContain('Plano de lona hecha: 38 cm');
+    expect(html).toContain('Plano de lona hecha: 37 cm');
+    expect(html).not.toContain('38 cm');
     expect(html).toContain('Calculado por la web');
   });
 
@@ -44,16 +45,20 @@ describe('chaflán con aguas en las pantallas y las salidas', () => {
     }
   });
 
-  it('suma un centímetro al plano y al ancho de la lona hecha, conservando las aguas', () => {
+  it('la lona hecha es el remolque desplazado medio centímetro: plano 37 y aguas 14', () => {
+    // Iván, 11/11/2026: «has aumentado de 37 a 38 y no deberías»; se dibuja el remolque exacto y se
+    // desplaza medio centímetro todo el contorno para tener el centímetro de más en el ancho.
     const sinDemasia = contornoAutomatico(input, 0)!;
-    expect(contornoAutomatico(input, 1)).toBeCloseTo(sinDemasia + 1, 6);
+    // El contorno se da con un decimal.
+    expect(contornoAutomatico(input, 1)).toBeCloseTo(sinDemasia + Math.PI * 0.5, 1);
     const res = calcLona(input, DEFAULT_PARAMS);
     const escena = escenaLona(input, res, DEFAULT_PARAMS)!;
     if (escena.cuerpo.tipo !== 'lona') throw Error('Falta la lona');
     const techo = escena.cuerpo.perfilDelante.filter(([, y]) => Math.abs(y - 127) < 1e-9);
-    expect(techo[1][0] - techo[0][0]).toBeCloseTo(38, 6);
+    expect(techo[1][0] - techo[0][0]).toBeCloseTo(37, 6);
     expect(escena.cotas.some(c => c.texto === '14')).toBe(true);
-    expect(escena.cotas.some(c => c.texto === '38')).toBe(true);
+    expect(escena.cotas.some(c => c.texto === '37')).toBe(true);
+    expect(escena.cotas.some(c => c.texto === '38')).toBe(false);
   });
 
   it('la hoja y el respaldo SVG identifican el plano y las aguas', () => {
@@ -67,17 +72,18 @@ describe('chaflán con aguas en las pantallas y las salidas', () => {
     const el = { input, result: calcLona(input, DEFAULT_PARAMS), paramsSnapshot: DEFAULT_PARAMS };
     expect(soportada(el)).toBeNull();
     const p = piezasLona(el);
-    const hecha = esquinaChaflan({ ancho: 141, alto: 127, anchoPlanoSuperior: 38, aguas: 14,
+    // El remolque exacto: la lona hecha y el corte son desplazamientos suyos, con la misma pendiente.
+    const remolque = esquinaChaflan({ ancho: 140, alto: 127, anchoPlanoSuperior: 37, aguas: 14,
       modoChaflan: 'plano-aguas', radioAbajo: 7, radioArriba: 7 })!;
     const corte = esquinasChaflan(p.f, p.anchoPerfil, p.d.p.h);
-    expect(corte.anguloPendiente).toBeCloseTo(hecha.anguloPendiente, 9);
+    expect(corte.anguloPendiente).toBeCloseTo(remolque.anguloPendiente, 9);
     expect((corte.entrada * Math.tan(corte.anguloPendiente))).toBeCloseTo(corte.caida, 7);
     for (const cabeza of [p.d.p, p.t.p]) {
       const arcos = cabeza.arcos as Array<{ x: number; y: number; r: number; desde: number; hasta: number }>;
       expect(arcos).toHaveLength(4);
       const plano = (cabeza.lineas as number[][]).find(([, y1, , y2]) => y1 === cabeza.h && y2 === cabeza.h)!;
-      expect(plano[2] - plano[0]).toBeCloseTo(380, 6);
-      expect(arcos.every(a => a.r === 80)).toBe(true);
+      expect(plano[2] - plano[0]).toBeCloseTo(370, 6);
+      expect(arcos.every(a => Math.abs(a.r - 85) < 1e-9)).toBe(true);
       expect(arcos.some(a => Math.abs(a.hasta - a.desde - 45) > 1)).toBe(true);
       for (const a of arcos) expect([a.x, a.y, a.r, a.desde, a.hasta].every(Number.isFinite)).toBe(true);
     }

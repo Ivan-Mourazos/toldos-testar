@@ -103,9 +103,13 @@ function forma(i, demasiaLonaHecha = 1) {
   // vértices virtuales de la web y, si una arista lleva radio, ese radio + 1 cm, como el arquillado. Contrastado
   // con los cortes a mano de Euro Remolque (AR2604263 y otros 9: chaflán 14, radios 7 y 7,5 → arcos de 80 y 85).
   const masUno = (v) => ((v ?? 0) > 0 ? (v + 1) * 10 : 0);
-  // El plano recto conserva la medida hecha: al desplazar el corte 1 cm hacia fuera,
-  // los radios crecen 1 cm y sus centros mantienen la distancia entre tangencias.
-  const chaflan = tipo === 'TIPO 04' ? { modoChaflan: i.modoChaflan, plano: ((i.anchoPlanoSuperior ?? 0) + (i.demasiaLonaHecha ?? demasiaLonaHecha)) * 10, aguas: (i.aguas ?? 0) * 10, cara: (i.chaflan ?? 0) * 10, rAbajo: masUno(i.radioChaflanAbajo), rArriba: masUno(i.radioChaflanArriba) } : null;
+  // Plano superior y aguas (Iván, 11/11/2026): el remolque exacto, desplazado medio centímetro, es el
+  // terminado; el paño suma su centímetro. Se guardan las medidas del remolque y el desplazamiento.
+  const planoAguas = tipo === 'TIPO 04' && i.modoChaflan === 'plano-aguas';
+  const chaflan = tipo === 'TIPO 04' ? { modoChaflan: i.modoChaflan, plano: (i.anchoPlanoSuperior ?? 0) * 10, aguas: (i.aguas ?? 0) * 10, cara: (i.chaflan ?? 0) * 10,
+    rAbajo: planoAguas ? (i.radioChaflanAbajo ?? 0) * 10 : masUno(i.radioChaflanAbajo),
+    rArriba: planoAguas ? (i.radioChaflanArriba ?? 0) * 10 : masUno(i.radioChaflanArriba),
+    desfase: planoAguas ? ((i.demasiaLonaHecha ?? demasiaLonaHecha) / 2) * 10 : 0 } : null;
   return { tipo, r, aguas, rHombro, rCumbrera, chaflan };
 }
 
@@ -114,25 +118,12 @@ function forma(i, demasiaLonaHecha = 1) {
  * `pata` lo que baja por el lado y entra por arriba; los arcos, tangentes al lado, al chaflán y al techo.
  */
 export function esquinasChaflan(f, w, h) {
-  let e = esquinaChaflan({ ancho: w, alto: h, chaflan: f.chaflan.cara,
+  // Plano superior y aguas: el corte es el remolque exacto desplazado el terminado (medio cm) más el
+  // centímetro del paño, con la misma pendiente y los radios del remolque crecidos lo mismo.
+  const e = esquinaChaflan({ ancho: w, alto: h, chaflan: f.chaflan.cara,
     modoChaflan: f.chaflan.modoChaflan, anchoPlanoSuperior: f.chaflan.plano, aguas: f.chaflan.aguas,
-    radioAbajo: f.chaflan.rAbajo, radioArriba: f.chaflan.rArriba });
-  if (f.chaflan.modoChaflan === 'plano-aguas') {
-    // Se desarrolla primero el terminado y después se desplaza su contorno 1 cm
-    // hacia fuera. Recalcular la pendiente con el ancho y los radios de corte
-    // alteraría las aguas y dejaría la rosa con un ángulo distinto al remolque.
-    const hecha = esquinaChaflan({ ancho: w - 20, alto: h - 10, modoChaflan: 'plano-aguas',
-      anchoPlanoSuperior: f.chaflan.plano, aguas: f.chaflan.aguas,
-      radioAbajo: Math.max(f.chaflan.rAbajo - 10, 0), radioArriba: Math.max(f.chaflan.rArriba - 10, 0) });
-    if (!hecha) throw Error('Las medidas y radios del chaflán no caben en la cabeza de corte.');
-    const entrada = hecha.entrada + 10 - 10 * Math.tan(hecha.giroArriba / 2);
-    const caida = hecha.caida + 10 - 10 * Math.tan(hecha.giroAbajo / 2);
-    const cara = Math.hypot(entrada, caida);
-    const tangenteAbajo = f.chaflan.rAbajo * Math.tan(hecha.giroAbajo / 2);
-    const tangenteArriba = f.chaflan.rArriba * Math.tan(hecha.giroArriba / 2);
-    e = { ...hecha, entrada, caida, pata: caida, cara, radioAbajo: f.chaflan.rAbajo, radioArriba: f.chaflan.rArriba,
-      tangenteAbajo, tangenteArriba, caraRecta: Math.max(cara - tangenteAbajo - tangenteArriba, 0) };
-  }
+    radioAbajo: f.chaflan.rAbajo, radioArriba: f.chaflan.rArriba,
+    desfaseChaflan: f.chaflan.modoChaflan === 'plano-aguas' ? f.chaflan.desfase + 10 : 0 });
   if (!e) throw Error('Las medidas y radios del chaflán no caben en la cabeza de corte.');
   const cos = Math.cos(e.anguloPendiente), sen = Math.sin(e.anguloPendiente);
   const hombro = h - e.caida - e.tangenteAbajo;

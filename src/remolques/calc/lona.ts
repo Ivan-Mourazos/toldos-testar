@@ -170,11 +170,15 @@ export function contornoAutomatico(
   if (input.tipoPerfil === "TIPO 04" && input.modoChaflan === "plano-aguas" && errorChaflanConAguas(input)) return null;
   const ancho = atras && (input.anchoAtras ?? 0) > 0 ? input.anchoAtras! : input.ancho;
   const alto = atras && input.altoAtras > 0 ? input.altoAtras : input.altoDelante;
+  const demasia = input.demasiaLonaHecha ?? demasiaLonaHecha;
+  // Plano superior y aguas (Iván, 11/11/2026): la lona hecha es el remolque exacto desplazado
+  // medio centímetro por todo el contorno; así gana el centímetro de ancho, el techo sube medio
+  // y el plano sigue midiendo lo mismo entre curvas.
+  const desfase = input.tipoPerfil === "TIPO 04" && input.modoChaflan === "plano-aguas" ? demasia / 2 : 0;
   const valor = contornoCalculado(input.tipoPerfil, {
-    ancho: ancho + (input.demasiaLonaHecha ?? demasiaLonaHecha), alto,
+    ancho: ancho + demasia, alto: alto + desfase, desfaseChaflan: desfase,
     modoChaflan: input.modoChaflan,
-    anchoPlanoSuperior: input.anchoPlanoSuperior == null ? undefined
-      : input.anchoPlanoSuperior + (input.demasiaLonaHecha ?? demasiaLonaHecha),
+    anchoPlanoSuperior: input.anchoPlanoSuperior,
     aguas: input.aguas, radioCumbrera: input.radioCumbrera, radioHombro: input.radioHombro,
     radioEsquina: input.radioEsquina, chaflan: input.chaflan,
     radioChaflanAbajo: input.radioChaflanAbajo, radioChaflanArriba: input.radioChaflanArriba,

@@ -9,8 +9,12 @@ cliente Carlos López Cao y PVC azul 5015. La forma solo consta en el dibujo.
 - Alto total: **127 cm** delante y detrás.
 - El radio se obtiene en Oficina Técnica del dibujo del cliente. La hoja aportada no permite
   fijar un radio numérico confirmado: no se deduce de la foto ni se asigna uno por defecto.
-- Demasía de lona hecha: **1 cm**, recordada por Iván. En este caso ancho hecho 141 y plano hecho 38.
-  Se usa el parámetro de demasía vigente del pedido, también si es distinto de 1.
+- Demasía de lona hecha: **1 cm** en el ancho. **Cómo se aplica (Iván, 11/11/2026, corregido):** se
+  dibuja el remolque con sus medidas exactas (plano 37) y se desplaza **medio centímetro** hacia
+  fuera todo el contorno (lados y techo). Esa raya es el remolque terminado: ancho 141, techo medio
+  centímetro más arriba, radios +0,5 y **el plano sigue en 37** entre curvas (no 38, como se hizo
+  al principio). Después el paño suma su centímetro, como siempre.
+  Se usa el parámetro de demasía vigente del pedido: el desplazamiento es la mitad.
 
 ## Entrada y geometría
 
@@ -27,8 +31,10 @@ R_abajo·tan((π/2 − θ)/2) y R_arriba·tan(θ/2).
 El contorno suma ambos lados rectos, las dos pendientes rectas entre tangencias,
 el plano superior y los cuatro arcos con sus giros reales; no usa una polilínea aproximada.
 
-El contorno se calcula sobre la lona hecha, añadiendo la misma demasía al ancho y al plano.
-El corte conserva las demasías existentes de cabezas y radios (+1 cm si la arista es curva).
+El contorno es el de la lona hecha: el del remolque desplazado medio centímetro, que es el del
+remolque más π·0,5 cm (los giros) con la pendiente y el plano sin cambiar.
+El corte es el remolque desplazado 1,5 cm (medio del terminado y uno del paño): radios del
+remolque + 1,5 cm con los mismos centros; la rosa, 1 cm por dentro, cae en la raya del terminado.
 La cabeza de corte se obtiene desplazando el terminado 1 cm en perpendicular, conservando
 la pendiente y el plano entre curvas. La rosa mantiene los centros y resta ese centímetro a los radios.
 No se fuerza 45° ni se reducen radios imposibles en silencio: se pide revisar las medidas.

@@ -129,7 +129,7 @@ export function perfilForma(tipo: TipoPerfil, opts: PerfilOpts): PerfilForma {
       // `chaflan` es la cara entre vértices virtuales, no la pata.
       const e = esquinaChaflan({
         ancho: w, alto: h, chaflan: opts.chaflan ?? 0,
-        modoChaflan: opts.modoChaflan, anchoPlanoSuperior: opts.anchoPlanoSuperior, aguas: opts.alturaPico,
+        modoChaflan: opts.modoChaflan, anchoPlanoSuperior: opts.anchoPlanoSuperior, aguas: opts.alturaPico, desfaseChaflan: opts.desfaseChaflan,
         radioAbajo: opts.radioChaflanAbajo, radioArriba: opts.radioChaflanArriba,
       });
       if (!e) return { puntos: [[0, 0], [0, h], [w, h], [w, 0]], aristas: [1, 2] };

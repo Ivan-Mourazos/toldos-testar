@@ -29,7 +29,10 @@ function opcionesPerfil(input: LonaInput, ancho: number, alto: number, anchoRemo
     radioHombro: input.radioHombro ?? 0,
     chaflan: input.chaflan ?? 0,
     modoChaflan: input.modoChaflan,
-    anchoPlanoSuperior: (input.anchoPlanoSuperior ?? 0) + ancho - anchoRemolque,
+    // La lona hecha es el remolque desplazado medio centímetro (la mitad de lo que gana el ancho):
+    // el plano mide lo mismo entre curvas y la pendiente no cambia.
+    anchoPlanoSuperior: input.anchoPlanoSuperior ?? 0,
+    desfaseChaflan: input.modoChaflan === "plano-aguas" ? Math.max((ancho - anchoRemolque) / 2, 0) : 0,
     radioChaflanAbajo: input.radioChaflanAbajo ?? 0,
     radioChaflanArriba: input.radioChaflanArriba ?? 0,
     radio: input.radioEsquina ?? 0,
@@ -94,7 +97,7 @@ export function escenaLona(input: LonaInput, res: LonaResult, params: CalcParams
     cotas: [
       ...cotasCuerpo(cuerpo, chasis.suelo),
       ...(input.tipoPerfil === "TIPO 04" && input.modoChaflan === "plano-aguas"
-        ? cotasPlanoSuperior(cuerpo, input.anchoPlanoSuperior! + wD - input.ancho, { delante: hD, atras: hA }) : []),
+        ? cotasPlanoSuperior(cuerpo, input.anchoPlanoSuperior!, { delante: hD, atras: hA }) : []),
       ...(conAguas ? cotasAguas(cuerpo, input.aguas ?? 0, { delante: hD, atras: hA }) : []),
       ...cotasVentana(ventana, cuerpo.perfilDelante, { cremallera: tipoCierre(input.recogeDelante) === "CREMALLERA" }),
     ],

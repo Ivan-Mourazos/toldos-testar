@@ -20,6 +20,14 @@ export interface DefinicionChaflan {
   modoChaflan?: "cara" | "plano-aguas";
   /** Tramo plano real entre las tangencias superiores, medido en el remolque. */
   anchoPlanoSuperior?: number;
+  /**
+   * Cuánto se desplaza hacia fuera el contorno del remolque exacto (Iván, 11/11/2026: «se hace
+   * el remolque de la medida exacta, con la de 37, y después el desfase a todo el contorno»).
+   * Con él, `ancho` y `alto` son los del contorno desplazado y los radios y el plano, los del
+   * remolque. Medio centímetro da la lona hecha (el centímetro de más en el ancho); el paño suma
+   * después su centímetro, como siempre. Ausente o cero: el remolque tal cual.
+   */
+  desfaseChaflan?: number;
 }
 
 export interface EsquinaChaflan {
@@ -48,12 +56,37 @@ export interface EsquinaChaflan {
   caraRecta: number;
 }
 
+/**
+ * La esquina del contorno desplazado `d` hacia fuera, con el origen en su propia pared y su
+ * techo. Los tramos rectos se apartan `d` en perpendicular, los arcos crecen `d` con el mismo
+ * centro y la pendiente no cambia: el plano entre curvas mide lo mismo. Una arista viva
+ * (radio 0) sigue viva; su vértice se corre por la bisectriz.
+ */
+export function desplazarEsquina(e: EsquinaChaflan, d: number): EsquinaChaflan {
+  if (!(d > 0)) return e;
+  const radioAbajo = e.radioAbajo > 0 ? e.radioAbajo + d : 0;
+  const radioArriba = e.radioArriba > 0 ? e.radioArriba + d : 0;
+  const entrada = e.entrada + d - d * Math.tan(e.giroArriba / 2);
+  const caida = e.caida + d - d * Math.tan(e.giroAbajo / 2);
+  const cara = Math.hypot(entrada, caida);
+  const tangenteAbajo = radioAbajo * Math.tan(e.giroAbajo / 2);
+  const tangenteArriba = radioArriba * Math.tan(e.giroArriba / 2);
+  return { ...e, entrada, caida, pata: caida, cara, radioAbajo, radioArriba, tangenteAbajo, tangenteArriba,
+    caraRecta: Math.max(cara - tangenteAbajo - tangenteArriba, 0) };
+}
+
 export function esquinaChaflan({
-  ancho, alto, chaflan = 0, radioAbajo = 0, radioArriba = 0, modoChaflan, anchoPlanoSuperior, aguas,
+  ancho, alto, chaflan = 0, radioAbajo = 0, radioArriba = 0, modoChaflan, anchoPlanoSuperior, aguas, desfaseChaflan = 0,
 }: {
   ancho: number; alto: number; chaflan?: number; aguas?: number;
   radioAbajo?: number; radioArriba?: number;
 } & DefinicionChaflan): EsquinaChaflan | null {
+  if (modoChaflan === "plano-aguas" && desfaseChaflan > 0) {
+    // Primero el remolque exacto y después su contorno desplazado.
+    const remolque = esquinaChaflan({ ancho: ancho - 2 * desfaseChaflan, alto: alto - desfaseChaflan,
+      modoChaflan, anchoPlanoSuperior, aguas, radioAbajo, radioArriba });
+    return remolque && desplazarEsquina(remolque, desfaseChaflan);
+  }
   if (modoChaflan === "plano-aguas") {
     if (![ancho, alto, anchoPlanoSuperior, aguas, radioAbajo, radioArriba].every(Number.isFinite)
       || !(anchoPlanoSuperior! > 0 && anchoPlanoSuperior! < ancho)

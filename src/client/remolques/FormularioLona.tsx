@@ -171,7 +171,8 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
           <CampoNum name="aguas" label="Aguas" error={errores.aguas}
             value={input.aguas ?? 0} onChange={(v) => set('aguas', v)} />
           <p className="rem-nota rem-span-4">Medidas del remolque. El plano se mide entre las curvas.
-            {(input.anchoPlanoSuperior ?? 0) > 0 && <> Plano de lona hecha: {fmt(input.anchoPlanoSuperior! + (input.demasiaLonaHecha ?? p.demasiaLonaHecha))} cm.</>}
+            {/* Iván, 11/11/2026: el remolque exacto desplazado medio centímetro; el plano entre curvas no cambia. */}
+            {(input.anchoPlanoSuperior ?? 0) > 0 && <> Plano de lona hecha: {fmt(input.anchoPlanoSuperior!)} cm (el remolque con medio centímetro más por todo el contorno).</>}
             {esquina && <> Chaflán calculado entre vértices: {fmt(esquina.cara)} cm.</>}
           </p>
         </>}
