@@ -640,6 +640,97 @@ html::-webkit-scrollbar-track { background: transparent; }
   margin-left: auto;
 }
 
+/* Buscador de la cabecera (11/11/2026), como el BuscadorGlobal de CoordinaOT: en el hueco central,
+   36 px de alto como las pestañas, con su lista de resultados debajo. */
+.cabecera-buscador {
+  flex: 1 1 16rem;
+  margin-left: auto;
+  max-width: 26rem;
+  min-width: 12rem;
+  position: relative;
+}
+.cabecera-buscador-campo { align-items: center; display: flex; position: relative; }
+.cabecera-buscador-campo > svg {
+  color: var(--text-muted);
+  height: 0.875rem;
+  left: 0.625rem;
+  pointer-events: none;
+  position: absolute;
+  width: 0.875rem;
+}
+html:root .app-shell .cabecera-buscador-campo input {
+  font-size: 0.75rem;
+  height: 2.25rem;
+  line-height: 1rem;
+  padding: 0 3.25rem 0 2rem;
+  width: 100%;
+}
+.cabecera-buscador-campo kbd {
+  border: 1px solid var(--border);
+  border-radius: 0.25rem;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 0 0.25rem;
+  pointer-events: none;
+  position: absolute;
+  right: 0.625rem;
+}
+.cabecera-buscador-limpiar {
+  background: none;
+  border: 0;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: grid;
+  margin: 0;
+  padding: 0.25rem;
+  place-items: center;
+  position: absolute;
+  right: 0.375rem;
+}
+.cabecera-buscador-limpiar:hover { color: var(--text); }
+.cabecera-buscador-limpiar svg { height: 0.875rem; width: 0.875rem; }
+.cabecera-buscador-panel {
+  background: var(--glass-bg-pop);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+  left: 0;
+  padding: 0.25rem;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.375rem);
+  z-index: 60;
+}
+.cabecera-buscador-panel p { color: var(--text-muted); font-size: 0.75rem; margin: 0; padding: 0.75rem 0.5rem; text-align: center; }
+.cabecera-buscador-panel ul { list-style: none; margin: 0; max-height: 24rem; overflow-y: auto; padding: 0; }
+.cabecera-buscador-panel li button {
+  align-items: center;
+  background: none;
+  border: 0;
+  border-radius: 0.5rem;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  font-family: inherit;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.375rem 0.5rem;
+  text-align: left;
+  width: 100%;
+}
+.cabecera-buscador-panel li button.es-activo { background: color-mix(in srgb, var(--color-brand-400) 18%, transparent); }
+.cabecera-buscador-punto { border-radius: 9999px; flex: none; height: 0.5rem; width: 0.5rem; }
+.cabecera-buscador-punto.es-pendiente { background: #f59e0b; }
+.cabecera-buscador-punto.es-generado { background: #059669; }
+.cabecera-buscador-texto { display: grid; min-width: 0; }
+.cabecera-buscador-texto > span { font-size: 0.75rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cabecera-buscador-texto b { font-family: var(--font-mono, monospace); font-weight: 600; }
+.cabecera-buscador-texto small { color: var(--text-muted); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Con el buscador en medio, el semáforo y «Soy» ya no necesitan empujar a la derecha. */
+.cabecera-buscador ~ .cabecera-derecha { margin-left: 0; }
+
 /* Semáforo del bot de corte: un chip como los demás con una luz del color del estado. */
 .cabecera-bot-caja { position: relative; }
 .cabecera-bot {

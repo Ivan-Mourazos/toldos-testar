@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { recortarHistorial, borradoresVisibles, claveBandeja, collapseAwnings, detalleEnColumnas, notasDevolucion, fechaBorrador, groupByDay, inboxSections, limitModels, mergePendingReviews, pendingGroups, pendingYears, productoDe } from './ordersInbox';
+import { prioridadDe, recortarPorMeses, groupByMonth, generadosDeHoy, borradoresVisibles, claveBandeja, collapseAwnings, detalleEnColumnas, notasDevolucion, fechaBorrador, groupByDay, inboxSections, limitModels, mergePendingReviews, pendingGroups, pendingYears, productoDe } from './ordersInbox';
 import type { ResumenBorrador } from '../borradores/tipos.ts';
 import type { CoordinaStatus, PedidoBandeja, ReviewSummary } from './types';
 
@@ -135,34 +135,45 @@ describe('formato de fechas de Pedidos', () => {
   });
 });
 
-describe('generados: solo los últimos días hasta pedir más', () => {
+describe('prioridad de CoordinaOT en el borde de la fila', () => {
+  const fila = { orderCode: 'AR2600001', summary: { awningList: [{ letter: 'A', of: '0231780' }, { letter: 'B', of: '0231781' }] } } as unknown as PedidoBandeja;
+  it('la más alta de sus OF; sin dato o sin CoordinaOT, ninguna', () => {
+    expect(prioridadDe(fila, { disponible: true, ofs: { '0231780': { estado: 'en_curso', prioridad: 2 }, '0231781': { estado: 'en_curso', prioridad: 3 } } })).toBe(3);
+    expect(prioridadDe(fila, { disponible: true, ofs: { '0231780': { estado: 'en_curso' } } })).toBeNull();
+    expect(prioridadDe(fila, { disponible: false })).toBeNull();
+    expect(prioridadDe(fila, null)).toBeNull();
+  });
+});
+
+describe('historial por meses y generados de hoy', () => {
   const pedido = (codigo: string, updatedAt: string) => ({ orderCode: codigo, updatedAt });
   // Del más reciente al más antiguo, como llegan de inboxSections.
   const lista = [
-    pedido('A', '2026-11-10T09:00:00'), pedido('B', '2026-10-25T18:00:00'), pedido('C', '2026-10-11T08:00:00'),
-    pedido('D', '2026-10-10T20:00:00'), pedido('E', '2026-09-01T10:00:00'),
+    pedido('A', '2026-11-10T09:00:00'), pedido('B', '2026-11-02T18:00:00'), pedido('C', '2026-10-31T08:00:00'),
+    pedido('D', '2026-10-01T20:00:00'), pedido('E', '2026-08-15T10:00:00'),
   ];
 
-  it('cuenta los días desde el último generado de la lista, no desde hoy', () => {
-    // Del 10/11 hacia atrás 30 días: hasta el 11/10 entero.
-    const r = recortarHistorial(lista, 30, false);
-    expect(r.visibles.map((p) => p.orderCode)).toEqual(['A', 'B', 'C']);
-    expect(r.ocultos).toBe(2);
+  it('enseña el mes más reciente y ofrece el siguiente que tenga pedidos', () => {
+    const r = recortarPorMeses(lista, 1, false);
+    expect(r.visibles.map((p) => p.orderCode)).toEqual(['A', 'B']);
+    expect(r).toMatchObject({ ocultos: 3, siguiente: 'Octubre 2026' });
+    // Septiembre no tiene pedidos: después de octubre viene agosto.
+    expect(recortarPorMeses(lista, 2, false)).toMatchObject({ ocultos: 1, siguiente: 'Agosto 2026' });
+    expect(recortarPorMeses(lista, 3, false)).toEqual({ visibles: lista, ocultos: 0, siguiente: null });
   });
 
-  it('cada «ver más» suma días; al final no queda nada oculto', () => {
-    expect(recortarHistorial(lista, 60, false)).toMatchObject({ ocultos: 1 });
-    expect(recortarHistorial(lista, 90, false)).toMatchObject({ ocultos: 0, visibles: lista });
+  it('filtrando se ve todo el año', () => {
+    expect(recortarPorMeses(lista, 1, true)).toEqual({ visibles: lista, ocultos: 0, siguiente: null });
   });
 
-  it('buscando se ve todo el año', () => {
-    expect(recortarHistorial(lista, 30, true)).toEqual({ visibles: lista, ocultos: 0 });
+  it('agrupa por mes con su nombre', () => {
+    const grupos = groupByMonth(lista as never[]);
+    expect(grupos.map((g) => [g.label, g.reviews.length])).toEqual([['Noviembre 2026', 2], ['Octubre 2026', 2], ['Agosto 2026', 1]]);
   });
 
-  it('los pedidos sin fecha salen cuando ya no queda nada con fecha por enseñar', () => {
-    const conSinFecha = [...lista, pedido('X', '')];
-    expect(recortarHistorial(conSinFecha, 30, false).ocultos).toBe(3);
-    expect(recortarHistorial(conSinFecha, 90, false)).toEqual({ visibles: conSinFecha, ocultos: 0 });
+  it('generados de hoy, por el día local', () => {
+    expect(generadosDeHoy(lista, new Date(2026, 10, 10, 18, 0)).map((p) => p.orderCode)).toEqual(['A']);
+    expect(generadosDeHoy(lista, new Date(2026, 10, 11, 8, 0))).toEqual([]);
   });
 });
 

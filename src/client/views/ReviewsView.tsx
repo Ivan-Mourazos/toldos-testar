@@ -28,7 +28,12 @@ import { controlLabel } from '../components/controlLabels';
 // Pedidos: la bandeja y el pedido abierto. Los pendientes llegan de App (año actual y
 // anterior, los mismos que cuenta «Pedidos · N»); aquí solo se lee el Historial del año
 // elegido, que no filtra los pendientes.
-export function ReviewsView({ refreshKey, puertas = true, parameters, currentUser, pending, pendingLoading, onChanged, onOpen, onReuse, onEditRemolques, onReuseRemolques, onEditPuertas, onReusePuertas, onSeguirBorrador, onToast, onConfirm, abrirAlCargar = null, onAbiertoAlCargar }: {
+export function ReviewsView({ modo = 'pedidos', todos = [], onIrHistorial, refreshKey, puertas = true, parameters, currentUser, pending, pendingLoading, onChanged, onOpen, onReuse, onEditRemolques, onReuseRemolques, onEditPuertas, onReusePuertas, onSeguirBorrador, onToast, onConfirm, abrirAlCargar = null, onAbiertoAlCargar }: {
+  /** «pedidos»: lo pendiente y lo generado hoy; «historial»: los generados del año (Iván, 11/11/2026). */
+  modo?: 'pedidos' | 'historial';
+  /** Todos los pedidos del año actual y el anterior (los del buscador de la cabecera). */
+  todos?: PedidoBandeja[];
+  onIrHistorial?: () => void;
   refreshKey: number;
   /** false: puertas en pausa en el servidor, sin filtro de puertas. */
   puertas?: boolean;
@@ -135,10 +140,13 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
   // pendientes puede estar en el Historial (ya generado). Si no está en ninguna, se dice: lo
   // normal es que aún no se haya guardado para revisión desde aquí.
   useEffect(() => {
-    if (!abrirAlCargar || pendingLoading || historyLoading || atendidoAlCargar.current === abrirAlCargar) return;
+    // Sin pedido pedido se olvida el último: buscar otra vez el mismo debe abrirlo de nuevo.
+    if (!abrirAlCargar) { atendidoAlCargar.current = null; return; }
+    if (pendingLoading || historyLoading || atendidoAlCargar.current === abrirAlCargar) return;
     atendidoAlCargar.current = abrirAlCargar;
     const sinPuntos = (codigo: string) => codigo.replace(/[.\s-]/g, '').toUpperCase();
-    const encontrado = [...pending, ...history].find((p) => sinPuntos(p.orderCode) === abrirAlCargar);
+    // También en todos: lo que se busca en la cabecera puede ser un generado del año anterior.
+    const encontrado = [...pending, ...history, ...todos].find((p) => sinPuntos(p.orderCode) === abrirAlCargar);
     queueMicrotask(() => {
       onAbiertoAlCargar?.();
       if (!encontrado) {
@@ -147,7 +155,7 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
       }
       abrir(encontrado);
     });
-  }, [abrirAlCargar, pendingLoading, historyLoading, pending, history, onAbiertoAlCargar, onToast, abrir]);
+  }, [abrirAlCargar, pendingLoading, historyLoading, pending, history, todos, onAbiertoAlCargar, onToast, abrir]);
 
   const detailIsCurrent = detail?.orderCode === selectedCode;
   const selectedReview = detailIsCurrent ? detail.review : null;
@@ -426,7 +434,7 @@ export function ReviewsView({ refreshKey, puertas = true, parameters, currentUse
           />
         )}
       <div hidden={Boolean(selectedCode||selectedRemolques||selectedPuertas||buscadorAbierto)}>
-        <OrdersInbox puertas={puertas} pending={pending} history={history} currentUser={currentUser}
+        <OrdersInbox modo={modo} onIrHistorial={onIrHistorial} puertas={puertas} pending={pending} history={history} currentUser={currentUser}
           pendingLoading={pendingLoading} historyLoading={historyLoading} year={year}
           onYear={value=>{setHistoryLoading(true);setYear(value);}} onOpen={abrir} coordinaStatus={coordinaStatus}
           borradores={borradores} onSeguirBorrador={borrador=>void seguirBorrador(borrador)}

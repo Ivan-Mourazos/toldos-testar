@@ -728,7 +728,8 @@ export type ReviewStatus = 'PENDING_REVIEW' | 'CHANGES_REQUESTED' | 'APPROVED' |
 export type CoordinaStatus = {
   disponible: boolean;
   /** `autor`: quien lleva la OF en CoordinaOT, también si la ha cogido otro técnico (23/10/2026). */
-  ofs?: Record<string, { estado: string; nota?: string; actualizado?: string | null; revisor?: string; autor?: string }>;
+  /** `prioridad`: la del pedido en CoordinaOT (1 poca, 2 normal, 3 urgente), para el borde de la fila (11/11/2026). */
+  ofs?: Record<string, { estado: string; nota?: string; actualizado?: string | null; revisor?: string; autor?: string; prioridad?: 1 | 2 | 3 }>;
   motivo?: string;
 };
 
@@ -780,4 +781,4 @@ export type PedidoBandeja = ReviewSummary | ResumenPedidoRemolques | ResumenPedi
 
 export type ReviewPackage = ReviewSummary & { order: DraftState & { parameters?: RuleParameters; parametersVersion?: number | null } };
 
-export type ActiveTab = 'order' | 'parameters' | 'reviews' | 'settings';
+export type ActiveTab = 'order' | 'parameters' | 'reviews' | 'historial' | 'settings';

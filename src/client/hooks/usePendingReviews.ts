@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PedidoBandeja } from '../types';
 import type { Notify } from '../components/NotificationCenter';
-import { mergePendingReviews, pendingYears } from '../ordersInbox';
+import { mergePendingReviews, mergeReviews, pendingYears } from '../ordersInbox';
 import { leerPedidosDelAnio } from './listaPedidos';
 
 // Pedidos pendientes de generar, de toldos y de remolques (fase 5), para la bandeja y para el contador «Pedidos · N» de la
@@ -10,6 +10,8 @@ import { leerPedidosDelAnio } from './listaPedidos';
 // `refreshKey` (al guardar un pedido o generar sus archivos).
 export function usePendingReviews(refreshKey: number, onError: Notify) {
   const [reviews, setReviews] = useState<PedidoBandeja[]>([]);
+  // Todos, también los generados: el buscador de la cabecera busca aquí sin preguntar al servidor.
+  const [todos, setTodos] = useState<PedidoBandeja[]>([]);
   const [loading, setLoading] = useState(true);
   const requestId = useRef(0);
 
@@ -19,6 +21,7 @@ export function usePendingReviews(refreshKey: number, onError: Notify) {
       .then((years) => {
         if (current !== requestId.current) return;
         setReviews(mergePendingReviews(years.map((item) => item.pedidos)));
+        setTodos(mergeReviews(years.map((item) => item.pedidos)));
         setLoading(false);
         const warning = years.map((item) => item.avisoRemolques).find(Boolean);
         if (warning) onError(warning, { tone: 'error' });
@@ -30,5 +33,5 @@ export function usePendingReviews(refreshKey: number, onError: Notify) {
       });
   }, [refreshKey, onError]);
 
-  return { reviews, loading };
+  return { reviews, todos, loading };
 }

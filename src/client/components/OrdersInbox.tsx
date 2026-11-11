@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { AlertTriangle, ArrowUp, Check, ChevronDown, CircleAlert, FilePen, FileSearch, FolderOpen, Search, Trash2 } from 'lucide-react';
 import type { CoordinaStatus, PedidoBandeja } from '../types';
 import {
-  DIAS_HISTORIAL, recortarHistorial, borradoresVisibles, claveBandeja, collapseAwnings, detalleEnColumnas, fechaBorrador, filtrosProducto, formatListDate, groupByDay, inboxSections, limitModels, notasDevolucion, pendingGroups, productoDe,
+  recortarPorMeses, groupByMonth, generadosDeHoy, prioridadDe, borradoresVisibles, claveBandeja, collapseAwnings, detalleEnColumnas, fechaBorrador, filtrosProducto, formatListDate, groupByDay, inboxSections, limitModels, notasDevolucion, pendingGroups, productoDe,
   type FiltroProducto, type Producto,
 } from '../ordersInbox';
 import { controlLabel } from './controlLabels';
@@ -18,7 +18,10 @@ type AwningItem = NonNullable<PedidoBandeja['summary']['awningList']>[number];
 // (punto de color, nombre y cuántos), columnas juntas y filas densas; toda la fila se
 // pulsa y se despliega dentro, con cada toldo y lo que le pasa. Los toldos se ven ya en la
 // fila (A ✓, D aviso) para saber qué hay que revisar sin abrir nada.
-export function OrdersInbox({ pending, history, currentUser, pendingLoading, historyLoading, year, onYear, onOpen, coordinaStatus, borradores = [], onSeguirBorrador = () => undefined, onDescartarBorrador = () => undefined, onBuscarRemolques, puertas = true }: {
+export function OrdersInbox({ modo = 'pedidos', onIrHistorial, pending, history, currentUser, pendingLoading, historyLoading, year, onYear, onOpen, coordinaStatus, borradores = [], onSeguirBorrador = () => undefined, onDescartarBorrador = () => undefined, onBuscarRemolques, puertas = true }: {
+  /** «pedidos»: borradores, pendientes y lo generado hoy; «historial»: los generados del año por meses. */
+  modo?: 'pedidos' | 'historial';
+  onIrHistorial?: () => void;
   pending: PedidoBandeja[];
   history: PedidoBandeja[];
   currentUser: string;
@@ -44,11 +47,13 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
   const [producto, setProducto] = useState<FiltroProducto>('todos');
   const [openCode, setOpenCode] = useState<string | null>(null);
   const sections = inboxSections({ pending, history }, { me: currentUser, scope, query, producto });
-  // Generados: los últimos días y más a petición; otro año empieza otra vez por los últimos.
-  // Los días van con su año: al elegir otro año se vuelve a empezar por los últimos.
-  const [historialDe, setHistorialDe] = useState({ year, dias: DIAS_HISTORIAL });
-  const diasHistorial = historialDe.year === year ? historialDe.dias : DIAS_HISTORIAL;
-  const historial = recortarHistorial(sections.history, diasHistorial, query.trim() !== '');
+  const historialModo = modo === 'historial';
+  // Historial: el mes más reciente y más a petición. Los meses van con su año: al elegir otro
+  // año se vuelve a empezar por su último mes.
+  const [mesesDe, setMesesDe] = useState({ year, meses: 1 });
+  const meses = mesesDe.year === year ? mesesDe.meses : 1;
+  const historial = recortarPorMeses(sections.history, meses, query.trim() !== '');
+  const hoy = generadosDeHoy(sections.history);
   const groups = pendingGroups(sections.pending, coordinaStatus);
   const drafts = borradoresVisibles(borradores, { me: currentUser, scope, query, producto });
 
@@ -83,12 +88,15 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
     <section className="orders-inbox" aria-label="Pedidos">
       {/* Como CoordinaOT: sin panel de fondo; buscador y filtros en una barra encima de la lista. */}
       <header className="orders-inbox-bar orders-filters">
-        <label className="orders-search"><Search aria-hidden="true" /><input type="search" autoComplete="off" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Pedido, cliente, OF o modelo…" aria-label="Buscar pedidos" /></label>
+        {/* El buscador va en la cabecera (11/11/2026); aquí solo queda para filtrar un año del Historial. */}
+        {historialModo && <label className="orders-search"><Search aria-hidden="true" /><input type="search" autoComplete="off" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Filtrar el año: pedido, cliente, OF o modelo…" aria-label="Filtrar el historial" /></label>}
+        {!historialModo && <>
         <span className="orders-filter-label">Pendientes de</span>
         <div className="orders-scope tira-3d glass-chip" role="group" aria-label="Qué pedidos pendientes">
           <button type="button" className={scope === 'all' ? 'pestana-activa' : undefined} aria-pressed={scope === 'all'} onClick={() => setScope('all')}>Todo el equipo {sections.pendingAll}</button>
           <button type="button" className={scope === 'mine' ? 'pestana-activa' : undefined} aria-pressed={scope === 'mine'} onClick={() => setScope('mine')}>Míos {sections.pendingMine}</button>
         </div>
+        </>}
         <span className="orders-filter-label">Pedidos de</span>
         <div className="orders-scope tira-3d glass-chip" role="group" aria-label="Qué tipo de pedidos">
           {filtrosProducto.filter((filtro) => puertas || (filtro.key !== 'puertas' && filtro.key !== 'systemdock')).map((filtro) => (
@@ -105,8 +113,8 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
       {coordinaStatus && !coordinaStatus.disponible && (
         <p className="orders-coordina-down" role="status"><AlertTriangle aria-hidden="true" />{coordinaStatus.motivo === COORDINA_NOT_CONFIGURED_MOTIVO ? 'No se puede consultar CoordinaOT: la conexión no está configurada en el servidor.' : 'No se puede consultar CoordinaOT; los pedidos se muestran como por revisar.'}</p>
       )}
-      {(drafts.length > 0 || (!pendingLoading && groups.length > 0)) && columns(true)}
-      {drafts.length > 0 && (
+      {!historialModo && (drafts.length > 0 || (!pendingLoading && groups.length > 0)) && columns(true)}
+      {!historialModo && drafts.length > 0 && (
         <section className="orders-group" aria-label={`Borradores: ${drafts.length}`}>
           <h3 className="orders-group-title tone-draft"><span className="orders-dot" aria-hidden="true" />Borradores<span className="orders-count">{drafts.length}</span></h3>
           <div className="orders-block">
@@ -129,7 +137,7 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
           </div>
         </section>
       )}
-      {pendingLoading ? <p className="review-empty">Cargando pedidos…</p>
+      {historialModo ? null : pendingLoading ? <p className="review-empty">Cargando pedidos…</p>
         : groups.length === 0 ? <p className="review-empty"><FileSearch aria-hidden="true" />{scope === 'mine' ? 'No tienes pedidos pendientes.' : 'No hay pedidos pendientes.'}</p>
           : groups.map((group) => (
             <section key={group.key} className="orders-group" aria-label={`${group.label}: ${group.reviews.length}`}>
@@ -137,27 +145,42 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
               {block(group.reviews, true, group.tone)}
             </section>
           ))}
-      <header className="orders-inbox-bar">
-        <h2>Generados</h2>
-        <input className="review-year" type="number" min="2000" max="2100" value={year} onChange={(event) => onYear(Number(event.target.value))} aria-label="Año" />
-        <span className="orders-count">{sections.history.length}</span>
-      </header>
-      {historyLoading ? <p className="review-empty">Cargando historial…</p>
-        : sections.history.length === 0 ? <p className="review-empty">No hay pedidos generados en {year}.</p>
-          : <>{columns(false)}{groupByDay(historial.visibles).map((day) => (
-            <section key={day.key} className="orders-group" aria-label={`${day.label}: ${day.reviews.length} pedidos`}>
-              <h3 className="orders-day-title">{day.label}<span>· {day.reviews.length} {day.reviews.length === 1 ? 'pedido' : 'pedidos'}</span></h3>
-              {block(day.reviews, false)}
-            </section>
-          ))}
-          {historial.ocultos > 0 && (
-            <div className="orders-mas">
-              <button type="button" className="ghost-button boton-3d" onClick={() => setHistorialDe({ year, dias: diasHistorial + DIAS_HISTORIAL })}>
-                Ver {DIAS_HISTORIAL} días más
-              </button>
-              <span>{historial.ocultos === 1 ? 'Queda 1 pedido anterior' : `Quedan ${historial.ocultos} pedidos anteriores`} de {year}. El buscador mira en todo el año.</span>
-            </div>
-          )}</>}
+      {historialModo ? <>
+        <header className="orders-inbox-bar">
+          <h2>Generados</h2>
+          <input className="review-year" type="number" min="2000" max="2100" value={year} onChange={(event) => onYear(Number(event.target.value))} aria-label="Año" />
+          <span className="orders-count">{sections.history.length}</span>
+        </header>
+        {historyLoading ? <p className="review-empty">Cargando historial…</p>
+          : sections.history.length === 0 ? <p className="review-empty">{query.trim() ? 'Nada con eso en los generados de ' + year + '.' : 'No hay pedidos generados en ' + year + '.'}</p>
+            : <>{columns(false)}{groupByMonth(historial.visibles).map((mes) => (
+              <section key={mes.key} className="orders-month" aria-label={`${mes.label}: ${mes.reviews.length} pedidos`}>
+                <h3 className="orders-group-title orders-month-title tone-history"><span className="orders-dot" aria-hidden="true" />{mes.label}<span className="orders-count">{mes.reviews.length}</span></h3>
+                {groupByDay(mes.reviews).map((day) => (
+                  <section key={day.key} className="orders-group" aria-label={`${day.label}: ${day.reviews.length} pedidos`}>
+                    <h4 className="orders-day-title">{day.label}<span>· {day.reviews.length} {day.reviews.length === 1 ? 'pedido' : 'pedidos'}</span></h4>
+                    {block(day.reviews, false, 'history')}
+                  </section>
+                ))}
+              </section>
+            ))}
+            {historial.siguiente && (
+              <div className="orders-mas">
+                <button type="button" className="ghost-button boton-3d" onClick={() => setMesesDe({ year, meses: meses + 1 })}>Ver {historial.siguiente}</button>
+                <span>{historial.ocultos === 1 ? 'Queda 1 pedido anterior' : `Quedan ${historial.ocultos} pedidos anteriores`} de {year}.</span>
+              </div>
+            )}</>}
+      </> : <>
+        {/* Pedidos (11/11/2026): de lo generado, solo lo de hoy, para ver que salió lo que se acaba de pasar. */}
+        <header className="orders-inbox-bar">
+          <h2>Generados hoy</h2>
+          <span className="orders-count">{hoy.length}</span>
+          {onIrHistorial && <button type="button" className="ghost-button boton-3d orders-ver-historial" onClick={onIrHistorial}>Ver historial</button>}
+        </header>
+        {historyLoading ? <p className="review-empty">Cargando…</p>
+          : hoy.length === 0 ? <p className="review-empty">Hoy aún no se ha generado ningún pedido.</p>
+            : <>{columns(false)}<section className="orders-group" aria-label={`Generados hoy: ${hoy.length}`}>{block(hoy, false, 'history')}</section></>}
+      </>}
       <VolverArriba />
     </section>
   );
@@ -195,8 +218,11 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
   const notas = awnings?.length ? notasDevolucion(awnings, coordinaStatus) : {};
   const author = review.summary.technician ? controlLabel(review.summary.technician) : '—';
   const filaRef = useAjustarAlDesplegar(open);
+  // Lo generado ya no tiene prioridad que atender: su borde queda sin color.
+  const prioridad = review.status === 'PRODUCED' ? null : prioridadDe(review, coordinaStatus);
   return (
-    <li ref={filaRef} className={`orders-row ${open ? 'bloque-3d-hundido is-open' : 'bloque-3d'}${tone ? ` tone-${tone}` : ''}`}>
+    <li ref={filaRef} className={`orders-row ${open ? 'bloque-3d-hundido is-open' : 'bloque-3d'}${tone ? ` tone-${tone}` : ''}${prioridad ? ` prioridad-${prioridad}` : ''}`}
+      title={prioridad ? `Prioridad ${PRIORIDAD_TEXTO[prioridad]} en CoordinaOT` : undefined}>
       <div className="orders-row-head">
       <button
         type="button"
@@ -335,6 +361,8 @@ function useAjustarAlDesplegar(open: boolean) {
   }, [open]);
   return ref;
 }
+
+const PRIORIDAD_TEXTO = { 1: 'poca', 2: 'normal', 3: 'urgente' } as const;
 
 const ETIQUETA_PRODUCTO = { toldos: 'Toldo', remolques: 'Remolque', puertas: 'Puerta', systemdock: 'System Dock' } as const;
 

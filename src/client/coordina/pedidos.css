@@ -158,6 +158,8 @@
 .tone-review .orders-dot { background: #f59e0b; }
 .tone-returned .orders-dot { background: #dc2626; }
 .tone-approved .orders-dot { background: #0891b2; }
+/* Generados (Historial y «Generados hoy»): verde de terminado. */
+.tone-history .orders-dot { background: #059669; }
 /* Borradores (diseño 01/10/2026): punto dorado (el color de marca); no están en ningún estado de CoordinaOT. */
 .tone-draft .orders-dot { background: var(--color-brand-500); }
 .orders-group-title .orders-count,
@@ -222,6 +224,23 @@
 }
 /* La barra dorada de lo abierto recorre fila y detalle (`absolute inset-y-0 left-0 w-1
    bg-brand-500`). */
+/* Prioridad del pedido en CoordinaOT (Iván, 11/11/2026: «el color de la prioridad en el borde…
+   algo sin ser cargante»): una raya fina a la izquierda con los colores de CoordinaOT
+   (lib/estado.ts, PRIORIDAD). Urgente lleno; normal, que es casi todo, apagado; poca, casi
+   nada. Al abrir la fila la tapa la raya dorada, como en CoordinaOT. */
+.orders-row[class*='prioridad-']::after {
+  background: var(--prioridad);
+  bottom: 0;
+  content: '';
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 3px;
+}
+.orders-row.prioridad-3 { --prioridad: #d23b3b; }
+.orders-row.prioridad-2 { --prioridad: color-mix(in srgb, #d39a1c 55%, transparent); }
+.orders-row.prioridad-1 { --prioridad: color-mix(in srgb, #6b7280 40%, transparent); }
+.orders-row.is-open::after { display: none; }
 .orders-row.is-open::before {
   background: var(--color-brand-500);
   bottom: 0;
@@ -581,7 +600,19 @@ button.orders-code:focus-visible { outline: 2px solid var(--color-brand-400); ou
 }
 .orders-inbox .review-empty svg { height: 1rem; width: 1rem; }
 
-/* Generados: «Ver 30 días más» al pie y el botón de volver arriba (11/11/2026). */
+/* Los rótulos de bloque llevan el acento de los paneles de CoordinaOT (globals.css,
+   .cabecera-bloque::before: una raya de 3 px a la izquierda, «un acento por tipo, sin teñir el
+   fondo»), del color de su estado (Iván, 11/11/2026: «reutiliza los colores de paneles de
+   coordina»). Sustituye al punto: el mismo color, más fácil de seguir al bajar por la lista. */
+.orders-group-title { padding-left: 0.75rem; position: relative; }
+.orders-group-title .orders-dot { border-radius: 2px; height: 0.875rem; margin-right: 0.5rem; vertical-align: -0.15rem; width: 3px; }
+/* El mes del Historial, un escalón por encima de los días que lleva dentro. */
+.orders-month + .orders-month { margin-top: 1.25rem; }
+.orders-month-title { font-size: 0.8125rem; margin-bottom: 0.5rem; }
+.orders-day-title { margin-top: 0.5rem; }
+.orders-ver-historial { margin-left: auto; }
+
+/* Historial: «Ver <mes>» al pie y el botón de volver arriba (11/11/2026). */
 .orders-mas {
   align-items: center;
   color: var(--text-muted);

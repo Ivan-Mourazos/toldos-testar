@@ -48,6 +48,7 @@ import { readCurrentUser, saveCurrentUser } from './currentUser';
 import { MENSAJE_PEDIDO_RECIBIDO, destinoDeEnlace, origenDeCoordina, pedidoDeEnlace, pedidoDeMensaje, revisionDeEnlace, sinPedidoEnEnlace, type PedidoDeCoordina } from './enlacePedido';
 import { WhoAreYouDialog } from './components/WhoAreYouDialog';
 import { EstadoBotContexto, SemaforoBot, useEstadoBot } from './components/SemaforoBot';
+import { BuscadorCabecera } from './components/BuscadorCabecera';
 import { personaDe, tintaSobre } from './personas';
 import { usePendingReviews } from './hooks/usePendingReviews';
 import { buscarBorradorAlObtener, contenidoBorradorToldos, guardarBorradorPreguntando, TITULO_BORRADOR_EN_CORRECCION } from './borradores';
@@ -843,7 +844,9 @@ export default function App() {
       ? (remolquesVista === 'clientes' ? 'Clientes de remolques' : showRemolquesParameters ? 'Parámetros de remolques' : 'Parámetros de modelos')
       : activeTab === 'reviews'
         ? 'Pedidos'
-        : 'Configuración de carpetas';
+        : activeTab === 'historial'
+          ? 'Historial'
+          : 'Configuración de carpetas';
 
   // El flujo del corte de lona con el DWG, arriba junto a «Guardar para revisión», como en puertas y remolques.
   const [faltaCorteLona, setFaltaCorteLona] = useState<string | null>('Genera el corte de lona');
@@ -869,10 +872,17 @@ export default function App() {
         <nav className="cabecera-pestanas tira-3d glass-chip" aria-label="Vistas">
           <TabButton active={activeTab === 'order'} disabled={working === 'review'} label="Nuevo pedido" onClick={() => irAPestana('order')} />
           <TabButton active={activeTab === 'reviews'} disabled={working === 'review'} label="Pedidos" count={pendingCount} onClick={() => irAPestana('reviews')} />
+          {/* Iván, 11/11/2026: los generados en su propia pestaña; en Pedidos, lo pendiente y lo de hoy. */}
+          <TabButton active={activeTab === 'historial'} disabled={working === 'review'} label="Historial" onClick={() => irAPestana('historial')} />
           <TabButton active={activeTab === 'parameters'} disabled={working === 'review'} label="Parámetros" onClick={() => irAPestana('parameters')} />
           <TabButton active={activeTab === 'settings'} disabled={working === 'review'} label="Configuración" onClick={() => irAPestana('settings')} />
           {/* Iván, 02/10/2026: fuera el enlace a la web vieja de remolques; se hacen en Nuevo pedido. */}
         </nav>
+        <BuscadorCabecera pedidos={pendingReviews.todos} cargando={pendingReviews.loading} onElegir={(pedido) => {
+          // El mismo camino que un pedido que manda CoordinaOT: Pedidos lo abre en cuanto lo tiene.
+          irAPestana('reviews');
+          setRevisarAlCargar(pedido.orderCode.replace(/[.\s-]/g, '').toUpperCase());
+        }} />
         <div className="cabecera-derecha">
           <SemaforoBot bot={estadoDelBot} />
           <button type="button" className="cabecera-modo glass-chip" onClick={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))} aria-label={theme === 'dark' ? 'Pasar a modo claro' : 'Pasar a modo oscuro'} title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}>
@@ -1099,8 +1109,12 @@ export default function App() {
             </>
           )}
 
-          {activeTab === 'reviews' && (
+          {(activeTab === 'reviews' || activeTab === 'historial') && (
             <ReviewsView
+              key={activeTab}
+              modo={activeTab === 'historial' ? 'historial' : 'pedidos'}
+              todos={pendingReviews.todos}
+              onIrHistorial={() => irAPestana('historial')}
               puertas={puertasActivas}
               refreshKey={reviewRefresh}
               parameters={ruleSettings.parameters}
@@ -1117,7 +1131,7 @@ export default function App() {
               onSeguirBorrador={(borrador) => abrirBorrador(borrador)}
               onToast={notify}
               onConfirm={askForConfirmation}
-              abrirAlCargar={revisarAlCargar}
+              abrirAlCargar={activeTab === 'reviews' ? revisarAlCargar : null}
               onAbiertoAlCargar={() => { setRevisarAlCargar(null); setCargandoCoordina(null); }}
             />
           )}

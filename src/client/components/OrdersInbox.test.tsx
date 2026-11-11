@@ -100,7 +100,7 @@ describe('Pedidos con toldos y remolques', () => {
       />,
     );
     // Iván, 02/10/2026: en la barra de filtros, detrás de «Pedidos de», no en «Generados».
-    expect(pintar(() => undefined)).toMatch(/aria-label="Qué tipo de pedidos".*orders-buscar-remolques.*Buscar remolques<\/button>.*<h2>Generados<\/h2>/);
+    expect(pintar(() => undefined)).toMatch(/aria-label="Qué tipo de pedidos".*orders-buscar-remolques.*Buscar remolques<\/button>.*<h2>Generados hoy<\/h2>/);
     expect(pintar()).not.toContain('Buscar remolques');
   });
 
@@ -122,18 +122,31 @@ describe('Pedidos con toldos y remolques', () => {
   });
 });
 
-describe('Generados con límite', () => {
-  const generado = (orderCode: string, updatedAt: string) => fila(orderCode, { status: 'PRODUCED', updatedAt });
-  const historia = [generado('AR2600001', '2026-11-10T09:00:00'), generado('AR2600002', '2026-10-20T09:00:00'), generado('AR2600003', '2026-08-01T09:00:00')];
-  const pintar = () => renderToStaticMarkup(<OrdersInbox pending={[]} history={historia} currentUser="IVÁN" pendingLoading={false}
-    historyLoading={false} year={2026} onYear={() => undefined} onOpen={() => undefined} coordinaStatus={null} />);
+describe('Pedidos: lo de hoy; Historial: los generados por meses', () => {
+  const generado = (orderCode: string, updatedAt: Date) => fila(orderCode, { status: 'PRODUCED', updatedAt: updatedAt.toISOString() });
+  const hoy = new Date();
+  const historia = [generado('AR2600001', hoy), generado('AR2600002', new Date(2026, 9, 20, 9)), generado('AR2600003', new Date(2026, 7, 1, 9))];
+  const pintar = (modo?: 'pedidos' | 'historial') => renderToStaticMarkup(<OrdersInbox modo={modo} pending={[]} history={historia} currentUser="IVÁN" pendingLoading={false}
+    historyLoading={false} year={2026} onYear={() => undefined} onOpen={() => undefined} coordinaStatus={null} onIrHistorial={() => undefined} />);
 
-  it('pinta solo los últimos 30 días y ofrece ver más', () => {
+  it('Pedidos enseña solo lo generado hoy, sin buscador propio, y lleva al historial', () => {
     const html = pintar();
+    expect(html).toContain('Generados hoy');
     expect(html).toContain('AR2600001');
+    expect(html).not.toContain('AR2600002');
+    expect(html).toContain('Ver historial');
+    expect(html).not.toContain('aria-label="Buscar pedidos"');
+  });
+
+  it('Historial enseña el último mes y ofrece el anterior que tenga pedidos', () => {
+    const html = renderToStaticMarkup(<OrdersInbox modo="historial" pending={[]} currentUser="IVÁN" pendingLoading={false} historyLoading={false} year={2026}
+      onYear={() => undefined} onOpen={() => undefined} coordinaStatus={null}
+      history={[generado('AR2600002', new Date(2026, 9, 20, 9)), generado('AR2600003', new Date(2026, 7, 1, 9))]} />);
+    expect(html).toContain('Octubre 2026');
     expect(html).toContain('AR2600002');
     expect(html).not.toContain('AR2600003');
-    expect(html).toContain('Ver 30 días más');
-    expect(html).toContain('Queda 1 pedido anterior de 2026');
+    expect(html).toContain('Ver Agosto 2026');
+    expect(html).toContain('aria-label="Filtrar el historial"');
+    expect(html).not.toContain('Pendientes de');
   });
 });

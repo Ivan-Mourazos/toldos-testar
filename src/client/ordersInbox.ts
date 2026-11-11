@@ -42,15 +42,29 @@ export function claveBandeja(review: Pick<PedidoBandeja, 'kind' | 'orderCode'> &
 // año, las dos lecturas traen los mismos pedidos) y deja solo los pendientes de generar,
 // del más reciente al más antiguo.
 export function mergePendingReviews<T extends PedidoBandeja>(lists: T[][]) {
+  return mergeReviews(lists).filter((review) => isPendingGeneration(review.status));
+}
+
+/**
+ * La prioridad del pedido en CoordinaOT, para el borde de su fila (Iván, 11/11/2026: «que aparezca
+ * el color de la prioridad en el borde»). Es del pedido, así que basta con la más alta de sus OF.
+ * Sin dato de CoordinaOT, null: el borde queda sin color.
+ */
+export function prioridadDe(review: PedidoBandeja, status: CoordinaStatus | null): 1 | 2 | 3 | null {
+  if (!status?.disponible) return null;
+  const valores = (review.summary.awningList || []).map((item) => status.ofs?.[normalizeOf(item.of)]?.prioridad).filter((p): p is 1 | 2 | 3 => p === 1 || p === 2 || p === 3);
+  return valores.length ? (Math.max(...valores) as 1 | 2 | 3) : null;
+}
+
+/** Todos los pedidos de varios años, uno por número (el más reciente) y de nuevo a viejo: los del buscador. */
+export function mergeReviews<T extends PedidoBandeja>(lists: T[][]) {
   const byCode = new Map<string, T>();
   for (const review of lists.flat()) {
     const key = claveBandeja(review);
     const current = byCode.get(key);
     if (!current || (review.updatedAt || '') > (current.updatedAt || '')) byCode.set(key, review);
   }
-  return [...byCode.values()]
-    .filter((review) => isPendingGeneration(review.status))
-    .sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
+  return [...byCode.values()].sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
 }
 
 function normalize(value: string) {
@@ -134,23 +148,47 @@ export function formatListDate(value: string) {
   return Number.isNaN(date.getTime()) ? '—' : date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-// Generados (Iván, 11/11/2026: «la lista se agranda y no hay un límite»): se pintan los
-// últimos `dias` días, contados desde el generado más reciente de la lista (así un año pasado
-// también enseña algo), y el día del corte entero para no partir un grupo. Buscando se ve todo
-// el año. Los que no tienen fecha salen cuando ya no queda nada con fecha por enseñar.
-export const DIAS_HISTORIAL = 30;
+// Historial (Iván, 11/11/2026: «casi prefiero una pestaña nueva» y «la gente lo busca en vez de
+// bajar»): los generados del año van por meses de calendario. Se pintan los `meses` más
+// recientes que tengan pedidos (un año pasado empieza por su último mes) y al pie «Ver <mes>»
+// trae el siguiente. Filtrando se ve todo el año. Los que no tienen fecha salen al final.
+const NOMBRES_MES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+const claveMes = (valor?: string) => {
+  const d = new Date(valor || '');
+  return Number.isNaN(d.getTime()) ? null : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+};
+export const nombreMes = (clave: string) => {
+  const [anio, mes] = clave.split('-').map(Number);
+  const nombre = NOMBRES_MES[mes - 1];
+  return `${nombre.charAt(0).toUpperCase()}${nombre.slice(1)} ${anio}`;
+};
 
-export function recortarHistorial<T extends { updatedAt?: string }>(history: T[], dias: number, buscando: boolean) {
-  const momento = (pedido: T) => new Date(pedido.updatedAt || '').getTime();
-  const fechas = history.map(momento).filter((t) => !Number.isNaN(t));
-  if (buscando || !fechas.length) return { visibles: history, ocultos: 0 };
-  const corte = new Date(Math.max(...fechas));
-  corte.setHours(0, 0, 0, 0);
-  corte.setDate(corte.getDate() - dias);
-  const antes = history.filter((pedido) => momento(pedido) < corte.getTime());
-  if (!antes.length) return { visibles: history, ocultos: 0 };
-  const visibles = history.filter((pedido) => momento(pedido) >= corte.getTime());
-  return { visibles, ocultos: history.length - visibles.length };
+export function recortarPorMeses<T extends { updatedAt?: string }>(history: T[], meses: number, buscando: boolean) {
+  const claves = [...new Set(history.map((p) => claveMes(p.updatedAt)).filter((c): c is string => c !== null))].sort().reverse();
+  if (buscando || claves.length <= meses) return { visibles: history, ocultos: 0, siguiente: null as string | null };
+  const enVista = new Set(claves.slice(0, meses));
+  const visibles = history.filter((p) => { const c = claveMes(p.updatedAt); return c !== null && enVista.has(c); });
+  return { visibles, ocultos: history.length - visibles.length, siguiente: nombreMes(claves[meses]) };
+}
+
+/** Los generados de un año agrupados por mes, del más reciente al más antiguo; dentro, por días. */
+export function groupByMonth<T extends PedidoBandeja>(reviews: T[]) {
+  const grupos: { key: string; label: string; reviews: T[] }[] = [];
+  for (const review of reviews) {
+    const key = claveMes(review.updatedAt) ?? 'sin-fecha';
+    let grupo = grupos.find((g) => g.key === key);
+    if (!grupo) { grupo = { key, label: key === 'sin-fecha' ? 'Sin fecha' : nombreMes(key), reviews: [] }; grupos.push(grupo); }
+    grupo.reviews.push(review);
+  }
+  return grupos;
+}
+
+/** Pedidos: lo que se ha generado hoy (día local), para ver que salió lo que se acaba de pasar. */
+export function generadosDeHoy<T extends { updatedAt?: string }>(history: T[], ahora = new Date()) {
+  return history.filter((p) => {
+    const d = new Date(p.updatedAt || '');
+    return !Number.isNaN(d.getTime()) && d.toDateString() === ahora.toDateString();
+  });
 }
 
 // Historial por días, como CoordinaOT: «Jueves 24/09/26 · 15 pedidos» (Iván, 28/09/2026).
