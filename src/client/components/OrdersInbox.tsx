@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AlertTriangle, Check, ChevronDown, CircleAlert, FilePen, FileSearch, FolderOpen, Search, Trash2 } from 'lucide-react';
+import { AlertTriangle, ArrowUp, Check, ChevronDown, CircleAlert, FilePen, FileSearch, FolderOpen, Search, Trash2 } from 'lucide-react';
 import type { CoordinaStatus, PedidoBandeja } from '../types';
 import {
-  borradoresVisibles, claveBandeja, collapseAwnings, detalleEnColumnas, fechaBorrador, filtrosProducto, formatListDate, groupByDay, inboxSections, limitModels, notasDevolucion, pendingGroups, productoDe,
+  DIAS_HISTORIAL, recortarHistorial, borradoresVisibles, claveBandeja, collapseAwnings, detalleEnColumnas, fechaBorrador, filtrosProducto, formatListDate, groupByDay, inboxSections, limitModels, notasDevolucion, pendingGroups, productoDe,
   type FiltroProducto, type Producto,
 } from '../ordersInbox';
 import { controlLabel } from './controlLabels';
@@ -44,6 +44,11 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
   const [producto, setProducto] = useState<FiltroProducto>('todos');
   const [openCode, setOpenCode] = useState<string | null>(null);
   const sections = inboxSections({ pending, history }, { me: currentUser, scope, query, producto });
+  // Generados: los últimos días y más a petición; otro año empieza otra vez por los últimos.
+  // Los días van con su año: al elegir otro año se vuelve a empezar por los últimos.
+  const [historialDe, setHistorialDe] = useState({ year, dias: DIAS_HISTORIAL });
+  const diasHistorial = historialDe.year === year ? historialDe.dias : DIAS_HISTORIAL;
+  const historial = recortarHistorial(sections.history, diasHistorial, query.trim() !== '');
   const groups = pendingGroups(sections.pending, coordinaStatus);
   const drafts = borradoresVisibles(borradores, { me: currentUser, scope, query, producto });
 
@@ -139,13 +144,39 @@ export function OrdersInbox({ pending, history, currentUser, pendingLoading, his
       </header>
       {historyLoading ? <p className="review-empty">Cargando historial…</p>
         : sections.history.length === 0 ? <p className="review-empty">No hay pedidos generados en {year}.</p>
-          : <>{columns(false)}{groupByDay(sections.history).map((day) => (
+          : <>{columns(false)}{groupByDay(historial.visibles).map((day) => (
             <section key={day.key} className="orders-group" aria-label={`${day.label}: ${day.reviews.length} pedidos`}>
               <h3 className="orders-day-title">{day.label}<span>· {day.reviews.length} {day.reviews.length === 1 ? 'pedido' : 'pedidos'}</span></h3>
               {block(day.reviews, false)}
             </section>
-          ))}</>}
+          ))}
+          {historial.ocultos > 0 && (
+            <div className="orders-mas">
+              <button type="button" className="ghost-button boton-3d" onClick={() => setHistorialDe({ year, dias: diasHistorial + DIAS_HISTORIAL })}>
+                Ver {DIAS_HISTORIAL} días más
+              </button>
+              <span>{historial.ocultos === 1 ? 'Queda 1 pedido anterior' : `Quedan ${historial.ocultos} pedidos anteriores`} de {year}. El buscador mira en todo el año.</span>
+            </div>
+          )}</>}
+      <VolverArriba />
     </section>
+  );
+}
+
+// Aparece al bajar por la lista (Iván, 11/11/2026: «ni botón de volver arriba ni nada»).
+function VolverArriba() {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const mirar = () => setVisible(window.scrollY > 600);
+    mirar();
+    window.addEventListener('scroll', mirar, { passive: true });
+    return () => window.removeEventListener('scroll', mirar);
+  }, []);
+  if (!visible) return null;
+  return (
+    <button type="button" className="orders-arriba glass-chip boton-3d" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="Volver arriba" title="Volver arriba">
+      <ArrowUp aria-hidden="true" />
+    </button>
   );
 }
 

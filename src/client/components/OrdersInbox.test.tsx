@@ -121,3 +121,19 @@ describe('Pedidos con toldos y remolques', () => {
     expect(html).toContain('<button type="button" class="orders-code" title="Seguir con el borrador">AR2609</button>');
   });
 });
+
+describe('Generados con límite', () => {
+  const generado = (orderCode: string, updatedAt: string) => fila(orderCode, { status: 'PRODUCED', updatedAt });
+  const historia = [generado('AR2600001', '2026-11-10T09:00:00'), generado('AR2600002', '2026-10-20T09:00:00'), generado('AR2600003', '2026-08-01T09:00:00')];
+  const pintar = () => renderToStaticMarkup(<OrdersInbox pending={[]} history={historia} currentUser="IVÁN" pendingLoading={false}
+    historyLoading={false} year={2026} onYear={() => undefined} onOpen={() => undefined} coordinaStatus={null} />);
+
+  it('pinta solo los últimos 30 días y ofrece ver más', () => {
+    const html = pintar();
+    expect(html).toContain('AR2600001');
+    expect(html).toContain('AR2600002');
+    expect(html).not.toContain('AR2600003');
+    expect(html).toContain('Ver 30 días más');
+    expect(html).toContain('Queda 1 pedido anterior de 2026');
+  });
+});

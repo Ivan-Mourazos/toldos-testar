@@ -481,6 +481,12 @@ export function createWorkflowStore({ settingsFile, defaults }) {
 
   // Solo se comparten peticiones en marcha: al terminar se relee la carpeta en la próxima consulta.
   const listadosEnCurso = new Map();
+  // Resumen de cada pedido ya leído, por carpeta y nombre (Iván, 11/11/2026: la lista crece
+  // cada mes y abrir todos los PDF en cada visita a Pedidos se iba haciendo lento). Solo se
+  // vuelve a leer el archivo que cambia: guardar escribe un archivo nuevo y lo renombra, así
+  // que cambian su fecha y su número de archivo. Un archivo que ya no está sale del recuerdo.
+  const resumenesPorCarpeta = new Map();
+  const huellaArchivo = (info) => `${info.mtimeMs}:${info.ctimeMs}:${info.size}:${info.ino}`;
   async function listReviews(year = new Date().getFullYear()) {
     const settings = await getSettings();
     if (!settings.reviewDirectory) return [];
@@ -504,6 +510,8 @@ export function createWorkflowStore({ settingsFile, defaults }) {
     const legacyNames = names.filter((name) => name.toLowerCase().endsWith(LEGACY_REVIEW_FILE_SUFFIX)
       && !pdfCodes.has(name.slice(0, -LEGACY_REVIEW_FILE_SUFFIX.length).toUpperCase()));
     const archivos = [...pdfNames, ...legacyNames];
+    const anteriores = resumenesPorCarpeta.get(directory) ?? new Map();
+    const recordados = new Map();
     const reviews = [];
     let siguiente = 0;
     // Cada PDF se lee entero y PDF.js duplica sus bytes. No abrir toda la bandeja a la vez:
@@ -511,20 +519,34 @@ export function createWorkflowStore({ settingsFile, defaults }) {
     async function leerSiguiente() {
       while (siguiente < archivos.length) {
         const name = archivos[siguiente++];
+        const filePath = path.join(directory, name);
+        let huella = '';
         try {
-          const filePath = path.join(directory, name);
+          huella = huellaArchivo(await fs.stat(filePath));
+          const recordado = anteriores.get(name);
+          if (recordado?.huella === huella) {
+            recordados.set(name, recordado);
+            if (recordado.resumen) reviews.push(recordado.resumen);
+            continue;
+          }
           const review = name.toLowerCase().endsWith(REVIEW_FILE_SUFFIX)
             ? await extractReviewPackageFromPdf(await fs.readFile(filePath))
             : JSON.parse(await fs.readFile(filePath, 'utf8'));
-          reviews.push(reviewSummary(review));
+          const resumen = reviewSummary(review);
+          recordados.set(name, { huella, resumen });
+          reviews.push(resumen);
         } catch (error) {
           if (error.code !== NOT_EDITABLE_REVIEW_PDF) {
             console.error(`No se pudo leer ${name}:`, error.message);
           }
+          // El PDF definitivo (AR…-1.pdf) no es un pedido: se recuerda para no abrirlo en
+          // cada visita. Un error de lectura no se recuerda y se reintenta la próxima vez.
+          else if (huella) recordados.set(name, { huella, resumen: null });
         }
       }
     }
     await Promise.all([leerSiguiente(), leerSiguiente()]);
+    resumenesPorCarpeta.set(directory, recordados);
     return reviews.filter(Boolean).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   }
 

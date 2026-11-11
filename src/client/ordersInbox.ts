@@ -134,6 +134,25 @@ export function formatListDate(value: string) {
   return Number.isNaN(date.getTime()) ? '—' : date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
+// Generados (Iván, 11/11/2026: «la lista se agranda y no hay un límite»): se pintan los
+// últimos `dias` días, contados desde el generado más reciente de la lista (así un año pasado
+// también enseña algo), y el día del corte entero para no partir un grupo. Buscando se ve todo
+// el año. Los que no tienen fecha salen cuando ya no queda nada con fecha por enseñar.
+export const DIAS_HISTORIAL = 30;
+
+export function recortarHistorial<T extends { updatedAt?: string }>(history: T[], dias: number, buscando: boolean) {
+  const momento = (pedido: T) => new Date(pedido.updatedAt || '').getTime();
+  const fechas = history.map(momento).filter((t) => !Number.isNaN(t));
+  if (buscando || !fechas.length) return { visibles: history, ocultos: 0 };
+  const corte = new Date(Math.max(...fechas));
+  corte.setHours(0, 0, 0, 0);
+  corte.setDate(corte.getDate() - dias);
+  const antes = history.filter((pedido) => momento(pedido) < corte.getTime());
+  if (!antes.length) return { visibles: history, ocultos: 0 };
+  const visibles = history.filter((pedido) => momento(pedido) >= corte.getTime());
+  return { visibles, ocultos: history.length - visibles.length };
+}
+
 // Historial por días, como CoordinaOT: «Jueves 24/09/26 · 15 pedidos» (Iván, 28/09/2026).
 export function groupByDay<T extends PedidoBandeja>(reviews: T[]) {
   const groups: { key: string; label: string; reviews: T[] }[] = [];

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { borradoresVisibles, claveBandeja, collapseAwnings, detalleEnColumnas, notasDevolucion, fechaBorrador, groupByDay, inboxSections, limitModels, mergePendingReviews, pendingGroups, pendingYears, productoDe } from './ordersInbox';
+import { recortarHistorial, borradoresVisibles, claveBandeja, collapseAwnings, detalleEnColumnas, notasDevolucion, fechaBorrador, groupByDay, inboxSections, limitModels, mergePendingReviews, pendingGroups, pendingYears, productoDe } from './ordersInbox';
 import type { ResumenBorrador } from '../borradores/tipos.ts';
 import type { CoordinaStatus, PedidoBandeja, ReviewSummary } from './types';
 
@@ -132,6 +132,37 @@ describe('formato de fechas de Pedidos', () => {
   it('escribe las fechas con dos cifras', async () => {
     const { formatListDate } = await import('./ordersInbox');
     expect(formatListDate('2026-09-04T10:00:00.000Z')).toBe('04/09/2026');
+  });
+});
+
+describe('generados: solo los últimos días hasta pedir más', () => {
+  const pedido = (codigo: string, updatedAt: string) => ({ orderCode: codigo, updatedAt });
+  // Del más reciente al más antiguo, como llegan de inboxSections.
+  const lista = [
+    pedido('A', '2026-11-10T09:00:00'), pedido('B', '2026-10-25T18:00:00'), pedido('C', '2026-10-11T08:00:00'),
+    pedido('D', '2026-10-10T20:00:00'), pedido('E', '2026-09-01T10:00:00'),
+  ];
+
+  it('cuenta los días desde el último generado de la lista, no desde hoy', () => {
+    // Del 10/11 hacia atrás 30 días: hasta el 11/10 entero.
+    const r = recortarHistorial(lista, 30, false);
+    expect(r.visibles.map((p) => p.orderCode)).toEqual(['A', 'B', 'C']);
+    expect(r.ocultos).toBe(2);
+  });
+
+  it('cada «ver más» suma días; al final no queda nada oculto', () => {
+    expect(recortarHistorial(lista, 60, false)).toMatchObject({ ocultos: 1 });
+    expect(recortarHistorial(lista, 90, false)).toMatchObject({ ocultos: 0, visibles: lista });
+  });
+
+  it('buscando se ve todo el año', () => {
+    expect(recortarHistorial(lista, 30, true)).toEqual({ visibles: lista, ocultos: 0 });
+  });
+
+  it('los pedidos sin fecha salen cuando ya no queda nada con fecha por enseñar', () => {
+    const conSinFecha = [...lista, pedido('X', '')];
+    expect(recortarHistorial(conSinFecha, 30, false).ocultos).toBe(3);
+    expect(recortarHistorial(conSinFecha, 90, false)).toEqual({ visibles: conSinFecha, ocultos: 0 });
   });
 });
 
