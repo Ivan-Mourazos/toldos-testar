@@ -1,3 +1,4 @@
+import { errorChaflanConAguas, type DefinicionChaflan } from "../geometry/chaflan.ts";
 import { contornoCalculado } from "../geometry/contorno.ts";
 import { excelRound } from "./redondeo.ts";
 import { ajusteContorno, findRecogida, type CalcParams, type TipoPerfil } from "./params.ts";
@@ -18,7 +19,7 @@ export interface CabeceraInput {
   ordenFabricacion?: string;
 }
 
-export interface LonaInput {
+export interface LonaInput extends DefinicionChaflan {
   cabecera: CabeceraInput;
   cantidad: number; largo: number; ancho: number;
   /** Valor de la ficha al crear el elemento; se conserva con el pedido. Ausente = sus parámetros. */
@@ -160,16 +161,20 @@ export function contornoSesgado(
  */
 export function contornoAutomatico(
   input: Pick<LonaInput, "tipoPerfil" | "ancho" | "anchoAtras" | "altoDelante" | "altoAtras" | "aguas" | "radioCumbrera"
-    | "radioHombro" | "radioEsquina" | "chaflan" | "radioChaflanAbajo" | "radioChaflanArriba" | "demasiaLonaHecha" | "direccionAguas">,
+    | "modoChaflan" | "anchoPlanoSuperior" | "radioHombro" | "radioEsquina" | "chaflan" | "radioChaflanAbajo" | "radioChaflanArriba" | "demasiaLonaHecha" | "direccionAguas">,
   demasiaLonaHecha: number,
   atras = false,
 ): number | null {
   // El contorno soldado tiene un techo y dos laterales: no se expresa con una sola medida.
   if (aguasLongitudinales(input)) return null;
+  if (input.tipoPerfil === "TIPO 04" && input.modoChaflan === "plano-aguas" && errorChaflanConAguas(input)) return null;
   const ancho = atras && (input.anchoAtras ?? 0) > 0 ? input.anchoAtras! : input.ancho;
   const alto = atras && input.altoAtras > 0 ? input.altoAtras : input.altoDelante;
   const valor = contornoCalculado(input.tipoPerfil, {
     ancho: ancho + (input.demasiaLonaHecha ?? demasiaLonaHecha), alto,
+    modoChaflan: input.modoChaflan,
+    anchoPlanoSuperior: input.anchoPlanoSuperior == null ? undefined
+      : input.anchoPlanoSuperior + (input.demasiaLonaHecha ?? demasiaLonaHecha),
     aguas: input.aguas, radioCumbrera: input.radioCumbrera, radioHombro: input.radioHombro,
     radioEsquina: input.radioEsquina, chaflan: input.chaflan,
     radioChaflanAbajo: input.radioChaflanAbajo, radioChaflanArriba: input.radioChaflanArriba,

@@ -125,3 +125,11 @@ export function etiquetasMarcas(ollaos: Marca[], ganchos: Gancho[]): EtiquetaEsc
   }
   return etiquetas;
 }
+
+/** El plano real entre curvas, ya con la demasía de la lona hecha. */
+export function cotasPlanoSuperior(cuerpo: CuerpoLona, plano: number, altos: { delante: number; atras: number }): CotaEscena[] {
+  return [
+    { vistas: ["delante"], desde: [-plano / 2, altos.delante + S / 3, cuerpo.largo], hasta: [plano / 2, altos.delante + S / 3, cuerpo.largo], texto: fmt(plano) },
+    { vistas: ["detras"], desde: [-plano / 2, altos.atras + S / 3, 0], hasta: [plano / 2, altos.atras + S / 3, 0], texto: fmt(plano) },
+  ];
+}

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import type { Punto2D } from "../../remolques/geometry/curva.ts";
 import { perfilForma } from "../../remolques/geometry/perfil.ts";
-import { esquinaChaflan } from "../../remolques/geometry/chaflan.ts";
+import { errorChaflanConAguas, type DefinicionChaflan, esquinaChaflan } from "../../remolques/geometry/chaflan.ts";
 import {
   aristaLongitudinalVisible,
   caraExtrudidaVisible,
@@ -16,7 +16,7 @@ import { bordeLona } from "../../remolques/escena/cotas.ts";
 
 type Punto = Punto2D;
 
-export interface Escena3DProps {
+export interface Escena3DProps extends DefinicionChaflan {
   modo: "lona" | "baqueton";
   /** Medidas finales calculadas para las cotas; el perfil conserva sus medidas de entrada. */
   medidasHechas: { largo: number; ancho: number; anchoAtras?: number };
@@ -285,7 +285,7 @@ const ANCHO_BANDA_CREMALLERA = () => tamanoSimbolo(7);
 
 /** Exportada, con calcularVista, para el test que comprueba que el dibujo
  *  cabe en el panel: el margen es ahora estrecho y a mano no se ve. */
-export interface OpcionesVista {
+export interface OpcionesVista extends DefinicionChaflan {
   modo: "lona" | "baqueton";
   tipoPerfil: TipoPerfil;
   largo: number;
@@ -332,6 +332,7 @@ export function calcularVista(o: OpcionesVista) {
     radioCumbrera: o.radioCumbrera,
     radioHombro: o.radioHombro,
     chaflan: o.chaflan,
+    modoChaflan: o.modoChaflan, anchoPlanoSuperior: o.anchoPlanoSuperior,
     radioChaflanAbajo: o.radioChaflanAbajo,
     radioChaflanArriba: o.radioChaflanArriba,
     radio: o.radioEsquina,
@@ -563,7 +564,7 @@ export function calcularVista(o: OpcionesVista) {
       x: fondoBase.x + normalLateral.x * (anchoBastilla / 6),
       y: fondoBase.y + normalLateral.y * (anchoBastilla / 6),
     })}`;
-  const chaflanCota = o.modo === "lona" && o.tipoPerfil === "TIPO 04" && o.chaflan > 0
+  const chaflanCota = o.modo === "lona" && o.tipoPerfil === "TIPO 04" && o.modoChaflan !== "plano-aguas" && o.chaflan > 0
     ? (() => {
         // Los extremos de la cara no son siempre los vértices virtuales: cada
         // radio le consume `tangente·√½` a la recta del chaflán. No se leen de
@@ -614,6 +615,11 @@ export function calcularVista(o: OpcionesVista) {
     pliegues, radioOllao,
     cubierta, tieneCumbrera, ventana, marcasOllaos, costuraIzq, costuraDcha,
     bastillaBorde, bastillaInterior, chaflanCota, cremalleras, escala,
+    planoCota: o.tipoPerfil === "TIPO 04" && o.modoChaflan === "plano-aguas" ? {
+      desde: proyecta([[(o.anchoNear - (o.anchoPlanoSuperior ?? 0)) / 2, o.altoNear]], 0, 0)[0],
+      hasta: proyecta([[(o.anchoNear + (o.anchoPlanoSuperior ?? 0)) / 2, o.altoNear]], 0, 0)[0],
+      texto: fmt(o.anchoPlanoSuperior ?? 0),
+    } : null,
     anchoDesde: { x: frente[0].x, y: baseY + 35 },
     anchoHasta: { x: frente.at(-1)!.x, y: baseY + 35 },
     altoDesde: { x: frente[0].x - 42, y: baseY },
@@ -821,6 +827,8 @@ function PanelVista({
           </text>
         </g>
       )}
+      {d.planoCota && <Cota desde={{ ...d.planoCota.desde, y: d.planoCota.desde.y - 20 }}
+        hasta={{ ...d.planoCota.hasta, y: d.planoCota.hasta.y - 20 }} texto={d.planoCota.texto} />}
       {d.chaflanCota && (
         <Cota
           desde={d.chaflanCota.desde}
@@ -887,7 +895,7 @@ export function Escena3D(props: Escena3DProps) {
   const geometriaPerfilCompleta = props.modo === "baqueton"
     || props.tipoPerfil !== ""
       && (!["TIPO 02", "TIPO 03"].includes(props.tipoPerfil) || (props.aguas ?? 0) > 0)
-      && (props.tipoPerfil !== "TIPO 04" || (props.chaflan ?? 0) > 0)
+      && (props.tipoPerfil !== "TIPO 04" || (props.modoChaflan === "plano-aguas" ? errorChaflanConAguas(props) == null : (props.chaflan ?? 0) > 0))
       && (props.tipoPerfil !== "TIPO 05" || (props.radioEsquina ?? 0) > 0);
   const valido = props.largo > 0 && props.ancho > 0 && altoDelante > 0 && geometriaPerfilCompleta;
   // `valido` ya impide llegar aquí sin perfil; el respaldo solo existe para que
@@ -911,6 +919,7 @@ export function Escena3D(props: Escena3DProps) {
       radioHombro: props.radioHombro ?? 0,
       radioEsquina: props.radioEsquina ?? 0,
       chaflan: props.chaflan ?? 0,
+      modoChaflan: props.modoChaflan, anchoPlanoSuperior: props.anchoPlanoSuperior,
       radioChaflanAbajo: props.radioChaflanAbajo ?? 0,
       radioChaflanArriba: props.radioChaflanArriba ?? 0,
       ventanaAncho: props.ventanaAncho ?? 0,
@@ -944,7 +953,7 @@ export function Escena3D(props: Escena3DProps) {
   }, [
     valido, props.modo, props.baqueton, perfilDibujado, props.ancho, props.largo,
     props.aguas, props.direccionAguas, props.radioCumbrera, props.radioHombro, props.radioEsquina, props.chaflan,
-    props.radioChaflanAbajo, props.radioChaflanArriba,
+    props.radioChaflanAbajo, props.radioChaflanArriba, props.modoChaflan, props.anchoPlanoSuperior,
     props.ventana, props.ventanaAncho, props.ventanaAlto, props.ollaos, altoDelante, altoAtras, anchoAtras,
     bastilla, props.recogeDelante,
   ]);
@@ -961,7 +970,7 @@ export function Escena3D(props: Escena3DProps) {
   const mostrarAguas = props.modo === "lona"
     && !(props.tipoPerfil === "TIPO 02" && props.direccionAguas === "delante-atras")
     && (props.aguas ?? 0) > 0
-    && ["TIPO 02", "TIPO 03"].includes(props.tipoPerfil);
+    && (["TIPO 02", "TIPO 03"].includes(props.tipoPerfil) || (props.tipoPerfil === "TIPO 04" && props.modoChaflan === "plano-aguas"));
 
   return (
     <section className="rem-dibujo" aria-label="Vista técnica">

@@ -1,3 +1,4 @@
+import { errorChaflanConAguas } from "../geometry/chaflan.ts";
 import type { LonaInput } from "../calc/lona.ts";
 import type { BaquetonInput } from "../calc/baqueton.ts";
 import { esModeloGanado, type GanadoInput } from "../calc/ganado.ts";
@@ -24,7 +25,7 @@ export function medidasSuficientes(input: LonaInput | BaquetonInput | GanadoInpu
   }
   return input.largo > 0 && input.ancho > 0 && input.altoDelante > 0
     && (!["TIPO 02", "TIPO 03"].includes(input.tipoPerfil) || (input.aguas ?? 0) > 0)
-    && (input.tipoPerfil !== "TIPO 04" || (input.chaflan ?? 0) > 0)
+    && (input.tipoPerfil !== "TIPO 04" || (input.modoChaflan === "plano-aguas" ? errorChaflanConAguas(input) == null : (input.chaflan ?? 0) > 0))
     && (input.tipoPerfil !== "TIPO 05" || (input.radioEsquina ?? 0) > 0);
 }
 

@@ -22,7 +22,7 @@
 
 import { findRecogida } from '../calc/params.ts';
 import { aguasLongitudinales } from '../calc/lona.ts';
-import { esquinaChaflan } from '../geometry/chaflan.ts';
+import { errorChaflanConAguas, esquinaChaflan } from '../geometry/chaflan.ts';
 import { anchoArial } from '../../domain/corteLona/texto.js';
 import { buscarColocacion, PRESUPUESTO_TETRIS } from '../../domain/corteLona/colocacionTetris.ts';
 
@@ -55,7 +55,12 @@ export function soportada(el) {
     return null;
   }
   if (!['TIPO 01', 'TIPO 02', 'TIPO 03', 'TIPO 04', 'TIPO 05'].includes(i.tipoPerfil)) return `perfil ${i.tipoPerfil || 'sin elegir'}`;
-  if (i.tipoPerfil === 'TIPO 04' && !((i.chaflan ?? 0) > 0)) return 'chaflán sin medida';
+  if (i.tipoPerfil === 'TIPO 04') {
+    if (i.modoChaflan === 'plano-aguas') {
+      const error = errorChaflanConAguas(i);
+      if (error) return error.mensaje;
+    } else if (!((i.chaflan ?? 0) > 0)) return 'chaflán sin medida';
+  }
   if (/PUENTES/.test(i.recogeDelante ?? '') || (/PUENTES/.test(i.recogeAtras ?? '') && !PUENTES_CON_CORTE.test(i.recogeAtras))) return 'recogida con puentes';
   if (!r.panoContorno) return 'sin contorno calculado';
   const c = r.panoContorno;
@@ -86,7 +91,7 @@ const rotular = (p, texto, sitio = [15, 15], marcar = true) => {
 const seg = (p, x1, y1, x2, y2) => p.lineas.push([x1, y1, x2, y2]);
 const marca = (p, x1, y1, x2, y2) => p.rot.push([x1, y1, x2, y2]);
 
-function forma(i) {
+function forma(i, demasiaLonaHecha = 1) {
   const tipo = aguasLongitudinales(i) ? 'TIPO 01' : i.tipoPerfil;
   const r = tipo === 'TIPO 05' ? ((i.radioEsquina ?? 0) + 1) * 10 : 0;
   const aguas = ['TIPO 02', 'TIPO 03'].includes(tipo) ? (i.aguas ?? 0) * 10 : 0;
@@ -98,7 +103,9 @@ function forma(i) {
   // vértices virtuales de la web y, si una arista lleva radio, ese radio + 1 cm, como el arquillado. Contrastado
   // con los cortes a mano de Euro Remolque (AR2604263 y otros 9: chaflán 14, radios 7 y 7,5 → arcos de 80 y 85).
   const masUno = (v) => ((v ?? 0) > 0 ? (v + 1) * 10 : 0);
-  const chaflan = tipo === 'TIPO 04' ? { cara: (i.chaflan ?? 0) * 10, rAbajo: masUno(i.radioChaflanAbajo), rArriba: masUno(i.radioChaflanArriba) } : null;
+  // El plano recto conserva la medida hecha: al desplazar el corte 1 cm hacia fuera,
+  // los radios crecen 1 cm y sus centros mantienen la distancia entre tangencias.
+  const chaflan = tipo === 'TIPO 04' ? { modoChaflan: i.modoChaflan, plano: ((i.anchoPlanoSuperior ?? 0) + (i.demasiaLonaHecha ?? demasiaLonaHecha)) * 10, aguas: (i.aguas ?? 0) * 10, cara: (i.chaflan ?? 0) * 10, rAbajo: masUno(i.radioChaflanAbajo), rArriba: masUno(i.radioChaflanArriba) } : null;
   return { tipo, r, aguas, rHombro, rCumbrera, chaflan };
 }
 
@@ -107,17 +114,39 @@ function forma(i) {
  * `pata` lo que baja por el lado y entra por arriba; los arcos, tangentes al lado, al chaflán y al techo.
  */
 export function esquinasChaflan(f, w, h) {
-  const e = esquinaChaflan({ ancho: w, alto: h, chaflan: f.chaflan.cara, radioAbajo: f.chaflan.rAbajo, radioArriba: f.chaflan.rArriba });
-  const s = Math.SQRT1_2;
-  // Lado izquierdo (x desde el lado); el derecho es su reflejo.
-  return {
-    ...e,
-    hombro: h - e.pata - e.tangenteAbajo,                                   // donde acaba el lado recto
-    abajo: { cx: e.radioAbajo, cy: h - e.pata - e.tangenteAbajo },          // centro del arco contra el lado
-    arriba: { cx: e.pata + e.tangenteArriba, cy: h - e.radioArriba },       // centro del arco contra el techo
-    desde: [e.tangenteAbajo * s, h - e.pata + e.tangenteAbajo * s],         // el chaflán recto, de abajo…
-    hasta: [e.pata - e.tangenteArriba * s, h - e.tangenteArriba * s],       // …a arriba
+  let e = esquinaChaflan({ ancho: w, alto: h, chaflan: f.chaflan.cara,
+    modoChaflan: f.chaflan.modoChaflan, anchoPlanoSuperior: f.chaflan.plano, aguas: f.chaflan.aguas,
+    radioAbajo: f.chaflan.rAbajo, radioArriba: f.chaflan.rArriba });
+  if (f.chaflan.modoChaflan === 'plano-aguas') {
+    // Se desarrolla primero el terminado y después se desplaza su contorno 1 cm
+    // hacia fuera. Recalcular la pendiente con el ancho y los radios de corte
+    // alteraría las aguas y dejaría la rosa con un ángulo distinto al remolque.
+    const hecha = esquinaChaflan({ ancho: w - 20, alto: h - 10, modoChaflan: 'plano-aguas',
+      anchoPlanoSuperior: f.chaflan.plano, aguas: f.chaflan.aguas,
+      radioAbajo: Math.max(f.chaflan.rAbajo - 10, 0), radioArriba: Math.max(f.chaflan.rArriba - 10, 0) });
+    if (!hecha) throw Error('Las medidas y radios del chaflán no caben en la cabeza de corte.');
+    const entrada = hecha.entrada + 10 - 10 * Math.tan(hecha.giroArriba / 2);
+    const caida = hecha.caida + 10 - 10 * Math.tan(hecha.giroAbajo / 2);
+    const cara = Math.hypot(entrada, caida);
+    const tangenteAbajo = f.chaflan.rAbajo * Math.tan(hecha.giroAbajo / 2);
+    const tangenteArriba = f.chaflan.rArriba * Math.tan(hecha.giroArriba / 2);
+    e = { ...hecha, entrada, caida, pata: caida, cara, radioAbajo: f.chaflan.rAbajo, radioArriba: f.chaflan.rArriba,
+      tangenteAbajo, tangenteArriba, caraRecta: Math.max(cara - tangenteAbajo - tangenteArriba, 0) };
+  }
+  if (!e) throw Error('Las medidas y radios del chaflán no caben en la cabeza de corte.');
+  const cos = Math.cos(e.anguloPendiente), sen = Math.sin(e.anguloPendiente);
+  const hombro = h - e.caida - e.tangenteAbajo;
+  const abajo = { cx: e.radioAbajo, cy: hombro };
+  const arriba = { cx: e.entrada + e.tangenteArriba, cy: h - e.radioArriba };
+  const desde = [e.tangenteAbajo * cos, h - e.caida + e.tangenteAbajo * sen];
+  const hasta = [e.entrada - e.tangenteArriba * cos, h - e.tangenteArriba * sen];
+  const alto = (dx) => {
+    if (e.radioAbajo > 0 && dx < desde[0]) return abajo.cy + Math.sqrt(Math.max(e.radioAbajo ** 2 - (dx - abajo.cx) ** 2, 0));
+    if (dx < hasta[0]) return h - e.caida + dx * Math.tan(e.anguloPendiente);
+    if (e.radioArriba > 0 && dx < arriba.cx) return arriba.cy + Math.sqrt(Math.max(e.radioArriba ** 2 - (dx - arriba.cx) ** 2, 0));
+    return h;
   };
+  return { ...e, hombro, abajo, arriba, desde, hasta, alto };
 }
 
 /**
@@ -173,7 +202,8 @@ function cabeza(f, w, h, oreja, ollaos, hecha, ventana, cremallera = false, puen
   }
   if (ch) {
     // Chaflán recto en cada hombro, con su arco contra el lado y contra el techo si lleva radio; el derecho, reflejado.
-    for (const [lado, m, abajo, arriba] of [[x0, 1, [135, 180], [90, 135]], [x1, -1, [0, 45], [45, 90]]]) {
+    const grados = ch.anguloPendiente * 180 / Math.PI;
+    for (const [lado, m, abajo, arriba] of [[x0, 1, [90 + grados, 180], [90, 90 + grados]], [x1, -1, [0, 90 - grados], [90 - grados, 90]]]) {
       seg(p, lado + m * ch.desde[0], ch.desde[1], lado + m * ch.hasta[0], ch.hasta[1]);
       if (ch.radioAbajo > 0) p.arcos.push({ x: lado + m * ch.abajo.cx, y: ch.abajo.cy, r: ch.radioAbajo, desde: abajo[0], hasta: abajo[1] });
       if (ch.radioArriba > 0) p.arcos.push({ x: lado + m * ch.arriba.cx, y: ch.arriba.cy, r: ch.radioArriba, desde: arriba[0], hasta: arriba[1] });
@@ -204,7 +234,7 @@ function cabeza(f, w, h, oreja, ollaos, hecha, ventana, cremallera = false, puen
   // Lo que tiene encima cada punto del perfil: el borde de arriba, la pendiente de las aguas o la curva del arquillado.
   const encima = (x) => {
     if (ag) return ag.alto(Math.max(Math.min(x - x0, x1 - x), 0));
-    if (ch) { const dx = Math.max(Math.min(x - x0, x1 - x), 0); return dx < ch.pata ? h - ch.pata + dx : h; }
+    if (ch) return ch.alto(Math.max(Math.min(x - x0, x1 - x), 0));
     if (f.tipo === 'TIPO 02') return hombro + (h - hombro) * (1 - Math.abs(x - (x0 + w / 2)) / (w / 2));
     if (f.tipo === 'TIPO 05') {
       const dx = Math.max(x0 + f.r - x, x - (x1 - f.r), 0);
@@ -636,7 +666,7 @@ export function cortarLonasAltas(elementos, x0 = 0, letras = null, extras = [], 
 
 // Delantero y trasero de una lona alta (en mm, sin colocar) y lo que necesita su contorno.
 function cabezasLona(el) {
-  const i = el.input, r = el.result, f = forma(i);
+  const i = el.input, r = el.result, f = forma(i, el.paramsSnapshot?.demasiaLonaHecha);
   const hecha = r.lonaHecha, del = r.panoDelantero, tra = r.panoTrasero;
   const puentes = PUENTES_CON_CORTE.test(i.recogeAtras ?? '');
   // El perfil de cada cabeza: la lona hecha + 2 (el remolque + 3, lo que da la web sin recoger), con el ancho de

@@ -10,13 +10,25 @@
  * sitios como le pasa hoy al TIPO 03.
  */
 
-/** El chaflán es simétrico: las dos esquinas giran 45°. */
+/** Giro de cada esquina del chaflán histórico definido por su cara. */
 export const GIRO_CHAFLAN = Math.PI / 4;
 
 const TANGENTE_MEDIA = Math.tan(GIRO_CHAFLAN / 2);
 
+/** Ausente conserva el chaflán histórico, definido por su cara a 45°. */
+export interface DefinicionChaflan {
+  modoChaflan?: "cara" | "plano-aguas";
+  /** Tramo plano real entre las tangencias superiores, medido en el remolque. */
+  anchoPlanoSuperior?: number;
+}
+
 export interface EsquinaChaflan {
-  /** Cuánto baja por la pared, igual a cuánto entra por el techo. */
+  entrada: number;
+  caida: number;
+  anguloPendiente: number;
+  giroAbajo: number;
+  giroArriba: number;
+  /** Campo histórico: caída por la pared; solo a 45° coincide con la entrada. */
   pata: number;
   /** Cara entre vértices virtuales, ya efectiva tras acotar la pata. */
   cara: number;
@@ -37,11 +49,37 @@ export interface EsquinaChaflan {
 }
 
 export function esquinaChaflan({
-  ancho, alto, chaflan, radioAbajo = 0, radioArriba = 0,
+  ancho, alto, chaflan = 0, radioAbajo = 0, radioArriba = 0, modoChaflan, anchoPlanoSuperior, aguas,
 }: {
-  ancho: number; alto: number; chaflan: number;
+  ancho: number; alto: number; chaflan?: number; aguas?: number;
   radioAbajo?: number; radioArriba?: number;
-}): EsquinaChaflan | null {
+} & DefinicionChaflan): EsquinaChaflan | null {
+  if (modoChaflan === "plano-aguas") {
+    if (![ancho, alto, anchoPlanoSuperior, aguas, radioAbajo, radioArriba].every(Number.isFinite)
+      || !(anchoPlanoSuperior! > 0 && anchoPlanoSuperior! < ancho)
+      || !(aguas! > 0 && aguas! < alto) || radioAbajo < 0 || radioArriba < 0) return null;
+    const caida = aguas!;
+    const hastaPlano = (ancho - anchoPlanoSuperior!) / 2;
+    // El plano se mide entre tangencias, no entre vértices. Con t = tan(θ/2):
+    // (2r − aguas)t² − 2·hastaPlano·t + aguas = 0. La raíz pequeña mantiene
+    // la pendiente hacia fuera; la otra solución deja la tangencia fuera del tramo.
+    const discriminante = hastaPlano ** 2 - caida * (2 * radioArriba - caida);
+    if (discriminante < 0) return null;
+    const t = caida / (hastaPlano + Math.sqrt(discriminante));
+    if (!(t > 0 && t < 1)) return null;
+    const anguloPendiente = 2 * Math.atan(t);
+    const entrada = hastaPlano - radioArriba * t;
+    const cara = Math.hypot(entrada, caida);
+    const giroAbajo = Math.PI / 2 - anguloPendiente;
+    const giroArriba = anguloPendiente;
+    const tangenteAbajo = radioAbajo * Math.tan(giroAbajo / 2);
+    const tangenteArriba = radioArriba * t;
+    if (!(entrada > 0) || tangenteAbajo > alto - caida
+      || tangenteAbajo + tangenteArriba > cara + 1e-9) return null;
+    return { pata: caida, entrada, caida, anguloPendiente, giroAbajo, giroArriba,
+      cara, radioAbajo, radioArriba, tangenteAbajo, tangenteArriba,
+      caraRecta: Math.max(cara - tangenteAbajo - tangenteArriba, 0) };
+  }
   if (!(chaflan > 0) || !(ancho > 0) || !(alto > 0)) return null;
 
   // La pata se acota a la pieza y la cara se recalcula desde ella: usar el
@@ -73,7 +111,8 @@ export function esquinaChaflan({
   const tangenteAbajo = rAbajo * TANGENTE_MEDIA;
   const tangenteArriba = rArriba * TANGENTE_MEDIA;
   return {
-    pata,
+    pata, entrada: pata, caida: pata, anguloPendiente: GIRO_CHAFLAN,
+    giroAbajo: GIRO_CHAFLAN, giroArriba: GIRO_CHAFLAN,
     cara,
     radioAbajo: rAbajo,
     radioArriba: rArriba,
@@ -94,4 +133,27 @@ export function esquinaChaflan({
  */
 export function recorteEsquina(radio: number): number {
   return 2 * radio * TANGENTE_MEDIA - radio * GIRO_CHAFLAN;
+}
+
+/** La misma comprobación para formulario, dibujo y corte; no se ajustan radios a escondidas. */
+export function errorChaflanConAguas(input: DefinicionChaflan & {
+  ancho: number; anchoAtras?: number; altoDelante: number; altoAtras?: number; traseraPorArriba?: boolean;
+  aguas?: number; radioChaflanAbajo?: number; radioChaflanArriba?: number;
+}): { campo: string; mensaje: string } | null {
+  const anchoAtras = (input.anchoAtras ?? 0) > 0 ? input.anchoAtras! : input.ancho;
+  const altoAtras = (input.altoAtras ?? 0) > 0 && !input.traseraPorArriba ? input.altoAtras! : input.altoDelante;
+  if (!Number.isFinite(input.anchoPlanoSuperior) || !(input.anchoPlanoSuperior! > 0)
+    || input.anchoPlanoSuperior! >= Math.min(input.ancho, anchoAtras)) {
+    return { campo: "anchoPlanoSuperior", mensaje: "Introduce un plano superior mayor que cero y menor que el ancho del remolque, delante y detrás." };
+  }
+  if (!Number.isFinite(input.aguas) || !(input.aguas! > 0 && input.aguas! < Math.min(input.altoDelante, altoAtras))) {
+    return { campo: "aguas", mensaje: "Introduce unas aguas mayores que cero y menores que el alto del remolque." };
+  }
+  for (const [ancho, alto] of [[input.ancho, input.altoDelante], [anchoAtras, altoAtras]]) {
+    if (!esquinaChaflan({ ancho, alto, modoChaflan: "plano-aguas", anchoPlanoSuperior: input.anchoPlanoSuperior,
+      aguas: input.aguas, radioAbajo: input.radioChaflanAbajo, radioArriba: input.radioChaflanArriba })) {
+      return { campo: "radioChaflanArriba", mensaje: "Los radios no caben con ese plano y esas aguas. Revisa los dos radios y las medidas." };
+    }
+  }
+  return null;
 }

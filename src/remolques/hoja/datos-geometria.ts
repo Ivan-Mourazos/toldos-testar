@@ -22,7 +22,9 @@ export function datosGeometriaPdf(input: LonaInput): string[] {
         `RADIO HOMBRO ${fmt(input.radioHombro)} CM`,
       ];
     case "TIPO 04": {
-      const lineas = [`CHAFLÁN ${fmt(input.chaflan)} CM`];
+      const lineas = input.modoChaflan === "plano-aguas"
+        ? [`PLANO SUPERIOR ${fmt(input.anchoPlanoSuperior)} CM · AGUAS ${fmt(input.aguas)} CM`]
+        : [`CHAFLÁN ${fmt(input.chaflan)} CM`];
       if ((input.radioChaflanAbajo ?? 0) > 0 || (input.radioChaflanArriba ?? 0) > 0) {
         lineas.push(`RADIOS ${fmt(input.radioChaflanAbajo)} / ${fmt(input.radioChaflanArriba)} CM`);
       }

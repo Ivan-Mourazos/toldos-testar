@@ -75,20 +75,21 @@ function rosaCabeza(L, f, x0, w, h, t) {
   if (f.tipo === 'TIPO 04') {
     // Con chaflán: 1 cm por dentro del corte, el chaflán paralelo y los arcos con el mismo centro (radio − 1 cm);
     // con una arista viva o de radio de 1 cm o menos, la esquina por dentro queda viva.
-    const e = esquinasChaflan(f, w, h), s = Math.SQRT1_2, k = i * (Math.SQRT2 - 1);
+    const e = esquinasChaflan(f, w, h), sen = Math.sin(e.anguloPendiente), cos = Math.cos(e.anguloPendiente);
+    const kAbajo = i * Math.tan(e.giroAbajo / 2), kArriba = i * Math.tan(e.giroArriba / 2), grados = e.anguloPendiente * 180 / Math.PI;
     const tramo = (pts) => L.g.polilineas.push({ capa: 'referencias', puntos: pts.map(([a, b]) => t(a, b)), cerrada: false });
     const arco = (cx, cy, radio, desde, hasta) => { const [x, y] = t(cx, cy); L.g.arcos.push({ capa: 'referencias', x, y, r: radio / 10, desde, hasta }); };
     // Lado izquierdo, en x desde el lado; el derecho se refleja.
-    const ladoY = e.radioAbajo > i ? e.abajo.cy : h - e.pata - k;
-    const ini = e.radioAbajo > i ? [e.abajo.cx - (e.radioAbajo - i) * s, e.abajo.cy + (e.radioAbajo - i) * s] : [i, ladoY];
-    const fin = e.radioArriba > i ? [e.arriba.cx - (e.radioArriba - i) * s, e.arriba.cy + (e.radioArriba - i) * s] : [e.pata + k, h - i];
-    const techo = e.radioArriba > i ? e.arriba.cx : e.pata + k;
+    const ladoY = e.radioAbajo > i ? e.abajo.cy : h - e.caida - kAbajo;
+    const ini = e.radioAbajo > i ? [e.abajo.cx - (e.radioAbajo - i) * sen, e.abajo.cy + (e.radioAbajo - i) * cos] : [i, ladoY];
+    const fin = e.radioArriba > i ? [e.arriba.cx - (e.radioArriba - i) * sen, e.arriba.cy + (e.radioArriba - i) * cos] : [e.entrada + kArriba, h - i];
+    const techo = e.radioArriba > i ? e.arriba.cx : e.entrada + kArriba;
     tramo([[x0 + i, ladoY], [x0 + i, base], [x0 + w - i, base], [x0 + w - i, ladoY]]);
     tramo([[x0 + ini[0], ini[1]], [x0 + fin[0], fin[1]]]);
     tramo([[x0 + w - ini[0], ini[1]], [x0 + w - fin[0], fin[1]]]);
     tramo([[x0 + techo, h - i], [x0 + w - techo, h - i]]);
-    if (e.radioAbajo > i) { arco(x0 + e.abajo.cx, e.abajo.cy, e.radioAbajo - i, 135, 180); arco(x0 + w - e.abajo.cx, e.abajo.cy, e.radioAbajo - i, 0, 45); }
-    if (e.radioArriba > i) { arco(x0 + e.arriba.cx, e.arriba.cy, e.radioArriba - i, 90, 135); arco(x0 + w - e.arriba.cx, e.arriba.cy, e.radioArriba - i, 45, 90); }
+    if (e.radioAbajo > i) { arco(x0 + e.abajo.cx, e.abajo.cy, e.radioAbajo - i, 90 + grados, 180); arco(x0 + w - e.abajo.cx, e.abajo.cy, e.radioAbajo - i, 0, 90 - grados); }
+    if (e.radioArriba > i) { arco(x0 + e.arriba.cx, e.arriba.cy, e.radioArriba - i, 90, 90 + grados); arco(x0 + w - e.arriba.cx, e.arriba.cy, e.radioArriba - i, 90 - grados, 90); }
     return;
   }
   // Recto con aguas: las pendientes de dentro van paralelas a las del corte, a 1 cm medido en perpendicular, como
@@ -184,6 +185,14 @@ function confeccionLona(L, el, X, Y, letras = ['']) {
     if (vy0 - eD.textoDesde >= 20) L.texto(R(2), xDel + (vx0 + vx1) / 2, Y + (eD.textoDesde + vy0) / 2 - 3, 14);
     else L.texto(R(2), xDel + vx0 / 2 + 0.5, Y + (vy0 + vy1) / 2, 14);
   } else L.texto(R(2), xDel + W / 2, Y + (eD.textoDesde + H) / 2 - 3, 14);
+
+  if (i.tipoPerfil === 'TIPO 04' && i.modoChaflan === 'plano-aguas') {
+    const e = esquinasChaflan(P.f, P.anchoPerfil, H * 10);
+    const xPlano = xDel + oD + e.arriba.cx / 10;
+    const plano = (P.anchoPerfil - 2 * e.arriba.cx) / 10;
+    L.cota('cotas', xPlano, Y + H - 1, xPlano + plano, Y + H - 1, r1(plano), 12, 5);
+    L.cota('cotas', xDel + W, Y + H - 1 - i.aguas, xDel + W, Y + H - 1, i.aguas, 12, 5);
+  }
 
   // Paño trasero (con orejas si recoge con goma).
   pintar(L, P.t.p, enPlano(xTra, Y));

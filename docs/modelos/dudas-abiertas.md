@@ -1,5 +1,12 @@
 # Dudas abiertas
 
+## Chaflán con aguas · 11/11/2026
+
+**Q-CH01 · pedido AR.26.05496:** falta el radio numérico que Oficina Técnica obtiene del dibujo
+original. Iván confirma plano superior real de 37 cm, aguas de 14 y demasía de lona hecha de 1 cm.
+La web permite indicar los radios y recalcula la cara y el contorno; no asigna un radio supuesto
+al pedido. [Expediente y geometría](./chaflan-aguas.md).
+
 ## Refuerzos de stock en remolques · 10/11/2026
 
 **Q-STOCK-R01:** ¿Queréis guardar también tiras de refuerzo de menos de 123 cm de largo?

@@ -1,3 +1,4 @@
+import { errorChaflanConAguas } from "../geometry/chaflan.ts";
 import { aguasLongitudinales, errorContornoSoldado, contornoAutomatico, contornoSesgado, type LonaInput } from "../calc/lona.ts";
 import type { BaquetonInput } from "../calc/baqueton.ts";
 import { esModeloGanado, type GanadoInput } from "../calc/ganado.ts";
@@ -64,7 +65,10 @@ export function erroresPlanteamiento(input: LonaInput | BaquetonInput | GanadoIn
       "aguas",
       "Introduce la medida de aguas.",
     );
-    agregar(input.tipoPerfil === "TIPO 04" && !positivo(input.chaflan), "chaflan", "Introduce el chaflán.");
+    if (input.tipoPerfil === "TIPO 04" && input.modoChaflan === "plano-aguas") {
+      const error = errorChaflanConAguas(input);
+      if (error) errores.push(error);
+    } else agregar(input.tipoPerfil === "TIPO 04" && !positivo(input.chaflan), "chaflan", "Introduce el chaflán.");
     agregar(
       input.tipoPerfil === "TIPO 05" && !positivo(input.radioEsquina),
       "radioEsquina",

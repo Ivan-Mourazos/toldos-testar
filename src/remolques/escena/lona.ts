@@ -1,3 +1,4 @@
+import { errorChaflanConAguas } from "../geometry/chaflan.ts";
 import { aguasLongitudinales, type LonaInput, type LonaResult } from "../calc/lona.ts";
 import type { CalcParams, TipoPerfil } from "../calc/params.ts";
 import { colorBaseMaterial } from "../geometry/color-lona.ts";
@@ -6,7 +7,7 @@ import { cierresLona, tipoCierre } from "./cierres.ts";
 import { cajaDe, chasisDe, rotulosDe } from "./chasis.ts";
 import { cajonDe, gomasDe, marcasGanchos, marcasOllaos, posicionesGanchos } from "./comun.ts";
 import { ALTO_CAJON, BASTILLA } from "./constantes.ts";
-import { cotasAguas, cotasCuerpo, cotasVentana, etiquetasMarcas } from "./cotas.ts";
+import { cotasAguas, cotasCuerpo, cotasPlanoSuperior, cotasVentana, etiquetasMarcas } from "./cotas.ts";
 import type { CuerpoLona, EscenaRemolque, Perfil2D } from "./tipos.ts";
 import { ventanaLona } from "./ventana.ts";
 
@@ -15,18 +16,20 @@ export function lonaDibujable(input: LonaInput): boolean {
   if (!(input.largo > 0 && input.ancho > 0 && input.altoDelante > 0) || input.tipoPerfil === "") return false;
   if ((input.tipoPerfil === "TIPO 02" || input.tipoPerfil === "TIPO 03") && !((input.aguas ?? 0) > 0)) return false;
   if (aguasLongitudinales(input) && (input.aguas ?? 0) >= Math.min(input.altoDelante, input.altoAtras > 0 ? input.altoAtras : input.altoDelante)) return false;
-  if (input.tipoPerfil === "TIPO 04" && !((input.chaflan ?? 0) > 0)) return false;
+  if (input.tipoPerfil === "TIPO 04" && (input.modoChaflan === "plano-aguas" ? errorChaflanConAguas(input) != null : !((input.chaflan ?? 0) > 0))) return false;
   if (input.tipoPerfil === "TIPO 05" && !((input.radioEsquina ?? 0) > 0)) return false;
   return true;
 }
 
-function opcionesPerfil(input: LonaInput, ancho: number, alto: number): PerfilOpts {
+function opcionesPerfil(input: LonaInput, ancho: number, alto: number, anchoRemolque: number): PerfilOpts {
   return {
     ancho, altoDelante: alto,
     alturaPico: input.aguas ?? 0,
     radioCumbrera: input.radioCumbrera ?? 0,
     radioHombro: input.radioHombro ?? 0,
     chaflan: input.chaflan ?? 0,
+    modoChaflan: input.modoChaflan,
+    anchoPlanoSuperior: (input.anchoPlanoSuperior ?? 0) + ancho - anchoRemolque,
     radioChaflanAbajo: input.radioChaflanAbajo ?? 0,
     radioChaflanArriba: input.radioChaflanArriba ?? 0,
     radio: input.radioEsquina ?? 0,
@@ -42,8 +45,8 @@ export function perfilesLona(input: LonaInput, wD: number, wA: number, hD: numbe
     hD -= input.aguas ?? 0;
     hA -= input.aguas ?? 0;
   }
-  const delante = perfilForma(tipo, opcionesPerfil(input, wD, hD)).puntos;
-  const calculadoAtras = perfilForma(tipo, opcionesPerfil(input, wA, hA)).puntos;
+  const delante = perfilForma(tipo, opcionesPerfil(input, wD, hD, input.ancho)).puntos;
+  const calculadoAtras = perfilForma(tipo, opcionesPerfil(input, wA, hA, (input.anchoAtras ?? 0) > 0 ? input.anchoAtras! : input.ancho)).puntos;
   // Las dos caras se emparejan punto a punto para tejer el contorno, como en el dibujo técnico:
   // si el acotado de radios deja distinto número de puntos, la trasera es la delantera escalada.
   const atras = calculadoAtras.length === delante.length
@@ -80,7 +83,7 @@ export function escenaLona(input: LonaInput, res: LonaResult, params: CalcParams
   const chasis = chasisDe(cajon);
   const caja = cajaDe(Math.max(wD, wA) / 2, Math.max(hD, hA), largo, chasis);
   const ventana = ventanaLona(input, cuerpo);
-  const conAguas = input.tipoPerfil === "TIPO 02" || input.tipoPerfil === "TIPO 03";
+  const conAguas = input.tipoPerfil === "TIPO 02" || input.tipoPerfil === "TIPO 03" || (input.tipoPerfil === "TIPO 04" && input.modoChaflan === "plano-aguas");
   return {
     cuerpo,
     color: colorBaseMaterial(input.material),
@@ -90,6 +93,8 @@ export function escenaLona(input: LonaInput, res: LonaResult, params: CalcParams
     ventana,
     cotas: [
       ...cotasCuerpo(cuerpo, chasis.suelo),
+      ...(input.tipoPerfil === "TIPO 04" && input.modoChaflan === "plano-aguas"
+        ? cotasPlanoSuperior(cuerpo, input.anchoPlanoSuperior! + wD - input.ancho, { delante: hD, atras: hA }) : []),
       ...(conAguas ? cotasAguas(cuerpo, input.aguas ?? 0, { delante: hD, atras: hA }) : []),
       ...cotasVentana(ventana, cuerpo.perfilDelante, { cremallera: tipoCierre(input.recogeDelante) === "CREMALLERA" }),
     ],

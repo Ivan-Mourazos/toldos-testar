@@ -1,7 +1,8 @@
+import type { DefinicionChaflan } from "./chaflan.ts";
 import type { TipoPerfil } from "../calc/params.ts";
-import { esquinaChaflan, GIRO_CHAFLAN } from "./chaflan.ts";
+import { esquinaChaflan } from "./chaflan.ts";
 
-export interface PerfilOpts {
+export interface PerfilOpts extends DefinicionChaflan {
   ancho: number;
   altoDelante: number;
   alturaPico?: number;
@@ -128,20 +129,21 @@ export function perfilForma(tipo: TipoPerfil, opts: PerfilOpts): PerfilForma {
       // `chaflan` es la cara entre vértices virtuales, no la pata.
       const e = esquinaChaflan({
         ancho: w, alto: h, chaflan: opts.chaflan ?? 0,
+        modoChaflan: opts.modoChaflan, anchoPlanoSuperior: opts.anchoPlanoSuperior, aguas: opts.alturaPico,
         radioAbajo: opts.radioChaflanAbajo, radioArriba: opts.radioChaflanArriba,
       });
       if (!e) return { puntos: [[0, 0], [0, h], [w, h], [w, 0]], aristas: [1, 2] };
       if (e.radioAbajo === 0 && e.radioArriba === 0) {
         return {
-          puntos: [[0, 0], [0, h - e.pata], [e.pata, h], [w - e.pata, h], [w, h - e.pata], [w, 0]],
+          puntos: [[0, 0], [0, h - e.caida], [e.entrada, h], [w - e.entrada, h], [w, h - e.caida], [w, 0]],
           aristas: [1, 2, 3, 4],
         };
       }
       // Centros: el de abajo a `radioAbajo` de la pared, el de arriba a
       // `radioArriba` del techo. Las aristas van en las tangencias, no en los
       // vértices virtuales: los arcos son superficie lisa, igual que el TIPO 03.
-      const yTangenteAbajo = h - e.pata - e.tangenteAbajo;
-      const xTangenteArriba = e.pata + e.tangenteArriba;
+      const yTangenteAbajo = h - e.caida - e.tangenteAbajo;
+      const xTangenteArriba = e.entrada + e.tangenteArriba;
 
       // Se construye solo el lado izquierdo, de donde la pared deja de ser
       // recta hasta donde el techo empieza a serlo, y el derecho sale de
@@ -156,7 +158,7 @@ export function perfilForma(tipo: TipoPerfil, opts: PerfilOpts): PerfilForma {
       if (e.radioAbajo > 0) {
         // De 180° a 135°, girando 45°. Su primer punto ya está puesto.
         izquierda.push(
-          ...arco(e.radioAbajo, yTangenteAbajo, e.radioAbajo, Math.PI, Math.PI - GIRO_CHAFLAN, 5).slice(1),
+          ...arco(e.radioAbajo, yTangenteAbajo, e.radioAbajo, Math.PI, Math.PI - e.giroAbajo, 5).slice(1),
         );
         aristasIzquierda.push(izquierda.length - 1);
       }
@@ -164,11 +166,11 @@ export function perfilForma(tipo: TipoPerfil, opts: PerfilOpts): PerfilForma {
         // De 135° a 90°. Su primer punto cierra el tramo recto del chaflán.
         const inicioArcoArriba = izquierda.length;
         izquierda.push(
-          ...arco(xTangenteArriba, h - e.radioArriba, e.radioArriba, Math.PI - GIRO_CHAFLAN, Math.PI / 2, 5),
+          ...arco(xTangenteArriba, h - e.radioArriba, e.radioArriba, Math.PI / 2 + e.anguloPendiente, Math.PI / 2, 5),
         );
         aristasIzquierda.push(inicioArcoArriba, izquierda.length - 1);
       } else {
-        izquierda.push([e.pata, h]);
+        izquierda.push([e.entrada, h]);
         aristasIzquierda.push(izquierda.length - 1);
       }
 

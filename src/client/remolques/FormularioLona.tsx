@@ -1,3 +1,4 @@
+import { errorChaflanConAguas, esquinaChaflan } from "../../remolques/geometry/chaflan.ts";
 import React, { useState } from 'react';
 import type { AskForConfirmation } from '../components/NotificationCenter';
 import { aguasLongitudinales, CONTORNO_LONGITUDINAL_PENDIENTE, contornoAutomatico, solapeSoldadura, type LonaInput } from '../../remolques/calc/lona.ts';
@@ -41,6 +42,13 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
   const dc = (campo: string) => delCliente.includes(campo);
   const p = params ?? DEFAULT_PARAMS;
   const longitudinal = aguasLongitudinales(input);
+  const porPlano = input.tipoPerfil === 'TIPO 04' && input.modoChaflan === 'plano-aguas';
+  const errorPlano = porPlano ? errorChaflanConAguas(input) : null;
+  const esquina = porPlano && !errorPlano ? esquinaChaflan({
+    ancho: input.ancho, alto: input.altoDelante, modoChaflan: 'plano-aguas',
+    anchoPlanoSuperior: input.anchoPlanoSuperior, aguas: input.aguas,
+    radioAbajo: input.radioChaflanAbajo, radioArriba: input.radioChaflanArriba,
+  }) : null;
   const RECOGIDAS = opcionesConEtiqueta(p.recogidas.map((r) => r.nombre));
   const ajuste = ajusteContorno(p, input.tipoPerfil, {
     abajo: input.radioChaflanAbajo, arriba: input.radioChaflanArriba,
@@ -66,7 +74,7 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
     : contornoLegacy ? Math.max((input.contornoScad ?? 0) - ajuste, 0) : contornoExacto ?? 0;
   const contornoAtrasEscrito = (input.contornoAtras ?? 0) > 0;
   const contornoAtrasVisible = contornoAtrasEscrito ? input.contornoAtras! : contornoAtrasExacto ?? 0;
-  const faltaDato = input.tipoPerfil === 'TIPO 04' && !(input.chaflan ?? 0)
+  const faltaDato = porPlano && errorPlano ? 'plano, las aguas y los radios' : input.tipoPerfil === 'TIPO 04' && !porPlano && !(input.chaflan ?? 0)
     ? 'chaflán'
     : input.tipoPerfil === 'TIPO 05' && !(input.radioEsquina ?? 0)
       ? 'radio'
@@ -153,6 +161,21 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
           <p className="rem-nota rem-span-4" role="status">{CONTORNO_LONGITUDINAL_PENDIENTE} El techo monta encima del lateral: marca roja en los laterales, a {fmt(solapeSoldadura(input))} cm del borde.</p>
         </>}
         {input.tipoPerfil === 'TIPO 04' && (
+          <CampoSelect name="modoChaflan" label="Cómo se mide" span={2} value={input.modoChaflan ?? 'cara'}
+            opciones={[{ value: 'cara', label: 'Cara del chaflán' }, { value: 'plano-aguas', label: 'Plano superior y aguas' }]}
+            onChange={(v) => set('modoChaflan', v as LonaInput['modoChaflan'])} />
+        )}
+        {porPlano && <>
+          <CampoNum name="anchoPlanoSuperior" label="Plano superior" error={errores.anchoPlanoSuperior}
+            value={input.anchoPlanoSuperior ?? 0} onChange={(v) => set('anchoPlanoSuperior', v)} />
+          <CampoNum name="aguas" label="Aguas" error={errores.aguas}
+            value={input.aguas ?? 0} onChange={(v) => set('aguas', v)} />
+          <p className="rem-nota rem-span-4">Medidas del remolque. El plano se mide entre las curvas.
+            {(input.anchoPlanoSuperior ?? 0) > 0 && <> Plano de lona hecha: {fmt(input.anchoPlanoSuperior! + (input.demasiaLonaHecha ?? p.demasiaLonaHecha))} cm.</>}
+            {esquina && <> Chaflán calculado entre vértices: {fmt(esquina.cara)} cm.</>}
+          </p>
+        </>}
+        {input.tipoPerfil === 'TIPO 04' && !porPlano && (
           <CampoNum name="chaflan" delCliente={dc('chaflan')} error={errores.chaflan} label="Chaflán · vértices"
             value={input.chaflan ?? 0} onChange={(v) => set('chaflan', v)} />
         )}
@@ -167,7 +190,7 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
         {camposRadio.length > 0 && verRadios && (
           <div className="rem-banda rem-span-4">
             {camposRadio.map((campo) => (
-              <CampoNum key={campo} name={campo} delCliente={dc(campo)} label={ETIQUETAS_RADIO[campo]} value={input[campo] ?? 0}
+              <CampoNum key={campo} name={campo} delCliente={dc(campo)} label={ETIQUETAS_RADIO[campo]} error={errores[campo]} value={input[campo] ?? 0}
                 onChange={(v) => set(campo, v)} />
             ))}
           </div>

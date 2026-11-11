@@ -1,7 +1,8 @@
+import type { DefinicionChaflan } from "./chaflan.ts";
 import { esquinaChaflan, recorteEsquina } from "./chaflan.ts";
 import type { TipoPerfil } from "../calc/params.ts";
 
-export interface MedidasContorno {
+export interface MedidasContorno extends DefinicionChaflan {
   ancho: number;
   alto: number;
   /** Caída desde la cumbrera hasta los hombros (TIPO 02 y 03). */
@@ -64,12 +65,16 @@ export function contornoCalculado(tipo: TipoPerfil | "", m: MedidasContorno): nu
       // `chaflan` es la cara entre vértices virtuales, no la pata.
       const e = esquinaChaflan({
         ancho: w, alto: h, chaflan: m.chaflan ?? 0,
+        modoChaflan: m.modoChaflan, anchoPlanoSuperior: m.anchoPlanoSuperior, aguas: m.aguas,
         radioAbajo: m.radioChaflanAbajo, radioArriba: m.radioChaflanArriba,
       });
       if (!e) return null;
       // Los radios son los ya acotados por `esquinaChaflan`, no los de entrada.
-      const recorte = recorteEsquina(e.radioAbajo) + recorteEsquina(e.radioArriba);
-      return 2 * (h - e.pata) + 2 * e.cara + (w - 2 * e.pata) - 2 * recorte;
+      const recorte = (radio: number, giro: number) => 2 * radio * Math.tan(giro / 2) - radio * giro;
+      const descuento = m.modoChaflan === "plano-aguas"
+        ? recorte(e.radioAbajo, e.giroAbajo) + recorte(e.radioArriba, e.giroArriba)
+        : recorteEsquina(e.radioAbajo) + recorteEsquina(e.radioArriba);
+      return 2 * (h - e.caida) + 2 * e.cara + (w - 2 * e.entrada) - 2 * descuento;
     }
     case "TIPO 05": {
       const radio = Math.min(m.radioEsquina ?? 0, w / 2, h);
