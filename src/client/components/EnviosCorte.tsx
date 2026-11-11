@@ -1,5 +1,6 @@
 import { controlLabel } from './controlLabels';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { EstadoBotContexto, estadoEnvioBot } from './SemaforoBot';
 import type { EnvioCorte } from '../../corteEnviosTipos';
 import { CARPETA_TECNICO } from '../../corteTecnicos.js';
 import { authorNames } from '../../reviewRules.js';
@@ -7,13 +8,19 @@ import { carpetaLegible } from './enviosCorteTexto';
 
 /** El historial conserva el destino real y los nombres publicados. */
 export function HistorialEnvios({ envios = [], motivo }: { envios?: EnvioCorte[]; motivo?: string }) {
+  const bot = useContext(EstadoBotContexto);
   if (!envios.length && !motivo) return null;
   return <div className="corte-envios">
     {motivo && <p className="corte-ayuda">{motivo}</p>}
     {envios.length > 0 && <div className="corte-envios-historial" role="status"><strong>Envíos del corte</strong>
-      <ul>{envios.map((e, i) => <li key={e.id}><span>{`Envío ${e.numero ?? i + 1} · Entrega ${e.entrega ?? 1} · `}{new Date(e.fecha).toLocaleString('es-ES')} · {controlLabel(e.usuario)} · {e.destino === 'bot' ? 'Bot' : 'DXFs'}{e.parcial ? ' · Envío incompleto: revisarlo antes de repetir' : ''}{e.nota ? ` · ${e.nota}` : ''}</span><small title={e.carpeta}>{carpetaLegible(e.carpeta)} · {e.archivos.map(a => a.filename).join(' · ')}</small></li>)}</ul>
+      <ul>{envios.map((e, i) => <li key={e.id}><span>{`Envío ${e.numero ?? i + 1} · Entrega ${e.entrega ?? 1} · `}{new Date(e.fecha).toLocaleString('es-ES')} · {controlLabel(e.usuario)} · {e.destino === 'bot' ? 'Bot' : 'DXFs'}{e.parcial ? ' · Envío incompleto: revisarlo antes de repetir' : ''}{e.nota ? ` · ${e.nota}` : ''}</span><EstadoEnvio estado={estadoEnvioBot(e, bot)} /><small title={e.carpeta}>{carpetaLegible(e.carpeta)} · {e.archivos.map(a => a.filename).join(' · ')}</small></li>)}</ul>
     </div>}
   </div>;
+}
+
+function EstadoEnvio({ estado }: { estado: 'en-cola' | 'recogido' | null }) {
+  if (!estado) return null;
+  return <b className={`corte-envio-bot es-${estado}`}>{estado === 'recogido' ? 'Recogido por el bot' : 'En cola del bot'}</b>;
 }
 
 export type DestinoDxf = 'bot' | 'dxfs' | 'descarga';

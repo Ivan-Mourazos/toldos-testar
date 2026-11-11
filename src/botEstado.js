@@ -9,7 +9,7 @@ import { resolveDirectoryTemplate } from './workflow.js';
 // tres días así y solo se veía mirando los .cmt a mano). Solo lee; nunca toca las carpetas.
 export const MINUTOS_PARADO = 15;
 
-const sinDatos = (motivo, comprobado) => ({ estado: 'sin-datos', motivo, cola: [], desde: null, comprobado });
+const sinDatos = (motivo, comprobado) => ({ estado: 'sin-datos', motivo, cola: [], carpetas: [], desde: null, comprobado });
 
 export async function estadoBot({ plantilla, ahora = new Date(), minutosParado = MINUTOS_PARADO }) {
   const comprobado = ahora.toISOString();
@@ -20,25 +20,26 @@ export async function estadoBot({ plantilla, ahora = new Date(), minutosParado =
     ? Object.entries(CARPETA_TECNICO).map(([tecnico, carpeta]) => ({ tecnico, dir: base.replaceAll('{TECNICO}', carpeta) }))
     : [{ tecnico: '', dir: base }];
   const cola = [];
-  let leidas = 0;
+  // Las carpetas que se han podido mirar: un envío a otra carpeta no se puede dar por recogido.
+  const carpetasLeidas = [];
   for (const { tecnico, dir } of carpetas) {
     let nombres;
     try { nombres = await fs.readdir(dir); } catch { continue; }
-    leidas += 1;
+    carpetasLeidas.push(dir);
     for (const nombre of nombres) {
       if (!nombre.toLowerCase().endsWith('.dxf')) continue;
       // Un DXF copiado a mano conserva su fecha de modificación: la de creación dice cuándo llegó.
       const info = await fs.stat(path.join(dir, nombre)).catch(() => null);
       if (!info?.isFile()) continue;
       const llegada = new Date(Math.max(info.mtimeMs, info.birthtimeMs || 0));
-      cola.push({ pedido: nombre.slice(0, -4), tecnico, desde: llegada.toISOString() });
+      cola.push({ pedido: nombre.slice(0, -4), archivo: nombre, carpeta: dir, tecnico, desde: llegada.toISOString() });
     }
   }
-  if (!leidas) return sinDatos('No se puede leer la carpeta del bot.', comprobado);
+  if (!carpetasLeidas.length) return sinDatos('No se puede leer la carpeta del bot.', comprobado);
   cola.sort((a, b) => a.desde.localeCompare(b.desde));
   const desde = cola[0]?.desde ?? null;
   const parado = desde !== null && ahora.getTime() - new Date(desde).getTime() >= minutosParado * 60_000;
-  return { estado: !cola.length ? 'al-dia' : parado ? 'parado' : 'en-cola', cola, desde, comprobado };
+  return { estado: !cola.length ? 'al-dia' : parado ? 'parado' : 'en-cola', cola, carpetas: carpetasLeidas, desde, comprobado };
 }
 
 /** La carpeta es de red: varias pantallas abiertas comparten la misma lectura durante `ms`. */

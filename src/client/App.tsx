@@ -47,7 +47,7 @@ import { todayIso } from './constants';
 import { readCurrentUser, saveCurrentUser } from './currentUser';
 import { MENSAJE_PEDIDO_RECIBIDO, destinoDeEnlace, origenDeCoordina, pedidoDeEnlace, pedidoDeMensaje, revisionDeEnlace, sinPedidoEnEnlace, type PedidoDeCoordina } from './enlacePedido';
 import { WhoAreYouDialog } from './components/WhoAreYouDialog';
-import { SemaforoBot, useEstadoBot } from './components/SemaforoBot';
+import { EstadoBotContexto, SemaforoBot, useEstadoBot } from './components/SemaforoBot';
 import { personaDe, tintaSobre } from './personas';
 import { usePendingReviews } from './hooks/usePendingReviews';
 import { buscarBorradorAlObtener, contenidoBorradorToldos, guardarBorradorPreguntando, TITULO_BORRADOR_EN_CORRECCION } from './borradores';
@@ -855,6 +855,7 @@ export default function App() {
     activo: activeTab === 'order' && editorPedidoAbierto && producto === 'toldos', editable: true });
 
   return (
+    <EstadoBotContexto.Provider value={estadoDelBot}>
     <main className={`app-shell${activeTab === 'order' ? ' is-new-order' : ''}`}>
       {/* Cabecera como la de CoordinaOT (diseño 29/09/2026, estilo CoordinaOT): del color de
           la página, logo a la izquierda, pestañas como teclas sueltas y, a la derecha, el modo
@@ -1152,5 +1153,6 @@ export default function App() {
         <WhoAreYouDialog current={currentUser} onChoose={chooseUser} onCancel={currentUser ? () => setChoosingUser(false) : undefined} />
       )}
     </main>
+    </EstadoBotContexto.Provider>
   );
 }

@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { createContext, useEffect, useRef, useState } from 'react';
+import type { EnvioCorte } from '../../corteEnviosTipos';
 import { controlLabel } from './controlLabels';
 
 // Semáforo del bot de corte en la cabecera (Iván, 10/11/2026): si está al día, si tiene
@@ -7,12 +8,35 @@ import { controlLabel } from './controlLabels';
 export type EstadoBot = {
   estado: 'al-dia' | 'en-cola' | 'parado' | 'sin-datos';
   motivo?: string;
-  cola: Array<{ pedido: string; tecnico: string; desde: string }>;
+  cola: Array<{ pedido: string; archivo?: string; carpeta?: string; tecnico: string; desde: string }>;
+  /** Las carpetas de pendientes que el servidor ha podido mirar. */
+  carpetas: string[];
   desde: string | null;
   comprobado: string;
 };
 
 const REFRESH_MS = 60_000;
+
+/** La misma lectura para la cabecera y para el historial de envíos de cada pedido. */
+export const EstadoBotContexto = createContext<EstadoBot | null>(null);
+
+const mismaCarpeta = (ruta: string) => ruta.replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase();
+
+/**
+ * Qué ha sido de un envío al bot (Iván, 11/11/2026: hasta ahora lo último que sabía la web era
+ * «mandado»). El bot se lleva el DXF de la carpeta de pendientes al procesarlo: si sigue ahí, está
+ * en cola; si ya no, lo recogió. Solo se afirma si su carpeta es una de las que se han mirado.
+ */
+export function estadoEnvioBot(envio: EnvioCorte, bot: EstadoBot | null): 'en-cola' | 'recogido' | null {
+  if (envio.destino !== 'bot' || !bot || bot.estado === 'sin-datos') return null;
+  const carpeta = mismaCarpeta(envio.carpeta);
+  if (!bot.carpetas.some((c) => mismaCarpeta(c) === carpeta)) return null;
+  // Mandado después de la última lectura: aún no se ha podido ver si lo recogió.
+  if (new Date(envio.fecha).getTime() >= new Date(bot.comprobado).getTime()) return 'en-cola';
+  const nombres = new Set(envio.archivos.map((a) => a.filename.toLowerCase()));
+  const sigue = bot.cola.some((c) => c.carpeta && c.archivo && mismaCarpeta(c.carpeta) === carpeta && nombres.has(c.archivo.toLowerCase()));
+  return sigue ? 'en-cola' : 'recogido';
+}
 const dos = (n: number) => String(n).padStart(2, '0');
 
 /** «13:07» si es de hoy; «06/11 13:07» si no. */

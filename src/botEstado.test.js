@@ -42,6 +42,9 @@ describe('semáforo del bot de corte', () => {
     const enCola = await estadoBot({ plantilla, ahora: new Date(ahora.getTime() + 60_000) });
     expect(enCola.estado).toBe('en-cola');
     expect(enCola.cola.map((c) => [c.pedido, c.tecnico]).sort()).toEqual([['AR2600001', 'IVÁN'], ['AR2600002', 'ÁNGEL']]);
+    // Cada DXF dice su archivo y su carpeta, y el estado las carpetas que ha podido mirar.
+    expect(enCola.cola.find((c) => c.pedido === 'AR2600001')).toMatchObject({ archivo: 'AR2600001.dxf', carpeta: path.join(raiz, 'Ivan.Sanchez') });
+    expect(enCola.carpetas.sort()).toEqual([path.join(raiz, 'Angel'), path.join(raiz, 'Ivan.Sanchez')]);
     const parado = await estadoBot({ plantilla, ahora: new Date(ahora.getTime() + 16 * 60_000) });
     expect(parado.estado).toBe('parado');
     expect(parado.desde).toBe(parado.cola[0].desde);
