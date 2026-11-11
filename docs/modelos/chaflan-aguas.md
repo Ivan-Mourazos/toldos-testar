@@ -12,8 +12,10 @@ cliente Carlos López Cao y PVC azul 5015. La forma solo consta en el dibujo.
 - Demasía de lona hecha: **1 cm** en el ancho. **Cómo se aplica (Iván, 11/11/2026, corregido):** se
   dibuja el remolque con sus medidas exactas (plano 37) y se desplaza **medio centímetro** hacia
   fuera todo el contorno (lados y techo). Esa raya es el remolque terminado: ancho 141, techo medio
-  centímetro más arriba, radios +0,5 y **el plano sigue en 37** entre curvas (no 38, como se hizo
-  al principio). Después el paño suma su centímetro, como siempre.
+  centímetro más arriba y **el plano sigue en 37** entre curvas (no 38, como se hizo al principio).
+  Después el paño suma su centímetro, como siempre.
+- **Radios (Iván, 11/11/2026):** el radio que se marca es el de la **lona terminada**. El remolque
+  lleva ese radio − 0,5 y el corte, + 1 como siempre (radio 7 → remolque 6,5, terminado 7, corte 8).
   Se usa el parámetro de demasía vigente del pedido: el desplazamiento es la mitad.
 
 ## Entrada y geometría
@@ -33,8 +35,8 @@ el plano superior y los cuatro arcos con sus giros reales; no usa una polilínea
 
 El contorno es el de la lona hecha: el del remolque desplazado medio centímetro, que es el del
 remolque más π·0,5 cm (los giros) con la pendiente y el plano sin cambiar.
-El corte es el remolque desplazado 1,5 cm (medio del terminado y uno del paño): radios del
-remolque + 1,5 cm con los mismos centros; la rosa, 1 cm por dentro, cae en la raya del terminado.
+El corte es el remolque desplazado 1,5 cm (medio del terminado y uno del paño): radio marcado
++ 1 cm con los mismos centros; la rosa, 1 cm por dentro, cae en la raya del terminado con el radio marcado.
 La cabeza de corte se obtiene desplazando el terminado 1 cm en perpendicular, conservando
 la pendiente y el plano entre curvas. La rosa mantiene los centros y resta ese centímetro a los radios.
 No se fuerza 45° ni se reducen radios imposibles en silencio: se pide revisar las medidas.

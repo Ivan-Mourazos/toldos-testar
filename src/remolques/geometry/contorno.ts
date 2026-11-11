@@ -65,7 +65,7 @@ export function contornoCalculado(tipo: TipoPerfil | "", m: MedidasContorno): nu
       // `chaflan` es la cara entre vértices virtuales, no la pata.
       const e = esquinaChaflan({
         ancho: w, alto: h, chaflan: m.chaflan ?? 0,
-        modoChaflan: m.modoChaflan, anchoPlanoSuperior: m.anchoPlanoSuperior, aguas: m.aguas, desfaseChaflan: m.desfaseChaflan,
+        modoChaflan: m.modoChaflan, anchoPlanoSuperior: m.anchoPlanoSuperior, aguas: m.aguas, desfaseChaflan: m.desfaseChaflan, radiosEnDesfase: m.radiosEnDesfase,
         radioAbajo: m.radioChaflanAbajo, radioArriba: m.radioChaflanArriba,
       });
       if (!e) return null;

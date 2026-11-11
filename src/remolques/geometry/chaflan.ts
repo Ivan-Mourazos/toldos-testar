@@ -28,6 +28,13 @@ export interface DefinicionChaflan {
    * después su centímetro, como siempre. Ausente o cero: el remolque tal cual.
    */
   desfaseChaflan?: number;
+  /**
+   * En qué raya están medidos los radios, como desplazamiento desde el remolque (Iván, 11/11/2026:
+   * «debe quedar el radio que yo marco en la lona terminada»): con medio centímetro, el radio
+   * marcado es el del terminado, el remolque lleva medio menos y el corte, uno más. Cero: radios
+   * del remolque.
+   */
+  radiosEnDesfase?: number;
 }
 
 export interface EsquinaChaflan {
@@ -77,14 +84,18 @@ export function desplazarEsquina(e: EsquinaChaflan, d: number): EsquinaChaflan {
 
 export function esquinaChaflan({
   ancho, alto, chaflan = 0, radioAbajo = 0, radioArriba = 0, modoChaflan, anchoPlanoSuperior, aguas, desfaseChaflan = 0,
+  radiosEnDesfase = 0,
 }: {
   ancho: number; alto: number; chaflan?: number; aguas?: number;
   radioAbajo?: number; radioArriba?: number;
 } & DefinicionChaflan): EsquinaChaflan | null {
   if (modoChaflan === "plano-aguas" && desfaseChaflan > 0) {
     // Primero el remolque exacto y después su contorno desplazado.
+    // Los radios marcados son los de la raya `radiosEnDesfase`; el remolque lleva esa medida menos
+    // (una arista viva sigue viva).
+    const delRemolque = (radio: number) => (radio > 0 ? Math.max(radio - radiosEnDesfase, 0) : 0);
     const remolque = esquinaChaflan({ ancho: ancho - 2 * desfaseChaflan, alto: alto - desfaseChaflan,
-      modoChaflan, anchoPlanoSuperior, aguas, radioAbajo, radioArriba });
+      modoChaflan, anchoPlanoSuperior, aguas, radioAbajo: delRemolque(radioAbajo), radioArriba: delRemolque(radioArriba) });
     return remolque && desplazarEsquina(remolque, desfaseChaflan);
   }
   if (modoChaflan === "plano-aguas") {

@@ -33,6 +33,8 @@ function opcionesPerfil(input: LonaInput, ancho: number, alto: number, anchoRemo
     // el plano mide lo mismo entre curvas y la pendiente no cambia.
     anchoPlanoSuperior: input.anchoPlanoSuperior ?? 0,
     desfaseChaflan: input.modoChaflan === "plano-aguas" ? Math.max((ancho - anchoRemolque) / 2, 0) : 0,
+    // Los radios marcados son los de la lona terminada (la que se dibuja).
+    radiosEnDesfase: input.modoChaflan === "plano-aguas" ? Math.max((ancho - anchoRemolque) / 2, 0) : 0,
     radioChaflanAbajo: input.radioChaflanAbajo ?? 0,
     radioChaflanArriba: input.radioChaflanArriba ?? 0,
     radio: input.radioEsquina ?? 0,

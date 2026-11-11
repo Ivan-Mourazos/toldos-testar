@@ -9,15 +9,24 @@ const medidas = { ancho: 140, alto: 127, anchoPlanoSuperior: 60, aguas: 14, radi
 describe("lona hecha: el remolque exacto desplazado medio centímetro por todo el contorno", () => {
   // Iván, 11/11/2026: «se hace el remolque de la medida exacta, con la medida de 37, y después
   // el desfase a todo el contorno para tener el centímetro de más»: medio centímetro por lado.
-  const exacto = esquinaChaflan({ ...medidas, anchoPlanoSuperior: 37, modoChaflan: "plano-aguas" })!;
+  // El radio marcado (7) es el de la lona terminada (Iván, 11/11/2026): el remolque lleva 6,5.
+  const exacto = esquinaChaflan({ ...medidas, anchoPlanoSuperior: 37, modoChaflan: "plano-aguas", radioAbajo: 6.5, radioArriba: 6.5 })!;
   const hecha = esquinaChaflan({ ...medidas, ancho: 141, alto: 127.5, anchoPlanoSuperior: 37,
-    modoChaflan: "plano-aguas", desfaseChaflan: 0.5 })!;
+    modoChaflan: "plano-aguas", desfaseChaflan: 0.5, radiosEnDesfase: 0.5 })!;
 
-  it("conserva la pendiente y el plano de 37, y los radios crecen medio centímetro", () => {
+  it("conserva la pendiente y el plano de 37, y la lona terminada lleva el radio marcado", () => {
     expect(hecha.anguloPendiente).toBeCloseTo(exacto.anguloPendiente, 12);
     expect(141 - 2 * (hecha.entrada + hecha.tangenteArriba)).toBeCloseTo(37, 9);
-    expect(hecha.radioAbajo).toBe(7.5);
-    expect(hecha.radioArriba).toBe(7.5);
+    expect(hecha.radioAbajo).toBe(7);
+    expect(hecha.radioArriba).toBe(7);
+  });
+
+  it("el corte, un centímetro más: radio marcado + 1", () => {
+    const corte = esquinaChaflan({ ...medidas, ancho: 143, alto: 128.5, anchoPlanoSuperior: 37,
+      modoChaflan: "plano-aguas", desfaseChaflan: 1.5, radiosEnDesfase: 0.5 })!;
+    expect(corte.radioAbajo).toBe(8);
+    expect(corte.radioArriba).toBe(8);
+    expect(corte.anguloPendiente).toBeCloseTo(exacto.anguloPendiente, 12);
   });
 
   it("cada tramo recto queda a medio centímetro del del remolque", () => {
@@ -29,9 +38,9 @@ describe("lona hecha: el remolque exacto desplazado medio centímetro por todo e
 
   it("el contorno es el del remolque más medio centímetro de cada giro y del techo", () => {
     const remolque = contornoCalculado("TIPO 04", { ancho: 140, alto: 127, anchoPlanoSuperior: 37, aguas: 14,
-      modoChaflan: "plano-aguas", radioChaflanAbajo: 7, radioChaflanArriba: 7 })!;
+      modoChaflan: "plano-aguas", radioChaflanAbajo: 6.5, radioChaflanArriba: 6.5 })!;
     const terminado = contornoCalculado("TIPO 04", { ancho: 141, alto: 127.5, anchoPlanoSuperior: 37, aguas: 14,
-      modoChaflan: "plano-aguas", desfaseChaflan: 0.5, radioChaflanAbajo: 7, radioChaflanArriba: 7 })!;
+      modoChaflan: "plano-aguas", desfaseChaflan: 0.5, radiosEnDesfase: 0.5, radioChaflanAbajo: 7, radioChaflanArriba: 7 })!;
     // Desplazar d una curva que gira 180° en total (de subir a bajar) la alarga π·d.
     expect(terminado - remolque).toBeCloseTo(Math.PI * 0.5, 9);
   });

@@ -123,7 +123,8 @@ export function esquinasChaflan(f, w, h) {
   const e = esquinaChaflan({ ancho: w, alto: h, chaflan: f.chaflan.cara,
     modoChaflan: f.chaflan.modoChaflan, anchoPlanoSuperior: f.chaflan.plano, aguas: f.chaflan.aguas,
     radioAbajo: f.chaflan.rAbajo, radioArriba: f.chaflan.rArriba,
-    desfaseChaflan: f.chaflan.modoChaflan === 'plano-aguas' ? f.chaflan.desfase + 10 : 0 });
+    // Los radios marcados son los de la lona terminada: en el corte, + 1 cm como siempre.
+    desfaseChaflan: f.chaflan.modoChaflan === 'plano-aguas' ? f.chaflan.desfase + 10 : 0, radiosEnDesfase: f.chaflan.desfase });
   if (!e) throw Error('Las medidas y radios del chaflán no caben en la cabeza de corte.');
   const cos = Math.cos(e.anguloPendiente), sen = Math.sin(e.anguloPendiente);
   const hombro = h - e.caida - e.tangenteAbajo;

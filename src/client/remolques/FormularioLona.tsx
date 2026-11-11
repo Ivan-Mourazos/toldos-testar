@@ -44,10 +44,14 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
   const longitudinal = aguasLongitudinales(input);
   const porPlano = input.tipoPerfil === 'TIPO 04' && input.modoChaflan === 'plano-aguas';
   const errorPlano = porPlano ? errorChaflanConAguas(input) : null;
+  // El chaflán del remolque: los radios marcados son los de la lona terminada (Iván, 11/11/2026),
+  // y el remolque lleva medio centímetro menos (la mitad de la demasía).
+  const medioDemasia = (input.demasiaLonaHecha ?? p.demasiaLonaHecha) / 2;
+  const radioRemolque = (radio?: number) => ((radio ?? 0) > 0 ? Math.max(radio! - medioDemasia, 0) : 0);
   const esquina = porPlano && !errorPlano ? esquinaChaflan({
     ancho: input.ancho, alto: input.altoDelante, modoChaflan: 'plano-aguas',
     anchoPlanoSuperior: input.anchoPlanoSuperior, aguas: input.aguas,
-    radioAbajo: input.radioChaflanAbajo, radioArriba: input.radioChaflanArriba,
+    radioAbajo: radioRemolque(input.radioChaflanAbajo), radioArriba: radioRemolque(input.radioChaflanArriba),
   }) : null;
   const RECOGIDAS = opcionesConEtiqueta(p.recogidas.map((r) => r.nombre));
   const ajuste = ajusteContorno(p, input.tipoPerfil, {
@@ -174,6 +178,7 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
             {/* Iván, 11/11/2026: el remolque exacto desplazado medio centímetro; el plano entre curvas no cambia. */}
             {(input.anchoPlanoSuperior ?? 0) > 0 && <> Plano de lona hecha: {fmt(input.anchoPlanoSuperior!)} cm (el remolque con medio centímetro más por todo el contorno).</>}
             {esquina && <> Chaflán calculado entre vértices: {fmt(esquina.cara)} cm.</>}
+            {porPlano && <> Los radios son los de la lona terminada.</>}
           </p>
         </>}
         {input.tipoPerfil === 'TIPO 04' && !porPlano && (

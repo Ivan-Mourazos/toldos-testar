@@ -176,7 +176,7 @@ export function contornoAutomatico(
   // y el plano sigue midiendo lo mismo entre curvas.
   const desfase = input.tipoPerfil === "TIPO 04" && input.modoChaflan === "plano-aguas" ? demasia / 2 : 0;
   const valor = contornoCalculado(input.tipoPerfil, {
-    ancho: ancho + demasia, alto: alto + desfase, desfaseChaflan: desfase,
+    ancho: ancho + demasia, alto: alto + desfase, desfaseChaflan: desfase, radiosEnDesfase: desfase,
     modoChaflan: input.modoChaflan,
     anchoPlanoSuperior: input.anchoPlanoSuperior,
     aguas: input.aguas, radioCumbrera: input.radioCumbrera, radioHombro: input.radioHombro,

@@ -48,7 +48,8 @@ describe('chaflán con aguas en las pantallas y las salidas', () => {
   it('la lona hecha es el remolque desplazado medio centímetro: plano 37 y aguas 14', () => {
     // Iván, 11/11/2026: «has aumentado de 37 a 38 y no deberías»; se dibuja el remolque exacto y se
     // desplaza medio centímetro todo el contorno para tener el centímetro de más en el ancho.
-    const sinDemasia = contornoAutomatico(input, 0)!;
+    // El remolque exacto lleva el radio marcado − 0,5 (el marcado es el de la lona terminada).
+    const sinDemasia = contornoAutomatico({ ...input, radioChaflanAbajo: 6.5, radioChaflanArriba: 6.5 }, 0)!;
     // El contorno se da con un decimal.
     expect(contornoAutomatico(input, 1)).toBeCloseTo(sinDemasia + Math.PI * 0.5, 1);
     const res = calcLona(input, DEFAULT_PARAMS);
@@ -74,7 +75,7 @@ describe('chaflán con aguas en las pantallas y las salidas', () => {
     const p = piezasLona(el);
     // El remolque exacto: la lona hecha y el corte son desplazamientos suyos, con la misma pendiente.
     const remolque = esquinaChaflan({ ancho: 140, alto: 127, anchoPlanoSuperior: 37, aguas: 14,
-      modoChaflan: 'plano-aguas', radioAbajo: 7, radioArriba: 7 })!;
+      modoChaflan: 'plano-aguas', radioAbajo: 6.5, radioArriba: 6.5 })!;
     const corte = esquinasChaflan(p.f, p.anchoPerfil, p.d.p.h);
     expect(corte.anguloPendiente).toBeCloseTo(remolque.anguloPendiente, 9);
     expect((corte.entrada * Math.tan(corte.anguloPendiente))).toBeCloseTo(corte.caida, 7);
@@ -83,7 +84,7 @@ describe('chaflán con aguas en las pantallas y las salidas', () => {
       expect(arcos).toHaveLength(4);
       const plano = (cabeza.lineas as number[][]).find(([, y1, , y2]) => y1 === cabeza.h && y2 === cabeza.h)!;
       expect(plano[2] - plano[0]).toBeCloseTo(370, 6);
-      expect(arcos.every(a => Math.abs(a.r - 85) < 1e-9)).toBe(true);
+      expect(arcos.every(a => Math.abs(a.r - 80) < 1e-9)).toBe(true);
       expect(arcos.some(a => Math.abs(a.hasta - a.desde - 45) > 1)).toBe(true);
       for (const a of arcos) expect([a.x, a.y, a.r, a.desde, a.hasta].every(Number.isFinite)).toBe(true);
     }
