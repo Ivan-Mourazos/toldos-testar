@@ -3,6 +3,7 @@ import { leerCmt, registro } from './binario.ts';
 import { leerDxf, value, number } from './dxf.ts';
 import { generarGeometria } from './geometria.ts';
 import { leerFuente } from './fuente.ts';
+import { quitarLeyendaWeb, recolocar } from './leyenda.ts';
 import type { Duda, ObjetoGeometrico, OpcionesCmt, Dxf } from './tipos.ts';
 export { leerCmt, serializarCmt } from './binario.ts';
 export type { DocumentoCmt, ObjetoCmt, RegistroCmt } from './binario.ts';
@@ -76,7 +77,13 @@ function validar(d: Dxf): { dudas: Duda[]; avisos: Duda[]; tieneTexto: boolean }
 export function dxfACmt(dxfTexto: string, opciones: OpcionesCmt = {}): ResultadoCmt {
   const resultado: ResultadoCmt = {cmt: null, objetos: [], avisos: [], dudas: []};
   try {
-    const d = leerDxf(dxfTexto), v = validar(d); resultado.dudas.push(...v.dudas); resultado.avisos.push(...v.avisos);
+    const d = leerDxf(dxfTexto);
+    let sinLeyenda = false;
+    if (opciones.sinLeyenda) {
+      const q = quitarLeyendaWeb(d); d.entities = q.entidades; sinLeyenda = q.quitada;
+      resultado.avisos.push({motivo: q.quitada ? 'Se ha quitado la leyenda del bot: el dibujo va a 300 y 20 mm' : 'No se ha encontrado entera la leyenda de la web: el dibujo se convierte tal cual'});
+    }
+    const v = validar(d); resultado.dudas.push(...v.dudas); resultado.avisos.push(...v.avisos);
     let font: ReturnType<typeof leerFuente> | undefined;
     if (v.tieneTexto) {
       const ruta = opciones.rutaFuente ?? process.env.CMT_ARIAL_PATH ?? (process.platform === 'win32' ? 'C:/Windows/Fonts/arial.ttf' : undefined);
@@ -88,6 +95,7 @@ export function dxfACmt(dxfTexto: string, opciones: OpcionesCmt = {}): Resultado
     }
     if (resultado.dudas.length) return resultado;
     const g = generarGeometria(d, {font, compatibilidadRobot: opciones.compatibilidadRobot}); resultado.avisos.push(...g.avisos); resultado.dudas.push(...g.issues); resultado.objetos = g.objects;
+    if (sinLeyenda) recolocar(g.objects);
     if (opciones.compatibilidadRobot !== false) resultado.avisos.push({motivo: 'Se reproduce el redondeo SVG del robot (seis cifras, 96 dpi); compatibilidadRobot:false conserva la precisión del DXF y puede mostrar rellenos distintos'});
     if (!resultado.dudas.length) resultado.cmt = escribir(g.objects);
   } catch (error) {

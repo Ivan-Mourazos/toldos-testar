@@ -2,6 +2,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { leerCmt, serializarCmt, dxfACmt } from './index.ts';
+import { escribirDxf2004 } from '../domain/corteLona/dxfCorte.js';
 
 const fixture = (name: string) => readFileSync(fileURLToPath(new URL(`./__fixtures__/${name}`, import.meta.url)), 'utf8');
 const original = (name: string) => Buffer.from(fixture(`${name}.cmt.base64`), 'base64');
@@ -105,5 +106,35 @@ describe('conversión independiente del DXF', () => {
     expect(r.dudas).toEqual([]);
     expect(r.objetos.some(o => o.entity === 'TEXT')).toBe(true);
     expect(leerCmt(r.cmt!).objects.length).toBe(r.objetos.length);
+  });
+});
+
+describe('Leyenda del bot (Iván, 12/11/2026): en el corte sobra y descoloca el dibujo en la máquina', () => {
+  const U = 72 / 25.4;
+  const cuadrado = { lineas: [[0, 0, 500, 0], [500, 0, 500, 300], [500, 300, 0, 300], [0, 300, 0, 0]].map(([x1, y1, x2, y2]) => ({ capa: 'DISCO1', x1, y1, x2, y2 })), textos: [] };
+  const esquina = (objetos: { paths: { x: number; y: number }[][] }[]) => {
+    const p = objetos.flatMap(o => o.paths.flat());
+    return [Math.min(...p.map(q => q.x)) / U, Math.min(...p.map(q => q.y)) / U];
+  };
+
+  it('con sinLeyenda solo queda el dibujo, con su esquina a 300 y 20 mm, y no hace falta la fuente', () => {
+    const r = dxfACmt(escribirDxf2004(cuadrado), { sinLeyenda: true, rutaFuente: 'no-existe.ttf' });
+    expect(r.dudas).toEqual([]);
+    expect(r.objetos.map(o => o.tool)).toEqual(['CM-CUTW-Def']);
+    const [x, y] = esquina(r.objetos);
+    expect(x).toBeCloseTo(300, 2); expect(y).toBeCloseTo(20, 2);
+    expect(leerCmt(r.cmt!).objects).toHaveLength(1);
+  });
+
+  it('si el DXF no trae la leyenda de la web entera, no quita nada y lo avisa', () => {
+    const r = dxfACmt(escribirDxf2004(cuadrado, { leyenda: false }), { sinLeyenda: true });
+    expect(r.objetos).toHaveLength(1);
+    expect(r.avisos.map(a => a.motivo)).toContain('No se ha encontrado entera la leyenda de la web: el dibujo se convierte tal cual');
+  });
+
+  it('sin la opción, la leyenda sigue saliendo como hasta ahora', () => {
+    const r = dxfACmt(escribirDxf2004(cuadrado), { rutaFuente: 'no-existe.ttf' });
+    expect(r.cmt).toBeNull();
+    expect(r.dudas.map(d => d.motivo).join(' ')).toContain('fuente Arial');
   });
 });

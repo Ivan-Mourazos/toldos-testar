@@ -14,12 +14,15 @@ const lineaDuda = ({ motivo, capa, handle }) => {
   return detalle ? `${motivo} (${detalle})` : motivo;
 };
 
+// La leyenda del bot no va al CMT: en la máquina sobra y descoloca el dibujo (Iván, 12/11/2026).
+const sinLeyenda = (texto) => dxfACmt(texto, { sinLeyenda: true });
+
 /**
  * Piloto: con cada DXF que va al robot, deja en una carpeta aparte el CMT hecho por la web, para
  * compararlo con el que genere el robot. No es la carpeta de la máquina y nada depende de él:
  * cualquier fallo se anota y el envío sigue.
  */
-export async function dejarCmtPiloto({ carpeta, archivos, convertir = dxfACmt, aviso = console.warn }) {
+export async function dejarCmtPiloto({ carpeta, archivos, convertir = sinLeyenda, aviso = console.warn }) {
   if (!carpeta) return [];
   const resultados = [];
   for (const { filename, contents } of archivos) {
