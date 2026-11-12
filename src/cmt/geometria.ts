@@ -1,7 +1,7 @@
-import { value, number } from './dxf';
-import type { Fuente } from './fuente';
-import type { Dxf, EntidadDxf, Duda, Punto, ObjetoGeometrico } from './tipos';
-import { redondearComoRobot } from './compatibilidad';
+import { value, number } from './dxf.ts';
+import type { Fuente } from './fuente.ts';
+import type { Dxf, EntidadDxf, Duda, Punto, ObjetoGeometrico } from './tipos.ts';
+import { redondearComoRobot } from './compatibilidad.ts';
 type Trazo = Pick<ObjetoGeometrico, 'paths' | 'source' | 'entity' | 'serial' | 'firstSteps'>;
 // Geometría: razón observada de 72/25,4 unidades CMT por mm DXF.
 // Los parámetros del controlador usan otra razón: 600/25,4.

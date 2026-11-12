@@ -1,4 +1,4 @@
-import type { Dxf, EntidadDxf } from './tipos';
+import type { Dxf, EntidadDxf } from './tipos.ts';
 
 export function leerDxf(texto: string): Dxf {
   const lines = texto.replace(/\r/g, '').split('\n');

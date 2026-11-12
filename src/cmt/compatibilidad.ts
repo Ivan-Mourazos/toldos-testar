@@ -1,5 +1,5 @@
-import type { Dxf, ObjetoGeometrico } from './tipos';
-import { value } from './dxf';
+import type { Dxf, ObjetoGeometrico } from './tipos.ts';
+import { value } from './dxf.ts';
 
 /**
  * El paso SVG observado expresa las LINE en píxeles de 96 dpi con seis cifras.

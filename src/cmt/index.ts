@@ -1,12 +1,12 @@
-import plantilla from './plantilla.json';
-import { leerCmt, registro } from './binario';
-import { leerDxf, value, number } from './dxf';
-import { generarGeometria } from './geometria';
-import { leerFuente } from './fuente';
-import type { Duda, ObjetoGeometrico, OpcionesCmt, Dxf } from './tipos';
-export { leerCmt, serializarCmt } from './binario';
-export type { DocumentoCmt, ObjetoCmt, RegistroCmt } from './binario';
-export type { Duda, ObjetoGeometrico, OpcionesCmt } from './tipos';
+import plantilla from './plantilla.json' with { type: 'json' };
+import { leerCmt, registro } from './binario.ts';
+import { leerDxf, value, number } from './dxf.ts';
+import { generarGeometria } from './geometria.ts';
+import { leerFuente } from './fuente.ts';
+import type { Duda, ObjetoGeometrico, OpcionesCmt, Dxf } from './tipos.ts';
+export { leerCmt, serializarCmt } from './binario.ts';
+export type { DocumentoCmt, ObjetoCmt, RegistroCmt } from './binario.ts';
+export type { Duda, ObjetoGeometrico, OpcionesCmt } from './tipos.ts';
 
 export interface ResultadoCmt {
   /** Es null si hay dudas: el llamante debe resolverlas antes de obtener un fichero. */

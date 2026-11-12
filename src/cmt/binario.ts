@@ -1,4 +1,4 @@
-import type { Punto } from './tipos';
+import type { Punto } from './tipos.ts';
 
 export interface Parametro { name: string; type: number; value: number | string; desde: number; hasta: number }
 export interface RegistroCmt {

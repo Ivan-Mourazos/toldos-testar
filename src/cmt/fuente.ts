@@ -1,6 +1,6 @@
 // Lector TrueType mínimo: contornos de glyf, métricas y mapa Unicode.
 import fs from 'node:fs';
-import type { Punto } from './tipos';
+import type { Punto } from './tipos.ts';
 interface Nodo {
     x: number;
     y: number;

@@ -25,6 +25,18 @@ beforeEach(async () => {
 afterEach(async () => { vi.restoreAllMocks(); await fs.rm(raiz, { recursive: true, force: true }); });
 
 describe('Envío común del corte, independiente de generar archivos', () => {
+  it('piloto del CMT: recibe lo que ha ido al bot, no lo que va a la carpeta del año, y si falla el envío sale igual', async () => {
+    await fs.mkdir(path.join(raiz, 'bot/Ivan.Sanchez'), { recursive: true });
+    const pilotoCmt = vi.fn(async () => { throw new Error('piloto roto'); });
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect((await enviarCorte({ ...entrada, destino: 'dxfs', pilotoCmt })).status).toBe(200);
+    expect(pilotoCmt).not.toHaveBeenCalled();
+    const res = await enviarCorte({ ...entrada, destino: 'bot', confirmBot: true, pilotoCmt });
+    expect(res.status).toBe(200);
+    expect(pilotoCmt).toHaveBeenCalledOnce();
+    expect(pilotoCmt.mock.calls[0][0].map(a => [a.filename, String(a.contents)])).toEqual([['AR2604784.dxf', 'corte nuevo']]);
+    expect(guardar).toHaveBeenCalledTimes(2);
+  });
   it.each(['toldos-testar-review', 'puertas', 'remolques'])('al bot nunca va con sufijo; el año solo lo pone desde la segunda entrega, en %s (Iván, 09/11/2026)', async kind => {
     const inicio = kind === 'toldos-testar-review' ? 1 : 10;
     await fs.mkdir(path.join(raiz, 'bot/Ivan.Sanchez'), { recursive: true });

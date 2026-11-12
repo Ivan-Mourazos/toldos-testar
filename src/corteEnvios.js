@@ -6,12 +6,16 @@ import { AWNING_NOUNS, generationBlock, uniqueOfs } from './reviewRules.js';
 import { aprobacionToldos } from './toldosEditable.js';
 import { writeFileAtomic } from './workflow.js';
 import { codigoAnual, codigoEntrega, numeroEntrega } from './entregas.js';
+import { dejarCmtPiloto } from './cmtPiloto.js';
+
+// Piloto (12/11/2026): carpeta aparte, nunca la de la máquina. Vacía = piloto apagado.
+const pilotoCmtConfigurado = (archivos) => dejarCmtPiloto({ carpeta: process.env.CORTE_CMT_PILOTO_DIRECTORY || '', archivos });
 
 const fallo = (codigo, mensaje) => Object.assign(new Error(mensaje), { statusCode: codigo });
 
 /** Destinos y registro comunes a cualquier producto. Los adaptadores solo calculan el DXF y guardan el pedido. */
 export async function enviarCorte({ pedido, order, settings, usuario, destino, confirmBot = false, confirmOverwrite = false,
-  elementos, coordina, comprobarCorte, preparar, guardarRegistro, obtenerActual = async () => pedido, tecnicoDestino, prepararSolo = false, ahora = () => new Date(), nombres = AWNING_NOUNS, nota = '' }) {
+  elementos, coordina, comprobarCorte, preparar, guardarRegistro, obtenerActual = async () => pedido, tecnicoDestino, prepararSolo = false, ahora = () => new Date(), nombres = AWNING_NOUNS, nota = '', pilotoCmt = pilotoCmtConfigurado }) {
   if (!settings.productionEnabled) throw fallo(403, 'Modo simulación: no se ha escrito ni enviado el corte.');
   if (!usuario) throw fallo(400, 'Elige quién eres en «Soy» antes de mandar o guardar el corte.');
   if (!['bot', 'dxfs'].includes(destino)) throw fallo(400, 'Indica un destino del corte: bot o dxfs.');
@@ -104,7 +108,10 @@ export async function enviarCorte({ pedido, order, settings, usuario, destino, c
       throw error;
     }
   }
-  return registrarSalida();
+  const salida = await registrarSalida();
+  // Lo que ha ido al robot se convierte también a CMT para comparar. Va después de registrar y no puede tumbar el envío.
+  if (destino === 'bot') await Promise.resolve().then(() => pilotoCmt(escritos)).catch((error) => console.warn(`Piloto del CMT: ${error.message}`));
+  return salida;
   };
   return prepararSolo ? { status: 200, cuerpo: { ok: true }, ejecutar } : ejecutar();
 }

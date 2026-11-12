@@ -1,7 +1,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { leerCmt, serializarCmt, dxfACmt } from './index';
+import { leerCmt, serializarCmt, dxfACmt } from './index.ts';
 
 const fixture = (name: string) => readFileSync(fileURLToPath(new URL(`./__fixtures__/${name}`, import.meta.url)), 'utf8');
 const original = (name: string) => Buffer.from(fixture(`${name}.cmt.base64`), 'base64');
