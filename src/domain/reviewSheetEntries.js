@@ -13,6 +13,7 @@ import { normalizeSolapas } from './solapasRules.js';
 import { lacadoLabel } from './lacados.js';
 import { irisGuideFixingForPlacement } from './irisParameters.js';
 import { normalizeEmbudo, etiquetasEmbudo } from './embudoConfiguration.js';
+import { resolverDelanteEnrollable, resolverTipoEnrollable } from './enrollableOpciones.js';
 
 const legacyModelNames = {
   'AMBAR BOX': 'Microbox 300', 'AGATA BOX': 'Modul 400 / Modulbox', 'CUARZO BOX': 'Storbox 250',
@@ -118,7 +119,10 @@ export function buildReviewSheetEntries(order, calculation) {
       addField(cardFields, 'Remate', valanceFinish, true);
       if (valanceFinish === 'OTRO') addField(cardFields, 'Color remate', awning.remateColor, true);
     }
-    if (awning.fabricDiagramOverride) addField(cardFields, 'Dibujo de confección', awning.fabricDiagramOverride, true);
+    if (awning.model === 'ENROLLABLE') {
+      addField(cardFields, 'Tipo', resolverTipoEnrollable(awning) === 'CAMBIO TELA' ? 'CAMBIO DE TELA' : resolverTipoEnrollable(awning), true);
+      addField(cardFields, 'Delante', resolverDelanteEnrollable(awning), true);
+    } else if (awning.fabricDiagramOverride) addField(cardFields, 'Dibujo de confección', awning.fabricDiagramOverride, true);
     if (fields.tubeLoad) addField(cardFields, 'Tubo de carga', awning.tubeLoad, true);
     if (fields.submodel && !isHera) addField(cardFields, 'Variante', awning.submodel, true);
     if (awning.model === 'ANTICA' || awning.model === 'CAMBIO ANTICA') addField(cardFields, 'Configuración Antica', awning.anticaVariant, true);

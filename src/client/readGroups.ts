@@ -95,7 +95,7 @@ export function readUnitOf(label: string) {
 
 export function readGroupOf(label: string): ReadGroupId {
   const clean = label.trim();
-  if (['Tela', 'Tela bamba', 'Curva bamba', 'Remate', 'Color remate', 'Rotulación tela', 'Rotulación bamba', 'Empate indicado por cliente', 'Cara hacia el interior (ventana)'].includes(clean)) return 'tela';
+  if (['Tela', 'Tela bamba', 'Curva bamba', 'Remate', 'Color remate', 'Rotulación tela', 'Rotulación bamba', 'Empate indicado por cliente', 'Cara hacia el interior (ventana)', 'Tipo', 'Delante'].includes(clean)) return 'tela';
   if (clean === 'Dibujo de confección') return 'dibujo';
   if (['Sujeción del suplemento', 'Indicar sujeción', 'Distancia entre broches (cm)', 'Solape sobre la onda (cm)', 'Remate inferior', 'Indicar remate', 'Bastilla de unión (cm)', 'Bastilla lateral (cm)', 'Bastilla inferior (cm)'].includes(clean)) return 'tela';
   if (clean.startsWith('Obs. ')) return 'observaciones';

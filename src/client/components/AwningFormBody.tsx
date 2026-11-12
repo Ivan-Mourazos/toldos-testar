@@ -12,7 +12,7 @@ const orden = [
   'OF', 'Frente', 'Frente de tela', 'Salida', 'Caída', 'Salida brazo', 'Caída de tela', 'Alto terminado (cm)', 'Bamba (cm)',
   'Ajuste de tela (cm)', 'Ajuste de salida de tela', 'Ajuste de salida (cm)', 'Sumar para enrolle y tubo (cm)', 'Sumar a la caída (cm)',
   'Tela', 'Rotulación tela', 'Curva bamba', 'Tela bamba', 'Remate', 'Color remate', 'Rotulación bamba',
-  'Empate indicado por cliente', 'Cara hacia el interior (ventana)',
+  'Empate indicado por cliente', 'Cara hacia el interior (ventana)', 'Tipo', 'Delante',
   'Variante', 'Configuración Antica', 'Altura soporte-brazo (cm)', 'Posición de trabajo', 'Configuración de brazos',
   'Terminales · confirmar con taller', 'Nº de brazos', 'Nº brazos', 'Lado del brazo suelto', 'Tubo de carga', 'Soporte', 'Tipo de soporte', 'Para capota',
   'Tipo de guía', 'Fijación de la guía', 'Forma del cofre', 'Secur Wind Block', 'Telón', 'Lacado',
@@ -110,6 +110,8 @@ export function AwningFormBody({ reading, awning, children }: { reading: boolean
     if (awning.model === 'CAMBIO TELA' && item.label === 'Sumar para enrolle y tubo (cm)') { item.group = 'tela'; item.minimum = 3; }
     if (awning.model === 'CAMBIO ANTICA' && ['Configuración Antica', 'Sumar a la caída (cm)'].includes(item.label)) item.group = 'tela';
     if (awning.model === 'HERA' && ['Arriba', 'Abajo'].includes(item.label)) item.minimum = 3;
+    // «Cambio de tela» no cabe en un tercio de tarjeta.
+    if (awning.model === 'ENROLLABLE') { if (item.label === 'Tipo') item.minimum = 5; if (item.label === 'Delante') item.minimum = 4; }
     if (awning.model === 'IRIS' && item.label.startsWith('Diagonal ')) item.minimum = 4;
     if (awning.model === 'IRIS') {
       if (item.label === 'Forma del cofre') item.minimum = 4;
@@ -164,7 +166,7 @@ export function AwningFormBody({ reading, awning, children }: { reading: boolean
   if (!reading) {
     for (const item of items) {
       if (['Nº de brazos', 'Nº brazos'].includes(item.label) || /^Nº brazos ·/.test(item.label)) item.group = 'medidas';
-      else if (['Bamba (cm)', 'Tela', 'Tela bamba', 'Curva bamba', 'Remate', 'Color remate', 'Rotulación tela', 'Rotulación bamba', 'Ajuste de tela (cm)', 'Dibujo de confección'].includes(item.label)) item.group = 'tela';
+      else if (['Bamba (cm)', 'Tela', 'Tela bamba', 'Curva bamba', 'Remate', 'Color remate', 'Rotulación tela', 'Rotulación bamba', 'Ajuste de tela (cm)', 'Dibujo de confección', 'Tipo', 'Delante'].includes(item.label)) item.group = 'tela';
       else if (['accionamiento', 'colocacion'].includes(item.group)) item.group = 'estructura';
     }
   }

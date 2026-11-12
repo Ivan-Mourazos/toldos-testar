@@ -32,6 +32,7 @@ import { inferHeraVariant, normalizeHeraJoin } from './heraParameters.js';
 import { collectFabricMaterialKeys, roundFabricMeters } from './reservationFabrics.js';
 import { normalizeSolapas } from './solapasRules.js';
 import { normalizeEmbudo } from './embudoConfiguration.js';
+import { resolverDelanteEnrollable, resolverTipoEnrollable } from './enrollableOpciones.js';
 
 export function normalizeOrder(payload) {
   if (!payload || typeof payload !== 'object') {
@@ -274,6 +275,8 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     valanceFabric: cleanText(awning?.valanceFabric || (legacyOrder.bambaDistinta ? legacyOrder.telaBamba : '')),
     fabricImage: normalizeFabricImage(awning?.fabricImage),
     fabricDiagramOverride: normalizeFabricDiagramOverride(model, awning?.fabricDiagramOverride),
+    rollerJob: model === 'ENROLLABLE' ? resolverTipoEnrollable(awning) : '',
+    rollerFront: model === 'ENROLLABLE' ? resolverDelanteEnrollable(awning) : '',
     workshopDrawingId: cleanText(awning?.workshopDrawingId),
     remate,
     remateColor: remate === 'OTRO' ? cleanText(awning?.remateColor || legacyOrder.remateColor) : '',

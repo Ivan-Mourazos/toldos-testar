@@ -17,6 +17,7 @@ import { getFabricPatternDiagram, getAwningDiagram, isFabricOnlyModel, isVertica
 import { normalizeAnticaVariant, resolveAnticaRoundEntry } from './anticaRules.js';
 import { irisHasCassette, normalizeIrisGuideType } from './irisParameters.js';
 import { buildIrisSquaringView } from './irisSquaringView.js';
+import { resolverDelanteEnrollable, textoDelanteEnrollable } from './enrollableOpciones.js';
 import { getIrisWindow } from './irisWindow.js';
 import { resolveConfiguredDrawing } from './drawingParameters.js';
 import { shortFabricName } from './fabricShortName.js';
@@ -412,7 +413,8 @@ export { getFabricPatternDiagram } from './modelBehavior.js';
 // muestra, así que añadir un dibujo con cotas obliga a decidirlo.
 const measuredDiagrams = {
   BAMBALINA: (calculation) => [calculation?.fabricDrop ?? null],
-  ENROLLABLE: (calculation) => [calculation?.fabricWidth ?? null, calculation?.fabricDrop ?? null]
+  ENROLLABLE: (calculation) => [calculation?.fabricWidth ?? null, calculation?.fabricDrop ?? null],
+  'CAMBIO ENROLLABLE': (calculation) => [calculation?.fabricWidth ?? null, calculation?.fabricDrop ?? null]
 };
 
 function measuredDiagramKey(diagram, calculation) {
@@ -430,6 +432,8 @@ function fabricDiagramGroupKey(diagram, awning) {
   // El dibujo del HERA es el de su cara interior y el título, su variante: solo comparten
   // hoja los que coinciden en las dos.
   if (diagram === 'HERA') return ['HERA', heraVariantName(awning), heraInteriorFace(awning)].join('|');
+  // Lo de delante (pletina o varilla) cambia el rótulo de abajo.
+  if (diagram === 'ENROLLABLE' || diagram === 'CAMBIO ENROLLABLE') return [diagram, resolverDelanteEnrollable(awning)].join('|');
   const isCurtain = diagram.startsWith('CORTINA');
   const hasWindow = isCurtain && diagram.includes('VENTANA') && !diagram.includes('SIN-VENTANA');
   const isAntica = diagram === 'ANTICA';
@@ -1391,11 +1395,11 @@ function drawAwningDiagram(doc, x, y, w, h, diagram = 'GENERAL', awning = {}, ca
   if (awning.fabricImage) return drawCustomFabricImage(doc, x, y, w, h, awning.fabricImage);
   if (diagram.startsWith('CORTINA')) return drawCurtainDiagram(doc, x, y, w, h, diagram, awning);
   if (diagram === 'TOLDO-VELCRO') return drawToldoVelcroDiagram(doc, x, y, w, h, awning);
-  if (diagram === 'CAMBIO ENROLLABLE') return drawChangeRollerDiagram(doc, x, y, w, h);
+  if (diagram === 'CAMBIO ENROLLABLE') return drawChangeRollerDiagram(doc, x, y, w, h, calculation, awning);
   if (diagram === 'SUPLEMENTO') return drawSupplementDiagram(doc, x, y, w, h, awning);
   if (diagram === 'SOLAPAS') return drawSolapasDiagram(doc, x, y, w, h, awning);
   if (diagram === 'EMBUDO') return drawEmbudoDiagram(doc, x, y, w, h, awning);
-  if (diagram === 'ENROLLABLE') return drawRollerDiagram(doc, x, y, w, h, calculation);
+  if (diagram === 'ENROLLABLE') return drawRollerDiagram(doc, x, y, w, h, calculation, awning);
   if (diagram === 'BAMBALINA') return drawValanceDiagram(doc, x, y, w, h, awning, calculation);
   if (diagram === 'ANTICA') return drawAnticaDiagram(doc, x, y, w, h, awning);
   if (diagram === 'IRIS') return drawIrisDiagram(doc, x, y, w, h, awning, calculation);
@@ -2059,23 +2063,21 @@ function drawToldoVelcroDiagram(doc, x, y, w, h, awning = {}) {
   }
 }
 
-function drawChangeRollerDiagram(doc, x, y, w, h) {
+// Cambio de tela de un enrollable, como el dibujo CAMBIO ENROLLABLE del Excel: la varilla
+// plana va por el revés, a continuación de la varilla screen redonda que ya tiene la puerta.
+function drawChangeRollerDiagram(doc, x, y, w, h, calculation = {}, awning = {}) {
   drawDiagramShell(doc, x, y, w, h);
-  // CAMBIO ENROLLABLE también lleva un giro de 270°: pletina abajo, varilla plana arriba.
-  const panelX = x + w * 0.12;
-  const panelY = y + h * 0.13;
-  const panelW = w * 0.76;
-  const panelH = h * 0.74;
-  doc.rect(panelX, panelY, panelW, panelH).fillAndStroke('#fbfcfc', '#4f6e63');
-  doc.rect(panelX, panelY, panelW, h / 30).fillAndStroke('#edf3f0', '#4f6e63');
-  doc.rect(panelX, panelY + panelH - h / 30, panelW, h / 30).fillAndStroke('#d9e5e0', '#4f6e63');
-  doc.circle(panelX + 14, panelY + 5, 3).fillAndStroke(colors.paper, '#4f6e63');
-  drawRotatedDiagramText(doc, 'AL CORTE', panelX - w * 0.065, panelY + panelH / 2, panelH * 0.8);
-  drawRotatedDiagramText(doc, 'AL CORTE', panelX + panelW + w * 0.065, panelY + panelH / 2, panelH * 0.8);
-  drawDiagramText(doc, 'E. PLETINA 30 × 6 · REFUERZO PVC INTERIOR', panelX, panelY + panelH + h * 0.027, panelW);
-  drawDiagramText(doc, 'VARILLA PLANA POR REVÉS · CONT. SCREEN REDONDA', panelX, y + h * 0.04, panelW);
-  doc.fillColor(colors.grayDark).font(fonts.semibold).fontSize(diagramText(6))
-    .text('CONFECCIÓN SOBRE TELA EXISTENTE', panelX + 14, panelY + panelH / 2 - 4, { width: panelW - 28, align: 'center' });
+  drawRollerMeasures(doc, x, y, w, h, calculation);
+  const panelW = w * 0.62;
+  const panelX = x + (w - panelW) / 2;
+  const panelY = y + h * 0.15;
+  const panelH = h * 0.78;
+  doc.rect(panelX, panelY, panelW, panelH).fillAndStroke(colors.soft, '#4f6e63');
+  drawDiagramText(doc, 'VARILLA PLANA POR REVÉS A CONTINUACIÓN DE', panelX + 6, panelY + 8, panelW - 12);
+  drawDiagramText(doc, 'VARILLA SCREEN REDONDA', panelX + 6, panelY + 8 + diagramText(6.5) * 2.6, panelW - 12);
+  drawRotatedDiagramText(doc, 'AL CORTE', panelX - w * 0.09, panelY + panelH / 2, panelH * 0.8);
+  drawRotatedDiagramText(doc, 'AL CORTE', panelX + panelW + w * 0.09, panelY + panelH / 2, panelH * 0.8);
+  drawRollerFront(doc, panelX, panelY + panelH, panelW, awning, true);
 }
 
 // La sujeción y las bastillas del suplemento se configuran por pedido: un campo
@@ -2200,35 +2202,42 @@ function drawValanceOverSupplement(doc, x, top, w, bottom, curve) {
   doc.fillAndStroke('#e3ece7', '#9a2a22');
 }
 
-// Iván confirma el 14/09/2026 que la varilla plana, la pletina 30 × 6 y el refuerzo
-// de PVC son siempre iguales y que un enrollable no tiene más variantes. Lo que
-// faltaba era el corte, que hasta ahora no aparecía en ninguna parte del dibujo.
-function drawRollerDiagram(doc, x, y, w, h, calculation = {}) {
-  drawDiagramShell(doc, x, y, w, h);
+// Rótulo amarillo con el frente y el corte calculados, encima del dibujo.
+function drawRollerMeasures(doc, x, y, w, h, calculation = {}) {
   const medidas = [
     calculation.fabricWidth ? `FRENTE ${formatInstructionMeasure(calculation.fabricWidth)} CM` : '',
     calculation.fabricDrop ? `CORTE ${formatInstructionMeasure(calculation.fabricDrop)} CM` : ''
   ].filter(Boolean).join(' · ');
-  if (medidas) {
-    doc.roundedRect(x + w * 0.12, y + h * 0.03, w * 0.76, h * 0.063, 4).fillAndStroke('#fff4cc', '#d2a116');
-    doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(8.5)
-      .text(medidas, x + w * 0.14, y + h * 0.047, { width: w * 0.72, align: 'center' });
-  }
-  const panelW = w * 0.70;
+  if (!medidas) return;
+  doc.roundedRect(x + w * 0.12, y + h * 0.03, w * 0.76, h * 0.063, 4).fillAndStroke('#fff4cc', '#d2a116');
+  doc.fillColor(colors.inkSoft).font(fonts.semibold).fontSize(8.5)
+    .text(medidas, x + w * 0.14, y + h * 0.047, { width: w * 0.72, align: 'center' });
+}
+
+// Delante del enrollable (Iván, 12/11/2026): pletina 30 × 6 con refuerzo de PVC, o
+// solo varilla. Se rotula dentro del paño, pegado al borde de abajo.
+function drawRollerFront(doc, panelX, panelBottom, panelW, awning = {}) {
+  const lines = textoDelanteEnrollable(resolverDelanteEnrollable(awning));
+  const lineH = diagramText(6.5) * 1.35;
+  lines.forEach((line, index) => {
+    drawDiagramText(doc, line, panelX + 4, panelBottom - 6 - lineH * (lines.length - index), panelW - 8);
+  });
+}
+
+// Enrollable nuevo, como el dibujo ENROLLABLE del Excel: varilla plana arriba, al corte
+// a los lados y delante la pletina o la varilla que se elija en el formulario.
+function drawRollerDiagram(doc, x, y, w, h, calculation = {}, awning = {}) {
+  drawDiagramShell(doc, x, y, w, h);
+  drawRollerMeasures(doc, x, y, w, h, calculation);
+  const panelW = w * 0.62;
   const panelX = x + (w - panelW) / 2;
-  // El panel baja para dejar sitio a la chapa de medidas sobre la varilla plana.
-  const panelY = y + h * 0.18;
-  // Bajo el panel caben la pletina y el refuerzo; si el hueco es más bajo, el panel cede.
-  const panelH = h * 0.66;
+  const panelY = y + h * 0.2;
+  const panelH = h * 0.73;
   doc.rect(panelX, panelY, panelW, panelH).fillAndStroke(colors.soft, '#4f6e63');
-  doc.rect(panelX, panelY, panelW, 9).fillAndStroke('#d9e5e0', '#4f6e63');
-  doc.rect(panelX, panelY + panelH - 9, panelW, 9).fillAndStroke('#d9e5e0', '#4f6e63');
-  drawDiagramText(doc, 'VARILLA PLANA', panelX, panelY - 16, panelW);
-  drawDiagramText(doc, 'PLETINA 30 × 6', panelX, panelY + panelH + 8, panelW);
-  drawRotatedDiagramText(doc, 'AL CORTE', panelX - w * 0.07, panelY + panelH / 2, panelH * 0.8);
-  drawRotatedDiagramText(doc, 'AL CORTE', panelX + panelW + w * 0.07, panelY + panelH / 2, panelH * 0.8);
-  doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(diagramText(6))
-    .text('REFUERZO PVC POR DENTRO', x + w * 0.1, y + h * 0.95, { width: w * 0.8, align: 'center' });
+  drawDiagramText(doc, 'VARILLA PLANA', panelX + 6, panelY + 6, panelW - 12);
+  drawRotatedDiagramText(doc, 'AL CORTE', panelX + w * 0.05, panelY + panelH / 2, panelH * 0.8);
+  drawRotatedDiagramText(doc, 'AL CORTE', panelX + panelW - w * 0.05, panelY + panelH / 2, panelH * 0.8);
+  drawRollerFront(doc, panelX, panelY + panelH, panelW, awning);
 }
 
 function drawValanceDiagram(doc, x, y, w, h, awning = {}, calculation = {}) {

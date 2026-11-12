@@ -47,11 +47,43 @@ describe('Enrollable para taller', () => {
     expect(text).toContain('FRENTE 240 CM');
   });
 
-  test('conserva los elementos fijos confirmados por Iván', async () => {
-    const [text] = await pages(baseOrder);
+  test('un enrollable nuevo con pletina sale como en el Excel', async () => {
+    const [text] = await pages({ ...baseOrder, awnings: [{ ...baseAwning, rollerJob: 'NUEVO', rollerFront: 'PLETINA' }] });
     expect(text).toContain('VARILLA PLANA');
-    expect(text).toContain('PLETINA 30 × 6');
-    expect(text).toContain('REFUERZO PVC POR DENTRO');
+    expect(text).toContain('E. PLETINA DE 30 × 6');
+    expect(text).toContain('CON REFUERZO PVC POR DENTRO');
+    expect(text).not.toContain('POR REVÉS');
+  });
+
+  test('con varilla delante, abajo pone solo «VARILLA»', async () => {
+    const [text] = await pages({ ...baseOrder, awnings: [{ ...baseAwning, rollerJob: 'NUEVO', rollerFront: 'VARILLA' }] });
+    expect(text).not.toContain('PLETINA');
+    expect(text).not.toContain('REFUERZO PVC');
+    expect(text.match(/VARILLA/g)).toHaveLength(2);
+  });
+
+  test('un cambio de tela lleva su dibujo, con medidas y lo de delante', async () => {
+    const [conPletina] = await pages({ ...baseOrder, awnings: [{ ...baseAwning, rollerJob: 'CAMBIO TELA', rollerFront: 'PLETINA' }] });
+    expect(conPletina).toContain('VARILLA PLANA POR REVÉS A CONTINUACIÓN DE');
+    expect(conPletina).toContain('VARILLA SCREEN REDONDA');
+    expect(conPletina).toContain('CORTE 505 CM');
+    expect(conPletina).toContain('E. PLETINA DE 30 × 6');
+    const [conVarilla] = await pages({ ...baseOrder, awnings: [{ ...baseAwning, rollerJob: 'CAMBIO TELA', rollerFront: 'VARILLA' }] });
+    expect(conVarilla).toContain('VARILLA SCREEN REDONDA');
+    expect(conVarilla).not.toContain('PLETINA');
+  });
+
+  test('un enrollable con pletina y otro con varilla no comparten dibujo', async () => {
+    const text = await pages({
+      ...baseOrder,
+      awnings: [
+        { ...baseAwning, rollerJob: 'NUEVO', rollerFront: 'PLETINA' },
+        { ...baseAwning, id: 'b', of: '0228337', rollerJob: 'NUEVO', rollerFront: 'VARILLA' }
+      ]
+    });
+    const todo = text.join(' ');
+    expect(todo).toContain('E. PLETINA DE 30 × 6');
+    expect(todo.match(/VARILLA PLANA/g)).toHaveLength(2);
   });
 
   test('dos enrollables de distinto corte no comparten rótulo', async () => {

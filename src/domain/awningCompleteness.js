@@ -15,6 +15,7 @@ import { curtainWindowDrawingHeight, isConfiguredCurtain } from './curtainConfig
 import { getIrisWindow } from './irisWindow.js';
 import { solapaCompletenessIssues } from './solapasRules.js';
 import { embudoIssues } from './embudoConfiguration.js';
+import { resolverDelanteEnrollable, resolverTipoEnrollable } from './enrollableOpciones.js';
 
 const windowDimensions = [
   ['curtainWindowExit', 'salida ventana'],
@@ -27,7 +28,7 @@ const windowDimensions = [
 // campos. Antes salía en el orden de las comprobaciones ("OF · tela · dispositivo ·
 // tubo de carga · frente…"). Lo que no está en la lista va al final, en su orden.
 const fillOrder = [
-  'fabric', 'fabricRollWidth', 'valanceRollWidth', 'of', 'width', 'projection', 'cambioTelaExtraCm', 'valanceHeight', 'valanceCurve', 'remate', 'remateColor',
+  'fabric', 'fabricRollWidth', 'valanceRollWidth', 'of', 'rollerJob', 'width', 'projection', 'rollerFront', 'cambioTelaExtraCm', 'valanceHeight', 'valanceCurve', 'remate', 'remateColor',
   'submodel', 'irisFrontTop', 'irisExitLeft', 'irisBoxShape', 'anticaVariant', 'anticaSupportHeight', 'electraSupport', 'armCount', 'tubeLoad',
   'heraChainColor', 'height', 'heraJoin', 'heraTopFinish', 'heraBottomFinish', 'heraInteriorFace',
   'curtainHasWindow', 'curtainFinish', ...windowDimensions.map(([field]) => field),
@@ -131,6 +132,10 @@ export function getMissingFields(awning, order = null) {
       const fabric = resolveFabric(order.sameFabric !== false ? order.fabric : awning.fabric);
       if (fabric?.material?.trim().toUpperCase() !== 'PLASTICA (LONA)') add('fabric', 'lona de PVC');
     }
+  }
+  if (model === 'ENROLLABLE') {
+    if (!resolverTipoEnrollable(awning)) add('rollerJob', 'nuevo o cambio de tela');
+    if (!resolverDelanteEnrollable(awning)) add('rollerFront', 'pletina o varilla');
   }
   if (isHera) {
     const withChain = awning.submodel !== 'HERA 56 MOTOR';

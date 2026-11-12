@@ -882,7 +882,7 @@ describe('buildOrderPlanteamientoPdf', () => {
     expect(pageTexts[0]).toContain('TOLDO · VELCRO');
     expect(pageTexts[0]).toContain('B.N(4)');
     expect(pageTexts[1]).toContain('CAMBIO ENROLLABLE');
-    expect(pageTexts[1]).toContain('PLETINA 30 × 6');
+    expect(pageTexts[1]).toContain('E. PLETINA DE 30 × 6');
     // El título ya no da por hecha la sujeción: se configura por pedido.
     expect(pageTexts[2]).toContain('SUPLEMENTO');
     expect(pageTexts[2]).not.toContain('CON BROCHES');

@@ -10,6 +10,7 @@ import { monoblock350EstablishedProjections } from './monoblock350Parameters.js'
 import { ambarBoxEstablishedProjections } from './ambarBoxParameters.js';
 import { agataBoxEstablishedProjections } from './agataBoxParameters.js';
 import { normalizeModelName } from './modelNames.js';
+import { resolverTipoEnrollable } from './enrollableOpciones.js';
 import { models } from './catalog.js';
 
 const fallbackModel = {
@@ -192,6 +193,8 @@ export function getEstablishedProjections(modelCode) {
 export function getFabricPatternDiagram(awning = {}, cadDiagram = getAwningDiagram(awning)) {
   const model = String(awning.model || '').trim().toUpperCase();
   if (model === 'EMBUDO') return 'EMBUDO';
+  // El tipo (nuevo o cambio de tela) manda sobre el dibujo elegido a mano.
+  if (model === 'ENROLLABLE') return resolverTipoEnrollable(awning) === 'CAMBIO TELA' ? 'CAMBIO ENROLLABLE' : 'ENROLLABLE';
   const override = normalizeFabricDiagramOverride(model, awning.fabricDiagramOverride);
   if (override) return override;
   if (model.startsWith('HERA')) return 'HERA';

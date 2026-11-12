@@ -165,7 +165,8 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
   const automaticDrawingLabel = automaticDrawing ? `Automático (sale: «${automaticDrawing.name}» del taller)` : 'Automático (sale: el de la web)';
   const drawingChoices = [
     ...workshopDrawings.map(({ id }) => `${WORKSHOP_DRAWING}${id}`),
-    ...fabricDiagramOptions.filter(({ value }) => value).map(({ value }) => value)
+    // En el enrollable, el dibujo de cambio sale del campo «Tipo», no de aquí.
+    ...fabricDiagramOptions.filter(({ value }) => value && !(awning.model === 'ENROLLABLE' && value === 'CAMBIO ENROLLABLE')).map(({ value }) => value)
   ];
   const drawingValue = awning.workshopDrawingId && !chosenMissing ? `${WORKSHOP_DRAWING}${awning.workshopDrawingId}` : awning.fabricDiagramOverride;
   const drawingChoiceLabel = (value: string) => {
@@ -657,6 +658,19 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           {isHera && (
             <div className="awning-wide-field">
               <SegmentedField label="Cara hacia el interior (ventana)" missing={isMissing('heraInteriorFace')} value={awning.heraInteriorFace} options={['DERECHO', 'REVÉS']} onChange={(heraInteriorFace) => update({ heraInteriorFace: heraInteriorFace as Awning['heraInteriorFace'] })} />
+            </div>
+          )}
+          {awning.model === 'ENROLLABLE' && (
+            <div className="awning-installation-row awning-wide-field">
+              {/* Nuevo o cambio de tela, y pletina o varilla delante: cambian el dibujo, no el corte (Iván, 12/11/2026). */}
+              <SegmentedField label="Tipo" missing={isMissing('rollerJob')} value={awning.rollerJob ?? ''} options={['NUEVO', 'CAMBIO TELA']}
+                onChange={(value) => update({
+                  rollerJob: value as Awning['rollerJob'],
+                  // El dibujo de cambio sigue guardado como antes, para los dibujos del taller que lo piden.
+                  ...(awning.workshopDrawingId ? {} : { fabricDiagramOverride: value === 'CAMBIO TELA' ? 'CAMBIO ENROLLABLE' : '' })
+                })} />
+              <SegmentedField label="Delante" missing={isMissing('rollerFront')} value={awning.rollerFront ?? ''} options={['PLETINA', 'VARILLA']}
+                onChange={(value) => update({ rollerFront: value as Awning['rollerFront'] })} />
             </div>
           )}
           {supportsValance && (

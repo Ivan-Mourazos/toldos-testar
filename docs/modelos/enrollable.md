@@ -12,6 +12,15 @@ Lona para puerta enrollable (ENROLLABLE, trabajo FABRIC_ONLY). Iván confirma el
 
 Regla de corte: `caída = salida + 25`, editable en Parámetros y con excepción por elemento.
 
+## Nuevo o cambio de tela, y pletina o varilla (12/11/2026)
+
+Iván pide distinguir un enrollable nuevo de un cambio de tela, y elegir qué lleva delante. Las dos cosas cambian solo el dibujo; el corte (salida + 25) y la reserva no cambian.
+
+- **Tipo** (obligatorio): Nuevo o Cambio de tela. Nuevo saca el dibujo ENROLLABLE del Excel (varilla plana arriba); Cambio de tela, el CAMBIO ENROLLABLE (varilla plana por revés a continuación de varilla screen redonda). Los dos rotulan frente y corte.
+- **Delante** (obligatorio): Pletina rotula «E. PLETINA DE 30 × 6 / CON REFUERZO PVC POR DENTRO»; Varilla rotula solo «VARILLA» (Iván: «que ponga Varilla y listo»).
+- Los pedidos guardados antes se leen como nuevo con pletina, salvo los que tenían elegido el dibujo «Cambio de enrollable».
+- Código: [enrollableOpciones.js](../../src/domain/enrollableOpciones.js) y sus pruebas.
+
 ## Estado por área
 
 | Área | Resultado y límite |

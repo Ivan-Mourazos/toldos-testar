@@ -10,6 +10,7 @@ import type { Awning, DraftState, FabricProposal } from '../types';
 import { sanitizeFabricProposals } from '../fabricProposal';
 import { createAwning, storageKey, todayIso, uid } from '../constants';
 import { formOptions, getModelBehavior, getModelWorkType, normalizeFabricDiagramOverride, normalizeValanceFinish } from '../../domain/modelBehavior.js';
+import { resolverDelanteEnrollable, resolverTipoEnrollable } from '../../domain/enrollableOpciones.js';
 import { normalizeAnticaMeasurementMode, normalizeAnticaVariant, resolveAnticaRoundEntry } from '../../domain/anticaRules.js';
 import { inferHeraVariant, normalizeHeraJoin } from '../../domain/heraParameters.js';
 import { electraHasCofre, normalizeElectraMotor, normalizeElectraSupport, normalizeElectraVariant } from '../../domain/electraParameters.js';
@@ -102,6 +103,9 @@ export function sanitizeAwning(old: Record<string, unknown>): Awning {
   base.valanceFabric = typeof old.valanceFabric === 'string' ? old.valanceFabric : '';
   base.fabricImage = normalizeFabricImage(old.fabricImage);
   base.fabricDiagramOverride = normalizeFabricDiagramOverride(base.model, old.fabricDiagramOverride) as Awning['fabricDiagramOverride'];
+  // Un enrollable guardado antes de poder elegirlo era nuevo con pletina (salvo el dibujo de cambio).
+  base.rollerJob = base.model === 'ENROLLABLE' ? resolverTipoEnrollable(old) : '';
+  base.rollerFront = base.model === 'ENROLLABLE' ? resolverDelanteEnrollable(old) : '';
   base.workshopDrawingId = typeof old.workshopDrawingId === 'string' ? old.workshopDrawingId : '';
   // Los pedidos anteriores al suplemento configurable no traen estos campos.
   Object.assign(base, sanitizeSupplement(base.fabricDiagramOverride === 'SUPLEMENTO' ? old : {}));
@@ -607,6 +611,8 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     valanceCurve: supportsValance ? awning.valanceCurve : '',
     valanceFabric: supportsValance ? awning.valanceFabric : '',
     fabricDiagramOverride: normalizeFabricDiagramOverride(model, awning.fabricDiagramOverride) as Awning['fabricDiagramOverride'],
+    rollerJob: model === 'ENROLLABLE' ? (awning.rollerJob ?? '') : '',
+    rollerFront: model === 'ENROLLABLE' ? (awning.rollerFront ?? '') : '',
     // Un dibujo del taller es de su modelo.
     workshopDrawingId: '',
     ...sanitizeSupplement(normalizeFabricDiagramOverride(model, awning.fabricDiagramOverride) === 'SUPLEMENTO' ? awning : {}),

@@ -39,6 +39,8 @@ export function createAwning(workType: Awning['workType'] = 'FULL_AWNING'): Awni
     valanceCurve: '',
     valanceFabric: '',
     fabricDiagramOverride: '',
+    rollerJob: '',
+    rollerFront: '',
     workshopDrawingId: '',
     supplementFastening: '',
     supplementFasteningOther: '',

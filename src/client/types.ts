@@ -78,6 +78,9 @@ export type Awning = {
   valanceFabric: string;
   fabricImage?: string | null;
   fabricDiagramOverride: '' | 'TOLDO-VELCRO' | 'CAMBIO ENROLLABLE' | 'SUPLEMENTO';
+  /** Trabajo de tela ENROLLABLE: nuevo o cambio de tela, y qué lleva delante. Vacío = sin elegir. */
+  rollerJob?: '' | 'NUEVO' | 'CAMBIO TELA';
+  rollerFront?: '' | 'PLETINA' | 'VARILLA';
   // Dibujo del taller elegido a mano en la tarjeta; vacío = automático.
   workshopDrawingId?: string;
   supplementFastening: string;
