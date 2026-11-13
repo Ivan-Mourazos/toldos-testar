@@ -10,7 +10,7 @@ import type { ElementoPedidoHoja } from "./tipos.ts";
 
 export interface CasoFixture { caso: string; tipo: TipoPlanteamiento; input: LonaInput | BaquetonInput }
 
-export const NOMBRES_MUESTRAS = ["lona-ventana", "baqueton", "segun-ganchos", "bastilla", "perfiles", "varios", "sesgado", "cremallera", "ollaos-largos"] as const;
+export const NOMBRES_MUESTRAS = ["lona-ventana", "baqueton", "segun-ganchos", "bastilla", "perfiles", "varios", "sesgado", "cremallera", "ollaos-largos", "correas"] as const;
 export type NombreMuestra = (typeof NOMBRES_MUESTRAS)[number];
 
 const OBSERVACIONES_LARGAS = "REFORZAR LAS ESQUINAS DE DETRÁS CON DOBLE COSTURA. EL CLIENTE QUIERE LA ROTULACIÓN "
@@ -89,6 +89,11 @@ export function muestrasHoja(casos: CasoFixture[]): Record<NombreMuestra, Elemen
       tipoPerfil: "TIPO 02", ...SIN_AGUAS, aguas: 15, ventana: true, ventanaAncho: 50, ventanaAlto: 35,
       recogeDelante: "CREMALLERA", recogeAtras: "CREMALLERA",
       observaciones: "CREMALLERA DEL 9 (GRANDE)\nREFORZAR LAS ESQUINAS CON DOBLE COSTURA\nCOMPROBAR LA MEDIDA DEL CAJÓN ANTES DE CORTAR",
+    })],
+    // Correas detrás, como el AR2504631 de Remolques Jalón (13/11/2026): arquillado con aguas.
+    "correas": [copia(casos, "lona-02", "AR.26.99995", "10", {
+      largo: 241, ancho: 136, altoDelante: 82, altoAtras: 82, tipoPerfil: "TIPO 03", aguas: 8.2, radioHombro: 10, radioCumbrera: 0,
+      ventana: false, recogeDelante: "NO", recogeAtras: "CORREAS",
     })],
   };
 }

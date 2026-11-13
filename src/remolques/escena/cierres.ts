@@ -1,5 +1,6 @@
 import { excelRound } from "../calc/redondeo.ts";
 import { findRecogida, type CalcParams } from "../calc/params.ts";
+import { alturasCorreas } from "../calc/correas.ts";
 import { USAR_COLUMNA_ATRAS } from "../calc/lona.ts";
 import type { LonaInput } from "../calc/lona.ts";
 import { semianchoCajon } from "./comun.ts";
@@ -15,7 +16,7 @@ const r1 = (v: number) => excelRound(v, 1);
 export function tipoCierre(nombre: string): TipoCierre {
   if (nombre.startsWith("PUENTES")) return "PUENTES";
   if (nombre === "GANCHOS CORAZON") return "CORAZON";
-  return nombre === "GOMA" || nombre === "CREMALLERA" || nombre === "VELCRO" ? nombre : "NO";
+  return nombre === "GOMA" || nombre === "CREMALLERA" || nombre === "VELCRO" || nombre === "CORREAS" ? nombre : "NO";
 }
 
 /** Alturas repartidas de abajo arriba, con un margen en cada punta, a un paso lo más cercano a `paso`. */
@@ -134,7 +135,7 @@ export function cierresLona(
     // El segundo punto del perfil es donde acaba la pared vertical (el hombro o el arranque del radio).
     const alto = perfil[1][1];
     const semi = perfil[perfil.length - 1][0];
-    const conOreja = tipo === "GOMA" || tipo === "CORAZON" || tipo === "VELCRO" || tipo === "PUENTES";
+    const conOreja = tipo === "GOMA" || tipo === "CORAZON" || tipo === "VELCRO" || tipo === "PUENTES" || tipo === "CORREAS";
     const oreja = conOreja ? orejaRecogida(params, nombre, cara) : 0;
     const base: Vec3 = [lado * semi, 0, z];
     return {
@@ -158,6 +159,8 @@ export function cierresLona(
         }
         : null,
       velcro: tipo === "VELCRO" ? { ancho: ANCHO_VELCRO } : null,
+      // Repartidas por la oreja, que sube hasta donde acaba la pared vertical (como en el corte).
+      correas: tipo === "CORREAS" && oreja > 0 ? alturasCorreas(alto) : [],
     };
   });
 }

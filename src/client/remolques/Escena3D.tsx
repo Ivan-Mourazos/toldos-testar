@@ -234,6 +234,22 @@ function SimboloRecogida({ costura, tipo }: { costura: Costura; tipo: string }) 
     );
   }
 
+  if (tipo === "CORREAS") {
+    // correas cruzando la costura, cada una con su hebilla
+    const largo = tamanoSimbolo(16), grueso = tamanoSimbolo(4), hebilla = tamanoSimbolo(6);
+    const correas = [yBase - alto * 0.25, yBase - alto * 0.65];
+    return (
+      <g stroke={COLOR_RECOGIDA} strokeWidth={TRAZO_ARISTA}>
+        {correas.map((y, i) => (
+          <g key={i}>
+            <rect x={x - largo / 2} y={y - grueso / 2} width={largo} height={grueso} fill="#ffffff" />
+            <rect x={x + largo / 2 - hebilla / 2} y={y - hebilla / 2} width={hebilla} height={hebilla} fill="none" />
+          </g>
+        ))}
+      </g>
+    );
+  }
+
   if (tipo.startsWith("PUENTES")) {
     // trabillas repartidas por la costura
     const lado = tamanoSimbolo(9);

@@ -11,7 +11,7 @@ export type Perfil2D = Array<[number, number]>;
 export type Vista = "tres-cuartos" | "delante" | "detras" | "lateral" | "arriba";
 export type LadoBorde = "delante" | "atras" | "izquierdo" | "derecho";
 export type Esquina = "delante-izquierda" | "delante-derecha" | "atras-izquierda" | "atras-derecha";
-export type TipoCierre = "NO" | "GOMA" | "CORAZON" | "CREMALLERA" | "VELCRO" | "PUENTES";
+export type TipoCierre = "NO" | "GOMA" | "CORAZON" | "CREMALLERA" | "VELCRO" | "PUENTES" | "CORREAS";
 
 /** Un ollao o un gancho: su lado, su posición con el convenio de los ollaos y dónde cae. */
 export interface Marca { lado: LadoBorde; posicion: number; punto: Vec3; normal: Vec3 }
@@ -51,6 +51,9 @@ export interface CierreEsquina {
   cremallera: { distancia: number; hasta: number; pie: Vec3; normal: Vec3 } | null;
   /** Velcro: ancho de la tira en el borde de la oreja. */
   velcro: { ancho: number } | null;
+  /** Correas: altura del borde de abajo de cada cinta, de abajo arriba (calc/correas.ts). La cinta va
+   *  del paño, cruzando la oreja, a su hebilla en el lateral. Vacío en las demás recogidas o sin oreja. */
+  correas: number[];
 }
 
 export interface CuerpoLona {

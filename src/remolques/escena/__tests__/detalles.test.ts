@@ -1,14 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_PARAMS } from "../../calc/params.ts";
 import { alturasCierre, orejaRecogida, tipoCierre } from "../cierres.ts";
+import { alturasCorreas } from "../../calc/correas.ts";
 import { calcLona } from "../../calc/lona.ts";
 import { construirEscena } from "../index.ts";
 import { escenaLona, lonaPrueba } from "./casos.ts";
 
 describe("cierres de las esquinas", () => {
   it("reconoce cada recogida", () => {
-    expect(["NO", "", "GOMA", "GANCHOS CORAZON", "CREMALLERA", "VELCRO", "PUENTES ESVA", "PUENTES HIJOS DE PEDRO LOPEZ"].map(tipoCierre))
-      .toEqual(["NO", "NO", "GOMA", "CORAZON", "CREMALLERA", "VELCRO", "PUENTES", "PUENTES"]);
+    expect(["NO", "", "GOMA", "GANCHOS CORAZON", "CREMALLERA", "VELCRO", "PUENTES ESVA", "PUENTES HIJOS DE PEDRO LOPEZ", "CORREAS"].map(tipoCierre))
+      .toEqual(["NO", "NO", "GOMA", "CORAZON", "CREMALLERA", "VELCRO", "PUENTES", "PUENTES", "CORREAS"]);
   });
 
   it("la oreja es la demasía de la recogida sobre «NO», repartida en las dos esquinas", () => {
@@ -234,6 +235,15 @@ describe("cierres de las esquinas", () => {
     expect(e.cierres.find((x) => x.esquina === "delante-izquierda")).toMatchObject({ oreja: 12, velcro: { ancho: 3 }, alturas: [] });
     // Iván, 30/09/2026: «pon una medida como ollaos y listo»: el paso de los ollaos (35 por defecto).
     expect(e.cierres.find((x) => x.esquina === "atras-izquierda")).toMatchObject({ tipo: "PUENTES", oreja: 19.8, alturas: [10, 50, 90] });
+  });
+
+  it("correas: la oreja de la goma y las cintas repartidas por ella, como en el corte (AR2504631)", () => {
+    const e = escenaLona({ recogeAtras: "CORREAS" })!;
+    const c = e.cierres.find((x) => x.esquina === "atras-derecha")!;
+    expect(c).toMatchObject({ tipo: "CORREAS", oreja: 12, gomaDiagonal: [], velcro: null });
+    expect(c.correas).toEqual(alturasCorreas(c.alto));
+    expect(c.correas[0]).toBe(15);
+    expect(e.cierres.find((x) => x.esquina === "delante-derecha")!.correas).toEqual([]);
   });
 
   it("los puentes siguen el paso de los ollaos del elemento; sin paso, el de Parámetros", () => {

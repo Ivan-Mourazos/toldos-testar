@@ -30,6 +30,9 @@ const LENGUETA_CREMALLERA = { ancho: 2.4, alto: 6.5, grueso: 0.4 };
 const PUENTE_EN_SOLAPA = 4;
 const ANCHO_CINCHA = 2.5;
 const CINCHA_SUELTA = 12;
+/** Hebilla de la correa, en el lateral (cm), y lo que sobra de cinta pasada la hebilla. */
+const HEBILLA = { ancho: 3, alto: 3.6 };
+const CORREA_SOBRANTE = 4;
 /** La lengüeta del gancho corazón sale esto de la placa: por ahí pasa el cordón. */
 const LENGUETA = 1;
 
@@ -76,7 +79,7 @@ export function piezasCierres(cierres: CierreEsquina[]): CierresEnMallas {
     };
 
     // Goma, velcro y puentes van sobre la oreja: sin oreja no hay dónde ponerlos.
-    const sobreOreja = c.tipo === 'GOMA' || c.tipo === 'CORAZON' || c.tipo === 'PUENTES' || c.velcro !== null;
+    const sobreOreja = c.tipo === 'GOMA' || c.tipo === 'CORAZON' || c.tipo === 'PUENTES' || c.tipo === 'CORREAS' || c.velcro !== null;
     if (c.oreja <= 0 && sobreOreja) continue;
     /** Posición, a lo largo del lateral, de algo que va a `d` cm del borde libre de la oreja: nunca pasa de media oreja. */
     const desdeBorde = (d: number) => c.oreja - Math.min(d, c.oreja / 2);
@@ -146,6 +149,18 @@ export function piezasCierres(cierres: CierreEsquina[]): CierresEnMallas {
       const lengueta = new THREE.BoxGeometry(LENGUETA_CREMALLERA.ancho, LENGUETA_CREMALLERA.alto, LENGUETA_CREMALLERA.grueso)
         .applyMatrix4(sobreCara(enPano(hasta - CURSOR.alto - LENGUETA_CREMALLERA.alto / 2 + 0.8, 1.2), normalPano));
       r.piezas.push({ geometria: unir([cursor, lengueta]), material: 'tirador' });
+    }
+
+    if (c.tipo === 'CORREAS') {
+      // Lámina RECOLLER_CON_CORREAS: la cinta sale del paño por la esquina, pasa por encima de la oreja y
+      // abrocha en la hebilla del lateral, justo pasada la oreja; la punta sobra un poco.
+      const hebilla = c.oreja + HEBILLA.ancho / 2 + 1;
+      const largo = hebilla + HEBILLA.ancho / 2 + CORREA_SOBRANTE;
+      for (const y of c.correas) {
+        const centro = y + ANCHO_CINCHA / 2;
+        colocar(plano(largo, ANCHO_CINCHA), punto(largo / 2, centro, 0.6), 'cincha');
+        colocar(new THREE.BoxGeometry(HEBILLA.ancho, HEBILLA.alto, 0.4), punto(hebilla, centro, 0.8), 'herraje');
+      }
     }
 
     if (c.tipo === 'PUENTES') {
