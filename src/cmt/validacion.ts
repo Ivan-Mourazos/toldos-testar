@@ -1,6 +1,6 @@
 import { number, value } from './dxf.ts';
 import { splineCubica } from './entidades.ts';
-import { prepararTexto } from './textos.ts';
+
 import type { Dxf, Duda } from './tipos.ts';
 
 export function validar(d: Dxf): { dudas: Duda[]; avisos: Duda[]; tieneTexto: boolean } {
@@ -36,16 +36,9 @@ export function validar(d: Dxf): { dudas: Duda[]; avisos: Duda[]; tieneTexto: bo
     if (e.type === 'LWPOLYLINE' && (number(e, 43) || e.pairs.some(([c, v]) => (c === 40 || c === 41) && Number(v) !== 0))) duda(`La polilínea ${sitio} tiene anchura: pon su anchura a cero en ZWCAD o dibuja sus bordes como contornos`);
     if (['TEXT','MTEXT'].includes(e.type)) {
       tieneTexto = true;
-      const estilo=value(e,7,'Standard');
-      if(fuenteDxf?.toLowerCase()!=='arial.ttf')avisos.push({...base,fuenteDxf,motivo:`El estilo ${estilo} (${fuenteDxf||'sin fuente declarada'}) usa la fuente Arial global del importador, como options.font`});
+
       if(number(e,40)<=0)duda(`El texto ${sitio} tiene altura no positiva: corrígelo en ZWCAD`);
-      try {
-        const p=prepararTexto(e,d);
-        if(e.type==='MTEXT')avisos.push({...base,motivo:'El DXF conserva MTEXT: el estilo y las unidades no identifican su preparación previa en CAD'});
-        if(p.plegado)avisos.push({...base,motivo:'El importador pliega el texto por número de caracteres e inserta un párrafo vacío al principio'});
-        if(p.vertical||p.lineas.flat().some(f=>f.base))avisos.push({...base,motivo:'La escritura vertical o la alineación interna de este texto no tiene un ejemplo de render contrastado en el corpus'});
-        if(e.type==='MTEXT'&&(number(e,75)||number(e,76)>1||e.pairs.some(([c,v],i)=>c===1070&&v==='76'&&Number(e.pairs[i+1]?.[1])>1)))avisos.push({...base,motivo:'El importador no reparte las columnas CAD; usa únicamente los párrafos del contenido'});
-      }catch(error){duda(`El texto ${sitio} no se puede preparar: ${error instanceof Error?error.message:String(error)}`);}
+      if(e.type==='MTEXT'&&(number(e,75)||number(e,76)>1||e.pairs.some(([c,v],i)=>c===1070&&v==='76'&&Number(e.pairs[i+1]?.[1])>1)))avisos.push({...base,motivo:'Las columnas CAD se leen en orden de párrafos; su reparto no tiene contraste en el corpus'});
     }
   }
   return {dudas, avisos, tieneTexto};

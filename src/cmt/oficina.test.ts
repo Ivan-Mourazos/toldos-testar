@@ -102,25 +102,25 @@ describe('geometría de los planos de oficina', () => {
 });
 
 describe('textos de oficina', () => {
-  it.skipIf(!existsSync(arial))('conserva el espacio explícito de un fragmento MTEXT y neutraliza color y grupos', () => {
+  it.skipIf(!existsSync(arial))('comparación histórica directa: conserva el espacio de fragmento sin descomponer', () => {
     const e={type:'MTEXT',pairs:[[8,'texto'],[3,'{\\C1;OPCION\\~'],[1,'UNIDOS}'],[10,'200'],[20,'700'],[40,'100'],[71,'1']] as [number,string][]};
-    const r=dxfACmt(serializar([e]),{rutaFuente:arial});
+    const r=dxfACmt(serializar([e]),{rutaFuente:arial,preparacionMtext:'directa'});
     const simple={type:'TEXT',pairs:[[8,'texto'],[1,'OPCION UNIDOS'],[10,'200'],[20,'600'],[40,'100']] as [number,string][]};
     expect(r.dudas).toEqual([]);
     expect(r.cmt).toEqual(dxfACmt(serializar([simple]),{rutaFuente:arial}).cmt);
   });
-  it.skipIf(!existsSync(arial))('convierte el MTEXT superior izquierdo contrastado en AR2604983', () => {
+  it.skipIf(!existsSync(arial))('comparación histórica directa de AR2604983, cuyo robot recibió MTEXT sin descomponer', () => {
     const d=leerDxf(fixture('AR2604983'));
     const e=d.entities.find(e=>e.type==='MTEXT')!;
-    const mt=dxfACmt(serializar([e]),{rutaFuente:arial,compatibilidadRobot:false});
+    const mt=dxfACmt(serializar([e]),{rutaFuente:arial,compatibilidadRobot:false,preparacionMtext:'directa'});
     const text={type:'TEXT',pairs:e.pairs.filter(([c])=>![20,41,71,72,73].includes(c)).concat([[20,String(number(e,20)-number(e,40))]])};
     const simple=dxfACmt(serializar([text]),{rutaFuente:arial,compatibilidadRobot:false});
     expect(mt.dudas).toEqual([]);
     expect(mt.objetos.map(o=>o.paths)).toEqual(simple.objetos.map(o=>o.paths));
   });
-  it.skipIf(!existsSync(arial))('reproduce los 21 contornos MTEXT de la etiqueta exterior del robot AR2604983', () => {
+  it.skipIf(!existsSync(arial))('comparación histórica directa: 21 contornos de AR2604983 antes de exigir descomposición', () => {
     // La etiqueta exterior real se conserva en el recorte específico, sin el resto del pedido.
-    const r=dxfACmt(fixture('AR2604983-texto'),{rutaFuente:arial});
+    const r=dxfACmt(fixture('AR2604983-texto'),{rutaFuente:arial,preparacionMtext:'directa'});
     const robot=JSON.parse(readFileSync(new URL('./__fixtures__/oficina-mtext-robot.json',import.meta.url),'utf8')) as {objetos:{tool:string;paths:number[][][]}[]};
     expect(r.dudas).toEqual([]);
     expect(r.objetos).toHaveLength(robot.objetos.length);
@@ -152,14 +152,14 @@ describe('textos de oficina', () => {
     const bloque=dxfACmt(serializar([{type:'INSERT',pairs:[[8,'ROTULADOR']]}]));
     expect(bloque.dudas.some(d=>/bloque.*ROTULADOR.*descomp/i.test(d.motivo))).toBe(true);
     expect(r.dudas.some(d=>d.tipo==='MTEXT')).toBe(false);
-    expect(r.avisos.some(d=>/MTEXT/.test(d.motivo))).toBe(true);
+    expect(r.dudas.some(d=>d.tipo==='SPLINE')).toBe(true);
     expect(value(leerDxf(fixture('AR2604736')).entities[0],8)).toBe('ROTULADOR');
   });
   it.skipIf(!existsSync(arial)).each(['AR2604860','AR2605027','AR2605250','AR2605332'])('convierte %s con textos y avisa de la disposición que requiere revisión', id=>{
     const r=dxfACmt(fixture(id),{sinLeyenda:true,rutaFuente:arial});
     expect(r.dudas).toEqual([]);
     expect(r.cmt).not.toBeNull();
-    expect(r.avisos.some(d=>/MTEXT/.test(d.motivo))).toBe(true);
+    expect(r.avisos.some(d=>/descompuesto.*textos de varias líneas/.test(d.motivo))).toBe(true);
     expect(dxfACmt(fixture(id),{sinLeyenda:true,sinTextos:true}).dudas).toEqual([]);
   });
   it.skipIf(!existsSync(arial))('ignora las columnas CAD, como el importador, y lo avisa', () => {

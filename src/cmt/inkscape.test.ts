@@ -1,7 +1,10 @@
 import{describe,it,expect}from 'vitest';
 import{existsSync,readFileSync}from 'node:fs';
-import{prepararTexto,normalizarCampo}from './textos.ts';
+import{prepararTexto,normalizarCampo,contornosTexto}from './textos.ts';
 import{dxfACmt}from './index.ts';
+import{leerDxf}from './dxf.ts';
+import{leerFuente}from './fuente.ts';
+import{limitesCabecera,UNIDADES}from './geometria.ts';
 import type{Dxf,EntidadDxf}from './tipos.ts';
 const d:Dxf={entities:[],layers:{},styles:{Standard:{3:'arial.ttf',70:'0'}},sections:{}};
 const e=(type='MTEXT',pairs:[number,string][]=[]):EntidadDxf=>({type,pairs:[[8,'texto'],[1,'AB\\PCD'],[10,'100'],[20,'500'],[40,'20'],...pairs]});
@@ -19,9 +22,12 @@ describe('texto del importador DXF Inkscape 1.2/master',()=>{
  it('mtext_normalize repite el control F a ambos lados de un P dentro de llaves',()=>{const t=e();t.pairs=t.pairs.filter(p=>p[0]!==1).concat([[1,'{\\FCalibri;AB\\PCD}']]);expect(prepararTexto(t,d).lineas.map(l=>l.map(f=>f.texto).join(''))).toEqual(['AB','CD']);});
  it('50/51 con extrusión negativa conserva la permutación de ángulos del importador',()=>{expect(prepararTexto(e('TEXT',[[50,'30'],[51,'12'],[230,'-1']]),d).giro).toBe(168);});
  it('un formato desconocido se conserva literal; no se inventa una fracción S',()=>{const t=e();t.pairs=t.pairs.filter(p=>p[0]!==1).concat([[1,'\\pt6;TRANSP.']]);expect(prepararTexto(t,d).lineas[0][0].texto).toBe('\\pt6;TRANSP.');expect(normalizarCampo('ANTES\\S1/2;DESPUES')).toBe('ANTESDESPUES');});
- it.skipIf(!existsSync(arial)).each([['plegado',10],['porcentajes',38]])('Arial necesaria: contornos reales de %s coinciden con el robot', (name,total)=>{
-  const t=readFileSync(new URL(`./__fixtures__/quinta-${name}.dxf`,import.meta.url),'utf8');const r=dxfACmt(t,{rutaFuente:arial});expect(r.dudas).toEqual([]);expect(r.objetos).toHaveLength(total);
+ it.skipIf(!existsSync(arial)).each([['plegado',10],['porcentajes',38]])('modelo histórico del importador explícito para %s; corte usa ahora semántica CAD', (name,total)=>{
+  const t=readFileSync(new URL(`./__fixtures__/quinta-${name}.dxf`,import.meta.url),'utf8'),doc=leerDxf(t),font=leerFuente(arial),min=limitesCabecera(doc);
+  const objetos=doc.entities.flatMap(e=>contornosTexto(e,doc,font).map(p=>({paths:[p.map(q=>({...q,x:(q.x+300-min[0])*UNIDADES,y:(q.y+20-min[1])*UNIDADES}))]})));
+  expect(objetos).toHaveLength(total);
   const ref=JSON.parse(readFileSync(new URL(`./__fixtures__/quinta-${name}-robot.json`,import.meta.url),'utf8')) as {objetos:{points:{x:number;y:number;type:number}[]}[]};
-  for(const [i,o]of r.objetos.entries()){expect(o.paths[0]).toHaveLength(ref.objetos[i].points.length);for(const[j,q]of o.paths[0].entries()){const p=ref.objetos[i].points[j];expect(q.type).toBe(p.type);expect(Math.hypot(q.x-p.x,q.y-p.y)/(72/25.4)).toBeLessThan(.1);}}
+  for(const [i,o]of objetos.entries()){expect(o.paths[0]).toHaveLength(ref.objetos[i].points.length);for(const[j,q]of o.paths[0].entries()){const p=ref.objetos[i].points[j];expect(q.type).toBe(p.type);expect(Math.hypot(q.x-p.x,q.y-p.y)/(72/25.4)).toBeLessThan(.1);}}
+  expect(dxfACmt(t,{rutaFuente:arial}).dudas).toEqual([]);
  });
 });

@@ -4,7 +4,7 @@ import type { Dxf, EntidadDxf, Duda, Punto, ObjetoGeometrico } from './tipos.ts'
 import { redondearComoRobot } from './compatibilidad.ts';
 import { splineCubica } from './entidades.ts';
 import { contornosTexto } from './textos.ts';
-import { descomponerMtext } from './textos-cad.ts';
+import { descomponerMtext, contornosTextCad } from './textos-cad.ts';
 type Trazo = Pick<ObjetoGeometrico, 'paths' | 'source' | 'entity' | 'serial' | 'firstSteps'>;
 // Geometría: razón observada de 72/25,4 unidades CMT por mm DXF.
 // Los parámetros del controlador usan otra razón: 600/25,4.
@@ -91,7 +91,7 @@ export function generarGeometria(d: Dxf, options: {
     preparacionMtext?: 'directa'|'textos';
 } = {}) {
     const issues: Duda[] = [], avisos: Duda[] = [], objects: ObjetoGeometrico[] = [];
-    let serial = 0;
+    let serial = 0, mtextDescompuestos=0;
     const layers = [...new Set([...Object.keys(d.layers), ...d.entities.map(e => value(e, 8))])];
     for (const layer of layers) {
         const group: Trazo[] = [], tool = herramienta(layer);
@@ -101,17 +101,14 @@ export function generarGeometria(d: Dxf, options: {
             if (e.type === 'TEXT' || e.type === 'MTEXT') {
                 flush();
                 // Se conserva la ausencia comprobada de estos indicadores en el CMT, fuera del modelo SVG.
-                if(e.type==='MTEXT'&&value(e,1)==='1'&&Math.abs(number(e,11))<1e-10&&number(e,21)===-1){avisos.push({handle:value(e,5),tipo:e.type,capa:layer,motivo:'El texto MTEXT «1» girado no se dibuja, igual que en los ejemplos del robot'});continue;}
+                if(options.preparacionMtext==='directa'&&e.type==='MTEXT'&&value(e,1)==='1'&&Math.abs(number(e,11))<1e-10&&number(e,21)===-1){avisos.push({handle:value(e,5),tipo:e.type,capa:layer,motivo:'El texto MTEXT «1» girado no se dibuja, igual que en los ejemplos del robot'});continue;}
                 try {
                     let textos=[e];
-                    if(e.type==='MTEXT'&&options.preparacionMtext==='textos'){
-                        const descompuestos=descomponerMtext(e,d,options.font!);
-                        if(descompuestos)textos=descompuestos;
-                        avisos.push({handle:value(e,5),tipo:e.type,capa:layer,motivo:descompuestos
-                            ?'MTEXT preparado como TEXT: cuadro de tinta Arial, plegado por palabras y avance de párrafo CAD contrastados'
-                            :'La preparación CAD no está contrastada para este formato o anclaje; se conserva la importación directa del MTEXT'});
+                    if(e.type==='MTEXT'&&options.preparacionMtext!=='directa'){
+                        textos=descomponerMtext(e,d,options.font!,avisos);mtextDescompuestos++;
                     }
-                    for (const texto of textos)for (const path of contornosTexto(texto,d,options.font!)) {
+                    for (const texto of textos)for (const path of texto.type==='MTEXT'?contornosTexto(texto,d,options.font!):texto.type==='LINE'?
+                        [[punto(number(texto,10),number(texto,20),0),punto(number(texto,11),number(texto,21))]]:contornosTextCad(texto,d,options.font!,avisos)) {
                         const p=transformar(path,e,false);
                         group.push({paths:[p],source:[value(e,5)],entity:e.type,serial:serial++});
                     }
@@ -143,10 +140,13 @@ export function generarGeometria(d: Dxf, options: {
                 issues.push({ handle: value(e, 5), tipo: e.type, motivo: 'Entidad no implementada' });
                 continue;
             }
-            if(p&&e.transformacion&&e.type==='LWPOLYLINE'&&!closed&&igual(p[0],p.at(-1)!))p=[{...p.at(-1)!,type:0},...p.slice(1)];
             if(p)p=transformar(p,e);
             if (!p || p.length<2)
                 continue;
+            if(e.type==='LWPOLYLINE'&&p.every(q=>dist(q,p[0])<1e-10)){
+                if(!avisos.some(a=>/tramos de longitud cero/.test(a.motivo)))avisos.push({motivo:'Se han omitido tramos de longitud cero de polilíneas, que no dibujan corte'});
+                continue;
+            }
             const incoming: Trazo = { paths: [p], firstSteps: p.length - 1, source: [value(e, 5)], entity: e.type, serial: serial++ };
             if (closed) {
                 geo.push(incoming);
@@ -191,6 +191,7 @@ export function generarGeometria(d: Dxf, options: {
         for (const o of group)
             objects.push({ ...o, layer, tool, flags: 0 });
     }
+    if(mtextDescompuestos)avisos.push({motivo:`Se han descompuesto ${mtextDescompuestos} textos de varias líneas`});
     if (options.compatibilidadRobot !== false) redondearComoRobot(objects, d);
     const min = limitesCabecera(d), translation = options.translation ?? [300 - min[0], 20 - min[1]], scale = options.scale ?? ESCALA;
     for (const o of objects)

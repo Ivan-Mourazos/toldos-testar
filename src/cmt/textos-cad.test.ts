@@ -20,7 +20,7 @@ function distancia(q:Punto,a:Punto,b:Punto){
  return Math.hypot(q.x-a.x-t*dx,q.y-a.y-t*dy)/(72/25.4);
 }
 
-describe('MTEXT preparado como TEXT en CAD, por elección explícita',()=>{
+describe('MTEXT preparado como TEXT en CAD por decisión de Oficina Técnica',()=>{
  it.skipIf(!existsSync(arial))('reproduce 94 contornos reales: párrafos, margen, plegado por palabras y giro',()=>{
   const r=dxfACmt(fixture('sexta-textos-cad.dxf'),{rutaFuente:arial,preparacionMtext:'textos'});
   expect(r.dudas).toEqual([]);
@@ -33,20 +33,21 @@ describe('MTEXT preparado como TEXT en CAD, por elección explícita',()=>{
    }
   }
  });
- it.skipIf(!existsSync(arial))('la importación directa sigue siendo el valor por defecto',()=>{
+ it.skipIf(!existsSync(arial))('descomponer siempre para corte sustituye la importación directa por defecto',()=>{
   const text=fixture('corpus-saltos.dxf');
-  expect(dxfACmt(text,{rutaFuente:arial}).cmt).toEqual(dxfACmt(text,{rutaFuente:arial,preparacionMtext:'directa'}).cmt);
+  expect(dxfACmt(text,{rutaFuente:arial}).cmt).toEqual(dxfACmt(text,{rutaFuente:arial,preparacionMtext:'textos'}).cmt);
+  expect(dxfACmt(text,{rutaFuente:arial}).cmt).not.toEqual(dxfACmt(text,{rutaFuente:arial,preparacionMtext:'directa'}).cmt);
  });
  it.skipIf(!existsSync(arial))('la preparación de MTEXT no cambia los TEXT normales',()=>{
   const text=fixture('quinta-porcentajes.dxf');
   expect(dxfACmt(text,{rutaFuente:arial}).cmt).toEqual(dxfACmt(text,{rutaFuente:arial,preparacionMtext:'textos'}).cmt);
  });
- it.skipIf(!existsSync(arial))('un anclaje sin evidencia conserva la importación directa y avisa',()=>{
+ it.skipIf(!existsSync(arial))('los otros anclajes también se descomponen para corte y el aviso es agregado',()=>{
   const text=fixture('sexta-textos-cad.dxf').replace(/71\n1\n/g,'71\n5\n');
   const r=dxfACmt(text,{rutaFuente:arial,preparacionMtext:'textos'});
   expect(r.cmt).not.toBeNull();
   expect(r.cmt).toEqual(dxfACmt(text,{rutaFuente:arial}).cmt);
-  expect(r.avisos.some(a=>/no está contrastada.*anclaje/.test(a.motivo))).toBe(true);
+  expect(r.avisos.filter(a=>/descompuesto.*textos de varias líneas/.test(a.motivo))).toHaveLength(1);
  });
  it('sin textos no necesita fuente ni ejecuta la preparación CAD',()=>{
   const r=dxfACmt(fixture('sexta-textos-cad.dxf'),{sinTextos:true,rutaFuente:'ausente.ttf',preparacionMtext:'textos'});

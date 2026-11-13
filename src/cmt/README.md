@@ -1,112 +1,115 @@
 # Conversión CMT en memoria
 
 `dxfACmt(texto, {rutaFuente?, compatibilidadRobot?, sinLeyenda?, sinTextos?, rutasFuentesReserva?, preparacionMtext?})`
-convierte un DXF ya decodificado en memoria, sin escribir ficheros ni conectarse a producción.
-Devuelve `{cmt, objetos, avisos, dudas}`. El llamante decodifica con `textoDxf` de
-`src/cmtPiloto.js`; los DXF pueden ser UTF-8 o Windows-1252.
+convierte un DXF decodificado en memoria. Devuelve `{cmt, objetos, avisos, dudas}`;
+`cmt` es null si existen dudas. No escribe ficheros ni accede a producción.
+El llamante puede decodificar UTF-8/Windows-1252 con `textoDxf` de `src/cmtPiloto.js`.
 
-Arial se busca por `rutaFuente`, `CMT_ARIAL_PATH` y, en Windows,
-`C:/Windows/Fonts/arial.ttf`. La fuente es global, como `options.font` en el importador
-DXF de Inkscape; el STYLE del DXF no selecciona otro archivo. Se avisa de esa sustitución.
-No se distribuyen fuentes. En Linux hay que configurar su ruta.
+## Preparación para corte
 
-Los glifos ausentes se buscan por orden en `rutasFuentesReserva`, o en
-`CMT_FUENTES_RESERVA` (separador `;` en Windows, `:` en Linux). Windows prueba por defecto
-Lucida Sans Unicode (`C:/Windows/Fonts/l_10646.ttf`), contrastada para ∅. Se cargan solo
-cuando hacen falta. `rutasFuentesReserva: []` desactiva las reservas. Si falta Lucida,
-∅ se omite con aviso conservando su avance medido de 0,97607421875 alturas; otros glifos
-sin reserva ni evidencia siguen dando duda. No se aplica kerning entre fuentes distintas.
+Desde la decisión de Oficina Técnica del 13/11/2026, **MTEXT se descompone por
+defecto**. `preparacionMtext:'textos'` es el valor implícito. No hay caída a la
+colocación de Inkscape para otros anclajes o formatos. `directa` se conserva solo
+como comparación explícita del flujo antiguo; la página y el piloto no la usan.
+Esa opción afecta únicamente a MTEXT: los TEXT normales siguen las reglas CAD.
 
-La preparación de textos reproduce las reglas de `dxf_input_1.2.py` y `master`, cuyas
-funciones de texto son equivalentes en los cuatro archivos fuente estudiados:
+INSERT se expande por su base, escala afín completa, giro y anidación. La capa 0
+hereda la del INSERT; las otras permanecen, incluida marca. Los ATTRIB visibles
+se convierten a TEXT en coordenadas del padre; se omiten los invisibles y no se
+duplican los ATTDEF variables. Las cotas DIMENSION usan su bloque anónimo cuando
+está presente. SOLID conserva su perímetro. Las polilíneas 2D se convierten por
+sus tramos rectos y arcos; después el escritor conserva la unión de trazados.
+Se omiten POINT, tramos de longitud cero y HATCH/WIPEOUT/IMAGE/VIEWPORT con aviso.
+El espacio papel se excluye antes de expandir los bloques.
 
-- TEXT inyecta 70 y 71 y usa la misma función que MTEXT. Si ya existe 71, el primer valor
-  conserva prioridad: por ejemplo, 2 se interpreta como anclaje central, no como reflejo.
-- Se usa la inserción 10/20. Se ignoran 72/73 y el oblicuo 51. El ancho 41 no estira las
-  letras: solo puede activar el plegado. La normal afecta a la inserción X, no refleja
-  los contornos de las letras. Con normal -Z y ambos 50/51 se conserva la permutación de
-  ángulos del importador.
-- 50 tiene prioridad, incluso si vale cero. Sin 50 se usa el vector 11/21 únicamente si
-  están ambas coordenadas y su módulo está estrictamente entre 0,99 y 1,01. El bit 4 de
-  STYLE 70, cuando hay un estilo explícito, activa escritura vertical y anula el giro.
-- MTEXT sin 70 empieza una altura por debajo de la inserción. 2/5/8 usan anclaje central,
-  3/6/9 usan final. 4/5/6 empiezan media altura por debajo. Los inferiores 7/8/9 no
-  reciben una corrección vertical propia. Se gira también el desplazamiento inicial.
-- El interlineado es el 125 % observado; 44 y 73 no lo modifican. Solo `\P` separa
-  párrafos; `^J` queda literal. Los espacios repetidos se conservan, como demuestran
-  los rótulos web contrastados.
-- Con 41 > 10, 40 > 1 y texto sin `\P` ni `{`, el importador pliega por
-  `floor(41 * 2 / 40)` caracteres. Su bucle inserta también un `\P` inicial vacío.
-  No se sustituye por un ajuste por palabras.
-- Antes de concatenar 3/1 se recortan los extremos de cada dato, como en `get_line`.
-  `\~` pasa a espacio, `^I` desaparece, `\U+XXXX` se decodifica. `\S…;` y `\W…;`
-  se eliminan con expresiones codiciosas. `%%c/%%d/%%p` permanecen literales.
-- `mtext_normalize` repite el control de un grupo al cruzar un `\P`. El separador de
-  grupos no es un parser CAD general: toma la primera llave de cierre. F elimina el
-  nombre de fuente y conserva la fuente global. H numérico cambia el tamaño; H relativo
-  como `2x` falla como `float()` en Python y deja ese grupo sin texto. C cambia estilo
-  gráfico, sin cambiar la referencia de herramienta; T usa espaciado en píxeles SVG;
-  A conserva su alineación interna. Los controles desconocidos permanecen literales.
-  No se inventan fracciones, subrayados ni formatos que el script no dibuja.
-- Las columnas CAD se ignoran con aviso: solo se usan los párrafos del contenido.
+Los avisos de descomposición se agregan por tipo: un resumen de bloques/cotas/
+polilíneas y otro de textos de varias líneas, sin un aviso por cada MTEXT o INSERT.
+Las referencias de herramienta siguen dependiendo de las capas contrastadas:
+DISCO1, DISCO2, CUTTER, ROTULADOR/TALADRO. Una capa marca no se cambia a ROTULADOR.
 
-Se conserva el tamaño nominal ya contrastado para mantener los bytes de la web: no se
-introduce la cuantización de `font-size: %.3fpx` en los casos existentes. Las hipótesis
-versionadas del estudio sí incluyen las precisiones publicadas (una y tres cifras
- decimales en píxeles). La escritura vertical y los controles A no tienen ejemplos de
-render en el corpus; usan dirección vertical y métricas ascendente/descendente TrueType,
-con aviso de esa falta de contraste.
+## MTEXT y fuentes
 
-Los diez indicadores MTEXT «1» con vector (0;-1), ausentes de los CMT estudiados,
-siguen omitiéndose con aviso. Es una ausencia comprobada del flujo completo, no una
-regla deducida de `export_mtext`.
+La colocación conserva el ancla medida en AR2601895: se mide el cuadro a h/cap
+(cap es la altura de H de la fuente) y cada TEXT resultante se dibuja a h. ZWCAD
+confirma que el avance para repartir líneas se mide **sin kerning**; el kerning
+se aplica al dibujar el TEXT. La regla antigua con kerning y un espacio adicional
+acertaba en ese pedido por compensación. El reparto actual conserva sus 166/166
+contornos, y además los párrafos contrastados de AR2601766, AR2603514 y AR2603750.
 
-**Límite de la comparación MTEXT:** ninguno de los 1.476 pares que declaran DXF 2000
-contiene MTEXT. Todos los MTEXT del corpus están en archivos 2004/2007. Algunos pueden
-haber pasado por descomposición en ZWCAD o haber sido guardados después del CMT. El
-modelo directo de Inkscape y la hipótesis de TEXT descompuesto dan resultados incompatibles
-en distintos pedidos; no se elige uno por pedido consultando su CMT de referencia.
-El módulo usa el modelo 1.2/master y no afirma paridad completa del flujo anterior.
-Véase `tmp/cmt-estudio/quinta-ronda.md` para la medición y los contraejemplos.
+Se incluyen los nueve anclajes, límites de tinta para justificar cada línea,
+ancho 41 por palabras (cero no pliega), párrafos y altura total. Se lee el
+XRECORD ACAD_MTEXT_2008_RT: puede conservar una justificación que no está en el
+dato 1 del MTEXT. El giro usa el último 50 o vector 11/21; no exige módulo unitario.
+La normal −Z refleja el conjunto. El interlineado base es 5h/3 multiplicado por 44;
+«al menos» conserva exactamente T_i + 2h/3 con factor 1, y «exacto» separa bases.
 
-`preparacionMtext:'textos'` permite elegir explícitamente la preparación CAD antes de
-importar los TEXT. Reproduce los 166 contornos de AR2601895: mide el margen izquierdo
-y la altura superior de tinta con `h/cap`, siendo `cap` la altura de H en la fuente;
-pliega por palabras contando el espacio final. Cada base cae tras la altura superior
-de esa línea y cada párrafo añade además `2*h/3`. Gira también ese desplazamiento y
-mantiene `h` como tamaño de los contornos importados. Hay 94 contornos reales en los
-fixtures de esta regla, sin dependencia de `tmp/` ni del CMT en ejecución.
+El parser usa una pila para los grupos de formato. Reconoce P/N/^J, espacios
+protegidos, barras y llaves escapadas, Unicode, f/F, H absoluta y relativa, W/T/Q/A,
+colores C/c y símbolos %%c/%%d/%%p. Las rayas L/O/K y %%u/%%o se omiten con aviso.
+Las fracciones S producen numerador/denominador reducidos y líneas cuando procede.
+Los cambios de tamaño y fuente intervienen en el reparto y altura de la línea.
 
-Solo está contrastada para texto plano, anclaje 1, normal +Z e interlineado 44=1.
-Los demás casos conservan la importación directa con aviso. El valor por defecto es
-`'directa'`: hay ejemplos reales que coinciden únicamente por esa ruta. Ni STYLE,
-40, $MEASUREMENT ni $INSUNITS permiten decidir entre las preparaciones estudiadas.
-La opción no modifica TEXT ni certifica un trazado previo de letras como geometría
-CAD; ese tercer camino tiene un tamaño y una cuantización distintos aún pendientes.
+Arial se busca por `rutaFuente`, `CMT_ARIAL_PATH` o, en Windows,
+`C:/Windows/Fonts/arial.ttf`. Las TTF de STYLE y los controles de fuente se buscan
+junto a esa fuente; nunca se siguen rutas externas contenidas en el DXF. Una
+fuente ausente, incluida una SHX sin lector, se sustituye por Arial y se avisa.
+Las leyendas txt.shx contrastadas tienen margen cero y altura nominal h; no se
+certifican avances o anclajes complejos de SHX desconocidas.
 
-Se convierten LINE, ARC, CIRCLE, LWPOLYLINE sin anchura, POLYLINE/VERTEX/SEQEND 2D y
-la SPLINE cúbica no racional de cuatro controles y extremos de nudos cuádruples del
-corpus. INSERT descompone punto base, escala, giro, capas y anidación; la capa 0 hereda
-la de la inserción. Las flechas de marca usan rotulador según los ejemplos. POINT y las
-polilíneas válidas de un solo vértice se omiten con aviso. El espacio papel se excluye
-antes de descomponer bloques. La elevación se proyecta a XY y se avisa.
+Los glifos ausentes se buscan por orden en `rutasFuentesReserva` o
+`CMT_FUENTES_RESERVA` (separador de rutas del sistema). Windows prueba Lucida Sans
+Unicode por defecto, contrastada para ∅. `[]` desactiva las reservas. Sin Lucida,
+∅ se omite con aviso y mantiene su avance medido de 0,97607421875 alturas; los
+otros glifos sin reserva producen duda. Las variantes de fuente conservan esas
+reservas y sus avisos en cada conversión. No se distribuyen fuentes.
 
-Las referencias de herramienta siguen las capas contrastadas: DISCO1, DISCO2, CUTTER,
-ROTULADOR/TALADRO. Las capas conocidas sin referencia (0, marca, corte, curv, TALADADRO,
-Defpoints, cortes - lona, etc.) conservan herramienta vacía y aviso. El color ACI no
-proporciona una tabla universal: el corpus tiene colores iguales con herramientas distintas.
+## TEXT normales y compatibilidad web
 
-`sinLeyenda:true` quita solo el conjunto completo reconocido web/oficina y lleva la
-esquina restante a 300/20 mm. `sinTextos:true` descarta TEXT/MTEXT después de descomponer
-bloques y antes de validar fuentes. Por defecto no se descartan los textos. Se mantiene
-el redondeo SVG de LINE (seis cifras a 96 dpi), la unión de trazados y el origen habitual.
-`compatibilidadRobot:false` conserva la precisión de la geometría DXF. La miniatura y
-parámetros siguen en `plantilla.json`; el lector CMT público conserva su contrato estricto.
+TEXT usa 72/73 y 11/21, ajustar/alinear entre dos puntos, factor de anchura,
+oblicuidad de entidad o STYLE, reflejos 71, giro y normal. Los avances del cuadro
+CAD se miden sin kerning e incluyen los voladizos; el trazado nominal mantiene
+el kerning del importador ya contrastado. Se decodifican los símbolos CAD.
 
-Los fixtures y pruebas son independientes de `tmp/` y la red. Las pruebas con fuentes
-se omiten con un nombre explícito si faltan. Las regresiones incorporan 10 contornos
-reales de plegado y 38 de los códigos `%%` literales, además de los casos anteriores.
-La quinta ronda deja cinco CMT y un LEEME en `tmp/cmt-estudio/prueba6/` para revisión manual.
-No se ha ejecutado CUTMatic ni conectado el módulo a la web.
+El emisor web ya proporciona 10/20 calculados con `anchoArial`. Si esos valores
+coinciden con su cálculo y con el error máximo de los seis decimales publicados
+(incluidos altura y giro), se conserva esa base para mantener los bytes web.
+Un 10/20 ajeno a ese cálculo no sustituye al punto de alineación 11/21.
 
-Pruebas acotadas: `pnpm vitest run src/cmt src/cmtPiloto.test.js src/corteEnvios.test.js src/cmtHerramientaRoutes.test.js --maxWorkers=3`.
+Se mantiene el redondeo SVG de LINE y la precisión nominal de los contornos.
+`compatibilidadRobot:false` conserva la precisión del DXF. `sinLeyenda:true`
+quita solo una leyenda completa reconocida y recoloca el dibujo a 300/20 mm.
+`sinTextos:true` descarta TEXT/MTEXT tras expandir bloques, antes de cargar fuentes.
+La miniatura y los parámetros permanecen en `plantilla.json`.
+
+## Evidencia y límites
+
+La sexta ronda utiliza 174 pares entrada → EXPLODE real de ZWCAD recibidos del
+coordinador. No se ha ejecutado CAD en esta tarea. Convierten ambas versiones de
+174/174; coinciden 170/174 CMT completos por defecto y 171/174 con `sinLeyenda:true`,
+a 0,01 mm y con las mismas herramientas. No es igualdad binaria ni de orden.
+
+En 576 MTEXT del modelo se contrastan 625 TEXT y 5.784 contornos: coinciden
+5.755/5.784. Hay contraste real de anclajes 1/3/5/7, giros libres y ortogonales,
+plegado y justificación de párrafos. Quedan dos discrepancias métricas conocidas:
+CUTTER con Arial Narrow (AR2600484, 0,034106 mm) y la nota con ª (AR2603477,
+5,184175 mm). Cambios de $EXTMIN al guardar explican las otras diferencias globales.
+El reconocedor de leyenda no resuelve la variante Narrow ya explotada.
+
+Sin contraste CAD real: anclajes 2/4/6/8/9, 44≠1, interlineado exacto, −Z de MTEXT,
+mezcla de fuentes/alturas, fracciones, W/T/Q/A, atributos, DIMENSION y bloques
+anidados de escala desigual. Tienen pruebas sintéticas. En particular, la escala
+70 % y la colocación fina de las fracciones son provisionales: no están certificadas
+como el EXPLODE de ZWCAD. Columnas, sangrías y tabuladores generales aún no tienen
+una maquetación CAD completa; se conserva el orden del contenido y se avisa.
+LEADER/MLEADER/TOLERANCE/TABLE no aparecen en el corpus y conservan su duda.
+
+Los fixtures son independientes de tmp y de la red. `sexta-explode-zwcad.json`
+recorta 17 casos reales, incluidos dos TEXT que ZWCAD recalcula al guardar, con
+menos de 50 KB adicionales. Las pruebas con fuente se omiten con nombre explícito
+si no está disponible. El informe completo, cambios individuales en TEXT,
+recuentos del corpus y seis CMT/PNG de revisión están en
+`tmp/cmt-estudio/sexta-ronda.md` y `tmp/cmt-estudio/prueba7/`.
+
+Pruebas acotadas:
+`pnpm vitest run src/cmt src/cmtPiloto.test.js src/corteEnvios.test.js src/cmtHerramientaRoutes.test.js src/client/cmt --maxWorkers=3`,
+`pnpm typecheck` y `pnpm lint`. No se ejecuta la suite completa en este equipo.

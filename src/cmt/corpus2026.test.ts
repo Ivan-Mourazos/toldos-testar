@@ -13,13 +13,13 @@ function compararRobot(name:string,objetos:ReturnType<typeof dxfACmt>['objetos']
  }expect(o.paths[0]).toHaveLength(robot.objetos[i].points.length);for(const [j,q]of o.paths[0].entries()){const p=robot.objetos[i].points[j];expect(q.type).toBe(p.type);expect(Math.hypot(q.x-p.x,q.y-p.y)/(72/25.4)).toBeLessThan(.1);}}
 }
 describe('corpus 2026: conversiones contrastadas con el robot',()=>{
- it.skipIf(!existsSync(arial))('Arial necesaria: MTEXT con dos líneas conserva los 19 contornos',()=>{
-  const r=dxfACmt(fixture('saltos'),{rutaFuente:arial});expect(r.dudas).toEqual([]);expect(r.objetos).toHaveLength(19);
+ it.skipIf(!existsSync(arial))('comparación histórica explícita: los 19 contornos recibidos sin descomponer usan directa',()=>{
+  const r=dxfACmt(fixture('saltos'),{rutaFuente:arial,preparacionMtext:'directa'});expect(r.dudas).toEqual([]);expect(r.objetos).toHaveLength(19);
   compararRobot('saltos',r.objetos);
  });
- it.skipIf(!existsSync(arial))('Arial necesaria: fuente ARIALN se importa como Arial normal',()=>{
+ it.skipIf(!existsSync(arial)||!existsSync('C:/Windows/Fonts/arialn.ttf'))('CAD usa ARIALN del estilo en vez de sustituirla por Arial normal',()=>{
   const r=dxfACmt(fixture('arialn'),{rutaFuente:arial});expect(r.dudas).toEqual([]);
-  expect(r.cmt).toEqual(dxfACmt(fixture('arialn').replace(/ARIALN\.TTF/gi,'arial.ttf'),{rutaFuente:arial}).cmt);
+  expect(r.cmt).toEqual(dxfACmt(fixture('arialn').replace(/ARIALN\.TTF/gi,'arial.ttf'),{rutaFuente:'C:/Windows/Fonts/arialn.ttf'}).cmt);
  });
  it.skipIf(!existsSync(arial))('Arial necesaria: sin fuente de reserva se omite solo ∅ conservando el avance',()=>{
   const r=dxfACmt(fixture('reserva'),{rutaFuente:arial,rutasFuentesReserva:[]});expect(r.dudas).toEqual([]);expect(r.objetos).toHaveLength(94);expect(r.avisos.some(a=>/∅.*omite/.test(a.motivo))).toBe(true);
@@ -28,7 +28,7 @@ describe('corpus 2026: conversiones contrastadas con el robot',()=>{
   const r=dxfACmt(fixture('reserva'),{rutaFuente:arial,rutasFuentesReserva:['C:/Windows/Fonts/l_10646.ttf']});expect(r.dudas).toEqual([]);expect(r.objetos).toHaveLength(106);compararRobot('reserva',r.objetos);
  });
  it('capa 0 queda sin herramienta; el color blanco no la convierte en DISCO1',()=>{const r=dxfACmt(fixture('capa0'));expect(r.dudas).toEqual([]);expect(r.objetos.length).toBeGreaterThan(0);expect(r.objetos.every(o=>o.tool==='')).toBe(true);});
- it('explota los cuatro INSERT reales con giro, escala y capa de sus trazos',()=>{const r=dxfACmt(fixture('bloque'));expect(r.dudas).toEqual([]);expect(r.objetos).toHaveLength(4);expect(r.objetos.every(o=>o.tool==='CM-PEN-Def')).toBe(true);compararRobot('bloque',r.objetos);});
+ it('EXPLODE CAD conserva también el asta de los cuatro INSERT: sustituye el cierre prematuro del modelo robot',()=>{const r=dxfACmt(fixture('bloque'));expect(r.dudas).toEqual([]);expect(r.objetos).toHaveLength(4);expect(r.objetos.every(o=>o.tool==='CM-PEN-Def')).toBe(true);expect(r.objetos.every(o=>Math.hypot(o.paths[0][0].x-o.paths[0][1].x,o.paths[0][0].y-o.paths[0][1].y)>20)).toBe(true);});
  it('convierte las POLYLINE/VERTEX/SEQEND antiguas como trazados completos',()=>{const r=dxfACmt(fixture('polilinea'));expect(r.dudas).toEqual([]);expect(r.objetos.length).toBeGreaterThan(0);expect(r.objetos.every(o=>o.paths[0].length>=2)).toBe(true);});
  it('conserva la cúbica SPLINE de cuatro controles del ejemplo real',()=>{const r=dxfACmt(fixture('spline'));expect(r.dudas).toEqual([]);expect(r.objetos).toHaveLength(1);expect(r.objetos[0].paths[0].map(p=>p.type)).toEqual([0,1,2,3]);});
  it('POINT se omite con aviso como en el importador del robot',()=>{const r=dxfACmt(fixture('punto'));expect(r.dudas).toEqual([]);expect(r.objetos).toHaveLength(0);expect(r.avisos.filter(a=>/POINT/.test(a.motivo))).toHaveLength(3);});
