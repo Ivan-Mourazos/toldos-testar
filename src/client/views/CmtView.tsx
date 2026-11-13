@@ -1,3 +1,6 @@
+import { BotonMandarMaquina, type EnvioMaquina } from '../components/CorteMaquina';
+import { archivoBase64 } from '../cmt/conversion';
+import { controlLabel } from '../components/controlLabels';
 import React, { useRef, useState } from 'react';
 import { convertirArchivo, medidasCmt, permiteSinTextos, textoEstado, type EstadoCmt, type ResultadoCmt } from '../cmt/conversion';
 import { descargarCmt, descargarTodos } from '../cmt/descarga';
@@ -10,6 +13,7 @@ interface FilaCmt {
   sinTextos: boolean;
   resultado?: ResultadoCmt;
   error?: string;
+  envio?: EnvioMaquina;
 }
 
 export function CmtView() {
@@ -23,7 +27,7 @@ export function CmtView() {
   const convirtiendo = filas.some(f => f.estado === 'convirtiendo');
 
   async function convertir(fila: FilaCmt, sinTextos = false) {
-    setFilas(actuales => actuales.map(f => f.id === fila.id ? { ...f, estado: 'convirtiendo', sinTextos, resultado: undefined, error: undefined } : f));
+    setFilas(actuales => actuales.map(f => f.id === fila.id ? { ...f, estado: 'convirtiendo', sinTextos, envio: undefined, resultado: undefined, error: undefined } : f));
     try {
       const resultado = await convertirArchivo(fila.archivo, sinTextos);
       setFilas(actuales => actuales.map(f => f.id === fila.id ? { ...f, resultado, estado: resultado.ok ? 'listo' : 'error' } : f));
@@ -76,6 +80,9 @@ export function CmtView() {
             <span className={`cmt-estado ${fila.estado === 'listo' ? 'pildora-plantear' : 'pildora-aviso'}`}>{textoEstado(fila.estado)}</span>
             {fila.estado === 'listo' && fila.resultado && <button type="button" className="primary-button" disabled={guardando} onClick={() => void guardar([fila.resultado!])}>Descargar CMT</button>}
           </div>
+          {fila.estado === 'listo' && <BotonMandarMaquina ruta="/api/cmt/enviar" cuerpo={async () => ({ nombre: fila.archivo.name, dxfBase64: await archivoBase64(fila.archivo), sinTextos: fila.sinTextos })}
+            onEnviado={envio => setFilas(actuales => actuales.map(f => f.id === fila.id ? { ...f, envio } : f))} />}
+          {fila.envio && <p className="cmt-progreso">Mandado a la máquina por {controlLabel(fila.envio.usuario)} a las {new Date(fila.envio.fecha).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</p>}
           {fila.resultado && <>
             <div className="cmt-resumen">
               <span><strong>{medidasCmt(fila.resultado.resumen)}</strong>{fila.resultado.ok ? ' · Medidas del dibujo' : ' · Parte convertible'}</span>

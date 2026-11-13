@@ -20,12 +20,17 @@ export const permiteSinTextos = (dudas: string[], sinTextos: boolean) => !sinTex
 export async function convertirArchivo(archivo: File, sinTextos = false, pedir: typeof fetch = fetch): Promise<ResultadoCmt> {
   if (!/\.dxf$/i.test(archivo.name)) throw new Error('Elige un fichero con extensión .dxf.');
   if (archivo.size > 30 * 1024 * 1024) throw new Error('El DXF supera el máximo de 30 MB por fichero.');
-  const bytes = new Uint8Array(await archivo.arrayBuffer());
-  const trozos: string[] = [];
-  for (let i = 0; i < bytes.length; i += 32768) trozos.push(String.fromCharCode(...bytes.subarray(i, i + 32768)));
+  const dxfBase64 = await archivoBase64(archivo);
   const respuesta = await pedir('/api/cmt/convertir', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nombre: archivo.name, dxfBase64: btoa(trozos.join('')), sinTextos }) });
+    body: JSON.stringify({ nombre: archivo.name, dxfBase64, sinTextos }) });
   const datos = await respuesta.json();
   if (!respuesta.ok) throw new Error(datos.error || 'No se pudo convertir el DXF.');
   return datos;
+}
+
+export async function archivoBase64(archivo: File): Promise<string> {
+  const bytes = new Uint8Array(await archivo.arrayBuffer());
+  const trozos: string[] = [];
+  for (let i = 0; i < bytes.length; i += 32768) trozos.push(String.fromCharCode(...bytes.subarray(i, i + 32768)));
+  return btoa(trozos.join(''));
 }

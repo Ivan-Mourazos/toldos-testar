@@ -26,6 +26,10 @@ export DRAFTS_DIRECTORY="$D/borradores"
 export OFICINA_TECNICA_DIRECTORY="$D/oficina-lectura"
 export ODA_TEMP_DIRECTORY="$D/oda-temporales"
 export CORTE_LONA_BOT_DIRECTORY="$D/corte-bot" CORTE_LONA_PLANO_DIRECTORY="$D/corte-planos"
+export CORTE_DIRECTO_ENABLED=false
+export CORTE_MAQUINA_DXF_DIRECTORY="$D/maquina/{YYYY}/ARCHIVOS DXF - MAQUINA NUEVA"
+export CORTE_MAQUINA_CMT_DIRECTORY="$D/maquina/{YYYY}"
+export CORTE_CMT_PILOTO_DIRECTORY="$D/cmt-piloto"
 export CORTE_LONA_DXF_DIRECTORY="$D/oficina/{YYYY}/DXFs"
 # CoordinaOT simulado (scripts/fake-coordina.mjs): la aislada nunca pregunta al real.
 export FAKE_COORDINA_PORT="${FAKE_COORDINA_PORT:-4320}"

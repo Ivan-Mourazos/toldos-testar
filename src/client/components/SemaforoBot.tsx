@@ -6,7 +6,7 @@ import { controlLabel } from './controlLabels';
 // cola o si lleva parado un rato, sin ir a mirar los .cmt a mano. Lo calcula el servidor
 // (src/botEstado.js) con lo que sigue en las carpetas de pendientes.
 export type EstadoBot = {
-  estado: 'al-dia' | 'en-cola' | 'parado' | 'sin-datos';
+  estado: 'al-dia' | 'en-cola' | 'parado' | 'sin-datos' | 'directo';
   motivo?: string;
   cola: Array<{ pedido: string; archivo?: string; carpeta?: string; tecnico: string; desde: string }>;
   /** Las carpetas de pendientes que el servidor ha podido mirar. */
@@ -28,7 +28,7 @@ const mismaCarpeta = (ruta: string) => ruta.replace(/\\/g, '/').replace(/\/+$/, 
  * en cola; si ya no, lo recogió. Solo se afirma si su carpeta es una de las que se han mirado.
  */
 export function estadoEnvioBot(envio: EnvioCorte, bot: EstadoBot | null): 'en-cola' | 'recogido' | null {
-  if (envio.destino !== 'bot' || !bot || bot.estado === 'sin-datos') return null;
+  if (envio.destino !== 'bot' || !bot || ['sin-datos', 'directo'].includes(bot.estado)) return null;
   const carpeta = mismaCarpeta(envio.carpeta);
   if (!bot.carpetas.some((c) => mismaCarpeta(c) === carpeta)) return null;
   // Mandado después de la última lectura: aún no se ha podido ver si lo recogió.
@@ -82,7 +82,7 @@ export function SemaforoBot({ bot, ahora = new Date() }: { bot: EstadoBot | null
     document.addEventListener('keydown', tecla);
     return () => { document.removeEventListener('mousedown', fuera); document.removeEventListener('keydown', tecla); };
   }, [abierto]);
-  if (!bot) return null;
+  if (!bot || bot.estado === 'directo') return null;
   return (
     <div className="cabecera-bot-caja" ref={raiz}>
       <button type="button" className={`cabecera-bot glass-chip es-${bot.estado}`} aria-expanded={abierto} onClick={() => setAbierto((v) => !v)}

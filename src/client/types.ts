@@ -685,6 +685,9 @@ export type OrderAutofill = {
 };
 
 export type WorkflowSettings = {
+  corteDirectoEnabled?: boolean;
+  corteMaquinaDxfDirectory?: string;
+  corteMaquinaCmtDirectory?: string;
   corteLonaBotDirectory?: string;
   corteLonaPlanoDirectory?: string;
   corteLonaDxfDirectory?: string;

@@ -117,7 +117,7 @@ export function CorteRemolques({ ruta, version, generado = false, notify, onConf
           </button>
         )}
       </CabeceraDocumento>
-      <p className="corte-ayuda">El plano sale al guardar para revisión. El DXF se manda al bot con el botón de arriba.</p>
+      <p className="corte-ayuda">El plano sale al guardar para revisión. Puedes descargar el corte o mandarlo desde sus acciones.</p>
       {Boolean(datos?.cortes.length) && acciones}
       {!estado && <p className="corte-ayuda">Calculando el corte…</p>}
       {estado?.error && <p role="alert" className="corte-aviso">{estado.error}</p>}

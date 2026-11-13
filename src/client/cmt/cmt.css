@@ -26,3 +26,8 @@
 .cmt-dudas { padding: 14px 16px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--surface-2); }
 .cmt-dudas button { margin-top: 12px; }
 .cmt-error { margin: 12px 0 0; color: var(--tramo-ajustado); font-size: 14px; }
+
+.cmt-mandar { display: grid; justify-items: start; gap: 6px; margin-top: 12px; }
+.cmt-mandar small { color: var(--text-muted); font-size: 13px; line-height: 1.5; }
+.corte-maquina-acciones { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; margin: 16px 0; }
+.corte-maquina-acciones .cmt-mandar { margin-top: 0; }

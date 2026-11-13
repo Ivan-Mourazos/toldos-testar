@@ -1,3 +1,4 @@
+import { CorteMaquinaContexto } from './CorteMaquina';
 import { controlLabel } from './controlLabels';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { EstadoBotContexto, estadoEnvioBot } from './SemaforoBot';
@@ -13,7 +14,7 @@ export function HistorialEnvios({ envios = [], motivo }: { envios?: EnvioCorte[]
   return <div className="corte-envios">
     {motivo && <p className="corte-ayuda">{motivo}</p>}
     {envios.length > 0 && <div className="corte-envios-historial" role="status"><strong>Envíos del corte</strong>
-      <ul>{envios.map((e, i) => <li key={e.id}><span>{`Envío ${e.numero ?? i + 1} · Entrega ${e.entrega ?? 1} · `}{new Date(e.fecha).toLocaleString('es-ES')} · {controlLabel(e.usuario)} · {e.destino === 'bot' ? 'Bot' : 'DXFs'}{e.parcial ? ' · Envío incompleto: revisarlo antes de repetir' : ''}{e.nota ? ` · ${e.nota}` : ''}</span><EstadoEnvio estado={estadoEnvioBot(e, bot)} /><small title={e.carpeta}>{carpetaLegible(e.carpeta)} · {e.archivos.map(a => a.filename).join(' · ')}</small></li>)}</ul>
+      <ul>{envios.map((e, i) => <li key={e.id}><span>{`Envío ${e.numero ?? i + 1} · Entrega ${e.entrega ?? 1} · `}{new Date(e.fecha).toLocaleString('es-ES')} · {controlLabel(e.usuario)} · {e.destino === 'bot' ? 'Bot' : e.destino === 'maquina' ? 'Máquina' : 'DXFs'}{e.parcial ? ' · Envío incompleto: revisarlo antes de repetir' : ''}{e.nota ? ` · ${e.nota}` : ''}</span><EstadoEnvio estado={estadoEnvioBot(e, bot)} /><small title={e.carpeta}>{carpetaLegible(e.carpeta)} · {e.archivos.map(a => a.filename).join(' · ')}</small></li>)}</ul>
     </div>}
   </div>;
 }
@@ -33,12 +34,13 @@ export const DESTINOS_DXF = [
 export function SelectorDestinoDxf({ destino, elegir, tecnico, elegirTecnico, tecnicoPedido }: {
   destino: DestinoDxf; elegir: (d: DestinoDxf) => void; tecnico: string; elegirTecnico: (t: string) => void; tecnicoPedido: string;
 }) {
+  const { settings } = useContext(CorteMaquinaContexto);
   return <>
     <label htmlFor="destino-dxf">Destino del DXF</label>
     <select id="destino-dxf" value={destino} onChange={e => elegir(e.target.value as DestinoDxf)}>
-      {DESTINOS_DXF.map(d => <option key={d.valor} value={d.valor}>{d.etiqueta}</option>)}
+      {DESTINOS_DXF.map(d => <option key={d.valor} value={d.valor}>{d.valor === 'bot' && settings?.corteDirectoEnabled ? 'Máquina de corte (DXF y CMT)' : d.etiqueta}</option>)}
     </select>
-    {destino === 'bot' && <><label htmlFor="tecnico-dxf">Carpeta del técnico</label><select id="tecnico-dxf" value={tecnico} onChange={e => elegirTecnico(e.target.value)}>
+    {destino === 'bot' && !settings?.corteDirectoEnabled && <><label htmlFor="tecnico-dxf">Carpeta del técnico</label><select id="tecnico-dxf" value={tecnico} onChange={e => elegirTecnico(e.target.value)}>
       <option value="">Técnico del pedido · {controlLabel(tecnicoPedido)}</option>
       {Object.entries(CARPETA_TECNICO).map(([nombre, carpeta]) => <option key={nombre} value={nombre}>{controlLabel(nombre)} · {carpeta}</option>)}
     </select></>}
@@ -49,6 +51,7 @@ export function SelectorDestinoDxf({ destino, elegir, tecnico, elegirTecnico, te
 export function EnviosCorte({ tecnicoPedido, descarga, enviar, cancelar }: {
   tecnicoPedido: string; descarga: string; enviar: (destino: 'bot' | 'dxfs', tecnico?: string) => void; cancelar: () => void;
 }) {
+  const { settings } = useContext(CorteMaquinaContexto);
   const dialogo = useRef<HTMLDialogElement>(null);
   const [destino, elegir] = useState<DestinoDxf>('bot');
   const [tecnico, elegirTecnico] = useState('');
@@ -58,7 +61,7 @@ export function EnviosCorte({ tecnicoPedido, descarga, enviar, cancelar }: {
     <SelectorDestinoDxf destino={destino} elegir={elegir} tecnico={tecnico} elegirTecnico={elegirTecnico} tecnicoPedido={authorNames(tecnicoPedido).at(-1) || tecnicoPedido} />
     <footer><button type="button" className="ghost-button boton-3d" onClick={cancelar}>Cancelar</button>
       {destino === 'descarga' ? <a className="primary-button boton-3d" href={descarga} download onClick={cancelar}>Descargar en mi PC</a>
-        : <button type="button" className="primary-button boton-3d" onClick={() => enviar(destino, tecnico || undefined)}>{destino === 'bot' ? 'Mandar al bot' : 'Guardar DXF'}</button>}
+        : <button type="button" className="primary-button boton-3d" onClick={() => enviar(destino, tecnico || undefined)}>{destino === 'bot' ? settings?.corteDirectoEnabled ? 'Mandar corte a la máquina' : 'Mandar corte al bot' : 'Guardar DXF'}</button>}
     </footer>
   </dialog>;
 }

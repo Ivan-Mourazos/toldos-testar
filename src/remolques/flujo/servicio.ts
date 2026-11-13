@@ -1,3 +1,4 @@
+import { ultimoEnvioCorte } from '../../corteMaquina.js';
 import { pasarAProduccion, prepararPlanoProduccion } from '../../produccion.js';
 import { numerarEntrega, aplicarDestino, necesitaPrepararDestino } from '../../entregasRps.js';
 import { readFile, stat } from "node:fs/promises";
@@ -43,7 +44,7 @@ export type EstadoCoordina = {
 export interface DependenciasPedidosRemolques {
   almacen: AlmacenPedidosRemolques;
   /** Configuración → Rutas de trabajo en este momento. */
-  ajustes: () => Promise<CarpetasRemolques & AjustesFlujoDwg & { corteLonaBotDirectory?: string; corteLonaDxfDirectory?: string; rpsPlanteamientosDirectory?: string; planteamientosDirectory?: string }>;
+  ajustes: () => Promise<CarpetasRemolques & AjustesFlujoDwg & { corteDirectoEnabled?: boolean; corteMaquinaDxfDirectory?: string; corteMaquinaCmtDirectory?: string; corteLonaBotDirectory?: string; corteLonaDxfDirectory?: string; rpsPlanteamientosDirectory?: string; planteamientosDirectory?: string }>;
   /** Espera a las carpetas de red dormidas antes de generar (workflow.js, waitForDirectories). */
   despertarCarpetas?: (carpetas: string[]) => Promise<unknown>;
   /** Los parámetros comunes de remolques, si la pantalla no manda los suyos. */
@@ -608,9 +609,10 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       Object.assign(pedido, salida.pedido);
       const calculado = pedidoCalculado(pedido);
       // Si el corte del DWG ya no es el que se confirmó (y revisó), se pregunta antes de mandarlo.
-      let nota = salida.nota;
+      const original = c.destino === 'maquina' && ultimoEnvioCorte(pedido);
+      let nota = original ? 'Reenvío del DXF original del último envío registrado.' : salida.nota;
       let preparar = () => deps.corte!.prepararDxf!(calculado);
-      if (pedido.corteConfirmado) {
+      if (pedido.corteConfirmado && !original) {
         // Pasado a revisión en CoordinaOT y aprobado otra vez después del cambio: sale sin preguntar.
         const ofs = uniqueOfs(elementosAprobacion(pedidoEntrega(pedido)));
         const aprobadoEn = aprobacionDeTodas(await deps.coordina.statusOf(ofs, { fresh: true }), ofs);
@@ -644,7 +646,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
           { nombre: "Plano", preparar: () => prepararPlanoProduccion({ confirmado: pedido.corteConfirmado, confirmOverwrite: entrada.confirmPlanoOverwrite === true,
             preparar: async () => { const p = await deps.corte!.preparar(pedidoEntrega(pedido, "anual")); return { ...p, ficheros: p.ficheros.filter(f => f.type === "plano-corte-lona") }; },
             escribir: (ficheros: ArchivoCorte[]) => deps.corte!.escribir(ficheros) }) },
-          { nombre: "DXF al bot", preparar: () => enviarCorte(codigo, { ...entrada, usuario: entrada.savedBy, destino: "bot", confirmOverwrite: entrada.confirmDxfOverwrite === true }, true, true) },
+          { nombre: (await deps.ajustes()).corteDirectoEnabled ? 'DXF y CMT a la máquina' : 'DXF al bot', preparar: () => enviarCorte(codigo, { ...entrada, usuario: entrada.savedBy, destino: "bot", confirmOverwrite: entrada.confirmDxfOverwrite === true }, true, true) },
         ] : []),
       ]);
     } finally { ocupados.delete(codigo); }

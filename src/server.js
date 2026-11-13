@@ -1,3 +1,5 @@
+import { registrarDescargasCorte } from './corteMaquina.js';
+import { registrarRutasCmtMaquina } from './cmtMaquinaRoutes.js';
 import { pasarAProduccion, prepararPlanoProduccion } from './produccion.js';
 import { catalogoEntregas, numerarEntrega, aplicarDestino, necesitaPrepararDestino } from './entregasRps.js';
 import { avisoEntradaEntrega, codigoCorteEditable, abrirEntrega, codigoAnual, codigoEntrega, ofsEntrega, pedidoEntrega } from './entregas.js';
@@ -113,6 +115,9 @@ const workflowStore = createWorkflowStore({
   settingsFile: config.workflowSettingsFile,
   defaults: defaultWorkflowSettings({
     fileWritesEnabled: config.fileWritesEnabled,
+    corteDirectoEnabled: config.corteDirectoEnabled,
+    corteMaquinaDxfDirectory: config.corteMaquinaDxfDirectory,
+    corteMaquinaCmtDirectory: config.corteMaquinaCmtDirectory,
     corteLonaBotDirectory: config.corteLonaBotDirectory,
     corteLonaPlanoDirectory: config.corteLonaPlanoDirectory,
     corteLonaDxfDirectory: config.corteLonaDxfDirectory,
@@ -271,6 +276,8 @@ app.use(compression());
 // general porque el primer express.json que lee el cuerpo es el que manda.
 app.use('/api/remolques/pdf', express.json({ limit: '1mb' }));
 registrarRutasCmtHerramienta(app);
+registrarRutasCmtMaquina(app, { ajustes: () => workflowStore.getSettings(), tecnicos: formOptions.tecnicos,
+  carpetaRegistro: () => path.join(path.dirname(config.workflowSettingsFile), 'corte-maquina-envios') });
 app.use(express.json({ limit: '20mb' }));
 
 app.use('/api', (req, _res, next) => {
@@ -449,11 +456,19 @@ const enviarCorteToldos = registrarRutasEnviosCorte(app, {
   },
 });
 
+registrarDescargasCorte(app, { ruta: '/api/reviews/:orderCode/corte-lona', obtener: codigo => workflowStore.getReview(sanitizeOrderCode(codigo)),
+  preparar: async review => {
+    if (review.corteConfirmado) return [{ filename: review.orderCode + '.dxf', contents: Buffer.from(await dxfToldosDesdeDwg(review), 'latin1') }];
+    return (await prepararArchivosCorte({ order: pedidoEntrega(review).order, codigoSalida: codigoEntrega(review), corteLona: review.corteLona,
+      settings: { productionEnabled: true }, tipo: 'bot', soloContenido: true })).files;
+  } });
+
 // Semáforo del bot de corte de la cabecera: solo lee la carpeta de pendientes.
 const consultarBot = estadoBotCompartido(async () => (await workflowStore.getSettings()).corteLonaBotDirectory);
 app.get('/api/bot/estado', async (_req, res, next) => {
   try {
-    res.json(await consultarBot());
+    const settings = await workflowStore.getSettings();
+    res.json(settings.corteDirectoEnabled ? { estado: 'directo', cola: [], carpetas: [], desde: null, comprobado: new Date().toISOString() } : await consultarBot());
   } catch (error) {
     next(error);
   }
@@ -987,6 +1002,9 @@ app.post('/api/remolques/pedidos/:orderCode/corte/enviar', rutaRemolques(async (
   res.status(status).json(cuerpo);
 }));
 
+registrarDescargasCorte(app, { ruta: '/api/remolques/pedidos/:orderCode/corte', obtener: codigo => pedidosRemolques.obtener(codigo),
+  preparar: async pedido => [await pedidosRemolques.descargarCorte(pedido.orderCode)] });
+
 app.get('/api/remolques/pedidos/:orderCode/corte/dxf', rutaRemolques(async (req, res) => {
   const { filename, contents } = await pedidosRemolques.descargarCorte(req.params.orderCode);
   res.set('Cache-Control', 'no-store').type('application/dxf')
@@ -1081,6 +1099,9 @@ app.post('/api/puertas/pedidos/:orderCode/corte/pdf', rutaRemolques(async (req, 
   const { status, cuerpo } = await pedidosPuertas.rehacerPdf(req.params.orderCode, req.body);
   res.status(status).json(cuerpo);
 }));
+
+registrarDescargasCorte(app, { ruta: '/api/puertas/pedidos/:orderCode/corte', obtener: codigo => pedidosPuertas.obtener(codigo),
+  preparar: async pedido => [await pedidosPuertas.descargarCorte(pedido.orderCode)] });
 
 app.get('/api/puertas/pedidos/:orderCode/corte/dxf', rutaRemolques(async (req, res) => {
   const { filename, contents } = await pedidosPuertas.descargarCorte(req.params.orderCode);
@@ -1612,7 +1633,7 @@ app.post('/api/reviews/:orderCode/produccion', async (req, res, next) => {
         { nombre: 'Plano', preparar: () => prepararPlanoProduccion({ confirmado: pedido.corteConfirmado, confirmOverwrite: entrada.confirmPlanoOverwrite === true,
           preparar: async () => { const p = await prepararArchivosCorte({ order: pedidoEntrega(pedido).order, corteLona: pedido.corteLona, settings, oda, tipo: 'plano', codigoSalida: codigoAnual(pedido) }); return { ficheros: p.files, avisos: p.avisos }; },
           escribir: async files => { for (const f of files) { await fs.mkdir(path.dirname(f.savedPath), { recursive: true }); await writeFileAtomic(f.savedPath, f.contents, { conservarAnterior: true }); } } }) },
-        { nombre: 'DXF al bot', preparar: () => enviarCorteToldos(codigo, { ...entrada, usuario: entrada.savedBy, destino: 'bot', confirmOverwrite: entrada.confirmDxfOverwrite === true }, true) },
+        { nombre: settings.corteDirectoEnabled ? 'DXF y CMT a la máquina' : 'DXF al bot', preparar: () => enviarCorteToldos(codigo, { ...entrada, usuario: entrada.savedBy, destino: 'bot', confirmOverwrite: entrada.confirmDxfOverwrite === true }, true) },
       ] : []),
     ]);
     res.status(r.status).json(r.cuerpo);

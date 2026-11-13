@@ -49,3 +49,20 @@ it('regenerar el corte refresca la ficha para revisarlo y no termina la producci
   expect(fetch).toHaveBeenCalledTimes(2);
   expect(notify).toHaveBeenCalledWith(expect.stringContaining('Revísalo'), { tone: 'info' });
 });
+
+it('en modo directo confirma la máquina, conserva la sustitución de ambos ficheros y entrega el registro', async () => {
+  const preguntar = vi.fn().mockResolvedValue('confirm'), recibido = vi.fn();
+  const envio = { usuario: 'IVÁN', fecha: '2026-11-13T12:00:00Z' };
+  const pedir = vi.fn().mockResolvedValueOnce(respuesta(409, { needsConfirmation: true, paso: 'DXF y CMT a la máquina', existing: ['plano.dxf', 'plano.cmt'] }))
+    .mockResolvedValueOnce(respuesta(200, { envio, mensaje: 'DXF y CMT mandados a la máquina de corte.' }));
+  vi.stubGlobal('fetch', pedir);
+  await ejecutarSalidaPedido({ ruta: '/produccion', usuario: 'IVÁN', preguntar, notify: vi.fn(), bot: true, maquina: true, terminado: vi.fn(), recibido });
+  expect(preguntar.mock.calls[0][0]).toMatchObject({ title: 'Mandar corte a la máquina', confirmLabel: 'Sí, mandar a la máquina' });
+  expect(JSON.parse(pedir.mock.calls[1][1].body)).toMatchObject({ confirmBot: true, confirmDxfOverwrite: true });
+  expect(recibido).toHaveBeenCalledWith(expect.objectContaining({ envio }));
+});
+it('cancelar la confirmación de máquina no envía el fichero', async () => {
+  const pedir = vi.fn(); vi.stubGlobal('fetch', pedir);
+  await ejecutarSalidaPedido({ ruta: '/api/cmt/enviar', usuario: 'IVÁN', preguntar: vi.fn().mockResolvedValue('cancel'), notify: vi.fn(), bot: true, maquina: true, terminado: vi.fn() });
+  expect(pedir).not.toHaveBeenCalled();
+});

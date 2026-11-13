@@ -1,3 +1,4 @@
+import { AccionesCorteMaquina } from './CorteMaquina';
 import { ProduccionPedido } from './ProduccionPedido';
 import type { DestinoEntrega } from '../../entregasTipos';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -212,6 +213,7 @@ export function ReviewOrderDetail({
         generarArriba={autorDelCorte}
         regenerable={autorDelCorte}
         onListo={setFaltaCorte} />} />
+      {conCorteLona && <AccionesCorteMaquina ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona`} codigo={review.orderCode} onEnviado={onChanged} />}
       <HistorialEnvios envios={review.enviosCorte} />
       {review.planosCorte && <div className="corte-ayuda">{review.planosCorte.files.map(f => <p key={f.savedPath}>Plano: {f.savedPath} · {formatDateTime(f.writtenAt)}</p>)}{review.planosCorte.avisos.map((a, i) => <p key={i}>{a}</p>)}</div>}
     </section>

@@ -30,6 +30,18 @@ afterEach(() => {
 });
 
 describe('configuración por entorno', () => {
+  test('envío directo apagado por defecto y carpetas por entorno', async () => {
+    const claves = ['CORTE_DIRECTO_ENABLED', 'CORTE_MAQUINA_DXF_DIRECTORY', 'CORTE_MAQUINA_CMT_DIRECTORY'];
+    const previas = claves.map(k => process.env[k]);
+    try {
+      process.env.CORTE_DIRECTO_ENABLED = '';
+      expect((await loadConfig('production', '')).corteDirectoEnabled).toBe(false);
+      process.env.CORTE_DIRECTO_ENABLED = 'true';
+      process.env.CORTE_MAQUINA_DXF_DIRECTORY = '/maquina/{YYYY}/DXF';
+      process.env.CORTE_MAQUINA_CMT_DIRECTORY = '/maquina/{YYYY}';
+      expect(await loadConfig('production', '')).toMatchObject({ corteDirectoEnabled: true, corteMaquinaDxfDirectory: '/maquina/{YYYY}/DXF', corteMaquinaCmtDirectory: '/maquina/{YYYY}' });
+    } finally { claves.forEach((k, i) => restoreEnvironment(k, previas[i])); }
+  });
   test('HERA está habilitado por defecto en desarrollo', async () => {
     const config = await loadConfig('development', '');
     expect(config.heraEnabled).toBe(true);

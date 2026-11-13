@@ -5,10 +5,10 @@ export interface EnvioCorte {
   entrega?: number;
   fecha: string;
   usuario: string;
-  destino: 'bot' | 'dxfs';
+  destino: 'bot' | 'dxfs' | 'maquina';
   carpeta: string;
   parcial?: boolean;
   /** Lo que hay que recordar del envío (p. ej. que el corte del DWG cambió después de revisarlo). */
   nota?: string;
-  archivos: { filename: string; savedPath: string }[];
+  archivos: { filename: string; savedPath: string; dxfBase64?: string }[];
 }

@@ -1,3 +1,4 @@
+import { nombreBaseDxf } from './corteMaquina.js';
 import express from 'express';
 import { dxfACmt } from './cmt/index.ts';
 import { lineaDuda, textoDxf } from './cmtPiloto.js';
@@ -60,9 +61,7 @@ export function registrarRutasCmtHerramienta(app, { convertir = dxfACmt } = {}) 
     }
     const contenido = Buffer.from(dxfBase64, 'base64');
     if (contenido.length > MAX_DXF) return res.status(413).json({ ok: false, error: ERROR_TAMANO });
-    const base = [...nombre.split(/[\\/]/).at(-1).replace(/\.dxf$/i, '')]
-      .map(c => c.charCodeAt(0) < 32 || /[<>:"|?*]/.test(c) ? '_' : c).join('')
-      .replace(/^[.\s]+|[.\s]+$/g, '').slice(0, 180) || 'corte';
+    const base = nombreBaseDxf(nombre);
     try {
       const r = await convertir(textoDxf(contenido), { sinLeyenda: true, sinTextos });
       const dudas = [...new Set(r.dudas.map(lineaDuda))];

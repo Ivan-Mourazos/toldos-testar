@@ -1,3 +1,4 @@
+import { CorteMaquinaContexto } from './components/CorteMaquina';
 import React, { useEffect, useRef, useState } from 'react';
 import { debePreguntarAlCorregir } from './correccionPedido';
 import { useContenidoFluido } from './hooks/useContenidoFluido';
@@ -859,7 +860,8 @@ export default function App() {
     activo: activeTab === 'order' && editorPedidoAbierto && producto === 'toldos', editable: true });
 
   return (
-    <EstadoBotContexto.Provider value={estadoDelBot}>
+    <CorteMaquinaContexto.Provider value={{ settings: workflowSettings, usuario: currentUser, preguntar: askForConfirmation, notify }}>
+    <EstadoBotContexto.Provider value={workflowSettings?.corteDirectoEnabled ? null : estadoDelBot}>
     <main className={`app-shell${activeTab === 'order' ? ' is-new-order' : ''}`}>
       {/* Cabecera como la de CoordinaOT (diseño 29/09/2026, estilo CoordinaOT): del color de
           la página, logo a la izquierda, pestañas como teclas sueltas y, a la derecha, el modo
@@ -886,7 +888,7 @@ export default function App() {
           setRevisarAlCargar(pedido.orderCode.replace(/[.\s-]/g, '').toUpperCase());
         }} />
         <div className="cabecera-derecha">
-          <SemaforoBot bot={estadoDelBot} />
+          <SemaforoBot bot={workflowSettings?.corteDirectoEnabled ? null : estadoDelBot} />
           <button type="button" className="cabecera-modo glass-chip" onClick={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))} aria-label={theme === 'dark' ? 'Pasar a modo claro' : 'Pasar a modo oscuro'} title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}>
             {theme === 'dark' ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
           </button>
@@ -1171,5 +1173,6 @@ export default function App() {
       )}
     </main>
     </EstadoBotContexto.Provider>
+    </CorteMaquinaContexto.Provider>
   );
 }

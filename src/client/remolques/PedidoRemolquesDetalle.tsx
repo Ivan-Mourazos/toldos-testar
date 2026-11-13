@@ -1,3 +1,4 @@
+import { AccionesCorteMaquina } from '../components/CorteMaquina';
 import { ProduccionPedido } from '../components/ProduccionPedido';
 import { guardarToldosEditable } from '../toldosEditable';
 import type { DestinoEntrega } from '../../entregasTipos';
@@ -164,7 +165,7 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
       {/* Debajo de los datos (Iván, 20/10/2026). Se vuelve a calcular si el pedido cambia (guardado o generado). */}
       <DocumentosPedido planteamiento={<PlanteamientoPedido origen={`${ruta}/vista-previa`} version={pedido.updatedAt} />}
         corte={<CorteRemolques ruta={ruta} version={pedido.updatedAt} generado notify={notify} onConfirm={onConfirm} onVista={recibirVista}
-        acciones={<HistorialEnvios envios={pedido.enviosCorte} />} />} />
+        acciones={<>{opcionesCorte.aplica && <AccionesCorteMaquina ruta={ruta + "/corte"} codigo={pedido.orderCode} onEnviado={onEnviado} />}<HistorialEnvios envios={pedido.enviosCorte} /></>} />} />
     </section>
   );
 }

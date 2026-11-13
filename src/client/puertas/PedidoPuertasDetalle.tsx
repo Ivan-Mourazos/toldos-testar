@@ -1,3 +1,4 @@
+import { AccionesCorteMaquina } from '../components/CorteMaquina';
 import { ProduccionPedido } from '../components/ProduccionPedido';
 import { guardarToldosEditable } from '../toldosEditable';
 import type { DestinoEntrega } from '../../entregasTipos';
@@ -64,7 +65,7 @@ function PlanteamientoPuertas({ pedido }: { pedido: PedidoPuertasGuardado }) {
   );
 }
 
-function CortePuertasGuardado({ ruta, version, historial, systemDock = false }: { ruta: string; version: string; historial?: React.ReactNode; systemDock?: boolean }) {
+function CortePuertasGuardado({ ruta, version, historial, acciones, confirmado, systemDock = false }: { ruta: string; version: string; historial?: React.ReactNode; acciones?: React.ReactNode; confirmado?: boolean; systemDock?: boolean }) {
   const clave = `${ruta}|${version}`;
   const [leido, setLeido] = useState<{ clave: string; datos?: VistaPuertas; error?: string } | null>(null);
   useEffect(() => {
@@ -83,7 +84,7 @@ function CortePuertasGuardado({ ruta, version, historial, systemDock = false }: 
   const datos = estado?.datos;
   return (
     <section className="corte-lona panel bloque-3d" aria-label="Corte" aria-busy={!estado}>
-      <CabeceraDocumento titulo="Corte" icono={<Scissors aria-hidden="true" />} />{historial}
+      <CabeceraDocumento titulo="Corte" icono={<Scissors aria-hidden="true" />} />{(confirmado || Boolean(datos?.cortes.length)) && acciones}{historial}
       <p className="corte-ayuda">{systemDock?'Un solo DXF por pedido con las tandas de lonas perimetrales.':'Un solo DXF por pedido; si hay saco entero y saco en dos, van las dos opciones y el técnico de la máquina elige.'}</p>
       {!estado && <p className="corte-ayuda">Calculando el corte…</p>}
       {estado?.error && <p role="alert" className="corte-aviso">{estado.error}</p>}
@@ -272,7 +273,7 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
       <DocumentosPedido
         planteamiento={<PlanteamientoPuertas pedido={pedido} />}
         corte={<CortePuertasGuardado ruta={ruta} version={pedido.updatedAt} systemDock={productoDeElementos(pedido.elementos)==='systemdock'}
-          historial={<HistorialEnvios envios={pedido.enviosCorte} />} />} />
+          confirmado={Boolean(pedido.corteConfirmado || pedido.enviosCorte?.length)} acciones={<AccionesCorteMaquina ruta={ruta + "/corte"} codigo={pedido.orderCode} onEnviado={onChanged} />} historial={<HistorialEnvios envios={pedido.enviosCorte} />} />} />
     </section>
   );
 }

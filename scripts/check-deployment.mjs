@@ -1,3 +1,4 @@
+import { comprobarCarpetasMaquina } from './lib/deploy-corte-maquina.mjs';
 import { constants as fsConstants } from 'node:fs';
 import { access, readdir, readFile, stat } from 'node:fs/promises';
 import { createRequire } from 'node:module';
@@ -26,6 +27,9 @@ const EFFECTIVE_ENV_KEYS = [
   'ENABLE_PUERTAS',
   'ENABLE_LEGACY_EXPORTS',
   'ENABLE_FILE_WRITES',
+  'CORTE_DIRECTO_ENABLED',
+  'CORTE_MAQUINA_DXF_DIRECTORY',
+  'CORTE_MAQUINA_CMT_DIRECTORY',
   'REVIEW_DIRECTORY',
   'PLANTEAMIENTOS_DIRECTORY',
   'RPS_UPLOAD_DIRECTORY',
@@ -384,6 +388,9 @@ async function checkWorkflowEnvironment(values) {
   const envIsProduction = unquote(values.get('NODE_ENV')).toLowerCase() === 'production';
   const seedSettings = {
     productionEnabled: writes === 'true',
+    corteDirectoEnabled: ['true', '1', 'yes', 'on', 'si', 'sí'].includes(unquote(values.get('CORTE_DIRECTO_ENABLED')).toLowerCase()),
+    corteMaquinaDxfDirectory: unquote(values.get('CORTE_MAQUINA_DXF_DIRECTORY')),
+    corteMaquinaCmtDirectory: unquote(values.get('CORTE_MAQUINA_CMT_DIRECTORY')),
     reviewDirectory: unquote(values.get('REVIEW_DIRECTORY')),
     planteamientosDirectory: unquote(values.get('PLANTEAMIENTOS_DIRECTORY')),
     rpsUploadDirectory: unquote(values.get('RPS_UPLOAD_DIRECTORY')),
@@ -414,6 +421,9 @@ async function checkWorkflowEnvironment(values) {
   const effectiveSettings = persistedSettings
     ? {
         productionEnabled: persistedSettings.productionEnabled === true,
+        corteDirectoEnabled: (persistedSettings.corteDirectoEnabled ?? seedSettings.corteDirectoEnabled) === true,
+        corteMaquinaDxfDirectory: stringOrFallback(persistedSettings.corteMaquinaDxfDirectory, seedSettings.corteMaquinaDxfDirectory),
+        corteMaquinaCmtDirectory: stringOrFallback(persistedSettings.corteMaquinaCmtDirectory, seedSettings.corteMaquinaCmtDirectory),
         reviewDirectory: stringOrFallback(persistedSettings.reviewDirectory, seedSettings.reviewDirectory),
         planteamientosDirectory: stringOrFallback(persistedSettings.planteamientosDirectory, seedSettings.planteamientosDirectory),
         rpsUploadDirectory: stringOrFallback(persistedSettings.rpsUploadDirectory, seedSettings.rpsUploadDirectory),
@@ -455,6 +465,11 @@ async function checkWorkflowEnvironment(values) {
     }
     await inspectLinuxPath(key, configuredPath, { template: true, required: strictDeployment, writable });
   }
+
+  const maquina = await comprobarCarpetasMaquina(effectiveSettings);
+  maquina.errores.forEach(fail);
+  maquina.avisos.forEach(warn);
+  maquina.exitos.forEach(pass);
 
   const remolques = await comprobarCarpetasRemolques({
     planteamientos: effectiveSettings.remolquesPlanteamientosDirectory,

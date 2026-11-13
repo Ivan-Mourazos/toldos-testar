@@ -27,6 +27,9 @@ export const config = {
   odaFileConverter: process.env.ODA_FILE_CONVERTER || '',
   // Raíz sin año; solo se lee AUTOCAD/MATERIAL PARA STOCK.dwg.
   oficinaTecnicaDirectory: process.env.OFICINA_TECNICA_DIRECTORY || '',
+  corteDirectoEnabled: booleanFromEnv('CORTE_DIRECTO_ENABLED'),
+  corteMaquinaDxfDirectory: process.env.CORTE_MAQUINA_DXF_DIRECTORY || '',
+  corteMaquinaCmtDirectory: process.env.CORTE_MAQUINA_CMT_DIRECTORY || '',
   corteLonaBotDirectory: process.env.CORTE_LONA_BOT_DIRECTORY || '',
   corteLonaPlanoDirectory: process.env.CORTE_LONA_PLANO_DIRECTORY || '',
   corteLonaDxfDirectory: process.env.CORTE_LONA_DXF_DIRECTORY || '',

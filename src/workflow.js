@@ -23,6 +23,9 @@ export function defaultWorkflowSettings(seed = {}) {
   return {
     schemaVersion: 1,
     productionEnabled: Boolean(seed.fileWritesEnabled),
+    corteDirectoEnabled: seed.corteDirectoEnabled === true,
+    corteMaquinaDxfDirectory: seed.corteMaquinaDxfDirectory || '',
+    corteMaquinaCmtDirectory: seed.corteMaquinaCmtDirectory || '',
     corteLonaBotDirectory: seed.corteLonaBotDirectory || '',
     corteLonaPlanoDirectory: seed.corteLonaPlanoDirectory || '',
     corteLonaDxfDirectory: seed.corteLonaDxfDirectory || '',
@@ -43,6 +46,9 @@ export function normalizeWorkflowSettings(input, current = defaultWorkflowSettin
   const settings = {
     schemaVersion: 1,
     productionEnabled: input?.productionEnabled === true,
+    corteDirectoEnabled: (input?.corteDirectoEnabled ?? current.corteDirectoEnabled) === true,
+    corteMaquinaDxfDirectory: cleanPath(input?.corteMaquinaDxfDirectory ?? current.corteMaquinaDxfDirectory),
+    corteMaquinaCmtDirectory: cleanPath(input?.corteMaquinaCmtDirectory ?? current.corteMaquinaCmtDirectory),
     corteLonaBotDirectory: cleanPath(input?.corteLonaBotDirectory ?? current.corteLonaBotDirectory),
     corteLonaPlanoDirectory: cleanPath(input?.corteLonaPlanoDirectory ?? current.corteLonaPlanoDirectory),
     corteLonaDxfDirectory: cleanPath(input?.corteLonaDxfDirectory ?? current.corteLonaDxfDirectory),
@@ -60,6 +66,8 @@ export function normalizeWorkflowSettings(input, current = defaultWorkflowSettin
   };
 
   for (const [label, value] of [
+    ['corteMaquinaDxfDirectory', settings.corteMaquinaDxfDirectory],
+    ['corteMaquinaCmtDirectory', settings.corteMaquinaCmtDirectory],
     ['carpeta de DXF del corte', settings.corteLonaBotDirectory],
     ['carpeta de planos del corte', settings.corteLonaPlanoDirectory],
     ['carpeta de DXFs de oficina técnica', settings.corteLonaDxfDirectory],
@@ -87,6 +95,10 @@ export function normalizeWorkflowSettings(input, current = defaultWorkflowSettin
   }
   if (settings.corteLonaDxfDirectory && !settings.corteLonaDxfDirectory.includes('{YYYY}')) {
     throw new Error('La carpeta de DXFs de oficina técnica debe llevar {YYYY}.');
+  }
+  if (settings.corteDirectoEnabled && (!settings.corteMaquinaDxfDirectory || !settings.corteMaquinaCmtDirectory)) throw new Error('Indica las dos carpetas de la máquina antes de activar el envío directo.');
+  for (const clave of ['corteMaquinaDxfDirectory', 'corteMaquinaCmtDirectory']) {
+    if (settings[clave] && (!settings[clave].includes('{YYYY}') || /\{(?!YYYY\})/.test(settings[clave]))) throw new Error('Las carpetas de la máquina deben llevar solamente {YYYY}.');
   }
   if (settings.remolquesRevisionDirectory.includes('{YYYY}')) {
     throw new Error('La carpeta interna de remolques no lleva {YYYY}: todos los pedidos van en la misma carpeta.');
@@ -124,11 +136,13 @@ export async function checkWorkflowDirectories(input, { year = new Date().getFul
     ['rpsUploadDirectory', 'Subida de material', settings.rpsUploadDirectory, 'write']
   ];
   if (settings.productionEnabled) {
-    if (settings.corteLonaBotDirectory) definitions.push(['corteLonaBotDirectory', 'Corte de lona · DXF del bot', settings.corteLonaBotDirectory, 'write']);
+    if (!settings.corteDirectoEnabled && settings.corteLonaBotDirectory) definitions.push(['corteLonaBotDirectory', 'Corte de lona · DXF del bot', settings.corteLonaBotDirectory, 'write']);
     if (settings.corteLonaPlanoDirectory) definitions.push(['corteLonaPlanoDirectory', 'Corte de lona · planos', settings.corteLonaPlanoDirectory, 'write']);
     if (settings.corteLonaDxfDirectory) definitions.push(['corteLonaDxfDirectory', 'Corte de lona · DXFs de oficina técnica', settings.corteLonaDxfDirectory, 'write']);
     if (settings.corteBorradoresDirectory) definitions.push(['corteBorradoresDirectory', 'Corte · borradores del DWG', settings.corteBorradoresDirectory, 'write']);
   }
+  if (settings.productionEnabled && settings.corteDirectoEnabled && settings.corteMaquinaDxfDirectory) definitions.push(['corteMaquinaDxfDirectory', 'Máquina · DXF', settings.corteMaquinaDxfDirectory, 'write']);
+  if (settings.productionEnabled && settings.corteDirectoEnabled && settings.corteMaquinaCmtDirectory) definitions.push(['corteMaquinaCmtDirectory', 'Máquina · CMT', settings.corteMaquinaCmtDirectory, 'write']);
   if (settings.rpsPlanteamientosDirectory) {
     definitions.push(['rpsPlanteamientosDirectory', 'Histórico de planteamientos RPS', settings.rpsPlanteamientosDirectory, 'read']);
   }
@@ -161,7 +175,7 @@ export async function checkWorkflowDirectories(input, { year = new Date().getFul
       // La carpeta DXFs del año la crea la web al guardar (Iván, 21/10/2026): si aún no está, basta con poder
       // escribir en la que exista por encima, sin subir más allá de la parte fija de la ruta (antes de {YYYY}).
       let comprobada = directory;
-      if (key === 'corteLonaDxfDirectory') {
+      if (['corteLonaDxfDirectory', 'corteMaquinaDxfDirectory', 'corteMaquinaCmtDirectory'].includes(key)) {
         const raiz = resolveDirectoryTemplate(directoryTemplateRoot(template), year);
         while (comprobada.length > raiz.length && !(await fs.stat(comprobada).then(() => true, () => false))) comprobada = path.dirname(comprobada);
       }

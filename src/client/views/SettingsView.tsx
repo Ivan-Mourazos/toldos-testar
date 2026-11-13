@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AlertTriangle, CheckCircle2, FolderCheck, FolderCog, LoaderCircle, ShieldCheck, XCircle } from 'lucide-react';
+import { Scissors, AlertTriangle, CheckCircle2, FolderCheck, FolderCog, LoaderCircle, ShieldCheck, XCircle } from 'lucide-react';
 import type { WorkflowDirectoryCheck, WorkflowReadiness, WorkflowSettings } from '../types';
 import type { Notify } from '../components/NotificationCenter';
 
@@ -41,11 +41,16 @@ export function SettingsView({
     && form.remolquesOficinaTecnicaDirectory === settings.remolquesOficinaTecnicaDirectory
     && form.remolquesRevisionDirectory === settings.remolquesRevisionDirectory
     && form.draftsDirectory === settings.draftsDirectory;
-  const cortesCoinciden = form.corteLonaBotDirectory === settings.corteLonaBotDirectory && form.corteLonaPlanoDirectory === settings.corteLonaPlanoDirectory && form.corteLonaDxfDirectory === settings.corteLonaDxfDirectory
+  const maquinaCoincide = form.corteDirectoEnabled === settings.corteDirectoEnabled && form.corteMaquinaDxfDirectory === settings.corteMaquinaDxfDirectory && form.corteMaquinaCmtDirectory === settings.corteMaquinaCmtDirectory;
+  const cortesCoinciden = maquinaCoincide && form.corteLonaBotDirectory === settings.corteLonaBotDirectory && form.corteLonaPlanoDirectory === settings.corteLonaPlanoDirectory && form.corteLonaDxfDirectory === settings.corteLonaDxfDirectory
     && form.corteBorradoresDirectory === settings.corteBorradoresDirectory && form.corteBorradoresRed === settings.corteBorradoresRed;
 
   function updateForm(patch: Partial<WorkflowSettings>) {
-    setForm((current) => ({ ...current, ...patch }));
+    setForm((current) => {
+      const siguiente = { ...current, ...patch };
+      if (!siguiente.corteMaquinaDxfDirectory?.trim() || !siguiente.corteMaquinaCmtDirectory?.trim()) siguiente.corteDirectoEnabled = false;
+      return siguiente;
+    });
     setDirectoryCheck(null);
   }
 
@@ -132,6 +137,8 @@ export function SettingsView({
         <RouteField step="C3" title="Corte de lona · DXFs de oficina técnica" description="Con «Guardar DXF en DXFs», aprobado en CoordinaOT. Ruta con {YYYY}: la web crea la carpeta si falta y pregunta antes de sustituir el DXF." value={form.corteLonaDxfDirectory || ''} onChange={(corteLonaDxfDirectory) => updateForm({ corteLonaDxfDirectory })} placeholder="/mnt/oftecnica/Oficina Tecnica/{YYYY}/DXFs" />
         <RouteField step="C4" title="Corte · borradores del DWG" description="Con «Abrir corte»: el plano del pedido se deja aquí para perfilarlo en ZWCAD antes de guardar para revisión. Una sola carpeta, sin plantillas." value={form.corteBorradoresDirectory || ''} onChange={(corteBorradoresDirectory) => updateForm({ corteBorradoresDirectory })} placeholder="/mnt/oftecnica/BORRADORES CORTE" />
         <RouteField step="C5" title="Corte · borradores vistos desde los PC" description="La misma carpeta C4 como la ven los PC, para abrir el DWG en ZWCAD con tgm-pedidos. Dentro de Oficina Tecnica; con la IP o con \\stinkor se guarda con la de DFS (la unidad Y:)." value={form.corteBorradoresRed || ''} onChange={(corteBorradoresRed) => updateForm({ corteBorradoresRed })} placeholder="\\toldosgomez.local\DFS_POL\oftecnica\BORRADORES CORTE" />
+        <RouteField step="C6" title="Máquina nueva · DXF" description="Carpeta del DXF original, con su leyenda. Debe llevar {YYYY}. La raíz tiene que existir; la web solo crea el año y sus subcarpetas, y pregunta antes de sustituir." value={form.corteMaquinaDxfDirectory || ''} onChange={corteMaquinaDxfDirectory => updateForm({ corteMaquinaDxfDirectory })} placeholder="/mnt/maqcorte/{YYYY}/ARCHIVOS DXF - MAQUINA NUEVA" />
+        <RouteField step="C7" title="Máquina vieja · CMT" description="Carpeta del CMT sin leyenda. Debe llevar {YYYY}. Si hay dudas al convertir, no se escribe ninguno de los dos ficheros ni se manda al bot." value={form.corteMaquinaCmtDirectory || ''} onChange={corteMaquinaCmtDirectory => updateForm({ corteMaquinaCmtDirectory })} placeholder="/mnt/maqcorte/{YYYY}" />
         <RouteField
           step="01"
           title="Pedidos para revisión"
@@ -198,6 +205,13 @@ export function SettingsView({
         />
       </div>
 
+      <div className="workflow-production-switch bloque-3d-hundido">
+        <div><Scissors aria-hidden="true" /><span><strong>Corte directo a la máquina</strong><small>Apagado: bot y piloto CMT. Encendido: DXF y CMT a sus carpetas; si falla la conversión no sale ningún fichero. Los envíos siguen necesitando confirmación.</small></span></div>
+        <label className="workflow-toggle"><span>Enviar el corte directamente a la máquina (sin el bot)</span>
+          <input type="checkbox" role="switch" checked={form.corteDirectoEnabled === true} aria-checked={form.corteDirectoEnabled === true} disabled={!form.corteMaquinaDxfDirectory?.trim() || !form.corteMaquinaCmtDirectory?.trim()} onChange={e => updateForm({ corteDirectoEnabled: e.target.checked })} />
+          <strong className={form.corteDirectoEnabled ? 'is-on' : ''}>{form.corteDirectoEnabled ? 'Activado' : 'Desactivado'}</strong>
+        </label>
+      </div>
       <div className="workflow-production-switch bloque-3d-hundido">
         <div>
           <ShieldCheck aria-hidden="true" />

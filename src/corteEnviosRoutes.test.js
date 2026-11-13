@@ -25,6 +25,7 @@ beforeEach(async () => {
     contexto: (p) => ({ order: p.order, elementos: p.order.awnings.map((a) => ({ letter: 'A', of: a.of })), comprobarCorte: () => exigirCorteAlDia(p.order, p.corteLona) }),
     preparar: async (p) => (await prepararArchivosCorte({ order: p.order, corteLona: p.corteLona, settings, tipo: 'bot' })).files,
     desdeDwg: async (p, cuerpo, usuario) => dwg?.(p, cuerpo, usuario) ?? null,
+    convertir: () => ({ cmt: Buffer.from('CMT de prueba'), dudas: [] }),
     guardar, tecnicos: ['IVÁN'], coordina: { statusOf: async () => ({ disponible: true, ofs: { '0232568': { estado: aprobada ? 'aprobada' : 'pendiente' } } }) },
   });
   app.use((e, _req, res, _next) => res.status(e.statusCode || 500).json({ error: e.message }));
@@ -70,4 +71,16 @@ it('rechaza sin aprobación, corte viejo, sin OF, usuario inventado y simulació
   expect((await enviar()).status).toBe(403);
   expect(await fs.readdir(raiz)).toEqual([]);
   expect(guardar).not.toHaveBeenCalled();
+});
+
+it('el reenvío explícito usa el original registrado aunque falte o cambie el DWG', async () => {
+  settings.corteDirectoEnabled = true;
+  settings.corteMaquinaDxfDirectory = path.join(raiz, '{YYYY}/maquina-dxf');
+  settings.corteMaquinaCmtDirectory = path.join(raiz, '{YYYY}/maquina-cmt');
+  pedido.enviosCorte = [{ archivos: [{ filename: 'AR2604784.dxf', dxfBase64: Buffer.from('DXF enviado').toString('base64') }] }];
+  dwg = vi.fn(() => { throw new Error('El DWG ya no está'); });
+  expect((await enviar({ destino: 'maquina', confirmBot: true })).status).toBe(200);
+  expect(dwg).not.toHaveBeenCalled();
+  expect(await fs.readFile(path.join(raiz, '2026/maquina-dxf/AR2604784.dxf'), 'utf8')).toBe('DXF enviado');
+  expect(pedido.enviosCorte.at(-1).nota).toContain('DXF original');
 });
