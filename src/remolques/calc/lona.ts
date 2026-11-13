@@ -333,6 +333,10 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
   if (input.recogeDelante === "GANCHOS CORAZON" || input.recogeAtras === "GANCHOS CORAZON") {
     notas.push("GANCHOS CORAZÓN: el taller coloca los ganchos a ojo.");
   }
+  // Correas (13/11/2026, AR2504631): la cinta en el paño, sin llegar a la oreja, y la hebilla en el lateral.
+  if (input.recogeDelante === "CORREAS" || input.recogeAtras === "CORREAS") {
+    notas.push("CORREAS: orejas sin ollaos; cinta en el paño y hebilla en el lateral, cosidas sobre las rayas del corte.");
+  }
   if (input.bastillaEnfundar) notas.push("Bastilla de enfundar: paño contorno con demasía 13.");
   if (input.traseraPorArriba && altoAtras !== input.altoDelante) {
     notas.push(`Paño trasero de ${r1(altoAtras)} a la línea por arriba: queda ${r1(Math.abs(input.altoDelante - altoAtras))} cm ${altoAtras < input.altoDelante ? "más corto" : "más largo"} por abajo que el remolque.`);

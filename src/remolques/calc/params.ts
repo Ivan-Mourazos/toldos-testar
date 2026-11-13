@@ -109,6 +109,8 @@ export const DEFAULT_PARAMS: CalcParams = {
     r("GANCHOS CORAZON", 27, 27),
     r("CREMALLERA", 3, 3),
     r("VELCRO", 27, 27),
+    // Correas (13/11/2026): el paño de la goma, como en el AR2504631 (163 con 136 de ancho); ver correas.ts.
+    r("CORREAS", 27, 27),
     r("PUENTES ESVA", 21, 21, 19, 19),
     r("PUENTES LATERALES", 41, 21, 9, 9),
     // Sus remolques son 1,5 cm más anchos detrás y los 42,5 ya lo incluyen: el paño trasero

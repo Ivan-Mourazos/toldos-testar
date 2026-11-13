@@ -1,5 +1,18 @@
 # Dudas abiertas
 
+## Recogida con correas · 13/11/2026
+
+Ejemplo: AR2504631 de Remolques Jalón (JTL240, arquillado con aguas, abierta detrás con dos correas por
+esquina) y la lámina `DIBUJOS/REMOLQUES/REMOLQUES GANADO/remolques especiales/RECOLLER_CON_CORREAS.jpg`.
+Aplicado: paño de la goma (+27), orejas sin ollaos, cinta de 2,5 en el paño y hebilla en el lateral; raya
+justo debajo de cada cinta (en la oreja, de 3 a 5 cm del borde; en el contorno, de 1 a 3 cm de la punta).
+Reparto (Iván: «repartidas por la oreja»): la primera a 15 sobre la lona hecha, la de arriba con su borde
+alto a 10 de lo alto de la oreja y las justas entre medias, sin pasar de 35 de hueco entre cintas.
+
+Ojo al meter el arquillado con aguas (TIPO 03): en la web las aguas se miden desde el hombro virtual. El
+Excel del 4631 decía «aguas 17» (desde donde empieza la curva); en la web son **aguas 8,2 con radio 10**,
+y así la oreja sale a 68,5 y las correas a 15 y 52,5, como a mano.
+
 ## Chaflán con aguas · 11/11/2026
 
 **Q-CH01 · pedido AR.26.05496:** falta el radio numérico que Oficina Técnica obtiene del dibujo

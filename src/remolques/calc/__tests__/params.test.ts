@@ -2,16 +2,20 @@ import { describe, expect, it } from "vitest";
 import { ajusteContorno, DEFAULT_PARAMS, findClienteBaqueton, findRecogida } from "../params.ts";
 
 describe("DEFAULT_PARAMS (hoja PAR)", () => {
-  it("tiene las 8 recogidas con sus demasías", () => {
+  it("tiene las 9 recogidas con sus demasías", () => {
     const nombres = DEFAULT_PARAMS.recogidas.map((r) => r.nombre);
     expect(nombres).toEqual([
-      "NO", "GOMA", "GANCHOS CORAZON", "CREMALLERA", "VELCRO",
+      "NO", "GOMA", "GANCHOS CORAZON", "CREMALLERA", "VELCRO", "CORREAS",
       "PUENTES ESVA", "PUENTES LATERALES", "PUENTES HIJOS DE PEDRO LOPEZ",
     ]);
     expect(findRecogida(DEFAULT_PARAMS, "GOMA")).toMatchObject({ delante: 27, atras: 27 });
     // Provisional: las de la goma hasta que el taller dé las suyas.
     expect(findRecogida(DEFAULT_PARAMS, "GANCHOS CORAZON")).toEqual({
       nombre: "GANCHOS CORAZON", delante: 27, atras: 27, lateralSoloAtras: 0, lateralSoloDelante: 0,
+    });
+    // Correas: el paño de la goma (AR2504631: 136 + 27 = 163).
+    expect(findRecogida(DEFAULT_PARAMS, "CORREAS")).toEqual({
+      nombre: "CORREAS", delante: 27, atras: 27, lateralSoloAtras: 0, lateralSoloDelante: 0,
     });
     expect(findRecogida(DEFAULT_PARAMS, "PUENTES LATERALES")).toMatchObject({
       delante: 41, atras: 21, lateralSoloAtras: 9, lateralSoloDelante: 9,

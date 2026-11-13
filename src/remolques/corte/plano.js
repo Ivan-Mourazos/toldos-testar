@@ -161,12 +161,27 @@ function confeccionLona(L, el, X, Y, letras = ['']) {
     L.cota('vent-pre-noimpr', x0 + ancho, Y, x0 + ancho, Y + alto / 10, r1(alto / 10), 12);
   };
 
+  // Correas (AR2504631): cada cinta de 2,5 cm cosida en el paño, sin llegar a la oreja, y saliendo 2,5 cm por
+  // fuera; su borde de abajo, acotado sobre la lona hecha. En rosa (referencia-1), como las hebillas del ganado.
+  const correas = (x0, ancho, oreja, alturas, lado) => {
+    if (!alturas?.length) return;
+    const rect = (xa, xb, y) => L.g.polilineas.push({ capa: 'referencia-1', puntos: [[xa, y], [xb, y], [xb, y + 2.5], [xa, y + 2.5]], cerrada: true });
+    for (const a of alturas) {
+      const y = Y + a / 10;
+      rect(x0 - 2.5, x0 + oreja + 12, y);
+      rect(x0 + ancho - oreja - 12, x0 + ancho + 2.5, y);
+    }
+    [...alturas].sort((a, b) => a - b).forEach((a, k) => L.cota('cotas', x0 + ancho, Y + 3.5, x0 + ancho, Y + a / 10, r1(a / 10 - 3.5), lado + 6.5 * k, 5));
+    L.texto('CORREAS EN ESQUINA', x0 + ancho / 2, Y + Math.max(...alturas) / 10 + 8, 5);
+  };
+
   // Paño delantero (con orejas si recoge delante).
   const oD = P.orejaDelante / 10;
   pintar(L, P.d.p, enPlano(xDel, Y));
   rosaCabeza(L, P.f, P.orejaDelante, P.anchoPerfil, H * 10, enPlano(xDel, Y));
   const eD = escaleraCabeza(P.ollaos.delante.length);
   orejas(xDel, W, oD, P.d.altoOreja, eD.bajan);
+  correas(xDel, W, oD, P.d.p.correas, 20);
   L.cota('cotas', xDel + oD + 1, Y, xDel + W - oD - 1, Y, hecha.ancho, -12 - eD.bajan);
   L.cota('vent-pre-noimpr', xDel, Y, xDel + W, Y, W, -26 - eD.bajan);
   L.cota('cotas', xDel, Y + 3.5, xDel, Y + H - 1, i.altoDelante, -12);
@@ -199,6 +214,7 @@ function confeccionLona(L, el, X, Y, letras = ['']) {
   rosaCabeza(L, P.f, P.oreja, P.anchoPerfilTra, Ht * 10, enPlano(xTra, Y));
   const eT = escaleraCabeza(P.ollaos.atras.length);
   orejas(xTra, Wt, o, P.t.altoOreja, eT.bajan, P.puentes ? marcaOrejaPuentes(el.paramsSnapshot, i.recogeAtras) : undefined);
+  correas(xTra, Wt, o, P.t.p.correas, 20);
   L.cota('cotas', xTra + o + 1, Y, xTra + Wt - o - 1, Y, hecha.anchoAtras ?? hecha.ancho, -12 - eT.bajan);
   L.cota('vent-pre-noimpr', xTra, Y, xTra + Wt, Y, Wt, -26 - eT.bajan);
   if (Ht !== H) {
@@ -218,6 +234,21 @@ function confeccionLona(L, el, X, Y, letras = ['']) {
   const g = P.c.geo, uD = g.uDelante, uA = g.uAtras;
   L.g.polilineas.push({ capa: 'referencias', puntos: [[uD, g.yb(uD) + 35], [uD, g.yt(uD) - 35], [uA, g.yt(uA) - 35], [uA, g.yb(uA) + 35]].map(([u, v]) => tc(u, v)), cerrada: true });
   L.texto(R(1), xCon + B / 2, Y + A / 2 - 4, 14);
+  // Hebillas de las correas, en los dos laterales de cada punta que recoge con correas: a la altura de la cinta
+  // del paño, de la punta hacia dentro, y acotadas sobre la lona hecha (AR2504631: 15 y 52,5).
+  for (const [lado, u0, signo] of [[A * 10, A * 10, -1], [0, 0, 1]]) {
+    const alturas = (P.c.hebillas ?? []).filter(([u]) => u === lado).map(([, v]) => v);
+    if (!alturas.length) continue;
+    for (const v of alturas) {
+      for (const [va, vb] of [[g.yb(u0) + v, g.yb(u0) + v + 25], [g.yt(u0) - v - 25, g.yt(u0) - v]]) {
+        const pts = [[u0, va], [u0 + signo * 86, va], [u0 + signo * 86, vb], [u0, vb]].map(([u, vv]) => tc(u, vv));
+        L.g.polilineas.push({ capa: 'referencia-1', puntos: pts, cerrada: true });
+      }
+    }
+    const yy = Y + u0 / 10;
+    [...alturas].sort((a, b) => a - b).forEach((v, k) => L.cota('cotas', xCon + g.yb(u0) / 10 + 3.5, yy, xCon + g.yb(u0) / 10 + v / 10, yy, r1(v / 10 - 3.5), signo * -(24 + 6.5 * k), 5));
+    L.texto('HEBILLAS EN ESQUINAS', xCon + B / 2, yy + signo * 14, 5);
+  }
   // Anchos del contorno: delante y, si va en trapecio, también detrás.
   const xb = (u) => xCon + g.yb(u) / 10, xt = (u) => xCon + g.yt(u) / 10;
   L.cota('cotas', xb(0) + 3.5, Y, xt(0) - 3.5, Y, r.contornoAjustado - 7, -12);

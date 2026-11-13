@@ -10,7 +10,7 @@ const CAMPOS_NUMERICOS = [
 ] as const;
 
 /** Recogidas que el código añadió después de que hubiera Parámetros guardados. */
-const RECOGIDAS_NUEVAS = ["GANCHOS CORAZON"];
+const RECOGIDAS_NUEVAS = ["GANCHOS CORAZON", "CORREAS"];
 
 /** Marcas que el código añadió a una recogida que ya existía, con el valor que le da. */
 const MARCAS_NUEVAS: Array<{ nombre: string; marca: "panoTraseroConAnchoDelante"; valor: boolean }> = [

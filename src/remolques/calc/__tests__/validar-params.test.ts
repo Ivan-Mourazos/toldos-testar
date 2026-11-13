@@ -17,8 +17,9 @@ describe("normalizarParams", () => {
     const p = normalizarParams({ recogidas: guardadas });
     expect(p.recogidas.slice(0, 2)).toEqual(guardadas);
     // Solo las recogidas que el código añadió después: una que se quitó a propósito no vuelve.
-    expect(p.recogidas.map((r) => r.nombre)).toEqual(["NO", "GOMA", "GANCHOS CORAZON"]);
+    expect(p.recogidas.map((r) => r.nombre)).toEqual(["NO", "GOMA", "GANCHOS CORAZON", "CORREAS"]);
     expect(p.recogidas[2]).toEqual(DEFAULT_PARAMS.recogidas.find((r) => r.nombre === "GANCHOS CORAZON"));
+    expect(p.recogidas[3]).toEqual(DEFAULT_PARAMS.recogidas.find((r) => r.nombre === "CORREAS"));
   });
   it("si ya traen los ganchos corazón con otras medidas, se quedan las guardadas", () => {
     const propia = { nombre: "GANCHOS CORAZON", delante: 20, atras: 20, lateralSoloAtras: 1, lateralSoloDelante: 1 };
