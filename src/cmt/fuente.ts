@@ -214,5 +214,6 @@ export function leerFuente(file: string) {
         }
     }
     const kern = (left: string, right: string) => (kernPairs.get(glyphId(left.codePointAt(0) ?? 0) * 65536 + glyphId(right.codePointAt(0) ?? 0)) ?? 0) / units;
-    return { units, paths, glyphId, glyph, file, kern };
+    const ascenso=b.readInt16BE(tables.hhea+4)/units,descenso=b.readInt16BE(tables.hhea+6)/units;
+    return { units, paths, glyphId, glyph, file, kern, ascenso, descenso };
 }

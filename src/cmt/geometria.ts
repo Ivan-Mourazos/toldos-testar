@@ -2,7 +2,9 @@ import { value, number } from './dxf.ts';
 import type { Fuente } from './fuente.ts';
 import type { Dxf, EntidadDxf, Duda, Punto, ObjetoGeometrico } from './tipos.ts';
 import { redondearComoRobot } from './compatibilidad.ts';
-import { mtextAText } from './textos.ts';
+import { splineCubica } from './entidades.ts';
+import { contornosTexto } from './textos.ts';
+import { descomponerMtext } from './textos-cad.ts';
 type Trazo = Pick<ObjetoGeometrico, 'paths' | 'source' | 'entity' | 'serial' | 'firstSteps'>;
 // Geometría: razón observada de 72/25,4 unidades CMT por mm DXF.
 // Los parámetros del controlador usan otra razón: 600/25,4.
@@ -53,34 +55,6 @@ export function invertir(p: Punto[]): Punto[] { const out = [{ ...p.at(-1)!, typ
     else
         out.push({ ...s[2], type: 1 }, { ...s[1], type: 2 }, { ...s[0], type: 3 });
 } return out; }
-function texto(e: EntidadDxf, font: Fuente) {
-    const text = value(e, 1).replace(/\\U\+([0-9a-f]{4})/gi, (_: string, hex: string) => String.fromCodePoint(parseInt(hex, 16)));
-    const h = number(e, 40), width = number(e, 41, 1);
-    const theta = number(e, 50) * Math.PI / 180, c = Math.cos(theta), s = Math.sin(theta), chars = [...text];
-    const baseX = number(e, 10), baseY = number(e, 20);
-    let x = 0, y = 0;
-    // Estos DXF ya guardan el punto de inserción calculado en 10/20, también en texto centrado.
-    // La exportación observada conserva ese punto; no vuelve a alinear a partir de 11/21.
-    const out: Punto[][] = [];
-    let previous: string | undefined;
-    for (const ch of chars) {
-        if (ch === '\n') {
-            x = 0;
-            y -= h * 1.4;
-            previous = undefined;
-            continue;
-        }
-        if (previous)
-            x += font.kern(previous, ch) * h * width;
-        const g = font.paths(ch);
-        for (const p of [...g.paths].reverse()) {
-            out.push(p.map(q => { const xx = x + q.x / font.units * h * width, yy = y + q.y / font.units * h; return punto(baseX + c * xx - s * yy, baseY + s * xx + c * yy, q.type, q.mark); }));
-        }
-        x += g.advance * h * width;
-        previous = ch;
-    }
-    return out;
-}
 export function polilinea(e: EntidadDxf) { const vertices: {
     x: number;
     y: number;
@@ -104,11 +78,17 @@ export function polilinea(e: EntidadDxf) { const vertices: {
 } return points; }
 export function limitesCabecera(d: Dxf) { const p = d.sections.HEADER?.[0]?.pairs ?? [], i = p.findIndex(x => x[0] === 9 && x[1] === '$EXTMIN'); if (i < 0)
     return [0, 0]; return [Number(p[i + 1][1]), Number(p[i + 2][1])]; }
+function transformar(p:Punto[],e:EntidadDxf,reflejar=true):Punto[]{
+ const m=e.transformacion,negativa=reflejar&&number(e,230,1)<0&&e.type!=='LINE';
+ if(!m&&!negativa)return p;
+ return p.map(q=>{const x=negativa?-q.x:q.x,y=q.y;return {...q,x:m?m[0]*x+m[2]*y+m[4]:x,y:m?m[1]*x+m[3]*y+m[5]:y};});
+}
 export function generarGeometria(d: Dxf, options: {
     font?: Fuente;
     translation?: number[];
     scale?: number;
     compatibilidadRobot?: boolean;
+    preparacionMtext?: 'directa'|'textos';
 } = {}) {
     const issues: Duda[] = [], avisos: Duda[] = [], objects: ObjetoGeometrico[] = [];
     let serial = 0;
@@ -120,10 +100,21 @@ export function generarGeometria(d: Dxf, options: {
         for (const e of d.entities.filter(e => value(e, 8) === layer && !number(e, 67) && e.type !== 'VIEWPORT')) {
             if (e.type === 'TEXT' || e.type === 'MTEXT') {
                 flush();
+                // Se conserva la ausencia comprobada de estos indicadores en el CMT, fuera del modelo SVG.
+                if(e.type==='MTEXT'&&value(e,1)==='1'&&Math.abs(number(e,11))<1e-10&&number(e,21)===-1){avisos.push({handle:value(e,5),tipo:e.type,capa:layer,motivo:'El texto MTEXT «1» girado no se dibuja, igual que en los ejemplos del robot'});continue;}
                 try {
-                    const entrada = e.type==='MTEXT' ? mtextAText(e,options.font!) : e;
-                    for (const p of texto(entrada, options.font!))
-                        group.push({ paths: [p], source: [value(e, 5)], entity: e.type, serial: serial++ });
+                    let textos=[e];
+                    if(e.type==='MTEXT'&&options.preparacionMtext==='textos'){
+                        const descompuestos=descomponerMtext(e,d,options.font!);
+                        if(descompuestos)textos=descompuestos;
+                        avisos.push({handle:value(e,5),tipo:e.type,capa:layer,motivo:descompuestos
+                            ?'MTEXT preparado como TEXT: cuadro de tinta Arial, plegado por palabras y avance de párrafo CAD contrastados'
+                            :'La preparación CAD no está contrastada para este formato o anclaje; se conserva la importación directa del MTEXT'});
+                    }
+                    for (const texto of textos)for (const path of contornosTexto(texto,d,options.font!)) {
+                        const p=transformar(path,e,false);
+                        group.push({paths:[p],source:[value(e,5)],entity:e.type,serial:serial++});
+                    }
                 } catch(error) {
                     issues.push({handle:value(e,5),tipo:e.type,capa:layer,motivo:`El texto en la capa ${layer} no se puede dibujar: ${error instanceof Error?error.message:String(error)}. Descompón el texto a TEXT con Arial en ZWCAD o elige «sin textos»`});
                 }
@@ -143,6 +134,7 @@ export function generarGeometria(d: Dxf, options: {
                     sweep += 2 * Math.PI;
                 p = arco(number(e, 10), number(e, 20), number(e, 40), start, sweep);
             }
+            else if(e.type==='SPLINE')p=splineCubica(e);
             else if (e.type === 'LWPOLYLINE') {
                 p = polilinea(e);
                 closed = !!(number(e, 70) & 1);
@@ -151,9 +143,9 @@ export function generarGeometria(d: Dxf, options: {
                 issues.push({ handle: value(e, 5), tipo: e.type, motivo: 'Entidad no implementada' });
                 continue;
             }
-            if (number(e, 230, 1) < 0 && e.type!=='LINE')
-                issues.push({ handle: value(e, 5), motivo: 'Extrusión negativa no implementada' });
-            if (!p?.length)
+            if(p&&e.transformacion&&e.type==='LWPOLYLINE'&&!closed&&igual(p[0],p.at(-1)!))p=[{...p.at(-1)!,type:0},...p.slice(1)];
+            if(p)p=transformar(p,e);
+            if (!p || p.length<2)
                 continue;
             const incoming: Trazo = { paths: [p], firstSteps: p.length - 1, source: [value(e, 5)], entity: e.type, serial: serial++ };
             if (closed) {

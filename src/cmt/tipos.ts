@@ -14,7 +14,7 @@ export interface ObjetoGeometrico {
   firstSteps?: number;
   flags?: number;
 }
-export interface EntidadDxf { type: string; pairs: [number, string][] }
+export interface EntidadDxf { type: string; pairs: [number, string][]; transformacion?: [number,number,number,number,number,number] }
 export interface Dxf {
   entities: EntidadDxf[];
   layers: Record<string, { color: number; flags: number }>;
@@ -30,4 +30,8 @@ export interface OpcionesCmt {
   sinLeyenda?: boolean;
   /** Descarta TEXT y MTEXT antes de validar fuentes y formato. Por defecto, false. */
   sinTextos?: boolean;
+  /** Preparación previa conocida de MTEXT. Por defecto directa; textos usa el cuadro CAD contrastado. */
+  preparacionMtext?: 'directa'|'textos';
+  /** Rutas TrueType por orden; CMT_FUENTES_RESERVA usa el separador de rutas del sistema. */
+  rutasFuentesReserva?: string[];
 }

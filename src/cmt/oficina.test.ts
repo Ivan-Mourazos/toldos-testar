@@ -85,11 +85,12 @@ describe('geometría de los planos de oficina', () => {
     expect(distancia).toBeCloseTo(620);
     expect(number(d.entities[0],230)).toBe(-1);
   });
-  it('tolera solo el residuo numérico de elevación observado y sigue rechazando relieve', () => {
+  it('proyecta al plano XY tanto el residuo numérico como la elevación observada', () => {
     const e={...recta,pairs:[...recta.pairs,[30,'-0.0000000000829829']] as [number,string][]};
     expect(dxfACmt(serializar([e])).dudas).toEqual([]);
     e.pairs[e.pairs.length-1]=[30,'0.1'];
-    expect(dxfACmt(serializar([e])).cmt).toBeNull();
+    expect(dxfACmt(serializar([e])).dudas).toEqual([]);
+    expect(dxfACmt(serializar([e])).avisos.some(a=>/proyecta/.test(a.motivo))).toBe(true);
   });
   it.each(['corte','curv','TALADADRO'])('conserva %s sin herramienta con aviso para el técnico', capa=>{
     const e={...recta,pairs:recta.pairs.map(([c,v]): [number,string]=>[c,c===8?capa:v])};
@@ -101,8 +102,8 @@ describe('geometría de los planos de oficina', () => {
 });
 
 describe('textos de oficina', () => {
-  it.skipIf(!existsSync(arial))('conserva los espacios entre fragmentos MTEXT y neutraliza solo color y grupos', () => {
-    const e={type:'MTEXT',pairs:[[8,'texto'],[3,'{\\C1;OPCION '],[1,'UNIDOS}'],[10,'200'],[20,'700'],[40,'100'],[71,'1']] as [number,string][]};
+  it.skipIf(!existsSync(arial))('conserva el espacio explícito de un fragmento MTEXT y neutraliza color y grupos', () => {
+    const e={type:'MTEXT',pairs:[[8,'texto'],[3,'{\\C1;OPCION\\~'],[1,'UNIDOS}'],[10,'200'],[20,'700'],[40,'100'],[71,'1']] as [number,string][]};
     const r=dxfACmt(serializar([e]),{rutaFuente:arial});
     const simple={type:'TEXT',pairs:[[8,'texto'],[1,'OPCION UNIDOS'],[10,'200'],[20,'600'],[40,'100']] as [number,string][]};
     expect(r.dudas).toEqual([]);
@@ -140,28 +141,35 @@ describe('textos de oficina', () => {
     expect(shx.dudas).toEqual([]);
     expect(shx.cmt).toEqual(ttf.cmt);
     expect(shx.avisos.some(a=>/txt.shx.*Arial/.test(a.motivo))).toBe(true);
-    expect(dxfACmt(serializar([e],'simplex.shx')).dudas.some(d=>/simplex.shx/.test(d.motivo))).toBe(true);
+    const simplex=dxfACmt(serializar([e],'simplex.shx'),{rutaFuente:arial});
+    expect(simplex.cmt).toEqual(ttf.cmt);
+    expect(simplex.avisos.some(d=>/simplex.shx.*Arial/.test(d.motivo))).toBe(true);
   });
   it('explica al técnico qué hacer con una spline, un bloque y un texto sin conversión segura', () => {
-    const r=dxfACmt(serializar([{type:'SPLINE',pairs:[[8,'DISCO1']]},{type:'INSERT',pairs:[[8,'ROTULADOR']]},{type:'MTEXT',pairs:[[8,'texto'],[1,'\\S1/2;'],[10,'0'],[20,'0'],[40,'10']]}]));
+    const r=dxfACmt(serializar([{type:'SPLINE',pairs:[[8,'DISCO1']]},{type:'MTEXT',pairs:[[8,'texto'],[1,'\\S1/2;'],[10,'0'],[20,'0'],[40,'10']]}]));
     expect(r.cmt).toBeNull();
-    expect(r.dudas.some(d=>/spline.*DISCO1.*polilínea.*ZWCAD/i.test(d.motivo))).toBe(true);
-    expect(r.dudas.some(d=>/bloque.*ROTULADOR.*descomp/i.test(d.motivo))).toBe(true);
-    expect(r.dudas.some(d=>/texto.*texto.*sin textos/i.test(d.motivo))).toBe(true);
+    expect(r.dudas.some(d=>d.tipo==='SPLINE'&&d.capa==='DISCO1')).toBe(true);
+    const bloque=dxfACmt(serializar([{type:'INSERT',pairs:[[8,'ROTULADOR']]}]));
+    expect(bloque.dudas.some(d=>/bloque.*ROTULADOR.*descomp/i.test(d.motivo))).toBe(true);
+    expect(r.dudas.some(d=>d.tipo==='MTEXT')).toBe(false);
+    expect(r.avisos.some(d=>/MTEXT/.test(d.motivo))).toBe(true);
     expect(value(leerDxf(fixture('AR2604736')).entities[0],8)).toBe('ROTULADOR');
   });
-  it.each(['AR2604860','AR2605027','AR2605250','AR2605332'])('deja una duda concreta para la disposición no contrastada de %s', id=>{
+  it.skipIf(!existsSync(arial)).each(['AR2604860','AR2605027','AR2605250','AR2605332'])('convierte %s con textos y avisa de la disposición que requiere revisión', id=>{
     const r=dxfACmt(fixture(id),{sinLeyenda:true,rutaFuente:arial});
-    expect(r.cmt).toBeNull();
-    expect(r.dudas.some(d=>/texto.*capa.*sin textos/i.test(d.motivo))).toBe(true);
+    expect(r.dudas).toEqual([]);
+    expect(r.cmt).not.toBeNull();
+    expect(r.avisos.some(d=>/MTEXT/.test(d.motivo))).toBe(true);
     expect(dxfACmt(fixture(id),{sinLeyenda:true,sinTextos:true}).dudas).toEqual([]);
   });
-  it('no interpreta como una línea simple un MTEXT con columnas guardadas en sus datos CAD', () => {
+  it.skipIf(!existsSync(arial))('ignora las columnas CAD, como el importador, y lo avisa', () => {
     const e=leerDxf(fixture('AR2604859')).entities[0];
     const col=e.pairs.findIndex(([c,v])=>c===1070&&v==='76');
     e.pairs[col+1][1]='2';
     const r=dxfACmt(serializar([e]),{rutaFuente:arial});
-    expect(r.cmt).toBeNull();
-    expect(r.dudas.some(d=>/columnas/.test(d.motivo))).toBe(true);
+    expect(r.dudas).toEqual([]);
+    expect(r.cmt).not.toBeNull();
+    expect(r.avisos.some(d=>/columnas CAD/.test(d.motivo))).toBe(true);
   });
 });
+

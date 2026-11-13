@@ -1,6 +1,8 @@
 import plantilla from './plantilla.json' with { type: 'json' };
 import { leerCmt, registro } from './binario.ts';
 import { leerDxf } from './dxf.ts';
+import { prepararEntidades } from './entidades.ts';
+import { conReservas } from './reservas.ts';
 import { validar } from './validacion.ts';
 import { generarGeometria } from './geometria.ts';
 import { leerFuente } from './fuente.ts';
@@ -51,6 +53,7 @@ export function dxfACmt(dxfTexto: string, opciones: OpcionesCmt = {}): Resultado
       const q = quitarLeyendaWeb(d); d.entities = q.entidades; sinLeyenda = q.quitada;
       resultado.avisos.push({motivo: q.quitada ? 'Se ha quitado la leyenda del bot o de oficina: el dibujo va a 300 y 20 mm' : 'No se ha encontrado entera la leyenda de la web: el dibujo se convierte tal cual'});
     }
+    prepararEntidades(d,resultado.avisos);
     if (opciones.sinTextos) {
       const antes=d.entities.length;
       d.entities=d.entities.filter(e=>!['TEXT','MTEXT'].includes(e.type));
@@ -62,12 +65,12 @@ export function dxfACmt(dxfTexto: string, opciones: OpcionesCmt = {}): Resultado
       const ruta = opciones.rutaFuente ?? process.env.CMT_ARIAL_PATH ?? (process.platform === 'win32' ? 'C:/Windows/Fonts/arial.ttf' : undefined);
       if (!ruta) resultado.dudas.push({motivo: 'Falta la fuente Arial en el equipo que convierte: avisa al responsable para configurar rutaFuente o CMT_ARIAL_PATH, o elige «sin textos»'});
       else {
-        try { font = leerFuente(ruta); }
+        try { font = conReservas(leerFuente(ruta),opciones,resultado.avisos); }
         catch (error) { resultado.dudas.push({motivo: `No se puede leer la fuente Arial en ${ruta}: ${error instanceof Error ? error.message : String(error)}. Avisa al responsable para revisar la instalación o elige «sin textos»`}); }
       }
     }
     if (resultado.dudas.length) return resultado;
-    const g = generarGeometria(d, {font, compatibilidadRobot: opciones.compatibilidadRobot}); resultado.avisos.push(...g.avisos); resultado.dudas.push(...g.issues); resultado.objetos = g.objects;
+    const g = generarGeometria(d, {font, compatibilidadRobot: opciones.compatibilidadRobot, preparacionMtext: opciones.preparacionMtext}); resultado.avisos.push(...g.avisos); resultado.dudas.push(...g.issues); resultado.objetos = g.objects;
     if (sinLeyenda) recolocar(g.objects);
     if (opciones.compatibilidadRobot !== false) resultado.avisos.push({motivo: 'Se reproduce el redondeo SVG del robot (seis cifras, 96 dpi); compatibilidadRobot:false conserva la precisión del DXF y puede mostrar rellenos distintos'});
     if (!resultado.dudas.length) resultado.cmt = escribir(g.objects);
