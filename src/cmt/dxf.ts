@@ -21,7 +21,9 @@ export function leerDxf(texto: string): Dxf {
     if (c === 0) { entity = { type: v, pairs: [] }; sections[section].push(entity); }
     else {
       if (!entity) { entity = { type: 'HEADER', pairs: [] }; sections[section].push(entity); }
-      entity.pairs.push([c, v]);
+      // Los fragmentos MTEXT pueden terminar o empezar con un espacio entre palabras.
+      // TEXT conserva el tratamiento anterior para no cambiar las salidas ya contrastadas.
+      entity.pairs.push([c, entity.type==='MTEXT' && (c===1 || c===3) ? lines[2*i+1] : v]);
     }
   }
   if (!sections.ENTITIES || !pairs.some(([c, v]) => c === 0 && v === 'EOF') || section) throw new Error('DXF incompleto: faltan ENTITIES, ENDSEC o EOF');
@@ -38,6 +40,6 @@ export const values = (e: EntidadDxf, c: number): string[] => e.pairs.filter(x =
 export const value = (e: EntidadDxf, c: number, fallback = ''): string => values(e, c)[0] ?? fallback;
 export const number = (e: EntidadDxf, c: number, fallback = 0): number => {
   const n = Number(value(e, c, String(fallback)));
-  if (!Number.isFinite(n)) throw new Error(`Valor numérico DXF inválido: ${value(e, 5)}, código ${c}`);
+  if (!Number.isFinite(n)) throw new Error(`La entidad ${e.type} en la capa ${value(e,8) || '(sin nombre)'} tiene un número inválido (elemento ${value(e,5)}, dato ${c}): corrígelo en ZWCAD y vuelve a exportar el DXF`);
   return n;
 };

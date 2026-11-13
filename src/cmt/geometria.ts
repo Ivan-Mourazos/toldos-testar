@@ -2,6 +2,7 @@ import { value, number } from './dxf.ts';
 import type { Fuente } from './fuente.ts';
 import type { Dxf, EntidadDxf, Duda, Punto, ObjetoGeometrico } from './tipos.ts';
 import { redondearComoRobot } from './compatibilidad.ts';
+import { mtextAText } from './textos.ts';
 type Trazo = Pick<ObjetoGeometrico, 'paths' | 'source' | 'entity' | 'serial' | 'firstSteps'>;
 // Geometría: razón observada de 72/25,4 unidades CMT por mm DXF.
 // Los parámetros del controlador usan otra razón: 600/25,4.
@@ -117,10 +118,15 @@ export function generarGeometria(d: Dxf, options: {
         let geo: Trazo[] = [];
         const flush = () => { group.push(...geo); geo = []; };
         for (const e of d.entities.filter(e => value(e, 8) === layer && !number(e, 67) && e.type !== 'VIEWPORT')) {
-            if (e.type === 'TEXT') {
+            if (e.type === 'TEXT' || e.type === 'MTEXT') {
                 flush();
-                for (const p of texto(e, options.font!))
-                    group.push({ paths: [p], source: [value(e, 5)], entity: e.type, serial: serial++ });
+                try {
+                    const entrada = e.type==='MTEXT' ? mtextAText(e,options.font!) : e;
+                    for (const p of texto(entrada, options.font!))
+                        group.push({ paths: [p], source: [value(e, 5)], entity: e.type, serial: serial++ });
+                } catch(error) {
+                    issues.push({handle:value(e,5),tipo:e.type,capa:layer,motivo:`El texto en la capa ${layer} no se puede dibujar: ${error instanceof Error?error.message:String(error)}. Descompón el texto a TEXT con Arial en ZWCAD o elige «sin textos»`});
+                }
                 continue;
             }
             let p: Punto[] | undefined, closed = false;
@@ -145,7 +151,7 @@ export function generarGeometria(d: Dxf, options: {
                 issues.push({ handle: value(e, 5), tipo: e.type, motivo: 'Entidad no implementada' });
                 continue;
             }
-            if (number(e, 230, 1) < 0)
+            if (number(e, 230, 1) < 0 && e.type!=='LINE')
                 issues.push({ handle: value(e, 5), motivo: 'Extrusión negativa no implementada' });
             if (!p?.length)
                 continue;

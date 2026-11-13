@@ -6,10 +6,11 @@ import { personaDe, tintaSobre } from '../personas';
 
 // La primera vez no se puede cerrar sin elegir (sin onCancel): así el autor de cada
 // pedido se pone solo y no hay que pedir técnico ni revisor en el formulario.
-export function WhoAreYouDialog({ current, onChoose, onCancel }: {
+export function WhoAreYouDialog({ current, onChoose, onCancel, onAbrirCmt }: {
   current: string;
   onChoose: (name: string) => void;
   onCancel?: () => void;
+  onAbrirCmt?: () => void;
 }) {
   return (
     <div className="confirmation-backdrop">
@@ -37,6 +38,7 @@ export function WhoAreYouDialog({ current, onChoose, onCancel }: {
             );
           })}
         </div>
+        {onAbrirCmt && <button type="button" className="ghost-button" onClick={onAbrirCmt}>DXF a CMT · Sin elegir técnico</button>}
       </section>
     </div>
   );

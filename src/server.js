@@ -27,6 +27,7 @@ import { conRevisor, htmlPresentaciones, sinDibujarEnPdf } from './flujoDwg/plan
 import { conHojasDelante } from './flujoDwg/unirPdf.js';
 import { SUBCARPETA_PUERTAS, TIPO_PEDIDO_PUERTAS } from './puertas/flujo/tipos.ts';
 import { crearOfStockSacos } from './ofStockSacos.js';
+import { registrarRutasCmtHerramienta } from './cmtHerramientaRoutes.js';
 import { registrarRutasCorteLona } from './corteLonaRoutes.js';
 import { registrarRutasAssa } from './assa/rutas.js';
 import { exigirCorteAlDia, escribirPlanosCorte, prepararArchivosCorte } from './corteLonaArchivos.js';
@@ -269,6 +270,7 @@ app.use(compression());
 // La vista previa de la hoja de taller solo recibe un pedido: 1 MB de sobra. Va antes del límite
 // general porque el primer express.json que lee el cuerpo es el que manda.
 app.use('/api/remolques/pdf', express.json({ limit: '1mb' }));
+registrarRutasCmtHerramienta(app);
 app.use(express.json({ limit: '20mb' }));
 
 app.use('/api', (req, _res, next) => {

@@ -29,6 +29,7 @@ import { incompleteAwningLines } from './incompleteAwnings';
 import { PdfPreviewViewer } from './components/PdfPreviewViewer';
 import { controlLabel } from './components/controlLabels';
 import { OrderView } from './views/OrderView';
+import { CmtView } from './views/CmtView';
 import { CorteLona, toldosConCorte } from './components/CorteLona';
 import { BotonesFlujoCorte, useFlujoCorteDwg } from './flujoCorteDwg';
 import { abrirCorteToldos, guardarToldosEditable } from './toldosEditable';
@@ -92,7 +93,7 @@ export default function App() {
   const [revisarAlCargar, setRevisarAlCargar] = useState<string | null>(() => revisionDeEnlace(window.location.search));
   // El pedido de CoordinaOT que se está cargando, para el aviso «Cargando…» (Iván, 10/11/2026: parecía trabado).
   const [cargandoCoordina, setCargandoCoordina] = useState<string | null>(() => revisionDeEnlace(window.location.search));
-  const [activeTab, setActiveTab] = useState<ActiveTab>(() => (revisarAlCargar ? 'reviews' : 'order'));
+  const [activeTab, setActiveTab] = useState<ActiveTab>(() => (revisarAlCargar ? 'reviews' : new URLSearchParams(window.location.search).get('herramienta') === 'cmt' ? 'cmt' : 'order'));
   // Toldos o Remolques en Nuevo pedido (diseño 30/09/2026, fase 2a). Remolques se monta la primera
   // vez que se elige y se queda montado (oculto) para no perder el pedido a medias al cambiar
   // de producto o de pestaña; los toldos ya viven en `draft`, que es de esta pantalla.
@@ -846,7 +847,7 @@ export default function App() {
         ? 'Pedidos'
         : activeTab === 'historial'
           ? 'Historial'
-          : 'Configuración de carpetas';
+          : activeTab === 'cmt' ? 'DXF a CMT' : 'Configuración de carpetas';
 
   // El flujo del corte de lona con el DWG, arriba junto a «Guardar para revisión», como en puertas y remolques.
   const [faltaCorteLona, setFaltaCorteLona] = useState<string | null>('Genera el corte de lona');
@@ -875,6 +876,7 @@ export default function App() {
           {/* Iván, 11/11/2026: los generados en su propia pestaña; en Pedidos, lo pendiente y lo de hoy. */}
           <TabButton active={activeTab === 'historial'} disabled={working === 'review'} label="Historial" onClick={() => irAPestana('historial')} />
           <TabButton active={activeTab === 'parameters'} disabled={working === 'review'} label="Parámetros" onClick={() => irAPestana('parameters')} />
+          <TabButton active={activeTab === 'cmt'} disabled={working === 'review'} label="DXF a CMT" onClick={() => irAPestana('cmt')} />
           <TabButton active={activeTab === 'settings'} disabled={working === 'review'} label="Configuración" onClick={() => irAPestana('settings')} />
           {/* Iván, 02/10/2026: fuera el enlace a la web vieja de remolques; se hacen en Nuevo pedido. */}
         </nav>
@@ -1135,6 +1137,7 @@ export default function App() {
               onAbiertoAlCargar={() => { setRevisarAlCargar(null); setCargandoCoordina(null); }}
             />
           )}
+          <div hidden={activeTab !== 'cmt'}><CmtView /></div>
           {activeTab === 'settings' && (
             workflowSettings && workflowReadiness
               ? <SettingsView
@@ -1163,8 +1166,8 @@ export default function App() {
           </div>
         </div>
       )}
-      {(!currentUser || choosingUser) && (
-        <WhoAreYouDialog current={currentUser} onChoose={chooseUser} onCancel={currentUser ? () => setChoosingUser(false) : undefined} />
+      {((!currentUser && activeTab !== 'cmt') || choosingUser) && (
+        <WhoAreYouDialog onAbrirCmt={!currentUser ? () => { setChoosingUser(false); irAPestana('cmt'); } : undefined} current={currentUser} onChoose={chooseUser} onCancel={currentUser ? () => setChoosingUser(false) : undefined} />
       )}
     </main>
     </EstadoBotContexto.Provider>

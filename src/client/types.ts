@@ -784,4 +784,4 @@ export type PedidoBandeja = ReviewSummary | ResumenPedidoRemolques | ResumenPedi
 
 export type ReviewPackage = ReviewSummary & { order: DraftState & { parameters?: RuleParameters; parametersVersion?: number | null } };
 
-export type ActiveTab = 'order' | 'parameters' | 'reviews' | 'historial' | 'settings';
+export type ActiveTab = 'order' | 'parameters' | 'reviews' | 'historial' | 'settings' | 'cmt';

@@ -9,7 +9,7 @@ export function textoDxf(contents) {
   catch { return new TextDecoder('windows-1252').decode(contents); }
 }
 
-const lineaDuda = ({ motivo, capa, handle }) => {
+export const lineaDuda = ({ motivo, capa, handle }) => {
   const detalle = [capa && `capa ${capa}`, handle && `entidad ${handle}`].filter(Boolean).join(', ');
   return detalle ? `${motivo} (${detalle})` : motivo;
 };

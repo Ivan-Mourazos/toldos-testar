@@ -26,6 +26,8 @@ export interface OpcionesCmt {
   rutaFuente?: string;
   /** Reproduce las seis cifras del paso SVG del robot. Por defecto, true. */
   compatibilidadRobot?: boolean;
-  /** Quita la leyenda del bot que escribe la web y lleva el dibujo a 300 y 20 mm. Por defecto, false. */
+  /** Quita la leyenda completa reconocida de la web u oficina y lleva el dibujo a 300 y 20 mm. */
   sinLeyenda?: boolean;
+  /** Descarta TEXT y MTEXT antes de validar fuentes y formato. Por defecto, false. */
+  sinTextos?: boolean;
 }
