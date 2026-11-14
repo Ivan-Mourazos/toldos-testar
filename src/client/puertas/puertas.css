@@ -83,7 +83,7 @@
 .puerta-eje { fill:none; stroke:var(--tramo-ajustado); stroke-width:0.6; stroke-dasharray:3 2; }
 .puerta-marca { fill:none; stroke:var(--tramo-ajustado); stroke-width:0.7; }
 .puerta-ventana { fill:var(--surface); stroke:var(--text); stroke-width:0.8; }
-.puerta-cutter-texto { color:var(--tramo-holgado); }
+.puerta-cutter-texto { color:var(--capa-cutter); }
 .puerta-corte-dibujo { height:auto; max-height:330px; min-height:140px; }
 .puerta-corte-desplazamiento { overflow:auto; max-height:520px; }
 .puerta-corte-desplazamiento:focus-visible { outline:2px solid var(--color-brand-500); outline-offset:2px; }

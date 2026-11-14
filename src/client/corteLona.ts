@@ -17,7 +17,7 @@ export type VistaCorte = {
   sacos: { largo: number; alto: number }[];
   dibujo: {
     lineas: { capa: string; x1: number; y1: number; x2: number; y2: number }[];
-    textos: { x: number; y: number; h: number; valor: string; giro?: number; centrado?: boolean }[];
+    textos: { capa?: string; x: number; y: number; h: number; valor: string; giro?: number; centrado?: boolean }[];
     arcos?: { capa: string; x: number; y: number; r: number; desde: number; hasta: number }[];
   };
 };

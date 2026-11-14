@@ -4,6 +4,8 @@
 const MONTAJES: Array<[string, string]> = [
   ['/mnt/planteamientos/bot-pendientes', 'maqcorte\\BOT\\Pendientes'],
   ['/mnt/bot-pendientes', 'maqcorte\\BOT\\Pendientes'],
+  // Envío directo a las máquinas (14/11/2026): maqcorte entero montado en el .90.
+  ['/mnt/planteamientos/maqcorte', 'maqcorte'],
   ['/mnt/planteamientos/oftecnica', 'Oficina Tecnica'],
   ['/mnt/oftecnica', 'Oficina Tecnica'],
 ];

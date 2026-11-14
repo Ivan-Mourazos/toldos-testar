@@ -6,6 +6,7 @@ import { carpetaLegible, mensajeEnvio } from './enviosCorteTexto';
 describe('dónde ha ido el corte, dicho como en Windows', () => {
   it('cada montaje del servidor, con su carpeta compartida', () => {
     expect(carpetaLegible('/mnt/planteamientos/bot-pendientes/Ivan.Sanchez')).toBe('maqcorte\\BOT\\Pendientes\\Ivan.Sanchez');
+    expect(carpetaLegible('/mnt/planteamientos/maqcorte/2026/ARCHIVOS DXF - MAQUINA NUEVA')).toBe('maqcorte\\2026\\ARCHIVOS DXF - MAQUINA NUEVA');
     expect(carpetaLegible('/mnt/planteamientos/oftecnica/2026/DXFs')).toBe('Oficina Tecnica\\2026\\DXFs');
     expect(carpetaLegible('/mnt/oftecnica/DXF PRUEBAS WEB')).toBe('Oficina Tecnica\\DXF PRUEBAS WEB');
   });

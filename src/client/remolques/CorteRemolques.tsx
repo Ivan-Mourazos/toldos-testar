@@ -167,15 +167,15 @@ export function DibujoCorteRemolques({ entidades, largo, material }: { entidades
     <svg className="corte-dibujo is-remolques" role="img" aria-label={`Vista del corte ${material}`}
       viewBox={`${minX - margen} ${-maxY - margen} ${maxX - minX + margen * 2} ${maxY - minY + margen * 2}`}>
       <rect x="0" y={-ROLLO} width={largo} height={ROLLO} className="corte-rollo" />
-      {lineas.map((l, i) => <line key={i} x1={l.x1} y1={-l.y1} x2={l.x2} y2={-l.y2} className={l.capa === 'ROTULADOR' ? 'corte-marca' : 'corte-linea'} vectorEffect="non-scaling-stroke" />)}
+      {lineas.map((l, i) => <line key={i} x1={l.x1} y1={-l.y1} x2={l.x2} y2={-l.y2} data-capa={l.capa} className={l.capa === 'ROTULADOR' ? 'corte-marca' : 'corte-linea'} vectorEffect="non-scaling-stroke" />)}
       {arcos.map((a, i) => {
         const [x0, y0] = punto(a, a.desde), [x1, y1] = punto(a, a.hasta);
         const grande = ((a.hasta - a.desde + 360) % 360) > 180 ? 1 : 0;
-        return <path key={i} d={`M${x0} ${y0} A${a.r} ${a.r} 0 ${grande} 0 ${x1} ${y1}`} className="corte-linea" vectorEffect="non-scaling-stroke" />;
+        return <path key={i} d={`M${x0} ${y0} A${a.r} ${a.r} 0 ${grande} 0 ${x1} ${y1}`} data-capa={a.capa} className="corte-linea" vectorEffect="non-scaling-stroke" />;
       })}
-      {circulos.map((c, i) => <circle key={i} cx={c.x} cy={-c.y} r={radioOllao(c.r)} className="corte-marca" vectorEffect="non-scaling-stroke" />)}
+      {circulos.map((c, i) => <circle key={i} cx={c.x} cy={-c.y} r={radioOllao(c.r)} data-capa={c.capa} className="corte-marca" vectorEffect="non-scaling-stroke" />)}
       {textos.filter((t) => t.capa !== 'ROTULADOR').map((t, i) => (
-        <text key={i} x={t.x} y={-t.y} fontSize={t.h} textAnchor={t.centrado ? 'middle' : 'start'} transform={t.giro ? `rotate(${-t.giro} ${t.x} ${-t.y})` : undefined}>{t.valor}</text>
+        <text key={i} data-capa={t.capa} x={t.x} y={-t.y} fontSize={t.h} textAnchor={t.centrado ? 'middle' : 'start'} transform={t.giro ? `rotate(${-t.giro} ${t.x} ${-t.y})` : undefined}>{t.valor}</text>
       ))}
     </svg>
   );

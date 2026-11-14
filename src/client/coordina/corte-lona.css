@@ -32,7 +32,20 @@
 .corte-marca { stroke: var(--tramo-ajustado); stroke-width: 1; }
 .corte-dibujo text { fill: var(--text); font-family: var(--font-sans), sans-serif; }
 .corte-leyenda { display: flex; gap: 18px; color: var(--text-muted); }
-.corte-leyenda span:last-child { color: var(--tramo-ajustado); }
+.corte-leyenda span:last-child { color: var(--capa-rotulador); }
+/* Colores de las capas del corte como en el CAD de la oficina (Iván, 14/11/2026: «la capa rotulador la tenemos
+   roja»). Son los de la plantilla base-corte.dxf: DISCO1 7, DISCO2 6, CUTTER 112, taladro 160, ROTULADOR 1 y
+   texto 106. El 7 es blanco o negro según el fondo, como en el CAD; el texto se aclara en oscuro para leerse. */
+:root { --capa-disco1: var(--text); --capa-disco2: #ff00ff; --capa-cutter: #00a552; --capa-taladro: #003fff; --capa-rotulador: #ff0000; --capa-texto: #004c13; }
+:root[data-theme="dark"] { --capa-taladro: #3f7fff; --capa-texto: #3fbf5f; }
+svg [data-capa="DISCO1"] { stroke: var(--capa-disco1); }
+svg [data-capa="DISCO2"] { stroke: var(--capa-disco2); }
+svg [data-capa="CUTTER"] { stroke: var(--capa-cutter); }
+svg [data-capa="taladro"] { stroke: var(--capa-taladro); }
+svg [data-capa="ROTULADOR"] { stroke: var(--capa-rotulador); }
+svg text[data-capa] { stroke: none; }
+svg text[data-capa="texto"] { fill: var(--capa-texto); }
+svg text[data-capa="ROTULADOR"] { fill: var(--capa-rotulador); }
 .corte-desglose { font-size: 13px; }
 .corte-desglose > div { display: inline-block; vertical-align: top; margin: 10px 30px 0 0; }
 .corte-desglose ul { padding-left: 18px; line-height: 1.7; }

@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import type { Programa } from './tipos';
+import '../coordina/corte-lona.css';
 
-const color = (capa: string) => capa === 'CUTTER' ? 'var(--tramo-holgado)' : capa === 'ROTULADOR' ? 'var(--color-brand-700)' : 'var(--text)';
+// Colores de las capas como en el CAD de la oficina (definidos en corte-lona.css).
+const color = (capa: string) => ({ DISCO2: 'var(--capa-disco2)', CUTTER: 'var(--capa-cutter)', taladro: 'var(--capa-taladro)', ROTULADOR: 'var(--capa-rotulador)' } as Record<string, string>)[capa] ?? 'var(--capa-disco1)';
 const numero = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 1 });
 
 // Los bloques de canalón cuentan canalones (un entero o dos mitades); el resto, paños.

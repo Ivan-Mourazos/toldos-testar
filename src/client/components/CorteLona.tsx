@@ -184,6 +184,6 @@ export function DibujoCorte({ corte }: { corte: VistaCorte }) {
       return <path key={i} d={`M${x0} ${y0} A${a.r} ${a.r} 0 ${a.hasta - a.desde > 180 ? 1 : 0} 0 ${x1} ${y1}`}
         fill="none" data-capa={a.capa} className={a.capa === 'ROTULADOR' ? 'corte-marca' : 'corte-linea'} vectorEffect="non-scaling-stroke" />;
     })}
-    {textos.map((t, i) => <text key={i} x={t.x} y={-t.y} fontSize={t.h} textAnchor={t.centrado ? 'middle' : 'start'} transform={t.giro ? `rotate(${-t.giro} ${t.x} ${-t.y})` : undefined}>{t.valor}</text>)}
+    {textos.map((t, i) => <text key={i} data-capa={t.capa} x={t.x} y={-t.y} fontSize={t.h} textAnchor={t.centrado ? 'middle' : 'start'} transform={t.giro ? `rotate(${-t.giro} ${t.x} ${-t.y})` : undefined}>{t.valor}</text>)}
   </svg>;
 }

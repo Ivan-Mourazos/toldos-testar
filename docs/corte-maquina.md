@@ -47,9 +47,18 @@ Pedidos y planos sueltos comparten `publicarArchivosCorte`, extraído de `enviar
 
 En modo directo el servidor no consulta la cola del bot; devuelve `estado: 'directo'`. La cabecera y el historial de envíos ocultan inmediatamente los avisos del bot al guardar ese modo. Se conserva el cálculo anterior del bot para volver a él al apagarlo.
 
+## Rutas de producción (confirmadas por Iván el 14/11/2026)
+
+En el .90, `\\192.168.0.128\Oftecnica\maqcorte` se monta entero en `/mnt/planteamientos/maqcorte`, con el usuario `web.planteamientos` (tiene Modificar en maqcorte), igual que `bot-pendientes`:
+
+- DXF (máquina nueva): `/mnt/planteamientos/maqcorte/{YYYY}/ARCHIVOS DXF - MAQUINA NUEVA`
+- CMT (máquina vieja): `/mnt/planteamientos/maqcorte/{YYYY}`
+
+Se guardan en Configuración. El interruptor del envío directo se enciende aparte, cuando se haya cortado un pedido de prueba.
+
 ## Revisión pendiente de Iván
 
-Confirmar las dos rutas de producción antes de activarlo. Para pedidos antiguos cuyo DXF ya retiró el bot, recuperar el original y utilizar «DXF a CMT». La conversión sigue dependiendo de las dudas que señale el módulo CMT, que este cambio no modifica.
+Cortar un pedido de prueba con el CMT de la web antes de encender el envío directo. Para pedidos antiguos cuyo DXF ya retiró el bot, recuperar el original y utilizar «DXF a CMT». La conversión sigue dependiendo de las dudas que señale el módulo CMT, que este cambio no modifica.
 
 ## Verificación realizada
 
