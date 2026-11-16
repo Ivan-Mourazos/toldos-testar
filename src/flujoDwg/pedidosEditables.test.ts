@@ -101,11 +101,11 @@ it('si falla publicar y restaurar el plano, el error del pedido indica dónde es
     return renombrar(origen, destino);
   });
   await expect(t.servicio.guardar(t.cuerpo(true, { decisionCorte: 'regenerar' }))).rejects.toMatchObject({
-    statusCode: 500, message: expect.stringContaining('.anterior-'),
+    statusCode: 500, message: expect.stringContaining(`.bak${path.extname(ruta).slice(1)}`),
   });
   expect(await t.obtener()).toEqual(antes);
   const carpeta = path.dirname(ruta);
-  const copias = (await fs.readdir(carpeta)).filter(n => n.includes('.anterior-'));
+  const copias = (await fs.readdir(carpeta)).filter(n => n.endsWith(`.bak${path.extname(ruta).slice(1)}`));
   expect(copias).toHaveLength(1);
   expect(await fs.readFile(path.join(carpeta, copias[0]))).toEqual(bytes);
 });
@@ -483,4 +483,9 @@ describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido 
     expect((await t.servicio.guardar(t.cuerpo(true, { decisionCorte: 'regenerar' }))).status).toBe(200);
     expect((await t.obtener()).entregaActual).toBe(10);
   });
+});
+
+it.each(['EBUSY', 'ETXTBSY'])('con %s dice que el plano está abierto: en la carpeta de red de Linux el bloqueo de ZWCAD llega así', async code => {
+  const { motivoPlano } = await import('./flujo.ts');
+  expect(motivoPlano(Object.assign(new Error('ocupado'), { code }), 'AR2605535 (plano).dwg')).toMatch(/AR2605535 \(plano\)\.dwg: está abierto.*Ciérralo/);
 });

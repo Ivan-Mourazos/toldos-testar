@@ -43,7 +43,7 @@ describe('sustituir planos en una carpeta compartida que no deja reemplazar', ()
     vi.restoreAllMocks();
     await fs.rm(raiz, { recursive: true, force: true });
   });
-  const copias = async raiz => (await fs.readdir(raiz)).filter(n => n.includes('.anterior-'));
+  const copias = async raiz => (await fs.readdir(raiz)).filter(n => n.endsWith('.bakdwg'));
   function simularReemplazoDenegado() {
     return vi.spyOn(fs, 'rename').mockImplementation(async (origen, hasta) => {
       if (hasta === destino && origen.startsWith(`${destino}.tmp-`) && await fs.stat(destino).then(() => true, () => false)) throw fallo('EACCES');
@@ -58,10 +58,15 @@ describe('sustituir planos en una carpeta compartida que no deja reemplazar', ()
     expect(await copias(raiz)).toEqual([]);
     expect((await fs.readdir(raiz)).filter(n => n.includes('.tmp-'))).toEqual([]);
   });
-  it('el reemplazo directo sigue siendo el primer intento y no crea copias innecesarias', async () => {
-    const rename = vi.spyOn(fs, 'rename');
+  // AR2605535 (16/11/2026): en CIFS, renombrar encima puede borrar el destino. Primero se aparta como .bakdwg.
+  it('nunca renombra encima del plano: lo aparta, publica el nuevo y borra la copia', async () => {
+    const rename = vi.spyOn(fs, 'rename').mockImplementation(async (origen, hasta) => {
+      if (await fs.stat(hasta).then(() => true, () => false)) throw new Error(`renombrado encima de ${hasta}`);
+      return renombrar(origen, hasta);
+    });
     await writeFileAtomic(destino, 'PLANO NUEVO', { conservarAnterior: true });
-    expect(rename).toHaveBeenCalledOnce();
+    expect(await fs.readFile(destino, 'utf8')).toBe('PLANO NUEVO');
+    expect(rename.mock.calls[0]).toEqual([destino, path.join(raiz, 'AR2605473.bakdwg')]);
     expect(await copias(raiz)).toEqual([]);
   });
   it('si tampoco puede apartar el anterior, conserva el original y devuelve el error', async () => {
@@ -78,7 +83,7 @@ describe('sustituir planos en una carpeta compartida que no deja reemplazar', ()
     await expect(writeFileAtomic(destino, 'PLANO NUEVO', { conservarAnterior: true })).rejects.toMatchObject({ code: 'EACCES' });
     expect(await fs.readFile(destino, 'utf8')).toBe('PLANO ANTERIOR');
     expect(await copias(raiz)).toEqual([]);
-    expect(rename.mock.calls.some(([, hasta]) => hasta.includes('.anterior-'))).toBe(true);
+    expect(rename.mock.calls.some(([, hasta]) => hasta.endsWith('.bakdwg'))).toBe(true);
     expect((await fs.readdir(raiz)).filter(n => n.includes('.tmp-'))).toEqual([]);
   });
   it('si falla restaurar, conserva la copia e indica su ubicación', async () => {
@@ -87,7 +92,7 @@ describe('sustituir planos en una carpeta compartida que no deja reemplazar', ()
       return renombrar(origen, hasta);
     });
     await expect(writeFileAtomic(destino, 'PLANO NUEVO', { conservarAnterior: true })).rejects.toMatchObject({
-      statusCode: 500, message: expect.stringContaining('.anterior-'),
+      statusCode: 500, message: expect.stringContaining('AR2605473.bakdwg'),
     });
     const anteriores = await copias(raiz);
     expect(anteriores).toHaveLength(1);
@@ -115,8 +120,9 @@ describe('sustituir planos en una carpeta compartida que no deja reemplazar', ()
     expect(await fs.readFile(path.join(raiz, anteriores[0]), 'utf8')).toBe('PLANO ANTERIOR');
   });
   it('si el plano está abierto (EBUSY) no lo aparta: hay que cerrarlo y volver a guardar', async () => {
+    // Abierto en ZWCAD, tampoco se deja mover.
     vi.spyOn(fs, 'rename').mockImplementation(async (origen, hasta) => {
-      if (hasta === destino) throw fallo('EBUSY');
+      if (hasta === destino || origen === destino) throw fallo('EBUSY');
       return renombrar(origen, hasta);
     });
     await expect(writeFileAtomic(destino, 'PLANO NUEVO', { conservarAnterior: true })).rejects.toMatchObject({ code: 'EBUSY' });

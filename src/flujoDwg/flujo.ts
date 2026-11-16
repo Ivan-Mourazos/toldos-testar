@@ -88,7 +88,7 @@ export function motivoPlano(error: unknown, nombre: string): string {
   if (codigo === "EACCES" || codigo === "EPERM") {
     return `No se pudo sustituir ${nombre}: el servidor no tiene permiso para cambiar el plano o el archivo está bloqueado. Comprueba los permisos de la carpeta y que nadie tenga el plano abierto; después vuelve a guardar.`;
   }
-  if (codigo === "EBUSY") return `No se pudo sustituir ${nombre}: está abierto (quizá en AutoCAD o ZWCAD). Ciérralo y vuelve a intentarlo.`;
+  if (codigo === "EBUSY" || codigo === "ETXTBSY") return `No se pudo sustituir ${nombre}: está abierto (quizá en AutoCAD o ZWCAD). Ciérralo y vuelve a intentarlo.`;
   return `No se pudo escribir ${nombre} en su carpeta. Comprueba que la carpeta está disponible y vuelve a guardar.`;
 }
 
