@@ -1,4 +1,4 @@
-import { ultimoEnvioCorte } from '../../corteMaquina.js';
+import { ultimoEnvioCorte, convertirCmtRemolques } from '../../corteMaquina.js';
 import { pasarAProduccion, prepararPlanoProduccion } from '../../produccion.js';
 import { numerarEntrega, aplicarDestino, necesitaPrepararDestino } from '../../entregasRps.js';
 import { readFile, stat } from "node:fs/promises";
@@ -653,7 +653,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       return await enviarCorteCompartido({ nota, pedido, order: { orderCode: codigoEntrega(pedido), technician: pedido.summary.technician }, settings: await deps.ajustes(),
         usuario, destino: c.destino, tecnicoDestino: c.tecnicoDestino, prepararSolo, confirmBot: c.confirmBot === true, confirmOverwrite: c.confirmOverwrite === true,
         elementos: elementosAprobacion(pedidoEntrega(pedido)), coordina: deps.coordina, nombres: ELEMENT_NOUNS,
-        comprobarCorte: () => {}, preparar,
+        comprobarCorte: () => {}, preparar, convertir: convertirCmtRemolques,
         obtenerActual: () => obtener(orderCode), guardarRegistro: (actualizado: PedidoRemolques) => deps.almacen.guardar(actualizado), ahora: reloj });
     } finally { if (!bloqueado) ocupados.delete(orderCode); }
   }

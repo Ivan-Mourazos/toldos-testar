@@ -22,6 +22,8 @@ export interface Dxf {
   sections: Record<string, EntidadDxf[]>;
 }
 export interface OpcionesCmt {
+  /** Remolques (máquina vieja): las curvas de DISCO1 con radio menor que este, en mm, van a CUTTER. */
+  curvasACutter?: number;
   /** Arial del sistema o una copia proporcionada por el administrador. No se distribuye. */
   rutaFuente?: string;
   /** Reproduce las seis cifras del paso SVG del robot. Por defecto, true. */

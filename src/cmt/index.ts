@@ -2,6 +2,7 @@ import plantilla from './plantilla.json' with { type: 'json' };
 import { leerCmt, registro } from './binario.ts';
 import { leerDxf } from './dxf.ts';
 import { prepararEntidades } from './entidades.ts';
+import { curvasACutter } from './curvasCutter.ts';
 import { conReservas } from './reservas.ts';
 import { validar } from './validacion.ts';
 import { generarGeometria } from './geometria.ts';
@@ -54,6 +55,7 @@ export function dxfACmt(dxfTexto: string, opciones: OpcionesCmt = {}): Resultado
       resultado.avisos.push({motivo: q.quitada ? 'Se ha quitado la leyenda del bot o de oficina: el dibujo va a 300 y 20 mm' : 'No se ha encontrado entera la leyenda de la web: el dibujo se convierte tal cual'});
     }
     prepararEntidades(d,resultado.avisos);
+    if (opciones.curvasACutter) curvasACutter(d, opciones.curvasACutter, resultado.avisos);
     if (opciones.sinTextos) {
       const antes=d.entities.length;
       d.entities=d.entities.filter(e=>!['TEXT','MTEXT'].includes(e.type));

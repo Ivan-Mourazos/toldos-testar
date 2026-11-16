@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { dxfACmt } from './cmt/index.ts';
+import { RADIO_CUTTER_REMOLQUES } from './cmt/curvasCutter.ts';
 import { lineaDuda, textoDxf } from './cmtPiloto.js';
 import { numeroEntrega } from './entregas.js';
 import { carpetaCorte } from './corteLonaArchivos.js';
@@ -14,6 +15,9 @@ export function nombreBaseDxf(nombre) {
     .replace(/^[.\s]+|[.\s]+$/g, '').slice(0, 180) || 'corte';
   return /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.|$)/i.test(base) ? `_${base}` : base;
 }
+
+/** Remolques: el CMT es para la máquina vieja y sus curvas cerradas van a CUTTER (el DXF de la nueva no cambia). */
+export const convertirCmtRemolques = (texto, opciones = {}) => dxfACmt(texto, { ...opciones, curvasACutter: RADIO_CUTTER_REMOLQUES });
 
 export async function convertirCorte(contents, convertir = dxfACmt) {
   let resultado;

@@ -1,4 +1,4 @@
-import { registrarDescargasCorte } from './corteMaquina.js';
+import { registrarDescargasCorte, convertirCmtRemolques } from './corteMaquina.js';
 import { registrarRutasCmtMaquina } from './cmtMaquinaRoutes.js';
 import { pasarAProduccion, prepararPlanoProduccion } from './produccion.js';
 import { catalogoEntregas, numerarEntrega, aplicarDestino, necesitaPrepararDestino } from './entregasRps.js';
@@ -1005,7 +1005,7 @@ app.post('/api/remolques/pedidos/:orderCode/corte/enviar', rutaRemolques(async (
 }));
 
 registrarDescargasCorte(app, { ruta: '/api/remolques/pedidos/:orderCode/corte', obtener: codigo => pedidosRemolques.obtener(codigo),
-  preparar: async pedido => [await pedidosRemolques.descargarCorte(pedido.orderCode)] });
+  preparar: async pedido => [await pedidosRemolques.descargarCorte(pedido.orderCode)], convertir: convertirCmtRemolques });
 
 app.get('/api/remolques/pedidos/:orderCode/corte/dxf', rutaRemolques(async (req, res) => {
   const { filename, contents } = await pedidosRemolques.descargarCorte(req.params.orderCode);
