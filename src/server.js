@@ -32,7 +32,7 @@ import { crearOfStockSacos } from './ofStockSacos.js';
 import { registrarRutasCmtHerramienta } from './cmtHerramientaRoutes.js';
 import { registrarRutasCorteLona } from './corteLonaRoutes.js';
 import { registrarRutasAssa } from './assa/rutas.js';
-import { exigirCorteAlDia, escribirPlanosCorte, prepararArchivosCorte } from './corteLonaArchivos.js';
+import { exigirCorteAlDia, exigirCorteParaSalir, escribirPlanosCorte, prepararArchivosCorte } from './corteLonaArchivos.js';
 import { registrarRutasEnviosCorte } from './corteEnviosRoutes.js';
 import { estadoBotCompartido } from './botEstado.js';
 import { createCoordinaClient } from './coordinaStatus.js';
@@ -435,7 +435,7 @@ const enviarCorteToldos = registrarRutasEnviosCorte(app, {
   ajustes: () => workflowStore.getSettings(), coordina, tecnicos: formOptions.tecnicos, locks: generationLocks,
   contexto: (review) => ({ order: { ...pedidoEntrega(review).order, orderCode: codigoEntrega(review) },
     elementos: pedidoEntrega(review).order.awnings.map((a, i) => ({ letter: awningLetter(i), of: a.of })),
-    comprobarCorte: () => exigirCorteAlDia(pedidoEntrega(review).order, review.corteLona) }),
+    comprobarCorte: () => exigirCorteParaSalir(review, pedidoEntrega(review).order) }),
   preparar: async (review) => (await prepararArchivosCorte({ order: pedidoEntrega(review).order, codigoSalida: codigoEntrega(review), corteLona: review.corteLona,
     settings: await workflowStore.getSettings(), tipo: 'bot', soloContenido: true })).files,
   // Flujo del DWG, fase 3: con el corte confirmado, el DXF sale del DWG revisado; si cambió después, se pregunta.
@@ -1466,7 +1466,7 @@ async function generarArchivosToldos(orderCode, cuerpo, prepararSolo = false) {
     const order = normalizeOrder(pedidoEntrega(review).order);
     assertDeploymentModelsEnabled(order, deploymentFeatures);
     if (review.corteSimulado) throw httpError(409, 'El corte se calculó en simulación: regenera el corte para escribir el plano antes de generar archivos.');
-    if (!review.corteConfirmado) exigirCorteAlDia(order, review.corteLona);
+    exigirCorteParaSalir(review, order);
 
     // Solo se genera lo que CoordinaOT ha aprobado, OF por OF, preguntando en el momento.
     // Si CoordinaOT no responde, no se genera (diseño 29/09/2026, opción A).

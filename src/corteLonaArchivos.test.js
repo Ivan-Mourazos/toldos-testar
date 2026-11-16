@@ -5,7 +5,7 @@ import path from 'node:path';
 import revision from './domain/corteLona/fixtures/revision-AR2604784.json' with { type: 'json' };
 import { generarCorteLona } from './domain/corteLona/index.js';
 import { crearEstadoCorteLona, corteLonaPendiente } from './corteLonaEstado.js';
-import { carpetaCorte, exigirCorteAlDia, prepararArchivosCorte, escribirPlanosCorte } from './corteLonaArchivos.js';
+import { carpetaCorte, exigirCorteAlDia, exigirCorteParaSalir, prepararArchivosCorte, escribirPlanosCorte } from './corteLonaArchivos.js';
 import { defaultWorkflowSettings, normalizeWorkflowSettings, createReviewPackage, reviewSummary, markReviewFilesGenerated } from './workflow.js';
 import { calculateOrder } from './domain/rules.js';
 import { pedidoVariasTelas } from './domain/corteLona/fixtures/variasTelas.js';
@@ -65,6 +65,15 @@ describe('Reglas y salidas del corte', () => {
     viejo.awnings[0].width += 10;
     expect(() => exigirCorteAlDia(viejo, corteLona)).toThrow(/A.*viejo/);
     expect(() => exigirCorteAlDia(order, corteLona)).not.toThrow();
+  });
+  // AR2605535 (16/11/2026): al corregir se quitó el toldo y se volvió a añadir; el cálculo guardado ya no era el suyo,
+  // pero el plano revisado sí estaba aceptado («Usar este corte igualmente») y el DXF no salía.
+  it('con plano revisado sale ese plano aunque el cálculo guardado sea de otros datos; sin plano exige el corte al día', () => {
+    const cambiado = structuredClone(order);
+    cambiado.awnings[0] = { ...cambiado.awnings[0], id: 'toldo-vuelto-a-crear' };
+    expect(() => exigirCorteParaSalir({ corteLona }, cambiado)).toThrow(/A.*generar/);
+    expect(() => exigirCorteParaSalir({ corteLona, corteConfirmado: { huella: 'h', plano: 'AR.dwg' } }, cambiado)).not.toThrow();
+    expect(() => exigirCorteParaSalir({ corteLona }, order)).not.toThrow();
   });
   it('no exige corte a tela acrílica ni a modelos sin corte', () => {
     expect(corteLonaPendiente({ ...order, fabric: 'ACRILI2018P120' }, null)).toEqual([]);

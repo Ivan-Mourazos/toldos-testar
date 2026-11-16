@@ -16,6 +16,14 @@ export function exigirCorteAlDia(order, corteLona) {
   throw error;
 }
 
+/**
+ * Con plano revisado, lo que sale es ese plano: si no lleva los últimos datos ya se ha preguntado antes
+ * («Usar este corte igualmente»). Sin plano, el cálculo guardado tiene que ser el de los datos del pedido.
+ */
+export function exigirCorteParaSalir(pedido, order) {
+  if (!pedido.corteConfirmado) exigirCorteAlDia(order, pedido.corteLona);
+}
+
 const segmento = value => Array.from(String(value || '')).filter(c => c.charCodeAt(0) >= 32).join('').trim().replace(/\.\./g, '').replace(/[<>:"/\\|?*]/g, '_').replace(/^\.+|\.+$/g, '').replace(/^_+|_+$/g, '') || 'SIN_TECNICO';
 
 // Carpeta de cada técnico en BOT\Pendientes (Iván, 20/10/2026: «el autor que sea tiene su carpeta»), que se
