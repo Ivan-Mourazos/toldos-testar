@@ -24,7 +24,13 @@ export async function renombrarAtomico(origen, destino) {
 export async function sustituirApartando(origen, destino) {
   const existe = await fs.lstat(destino).then(s => s.isFile(), e => { if (e.code === 'ENOENT') return false; throw e; });
   if (!existe) return renombrarAtomico(origen, destino);
-  const respaldo = path.join(path.dirname(destino), `.${path.basename(destino)}.anterior-${randomUUID()}`);
+  // Como ZWCAD: el anterior queda como AR2605535.bak; para recuperarlo basta cambiarle la extensión (Iván, 16/11/2026).
+  // Un .bak que ya esté ahí es de un fallo anterior sin recuperar: no se pisa, este lleva la fecha.
+  const { dir, name } = path.parse(destino);
+  let respaldo = path.join(dir, `${name}.bak`);
+  if (await fs.lstat(respaldo).then(() => true, e => { if (e.code === 'ENOENT') return false; throw e; })) {
+    respaldo = path.join(dir, `${name} ${new Date().toISOString().replace(/[:.]/g, '-')}.bak`);
+  }
   await renombrarAtomico(destino, respaldo);
   try { await renombrarAtomico(origen, destino); }
   catch (error) {
@@ -33,7 +39,7 @@ export async function sustituirApartando(origen, destino) {
       if (ocupado) throw new Error('Otro archivo ocupa el destino.');
       await renombrarAtomico(respaldo, destino);
     } catch (restauracion) {
-      throw Object.assign(new Error(`No se pudo guardar ${path.basename(destino)} ni devolver el anterior a su sitio. El anterior está conservado en ${respaldo}. Avisa a informática.`,
+      throw Object.assign(new Error(`No se pudo guardar ${path.basename(destino)} ni devolver el anterior a su sitio. El anterior está en ${respaldo}: cámbiale la extensión .bak por ${path.extname(destino)} para recuperarlo. Avisa a informática.`,
         { cause: new AggregateError([error, restauracion]) }), { statusCode: 500, respaldo });
     }
     throw error;

@@ -182,9 +182,21 @@ describe('guardar el pedido apartando antes el anterior', () => {
       if (hasta === destino) throw Object.assign(new Error('EIO'), { code: 'EIO' });
       return renombrar(origen, hasta);
     });
-    await expect(writeFileAtomic(destino, 'NUEVO', { apartarAntes: true })).rejects.toMatchObject({ statusCode: 500, message: expect.stringContaining('.anterior-') });
-    const copias = (await restos()).filter(n => n.includes('.anterior-'));
-    expect(copias).toHaveLength(1);
-    expect(await fs.readFile(path.join(raiz, copias[0]), 'utf8')).toBe('ANTERIOR');
+    await expect(writeFileAtomic(destino, 'NUEVO', { apartarAntes: true })).rejects.toMatchObject({ statusCode: 500, message: expect.stringContaining('AR2605535.bak') });
+    expect(await restos()).toEqual(['AR2605535.bak']);
+    expect(await fs.readFile(path.join(raiz, 'AR2605535.bak'), 'utf8')).toBe('ANTERIOR');
+  });
+  it('no pisa un .bak de un fallo anterior: el nuevo lleva la fecha y el viejo se conserva', async () => {
+    await fs.writeFile(destino, 'ANTERIOR');
+    await fs.writeFile(path.join(raiz, 'AR2605535.bak'), 'BAK VIEJO');
+    vi.spyOn(fs, 'rename').mockImplementation(async (origen, hasta) => {
+      if (hasta === destino) throw Object.assign(new Error('EIO'), { code: 'EIO' });
+      return renombrar(origen, hasta);
+    });
+    await expect(writeFileAtomic(destino, 'NUEVO', { apartarAntes: true })).rejects.toMatchObject({ statusCode: 500 });
+    expect(await fs.readFile(path.join(raiz, 'AR2605535.bak'), 'utf8')).toBe('BAK VIEJO');
+    const conFecha = (await restos()).filter(n => /^AR2605535 .+\.bak$/.test(n));
+    expect(conFecha).toHaveLength(1);
+    expect(await fs.readFile(path.join(raiz, conFecha[0]), 'utf8')).toBe('ANTERIOR');
   });
 });
