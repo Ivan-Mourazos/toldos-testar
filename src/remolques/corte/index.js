@@ -114,7 +114,7 @@ export function generarCorteRemolques(pedido, { ofStockSacos, largoMinimoRefuerz
     const ganados = els.filter((e) => e.tipo === 'ganado');
     const fuera = [...lonas.map((e) => [e, soportada(e)]), ...ganados.map((e) => [e, soportadaGanado(e)])].filter(([, motivo]) => motivo);
     if (fuera.length) {
-      aMano.push({ nombre, material, motivo: fuera.map(([e, m]) => `${e.of} ${e.input.largo}×${e.input.ancho}: ${m}`).join('; '), elementos: els.map((e) => e.of) });
+      aMano.push({ nombre, material, motivo: fuera.map(([e, m]) => `${e.of} ${e.input.largo}×${e.input.ancho}: ${m}`).join('; '), elementos: els.map((e) => e.of), versiones: els.map((e) => e.version) });
       continue;
     }
     const refuerzos = baqs.some(llevaRefuerzos);
@@ -171,6 +171,8 @@ export function generarCorteRemolques(pedido, { ofStockSacos, largoMinimoRefuerz
       cortes.push({
         nombre, material, materialCorto: corto, largo, refuerzos, ...(opcion ? { opcion } : {}),
         elementos: els.map((e) => ({ of: e.of, descripcion: descripcion(e), cantidad: e.input.cantidad || 1 })),
+        // Para apuntar en la hoja de taller de cada elemento los ML del corte de su lona (Iván, 16/11/2026).
+        versiones: els.map((e) => e.version),
         avisos: [...la.avisos, ...cb.avisos],
         apartes: la.apartes,
         ocupadas, sacos: stock.sacos, refuerzosStock: refStock.tiras,

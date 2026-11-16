@@ -25,4 +25,6 @@ export interface DatosHojaPedido {
   params: CalcParams;
   /** «REVISADO POR» de la cabecera: quien aprobó en CoordinaOT (fase 5). Vacío en la vista previa. */
   revisadoPor?: string;
+  /** Por versión de elemento, los ML del corte de su lona (hoja/metros-corte.ts). Sin él, la hoja no los pone. */
+  metrosCorte?: Record<string, string>;
 }

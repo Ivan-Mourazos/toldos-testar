@@ -36,6 +36,8 @@ export interface PaginaHojaDatos extends DatosHoja {
   /** Lo que se escribe al pie de la vista de delante y de la de detrás: su recogida (Iván,
    *  30/09/2026). null en el baquetón, que no lleva. */
   notasVistas: { delante: string; detras: string } | null;
+  /** Debajo del MATERIAL: los ML del corte de su lona (Iván, 16/11/2026). "" si no se sabe. */
+  metrosCorte: string;
   /** Remolque de ganado: su modelo y cantidad, para pintar el dibujo de la plantilla en vez de las vistas. */
   ganado?: { modelo: string; cantidad: number; medidasCal?: import("../ganado/medidas.ts").MedidasCal };
 }
@@ -125,11 +127,12 @@ export function nivelVistas(pagina: Pick<PaginaHojaDatos, "ganchos" | "ollaos">)
   return alto === 0 ? 0 : alto <= ALTO_LIBERADO_MM ? 1 : 2;
 }
 
-export function paginaHoja(elemento: ElementoHoja, indice: number, total: number, params: CalcParams, revisadoPor = ""): PaginaHojaDatos {
+export function paginaHoja(elemento: ElementoHoja, indice: number, total: number, params: CalcParams, revisadoPor = "", metrosCorte = ""): PaginaHojaDatos {
   // El de ganado no reparte ollaos: van en su dibujo de confección y en el corte.
   if (elemento.tipo === "ganado") {
     return {
       ...datosHoja(elemento, indice, total),
+      metrosCorte,
       clave: elemento.version,
       tipo: elemento.tipo,
       cabecera: cabeceraHoja(elemento.input.cabecera, revisadoPor),
@@ -141,6 +144,7 @@ export function paginaHoja(elemento: ElementoHoja, indice: number, total: number
   }
   return {
     ...datosHoja(elemento, indice, total),
+    metrosCorte,
     clave: elemento.version,
     tipo: elemento.tipo,
     cabecera: cabeceraHoja(elemento.input.cabecera, revisadoPor),

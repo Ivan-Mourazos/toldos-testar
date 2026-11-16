@@ -17,6 +17,7 @@ import type { CalcParams } from "../calc/params.ts";
 import { exigirOfsCorte } from "../corte/of.js";
 import { validarParams } from "../calc/validar-params.ts";
 import { prepararPedidoHoja } from "../hoja/pedido.ts";
+import { metrosCortePorElemento, type VistaCorteMetros } from "../hoja/metros-corte.ts";
 import type { DatosHojaPedido } from "../hoja/tipos.ts";
 import { archivarPdfRemolques, destinosPdfRemolques, ErrorArchivoPdf, mensajeCarpetaNoDisponible, type CarpetasRemolques } from "../salida/archivo.ts";
 import { nombrePdf } from "../salida/nombre-pdf.ts";
@@ -185,6 +186,21 @@ function conResultadosDeLaHoja(pedido: PedidoRemolques, datos: DatosHojaPedido):
 }
 
 const sinContenido = ({ contenido: _contenido, ...fichero }: ArchivoCorte): FicheroCorte => fichero;
+
+/**
+ * La hoja con los ML del corte de cada lona debajo del material (Iván, 16/11/2026). Si el corte no se
+ * puede calcular, la hoja sale igual, sin los ML: no se para un PDF por eso.
+ */
+async function conMetrosCorte(datos: DatosHojaPedido, corte: CorteRemolques | undefined, pedido: () => PedidoRemolques,
+  registrar: (mensaje: string) => void): Promise<DatosHojaPedido> {
+  if (!corte) return datos;
+  try {
+    return { ...datos, metrosCorte: metrosCortePorElemento(await corte.vista(pedido()) as VistaCorteMetros | null) };
+  } catch (error) {
+    registrar(`No se pudieron calcular los ML del corte para la hoja: ${error instanceof Error ? error.message : String(error)}`);
+    return datos;
+  }
+}
 
 async function prepararCorte(corte: CorteRemolques, pedido: PedidoRemolques, registrar: (mensaje: string) => void) {
   try {
@@ -449,7 +465,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       const usuario = (cuerpo as { savedBy?: string } | null)?.savedBy;
       if (usuario && deps.tecnicos.includes(usuario) && generado.production) generado.production.createdBy = usuario;
       generado = cerrarEntrega(generado, materiales);
-      const pdf = await adjuntarDatosPedido(await deps.hacerPdf(datos), (cuerpo as { soloPdf?: boolean })?.soloPdf ? { ...pedido, production: generado.production } : generado);
+      const pdf = await adjuntarDatosPedido(await deps.hacerPdf(await conMetrosCorte(datos, deps.corte, () => calculadoEntrega, registrar)),(cuerpo as { soloPdf?: boolean })?.soloPdf ? { ...pedido, production: generado.production } : generado);
       const finalizar = async () => {
         const actual = await obtener(orderCode);
         await deps.almacen.guardar({ ...generado, enviosCorte: actual.enviosCorte });
@@ -555,13 +571,25 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     return deps.corte.vista(pedido);
   }
 
+  /** Los ML del corte para la vista previa de la hoja desde el formulario; sin corte, nada. */
+  async function metrosCorteDeLaPantalla(cuerpo: unknown): Promise<Record<string, string> | undefined> {
+    if (!deps.corte) return undefined;
+    try {
+      return metrosCortePorElemento(await vistaPreviaCorte(cuerpo) as VistaCorteMetros | null);
+    } catch (error) {
+      registrar(`No se pudieron calcular los ML del corte para la vista previa: ${error instanceof Error ? error.message : String(error)}`);
+      return undefined;
+    }
+  }
+
   async function vistaPrevia(orderCode: string): Promise<{ pdf: Uint8Array; nombre: string }> {
     const pedido = await obtener(orderCode);
     const datos: DatosHojaPedido = {
       ...prepararPedidoHoja(elementosPedidoHoja(pedidoEntrega(pedido)), pedido.params),
       revisadoPor: pedido.status === "PRODUCED" ? pedido.reviewedBy : "",
     };
-    return { pdf: await adjuntarDatosPedido(await deps.hacerPdf(datos), pedido), nombre: pedido.entregaActual ? `${codigoEntrega(pedido)}.pdf` : nombrePdf(pedido.numeroPedido) };
+    const conMetros = await conMetrosCorte(datos, deps.corte, () => conResultadosDeLaHoja(pedidoEntrega(pedido), datos), registrar);
+    return { pdf: await adjuntarDatosPedido(await deps.hacerPdf(conMetros), pedido), nombre: pedido.entregaActual ? `${codigoEntrega(pedido)}.pdf` : nombrePdf(pedido.numeroPedido) };
   }
 
   async function archivo(orderCode: string): Promise<{ pdf: Uint8Array; nombre: string }> {
@@ -661,5 +689,5 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     return pedido.corteConfirmado ? prepararPlanoProduccion({ confirmado: pedido.corteConfirmado }) : planoCorte(codigo, cuerpo);
   }
 
-  return { guardarPlano, produccion, listar, obtener, guardar, borradorCorte, confirmarCorte, estadoCorte, enlacesCorte, generar, vistaPrevia, archivo, buscar, corte, vistaPreviaCorte, planoCorte, enviarCorte, descargarCorte };
+  return { guardarPlano, produccion, listar, obtener, guardar, borradorCorte, confirmarCorte, estadoCorte, enlacesCorte, generar, vistaPrevia, archivo, buscar, corte, vistaPreviaCorte, metrosCorteDeLaPantalla, planoCorte, enviarCorte, descargarCorte };
 }

@@ -905,7 +905,9 @@ app.post('/api/remolques/pdf', async (req, res, next) => {
     const params = req.body?.params == null
       ? await parametrosRemolques()
       : paramsDeLaPantalla(req.body.params);
-    const datos = prepararPedidoHoja(req.body?.elementos, params);
+    // Con los ML del corte debajo del material (Iván, 16/11/2026); si el corte falla, la hoja sale sin ellos.
+    const metrosCorte = await pedidosRemolques.metrosCorteDeLaPantalla({ ...req.body, params });
+    const datos = { ...prepararPedidoHoja(req.body?.elementos, params), ...(metrosCorte ? { metrosCorte } : {}) };
     const pdf = await servicioPdfRemolques.generar({
       // La ficha se guarda al salir de la cola: su minuto empieza cuando Chromium va a pedirla.
       preparar: () => (id = fichasHojaRemolques.guardar(datos)),

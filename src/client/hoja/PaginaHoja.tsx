@@ -135,6 +135,8 @@ export function PaginaHoja({ pagina, vistas }: { pagina: PaginaHojaDatos; vistas
             <span className="hoja-rotulo">MATERIAL</span>
             {/* En una línea: si no cabe, la letra baja hasta 7 pt y, si ni así, «…» (HojaPedido.tsx). */}
             <p className="hoja-material hoja-una-linea" data-letra-minima="7">{pagina.material}</p>
+            {/* Debajo, en una línea, los ML del corte de su lona (Iván, 16/11/2026). */}
+            {pagina.metrosCorte && <p className="hoja-material hoja-una-linea" data-letra-minima="7">{pagina.metrosCorte}</p>}
           </div>
           <div className="hoja-grupo">
             <span className="hoja-rotulo">OBSERVACIONES</span>
