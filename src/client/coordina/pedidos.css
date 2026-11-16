@@ -246,10 +246,13 @@
   bottom: 0;
   content: '';
   left: 0;
+  pointer-events: none;
   position: absolute;
   top: 0;
   width: 0.25rem;
-  z-index: 1;
+  /* Por encima del detalle (`.orders-detail`, z-index 3), que en el estilo HeroUI lleva fondo
+     propio y la tapaba de la cabecera para abajo. */
+  z-index: 4;
 }
 /* La fila: `px-3 py-1.5`, abierta `bg-brand-500/10`, con el ratón `bg-surface-2`. El botón que
    la cubre (`.orders-row-toggle`, hermano de las celdas) recibe el clic; las celdas no. */
