@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Check, Search, X } from 'lucide-react';
 import { fabricSelectionLabel, resolveFabric, serializeFabricSelection } from '../../domain/fabricCatalog.js';
 import { useFloatingMenu } from '../hooks/useFloatingMenu';
+import { useSalidaAnimada } from '../hooks/useSalidaAnimada';
 import { ReadPair, useReadMode } from './ReadMode';
 import { NumberField } from './NumberField';
 
@@ -37,6 +38,7 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
   const [typed, setTyped] = useState(false);
   const [options, setOptions] = useState<FabricOption[]>([]);
   const [open, setOpen] = useState(false);
+  const { montado, alTerminar } = useSalidaAnimada(open);
   const [loading, setLoading] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -172,8 +174,9 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
           label={widthLabel} value={selectedFabric.width} min={0.1} step={0.1} missing={!selectedFabric.width}
           onChange={(width) => onChange(serializeFabricSelection({ ...selectedFabric, width }))} />}
       </>}
-      {open && createPortal(
-        <div ref={menuRef} id={listId} className="fabric-options fabric-options-portal" style={menuStyle} role="listbox">
+      {montado && createPortal(
+        <div ref={menuRef} id={listId} className={`fabric-options fabric-options-portal${open ? '' : ' pop-out'}`} style={menuStyle}
+          role="listbox" aria-hidden={!open} inert={!open} onAnimationEnd={alTerminar}>
           {loading && <div className="fabric-option-state">Buscando en RPSNext…</div>}
           {!loading && options.length === 0 && <div className="fabric-option-state">Sin coincidencias</div>}
           {!loading && options.map((option) => (

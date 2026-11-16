@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Check, ChevronDown } from 'lucide-react';
 import { controlLabel } from './controlLabels';
 import { useFloatingMenu } from '../hooks/useFloatingMenu';
+import { useSalidaAnimada } from '../hooks/useSalidaAnimada';
 import { ReadPair, useReadMode, withUnit } from './ReadMode';
 import { readUnitOf } from '../readGroups';
 
@@ -25,6 +26,7 @@ export function SelectField({ label, value, options, onChange, placeholder, allo
   const emptyOptionLabel = optionLabel?.('') || emptyLabel || 'No indicado';
   const reading = useReadMode();
   const [open, setOpen] = useState(false);
+  const { montado, alTerminar } = useSalidaAnimada(open);
   const [activeIndex, setActiveIndex] = useState(0);
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -129,8 +131,9 @@ export function SelectField({ label, value, options, onChange, placeholder, allo
         <ChevronDown aria-hidden="true" />
       </button>
 
-      {open && createPortal(
-        <div ref={menuRef} id={listboxId} className="select-options select-options-portal" style={menuStyle} role="listbox" aria-labelledby={labelId}>
+      {montado && createPortal(
+        <div ref={menuRef} id={listboxId} className={`select-options select-options-portal${open ? '' : ' pop-out'}`} style={menuStyle}
+          role="listbox" aria-labelledby={labelId} aria-hidden={!open} inert={!open} onAnimationEnd={alTerminar}>
           {sections.map(({ group, entries }, sectionIndex) => (
             <div key={sectionIndex} role={group ? 'group' : undefined} aria-label={group || undefined}>
               {group && <div className="select-group-label">{group}</div>}

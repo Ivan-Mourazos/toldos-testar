@@ -108,13 +108,17 @@ html[data-estilo="hero"]:root #root :is(.ghost-button, .icon-text-button, .icon-
 }
 html[data-estilo="hero"]:root #root :is(.ghost-button, .icon-text-button, .icon-button, .glass-chip, .chip-3d):active:not(:disabled) { background-color: var(--hero-relleno-pulsado); }
 
-/* Pestañas: carril gris en píldora; la elegida, píldora blanca con sombra. */
+/* Pestañas: carril gris en píldora; la elegida, píldora blanca con sombra.
+   Como en CoordinaOT, el carril no hereda el borde y la sombra de un botón al pasar el ratón. */
 html[data-estilo="hero"]:root #root .tira-3d,
-html[data-estilo="hero"]:root #root .tira-3d.glass-chip {
+html[data-estilo="hero"]:root #root .tira-3d.glass-chip,
+html[data-estilo="hero"]:root #root .tira-3d.glass-chip:hover:not(:disabled),
+html[data-estilo="hero"]:root #root .tira-3d.glass-chip:active:not(:disabled) {
   background: var(--hero-carril);
   border: 0;
   border-radius: 999px;
   box-shadow: none;
+  transform: none;
   gap: 2px;
   max-width: 100%;
   padding: 4px;
@@ -123,6 +127,8 @@ html[data-estilo="hero"]:root #root .tira-3d.glass-chip {
 html[data-estilo="hero"]:root #root .tira-3d > :not(.pestana-activa),
 html[data-estilo="hero"]:root #root .tira-3d > :not(.pestana-activa):hover {
   background-color: transparent;
+  border: 0;
+  box-shadow: none;
   color: var(--hero-texto-suave);
 }
 html[data-estilo="hero"]:root #root .tira-3d > :not(.pestana-activa):hover { color: var(--text); }

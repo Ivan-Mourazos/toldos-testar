@@ -493,6 +493,8 @@ body {
 html {
   scrollbar-color: var(--border-strong) transparent;
   scrollbar-width: thin;
+  /* Como en CoordinaOT: cambiar de pestaña no mueve la página al aparecer la barra. */
+  scrollbar-gutter: stable;
 }
 html::-webkit-scrollbar { width: 12px; height: 12px; }
 html::-webkit-scrollbar-thumb {

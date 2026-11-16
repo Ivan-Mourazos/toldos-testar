@@ -1,5 +1,6 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { Ellipsis } from 'lucide-react';
+import { useSalidaAnimada } from '../hooks/useSalidaAnimada';
 
 /**
  * «Más ⋯»: las acciones que se usan poco, recogidas en un menú para que la barra de arriba solo enseñe el paso que toca
@@ -8,6 +9,7 @@ import { Ellipsis } from 'lucide-react';
  */
 export function MenuMas({ children, etiqueta = 'Más' }: { children: React.ReactNode; etiqueta?: string }) {
   const [abierto, setAbierto] = useState(false);
+  const { montado, alTerminar } = useSalidaAnimada(abierto);
   const raiz = useRef<HTMLDivElement>(null);
   const boton = useRef<HTMLButtonElement>(null);
   const id = useId();
@@ -24,7 +26,8 @@ export function MenuMas({ children, etiqueta = 'Más' }: { children: React.React
   return <div className="menu-mas" ref={raiz}>
     <button ref={boton} type="button" className="ghost-button boton-3d" aria-haspopup="menu" aria-expanded={abierto} aria-controls={id}
       onClick={() => setAbierto((v) => !v)}><Ellipsis size={16} aria-hidden="true" />{etiqueta}</button>
-    {abierto && <div id={id} className="menu-mas-panel glass-pop" role="menu" onClick={(evento) => {
+    {montado && <div id={id} className={`menu-mas-panel glass-pop${abierto ? '' : ' pop-out'}`} role="menu"
+      aria-hidden={!abierto} inert={!abierto} onAnimationEnd={alTerminar} onClick={(evento) => {
       if ((evento.target as HTMLElement).closest('.menu-mas-item')) setAbierto(false);
     }}>{children}</div>}
   </div>;

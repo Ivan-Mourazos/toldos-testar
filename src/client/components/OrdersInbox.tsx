@@ -6,6 +6,7 @@ import {
   type FiltroProducto, type Producto,
 } from '../ordersInbox';
 import { controlLabel } from './controlLabels';
+import { Desplegable } from './Desplegable';
 import type { ResumenBorrador } from '../../borradores/tipos.ts';
 import { formOptions } from '../../domain/modelBehavior.js';
 import { authorNames } from '../../reviewRules.js';
@@ -248,7 +249,7 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
         </span>
       </div>
       </div>
-      {open && (
+      <Desplegable abierto={open}>
         <div className="orders-detail" id={detailId}>
           {awnings?.length ? (
             <ul className={detalleEnColumnas(awnings.length) ? 'orders-detail-list is-columns' : 'orders-detail-list'}>
@@ -277,7 +278,7 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
             <button type="button" className="primary-button boton-3d" onClick={onOpen}><FolderOpen aria-hidden="true" />Abrir el pedido</button>
           </div>
         </div>
-      )}
+      </Desplegable>
     </li>
   );
 }
@@ -317,7 +318,7 @@ function DraftRow({ borrador, mine, open, onToggle, onSeguir, onDescartar }: {
         <span className="orders-awnings"><span className="orders-models">{elementos} {elementos === 1 ? 'elemento' : 'elementos'}</span></span>
       </div>
       </div>
-      {open && (
+      <Desplegable abierto={open}>
         <div className="orders-detail" id={detailId}>
           <p className="orders-detail-empty">Guardado por {author} el {fechaBorrador(borrador.updatedAt)}. Es un borrador: no está en revisión hasta que se guarde para revisión.</p>
           <div className="orders-detail-actions">
@@ -325,7 +326,7 @@ function DraftRow({ borrador, mine, open, onToggle, onSeguir, onDescartar }: {
             <button type="button" className="primary-button boton-3d" onClick={onSeguir}><FilePen aria-hidden="true" />Seguir con el borrador</button>
           </div>
         </div>
-      )}
+      </Desplegable>
     </li>
   );
 }
@@ -356,8 +357,15 @@ function useAjustarAlDesplegar(open: boolean) {
     if (!open || !ref.current) return;
     const fila = ref.current;
     const quieto = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const id = requestAnimationFrame(() => fila.scrollIntoView({ block: 'nearest', behavior: quieto ? 'auto' : 'smooth' }));
-    return () => cancelAnimationFrame(id);
+    let vigente = true;
+    const id = requestAnimationFrame(() => {
+      const ajustar = () => { if (vigente) fila.scrollIntoView({ block: 'nearest', behavior: quieto ? 'auto' : 'smooth' }); };
+      const apertura = fila.querySelector('.desplegable')?.getAnimations()[0];
+      // Medir con la fila ya abierta: al empezar la animación el detalle aún mide cero.
+      if (apertura && !quieto) void apertura.finished.then(ajustar, () => undefined);
+      else ajustar();
+    });
+    return () => { vigente = false; cancelAnimationFrame(id); };
   }, [open]);
   return ref;
 }
