@@ -178,3 +178,20 @@ it('al registrar conserva la aceptación del corte y los datos guardados tras pr
   expect(guardar).toHaveBeenCalledWith(expect.objectContaining({ corteNoRegenerado: false, corteConfirmado,
     production: actual.production, enviosCorte: [actual.enviosCorte[0], expect.objectContaining({ destino: 'dxfs' })] }));
 });
+
+// AR2605535 (16/11/2026): el DXF llegó a la máquina con 0 bytes.
+describe('nunca sale un corte vacío o a medias', () => {
+  it('un DXF vacío no se escribe', async () => {
+    preparar.mockResolvedValue([{ filename: 'AR2604784.dxf', contents: Buffer.alloc(0) }]);
+    await expect(enviarCorte(entrada)).rejects.toMatchObject({ statusCode: 409, message: expect.stringContaining('vacío') });
+    expect(await fs.readdir(raiz).catch(() => [])).toEqual([]);
+    expect(guardar).not.toHaveBeenCalled();
+  });
+  it('si en la carpeta queda con otro tamaño, falla y no registra el envío', async () => {
+    const stat = fs.stat.bind(fs);
+    vi.spyOn(fs, 'stat').mockImplementation(async (p, ...r) => p.endsWith('AR2604784.dxf') && !String(p).includes('.corte-')
+      ? stat(p, ...r).then(s => ({ ...s, size: 0, isDirectory: () => s.isDirectory() })) : stat(p, ...r));
+    await expect(enviarCorte(entrada)).rejects.toThrow(/0 bytes/);
+    expect(guardar).not.toHaveBeenCalled();
+  });
+});

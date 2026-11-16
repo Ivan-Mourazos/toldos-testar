@@ -96,6 +96,9 @@ export async function enviarCorte({ pedido, order, settings, usuario, destino, c
 
 /** Comprueba todos los nombres antes de publicar. Cada fichero aparece completo y toda salida parcial se registra. */
 export async function publicarArchivosCorte({ files, carpeta, confirmOverwrite = false, crearCarpetas = false, registrar }) {
+  // Un DXF o CMT vacío no se corta (AR2605535, 16/11/2026: llegaron a la máquina con 0 bytes).
+  const vacios = files.filter(f => !f.contents || Buffer.byteLength(f.contents) === 0).map(f => f.filename);
+  if (vacios.length) throw fallo(409, `El corte está vacío (${vacios.join(', ')}). No se ha escrito nada.`);
   const existing = (await Promise.all(files.map(async file => {
     try { await fs.stat(file.savedPath); return file.filename; }
     catch (error) { if (error.code !== 'ENOENT') throw error; return ''; }
@@ -138,6 +141,9 @@ export async function publicarArchivosCorte({ files, carpeta, confirmOverwrite =
           }
         } finally { await fs.unlink(temporal).catch(() => {}); }
       }
+      // Se comprueba en la carpeta lo que ha quedado: la red puede dejar el archivo a medias sin dar error.
+      const tamano = (await fs.stat(file.savedPath)).size;
+      if (tamano !== Buffer.byteLength(file.contents)) throw new Error(`en la carpeta ha quedado con ${tamano} bytes en vez de ${Buffer.byteLength(file.contents)}`);
       escritos.push(file);
     } catch (error) {
       if (escritos.length) {

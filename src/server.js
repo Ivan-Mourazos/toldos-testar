@@ -93,6 +93,7 @@ import {
   createReviewPackage,
   createWorkflowStore,
   defaultWorkflowSettings,
+  buildReviewPath,
   fileExists,
   getOrderYear,
   markReviewApproved,
@@ -165,6 +166,15 @@ const deploymentFeatures = {
 const app = express();
 const cierreHttp = crearCierreHttp();
 app.use(cierreHttp.middleware);
+// Todo fallo del servidor queda en el log de PM2 con la ruta (y el pedido): sin esto, el 5535 (16/11/2026) no dejó rastro.
+app.use((req, res, next) => {
+  const json = res.json.bind(res);
+  res.json = (cuerpo) => {
+    if (res.statusCode >= 500) console.error(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} → ${res.statusCode}: ${cuerpo?.error ?? ''}`);
+    return json(cuerpo);
+  };
+  next();
+});
 const coordina = createCoordinaClient({ url: config.coordinaUrl, key: config.coordinaClave });
 const generationLocks = new Set();
 // Hoja de taller de remolques (fase 4): los datos de cada PDF esperan aquí, en memoria y un
@@ -1522,9 +1532,12 @@ async function generarArchivosToldos(orderCode, cuerpo, prepararSolo = false) {
       if (target.build) target.contents = await target.build();
       target.exists = await fileExists(target.savedPath);
     }));
+    // En la primera entrega el PDF del año es el propio pedido de TOLDOS: ya existe siempre y lo escribe saveReview.
+    // Contarlo hacía preguntar «¿sobrescribir?» en pedidos que nunca se habían pasado (Iván, 16/11/2026).
+    const pdfAnualEsElPedido = path.resolve(pdfAnual) === path.resolve(buildReviewPath(settings.reviewDirectory, review.orderCode));
     const existing = [...new Set([
       ...targets.filter((target) => target.exists).map((target) => target.filename),
-      ...(await fileExists(pdfAnual) ? [path.basename(pdfAnual)] : []),
+      ...(!pdfAnualEsElPedido && await fileExists(pdfAnual) ? [path.basename(pdfAnual)] : []),
     ])];
     if (existing.length > 0 && req.body?.confirmOverwrite !== true) {
       return res.status(409).json({ needsConfirmation: true, existing });
@@ -1592,9 +1605,11 @@ async function generarArchivosToldos(orderCode, cuerpo, prepararSolo = false) {
           await writeFileAtomic(target.savedPath, target.contents);
           escritos.push(target.savedPath);
         }
-        await fs.mkdir(path.dirname(pdfAnual), { recursive: true });
-        await writeFileAtomic(pdfAnual, pdfTarget.contents);
-        escritos.push(pdfAnual);
+        if (!pdfAnualEsElPedido) {
+          await fs.mkdir(path.dirname(pdfAnual), { recursive: true });
+          await writeFileAtomic(pdfAnual, pdfTarget.contents);
+          escritos.push(pdfAnual);
+        }
 
         // El PDF conserva las mismas páginas en ambos destinos y en la ficha editable.
         const guardado = prepararSolo || cuerpo.soloPdf ? { ...review, production: updated.production } : updated;
@@ -1828,8 +1843,10 @@ app.use('/api', (_req, res) => {
 
 await configureFrontend();
 
-app.use((error, _req, res, _next) => {
+app.use((error, req, res, _next) => {
   const status = error.statusCode || 400;
+  // Los errores sin código propio (de disco, red…) también se apuntan aunque se respondan como 400.
+  if (status >= 500 || !error.statusCode) console.error(`${req.method} ${req.originalUrl}:`, error);
   res.status(status).json({ error: error.message || 'No se pudo completar la operación.' });
 });
 

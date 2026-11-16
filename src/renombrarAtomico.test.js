@@ -137,3 +137,54 @@ describe('sustituir planos en una carpeta compartida que no deja reemplazar', ()
     expect(await copias(raiz)).toEqual([]);
   });
 });
+
+// AR2605535 (16/11/2026): en CIFS, renombrar encima puede borrar el destino y perderlo. El pedido nunca se renombra encima.
+describe('guardar el pedido apartando antes el anterior', () => {
+  let raiz, destino, renombrar;
+  beforeEach(async () => {
+    await fs.mkdir(path.resolve('tmp'), { recursive: true });
+    raiz = await fs.mkdtemp(path.resolve('tmp/apartar-pedido-'));
+    destino = path.join(raiz, 'AR2605535.pdf');
+    renombrar = fs.rename.bind(fs);
+  });
+  afterEach(async () => { vi.restoreAllMocks(); await fs.rm(raiz, { recursive: true, force: true }); });
+  const restos = async () => (await fs.readdir(raiz)).filter(n => n !== 'AR2605535.pdf');
+
+  it('nunca renombra encima de un archivo existente y no deja copias', async () => {
+    await fs.writeFile(destino, 'ANTERIOR');
+    const rename = vi.spyOn(fs, 'rename').mockImplementation(async (origen, hasta) => {
+      if (await fs.stat(hasta).then(() => true, () => false)) throw new Error(`renombrado encima de ${hasta}`);
+      return renombrar(origen, hasta);
+    });
+    await writeFileAtomic(destino, 'NUEVO', { apartarAntes: true });
+    expect(await fs.readFile(destino, 'utf8')).toBe('NUEVO');
+    expect(rename).toHaveBeenCalledTimes(2);
+    expect(await restos()).toEqual([]);
+  });
+  it('si no existe, se publica directamente', async () => {
+    await writeFileAtomic(destino, 'NUEVO', { apartarAntes: true });
+    expect(await fs.readFile(destino, 'utf8')).toBe('NUEVO');
+    expect(await restos()).toEqual([]);
+  });
+  it('si falla publicar el nuevo, el anterior vuelve a su sitio', async () => {
+    await fs.writeFile(destino, 'ANTERIOR');
+    vi.spyOn(fs, 'rename').mockImplementation(async (origen, hasta) => {
+      if (origen.includes('.tmp-')) throw Object.assign(new Error('EIO'), { code: 'EIO' });
+      return renombrar(origen, hasta);
+    });
+    await expect(writeFileAtomic(destino, 'NUEVO', { apartarAntes: true })).rejects.toMatchObject({ code: 'EIO' });
+    expect(await fs.readFile(destino, 'utf8')).toBe('ANTERIOR');
+    expect(await restos()).toEqual([]);
+  });
+  it('si tampoco puede devolverlo, conserva la copia y dice dónde está', async () => {
+    await fs.writeFile(destino, 'ANTERIOR');
+    vi.spyOn(fs, 'rename').mockImplementation(async (origen, hasta) => {
+      if (hasta === destino) throw Object.assign(new Error('EIO'), { code: 'EIO' });
+      return renombrar(origen, hasta);
+    });
+    await expect(writeFileAtomic(destino, 'NUEVO', { apartarAntes: true })).rejects.toMatchObject({ statusCode: 500, message: expect.stringContaining('.anterior-') });
+    const copias = (await restos()).filter(n => n.includes('.anterior-'));
+    expect(copias).toHaveLength(1);
+    expect(await fs.readFile(path.join(raiz, copias[0]), 'utf8')).toBe('ANTERIOR');
+  });
+});

@@ -16,6 +16,32 @@ export async function renombrarAtomico(origen, destino) {
 }
 
 /**
+ * Sustituye sin renombrar nunca encima de un archivo existente. En las carpetas de red montadas en Linux (CIFS),
+ * cuando el servidor rechaza reemplazar, el propio sistema borra el destino y vuelve a intentarlo; si ese segundo
+ * intento falla, el destino se pierde sin que la web pueda evitarlo (pedido AR2605535, 16/11/2026). Por eso el
+ * anterior se aparta primero con un nombre que no existe, se publica el nuevo y, si falla, se devuelve a su sitio.
+ */
+export async function sustituirApartando(origen, destino) {
+  const existe = await fs.lstat(destino).then(s => s.isFile(), e => { if (e.code === 'ENOENT') return false; throw e; });
+  if (!existe) return renombrarAtomico(origen, destino);
+  const respaldo = path.join(path.dirname(destino), `.${path.basename(destino)}.anterior-${randomUUID()}`);
+  await renombrarAtomico(destino, respaldo);
+  try { await renombrarAtomico(origen, destino); }
+  catch (error) {
+    try {
+      const ocupado = await fs.lstat(destino).then(() => true, e => { if (e.code === 'ENOENT') return false; throw e; });
+      if (ocupado) throw new Error('Otro archivo ocupa el destino.');
+      await renombrarAtomico(respaldo, destino);
+    } catch (restauracion) {
+      throw Object.assign(new Error(`No se pudo guardar ${path.basename(destino)} ni devolver el anterior a su sitio. El anterior está conservado en ${respaldo}. Avisa a informática.`,
+        { cause: new AggregateError([error, restauracion]) }), { statusCode: 500, respaldo });
+    }
+    throw error;
+  }
+  await fs.rm(respaldo, { force: true }).catch(() => {});
+}
+
+/**
  * Algunos recursos SMB permiten apartar el plano pero rechazan reemplazarlo directamente. El anterior se aparta
  * con un nombre provisional en su misma carpeta y se borra cuando el nuevo ya está en su sitio: no se guardan
  * copias (Iván, 10/11/2026: sin carpeta «_anteriores»; las versiones viejas se borran). Si está abierto (EBUSY)

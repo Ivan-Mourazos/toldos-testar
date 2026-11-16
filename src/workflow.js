@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { abrirEntrega, cerrarEntrega, pedidoEntrega, ofsEntrega } from './entregas.js';
-import { renombrarAtomico, renombrarConRespaldo } from './renombrarAtomico.js';
+import { renombrarAtomico, renombrarConRespaldo, sustituirApartando } from './renombrarAtomico.js';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
@@ -489,7 +489,7 @@ export function createWorkflowStore({ settingsFile, defaults }) {
     }
     const reviewPath = buildReviewPath(settings.reviewDirectory, review.orderCode);
     await fs.mkdir(path.dirname(reviewPath), { recursive: true });
-    await writeFileAtomic(reviewPath, pdf);
+    await writeFileAtomic(reviewPath, pdf, { apartarAntes: true });
     return reviewPath;
   }
 
@@ -599,11 +599,13 @@ export async function fileExists(target) {
 }
 
 // Solo los planos activan la copia: tras un rechazo de SMB, apartar y publicar requiere dos renombrados.
-export async function writeFileAtomic(targetPath, contents, { conservarAnterior = false } = {}) {
+// `apartarAntes`: nunca renombra encima del existente (el pedido de TOLDOS no se puede perder).
+export async function writeFileAtomic(targetPath, contents, { conservarAnterior = false, apartarAntes = false } = {}) {
   const tmpPath = `${targetPath}.tmp-${process.pid}-${Date.now()}`;
   await fs.writeFile(tmpPath, contents);
   try {
-    if (conservarAnterior) await renombrarConRespaldo(tmpPath, targetPath);
+    if (apartarAntes) await sustituirApartando(tmpPath, targetPath);
+    else if (conservarAnterior) await renombrarConRespaldo(tmpPath, targetPath);
     else await renombrarAtomico(tmpPath, targetPath);
   } catch (error) {
     await fs.unlink(tmpPath).catch(() => {});
