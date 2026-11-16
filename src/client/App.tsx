@@ -26,7 +26,7 @@ import { OrderSearch } from './components/OrderSearch';
 import { CargandoPedido } from './components/CargandoPedido';
 import { normalizarNumeroPedidoRps } from '../remolques/rps/numero-pedido.ts';
 import type { PedidoRps } from '../remolques/rps/types.ts';
-import { incompleteAwningLines } from './incompleteAwnings';
+import { avisoSinCalculo, incompleteAwningLines } from './incompleteAwnings';
 import { PdfPreviewViewer } from './components/PdfPreviewViewer';
 import { controlLabel } from './components/controlLabels';
 import { OrderView } from './views/OrderView';
@@ -196,7 +196,7 @@ export default function App() {
   const estadoDelBot = useEstadoBot();
   const pendingCount = pendingReviews.reviews.length;
 
-  const { calculation, calculationState } = useCalculation({
+  const { calculation, calculationState, calculationError, recalcular } = useCalculation({
     activeTab,
     orderCode: draft.orderCode,
     customer: draft.customer,
@@ -690,12 +690,18 @@ export default function App() {
     else notify(result.message || 'No se pudieron guardar los parámetros.', { tone: 'error' });
   }
 
+  function avisarSinCalculo(paraQue: string) {
+    const aviso = avisoSinCalculo(draft.awnings, { fabric: draft.fabric, sameFabric: draft.sameFabric }, { estado: calculationState, error: calculationError }, paraQue);
+    notify(aviso.message, { tone: 'warning', title: aviso.title });
+    if (calculationState === 'error') recalcular();
+  }
+
   async function saveForReview(regenerar = false) {
     const incomplete = incompleteAwningLines(draft.awnings, { fabric: draft.fabric, sameFabric: draft.sameFabric });
     // Sin ningún toldo calculado no se manda a revisar (Iván, 01/10/2026): saldría en «Por
     // revisar» sin despiece ni reserva. Para dejar un pedido a medias, el borrador.
     if (!calculation || calculation.ofs.length === 0) {
-      notify(incomplete.length ? incomplete.join('. ') : 'Añade al menos un toldo antes de guardarlo para revisión.', { tone: 'warning', title: 'Faltan datos' });
+      avisarSinCalculo('antes de guardarlo para revisión');
       return;
     }
     if (incomplete.length) {
@@ -785,8 +791,7 @@ export default function App() {
 
   async function openPlanteamientoPreview() {
     if (!calculation || calculation.ofs.length === 0) {
-      const incomplete = incompleteAwningLines(draft.awnings, { fabric: draft.fabric, sameFabric: draft.sameFabric });
-      notify(incomplete.length ? incomplete.join('. ') : 'Añade al menos un toldo para ver el planteamiento.', { tone: 'warning', title: 'Faltan datos' });
+      avisarSinCalculo('para ver el planteamiento');
       return;
     }
     setWorking('preview');

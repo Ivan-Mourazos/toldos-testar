@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ActiveTab, Awning, Calculation, CalculationState, RuleParameters } from '../types';
 
 export function useCalculation({
@@ -36,6 +36,12 @@ export function useCalculation({
 }) {
   const [calculation, setCalculation] = useState<Calculation | null>(null);
   const [calculationState, setCalculationState] = useState<CalculationState>('idle');
+  const [calculationError, setCalculationError] = useState('');
+  // Un fallo pasajero (el servidor reiniciándose, la red) dejaba el formulario sin cálculo hasta que se tocaba
+  // algún dato: ahora se reintenta solo unas veces y se puede pedir de nuevo (AR2605535, 16/11/2026).
+  const [intento, setIntento] = useState(0);
+  const reintentos = useRef(0);
+  const recalcular = useCallback(() => { reintentos.current = 0; setIntento((n) => n + 1); }, []);
 
   useEffect(() => {
     if (awnings.length === 0) {
@@ -43,6 +49,7 @@ export function useCalculation({
     }
 
     const controller = new AbortController();
+    let reintento: number | undefined;
 
     const timer = window.setTimeout(async () => {
       setCalculationState('validating');
@@ -69,22 +76,31 @@ export function useCalculation({
           }),
           signal: controller.signal
         });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'No se pudo actualizar el planteamiento.');
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw Object.assign(new Error(data.error || ''), { delServidor: response.status < 500 });
         setCalculation(data);
         setCalculationState('ready');
-      } catch {
+        setCalculationError('');
+        reintentos.current = 0;
+      } catch (error) {
         if (controller.signal.aborted) return;
         setCalculation(null);
         setCalculationState('error');
+        setCalculationError(error instanceof Error && 'delServidor' in error ? error.message : 'no hay conexión con el servidor');
+        // Lo que el servidor rechaza por los datos no cambia por repetirlo.
+        if (!(error instanceof Error && 'delServidor' in error && error.delServidor) && reintentos.current < 3) {
+          reintentos.current += 1;
+          reintento = window.setTimeout(() => setIntento((n) => n + 1), 1500 * reintentos.current);
+        }
       }
     }, 350);
 
     return () => {
       controller.abort();
       window.clearTimeout(timer);
+      window.clearTimeout(reintento);
     };
-  }, [activeTab, orderCode, customer, orderDate, technician, reviewer, fabric, sameFabric, remate, remateColor, structureColor, rotTela, rotBamba, awnings, parameters]);
+  }, [activeTab, orderCode, customer, orderDate, technician, reviewer, fabric, sameFabric, remate, remateColor, structureColor, rotTela, rotBamba, awnings, parameters, intento]);
 
   const effectiveCalculation = awnings.length === 0 ? null : calculation;
   const effectiveState = awnings.length === 0 ? 'idle' : calculationState;
@@ -93,7 +109,7 @@ export function useCalculation({
     ofs: consolidateOfs(effectiveCalculation?.ofs || [])
   }), [effectiveCalculation, orderCode]);
 
-  return { calculation: effectiveCalculation, calculationState: effectiveState, reservation };
+  return { calculation: effectiveCalculation, calculationState: effectiveState, calculationError, recalcular, reservation };
 }
 
 function consolidateOfs(ofs: Calculation['ofs']) {
