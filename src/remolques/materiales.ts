@@ -10,10 +10,11 @@ const CACHE_MS = 60 * 60 * 1000;
 
 let cache: { data: Material[]; at: number } | null = null;
 
-/** Materiales de producción: familias PVC identificadas como 580 o 650. */
+/** Materiales de producción: familias PVC identificadas como 580 o 650, y la LAC640. */
 export function esLonaPvcProduccion(descripcion: string): boolean {
   const nombre = descripcion.trim().toUpperCase();
-  return /^LONA\b/.test(nombre) && /(?:^|\D)(?:580|650)(?:\D|$)/.test(nombre);
+  return /^LONA\b/.test(nombre)
+    && (/(?:^|\D)(?:580|650)(?:\D|$)/.test(nombre) || /\bLAC\s*640\b/.test(nombre));
 }
 
 const materialesSeedProduccion = () =>
@@ -76,7 +77,8 @@ export async function getMaterialesConOrigen(): Promise<{ materiales: Material[]
           AND a.IDProductSubFamily = @sub
           AND a.InactiveDate IS NULL
           AND a.Description LIKE '%:%:%'
-          AND (a.Description LIKE '%580%' OR a.Description LIKE '%650%')
+          AND (a.Description LIKE '%580%' OR a.Description LIKE '%650%'
+            OR REPLACE(a.Description, ' ', '') LIKE '%LAC640%')
         ORDER BY a.Description`);
     const data = rowsToMateriales(res.recordset);
     if (data.length > 0) {
