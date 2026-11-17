@@ -101,10 +101,10 @@ describe('Correcciones de Iván: marcas y piezas independientes de Araujo',()=>{
     }
   });
   it.each([
-    ['5365',araujo5365,'8731ea90b4d4c773d18c0b26b4c7ee49064b9902d89d063272ed120c288e457d'],
-    ['5733',araujo5733,'a8cc252132663da218dd6b6cc0875a9142b1d70638a931e89a58d362bcd04495'],
-    ['4292',araujo4292,'77de5aa841397bd6b400714add03454c05b54fc8d540ab0d727b420fcf63c5d0'],
-    ['4373',araujo4373,'ec4469b30074a818f476a40d4d6f5d854ca4fc1afbad90c6ed8ac88c037d96fe'],
+    ['5365',araujo5365,'20e4b3dfeb78c77a41c80a558cde7c5582eced545803c02c3ecc32d8b03e57ec'],
+    ['5733',araujo5733,'0ed9c1e96398d6973a607497f0f8c58f8d9d8033ceb01d0831c5a22887d9fc1a'],
+    ['4292',araujo4292,'f24af116d765b3d4a272b987203f7716a75cca6a282814d9429d19fd7e00cd7f'],
+    ['4373',araujo4373,'a5703c4f3f8009377ae773fdeeb8c393bc32efbc7251c30ee97a0b174081d149'],
   ] as const)('%s: el corte, el alzado y el plano no impresos conservan la huella previa a esta revisión',(codigo,crear,huella)=>{
     const p=crear(),doc={...pedido([p]),orderCode:'AR260'+codigo};
     const datos=[generarCortePuertas(doc),[geometriaAlzado(p,calcularPuerta(p))],escribirPlanoPuertas({pedido:doc,cabecera:{cliente:'ARAUJO',tecnico:'IVÁN',revisor:'',fecha:'2026-11-05'}})];

@@ -25,5 +25,24 @@ export function metrosPorOf(cortes: CortePuertas[], material: string): Map<strin
   return total;
 }
 
+/**
+ * Los ML de la lona de una puerta para su cajetín: los rollos donde van sus paños y, en cada uno, lo que toca a cada OF
+ * de esos paños. Una sola cifra si la puerta tiene una OF y una lona; si no (Araujo con tramos de otra OF u otro
+ * material), cada una con su OF y su material. Solo apilables, enrollables y autorreparables, también las de Araujo y
+ * Santa Pau; ni System Dock ni sacos confeccionados (Iván, 17/11/2026).
+ */
+export function textoMlPuerta(cortes: CortePuertas[], elemento: { id: string; input: { modelo: string } }): string {
+  if (!['PUERTAPLE', 'PUERTAENR', 'PUERTAUTO'].includes(elemento.input.modelo)) return '';
+  const pares = new Map<string, { material: string; of: string }>();
+  for (const c of cortes) if (c.opcion === 'principal') for (const { pieza: p } of c.colocadas)
+    if (p.clase === 'pano' && p.id.startsWith(`${elemento.id}:`)) pares.set(JSON.stringify([c.material, p.of]), { material: c.material, of: p.of });
+  const lista = [...pares.values()];
+  const variasOf = new Set(lista.map(x => x.of)).size > 1, variosMat = new Set(lista.map(x => x.material)).size > 1;
+  return lista.map(({ material, of }) => {
+    const cm = metrosPorOf(cortes, material).get(of) ?? 0;
+    return [...variasOf ? [of] : [], ...variosMat ? [material] : [], formatoMl(cm)].join(' ');
+  }).filter(v => !/^0,00 ML$/.test(v)).join(' · ');
+}
+
 /** «20,00 ML» a partir de los cm. */
 export const formatoMl = (cm: number) => `${(cm / 100).toFixed(2).replace('.', ',')} ML`;

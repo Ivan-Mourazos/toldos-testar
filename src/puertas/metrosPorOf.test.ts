@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { apilable, base, pedidoDe } from './__fixtures__/ejemplos.ts';
 import { generarCortePuertas } from './corte.ts';
 import { hojasPuertas } from './planoEnrollable.ts';
-import { formatoMl, metrosPorOf } from './metrosPorOf.ts';
+import { nuevaPuertaDeCliente } from './nuevaPuertaCliente.ts';
+import { formatoMl, metrosPorOf, textoMlPuerta } from './metrosPorOf.ts';
+import { escribirPlanoPuertas } from './plano.ts';
+import { araujo5365 } from './__fixtures__/araujo.ts';
 import type { CortePuertas, PiezaPuerta } from './tipos.ts';
 
 // Iván, 17/11/2026: en un pedido de varias puertas con un corte largo hay que poner unos ML a cada OF. Repartir a partes
@@ -58,6 +61,24 @@ describe('ML de la lona por OF', () => {
     expect(ml[0]).toBeGreaterThan(ml[1]);
     const largo = cortes.filter(c => c.opcion === 'principal' && c.material === 'LAC900 AZUL 5002').reduce((s, c) => s + Math.round(c.largo / 10), 0);
     expect(ml[0] + ml[1]).toBe(largo);
+  });
+
+  it('en los sacos confeccionados no van los ML, solo en las puertas', () => {
+    const saco = { ...nuevaPuertaDeCliente('portanova', 'saco-confeccionado'), frente: 2000, alto: 9, of: '0234043', confirmada: true };
+    const pedido = pedidoDe('AR2600001', saco, { ...apilable(), of: '0290001' });
+    const hojas = hojasPuertas(pedido, [], generarCortePuertas(pedido).cortes);
+    expect(hojas[0].nombre).toBe('SACO A');
+    expect(hojas[0].cajetin.MATERIAL).not.toMatch(/ML/);
+    expect(hojas[1].cajetin.MATERIAL).toMatch(/· \d+,\d\d ML$/);
+  });
+
+  it('en Araujo también: el cajetín de cada puerta lleva los ML de su lona', () => {
+    const pedido = pedidoDe('AR2605365', araujo5365());
+    const { cortes } = generarCortePuertas(pedido);
+    const ml = textoMlPuerta(cortes, pedido.elementos[0]);
+    expect(ml).toMatch(/\d+,\d\d ML/);
+    const dxf = escribirPlanoPuertas({ pedido, cabecera: { cliente: 'ARAUJO', tecnico: 'IVÁN', revisor: '', fecha: '17/11/2026' } });
+    expect(dxf).toContain(ml.split(' · ')[0]);
   });
 
   it('sin el corte, el cajetín queda como antes', () => {

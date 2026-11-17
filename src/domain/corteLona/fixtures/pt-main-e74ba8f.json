@@ -2251,7 +2251,7 @@
     {
       "familia": "Puertas / Araujo",
       "ejemplo": "AR2605365",
-      "dxf": "4d278a06788e7d79500ee0717a11844ef42a88f4b32b4703fae2e1b02cce7773",
+      "dxf": "ced0257bf99a57996c9b500bce7fa632a43a47fbd061c6ec36fb1dd9339d495c",
       "geometria": "58f99ba83bdb5701592d2e32f314201905179c75833f21ae2c369da0cf48210b",
       "textosFijos": "559306a1e09325afb0e893602d96ebf9671f00e243b96c3f2a21455a03245558",
       "textos": "136baeecbd3ede7450a89535eb78c94e2aa339f7ba4a64e583625baa144ed3ec",
@@ -2337,7 +2337,7 @@
     {
       "familia": "Puertas / Araujo",
       "ejemplo": "AR2505733",
-      "dxf": "f59533a9602b97eaa86917cacdc37552e94efe984598058be833d8b9d42ccb60",
+      "dxf": "b99f8de8ef1a153e47d7f1885b75a9a7663fc84cce94d45213e542016f213375",
       "geometria": "c74c211596c8c0d95e04cf27a5f3896722866b816e67d8ca04568dfef6a03bd1",
       "textosFijos": "cd211fa1ab2dffbcbc47c9e468dc691dae6b6847200ff985c1beaed66d7a72bf",
       "textos": "f50db21b7fddbe38300170a17d882e9ed6c70805ff92d0bf24b815f7a8a91356",
@@ -2445,7 +2445,7 @@
     {
       "familia": "Puertas / Araujo",
       "ejemplo": "AR2604292",
-      "dxf": "202020c2548f67af2aabb0eb383804930034952342757fc393594dc2fc9aba29",
+      "dxf": "df09aa61a59e446648d31263fb21248e30fb67e859b25cf50cea9b1efaed4280",
       "geometria": "5eda95568aadbbdab381aa87c865c7db323ee79b772c504069bbb26d54fcf8ab",
       "textosFijos": "554592d80c646fe816af72f3ca5c1cf4f34d3d080d514c6c260c7f6032257a61",
       "textos": "24dca268a52262ca7002e644b2c1c41e964d9e98f127527ad6be24b576091a7b",
@@ -2502,7 +2502,7 @@
     {
       "familia": "Puertas / Araujo",
       "ejemplo": "AR2604373",
-      "dxf": "cef2bf619926b9e57296c8088754db6086dd8f1259952606a7d1e78cdd6ddbb8",
+      "dxf": "2ac7cff4b474d072850c9becfbd276d6ab6a5f56039e1246fa11a0004c9d0493",
       "geometria": "b87ef9bd852cb664c89803acd93a7c74802daad7dcb0f4e29ba8ef8cb11e1738",
       "textosFijos": "1b4302c977bb4ea35f047c0f1dc51d5d7af806ac24ca888fc40895d44e5dcd8f",
       "textos": "35893ef773d8cd35b75aa59d12741abb8e9c0d160d99af1d0d52d94efb3ba8fb",
@@ -2549,7 +2549,7 @@
     {
       "familia": "Puertas / Araujo",
       "ejemplo": "AR2602391",
-      "dxf": "5a20a3b5eedf0149800246c23bd5095e69e7cc60e971a15276b39880e0484fcd",
+      "dxf": "cdd618aaedef27383bf9979fa1bfbdeda632044539a505595bd3dd37735f1349",
       "geometria": "9181ce1bb3a91e8c56b9fde1781fb44f3c8183f2c9fc112c6d3995d31e55fe6f",
       "textosFijos": "9794b196bbf27d1af9f7b83a2af2124b1bd3d8d86473df47cba5392a5b5f1a82",
       "textos": "038891d416401abd4598c910c516073bf110571d7efcb603a69ed957ffd99df2",
@@ -2711,7 +2711,7 @@
     {
       "familia": "Puertas / Santa Pau",
       "ejemplo": "AR2604815",
-      "dxf": "13174281f475cf566b6818308895dcbc0595d0339a1119e769577fcfb6d52d51",
+      "dxf": "9bd8a9023067363e0b6f677a19d7ae807d443b775ce564fb81cce0f7082d6748",
       "geometria": "ac3352d6272eebcfb4894ef82698d3d6499ab4c299cf71b6980d249093578a36",
       "textosFijos": "f26301918b9cecb8c417a2778ed5e2cc58038c68a0f01d8a1d0cb435afef7f17",
       "textos": "a2088ac882f7e0fd99394ad25842f7ceba6d79559ae9d4b57812620340c7ddf4",
@@ -2791,7 +2791,7 @@
     {
       "familia": "Puertas / Santa Pau",
       "ejemplo": "AR2605363",
-      "dxf": "70b34d7437e0211d779781ecb8cbec9e38b670d8cdbd2c9776a36cc19a2de738",
+      "dxf": "f997c5700afa9f31dc66ba6fa1779c6616b7ec0a15797fd4571fccd5b493b15d",
       "geometria": "550320ed203ddb4d4087d02a36b4a4d5ebaeee37d31be6630e29394972a1114b",
       "textosFijos": "92aed4a7e903d83437ea851d6f983c5b6cf54903ef3d600b340ffc679aa859fe",
       "textos": "ceaf01a0b8dd157b8b5bc51c4cf0f6acf6e359828f1c52738e5a1a7c4d65ad17",

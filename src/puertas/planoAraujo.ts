@@ -5,6 +5,7 @@ import { calcularPuerta } from './calcular.ts';
 import { cotasImpresionAraujo, esImpresionAraujo, presentarImpresionAraujo } from './cotasImpresionAraujo.ts';
 import { corteEnPlano, entidadesDePieza, textosFuera } from './corteEnPlano.ts';
 import { ENTRE_MUESTRAS } from './planoTaller.ts';
+import { textoMlPuerta } from './metrosPorOf.ts';
 import { bloqueFlechaEnrollable, dibujarCorte, hojasPuertas, lienzoAMetros, origenCorte, sumarLienzo, type LienzoEnrollable } from './planoEnrollable.ts';
 import type { CortePuertas, PedidoPuertas, Punto } from './tipos.ts';
 
@@ -31,13 +32,16 @@ function filasCorte(cortes:CortePuertas[],pedido:PedidoPuertas):CortePuertas[][]
 export function escribirPlanoAraujo(pedido:PedidoPuertas,cortes:CortePuertas[],cabecera:{cliente:string;tecnico:string;revisor:string;fecha:string},subtitulo='MEDIDAS EN CM · ARAUJO · TRAMOS Y BOLSAS'):string{
   const l=vacio();let dy=0,ancho=0,izquierda=0,bajoAnterior=0;
   const zonasPuertas:Array<{x0:number;y0:number;x1:number;y1:number}>=[];
-  const hojas:Array<{nombre:string;zona:{x0:number;y0:number;x1:number;y1:number};cajetin:{HOJA:string;OF:string}}>=[];
+  const hojas:Array<{nombre:string;zona:{x0:number;y0:number;x1:number;y1:number};cajetin:{HOJA:string;OF:string;MATERIAL?:string}}>=[];
+  // Los ML de la lona de cada puerta junto al material, como en las demás (Iván, 17/11/2026).
+  const materialPlano=[...new Set(cortes.map(c=>textoSeguro(c.material)))].join(' / ');
   for(const [i,e] of pedido.elementos.entries()){
     const g=geometriaAlzado(e.input,calcularPuerta(e.input),String.fromCharCode(65+i));
     if(i>0&&e.input.araujo)dy=bajoAnterior+g.vista.yMin-180;
     const ofsPuerta=[...new Set([e.input.of,...e.input.araujo?.tramos.map(t=>t.of)??[]].filter(Boolean))];
     hojas.push({nombre:String.fromCharCode(65+i),zona:{x0:100+g.vista.xMin/100,x1:100+(g.vista.xMin+g.vista.ancho)/100,
-      y0:100+(dy-g.vista.yMin-g.vista.alto)/100,y1:100+(dy-g.vista.yMin)/100},cajetin:{HOJA:(i+1)+'/'+pedido.elementos.length,OF:ofsPuerta.length>1?'VARIAS':e.input.of}});
+      y0:100+(dy-g.vista.yMin-g.vista.alto)/100,y1:100+(dy-g.vista.yMin)/100},cajetin:{HOJA:(i+1)+'/'+pedido.elementos.length,OF:ofsPuerta.length>1?'VARIAS':e.input.of,
+      ...(textoMlPuerta(cortes,e)?{MATERIAL:`${materialPlano} · ${textoMlPuerta(cortes,e)}`}:{})}});
     if(g.cad)sumarLienzo(l,g.cad,0,dy);
     else for(const f of g.formas){
       if(f.tipo==='rect')rect(l,capa(f.clase),f.x,dy-f.y-f.alto,f.ancho,f.alto,f.radio);
@@ -94,8 +98,8 @@ export function escribirPlanoAraujo(pedido:PedidoPuertas,cortes:CortePuertas[],c
   const zc={x0:ox+zona.x0/100,y0:oy+zona.y0/100,x1:ox+zona.x1/100,y1:oy+zona.y1/100};
   const ofs=[...new Set(pedido.elementos.flatMap(e=>[e.input.of.trim(),...e.input.araujo?.tramos.map(t=>t.of?.trim()??'')??[]]).filter(Boolean))];
   return corregirRotulosPuertas({...lienzoAMetros(l,100,100),corte:lienzoAMetros(corteSanta?.lienzo??lc,ox,oy),...(santaPau
-    ?{zonas:{toldos:za,corte:zc},hojas:hojasPuertas(pedido,zonasPuertas),bloques:[{...bloqueFlechaEnrollable,capa:'marca'}],capas:[{nombre:'cortes - lona',color:7},{nombre:'corte (vent)',color:5}]}
+    ?{zonas:{toldos:za,corte:zc},hojas:hojasPuertas(pedido,zonasPuertas,cortes),bloques:[{...bloqueFlechaEnrollable,capa:'marca'}],capas:[{nombre:'cortes - lona',color:7},{nombre:'corte (vent)',color:5}]}
     :{hojas,girarCorte:false,zonas:{toldos:za,corte:zc,cortes:zonasCorte.map(z=>({x0:ox+z.x0/100,y0:oy+z.y0/100,x1:ox+z.x1/100,y1:oy+z.y1/100}))}})},
     {pedido:pedido.orderCode,of:ofs.length>1?'VARIAS':ofs[0]??'',cliente:textoSeguro(cabecera.cliente),tecnico:textoSeguro(cabecera.tecnico),revisor:textoSeguro(cabecera.revisor),
-      fecha:cabecera.fecha,pagina:'1/1',material:[...new Set(cortes.map(c=>textoSeguro(c.material)))].join(' / '),subtitulo}).dxf;
+      fecha:cabecera.fecha,pagina:'1/1',material:materialPlano,subtitulo}).dxf;
 }
