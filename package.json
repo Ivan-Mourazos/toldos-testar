@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "node src/server.js",
     "build": "pnpm typecheck && vite build",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile node_modules/.cache/tsc/tsbuildinfo",
     "start": "node src/server.js",
     "deploy:check": "node scripts/check-deployment.mjs",
     "deploy:smoke": "node scripts/smoke-production.mjs",
