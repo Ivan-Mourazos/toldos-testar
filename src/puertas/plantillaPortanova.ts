@@ -161,7 +161,7 @@ export function presentacionPortanova(pedido: PedidoPuertas,
       {x:164,y:56,h:2.3,ancho:121,valor:'Negro hacia el exterior. Marcar por lado negro.'},
       {x:164,y:48,h:2.3,ancho:121,valor:'Soldar 3 cm para cerrar el cilindro.'},
       {x:164,y:40,h:2.3,ancho:121,valor:'Elegir sin empate o dos mitades con empate de 2 cm.'},
-      {x:164,y:30,h:2.1,ancho:121,valor:'Esquemas sin escala. Las cotas indican los cm reales.'},
+      {x:164,y:30,h:2.1,ancho:121,valor:'Plano y corte a escala; el saco cerrado es un dibujo sin escala.'},
     ];
     bloque.lineas=[];
     bloque.quitarVentanas=[3,5];

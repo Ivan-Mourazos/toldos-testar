@@ -49,8 +49,10 @@ La cantidad y la OF se conservan, y el técnico marca «Confirmado con el pedido
 
 Se reutilizan el documento `kind: puertas`, guardado, Pedidos, revisión y aprobación de OF de CoordinaOT.
 El plano usa la hoja de Portanova y CAJETÍN TGM; confección y ambas opciones de corte comparten presentación.
-El dibujo se ensancha y su largo se reduce a un esquema fijo para poder leerlo en A4. Las cotas y rótulos indican
-siempre las medidas reales en cm y se avisa «ESQUEMA SIN ESCALA · COTAS REALES EN CM». El DXF del bot conserva la escala real.
+Todo en horizontal, como los planos de Iván (AR2604808, AR2604933; Iván, 17/11/2026): el plano abierto y las dos
+opciones de corte a escala real, con el largo a lo ancho de la hoja; cada cota mide lo que dice. Debajo del plano abierto,
+el saco ya cerrado y aplastado, en perspectiva y sombreado (negro por fuera, plata en la boca), con el largo y el aplastado escritos:
+es una ilustración sin escala y por eso no lleva cotas. El DXF del bot conserva la escala real.
 El recuadro DIBUJO del modelo incluye los esquemas de presentación; el recuadro CORTE contiene aparte las piezas
 reales, a escala, de modo que la extracción del DWG para la máquina conserva las medidas y las marcas correctas.
 En pedidos solo de sacos se sustituyen las notas y el detalle del saco inferior de puerta por instrucciones de este producto.

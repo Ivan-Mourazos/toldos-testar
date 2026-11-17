@@ -8,7 +8,7 @@ import { medidasSacoArena, numeroSacoArena as n } from '../../puertas/sacoArena.
 import type { Puerta } from '../../puertas/tipos.ts';
 
 export function VistaSacoArena({ puerta: p }: { puerta: Puerta }) {
-  const m = medidasSacoArena(p), completo = p.frente>0&&p.alto>0;
+  const m = medidasSacoArena(p), completo = p.frente>0&&p.alto>0, uid = useId();
   return <section className="puerta-alzado panel panel-vidrio" aria-label="Medidas del saco confeccionado">
     <header><h2>Saco confeccionado</h2><span>OF {p.of||'SIN OF'}</span></header>
     {completo ? <>
@@ -17,21 +17,36 @@ export function VistaSacoArena({ puerta: p }: { puerta: Puerta }) {
         <tr><td>Al corte · sin empate</td><td>{n(m.anchoCorte)} × {n(m.largoCorte)}</td></tr>
         <tr><td>Para empatar · 2 piezas</td><td>{n(m.anchoCorte)} × {n(m.largoMitad)}</td></tr>
       </tbody></table>
-      <svg role="img" aria-label="Esquema del confeccionado y las dos opciones de corte" viewBox="0 0 540 265" style={{maxHeight:280}}>
-        <g fill="none" stroke="currentColor" strokeWidth="1.5">
-          <rect x="40" y="45" width="95" height="155"/><path d="M55 45V200" strokeDasharray="5 4"/>
-          <rect x="210" y="45" width="95" height="155"/>
-          <rect x="380" y="45" width="50" height="95"/><rect x="430" y="45" width="50" height="95"/>
-          <path d="M380 130H430M430 55H480" strokeDasharray="5 4"/>
+      <svg role="img" aria-label="Saco confeccionado, plano abierto y las dos opciones de corte, en horizontal" viewBox="0 0 540 330" style={{maxHeight:340}}>
+        <defs>
+          <linearGradient id={`${uid}-tubo`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#6b6f75"/><stop offset=".28" stopColor="#3a3d42"/><stop offset=".6" stopColor="#16181b"/><stop offset="1" stopColor="#050506"/>
+          </linearGradient>
+          <radialGradient id={`${uid}-boca`} cx=".55" cy=".5" r=".6"><stop offset="0" stopColor="#8c9096"/><stop offset=".7" stopColor="#c9ccd1"/><stop offset="1" stopColor="#eef0f2"/></radialGradient>
+        </defs>
+        <g transform="rotate(-12 270 70)">
+          <rect x="95" y="52" width="350" height="28" fill={`url(#${uid}-tubo)`}/>
+          <ellipse cx="445" cy="66" rx="2.5" ry="14" fill="#2a2c30"/>
+          <ellipse cx="95" cy="66" rx="3" ry="14" fill={`url(#${uid}-boca)`} stroke="#111"/>
+          <rect x="102" y="56" width="336" height="4" rx="2" fill="#fff" opacity=".18"/>
         </g>
         <g fill="currentColor" fontSize="13" textAnchor="middle">
-          <text x="88" y="25">Confeccionado</text><text x="88" y="222">Pisar 3 cm</text>
-          <text x="258" y="25">Sin empate</text><text x="258" y="222">1 pieza por saco</text>
-          <text x="430" y="25">Para empatar</text><text x="405" y="120">1</text><text x="455" y="80">1</text>
-          <text x="430" y="168">Empate 2 cm</text><text x="430" y="188">Marcar por lado negro</text>
-          <text x="270" y="252">Esquema sin escala · medidas reales en la tabla</text>
+          <text x="290" y="28">Largo {n(m.largo)} cm</text><text x="95" y="128">Aplastado {n(m.aplastado)} cm</text>
+        </g>
+        <g fill="none" stroke="currentColor" strokeWidth="1.5">
+          <rect x="30" y="158" width="480" height="14"/><path d="M30 169H510" strokeDasharray="5 4"/>
+          <rect x="30" y="218" width="480" height="14"/>
+          <rect x="30" y="278" width="240" height="14"/><rect x="30" y="292" width="240" height="14"/>
+          <path d="M266 278V292M34 292V306" strokeDasharray="3 3"/>
+        </g>
+        <g fill="currentColor" fontSize="13">
+          <text x="30" y="150">Confeccionado {n(m.confeccionado)} × {n(m.largo)} · pisar 3 cm</text>
+          <text x="30" y="210">Al corte sin empate {n(m.anchoCorte)} × {n(m.largoCorte)}</text>
+          <text x="30" y="270">Para empatar 2 × {n(m.anchoCorte)} × {n(m.largoMitad)}</text>
+          <text x="285" y="296">Empate 2 cm · marcar por lado negro</text>
         </g>
       </svg>
+
       <p className="puerta-ayuda">Soldar 3 cm para cerrar el cilindro. Negro hacia el exterior.</p>
       <p className="puerta-ayuda">El corte incluye las dos opciones. El técnico de la máquina elige una.</p>
     </> : <p>Completa el largo y el aplastado para ver las medidas del saco y sus dos opciones de corte.</p>}

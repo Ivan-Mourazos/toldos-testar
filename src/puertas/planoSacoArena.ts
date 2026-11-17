@@ -1,5 +1,5 @@
 import { textoSeguro } from '../domain/corteLona/texto.js';
-import { medidasSacoArena, numeroSacoArena } from './sacoArena.ts';
+import { medidasSacoArena, numeroSacoArena, REGLAS_SACO_ARENA } from './sacoArena.ts';
 import type { LienzoEnrollable } from './planoEnrollable.ts';
 import type { CortePuertas, Puerta } from './tipos.ts';
 
@@ -7,52 +7,88 @@ const vacio = (): LienzoEnrollable => ({ lineas: [], polilineas: [], textos: [],
 const texto = (l: LienzoEnrollable, valor: string, x: number, y: number, h = 14) => l.textos.push({ capa: 'texto', valor: textoSeguro(valor), x, y, h, centrado: true });
 const rect = (l: LienzoEnrollable, x: number, y: number, ancho: number, alto: number, capa = 'DISCO1') =>
   l.polilineas.push({ capa, puntos: [[x,y],[x+ancho,y],[x+ancho,y+alto],[x,y+alto]], cerrada: true });
-function cota(l: LienzoEnrollable, x1: number, y1: number, x2: number, y2: number, d: number, valor: number) {
-  l.cotas.push({ capa: 'cotas', estilo: 'XERA 20', x1, y1, x2, y2, d, giro: x1===x2?90:0, valor, rotulo: numeroSacoArena(valor) });
+function cota(l: LienzoEnrollable, x1: number, y1: number, x2: number, y2: number, d: number, valor: number, letra?: number) {
+  // Sin rótulo: el número es siempre lo que mide la cota (Iván, 17/11/2026). La altura del texto, en metros del modelo.
+  l.cotas.push({ capa: 'cotas', estilo: 'XERA 20', x1, y1, x2, y2, d, giro: x1===x2?90:0, valor, ...(letra ? { alturaTexto: letra/100 } : {}) });
 }
 
-/** Esquema ensanchado y largo reducido para leerlo en A4. Las cotas conservan siempre los cm reales. */
+// En horizontal, como los planos de Iván (AR2604808, AR2604933): el largo a lo ancho de la hoja y cada cota mide lo
+// que dice (Iván, 17/11/2026). La letra crece con el largo para que se lea en A4.
+const letra = (largo: number) => Math.max(12, largo / 55);
+
+type P = [number, number];
+function dibujarTubo(l: LienzoEnrollable, A: P, largo: number, r: number, m: ReturnType<typeof medidasSacoArena>, T: number) {
+  const ang = Math.PI/6, u: P = [Math.cos(ang), Math.sin(ang)], v: P = [-Math.sin(ang), Math.cos(ang)], k = 0.1; // k pequeño: saco aplastado, la boca es una ranura
+  const B: P = [A[0]+u[0]*largo, A[1]+u[1]*largo];
+  const punto = (c: P, th: number, esc = 1): P => [c[0]+esc*r*(v[0]*Math.sin(th)+u[0]*k*Math.cos(th)), c[1]+esc*r*(v[1]*Math.sin(th)+u[1]*k*Math.cos(th))];
+  const arco = (c: P, desde: number, hasta: number, esc = 1, n = 24) => Array.from({ length: n+1 }, (_, i) => punto(c, desde+(hasta-desde)*i/n, esc));
+  const grados = (g: number) => g*Math.PI/180;
+  // Bandas de luz: más claras arriba a la izquierda, casi negras abajo (ACI 250 = casi negro … 254 = gris claro).
+  const N = 14;
+  for (let i = 0; i < N; i++) {
+    const t1 = grados(-90+180*i/N), t2 = grados(-90+180*(i+1)/N), luz = Math.cos((t1+t2)/2-grados(50));
+    const color = luz > 0.93 ? 253 : luz > 0.75 ? 252 : luz > 0.35 ? 251 : 250;
+    l.sombreados.push({ capa: 'referencias', solido: true, color, puntos: [...arco(A, t1, t2, 1, 4), ...arco(B, t2, t1, 1, 4)] });
+  }
+  // Boca del saco: por dentro plata, con la sombra del interior.
+  l.sombreados.push({ capa: 'referencias', solido: true, color: 254, puntos: arco(A, 0, 2*Math.PI, 1, 48).slice(0, -1) });
+  const fondo: P = [A[0]+u[0]*r*0.25, A[1]+u[1]*r*0.25];
+  l.sombreados.push({ capa: 'referencias', solido: true, color: 9, puntos: arco(fondo, 0, 2*Math.PI, 0.72, 48).slice(0, -1) });
+  const pl = (puntos: P[], capa = 'corte', cerrada = false) => l.polilineas.push({ capa, puntos, cerrada });
+  pl(arco(A, 0, 2*Math.PI, 1, 48).slice(0, -1), 'corte', true);
+  pl([punto(A, grados(90)), punto(B, grados(90))]); pl([punto(A, grados(-90)), punto(B, grados(-90))]);
+  pl(arco(B, grados(-90), grados(90)));
+  pl(arco(B, grados(90), grados(270)), 'ejes');
+  // Medidas escritas sobre el dibujo: largo a lo largo del tubo, aplastado en la boca.
+  const centro: P = [(A[0]+B[0])/2+v[0]*(r+1.3*T), (A[1]+B[1])/2+v[1]*(r+1.3*T)];
+  l.textos.push({ capa: 'texto', valor: `LARGO ${numeroSacoArena(m.largo)} CM`, x: centro[0], y: centro[1], h: 1.2*T, giro: 30, centrado: true });
+  l.textos.push({ capa: 'texto', valor: `APLASTADO ${numeroSacoArena(m.aplastado)} CM`, x: A[0], y: A[1]-0.9*r-1.6*T, h: 1.2*T, centrado: true });
+  return B;
+}
+
 export function dibujarSacoConfeccionado(p: Puerta) {
-  const l = vacio(), m = medidasSacoArena(p), w = 120, h = 440;
-  texto(l, 'SACO CONFECCIONADO', w/2, 85, 20);
-  texto(l, `OF ${p.of || 'SIN OF'} · CANTIDAD: ${p.cantidad}`, w/2, 55);
-  rect(l, 0, -h, w, h, 'referencias');
-  const marca = w * 3/m.confeccionado;
-  l.lineas.push({ capa: 'ROTULADOR', x1: marca, y1: -h, x2: marca, y2: 0 });
-  cota(l, 0, 0, w, 0, 25, m.confeccionado);
-  cota(l, w, -h, w, 0, w+35, m.largo);
-  texto(l, 'PISAR 3CM', w/2, -h-35);
-  texto(l, 'SOLDAR 3CM PARA CERRAR EL CILINDRO', w/2, -h-65);
-  texto(l, `${p.material} ${p.color}`, w/2, -h-95);
-  texto(l, '(NEGRO HACIA EL EXTERIOR)', w/2, -h-120);
-  texto(l, 'ESQUEMA SIN ESCALA · COTAS REALES EN CM', w/2, -h-150, 12);
-  return { lienzo: l, zona: { x0: -155, x1: 285, y0: -h-175, y1: 110 } };
+  const l = vacio(), m = medidasSacoArena(p), L = m.largo, a = m.confeccionado, T = letra(L);
+  texto(l, `SACO CONFECCIONADO · OF ${p.of || 'SIN OF'} · CANTIDAD: ${p.cantidad}`, L/2, 3*T, 1.2*T);
+  // Plano abierto a escala real, como los planos de Iván: largo arriba, ancho y «PISAR 3CM» a la izquierda.
+  rect(l, 0, -a, L, a, 'referencias');
+  l.lineas.push({ capa: 'ROTULADOR', x1: 0, y1: -a+REGLAS_SACO_ARENA.soldadura, x2: L, y2: -a+REGLAS_SACO_ARENA.soldadura });
+  cota(l, 0, 0, L, 0, 0.9*T, L, 1.4*T);
+  cota(l, 0, -a, 0, 0, -1.2*T, a, 1.4*T);
+  l.textos.push({ capa: 'texto', valor: 'PISAR 3CM', x: -3.4*T, y: -a/2, h: T, giro: 90, centrado: true });
+  texto(l, 'SOLDAR 3CM PARA CERRAR EL CILINDRO', L/2, -a-1.6*T, T);
+  texto(l, `${p.material} ${p.color} (NEGRO HACIA EL EXTERIOR)`, L/2, -a-3*T, T);
+  // El saco ya cerrado y aplastado debajo, centrado.
+  const largoTubo = 0.6*L, r = 0.06*L, alto = largoTubo*Math.sin(Math.PI/6);
+  const A: P = [L/2-largoTubo*Math.cos(Math.PI/6)/2, -a-5.5*T-r-alto];
+  dibujarTubo(l, A, largoTubo, r, m, T);
+  return { lienzo: l, zona: { x0: -4.5*T, x1: L+2*T, y0: A[1]-r-3.5*T, y1: 4.2*T } };
 }
 
 export function dibujarOpcionesSacoArena(p: Puerta) {
-  const l = vacio(), m = medidasSacoArena(p), w = 90, h = 440, x = 255;
-  texto(l, 'AL CORTE · SIN EMPATE', w/2, 70, 18);
-  rect(l, 0, -h, w, h);
-  cota(l, 0, 0, w, 0, 25, m.anchoCorte);
-  cota(l, 0, -h, 0, 0, -35, m.largoCorte);
-  texto(l, 'PARA EMPATAR', x+w, 70, 18);
-  // Las dos mitades juntas, como el dibujo de Iván: cota de ancho total y de largo de cada mitad.
-  for (const [i, px] of [x, x+w].entries()) {
-    rect(l, px, -h/2, w, h/2);
-    const yy = i===0 ? -h/2+8 : -8;
-    l.lineas.push({ capa: 'ROTULADOR', x1: px, y1: yy, x2: px+w, y2: yy });
-    texto(l, '1', px+w/2, i===0 ? yy+14 : yy-24, 16);
+  const l = vacio(), m = medidasSacoArena(p), Lc = m.largoCorte, Lm = m.largoMitad, c = m.anchoCorte, T = letra(Lc);
+  texto(l, 'AL CORTE · SIN EMPATE', Lc/2, 3.2*T, 1.2*T);
+  rect(l, 0, -c, Lc, c);
+  cota(l, 0, 0, Lc, 0, 0.9*T, Lc, 1.4*T);
+  cota(l, Lc, -c, Lc, 0, Lc+1.2*T, c, 1.4*T);
+  // Las dos mitades una encima de otra, como el dibujo de Iván: cota del alto de las dos y del largo de cada mitad.
+  const y = -c-7*T;
+  texto(l, 'PARA EMPATAR', Lm/2, y+3.2*T, 1.2*T);
+  for (const [i, py] of [y-c, y-2*c].entries()) {
+    rect(l, 0, py, Lm, c);
+    const xm = i===0 ? Lm-1 : 1;
+    l.lineas.push({ capa: 'ROTULADOR', x1: xm, y1: py, x2: xm, y2: py+c });
+    texto(l, '1', i===0 ? Lm-3*T : 3*T, py+c/2-T/3, T);
   }
-  cota(l, x, 0, x+2*w, 0, 25, 2*m.anchoCorte);
-  cota(l, x+2*w, -h/2, x+2*w, 0, x+2*w+35, m.largoMitad);
-  cota(l, x, -h/2, x+w, -h/2, -h/2-30, m.anchoCorte);
-  texto(l, 'EMPATE 2 CM · 1 CM EN CADA MITAD', x+w, -h/2-65, 13);
-  texto(l, 'MARCAR POR LADO NEGRO', x+w, -h/2-95, 14);
-  texto(l, `2 PIEZAS DE ${numeroSacoArena(m.anchoCorte)} X ${numeroSacoArena(m.largoMitad)} CM`, x+w, -h/2-125, 13);
-  texto(l, 'ELEGIR SOLO UNA DE LAS DOS OPCIONES', 210, -h-65, 16);
-  texto(l, `OF ${p.of || 'SIN OF'} · CANTIDAD: ${p.cantidad} SACO(S)`, 210, -h-95, 14);
-  texto(l, 'ESQUEMA SIN ESCALA · COTAS REALES EN CM', 210, -h-125, 13);
-  return { lienzo: l, zona: { x0: -65, x1: 515, y0: -h-160, y1: 100 } };
+  cota(l, 0, y, Lm, y, y+0.9*T, Lm, 1.4*T);
+  cota(l, Lm, y-2*c, Lm, y, Lm+1.2*T, 2*c, 1.4*T);
+  const xt = Lm+4*T, xc = xt+(Lc-xt)/2;
+  texto(l, 'EMPATE 2 CM · 1 CM EN CADA MITAD', xc, y+1.5*T, T);
+  texto(l, 'MARCAR POR LADO NEGRO', xc, y, T);
+  texto(l, `2 PIEZAS DE ${numeroSacoArena(c)} X ${numeroSacoArena(Lm)} CM`, xc, y-1.5*T, T);
+  const yb = y-2*c-4*T;
+  texto(l, 'ELEGIR SOLO UNA DE LAS DOS OPCIONES', Lc/2, yb, 1.1*T);
+  texto(l, `OF ${p.of || 'SIN OF'} · CANTIDAD: ${p.cantidad} SACO(S)`, Lc/2, yb-1.5*T, T);
+  return { lienzo: l, zona: { x0: -T, x1: Lc+3*T, y0: yb-2.5*T, y1: 4.6*T } };
 }
 
 /** Copia real en metros para CORTE; los esquemas de papel quedan en DIBUJO y nunca llegan al bot. */
