@@ -24,6 +24,8 @@ export interface Escena3DProps extends DefinicionChaflan {
   ancho: number;
   /** Ancho trasero si el remolque va sesgado; 0 o ausente = igual al delantero. */
   anchoAtras?: number;
+  /** Borde inferior del paño delantero por encima de la base; el contorno no se recorta. */
+  delanteraDesde?: number;
   altoDelante: number;
   altoAtras: number;
   aguas?: number;
@@ -307,6 +309,8 @@ export interface OpcionesVista extends DefinicionChaflan {
   largo: number;
   anchoNear: number;
   anchoFar: number;
+  desdeNear?: number;
+  desdeFar?: number;
   altoNear: number;
   altoFar: number;
   /** Caída uniforme de ambos laterales del baquetón. */
@@ -377,11 +381,15 @@ export function calcularVista(o: OpcionesVista) {
       x: origenX + x * escala + dx,
       y: baseY - y * escala - dy,
     }));
-  const frente = proyecta(near, 0, 0);
+  const frenteContorno = proyecta(near, 0, 0);
+  const frente = (o.desdeNear ?? 0) > 0
+    ? proyecta(near.map(([x, y]) => [x, Math.max(y, o.desdeNear!)]), 0, 0) : frenteContorno;
   // El sesgado es simétrico: la cara del fondo se centra respecto a la cercana.
   // En el baquetón la cubierta queda nivelada: el exceso trasero cae hacia abajo.
   const ajusteBaseFar = o.modo === "baqueton" ? (o.altoNear - o.altoFar) * escala : 0;
-  const fondo = proyecta(far, profundidadX + ((o.anchoNear - o.anchoFar) / 2) * escala, profundidadY + ajusteBaseFar);
+  const fondoContorno = proyecta(far, profundidadX + ((o.anchoNear - o.anchoFar) / 2) * escala, profundidadY + ajusteBaseFar);
+  const fondo = (o.desdeFar ?? 0) > 0
+    ? fondoContorno.map((p, k) => ({ ...p, y: p.y - Math.max(o.desdeFar! - far[k][1], 0) * escala })) : fondoContorno;
   const cumbrera = longitudinal ? [1, 2].map((i) => ({
     x: (frente[i].x + fondo[i].x) / 2,
     y: baseY - Math.max(o.altoNear, o.altoFar) * escala - profundidadY / 2,
@@ -391,15 +399,15 @@ export function calcularVista(o: OpcionesVista) {
   const altoLateral = o.altoLateral ?? Math.min(o.altoNear, o.altoFar);
   const lateralNear = o.modo === "baqueton"
     ? { x: frente.at(-1)!.x, y: frente.at(-2)!.y + altoLateral * escala }
-    : frente.at(-1)!;
+    : frenteContorno.at(-1)!;
   const lateralFar = o.modo === "baqueton"
     ? { x: fondo.at(-1)!.x, y: fondo.at(-2)!.y + altoLateral * escala }
-    : fondo.at(-1)!;
+    : fondoContorno.at(-1)!;
   const perfilLateral = (puntos: Punto[], base: Punto) => puntos.map((p, i) =>
     i === 0 || i === puntos.length - 1 ? { x: p.x, y: base.y } : p);
   const frenteLateral = perfilLateral(frente, lateralNear);
   const fondoLateral = perfilLateral(fondo, lateralFar);
-  const panoFondo = o.modo === "baqueton" && o.altoFar > altoLateral
+  const panoFondo = (o.modo === "baqueton" && o.altoFar > altoLateral) || (o.desdeFar ?? 0) > 0
     ? puntosSvg(fondo) : null;
   const indicePicoFrente = near.reduce(
     (mejor, [, y], indice) => y > near[mejor][1] ? indice : mejor,
@@ -638,7 +646,7 @@ export function calcularVista(o: OpcionesVista) {
     } : null,
     anchoDesde: { x: frente[0].x, y: baseY + 35 },
     anchoHasta: { x: frente.at(-1)!.x, y: baseY + 35 },
-    altoDesde: { x: frente[0].x - 42, y: baseY },
+    altoDesde: { x: frente[0].x - 42, y: baseY - (o.desdeNear ?? 0) * escala },
     altoHasta: { x: frente[0].x - 42, y: baseY - (longitudinal ? o.altoNear - o.aguas : o.altoNear) * escala },
     largoDesde: { x: lateralNear.x + 20, y: lateralNear.y + 15 },
     largoHasta: { x: lateralFar.x + 20, y: lateralFar.y + 15 },
@@ -946,6 +954,7 @@ export function Escena3D(props: Escena3DProps) {
       ...base,
       anchoNear: props.ancho,
       anchoFar: anchoAtras,
+      desdeNear: props.delanteraDesde,
       altoNear: altoDelante,
       altoFar: altoAtras,
       conVentana: props.modo === "lona" && (props.ventana ?? false),
@@ -958,6 +967,7 @@ export function Escena3D(props: Escena3DProps) {
       ...base,
       anchoNear: anchoAtras,
       anchoFar: props.ancho,
+      desdeFar: props.delanteraDesde,
       altoNear: altoAtras,
       altoFar: altoDelante,
       conVentana: false,
@@ -971,7 +981,7 @@ export function Escena3D(props: Escena3DProps) {
     props.aguas, props.direccionAguas, props.radioCumbrera, props.radioHombro, props.radioEsquina, props.chaflan,
     props.radioChaflanAbajo, props.radioChaflanArriba, props.modoChaflan, props.anchoPlanoSuperior,
     props.ventana, props.ventanaAncho, props.ventanaAlto, props.ollaos, altoDelante, altoAtras, anchoAtras,
-    bastilla, props.recogeDelante,
+    bastilla, props.recogeDelante, props.delanteraDesde,
   ]);
 
   useEffect(() => {
@@ -1024,7 +1034,7 @@ export function Escena3D(props: Escena3DProps) {
             titulo="VISTA DELANTERA"
             etiquetaAlto={props.modo === "baqueton" ? "BAQUETÓN" : "ALTO DEL."}
             etiquetaAncho={cotaAnchoAtras !== cotas.ancho ? "ANCHO DEL." : "ANCHO"}
-            altoNear={longitudinal ? altoDelante - (props.aguas ?? 0) : altoDelante}
+            altoNear={(longitudinal ? altoDelante - (props.aguas ?? 0) : altoDelante) - (props.delanteraDesde ?? 0)}
             ancho={cotas.ancho}
             largo={cotas.largo}
             mostrarLargo

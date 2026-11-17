@@ -148,11 +148,13 @@ export function perfilTrasero(c: CuerpoLona): Perfil2D {
 export function piezasCuerpo(c: CuerpoLona | CuerpoBaqueton): Pieza[] {
   if (c.tipo === 'baqueton') return piezasBaqueton(c);
   const trasero = perfilTrasero(c);
+  const delantero = (c.delanteraDesde ?? 0) > 0
+    ? c.perfilDelante.map(([x, y]) => [x, Math.max(y, c.delanteraDesde!)] as [number, number]) : c.perfilDelante;
   return [
     { geometria: geometriaContorno(c), material: 'lona' },
-    { geometria: geometriaPano(c.perfilDelante, c.largo), material: 'lona' },
+    { geometria: geometriaPano(delantero, c.largo), material: 'lona' },
     { geometria: geometriaPano(trasero, 0), material: 'lona' },
-    costura(c.perfilDelante, c.largo),
+    costura(delantero, c.largo),
     costura(trasero, 0),
     ...(c.cumbreraTransversal != null ? [1, c.perfilDelante.length - 2].map(k => ({
       geometria: tuboPoligonal([
@@ -167,6 +169,7 @@ export function piezasCuerpo(c: CuerpoLona | CuerpoBaqueton): Pieza[] {
         new THREE.Vector3((c.perfilDelante.at(-2)![0] + c.perfilAtras.at(-2)![0]) / 2, c.cumbreraTransversal, c.largo / 2),
       ], 0.12), material: 'lonaOscura' as const,
     }] : []),
+    ...((c.delanteraDesde ?? 0) > 0 ? [costura([delantero[0], delantero[delantero.length - 1]], c.largo)] : []),
     // El borde de abajo del paño trasero, que queda al aire por encima de la base.
     ...((c.traseraDesde ?? 0) > 0 ? [costura([trasero[0], trasero[trasero.length - 1]], 0)] : []),
     ...(c.bastilla > 0 ? piezasBastilla(c) : []),

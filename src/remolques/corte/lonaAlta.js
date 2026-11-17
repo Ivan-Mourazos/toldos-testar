@@ -22,7 +22,7 @@
 
 import { findRecogida } from '../calc/params.ts';
 import { alturasCorreas, esCorreas } from '../calc/correas.ts';
-import { aguasLongitudinales } from '../calc/lona.ts';
+import { recorteDelantero, aguasLongitudinales } from '../calc/lona.ts';
 import { errorChaflanConAguas, esquinaChaflan } from '../geometry/chaflan.ts';
 import { anchoArial } from '../../domain/corteLona/texto.js';
 import { buscarColocacion, PRESUPUESTO_TETRIS } from '../../domain/corteLona/colocacionTetris.ts';
@@ -705,16 +705,18 @@ function cabezasLona(el) {
   // la trasera 4 cm más corta, no 85,5). También en el recto (AR2605129).
   // Con la trasera a la línea por arriba el trasero acaba más arriba que el contorno, que llega hasta el fondo: su
   // oreja cae en el contorno lo que se queda corto más arriba (AR2605158: 81,5 + 4 = 85,5; Iván, 21/10/2026).
-  const bajaTrasera = i.traseraPorArriba ? Math.max((del.alto - tra.alto) * 10, 0) : 0;
-  const marcasHombro = orejaDelante > 0 ? d.altoOreja : null;
+  const bajaDelantera = recorteDelantero(i) * 10;
+  // Se recupera el alto completo de delante: las dos cabezas pueden ir recortadas por separado.
+  const bajaTrasera = i.traseraPorArriba ? Math.max((del.alto + bajaDelantera / 10 - tra.alto) * 10, 0) : 0;
+  const marcasHombro = orejaDelante > 0 ? d.altoOreja + bajaDelantera : null;
   const marcasAtras = oreja > 0 ? t.altoOreja + bajaTrasera : null;
   // Lados del rebaje de los puentes, desde cada borde del contorno: iguales que las orejas del trasero (Iván,
   // 21/10/2026; 535 y 535 en AR2605103). En AR2605078 y AR2604800 a mano no coincidieron y salieron mal.
   const rebajeLado = puentes ? t.altoOreja : 0;
   // Hebillas en el contorno, a la altura de las cintas de cada paño (con la trasera a la línea por arriba, lo que
   // el trasero se queda corto por abajo, como las marcas del hombro).
-  const hebillas = { delante: d.p.correas ?? null, atras: t.p.correas?.map((y) => y + bajaTrasera) ?? null };
-  return { f, d, t, oreja, orejaDelante, anchoPerfil, anchoPerfilTra, ventana, ollaosDel, ollaosAtr, marcasHombro, marcasAtras, bajaTrasera, rebajeLado, puentes, hebillas };
+  const hebillas = { delante: d.p.correas?.map((y) => y + bajaDelantera) ?? null, atras: t.p.correas?.map((y) => y + bajaTrasera) ?? null };
+  return { f, d, t, oreja, orejaDelante, anchoPerfil, anchoPerfilTra, ventana, ollaosDel, ollaosAtr, marcasHombro, marcasAtras, bajaTrasera, bajaDelantera, rebajeLado, puentes, hebillas };
 }
 
 // Las tres piezas de una lona alta (en mm, sin colocar) y sus datos, para el dibujo de confección del plano.

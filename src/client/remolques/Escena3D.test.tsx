@@ -66,3 +66,23 @@ describe('cotas del dibujo de respaldo', () => {
     expect(justa.cotas!.alto.desde.x).toBeGreaterThan(justa.x);
   });
 });
+
+
+describe('delantera más corta en el dibujo de respaldo', () => {
+  it('sube el paño cercano 17 cm y conserva el borde de los laterales', () => {
+    const normal = calcularVista(base);
+    const recortada = calcularVista({ ...base, desdeNear: 17 });
+    expect(recortada.frente[0].y).toBeCloseTo(normal.frente[0].y - 17 * normal.escala);
+    expect(recortada.lateralNear).toEqual(normal.lateralNear);
+    expect(recortada.lateralFar).toEqual(normal.lateralFar);
+    expect(recortada.altoDesde.y).toBeCloseTo(recortada.frente[0].y);
+  });
+
+  it('también sube el paño lejano al mirar desde detrás', () => {
+    const normal = calcularVista(base);
+    const recortada = calcularVista({ ...base, desdeFar: 17 });
+    expect(recortada.fondo[0].y).toBeCloseTo(normal.fondo[0].y - 17 * normal.escala);
+    expect(recortada.frente).toEqual(normal.frente);
+    expect(recortada.lateralFar).toEqual(normal.lateralFar);
+  });
+});

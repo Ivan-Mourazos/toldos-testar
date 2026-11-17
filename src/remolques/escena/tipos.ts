@@ -69,6 +69,8 @@ export interface CuerpoLona {
   /** Con la trasera a la línea por arriba (AR2605158): a qué altura empieza el paño trasero, que es más
    *  corto por abajo que el remolque. Ausente = desde la base. */
   traseraDesde?: number;
+  /** Borde inferior del paño delantero por encima de la base del contorno, en cm. */
+  delanteraDesde?: number;
 }
 
 export interface CuerpoBaqueton {

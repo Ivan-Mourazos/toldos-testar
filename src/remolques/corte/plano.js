@@ -296,6 +296,12 @@ function confeccionLona(L, el, X, Y, letras = ['']) {
       L.cota('vent-pre-noimpr', xt(A * 10) - b, yy, xt(A * 10), yy, r1(b), 16, 6);
     }
   }
+  // El recorte delantero se acota desde ambos bordes, también si es fijo y no hay marcas de hombro.
+  if (P.bajaDelantera > 0) {
+    const b = P.bajaDelantera / 10;
+    L.cota('vent-pre-noimpr', xb(0), Y, xb(0) + b, Y, r1(b), -16, 6);
+    L.cota('vent-pre-noimpr', xt(0) - b, Y, xt(0), Y, r1(b), -16, 6);
+  }
   return { ancho: xCon + B - X, alto: Math.max(H, A) };
 }
 
@@ -322,6 +328,11 @@ function confeccionLonaSoldada(L, el, P, X, Y, letras) {
     if (nominal) L.g.polilineas.push({ capa: 'referencias', puntos: nominal.map(([a, b]) => [x + a, y + b]), cerrada: true });
     else rosaCabeza(L, P.f, n === 2 ? P.orejaDelante : P.oreja, n === 2 ? P.anchoPerfil : P.anchoPerfilTra, p.h, t);
     if (n >= 4) {
+      if (P.bajaDelantera > 0) {
+        // El segundo lateral está reflejado: la punta de delante queda al otro lado.
+        const xDelante = n === 4 ? x : x + p.w / 10, b = P.bajaDelantera / 10;
+        L.cota('vent-pre-noimpr', xDelante, y, xDelante, y + b, r1(b), n === 4 ? -12 : 12, 6);
+      }
       const xb = x + g.lateral.desdeDelante + el.result.lonaHecha.largo;
       [...posiciones].sort((a, b) => a - b).forEach((pos, k) => L.g.cotas.push({
         capa: 'cotas', estilo: 'XERAL 5', x1: xb, y1: y + 4.5, x2: xb - pos, y2: y + 4.5,

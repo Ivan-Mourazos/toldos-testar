@@ -82,7 +82,7 @@ export function gomaDiagonal(
   // Sobre la oreja, a OLLAO_EN_OREJA de su borde libre; con una oreja estrecha, en su mitad.
   const a = oreja - Math.min(OLLAO_EN_OREJA, oreja / 2);
   return fracciones.map((f, i) => {
-    const y = r1(alto * f);
+    const y = r1(base[1] + alto * f);
     // Pared alta: al centro. Si no, ollaos de abajo arriba ↔ ganchos de lejos a cerca.
     const x = alto >= ALTO_GOMA_AL_CENTRO ? 0 : r1(lado * (semi - distancias[distancias.length - 1 - i] * escala));
     const { punto: gancho, nuevo } = elegir([x, -GANCHO_BAJO_BORDE, zCara]);
@@ -104,13 +104,13 @@ export function gomaDiagonal(
  *  desfasadas medio paso, así que de abajo arriba se alternan y el cordón hace el zigzag. */
 export function ganchosCorazon(base: Vec3, alto: number, hacia: Vec3, oreja: number, paso: number): CierreEsquina["corazon"] {
   if (oreja <= 0) return null;
-  const sobre = (a: number, y: number): Vec3 => [r1(base[0] + hacia[0] * a), y, r1(base[2] + hacia[2] * a)];
+  const sobre = (a: number, y: number): Vec3 => [r1(base[0] + hacia[0] * a), r1(base[1] + y), r1(base[2] + hacia[2] * a)];
   const enOreja = oreja - Math.min(CORAZON_A_BORDE, oreja / 2);
   const ganchos = alturasCierre(alto, paso / 2).map((y, i) => ({
     punto: sobre(i % 2 === 0 ? enOreja : oreja + CORAZON_A_BORDE, y),
     enOreja: i % 2 === 0,
   }));
-  return { ganchos, nudo: sobre(oreja, r1(Math.max(ganchos[0].punto[1] - CORAZON_NUDO, ganchos[0].punto[1] / 2))) };
+  return { ganchos, nudo: sobre(oreja, r1(Math.max(ganchos[0].punto[1] - base[1] - CORAZON_NUDO, (ganchos[0].punto[1] - base[1]) / 2))) };
 }
 
 /** `ganchos`: los del cajón para la goma perimetral (genéricos o del pedido). */
@@ -133,11 +133,12 @@ export function cierresLona(
   return esquinas.map(({ esquina, nombre, perfil, z, lado, hacia, cara }) => {
     const tipo = tipoCierre(nombre);
     // El segundo punto del perfil es donde acaba la pared vertical (el hombro o el arranque del radio).
-    const alto = perfil[1][1];
+    const desde = cara === "delante" ? cuerpo.delanteraDesde ?? 0 : 0;
+    const alto = Math.max(perfil[1][1] - desde, 0);
     const semi = perfil[perfil.length - 1][0];
     const conOreja = tipo === "GOMA" || tipo === "CORAZON" || tipo === "VELCRO" || tipo === "PUENTES" || tipo === "CORREAS";
     const oreja = conOreja ? orejaRecogida(params, nombre, cara) : 0;
-    const base: Vec3 = [lado * semi, 0, z];
+    const base: Vec3 = [lado * semi, desde, z];
     return {
       esquina, tipo,
       base,
@@ -155,7 +156,7 @@ export function cierresLona(
       cremallera: tipo === "CREMALLERA"
         ? {
           distancia: CREMALLERA_A_ESQUINA, hasta: r1(alto - CREMALLERA_BAJO_CIMA),
-          pie: [r1(lado * (semi - CREMALLERA_A_ESQUINA)), 0, z], normal: [0, 0, -hacia[2]],
+          pie: [r1(lado * (semi - CREMALLERA_A_ESQUINA)), desde, z], normal: [0, 0, -hacia[2]],
         }
         : null,
       velcro: tipo === "VELCRO" ? { ancho: ANCHO_VELCRO } : null,
