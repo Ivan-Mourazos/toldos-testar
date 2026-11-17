@@ -36,7 +36,7 @@ assert.equal(extraido.error, null);
 const bot = entidadesBot(extraido.entidades);
 assert.deepEqual(bot.noConvertibles, []);
 const largos = bot.lineas.filter(l=>l.capa==='DISCO1').map(l=>Math.hypot(l.x2-l.x1,l.y2-l.y1));
-for (const [medida, cantidad] of [[20130,2],[10075,4],[240,6]]) assert.equal(largos.filter(l=>Math.abs(l-medida)<.01).length,cantidad);
+for (const [medida, cantidad] of [[20130,2],[10075,4],[210,6]]) assert.equal(largos.filter(l=>Math.abs(l-medida)<.01).length,cantidad);
 await fs.writeFile(`${base}-bot-desde-dwg.dxf`, escribirDxf2004(bot));
 const browser = await chromium.launch();
 try {
@@ -50,6 +50,6 @@ try {
   await fs.writeFile(`${base}-contraste.json`, JSON.stringify({ avisos: corte.avisos,
     piezas: corte.cortes.flatMap(c=>c.colocadas.map(t=>({nombre:t.pieza.nombre,largoMm:t.pieza.ancho*10,anchoMm:t.pieza.alto*10}))),
     presentaciones: hojas.length, esquemaPlano: 'Sin escala, cotas reales en cm', unidadesBot: 'mm',
-    vueltaDwg: { error:extraido.error,contornosSinEmpateMm:20130,contornosMitadesMm:10075,anchoMm:240 } }, null, 2));
+    vueltaDwg: { error:extraido.error,contornosSinEmpateMm:20130,contornosMitadesMm:10075,anchoMm:210 } }, null, 2));
 } finally { await browser.close(); }
 console.log(`AR2605585: DWG, DXF de plano y bot y PNG en ${dir}`);

@@ -13,7 +13,7 @@ export function VistaSacoArena({ puerta: p }: { puerta: Puerta }) {
     <header><h2>Saco confeccionado</h2><span>OF {p.of||'SIN OF'}</span></header>
     {completo ? <>
       <table><thead><tr><th>Preparación</th><th>Medidas (cm)</th></tr></thead><tbody>
-        <tr><td>Confeccionado · plano abierto</td><td>{n(m.confeccionado)} × {n(m.largo)}</td></tr>
+        <tr><td>Doblado · marca de rotulador</td><td>{n(2*m.aplastado)} + 3 para pisar</td></tr>
         <tr><td>Al corte · sin empate</td><td>{n(m.anchoCorte)} × {n(m.largoCorte)}</td></tr>
         <tr><td>Para empatar · 2 piezas</td><td>{n(m.anchoCorte)} × {n(m.largoMitad)}</td></tr>
       </tbody></table>
@@ -34,13 +34,13 @@ export function VistaSacoArena({ puerta: p }: { puerta: Puerta }) {
           <text x="290" y="28">Largo {n(m.largo)} cm</text><text x="95" y="128">Aplastado {n(m.aplastado)} cm</text>
         </g>
         <g fill="none" stroke="currentColor" strokeWidth="1.5">
-          <rect x="30" y="158" width="480" height="14"/><path d="M30 169H510" strokeDasharray="5 4"/>
+          <rect x="30" y="158" width="480" height="14"/><path d="M30 161H510" strokeDasharray="5 4"/>
           <rect x="30" y="218" width="480" height="14"/>
           <rect x="30" y="278" width="240" height="14"/><rect x="30" y="292" width="240" height="14"/>
           <path d="M266 278V292M34 292V306" strokeDasharray="3 3"/>
         </g>
         <g fill="currentColor" fontSize="13">
-          <text x="30" y="150">Confeccionado {n(m.confeccionado)} × {n(m.largo)} · pisar 3 cm</text>
+          <text x="30" y="150">Doblado {n(2*m.aplastado)} hasta la marca + 3 cm para pisar</text>
           <text x="30" y="210">Al corte sin empate {n(m.anchoCorte)} × {n(m.largoCorte)}</text>
           <text x="30" y="270">Para empatar 2 × {n(m.anchoCorte)} × {n(m.largoMitad)}</text>
           <text x="285" y="296">Empate 2 cm · marcar por lado negro</text>

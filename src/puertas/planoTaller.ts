@@ -1,6 +1,6 @@
 import { retocarPortanova } from './retoquesPortanova.js';
 import { dibujarVentanasPlano } from './ventanasPlano.ts';
-import { dibujarSacoConfeccionado, dibujarOpcionesSacoArena, corteRealSacosArena } from './planoSacoArena.ts';
+import { dibujarSacoConfeccionado, dibujarOpcionesSacoArena } from './planoSacoArena.ts';
 import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { alturasTubos, calcularPuerta, desfaseCintas } from './calcular.ts';
@@ -443,7 +443,7 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas, ancho
   for (const c of [...cortes].sort((a, b) => prioridad(a) - prioridad(b) || ordenOpcion(a) - ordenOpcion(b))) {
     const sacoArena = pedido.elementos.find(e=>e.input.modelo==='SACOARENA'&&c.colocadas[0]?.pieza.id.startsWith(`${e.id}:`));
     if (sacoArena) {
-      const d = dibujarOpcionesSacoArena(sacoArena.input), dy = techo-d.zona.y1;
+      const d = dibujarOpcionesSacoArena(sacoArena.input, c), dy = techo-d.zona.y1;
       sumarLienzo(l,d.lienzo,0,dy);
       filas.push({y0:dy+d.zona.y0,y1:techo,piezas:[[d.zona.x0,d.zona.x1]]});
       anchoMax=Math.max(anchoMax,d.zona.x1);techo=dy+d.zona.y0-95; banda=null;
@@ -596,9 +596,7 @@ export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[
   const [ox, oy] = origenCorte(za, corte.zona);
   let zc = zonaM(corte.zona, ox, oy), altoVista: number | undefined, tramosCorte: Array<{ zona: Zona; papel: Zona }> | undefined;
   let ventanaCorte: Zona | undefined;
-  const zonaDibujo={x0:Math.min(za.x0,zc.x0),x1:Math.max(za.x1,zc.x1),y0:Math.min(za.y0,zc.y0),y1:Math.max(za.y1,zc.y1)};
-  const maquina=conSacosArena?corteRealSacosArena(cortes,zonaDibujo.x1+3,zonaDibujo.y0):null;
-  const corteReal = maquina?.zona??zc;
+  const corteReal = zc;
   if (portanova && elegido.tramos.length <= 1) {
     // Cada ventana a la medida de lo que enseña, para que no se cuele nada de al lado (Iván, 06/11/2026). El corte, pegado
     // arriba: abajo a la izquierda en «arriba»; centrado a lo ancho en «lado». Girado si así se ve más grande.
@@ -620,9 +618,7 @@ export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[
   const escribir = (p: Parameters<typeof escribirDxfPlano>[0], c: Parameters<typeof escribirDxfPlano>[1]) => portanova
     ? retocarPortanova(p, c) : escribirDxfPlano(p, c);
   const dibujo=lienzoAMetros(l,100,100);
-  if(maquina)sumarLienzo(dibujo,maquina.lienzo);
   return escribir({ ...dibujo, corte: lienzoAMetros(corte.lienzo, ox, oy), zonas: { toldos: za, corte: zc, corteReal }, corteDerecho: true,
-    ...(maquina?{recuadros:[['DIBUJO',zonaDibujo],['CORTE',maquina.zona]]}:{}),
     corteGirable: !conSacosArena, hojas: hojasPuertas(pedido, zonasPuertas.map(z => zonaM(z, 100, 100)), cortes),
     ...(portanova ? { ajustarVentanaALaZona: true } : {}),
     bloques: [bloqueFlechaEnrollable], coloresModelo: { ejes: 23, borrar: 40, curv: 3, 'corte (vent)': 5 },

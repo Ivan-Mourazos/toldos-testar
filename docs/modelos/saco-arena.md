@@ -8,16 +8,19 @@ Medidas de confección y formulario en centímetros; el DXF del bot usa milímet
 
 Para largo `L` y ancho aplastado `a`:
 
-- Plano abierto confeccionado: `(2 × a + 3) × L`.
-- Sin empate: una pieza `(2 × a + 6) × (L + 13)`.
-- Para empatar: dos piezas `(2 × a + 6) × ((L + 13) / 2 + 1)`.
+- Ancho de corte `2 × a + 3` (Iván, 17/11/2026): doblada, la lona da la medida pedida y se pisan 3 cm para cerrar.
+  La marca de rotulador va a 3 cm del borde de arriba: es hasta donde llega el otro borde al soldar.
+- Sin empate: una pieza `(2 × a + 3) × (L + 13)`; el largo pedido entre dos rayas verticales, a 3 cm del principio y a 10 del final.
+- Para empatar: dos piezas `(2 × a + 3) × ((L + 13) / 2 + 1)`; la primera con la raya del principio, la segunda con la del final.
+- El dibujo del plano es la misma pieza que se corta, con las mismas marcas.
 - Pisar y soldar 3 cm para cerrar el cilindro. Empate de 2 cm: 1 cm en cada mitad.
 - Material inicial TENTALU PLATA/NEGRO, cara negra hacia el exterior, marcas por lado negro.
 - Restos de lona; rollo inicial de 300 cm, editable. Sin reserva automática de material.
 
 Procedencia de las constantes: geometría y textos de los planos de Iván AR2602823, AR2604808 y AR2604933.
 El coordinador confirmó con la hoja escaneada de AR2604933 que se pedían 7,5 cm aplastados y 1500 cm de largo.
-Los tres casos cumplen `2 × aplastado + 3`. Los antiguos 19/22 correspondían a otro técnico y no son la regla vigente.
+Hasta el 17/11/2026 se cortaba con 3 cm más (24 para 9 aplastado, como AR2604808); Iván fijó ese día el corte en `2 × a + 3`
+(21 para 9, marca a 18). Las columnas de corte de la tabla de abajo son los planos de entonces, no la regla vigente.
 Q-SA01 está **contestada**, no pendiente.
 
 ## Evidencias

@@ -1,5 +1,5 @@
 import { textoSeguro } from '../domain/corteLona/texto.js';
-import { medidasSacoArena, numeroSacoArena, REGLAS_SACO_ARENA } from './sacoArena.ts';
+import { marcasSacoArena, medidasSacoArena, numeroSacoArena, REGLAS_SACO_ARENA } from './sacoArena.ts';
 import type { LienzoEnrollable } from './planoEnrollable.ts';
 import type { CortePuertas, Puerta } from './tipos.ts';
 
@@ -44,56 +44,62 @@ function dibujarTubo(l: LienzoEnrollable, x0: number, y0: number, ancho: number,
   l.textos.push({ capa: 'texto', valor: `APLASTADO ${numeroSacoArena(m.aplastado)} CM`, x: boca[0], y: y0-1.8*T, h: 1.2*T, centrado: true });
 }
 
+/** Pieza con sus marcas de rotulador, en cm, con la esquina de abajo a la izquierda en (x, y). */
+function piezaConMarcas(l: LienzoEnrollable, x: number, y: number, largo: number, ancho: number, tramo: Parameters<typeof marcasSacoArena>[2]) {
+  rect(l, x, y, largo, ancho);
+  for (const [x1, y1, x2, y2] of marcasSacoArena(largo, ancho, tramo)) l.lineas.push({ capa: 'ROTULADOR', x1: x+x1, y1: y+y1, x2: x+x2, y2: y+y2 });
+}
+
 export function dibujarSacoConfeccionado(p: Puerta) {
-  const l = vacio(), m = medidasSacoArena(p), L = m.largo, a = m.confeccionado, T = letra(L);
+  const l = vacio(), m = medidasSacoArena(p), L = m.largoCorte, c = m.anchoCorte, T = letra(L), x3 = REGLAS_SACO_ARENA.inicioLargo;
   texto(l, `SACO CONFECCIONADO · OF ${p.of || 'SIN OF'} · CANTIDAD: ${p.cantidad}`, L/2, 3*T, 1.2*T);
-  // Plano abierto a escala real, como los planos de Iván: largo arriba, ancho y «PISAR 3CM» a la izquierda.
-  rect(l, 0, -a, L, a, 'referencias');
-  l.lineas.push({ capa: 'ROTULADOR', x1: 0, y1: -a+REGLAS_SACO_ARENA.soldadura, x2: L, y2: -a+REGLAS_SACO_ARENA.soldadura });
-  cota(l, 0, 0, L, 0, 0.9*T, L, 1.4*T);
-  cota(l, 0, -a, 0, 0, -1.2*T, a, 1.4*T);
-  l.textos.push({ capa: 'texto', valor: 'PISAR 3CM', x: -3.4*T, y: -a/2, h: T, giro: 90, centrado: true });
-  texto(l, 'SOLDAR 3CM PARA CERRAR EL CILINDRO', L/2, -a-1.6*T, T);
-  texto(l, `${p.material} ${p.color} (NEGRO HACIA EL EXTERIOR)`, L/2, -a-3*T, T);
-  // El saco ya cerrado y aplastado debajo, centrado.
-  const ancho = 0.3*L, alto = ancho*SACO_IVAN.alto/SACO_IVAN.ancho, y0 = -a-5.5*T-alto;
+  // La misma pieza que se corta, como los planos de Iván (AR2604808): la marca a 3 cm de arriba, el largo pedido
+  // entre las rayas verticales y, a la izquierda, el doble del aplastado hasta la marca y los 3 cm que se pisan.
+  piezaConMarcas(l, 0, -c, L, c, 'entero');
+  cota(l, x3, 0, x3+m.largo, 0, 0.9*T, m.largo, 1.4*T);
+  cota(l, 0, -c, 0, -REGLAS_SACO_ARENA.soldadura, -1.2*T, c-REGLAS_SACO_ARENA.soldadura, 1.4*T);
+  l.textos.push({ capa: 'texto', valor: 'PISAR 3CM', x: -3.4*T, y: -c/2, h: T, giro: 90, centrado: true });
+  texto(l, 'SOLDAR 3CM PARA CERRAR EL CILINDRO', L/2, -c-1.6*T, T);
+  texto(l, `${p.material} ${p.color} (NEGRO HACIA EL EXTERIOR)`, L/2, -c-3*T, T);
+  // El saco ya cerrado debajo, centrado.
+  const ancho = 0.3*L, alto = ancho*SACO_IVAN.alto/SACO_IVAN.ancho, y0 = -c-5.5*T-alto;
   dibujarTubo(l, L/2-ancho/2, y0, ancho, m, T);
   return { lienzo: l, zona: { x0: -4.5*T, x1: L+2*T, y0: y0-3.5*T, y1: 4.2*T } };
 }
 
-export function dibujarOpcionesSacoArena(p: Puerta) {
-  const l = vacio(), m = medidasSacoArena(p), Lc = m.largoCorte, Lm = m.largoMitad, c = m.anchoCorte, T = letra(Lc);
-  texto(l, 'AL CORTE · SIN EMPATE', Lc/2, 3.2*T, 1.2*T);
-  rect(l, 0, -c, Lc, c);
-  cota(l, 0, 0, Lc, 0, 0.9*T, Lc, 1.4*T);
-  cota(l, Lc, -c, Lc, 0, Lc+1.2*T, c, 1.4*T);
-  // Las dos mitades una encima de otra, como el dibujo de Iván: cota del alto de las dos y del largo de cada mitad.
-  const y = -c-7*T;
-  texto(l, 'PARA EMPATAR', Lm/2, y+3.2*T, 1.2*T);
-  for (const [i, py] of [y-c, y-2*c].entries()) {
-    rect(l, 0, py, Lm, c);
-    const xm = i===0 ? Lm-1 : 1;
-    l.lineas.push({ capa: 'ROTULADOR', x1: xm, y1: py, x2: xm, y2: py+c });
-    texto(l, '1', i===0 ? Lm-3*T : 3*T, py+c/2-T/3, T);
+/**
+ * El corte del saco, que es el mismo que va a la máquina (Iván, 17/11/2026): las piezas, las marcas y el mininúmero
+ * salen del DXF del bot (mm → cm), y encima solo los títulos y las cotas, que el bot no lee. Abajo las dos mitades
+ * apiladas y encima la pieza sin empate.
+ */
+export function dibujarOpcionesSacoArena(p: Puerta, corte: CortePuertas) {
+  const l = vacio(), m = medidasSacoArena(p), c = m.anchoCorte, T = letra(m.largoCorte), cm = (n: number) => n / 10;
+  for (const a of corte.entidades.lineas) l.lineas.push({ ...a, x1: cm(a.x1), y1: cm(a.y1), x2: cm(a.x2), y2: cm(a.y2) });
+  for (const t of corte.entidades.textos) l.textos.push({ ...t, x: cm(t.x), y: cm(t.y), h: cm(t.h) });
+  const pieza = (nombre: string) => corte.colocadas.find(t => t.pieza.nombre === nombre);
+  const entera = pieza('SIN EMPATE'), mitades = ['PARA EMPATAR 1/2', 'PARA EMPATAR 2/2'].map(pieza);
+  let x1 = 0, y0 = 0, y1 = 0;
+  if (entera) {
+    const x = cm(entera.x), y = cm(entera.y), L = entera.pieza.ancho;
+    texto(l, 'AL CORTE · SIN EMPATE', x + L / 2, y + c + 3.2 * T, 1.2 * T);
+    cota(l, x, y + c, x + L, y + c, y + c + 0.9 * T, L, 1.4 * T);
+    cota(l, x + L, y, x + L, y + c, x + L + 1.2 * T, c, 1.4 * T);
+    x1 = x + L + 3 * T; y1 = y + c + 4.6 * T; y0 = y;
   }
-  cota(l, 0, y, Lm, y, y+0.9*T, Lm, 1.4*T);
-  cota(l, Lm, y-2*c, Lm, y, Lm+1.2*T, 2*c, 1.4*T);
-  // Como el plano de Iván: solo «MARCAR POR LADO NEGRO» al lado; el resto ya lo dicen las cotas y los «1» (17/11/2026).
-  texto(l, 'MARCAR POR LADO NEGRO', Lm+4*T+(Lc-Lm-4*T)/2, y-c-T/3, T);
-  return { lienzo: l, zona: { x0: -T, x1: Lc+3*T, y0: y-2*c-2.5*T, y1: 4.6*T } };
-}
-
-/** Copia real en metros para CORTE; los esquemas de papel quedan en DIBUJO y nunca llegan al bot. */
-/** x, y: esquina de abajo a la izquierda, en metros, justo a la derecha del DIBUJO (no a cientos de metros). */
-export function corteRealSacosArena(cortes: CortePuertas[], x: number, y: number) {
-  const l = vacio();
-  let dy = 0, ancho = 0;
-  for (const c of cortes) {
-    l.lineas.push(...c.entidades.lineas.map(a=>({...a,x1:x+a.x1/1000,x2:x+a.x2/1000,y1:y+dy+a.y1/1000,y2:y+dy+a.y2/1000})));
-    l.textos.push(...c.entidades.textos.map(a=>({...a,x:x+a.x/1000,y:y+dy+a.y/1000,h:a.h/1000})));
-    l.arcos.push(...c.entidades.arcos.map(a=>({...a,x:x+a.x/1000,y:y+dy+a.y/1000,r:a.r/1000})));
-    l.circulos.push(...c.entidades.circulos.map(a=>({...a,x:x+a.x/1000,y:y+dy+a.y/1000,r:a.r/1000})));
-    ancho=Math.max(ancho,c.largo/1000);dy+=(c.anchoRollo+1500)/1000;
+  if (mitades[0] && mitades[1]) {
+    const [a, b] = mitades, x = cm(a.x), ya = cm(a.y), yb = cm(b.y) + c, M = a.pieza.ancho;
+    // El «1» grande, para leerlo en la hoja; el pequeño del rotulador ya viene del bot.
+    texto(l, '1', x + M - 3 * T, ya + c / 2 - T / 3, T);
+    texto(l, '1', cm(b.x) + 3 * T, cm(b.y) + c / 2 - T / 3, T);
+    cota(l, x, ya, x + M, ya, ya - 0.9 * T, M, 1.4 * T);
+    // Apiladas: cota del alto de las dos; si van una detrás de otra, el ancho de una.
+    const apiladas = b.x === a.x;
+    cota(l, x + M, ya, x + M, apiladas ? yb : ya + c, x + M + 1.2 * T, apiladas ? 2 * c : c, 1.4 * T);
+    // A la derecha de las mitades, en dos líneas, sin salirse del largo de la pieza entera.
+    const xt = apiladas ? x + M + 4 * T : cm(b.x) + M + 2 * T, yt = (ya + (apiladas ? yb : ya + c)) / 2;
+    l.textos.push({ capa: 'texto', valor: 'PARA EMPATAR', x: xt, y: yt + 0.2 * T, h: T });
+    l.textos.push({ capa: 'texto', valor: 'MARCAR POR LADO NEGRO', x: xt, y: yt - 1.3 * T, h: T });
+    x1 = Math.max(x1, xt + 14 * T); y0 = Math.min(y0 || ya, ya - 2.5 * T); y1 = Math.max(y1, ya + 2 * c);
   }
-  return {lienzo:l,zona:{x0:x-.2,x1:x+ancho+.5,y0:y-.2,y1:y+dy+.5}};
+  return { lienzo: l, zona: { x0: -T, x1, y0, y1 } };
 }

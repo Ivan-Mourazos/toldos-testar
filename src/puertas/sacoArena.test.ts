@@ -15,9 +15,9 @@ const pedido = (): PedidoPuertas => ({ schemaVersion: 1, kind: 'puertas', orderC
 
 describe('Saco confeccionado de Portanova', () => {
   it.each([
-    [2000, 9, 21, 24, 2013, 1007.5],
-    [2500, 9, 21, 24, 2513, 1257.5],
-    [1500, 7.5, 18, 21, 1513, 757.5],
+    [2000, 9, 21, 21, 2013, 1007.5],
+    [2500, 9, 21, 21, 2513, 1257.5],
+    [1500, 7.5, 18, 18, 1513, 757.5],
   ])('calcula %s × %s con la regla de los planos recientes', (largo, aplastado, confeccionado, ancho, corte, mitad) => {
     expect(medidasSacoArena({ frente: largo, alto: aplastado })).toEqual({ largo, aplastado, confeccionado, anchoCorte: ancho, largoCorte: corte, largoMitad: mitad });
     const r = calcularPuerta({ ...saco(), frente: largo, alto: aplastado });
@@ -27,7 +27,7 @@ describe('Saco confeccionado de Portanova', () => {
 
   it('avisa de medidas, confirmación, cantidad, material, OF y rollo insuficiente', () => {
     expect(calcularPuerta({ ...saco(), frente: 0 }).avisos.some(a => a.codigo === 'MEDIDAS')).toBe(true);
-    expect(calcularPuerta({ ...saco(), rollo: 23 }).avisos.some(a => a.codigo === 'NO_CABE')).toBe(true);
+    expect(calcularPuerta({ ...saco(), rollo: 20 }).avisos.some(a => a.codigo === 'NO_CABE')).toBe(true);
     expect(calcularPuerta({ ...saco(), rollo: 30 }).avisos.some(a => a.codigo === 'EMPATE_POR_SEPARADO')).toBe(true);
     expect(calcularPuerta({ ...saco(), cantidad: 1.5, confirmada: false, material: '', of: '' }).avisos.map(a => a.codigo)).toEqual(expect.arrayContaining(['CANTIDAD', 'MODELO', 'MATERIAL', 'SIN_OF']));
   });
@@ -64,7 +64,10 @@ describe('Saco confeccionado de Portanova', () => {
     expect(c.entidades.textos.map(t => [t.valor, t.capa, t.h])).toEqual([['1', 'ROTULADOR', 10], ['1', 'ROTULADOR', 10]]);
     // Cada mininúmero cae dentro de su pieza.
     for (const t of c.entidades.textos) expect(c.colocadas.some(p => t.x > p.x && t.x < p.x + p.pieza.ancho * 10 && t.y > p.y && t.y < p.y + p.pieza.alto * 10)).toBe(true);
-    expect(c.colocadas.map(t => [t.pieza.ancho * 10, t.pieza.alto * 10])).toEqual([[20130, 240], [10075, 240], [10075, 240]]);
+    // Ordenado como el plano: las mitades apiladas abajo y el sin empate encima, sin montarse.
+    expect(c.colocadas.map(t => [t.pieza.nombre, t.x, t.y, t.pieza.ancho * 10, t.pieza.alto * 10])).toEqual([
+      ['PARA EMPATAR 1/2', 0, 0, 10075, 210], ['PARA EMPATAR 2/2', 0, 210, 10075, 210], ['SIN EMPATE', 0, 920, 20130, 210]]);
+    expect(c.largo).toBe(20130);
     expect(c.entidades.lineas.some(l => l.capa === 'ROTULADOR')).toBe(true);
     expect(r.archivo?.dxf).toContain('DISCO1');
   });
@@ -94,7 +97,7 @@ describe('Saco confeccionado de Portanova', () => {
     const largos = bot.lineas.filter(l=>l.capa==='DISCO1').map(l=>Math.hypot(l.x2-l.x1,l.y2-l.y1));
     expect(largos.filter(n=>Math.abs(n-20130)<.01)).toHaveLength(2);
     expect(largos.filter(n=>Math.abs(n-10075)<.01)).toHaveLength(4);
-    expect(largos.filter(n=>Math.abs(n-240)<.01)).toHaveLength(6);
+    expect(largos.filter(n=>Math.abs(n-210)<.01)).toHaveLength(6);
   });
 
   it('admite una puerta y un saco en el mismo pedido sin alterar el corte de la puerta', () => {
