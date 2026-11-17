@@ -57,16 +57,13 @@ describe('Saco confeccionado de Portanova', () => {
     expect(r.avisos.join(' ')).toMatch(/aplastado/i);
   });
 
-  it('un DXF del bot, dos opciones en mm, marcas en negro, OF y cantidad sin REVÉS', () => {
+  it('un DXF del bot, dos opciones en mm, marcas en negro y sin rótulos salvo el mininúmero del empate', () => {
     const r = generarCortePuertas(pedido());
     expect(r.archivo).not.toBeNull();
-    const c = r.cortes[0], textos = c.entidades.textos.map(t => t.valor).join(' ');
-    expect(textos).toMatch(/SIN EMPATE/);
-    expect(textos).toMatch(/PARA EMPATAR/);
-    expect(textos).toMatch(/0234043/);
-    expect(textos).toMatch(/CANTIDAD: 1/);
-    expect(textos).toMatch(/MARCAR POR LADO NEGRO/);
-    expect(textos).not.toMatch(/REVÉS/);
+    const c = r.cortes[0];
+    expect(c.entidades.textos.map(t => [t.valor, t.capa, t.h])).toEqual([['1', 'ROTULADOR', 10], ['1', 'ROTULADOR', 10]]);
+    // Cada mininúmero cae dentro de su pieza.
+    for (const t of c.entidades.textos) expect(c.colocadas.some(p => t.x > p.x && t.x < p.x + p.pieza.ancho * 10 && t.y > p.y && t.y < p.y + p.pieza.alto * 10)).toBe(true);
     expect(c.colocadas.map(t => [t.pieza.ancho * 10, t.pieza.alto * 10])).toEqual([[20130, 240], [10075, 240], [10075, 240]]);
     expect(c.entidades.lineas.some(l => l.capa === 'ROTULADOR')).toBe(true);
     expect(r.archivo?.dxf).toContain('DISCO1');

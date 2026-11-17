@@ -158,10 +158,8 @@ export function presentacionPortanova(pedido: PedidoPuertas,
     bloque.textos = [
       {x:164,y:71,h:2.4,ancho:121,valor:`MATERIALES: ${materiales.join(' · ')}`},
       {x:164,y:63,h:2.3,ancho:121,valor:'SACO CONFECCIONADO · RESTOS'},
-      {x:164,y:56,h:2.3,ancho:121,valor:'Negro hacia el exterior. Marcar por lado negro.'},
-      {x:164,y:48,h:2.3,ancho:121,valor:'Soldar 3 cm para cerrar el cilindro.'},
-      {x:164,y:40,h:2.3,ancho:121,valor:'Elegir sin empate o dos mitades con empate de 2 cm.'},
-      {x:164,y:30,h:2.1,ancho:121,valor:'Plano y corte a escala; el saco cerrado es un dibujo sin escala.'},
+      // Lo demás ya está escrito en el dibujo; aquí solo lo que no sale en él (Iván, 17/11/2026).
+      {x:164,y:55,h:2.3,ancho:121,valor:'Elegir sin empate o dos mitades con empate de 2 cm.'},
     ];
     bloque.lineas=[];
     bloque.quitarVentanas=[3,5];

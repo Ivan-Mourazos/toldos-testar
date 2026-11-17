@@ -596,7 +596,8 @@ export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[
   const [ox, oy] = origenCorte(za, corte.zona);
   let zc = zonaM(corte.zona, ox, oy), altoVista: number | undefined, tramosCorte: Array<{ zona: Zona; papel: Zona }> | undefined;
   let ventanaCorte: Zona | undefined;
-  const maquina=conSacosArena?corteRealSacosArena(cortes):null;
+  const zonaDibujo={x0:Math.min(za.x0,zc.x0),x1:Math.max(za.x1,zc.x1),y0:Math.min(za.y0,zc.y0),y1:Math.max(za.y1,zc.y1)};
+  const maquina=conSacosArena?corteRealSacosArena(cortes,zonaDibujo.x1+3,zonaDibujo.y0):null;
   const corteReal = maquina?.zona??zc;
   if (portanova && elegido.tramos.length <= 1) {
     // Cada ventana a la medida de lo que enseña, para que no se cuele nada de al lado (Iván, 06/11/2026). El corte, pegado
@@ -621,7 +622,7 @@ export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[
   const dibujo=lienzoAMetros(l,100,100);
   if(maquina)sumarLienzo(dibujo,maquina.lienzo);
   return escribir({ ...dibujo, corte: lienzoAMetros(corte.lienzo, ox, oy), zonas: { toldos: za, corte: zc, corteReal }, corteDerecho: true,
-    ...(maquina?{recuadros:[['DIBUJO',{x0:Math.min(za.x0,zc.x0),x1:Math.max(za.x1,zc.x1),y0:Math.min(za.y0,zc.y0),y1:Math.max(za.y1,zc.y1)}],['CORTE',maquina.zona]]}:{}),
+    ...(maquina?{recuadros:[['DIBUJO',zonaDibujo],['CORTE',maquina.zona]]}:{}),
     corteGirable: !conSacosArena, hojas: hojasPuertas(pedido, zonasPuertas.map(z => zonaM(z, 100, 100))),
     ...(portanova ? { ajustarVentanaALaZona: true } : {}),
     bloques: [bloqueFlechaEnrollable], coloresModelo: { ejes: 23, borrar: 40, curv: 3, 'corte (vent)': 5 },

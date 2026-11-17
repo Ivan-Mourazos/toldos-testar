@@ -51,7 +51,7 @@ Se reutilizan el documento `kind: puertas`, guardado, Pedidos, revisión y aprob
 El plano usa la hoja de Portanova y CAJETÍN TGM; confección y ambas opciones de corte comparten presentación.
 Todo en horizontal, como los planos de Iván (AR2604808, AR2604933; Iván, 17/11/2026): el plano abierto y las dos
 opciones de corte a escala real, con el largo a lo ancho de la hoja; cada cota mide lo que dice. Debajo del plano abierto,
-el saco ya cerrado y aplastado, en perspectiva y sombreado (negro por fuera, plata en la boca), con el largo y el aplastado escritos:
+el saco cerrado copiado tal cual del plano de Iván AR2604933 (solo bordes, cabeza aplastada), con el largo y el aplastado escritos:
 es una ilustración sin escala y por eso no lleva cotas. El DXF del bot conserva la escala real.
 El recuadro DIBUJO del modelo incluye los esquemas de presentación; el recuadro CORTE contiene aparte las piezas
 reales, a escala, de modo que la extracción del DWG para la máquina conserva las medidas y las marcas correctas.
@@ -63,3 +63,5 @@ Texto con OF, cantidad y repetición explícita por saco. Sin REVÉS. Las mitade
 en un rollo estrecho se colocan consecutivas y se avisa. Si ni una pieza cabe, se bloquea la generación.
 
 Ejemplo reproducible: `node scripts/contrastar-saco-arena.mjs`, salidas exclusivamente en `tmp/saco-arena/`.
+
+Corte de la máquina sin rótulos (Iván, 17/11/2026): solo las piezas, la raya del pisado y, en el empate, la raya y el mininúmero «1» de 1 cm dentro de cada mitad. En el DWG el recuadro CORTE va a 3 m a la derecha del DIBUJO.

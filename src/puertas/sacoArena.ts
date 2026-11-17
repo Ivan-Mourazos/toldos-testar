@@ -41,32 +41,27 @@ export function calcularSacoArena(p: Puerta): ResultadoPuerta {
 /** Ambas opciones en el mismo corte; el técnico elige una. Una muestra por OF, con repetición explícita. */
 export function cortarSacosArena(sacos: Array<{ puerta: Puerta; pieza: PiezaPuerta }>): CortePuertas[] {
   return sacos.map(({ puerta: p, pieza }) => {
-    const m = medidasSacoArena(p), n = numeroSacoArena, mm = (n: number) => redondear(n * 10);
+    const m = medidasSacoArena(p), mm = (n: number) => redondear(n * 10);
     const entidades: CortePuertas['entidades'] = { lineas: [], textos: [], arcos: [], circulos: [] };
     const colocadas: CortePuertas['colocadas'] = [];
     const w = mm(m.anchoCorte), L = mm(m.largoCorte), M = mm(m.largoMitad), xEmpate = L + 500;
-    const texto = (valor: string, x: number, y: number, h = 60) => entidades.textos.push({ capa: 'texto', valor, x, y, h });
     const dibujar = (largo: number, x: number, y: number, nombre: string, extremo?: 'inicio' | 'fin') => {
       const b = { ...pieza, id: `${pieza.id}:${nombre}`, nombre, ancho: largo / 10 };
       colocadas.push({ pieza: b, x, y, girada: false });
       for (const [x1, y1, x2, y2] of [[x, y, x + largo, y], [x + largo, y, x + largo, y + w], [x + largo, y + w, x, y + w], [x, y + w, x, y]]) entidades.lineas.push({ capa: 'DISCO1', x1, y1, x2, y2 });
       entidades.lineas.push({ capa: 'ROTULADOR', x1: x, y1: y + 30, x2: x + largo, y2: y + 30 });
-      texto(`OF ${pieza.of} · CANTIDAD: ${p.cantidad} · CORTAR ${p.cantidad} VECES · ${nombre} · ${n(largo / 10)} X ${n(m.anchoCorte)} CM`, x + 180, y + w / 2, Math.min(60, w / 4));
       if (extremo) {
         const xe = extremo === 'fin' ? x + largo - 10 : x + 10;
         entidades.lineas.push({ capa: 'ROTULADOR', x1: xe, y1: y, x2: xe, y2: y + w });
-        texto('1', extremo === 'fin' ? xe - 70 : xe + 30, y + w / 2, Math.min(60, w / 4));
+        // Sin rótulos en la máquina (Iván, 17/11/2026): solo el mininúmero del empate, dentro de la pieza.
+        entidades.textos.push({ capa: 'ROTULADOR', valor: '1', x: extremo === 'fin' ? xe - 25 : xe + 15, y: y + w / 2 - 5, h: 10 });
       }
     };
-    texto('SIN EMPATE · ELEGIR SOLO UNA OPCIÓN', 0, w + 110, 80);
     dibujar(L, 0, 0, 'SIN EMPATE');
     const juntas = 2 * m.anchoCorte <= p.rollo;
     dibujar(M, xEmpate, 0, 'PARA EMPATAR 1/2', 'fin');
     dibujar(M, juntas ? xEmpate : xEmpate + M + 100, juntas ? w : 0, 'PARA EMPATAR 2/2', 'inicio');
-    const techo = (juntas ? 2 : 1) * w;
-    texto('PARA EMPATAR · EMPATE 2 CM · MARCAR POR LADO NEGRO', xEmpate, techo + 110, 80);
-    texto(`${pieza.material} · NEGRO HACIA EL EXTERIOR · RESTOS · OF ${pieza.of}`, 0, techo + 260, 80);
-    // La franja incluye ambas opciones separadas y sus rótulos; nunca se mezcla con el anidado de puertas.
+    // La franja incluye ambas opciones separadas; nunca se mezcla con el anidado de puertas.
     return { material: pieza.material, anchoRollo: mm(p.rollo), largo: xEmpate + (juntas ? M : 2 * M + 100),
       opcion: 'principal', entidades, colocadas };
   });
