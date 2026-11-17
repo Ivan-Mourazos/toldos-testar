@@ -54,6 +54,10 @@ export interface LonaInput extends DefinicionChaflan {
    *  por abajo; el remolque sigue con el alto de delante y el contorno no se sesga (Iván, 20/10/2026,
    *  AR2605158: 87 de alto y la trasera de 83). Ausente o false = como siempre. */
   traseraPorArriba?: boolean;
+  /** Solo el paño delantero queda más corto por abajo; el alto del remolque y el contorno se conservan. */
+  delanteraPorArriba?: boolean;
+  /** Centímetros que se acorta el delantero por abajo (AR2605589: 17). Solo con delanteraPorArriba. */
+  delanteraRecorte?: number;
   /** Campo histórico: contenía directamente la medida final de corte. */
   contornoScad?: number;
   /** Sin elegir hasta que el usuario decide: un perfil recto por defecto pasaría
@@ -186,6 +190,12 @@ export function contornoAutomatico(
   return valor == null ? null : r1(valor);
 }
 
+/** Diferencia desde la base del contorno al borde inferior del paño delantero. */
+export function recorteDelantero(input: Pick<LonaInput, "delanteraPorArriba" | "delanteraRecorte">): number {
+  return input.delanteraPorArriba && Number.isFinite(input.delanteraRecorte)
+    ? Math.max(input.delanteraRecorte ?? 0, 0) : 0;
+}
+
 export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
   const longitudinal = aguasLongitudinales(input);
   const recDel = findRecogida(params, input.recogeDelante);
@@ -230,7 +240,7 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
 
   const panoDelantero: Pano = {
     ancho: r1(input.ancho + recDel.delante + deltaDemasia),
-    alto: r1(input.altoDelante - (longitudinal ? input.aguas ?? 0 : 0) + params.demasiaAlto),
+    alto: r1(input.altoDelante - recorteDelantero(input) - (longitudinal ? input.aguas ?? 0 : 0) + params.demasiaAlto),
     etiqueta: "PAÑO DELANTERO",
   };
   const demasiaTrasera = USAR_COLUMNA_ATRAS ? recAtr.atras : recAtr.delante;
@@ -338,6 +348,9 @@ export function calcLona(input: LonaInput, params: CalcParams): LonaResult {
     notas.push("CORREAS: orejas sin ollaos; cinta en el paño y hebilla en el lateral, cosidas sobre las rayas del corte.");
   }
   if (input.bastillaEnfundar) notas.push("Bastilla de enfundar: paño contorno con demasía 13.");
+  if (recorteDelantero(input) > 0) {
+    notas.push(`Paño delantero de ${r1(input.altoDelante - recorteDelantero(input) - (longitudinal ? input.aguas ?? 0 : 0)).toLocaleString("es-ES")} a la línea por arriba: queda ${r1(recorteDelantero(input)).toLocaleString("es-ES")} cm más corto por abajo que el remolque.`);
+  }
   if (input.traseraPorArriba && altoAtras !== input.altoDelante) {
     notas.push(`Paño trasero de ${r1(altoAtras)} a la línea por arriba: queda ${r1(Math.abs(input.altoDelante - altoAtras))} cm ${altoAtras < input.altoDelante ? "más corto" : "más largo"} por abajo que el remolque.`);
   }

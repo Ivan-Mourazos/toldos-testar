@@ -1,4 +1,5 @@
 import React from 'react';
+import { recorteDelantero } from '../../remolques/calc/lona.ts';
 import type { CalcParams } from '../../remolques/calc/params.ts';
 import type { ElementoEscena } from '../../remolques/escena/tipos.ts';
 import { DibujoRemolque } from './DibujoRemolque';
@@ -15,6 +16,7 @@ export function DibujoElemento({ elemento, params }: { elemento: ElementoEscena;
       <DibujoRemolque tipo="lona" input={lona} res={res} params={params}
         respaldo={(
           <Escena3D modo="lona" medidasHechas={res.lonaHecha} largo={lona.largo} ancho={lona.ancho} anchoAtras={lona.anchoAtras}
+            delanteraDesde={recorteDelantero(lona)}
             altoDelante={lona.altoDelante} altoAtras={lona.traseraPorArriba ? 0 : lona.altoAtras}
             aguas={lona.aguas} direccionAguas={lona.direccionAguas} radioCumbrera={lona.radioCumbrera} radioHombro={lona.radioHombro}
             radioEsquina={lona.radioEsquina} chaflan={lona.chaflan} modoChaflan={lona.modoChaflan} anchoPlanoSuperior={lona.anchoPlanoSuperior}

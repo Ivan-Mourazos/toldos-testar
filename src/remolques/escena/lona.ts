@@ -1,5 +1,5 @@
 import { errorChaflanConAguas } from "../geometry/chaflan.ts";
-import { aguasLongitudinales, type LonaInput, type LonaResult } from "../calc/lona.ts";
+import { recorteDelantero, aguasLongitudinales, type LonaInput, type LonaResult } from "../calc/lona.ts";
 import type { CalcParams, TipoPerfil } from "../calc/params.ts";
 import { colorBaseMaterial } from "../geometry/color-lona.ts";
 import { perfilForma, type PerfilOpts } from "../geometry/perfil.ts";
@@ -73,16 +73,18 @@ export function escenaLona(input: LonaInput, res: LonaResult, params: CalcParams
   const traseraDesde = input.traseraPorArriba && input.altoAtras > 0 && input.altoAtras < input.altoDelante
     ? input.altoDelante - input.altoAtras
     : 0;
+  const delanteraDesde = recorteDelantero(input);
   const cuerpo: CuerpoLona = {
     tipo: "lona", perfilDelante: perfiles.delante, perfilAtras: perfiles.atras, largo,
     bastilla: input.bastillaEnfundar ? BASTILLA : 0,
     ...(aguasLongitudinales(input) ? { cumbreraTransversal: Math.max(hD, hA) } : {}),
     ...(traseraDesde > 0 ? { traseraDesde } : {}),
+    ...(delanteraDesde > 0 ? { delanteraDesde } : {}),
   };
   const anchoAtrasRemolque = (input.anchoAtras ?? 0) > 0 ? input.anchoAtras! : input.ancho;
   const cajon = cajonDe(largo, input.largo, input.ancho, anchoAtrasRemolque, ALTO_CAJON);
   const medidas = { largo, anchoDelante: wD, anchoAtras: wA };
-  const bordes = { delante: 0, atras: 0, laterales: 0 };
+  const bordes = { delante: delanteraDesde, atras: 0, laterales: 0 };
   const ollaos = marcasOllaos(res.reparto, medidas, bordes);
   const ganchos = marcasGanchos(posicionesGanchos(res.reparto, res.ganchos), Boolean(res.ganchos), medidas, cajon, bordes);
   const chasis = chasisDe(cajon);

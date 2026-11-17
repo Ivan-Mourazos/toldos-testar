@@ -364,3 +364,21 @@ remolque + 3); lo que el paño tenga de más son orejas, también delante si rec
 Corrección (21/10/2026, Iván): con la **trasera a la línea por arriba** el trasero acaba más arriba que el contorno,
 que llega hasta el fondo. Por eso las marcas del hombro de detrás van a la oreja del trasero **más** lo que se queda
 corto por abajo (AR2605158: 81,5 + 4 = 85,5), y el plano acota esos 4 cm desde cada borde del contorno.
+
+
+## Delantera a la línea por arriba (17/11/2026, AR2605589)
+
+Iván confirma una pick-up Land Rover con la delantera **fija, sin recogida ni orejas**:
+los laterales y la trasera llegan a la línea por abajo; al delantero le faltan **17 cm por abajo**.
+Se añade la opción independiente «Delantera a la línea por arriba» y «Acortar delantero por abajo»
+(en cm). El alto delantero existente sigue siendo el del remolque completo: no se reutiliza ni se
+migra, para conservar los planteamientos anteriores. El paño delantero pierde esa diferencia de
+alto; el contorno, los laterales y el paño trasero no cambian.
+
+Las dos cabezas pueden ir a la línea por arriba a la vez: cada diferencia se mide desde la base
+completa del contorno. Con orejas delante, su marca del hombro suma el recorte delantero; fija o
+con cremallera, esa punta conserva solo el centro. El plano acota el recorte desde ambos bordes
+del contorno incluso con la delantera fija. Las hebillas de las correas suman también esa diferencia.
+La trasera conserva «Alto detrás» y su opción actual, sin cambiar los datos guardados ni sus cortes.
+El dibujo, las cotas del paño y la hoja indican la delantera más corta y mantienen el alto del remolque.
+Las demás medidas del 5589 no se deducen de este caso ni se fijan como valores por defecto.

@@ -1,4 +1,4 @@
-import { aguasLongitudinales, type LonaInput, type LonaResult } from "../calc/lona.ts";
+import { aguasLongitudinales, recorteDelantero, type LonaInput, type LonaResult } from "../calc/lona.ts";
 import type { BaquetonInput, BaquetonResult } from "../calc/baqueton.ts";
 import type { GanadoInput, GanadoResult } from "../calc/ganado.ts";
 import type { PlanteamientoRecord, TipoPlanteamiento } from "../store/types.ts";
@@ -90,6 +90,7 @@ export function hojaLona(i: LonaInput, r: LonaResult): CuerpoHoja {
             : i.traseraPorArriba
               ? `ALTO ${fmt(i.altoDelante)} · TRASERA ${fmt(altoAtras)} A LA LÍNEA POR ARRIBA`
               : `ALTO ${fmt(i.altoDelante)} DEL. / ${fmt(altoAtras)} TRAS.`]),
+          ...(recorteDelantero(i) > 0 ? [`DELANTERA ${fmt(i.altoDelante - recorteDelantero(i) - (aguasLongitudinales(i) ? i.aguas ?? 0 : 0))} A LA LÍNEA POR ARRIBA · ${fmt(recorteDelantero(i))} CM MÁS CORTA POR ABAJO`] : []),
         ],
         notas: sesgado ? [`ANCHO ${fmt(i.ancho)} DEL. / ${fmt(i.anchoAtras!)} TRAS.`] : [],
       },

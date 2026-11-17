@@ -1,5 +1,5 @@
 import { errorChaflanConAguas } from "../geometry/chaflan.ts";
-import { aguasLongitudinales, errorContornoSoldado, contornoAutomatico, contornoSesgado, type LonaInput } from "../calc/lona.ts";
+import { aguasLongitudinales, recorteDelantero, errorContornoSoldado, contornoAutomatico, contornoSesgado, type LonaInput } from "../calc/lona.ts";
 import type { BaquetonInput } from "../calc/baqueton.ts";
 import { esModeloGanado, type GanadoInput } from "../calc/ganado.ts";
 import { calcularMedidasCal } from "../ganado/medidas.ts";
@@ -52,6 +52,9 @@ export function erroresPlanteamiento(input: LonaInput | BaquetonInput | GanadoIn
     agregar(aguasLongitudinales(input) && (input.aguas ?? 0) >= Math.min(input.altoDelante, input.altoAtras > 0 ? input.altoAtras : input.altoDelante),
       "aguas", "Las aguas deben ser menores que el alto del centro para dejar altura en los extremos.");
     agregar(!positivo(input.altoDelante), "altoDelante", "Introduce el alto delantero.");
+    agregar(input.delanteraPorArriba === true && (!positivo(input.delanteraRecorte)
+      || input.delanteraRecorte! >= input.altoDelante - (aguasLongitudinales(input) ? input.aguas ?? 0 : 0)),
+      "delanteraRecorte", "Introduce cuánto se acorta el delantero por abajo: mayor que cero y menor que el alto del paño.");
     // Las decisiones propias de la lona, con el mismo criterio: mientras no se
     // elija el perfil no se sabe qué medidas hacen falta, y las comprobaciones
     // de aguas, chaflán y radio de abajo callan a propósito hasta entonces.
@@ -85,7 +88,7 @@ export function erroresPlanteamiento(input: LonaInput | BaquetonInput | GanadoIn
       "El ancho de la ventana debe ser menor que el ancho del remolque.",
     );
     agregar(
-      input.ventana === true && positivo(input.ventanaAlto) && Number(input.ventanaAlto) >= input.altoDelante - (aguasLongitudinales(input) ? input.aguas ?? 0 : 0),
+      input.ventana === true && positivo(input.ventanaAlto) && Number(input.ventanaAlto) >= input.altoDelante - recorteDelantero(input) - (aguasLongitudinales(input) ? input.aguas ?? 0 : 0),
       "ventanaAlto",
       "El alto de la ventana debe ser menor que el alto delantero.",
     );

@@ -222,7 +222,7 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
         <CampoNum name="largo" error={errores.largo} label="Largo" value={input.largo} onChange={(v) => set('largo', v)} />
         <CampoNum name="ancho" error={errores.ancho} label="Ancho" value={input.ancho}
           onChange={(v) => onChange(conMedidaDelante(input, 'ancho', v, verDetras))} />
-        <CampoNum name="altoDelante" error={errores.altoDelante} label={longitudinal ? 'Alto centro' : 'Alto delante'} value={input.altoDelante}
+        <CampoNum name="altoDelante" error={errores.altoDelante} label={longitudinal ? 'Alto centro' : input.delanteraPorArriba ? 'Alto del remolque delante' : 'Alto delante'} value={input.altoDelante}
           onChange={(v) => onChange(conMedidaDelante(input, 'altoDelante', v, verDetras))} />
         {!longitudinal && <div className="rem-contorno">
           <CampoNum name="contorno" error={errores.contorno} label="Contorno" value={contornoVisible}
@@ -231,6 +231,15 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
             () => onChange({ ...input, contorno: undefined, contornoScad: undefined }))}
         </div>}
         {longitudinal && <p className="rem-nota rem-span-4">Delantero y trasero rectangulares. Con el mismo alto en ambos extremos: alto centro menos aguas.</p>}
+        <div className={`${input.delanteraPorArriba ? 'rem-banda' : 'rem-fila'} rem-span-4`}>
+          <CampoSiNo name="delanteraPorArriba" label="Delantera a la línea por arriba" value={input.delanteraPorArriba ?? false}
+            onChange={(v) => onChange({ ...input, delanteraPorArriba: v || undefined, ...(v ? {} : { delanteraRecorte: undefined }) })} />
+          {input.delanteraPorArriba && <>
+            <CampoNum name="delanteraRecorte" label="Acortar delantero por abajo" error={errores.delanteraRecorte}
+              value={input.delanteraRecorte ?? 0} onChange={(v) => set('delanteraRecorte', v)} />
+            <p className="rem-nota rem-span-4">Centímetros que le faltan por abajo al paño delantero. El contorno y los laterales llegan hasta abajo.</p>
+          </>}
+        </div>
         {/* Remolque más ancho (o más alto) detrás: sus medidas de detrás, con el contorno de esa
             punta, porque el paño contorno se corta en trapecio (CAD de Iván, 30/09/2026). La caja solo
             sale con ellas: el Sí / No suelto no necesita marco. */}
