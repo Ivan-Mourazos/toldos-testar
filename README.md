@@ -287,8 +287,13 @@ cd /webs/toldos-testar
 # Si esto lista algo, resolverlo antes de seguir: el pull fallaría.
 git log --oneline origin/main..HEAD
 git pull --ff-only
-pnpm install --frozen-lockfile
-PLAYWRIGHT_SKIP_BROWSER_GC=1 pnpm exec playwright-core install chromium
+# Dependencias y Chromium solo si cambió el lockfile: si no, no hacen nada y gastan tiempo.
+git diff --quiet HEAD@{1} HEAD -- pnpm-lock.yaml || {
+  pnpm install --frozen-lockfile
+  PLAYWRIGHT_SKIP_BROWSER_GC=1 pnpm exec playwright-core install chromium
+}
+# Los tipos se comprueban con caché (node_modules/.cache/tsc): no borrar esa carpeta,
+# o el build vuelve a tardar más de un minuto en el .90 (17/11/2026).
 pnpm build
 pnpm deploy:check
 pnpm deploy:smoke
