@@ -1,7 +1,36 @@
-# Sacos de stock en el corte de remolques · 10/11/2026
+# Sacos de stock en el corte de remolques · 17/11/2026
 
-Ampliación posterior: [sacos nominales y tiras de refuerzo](./remolques-stock-refuerzos.md).
-Esa es la regla actual; este informe conserva la investigación y los resultados anteriores.
+## Regla actual · Iván, 17/11/2026
+
+El saco de stock es de **130×85 cm (alto × ancho)**: se confecciona con una tira de **260×85**
+o con **dos trozos de 130×85**. El catálogo anterior queda retirado. Se permite **±10 cm en cada
+lado**, en ambos sentidos y giros, redondeando a centímetros enteros. La OF sigue siendo la del
+`MATERIAL PARA STOCK.dwg`; se conserva la lectura existente.
+
+Se elige la combinación de retales que da más sacos **después de cerrar las parejas en todo el material**:
+`tiras + floor(trozos / 2)`. Se conserva también la alternativa con un trozo pendiente, que puede
+completar su pareja en otro retal; se compara con la tira y con dejar el último trozo sin cortar. A igualdad,
+se prefieren tiras; después más superficie y menos piezas. Se aplica el mismo criterio al desempate
+del Tetris, siempre después de minimizar el largo. Los trozos se cuentan entre todos los huecos del
+corte de ese material: si el total es impar, se descarta el último antes de dibujar y de valorar el stock.
+
+Los rótulos, también los agrupados de remolques, indican la **medida real** de las piezas, por ejemplo
+`SACO 270X87 STOCK`. No se añade ninguna frase de confección. Solo se aprovecha lona ya gastada:
+no se alarga el rollo, no se añaden piezas del pedido y no se invaden otras piezas. En toldos y puertas
+el desempate puede recolocar o girar piezas conservando despiece, cantidades y largo.
+
+Ejemplos: en 140×300 caben cuatro trozos de 140×75, que dan dos sacos y ganan a una tira. En
+270×95 gana una tira frente a dos trozos, porque ambas opciones dan un saco. En 285×120 gana una
+tira frente a tres trozos, porque el tercero no completa otro saco; si otro retal aporta el cuarto trozo,
+las cuatro piezas dan dos sacos y ganan a la tira. Un único trozo en
+130×85 no da un saco y se descarta; dos huecos separados de ese tamaño sí pueden completar uno.
+
+Los refuerzos siguen aprovechando el sobrante posterior: [reglas de tiras](./remolques-stock-refuerzos.md).
+
+## Investigación y resultados históricos · catálogo anterior (hasta el 16/11/2026)
+
+Todo lo que sigue conserva las fuentes y resultados del 10/11/2026. Las medidas antiguas, los
+rótulos nominales y los recuentos de esas tablas **no son el catálogo ni las expectativas actuales**.
 
 El corte de remolques completa los retales rectangulares con los mismos sacos de stock de toldos y puertas.
 Primero se colocan todas las piezas del pedido; los sacos no cambian su colocación ni alargan el rollo.

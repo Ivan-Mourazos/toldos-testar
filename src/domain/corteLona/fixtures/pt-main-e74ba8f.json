@@ -146,7 +146,7 @@
       "modelos": [
         "CORTINA"
       ],
-      "corte": "1ba38a46b76f3a6639ed060163d844a275d086f1197a56980bf3718469774dc1"
+      "corte": "1c5056cce2b0fe61ffcebce082f6d7f2c853a19eb4a342c2f0d093cfca5fa475"
     },
     {
       "pedido": "AR2601829",
@@ -181,7 +181,7 @@
       "modelos": [
         "GALICIA"
       ],
-      "corte": "50de27b730535181b1d01024412ef9ec8dd47e504394fe5e7cec7d01894e0e17"
+      "corte": "d6457ad5b67a5e989d5b9a8ea138e0455fa10a16f1ac88c6b54b855a8e4d520a"
     }
   ],
   "integridadPuertas": [
@@ -197,8 +197,8 @@
     },
     {
       "pedido": "AR2604906",
-      "corte": "fb25a31fba600cdfaa970116efb87dcabea36c057f0e1c4fde7e9c556d0070a3",
-      "archivo": "0c31fc8273e8ec3cba0e74ac54c3fad9f752cb8c45b5694013b7dfd664bdc02a"
+      "corte": "4912aeb6ce05e8e6dca2a630d7140ba467622da47a8443f79ff82ef47c2d77a8",
+      "archivo": "964233f34294016476def1c234c7193109179ba3e952cfadcfd898d70fb65cd0"
     },
     {
       "pedido": "AR2604904",
@@ -207,28 +207,28 @@
     },
     {
       "pedido": "AR2605246",
-      "corte": "97ea76ee84cf2fe79a2d9b21adde15394424152127227a5c325048a8e63cb5b7",
-      "archivo": "9d81bfccf0e940c8569cf0ff56caed8427cced02e6a18776d581fd73c26f67cd"
+      "corte": "990b58b388d79fc3c43d174113e0aa933874167c35392fdc95aa8b47bd70ad7e",
+      "archivo": "68bc75abaabdeb5f0b1d12b39c5e27c79158196392db9b3481e7be0914a383c1"
     },
     {
       "pedido": "AR2605220",
-      "corte": "e44529855d6d9e4c35cda56bdea27ad95478b3dedac0b49ac12a6aa7f006e1f4",
-      "archivo": "956db9520648830d4b4fdc8e9b884582170ac4cee90ecb472254cae40ef552b1"
+      "corte": "a5a33839f98782c330d7f4ec93bfa56354aae2bfa0cfedbe77b1e4d2cc11140a",
+      "archivo": "087f3a3bb111745b68bb77af1639c08c9f6bbc5b1612530d030f126675118099"
     },
     {
       "pedido": "AR2605035",
-      "corte": "420a734f32e593d7ff156139d63c83cbdc8cae21638a31bee80d70d158636baf",
-      "archivo": "1dbb231b04451e2579d05409c5cf48576266ba22a73b0cecf8e6d9cc588fd59d"
+      "corte": "5d5fe0867168678f4d9cac881d589e4f3c8192e5945f20ed4c58f4c133d66018",
+      "archivo": "b3dc015c4800156315ac0e121458d6bc8bd84c40ec89933529ca9c74ef1627d9"
     },
     {
       "pedido": "AR2605365",
-      "corte": "f12f9b166e4da2cfb9322530418cb27a44acd66d3a7cbc8c2886d17d7920c945",
-      "archivo": "748a5bc34004e09b55f0ecd095facb4cf2857ed0ec1d362a2a86b388206369fc"
+      "corte": "a00bd560280386c2b8e97513d21148372d1b67eb31827de7870051af15a13dc1",
+      "archivo": "6569b256105d0b95b5f45648fb2f639995edff4ae803fe683153408f4256c26a"
     },
     {
       "pedido": "AR2505733",
-      "corte": "0e3abe19b48ed60f71838ce7cd5948d804e18715502492f833036248e9f3977d",
-      "archivo": "4f8a244ce68a38301515a04ad68491c222bb910e598b4c343e08ba3ab880524c"
+      "corte": "06a5e075bb230c12d63b5ef2cdfa6b4ff87112a820536bccf909052d8ac960e2",
+      "archivo": "c8d5740c4e7636eeb9f629dba4162dfe34f374bd13b769f31afdf1930d166afe"
     },
     {
       "pedido": "AR2604292",
@@ -242,13 +242,13 @@
     },
     {
       "pedido": "AR2602391",
-      "corte": "52b0e7580ade44b94fe3d8dd6b4b58867b117c692ac01f67b76b5513b67d21d9",
-      "archivo": "bc5d85a6a9765547428afbab41ad7c8ea28d54d57eb4e7024cebd162f131f6bd"
+      "corte": "1f748810583156662ab1bfab6544e9f1b58ebc5fb283729d6c177d3079b9962a",
+      "archivo": "8e2935382eaa4e694e4eb252819b599f76f546493888bccabd7843a36ea6d6a9"
     },
     {
       "pedido": "AR2506255",
-      "corte": "ebb6a021d39a66221894138a6f57adbcce17bc14954e3e2d4abdf11d449ce329",
-      "archivo": "ce22211fdab66e1f02657c141b4c91973c6b47d29a39274bbb4fa3d20f1eda82"
+      "corte": "8cd4515503af41e6b7b28fb6da433f5086fb7a3c4d56751ccc665c71a52c9f6a",
+      "archivo": "704d1434d623c41ec95e7839d10f86e186494223ad431c91d02b4f7f9454c6e9"
     },
     {
       "pedido": "AR2604815",
@@ -399,12 +399,12 @@
       "familia": "Toldos / CORTINA",
       "ejemplo": "AR2605193 con ventana y bambalina / material 1",
       "dxf": "185bb2f43e14cc7f359c939297de45eff05dc4c679b7d90f5079499c72ae9ecd",
-      "geometria": "e17604ea515ce6042e10e32c0e810cf960852f75bf6920c9a70d4836c6b1368f",
-      "textosFijos": "8804ff3bf04e920dddd9435cb3499667a47f9e24f2cb536452d7a1ed75a09706",
-      "textos": "90a77c3b05317c658ef85391baef7b0977644f6ef5c59b0dd1b61fcf0a4ce1c3",
-      "cotas": "814a6378a74bbc2e585c247b8073ca13af6c358cbb2cfa391ec17613a9008fdb",
+      "geometria": "e0d30cf094b7fe68d23102c71dc063a6952afe163f0441df3ccf8d816c822a3f",
+      "textosFijos": "b5d874e89914e0dd60575a58c353fc25459b556164f6ab892c66bb29e524185e",
+      "textos": "dbbb039993060a1df3dcccf3c7b635b8abf5b49d9e37a80289142d5ba6029fdb",
+      "cotas": "0c0b94560783cf1ad4368392e2953e035958c5b69b802f0c3d1173a847d8b8c0",
       "cotasPosicionHash": "b8b4b35dc2b399fc6f1f6914016da587a00cb93213ed8790cde917dc661e499b",
-      "ordenTextos": "b5efe5761d5a03251eca36a1e9fa76434c380f25b1f7b7804adf770add658988",
+      "ordenTextos": "1b10273c55288c2465d773e11392bd7e353f9a8f47a55b3166e9922a5ea65dcc",
       "textosEnHoja": [
         0,
         1,
@@ -469,12 +469,12 @@
       "familia": "Toldos / CORTINA",
       "ejemplo": "AR2605193 con ventana y bambalina / material 2",
       "dxf": "185bb2f43e14cc7f359c939297de45eff05dc4c679b7d90f5079499c72ae9ecd",
-      "geometria": "e17604ea515ce6042e10e32c0e810cf960852f75bf6920c9a70d4836c6b1368f",
-      "textosFijos": "8804ff3bf04e920dddd9435cb3499667a47f9e24f2cb536452d7a1ed75a09706",
-      "textos": "90a77c3b05317c658ef85391baef7b0977644f6ef5c59b0dd1b61fcf0a4ce1c3",
-      "cotas": "814a6378a74bbc2e585c247b8073ca13af6c358cbb2cfa391ec17613a9008fdb",
+      "geometria": "e0d30cf094b7fe68d23102c71dc063a6952afe163f0441df3ccf8d816c822a3f",
+      "textosFijos": "b5d874e89914e0dd60575a58c353fc25459b556164f6ab892c66bb29e524185e",
+      "textos": "dbbb039993060a1df3dcccf3c7b635b8abf5b49d9e37a80289142d5ba6029fdb",
+      "cotas": "0c0b94560783cf1ad4368392e2953e035958c5b69b802f0c3d1173a847d8b8c0",
       "cotasPosicionHash": "b8b4b35dc2b399fc6f1f6914016da587a00cb93213ed8790cde917dc661e499b",
-      "ordenTextos": "b5efe5761d5a03251eca36a1e9fa76434c380f25b1f7b7804adf770add658988",
+      "ordenTextos": "1b10273c55288c2465d773e11392bd7e353f9a8f47a55b3166e9922a5ea65dcc",
       "textosEnHoja": [
         0,
         1,
@@ -719,12 +719,12 @@
       "familia": "Toldos / BAMBALINAS",
       "ejemplo": "Bamba separada por material / material 1",
       "dxf": "4ebae8e599f91eb7aefeebd6472f737eb817846725e8b74194e7daf3615b9958",
-      "geometria": "6d2b079437da583243c0d8f3070478b40e2a2defc30e392764ca3662be454d64",
+      "geometria": "cac9497f4b1013909fabdeb6df850f73bc9c87982d73671f7330fa4d35e74b25",
       "textosFijos": "fc16c66681893af0250ad864e41230eb783f69619a284a7b91f1300e0badcb97",
-      "textos": "8af0617135aeda5c48ddc54a78ad93dfd6f2a35a906111409ba29e37f275ce0e",
+      "textos": "472f9e6174a11cf9d177c6dd3bef45c0ac1ebc29a41bdbb3fe37b4095eef7723",
       "cotas": "6e627d5e8c7cba4ff3333e7cc92fbcbda8eaf2e7d342c4389782a95af8027599",
       "cotasPosicionHash": "b4c0a37a65c32508c71b9f1e363a845bd3bc8c02ddb215edbbc98e39977658ac",
-      "ordenTextos": "f6331ff3ef6cb9e3c7c0e3c34483cab3cf43b25995871b0aba66ca2f4dd0c87c",
+      "ordenTextos": "d71a49ee346188c4a0920a14c34c44dbc3cc0421a1a4b12840a98079f2359871",
       "textosEnHoja": [
         0,
         1,
@@ -776,23 +776,7 @@
         47,
         48,
         49,
-        50,
-        51,
-        52,
-        53,
-        54,
-        55,
-        56,
-        57,
-        58,
-        59,
-        60,
-        61,
-        62,
-        63,
-        64,
-        65,
-        66
+        50
       ]
     },
     {
@@ -1635,12 +1619,12 @@
       "familia": "Puertas / Portanova Apilable",
       "ejemplo": "AR2604906",
       "dxf": "3570a1a44c8fc5d057cebd055492997e87dd715e99494c3a6ac4d47c152367fe",
-      "geometria": "fb73a286c8ea35a31ff74f82075542360ab80d9ee89db8dfd4e38f057634649a",
+      "geometria": "8c0521d221dab232745ee086db4c83256ad9c40b5ff7f109d96a682956793633",
       "textosFijos": "850005c860ccbf1fc20c0159f6bb067944f8363a767baa1eccfcf053bdaf56ec",
-      "textos": "1a605607406088d0b03ba22dfa976ed9c290b92207587cec64ab631981244c2f",
-      "cotas": "b5432963662f29fc8bcde55412b7dd72ed9578e451f6b52d994b077c39ed72a7",
+      "textos": "2d2245177ddb8c8abca27afcab9d6ab82f2e93d15cb3196cdd2aa9e94edaab8d",
+      "cotas": "3b4163512b8744f681019c56aedfbb53ce2cdfc1fef43353833dd695d1c12ebe",
       "cotasPosicionHash": "07ef0e03597c809ecbf10ed3aa7ddafe6dd17954795dd5087df413fb8088ac6b",
-      "ordenTextos": "dabf56569bd451fc3b1b078597ca934a1945ff0ef081fdb99e7fb32dac13ea22",
+      "ordenTextos": "a4578222b9c284b6466a3e826ba588fcef190df643cf8da7e371286b048cb1cc",
       "textosEnHoja": [
         0,
         1,
@@ -1729,19 +1713,7 @@
         84,
         85,
         86,
-        87,
-        88,
-        89,
-        90,
-        91,
-        92,
-        93,
-        94,
-        95,
-        96,
-        97,
-        98,
-        99
+        87
       ]
     },
     {
@@ -1813,12 +1785,12 @@
       "familia": "Puertas / Portanova compatibilidad",
       "ejemplo": "AR2605246",
       "dxf": "4c2a1e990f11492d5ff816af7ecf0267d484b13e2684af9b6f4fe1705c2d53d2",
-      "geometria": "7d0e9166a4a6f2e10e3a6905c9573bd02f575d61c8e37083582ab0b9361b3efe",
+      "geometria": "8826c029cadce5c222b720af0e7c7898d0d80b27075bb9d4b1d44096af55c916",
       "textosFijos": "2ff57fc9b85930a93d05290657b9eb7174b23e54624557d7d6801f670210f313",
-      "textos": "af4501db9e064179a7be5fdea6665c08cae4a712ddb4423388795c9db37a6a3e",
+      "textos": "00c916acede2a23935ace193dbc6c79aa68f4bdb02d20e25ea2c65984751ca87",
       "cotas": "73b83ace1dea00e6dce9e188396f8e882cb2298fa6a474e0a3c2c0d3ec012fab",
       "cotasPosicionHash": "52e29212bb6846e5c704b2aca469738c6728d1f508c5685440aa429a7b53c456",
-      "ordenTextos": "6927b7b0be9d02d1dc0d0784556b6544d185519ec975310e7e20fc8f0b6538a8",
+      "ordenTextos": "c0db59305ed28a2e1b95a70dde57fc57bb09c1205d3d26dbc2a30c3090cc0c92",
       "textosEnHoja": [
         0,
         1,
@@ -1921,23 +1893,19 @@
         98,
         99,
         100,
-        101,
-        102,
-        103,
-        104,
-        105
+        101
       ]
     },
     {
       "familia": "Puertas / Portanova compatibilidad",
       "ejemplo": "AR2605220",
       "dxf": "1ae05c31b05513a3be39ec100c073f2c7454d735d3ae7767429a71cdb9abb38a",
-      "geometria": "2c86aa9af2bd0e2fe3a3b259adaa12c7caa3c029b481bd6cfe857459880c45c9",
+      "geometria": "76540b1894a242f5d773ba1c5939af947decfab4cb5b65bacc81767fc0c997ff",
       "textosFijos": "416eb904cf7e94ca2b0db7772b2aa706e3aed6e6b6ff4659d3ce183d26a24c67",
-      "textos": "30e4db291a956adc2b4b1b744b9e264438e344af62f9c7f3ab04c946686af858",
-      "cotas": "7849e25295d4bf806bd0fc113f018d2d389123216b088d7c486d1af894c2c0ec",
+      "textos": "becdd7e58765ad42b5abbcf491f3dc2a69e2d597a30929d811dd15c3bc03eadd",
+      "cotas": "16970b5703617b997a83d6cbefb1c247a570b15e9ca1666245e52fc862730b6d",
       "cotasPosicionHash": "a2976e4e0c4f1c7acd27dd57a9dde3befd13da4b0d295ef81db1575ce0dd220d",
-      "ordenTextos": "a5f47a9dd1d1ffa5ee1a563ebe880c0b59265099069399e9b6a68e215fe72a05",
+      "ordenTextos": "9e517fdb4a319ebd34ace662920748416cd546db13ccafe707b266b4655f465b",
       "textosEnHoja": [
         0,
         1,
@@ -2002,19 +1970,31 @@
         60,
         61,
         62,
-        63
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75
       ]
     },
     {
       "familia": "Puertas / Portanova compatibilidad",
       "ejemplo": "AR2605035",
       "dxf": "999745830a46a5e3ef5af4dc6fe5accd7d7c9f5b6e117970f31926b10494d051",
-      "geometria": "e63fa48be1c3c53e448913a88f0ccd3412340b169de6ecaec084ff7c44c37ceb",
+      "geometria": "1c9d1873b686bf69600b6306eb4a0299785e53c3d21b96293c6fd0777b1722ee",
       "textosFijos": "fb2cfdb8ceb84844a7980813c6e7fd12369293f6b777e951ee739ec629032e90",
-      "textos": "a446c11bd946d96fb8bf28363f1fa3eca11b3e36156eecd067314702b1560839",
-      "cotas": "bc1c512e13f4ca5b5207563e28d48e394b04c5acfa6d661b142ede10194e3cb0",
+      "textos": "0d46df2f30abd2c974dc98ab6ad591437bc1b8703e0611fac4556e6e876193f5",
+      "cotas": "bc4eaed8cd84ae534741c49fa0e3e6240389f881e9643c729803bd4e6cb7d409",
       "cotasPosicionHash": "7986600baf42b6c071950826475ff6705407188f305e8982e70be4ae229702a2",
-      "ordenTextos": "254ca9a95569408fa5473daff4c9f3d6d82efe0dfa06815685a66d9d83b1f771",
+      "ordenTextos": "213e7b1ec68e449f1702273ee2d29f78efbe946333b77060970a53b6f58392b0",
       "textosEnHoja": [
         0,
         1,
@@ -2241,23 +2221,19 @@
         222,
         223,
         224,
-        225,
-        226,
-        227,
-        228,
-        229
+        225
       ]
     },
     {
       "familia": "Puertas / Araujo",
       "ejemplo": "AR2605365",
-      "dxf": "ced0257bf99a57996c9b500bce7fa632a43a47fbd061c6ec36fb1dd9339d495c",
-      "geometria": "58f99ba83bdb5701592d2e32f314201905179c75833f21ae2c369da0cf48210b",
-      "textosFijos": "559306a1e09325afb0e893602d96ebf9671f00e243b96c3f2a21455a03245558",
-      "textos": "136baeecbd3ede7450a89535eb78c94e2aa339f7ba4a64e583625baa144ed3ec",
-      "cotas": "c07e8796816dcd9a518ef7c28f1b0e206ffcc50a8b881bbddbd7b5d65cd2f49b",
-      "cotasPosicionHash": "6ebace7c4375c7aeb55a3f325fd145246d76ee40924fa18080d87586a31ea5ef",
-      "ordenTextos": "fec9ea025d6753ad008f4a30f93513659e3e36ceae016b1a91a49ff03a514030",
+      "dxf": "d40c42fc244f8090f3908534356c0afcb1e0bad2493eef6148bb8fd6bb881029",
+      "geometria": "9ba17affab076a16dbf06ec09e68a7d14fba0fdad006ab0950b752d05c708a68",
+      "textosFijos": "6cb5f2f858c3388f284b9a492770c95f6a4c0af2cd9b6b9b11530a4dce6c8e88",
+      "textos": "ca6f839471b7673cff06cd8f70718c2c553debecbe5c110031e4f970e84b1f7f",
+      "cotas": "cb6d5dfa968cf2149a6b027174f5cf13994f93aecf211abd24ffb8bd292dd0ac",
+      "cotasPosicionHash": "998ad27cc78dbc27917da639187d5f87b66683ca2cfd0af30ab9c0dd82e69f7d",
+      "ordenTextos": "fe197125050cd443699b4164e691559aa6745cf14ae6711dc488e7a0184324cb",
       "textosEnHoja": [
         0,
         1,
@@ -2315,35 +2291,19 @@
         53,
         54,
         55,
-        56,
-        57,
-        58,
-        59,
-        60,
-        61,
-        62,
-        63,
-        64,
-        65,
-        66,
-        67,
-        68,
-        69,
-        70,
-        71,
-        72
+        56
       ]
     },
     {
       "familia": "Puertas / Araujo",
       "ejemplo": "AR2505733",
-      "dxf": "b99f8de8ef1a153e47d7f1885b75a9a7663fc84cce94d45213e542016f213375",
-      "geometria": "c74c211596c8c0d95e04cf27a5f3896722866b816e67d8ca04568dfef6a03bd1",
-      "textosFijos": "cd211fa1ab2dffbcbc47c9e468dc691dae6b6847200ff985c1beaed66d7a72bf",
-      "textos": "f50db21b7fddbe38300170a17d882e9ed6c70805ff92d0bf24b815f7a8a91356",
-      "cotas": "bd6416caf3359619674f60e259666eb23fbde5e3968321d40c4617e2eed7e7eb",
-      "cotasPosicionHash": "36bb538fcb8107a9b141f7d5465999f3999aae55d9109c78c936b52c96772b90",
-      "ordenTextos": "cd8c2405868cd0c74745db054dd639c30c35be86c191b611ac8ff2324b6f4ee9",
+      "dxf": "7aee3b85e372a0df9032691db698d2d24c1766a68edd2f68668cf9d1136bfd6e",
+      "geometria": "c209a47131333359267914edb028a11f88b531c31a151480a6c773546cba120f",
+      "textosFijos": "67566eee1869e1e1379e0397c16da80f006049dfc33de91f11b16af078d71076",
+      "textos": "7a41b1004e6773909919f3c2a498be59fc868e00ec5cbaa59b564bb3f656aa20",
+      "cotas": "cf511c2ae7cbe31e707809b36f64afafd8a07dcc8d454249a4c1ebd5b64ee0d8",
+      "cotasPosicionHash": "49087b55bba5c92ad1bec32d5299af114f160eb3553cdb4b5deac15330222b9c",
+      "ordenTextos": "485f6f75a59dc81d5a6e47d2f2b2ec24c7503840217db110c05ea22c77296eec",
       "textosEnHoja": [
         0,
         1,
@@ -2431,15 +2391,7 @@
         83,
         84,
         85,
-        86,
-        87,
-        88,
-        89,
-        90,
-        91,
-        92,
-        93,
-        94
+        86
       ]
     },
     {
@@ -2549,13 +2501,13 @@
     {
       "familia": "Puertas / Araujo",
       "ejemplo": "AR2602391",
-      "dxf": "cdd618aaedef27383bf9979fa1bfbdeda632044539a505595bd3dd37735f1349",
-      "geometria": "9181ce1bb3a91e8c56b9fde1781fb44f3c8183f2c9fc112c6d3995d31e55fe6f",
+      "dxf": "078be0c9b14f4987b795eee4b7fe072ddaf45115a5070e7f246507435d00bbe8",
+      "geometria": "e2f13529d4149c60da3c687f1de5fb161c0ae6aa221484cdccc77ef3ff4ca3fd",
       "textosFijos": "9794b196bbf27d1af9f7b83a2af2124b1bd3d8d86473df47cba5392a5b5f1a82",
-      "textos": "038891d416401abd4598c910c516073bf110571d7efcb603a69ed957ffd99df2",
-      "cotas": "b855a93fc0108c00740bbbefa2126f61e21a9749a3024e3330031a33b87cc9b2",
-      "cotasPosicionHash": "61c6e1e69f2d7947f126eded30ee1f287286195d32fa9db15aecf60c1178dce1",
-      "ordenTextos": "891449008b495166bf08cddfe804e2e394e9faa8c810c9f6fc0303db9f7a451c",
+      "textos": "679865772e02a51fd24e05bc79137ef66870fc31b08432ec0a978e37836f9637",
+      "cotas": "2526a45e7527f26783a5f0fb6973d3c45314274d0a69990e54756490d2006d36",
+      "cotasPosicionHash": "7ec8952bbac69999c556482e2300ed93672806863b1f2aaf657baf24b630bade",
+      "ordenTextos": "d3e1e286cdb900bde1bcb6bd0493d479f927310e6f8ab9b944cf706db48636a6",
       "textosEnHoja": [
         0,
         1,
@@ -2649,23 +2601,19 @@
         89,
         90,
         91,
-        92,
-        93,
-        94,
-        95,
-        96
+        92
       ]
     },
     {
       "familia": "Puertas / Araujo",
       "ejemplo": "AR2506255",
       "dxf": "12b4464c5cedf159ce8e19909f2609f4403483e5ae5c71fed4a8dc9d69fb6870",
-      "geometria": "23e56010fc690d4751d6994608699bf883cf254404ae08afc5a8f45e6cf888e7",
-      "textosFijos": "5aabddf617c1646de146efae5f7487b49c2e5d52a884acb9ae18a6dafdec3932",
-      "textos": "21b2ae90c8530ffb3d9636dac4de0d80836f724ace77847516b7e5c2ccb2d3c0",
-      "cotas": "fe1965b8d6ae6e7504a2fea0cc4a88242e1555714d9a0f1049404fec5dcf7a68",
-      "cotasPosicionHash": "f9fe009856e7d27e69b1e3e53233a938e28ba6b713ea41933fab17b878acbb0a",
-      "ordenTextos": "d8f81cd77e31fa247dab91750ef4a35ae6b18ee01c38f05fbb922932e2395239",
+      "geometria": "e9f7b9cf44291d7a9bbfe5f8f4d9d3a7eca17e5107a5a51549d67e9590665d1a",
+      "textosFijos": "74622de9c7cd8fe88bd94d96e530551c1e92bcc395fbf2d9591aa8535532620d",
+      "textos": "f86a8f8dab0cadfba6224b84c7ae52617b79e8a51b895c2941f8154168a988cb",
+      "cotas": "c1fe984889c27fb2b9c98ab5c5f2e556095301cb5990c90d6814e08f5a9d36db",
+      "cotasPosicionHash": "b238d975c7a3560f7d5d5253bd4e2fdee578a03f9dbcc9f7ed0acfb296a9e687",
+      "ordenTextos": "a09bc851ba87955a2ceca4fe5cbe9165a36737abcc73bf165c7a1672d0644ff2",
       "textosEnHoja": [
         0,
         1,
@@ -2697,15 +2645,7 @@
         27,
         28,
         29,
-        30,
-        31,
-        32,
-        33,
-        34,
-        35,
-        36,
-        37,
-        38
+        30
       ]
     },
     {

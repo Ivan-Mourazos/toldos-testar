@@ -143,18 +143,8 @@
    "giradas": [],
    "sacos": [
     {
-     "medida": "125X78",
-     "largo": 1250,
-     "ancho": 780
-    },
-    {
-     "medida": "125X78",
-     "largo": 1250,
-     "ancho": 780
-    },
-    {
-     "medida": "125X78",
-     "largo": 1250,
+     "medida": "270X78",
+     "largo": 2700,
      "ancho": 780
     }
    ]
@@ -212,19 +202,44 @@
    "giradas": [],
    "sacos": [
     {
-     "medida": "125X225",
-     "largo": 2250,
-     "ancho": 1250
+     "medida": "128X76",
+     "largo": 760,
+     "ancho": 1280
     },
     {
-     "medida": "125X225",
-     "largo": 2250,
-     "ancho": 1250
+     "medida": "128X76",
+     "largo": 760,
+     "ancho": 1280
     },
     {
-     "medida": "125X225",
-     "largo": 2250,
-     "ancho": 1250
+     "medida": "128X76",
+     "largo": 760,
+     "ancho": 1280
+    },
+    {
+     "medida": "128X76",
+     "largo": 760,
+     "ancho": 1280
+    },
+    {
+     "medida": "128X76",
+     "largo": 760,
+     "ancho": 1280
+    },
+    {
+     "medida": "128X76",
+     "largo": 760,
+     "ancho": 1280
+    },
+    {
+     "medida": "128X76",
+     "largo": 760,
+     "ancho": 1280
+    },
+    {
+     "medida": "128X76",
+     "largo": 760,
+     "ancho": 1280
     }
    ]
   }
@@ -334,53 +349,53 @@
    "giradas": [],
    "sacos": [
     {
-     "medida": "125X76",
-     "largo": 1250,
+     "medida": "133X76",
+     "largo": 1330,
      "ancho": 760
     },
     {
-     "medida": "125X76",
-     "largo": 1250,
+     "medida": "133X76",
+     "largo": 1330,
      "ancho": 760
     },
     {
-     "medida": "125X76",
-     "largo": 1250,
+     "medida": "133X76",
+     "largo": 1330,
      "ancho": 760
     },
     {
-     "medida": "125X76",
-     "largo": 1250,
+     "medida": "133X76",
+     "largo": 1330,
      "ancho": 760
     },
     {
-     "medida": "125X76",
-     "largo": 1250,
+     "medida": "133X76",
+     "largo": 1330,
      "ancho": 760
     },
     {
-     "medida": "125X76",
-     "largo": 1250,
+     "medida": "133X76",
+     "largo": 1330,
      "ancho": 760
     },
     {
-     "medida": "125X76",
-     "largo": 1250,
+     "medida": "133X76",
+     "largo": 1330,
      "ancho": 760
     },
     {
-     "medida": "125X76",
-     "largo": 1250,
+     "medida": "133X76",
+     "largo": 1330,
      "ancho": 760
     },
     {
-     "medida": "125X76",
-     "largo": 1250,
+     "medida": "133X76",
+     "largo": 1330,
      "ancho": 760
     },
     {
-     "medida": "125X76",
-     "largo": 1250,
+     "medida": "133X76",
+     "largo": 1330,
      "ancho": 760
     }
    ]
@@ -438,19 +453,34 @@
    "giradas": [],
    "sacos": [
     {
-     "medida": "125X165",
-     "largo": 1250,
-     "ancho": 1650
+     "medida": "140X89",
+     "largo": 1400,
+     "ancho": 890
     },
     {
-     "medida": "125X165",
-     "largo": 1250,
-     "ancho": 1650
+     "medida": "140X89",
+     "largo": 1400,
+     "ancho": 890
     },
     {
-     "medida": "125X165",
-     "largo": 1250,
-     "ancho": 1650
+     "medida": "140X89",
+     "largo": 1400,
+     "ancho": 890
+    },
+    {
+     "medida": "140X89",
+     "largo": 1400,
+     "ancho": 890
+    },
+    {
+     "medida": "140X89",
+     "largo": 1400,
+     "ancho": 890
+    },
+    {
+     "medida": "140X89",
+     "largo": 1400,
+     "ancho": 890
     }
    ]
   }
@@ -599,23 +629,8 @@
    "giradas": [],
    "sacos": [
     {
-     "medida": "117X78",
-     "largo": 1170,
-     "ancho": 780
-    },
-    {
-     "medida": "117X78",
-     "largo": 1170,
-     "ancho": 780
-    },
-    {
-     "medida": "117X78",
-     "largo": 1170,
-     "ancho": 780
-    },
-    {
-     "medida": "117X78",
-     "largo": 1170,
+     "medida": "270X78",
+     "largo": 2700,
      "ancho": 780
     }
    ]
@@ -673,18 +688,8 @@
    "giradas": [],
    "sacos": [
     {
-     "medida": "125X78",
-     "largo": 1250,
-     "ancho": 780
-    },
-    {
-     "medida": "125X78",
-     "largo": 1250,
-     "ancho": 780
-    },
-    {
-     "medida": "125X78",
-     "largo": 1250,
+     "medida": "270X78",
+     "largo": 2700,
      "ancho": 780
     }
    ]
@@ -816,14 +821,14 @@
    "giradas": [],
    "sacos": [
     {
-     "medida": "125X165",
-     "largo": 1250,
-     "ancho": 1650
+     "medida": "270X95",
+     "largo": 2700,
+     "ancho": 950
     },
     {
-     "medida": "125X165",
-     "largo": 1250,
-     "ancho": 1650
+     "medida": "270X95",
+     "largo": 2700,
+     "ancho": 950
     }
    ]
   }
@@ -1076,7 +1081,18 @@
     "A1",
     "A2"
    ],
-   "sacos": []
+   "sacos": [
+    {
+     "medida": "140X95",
+     "largo": 1400,
+     "ancho": 950
+    },
+    {
+     "medida": "140X95",
+     "largo": 1400,
+     "ancho": 950
+    }
+   ]
   }
  },
  {
@@ -1170,29 +1186,54 @@
    "giradas": [],
    "sacos": [
     {
-     "medida": "125X115",
-     "largo": 1150,
-     "ancho": 1250
+     "medida": "120X95",
+     "largo": 1200,
+     "ancho": 950
     },
     {
-     "medida": "125X115",
-     "largo": 1150,
-     "ancho": 1250
+     "medida": "120X95",
+     "largo": 1200,
+     "ancho": 950
     },
     {
-     "medida": "125X115",
-     "largo": 1150,
-     "ancho": 1250
+     "medida": "120X95",
+     "largo": 1200,
+     "ancho": 950
     },
     {
-     "medida": "125X115",
-     "largo": 1150,
-     "ancho": 1250
+     "medida": "120X95",
+     "largo": 1200,
+     "ancho": 950
     },
     {
-     "medida": "125X115",
-     "largo": 1150,
-     "ancho": 1250
+     "medida": "120X95",
+     "largo": 1200,
+     "ancho": 950
+    },
+    {
+     "medida": "120X95",
+     "largo": 1200,
+     "ancho": 950
+    },
+    {
+     "medida": "120X95",
+     "largo": 1200,
+     "ancho": 950
+    },
+    {
+     "medida": "120X95",
+     "largo": 1200,
+     "ancho": 950
+    },
+    {
+     "medida": "120X95",
+     "largo": 1200,
+     "ancho": 950
+    },
+    {
+     "medida": "120X95",
+     "largo": 1200,
+     "ancho": 950
     }
    ]
   }

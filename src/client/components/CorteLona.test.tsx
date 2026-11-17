@@ -33,7 +33,7 @@ describe('Vista compartida del corte de lona', () => {
     const html = renderToStaticMarkup(<CorteLonaVista datos={{ ...vista, cortes: { conSacos: [bamba], trozoSeparado: null } }} />);
     expect(html).toContain('Bamba sola · sin sacos');
     expect(html).not.toContain('Con sacos');
-    expect(html).not.toContain('Sacos:');
+    expect(html).not.toContain('Piezas para sacos:');
     expect(html).not.toContain('Trozo separado');
   });
   it('el cristal de la cortina va en su rollo, rotulado sin sacos', () => {
@@ -41,7 +41,7 @@ describe('Vista compartida del corte de lona', () => {
     const html = renderToStaticMarkup(<CorteLonaVista datos={{ ...vista, cortes: { conSacos: [cristal], trozoSeparado: null } }} />);
     expect(html).toContain('Cristal · sin sacos');
     expect(html).not.toContain('Con sacos');
-    expect(html).not.toContain('Sacos:');
+    expect(html).not.toContain('Piezas para sacos:');
   });
   it('sin OF muestra una etiqueta de aviso aunque el corte conste al día', () => {
     const order = { ...defaultDraft(), fabric: 'PVC|||250|||LONA PVC|||PLASTICA (LONA)', awnings: [{ ...createAwning(), model: 'GALICIA', of: '' }] };
@@ -77,7 +77,7 @@ describe('Vista compartida del corte de lona', () => {
   });
   it('muestra largos con coma, piezas, sacos y avisos en lectura sin descargas', () => {
     const html = renderToStaticMarkup(<CorteLonaVista datos={vista} />);
-    for (const texto of ['4,875', 'PVC verde', 'Con sacos', 'Toldo A', 'Sacos', 'bamba con onda', 'REVÉS']) expect(html).toContain(texto);
+    for (const texto of ['4,875', 'PVC verde', 'Con sacos', 'Toldo A', 'Piezas para sacos', 'bamba con onda', 'REVÉS']) expect(html).toContain(texto);
     expect(html).not.toMatch(/download|Descargar/);
   });
   it('pinta las dos capas y distingue el trozo separado del rollo principal', () => {

@@ -1,0 +1,932 @@
+{
+  "regla": "Iván, 17/11/2026",
+  "pedidos": [
+    {
+      "pedido": "AR2604858",
+      "cortes": [
+        {
+          "largo": 7940,
+          "sacos": 4,
+          "tiras": 4,
+          "trozos": 0,
+          "area": 79920,
+          "ancho": 299.25
+        },
+        {
+          "largo": 3790,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 56.5
+        },
+        {
+          "largo": 4035,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 26
+        },
+        {
+          "largo": 520,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 202.75
+        }
+      ]
+    },
+    {
+      "pedido": "AR2604638",
+      "cortes": [
+        {
+          "largo": 1720,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 285
+        },
+        {
+          "largo": 1640,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 56.5
+        },
+        {
+          "largo": 260,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 178.5
+        },
+        {
+          "largo": 260,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 180.5
+        }
+      ]
+    },
+    {
+      "pedido": "AR2604524",
+      "cortes": [
+        {
+          "largo": 9500,
+          "sacos": 3,
+          "tiras": 0,
+          "trozos": 6,
+          "area": 78120,
+          "ancho": 299.75
+        },
+        {
+          "largo": 4490,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 56.5
+        },
+        {
+          "largo": 4815,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 26
+        },
+        {
+          "largo": 520,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 241.75
+        }
+      ]
+    },
+    {
+      "pedido": "AR2604434",
+      "cortes": [
+        {
+          "largo": 1187.5,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 300
+        },
+        {
+          "largo": 1460,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 56.5
+        },
+        {
+          "largo": 260,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 156.5
+        },
+        {
+          "largo": 260,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 158.5
+        }
+      ]
+    },
+    {
+      "pedido": "AR2604349",
+      "cortes": [
+        {
+          "largo": 3300,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 298
+        },
+        {
+          "largo": 2740,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 56.5
+        },
+        {
+          "largo": 260,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 288.5
+        },
+        {
+          "largo": 260,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 290.5
+        }
+      ]
+    },
+    {
+      "pedido": "AR2604970",
+      "cortes": [
+        {
+          "largo": 8505,
+          "sacos": 2,
+          "tiras": 0,
+          "trozos": 4,
+          "area": 46872,
+          "ancho": 299.75
+        },
+        {
+          "largo": 4040,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 56.5
+        },
+        {
+          "largo": 520,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 215.25
+        }
+      ]
+    },
+    {
+      "pedido": "AR2604069",
+      "cortes": [
+        {
+          "largo": 6300,
+          "sacos": 1,
+          "tiras": 1,
+          "trozos": 0,
+          "area": 25650,
+          "ancho": 293.25
+        },
+        {
+          "largo": 3030,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 56.5
+        },
+        {
+          "largo": 3215,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 26
+        },
+        {
+          "largo": 520,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 161.75
+        }
+      ]
+    },
+    {
+      "pedido": "AR2604725",
+      "cortes": [
+        {
+          "largo": 9480,
+          "sacos": 3,
+          "tiras": 0,
+          "trozos": 6,
+          "area": 73920,
+          "ancho": 299.75
+        },
+        {
+          "largo": 4560,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 56.5
+        },
+        {
+          "largo": 520,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 241.25
+        }
+      ]
+    },
+    {
+      "pedido": "AR2604904",
+      "cortes": [
+        {
+          "largo": 8630,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 300
+        },
+        {
+          "largo": 4260,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 28
+        },
+        {
+          "largo": 560,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 214
+        }
+      ]
+    },
+    {
+      "pedido": "AR2604764",
+      "cortes": [
+        {
+          "largo": 1210,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 296.5
+        },
+        {
+          "largo": 280,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 110
+        },
+        {
+          "largo": 280,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 112
+        }
+      ]
+    },
+    {
+      "pedido": "AR2604717",
+      "cortes": [
+        {
+          "largo": 9550,
+          "sacos": 2,
+          "tiras": 0,
+          "trozos": 4,
+          "area": 45120,
+          "ancho": 300
+        },
+        {
+          "largo": 4720,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 28
+        },
+        {
+          "largo": 560,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 237
+        }
+      ]
+    },
+    {
+      "pedido": "AR2604402",
+      "cortes": [
+        {
+          "largo": 3315,
+          "sacos": 1,
+          "tiras": 1,
+          "trozos": 0,
+          "area": 20520,
+          "ancho": 300
+        },
+        {
+          "largo": 280,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 182
+        },
+        {
+          "largo": 280,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 184
+        }
+      ]
+    },
+    {
+      "pedido": "AR2604013",
+      "cortes": [
+        {
+          "largo": 3765,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 291
+        },
+        {
+          "largo": 280,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 249
+        },
+        {
+          "largo": 280,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 251
+        }
+      ]
+    },
+    {
+      "pedido": "AR2604592",
+      "cortes": [
+        {
+          "largo": 8000,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 296
+        },
+        {
+          "largo": 360,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 132
+        },
+        {
+          "largo": 4100,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 30
+        },
+        {
+          "largo": 600,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 211
+        }
+      ]
+    },
+    {
+      "pedido": "AR2604723",
+      "cortes": [
+        {
+          "largo": 15300,
+          "sacos": 4,
+          "tiras": 4,
+          "trozos": 0,
+          "area": 96900,
+          "ancho": 298
+        },
+        {
+          "largo": 360,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 114
+        },
+        {
+          "largo": 5200,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 30
+        },
+        {
+          "largo": 600,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 266
+        }
+      ]
+    },
+    {
+      "pedido": "AR2604724",
+      "cortes": [
+        {
+          "largo": 15000,
+          "sacos": 4,
+          "tiras": 4,
+          "trozos": 0,
+          "area": 95000,
+          "ancho": 298
+        },
+        {
+          "largo": 360,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 110
+        },
+        {
+          "largo": 5100,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 30
+        },
+        {
+          "largo": 600,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 261
+        }
+      ]
+    },
+    {
+      "pedido": "AR2604859",
+      "cortes": [
+        {
+          "largo": 14130,
+          "sacos": 6,
+          "tiras": 6,
+          "trozos": 0,
+          "area": 126360,
+          "ancho": 294
+        },
+        {
+          "largo": 400,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 99
+        },
+        {
+          "largo": 4810,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 30
+        },
+        {
+          "largo": 600,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 246.5
+        }
+      ]
+    },
+    {
+      "pedido": "AR2604906",
+      "cortes": [
+        {
+          "largo": 15900,
+          "sacos": 7,
+          "tiras": 7,
+          "trozos": 0,
+          "area": 141750,
+          "ancho": 294
+        },
+        {
+          "largo": 390,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 120
+        },
+        {
+          "largo": 5400,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 30
+        },
+        {
+          "largo": 600,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 276
+        }
+      ]
+    },
+    {
+      "pedido": "AR2605134",
+      "cortes": [
+        {
+          "largo": 7080,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 300
+        },
+        {
+          "largo": 2040,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 56.5
+        },
+        {
+          "largo": 260,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 218.5
+        },
+        {
+          "largo": 260,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 220.5
+        }
+      ]
+    },
+    {
+      "pedido": "AR2605220",
+      "cortes": [
+        {
+          "largo": 7320,
+          "sacos": 3,
+          "tiras": 0,
+          "trozos": 6,
+          "area": 68076,
+          "ancho": 299.75
+        },
+        {
+          "largo": 3540,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 56.5
+        },
+        {
+          "largo": 3725,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 26
+        },
+        {
+          "largo": 520,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 187.25
+        }
+      ]
+    },
+    {
+      "pedido": "AR2605036",
+      "cortes": [
+        {
+          "largo": 12440,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 277
+        },
+        {
+          "largo": 1500,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 33
+        },
+        {
+          "largo": 6320,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 30
+        },
+        {
+          "largo": 3220,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 60
+        }
+      ]
+    },
+    {
+      "pedido": "AR2605065",
+      "cortes": [
+        {
+          "largo": 2332.5,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 298.75
+        },
+        {
+          "largo": 2020,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 124
+        },
+        {
+          "largo": 260,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 220.5
+        },
+        {
+          "largo": 260,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 222.5
+        }
+      ]
+    },
+    {
+      "pedido": "AR2604526",
+      "cortes": [
+        {
+          "largo": 6335,
+          "sacos": 4,
+          "tiras": 4,
+          "trozos": 0,
+          "area": 79464,
+          "ancho": 300
+        },
+        {
+          "largo": 280,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 300
+        },
+        {
+          "largo": 440,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 117
+        },
+        {
+          "largo": 560,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 151
+        }
+      ]
+    },
+    {
+      "pedido": "AR2604526-350",
+      "cortes": [
+        {
+          "largo": 7110,
+          "sacos": 2,
+          "tiras": 0,
+          "trozos": 4,
+          "area": 50400,
+          "ancho": 300
+        },
+        {
+          "largo": 3500,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 28
+        },
+        {
+          "largo": 560,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 176
+        }
+      ]
+    },
+    {
+      "pedido": "AR2604638-1ET",
+      "cortes": [
+        {
+          "largo": 1720,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 269
+        },
+        {
+          "largo": 1640,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 56.5
+        },
+        {
+          "largo": 260,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 178.5
+        },
+        {
+          "largo": 260,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 180.5
+        }
+      ]
+    },
+    {
+      "pedido": "EJEMPLO-APILABLE",
+      "cortes": [
+        {
+          "largo": 4110,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 300
+        },
+        {
+          "largo": 540,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 84
+        },
+        {
+          "largo": 3100,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 30
+        },
+        {
+          "largo": 600,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 161
+        }
+      ]
+    },
+    {
+      "pedido": "EJEMPLO-AUTORREPARABLE",
+      "cortes": [
+        {
+          "largo": 7000,
+          "sacos": 2,
+          "tiras": 0,
+          "trozos": 4,
+          "area": 47040,
+          "ancho": 291
+        },
+        {
+          "largo": 3500,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 28
+        },
+        {
+          "largo": 560,
+          "sacos": 0,
+          "tiras": 0,
+          "trozos": 0,
+          "area": 0,
+          "ancho": 176
+        }
+      ]
+    }
+  ]
+}

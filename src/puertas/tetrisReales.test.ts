@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import antes from './__fixtures__/cortesAntesTetris.json';
 import revision from './__fixtures__/cortesAntesAnchoTotal.json';
+import catalogo from './__fixtures__/cortesSacos130x85.json';
 import { pedidosTetris } from './__fixtures__/cortesTetris.ts';
 import { generarCortePuertas } from './corte.ts';
 
@@ -42,20 +43,16 @@ describe('Tetris contra todos los pedidos configurables de las fixtures', () => 
         expect(puestos).toHaveLength(1);
         expect(puestos[0].pieza.multiplicador ?? 1).toBe(pieza.cantidad);
       }
-      // Con el mismo largo y área, manda el ancho total que se acota, contando stock.
+      // Iván, 17/11/2026: se compara el stock con el catálogo nuevo; los largos anteriores siguen acotando el gasto.
       if (originales.some(p => p.clase === 'pano')) {
         const stock = c.colocadas.filter(s => s.pieza.id.startsWith('stock-'));
         const areaStock = stock.reduce((area, s) => area + s.pieza.ancho * s.pieza.alto, 0);
         const anchoTotal = Math.max(...c.colocadas.map(s => s.y / 10 + (s.girada ? s.pieza.ancho : s.pieza.alto)));
-        if (c.largo / 10 === previo.largos[i]) {
-          expect(stock.length).toBeGreaterThanOrEqual(previo.sacos);
-          expect(areaStock).toBeGreaterThanOrEqual(previo.areaStock);
-          if (areaStock === previo.areaStock) expect(anchoTotal).toBeLessThanOrEqual(previo.anchoStock);
-        }
-        if (c.largo / 10 === rebasado.largos[i]) {
-          expect(areaStock).toBeGreaterThanOrEqual(rebasado.areaStock);
-          if (areaStock === rebasado.areaStock) expect(anchoTotal).toBeLessThanOrEqual(rebasado.anchoStock);
-        }
+        const tiras = stock.filter(s => Math.max(s.pieza.ancho, s.pieza.alto) >= 250).length;
+        const trozos = stock.length - tiras;
+        expect(trozos % 2).toBe(0);
+        const esperado = catalogo.pedidos.find(f => f.pedido === p.orderCode)!.cortes[i];
+        expect({ largo: c.largo, sacos: tiras + trozos / 2, tiras, trozos, area: areaStock, ancho: anchoTotal }).toEqual(esperado);
       }
     });
     expect(generarCortePuertas(p, { ofStockSacos: '0230811' })).toEqual(r);

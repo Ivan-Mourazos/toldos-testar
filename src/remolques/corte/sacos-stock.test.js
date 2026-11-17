@@ -3,7 +3,7 @@ import { generarCorteRemolques } from './index.js';
 import { crearCorteRemolques } from './archivos.js';
 import { CAPAS_BOT } from '../../domain/corteLona/dxfCorte.js';
 import { numero, registrosDxf, valor } from '../../domain/corteLona/dxfTestHelpers.js';
-import { SACOS } from '../../domain/corteLona/colocacion.js';
+import { SACOS, MARGEN_SACO_CM } from '../../domain/corteLona/colocacion.js';
 import { sacosDeStock } from './sacos.js';
 import a from './__fixtures__/AR2604390.json' with { type: 'json' };
 import b from './__fixtures__/AR2604990.json' with { type: 'json' };
@@ -14,19 +14,25 @@ import ventana from './__fixtures__/AR2605023.json' with { type: 'json' };
 import empates from './__fixtures__/AR2605079.json' with { type: 'json' };
 import mezcla from './__fixtures__/AR2605129.json' with { type: 'json' };
 import entera from './__fixtures__/AR2605192.json' with { type: 'json' };
+import tira from './__fixtures__/sacos-stock/AR2605467.json' with { type: 'json' };
 
 const stock = { ofStockSacos: '0230811' };
 const solapan = (a, b) => a.x < b.x + b.ancho - 0.01 && a.x + a.ancho > b.x + 0.01
   && a.y < b.y + b.hueco - 0.01 && a.y + a.hueco > b.y + 0.01;
 
 describe('sacos de stock en remolques, contraste de varios pedidos reales', () => {
-  it.each([b, empates, varias, entera])('$orderCode: añade sacos en el tramo gastado', pedido => {
+  it.each([b, empates, varias, entera])('$orderCode: descarta el trozo suelto sin alargar el corte (Iván, 17/11/2026)', pedido => {
     const antes = generarCorteRemolques(pedido);
     const despues = generarCorteRemolques(pedido, stock);
     expect(despues.cortes.map(c => c.largo)).toEqual(antes.cortes.map(c => c.largo));
-    expect(despues.cortes.flatMap(c => c.sacos).length).toBeGreaterThan(0);
+    expect(despues.cortes.flatMap(c => c.sacos)).toEqual([]);
+  });
+  it('AR2605467: añade una tira que forma un saco completo en el tramo gastado', () => {
+    const despues = generarCorteRemolques(tira, stock);
+    expect(despues.cortes.map(c => c.largo)).toEqual(generarCorteRemolques(tira).cortes.map(c => c.largo));
+    expect(despues.cortes[0].sacos.map(s => s.medidaCatalogo)).toEqual(['260X85']);
     expect(despues.archivo.dxf).toContain('0230811');
-    expect(despues.archivo.plano.dxf).toContain('STOCK');
+    expect(despues.archivo.plano.dxf).toContain('SACO 270X87 STOCK');
   });
 
   it.each([a, b, c, baqueton, varias, ventana, empates, mezcla])('$orderCode: respeta piezas, tapas, empates y alternativas sin aumentar el consumo', pedido => {
@@ -50,9 +56,9 @@ describe('sacos de stock en remolques, contraste de varios pedidos reales', () =
         expect(corte.ocupadas.some(p => solapan(saco, p))).toBe(false);
         expect(corte.sacos.slice(i + 1).some(p => solapan(saco, p))).toBe(false);
         const [alto, ancho] = saco.medida.split('X').map(Number);
-        expect(SACOS.some(([h, w]) => Math.abs(h - alto) <= 5 && Math.abs(w - ancho) <= 5)).toBe(true);
+        expect(SACOS.some(([h, w]) => Math.abs(h - alto) <= MARGEN_SACO_CM && Math.abs(w - ancho) <= MARGEN_SACO_CM)).toBe(true);
         expect(alto * ancho * 100).toBe(saco.ancho * saco.hueco);
-        expect(corte.entidades.textos.some(t => t.valor.includes(saco.medidaCatalogo) && t.valor.includes('STOCK'))).toBe(true);
+        expect(corte.entidades.textos.some(t => t.valor.includes(saco.medida) && t.valor.includes('STOCK'))).toBe(true);
       }
     });
     const registros = registrosDxf(despues.archivo.dxf);
@@ -75,17 +81,25 @@ describe('sacos de stock en remolques, contraste de varios pedidos reales', () =
   });
 
   it.each(SACOS)('reutiliza el saco de %i × %i del catálogo común si ese es el retal disponible', (alto, ancho) => {
-    const { sacos } = sacosDeStock([{ x: 0, y: 0, ancho: ancho * 10, hueco: 2500 - alto * 10 }], 2500, '0230811');
-    expect(sacos).toHaveLength(1);
-    expect(sacos[0].medida).toBe(`${alto}X${ancho}`);
+    const { sacos } = sacosDeStock([{ x: 0, y: 0, ancho: ancho * 10, hueco: 100 }], alto * 10 + 100, '0230811');
+    // Iván, 17/11/2026: la tira forma un saco, el trozo aislado no.
+    expect(sacos).toHaveLength(alto === 260 ? 1 : 0);
+    if (sacos.length) expect(sacos[0].medida).toBe(`${alto}X${ancho}`);
   });
 
   it('busca entre piezas y gira el saco sin cambiar el alto × ancho de su rótulo', () => {
-    const ocupadas = [{ x: 0, y: 0, ancho: 2000, hueco: 850 }, { x: 1200, y: 850, ancho: 800, hueco: 1650 },
+    const hueco = [{ x: 0, y: 0, ancho: 2000, hueco: 850 }, { x: 1200, y: 850, ancho: 800, hueco: 1650 },
       { x: 0, y: 1650, ancho: 1200, hueco: 850 }];
+    const ocupadas = [...hueco, ...hueco.map(p => ({ ...p, x: p.x + 2100 }))];
     const { sacos } = sacosDeStock(ocupadas, 2500, '0230811');
-    expect(sacos).toHaveLength(1);
-    expect(sacos[0]).toMatchObject({ x: 0, y: 850, ancho: 1200, hueco: 800, medida: '120X80' });
+    expect(sacos).toHaveLength(2);
+    // Iván, 17/11/2026: importa la pareja sin solapes y el giro, no el orden de los huecos elegidos.
+    for (const [i, saco] of sacos.entries()) {
+      expect(saco.medidaCatalogo).toBe('130X85');
+      expect(saco.ancho).toBeGreaterThan(saco.hueco);
+      expect(saco.medida).toBe(`${saco.ancho / 10}X${saco.hueco / 10}`);
+      expect([...ocupadas, ...sacos.slice(i + 1)].some(p => solapan(saco, p))).toBe(false);
+    }
   });
 
   it('solo usa una OF de stock válida; sin ella conserva el corte anterior', () => {
@@ -96,13 +110,13 @@ describe('sacos de stock en remolques, contraste de varios pedidos reales', () =
   it('con el stock encendido, la vista, el plano y la descarga leen la misma OF de stock del servidor', async () => {
     const ofStockSacos = async () => ({ of: '1234567', avisos: ['Aviso de lectura del dibujo de stock.'] });
     const corte = crearCorteRemolques({ ajustes: async () => ({}), oda: { disponible: false }, ofStockSacos, aprovecharStock: true });
-    const vista = await corte.vista(b);
+    const vista = await corte.vista(tira);
     expect(vista.cortes[0].sacos.length).toBeGreaterThan(0);
     expect(vista.cortes[0].sacos.every(s => s.of === '1234567')).toBe(true);
     expect(vista.avisos).toContain('Aviso de lectura del dibujo de stock.');
-    const { ficheros, avisos } = await corte.preparar(b, 'tmp/sacos-stock/borradores');
+    const { ficheros, avisos } = await corte.preparar(tira, 'tmp/sacos-stock/borradores');
     expect(ficheros[0].contenido.toString('utf8')).toContain('1234567');
     expect(avisos).toContain('Aviso de lectura del dibujo de stock.');
-    expect(Buffer.from((await corte.prepararDxf(b))[0].contents).toString('latin1')).toContain('1234567');
+    expect(Buffer.from((await corte.prepararDxf(tira))[0].contents).toString('latin1')).toContain('1234567');
   });
 });

@@ -3,7 +3,12 @@ export type FormaCorte = { w: number; h: number; girada: boolean };
 export type RectanguloCorte = FormaCorte & { id: string; x: number; y: number };
 export type PiezaCorte = { id: string; formas: FormaCorte[]; simetria?: string };
 export type PresupuestoCorte = { restantes: number };
-export type AprovechamientoStock = { area: number; ancho: number };
+export type AprovechamientoStock = { area: number; ancho: number; sacos?: number; tiras?: number; piezas?: number };
+/** Iván, 17/11/2026: primero sacos equivalentes; a igualdad, tiras, superficie y menos piezas. */
+export function compararStock(a: AprovechamientoStock, b: AprovechamientoStock): number {
+  return (a.sacos ?? 0) - (b.sacos ?? 0) || (a.tiras ?? 0) - (b.tiras ?? 0)
+    || a.area - b.area || (b.piezas ?? 0) - (a.piezas ?? 0);
+}
 /** Intentos para todo un pedido, en puertas, toldos y remolques (Iván, 23/10/2026: «el tetris hay que aplicarlo a
  * todo»). Se cuentan nodos, no tiempo: el resultado no depende de la máquina. */
 export const PRESUPUESTO_TETRIS = 60000;
@@ -66,7 +71,7 @@ export function buscarColocacion(
   const limites = (rs: RectanguloCorte[]) => ({ largo: Math.max(0, ...rs.map(derecha)), ancho: Math.max(0, ...rs.map(arriba)) });
   let coste = limites(mejor);
   let retal = -1;
-  let stock = -1;
+  let stock: AprovechamientoStock | null = null;
   const area = piezas.reduce((s, p) => s + p.formas[0].w * p.formas[0].h, 0);
   const usadas = new Set<string>();
   const puestas: RectanguloCorte[] = [];
@@ -83,7 +88,7 @@ export function buscarColocacion(
       if (largo < coste.largo - EPS) {
         mejor = puestas.map(p => ({ ...p }));
         coste = { largo, ancho };
-        retal = -1; stock = -1;
+        retal = -1; stock = null;
         return;
       }
       if (largo > coste.largo + EPS || !aprovechamiento && ancho > coste.ancho + EPS) return;
@@ -92,20 +97,22 @@ export function buscarColocacion(
       const trabajo = puestas.length * puestas.length;
       if (presupuesto.restantes < trabajo) { presupuesto.restantes = 0; return; }
       presupuesto.restantes -= trabajo;
-      let nuevoStock = 0;
+      let nuevoStock: AprovechamientoStock | null = null;
+      let diferenciaStock = 0;
       let anchoTotal = ancho;
       if (aprovechamiento) {
-        if (stock < 0) {
+        if (!stock) {
           const anterior = aprovechamiento(huecosLibres(mejor, coste.largo, rollo));
-          stock = anterior.area;
+          stock = anterior;
           coste.ancho = Math.max(coste.ancho, anterior.ancho);
         }
         const nuevo = aprovechamiento(huecosLibres(puestas, largo, rollo));
-        nuevoStock = nuevo.area;
+        nuevoStock = nuevo;
         anchoTotal = Math.max(ancho, nuevo.ancho);
-        if (nuevoStock < stock - EPS) return;
+        diferenciaStock = compararStock(nuevo, stock);
+        if (diferenciaStock < -EPS) return;
       }
-      const mejoraStock = aprovechamiento && nuevoStock > stock + EPS;
+      const mejoraStock = aprovechamiento && diferenciaStock > EPS;
       if (!mejoraStock && anchoTotal > coste.ancho + EPS) return;
       if (mejoraStock || anchoTotal < coste.ancho - EPS) {
         mejor = puestas.map(p => ({ ...p }));

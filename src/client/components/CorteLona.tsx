@@ -159,7 +159,7 @@ function Opcion({ corte, titulo, soloBamba = false }: { corte: VistaCorte; titul
     {Boolean(corte.largoRestos) && <p>{numero(corte.largoRestos! / 1000)} m aparte, para cortar de un resto</p>}
     <DibujoCorte corte={corte} />
     <small className="corte-leyenda"><span>DISCO1 · corte</span><span>ROTULADOR · marcas</span></small>
-    {!soloBamba && <p>Sacos: {corte.sacos.length}{corte.sacos.length > 0 ? ` · ${corte.sacos.map(s => `${numero(s.largo / 10)} × ${numero(s.alto / 10)} cm`).join(' · ')}` : ' · sin alargar el rollo'}</p>}
+    {!soloBamba && <p>Piezas para sacos: {corte.sacos.length}{corte.sacos.length > 0 ? ` · ${corte.sacos.map(s => `${numero(s.largo / 10)} × ${numero(s.alto / 10)} cm`).join(' · ')}` : ' · sin alargar el rollo'}</p>}
   </section>;
 }
 

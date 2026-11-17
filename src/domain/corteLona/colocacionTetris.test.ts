@@ -33,6 +33,16 @@ describe('Colocación como el Tetris', () => {
     expect(ancho(r)).toBe(6);
     expect(stock(huecosLibres(r, 10, 6))).toBe(24);
   });
+  it('Iván, 17/11/2026: más sacos gana aunque aprovechen menos superficie', () => {
+    const piezas = [pieza('a', 10, 2), pieza('b', 4, 2), pieza('c', 4, 2)];
+    const inicial = [sitio('a', 0, 0, 10, 2), sitio('b', 0, 2, 4, 2), sitio('c', 4, 2, 4, 2)];
+    const stock = (hs: ReturnType<typeof huecosLibres>) => hs.some(h => h.w >= 6 && h.h >= 4)
+      ? { sacos: 2, tiras: 0, piezas: 4, area: 20, ancho: 0 }
+      : { sacos: 1, tiras: 1, piezas: 1, area: 24, ancho: 0 };
+    const r = buscarColocacion(piezas, 6, inicial, { restantes: 100000 }, () => true, stock);
+    expect(largo(r)).toBe(10);
+    expect(stock(huecosLibres(r, 10, 6)).sacos).toBe(2);
+  });
   it('a igual largo y stock reduce el ancho total aunque las piezas del pedido ocupen más', () => {
     const piezas = [pieza('a', 10, 2), pieza('b', 4, 2), pieza('c', 4, 2)];
     const inicial = [sitio('a', 0, 0, 10, 2), sitio('b', 0, 2, 4, 2), sitio('c', 4, 2, 4, 2)];

@@ -12,7 +12,7 @@ const pedido = () => {
   return { schemaVersion: 1, kind: 'puertas', orderCode: 'AR2604638', elementos: [{ id: 'puerta-a', input: p }] };
 };
 describe('Corte de puertas', () => {
-  it('AR2604725: con OF prioriza cuatro sacos; sin OF reduce el ancho del pedido', () => {
+  it('AR2604725: Iván, 17/11/2026, seis trozos forman tres sacos; sin OF reduce el ancho', () => {
     const p = pedido();
     Object.assign(p.elementos[0].input, { frente: 474, alto: 430, of: '0232504', color: 'GRIS 7038' });
     p.elementos[0].input.enrollable = { T: 239, D: 60, margen: 11, empates: [], sacoPartido: true };
@@ -20,11 +20,12 @@ describe('Corte de puertas', () => {
     const conStock = generarCortePuertas(p, { ofStockSacos: '0230811' }).cortes;
     const lona = conStock.find(c => c.material === 'LAC900 GRIS 7038');
     const sacos = lona.colocadas.filter(k => k.pieza.nombre === 'Saco de stock');
-    // Los cuatro sacos recuperan 77.880 cm²: prima esa área frente a un pedido de ancho 246,25.
-    expect(sacos).toHaveLength(4);
-    expect(sacos.reduce((s, k) => s + k.pieza.ancho * k.pieza.alto, 0)).toBe(77880);
+    // Iván, 17/11/2026: seis trozos de 140×88 forman tres sacos, sin cambiar el consumo.
+    expect(sacos).toHaveLength(6);
+    expect(sacos.map(k => [k.pieza.ancho, k.pieza.alto])).toEqual(Array.from({ length: 6 }, () => [140, 88]));
+    expect(sacos.reduce((s, k) => s + k.pieza.ancho * k.pieza.alto, 0)).toBe(73920);
     expect(sacos.every(k => k.pieza.of === '0230811')).toBe(true);
-    expect(lona.entidades.textos.filter(t => t.valor === 'STOCK')).toHaveLength(4);
+    expect(lona.entidades.textos.filter(t => t.valor === 'STOCK')).toHaveLength(6);
     expect(Math.max(...lona.colocadas.filter(k => k.pieza.nombre !== 'Saco de stock')
       .map(k => k.y + 10 * (k.girada ? k.pieza.ancho : k.pieza.alto)))).toBe(2902.5);
     const sinStock = generarCortePuertas(p).cortes.find(c => c.material === lona.material);
@@ -117,7 +118,7 @@ describe('Corte de puertas', () => {
     expect(textosPieza.some(t => t.valor.includes('REVÉS'))).toBe(false);
     expect(textosPieza.some(t => t.valor === '0232309' && t.h === 200)).toBe(true);
   });
-  it('AR2605220: prima el área de los tres sacos grandes y conserva los cachos pegados', () => {
+  it('AR2605220: Iván, 17/11/2026, seis trozos forman tres sacos y conserva los cachos pegados', () => {
     const p = pedido();
     Object.assign(p.elementos[0].input, { frente: 366, alto: 410, of: '0233291', color: 'AZUL 5010' });
     p.elementos[0].input.enrollable = { T: 229, D: 60, margen: 8, empates: [] };
@@ -125,17 +126,17 @@ describe('Corte de puertas', () => {
     const lona = generarCortePuertas(p, { ofStockSacos: '0230811' }).cortes.find(c => c.material === 'LAC900 AZUL 5010');
     expect(lona.largo).toBe(7320);
     const cachos = lona.colocadas.filter(k => k.pieza.clase === 'cacho');
-    // Los seis pequeños de e90b84f sumaban 53.592 cm²; tres de 122 × 165 recuperan 60.390.
+    // Iván, 17/11/2026: esta configuración da seis trozos de 122×93, tres sacos completos.
     const stock = lona.colocadas.filter(k => k.pieza.id.startsWith('stock-'));
-    expect(stock).toHaveLength(3);
-    expect(stock.map(k => [k.pieza.ancho, k.pieza.alto])).toEqual([[122, 165], [122, 165], [122, 165]]);
-    expect(stock.reduce((s, k) => s + k.pieza.ancho * k.pieza.alto, 0)).toBe(60390);
+    expect(stock).toHaveLength(6);
+    expect(stock.map(k => [k.pieza.ancho, k.pieza.alto])).toEqual(Array.from({ length: 6 }, () => [122, 93]));
+    expect(stock.reduce((s, k) => s + k.pieza.ancho * k.pieza.alto, 0)).toBe(68076);
     expect(cachos[0].y).toBe(cachos[1].y);
     expect(cachos[1].x).toBe(cachos[0].x + 10 * (cachos[0].girada ? cachos[0].pieza.alto : cachos[0].pieza.ancho));
     expect(Math.max(...lona.colocadas.filter(k => !k.pieza.id.startsWith('stock-'))
       .map(k => k.y + 10 * (k.girada ? k.pieza.ancho : k.pieza.alto)))).toBe(2772.5);
     const ocupado = Math.max(...lona.colocadas.map(k => k.y + 10 * (k.girada ? k.pieza.ancho : k.pieza.alto)));
-    expect(ocupado).toBe(2787.5);
+    expect(ocupado).toBe(2997.5);
   });
   it('sin OF dibuja SIN OF y no crea archivo ni aun con un pedido identificado', () => {
     const p=pedido(); p.elementos[0].input.of='';

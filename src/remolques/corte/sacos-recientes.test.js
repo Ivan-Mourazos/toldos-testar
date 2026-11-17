@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { generarCorteRemolques } from './index.js';
 import { sacosDeStock } from './sacos.js';
-import { SACOS, sacosEnRetales } from '../../domain/corteLona/colocacion.js';
+import { SACOS, MARGEN_SACO_CM, sacosEnRetales } from '../../domain/corteLona/colocacion.js';
 import a from './__fixtures__/sacos-stock/AR2605442.json' with { type: 'json' };
 import b from './__fixtures__/sacos-stock/AR2605448.json' with { type: 'json' };
 import c from './__fixtures__/sacos-stock/AR2605456.json' with { type: 'json' };
@@ -45,16 +45,15 @@ describe('aprovechamiento sin descartar lona que aún puede dar un saco', () => 
     // Solo se reserva lo que ocupan los sacos, nunca todo el hueco candidato.
     const { sacos } = sacosDeStock(ocupadas, 2500, '0230811');
     expect(sacosEnRetales(ocupadas, 2500, '0230811')).toEqual([]);
-    expect(sacos).toHaveLength(1);
-    expect(sacos[0]).toMatchObject({ x: 4000, y: 1200, ancho: 800, hueco: 1200, medida: '120X80' });
+    // Iván, 17/11/2026: ese retal solo da medio saco y se descarta sin pareja.
+    expect(sacos).toEqual([]);
   });
 
-  it('combina distintas medidas del catálogo en el mismo retal', () => {
+  it('Iván, 17/11/2026: en 285×120 gana una tira que ya forma un saco', () => {
     const ocupadas = [{ x: 0, y: 0, ancho: 2850, hueco: 1300 }];
     const { sacos } = sacosDeStock(ocupadas, 2500, '0230811');
-    expect(new Set(sacos.map(s => s.medida)).size).toBeGreaterThan(1);
-    expect(sacos.map(s => s.medida)).toEqual(['120X110', '120X160']);
-    expect(sacos.reduce((area, s) => area + s.ancho * s.hueco, 0)).toBeGreaterThan(3060000);
+    expect(sacos.map(s => s.medida)).toEqual(['270X95']);
+    expect(sacos.reduce((area, s) => area + s.ancho * s.hueco, 0)).toBe(2565000);
     for (const s of sacos) {
       expect(s.x + s.ancho).toBeLessThanOrEqual(2850);
       expect(s.y).toBeGreaterThanOrEqual(1300);
@@ -83,7 +82,7 @@ describe('aprovechamiento sin descartar lona que aún puede dar un saco', () => 
         expect(s.x + s.ancho).toBeLessThanOrEqual(largo);
         expect(s.y + s.hueco).toBeLessThanOrEqual(2500);
         const [alto, ancho] = s.medida.split('X').map(Number);
-        expect(SACOS.some(([h, w]) => Math.abs(h - alto) <= 5 && Math.abs(w - ancho) <= 5)).toBe(true);
+        expect(SACOS.some(([h, w]) => Math.abs(h - alto) <= MARGEN_SACO_CM && Math.abs(w - ancho) <= MARGEN_SACO_CM)).toBe(true);
         expect(alto * ancho * 100).toBe(s.ancho * s.hueco);
       }
       expect(sacos.every(s => SACOS.some(([h, w]) => s.medidaCatalogo === `${h}X${w}`))).toBe(true);

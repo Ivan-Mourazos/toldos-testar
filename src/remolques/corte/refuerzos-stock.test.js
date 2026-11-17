@@ -64,15 +64,15 @@ describe('refuerzos de stock después de los sacos', () => {
     expect(tiras.some(t => t.x === 2000 && t.ancho <= 200)).toBe(false);
   });
 
-  it('rotula el nominal del saco y conserva aparte su medida real si necesita tolerancia', () => {
-    const r = sacosDeStock([{ x: 0, y: 0, ancho: 1250, hueco: 1730 }], 2500, '0230811');
+  it('Iván, 17/11/2026: rotula la medida real y conserva el nominal del catálogo aparte', () => {
+    const r = sacosDeStock([{ x: 0, y: 0, ancho: 2700, hueco: 1730 }], 2500, '0230811');
     expect(r.sacos).toHaveLength(1);
-    expect(r.sacos[0]).toMatchObject({ medida: '120X77', medidaCatalogo: '120X80', ancho: 1200, hueco: 770 });
-    expect(r.textos.some(t => t.valor === 'SACO 120X80 STOCK')).toBe(true);
+    expect(r.sacos[0]).toMatchObject({ medida: '270X77', medidaCatalogo: '260X85', ancho: 2700, hueco: 770 });
+    expect(r.textos.some(t => t.valor === 'SACO 270X77 STOCK')).toBe(true);
   });
 
   it('la OF y el rótulo de un saco girado quedan dentro de él y separados', () => {
-    const r = sacosDeStock([{ x: 0, y: 0, ancho: 800, hueco: 1300 }], 2500, '0230811');
+    const r = sacosDeStock([{ x: 0, y: 0, ancho: 800, hueco: 100 }], 2700, '0230811');
     expect(r.sacos).toHaveLength(1);
     const s = r.sacos[0];
     for (const t of r.textos) {
@@ -117,7 +117,7 @@ it.each(muestras)('%s: conserva todas las piezas y separa sacos y tiras en las m
   }
 });
 
-it('AR2605467: dos sacos nominales y el rótulo de la referencia manual, sin adelantar refuerzos', () => {
+it('AR2605467: Iván, 17/11/2026, una tira sustituye los dos sacos del manual anterior', () => {
   const manual = registrosDxf(readFileSync(new URL('./__fixtures__/sacos-stock/AR2605467-manual-entidades.dxf', import.meta.url), 'utf8'));
   expect(manual.some(e => valor(e, 8) === 'texto' && valor(e, 1) === 'SACOS 120X80 STOCK')).toBe(true);
   const lineas = manual.filter(e => e.tipo === 'LINE' && valor(e, 8) === 'DISCO1');
@@ -127,11 +127,11 @@ it('AR2605467: dos sacos nominales y el rótulo de la referencia manual, sin ade
   const corte = r.cortes[0];
   expect(corte.largo).toBe(4210);
   expect(corte.sacos.map(s => [s.x, s.y, s.ancho, s.hueco, s.medida])).toEqual([
-    [1325, 1630, 1200, 800, '120X80'], [2525, 1630, 1200, 800, '120X80'],
+    [1325, 1630, 2700, 870, '270X87'],
   ]);
   expect(corte.refuerzosStock).toEqual([]);
-  expect(corte.entidades.textos.filter(t => t.valor === 'SACOS 120X80 STOCK' && t.capa === 'texto')).toHaveLength(1);
-  expect(corte.entidades.textos.filter(t => t.valor === '0230811')).toHaveLength(2);
+  expect(corte.entidades.textos.filter(t => t.valor === 'SACO 270X87 STOCK' && t.capa === 'texto')).toHaveLength(1);
+  expect(corte.entidades.textos.filter(t => t.valor === '0230811')).toHaveLength(1);
   expect(r.archivo.nombre).toBe('AR2605467');
-  expect(r.archivo.dxf).toContain('SACOS 120X80 STOCK');
+  expect(r.archivo.dxf).toContain('SACO 270X87 STOCK');
 });

@@ -1,4 +1,28 @@
-# Sacos y tiras de stock en remolques · 10/11/2026
+# Sacos y tiras de stock en remolques · 17/11/2026
+
+## Regla actual de sacos · Iván, 17/11/2026
+
+El catálogo de sacos se sustituye por **260×85 cm** (una tira = un saco) y **130×85 cm**
+(dos trozos = un saco), alto × ancho. Se admite **±10 cm en cada medida**, por arriba y por abajo,
+en ambos giros y centímetros enteros. Los trozos se emparejan en todo el corte del material y se
+descarta el último si hay un total impar. La OF sigue viniendo del mismo dibujo de stock.
+
+Se maximiza el número de sacos cerrados en todo el material: `tiras + floor(trozos / 2)`.
+Se comparan las alternativas pares e impares entre retales antes de descartar el trozo suelto;
+a igualdad, tiras, superficie y menos piezas. La medida
+real va en cada rótulo y en el rótulo agrupado. En AR2605467 el catálogo nuevo da **una tira de
+270×87 cm**, donde antes había dos piezas de 120×80: el largo sigue siendo **4210 mm** y no quedan
+refuerzos. En AR2604990, AR2605079, AR2605088 y AR2605192, los huecos que antes daban una pieza
+antigua solo dan un trozo sin pareja: no se dibuja saco; el sobrante puede destinarse a refuerzos.
+
+Las reglas de las tiras de refuerzo se mantienen: **200 o 165 mm exactos**, longitudinales, mínimo
+1230 mm, después de los sacos. No se les aplica el margen de los sacos. No crece el rollo ni cambian
+las piezas del pedido por añadir stock. Véase el [catálogo común](./remolques-sacos-stock.md).
+
+## Investigación y resultados históricos · catálogo anterior (10/11/2026)
+
+Las referencias nominales, posiciones y tablas de sacos que siguen documentan el catálogo anterior.
+La preferencia por el nominal y su tolerancia de ±5 cm quedaron sustituidas el 17/11/2026.
 
 Primero se colocan los sacos; después se aprovecha lo que quede con refuerzos longitudinales de stock.
 No se alarga el rollo, no se mueven piezas ni se añaden bolsas. Ganado, toldos y puertas conservan sus cortes.

@@ -1,17 +1,31 @@
 import { AJUSTES_POR_DEFECTO, piezasToldo } from './despiece.js';
-import { buscarColocacion, huecosLibres, PRESUPUESTO_TETRIS } from './colocacionTetris.ts';
+import { buscarColocacion, compararStock, huecosLibres, PRESUPUESTO_TETRIS } from './colocacionTetris.ts';
 
 export { PRESUPUESTO_TETRIS };
 
-// Sacos de stock para aprovechar la lona que sobra (Iván, 19/10/2026; AUTOCADMATERIAL PARA STOCK.dwg):
-// de cualquier PVC y gramaje, alto × ancho en cm, con ±5 cm de margen en cada medida.
-export const SACOS = [[120, 80], [120, 110], [120, 160], [120, 220]];
-const MARGEN_SACO_CM = 5;
+// Iván, 17/11/2026: alto × ancho en cm, cualquier PVC y gramaje, ±10 cm en ambos lados.
+// Una tira hace un saco; dos trozos hacen un saco. La OF sigue siendo la del dibujo de stock.
+export const SACOS = [[260, 85], [130, 85]];
+export const MARGEN_SACO_CM = 10;
+
+/** Iván, 17/11/2026: las parejas se cuentan en todo el corte del material, entre todos sus huecos. */
+export function completarParejasSacos(sacos) {
+  const trozos = sacos.filter(s => s.medidaCatalogo === '130X85');
+  const sobrante = trozos.length % 2 ? trozos.at(-1) : null;
+  return sacos.filter(s => s !== sobrante);
+}
+
+/** Iván, 17/11/2026: solo cuentan sacos cerrados; el trozo impar no suma otro saco. */
+export function valorarSacos(sacos) {
+  const tiras = sacos.filter(s => s.medidaCatalogo === '260X85').length;
+  return { sacos: tiras + Math.floor((sacos.length - tiras) / 2), tiras, piezas: sacos.length,
+    area: sacos.reduce((s, q) => s + q.ancho * q.hueco, 0), ancho: Math.max(0, ...sacos.map(q => q.y + q.hueco)) };
+}
 
 /**
  * Sacos que caben en la lona que queda libre dentro del largo de rollo ya gastado: encima de las piezas
  * de cada columna y a la derecha de las piezas más cortas que su columna. En cada hueco se pone en
- * filas el saco (normal o girado) que más superficie aprovecha. Devuelve piezas colocadas (mm).
+ * filas la opción que da más sacos, priorizando tiras a igualdad (Iván, 17/11/2026). Devuelve piezas en mm.
  */
 export function sacosEnHuecos(colocadas, anchoRolloMm, ofStock) {
   const columnas = new Map();
@@ -27,35 +41,55 @@ export function sacosEnHuecos(colocadas, anchoRolloMm, ofStock) {
     huecos.push({ x: c.x, y: c.alto, w: c.largo, h: anchoRolloMm - c.alto });
     for (const p of c.piezas) if (p.ancho < c.largo) huecos.push({ x: p.x + p.ancho, y: p.y, w: c.largo - p.ancho, h: p.hueco });
   }
-  const sacos = [];
+  return sacosEnRectangulos(huecos, ofStock);
+}
+
+/** Rejillas de un retal, incluidas las alternativas que dejan sin cortar su último trozo. */
+function rejillasSacos(hueco, ofStock) {
+  const opciones = [[]];
   const m = MARGEN_SACO_CM * 10;
-  for (const hueco of huecos) {
-    const opciones = [];
-    for (const [alto, ancho] of SACOS) {
-      for (const [w, h, girado] of [[ancho * 10, alto * 10, false], [alto * 10, ancho * 10, true]]) {
-        // Cuántos caben a lo largo y a lo ancho con el margen, y a qué medida quedan (en cm enteros).
-        const nx = Math.floor(hueco.w / (w - m)), ny = Math.floor(hueco.h / (h - m));
-        if (!nx || !ny) continue;
-        const wr = Math.max(w - m, Math.floor(Math.min(w + m, hueco.w / nx) / 10) * 10);
-        const hr = Math.max(h - m, Math.floor(Math.min(h + m, hueco.h / ny) / 10) * 10);
-        // Rotulado con la medida real que queda (Iván), alto × ancho como en el dibujo de stock.
-        const [altoReal, anchoReal] = girado ? [wr / 10, hr / 10] : [hr / 10, wr / 10];
-        opciones.push({ area: nx * ny * wr * hr, n: nx * ny, nx, ny, wr, hr, medida: `${altoReal}X${anchoReal}` });
+  for (const [alto, ancho] of SACOS) {
+    for (const [w, h, girado] of [[ancho * 10, alto * 10, false], [alto * 10, ancho * 10, true]]) {
+      // Cuántos caben a lo largo y a lo ancho con el margen, y a qué medida quedan (en cm enteros).
+      const nx = Math.floor(hueco.w / (w - m)), ny = Math.floor(hueco.h / (h - m));
+      if (!nx || !ny) continue;
+      const wr = Math.max(w - m, Math.floor(Math.min(w + m, hueco.w / nx) / 10) * 10);
+      const hr = Math.max(h - m, Math.floor(Math.min(h + m, hueco.h / ny) / 10) * 10);
+      // Rotulado con la medida real que queda (Iván), alto × ancho como en el dibujo de stock.
+      const [altoReal, anchoReal] = girado ? [wr / 10, hr / 10] : [hr / 10, wr / 10];
+      const rejilla = [];
+      for (let i = 0; i < nx; i++) for (let j = 0; j < ny; j++) {
+        rejilla.push({ nombre: 'SACO', saco: true, medida: `${altoReal}X${anchoReal}`, medidaCatalogo: `${alto}X${ancho}`, of: ofStock, marcas: [], girada: false,
+          x: hueco.x + i * wr, y: hueco.y + j * hr, ancho: wr, hueco: hr, largo: wr, alto: hr });
       }
-    }
-    if (!opciones.length) continue;
-    // La que más lona aprovecha; si otras se quedan a menos de un 5 %, la de menos sacos (más grandes),
-    // como hace la oficina (AR2602119: tres de 120×220).
-    const maximo = Math.max(...opciones.map((o) => o.area));
-    const mejor = opciones.filter((o) => o.area >= maximo * 0.95).sort((a, b) => a.n - b.n || b.area - a.area)[0];
-    for (let i = 0; i < mejor.nx; i++) {
-      for (let j = 0; j < mejor.ny; j++) {
-        sacos.push({ nombre: 'SACO', saco: true, medida: mejor.medida, of: ofStock, marcas: [], girada: false,
-          x: hueco.x + i * mejor.wr, y: hueco.y + j * mejor.hr, ancho: mejor.wr, hueco: mejor.hr, largo: mejor.wr, alto: mejor.hr });
-      }
+      opciones.push(rejilla);
+      if (alto === 130) opciones.push(rejilla.slice(0, -1));
     }
   }
-  return sacos;
+  return opciones;
+}
+
+/** Iván, 17/11/2026: conserva la mejor combinación con total par y con total impar de trozos.
+ * Dentro de cada paridad el valor es aditivo: el siguiente retal puede completar el trozo pendiente.
+ * Incluir una pieza menos permite cerrar el material sin que un impar gane a una tira completa.
+ */
+export function planesSacosEnRectangulos(huecos, ofStock) {
+  let mejores = [{ sacos: [], valor: valorarSacos([]) }, null];
+  for (const hueco of huecos) {
+    const siguientes = [null, null];
+    for (const previo of mejores.filter(Boolean)) for (const rejilla of rejillasSacos(hueco, ofStock)) {
+      const sacos = [...previo.sacos, ...rejilla], valor = valorarSacos(sacos);
+      const paridad = (valor.piezas - valor.tiras) % 2;
+      if (!siguientes[paridad] || compararStock(valor, siguientes[paridad].valor) > 0) siguientes[paridad] = { sacos, valor };
+    }
+    mejores = siguientes;
+  }
+  return mejores.filter(Boolean).map(p => p.sacos);
+}
+
+/** Retales sin solapes; el primer plan tiene todas las parejas cerradas entre todos los huecos. */
+export function sacosEnRectangulos(huecos, ofStock) {
+  return planesSacosEnRectangulos(huecos, ofStock)[0];
 }
 
 /**
@@ -64,15 +98,14 @@ export function sacosEnHuecos(colocadas, anchoRolloMm, ofStock) {
  */
 export function sacosEnRetales(colocadas, anchoRolloMm, ofStock) {
   const largo = Math.max(0, ...colocadas.map((p) => p.x + p.ancho));
-  return huecosLibres(colocadas.map((p) => ({ x: p.x, y: p.y, w: p.ancho, h: p.hueco })), largo, anchoRolloMm)
-    .flatMap((h) => sacosEnHuecos([{ x: h.x, y: 0, ancho: h.w, hueco: h.y }], h.y + h.h, ofStock));
+  return sacosEnRectangulos(huecosLibres(colocadas.map((p) => ({ x: p.x, y: p.y, w: p.ancho, h: p.hueco })), largo, anchoRolloMm), ofStock);
 }
 
-/** Cuánta lona aprovechan los sacos de stock en unos retales: el Tetris lo usa para desempatar a igual largo. */
+/** Iván, 17/11/2026: el Tetris desempata a igual largo por sacos equivalentes, tiras y superficie. */
 function aprovechamientoSacos(anchoRolloMm, ofStock) {
   return (libres) => {
-    const sacos = libres.flatMap((h) => sacosEnHuecos([{ x: h.x, y: 0, ancho: h.w, hueco: h.y }], h.y + h.h, ofStock));
-    return { area: sacos.reduce((s, q) => s + q.ancho * q.hueco, 0), ancho: Math.max(0, ...sacos.map((q) => q.y + q.hueco)) };
+    const sacos = sacosEnRectangulos(libres, ofStock);
+    return valorarSacos(sacos);
   };
 }
 

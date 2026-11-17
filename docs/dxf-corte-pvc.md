@@ -157,17 +157,17 @@ Iván (19/10/2026): primero hay que generar el DWG del planteamiento, y de él s
 
 Iván, 19/10/2026: en los cortes donde queda mucha lona sin aprovechar se pueden añadir sacos de stock.
 - **De dónde salen:** `AUTOCAD\MATERIAL PARA STOCK.dwg`, sección «SACOS · cualquier color y gramaje · pueden ser medidas aproximadas · se utilizan para embalar lonas finalizadas».
-- **Medidas (alto × ancho):** 120×80, 120×110, 120×160 y 120×220, con ±5 cm en cada medida (Iván). Valen de cualquier PVC y gramaje.
-- **Rotulado:** como en AR2602119, cuatro líneas centradas: la OF de stock, SACO, la medida y STOCK. Si la medida se ajusta dentro del margen, se rotula la **medida real** (Iván), por ejemplo 125X225.
+- **Medidas (alto × ancho), Iván, 17/11/2026:** saco de 130×85, confeccionado con una tira de 260×85 (un saco) o dos trozos de 130×85 (medio saco cada uno). Se retiran todas las medidas del catálogo anterior. Margen de **±10 cm en cada lado**, por arriba y por abajo, en centímetros enteros y ambos giros. Valen de cualquier PVC y gramaje.
+- **Rotulado, Iván, 17/11/2026:** la OF de stock, SACO, la **medida real** y STOCK. La tira lleva su medida de pieza (por ejemplo 270X95); los trozos, la suya (por ejemplo 130X85). En remolques el rótulo agrupado también usa la medida real, sin añadir una frase de confección.
 - **De momento solo sacos** (Iván): las bolsas y los refuerzos del mismo dibujo no se usan.
 - **Cómo se hace en la práctica** (Iván, 19/10/2026): muchas veces no se meten tantos sacos. Los paños se dejan separados para ver si hay algún resto de lona en el que cortar el paño pequeño. Normalmente no lo hay, y entonces se manda rellenar con sacos. Por eso los sacos son una opción, no algo fijo.
 - **OF de stock:** hoy es 0230811. La web la lee del propio DWG (`stock.mjs`), así que si la oficina la cambia allí, cambia en la web.
 - **Cómo se colocan** (`sacosEnHuecos`, opción `--sacos`):
   - Solo en los huecos dentro del largo de rollo que ya se gasta: encima de las piezas de cada columna y a la derecha de las piezas más cortas que su columna. No alargan el rollo.
-  - En cada hueco se ponen en filas los sacos, normales o girados, que más lona aprovechan.
-  - Si otra opción se queda a menos de un 5 %, se elige la de menos sacos, que son más grandes.
+  - Iván, 17/11/2026: se maximiza el número de sacos cerrados entre todos los huecos del material: `tiras + floor(trozos / 2)`; a igualdad, tiras, superficie y menos piezas. Se conserva una alternativa par y otra impar para completar parejas entre retales, incluyendo la opción de tira y la de dejar un trozo sin cortar. El Tetris usa el mismo criterio al desempatar, después de minimizar el largo.
+  - Los trozos se cuentan entre todos los huecos del mismo corte/material. Si el total es impar, se descarta el último; un trozo suelto no es un saco completo.
   - Se cortan en DISCO1 con los bordes comunes una sola vez.
-- **Resultado:** AR2602119 sale con tres sacos de 120×220, como el corte de la oficina. En AR2502068 se llena con diez de 120×80 el hueco que la oficina dejó vacío.
+- **Resultados históricos del catálogo anterior:** AR2602119 salía con tres sacos nominales de 120×220 (reales de 125×225), y AR2502068 con diez nominales de 120×80. Esos recuentos se sustituyen por el catálogo de Iván, 17/11/2026; los sacos siguen sin añadir largo al rollo.
 
 ## Alcance: no solo fachada en PVC
 

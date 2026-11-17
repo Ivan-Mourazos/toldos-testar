@@ -26,13 +26,13 @@ describe('el stock de remolques no cambia los DXF de los otros cortes', () => {
     expect(generarCorteLona(order, stock).cortes.conSacos.map(c => sha(c.dxf))).toEqual([esperado]);
   });
 
-  it('AR2604725: conserva por SHA los cuatro sacos y todos los colores de la puerta', () => {
+  it('AR2604725: Iván, 17/11/2026, fija por SHA los seis trozos y todos los colores de la puerta', () => {
     const input = nuevaPuerta('PUERTAENR');
     Object.assign(input, { frente: 474, alto: 430, of: '0232504', cantidad: 1, color: 'GRIS 7038', rollo: 300, rolloSaco: 300, rolloCristal: 140, confirmada: true, ventanasConfirmadas: true });
     input.enrollable = { T: 239, D: 60, margen: 11, empates: [], sacoPartido: true };
     input.entradas = [60, 131, 191, 241].map(altura => ({ altura, diametro: 30, largo: 474, alto: 8, huecos: [] }));
     const pedido = { schemaVersion: 1, kind: 'puertas', orderCode: 'AR2604725', elementos: [{ id: 'puerta-a', input }] };
-    expect(sha(generarCortePuertas(pedido, stock).archivo.dxf)).toBe('502c34a7690a4ad69e4f8ebf5790a9159fd76308e7b3734ade6ad064f4def750');
+    expect(sha(generarCortePuertas(pedido, stock).archivo.dxf)).toBe('b29f4d87f3a2db072437d4c100c63b1d616d39059da8f6d42acfc23fc2dee6de');
   });
 
   it.each([

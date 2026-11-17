@@ -1,6 +1,6 @@
 import { escribirDxf2004 } from '../domain/corteLona/dxfCorte.js';
 import { anchoArial } from '../domain/corteLona/texto.js';
-import { sacosEnHuecos } from '../domain/corteLona/colocacion.js';
+import { sacosEnRectangulos, valorarSacos } from '../domain/corteLona/colocacion.js';
 import { calcularPuerta } from './calcular.ts';
 import { cortarSystemDock, medidaSystemDock } from './systemDock.ts';
 import { cortarSacosArena } from './sacoArena.ts';
@@ -387,8 +387,8 @@ function filaFinal(columna: Columna) {
 function sacosDeStock(ocupadas: Array<{ x: number; y: number; ancho: number; hueco: number }>, rollo: number, ofStock: string, entidades: EntidadesPuertas, material: string, rolloCm: number) {
   const largo = Math.max(0, ...ocupadas.map(p => p.x + p.ancho));
   const libres = huecosLibres(ocupadas.map(p => ({ x: p.x, y: p.y, w: p.ancho, h: p.hueco })), largo, rollo);
-  // Reutiliza las medidas y márgenes de toldos en cada retal real, ya separado de los demás.
-  const sacos = libres.flatMap(h => sacosEnHuecos([{ x: h.x, y: 0, ancho: h.w, hueco: h.y }], h.y + h.h, ofStock)) as Array<{ x: number; y: number; ancho: number; hueco: number; medida: string }>;
+  // Iván, 17/11/2026: se emparejan los trozos entre todos los retales de este material.
+  const sacos = sacosEnRectangulos(libres, ofStock) as Array<{ x: number; y: number; ancho: number; hueco: number; medida: string }>;
   return sacos.map((saco, i) => {
     const [x0, y0, w, h] = [saco.x, saco.y, saco.ancho, saco.hueco];
     entidades.lineas.push(
@@ -530,10 +530,9 @@ function colocar(
       return ca === cb || (ca.localeCompare(cb, 'es', { numeric: true }) < 0 ? a.y > b.y : b.y > a.y);
     }));
     const aprovechamiento = (libres: ReturnType<typeof huecosLibres>) => {
-      const sacos = libres.flatMap(h => sacosEnHuecos([{ x: h.x, y: 0, ancho: h.w, hueco: h.y }], h.y + h.h, ofStock)) as Array<{ y: number; ancho: number; hueco: number }>;
+      const sacos = sacosEnRectangulos(libres, ofStock);
       // Se valora el mismo ancho total que acota el plano, incluidos los sacos que irán al corte.
-      return { area: sacos.reduce((suma, s) => suma + s.ancho * s.hueco, 0),
-        ancho: Math.max(0, ...sacos.map(s => s.y + s.hueco)) };
+      return valorarSacos(sacos);
     };
     const conStock = Boolean(ofStock && opcion === 'principal' && grupo.some(p => p.clase === 'pano'));
     const elegidas = buscarColocacion(piezasBusqueda, rollo, inicial, presupuesto, valida, conStock ? aprovechamiento : undefined);
