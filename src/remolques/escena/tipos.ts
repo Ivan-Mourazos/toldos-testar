@@ -71,6 +71,9 @@ export interface CuerpoLona {
   traseraDesde?: number;
   /** Borde inferior del paño delantero por encima de la base del contorno, en cm. */
   delanteraDesde?: number;
+  /** Altos pedidos de cada cara, para el número de las cotas: con radio en la cumbrera el pico del
+   *  perfil queda por debajo (79,4 con 80, AR2605589) y la hoja tiene que decir la medida pedida. */
+  altosPedido?: { delante: number; atras: number };
 }
 
 export interface CuerpoBaqueton {

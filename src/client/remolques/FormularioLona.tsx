@@ -222,7 +222,7 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
         <CampoNum name="largo" error={errores.largo} label="Largo" value={input.largo} onChange={(v) => set('largo', v)} />
         <CampoNum name="ancho" error={errores.ancho} label="Ancho" value={input.ancho}
           onChange={(v) => onChange(conMedidaDelante(input, 'ancho', v, verDetras))} />
-        <CampoNum name="altoDelante" error={errores.altoDelante} label={longitudinal ? 'Alto centro' : input.delanteraPorArriba ? 'Alto del remolque delante' : 'Alto delante'} value={input.altoDelante}
+        <CampoNum name="altoDelante" error={errores.altoDelante} label={longitudinal ? 'Alto centro' : input.delanteraPorArriba ? 'Alto laterales (hasta abajo)' : 'Alto delante'} value={input.altoDelante}
           onChange={(v) => onChange(conMedidaDelante(input, 'altoDelante', v, verDetras))} />
         {!longitudinal && <div className="rem-contorno">
           <CampoNum name="contorno" error={errores.contorno} label="Contorno" value={contornoVisible}
@@ -237,7 +237,13 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
           {input.delanteraPorArriba && <>
             <CampoNum name="delanteraRecorte" label="Acortar delantero por abajo" error={errores.delanteraRecorte}
               value={input.delanteraRecorte ?? 0} onChange={(v) => set('delanteraRecorte', v)} />
-            <p className="rem-nota rem-span-4">Centímetros que le faltan por abajo al paño delantero. El contorno y los laterales llegan hasta abajo.</p>
+            {/* AR2605589: se metió el alto del delantero (80) como alto y salió todo a 80, contorno incluido.
+                El alto de arriba es el de los laterales; aquí, lo que se queda el delantero. */}
+            <p className="rem-nota rem-span-4">
+              {input.altoDelante > 0 && (input.delanteraRecorte ?? 0) > 0
+                ? `Paño delantero de ${(input.altoDelante - (input.delanteraRecorte ?? 0)).toLocaleString('es-ES')} de alto; laterales y contorno de ${input.altoDelante.toLocaleString('es-ES')}, hasta abajo.`
+                : 'Centímetros que le faltan por abajo al paño delantero. El contorno y los laterales llegan hasta abajo.'}
+            </p>
           </>}
         </div>
         {/* Remolque más ancho (o más alto) detrás: sus medidas de detrás, con el contorno de esa

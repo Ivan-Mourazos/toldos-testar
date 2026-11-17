@@ -80,6 +80,7 @@ export function escenaLona(input: LonaInput, res: LonaResult, params: CalcParams
     ...(aguasLongitudinales(input) ? { cumbreraTransversal: Math.max(hD, hA) } : {}),
     ...(traseraDesde > 0 ? { traseraDesde } : {}),
     ...(delanteraDesde > 0 ? { delanteraDesde } : {}),
+    ...(aguasLongitudinales(input) ? {} : { altosPedido: { delante: hD, atras: hA } }),
   };
   const anchoAtrasRemolque = (input.anchoAtras ?? 0) > 0 ? input.anchoAtras! : input.ancho;
   const cajon = cajonDe(largo, input.largo, input.ancho, anchoAtrasRemolque, ALTO_CAJON);

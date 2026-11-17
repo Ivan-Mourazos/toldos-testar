@@ -79,6 +79,20 @@ describe('cabezas a la línea por arriba, independientes', () => {
     expect(cotasCorte(el.input).filter(v => v === 17)).toHaveLength(2);
   });
 
+  it('AR2605589: con radio en la cumbrera las vistas dicen 80 delante y 97 detrás y de lado, no el pico (79,4)', () => {
+    const el = preparar({
+      tipoPerfil: 'TIPO 03', aguas: 27, radioCumbrera: 11.5, radioHombro: 10, altoDelante: 97,
+      delanteraPorArriba: true, delanteraRecorte: 17,
+    });
+    const escena = escenaLona(el.input, el.result, DEFAULT_PARAMS)!;
+    const textos = (vista: string) => escena.cotas.filter(c => c.vistas.includes(vista as never)).map(c => c.texto);
+    expect(textos('delante')).toContain('80');
+    expect(textos('detras')).toContain('97');
+    expect(textos('lateral')).toEqual(expect.arrayContaining(['97']));
+    expect(escena.cotas.map(c => c.texto).filter(t => /,/.test(t) && /^(79|96|62)/.test(t))).toEqual([]);
+    expect(hojaLona(el.input, el.result).banda[1].lineas[1]).toBe('ALTO 97 · DELANTERA 80 A LA LÍNEA POR ARRIBA');
+  });
+
   it.each([false, true])('dibujo, geometría y cotas con trasera por arriba: %s', (traseraPorArriba) => {
     const el = preparar({ delanteraPorArriba: true, delanteraRecorte: 17, traseraPorArriba, altoAtras: traseraPorArriba ? 83 : 0 });
     const escena = escenaLona(el.input, el.result, DEFAULT_PARAMS)!;
