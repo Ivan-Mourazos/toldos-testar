@@ -3,7 +3,7 @@ import {describe,it,expect} from 'vitest';
 import {dxfACmt} from './index.ts';
 import {leerDxf,value} from './dxf.ts';
 const arial=process.env.CMT_ARIAL_PATH??'C:/Windows/Fonts/arial.ttf';
-const fixture=(name:string)=>readFileSync(new URL(`./__fixtures__/corpus-${name}.dxf`,import.meta.url),'utf8');
+const fixture=(name:string)=>readFileSync(new URL(`./__fixtures__/corpus-${name}.dxf`,import.meta.url),'utf8').replace(/\r\n/g,'\n');
 function compararRobot(name:string,objetos:ReturnType<typeof dxfACmt>['objetos']){
  const robot=JSON.parse(readFileSync(new URL(`./__fixtures__/corpus-${name}-robot.json`,import.meta.url),'utf8')) as {objetos:{tool:string;points:{x:number;y:number;type:number}[]}[]};
  expect(objetos).toHaveLength(robot.objetos.length);
