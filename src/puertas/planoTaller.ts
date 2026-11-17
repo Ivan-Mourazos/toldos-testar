@@ -623,7 +623,7 @@ export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[
   if(maquina)sumarLienzo(dibujo,maquina.lienzo);
   return escribir({ ...dibujo, corte: lienzoAMetros(corte.lienzo, ox, oy), zonas: { toldos: za, corte: zc, corteReal }, corteDerecho: true,
     ...(maquina?{recuadros:[['DIBUJO',zonaDibujo],['CORTE',maquina.zona]]}:{}),
-    corteGirable: !conSacosArena, hojas: hojasPuertas(pedido, zonasPuertas.map(z => zonaM(z, 100, 100))),
+    corteGirable: !conSacosArena, hojas: hojasPuertas(pedido, zonasPuertas.map(z => zonaM(z, 100, 100)), cortes),
     ...(portanova ? { ajustarVentanaALaZona: true } : {}),
     bloques: [bloqueFlechaEnrollable], coloresModelo: { ejes: 23, borrar: 40, curv: 3, 'corte (vent)': 5 },
     ...(portanova ? presentacionPortanova(pedido, cabecera, { toldos: za, corte: zc }, altoVista, tramosCorte, disposicion, ventanaCorte) : {}),

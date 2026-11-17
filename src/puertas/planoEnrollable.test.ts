@@ -178,12 +178,12 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
     // y los refuerzos centrados en su hueco con una raya a cada uno; sin los «a2» del saco partido en el dibujo
     // del saco (correcciones de Iván sobre AR2605035). Después, cotas verticales más juntas, nota BOLSILLO y
     // cajetín algo más pequeño (23/10/2026). Luego, presentación «PUERTA A», el corte en fila con la puerta y ventanas con la proporción justa. Después, el corte a la derecha y los recuadros DIBUJO y CORTE pegados, con margen del 20 %.
-    ['apilable', apilable, 'eed1f27487e84d828aadbd9fb778148e1fe652751688b6d915a3885276a721c9'],
+    ['apilable', apilable, '6199323eb3b698dfe8c4cb5f2f3e9a73e01e0b809ec7aafd4fa3b2281004c206'],
     // Tetris coloca las dos E.T. sobre los paños: baja de 711 a 700 cm sin cambiar el alzado.
     // 27/10/2026 (AR2605249): saco de 2 × (rematado + 2) y la raya de soldar el saco, 2 cm sobre el bajo del paño.
     // Se elimina la segunda raya del saco y las dos referencias fijas de la regla anterior (Iván, 27/10/2026).
     // Empates: una raya en el paño superior y flecha hacia el borde a media escala; abajo solo mininúmeros.
-    ['autorreparable', autorreparable, '5d77a7f03fccdc608cbfbf41bf304dfb5ce5239dba2b9c70b148cb015efe52d4'],
+    ['autorreparable', autorreparable, '39a67bee1b7e0fbad0b915f1897575ac7982bd4d9396ef22b8c6b6171dfd1798'],
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {
     const pedido = { ...pedidoDe('AR2600001', crear()), cabecera: { clienteRps: { codigo: '009999' } } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido, cabecera })).digest('hex')).toBe(hash);

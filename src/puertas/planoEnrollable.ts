@@ -8,6 +8,7 @@ import { dibujarVentanasPlano } from './ventanasPlano.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
 import { SEPARACION_EXTRA_FILAS, TITULO_MATERIAL_MM } from './corte.ts';
 import { corteEnPlano, entidadesDePieza, textosFuera } from './corteEnPlano.ts';
+import { formatoMl, metrosPorOf } from './metrosPorOf.ts';
 import type { CortePuertas, EntidadesPuertas, PedidoPuertas, Puerta, Punto } from './tipos.ts';
 export { sumarLienzo } from './lienzo.ts';
 
@@ -366,11 +367,19 @@ export function origenCorte(puertas: Zona, corte: Zona): [number, number] {
 /** Cm de modelo entre puertas: cada presentación encuadra la suya sin asomar la vecina. */
 export const ENTRE_PUERTAS = 300;
 
-/** Una presentación por puerta, «PUERTA A»…, con su OF y su material en el cajetín (Iván, 23/10/2026). */
-export function hojasPuertas(pedido: PedidoPuertas, zonas: Zona[]) {
-  return pedido.elementos.map((e, i) => ({
-    nombre: `${e.input.modelo==='SACOARENA'?'SACO':'PUERTA'} ${String.fromCharCode(65 + i)}`, zona: zonas[i],
-    cajetin: { OF: e.input.of, MATERIAL: textoSeguro(`${e.input.material} ${e.input.color}`), HOJA: `${i + 1}/${pedido.elementos.length}` },
-  }));
+/**
+ * Una presentación por puerta, «PUERTA A»…, con su OF y su material en el cajetín (Iván, 23/10/2026). Con el corte, junto
+ * al material, los ML de la lona que le tocan a su OF, repartidos por superficie (Iván, 17/11/2026).
+ */
+export function hojasPuertas(pedido: PedidoPuertas, zonas: Zona[], cortes?: CortePuertas[]) {
+  return pedido.elementos.map((e, i) => {
+    const lona = `${e.input.material.trim()} ${e.input.color.trim()}`.trim();
+    const cm = cortes && metrosPorOf(cortes, lona).get(e.input.of.trim() || 'SIN OF');
+    return {
+      nombre: `${e.input.modelo==='SACOARENA'?'SACO':'PUERTA'} ${String.fromCharCode(65 + i)}`, zona: zonas[i],
+      cajetin: { OF: e.input.of, MATERIAL: textoSeguro(`${e.input.material} ${e.input.color}`) + (cm ? ` · ${formatoMl(cm)}` : ''),
+        HOJA: `${i + 1}/${pedido.elementos.length}` },
+    };
+  });
 }
 

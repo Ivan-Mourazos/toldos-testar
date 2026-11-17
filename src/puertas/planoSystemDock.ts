@@ -67,7 +67,7 @@ export function escribirPlanoSystemDock(pedido: PedidoPuertas, cortes: CortePuer
   const ofs = [...new Set(pedido.elementos.map(e => e.input.of.trim()).filter(Boolean))];
   const material = [...new Set(pedido.elementos.map(e => `${e.input.material} ${e.input.color}`.trim()))].join(' / ');
   return escribirPlanoImpreso({ ...lienzoAMetros(alzados, 100, 100), corte: lienzoAMetros(corte.lienzo, ox, oy), zonas: { toldos: za, corte: zc },
-    hojas: hojasPuertas(pedido, zonasPuertas.map(z => zonaM(z, 100, 100))) },
+    hojas: hojasPuertas(pedido, zonasPuertas.map(z => zonaM(z, 100, 100)), cortes) },
     { pedido: pedido.orderCode, of: ofs.length > 1 ? 'VARIAS' : ofs[0] ?? '', cliente: textoSeguro(cabecera.cliente), tecnico: textoSeguro(cabecera.tecnico),
       revisor: textoSeguro(cabecera.revisor), fecha: cabecera.fecha.split('-').reverse().map((v, i) => i === 2 ? v.slice(2) : v).join('/'), pagina: '1/1',
       material: textoSeguro(material), subtitulo: 'MEDIDAS EN CM · LONA PERIMETRAL' }, { familia: 'puertas', usarHojaCompleta: true }).dxf;
