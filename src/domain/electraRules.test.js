@@ -140,15 +140,16 @@ describe('ELECTRA / Elit Vertical · descuentos según soporte', () => {
     const result = calculate({ submodel, electraSupport });
     const cofre = submodel.startsWith('CON COFRE');
     const caps = cofre ? 'TAPOPLUN280BL16' : 'TAPASLAMAXSCNE11';
+    const loadName = cofre ? 'TUBO DE CARGA UNIVERS 280' : 'TUBO DE CARGA ELIT';
 
     expect(result.calculation.valid).toBe(true);
     expect(result.materials).toEqual(expect.arrayContaining([
-      expect.objectContaining({ description: 'TUBO DE CARGA ELIT', quantity: 1 }),
+      expect.objectContaining({ description: loadName, quantity: 1 }),
       expect.objectContaining({ code: caps, quantity: 1 })
     ]));
     expect(result.materials.some(({ code }) => code.startsWith(cofre ? 'PUNI280' : 'PECARMAX'))).toBe(true);
     expect(result.despiece.rows).toEqual(expect.arrayContaining([
-      expect.objectContaining({ name: 'TUBO DE CARGA ELIT', units: 1 }),
+      expect.objectContaining({ name: loadName, units: 1 }),
       expect.objectContaining({ reference: caps, units: 1 })
     ]));
     expect(result.despiece.rows.map((row) => row.num)).toEqual(result.despiece.rows.map((_, index) => index + 1));

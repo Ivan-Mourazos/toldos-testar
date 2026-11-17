@@ -252,7 +252,7 @@ function electraPieces(context) {
     { ...supportLine },
     { code: `TURA80HG${rollStockLength}C`, quantity: units, description: 'TUBO DE ENROLLE P801', length: rollTubeLength },
     { code: tipBushing('P801').code, quantity: units, description: tipBushing('P801').description },
-    { code: loadProfileReference.code, quantity: units, description: loadProfileDescription(), length: loadBarLength },
+    { code: loadProfileReference.code, quantity: units, description: loadProfileDescription(loadProfileReference.code), length: loadBarLength },
     loadProfileReference.code.startsWith('PUNI280')
       ? plasticUniversalCaps(lacado, units)
       : { code: 'TAPASLAMAXSCNE11', quantity: units, description: 'JGO TAPAS PERFIL CARGA MAXISCREEN' }
@@ -378,8 +378,10 @@ function verticalReference(base, suffix, needed, wanted) {
 
 
 
-function loadProfileDescription() {
-  return 'TUBO DE CARGA ELIT';
+// Con cofre y sin guía la barra es el Univers 280 y así se rotula; el planteamiento la
+// llamaba «ELIT» y el taller entendía que iba el Elit (AR2605296, 17/11/2026).
+function loadProfileDescription(code) {
+  return String(code).startsWith('PUNI280') ? 'TUBO DE CARGA UNIVERS 280' : 'TUBO DE CARGA ELIT';
 }
 
 function plasticUniversalCaps(lacado, units) {
