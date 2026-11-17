@@ -46,8 +46,8 @@ it('exige confirmación de corte y después pregunta por todos los archivos exis
   expect((await enviarCorte({ ...entrada, confirmOverwrite: true })).status).toBe(200);
 });
 it('un fallo al publicar el segundo fichero registra el primero y explica la salida parcial', async () => {
-  const enlace = fs.link.bind(fs);
-  vi.spyOn(fs, 'link').mockImplementation(async (de, a) => { if (a.endsWith('.cmt')) throw new Error('Disco lleno'); return enlace(de, a); });
+  const abrir = fs.open.bind(fs);
+  vi.spyOn(fs, 'open').mockImplementation(async (p, ...r) => { if (String(p).endsWith('.cmt')) throw new Error('Disco lleno'); return abrir(p, ...r); });
   await expect(enviarCorte(entrada)).rejects.toThrow(/Solo una parte/);
   expect(guardar.mock.calls[0][0].enviosCorte[0]).toMatchObject({ destino: 'maquina', parcial: true, archivos: [expect.objectContaining({ filename: 'AR2600001.dxf' })] });
 });

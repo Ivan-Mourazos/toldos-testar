@@ -66,12 +66,33 @@ describe('Envío común del corte, independiente de generar archivos', () => {
       expect(await fs.readFile(archivo.savedPath)).toEqual(previstos[i].contents);
     }
   });
-  it('si la carpeta de red no admite enlaces, escribe igual el DXF nuevo (montaje CIFS del servidor)', async () => {
-    vi.spyOn(fs, 'link').mockRejectedValue(Object.assign(new Error('no admitido'), { code: 'EPERM' }));
+  // AR2605588 (17/11/2026): por DFS no se replicaba lo publicado desde un .tmp con enlace duro.
+  it('escribe el DXF directamente con su nombre, sin temporales ni enlaces (como a mano)', async () => {
+    const enlace = vi.spyOn(fs, 'link');
+    const abrir = vi.spyOn(fs, 'open');
     const res = await enviarCorte(entrada);
     expect(res.status).toBe(200);
     expect(await fs.readFile(path.join(raiz, '2026/DXFs/AR2604784.dxf'), 'utf8')).toBe('corte nuevo');
-    expect((await fs.readdir(path.join(raiz, '2026/DXFs'))).filter((n) => n.endsWith('.tmp'))).toEqual([]);
+    expect(enlace).not.toHaveBeenCalled();
+    expect(abrir.mock.calls.map(([p]) => path.basename(p))).toEqual(['AR2604784.dxf']);
+    expect(await fs.readdir(path.join(raiz, '2026/DXFs'))).toEqual(['AR2604784.dxf']);
+  });
+  it('al sustituir también escribe directamente con su nombre', async () => {
+    await enviarCorte(entrada);
+    const escribir = vi.spyOn(fs, 'writeFile');
+    expect((await enviarCorte({ ...entrada, confirmOverwrite: true })).status).toBe(200);
+    expect(escribir.mock.calls.map(([p]) => path.basename(p))).toEqual(['AR2604784.dxf']);
+    expect(await fs.readdir(path.join(raiz, '2026/DXFs'))).toEqual(['AR2604784.dxf']);
+  });
+  it('si la escritura se corta, no deja el fichero a medias', async () => {
+    const abrir = fs.open.bind(fs);
+    vi.spyOn(fs, 'open').mockImplementation(async (...a) => {
+      const f = await abrir(...a);
+      return { writeFile: async (c) => { await f.writeFile(c.subarray(0, 3)); throw new Error('red caída'); }, close: () => f.close() };
+    });
+    await expect(enviarCorte(entrada)).rejects.toThrow(/red caída/);
+    expect(await fs.readdir(path.join(raiz, '2026/DXFs'))).toEqual([]);
+    expect(guardar).not.toHaveBeenCalled();
   });
   it('crea DXFs y registra cuándo, quién, destino y archivos en el pedido', async () => {
     const res = await enviarCorte(entrada);
@@ -147,8 +168,8 @@ describe('Envío común del corte, independiente de generar archivos', () => {
   });
   it('si falla el segundo archivo, registra el que ya salió y avisa antes de repetir', async () => {
     preparar.mockResolvedValue([{ filename: 'primero.dxf', contents: Buffer.from('uno') }, { filename: 'segundo.dxf', contents: Buffer.from('dos') }]);
-    const enlazar = fs.link.bind(fs);
-    vi.spyOn(fs, 'link').mockImplementationOnce(enlazar).mockRejectedValueOnce(new Error('carpeta caída'));
+    const abrir = fs.open.bind(fs);
+    vi.spyOn(fs, 'open').mockImplementation(async (p, ...r) => { if (String(p).endsWith('segundo.dxf')) throw new Error('carpeta caída'); return abrir(p, ...r); });
     await expect(enviarCorte(entrada)).rejects.toThrow(/parte del corte.*registrad/i);
     expect(guardar).toHaveBeenCalledWith(expect.objectContaining({ enviosCorte: [expect.objectContaining({ parcial: true, archivos: [expect.objectContaining({ filename: 'primero.dxf' })] })] }));
   });

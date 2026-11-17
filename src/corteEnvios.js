@@ -4,7 +4,6 @@ import { randomUUID } from 'node:crypto';
 import { CARPETA_TECNICO, carpetaCorte } from './corteLonaArchivos.js';
 import { AWNING_NOUNS, generationBlock, uniqueOfs } from './reviewRules.js';
 import { aprobacionToldos } from './toldosEditable.js';
-import { writeFileAtomic } from './workflow.js';
 import { codigoAnual, codigoEntrega, numeroEntrega } from './entregas.js';
 import { prepararMaquina, fuenteCorte } from './corteMaquina.js';
 import { dejarCmtPiloto } from './cmtPiloto.js';
@@ -94,6 +93,27 @@ export async function enviarCorte({ pedido, order, settings, usuario, destino, c
   return prepararSolo ? { status: 200, cuerpo: { ok: true }, ejecutar } : ejecutar();
 }
 
+/**
+ * Escribe el fichero directamente con su nombre, como cuando un técnico lo guarda a mano.
+ * AR2605588 (17/11/2026): la máquina lee la carpeta por DFS (\\toldosgomez.local\DFS_POL\Maqcorte), que replica
+ * a otro servidor. Lo que la web publicaba desde un `.corte-….tmp` con un enlace duro no se replicaba nunca
+ * (DFS no copia los .tmp) y en la máquina no aparecía. Sin temporales ni enlaces, se replica como los demás.
+ * Sin `sustituir`, `wx` falla si apareció otro con ese nombre desde la comprobación; si la escritura se corta,
+ * se borra lo que esta llamada creó a medias.
+ */
+async function escribirComoAMano(destino, contenido, sustituir) {
+  if (sustituir) { await fs.writeFile(destino, contenido); return; }
+  let creado = false;
+  try {
+    const fichero = await fs.open(destino, 'wx');
+    creado = true;
+    try { await fichero.writeFile(contenido); } finally { await fichero.close(); }
+  } catch (error) {
+    if (creado) await fs.unlink(destino).catch(() => {});
+    throw error;
+  }
+}
+
 /** Comprueba todos los nombres antes de publicar. Cada fichero aparece completo y toda salida parcial se registra. */
 export async function publicarArchivosCorte({ files, carpeta, confirmOverwrite = false, crearCarpetas = false, registrar }) {
   // Un DXF o CMT vacío no se corta (AR2605535, 16/11/2026: llegaron a la máquina con 0 bytes).
@@ -125,22 +145,7 @@ export async function publicarArchivosCorte({ files, carpeta, confirmOverwrite =
   // Comprobar todo antes de escribir permite preguntar por todos los archivos de una sola vez.
   for (const file of files) {
     try {
-      if (confirmOverwrite) await writeFileAtomic(file.savedPath, file.contents);
-      else {
-        // El enlace publica el archivo completo y falla si apareció otro desde la comprobación.
-        const temporal = path.join(path.dirname(file.savedPath), `.corte-${randomUUID()}.tmp`);
-        try {
-          await fs.writeFile(temporal, file.contents, { flag: 'wx' });
-          try { await fs.link(temporal, file.savedPath); }
-          catch (error) {
-            // Algunas carpetas de red (CIFS) no admiten enlaces: se vuelve a mirar y se escribe sustituyendo.
-            if (!['EPERM', 'ENOTSUP', 'EOPNOTSUPP', 'ENOSYS', 'EXDEV', 'EINVAL'].includes(error.code)) throw error;
-            const yaEsta = await fs.stat(file.savedPath).then(() => true, (e) => { if (e.code !== 'ENOENT') throw e; return false; });
-            if (yaEsta) throw Object.assign(new Error('ya existe'), { code: 'EEXIST' });
-            await writeFileAtomic(file.savedPath, file.contents);
-          }
-        } finally { await fs.unlink(temporal).catch(() => {}); }
-      }
+      await escribirComoAMano(file.savedPath, file.contents, confirmOverwrite);
       // Se comprueba en la carpeta lo que ha quedado: la red puede dejar el archivo a medias sin dar error.
       const tamano = (await fs.stat(file.savedPath)).size;
       if (tamano !== Buffer.byteLength(file.contents)) throw new Error(`en la carpeta ha quedado con ${tamano} bytes en vez de ${Buffer.byteLength(file.contents)}`);

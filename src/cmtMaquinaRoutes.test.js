@@ -58,8 +58,8 @@ it('dudas no escriben ni registro ni carpetas y repetir pregunta por ambos archi
   expect((await enviar({ confirmOverwrite: true })).status).toBe(200);
 });
 it('si falla el CMT, registra el DXF como parcial y avisa sin acudir al bot', async () => {
-  const link = fs.link.bind(fs);
-  vi.spyOn(fs, 'link').mockImplementation(async (de, a) => { if (a.endsWith('.cmt')) throw new Error('Disco lleno'); await link(de, a); });
+  const abrir = fs.open.bind(fs);
+  vi.spyOn(fs, 'open').mockImplementation(async (p, ...r) => { if (String(p).endsWith('.cmt')) throw new Error('Disco lleno'); return abrir(p, ...r); });
   const res = await enviar();
   expect(res.status).toBe(500);
   expect((await res.json()).error).toContain('Solo una parte');

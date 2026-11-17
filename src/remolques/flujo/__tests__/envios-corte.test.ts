@@ -109,10 +109,10 @@ it('el bot pendiente de sobrescribir no publica PDF; si cae al escribir, informa
     .toMatchObject({ status: 409, cuerpo: { paso: 'DXF al bot', needsConfirmation: true } });
   expect(await fs.readdir(path.join(raiz, 'pdf'))).toEqual([]);
   await fs.unlink(path.join(carpeta, 'AR2605132.dxf'));
-  const enlazar = fs.link.bind(fs);
-  const fallo = vi.spyOn(fs, 'link').mockImplementation(async (origen, destino) => {
+  const abrir = fs.open.bind(fs);
+  const fallo = vi.spyOn(fs, 'open').mockImplementation(async (destino, ...resto) => {
     if (path.dirname(String(destino)) === carpeta) throw new Error('Bot sin conexión');
-    return enlazar(origen, destino);
+    return abrir(destino, ...resto);
   });
   try {
     expect(await servicio.produccion(fixture.orderCode, { savedBy: 'IVÁN', confirmBot: true }))
