@@ -7,6 +7,7 @@ import { alturasTubos, calcularPuerta, huecosEntrada, MODELOS_PUERTAS, nuevaPuer
 import { awningLetter } from '../../domain/awningCompleteness.js';
 import type { PedidoPuertasGuardado } from '../../puertas/flujo/tipos.ts';
 import { REGLAS_SYSTEM_DOCK } from '../../puertas/systemDock.ts';
+import { ConfigurarSacoArena } from './SacoArena';
 import { notaPlanoEnrollable, panoContinuoEnrollable } from '../../puertas/ventanalesEnrollable.ts';
 import { esPedidoMixto, productoDeElementos } from '../../puertas/producto.ts';
 import { medidasSaco, sacoPuerta, sacoUtil } from '../../puertas/saco.ts';
@@ -66,6 +67,7 @@ function Configurar({p,cambiar,corte,derecha='alzado',letra='A',vistas}:{p:Puert
   const formularioFluido=useContenidoFluido<HTMLElement>(pestana);
   const dibujoFluido=useContenidoFluido(derecha);
   const ficha=fichaDePuerta(p);
+  if(p.modelo==='SACOARENA')return <ConfigurarSacoArena p={p} cambiar={cambiar} corte={corte} derecha={derecha} vistas={vistas}/>;
   if(p.clientePuertas&&!ficha.habilitado)return <section className="puerta-config panel panel-vidrio" aria-label="Cliente sin reglas de confección"><h2>{ficha.nombre} · confección pendiente</h2><p className="puerta-ayuda">{textoMedidasMm(ficha.aviso??'')}</p><p className="puerta-ayuda">Artículo {p.articuloOrigen||'sin indicar'} · OF {p.of||'SIN OF'} · {num(p.frente)} × {num(p.alto)} mm</p><p className="puerta-ayuda">{p.observaciones}</p></section>;
   if(p.araujo)return <ConfigurarAraujo p={p} cambiar={cambiar} corte={corte} derecha={derecha} letra={letra} vistas={vistas}/>;
   if(p.santapau)return <ConfigurarSantaPau p={p} cambiar={cambiar} corte={corte} derecha={derecha} letra={letra} vistas={vistas}/>;
@@ -415,6 +417,7 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
   const sd = producto === 'systemdock';
   const nombre = sd ? 'System Dock' : 'Puertas';
   const [pedido, setPedido] = useState<PedidoPantallaPuertas>(() => pedidoVacio(producto));
+  const sacos=pedido.elementos.length>0&&pedido.elementos.every(e=>e.input.modelo==='SACOARENA');
   const formularioGuardado = useRef(leerFormularioGuardado('puertas'));
   const [indice, setIndice] = useState(0);
   const elementoFluido=useContenidoFluido(String(indice));
@@ -494,6 +497,10 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
     setIndice(0);
     const n = rps.puertas.length;
     const lonas = n > 0 && rps.puertas.every(p => p.modelo === 'SYSTEMDOCK');
+    if(n>0&&rps.puertas.every(p=>p.modelo==='SACOARENA')) {
+      notify(`${n} ${n===1?'saco confeccionado traído':'sacos confeccionados traídos'} de RPS con largo, aplastado, cantidad y OF. Confirma las medidas con el pedido.${rps.avisos.length?` ${rps.avisos.join(' ')}`:''}`,{tone:'success',title:nombre});
+      return;
+    }
     notify(`${n} ${lonas ? (n === 1 ? 'lona de SYSTEM DOCK traída' : 'lonas de SYSTEM DOCK traídas') : n === 1 ? 'puerta traída' : 'puertas traídas'} de RPS con sus medidas, ${lonas ? '' : 'color, '}cantidad y OF. Confirma ${lonas ? 'las medidas con el pedido' : 'el modelo y las medidas con el dibujo'} del cliente.${rps.avisos.length ? ` ${rps.avisos.join(' ')}` : ''}`,
       { tone: 'success', title: nombre });
   }, [notify, nombre]);
@@ -589,7 +596,7 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
       <label className="field puerta-campo"><span>Fecha</span><input type="date" aria-label={`Fecha del pedido de ${nombre}`} value={pedido.cabecera.fecha} onChange={e=>cabecera({fecha:e.target.value})}/></label>
     </div></div>
     </section>
-    <div className="puerta-selector"><div className="tira-3d" role="group" aria-label={sd?'Lonas del pedido':'Puertas del pedido'}>{pedido.elementos.map((e,i)=><button type="button" key={e.id} className={`pestana ${indice===i?'pestana-activa':''}`} aria-pressed={indice===i} onClick={()=>setIndice(i)}>{e.input.modelo==='SYSTEMDOCK'?'Lona':'Puerta'} {i+1} · {e.input.of||'SIN OF'}</button>)}</div><button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:[...pedido.elementos,{id:uid(),input:sd?nuevaLona():otraPuertaDelCliente(pedido.elementos[0].input)}]});setIndice(pedido.elementos.length);}}><Plus size={16}/>{sd?'Añadir lona':'Añadir puerta'}</button>{pedido.elementos.length>1&&<button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:pedido.elementos.filter((_,i)=>i!==indice)});setIndice(Math.max(0,indice-1));}}><Trash2 size={16}/>{sd?'Quitar lona':'Quitar puerta'}</button>}
+    <div className="puerta-selector"><div className="tira-3d" role="group" aria-label={sd?'Lonas del pedido':sacos?'Sacos del pedido':'Puertas del pedido'}>{pedido.elementos.map((e,i)=><button type="button" key={e.id} className={`pestana ${indice===i?'pestana-activa':''}`} aria-pressed={indice===i} onClick={()=>setIndice(i)}>{e.input.modelo==='SYSTEMDOCK'?'Lona':e.input.modelo==='SACOARENA'?'Saco':'Puerta'} {i+1} · {e.input.of||'SIN OF'}</button>)}</div><button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:[...pedido.elementos,{id:uid(),input:sd?nuevaLona():otraPuertaDelCliente(pedido.elementos[0].input)}]});setIndice(pedido.elementos.length);}}><Plus size={16}/>{sd?'Añadir lona':sacos?'Añadir saco':'Añadir puerta'}</button>{pedido.elementos.length>1&&<button className="ghost-button" type="button" onClick={()=>{setPedido({...pedido,elementos:pedido.elementos.filter((_,i)=>i!==indice)});setIndice(Math.max(0,indice-1));}}><Trash2 size={16}/>{sd?'Quitar lona':sacos?'Quitar saco':'Quitar puerta'}</button>}
     </div>
     {/* El conmutador va dentro de la columna del dibujo y lo acompaña al bajar por el formulario. */}
     <div className="puerta-espacio" ref={elementoFluido}><Configurar key={pedido.elementos[indice].id} p={pedido.elementos[indice].input} cambiar={p=>setPedido({...pedido,elementos:pedido.elementos.map((e,i)=>i===indice?{...e,input:p}:e)})} corte={<CorteResumen vista={vistaCorte}/>} derecha={derecha} letra={awningLetter(indice)}

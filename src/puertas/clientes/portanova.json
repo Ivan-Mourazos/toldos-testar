@@ -14,7 +14,8 @@
     { "id": "enrollable", "nombre": "Enrollable", "modelo": "PUERTAENR" },
     { "id": "plegable", "nombre": "Plegable", "modelo": "PUERTAPLE" },
     { "id": "apilable", "nombre": "Apilable", "modelo": "PUERTAPLE" },
-    { "id": "autorreparable", "nombre": "Autorreparable", "modelo": "PUERTAUTO" }
+    { "id": "autorreparable", "nombre": "Autorreparable", "modelo": "PUERTAUTO" },
+    { "id": "saco-confeccionado", "nombre": "Saco confeccionado", "modelo": "SACOARENA" }
   ],
-  "articulos": { "PUERTAENR": "enrollable", "PUERTAPLE": "apilable", "PUERTAUTO": "autorreparable" }
+  "articulos": { "PUERTAENR": "enrollable", "PUERTAPLE": "apilable", "PUERTAUTO": "autorreparable", "SACOTGM": "saco-confeccionado", "FUNDA": "saco-confeccionado" }
 }

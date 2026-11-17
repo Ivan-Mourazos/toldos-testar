@@ -26,7 +26,7 @@ function validar(valor:unknown):FichaClientePuertas {
   const f=valor as FichaClientePuertas;
   if(!f||!f.id||!f.nombre||typeof f.codigoRps!=='string'||!['cm','mm'].includes(f.unidadHoja)||typeof f.habilitado!=='boolean'||!['portanova','araujo','santapau','pendiente'].includes(f.calculo)
     ||!f.rollos||!Object.values(f.rollos).every(n=>Number.isFinite(n)&&n>0)||!f.rotulos||!f.perfiles||!Array.isArray(f.tipos)||!f.tipos.length||!f.articulos
-    ||f.tipos.some(t=>!t.id||!t.nombre||!['PUERTAENR','PUERTAPLE','PUERTAUTO'].includes(t.modelo))||Object.values(f.articulos).some(t=>!f.tipos.some(x=>x.id===t)))throw new Error('Ficha de cliente de Puertas inválida. Revisa src/puertas/clientes/.');
+    ||f.tipos.some(t=>!t.id||!t.nombre||!['PUERTAENR','PUERTAPLE','PUERTAUTO',...(f.id==='portanova'?['SACOARENA']:[])].includes(t.modelo))||Object.values(f.articulos).some(t=>!f.tipos.some(x=>x.id===t)))throw new Error('Ficha de cliente de Puertas inválida. Revisa src/puertas/clientes/.');
   return f;
 }
 export const fichasClientesPuertas=Object.values(archivos).map(validar).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));

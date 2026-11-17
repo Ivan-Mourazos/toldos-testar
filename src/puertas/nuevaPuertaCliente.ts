@@ -18,6 +18,7 @@ export function otraPuertaDelCliente(p:Puerta):Puerta {
 export function cambiarTipoDelCliente(p:Puerta,tipo:string):Puerta {
   const f=fichaPorId(p.clientePuertas??(p.araujo?'araujo':'portanova'))!,t=f.tipos.find(t=>t.id===tipo);
   if(!t)throw new Error('Tipo no permitido por la ficha del cliente.');
+  if ((p.modelo==='SACOARENA') !== (t.modelo==='SACOARENA')) return {...nuevaPuertaDeCliente(f.id,t.id),of:p.of,cantidad:p.cantidad,observaciones:p.observaciones};
   return {...p,tipoPuerta:p.clientePuertas?t.id:undefined,modelo:t.modelo,confirmada:false,ventanasConfirmadas:false,
     ...(!p.araujo&&p.modelo!==t.modelo?{entradas:[],ventanas:[]} : {}),
     ...(p.araujo?{araujo:{...p.araujo,forma:t.forma??'sueltos'}}:{})};

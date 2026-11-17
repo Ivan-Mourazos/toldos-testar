@@ -28,6 +28,17 @@ export function puertasDesdeRps(lineas: LineaPuertaRps[], { clienteCodigo = '' }
   const ficha=fichaPorCodigo(clienteCodigo);
   for (const l of lineas) {
     const articulo = l.articulo.trim().toUpperCase();
+    if (ficha.id==='portanova' && ['SACOTGM','FUNDA'].includes(articulo)) {
+      const texto = `${l.comentario} ${l.descripcion}`.replace(/\s+/g,' ').trim();
+      const par = /(\d+(?:[.,]\d+)?)\s*(?:CM)?\s*(?:DE LARGO\s*)?X\s*(\d+(?:[.,]\d+)?)/i.exec(texto)
+        ?? /(?:MEDIDAS|MEDIAS)\s+(\d+(?:[.,]\d+)?)\s+(\d+(?:[.,]\d+)?)\s*CM/i.exec(texto);
+      const largo = par?.[1] ?? /(?:MEDIDAS|MEDIAS)\s+(\d+(?:[.,]\d+)?)\s*CM/i.exec(texto)?.[1];
+      puertas.push({...nuevaPuertaDeCliente('portanova','saco-confeccionado'),articuloOrigen:'SACOARENA',
+        frente:largo?numero(largo):0,alto:par?numero(par[2]):0,cantidad:l.cantidad,of:l.of.trim(),observaciones:[l.articulo,l.descripcion,l.comentario].filter(Boolean).join(' · ')});
+      if (!par) avisos.push(`Saco confeccionado · OF ${l.of}: falta el aplastado; compruébalo con el pedido.`);
+      if (/DI[AÁ]METRO/i.test(texto)) avisos.push(`Saco confeccionado · OF ${l.of}: RPS dice diámetro. Confirma que ${par?.[2]??'la medida'} cm es el aplastado antes de generar.`);
+      continue;
+    }
     if(ficha.calculo==='araujo') {
       const p=araujoDesdeRps(l,ficha);
       if(p) { puertas.push(p);avisos.push(`${ficha.nombre}: comprueba en la hoja si son tramos sueltos o lona continua, cantidades, bolsas, perfil de canutillo, ventanas y rollos. RPS solo propone lo escrito.`);continue; }

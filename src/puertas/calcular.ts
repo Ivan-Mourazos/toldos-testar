@@ -4,6 +4,7 @@ import { repartirPanos, type RepartoPanos } from './empates.ts';
 import { marcasBolsillo } from './bolsillo.ts';
 import { numerarBorde } from './unionesCorte.ts';
 import { calcularSystemDock } from './systemDock.ts';
+import { calcularSacoArena, REGLAS_SACO_ARENA } from './sacoArena.ts';
 import { calcularAraujo } from './araujo.ts';
 import { calcularSantaPau } from './santapau.ts';
 import { fichaDePuerta } from './clientes.ts';
@@ -12,7 +13,7 @@ import { flechaEmpate } from './marcasEmpate.ts';
 import { ensancharPieza, huecosSinEscuadrado, llevaEscuadrado } from './escuadrado.ts';
 import { bajoDobleSaco, desnivelSuelo, espejarPieza, inclinarSaco, pestanaDerecha, sacoApilable, sacoPuerta, sacoUtil } from './saco.ts';
 
-export const MODELOS_PUERTAS: Record<ModeloPuerta, string> = { PUERTAENR: 'Enrollable', PUERTAPLE: 'Apilable', PUERTAUTO: 'Autorreparable', SYSTEMDOCK: 'System Dock' };
+export const MODELOS_PUERTAS: Record<ModeloPuerta, string> = { PUERTAENR: 'Enrollable', PUERTAPLE: 'Apilable', PUERTAUTO: 'Autorreparable', SYSTEMDOCK: 'System Dock', SACOARENA: 'Saco confeccionado' };
 export const REGLAS_ENROLLABLE = { solapeEntrada:7.5, corteEntrada:8, unionNormal:2 };
 const n = (x: number) => Math.round(x * 10000) / 10000;
 const positivo = (x: number) => Number.isFinite(x) && x > 0 && x <= 3000;
@@ -21,7 +22,7 @@ const numero = (x: number) => x.toLocaleString('es-ES', { maximumFractionDigits:
 export function nuevaPuerta(modelo: ModeloPuerta = 'PUERTAENR'): Puerta {
   return { modelo, articuloOrigen:'', frente: 0, alto: 0, of: '', cantidad: 1, margenMarcas:1.5, confirmada: false, ventanasConfirmadas: false, bolsillo:false, medidasBolsillo:{distancia:0,ancho:0,lado:'izquierdo',altoSuperior:null},
     material: 'LAC900', color: '', materialCristal: 'TRANSP. 1000MI', materialSaco: 'LAC900 NEGRO', sacoDiagonalesAmarillas: false,
-    ...ROLLOS_PORTANOVA, observaciones: '', entradas: [], ventanas: [],
+    ...ROLLOS_PORTANOVA, ...(modelo==='SACOARENA'?{material:REGLAS_SACO_ARENA.material,color:REGLAS_SACO_ARENA.color,rollo:REGLAS_SACO_ARENA.rollo,ventanasConfirmadas:true}:{}), observaciones: '', entradas: [], ventanas: [],
     enrollable: { T: 0, D: 60, margen: 0, empates: [], saco: 120 },
     apilable: { pie: 0, pasos: [], cabecera: 0, bolsillo: 24, saco: null, doble: false, empates: null },
     autorreparable: { empates: [], saco: 120 } };
@@ -51,6 +52,7 @@ export function huecosEntrada(largo: number, diametro: 30 | 42, cintas: number[]
 const seCruzan = (a: Hueco, b: Hueco) => a.x < b.x + b.ancho - 0.001 && b.x < a.x + a.ancho - 0.001 && a.y < b.y + b.alto - 0.001 && b.y < a.y + a.alto - 0.001;
 
 export function calcularPuerta(p: Puerta): ResultadoPuerta {
+  if (p.modelo === 'SACOARENA') return calcularSacoArena(p);
   if(p.clientePuertas&&!fichaDePuerta(p).habilitado)return {version:1,piezas:[],alternativasSaco:null,empates:[],uniones:[],bolsillo:null,avisos:[{codigo:'CLIENTE_SIN_REGLAS',nivel:'error',texto:fichaDePuerta(p).aviso??'Falta contrastar las reglas de este cliente.'}]};
   if (p.araujo) return calcularAraujo(p);
   if (p.santapau) return calcularSantaPau(p);
