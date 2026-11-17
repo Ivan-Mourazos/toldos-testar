@@ -23,7 +23,8 @@ export function cotasCuerpo(cuerpo: CuerpoLona | CuerpoBaqueton, suelo: number):
     // más arriba; de lado, el remolque sigue con su alto.
     const desde = cuerpo.traseraDesde ?? 0;
     const delanteDesde = cuerpo.delanteraDesde ?? 0;
-    // El número es el alto pedido; la línea llega al pico del perfil.
+    // Con radio en la cumbrera el pico del perfil queda por debajo del alto pedido (79,4 con 80, AR2605589):
+    // la línea llega al alto pedido y el número es lo que mide la línea, nunca otro (Iván, 17/11/2026).
     const altoD = cuerpo.altosPedido?.delante ?? hD;
     const altoA = cuerpo.altosPedido?.atras ?? hA;
     return [
@@ -32,10 +33,10 @@ export function cotasCuerpo(cuerpo: CuerpoLona | CuerpoBaqueton, suelo: number):
       { vistas: ["delante", "tres-cuartos"], desde: [-wD / 2, yAbajo, L], hasta: [wD / 2, yAbajo, L], texto: fmt(wD) },
       { vistas: ["arriba"], desde: [-wD / 2, 0, L + S], hasta: [wD / 2, 0, L + S], texto: fmt(wD) },
       { vistas: ["detras"], desde: [-wA / 2, yAbajo, 0], hasta: [wA / 2, yAbajo, 0], texto: fmt(wA) },
-      { vistas: ["delante", "tres-cuartos"], desde: [-wD / 2 - S, delanteDesde, L], hasta: [-wD / 2 - S, hD, L], texto: fmt(r1(altoD - delanteDesde)) },
-      { vistas: ["lateral"], desde: [wD / 2, 0, L + S], hasta: [wD / 2, hD, L + S], texto: fmt(altoD) },
-      { vistas: ["detras"], desde: [wA / 2 + S, desde, 0], hasta: [wA / 2 + S, hA, 0], texto: fmt(r1(altoA - desde)) },
-      { vistas: ["lateral"], desde: [wA / 2, 0, -S], hasta: [wA / 2, hA, -S], texto: fmt(altoA) },
+      { vistas: ["delante", "tres-cuartos"], desde: [-wD / 2 - S, delanteDesde, L], hasta: [-wD / 2 - S, altoD, L], texto: fmt(r1(altoD - delanteDesde)) },
+      { vistas: ["lateral"], desde: [wD / 2, 0, L + S], hasta: [wD / 2, altoD, L + S], texto: fmt(altoD) },
+      { vistas: ["detras"], desde: [wA / 2 + S, desde, 0], hasta: [wA / 2 + S, altoA, 0], texto: fmt(r1(altoA - desde)) },
+      { vistas: ["lateral"], desde: [wA / 2, 0, -S], hasta: [wA / 2, altoA, -S], texto: fmt(altoA) },
     ];
   }
   const W = cuerpo.ancho;

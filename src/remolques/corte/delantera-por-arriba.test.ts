@@ -8,7 +8,7 @@ import { piezasCuerpo } from '../../client/remolques/render/cuerpo.ts';
 import { sinDetras } from '../../client/remolques/medidasOpcionales.ts';
 import { piezasLona } from './lonaAlta.js';
 import { generarCorteRemolques } from './index.js';
-import { numero, registrosDxf } from '../../domain/corteLona/dxfTestHelpers.js';
+import { numero, registrosDxf, valor } from '../../domain/corteLona/dxfTestHelpers.js';
 import AR2605158 from './__fixtures__/AR2605158.json' with { type: 'json' };
 
 // Base de fabricación conocida; los 17 cm son la diferencia confirmada del 5589.
@@ -91,6 +91,20 @@ describe('cabezas a la línea por arriba, independientes', () => {
     expect(textos('lateral')).toEqual(expect.arrayContaining(['97']));
     expect(escena.cotas.map(c => c.texto).filter(t => /,/.test(t) && /^(79|96|62)/.test(t))).toEqual([]);
     expect(hojaLona(el.input, el.result).banda[1].lineas[1]).toBe('ALTO 97 · DELANTERA 80 A LA LÍNEA POR ARRIBA');
+  });
+
+  it('AR2605589: en el corte la delantera acota 80 y la trasera 97, y cada número es lo que mide', () => {
+    const el = preparar({
+      tipoPerfil: 'TIPO 03', aguas: 27, radioCumbrera: 11.5, radioHombro: 10, altoDelante: 97,
+      delanteraPorArriba: true, delanteraRecorte: 17,
+    });
+    const dims = registrosDxf(generarCorteRemolques({ ...AR2605158, elementos: [el] }).archivo!.plano.dxf)
+      .filter((r) => r.tipo === 'DIMENSION');
+    // Nunca un texto encima de la medida (salía 97 en una de 80 y 0 en una de 97).
+    expect(dims.filter((r) => valor(r, 1) != null)).toEqual([]);
+    const altos = dims.filter((r) => valor(r, 8) === 'cotas' && numero(r, 13) === numero(r, 14))
+      .map((r) => Math.round(numero(r, 42) * 10) / 10);
+    expect(altos).toEqual(expect.arrayContaining([80, 97]));
   });
 
   it.each([false, true])('dibujo, geometría y cotas con trasera por arriba: %s', (traseraPorArriba) => {

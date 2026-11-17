@@ -21,10 +21,10 @@ function lienzo() {
   // Cota de verdad (se puede seleccionar y modificar en el CAD), con los estilos de cota de la oficina: XERAL
   // para las medidas grandes y XERAL 5 para las pequeñas (o las cortas, donde no cabe el texto grande). La
   // línea de cota, a `lado` cm de lo acotado.
-  const cota = (capa, x1, y1, x2, y2, valor, lado, h = 8) => {
+  const cota = (capa, x1, y1, x2, y2, _valor, lado, h = 8) => {
     const vertical = Math.abs(x1 - x2) < 1e-6;
     const largo = Math.abs(vertical ? y2 - y1 : x2 - x1);
-    g.cotas.push({ capa, estilo: h >= 7 && largo >= 25 ? 'XERAL' : 'XERAL 5', x1, y1, x2, y2, giro: vertical ? 90 : 0, d: (vertical ? x1 : y1) + lado, valor });
+    g.cotas.push({ capa, estilo: h >= 7 && largo >= 25 ? 'XERAL' : 'XERAL 5', x1, y1, x2, y2, giro: vertical ? 90 : 0, d: (vertical ? x1 : y1) + lado });
   };
   return { g, linea, texto, cota };
 }
@@ -184,7 +184,7 @@ function confeccionLona(L, el, X, Y, letras = ['']) {
   correas(xDel, W, oD, P.d.p.correas, 20);
   L.cota('cotas', xDel + oD + 1, Y, xDel + W - oD - 1, Y, hecha.ancho, -12 - eD.bajan);
   L.cota('vent-pre-noimpr', xDel, Y, xDel + W, Y, W, -26 - eD.bajan);
-  L.cota('cotas', xDel, Y + 3.5, xDel, Y + H - 1, i.altoDelante, -12);
+  L.cota('cotas', xDel, Y + 3.5, xDel, Y + H - 1, null, -12);
   L.cota('vent-pre-noimpr', xDel, Y, xDel, Y + H, H, -26);
   escaleraH(L, xDel + oD + 1, Y + 4.5, P.ollaos.delante, eD.abajo);
   if (P.ventana) {
@@ -219,7 +219,7 @@ function confeccionLona(L, el, X, Y, letras = ['']) {
   L.cota('vent-pre-noimpr', xTra, Y, xTra + Wt, Y, Wt, -26 - eT.bajan);
   if (Ht !== H) {
     // Trasero de otro alto (p. ej. a la línea por arriba): su alto terminado y de corte, como en el delantero.
-    L.cota('cotas', xTra, Y + 3.5, xTra, Y + Ht - 1, i.altoAtras, -12);
+    L.cota('cotas', xTra, Y + 3.5, xTra, Y + Ht - 1, null, -12);
     L.cota('vent-pre-noimpr', xTra, Y, xTra, Y + Ht, Ht, -26);
   }
   L.texto(R(3), xTra + Wt / 2, Y + (eT.textoDesde + Ht) / 2 - 3, 14);
