@@ -6,11 +6,11 @@ import type { ElementoPedidoHoja } from "./tipos.ts";
 // Pedidos de muestra de la hoja de taller, sacados de los casos reales de la fixture
 // (src/remolques/__fixtures__/produccion-2026-09.json). Los usan la página de la hoja en
 // desarrollo (?muestra=…), la e2e, el smoke del despliegue y las muestras para Iván.
-// Números de pedido de prueba (AR.26.9999x): no existen en RPS.
+// Números de pedido de prueba (AR.26.999xx): no existen en RPS.
 
 export interface CasoFixture { caso: string; tipo: TipoPlanteamiento; input: LonaInput | BaquetonInput }
 
-export const NOMBRES_MUESTRAS = ["lona-ventana", "baqueton", "segun-ganchos", "bastilla", "perfiles", "varios", "sesgado", "cremallera", "ollaos-largos", "correas"] as const;
+export const NOMBRES_MUESTRAS = ["lona-ventana", "baqueton", "segun-ganchos", "bastilla", "perfiles", "varios", "sesgado", "cremallera", "ollaos-largos", "correas", "delantera-arriba"] as const;
 export type NombreMuestra = (typeof NOMBRES_MUESTRAS)[number];
 
 const OBSERVACIONES_LARGAS = "REFORZAR LAS ESQUINAS DE DETRÁS CON DOBLE COSTURA. EL CLIENTE QUIERE LA ROTULACIÓN "
@@ -95,5 +95,16 @@ export function muestrasHoja(casos: CasoFixture[]): Record<NombreMuestra, Elemen
       largo: 241, ancho: 136, altoDelante: 82, altoAtras: 82, tipoPerfil: "TIPO 03", aguas: 8.2, radioHombro: 10, radioCumbrera: 0,
       ventana: false, recogeDelante: "NO", recogeAtras: "CORREAS",
     })],
+    // La pick-up del AR2605589 (17/11/2026): delantera fija 17 cm más corta por abajo, a la línea por
+    // arriba; la segunda hoja, las dos cabezas recortadas.
+    "delantera-arriba": [
+      copia(casos, "lona-02", "AR.26.99989", "10", {
+        ventana: false, recogeDelante: "NO", delanteraPorArriba: true, delanteraRecorte: 17,
+      }),
+      copia(casos, "lona-02", "AR.26.99989", "11", {
+        ventana: false, recogeDelante: "NO", delanteraPorArriba: true, delanteraRecorte: 17,
+        altoAtras: 89, traseraPorArriba: true,
+      }),
+    ],
   };
 }

@@ -8,7 +8,7 @@ import { tablaGanchos } from "../pagina.ts";
 import { prepararPedidoHoja } from "../pedido.ts";
 
 const ELEMENTOS: Record<(typeof NOMBRES_MUESTRAS)[number], number> = {
-  "lona-ventana": 1, baqueton: 1, "segun-ganchos": 1, bastilla: 1, perfiles: 5, varios: 3, sesgado: 1, cremallera: 1, "ollaos-largos": 2, correas: 1,
+  "lona-ventana": 1, baqueton: 1, "segun-ganchos": 1, bastilla: 1, perfiles: 5, varios: 3, sesgado: 1, cremallera: 1, "ollaos-largos": 2, correas: 1, "delantera-arriba": 2,
 };
 
 describe("muestras de la hoja de taller", () => {
@@ -18,10 +18,10 @@ describe("muestras de la hoja de taller", () => {
     expect(prepararPedidoHoja(muestras[nombre], DEFAULT_PARAMS).elementos).toHaveLength(ELEMENTOS[nombre]);
   });
 
-  it("cada muestra es un pedido distinto de prueba (AR.26.9999x)", () => {
+  it("cada muestra es un pedido distinto de prueba (AR.26.999xx)", () => {
     const numeros = NOMBRES_MUESTRAS.map((n) => normalizarNumeroPedido(muestras[n][0].input.cabecera.numeroPedido));
     expect(new Set(numeros).size).toBe(NOMBRES_MUESTRAS.length);
-    expect(numeros.every((n) => n.startsWith("AR269999"))).toBe(true);
+    expect(numeros.every((n) => n.startsWith("AR26999"))).toBe(true);
   });
 
   it("la de ganchos lleva la tabla de ganchos con delante medido al revés", () => {

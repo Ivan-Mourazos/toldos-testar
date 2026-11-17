@@ -105,8 +105,7 @@ describe('cabezas a la línea por arriba, independientes', () => {
     const el = preparar({ delanteraPorArriba: true, delanteraRecorte: 17, traseraPorArriba: true, altoAtras: 83 });
     const hoja = hojaLona(el.input, el.result);
     expect(hoja.banda[1].lineas.join(' ')).toContain('ALTO 87');
-    expect(hoja.banda[1].lineas.join(' ')).toContain('DELANTERA 70 A LA LÍNEA POR ARRIBA');
-    expect(hoja.banda[1].lineas.join(' ')).toContain('TRASERA 83 A LA LÍNEA POR ARRIBA');
+    expect(hoja.banda[1].lineas).toEqual(['185 × 121', 'ALTO 87 · DELANTERA 70 Y TRASERA 83 A LA LÍNEA POR ARRIBA']);
   });
 
   it('las orejas y las correas del dibujo empiezan con el paño delantero, 17 cm sobre la base', () => {

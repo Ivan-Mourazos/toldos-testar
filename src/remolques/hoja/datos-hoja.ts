@@ -65,6 +65,9 @@ export function hojaLona(i: LonaInput, r: LonaResult): CuerpoHoja {
   const altoAtras = i.altoAtras > 0 ? i.altoAtras : i.altoDelante;
   const sesgado = (i.anchoAtras ?? 0) > 0 && i.anchoAtras !== i.ancho;
   const contornoSesgado = r.contornoAtrasAjustado !== undefined;
+  // Alto del paño delantero a la línea por arriba; 0 si va hasta abajo como el resto.
+  const delanteraHoja = recorteDelantero(i) > 0
+    ? i.altoDelante - recorteDelantero(i) - (aguasLongitudinales(i) ? i.aguas ?? 0 : 0) : 0;
   const panos = [
     textoPanos(i.cantidad, r.panoDelantero.ancho, r.panoDelantero.alto),
     textoPanos(i.cantidad, r.panoTrasero.ancho, r.panoTrasero.alto),
@@ -83,14 +86,21 @@ export function hojaLona(i: LonaInput, r: LonaResult): CuerpoHoja {
         titulo: "MEDIDA LONA HECHA",
         lineas: [
           `${fmt(r.lonaHecha.largo)} × ${fmt(r.lonaHecha.ancho)}`,
+          // Con la delantera a la línea por arriba (AR2605589) va en la misma línea que el alto, como la
+          // trasera: en la banda solo caben tres renglones y una línea más desbordaba la hoja.
           ...(aguasLongitudinales(i)
-            ? [`ALTO CENTRO ${fmt(i.altoDelante)}`, `EXTREMOS ${fmt(i.altoDelante - (i.aguas ?? 0))}`]
-            : [altoAtras === i.altoDelante
+            ? [`ALTO CENTRO ${fmt(i.altoDelante)}`, delanteraHoja > 0
+              ? `EXTREMOS ${fmt(i.altoDelante - (i.aguas ?? 0))} · DELANTERA ${fmt(delanteraHoja)} A LA LÍNEA POR ARRIBA`
+              : `EXTREMOS ${fmt(i.altoDelante - (i.aguas ?? 0))}`]
+            : [delanteraHoja > 0
+            ? i.traseraPorArriba && altoAtras !== i.altoDelante
+              ? `ALTO ${fmt(i.altoDelante)} · DELANTERA ${fmt(delanteraHoja)} Y TRASERA ${fmt(altoAtras)} A LA LÍNEA POR ARRIBA`
+              : `ALTO ${fmt(i.altoDelante)} · DELANTERA ${fmt(delanteraHoja)} A LA LÍNEA POR ARRIBA`
+            : altoAtras === i.altoDelante
             ? `ALTO ${fmt(i.altoDelante)}`
             : i.traseraPorArriba
               ? `ALTO ${fmt(i.altoDelante)} · TRASERA ${fmt(altoAtras)} A LA LÍNEA POR ARRIBA`
               : `ALTO ${fmt(i.altoDelante)} DEL. / ${fmt(altoAtras)} TRAS.`]),
-          ...(recorteDelantero(i) > 0 ? [`DELANTERA ${fmt(i.altoDelante - recorteDelantero(i) - (aguasLongitudinales(i) ? i.aguas ?? 0 : 0))} A LA LÍNEA POR ARRIBA · ${fmt(recorteDelantero(i))} CM MÁS CORTA POR ABAJO`] : []),
         ],
         notas: sesgado ? [`ANCHO ${fmt(i.ancho)} DEL. / ${fmt(i.anchoAtras!)} TRAS.`] : [],
       },
