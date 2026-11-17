@@ -3,6 +3,7 @@ import { anchoArial } from '../domain/corteLona/texto.js';
 import { sacosEnHuecos } from '../domain/corteLona/colocacion.js';
 import { calcularPuerta } from './calcular.ts';
 import { cortarSystemDock, medidaSystemDock } from './systemDock.ts';
+import { cortarSacosArena } from './sacoArena.ts';
 import { enderezarSaco, invertirPanoInclinado } from './saco.ts';
 import { centroLibre } from './unionesCorte.ts';
 import { piezaSinMargenes } from './escuadrado.ts';
@@ -633,9 +634,12 @@ export function generarCortePuertas(
   const systemDock = pedido.elementos.flatMap((e, i) => e.input.modelo === 'SYSTEMDOCK'
     ? resultados[i].piezas.map(pieza => ({ pieza, medida: medidaSystemDock(e.input) })) : []);
   const deSystemDock = new Set(systemDock.map(l => l.pieza.id));
+  const sacosArena = pedido.elementos.flatMap((e,i)=>e.input.modelo==='SACOARENA'?resultados[i].piezas.map(pieza=>({puerta:e.input,pieza})):[]);
+  const deSacoArena = new Set(sacosArena.map(s=>s.pieza.id));
   const cortes = [
+    ...cortarSacosArena(sacosArena),
     ...cortarSystemDock(systemDock).map(c => { fusionarCortesPuertas(c.entidades, c.anchoRollo); return c; }),
-    ...colocar(principal.filter(p => !deSystemDock.has(p.id)), 'principal', codigosPano, esEnrollable, esAutorreparable, presupuesto, ofStockSacos, esAraujo),
+    ...colocar(principal.filter(p => !deSystemDock.has(p.id)&&!deSacoArena.has(p.id)), 'principal', codigosPano, esEnrollable, esAutorreparable, presupuesto, ofStockSacos, esAraujo),
     ...colocar(entero, 'saco-entero', codigosPano, esEnrollable, esAutorreparable, presupuesto),
     ...colocar(partido, 'saco-partido', codigosPano, esEnrollable, esAutorreparable, presupuesto),
   ];

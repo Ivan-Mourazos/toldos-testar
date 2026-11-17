@@ -145,7 +145,7 @@ export function presentacionPortanova(pedido: PedidoPuertas,
   const materiales = unicos(puertas.flatMap(p => [
     ...(calcularPuerta(p).piezas.some(x => x.clase === 'cristal') ? [p.materialCristal] : []),
     `${p.material} ${p.color}`,
-    p.sacoDiagonalesAmarillas ? p.materialSaco.replace(/NEGRO\s*$/i, 'AMARILLO/NEGRO') : p.materialSaco,
+    ...(p.modelo==='SACOARENA'?[]:[p.sacoDiagonalesAmarillas ? p.materialSaco.replace(/NEGRO\s*$/i, 'AMARILLO/NEGRO') : p.materialSaco]),
   ]))
     .map(v => textoSeguro(v).replace(/LAC\s*900/g, 'LAC 900'));
   const ventana = (z: Zona, centro: Punto, ancho: number, alto: number) => ({ z, centro, ancho, alto });
@@ -153,6 +153,19 @@ export function presentacionPortanova(pedido: PedidoPuertas,
   const [dx, dy] = [zonas.toldos.x0 - CAJA_DETALLE.x0, zonas.toldos.y0 - 3 - CAJA_DETALLE.y1];
   const detalleModelo = { x0: CAJA_DETALLE.x0 + dx, x1: CAJA_DETALLE.x1 + dx, y0: CAJA_DETALLE.y0 + dy, y1: CAJA_DETALLE.y1 + dy };
   const bloque = bloqueNotasPortanova(materiales);
+  const soloSacos = puertas.length>0&&puertas.every(p=>p.modelo==='SACOARENA');
+  if (soloSacos) {
+    bloque.textos = [
+      {x:164,y:71,h:2.4,ancho:121,valor:`MATERIALES: ${materiales.join(' · ')}`},
+      {x:164,y:63,h:2.3,ancho:121,valor:'SACO CONFECCIONADO · RESTOS'},
+      {x:164,y:56,h:2.3,ancho:121,valor:'Negro hacia el exterior. Marcar por lado negro.'},
+      {x:164,y:48,h:2.3,ancho:121,valor:'Soldar 3 cm para cerrar el cilindro.'},
+      {x:164,y:40,h:2.3,ancho:121,valor:'Elegir sin empate o dos mitades con empate de 2 cm.'},
+      {x:164,y:30,h:2.1,ancho:121,valor:'Esquemas sin escala. Las cotas indican los cm reales.'},
+    ];
+    bloque.lineas=[];
+    bloque.quitarVentanas=[3,5];
+  }
   return {
     detalle: detalleModelo,
     plantilla: separarNumeroCotaDetalle(moverDetalle(plantilla, dx, dy)).replaceAll('ENRROLLABLES', 'ENROLLABLES').replace('TIENES QUE IR', 'TIENEN QUE IR').replace('CM.SOLDAR', 'CM. SOLDAR')

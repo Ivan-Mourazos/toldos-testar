@@ -1,5 +1,6 @@
 import { retocarPortanova } from './retoquesPortanova.js';
 import { dibujarVentanasPlano } from './ventanasPlano.ts';
+import { dibujarSacoConfeccionado, dibujarOpcionesSacoArena, corteRealSacosArena } from './planoSacoArena.ts';
 import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { alturasTubos, calcularPuerta, desfaseCintas } from './calcular.ts';
@@ -219,6 +220,7 @@ function dibujarSaco(l: Lienzo, p: Puerta, letraPuerta = '') {
 
 /** `identificar`: con varias puertas, el saco y los cristales llevan la letra de su puerta. */
 export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = false): { lienzo: Lienzo; zona: Zona } {
+  if (p.modelo === 'SACOARENA') return dibujarSacoConfeccionado(p);
   if (p.modelo === 'PUERTAENR') return dibujarAlzadoEnrollable(p, letra, identificar);
   const l = vacio(), F = p.frente, H = p.alto, ple = p.modelo === 'PUERTAPLE', r = calcularPuerta(p);
   const escuadrado = llevaEscuadrado(p), margen = escuadrado ? 1 : 0;
@@ -439,6 +441,14 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas, ancho
   const limite = Math.min(anchoMuestras, Math.max(0, ...cortes.filter(c => !esMuestra(c)).map(c => c.largo / 10)) || Infinity);
   let banda: { x: number; techo: number; fondo: number } | null = null;
   for (const c of [...cortes].sort((a, b) => prioridad(a) - prioridad(b) || ordenOpcion(a) - ordenOpcion(b))) {
+    const sacoArena = pedido.elementos.find(e=>e.input.modelo==='SACOARENA'&&c.colocadas[0]?.pieza.id.startsWith(`${e.id}:`));
+    if (sacoArena) {
+      const d = dibujarOpcionesSacoArena(sacoArena.input), dy = techo-d.zona.y1;
+      sumarLienzo(l,d.lienzo,0,dy);
+      filas.push({y0:dy+d.zona.y0,y1:techo,piezas:[[d.zona.x0,d.zona.x1]]});
+      anchoMax=Math.max(anchoMax,d.zona.x1);techo=dy+d.zona.y0-95; banda=null;
+      continue;
+    }
     const muestra = esMuestra(c);
     if (!muestra) banda = null;
     if (muestra) {
@@ -527,6 +537,7 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas, ancho
 }
 
 export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[], cabecera: { cliente: string; tecnico: string; revisor: string; fecha: string }) {
+  const conSacosArena=pedido.elementos.some(e=>e.input.modelo==='SACOARENA');
   const l = vacio(); let cursor = 0, abajo = 0, arriba = 0, izquierda = -65;
   const zonasPuertas: Zona[] = [];
   for (const [i, e] of pedido.elementos.entries()) {
@@ -585,12 +596,13 @@ export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[
   const [ox, oy] = origenCorte(za, corte.zona);
   let zc = zonaM(corte.zona, ox, oy), altoVista: number | undefined, tramosCorte: Array<{ zona: Zona; papel: Zona }> | undefined;
   let ventanaCorte: Zona | undefined;
-  const corteReal = zc;
+  const maquina=conSacosArena?corteRealSacosArena(cortes):null;
+  const corteReal = maquina?.zona??zc;
   if (portanova && elegido.tramos.length <= 1) {
     // Cada ventana a la medida de lo que enseña, para que no se cuele nada de al lado (Iván, 06/11/2026). El corte, pegado
     // arriba: abajo a la izquierda en «arriba»; centrado a lo ancho en «lado». Girado si así se ve más grande.
     const R = DISPOSICIONES_PORTANOVA[disposicion].corte, w = zc.x1 - zc.x0, h = zc.y1 - zc.y0;
-    const recto = escala(zc, R), girado = Math.min((R.x1 - R.x0) / h, (R.y1 - R.y0) / w);
+    const recto = escala(zc, R), girado = conSacosArena?0:Math.min((R.x1 - R.x0) / h, (R.y1 - R.y0) / w);
     const [vw, vh] = girado > 1.02 * recto ? [h * girado, w * girado] : [w * recto, h * recto];
     const x0 = disposicion === 'arriba' ? R.x0 : (R.x0 + R.x1 - vw) / 2;
     ventanaCorte = { x0, x1: x0 + vw, y0: R.y1 - vh, y1: R.y1 };
@@ -606,12 +618,15 @@ export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[
   const unicos = (xs: string[]) => [...new Set(xs.filter(Boolean))].join(' / '), ps = pedido.elementos.map(e => e.input);
   const escribir = (p: Parameters<typeof escribirDxfPlano>[0], c: Parameters<typeof escribirDxfPlano>[1]) => portanova
     ? retocarPortanova(p, c) : escribirDxfPlano(p, c);
-  return escribir({ ...lienzoAMetros(l, 100, 100), corte: lienzoAMetros(corte.lienzo, ox, oy), zonas: { toldos: za, corte: zc, corteReal }, corteDerecho: true,
-    corteGirable: true, hojas: hojasPuertas(pedido, zonasPuertas.map(z => zonaM(z, 100, 100))),
+  const dibujo=lienzoAMetros(l,100,100);
+  if(maquina)sumarLienzo(dibujo,maquina.lienzo);
+  return escribir({ ...dibujo, corte: lienzoAMetros(corte.lienzo, ox, oy), zonas: { toldos: za, corte: zc, corteReal }, corteDerecho: true,
+    ...(maquina?{recuadros:[['DIBUJO',{x0:Math.min(za.x0,zc.x0),x1:Math.max(za.x1,zc.x1),y0:Math.min(za.y0,zc.y0),y1:Math.max(za.y1,zc.y1)}],['CORTE',maquina.zona]]}:{}),
+    corteGirable: !conSacosArena, hojas: hojasPuertas(pedido, zonasPuertas.map(z => zonaM(z, 100, 100))),
     ...(portanova ? { ajustarVentanaALaZona: true } : {}),
     bloques: [bloqueFlechaEnrollable], coloresModelo: { ejes: 23, borrar: 40, curv: 3, 'corte (vent)': 5 },
     ...(portanova ? presentacionPortanova(pedido, cabecera, { toldos: za, corte: zc }, altoVista, tramosCorte, disposicion, ventanaCorte) : {}),
   }, { pedido: pedido.orderCode, of: unicos(ps.map(p => p.of)), cliente: textoSeguro(cabecera.cliente), tecnico: textoSeguro(cabecera.tecnico),
     revisor: textoSeguro(cabecera.revisor), fecha: cabecera.fecha.split('-').reverse().map((v, i) => i === 2 ? v.slice(2) : v).join('/'), pagina: '1/1',
-    material: textoSeguro(unicos(ps.map(p => `${p.material} ${p.color}`))), subtitulo: 'MEDIDAS EN CM · PUERTA DE LONA' }).dxf;
+    material: textoSeguro(unicos(ps.map(p => `${p.material} ${p.color}`))), subtitulo: ps.every(p=>p.modelo==='SACOARENA')?'MEDIDAS EN CM · SACO CONFECCIONADO':'MEDIDAS EN CM · PUERTA DE LONA' }).dxf;
 }

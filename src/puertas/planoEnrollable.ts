@@ -369,7 +369,7 @@ export const ENTRE_PUERTAS = 300;
 /** Una presentación por puerta, «PUERTA A»…, con su OF y su material en el cajetín (Iván, 23/10/2026). */
 export function hojasPuertas(pedido: PedidoPuertas, zonas: Zona[]) {
   return pedido.elementos.map((e, i) => ({
-    nombre: `PUERTA ${String.fromCharCode(65 + i)}`, zona: zonas[i],
+    nombre: `${e.input.modelo==='SACOARENA'?'SACO':'PUERTA'} ${String.fromCharCode(65 + i)}`, zona: zonas[i],
     cajetin: { OF: e.input.of, MATERIAL: textoSeguro(`${e.input.material} ${e.input.color}`), HOJA: `${i + 1}/${pedido.elementos.length}` },
   }));
 }
