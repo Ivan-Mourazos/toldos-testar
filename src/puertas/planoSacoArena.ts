@@ -17,32 +17,26 @@ function cota(l: LienzoEnrollable, x1: number, y1: number, x2: number, y2: numbe
 const letra = (largo: number) => Math.max(12, largo / 55);
 
 type P = [number, number];
+// Como en la web pero solo con bordes (el plano sale en blanco y negro): saco largo y fino, poco inclinado,
+// con las cabezas aplastadas dibujadas como una lente que acaba en punta a los dos lados.
+const GIRO_TUBO = 12;
 function dibujarTubo(l: LienzoEnrollable, A: P, largo: number, r: number, m: ReturnType<typeof medidasSacoArena>, T: number) {
-  const ang = Math.PI/6, u: P = [Math.cos(ang), Math.sin(ang)], v: P = [-Math.sin(ang), Math.cos(ang)], k = 0.1; // k pequeño: saco aplastado, la boca es una ranura
+  const ang = GIRO_TUBO*Math.PI/180, u: P = [Math.cos(ang), Math.sin(ang)], v: P = [-Math.sin(ang), Math.cos(ang)], k = 0.3;
   const B: P = [A[0]+u[0]*largo, A[1]+u[1]*largo];
-  const punto = (c: P, th: number, esc = 1): P => [c[0]+esc*r*(v[0]*Math.sin(th)+u[0]*k*Math.cos(th)), c[1]+esc*r*(v[1]*Math.sin(th)+u[1]*k*Math.cos(th))];
-  const arco = (c: P, desde: number, hasta: number, esc = 1, n = 24) => Array.from({ length: n+1 }, (_, i) => punto(c, desde+(hasta-desde)*i/n, esc));
-  const grados = (g: number) => g*Math.PI/180;
-  // Bandas de luz: más claras arriba a la izquierda, casi negras abajo (ACI 250 = casi negro … 254 = gris claro).
-  const N = 14;
-  for (let i = 0; i < N; i++) {
-    const t1 = grados(-90+180*i/N), t2 = grados(-90+180*(i+1)/N), luz = Math.cos((t1+t2)/2-grados(50));
-    const color = luz > 0.93 ? 253 : luz > 0.75 ? 252 : luz > 0.35 ? 251 : 250;
-    l.sombreados.push({ capa: 'referencias', solido: true, color, puntos: [...arco(A, t1, t2, 1, 4), ...arco(B, t2, t1, 1, 4)] });
-  }
-  // Boca del saco: por dentro plata, con la sombra del interior.
-  l.sombreados.push({ capa: 'referencias', solido: true, color: 254, puntos: arco(A, 0, 2*Math.PI, 1, 48).slice(0, -1) });
-  const fondo: P = [A[0]+u[0]*r*0.25, A[1]+u[1]*r*0.25];
-  l.sombreados.push({ capa: 'referencias', solido: true, color: 9, puntos: arco(fondo, 0, 2*Math.PI, 0.72, 48).slice(0, -1) });
+  const en = (c: P, a: number, b: number): P => [c[0]+v[0]*a+u[0]*b, c[1]+v[1]*a+u[1]*b];
+  // Media lente de la cabeza aplastada: de punta a punta, abombada hacia delante (lado=1) o hacia atrás (lado=-1).
+  const media = (c: P, lado: number, esc = 1, n = 16) => Array.from({ length: n+1 }, (_, i) => {
+    const t = -1+2*i/n; return en(c, esc*r*t, lado*esc*k*r*(1-t*t));
+  });
   const pl = (puntos: P[], capa = 'corte', cerrada = false) => l.polilineas.push({ capa, puntos, cerrada });
-  pl(arco(A, 0, 2*Math.PI, 1, 48).slice(0, -1), 'corte', true);
-  pl([punto(A, grados(90)), punto(B, grados(90))]); pl([punto(A, grados(-90)), punto(B, grados(-90))]);
-  pl(arco(B, grados(-90), grados(90)));
-  pl(arco(B, grados(90), grados(270)), 'ejes');
-  // Medidas escritas sobre el dibujo: largo a lo largo del tubo, aplastado en la boca.
-  const centro: P = [(A[0]+B[0])/2+v[0]*(r+1.3*T), (A[1]+B[1])/2+v[1]*(r+1.3*T)];
-  l.textos.push({ capa: 'texto', valor: `LARGO ${numeroSacoArena(m.largo)} CM`, x: centro[0], y: centro[1], h: 1.2*T, giro: 30, centrado: true });
-  l.textos.push({ capa: 'texto', valor: `APLASTADO ${numeroSacoArena(m.aplastado)} CM`, x: A[0], y: A[1]-0.9*r-1.6*T, h: 1.2*T, centrado: true });
+  pl([...media(A, 1), ...media(A, -1).reverse().slice(1, -1)], 'corte', true);
+  pl([...media(A, 1, 0.55), ...media(A, -1, 0.55).reverse().slice(1, -1)], 'ejes', true);
+  pl([en(A, r, 0), en(B, r, 0)]); pl([en(A, -r, 0), en(B, -r, 0)]);
+  pl(media(B, 1));
+  pl([en(A, 0.55*r, 0.6*k*r), en(B, 0.55*r, 0.6*k*r)], 'ejes');
+  const centro = en([(A[0]+B[0])/2, (A[1]+B[1])/2], r+1.3*T, 0);
+  l.textos.push({ capa: 'texto', valor: `LARGO ${numeroSacoArena(m.largo)} CM`, x: centro[0], y: centro[1], h: 1.2*T, giro: GIRO_TUBO, centrado: true });
+  l.textos.push({ capa: 'texto', valor: `APLASTADO ${numeroSacoArena(m.aplastado)} CM`, x: A[0], y: A[1]-r-1.8*T, h: 1.2*T, centrado: true });
   return B;
 }
 
@@ -58,8 +52,8 @@ export function dibujarSacoConfeccionado(p: Puerta) {
   texto(l, 'SOLDAR 3CM PARA CERRAR EL CILINDRO', L/2, -a-1.6*T, T);
   texto(l, `${p.material} ${p.color} (NEGRO HACIA EL EXTERIOR)`, L/2, -a-3*T, T);
   // El saco ya cerrado y aplastado debajo, centrado.
-  const largoTubo = 0.6*L, r = 0.06*L, alto = largoTubo*Math.sin(Math.PI/6);
-  const A: P = [L/2-largoTubo*Math.cos(Math.PI/6)/2, -a-5.5*T-r-alto];
+  const largoTubo = 0.75*L, r = 0.025*L, giro = GIRO_TUBO*Math.PI/180, alto = largoTubo*Math.sin(giro);
+  const A: P = [L/2-largoTubo*Math.cos(giro)/2, -a-5.5*T-r-alto];
   dibujarTubo(l, A, largoTubo, r, m, T);
   return { lienzo: l, zona: { x0: -4.5*T, x1: L+2*T, y0: A[1]-r-3.5*T, y1: 4.2*T } };
 }

@@ -26,8 +26,8 @@ export function VistaSacoArena({ puerta: p }: { puerta: Puerta }) {
         </defs>
         <g transform="rotate(-12 270 70)">
           <rect x="95" y="52" width="350" height="28" fill={`url(#${uid}-tubo)`}/>
-          <ellipse cx="445" cy="66" rx="2.5" ry="14" fill="#2a2c30"/>
-          <ellipse cx="95" cy="66" rx="3" ry="14" fill={`url(#${uid}-boca)`} stroke="#111"/>
+          <path d="M445 52Q451 66 445 80Q439 66 445 52Z" fill="#2a2c30"/>
+          <path d="M95 52Q102 66 95 80Q88 66 95 52Z" fill={`url(#${uid}-boca)`} stroke="#111"/>
           <rect x="102" y="56" width="336" height="4" rx="2" fill="#fff" opacity=".18"/>
         </g>
         <g fill="currentColor" fontSize="13" textAnchor="middle">
