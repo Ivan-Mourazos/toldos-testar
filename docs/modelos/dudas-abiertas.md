@@ -1,5 +1,11 @@
 # Dudas abiertas
 
+## Saco confeccionado de Portanova · 17/11/2026
+
+| Código | Pregunta | Respuesta confirmada |
+| --- | --- | --- |
+| Q-SA01 · contestada | En ene–mar 2026 los sacos de 9 aplastado se dibujaban de 19 (corte 22) y ahora de 21 (corte 24). La web usa 21 = 2 × 9 + 3. ¿Es la buena? | Manda la regla de los planos de Iván: **2 × aplastado + 3**; los 19/22 antiguos eran de otro técnico. AR2602823 (2000 × 9), AR2604808 (2500 × 9) y AR2604933 (1500 × 7,5, confirmado por la hoja escaneada) cumplen la regla. Véase [saco-arena.md](./saco-arena.md). |
+
 ## Recogida con correas · 13/11/2026
 
 Ejemplo: AR2504631 de Remolques Jalón (JTL240, arquillado con aguas, abierta detrás con dos correas por
