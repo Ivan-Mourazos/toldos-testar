@@ -1,29 +1,29 @@
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { centros, construir, posicionLona, radioMedioTubo, type ModeloEnrolle } from '../../puertas/enrolle/geometria.ts';
+import { construir, radioMedioTubo } from '../../puertas/enrolle/geometria.ts';
 import type { EnrolleTgm } from '../../puertas/tgm.ts';
 import { InputDecimal } from '../remolques/InputDecimal';
 import { numeroPuerta as numero } from './medidasPuertas';
 
+import { fotograma, prepararTrayectoria } from './trayectoriaEnrolle';
+
+const formatoAvance = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 1, useGrouping: false });
 const DURACION = 6000;
 const LADO_LIENZO = 440;
 const RESOLUCION_LIENZO = 2;
 
-function dibujar(canvas: HTMLCanvasElement, modelo: ModeloEnrolle, avance: number, enrolle: EnrolleTgm) {
+function dibujar(canvas: HTMLCanvasElement, trayectoria: ReturnType<typeof prepararTrayectoria>, avance: number, enrolle: EnrolleTgm, color: (nombre: string) => string) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
-  const css = getComputedStyle(canvas);
-  const color = (nombre: string) => css.getPropertyValue(nombre).trim();
+  const { modelo } = trayectoria;
   const { cfg, colocacion, ajustes, conSaco, anchoEt, cierreBajo } = enrolle;
-  const apoyo = posicionLona(modelo, avance);
+  const { apoyo, tubos, punto, cola } = fotograma(trayectoria, avance);
   const radioTubo = cfg.diametroTubo / 2;
   const radioTira = radioMedioTubo(cfg);
-  const tubos = centros(modelo, avance);
   const tiras = cfg.conFunda ? tubos.map((t, i) => {
-    const { marca, angulo } = modelo.tubos[i];
-    const a = marca <= avance ? angulo : apoyo.a;
+    const marca = modelo.marcas[i];
     const ancho = !conSaco && i === tubos.length - 1 ? cierreBajo : anchoEt;
     const cola = Math.max(0, (ancho * 10 - Math.PI * radioTira) / 2);
-    return { ...t, marca, a, c: Math.cos(a), s: Math.sin(a), alcance: radioTira + cola };
+    return { ...t, marca, alcance: radioTira + cola };
   }) : [];
   const finLona = modelo.largo + (conSaco ? 0 : tiras.at(-1)?.alcance ?? 0);
   const colorLona = color('--control-active-border');
@@ -53,43 +53,30 @@ function dibujar(canvas: HTMLCanvasElement, modelo: ModeloEnrolle, avance: numbe
     circulo(cfg.diametroEnrolle / 2 + cfg.altoPerfil - radio, 0, radio, color('--control-active-border'), color('--control-active-border'));
   }
 
-  // Pasado el punto de apoyo, el tramo libre sigue su tangente.
-  const seno = Math.sin(apoyo.a), coseno = Math.cos(apoyo.a);
-  const trazarLona = (desde: number, hasta: number, continuar = false) => {
-    const pasos = Math.max(1, Math.min(700, Math.ceil((hasta - desde) / 4)));
+  const trazar = (desde: number, hasta: number, obtener: typeof punto) => {
+    const pasos = Math.max(1, Math.min(1500, Math.ceil((hasta - desde) / 3)));
     for (let i = 0; i <= pasos; i++) {
-      const marca = desde + (hasta - desde) * i / pasos;
-      const libre = marca - avance;
-      const p = libre <= 0 ? posicionLona(modelo, marca) : { x: apoyo.x - libre * seno, y: apoyo.y + libre * coseno, a: apoyo.a };
-      let { x, y } = p;
-      // Fuera del medio tubo, el paño y la tira comparten la recta de las soldaduras.
-      let pesoMaximo = 0;
-      for (const tira of tiras) {
-        const distancia = marca - tira.marca;
-        const peso = Math.min(1, 1 - (Math.abs(distancia) - tira.alcance) / radioTubo);
-        if (peso <= pesoMaximo) continue;
-        pesoMaximo = peso;
-        const planoX = tira.x - distancia * tira.s;
-        const planoY = tira.y + distancia * tira.c;
-        x = p.x + peso * (planoX - p.x);
-        y = p.y + peso * (planoY - p.y);
-      }
-      if (i === 0 && !continuar) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+      const p = obtener(desde + (hasta - desde) * i / pasos);
+      if (i === 0) ctx.moveTo(p.x, p.y);
+      else ctx.lineTo(p.x, p.y);
     }
   };
-  ctx.beginPath();
+  // El paño y la tira se sueldan sobre la misma curva a ambos lados del tubo.
   const finVisible = Math.min(finLona, avance + LADO_LIENZO / escala);
   let desde = 0;
-  for (const tira of tiras) {
-    const antes = tira.marca - radioTira, despues = tira.marca + radioTira;
-    if (antes < desde || despues > finVisible) continue;
-    trazarLona(desde, antes, desde > 0);
+  ctx.beginPath();
+  for (const [i, tira] of tiras.entries()) {
+    if (tira.marca - tira.alcance > finVisible) break;
+    const antes = tira.marca - tira.alcance, despues = tira.marca + tira.alcance;
+    if (antes > desde) trazar(desde, antes, punto);
+    const soldada = (d: number) => cola(i, d, tira.alcance);
+    trazar(-tira.alcance, -radioTira, soldada);
     const a = tira.a - Math.PI / 2;
     ctx.arc(tira.x, tira.y, radioTira, a, a - Math.PI, true);
+    trazar(radioTira, tira.alcance, soldada);
     desde = despues;
   }
-  trazarLona(desde, finVisible, desde > 0);
+  if (desde < finVisible) trazar(desde, finVisible, punto);
   ctx.strokeStyle = colorLona;
   ctx.lineWidth = cfg.grosor;
   ctx.stroke();
@@ -101,19 +88,17 @@ function dibujar(canvas: HTMLCanvasElement, modelo: ModeloEnrolle, avance: numbe
     ctx.lineWidth = (riesgo || !cfg.conFunda ? 2 : 0.75) / escala;
     circulo(t.x, t.y, radioTubo, color('--surface'), borde);
   });
-  for (const tira of tiras) {
-    ctx.save();
-    ctx.translate(tira.x, tira.y);
-    ctx.rotate(tira.a - Math.PI / 2);
+  for (const [i, tira] of tiras.entries()) {
+    if (tira.marca - tira.alcance > finVisible) break;
+    const soldada = (d: number) => cola(i, d, tira.alcance);
     ctx.strokeStyle = colorTira;
     ctx.lineWidth = cfg.grosor;
     ctx.beginPath();
-    ctx.moveTo(tira.alcance, 0);
-    ctx.lineTo(radioTira, 0);
-    ctx.arc(0, 0, radioTira, 0, Math.PI);
-    ctx.lineTo(-tira.alcance, 0);
+    trazar(-tira.alcance, -radioTira, soldada);
+    const a = tira.a - Math.PI / 2;
+    ctx.arc(tira.x, tira.y, radioTira, a, a + Math.PI);
+    trazar(radioTira, tira.alcance, soldada);
     ctx.stroke();
-    ctx.restore();
   }
   ctx.setTransform(RESOLUCION_LIENZO, 0, 0, RESOLUCION_LIENZO, 0, 0);
   ctx.textAlign = 'center';
@@ -131,13 +116,17 @@ export function SimuladorEnrolle({ enrolle, manual = false, cambiarManual }: {
 }) {
   const { largo, cfg, colocacion, ajustes, conSaco } = enrolle;
   const modelo = useMemo(() => construir(cfg, colocacion.marcas, largo), [cfg, colocacion.marcas, largo]);
-  const [fraccion, setFraccion] = useState(1);
+  const trayectoria = useMemo(() => prepararTrayectoria(modelo), [modelo]);
+  const fraccion = useRef(1);
+  const barra = useRef<HTMLInputElement>(null);
+  const salida = useRef<HTMLOutputElement>(null);
+  const pintar = useRef<(f: number) => void>(() => {});
   const [inicio, setInicio] = useState<number | null>(null);
   const [error, setError] = useState('');
   const [tema, setTema] = useState(() => globalThis.document?.documentElement.dataset.theme ?? '');
   const lienzo = useRef<HTMLCanvasElement>(null);
   const id = useId();
-  const avance = fraccion * modelo.largo;
+  const avance = modelo.largo;
   const justa = colocacion.parejas[0];
   const haySolape = justa && justa.separacion < ajustes.margen;
   const textoAvance = `${numero(avance)} de ${numero(modelo.largo)} mm de avance`;
@@ -149,7 +138,7 @@ export function SimuladorEnrolle({ enrolle, manual = false, cambiarManual }: {
     const paso = (t: number) => {
       primero ??= t;
       const siguiente = Math.min(1, inicio + (t - primero) / DURACION);
-      setFraccion(siguiente);
+      pintar.current(siguiente);
       if (siguiente < 1) idFotograma = requestAnimationFrame(paso);
       else setInicio(null);
     };
@@ -165,19 +154,37 @@ export function SimuladorEnrolle({ enrolle, manual = false, cambiarManual }: {
   }, []);
 
   useEffect(() => {
-    if (lienzo.current) dibujar(lienzo.current, modelo, avance, enrolle);
-  }, [modelo, avance, enrolle, tema]);
+    const canvas = lienzo.current;
+    if (!canvas) return;
+    const css = getComputedStyle(canvas);
+    const colores = new Map(['--surface-2', '--text-muted', '--control-active-border', '--tramo-holgado',
+      '--tramo-ajustado', '--text', '--surface'].map(nombre => [nombre, css.getPropertyValue(nombre).trim()]));
+    const color = (nombre: string) => colores.get(nombre)!;
+    const max = numero(modelo.largo);
+    pintar.current = f => {
+      fraccion.current = f;
+      const mm = f * modelo.largo;
+      dibujar(canvas, trayectoria, mm, enrolle, color);
+      const texto = `${formatoAvance.format(mm)} de ${max} mm de avance`;
+      if (barra.current) {
+        barra.current.valueAsNumber = mm;
+        barra.current.setAttribute('aria-valuetext', texto);
+      }
+      if (salida.current?.firstChild) salida.current.firstChild.nodeValue = texto;
+    };
+    pintar.current(fraccion.current);
+  }, [modelo, trayectoria, enrolle, tema]);
 
   function mover(mm: number) {
     setInicio(null);
-    setFraccion(Math.max(0, Math.min(mm / modelo.largo, 1)));
+    pintar.current(Math.max(0, Math.min(mm / modelo.largo, 1)));
   }
 
   function reproducir() {
     if (inicio !== null) setInicio(null);
     else {
-      const desde = fraccion === 1 ? 0 : fraccion;
-      setFraccion(desde);
+      const desde = fraccion.current === 1 ? 0 : fraccion.current;
+      pintar.current(desde);
       setInicio(desde);
     }
   }
@@ -200,9 +207,9 @@ export function SimuladorEnrolle({ enrolle, manual = false, cambiarManual }: {
         <canvas ref={lienzo} width={LADO_LIENZO * RESOLUCION_LIENZO} height={LADO_LIENZO * RESOLUCION_LIENZO} aria-hidden="true" />
         <div className="simulador-enrolle__mandos">
           <label htmlFor={`${id}-avance`}>Enrollado</label>
-          <input id={`${id}-avance`} type="range" min={0} max={modelo.largo} step="any" value={avance}
+          <input id={`${id}-avance`} type="range" min={0} max={modelo.largo} step="any" ref={barra} defaultValue={avance}
             aria-valuetext={textoAvance} onChange={e => mover(e.currentTarget.valueAsNumber)} />
-          <output htmlFor={`${id}-avance`} aria-live="off">{textoAvance}</output>
+          <output ref={salida} htmlFor={`${id}-avance`} aria-live="off">{textoAvance}</output>
           <div className="simulador-enrolle__acciones">
             <button type="button" className="ghost-button" onClick={reproducir}>{inicio === null ? 'Reproducir' : 'Pausar'}</button>
             <button type="button" className="ghost-button" disabled={!justa} onClick={() => justa && mover(justa.donde)}>Ir al punto más justo</button>

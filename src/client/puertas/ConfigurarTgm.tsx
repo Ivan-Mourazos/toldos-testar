@@ -98,9 +98,9 @@ export function ConfigurarTgm({ p, cambiar, corte, derecha, letra, vistas }: {
         </label>
       </section>
       <div className="puerta-derecha">
-        <div className="puerta-dibujo"><div className="puerta-tgm-vista">
+        <div className="puerta-dibujo">
           {vistas}{derecha === 'corte' && corte ? corte : <AlzadoPuerta puerta={derivada} resultado={resultado} letra={letra} />}
-        </div></div>
+        </div>
         <section className="puerta-avisos panel panel-vidrio" aria-label="Comprobaciones de puerta">
           <h2>Qué falta o revisar <span>{errores} pendientes</span></h2>
           {resultado.avisos.length > 0 && <ul>{resultado.avisos.map(a => <li key={`${a.codigo}-${a.texto}`} className={a.nivel === 'error' ? 'es-error' : undefined}>
