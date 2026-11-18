@@ -4,6 +4,7 @@ import { colocarTubos, repartoIgual } from './colocar.ts';
 
 const ajustes = { margen: 5, desvio: 100, anguloPerfil: 20 };
 const tgm = { ...CONFIG_CODEX, altoPerfil: 10, anchoPerfil: 10 };
+const conPerfil = { ...ajustes, anguloPerfil: 25 };
 
 describe('reparto igual', () => {
   it('con tubo abajo, n tramos; con saco, n + 1', () => {
@@ -17,6 +18,35 @@ describe('reparto igual', () => {
 });
 
 describe('colocar tubos', () => {
+  it.each([
+    { largo: 6000, nTubos: 6, minimo: 20 },
+    { largo: 4782, nTubos: 5, minimo: 35 },
+  ])('mantiene al menos $minimo mm durante el ciclo de $largo mm con $nTubos tubos', ({ largo, nTubos, minimo }) => {
+    const c = colocarTubos(tgm, conPerfil, { largo, nTubos, conSaco: false });
+    expect(c.parejas[0].separacion).toBeGreaterThanOrEqual(minimo);
+    expect(c.marcas.at(-1)).toBe(largo);
+    expect(c.avisos).toEqual([]);
+    for (const [k, marca] of c.marcas.entries()) {
+      expect(Math.abs(marca - c.iguales[k])).toBeLessThanOrEqual(conPerfil.desvio);
+      expect(marca - (c.marcas[k - 1] ?? 0)).toBeGreaterThanOrEqual(50);
+      expect(c.angulos[k]).toBeGreaterThanOrEqual(conPerfil.anguloPerfil);
+    }
+  });
+
+  it.each([
+    { largo: 4200, anterior: 75.3369 },
+    { largo: 3660, anterior: 65.0129 },
+  ])('con tres tubos en $largo mm conserva el mínimo anterior con una tolerancia de 1 mm', ({ largo, anterior }) => {
+    const c = colocarTubos(tgm, conPerfil, { largo, nTubos: 3, conSaco: false });
+    expect(c.parejas[0].separacion).toBeGreaterThanOrEqual(anterior - 1);
+  });
+
+  it('repite las mismas marcas para el mismo caso con varios arranques', () => {
+    const caso = { largo: 4782, nTubos: 5, conSaco: false };
+    const primera = colocarTubos(tgm, conPerfil, caso);
+    expect(colocarTubos(tgm, conPerfil, caso).marcas).toEqual(primera.marcas);
+  });
+
   it('4200 con 3 tubos: separa mucho más que los tramos iguales y sin pasarse del desvío', () => {
     const c = colocarTubos(CONFIG_CODEX, { ...ajustes, anguloPerfil: 0 }, { largo: 4200, nTubos: 3, conSaco: false });
     expect(c.marcas.at(-1)).toBe(4200);
