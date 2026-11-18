@@ -178,7 +178,7 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
     // y los refuerzos centrados en su hueco con una raya a cada uno; sin los «a2» del saco partido en el dibujo
     // del saco (correcciones de Iván sobre AR2605035). Después, cotas verticales más juntas, nota BOLSILLO y
     // cajetín algo más pequeño (23/10/2026). Luego, presentación «PUERTA A», el corte en fila con la puerta y ventanas con la proporción justa. Después, el corte a la derecha y los recuadros DIBUJO y CORTE pegados, con margen del 20 %.
-    ['apilable', apilable, '6199323eb3b698dfe8c4cb5f2f3e9a73e01e0b809ec7aafd4fa3b2281004c206'],
+    ['apilable', apilable, '2fa0198f151dc274d2495a0b74dfddb2947de4d24474a7d9b70815b25134510a'],
     // Tetris coloca las dos E.T. sobre los paños: baja de 711 a 700 cm sin cambiar el alzado.
     // 27/10/2026 (AR2605249): saco de 2 × (rematado + 2) y la raya de soldar el saco, 2 cm sobre el bajo del paño.
     // Se elimina la segunda raya del saco y las dos referencias fijas de la regla anterior (Iván, 27/10/2026).

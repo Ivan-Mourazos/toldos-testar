@@ -300,7 +300,7 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       x.contorno = [[0,bajoEn(0)],[ancho,bajoEn(ancho)],[ancho,x.alto],[0,x.alto]];
       const m = p.margenMarcas;
       x.marcas.push([m,bajoEn(m)+2,ancho-m,bajoEn(ancho-m)+2]);
-    }
+    } else marca(paneles[0].pieza,2); // Soldadura del saco a 2 del bajo, como en el plano (Iván, 18/11/2026, AR2605391).
     const s = sacoApilable(p), h = a.doble ? 37 : s.corte;
     const w = a.doble ? p.frente-6 : ancho;
     const pestana = a.doble ? 12 : 10, altoPestana = a.doble ? 14 : s.altoPestana;

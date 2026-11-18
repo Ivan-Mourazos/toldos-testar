@@ -192,13 +192,13 @@
     },
     {
       "pedido": "AR2605036",
-      "corte": "3ceaccc6672f475da43efdfb3c8917210a357be98a50bce07fefcfb52505072a",
-      "archivo": "59917e07884d0caa4a8b2bdb5c8ce843dcdfb17d1f31af90222c30f5fa3d9ed7"
+      "corte": "0061660b4c4e9f20244a6f3b0de7edd247722778d9fe62180d646a0a56530315",
+      "archivo": "315bc5f2299b9d2d144a06571f2a99d159e2e16550adbc17cd973fa56c54ed7f"
     },
     {
       "pedido": "AR2604906",
-      "corte": "4912aeb6ce05e8e6dca2a630d7140ba467622da47a8443f79ff82ef47c2d77a8",
-      "archivo": "964233f34294016476def1c234c7193109179ba3e952cfadcfd898d70fb65cd0"
+      "corte": "07050a830600a2eb4aa6f2e1738b9696bb4bfdef56981e9886ffec72f7c4fc0e",
+      "archivo": "44eb6ebb865f4c590a333e198997d280a2d3495718930d19f2d1d0568dc8ad1d"
     },
     {
       "pedido": "AR2604904",
@@ -217,8 +217,8 @@
     },
     {
       "pedido": "AR2605035",
-      "corte": "5d5fe0867168678f4d9cac881d589e4f3c8192e5945f20ed4c58f4c133d66018",
-      "archivo": "b3dc015c4800156315ac0e121458d6bc8bd84c40ec89933529ca9c74ef1627d9"
+      "corte": "f3cfed707becf8bf1787ead7707e2f1b9eb49c9c089b5138327f4a662a01f194",
+      "archivo": "14d5300d8052e9ad57a50bae12ca468f1ab52a4efa5232ccae121f21bcc50635"
     },
     {
       "pedido": "AR2605365",
@@ -1546,7 +1546,7 @@
       "familia": "Puertas / Portanova Plegable",
       "ejemplo": "AR2605036",
       "dxf": "83b3bf74982ee118cc17fde9876a103513ffa244954f82e266f85990d3f4adaf",
-      "geometria": "e8761d95dddd3d70a206ea13b45f23d9a8da04a7124b31923d2bf809f9186c81",
+      "geometria": "a06a670da2b4ce0ee1da793fca82ab05a89e95728b85a788558fae6d8e835461",
       "textosFijos": "fa2fb7e1ba5efe5a3b74df96fbfeb52696b39952146551be2dd60c200f2967c6",
       "textos": "1291f8a2ab99ad9c3534d6eec6f601498a70fd14a3d3f5afc046af59d4a13708",
       "cotas": "b13be12f6ddb1df4dd1c6a08c5a62a5541d6e184f52ed9215758f0ce0d3c9803",
@@ -1619,7 +1619,7 @@
       "familia": "Puertas / Portanova Apilable",
       "ejemplo": "AR2604906",
       "dxf": "3570a1a44c8fc5d057cebd055492997e87dd715e99494c3a6ac4d47c152367fe",
-      "geometria": "8c0521d221dab232745ee086db4c83256ad9c40b5ff7f109d96a682956793633",
+      "geometria": "4f546575899b04b1ccf89c8f4882cad6ca4963a8128ff062c49cd82139be9e21",
       "textosFijos": "850005c860ccbf1fc20c0159f6bb067944f8363a767baa1eccfcf053bdaf56ec",
       "textos": "2d2245177ddb8c8abca27afcab9d6ab82f2e93d15cb3196cdd2aa9e94edaab8d",
       "cotas": "3b4163512b8744f681019c56aedfbb53ce2cdfc1fef43353833dd695d1c12ebe",
@@ -1989,7 +1989,7 @@
       "familia": "Puertas / Portanova compatibilidad",
       "ejemplo": "AR2605035",
       "dxf": "999745830a46a5e3ef5af4dc6fe5accd7d7c9f5b6e117970f31926b10494d051",
-      "geometria": "1c9d1873b686bf69600b6306eb4a0299785e53c3d21b96293c6fd0777b1722ee",
+      "geometria": "2698ee8f3aac9bd03cefa7dd74d76b3f89206ec4ec2d3bd55d6bc4cf944dae4b",
       "textosFijos": "fb2cfdb8ceb84844a7980813c6e7fd12369293f6b777e951ee739ec629032e90",
       "textos": "0d46df2f30abd2c974dc98ab6ad591437bc1b8703e0611fac4556e6e876193f5",
       "cotas": "bc4eaed8cd84ae534741c49fa0e3e6240389f881e9643c729803bd4e6cb7d409",
