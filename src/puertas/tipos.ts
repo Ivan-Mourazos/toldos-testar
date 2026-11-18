@@ -46,6 +46,8 @@ export interface Puerta {
     nTubos: number;
     diametroTubo: 42; // mm
     anchoEt: number; // cm de corte
+    cierreBajo: number; // cm de lona por debajo del bajo terminado (Q-TGM05)
+    marcaCierre: number; // cm desde el borde del corte (Q-TGM05)
     abajo: 'tubo' | 'saco'; // La medida del saco se guarda en enrollable.saco.
     grosor: number; // mm
     tubosManual: number[] | null; // mm desde el perfil; null para reparto automático
@@ -88,8 +90,10 @@ export interface Puerta {
     sinVentanal?: boolean;
     /** TGM con tubo abajo, alojado en el cierre de la lona. */
     sinSaco?: boolean;
-    /** Centímetros de lona que se doblan para el cierre del tubo de abajo (Q-TGM05). */
+    /** Centímetros de lona por debajo del bajo terminado para el cierre (Q-TGM05). */
     cierreBajo?: number;
+    /** Centímetros desde el borde de corte a la marca del cierre (Q-TGM05). */
+    marcaCierre?: number;
     /** Ancho de corte de la E.T. en cm. Sin el campo, se aplica REGLAS_ENROLLABLE.corteEntrada. */
     anchoEt?: number;
     /** Sin E.T. encima: T llega al borde del paño y no hay marcas de esa E.T.

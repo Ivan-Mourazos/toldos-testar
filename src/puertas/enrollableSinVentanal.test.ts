@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { calcularPuerta, huecosEntrada } from './calcular.ts';
 import { generarCortePuertas } from './corte.ts';
 import { escribirPlanoPuertas } from './plano.ts';
+import { dibujarAlzadoEnrollable } from './planoEnrollable.ts';
 import { leerPedidoPuertas } from './pedido.ts';
 import { NOTA_CACHOS_CRISTAL, notaPlanoEnrollable } from './ventanalesEnrollable.ts';
 import { registrosDxf, valor } from '../domain/corteLona/dxfTestHelpers.js';
@@ -70,6 +71,12 @@ describe('puerta enrollable sin ventanal', () => {
 });
 
 describe('enrollable TGM sin saco y con E.T. de ancho variable', () => {
+  const sinSaco = () => {
+    const p = base('PUERTAENR', 300, 430);
+    return { ...p, enrollable: { ...p.enrollable, sinVentanal: true, sinSaco: true,
+      cierreBajo: 14, anchoEt: 14.5, saco: null, sacoPartido: true } };
+  };
+
   it('corta la E.T. suelta a 14,5 y conserva el solape de la unión en 7,5 cm', () => {
     const p = base('PUERTAENR', 300, 430);
     const r = calcularPuerta({ ...p, rollo: 250, enrollable: { ...p.enrollable, sinVentanal: true, anchoEt: 14.5 },
@@ -97,26 +104,45 @@ describe('enrollable TGM sin saco y con E.T. de ancho variable', () => {
     expect(huecosEntrada(300, 42)[0]).toMatchObject({ y: 2, alto: 9.5 });
   });
 
-  it('baja el paño 10 cm, marca el doblez en el bajo terminado y lo lleva al corte', () => {
-    const basePuerta = base('PUERTAENR', 300, 430);
-    const p = { ...basePuerta, enrollable: { ...basePuerta.enrollable, sinVentanal: true, sinSaco: true,
-      cierreBajo: 10, anchoEt: 14.5, saco: null, sacoPartido: true } };
+  it('baja el paño 14 cm y lleva al corte una sola marca de cierre a 23 cm del borde', () => {
+    const puerta = sinSaco();
+    const p = { ...puerta, enrollable: { ...puerta.enrollable, marcaCierre: 23 } };
     const r = calcularPuerta(p);
     expect(r.avisos.filter(a => a.nivel === 'error')).toEqual([]);
     expect(r.alternativasSaco).toBeNull();
-    expect(r.piezas).toMatchObject([{ nombre: 'Paño', ancho: 300, alto: 443.5 }]);
+    expect(r.piezas).toMatchObject([{ nombre: 'Paño', ancho: 300, alto: 447.5 }]);
     const [pano] = r.piezas;
     expect(pano.origenAlzado?.[0]).toBeCloseTo(0);
-    expect(pano.origenAlzado?.[1]).toBe(-10);
-    expect(pano.marcas).toEqual([[1.5, 10, 298.5, 10], [1.5, 436.5, 298.5, 436.5]]);
+    expect(pano.origenAlzado?.[1]).toBe(-14);
+    expect(pano.marcas).toEqual([[1.5, 23, 298.5, 23], [1.5, 440.5, 298.5, 440.5]]);
 
     const corte = generarCortePuertas(pedidoDe('PRUEBA', p));
     expect(corte.archivo).not.toBeNull();
     const [lona] = corte.cortes;
     const [{ x, y, girada }] = lona.colocadas;
-    const doblez = girada
-      ? { x1: x + 4335, x2: x + 4335, y1: y + 15, y2: y + 2985 }
-      : { x1: x + 15, x2: x + 2985, y1: y + 100, y2: y + 100 };
-    expect(lona.entidades.lineas).toContainEqual({ capa: 'ROTULADOR', ...doblez });
+    const cierre = girada
+      ? { x1: x + 4245, x2: x + 4245, y1: y + 15, y2: y + 2985 }
+      : { x1: x + 15, x2: x + 2985, y1: y + 230, y2: y + 230 };
+    expect(lona.entidades.lineas).toContainEqual({ capa: 'ROTULADOR', ...cierre });
+  });
+
+  it('sin marcaCierre el paño y el alzado llevan solo la marca de cabecera', () => {
+    const p = sinSaco();
+    expect(calcularPuerta(p).piezas[0].marcas).toEqual([[1.5, 440.5, 298.5, 440.5]]);
+    const { lienzo } = dibujarAlzadoEnrollable(p, 'A');
+    expect(lienzo.lineas.filter(l => l.capa === 'ROTULADOR')).toEqual([
+      { capa: 'ROTULADOR', x1: 0, y1: -3.5, x2: 300, y2: -3.5 },
+    ]);
+  });
+
+  it('el alzado sin saco dibuja el bajo terminado, el aumento y la raya del cierre a +9 cm', () => {
+    const p = sinSaco();
+    const { lienzo } = dibujarAlzadoEnrollable({ ...p, enrollable: { ...p.enrollable, marcaCierre: 23 } }, 'A');
+    expect(lienzo.textos.map(t => t.valor).join('\n')).not.toMatch(/SACO|VELCRO/);
+    expect(lienzo.lineas).toContainEqual({ capa: 'DISCO1', x1: 0, y1: -430, x2: 300, y2: -430 });
+    expect(lienzo.lineas).toContainEqual({ capa: 'referencias', x1: 0, y1: -444, x2: 300, y2: -444 });
+    expect(lienzo.lineas.filter(l => l.capa === 'ROTULADOR' && l.y1 < -400)).toEqual([
+      { capa: 'ROTULADOR', x1: 1.5, y1: -421, x2: 298.5, y2: -421 },
+    ]);
   });
 });

@@ -182,8 +182,10 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       // También en el dibujo: sin esto los mininúmeros de los paños salían contados desde el bajo de la puerta (27/10/2026).
       for(const panel of grupo) {panel.desde+=origen;panel.hasta+=origen;panel.pieza.origenAlzado=[-lateral,panel.desde];}
       const marcarEn=(y:number,dir?:1|-1)=>{const panel=grupo.find(t=>y>=t.desde&&y<=t.hasta);if(panel)marca(panel.pieza,y-panel.desde,dir);};
-      // En el bajo se marca el doblez del cierre o la soldadura del saco.
-      if(nombre==='inferior') marcarEn(sinSaco ? 0 : origen + 2);
+      if(nombre==='inferior') {
+        if(!sinSaco) marcarEn(origen + 2);
+        else if(e.marcaCierre!==undefined) marcarEn(origen + e.marcaCierre);
+      }
       else if(!e.sinEtArriba) marcarEn(origen + 7.5, -1);
       // Sin ventanal, la raya de arriba es la de la cabecera, como en el paño superior.
       if(ciega) marcarEn(origen+h-7);

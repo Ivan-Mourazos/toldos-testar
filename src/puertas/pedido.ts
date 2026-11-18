@@ -12,6 +12,7 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
   if(!objeto(valor) || valor.kind!=='puertas' || valor.schemaVersion!==1 || typeof valor.orderCode!=='string' || valor.orderCode.length>40 || !Array.isArray(valor.elementos) || !valor.elementos.length || valor.elementos.length>50) return error();
   const ids=new Set();
   let unidades=0;
+  let faltaCierreTgm=false;
   for(const e of valor.elementos) {
     if(!objeto(e) || typeof e.id!=='string' || e.id.length>100 || !e.id || ids.has(e.id) || !objeto(e.input)) return error();
     ids.add(e.id);
@@ -49,6 +50,8 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
         ||(t.abajo!=='tubo'&&t.abajo!=='saco')||!objeto(ajustes)
         ||!['margen','desvio','altoPerfil','anchoPerfil','anguloPerfil'].every(k=>Number.isFinite(ajustes[k])))return error();
       if(t.tubosManual!==null&&(!Array.isArray(t.tubosManual)||!t.tubosManual.every(n=>Number.isFinite(n))))return error();
+      if(['cierreBajo','marcaCierre'].some(k=>t[k]!==undefined&&!cotas(t,[k])))return error();
+      faltaCierreTgm ||= t.cierreBajo===undefined || t.marcaCierre===undefined;
     }
     if(p.santapau!==undefined){
       const s=p.santapau;
@@ -89,6 +92,7 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
     if(p.enrollable.sinVentanal!==undefined && typeof p.enrollable.sinVentanal!=='boolean')return error();
     if(p.enrollable.sinSaco!==undefined && typeof p.enrollable.sinSaco!=='boolean')return error();
     if(p.enrollable.cierreBajo!==undefined && !cotas(p.enrollable,['cierreBajo']))return error();
+    if(p.enrollable.marcaCierre!==undefined && !cotas(p.enrollable,['marcaCierre']))return error();
     if(p.enrollable.anchoEt!==undefined && !cotas(p.enrollable,['anchoEt']))return error();
     if(p.enrollable.ventanasPequenas!==undefined && typeof p.enrollable.ventanasPequenas!=='boolean')return error();
     if(p.enrollable.sinEtArriba!==undefined && typeof p.enrollable.sinEtArriba!=='boolean')return error();
@@ -103,5 +107,16 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
     unidades+=p.cantidad as number;
     if(unidades>100) return error();
   }
-  return valor as unknown as PedidoPuertas;
+  const pedido=valor as unknown as PedidoPuertas;
+  if(!faltaCierreTgm)return pedido;
+
+  // Las primeras puertas TGM se podían guardar antes de confirmar las cotas del cierre.
+  const enrolle=fichaPorId('tgm')!.enrolle!;
+  return {...pedido,elementos:pedido.elementos.map(e=>{
+    const {tgm}=e.input;
+    if(!tgm || (tgm.cierreBajo!==undefined && tgm.marcaCierre!==undefined))return e;
+    return {...e,input:{...e.input,tgm:{...tgm,
+      cierreBajo:tgm.cierreBajo??enrolle.cierreBajo,marcaCierre:tgm.marcaCierre??enrolle.marcaCierre,
+    }}};
+  })};
 }

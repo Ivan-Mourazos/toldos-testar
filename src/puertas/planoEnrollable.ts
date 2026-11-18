@@ -78,7 +78,10 @@ function huecoRotulo(abajo: number, arriba: number, obstaculos: number[], margen
 
 export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSaco = false): { lienzo: Lienzo; zona: Zona } {
   const l = vacio(), F = p.frente, H = p.alto, T = panoContinuoEnrollable(p) ? 0 : p.enrollable.T;
-  const r = calcularPuerta(p), saco = sacoPuerta(p), bajo = saco.rematado, hs = saco.corte, hp = saco.altoPestana;
+  const r = calcularPuerta(p), saco = sacoPuerta(p), hs = saco.corte, hp = saco.altoPestana;
+  const { sinSaco, marcaCierre } = p.enrollable;
+  const bajo = sinSaco ? 0 : saco.rematado;
+  const corteBajo = -H - (p.enrollable.cierreBajo ?? 0);
   const ventanales = T > 0 ? ventanalesEnrollable(p) : [];
   const ejes: number[] = ventanales.length ? [T] : [];
   for (const v of ventanales) ejes.push(ejes.at(-1)! + v.D);
@@ -139,11 +142,31 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSac
     cota(l, 0, -b - 3.75, 0, -b + 3.75, -9.15 + i, 'XERAL 5');
     texto(l, '3 CM (HUECOS)', F / 2, -b + (superior ? 14.7311 : segundo ? -7.59 : 14.187) - 3.5, 7, { centrado: true });
   });
-  linea(l, 'ROTULADOR', 0, -H + bajo + 2, F, -H + bajo + 2);
+  if (!sinSaco) linea(l, 'ROTULADOR', 0, -H + bajo + 2, F, -H + bajo + 2);
   linea(l, 'referencias', 0, -H, F, -H);
-  linea(l, 'referencias', 0, -H, 0, -H + bajo + 2);
-  linea(l, 'referencias', F, -H, F, -H + bajo);
-  texto(l, 'SOLDAR SACO NEGRO 2 CM MÁXIMO', F / 2, -H + 1.6012 + Math.min(7, F / 28) / 2, Math.min(7, F / 28), { centrado: true });
+  if (sinSaco) {
+    if (corteBajo < -H) {
+      linea(l, 'referencias', 0, -H, 0, corteBajo);
+      linea(l, 'referencias', 0, corteBajo, F, corteBajo);
+      linea(l, 'referencias', F, corteBajo, F, -H);
+    }
+    if (marcaCierre !== undefined) {
+      const alturaCierre = corteBajo + marcaCierre;
+      // Mostrar la raya del propio paño si el cálculo la ha podido colocar.
+      for (const pieza of piezasPano) {
+        const [x, y] = pieza.origenAlzado!;
+        const marca = pieza.marcas.find(([x1, y1, x2, y2]) => y1 === y2 && x2 - x1 > pieza.ancho / 2
+          && Math.abs(y - H + y1 - alturaCierre) < .001);
+        if (!marca) continue;
+        linea(l, 'ROTULADOR', x + marca[0], alturaCierre, x + marca[2], alturaCierre);
+        break;
+      }
+    }
+  } else {
+    linea(l, 'referencias', 0, -H, 0, -H + bajo + 2);
+    linea(l, 'referencias', F, -H, F, -H + bajo);
+    texto(l, 'SOLDAR SACO NEGRO 2 CM MÁXIMO', F / 2, -H + 1.6012 + Math.min(7, F / 28) / 2, Math.min(7, F / 28), { centrado: true });
+  }
   // Iván, 06/11/2026 (AR2605429): «AL CORTE» centrado en el paño de arriba (hasta el ventanal o la primera E.T.), como en
   // las apilables; sin ventanal salía pegado arriba. «PISAR LAS E.T.», centrado en el alto de la puerta.
   const techo = Math.min(H, ...(T > 0 ? [T] : []), ...p.entradas.map(e => H - e.altura).filter(y => y > 0 && y < H));
@@ -158,36 +181,38 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSac
   const hitos = [0, ...bandas, H];
   hitos.slice(1).forEach((h, i) => cota(l, F, -hitos[i], F, -h, F + 21.93));
   cota(l, F, 0, F, -H, F + 37.91);
-  cota(l, F, -H, F, -H + bajo, F + 9.79, 'XERAL 5');
-  // El saco del pedido bajo la puerta, como en las apilables (Iván, 26/10/2026: «no salía el texto de saco de 80»).
-  texto(l, `SACO DE ${sacoUtil(p) ?? 100}`, F / 2, -H - 14, Math.min(10, F / 25), { centrado: true });
-
-  // Saco desplegado, con escalón y los dos velcros en su capa original. Con el de 120: corte 26, pestaña y velcros
-  // de 11 a 2 de cada lado; con otro saco, sus medidas (Iván, 23/10/2026).
   const ys = -H - 47.6767;
-  contorno(l, 'referencias', [[0, ys], [F, ys], [F, ys - hs], [0, ys - hs], [0, ys - 2 - hp], [-6.5, ys - 2 - hp], [-6.5, ys - 2], [0, ys - 2]]);
-  for (const y of [ys - 2, ys - hs / 2, ys - hs + 2]) linea(l, 'vent-pre-noimpr', 0, y, F, y);
-  const bravo = rectangulo(l, 'referencia-1', -6.5, ys - 2 - hp, 3, hp);
-  const suave = rectangulo(l, 'referencia-1', 1.5, ys - hs + 2, 3, hp);
-  l.sombreados.push({ capa: 'referencia-1', puntos: bravo, solido: true }, { capa: 'referencia-1', puntos: suave, solido: false });
-  cota(l, 0, ys - hs, F, ys - hs, ys - hs + 9.49, 'XERAL 5');
-  cota(l, 0, ys - hs, 0, ys, -32.47);
-  cota(l, -6.5, ys - 2, 0, ys - 2, ys + 7.82);
-  cota(l, 0, ys - hs + 2, 4.5, ys - hs + 2, ys - hs - 17.25);
-  // Con varias puertas, el saco dice de cuál es, con su letra (Iván, 24/10/2026), en su sitio: a la izquierda de la cota.
-  const rotulo = identificarSaco ? `${rotuloSaco(p)} · ${letra}` : rotuloSaco(p), centrado = p.sacoDiagonalesAmarillas;
-  texto(l, rotulo, centrado ? F / 2 : F / 2 - 71.5081, ys - hs / 2 + 1.1207,
-    centrado ? Math.min(10, F * .9 / anchoArial(rotulo, 1)) : identificarSaco ? Math.min(10, (F / 2 + 71.5081 - 3) / anchoArial(rotulo, 1)) : 10,
-    centrado ? { centrado: true } : {});
-  // Iván, 22/10/2026: los textos de los velcros, más pequeños, simétricos respecto al saco y con la raya
-  // llegando a cada velcro (el bravo en la pestaña y el suave en el saco), no sueltos en el aire.
-  const hVelcro = 5, xVelcro = 20, dVelcro = 23;
-  for (const [valor, y, velcro] of [
-    ['COSER VELCRO REVÉS DE 3 BRAVO', ys - hs / 2 + dVelcro, [-5, ys - 2]],
-    ['COSER VELCRO DERECHO DE 3 SUAVE', ys - hs / 2 - dVelcro, [3, ys - hs + 2]],
-  ] as const) {
-    texto(l, valor, xVelcro, y, hVelcro, { ancla: 4 });
-    linea(l, 'texto', xVelcro - 1.5, y, velcro[0], velcro[1]);
+  if (!sinSaco) {
+    cota(l, F, -H, F, -H + bajo, F + 9.79, 'XERAL 5');
+    // El saco del pedido bajo la puerta, como en las apilables (Iván, 26/10/2026: «no salía el texto de saco de 80»).
+    texto(l, `SACO DE ${sacoUtil(p) ?? 100}`, F / 2, -H - 14, Math.min(10, F / 25), { centrado: true });
+
+    // Saco desplegado, con escalón y los dos velcros en su capa original. Con el de 120: corte 26, pestaña y velcros
+    // de 11 a 2 de cada lado; con otro saco, sus medidas (Iván, 23/10/2026).
+    contorno(l, 'referencias', [[0, ys], [F, ys], [F, ys - hs], [0, ys - hs], [0, ys - 2 - hp], [-6.5, ys - 2 - hp], [-6.5, ys - 2], [0, ys - 2]]);
+    for (const y of [ys - 2, ys - hs / 2, ys - hs + 2]) linea(l, 'vent-pre-noimpr', 0, y, F, y);
+    const bravo = rectangulo(l, 'referencia-1', -6.5, ys - 2 - hp, 3, hp);
+    const suave = rectangulo(l, 'referencia-1', 1.5, ys - hs + 2, 3, hp);
+    l.sombreados.push({ capa: 'referencia-1', puntos: bravo, solido: true }, { capa: 'referencia-1', puntos: suave, solido: false });
+    cota(l, 0, ys - hs, F, ys - hs, ys - hs + 9.49, 'XERAL 5');
+    cota(l, 0, ys - hs, 0, ys, -32.47);
+    cota(l, -6.5, ys - 2, 0, ys - 2, ys + 7.82);
+    cota(l, 0, ys - hs + 2, 4.5, ys - hs + 2, ys - hs - 17.25);
+    // Con varias puertas, el saco dice de cuál es, con su letra (Iván, 24/10/2026), en su sitio: a la izquierda de la cota.
+    const rotulo = identificarSaco ? `${rotuloSaco(p)} · ${letra}` : rotuloSaco(p), centrado = p.sacoDiagonalesAmarillas;
+    texto(l, rotulo, centrado ? F / 2 : F / 2 - 71.5081, ys - hs / 2 + 1.1207,
+      centrado ? Math.min(10, F * .9 / anchoArial(rotulo, 1)) : identificarSaco ? Math.min(10, (F / 2 + 71.5081 - 3) / anchoArial(rotulo, 1)) : 10,
+      centrado ? { centrado: true } : {});
+    // Iván, 22/10/2026: los textos de los velcros, más pequeños, simétricos respecto al saco y con la raya
+    // llegando a cada velcro (el bravo en la pestaña y el suave en el saco), no sueltos en el aire.
+    const hVelcro = 5, xVelcro = 20, dVelcro = 23;
+    for (const [valor, y, velcro] of [
+      ['COSER VELCRO REVÉS DE 3 BRAVO', ys - hs / 2 + dVelcro, [-5, ys - 2]],
+      ['COSER VELCRO DERECHO DE 3 SUAVE', ys - hs / 2 - dVelcro, [3, ys - hs + 2]],
+    ] as const) {
+      texto(l, valor, xVelcro, y, hVelcro, { ancla: 4 });
+      linea(l, 'texto', xVelcro - 1.5, y, velcro[0], velcro[1]);
+    }
   }
   const nota = notaPlanoEnrollable(p);
   // Iván confirmó que el recorte de esta nota en su ventana era un descuido: debe leerse entera.
@@ -198,7 +223,8 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSac
     else actual += (actual ? ' ' : '') + palabra;
   }
   if (actual) lineas.push(actual);
-  lineas.forEach((v, i) => texto(l, v, F / 2, ys - hs - 48 - i * hNota * 1.4, hNota, { centrado: true }));
+  const yNota = sinSaco ? corteBajo - 30 : ys - hs - 48;
+  lineas.forEach((v, i) => texto(l, v, F / 2, yNota - i * hNota * 1.4, hNota, { centrado: true }));
 
   // Los empates y bolsillos configurados conservan sus marcas; nunca crean una pieza nueva.
   // Un empate en una E.T. se dibuja como la E.T., igual que en las apilables (Iván, 06/11/2026, AR2605429).
@@ -232,7 +258,8 @@ export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSac
       { capa: 'ROTULADOR', centrado: true, giro: m.giro ?? 0 });
     sx += pieza.ancho - 2;
   }
-  return { lienzo: l, zona: { x0: -65, x1: F + 70, y0: ys - hs - 60 - (lineas.length - 1) * hNota * 1.4, y1: 40 } };
+  const fondo = sinSaco ? corteBajo - 42 : ys - hs - 60;
+  return { lienzo: l, zona: { x0: -65, x1: F + 70, y0: fondo - (lineas.length - 1) * hNota * 1.4, y1: 40 } };
 }
 
 
