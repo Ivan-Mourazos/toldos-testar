@@ -1,0 +1,17 @@
+{
+  "id": "tgm",
+  "nombre": "TGM",
+  "codigoRps": "",
+  "unidadHoja": "cm",
+  "habilitado": true,
+  "calculo": "tgm",
+  "rollos": { "rollo": 300, "rolloCristal": 140, "rolloSaco": 300 },
+  "rollosConfirmados": false,
+  "remates": "Puerta enrollable propia de TGM: lona sujeta con varilla a un perfil fleco atornillado al tubo de enrolle",
+  "perfiles": {},
+  "rotulos": { "espaciador": "", "cremallera": "", "plantilla": "general" },
+  "tipos": [ { "id": "enrollable", "nombre": "Enrollable", "modelo": "PUERTAENR" } ],
+  "articulos": { "PUERTAENR": "enrollable" },
+  "enrolle": { "diametroEnrolle": 88.9, "diametroTubo": 42, "grosor": 0.8, "anadido": 30, "anchoEt": 8, "nTubos": 3,
+    "margen": 5, "desvio": 100, "altoPerfil": 10, "anchoPerfil": 10, "anguloPerfil": 25 }
+}

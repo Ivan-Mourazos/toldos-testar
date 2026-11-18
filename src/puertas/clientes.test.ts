@@ -5,7 +5,7 @@ import { calcularPuerta } from './calcular.ts';
 import { generarCortePuertas } from './corte.ts';
 import { leerPedidoPuertas } from './pedido.ts';
 import { escribirPlanoPuertas } from './plano.ts';
-import { fichasClientesPuertas, fichaPorCodigo, fichaDePuerta } from './clientes.ts';
+import { fichasClientesPuertas, fichaPorCodigo, fichaPorId, fichaDePuerta, validarFichaClientePuertas } from './clientes.ts';
 import { cambiarTipoDelCliente, nuevaPuertaDeCliente, otraPuertaDelCliente } from './nuevaPuertaCliente.ts';
 import { puertasDesdeRps } from './rps.ts';
 
@@ -19,6 +19,13 @@ const huellas:Record<string,string[]>={
  AR2605035:['7a300790349ce58674f2b7412da91374b5ed904f67d19a24f7be7e9fd54ff932','4a34ddd7d8e82bc5c891fca4f12b655cf881f7997ee211d24c56d13b076a515c','98cf2a1f82093c07c0e5dc446421d6526375e87e463a6cd0d646f6234c0a6cf0','943427c2782516abb4ab85aed138174836c2e05c8c2b5988b01b4b3dc064eb77'],
 };
 describe('fichas de clientes de Puertas',()=>{
+ it('rechaza una ficha de cálculo TGM sin los parámetros de enrolle',()=>{
+  const {enrolle,...ficha}=fichaPorId('tgm')!;
+  expect(enrolle).toBeDefined();
+  expect(()=>validarFichaClientePuertas(ficha)).toThrow(/Ficha de cliente de Puertas inválida/);
+  expect(()=>validarFichaClientePuertas({...ficha,enrolle:{...enrolle,anguloPerfil:0}})).toThrow(/Ficha de cliente de Puertas inválida/);
+  expect(()=>validarFichaClientePuertas({...ficha,enrolle:{...enrolle,altoPerfil:0}})).not.toThrow();
+ });
  it('cada cliente tiene unidades, rollos, tipos y rótulos propios; el desconocido va a General',()=>{
   expect(fichasClientesPuertas.map(f=>f.id)).toEqual(expect.arrayContaining(['araujo','general','portanova']));
   expect(fichaPorCodigo('001336')).toMatchObject({id:'portanova',unidadHoja:'cm',rollos:{rollo:300,rolloCristal:140,rolloSaco:300},rotulos:{espaciador:'ESPACIADOR ESPECIAL PORTANOVA'}});

@@ -38,6 +38,19 @@ export interface Puerta {
   santapau?: { /** Sin revisión, se conserva el corte anterior si el documento guardó +5. */
     revision?: '4815' | '5363';
     aumentoBajo: number; altoFaldon: number; ladoCerrado: 'izquierda'|'derecha'|'sin confirmar'; refuerzos: boolean; anchoRefuerzo?: number };
+  tgm?: {
+    altoHueco: number; // cm
+    altoTotal: number | null; // cm; si falta, se suma el añadido al alto del hueco
+    anadido: number; // cm
+    diametroEnrolle: number; // mm
+    nTubos: number;
+    diametroTubo: 42; // mm
+    anchoEt: number; // cm de corte
+    abajo: 'tubo' | 'saco'; // La medida del saco se guarda en enrollable.saco.
+    grosor: number; // mm
+    tubosManual: number[] | null; // mm desde el perfil; null para reparto automático
+    ajustes: { margen: number; desvio: number; altoPerfil: number; anchoPerfil: number; anguloPerfil: number }; // mm y grados
+  };
   /** Opcionales: los documentos anteriores conservan su interpretación y sus bytes. */
   clientePuertas?: string;
   tipoPuerta?: string;
@@ -73,6 +86,12 @@ export interface Puerta {
     /** Puerta enrollable ciega, sin ventanal (Iván, 06/11/2026, AR2605429): un solo paño del saco a la cabecera,
      * sin cristal ni cachos; T, D y margen no cuentan. */
     sinVentanal?: boolean;
+    /** TGM con tubo abajo, alojado en el cierre de la lona. */
+    sinSaco?: boolean;
+    /** Centímetros de lona que se doblan para el cierre del tubo de abajo (Q-TGM05). */
+    cierreBajo?: number;
+    /** Ancho de corte de la E.T. en cm. Sin el campo, se aplica REGLAS_ENROLLABLE.corteEntrada. */
+    anchoEt?: number;
     /** Sin E.T. encima: T llega al borde del paño y no hay marcas de esa E.T.
      * El cristal y los cachos solapan 2 cm con el paño. Sin el campo, con E.T. como siempre. */
     sinEtArriba?: boolean;

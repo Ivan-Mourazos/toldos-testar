@@ -439,3 +439,20 @@ Respuestas de Iván. «Pendiente» quiere decir que la web todavía no lo aplica
 | Q-SP05 · Contestada | Rollos | **Iván, 04/11:** «iguales al resto, 300/140/300 por defecto sin aviso de provisional». Valores iniciales confirmados y editables |
 | Q-SP06 · Contestada | Lado cerrado | **Iván, 04/11:** «mejor elegir». Elección obligatoria por pedido, mirando por el revés; sin elegir no se genera el bot |
 | Q-SP07 · Cerrada por comprobación | El informe anterior atribuía X2 al alzado B del5363. La reconversión de la copia local del DWG y sus entidades muestran **X1**, igual que hoja y RPS | **B×1**, OF0233645, también rotulada X1 en el alzado. A×2, OF0233644. No queda una contradicción de cantidad |
+
+## Puertas · TGM enrollable · 18/11/2026
+
+- **Q-TGM01 · Bolsillo de la varilla (contestada).** Iván, 18/11: la lona lleva 3,5 cm de más arriba para la
+  entrada de la varilla (como la cabecera de Portanova), los 30 cm de enrolle se cuentan desde la varilla ya puesta
+  y el bolsillo va soldado.
+- **Q-TGM02 · Perfil fleco (contestada).** Bulto de 1 cm (Iván, 18/11); basta con que el tubo quede un poco
+  desplazado. Calculado con el modelo del rollo: el bulto sube 9,6 mm encima del perfil y a 25° ya está por debajo de
+  la mitad (5 mm); a unos 36° desaparece. Mínimo 25°.
+- **Q-TGM03 · E.T. (contestada).** Iván, 18/11: la E.T. es solo una tira de lona que sujeta el tubo. Se corta del
+  ancho exacto que dice el pedido (depende del tubo), se suelda 2-3 cm por arriba y por abajo y el tubo va en el
+  centro. No cambia las uniones de la lona.
+- **Q-TGM04 · Tubo abajo (contestada).** Iván, 18/11: sin saco, el tubo de abajo va en el cierre: la lona lleva un
+  aumento que se dobla, se suelda y deja el tubo dentro con la medida terminada.
+- **Q-TGM05 · Aumento del cierre de abajo.** Iván, 18/11 (lo están mirando en el taller): lo necesario para que
+  entre el tubo y un poco más para soldar. Mientras tanto: media vuelta del tubo (π·Ø/2) + 3 cm de soldadura y
+  holgura, redondeado al cm de arriba. Con Ø42: 6,6 + 3 = 9,6 → 10 cm.

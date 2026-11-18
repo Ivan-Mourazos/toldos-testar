@@ -17,12 +17,14 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
     ids.add(e.id);
     const p=e.input;
     if(p.clientePuertas!==undefined){
-      if(typeof p.clientePuertas!=='string'||!fichaPorId(p.clientePuertas))return error();
-      const tipo=fichaPorId(p.clientePuertas)!.tipos.find(t=>t.id===p.tipoPuerta);
+      const ficha=typeof p.clientePuertas==='string'?fichaPorId(p.clientePuertas):undefined;
+      if(!ficha)return error();
+      const tipo=ficha.tipos.find(t=>t.id===p.tipoPuerta);
       if(!tipo||tipo.modelo!==p.modelo||tipo.forma&&(!objeto(p.araujo)||tipo.forma!==p.araujo.forma))return error();
-      if((fichaPorId(p.clientePuertas)!.calculo==='araujo')!==Boolean(p.araujo))return error();
-      if((fichaPorId(p.clientePuertas)!.calculo==='santapau')!==Boolean(p.santapau))return error();
-    }else if(p.tipoPuerta!==undefined)return error();
+      if((ficha.calculo==='araujo')!==Boolean(p.araujo))return error();
+      if((ficha.calculo==='santapau')!==Boolean(p.santapau))return error();
+      if((ficha.calculo==='tgm')!==(p.tgm!==undefined))return error();
+    }else if(p.tipoPuerta!==undefined||p.tgm!==undefined)return error();
     if(typeof p.modelo!=='string' || !Object.hasOwn(MODELOS_PUERTAS,p.modelo)) return error();
     if(p.articuloOrigen!=='' && (typeof p.articuloOrigen!=='string'||!Object.hasOwn(MODELOS_PUERTAS,p.articuloOrigen)&&!(ARTICULOS_TRAMOS_ARAUJO as readonly string[]).includes(p.articuloOrigen)))return error();
     if(p.notaPlano!==undefined && (typeof p.notaPlano!=='string' || p.notaPlano.length>1000)) return error();
@@ -38,6 +40,16 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
     const numeros=(x:unknown,max=100)=>lista(x,max) && x.every(n=>typeof n==='number' && Number.isFinite(n) && Math.abs(n)<=3000);
     const cotas=(x:unknown,claves:string[])=>objeto(x) && claves.every(k=>typeof x[k]==='number' && Number.isFinite(x[k]) && Math.abs(x[k] as number)<=3000);
     const hueco=(x:unknown)=>cotas(x,['x','y','ancho','alto','radio']);
+    if(p.tgm!==undefined){
+      const t=p.tgm;
+      if(!objeto(t))return error();
+      const {ajustes}=t;
+      if(!cotas(t,['altoHueco','anadido','anchoEt'])||t.altoTotal!==null&&!cotas(t,['altoTotal'])
+        ||!Number.isFinite(t.diametroEnrolle)||t.diametroTubo!==42||!Number.isFinite(t.grosor)||!Number.isInteger(t.nTubos)
+        ||(t.abajo!=='tubo'&&t.abajo!=='saco')||!objeto(ajustes)
+        ||!['margen','desvio','altoPerfil','anchoPerfil','anguloPerfil'].every(k=>Number.isFinite(ajustes[k])))return error();
+      if(t.tubosManual!==null&&(!Array.isArray(t.tubosManual)||!t.tubosManual.every(n=>Number.isFinite(n))))return error();
+    }
     if(p.santapau!==undefined){
       const s=p.santapau;
       if(p.clientePuertas!=='santapau'||!objeto(s)||!cotas(s,['aumentoBajo','altoFaldon'])||!['izquierda','derecha','sin confirmar'].includes(s.ladoCerrado as string)||typeof s.refuerzos!=='boolean')return error();
@@ -75,6 +87,9 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
     if(!objeto(p.enrollable) || !cotas(p.enrollable,['T','D','margen']) || !lista(p.enrollable.empates,100) || !p.enrollable.empates.every(u=>objeto(u) && ['superior','inferior'].includes(u.pano as string) && cotas(u,['altura','solape']) && (u.tubo===undefined || (typeof u.tubo==='number'&&Number.isInteger(u.tubo)&&u.tubo>0&&u.tubo<=(p.entradas as unknown[]).length)))) return error();
     if(p.enrollable.sacoPartido!==undefined && typeof p.enrollable.sacoPartido!=='boolean')return error();
     if(p.enrollable.sinVentanal!==undefined && typeof p.enrollable.sinVentanal!=='boolean')return error();
+    if(p.enrollable.sinSaco!==undefined && typeof p.enrollable.sinSaco!=='boolean')return error();
+    if(p.enrollable.cierreBajo!==undefined && !cotas(p.enrollable,['cierreBajo']))return error();
+    if(p.enrollable.anchoEt!==undefined && !cotas(p.enrollable,['anchoEt']))return error();
     if(p.enrollable.ventanasPequenas!==undefined && typeof p.enrollable.ventanasPequenas!=='boolean')return error();
     if(p.enrollable.sinEtArriba!==undefined && typeof p.enrollable.sinEtArriba!=='boolean')return error();
     if(p.enrollable.sinEtAbajo!==undefined && typeof p.enrollable.sinEtAbajo!=='boolean')return error();

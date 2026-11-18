@@ -6,13 +6,17 @@ export interface TipoPuertaCliente {
 }
 export interface FichaClientePuertas {
   id: string; nombre: string; codigoRps: string; unidadHoja: 'cm'|'mm'; habilitado: boolean;
-  calculo: 'portanova'|'araujo'|'santapau'|'pendiente'; aviso?: string;
+  calculo: 'portanova'|'araujo'|'santapau'|'tgm'|'pendiente'; aviso?: string;
   rollos: { rollo: number; rolloCristal: number; rolloSaco: number }; rollosConfirmados: boolean;
   remates: string; perfiles: Record<string,{aumento:number;marca:number;nombre?:string;aviso?:string}>;
   perfilInicial?: string;
   rotulacion?: { desdeBajo: number; dosCaras: boolean };
   rotulos: { espaciador: string; cremallera: string; plantilla: 'portanova'|'general' };
   tipos: TipoPuertaCliente[]; articulos: Record<string,string>;
+  enrolle?: {
+    diametroEnrolle: number; diametroTubo: 42; grosor: number; anadido: number; anchoEt: number; nTubos: number;
+    margen: number; desvio: number; altoPerfil: number; anchoPerfil: number; anguloPerfil: number;
+  };
 }
 /** Node lee la carpeta; Vite incluye esos mismos JSON al compilar. No hay una lista de clientes en el código. */
 function archivosNode(): Record<string,unknown> {
@@ -22,14 +26,22 @@ function archivosNode(): Record<string,unknown> {
 }
 const archivos:Record<string,unknown>=typeof process!=='undefined'&&typeof process.getBuiltinModule==='function'
   ? archivosNode() : import.meta.glob('./clientes/*.json',{eager:true,import:'default'});
-function validar(valor:unknown):FichaClientePuertas {
+export function validarFichaClientePuertas(valor:unknown):FichaClientePuertas {
   const f=valor as FichaClientePuertas;
-  if(!f||!f.id||!f.nombre||typeof f.codigoRps!=='string'||!['cm','mm'].includes(f.unidadHoja)||typeof f.habilitado!=='boolean'||!['portanova','araujo','santapau','pendiente'].includes(f.calculo)
+  if(!f||!f.id||!f.nombre||typeof f.codigoRps!=='string'||!['cm','mm'].includes(f.unidadHoja)||typeof f.habilitado!=='boolean'||!['portanova','araujo','santapau','tgm','pendiente'].includes(f.calculo)
     ||!f.rollos||!Object.values(f.rollos).every(n=>Number.isFinite(n)&&n>0)||!f.rotulos||!f.perfiles||!Array.isArray(f.tipos)||!f.tipos.length||!f.articulos
-    ||f.tipos.some(t=>!t.id||!t.nombre||!['PUERTAENR','PUERTAPLE','PUERTAUTO',...(f.id==='portanova'?['SACOARENA']:[])].includes(t.modelo))||Object.values(f.articulos).some(t=>!f.tipos.some(x=>x.id===t)))throw new Error('Ficha de cliente de Puertas inválida. Revisa src/puertas/clientes/.');
+    ||f.tipos.some(t=>!t.id||!t.nombre||!['PUERTAENR','PUERTAPLE','PUERTAUTO',...(f.id==='portanova'?['SACOARENA']:[])].includes(t.modelo))||Object.values(f.articulos).some(t=>!f.tipos.some(x=>x.id===t))
+    ||f.calculo==='tgm'&&!valoresEnrolleValidos(f.enrolle))throw new Error('Ficha de cliente de Puertas inválida. Revisa src/puertas/clientes/.');
   return f;
 }
-export const fichasClientesPuertas=Object.values(archivos).map(validar).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
+
+function valoresEnrolleValidos(e: FichaClientePuertas['enrolle']): boolean {
+  return !!e && e.diametroTubo === 42 && Number.isFinite(e.altoPerfil) && e.altoPerfil >= 0
+    && [e.diametroEnrolle, e.grosor, e.anadido, e.anchoEt, e.nTubos, e.margen, e.desvio, e.anchoPerfil, e.anguloPerfil]
+      .every(n => Number.isFinite(n) && n > 0);
+}
+
+export const fichasClientesPuertas=Object.values(archivos).map(validarFichaClientePuertas).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
 if(new Set(fichasClientesPuertas.map(f=>f.id)).size!==fichasClientesPuertas.length||new Set(fichasClientesPuertas.filter(f=>f.codigoRps).map(f=>f.codigoRps)).size!==fichasClientesPuertas.filter(f=>f.codigoRps).length)throw new Error('Fichas de Puertas con identificador o código RPS repetido.');
 export const fichaPorId=(id:string)=>fichasClientesPuertas.find(f=>f.id===id);
 export const fichaPorCodigo=(codigo:string)=>fichasClientesPuertas.find(f=>f.codigoRps&&f.codigoRps===codigo.trim())??fichaPorId('general')!;
