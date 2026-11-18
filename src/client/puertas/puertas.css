@@ -76,6 +76,30 @@
 .puerta-avisos .es-error { color:var(--error-texto); }
 .puerta-piezas table { width:100%; border-collapse:collapse; font-size:12px; }
 .puerta-piezas td, .puerta-piezas th { padding:9px; border-bottom:1px solid var(--border); text-align:left; }
+.puerta-tgm-ajustes { margin-top:12px; border-top:1px solid var(--border); }
+.puerta-tgm-ajustes > button { margin:10px 0; }
+.simulador-enrolle { margin-top:16px; padding:16px; }
+.puerta-editor .simulador-enrolle { grid-column:1 / -1; grid-row:6; margin:0; }
+.simulador-enrolle__cuerpo { display:grid; grid-template-columns:minmax(270px, .78fr) minmax(0, 1.22fr); gap:18px; margin-top:12px; }
+.simulador-enrolle__dibujo { display:grid; align-content:start; justify-items:center; gap:10px; min-width:0; }
+.simulador-enrolle canvas { display:block; width:min(100%, 258px); height:auto; background:var(--zone); border:1px solid var(--border); border-radius:8px; }
+.simulador-enrolle__mandos { display:grid; grid-template-columns:1fr auto; align-items:center; gap:5px 10px; width:100%; max-width:425px; font-size:12px; }
+.simulador-enrolle__mandos > label { font-weight:600; }
+.simulador-enrolle__mandos > output { grid-column:2; grid-row:1; font-variant-numeric:tabular-nums; color:var(--text-muted); }
+.simulador-enrolle__mandos input { grid-column:1 / -1; width:100%; margin:0; accent-color:var(--control-active-border); }
+.simulador-enrolle__mandos input:focus-visible { outline:2px solid var(--focus-ring); outline-offset:2px; }
+.simulador-enrolle__acciones { display:flex; flex-wrap:wrap; gap:6px; grid-column:1 / -1; }
+.simulador-enrolle__datos { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:0 0 8px; }
+.simulador-enrolle__datos > div { background:var(--zone); border:1px solid var(--border); border-radius:8px; padding:9px 12px; }
+.simulador-enrolle__datos dt, .simulador-enrolle__datos .simulador-enrolle__detalle { color:var(--text-muted); font-size:12px; }
+.simulador-enrolle__datos dd { margin:3px 0 0; font-size:18px; font-weight:600; font-variant-numeric:tabular-nums; }
+.simulador-enrolle__datos > .es-error dd, .simulador-enrolle__error { color:var(--error-texto); }
+.simulador-enrolle__tabla { width:100%; border-collapse:collapse; font-size:12px; font-variant-numeric:tabular-nums; }
+.simulador-enrolle__tabla caption { text-align:left; color:var(--text-muted); font-size:12px; padding-block:6px; }
+.simulador-enrolle__tabla :is(th, td) { text-align:right; padding:6px; border-bottom:1px solid var(--border); }
+.simulador-enrolle__tabla :is(th, td):first-child { text-align:left; }
+.simulador-enrolle__tabla input { width:86px; max-width:100%; min-width:0; text-align:right; padding:4px; }
+.simulador-enrolle__error { margin:6px 0; font-size:12px; }
 .puerta-cutter { stroke:var(--tramo-holgado); stroke-width:1.2; fill:none; }
 .puerta-pano { fill:var(--surface); stroke:var(--text); stroke-width:0.8; }
 .puerta-franja-amarilla { fill:#c4bd00; stroke:none; }
@@ -177,7 +201,12 @@ html:root #root .puerta-editor .puerta-dibujo .puerta-vistas { position:absolute
   grid-column:2; grid-row:1 / span 5; position:sticky; top:var(--puerta-techo,76px); align-self:start;
   height:var(--puerta-alto,calc(100dvh - 88px)); min-width:0; min-height:0; display:flex; flex-direction:column;
 }
-.puerta-editor .puerta-dibujo > :is(.puerta-alzado,.puerta-corte-resumen) {
+.puerta-editor .puerta-config-tgm .puerta-dibujo { position:relative; top:auto; height:auto; align-self:stretch; display:block; }
+.puerta-editor .puerta-tgm-vista {
+  position:sticky; top:var(--puerta-techo,76px); display:flex; flex-direction:column;
+  height:var(--puerta-alto,calc(100dvh - 88px));
+}
+.puerta-editor :is(.puerta-dibujo,.puerta-tgm-vista) > :is(.puerta-alzado,.puerta-corte-resumen) {
   flex:1; margin:0; max-height:none; min-width:0; min-height:0; display:flex; flex-direction:column; overflow:auto; padding:12px;
 }
 .puerta-editor .puerta-alzado header { margin-bottom:4px; padding-right:160px; flex-wrap:wrap; gap:4px 12px; }

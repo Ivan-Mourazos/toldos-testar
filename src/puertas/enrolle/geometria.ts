@@ -119,8 +119,12 @@ export function construir(cfg: ConfigEnrolle, marcas: number[], largo = marcas.a
   return { cfg, largo, marcas, tubos, camino };
 }
 
+export function posicionLona(m: ModeloEnrolle, avance: number): Apoyo {
+  return en(m.cfg, m.camino, avance);
+}
+
 export function centros(m: ModeloEnrolle, avance: number): Punto[] {
-  const { desfase } = medidas(m.cfg), p = en(m.cfg, m.camino, avance), c = Math.cos(p.a), s = Math.sin(p.a);
+  const { desfase } = medidas(m.cfg), p = posicionLona(m, avance), c = Math.cos(p.a), s = Math.sin(p.a);
   return m.tubos.map(t => {
     if (avance >= t.marca) return t;
     const libre = t.marca - avance;

@@ -1,4 +1,4 @@
-import { alturasTubos, desfaseCintas } from './calcular.ts';
+import { alturasTubos, desfaseCintas, solapeEntradaEnrollable } from './calcular.ts';
 import { huecosSinEscuadrado, llevaEscuadrado } from './escuadrado.ts';
 import { alzadoAraujo } from './alzadoAraujo.ts';
 import { alzadoSantaPau } from './alzadoSantaPau.ts';
@@ -90,6 +90,8 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   const H = p.alto > 0 ? p.alto : 400;
   const desnivel = desnivelSuelo(p), altoDerecho = H - desnivel;
   const enr = p.modelo === 'PUERTAENR';
+  const sinSaco = enr && p.enrollable.sinSaco;
+  const pvcTgm = enr && p.tgm?.lona === 'pvc';
   const ple = p.modelo === 'PUERTAPLE';
   const auto = p.modelo === 'PUERTAUTO';
   const margen = llevaEscuadrado(p) ? 1 : 0;
@@ -149,7 +151,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
           && !(p.enrollable.sinEtAbajo && Math.abs(y - ejesVentanal.at(-1)!) < .01))
         .filter((y, idx, arr) => y > 0 && y < H && arr.findIndex(v => Math.abs(v - y) < 0.5) === idx)
         .sort((a, b) => a - b)
-        .map(y => ({ y, alto: 7.5 }))
+        .map(y => ({ y, alto: p.tgm?.anchoEt ?? 7.5 }))
     : ple
       ? tubos.map((altura, i) => ({
           y: H - altura,
@@ -164,11 +166,13 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   const altoPestana = ple && p.apilable.doble ? 14 : saco.altoPestana;
   const wSaco = ple && p.apilable.doble ? Math.max(20, F - 6) : F;
 
-  const textosTaller = colocarTextosPuerta({ ...p, frente: F, alto: H }, resultado);
+  const textosTaller = colocarTextosPuerta({ ...p, frente: F, alto: H }, resultado)
+    .filter(t => !sinSaco || (t.id !== 'saco' && t.id !== 'soldar-saco'));
   const xMin = Math.min(desnivel ? -116 : -56, ...textosTaller.map(t => t.x - 8));
   const yMin = -62;
   const anchoVista = Math.max(F + (desnivel ? 150 : 110), ...textosTaller.map(t => t.x + t.ancho + 8)) - xMin;
-  const altoVista = yDesplegado + hCorteSaco + Math.abs(desnivel) + (enr ? 80 : 55) - yMin;
+  const altoVista = sinSaco ? H + (p.enrollable.cierreBajo ?? 0) + 25 - yMin
+    : yDesplegado + hCorteSaco + Math.abs(desnivel) + (enr ? 80 : 55) - yMin;
   const letraBase = Math.min(10.5, Math.max(7.5, Math.min(F / 24, H / 38)));
 
   // Contorno general de la puerta
@@ -251,11 +255,21 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
     rect('puerta-entrada-alzado', 0 - margen, b.y - b.alto / 2, F + margen * 2, b.alto);
     linea('puerta-tubo', 0, b.y, F, b.y);
     cota({ x1: -12, y1: b.y - b.alto / 2, x2: -12, y2: b.y + b.alto / 2, linea: -12, valor: b.alto, estilo: enr ? 'XERAL 5' : 'XERAL', marcas: 4, texto: { x: -18, y: b.y + 3, ancla: 'end' } });
-    marca(b.y + b.alto / 2, -1);
+    if (!pvcTgm || !resultado.uniones.some(u => u.tubo && Math.abs(H - b.y - u.altura) < .01)) {
+      marca(b.y + (p.tgm && enr ? solapeEntradaEnrollable(p) : b.alto) / 2, -1);
+    }
   }
   marca(auto ? 30 : ple ? p.apilable.bolsillo / 2 : 3.5);
   const inicioMarcaSaco = formas.length;
-  marca(H - hSaco, -1);
+  if (!sinSaco) marca(H - hSaco, -1);
+  else {
+    const cierre = p.enrollable.cierreBajo ?? 0;
+    if (cierre > 0) rect('puerta-pano', 0, H, F, cierre);
+    if (p.enrollable.marcaCierre !== undefined) {
+      const y = H + cierre - p.enrollable.marcaCierre;
+      linea('puerta-rotulador', p.margenMarcas, y, F - p.margenMarcas, y);
+    }
+  }
   if (desnivel) for (const f of formas.slice(inicioMarcaSaco)) {
     if (f.tipo==='linea') { f.y1-=desnivel*f.x1/F; f.y2-=desnivel*f.x2/F; }
     if (f.tipo==='polilinea') f.puntos=f.puntos.map(([x,y])=>[x,y-desnivel*x/F]);
@@ -284,7 +298,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
       const yEje = H - (ple ? tubos[i] ?? e.altura : e.altura);
       if (enr && (p.enrollable.sinEtArriba && Math.abs(yEje - T) < .01
         || p.enrollable.sinEtAbajo && Math.abs(yEje - ejesVentanal.at(-1)!) < .01)) return;
-      const altoE = enr ? 7.5 : e.alto || (e.diametro === 42 ? 13.5 : 12);
+      const altoE = enr && !p.tgm ? 7.5 : e.alto || (e.diametro === 42 ? 13.5 : 12);
       // Cada hueco en coordenadas de la puerta. Los extremos están en la E.T. (que en apilables de más de 6 m
       // sobresale 1 cm); las cintas ya se miden desde el borde de la puerta (AR2605391), salvo que la E.T. sea
       // del largo del frente, como en el AR2605036, donde se dibujaban con el mismo cm de menos.
@@ -309,9 +323,11 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   }
 
   // Saco en el bajo de la puerta terminada y su cota
-  if (desnivel) formas.push({tipo:'poligono',clase:'puerta-saco',puntos:[[0,H-hSaco],[F,altoDerecho-hSaco],[F,altoDerecho],[0,H]]});
-  else rect('puerta-saco', 0, H - hSaco, F, hSaco);
-  cota({ x1: F + 12, y1: altoDerecho - hCota, x2: F + 12, y2: altoDerecho, linea: F + 12, valor: hCota, marcas: 4, texto: { x: F + 18, y: altoDerecho - hCota / 2 + 3, ancla: 'start' } });
+  if (!sinSaco) {
+    if (desnivel) formas.push({tipo:'poligono',clase:'puerta-saco',puntos:[[0,H-hSaco],[F,altoDerecho-hSaco],[F,altoDerecho],[0,H]]});
+    else rect('puerta-saco', 0, H - hSaco, F, hSaco);
+    cota({ x1: F + 12, y1: altoDerecho - hCota, x2: F + 12, y2: altoDerecho, linea: F + 12, valor: hCota, marcas: 4, texto: { x: F + 18, y: altoDerecho - hCota / 2 + 3, ancla: 'start' } });
+  }
 
   // Bolsillo opcional: solo dos esquinas en L
   if (resultado.bolsillo) {
@@ -331,7 +347,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
     if (!u.tubo) nota(`EMPATE ${numAlzado(u.solape)}cm`, 40, H - u.altura - 4, 5);
     if (u.tubo) {
       marca(H - u.altura - u.solape / 2);
-      marca(H - u.altura + u.solape / 2, -1);
+      if (!pvcTgm) marca(H - u.altura + u.solape / 2, -1);
     } else {
       const y = H - u.altura - u.solape / 2;
       linea('puerta-rotulador', p.margenMarcas, y, F - p.margenMarcas, y);
@@ -389,6 +405,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   // Pieza desplegada del saco con su pestaña debajo del alzado
   const inicioDesplegado = formas.length;
   const y0 = yDesplegado, y1 = yDesplegado + hCorteSaco;
+  if (sinSaco) return { formas, vista: { xMin, yMin, ancho: anchoVista, alto: altoVista }, letraBase, F, H };
   formas.push({
     tipo: 'poligono', clase: 'puerta-saco-pieza',
     puntos: pestanaSaco > 0

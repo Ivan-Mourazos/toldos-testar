@@ -24,6 +24,7 @@ import type { ResumenPedido } from '../remolques/SelectorProducto';
 import { AlzadoPuerta } from './AlzadoPuerta';
 import { ConfigurarAraujo } from './ConfigurarAraujo';
 import { ConfigurarSantaPau } from './ConfigurarSantaPau';
+import { ConfigurarTgm } from './ConfigurarTgm';
 import { fichaDePuerta, fichaPorCodigo, fichaPorId, tipoDePuerta } from '../../puertas/clientes.ts';
 import { cambiarTipoDelCliente, nuevaPuertaDeCliente, otraPuertaDelCliente } from '../../puertas/nuevaPuertaCliente.ts';
 import { CorteResumen, useVistaCortePuertas } from './VistaCortePuertas';
@@ -62,7 +63,6 @@ function Huecos({huecos,cambiar}:{huecos:Hueco[];cambiar:(h:Hueco[])=>void}) {
 }
 type PestanaPuerta='puerta'|'estructura'|'entradas'|'ventanas'|'saco'|'texto';
 function Configurar({p,cambiar,corte,derecha='alzado',letra='A',vistas}:{p:Puerta;cambiar:(p:Puerta)=>void;corte?:React.ReactNode;derecha?:'alzado'|'corte';letra?:string;vistas?:React.ReactNode}) {
-  const resultado=calcularPuerta(p);
   const [pestana,setPestana]=useState<PestanaPuerta>('puerta');
   const formularioFluido=useContenidoFluido<HTMLElement>(pestana);
   const dibujoFluido=useContenidoFluido(derecha);
@@ -71,6 +71,8 @@ function Configurar({p,cambiar,corte,derecha='alzado',letra='A',vistas}:{p:Puert
   if(p.clientePuertas&&!ficha.habilitado)return <section className="puerta-config panel panel-vidrio" aria-label="Cliente sin reglas de confección"><h2>{ficha.nombre} · confección pendiente</h2><p className="puerta-ayuda">{textoMedidasMm(ficha.aviso??'')}</p><p className="puerta-ayuda">Artículo {p.articuloOrigen||'sin indicar'} · OF {p.of||'SIN OF'} · {num(p.frente)} × {num(p.alto)} mm</p><p className="puerta-ayuda">{p.observaciones}</p></section>;
   if(p.araujo)return <ConfigurarAraujo p={p} cambiar={cambiar} corte={corte} derecha={derecha} letra={letra} vistas={vistas}/>;
   if(p.santapau)return <ConfigurarSantaPau p={p} cambiar={cambiar} corte={corte} derecha={derecha} letra={letra} vistas={vistas}/>;
+  if(p.tgm)return <ConfigurarTgm p={p} cambiar={cambiar} corte={corte} derecha={derecha} letra={letra} vistas={vistas}/>;
+  const resultado=calcularPuerta(p);
   // System Dock: una lona rectangular; sin cristal, saco, tubos ni ventanas (src/puertas/systemDock.ts).
   const sd=p.modelo==='SYSTEMDOCK';
   const set=<K extends keyof Puerta>(k:K,v:Puerta[K])=>cambiar({...p,[k]:v});
