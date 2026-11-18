@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { calcularPuerta } from './calcular.ts';
+import { calcularPuerta, huecosEntrada } from './calcular.ts';
 import { generarCortePuertas } from './corte.ts';
 import { escribirPlanoPuertas } from './plano.ts';
 import { leerPedidoPuertas } from './pedido.ts';
 import { NOTA_CACHOS_CRISTAL, notaPlanoEnrollable } from './ventanalesEnrollable.ts';
 import { registrosDxf, valor } from '../domain/corteLona/dxfTestHelpers.js';
-import { pedidoDe, puerta4638 } from './__fixtures__/ejemplos.ts';
+import { base, pedidoDe, puerta4638 } from './__fixtures__/ejemplos.ts';
 
 // Iván, 06/11/2026 (AR2605429): una enrollable puede ir sin ventanal; antes no dejaba generar el corte.
 const ciega = () => {
@@ -66,5 +66,57 @@ describe('puerta enrollable sin ventanal', () => {
     expect(notaPlanoEnrollable(ciega())).toBe('');
     expect(notaPlanoEnrollable({ ...puerta4638(), notaPlano: '' })).toBe('');
     expect(notaPlanoEnrollable({ ...puerta4638(), notaPlano: 'OTRA NOTA' })).toBe('OTRA NOTA');
+  });
+});
+
+describe('enrollable TGM sin saco y con E.T. de ancho variable', () => {
+  it('corta la E.T. suelta a 14,5 y conserva el solape de la unión en 7,5 cm', () => {
+    const p = base('PUERTAENR', 300, 430);
+    const r = calcularPuerta({ ...p, rollo: 250, enrollable: { ...p.enrollable, sinVentanal: true, anchoEt: 14.5 },
+      entradas: [90, 220].map(altura => ({ altura, diametro: 42, largo: 300, alto: 14.5, huecos: [] })) });
+    expect(r.piezas.filter(x => x.clase === 'entrada')).toMatchObject([
+      { nombre: 'Entrada de tubo 1', ancho: 300, alto: 14.5, origenAlzado: [0, 82.75] },
+    ]);
+    expect(r.uniones).toEqual([{ altura: 220, solape: 7.5, tubo: 2 }]);
+  });
+
+  it('también corta al ancho exacto las dos E.T. entre ventanales', () => {
+    const p = puerta4638();
+    const r = calcularPuerta({ ...p, enrollable: { ...p.enrollable, anchoEt: 14.5, ventanales: [{ D: 50, margen: 6 }] } });
+    const tiras = r.piezas.filter(x => x.nombre.startsWith('Entrada entre ventanales'));
+    expect(tiras).toMatchObject([
+      { alto: 14.5, origenAlzado: [0, 123.75] },
+      { alto: 14.5, origenAlzado: [0, 123.75] },
+    ]);
+  });
+
+  it('centra los huecos de Ø42 de los extremos y las cintas en la E.T. de 14,5', () => {
+    expect(huecosEntrada(300, 42, [80], 14.5)).toMatchObject([
+      { y: 2.5, alto: 9.5, ancho: 5 }, { y: 2.5, alto: 9.5, ancho: 5 }, { y: 2.5, alto: 9.5, ancho: 12 },
+    ]);
+    expect(huecosEntrada(300, 42)[0]).toMatchObject({ y: 2, alto: 9.5 });
+  });
+
+  it('baja el paño 10 cm, marca el doblez en el bajo terminado y lo lleva al corte', () => {
+    const basePuerta = base('PUERTAENR', 300, 430);
+    const p = { ...basePuerta, enrollable: { ...basePuerta.enrollable, sinVentanal: true, sinSaco: true,
+      cierreBajo: 10, anchoEt: 14.5, saco: null, sacoPartido: true } };
+    const r = calcularPuerta(p);
+    expect(r.avisos.filter(a => a.nivel === 'error')).toEqual([]);
+    expect(r.alternativasSaco).toBeNull();
+    expect(r.piezas).toMatchObject([{ nombre: 'Paño', ancho: 300, alto: 443.5 }]);
+    const [pano] = r.piezas;
+    expect(pano.origenAlzado?.[0]).toBeCloseTo(0);
+    expect(pano.origenAlzado?.[1]).toBe(-10);
+    expect(pano.marcas).toEqual([[1.5, 10, 298.5, 10], [1.5, 436.5, 298.5, 436.5]]);
+
+    const corte = generarCortePuertas(pedidoDe('PRUEBA', p));
+    expect(corte.archivo).not.toBeNull();
+    const [lona] = corte.cortes;
+    const [{ x, y, girada }] = lona.colocadas;
+    const doblez = girada
+      ? { x1: x + 4335, x2: x + 4335, y1: y + 15, y2: y + 2985 }
+      : { x1: x + 15, x2: x + 2985, y1: y + 100, y2: y + 100 };
+    expect(lona.entidades.lineas).toContainEqual({ capa: 'ROTULADOR', ...doblez });
   });
 });

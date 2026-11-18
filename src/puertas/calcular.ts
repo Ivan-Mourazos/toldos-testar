@@ -43,8 +43,8 @@ export function yEnTramo(p: Puerta, tramo: number, alto: number): number | null 
   if (!Number.isInteger(tramo) || tramo < 1 || tramo >= t.length) return null;
   return n((t[tramo - 1] + t[tramo]) / 2 - alto / 2);
 }
-export function huecosEntrada(largo: number, diametro: 30 | 42, cintas: number[] = []): Hueco[] {
-  const alto = diametro === 42 ? 13.5 : 12, h = diametro === 42 ? 9.5 : 7.5;
+export function huecosEntrada(largo: number, diametro: 30 | 42, cintas: number[] = [], altoEt?: number): Hueco[] {
+  const alto = altoEt ?? (diametro === 42 ? 13.5 : 12), h = diametro === 42 ? 9.5 : 7.5;
   return [{ x: 1, y: (alto - h) / 2, ancho: 5, alto: h, radio: 0.5 },
     { x: largo - 6, y: (alto - h) / 2, ancho: 5, alto: h, radio: 0.5 },
     ...cintas.map(x => ({ x, y: (alto - h) / 2, ancho: 12, alto: h, radio: 0.5 }))];
@@ -60,8 +60,9 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
   const piezas: PiezaPuerta[] = [], avisos: AvisoPuerta[] = [];
   const aviso = (codigo: string, texto: string, nivel: 'error' | 'aviso' = 'error') => { if (!avisos.some(a => a.codigo === codigo && a.texto === texto)) avisos.push({ codigo, texto, nivel }); };
   const r: ResultadoPuerta = { version: 1, piezas, alternativasSaco: null, empates: [], uniones:[], bolsillo:null, avisos };
+  const sinSaco = p.modelo === 'PUERTAENR' && p.enrollable.sinSaco;
   if (!p.confirmada) aviso('MODELO', 'Falta marcar «Confirmado con el dibujo»: comprueba el modelo, las medidas y las ventanas con el dibujo del cliente.');
-  if ((p.modelo==='PUERTAENR'||p.modelo==='PUERTAUTO') && sacoUtil(p)===null) aviso('SACO', 'Falta el saco útil del pedido (en mm: 80, 110, 120…).');
+  if (!sinSaco && (p.modelo==='PUERTAENR'||p.modelo==='PUERTAUTO') && sacoUtil(p)===null) aviso('SACO', 'Falta el saco útil del pedido (en mm: 80, 110, 120…).');
   if(p.articuloOrigen && p.articuloOrigen!==p.modelo)aviso('ARTICULO_MODELO',`En RPS pone ${p.articuloOrigen} pero has elegido ${MODELOS_PUERTAS[p.modelo].toLowerCase()}: mira en el dibujo del cliente cuál es.`, 'aviso');
   if (!positivo(p.frente) || !positivo(p.alto)) aviso('MEDIDAS', 'Faltan el frente y el alto de la puerta (en cm).');
   if (!Number.isInteger(p.cantidad) || p.cantidad < 1 || p.cantidad > 50) aviso('CANTIDAD', 'La cantidad de puertas iguales tiene que ser un número entero entre 1 y 50.');
@@ -135,8 +136,10 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       }
     }
   }
+  // La E.T. de TGM se corta al ancho del pedido y se suelda 2-3 cm arriba y abajo, con el tubo en el centro (Q-TGM03).
+  const corteEt = p.modelo === 'PUERTAENR' ? p.enrollable.anchoEt ?? REGLAS_ENROLLABLE.corteEntrada : 0;
   function entrada(e: Entrada, i: number) {
-    const alto=p.modelo==='PUERTAENR'?REGLAS_ENROLLABLE.corteEntrada:e.alto;
+    const alto=p.modelo==='PUERTAENR'?corteEt:e.alto;
     const x = agregar(pieza(`Entrada de tubo ${i + 1}`, 'entrada', e.largo - (escuadrado ? 2 : 0), alto));
     x.huecos = huecosET(e);
     x.origenAlzado = [0, e.altura - alto / 2];
@@ -148,7 +151,9 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
   }
   if (p.modelo === 'PUERTAENR') {
     const e = p.enrollable, ventanales=ventanalesEnrollable(p);
-    const altoVentanales=ventanales.reduce((s,v)=>s+v.D,0), s = sacoPuerta(p), origenInferior = s.rematado;
+    const altoVentanales=ventanales.reduce((s,v)=>s+v.D,0), s = sacoPuerta(p);
+    // Sin saco, se corta lona por debajo del bajo terminado para doblarla y soldarla alrededor del tubo (Q-TGM04).
+    const origenInferior = sinSaco ? -(e.cierreBajo ?? 0) : s.rematado;
     // La E.T. que no lleva el ventanal, arriba o abajo (Iván, 27/10/2026, AR2605247): ni se corta ni se marca.
     const ciega=panoContinuoEnrollable(p);
     const etVentanal=(t:Entrada)=>!ciega&&(Boolean(e.sinEtArriba)&&Math.abs(t.altura-(p.alto-e.T))<.01
@@ -177,8 +182,9 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       // También en el dibujo: sin esto los mininúmeros de los paños salían contados desde el bajo de la puerta (27/10/2026).
       for(const panel of grupo) {panel.desde+=origen;panel.hasta+=origen;panel.pieza.origenAlzado=[-lateral,panel.desde];}
       const marcarEn=(y:number,dir?:1|-1)=>{const panel=grupo.find(t=>y>=t.desde&&y<=t.hasta);if(panel)marca(panel.pieza,y-panel.desde,dir);};
-      // Sin E.T., ninguna raya en ese borde; se conservan la varilla y la soldadura del saco.
-      if(nombre==='inferior'||!e.sinEtArriba) marcarEn(origen+(nombre==='superior'?7.5:2),nombre==='superior'?-1:undefined);
+      // En el bajo se marca el doblez del cierre o la soldadura del saco.
+      if(nombre==='inferior') marcarEn(sinSaco ? 0 : origen + 2);
+      else if(!e.sinEtArriba) marcarEn(origen + 7.5, -1);
       // Sin ventanal, la raya de arriba es la de la cabecera, como en el paño superior.
       if(ciega) marcarEn(origen+h-7);
       else if(nombre==='superior'||!e.sinEtAbajo) marcarEn(origen+h-(nombre==='superior'?7:7.5),nombre==='inferior'?1:undefined);
@@ -198,8 +204,8 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       for(let i=0;i<ventanales.length-1;i++) {
         eje=n(eje-ventanales[i].D);
         const crear=(cara:string)=>{
-          const x=agregar(pieza(`Entrada entre ventanales ${i+1} · ${cara}`,'entrada',p.frente,REGLAS_ENROLLABLE.corteEntrada));
-          x.origenAlzado=[0,eje-REGLAS_ENROLLABLE.corteEntrada/2]; return x;
+          const x=agregar(pieza(`Entrada entre ventanales ${i+1} · ${cara}`,'entrada',p.frente,corteEt));
+          x.origenAlzado=[0,eje-corteEt/2]; return x;
         };
         const delantera=crear('delantera'),trasera=crear('trasera');
         separaciones.push({delantera,trasera});
@@ -231,22 +237,23 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
         }
       }
     }
-    if(e.sacoPartido){
+    if(!sinSaco){
       const mitad=(p.frente+6.5+2)/2;
-      const izquierda=agregar(sacoConPestana(mitad-6.5,s.corte,6.5,s.altoPestana,s.corte/2,'Saco partido · con pestaña'));
-      const derecha=agregar(pieza('Saco partido · sin pestaña','saco',mitad,s.corte,p.materialSaco,p.rolloSaco));
-      numerarBorde(izquierda,++numeroUnion,'derecha');
-      numerarBorde(derecha,numeroUnion,'izquierda');
-    }else{
-      // El saco entero y, de alternativa, en dos mitades, por si aprovecha mejor el rollo, como en las apilables
-      // (Iván, 06/11/2026, AR2605429). Con «saco partido» marcado, solo las dos mitades.
-      const mitad=(p.frente+6.5+2)/2;
-      agregar(sacoConPestana(p.frente,s.corte,6.5,s.altoPestana,s.corte/2));
-      const izquierda=sacoConPestana(mitad-6.5,s.corte,6.5,s.altoPestana,s.corte/2,'Saco partido · con pestaña');
-      const derecha=pieza('Saco partido · sin pestaña','saco',mitad,s.corte,p.materialSaco,p.rolloSaco);
-      numerarBorde(izquierda,++numeroUnion,'derecha');
-      numerarBorde(derecha,numeroUnion,'izquierda');
-      r.alternativasSaco={entero:[],partido:[izquierda,derecha]};
+      if(e.sacoPartido){
+        const izquierda=agregar(sacoConPestana(mitad-6.5,s.corte,6.5,s.altoPestana,s.corte/2,'Saco partido · con pestaña'));
+        const derecha=agregar(pieza('Saco partido · sin pestaña','saco',mitad,s.corte,p.materialSaco,p.rolloSaco));
+        numerarBorde(izquierda,++numeroUnion,'derecha');
+        numerarBorde(derecha,numeroUnion,'izquierda');
+      }else{
+        // El saco entero y, de alternativa, en dos mitades, por si aprovecha mejor el rollo, como en las apilables
+        // (Iván, 06/11/2026, AR2605429). Con «saco partido» marcado, solo las dos mitades.
+        agregar(sacoConPestana(p.frente,s.corte,6.5,s.altoPestana,s.corte/2));
+        const izquierda=sacoConPestana(mitad-6.5,s.corte,6.5,s.altoPestana,s.corte/2,'Saco partido · con pestaña');
+        const derecha=pieza('Saco partido · sin pestaña','saco',mitad,s.corte,p.materialSaco,p.rolloSaco);
+        numerarBorde(izquierda,++numeroUnion,'derecha');
+        numerarBorde(derecha,numeroUnion,'izquierda');
+        r.alternativasSaco={entero:[],partido:[izquierda,derecha]};
+      }
     }
     // Sin E.T. encima o debajo del ventanal, una entrada a esa altura no se corta: se avisa por si sobra en el pedido.
     if(p.entradas.some(etVentanal))aviso('ET_VENTANAL','Marcado sin E.T. en el ventanal, pero hay una entrada a esa altura: no se corta. Quítala del pedido si sobra.','aviso');
