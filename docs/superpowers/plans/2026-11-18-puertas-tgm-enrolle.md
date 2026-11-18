@@ -710,9 +710,9 @@ añadir una prueba en `rps.test.ts` de que un código desconocido sigue cayendo 
 ```markdown
 ## Puertas · TGM enrollable · 18/11/2026
 
-- **Q-TGM01 · Bolsillo de la varilla.** Iván, 18/11: la lona lleva 3,5 cm de más arriba para la entrada de la
-  varilla (como la cabecera de Portanova), y los 30 cm de enrolle se cuentan desde la varilla ya puesta. Queda: ¿se
-  suelda o se cose el bolsillo?
+- **Q-TGM01 · Bolsillo de la varilla (contestada).** Iván, 18/11: la lona lleva 3,5 cm de más arriba para la
+  entrada de la varilla (como la cabecera de Portanova), los 30 cm de enrolle se cuentan desde la varilla ya puesta
+  y el bolsillo va soldado.
 - **Q-TGM02 · Perfil fleco.** El bulto es de 1 cm (Iván, 18/11). ¿A cuántos
   grados del perfil tiene que quedar un tubo para no montarse (provisional 20°)? El alto, 10 mm, está confirmado.
 - **Q-TGM03 · E.T. de ancho variable.** Con una E.T. de 14,5 cm de corte, ¿cuánto solapa con la lona? Mientras tanto,

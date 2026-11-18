@@ -142,7 +142,7 @@ congele.
 Decidido por Iván el 18/11: grosor 0,8 mm, añadido de 30 cm, y lona sujeta con varilla en perfil fleco atornillado al
 tubo de enrolle. Queda:
 
-- Bolsillo de la varilla: diámetro de la varilla, cuánto se corta para el bolsillo y cómo se cierra (soldado o cosido).
+- Bolsillo de la varilla: contestado (Iván, 18/11). La lona lleva 3,5 cm de más para la entrada de la varilla, los 30 cm de enrolle se cuentan desde la varilla puesta y el bolsillo va soldado.
 - Ancho del perfil fleco por fuera del tubo (provisional, 20 mm) y ángulo mínimo entre tubo y perfil (provisional, ±20°).
 
 ## Fuera de la fase 1
