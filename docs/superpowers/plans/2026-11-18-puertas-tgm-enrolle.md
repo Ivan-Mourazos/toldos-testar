@@ -330,7 +330,7 @@ export function angulosAlPerfil(m: ModeloEnrolle): number[]; // grados, 0–180,
 ```
 
 El perfil fleco está en el arranque de la lona (ángulo 0). Abulta `altoPerfil` (10 mm, Iván 18/11) y tiene
-`anchoPerfil` de ancho (20 mm, provisional Q-TGM02). Se modela como un disco de radio `anchoPerfil/2` con el centro a
+`anchoPerfil` de ancho (10 mm: bulto redondo de 1 cm con la varilla dentro, Iván 18/11). Se modela como un disco de radio `anchoPerfil/2` con el centro a
 `eje + altoPerfil − anchoPerfil/2` en el ángulo 0, que empieza a estorbar en la vuelta siguiente, como los tubos.
 
 - [ ] **Paso 1: prueba que falla**
@@ -340,7 +340,7 @@ El perfil fleco está en el arranque de la lona (ángulo 0). Abulta `altoPerfil`
 import { angulosAlPerfil } from './geometria.ts';
 
 describe('perfil fleco', () => {
-  const conPerfil = { ...CONFIG_CODEX, altoPerfil: 10, anchoPerfil: 20 };
+  const conPerfil = { ...CONFIG_CODEX, altoPerfil: 10, anchoPerfil: 10 };
   it('sin perfil da lo mismo que Codex', () => {
     const a = revisarCiclo(construir(CONFIG_CODEX, [1470, 2714, 4200]))[0];
     const b = revisarCiclo(construir({ ...CONFIG_CODEX, altoPerfil: 0, anchoPerfil: 20 }, [1470, 2714, 4200]))[0];
@@ -374,7 +374,7 @@ Esperado: FALLA, `angulosAlPerfil` no existe y el perfil no cambia nada.
 ```ts
 // en src/puertas/enrolle/geometria.ts, sustituir discosIniciales
 /** Tubo de enrolle y perfil fleco. El perfil es un bulto en el arranque de la lona que la lona tapa a partir de la
- * vuelta siguiente; se modela como un disco más (provisional Q-TGM02 en el ancho). */
+ * vuelta siguiente; se modela como un disco más (bulto de 1 cm, Iván 18/11). */
 function discosIniciales(cfg: ConfigEnrolle): Disco[] {
   const { eje, crecimiento: g } = medidas(cfg);
   const discos: Disco[] = [{ x: 0, y: 0, base: eje + cfg.grosor / 2, inicio: 0 }];
@@ -443,7 +443,7 @@ import { CONFIG_CODEX } from './geometria.ts';
 import { colocarTubos, repartoIgual } from './colocar.ts';
 
 const ajustes = { margen: 5, desvio: 100, anguloPerfil: 20 };
-const tgm = { ...CONFIG_CODEX, altoPerfil: 10, anchoPerfil: 20 };
+const tgm = { ...CONFIG_CODEX, altoPerfil: 10, anchoPerfil: 10 };
 
 describe('reparto igual', () => {
   it('con tubo abajo, n tramos; con saco, n + 1', () => {
@@ -682,7 +682,7 @@ Esperado: FALLA, no existe la ficha `tgm`.
   "tipos": [ { "id": "enrollable", "nombre": "Enrollable", "modelo": "PUERTAENR" } ],
   "articulos": { "PUERTAENR": "enrollable" },
   "enrolle": { "diametroEnrolle": 88.9, "diametroTubo": 42, "grosor": 0.8, "anadido": 30, "anchoEt": 8, "nTubos": 3,
-    "margen": 5, "desvio": 100, "altoPerfil": 10, "anchoPerfil": 20, "anguloPerfil": 20 }
+    "margen": 5, "desvio": 100, "altoPerfil": 10, "anchoPerfil": 10, "anguloPerfil": 20 }
 }
 ```
 Conservar el final de línea que usen los otros JSON de `src/puertas/clientes/`.
@@ -712,7 +712,7 @@ añadir una prueba en `rps.test.ts` de que un código desconocido sigue cayendo 
 
 - **Q-TGM01 · Bolsillo de la varilla.** ¿Diámetro de la varilla, cuánto se corta para el bolsillo y se suelda o se
   cose? Mientras tanto, la cabecera es la de la enrollable de Portanova (+3,5 cm).
-- **Q-TGM02 · Perfil fleco.** ¿Cuánto mide de ancho por fuera del tubo de enrolle (provisional 20 mm) y a cuántos
+- **Q-TGM02 · Perfil fleco.** El bulto es de 1 cm (Iván, 18/11). ¿A cuántos
   grados del perfil tiene que quedar un tubo para no montarse (provisional 20°)? El alto, 10 mm, está confirmado.
 - **Q-TGM03 · E.T. de ancho variable.** Con una E.T. de 14,5 cm de corte, ¿cuánto solapa con la lona? Mientras tanto,
   0,5 cm menos que el corte, como la de Portanova (8 de corte, 7,5 de solape).
