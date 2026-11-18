@@ -84,10 +84,21 @@ function en(cfg: ConfigEnrolle, camino: Tramo[], largo: number): Apoyo {
   return apoyo(p.disco, anguloEnArco(p, ds, g), g);
 }
 
-/** Discos fijos del tubo de enrolle; el perfil fleco se añade en la tarea 2. */
+/** El perfil fleco abulta en la lona a partir de la vuelta siguiente. */
 function discosIniciales(cfg: ConfigEnrolle): Disco[] {
-  const { eje } = medidas(cfg);
-  return [{ x: 0, y: 0, base: eje + cfg.grosor / 2, inicio: 0 }];
+  const { eje, crecimiento } = medidas(cfg);
+  const discos: Disco[] = [{ x: 0, y: 0, base: eje + cfg.grosor / 2, inicio: 0 }];
+  if (cfg.altoPerfil > 0 && cfg.anchoPerfil > 0) {
+    const radioPerfil = cfg.anchoPerfil / 2;
+    const inicio = Math.PI;
+    discos.push({
+      x: eje + cfg.altoPerfil - radioPerfil,
+      y: 0,
+      inicio,
+      base: radioPerfil + cfg.grosor / 2 - crecimiento * inicio,
+    });
+  }
+  return discos;
 }
 
 export function construir(cfg: ConfigEnrolle, marcas: number[], largo = marcas.at(-1) ?? 0): ModeloEnrolle {
@@ -114,6 +125,14 @@ export function centros(m: ModeloEnrolle, avance: number): Punto[] {
     if (avance >= t.marca) return t;
     const libre = t.marca - avance;
     return { x: p.x + desfase * c - libre * s, y: p.y + desfase * s + libre * c };
+  });
+}
+
+/** Ángulo de apoyo de cada tubo respecto al perfil, en grados de 0 a 180. */
+export function angulosAlPerfil(m: ModeloEnrolle): number[] {
+  return m.tubos.map(t => {
+    const angulo = ((t.angulo % TAU) + TAU) % TAU;
+    return Math.min(angulo, TAU - angulo) * 180 / Math.PI;
   });
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CONFIG_CODEX, construir, revisarCiclo, separacionFinal, diametroFinal } from './geometria.ts';
+import { CONFIG_CODEX, angulosAlPerfil, construir, revisarCiclo, separacionFinal, diametroFinal } from './geometria.ts';
 
 // Valores de las simulaciones HTML de Codex (18/11/2026), tubo de enrolle Ø88,9, tubos Ø42, lona 0,8.
 describe('geometría del enrolle: contraste con Codex', () => {
@@ -36,5 +36,61 @@ describe('geometría del enrolle: contraste con Codex', () => {
     const largo = construir(CONFIG_CODEX, [1100, 2200, 3300], 4400);
     expect(largo.largo).toBe(4400);
     expect(diametroFinal(largo)).toBeGreaterThan(diametroFinal(corto));
+  });
+});
+
+describe('perfil fleco', () => {
+  const conPerfil = { ...CONFIG_CODEX, altoPerfil: 10, anchoPerfil: 10 };
+  const marcas = [1470, 2714, 4200];
+
+  it('sin perfil da lo mismo que Codex', () => {
+    const a = revisarCiclo(construir(CONFIG_CODEX, marcas))[0];
+    const b = revisarCiclo(construir({ ...conPerfil, altoPerfil: 0 }, marcas))[0];
+    expect(b.separacion).toBeCloseTo(a.separacion, 6);
+  });
+
+  it('el bulto del perfil cambia dónde caen los tubos y el diámetro final', () => {
+    const sin = construir(CONFIG_CODEX, marcas);
+    const con = construir(conPerfil, marcas);
+    expect(con.tubos[2].angulo).not.toBeCloseTo(sin.tubos[2].angulo, 2);
+    expect(diametroFinal(con)).toBeLessThan(diametroFinal(sin));
+  });
+
+  it('el bulto del perfil agranda el rollo de lona sin tubos', () => {
+    const sin = construir(CONFIG_CODEX, [], 1000);
+    const con = construir(conPerfil, [], 1000);
+    expect(diametroFinal(con)).toBeGreaterThan(diametroFinal(sin));
+  });
+
+  it('el ancho del perfil influye en la posición de los tubos', () => {
+    const redondo = construir(conPerfil, marcas);
+    const masAncho = construir({ ...conPerfil, anchoPerfil: 12 }, marcas);
+    expect(masAncho.tubos[2].angulo).not.toBeCloseTo(redondo.tubos[2].angulo, 2);
+  });
+
+  it('da el ángulo de cada tubo al perfil, entre 0 y 180 grados', () => {
+    const angulos = angulosAlPerfil(construir(conPerfil, marcas));
+    expect(angulos).toHaveLength(3);
+    for (const angulo of angulos) {
+      expect(angulo).toBeGreaterThanOrEqual(0);
+      expect(angulo).toBeLessThanOrEqual(180);
+    }
+  });
+
+  it('un tubo justo una vuelta después del arranque queda encima del perfil', () => {
+    // La lona recorre el bulto del perfil antes de completar los 360 grados.
+    let desde = 0;
+    let hasta = 2 * Math.PI * (conPerfil.diametroEnrolle + conPerfil.grosor);
+    while (hasta - desde > 0.001) {
+      const marca = (desde + hasta) / 2;
+      const [tubo] = construir(conPerfil, [marca]).tubos;
+      if (tubo.angulo < 2 * Math.PI) desde = marca;
+      else hasta = marca;
+    }
+
+    const modelo = construir(conPerfil, [(desde + hasta) / 2, 3000]);
+    expect(angulosAlPerfil(modelo)[0]).toBeLessThan(20);
+    const extremoPerfil = conPerfil.diametroEnrolle / 2 + conPerfil.altoPerfil;
+    expect(modelo.tubos[0].x - conPerfil.diametroTubo / 2).toBeGreaterThan(extremoPerfil);
   });
 });
