@@ -64,9 +64,11 @@ describe('dibujo de la cortina con ventana en la hoja de estructura', () => {
     const { order, calculation } = pedido([cortina]);
     const pages = await pageTexts(await buildOrderPlanteamientoPdf({ order, calculation, htmlStructure: false, htmlFabric: false }));
     const estructura = pages.find((page) => page.includes('Toldo A · Estructura')).replace(/\s+/g, ' ');
-    for (const texto of ['CORTINA CON VENTANA', 'PAÑO ARRIBA 120,5', 'VENTANA 137', 'PAÑO ABAJO 52', 'ESQUINA 15', 'E.T. Ø40']) {
+    for (const texto of ['CORTINA CON VENTANA', 'PAÑO ARRIBA 120,5', 'VENTANA 137', 'PAÑO ABAJO 52']) {
       expect(estructura).toContain(texto);
     }
+    // Solo las medidas de los paños, como en el Iris (Iván, 18/11).
+    for (const texto of ['ESQUINA', 'ANCHO VENTANA', 'MEDIDAS TERMINADAS']) expect(estructura).not.toContain(texto);
   });
 
   test('el servidor encaja el dibujo sobre la estructura HTML', async () => {

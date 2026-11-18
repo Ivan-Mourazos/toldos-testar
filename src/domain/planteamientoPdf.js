@@ -1581,7 +1581,7 @@ export function curtainWindowStructureMeasures(awning = {}, calculation = {}) {
 }
 
 // Iván, 18/11/2026: como el del Iris, para que en la estructura se vea dónde va la ventana:
-// paño de arriba, ventana y paño de abajo, con las esquinas de lona a los lados.
+// paño de arriba, ventana y paño de abajo. Solo esas medidas (Iván, 18/11).
 function drawCurtainWindowStructureDiagram(doc, x, y, w, h, awning, calculation = {}) {
   const m = curtainWindowStructureMeasures(awning, calculation);
   const model = String(awning.model || '').trim().toUpperCase();
@@ -1590,12 +1590,11 @@ function drawCurtainWindowStructureDiagram(doc, x, y, w, h, awning, calculation 
   const measure = (value) => value > 0 ? formatNumber(value) : 'POR INDICAR';
   drawDiagramShell(doc, x, y, w, h);
   drawDiagramText(doc, `${model === 'ELECTRA' ? 'ELECTRA' : model} CON VENTANA`, x + 3, y + h * 0.04, w - 6, size);
-  drawDiagramText(doc, `MEDIDAS TERMINADAS · TELA ${measure(m.fabricWidth)}`, x + 3, y + h * 0.11, w - 6, small);
 
   const frameX = x + w * 0.07;
   const frameW = w * 0.45;
-  const frameY = y + h * 0.2;
-  const frameH = h * 0.56;
+  const frameY = y + h * 0.14;
+  const frameH = h * 0.78;
   // Alto de cada banda a escala; si falta una medida, un reparto fijo que no engañe con cotas.
   const total = m.top + m.window + m.bottom;
   const minBand = 12;
@@ -1631,9 +1630,6 @@ function drawCurtainWindowStructureDiagram(doc, x, y, w, h, awning, calculation 
       .font(fonts.bold)
       .text(value, labelX, (from + to) / 2 + 0.5, { width: labelW, lineBreak: false });
   }
-  const finish = m.bottomFinish === 'ET' ? 'E.T. Ø40' : 'VARILLA BLANCA (5,5)';
-  drawDiagramText(doc, `ABAJO ${finish}${m.bamba > 0 ? ` · BAMBA ${formatNumber(m.bamba)}` : ''}`, x + 3, y + h * 0.82, w - 6, small);
-  drawDiagramText(doc, `ESQUINA ${measure(m.corner)} · ANCHO VENTANA ${measure(m.windowWidth)}`, x + 3, y + h * 0.9, w - 6, small);
 }
 
 function drawIrisWindowDiagram(doc, x, y, w, h, awning, calculation) {
