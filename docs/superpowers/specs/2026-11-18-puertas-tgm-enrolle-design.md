@@ -82,8 +82,9 @@ hacia abajo. En el plano se pasan a medidas desde abajo, como en Portanova.
    provisional, los dos en Parámetros. Cada vuelta de lona repite ese bulto hacia fuera, igual que el modelo ya hace con
    los tubos. La simulación da la separación mínima entre cada pareja de tubos, en qué momento del enrollado se da, el
    ángulo de cada tubo respecto al perfil y el diámetro final del rollo.
-4. **Corrección:** la web mueve los tubos lo mínimo, sin alejarse del reparto igual más del **desvío máximo** (en
-   Parámetros), hasta que:
+4. **Corrección:** la web busca las posiciones que **más separan** los tubos, sin alejarse del reparto igual más del
+   **desvío máximo** (±10 cm por defecto, en Parámetros). Iván, 18/11: con tramos iguales los tubos quedaban a 6 mm
+   (4200) o 15,5 mm (3660) en el peor momento; separándolos dentro de ±10 cm quedan a unos 75-80 mm. Tiene que quedar:
    - ninguna pareja queda por debajo del **margen mínimo** (5 mm por defecto, en Parámetros);
    - ningún tubo cae, en ninguna vuelta, a menos del **ángulo mínimo del perfil** (±20° por defecto, en Parámetros).
 5. **Avisos con código**, como los demás de Puertas:
@@ -113,7 +114,7 @@ soldar el saco y ML por OF. Cambia esto:
 | `src/puertas/clientes/tgm.json` | «TGM», habilitada, tipo Enrollable, `calculo: "tgm"` | — |
 | Cálculo de la puerta | `calculo: "tgm"` reutiliza la enrollable de Portanova y le pasa la cadena de tubos, la E.T. y el saco | `colocar.ts`, cálculo de Portanova |
 | `src/client/puertas/SimuladorEnrolle.tsx` | Dibujo del rollo en canvas; barra para enrollar y desenrollar; botón Reproducir; separación mínima y entre qué tubos; diámetro final; tabla de tramos; botón para ir al punto más justo. Colores y piezas de CoordinaOT, en claro y oscuro | `geometria.ts` |
-| Parámetros | Margen mínimo, desvío máximo, alto y ancho del perfil fleco, ángulo mínimo del perfil, y tubo de enrolle, añadido y grosor por defecto | — |
+| Parámetros (ficha TGM y «Ajustes del enrolle» de cada puerta) | Margen mínimo, desvío máximo, alto y ancho del perfil fleco, ángulo mínimo del perfil, y tubo de enrolle, añadido y grosor por defecto | — |
 
 La ficha «General» no se borra: la web la usa por dentro para los códigos RPS que no son de ningún cliente. Sigue oculta
 y sin cálculo, y «TGM» se añade como ficha nueva. En la pantalla se ve TGM, no General.
