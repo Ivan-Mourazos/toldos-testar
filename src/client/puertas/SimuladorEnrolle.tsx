@@ -5,6 +5,8 @@ import { InputDecimal } from '../remolques/InputDecimal';
 import { numeroPuerta as numero } from './medidasPuertas';
 
 const DURACION = 6000;
+const LADO_LIENZO = 440;
+const RESOLUCION_LIENZO = 2;
 
 function dibujar(canvas: HTMLCanvasElement, modelo: ModeloEnrolle, avance: number, enrolle: EnrolleTgm) {
   const ctx = canvas.getContext('2d');
@@ -16,9 +18,10 @@ function dibujar(canvas: HTMLCanvasElement, modelo: ModeloEnrolle, avance: numbe
   const radioTubo = cfg.diametroTubo / 2;
   const finLona = largo + (cfg.conFunda && !conSaco ? radioTubo : 0);
   const colorLona = color('--control-active-border');
-  const escala = canvas.height / (Math.max(colocacion.diametroFinal, cfg.diametroEnrolle) * 1.5);
+  const colorFunda = color('--tramo-holgado');
+  const escala = LADO_LIENZO / (Math.max(colocacion.diametroFinal, cfg.diametroEnrolle) * 1.22);
   const giro = Math.PI - apoyo.a;
-  const cx = canvas.width / 2, cy = canvas.height * 0.44;
+  const cx = LADO_LIENZO / 2, cy = LADO_LIENZO * 0.47;
   const circulo = (x: number, y: number, radio: number, relleno: string, borde: string) => {
     ctx.beginPath();
     ctx.arc(x, y, radio, 0, 2 * Math.PI);
@@ -30,7 +33,9 @@ function dibujar(canvas: HTMLCanvasElement, modelo: ModeloEnrolle, avance: numbe
 
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.setTransform(escala, 0, 0, -escala, cx, cy);
+  ctx.setTransform(RESOLUCION_LIENZO, 0, 0, RESOLUCION_LIENZO, 0, 0);
+  ctx.translate(cx, cy);
+  ctx.scale(escala, -escala);
   ctx.rotate(giro);
   ctx.lineWidth = 2 / escala;
   circulo(0, 0, cfg.diametroEnrolle / 2, color('--surface-2'), color('--text-muted'));
@@ -54,7 +59,7 @@ function dibujar(canvas: HTMLCanvasElement, modelo: ModeloEnrolle, avance: numbe
   };
   ctx.beginPath();
   trazarLona(0, avance, 0);
-  trazarLona(avance, Math.min(finLona, avance + canvas.height / escala), 0, true);
+  trazarLona(avance, Math.min(finLona, avance + LADO_LIENZO / escala), 0, true);
   ctx.strokeStyle = colorLona;
   ctx.lineWidth = cfg.grosor;
   ctx.stroke();
@@ -75,7 +80,7 @@ function dibujar(canvas: HTMLCanvasElement, modelo: ModeloEnrolle, avance: numbe
     const esCierre = !conSaco && k === tubos.length - 1;
     const radioFunda = radioTubo + cfg.grosor / 2;
     const cola = Math.max(0, ((esCierre ? cierreBajo : anchoEt) * 10 - 2 * Math.PI * radioFunda) / 2);
-    ctx.strokeStyle = colorLona;
+    ctx.strokeStyle = colorFunda;
     ctx.lineWidth = cfg.grosor;
     if (cola > 0) {
       ctx.beginPath();
@@ -91,7 +96,7 @@ function dibujar(canvas: HTMLCanvasElement, modelo: ModeloEnrolle, avance: numbe
     ctx.lineWidth = (riesgo ? 2 : 0.75) / escala;
     circulo(t.x, t.y, radioTubo, color('--surface'), borde);
   });
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.setTransform(RESOLUCION_LIENZO, 0, 0, RESOLUCION_LIENZO, 0, 0);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.font = '600 15px system-ui, sans-serif';
@@ -173,7 +178,7 @@ export function SimuladorEnrolle({ enrolle, manual = false, cambiarManual }: {
     <h2 id={`${id}-titulo`}>Simulador de enrolle</h2>
     <div className="simulador-enrolle__cuerpo">
       <div className="simulador-enrolle__dibujo">
-        <canvas ref={lienzo} width={420} height={420} aria-hidden="true" />
+        <canvas ref={lienzo} width={LADO_LIENZO * RESOLUCION_LIENZO} height={LADO_LIENZO * RESOLUCION_LIENZO} aria-hidden="true" />
         <div className="simulador-enrolle__mandos">
           <label htmlFor={`${id}-avance`}>Enrollado</label>
           <input id={`${id}-avance`} type="range" min={0} max={largo} step={0.1} value={Number(avance.toFixed(1))}
