@@ -19,6 +19,7 @@ describe('simulador de enrolle', () => {
     expect(html).toContain('type="range"');
     expect(html).toContain('Reproducir');
     expect(html).toContain('Ir al punto más justo');
+    expect(html).toContain(`max="${enrolle().largo}"`);
   });
 
   it('permite editar las marcas pero deja fijo el tubo que va en el cierre', () => {

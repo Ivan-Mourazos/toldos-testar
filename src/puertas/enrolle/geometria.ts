@@ -12,7 +12,7 @@ type Tramo =
   | { tipo: 'linea'; a: number; desde: Apoyo; inicio: number; fin: number }
   | { tipo: 'arco'; a: number; r: number; disco: Disco; inicio: number; fin: number };
 /** Largo y marcas proyectados, con los tubos montados. */
-export interface ModeloEnrolle { cfg: ConfigEnrolle; largo: number; marcas: number[]; tubos: TuboColocado[]; camino: Tramo[] }
+export interface ModeloEnrolle { cfg: ConfigEnrolle; largo: number; marcas: number[]; tubos: TuboColocado[]; camino: Tramo[]; proyectar: (mm: number) => number; desplegar: (mm: number) => number }
 
 const TAU = 2 * Math.PI, PRECISION = 0.02;
 export const radioMedioTubo = (cfg: ConfigEnrolle) => (cfg.diametroTubo + cfg.grosor) / 2;
@@ -23,8 +23,10 @@ const medidas = (cfg: ConfigEnrolle) => {
   return { eje: cfg.diametroEnrolle / 2, exterior, desfase: exterior + mediaLona, crecimiento: cfg.grosor / TAU };
 };
 
+const identidad = (mm: number) => mm;
+
 function proyectarLona(cfg: ConfigEnrolle, marcas: number[], largo: number) {
-  if (!cfg.conFunda) return { marcas, largo };
+  if (!cfg.conFunda) return { marcas, largo, proyectar: identidad, desplegar: identidad };
   const medioArco = Math.PI * radioMedioTubo(cfg) / 2;
   const abultados: Array<{ desde: number; hasta: number }> = [];
   for (const marca of marcas) {
@@ -38,7 +40,15 @@ function proyectarLona(cfg: ConfigEnrolle, marcas: number[], largo: number) {
     const sobreTubos = abultados.reduce((suma, { desde, hasta }) => suma + Math.max(0, Math.min(mm, hasta) - desde), 0);
     return mm - (1 - 2 / Math.PI) * sobreTubos;
   };
-  return { marcas: marcas.map(proyectar), largo: proyectar(largo) };
+  const desplegar = (avance: number) => {
+    let mm = avance;
+    for (const { desde, hasta } of abultados) {
+      const sobreTubo = Math.min(Math.max(0, mm - desde) * Math.PI / 2, hasta - desde);
+      mm += (1 - 2 / Math.PI) * sobreTubo;
+    }
+    return mm;
+  };
+  return { marcas: marcas.map(proyectar), largo: proyectar(largo), proyectar, desplegar };
 }
 
 function apoyo(d: Disco, a: number, g: number): Apoyo {
@@ -124,7 +134,7 @@ function discosIniciales(cfg: ConfigEnrolle): Disco[] {
 }
 
 export function construir(cfg: ConfigEnrolle, marcasPlanas: number[], largoPlano = marcasPlanas.at(-1) ?? 0): ModeloEnrolle {
-  const { marcas, largo } = proyectarLona(cfg, marcasPlanas, largoPlano);
+  const { marcas, largo, proyectar, desplegar } = proyectarLona(cfg, marcasPlanas, largoPlano);
   const { desfase, crecimiento: g } = medidas(cfg);
   const discos = discosIniciales(cfg), tubos: TuboColocado[] = [];
   let camino = contorno(cfg, discos, largo);
@@ -140,7 +150,7 @@ export function construir(cfg: ConfigEnrolle, marcasPlanas: number[], largoPlano
       camino = contorno(cfg, discos, largo);
     }
   }
-  return { cfg, largo, marcas, tubos, camino };
+  return { cfg, largo, marcas, tubos, camino, proyectar, desplegar };
 }
 
 export function posicionLona(m: ModeloEnrolle, avance: number): Apoyo {

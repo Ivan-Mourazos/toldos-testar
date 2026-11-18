@@ -1,39 +1,131 @@
-import { centros, posicionLona, radioMedioTubo, type ModeloEnrolle } from '../../puertas/enrolle/geometria.ts';
+import { centros, posicionLona, radioMedioTubo, type ModeloEnrolle, type Punto } from '../../puertas/enrolle/geometria.ts';
 
-/** Malla de dibujo en mm. Incluye el extremo exacto y limita la memoria para medidas excepcionales. */
-export function prepararTrayectoria(modelo: ModeloEnrolle) {
+type Apoyo = ReturnType<typeof posicionLona>;
+type Centro = Punto & { a: number };
+type Recorrido = (marca: number) => Apoyo;
+
+function costado(centro: Centro, distancia: number) {
+  return { x: centro.x - distancia * Math.sin(centro.a), y: centro.y + distancia * Math.cos(centro.a) };
+}
+
+// Desde la costura, buscar la tangencia con el apoyo de ESTA vuelta. El límite
+// entre dos bultos evita que la búsqueda salte a otro tubo o a otra revolución.
+function contacto(punto: Recorrido, centro: Punto, radio: number, inicio: number, fin: number, paso: number) {
+  const margen = (marca: number) => {
+    const p = punto(marca);
+    return (centro.x - p.x) * Math.cos(p.a) + (centro.y - p.y) * Math.sin(p.a) + radio;
+  };
+  let anterior = inicio;
+  const pasos = Math.max(1, Math.ceil(Math.abs(fin - inicio) / paso));
+  for (let i = 1; i <= pasos; i++) {
+    let actual = inicio + (fin - inicio) * i / pasos;
+    if (margen(actual) <= 0) {
+      for (let n = 0; n < 12; n++) {
+        const medio = (anterior + actual) / 2;
+        if (margen(medio) > 0) anterior = medio;
+        else actual = medio;
+      }
+      return actual;
+    }
+    anterior = actual;
+  }
+  return fin;
+}
+
+interface Lado { inicio: number; contacto: number; fin: number; signo: number }
+
+function reconstruirLado(lado: Lado, t: Centro, radio: number, punto: Recorrido, avance: number, paso: number): Punto[] {
+  const { signo, contacto, fin } = lado;
+  const junta = costado(t, signo * radio);
+  const apoyo = punto(contacto);
+  const puntos = [junta];
+  // La lona sale de la semicircunferencia interior por la tangente de la costura
+  // y recupera la tangente común entre tubo y apoyo. Su intersección guía la curva.
+  const nx = Math.cos(apoyo.a), ny = Math.sin(apoyo.a);
+  const cx = Math.cos(t.a), cy = Math.sin(t.a);
+  const proyeccion = cx * nx + cy * ny;
+  const altura = Math.abs(proyeccion) < 1e-6 ? 0 : ((apoyo.x - junta.x) * nx + (apoyo.y - junta.y) * ny) / proyeccion;
+  const h = Math.max(0, Math.min(radio, altura));
+  const control = { x: junta.x + h * cx, y: junta.y + h * cy };
+  const largo = Math.hypot(apoyo.x - junta.x, apoyo.y - junta.y);
+  const pasos = Math.max(1, Math.ceil((largo + h) / paso));
+  for (let k = 1; k <= pasos; k++) {
+    const u = k / pasos, v = 1 - u;
+    puntos.push({
+      x: v*v*junta.x + 2*v*u*control.x + u*u*apoyo.x,
+      y: v*v*junta.y + 2*v*u*control.y + u*u*apoyo.y,
+    });
+  }
+  // En el tramo libre basta un segmento hasta la tangente.
+  const tangente = Math.max(Math.min(fin, contacto), Math.min(avance, Math.max(fin, contacto)));
+  const n = Math.ceil(Math.abs(tangente - (signo > 0 ? contacto : fin)) / paso);
+  if (signo < 0 && tangente < contacto) puntos.push(punto(tangente));
+  for (let k = 1; k <= n; k++) {
+    const desde = signo > 0 ? contacto : tangente;
+    puntos.push(punto(desde + ((signo > 0 ? tangente : fin) - desde) * k / n));
+  }
+  if (signo > 0 && tangente < fin) puntos.push(punto(fin));
+  return puntos;
+}
+
+export function prepararTrayectoria(modelo: ModeloEnrolle, extension = 0) {
   const pasos = Math.max(1, Math.min(50000, Math.ceil(modelo.largo / 2)));
   const paso = modelo.largo / pasos;
   const muestras = Array.from({ length: pasos + 1 }, (_, i) => posicionLona(modelo, i * paso));
-  return { modelo, muestras, paso };
+  const enrollada: Recorrido = marca => {
+    if (marca >= modelo.largo) {
+      const fin = muestras[pasos];
+      return { ...costado(fin, marca - modelo.largo), a: fin.a };
+    }
+    const indice = Math.max(0, marca / paso), i = Math.min(pasos - 1, Math.floor(indice));
+    const p = muestras[i], q = muestras[i + 1], f = indice - i;
+    return { x: p.x + f * (q.x - p.x), y: p.y + f * (q.y - p.y), a: p.a + f * (q.a - p.a) };
+  };
+  const radio = radioMedioTubo(modelo.cfg);
+  const lados = modelo.tubos.map((t, i) => [-1, 1].map(signo => {
+    const vecino = modelo.marcas[i + signo];
+    const fin = vecino === undefined ? (signo < 0 ? 0 : modelo.largo + extension) : (vecino + t.marca) / 2;
+    const inicio = t.marca + signo * radio;
+    const centro = { ...t, a: t.angulo };
+    const marcaContacto = contacto(enrollada, centro, radio, inicio, fin, paso);
+    const lado = { inicio, fin, contacto: marcaContacto, signo };
+    return { ...lado, enrollado: reconstruirLado(lado, centro, radio, enrollada, modelo.largo, paso) };
+  }));
+  return { modelo, enrollada, lados, paso, radio };
 }
 
-export function fotograma({ modelo, muestras, paso }: ReturnType<typeof prepararTrayectoria>, avance: number) {
+export function fotograma(trayectoria: ReturnType<typeof prepararTrayectoria>, avance: number) {
+  const { modelo, enrollada, radio, paso } = trayectoria;
   const apoyo = posicionLona(modelo, avance);
-  const c = Math.cos(apoyo.a), s = Math.sin(apoyo.a);
   const tubos = centros(modelo, avance).map((p, i) => ({
     ...p, a: modelo.marcas[i] <= avance ? modelo.tubos[i].angulo : apoyo.a,
   }));
-  const punto = (marca: number) => {
-    if (marca >= avance) return { x: apoyo.x - (marca - avance) * s, y: apoyo.y + (marca - avance) * c };
-    const indice = Math.max(0, marca / paso);
-    const i = Math.min(muestras.length - 2, Math.floor(indice)), f = indice - i;
-    const p = muestras[i], q = muestras[i + 1];
-    return { x: p.x + (q.x - p.x) * f, y: p.y + (q.y - p.y) * f };
-  };
-  const radio = radioMedioTubo(modelo.cfg);
-  // La soldadura comparte el recorrido del paño. Solo se levanta cerca del tubo
-  // para llegar al extremo común de las dos semicircunferencias.
-  const uniones = tubos.map((t, i) => [-radio, radio].map(d => {
-    const base = punto(modelo.marcas[i] + d);
-    return { x: t.x - d * Math.sin(t.a) - base.x, y: t.y + d * Math.cos(t.a) - base.y };
+  const punto: Recorrido = marca => marca < avance ? enrollada(marca) : { ...costado(apoyo, marca - avance), a: apoyo.a };
+  const lados = trayectoria.lados.map((par, i) => par.map(lado => {
+    const marca = modelo.marcas[i];
+    if (marca === modelo.largo && lado.signo > 0) {
+      return [costado(tubos[i], radio), costado(tubos[i], lado.fin - marca)];
+    }
+    if (avance >= Math.min(modelo.largo, Math.max(marca, lado.fin, lado.inicio))) return lado.enrollado;
+    if (avance <= Math.min(marca - radio, lado.fin, lado.inicio)) return [costado(tubos[i], lado.signo * radio), punto(lado.fin)];
+    return reconstruirLado(lado, tubos[i], radio, punto, avance, paso);
   }));
-  const cola = (i: number, d: number, alcance: number) => {
-    const p = punto(modelo.marcas[i] + d);
-    const delta = uniones[i][Number(d >= 0)];
-    const u = alcance > radio ? Math.max(0, Math.min(1, (alcance - Math.abs(d)) / (alcance - radio))) : 1;
-    const peso = u * u * (3 - 2 * u);
-    return { x: p.x + peso * delta.x, y: p.y + peso * delta.y };
-  };
-  return { apoyo, tubos, punto, cola };
+  return { apoyo, tubos, punto, lados };
+}
+
+/** Primeros milímetros del propio paño, medidos por longitud de arco desde la costura. */
+export function colasSoldadas(lona: Punto[], largo: number) {
+  const cola = [lona[0]];
+  let faltan = largo;
+  for (let i = 1; i < lona.length && faltan > 0; i++) {
+    const a = lona[i - 1], b = lona[i], dx = b.x - a.x, dy = b.y - a.y;
+    const tramo = Math.hypot(dx, dy);
+    if (faltan < tramo) {
+      cola.push({ x: a.x + dx * faltan / tramo, y: a.y + dy * faltan / tramo });
+      break;
+    }
+    cola.push(b);
+    faltan -= tramo;
+  }
+  return cola;
 }
