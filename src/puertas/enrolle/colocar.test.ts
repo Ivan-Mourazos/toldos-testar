@@ -71,11 +71,12 @@ describe('colocar tubos', () => {
     expect(c.angulos[0]).toBeGreaterThanOrEqual(20);
     expect(c.avisos).toEqual([]);
   });
-  it('5 y 6 tubos en menos de un segundo', () => {
+  // Solos tardan unos 0,8 s; con toda la batería en paralelo pasan del segundo, así que el límite es 2 s.
+  it('5 y 6 tubos en menos de dos segundos', () => {
     const t = performance.now();
     expect(colocarTubos(tgm, ajustes, { largo: 4782, nTubos: 5, conSaco: false }).parejas[0].separacion).toBeGreaterThan(5);
     expect(colocarTubos(tgm, ajustes, { largo: 6000, nTubos: 6, conSaco: false }).parejas).toHaveLength(15);
-    expect(performance.now() - t).toBeLessThan(1000);
+    expect(performance.now() - t).toBeLessThan(2000);
   });
   it('posiciones a mano: no las mueve y avisa si se solapan', () => {
     const sinPerfil = { ...ajustes, anguloPerfil: 0 };
