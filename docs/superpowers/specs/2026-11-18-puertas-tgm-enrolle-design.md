@@ -86,7 +86,7 @@ hacia abajo. En el plano se pasan a medidas desde abajo, como en Portanova.
    **desvío máximo** (±10 cm por defecto, en Parámetros). Iván, 18/11: con tramos iguales los tubos quedaban a 6 mm
    (4200) o 15,5 mm (3660) en el peor momento; separándolos dentro de ±10 cm quedan a unos 75-80 mm. Tiene que quedar:
    - ninguna pareja queda por debajo del **margen mínimo** (5 mm por defecto, en Parámetros);
-   - ningún tubo cae, en ninguna vuelta, a menos del **ángulo mínimo del perfil** (±20° por defecto, en Parámetros).
+   - ningún tubo cae, en ninguna vuelta, a menos del **ángulo mínimo del perfil** (25° por defecto, en Parámetros; Q-TGM02).
 5. **Avisos con código**, como los demás de Puertas:
    - `TUBOS_SOLAPAN` (error): no hay colocación que cumpla el margen.
    - `TUBO_SOBRE_PERFIL` (error): no hay colocación que aparte los tubos del perfil fleco.
@@ -143,7 +143,7 @@ Decidido por Iván el 18/11: grosor 0,8 mm, añadido de 30 cm, y lona sujeta con
 tubo de enrolle. Queda:
 
 - Bolsillo de la varilla: contestado (Iván, 18/11). La lona lleva 3,5 cm de más para la entrada de la varilla, los 30 cm de enrolle se cuentan desde la varilla puesta y el bolsillo va soldado.
-- Ancho del perfil fleco por fuera del tubo (provisional, 20 mm) y ángulo mínimo entre tubo y perfil (provisional, ±20°).
+- Ancho del perfil fleco por fuera del tubo (provisional, 20 mm) y ángulo mínimo entre tubo y perfil: 25°, calculado (con el tubo un poco desplazado vale, Iván 18/11). E.T.: tira del ancho exacto del pedido, soldada 2-3 cm arriba y abajo, tubo en el centro. Sin saco, el tubo de abajo va en un cierre de la lona doblada; falta cuánto aumento lleva (Q-TGM05).
 
 ## Fuera de la fase 1
 

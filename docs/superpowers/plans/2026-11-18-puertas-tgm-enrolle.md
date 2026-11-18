@@ -54,7 +54,7 @@ código que ya existe. La pantalla añade el formulario TGM y el simulador en ca
 | `src/client/puertas/ConfigurarTgm.tsx` (nuevo) | Formulario de la puerta TGM |
 | `src/client/puertas/SimuladorEnrolle.tsx` (nuevo) | Dibujo del rollo en canvas, barra, reproducir, datos |
 | `src/client/puertas/PuertasView.tsx` | Muestra `ConfigurarTgm` si la puerta es TGM |
-| `docs/modelos/dudas-abiertas.md` | Dudas Q-TGM01..04 |
+| `docs/modelos/dudas-abiertas.md` | Dudas Q-TGM01..05 |
 
 ---
 
@@ -431,7 +431,7 @@ export function colocarTubos(cfg: ConfigEnrolle, ajustes: AjustesEnrolle, d: Dat
 
 Criterio (cambio sobre el diseño, ver nota al final): partiendo de tramos iguales, se buscan las posiciones que dan la
 **mayor separación** entre tubos con el rollo terminado, sin alejarse de los tramos iguales más del desvío máximo
-(100 mm por defecto) y con todos los tubos a más del ángulo mínimo del perfil (20°). Luego se revisa el enrollado
+(100 mm por defecto) y con todos los tubos a más del ángulo mínimo del perfil (25° en la ficha TGM, Q-TGM02). Luego se revisa el enrollado
 completo. Sin saco, el último tubo es el final de la lona y no se mueve. Con saco se mueven todos.
 
 - [ ] **Paso 1: prueba que falla**
@@ -619,6 +619,7 @@ tgm?: {
 };
 // tipos.ts, dentro de enrollable
 sinSaco?: boolean;   // TGM con tubo abajo
+cierreBajo?: number; // cm de lona que se doblan en el cierre con el tubo de abajo (Q-TGM05)
 anchoEt?: number;    // cm; si falta, REGLAS_ENROLLABLE.corteEntrada (8)
 // clientes.ts
 calculo: 'portanova'|'araujo'|'santapau'|'tgm'|'pendiente';
@@ -682,7 +683,7 @@ Esperado: FALLA, no existe la ficha `tgm`.
   "tipos": [ { "id": "enrollable", "nombre": "Enrollable", "modelo": "PUERTAENR" } ],
   "articulos": { "PUERTAENR": "enrollable" },
   "enrolle": { "diametroEnrolle": 88.9, "diametroTubo": 42, "grosor": 0.8, "anadido": 30, "anchoEt": 8, "nTubos": 3,
-    "margen": 5, "desvio": 100, "altoPerfil": 10, "anchoPerfil": 10, "anguloPerfil": 20 }
+    "margen": 5, "desvio": 100, "altoPerfil": 10, "anchoPerfil": 10, "anguloPerfil": 25 }
 }
 ```
 Conservar el final de línea que usen los otros JSON de `src/puertas/clientes/`.
@@ -713,12 +714,16 @@ añadir una prueba en `rps.test.ts` de que un código desconocido sigue cayendo 
 - **Q-TGM01 · Bolsillo de la varilla (contestada).** Iván, 18/11: la lona lleva 3,5 cm de más arriba para la
   entrada de la varilla (como la cabecera de Portanova), los 30 cm de enrolle se cuentan desde la varilla ya puesta
   y el bolsillo va soldado.
-- **Q-TGM02 · Perfil fleco.** El bulto es de 1 cm (Iván, 18/11). ¿A cuántos
-  grados del perfil tiene que quedar un tubo para no montarse (provisional 20°)? El alto, 10 mm, está confirmado.
-- **Q-TGM03 · E.T. de ancho variable.** Con una E.T. de 14,5 cm de corte, ¿cuánto solapa con la lona? Mientras tanto,
-  0,5 cm menos que el corte, como la de Portanova (8 de corte, 7,5 de solape).
-- **Q-TGM04 · Tubo abajo.** Sin saco, ¿el último tubo va en una E.T. al borde de la lona? Mientras tanto, así, con el
-  eje a media E.T. del bajo.
+- **Q-TGM02 · Perfil fleco (contestada).** Bulto de 1 cm (Iván, 18/11); basta con que el tubo quede un poco
+  desplazado. Calculado con el modelo del rollo: el bulto sube 9,6 mm encima del perfil y a 25° ya está por debajo de
+  la mitad (5 mm); a unos 36° desaparece. Mínimo 25°.
+- **Q-TGM03 · E.T. (contestada).** Iván, 18/11: la E.T. es solo una tira de lona que sujeta el tubo. Se corta del
+  ancho exacto que dice el pedido (depende del tubo), se suelda 2-3 cm por arriba y por abajo y el tubo va en el
+  centro. No cambia las uniones de la lona.
+- **Q-TGM04 · Tubo abajo (contestada).** Iván, 18/11: sin saco, el tubo de abajo va en el cierre: la lona lleva un
+  aumento que se dobla, se suelda y deja el tubo dentro con la medida terminada.
+- **Q-TGM05 · Aumento del cierre de abajo.** ¿Cuántos cm de lona lleva el cierre del tubo de abajo? Mientras tanto,
+  el ancho de la E.T. (lo mismo que necesita la tira para rodear el tubo y soldarse).
 ```
 
 - [ ] **Paso 4: comprobar que pasa**
@@ -730,7 +735,7 @@ Esperado: todo en verde, también las pruebas que ya había.
 
 ```bash
 git add src/puertas/clientes/tgm.json src/puertas/clientes.ts src/puertas/tipos.ts src/puertas/nuevaPuertaCliente.ts src/puertas/pedido.ts src/puertas/rps.ts src/puertas/tgm.test.ts src/puertas/clientes.test.ts src/puertas/pedido.test.ts src/puertas/rps.test.ts docs/modelos/dudas-abiertas.md
-git commit -m "feat(puertas): ficha TGM con la enrollable propia y sus valores de enrolle; dudas Q-TGM01..04"
+git commit -m "feat(puertas): ficha TGM con la enrollable propia y sus valores de enrolle; dudas Q-TGM01..05"
 ```
 (Si la prueba de `pedido.ts` está en otro fichero, añadir ese en su lugar.)
 
@@ -755,23 +760,23 @@ import { huecosEntrada } from './calcular.ts';
 
 describe('enrollable TGM: sin saco y E.T. de otro ancho', () => {
   const con = (cambios: object) => { const p = ciega(); return { ...p, enrollable: { ...p.enrollable, ...cambios } }; };
-  it('E.T. de 14,5: se corta a 14,5 y solapa 14 (provisional Q-TGM03)', () => {
+  it('E.T. de 14,5: se corta a 14,5 y las uniones de la lona no cambian (Q-TGM03)', () => {
     const r = calcularPuerta(con({ anchoEt: 14.5 }));
     const et = r.piezas.filter(x => x.clase === 'entrada');
     expect(et.length).toBeGreaterThan(0);
     expect(et.every(x => x.alto === 14.5)).toBe(true);
-    expect(r.uniones.filter(u => u.tubo).every(u => u.solape === 14)).toBe(true);
+    expect(r.uniones.filter(u => u.tubo).every(u => u.solape === 7.5)).toBe(true);
   });
   it('los huecos de Ø42 se centran en la E.T. de 14,5', () => {
     expect(huecosEntrada(300, 42, [], 14.5)[0]).toMatchObject({ y: 2.5, alto: 9.5, ancho: 5 });
     expect(huecosEntrada(300, 42)[0]).toMatchObject({ y: 2, alto: 9.5 });
   });
-  it('sin saco: no hay pieza de saco y el paño arranca en el bajo', () => {
-    const r = calcularPuerta(con({ sinSaco: true }));
+  it('sin saco: no hay pieza de saco y el paño baja el aumento del cierre', () => {
+    const r = calcularPuerta(con({ sinSaco: true, cierreBajo: 8 }));
     expect(r.piezas.some(x => x.clase === 'saco')).toBe(false);
     expect(r.avisos.filter(a => a.nivel === 'error')).toEqual([]);
-    const pano = r.piezas.find(x => x.clase === 'pano')!;
-    expect(pano.origenAlzado![1]).toBe(0);
+    const abajo = Math.min(...r.piezas.filter(x => x.clase === 'pano').map(x => x.origenAlzado![1]));
+    expect(abajo).toBe(-8);
   });
   it('sin cambios, la ciega de Portanova da lo mismo que antes', () => {
     expect(calcularPuerta(con({}))).toEqual(calcularPuerta(ciega()));
@@ -795,15 +800,16 @@ export function huecosEntrada(largo: number, diametro: 30 | 42, cintas: number[]
 ```
 Dentro de `calcularPuerta`, antes de `function entrada`:
 ```ts
-  // TGM: la E.T. puede ser de otro ancho (Iván, 18/11/2026: «unas de 14,5»). Solape provisional Q-TGM03.
+  // TGM: la E.T. es una tira que se corta del ancho exacto del pedido, se suelda 2-3 cm arriba y abajo y lleva el
+  // tubo en el centro (Iván, 18/11/2026). No cambia el solape de las uniones de la lona.
   const corteEt = p.modelo==='PUERTAENR' ? p.enrollable.anchoEt ?? REGLAS_ENROLLABLE.corteEntrada : 0;
-  const solapeEt = p.modelo==='PUERTAENR' && p.enrollable.anchoEt ? n(p.enrollable.anchoEt - .5) : REGLAS_ENROLLABLE.solapeEntrada;
 ```
-y sustituir, solo en la rama `PUERTAENR` (líneas 139, 169, 187 y las de entradas entre ventanales 201-202),
-`REGLAS_ENROLLABLE.corteEntrada` por `corteEt` y `REGLAS_ENROLLABLE.solapeEntrada` por `solapeEt`.
+y sustituir, solo en la rama `PUERTAENR` (línea 139 y las de entradas entre ventanales 201-202),
+`REGLAS_ENROLLABLE.corteEntrada` por `corteEt`. `REGLAS_ENROLLABLE.solapeEntrada` no se toca.
 
 Sin saco (`e.sinSaco`), en la rama `PUERTAENR`:
-- `origenInferior = e.sinSaco ? 0 : s.rematado`;
+- `origenInferior = e.sinSaco ? -(e.cierreBajo ?? 0) : s.rematado`: el paño de abajo baja el aumento del cierre, que
+  se dobla y se suelda con el tubo dentro (Iván, 18/11, Q-TGM04); marcar la raya del doblez en 0;
 - no añadir ninguna pieza de saco (envolver en `if (!e.sinSaco)` el bloque de saco de las líneas 230-250);
 - no marcar la raya de soldar el saco (`marcarEn(origen+2…)` de la línea 183 cuando `nombre==='inferior'`);
 - no dar el aviso `SACO` de la línea 64 cuando `p.enrollable.sinSaco`.
@@ -846,10 +852,13 @@ Reglas (diseño, sección «Cómo coloca»):
   varilla). Encima lleva 3,5 cm para la entrada de la varilla, que es la cabecera de Portanova (`p.alto + 3,5`), así
   que no hay que cambiarla. Las marcas del simulador se miden desde la varilla.
 - Con saco: largo enrollado (mm) = `(altoLona − sacoPuerta(p).rematado) × 10`; tubos en `n + 1` tramos.
-- Con tubo abajo: largo enrollado (mm) = `(altoLona − anchoEt / 2) × 10`; el último tubo es el final (Q-TGM04).
+- Con tubo abajo: largo enrollado (mm) = `(altoLona − diametroTubo / 20) × 10` (el tubo va en el cierre, con su
+  eje a medio tubo del bajo); el último tubo es el final y **no lleva E.T.**: va en el cierre, que lleva
+  `cierreBajo = anchoEt` cm de aumento (provisional Q-TGM05).
 - Altura de cada tubo desde abajo (cm) = `altoLona − marca / 10`, redondeada a 0,1.
 - La puerta derivada es la enrollable ciega de Portanova con `alto = altoLona`, `sinSaco = abajo === 'tubo'`,
-  `anchoEt` y las entradas `{ altura, diametro: 42, largo: frente, alto: anchoEt, huecos: huecosEntrada(frente, 42, [], anchoEt) }`.
+  `anchoEt`, `cierreBajo` (solo con tubo abajo) y las entradas `{ altura, diametro: 42, largo: frente, alto: anchoEt,
+  huecos: huecosEntrada(frente, 42, [], anchoEt) }` de todos los tubos menos el del cierre.
 - Los avisos del colocador se añaden a los del cálculo.
 
 - [ ] **Paso 1: prueba que falla**
@@ -893,10 +902,15 @@ describe('cálculo de la puerta TGM', () => {
     const ejes = r.uniones.filter(u => u.tubo).map(u => u.altura).concat(r.piezas.filter(x => x.clase === 'entrada').map(x => x.origenAlzado![1] + x.alto / 2));
     for (const m of e.colocacion.marcas) expect(ejes.some(y => Math.abs(y - (430 - m / 10)) < .11)).toBe(true);
   });
-  it('con tubo abajo no lleva saco y el último tubo va en el bajo', () => {
-    const r = calcularPuerta(puertaTgm({ abajo: 'tubo' }));
+  it('con tubo abajo no lleva saco y el último tubo va en el cierre, sin E.T.', () => {
+    const p = puertaTgm({ abajo: 'tubo' }), r = calcularPuerta(p);
     expect(r.piezas.some(x => x.clase === 'saco')).toBe(false);
     expect(r.avisos.filter(a => a.nivel === 'error')).toEqual([]);
+    expect(enrolleTgm(p)!.largo).toBeCloseTo((430 - 2.1) * 10, 1);
+    const ets = r.uniones.filter(u => u.tubo).length + r.piezas.filter(x => x.clase === 'entrada').length;
+    expect(ets).toBe(2); // 3 tubos: 2 en E.T. y el de abajo en el cierre
+    const abajo = Math.min(...r.piezas.filter(x => x.clase === 'pano').map(x => x.origenAlzado![1]));
+    expect(abajo).toBeCloseTo(-8, 1); // aumento del cierre = ancho de la E.T. (Q-TGM05)
   });
   it('E.T. de 14,5', () => {
     const p = puertaTgm({ anchoEt: 14.5 });
@@ -947,7 +961,8 @@ export function enrolleTgm(p: Puerta): EnrolleTgm | null {
   if (!t || !(t.altoHueco > 0) || !(p.frente > 0) || !(t.nTubos >= 1) || !(t.anchoEt > 0)) return null;
   const altoLona = t.altoTotal && t.altoTotal > 0 ? t.altoTotal : t.altoHueco + t.anadido;
   const conSaco = t.abajo === 'saco';
-  const bajo = conSaco ? sacoPuerta(p).rematado : t.anchoEt / 2; // Provisional (Q-TGM04) sin saco
+  // Sin saco, el tubo de abajo va en el cierre con su eje a medio tubo del bajo (Iván, 18/11/2026, Q-TGM04).
+  const bajo = conSaco ? sacoPuerta(p).rematado : t.diametroTubo / 20;
   const largo = d1((altoLona - bajo) * 10);
   const cfg: ConfigEnrolle = { diametroEnrolle: t.diametroEnrolle, diametroTubo: t.diametroTubo, grosor: t.grosor, altoPerfil: t.ajustes.altoPerfil, anchoPerfil: t.ajustes.anchoPerfil };
   const ajustes: AjustesEnrolle = { margen: t.ajustes.margen, desvio: t.ajustes.desvio, anguloPerfil: t.ajustes.anguloPerfil };
@@ -957,8 +972,10 @@ export function enrolleTgm(p: Puerta): EnrolleTgm | null {
 export function puertaTgmDerivada(p: Puerta, e: EnrolleTgm): Puerta {
   const t = p.tgm!;
   return { ...p, alto: e.altoLona,
-    enrollable: { ...p.enrollable, sinVentanal: true, sinSaco: !e.conSaco, anchoEt: t.anchoEt },
-    entradas: e.colocacion.marcas.map(m => ({ altura: d1(e.altoLona - m / 10), diametro: 42 as const, largo: p.frente, alto: t.anchoEt, huecos: huecosEntrada(p.frente, 42, [], t.anchoEt) })) };
+    enrollable: { ...p.enrollable, sinVentanal: true, sinSaco: !e.conSaco, anchoEt: t.anchoEt,
+      ...(e.conSaco ? {} : { cierreBajo: t.anchoEt }) }, // aumento provisional (Q-TGM05)
+    // Sin saco, el último tubo va en el cierre de abajo y no lleva E.T.
+    entradas: (e.conSaco ? e.colocacion.marcas : e.colocacion.marcas.slice(0, -1)).map(m => ({ altura: d1(e.altoLona - m / 10), diametro: 42 as const, largo: p.frente, alto: t.anchoEt, huecos: huecosEntrada(p.frente, 42, [], t.anchoEt) })) };
 }
 
 export function calcularTgm(p: Puerta, calcularEnrollable: (p: Puerta) => ResultadoPuerta): ResultadoPuerta {
@@ -1181,7 +1198,7 @@ git commit -m "feat(puertas): pantalla de la puerta TGM con el simulador de enro
 - [ ] `git status`: solo los ficheros de este plan; `docs/gcp/` y `paseo.json` sin tocar.
 - [ ] `git diff main --stat -- src/remolques src/client/remolques`: vacío.
 - [ ] Informe al coordinador: commits, pruebas ejecutadas con su resultado, capturas, y lo que quedó provisional
-  (Q-TGM01..04).
+  (Q-TGM01..05).
 
 ---
 
