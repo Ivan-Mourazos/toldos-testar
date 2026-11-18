@@ -43,14 +43,30 @@ describe('tubos sujetos con la tira de la E.T.', () => {
   const cfg = { ...CONFIG_CODEX, grosor: 1.2, conFunda: true };
   const radio = cfg.diametroTubo / 2;
 
-  it('el tubo toca la lona tanto en el tramo libre como al apoyarse', () => {
+  it('el tubo está centrado en la lona libre y su bulto se apoya al enrollarse', () => {
     const m = construir(cfg, [420]);
-    for (const avance of [400, 420]) {
+    for (const [avance, esperado] of [[300, 0], [m.largo, radio + 1.5 * cfg.grosor]]) {
       const p = posicionLona(m, avance);
       const [t] = centros(m, avance);
       const distanciaNormal = (t.x - p.x) * Math.cos(p.a) + (t.y - p.y) * Math.sin(p.a);
-      expect(distanciaNormal).toBeCloseTo(radio + cfg.grosor / 2, 8);
+      expect(distanciaNormal).toBeCloseTo(esperado, 8);
     }
+  });
+
+  it('descuenta medio encogimiento en el eje y uno entero al pasar cada tubo', () => {
+    const gasto = (Math.PI - 2) * (radio + cfg.grosor / 2);
+    const marcas = [400, 800, 1200];
+    const conSaco = construir(cfg, marcas, 1400);
+    expect(conSaco.largo).toBeCloseTo(1400 - 3 * gasto, 8);
+    conSaco.marcas.forEach((marca, i) => expect(marca).toBeCloseTo(marcas[i] - (i + 0.5) * gasto, 8));
+    expect(construir(cfg, marcas).largo).toBeCloseTo(1200 - 2.5 * gasto, 8);
+    expect(marcas).toEqual([400, 800, 1200]);
+  });
+
+  it('con tubos manuales cercanos conserva el orden de las marcas proyectadas', () => {
+    const m = construir(cfg, [400, 410, 900]);
+    expect(m.marcas[1] - m.marcas[0]).toBeCloseTo(10 * 2 / Math.PI, 8);
+    expect(revisarCiclo(m)[0].separacion).toBeLessThan(0);
   });
 
   it('mide el hueco entre las fundas, tanto al final como durante el ciclo', () => {

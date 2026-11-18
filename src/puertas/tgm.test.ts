@@ -105,26 +105,26 @@ describe('cálculo de la puerta TGM', () => {
     const r = calcularPuerta(p);
     expect(r.avisos).toEqual([]);
     expect(r.uniones).toEqual([
-      { altura: 153.5, solape: 14.5, tubo: 2 }, { altura: 280.5, solape: 14.5, tubo: 1 },
+      { altura: 154.6, solape: 14.5, tubo: 2 }, { altura: 285, solape: 14.5, tubo: 1 },
     ]);
     expect(r.piezas.map(x => [x.nombre, x.ancho, x.alto])).toEqual([
-      ['Paño 1', 300, 174.75], ['Paño 2', 300, 141.5], ['Paño 3', 300, 160.25],
+      ['Paño 1', 300, 175.85], ['Paño 2', 300, 144.9], ['Paño 3', 300, 155.75],
     ]);
     const [inferior, central, superior] = r.piezas;
-    expect(inferior.huecos).toMatchObject([{ y: 162.75, alto: 9.5 }, { y: 162.75, alto: 9.5 }]);
-    expect(central.huecos).toMatchObject([{ y: 129.5, alto: 9.5 }, { y: 129.5, alto: 9.5 }]);
+    expect(inferior.huecos).toMatchObject([{ y: 163.85, alto: 9.5 }, { y: 163.85, alto: 9.5 }]);
+    expect(central.huecos).toMatchObject([{ y: 132.9, alto: 9.5 }, { y: 132.9, alto: 9.5 }]);
     expect(superior.huecos).toEqual([]);
     const rayas = (pieza: typeof inferior) => pieza.marcas.filter(([a, b, c, d]) => b === d && c - a > 150).map(m => m[1]);
     expect(rayas(inferior)).toEqual([23]);
     expect(rayas(central)).toEqual([14.5]);
-    expect(rayas(superior)).toEqual([14.5, 153.25]);
+    expect(rayas(superior)).toEqual([14.5, 148.75]);
     for (const pano of [central, superior]) {
       expect(pano.marcas).toContainEqual([150, 14.5, 150, 13.5]);
     }
 
     const { lienzo } = dibujarAlzadoEnrollable(p, 'A');
     const flechas = lienzo.inserciones.filter(i => i.nombre === 'FLECHA2');
-    expect(flechas.map(f => Number(f.y.toFixed(2)))).toEqual([-142.25, -269.25]);
+    expect(flechas.map(f => Number(f.y.toFixed(2)))).toEqual([-137.75, -268.15]);
     expect(flechas.map(f => f.giro)).toEqual([0, 0]);
     expect(generarCortePuertas(pedidoDe('PVC-TGM', p)).archivo?.dxf).toContain('EOF');
   });
@@ -134,11 +134,11 @@ describe('cálculo de la puerta TGM', () => {
     const r = calcularPuerta(p);
     expect(r.avisos).toEqual([]);
     expect(r.uniones).toEqual([]);
-    expect(r.piezas[0].marcas).toContainEqual([1.5, 285.5, 298.5, 285.5]);
-    expect(r.piezas[0].marcas).toContainEqual([1.5, 158.5, 298.5, 158.5]);
+    expect(r.piezas[0].marcas).toContainEqual([1.5, 290, 298.5, 290]);
+    expect(r.piezas[0].marcas).toContainEqual([1.5, 159.6, 298.5, 159.6]);
     const { lienzo } = dibujarAlzadoEnrollable(p, 'A');
     expect(lienzo.inserciones.filter(i => i.nombre === 'FLECHA2').map(f => Number(f.y.toFixed(2))))
-      .toEqual([-158.5, -285.5]);
+      .toEqual([-154, -284.4]);
   });
 
   it('PVC: el empate que indica un tubo usa su eje y el ancho de E.T. actuales', () => {
@@ -147,7 +147,7 @@ describe('cálculo de la puerta TGM', () => {
       empates: [{ pano: 'inferior' as const, altura: 160, solape: 7.5, tubo: 2 }] } };
     const r = calcularPuerta(p);
     expect(r.avisos).toEqual([]);
-    expect(r.uniones).toEqual([{ altura: 153.5, solape: 18, tubo: 2 }]);
+    expect(r.uniones).toEqual([{ altura: 154.6, solape: 18, tubo: 2 }]);
   });
 
   it.each([
@@ -165,8 +165,8 @@ describe('cálculo de la puerta TGM', () => {
       { nombre: 'Paño 1', material: `${pano} AZUL 5002`, alto: 250, huecos: [] },
       { nombre: 'Paño 2', material: `${pano} AZUL 5002`, alto: 199.5, huecos: [] },
     ]);
-    expect(panos[0].marcas).toContainEqual([1.5, 163.75, 298.5, 163.75]);
-    expect(panos[1].marcas).toContainEqual([1.5, 42.75, 298.5, 42.75]);
+    expect(panos[0].marcas).toContainEqual([1.5, 164.85, 298.5, 164.85]);
+    expect(panos[1].marcas).toContainEqual([1.5, 47.25, 298.5, 47.25]);
     const ets = r.piezas.filter(x => x.clase === 'entrada');
     expect(ets).toHaveLength(2);
     for (const et of ets) {

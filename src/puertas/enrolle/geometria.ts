@@ -11,15 +11,35 @@ interface Apoyo extends Punto { a: number }
 type Tramo =
   | { tipo: 'linea'; a: number; desde: Apoyo; inicio: number; fin: number }
   | { tipo: 'arco'; a: number; r: number; disco: Disco; inicio: number; fin: number };
+/** Largo y marcas proyectados, con los tubos montados. */
 export interface ModeloEnrolle { cfg: ConfigEnrolle; largo: number; marcas: number[]; tubos: TuboColocado[]; camino: Tramo[] }
 
 const TAU = 2 * Math.PI, PRECISION = 0.02;
+export const radioMedioTubo = (cfg: ConfigEnrolle) => (cfg.diametroTubo + cfg.grosor) / 2;
 const medidas = (cfg: ConfigEnrolle) => {
   const tubo = cfg.diametroTubo / 2;
   const exterior = tubo + (cfg.conFunda ? cfg.grosor : 0);
   const mediaLona = cfg.grosor / 2;
-  return { eje: cfg.diametroEnrolle / 2, exterior, desfase: tubo + mediaLona, radioApoyo: exterior + mediaLona, crecimiento: cfg.grosor / TAU };
+  return { eje: cfg.diametroEnrolle / 2, exterior, desfase: exterior + mediaLona, crecimiento: cfg.grosor / TAU };
 };
+
+function proyectarLona(cfg: ConfigEnrolle, marcas: number[], largo: number) {
+  if (!cfg.conFunda) return { marcas, largo };
+  const medioArco = Math.PI * radioMedioTubo(cfg) / 2;
+  const abultados: Array<{ desde: number; hasta: number }> = [];
+  for (const marca of marcas) {
+    const desde = Math.max(0, marca - medioArco), hasta = marca + medioArco;
+    const anterior = abultados.at(-1);
+    // Si dos tubos manuales se pisan, la proyección sigue siendo monótona y la revisión detecta el solape.
+    if (anterior && desde <= anterior.hasta) anterior.hasta = hasta;
+    else abultados.push({ desde, hasta });
+  }
+  const proyectar = (mm: number) => {
+    const sobreTubos = abultados.reduce((suma, { desde, hasta }) => suma + Math.max(0, Math.min(mm, hasta) - desde), 0);
+    return mm - (1 - 2 / Math.PI) * sobreTubos;
+  };
+  return { marcas: marcas.map(proyectar), largo: proyectar(largo) };
+}
 
 function apoyo(d: Disco, a: number, g: number): Apoyo {
   const c = Math.cos(a), s = Math.sin(a), r = d.base + g * a;
@@ -103,8 +123,9 @@ function discosIniciales(cfg: ConfigEnrolle): Disco[] {
   return discos;
 }
 
-export function construir(cfg: ConfigEnrolle, marcas: number[], largo = marcas.at(-1) ?? 0): ModeloEnrolle {
-  const { desfase, radioApoyo, crecimiento: g } = medidas(cfg);
+export function construir(cfg: ConfigEnrolle, marcasPlanas: number[], largoPlano = marcasPlanas.at(-1) ?? 0): ModeloEnrolle {
+  const { marcas, largo } = proyectarLona(cfg, marcasPlanas, largoPlano);
+  const { desfase, crecimiento: g } = medidas(cfg);
   const discos = discosIniciales(cfg), tubos: TuboColocado[] = [];
   let camino = contorno(cfg, discos, largo);
   for (const marca of marcas) {
@@ -113,9 +134,9 @@ export function construir(cfg: ConfigEnrolle, marcas: number[], largo = marcas.a
     tubos.push({ x, y, marca, angulo: p.a });
     if (marca < largo) {
       // El tubo empieza a estorbar en la vuelta siguiente, por el lado contrario (Codex).
-      // El disco de apoyo incluye la tira exterior, aunque el tubo descansa directamente en la lona.
+      // Por ambas caras, el disco de apoyo incluye un grosor de lona.
       const inicio = p.a + Math.PI;
-      discos.push({ x, y, inicio, base: radioApoyo - g * inicio });
+      discos.push({ x, y, inicio, base: desfase - g * inicio });
       camino = contorno(cfg, discos, largo);
     }
   }
@@ -126,13 +147,16 @@ export function posicionLona(m: ModeloEnrolle, avance: number): Apoyo {
   return en(m.cfg, m.camino, avance);
 }
 
-function centroLibre(p: Apoyo, distancia: number, desfase: number, c: number, s: number): Punto {
-  return { x: p.x + desfase * c - distancia * s, y: p.y + desfase * s + distancia * c };
+function centroLibre(p: Apoyo, distancia: number, desfase: number, entrada: number, c: number, s: number): Punto {
+  // Al llegar el bulto a la tangente, se levanta progresivamente hasta apoyar en la vuelta de debajo.
+  const altura = entrada > 0 ? desfase * Math.max(0, 1 - distancia / entrada) : desfase;
+  return { x: p.x + altura * c - distancia * s, y: p.y + altura * s + distancia * c };
 }
 
 export function centros(m: ModeloEnrolle, avance: number): Punto[] {
   const { desfase } = medidas(m.cfg), p = posicionLona(m, avance), c = Math.cos(p.a), s = Math.sin(p.a);
-  return m.tubos.map(t => avance >= t.marca ? t : centroLibre(p, t.marca - avance, desfase, c, s));
+  const entrada = m.cfg.conFunda ? radioMedioTubo(m.cfg) : 0;
+  return m.tubos.map(t => avance >= t.marca ? t : centroLibre(p, t.marca - avance, desfase, entrada, c, s));
 }
 
 /** Ángulo de apoyo de cada tubo respecto al perfil, en grados de 0 a 180. */
@@ -158,23 +182,27 @@ export function separacionFinal(m: ModeloEnrolle): Pareja {
 export function revisarCiclo(m: ModeloEnrolle): Pareja[] {
   const { desfase, exterior } = medidas(m.cfg), parejas: Pareja[] = [];
   const diametro = 2 * exterior;
+  const entrada = m.cfg.conFunda ? radioMedioTubo(m.cfg) : 0;
+  const iniciales = entrada > 0 ? centros(m, 0) : [];
   for (let i = 0; i < m.tubos.length; i++) for (let j = i + 1; j < m.tubos.length; j++) {
     const desde = m.marcas[i], hasta = m.marcas[j];
     const fijo = m.tubos[i], segundo = m.tubos[j];
-    let mejor = Infinity, donde = desde;
+    let mejor = entrada > 0 ? Math.hypot(iniciales[i].x - iniciales[j].x, iniciales[i].y - iniciales[j].y) - diametro : Infinity;
+    let donde = entrada > 0 ? 0 : desde;
     const medir = (avance: number) => {
       // Entre las dos marcas solo se mueve el segundo tubo de la pareja.
       let q: Punto = segundo;
       if (avance < hasta) {
         const p = posicionLona(m, avance);
-        q = centroLibre(p, hasta - avance, desfase, Math.cos(p.a), Math.sin(p.a));
+        q = centroLibre(p, hasta - avance, desfase, entrada, Math.cos(p.a), Math.sin(p.a));
       }
       const s = Math.hypot(fijo.x - q.x, fijo.y - q.y) - diametro;
       if (s < mejor) { mejor = s; donde = avance; }
       return s;
     };
     const afinar = (a: number, b: number, sa: number, sb: number, rMin: number) => {
-      const ritmo = Math.hypot(hasta - a, desfase) / rMin;
+      const subida = entrada > 0 && b > hasta - entrada ? desfase / entrada : 0;
+      const ritmo = Math.hypot(hasta - a, desfase) / rMin + subida;
       if (Math.min(sa, sb) - ritmo * (b - a) / 2 >= mejor - PRECISION) return;
       const medio = (a + b) / 2, sm = medir(medio);
       afinar(a, medio, sa, sm, rMin); afinar(medio, b, sm, sb, rMin);
@@ -183,7 +211,10 @@ export function revisarCiclo(m: ModeloEnrolle): Pareja[] {
       const lo = Math.max(desde, t.inicio), hi = Math.min(hasta, t.fin);
       if (lo >= hi) continue;
       let a = lo, sa = medir(a);
-      if (t.tipo === 'linea') continue;
+      if (t.tipo === 'linea') {
+        if (entrada > 0 && hi > hasta - entrada) afinar(a, hi, sa, medir(hi), Infinity);
+        continue;
+      }
       for (let b = Math.min(a + 12, hi); a < hi; b = Math.min(a + 12, hi)) {
         const sb = medir(b); afinar(a, b, sa, sb, t.r); a = b; sa = sb;
       }
