@@ -450,8 +450,10 @@ Respuestas de Iván. «Pendiente» quiere decir que la web todavía no lo aplica
   la mitad (5 mm); a unos 36° desaparece. Mínimo 25°.
 - **Q-TGM03 · E.T. (contestada).** Iván, 18/11: la E.T. es solo una tira de lona que sujeta el tubo. Se corta del
   ancho exacto que dice el pedido (depende del tubo), se suelda 2-3 cm por arriba y por abajo y el tubo va en el
-  centro. No cambia las uniones de la lona. Ancho provisional por defecto para Ø42: 14,5 cm (9,5 cm de hueco y
-  2,5 cm de soldadura por cada lado). Si el pedido da el ancho, se usa el del pedido.
+  centro. Ancho provisional por defecto para Ø42: 14,5 cm (9,5 cm de hueco y 2,5 cm de soldadura por cada lado).
+  Si el pedido da el ancho, se usa el del pedido. En rejilla las E.T. son tiras aparte y los paños se empatan por el
+  ancho del rollo. En PVC, cuando el empate va en una E.T., el paño inferior forma la entrada y lleva los huecos, el
+  solape ocupa todo el ancho de la E.T. y se marca solo el paño superior con flecha.
 - **Q-TGM04 · Tubo abajo (contestada).** Iván, 18/11: sin saco, el tubo de abajo va en el cierre: la lona lleva un
   aumento que se dobla, se suelda y deja el tubo dentro con la medida terminada.
 - **Q-TGM05 · Aumento del cierre de abajo (contestada).** Iván, 18/11: el aumento de abajo son 14 cm y la marca

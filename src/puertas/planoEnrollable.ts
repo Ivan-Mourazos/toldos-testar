@@ -1,6 +1,6 @@
 import { separacionCorte } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
-import { calcularPuerta, calcularPuertaDerivada } from './calcular.ts';
+import { calcularPuerta, calcularPuertaDerivada, solapeEntradaEnrollable } from './calcular.ts';
 import { enrolleTgm, puertaTgmDerivada } from './tgm.ts';
 import { rotuloSaco, sacoPuerta, sacoUtil } from './saco.ts';
 import { anclarCotas } from './cotasPuertas.ts';
@@ -134,16 +134,19 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
   };
   if (sinEtArriba) sinEt(T, true);
   if (sinEtAbajo) sinEt(ejes.at(-1)!, false);
+  const mitadEt = solapeEntradaEnrollable(p) / 2;
   bandas.forEach((b, i) => {
     if (sinEtArriba && esEje(b, 0) || sinEtAbajo && esEje(b, ejes.length - 1)) return;
     const superior = ventanales.length > 0 && esEje(b, 0);
     const segundo = ventanales.length > 0 ? esEje(b, 1) : i === 1;
-    const yMarca = -b + (superior ? 3.75 : -3.75);
+    const empateEt = p.tgm?.lona === 'pvc' && r.uniones.some(u => u.tubo !== undefined && Math.abs(H - b - u.altura) < .01);
+    const rayaArriba = superior || empateEt;
+    const yMarca = -b + (rayaArriba ? mitadEt : -mitadEt);
     linea(l, 'ejes', 0, -b, F, -b);
     linea(l, 'ROTULADOR', 0, yMarca, F, yMarca);
-    flecha(l, F / 2, yMarca, superior ? 0 : 180, segundo ? -1 : 1);
-    if (!ejes.some(e => Math.abs(e - b) < .01)) linea(l, 'borrar', 0, -b + 3.75, F, -b + 3.75);
-    cota(l, 0, -b - 3.75, 0, -b + 3.75, -9.15 + i, 'XERAL 5');
+    flecha(l, F / 2, yMarca, rayaArriba ? 0 : 180, segundo ? -1 : 1);
+    if (!empateEt && !ejes.some(e => Math.abs(e - b) < .01)) linea(l, 'borrar', 0, -b + mitadEt, F, -b + mitadEt);
+    cota(l, 0, -b - mitadEt, 0, -b + mitadEt, -9.15 + i, 'XERAL 5');
     texto(l, '3 CM (HUECOS)', F / 2, -b + (superior ? 14.7311 : segundo ? -7.59 : 14.187) - 3.5, 7, { centrado: true });
   });
   if (!sinSaco) linea(l, 'ROTULADOR', 0, -H + bajo + 2, F, -H + bajo + 2);

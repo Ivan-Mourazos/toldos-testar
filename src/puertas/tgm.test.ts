@@ -100,7 +100,55 @@ const puertaTgm = (cambios: Partial<NonNullable<Puerta['tgm']>> = {}): Puerta =>
 };
 
 describe('cálculo de la puerta TGM', () => {
-  it.todo('PVC: el empate va en la E.T. (pendiente de Iván)');
+  it('PVC: el paño inferior forma la E.T. y el superior lleva su raya de empate con flecha', () => {
+    const p = { ...puertaTgm({ abajo: 'tubo', lona: 'pvc' }), rollo: 250 };
+    const r = calcularPuerta(p);
+    expect(r.avisos).toEqual([]);
+    expect(r.uniones).toEqual([
+      { altura: 153.1, solape: 14.5, tubo: 2 }, { altura: 280.2, solape: 14.5, tubo: 1 },
+    ]);
+    expect(r.piezas.map(x => [x.nombre, x.ancho, x.alto])).toEqual([
+      ['Paño 1', 300, 174.35], ['Paño 2', 300, 141.6], ['Paño 3', 300, 160.55],
+    ]);
+    const [inferior, central, superior] = r.piezas;
+    expect(inferior.huecos).toMatchObject([{ y: 162.35, alto: 9.5 }, { y: 162.35, alto: 9.5 }]);
+    expect(central.huecos).toMatchObject([{ y: 129.6, alto: 9.5 }, { y: 129.6, alto: 9.5 }]);
+    expect(superior.huecos).toEqual([]);
+    const rayas = (pieza: typeof inferior) => pieza.marcas.filter(([a, b, c, d]) => b === d && c - a > 150).map(m => m[1]);
+    expect(rayas(inferior)).toEqual([23]);
+    expect(rayas(central)).toEqual([14.5]);
+    expect(rayas(superior)).toEqual([14.5, 153.55]);
+    for (const pano of [central, superior]) {
+      expect(pano.marcas).toContainEqual([150, 14.5, 150, 13.5]);
+    }
+
+    const { lienzo } = dibujarAlzadoEnrollable(p, 'A');
+    const flechas = lienzo.inserciones.filter(i => i.nombre === 'FLECHA2');
+    expect(flechas.map(f => Number(f.y.toFixed(2)))).toEqual([-142.55, -269.65]);
+    expect(flechas.map(f => f.giro)).toEqual([0, 0]);
+    expect(generarCortePuertas(pedidoDe('PVC-TGM', p)).archivo?.dxf).toContain('EOF');
+  });
+
+  it('PVC: marca una E.T. suelta a medio ancho por debajo de su eje', () => {
+    const p = puertaTgm({ abajo: 'tubo', lona: 'pvc', anchoEt: 18 });
+    const r = calcularPuerta(p);
+    expect(r.avisos).toEqual([]);
+    expect(r.uniones).toEqual([]);
+    expect(r.piezas[0].marcas).toContainEqual([1.5, 285.2, 298.5, 285.2]);
+    expect(r.piezas[0].marcas).toContainEqual([1.5, 158.1, 298.5, 158.1]);
+    const { lienzo } = dibujarAlzadoEnrollable(p, 'A');
+    expect(lienzo.inserciones.filter(i => i.nombre === 'FLECHA2').map(f => Number(f.y.toFixed(2))))
+      .toEqual([-158.8, -285.9]);
+  });
+
+  it('PVC: el empate que indica un tubo usa su eje y el ancho de E.T. actuales', () => {
+    const base = puertaTgm({ abajo: 'tubo', lona: 'pvc', anchoEt: 18 });
+    const p = { ...base, enrollable: { ...base.enrollable,
+      empates: [{ pano: 'inferior' as const, altura: 160, solape: 7.5, tubo: 2 }] } };
+    const r = calcularPuerta(p);
+    expect(r.avisos).toEqual([]);
+    expect(r.uniones).toEqual([{ altura: 153.1, solape: 18, tubo: 2 }]);
+  });
 
   it.each([
     { materialEt: 'LAC900', material: 'LAC900', pano: 'REJILLA' },

@@ -16,6 +16,9 @@ import { bajoDobleSaco, desnivelSuelo, espejarPieza, inclinarSaco, pestanaDerech
 
 export const MODELOS_PUERTAS: Record<ModeloPuerta, string> = { PUERTAENR: 'Enrollable', PUERTAPLE: 'Apilable', PUERTAUTO: 'Autorreparable', SYSTEMDOCK: 'System Dock', SACOARENA: 'Saco confeccionado' };
 export const REGLAS_ENROLLABLE = { solapeEntrada:7.5, corteEntrada:8, unionNormal:2 };
+export function solapeEntradaEnrollable(p: Puerta): number {
+  return p.tgm?.lona === 'pvc' ? p.tgm.anchoEt : REGLAS_ENROLLABLE.solapeEntrada;
+}
 const n = (x: number) => Math.round(x * 10000) / 10000;
 const positivo = (x: number) => Number.isFinite(x) && x > 0 && x <= 3000;
 const numero = (x: number) => x.toLocaleString('es-ES', { maximumFractionDigits: 2 });
@@ -160,6 +163,7 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
   }
   if (p.modelo === 'PUERTAENR') {
     const e = p.enrollable, ventanales=ventanalesEnrollable(p);
+    const solapeEt = solapeEntradaEnrollable(p);
     const altoVentanales=ventanales.reduce((s,v)=>s+v.D,0), s = sacoPuerta(p);
     // Sin saco, se corta lona por debajo del bajo terminado para doblarla y soldarla alrededor del tubo (Q-TGM04).
     const origenInferior = sinSaco ? -(e.cierreBajo ?? 0) : s.rematado;
@@ -181,8 +185,13 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
     for (const [nombre,h,origen] of panos) {
       // En rejilla los paños se reparten por el ancho del rollo, con la unión normal de 2 cm.
       const manual=rejilla?[]:e.empates.filter(u=>u.pano===nombre);
-      const tubos=rejilla?[]:p.entradas.map((t,i)=>({eje:t.altura-origen,solape:REGLAS_ENROLLABLE.solapeEntrada,tubo:i+1})).filter(t=>!etVentanal(p.entradas[t.tubo-1]));
-      const plan=repartirPanos({desde:0,hasta:h,frente:ancho,rollo:p.rollo,tubos,normal:true,indicados:manual.length?manual.map(u=>({eje:u.altura,solape:u.solape,tubo:u.tubo})):undefined});
+      const tubos=rejilla?[]:p.entradas.map((t,i)=>({eje:t.altura-origen,solape:solapeEt,tubo:i+1})).filter(t=>!etVentanal(p.entradas[t.tubo-1]));
+      const indicados = manual.map(u => {
+        // En PVC TGM, un empate en la E.T. sigue la posición y el ancho actuales del tubo.
+        const tubo = p.tgm?.lona === 'pvc' && u.tubo ? tubos.find(t => t.tubo === u.tubo) : undefined;
+        return tubo ?? { eje: u.altura, solape: u.solape, tubo: u.tubo };
+      });
+      const plan=repartirPanos({desde:0,hasta:h,frente:ancho,rollo:p.rollo,tubos,normal:true,indicados:indicados.length?indicados:undefined});
       const antes=paneles.length;
       reparto(plan,ciega?'Paño':`Paño ${nombre}`);
       r.uniones.push(...plan.uniones.map(u=>({altura:u.eje+origen,solape:u.solape,tubo:u.tubo})));
@@ -202,7 +211,7 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
       else if(nombre==='superior'||!e.sinEtAbajo) marcarEn(origen+h-(nombre==='superior'?7:7.5),nombre==='inferior'?1:undefined);
       for(const [i,t] of p.entradas.entries()) {
         if(plan.uniones.some(u=>u.tubo===i+1)||etVentanal(t))continue;
-        const y=t.altura-REGLAS_ENROLLABLE.solapeEntrada/2;
+        const y=t.altura-solapeEt/2;
         if(y>origen+7.5 && y<origen+h-(nombre==='superior'||ciega?7:7.5)-.001)marcarEn(y,1);
       }
     }
