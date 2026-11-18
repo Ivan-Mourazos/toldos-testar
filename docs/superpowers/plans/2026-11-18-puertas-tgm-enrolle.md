@@ -710,8 +710,9 @@ añadir una prueba en `rps.test.ts` de que un código desconocido sigue cayendo 
 ```markdown
 ## Puertas · TGM enrollable · 18/11/2026
 
-- **Q-TGM01 · Bolsillo de la varilla.** ¿Diámetro de la varilla, cuánto se corta para el bolsillo y se suelda o se
-  cose? Mientras tanto, la cabecera es la de la enrollable de Portanova (+3,5 cm).
+- **Q-TGM01 · Bolsillo de la varilla.** Iván, 18/11: la lona lleva 3,5 cm de más arriba para la entrada de la
+  varilla (como la cabecera de Portanova), y los 30 cm de enrolle se cuentan desde la varilla ya puesta. Queda: ¿se
+  suelda o se cose el bolsillo?
 - **Q-TGM02 · Perfil fleco.** El bulto es de 1 cm (Iván, 18/11). ¿A cuántos
   grados del perfil tiene que quedar un tubo para no montarse (provisional 20°)? El alto, 10 mm, está confirmado.
 - **Q-TGM03 · E.T. de ancho variable.** Con una E.T. de 14,5 cm de corte, ¿cuánto solapa con la lona? Mientras tanto,
@@ -841,8 +842,9 @@ export function calcularTgm(p: Puerta, calcularEnrollable: (p: Puerta) => Result
 
 Reglas (diseño, sección «Cómo coloca»):
 - Alto de la lona (cm) = `altoTotal` o, si falta, `altoHueco + anadido`.
-- Las marcas se miden desde el borde de arriba de la lona (perfil fleco). Provisional Q-TGM01: la cabecera sigue
-  siendo la de Portanova.
+- El alto de la lona se mide hasta la varilla ya puesta (Iván, 18/11: los 30 cm de enrolle cuentan desde la
+  varilla). Encima lleva 3,5 cm para la entrada de la varilla, que es la cabecera de Portanova (`p.alto + 3,5`), así
+  que no hay que cambiarla. Las marcas del simulador se miden desde la varilla.
 - Con saco: largo enrollado (mm) = `(altoLona − sacoPuerta(p).rematado) × 10`; tubos en `n + 1` tramos.
 - Con tubo abajo: largo enrollado (mm) = `(altoLona − anchoEt / 2) × 10`; el último tubo es el final (Q-TGM04).
 - Altura de cada tubo desde abajo (cm) = `altoLona − marca / 10`, redondeada a 0,1.
@@ -873,6 +875,12 @@ describe('cálculo de la puerta TGM', () => {
     expect(e.conSaco).toBe(true);
     expect(e.colocacion.marcas).toHaveLength(3);
     expect(e.colocacion.avisos.filter(a => a.nivel === 'error')).toEqual([]);
+  });
+  it('el paño llega a la varilla + 3,5 cm de entrada de varilla', () => {
+    const r = calcularPuerta(puertaTgm({ abajo: 'tubo' }));
+    const panos = r.piezas.filter(x => x.clase === 'pano');
+    const arriba = Math.max(...panos.map(x => x.origenAlzado![1] + x.alto));
+    expect(arriba).toBeCloseTo(430 + 3.5, 1);
   });
   it('el alto total manda sobre hueco + añadido', () => {
     expect(enrolleTgm(puertaTgm({ altoTotal: 450 }))!.altoLona).toBe(450);
