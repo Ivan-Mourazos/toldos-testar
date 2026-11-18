@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CONFIG_CODEX, angulosAlPerfil, construir, revisarCiclo, separacionFinal, diametroFinal } from './geometria.ts';
+import { CONFIG_CODEX, angulosAlPerfil, centros, construir, posicionLona, revisarCiclo, separacionFinal, diametroFinal } from './geometria.ts';
 
 // Valores de las simulaciones HTML de Codex (18/11/2026), tubo de enrolle Ø88,9, tubos Ø42, lona 0,8.
 describe('geometría del enrolle: contraste con Codex', () => {
@@ -36,6 +36,46 @@ describe('geometría del enrolle: contraste con Codex', () => {
     const largo = construir(CONFIG_CODEX, [1100, 2200, 3300], 4400);
     expect(largo.largo).toBe(4400);
     expect(diametroFinal(largo)).toBeGreaterThan(diametroFinal(corto));
+  });
+});
+
+describe('tubos con funda de lona', () => {
+  const cfg = { ...CONFIG_CODEX, grosor: 1.2, conFunda: true };
+  const radio = cfg.diametroTubo / 2;
+
+  it('aleja el eje de la línea media tanto en la lona libre como al apoyarse', () => {
+    const m = construir(cfg, [420]);
+    for (const avance of [400, 420]) {
+      const p = posicionLona(m, avance);
+      const [t] = centros(m, avance);
+      const distanciaNormal = (t.x - p.x) * Math.cos(p.a) + (t.y - p.y) * Math.sin(p.a);
+      expect(distanciaNormal).toBeCloseTo(radio + 1.5 * cfg.grosor, 8);
+    }
+  });
+
+  it('mide el hueco entre las fundas, tanto al final como durante el ciclo', () => {
+    const m = construir(cfg, [420, 450]);
+    for (const { separacion, donde } of [separacionFinal(m), revisarCiclo(m)[0]]) {
+      const [a, b] = centros(m, donde);
+      expect(separacion).toBeCloseTo(Math.hypot(a.x - b.x, a.y - b.y) - cfg.diametroTubo - 2 * cfg.grosor, 8);
+    }
+  });
+
+  it('la vuelta siguiente apoya sobre la funda y el diámetro incluye su grosor', () => {
+    const m = construir(cfg, [420], 1000);
+    const [t] = m.tubos;
+    const objetivo = t.angulo + 2 * Math.PI;
+    let desde = t.marca, hasta = m.largo;
+    while (hasta - desde > 0.0001) {
+      const medio = (desde + hasta) / 2;
+      if (posicionLona(m, medio).a < objetivo) desde = medio;
+      else hasta = medio;
+    }
+    const p = posicionLona(m, (desde + hasta) / 2);
+    const distanciaNormal = (p.x - t.x) * Math.cos(p.a) + (p.y - t.y) * Math.sin(p.a);
+    expect(distanciaNormal).toBeCloseTo(radio + 2 * cfg.grosor, 4);
+    const alTerminar = construir(cfg, [420]);
+    expect(diametroFinal(alTerminar) / 2).toBeCloseTo(Math.hypot(t.x, t.y) + radio + cfg.grosor, 8);
   });
 });
 
@@ -77,20 +117,22 @@ describe('perfil fleco', () => {
     }
   });
 
-  it('un tubo justo una vuelta después del arranque queda encima del perfil', () => {
+  it.each([false, true])('un tubo justo una vuelta después del arranque queda encima del perfil (funda %s)', conFunda => {
+    const cfg = { ...conPerfil, conFunda };
     // La lona recorre el bulto del perfil antes de completar los 360 grados.
     let desde = 0;
     let hasta = 2 * Math.PI * (conPerfil.diametroEnrolle + conPerfil.grosor);
     while (hasta - desde > 0.001) {
       const marca = (desde + hasta) / 2;
-      const [tubo] = construir(conPerfil, [marca]).tubos;
+      const [tubo] = construir(cfg, [marca]).tubos;
       if (tubo.angulo < 2 * Math.PI) desde = marca;
       else hasta = marca;
     }
 
-    const modelo = construir(conPerfil, [(desde + hasta) / 2, 3000]);
+    const modelo = construir(cfg, [(desde + hasta) / 2, 3000]);
     expect(angulosAlPerfil(modelo)[0]).toBeLessThan(20);
     const extremoPerfil = conPerfil.diametroEnrolle / 2 + conPerfil.altoPerfil;
-    expect(modelo.tubos[0].x - conPerfil.diametroTubo / 2).toBeGreaterThan(extremoPerfil);
+    const radioExterior = cfg.diametroTubo / 2 + (conFunda ? cfg.grosor : 0);
+    expect(modelo.tubos[0].x - radioExterior).toBeGreaterThan(extremoPerfil);
   });
 });

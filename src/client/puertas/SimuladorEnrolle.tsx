@@ -11,8 +11,11 @@ function dibujar(canvas: HTMLCanvasElement, modelo: ModeloEnrolle, avance: numbe
   if (!ctx) return;
   const css = getComputedStyle(canvas);
   const color = (nombre: string) => css.getPropertyValue(nombre).trim();
-  const { cfg, colocacion, largo, ajustes } = enrolle;
+  const { cfg, colocacion, largo, ajustes, conSaco, anchoEt, cierreBajo } = enrolle;
   const apoyo = posicionLona(modelo, avance);
+  const radioTubo = cfg.diametroTubo / 2;
+  const finLona = largo + (cfg.conFunda && !conSaco ? radioTubo : 0);
+  const colorLona = color('--control-active-border');
   const escala = canvas.height / (Math.max(colocacion.diametroFinal, cfg.diametroEnrolle) * 1.5);
   const giro = Math.PI - apoyo.a;
   const cx = canvas.width / 2, cy = canvas.height * 0.44;
@@ -36,18 +39,24 @@ function dibujar(canvas: HTMLCanvasElement, modelo: ModeloEnrolle, avance: numbe
     circulo(cfg.diametroEnrolle / 2 + cfg.altoPerfil - radio, 0, radio, color('--control-active-border'), color('--control-active-border'));
   }
 
-  // La parte libre sigue la tangente de la lona en el punto de apoyo.
-  const pasos = Math.max(1, Math.min(700, Math.ceil(avance / 8)));
-  const arranque = posicionLona(modelo, 0);
+  // Pasado el punto de apoyo, el tramo libre sigue su tangente.
+  const seno = Math.sin(apoyo.a), coseno = Math.cos(apoyo.a);
+  const trazarLona = (desde: number, hasta: number, desplazamiento: number, continuar = false) => {
+    const pasos = Math.max(1, Math.min(700, Math.ceil((hasta - desde) / 4)));
+    for (let i = 0; i <= pasos; i++) {
+      const marca = desde + (hasta - desde) * i / pasos;
+      const libre = marca - avance;
+      const p = libre <= 0 ? posicionLona(modelo, marca) : { x: apoyo.x - libre * seno, y: apoyo.y + libre * coseno, a: apoyo.a };
+      const x = p.x + desplazamiento * Math.cos(p.a), y = p.y + desplazamiento * Math.sin(p.a);
+      if (i === 0 && !continuar) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+  };
   ctx.beginPath();
-  ctx.moveTo(arranque.x, arranque.y);
-  for (let i = 1; i <= pasos; i++) {
-    const p = posicionLona(modelo, i / pasos * avance);
-    ctx.lineTo(p.x, p.y);
-  }
-  const libre = Math.min(largo - avance, canvas.height / escala);
-  ctx.lineTo(apoyo.x - libre * Math.sin(apoyo.a), apoyo.y + libre * Math.cos(apoyo.a));
-  ctx.strokeStyle = color('--control-active-border');
+  trazarLona(0, avance, 0);
+  trazarLona(avance, Math.min(finLona, avance + canvas.height / escala), 0, true);
+  ctx.strokeStyle = colorLona;
+  ctx.lineWidth = cfg.grosor;
   ctx.stroke();
 
   const justa = colocacion.parejas[0];
@@ -55,7 +64,32 @@ function dibujar(canvas: HTMLCanvasElement, modelo: ModeloEnrolle, avance: numbe
   tubos.forEach((t, k) => {
     const riesgo = justa && justa.separacion < ajustes.margen && (k === justa.i || k === justa.j);
     const borde = riesgo ? color('--tramo-ajustado') : color('--text');
-    circulo(t.x, t.y, cfg.diametroTubo / 2, color('--surface'), borde);
+    if (!cfg.conFunda) {
+      ctx.lineWidth = 2 / escala;
+      circulo(t.x, t.y, radioTubo, color('--surface'), borde);
+      return;
+    }
+
+    // El perímetro se mide por la línea media de la funda. Las colas se sueldan en la cara exterior del paño.
+    const marca = modelo.marcas[k];
+    const esCierre = !conSaco && k === tubos.length - 1;
+    const radioFunda = radioTubo + cfg.grosor / 2;
+    const cola = Math.max(0, ((esCierre ? cierreBajo : anchoEt) * 10 - 2 * Math.PI * radioFunda) / 2);
+    ctx.strokeStyle = colorLona;
+    ctx.lineWidth = cfg.grosor;
+    if (cola > 0) {
+      ctx.beginPath();
+      trazarLona(Math.max(0, marca - cola), marca, cfg.grosor);
+      trazarLona(marca, Math.min(finLona, marca + cola), cfg.grosor, true);
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.arc(t.x, t.y, radioFunda, 0, 2 * Math.PI);
+    ctx.fillStyle = color('--surface');
+    ctx.fill();
+    ctx.stroke();
+    ctx.lineWidth = (riesgo ? 2 : 0.75) / escala;
+    circulo(t.x, t.y, radioTubo, color('--surface'), borde);
   });
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.textAlign = 'center';

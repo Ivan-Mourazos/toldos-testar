@@ -10,6 +10,8 @@ export interface EnrolleTgm {
   largo: number;
   conSaco: boolean;
   altoLona: number;
+  anchoEt: number;
+  cierreBajo: number;
   colocacion: Colocacion;
 }
 
@@ -30,7 +32,7 @@ export function enrolleTgm(p: Puerta): EnrolleTgm | null {
 
   const { margen, desvio, altoPerfil, anchoPerfil, anguloPerfil } = t.ajustes;
   const cfg: ConfigEnrolle = {
-    diametroEnrolle: t.diametroEnrolle, diametroTubo: t.diametroTubo, grosor: t.grosor, altoPerfil, anchoPerfil,
+    diametroEnrolle: t.diametroEnrolle, diametroTubo: t.diametroTubo, grosor: t.grosor, altoPerfil, anchoPerfil, conFunda: true,
   };
   const ajustes: AjustesEnrolle = { margen, desvio, anguloPerfil };
   // También en manual, el cierre queda fijo aunque cambie el alto de la lona.
@@ -38,7 +40,7 @@ export function enrolleTgm(p: Puerta): EnrolleTgm | null {
     ? [...t.tubosManual.slice(0, -1), largo]
     : t.tubosManual;
   const colocacion = colocarTubos(cfg, ajustes, { largo, nTubos: t.nTubos, conSaco, manual });
-  return { cfg, ajustes, largo, conSaco, altoLona, colocacion };
+  return { cfg, ajustes, largo, conSaco, altoLona, anchoEt: t.anchoEt, cierreBajo: t.cierreBajo, colocacion };
 }
 
 /** Configuración de la enrollable ciega con los ejes que ha colocado el simulador. */

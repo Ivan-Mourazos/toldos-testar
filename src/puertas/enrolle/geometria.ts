@@ -1,7 +1,7 @@
 // Geometría del rollo de una puerta enrollable. Traducción de las simulaciones de Codex (18/11/2026):
 // la lona tensa se modela como el contorno de varios discos (tubo de enrolle y tubos ya enrollados) que crecen
 // un grosor de lona por vuelta. Todo en mm y radianes.
-export interface ConfigEnrolle { diametroEnrolle: number; diametroTubo: number; grosor: number; altoPerfil: number; anchoPerfil: number }
+export interface ConfigEnrolle { diametroEnrolle: number; diametroTubo: number; grosor: number; altoPerfil: number; anchoPerfil: number; conFunda?: boolean }
 export const CONFIG_CODEX: ConfigEnrolle = { diametroEnrolle: 88.9, diametroTubo: 42, grosor: 0.8, altoPerfil: 0, anchoPerfil: 0 };
 export interface Punto { x: number; y: number }
 export interface TuboColocado extends Punto { marca: number; angulo: number }
@@ -15,8 +15,9 @@ export interface ModeloEnrolle { cfg: ConfigEnrolle; largo: number; marcas: numb
 
 const TAU = 2 * Math.PI, PRECISION = 0.02;
 const medidas = (cfg: ConfigEnrolle) => {
-  const tubo = cfg.diametroTubo / 2, crecimiento = cfg.grosor / TAU;
-  return { eje: cfg.diametroEnrolle / 2, tubo, desfase: tubo + cfg.grosor / 2, crecimiento };
+  const tubo = cfg.diametroTubo / 2;
+  const exterior = tubo + (cfg.conFunda ? cfg.grosor : 0);
+  return { eje: cfg.diametroEnrolle / 2, exterior, desfase: exterior + cfg.grosor / 2, crecimiento: cfg.grosor / TAU };
 };
 
 function apoyo(d: Disco, a: number, g: number): Apoyo {
@@ -123,13 +124,13 @@ export function posicionLona(m: ModeloEnrolle, avance: number): Apoyo {
   return en(m.cfg, m.camino, avance);
 }
 
+function centroLibre(p: Apoyo, distancia: number, desfase: number, c: number, s: number): Punto {
+  return { x: p.x + desfase * c - distancia * s, y: p.y + desfase * s + distancia * c };
+}
+
 export function centros(m: ModeloEnrolle, avance: number): Punto[] {
   const { desfase } = medidas(m.cfg), p = posicionLona(m, avance), c = Math.cos(p.a), s = Math.sin(p.a);
-  return m.tubos.map(t => {
-    if (avance >= t.marca) return t;
-    const libre = t.marca - avance;
-    return { x: p.x + desfase * c - libre * s, y: p.y + desfase * s + libre * c };
-  });
+  return m.tubos.map(t => avance >= t.marca ? t : centroLibre(p, t.marca - avance, desfase, c, s));
 }
 
 /** Ángulo de apoyo de cada tubo respecto al perfil, en grados de 0 a 180. */
@@ -140,12 +141,12 @@ export function angulosAlPerfil(m: ModeloEnrolle): number[] {
   });
 }
 
-const hueco = (m: ModeloEnrolle, a: Punto, b: Punto) => Math.hypot(a.x - b.x, a.y - b.y) - m.cfg.diametroTubo;
-
 export function separacionFinal(m: ModeloEnrolle): Pareja {
+  const diametro = 2 * medidas(m.cfg).exterior;
   let mejor: Pareja = { i: 0, j: 0, separacion: Infinity, donde: m.largo };
   for (let i = 0; i < m.tubos.length; i++) for (let j = i + 1; j < m.tubos.length; j++) {
-    const s = hueco(m, m.tubos[i], m.tubos[j]);
+    const a = m.tubos[i], b = m.tubos[j];
+    const s = Math.hypot(a.x - b.x, a.y - b.y) - diametro;
     if (s < mejor.separacion) mejor = { i, j, separacion: s, donde: m.largo };
   }
   return mejor;
@@ -153,12 +154,20 @@ export function separacionFinal(m: ModeloEnrolle): Pareja {
 
 /** Antes de la primera marca ambos tubos avanzan juntos; tras la segunda quedan fijos. */
 export function revisarCiclo(m: ModeloEnrolle): Pareja[] {
-  const { desfase } = medidas(m.cfg), parejas: Pareja[] = [];
+  const { desfase, exterior } = medidas(m.cfg), parejas: Pareja[] = [];
+  const diametro = 2 * exterior;
   for (let i = 0; i < m.tubos.length; i++) for (let j = i + 1; j < m.tubos.length; j++) {
     const desde = m.marcas[i], hasta = m.marcas[j];
+    const fijo = m.tubos[i], segundo = m.tubos[j];
     let mejor = Infinity, donde = desde;
     const medir = (avance: number) => {
-      const q = centros(m, avance), s = hueco(m, q[i], q[j]);
+      // Entre las dos marcas solo se mueve el segundo tubo de la pareja.
+      let q: Punto = segundo;
+      if (avance < hasta) {
+        const p = posicionLona(m, avance);
+        q = centroLibre(p, hasta - avance, desfase, Math.cos(p.a), Math.sin(p.a));
+      }
+      const s = Math.hypot(fijo.x - q.x, fijo.y - q.y) - diametro;
       if (s < mejor) { mejor = s; donde = avance; }
       return s;
     };
@@ -183,9 +192,10 @@ export function revisarCiclo(m: ModeloEnrolle): Pareja[] {
 }
 
 export function diametroFinal(m: ModeloEnrolle): number {
-  const { eje, tubo, crecimiento } = medidas(m.cfg);
+  const { eje, exterior, crecimiento } = medidas(m.cfg);
+  const radioTubo = m.cfg.conFunda ? exterior : exterior + m.cfg.grosor;
   let radio = eje;
-  for (const t of m.tubos) radio = Math.max(radio, Math.hypot(t.x, t.y) + tubo + m.cfg.grosor);
+  for (const t of m.tubos) radio = Math.max(radio, Math.hypot(t.x, t.y) + radioTubo);
 
   const medir = (p: Punto) => Math.hypot(p.x, p.y) + m.cfg.grosor / 2;
   for (const tramo of m.camino) {
