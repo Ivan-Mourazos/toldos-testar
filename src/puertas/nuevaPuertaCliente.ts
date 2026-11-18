@@ -18,6 +18,7 @@ export function nuevaPuertaDeCliente(cliente:string,tipo:string):Puerta {
       tgm:{
         altoHueco:0,altoTotal:null,anadido:e.anadido,diametroEnrolle:e.diametroEnrolle,nTubos:e.nTubos,
         diametroTubo:e.diametroTubo,anchoEt:e.anchoEt,abajo:'saco' as const,grosor:e.grosor,tubosManual:null,
+        lona:e.lona,materialEt:e.materialEt,
         cierreBajo:e.cierreBajo,marcaCierre:e.marcaCierre,
         ajustes:{margen:e.margen,desvio:e.desvio,altoPerfil:e.altoPerfil,anchoPerfil:e.anchoPerfil,anguloPerfil:e.anguloPerfil},
       },

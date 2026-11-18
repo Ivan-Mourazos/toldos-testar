@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import * as clientes from './clientes.ts';
 import { puertasDesdeRps } from './rps.ts';
 
 // Líneas reales de RPS (copiadas de los pedidos de Portanova y otros, 22/10/2026).
@@ -6,6 +7,19 @@ const linea = (articulo: string, comentario: string, cantidad = 1, of = '0233008
   ({ articulo, cantidad, descripcion: 'LONA PARA PUERTA PLEGABLE', comentario, of });
 
 describe('puertasDesdeRps', () => {
+  it('en una futura ficha RPS de TGM propone PVC de serie y reconoce la rejilla escrita', () => {
+    const fichaRps = vi.spyOn(clientes, 'fichaPorCodigo').mockReturnValue(clientes.fichaPorId('tgm')!);
+    try {
+      const { puertas } = puertasDesdeRps([
+        linea('PUERTAENR', 'MEDIDAS 300 X 400 CM'),
+        linea('PUERTAENR', 'LONA DE REJILLA, MEDIDAS 300 X 400 CM'),
+      ], { clienteCodigo: '009998' });
+      expect(puertas[0]).toMatchObject({ tgm: { lona: 'pvc', anchoEt: 14.5, materialEt: 'LAC900' } });
+      expect(puertas[1]).toMatchObject({ material: 'REJILLA', tgm: { lona: 'rejilla', anchoEt: 14.5, materialEt: 'LAC900' } });
+    } finally {
+      fichaRps.mockRestore();
+    }
+  });
   it.each(['009999', ''])('un código de cliente sin ficha de RPS (%j) cae en General', clienteCodigo => {
     const { puertas } = puertasDesdeRps([linea('PUERTAENR', 'MEDIDAS 366 X 410 CM')], { clienteCodigo });
     expect(puertas).toHaveLength(1);

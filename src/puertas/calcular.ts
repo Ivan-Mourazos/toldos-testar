@@ -57,12 +57,18 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
   if(p.clientePuertas&&!fichaDePuerta(p).habilitado)return {version:1,piezas:[],alternativasSaco:null,empates:[],uniones:[],bolsillo:null,avisos:[{codigo:'CLIENTE_SIN_REGLAS',nivel:'error',texto:fichaDePuerta(p).aviso??'Falta contrastar las reglas de este cliente.'}]};
   if (p.araujo) return calcularAraujo(p);
   if (p.santapau) return calcularSantaPau(p);
-  if (p.tgm) return calcularTgm(p, q => calcularPuerta({ ...q, tgm: undefined }));
+  if (p.tgm) return calcularTgm(p, calcularPuertaDerivada);
   if (p.modelo === 'SYSTEMDOCK') return calcularSystemDock(p);
+  return calcularPuertaDerivada(p);
+}
+
+/** Calcula las piezas de una puerta con sus cotas y entradas ya resueltas. */
+export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
   const piezas: PiezaPuerta[] = [], avisos: AvisoPuerta[] = [];
   const aviso = (codigo: string, texto: string, nivel: 'error' | 'aviso' = 'error') => { if (!avisos.some(a => a.codigo === codigo && a.texto === texto)) avisos.push({ codigo, texto, nivel }); };
   const r: ResultadoPuerta = { version: 1, piezas, alternativasSaco: null, empates: [], uniones:[], bolsillo:null, avisos };
   const sinSaco = p.modelo === 'PUERTAENR' && p.enrollable.sinSaco;
+  const rejilla = p.modelo === 'PUERTAENR' && p.tgm?.lona === 'rejilla';
   if (!p.confirmada) aviso('MODELO', 'Falta marcar «Confirmado con el dibujo»: comprueba el modelo, las medidas y las ventanas con el dibujo del cliente.');
   if (!sinSaco && (p.modelo==='PUERTAENR'||p.modelo==='PUERTAUTO') && sacoUtil(p)===null) aviso('SACO', 'Falta el saco útil del pedido (en mm: 80, 110, 120…).');
   if(p.articuloOrigen && p.articuloOrigen!==p.modelo)aviso('ARTICULO_MODELO',`En RPS pone ${p.articuloOrigen} pero has elegido ${MODELOS_PUERTAS[p.modelo].toLowerCase()}: mira en el dibujo del cliente cuál es.`, 'aviso');
@@ -74,13 +80,14 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
   if (p.confirmada && !p.ventanasConfirmadas) aviso('VENTANAS', 'Falta confirmar las ventanas con el dibujo (o que la puerta es ciega).');
   if (!p.of.trim() || p.of.trim().toUpperCase()==='SIN OF') aviso('SIN_OF', 'Sin OF: se puede ver y revisar, pero no se guardan archivos hasta poner la OF.', 'aviso');
   if (p.modelo === 'PUERTAPLE' && /enrollable|varilla\s+superior/i.test(p.observaciones)) aviso('TEXTO_MODELO', 'El texto del pedido habla de enrollable o de varilla superior: comprueba en el dibujo que es apilable.', 'aviso');
-  if (/rejilla|mosquitera|antivand[aá]lica|franja corrida|recambio/i.test(p.observaciones)) aviso('FUERA_FASE', 'El texto del pedido pide algo que la web todavía no despieza (rejilla, mosquitera, antivandálica…): hazlo a mano.');
+  if ((!rejilla && /rejilla/i.test(p.observaciones)) || /mosquitera|antivand[aá]lica|franja corrida|recambio/i.test(p.observaciones)) aviso('FUERA_FASE', 'El texto del pedido pide algo que la web todavía no despieza (rejilla, mosquitera, antivandálica…): hazlo a mano.');
   if (avisos.some(a => ['MEDIDAS', 'CANTIDAD'].includes(a.codigo))) return r;
   const escuadrado = llevaEscuadrado(p);
   const ancho = p.frente + (!escuadrado && p.modelo === 'PUERTAPLE' && p.frente > 600 ? 2 : 0);
   const lateral = (ancho - p.frente) / 2;
   if (lateral || escuadrado) aviso('ESCUADRADO', 'Frente mayor de 6 m: se añade 1 cm por cada lado para escuadrar.', 'aviso');
   const lona = `${p.material.trim()} ${p.color.trim()}`.trim();
+  const materialEntrada = rejilla ? `${p.tgm!.materialEt} ${p.color.trim()}`.trim() : lona;
   function pieza(nombre: string, clase: PiezaPuerta['clase'], w: number, h: number, material = lona, rollo = p.rollo, cantidad = 1): PiezaPuerta {
     return { id: `${clase}-${piezas.length}-${nombre}`, nombre, clase, ancho: n(w), alto: n(h), material, rollo, cantidad: cantidad * p.cantidad,
       of: p.of.trim() || 'SIN OF', radio: 0, contorno: [[0,0],[n(w),0],[n(w),n(h)],[0,n(h)]], marcas: [], textos: [], huecos: [] };
@@ -142,7 +149,7 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
   const corteEt = p.modelo === 'PUERTAENR' ? p.enrollable.anchoEt ?? REGLAS_ENROLLABLE.corteEntrada : 0;
   function entrada(e: Entrada, i: number) {
     const alto=p.modelo==='PUERTAENR'?corteEt:e.alto;
-    const x = agregar(pieza(`Entrada de tubo ${i + 1}`, 'entrada', e.largo - (escuadrado ? 2 : 0), alto));
+    const x = agregar(pieza(`Entrada de tubo ${i + 1}`, 'entrada', e.largo - (escuadrado ? 2 : 0), alto, materialEntrada));
     x.huecos = huecosET(e);
     x.origenAlzado = [0, e.altura - alto / 2];
   }
@@ -172,8 +179,9 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
       ? [['inferior',n(p.alto+3.5-origenInferior),origenInferior]] as const
       : [['superior',p.alto+3.5-bordeSuperior,bordeSuperior],['inferior',inferior,origenInferior]] as const;
     for (const [nombre,h,origen] of panos) {
-      const manual=e.empates.filter(u=>u.pano===nombre);
-      const tubos=p.entradas.map((t,i)=>({eje:t.altura-origen,solape:REGLAS_ENROLLABLE.solapeEntrada,tubo:i+1})).filter(t=>!etVentanal(p.entradas[t.tubo-1]));
+      // En rejilla los paños se reparten por el ancho del rollo, con la unión normal de 2 cm.
+      const manual=rejilla?[]:e.empates.filter(u=>u.pano===nombre);
+      const tubos=rejilla?[]:p.entradas.map((t,i)=>({eje:t.altura-origen,solape:REGLAS_ENROLLABLE.solapeEntrada,tubo:i+1})).filter(t=>!etVentanal(p.entradas[t.tubo-1]));
       const plan=repartirPanos({desde:0,hasta:h,frente:ancho,rollo:p.rollo,tubos,normal:true,indicados:manual.length?manual.map(u=>({eje:u.altura,solape:u.solape,tubo:u.tubo})):undefined});
       const antes=paneles.length;
       reparto(plan,ciega?'Paño':`Paño ${nombre}`);

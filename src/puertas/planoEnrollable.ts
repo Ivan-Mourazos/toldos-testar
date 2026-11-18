@@ -1,6 +1,6 @@
 import { separacionCorte } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
-import { calcularPuerta } from './calcular.ts';
+import { calcularPuerta, calcularPuertaDerivada } from './calcular.ts';
 import { enrolleTgm, puertaTgmDerivada } from './tgm.ts';
 import { rotuloSaco, sacoPuerta, sacoUtil } from './saco.ts';
 import { anclarCotas } from './cotasPuertas.ts';
@@ -79,9 +79,10 @@ function huecoRotulo(abajo: number, arriba: number, obstaculos: number[], margen
 
 export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identificarSaco = false): { lienzo: Lienzo; zona: Zona } {
   const enrolle = puerta.tgm ? enrolleTgm(puerta) : null;
-  const p = enrolle ? { ...puertaTgmDerivada(puerta, enrolle), tgm: undefined } : puerta;
+  const p = enrolle ? puertaTgmDerivada(puerta, enrolle) : puerta;
   const l = vacio(), F = p.frente, H = p.alto, T = panoContinuoEnrollable(p) ? 0 : p.enrollable.T;
-  const r = calcularPuerta(p), saco = sacoPuerta(p), hs = saco.corte, hp = saco.altoPestana;
+  const r = enrolle ? calcularPuertaDerivada(p) : calcularPuerta(p);
+  const saco = sacoPuerta(p), hs = saco.corte, hp = saco.altoPestana;
   const { sinSaco, marcaCierre } = p.enrollable;
   const bajo = sinSaco ? 0 : saco.rematado;
   const corteBajo = -H - (p.enrollable.cierreBajo ?? 0);

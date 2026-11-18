@@ -17,7 +17,7 @@ export interface FichaClientePuertas {
     diametroEnrolle: number; diametroTubo: 42; grosor: number; anadido: number; anchoEt: number; nTubos: number;
     margen: number; desvio: number; altoPerfil: number; anchoPerfil: number; anguloPerfil: number;
     cierreBajo: number; marcaCierre: number;
-  };
+  } & Pick<NonNullable<Puerta['tgm']>, 'lona' | 'materialEt'>;
 }
 /** Node lee la carpeta; Vite incluye esos mismos JSON al compilar. No hay una lista de clientes en el código. */
 function archivosNode(): Record<string,unknown> {
@@ -38,6 +38,7 @@ export function validarFichaClientePuertas(valor:unknown):FichaClientePuertas {
 
 function valoresEnrolleValidos(e: FichaClientePuertas['enrolle']): boolean {
   return !!e && e.diametroTubo === 42 && Number.isFinite(e.altoPerfil) && e.altoPerfil >= 0
+    && (e.lona === 'pvc' || e.lona === 'rejilla') && (e.materialEt === 'LAC650' || e.materialEt === 'LAC900')
     && [e.diametroEnrolle, e.grosor, e.anadido, e.anchoEt, e.nTubos, e.margen, e.desvio, e.anchoPerfil, e.anguloPerfil,
       e.cierreBajo, e.marcaCierre]
       .every(n => Number.isFinite(n) && n > 0);

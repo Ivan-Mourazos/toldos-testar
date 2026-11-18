@@ -46,6 +46,8 @@ export interface Puerta {
     nTubos: number;
     diametroTubo: 42; // mm
     anchoEt: number; // cm de corte
+    lona: 'pvc' | 'rejilla';
+    materialEt: 'LAC650' | 'LAC900'; // Solo para las tiras aparte de la rejilla.
     cierreBajo: number; // cm de lona por debajo del bajo terminado (Q-TGM05)
     marcaCierre: number; // cm desde el borde del corte (Q-TGM05)
     abajo: 'tubo' | 'saco'; // La medida del saco se guarda en enrollable.saco.

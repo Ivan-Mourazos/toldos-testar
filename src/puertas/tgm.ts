@@ -43,12 +43,13 @@ export function enrolleTgm(p: Puerta): EnrolleTgm | null {
 
 /** Configuración de la enrollable ciega con los ejes que ha colocado el simulador. */
 export function puertaTgmDerivada(p: Puerta, e: EnrolleTgm): Puerta {
-  const { anchoEt, diametroTubo, cierreBajo, marcaCierre } = p.tgm!;
+  const { anchoEt, diametroTubo, cierreBajo, marcaCierre, lona } = p.tgm!;
   // El último tubo sin saco va en el cierre y no lleva E.T.
   const marcas = e.conSaco ? e.colocacion.marcas : e.colocacion.marcas.slice(0, -1);
   return {
     ...p,
     alto: e.altoLona,
+    material: lona === 'rejilla' && ['LAC650', 'LAC900'].includes(p.material.trim().toUpperCase()) ? 'REJILLA' : p.material,
     ventanas: [],
     enrollable: {
       ...p.enrollable,

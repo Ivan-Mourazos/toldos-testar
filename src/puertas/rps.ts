@@ -56,8 +56,9 @@ export function puertasDesdeRps(lineas: LineaPuertaRps[], { clienteCodigo = '' }
     const medidas = /MEDIDAS?\s+(\d+(?:[.,]\d+)?)\s*(?:CM)?\s*X\s*(\d+(?:[.,]\d+)?)/i.exec(texto);
     const color = /COLOR\s+([A-ZÁÉÍÓÚÑ]+(?:\s+[A-ZÁÉÍÓÚÑ]+)*\s+\d{4})/i.exec(texto);
     const cantidad = Number.isInteger(l.cantidad) && l.cantidad >= 1 && l.cantidad <= 50 ? l.cantidad : 1;
+    const base = ficha.calculo==='santapau'||ficha.calculo==='tgm' ? nuevaPuertaDeCliente(ficha.id,tipo.id) : nuevaPuerta(tipo.modelo);
     puertas.push({
-      ...(ficha.calculo==='santapau'||ficha.calculo==='tgm'?nuevaPuertaDeCliente(ficha.id,tipo.id):nuevaPuerta(tipo.modelo)),
+      ...base,
       clientePuertas:ficha.id,tipoPuerta:tipo.id,...ficha.rollos,
       articuloOrigen: articulo as ModeloPuerta,
       frente: medidas ? numero(medidas[1]) : 0,
@@ -66,6 +67,7 @@ export function puertasDesdeRps(lineas: LineaPuertaRps[], { clienteCodigo = '' }
       cantidad,
       of: l.of.trim(),
       observaciones: l.comentario.trim(),
+      ...(base.tgm&&/\blona\s+(?:de\s+)?rejilla\b/i.test(texto)?{material:'REJILLA',tgm:{...base.tgm,lona:'rejilla' as const}}:{}),
       ...(ficha.calculo==='santapau'&&/IGN[IÍ]FUGA?\s+M2/i.test(texto)?{material:'LAC900 IGNÍFUGA M2'}:{}),
     });
   }

@@ -17,7 +17,7 @@ describe('ficha TGM', () => {
     expect(f.tipos.map(t => t.id)).toEqual(['enrollable']);
     expect(f.enrolle).toMatchObject({
       diametroEnrolle: 88.9, diametroTubo: 42, grosor: 0.8, anadido: 30, altoPerfil: 10, anchoPerfil: 10, anguloPerfil: 25,
-      cierreBajo: 14, marcaCierre: 23,
+      cierreBajo: 14, marcaCierre: 23, anchoEt: 14.5,
     });
   });
 
@@ -25,10 +25,11 @@ describe('ficha TGM', () => {
     const p = nuevaPuertaDeCliente('tgm', 'enrollable');
     expect(p).toMatchObject({
       modelo: 'PUERTAENR', ventanasConfirmadas: true,
-      enrollable: { sinVentanal: true, saco: 120, anchoEt: 8 },
+      enrollable: { sinVentanal: true, saco: 120, anchoEt: 14.5 },
       tgm: {
         altoHueco: 0, altoTotal: null, anadido: 30, diametroEnrolle: 88.9, diametroTubo: 42,
-        nTubos: 3, anchoEt: 8, abajo: 'saco', grosor: 0.8, tubosManual: null, cierreBajo: 14, marcaCierre: 23,
+        nTubos: 3, anchoEt: 14.5, abajo: 'saco', grosor: 0.8, tubosManual: null, cierreBajo: 14, marcaCierre: 23,
+        lona: 'pvc', materialEt: 'LAC900',
         ajustes: { margen: 5, desvio: 100, altoPerfil: 10, anchoPerfil: 10, anguloPerfil: 25 },
       },
     });
@@ -46,19 +47,30 @@ describe('pedido TGM', () => {
       ...p,
       enrollable: { ...p.enrollable, sinSaco: true, cierreBajo: 15, marcaCierre: 24 },
       tgm: { ...p.tgm!, altoHueco: 400, altoTotal: 430.5, anchoEt: 14.5, tubosManual: [1100, 2200, 3300],
-        abajo: 'tubo', cierreBajo: 15, marcaCierre: 24 },
+        abajo: 'tubo', cierreBajo: 15, marcaCierre: 24, lona: 'rejilla', materialEt: 'LAC650' },
     });
     expect(leerPedidoPuertas(JSON.parse(JSON.stringify(pedido)))).toEqual(pedido);
   });
 
-  it('reabre una TGM guardada antes de añadir las cotas del cierre', () => {
+  it('completa las cotas y los materiales de una TGM antigua conservando su ancho guardado', () => {
     const p = nuevaPuertaDeCliente('tgm', 'enrollable');
     const pedido = pedidoDe('PRUEBA', p);
     const [elemento] = pedido.elementos;
-    const anterior = { ...p, tgm: { ...p.tgm, cierreBajo: undefined, marcaCierre: undefined } };
+    const anterior = { ...p, tgm: { ...p.tgm, anchoEt: 8, cierreBajo: undefined, marcaCierre: undefined,
+      lona: undefined, materialEt: undefined } };
     const guardado = JSON.parse(JSON.stringify({ ...pedido, elementos: [{ ...elemento, input: anterior }] }));
-    expect(leerPedidoPuertas(guardado).elementos[0].input).toEqual(p);
+    expect(leerPedidoPuertas(guardado).elementos[0].input).toEqual({ ...p, tgm: { ...p.tgm, anchoEt: 8 } });
     expect(guardado.elementos[0].input.tgm).not.toHaveProperty('marcaCierre');
+  });
+
+  it('rechaza tipos de lona y materiales de E.T. ajenos a TGM', () => {
+    const p = nuevaPuertaDeCliente('tgm', 'enrollable');
+    const pedido = pedidoDe('PRUEBA', p);
+    const [elemento] = pedido.elementos;
+    for (const cambios of [{ lona: 'acrilica' }, { materialEt: 'LAC450' }]) {
+      const input = { ...p, tgm: { ...p.tgm, ...cambios } };
+      expect(() => leerPedidoPuertas({ ...pedido, elementos: [{ ...elemento, input }] })).toThrow(/campos inválidos/);
+    }
   });
 
   it('rechaza cotas del cierre que no son números', () => {
@@ -84,10 +96,38 @@ describe('pedido TGM', () => {
 const puertaTgm = (cambios: Partial<NonNullable<Puerta['tgm']>> = {}): Puerta => {
   const p = nuevaPuertaDeCliente('tgm', 'enrollable');
   return { ...p, of: 'OF1', frente: 300, alto: 400, color: 'BLANCO', confirmada: true,
-    tgm: { ...p.tgm!, altoHueco: 400, nTubos: 3, anchoEt: 14.5, ...cambios } };
+    tgm: { ...p.tgm!, altoHueco: 400, nTubos: 3, ...cambios } };
 };
 
 describe('cálculo de la puerta TGM', () => {
+  it.todo('PVC: el empate va en la E.T. (pendiente de Iván)');
+
+  it.each([
+    { materialEt: 'LAC900', material: 'LAC900', pano: 'REJILLA' },
+    { materialEt: 'LAC650', material: 'REJILLA SEDOCROM', pano: 'REJILLA SEDOCROM' },
+  ] as const)('rejilla: empata por el rollo y corta las E.T. de $materialEt aparte', ({ materialEt, material, pano }) => {
+    const base = puertaTgm({ abajo: 'tubo', lona: 'rejilla', materialEt });
+    const p = { ...base, rollo: 250, material, color: 'AZUL 5002', observaciones: 'LONA DE REJILLA',
+      enrollable: { ...base.enrollable, empates: [{ pano: 'inferior' as const, altura: 167.1, solape: 7.5, tubo: 2 }] } };
+    const r = calcularPuerta(p);
+    expect(r.avisos).toEqual([]);
+    expect(r.uniones).toEqual([{ altura: 235, solape: 2 }]);
+    const panos = r.piezas.filter(x => x.clase === 'pano');
+    expect(panos).toMatchObject([
+      { nombre: 'Paño 1', material: `${pano} AZUL 5002`, alto: 250, huecos: [] },
+      { nombre: 'Paño 2', material: `${pano} AZUL 5002`, alto: 199.5, huecos: [] },
+    ]);
+    expect(panos[0].marcas).toContainEqual([1.5, 163.35, 298.5, 163.35]);
+    expect(panos[1].marcas).toContainEqual([1.5, 42.45, 298.5, 42.45]);
+    const ets = r.piezas.filter(x => x.clase === 'entrada');
+    expect(ets).toHaveLength(2);
+    for (const et of ets) {
+      expect(et).toMatchObject({ material: `${materialEt} AZUL 5002`, ancho: 300, alto: 14.5 });
+      expect(et.huecos).toMatchObject([{ y: 2.5, alto: 9.5, abierto: 'izquierda' }, { y: 2.5, alto: 9.5, abierto: 'derecha' }]);
+    }
+    expect(generarCortePuertas(pedidoDe('REJILLA-TGM', p)).archivo?.dxf).toContain('EOF');
+  });
+
   it('suma los 30 cm al hueco, descuenta el rematado del saco y coloca tres tubos', () => {
     const e = enrolleTgm(puertaTgm())!;
     expect(e).toMatchObject({ altoLona: 430, conSaco: true, largo: 4170 });
@@ -103,12 +143,13 @@ describe('cálculo de la puerta TGM', () => {
   });
 
   it('con saco corta tres E.T. de 14,5 centradas en los ejes del simulador', () => {
-    const p = puertaTgm(), r = calcularPuerta(p), e = enrolleTgm(p)!;
+    const p = puertaTgm({ materialEt: 'LAC650' }), r = calcularPuerta(p), e = enrolleTgm(p)!;
     expect(r.avisos).toEqual([]);
     expect(r.piezas.map(x => x.clase)).toEqual(['pano', 'saco', 'entrada', 'entrada', 'entrada']);
     const ets = r.piezas.filter(x => x.clase === 'entrada');
     expect(ets.map(x => x.alto)).toEqual([14.5, 14.5, 14.5]);
     for (const [i, m] of e.colocacion.marcas.entries()) {
+      expect(ets[i].material).toBe('LAC900 BLANCO');
       expect(ets[i].origenAlzado![1] + ets[i].alto / 2).toBeCloseTo(430 - m / 10, 1);
       expect(ets[i].huecos[0]).toMatchObject({ y: 2.5, alto: 9.5 });
     }
