@@ -19,6 +19,7 @@ import { irisHasCassette, normalizeIrisGuideType } from './irisParameters.js';
 import { buildIrisSquaringView } from './irisSquaringView.js';
 import { resolverDelanteEnrollable, textoDelanteEnrollable } from './enrollableOpciones.js';
 import { getIrisWindow } from './irisWindow.js';
+import { pañosVentanaCortina } from './corteLona/cortina.js';
 import { resolveConfiguredDrawing } from './drawingParameters.js';
 import { shortFabricName } from './fabricShortName.js';
 import { crearLienzoSvg, superficiePlanoTecnico } from './dibujoSvg.js';
@@ -123,7 +124,7 @@ async function buildWebPlanteamientoPdf({ order, calculation, review = null, onl
   const structureDrawings = structureSheets.map((sheet) => {
     if (!sheet.diagramBox) return Promise.resolve({ drawing: null });
     const { awning, ofBlock } = plan.structureEntries[sheet.structureIndex];
-    return buildStructureDiagramBoxPdf({ awning, calculation: ofBlock?.calculation })
+    return buildStructureDiagramBoxPdf({ awning, calculation: ofBlock?.calculation, box: sheet.diagramBox })
       .then((drawing) => ({ drawing }), (error) => ({ error }));
   });
   const drawings = fabricSheets.map((sheet) => {
@@ -504,7 +505,8 @@ function drawStructurePage(doc, { order, awning, ofBlock, index, continuation = 
   const split = splitDespiece(ofBlock?.despiece?.rows || []);
 
   // Todos los modelos reservan las filas reales de observaciones antes de repartir el despiece.
-  const iris = String(awning.model || '').trim().toUpperCase() === 'IRIS';
+  // Con dibujo (Iris y cortina con ventana) la columna derecha se compacta y el dibujo va al pie.
+  const iris = Boolean(structureDiagramKind(awning));
   const anchoring = ofBlock?.despiece?.anchoring;
   const conAnclaje = anchoringIndicated(anchoring);
   const notas = structureNotes(awning, ofBlock?.calculation);
@@ -520,7 +522,7 @@ function drawStructurePage(doc, { order, awning, ofBlock, index, continuation = 
   const despieceMaxBottom = pageH - 20 - accesoriosH - anclajeH;
   const despieceBottom = drawDespieceTable(doc, margin, top, leftW, split.main, despieceMaxBottom, rowH);
   if (iris) {
-    drawIrisStructureSide(doc, { order, awning, ofBlock });
+    drawDiagramStructureSide(doc, { order, awning, ofBlock });
   } else drawStructureSide(doc, rightX, top, rightW, { order, awning, calc: ofBlock?.calculation });
 
   const accessoriesY = despieceBottom;
@@ -842,7 +844,32 @@ export const FABRIC_SHEET_DIAGRAM_BOX = Object.freeze({ x: 36, y: 149, width: 24
 // IRIS conserva la hoja A5: los datos se compactan y el escuadrado ocupa el pie derecho.
 export const IRIS_STRUCTURE_DIAGRAM_BOX = Object.freeze({ x: 417.28, y: 245, width: 164, height: 150.53 });
 
-function drawIrisStructureSide(doc, { order, awning, ofBlock }) {
+// Iván, 18/11/2026: la cortina con ventana lleva su dibujo en la estructura, como el Iris. Por
+// ahora solo los modelos de cortina con despiece (Cambio de cortina no tiene hoja de estructura).
+const CURTAIN_STRUCTURE_MODELS = new Set(['CORTINA', 'SELENA', 'ELECTRA']);
+
+/** Qué dibujo lleva la hoja de estructura de un toldo: 'IRIS', 'CORTINA-VENTANA' o null. */
+export function structureDiagramKind(awning = {}) {
+  const model = String(awning.model || '').trim().toUpperCase();
+  if (model === 'IRIS') return 'IRIS';
+  if (CURTAIN_STRUCTURE_MODELS.has(model) && awning.curtainHasWindow === true) return 'CORTINA-VENTANA';
+  return null;
+}
+
+// Columna derecha compacta: DETALLES empieza en 147 con filas de 10 y una barra de 11; la tela va
+// detrás y el dibujo debajo, hasta el mismo pie que el escuadrado del Iris.
+export const COMPACT_DETAILS_Y = 147;
+export function compactFabricY(detailsCount) {
+  return COMPACT_DETAILS_Y + 11 + detailsCount * 10 + 3;
+}
+function compactDiagramBox(detailsCount) {
+  const box = IRIS_STRUCTURE_DIAGRAM_BOX;
+  const y = compactFabricY(detailsCount) + 44;
+  if (y === box.y) return box;
+  return { x: box.x, y, width: box.width, height: Math.round((box.y + box.height - y) * 100) / 100 };
+}
+
+function drawDiagramStructureSide(doc, { order, awning, ofBlock }) {
   const x = IRIS_STRUCTURE_DIAGRAM_BOX.x;
   const w = IRIS_STRUCTURE_DIAGRAM_BOX.width;
   // Los mismos textos que HTML, para que las medidas y las piezas de cristal coincidan.
@@ -852,10 +879,15 @@ function drawIrisStructureSide(doc, { order, awning, ofBlock }) {
   roundedBox(doc, x, 130, w, 14, 2, sheet.valid ? colors.green : '#fae0dc', colors.ink);
   doc.fillColor(sheet.valid ? colors.greenText : colors.red).font(fonts.bold).fontSize(8)
     .text(sheet.valid ? 'VÁLIDO' : 'REVISAR', x, 131, { width: w, align: 'center', lineBreak: false });
-  drawMiniTable(doc, x, 147, w, 'DETALLES', sheet.detalles, 10, { barH: 11, size: 6.5 });
-  drawMiniTable(doc, x, 201, w, 'DIMENSIONES TELA', sheet.tela, 10, { barH: 11, size: 6.5 });
-  const box = IRIS_STRUCTURE_DIAGRAM_BOX;
-  drawIrisDiagram(doc, box.x, box.y, box.width, box.height, awning, ofBlock?.calculation);
+  drawMiniTable(doc, x, COMPACT_DETAILS_Y, w, 'DETALLES', sheet.detalles, 10, { barH: 11, size: 6.5 });
+  drawMiniTable(doc, x, compactFabricY(sheet.detalles.length), w, 'DIMENSIONES TELA', sheet.tela, 10, { barH: 11, size: 6.5 });
+  drawStructureDiagram(doc, sheet.diagramBox, awning, ofBlock?.calculation);
+}
+
+function drawStructureDiagram(doc, box, awning, calculation) {
+  if (structureDiagramKind(awning) === 'CORTINA-VENTANA') {
+    drawCurtainWindowStructureDiagram(doc, box.x, box.y, box.width, box.height, awning, calculation);
+  } else drawIrisDiagram(doc, box.x, box.y, box.width, box.height, awning, calculation);
 }
 
 // «—» en lo que no aplica (Iván, 03/10/2026): vacío o el «-» de siempre.
@@ -960,10 +992,24 @@ export function buildStructureSheetPages({ order: fullOrder, calculation, onlyAw
         : dash(isHeraAwning(awning) ? heraHeading(awning) : generalHeadingNames[modelName] || modelName);
     const motor = String(awning.device || '').toUpperCase() === 'MOTOR';
     const hera = isHeraAwning(awning) ? heraStructureData(awning, calc) : null;
+    // El HERA no pide lacado de estructura: va el color de la cadena o de los mecanismos.
+    const detalles = hera ? [
+      [hera.chain ? 'COLOR CADENA' : 'COLOR MECANISMOS', dash(hera.color)],
+      ['DISPOSITIVO', dash(hera.device)],
+      ...(hera.side ? [['LADO MANDO', hera.side]] : []),
+      ...(hera.placement ? [['COLOCACIÓN TOLDO', hera.placement]] : [])
+    ] : [
+      ['LACADO', dash(lacadoPrintName(awning.structureColor || order.structureColor))],
+      ['DISPOSITIVO', dash(awning.device)],
+      [motor ? 'POSICIÓN MOTOR' : 'COLOCACIÓN MÁQUINA', dash(awning.machineSide)],
+      ['COLOCACIÓN TOLDO', dash(awning.placement)],
+      ...(awning.model === 'ELECTRA' ? [['VARIANTE', dash(awning.submodel)], ['SOPORTE', dash(awning.electraSupport)]] : []),
+      ...(calc?.dropArmMode === 'VERTICAL_170' ? [['TRABAJO', 'BAJADA VERTICAL 170°']] : [])
+    ];
     return {
       kind: 'estructura',
       structureIndex,
-      ...(modelName === 'IRIS' ? { diagramBox: IRIS_STRUCTURE_DIAGRAM_BOX } : {}),
+      ...(structureDiagramKind(awning) ? { diagramBox: compactDiagramBox(detalles.length) } : {}),
       header: {
         of: dash(awning.of),
         orderCode: dash(order.orderCode),
@@ -1002,20 +1048,7 @@ export function buildStructureSheetPages({ order: fullOrder, calculation, onlyAw
         ...(hera?.chain ? [['ALTURA', dash(formatNumber(hera.height))]] : [])
       ],
       valid: calc?.valid !== false,
-      // El HERA no pide lacado de estructura: va el color de la cadena o de los mecanismos.
-      detalles: hera ? [
-        [hera.chain ? 'COLOR CADENA' : 'COLOR MECANISMOS', dash(hera.color)],
-        ['DISPOSITIVO', dash(hera.device)],
-        ...(hera.side ? [['LADO MANDO', hera.side]] : []),
-        ...(hera.placement ? [['COLOCACIÓN TOLDO', hera.placement]] : [])
-      ] : [
-      ['LACADO', dash(lacadoPrintName(awning.structureColor || order.structureColor))],
-        ['DISPOSITIVO', dash(awning.device)],
-        [motor ? 'POSICIÓN MOTOR' : 'COLOCACIÓN MÁQUINA', dash(awning.machineSide)],
-        ['COLOCACIÓN TOLDO', dash(awning.placement)],
-        ...(awning.model === 'ELECTRA' ? [['VARIANTE', dash(awning.submodel)], ['SOPORTE', dash(awning.electraSupport)]] : []),
-        ...(calc?.dropArmMode === 'VERTICAL_170' ? [['TRABAJO', 'BAJADA VERTICAL 170°']] : [])
-      ],
+      detalles,
       tela: [
         ['TELA', calc ? dash(formatNumber(calc.fabricWidth)) : '—'],
         [vertical ? 'CAÍDA PAÑO' : 'SALIDA PAÑO', calc ? dash(formatNumber(calc.fabricDrop)) : '—'],
@@ -1362,9 +1395,9 @@ export async function buildFabricDiagramBoxPdf({ diagram, awning, calculation })
   });
 }
 
-export async function buildStructureDiagramBoxPdf({ awning, calculation }) {
-  return buildDiagramBoxPdf(IRIS_STRUCTURE_DIAGRAM_BOX, (doc, width, height) => {
-    drawIrisDiagram(doc, 0, 0, width, height, awning, calculation);
+export async function buildStructureDiagramBoxPdf({ awning, calculation, box = IRIS_STRUCTURE_DIAGRAM_BOX }) {
+  return buildDiagramBoxPdf(box, (doc, width, height) => {
+    drawStructureDiagram(doc, { x: 0, y: 0, width, height }, awning, calculation);
   });
 }
 
@@ -1518,6 +1551,89 @@ function drawIrisDiagram(doc, x, y, w, h, awning, calculation = {}) {
   }
   doc.font(fonts.italic).fontSize(compact ? 6.2 : diagramText(5.8))
     .text('COMPROBAR DIAGONALES · CREMALLERA XL', x + w * (compact ? 0.02 : 0.1), compact ? y + h - 9 : y + h * 0.95, { width: w * (compact ? 0.96 : 0.8), align: 'center' });
+}
+
+/**
+ * Paños de la cortina con ventana para la hoja de estructura, con las mismas reglas que el corte
+ * (pañosVentanaCortina). Cada medida en cm, terminada; 0 si falta un dato.
+ */
+export function curtainWindowStructureMeasures(awning = {}, calculation = {}) {
+  const spec = buildCurtainDiagramSpec(getAwningDiagram(awning), awning);
+  const alto = Number(awning.curtainWindowHeight) || 0;
+  const corner = Number(awning.curtainWindowCorner) || 0;
+  const fabricWidth = Number(calculation.fabricWidth) || 0;
+  const fabricDrop = Number(calculation.fabricDrop) || 0;
+  // La misma cota de abajo que el dibujo de la hoja de telas.
+  const desdeAbajo = isConfiguredCurtain(awning) ? curtainWindowDrawingHeight(awning)
+    : (Number(awning.curtainWindowFloorHeight) || 0) - curtainBottomDeduction(awning);
+  // La bamba cuenta como en el corte: solo si es de la misma tela.
+  const bamba = awning.hasValance && !awning.valanceFabric ? Number(awning.valanceHeight) || 0 : 0;
+  const ventana = { alto, desdeAbajo: Math.max(0, desdeAbajo) };
+  const paños = fabricDrop > 0 && alto > 0 && ventana.desdeAbajo > 0
+    ? pañosVentanaCortina({ caidaTela: fabricDrop, bamba, abajo: spec.bottomFinish === 'ET' ? 'ET' : 'VARILLA', ventana })
+    : null;
+  const top = paños && paños.arriba > 0 ? paños.arriba : 0;
+  return {
+    top, window: alto, bottom: ventana.desdeAbajo, corner, fabricWidth, bamba,
+    windowWidth: fabricWidth > 2 * corner && corner > 0 ? fabricWidth - 2 * corner : 0,
+    bottomFinish: spec.bottomFinish, valid: top > 0 && alto > 0 && ventana.desdeAbajo > 0
+  };
+}
+
+// Iván, 18/11/2026: como el del Iris, para que en la estructura se vea dónde va la ventana:
+// paño de arriba, ventana y paño de abajo, con las esquinas de lona a los lados.
+function drawCurtainWindowStructureDiagram(doc, x, y, w, h, awning, calculation = {}) {
+  const m = curtainWindowStructureMeasures(awning, calculation);
+  const model = String(awning.model || '').trim().toUpperCase();
+  const size = h < 220 ? 6.3 : diagramText(6.5);
+  const small = h < 220 ? 5.8 : diagramText(6);
+  const measure = (value) => value > 0 ? formatNumber(value) : 'POR INDICAR';
+  drawDiagramShell(doc, x, y, w, h);
+  drawDiagramText(doc, `${model === 'ELECTRA' ? 'ELECTRA' : model} CON VENTANA`, x + 3, y + h * 0.04, w - 6, size);
+  drawDiagramText(doc, `MEDIDAS TERMINADAS · TELA ${measure(m.fabricWidth)}`, x + 3, y + h * 0.11, w - 6, small);
+
+  const frameX = x + w * 0.07;
+  const frameW = w * 0.45;
+  const frameY = y + h * 0.2;
+  const frameH = h * 0.56;
+  // Alto de cada banda a escala; si falta una medida, un reparto fijo que no engañe con cotas.
+  const total = m.top + m.window + m.bottom;
+  const minBand = 12;
+  const parts = m.valid ? [m.top, m.window, m.bottom].map((v) => v / total * frameH) : [frameH * 0.3, frameH * 0.4, frameH * 0.3];
+  const [topH, windowH] = parts.map((v) => Math.max(minBand, v));
+  const windowY = frameY + Math.min(topH, frameH - 2 * minBand);
+  const windowBottom = Math.min(windowY + windowH, frameY + frameH - minBand);
+  const bottomY = frameY + frameH;
+  const sideW = m.corner > 0 && m.fabricWidth > 0 ? Math.max(5, Math.min(frameW * 0.3, m.corner / m.fabricWidth * frameW)) : frameW * 0.12;
+
+  doc.rect(frameX, frameY, frameW, frameH).fillAndStroke(colors.yellowSoft, colors.inkSoft);
+  doc.rect(frameX + sideW, windowY, frameW - 2 * sideW, windowBottom - windowY).fillAndStroke('#e7f1f6', colors.inkSoft);
+  drawDiagramText(doc, 'CRISTAL', frameX + sideW, (windowY + windowBottom) / 2 - 3, frameW - 2 * sideW, small);
+  if (windowY - frameY > 10) drawDiagramText(doc, 'LONA', frameX, (frameY + windowY) / 2 - 3, frameW, small);
+  if (bottomY - windowBottom > 10) drawDiagramText(doc, 'LONA', frameX, (windowBottom + bottomY) / 2 - 3, frameW, small);
+
+  // Cadena de cotas a la derecha, con el nombre de cada paño al lado.
+  const dimX = frameX + frameW + 6;
+  const labelX = dimX + 5;
+  const labelW = x + w - 3 - labelX;
+  for (const [from, to, label] of [
+    [frameY, windowY, ['PAÑO ARRIBA', measure(m.top)]],
+    [windowY, windowBottom, ['VENTANA', measure(m.window)]],
+    [windowBottom, bottomY, ['PAÑO ABAJO', measure(m.bottom)]]
+  ]) {
+    doc.moveTo(dimX, from).lineTo(dimX, to)
+      .moveTo(dimX - 2, from).lineTo(dimX + 2, from)
+      .moveTo(dimX - 2, to).lineTo(dimX + 2, to).strokeColor(colors.inkSoft).lineWidth(0.6).stroke();
+    // Nombre arriba y medida debajo, para que «POR INDICAR» también quepa.
+    const [name, value] = label;
+    doc.fillColor(colors.ink).font(fonts.semibold).fontSize(small)
+      .text(name, labelX, (from + to) / 2 - small - 0.5, { width: labelW, lineBreak: false })
+      .font(fonts.bold)
+      .text(value, labelX, (from + to) / 2 + 0.5, { width: labelW, lineBreak: false });
+  }
+  const finish = m.bottomFinish === 'ET' ? 'E.T. Ø40' : 'VARILLA BLANCA (5,5)';
+  drawDiagramText(doc, `ABAJO ${finish}${m.bamba > 0 ? ` · BAMBA ${formatNumber(m.bamba)}` : ''}`, x + 3, y + h * 0.82, w - 6, small);
+  drawDiagramText(doc, `ESQUINA ${measure(m.corner)} · ANCHO VENTANA ${measure(m.windowWidth)}`, x + 3, y + h * 0.9, w - 6, small);
 }
 
 function drawIrisWindowDiagram(doc, x, y, w, h, awning, calculation) {

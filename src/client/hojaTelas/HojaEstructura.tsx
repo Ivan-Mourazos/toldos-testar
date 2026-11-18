@@ -143,7 +143,8 @@ function ColumnaDerecha({ datos }: { datos: HojaEstructuraDatos }) {
         {datos.valid ? 'VÁLIDO' : 'REVISAR'}
       </div>
       <Tabla y={147} titulo="DETALLES" filas={datos.detalles} altoFila={10} altoBarra={11} />
-      <Tabla y={201} titulo="DIMENSIONES TELA" filas={datos.tela} altoFila={10} altoBarra={11} />
+      {/* Como compactFabricY del servidor: con más detalles (Electra) la tela baja con ellos. */}
+      <Tabla y={147 + 11 + datos.detalles.length * 10 + 3} titulo="DIMENSIONES TELA" filas={datos.tela} altoFila={10} altoBarra={11} />
       {/* El servidor encaja aquí el mismo escuadrado de pdfkit que lleva la hoja de telas. */}
       <div data-estructura-escuadrado="" style={sitio(box.x, box.y, box.width, box.height)} />
     </>;

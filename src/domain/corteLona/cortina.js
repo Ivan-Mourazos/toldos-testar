@@ -21,6 +21,23 @@ export const REGLAS_CORTINA = {
   bambaBastilla: 3       // B.N(3) abajo
 };
 const ACABADOS = ['VARILLA', 'ET'];
+
+/**
+ * Alto de los paños de una cortina con ventana, en cm. `arriba` y `abajo` son las medidas terminadas
+ * (de la varilla de arriba a la ventana y de la ventana al terminado de abajo); `superiorCorte` e
+ * `inferiorCorte`, las bandas que salen en el corte. El dibujo de la hoja de estructura y el corte
+ * usan esta misma cuenta, para que nunca digan cosas distintas (Iván, 18/11/2026).
+ */
+export function pañosVentanaCortina({ caidaTela, bamba = 0, abajo = 'VARILLA', arriba = 'VARILLA', ventana }) {
+  const R = REGLAS_CORTINA;
+  const margenArriba = arriba === 'REMACHADO' ? R.bastillaRemachado : R.varillaArriba;
+  const margenAbajo = abajo === 'ET' ? R.et : R.varillaAbajo;
+  // El cuerpo es la caída de la web sin la bamba y su remate de 5, como en fachada.
+  const cuerpo = caidaTela - (bamba > 0 ? bamba + 5 : 0);
+  const inferiorCorte = ventana.desdeAbajo + margenAbajo;
+  const superiorCorte = cuerpo - inferiorCorte - ventana.alto;
+  return { arriba: round1(superiorCorte - margenArriba), ventana: ventana.alto, abajo: ventana.desdeAbajo, superiorCorte, inferiorCorte };
+}
 // Mininúmeros: a 1 cm del borde y de la punta, igual en el corte y en el alzado. Con ventana, el número de cada
 // esquina de la ventana (piezasCortina); sin ventana, los números de empate como en toldos y remolques.
 const BORDE = 10;
@@ -84,8 +101,7 @@ export function piezasCortina({ letra, frenteTela, caidaTela, bamba = 0, anchoRo
     const { alto: V, esquina, desdeAbajo } = v;
     for (const valor of [V, esquina, desdeAbajo]) if (!Number.isFinite(valor) || valor <= 0) throw new Error('Faltan medidas de la ventana.');
     if (2 * esquina >= frenteTela) throw new Error('Los laterales de la ventana no dejan hueco en el frente.');
-    const inferior = desdeAbajo + abajo;
-    const superior = cuerpo - inferior - V;
+    const { superiorCorte: superior, inferiorCorte: inferior } = pañosVentanaCortina({ caidaTela, bamba, abajo: cortina.abajo, arriba: cortina.arriba, ventana: v });
     if (superior <= arriba + R.solapeCristal) throw new Error('La ventana no cabe en la cortina: revisa su alto y la distancia desde abajo.');
     if (!cabe(inferior) || !cabe(superior)) throw new Error('Una banda de la cortina no cabe en el rollo: el corte se hace a mano por ahora.');
     // Los laterales con su nombre, en grande y en mininúmero en la esquina, como a mano en AR2604988 y AR2601829 (Iván,
