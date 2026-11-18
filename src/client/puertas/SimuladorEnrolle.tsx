@@ -16,9 +16,21 @@ function dibujar(canvas: HTMLCanvasElement, modelo: ModeloEnrolle, avance: numbe
   const { cfg, colocacion, largo, ajustes, conSaco, anchoEt, cierreBajo } = enrolle;
   const apoyo = posicionLona(modelo, avance);
   const radioTubo = cfg.diametroTubo / 2;
-  const finLona = largo + (cfg.conFunda && !conSaco ? radioTubo : 0);
+  // Medidas por la línea media de la tira: dos tangentes rectas y media circunferencia.
+  const radioTira = radioTubo + cfg.grosor / 2;
+  const altoTangente = Math.max(0, radioTubo - cfg.grosor / 2);
+  const largoBaden = 2 * altoTangente + Math.PI * radioTira;
+  const tubos = centros(modelo, avance);
+  const tiras = cfg.conFunda ? tubos.map((t, i) => {
+    const { marca, angulo } = modelo.tubos[i];
+    const a = marca <= avance ? angulo : apoyo.a;
+    const ancho = !conSaco && i === tubos.length - 1 ? cierreBajo : anchoEt;
+    const cola = Math.max(0, (ancho * 10 - largoBaden) / 2);
+    return { ...t, marca, a, c: Math.cos(a), s: Math.sin(a), alcance: radioTira + cola };
+  }) : [];
+  const finLona = largo + (conSaco ? 0 : tiras.at(-1)?.alcance ?? 0);
   const colorLona = color('--control-active-border');
-  const colorFunda = color('--tramo-holgado');
+  const colorTira = color('--tramo-holgado');
   const escala = LADO_LIENZO / (Math.max(colocacion.diametroFinal, cfg.diametroEnrolle) * 1.22);
   const giro = Math.PI - apoyo.a;
   const cx = LADO_LIENZO / 2, cy = LADO_LIENZO * 0.47;
@@ -46,56 +58,60 @@ function dibujar(canvas: HTMLCanvasElement, modelo: ModeloEnrolle, avance: numbe
 
   // Pasado el punto de apoyo, el tramo libre sigue su tangente.
   const seno = Math.sin(apoyo.a), coseno = Math.cos(apoyo.a);
-  const trazarLona = (desde: number, hasta: number, desplazamiento: number, continuar = false) => {
+  const trazarLona = (desde: number, hasta: number, continuar = false) => {
     const pasos = Math.max(1, Math.min(700, Math.ceil((hasta - desde) / 4)));
     for (let i = 0; i <= pasos; i++) {
       const marca = desde + (hasta - desde) * i / pasos;
       const libre = marca - avance;
       const p = libre <= 0 ? posicionLona(modelo, marca) : { x: apoyo.x - libre * seno, y: apoyo.y + libre * coseno, a: apoyo.a };
-      const x = p.x + desplazamiento * Math.cos(p.a), y = p.y + desplazamiento * Math.sin(p.a);
+      let { x, y } = p;
+      // La tira y el paño se dibujan planos en la soldadura. Fuera de ella, el paño vuelve al contorno del rollo.
+      let pesoMaximo = 0;
+      for (const tira of tiras) {
+        if (tira.marca > avance) continue;
+        const distancia = marca - tira.marca;
+        const peso = Math.min(1, 1 - (Math.abs(distancia) - tira.alcance) / radioTubo);
+        if (peso <= pesoMaximo) continue;
+        pesoMaximo = peso;
+        const planoX = tira.x - radioTira * tira.c - distancia * tira.s;
+        const planoY = tira.y - radioTira * tira.s + distancia * tira.c;
+        x = p.x + peso * (planoX - p.x);
+        y = p.y + peso * (planoY - p.y);
+      }
       if (i === 0 && !continuar) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
   };
   ctx.beginPath();
-  trazarLona(0, avance, 0);
-  trazarLona(avance, Math.min(finLona, avance + LADO_LIENZO / escala), 0, true);
+  trazarLona(0, avance);
+  trazarLona(avance, Math.min(finLona, avance + LADO_LIENZO / escala), true);
   ctx.strokeStyle = colorLona;
   ctx.lineWidth = cfg.grosor;
   ctx.stroke();
 
   const justa = colocacion.parejas[0];
-  const tubos = centros(modelo, avance);
   tubos.forEach((t, k) => {
     const riesgo = justa && justa.separacion < ajustes.margen && (k === justa.i || k === justa.j);
     const borde = riesgo ? color('--tramo-ajustado') : color('--text');
-    if (!cfg.conFunda) {
-      ctx.lineWidth = 2 / escala;
-      circulo(t.x, t.y, radioTubo, color('--surface'), borde);
-      return;
-    }
-
-    // El perímetro se mide por la línea media de la funda. Las colas se sueldan en la cara exterior del paño.
-    const marca = modelo.marcas[k];
-    const esCierre = !conSaco && k === tubos.length - 1;
-    const radioFunda = radioTubo + cfg.grosor / 2;
-    const cola = Math.max(0, ((esCierre ? cierreBajo : anchoEt) * 10 - 2 * Math.PI * radioFunda) / 2);
-    ctx.strokeStyle = colorFunda;
-    ctx.lineWidth = cfg.grosor;
-    if (cola > 0) {
-      ctx.beginPath();
-      trazarLona(Math.max(0, marca - cola), marca, cfg.grosor);
-      trazarLona(marca, Math.min(finLona, marca + cola), cfg.grosor, true);
-      ctx.stroke();
-    }
-    ctx.beginPath();
-    ctx.arc(t.x, t.y, radioFunda, 0, 2 * Math.PI);
-    ctx.fillStyle = color('--surface');
-    ctx.fill();
-    ctx.stroke();
-    ctx.lineWidth = (riesgo ? 2 : 0.75) / escala;
+    ctx.lineWidth = (riesgo || !cfg.conFunda ? 2 : 0.75) / escala;
     circulo(t.x, t.y, radioTubo, color('--surface'), borde);
   });
+  for (const tira of tiras) {
+    ctx.save();
+    ctx.translate(tira.x, tira.y);
+    ctx.rotate(tira.a - Math.PI / 2);
+    ctx.strokeStyle = colorTira;
+    ctx.lineWidth = cfg.grosor;
+    ctx.beginPath();
+    ctx.moveTo(tira.alcance, -altoTangente);
+    ctx.lineTo(radioTira, -altoTangente);
+    ctx.lineTo(radioTira, 0);
+    ctx.arc(0, 0, radioTira, 0, Math.PI);
+    ctx.lineTo(-radioTira, -altoTangente);
+    ctx.lineTo(-tira.alcance, -altoTangente);
+    ctx.stroke();
+    ctx.restore();
+  }
   ctx.setTransform(RESOLUCION_LIENZO, 0, 0, RESOLUCION_LIENZO, 0, 0);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';

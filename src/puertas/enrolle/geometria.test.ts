@@ -39,17 +39,17 @@ describe('geometría del enrolle: contraste con Codex', () => {
   });
 });
 
-describe('tubos con funda de lona', () => {
+describe('tubos sujetos con la tira de la E.T.', () => {
   const cfg = { ...CONFIG_CODEX, grosor: 1.2, conFunda: true };
   const radio = cfg.diametroTubo / 2;
 
-  it('aleja el eje de la línea media tanto en la lona libre como al apoyarse', () => {
+  it('el tubo toca la lona tanto en el tramo libre como al apoyarse', () => {
     const m = construir(cfg, [420]);
     for (const avance of [400, 420]) {
       const p = posicionLona(m, avance);
       const [t] = centros(m, avance);
       const distanciaNormal = (t.x - p.x) * Math.cos(p.a) + (t.y - p.y) * Math.sin(p.a);
-      expect(distanciaNormal).toBeCloseTo(radio + 1.5 * cfg.grosor, 8);
+      expect(distanciaNormal).toBeCloseTo(radio + cfg.grosor / 2, 8);
     }
   });
 

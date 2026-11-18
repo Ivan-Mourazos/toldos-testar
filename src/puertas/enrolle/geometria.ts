@@ -17,7 +17,8 @@ const TAU = 2 * Math.PI, PRECISION = 0.02;
 const medidas = (cfg: ConfigEnrolle) => {
   const tubo = cfg.diametroTubo / 2;
   const exterior = tubo + (cfg.conFunda ? cfg.grosor : 0);
-  return { eje: cfg.diametroEnrolle / 2, exterior, desfase: exterior + cfg.grosor / 2, crecimiento: cfg.grosor / TAU };
+  const mediaLona = cfg.grosor / 2;
+  return { eje: cfg.diametroEnrolle / 2, exterior, desfase: tubo + mediaLona, radioApoyo: exterior + mediaLona, crecimiento: cfg.grosor / TAU };
 };
 
 function apoyo(d: Disco, a: number, g: number): Apoyo {
@@ -103,7 +104,7 @@ function discosIniciales(cfg: ConfigEnrolle): Disco[] {
 }
 
 export function construir(cfg: ConfigEnrolle, marcas: number[], largo = marcas.at(-1) ?? 0): ModeloEnrolle {
-  const { desfase, crecimiento: g } = medidas(cfg);
+  const { desfase, radioApoyo, crecimiento: g } = medidas(cfg);
   const discos = discosIniciales(cfg), tubos: TuboColocado[] = [];
   let camino = contorno(cfg, discos, largo);
   for (const marca of marcas) {
@@ -112,8 +113,9 @@ export function construir(cfg: ConfigEnrolle, marcas: number[], largo = marcas.a
     tubos.push({ x, y, marca, angulo: p.a });
     if (marca < largo) {
       // El tubo empieza a estorbar en la vuelta siguiente, por el lado contrario (Codex).
+      // El disco de apoyo incluye la tira exterior, aunque el tubo descansa directamente en la lona.
       const inicio = p.a + Math.PI;
-      discos.push({ x, y, inicio, base: desfase - g * inicio });
+      discos.push({ x, y, inicio, base: radioApoyo - g * inicio });
       camino = contorno(cfg, discos, largo);
     }
   }
