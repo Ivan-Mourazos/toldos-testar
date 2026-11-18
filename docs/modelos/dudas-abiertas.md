@@ -453,6 +453,5 @@ Respuestas de Iván. «Pendiente» quiere decir que la web todavía no lo aplica
   centro. No cambia las uniones de la lona.
 - **Q-TGM04 · Tubo abajo (contestada).** Iván, 18/11: sin saco, el tubo de abajo va en el cierre: la lona lleva un
   aumento que se dobla, se suelda y deja el tubo dentro con la medida terminada.
-- **Q-TGM05 · Aumento del cierre de abajo.** Iván, 18/11 (lo están mirando en el taller): lo necesario para que
-  entre el tubo y un poco más para soldar. Mientras tanto: media vuelta del tubo (π·Ø/2) + 3 cm de soldadura y
-  holgura, redondeado al cm de arriba. Con Ø42: 6,6 + 3 = 9,6 → 10 cm.
+- **Q-TGM05 · Aumento del cierre de abajo (contestada).** Iván, 18/11: el aumento de abajo son 14 cm y la marca
+  va a 23 cm del borde del corte (9 cm por encima del bajo terminado).

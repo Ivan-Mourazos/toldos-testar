@@ -143,7 +143,7 @@ Decidido por Iván el 18/11: grosor 0,8 mm, añadido de 30 cm, y lona sujeta con
 tubo de enrolle. Queda:
 
 - Bolsillo de la varilla: contestado (Iván, 18/11). La lona lleva 3,5 cm de más para la entrada de la varilla, los 30 cm de enrolle se cuentan desde la varilla puesta y el bolsillo va soldado.
-- Ancho del perfil fleco por fuera del tubo (provisional, 20 mm) y ángulo mínimo entre tubo y perfil: 25°, calculado (con el tubo un poco desplazado vale, Iván 18/11). E.T.: tira del ancho exacto del pedido, soldada 2-3 cm arriba y abajo, tubo en el centro. Sin saco, el tubo de abajo va en un cierre de la lona doblada; falta cuánto aumento lleva (Q-TGM05).
+- Ancho del perfil fleco por fuera del tubo (provisional, 20 mm) y ángulo mínimo entre tubo y perfil: 25°, calculado (con el tubo un poco desplazado vale, Iván 18/11). E.T.: tira del ancho exacto del pedido, soldada 2-3 cm arriba y abajo, tubo en el centro. Sin saco, el tubo de abajo va en un cierre de la lona doblada: 14 cm de aumento y la marca a 23 cm del borde (Iván, 18/11).
 
 ## Fuera de la fase 1
 

@@ -619,7 +619,8 @@ tgm?: {
 };
 // tipos.ts, dentro de enrollable
 sinSaco?: boolean;   // TGM con tubo abajo
-cierreBajo?: number; // cm de lona que se doblan en el cierre con el tubo de abajo (Q-TGM05)
+cierreBajo?: number; // cm de lona por debajo del bajo terminado para el cierre del tubo de abajo (14, Q-TGM05)
+marcaCierre?: number; // cm desde el borde del corte a la marca del cierre (23, Q-TGM05)
 anchoEt?: number;    // cm; si falta, REGLAS_ENROLLABLE.corteEntrada (8)
 // clientes.ts
 calculo: 'portanova'|'araujo'|'santapau'|'tgm'|'pendiente';
@@ -722,9 +723,8 @@ añadir una prueba en `rps.test.ts` de que un código desconocido sigue cayendo 
   centro. No cambia las uniones de la lona.
 - **Q-TGM04 · Tubo abajo (contestada).** Iván, 18/11: sin saco, el tubo de abajo va en el cierre: la lona lleva un
   aumento que se dobla, se suelda y deja el tubo dentro con la medida terminada.
-- **Q-TGM05 · Aumento del cierre de abajo.** Iván, 18/11 (lo están mirando en el taller): lo necesario para que
-  entre el tubo y un poco más para soldar. Mientras tanto: media vuelta del tubo (π·Ø/2) + 3 cm de soldadura y
-  holgura, redondeado al cm de arriba. Con Ø42: 6,6 + 3 = 9,6 → 10 cm.
+- **Q-TGM05 · Aumento del cierre de abajo (contestada).** Iván, 18/11: el aumento de abajo son 14 cm y la marca
+  va a 23 cm del borde del corte (9 cm por encima del bajo terminado).
 ```
 
 - [ ] **Paso 4: comprobar que pasa**
@@ -773,7 +773,7 @@ describe('enrollable TGM: sin saco y E.T. de otro ancho', () => {
     expect(huecosEntrada(300, 42)[0]).toMatchObject({ y: 2, alto: 9.5 });
   });
   it('sin saco: no hay pieza de saco y el paño baja el aumento del cierre', () => {
-    const r = calcularPuerta(con({ sinSaco: true, cierreBajo: 8 }));
+    const r = calcularPuerta(con({ sinSaco: true, cierreBajo: 14, marcaCierre: 23 }));
     expect(r.piezas.some(x => x.clase === 'saco')).toBe(false);
     expect(r.avisos.filter(a => a.nivel === 'error')).toEqual([]);
     const abajo = Math.min(...r.piezas.filter(x => x.clase === 'pano').map(x => x.origenAlzado![1]));
@@ -810,7 +810,7 @@ y sustituir, solo en la rama `PUERTAENR` (línea 139 y las de entradas entre ven
 
 Sin saco (`e.sinSaco`), en la rama `PUERTAENR`:
 - `origenInferior = e.sinSaco ? -(e.cierreBajo ?? 0) : s.rematado`: el paño de abajo baja el aumento del cierre, que
-  se dobla y se suelda con el tubo dentro (Iván, 18/11, Q-TGM04); marcar la raya del doblez en 0;
+  se dobla y se suelda con el tubo dentro (Iván, 18/11, Q-TGM04); la marca va a `marcaCierre` cm del borde del corte;
 - no añadir ninguna pieza de saco (envolver en `if (!e.sinSaco)` el bloque de saco de las líneas 230-250);
 - no marcar la raya de soldar el saco (`marcarEn(origen+2…)` de la línea 183 cuando `nombre==='inferior'`);
 - no dar el aviso `SACO` de la línea 64 cuando `p.enrollable.sinSaco`.
@@ -855,7 +855,7 @@ Reglas (diseño, sección «Cómo coloca»):
 - Con saco: largo enrollado (mm) = `(altoLona − sacoPuerta(p).rematado) × 10`; tubos en `n + 1` tramos.
 - Con tubo abajo: largo enrollado (mm) = `(altoLona − diametroTubo / 20) × 10` (el tubo va en el cierre, con su
   eje a medio tubo del bajo); el último tubo es el final y **no lleva E.T.**: va en el cierre, que lleva
-  `cierreBajo = ⌈π·Ø/2 + 3⌉` cm de aumento (Ø en cm; 10 cm con Ø42; provisional Q-TGM05).
+  `cierreBajo = 14` cm de aumento y la marca a `marcaCierre = 23` cm del borde (Iván, 18/11, Q-TGM05; en la ficha).
 - Altura de cada tubo desde abajo (cm) = `altoLona − marca / 10`, redondeada a 0,1.
 - La puerta derivada es la enrollable ciega de Portanova con `alto = altoLona`, `sinSaco = abajo === 'tubo'`,
   `anchoEt`, `cierreBajo` (solo con tubo abajo) y las entradas `{ altura, diametro: 42, largo: frente, alto: anchoEt,
@@ -911,7 +911,7 @@ describe('cálculo de la puerta TGM', () => {
     const ets = r.uniones.filter(u => u.tubo).length + r.piezas.filter(x => x.clase === 'entrada').length;
     expect(ets).toBe(2); // 3 tubos: 2 en E.T. y el de abajo en el cierre
     const abajo = Math.min(...r.piezas.filter(x => x.clase === 'pano').map(x => x.origenAlzado![1]));
-    expect(abajo).toBeCloseTo(-10, 1); // aumento del cierre: media vuelta de Ø42 + 3 cm (Q-TGM05)
+    expect(abajo).toBeCloseTo(-14, 1); // aumento del cierre: 14 cm (Q-TGM05)
   });
   it('E.T. de 14,5', () => {
     const p = puertaTgm({ anchoEt: 14.5 });
@@ -974,8 +974,8 @@ export function puertaTgmDerivada(p: Puerta, e: EnrolleTgm): Puerta {
   const t = p.tgm!;
   return { ...p, alto: e.altoLona,
     enrollable: { ...p.enrollable, sinVentanal: true, sinSaco: !e.conSaco, anchoEt: t.anchoEt,
-      // Cierre de abajo: lo que pide el tubo para entrar (media vuelta) y 3 cm para soldar (Iván, 18/11; Q-TGM05).
-      ...(e.conSaco ? {} : { cierreBajo: Math.ceil(Math.PI * t.diametroTubo / 20 + 3) }) },
+      // Cierre de abajo: 14 cm de aumento y la marca a 23 cm del borde (Iván, 18/11; Q-TGM05).
+      ...(e.conSaco ? {} : { cierreBajo: t.cierreBajo, marcaCierre: t.marcaCierre }) },
     // Sin saco, el último tubo va en el cierre de abajo y no lleva E.T.
     entradas: (e.conSaco ? e.colocacion.marcas : e.colocacion.marcas.slice(0, -1)).map(m => ({ altura: d1(e.altoLona - m / 10), diametro: 42 as const, largo: p.frente, alto: t.anchoEt, huecos: huecosEntrada(p.frente, 42, [], t.anchoEt) })) };
 }
