@@ -7,6 +7,7 @@ import { calcularSystemDock } from './systemDock.ts';
 import { calcularSacoArena, REGLAS_SACO_ARENA } from './sacoArena.ts';
 import { calcularAraujo } from './araujo.ts';
 import { calcularSantaPau } from './santapau.ts';
+import { calcularTgm } from './tgm.ts';
 import { fichaDePuerta } from './clientes.ts';
 import { panoContinuoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
@@ -56,6 +57,7 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
   if(p.clientePuertas&&!fichaDePuerta(p).habilitado)return {version:1,piezas:[],alternativasSaco:null,empates:[],uniones:[],bolsillo:null,avisos:[{codigo:'CLIENTE_SIN_REGLAS',nivel:'error',texto:fichaDePuerta(p).aviso??'Falta contrastar las reglas de este cliente.'}]};
   if (p.araujo) return calcularAraujo(p);
   if (p.santapau) return calcularSantaPau(p);
+  if (p.tgm) return calcularTgm(p, q => calcularPuerta({ ...q, tgm: undefined }));
   if (p.modelo === 'SYSTEMDOCK') return calcularSystemDock(p);
   const piezas: PiezaPuerta[] = [], avisos: AvisoPuerta[] = [];
   const aviso = (codigo: string, texto: string, nivel: 'error' | 'aviso' = 'error') => { if (!avisos.some(a => a.codigo === codigo && a.texto === texto)) avisos.push({ codigo, texto, nivel }); };

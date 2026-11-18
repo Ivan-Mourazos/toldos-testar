@@ -1,6 +1,7 @@
 import { separacionCorte } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { calcularPuerta } from './calcular.ts';
+import { enrolleTgm, puertaTgmDerivada } from './tgm.ts';
 import { rotuloSaco, sacoPuerta, sacoUtil } from './saco.ts';
 import { anclarCotas } from './cotasPuertas.ts';
 import { notaPlanoEnrollable, panoContinuoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
@@ -76,7 +77,9 @@ function huecoRotulo(abajo: number, arriba: number, obstaculos: number[], margen
     .reduce((a, b) => b[1] - b[0] > a[1] - a[0] ? b : a);
 }
 
-export function dibujarAlzadoEnrollable(p: Puerta, letra: string, identificarSaco = false): { lienzo: Lienzo; zona: Zona } {
+export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identificarSaco = false): { lienzo: Lienzo; zona: Zona } {
+  const enrolle = puerta.tgm ? enrolleTgm(puerta) : null;
+  const p = enrolle ? { ...puertaTgmDerivada(puerta, enrolle), tgm: undefined } : puerta;
   const l = vacio(), F = p.frente, H = p.alto, T = panoContinuoEnrollable(p) ? 0 : p.enrollable.T;
   const r = calcularPuerta(p), saco = sacoPuerta(p), hs = saco.corte, hp = saco.altoPestana;
   const { sinSaco, marcaCierre } = p.enrollable;
