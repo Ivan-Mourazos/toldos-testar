@@ -24,7 +24,12 @@ describe('Tetris contra todos los pedidos configurables de las fixtures', () => 
       rects.forEach((a, j) => {
         expect(a.x).toBeGreaterThanOrEqual(0);
         expect(a.y).toBeGreaterThanOrEqual(0);
-        expect(a.x + a.w).toBeLessThanOrEqual(c.largo + .001);
+        const aparte = c.colocadas[j].aparte;
+        if (aparte) {
+          expect(c.colocadas[j].pieza.clase).toBe('entrada');
+          expect(a.x).toBeGreaterThanOrEqual(c.largo + 1500);
+        }
+        expect(a.x + a.w).toBeLessThanOrEqual((aparte ? c.extensionDibujo! : c.largo) + .001);
         expect(a.y + a.h).toBeLessThanOrEqual(c.anchoRollo + .001);
         rects.slice(j + 1).forEach(b => {
           const cruza = a.x < b.x + b.w - .001 && b.x < a.x + a.w - .001 && a.y < b.y + b.h - .001 && b.y < a.y + a.h - .001;
@@ -47,7 +52,7 @@ describe('Tetris contra todos los pedidos configurables de las fixtures', () => 
       if (originales.some(p => p.clase === 'pano')) {
         const stock = c.colocadas.filter(s => s.pieza.id.startsWith('stock-'));
         const areaStock = stock.reduce((area, s) => area + s.pieza.ancho * s.pieza.alto, 0);
-        const anchoTotal = Math.max(...c.colocadas.map(s => s.y / 10 + (s.girada ? s.pieza.ancho : s.pieza.alto)));
+        const anchoTotal = Math.max(...c.colocadas.filter(s => !s.aparte).map(s => s.y / 10 + (s.girada ? s.pieza.ancho : s.pieza.alto)));
         const tiras = stock.filter(s => Math.max(s.pieza.ancho, s.pieza.alto) >= 250).length;
         const trozos = stock.length - tiras;
         expect(trozos % 2).toBe(0);

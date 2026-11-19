@@ -526,9 +526,9 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas, ancho
     sumarEntidades(l, corteEnPlano(c, yc));
     // Iván, 23/10/2026 (AR2605035): la cota, hasta la altura máxima de las piezas, y sin rayas del rollo, que no
     // son corte; como en las enrollables (planos a mano 4638 y 5220).
-    const ocupado = Math.max(...c.colocadas.map(t => t.y / 10 + (t.girada ? t.pieza.ancho : t.pieza.alto)));
+    const ocupado = Math.max(0, ...c.colocadas.filter(t => !t.aparte).map(t => t.y / 10 + (t.girada ? t.pieza.ancho : t.pieza.alto)));
     cota(l, 0, yc, c.largo / 10, yc, yc - 30, 'XERA 20'); cota(l, 0, yc, 0, yc + ocupado, -35, 'XERA 20');
-    anchoMax = Math.max(anchoMax, c.largo / 10);
+    anchoMax = Math.max(anchoMax, (c.extensionDibujo ?? c.largo) / 10);
     // Sin partir por el texto de la cota del largo, que va en medio.
     filas.push({ y0: yc - 45, y1: techo + 40, evitar: [c.largo / 20],
       piezas: c.colocadas.map(t => [t.x / 10, t.x / 10 + (t.girada ? t.pieza.alto : t.pieza.ancho)] as [number, number]) });

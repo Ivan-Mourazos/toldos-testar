@@ -42,29 +42,22 @@ describe('Corte de puertas', () => {
     const lona = generarCortePuertas(p).cortes.find(c => c.material.includes('BLANCO') || c.material === 'LAC900 AZUL 5002');
     expect(lona.largo).toBe(1720);
   });
-  it('AR2605134 (3 puertas de 212 × 360) gasta 708 cm como el corte a mano: paños tumbados y E.T. de pie', () => {
-    // Iván dibujó el corte el 22/10/2026: los tres pares de paños con el frente a lo largo (636 cm) y las nueve
-    // E.T. de 212 × 8 de pie, una al lado de otra (72 cm). La web las tumbaba en otra columna y gastaba 848.
+  it('AR2605134 (3 puertas de 212 × 360) mantiene los tres pares de paños y corta de restos las nueve E.T.', () => {
     const p = pedido();
     Object.assign(p.elementos[0].input, { frente: 212, alto: 360, cantidad: 3 });
     p.elementos[0].input.enrollable = { T: 169, D: 60, margen: 6, empates: [] };
     p.elementos[0].input.entradas = [60, 131, 191].map(altura => ({ altura, diametro: 30, largo: 212, alto: 8, huecos: [] }));
     const lona = generarCortePuertas(p).cortes.find(c => c.material === 'LAC900 AZUL 5002');
     expect(lona.colocadas.filter(k => k.pieza.clase === 'pano').every(k => !k.girada)).toBe(true);
-    expect(lona.colocadas.filter(k => k.pieza.clase === 'entrada').every(k => k.girada)).toBe(true);
-    expect(lona.largo).toBe(7080);
+    expect(lona.colocadas.filter(k => k.aparte && k.pieza.clase === 'entrada')).toHaveLength(9);
+    expect(lona.largo).toBe(6500);
     // Iván, 22/10/2026: en el corte, A1 arriba y A2 debajo, como en el alzado (y es Y hacia arriba).
     const textos = lona.entidades.textos;
     const alturaDe = (codigo) => textos.filter(t => t.valor === codigo).map(t => t.y);
     expect(Math.min(...alturaDe('A1'))).toBeGreaterThan(Math.max(...alturaDe('A2')));
-    // Las E.T. siguen abajo y los cachos encima, como a mano.
-    const entradas = lona.colocadas.filter(k => k.pieza.clase === 'entrada'), cachos = lona.colocadas.filter(k => k.pieza.clase === 'cacho');
-    expect(Math.min(...cachos.map(k => k.y))).toBeGreaterThanOrEqual(Math.max(...entradas.map(k => k.y)));
-    // Iván, 22/10/2026: los cachos van unidos, compartiendo el corte, no sueltos con un hueco entre ellos.
-    const ancho = (k) => (k.girada ? k.pieza.alto : k.pieza.ancho) * 10;
-    const fila = [...cachos].sort((a, b) => a.x - b.x);
-    fila.slice(1).forEach((k, i) => expect(k.x).toBeCloseTo(fila[i].x + ancho(fila[i]), 3));
-    expect(new Set(cachos.map(k => k.y)).size).toBe(1);
+    const cachos = lona.colocadas.filter(k => k.pieza.clase === 'cacho');
+    expect(cachos).toHaveLength(6);
+    expect(cachos.every(k => k.x < lona.largo)).toBe(true);
   });
   it('mantiene códigos únicos a partir de la puerta 27', () => {
     const p=pedido(),input=p.elementos[0].input;

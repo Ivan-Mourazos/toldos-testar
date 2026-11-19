@@ -85,7 +85,7 @@ describe('Santa Pau: entidades de confección del 4815 de Iván',()=>{
   expect(c.colocadas.filter(t=>t.pieza.clase==='entrada')).toHaveLength(9);
   expect(c.colocadas.filter(t=>t.pieza.clase==='refuerzo')).toHaveLength(18);
   const cajas=c.colocadas.map(t=>({x:t.x,y:t.y,w:(t.girada?t.pieza.alto:t.pieza.ancho)*10,h:(t.girada?t.pieza.ancho:t.pieza.alto)*10}));
-  expect(cajas.every(b=>b.x>=0&&b.y>=0&&b.x+b.w<=c.largo+.01&&b.y+b.h<=c.anchoRollo+.01)).toBe(true);
+  expect(cajas.every((b,i)=>b.x>=0&&b.y>=0&&b.x+b.w<=(c.colocadas[i].aparte?c.extensionDibujo!:c.largo)+.01&&b.y+b.h<=c.anchoRollo+.01)).toBe(true);
   expect(cajas.every((a,i)=>cajas.slice(i+1).every(b=>Math.min(a.x+a.w,b.x+b.w)-Math.max(a.x,b.x)<.01||Math.min(a.y+a.h,b.y+b.h)-Math.max(a.y,b.y)<.01))).toBe(true);
  });
  it.each(pedidosSantaPau())('$orderCode: una presentación por puerta conserva las dos OF',pedido=>{

@@ -194,9 +194,10 @@ export interface CortePuertas {
   material: string;
   anchoRollo: number;
   largo: number;
+  extensionDibujo?: number;
   opcion: 'principal' | 'saco-entero' | 'saco-partido';
   entidades: EntidadesPuertas;
-  colocadas: Array<{ pieza: PiezaPuerta; x: number; y: number; girada: boolean }>;
+  colocadas: Array<{ pieza: PiezaPuerta; x: number; y: number; girada: boolean; aparte?: boolean }>;
 }
 export interface VistaPuertas {
   resultados: ResultadoPuerta[];

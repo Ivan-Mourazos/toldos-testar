@@ -382,12 +382,12 @@ export function dibujarCorte(cortes: CortePuertas[], _pedido: PedidoPuertas): { 
     sumar(l, corteEnPlano(c, yc));
     // Se acota el ancho que ocupan las piezas, hasta el último corte, y no el del rollo (Iván, 23/10/2026, AR2605220:
     // 278,8 de un rollo de 300). Con una referencia en ese borde aunque no haya pieza en la esquina.
-    const ocupado = Math.max(...c.colocadas.map(t => t.y / 10 + (t.girada ? t.pieza.ancho : t.pieza.alto)));
+    const ocupado = Math.max(0, ...c.colocadas.filter(t => !t.aparte).map(t => t.y / 10 + (t.girada ? t.pieza.ancho : t.pieza.alto)));
     const borde = yc + Math.min(alto, ocupado);
     linea(l, 'cotas', 0, borde, Math.min(12, c.largo / 10), borde);
     cota(l, 0, yc, c.largo / 10, yc, yc - 25.8375, CORTE_COTAS);
     cota(l, 0, yc, 0, borde, -35.1317, CORTE_COTAS);
-    anchoMax = Math.max(anchoMax, c.largo / 10);
+    anchoMax = Math.max(anchoMax, (c.extensionDibujo ?? c.largo) / 10);
     // Sitio para el título del bot («MATERIAL · CORTE»), que va encima del rollo.
     techo = yc - 100 - SEPARACION_EXTRA_FILAS;
   }

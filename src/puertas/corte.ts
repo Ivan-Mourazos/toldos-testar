@@ -1,3 +1,4 @@
+import { columnasPanos } from './columnasPanos.ts';
 import { escribirDxf2004 } from '../domain/corteLona/dxfCorte.js';
 import { anchoArial } from '../domain/corteLona/texto.js';
 import { sacosEnRectangulos, valorarSacos } from '../domain/corteLona/colocacion.js';
@@ -405,6 +406,53 @@ function sacosDeStock(ocupadas: Array<{ x: number; y: number; ancho: number; hue
   });
 }
 
+// Umbral provisional de Iván: a partir de medio rollo se cortan todas las E.T. en la lona.
+const FRACCION_ROLLO_ET_DE_RESTOS = 0.5;
+
+function distribuirEntradas(grupo: PiezaPuerta[], completo: CortePuertas, anidar: (piezas: PiezaPuerta[]) => CortePuertas,
+  dibujar: (p: PiezaPuerta, x: number, y: number, entidades: EntidadesPuertas) => void): CortePuertas {
+  const principales = grupo.filter(p => p.clase !== 'entrada');
+  if (principales.length === grupo.length) return completo;
+  let principal: CortePuertas = principales.length ? anidar(principales) : {
+    material: completo.material, anchoRollo: completo.anchoRollo, opcion: completo.opcion, largo: 0,
+    colocadas: [], entidades: { ...vacias(), textos: completo.entidades.textos.filter(t => t.valor === completo.material) },
+  };
+  const limite = principal.largo;
+  if (completo.largo <= limite + .001) return completo;
+
+  const aparte: PiezaPuerta[] = [];
+  let anchoAparte = 0;
+  for (const p of grupo.filter(p => p.clase === 'entrada')) {
+    // Las copias tienen la misma geometría. Buscar cuántas entran evita una búsqueda por unidad.
+    let dentro = 0, maximo = p.cantidad;
+    while (limite > 0 && dentro < maximo) {
+      const n = Math.ceil((dentro + maximo) / 2);
+      const prueba = anidar([...principales, { ...p, cantidad: n }]);
+      if (prueba.largo <= limite + .001) { dentro = n; principal = prueba; }
+      else maximo = n - 1;
+    }
+    if (dentro) principales.push({ ...p, cantidad: dentro });
+    anchoAparte += mm(p.alto) * (p.cantidad - dentro);
+    if (anchoAparte >= completo.anchoRollo * FRACCION_ROLLO_ET_DE_RESTOS) return completo;
+    for (let i = dentro; i < p.cantidad; i++) aparte.push({ ...p, cantidad: 1 });
+  }
+  if (!aparte.length) return principal;
+  const x = principal.largo + 1500;
+  let y = 0;
+  const separacion = Math.min(50, (principal.anchoRollo - anchoAparte) / aparte.length);
+  const ancho = Math.max(...aparte.map(p => mm(p.ancho)));
+  for (const pieza of aparte) {
+    // Después de fusionar el rollo: el borde inferior de un retal también se corta.
+    dibujar(pieza, x, y, principal.entidades);
+    principal.colocadas.push({ pieza, x, y, girada: false, aparte: true });
+    y += mm(pieza.alto) + separacion;
+  }
+  principal.extensionDibujo = x + ancho;
+  principal.entidades.textos.push({ capa: 'texto', valor: 'CORTAR DE RESTOS', centrado: true,
+    x: x + ancho / 2, y: y + 100, h: Math.min(150, ancho / anchoArial('CORTAR DE RESTOS', 1)) });
+  return principal;
+}
+
 function colocar(
   piezas: PiezaPuerta[],
   opcion: CortePuertas['opcion'],
@@ -428,7 +476,7 @@ function colocar(
     g.push(puertaMuestra&&variasPuertasAraujo&&p.alto<=p.rollo?{...p,sinGiro:true}:p);
     grupos.set(k, g);
   }
-  return [...grupos.values()].map(grupoOriginal => {
+  function anidar(grupoOriginal: PiezaPuerta[], presupuesto: PresupuestoCorte): CortePuertas {
     const santa=colocacionSantaPau(grupoOriginal);
     let corteSanta:CortePuertas|null=null;
     if(santa){
@@ -535,7 +583,10 @@ function colocar(
       return valorarSacos(sacos);
     };
     const conStock = Boolean(ofStock && opcion === 'principal' && grupo.some(p => p.clase === 'pano'));
-    const elegidas = buscarColocacion(piezasBusqueda, rollo, inicial, presupuesto, valida, conStock ? aprovechamiento : undefined);
+    const alternativa = grupo.some(p => p.clase === 'entrada') && grupo.filter(p => p.clase === 'pano').length > 2
+      ? columnasPanos(piezasBusqueda, id => sitios[Number(id)].t.pieza.clase === 'pano', rollo) : null;
+    const semilla = alternativa && Math.max(...alternativa.map(r=>r.x+r.w)) < largo ? alternativa : inicial;
+    const elegidas = buscarColocacion(piezasBusqueda, rollo, semilla, presupuesto, valida, conStock ? aprovechamiento : undefined);
     // Las franjas que llenan el rollo separan el anidado: trasladarlas al inicio no altera su consumo.
     const completas = elegidas.filter(s => Math.abs(s.h - rollo) < .001).sort((a, b) => a.x - b.x);
     const seleccionadas = elegidas.map(s => {
@@ -581,6 +632,13 @@ function colocar(
     if (porElReves) entidades.textos.push({ capa: 'texto', x: 0, y: base, h: TITULO_MATERIAL_MM, valor: 'CORTAR POR EL REVÉS' });
     fusionarCortesPuertas(entidades, primerPano ? rollo : undefined);
     return corteSanta&&corteSanta.largo<=largo?corteSanta:{ material: grupo[0].material, anchoRollo: rollo, largo, opcion, entidades, colocadas };
+  }
+  const pruebasRestos = { restantes: PRESUPUESTO_TETRIS };
+  return [...grupos.values()].map(grupo => {
+    const completo = anidar(grupo, presupuesto);
+    if (opcion !== 'principal') return completo;
+    return distribuirEntradas(grupo, completo, piezas => anidar(piezas, pruebasRestos),
+      (p, x, y, entidades) => dibujarPieza(entidades, p, x, y, false, codigosPano.get(p.id), !esEnrollable(p.id), false, esAraujo(p.id)));
   });
 }
 

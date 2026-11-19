@@ -12,7 +12,7 @@ export function metrosPorOf(cortes: CortePuertas[], material: string): Map<strin
   for (const c of cortes) {
     if (c.opcion !== 'principal' || c.material !== material || !c.colocadas.length) continue;
     const areas = new Map<string, number>();
-    for (const { pieza: p } of c.colocadas) areas.set(p.of, (areas.get(p.of) ?? 0) + p.ancho * p.alto * (p.multiplicador ?? 1));
+    for (const { pieza: p } of c.colocadas.filter(t => !t.aparte)) areas.set(p.of, (areas.get(p.of) ?? 0) + p.ancho * p.alto * (p.multiplicador ?? 1));
     const suma = [...areas.values()].reduce((s, v) => s + v, 0);
     if (!(suma > 0)) continue;
     const largo = Math.round(c.largo / 10);

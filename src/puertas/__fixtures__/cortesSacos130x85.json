@@ -116,7 +116,7 @@
       "pedido": "AR2604434",
       "cortes": [
         {
-          "largo": 1187.5,
+          "largo": 1137.5,
           "sacos": 0,
           "tiras": 0,
           "trozos": 0,
@@ -153,12 +153,12 @@
       "pedido": "AR2604349",
       "cortes": [
         {
-          "largo": 3300,
+          "largo": 3150,
           "sacos": 0,
           "tiras": 0,
           "trozos": 0,
           "area": 0,
-          "ancho": 298
+          "ancho": 297
         },
         {
           "largo": 2740,
@@ -285,11 +285,11 @@
       "pedido": "AR2604904",
       "cortes": [
         {
-          "largo": 8630,
-          "sacos": 0,
-          "tiras": 0,
+          "largo": 8520,
+          "sacos": 1,
+          "tiras": 1,
           "trozos": 0,
-          "area": 0,
+          "area": 24570,
           "ancho": 300
         },
         {
@@ -314,12 +314,12 @@
       "pedido": "AR2604764",
       "cortes": [
         {
-          "largo": 1210,
+          "largo": 1100,
           "sacos": 0,
           "tiras": 0,
           "trozos": 0,
           "area": 0,
-          "ancho": 296.5
+          "ancho": 254.5
         },
         {
           "largo": 280,
@@ -343,11 +343,11 @@
       "pedido": "AR2604717",
       "cortes": [
         {
-          "largo": 9550,
-          "sacos": 2,
+          "largo": 9440,
+          "sacos": 3,
           "tiras": 0,
-          "trozos": 4,
-          "area": 45120,
+          "trozos": 6,
+          "area": 63648,
           "ancho": 300
         },
         {
@@ -467,12 +467,12 @@
       "pedido": "AR2604723",
       "cortes": [
         {
-          "largo": 15300,
-          "sacos": 4,
-          "tiras": 4,
+          "largo": 10200,
+          "sacos": 0,
+          "tiras": 0,
           "trozos": 0,
-          "area": 96900,
-          "ancho": 298
+          "area": 0,
+          "ancho": 296
         },
         {
           "largo": 360,
@@ -504,12 +504,12 @@
       "pedido": "AR2604724",
       "cortes": [
         {
-          "largo": 15000,
-          "sacos": 4,
-          "tiras": 4,
+          "largo": 10000,
+          "sacos": 0,
+          "tiras": 0,
           "trozos": 0,
-          "area": 95000,
-          "ancho": 298
+          "area": 0,
+          "ancho": 296
         },
         {
           "largo": 360,
@@ -541,12 +541,12 @@
       "pedido": "AR2604859",
       "cortes": [
         {
-          "largo": 14130,
-          "sacos": 6,
-          "tiras": 6,
+          "largo": 9420,
+          "sacos": 0,
+          "tiras": 0,
           "trozos": 0,
-          "area": 126360,
-          "ancho": 294
+          "area": 0,
+          "ancho": 298
         },
         {
           "largo": 400,
@@ -578,12 +578,12 @@
       "pedido": "AR2604906",
       "cortes": [
         {
-          "largo": 15900,
-          "sacos": 7,
-          "tiras": 7,
+          "largo": 10600,
+          "sacos": 0,
+          "tiras": 0,
           "trozos": 0,
-          "area": 141750,
-          "ancho": 294
+          "area": 0,
+          "ancho": 296
         },
         {
           "largo": 390,
@@ -615,7 +615,7 @@
       "pedido": "AR2605134",
       "cortes": [
         {
-          "largo": 7080,
+          "largo": 6500,
           "sacos": 0,
           "tiras": 0,
           "trozos": 0,
@@ -726,12 +726,12 @@
       "pedido": "AR2605065",
       "cortes": [
         {
-          "largo": 2332.5,
+          "largo": 2230,
           "sacos": 0,
           "tiras": 0,
           "trozos": 0,
           "area": 0,
-          "ancho": 298.75
+          "ancho": 293
         },
         {
           "largo": 2020,
@@ -763,11 +763,11 @@
       "pedido": "AR2604526",
       "cortes": [
         {
-          "largo": 6335,
-          "sacos": 4,
-          "tiras": 4,
+          "largo": 3225,
+          "sacos": 0,
+          "tiras": 0,
           "trozos": 0,
-          "area": 79464,
+          "area": 0,
           "ancho": 300
         },
         {
@@ -800,11 +800,11 @@
       "pedido": "AR2604526-350",
       "cortes": [
         {
-          "largo": 7110,
+          "largo": 7000,
           "sacos": 2,
-          "tiras": 0,
-          "trozos": 4,
-          "area": 50400,
+          "tiras": 2,
+          "trozos": 0,
+          "area": 50220,
           "ancho": 300
         },
         {
@@ -866,7 +866,7 @@
       "pedido": "EJEMPLO-APILABLE",
       "cortes": [
         {
-          "largo": 4110,
+          "largo": 3510,
           "sacos": 0,
           "tiras": 0,
           "trozos": 0,

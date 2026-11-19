@@ -219,7 +219,7 @@ describe('Correcciones de Iván a AR2605035 (26/10/2026)',()=>{
     const corte=generarCortePuertas(pedidoDe('AR2600001',apilable()));
     for(const c of corte.cortes) {
       const paños=c.colocadas.some(t=>t.pieza.clase==='pano'), textos=c.entidades.textos.map(t=>t.valor);
-      const orillo=c.entidades.lineas.some(l=>l.capa==='DISCO1'&&Math.abs(l.y1)<.001&&Math.abs(l.y2)<.001);
+      const orillo=c.entidades.lineas.some(l=>l.capa==='DISCO1'&&l.x1<=c.largo&&l.x2<=c.largo&&Math.abs(l.y1)<.001&&Math.abs(l.y2)<.001);
       expect(orillo).toBe(!paños);
       if(!paños) expect(textos).not.toContain('REVÉS');
     }
@@ -227,7 +227,7 @@ describe('Correcciones de Iván a AR2605035 (26/10/2026)',()=>{
     // También en las enrollables (Iván, 26/10/2026).
     for(const c of generarCortePuertas(pedidoDe('AR2600001',puerta4638())).cortes) {
       const paños=c.colocadas.some(t=>t.pieza.clase==='pano');
-      expect(c.entidades.lineas.some(l=>l.capa==='DISCO1'&&Math.abs(l.y1)<.001&&Math.abs(l.y2)<.001)).toBe(!paños);
+      expect(c.entidades.lineas.some(l=>l.capa==='DISCO1'&&l.x1<=c.largo&&l.x2<=c.largo&&Math.abs(l.y1)<.001&&Math.abs(l.y2)<.001)).toBe(!paños);
       expect(c.entidades.textos.some(t=>t.valor.endsWith('CORTAR POR EL REVÉS'))).toBe(paños);
     }
   });

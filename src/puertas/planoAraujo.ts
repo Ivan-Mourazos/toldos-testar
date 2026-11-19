@@ -82,7 +82,7 @@ export function escribirPlanoAraujo(pedido:PedidoPuertas,cortes:CortePuertas[],c
     const ocupado=Math.max(0,...c.colocadas.map(t=>t.y/10+(t.girada?t.pieza.ancho:t.pieza.alto)));
     yc-=ocupado;
     const fuera=textosFuera(c);
-    const e=corteEnPlano({...c,entidades:{...c.entidades,textos:c.entidades.textos.filter(t=>!fuera.includes(t))}},yc);
+    const e=corteEnPlano({...c,entidades:{...c.entidades,textos:c.entidades.textos.filter(t=>(!fuera.includes(t) || t.valor === 'CORTAR DE RESTOS'))}},yc);
     sumarLienzo(lc,{...vacio(),...e});
     cotasImpresionAraujo(lc,c,yc);
     const titulo=textoSeguro(c.material),hTitulo=Math.max(10,Math.min(20,c.largo/100));
@@ -90,8 +90,8 @@ export function escribirPlanoAraujo(pedido:PedidoPuertas,cortes:CortePuertas[],c
     if(!impresa)lc.cotas.push({capa:'cotas',estilo:'XERA 20',x1:0,y1:yc,x2:c.largo/10,y2:yc,d:yc-45,giro:0,valor:c.largo/10,posicionTexto:[c.largo/20,yc-65]},
       {capa:'cotas',estilo:'XERA 20',x1:0,y1:yc,x2:0,y2:yc+ocupado,d:-35,giro:90,valor:ocupado});
     zonasCorte.push({x0:Math.min(impresa?Math.min(-100,...lc.cotas.filter(q=>q.giro===90).map(q=>q.d-15)):-75,c.largo/20-anchoArial(titulo,hTitulo)/2-5),y0:yc-80,
-      x1:Math.max(c.largo/10+40,c.largo/20+anchoArial(titulo,hTitulo)/2+5),y1:yc+ocupado+50});
-    wc=Math.max(wc,c.largo/10);yc-=140;
+      x1:Math.max((c.extensionDibujo??c.largo)/10+40,c.largo/20+anchoArial(titulo,hTitulo)/2+5),y1:yc+ocupado+50});
+    wc=Math.max(wc,(c.extensionDibujo??c.largo)/10);yc-=140;
   }
   const santaPau=pedido.elementos.every(e=>e.input.santapau),corteSanta=santaPau?dibujarCorte(cortes,pedido):null;
   const zona=corteSanta?.zona??{x0:-70,y0:yc+60,x1:wc+40,y1:100},[ox,oy]=origenCorte(za,zona);
