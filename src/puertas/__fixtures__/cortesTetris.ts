@@ -44,7 +44,8 @@ export function pedidosTetris() {
   const espaciador = base('PUERTAUTO', 350, 420);
   espaciador.autorreparable = { saco: 110, empates: [299], espaciadorCentral: true };
   pedidos.push(pedidoDe('AR2604526-350', espaciador));
-  pedidos.push(pedidoDe('AR2604638-1ET', puerta4638()));
+  // 19/11/2026: con una sola E.T., como se guardó antes de la regla ET_FALTA; el Tetris no mira los avisos.
+  pedidos.push(pedidoDe('AR2604638-1ET', { ...puerta4638(), entradas: puerta4638().entradas.slice(0, 1) }));
   pedidos.push(pedidoDe('EJEMPLO-APILABLE', apilable()));
   pedidos.push(pedidoDe('EJEMPLO-AUTORREPARABLE', autorreparable()));
   return pedidos;

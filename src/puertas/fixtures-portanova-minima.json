@@ -711,8 +711,38 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
+            106.318659,
+            94.215
+          ],
+          "h": 0.06560000000000343,
+          "ancho": 0,
+          "escalaX": 1,
+          "giro": 0,
+          "ancla": 5,
+          "valor": "A · ET 2"
+        },
+        {
+          "capa": "texto",
+          "color": 106,
+          "tipo": "texto",
+          "punto": [
+            106.318659,
+            94.295
+          ],
+          "h": 0.06560000000000343,
+          "ancho": 0,
+          "escalaX": 1,
+          "giro": 0,
+          "ancla": 5,
+          "valor": "A · ET 3"
+        },
+        {
+          "capa": "texto",
+          "color": 106,
+          "tipo": "texto",
+          "punto": [
             105.735159,
-            94.21
+            94.37
           ],
           "h": 0.007999999999995566,
           "ancho": 0,
@@ -727,7 +757,7 @@
           "tipo": "texto",
           "punto": [
             105.747159,
-            94.21
+            94.37
           ],
           "h": 0.007999999999995566,
           "ancho": 0,
@@ -742,7 +772,7 @@
           "tipo": "texto",
           "punto": [
             106.300159,
-            94.21
+            94.37
           ],
           "h": 0.007999999999995566,
           "ancho": 0,
@@ -757,7 +787,7 @@
           "tipo": "texto",
           "punto": [
             106.312159,
-            94.21
+            94.37
           ],
           "h": 0.007999999999995566,
           "ancho": 0,
@@ -772,7 +802,7 @@
           "tipo": "texto",
           "punto": [
             105.458659,
-            94.645
+            94.805
           ],
           "h": 0.20000000000000284,
           "ancho": 0,
@@ -787,7 +817,7 @@
           "tipo": "texto",
           "punto": [
             105.458659,
-            94.365
+            94.525
           ],
           "h": 0.20000000000000284,
           "ancho": 0,
@@ -5613,7 +5643,7 @@
           "escalaX": 1,
           "giro": 0,
           "ancla": 5,
-          "valor": "B · ET 1"
+          "valor": "A · ET 2"
         },
         {
           "capa": "texto",
@@ -5628,6 +5658,21 @@
           "escalaX": 1,
           "giro": 0,
           "ancla": 5,
+          "valor": "A · ET 3"
+        },
+        {
+          "capa": "texto",
+          "color": 106,
+          "tipo": "texto",
+          "punto": [
+            117.146,
+            93.555
+          ],
+          "h": 0.06560000000000343,
+          "ancho": 0,
+          "escalaX": 1,
+          "giro": 0,
+          "ancla": 5,
           "valor": "B · ET 1"
         },
         {
@@ -5635,13 +5680,88 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            116.321,
-            93.8035
+            117.146,
+            93.635
+          ],
+          "h": 0.06560000000000343,
+          "ancho": 0,
+          "escalaX": 1,
+          "giro": 0,
+          "ancla": 5,
+          "valor": "B · ET 1"
+        },
+        {
+          "capa": "texto",
+          "color": 106,
+          "tipo": "texto",
+          "punto": [
+            117.146,
+            93.715
+          ],
+          "h": 0.06560000000000343,
+          "ancho": 0,
+          "escalaX": 1,
+          "giro": 0,
+          "ancla": 5,
+          "valor": "B · ET 2"
+        },
+        {
+          "capa": "texto",
+          "color": 106,
+          "tipo": "texto",
+          "punto": [
+            117.146,
+            93.795
+          ],
+          "h": 0.06560000000000343,
+          "ancho": 0,
+          "escalaX": 1,
+          "giro": 0,
+          "ancla": 5,
+          "valor": "B · ET 2"
+        },
+        {
+          "capa": "texto",
+          "color": 106,
+          "tipo": "texto",
+          "punto": [
+            117.146,
+            93.875
+          ],
+          "h": 0.06560000000000343,
+          "ancho": 0,
+          "escalaX": 1,
+          "giro": 0,
+          "ancla": 5,
+          "valor": "B · ET 3"
+        },
+        {
+          "capa": "texto",
+          "color": 106,
+          "tipo": "texto",
+          "punto": [
+            117.146,
+            93.955
+          ],
+          "h": 0.06560000000000343,
+          "ancho": 0,
+          "escalaX": 1,
+          "giro": 0,
+          "ancla": 5,
+          "valor": "B · ET 3"
+        },
+        {
+          "capa": "texto",
+          "color": 106,
+          "tipo": "texto",
+          "punto": [
+            116.5625,
+            94.03
           ],
           "h": 0.007999999999995566,
           "ancho": 0,
           "escalaX": 1,
-          "giro": 0,
+          "giro": -90,
           "ancla": 5,
           "valor": "A · CACHO"
         },
@@ -5650,13 +5770,13 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            116.321,
-            93.7915
+            116.5745,
+            94.03
           ],
           "h": 0.007999999999995566,
           "ancho": 0,
           "escalaX": 1,
-          "giro": 0,
+          "giro": -90,
           "ancla": 5,
           "valor": "0232309"
         },
@@ -5665,13 +5785,13 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            116.391,
-            93.8035
+            117.1275,
+            94.03
           ],
           "h": 0.007999999999995566,
           "ancho": 0,
           "escalaX": 1,
-          "giro": 0,
+          "giro": -90,
           "ancla": 5,
           "valor": "A · CACHO"
         },
@@ -5680,13 +5800,13 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            116.391,
-            93.7915
+            117.1395,
+            94.03
           ],
           "h": 0.007999999999995566,
           "ancho": 0,
           "escalaX": 1,
-          "giro": 0,
+          "giro": -90,
           "ancla": 5,
           "valor": "0232309"
         },
@@ -5695,68 +5815,8 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            116.461,
-            93.8035
-          ],
-          "h": 0.007999999999995566,
-          "ancho": 0,
-          "escalaX": 1,
-          "giro": 0,
-          "ancla": 5,
-          "valor": "B · CACHO"
-        },
-        {
-          "capa": "texto",
-          "color": 106,
-          "tipo": "texto",
-          "punto": [
-            116.461,
-            93.7915
-          ],
-          "h": 0.007999999999995566,
-          "ancho": 0,
-          "escalaX": 1,
-          "giro": 0,
-          "ancla": 5,
-          "valor": "0239999"
-        },
-        {
-          "capa": "texto",
-          "color": 106,
-          "tipo": "texto",
-          "punto": [
-            116.531,
-            93.8035
-          ],
-          "h": 0.007999999999995566,
-          "ancho": 0,
-          "escalaX": 1,
-          "giro": 0,
-          "ancla": 5,
-          "valor": "B · CACHO"
-        },
-        {
-          "capa": "texto",
-          "color": 106,
-          "tipo": "texto",
-          "punto": [
-            116.531,
-            93.7915
-          ],
-          "h": 0.007999999999995566,
-          "ancho": 0,
-          "escalaX": 1,
-          "giro": 0,
-          "ancla": 5,
-          "valor": "0239999"
-        },
-        {
-          "capa": "texto",
-          "color": 106,
-          "tipo": "texto",
-          "punto": [
-            116.8425,
-            93.55
+            117.6925,
+            94.03
           ],
           "h": 0.007999999999995566,
           "ancho": 0,
@@ -5770,8 +5830,8 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            116.8545,
-            93.55
+            117.7045,
+            94.03
           ],
           "h": 0.007999999999995566,
           "ancho": 0,
@@ -5785,8 +5845,8 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            117.4075,
-            93.55
+            116.5625,
+            94.1
           ],
           "h": 0.007999999999995566,
           "ancho": 0,
@@ -5800,8 +5860,68 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            117.4195,
-            93.55
+            116.5745,
+            94.1
+          ],
+          "h": 0.007999999999995566,
+          "ancho": 0,
+          "escalaX": 1,
+          "giro": -90,
+          "ancla": 5,
+          "valor": "0239999"
+        },
+        {
+          "capa": "texto",
+          "color": 106,
+          "tipo": "texto",
+          "punto": [
+            117.1275,
+            94.1
+          ],
+          "h": 0.007999999999995566,
+          "ancho": 0,
+          "escalaX": 1,
+          "giro": -90,
+          "ancla": 5,
+          "valor": "B · CACHO"
+        },
+        {
+          "capa": "texto",
+          "color": 106,
+          "tipo": "texto",
+          "punto": [
+            117.1395,
+            94.1
+          ],
+          "h": 0.007999999999995566,
+          "ancho": 0,
+          "escalaX": 1,
+          "giro": -90,
+          "ancla": 5,
+          "valor": "0239999"
+        },
+        {
+          "capa": "texto",
+          "color": 106,
+          "tipo": "texto",
+          "punto": [
+            117.6925,
+            94.1
+          ],
+          "h": 0.007999999999995566,
+          "ancho": 0,
+          "escalaX": 1,
+          "giro": -90,
+          "ancla": 5,
+          "valor": "B · CACHO"
+        },
+        {
+          "capa": "texto",
+          "color": 106,
+          "tipo": "texto",
+          "punto": [
+            117.7045,
+            94.1
           ],
           "h": 0.007999999999995566,
           "ancho": 0,

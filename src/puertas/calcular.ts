@@ -190,10 +190,11 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
     // Las E.T. de los bordes del ventanal salen de «Entradas de tubo», no de T y D: si falta alguna, la web cortaba
     // menos E.T. de las que lleva la puerta sin avisar (AR2605639: solo la de 60, faltaban las de 131 y 191).
     if (!ciega && !rejilla && positivo(e.T)) {
-      const bordes=[p.alto-e.T];
-      ventanales.forEach(v=>bordes.push(n(bordes.at(-1)!-v.D)));
-      const faltan=bordes.filter((y,i)=>!(i===0&&e.sinEtArriba)&&!(i===bordes.length-1&&e.sinEtAbajo)&&!p.entradas.some(t=>Math.abs(t.altura-y)<=1));
-      if(faltan.length)aviso('ET_FALTA',`Falta la E.T. del ventanal con el eje a ${faltan.map(y=>numero(y)).join(' y ')} cm (alto − T y − D): añádela en «Entradas de tubo» o escribe los tramos del dibujo.`,'aviso');
+      // Las de entre ventanales las pone la web (delantera y trasera); las de arriba y abajo, el pedido.
+      // Iván, 19/11/2026: obligatorias, y el alzado y el plano solo dibujan las que están metidas.
+      const bordes=[...e.sinEtArriba?[]:[n(p.alto-e.T)],...e.sinEtAbajo?[]:[n(p.alto-e.T-altoVentanales)]];
+      const faltan=bordes.filter(y=>!p.entradas.some(t=>Math.abs(t.altura-y)<=1));
+      if(faltan.length)aviso('ET_FALTA',`Falta la E.T. del ventanal con el eje a ${faltan.map(y=>numero(y)).join(' y ')} cm (alto − T y − D): añádela en «Entradas de tubo» o escribe los tramos del dibujo. Si no lleva, marca «Sin E.T.».`);
     }
     const incorporadas=new Set<number>();
     // Sin ventanal, un solo paño del rematado del saco a la cabecera (Iván, 06/11/2026, AR2605429).

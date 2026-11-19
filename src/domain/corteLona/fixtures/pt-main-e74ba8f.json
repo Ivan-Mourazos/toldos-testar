@@ -194,8 +194,8 @@
   "integridadPuertas": [
     {
       "pedido": "AR2604638",
-      "corte": "a2b995168ffaebc31c289d74dd95e49e6ca0ac16c7012be08f1978d554a880bd",
-      "archivo": "62119c01f14975f4736ed73649dee12b76d5578a1f9aff67a0f4278c9b2312b2"
+      "corte": "b755d5123bcce00ccf4aeb5bfd0fa3e1f2129f074228290ebe4fca344c65647f",
+      "archivo": "fd62c65ed776d9a1c89c5f547ca186d1a0a7fd28cd6fe48065441254e659a0e7"
     },
     {
       "pedido": "AR2605036",
@@ -214,8 +214,8 @@
     },
     {
       "pedido": "AR2605246",
-      "corte": "990b58b388d79fc3c43d174113e0aa933874167c35392fdc95aa8b47bd70ad7e",
-      "archivo": "68bc75abaabdeb5f0b1d12b39c5e27c79158196392db9b3481e7be0914a383c1"
+      "corte": "1d10b6dfec2addb1585d2d0a82164eb1d06e9233a5e079b99ff4e3d854174688",
+      "archivo": "203289873b0e5e108fa5c925469cdc74d0e10427a7d0399a858a833ccfea2064"
     },
     {
       "pedido": "AR2605220",
@@ -1492,12 +1492,12 @@
       "familia": "Puertas / Portanova Enrollable",
       "ejemplo": "AR2604638",
       "dxf": "9c997101bf41c51d7513da1c3fcf1e4f805002d643f3a7987c11d1cb77fb3a0c",
-      "geometria": "ce6a21c779bfc18e0406f9b50559b53e038a0777f25ba4fb94ad18eb75a8466d",
+      "geometria": "10ca24332c1592b80683222b3bbad039e50074e5a9fc223487fcd9d0ad280e09",
       "textosFijos": "876a1b35bc850afd2e158198a3c9b3bccb426f16d5a5eade398ed2de260178fe",
-      "textos": "74dc5d42e89f8e16cdbf40ab37115f8ac93c67f581059d94bf3f85efdb867dbd",
-      "cotas": "4efc799e7599e1b7ac137a9b3a0e1c10a80e8a13a75b4e08af99e2e9e75a3a0c",
+      "textos": "b7142ed2df53580ee9e6a0e3c21bd369ead4b00973919896d10a24083321b4e7",
+      "cotas": "adf662bf04b8ff63994e639265a3a982c285b76463b8405896fa8c78ed315331",
       "cotasPosicionHash": "2d261dcbe3854697199b72be1f6d17086e6c26f4e1cc6d09fd0f6751ea43b90c",
-      "ordenTextos": "f0d5dc742b167b07bc9405ad0d492b94c7293d708de9259007ee5ba75ae248f0",
+      "ordenTextos": "b5b2340c585d0884f070748373dead9fcad1b476be5c53e2be291e7be35bbf75",
       "textosEnHoja": [
         0,
         1,
@@ -1792,12 +1792,12 @@
       "familia": "Puertas / Portanova compatibilidad",
       "ejemplo": "AR2605246",
       "dxf": "4c2a1e990f11492d5ff816af7ecf0267d484b13e2684af9b6f4fe1705c2d53d2",
-      "geometria": "8826c029cadce5c222b720af0e7c7898d0d80b27075bb9d4b1d44096af55c916",
+      "geometria": "eb97fbf2a86af1295db81dcc8d41b4f74a46cdca84ecc75d2ca443ca9daf7cf2",
       "textosFijos": "2ff57fc9b85930a93d05290657b9eb7174b23e54624557d7d6801f670210f313",
-      "textos": "00c916acede2a23935ace193dbc6c79aa68f4bdb02d20e25ea2c65984751ca87",
+      "textos": "9ab7646e0265fe4bb83b227196944597a3b6ba5610fc7fff2e41765798f36fa6",
       "cotas": "73b83ace1dea00e6dce9e188396f8e882cb2298fa6a474e0a3c2c0d3ec012fab",
       "cotasPosicionHash": "52e29212bb6846e5c704b2aca469738c6728d1f508c5685440aa429a7b53c456",
-      "ordenTextos": "c0db59305ed28a2e1b95a70dde57fc57bb09c1205d3d26dbc2a30c3090cc0c92",
+      "ordenTextos": "abdde07368a2ded5bb08b7f8c85cd6ad23964e639510b9cb875e7f27c0b564d1",
       "textosEnHoja": [
         0,
         1,

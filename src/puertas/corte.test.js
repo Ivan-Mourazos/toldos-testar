@@ -93,7 +93,9 @@ describe('Corte de puertas', () => {
   });
 
   it('genera un DXF 2004 con capas del bot y materiales apilados', () => {
-    const r = generarCortePuertas(pedido());
+    // 19/11/2026: con las E.T. del ventanal; sin ellas el corte ya no se genera (ET_FALTA).
+    const p = pedido(); p.elementos[0].input.entradas = [131, 191].map(altura => ({ altura, diametro: 30, largo: 172, alto: 8, huecos: [] }));
+    const r = generarCortePuertas(p);
     expect(r.archivo?.dxf).toContain('AC1018');
     expect(r.archivo?.dxf).toContain('0232309');
     expect(r.archivo?.dxf).toMatch(/\r\nEOF\r\n/);

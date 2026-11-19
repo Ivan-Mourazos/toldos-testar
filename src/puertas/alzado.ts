@@ -148,7 +148,9 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   // Bandas de entrada de tubo con sus cotas de alto a la izquierda (sin duplicar ejes del ventanal)
   const bandasIzquierda: Array<{ y: number; alto: number }> = enr
     ? [
-        ...(ventanales.length ? ejesVentanal.filter((_, k) => !(k === 0 && p.enrollable.sinEtArriba) && !(k === ejesVentanal.length - 1 && p.enrollable.sinEtAbajo)) : []),
+        // Iván, 19/11/2026: de los ejes del ventanal solo los de entre ventanales (la web los corta sola); el de
+        // arriba y el de abajo, solo si su E.T. está en «Entradas de tubo», para que no parezcan puestas sin estarlo.
+        ...ejesVentanal.slice(1, -1),
         ...tubos.map(altura => H - altura),
       ]
         .filter(y => !(p.enrollable.sinEtArriba && Math.abs(y - T) < .01)

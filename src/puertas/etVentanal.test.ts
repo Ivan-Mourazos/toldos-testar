@@ -15,7 +15,7 @@ describe('E.T. de los bordes del ventanal de enrollable', () => {
   it('avisa si falta la E.T. de arriba o de abajo del ventanal', () => {
     const r = calcularPuerta(puerta5639([60]));
     const aviso = r.avisos.find(a => a.codigo === 'ET_FALTA');
-    expect(aviso?.nivel).toBe('aviso');
+    expect(aviso?.nivel).toBe('error');
     expect(aviso?.texto).toContain('191 y 131');
   });
   it('no avisa con las tres E.T. de la hoja', () => {

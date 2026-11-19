@@ -91,7 +91,8 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
   const ventanales = T > 0 ? ventanalesEnrollable(p) : [];
   const ejes: number[] = ventanales.length ? [T] : [];
   for (const v of ventanales) ejes.push(ejes.at(-1)! + v.D);
-  const bandas = [...new Set([...ejes, ...p.entradas.map(e => H - e.altura)])].filter(y => y > 0 && y < H).sort((a, b) => a - b);
+  // Iván, 19/11/2026: el eje de arriba y el de abajo del ventanal se dibujan solo si su E.T. está metida.
+  const bandas = [...new Set([...ejes.slice(1, -1), ...p.entradas.map(e => H - e.altura)])].filter(y => y > 0 && y < H).sort((a, b) => a - b);
   // Los contornos son los paños cortados: 3,5 sobre la cabecera y, abajo, en el rematado del saco (13 con el de 120);
   // el saco sube 2 más para soldar (Iván, 24/10/2026, AR2605220).
   const paños: Array<[number, number]> = ventanales.length
@@ -202,7 +203,8 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
   texto(l, rotulo?.[0] ?? 'CERRAR E.T', F + 38, -H - 11, rotulo ? 5 : 7, { centrado: true });
   texto(l, rotulo?.[1] ?? '2 CM MÁXIMO', F + 38, -H - 21, 7, { centrado: true });
   cota(l, 0, 0, F, 0, 23.01, 'XERA 15');
-  const hitos = [0, ...bandas, ...(envoltorio && envoltorio.eje > 0 ? [H - envoltorio.eje] : []), H].sort((a, b) => a - b);
+  // Las cotas del ventanal (T, D) van siempre, aunque falte su E.T.
+  const hitos = [0, ...bandas, ...ejes.filter(y => y > 0 && y < H && !bandas.some(b => Math.abs(b - y) < .01)), ...(envoltorio && envoltorio.eje > 0 ? [H - envoltorio.eje] : []), H].sort((a, b) => a - b);
   hitos.slice(1).forEach((h, i) => cota(l, F, -hitos[i], F, -h, F + 21.93));
   cota(l, F, 0, F, -H, F + 37.91);
   const ys = -H - 47.6767;

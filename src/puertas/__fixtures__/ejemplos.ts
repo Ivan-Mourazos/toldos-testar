@@ -11,10 +11,10 @@ export function base(modelo: Puerta['modelo'], frente: number, alto: number): Pu
     material: 'LAC900', color: 'AZUL 5002', confirmada: true, ventanasConfirmadas: true };
 }
 
-/** AR2604638: enrollable 172 × 314 con ventanal (T 123, D 60, m 6) y una entrada a 60. */
+/** AR2604638: enrollable 172 × 314 con ventanal (T 123, D 60, m 6) y sus tres E.T. (60, 131 y 191; 19/11/2026: antes solo la de 60). */
 export function puerta4638(): Puerta {
   return { ...base('PUERTAENR', 172, 314), enrollable: { T: 123, D: 60, margen: 6, empates: [] },
-    entradas: [{ altura: 60, diametro: 30, largo: 172, alto: 8, huecos: [] }] };
+    entradas: [60, 131, 191].map(altura => ({ altura, diametro: 30 as const, largo: 172, alto: 8, huecos: [] })) };
 }
 export function apilable(): Puerta {
   const p = base('PUERTAPLE', 300, 350);
