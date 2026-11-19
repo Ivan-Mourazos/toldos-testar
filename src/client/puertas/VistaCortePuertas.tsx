@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import type { CortePuertas, PedidoPuertas, VistaPuertas } from '../../puertas/tipos.ts';
+import { anchoArial } from '../../domain/corteLona/texto.js';
 import { presentarImpresionAraujo } from '../../puertas/cotasImpresionAraujo.ts';
 import '../coordina/corte-lona.css';
 import { textoMedidasMm } from './medidasPuertas';
@@ -9,7 +10,10 @@ export function DibujoCortePuertas({corte,zoom=1,ajustado=false}:{corte:CortePue
   const c=presentarImpresionAraujo(corte);
   const alto=c.anchoRollo+430;
   const techo=Math.max(0,...c.colocadas.map(p=>p.y+10*(p.girada?p.pieza.ancho:p.pieza.alto)));
-  return <svg role="img" aria-label={`Corte ${c.material}`} className="corte-dibujo puerta-corte-dibujo" style={zoom>1?{width:`${zoom*100}%`,maxHeight:'none'}:undefined} viewBox={ajustado?`-20 ${-techo-20} ${c.largo+40} ${techo+40}`:zoom>1?`0 ${-techo} ${c.largo} ${techo}`:`-100 ${-alto} ${c.largo+200} ${alto+100}`}>
+  // El título del material va a 200 mm aunque el corte sea corto (un saco entero): la vista llega hasta donde acaba,
+  // para que no se corte por la derecha. En SVG el tamaño es el del cuerpo, no el de las mayúsculas como en el DXF.
+  const derecha=Math.max(c.largo,...c.entidades.textos.filter(t=>!t.giro&&!t.centrado).map(t=>t.x+anchoArial(textoMedidasMm(t.valor),t.h*0.716)));
+  return <svg role="img" aria-label={`Corte ${c.material}`} className="corte-dibujo puerta-corte-dibujo" style={zoom>1?{width:`${zoom*100}%`,maxHeight:'none'}:undefined} viewBox={ajustado?`-20 ${-techo-20} ${c.largo+40} ${techo+40}`:zoom>1?`0 ${-techo} ${c.largo} ${techo}`:`-100 ${-alto} ${derecha+200} ${alto+100}`}>
     <rect className="corte-rollo" width={c.largo} height={c.anchoRollo} y={-c.anchoRollo}/>
     {c.entidades.lineas.map((l,i)=><line key={i} x1={l.x1} y1={-l.y1} x2={l.x2} y2={-l.y2} data-capa={l.capa} className={l.capa==='ROTULADOR'?'corte-marca':l.capa==='CUTTER'?'puerta-cutter':'corte-linea'} vectorEffect="non-scaling-stroke"/>)}
     {c.entidades.arcos.map((a,i)=>{
