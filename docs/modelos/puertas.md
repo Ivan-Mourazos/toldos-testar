@@ -79,6 +79,8 @@ Las ventanas se pueden introducir una a una o por filas de columnas iguales. Tie
 
 **Doble saco, corrección definitiva de Iván, punto 15:** el saco normal de 80 queda incorporado al paño. Aparte se corta un **envoltorio** negro de (F − 6) × 37, con pestaña 12 × 14. Se centra al ancho de la puerta, se dobla a la mitad y se suelda 2 para envolver el saco normal. No hay una tira de 12 ni un saco de 120 añadido. Los ejemplos AR2601036, AR2600520 y AR2600236 tienen un empate de 12: suman H + 37,5, que ya incluye esa entrada.
 
+**Doble saco con las medidas del pedido (Iván, 19/11/2026, AR2605641, Portanova):** el pedido da el útil de los dos sacos (interior 120, exterior 170: «que pise esos 50 mm mayores»). El interior es el saco del pedido y se remata como un saco normal (120 → 13; el paño arranca rematado + 2,5 por debajo del bajo). El envoltorio exterior escala el de siempre, que era un exterior de 130 (80 + 50): rematado = útil/10 + 1, corte = 2 × rematado + 9, pestaña 12 × rematado, ancho F − 6. 130 → 37 y 12 × 14; 170 → 45 y 12 × 18. Si no se pone el exterior, se toma el interior + 50; si no es mayor que el interior, la web avisa.
+
 Las instrucciones son soldar solapa 2, coser velcro de 5 bravo al revés y de 5 suave al derecho, centrar el envoltorio y cerrar entradas 2 como máximo. Los refuerzos de 10 y 15 a 10 del borde, en lona de 2 mm, son notas de confección del plano: no se inventan longitudes ni se añaden piezas de stock al corte.
 
 El plano CAD de apilable usa `planoTaller.ts`, contrastado con AR2605036 y AR2604906:

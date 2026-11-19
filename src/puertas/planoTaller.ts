@@ -9,7 +9,7 @@ import { flechaEmpate } from './marcasEmpate.ts';
 import { fusionarCortesPuertas, SEPARACION_EXTRA_FILAS, TITULO_MATERIAL_MM } from './corte.ts';
 import { esClientePortanova } from './clientePortanova.ts';
 import { fichaDePuerta } from './clientes.ts';
-import { bajoDobleSaco, desnivelSuelo, pestanaDerecha, rotuloSaco, sacoApilable, sacoPuerta, sacoUtil } from './saco.ts';
+import { bajoDobleSaco, desnivelSuelo, envoltorioDobleSaco, pestanaDerecha, rotuloSaco, sacoApilable, sacoPuerta, sacoUtil, utilSacoExterior } from './saco.ts';
 import { corteEnPlano, entidadesDePieza, textosFuera } from './corteEnPlano.ts';
 import { bloqueFlechaEnrollable, dibujarAlzadoEnrollable, ENTRE_PUERTAS, hojasPuertas, lienzoAMetros, origenCorte, sumarLienzo, type LienzoEnrollable } from './planoEnrollable.ts';
 import { DISPOSICIONES_PORTANOVA, presentacionPortanova, type DisposicionPortanova } from './plantillaPortanova.ts';
@@ -117,8 +117,9 @@ function dibujarSaco(l: Lienzo, p: Puerta, letraPuerta = '') {
   const destino = l, desnivel = desnivelSuelo(p), derecha = pestanaDerecha(p);
   if (desnivel || derecha) l = vacio();
   const ple = p.modelo === 'PUERTAPLE', doble = ple && p.apilable.doble;
-  const w = doble ? p.frente - 6 : p.frente, h = doble ? 37 : sacoPuerta(p).corte;
-  const pestaña = ple ? doble ? 12 : 10 : 0, hp = ple ? doble ? 14 : sacoApilable(p).altoPestana : 0;
+  const env = envoltorioDobleSaco(p);
+  const w = doble ? env.ancho : p.frente, h = doble ? env.corte : sacoPuerta(p).corte;
+  const pestaña = ple ? doble ? env.pestana : 10 : 0, hp = ple ? doble ? env.altoPestana : sacoApilable(p).altoPestana : 0;
   const ys = -p.alto - (ple ? 49.0879644349 : 40);
   const margen = llevaEscuadrado(p) ? 1 : 0;
   contorno(l, 'referencias', pestaña ? [[0, ys], [w + margen, ys], [w + margen, ys - h], [0, ys - h], [0, ys - 2 - hp],
@@ -363,7 +364,7 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
   cota(l, 0, 0, 0, -H, -40, ple ? 'XERA 15' : 'XERAL');
   cota(l, F, -H, F, -H + (ple ? hSaco : hSaco + 2), F + 12, 'XERAL 5');
   // Con el suelo inclinado, paralelo al bajo de la puerta (Iván, 23/10/2026, AR2605035).
-  texto(l, ple && p.apilable.doble ? 'DOBLE SACO · SACO 80 INTEGRADO' : `SACO DE ${sacoUtil(p) ?? (ple ? 80 : 120)}`, F / 2, -H - 12 + desnivel / 2,
+  texto(l, ple && p.apilable.doble ? `DOBLE SACO · INTERIOR ${p.apilable.saco ?? 80} · EXTERIOR ${utilSacoExterior(p)}` : `SACO DE ${sacoUtil(p) ?? (ple ? 80 : 120)}`, F / 2, -H - 12 + desnivel / 2,
     Math.min(10, F / 25), Math.atan(desnivel / F) * 180 / Math.PI);
   if (ple) {
     // Del lado contrario a la pestaña: con la pestaña a la derecha, a la izquierda (Iván, 23/10/2026, AR2605035).

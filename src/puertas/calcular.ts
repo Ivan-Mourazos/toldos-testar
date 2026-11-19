@@ -12,7 +12,7 @@ import { fichaDePuerta } from './clientes.ts';
 import { panoContinuoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
 import { ensancharPieza, huecosSinEscuadrado, llevaEscuadrado } from './escuadrado.ts';
-import { bajoDobleSaco, desnivelSuelo, espejarPieza, inclinarSaco, pestanaDerecha, sacoApilable, sacoPuerta, sacoUtil } from './saco.ts';
+import { bajoDobleSaco, desnivelSuelo, envoltorioDobleSaco, espejarPieza, inclinarSaco, pestanaDerecha, sacoApilable, sacoPuerta, sacoUtil, utilSacoExterior } from './saco.ts';
 
 export const MODELOS_PUERTAS: Record<ModeloPuerta, string> = { PUERTAENR: 'Enrollable', PUERTAPLE: 'Apilable', PUERTAUTO: 'Autorreparable', SYSTEMDOCK: 'System Dock', SACOARENA: 'Saco confeccionado' };
 export const REGLAS_ENROLLABLE = { solapeEntrada:7.5, corteEntrada:8, unionNormal:2 };
@@ -309,7 +309,7 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
       aviso('SUELO_SACO', 'No queda sitio para el saco y su soldadura bajo la primera entrada: revisa los altos.');
     if (!positivo(a.pie) || !positivo(a.cabecera) || a.pasos.some(x => !positivo(x)) || Math.abs(alturas.at(-1)!+a.cabecera-p.alto) > 0.05) aviso('CADENA', `La cadena del dibujo (pie + pasos + cabecera) suma ${numero(alturas.at(-1)!+a.cabecera)} cm y el alto es ${numero(p.alto)} cm: tienen que coincidir.`);
     if (!a.saco) aviso('SACO', 'Falta el saco útil del pedido (en mm: 80, 110, 120…).');
-    if(a.doble && a.saco!==80) aviso('SACO_DOBLE','El doble saco lleva el saco normal de 80 integrado y un envoltorio aparte.');
+    if(a.doble && utilSacoExterior(p)<=(a.saco??80)) aviso('SACO_DOBLE','El saco exterior del doble saco tiene que ser mayor que el interior (el pedido suele pedir 50 mm más).');
     // Iván, 23/10/2026 (AR2605035): olvidar los recortes de las cintas es grave; si ninguna E.T. los lleva, se avisa.
     const cintas = (e: Entrada) => e.huecos.some(h => h.x > 1.01 && h.x + h.ancho < e.largo - 1.01);
     if(p.entradas.length && !p.entradas.some(cintas)) aviso('CINTAS','Ninguna entrada de tubo lleva recortes de cinta: mira el dibujo y ponlos en «Recortes de cintas».','aviso');
@@ -348,16 +348,16 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
       const m = p.margenMarcas;
       x.marcas.push([m,bajoEn(m)+2,ancho-m,bajoEn(ancho-m)+2]);
     } else marca(paneles[0].pieza,2); // Soldadura del saco a 2 del bajo, como en el plano (Iván, 18/11/2026, AR2605391).
-    const s = sacoApilable(p), h = a.doble ? 37 : s.corte;
-    const w = a.doble ? p.frente-6 : ancho;
-    const pestana = a.doble ? 12 : 10, altoPestana = a.doble ? 14 : s.altoPestana;
+    const s = sacoApilable(p), env = envoltorioDobleSaco(p), h = a.doble ? env.corte : s.corte;
+    const w = a.doble ? env.ancho : ancho;
+    const pestana = a.doble ? env.pestana : 10, altoPestana = a.doble ? env.altoPestana : s.altoPestana;
     // La pestaña a 2 cm del borde de arriba, como en el dibujo (Iván, 28/10/2026, AR2605035: en el corte salía a 2 del de
     // abajo, el saco volteado). El corte dibuja la pieza con la y hacia arriba.
     const desdePestana = h - 2 - altoPestana;
     const entero = sacoConPestana(w,h,pestana,altoPestana,desdePestana,a.doble?'Envoltorio del doble saco':'Saco');
     if(a.doble) {
       entero.textos.push({x:pestana+2,y:5,valor:'CENTRAR EL SACO · DOBLAR A LA MITAD · SOLDAR 2 CM'});
-      paneles[0].pieza.textos.push({x:ancho/2,y:15,valor:'SACO NORMAL INTEGRADO · VELCRO REVÉS 5 BRAVO / DERECHO 5 SUAVE'});
+      paneles[0].pieza.textos.push({x:ancho/2,y:15,valor:`SACO ${a.saco ?? 80} INTEGRADO · VELCRO REVÉS 5 BRAVO / DERECHO 5 SUAVE`});
     }
     if (/negro|9005|\bblack\b/i.test(p.color)) { entero.material=lona; entero.rollo=p.rollo; agregar(entero); }
     else {
@@ -381,7 +381,7 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
         inclinarSaco(mitades[1],pendiente,w/2-1);
       }
     }
-    if (a.doble) aviso('DOBLE_SACO', 'Doble saco: saco normal de 80 integrado en el paño y envoltorio aparte (F − 6) × 37, centrado al ancho, doblado a la mitad y soldado 2 cm. Pestaña 12 × 14; velcro de 5 bravo al revés y suave al derecho. Cerrar E.T. 2 cm máximo.', 'aviso');
+    if (a.doble) aviso('DOBLE_SACO', `Doble saco: saco interior de ${a.saco ?? 80} integrado en el paño y envoltorio de ${env.util} aparte (F − 6) × ${numero(env.corte)}, centrado al ancho, doblado a la mitad y soldado 2 cm. Pestaña 12 × ${numero(env.altoPestana)}; velcro de 5 bravo al revés y suave al derecho. Cerrar E.T. 2 cm máximo.`, 'aviso');
   } else {
     const empates = p.autorreparable.empates;
     // El cuerpo arranca en el rematado del saco (12 con el de 120 antes del 23/10/2026); los empates, desde ahí.

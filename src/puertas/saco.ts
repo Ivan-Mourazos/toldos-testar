@@ -40,6 +40,16 @@ export const sacoPuerta = (p: Puerta) => medidasSaco(sacoUtil(p) ?? (p.modelo ==
  * (antes −13,5 con el rematado de 11; con el de 9, −11,5). */
 export const bajoDobleSaco = (p: Puerta) => -(sacoApilable(p).rematado + 2.5);
 
+/** Útil del saco exterior del doble saco en mm; sin poner, el interior + 50, como pide Portanova. */
+export const utilSacoExterior = (p: Puerta) => p.apilable.sacoExterior ?? (p.apilable.saco ?? 80) + 50;
+
+/** Envoltorio del doble saco (Iván, 19/11/2026, AR2605641): el de 37 × pestaña 12 × 14 de siempre es un exterior de
+ * 130 (80 + 50). Rematado = útil/10 + 1, corte 2 × rematado + 9 y pestaña 12 × rematado; ancho F − 6. */
+export function envoltorioDobleSaco(p: Puerta) {
+  const rematado = utilSacoExterior(p) / 10 + 1;
+  return { util: utilSacoExterior(p), ancho: p.frente - 6, corte: 2 * rematado + 9, pestana: 12, altoPestana: rematado };
+}
+
 /** Pestaña del saco a la derecha mirando por el revés, como la pinte el pedido (Iván, 23/10/2026). */
 export const pestanaDerecha = (p: Puerta) => p.modelo === 'PUERTAPLE' && p.apilable.ladoPestana === 'derecha';
 

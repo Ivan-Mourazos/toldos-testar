@@ -115,6 +115,31 @@ describe('Comprobaciones y reglas confirmadas', () => {
     // La pestaña 12 × 14 a 2 cm del borde de arriba, como en el dibujo (Iván, 28/10/2026, AR2605035).
     expect(r.alternativasSaco!.entero[0].contorno.slice(4)).toEqual([[12,35],[0,35],[0,21],[12,21]]);
   });
+  // Iván, 19/11/2026 (AR2605641, Portanova): doble saco con el interior y el exterior del pedido (120 y 170). El 37 de
+  // siempre es un exterior de 130 (80 + 50): rematado = útil/10 + 1, corte 2 × rematado + 9 y pestaña 12 × rematado.
+  it.each([
+    [120,170,45,18],
+    [120,undefined,45,18], // el exterior, sin poner, es el interior + 50
+    [80,130,37,14],
+  ] as const)('doble saco libre: interior %s y exterior %s → envoltorio %s con pestaña 12 × %s', (interior,exterior,alto,altoPestana) => {
+    const p=base('PUERTAPLE',286,463);
+    p.apilable={...p.apilable,pie:38,pasos:[50,50,50,50,50,50,50],cabecera:75,saco:interior,doble:true,empates:null,...(exterior?{sacoExterior:exterior}:{})};
+    p.entradas=alturasTubos(p).map(altura=>({altura,diametro:30,largo:p.frente,alto:12,huecos:[]}));
+    const r=calcularPuerta(p);
+    const envoltorio=r.alternativasSaco!.entero[0];
+    expect(envoltorio).toMatchObject({ancho:286-6+12,alto});
+    expect(envoltorio.contorno.slice(4)).toEqual([[12,alto-2],[0,alto-2],[0,alto-2-altoPestana],[12,alto-2-altoPestana]]);
+    expect(r.avisos.map(a=>a.codigo)).not.toContain('SACO_DOBLE');
+    // El interior sale del paño: arranca su rematado + 2,5 por debajo del bajo.
+    const conOchenta=structuredClone(p); conOchenta.apilable.saco=80; delete conOchenta.apilable.sacoExterior;
+    const alto0=(q:typeof p)=>calcularPuerta(q).piezas.filter(x=>x.clase==='pano').reduce((s,x)=>s+x.alto,0);
+    expect(alto0(p)-alto0(conOchenta)).toBeCloseTo((interior-80)/10);
+  });
+  it('doble saco: avisa si el exterior no es mayor que el interior', () => {
+    const p=base('PUERTAPLE',286,463);
+    p.apilable={...p.apilable,saco:120,sacoExterior:120,doble:true};
+    expect(calcularPuerta(p).avisos.map(a=>a.codigo)).toContain('SACO_DOBLE');
+  });
   it.each([['AR2603284',251,297,106],['AR2603277',358,430,239]] as const)('bajo %s: los 125,75 antiguos son un error conocido, confirmado por Iván', (_pedido,F,H,T)=>{
     const p=base('PUERTAENR',F,H); p.enrollable={T,D:60,margen:6,empates:[]};
     const inferior=calcularPuerta(p).piezas.find(x=>x.nombre==='Paño inferior')!;

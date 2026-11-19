@@ -10,7 +10,7 @@ import { REGLAS_SYSTEM_DOCK } from '../../puertas/systemDock.ts';
 import { ConfigurarSacoArena } from './SacoArena';
 import { notaPlanoEnrollable, panoContinuoEnrollable } from '../../puertas/ventanalesEnrollable.ts';
 import { esPedidoMixto, productoDeElementos } from '../../puertas/producto.ts';
-import { medidasSaco, sacoPuerta, sacoUtil } from '../../puertas/saco.ts';
+import { bajoDobleSaco, envoltorioDobleSaco, medidasSaco, sacoApilable, sacoPuerta, sacoUtil } from '../../puertas/saco.ts';
 import type { Entrada, Hueco, ModeloPuerta, Puerta, Ventana } from '../../puertas/tipos.ts';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { OrderActions } from '../components/OrderActions';
@@ -199,12 +199,12 @@ function Configurar({p,cambiar,corte,derecha='alzado',letra='A',vistas}:{p:Puert
       {ver('saco')&&<>
         {!sd&&<fieldset><legend>Saco</legend>
         {p.modelo==='PUERTAENR'&&<><div className="puerta-campos"><SacoUtil valor={sacoUtil(p)} cambiar={v=>set('enrollable',{...p.enrollable,saco:v})}/></div><AyudaSaco p={p}/><label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.enrollable.sacoPartido)} onChange={e=>set('enrollable',{...p.enrollable,sacoPartido:e.target.checked})}/>Saco en dos piezas con unión de 20 mm</label></>}
-        {p.modelo==='PUERTAPLE'&&<div className="puerta-campos">          <fieldset className="puerta-control" disabled={p.apilable.doble}>
-            <SacoUtil valor={p.apilable.saco} cambiar={v=>cadena({saco:v})}/>
-          </fieldset>
+        {p.modelo==='PUERTAPLE'&&<div className="puerta-campos">
+          <SacoUtil titulo={p.apilable.doble?'Saco interior útil (mm)':undefined} valor={p.apilable.saco} cambiar={v=>cadena({saco:v})}/>
+          {p.apilable.doble&&<SacoUtil titulo="Saco exterior útil (mm)" habituales={[130,160,170]} valor={p.apilable.sacoExterior??null} cambiar={v=>cadena({sacoExterior:v})}/>}
           <SegmentedField label="Pestaña del saco por el revés" value={p.apilable.ladoPestana==='derecha'?'Derecha':'Izquierda'} options={['Izquierda','Derecha']} onChange={v=>cadena({ladoPestana:v==='Derecha'?'derecha':'izquierda'})}/>
-          <label className="puerta-casilla"><input type="checkbox" checked={p.apilable.doble} onChange={e=>cadena({doble:e.target.checked,...(e.target.checked?{saco:80}:{})})}/>Doble saco</label>
-          {p.apilable.doble?<p className="puerta-ayuda">El saco de 80 integrado queda rematado de 90 mm: el paño empieza 115 mm por debajo del bajo.</p>:<AyudaSaco p={p}/>}</div>}
+          <label className="puerta-casilla"><input type="checkbox" checked={p.apilable.doble} onChange={e=>cadena({doble:e.target.checked})}/>Doble saco</label>
+          {p.apilable.doble?<AyudaDobleSaco p={p}/>:<AyudaSaco p={p}/>}</div>}
         {p.modelo==='PUERTAUTO'&&<><div className="puerta-campos"><SacoUtil valor={sacoUtil(p)} cambiar={v=>set('autorreparable',{...p.autorreparable,saco:v})}/></div><AyudaSaco p={p}/></>}
         <label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.sacoDiagonalesAmarillas)} onChange={e=>set('sacoDiagonalesAmarillas',e.target.checked)}/>Saco con diagonales amarillas (impresión digital)</label>
         </fieldset>}
@@ -297,13 +297,19 @@ function EntradasApilable({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
     </details>
   </fieldset>;
 }
-function SacoUtil({valor,cambiar}:{valor:number|null;cambiar:(n:number|null)=>void}) {
+function SacoUtil({valor,cambiar,titulo='Saco útil del pedido (mm)',habituales=[80,110,120]}:{valor:number|null;cambiar:(n:number|null)=>void;titulo?:string;habituales?:number[]}) {
   return <div className="puerta-saco-util">
-    <Numero unidad="mm" titulo="Saco útil del pedido (mm)" valor={valor} cambiar={cambiar}/>
-    <div className="puerta-saco-rapido" role="group" aria-label="Sacos habituales">
-      {[80,110,120].map(mm=><button type="button" key={mm} className={`chip-3d ${valor===mm?'glass-chip-activo':''}`} aria-pressed={valor===mm} onClick={()=>cambiar(mm)}>{mm}</button>)}
+    <Numero unidad="mm" titulo={titulo} valor={valor} cambiar={cambiar}/>
+    <div className="puerta-saco-rapido" role="group" aria-label={`${titulo}: medidas habituales`}>
+      {habituales.map(mm=><button type="button" key={mm} className={`chip-3d ${valor===mm?'glass-chip-activo':''}`} aria-pressed={valor===mm} onClick={()=>cambiar(mm)}>{mm}</button>)}
     </div>
   </div>;
+}
+/** Doble saco: el interior sale del paño y el exterior es un envoltorio aparte (Iván, 19/11/2026, AR2605641). */
+function AyudaDobleSaco({p}:{p:Puerta}) {
+  const mm=(cm:number)=>(cm*10).toLocaleString('es-ES',{maximumFractionDigits:1});
+  const interior=sacoApilable(p), env=envoltorioDobleSaco(p);
+  return <p className="puerta-ayuda">El saco interior de {p.apilable.saco??80} queda rematado de {mm(interior.rematado)} mm: el paño empieza {mm(-bajoDobleSaco(p))} mm por debajo del bajo. Envoltorio exterior de {env.util}{p.apilable.sacoExterior==null?' (interior + 50)':''}: (F − 60) × {mm(env.corte)} mm, pestaña 120 × {mm(env.altoPestana)} mm.</p>;
 }
 /** Las E.T. de la enrollable con los tramos de la hoja (Iván, 26/10/2026): la web hace las sumas. */
 function TramosET({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {

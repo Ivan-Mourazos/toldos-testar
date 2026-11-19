@@ -4,7 +4,7 @@ import { envoltorioTgm } from './tgm.ts';
 import { alzadoAraujo } from './alzadoAraujo.ts';
 import { alzadoSantaPau } from './alzadoSantaPau.ts';
 import { colocarTextosPuerta } from './textosPlano.ts';
-import { desnivelSuelo, pestanaDerecha, rotuloSaco, sacoPuerta } from './saco.ts';
+import { desnivelSuelo, envoltorioDobleSaco, pestanaDerecha, rotuloSaco, sacoPuerta } from './saco.ts';
 import { medidaSystemDock, REGLAS_SYSTEM_DOCK } from './systemDock.ts';
 import { NOTA_CACHOS_CRISTAL, notaPlanoEnrollable, panoContinuoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
@@ -165,9 +165,9 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
 
   // Pieza desplegada del saco debajo del alzado
   const yDesplegado = Math.max(H,altoDerecho) + 48;
-  const hCorteSaco = ple && p.apilable.doble ? 37 : saco.corte;
-  const pestanaSaco = enr ? 6.5 : auto ? 0 : p.apilable.doble ? 12 : 10;
-  const altoPestana = ple && p.apilable.doble ? 14 : saco.altoPestana;
+  const env = envoltorioDobleSaco(p), hCorteSaco = ple && p.apilable.doble ? env.corte : saco.corte;
+  const pestanaSaco = enr ? 6.5 : auto ? 0 : p.apilable.doble ? env.pestana : 10;
+  const altoPestana = ple && p.apilable.doble ? env.altoPestana : saco.altoPestana;
   const wSaco = ple && p.apilable.doble ? Math.max(20, F - 6) : F;
 
   const textosTaller = colocarTextosPuerta({ ...p, frente: F, alto: H }, resultado)

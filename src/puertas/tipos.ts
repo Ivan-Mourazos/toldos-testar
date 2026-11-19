@@ -115,6 +115,8 @@ export interface Puerta {
   apilable: { pie: number; pasos: number[]; cabecera: number; bolsillo: number;
     /** Saco útil del pedido en mm (80, 110, 120…); se remata 1 cm más grande. */
     saco: number | null; doble: boolean; empates: number[] | null;
+    /** Doble saco: útil del saco exterior (envoltorio) en mm; sin poner, el interior + 50. */
+    sacoExterior?: number | null;
     /** Lado de la pestaña del saco mirando por el revés, como el pedido; sin poner, izquierda. */
     ladoPestana?: 'izquierda' | 'derecha';
     /** Altos terminados mirando por el revés, como el alzado y la hoja de Portanova. La cadena común toma el bajo izquierdo como origen. */

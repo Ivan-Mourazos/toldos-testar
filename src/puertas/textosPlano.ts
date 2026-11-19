@@ -1,7 +1,7 @@
 import { alturasTubos, calcularPuerta } from './calcular.ts';
 import { anchoArial } from '../domain/corteLona/texto.js';
 import type { Puerta, ResultadoPuerta } from './tipos.ts';
-import { sacoPuerta, sacoUtil } from './saco.ts';
+import { sacoPuerta, sacoUtil, utilSacoExterior } from './saco.ts';
 import { fichaDePuerta } from './clientes.ts';
 import { rotuloCierreTgm } from './tgm.ts';
 
@@ -196,7 +196,7 @@ export function plantillaTextosPuerta(p: Puerta, resultado: ResultadoPuerta = ca
     });
     add('refuerzo-10', 'REFUERZO DE 10CM A 10CM DEL BORDE SOLDADO LONA DE 2MM', F * 0.22, H - 26, 5);
     add('refuerzo-15', 'REFUERZO DE 15CM A 10CM DEL BORDE SOLDADO LONA DE 2MM', F * 0.78, H - 26, 5);
-    add('saco', p.apilable.doble ? 'DOBLE SACO · SACO 80 INTEGRADO' : `SACO DE ${p.apilable.saco ?? 80}`, F / 2, H + 10, 10,
+    add('saco', p.apilable.doble ? `DOBLE SACO · INTERIOR ${p.apilable.saco ?? 80} · EXTERIOR ${utilSacoExterior(p)}` : `SACO DE ${p.apilable.saco ?? 80}`, F / 2, H + 10, 10,
       { x: 0, y: H + 1, ancho: F, alto: 18 });
     add('cerrar-et', 'CERRAR E.T\n2 CM MÁXIMO', F + 75, H + 14, 5,
       { x: F + 20, y: H + 1, ancho: 110, alto: 25 });
