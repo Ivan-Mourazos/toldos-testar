@@ -458,7 +458,11 @@ Respuestas de Iván. «Pendiente» quiere decir que la web todavía no lo aplica
   aumento que se dobla, se suelda y deja el tubo dentro con la medida terminada.
 - **Q-TGM05 · Aumento del cierre de abajo (contestada).** Iván, 18/11: el aumento de abajo son 14 cm y la marca
   va a 23 cm del borde del corte (9 cm por encima del bajo terminado del cierre).
-- **Q-TGM06 · Tubo con saco envolvente (pendiente de taller).** Se supone que el borde inferior de la soldadura toca
-  la corona del tubo. Para Ø42, el eje está a terminado − 2,1 cm del doblez y el bajo del cierre a terminado − 4,2.
-  Confirmar esa referencia y si el envoltorio entra en el rollo. El simulador llega al eje y excluye el envoltorio.
+- **Q-TGM06 · Soldadura compartida del último tubo.** Iván confirma que los dos bordes del saco se sueldan
+  en la misma franja que el cierre. La medida habitual es 50 mm. El terminado se mide desde la raya hasta el doblez.
+  El simulador llega al eje del tubo y excluye el envoltorio.
+  Supuestos por confirmar en taller: al variar la soldadura, el aumento y la distancia del corte a la raya
+  varían en la misma cantidad. Si la ficha tiene ajustes manuales, ambos son referencias para 50 mm.
+  El tubo apoya en el bajo de la lona, con el eje un radio por encima. Se reservan 5 mm entre el tubo y el doblez
+  y el diámetro entero debe caber bajo la raya. Con la ficha habitual el saco terminado mínimo es 95 mm.
   En laterales, el paño lleva solo la bastilla indicada incluso con frente mayor de 6 m. Confirmar este criterio.

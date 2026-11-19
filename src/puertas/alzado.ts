@@ -279,12 +279,11 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
       const costura = H - envoltorio.terminado;
       rect('puerta-saco', 3, costura - envoltorio.soldadura, F - 6, envoltorio.terminado + envoltorio.soldadura);
       linea('puerta-tubo', 0, H - envoltorio.eje, F, H - envoltorio.eje);
-      linea('puerta-rotulador', p.margenMarcas, costura - envoltorio.soldadura, F - p.margenMarcas, costura - envoltorio.soldadura);
       for (const [y1, y2, x] of [[costura, H, -16], [costura - envoltorio.soldadura, costura, -48]]) {
         cota({ x1: 3, y1, x2: 3, y2, linea: x, valor: y2 - y1, estilo: 'XERAL 5', marcas: 2,
           texto: { x: x - 7, y: (y1 + y2) / 2 + 2, ancla: 'end' } });
       }
-      nota('SACO ENVOLVENTE', F / 2, H + 17, 5);
+      nota('SACO ENVOLVENTE', F / 2, Math.max(H, pie + cierre) + 12, 5);
     }
     if (p.enrollable.marcaCierre !== undefined) {
       const y = pie + cierre - p.enrollable.marcaCierre;

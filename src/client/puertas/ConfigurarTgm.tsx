@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { calcularPuerta, calcularPuertaDerivada } from '../../puertas/calcular.ts';
 import { fichaPorId } from '../../puertas/clientes.ts';
-import { enrolleTgm, puertaTgmDerivada } from '../../puertas/tgm.ts';
+import { enrolleTgm, puertaTgmDerivada, SOLDADURA_BASE_TGM } from '../../puertas/tgm.ts';
 import type { Puerta } from '../../puertas/tipos.ts';
 import { SelectField } from '../components/SelectField';
 import { SegmentedField } from '../components/SegmentedField';
@@ -76,10 +76,8 @@ export function ConfigurarTgm({ p, cambiar, corte, derecha, letra, vistas }: {
             const abajo = v === 'Saco' ? 'saco' : v === 'Tubo' ? 'tubo' : 'envolvente';
             if (abajo !== t.abajo) medidas({ abajo }, { enrollable: { ...p.enrollable, sinSaco: abajo !== 'saco' } });
           }} />
-          {t.abajo === 'envolvente' && <>
-            <Numero titulo="Saco terminado (mm)" valor={t.terminado ?? null} cambiar={terminado => medidas({ terminado })} />
-            <Numero titulo="Soldadura (mm)" valor={t.soldadura === undefined ? 2 : t.soldadura} cambiar={soldadura => medidas({ soldadura })} />
-          </>}
+          {t.abajo === 'envolvente' && <Numero titulo="Saco terminado (mm)" valor={t.terminado ?? null} cambiar={terminado => medidas({ terminado })} />}
+          {t.abajo !== 'saco' && <Numero titulo="Soldadura del último tubo (mm)" valor={t.soldadura === undefined ? SOLDADURA_BASE_TGM : t.soldadura} cambiar={soldadura => medidas({ soldadura })} />}
           {t.abajo === 'saco' && <Numero titulo="Saco útil (mm)" unidad="mm" valor={p.enrollable.saco ?? null}
             cambiar={saco => datos({ enrollable: { ...p.enrollable, saco } })} />}
           {texto('Material de lona', 'material')}{texto('Color de puerta', 'color')}

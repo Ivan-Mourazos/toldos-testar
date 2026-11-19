@@ -3,6 +3,7 @@ import { anchoArial } from '../domain/corteLona/texto.js';
 import type { Puerta, ResultadoPuerta } from './tipos.ts';
 import { sacoPuerta, sacoUtil } from './saco.ts';
 import { fichaDePuerta } from './clientes.ts';
+import { rotuloCierreTgm } from './tgm.ts';
 
 export interface CajaTexto {
   x: number;
@@ -169,7 +170,7 @@ export function plantillaTextosPuerta(p: Puerta, resultado: ResultadoPuerta = ca
     lateral('pisar-et', 'DE ESTE LADO PISAR LAS E.T. 1 CM', F + 105, H / 2 + 20, 10);
     add('soldar-saco', 'SOLDAR SACO NEGRO 2 CM MÁXIMO', F / 2, H - 6.5, 7,
       { x: 3, y: H - 12, ancho: F - 6, alto: 11 });
-    add('cerrar-et', 'CERRAR E.T\n2 CM MÁXIMO', F + 75, H + 6, 5,
+    add('cerrar-et', rotuloCierreTgm(p)?.join('\n') ?? 'CERRAR E.T\n2 CM MÁXIMO', F + 75, H + 6, 5,
       { x: F + 20, y: H - 7, ancho: 110, alto: 25 });
   } else if (p.modelo === 'PUERTAPLE') {
     const ys = alturasTubos(p);

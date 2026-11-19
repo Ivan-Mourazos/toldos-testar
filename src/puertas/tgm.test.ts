@@ -100,23 +100,38 @@ const puertaTgm = (cambios: Partial<NonNullable<Puerta['tgm']>> = {}): Puerta =>
 };
 
 describe('cálculo de la puerta TGM', () => {
+  it.each([[5, 14, 23], [7, 16, 25]])('ajusta el cierre del tubo a una soldadura de %s cm', (soldadura, cierreBajo, marcaCierre) => {
+    const p = puertaTgm({ abajo: 'tubo', soldadura });
+    expect(puertaTgmDerivada(p, enrolleTgm(p)!).enrollable).toMatchObject({ cierreBajo, marcaCierre });
+  });
   it('envuelve el tubo del cierre y conserva el frente de las E.T. entre bastillas', () => {
-    const p = puertaTgm({ abajo: 'envolvente', altoHueco: 320, laterales: 'bastilla', bastilla: 5, terminado: 10, soldadura: 2 });
+    const p = puertaTgm({ abajo: 'envolvente', altoHueco: 320, laterales: 'bastilla', bastilla: 5, terminado: 10 });
     p.rollo = 320;
     const r = calcularPuerta(p);
     expect(r.avisos).toEqual([]);
-    expect(enrolleTgm(p)?.largo).toBe(3421);
-    expect(r.piezas.filter(x => x.clase === 'pano')).toMatchObject([{ ancho: 310, alto: 361.7 }]);
-    expect(r.piezas[0].marcas).toContainEqual([6.5, 20.2, 303.5, 20.2]);
+    expect(enrolleTgm(p)?.largo).toBe(3469);
+    expect(r.piezas.filter(x => x.clase === 'pano')).toMatchObject([{ ancho: 310, alto: 366.5 }]);
+    const rayasDelCierre = r.piezas[0].marcas.filter(([x1, y1, x2, y2]) => y1 === y2 && y1 < 35 && x2 - x1 > 150);
+    expect(rayasDelCierre).toEqual([[6.5, 23, 303.5, 23]]);
+    const { lienzo } = dibujarAlzadoEnrollable(p, 'A');
+    expect(lienzo.lineas.filter(l => l.capa === 'ROTULADOR' && l.y1 === l.y2 && l.y1 < -330 && l.x2 - l.x1 > 150))
+      .toMatchObject([{ y1: -340 }]);
+    expect(lienzo.cotas).toContainEqual(expect.objectContaining({ y1: -340, y2: -335, valor: 5 }));
     expect(r.piezas.filter(x => x.clase === 'entrada')).toMatchObject([{ ancho: 300, huecos: [] }, { ancho: 300, huecos: [] }]);
-    expect(r.alternativasSaco).toMatchObject({ entero: [{ ancho: 306, alto: 24 }], partido: [{ ancho: 160, alto: 24 }, { ancho: 148, alto: 24 }] });
+    expect(r.alternativasSaco).toMatchObject({ entero: [{ ancho: 306, alto: 30 }], partido: [{ ancho: 160, alto: 30 }, { ancho: 148, alto: 30 }] });
     expect(leerPedidoPuertas(pedidoDe('ENV', p)).elementos[0].input).toEqual(p);
+  });
+  it('respeta la altura de raya de una ficha personalizada al cambiar la soldadura', () => {
+    const p = puertaTgm({ abajo: 'envolvente', terminado: 12, cierreBajo: 15, marcaCierre: 25, soldadura: 7 });
+    const e = enrolleTgm(p)!;
+    expect(puertaTgmDerivada(p, e).enrollable).toMatchObject({ cierreBajo: 17, marcaCierre: 27 });
+    expect(e.largo).toBe(4259);
   });
   it('reparte por el ancho con bastillas y embebe la primera E.T. en el paño', () => {
     const p = puertaTgm({ abajo: 'envolvente', altoHueco: 320, laterales: 'bastilla', bastilla: 5, terminado: 10 });
     const r = calcularPuerta(p);
     expect(r.avisos).toEqual([]);
-    expect(r.piezas.map(x => [x.ancho, x.alto])).toEqual([[310, 255.35], [310, 120.85], [300, 14.5]]);
+    expect(r.piezas.map(x => [x.ancho, x.alto])).toEqual([[310, 257.95], [310, 123.05], [300, 14.5]]);
     for (const x of r.piezas.filter(x => x.clase === 'pano')) {
       expect(x.huecos).toEqual([]);
       for (const borde of [5, 305]) expect(x.marcas).toContainEqual([borde, 0, borde, x.alto]);
@@ -134,9 +149,9 @@ describe('cálculo de la puerta TGM', () => {
     expect(r.piezas.filter(x => x.clase === 'entrada').map(x => x.ancho)).toEqual([650, 650, 650]);
   });
   it('pide el terminado del envoltorio y rechaza una soldadura vacía', () => {
-    for (const cambios of [{ terminado: null }, { terminado: 10, soldadura: null }]) {
+    for (const cambios of [{ terminado: null }, { terminado: 9.4 }, { terminado: 10, soldadura: null }]) {
       const r = calcularPuerta(puertaTgm({ abajo: 'envolvente', ...cambios }));
-      expect(r.avisos).toContainEqual(expect.objectContaining({ codigo: 'TGM_ENVOLTORIO', nivel: 'error' }));
+      expect(r.avisos).toContainEqual(expect.objectContaining({ codigo: cambios.soldadura === null ? 'TGM_SOLDADURA' : 'TGM_ENVOLTORIO', nivel: 'error' }));
       expect(r.piezas).toEqual([]);
     }
   });

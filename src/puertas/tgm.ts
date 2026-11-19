@@ -17,14 +17,24 @@ export interface EnrolleTgm {
 const decima = (x: number) => Math.round(x * 10) / 10;
 const positivo = (x: number) => Number.isFinite(x) && x > 0;
 
-/** Cotas en cm desde el doblez terminado. La costura empieza sobre la corona del tubo. */
+export const SOLDADURA_BASE_TGM = 5; // cm, referencia de cierreBajo y marcaCierre en la ficha
+
+export function rotuloCierreTgm(p: Puerta) {
+  if (!p.tgm || p.tgm.abajo === 'saco') return null;
+  const ancho = p.tgm.soldadura === undefined ? SOLDADURA_BASE_TGM : p.tgm.soldadura;
+  return [p.tgm.abajo === 'envolvente' ? 'SOLDADURA COMPARTIDA' : 'SOLDADURA DEL CIERRE',
+    ancho === null ? 'SIN MEDIDA' : `${(ancho * 10).toLocaleString('es-ES')} mm`] as const;
+}
+
+/** Cotas en cm desde el doblez del saco hasta la raya compartida con el cierre. */
 export function envoltorioTgm(p: Puerta) {
   const t = p.tgm;
   if (t?.abajo !== 'envolvente') return null;
   const terminado = t.terminado ?? 0;
-  const soldadura = t.soldadura === undefined ? 2 : t.soldadura ?? 0;
-  return { terminado, soldadura, alto: 2 * (terminado + soldadura), bajoLona: terminado - t.diametroTubo / 10,
-    eje: terminado - t.diametroTubo / 20 };
+  const soldadura = t.soldadura === undefined ? SOLDADURA_BASE_TGM : t.soldadura ?? 0;
+  const bajoLona = terminado - (t.marcaCierre - t.cierreBajo);
+  return { terminado, soldadura, alto: 2 * (terminado + soldadura), bajoLona,
+    eje: bajoLona + t.diametroTubo / 20 };
 }
 
 export function enrolleTgm(p: Puerta): EnrolleTgm | null {
@@ -49,7 +59,8 @@ export function enrolleTgm(p: Puerta): EnrolleTgm | null {
     ? [...t.tubosManual.slice(0, -1), largo]
     : t.tubosManual;
   const colocacion = colocarTubos(cfg, ajustes, { largo, nTubos: t.nTubos, conSaco, manual });
-  return { cfg, ajustes, largo, conSaco, altoLona, anchoEt: t.anchoEt, cierreBajo: t.cierreBajo, colocacion };
+  const cierreBajo = t.cierreBajo + ((t.soldadura ?? SOLDADURA_BASE_TGM) - SOLDADURA_BASE_TGM);
+  return { cfg, ajustes, largo, conSaco, altoLona, anchoEt: t.anchoEt, cierreBajo, colocacion };
 }
 
 /** Configuración de la enrollable ciega con los ejes que ha colocado el simulador. */
@@ -68,8 +79,8 @@ export function puertaTgmDerivada(p: Puerta, e: EnrolleTgm): Puerta {
       ventanasPequenas: false,
       sinSaco: !e.conSaco,
       anchoEt,
-      cierreBajo: e.conSaco ? undefined : cierreBajo,
-      marcaCierre: e.conSaco ? undefined : marcaCierre,
+      cierreBajo: e.conSaco ? undefined : e.cierreBajo,
+      marcaCierre: e.conSaco ? undefined : marcaCierre + (e.cierreBajo - cierreBajo),
     },
     entradas: marcas.map(marca => ({
       altura: decima(e.altoLona - marca / 10), diametro: diametroTubo, largo: p.frente, alto: anchoEt,

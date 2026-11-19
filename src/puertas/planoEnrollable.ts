@@ -1,7 +1,7 @@
 import { separacionCorte } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { calcularPuerta, calcularPuertaDerivada, solapeEntradaEnrollable } from './calcular.ts';
-import { enrolleTgm, envoltorioTgm, puertaTgmDerivada } from './tgm.ts';
+import { enrolleTgm, envoltorioTgm, puertaTgmDerivada, rotuloCierreTgm } from './tgm.ts';
 import { rotuloSaco, sacoPuerta, sacoUtil } from './saco.ts';
 import { anclarCotas } from './cotasPuertas.ts';
 import { notaPlanoEnrollable, panoContinuoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
@@ -187,20 +187,20 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
   if (envoltorio && envoltorio.terminado > 0) {
     const y = -H + envoltorio.terminado + envoltorio.soldadura;
     rectangulo(l, 'referencias', 3, -H, F - 6, y + H);
-    linea(l, 'ROTULADOR', p.margenMarcas, y, F - p.margenMarcas, y);
     linea(l, 'ejes', 0, -H + envoltorio.eje, F, -H + envoltorio.eje);
     cota(l, 3, -H, 3, -H + envoltorio.terminado, -16, 'XERAL 5');
     cota(l, 3, -H + envoltorio.terminado, 3, y, -32, 'XERAL 5');
-    texto(l, 'SACO ENVOLVENTE', F / 2, -H - 16, 5, { centrado: true });
+    texto(l, 'SACO ENVOLVENTE', F / 2, Math.min(-H, corteBajo) - 12, 5, { centrado: true });
   }
   const rotuloLateral = bastilla > 0 ? `BASTILLA DE ${bastilla.toLocaleString('es-ES')} CM` : 'AL CORTE';
   texto(l, rotuloLateral, -bastilla - 6.04, -techo / 2, 7, { giro: 90, centrado: true });
   texto(l, rotuloLateral, F + bastilla + 5.46, -techo / 2, 7, { giro: 90, centrado: true });
   texto(l, 'DE ESTE LADO PISAR LAS E.T. 1 CM', F + 58, -H / 2, 10, { giro: 90, centrado: true });
-  linea(l, 'texto', F + 12.17, -H - 5.32, F - .79, -H + 7.90);
+  const rotulo = rotuloCierreTgm(p);
+  linea(l, 'texto', F + 12.17, -H - 5.32, F - .79, rotulo && marcaCierre !== undefined ? corteBajo + marcaCierre : -H + 7.90);
   // La nota de la raya, que faltaba (Iván, 24/10/2026, AR2605220), como en las apilables.
-  texto(l, 'CERRAR E.T', F + 38, -H - 11, 7, { centrado: true });
-  texto(l, '2 CM MÁXIMO', F + 38, -H - 21, 7, { centrado: true });
+  texto(l, rotulo?.[0] ?? 'CERRAR E.T', F + 38, -H - 11, rotulo ? 5 : 7, { centrado: true });
+  texto(l, rotulo?.[1] ?? '2 CM MÁXIMO', F + 38, -H - 21, 7, { centrado: true });
   cota(l, 0, 0, F, 0, 23.01, 'XERA 15');
   const hitos = [0, ...bandas, ...(envoltorio && envoltorio.eje > 0 ? [H - envoltorio.eje] : []), H].sort((a, b) => a - b);
   hitos.slice(1).forEach((h, i) => cota(l, F, -hitos[i], F, -h, F + 21.93));

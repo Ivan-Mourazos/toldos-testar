@@ -88,10 +88,13 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
   const bastilla = p.tgm?.laterales === 'bastilla' ? p.tgm.bastilla ?? 0 : 0;
   const envoltorio = envoltorioTgm(p);
   if (p.tgm?.laterales === 'bastilla' && !positivo(bastilla)) aviso('TGM_BASTILLA', 'Introduce la bastilla por lado en el pedido.');
-  if (envoltorio && (!positivo(envoltorio.terminado) || !positivo(envoltorio.soldadura) || envoltorio.bajoLona < 0 ||
+  if (p.tgm && p.tgm.abajo !== 'saco' && p.tgm.soldadura !== undefined && !positivo(p.tgm.soldadura ?? 0))
+    aviso('TGM_SOLDADURA', 'Introduce una soldadura del último tubo mayor que cero.');
+  if (envoltorio && (envoltorio.bajoLona < 0.5 || !positivo(envoltorio.terminado) ||
+      envoltorio.bajoLona + p.tgm!.diametroTubo / 10 > envoltorio.terminado ||
       envoltorio.alto < 16 || p.frente <= 6 || envoltorio.terminado + envoltorio.soldadura >= p.alto))
-    aviso('TGM_ENVOLTORIO', 'Revisa el saco terminado y la soldadura. Deben caber el tubo, la pestaña de 14 cm a 2 cm del borde y la soldadura sobre la lona.');
-  if (avisos.some(a => a.codigo === 'TGM_BASTILLA' || a.codigo === 'TGM_ENVOLTORIO')) return r;
+    aviso('TGM_ENVOLTORIO', 'Revisa el saco terminado. El tubo debe caber bajo la raya del cierre con al menos 5 mm libres sobre el doblez. Comprueba también el espacio para la pestaña y la soldadura.');
+  if (avisos.some(a => ['TGM_BASTILLA', 'TGM_ENVOLTORIO', 'TGM_SOLDADURA'].includes(a.codigo))) return r;
   const escuadrado = llevaEscuadrado(p);
   const ancho = p.frente + (!escuadrado && p.modelo === 'PUERTAPLE' && p.frente > 600 ? 2 : 0);
   const lateral = (ancho - p.frente) / 2;
@@ -209,7 +212,6 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
       for(const panel of grupo) {panel.desde+=origen;panel.hasta+=origen;panel.pieza.origenAlzado=[-lateral,panel.desde];}
       const marcarEn=(y:number,dir?:1|-1)=>{const panel=grupo.find(t=>y>=t.desde&&y<=t.hasta);if(panel)marca(panel.pieza,y-panel.desde,dir);};
       if(nombre==='inferior') {
-        if (envoltorio) marcarEn(envoltorio.terminado + envoltorio.soldadura);
         if(!sinSaco) marcarEn(origen + 2);
         else if(e.marcaCierre!==undefined) marcarEn(origen + e.marcaCierre);
       }
