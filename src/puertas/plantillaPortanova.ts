@@ -142,7 +142,7 @@ export function presentacionPortanova(pedido: PedidoPuertas,
   const puertas = pedido.elementos.map(e => e.input);
   // Como los planos de la oficina (AR2604904): el cristal solo si la puerta lo lleva, y el saco que va a impresión
   // digital como AMARILLO/NEGRO (Iván, 22/10/2026).
-  const materiales = unicos(puertas.flatMap(p => [
+  const materiales = unicos(puertas.flatMap(p => p.abrigo?calcularPuerta(p).piezas.map(x=>x.material):[
     ...(calcularPuerta(p).piezas.some(x => x.clase === 'cristal') ? [p.materialCristal] : []),
     `${p.material} ${p.color}`,
     ...(p.modelo==='SACOARENA'?[]:[p.sacoDiagonalesAmarillas ? p.materialSaco.replace(/NEGRO\s*$/i, 'AMARILLO/NEGRO') : p.materialSaco]),
@@ -154,6 +154,12 @@ export function presentacionPortanova(pedido: PedidoPuertas,
   const detalleModelo = { x0: CAJA_DETALLE.x0 + dx, x1: CAJA_DETALLE.x1 + dx, y0: CAJA_DETALLE.y0 + dy, y1: CAJA_DETALLE.y1 + dy };
   const bloque = bloqueNotasPortanova(materiales);
   const soloSacos = puertas.length>0&&puertas.every(p=>p.modelo==='SACOARENA');
+  if(puertas.length && puertas.every(p=>p.modelo==='ABRIGO')){
+    bloque.textos=[{x:164,y:70,h:2.5,ancho:121,valor:'ABRIGO DE CARGA · PORTANOVA'},
+      {x:164,y:62,h:2.3,ancho:121,valor:'Laterales B y C: un ollao N14 con arandela N30 por lateral.'}];
+    bloque.lineas=[];
+    bloque.quitarVentanas=[3,5];
+  }
   if (soloSacos) {
     bloque.textos = [
       {x:164,y:71,h:2.4,ancho:121,valor:`MATERIALES: ${materiales.join(' · ')}`},

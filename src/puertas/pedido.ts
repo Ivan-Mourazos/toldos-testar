@@ -43,6 +43,9 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
     const numeros=(x:unknown,max=100)=>lista(x,max) && x.every(n=>typeof n==='number' && Number.isFinite(n) && Math.abs(n)<=3000);
     const cotas=(x:unknown,claves:string[])=>objeto(x) && claves.every(k=>typeof x[k]==='number' && Number.isFinite(x[k]) && Math.abs(x[k] as number)<=3000);
     const hueco=(x:unknown)=>cotas(x,['x','y','ancho','alto','radio']);
+    if((p.modelo==='ABRIGO')!==(p.abrigo!==undefined))return error();
+    if(p.abrigo!==undefined && (p.clientePuertas!=='portanova'||!objeto(p.abrigo)
+      ||!['frente','laterales','perimetral','tiras'].includes(String(p.abrigo.parte))||!cotas(p.abrigo,['corto'])))return error();
     if(p.tgm!==undefined){
       const t=p.tgm;
       if(!objeto(t))return error();

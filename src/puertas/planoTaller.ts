@@ -219,8 +219,70 @@ function dibujarSaco(l: Lienzo, p: Puerta, letraPuerta = '') {
   return ys - h - 48 - Math.abs(desnivel);
 }
 
+function alzadoAbrigo(puertas: Puerta[]) {
+  const l=vacio(), piezas=new Map<string,PiezaPuerta>();
+  for(const puerta of puertas) for(const pieza of calcularPuerta(puerta).piezas){
+    const clave=JSON.stringify([pieza.nombre,pieza.contorno,pieza.of]);
+    const previa=piezas.get(clave);
+    if(previa) previa.cantidad+=pieza.cantidad;
+    else piezas.set(clave,pieza);
+  }
+  const lista=[...piezas.values()];
+  const frente=Math.max(180,...lista.filter(p=>p.nombre==='A'||p.nombre==='E').map(p=>p.ancho),
+    ...lista.filter(p=>p.nombre==='B').map(p=>p.alto*2+160));
+  let suelo=0, pvc=0, xMax=frente;
+  for(const nombre of ['A','B','C','E','D']){
+    let lateral=0;
+    for(const p of lista.filter(p=>p.nombre===nombre)){
+      const lado=nombre==='B'||nombre==='C';
+      const x=nombre==='D'?frente+110:nombre==='C'?frente-p.alto:0;
+      const y=lado?-(lista.filter(q=>q.nombre==='A').reduce((s,q)=>s+q.alto+110,0)+lateral+p.ancho):
+        (nombre==='D'?pvc:suelo)-p.alto;
+      const posicion=([a,b]:Punto):Punto=>lado?[x+b,y+a]:[x+a,y+b];
+      const puntos=p.contorno.map(posicion);
+      contorno(l,p.abrigo!.capa,puntos);
+      for(const m of p.circulosMarca??[]){
+        const [cx,cy]=posicion([m.x,m.y]);
+        l.circulos.push({capa:'ROTULADOR',x:cx,y:cy,r:m.r});
+      }
+      if(lado){
+        const largo=p.ancho,corto=Math.min(...p.contorno.filter(q=>q[0]>0).map(q=>q[0]));
+        const xb=nombre==='B'?x:x+p.alto, xc=nombre==='B'?x+p.alto:x;
+        cota(l,xb,y,xb,y+largo,xb+(nombre==='B'?-20:20));
+        cota(l,xc,y,xc,y+corto,xc+(nombre==='B'?20:-20));
+        cota(l,x,y,x+p.alto,y,y-18);
+        const [a,b,,d]=p.circulosMarca!;
+        cota(l,x+a.y,y+a.x,x+b.y,y+b.x,x+a.y+15);
+        cota(l,x+a.y,y+a.x,x+d.y,y+d.x,y+16);
+        texto(l,'MARCA DERECHO',x+p.alto/2,y+64,4,90);
+        texto(l,`${nombre}  X ${p.cantidad}`,x+p.alto/2,y+largo/2,6);
+        if(nombre==='B'){
+          const pico=y+corto+28;
+          linea(l,'referencias',x+p.alto,y+corto,frente/2,pico);
+          linea(l,'referencias',frente/2,pico,frente-p.alto,y+corto);
+          texto(l,'OLLAO GRANDE EN ESQUINA',frente/2,pico+8,7);
+          texto(l,`OF ${p.of}`,frente/2,y+largo/2,6);
+        }
+        lateral+=largo+100;
+      }else{
+        cota(l,x,y,x+p.ancho,y,y-16);
+        cota(l,x,y,x,y+p.alto,x-18);
+        texto(l,`${nombre}  X ${p.cantidad} · OF ${p.of}`,x+p.ancho/2,y+p.alto+12,9);
+        if(p.abrigo!.nota) texto(l,p.abrigo!.nota,x+p.ancho/2,y+p.alto/2,8);
+      }
+      if(nombre==='D') pvc=y-95;
+      else suelo=Math.min(suelo,y-110);
+      xMax=Math.max(xMax,x+(lado?p.alto:p.ancho));
+    }
+  }
+  if(lista.some(p=>p.nombre==='D')) texto(l,'PVC ALPHA 580 GR NEGRO',frente+110+Math.max(...lista.filter(p=>p.nombre==='D').map(p=>p.ancho))/2,42,8);
+  texto(l,'ABRIGO · LONA 3 MM',frente/2,42,8);
+  return {lienzo:l,zona:{x0:-45,x1:xMax+45,y0:Math.min(suelo,pvc),y1:65}};
+}
+
 /** `identificar`: con varias puertas, el saco y los cristales llevan la letra de su puerta. */
 export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = false): { lienzo: Lienzo; zona: Zona } {
+  if (p.modelo === 'ABRIGO') return alzadoAbrigo([p]);
   if (p.modelo === 'SACOARENA') return dibujarSacoConfeccionado(p);
   if (p.modelo === 'PUERTAENR') return dibujarAlzadoEnrollable(p, letra, identificar);
   const l = vacio(), F = p.frente, H = p.alto, ple = p.modelo === 'PUERTAPLE', r = calcularPuerta(p);
@@ -541,8 +603,9 @@ export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[
   const conSacosArena=pedido.elementos.some(e=>e.input.modelo==='SACOARENA');
   const l = vacio(); let cursor = 0, abajo = 0, arriba = 0, izquierda = -65;
   const zonasPuertas: Zona[] = [];
-  for (const [i, e] of pedido.elementos.entries()) {
-    const d = dibujarAlzadoTaller(e.input, String.fromCharCode(65 + i), pedido.elementos.length > 1), dx = i ? cursor - d.zona.x0 : 0;
+  const soloAbrigo=pedido.elementos.length>0&&pedido.elementos.every(e=>e.input.modelo==='ABRIGO');
+  for (const [i, e] of (soloAbrigo?pedido.elementos.slice(0,1):pedido.elementos).entries()) {
+    const d = soloAbrigo?alzadoAbrigo(pedido.elementos.map(e=>e.input)):dibujarAlzadoTaller(e.input, String.fromCharCode(65 + i), pedido.elementos.length > 1), dx = i ? cursor - d.zona.x0 : 0;
     sumarLienzo(l, d.lienzo, dx); cursor = dx + d.zona.x1 + ENTRE_PUERTAS;
     izquierda = Math.min(izquierda,dx+d.zona.x0);
     let suelo = d.zona.y0;
@@ -620,11 +683,11 @@ export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[
     ? retocarPortanova(p, c) : escribirDxfPlano(p, c);
   const dibujo=lienzoAMetros(l,100,100);
   return escribir({ ...dibujo, corte: lienzoAMetros(corte.lienzo, ox, oy), zonas: { toldos: za, corte: zc, corteReal }, corteDerecho: true,
-    corteGirable: !conSacosArena, hojas: hojasPuertas(pedido, zonasPuertas.map(z => zonaM(z, 100, 100)), cortes),
+    corteGirable: !conSacosArena, hojas: soloAbrigo?[{nombre:'ABRIGO',zona:za,cajetin:{OF:'VARIAS',HOJA:'1/1',MATERIAL:'LONA 3 MM / PVC ALPHA 580'}}]:hojasPuertas(pedido, zonasPuertas.map(z => zonaM(z, 100, 100)), cortes),
     ...(portanova ? { ajustarVentanaALaZona: true } : {}),
     bloques: [bloqueFlechaEnrollable], coloresModelo: { ejes: 23, borrar: 40, curv: 3, 'corte (vent)': 5 },
     ...(portanova ? presentacionPortanova(pedido, cabecera, { toldos: za, corte: zc }, altoVista, tramosCorte, disposicion, ventanaCorte) : {}),
-  }, { pedido: pedido.orderCode, of: unicos(ps.map(p => p.of)), cliente: textoSeguro(cabecera.cliente), tecnico: textoSeguro(cabecera.tecnico),
+  }, { pedido: pedido.orderCode, of: soloAbrigo?'VARIAS':unicos(ps.map(p => p.of)), cliente: textoSeguro(cabecera.cliente), tecnico: textoSeguro(cabecera.tecnico),
     revisor: textoSeguro(cabecera.revisor), fecha: cabecera.fecha.split('-').reverse().map((v, i) => i === 2 ? v.slice(2) : v).join('/'), pagina: '1/1',
-    material: textoSeguro(unicos(ps.map(p => `${p.material} ${p.color}`))), subtitulo: ps.every(p=>p.modelo==='SACOARENA')?'MEDIDAS EN CM · SACO CONFECCIONADO':'MEDIDAS EN CM · PUERTA DE LONA' }).dxf;
+    material: textoSeguro(unicos(ps.map(p => `${p.material} ${p.color}`))), subtitulo: soloAbrigo?'MEDIDAS EN CM · ABRIGO':ps.every(p=>p.modelo==='SACOARENA')?'MEDIDAS EN CM · SACO CONFECCIONADO':'MEDIDAS EN CM · PUERTA DE LONA' }).dxf;
 }

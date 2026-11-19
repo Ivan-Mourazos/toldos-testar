@@ -31,7 +31,7 @@ export function validarFichaClientePuertas(valor:unknown):FichaClientePuertas {
   const f=valor as FichaClientePuertas;
   if(!f||!f.id||!f.nombre||typeof f.codigoRps!=='string'||!['cm','mm'].includes(f.unidadHoja)||typeof f.habilitado!=='boolean'||!['portanova','araujo','santapau','tgm','pendiente'].includes(f.calculo)
     ||!f.rollos||!Object.values(f.rollos).every(n=>Number.isFinite(n)&&n>0)||!f.rotulos||!f.perfiles||!Array.isArray(f.tipos)||!f.tipos.length||!f.articulos
-    ||f.tipos.some(t=>!t.id||!t.nombre||!['PUERTAENR','PUERTAPLE','PUERTAUTO',...(f.id==='portanova'?['SACOARENA']:[])].includes(t.modelo))||Object.values(f.articulos).some(t=>!f.tipos.some(x=>x.id===t))
+    ||f.tipos.some(t=>!t.id||!t.nombre||!['PUERTAENR','PUERTAPLE','PUERTAUTO',...(f.id==='portanova'?['SACOARENA','ABRIGO']:[])].includes(t.modelo))||Object.values(f.articulos).some(t=>!f.tipos.some(x=>x.id===t))
     ||f.calculo==='tgm'&&!valoresEnrolleValidos(f.enrolle))throw new Error('Ficha de cliente de Puertas inválida. Revisa src/puertas/clientes/.');
   return f;
 }

@@ -17,6 +17,7 @@ import {
 const OF_PROVISIONAL = "SIN OF";
 export const PUERTA_NOUNS = { one: "puerta", many: "puertas", none: "El pedido no tiene puertas.", femenino: true };
 export function nombresElementosPuertas(pedido: Pick<PedidoPuertas, "elementos">) {
+  if(pedido.elementos.length&&pedido.elementos.every(e=>e.input.modelo==='ABRIGO')) return {one:'línea de abrigo',many:'líneas de abrigo',none:'El pedido no tiene líneas de abrigo.',femenino:true};
   if(pedido.elementos.length&&pedido.elementos.every(e=>e.input.modelo==='SACOARENA')) return {one:'saco confeccionado',many:'sacos confeccionados',none:'El pedido no tiene sacos confeccionados.',femenino:false};
   return pedido.elementos.length && pedido.elementos.every(e => e.input.modelo === 'SYSTEMDOCK')
     ? { one: 'lona System Dock', many: 'lonas System Dock', none: 'El pedido no tiene lonas System Dock.', femenino: true }

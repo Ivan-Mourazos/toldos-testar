@@ -1,9 +1,10 @@
+import { materialesAbrigo } from './abrigo.ts';
 import { nuevaPuerta } from './calcular.ts';
 import { REGLAS_SYSTEM_DOCK } from './systemDock.ts';
 import { araujoDesdeRps } from './araujoRps.ts';
 import { fichaPorCodigo } from './clientes.ts';
 import { nuevaPuertaDeCliente } from './nuevaPuertaCliente.ts';
-import type { ModeloPuerta, Puerta } from './tipos.ts';
+import type { ModeloPuerta, ParteAbrigo, Puerta } from './tipos.ts';
 
 /** SYSTEM DOCK, S.L. en RPS: sus líneas «LONA PERIMETRAL …» son lonas de abrigo de muelle (docs/modelos/system-dock.md). */
 export const CODIGO_SYSTEM_DOCK = '032286';
@@ -26,8 +27,32 @@ export function puertasDesdeRps(lineas: LineaPuertaRps[], { clienteCodigo = '' }
   const puertas: Puerta[] = [];
   const avisos: string[] = [];
   const ficha=fichaPorCodigo(clienteCodigo);
+  const pedidoAbrigo = ficha.id==='portanova' && (lineas.some(l=>/\bABRIGOS?\b/i.test(l.comentario))
+    || lineas.some(l=>l.articulo.trim()==='LONAPLNORECTANG' && /3\s*MM/i.test(l.comentario) && /\d\s*\/\s*\d/.test(l.comentario)));
   for (const l of lineas) {
     const articulo = l.articulo.trim().toUpperCase();
+    if (pedidoAbrigo) {
+      const parte:ParteAbrigo|undefined = articulo==='LONARECTANGULARO'?'frente':articulo==='LONAPLNORECTANG'?'laterales':
+        articulo==='LONASCPVC'?(/580/i.test(l.comentario)?'perimetral':/3\s*MM/i.test(l.comentario)?'tiras':undefined):undefined;
+      if (parte) {
+        const pares=[...l.comentario.matchAll(/(\d+(?:[.,]\d+)?)(?:\s*\/\s*(\d+(?:[.,]\d+)?))?\s*(?:CM)?\s*[X×]\s*(\d+(?:[.,]\d+)?)\s*CM\b/gi)];
+        const m=pares.length===1?pares[0]:undefined;
+        const primero=m?numero(m[1]):0, segundo=m?.[2]?numero(m[2]):0, ancho=m?numero(m[3]):0;
+        const frente=parte==='laterales'?Math.max(primero,segundo):parte==='tiras'&&primero===3?ancho:primero;
+        const alto=parte==='tiras'?(!m||primero===3?3:ancho):ancho;
+        const corto=parte==='laterales'?Math.min(primero,segundo):0;
+        const uds=parte==='frente'?l.cantidad*10000/(frente*alto):parte==='laterales'?l.cantidad/2:l.cantidad;
+        const cantidad=Number.isFinite(uds)&&Math.abs(uds-Math.round(uds))<0.00001&&uds>=1&&uds<=50?Math.round(uds):0;
+        const repartir=(parte==='tiras'||parte==='perimetral')&&!m&&cantidad>0;
+        for(let i=0;i<(repartir?cantidad:1);i++) puertas.push({...nuevaPuertaDeCliente('portanova','abrigo'),
+          abrigo:{parte,corto},articuloOrigen:'ABRIGO',of:l.of.trim(),frente,alto,
+          material:materialesAbrigo[parte],color:'',rollo:parte==='perimetral'?250:160,
+          cantidad:repartir?1:cantidad,observaciones:l.comentario});
+        if (!m || !cantidad) avisos.push(`Abrigo · OF ${l.of}: comprueba las medidas y las unidades de ${parte} en la hoja.`);
+        continue;
+      }
+      if(articulo==='LONASCPVC') avisos.push(`OF ${l.of}: falta identificar el material de esta línea de abrigo.`);
+    }
     if (ficha.id==='portanova' && ['SACOTGM','FUNDA'].includes(articulo)) {
       const texto = `${l.comentario} ${l.descripcion}`.replace(/\s+/g,' ').trim();
       const par = /(\d+(?:[.,]\d+)?)\s*(?:CM)?\s*(?:DE LARGO\s*)?X\s*(\d+(?:[.,]\d+)?)/i.exec(texto)

@@ -109,8 +109,8 @@ function FilaPuerta({ letra, puerta, coordina }: { letra: string; puerta: Pedido
   return (
     <li className="rem-pedido-elemento bloque-3d">
       <strong className="rem-pedido-letra">{letra}</strong>
-      <span>{`${puerta.modelo==='SYSTEMDOCK'?'Lona System Dock':puerta.modelo==='SACOARENA'?'Saco confeccionado':`Puerta ${MODELOS_PUERTAS[puerta.modelo].toLowerCase()}`}${puerta.cantidad > 1 ? ` · ${puerta.cantidad} iguales` : ''}`}</span>
-      <span>{puerta.modelo==='SACOARENA'?`${numeroSacoArena(puerta.frente)} × ${numeroSacoArena(puerta.alto)} cm aplastado`:`${medidaPuerta(puerta.frente)} × ${medidaPuerta(puerta.alto)} mm`}</span>
+      <span>{`${puerta.abrigo?`Abrigo · ${puerta.abrigo.parte}`:puerta.modelo==='SYSTEMDOCK'?'Lona System Dock':puerta.modelo==='SACOARENA'?'Saco confeccionado':`Puerta ${MODELOS_PUERTAS[puerta.modelo].toLowerCase()}`}${puerta.cantidad > 1 ? ` · ${puerta.cantidad} iguales` : ''}`}</span>
+      <span>{puerta.modelo==='SACOARENA'?`${numeroSacoArena(puerta.frente)} × ${numeroSacoArena(puerta.alto)} cm aplastado`:`${medidaPuerta(puerta.frente)}${puerta.abrigo?.parte==='laterales'?` / ${medidaPuerta(puerta.abrigo.corto)}`:''} × ${medidaPuerta(puerta.alto)} mm`}</span>
       <span>{`OF ${of || '—'}`}</span>
       <span className="rem-pedido-material" title={puerta.material}>{[puerta.material, puerta.color].filter(Boolean).join(' · ') || 'Sin material'}</span>
       {aprobadoPor && <span className="orders-detail-approved">{`Aprobado por ${controlLabel(aprobadoPor)}`}</span>}

@@ -41,11 +41,11 @@ export const RENGLON_TITULO_MM = 280;
 /** Espacio de más (cm) entre las filas del corte en el plano: lona, saco y cristal menos juntos (Iván, 26/10/2026). */
 export const SEPARACION_EXTRA_FILAS = 40;
 
-export function fusionarCortesPuertas(entidades: EntidadesPuertas, rollo?: number) {
+export function fusionarCortesPuertas(entidades: EntidadesPuertas, rollo?: number, capa = 'DISCO1') {
   const grupos = new Map<string, number[][]>();
   const resto: EntidadesPuertas['lineas'] = [];
   for (const l of entidades.lineas) {
-    if (l.capa !== 'DISCO1') {
+    if (l.capa !== capa) {
       resto.push(l);
       continue;
     }
@@ -72,7 +72,7 @@ export function fusionarCortesPuertas(entidades: EntidadesPuertas, rollo?: numbe
     }
     const c = Number(k.slice(1));
     for (const [a, b] of unidos) {
-      resto.push(k[0] === 'h' ? { capa: 'DISCO1', x1: a, y1: c, x2: b, y2: c } : { capa: 'DISCO1', x1: c, y1: a, x2: c, y2: b });
+      resto.push(k[0] === 'h' ? { capa, x1: a, y1: c, x2: b, y2: c } : { capa, x1: c, y1: a, x2: c, y2: b });
     }
   }
   entidades.lineas = resto;
@@ -299,7 +299,7 @@ function dibujarPieza(
     }
   }
   if (pieza.radio > 0) redondeado({ x: 0, y: 0, ancho: pieza.ancho, alto: pieza.alto, radio: pieza.radio }, false);
-  else pieza.contorno.forEach((p, i) => linea('DISCO1', p, pieza.contorno[(i + 1) % pieza.contorno.length]));
+  else pieza.contorno.forEach((p, i) => linea(pieza.abrigo?.capa ?? 'DISCO1', p, pieza.contorno[(i + 1) % pieza.contorno.length]));
   for (const [a, b, c, d] of pieza.marcas) linea('ROTULADOR', [a, b], [c, d]);
   for(const c of pieza.circulosMarca??[]){
     const [cx,cy]=transformar([c.x,c.y]);
@@ -318,6 +318,11 @@ function dibujarPieza(
       valor: `${letra}${u.numero}`, centrado: true, literal: true });
   }
   pieza.huecos.forEach(h => redondeado(h, true));
+  if(pieza.abrigo){
+    const [tx,ty]=transformar([pieza.ancho/2,pieza.alto/2]);
+    entidades.textos.push({capa:'texto',valor:[pieza.nombre,`OF ${pieza.of}`,`X ${pieza.cantidad}`,pieza.abrigo.nota].filter(Boolean).join(' · '),x:tx,y:ty,h:Math.min(24,mm(pieza.alto)/2),centrado:true,giro:girada?90:0});
+    return;
+  }
   if(pieza.id.includes(':santapau-')){
     for(const t of rotulosSantaPau(pieza,codigoPano??'A')){
       const [tx,ty]=transformar([t.x,t.y]);
@@ -473,7 +478,7 @@ function colocar(
     }
     // Las muestras auxiliares de Araujo pertenecen a su puerta, aunque compartan material y OF.
     const puertaMuestra=esAraujo(p.id)&&(p.clase==='cristal'||p.clase==='saco')?p.id.split(':')[0]:'';
-    const k = JSON.stringify([p.material, p.rollo, puertaMuestra]);
+    const k = JSON.stringify([p.material, p.rollo, puertaMuestra, p.abrigo?.capa]);
     const g = grupos.get(k) ?? [];
     g.push(puertaMuestra&&variasPuertasAraujo&&p.alto<=p.rollo?{...p,sinGiro:true}:p);
     grupos.set(k, g);
@@ -584,7 +589,7 @@ function colocar(
       // Se valora el mismo ancho total que acota el plano, incluidos los sacos que irán al corte.
       return valorarSacos(sacos);
     };
-    const conStock = Boolean(ofStock && opcion === 'principal' && grupo.some(p => p.clase === 'pano'));
+    const conStock = Boolean(!grupo[0].abrigo && ofStock && opcion === 'principal' && grupo.some(p => p.clase === 'pano'));
     const alternativa = grupo.some(p => p.clase === 'entrada') && grupo.filter(p => p.clase === 'pano').length > 2
       ? columnasPanos(piezasBusqueda, id => sitios[Number(id)].t.pieza.clase === 'pano', rollo) : null;
     const semilla = alternativa && Math.max(...alternativa.map(r=>r.x+r.w)) < largo ? alternativa : inicial;
@@ -606,7 +611,7 @@ function colocar(
         s === primerPano && esAraujo(s.t.pieza.id), esAraujo(s.t.pieza.id));
     }
     // Solo en la lona de la puerta (la de los paños) y en el corte principal: no en el transparente ni en el saco.
-    if (ofStock && opcion === 'principal' && grupo.some(p => p.clase === 'pano')) {
+    if (!grupo[0].abrigo && ofStock && opcion === 'principal' && grupo.some(p => p.clase === 'pano')) {
       const ocupadas = seleccionadas.map(s => ({ x: s.x, y: s.y, ancho: mm(s.t.girada ? s.t.pieza.alto : s.t.pieza.ancho), hueco: s.t.h }));
       colocadas.push(...sacosDeStock(ocupadas, rollo, ofStock, entidades, grupo[0].material, grupo[0].rollo));
     }
@@ -620,7 +625,7 @@ function colocar(
     // los paños se corta por el revés: va en el mismo renglón que el material y del mismo tamaño, porque es muy
     // importante y antes se veía poco (Iván, 06/11/2026). El corte principal no lleva «CORTE».
     const santaPau = grupo.every(p=>p.id.includes(':santapau-'));
-    const porElReves = Boolean(primerPano) && !esAraujo(primerPano!.t.pieza.id) && !santaPau;
+    const porElReves = !grupo[0].abrigo && Boolean(primerPano) && !esAraujo(primerPano!.t.pieza.id) && !santaPau;
     const rotuloMaterial = santaPau
       ? grupo[0].clase==='saco'&&grupo[0].sacoDiagonalesAmarillas?'SACO 900 GR AMARILLO/NEGRO':grupo[0].material
       : [grupo[0].material, ...(opcion === 'principal' ? [] : [titulo])].join(' · ');
@@ -632,7 +637,7 @@ function colocar(
     const base = esAraujo(grupo[0].id) ? rollo + 250 : (ocupado || rollo) + 120;
     entidades.textos.push({ capa: 'texto', x: 0, y: base + (porElReves ? RENGLON_TITULO_MM : 0), h: TITULO_MATERIAL_MM, valor: rotuloMaterial });
     if (porElReves) entidades.textos.push({ capa: 'texto', x: 0, y: base, h: TITULO_MATERIAL_MM, valor: 'CORTAR POR EL REVÉS' });
-    fusionarCortesPuertas(entidades, primerPano ? rollo : undefined);
+    fusionarCortesPuertas(entidades, primerPano && !grupo[0].abrigo ? rollo : undefined, grupo[0].abrigo?.capa);
     return corteSanta&&corteSanta.largo<=largo?corteSanta:{ material: grupo[0].material, anchoRollo: rollo, largo, opcion, entidades, colocadas };
   }
   const pruebasRestos = { restantes: PRESUPUESTO_TETRIS };

@@ -1,6 +1,6 @@
 /** Medidas de confección en centímetros; diámetro de tubos en milímetros. */
 /** SYSTEMDOCK: lona perimetral de SYSTEM DOCK (frente = largo y alto = ancho de la lona; ver systemDock.ts). */
-export type ModeloPuerta = 'PUERTAENR' | 'PUERTAPLE' | 'PUERTAUTO' | 'SYSTEMDOCK' | 'SACOARENA';
+export type ModeloPuerta = 'PUERTAENR' | 'PUERTAPLE' | 'PUERTAUTO' | 'SYSTEMDOCK' | 'SACOARENA' | 'ABRIGO';
 export type Punto = [number, number];
 export type Segmento = [number, number, number, number];
 export interface Hueco { x: number; y: number; ancho: number; alto: number; radio: number; abierto?: 'izquierda' | 'derecha' }
@@ -33,7 +33,9 @@ export interface ConfiguracionAraujo {
   perfil: string;
   tramos: TramoAraujo[];
 }
+export type ParteAbrigo = 'frente' | 'laterales' | 'perimetral' | 'tiras';
 export interface Puerta {
+  abrigo?: { parte: ParteAbrigo; corto: number };
   /** Santa Pau: los bordes visibles de mirilla van en ventanas; ejes de tubo en entradas. */
   santapau?: { /** Sin revisión, se conserva el corte anterior si el documento guardó +5. */
     revision?: '4815' | '5363';
@@ -128,6 +130,7 @@ export interface Puerta {
 }
 export interface AvisoPuerta { codigo: string; nivel: 'error' | 'aviso'; texto: string }
 export interface PiezaPuerta {
+  abrigo?: { capa: 'DISCO1'|'CUTTER'; nota: string };
   id: string;
   nombre: string;
   clase: 'pano' | 'entrada' | 'cristal' | 'cacho' | 'saco' | 'refuerzo';

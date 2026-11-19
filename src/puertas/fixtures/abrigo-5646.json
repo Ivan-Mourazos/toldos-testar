@@ -1,0 +1,46 @@
+[
+  {
+    "pedido": "AR.26.05646",
+    "fecha": "2026-11-18",
+    "cli": "001336",
+    "linea": 1,
+    "articulo": "LONARECTANGULARO",
+    "descripcion": "OTRA LONA  RECTANGULAR CONFECCIONADA ",
+    "comentario": "POR CONFECCION Y ROTULACION DE LONA PVC 3MM, DE MEDIDAS 330 CM X 100CM.",
+    "cantidad": 3.3,
+    "of_": "0234151"
+  },
+  {
+    "pedido": "AR.26.05646",
+    "fecha": "2026-11-18",
+    "cli": "001336",
+    "linea": 2,
+    "articulo": "LONAPLNORECTANG",
+    "descripcion": "LONA PLASTICA CONFECCIONADA NO RECTANGULAR",
+    "comentario": "POR CONFECCION Y ROTULACION DE LONA PVC 3MM, DE MEDIDAS 335/325CM X 55CM.",
+    "cantidad": 2,
+    "of_": "0234152"
+  },
+  {
+    "pedido": "AR.26.05646",
+    "fecha": "2026-11-18",
+    "cli": "001336",
+    "linea": 3,
+    "articulo": "LONASCPVC",
+    "descripcion": "LONA SEMI CONFECCIONADA :PVC",
+    "comentario": "POR SUMINISTRO DE LONAS SIN CONFECCIONAR DE DIFERENTES MEDIDAS EN PVC 580 GR/M²,COLOR NEGRO",
+    "cantidad": 3,
+    "of_": "0234153"
+  },
+  {
+    "pedido": "AR.26.05646",
+    "fecha": "2026-11-18",
+    "cli": "001336",
+    "linea": 4,
+    "articulo": "LONASCPVC",
+    "descripcion": "LONA SEMI CONFECCIONADA :PVC",
+    "comentario": "POR SUMINISTRO DE LONA DE DIFERENTES MEDIDAS, CALIDAD  PVC 3 MM, COLOR NEGRO ",
+    "cantidad": 3,
+    "of_": "0234154"
+  }
+]

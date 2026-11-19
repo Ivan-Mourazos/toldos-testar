@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { VistaAbrigo } from './Abrigo';
 import { VistaSacoArena } from './SacoArena';
 import { SelectField } from '../components/SelectField';
 import { MODELOS_PUERTAS } from '../../puertas/calcular.ts';
@@ -94,6 +95,7 @@ function Forma({ f, araujo }: { f: FormaAlzado; araujo:boolean }) {
 
 export function AlzadoPuerta({ puerta: p, resultado, letra = 'A' }: { puerta: Puerta; resultado: ResultadoPuerta; letra?: string }) {
   const [pieza,setPieza]=useState('todas');
+  if(p.modelo==='ABRIGO') return <VistaAbrigo p={p}/>;
   if(p.modelo==='SACOARENA') return <VistaSacoArena puerta={p}/>;
   if(p.modelo==='SYSTEMDOCK'&&!(p.frente>0&&p.alto>0)) return <section className="puerta-alzado panel panel-vidrio" aria-label="Alzado de la lona"><h2>Alzado</h2><p>Completa el largo y el ancho de la lona para ver sus medidas reales.</p></section>;
   const { formas: todas, grupos, vista: conjunto, vistas, letraBase, F, H } = geometriaAlzado(p, resultado, letra);
