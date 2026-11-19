@@ -172,7 +172,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
 
   const textosTaller = colocarTextosPuerta({ ...p, frente: F, alto: H }, resultado)
     .filter(t => !sinSaco || (t.id !== 'saco' && t.id !== 'soldar-saco'));
-  const xMin = Math.min(desnivel ? -116 : -56, ...textosTaller.map(t => t.x - 8));
+  const xMin = Math.min(desnivel ? -116 : envoltorio ? -80 : -56, ...textosTaller.map(t => t.x - 8));
   const yMin = -62;
   const anchoVista = Math.max(F + (desnivel ? 150 : 110), ...textosTaller.map(t => t.x + t.ancho + 8)) - xMin;
   const altoVista = sinSaco ? H + (p.enrollable.cierreBajo ?? 0) + 25 - yMin
@@ -192,7 +192,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   // Cabecera según modelo
   if (enr || auto) {
     linea('puerta-varilla', 0, 0, F, 0);
-    texto('VARILLA NEGRA (4,5)', F / 2, -10, 'middle', 'puerta-texto-cabecera');
+    texto(p.tgm ? 'VARILLA NEGRA (4,5 mm)' : 'VARILLA NEGRA (4,5)', F / 2, -10, 'middle', 'puerta-texto-cabecera');
   }
   if (ple) {
     rect('puerta-entrada-alzado', 0 - margen, 0, F + margen * 2, p.apilable.bolsillo);
@@ -280,9 +280,9 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
       rect('puerta-saco', 3, costura - envoltorio.soldadura, F - 6, envoltorio.terminado + envoltorio.soldadura);
       linea('puerta-tubo', 0, H - envoltorio.eje, F, H - envoltorio.eje);
       linea('puerta-rotulador', p.margenMarcas, costura - envoltorio.soldadura, F - p.margenMarcas, costura - envoltorio.soldadura);
-      for (const [y1, y2, x] of [[costura, H, -16], [costura - envoltorio.soldadura, costura, -32]]) {
+      for (const [y1, y2, x] of [[costura, H, -16], [costura - envoltorio.soldadura, costura, -48]]) {
         cota({ x1: 3, y1, x2: 3, y2, linea: x, valor: y2 - y1, estilo: 'XERAL 5', marcas: 2,
-          texto: { x: x - 2, y: (y1 + y2) / 2, ancla: 'end' } });
+          texto: { x: x - 7, y: (y1 + y2) / 2 + 2, ancla: 'end' } });
       }
       nota('SACO ENVOLVENTE', F / 2, H + 17, 5);
     }

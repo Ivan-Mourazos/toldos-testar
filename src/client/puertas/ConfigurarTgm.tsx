@@ -3,7 +3,6 @@ import { calcularPuerta, calcularPuertaDerivada } from '../../puertas/calcular.t
 import { fichaPorId } from '../../puertas/clientes.ts';
 import { enrolleTgm, puertaTgmDerivada } from '../../puertas/tgm.ts';
 import type { Puerta } from '../../puertas/tipos.ts';
-import { InputDecimal } from '../remolques/InputDecimal';
 import { SelectField } from '../components/SelectField';
 import { SegmentedField } from '../components/SegmentedField';
 import { AlzadoPuerta } from './AlzadoPuerta';
@@ -32,12 +31,6 @@ export function ConfigurarTgm({ p, cambiar, corte, derecha, letra, vistas }: {
 
   const datos = (cambios: Partial<Puerta>) => cambiar({ ...p, ...cambios, confirmada: false, ventanasConfirmadas: false });
   const medidas = (cambios: Partial<Tgm>, otros?: Partial<Puerta>) => datos({ ...otros, tgm: { ...t, ...cambios } });
-  const centimetros = (titulo: string, campo: 'bastilla' | 'terminado' | 'soldadura') => (
-    <label className="field puerta-campo"><span>{titulo} (cm)</span>
-      <InputDecimal value={campo === 'soldadura' && t[campo] === undefined ? 2 : t[campo]}
-        onValor={valor => medidas({ [campo]: valor })} />
-    </label>
-  );
   const ajustes = (cambios: Partial<Tgm['ajustes']>) => medidas({ ajustes: { ...t.ajustes, ...cambios } });
   const alternativas = t.abajo === 'envolvente' ? resultado.alternativasSaco : null;
   const piezas = [...resultado.piezas, ...(alternativas?.entero ?? [])];
@@ -77,14 +70,15 @@ export function ConfigurarTgm({ p, cambiar, corte, derecha, letra, vistas }: {
           <SegmentedField label="Lona" value={t.lona === 'rejilla' ? 'Rejilla' : 'PVC'} options={['PVC', 'Rejilla']} onChange={elegirLona} />
           <SegmentedField label="Laterales" value={t.laterales === 'bastilla' ? 'Bastilla' : 'Al corte'} options={['Al corte', 'Bastilla']}
             onChange={v => medidas({ laterales: v === 'Bastilla' ? 'bastilla' : 'corte' })} />
-          {t.laterales === 'bastilla' && centimetros('Bastilla por lado', 'bastilla')}
+          {t.laterales === 'bastilla' && <Numero titulo="Bastilla por lado (mm)" valor={t.bastilla ?? null}
+            cambiar={bastilla => medidas({ bastilla })} />}
           <SegmentedField label="Abajo" value={t.abajo === 'envolvente' ? 'Tubo con saco envolvente' : t.abajo === 'saco' ? 'Saco' : 'Tubo'} options={['Saco', 'Tubo', 'Tubo con saco envolvente']} onChange={v => {
             const abajo = v === 'Saco' ? 'saco' : v === 'Tubo' ? 'tubo' : 'envolvente';
             if (abajo !== t.abajo) medidas({ abajo }, { enrollable: { ...p.enrollable, sinSaco: abajo !== 'saco' } });
           }} />
           {t.abajo === 'envolvente' && <>
-            {centimetros('Saco terminado', 'terminado')}
-            {centimetros('Soldadura', 'soldadura')}
+            <Numero titulo="Saco terminado (mm)" valor={t.terminado ?? null} cambiar={terminado => medidas({ terminado })} />
+            <Numero titulo="Soldadura (mm)" valor={t.soldadura === undefined ? 2 : t.soldadura} cambiar={soldadura => medidas({ soldadura })} />
           </>}
           {t.abajo === 'saco' && <Numero titulo="Saco útil (mm)" unidad="mm" valor={p.enrollable.saco ?? null}
             cambiar={saco => datos({ enrollable: { ...p.enrollable, saco } })} />}
