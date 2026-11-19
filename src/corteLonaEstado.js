@@ -1,9 +1,10 @@
 import { createHash } from 'node:crypto';
 import { normalizeOrder } from './domain/validation.js';
 import { calculateOrder } from './domain/rules.js';
-import { corteReadiness, motivoCorteManual } from './domain/corteReadiness.js';
+import { corteReadiness, motivoCorteManual, telaConCorte } from './domain/corteReadiness.js';
 import { awningLetter } from './domain/awningCompleteness.js';
 import { AJUSTES_POR_DEFECTO } from './domain/corteLona/despiece.js';
+import { BASTILLAS_TIRA } from './domain/corteLona/bambalina.js';
 import { resolveFabric } from './domain/fabricCatalog.js';
 
 // Subir esta versión cuando cambien las reglas de corte que invaliden los cortes guardados.
@@ -35,7 +36,7 @@ export function crearEstadoCorteLona(order, { ajustes = {}, resultado, ofStockSa
   return { version: VERSION_CORTE, generadoEn: now, generadoPor: orden.technician, ofStockSacos,
     ajustes: Object.fromEntries(orden.awnings.map((t, i) => [claveToldo(t, i), ajustesToldo(ajustes, t, i)])),
     toldos: orden.awnings.flatMap((t, i) => letras.has(awningLetter(i)) || (corteReadiness(t.model).ready &&
-      resolveFabric(orden.sameFabric ? orden.fabric : t.fabric)?.material?.trim().toUpperCase() === 'PLASTICA (LONA)' && motivoCorteManual(t)) ? [{
+      telaConCorte(resolveFabric(orden.sameFabric ? orden.fabric : t.fabric)) && motivoCorteManual(t)) ? [{
       clave: claveToldo(t, i), id: t.id, letra: awningLetter(i), of: t.of,
       firma: firmaToldo(orden, i, ajustesToldo(ajustes, t, i)),
       ...(motivoCorteManual(t) ? { manual: true, motivoManual: motivoCorteManual(t) } : {})
@@ -47,7 +48,7 @@ export function corteLonaPendiente(order, corteLona) {
   const orden = normalizeOrder(order);
   return orden.awnings.flatMap((t, i) => {
     if (!corteReadiness(t.model).ready) return [];
-    if (resolveFabric(orden.sameFabric ? orden.fabric : t.fabric)?.material?.trim().toUpperCase() !== 'PLASTICA (LONA)') return [];
+    if (!telaConCorte(resolveFabric(orden.sameFabric ? orden.fabric : t.fabric))) return [];
     const anterior = corteLona?.toldos?.find((p) => p.clave === claveToldo(t, i) && p.letra === awningLetter(i));
     if (anterior?.manual === true && motivoCorteManual(t)) return [];
     const motivo = !anterior ? 'sinGenerar' : corteLona.version !== VERSION_CORTE ||
@@ -68,7 +69,7 @@ export function copiarEstadoCorteLona(estado) {
   return { version: estado.version, generadoEn: String(estado.generadoEn || ''), generadoPor: String(estado.generadoPor || ''),
     ...(/^\d{7}$/.test(String(estado.ofStockSacos)) ? { ofStockSacos: estado.ofStockSacos } : {}),
     ajustes: Object.fromEntries(Object.entries(estado.ajustes).map(([k, a]) => [k,
-      Object.fromEntries([...Object.keys(AJUSTES_POR_DEFECTO), 'varillaArriba'].filter((campo) => Object.hasOwn(a, campo)).map((campo) => [campo, a[campo]]))])),
+      Object.fromEntries([...Object.keys(AJUSTES_POR_DEFECTO), 'varillaArriba', ...BASTILLAS_TIRA].filter((campo) => Object.hasOwn(a, campo)).map((campo) => [campo, a[campo]]))])),
     toldos: estado.toldos.map((t) => ({ ...Object.fromEntries(['clave', 'id', 'letra', 'of', 'firma'].map((k) => [k, String(t[k] || '')])),
       ...(t.manual === true ? { manual: true, motivoManual: String(t.motivoManual || '') } : {}) })) };
 }

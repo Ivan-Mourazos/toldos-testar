@@ -69,6 +69,11 @@ export async function generarMuestras() {
       fabric: 'PVC900BL|||250|||LONA PVC 900 BLANCO :250 AN|||PLASTICA (LONA)',
       awnings: [{ id: 'a', model: 'EMBUDO', of: tipo === 'conico' ? '0233311' : '', units: e.cantidad, fabricNotes: 'DOBLE COSTURA EN SOLDADURA', embudo: e.entrada }] }));
   }
+  await registrar('Toldos / BAMBALINA', 'Bambalina suelta en Soltis con onda', 'src/domain/corteLona/index.test.js', () => toldo({
+    orderCode: 'AR2609999', customer: 'PRUEBA BAMBALINA', technician: 'IVÁN', orderDate: '2026-11-19',
+    fabric: 'SOLTIS92BEIGP267|||267|||SOLTIS 92  BEIGE|||SOLTIS 92',
+    awnings: [{ id: 'b-1', of: '0231679', model: 'BAMBALINA', workType: 'FABRIC_ONLY', units: 1, width: 480, projection: 0,
+      hasValance: true, valanceHeight: 30, valanceCurve: 'NORMAL', rotValance: 'NO' }] }));
   await registrar('Toldos / BAMBALINAS', 'Bamba separada por material', 'src/domain/corteLona/fixtures/variasTelas.js', () => toldo(pedidoVariasTelas()));
 
   const dir = 'src/remolques/corte/__fixtures__';

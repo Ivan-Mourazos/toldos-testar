@@ -3,7 +3,8 @@ import { anchoArial } from './texto.js';
 import { bordeOndulado, HOLGURA_ONDA_MM } from './bambalina.js';
 import { dibujoPiezaEmbudo } from './embudo.js';
 
-// La tira lleva B.N(2) en cada punta (tiraExtraLargoCm): las ondas, enteras, entre los dos.
+// La tira lleva B.N(2) en cada punta (tiraExtraLargoCm): las ondas, enteras, entre los dos. Si las bastillas de las
+// puntas se han cambiado, la pieza trae las suyas en `margenOnda` (despiece.js).
 const MARGEN_ONDA = (AJUSTES_POR_DEFECTO.tiraExtraLargoCm / 2) * 10;
 
 /** Líneas de corte (DISCO1), del rotulador y textos de las piezas ya colocadas. */
@@ -36,7 +37,7 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
     if (p.onda) {
       // Bambalina con onda (bambalina.js): el borde de abajo, con su forma y con la cuchilla, aunque vaya en el orillo;
       // las ondas enteras entre los B.N(2) de las puntas. Girada, el de abajo queda a la derecha.
-      const onda = bordeOndulado(p.onda, p.largo, MARGEN_ONDA).map(([u, v]) => [u, v + HOLGURA_ONDA_MM]);
+      const onda = bordeOndulado(p.onda, p.largo, p.margenOnda ?? MARGEN_ONDA).map(([u, v]) => [u, v + HOLGURA_ONDA_MM]);
       const enRollo = ([u, v]) => (p.girada ? [x0 + p.alto - v, y0 + u] : [x0 + u, y0 + v]);
       for (let k = 0; k < onda.length - 1; k++) {
         const [[a, b], [c, d]] = [enRollo(onda[k]), enRollo(onda[k + 1])];
@@ -106,7 +107,7 @@ export function dibujo(colocadas, anchoRolloMm, { of, tela }) {
     if (p.onda) {
       // Tira con onda: nombre y OF en fila a lo largo, en la franja que queda entre lo más alto de la onda y el borde
       // de arriba, sin pisar la onda.
-      const fondo = HOLGURA_ONDA_MM + Math.max(...bordeOndulado(p.onda, p.largo, MARGEN_ONDA).map(([, v]) => v));
+      const fondo = HOLGURA_ONDA_MM + Math.max(...bordeOndulado(p.onda, p.largo, p.margenOnda ?? MARGEN_ONDA).map(([, v]) => v));
       const franja = Math.max(1, p.alto - fondo), lineasTexto = [p.nombre, ...(p.of ? [p.of] : [])];
       const h = Math.min(300, franja * 0.6, ...lineasTexto.map((v) => (p.largo / lineasTexto.length) * 0.8 / anchoArial(v, 1)));
       const v = fondo + franja / 2;

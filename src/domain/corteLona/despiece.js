@@ -1,7 +1,7 @@
 import { piezasCortina } from './cortina.js';
 import { piezasSolapas } from './solapas.js';
 import { piezasEmbudo } from './embudo.js';
-import { altoTiraCm, HOLGURA_ONDA_MM } from './bambalina.js';
+import { altoTiraCm, bastillasTira, BASTILLAS_TIRA, HOLGURA_ONDA_MM, largoTiraCm } from './bambalina.js';
 
 // Estudio DXF: piezas de la lona de PVC de un toldo de fachada y su colocación en el rollo.
 // Medidas de entrada en cm (como el planteamiento); las piezas salen en mm (el DXF va en mm).
@@ -46,7 +46,9 @@ export const despiecesPorModelo = Object.freeze({
   CORTINA: (datos) => (datos.soloCristal ? piezasCortina({ ...datos, anchoRollo: datos.anchoRolloLona }).cristal : piezasCortina(datos).pvc),
   'CAMBIO CORTINA': (datos) => (datos.soloCristal ? piezasCortina({ ...datos, anchoRollo: datos.anchoRolloLona }).cristal : piezasCortina(datos).pvc),
   SOLAPAS: (datos) => piezasSolapas(datos),
-  EMBUDO: (datos) => piezasEmbudo(datos)
+  EMBUDO: (datos) => piezasEmbudo(datos),
+  // La bambalina suelta: solo la tira, como la bamba de un toldo.
+  BAMBALINA: (datos) => piezasFachada({ ...datos, soloBamba: true })
 });
 
 function piezasFachada({ letra, frenteTela, caidaTela, bamba, soloBamba = false, anchoRollo, ajustes = {}, onda = null }) {
@@ -55,16 +57,22 @@ function piezasFachada({ letra, frenteTela, caidaTela, bamba, soloBamba = false,
     if (!Number.isFinite(valor) || valor <= 0) throw new Error(`Medida no válida: ${nombre}.`);
   }
   if (!Number.isFinite(bamba) || bamba < 0) throw new Error('Altura de bamba no válida.');
-  const tira = altoTiraCm(bamba, a.tiraExtraAltoCm, onda);
+  const b = bastillasTira(a, onda);
+  const tira = altoTiraCm(bamba, b);
+  const largoTira = largoTiraCm(frenteTela, b);
   // Con onda (bambalina.js), la tira lleva su forma abajo, sin bastilla (va con remate, aparte); el alto, hasta lo
   // más bajo de la onda.
   // Con onda, 1 cm más por debajo de ella (HOLGURA_ONDA_MM).
-  const conOnda = onda ? { onda } : {};
+  // Las ondas van entre las bastillas de las puntas; solo se apunta si no son las de siempre (dibujoCorte.js).
+  const margenOnda = [b.izq * 10, b.der * 10];
+  const conOnda = onda ? { onda, ...(margenOnda.every((m) => m === MARGEN_ONDA_MM) ? {} : { margenOnda }) } : {};
+  // Arriba al corte: sin varilla, sin raya de rotulador.
+  const marcasTira = b.arriba > 0 ? ['tira'] : [];
   const altoTira = mm(tira) + (onda ? HOLGURA_ONDA_MM : 0);
-  if (soloBamba) return [{ nombre: `${letra} BAMBA`, largo: mm(frenteTela + a.tiraExtraLargoCm), alto: altoTira, marcas: ['tira'], ...conOnda }];
+  if (soloBamba) return [{ nombre: `${letra} BAMBA`, largo: mm(largoTira), alto: altoTira, marcas: marcasTira, ...conOnda }];
   const cuerpo = caidaTela - tira;
   if (cuerpo <= 0) throw new Error('La tira no puede ocupar toda la caída.');
-  if (a.empate === 'vertical' && frenteTela > anchoRollo) return piezasVerticales({ letra, frenteTela, cuerpo, tira, anchoRollo, a, conOnda, altoTira });
+  if (a.empate === 'vertical' && frenteTela > anchoRollo) return piezasVerticales({ letra, frenteTela, cuerpo, tira, largoTira, marcasTira, anchoRollo, a, conOnda, altoTira });
   const paños = [];
   let resto = cuerpo;
   // Si el frente cabe en el rollo, el cuerpo se puede cortar girado (frente a lo ancho del rollo)
@@ -83,7 +91,7 @@ function piezasFachada({ letra, frenteTela, caidaTela, bamba, soloBamba = false,
     // La varilla inferior engancha el cuerpo al tubo de carga, haya bamba o no (Iván).
     marcas: [...(i === 0 ? ['abajo'] : []), ...(i === paños.length - 1 ? ['arriba'] : [])]
   }));
-  if (tira) piezas.push({ nombre: `${letra} BAMBA`, largo: mm(frenteTela + a.tiraExtraLargoCm), alto: altoTira, marcas: ['tira'], ...conOnda });
+  if (tira) piezas.push({ nombre: `${letra} BAMBA`, largo: mm(largoTira), alto: altoTira, marcas: marcasTira, ...conOnda });
   return piezas;
 }
 
@@ -92,7 +100,7 @@ function piezasFachada({ letra, frenteTela, caidaTela, bamba, soloBamba = false,
  * se reparte en paños iguales a lo largo de la caída, con los cm de empate en cada unión, como en
  * AR2604097 y AR2604784. La tira va entera o, con `tiraPartida`, en tantos trozos como paños.
  */
-function piezasVerticales({ letra, frenteTela, cuerpo, tira, anchoRollo, a, conOnda, altoTira }) {
+function piezasVerticales({ letra, frenteTela, cuerpo, tira, largoTira, marcasTira, anchoRollo, a, conOnda, altoTira }) {
   const anchos = (total) => {
     let n = 2;
     while ((total + a.empateCm * (n - 1)) / n > anchoRollo) n++;
@@ -101,11 +109,11 @@ function piezasVerticales({ letra, frenteTela, cuerpo, tira, anchoRollo, a, conO
   const piezas = anchos(frenteTela + 2 * a.lateralVerticalCm).map((ancho, i) => ({
     nombre: `${letra}${i + 1}`, largo: mm(ancho), alto: mm(cuerpo), marcas: ['arriba', 'abajo']
   }));
-  if (tira && !a.tiraPartida) piezas.push({ nombre: `${letra} BAMBA`, largo: mm(frenteTela + a.tiraExtraLargoCm), alto: altoTira, marcas: ['tira'], ...conOnda });
+  if (tira && !a.tiraPartida) piezas.push({ nombre: `${letra} BAMBA`, largo: mm(largoTira), alto: altoTira, marcas: marcasTira, ...conOnda });
   if (tira && a.tiraPartida && conOnda.onda) throw new Error('Bambalina con onda en trozos: el corte se hace a mano por ahora.');
   if (tira && a.tiraPartida) {
-    anchos(frenteTela + a.tiraExtraLargoCm).forEach((ancho, i) =>
-      piezas.push({ nombre: `${letra} BAMBA ${i + 1}`, largo: mm(ancho), alto: mm(tira), marcas: ['tira'] }));
+    anchos(largoTira).forEach((ancho, i) =>
+      piezas.push({ nombre: `${letra} BAMBA ${i + 1}`, largo: mm(ancho), alto: mm(tira), marcas: marcasTira }));
   }
   return piezas;
 }
@@ -117,9 +125,15 @@ export function validarAjustes(a, anchoRollo) {
   for (const clave of ['empateCm', 'aumentoEscuadrarCm', 'lateralVerticalCm', 'tiraExtraLargoCm', 'tiraExtraAltoCm', 'varillaArribaMm', 'varillaTiraMm']) {
     if (!Number.isFinite(a[clave]) || a[clave] < 0) throw new Error(`Ajuste no válido: ${clave}.`);
   }
+  // Las bastillas de la tira, si se han cambiado; 0 es al corte.
+  for (const clave of BASTILLAS_TIRA) {
+    if (a[clave] !== undefined && (!Number.isFinite(a[clave]) || a[clave] < 0)) throw new Error(`Ajuste no válido: ${clave}.`);
+  }
   if (a.empateCm >= anchoRollo) throw new Error('El empate debe ser menor que el ancho del rollo.');
   if (typeof a.tiraPartida !== 'boolean') throw new Error('La opción de tira partida debe ser sí o no.');
   return a;
 }
 
 const mm = (cm) => Math.round(cm * 100) / 10;
+/** El margen de las ondas con las puntas de siempre, B.N(2): el que usa dibujoCorte.js si la pieza no trae el suyo. */
+export const MARGEN_ONDA_MM = (AJUSTES_POR_DEFECTO.tiraExtraLargoCm / 2) * 10;

@@ -177,6 +177,13 @@
       "corte": "5e5760e8670215cf3d5d62a1b0e117663d7af58ba5f38817b8013eabb43e38a5"
     },
     {
+      "pedido": "AR2609999",
+      "modelos": [
+        "BAMBALINA"
+      ],
+      "corte": "76a83871e9db84b6e5ba7df593f363ff63d9d73c235d1c466f1f095c223e968f"
+    },
+    {
       "pedido": "AR2604784",
       "modelos": [
         "GALICIA"

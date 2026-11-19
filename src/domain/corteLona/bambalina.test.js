@@ -44,3 +44,30 @@ describe('Bambalinas con onda (plantilla BAMBALINAS.dwg)', () => {
     expect(tira('NORMAL')).toMatchObject({ alto: 340, onda: 'NORMAL' });
   });
 });
+
+describe('Bastillas de la bambalina (Iván, 19/11/2026)', () => {
+  const tira = (ajustes, extra = {}) => piezasToldo({ modelo: 'BAMBALINA', letra: 'A', frenteTela: 480, caidaTela: 35, bamba: 30, anchoRollo: 250, ajustes, ...extra })[0];
+  it('sin tocar, lo de siempre: B.N(2) en cada punta, B.N(2) abajo y 3 arriba para la varilla', () => {
+    expect(tira({})).toMatchObject({ largo: 4840, alto: 350, marcas: ['tira'] });
+    expect(tira({ bambaPuntaIzqCm: 2, bambaPuntaDerCm: 2, bambaAbajoCm: 2, bambaArribaCm: 3 })).toEqual(tira({}));
+  });
+  it('cada borde con su bastilla o al corte (0)', () => {
+    expect(tira({ bambaPuntaIzqCm: 0, bambaPuntaDerCm: 3, bambaAbajoCm: 0, bambaArribaCm: 4 })).toMatchObject({ largo: 4830, alto: 340, marcas: ['tira'] });
+  });
+  it('arriba al corte: sin varilla ni raya de rotulador', () => {
+    expect(tira({ bambaArribaCm: 0 })).toMatchObject({ alto: 320, marcas: [] });
+  });
+  it('con onda no hay bastilla abajo y las ondas van entre las bastillas de las puntas', () => {
+    const p = tira({ bambaPuntaIzqCm: 0, bambaPuntaDerCm: 5, bambaAbajoCm: 4 }, { onda: 'NORMAL' });
+    expect(p).toMatchObject({ largo: 4850, alto: 330 + 10, margenOnda: [0, 50] });
+    const borde = bordeOndulado('NORMAL', p.largo, p.margenOnda);
+    const ondas = borde.filter(([, v]) => v < borde[0][1]);
+    expect(Math.min(...ondas.map(([u]) => u))).toBeGreaterThanOrEqual(0);
+    expect(Math.max(...ondas.map(([u]) => u))).toBeLessThanOrEqual(4800);
+    expect(tira({}, { onda: 'NORMAL' }).margenOnda).toBeUndefined();
+  });
+  it('rechaza una bastilla negativa o que no es un número', () => {
+    expect(() => tira({ bambaAbajoCm: -1 })).toThrow(/bambaAbajoCm/);
+    expect(() => tira({ bambaPuntaIzqCm: Number.NaN })).toThrow(/bambaPuntaIzqCm/);
+  });
+});

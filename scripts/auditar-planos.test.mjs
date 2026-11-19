@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 import { generarMuestras } from './lib/muestras-planos.mjs';
 
-it('genera los ocho modelos con corte y las demás familias desde fuentes locales existentes', async () => {
+it('genera los modelos con corte y las demás familias desde fuentes locales existentes', async () => {
   const r = await generarMuestras();
   expect(r.excluidas.filter(e => e.ejemplo)).toEqual([]);
   for (const modelo of r.modelosConCorte) expect(r.muestras.some(p => p.familia === `Toldos / ${modelo}`), modelo).toBe(true);

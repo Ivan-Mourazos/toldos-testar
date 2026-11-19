@@ -406,3 +406,51 @@ describe('Del pedido guardado al corte de lona', () => {
     expect(salidaBastilla.avisos).toEqual([expect.stringContaining('pendiente de Oficina Técnica')]);
   });
 });
+
+describe('Bambalina y Soltis en el corte (Iván, 19/11/2026)', () => {
+  const soltis = 'SOLTIS92BEIGP267|||267|||SOLTIS 92  BEIGE|||SOLTIS 92';
+  const pvc = 'PVC580BL|||250|||LONA PVC 580 BLANCO :250 AN|||PLASTICA (LONA)';
+  const bambalina = (fabric, extra = {}) => ({
+    orderCode: 'AR2609999', customer: 'PRUEBA BAMBALINA', technician: 'IVÁN', orderDate: '2026-11-19', fabric,
+    awnings: [{ id: 'b-1', of: '0231679', model: 'BAMBALINA', workType: 'FABRIC_ONLY', units: 1,
+      width: 480, projection: 0, hasValance: true, valanceHeight: 30, valanceCurve: 'RECTA', rotValance: 'NO', ...extra }]
+  });
+  it.each([['PVC', pvc], ['Soltis', soltis]])('corta la bambalina en %s como una tira, con B.N(2) en las puntas y bamba + 5', (_n, fabric) => {
+    const salida = generar(bambalina(fabric));
+    expect(salida.avisos).toEqual([]);
+    expect(salida.modelos).toEqual(['BAMBALINA']);
+    const corte = salida.cortes.conSacos[0];
+    expect(corte.piezas[0].piezas.map((p) => [p.nombre, p.largo, p.alto])).toEqual([['A BAMBA', 4840, 350]]);
+    expect(corte.sacos).toEqual([]);
+    expect(salida.plano[0].dxf).toContain('BAMBALINA');
+  });
+  it('corta la bambalina con onda con la forma de la plantilla', () => {
+    const corte = generar(bambalina(soltis, { valanceCurve: 'NORMAL' })).cortes.conSacos[0];
+    expect(corte.colocadas[0].onda).toBe('NORMAL');
+    expect(corte.dxf).toContain('CUTTER');
+  });
+  it('el plano de Soltis no dice lona de PVC', () => {
+    const plano = generar(bambalina(soltis)).plano[0].dxf;
+    expect(plano).toContain('SOLTIS');
+    expect(plano).not.toContain('LONA DE PVC');
+  });
+  it('corta también un toldo en Soltis', () => {
+    const order = structuredClone(revision.order);
+    order.fabric = soltis;
+    const salida = generar(order);
+    expect(salida.avisos).toEqual([]);
+    expect(salida.cortes.conSacos[0].piezas[0].piezas.map((p) => p.nombre)).toEqual(['A', 'A BAMBA']);
+  });
+  it('el plano de la bambalina dice cada bastilla o AL CORTE', () => {
+    const plano = generar(bambalina(pvc), { ajustes: { 'b-1': { bambaPuntaIzqCm: 0, bambaPuntaDerCm: 3, bambaAbajoCm: 0, bambaArribaCm: 0 } } }).plano[0].dxf;
+    expect(plano).toContain('B.N(3)');
+    expect(plano).toContain('AL CORTE');
+    expect(plano).not.toContain('B.N(2)');
+    expect(plano).not.toContain('VARILLA BLANCA');
+  });
+  it('la bambalina en acrílico sigue fuera del corte', () => {
+    const salida = generar(bambalina('ACR|||120|||TELA ACRILICA|||ACR'));
+    expect(salida.cortes.conSacos).toEqual([]);
+    expect(salida.avisos).toEqual([expect.stringContaining('PVC o Soltis')]);
+  });
+});

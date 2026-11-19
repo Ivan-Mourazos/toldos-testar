@@ -19,6 +19,14 @@ describe('Estado guardado del corte de lona', () => {
     expect(firmasCorteLona(copiarEstadoCorteLona(estado))).toEqual(firmasCorteLona(estado));
   });
 
+  it('guarda en la revisión las bastillas de la bambalina, también al corte (Iván, 19/11/2026)', () => {
+    const clave = Object.keys(generar().ajustes)[0];
+    const estado = generar(order, { [clave]: { bambaPuntaIzqCm: 0, bambaArribaCm: 4 } });
+    const copia = copiarEstadoCorteLona(estado);
+    expect(copia.ajustes[clave]).toMatchObject({ bambaPuntaIzqCm: 0, bambaArribaCm: 4 });
+    expect(corteLonaPendiente(order, copia)).toEqual(corteLonaPendiente(order, estado));
+  });
+
   it('firma estable con claves y ajustes equivalentes, sensible a medidas, tela, bamba y ajustes', () => {
     const firma = firmaToldo(order, 0, {});
     expect(firmaToldo({ ...order }, 0, { empate: 'horizontal' })).toBe(firma);

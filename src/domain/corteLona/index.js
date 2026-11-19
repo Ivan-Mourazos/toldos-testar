@@ -4,7 +4,7 @@ import { normalizeOrder } from '../validation.js';
 import { resolveFabric } from '../fabricCatalog.js';
 import { shortFabricName } from '../fabricShortName.js';
 import { awningLetter } from '../awningCompleteness.js';
-import { corteReadiness, motivoCorteManual } from '../corteReadiness.js';
+import { corteReadiness, motivoCorteManual, telaConCorte } from '../corteReadiness.js';
 import { opcionesCorte, PRESUPUESTO_TETRIS } from './colocacion.js';
 import { dibujo } from './dibujoCorte.js';
 import { escribirDxf2004 } from './dxfCorte.js';
@@ -57,8 +57,8 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
       continue;
     }
     const tela = resolveFabric(orden.sameFabric ? orden.fabric : toldo.fabric);
-    if (tela?.material?.trim().toUpperCase() !== 'PLASTICA (LONA)') {
-      avisar(letra, toldo.of, 'esta fase solo corta lona de PVC (PLASTICA (LONA)).');
+    if (!telaConCorte(tela)) {
+      avisar(letra, toldo.of, 'solo se corta en la máquina la lona de PVC o Soltis.');
       continue;
     }
     const bloque = calculo.ofs.find((o) => o.awningIndex === i);
@@ -71,11 +71,14 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
       avisar(letra, toldo.of, 'faltan medidas válidas de la lona o del rollo.');
       continue;
     }
+    const bambalina = toldo.model === 'BAMBALINA';
     const t = {
       letra, of: bloque.of, modelo: toldo.model, cambioTela: toldo.workType !== 'FULL_AWNING',
       frenteTela: c.fabricWidth, caidaTela: c.fabricDrop, anchoRollo: c.fabricRollWidth,
-      bamba: toldo.hasValance && !toldo.valanceFabric ? Number(toldo.valanceHeight) : 0,
-      onda: toldo.hasValance ? formaBambalina(toldo.valanceCurve) : null,
+      bamba: bambalina || (toldo.hasValance && !toldo.valanceFabric) ? Number(toldo.valanceHeight) : 0,
+      onda: bambalina || toldo.hasValance ? formaBambalina(toldo.valanceCurve) : null,
+      // La bambalina suelta es solo la tira de una bamba: varilla blanca arriba y B.N(2) en las puntas (Iván, 19/11/2026).
+      ...(bambalina ? { soloBamba: true } : {}),
       unidades: Number(toldo.units), tela: c.fabricDescription,
       ajustes: ajustes[toldo.id] ?? ajustes[toldo.of] ?? ajustes[letra] ?? {},
       ...(toldo.model === 'CORTINA' || toldo.model === 'CAMBIO CORTINA' ? { cortina: datosCortina(toldo) } : {}),
@@ -96,9 +99,9 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
     }
     agregar(t, { code: c.fabricCode || tela.code, description: c.fabricDescription });
     if (cristal.length) agregar({ ...t, soloCristal: true, anchoRollo: CRISTAL.ancho, anchoRolloLona: t.anchoRollo }, CRISTAL);
-    if (toldo.hasValance && toldo.valanceFabric) {
+    if (!bambalina && toldo.hasValance && toldo.valanceFabric) {
       const telaBamba = resolveFabric(toldo.valanceFabric);
-      if (telaBamba?.material?.trim().toUpperCase() === 'PLASTICA (LONA)') {
+      if (telaConCorte(telaBamba)) {
         agregar({ ...t, soloBamba: true, bamba: Number(toldo.valanceHeight), anchoRollo: telaBamba.width,
           tela: telaBamba.description }, telaBamba);
       } else avisar(letra, toldo.of, 'la bamba va en otro material y no entra en este corte.');
@@ -140,13 +143,14 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
     const geometria = dibujarPlano(grupo, corte, trozoSeparado, cristales);
     const solapas = grupo.toldos.every((t) => t.solapas);
     const cortinas = grupo.toldos.every((t) => t.cortina);
-    const subtituloTipo = grupo.toldos.every((t) => t.embudo) ? 'EMBUDO DE DESCARGA' : solapas ? 'SOLAPA CON VELCRO'
+    const subtituloTipo = grupo.toldos.every((t) => t.embudo) ? 'EMBUDO DE DESCARGA'
+      : grupo.toldos.every((t) => t.modelo === 'BAMBALINA') ? 'BAMBALINA' : solapas ? 'SOLAPA CON VELCRO'
       : cortinas ? (grupo.toldos.every((t) => t.cortina?.cambio) ? 'CAMBIO DE TELA · CORTINA' : 'CORTINA')
       : grupo.toldos.every((t) => t.cambioTela) ? 'CAMBIO DE TELA'
       : grupo.toldos.some((t) => t.cambioTela) ? 'TOLDO Y CAMBIO DE TELA' : 'TOLDO DE FACHADA';
     const datos = Object.fromEntries(Object.entries({ ...cabecera,
       tituloCorte: `CORTE · ${grupo.material} · ROLLO DE ${grupo.anchoRollo / 10} · ${((corte.largoMaterial ?? corte.largo) / 1000).toLocaleString('es-ES')} M${corte.repeticiones > 1 ? ` · REPETIR X${corte.repeticiones}` : ''}`,
-      subtitulo: `MEDIDAS EN CM · LONA DE PVC · ${subtituloTipo}`
+      subtitulo: `MEDIDAS EN CM · ${/SOLTIS/i.test(grupo.codigoTela) ? 'SOLTIS' : 'LONA DE PVC'} · ${subtituloTipo}`
     }).map(([k, v]) => [k, textoSeguro(v)]));
     for (const h of geometria.hojas) h.cajetin.OF = textoSeguro(h.cajetin.OF);
     planos.push({ codigoTela: grupo.codigoTela, material: grupo.material, geometria,

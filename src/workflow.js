@@ -9,7 +9,7 @@ import { normalizeOrder } from './domain/validation.js';
 import { abreTgmPedidos, rutaParaTgmPedidos } from './flujoDwg/rutaPc.js';
 import { summarizeAwnings } from './domain/awningListSummary.js';
 import { copiarEstadoCorteLona, corteLonaPendiente } from './corteLonaEstado.js';
-import { corteReadiness } from './domain/corteReadiness.js';
+import { corteReadiness, telaConCorte } from './domain/corteReadiness.js';
 import { resolveFabric } from './domain/fabricCatalog.js';
 
 export const REVIEW_FILE_SUFFIX = '.pdf';
@@ -314,7 +314,7 @@ export function reviewSummary(review) {
   try {
     const order = normalizeOrder(review.order);
     const actual = pedidoEntrega(review).order;
-    const requiereCorte = actual.awnings.some(t => corteReadiness(t.model).ready && resolveFabric(actual.sameFabric ? actual.fabric : t.fabric)?.material?.trim().toUpperCase() === 'PLASTICA (LONA)');
+    const requiereCorte = actual.awnings.some(t => corteReadiness(t.model).ready && telaConCorte(resolveFabric(actual.sameFabric ? actual.fabric : t.fabric)));
     if (requiereCorte) {
       const pendientes = corteLonaPendiente(actual, review.corteLona);
       summary.corteLonaEstado = pendientes.some(p => p.motivo === 'viejo') ? 'viejo' : pendientes.length ? 'falta' : 'hecho';

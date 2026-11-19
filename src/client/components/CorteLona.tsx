@@ -1,9 +1,10 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { CheckCircle2, Scissors, RefreshCw } from 'lucide-react';
-import { corteReadiness } from '../../domain/corteReadiness.js';
+import { corteReadiness, telaConCorte } from '../../domain/corteReadiness.js';
 import { resolveFabric } from '../../domain/fabricCatalog.js';
 import { awningLetter } from '../../domain/awningCompleteness.js';
 import { AJUSTES_POR_DEFECTO } from '../../domain/corteLona/despiece.js';
+import { bastillasTira, formaBambalina } from '../../domain/corteLona/bambalina.js';
 import type { DraftState } from '../types';
 import { textoEstadoCorte, type AjustesCorte, type CorteRespuesta, type EstadoCorte, type PendienteCorte, type VistaCorte } from '../corteLona';
 import '../coordina/corte-lona.css';
@@ -20,7 +21,7 @@ const numero = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits:
 /** Los toldos del pedido que llevan corte de lona: PVC de un modelo con corte. */
 export function toldosConCorte(order: DraftState) {
   return order.awnings.flatMap((t, i) => corteReadiness(t.model).ready &&
-    resolveFabric(order.sameFabric ? order.fabric : t.fabric)?.material?.trim().toUpperCase() === 'PLASTICA (LONA)' ? [{ t, letra: awningLetter(i) }] : []);
+    telaConCorte(resolveFabric(order.sameFabric ? order.fabric : t.fabric)) ? [{ t, letra: awningLetter(i) }] : []);
 }
 
 /** Para generar el corte desde la barra de arriba del pedido guardado. */
@@ -106,7 +107,7 @@ export const CorteLona = forwardRef<CorteLonaControl, {
       {!generarArriba && (!reviewCode || (regenerable && pendientes !== null && estadoVisible !== 'hecho')) && <button className="primary-button boton-3d" type="button" disabled={generando} onClick={() => void generar()}><RefreshCw size={16} aria-hidden="true" />{generando ? 'Generando corte…' : 'Generar corte'}</button>}
       {acciones?.(Boolean(datos && pendientes?.length === 0))}
     </CabeceraDocumento>
-    <p className="corte-ayuda">PVC · piezas y marcas de confección, agrupadas por tela</p>
+    <p className="corte-ayuda">PVC y Soltis · piezas y marcas de confección, agrupadas por tela</p>
     {enDwg && <p className="corte-ayuda">El corte válido es el guardado en ZWCAD. Esta vista no incluye sus retoques.</p>}
     {noRegenerado && <p className="corte-aviso">{CORTE_NO_REGENERADO}</p>}
     {error && <p role="alert" className="corte-aviso">{error}</p>}
@@ -117,6 +118,7 @@ export const CorteLona = forwardRef<CorteLonaControl, {
         const clave = t.id || t.of || letra;
         const a = { ...AJUSTES_POR_DEFECTO, ...estado?.ajustes[clave] } as AjustesCorte;
         return <fieldset key={clave} disabled={generando}><legend>Toldo {letra} · OF {t.of || 'sin indicar'}</legend>
+          {t.model === 'BAMBALINA' ? <BordesBambalina a={a} onda={Boolean(formaBambalina(t.valanceCurve))} cambiar={patch => cambiar(clave, patch)} /> : <>
           <label>Empate<select aria-label="Empate" value={a.empate} onChange={e => cambiar(clave, { empate: e.target.value as AjustesCorte['empate'] })}><option value="horizontal">Horizontal</option><option value="vertical">Vertical</option></select></label>
           {([
             ['empateCm', 'Empate (cm)'], ['aumentoEscuadrarCm', 'Aumento para escuadrar (cm)'], ['lateralVerticalCm', 'Cada lateral en vertical (cm)'],
@@ -128,6 +130,7 @@ export const CorteLona = forwardRef<CorteLonaControl, {
           }} /></label>)}
           <label>Varilla de arriba<select aria-label="Varilla de arriba" value={a.varillaArriba || (t.workType === 'FULL_AWNING' ? 'VARILLA NEGRA (4,5)' : 'VARILLA BLANCA (5,5)')} onChange={e => cambiar(clave, { varillaArriba: e.target.value })}><option value="VARILLA NEGRA (4,5)">Varilla negra (4,5)</option><option value="VARILLA BLANCA (5,5)">Varilla blanca (5,5)</option></select></label>
           <label>Tira en vertical<select aria-label="Tira en vertical" value={estado?.ajustes[clave]?.tiraPartida === undefined ? 'auto' : a.tiraPartida ? 'partida' : 'entera'} onChange={e => cambiar(clave, { tiraPartida: e.target.value === 'auto' ? undefined : e.target.value === 'partida' })}><option value="auto">Automática</option><option value="entera">Entera</option><option value="partida">Partida</option></select></label>
+          </>}
         </fieldset>;
       })}
     </details>}
@@ -135,6 +138,29 @@ export const CorteLona = forwardRef<CorteLonaControl, {
     {!datos && estado && !reviewCode && <p className="corte-ayuda">Genera el corte para ver las piezas y las dos opciones del rollo.</p>}
   </section>;
 });
+
+/** Los cuatro bordes de la bambalina: cada uno con su bastilla en cm o al corte, sin bastilla (Iván, 19/11/2026). */
+const BORDES_BAMBALINA = [
+  ['bambaPuntaIzqCm', 'izq', 'Punta izquierda'], ['bambaPuntaDerCm', 'der', 'Punta derecha'],
+  ['bambaAbajoCm', 'abajo', 'Abajo'], ['bambaArribaCm', 'arriba', 'Arriba (varilla)']
+] as const;
+const BASTILLAS_POR_DEFECTO = bastillasTira(AJUSTES_POR_DEFECTO, null);
+
+function BordesBambalina({ a, onda, cambiar }: { a: AjustesCorte; onda: boolean; cambiar: (patch: Partial<AjustesCorte>) => void }) {
+  const b = bastillasTira(a, onda);
+  return <>{BORDES_BAMBALINA.map(([campo, borde, etiqueta]) => {
+    if (borde === 'abajo' && onda) return <label key={campo}>{etiqueta}<span className="corte-borde-nota">Con onda: remate aparte</span></label>;
+    const valor = b[borde];
+    return <label key={campo}>{etiqueta}<span className="corte-borde">
+      <select aria-label={`${etiqueta}: bastilla o al corte`} value={valor > 0 ? 'bastilla' : 'al-corte'} onChange={e => cambiar({ [campo]: e.target.value === 'al-corte' ? 0 : BASTILLAS_POR_DEFECTO[borde] || 2 })}><option value="bastilla">Bastilla</option><option value="al-corte">Al corte</option></select>
+      <input key={`${campo}-${valor}`} type="text" inputMode="decimal" aria-label={`${etiqueta}: bastilla en cm`} disabled={valor === 0} defaultValue={numero(valor)} onBlur={e => {
+        const nuevo = Number(e.target.value.replace(',', '.'));
+        if (!Number.isFinite(nuevo) || nuevo < 0) { e.target.value = numero(valor); return; }
+        if (nuevo !== valor) cambiar({ [campo]: nuevo });
+      }} />
+    </span></label>;
+  })}</>;
+}
 
 export function CorteLonaVista({ datos }: { datos: CorteRespuesta }) {
   return <>

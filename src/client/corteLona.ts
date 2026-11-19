@@ -2,6 +2,8 @@ export type AjustesCorte = {
   empate?: 'horizontal' | 'vertical'; empateCm?: number; aumentoEscuadrarCm?: number;
   lateralVerticalCm?: number; tiraExtraLargoCm?: number; tiraExtraAltoCm?: number;
   varillaArriba?: string; varillaArribaMm?: number; varillaTiraMm?: number; tiraPartida?: boolean;
+  // Bastillas de la bambalina, en cm por borde; 0 es al corte (Iván, 19/11/2026).
+  bambaPuntaIzqCm?: number; bambaPuntaDerCm?: number; bambaAbajoCm?: number; bambaArribaCm?: number;
 };
 export type EstadoCorte = {
   version: number; generadoEn: string; generadoPor: string; ofStockSacos: string;

@@ -12,8 +12,25 @@ export const HOLGURA_ONDA_MM = 10;
  * corta aparte (puede ser de otra tela) y no va en este corte (Iván, 28/10/2026). */
 export const BASTILLA_ABAJO_TIRA_CM = 2;
 
-/** El alto de corte de la tira (cm): la bamba y lo que se le suma, sin la bastilla de abajo si lleva onda. */
-export const altoTiraCm = (bamba, extraAltoCm, onda) => (bamba > 0 ? bamba + extraAltoCm - (onda ? BASTILLA_ABAJO_TIRA_CM : 0) : 0);
+/** Los cm de bastilla de cada borde de la tira que se pueden cambiar (Iván, 19/11/2026); 0 es «al corte». */
+export const BASTILLAS_TIRA = Object.freeze(['bambaPuntaIzqCm', 'bambaPuntaDerCm', 'bambaAbajoCm', 'bambaArribaCm']);
+
+/**
+ * Los cm de cada borde de la tira, con los ajustes del toldo. Sin tocar, lo de siempre: la mitad de
+ * `tiraExtraLargoCm` en cada punta (B.N(2)), la B.N(2) abajo y el resto de `tiraExtraAltoCm` arriba, para la varilla.
+ * Con onda no hay bastilla abajo: lleva remate, aparte.
+ */
+export function bastillasTira(a, onda) {
+  const v = (clave, porDefecto) => a[clave] ?? porDefecto;
+  return { izq: v('bambaPuntaIzqCm', a.tiraExtraLargoCm / 2), der: v('bambaPuntaDerCm', a.tiraExtraLargoCm / 2),
+    abajo: onda ? 0 : v('bambaAbajoCm', BASTILLA_ABAJO_TIRA_CM), arriba: v('bambaArribaCm', a.tiraExtraAltoCm - BASTILLA_ABAJO_TIRA_CM) };
+}
+
+/** El alto de corte de la tira (cm): la bamba y las bastillas de arriba y de abajo. */
+export const altoTiraCm = (bamba, b) => (bamba > 0 ? bamba + (b.arriba + b.abajo) : 0);
+
+/** El largo de corte de la tira (cm): el frente y las bastillas de las puntas. */
+export const largoTiraCm = (frente, b) => frente + (b.izq + b.der);
 
 /** Las formas de la plantilla; la EXTRASUAVE de la web es la SUPERSUAVE de la plantilla. */
 export const FORMAS_BAMBALINA = Object.freeze(Object.keys(ONDAS_BAMBALINA));
@@ -28,13 +45,15 @@ export function formaBambalina(curva) {
 /**
  * El borde de abajo de una tira de `largoMm` con la onda `forma`, de punta a punta: [[u, v]] en mm, con v = 0 en
  * lo más bajo de la onda. Las ondas, enteras, en lo que queda entre `margenMm` de cada punta, centradas.
+ * `margenMm` puede ser [izquierda, derecha] si las puntas llevan bastillas distintas.
  */
 export function bordeOndulado(forma, largoMm, margenMm) {
+  const [mi, md] = Array.isArray(margenMm) ? margenMm : [margenMm, margenMm];
   const d = ONDAS_BAMBALINA[forma];
   if (!d) throw new Error(`Bambalina sin forma conocida: ${forma}.`);
   const paso = d.paso * 10, nivel = d.nivel * 10;
-  const n = Math.max(0, Math.floor((largoMm - 2 * margenMm + 1e-6) / paso));
-  const desde = (largoMm - n * paso) / 2;
+  const n = Math.max(0, Math.floor((largoMm - mi - md + 1e-6) / paso));
+  const desde = mi + (largoMm - mi - md - n * paso) / 2;
   const r = (v) => Math.round(v * 10) / 10;
   if (!n) return [[0, r(nivel)], [r(largoMm), r(nivel)]];
   const puntos = [[0, nivel], [desde, nivel]];
