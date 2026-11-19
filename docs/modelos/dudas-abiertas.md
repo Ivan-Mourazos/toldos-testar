@@ -463,6 +463,9 @@ Respuestas de Iván. «Pendiente» quiere decir que la web todavía no lo aplica
   El simulador llega al eje del tubo y excluye el envoltorio.
   Supuestos por confirmar en taller: al variar la soldadura, el aumento y la distancia del corte a la raya
   varían en la misma cantidad. Si la ficha tiene ajustes manuales, ambos son referencias para 50 mm.
-  El tubo apoya en el bajo de la lona, con el eje un radio por encima. Se reservan 5 mm entre el tubo y el doblez
-  y el diámetro entero debe caber bajo la raya. Con la ficha habitual el saco terminado mínimo es 95 mm.
+  **Contestado (Iván, 19/11):** el saco lleva la misma soldadura por delante y por detrás, y el terminado se mide
+  sin contar la soldadura; por eso se corta a 2 × (terminado + soldadura). El tubo va apoyado en el fondo de su
+  bolsa, con el eje un radio por encima del bajo de la lona. Esa bolsa no llega al fondo del saco: entre el bajo
+  de la lona y el doblez se reservan al menos 5 mm, y el diámetro entero debe caber bajo la raya. Con la ficha
+  habitual el saco terminado mínimo es 95 mm.
   En laterales, el paño lleva solo la bastilla indicada incluso con frente mayor de 6 m. Confirmar este criterio.
