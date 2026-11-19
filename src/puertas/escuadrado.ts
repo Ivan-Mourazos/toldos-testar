@@ -16,24 +16,25 @@ export function huecosSinEscuadrado(e: Entrada, frente: number): Hueco[] {
   });
 }
 
-/** Primero se confecciona a frente; al final se añade lona y se traslada su contenido local 1 cm. */
-export function ensancharPieza(x: PiezaPuerta): void {
+/** Primero se confecciona a frente; al final se añade lona y se traslada su contenido local el margen de un lado. */
+export function ensancharPieza(x: PiezaPuerta, margen = 1): void {
   if (x.clase === 'cristal') return;
   const ancho = x.ancho;
-  x.contorno = x.contorno.map(([a, b]) => [a === 0 ? 0 : a === ancho ? ancho + 2 : a + 1, b]);
-  x.marcas = x.marcas.map(([a, b, c, d]) => [a + 1, b, c + 1, d]);
-  x.huecos = x.huecos.map(h => ({ ...h, x: h.x + 1 }));
-  x.textos = x.textos.map(t => ({ ...t, x: t.x + 1 }));
-  x.unionesCorte = x.unionesCorte?.map(u => ({ ...u, x: u.x + 1 }));
-  if (x.origenAlzado) x.origenAlzado = [x.origenAlzado[0] - 1, x.origenAlzado[1]];
-  x.ancho += 2;
-  x.margenEscuadrado = 1;
+  x.contorno = x.contorno.map(([a, b]) => [a === 0 ? 0 : a === ancho ? ancho + 2 * margen : a + margen, b]);
+  x.marcas = x.marcas.map(([a, b, c, d]) => [a + margen, b, c + margen, d]);
+  x.huecos = x.huecos.map(h => ({ ...h, x: h.x + margen }));
+  x.textos = x.textos.map(t => ({ ...t, x: t.x + margen }));
+  x.unionesCorte = x.unionesCorte?.map(u => ({ ...u, x: u.x + margen }));
+  if (x.origenAlzado) x.origenAlzado = [x.origenAlzado[0] - margen, x.origenAlzado[1]];
+  x.ancho += 2 * margen;
+  x.margenEscuadrado = margen;
 }
 
 /** Para rotular se usa el mismo espacio libre y tamaño de letra que antes de añadir los márgenes. */
 export function piezaSinMargenes(x: PiezaPuerta): PiezaPuerta {
-  return { ...x, margenEscuadrado: undefined, ancho: x.ancho - 2,
-    contorno: x.contorno.map(([a, b]) => [a === 0 ? 0 : a === x.ancho ? a - 2 : a - 1, b]),
-    huecos: x.huecos.map(h => ({ ...h, x: h.x - 1 })),
-    marcas: x.marcas.map(([a, b, c, d]) => [a - 1, b, c - 1, d]) };
+  const margen = x.margenEscuadrado ?? 1;
+  return { ...x, margenEscuadrado: undefined, ancho: x.ancho - 2 * margen,
+    contorno: x.contorno.map(([a, b]) => [a === 0 ? 0 : a === x.ancho ? a - 2 * margen : a - margen, b]),
+    huecos: x.huecos.map(h => ({ ...h, x: h.x - margen })),
+    marcas: x.marcas.map(([a, b, c, d]) => [a - margen, b, c - margen, d]) };
 }

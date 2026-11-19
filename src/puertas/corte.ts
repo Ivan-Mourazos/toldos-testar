@@ -127,7 +127,7 @@ function rotulosPieza(
   araujo = false,
 ) {
   if (pieza.margenEscuadrado) {
-    rotulosPieza(entidades, piezaSinMargenes(pieza), x + (girada ? 0 : 10), y + (girada ? 10 : 0), girada, codigoPano, columnas, reves, araujo);
+    rotulosPieza(entidades, piezaSinMargenes(pieza), x + (girada ? 0 : mm(pieza.margenEscuadrado)), y + (girada ? mm(pieza.margenEscuadrado) : 0), girada, codigoPano, columnas, reves, araujo);
     return;
   }
   const wMm = girada ? mm(pieza.alto) : mm(pieza.ancho);

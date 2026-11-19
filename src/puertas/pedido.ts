@@ -49,10 +49,12 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
       const {ajustes}=t;
       if(!cotas(t,['altoHueco','anadido','anchoEt'])||t.altoTotal!==null&&!cotas(t,['altoTotal'])
         ||!Number.isFinite(t.diametroEnrolle)||t.diametroTubo!==42||!Number.isFinite(t.grosor)||!Number.isInteger(t.nTubos)
-        ||(t.abajo!=='tubo'&&t.abajo!=='saco')||!objeto(ajustes)
+        ||(t.abajo!=='tubo'&&t.abajo!=='saco'&&t.abajo!=='envolvente')||!objeto(ajustes)
         ||!['margen','desvio','altoPerfil','anchoPerfil','anguloPerfil'].every(k=>Number.isFinite(ajustes[k])))return error();
       if(t.tubosManual!==null&&(!Array.isArray(t.tubosManual)||!t.tubosManual.every(n=>Number.isFinite(n))))return error();
       if(['cierreBajo','marcaCierre'].some(k=>t[k]!==undefined&&!cotas(t,[k])))return error();
+      if(t.laterales!==undefined && t.laterales!=='corte' && t.laterales!=='bastilla')return error();
+      if(['bastilla','terminado','soldadura'].some(k=>t[k]!=null && !cotas(t,[k])))return error();
       if(t.lona!==undefined&&t.lona!=='pvc'&&t.lona!=='rejilla')return error();
       if(t.materialEt!==undefined&&t.materialEt!=='LAC650'&&t.materialEt!=='LAC900')return error();
       faltanDatosTgm ||= camposTgmConValorDeFicha.some(k=>t[k]===undefined);

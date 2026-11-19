@@ -50,7 +50,11 @@ export interface Puerta {
     materialEt: 'LAC650' | 'LAC900'; // Solo para las tiras aparte de la rejilla.
     cierreBajo: number; // cm de lona por debajo del bajo terminado (Q-TGM05)
     marcaCierre: number; // cm desde el borde del corte (Q-TGM05)
-    abajo: 'tubo' | 'saco'; // La medida del saco se guarda en enrollable.saco.
+    laterales?: 'corte' | 'bastilla';
+    bastilla?: number | null;
+    terminado?: number | null;
+    soldadura?: number | null;
+    abajo: 'tubo' | 'saco' | 'envolvente'; // La medida del saco se guarda en enrollable.saco.
     grosor: number; // mm
     tubosManual: number[] | null; // mm desde el perfil; null para reparto automático
     ajustes: { margen: number; desvio: number; altoPerfil: number; anchoPerfil: number; anguloPerfil: number }; // mm y grados

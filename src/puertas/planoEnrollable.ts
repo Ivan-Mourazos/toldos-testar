@@ -1,7 +1,7 @@
 import { separacionCorte } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { calcularPuerta, calcularPuertaDerivada, solapeEntradaEnrollable } from './calcular.ts';
-import { enrolleTgm, puertaTgmDerivada } from './tgm.ts';
+import { enrolleTgm, envoltorioTgm, puertaTgmDerivada } from './tgm.ts';
 import { rotuloSaco, sacoPuerta, sacoUtil } from './saco.ts';
 import { anclarCotas } from './cotasPuertas.ts';
 import { notaPlanoEnrollable, panoContinuoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
@@ -84,8 +84,10 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
   const r = enrolle ? calcularPuertaDerivada(p) : calcularPuerta(p);
   const saco = sacoPuerta(p), hs = saco.corte, hp = saco.altoPestana;
   const { sinSaco, marcaCierre } = p.enrollable;
-  const bajo = sinSaco ? 0 : saco.rematado;
-  const corteBajo = -H - (p.enrollable.cierreBajo ?? 0);
+  const envoltorio = envoltorioTgm(p);
+  const bastilla = p.tgm?.laterales === 'bastilla' ? p.tgm.bastilla ?? 0 : 0;
+  const bajo = sinSaco ? envoltorio?.bajoLona ?? 0 : saco.rematado;
+  const corteBajo = -H + (envoltorio?.bajoLona ?? 0) - (p.enrollable.cierreBajo ?? 0);
   const ventanales = T > 0 ? ventanalesEnrollable(p) : [];
   const ejes: number[] = ventanales.length ? [T] : [];
   for (const v of ventanales) ejes.push(ejes.at(-1)! + v.D);
@@ -147,15 +149,15 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
     flecha(l, F / 2, yMarca, rayaArriba ? 0 : 180, segundo ? -1 : 1);
     if (!empateEt && !ejes.some(e => Math.abs(e - b) < .01)) linea(l, 'borrar', 0, -b + mitadEt, F, -b + mitadEt);
     cota(l, 0, -b - mitadEt, 0, -b + mitadEt, -9.15 + i, 'XERAL 5');
-    texto(l, '3 CM (HUECOS)', F / 2, -b + (superior ? 14.7311 : segundo ? -7.59 : 14.187) - 3.5, 7, { centrado: true });
+    if (!p.tgm) texto(l, '3 CM (HUECOS)', F / 2, -b + (superior ? 14.7311 : segundo ? -7.59 : 14.187) - 3.5, 7, { centrado: true });
   });
   if (!sinSaco) linea(l, 'ROTULADOR', 0, -H + bajo + 2, F, -H + bajo + 2);
   linea(l, 'referencias', 0, -H, F, -H);
   if (sinSaco) {
-    if (corteBajo < -H) {
-      linea(l, 'referencias', 0, -H, 0, corteBajo);
+    if (corteBajo < -H + bajo) {
+      linea(l, 'referencias', 0, -H + bajo, 0, corteBajo);
       linea(l, 'referencias', 0, corteBajo, F, corteBajo);
-      linea(l, 'referencias', F, corteBajo, F, -H);
+      linea(l, 'referencias', F, corteBajo, F, -H + bajo);
     }
     if (marcaCierre !== undefined) {
       const alturaCierre = corteBajo + marcaCierre;
@@ -177,15 +179,30 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
   // Iván, 06/11/2026 (AR2605429): «AL CORTE» centrado en el paño de arriba (hasta el ventanal o la primera E.T.), como en
   // las apilables; sin ventanal salía pegado arriba. «PISAR LAS E.T.», centrado en el alto de la puerta.
   const techo = Math.min(H, ...(T > 0 ? [T] : []), ...p.entradas.map(e => H - e.altura).filter(y => y > 0 && y < H));
-  texto(l, 'AL CORTE', -6.04, -techo / 2, 7, { giro: 90, centrado: true });
-  texto(l, 'AL CORTE', F + 5.46, -techo / 2, 7, { giro: 90, centrado: true });
+  if (bastilla > 0) {
+    const pie = sinSaco ? corteBajo : -H + bajo;
+    for (const x of [-bastilla, F]) rectangulo(l, 'referencias', x, pie, bastilla, 3.5 - pie);
+    cota(l, -bastilla, 3.5, 0, 3.5, 12, 'XERAL 5');
+  }
+  if (envoltorio && envoltorio.terminado > 0) {
+    const y = -H + envoltorio.terminado + envoltorio.soldadura;
+    rectangulo(l, 'referencias', 3, -H, F - 6, y + H);
+    linea(l, 'ROTULADOR', p.margenMarcas, y, F - p.margenMarcas, y);
+    linea(l, 'ejes', 0, -H + envoltorio.eje, F, -H + envoltorio.eje);
+    cota(l, 3, -H, 3, -H + envoltorio.terminado, -16, 'XERAL 5');
+    cota(l, 3, -H + envoltorio.terminado, 3, y, -32, 'XERAL 5');
+    texto(l, 'SACO ENVOLVENTE', F / 2, -H - 16, 5, { centrado: true });
+  }
+  const rotuloLateral = bastilla > 0 ? `BASTILLA DE ${bastilla.toLocaleString('es-ES')} CM` : 'AL CORTE';
+  texto(l, rotuloLateral, -bastilla - 6.04, -techo / 2, 7, { giro: 90, centrado: true });
+  texto(l, rotuloLateral, F + bastilla + 5.46, -techo / 2, 7, { giro: 90, centrado: true });
   texto(l, 'DE ESTE LADO PISAR LAS E.T. 1 CM', F + 58, -H / 2, 10, { giro: 90, centrado: true });
   linea(l, 'texto', F + 12.17, -H - 5.32, F - .79, -H + 7.90);
   // La nota de la raya, que faltaba (Iván, 24/10/2026, AR2605220), como en las apilables.
   texto(l, 'CERRAR E.T', F + 38, -H - 11, 7, { centrado: true });
   texto(l, '2 CM MÁXIMO', F + 38, -H - 21, 7, { centrado: true });
   cota(l, 0, 0, F, 0, 23.01, 'XERA 15');
-  const hitos = [0, ...bandas, H];
+  const hitos = [0, ...bandas, ...(envoltorio && envoltorio.eje > 0 ? [H - envoltorio.eje] : []), H].sort((a, b) => a - b);
   hitos.slice(1).forEach((h, i) => cota(l, F, -hitos[i], F, -h, F + 21.93));
   cota(l, F, 0, F, -H, F + 37.91);
   const ys = -H - 47.6767;
@@ -230,7 +247,7 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
     else actual += (actual ? ' ' : '') + palabra;
   }
   if (actual) lineas.push(actual);
-  const yNota = sinSaco ? corteBajo - 30 : ys - hs - 48;
+  const yNota = sinSaco ? Math.min(-H, corteBajo) - 30 : ys - hs - 48;
   lineas.forEach((v, i) => texto(l, v, F / 2, yNota - i * hNota * 1.4, hNota, { centrado: true }));
 
   // Los empates y bolsillos configurados conservan sus marcas; nunca crean una pieza nueva.
@@ -265,7 +282,7 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
       { capa: 'ROTULADOR', centrado: true, giro: m.giro ?? 0 });
     sx += pieza.ancho - 2;
   }
-  const fondo = sinSaco ? corteBajo - 42 : ys - hs - 60;
+  const fondo = sinSaco ? Math.min(-H, corteBajo) - 42 : ys - hs - 60;
   return { lienzo: l, zona: { x0: -65, x1: F + 70, y0: fondo - (lineas.length - 1) * hNota * 1.4, y1: 40 } };
 }
 

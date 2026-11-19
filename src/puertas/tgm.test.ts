@@ -100,6 +100,49 @@ const puertaTgm = (cambios: Partial<NonNullable<Puerta['tgm']>> = {}): Puerta =>
 };
 
 describe('cálculo de la puerta TGM', () => {
+  it('envuelve el tubo del cierre y conserva el frente de las E.T. entre bastillas', () => {
+    const p = puertaTgm({ abajo: 'envolvente', altoHueco: 320, laterales: 'bastilla', bastilla: 5, terminado: 10, soldadura: 2 });
+    p.rollo = 320;
+    const r = calcularPuerta(p);
+    expect(r.avisos).toEqual([]);
+    expect(enrolleTgm(p)?.largo).toBe(3421);
+    expect(r.piezas.filter(x => x.clase === 'pano')).toMatchObject([{ ancho: 310, alto: 361.7 }]);
+    expect(r.piezas[0].marcas).toContainEqual([6.5, 20.2, 303.5, 20.2]);
+    expect(r.piezas.filter(x => x.clase === 'entrada')).toMatchObject([{ ancho: 300, huecos: [] }, { ancho: 300, huecos: [] }]);
+    expect(r.alternativasSaco).toMatchObject({ entero: [{ ancho: 306, alto: 24 }], partido: [{ ancho: 160, alto: 24 }, { ancho: 148, alto: 24 }] });
+    expect(leerPedidoPuertas(pedidoDe('ENV', p)).elementos[0].input).toEqual(p);
+  });
+  it('reparte por el ancho con bastillas y embebe la primera E.T. en el paño', () => {
+    const p = puertaTgm({ abajo: 'envolvente', altoHueco: 320, laterales: 'bastilla', bastilla: 5, terminado: 10 });
+    const r = calcularPuerta(p);
+    expect(r.avisos).toEqual([]);
+    expect(r.piezas.map(x => [x.ancho, x.alto])).toEqual([[310, 255.35], [310, 120.85], [300, 14.5]]);
+    for (const x of r.piezas.filter(x => x.clase === 'pano')) {
+      expect(x.huecos).toEqual([]);
+      for (const borde of [5, 305]) expect(x.marcas).toContainEqual([borde, 0, borde, x.alto]);
+    }
+    const { lienzo } = dibujarAlzadoEnrollable(p, 'A');
+    expect(lienzo.textos.map(t => t.valor)).toContain('BASTILLA DE 5 CM');
+    expect(lienzo.textos.map(t => t.valor)).not.toContain('3 CM (HUECOS)');
+    expect(lienzo.cotas).toContainEqual(expect.objectContaining({ y1: -350, y2: -340, valor: 10 }));
+    expect(generarCortePuertas(pedidoDe('ENV', p)).archivo?.dxf).toContain('EOF');
+  });
+  it('mantiene la bastilla indicada por encima de seis metros', () => {
+    const p = { ...puertaTgm({ laterales: 'bastilla', bastilla: 8, lona: 'rejilla' }), frente: 650 };
+    const r = calcularPuerta(p);
+    expect(r.piezas.filter(x => x.clase === 'pano').map(x => x.ancho)).toEqual([666, 666]);
+    expect(r.piezas.filter(x => x.clase === 'entrada').map(x => x.ancho)).toEqual([650, 650, 650]);
+  });
+  it('pide el terminado del envoltorio y rechaza una soldadura vacía', () => {
+    for (const cambios of [{ terminado: null }, { terminado: 10, soldadura: null }]) {
+      const r = calcularPuerta(puertaTgm({ abajo: 'envolvente', ...cambios }));
+      expect(r.avisos).toContainEqual(expect.objectContaining({ codigo: 'TGM_ENVOLTORIO', nivel: 'error' }));
+      expect(r.piezas).toEqual([]);
+    }
+  });
+  it('pide la medida de bastilla del pedido', () => {
+    expect(calcularPuerta(puertaTgm({ laterales: 'bastilla' })).avisos).toContainEqual(expect.objectContaining({ codigo: 'TGM_BASTILLA', nivel: 'error' }));
+  });
   it('PVC: el paño inferior forma la E.T. y el superior lleva su raya de empate con flecha', () => {
     const p = { ...puertaTgm({ abajo: 'tubo', lona: 'pvc' }), rollo: 250 };
     const r = calcularPuerta(p);
@@ -111,8 +154,8 @@ describe('cálculo de la puerta TGM', () => {
       ['Paño 1', 300, 175.85], ['Paño 2', 300, 144.9], ['Paño 3', 300, 155.75],
     ]);
     const [inferior, central, superior] = r.piezas;
-    expect(inferior.huecos).toMatchObject([{ y: 163.85, alto: 9.5 }, { y: 163.85, alto: 9.5 }]);
-    expect(central.huecos).toMatchObject([{ y: 132.9, alto: 9.5 }, { y: 132.9, alto: 9.5 }]);
+    expect(inferior.huecos).toEqual([]);
+    expect(central.huecos).toEqual([]);
     expect(superior.huecos).toEqual([]);
     const rayas = (pieza: typeof inferior) => pieza.marcas.filter(([a, b, c, d]) => b === d && c - a > 150).map(m => m[1]);
     expect(rayas(inferior)).toEqual([23]);
@@ -171,7 +214,7 @@ describe('cálculo de la puerta TGM', () => {
     expect(ets).toHaveLength(2);
     for (const et of ets) {
       expect(et).toMatchObject({ material: `${materialEt} AZUL 5002`, ancho: 300, alto: 14.5 });
-      expect(et.huecos).toMatchObject([{ y: 2.5, alto: 9.5, abierto: 'izquierda' }, { y: 2.5, alto: 9.5, abierto: 'derecha' }]);
+      expect(et.huecos).toEqual([]);
     }
     expect(generarCortePuertas(pedidoDe('REJILLA-TGM', p)).archivo?.dxf).toContain('EOF');
   });
@@ -200,7 +243,7 @@ describe('cálculo de la puerta TGM', () => {
       expect(ets[i].material).toBe('LAC900 BLANCO');
       const eje = ets[i].origenAlzado![1] + ets[i].alto / 2;
       expect(Math.abs(eje - (430 - m / 10))).toBeLessThanOrEqual(0.05 + 1e-9);
-      expect(ets[i].huecos[0]).toMatchObject({ y: 2.5, alto: 9.5 });
+      expect(ets[i].huecos).toEqual([]);
     }
   });
 

@@ -1,4 +1,3 @@
-import { huecosEntrada } from './calcular.ts';
 import { colocarTubos, type AjustesEnrolle, type Colocacion } from './enrolle/colocar.ts';
 import type { ConfigEnrolle } from './enrolle/geometria.ts';
 import { sacoPuerta } from './saco.ts';
@@ -18,6 +17,16 @@ export interface EnrolleTgm {
 const decima = (x: number) => Math.round(x * 10) / 10;
 const positivo = (x: number) => Number.isFinite(x) && x > 0;
 
+/** Cotas en cm desde el doblez terminado. La costura empieza sobre la corona del tubo. */
+export function envoltorioTgm(p: Puerta) {
+  const t = p.tgm;
+  if (t?.abajo !== 'envolvente') return null;
+  const terminado = t.terminado ?? 0;
+  const soldadura = t.soldadura === undefined ? 2 : t.soldadura ?? 0;
+  return { terminado, soldadura, alto: 2 * (terminado + soldadura), bajoLona: terminado - t.diametroTubo / 10,
+    eje: terminado - t.diametroTubo / 20 };
+}
+
 export function enrolleTgm(p: Puerta): EnrolleTgm | null {
   const t = p.tgm;
   if (!t || ![t.altoHueco, p.frente, t.anchoEt, t.diametroEnrolle, t.grosor].every(positivo)
@@ -26,7 +35,7 @@ export function enrolleTgm(p: Puerta): EnrolleTgm | null {
   const altoLona = t.altoTotal !== null && positivo(t.altoTotal) ? t.altoTotal : t.altoHueco + t.anadido;
   const conSaco = t.abajo === 'saco';
   // El enrolle se cuenta desde la varilla. Con tubo abajo termina en el eje del tubo del cierre (Q-TGM04).
-  const bajo = conSaco ? sacoPuerta(p).rematado : t.diametroTubo / 20;
+  const bajo = conSaco ? sacoPuerta(p).rematado : (envoltorioTgm(p)?.eje ?? t.diametroTubo / 20);
   const largo = decima((altoLona - bajo) * 10);
   if (!positivo(largo)) return null;
 
@@ -64,7 +73,7 @@ export function puertaTgmDerivada(p: Puerta, e: EnrolleTgm): Puerta {
     },
     entradas: marcas.map(marca => ({
       altura: decima(e.altoLona - marca / 10), diametro: diametroTubo, largo: p.frente, alto: anchoEt,
-      huecos: huecosEntrada(p.frente, diametroTubo, [], anchoEt),
+      huecos: [],
     })),
   };
 }

@@ -101,7 +101,16 @@ soldar el saco y ML por OF. Cambia esto:
 - Arriba, el bolsillo de la **varilla** que entra en el perfil fleco, en lugar del bolsillo superior de Portanova.
 - La cadena de tubos sale del colocador, no del técnico.
 - El ancho de la E.T. sale de la puerta, no de una constante.
-- Los huecos laterales son los de Ø42 que ya tiene Portanova (5 × 9,5).
+- La E.T. suelta se corta lisa a frente. En PVC puede quedar incorporada en el empate, lisa y de todo el ancho del paño.
+- Laterales al corte por defecto. Con bastilla B los paños miden F + 2B, con rayas de doblez en B y F + B. El reparto
+  por rollo usa ese ancho. Por encima de 6 m se mantiene la misma regla.
+- Con tubo y saco envolvente, el doblez es el bajo terminado. Si T es el saco terminado y S la soldadura (2 cm por
+  defecto), la tira mide (F − 6) × 2(T + S), con pestaña adicional de 12 × 14 a 2 del borde. Las mitades llevan
+  1 cm de más cada una para la unión. El material es el del saco.
+- Geometría provisional Q-TGM06, en cm desde el bajo. El borde inferior de la soldadura está a T y el superior a
+  T + S (raya de rotulador). El tubo de diámetro D toca la soldadura por debajo, con eje a T − D/2 y bajo del
+  cierre a T − D. El corte del paño empieza 14 cm por debajo de ese cierre y su marca va a 23 cm del corte.
+  El simulador termina en el eje y deja fuera el envoltorio.
 - El saco, con la medida escrita, con las reglas de saco que ya existen.
 - Sin ventanas.
 

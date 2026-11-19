@@ -1,5 +1,6 @@
 import { alturasTubos, desfaseCintas, solapeEntradaEnrollable } from './calcular.ts';
 import { huecosSinEscuadrado, llevaEscuadrado } from './escuadrado.ts';
+import { envoltorioTgm } from './tgm.ts';
 import { alzadoAraujo } from './alzadoAraujo.ts';
 import { alzadoSantaPau } from './alzadoSantaPau.ts';
 import { colocarTextosPuerta } from './textosPlano.ts';
@@ -91,6 +92,9 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   const desnivel = desnivelSuelo(p), altoDerecho = H - desnivel;
   const enr = p.modelo === 'PUERTAENR';
   const sinSaco = enr && p.enrollable.sinSaco;
+  const envoltorio = envoltorioTgm(p);
+  const pie = H - (envoltorio?.bajoLona ?? 0);
+  const bastilla = p.tgm?.laterales === 'bastilla' ? p.tgm.bastilla ?? 0 : 0;
   const pvcTgm = enr && p.tgm?.lona === 'pvc';
   const ple = p.modelo === 'PUERTAPLE';
   const auto = p.modelo === 'PUERTAUTO';
@@ -128,7 +132,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   const hitosDerecha = ple
     ? [0, ...tubos, H]
     : enr
-      ? [...new Set([0, ...tubos, ...(ventanales.length ? ejesVentanal.map(y => H - y) : []), H])]
+      ? [...new Set([0, ...tubos, ...(envoltorio ? [envoltorio.eje] : []), ...(ventanales.length ? ejesVentanal.map(y => H - y) : []), H])]
           .filter(y => y >= 0 && y <= H)
           .sort((a, b) => a - b)
       // Autorreparable: la soldadura del saco y los empates, desde su rematado (antes 14 y +12 fijos, del rematado de 12).
@@ -177,7 +181,13 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
 
   // Contorno general de la puerta
   if (desnivel) formas.push({tipo:'poligono',clase:'puerta-lona',puntos:[[0,0],[F,0],[F,altoDerecho],[0,H]]});
-  else rect('puerta-lona', 0 - margen, 0, F + margen * 2, H);
+  else rect('puerta-lona', -margen, 0, F + margen * 2, pie);
+  if (bastilla > 0) {
+    const fin = sinSaco ? pie + (p.enrollable.cierreBajo ?? 0) : H - saco.rematado;
+    for (const x of [-bastilla, F]) rect('puerta-pano', x, -3.5, bastilla, fin + 3.5);
+    cota({ x1: -bastilla, y1: 0, x2: 0, y2: 0, linea: -17, valor: bastilla, estilo: 'XERAL 5', marcas: 2,
+      texto: { x: -bastilla - 6, y: -18, ancla: 'end' } });
+  }
 
   // Cabecera según modelo
   if (enr || auto) {
@@ -264,9 +274,20 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   if (!sinSaco) marca(H - hSaco, -1);
   else {
     const cierre = p.enrollable.cierreBajo ?? 0;
-    if (cierre > 0) rect('puerta-pano', 0, H, F, cierre);
+    if (cierre > 0) rect('puerta-pano', 0, pie, F, cierre);
+    if (envoltorio && envoltorio.terminado > 0) {
+      const costura = H - envoltorio.terminado;
+      rect('puerta-saco', 3, costura - envoltorio.soldadura, F - 6, envoltorio.terminado + envoltorio.soldadura);
+      linea('puerta-tubo', 0, H - envoltorio.eje, F, H - envoltorio.eje);
+      linea('puerta-rotulador', p.margenMarcas, costura - envoltorio.soldadura, F - p.margenMarcas, costura - envoltorio.soldadura);
+      for (const [y1, y2, x] of [[costura, H, -16], [costura - envoltorio.soldadura, costura, -32]]) {
+        cota({ x1: 3, y1, x2: 3, y2, linea: x, valor: y2 - y1, estilo: 'XERAL 5', marcas: 2,
+          texto: { x: x - 2, y: (y1 + y2) / 2, ancla: 'end' } });
+      }
+      nota('SACO ENVOLVENTE', F / 2, H + 17, 5);
+    }
     if (p.enrollable.marcaCierre !== undefined) {
-      const y = H + cierre - p.enrollable.marcaCierre;
+      const y = pie + cierre - p.enrollable.marcaCierre;
       linea('puerta-rotulador', p.margenMarcas, y, F - p.margenMarcas, y);
     }
   }

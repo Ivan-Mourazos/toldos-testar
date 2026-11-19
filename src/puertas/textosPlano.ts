@@ -135,8 +135,10 @@ export function plantillaTextosPuerta(p: Puerta, resultado: ResultadoPuerta = ca
 
   // Alturas y distribución de AR2604638/4725 y AR2605036; las cajas libres adaptan la plantilla a cada pedido.
   if (p.modelo !== 'PUERTAUTO') {
-    lateral('al-corte-izq', 'AL CORTE', -9, techo / 2, p.modelo === 'PUERTAPLE' ? 8 : 7);
-    lateral('al-corte-der', 'AL CORTE', F + 9, techo / 2, p.modelo === 'PUERTAPLE' ? 8 : 7);
+    const b = p.tgm?.laterales === 'bastilla' ? p.tgm.bastilla ?? 0 : 0;
+    const rotulo = b > 0 ? `BASTILLA DE ${b.toLocaleString('es-ES')} CM` : 'AL CORTE';
+    lateral('al-corte-izq', rotulo, -9 - b, techo / 2, p.modelo === 'PUERTAPLE' ? 8 : 7);
+    lateral('al-corte-der', rotulo, F + 9 + b, techo / 2, p.modelo === 'PUERTAPLE' ? 8 : 7);
   }
 
   if (p.modelo === 'PUERTAENR') {
@@ -155,7 +157,7 @@ export function plantillaTextosPuerta(p: Puerta, resultado: ResultadoPuerta = ca
     const ejes = e.ventanasPequenas ? [] : [T];
     for (const v of vs) ejes.push(ejes.at(-1)! + v.D);
     for (const y of tubos.map(y => H - y)) if (!ejes.some(eje => Math.abs(eje - y) < 0.1)) ejes.push(y);
-    ejes.filter(y => y > 0 && y < H - 13).forEach((y, i) => {
+    ejes.filter(y => !p.tgm && y > 0 && y < H - 13).forEach((y, i) => {
       // Sin E.T. encima del ventanal, su eje no lleva leyenda de E.T. (Iván, 27/10/2026, AR2605247).
       if (!e.ventanasPequenas && (e.sinEtArriba && i === 0 && y === T || e.sinEtAbajo && y === fin)) return;
       if (ejes.slice(1, vs.length).includes(y)) {

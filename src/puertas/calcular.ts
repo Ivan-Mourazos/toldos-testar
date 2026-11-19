@@ -7,7 +7,7 @@ import { calcularSystemDock } from './systemDock.ts';
 import { calcularSacoArena, REGLAS_SACO_ARENA } from './sacoArena.ts';
 import { calcularAraujo } from './araujo.ts';
 import { calcularSantaPau } from './santapau.ts';
-import { calcularTgm } from './tgm.ts';
+import { calcularTgm, envoltorioTgm } from './tgm.ts';
 import { fichaDePuerta } from './clientes.ts';
 import { panoContinuoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
@@ -85,6 +85,13 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
   if (p.modelo === 'PUERTAPLE' && /enrollable|varilla\s+superior/i.test(p.observaciones)) aviso('TEXTO_MODELO', 'El texto del pedido habla de enrollable o de varilla superior: comprueba en el dibujo que es apilable.', 'aviso');
   if ((!rejilla && /rejilla/i.test(p.observaciones)) || /mosquitera|antivand[aá]lica|franja corrida|recambio/i.test(p.observaciones)) aviso('FUERA_FASE', 'El texto del pedido pide algo que la web todavía no despieza (rejilla, mosquitera, antivandálica…): hazlo a mano.');
   if (avisos.some(a => ['MEDIDAS', 'CANTIDAD'].includes(a.codigo))) return r;
+  const bastilla = p.tgm?.laterales === 'bastilla' ? p.tgm.bastilla ?? 0 : 0;
+  const envoltorio = envoltorioTgm(p);
+  if (p.tgm?.laterales === 'bastilla' && !positivo(bastilla)) aviso('TGM_BASTILLA', 'Introduce la bastilla por lado en el pedido.');
+  if (envoltorio && (!positivo(envoltorio.terminado) || !positivo(envoltorio.soldadura) || envoltorio.bajoLona < 0 ||
+      envoltorio.alto < 16 || p.frente <= 6 || envoltorio.terminado + envoltorio.soldadura >= p.alto))
+    aviso('TGM_ENVOLTORIO', 'Revisa el saco terminado y la soldadura. Deben caber el tubo, la pestaña de 14 cm a 2 cm del borde y la soldadura sobre la lona.');
+  if (avisos.some(a => a.codigo === 'TGM_BASTILLA' || a.codigo === 'TGM_ENVOLTORIO')) return r;
   const escuadrado = llevaEscuadrado(p);
   const ancho = p.frente + (!escuadrado && p.modelo === 'PUERTAPLE' && p.frente > 600 ? 2 : 0);
   const lateral = (ancho - p.frente) / 2;
@@ -166,7 +173,7 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
     const solapeEt = solapeEntradaEnrollable(p);
     const altoVentanales=ventanales.reduce((s,v)=>s+v.D,0), s = sacoPuerta(p);
     // Sin saco, se corta lona por debajo del bajo terminado para doblarla y soldarla alrededor del tubo (Q-TGM04).
-    const origenInferior = sinSaco ? -(e.cierreBajo ?? 0) : s.rematado;
+    const origenInferior = sinSaco ? (envoltorio?.bajoLona ?? 0) - (e.cierreBajo ?? 0) : s.rematado;
     // La E.T. que no lleva el ventanal, arriba o abajo (Iván, 27/10/2026, AR2605247): ni se corta ni se marca.
     const ciega=panoContinuoEnrollable(p);
     const etVentanal=(t:Entrada)=>!ciega&&(Boolean(e.sinEtArriba)&&Math.abs(t.altura-(p.alto-e.T))<.01
@@ -191,7 +198,7 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
         const tubo = p.tgm?.lona === 'pvc' && u.tubo ? tubos.find(t => t.tubo === u.tubo) : undefined;
         return tubo ?? { eje: u.altura, solape: u.solape, tubo: u.tubo };
       });
-      const plan=repartirPanos({desde:0,hasta:h,frente:ancho,rollo:p.rollo,tubos,normal:true,indicados:indicados.length?indicados:undefined});
+      const plan=repartirPanos({desde:0,hasta:h,frente:ancho + 2 * bastilla,rollo:p.rollo,tubos,normal:true,indicados:indicados.length?indicados:undefined});
       const antes=paneles.length;
       reparto(plan,ciega?'Paño':`Paño ${nombre}`);
       r.uniones.push(...plan.uniones.map(u=>({altura:u.eje+origen,solape:u.solape,tubo:u.tubo})));
@@ -202,6 +209,7 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
       for(const panel of grupo) {panel.desde+=origen;panel.hasta+=origen;panel.pieza.origenAlzado=[-lateral,panel.desde];}
       const marcarEn=(y:number,dir?:1|-1)=>{const panel=grupo.find(t=>y>=t.desde&&y<=t.hasta);if(panel)marca(panel.pieza,y-panel.desde,dir);};
       if(nombre==='inferior') {
+        if (envoltorio) marcarEn(envoltorio.terminado + envoltorio.soldadura);
         if(!sinSaco) marcarEn(origen + 2);
         else if(e.marcaCierre!==undefined) marcarEn(origen + e.marcaCierre);
       }
@@ -257,6 +265,15 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
           else if(i<separaciones.length)juntar(separaciones[i].delantera,abajo);
         }
       }
+    }
+    if (envoltorio) {
+      const w = p.frente - 6, h = envoltorio.alto;
+      const entero = sacoConPestana(w, h, 12, 14, h - 16, 'Envoltorio del tubo');
+      const izquierda = sacoConPestana(w / 2 + 1, h, 12, 14, h - 16, 'Envoltorio partido · con pestaña');
+      const derecha = pieza('Envoltorio partido · sin pestaña', 'saco', w / 2 + 1, h, p.materialSaco, p.rolloSaco);
+      numerarBorde(izquierda, ++numeroUnion, 'derecha');
+      numerarBorde(derecha, numeroUnion, 'izquierda');
+      r.alternativasSaco = { entero: [entero], partido: [izquierda, derecha] };
     }
     if(!sinSaco){
       const mitad=(p.frente+6.5+2)/2;
@@ -449,7 +466,11 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
     }
   }
   const todas = [...piezas,...(r.alternativasSaco?.entero??[]),...(r.alternativasSaco?.partido??[])];
-  if (escuadrado) todas.forEach(ensancharPieza);
+  if (escuadrado) todas.forEach(x => ensancharPieza(x));
+  if (bastilla) for (const { pieza: pano } of paneles) {
+    ensancharPieza(pano, bastilla);
+    for (const x of [bastilla, pano.ancho - bastilla]) pano.marcas.push([x, 0, x, pano.alto]);
+  }
   if(!Number.isFinite(p.margenMarcas)||p.margenMarcas<0||2*p.margenMarcas>=ancho)aviso('MARCAS','Revisa el margen de las marcas respecto al borde.');
   for (const x of todas) {
     if (!positivo(x.ancho) || !positivo(x.alto)) aviso('PIEZA',`${x.nombre}: las medidas de corte deben ser positivas.`);

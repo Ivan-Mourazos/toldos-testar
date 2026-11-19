@@ -452,9 +452,13 @@ Respuestas de Iván. «Pendiente» quiere decir que la web todavía no lo aplica
   ancho exacto que dice el pedido (depende del tubo), se suelda 2-3 cm por arriba y por abajo y el tubo va en el
   centro. Ancho provisional por defecto para Ø42: 14,5 cm (9,5 cm de hueco y 2,5 cm de soldadura por cada lado).
   Si el pedido da el ancho, se usa el del pedido. En rejilla las E.T. son tiras aparte y los paños se empatan por el
-  ancho del rollo. En PVC, cuando el empate va en una E.T., el paño inferior forma la entrada y lleva los huecos, el
+  ancho del rollo. En PVC, cuando el empate va en una E.T., el paño inferior forma la entrada lisa, el
   solape ocupa todo el ancho de la E.T. y se marca solo el paño superior con flecha.
 - **Q-TGM04 · Tubo abajo (contestada).** Iván, 18/11: sin saco, el tubo de abajo va en el cierre: la lona lleva un
   aumento que se dobla, se suelda y deja el tubo dentro con la medida terminada.
 - **Q-TGM05 · Aumento del cierre de abajo (contestada).** Iván, 18/11: el aumento de abajo son 14 cm y la marca
-  va a 23 cm del borde del corte (9 cm por encima del bajo terminado).
+  va a 23 cm del borde del corte (9 cm por encima del bajo terminado del cierre).
+- **Q-TGM06 · Tubo con saco envolvente (pendiente de taller).** Se supone que el borde inferior de la soldadura toca
+  la corona del tubo. Para Ø42, el eje está a terminado − 2,1 cm del doblez y el bajo del cierre a terminado − 4,2.
+  Confirmar esa referencia y si el envoltorio entra en el rollo. El simulador llega al eje y excluye el envoltorio.
+  En laterales, el paño lleva solo la bastilla indicada incluso con frente mayor de 6 m. Confirmar este criterio.
