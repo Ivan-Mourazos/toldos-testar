@@ -13,8 +13,9 @@ const hash=(s:string)=>createHash('sha256').update(s).digest('hex');
 // Iván, 17/11/2026: documento y cálculo conservan sus SHA; bot y plano incluyen el catálogo nuevo de sacos.
 // Se regeneraron con generarCortePuertas y escribirPlanoPuertas; nunca durante la prueba.
 // 06/11/2026: el bot y el plano cambian por el título del corte (sin «· CORTE», con «CORTAR POR EL REVÉS»); documento y cálculo, iguales. En las enrollables, textos de una línea centrados, A1/A2 grandes y AL CORTE centrado.
+// 19/11/2026: el cálculo del 5246 (enrollable de ejemplo con una sola E.T.) lleva el aviso ET_FALTA; bot y plano, iguales.
 const huellas:Record<string,string[]>={
- AR2605246:['f0f0a54c11d666661efcef82abf25657ae6c179f72b53d9a1d8a5a77d4f33912','09b72ae0c11a58bc51b7641162012d6b3d64c37748b7c86899c20e094d3012f1','7e48a87bc42675d44d3c84cce21e7f9a6c45c8ae67afc4e649ac0f81408f4e03','f20cdbd934d1d4a5b17e0d9df9af1c08b43aa051dad19761a7cd3b391729a0d5'],
+ AR2605246:['f0f0a54c11d666661efcef82abf25657ae6c179f72b53d9a1d8a5a77d4f33912','a9dd719c809f7adbc558f469a18bfc560a37ad2e52c624b3ed8e9097ab373387','7e48a87bc42675d44d3c84cce21e7f9a6c45c8ae67afc4e649ac0f81408f4e03','f20cdbd934d1d4a5b17e0d9df9af1c08b43aa051dad19761a7cd3b391729a0d5'],
  AR2605220:['2d3805fca845c43338af3ed41ae1383a2a9fd78b16c87736019930d3b76d2e33','f404e03c7050d002944949bf369652a289a8ee31668bbfef6add86b62fada5c3','0b07a6990d1e0753ea1b66ad1b5e59bbb8b0c7693b4fcf33846ae38a8ec59e82','ba839dc8738b514d5c23adece4aa0654a087567b9490e5d4d312471ef48e3810'],
  AR2605035:['7a300790349ce58674f2b7412da91374b5ed904f67d19a24f7be7e9fd54ff932','4a34ddd7d8e82bc5c891fca4f12b655cf881f7997ee211d24c56d13b076a515c','98cf2a1f82093c07c0e5dc446421d6526375e87e463a6cd0d646f6234c0a6cf0','943427c2782516abb4ab85aed138174836c2e05c8c2b5988b01b4b3dc064eb77'],
 };

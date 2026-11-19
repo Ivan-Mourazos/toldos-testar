@@ -187,6 +187,14 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
     const bordeInferior = p.alto - e.T - altoVentanales + (e.sinEtAbajo ? 0 : 3.75);
     const inferior = n(bordeInferior - origenInferior);
     if (!ciega && (!positivo(e.T) || ventanales.some(v=>!positivo(v.D)||v.altoVisible<=0||!positivo(v.margen)||2*v.margen>=p.frente) || e.T + altoVentanales >= p.alto)) aviso('VENTANAL', 'Revisa T, las cotas de los ventanales y los márgenes laterales.');
+    // Las E.T. de los bordes del ventanal salen de «Entradas de tubo», no de T y D: si falta alguna, la web cortaba
+    // menos E.T. de las que lleva la puerta sin avisar (AR2605639: solo la de 60, faltaban las de 131 y 191).
+    if (!ciega && !rejilla && positivo(e.T)) {
+      const bordes=[p.alto-e.T];
+      ventanales.forEach(v=>bordes.push(n(bordes.at(-1)!-v.D)));
+      const faltan=bordes.filter((y,i)=>!(i===0&&e.sinEtArriba)&&!(i===bordes.length-1&&e.sinEtAbajo)&&!p.entradas.some(t=>Math.abs(t.altura-y)<=1));
+      if(faltan.length)aviso('ET_FALTA',`Falta la E.T. del ventanal con el eje a ${faltan.map(y=>numero(y)).join(' y ')} cm (alto − T y − D): añádela en «Entradas de tubo» o escribe los tramos del dibujo.`,'aviso');
+    }
     const incorporadas=new Set<number>();
     // Sin ventanal, un solo paño del rematado del saco a la cabecera (Iván, 06/11/2026, AR2605429).
     const panos=ciega
