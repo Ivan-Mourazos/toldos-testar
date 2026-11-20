@@ -233,6 +233,21 @@ describe('Saco del pedido en todas las puertas (Iván, 23/10/2026)', () => {
     expect(r.piezas.find(x => x.clase === 'saco')).toMatchObject({ nombre: 'Saco de 120', alto: 30 });
     expect(r.piezas.find(x => x.clase === 'pano')!.alto).toBe(331 + 3.5 - 13);
   });
+  // Iván, 20/11/2026 (AR2605669): puerta negra 9005 con saco negro, el mismo material: el saco va en la lona de la puerta.
+  it.each(['PUERTAENR','PUERTAUTO'] as const)('%s negra con saco negro: el saco entero en la lona, sin alternativa en dos', modelo => {
+    const p = base(modelo, 176, 280);
+    if (modelo === 'PUERTAENR') p.enrollable = { T: 123, D: 60, margen: 6, empates: [], saco: 80 }; else p.autorreparable = { empates: [], saco: 120 };
+    p.material = 'LAC900'; p.color = 'NEGRO 9005'; p.materialSaco = 'LAC900 NEGRO'; p.rollo = 300; p.rolloSaco = 250;
+    const r = calcularPuerta(p), sacos = r.piezas.filter(x => x.clase === 'saco');
+    expect(sacos).toHaveLength(1);
+    expect(sacos[0]).toMatchObject({ material: 'LAC900 NEGRO 9005', rollo: 300 });
+    expect(r.alternativasSaco).toBeNull();
+    // Con el saco de otro color (impreso, amarillo…) sigue aparte, como siempre.
+    p.materialSaco = 'LAC900 AMARILLO';
+    const otro = calcularPuerta(p);
+    expect(otro.piezas.find(x => x.clase === 'saco')).toMatchObject({ material: 'LAC900 AMARILLO', rollo: 250 });
+    expect(otro.alternativasSaco?.partido).toHaveLength(2);
+  });
   it.each(['PUERTAENR','PUERTAUTO'] as const)('%s sin saco puesto avisa', modelo => {
     const p = base(modelo, 300, 331);
     if (modelo === 'PUERTAENR') p.enrollable.saco = null; else p.autorreparable.saco = null;

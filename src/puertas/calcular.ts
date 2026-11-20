@@ -103,6 +103,11 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
   if (lateral || escuadrado) aviso('ESCUADRADO', 'Frente mayor de 6 m: se añade 1 cm por cada lado para escuadrar.', 'aviso');
   const lona = `${p.material.trim()} ${p.color.trim()}`.trim();
   const materialEntrada = rejilla ? `${p.tgm!.materialEt} ${p.color.trim()}`.trim() : lona;
+  // Puerta negra (9005) con saco negro: es el mismo material, así que el saco se corta en la lona de la puerta, entero y
+  // sin la alternativa en dos (Iván, 20/11/2026, AR2605669). Antes solo lo hacían las apilables.
+  const esNegro = (texto: string) => /negro|9005|\bblack\b/i.test(texto);
+  const sacoEnLona = esNegro(p.color) && esNegro(p.materialSaco);
+  const materialSaco = sacoEnLona ? lona : p.materialSaco, rolloSaco = sacoEnLona ? p.rollo : p.rolloSaco;
   function pieza(nombre: string, clase: PiezaPuerta['clase'], w: number, h: number, material = lona, rollo = p.rollo, cantidad = 1): PiezaPuerta {
     return { id: `${clase}-${piezas.length}-${nombre}`, nombre, clase, ancho: n(w), alto: n(h), material, rollo, cantidad: cantidad * p.cantidad,
       of: p.of.trim() || 'SIN OF', radio: 0, contorno: [[0,0],[n(w),0],[n(w),n(h)],[0,n(h)]], marcas: [], textos: [], huecos: [] };
@@ -169,7 +174,7 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
     x.origenAlzado = [0, e.altura - alto / 2];
   }
   function sacoConPestana(w: number, h: number, pestana: number, altoPestana: number, desde: number, nombre = 'Saco') {
-    const x = pieza(nombre, 'saco', w + pestana, h, p.materialSaco, p.rolloSaco);
+    const x = pieza(nombre, 'saco', w + pestana, h, materialSaco, rolloSaco);
     x.contorno = [[pestana,0],[w+pestana,0],[w+pestana,h],[pestana,h],[pestana,desde+altoPestana],[0,desde+altoPestana],[0,desde],[pestana,desde]];
     return x;
   }
@@ -284,23 +289,28 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
     if (envoltorio) {
       const w = p.frente - 6, h = envoltorio.alto;
       const entero = sacoConPestana(w, h, 12, 14, h - 16, 'Envoltorio del tubo');
-      const izquierda = sacoConPestana(w / 2 + 1, h, 12, 14, h - 16, 'Envoltorio partido · con pestaña');
-      const derecha = pieza('Envoltorio partido · sin pestaña', 'saco', w / 2 + 1, h, p.materialSaco, p.rolloSaco);
-      numerarBorde(izquierda, ++numeroUnion, 'derecha');
-      numerarBorde(derecha, numeroUnion, 'izquierda');
-      r.alternativasSaco = { entero: [entero], partido: [izquierda, derecha] };
+      if (sacoEnLona) agregar(entero);
+      else {
+        const izquierda = sacoConPestana(w / 2 + 1, h, 12, 14, h - 16, 'Envoltorio partido · con pestaña');
+        const derecha = pieza('Envoltorio partido · sin pestaña', 'saco', w / 2 + 1, h, materialSaco, rolloSaco);
+        numerarBorde(izquierda, ++numeroUnion, 'derecha');
+        numerarBorde(derecha, numeroUnion, 'izquierda');
+        r.alternativasSaco = { entero: [entero], partido: [izquierda, derecha] };
+      }
     }
     if(!sinSaco){
       const mitad=(p.frente+6.5+2)/2;
       if(e.sacoPartido){
         const izquierda=agregar(sacoConPestana(mitad-6.5,s.corte,6.5,s.altoPestana,s.corte/2,'Saco partido · con pestaña'));
-        const derecha=agregar(pieza('Saco partido · sin pestaña','saco',mitad,s.corte,p.materialSaco,p.rolloSaco));
+        const derecha=agregar(pieza('Saco partido · sin pestaña','saco',mitad,s.corte,materialSaco,rolloSaco));
         numerarBorde(izquierda,++numeroUnion,'derecha');
         numerarBorde(derecha,numeroUnion,'izquierda');
       }else{
         // El saco entero y, de alternativa, en dos mitades, por si aprovecha mejor el rollo, como en las apilables
         // (Iván, 06/11/2026, AR2605429). Con «saco partido» marcado, solo las dos mitades.
         agregar(sacoConPestana(p.frente,s.corte,6.5,s.altoPestana,s.corte/2));
+      }
+      if(!e.sacoPartido&&!sacoEnLona){
         const izquierda=sacoConPestana(mitad-6.5,s.corte,6.5,s.altoPestana,s.corte/2,'Saco partido · con pestaña');
         const derecha=pieza('Saco partido · sin pestaña','saco',mitad,s.corte,p.materialSaco,p.rolloSaco);
         numerarBorde(izquierda,++numeroUnion,'derecha');
@@ -425,10 +435,10 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
     }
     agregar(pieza('Entrada de tubo','entrada',p.frente+11,21));
     agregar(pieza('Entrada de tubo','entrada',p.frente+11,21));
-    agregar(pieza(`Saco de ${sacoUtil(p) ?? 120}`,'saco',p.frente,s.corte,p.materialSaco,p.rolloSaco));
+    agregar(pieza(`Saco de ${sacoUtil(p) ?? 120}`,'saco',p.frente,s.corte,materialSaco,rolloSaco));
     // Como en las demás puertas, de alternativa el saco en dos, con 1 cm más cada mitad para soldarlas (Iván, 06/11/2026:
     // «no puede ser que unas pongan el saco de una manera y otras no»).
-    {
+    if(!sacoEnLona){
       const mitad=p.frente/2+1;
       const izquierda=pieza('Saco partido · izquierda','saco',mitad,s.corte,p.materialSaco,p.rolloSaco);
       const derecha=pieza('Saco partido · derecha','saco',mitad,s.corte,p.materialSaco,p.rolloSaco);
