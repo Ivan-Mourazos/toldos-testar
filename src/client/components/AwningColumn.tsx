@@ -31,7 +31,6 @@ import { normalizeAgataSubmodel, resolveAgataMinimumLine, suggestedAgataArmCount
 import { cambioTelaExtraError, resolveFabricJobAllowance } from '../../domain/fabricJobParameters.js';
 import { cortinaMotorPower, cortinaMotorPowers } from '../../domain/curtainMotor.js';
 import { resolveFabric } from '../../domain/fabricCatalog.js';
-import { telaConCorte } from '../../domain/corteReadiness.js';
 import { formaBambalina } from '../../domain/corteLona/bambalina.js';
 import { BastillasBambalinaFields } from './BastillasBambalinaFields';
 import { monoblockLoadBarDiscount, resolveMonoblockRule, resolveMonoblockSupportCount, suggestedMonoblockArmCount } from '../../domain/monoblock350Parameters.js';
@@ -690,7 +689,8 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               {valanceFinish === 'OTRO' && <TextField label="Color remate" missing={isMissing('remateColor')} value={awning.remateColor} onChange={(remateColor) => update({ remateColor })} />}
             </div>
           )}
-          {standaloneValance && telaConCorte(resolveFabric(sameFabric !== false ? orderFabric : awning.fabric)) && (
+          {/* En PVC y Soltis van al corte; en acrílico, sin corte, van indicadas en el dibujo (Iván, 20/11/2026). */}
+          {standaloneValance && (
             <BastillasBambalinaFields value={awning.bambaBastillas} onda={Boolean(formaBambalina(awning.valanceCurve))} onChange={(bambaBastillas) => update({ bambaBastillas })} />
           )}
           {fields.implemented && supportsFabricDropAdjustment(awning.model) && (

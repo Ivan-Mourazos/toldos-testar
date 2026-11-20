@@ -67,6 +67,34 @@ describe('Bambalina para taller', () => {
   });
 });
 
+// Iván, 20/11/2026: las bastillas del formulario también en acrílico, sin corte: van indicadas en el dibujo.
+describe('Bambalina: las bastillas elegidas salen en el dibujo', () => {
+  test('sin tocarlas, el dibujo de siempre', async () => {
+    const [text] = await pages(baseOrder);
+    expect(text).toContain('REMATE RECTA');
+    expect(text).not.toContain('AL CORTE');
+    expect(text).not.toMatch(/BASTILLA \d/);
+  });
+  test('cada borde cambiado se rotula con sus cm o al corte', async () => {
+    const [text] = await pages({ ...baseOrder, awnings: [{ ...baseAwning, bambaBastillas: { izq: 0, der: 3.5, abajo: 4, arriba: 6 } }] });
+    expect(text).toContain('AL CORTE');
+    expect(text).toContain('BASTILLA 3,5 CM');
+    expect(text).toContain('REMATE RECTA · BASTILLA 4 CM');
+    expect(text).toContain('VARILLA BLANCA · BASTILLA 6 CM');
+  });
+  test('arriba y abajo al corte', async () => {
+    const [text] = await pages({ ...baseOrder, awnings: [{ ...baseAwning, bambaBastillas: { abajo: 0, arriba: 0 } }] });
+    expect(text).toContain('ARRIBA AL CORTE');
+    expect(text).toContain('REMATE RECTA · AL CORTE');
+  });
+  test('con imagen sustituta, las bastillas van en las notas', async () => {
+    const fabricImage = 'data:image/png;base64,' + readFileSync(new URL('./assets/tgm-logo.png', import.meta.url)).toString('base64');
+    const [text] = await pages({ ...baseOrder, awnings: [{ ...baseAwning, fabricImage, bambaBastillas: { izq: 0, abajo: 3 } }] });
+    expect(text).toContain('PUNTA IZQ. AL CORTE');
+    expect(text).toContain('ABAJO BASTILLA 3 CM');
+  });
+});
+
 // Medidas de los Excel de OT leídos el 14/09/2026. No unificar las OF del 4111: discrepancia pendiente.
 describe('Bambalina: históricos y redondeo confirmado por OT', () => {
   test.each([

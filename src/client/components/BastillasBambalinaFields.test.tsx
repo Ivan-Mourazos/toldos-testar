@@ -31,8 +31,12 @@ describe('Bastillas de la bambalina en el formulario (Iván, 20/11/2026)', () =>
   test('con onda, abajo no lleva bastilla', () => {
     expect(formulario('BAMBALINA', pvc, { valanceCurve: 'NORMAL' })).toContain('el remate va aparte');
   });
-  test('no sale en acrílico ni en la bamba de un toldo', () => {
-    expect(formulario('BAMBALINA', acrilico)).not.toContain('Arriba (varilla)');
+  // Iván, 20/11/2026: también en acrílico, aunque no haya corte; va indicado en el dibujo.
+  test('sale también en acrílico', () => {
+    const html = formulario('BAMBALINA', acrilico);
+    for (const texto of ['Punta izquierda', 'Punta derecha', 'Abajo', 'Arriba (varilla)']) expect(html).toContain(texto);
+  });
+  test('no sale en la bamba de un toldo', () => {
     expect(formulario('GALICIA', pvc)).not.toContain('Arriba (varilla)');
   });
 });

@@ -11,8 +11,9 @@ type Bastillas = NonNullable<Awning['bambaBastillas']>;
 const ETIQUETAS: Record<Borde, string> = { izq: 'Punta izquierda', der: 'Punta derecha', abajo: 'Abajo', arriba: 'Arriba (varilla)' };
 
 /**
- * Las bastillas de la bambalina suelta de PVC o Soltis, borde a borde: bastilla de los cm que se quieran o al corte
+ * Las bastillas de la bambalina suelta, borde a borde: bastilla de los cm que se quieran o al corte
  * (Iván, 20/11/2026: «tiene que salir en el formulario según se elija el material»). Sin tocar, las de siempre.
+ * En PVC y Soltis van al corte; en acrílico, sin corte, se indican en el dibujo.
  */
 export function BastillasBambalinaFields({ value, onda, onChange }: { value: Awning['bambaBastillas']; onda: boolean; onChange: (value: Bastillas | undefined) => void }) {
   const porDefecto = bastillasTira(AJUSTES_POR_DEFECTO, onda) as Record<Borde, number>;

@@ -75,7 +75,9 @@ const byLabel: Record<string, ReadGroupId> = {
 const byPattern: Array<[RegExp, ReadGroupId]> = [
   [/^Nº brazos · /, 'estructura'],
   [/^Restar .+ cm abajo$/, 'estructura'],
-  [/^Solapa [A-Z0-9]+ · /, 'medidas']
+  [/^Solapa [A-Z0-9]+ · /, 'medidas'],
+  // Bastillas de la bambalina suelta: el borde y sus cm.
+  [/^(Punta izquierda|Punta derecha|Abajo|Arriba \(varilla\))(: bastilla \(cm\))?$/, 'tela']
 ];
 
 // Unidad de cada valor en la ficha («285 cm»): las medidas en cm que no la llevan ya en la

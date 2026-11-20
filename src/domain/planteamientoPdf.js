@@ -20,6 +20,7 @@ import { buildIrisSquaringView } from './irisSquaringView.js';
 import { resolverDelanteEnrollable, textoDelanteEnrollable } from './enrollableOpciones.js';
 import { getIrisWindow } from './irisWindow.js';
 import { pañosVentanaCortina } from './corteLona/cortina.js';
+import { formaBambalina, normalizarBastillasBamba } from './corteLona/bambalina.js';
 import { resolveConfiguredDrawing } from './drawingParameters.js';
 import { shortFabricName } from './fabricShortName.js';
 import { crearLienzoSvg, superficiePlanoTecnico } from './dibujoSvg.js';
@@ -1270,6 +1271,7 @@ export function fabricPageNotes(order = {}, lines = []) {
       const hiddenDrawing = special && awning.fabricImage && normalizeFabricDiagramOverride('BAMBALINA', awning.fabricDiagramOverride) !== 'SUPLEMENTO';
       const parts = [
         hiddenDrawing && 'VARILLA BLANCA · BASTILLAS LATERALES',
+        hiddenDrawing && String(awning.model || '').trim().toUpperCase() === 'BAMBALINA' && notaBastillasBamba(awning),
         ...comentarios(awning.fabricNotes),
         ...(special ? comentarios(awning.structureNotes).map((text) => `ACLARACIONES: ${text}`) : [])
       ].filter(Boolean);
@@ -2352,22 +2354,46 @@ function drawRollerDiagram(doc, x, y, w, h, calculation = {}, awning = {}) {
   drawRollerFront(doc, panelX, panelY + panelH, panelW, awning);
 }
 
+/**
+ * Las bastillas elegidas en el formulario de la bambalina suelta (Iván, 20/11/2026: también en acrílico, sin corte,
+ * «se indica en el dibujo»). Solo los bordes cambiados; con onda, abajo no lleva bastilla: el remate va aparte.
+ */
+function bastillasBambaElegidas(awning = {}) {
+  const elegidas = { ...(normalizarBastillasBamba(awning.bambaBastillas) ?? {}) };
+  if (formaBambalina(awning.valanceCurve)) delete elegidas.abajo;
+  return elegidas;
+}
+
+const textoBastilla = (cm) => (cm > 0 ? `BASTILLA ${formatInstructionMeasure(cm)} CM` : 'AL CORTE');
+
+/** Las bastillas elegidas en una línea, para las notas cuando una imagen tapa el dibujo. */
+function notaBastillasBamba(awning) {
+  const elegidas = bastillasBambaElegidas(awning);
+  const nombres = { izq: 'PUNTA IZQ.', der: 'PUNTA DCHA.', abajo: 'ABAJO', arriba: 'ARRIBA' };
+  return Object.entries(nombres).filter(([borde]) => borde in elegidas)
+    .map(([borde, nombre]) => `${nombre} ${textoBastilla(elegidas[borde])}`).join(' · ');
+}
+
 function drawValanceDiagram(doc, x, y, w, h, awning = {}, calculation = {}) {
   const valance = buildValanceDiagramSpec({ ...awning, model: 'BAMBALINA' });
+  const elegidas = bastillasBambaElegidas(awning);
   drawDiagramShell(doc, x, y, w, h);
   const stripX = x + w * 0.10;
   const stripY = y + h * 0.17;
   const stripW = w * 0.80;
   const stripH = h * 0.63;
+  const arriba = !('arriba' in elegidas) ? 'VARILLA BLANCA' : elegidas.arriba > 0 ? `VARILLA BLANCA · ${textoBastilla(elegidas.arriba)}` : 'ARRIBA AL CORTE';
   drawValancePanel(doc, stripX, stripY, stripW, stripH, valance, {
-    topLabel: 'VARILLA BLANCA',
+    topLabel: arriba,
     bodyLabel: `${bambaDiagramLabel(valance)} · CORTE ${formatInstructionMeasure(calculation.fabricDrop)} CM`,
     measurement: ''
   });
-  drawRotatedDiagramText(doc, 'BASTILLA', stripX - 10, stripY + stripH / 2, stripH - 18);
-  drawRotatedDiagramText(doc, 'BASTILLA', stripX + stripW + 10, stripY + stripH / 2, stripH - 18);
+  const punta = (borde) => (borde in elegidas ? textoBastilla(elegidas[borde]) : 'BASTILLA');
+  drawRotatedDiagramText(doc, punta('izq'), stripX - 10, stripY + stripH / 2, stripH - 18);
+  drawRotatedDiagramText(doc, punta('der'), stripX + stripW + 10, stripY + stripH / 2, stripH - 18);
+  const abajo = 'abajo' in elegidas ? ` · ${textoBastilla(elegidas.abajo)}` : '';
   doc.fillColor(colors.grayDark).font(fonts.regular).fontSize(diagramText(6))
-    .text(`REMATE ${valance.curve}`, stripX, stripY + stripH + 22, { width: stripW, align: 'center' });
+    .text(`REMATE ${valance.curve}${abajo}`, stripX, stripY + stripH + 22, { width: stripW, align: 'center' });
 }
 
 function drawAnticaDiagram(doc, x, y, w, h, awning = {}) {
