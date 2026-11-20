@@ -23,6 +23,11 @@ const comprobarHandles = (dxf) => {
 };
 
 describe('DXF del bot', () => {
+  it('AR2604784 Galicia conserva la bambalina en el rollo por 40 mm de diferencia', () => {
+    const corte = resultado().cortes.conSacos[0];
+    expect(corte.largo).toBe(4850);
+    expect(corte.colocadas.some(p => p.aparte)).toBe(false);
+  });
   it.each(fixtures)('$pedido mantiene o reduce el consumo del corte completo', f => {
     const toldos = f.toldos.map(t => f.verticales.includes(t.letra)
       ? { ...t, ajustes: { ...t.ajustes, empate: 'vertical' } } : t);
@@ -49,10 +54,11 @@ describe('DXF del bot', () => {
     expect((Math.max(...xs) - Math.min(...xs)) * 25.4 / 72).toBeCloseTo(corte.extensionDibujo, 1);
   });
   it('la bamba apartada conserva la onda, las bastillas asimétricas y las marcas de la pieza original', () => {
-    const t = { ...fixtures.find(f => f.pedido === 'AR2602743').toldos[0], onda: 'NORMAL',
+    const [a, b] = fixtures.find(f => f.pedido === 'AR2505753').toldos;
+    const t = { ...a, onda: 'NORMAL',
       ajustes: { bambaPuntaIzqCm: 0, bambaPuntaDerCm: 5, bambaArribaCm: 4 } };
-    const corte = opcionesCorte([t], '0230811').conSacos;
-    const aparte = corte.colocadas.find(p => p.aparte);
+    const corte = opcionesCorte([t, b], '0230811').conSacos;
+    const aparte = corte.colocadas.find(p => p.aparte && p.onda);
     const tira = corte.piezas[0].piezas.find(p => p.onda);
     expect(aparte).toMatchObject({ ...tira, onda: 'NORMAL', margenOnda: [0, 50] });
     const d = dibujo(corte.colocadas, 2500, { of: t.of, tela: 'PVC' });

@@ -118,28 +118,28 @@
       "modelos": [
         "ARZUA PRO"
       ],
-      "corte": "390064baf19e615d9135885e2b5da5a6c6e5e318caa2ca2ccd5932cf0493e262"
+      "corte": "10944d8ac7b2fb79af51e091c9562dfcae8a31a5b8baf5236e7cbee2fef02a02"
     },
     {
       "pedido": "AR2604784",
       "modelos": [
         "GALICIA"
       ],
-      "corte": "dc37f38245c4fa54bc38da02034a610adf28159f66a8bb8beedb55b587dd5c7d"
+      "corte": "7b55c9c13328cce4de99ca098f6e5c71f920fed45670e56ee1971a6510b3ac5c"
     },
     {
       "pedido": "AR2604784",
       "modelos": [
         "MONOBLOCK 350"
       ],
-      "corte": "83de99a1ad619a3b03edfd088eb2398b6478c6cc96f5eaf046fad8e693de802d"
+      "corte": "b9e6bb265d81b5e265f4dd79f11c58d50d0f7bcab9558e942f92737d11358a7d"
     },
     {
       "pedido": "AR2604784",
       "modelos": [
         "CAMBIO TELA"
       ],
-      "corte": "a9b7b0665edf9298db3d203047f501d9c85a57333b5099a981718988ded4490a"
+      "corte": "53eb9e72b644b9ef8f7d75e0c61a71f2a5f2aff9124dab4d785a0a4470fe8ab7"
     },
     {
       "pedido": "AR2605193",
@@ -277,13 +277,13 @@
     {
       "familia": "Toldos / ARZUA PRO",
       "ejemplo": "AR2604784 adaptado como en index.test.js",
-      "dxf": "865b55262763bba2e6b738388c1877b4cd403f8f61c3f28495f67b43752351e5",
-      "geometria": "0260c6e6a07512aa1de7c804176d9dd2b122e06627511387456f78727a9d74f4",
-      "textosFijos": "e27522524df3718f5716bf8139eca89ffb3f6950cf034e500843485018195409",
-      "textos": "fdd334b45b72170da7147d84398c0c55049dc849325290d3693739936ac3d162",
-      "cotas": "606db014648d7097ef2c2d8f086707e1746374e6ee41fe36cfef7f2def563ce0",
+      "dxf": "9ef8c7266ac9da02058e7aa69c56285d601732c8535a2a4604141231558499b5",
+      "geometria": "e1eaa4ffc47a92511dca9ee8010168627b31eded910e830bc49ac8b7d7c7f695",
+      "textosFijos": "33d934473593e0a3cf523829b7383bbd740989b10bab78e43a1822f002b7305d",
+      "textos": "cb26988f257e098d1bea620b3cf2f3d3af89cad49436605af6f4e636a7d17ded",
+      "cotas": "56aad3d03c04b5c41b04ee501979cd404a94abcc3659afaa114230afdd440d34",
       "cotasPosicionHash": "3958afd624a3d8cf94d3f4f48a7bafcc9ae735be67f1d0cb2c2d5543340667e1",
-      "ordenTextos": "41788c49983f87752d650fc27e365318cde7871bbb9ab1d507537755a1e9a7fc",
+      "ordenTextos": "911d4888bf2e000b1103c58daebbc5ee108847485d0436b76fe54b76253f9623",
       "textosEnHoja": [
         0,
         1,
@@ -303,22 +303,19 @@
         15,
         16,
         17,
-        18,
-        19,
-        20,
-        21
+        18
       ]
     },
     {
       "familia": "Toldos / GALICIA",
       "ejemplo": "AR2604784 adaptado como en index.test.js",
-      "dxf": "d787efc9d312c91897d2d909f4b0c0813eaef802b4034d6f59aaed2638528188",
-      "geometria": "1b76d85942f6999d2ec53b8986f6520bfe93fe832932169b622f3cafa1cf3a91",
-      "textosFijos": "f5945f587887936a327de9c27b5680014644e9da1772ddaae6d240f9249d81a8",
-      "textos": "fdd334b45b72170da7147d84398c0c55049dc849325290d3693739936ac3d162",
-      "cotas": "d17d83496fdb4697e80b127394f2e82d005ea997d7e226e08c4f1bfdd78fb10d",
+      "dxf": "636494588d5bd35d7dc467a722e40599b633ef7802b42e6647e2208b6a4c0d31",
+      "geometria": "6fdec0644fc354079c9da056f8a4ea88c25b94d0f8723b454cbf2e8625b412bd",
+      "textosFijos": "d812da2f8e12729fe5858561e9f6ce14ec35abffba3282acf958d12e6f3d8574",
+      "textos": "cb26988f257e098d1bea620b3cf2f3d3af89cad49436605af6f4e636a7d17ded",
+      "cotas": "e043b074ce72fb1b058cb25e04758db94301381c554aa06aafccd306ecc14bcc",
       "cotasPosicionHash": "3fd872afa285c9ff6f4f2ea957680de6301c123918ce86d2a59c0756cf715707",
-      "ordenTextos": "253c88b7ee1ff4ed27709d888ee003d1cad0365ee8a5f582d333c9b9211f6d35",
+      "ordenTextos": "674ad9b37816d553b22183932f41a3bf1d363750bdecd3d2c194553fd3454926",
       "textosEnHoja": [
         0,
         1,
@@ -338,22 +335,19 @@
         15,
         16,
         17,
-        18,
-        19,
-        20,
-        21
+        18
       ]
     },
     {
       "familia": "Toldos / MONOBLOCK 350",
       "ejemplo": "AR2604784 adaptado como en index.test.js",
-      "dxf": "148d3088da5bcbe9a46b5d6e3c84443dfc1c20481663e077e4c74763373bcb9e",
-      "geometria": "830b99b8ad5468628cdc39591a8dae257861a7e99d72b9d8a02b97ace888a602",
-      "textosFijos": "607275b0cc5334d4e393eb46d578c1f094c9ec2c63f098b4fe5f786fdf142443",
-      "textos": "fdd334b45b72170da7147d84398c0c55049dc849325290d3693739936ac3d162",
-      "cotas": "3b125e6639e8cd92d400b967b17fac41ae068430c781756bb25da6f8a38dc3d7",
+      "dxf": "5412774ea47bdf559790085a8d1746bddae73bb378436e0e759a2e0636d34115",
+      "geometria": "ea8b6307f80e554ec357d83b9d2663d605a1562e37e8d6ff0f97c8e3f384b870",
+      "textosFijos": "e2315eb88a970c6b26ebc8ff7ceb3059051a31a1e4daf96c102e0d8ecbf72957",
+      "textos": "cb26988f257e098d1bea620b3cf2f3d3af89cad49436605af6f4e636a7d17ded",
+      "cotas": "7d0db31168d573473330d3f5d9c62c53be39ca08fa4343504a0403ed5d821bdf",
       "cotasPosicionHash": "c4129728239804a71daaffde32d5e9b59d9e9726c579d40a4824c068215b1f8e",
-      "ordenTextos": "95bd909b21010111110b1f3e6e59686d2e29380a72cf94173842618721af7f92",
+      "ordenTextos": "ea428010988470c48a9e227d5c85d2d6cb2d53dbdf4b091007d2f99c678f0f23",
       "textosEnHoja": [
         0,
         1,
@@ -373,22 +367,19 @@
         15,
         16,
         17,
-        18,
-        19,
-        20,
-        21
+        18
       ]
     },
     {
       "familia": "Toldos / CAMBIO TELA",
       "ejemplo": "AR2604784 adaptado como en index.test.js",
-      "dxf": "77398cfcdf6461c1b08e4dc7c852b3cd8c84c85a448f42f59d1da208ebd45bd4",
-      "geometria": "27da29810f303d58aa404e59ee4b6e4969585db710df6f0b91ad2b73e9273b53",
-      "textosFijos": "43ad5d50a3139825ec0219f9b3288032f1ee53053755b11e0a81284a55a27646",
-      "textos": "c660ff0537e13c101c1532959da6f06de25222f16b844fa9978636dd7f54fb95",
-      "cotas": "2163a7d4f09ac7aa8e7c873780cb50e47fa3121aa07fd03bbc412efe06b05bc8",
+      "dxf": "24998aca32576bb91748b38f9e7b22a58037cca9e1507e548c7ebe3c6e5a7862",
+      "geometria": "73509cb117989989b9defcefc6245b8c952693898688cfad693e7fc8b454b3aa",
+      "textosFijos": "5d393460f5c2fb41f88c4e7e7041dec3f2e92792896c7091735eeb5fc4d02d3c",
+      "textos": "8f75046ef2b39c5646605b42c6810a2fc4d65faf9fe159da58f9628435676797",
+      "cotas": "62cb47b04bd741e60256cabfb32cd0089fde41f4ce87c83fb54dae36c2ff4900",
       "cotasPosicionHash": "9dcbe118afdc1a138923c4fcb7b66db31522a89c09f712561aa03e4dfaec41ad",
-      "ordenTextos": "2ce025f1ddd7e05470bab76b1e71497c1f66cd40e7a2a7724aa7d1f07e00c731",
+      "ordenTextos": "700a93bea5cbcc3cdc66b13e3762d6294d16e17157cedc52330fa57da9b55437",
       "textosEnHoja": [
         0,
         1,
@@ -408,10 +399,7 @@
         15,
         16,
         17,
-        18,
-        19,
-        20,
-        21
+        18
       ]
     },
     {

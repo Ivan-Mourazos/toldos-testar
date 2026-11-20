@@ -16,10 +16,10 @@ const stock = { ofStockSacos: '0230811' };
 
 describe('el stock de remolques no cambia los DXF de los otros cortes', () => {
   it.each([
-    ['GALICIA', '9ae4d2e455ba1930926b32ad0fe09555b9034cb6fa7fb32c5dfac8da708577b7'],
-    ['ARZUA PRO', '7d5496c4d4fcec98d65698ccc6fd984922eccfc5a280a240fd220d45a1bbd27c'],
-    ['MONOBLOCK 350', 'd871e7c8cdd209e07958e3d2d1983a4bd79c593f4c1da53355adaea8310db7fd'],
-    ['CAMBIO TELA', 'd9874b4bd5e0b1425ab6e1ba694447154ae2e7d2ef5ef5d58a5a05799d12d353'],
+    ['GALICIA', 'a4086a3a36e46b952c40a85d3fd5d4f4eee209e2b817d0f1530fda40da62c063'],
+    ['ARZUA PRO', '0d43e236e2314222da518703ee5447520f89c85407c73dd9ee47e71f8f0d937b'],
+    ['MONOBLOCK 350', 'c42c95216e98143b8e3089b3fab657a4056e1878e9ef6df1c04de17ff91da0b0'],
+    ['CAMBIO TELA', '8dcf778a9abc2c860bc0b47707ca09d2994b9702b0e298a133aeb73f935b22eb'],
   ])('%s: conserva el SHA del bot usando el mismo colocador común', (modelo, esperado) => {
     const order = structuredClone(revision.order);
     Object.assign(order.awnings[0], { model: modelo, armCount: 2, workType: modelo === 'CAMBIO TELA' ? 'FABRIC_ONLY' : 'FULL_AWNING' });

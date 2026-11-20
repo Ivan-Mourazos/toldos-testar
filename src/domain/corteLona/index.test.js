@@ -16,8 +16,7 @@ describe('Del pedido guardado al corte de lona', () => {
     expect(corte.piezas[0].piezas.map((p) => [p.nombre, p.largo, p.alto])).toEqual([
       ['A', 4810, 1900], ['A BAMBA', 4850, 150]
     ]);
-    expect(corte.largo).toBe(4810);
-    expect(corte.colocadas.find(p => p.nombre === 'A BAMBA')).toMatchObject({ aparte: true, x: 6310 });
+    expect(corte.largo).toBe(4850);
     expect(corte.dxf).toContain('AC1018');
     expect(resultado.cortes.trozoSeparado).toBeNull();
     expect(resultado.plano[0].dxf).toContain('AC1032');

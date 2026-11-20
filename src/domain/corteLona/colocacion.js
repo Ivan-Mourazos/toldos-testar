@@ -303,6 +303,8 @@ export function opcionesCorte(toldos, ofStockSacos, presupuesto = { restantes: P
 }
 
 function separarBambalinas(corte, esBamba, anchoRollo) {
+  // Iván 20/11: solo compensa buscar un resto si el rollo baja al menos 30 cm.
+  const AHORRO_MINIMO_MM = 300;
   const bambas = corte.colocadas.filter(esBamba);
   if (!bambas.length) return corte;
   const otras = corte.colocadas.filter(p => !esBamba(p));
@@ -313,7 +315,7 @@ function separarBambalinas(corte, esBamba, anchoRollo) {
   const largo = piezas => Math.max(...piezas.map(p => p.x + p.ancho));
   if (largo(otras) < largo(principal)) principal = otras;
   const limite = largo(principal);
-  if (limite >= corte.largo - 0.001) return corte;
+  if (corte.largo - limite < AHORRO_MINIMO_MM) return corte;
 
   const restos = [];
   let anchoRestos = 0;
