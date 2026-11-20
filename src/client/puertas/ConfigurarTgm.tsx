@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { calcularPuerta, calcularPuertaDerivada } from '../../puertas/calcular.ts';
 import { fichaPorId } from '../../puertas/clientes.ts';
 import { enrolleTgm, puertaTgmDerivada, SOLDADURA_BASE_TGM } from '../../puertas/tgm.ts';
@@ -11,6 +11,9 @@ import { SimuladorEnrolle } from './SimuladorEnrolle';
 import { medidaPuerta, textoMedidasMm } from './medidasPuertas';
 
 type Tgm = NonNullable<Puerta['tgm']>;
+type PestanaTgm = 'medidas' | 'et' | 'saco' | 'otros';
+// Pasos principales: medidas, E.T. y saco; el resto en «Otros ajustes» (Iván, 20/11/2026). TGM aún no lleva ventanas.
+const PESTANAS_TGM: Array<[PestanaTgm, string]> = [['medidas', 'Medidas'], ['et', 'E.T.'], ['saco', 'Saco'], ['otros', 'Otros ajustes']];
 
 export function ConfigurarTgm({ p, cambiar, corte, derecha, letra, vistas }: {
   p: Puerta;
@@ -21,6 +24,7 @@ export function ConfigurarTgm({ p, cambiar, corte, derecha, letra, vistas }: {
   vistas?: React.ReactNode;
 }) {
   const t = p.tgm!;
+  const [pestana, setPestana] = useState<PestanaTgm>('medidas');
   const { enrolle, derivada, resultado } = useMemo(() => {
     const enrolle = enrolleTgm(p);
     if (!enrolle) return { enrolle, derivada: p, resultado: calcularPuerta(p) };
@@ -59,40 +63,50 @@ export function ConfigurarTgm({ p, cambiar, corte, derecha, letra, vistas }: {
     <div className="puerta-config-alzado puerta-config-tgm">
       <section className="puerta-config panel panel-vidrio" aria-label="Configurador TGM">
         <header><h2>Datos de la puerta</h2><span>TGM</span></header>
-        <div className="puerta-campos">
+        <div className="tira-3d puerta-pestanas" role="tablist" aria-label="Partes de la puerta">{PESTANAS_TGM.map(([k, nombre]) => <button type="button" role="tab" key={k}
+          aria-selected={pestana === k} className={`pestana ${pestana === k ? 'pestana-activa' : ''}`} onClick={() => setPestana(k)}>{nombre}</button>)}</div>
+        {pestana === 'medidas' && <div className="puerta-campos">
+          {texto('OF de puerta', 'of')}
+          <Numero titulo="Cantidad de puertas iguales" unidad="cantidad" valor={p.cantidad || null} cambiar={v => datos({ cantidad: Math.trunc(v ?? 0) })} />
           <Numero titulo="Frente (mm)" valor={p.frente || null} cambiar={v => datos({ frente: v ?? 0 })} />
           <Numero titulo="Alto del hueco (mm)" valor={t.altoHueco || null} cambiar={v => medidas({ altoHueco: v ?? 0 }, { alto: v ?? 0 })} />
           <Numero titulo="Alto total (mm, opcional)" valor={t.altoTotal} cambiar={altoTotal => medidas({ altoTotal })} />
-          <Numero titulo="Añadido para enrollar (mm)" valor={t.anadido} cambiar={v => medidas({ anadido: v ?? 0 })} />
-          <Numero titulo="Número de tubos" unidad="cantidad" valor={t.nTubos || null} cambiar={v => medidas({ nTubos: Math.trunc(v ?? 0) })} />
-          <label className="field puerta-campo"><span>Diámetro de los tubos (mm)</span><input value={t.diametroTubo} readOnly /></label>
-          <Numero titulo="Diámetro de enrolle (mm)" unidad="mm" valor={t.diametroEnrolle || null} cambiar={v => medidas({ diametroEnrolle: v ?? 0 })} />
-          <Numero titulo="Ancho de E.T. (mm)" valor={t.anchoEt || null} cambiar={v => medidas({ anchoEt: v ?? 0 }, { enrollable: { ...p.enrollable, anchoEt: v ?? 0 } })} />
-          <Numero titulo="Grosor de la lona (mm)" unidad="mm" valor={t.grosor || null} cambiar={v => medidas({ grosor: v ?? 0 })} />
+          {texto('Color de puerta', 'color')}
+          <SegmentedField label="Lona" value={t.lona === 'rejilla' ? 'Rejilla' : 'PVC'} options={['PVC', 'Rejilla']} onChange={elegirLona} />
           <SegmentedField label="Varilla de arriba" value={t.varilla === 'blanca' ? 'Blanca 5,5' : t.varilla === 'negra' ? 'Negra 4,5' : ''}
             options={['Blanca 5,5', 'Negra 4,5']} missing={!t.varilla} onChange={v => medidas({ varilla: v === 'Blanca 5,5' ? 'blanca' : 'negra' })} />
-          <SegmentedField label="Lona" value={t.lona === 'rejilla' ? 'Rejilla' : 'PVC'} options={['PVC', 'Rejilla']} onChange={elegirLona} />
-          <SegmentedField label="Laterales" value={t.laterales === 'bastilla' ? 'Bastilla' : 'Al corte'} options={['Al corte', 'Bastilla']}
-            onChange={v => medidas({ laterales: v === 'Bastilla' ? 'bastilla' : 'corte' })} />
-          {t.laterales === 'bastilla' && <Numero titulo="Bastilla por lado (mm)" valor={t.bastilla ?? null}
-            cambiar={bastilla => medidas({ bastilla })} />}
+        </div>}
+        {pestana === 'et' && <div className="puerta-campos">
+          <Numero titulo="Número de tubos" unidad="cantidad" valor={t.nTubos || null} cambiar={v => medidas({ nTubos: Math.trunc(v ?? 0) })} />
+          <label className="field puerta-campo"><span>Diámetro de los tubos (mm)</span><input value={t.diametroTubo} readOnly /></label>
+          <Numero titulo="Ancho de E.T. (mm)" valor={t.anchoEt || null} cambiar={v => medidas({ anchoEt: v ?? 0 }, { enrollable: { ...p.enrollable, anchoEt: v ?? 0 } })} />
+          <Numero titulo="Añadido para enrollar (mm)" valor={t.anadido} cambiar={v => medidas({ anadido: v ?? 0 })} />
+          <Numero titulo="Diámetro de enrolle (mm)" unidad="mm" valor={t.diametroEnrolle || null} cambiar={v => medidas({ diametroEnrolle: v ?? 0 })} />
+        </div>}
+        {pestana === 'saco' && <div className="puerta-campos">
           <SegmentedField label="Abajo" value={t.abajo === 'envolvente' ? 'Tubo con saco envolvente' : t.abajo === 'saco' ? 'Saco' : 'Tubo'} options={['Saco', 'Tubo', 'Tubo con saco envolvente']} onChange={v => {
             const abajo = v === 'Saco' ? 'saco' : v === 'Tubo' ? 'tubo' : 'envolvente';
             if (abajo !== t.abajo) medidas({ abajo }, { enrollable: { ...p.enrollable, sinSaco: abajo !== 'saco' } });
           }} />
-          {t.abajo === 'envolvente' && <Numero titulo="Saco terminado (mm)" valor={t.terminado ?? null} cambiar={terminado => medidas({ terminado })} />}
-          {t.abajo !== 'saco' && t.lona !== 'rejilla' && <Numero titulo="Soldadura del último tubo (mm)" valor={t.soldadura === undefined ? SOLDADURA_BASE_TGM : t.soldadura} cambiar={soldadura => medidas({ soldadura })} />}
           {t.abajo === 'saco' && <Numero titulo="Saco útil (mm)" unidad="mm" valor={p.enrollable.saco ?? null}
             cambiar={saco => datos({ enrollable: { ...p.enrollable, saco } })} />}
-          {texto('Material de lona', 'material')}{texto('Color de puerta', 'color')}
+          {t.abajo === 'envolvente' && <Numero titulo="Saco terminado (mm)" valor={t.terminado ?? null} cambiar={terminado => medidas({ terminado })} />}
+          {t.abajo !== 'saco' && t.lona !== 'rejilla' && <Numero titulo="Soldadura del último tubo (mm)" valor={t.soldadura === undefined ? SOLDADURA_BASE_TGM : t.soldadura} cambiar={soldadura => medidas({ soldadura })} />}
+          {t.abajo !== 'tubo' && t.lona !== 'rejilla' && texto('Material del saco', 'materialSaco')}
+        </div>}
+        {pestana === 'otros' && <>
+        <div className="puerta-campos">
+          {texto('Material de lona', 'material')}
           <Numero titulo="Rollo de lona (mm)" valor={p.rollo} cambiar={v => datos({ rollo: v ?? 0 })} />
           {t.lona === 'rejilla' && <SelectField label={t.abajo === 'saco' ? 'PVC de las E.T. y del saco' : 'PVC de las E.T.'} value={t.materialEt} options={['LAC650', 'LAC900']}
             optionLabel={v => v} onChange={v => medidas({ materialEt: v === 'LAC650' ? 'LAC650' : 'LAC900' })} />}
-          {t.abajo !== 'tubo' && t.lona !== 'rejilla' && texto('Material del saco', 'materialSaco')}
-          {texto('OF de puerta', 'of')}
-          <Numero titulo="Cantidad de puertas iguales" unidad="cantidad" valor={p.cantidad || null} cambiar={v => datos({ cantidad: Math.trunc(v ?? 0) })} />
+          <Numero titulo="Grosor de la lona (mm)" unidad="mm" valor={t.grosor || null} cambiar={v => medidas({ grosor: v ?? 0 })} />
+          <SegmentedField label="Laterales" value={t.laterales === 'bastilla' ? 'Bastilla' : 'Al corte'} options={['Al corte', 'Bastilla']}
+            onChange={v => medidas({ laterales: v === 'Bastilla' ? 'bastilla' : 'corte' })} />
+          {t.laterales === 'bastilla' && <Numero titulo="Bastilla por lado (mm)" valor={t.bastilla ?? null}
+            cambiar={bastilla => medidas({ bastilla })} />}
         </div>
-        <details className="puerta-tgm-ajustes">
+        <details className="puerta-tgm-ajustes" open>
           <summary>Ajustes del enrolle</summary>
           <div className="puerta-campos">
             <Numero titulo="Margen mínimo (mm)" unidad="mm" valor={t.ajustes.margen} cambiar={v => ajustes({ margen: v ?? 0 })} />
@@ -103,6 +117,7 @@ export function ConfigurarTgm({ p, cambiar, corte, derecha, letra, vistas }: {
           </div>
           <button type="button" className="ghost-button" onClick={restaurarAjustes}>Restaurar valores por defecto</button>
         </details>
+        </>}
         <label className="puerta-casilla">
           <input type="checkbox" checked={p.confirmada && p.ventanasConfirmadas}
             onChange={e => cambiar({ ...p, confirmada: e.target.checked, ventanasConfirmadas: e.target.checked })} />

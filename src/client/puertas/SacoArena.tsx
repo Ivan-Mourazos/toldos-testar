@@ -76,7 +76,6 @@ export function ConfigurarSacoArena({ p, cambiar, corte, derecha, vistas }: {
         {campo('rollo','Ancho del rollo de restos (cm)')}
       </div><p className="puerta-ayuda">Cara negra hacia fuera. Marcar por el lado negro.</p></fieldset>
       <div className="puerta-confirmaciones"><label className="puerta-casilla"><input type="checkbox" name="confirmada" checked={p.confirmada} onChange={e=>cambiar({...p,confirmada:e.target.checked,ventanasConfirmadas:true})}/>Confirmado con el pedido: largo, aplastado, material y negro hacia fuera</label></div>
-      <details><summary>Texto del pedido</summary><div className="field puerta-campo"><label htmlFor={`${prefijo}-texto`}>Texto original y observaciones</label><textarea id={`${prefijo}-texto`} name="observaciones" value={p.observaciones} onChange={e=>set('observaciones',e.target.value)}/></div></details>
     </section>
     <div className="puerta-derecha"><div className="puerta-dibujo">{vistas}{derecha==='corte'&&corte?corte:<VistaSacoArena puerta={p}/>}</div>
       <section className="puerta-avisos panel panel-vidrio" aria-label="Comprobaciones del saco"><h2>Qué falta o revisar</h2>{r.avisos.length?<ul>{r.avisos.map(a=><li key={a.codigo} className={a.nivel==='error'?'es-error':''}>{a.texto}</li>)}</ul>:<p>Todo listo: medidas confirmadas.</p>}</section>

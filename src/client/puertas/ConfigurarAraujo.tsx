@@ -16,20 +16,21 @@ function Texto({titulo,valor,cambiar}:{titulo:string;valor:string;cambiar:(v:str
   return <label className="field puerta-campo"><span>{titulo}</span><input aria-label={titulo} value={valor} onChange={e=>cambiar(e.target.value)}/></label>;
 }
 export function ConfigurarAraujo({p,cambiar,corte,derecha,letra,vistas}:{p:Puerta;cambiar:(p:Puerta)=>void;corte?:React.ReactNode;derecha:'alzado'|'corte';letra:string;vistas?:React.ReactNode}){
-  const [pestana,setPestana]=useState('datos');
+  const [pestana,setPestana]=useState('medidas');
   const a=p.araujo!,resultado=calcularPuerta(p);
   const ficha=fichaDePuerta(p),perfiles=ficha.perfiles;
   const set=<K extends keyof Puerta>(k:K,v:Puerta[K])=>cambiar({...p,[k]:v});
   function tramos(ts:TramoAraujo[]){cambiar({...p,frente:ts[0]?.frente??0,alto:ts.filter(t=>t.tipo==='tramo').reduce((s,t)=>s+t.alto*t.cantidad,0),araujo:{...a,tramos:ts}});}
   const tramo=(i:number,parche:Partial<TramoAraujo>)=>tramos(a.tramos.map((t,j)=>i===j?{...t,...parche}:t));
   const ventana=(i:number,j:number,parche:Partial<Ventana>)=>tramo(i,{ventanas:a.tramos[i].ventanas.map((v,k)=>j===k?{...v,...parche}:v)});
-  const tabs=[['datos','Datos'],['tramos','Tramos y bolsas'],['ventanas','Ventanas'],['entradas','E.T.'],['texto','Texto']];
+  // Pasos principales: medidas (con los tramos y bolsas), E.T. y ventanas; el resto en «Otros ajustes» (Iván, 20/11/2026).
+  const tabs=[['medidas','Medidas'],['entradas','E.T.'],['ventanas','Ventanas'],['otros','Otros ajustes']];
   return <>
     <div className="puerta-config-alzado">
       <section className="puerta-config panel panel-vidrio" aria-label="Configurador de Araujo">
         <header><h2>Configurador</h2><span>{ficha.nombre} · medidas en mm</span></header>
         <div className="tira-3d puerta-pestanas" role="tablist" aria-label="Partes de Araujo">{tabs.map(([k,t])=><button type="button" role="tab" key={k} aria-selected={pestana===k} className={`pestana ${pestana===k?'pestana-activa':''}`} onClick={()=>setPestana(k)}>{t}</button>)}</div>
-        {pestana==='datos'&&<>
+        {pestana==='medidas'&&<>
           <div className="puerta-campos">
             <Texto titulo="OF de puerta" valor={p.of} cambiar={v=>set('of',v)}/>
             <Numero titulo="Cantidad de conjuntos iguales" unidad="cantidad" valor={p.cantidad} cambiar={v=>set('cantidad',v)}/>
@@ -37,22 +38,6 @@ export function ConfigurarAraujo({p,cambiar,corte,derecha,letra,vistas}:{p:Puert
             <Texto titulo="Color de puerta" valor={p.color} cambiar={v=>set('color',v)}/>
           </div>
           <p className="puerta-ayuda">Una fila por medida. Cada tramo o bolsa lleva su propia cantidad. Comprueba en la hoja si las entradas separan piezas o van soldadas sobre una lona continua.</p>
-          <fieldset><legend>Canutillos de los extremos</legend>
-            <SelectField label="Perfil de canutillo comprobado" value={a.perfil} options={Object.keys(perfiles)} optionLabel={v=>perfiles[v]?`${perfiles[v].nombre??'Canutillo'} · canutillo de ${num(perfiles[v].marca)} mm`:''} onChange={v=>cambiar(elegirPerfilAraujo(p,v))}/>
-            <p className="puerta-ayuda">Introduce las medidas del cliente. El canutillo de 70 mm es el habitual, también en LAC 900; COMB de 65 mm se elige a mano. La línea de rotulador va a {num(perfiles[a.perfil].marca)} mm del corte y la referencia de lona terminada, a {num(perfiles[a.perfil].aumento/2)} mm, solo en el plano.</p>
-            <p className="puerta-ayuda">{textoMedidasMm(ficha.remates??'')}. El ancho de cada E.T. se introduce en su pieza.</p>
-            {!ficha.rollosConfirmados&&<p className="puerta-ayuda">Comprueba los anchos reales en «Materiales y rollos» antes de generar el corte.</p>}
-          </fieldset>
-          <label className="puerta-casilla"><input type="checkbox" checked={Boolean(a.corteTrasImprimir)} onChange={e=>cambiar({...p,confirmada:false,ventanasConfirmadas:false,araujo:{...a,corteTrasImprimir:e.target.checked}})}/>Cortar el cuerpo después de imprimir</label>
-          {a.corteTrasImprimir&&<p className="puerta-ayuda">El alto del cuerpo cruza el rollo y se conserva la orientación de la impresión. Si supera el rollo, se reparte en paños y el superior lleva 20 mm más para soldar. El plano acota las entradas también en el corte.</p>}
-          <details><summary>Materiales y rollos</summary><div className="puerta-campos">
-            <Texto titulo="Material de lona" valor={p.material} cambiar={v=>set('material',v)}/><Numero titulo="Rollo de lona (mm)" valor={p.rollo} cambiar={v=>set('rollo',v)}/>
-            <Texto titulo="Material transparente" valor={p.materialCristal} cambiar={v=>set('materialCristal',v)}/><Numero titulo="Rollo transparente (mm)" valor={p.rolloCristal} cambiar={v=>set('rolloCristal',v)}/>
-            <Texto titulo="Material de bolsa" valor={p.materialSaco} cambiar={v=>set('materialSaco',v)}/><Numero titulo="Rollo de bolsa (mm)" valor={p.rolloSaco} cambiar={v=>set('rolloSaco',v)}/>
-            <Numero titulo="Margen de marcas (mm)" valor={p.margenMarcas} cambiar={v=>set('margenMarcas',v)}/>
-          </div></details>
-        </>}
-        {pestana==='tramos'&&<>
           <p className="puerta-ayuda">Medidas terminadas de la hoja. En cada extremo, corte y marca según el perfil confirmado. Las bolsas pueden tener otro frente.</p>
           {a.forma==='continua'&&a.tramos.filter(t=>t.tipo==='tramo').length>1&&<><p className="puerta-ayuda">Para una lona continua, deja un cuerpo con el alto total. Las entradas intermedias se ponen en «E.T.».</p><button type="button" className="ghost-button" disabled={a.tramos.some(t=>t.tipo==='tramo'&&(t.cantidad!==1||t.ventanas.length>0||t.rotulacion||t.entradas?.length||t.arriba?.tipo==='et'||t.abajo?.tipo==='et'||t.material||t.of||t.frente!==a.tramos.find(x=>x.tipo==='tramo')?.frente))} onClick={()=>{
             const cuerpos=a.tramos.filter(t=>t.tipo==='tramo');tramos([{...cuerpos[0],alto:cuerpos.reduce((s,t)=>s+t.alto,0)},...a.tramos.filter(t=>t.tipo==='bolsa')]);
@@ -99,7 +84,23 @@ export function ConfigurarAraujo({p,cambiar,corte,derecha,letra,vistas}:{p:Puert
           {p.entradas.map((e,i)=><fieldset key={i}><legend>Entrada {i+1}</legend><div className="puerta-campos">{(['altura','largo','alto'] as const).map(k=><Numero key={k} titulo={`${k==='altura'?'Eje desde el bajo':k==='largo'?'Largo':'Ancho E.T.'} entrada ${i+1} (mm)`} valor={e[k]} cambiar={v=>set('entradas',p.entradas.map((e,j)=>i===j?{...e,[k]:v}:e))}/>)}</div><button type="button" className="ghost-button" onClick={()=>set('entradas',p.entradas.filter((_,j)=>i!==j))}>Quitar entrada {i+1}</button></fieldset>)}
           </>}
         </>}
-        {pestana==='texto'&&<div className="puerta-campos"><label className="field puerta-campo puerta-campo-ancho"><span>Texto del pedido · {p.articuloOrigen||'sin artículo RPS'}</span><textarea aria-label="Texto del pedido" value={p.observaciones} onChange={e=>set('observaciones',e.target.value)}/></label><label className="field puerta-campo puerta-campo-ancho"><span>Nota en el plano</span><textarea aria-label="Nota en el plano" value={p.notaPlano??''} onChange={e=>set('notaPlano',e.target.value)}/></label></div>}
+        {pestana==='otros'&&<>
+          <fieldset><legend>Canutillos de los extremos</legend>
+            <SelectField label="Perfil de canutillo comprobado" value={a.perfil} options={Object.keys(perfiles)} optionLabel={v=>perfiles[v]?`${perfiles[v].nombre??'Canutillo'} · canutillo de ${num(perfiles[v].marca)} mm`:''} onChange={v=>cambiar(elegirPerfilAraujo(p,v))}/>
+            <p className="puerta-ayuda">Introduce las medidas del cliente. El canutillo de 70 mm es el habitual, también en LAC 900; COMB de 65 mm se elige a mano. La línea de rotulador va a {num(perfiles[a.perfil].marca)} mm del corte y la referencia de lona terminada, a {num(perfiles[a.perfil].aumento/2)} mm, solo en el plano.</p>
+            <p className="puerta-ayuda">{textoMedidasMm(ficha.remates??'')}. El ancho de cada E.T. se introduce en su pieza.</p>
+            {!ficha.rollosConfirmados&&<p className="puerta-ayuda">Comprueba los anchos reales en «Materiales y rollos», más abajo, antes de generar el corte.</p>}
+          </fieldset>
+          <label className="puerta-casilla"><input type="checkbox" checked={Boolean(a.corteTrasImprimir)} onChange={e=>cambiar({...p,confirmada:false,ventanasConfirmadas:false,araujo:{...a,corteTrasImprimir:e.target.checked}})}/>Cortar el cuerpo después de imprimir</label>
+          {a.corteTrasImprimir&&<p className="puerta-ayuda">El alto del cuerpo cruza el rollo y se conserva la orientación de la impresión. Si supera el rollo, se reparte en paños y el superior lleva 20 mm más para soldar. El plano acota las entradas también en el corte.</p>}
+          <fieldset><legend>Materiales y rollos</legend><div className="puerta-campos">
+            <Texto titulo="Material de lona" valor={p.material} cambiar={v=>set('material',v)}/><Numero titulo="Rollo de lona (mm)" valor={p.rollo} cambiar={v=>set('rollo',v)}/>
+            <Texto titulo="Material transparente" valor={p.materialCristal} cambiar={v=>set('materialCristal',v)}/><Numero titulo="Rollo transparente (mm)" valor={p.rolloCristal} cambiar={v=>set('rolloCristal',v)}/>
+            <Texto titulo="Material de bolsa" valor={p.materialSaco} cambiar={v=>set('materialSaco',v)}/><Numero titulo="Rollo de bolsa (mm)" valor={p.rolloSaco} cambiar={v=>set('rolloSaco',v)}/>
+            <Numero titulo="Margen de marcas (mm)" valor={p.margenMarcas} cambiar={v=>set('margenMarcas',v)}/>
+          </div></fieldset>
+          <label className="field puerta-campo puerta-campo-ancho"><span>Nota en el plano</span><textarea aria-label="Nota en el plano" value={p.notaPlano??''} onChange={e=>set('notaPlano',e.target.value)}/></label>
+        </>}
         <div className="puerta-confirmaciones"><label className="puerta-casilla"><input type="checkbox" checked={p.confirmada&&p.ventanasConfirmadas} onChange={e=>cambiar({...p,confirmada:e.target.checked,ventanasConfirmadas:e.target.checked})}/>Confirmado con el dibujo: tramos, bolsas, cantidades, canutillos y ventanas</label></div>
       </section>
       <div className="puerta-derecha">

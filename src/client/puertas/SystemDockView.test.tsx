@@ -9,8 +9,8 @@ const pintar = (producto: 'puertas' | 'systemdock') => renderToStaticMarkup(<Pue
 describe('formulario propio de System Dock', () => {
   it('fija la lona con sus materiales y muestra solo sus campos', () => {
     const html = pintar('systemdock');
-    for (const texto of ['Largo de la lona (mm)', 'Ancho de la lona (mm)', 'OF de lona', 'Texto del pedido', 'Confirmado con el pedido', REGLAS_SYSTEM_DOCK.material, REGLAS_SYSTEM_DOCK.color]) expect(html).toContain(texto);
-    for (const texto of ['Modelo de puerta', 'Artículo indicado en RPS', 'Nota en el plano', 'Partes de la puerta', 'Rollo transparente', 'Añadir puerta']) expect(html).not.toContain(texto);
+    for (const texto of ['Largo de la lona (mm)', 'Ancho de la lona (mm)', 'OF de lona', 'Confirmado con el pedido', REGLAS_SYSTEM_DOCK.material, REGLAS_SYSTEM_DOCK.color]) expect(html).toContain(texto);
+    for (const texto of ['Modelo de puerta', 'Artículo indicado en RPS', 'Texto del pedido', 'Nota en el plano', 'Partes de la puerta', 'Rollo transparente', 'Añadir puerta']) expect(html).not.toContain(texto);
     expect(html).toContain(`value="${REGLAS_SYSTEM_DOCK.rollo*10}"`);
     expect(html).toContain('Añadir lona');
   });

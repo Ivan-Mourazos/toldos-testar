@@ -46,8 +46,8 @@ for(const viewport of [{width:1280,height:720},{width:1600,height:1000}]) {
         assert.equal(await page.locator('.puerta-alzado .puerta-cristal[y="349"]').count(),3);
         assert.equal(await page.getByLabel('Radio del hueco, todas (mm)',{exact:true}).inputValue(),'20');
       } else if(nombre==='apilable') await page.getByRole('tab',{name:'Ventanas',exact:true}).click();
-      else if(nombre==='araujo') await page.getByRole('tab',{name:'Tramos y bolsas',exact:true}).click();
-      else if(nombre==='santapau') await page.getByRole('tab',{name:'Mirilla y tubos',exact:true}).click();
+      else if(nombre==='araujo') await page.getByRole('tab',{name:'Medidas',exact:true}).click();
+      else if(nombre==='santapau') await page.getByRole('tab',{name:'Ventanas',exact:true}).click();
       else {
         assert.equal(await page.getByLabel('Largo de la lona (mm)',{exact:true}).inputValue(),'10400');
         assert.match(await page.locator('.puerta-alzado').innerText(),/10400 mm/);

@@ -17,7 +17,8 @@ export function ConfigurarSantaPau({p,cambiar,corte,derecha,letra,vistas}:{p:Pue
  const remate=(q:Partial<NonNullable<Puerta['santapau']>>)=>patch({santapau:{...s,...q}});
  const ventana=(q:Partial<typeof v>)=>patch({ventanas:[{...v,...q}]});
  const texto=(titulo:string,key:'of'|'color'|'material'|'materialCristal'|'materialSaco'|'notaPlano')=><label className="field puerta-campo"><span>{titulo}</span><input aria-label={titulo} value={p[key]??''} onChange={e=>patch({[key]:e.target.value})}/></label>;
- const tabs=[['datos','Puerta'],['mirilla','Mirilla y tubos'],['remates','Confección'],['materiales','Materiales y texto']];
+ // Pasos principales: medidas, E.T., mirilla y faldón; materiales y nota en «Otros ajustes» (Iván, 20/11/2026).
+ const tabs=[['datos','Medidas'],['et','E.T.'],['mirilla','Ventanas'],['faldon','Faldón'],['otros','Otros ajustes']];
  return <>
   <div className="puerta-config-alzado">
    <section className="puerta-config panel panel-vidrio" aria-label="Configurador de Santa Pau">
@@ -31,12 +32,7 @@ export function ConfigurarSantaPau({p,cambiar,corte,derecha,letra,vistas}:{p:Pue
      </div>
      <p className="puerta-ayuda">Enrollable con mirilla, entradas de tubo y faldón independiente. Introduce las medidas del cliente directamente en mm.</p>
     </>}
-    {tab==='mirilla'&&<>
-     <fieldset><legend>Bordes visibles de la mirilla</legend><div className="puerta-campos">
-      <Numero titulo="Bajo de mirilla desde el bajo terminado (mm)" valor={v.y} cambiar={y=>ventana({y})}/>
-      <Numero titulo="Alto visible de mirilla (mm)" valor={v.alto} cambiar={alto=>ventana({alto})}/>
-      <Numero titulo="Margen lateral de lona (mm; 0 de lado a lado)" valor={v.x} cambiar={x=>ventana({x,ancho:p.frente-2*x})}/>
-     </div><p className="puerta-ayuda">El borde superior queda a {num(v.y+v.alto)} mm del bajo. Los ejes de tubo se ponen aparte.</p></fieldset>
+    {tab==='et'&&<>
      <fieldset><legend>Entradas de tubo · sueltas de 90 mm</legend>
       {p.entradas.map((e,i)=><div className="puerta-campos" key={i}>
        <Numero titulo={`Eje de tubo ${i+1} desde el bajo (mm)`} valor={e.altura} cambiar={altura=>patch({entradas:p.entradas.map((t,j)=>j===i?{...t,altura}:t)})}/>
@@ -46,20 +42,29 @@ export function ConfigurarSantaPau({p,cambiar,corte,derecha,letra,vistas}:{p:Pue
       <button type="button" className="ghost-button" onClick={()=>patch({entradas:[...p.entradas,{altura:0,largo:p.frente,alto:9,diametro:30,huecos:[]}]})}>Añadir E.T.</button>
       <p className="puerta-ayuda">Sin recortes de cintas. En 4815 el tubo es plano de 30 × 10 mm. Revisa el tubo de cada pedido.</p>
      </fieldset>
+     <div className="puerta-campos">
+      <SelectField label="Lado cerrado de las E.T. por el revés" value={s.ladoCerrado} options={['sin confirmar','izquierda','derecha']} optionLabel={v=>v==='sin confirmar'?'Sin confirmar':v==='derecha'?'Derecha':'Izquierda'} onChange={ladoCerrado=>remate({ladoCerrado:ladoCerrado as typeof s.ladoCerrado})}/>
+     </div>
+     <label className="puerta-casilla"><input type="checkbox" checked={s.refuerzos} onChange={e=>remate({refuerzos:e.target.checked})}/>Refuerzos en ambos extremos de todas las E.T.</label>
+     {s.refuerzos&&<Numero titulo="Ancho de corte del refuerzo (mm)" valor={s.anchoRefuerzo??REGLAS_SANTA_PAU.anchoRefuerzo} cambiar={anchoRefuerzo=>remate({anchoRefuerzo})}/>}
+     <p className="puerta-ayuda">Se cortan dos refuerzos por E.T., del ancho del pedido y del mismo alto que la entrada (90 mm).</p>
     </>}
-    {tab==='remates'&&<>
+    {tab==='mirilla'&&<>
+     <fieldset><legend>Bordes visibles de la mirilla</legend><div className="puerta-campos">
+      <Numero titulo="Bajo de mirilla desde el bajo terminado (mm)" valor={v.y} cambiar={y=>ventana({y})}/>
+      <Numero titulo="Alto visible de mirilla (mm)" valor={v.alto} cambiar={alto=>ventana({alto})}/>
+      <Numero titulo="Margen lateral de lona (mm; 0 de lado a lado)" valor={v.x} cambiar={x=>ventana({x,ancho:p.frente-2*x})}/>
+     </div><p className="puerta-ayuda">El borde superior queda a {num(v.y+v.alto)} mm del bajo. Los ejes de tubo se ponen aparte.</p></fieldset>
+    </>}
+    {tab==='faldon'&&<>
      <div className="puerta-campos">
       <Numero titulo="Alto de corte del faldón (mm)" valor={s.altoFaldon} cambiar={altoFaldon=>remate({altoFaldon})}/>
-      <SelectField label="Lado cerrado de las E.T. por el revés" value={s.ladoCerrado} options={['sin confirmar','izquierda','derecha']} optionLabel={v=>v==='sin confirmar'?'Sin confirmar':v==='derecha'?'Derecha':'Izquierda'} onChange={ladoCerrado=>remate({ladoCerrado:ladoCerrado as typeof s.ladoCerrado})}/>
      </div>
       <SelectField label="Confección del bajo" value={revisionSantaPau(s)} options={['5363','4815']} optionLabel={v=>v==='5363'?'Actual · bajo +25 mm':'Anterior · bajo +50 mm'} onChange={v=>remate({revision:v as '4815'|'5363',aumentoBajo:v==='4815'?5:2.5})}/>
       <p className="puerta-ayuda">Bajo del paño: +{num(aumentoSantaPau(s))} mm. Comprueba la confección del pedido.</p>
-     <label className="puerta-casilla"><input type="checkbox" checked={s.refuerzos} onChange={e=>remate({refuerzos:e.target.checked})}/>Refuerzos en ambos extremos de todas las E.T.</label>
-     {s.refuerzos&&<Numero titulo="Ancho de corte del refuerzo (mm)" valor={s.anchoRefuerzo??REGLAS_SANTA_PAU.anchoRefuerzo} cambiar={anchoRefuerzo=>remate({anchoRefuerzo})}/>}
      <label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.sacoDiagonalesAmarillas)} onChange={e=>patch({sacoDiagonalesAmarillas:e.target.checked})}/>Franja negra/amarilla en el faldón (impresión digital)</label>
-     <p className="puerta-ayuda">Se cortan dos refuerzos por E.T., del ancho del pedido y del mismo alto que la entrada (90 mm).</p>
     </>}
-    {tab==='materiales'&&<div className="puerta-campos">
+    {tab==='otros'&&<div className="puerta-campos">
      {texto('Material de lona','material')}{texto('Material transparente','materialCristal')}{texto('Material del faldón','materialSaco')}
      <Numero titulo="Rollo de lona (mm)" valor={p.rollo} cambiar={rollo=>patch({rollo})}/>
      <Numero titulo="Rollo transparente (mm)" valor={p.rolloCristal} cambiar={rolloCristal=>patch({rolloCristal})}/>

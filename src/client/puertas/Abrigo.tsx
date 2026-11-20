@@ -39,7 +39,6 @@ export function ConfigurarAbrigo({p,cambiar,vista,corte}:{p:Puerta;cambiar:(p:Pu
       <NumeroPuerta titulo="Ancho" valor={p.alto||null} cambiar={v=>editar({alto:v??0})}/>
     </div><p>{materialesAbrigo[parte]} · Consumo en ML según la OF.</p>{parte==='laterales'&&<p>Un ollao N14 y una arandela N30 por lateral.</p>}</fieldset>
     <label className="puerta-casilla"><input type="checkbox" checked={p.confirmada} onChange={e=>cambiar({...p,confirmada:e.target.checked})}/>Medidas y cantidad confirmadas con el pedido</label>
-    {p.observaciones&&<details><summary>Texto del pedido</summary><p>{p.observaciones}</p></details>}
   </section><div className="puerta-derecha"><div className="puerta-dibujo">{vista}{corte??<VistaAbrigo p={p}/>}</div>
     {avisos.length>0&&<section className="puerta-avisos panel panel-vidrio"><h2>Qué falta o revisar</h2><ul>{avisos.map(a=><li key={a.codigo}>{a.texto}</li>)}</ul></section>}
   </div></div>;
