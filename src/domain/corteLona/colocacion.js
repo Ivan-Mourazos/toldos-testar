@@ -69,15 +69,37 @@ function rejillasSacos(hueco, ofStock) {
   return opciones;
 }
 
+/**
+ * Iván, 20/11/2026 (AR2605667): «deberíamos priorizar los de 260 porque así ahorramos una costura». Además de
+ * las rejillas de un solo tipo, el retal se parte en dos franjas por una medida del catálogo (±10 cm) para
+ * mezclar tiras y trozos: en 400×150, una tira de 260 y un trozo de 130 por fila en vez de tres trozos. Lo
+ * mismo que ya hacían los remolques (src/remolques/corte/sacos.js).
+ */
+function rejillasConFranjas(hueco, ofStock) {
+  const opciones = rejillasSacos(hueco, ofStock);
+  const medidas = new Set(SACOS.flatMap(s => s.flatMap(cm => [cm - MARGEN_SACO_CM, cm, cm + MARGEN_SACO_CM].map(v => v * 10))));
+  for (const d of medidas) for (const [a, b] of [
+    d < hueco.w && [{ ...hueco, w: d }, { ...hueco, x: hueco.x + d, w: hueco.w - d }],
+    d < hueco.h && [{ ...hueco, h: d }, { ...hueco, y: hueco.y + d, h: hueco.h - d }],
+  ].filter(Boolean)) {
+    const segundas = rejillasSacos(b, ofStock).filter(r => r.length);
+    for (const primera of rejillasSacos(a, ofStock)) if (primera.length) for (const segunda of segundas) opciones.push([...primera, ...segunda]);
+  }
+  return opciones;
+}
+
 /** Iván, 17/11/2026: conserva la mejor combinación con total par y con total impar de trozos.
  * Dentro de cada paridad el valor es aditivo: el siguiente retal puede completar el trozo pendiente.
  * Incluir una pieza menos permite cerrar el material sin que un impar gane a una tira completa.
+ * Con `franjas` también se prueban tiras y trozos mezclados en un retal; es más lento, así que se usa al
+ * poner los sacos en el corte y no al valorar cada colocación del Tetris.
  */
-export function planesSacosEnRectangulos(huecos, ofStock) {
+export function planesSacosEnRectangulos(huecos, ofStock, { franjas = false } = {}) {
   let mejores = [{ sacos: [], valor: valorarSacos([]) }, null];
   for (const hueco of huecos) {
     const siguientes = [null, null];
-    for (const previo of mejores.filter(Boolean)) for (const rejilla of rejillasSacos(hueco, ofStock)) {
+    const rejillas = franjas ? rejillasConFranjas(hueco, ofStock) : rejillasSacos(hueco, ofStock);
+    for (const previo of mejores.filter(Boolean)) for (const rejilla of rejillas) {
       const sacos = [...previo.sacos, ...rejilla], valor = valorarSacos(sacos);
       const paridad = (valor.piezas - valor.tiras) % 2;
       if (!siguientes[paridad] || compararStock(valor, siguientes[paridad].valor) > 0) siguientes[paridad] = { sacos, valor };
@@ -88,8 +110,8 @@ export function planesSacosEnRectangulos(huecos, ofStock) {
 }
 
 /** Retales sin solapes; el primer plan tiene todas las parejas cerradas entre todos los huecos. */
-export function sacosEnRectangulos(huecos, ofStock) {
-  return planesSacosEnRectangulos(huecos, ofStock)[0];
+export function sacosEnRectangulos(huecos, ofStock, opciones) {
+  return planesSacosEnRectangulos(huecos, ofStock, opciones)[0];
 }
 
 /**
@@ -98,7 +120,7 @@ export function sacosEnRectangulos(huecos, ofStock) {
  */
 export function sacosEnRetales(colocadas, anchoRolloMm, ofStock) {
   const largo = Math.max(0, ...colocadas.map((p) => p.x + p.ancho));
-  return sacosEnRectangulos(huecosLibres(colocadas.map((p) => ({ x: p.x, y: p.y, w: p.ancho, h: p.hueco })), largo, anchoRolloMm), ofStock);
+  return sacosEnRectangulos(huecosLibres(colocadas.map((p) => ({ x: p.x, y: p.y, w: p.ancho, h: p.hueco })), largo, anchoRolloMm), ofStock, { franjas: true });
 }
 
 /** Iván, 17/11/2026: el Tetris desempata a igual largo por sacos equivalentes, tiras y superficie. */

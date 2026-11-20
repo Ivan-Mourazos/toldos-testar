@@ -12,7 +12,7 @@ const pedido = () => {
   return { schemaVersion: 1, kind: 'puertas', orderCode: 'AR2604638', elementos: [{ id: 'puerta-a', input: p }] };
 };
 describe('Corte de puertas', () => {
-  it('AR2604725: Iván, 17/11/2026, seis trozos forman tres sacos; sin OF reduce el ancho', () => {
+  it('AR2604725: Iván, 20/11/2026, mezcla dos tiras y dos trozos para tres sacos; sin OF reduce el ancho', () => {
     const p = pedido();
     Object.assign(p.elementos[0].input, { frente: 474, alto: 430, of: '0232504', color: 'GRIS 7038' });
     p.elementos[0].input.enrollable = { T: 239, D: 60, margen: 11, empates: [], sacoPartido: true };
@@ -20,12 +20,12 @@ describe('Corte de puertas', () => {
     const conStock = generarCortePuertas(p, { ofStockSacos: '0230811' }).cortes;
     const lona = conStock.find(c => c.material === 'LAC900 GRIS 7038');
     const sacos = lona.colocadas.filter(k => k.pieza.nombre === 'Saco de stock');
-    // Iván, 17/11/2026: seis trozos de 140×88 forman tres sacos, sin cambiar el consumo.
-    expect(sacos).toHaveLength(6);
-    expect(sacos.map(k => [k.pieza.ancho, k.pieza.alto])).toEqual(Array.from({ length: 6 }, () => [140, 88]));
-    expect(sacos.reduce((s, k) => s + k.pieza.ancho * k.pieza.alto, 0)).toBe(73920);
+    // Iván, 20/11/2026: cada tira da un saco con una costura menos. Los dos trozos forman el tercero.
+    expect(sacos).toHaveLength(4);
+    expect(sacos.map(k => [k.pieza.ancho, k.pieza.alto])).toEqual([[270, 88], [270, 88], [95, 140], [95, 140]]);
+    expect(sacos.reduce((s, k) => s + k.pieza.ancho * k.pieza.alto, 0)).toBe(74120);
     expect(sacos.every(k => k.pieza.of === '0230811')).toBe(true);
-    expect(lona.entidades.textos.filter(t => t.valor === 'STOCK')).toHaveLength(6);
+    expect(lona.entidades.textos.filter(t => t.valor === 'STOCK')).toHaveLength(4);
     expect(Math.max(...lona.colocadas.filter(k => k.pieza.nombre !== 'Saco de stock')
       .map(k => k.y + 10 * (k.girada ? k.pieza.ancho : k.pieza.alto)))).toBe(2902.5);
     const sinStock = generarCortePuertas(p).cortes.find(c => c.material === lona.material);

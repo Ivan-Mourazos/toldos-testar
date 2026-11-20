@@ -14,10 +14,11 @@ const hash=(s:string)=>createHash('sha256').update(s).digest('hex');
 // Se regeneraron con generarCortePuertas y escribirPlanoPuertas; nunca durante la prueba.
 // 06/11/2026: el bot y el plano cambian por el título del corte (sin «· CORTE», con «CORTAR POR EL REVÉS»); documento y cálculo, iguales. En las enrollables, textos de una línea centrados, A1/A2 grandes y AL CORTE centrado.
 // 19/11/2026: el 5246 sale del ejemplo 4638, que ya lleva sus tres E.T. (60, 131 y 191); antes solo la de 60.
+// 20/11/2026: se actualizan el bot y el plano de AR2605035 por las medidas y posiciones de sus tiras de stock.
 const huellas:Record<string,string[]>={
- AR2605246:['59fcde4280e6cf8c534127defa01fd1c31c47776df1e6e7910b56f4a4cfb8527','1b185ef12a60d50204a74854496e4bffb82a11391ab039f957a5e1f6e127e753','0e8a8c913254d53d8d69a2bea0dbbbc1d22ec9bf0bc81bd2d5241eb1ae582c31','e879d683ff525d0dca555cf0f1f1effc3a43c31b992456bb2180c85a06569190'],
- AR2605220:['2d3805fca845c43338af3ed41ae1383a2a9fd78b16c87736019930d3b76d2e33','f404e03c7050d002944949bf369652a289a8ee31668bbfef6add86b62fada5c3','0b07a6990d1e0753ea1b66ad1b5e59bbb8b0c7693b4fcf33846ae38a8ec59e82','ba839dc8738b514d5c23adece4aa0654a087567b9490e5d4d312471ef48e3810'],
- AR2605035:['7a300790349ce58674f2b7412da91374b5ed904f67d19a24f7be7e9fd54ff932','4a34ddd7d8e82bc5c891fca4f12b655cf881f7997ee211d24c56d13b076a515c','98cf2a1f82093c07c0e5dc446421d6526375e87e463a6cd0d646f6234c0a6cf0','943427c2782516abb4ab85aed138174836c2e05c8c2b5988b01b4b3dc064eb77'],
+ AR2605246:['59fcde4280e6cf8c534127defa01fd1c31c47776df1e6e7910b56f4a4cfb8527','1b185ef12a60d50204a74854496e4bffb82a11391ab039f957a5e1f6e127e753','81204a75e6943628457dc9cdcc0dcaf541f9aa8f4be0e613b3b94450507a9cff','11a71eaf7b9e19295d48999a28a6975958722857a48d7032da2add6353121f76'],
+ AR2605220:['2d3805fca845c43338af3ed41ae1383a2a9fd78b16c87736019930d3b76d2e33','f404e03c7050d002944949bf369652a289a8ee31668bbfef6add86b62fada5c3','4e15bfae53b68a581822088c0417c2ec9b27bf630f641e603b438435b4f8c8c6','3f10a476013f4c8d1a51a25b8492e0dcdf9486e7ad18f7f1f43bb112c48a744c'],
+ AR2605035:['7a300790349ce58674f2b7412da91374b5ed904f67d19a24f7be7e9fd54ff932','4a34ddd7d8e82bc5c891fca4f12b655cf881f7997ee211d24c56d13b076a515c','d36c8243b55dde601d83751dfe369bc46c0f08663c54844cfee737e1dfaa2c01','dc3ab6fb461d58636876492b5fb34830099e7f6e1aaad5c731b34c8246b51810'],
 };
 describe('fichas de clientes de Puertas',()=>{
  it('rechaza una ficha de cálculo TGM sin los parámetros de enrolle',()=>{

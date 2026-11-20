@@ -10256,7 +10256,7 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            166.688,
+            166.728,
             95.030082
           ],
           "h": 0.11875000000000568,
@@ -10271,7 +10271,7 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            166.688,
+            166.728,
             94.840082
           ],
           "h": 0.11875000000000568,
@@ -10286,7 +10286,7 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            166.688,
+            166.728,
             94.650082
           ],
           "h": 0.11875000000000568,
@@ -10294,14 +10294,14 @@
           "escalaX": 1,
           "giro": 0,
           "ancla": 5,
-          "valor": "252X95"
+          "valor": "260X95"
         },
         {
           "capa": "texto",
           "color": 106,
           "tipo": "texto",
           "punto": [
-            166.688,
+            166.728,
             94.460082
           ],
           "h": 0.11875000000000568,
@@ -10316,7 +10316,7 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            169.208,
+            169.283,
             95.030082
           ],
           "h": 0.11875000000000568,
@@ -10331,7 +10331,7 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            169.208,
+            169.283,
             94.840082
           ],
           "h": 0.11875000000000568,
@@ -10346,7 +10346,7 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            169.208,
+            169.283,
             94.650082
           ],
           "h": 0.11875000000000568,
@@ -10354,14 +10354,14 @@
           "escalaX": 1,
           "giro": 0,
           "ancla": 5,
-          "valor": "252X95"
+          "valor": "251X95"
         },
         {
           "capa": "texto",
           "color": 106,
           "tipo": "texto",
           "punto": [
-            169.208,
+            169.283,
             94.460082
           ],
           "h": 0.11875000000000568,
@@ -10376,7 +10376,7 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            171.728,
+            171.793,
             95.030082
           ],
           "h": 0.11875000000000568,
@@ -10391,7 +10391,7 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            171.728,
+            171.793,
             94.840082
           ],
           "h": 0.11875000000000568,
@@ -10406,7 +10406,7 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            171.728,
+            171.793,
             94.650082
           ],
           "h": 0.11875000000000568,
@@ -10414,14 +10414,14 @@
           "escalaX": 1,
           "giro": 0,
           "ancla": 5,
-          "valor": "252X95"
+          "valor": "251X95"
         },
         {
           "capa": "texto",
           "color": 106,
           "tipo": "texto",
           "punto": [
-            171.728,
+            171.793,
             94.460082
           ],
           "h": 0.11875000000000568,
@@ -10436,7 +10436,7 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            174.248,
+            174.303,
             95.030082
           ],
           "h": 0.11875000000000568,
@@ -10451,7 +10451,7 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            174.248,
+            174.303,
             94.840082
           ],
           "h": 0.11875000000000568,
@@ -10466,7 +10466,7 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            174.248,
+            174.303,
             94.650082
           ],
           "h": 0.11875000000000568,
@@ -10474,14 +10474,14 @@
           "escalaX": 1,
           "giro": 0,
           "ancla": 5,
-          "valor": "252X95"
+          "valor": "251X95"
         },
         {
           "capa": "texto",
           "color": 106,
           "tipo": "texto",
           "punto": [
-            174.248,
+            174.303,
             94.460082
           ],
           "h": 0.11875000000000568,
@@ -10496,7 +10496,7 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            176.768,
+            176.813,
             95.030082
           ],
           "h": 0.11875000000000568,
@@ -10511,7 +10511,7 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            176.768,
+            176.813,
             94.840082
           ],
           "h": 0.11875000000000568,
@@ -10526,7 +10526,7 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            176.768,
+            176.813,
             94.650082
           ],
           "h": 0.11875000000000568,
@@ -10534,14 +10534,14 @@
           "escalaX": 1,
           "giro": 0,
           "ancla": 5,
-          "valor": "252X95"
+          "valor": "251X95"
         },
         {
           "capa": "texto",
           "color": 106,
           "tipo": "texto",
           "punto": [
-            176.768,
+            176.813,
             94.460082
           ],
           "h": 0.11875000000000568,
@@ -10556,7 +10556,7 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            179.288,
+            179.323,
             95.030082
           ],
           "h": 0.11875000000000568,
@@ -10571,7 +10571,7 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            179.288,
+            179.323,
             94.840082
           ],
           "h": 0.11875000000000568,
@@ -10586,7 +10586,7 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            179.288,
+            179.323,
             94.650082
           ],
           "h": 0.11875000000000568,
@@ -10594,14 +10594,14 @@
           "escalaX": 1,
           "giro": 0,
           "ancla": 5,
-          "valor": "252X95"
+          "valor": "251X95"
         },
         {
           "capa": "texto",
           "color": 106,
           "tipo": "texto",
           "punto": [
-            179.288,
+            179.323,
             94.460082
           ],
           "h": 0.11875000000000568,
@@ -10616,7 +10616,7 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            181.808,
+            181.833,
             95.030082
           ],
           "h": 0.11875000000000568,
@@ -10631,7 +10631,7 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            181.808,
+            181.833,
             94.840082
           ],
           "h": 0.11875000000000568,
@@ -10646,7 +10646,7 @@
           "color": 106,
           "tipo": "texto",
           "punto": [
-            181.808,
+            181.833,
             94.650082
           ],
           "h": 0.11875000000000568,
@@ -10654,14 +10654,14 @@
           "escalaX": 1,
           "giro": 0,
           "ancla": 5,
-          "valor": "252X95"
+          "valor": "251X95"
         },
         {
           "capa": "texto",
           "color": 106,
           "tipo": "texto",
           "punto": [
-            181.808,
+            181.833,
             94.460082
           ],
           "h": 0.11875000000000568,
@@ -10738,212 +10738,212 @@
     {
       "familia": "Toldos / ARZUA PRO",
       "ejemplo": "AR2604784 adaptado como en index.test.js",
-      "sha": "4e9f63ea212070976b357b07073a90a260b1b76fdff5920d1c872c11d86886f1"
+      "sha": "837a50b664bc300b22c79ada58e0dceafd81bfc555e289371b52ae78c90f584b"
     },
     {
       "familia": "Toldos / GALICIA",
       "ejemplo": "AR2604784 adaptado como en index.test.js",
-      "sha": "6dbd5a1808c576bceace09f3095491292a451c5518d9b1f4494f666ef369e925"
+      "sha": "1e0f347ef8f026445b4aee0cfffb3f0af63f5f110e7eb21cbec0b86b355090a0"
     },
     {
       "familia": "Toldos / MONOBLOCK 350",
       "ejemplo": "AR2604784 adaptado como en index.test.js",
-      "sha": "48c2e97e9e325a1bd1616e9d27637e24cdc0dd203caffaebba92f6f13f3413bc"
+      "sha": "ade335ec9e51a9e9565642cff113f5399b4b3d53ed8354443801f15ea545e6a3"
     },
     {
       "familia": "Toldos / CAMBIO TELA",
       "ejemplo": "AR2604784 adaptado como en index.test.js",
-      "sha": "16b9850c307439aeb9db982734bcb1eb4068b3372cc9caa328bdd56933d1316f"
+      "sha": "fe6d4bf3b9e0ca6b8521f7e65fdb75f91758a1d26cb9b24d2f60af73771e1361"
     },
     {
       "familia": "Toldos / CORTINA",
       "ejemplo": "AR2605193 con ventana y bambalina / material 1",
-      "sha": "254d0fa0283a6764bd23c763e2b3313d97d844fbf1bce71b8fa8dd5283c536da"
+      "sha": "79900c36375383a8759d2e56036fff40c76fc538a6054038d3ed31643fa1a083"
     },
     {
       "familia": "Toldos / CORTINA",
       "ejemplo": "AR2605193 con ventana y bambalina / material 2",
-      "sha": "254d0fa0283a6764bd23c763e2b3313d97d844fbf1bce71b8fa8dd5283c536da"
+      "sha": "79900c36375383a8759d2e56036fff40c76fc538a6054038d3ed31643fa1a083"
     },
     {
       "familia": "Toldos / CAMBIO CORTINA",
       "ejemplo": "AR2601829 varilla",
-      "sha": "a1e37a4980f3ee692bba52a7903fb376047fd2c64c34cde416f3ed88c836f649"
+      "sha": "bc3562090d5e2baba938bfa187e5e9fd464e1f1bab9dabf2484ce0e7c099e685"
     },
     {
       "familia": "Toldos / SOLAPAS",
       "ejemplo": "AR2604205 siete solapas incluida oblicua",
-      "sha": "68f7c50fc0181219e04216eda4e0f21d02eb81565f686a28761933955ed8dec2"
+      "sha": "c8759fffa0a117d38fde6a70b747fdd4ccad2ec8c0263b458e9451b2c2e8fdac"
     },
     {
       "familia": "Toldos / EMBUDO",
       "ejemplo": "AR2605215 conico",
-      "sha": "6bb0f69747eb5fecf4354000525c330852af25824ee61f8ab4e47b5b582568bc"
+      "sha": "962191dcf2f657dbe6659c6e8be07ee7e6cce5fd88c0cdc5cc0552485741d989"
     },
     {
       "familia": "Toldos / EMBUDO",
       "ejemplo": "AR2600169 recto (vista previa sin OF)",
-      "sha": "e3f32eabf3073e13ee196d171cb6930a2a1064a6f3e4600f1206c45e61a72689"
+      "sha": "a7d8e87ba8b37f66c69e6acd6fdb7e03667af3599ec8cdbe7313f4cec729bf2c"
     },
     {
       "familia": "Toldos / BAMBALINAS",
       "ejemplo": "Bamba separada por material / material 1",
-      "sha": "092952e22eaa73d10807f17d3d3fbd9c3b3b3d698a56c42f34c5b11389f37bb7"
+      "sha": "376546b7e81a4de071cd66f9512a1dd720d6044a5653956364968276f675ebd2"
     },
     {
       "familia": "Toldos / BAMBALINAS",
       "ejemplo": "Bamba separada por material / material 2",
-      "sha": "257af9a61eae7eaa30b947f069aa1d3524a40cd9d78a07b84fe555c65685e0f1"
+      "sha": "48d3a80c5a055500c239a056bd34d326a4cf735e25b8b13ef1c41c1444d8ff0f"
     },
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2604390",
-      "sha": "92b681436c3be14833a5b4ad4e96f07cef9791ab4a5da3df52831020c41e3904"
+      "sha": "3dffc45fbfbd8ffffc3c8e46d76b6ca761fc01eca56c4db118ca7d6cf055b043"
     },
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2604412",
-      "sha": "082e3123411a60bcf54a44afa883e0b9acaba921207deebfce82c05eb3aebb21"
+      "sha": "75737b77fe220c1c8f7af9da952c5e9b4c6bd8100e73ae7c9d5ee525f7331123"
     },
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2604800",
-      "sha": "1e6e1ac4d288ff89e742303102362db4df1f6d2c4c9fd6cc31ae0d78019c1938"
+      "sha": "8185c7815eb55182af072f275aecb8db4ff177a7217cb13422f1ae2d148bfb7b"
     },
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2604802",
-      "sha": "94f3666b80197aac3362fafd5060bdb444dc086bf60d03fcccddf843aba8879e"
+      "sha": "5ea71d2443a258723a40c9407b2a827da32f01b19ed33719dbd41beb6d6b7ee3"
     },
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2604990",
-      "sha": "d39e13815b32b1acd01142e6b18c9e7aa20d3ed9825c0d091c9fdee534d61829"
+      "sha": "cf0be9c725e469dc48e427fd7a3b1467ecedc6c9898b19496749b6dbf8d1720f"
     },
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2605000",
-      "sha": "56ceb1993281423229c8e985d732a93e626b5979b82e8d0a9dd7b35a0f2ab807"
+      "sha": "b9c0ec2cf711b2f3d7e346ff69e762012a1e2c45cb8d8d1ee01e77e43b39a743"
     },
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2605023",
-      "sha": "99696c335ba835fe8e35493fdb3537e9b0f9452cb283afa232303be8c828b016"
+      "sha": "9454d9d1cef50280335332d3201147cbdea08f6ab94b9b1efa5daf51fab068c9"
     },
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2605071",
-      "sha": "691b0335a67cc9dd8011c193a0dc889e07b3d4bc182f9d1a25459f895b588fd8"
+      "sha": "9e044b761f5b0817501d28bf3e30d3dd80e9ca00dacc2314feb3f61a1d612148"
     },
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2605078",
-      "sha": "51dcb5371d7b437f3ce3cae43f65e107ee234ed7f20667cf458af220f62b15ed"
+      "sha": "5eb0d48ca10454201a2761a9be75f50be08a2bdd8b0ba74dbf99d1a4179e5486"
     },
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2605079",
-      "sha": "5234adb83a6818e08465cc9edf27358ddeb4934a944a7319d680b50445452921"
+      "sha": "891e45e3589d84ab419ac2c2fad210cfb4f1afcf9159f0bb99cfdf3e2f1fc9a1"
     },
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2605088",
-      "sha": "18c02c3a8c67d200568042f93a6dd3dfe39fffd96b68e0d702ee8144f3e5d798"
+      "sha": "70f0bb49dd9ab263c91cec8919146cb796718a26cd1a8f6bb142ff4a74f81e99"
     },
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2605120",
-      "sha": "1117278dfac209e6c35cf1611347d0edd283d153e578b7a9edeaeab200879d17"
+      "sha": "8fa511b1a9cfff977265ac77f1f9deab1cf9a8532f33b462bbfec2e4d9cbf24e"
     },
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2605129",
-      "sha": "dbc614c0418766b05efc10e585ec9f59adc5d263866c0bc180b4a28ec08483ef"
+      "sha": "a510c90fb1f45473a97f2bb0f465ce9694a024c57d6f39bf0f99ab137543e8d0"
     },
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2605132",
-      "sha": "56b950c0cf416a33cda5e92ae7b27232ded8d3f24d1716a1155ae282366f7f5d"
+      "sha": "8559e28daa2a7121cc31d4e1edd3d8ce5cb78ab5c147b4ab9dafe9a58579a0a5"
     },
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2605158",
-      "sha": "83716a46a7ab21cff7341a2a9c194b13febab29cb0fdfed84055ec1b806cc2e4"
+      "sha": "89f5ee564241cf2d056304f6df3bcbbb445072e7aee4189b0ce4d24a73ea4fe8"
     },
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2605192",
-      "sha": "3ad8016758b1bcfc50d1c751eec41a3608b6eb7c2a9182ea4f51bd611f353e7e"
+      "sha": "2cb992826d44524d0e9336e59142214df80521691f85c7fd7af4df1afbf5a0d5"
     },
     {
       "familia": "Remolques / ganado REMOLCAR_ECONOMICO",
       "ejemplo": "AR2600752",
-      "sha": "c63cf70226a02c2d9d49ab98b2d38387156f7422bd361d93ed1d2c846680c23d"
+      "sha": "daa7666f7e054147a71d4790e43e449b6946339ba0a43b48c1fc6d3ed2942929"
     },
     {
       "familia": "Remolques / ganado REMOLCAR_ESTANDAR",
       "ejemplo": "AR2601847",
-      "sha": "f49f122546865e42160e9b87a290d40e2997f9a2f8e01ca36e86fe0d4e7d8326"
+      "sha": "9aa54eea2b42bfb5f28f7ac087c8b1cddc19a4ae67124f5b591749f22be777c2"
     },
     {
       "familia": "Remolques / ganado CAL_MEDIDAS",
       "ejemplo": "AR2506052",
-      "sha": "01ac2fd115aea0ce0aa8a936a21791bfe2ad14860f930396fb724aa33d431e9b"
+      "sha": "d0b0079a2396536084947c512c3df102a41d78e9dca4bf43b9a80396c219698f"
     },
     {
       "familia": "Remolques / ganado CAL_MEDIDAS",
       "ejemplo": "AR2605319",
-      "sha": "c87dc0e4639998bc49e18f6fab523186a7772ec09e8f0280a9aca7c75f04989f"
+      "sha": "7e620b846098ab72ef600c6068fb6889b886d2a697d7c017832a9abf57433daa"
     },
     {
       "familia": "Puertas / Araujo",
       "ejemplo": "AR2605365",
-      "sha": "d40c42fc244f8090f3908534356c0afcb1e0bad2493eef6148bb8fd6bb881029"
+      "sha": "efc166616fa98562a00ad1ee48ed0c60fe5f97026f12e03d2d4380ff214d4338"
     },
     {
       "familia": "Puertas / Araujo",
       "ejemplo": "AR2505733",
-      "sha": "7aee3b85e372a0df9032691db698d2d24c1766a68edd2f68668cf9d1136bfd6e"
+      "sha": "644eae912a9f7c2a77a596286213a0a89893d984357f1e2cf5dfa5b18b7fac22"
     },
     {
       "familia": "Puertas / Araujo",
       "ejemplo": "AR2604292",
-      "sha": "df09aa61a59e446648d31263fb21248e30fb67e859b25cf50cea9b1efaed4280"
+      "sha": "ac47779cd61aa56acb1e641e6bd0e4f9d5e24ed97e994f9e4a02dd62a6c5634b"
     },
     {
       "familia": "Puertas / Araujo",
       "ejemplo": "AR2604373",
-      "sha": "2ac7cff4b474d072850c9becfbd276d6ab6a5f56039e1246fa11a0004c9d0493"
+      "sha": "fa9efd8b80e1f947b0722207c21659d78bfb7a010082d5fe3c7bbc6ed329cdc4"
     },
     {
       "familia": "Puertas / Araujo",
       "ejemplo": "AR2602391",
-      "sha": "078be0c9b14f4987b795eee4b7fe072ddaf45115a5070e7f246507435d00bbe8"
+      "sha": "baa3a6870069176c192b2a884e129cb14915897ce93a37742086587704487b75"
     },
     {
       "familia": "Puertas / Araujo",
       "ejemplo": "AR2506255",
-      "sha": "aa1b46abbdf616b3a11a416d03fa1220c6c84a9a111433581eb00b72bab37a91"
+      "sha": "83c080dc740e138f758340a4a57eff43dd4ee3002e47ed408ff85a09aee3e041"
     },
     {
       "familia": "Puertas / Santa Pau",
       "ejemplo": "AR2604815",
-      "sha": "98066b51c6f9fae14cac99696fe8a23f60f62572dd9285d0aea19efc7a2eb044"
+      "sha": "e46adc901e1e1d320628bf8e6ce564f35749cdece71670172ab67ec6e9c30f55"
     },
     {
       "familia": "Puertas / Santa Pau",
       "ejemplo": "AR2605363",
-      "sha": "60af4d7f3fef30315522c36cbedd0482670f65a10ae9794cf9227a5f82acacf3"
+      "sha": "b8aa1c3a342c61ba0c24784b26c4d1ecb294b0fd83ca0742692b1a215f9c167f"
     },
     {
       "familia": "Puertas / System Dock",
       "ejemplo": "AR2604615",
-      "sha": "7016035754bb70d58f50822e60a8c17c31a66e66052a86bd51488b0517ad841a"
+      "sha": "66a9bdab551f42efea5b85cd0d9424367d67adc37349946393ec9424e46da4a5"
     },
     {
       "familia": "ASSA / lote",
       "ejemplo": "2026-11-07 AR2605234",
-      "sha": "06f60f477762d90dcbb4e7db50e611c2cfbf55bb49379f181665ee071dca1883"
+      "sha": "e98d6b0d60cc07971854ed2363f48d4151cff1458141a0d62e88533f4183a4d5"
     }
   ]
 }

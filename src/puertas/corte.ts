@@ -399,7 +399,7 @@ function sacosDeStock(ocupadas: Array<{ x: number; y: number; ancho: number; hue
   const largo = Math.max(0, ...ocupadas.map(p => p.x + p.ancho));
   const libres = huecosLibres(ocupadas.map(p => ({ x: p.x, y: p.y, w: p.ancho, h: p.hueco })), largo, rollo);
   // Iván, 17/11/2026: se emparejan los trozos entre todos los retales de este material.
-  const sacos = sacosEnRectangulos(libres, ofStock) as Array<{ x: number; y: number; ancho: number; hueco: number; medida: string }>;
+  const sacos = sacosEnRectangulos(libres, ofStock, { franjas: true }) as Array<{ x: number; y: number; ancho: number; hueco: number; medida: string }>;
   return sacos.map((saco, i) => {
     const [x0, y0, w, h] = [saco.x, saco.y, saco.ancho, saco.hueco];
     entidades.lineas.push(

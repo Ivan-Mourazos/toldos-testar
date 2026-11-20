@@ -13,102 +13,102 @@
   "integridadRemolques": [
     {
       "pedido": "AR2604390",
-      "bot": "3c8c5468092e3d1992b840383d1c6e6f27a63fe148984013e718a049f43d24c4",
+      "bot": "3d7cdd172162ece7a9cc410e6f36c32e4dee5b7bd3c5cc4897027a48bdf50ce0",
       "colocacion": "f11ec269544a61778261793aa9cd1bfcf4fe52659d6453c4dd4f5c4f56f6e8b9"
     },
     {
       "pedido": "AR2604412",
-      "bot": "d6cd47de05a6c395571dae97d15ec636ee30571db245ceadf50f0a537d4ceb5c",
+      "bot": "64d9261da400975d27c2cfdda87ea84ce91c374c9aacd5f357f8d4d295f60dd6",
       "colocacion": "319b3757c63798b10acec4d8611ee3f7f094df6ed970040e8763bf974ce9f4a7"
     },
     {
       "pedido": "AR2604800",
-      "bot": "a487699a1bad280164ba04669a926006924c9187fa682b4ca8c4fd840baec092",
+      "bot": "1f9329701e8d85e431edcf4304135af0840340b263f870892c1795158eb0b717",
       "colocacion": "2a05bf8cbe75864e78447bd40360c41f97444250202a220d59cd90c3b4ea4d49"
     },
     {
       "pedido": "AR2604802",
-      "bot": "339ed0c31295ffc5dde2fe79759f2258b60d8e39df5bb3e8a3b71a283cb87d31",
+      "bot": "765fca94c75d9afaf31b43a815bbd64f35f559f27754b76430322e06e91fd449",
       "colocacion": "3e947c3d6495331942bab53e5da7aa46b55d42435a5eac29e862f884fc7d7355"
     },
     {
       "pedido": "AR2604990",
-      "bot": "0fcf74424b3ebb3ab31f99207d2abe425a0eea4039b3eea2f7f42a8d36395629",
+      "bot": "0cbea7ec2e6b7259662fc28d750075c91c5c6933a575842e17c10cb8c3992f12",
       "colocacion": "5721bb404f3f5f5f8056ef19c219c93d0bdef9d16eaff9b306f356fd0664fdd4"
     },
     {
       "pedido": "AR2605000",
-      "bot": "551a7d3cbbffedf0ff714de3bb674d640c70366fdaf26c57f57307a27298b720",
+      "bot": "2ffdf7ecfca71dbf6f318ec4b80760e9d4ec713d1b7f355ab872da12d5f1f72b",
       "colocacion": "bbc9a7fb49c627762c228797797f0ccaa04e5f2029cbe4916b2e8eddd8a01d3e"
     },
     {
       "pedido": "AR2605023",
-      "bot": "391d6f4376834b328324f6a38a1d70479f5fa7b14ae84de2780d8545e48994b1",
+      "bot": "06a2911f87f05b9f072d2ea4c3de0be778fe6fca85d025220ad324084b85e185",
       "colocacion": "8de31eabb7d9e771b211b9cf1e10e885f210213869c8c10f8891281dd64d3628"
     },
     {
       "pedido": "AR2605071",
-      "bot": "025d5b8ded263f55ebdade69a86cf2e2774e991f5d8158f60ec05be43db75042",
+      "bot": "a8a57a381ec78ef24d4b9b317edfcc68fdc9208a4e7b2cf52c8beccb98584331",
       "colocacion": "99af6d39c28d97d9dec61842e1446eb9e4c929ef5903f8a4ee95340e8919b47a"
     },
     {
       "pedido": "AR2605078",
-      "bot": "ed06727058dc28ac7f6677ce6e25d78e60d40c3f7c36cb4604f77408c73bedf7",
+      "bot": "dd1b4a167dbc93bf9ab096882bcebad374128a6d90afb33856990e92eab1f325",
       "colocacion": "25369a6e2ce0a26cf96dc74aa39252fd50abd8bb47e7bde50e18e4e1c3f329a1"
     },
     {
       "pedido": "AR2605079",
-      "bot": "436eae63628adb48d37d3776c5dfd64b4d5267c9119ca5953bc7fd06349dc708",
+      "bot": "71f94a5e8a2d8bbc88afca6cfeb287c8d9727a7f8a8cc781f9850aae9a3ae744",
       "colocacion": "8b85bb4edee1ad5688ebd2b3cb60b1f10bff1d674dc2728477aea3fc7f3b2503"
     },
     {
       "pedido": "AR2605088",
-      "bot": "8bfb8df7e4af4e3db7d22b242b753ba021e188d8f4e59e536505e0de91472969",
+      "bot": "3d6830f7d910f7ba17b03c11247e228d5a35d65426f44bfa4800e02072c4254e",
       "colocacion": "9aba2e31888ae3606a07ca80b40ae4a98882f930c7aa256abbf76e4883d7cead"
     },
     {
       "pedido": "AR2605120",
-      "bot": "8bb326dbe1ba218f1b4d65b24b81f4373e7155ab4cfbdbf88cb77e839c644ee1",
+      "bot": "a9171feb8f71a01b6319e5f012e515df5fa2b57b855d1cb2edd8f41664afe1ce",
       "colocacion": "224f36c5ec93ff51707aa058dc197952dc1fedad1af1d8347b963aa3459bf4de"
     },
     {
       "pedido": "AR2605129",
-      "bot": "e247bc1d932f5989072092e551bf5d18d512cd09f4f7e201dc39fcfd0f41d9e6",
+      "bot": "62dd48401d9f60188594f3a62e1603bc1cd97bc603399903e96ebab3befa740d",
       "colocacion": "e9310f3174f8a38eb8be3d154e9e6d267c98432f00454017a6e0e470153058dc"
     },
     {
       "pedido": "AR2605132",
-      "bot": "22dcc48a87ce63d3d9c4ccc2898b9ea3d53742a5938b7b1821c41a9eacbfa8fa",
+      "bot": "ce193efb4d8accececddb214bef975c842edfef87c5fe06613dba4018236f771",
       "colocacion": "385d9d76e75e3db93b2699a0731c82521c2140178ae51ff8324fc32a1e33b9ef"
     },
     {
       "pedido": "AR2605158",
-      "bot": "7d0dfdd540bfbd9bca4328219547721be841bc6640776b26c82fa615a5d31a0c",
+      "bot": "599e02b5d02210d3d5652be54fc7cda2903143640fdbaede7d078e7fa0916d46",
       "colocacion": "ca78ae58f68f392da234ca7ae824596f2d376e1d26faef0d4a7bcb4a2d28b4be"
     },
     {
       "pedido": "AR2605192",
-      "bot": "4baa6049d9da7255f37522b772c66be9cc68e3225d459385a3aaecb48656b792",
+      "bot": "54e6a6fab4aecdf143ac1b4bacc13d414a495d16aadc21ddfd18f4b9390855e8",
       "colocacion": "71b665ff79fe0d63c41dfb9d84361cf476cebe4c59d967c65dfa451ec2d33890"
     },
     {
       "pedido": "AR2600752",
-      "bot": "31aca3e524738d5684bc76eed3fdf3a918a34cc0ac23d70abed4f904ca794cec",
+      "bot": "12e5f0c2aabdd915bb99bbe3682372dd5dbf37f3ac301a30d0376f78b1e18057",
       "colocacion": "536843e1a0a2f794524747b019598c7891ef673b195edd8a5fe292cf43bc81a2"
     },
     {
       "pedido": "AR2601847",
-      "bot": "f4be54eb5d2a252623eb516f7f55a0c4bb98a3ad91b4f919431b7953b9e229de",
+      "bot": "e666a7791a4d1e7146189f9cee2ffd939f2713f7c4ba996cbf382f2faf30e394",
       "colocacion": "f67d4468f12bf3a082b49c7fd2f67621bdc2555737c2db79cce00a9fcf508d7a"
     },
     {
       "pedido": "AR2506052",
-      "bot": "237f35ab7e3cae78f454d7e7b5769414a642d3831b4213d583dc35b66ae37c60",
+      "bot": "6ee2f3326bed6901e0c181bd44cce7e2f2c41ceb3934794f134d6d10ace3eeea",
       "colocacion": "8c4f447659e008df72fa5bcfedd7cbcfbca51e76597240e7e74ccbf36b953eb2"
     },
     {
       "pedido": "AR2605319",
-      "bot": "e4c9d8dd54f34cd7f3fe9995069e34df15215d000fa64ea81eaa4beed980bd06",
+      "bot": "37b13e187eeb4719c419cb6b3865f1a1ea83e8fe23994d3a28bad474650c24b6",
       "colocacion": "c6c3468d9fb56eedfce3b38ba0903f4668ccc4508f56d081506494ac449e4120"
     }
   ],
@@ -118,159 +118,159 @@
       "modelos": [
         "ARZUA PRO"
       ],
-      "corte": "10944d8ac7b2fb79af51e091c9562dfcae8a31a5b8baf5236e7cbee2fef02a02"
+      "corte": "a8602d293f1aeb26c3315018c3be29f083039b6e705298249979dc3bca763b1f"
     },
     {
       "pedido": "AR2604784",
       "modelos": [
         "GALICIA"
       ],
-      "corte": "7b55c9c13328cce4de99ca098f6e5c71f920fed45670e56ee1971a6510b3ac5c"
+      "corte": "bafface488d8a92f7c88e462d0badde024db9cf1a7bcbcf54629d75a3d656d35"
     },
     {
       "pedido": "AR2604784",
       "modelos": [
         "MONOBLOCK 350"
       ],
-      "corte": "b9e6bb265d81b5e265f4dd79f11c58d50d0f7bcab9558e942f92737d11358a7d"
+      "corte": "5019bea3ca01f943badd9318f6eaa84b4970320ef81983ab27d08a60184e2674"
     },
     {
       "pedido": "AR2604784",
       "modelos": [
         "CAMBIO TELA"
       ],
-      "corte": "53eb9e72b644b9ef8f7d75e0c61a71f2a5f2aff9124dab4d785a0a4470fe8ab7"
+      "corte": "669c8f663ae34e7e2ef3c270168e7a3a90f182882de26f4a8197b536538ca6ed"
     },
     {
       "pedido": "AR2605193",
       "modelos": [
         "CORTINA"
       ],
-      "corte": "1c5056cce2b0fe61ffcebce082f6d7f2c853a19eb4a342c2f0d093cfca5fa475"
+      "corte": "315f4d0a2fd0ba6c03c646bee45ec7b8e0d65548eb8f8e8b65f0fa724269c6cd"
     },
     {
       "pedido": "AR2601829",
       "modelos": [
         "CAMBIO CORTINA"
       ],
-      "corte": "7e237fee385f07584d1c6e9faa6eca7cac41c7a9c119abba58477944cc330842"
+      "corte": "408ccca4abd954284c26ad97b8b55852f51a5fc21d2f8bbb4836d84b91c16474"
     },
     {
       "pedido": "AR2604205",
       "modelos": [
         "SOLAPAS"
       ],
-      "corte": "2a7d32105465b2920dec0dc6df923e89f39cb34daea5f6d9ab6ae333fdf236ce"
+      "corte": "63f0ea633295fb462b54317870a75782442615d4cbd0cb7605c801829e48c424"
     },
     {
       "pedido": "AR2605215",
       "modelos": [
         "EMBUDO"
       ],
-      "corte": "e82bca4967f244d6716b0a47d57bc2737705a1a5b90c111d492bd8301724e96d"
+      "corte": "c38137227abe47f65968957f74138fdc115612564e8ab4b24866f5418120297b"
     },
     {
       "pedido": "AR2600169",
       "modelos": [
         "EMBUDO"
       ],
-      "corte": "5e5760e8670215cf3d5d62a1b0e117663d7af58ba5f38817b8013eabb43e38a5"
+      "corte": "08aba78c4a9c3ed78ee39b688754b1dd0814f57c82c8913ddc070f1c08abe410"
     },
     {
       "pedido": "AR2609999",
       "modelos": [
         "BAMBALINA"
       ],
-      "corte": "76a83871e9db84b6e5ba7df593f363ff63d9d73c235d1c466f1f095c223e968f"
+      "corte": "2aa4ee22d2ffc644ae67bf5c0db9a7326fe932fdde501cd4ba9dc709a5e31169"
     },
     {
       "pedido": "AR2604784",
       "modelos": [
         "GALICIA"
       ],
-      "corte": "d6457ad5b67a5e989d5b9a8ea138e0455fa10a16f1ac88c6b54b855a8e4d520a"
+      "corte": "699a3949f85b6fae5a75e864d57d8d09db46e3f424e0439a1d5eb9a924b7c964"
     }
   ],
   "integridadPuertas": [
     {
       "pedido": "AR2604638",
       "corte": "b755d5123bcce00ccf4aeb5bfd0fa3e1f2129f074228290ebe4fca344c65647f",
-      "archivo": "fd62c65ed776d9a1c89c5f547ca186d1a0a7fd28cd6fe48065441254e659a0e7"
+      "archivo": "395bc3a3a521a85501dee03be6b49acae795a93e00dc7da374736bd09912258d"
     },
     {
       "pedido": "AR2605036",
       "corte": "0061660b4c4e9f20244a6f3b0de7edd247722778d9fe62180d646a0a56530315",
-      "archivo": "315bc5f2299b9d2d144a06571f2a99d159e2e16550adbc17cd973fa56c54ed7f"
+      "archivo": "9286f8e059a23bafebeeb7b4f3c682e8dfb4df3551d8a4f063b76c00ef1ab0cd"
     },
     {
       "pedido": "AR2604906",
       "corte": "65f61bd8e0ca354b6a77af0afc641854eb123887bb7ceeff96f71cf84ff6b8d4",
-      "archivo": "359dc762a4289f1669dbf50fca2d6d937da810f89c8f96b26a2a86743debf2dd"
+      "archivo": "c5fb147f534f1db21812288ed7658cc176008747144cb7b3150b9156269d6223"
     },
     {
       "pedido": "AR2604904",
       "corte": "a1e21d7776c9dc0a92cd3ffdf08a711fe6d9ecbb19c9c7d9fe7ef538cc8739fd",
-      "archivo": "55625ff28b91ca5cef6d244baf5b11ab296f09541c38e72193f2bdd716e96ce2"
+      "archivo": "52295e8ad1afbce22d86e7c085b98d4fc36cf2ffc9cc580ca846f6dbf81b2a3f"
     },
     {
       "pedido": "AR2605246",
       "corte": "26e2ad91a35ccdba7d6bbf295dc7868d1dcd2d27ed21837e8a160357c778331d",
-      "archivo": "6b131f60ebaf3a610deb7bdf7fe702ce405ce6f01a59c385c84e057d4f7b8fdd"
+      "archivo": "14a98abc804b901a4016bdb1e1aadd77b33a4c3f06b978a60cfadacd8a970abe"
     },
     {
       "pedido": "AR2605220",
       "corte": "a5a33839f98782c330d7f4ec93bfa56354aae2bfa0cfedbe77b1e4d2cc11140a",
-      "archivo": "087f3a3bb111745b68bb77af1639c08c9f6bbc5b1612530d030f126675118099"
+      "archivo": "9728f92fb64860202c7d7301a6ad16ab47aaf18f94adc23219e39ee4eaba81fd"
     },
     {
       "pedido": "AR2605035",
-      "corte": "f3cfed707becf8bf1787ead7707e2f1b9eb49c9c089b5138327f4a662a01f194",
-      "archivo": "14d5300d8052e9ad57a50bae12ca468f1ab52a4efa5232ccae121f21bcc50635"
+      "corte": "9a0bea7cfa09fdca832954aab7b609f52abc01d8e4dc0f3985ce8d9eac8988d7",
+      "archivo": "95e487011482cc7dfe0273e05d43e8b3c17053c111d48e3729c4ff4462f307f4"
     },
     {
       "pedido": "AR2605365",
       "corte": "a00bd560280386c2b8e97513d21148372d1b67eb31827de7870051af15a13dc1",
-      "archivo": "6569b256105d0b95b5f45648fb2f639995edff4ae803fe683153408f4256c26a"
+      "archivo": "b5050b6f18fd61414264796c17016310cc465156d9e8717bd0ca4242bb704faf"
     },
     {
       "pedido": "AR2505733",
-      "corte": "06a5e075bb230c12d63b5ef2cdfa6b4ff87112a820536bccf909052d8ac960e2",
-      "archivo": "c8d5740c4e7636eeb9f629dba4162dfe34f374bd13b769f31afdf1930d166afe"
+      "corte": "664b6f366cf944d51566a2bf570cff3d0d8dab9e600ba989dd24b0607838cc3a",
+      "archivo": "c016560cb40b95dc280921b0dd4d9b6ad68f3642f05b08dba88d9dd26136c245"
     },
     {
       "pedido": "AR2604292",
       "corte": "1bf8c891bceda8efe362627fecf98f7ebb6150563f77e7dbbe996072b7a0f00e",
-      "archivo": "3051afc97a236477179a8edf3ec02f3080f3e2c78eb38b336bddf27e2eda3072"
+      "archivo": "9f73e714c8c520dd19c44f164b81cd4723ad8a2da44a3514cc65f111eb85cebc"
     },
     {
       "pedido": "AR2604373",
       "corte": "825b6f75c13919fc271a11ee050bda20dd94c033131d25787493f9a8d7b7ce19",
-      "archivo": "b71a55da87d432d4bfea0f25423a0840178a5820c4126b08b7fe1beb8ca8776b"
+      "archivo": "b3938f04193445304774b5b1e98882030055843ca03d5fe8b176ed00b48e26a5"
     },
     {
       "pedido": "AR2602391",
       "corte": "1f748810583156662ab1bfab6544e9f1b58ebc5fb283729d6c177d3079b9962a",
-      "archivo": "8e2935382eaa4e694e4eb252819b599f76f546493888bccabd7843a36ea6d6a9"
+      "archivo": "d94e3c02f713fc27ef04888894b80bc8642733cd35cdc3ca785da0fa4b72255b"
     },
     {
       "pedido": "AR2506255",
       "corte": "8cd4515503af41e6b7b28fb6da433f5086fb7a3c4d56751ccc665c71a52c9f6a",
-      "archivo": "704d1434d623c41ec95e7839d10f86e186494223ad431c91d02b4f7f9454c6e9"
+      "archivo": "5e0bbe33129fb9b345e5415546a63bece19ce03a71d736525e35c202778a18a3"
     },
     {
       "pedido": "AR2604815",
       "corte": "968ea402b653eaff0c8677a28e45c15920b97d624c8a9189e952a8d27ac633b8",
-      "archivo": "5482f827fe797eb0e5782d281ded375288fcbfdd6b1ffafbca202d89169f681e"
+      "archivo": "637df76680ac9246e3c0e419536b57fb9d9e28e1ca716784df312a1742d74566"
     },
     {
       "pedido": "AR2605363",
       "corte": "a5e1b34e91f9fe83532918a6db6076e626c40f6e80b23e3c210b09f3a2230cbb",
-      "archivo": "6f31af1acaf5aea13c21bdec7f237b0ccbe0926bf4266739c197c633e2506403"
+      "archivo": "5d7b264d5ceb55eb95667e0142e5063615a4ce086e4c41122707ddd1265b91de"
     },
     {
       "pedido": "AR2604615",
       "corte": "c827c9dcd69ceeae1dc6fa40eb515f75da330995eae2083a4a28f22a5cc975c0",
-      "archivo": "1e9f809e7993c705c7feaf07b8c6e9cc9bfc79de0bdda8c4a3dca1c7338d9fb7"
+      "archivo": "ac0440530b24e5771102fbd8e4b16f61a71f8d5fda2146e27a5b0d19b490dde0"
     }
   ],
   "planos": [
@@ -813,7 +813,7 @@
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2604390",
-      "dxf": "92b681436c3be14833a5b4ad4e96f07cef9791ab4a5da3df52831020c41e3904",
+      "dxf": "3dffc45fbfbd8ffffc3c8e46d76b6ca761fc01eca56c4db118ca7d6cf055b043",
       "geometria": "d34b72d5e1c26eb2ff4d6cf1b4babf58021ed92cc091f8212887f71105a11dda",
       "textosFijos": "0877986c372e137de0dc4bc33fd3d0c46997b84099d5d6f31d1c92d5ac04fb74",
       "textos": "b388649eace85fa34434c7722430788f2882f72a5ce61a08c7d12938054ee66c",
@@ -833,7 +833,7 @@
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2604412",
-      "dxf": "082e3123411a60bcf54a44afa883e0b9acaba921207deebfce82c05eb3aebb21",
+      "dxf": "75737b77fe220c1c8f7af9da952c5e9b4c6bd8100e73ae7c9d5ee525f7331123",
       "geometria": "60ccb7ebecc99810f51d007a5b2f7589eeb51104e43e80f0b8a16f41d58a8137",
       "textosFijos": "ae5255d713ac0ad45a73e5b7dde5aaeab2251ff5b4dc27f8f9d8158b265ebefd",
       "textos": "519d4f52fa86e60b56980b4aeb0246541403fbe8897a290c526d190e528ad408",
@@ -854,7 +854,7 @@
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2604800",
-      "dxf": "1e6e1ac4d288ff89e742303102362db4df1f6d2c4c9fd6cc31ae0d78019c1938",
+      "dxf": "8185c7815eb55182af072f275aecb8db4ff177a7217cb13422f1ae2d148bfb7b",
       "geometria": "8e62673173bb3b4c66bfcbec153cfe7fb475d867192b0ebea23eaeb8f3d7e128",
       "textosFijos": "6bcba4acf3547e0e0f2a1afafc4472b5d8579e84e6f1ec0ff349d839c4955500",
       "textos": "705971f6abd99ca910c5c799f1dac5d35599db50297e9072c9ff0d128d24b077",
@@ -875,7 +875,7 @@
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2604802",
-      "dxf": "94f3666b80197aac3362fafd5060bdb444dc086bf60d03fcccddf843aba8879e",
+      "dxf": "5ea71d2443a258723a40c9407b2a827da32f01b19ed33719dbd41beb6d6b7ee3",
       "geometria": "71ee4c6c056400e2a2c48319fc662dc1579e37faee198ecf5ed5fa402dd61c38",
       "textosFijos": "b283208ded41e8aa46e80dac2d2c0d0a59c0e96d1e7110033a79a0632afaf3b5",
       "textos": "f6a30932ae1a44b9892b2ec8483d911704fe353cea768d11d234321e454806dc",
@@ -895,7 +895,7 @@
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2604990",
-      "dxf": "d39e13815b32b1acd01142e6b18c9e7aa20d3ed9825c0d091c9fdee534d61829",
+      "dxf": "cf0be9c725e469dc48e427fd7a3b1467ecedc6c9898b19496749b6dbf8d1720f",
       "geometria": "978e78d1b867ad9c499486909070e0c331937e58a3fd50e0d5d6bacec902c1cc",
       "textosFijos": "3207327bdf55e65aef5394f88aa023df674f2b5cb93dfb899317e8b68e3e8cee",
       "textos": "2eebd264ff35b6d3044db9798a0ff56e729c17be2a6b4d220c46e4d9e3fc6e7f",
@@ -915,7 +915,7 @@
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2605000",
-      "dxf": "56ceb1993281423229c8e985d732a93e626b5979b82e8d0a9dd7b35a0f2ab807",
+      "dxf": "b9c0ec2cf711b2f3d7e346ff69e762012a1e2c45cb8d8d1ee01e77e43b39a743",
       "geometria": "37c4bdf2947401b20f1ada5a3755fe9787278cd26f94e4e32f07708f98d527d1",
       "textosFijos": "958a1db28fa3412ceeb84327fbc5965de1c7715cf26b9cc3346b69e84a3c005c",
       "textos": "09279bbb497f0e3c905da54fe5dcf74f484426aab2a0523b772a0e30d8ecd6cc",
@@ -935,7 +935,7 @@
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2605023",
-      "dxf": "99696c335ba835fe8e35493fdb3537e9b0f9452cb283afa232303be8c828b016",
+      "dxf": "9454d9d1cef50280335332d3201147cbdea08f6ab94b9b1efa5daf51fab068c9",
       "geometria": "93ac677b53b876bb5cbe96e5dbc677565ae7b1e748c14baaddeb82ffade7d263",
       "textosFijos": "a906ee2c812bb947abfa4188635e3d9ca3f3778867d44e8185fa9a86712502ff",
       "textos": "dc8d53e7ec51b2603f7b1ac3c656885ead713109481a6dc4abcbd23a3ea7a527",
@@ -959,7 +959,7 @@
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2605071",
-      "dxf": "691b0335a67cc9dd8011c193a0dc889e07b3d4bc182f9d1a25459f895b588fd8",
+      "dxf": "9e044b761f5b0817501d28bf3e30d3dd80e9ca00dacc2314feb3f61a1d612148",
       "geometria": "9f2bec2d90a40646cd024cc8705f83c3e94b842152eff8c3d6e9185d4ade867f",
       "textosFijos": "26d5372d7dc5c8fc39472c61eb93192fe3f23b6229dcd935cbbe4c6997dc7181",
       "textos": "ffb880b0f49d7af6bcfab45934717874c9c2ed08376cb6452efe4f5acaa72d35",
@@ -982,7 +982,7 @@
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2605078",
-      "dxf": "51dcb5371d7b437f3ce3cae43f65e107ee234ed7f20667cf458af220f62b15ed",
+      "dxf": "5eb0d48ca10454201a2761a9be75f50be08a2bdd8b0ba74dbf99d1a4179e5486",
       "geometria": "41c1d155d04c82a8e5d788289721f36b939d79d7576d74d52f2a54b78de57cae",
       "textosFijos": "c634debd15d498202914614e0df76759e58dafd25c255cfbfca87d769455c12f",
       "textos": "7cfaba3e6c971cda5b6f5027bbb0464eb2bccd89b8356a4a3af17302ba8c773b",
@@ -1015,7 +1015,7 @@
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2605079",
-      "dxf": "5234adb83a6818e08465cc9edf27358ddeb4934a944a7319d680b50445452921",
+      "dxf": "891e45e3589d84ab419ac2c2fad210cfb4f1afcf9159f0bb99cfdf3e2f1fc9a1",
       "geometria": "5d088ae80970114cd772b57a106edcdb6f52a389b6413e856a348cf555672d04",
       "textosFijos": "b493cb2535d53f39842da8aef3164b6914dcf800641144e0025c222bac0b38d4",
       "textos": "01eb0329b55faae97f1f34a18fa288d5aafb647b1ebb1deee9de3d8ee8489172",
@@ -1056,7 +1056,7 @@
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2605088",
-      "dxf": "18c02c3a8c67d200568042f93a6dd3dfe39fffd96b68e0d702ee8144f3e5d798",
+      "dxf": "70f0bb49dd9ab263c91cec8919146cb796718a26cd1a8f6bb142ff4a74f81e99",
       "geometria": "d4f39cee8f45b5edb611bd145fbc8bece2c020003b1ae6564c050f2f3ca265f7",
       "textosFijos": "f043f31d72fcd64cd7b72821e79695ad989ad7d64864c8c2e62163137aa62cbc",
       "textos": "d5b00e1ebe4a636e7d9d49ed05efcef82aae5bf73992d9ff520f6301e38e1f1e",
@@ -1178,7 +1178,7 @@
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2605120",
-      "dxf": "1117278dfac209e6c35cf1611347d0edd283d153e578b7a9edeaeab200879d17",
+      "dxf": "8fa511b1a9cfff977265ac77f1f9deab1cf9a8532f33b462bbfec2e4d9cbf24e",
       "geometria": "6f4a0fc1ddbd0a3cef234ae400d5e09dc546ec7c835f3d5305ff0b591c8398c7",
       "textosFijos": "18f9eb7d636d2a76d6d0495b5c1388b3f8c110a08498900735c9673d454d8543",
       "textos": "0410a922dea33a888cc830ff563826050dda16ef118b01d79b286fd9463500d3",
@@ -1202,7 +1202,7 @@
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2605129",
-      "dxf": "dbc614c0418766b05efc10e585ec9f59adc5d263866c0bc180b4a28ec08483ef",
+      "dxf": "a510c90fb1f45473a97f2bb0f465ce9694a024c57d6f39bf0f99ab137543e8d0",
       "geometria": "d64db1aabd2408e81c16a71734f92cec7e049e49f25470bd7a7ddc464ce91a64",
       "textosFijos": "6d233b04497c2c372677aeaa41f3a1830f95c80d90e42c56a5f38c1692afc35b",
       "textos": "5c55a7ac87e9ad7e62a082d7514ff373f66ee43e603439f1011b64f9ff9d8a42",
@@ -1253,7 +1253,7 @@
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2605132",
-      "dxf": "56b950c0cf416a33cda5e92ae7b27232ded8d3f24d1716a1155ae282366f7f5d",
+      "dxf": "8559e28daa2a7121cc31d4e1edd3d8ce5cb78ab5c147b4ab9dafe9a58579a0a5",
       "geometria": "52fff80bca17445f374fbf0cd15f6212fd17b2c85391feb7cd831b06cc9cdd9d",
       "textosFijos": "44405b9172c21348bdc7e1028171f40980ceca288aa562edf175fb5cf34e3066",
       "textos": "412bc24cac66e5be2068d85e7e139ed008852a9633dd03575b2c14fcaf6ecf12",
@@ -1304,7 +1304,7 @@
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2605158",
-      "dxf": "83716a46a7ab21cff7341a2a9c194b13febab29cb0fdfed84055ec1b806cc2e4",
+      "dxf": "89f5ee564241cf2d056304f6df3bcbbb445072e7aee4189b0ce4d24a73ea4fe8",
       "geometria": "ec9dd85bdbb3cf0f98a319a71c19cbed83a562cb4e61e3ca7166617c32eb8ecf",
       "textosFijos": "11d0d061d44b20c4d86f4ea935e492367365a7acfabe5c1f4d2912dfadb6cc8d",
       "textos": "a76b7c35b72f5686a5686954427739e129a84b292efa29f50c000b03245dfcc6",
@@ -1325,7 +1325,7 @@
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2605192",
-      "dxf": "3ad8016758b1bcfc50d1c751eec41a3608b6eb7c2a9182ea4f51bd611f353e7e",
+      "dxf": "2cb992826d44524d0e9336e59142214df80521691f85c7fd7af4df1afbf5a0d5",
       "geometria": "a9e8d3b7292c8f57ec2509ae280ce5960e63f3439dd16c052e13a91f23a30ac2",
       "textosFijos": "1cef513aec1e131297eb4cfd74e2c4b13c19a4a7650a3b2235486c825e6625bf",
       "textos": "2c40ab19a928b5563a041d89eba2f87ac241a173eaa3c808b8f101306ae57912",
@@ -1358,7 +1358,7 @@
     {
       "familia": "Remolques / ganado REMOLCAR_ECONOMICO",
       "ejemplo": "AR2600752",
-      "dxf": "c63cf70226a02c2d9d49ab98b2d38387156f7422bd361d93ed1d2c846680c23d",
+      "dxf": "daa7666f7e054147a71d4790e43e449b6946339ba0a43b48c1fc6d3ed2942929",
       "geometria": "808efda94a79ef024d96ff709d3bded46f1f1a98d3182dabd42a193d666557b1",
       "textosFijos": "ef9a7dcadd09bc2ed333524ae3006d23da97996e3ba8531ed5c8d117153a53c1",
       "textos": "b720c6c51be6b5b9fc8b20fb99100832671129a248e6c2cad4fba10dfaece1be",
@@ -1395,7 +1395,7 @@
     {
       "familia": "Remolques / ganado REMOLCAR_ESTANDAR",
       "ejemplo": "AR2601847",
-      "dxf": "f49f122546865e42160e9b87a290d40e2997f9a2f8e01ca36e86fe0d4e7d8326",
+      "dxf": "9aa54eea2b42bfb5f28f7ac087c8b1cddc19a4ae67124f5b591749f22be777c2",
       "geometria": "4bd1fb95fa72e3eb289f79116c19d40da94003c18445dd6b4669df2c47806bd0",
       "textosFijos": "43125edb5250e675ce80660cc2322d06ff8ce771d4be16b28e891388d12bb19a",
       "textos": "93135d68812e1222a47cd4c2c47d98ce39885cb03f6588134fdc9716cd652104",
@@ -1433,7 +1433,7 @@
     {
       "familia": "Remolques / ganado CAL_MEDIDAS",
       "ejemplo": "AR2506052",
-      "dxf": "01ac2fd115aea0ce0aa8a936a21791bfe2ad14860f930396fb724aa33d431e9b",
+      "dxf": "d0b0079a2396536084947c512c3df102a41d78e9dca4bf43b9a80396c219698f",
       "geometria": "e85c37593ca3e9dd81e35874fb74d0011ea5fdde5216bd39526ad0c02531e577",
       "textosFijos": "05b15052a30c66b50d12ad908b93847fd62f1985ae66942b73e4a4c583966a18",
       "textos": "46f4d76f527611ba25f2af293e095ccea644dc59a0f845b7c6836f4245b88f14",
@@ -1460,7 +1460,7 @@
     {
       "familia": "Remolques / ganado CAL_MEDIDAS",
       "ejemplo": "AR2605319",
-      "dxf": "c87dc0e4639998bc49e18f6fab523186a7772ec09e8f0280a9aca7c75f04989f",
+      "dxf": "7e620b846098ab72ef600c6068fb6889b886d2a697d7c017832a9abf57433daa",
       "geometria": "f55e25646ec6baf9c9bbf2b1b62482bcce1150347c366a0bf6da8cc9505fe700",
       "textosFijos": "2032922fc620e05d772789548ab51be844adc2394c854646d8e1f6ef63986a97",
       "textos": "e928f55d49342c6eb69c4630f9a39c2ba32301e3cadaf6f3d19bcbf88bc25f63",
@@ -1981,12 +1981,12 @@
       "familia": "Puertas / Portanova compatibilidad",
       "ejemplo": "AR2605035",
       "dxf": "999745830a46a5e3ef5af4dc6fe5accd7d7c9f5b6e117970f31926b10494d051",
-      "geometria": "2698ee8f3aac9bd03cefa7dd74d76b3f89206ec4ec2d3bd55d6bc4cf944dae4b",
+      "geometria": "caf46f797c6a6286586cdecc8b9545f5e798f8dea32f78a937b3739814167c64",
       "textosFijos": "fb2cfdb8ceb84844a7980813c6e7fd12369293f6b777e951ee739ec629032e90",
-      "textos": "0d46df2f30abd2c974dc98ab6ad591437bc1b8703e0611fac4556e6e876193f5",
+      "textos": "ed147936fbddb80956996840437deab7f8795aa118083b3e112104fc8337bfbd",
       "cotas": "bc4eaed8cd84ae534741c49fa0e3e6240389f881e9643c729803bd4e6cb7d409",
       "cotasPosicionHash": "7986600baf42b6c071950826475ff6705407188f305e8982e70be4ae229702a2",
-      "ordenTextos": "213e7b1ec68e449f1702273ee2d29f78efbe946333b77060970a53b6f58392b0",
+      "ordenTextos": "1078ea465c846f572b40d00ae42b1088cf84e95fe43c282fdde2099a9e005d1a",
       "textosEnHoja": [
         0,
         1,
@@ -2219,7 +2219,7 @@
     {
       "familia": "Puertas / Araujo",
       "ejemplo": "AR2605365",
-      "dxf": "d40c42fc244f8090f3908534356c0afcb1e0bad2493eef6148bb8fd6bb881029",
+      "dxf": "efc166616fa98562a00ad1ee48ed0c60fe5f97026f12e03d2d4380ff214d4338",
       "geometria": "9ba17affab076a16dbf06ec09e68a7d14fba0fdad006ab0950b752d05c708a68",
       "textosFijos": "6cb5f2f858c3388f284b9a492770c95f6a4c0af2cd9b6b9b11530a4dce6c8e88",
       "textos": "ca6f839471b7673cff06cd8f70718c2c553debecbe5c110031e4f970e84b1f7f",
@@ -2289,13 +2289,13 @@
     {
       "familia": "Puertas / Araujo",
       "ejemplo": "AR2505733",
-      "dxf": "7aee3b85e372a0df9032691db698d2d24c1766a68edd2f68668cf9d1136bfd6e",
-      "geometria": "c209a47131333359267914edb028a11f88b531c31a151480a6c773546cba120f",
+      "dxf": "644eae912a9f7c2a77a596286213a0a89893d984357f1e2cf5dfa5b18b7fac22",
+      "geometria": "64db74d607e47bb5045da84828d06fb86120edacec7d86fdb933e80520df26d4",
       "textosFijos": "67566eee1869e1e1379e0397c16da80f006049dfc33de91f11b16af078d71076",
-      "textos": "7a41b1004e6773909919f3c2a498be59fc868e00ec5cbaa59b564bb3f656aa20",
+      "textos": "9e81aec4c7867b954e45e2a139abab853cbce22a61a247e9176e7a25461198fa",
       "cotas": "cf511c2ae7cbe31e707809b36f64afafd8a07dcc8d454249a4c1ebd5b64ee0d8",
       "cotasPosicionHash": "49087b55bba5c92ad1bec32d5299af114f160eb3553cdb4b5deac15330222b9c",
-      "ordenTextos": "485f6f75a59dc81d5a6e47d2f2b2ec24c7503840217db110c05ea22c77296eec",
+      "ordenTextos": "247dbd4653d455438e56f04e3c4c2c33d7cae3666aab7160abbb7f84174ac845",
       "textosEnHoja": [
         0,
         1,
@@ -2375,21 +2375,13 @@
         75,
         76,
         77,
-        78,
-        79,
-        80,
-        81,
-        82,
-        83,
-        84,
-        85,
-        86
+        78
       ]
     },
     {
       "familia": "Puertas / Araujo",
       "ejemplo": "AR2604292",
-      "dxf": "df09aa61a59e446648d31263fb21248e30fb67e859b25cf50cea9b1efaed4280",
+      "dxf": "ac47779cd61aa56acb1e641e6bd0e4f9d5e24ed97e994f9e4a02dd62a6c5634b",
       "geometria": "5eda95568aadbbdab381aa87c865c7db323ee79b772c504069bbb26d54fcf8ab",
       "textosFijos": "554592d80c646fe816af72f3ca5c1cf4f34d3d080d514c6c260c7f6032257a61",
       "textos": "24dca268a52262ca7002e644b2c1c41e964d9e98f127527ad6be24b576091a7b",
@@ -2446,7 +2438,7 @@
     {
       "familia": "Puertas / Araujo",
       "ejemplo": "AR2604373",
-      "dxf": "2ac7cff4b474d072850c9becfbd276d6ab6a5f56039e1246fa11a0004c9d0493",
+      "dxf": "fa9efd8b80e1f947b0722207c21659d78bfb7a010082d5fe3c7bbc6ed329cdc4",
       "geometria": "b87ef9bd852cb664c89803acd93a7c74802daad7dcb0f4e29ba8ef8cb11e1738",
       "textosFijos": "1b4302c977bb4ea35f047c0f1dc51d5d7af806ac24ca888fc40895d44e5dcd8f",
       "textos": "35893ef773d8cd35b75aa59d12741abb8e9c0d160d99af1d0d52d94efb3ba8fb",
@@ -2493,7 +2485,7 @@
     {
       "familia": "Puertas / Araujo",
       "ejemplo": "AR2602391",
-      "dxf": "078be0c9b14f4987b795eee4b7fe072ddaf45115a5070e7f246507435d00bbe8",
+      "dxf": "baa3a6870069176c192b2a884e129cb14915897ce93a37742086587704487b75",
       "geometria": "e2f13529d4149c60da3c687f1de5fb161c0ae6aa221484cdccc77ef3ff4ca3fd",
       "textosFijos": "9794b196bbf27d1af9f7b83a2af2124b1bd3d8d86473df47cba5392a5b5f1a82",
       "textos": "679865772e02a51fd24e05bc79137ef66870fc31b08432ec0a978e37836f9637",
@@ -2643,7 +2635,7 @@
     {
       "familia": "Puertas / Santa Pau",
       "ejemplo": "AR2604815",
-      "dxf": "98066b51c6f9fae14cac99696fe8a23f60f62572dd9285d0aea19efc7a2eb044",
+      "dxf": "e46adc901e1e1d320628bf8e6ce564f35749cdece71670172ab67ec6e9c30f55",
       "geometria": "e6d3de1615762f7231e086ea8a4ee918afea690874dbf3604e49bd29765a505a",
       "textosFijos": "ca8d99e34f8d015b18acddd676f6633d216559102e1740f4daf26530e5507064",
       "textos": "676f08c35ae5654ee9a9abd8e2f82d33fbd322a349524249a6bbc89904abc790",
@@ -2724,7 +2716,7 @@
     {
       "familia": "Puertas / Santa Pau",
       "ejemplo": "AR2605363",
-      "dxf": "60af4d7f3fef30315522c36cbedd0482670f65a10ae9794cf9227a5f82acacf3",
+      "dxf": "b8aa1c3a342c61ba0c24784b26c4d1ecb294b0fd83ca0742692b1a215f9c167f",
       "geometria": "0fdd87192f11969aab8a3bb546f8580a3757b6ea2cdd93d6c5915ae35f2a439d",
       "textosFijos": "3f2c845dc6f8f1bf9cf297f7403e9f087e50c5e9c02fc21abe895d5ef9413005",
       "textos": "48b758ea274bd69f97584e07b9dc0436bf3cbdc871e691c7441dbd7cb2833b43",
@@ -2848,7 +2840,7 @@
     {
       "familia": "ASSA / lote",
       "ejemplo": "2026-11-07 AR2605234",
-      "dxf": "06f60f477762d90dcbb4e7db50e611c2cfbf55bb49379f181665ee071dca1883",
+      "dxf": "e98d6b0d60cc07971854ed2363f48d4151cff1458141a0d62e88533f4183a4d5",
       "geometria": "8b1ae52fb73a17bce83783fcb71119117f43c2e1da2f33dc7cc875c41a85ea57",
       "textosFijos": "4e1ed95131c78b5e64f06874a57694d3fb19e8fe527186cbdaf8c647af0049d0",
       "textos": "89407528330467cd56ccbae11af0b6229a46b02ca9e6a927e9aff5c08b82c865",

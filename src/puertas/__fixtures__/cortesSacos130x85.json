@@ -9,7 +9,7 @@
           "sacos": 4,
           "tiras": 4,
           "trozos": 0,
-          "area": 79920,
+          "area": 80070,
           "ancho": 299.25
         },
         {
@@ -81,9 +81,9 @@
         {
           "largo": 9500,
           "sacos": 3,
-          "tiras": 0,
-          "trozos": 6,
-          "area": 78120,
+          "tiras": 2,
+          "trozos": 2,
+          "area": 76820,
           "ancho": 299.75
         },
         {
@@ -258,9 +258,9 @@
         {
           "largo": 9480,
           "sacos": 3,
-          "tiras": 0,
-          "trozos": 6,
-          "area": 73920,
+          "tiras": 2,
+          "trozos": 2,
+          "area": 74120,
           "ancho": 299.75
         },
         {
@@ -347,7 +347,7 @@
           "sacos": 3,
           "tiras": 0,
           "trozos": 6,
-          "area": 63648,
+          "area": 63920,
           "ancho": 300
         },
         {
@@ -907,7 +907,7 @@
           "sacos": 2,
           "tiras": 0,
           "trozos": 4,
-          "area": 47040,
+          "area": 47460,
           "ancho": 291
         },
         {

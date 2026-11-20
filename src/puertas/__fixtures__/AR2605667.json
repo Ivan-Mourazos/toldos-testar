@@ -1,0 +1,294 @@
+{
+  "schemaVersion": 1,
+  "kind": "puertas",
+  "orderCode": "AR2605667",
+  "numeroPedido": "AR2605667",
+  "cabecera": {
+    "cliente": "2006 PORTANOVA, S.L.",
+    "fecha": "2026-11-19",
+    "clienteRps": {
+      "codigo": "001336",
+      "nombre": "2006 PORTANOVA, S.L."
+    }
+  },
+  "elementos": [
+    {
+      "id": "puerta-1",
+      "input": {
+        "modelo": "PUERTAPLE",
+        "articuloOrigen": "PUERTAPLE",
+        "frente": 400,
+        "alto": 370,
+        "of": "0234218",
+        "cantidad": 1,
+        "margenMarcas": 1.5,
+        "confirmada": true,
+        "ventanasConfirmadas": true,
+        "bolsillo": false,
+        "medidasBolsillo": {
+          "distancia": 0,
+          "ancho": 0,
+          "lado": "izquierdo",
+          "altoSuperior": null
+        },
+        "material": "LAC900",
+        "color": "GRIS 7038",
+        "materialCristal": "TRANSP. 1000MI",
+        "materialSaco": "LAC900 NEGRO",
+        "sacoDiagonalesAmarillas": false,
+        "rollo": 300,
+        "rolloCristal": 140,
+        "rolloSaco": 300,
+        "observaciones": "REFERENCIA: 406-2026/GREDISA\r\nPOR CONFECCION DE LONA PARA PUERTA APILABLE, DE MEDIDAS 400 X 370 CM,  CON ENTRADAS DE TUBO Y VENTANAS DE PVC TRANSPARENTE, FABRICADA EN LONA POLIESTER RECUBIERTO DE PVC , COLOR GRIS 7038.",
+        "entradas": [
+          {
+            "diametro": 30,
+            "largo": 400,
+            "alto": 12,
+            "huecos": [
+              {
+                "x": 1,
+                "y": 2.25,
+                "ancho": 5,
+                "alto": 7.5,
+                "radio": 0.5
+              },
+              {
+                "x": 394,
+                "y": 2.25,
+                "ancho": 5,
+                "alto": 7.5,
+                "radio": 0.5
+              },
+              {
+                "x": 29,
+                "y": 2.25,
+                "ancho": 12,
+                "alto": 7.5,
+                "radio": 0.5
+              },
+              {
+                "x": 359,
+                "y": 2.25,
+                "ancho": 12,
+                "alto": 7.5,
+                "radio": 0.5
+              }
+            ],
+            "altura": 40
+          },
+          {
+            "diametro": 30,
+            "largo": 400,
+            "alto": 12,
+            "huecos": [
+              {
+                "x": 1,
+                "y": 2.25,
+                "ancho": 5,
+                "alto": 7.5,
+                "radio": 0.5
+              },
+              {
+                "x": 394,
+                "y": 2.25,
+                "ancho": 5,
+                "alto": 7.5,
+                "radio": 0.5
+              }
+            ],
+            "altura": 95
+          },
+          {
+            "diametro": 30,
+            "largo": 400,
+            "alto": 12,
+            "huecos": [
+              {
+                "x": 1,
+                "y": 2.25,
+                "ancho": 5,
+                "alto": 7.5,
+                "radio": 0.5
+              },
+              {
+                "x": 394,
+                "y": 2.25,
+                "ancho": 5,
+                "alto": 7.5,
+                "radio": 0.5
+              },
+              {
+                "x": 29,
+                "y": 2.25,
+                "ancho": 12,
+                "alto": 7.5,
+                "radio": 0.5
+              },
+              {
+                "x": 359,
+                "y": 2.25,
+                "ancho": 12,
+                "alto": 7.5,
+                "radio": 0.5
+              }
+            ],
+            "altura": 145
+          },
+          {
+            "diametro": 30,
+            "largo": 400,
+            "alto": 12,
+            "huecos": [
+              {
+                "x": 1,
+                "y": 2.25,
+                "ancho": 5,
+                "alto": 7.5,
+                "radio": 0.5
+              },
+              {
+                "x": 394,
+                "y": 2.25,
+                "ancho": 5,
+                "alto": 7.5,
+                "radio": 0.5
+              }
+            ],
+            "altura": 200
+          },
+          {
+            "diametro": 30,
+            "largo": 400,
+            "alto": 12,
+            "huecos": [
+              {
+                "x": 1,
+                "y": 2.25,
+                "ancho": 5,
+                "alto": 7.5,
+                "radio": 0.5
+              },
+              {
+                "x": 394,
+                "y": 2.25,
+                "ancho": 5,
+                "alto": 7.5,
+                "radio": 0.5
+              },
+              {
+                "x": 29,
+                "y": 2.25,
+                "ancho": 12,
+                "alto": 7.5,
+                "radio": 0.5
+              },
+              {
+                "x": 359,
+                "y": 2.25,
+                "ancho": 12,
+                "alto": 7.5,
+                "radio": 0.5
+              }
+            ],
+            "altura": 250
+          },
+          {
+            "diametro": 30,
+            "largo": 400,
+            "alto": 12,
+            "huecos": [
+              {
+                "x": 1,
+                "y": 2.25,
+                "ancho": 5,
+                "alto": 7.5,
+                "radio": 0.5
+              },
+              {
+                "x": 394,
+                "y": 2.25,
+                "ancho": 5,
+                "alto": 7.5,
+                "radio": 0.5
+              }
+            ],
+            "altura": 305
+          }
+        ],
+        "ventanas": [
+          {
+            "x": 53,
+            "y": 155,
+            "ancho": 128,
+            "alto": 35,
+            "radio": 2,
+            "radioCristal": 4,
+            "tramo": 3
+          },
+          {
+            "x": 219,
+            "y": 155,
+            "ancho": 128,
+            "alto": 35,
+            "radio": 2,
+            "radioCristal": 4,
+            "tramo": 3
+          }
+        ],
+        "enrollable": {
+          "T": 0,
+          "D": 60,
+          "margen": 0,
+          "empates": [],
+          "saco": 120
+        },
+        "apilable": {
+          "pie": 40,
+          "pasos": [
+            55,
+            50,
+            55,
+            50,
+            55
+          ],
+          "cabecera": 65,
+          "bolsillo": 24,
+          "saco": 80,
+          "doble": false,
+          "empates": null
+        },
+        "autorreparable": {
+          "empates": [],
+          "saco": 120
+        },
+        "clientePuertas": "portanova",
+        "tipoPuerta": "apilable"
+      }
+    }
+  ],
+  "entregas": [],
+  "siguienteEntrega": 10,
+  "entregaActual": 10,
+  "updatedBy": "IVÁN",
+  "entregaPorPreparar": false,
+  "corteConfirmado": {
+    "huella": "95c0d93e867ee83694289044a1a51fb5e701b39b2d82eccecc0951eb54ee3d5a",
+    "por": "IVÁN",
+    "fecha": "2026-11-20T13:30:02.267Z",
+    "filename": "AR2605667.dwg",
+    "plano": "/mnt/planteamientos/oftecnica/2026/AR2605667.dwg",
+    "planos": [
+      {
+        "filename": "AR2605667.dwg",
+        "plano": "/mnt/planteamientos/oftecnica/2026/AR2605667.dwg"
+      }
+    ],
+    "datos": "3abb70126d1ae44ef8e507effe9cbef1fbf142a33f17342b5b116ac6cda88ccb"
+  },
+  "corteSimulado": false,
+  "planosWeb": [
+    "/mnt/planteamientos/oftecnica/2026/AR2605667.dwg"
+  ],
+  "corteNoRegenerado": false
+}
