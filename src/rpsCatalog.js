@@ -2,6 +2,11 @@ import sql from 'mssql';
 import { config } from './config.js';
 import { rankFabricMatches } from './domain/fabricSearch.js';
 import { inferRollWidth, inferFabricDetails } from './domain/fabricRps.js';
+import { medirConsultas } from './medir-consultas.js';
+
+// Cada consulta a RPS queda apuntada con su tiempo en .logs/consultas-sql
+// (petición de IT, 20/11/2026). El informe está en coordina-ot: `pnpm consultas-sql`.
+medirConsultas({ web: 'Planteamientos', dir: '.logs/consultas-sql' });
 
 let poolPromise;
 let fabricCache = null;
@@ -16,7 +21,8 @@ function getPool() {
       user: config.db.user,
       password: config.db.password,
       database: config.db.database,
-      options: { encrypt: false, trustServerCertificate: true },
+      // appName: así IT ve en SQL Server (program_name) qué conexiones son nuestras.
+      options: { encrypt: false, trustServerCertificate: true, appName: 'Planteamientos' },
       pool: { min: 0, max: 5, idleTimeoutMillis: 30_000 },
       connectionTimeout: 8_000,
       requestTimeout: 15_000
