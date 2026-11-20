@@ -604,11 +604,8 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas, ancho
     const yc = techo - c.anchoRollo / 10;
     // Todo lo del bot en su sitio (Iván, 24/10/2026, flujo del DWG): rayas, giros, espaciadores, huecos, flechas,
     // mininúmeros y textos, también los de los sacos de stock. El plano no vuelve a anidar ni a rotular.
-    const fila=corteEnPlano(c,yc);
-    if(c.colocadas[0]?.pieza.abrigo){
-      for(const trazo of fila.lineas) if(trazo.capa==='CUTTER') Object.assign(trazo,{color:7});
-    }
-    sumarEntidades(l,fila);
+    // El negro de los contornos del abrigo es solo del dibujo; en el corte el CUTTER sigue en verde (Iván, 20/11/2026).
+    sumarEntidades(l,corteEnPlano(c,yc));
     // Iván, 23/10/2026 (AR2605035): la cota, hasta la altura máxima de las piezas, y sin rayas del rollo, que no
     // son corte; como en las enrollables (planos a mano 4638 y 5220).
     const ocupado = Math.max(0, ...c.colocadas.filter(t => !t.aparte).map(t => t.y / 10 + (t.girada ? t.pieza.ancho : t.pieza.alto)));

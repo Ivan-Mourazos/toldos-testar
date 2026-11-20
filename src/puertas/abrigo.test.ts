@@ -53,7 +53,7 @@ const pedido5646 = () => ({
     ...(i>=2?{frente:[400,335,335,335,335,340][i-2],alto:i<5?75:3}:{})}})),
 });
 
-it('presenta los contornos en ACI 7, la llamada en texto 106 y las cotas en verde', async () => {
+it('presenta los contornos del dibujo en ACI 7, el CUTTER del corte en verde, la llamada en texto 106 y las cotas en verde', async () => {
   const { leerPlanoTexto } = await import('../flujoDwg/planoDxf.js');
   const { escribirPlanoTaller, dibujarAlzadoTaller } = await import('./planoTaller.ts');
   const p=pedido5646();
@@ -63,7 +63,9 @@ it('presenta los contornos en ACI 7, la llamada en texto 106 y las cotas en verd
   const modelo: Array<{tipo:string;capa:string;color:number;deCota?:boolean;valor?:string;h:number}>=leerPlanoTexto(plano).modelo;
   const contornos=modelo.filter(v=>v.tipo==='raya'&&['CUTTER','DISCO1'].includes(v.capa));
   expect(contornos.length).toBeGreaterThan(20);
-  expect([...new Set(contornos.map(v=>v.color))]).toEqual([7]);
+  // Negro en el dibujo; en el corte el CUTTER sigue en verde, como siempre (Iván, 20/11/2026).
+  expect([...new Set(contornos.filter(v=>v.capa==='DISCO1').map(v=>v.color))]).toEqual([7]);
+  expect([...new Set(contornos.filter(v=>v.capa==='CUTTER').map(v=>v.color))]).toEqual([3]);
   expect(modelo.filter(v=>v.tipo==='raya'&&v.capa==='texto'&&v.color===106).length).toBeGreaterThanOrEqual(2);
   expect(modelo.some(v=>v.deCota&&v.color===3)).toBe(true);
   for(const [valor,h] of [['LONA 3MM',.2],['OLLAO GRANDE EN ESQUINA',.10],['AL CORTE ALREDEDOR',.10],['X 1',.30],['OF: 0234151',.15]] as const){
