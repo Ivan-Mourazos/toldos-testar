@@ -1,0 +1,84 @@
+{
+  "orderCode": "AR2605669",
+  "schemaVersion": 1,
+  "kind": "puertas",
+  "numeroPedido": "AR2605669",
+  "elementos": [
+    {
+      "id": "puerta-1",
+      "input": {
+        "modelo": "PUERTAENR",
+        "articuloOrigen": "PUERTAENR",
+        "frente": 176,
+        "alto": 280,
+        "of": "0234210",
+        "cantidad": 1,
+        "margenMarcas": 1.5,
+        "confirmada": true,
+        "ventanasConfirmadas": true,
+        "bolsillo": false,
+        "medidasBolsillo": {
+          "distancia": 0,
+          "ancho": 0,
+          "lado": "izquierdo",
+          "altoSuperior": null
+        },
+        "material": "LAC900",
+        "color": "NEGRO 9005",
+        "materialCristal": "TRANSP. 1000MI",
+        "materialSaco": "LAC900 NEGRO",
+        "sacoDiagonalesAmarillas": false,
+        "rollo": 300,
+        "rolloCristal": 140,
+        "rolloSaco": 300,
+        "observaciones": "REFERENCIA: L69-2026/NAVATEK\r\nPOR CONFECCION DE LONA PARA PUERTA ENROLLABLE, DE MEDIDAS 176 X 280 CM,  CON ENTRADAS DE TUBO , VENTANA DE PVC TRANSPARENTE Y VARILLA SUPEROR, FABRICADA EN LONA POLIESTER RECUBIERTO DE PVC , COLOR NEGRO 9005.",
+        "entradas": [
+          {
+            "diametro": 30,
+            "largo": 176,
+            "alto": 8,
+            "huecos": [],
+            "altura": 40
+          },
+          {
+            "diametro": 30,
+            "largo": 176,
+            "alto": 8,
+            "huecos": [],
+            "altura": 111
+          },
+          {
+            "diametro": 30,
+            "largo": 176,
+            "alto": 8,
+            "huecos": [],
+            "altura": 171
+          }
+        ],
+        "ventanas": [],
+        "enrollable": {
+          "T": 109,
+          "D": 60,
+          "margen": 8,
+          "empates": [],
+          "saco": 80
+        },
+        "apilable": {
+          "pie": 0,
+          "pasos": [],
+          "cabecera": 0,
+          "bolsillo": 24,
+          "saco": null,
+          "doble": false,
+          "empates": null
+        },
+        "autorreparable": {
+          "empates": [],
+          "saco": 120
+        },
+        "clientePuertas": "portanova",
+        "tipoPuerta": "enrollable"
+      }
+    }
+  ]
+}

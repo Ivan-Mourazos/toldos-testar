@@ -13,7 +13,7 @@ import { colocacionSantaPau } from './colocacionSantaPau.ts';
 import { rotulosSantaPau } from './rotulosSantaPau.ts';
 import { cajaLinea, componerRotulo } from './rotulosAraujo.ts';
 import { recortar } from './corteEnPlano.ts';
-import { buscarColocacion, huecosLibres, PRESUPUESTO_TETRIS, type PresupuestoCorte, type RectanguloCorte } from '../domain/corteLona/colocacionTetris.ts';
+import { buscarColocacion, huecosLibres, huecosMaximos, PRESUPUESTO_TETRIS, type PresupuestoCorte, type RectanguloCorte } from '../domain/corteLona/colocacionTetris.ts';
 import type { CortePuertas, EntidadesPuertas, Hueco, PedidoPuertas, PiezaPuerta, Punto, VistaPuertas } from './tipos.ts';
 
 const vacias = (): EntidadesPuertas => ({ lineas: [], textos: [], arcos: [], circulos: [] });
@@ -420,7 +420,7 @@ function sacosDeStock(ocupadas: Array<{ x: number; y: number; ancho: number; hue
 const FRACCION_ROLLO_ET_DE_RESTOS = 0.5;
 
 function distribuirEntradas(grupo: PiezaPuerta[], completo: CortePuertas, anidar: (piezas: PiezaPuerta[]) => CortePuertas,
-  dibujar: (p: PiezaPuerta, x: number, y: number, entidades: EntidadesPuertas) => void): CortePuertas {
+  dibujar: (p: PiezaPuerta, x: number, y: number, entidades: EntidadesPuertas, girada?: boolean) => void): CortePuertas {
   const principales = grupo.filter(p => p.clase !== 'entrada');
   if (principales.length === grupo.length) return completo;
   let principal: CortePuertas = principales.length ? anidar(principales) : {
@@ -430,8 +430,7 @@ function distribuirEntradas(grupo: PiezaPuerta[], completo: CortePuertas, anidar
   const limite = principal.largo;
   if (completo.largo <= limite + .001) return completo;
 
-  const aparte: PiezaPuerta[] = [];
-  let anchoAparte = 0;
+  const sobran: PiezaPuerta[] = [];
   for (const p of grupo.filter(p => p.clase === 'entrada')) {
     // Las copias tienen la misma geometría. Buscar cuántas entran evita una búsqueda por unidad.
     let dentro = 0, maximo = p.cantidad;
@@ -442,10 +441,39 @@ function distribuirEntradas(grupo: PiezaPuerta[], completo: CortePuertas, anidar
       else maximo = n - 1;
     }
     if (dentro) principales.push({ ...p, cantidad: dentro });
-    anchoAparte += mm(p.alto) * (p.cantidad - dentro);
-    if (anchoAparte >= completo.anchoRollo * FRACCION_ROLLO_ET_DE_RESTOS) return completo;
-    for (let i = dentro; i < p.cantidad; i++) aparte.push({ ...p, cantidad: 1 });
+    for (let i = dentro; i < p.cantidad; i++) sobran.push({ ...p, cantidad: 1 });
   }
+  // Lo que la búsqueda no ha metido se prueba en los huecos que quedan libres sin alargar el corte, de pie o tumbado
+  // (Iván, 20/11/2026, AR2605669: con el saco en la lona, las tres E.T. cabían de pie al lado de los cachos y salían
+  // a cortar de restos).
+  const rollo = principal.anchoRollo;
+  const ocupadas = principal.colocadas.map(t => ({ x: t.x, y: t.y, w: mm(t.girada ? t.pieza.alto : t.pieza.ancho), h: mm(t.girada ? t.pieza.ancho : t.pieza.alto) }));
+  const aparte: PiezaPuerta[] = [];
+  let metidas = 0;
+  for (const pieza of sobran) {
+    const formas = [{ w: mm(pieza.alto), h: mm(pieza.ancho), girada: true }, { w: mm(pieza.ancho), h: mm(pieza.alto), girada: false }]
+      .filter(f => f.h <= rollo + .001 && (!pieza.sinGiro || !f.girada));
+    // De pie (a lo ancho del rollo) si cabe; si no, tumbada. En cada forma, el hueco más justo.
+    let mejor: { x: number; y: number; w: number; h: number; girada: boolean; sobra: number } | null = null;
+    const huecos = limite > 0 ? huecosMaximos(ocupadas, limite, rollo) : [];
+    for (const f of formas) {
+      for (const hueco of huecos) {
+        if (f.w > hueco.w + .001 || f.h > hueco.h + .001) continue;
+        const sobra = hueco.w * hueco.h - f.w * f.h;
+        if (!mejor || sobra < mejor.sobra - .001) mejor = { x: hueco.x, y: hueco.y, w: f.w, h: f.h, girada: f.girada, sobra };
+      }
+      if (mejor) break;
+    }
+    if (!mejor) { aparte.push(pieza); continue; }
+    ocupadas.push(mejor);
+    dibujar(pieza, mejor.x, mejor.y, principal.entidades, mejor.girada);
+    principal.colocadas.push({ pieza, x: mejor.x, y: mejor.y, girada: mejor.girada });
+    metidas++;
+  }
+  // Las líneas que comparten con sus vecinas se cortan una vez, como en el anidado.
+  if (metidas) fusionarCortesPuertas(principal.entidades, grupo.some(p => p.clase === 'pano') && !grupo[0].abrigo ? rollo : undefined, grupo[0].abrigo?.capa);
+  const anchoAparte = aparte.reduce((s, p) => s + mm(p.alto), 0);
+  if (anchoAparte >= completo.anchoRollo * FRACCION_ROLLO_ET_DE_RESTOS) return completo;
   if (!aparte.length) return principal;
   const x = principal.largo + 1500;
   let y = 0;
@@ -648,7 +676,7 @@ function colocar(
     const completo = anidar(grupo, presupuesto);
     if (opcion !== 'principal') return completo;
     return distribuirEntradas(grupo, completo, piezas => anidar(piezas, pruebasRestos),
-      (p, x, y, entidades) => dibujarPieza(entidades, p, x, y, false, codigosPano.get(p.id), !esEnrollable(p.id), false, esAraujo(p.id)));
+      (p, x, y, entidades, girada = false) => dibujarPieza(entidades, p, x, y, girada, codigosPano.get(p.id), !esEnrollable(p.id), false, esAraujo(p.id)));
   });
 }
 

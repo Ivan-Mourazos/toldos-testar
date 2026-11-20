@@ -20,7 +20,7 @@ const solapan = (a: Hueco, b: Hueco) => a.x < derecha(b) - EPS && b.x < derecha(
   && a.y < arriba(b) - EPS && b.y < arriba(a) - EPS;
 
 /** Rectángulos libres máximos (pueden solaparse entre sí, nunca con una pieza). */
-function huecosMaximos(ocupadas: Hueco[], largo: number, rollo: number): Hueco[] {
+export function huecosMaximos(ocupadas: Hueco[], largo: number, rollo: number): Hueco[] {
   let libres: Hueco[] = [{ x: 0, y: 0, w: largo, h: rollo }];
   for (const p of ocupadas) libres = restar(libres, p);
   return libres;
