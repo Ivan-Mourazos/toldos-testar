@@ -485,11 +485,11 @@ Comparado el DWG de Jaime (4 portales en rejilla especial verde: A 575, B 587, C
 - **Q-TGM12 · Notas del dibujo (contestada).** Las de Jaime, no las de Portanova: «COSER VARILLA … EN LAS ESQUINAS» y
   «COSER E.T. EN LAS ESQUINAS», sin «PISAR LAS E.T.» ni la soldadura del cierre.
 - **Q-TGM13 · Hoja de tubos (contestada).** De momento no; solo las puertas.
-- **Q-TGM14 · Medidas del saco de PVC en rejilla.** La web lo hace con las medidas del plano de Jaime: la lona acaba
-  8,3 cm sobre el bajo, la raya de soldar va 5 cm por encima del corte y el saco cuelga su medida útil (15 cm en el
-  portal D) y se corta de 31 + 2 × lo que cuelga (61). Jaime dibujó 60,5. ¿Vale así para cualquier saco?
-  Y con «tubo con saco envolvente» en rejilla, la web cuelga el saco terminado con la misma regla: ¿se pide alguna vez?
-  ¿La E.T. sándwich se usa también en TGM de PVC, o allí sigue el cierre doblado?
+- **Q-TGM14 · Saco de PVC en rejilla (contestada).** La lona acaba 8,3 cm sobre el bajo, la raya de soldar va 5 cm
+  por encima del corte y el saco cuelga su medida útil (15 cm en el portal D) y se corta de 31 + 2 × lo que cuelga (61).
+  Iván, 20/11: la web lo calcula bien; Jaime le quitó medio centímetro solo para que el corte le entrara en el rollo de
+  300. En rejilla el saco va siempre en PVC, también con «tubo con saco envolvente». Las puertas de PVC normalmente no
+  llevan E.T. sándwich: siguen con el cierre doblado.
 
 ## Puertas · Portanova · Abrigo de carga · 19/11/2026
 
