@@ -1,3 +1,4 @@
+import { rotuloEnCajaAbrigo, rotulosAbrigo } from './rotulosAbrigo.ts';
 import { retocarPortanova } from './retoquesPortanova.js';
 import { dibujarVentanasPlano } from './ventanasPlano.ts';
 import { dibujarSacoConfeccionado, dibujarOpcionesSacoArena } from './planoSacoArena.ts';
@@ -240,7 +241,7 @@ function alzadoAbrigo(puertas: Puerta[]) {
         (nombre==='D'?pvc:suelo)-p.alto;
       const posicion=([a,b]:Punto):Punto=>lado?[x+b,y+a]:[x+a,y+b];
       const puntos=p.contorno.map(posicion);
-      contorno(l,p.abrigo!.capa,puntos);
+      contorno(l,'DISCO1',puntos);
       for(const m of p.circulosMarca??[]){
         const [cx,cy]=posicion([m.x,m.y]);
         l.circulos.push({capa:'ROTULADOR',x:cx,y:cy,r:m.r});
@@ -254,29 +255,47 @@ function alzadoAbrigo(puertas: Puerta[]) {
         const [a,b,,d]=p.circulosMarca!;
         cota(l,x+a.y,y+a.x,x+b.y,y+b.x,x+a.y+15);
         cota(l,x+a.y,y+a.x,x+d.y,y+d.x,y+16);
-        texto(l,'MARCA DERECHO',x+p.alto/2,y+64,4,90);
-        texto(l,`${nombre}  X ${p.cantidad}`,x+p.alto/2,y+largo/2,6);
+        const marca=rotuloEnCajaAbrigo('MARCA DERECHO',.5,-5,99.5,10);
+        texto(l,marca.valor,x+p.alto/2,y+marca.x,marca.h,90);
+        const libre=Math.max(.1,corto-100);
+        const letra=rotuloEnCajaAbrigo(nombre,x,y+100,p.alto,libre*.25);
+        const cantidad=rotuloEnCajaAbrigo(`X ${p.cantidad}`,x,y+100+libre*.25,p.alto,libre*.25);
+        for(const r of [letra,cantidad]) texto(l,r.valor,r.x,r.y,r.h);
+        const of=rotuloEnCajaAbrigo(`OF: ${p.of}`,0,0,libre*.50,p.alto);
+        texto(l,of.valor,x+p.alto/2,y+100+libre*.75,of.h,90);
         if(nombre==='B'){
           const pico=y+corto+28;
-          linea(l,'referencias',x+p.alto,y+corto,frente/2,pico);
-          linea(l,'referencias',frente/2,pico,frente-p.alto,y+corto);
-          texto(l,'OLLAO GRANDE EN ESQUINA',frente/2,pico+8,7);
-          texto(l,`OF ${p.of}`,frente/2,y+largo/2,6);
+          linea(l,'texto',x+p.alto,y+corto,frente/2,pico);
+          linea(l,'texto',frente/2,pico,frente-p.alto,y+corto);
+          const nota=rotuloEnCajaAbrigo('OLLAO GRANDE EN ESQUINA',0,pico+2,frente,22);
+          texto(l,nota.valor,nota.x,nota.y,nota.h);
         }
         lateral+=largo+100;
       }else{
         cota(l,x,y,x+p.ancho,y,y-16);
         cota(l,x,y,x,y+p.alto,x-18);
-        texto(l,`${nombre}  X ${p.cantidad} · OF ${p.of}`,x+p.ancho/2,y+p.alto+12,9);
-        if(p.abrigo!.nota) texto(l,p.abrigo!.nota,x+p.ancho/2,y+p.alto/2,8);
+        for(const r of rotulosAbrigo(p)){
+          // El frente de la presentación deja aire alrededor de la letra y la repetición (hojas de Portanova).
+          const alto=nombre==='A'?Math.min(r.h,p.alto/3,p.ancho/3):r.h;
+          texto(l,r.valor,x+r.x,y+r.y,alto,r.giro);
+        }
+        if(nombre==='E'){
+          // Las tiras solo tienen 3 cm de ancho. Repetir el rótulo encima permite leerlo en A4.
+          const r=rotuloEnCajaAbrigo(`E · X ${p.cantidad} · OF: ${p.of}`,x,y+p.alto+3,p.ancho,25);
+          texto(l,r.valor,r.x,r.y,r.h);
+        }
       }
       if(nombre==='D') pvc=y-95;
       else suelo=Math.min(suelo,y-110);
       xMax=Math.max(xMax,x+(lado?p.alto:p.ancho));
     }
   }
-  if(lista.some(p=>p.nombre==='D')) texto(l,'PVC ALPHA 580 GR NEGRO',frente+110+Math.max(...lista.filter(p=>p.nombre==='D').map(p=>p.ancho))/2,42,8);
-  texto(l,'ABRIGO · LONA 3 MM',frente/2,42,8);
+  const titulo=(valor:string,x:number,w:number)=>{
+    const r=rotuloEnCajaAbrigo(valor,x,12,w,48);
+    texto(l,r.valor,r.x,r.y,r.h);
+  };
+  if(lista.some(p=>p.nombre==='D')) titulo('PVC ALPHA 580 GR NEGRO',frente+110,Math.max(...lista.filter(p=>p.nombre==='D').map(p=>p.ancho)));
+  titulo('LONA 3MM',0,frente);
   return {lienzo:l,zona:{x0:-45,x1:xMax+45,y0:Math.min(suelo,pvc),y1:65}};
 }
 
@@ -585,7 +604,11 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas, ancho
     const yc = techo - c.anchoRollo / 10;
     // Todo lo del bot en su sitio (Iván, 24/10/2026, flujo del DWG): rayas, giros, espaciadores, huecos, flechas,
     // mininúmeros y textos, también los de los sacos de stock. El plano no vuelve a anidar ni a rotular.
-    sumarEntidades(l, corteEnPlano(c, yc));
+    const fila=corteEnPlano(c,yc);
+    if(c.colocadas[0]?.pieza.abrigo){
+      for(const trazo of fila.lineas) if(trazo.capa==='CUTTER') Object.assign(trazo,{color:7});
+    }
+    sumarEntidades(l,fila);
     // Iván, 23/10/2026 (AR2605035): la cota, hasta la altura máxima de las piezas, y sin rayas del rollo, que no
     // son corte; como en las enrollables (planos a mano 4638 y 5220).
     const ocupado = Math.max(0, ...c.colocadas.filter(t => !t.aparte).map(t => t.y / 10 + (t.girada ? t.pieza.ancho : t.pieza.alto)));
@@ -665,7 +688,7 @@ export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[
     // Cada ventana a la medida de lo que enseña, para que no se cuele nada de al lado (Iván, 06/11/2026). El corte, pegado
     // arriba: abajo a la izquierda en «arriba»; centrado a lo ancho en «lado». Girado si así se ve más grande.
     const R = DISPOSICIONES_PORTANOVA[disposicion].corte, w = zc.x1 - zc.x0, h = zc.y1 - zc.y0;
-    const recto = escala(zc, R), girado = conSacosArena?0:Math.min((R.x1 - R.x0) / h, (R.y1 - R.y0) / w);
+    const recto = escala(zc, R), girado = conSacosArena||soloAbrigo?0:Math.min((R.x1 - R.x0) / h, (R.y1 - R.y0) / w);
     const [vw, vh] = girado > 1.02 * recto ? [h * girado, w * girado] : [w * recto, h * recto];
     const x0 = disposicion === 'arriba' ? R.x0 : (R.x0 + R.x1 - vw) / 2;
     ventanaCorte = { x0, x1: x0 + vw, y0: R.y1 - vh, y1: R.y1 };
@@ -683,7 +706,7 @@ export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[
     ? retocarPortanova(p, c) : escribirDxfPlano(p, c);
   const dibujo=lienzoAMetros(l,100,100);
   return escribir({ ...dibujo, corte: lienzoAMetros(corte.lienzo, ox, oy), zonas: { toldos: za, corte: zc, corteReal }, corteDerecho: true,
-    corteGirable: !conSacosArena, hojas: soloAbrigo?[{nombre:'ABRIGO',zona:za,cajetin:{OF:'VARIAS',HOJA:'1/1',MATERIAL:'LONA 3 MM / PVC ALPHA 580'}}]:hojasPuertas(pedido, zonasPuertas.map(z => zonaM(z, 100, 100)), cortes),
+    corteGirable: !conSacosArena && !soloAbrigo, hojas: soloAbrigo?[{nombre:'ABRIGO',zona:za,cajetin:{OF:'VARIAS',HOJA:'1/1',MATERIAL:'LONA 3 MM / PVC ALPHA 580'}}]:hojasPuertas(pedido, zonasPuertas.map(z => zonaM(z, 100, 100)), cortes),
     ...(portanova ? { ajustarVentanaALaZona: true } : {}),
     bloques: [bloqueFlechaEnrollable], coloresModelo: { ejes: 23, borrar: 40, curv: 3, 'corte (vent)': 5 },
     ...(portanova ? presentacionPortanova(pedido, cabecera, { toldos: za, corte: zc }, altoVista, tramosCorte, disposicion, ventanaCorte) : {}),

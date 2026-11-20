@@ -4,6 +4,7 @@ import { anchoArial } from '../domain/corteLona/texto.js';
 import { sacosEnRectangulos, valorarSacos } from '../domain/corteLona/colocacion.js';
 import { calcularPuerta } from './calcular.ts';
 import { cortarSystemDock, medidaSystemDock } from './systemDock.ts';
+import { rotulosAbrigo } from './rotulosAbrigo.ts';
 import { cortarSacosArena } from './sacoArena.ts';
 import { enderezarSaco, invertirPanoInclinado } from './saco.ts';
 import { centroLibre } from './unionesCorte.ts';
@@ -319,8 +320,10 @@ function dibujarPieza(
   }
   pieza.huecos.forEach(h => redondeado(h, true));
   if(pieza.abrigo){
-    const [tx,ty]=transformar([pieza.ancho/2,pieza.alto/2]);
-    entidades.textos.push({capa:'texto',valor:[pieza.nombre,`OF ${pieza.of}`,`X ${pieza.cantidad}`,pieza.abrigo.nota].filter(Boolean).join(' · '),x:tx,y:ty,h:Math.min(24,mm(pieza.alto)/2),centrado:true,giro:girada?90:0});
+    for(const r of rotulosAbrigo(pieza)){
+      const [tx,ty]=transformar([r.x,r.y]);
+      entidades.textos.push({capa:'texto',valor:r.valor,x:tx,y:ty,h:mm(r.h),centrado:true,giro:(r.giro+(girada?90:0))%180});
+    }
     return;
   }
   if(pieza.id.includes(':santapau-')){
@@ -635,7 +638,7 @@ function colocar(
     // (Iván, 06/11/2026). Cuenta también los sacos de stock que rellenan el rollo.
     const ocupado = Math.min(rollo, Math.max(0, ...colocadas.map(t => t.y + mm(t.girada ? t.pieza.ancho : t.pieza.alto))));
     const base = esAraujo(grupo[0].id) ? rollo + 250 : (ocupado || rollo) + 120;
-    entidades.textos.push({ capa: 'texto', x: 0, y: base + (porElReves ? RENGLON_TITULO_MM : 0), h: TITULO_MATERIAL_MM, valor: rotuloMaterial });
+    entidades.textos.push({ capa: 'texto', x: 0, y: base + (porElReves ? RENGLON_TITULO_MM : 0), h: grupo[0].abrigo ? Math.min(400,largo*.95/anchoArial(rotuloMaterial,1)) : TITULO_MATERIAL_MM, valor: rotuloMaterial });
     if (porElReves) entidades.textos.push({ capa: 'texto', x: 0, y: base, h: TITULO_MATERIAL_MM, valor: 'CORTAR POR EL REVÉS' });
     fusionarCortesPuertas(entidades, primerPano && !grupo[0].abrigo ? rollo : undefined, grupo[0].abrigo?.capa);
     return corteSanta&&corteSanta.largo<=largo?corteSanta:{ material: grupo[0].material, anchoRollo: rollo, largo, opcion, entidades, colocadas };
