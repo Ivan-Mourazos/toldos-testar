@@ -113,6 +113,36 @@ export function fotograma(trayectoria: ReturnType<typeof prepararTrayectoria>, a
   return { apoyo, tubos, punto, lados };
 }
 
+type Trayectoria = ReturnType<typeof prepararTrayectoria>;
+
+/**
+ * El motor gira el rollo a ritmo constante. Entre dos bultos la lona va recta y
+ * su ángulo no cambia: si la reproducción avanzara a mm constantes, el rollo se
+ * quedaría quieto en cada tramo recto y luego giraría de golpe sobre el tubo.
+ * Por eso la reproducción avanza por giro (0 a 1) y aquí se pasa a mm de avance.
+ */
+export function avancePorGiro({ modelo }: Trayectoria, giro: number) {
+  const g = Math.max(0, Math.min(1, giro));
+  const desde = posicionLona(modelo, 0).a, hasta = posicionLona(modelo, modelo.largo).a;
+  const objetivo = desde + g * (hasta - desde);
+  if (g <= 0) return 0;
+  if (g >= 1) return modelo.largo;
+  let lo = 0, hi = modelo.largo;
+  for (let n = 0; n < 50; n++) {
+    const medio = (lo + hi) / 2;
+    if (posicionLona(modelo, medio).a < objetivo) lo = medio; else hi = medio;
+  }
+  return hi;
+}
+
+/** Giro (0 a 1) que corresponde a un avance, para seguir la reproducción desde la barra. */
+export function giroPorAvance({ modelo }: Trayectoria, avance: number) {
+  const desde = posicionLona(modelo, 0).a, hasta = posicionLona(modelo, modelo.largo).a;
+  if (hasta <= desde) return avance >= modelo.largo ? 1 : 0;
+  const a = posicionLona(modelo, Math.max(0, Math.min(modelo.largo, avance))).a;
+  return Math.max(0, Math.min(1, (a - desde) / (hasta - desde)));
+}
+
 /** Primeros milímetros del propio paño, medidos por longitud de arco desde la costura. */
 export function colasSoldadas(lona: Punto[], largo: number) {
   const cola = [lona[0]];

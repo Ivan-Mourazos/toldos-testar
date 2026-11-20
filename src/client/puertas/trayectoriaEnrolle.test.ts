@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import { CONFIG_CODEX, construir, radioMedioTubo } from '../../puertas/enrolle/geometria.ts';
-import { prepararTrayectoria, fotograma, colasSoldadas } from './trayectoriaEnrolle';
+import { prepararTrayectoria, fotograma, colasSoldadas, avancePorGiro, giroPorAvance } from './trayectoriaEnrolle';
 
 const modelo = construir({ ...CONFIG_CODEX, conFunda: true }, [500], 1100);
 const trayectoria = prepararTrayectoria(modelo);
@@ -62,4 +62,20 @@ it('mide ambas soldaduras sobre la lona reconstruida de cada tubo, incluida la v
       }
     }
   }
+});
+
+it('al reproducir, el rollo gira a ritmo constante también cuando la lona pasa de un bulto a otro', () => {
+  const m = construir({ ...CONFIG_CODEX, conFunda: true, altoPerfil: 10, anchoPerfil: 10 }, [1134.5, 2034, 3067.5], 4170);
+  const t = prepararTrayectoria(m);
+  const fotogramas = 900;
+  const angulos = Array.from({ length: fotogramas + 1 }, (_, k) => fotograma(t, avancePorGiro(t, k / fotogramas)).apoyo.a);
+  const total = angulos[fotogramas] - angulos[0];
+  expect(avancePorGiro(t, 0)).toBe(0);
+  expect(avancePorGiro(t, 1)).toBeCloseTo(m.largo, 6);
+  for (let k = 1; k <= fotogramas; k++) {
+    const giro = angulos[k] - angulos[k - 1];
+    expect(giro).toBeGreaterThan(total / fotogramas * 0.9);
+    expect(giro).toBeLessThan(total / fotogramas * 1.1);
+  }
+  for (const g of [0, 0.25, 0.5, 0.9, 1]) expect(giroPorAvance(t, avancePorGiro(t, g))).toBeCloseTo(g, 4);
 });

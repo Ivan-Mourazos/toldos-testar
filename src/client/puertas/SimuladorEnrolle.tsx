@@ -4,7 +4,7 @@ import type { EnrolleTgm } from '../../puertas/tgm.ts';
 import { InputDecimal } from '../remolques/InputDecimal';
 import { numeroPuerta as numero } from './medidasPuertas';
 
-import { colasSoldadas, fotograma, prepararTrayectoria } from './trayectoriaEnrolle';
+import { avancePorGiro, colasSoldadas, fotograma, giroPorAvance, prepararTrayectoria } from './trayectoriaEnrolle';
 
 const formatoAvance = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 1, useGrouping: false });
 const DURACION = 15000;
@@ -122,6 +122,8 @@ export function SimuladorEnrolle({ enrolle, manual = false, cambiarManual }: {
   const barra = useRef<HTMLInputElement>(null);
   const salida = useRef<HTMLOutputElement>(null);
   const pintar = useRef<(f: number) => void>(() => {});
+  // La reproducción avanza por giro del rollo, no por mm de lona: así no se para en los tramos rectos.
+  const fraccionDeGiro = useRef((g: number) => g);
   const [inicio, setInicio] = useState<number | null>(null);
   const [enPausa, setEnPausa] = useState(false);
   const [error, setError] = useState('');
@@ -139,7 +141,7 @@ export function SimuladorEnrolle({ enrolle, manual = false, cambiarManual }: {
     const paso = (t: number) => {
       primero ??= t;
       const siguiente = Math.min(1, inicio + (t - primero) / DURACION);
-      pintar.current(siguiente);
+      pintar.current(fraccionDeGiro.current(siguiente));
       if (siguiente < 1) idFotograma = requestAnimationFrame(paso);
       else setInicio(null);
     };
@@ -173,6 +175,7 @@ export function SimuladorEnrolle({ enrolle, manual = false, cambiarManual }: {
       }
       if (salida.current?.firstChild) salida.current.firstChild.nodeValue = texto;
     };
+    fraccionDeGiro.current = g => g >= 1 ? 1 : Math.min(1, modelo.desplegar(avancePorGiro(trayectoria, g)) / largo);
     pintar.current(fraccion.current);
   }, [modelo, trayectoria, enrolle, tema, largo]);
 
@@ -186,8 +189,8 @@ export function SimuladorEnrolle({ enrolle, manual = false, cambiarManual }: {
     setEnPausa(inicio !== null);
     if (inicio !== null) setInicio(null);
     else {
-      const desde = fraccion.current === 1 ? 0 : fraccion.current;
-      pintar.current(desde);
+      const desde = fraccion.current === 1 ? 0 : giroPorAvance(trayectoria, modelo.proyectar(fraccion.current * largo));
+      pintar.current(fraccionDeGiro.current(desde));
       setInicio(desde);
     }
   }
