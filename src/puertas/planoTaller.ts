@@ -20,7 +20,7 @@ import type { CortePuertas, EntidadesPuertas, Hueco, PedidoPuertas, PiezaPuerta,
 // AR2605036/4906 (apilables), AR2604904/4526 (autorreparables).
 type Lienzo = LienzoEnrollable;
 type Zona = { x0: number; y0: number; x1: number; y1: number };
-import { repartirCorte, type FilaCorte } from './repartoCorte.ts';
+import { cortesLibres, repartirCorte, type FilaCorte, type TramoCorte } from './repartoCorte.ts';
 const vacio = (): Lienzo => ({ lineas: [], polilineas: [], textos: [], cotas: [], inserciones: [], sombreados: [], arcos: [], circulos: [] });
 const num = (v: number) => v.toLocaleString('es-ES', { maximumFractionDigits: 2 });
 const linea = (l: Lienzo, capa: string, x1: number, y1: number, x2: number, y2: number) => l.lineas.push({ capa, x1, y1, x2, y2 });
@@ -596,7 +596,7 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas, ancho
       // 40 cm más entre filas que antes (Iván, 26/10/2026: «no dejes tan agrupado el corte… sin pasarse»).
       anchoMax = Math.max(anchoMax, x0 + largoFila, x0 + anchoTitulo);
       ocupa[0] = [ocupa[0][0], Math.max(ocupa[0][1], x0 + anchoTitulo)];
-      filas.push({ y0: fondo - 50, y1: t0 + 40, piezas: ocupa });
+      filas.push({ y0: fondo - 50, y1: t0 + 40, piezas: ocupa, muestras: true });
       banda.fondo = Math.min(banda.fondo, fondo); banda.x += Math.max(largoFila, anchoTitulo) + ENTRE_MUESTRAS * 2;
       techo = banda.fondo - 95 - SEPARACION_EXTRA_FILAS;
       continue;
@@ -660,7 +660,19 @@ export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[
       : largo > 0 ? (() => { const p = dibujarCorteTaller(cortes, pedido, Math.max(250, largo / 3)), q = repartirCorte(p.zona, p.filas, ventana);
         return q.length > 1 ? q[0].zona.x1 - q[0].zona.x0 - 40 : 0; })() : 0;
     if (ancho > 0) { c = dibujarCorteTaller(cortes, pedido, Math.max(250, ancho)); t = repartirCorte(c.zona, c.filas, ventana); }
-    return { corte: c, tramos: t };
+    // Las muestras de arriba no deben decidir por dónde se parte la lona (Iván, 20/11/2026, AR2605639: los sacos negros y
+    // los cristales tapaban los bordes de las columnas y el gris se partía a 15,80 m, con la última puerta sola debajo).
+    // Se prueba cada borde libre de la lona con las muestras recolocadas a su izquierda y gana la que más agranda el corte.
+    const escalaDe = (x: TramoCorte[]) => (x[0].papel.x1 - x[0].papel.x0) / (x[0].zona.x1 - x[0].zona.x0);
+    let mejor = { corte: c, tramos: t }, mejorEscala = escalaDe(t);
+    const lona = c.filas.filter(f => !f.muestras);
+    if (lona.length < c.filas.length) for (const borde of cortesLibres(lona)) {
+      if (borde - 50 < 250 || borde >= c.zona.x1 - 50) continue;
+      // Cada muestra acaba como mucho 45 cm después de su sitio: así quedan a la izquierda del borde.
+      const p = dibujarCorteTaller(cortes, pedido, borde - 50), q = repartirCorte(p.zona, p.filas, ventana);
+      if (escalaDe(q) > 1.02 * mejorEscala) { mejor = { corte: p, tramos: q }; mejorEscala = escalaDe(q); }
+    }
+    return mejor;
   };
   const escala = (z: Zona, r: Zona) => Math.min((r.x1 - r.x0) / (z.x1 - z.x0), (r.y1 - r.y0) / (z.y1 - z.y0));
   const escalaCorte = (o: ReturnType<typeof corteEn>, r: Zona) => o.tramos.length > 1

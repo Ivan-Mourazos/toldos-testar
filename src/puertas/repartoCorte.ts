@@ -6,7 +6,9 @@
  */
 type Zona = { x0: number; y0: number; x1: number; y1: number };
 /** Una fila del corte en el modelo (cm): su alto, con rótulo y cotas, y lo que ocupan sus piezas a lo largo. */
-export type FilaCorte = { y0: number; y1: number; piezas: Array<[number, number]>; evitar?: number[] };
+export type FilaCorte = { y0: number; y1: number; piezas: Array<[number, number]>; evitar?: number[];
+  /** Muestras (sacos, cristal): se pueden recolocar en otro ancho, así que no deciden por dónde se parte la lona. */
+  muestras?: boolean };
 export type TramoCorte = { zona: Zona; papel: Zona };
 
 /** Hueco entre ventanas, en mm de papel. */
@@ -17,7 +19,7 @@ const SOLAPE = 10;
 const ANCHO_TEXTO_COTA = 45;
 
 /** Donde se puede partir sin cortar ninguna pieza de ninguna fila. */
-function cortesLibres(filas: FilaCorte[]): number[] {
+export function cortesLibres(filas: FilaCorte[]): number[] {
   const bordes = [...new Set(filas.flatMap(f => f.piezas.flat()))].sort((a, b) => a - b);
   return bordes.filter(x => filas.every(f => f.piezas.every(([a, b]) => !(a < x - 0.5 && x + 0.5 < b))));
 }
