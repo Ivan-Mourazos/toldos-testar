@@ -57,6 +57,7 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
       if(['bastilla','terminado','soldadura'].some(k=>t[k]!=null && !cotas(t,[k])))return error();
       if(t.lona!==undefined&&t.lona!=='pvc'&&t.lona!=='rejilla')return error();
       if(t.materialEt!==undefined&&t.materialEt!=='LAC650'&&t.materialEt!=='LAC900')return error();
+      if(t.varilla!==undefined&&t.varilla!=='blanca'&&t.varilla!=='negra')return error();
       faltanDatosTgm ||= camposTgmConValorDeFicha.some(k=>t[k]===undefined);
     }
     if(p.santapau!==undefined){

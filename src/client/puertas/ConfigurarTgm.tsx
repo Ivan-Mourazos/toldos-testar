@@ -25,6 +25,8 @@ export function ConfigurarTgm({ p, cambiar, corte, derecha, letra, vistas }: {
     const enrolle = enrolleTgm(p);
     if (!enrolle) return { enrolle, derivada: p, resultado: calcularPuerta(p) };
     const derivada = puertaTgmDerivada(p, enrolle);
+    // Sin la varilla de arriba, calcularPuerta da el aviso y no saca piezas.
+    if (!p.tgm?.varilla) return { enrolle, derivada, resultado: calcularPuerta(p) };
     const r = calcularPuertaDerivada(derivada);
     return { enrolle, derivada, resultado: { ...r, avisos: [...enrolle.colocacion.avisos, ...r.avisos] } };
   }, [p]);
@@ -67,6 +69,8 @@ export function ConfigurarTgm({ p, cambiar, corte, derecha, letra, vistas }: {
           <Numero titulo="Diámetro de enrolle (mm)" unidad="mm" valor={t.diametroEnrolle || null} cambiar={v => medidas({ diametroEnrolle: v ?? 0 })} />
           <Numero titulo="Ancho de E.T. (mm)" valor={t.anchoEt || null} cambiar={v => medidas({ anchoEt: v ?? 0 }, { enrollable: { ...p.enrollable, anchoEt: v ?? 0 } })} />
           <Numero titulo="Grosor de la lona (mm)" unidad="mm" valor={t.grosor || null} cambiar={v => medidas({ grosor: v ?? 0 })} />
+          <SegmentedField label="Varilla de arriba" value={t.varilla === 'blanca' ? 'Blanca 5,5' : t.varilla === 'negra' ? 'Negra 4,5' : ''}
+            options={['Blanca 5,5', 'Negra 4,5']} missing={!t.varilla} onChange={v => medidas({ varilla: v === 'Blanca 5,5' ? 'blanca' : 'negra' })} />
           <SegmentedField label="Lona" value={t.lona === 'rejilla' ? 'Rejilla' : 'PVC'} options={['PVC', 'Rejilla']} onChange={elegirLona} />
           <SegmentedField label="Laterales" value={t.laterales === 'bastilla' ? 'Bastilla' : 'Al corte'} options={['Al corte', 'Bastilla']}
             onChange={v => medidas({ laterales: v === 'Bastilla' ? 'bastilla' : 'corte' })} />
@@ -77,14 +81,14 @@ export function ConfigurarTgm({ p, cambiar, corte, derecha, letra, vistas }: {
             if (abajo !== t.abajo) medidas({ abajo }, { enrollable: { ...p.enrollable, sinSaco: abajo !== 'saco' } });
           }} />
           {t.abajo === 'envolvente' && <Numero titulo="Saco terminado (mm)" valor={t.terminado ?? null} cambiar={terminado => medidas({ terminado })} />}
-          {t.abajo !== 'saco' && <Numero titulo="Soldadura del último tubo (mm)" valor={t.soldadura === undefined ? SOLDADURA_BASE_TGM : t.soldadura} cambiar={soldadura => medidas({ soldadura })} />}
+          {t.abajo !== 'saco' && t.lona !== 'rejilla' && <Numero titulo="Soldadura del último tubo (mm)" valor={t.soldadura === undefined ? SOLDADURA_BASE_TGM : t.soldadura} cambiar={soldadura => medidas({ soldadura })} />}
           {t.abajo === 'saco' && <Numero titulo="Saco útil (mm)" unidad="mm" valor={p.enrollable.saco ?? null}
             cambiar={saco => datos({ enrollable: { ...p.enrollable, saco } })} />}
           {texto('Material de lona', 'material')}{texto('Color de puerta', 'color')}
           <Numero titulo="Rollo de lona (mm)" valor={p.rollo} cambiar={v => datos({ rollo: v ?? 0 })} />
-          {t.lona === 'rejilla' && <SelectField label="Material de las E.T." value={t.materialEt} options={['LAC650', 'LAC900']}
+          {t.lona === 'rejilla' && <SelectField label={t.abajo === 'saco' ? 'PVC de las E.T. y del saco' : 'PVC de las E.T.'} value={t.materialEt} options={['LAC650', 'LAC900']}
             optionLabel={v => v} onChange={v => medidas({ materialEt: v === 'LAC650' ? 'LAC650' : 'LAC900' })} />}
-          {t.abajo !== 'tubo' && texto('Material del saco', 'materialSaco')}
+          {t.abajo !== 'tubo' && t.lona !== 'rejilla' && texto('Material del saco', 'materialSaco')}
           {texto('OF de puerta', 'of')}
           <Numero titulo="Cantidad de puertas iguales" unidad="cantidad" valor={p.cantidad || null} cambiar={v => datos({ cantidad: Math.trunc(v ?? 0) })} />
         </div>

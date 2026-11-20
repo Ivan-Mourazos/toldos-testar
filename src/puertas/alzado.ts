@@ -1,6 +1,6 @@
 import { alturasTubos, desfaseCintas, solapeEntradaEnrollable } from './calcular.ts';
 import { huecosSinEscuadrado, llevaEscuadrado } from './escuadrado.ts';
-import { envoltorioTgm } from './tgm.ts';
+import { abajoRejillaTgm, envoltorioTgm, SANDWICH_TGM } from './tgm.ts';
 import { alzadoAraujo } from './alzadoAraujo.ts';
 import { alzadoSantaPau } from './alzadoSantaPau.ts';
 import { colocarTextosPuerta } from './textosPlano.ts';
@@ -93,7 +93,9 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   const enr = p.modelo === 'PUERTAENR';
   const sinSaco = enr && p.enrollable.sinSaco;
   const envoltorio = envoltorioTgm(p);
-  const pie = H - (envoltorio?.bajoLona ?? 0);
+  // Rejilla TGM (AR2605499, plano de Jaime): la lona acaba sobre la E.T. sándwich y, debajo, cuelga el saco de PVC.
+  const rejilla = enr ? abajoRejillaTgm(p) : null;
+  const pie = H - (rejilla?.bajoLona ?? envoltorio?.bajoLona ?? 0);
   const bastilla = p.tgm?.laterales === 'bastilla' ? p.tgm.bastilla ?? 0 : 0;
   const pvcTgm = enr && p.tgm?.lona === 'pvc';
   const ple = p.modelo === 'PUERTAPLE';
@@ -132,7 +134,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   const hitosDerecha = ple
     ? [0, ...tubos, H]
     : enr
-      ? [...new Set([0, ...tubos, ...(envoltorio ? [envoltorio.eje] : []), ...(ventanales.length ? ejesVentanal.map(y => H - y) : []), H])]
+      ? [...new Set([0, ...tubos, ...(envoltorio ? [envoltorio.eje] : []), ...(rejilla ? [rejilla.colgado, rejilla.bajoLona] : []), ...(ventanales.length ? ejesVentanal.map(y => H - y) : []), H])]
           .filter(y => y >= 0 && y <= H)
           .sort((a, b) => a - b)
       // Autorreparable: la soldadura del saco y los empates, desde su rematado (antes 14 y +12 fijos, del rematado de 12).
@@ -194,7 +196,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   // Cabecera según modelo
   if (enr || auto) {
     linea('puerta-varilla', 0, 0, F, 0);
-    texto(p.tgm ? 'VARILLA NEGRA (4,5 mm)' : 'VARILLA NEGRA (4,5)', F / 2, -10, 'middle', 'puerta-texto-cabecera');
+    texto(p.tgm ? (p.tgm.varilla === 'blanca' ? 'VARILLA BLANCA (5,5 mm)' : 'VARILLA NEGRA (4,5 mm)') : 'VARILLA NEGRA (4,5)', F / 2, -10, 'middle', 'puerta-texto-cabecera');
   }
   if (ple) {
     rect('puerta-entrada-alzado', 0 - margen, 0, F + margen * 2, p.apilable.bolsillo);
@@ -286,6 +288,14 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
           texto: { x: x - 7, y: (y1 + y2) / 2 + 2, ancla: 'end' } });
       }
       nota('SACO ENVOLVENTE', F / 2, Math.max(H, pie + cierre) + 12, 5);
+    }
+    if (rejilla) {
+      const ySandwich = H - rejilla.colgado - SANDWICH_TGM.terminado;
+      rect('puerta-entrada-alzado', 0, ySandwich, F, SANDWICH_TGM.terminado);
+      linea('puerta-tubo', 0, ySandwich + SANDWICH_TGM.terminado / 2, F, ySandwich + SANDWICH_TGM.terminado / 2);
+      nota('E.T. SÁNDWICH', F / 2, ySandwich + SANDWICH_TGM.terminado / 2 - 2, 5);
+      // Lo que cuelga ya va acotado en la cadena de la derecha.
+      if (rejilla.colgado > 0) rect('puerta-saco', 0, H - rejilla.colgado, F, rejilla.colgado);
     }
     if (p.enrollable.marcaCierre !== undefined) {
       const y = pie + cierre - p.enrollable.marcaCierre;

@@ -469,3 +469,42 @@ Respuestas de Iván. «Pendiente» quiere decir que la web todavía no lo aplica
   de la lona y el doblez se reservan al menos 5 mm, y el diámetro entero debe caber bajo la raya. Con la ficha
   habitual el saco terminado mínimo es 95 mm.
   En laterales, el paño lleva solo la bastilla indicada incluso con frente mayor de 6 m. Confirmar este criterio.
+
+### Plano de Jaime para AR2605499 (19/11/2026)
+
+Comparado el DWG de Jaime (4 portales en rejilla especial verde: A 575, B 587, C 575 y D 689) con el que generó la web
+(AR26054991). Iván contestó el 19/11 y la web ya lo hace así:
+
+- **Q-TGM07 · Tubo de abajo en rejilla (contestada).** Como Jaime: E.T. de PVC tipo sándwich cortada de 31 cm, aparte.
+  Es la misma confección siempre; solo cambia si cambia la medida del saco.
+- **Q-TGM08 · Saco del portal D (contestada).** En rejilla el saco va en PVC aparte, soldado en la E.T. sándwich.
+- **Q-TGM09 · Varilla y laterales (contestada).** Como Jaime, «B.N. (10)». La web pregunta qué varilla lleva arriba:
+  blanca (5,5) o negra (4,5).
+- **Q-TGM10 · Un dibujo por portal (contestada).** Si son exactamente iguales, una puerta con «X2».
+- **Q-TGM11 · Número de los paños (contestada).** Da igual: se deja como la web, para que vayan todas iguales.
+- **Q-TGM12 · Notas del dibujo (contestada).** Las de Jaime, no las de Portanova: «COSER VARILLA … EN LAS ESQUINAS» y
+  «COSER E.T. EN LAS ESQUINAS», sin «PISAR LAS E.T.» ni la soldadura del cierre.
+- **Q-TGM13 · Hoja de tubos (contestada).** De momento no; solo las puertas.
+- **Q-TGM14 · Medidas del saco de PVC en rejilla.** La web lo hace con las medidas del plano de Jaime: la lona acaba
+  8,3 cm sobre el bajo, la raya de soldar va 5 cm por encima del corte y el saco cuelga su medida útil (15 cm en el
+  portal D) y se corta de 31 + 2 × lo que cuelga (61). Jaime dibujó 60,5. ¿Vale así para cualquier saco?
+  Y con «tubo con saco envolvente» en rejilla, la web cuelga el saco terminado con la misma regla: ¿se pide alguna vez?
+  ¿La E.T. sándwich se usa también en TGM de PVC, o allí sigue el cierre doblado?
+
+## Puertas · Portanova · Abrigo de carga · 19/11/2026
+
+Estudio en `abrigo-portanova.md` (ejemplo AR2605646 y nueve pedidos de 2024 a 2026).
+
+- **Q-AB01 · Ollao grande (contestada).** Iván, 19/11: es un ollao grande; la presentación lo dice
+  («OLLAO GRANDE EN ESQUINA») y en el corte se marca con rotulador, con el punto a unos 5 mm de la esquina del borde
+  corto del extremo inclinado. Material, el de la OF en RPS (en 2026, latón pavonado negro N14 + arandela N30).
+- **Q-AB02 · Franja del lateral (contestada).** Iván, 19/11: sí, siempre en el extremo recto y centrada en el ancho
+  (99,5 × 10 con cuatro puntos de rotulador, a 0,5 cm del borde). «MARCA DERECHO» es un texto para que se sepa que
+  la pieza se corta por el derecho.
+- **Q-AB03 · Logotipo del frente (contestada).** Iván, 19/11: no se indica. En ninguna presentación anterior sale el
+  logotipo; solo las notas de las franjas («FRANJAS EN AMARILLO», «… O EN BLANCO»). Ni rotulador ni cota del logo.
+- **Q-AB04 · Medidas (contestada).** Iván, 19/11: las medidas son las que trae el pedido; se adapta la plantilla y
+  listo. La web no propone medidas por regla (nada de frente + 10 ni frente + 70).
+- **Q-AB05 · Colocación en el rollo (contestada).** Iván, 19/11: la web lo coloca de la mejor manera (manda la lona),
+  pero separando materiales (lona de 3 mm, PVC 580 y tiras de resto) y con las notas de cada bloque (material, OF,
+  «X n», «AL CORTE ALREDEDOR», «MARCA DERECHO», «OLLAO GRANDE EN ESQUINA»).

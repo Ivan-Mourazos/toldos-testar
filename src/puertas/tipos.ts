@@ -48,6 +48,7 @@ export interface Puerta {
     anchoEt: number; // cm de corte
     lona: 'pvc' | 'rejilla';
     materialEt: 'LAC650' | 'LAC900'; // Solo para las tiras aparte de la rejilla.
+    varilla?: 'blanca' | 'negra'; // Varilla de arriba: blanca 5,5 o negra 4,5; la web la pregunta.
     cierreBajo: number; // cm de lona por debajo del bajo terminado (Q-TGM05)
     marcaCierre: number; // cm desde el borde del corte (Q-TGM05)
     laterales?: 'corte' | 'bastilla';

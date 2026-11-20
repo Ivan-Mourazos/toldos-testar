@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { geometriaAlzado } from './alzado.ts';
 import { pedidoDe } from './__fixtures__/ejemplos.ts';
 import { calcularPuerta } from './calcular.ts';
 import { fichaPorId } from './clientes.ts';
@@ -47,7 +48,7 @@ describe('pedido TGM', () => {
       ...p,
       enrollable: { ...p.enrollable, sinSaco: true, cierreBajo: 15, marcaCierre: 24 },
       tgm: { ...p.tgm!, altoHueco: 400, altoTotal: 430.5, anchoEt: 14.5, tubosManual: [1100, 2200, 3300],
-        abajo: 'tubo', cierreBajo: 15, marcaCierre: 24, lona: 'rejilla', materialEt: 'LAC650' },
+        abajo: 'tubo', cierreBajo: 15, marcaCierre: 24, lona: 'rejilla', materialEt: 'LAC650', varilla: 'negra' },
     });
     expect(leerPedidoPuertas(JSON.parse(JSON.stringify(pedido)))).toEqual(pedido);
   });
@@ -67,7 +68,7 @@ describe('pedido TGM', () => {
     const p = nuevaPuertaDeCliente('tgm', 'enrollable');
     const pedido = pedidoDe('PRUEBA', p);
     const [elemento] = pedido.elementos;
-    for (const cambios of [{ lona: 'acrilica' }, { materialEt: 'LAC450' }]) {
+    for (const cambios of [{ lona: 'acrilica' }, { materialEt: 'LAC450' }, { varilla: 'roja' }]) {
       const input = { ...p, tgm: { ...p.tgm, ...cambios } };
       expect(() => leerPedidoPuertas({ ...pedido, elementos: [{ ...elemento, input }] })).toThrow(/campos inválidos/);
     }
@@ -96,7 +97,7 @@ describe('pedido TGM', () => {
 const puertaTgm = (cambios: Partial<NonNullable<Puerta['tgm']>> = {}): Puerta => {
   const p = nuevaPuertaDeCliente('tgm', 'enrollable');
   return { ...p, of: 'OF1', frente: 300, alto: 400, color: 'BLANCO', confirmada: true,
-    tgm: { ...p.tgm!, altoHueco: 400, nTubos: 3, ...cambios } };
+    tgm: { ...p.tgm!, altoHueco: 400, nTubos: 3, varilla: 'blanca', ...cambios } };
 };
 
 describe('cálculo de la puerta TGM', () => {
@@ -137,7 +138,7 @@ describe('cálculo de la puerta TGM', () => {
       for (const borde of [5, 305]) expect(x.marcas).toContainEqual([borde, 0, borde, x.alto]);
     }
     const { lienzo } = dibujarAlzadoEnrollable(p, 'A');
-    expect(lienzo.textos.map(t => t.valor)).toContain('BASTILLA DE 5 CM');
+    expect(lienzo.textos.map(t => t.valor)).toContain('B.N. (5)');
     expect(lienzo.textos.map(t => t.valor)).not.toContain('3 CM (HUECOS)');
     expect(lienzo.cotas).toContainEqual(expect.objectContaining({ y1: -350, y2: -340, valor: 10 }));
     expect(generarCortePuertas(pedidoDe('ENV', p)).archivo?.dxf).toContain('EOF');
@@ -146,7 +147,7 @@ describe('cálculo de la puerta TGM', () => {
     const p = { ...puertaTgm({ laterales: 'bastilla', bastilla: 8, lona: 'rejilla' }), frente: 650 };
     const r = calcularPuerta(p);
     expect(r.piezas.filter(x => x.clase === 'pano').map(x => x.ancho)).toEqual([666, 666]);
-    expect(r.piezas.filter(x => x.clase === 'entrada').map(x => x.ancho)).toEqual([650, 650, 650]);
+    expect(r.piezas.filter(x => x.clase === 'entrada').map(x => x.ancho)).toEqual([650, 650, 650, 650]);
   });
   it('pide el terminado del envoltorio y rechaza una soldadura vacía', () => {
     for (const cambios of [{ terminado: null }, { terminado: 9.4 }, { terminado: 10, soldadura: null }]) {
@@ -217,16 +218,17 @@ describe('cálculo de la puerta TGM', () => {
       enrollable: { ...base.enrollable, empates: [{ pano: 'inferior' as const, altura: 167.1, solape: 7.5, tubo: 2 }] } };
     const r = calcularPuerta(p);
     expect(r.avisos).toEqual([]);
-    expect(r.uniones).toEqual([{ altura: 235, solape: 2 }]);
+    expect(r.uniones).toEqual([{ altura: 257.3, solape: 2 }]);
     const panos = r.piezas.filter(x => x.clase === 'pano');
     expect(panos).toMatchObject([
       { nombre: 'Paño 1', material: `${pano} AZUL 5002`, alto: 250, huecos: [] },
-      { nombre: 'Paño 2', material: `${pano} AZUL 5002`, alto: 199.5, huecos: [] },
+      { nombre: 'Paño 2', material: `${pano} AZUL 5002`, alto: 177.2, huecos: [] },
     ]);
-    expect(panos[0].marcas).toContainEqual([1.5, 164.85, 298.5, 164.85]);
-    expect(panos[1].marcas).toContainEqual([1.5, 47.25, 298.5, 47.25]);
-    const ets = r.piezas.filter(x => x.clase === 'entrada');
+    expect(panos[0].marcas).toContainEqual([1.5, 142.55, 298.5, 142.55]);
+    expect(panos[1].marcas).toContainEqual([1.5, 24.95, 298.5, 24.95]);
+    const ets = r.piezas.filter(x => x.clase === 'entrada' && x.alto === 14.5);
     expect(ets).toHaveLength(2);
+    expect(r.piezas.filter(x => x.clase === 'entrada').map(x => x.nombre)).toContain('E.T. sándwich');
     for (const et of ets) {
       expect(et).toMatchObject({ material: `${materialEt} AZUL 5002`, ancho: 300, alto: 14.5 });
       expect(et.huecos).toEqual([]);
@@ -306,5 +308,90 @@ describe('cálculo de la puerta TGM', () => {
     expect(lienzo.cotas).toContainEqual(expect.objectContaining({ y1: 0, y2: -430, valor: 430 }));
     expect(lienzo.lineas.filter(l => l.capa === 'ejes')).toHaveLength(abajo === 'saco' ? 3 : 2);
     if (abajo === 'tubo') expect(lienzo.lineas).toContainEqual({ capa: 'ROTULADOR', x1: 1.5, y1: -421, x2: 298.5, y2: -421 });
+  });
+});
+
+// Iván, 19/11/2026 (AR2605499, plano de Jaime): en rejilla el tubo de abajo va en una E.T. sándwich de PVC cortada de 31
+// y, si lleva saco, es de PVC aparte, soldado en esa E.T.; los textos son los de Jaime, no los de Portanova.
+describe('TGM de rejilla como el plano de Jaime (AR2605499)', () => {
+  const rejilla = (cambios: Partial<NonNullable<Puerta['tgm']>> = {}, puerta: Partial<Puerta> = {}): Puerta => {
+    const base = puertaTgm({ lona: 'rejilla', materialEt: 'LAC650', laterales: 'bastilla', bastilla: 10, varilla: 'blanca',
+      abajo: 'tubo', altoHueco: 336, ...cambios });
+    return { ...base, frente: 575, rollo: 500, material: 'REJILLA', color: 'VERDE 6026', ...puerta,
+      enrollable: { ...base.enrollable, sinSaco: (cambios.abajo ?? 'tubo') !== 'saco', ...puerta.enrollable } };
+  };
+  const valores = (p: Puerta) => dibujarAlzadoEnrollable(p, 'A').lienzo.textos.map(t => t.valor);
+
+  it('sin saco: la lona acaba 8,3 sobre el bajo, raya a 5 y E.T. sándwich de 31 en PVC', () => {
+    const p = rejilla();
+    const r = calcularPuerta(p);
+    expect(r.avisos.filter(a => a.nivel === 'error')).toEqual([]);
+    const panos = r.piezas.filter(x => x.clase === 'pano');
+    expect(panos.map(x => [x.ancho, x.alto])).toEqual([[595, 361.2]]);
+    expect(panos[0].marcas).toContainEqual([11.5, 5, 583.5, 5]);
+    expect(r.piezas.filter(x => x.clase === 'entrada').map(x => [x.nombre, x.ancho, x.alto, x.material])).toEqual([
+      ['Entrada de tubo 1', 575, 14.5, 'LAC650 VERDE 6026'], ['Entrada de tubo 2', 575, 14.5, 'LAC650 VERDE 6026'],
+      ['E.T. sándwich', 575, 31, 'LAC650 VERDE 6026'],
+    ]);
+    expect(enrolleTgm(p)).toMatchObject({ conSaco: false, largo: 3639 });
+    expect(generarCortePuertas(pedidoDe('REJILLA-5499', p)).archivo?.dxf).toContain('ET SÁNDWICH');
+  });
+
+  it('con saco: saco de PVC aparte de 31 + 2 × lo que cuelga, y el tubo sigue en la E.T. sándwich', () => {
+    const p = rejilla({ abajo: 'saco', altoHueco: 390, altoTotal: 420 }, { frente: 689, enrollable: { saco: 150 } as Puerta['enrollable'] });
+    const r = calcularPuerta(p);
+    expect(r.avisos.filter(a => a.nivel === 'error')).toEqual([]);
+    expect(r.piezas.filter(x => x.clase === 'pano').map(x => x.alto)).toEqual([400.2]);
+    expect(r.piezas.filter(x => x.clase === 'entrada').map(x => [x.nombre, x.ancho, x.alto, x.material])).toEqual([
+      ['Entrada de tubo 1', 689, 14.5, 'LAC650 VERDE 6026'], ['Entrada de tubo 2', 689, 14.5, 'LAC650 VERDE 6026'],
+      ['E.T. sándwich', 689, 31, 'LAC650 VERDE 6026'], ['Saco de PVC', 689, 61, 'LAC650 VERDE 6026'],
+    ]);
+    expect(r.piezas.some(x => x.clase === 'saco')).toBe(false);
+    expect(enrolleTgm(p)).toMatchObject({ conSaco: false, largo: 4029 });
+    const textos = valores(p);
+    expect(textos).toEqual(expect.arrayContaining(['SOLDAR SACO EN E.T.', 'SACO 650 GR VERDE 6026']));
+    expect(textos).not.toContain('SACO ENVOLVENTE');
+    expect(generarCortePuertas(pedidoDe('REJILLA-5499-D', p)).archivo?.dxf).toContain('EOF');
+  });
+
+  it('el dibujo lleva los textos de Jaime y no los de Portanova', () => {
+    const textos = valores(rejilla());
+    expect(textos).toEqual(expect.arrayContaining([
+      'VARILLA BLANCA (5,5)', 'B.N. (10)', 'ET Ø42 MM (CORTADA DE 14,5 CM)',
+      'E.T. Ø42 EN PVC TIPO SÁNDWICH CORTADA DE 31 CM EN PVC 650 VERDE 6026', 'E.T. Ø42 EN PVC VERDE 6026',
+      '- COSER VARILLA BLANCA EN LAS ESQUINAS', '- COSER E.T. EN LAS ESQUINAS',
+    ]));
+    expect(textos.filter(t => t === 'ET Ø42 MM (CORTADA DE 14,5 CM)')).toHaveLength(2);
+    for (const fuera of ['DE ESTE LADO PISAR LAS E.T. 1 CM', 'SOLDADURA DEL CIERRE', 'CERRAR E.T', 'BASTILLA DE 10 CM', 'VARILLA NEGRA (4,5)'])
+      expect(textos).not.toContain(fuera);
+    expect(valores(rejilla({ varilla: 'negra' }))).toEqual(expect.arrayContaining(['VARILLA NEGRA (4,5)', '- COSER VARILLA NEGRA EN LAS ESQUINAS']));
+  });
+
+  it('el alzado de pantalla dibuja la lona hasta la E.T. sándwich, con el saco colgado y sin los textos de Portanova', () => {
+    const textosAlzado = (p: Puerta) => {
+      const d = puertaTgmDerivada(p, enrolleTgm(p)!);
+      return { d, g: geometriaAlzado(d, calcularPuerta(p)) };
+    };
+    const { d, g } = textosAlzado(rejilla({ abajo: 'saco', altoHueco: 390, altoTotal: 420 },
+      { frente: 689, enrollable: { saco: 150 } as Puerta['enrollable'] }));
+    const H = d.alto;
+    const textos = g.formas.flatMap(f => f.tipo === 'texto' ? f.lineas : []);
+    expect(textos).toEqual(expect.arrayContaining(['VARILLA BLANCA (5,5 mm)', 'B.N. (10)', 'E.T. SÁNDWICH']));
+    for (const fuera of ['DE ESTE LADO PISAR LAS E.T. 1 CM', 'VARILLA NEGRA (4,5 mm)', 'SOLDAR SACO NEGRO 2 CM MÁXIMO'])
+      expect(textos).not.toContain(fuera);
+    expect(textos.some(t => t.startsWith('CERRAR E.T'))).toBe(false);
+    // La lona acaba 15 + 8,3 sobre el bajo; la raya de soldar, 5 más arriba; el saco cuelga 15.
+    expect(g.formas).toContainEqual(expect.objectContaining({ tipo: 'rect', clase: 'puerta-lona', alto: H - 23.3 }));
+    expect(g.formas).toContainEqual(expect.objectContaining({ tipo: 'linea', clase: 'puerta-rotulador', y1: H - 28.3 }));
+    expect(g.formas).toContainEqual(expect.objectContaining({ tipo: 'rect', clase: 'puerta-saco', y: H - 15, alto: 15 }));
+    expect(g.formas).toContainEqual(expect.objectContaining({ tipo: 'rect', clase: 'puerta-entrada-alzado', y: H - 28.3, alto: 13.3 }));
+    const negra = textosAlzado(rejilla({ varilla: 'negra' })).g.formas.flatMap(f => f.tipo === 'texto' ? f.lineas : []);
+    expect(negra).toContain('VARILLA NEGRA (4,5 mm)');
+  });
+
+  it('pregunta qué varilla lleva arriba', () => {
+    const r = calcularPuerta(rejilla({ varilla: undefined }));
+    expect(r.avisos).toContainEqual(expect.objectContaining({ codigo: 'TGM_VARILLA', nivel: 'error' }));
+    expect(r.piezas).toEqual([]);
   });
 });

@@ -3,7 +3,7 @@ import { anchoArial } from '../domain/corteLona/texto.js';
 import type { Puerta, ResultadoPuerta } from './tipos.ts';
 import { sacoPuerta, sacoUtil, utilSacoExterior } from './saco.ts';
 import { fichaDePuerta } from './clientes.ts';
-import { rotuloCierreTgm } from './tgm.ts';
+import { abajoRejillaTgm, rotuloCierreTgm } from './tgm.ts';
 
 export interface CajaTexto {
   x: number;
@@ -137,7 +137,8 @@ export function plantillaTextosPuerta(p: Puerta, resultado: ResultadoPuerta = ca
   // Alturas y distribución de AR2604638/4725 y AR2605036; las cajas libres adaptan la plantilla a cada pedido.
   if (p.modelo !== 'PUERTAUTO') {
     const b = p.tgm?.laterales === 'bastilla' ? p.tgm.bastilla ?? 0 : 0;
-    const rotulo = b > 0 ? `BASTILLA DE ${b.toLocaleString('es-ES')} CM` : 'AL CORTE';
+    // En TGM la bastilla se rotula como Jaime: «B.N. (10)».
+    const rotulo = b > 0 ? (p.tgm ? `B.N. (${b.toLocaleString('es-ES')})` : `BASTILLA DE ${b.toLocaleString('es-ES')} CM`) : 'AL CORTE';
     lateral('al-corte-izq', rotulo, -9 - b, techo / 2, p.modelo === 'PUERTAPLE' ? 8 : 7);
     lateral('al-corte-der', rotulo, F + 9 + b, techo / 2, p.modelo === 'PUERTAPLE' ? 8 : 7);
   }
@@ -167,10 +168,12 @@ export function plantillaTextosPuerta(p: Puerta, resultado: ResultadoPuerta = ca
           caja: { x: -135, y: y - 18, ancho: 100, alto: 24 }, destino: [0, y - 3.75] });
       } else add(`et-${i}`, '3 CM (HUECOS)', F / 2, y === fin ? y + 11 : y - 14, 7);
     });
-    lateral('pisar-et', 'DE ESTE LADO PISAR LAS E.T. 1 CM', F + 105, H / 2 + 20, 10);
-    add('soldar-saco', 'SOLDAR SACO NEGRO 2 CM MÁXIMO', F / 2, H - 6.5, 7,
+    // TGM no lleva «PISAR LAS E.T.»; en rejilla tampoco el saco soldado ni el cierre (plano de Jaime, AR2605499).
+    if (!p.tgm) lateral('pisar-et', 'DE ESTE LADO PISAR LAS E.T. 1 CM', F + 105, H / 2 + 20, 10);
+    const rejilla = abajoRejillaTgm(p);
+    if (!rejilla) add('soldar-saco', 'SOLDAR SACO NEGRO 2 CM MÁXIMO', F / 2, H - 6.5, 7,
       { x: 3, y: H - 12, ancho: F - 6, alto: 11 });
-    add('cerrar-et', rotuloCierreTgm(p)?.join('\n') ?? 'CERRAR E.T\n2 CM MÁXIMO', F + 75, H + 6, 5,
+    if (!rejilla) add('cerrar-et', rotuloCierreTgm(p)?.join('\n') ?? 'CERRAR E.T\n2 CM MÁXIMO', F + 75, H + 6, 5,
       { x: F + 20, y: H - 7, ancho: 110, alto: 25 });
   } else if (p.modelo === 'PUERTAPLE') {
     const ys = alturasTubos(p);

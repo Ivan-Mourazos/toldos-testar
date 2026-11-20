@@ -7,7 +7,7 @@ import { calcularSystemDock } from './systemDock.ts';
 import { calcularSacoArena, REGLAS_SACO_ARENA } from './sacoArena.ts';
 import { calcularAraujo } from './araujo.ts';
 import { calcularSantaPau } from './santapau.ts';
-import { calcularTgm, envoltorioTgm } from './tgm.ts';
+import { abajoRejillaTgm, calcularTgm, envoltorioTgm } from './tgm.ts';
 import { fichaDePuerta } from './clientes.ts';
 import { panoContinuoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
@@ -176,7 +176,9 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
     const solapeEt = solapeEntradaEnrollable(p);
     const altoVentanales=ventanales.reduce((s,v)=>s+v.D,0), s = sacoPuerta(p);
     // Sin saco, se corta lona por debajo del bajo terminado para doblarla y soldarla alrededor del tubo (Q-TGM04).
-    const origenInferior = sinSaco ? (envoltorio?.bajoLona ?? 0) - (e.cierreBajo ?? 0) : s.rematado;
+    const bajoRejilla = abajoRejillaTgm(p);
+    const origenInferior = bajoRejilla ? bajoRejilla.bajoLona
+      : sinSaco ? (envoltorio?.bajoLona ?? 0) - (e.cierreBajo ?? 0) : s.rematado;
     // La E.T. que no lleva el ventanal, arriba o abajo (Iván, 27/10/2026, AR2605247): ni se corta ni se marca.
     const ciega=panoContinuoEnrollable(p);
     const etVentanal=(t:Entrada)=>!ciega&&(Boolean(e.sinEtArriba)&&Math.abs(t.altura-(p.alto-e.T))<.01
@@ -307,6 +309,11 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
     // Sin E.T. encima o debajo del ventanal, una entrada a esa altura no se corta: se avisa por si sobra en el pedido.
     if(p.entradas.some(etVentanal))aviso('ET_VENTANAL','Marcado sin E.T. en el ventanal, pero hay una entrada a esa altura: no se corta. Quítala del pedido si sobra.','aviso');
     p.entradas.forEach((t,i)=>{if(!incorporadas.has(i+1)&&!etVentanal(t))entrada(t,i);});
+    if (bajoRejilla) {
+      // El tubo de abajo va en la E.T. sándwich y el saco, si lo lleva, es de PVC aparte soldado en ella (AR2605499).
+      agregar(pieza('E.T. sándwich', 'entrada', p.frente, bajoRejilla.corteSandwich, materialEntrada));
+      if (bajoRejilla.corteSaco) agregar(pieza('Saco de PVC', 'entrada', p.frente, bajoRejilla.corteSaco, materialEntrada));
+    }
   } else if (p.modelo === 'PUERTAPLE') {
     const a = p.apilable, alturas = alturasTubos(p);
     const suelo = a.sueloInclinado, desnivel = desnivelSuelo(p);

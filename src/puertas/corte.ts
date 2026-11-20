@@ -90,6 +90,8 @@ function etiquetaClasePieza(pieza: PiezaPuerta, codigoPano?: string): string {
     if (n) return `ET ${n}`;
     if (/delantera/i.test(pieza.nombre)) return 'ET DELANTERA';
     if (/trasera/i.test(pieza.nombre)) return 'ET TRASERA';
+    if (/sándwich/i.test(pieza.nombre)) return 'ET SÁNDWICH';
+    if (/^saco/i.test(pieza.nombre)) return 'SACO';
     return 'ET';
   }
   if (pieza.clase === 'saco') {
