@@ -363,16 +363,30 @@ describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido 
     expect((await t.obtener()).corteNoRegenerado).toBe(false);
   });
 
-  it('un plano ajeno pregunta antes de escribir o guardar; cancelar conserva todo', async () => {
+  it('un plano ajeno en la carpeta del año nunca se sustituye, aunque se confirme o se regenere', async () => {
+    // Iván, 19/11/2026 (AR2605499): la web pisó el DWG que había dibujado Jaime.
     const t = await preparar(tipo);
     const ruta = path.join(t.raiz, 'planos', `${t.codigo}.dxf`);
     await fs.mkdir(path.dirname(ruta), { recursive: true });
     await fs.writeFile(ruta, 'Plano manual ajeno');
-    expect((await t.servicio.guardar(t.cuerpo())).cuerpo).toMatchObject({ needsPlanoConfirmation: true });
-    expect(await fs.readFile(ruta, 'utf8')).toBe('Plano manual ajeno');
-    await expect(t.obtener()).rejects.toMatchObject({ statusCode: 404 });
-    expect((await t.servicio.guardar(t.cuerpo(false, { confirmPlanoOverwrite: true }))).status).toBe(200);
+    for (const extra of [{}, { confirmPlanoOverwrite: true }, { confirmPlanoOverwrite: true, decisionCorte: 'regenerar' }]) {
+      await expect(t.servicio.guardar(t.cuerpo(false, extra))).rejects.toMatchObject({
+        statusCode: 409, message: expect.stringContaining('no lo ha hecho la web') });
+      expect(await fs.readFile(ruta, 'utf8')).toBe('Plano manual ajeno');
+      await expect(t.obtener()).rejects.toMatchObject({ statusCode: 404 });
+    }
+    await fs.rm(ruta);
+    expect((await t.servicio.guardar(t.cuerpo())).status).toBe(200);
     expect(await fs.readFile(ruta, 'utf8')).not.toBe('Plano manual ajeno');
+  });
+
+  it('el plano que ya escribió la web para el pedido sí se sustituye al regenerar', async () => {
+    const t = await preparar(tipo);
+    await t.servicio.guardar(t.cuerpo());
+    const plano = (await t.obtener()).corteConfirmado!.plano;
+    await fs.writeFile(plano, 'Retocado en ZWCAD');
+    expect((await t.servicio.guardar(t.cuerpo(true, { decisionCorte: 'regenerar' }))).status).toBe(200);
+    expect(await fs.readFile(plano, 'utf8')).not.toBe('Retocado en ZWCAD');
   });
 
   it('si falla el primer guardado retira el plano nuevo y no deja un pedido a medias', async () => {

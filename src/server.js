@@ -1289,6 +1289,9 @@ app.post('/api/reviews', async (req, res, next) => {
     }
     review.entregaPorPreparar = false;
     if (existing?.status === 'PRODUCED' && !ofsEntrega(review).length) return res.json({ ok: true, unchanged: true, review: existing });
+    // Solo los planos que la web escribió para este pedido se pueden sustituir en la carpeta del año (Iván, 19/11/2026).
+    const planosWebPrevios = [...new Set([...(existing?.planosWeb ?? []), ...(existing?.corteConfirmado ? planosDe(existing.corteConfirmado).map(p => p.plano) : [])])];
+    if (planosWebPrevios.length) review.planosWeb = planosWebPrevios;
     const avisoEntrada = avisoEntradaEntrega(review, existing, req.body);
     if (avisoEntrada) return res.status(409).json(avisoEntrada);
     // Las correcciones parten del corte de su entrega; una entrega nueva prepara otro plano.
@@ -1331,7 +1334,7 @@ app.post('/api/reviews', async (req, res, next) => {
     let desdeBorrador = null;
     if (generarPlano && ajustesCorte.productionEnabled) {
       desdeBorrador = await flujoToldos.prepararRegeneracion({ orderCode: codigoCorte, technician: order.technician, usuario: savedBy,
-        datos: datosCorteToldos(review.corteLona), revisado: existing?.corteConfirmado,
+        datos: datosCorteToldos(review.corteLona), revisado: existing?.corteConfirmado, propios: planosWebPrevios,
         preparar: async carpeta => {
           const salida = await prepararArchivosCorte({ order, codigoSalida: codigoCorte, corteLona: review.corteLona, settings: ajustesCorte, oda, tipo: 'plano', carpeta });
           return { ficheros: salida.files.map(f => ({ filename: f.filename, savedPath: f.savedPath, contenido: f.contents })), avisos: salida.avisos };
@@ -1345,7 +1348,7 @@ app.post('/api/reviews', async (req, res, next) => {
     } else if (review.corteLona?.toldos?.length && (estadoDwg.borrador || existing?.corteConfirmado || !mantener)) {
       desdeBorrador = await flujoToldos.alGuardar({ orderCode: codigoCorte, technician: order.technician, usuario: savedBy,
         confirmOverwrite: req.body?.confirmPlanoOverwrite === true, datos: datosCorteToldos(review.corteLona),
-        revisado: existing?.corteConfirmado, aceptarHuella: req.body?.aceptarHuellaCorte, mantener, pendienteAceptacion: review.corteNoRegenerado });
+        revisado: existing?.corteConfirmado, propios: planosWebPrevios, aceptarHuella: req.body?.aceptarHuellaCorte, mantener, pendienteAceptacion: review.corteNoRegenerado });
     }
     if (desdeBorrador && 'respuesta' in desdeBorrador) {
       if (desdeBorrador.respuesta.cuerpo.cambioCorte) return res.status(409).json(desdeBorrador.respuesta.cuerpo);
@@ -1355,6 +1358,7 @@ app.post('/api/reviews', async (req, res, next) => {
     let planosCorte;
     if (desdeBorrador) {
       review.corteConfirmado = desdeBorrador.corteConfirmado;
+      review.planosWeb = [...new Set([...planosWebPrevios, ...planosDe(review.corteConfirmado).map(p => p.plano)])];
       review.corteSimulado = false;
       if (!mantener) review.corteNoRegenerado = false;
       planosCorte = { files: planosDe(review.corteConfirmado).map((p) => ({ type: 'plano-corte-lona', filename: p.filename, savedPath: p.plano, writtenAt: new Date().toISOString() })), avisos: desdeBorrador.avisos || [] };

@@ -289,15 +289,15 @@ describe('corte confirmado desde el borrador', () => {
     expect(await confirmar()).toMatchObject({ status: 409, cuerpo: { fuera: 1, error: expect.stringContaining('fuera de los recuadros') } });
   });
 
-  it('pregunta antes de sustituir el plano de la carpeta del año', async () => {
+  it('no sustituye un plano ajeno de la carpeta del año, aunque se confirme', async () => {
     await fs.mkdir(path.dirname(enAnio()), { recursive: true });
     await fs.writeFile(enAnio(), 'HECHO A MANO');
     await abrir();
     await confirmar();
-    expect((await guardar()).cuerpo).toMatchObject({ needsPlanoConfirmation: true, existing: ['AR2605134.dxf'] });
-    expect(await fs.readFile(enAnio(), 'utf8')).toBe('HECHO A MANO');
-    expect((await guardar({ confirmPlanoOverwrite: true })).status).toBe(200);
-    expect(await fs.readFile(enAnio(), 'utf8')).not.toBe('HECHO A MANO');
+    for (const extra of [{}, { confirmPlanoOverwrite: true }]) {
+      await expect(guardar(extra)).rejects.toMatchObject({ statusCode: 409, message: expect.stringContaining('AR2605134.dxf') });
+      expect(await fs.readFile(enAnio(), 'utf8')).toBe('HECHO A MANO');
+    }
   });
 
   it('con el corte confirmado, generar no rehace el plano y «Guardar plano» no lo pisa', async () => {

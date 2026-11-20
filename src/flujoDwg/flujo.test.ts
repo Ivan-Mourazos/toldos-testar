@@ -58,9 +58,11 @@ describe('toldos: aceptación al pasar a revisión, sin Confirmar corte', { time
     await fs.mkdir(carpeta, { recursive: true });
     for (const nombre of nombres) await fs.writeFile(path.join(carpeta, nombre), `Anterior: ${nombre}`);
     const borradores = await Promise.all(nombres.map(n => fs.readFile(path.join(raiz, 'borradores', n))));
+    // Los anteriores los escribió la web para este pedido: se pueden sustituir.
+    const propios = nombres.map(n => path.join(carpeta, n));
     const preparado = accion === 'regenerar'
-      ? await editable.prepararRegeneracion({ orderCode: pedido.orderCode, technician: 'ANA', usuario: 'IVÁN', preparar })
-      : await editable.alGuardar({ orderCode: pedido.orderCode, technician: 'ANA', confirmOverwrite: true, mantener: true });
+      ? await editable.prepararRegeneracion({ orderCode: pedido.orderCode, technician: 'ANA', usuario: 'IVÁN', preparar, propios })
+      : await editable.alGuardar({ orderCode: pedido.orderCode, technician: 'ANA', confirmOverwrite: true, mantener: true, propios });
     if (!preparado || 'respuesta' in preparado) throw new Error('Debe preparar la escritura');
     planoBloqueado = nombres[1];
     await expect(preparado.escribir()).rejects.toMatchObject({ statusCode: 500, message: expect.stringContaining(nombres[1]) });
@@ -87,7 +89,9 @@ describe('toldos: aceptación al pasar a revisión, sin Confirmar corte', { time
     await fs.mkdir(carpeta, { recursive: true });
     const ruta = path.join(carpeta, nombres[0]);
     await fs.writeFile(ruta, 'retoques previos de ZWCAD');
-    const nuevo = await editable.prepararRegeneracion({ orderCode: pedido.orderCode, technician: 'ANA', usuario: 'IVÁN', preparar });
+    await expect(editable.prepararRegeneracion({ orderCode: pedido.orderCode, technician: 'ANA', usuario: 'IVÁN', preparar }))
+      .rejects.toMatchObject({ statusCode: 409, message: expect.stringContaining('no lo ha hecho la web') });
+    const nuevo = await editable.prepararRegeneracion({ orderCode: pedido.orderCode, technician: 'ANA', usuario: 'IVÁN', preparar, propios: [ruta] });
     expect(await fs.readFile(ruta, 'utf8')).toBe('retoques previos de ZWCAD');
     await nuevo.escribir();
     expect(await fs.readFile(ruta, 'utf8')).not.toBe('retoques previos de ZWCAD');

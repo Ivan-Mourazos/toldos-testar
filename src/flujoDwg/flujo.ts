@@ -128,6 +128,22 @@ const claveDatos = (orderCode: string) => `${orderCode}-datos`;
 /** Todos los planos de un corte confirmado. */
 export const planosDe = (c: CorteConfirmado) => c.planos?.length ? c.planos : [{ filename: c.filename, plano: c.plano }];
 
+const rutaComparable = (ruta: string) => path.resolve(ruta).toLowerCase();
+
+/**
+ * Iván, 19/11/2026 (AR2605499): la web nunca sustituye en la carpeta del año un plano que no escribió ella para este
+ * pedido, aunque se confirme o se regenere: puede ser el que dibujó otro técnico a mano.
+ */
+async function negarPlanosAjenos(rutas: Array<{ filename: string; ruta: string }>, revisado: CorteConfirmado | undefined, otros: string[] = []) {
+  const propios = new Set([...(revisado ? planosDe(revisado).map(p => p.plano) : []), ...otros].map(rutaComparable));
+  const ajenos = [];
+  for (const r of rutas) if (!propios.has(rutaComparable(r.ruta)) && await existeFichero(r.ruta)) ajenos.push(r.filename);
+  if (!ajenos.length) return;
+  const cual = ajenos.length > 1 ? `los planos ${ajenos.join(' · ')}` : `el plano ${ajenos[0]}`;
+  throw new ErrorFlujoDwg(`En la carpeta del año ya está ${cual} y no lo ha hecho la web para este pedido (puede ser de otro técnico). ` +
+    'No se sustituye: si sobra, muévelo o cámbiale el nombre y vuelve a guardar.', 409);
+}
+
 export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
   const registrar = deps.registrar ?? ((mensaje: string) => console.error(mensaje));
   const ahora = () => (deps.ahora ?? (() => new Date()))().toISOString();
@@ -289,15 +305,15 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
    * `datos`: la huella de los datos que se guardan. Si no son aquellos con los que salió el borrador, no se guarda: el DWG
    * sería de otras medidas. Un borrador sin datos apuntados (anterior a este aviso) no se comprueba.
    */
-  async function alGuardar({ orderCode, technician, confirmOverwrite, datos, revisado, aceptarHuella, mantener = false, usuario, pendienteAceptacion = false }: {
-    orderCode: string; technician: string; confirmOverwrite: boolean; datos?: string; revisado?: CorteConfirmado;
+  async function alGuardar({ orderCode, technician, confirmOverwrite, datos, revisado, aceptarHuella, mantener = false, usuario, pendienteAceptacion = false, propios }: {
+    orderCode: string; technician: string; confirmOverwrite: boolean; datos?: string; revisado?: CorteConfirmado; propios?: string[];
     aceptarHuella?: string; mantener?: boolean; usuario?: string;
     pendienteAceptacion?: boolean;
   }):
     Promise<null | { respuesta: Respuesta } | { corteConfirmado: CorteConfirmado; escribir: () => Promise<void>; limpiar: () => Promise<string[]> }> {
     const ajustes = await deps.ajustes();
     if (!activo(ajustes)) return null;
-    if (deps.editable) return alGuardarEditable({ orderCode, technician, datos, revisado, aceptarHuella, mantener, usuario, pendienteAceptacion });
+    if (deps.editable) return alGuardarEditable({ orderCode, technician, datos, revisado, aceptarHuella, mantener, usuario, pendienteAceptacion, propios });
     const borradores = ajustes.corteBorradoresDirectory ? await borradoresDe(ajustes.corteBorradoresDirectory, orderCode) : [];
     const confirmacion = await deps.confirmaciones!.leer(orderCode);
     if (!borradores.length || !confirmacion) {
@@ -351,8 +367,10 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
   }
 
   /** El DWG guardado manda. Mantener permite guardar datos sin aceptar todavía el corte. */
-  async function prepararRegeneracion({ orderCode, technician, usuario, datos, preparar, revisado }: {
+  async function prepararRegeneracion({ orderCode, technician, usuario, datos, preparar, revisado, propios }: {
     orderCode: string; technician: string; usuario: string; datos?: string; revisado?: CorteConfirmado;
+    /** Otros planos que la web ya escribió para este pedido y puede sustituir. */
+    propios?: string[];
     preparar: (carpeta: string) => Promise<{ ficheros: FicheroPlano[]; avisos: string[] }>;
   }) {
     const ajustes = await deps.ajustes();
@@ -362,6 +380,7 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
     const preparado = await preparar(carpeta);
     if (!preparado.ficheros.length) throw new ErrorFlujoDwg(preparado.avisos.at(-1) || 'No se pudo preparar el corte.', 409);
     const ficheros = preparado.ficheros;
+    await negarPlanosAjenos(ficheros.map(f => ({ filename: f.filename, ruta: f.savedPath })), revisado, propios);
     const huellas = [];
     for (const f of ficheros) {
       const dxf = deps.leerContenido ? await deps.leerContenido(f) : Buffer.from(f.contenido).toString('utf8');
@@ -422,8 +441,8 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
   }
 
   /** El corte existente se comprueba sin modificar sus archivos hasta que se guarda. */
-  async function alGuardarEditable({ orderCode, technician, datos, revisado, aceptarHuella, mantener, usuario, pendienteAceptacion }: {
-    orderCode: string; technician: string; datos?: string; revisado?: CorteConfirmado; aceptarHuella?: string; mantener: boolean; usuario?: string;
+  async function alGuardarEditable({ orderCode, technician, datos, revisado, aceptarHuella, mantener, usuario, pendienteAceptacion, propios }: {
+    orderCode: string; technician: string; datos?: string; revisado?: CorteConfirmado; aceptarHuella?: string; mantener: boolean; usuario?: string; propios?: string[];
     pendienteAceptacion: boolean;
   }) {
     const ajustes = await deps.ajustes();
@@ -440,6 +459,7 @@ export function crearFlujoDwg(deps: DependenciasFlujoDwg) {
     const carpeta = ajustes.corteLonaPlanoDirectory ? carpetaCorte(ajustes.corteLonaPlanoDirectory, { orderCode, technician }) : '';
     if (borradores.length && !carpeta) throw new ErrorFlujoDwg('Falta la carpeta de planos del corte en Configuración.', 409);
     const destinos = fuentes.map(p => ({ ...p, destino: borradores.length && ajustes.productionEnabled ? path.join(carpeta, p.filename) : p.plano }));
+    await negarPlanosAjenos(destinos.filter(p => p.plano !== p.destino).map(p => ({ filename: p.filename, ruta: p.destino })), revisado, propios);
     const corteConfirmado: CorteConfirmado = { ...temporal,
       ...(!mantener ? { huella: dwg.huella, por: cambiados || pendienteAceptacion ? usuario || technician : temporal.por, fecha: cambiados || pendienteAceptacion ? ahora() : temporal.fecha } : {}),
       plano: destinos[0].destino, planos: destinos.map(p => ({ filename: p.filename, plano: p.destino })),
