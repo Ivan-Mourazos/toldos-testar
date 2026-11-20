@@ -10,6 +10,7 @@ import { dibujarPlano } from './plano.js';
 import { escribirDxfPlano } from './presentacion.js';
 import { ALTO_CAJETIN, ANCHO_CAJETIN, SITIO_CAJETIN } from './cajetin.js';
 import { registrosDxf, valor, numero, variable } from './dxfTestHelpers.js';
+import { dxfACmt } from '../../cmt/index.ts';
 
 const resultado = () => generarCorteLona(revision.order, { ofStockSacos: '0230811' });
 const comprobarHandles = (dxf) => {
@@ -22,6 +23,48 @@ const comprobarHandles = (dxf) => {
 };
 
 describe('DXF del bot', () => {
+  it.each(fixtures)('$pedido mantiene o reduce el consumo del corte completo', f => {
+    const toldos = f.toldos.map(t => f.verticales.includes(t.letra)
+      ? { ...t, ajustes: { ...t.ajustes, empate: 'vertical' } } : t);
+    const corte = opcionesCorte(toldos, '0230811').conSacos;
+    expect(corte.largo).toBe(f.largoConBambalinasDeRestosMm ?? f.esperado.largoRolloMm);
+    expect(corte.largo).toBeLessThanOrEqual(f.esperado.largoRolloMm);
+  });
+  it('AR2505753 consume 5,36 m y dibuja las dos bambalinas de restos en el mismo corte', () => {
+    const { toldos } = fixtures.find(f => f.pedido === 'AR2505753');
+    const corte = opcionesCorte(toldos, '0230811').conSacos;
+    expect(corte.largo).toBe(5360);
+    const aparte = corte.colocadas.filter(p => p.aparte);
+    expect(aparte.map(p => p.nombre).sort()).toEqual(['A BAMBA', 'B BAMBA']);
+    expect(Math.min(...aparte.map(p => p.x))).toBe(6860);
+    expect(corte.colocadas.filter(p => !p.aparte).every(p => p.x + p.ancho <= corte.largo)).toBe(true);
+    expect(corte.textosExtra.some(t => t.valor === 'CORTAR DE RESTOS')).toBe(true);
+    const d = dibujo(corte.colocadas, 2500, { of: toldos[0].of, tela: 'PVC' });
+    d.textos.push(...corte.textosExtra);
+    const cmt = dxfACmt(escribirDxf2004(d), { sinLeyenda: true });
+    expect(cmt.dudas).toEqual([]);
+    expect(cmt.cmt).toBeTruthy();
+    // El CMT mide en puntos de 1/72 de pulgada. Su geometría de cuchilla alcanza ambas tiras.
+    const xs = cmt.objetos.filter(o => o.tool === 'CM-CUTW-Def').flatMap(o => o.paths.flat().map(p => p.x));
+    expect((Math.max(...xs) - Math.min(...xs)) * 25.4 / 72).toBeCloseTo(corte.extensionDibujo, 1);
+  });
+  it('la bamba apartada conserva la onda, las bastillas asimétricas y las marcas de la pieza original', () => {
+    const t = { ...fixtures.find(f => f.pedido === 'AR2602743').toldos[0], onda: 'NORMAL',
+      ajustes: { bambaPuntaIzqCm: 0, bambaPuntaDerCm: 5, bambaArribaCm: 4 } };
+    const corte = opcionesCorte([t], '0230811').conSacos;
+    const aparte = corte.colocadas.find(p => p.aparte);
+    const tira = corte.piezas[0].piezas.find(p => p.onda);
+    expect(aparte).toMatchObject({ ...tira, onda: 'NORMAL', margenOnda: [0, 50] });
+    const d = dibujo(corte.colocadas, 2500, { of: t.of, tela: 'PVC' });
+    for (const capa of ['CUTTER', 'ROTULADOR']) {
+      expect(d.lineas.some(l => l.capa === capa && Math.min(l.x1, l.x2) >= aparte.x)).toBe(true);
+    }
+  });
+  it('conserva las bambas dentro cuando las sobrantes suman medio rollo', () => {
+    const { toldos } = fixtures.find(f => f.pedido === 'AR2505753');
+    const t = toldos.map(p => ({ ...p, bamba: 57.5 }));
+    expect(opcionesCorte(t, '0230811').conSacos.colocadas.some(p => p.aparte)).toBe(false);
+  });
   it('mantiene la plantilla 2004, mm, latin1, CRLF, leyenda y handles únicos', () => {
     const dxf = resultado().cortes.conSacos[0].dxf;
     expect(dxf).toMatch(/^\s*0\r\nSECTION\r\n\s*2\r\nHEADER\r\n\s*9\r\n\$ACADVER\r\n\s*1\r\nAC1018\r\n/);

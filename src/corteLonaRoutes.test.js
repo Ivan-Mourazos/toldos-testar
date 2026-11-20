@@ -51,7 +51,7 @@ describe('Rutas del corte de lona, sin escribir archivos de producción', () => 
     const json = await res.json();
     expect(json.modelos).toEqual(['GALICIA']);
     expect(json.avisos).toContain('OF de stock por defecto.');
-    expect(json.cortes.conSacos[0]).toMatchObject({ largo: 4850, anchoRollo: 2500 });
+    expect(json.cortes.conSacos[0]).toMatchObject({ largo: 4810, largoRestos: 4850, anchoRollo: 2500 });
     expect(json.cortes.conSacos[0].piezas[0].piezas.map((p) => p.nombre)).toEqual(['A', 'A BAMBA']);
     expect(json.cortes.conSacos[0].sacos).toEqual(expect.any(Array));
     expect(json.cortes.conSacos[0].dibujo.lineas.length).toBeGreaterThan(0);

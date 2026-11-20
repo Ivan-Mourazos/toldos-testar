@@ -1,6 +1,7 @@
 [
  {
   "pedido": "AR2602743",
+  "largoConBambalinasDeRestosMm": 3870,
   "origen": "excel",
   "verticales": [],
   "toldos": [
@@ -47,6 +48,7 @@
  },
  {
   "pedido": "AR2602670",
+  "largoConBambalinasDeRestosMm": 4840,
   "origen": "excel",
   "verticales": [],
   "toldos": [
@@ -487,6 +489,7 @@
  },
  {
   "pedido": "AR2505538",
+  "largoConBambalinasDeRestosMm": 3980,
   "origen": "excel",
   "verticales": [],
   "toldos": [
@@ -533,6 +536,7 @@
  },
  {
   "pedido": "AR2602355",
+  "largoConBambalinasDeRestosMm": 2870,
   "origen": "excel",
   "verticales": [],
   "toldos": [
@@ -697,6 +701,7 @@
  },
  {
   "pedido": "AR2500850",
+  "largoConBambalinasDeRestosMm": 1900,
   "origen": "excel",
   "verticales": [],
   "toldos": [
@@ -746,6 +751,7 @@
  },
  {
   "pedido": "AR2505753",
+  "largoConBambalinasDeRestosMm": 5360,
   "origen": "excel",
   "verticales": [],
   "toldos": [
@@ -835,6 +841,7 @@
  },
  {
   "pedido": "AR2405992",
+  "largoConBambalinasDeRestosMm": 2370,
   "origen": "excel",
   "verticales": [],
   "toldos": [
@@ -883,6 +890,7 @@
  },
  {
   "pedido": "AR2604784",
+  "largoConBambalinasDeRestosMm": 4810,
   "origen": "web",
   "verticales": [],
   "toldos": [
@@ -929,6 +937,7 @@
  },
  {
   "pedido": "AR2500481",
+  "largoConBambalinasDeRestosMm": 11700,
   "origen": "excel",
   "verticales": [
    "A"
@@ -1097,6 +1106,7 @@
  },
  {
   "pedido": "AR2600762",
+  "largoConBambalinasDeRestosMm": 17980,
   "origen": "excel",
   "verticales": [],
   "toldos": [

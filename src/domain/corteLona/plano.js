@@ -289,7 +289,7 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
     const conSacos = sacosStock.length ? ' · CON SACOS' : '';
     const titulo = tituloCristal ? `${tituloCristal} · ${metros(opcion.largo)} M`
       : !trozoSeparado ? `CORTE${conSacos} · ${metros(opcion.largoMaterial ?? opcion.largo)} M${opcion.repeticiones > 1 ? ` · REPETIR X${opcion.repeticiones}` : ''}`
-      : i === 0 ? `OPCIÓN 1${conSacos || ' · TODO SEGUIDO'} · ${metros(opcion.largo)} M`
+      : i === 0 ? `OPCIÓN 1${opcion.largoRestos ? ' · BAMBALINAS DE RESTOS' : conSacos || ' · TODO SEGUIDO'} · ${metros(opcion.largo)} M`
         : `OPCIÓN 2 · TROZO SEPARADO · ${metros(opcion.largo)} M + RESTOS ${metros(opcion.largoRestos)} M`;
     // En «cotas»: se imprime, pero no va al bot.
     texto(titulo, largoTotal / 2, yRollo + altoTitulo, 14, 0, 'cotas', largoTotal * 0.98);
@@ -301,7 +301,7 @@ export function dibujarPlano(datos, corteRollo, trozoSeparado = null, cristales 
     cota('cotas', 0, yRollo, opcion.largo / 10, yRollo, opcion.largo / 10, -25, 'XERA 20');
     yRollo -= anchoRollo + 280;
   }
-  const largoRollo = Math.max(...colocadas.map((p) => p.x + p.ancho)) / 10;
+  const largoRollo = corteRollo.largo / 10;
   // Ancho real que ocupan las piezas, no el del rollo (Iván).
   const usado = Math.max(...colocadas.map((p) => p.y + p.hueco)) / 10;
   const caja = (ls, ts, qs, arcos = []) => {

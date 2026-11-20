@@ -284,8 +284,12 @@ export function opcionesCorte(toldos, ofStockSacos, presupuesto = { restantes: P
   const anchoRollo = toldos[0].anchoRollo * 10;
   const corte = cortePedido(toldos, [], { presupuesto, aprovechamiento: sinStock ? undefined : aprovechamientoSacos(anchoRollo, ofStockSacos) });
   if (sinStock) return { conSacos: { ...corte, sacos: [] }, trozoSeparado: null };
-  const sacos = sacosEnRetales(corte.colocadas, anchoRollo, ofStockSacos);
-  const conSacos = { ...corte, colocadas: [...corte.colocadas, ...sacos], sacos };
+  const deToldo = new Set(toldos.filter(t => !t.soloBamba && !t.soloCristal).map(t => t.letra));
+  const esBamba = p => deToldo.has(p.letra) && p.nombre.includes('BAMBA');
+  const principalConRestos = separarBambalinas(corte, esBamba, anchoRollo);
+  const dentro = principalConRestos.colocadas.filter(p => !p.aparte);
+  const sacos = sacosEnRetales(dentro, anchoRollo, ofStockSacos);
+  const conSacos = { ...principalConRestos, colocadas: [...principalConRestos.colocadas, ...sacos], sacos };
   // La cortina no: sus piezas pequeñas son los laterales de la ventana, que se sueldan a las bandas.
   const letras = new Set(corte.piezas.filter((p, i) =>
     !toldos[i].cortina && !toldos[i].solapas && !toldos[i].embudo && (toldos[i].ajustes?.empate || 'horizontal') === 'horizontal' &&
@@ -294,19 +298,56 @@ export function opcionesCorte(toldos, ofStockSacos, presupuesto = { restantes: P
   const todas = corte.colocadas.map(({ girada: _g, ancho: _a, hueco: _h, x: _x, y: _y, ...p }) => p);
   if (!todas.some(pequena)) return { conSacos, trozoSeparado: null };
   const principal = colocar(todas.filter((p) => !pequena(p)), anchoRollo, { presupuesto });
-  const largoPrincipal = Math.max(...principal.map((p) => p.x + p.ancho));
   const restos = colocar(todas.filter(pequena), anchoRollo, { presupuesto });
+  return { conSacos, trozoSeparado: corteConRestos(corte, principal, restos, anchoRollo) };
+}
+
+function separarBambalinas(corte, esBamba, anchoRollo) {
+  const bambas = corte.colocadas.filter(esBamba);
+  if (!bambas.length) return corte;
+  const otras = corte.colocadas.filter(p => !esBamba(p));
+  if (!otras.length) return corte;
+  // La búsqueda completa ya se hizo con todas dentro. La variante por columnas no consume
+  // el presupuesto reservado a los demás materiales y a la opción de trozo separado.
+  let principal = colocarEnColumnas(otras, anchoRollo);
+  const largo = piezas => Math.max(...piezas.map(p => p.x + p.ancho));
+  if (largo(otras) < largo(principal)) principal = otras;
+  const limite = largo(principal);
+  if (limite >= corte.largo - 0.001) return corte;
+
+  const restos = [];
+  let anchoRestos = 0;
+  for (const bamba of bambas.sort((a, b) => b.largo - a.largo)) {
+    const libres = huecosLibres(principal.map(p => ({ x: p.x, y: p.y, w: p.ancho, h: p.hueco })), limite, anchoRollo);
+    const formas = [{ ancho: bamba.largo, hueco: bamba.alto, girada: false },
+      { ancho: bamba.alto, hueco: bamba.largo, girada: true }];
+    const hueco = libres.find(r => formas.some(f => f.ancho <= r.w && f.hueco <= r.h));
+    if (hueco) {
+      const forma = formas.find(f => f.ancho <= hueco.w && f.hueco <= hueco.h);
+      principal.push({ ...bamba, ...forma, x: hueco.x, y: hueco.y });
+    } else {
+      anchoRestos += Math.min(bamba.largo, bamba.alto);
+      if (anchoRestos >= anchoRollo / 2) return corte;
+      restos.push(bamba);
+    }
+  }
+  return restos.length ? corteConRestos(corte, principal, colocarEnColumnas(restos, anchoRollo), anchoRollo, false)
+    : { ...corte, largo: limite, colocadas: principal };
+}
+
+function corteConRestos(corte, principal, restos, anchoRollo, rotularPrincipal = true) {
+  const largoPrincipal = Math.max(...principal.map((p) => p.x + p.ancho));
   const largoRestos = Math.max(...restos.map((p) => p.x + p.ancho));
   const xRestos = largoPrincipal + 1500;
   const aparte = restos.map((p) => ({ ...p, x: p.x + xRestos, aparte: true }));
   const texto = (valor, x, y, h) => ({ capa: 'texto', valor, x, y, h, centrado: true });
-  return { conSacos, trozoSeparado: {
+  return {
     piezas: corte.piezas, colocadas: [...principal, ...aparte], sacos: [],
     largo: largoPrincipal, largoRestos, extensionDibujo: xRestos + largoRestos,
     textosExtra: [
-      texto('CORTE PRINCIPAL', largoPrincipal / 2, anchoRollo + 350, 150),
+      ...(rotularPrincipal ? [texto('CORTE PRINCIPAL', largoPrincipal / 2, anchoRollo + 350, 150)] : []),
       texto('CORTAR DE RESTOS', xRestos + largoRestos / 2, anchoRollo + 500, 150),
       texto('SI NO HAY RESTO, CORTAR DEL ROLLO', xRestos + largoRestos / 2, anchoRollo + 300, 100)
     ]
-  } };
+  };
 }
