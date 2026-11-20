@@ -6,6 +6,7 @@ import type { RepartoLados } from "../calc/ollaos.ts";
 import type { TipoPlanteamiento } from "../store/types.ts";
 import type { LineaPedido } from "../workspace/lineas.ts";
 import { DEFAULT_PARAMS, type CalcParams } from "../calc/params.ts";
+import { conAguasDelPedido } from "../calc/alto-sin-aguas.ts";
 import { hechaParaOllaos, propuestaOllaos } from "./adaptar-ollaos.ts";
 import { CAMPOS_PERFIL } from "./reglas.ts";
 import type { FichaCliente, MarcaDelCliente, MedidaHabitual } from "./tipos.ts";
@@ -124,6 +125,11 @@ function aplicarLona(entrada: LonaInput, ficha: FichaCliente, campos: string[], 
     campos.push("anchoAtras");
   }
   input = conOllaosDeFicha(input, ficha, "lona", campos, params);
+  // El alto del pedido no lleva las aguas (AR2605676): se guarda para sumarlas al escribirlas.
+  if (ficha.altoSinAguas && !input.altoSinAguas && input.altoDelante > 0) {
+    input = conAguasDelPedido({ ...input, altoSinAguas: { delante: input.altoDelante, atras: input.altoAtras } }, input.aguas ?? 0);
+    campos.push("altoSinAguas");
+  }
   const fijas = [...(ficha.cremallera ? [LINEA_CREMALLERA] : []), ...(ficha.observaciones ?? [])];
   return { ...input, observaciones: conObservaciones(input.observaciones, fijas, campos) };
 }

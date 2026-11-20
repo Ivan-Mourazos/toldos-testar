@@ -27,6 +27,9 @@ export interface LonaInput extends DefinicionChaflan {
   /** Ancho trasero si el remolque va sesgado; 0 o ausente = igual al delantero. */
   anchoAtras?: number;
   altoDelante: number; altoAtras: number;
+  /** El alto que dio el pedido, sin las aguas (clientes con «Alto del pedido sin aguas» en su ficha):
+   *  mientras exista, el alto es este más las aguas. Se quita si el técnico escribe el alto. */
+  altoSinAguas?: { delante: number; atras: number };
   /** Caída desde la cumbrera hasta los hombros del perfil. */
   aguas?: number;
   /** Ausente conserva las aguas hacia los laterales de los pedidos anteriores. */

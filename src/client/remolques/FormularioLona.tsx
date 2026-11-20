@@ -12,11 +12,21 @@ import { ObservationLines } from '../components/ObservationLines';
 import { avanzarConIntro } from '../avanzarConIntro';
 import { MODOS_OLLAOS, opcionesConEtiqueta } from './opciones';
 import { AvisoOllaosAdaptados } from './AvisoOllaosAdaptados';
+import { conAguasDelPedido, sinAltoDelPedido } from '../../remolques/calc/alto-sin-aguas.ts';
 
 // Formulario de la lona de remolque: los mismos campos, opciones, orden y avisos que el de la
 // web de remolques (`FormularioLona.tsx`). Sin «Realizado por»: lo pone «Soy» al crear la línea.
 
 const fmt = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 1 });
+
+/** Cliente que pide el alto sin aguas (AR2605676): de dónde sale el alto, o que faltan las aguas. */
+function AvisoAltoSinAguas({ input }: { input: LonaInput }) {
+  const base = input.altoSinAguas!.delante;
+  const aguas = input.aguas ?? 0;
+  return aguas > 0
+    ? <p className="rem-nota rem-span-4" role="status">Su pedido da el alto sin aguas: {fmt(base)} + {fmt(aguas)} de aguas = {fmt(base + aguas)}.</p>
+    : <p className="field-hint-warn rem-span-4" role="status">Su pedido da el alto sin aguas ({fmt(base)}): escribe las aguas de su pedido (lo que va tras «p.», p. ej. «Arquillo p.8») y se suman al alto.</p>;
+}
 const ETIQUETAS_RADIO = {
   radioCumbrera: 'Radio cumbrera',
   radioHombro: 'Radio hombro',
@@ -152,7 +162,7 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
           sinElegir="Elige el perfil" error={errores.tipoPerfil}
           onChange={(v) => set('tipoPerfil', v as LonaInput['tipoPerfil'])} />
         {['TIPO 02', 'TIPO 03'].includes(input.tipoPerfil) && (
-          <CampoNum name="aguas" delCliente={dc('aguas')} error={errores.aguas} label="Aguas" value={input.aguas ?? 0} onChange={(v) => set('aguas', v)} />
+          <CampoNum name="aguas" delCliente={dc('aguas')} error={errores.aguas} label="Aguas" value={input.aguas ?? 0} onChange={(v) => onChange(conAguasDelPedido(input, v))} />
         )}
         {input.tipoPerfil === 'TIPO 02' && (
           <CampoSelect name="direccionAguas" label="Aguas hacia" span={2} error={errores.direccionAguas} value={input.direccionAguas ?? 'laterales'}
@@ -173,7 +183,7 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
           <CampoNum name="anchoPlanoSuperior" label="Plano superior" error={errores.anchoPlanoSuperior}
             value={input.anchoPlanoSuperior ?? 0} onChange={(v) => set('anchoPlanoSuperior', v)} />
           <CampoNum name="aguas" label="Aguas" error={errores.aguas}
-            value={input.aguas ?? 0} onChange={(v) => set('aguas', v)} />
+            value={input.aguas ?? 0} onChange={(v) => onChange(conAguasDelPedido(input, v))} />
           <p className="rem-nota rem-span-4">Medidas del remolque. El plano se mide entre las curvas.
             {/* Iván, 11/11/2026: el remolque exacto desplazado medio centímetro; el plano entre curvas no cambia. */}
             {(input.anchoPlanoSuperior ?? 0) > 0 && <> Plano de lona hecha: {fmt(input.anchoPlanoSuperior!)} cm (el remolque con medio centímetro más por todo el contorno).</>}
@@ -223,13 +233,14 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
         <CampoNum name="ancho" error={errores.ancho} label="Ancho" value={input.ancho}
           onChange={(v) => onChange(conMedidaDelante(input, 'ancho', v, verDetras))} />
         <CampoNum name="altoDelante" error={errores.altoDelante} label={longitudinal ? 'Alto centro' : input.delanteraPorArriba ? 'Alto laterales (hasta abajo)' : 'Alto delante'} value={input.altoDelante}
-          onChange={(v) => onChange(conMedidaDelante(input, 'altoDelante', v, verDetras))} />
+          onChange={(v) => onChange(conMedidaDelante(sinAltoDelPedido(input), 'altoDelante', v, verDetras))} />
         {!longitudinal && <div className="rem-contorno">
           <CampoNum name="contorno" error={errores.contorno} label="Contorno" value={contornoVisible}
             onChange={(v) => onChange({ ...input, contorno: v, contornoScad: undefined })} />
           {botonCalculado(contornoEscrito, contornoVisible, contornoExacto,
             () => onChange({ ...input, contorno: undefined, contornoScad: undefined }))}
         </div>}
+        {input.altoSinAguas && <AvisoAltoSinAguas input={input} />}
         {longitudinal && <p className="rem-nota rem-span-4">Delantero y trasero rectangulares. Con el mismo alto en ambos extremos: alto centro menos aguas.</p>}
         <div className={`${input.delanteraPorArriba ? 'rem-banda' : 'rem-fila'} rem-span-4`}>
           <CampoSiNo name="delanteraPorArriba" label="Delantera a la línea por arriba" value={input.delanteraPorArriba ?? false}
@@ -254,7 +265,7 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
           {verDetras && (
             <>
               <CampoNum name="anchoAtras" delCliente={dc('anchoAtras')} label="Ancho detrás" value={input.anchoAtras ?? 0} onChange={(v) => set('anchoAtras', v)} />
-              <CampoNum name="altoAtras" label="Alto detrás" value={input.altoAtras} onChange={(v) => set('altoAtras', v)} />
+              <CampoNum name="altoAtras" label="Alto detrás" value={input.altoAtras} onChange={(v) => onChange({ ...sinAltoDelPedido(input), altoAtras: v })} />
               {/* El alto de detrás solo del paño trasero, a la línea por arriba (AR2605158, Iván 20/10/2026):
                   el contorno no cambia y no hace falta su medida de detrás. */}
               <CampoSiNo name="traseraPorArriba" label="Trasera a la línea por arriba" value={input.traseraPorArriba ?? false}

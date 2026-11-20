@@ -262,6 +262,7 @@ function FichaEditor({ ficha, recogidasGenerales, onChange, onQuitar }: {
         <SelectField label="Cremallera del 9" value={deSiNo(ficha.cremallera)} options={SI_NO} onChange={(v) => onChange({ cremallera: aSiNo(v) })} />
         <SelectField label="Refuerzo MFD de caballos Cal" value={deSiNo(ficha.refuerzoMfdCal)} options={SI_NO} onChange={(v) => onChange({ refuerzoMfdCal: aSiNo(v) })} />
         <SelectField label="Ollaos siempre repartidos" value={deSiNo(ficha.ollaosRepartidos)} options={SI_NO} onChange={(v) => onChange({ ollaosRepartidos: aSiNo(v) })} />
+        <SelectField label="Alto del pedido sin aguas (p. ej. «Arquillo p.8»)" value={deSiNo(ficha.altoSinAguas)} options={SI_NO} onChange={(v) => onChange({ altoSinAguas: aSiNo(v) })} />
       </div>
     </ParameterBand>
     <ParameterBand number="05" title="Extras de baquetón" description="Se suman a las demasías generales del baquetón cuando el baquetón es de este cliente.">

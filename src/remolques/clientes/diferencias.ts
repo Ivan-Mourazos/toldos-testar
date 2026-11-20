@@ -287,6 +287,11 @@ export function resumenCambios(antes: FichaCliente | null, despues: FichaCliente
     else lineas.push(`Recogida propia ${pd.nombre} cambiada`);
   }
   (["bastillaEnfundar", "ventana", "rotulacion", "material", "sesgoDetras", "demasiaLonaHecha", "cremallera"] as const).forEach(valor);
+  const siNo = (v: boolean | undefined) => v === undefined ? NADA : v ? "Sí" : "No";
+  for (const [clave, nombre] of [["ollaosRepartidos", "Ollaos siempre repartidos"], ["altoSinAguas", "Alto del pedido sin aguas"],
+    ["refuerzoMfdCal", "Refuerzo MFD de caballos Cal"]] as const) {
+    if (a[clave] !== d[clave]) lineas.push(`${nombre}: ${siNo(a[clave])} → ${siNo(d[clave])}`);
+  }
   const extras = resumenExtras(a.extrasBaqueton, d.extrasBaqueton);
   if (extras) lineas.push(extras);
   if (!igual(a.observaciones ?? [], d.observaciones ?? [])) lineas.push(`Observaciones fijas: ${altasYBajas(a.observaciones ?? [], d.observaciones ?? [])}`);

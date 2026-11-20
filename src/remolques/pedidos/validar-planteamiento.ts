@@ -52,6 +52,9 @@ export function erroresPlanteamiento(input: LonaInput | BaquetonInput | GanadoIn
     agregar(aguasLongitudinales(input) && (input.aguas ?? 0) >= Math.min(input.altoDelante, input.altoAtras > 0 ? input.altoAtras : input.altoDelante),
       "aguas", "Las aguas deben ser menores que el alto del centro para dejar altura en los extremos.");
     agregar(!positivo(input.altoDelante), "altoDelante", "Introduce el alto delantero.");
+    // AR2605676: el pedido daba 40 y las aguas (p.8) iban aparte; sin sumarlas la lona sale corta.
+    agregar(input.altoSinAguas != null && !((input.aguas ?? 0) > 0), "altoDelante",
+      "Su pedido da el alto sin aguas: escribe las aguas (lo que va tras «p.») o el alto completo a mano.");
     agregar(input.delanteraPorArriba === true && (!positivo(input.delanteraRecorte)
       || input.delanteraRecorte! >= input.altoDelante - (aguasLongitudinales(input) ? input.aguas ?? 0 : 0)),
       "delanteraRecorte", "Introduce cuánto se acorta el delantero por abajo: mayor que cero y menor que el alto del paño.");

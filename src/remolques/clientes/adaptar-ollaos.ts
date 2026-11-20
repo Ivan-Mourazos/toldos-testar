@@ -40,12 +40,15 @@ export function hechaParaOllaos(tipo: TipoPlanteamiento, input: MedidasEntrada, 
   return { largo: r1(input.largo + params.baquetonDemasiaFinal + cli.extraLargoFinal), ancho: r1(input.ancho + params.baquetonDemasiaFinal + cli.extraAnchoFinal) };
 }
 
-function referencia(m: MedidaHabitual, params: CalcParams, clienteEspecifico?: string): MedidaHecha | null {
+/** Sin lona hecha guardada, la de sus medidas con la demasía general y, en lona, el sesgo de detrás
+ *  de la ficha (AR2605676: Hijos de Pedro López tomó los ollaos de atrás sobre la lona 1,5 más ancha). */
+function referencia(m: MedidaHabitual, params: CalcParams, clienteEspecifico?: string, sesgoDetras?: number): MedidaHecha | null {
   if (m.hecha) return m.hecha;
   if (m.hechaDudosa) return null;
   const d = m.tipo === "lona" ? params.demasiaLonaHecha : params.baquetonDemasiaFinal;
   const extras = findClienteBaqueton(params, clienteEspecifico ?? "GENERAL");
-  return { largo: r1(m.largo + d + (m.tipo === "baqueton" ? extras.extraLargoFinal : 0)), ancho: r1(m.ancho + d + (m.tipo === "baqueton" ? extras.extraAnchoFinal : 0)) };
+  const ref = { largo: r1(m.largo + d + (m.tipo === "baqueton" ? extras.extraLargoFinal : 0)), ancho: r1(m.ancho + d + (m.tipo === "baqueton" ? extras.extraAnchoFinal : 0)) };
+  return m.tipo === "lona" && (sesgoDetras ?? 0) > 0 ? { ...ref, anchoAtras: r1(ref.ancho + sesgoDetras!) } : ref;
 }
 
 /** Exacta, o propuesta independiente por lado. «Siempre repartidos» impide cualquier aproximación. */
@@ -54,7 +57,7 @@ export function propuestaOllaos(ficha: FichaCliente, tipo: TipoPlanteamiento, in
   const exacta = medidas.find(m => m.largo === input.largo && m.ancho === input.ancho);
   const hecha = hechaParaOllaos(tipo, input, params);
   if (exacta) {
-    const ref = referencia(exacta, params, input.clienteEspecifico);
+    const ref = referencia(exacta, params, input.clienteEspecifico, ficha.sesgoDetras);
     const destino = (lado: keyof RepartoLados) => lado === "laterales" ? hecha.largo : lado === "atras" ? hecha.anchoAtras ?? hecha.ancho : hecha.ancho;
     const origen = (lado: keyof RepartoLados) => lado === "laterales" ? ref!.largo : lado === "atras" ? ref!.anchoAtras ?? ref!.ancho : ref!.ancho;
     const lados = ["laterales", "atras", "delante"] as const;
@@ -81,7 +84,7 @@ export function propuestaOllaos(ficha: FichaCliente, tipo: TipoPlanteamiento, in
       .sort((a, b) => Math.abs(a[eje] - medidaDestino) - Math.abs(b[eje] - medidaDestino)
         || (Math.abs(a.largo - input.largo) + Math.abs(a.ancho - input.ancho)) - (Math.abs(b.largo - input.largo) + Math.abs(b.ancho - input.ancho)));
     for (const m of candidatas) {
-      const ref = referencia(m, params, input.clienteEspecifico);
+      const ref = referencia(m, params, input.clienteEspecifico, ficha.sesgoDetras);
       if (!ref) continue;
       const origen = lado === "atras" ? ref.anchoAtras ?? ref.ancho : ref[eje];
       if (origen === destino) { ollaos[lado] = [...m.ollaos[lado]]; break; }

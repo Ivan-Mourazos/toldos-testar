@@ -72,6 +72,8 @@ export interface FichaCliente {
   refuerzoMfdCal?: boolean;
   /** Sus ollaos van siempre repartidos (su plantilla dice «OLLAOS REPARTIDOS»), salvo una medida habitual exacta. */
   ollaosRepartidos?: boolean;
+  /** Su pedido da el alto sin las aguas (p. ej. «Arquillo p.8»): al poner las aguas se suman al alto. */
+  altoSinAguas?: boolean;
   extrasBaqueton?: ExtrasBaqueton;
   /** Observaciones fijas, una por línea: salen siempre en sus planteamientos. */
   observaciones?: string[];
