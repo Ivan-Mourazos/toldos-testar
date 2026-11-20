@@ -12,9 +12,9 @@ const sha = dxf => createHash('sha256').update(dxf, 'latin1').digest('hex');
 
 describe('lona libre real de los tres pedidos recientes', () => {
   it.each([
-    [a, 5015, 'c2753035f7964b0b53bd6cd222d6d7579e7c591421fbef967c534ec3711629a1'],
-    [b, 5516, '844e93bda2f03163b45fc9be35bcc4004963ff6a6bb3c8c610fcabbc4f5f868a'],
-    [c, 3818, '8e733549a0f412c750558adfa9f68764f618fb3deed8431b50834166ab74bca7'],
+    [a, 5015, '59306122172b96800451e15e1b67872bef500532e596a13a7a61caf909b46997'],
+    [b, 5516, 'a2c53b2018783588fe328108244c0b36b1e554928f4bc1c2e021c510f084874e'],
+    [c, 3818, '4829e58de4496f9d88cef4aa6f7d85e7d736db893452e9c887a14a55f635bda8'],
   ].map(([p, l, sha]) => [p.orderCode, p, l, sha]))('%s: no fuerza sacos fuera de tolerancia ni aumenta el consumo', (_codigo, pedido, largo, esperado) => {
     const copia = structuredClone(pedido);
     const antes = generarCorteRemolques(pedido);

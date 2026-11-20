@@ -160,8 +160,8 @@ describe('Planos de apilables y autorreparables, según capas de oficina', () =>
       .filter(r => r.tipo !== 'DIMENSION' && !(r.tipo === 'LINE' && valor(r, 8) === 'cotas')).map(r => ({ tipo: r.tipo,
         pares: (r.pares as Array<[number, string]>).filter(([k]) => ![5, 330].includes(k)) }));
     expect(createHash('sha256').update(JSON.stringify(entidades)).digest('hex'))
-      .toBe('003ccb9a1762579b701ef54166a6c89b07bc75635b5e610de3a885e7f1af2759');
+      .toBe('ba4e30e200f17f6c7531640f3edf4dd7abeb28ba0ccdc5c68bc1eed5232bc177');
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido: pedidoDe('AR2605134', p), cabecera })).digest('hex'))
-      .toBe('91e83d87e519912387d3c1097f6caa6c348e925f3d85f5893483c2b35bb2c241');
+      .toBe('61acc9cc91d2aa29ce9078f5b64319f893d484fda1a6f35d7721cbe957b0abfa');
   });
 });

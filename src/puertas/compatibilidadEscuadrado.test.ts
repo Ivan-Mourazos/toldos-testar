@@ -14,14 +14,14 @@ const hash = (x: unknown) => createHash('sha256').update(typeof x === 'string' ?
 // 06/11/2026: el corte de las puertas sin «· CORTE» y con «CORTAR POR EL REVÉS» (Iván, AR2605429).
 // ARAUJO: actualizadas con la colocación legible del 04/11; el cálculo y las rayas del bot se conservan.
 const casos = [
-  ['5036', () => puertaPlanoReal('AR2605036'), '05dcc329fac3f6683edc4fc918d5c6d4aae5a5ee20cb4a17ef34ea14128c8778', '9a087f9fc922af730998e773dde15cd969e439cb99b24608279152cdd140f597'],
-  ['apilable300', apilable, '3ecd2f1e521a48e6a6b9995bb4b6d6fd4edfa77e62e3a89321d5f491142f76b9', '5bd8ab3e6c7305d7a59e0e89cba359f2d607b0f02a136a68ccb9543622e69270'],
-  ['apilable600', () => ({ ...apilable(), frente: 600 }), 'c0ffe409c37e19b8963ab1ef0e3a8b86fb5f8b262dea365e34762c37a0c579a8', '266a2a5635d41b41a59161a3f49d723da7f4b970c1f4988596a80cb2e45b4f48'],
+  ['5036', () => puertaPlanoReal('AR2605036'), 'b57ce1e0009ce0e94569cbf0a7f28e56799c7897002611139b4275f8c25ddc67', 'aa5aee411959167812ce42fd29ee976acadf0ee43d42a069f913464c408f8169'],
+  ['apilable300', apilable, 'f225c9965437b0fb4ce6a9ee47d6dad3a70e5052f68cf754460e651954a8c987', '5bd8ab3e6c7305d7a59e0e89cba359f2d607b0f02a136a68ccb9543622e69270'],
+  ['apilable600', () => ({ ...apilable(), frente: 600 }), '39ab08c5e4c3093cad07f9bc860cb22f54f81dab038bcbaae776b9efc0001b03', '266a2a5635d41b41a59161a3f49d723da7f4b970c1f4988596a80cb2e45b4f48'],
   // 19/11/2026: el cálculo de la enrollable de ejemplo lleva el aviso ET_FALTA (una sola E.T.); bot y plano, iguales.
-  ['enrollable', puerta4638, '1bcf88782bf27b9ca5879cfe3c429f45de494d4a9e33093012fbadaeb35ecd03', '548e91af9e46751b57984b53c1969b0d4e21b67d50a9019c5a1dc50648789398'],
-  ['autorreparable', autorreparable, 'cb8915f567187f8cd4467df4e5666cfa286ced7008a17399f49d6a7151fc7d56', 'e8d3f5effef53665edaddb5b190295cd963853b7b786e7768f09a217c2411762'],
-  ['araujo5365', araujo5365, '76588b25f63bfb97386800bd6aee15464125eebb0077b37247f998f9fefa931a', '3d1f6373804ed8a8c41e82625c2912435b1784e04c20fb10dd6ef92c85afd3ba'],
-  ['araujo5733', araujo5733, '2fa6c52c8aad5513fb09535aa22de8bf1e1576f419740ec84084dfeffe0d8395', '521ad19fd1eb262215ed7d037e144a0f372b4aad0899715e7a755fb707d1de72'],
+  ['enrollable', puerta4638, '6462b323bae25334a08edcf715c13cfd26eb103b845effae8aa9f58f7fd32d36', '9ce02b80e3990e29839f58c8b7a38d61f68297a50b7ba2b6f0b68170ee258ed9'],
+  ['autorreparable', autorreparable, 'c4049e83324efb5d2b01d0cad8e5cd982baedd06ec4e5e4f895c12a22a8ca79f', '63412d67292406654da9cffd6630e38ebe3dc4f434f184bbe4966f5f72277846'],
+  ['araujo5365', araujo5365, 'b8829583cd5c41ed9ba1c134de92c9f5debb7ed401d63088c87285e17493b648', '1c38a9a287a6cbedd1402b02c131aae5adbde61c690c4ae4bd7a23b1135df180'],
+  ['araujo5733', araujo5733, 'ac0df5d734e0055d8c2157ef504ff41590b2faff32bd0113bd087c973b48bb8d', '37317a5f38aba560097c6507ec2b4f05e9959a18bc926785893a274f5793811b'],
 ] as const;
 
 describe('el escuadrado del 5391 conserva las demás confecciones', () => {

@@ -48,12 +48,12 @@ describe('Correcciones de Iván: marcas y piezas independientes de Araujo',()=>{
       expect(registros.filter(r=>r.tipo==='MTEXT'&&valor(r,8)==='texto'&&valor(r,1)===material)).toHaveLength(1);
   });
   it.each([
-    ['5365',araujo5365,'95f07300beba1202e4090f7a0b31c5ba4a98b360aba65ab5754125c70f8f9ffa'],
-    ['5733',araujo5733,'8a4024f0892c18541777bbde037231cf3f694e92706aee3ca2c56e05078bd4ec'],
-    ['4292',araujo4292,'481760a6a7ca878bb35759b99628b8b24551be7762bc8ee3fee59c0a6ce81582'],
-    ['4373',araujo4373,'22bc254bd5706c7ba774f991ed04bb14734f5c3dd3360b0aab330d3667952a45'],
-    ['2391',araujo2391,'6a4d929766cc29095885f8297cab165e3ae0255840a248f692fe0b09acfa1b4a'],
-    ['6255',araujo6255,'a436b75b9385c97763d7e9526645df94076f2e1c1268b118785962a88835beca'],
+    ['5365',araujo5365,'b3f2d6d90db0b6856218735b6fedce3e5f30caaf9e2e0402a7545361c3748c1c'],
+    ['5733',araujo5733,'dfb2d81607dfa6912683e7548f28efb46f512fd9faf28faeb3b255d389da6573'],
+    ['4292',araujo4292,'0b619e11cd08adfb84ebadbb2248fb02d76dbab2d73cdbe5feb0cf5caf90f8a9'],
+    ['4373',araujo4373,'fce1f2948bf1ef7cdc7c46bae1c06ad97faa3f3215e1019c98e40464823c81e6'],
+    ['2391',araujo2391,'aa8f180d5dd1489f4d536ced7f46b5b54f227a6fb16cfba521abb10fa42b552b'],
+    ['6255',araujo6255,'f90423603e20dc7b5ed6edfdb7c47a735d83319c80ecb1d710dd13602a2d5d17'],
   ] as const)('%s: el resultado completo y el DXF del bot conservan la huella de b8c23c3',(_codigo,crear,huella)=>{
     const doc=pedido([crear()].flat());
     expect(createHash('sha256').update(JSON.stringify(generarCortePuertas(doc))).digest('hex')).toBe(huella);
@@ -101,10 +101,10 @@ describe('Correcciones de Iván: marcas y piezas independientes de Araujo',()=>{
     }
   });
   it.each([
-    ['5365',araujo5365,'20e4b3dfeb78c77a41c80a558cde7c5582eced545803c02c3ecc32d8b03e57ec'],
-    ['5733',araujo5733,'0ed9c1e96398d6973a607497f0f8c58f8d9d8033ceb01d0831c5a22887d9fc1a'],
-    ['4292',araujo4292,'f24af116d765b3d4a272b987203f7716a75cca6a282814d9429d19fd7e00cd7f'],
-    ['4373',araujo4373,'a5703c4f3f8009377ae773fdeeb8c393bc32efbc7251c30ee97a0b174081d149'],
+    ['5365',araujo5365,'89a9052ba8cd95475c62bd2108995c05c144eeb225055867478a87ec876250a6'],
+    ['5733',araujo5733,'e3d4a4cbfa702c76c62f571425b374839bd0db1c050649756e8b35898d8b91a5'],
+    ['4292',araujo4292,'ffb0938bd3d480f1a92b92bfd0cecb687a583a9953ee57cf172b7699ebbe4a70'],
+    ['4373',araujo4373,'fce3ec945e0bf36ab861cce4b3e9a861de46c060f78a6219d4ad0b97c0837f9f'],
   ] as const)('%s: el corte, el alzado y el plano no impresos conservan la huella previa a esta revisión',(codigo,crear,huella)=>{
     const p=crear(),doc={...pedido([p]),orderCode:'AR260'+codigo};
     const datos=[generarCortePuertas(doc),[geometriaAlzado(p,calcularPuerta(p))],escribirPlanoPuertas({pedido:doc,cabecera:{cliente:'ARAUJO',tecnico:'IVÁN',revisor:'',fecha:'2026-11-05'}})];

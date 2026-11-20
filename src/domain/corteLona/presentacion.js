@@ -6,6 +6,7 @@
 import { leerPlantilla } from './plantillas.js';
 import { ALTO_CAJETIN, SITIO_CAJETIN, anadirCajetin } from './cajetin.js';
 import { anchoArial } from './texto.js';
+import { encuadrarModelo, encuadrarPapel } from './vista.js';
 
 const MODELO = '1F';   // *Model_Space en la plantilla
 // Capas del bot que no trae la plantilla.
@@ -374,6 +375,8 @@ export function escribirDxfPlano(plano, cabecera) {
   }
   if (plano.hojas) src = anadirHojas(src, hojas, papelHojas, PAPEL, nuevo);
   src = src.replace(/(\$HANDSEED\n\s*5\n)[0-9A-F]+/, `$1${handle.toString(16).toUpperCase()}`);
+  // Al abrir, cada presentación con la hoja entera y el modelo encuadrado en el dibujo.
+  src = encuadrarPapel(encuadrarModelo(src));
 
   // La conversión a DWG queda para el servidor en la fase 2.
   return { dxf: src.replace(/\n/g, '\r\n'), reparto: reparto.corte.x0 === A4.x0 ? 'debajo' : 'al lado', ventanas };

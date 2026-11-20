@@ -178,12 +178,12 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
     // y los refuerzos centrados en su hueco con una raya a cada uno; sin los «a2» del saco partido en el dibujo
     // del saco (correcciones de Iván sobre AR2605035). Después, cotas verticales más juntas, nota BOLSILLO y
     // cajetín algo más pequeño (23/10/2026). Luego, presentación «PUERTA A», el corte en fila con la puerta y ventanas con la proporción justa. Después, el corte a la derecha y los recuadros DIBUJO y CORTE pegados, con margen del 20 %.
-    ['apilable', apilable, '140abaef05b456c556e01e089cae3e353f83b61fc77f1517a5bbfc9e47ba925c'],
+    ['apilable', apilable, '01a910e4089096ca563664cac53007252f3d7034f71d09cfafe84f42923814e9'],
     // Tetris coloca las dos E.T. sobre los paños: baja de 711 a 700 cm sin cambiar el alzado.
     // 27/10/2026 (AR2605249): saco de 2 × (rematado + 2) y la raya de soldar el saco, 2 cm sobre el bajo del paño.
     // Se elimina la segunda raya del saco y las dos referencias fijas de la regla anterior (Iván, 27/10/2026).
     // Empates: una raya en el paño superior y flecha hacia el borde a media escala; abajo solo mininúmeros.
-    ['autorreparable', autorreparable, '39a67bee1b7e0fbad0b915f1897575ac7982bd4d9396ef22b8c6b6171dfd1798'],
+    ['autorreparable', autorreparable, '17666e5bae9bea320dea1b9670f397a053c43663f4a0bde0c23e7b56a3476340'],
   ] as const)('%s conserva el DXF byte por byte', (_, crear, hash) => {
     const pedido = { ...pedidoDe('AR2600001', crear()), cabecera: { clienteRps: { codigo: '009999' } } };
     expect(createHash('sha256').update(escribirPlanoPuertas({ pedido, cabecera })).digest('hex')).toBe(hash);
@@ -214,7 +214,7 @@ describe('Regresión: planos de oficina y presentación compartida', () => {
       corte: { ...vacio, lineas: [{ capa: 'DISCO1', x1: 20, y1: 20, x2: 23, y2: 22 }] },
       zonas: { toldos: { x0: 9, y0: 9, x1: 15, y1: 13 }, corte: { x0: 19, y0: 19, x1: 24, y1: 23 } } };
     const dxf = escribirDxfPlano(toldo, { pedido: 'AR2600001', of: '0232309', ...cabecera, fecha: '22/10/26', pagina: '1/1', material: 'LAC900 BLANCO' }).dxf;
-    expect(createHash('sha256').update(dxf).digest('hex')).toBe('b758994e4fe189da0d23c97acb0c2eaf6ea035901c7f9bb090b40d65ef6514e4');
+    expect(createHash('sha256').update(dxf).digest('hex')).toBe('f3f47daad9ff0eefd454199ec7caa37b360dfd8183e9878485bc7a2a8ae9492d');
   });
 });
 

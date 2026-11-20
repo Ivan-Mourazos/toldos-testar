@@ -3,6 +3,7 @@
 import { leerPlantilla } from './plantillas.js';
 import leyendaBot from './plantillas/leyenda-bot.json' with { type: 'json' };
 import { anchoArial, textoLatin1 } from './texto.js';
+import { encuadrarModelo } from './vista.js';
 
 export const CAPAS_BOT = ['DISCO1', 'DISCO2', 'CUTTER', 'ROTULADOR', 'taladro', 'texto'];
 
@@ -55,6 +56,6 @@ export function escribirDxf2004({ lineas, textos, circulos = [], arcos = [] }, {
   for (const a of arcos) body += arco(a.capa, (a.x + dx) * k, (a.y + dy) * k, a.r * k, a.desde, a.hasta);
   let cabecera = head;
   if (k !== 1) cabecera = cabecera.replace(/(\$INSUNITS\n\s*70\n\s*)\d+/, `$1${k === 0.001 ? 6 : 0}`);
-  const out = cabecera.replace(/(\$HANDSEED\n\s*5\n)[0-9A-F]+/, `$1${handle.toString(16).toUpperCase()}`) + body + tail;
+  const out = encuadrarModelo(cabecera.replace(/(\$HANDSEED\n\s*5\n)[0-9A-F]+/, `$1${handle.toString(16).toUpperCase()}`) + body + tail);
   return out.replace(/\n/g, '\r\n');
 }
