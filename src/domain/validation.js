@@ -3,6 +3,7 @@ import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { normalizeFabricImage } from './fabricImage.js';
 import { normalizeStructureEdit } from './structureEdits.js';
 import { roundQuantity } from './math.js';
+import { normalizarBastillasBamba } from './corteLona/bambalina.js';
 import { normalizeArzuaProParameters } from './arzuaProParameters.js';
 import { normalizeGaliciaParameters } from './galiciaParameters.js';
 import { normalizeCoralBoxParameters, normalizePerlaBoxParameters } from './storbox400Parameters.js';
@@ -289,7 +290,9 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
     structureArmCount: nullableNumber(awning?.structureArmCount),
     structureNotes: cleanText(awning?.structureNotes ?? awning?.notes),
     structureNotesEdited: awning?.structureNotesEdited === true,
-    fabricNotes: cleanText(awning?.fabricNotes)
+    fabricNotes: cleanText(awning?.fabricNotes),
+    // Solo si se ha cambiado alguna: sin la clave, los cortes guardados no pasan a «corte viejo».
+    ...(model === 'BAMBALINA' && normalizarBastillasBamba(awning?.bambaBastillas) ? { bambaBastillas: normalizarBastillasBamba(awning.bambaBastillas) } : {})
   };
 }
 

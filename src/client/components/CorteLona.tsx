@@ -4,7 +4,6 @@ import { corteReadiness, telaConCorte } from '../../domain/corteReadiness.js';
 import { resolveFabric } from '../../domain/fabricCatalog.js';
 import { awningLetter } from '../../domain/awningCompleteness.js';
 import { AJUSTES_POR_DEFECTO } from '../../domain/corteLona/despiece.js';
-import { bastillasTira, formaBambalina } from '../../domain/corteLona/bambalina.js';
 import type { DraftState } from '../types';
 import { textoEstadoCorte, type AjustesCorte, type CorteRespuesta, type EstadoCorte, type PendienteCorte, type VistaCorte } from '../corteLona';
 import '../coordina/corte-lona.css';
@@ -118,7 +117,7 @@ export const CorteLona = forwardRef<CorteLonaControl, {
         const clave = t.id || t.of || letra;
         const a = { ...AJUSTES_POR_DEFECTO, ...estado?.ajustes[clave] } as AjustesCorte;
         return <fieldset key={clave} disabled={generando}><legend>Toldo {letra} · OF {t.of || 'sin indicar'}</legend>
-          {t.model === 'BAMBALINA' ? <BordesBambalina a={a} onda={Boolean(formaBambalina(t.valanceCurve))} cambiar={patch => cambiar(clave, patch)} /> : <>
+          {t.model === 'BAMBALINA' ? <p className="corte-ayuda">Las bastillas de la bambalina (o al corte) se eligen en el formulario del toldo.</p> : <>
           <label>Empate<select aria-label="Empate" value={a.empate} onChange={e => cambiar(clave, { empate: e.target.value as AjustesCorte['empate'] })}><option value="horizontal">Horizontal</option><option value="vertical">Vertical</option></select></label>
           {([
             ['empateCm', 'Empate (cm)'], ['aumentoEscuadrarCm', 'Aumento para escuadrar (cm)'], ['lateralVerticalCm', 'Cada lateral en vertical (cm)'],
@@ -138,29 +137,6 @@ export const CorteLona = forwardRef<CorteLonaControl, {
     {!datos && estado && !reviewCode && <p className="corte-ayuda">Genera el corte para ver las piezas y las dos opciones del rollo.</p>}
   </section>;
 });
-
-/** Los cuatro bordes de la bambalina: cada uno con su bastilla en cm o al corte, sin bastilla (Iván, 19/11/2026). */
-const BORDES_BAMBALINA = [
-  ['bambaPuntaIzqCm', 'izq', 'Punta izquierda'], ['bambaPuntaDerCm', 'der', 'Punta derecha'],
-  ['bambaAbajoCm', 'abajo', 'Abajo'], ['bambaArribaCm', 'arriba', 'Arriba (varilla)']
-] as const;
-const BASTILLAS_POR_DEFECTO = bastillasTira(AJUSTES_POR_DEFECTO, null);
-
-function BordesBambalina({ a, onda, cambiar }: { a: AjustesCorte; onda: boolean; cambiar: (patch: Partial<AjustesCorte>) => void }) {
-  const b = bastillasTira(a, onda);
-  return <>{BORDES_BAMBALINA.map(([campo, borde, etiqueta]) => {
-    if (borde === 'abajo' && onda) return <label key={campo}>{etiqueta}<span className="corte-borde-nota">Con onda: remate aparte</span></label>;
-    const valor = b[borde];
-    return <label key={campo}>{etiqueta}<span className="corte-borde">
-      <select aria-label={`${etiqueta}: bastilla o al corte`} value={valor > 0 ? 'bastilla' : 'al-corte'} onChange={e => cambiar({ [campo]: e.target.value === 'al-corte' ? 0 : BASTILLAS_POR_DEFECTO[borde] || 2 })}><option value="bastilla">Bastilla</option><option value="al-corte">Al corte</option></select>
-      <input key={`${campo}-${valor}`} type="text" inputMode="decimal" aria-label={`${etiqueta}: bastilla en cm`} disabled={valor === 0} defaultValue={numero(valor)} onBlur={e => {
-        const nuevo = Number(e.target.value.replace(',', '.'));
-        if (!Number.isFinite(nuevo) || nuevo < 0) { e.target.value = numero(valor); return; }
-        if (nuevo !== valor) cambiar({ [campo]: nuevo });
-      }} />
-    </span></label>;
-  })}</>;
-}
 
 export function CorteLonaVista({ datos }: { datos: CorteRespuesta }) {
   return <>

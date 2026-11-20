@@ -31,6 +31,9 @@ import { normalizeAgataSubmodel, resolveAgataMinimumLine, suggestedAgataArmCount
 import { cambioTelaExtraError, resolveFabricJobAllowance } from '../../domain/fabricJobParameters.js';
 import { cortinaMotorPower, cortinaMotorPowers } from '../../domain/curtainMotor.js';
 import { resolveFabric } from '../../domain/fabricCatalog.js';
+import { telaConCorte } from '../../domain/corteReadiness.js';
+import { formaBambalina } from '../../domain/corteLona/bambalina.js';
+import { BastillasBambalinaFields } from './BastillasBambalinaFields';
 import { monoblockLoadBarDiscount, resolveMonoblockRule, resolveMonoblockSupportCount, suggestedMonoblockArmCount } from '../../domain/monoblock350Parameters.js';
 import { maxiscreemVariantGroup } from '../../domain/maxiscreemParameters.js';
 import { IrisSquaringDiagram } from './IrisSquaringDiagram';
@@ -686,6 +689,9 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               <SegmentedField label="Remate" missing={isMissing('remate')} value={valanceFinish} options={['COMO TELA', 'OTRO']} onChange={(remate) => update({ remate, remateColor: remate === 'COMO TELA' ? '' : awning.remateColor })} />
               {valanceFinish === 'OTRO' && <TextField label="Color remate" missing={isMissing('remateColor')} value={awning.remateColor} onChange={(remateColor) => update({ remateColor })} />}
             </div>
+          )}
+          {standaloneValance && telaConCorte(resolveFabric(sameFabric !== false ? orderFabric : awning.fabric)) && (
+            <BastillasBambalinaFields value={awning.bambaBastillas} onda={Boolean(formaBambalina(awning.valanceCurve))} onChange={(bambaBastillas) => update({ bambaBastillas })} />
           )}
           {fields.implemented && supportsFabricDropAdjustment(awning.model) && (
             <div className="fabric-drop-adjust awning-wide-field">

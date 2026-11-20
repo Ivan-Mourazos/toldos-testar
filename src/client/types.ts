@@ -76,6 +76,8 @@ export type Awning = {
   valanceHeight: number | null;
   valanceCurve: string;
   valanceFabric: string;
+  // Bambalina suelta: bastilla de cada borde en cm, 0 al corte; sin el borde, la de siempre (Iván, 20/11/2026).
+  bambaBastillas?: { izq?: number; der?: number; abajo?: number; arriba?: number };
   fabricImage?: string | null;
   fabricDiagramOverride: '' | 'TOLDO-VELCRO' | 'CAMBIO ENROLLABLE' | 'SUPLEMENTO';
   /** Trabajo de tela ENROLLABLE: nuevo o cambio de tela, y qué lleva delante. Vacío = sin elegir. */

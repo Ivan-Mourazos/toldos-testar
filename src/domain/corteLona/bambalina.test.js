@@ -1,5 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { bordeOndulado, FORMAS_BAMBALINA, formaBambalina } from './bambalina.js';
+import { ajustesDeBastillas, bordeOndulado, FORMAS_BAMBALINA, formaBambalina, normalizarBastillasBamba } from './bambalina.js';
+import { normalizeOrder } from '../validation.js';
+
+describe('Bastillas de la bambalina en el formulario (Iván, 20/11/2026)', () => {
+  it('guarda solo los bordes válidos y nada si no se tocó ninguno', () => {
+    expect(normalizarBastillasBamba({ izq: 0, der: '3', abajo: -1, arriba: '' })).toEqual({ izq: 0, der: 3 });
+    expect(normalizarBastillasBamba({})).toBeUndefined();
+    expect(normalizarBastillasBamba(null)).toBeUndefined();
+    expect(ajustesDeBastillas({ izq: 0, arriba: 4 })).toEqual({ bambaPuntaIzqCm: 0, bambaArribaCm: 4 });
+  });
+  it('el pedido las conserva solo en la bambalina suelta y sin ellas no añade la clave', () => {
+    const toldo = (model, extra = {}) => normalizeOrder({ awnings: [{ model, ...extra }] }).awnings[0];
+    expect(toldo('BAMBALINA', { bambaBastillas: { abajo: 0 } }).bambaBastillas).toEqual({ abajo: 0 });
+    expect('bambaBastillas' in toldo('BAMBALINA')).toBe(false);
+    expect('bambaBastillas' in toldo('GALICIA', { bambaBastillas: { abajo: 0 } })).toBe(false);
+  });
+});
 import { ONDAS_BAMBALINA } from './bambalinasDatos.js';
 import { piezasToldo } from './despiece.js';
 

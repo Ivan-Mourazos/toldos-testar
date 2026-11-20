@@ -75,16 +75,11 @@ describe('Vista compartida del corte de lona', () => {
     expect(textoEstadoCorte('viejo')).toContain('han cambiado las medidas');
     expect(renderToStaticMarkup(<CorteLona order={order} reviewCode="AR2604784" />)).not.toContain('<button');
   });
-  it('la bambalina ajusta la bastilla de cada borde o lo deja al corte (Iván, 19/11/2026)', () => {
+  it('la bambalina remite al formulario para las bastillas (Iván, 20/11/2026)', () => {
     const order = { ...defaultDraft(), fabric: 'PVC|||250|||LONA PVC|||PLASTICA (LONA)', awnings: [{ ...createAwning(), model: 'BAMBALINA', of: '0231679', valanceHeight: 30 }] };
-    const estado = { version: 2, generadoEn: '', generadoPor: 'IVÁN', ofStockSacos: '0230811', ajustes: { [order.awnings[0].id]: { bambaPuntaIzqCm: 0, bambaArribaCm: 4 } }, toldos: [] };
-    const html = renderToStaticMarkup(<CorteLona order={order} estado={estado} />);
-    for (const texto of ['Punta izquierda', 'Punta derecha', 'Abajo', 'Arriba (varilla)', 'Al corte', 'Bastilla']) expect(html).toContain(texto);
+    const html = renderToStaticMarkup(<CorteLona order={order} />);
+    expect(html).toContain('se eligen en el formulario');
     expect(html).not.toContain('Aumento para escuadrar');
-    expect(html.match(/value="al-corte" selected=""/g)).toHaveLength(1);
-    expect(html).toContain('value="4"');
-    const conOnda = renderToStaticMarkup(<CorteLona order={{ ...order, awnings: [{ ...order.awnings[0], valanceCurve: 'NORMAL' }] }} estado={estado} />);
-    expect(conOnda).toContain('Con onda: remate aparte');
   });
   it('muestra largos con coma, piezas, sacos y avisos en lectura sin descargas', () => {
     const html = renderToStaticMarkup(<CorteLonaVista datos={vista} />);

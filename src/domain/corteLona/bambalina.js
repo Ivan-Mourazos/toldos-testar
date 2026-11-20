@@ -26,6 +26,29 @@ export function bastillasTira(a, onda) {
     abajo: onda ? 0 : v('bambaAbajoCm', BASTILLA_ABAJO_TIRA_CM), arriba: v('bambaArribaCm', a.tiraExtraAltoCm - BASTILLA_ABAJO_TIRA_CM) };
 }
 
+/** Cada borde de la bambalina suelta y su clave en los ajustes del corte. */
+export const BORDES_TIRA = Object.freeze([['izq', 'bambaPuntaIzqCm'], ['der', 'bambaPuntaDerCm'], ['abajo', 'bambaAbajoCm'], ['arriba', 'bambaArribaCm']]);
+
+/**
+ * Las bastillas que se eligen en el formulario de la bambalina suelta (Iván, 20/11/2026: «tiene que salir en el
+ * formulario»): { izq, der, abajo, arriba } en cm, 0 al corte. Solo los bordes cambiados; sin ninguno, undefined
+ * para que el toldo (y la firma del corte) quede igual que antes.
+ */
+export function normalizarBastillasBamba(valor) {
+  if (!valor || typeof valor !== 'object') return undefined;
+  const limpio = Object.fromEntries(BORDES_TIRA.flatMap(([borde]) => {
+    const n = valor[borde] === null || valor[borde] === '' ? NaN : Number(valor[borde]);
+    return Number.isFinite(n) && n >= 0 ? [[borde, n]] : [];
+  }));
+  return Object.keys(limpio).length ? limpio : undefined;
+}
+
+/** Las bastillas del formulario como ajustes del corte; mandan sobre las guardadas en el corte. */
+export function ajustesDeBastillas(valor) {
+  const b = normalizarBastillasBamba(valor) ?? {};
+  return Object.fromEntries(BORDES_TIRA.flatMap(([borde, clave]) => (borde in b ? [[clave, b[borde]]] : [])));
+}
+
 /** El alto de corte de la tira (cm): la bamba y las bastillas de arriba y de abajo. */
 export const altoTiraCm = (bamba, b) => (bamba > 0 ? bamba + (b.arriba + b.abajo) : 0);
 

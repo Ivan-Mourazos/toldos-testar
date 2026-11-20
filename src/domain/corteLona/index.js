@@ -1,5 +1,5 @@
 import { calculateOrder } from '../rules.js';
-import { formaBambalina } from './bambalina.js';
+import { ajustesDeBastillas, formaBambalina } from './bambalina.js';
 import { normalizeOrder } from '../validation.js';
 import { resolveFabric } from '../fabricCatalog.js';
 import { shortFabricName } from '../fabricShortName.js';
@@ -80,7 +80,8 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
       // La bambalina suelta es solo la tira de una bamba: varilla blanca arriba y B.N(2) en las puntas (Iván, 19/11/2026).
       ...(bambalina ? { soloBamba: true } : {}),
       unidades: Number(toldo.units), tela: c.fabricDescription,
-      ajustes: ajustes[toldo.id] ?? ajustes[toldo.of] ?? ajustes[letra] ?? {},
+      // Las bastillas de la bambalina suelta se eligen en el formulario y mandan sobre las del corte.
+      ajustes: { ...(ajustes[toldo.id] ?? ajustes[toldo.of] ?? ajustes[letra] ?? {}), ...(bambalina ? ajustesDeBastillas(toldo.bambaBastillas) : {}) },
       ...(toldo.model === 'CORTINA' || toldo.model === 'CAMBIO CORTINA' ? { cortina: datosCortina(toldo) } : {}),
       ...(toldo.model === 'SOLAPAS' ? { solapas: datosSolapas(toldo) } : {}),
       ...(toldo.model === 'EMBUDO' ? { embudo: normalizeEmbudo(toldo.embudo), notas: [orden.notes, toldo.fabricNotes].filter(Boolean).join('\n') } : {})

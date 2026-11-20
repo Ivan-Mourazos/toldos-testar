@@ -448,6 +448,13 @@ describe('Bambalina y Soltis en el corte (Iván, 19/11/2026)', () => {
     expect(plano).not.toContain('B.N(2)');
     expect(plano).not.toContain('VARILLA BLANCA');
   });
+  it('las bastillas elegidas en el formulario mandan sobre las del corte (Iván, 20/11/2026)', () => {
+    const order = bambalina(pvc, { bambaBastillas: { izq: 0, der: 0, abajo: 3 } });
+    const salida = generar(order, { ajustes: { 'b-1': { bambaPuntaIzqCm: 4, bambaArribaCm: 1 } } });
+    // 480 de frente sin puntas; alto 30 + 3 abajo + 1 arriba (este del corte, que el formulario no tocó).
+    expect(salida.cortes.conSacos[0].piezas[0].piezas.map((p) => [p.largo, p.alto])).toEqual([[4800, 340]]);
+    expect(salida.plano[0].dxf).toContain('AL CORTE');
+  });
   it('la bambalina en acrílico sigue fuera del corte', () => {
     const salida = generar(bambalina('ACR|||120|||TELA ACRILICA|||ACR'));
     expect(salida.cortes.conSacos).toEqual([]);
