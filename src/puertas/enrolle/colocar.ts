@@ -1,5 +1,5 @@
 import type { AvisoPuerta } from '../tipos.ts';
-import { angulosAlPerfil, construir, diametroFinal, revisarCiclo, separacionFinal, type ConfigEnrolle, type Pareja } from './geometria.ts';
+import { angulosAlPerfil, construir, diametroFinal, revisarCiclo, separacionFinal, type ConfigEnrolle, type MemoriaContornos, type Pareja } from './geometria.ts';
 
 export interface AjustesEnrolle {
   margen: number;
@@ -53,10 +53,10 @@ function coordenadaHalton(muestra: number, base: number): number {
   return coordenada;
 }
 
-function buscar(cfg: ConfigEnrolle, ajustes: AjustesEnrolle, datos: DatosColocar, iguales: number[], desvio: number): Colocacion {
+function buscar(cfg: ConfigEnrolle, ajustes: AjustesEnrolle, datos: DatosColocar, iguales: number[], desvio: number, memoria: MemoriaContornos): Colocacion {
   const { largo, conSaco } = datos;
   const moviles = conSaco ? iguales.length : iguales.length - 1;
-  if (moviles <= 0 || desvio === 0) return evaluar(cfg, ajustes, largo, iguales.slice(), iguales, desvio);
+  if (moviles <= 0 || desvio === 0) return evaluar(cfg, ajustes, largo, iguales.slice(), iguales, desvio, memoria);
 
   const cache = new Map<string, Candidata>();
   const puntuar = (marcas: number[]): Candidata => {
@@ -64,7 +64,7 @@ function buscar(cfg: ConfigEnrolle, ajustes: AjustesEnrolle, datos: DatosColocar
     const previa = cache.get(clave);
     if (previa) return previa;
 
-    const modelo = construir(cfg, marcas, largo);
+    const modelo = construir(cfg, marcas, largo, memoria);
     const candidata = {
       marcas,
       separacion: marcas.length < 2 ? 0 : separacionFinal(modelo).separacion,
@@ -126,7 +126,7 @@ function buscar(cfg: ConfigEnrolle, ajustes: AjustesEnrolle, datos: DatosColocar
   }
 
   const ordenadas = [...arranques].sort(compararFinal);
-  if (!ordenadas.length) return evaluar(cfg, ajustes, largo, iguales.slice(), iguales, desvio);
+  if (!ordenadas.length) return evaluar(cfg, ajustes, largo, iguales.slice(), iguales, desvio, memoria);
 
   let pulidas: Candidata[];
   if (pocosTubos && arranqueIgual) {
@@ -139,17 +139,17 @@ function buscar(cfg: ConfigEnrolle, ajustes: AjustesEnrolle, datos: DatosColocar
 
   // El mínimo de todo el enrollado decide entre las mejores al terminar el rollo.
   const [primera, ...finalistas] = [...new Set(pulidas)].sort(compararFinal).slice(0, 3);
-  let mejor = evaluar(cfg, ajustes, largo, primera.marcas, iguales, desvio);
+  let mejor = evaluar(cfg, ajustes, largo, primera.marcas, iguales, desvio, memoria);
   for (const candidata of finalistas) {
     if (candidata.sobrePerfil !== primera.sobrePerfil) break;
-    const resultado = evaluar(cfg, ajustes, largo, candidata.marcas, iguales, desvio);
+    const resultado = evaluar(cfg, ajustes, largo, candidata.marcas, iguales, desvio, memoria);
     if ((resultado.parejas[0]?.separacion ?? Infinity) > (mejor.parejas[0]?.separacion ?? Infinity)) mejor = resultado;
   }
   return mejor;
 }
 
-function evaluar(cfg: ConfigEnrolle, ajustes: AjustesEnrolle, largo: number, marcas: number[], iguales: number[], desvioUsado: number): Colocacion {
-  const modelo = construir(cfg, marcas, largo);
+function evaluar(cfg: ConfigEnrolle, ajustes: AjustesEnrolle, largo: number, marcas: number[], iguales: number[], desvioUsado: number, memoria?: MemoriaContornos): Colocacion {
+  const modelo = construir(cfg, marcas, largo, memoria);
   const parejas = revisarCiclo(modelo);
   const angulos = angulosAlPerfil(modelo);
   const avisos: AvisoPuerta[] = [];
@@ -181,11 +181,12 @@ export function colocarTubos(cfg: ConfigEnrolle, ajustes: AjustesEnrolle, datos:
     const usado = Math.max(0, ...manual.map((marca, k) => Math.abs(marca - iguales[k])));
     return evaluar(cfg, ajustes, largo, manual, iguales, usado);
   }
-  const dentro = buscar(cfg, ajustes, datos, iguales, desvio);
+  const memoria: MemoriaContornos = new Map();
+  const dentro = buscar(cfg, ajustes, datos, iguales, desvio, memoria);
   if (!dentro.avisos.length) return dentro;
   // Si no cabe dentro del desvío, se prueba con el doble y se avisa para que lo decida el técnico.
   const ampliado = 2 * desvio;
-  const fuera = buscar(cfg, ajustes, datos, iguales, ampliado);
+  const fuera = buscar(cfg, ajustes, datos, iguales, ampliado, memoria);
   if (fuera.avisos.length) return dentro;
   fuera.avisos.push({
     codigo: 'DESVIO_EXCEDIDO',

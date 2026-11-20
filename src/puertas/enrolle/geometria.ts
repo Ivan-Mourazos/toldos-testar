@@ -58,28 +58,34 @@ function apoyo(d: Disco, a: number, g: number): Apoyo {
 
 function contorno(cfg: ConfigEnrolle, discos: Disco[], largo: number): Tramo[] {
   const { desfase, crecimiento: g } = medidas(cfg);
-  const fin = largo / desfase + TAU, eventos = [0, fin];
+  const fin = largo / desfase + TAU, lista = [0, fin];
   for (let i = 1; i < discos.length; i++) {
     const d = discos[i];
-    if (d.inicio < fin) eventos.push(d.inicio);
-    for (const p of discos.slice(0, i)) {
+    if (d.inicio < fin) lista.push(d.inicio);
+    for (let k = 0; k < i; k++) {
+      const p = discos[k];
       const dx = d.x - p.x, dy = d.y - p.y, sep = Math.hypot(dx, dy);
       if (!sep || Math.abs(p.base - d.base) > sep) continue;
       const dir = Math.atan2(dy, dx), medio = Math.acos((p.base - d.base) / sep), desde = Math.max(p.inicio, d.inicio);
-      for (const raiz of [dir - medio, dir + medio])
-        for (let a = raiz + TAU * Math.ceil((desde - raiz) / TAU); a < fin; a += TAU) if (a > desde) eventos.push(a);
+      for (let lado = 0; lado < 2; lado++) {
+        const raiz = lado ? dir + medio : dir - medio;
+        for (let a = raiz + TAU * Math.ceil((desde - raiz) / TAU); a < fin; a += TAU) if (a > desde) lista.push(a);
+      }
     }
   }
-  eventos.sort((a, b) => a - b);
+  // Ordenar como números en un array tipado es mucho más rápido que con una función de comparación.
+  const eventos = Float64Array.from(lista).sort();
   const arcos: Array<{ a: number; b: number; disco: Disco }> = [];
   for (let i = 1; i < eventos.length; i++) {
     const a = eventos[i - 1], b = eventos[i];
     if (b - a < 1e-10) continue;
     const m = (a + b) / 2, c = Math.cos(m), s = Math.sin(m);
     let dueno = discos[0], alto = dueno.base;
-    for (const d of discos.slice(1)) {
+    for (let k = 1; k < discos.length; k++) {
+      const d = discos[k];
+      if (m < d.inicio) continue;
       const h = d.base + d.x * c + d.y * s;
-      if (m >= d.inicio && h > alto) { dueno = d; alto = h; }
+      if (h > alto) { dueno = d; alto = h; }
     }
     const ultimo = arcos.at(-1);
     if (ultimo && ultimo.disco === dueno) ultimo.b = b; else arcos.push({ a, b, disco: dueno });
@@ -108,7 +114,7 @@ function anguloEnArco(tramo: Extract<Tramo, { tipo: 'arco' }>, distancia: number
 }
 
 function en(cfg: ConfigEnrolle, camino: Tramo[], largo: number): Apoyo {
-  const g = medidas(cfg).crecimiento;
+  const g = cfg.grosor / TAU; // el crecimiento de medidas(), sin crear el objeto en cada punto
   let lo = 0, hi = camino.length - 1;
   while (lo < hi) { const m = (lo + hi) >> 1; if (camino[m].fin < largo) lo = m + 1; else hi = m; }
   const p = camino[lo], ds = largo - p.inicio;
@@ -133,11 +139,25 @@ function discosIniciales(cfg: ConfigEnrolle): Disco[] {
   return discos;
 }
 
-export function construir(cfg: ConfigEnrolle, marcasPlanas: number[], largoPlano = marcasPlanas.at(-1) ?? 0): ModeloEnrolle {
+/**
+ * Contornos ya calculados, por largo y marcas anteriores. Al buscar el reparto se prueban cientos de
+ * colocaciones que solo cambian un tubo: los contornos de los tubos de delante no cambian y se reutilizan.
+ * Solo vale para una misma configuración.
+ */
+export type MemoriaContornos = Map<string, Tramo[]>;
+
+export function construir(cfg: ConfigEnrolle, marcasPlanas: number[], largoPlano = marcasPlanas.at(-1) ?? 0, memoria?: MemoriaContornos): ModeloEnrolle {
   const { marcas, largo, proyectar, desplegar } = proyectarLona(cfg, marcasPlanas, largoPlano);
   const { desfase, crecimiento: g } = medidas(cfg);
   const discos = discosIniciales(cfg), tubos: TuboColocado[] = [];
-  let camino = contorno(cfg, discos, largo);
+  let clave = String(largo);
+  const calcular = () => {
+    if (!memoria) return contorno(cfg, discos, largo);
+    let camino = memoria.get(clave);
+    if (!camino) { camino = contorno(cfg, discos, largo); memoria.set(clave, camino); }
+    return camino;
+  };
+  let camino = calcular();
   for (const marca of marcas) {
     const p = en(cfg, camino, marca);
     const x = p.x + desfase * Math.cos(p.a), y = p.y + desfase * Math.sin(p.a);
@@ -147,7 +167,8 @@ export function construir(cfg: ConfigEnrolle, marcasPlanas: number[], largoPlano
       // Por ambas caras, el disco de apoyo incluye un grosor de lona.
       const inicio = p.a + Math.PI;
       discos.push({ x, y, inicio, base: desfase - g * inicio });
-      camino = contorno(cfg, discos, largo);
+      clave += ',' + marca;
+      camino = calcular();
     }
   }
   return { cfg, largo, marcas, tubos, camino, proyectar, desplegar };
