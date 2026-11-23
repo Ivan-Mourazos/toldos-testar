@@ -246,7 +246,7 @@ const pedidosRemolques = crearServicioPedidosRemolques({
   // El buscador busca también por el nombre de una ficha (sus códigos de RPS).
   fichas: () => remolquesClientesStore.get(),
   // Al generar, también el corte de lona: DXF del bot y plano, en las carpetas del corte de toldos.
-  // Huecos del corte con sacos y tiras de stock: encendido de nuevo el 23/11/2026 (Iván, a raíz del AR2605686).
+  // Huecos del corte con sacos de stock y, de último recurso, tiras de 1,5 m o más: encendido de nuevo el 23/11/2026 (Iván, a raíz del AR2605686).
   corte: crearCorteRemolques({ ajustes: () => workflowStore.getSettings(), oda, ofStockSacos, aprovecharStock: true }),
   // Flujo del DWG: los cortes confirmados, junto a los pedidos de remolques (carpeta interna, no la que ven los PC).
   confirmaciones: crearAlmacenConfirmaciones({ carpeta: async () => {

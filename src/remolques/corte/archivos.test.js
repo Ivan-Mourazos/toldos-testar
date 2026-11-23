@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import AR2605132 from './__fixtures__/AR2605132.json' with { type: 'json' };
-import { crearCorteRemolques } from './archivos.js';
+import { crearCorteRemolques, LARGO_MINIMO_TIRA_STOCK_MM } from './archivos.js';
 
 // Nada fuera de tmp/ del repositorio en las pruebas.
 const temporales = [];
@@ -47,5 +47,12 @@ describe('archivos del corte de remolques', () => {
     expect(JSON.stringify(sin.cortes)).not.toMatch(/STOCK/);
     const con = await crearCorteRemolques({ ajustes, oda: { disponible: false }, aprovecharStock: true }).vista(AR2605132);
     expect(stock(con.cortes)).toBeGreaterThan(0);
+  });
+
+  // Iván, 23/11/2026 (AR2605686): tiras «siempre como último recurso y siempre con un mínimo de 1,5 m».
+  it('las tiras de refuerzo de stock de la web miden 1,5 m o más', async () => {
+    const con = await crearCorteRemolques({ ajustes: async () => ({}), oda: { disponible: false }, aprovecharStock: true }).vista(AR2605132);
+    const tiras = con.cortes.flatMap(c => c.refuerzosStock);
+    expect(tiras.every(t => t.ancho >= LARGO_MINIMO_TIRA_STOCK_MM)).toBe(true);
   });
 });
