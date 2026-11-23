@@ -262,7 +262,7 @@ function confeccionLona(L, el, X, Y, letras = ['']) {
   // Contorno que no cabe en el rollo: dónde va el empate (2 cm) y la tira empatada en dos, en trazos.
   if (A * 10 > 2500 && B * 10 > 2500) {
     const yE = Y + 248, yE2 = Y + 250, xM = xCon + B / 2;
-    for (const yy of [yE, yE2]) L.g.polilineas.push({ capa: 'ejes', puntos: [[xCon, yy], [xCon + B, yy]], cerrada: false });
+    for (const yy of [yE, yE2]) L.g.polilineas.push({ capa: 'ejes', puntos: [[xb((yy - Y) * 10), yy], [xt((yy - Y) * 10), yy]], cerrada: false });
     L.g.polilineas.push({ capa: 'ejes', puntos: [[xM - 1, yE], [xM - 1, Y + A]], cerrada: false }, { capa: 'ejes', puntos: [[xM + 1, yE], [xM + 1, Y + A]], cerrada: false });
     L.texto(`EMPATE 2 CM · TIRA DE ${coma(A - 250 + 2)} EN DOS (${R(4)} Y ${R(5)})`, xCon + B / 2, yE - 7, 6, 0, 'cotas');
   }

@@ -92,6 +92,40 @@ describe('generarCorteRemolques', () => {
     expect(rotulador(c).filter((t) => t.valor === '3')).toHaveLength(2);
   });
 
+  it('el contorno en trapecio que no cabe en el rollo también se empata, no va a mano (AR2605695, 23/11/2026)', () => {
+    // Como AR2605079 pero con el remolque distinto detrás: contorno de 263 × 295,3 delante y 310 detrás.
+    const pedido = structuredClone(AR2605079);
+    const [el] = pedido.elementos;
+    el.result.panoContorno.altoAtras = 310;
+    expect(soportada(el)).toBeNull();
+    const { cortes, aMano } = generarCorteRemolques(pedido);
+    expect(aMano).toEqual([]);
+    expect(cortes.length).toBeGreaterThan(0);
+    for (const c of cortes) {
+      expect(c.avisos.some((a) => /empate de 2 cm/.test(a))).toBe(true);
+      // Ninguna línea de corte se sale del rollo.
+      const disco = c.entidades.lineas.filter((l) => l.capa === 'DISCO1');
+      expect(Math.max(...disco.flatMap((l) => [l.y1, l.y2]))).toBeLessThanOrEqual(2500.01);
+    }
+    // Las piezas del empate, recortadas del trapecio: los lados inclinados siguen inclinados en la grande.
+    const P = piezasLona(el);
+    const { grande, tiras } = contornoConEmpate(P.c, 1, '');
+    expect(grande.h).toBe(2500);
+    expect(grande.lineas.some(([x1, y1, x2, y2]) => x1 !== x2 && y1 !== y2)).toBe(true);
+    expect(tiras).toHaveLength(2);
+    // Los números de unión caen en el mismo punto del contorno en las dos piezas que se sueldan.
+    const g = P.c.geo, desde = P.c.w - (P.c.w - 2500 + 20), dv = g.H / 2 - 10;
+    const enLona = (p, dvp, du) => p.numeros.map(([x, y, n]) => [n, Math.round(x + dvp), Math.round(y + du)]);
+    const todos = [...enLona(grande, 0, 0), ...enLona(tiras[0], 0, desde), ...enLona(tiras[1], dv, desde)];
+    for (const n of ['1', '2', '3']) {
+      const sitios = todos.filter(([m]) => m === n).map(([, v, u]) => [v, u]);
+      expect(sitios).toHaveLength(2);
+      expect(sitios[0]).toEqual(sitios[1]);
+    }
+    const entera = contornoConTiraEntera(P.c, 1, '');
+    expect(entera.tira.h).toBe(P.c.w - 2500 + 20);
+  });
+
   it('las medias tiras del empate van como la pieza grande, sin espejo, y cada número cae en el mismo punto al soldar (AR2605192)', () => {
     // Contorno de 254 × 300 cm (la lona alta 253 × 152 × 75 de AR2605192): la tira de atrás sale empatada.
     const A = 2540, B = 3000, EMPATE = 20, desde = 2500 - EMPATE, mitad = (B + EMPATE) / 2;

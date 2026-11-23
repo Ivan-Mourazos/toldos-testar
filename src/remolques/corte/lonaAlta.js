@@ -65,9 +65,9 @@ export function soportada(el) {
   if (/PUENTES/.test(i.recogeDelante ?? '') || (/PUENTES/.test(i.recogeAtras ?? '') && !PUENTES_CON_CORTE.test(i.recogeAtras))) return 'recogida con puentes';
   if (!r.panoContorno) return 'sin contorno calculado';
   const c = r.panoContorno;
-  if (c.altoAtras && Math.max(c.alto, c.altoAtras) * 10 > ROLLO && c.ancho * 10 > ROLLO) return 'contorno en trapecio que no cabe en el rollo';
+  // El contorno en trapecio que no cabe en el rollo se empata como el rectangular (trapecioConEmpate).
   // El rebaje tiene que caber en la tira: si no, caería en el empate.
-  if (PUENTES_CON_CORTE.test(i.recogeAtras ?? '') && c.alto * 10 > ROLLO && c.ancho * 10 > ROLLO
+  if (PUENTES_CON_CORTE.test(i.recogeAtras ?? '') && Math.max(c.alto, c.altoAtras ?? 0) * 10 > ROLLO && c.ancho * 10 > ROLLO
     && c.ancho * 10 - ROLLO + EMPATE <= rebajePuentes(el) + EMPATE) return 'el rebaje de los puentes cae en el empate';
   return null;
 }
@@ -341,6 +341,7 @@ const EMPATE = 20;
 // de la lona, u, hacia atrás): para soldarlas basta con moverlas. Antes las tiras iban en espejo y, para soldarlas
 // sin darles la vuelta, su b1 caía donde la grande tiene el b2 (Iván, AR2605192, 22/10/2026).
 export function contornoConEmpate(c, n = 1, pre = '') {
+  if (enTrapecio(c)) return trapecioConEmpate(c, n, pre, false);
   const A = c.w, B = c.h; // u: a lo largo de la lona, delante en 0 y atrás en A; v: a lo ancho del contorno
   const s = A - ROLLO + EMPATE, mitad = (B + EMPATE) / 2, desde = A - s; // la tira va de u = desde a u = A
   const grande = pieza(B, ROLLO); // x = v (contorno), y = u (de 0 a 2500, desde delante)
@@ -382,6 +383,7 @@ export function contornoConEmpate(c, n = 1, pre = '') {
 // tira entera»): la tira de una pieza, tan larga como el contorno, unida a la grande por un solo empate con el mismo
 // número en las dos puntas. Las dos piezas en el mismo sentido que en contornoConEmpate.
 export function contornoConTiraEntera(c, n = 1, pre = '') {
+  if (enTrapecio(c)) return trapecioConEmpate(c, n, pre, true);
   const A = c.w, B = c.h;
   const s = A - ROLLO + EMPATE, desde = A - s;
   const grande = pieza(B, ROLLO);
@@ -403,6 +405,70 @@ export function contornoConTiraEntera(c, n = 1, pre = '') {
   numero(grande, punta, ROLLO - m, union); numero(grande, B - punta, ROLLO - m, union);
   numero(tira, punta, m, union); numero(tira, B - punta, m, union);
   return { grande, tira };
+}
+
+// Contorno en trapecio (remolque distinto detrás) que no cabe en el rollo por ningún lado (Iván, 23/11/2026,
+// AR2605695: «¿cómo que no se puede hacer?»): las mismas piezas y uniones que el rectangular, pero recortando el
+// trapecio, con sus lados inclinados (y el rebaje de los puentes, si lo lleva), por las rayas del empate.
+const enTrapecio = (c) => c.geo && c.geo.B !== c.geo.Bt;
+
+// Segmento [u1, v1, u2, v2] recortado al rectángulo u0..u1, v0..v1 (Liang-Barsky), o null si queda fuera.
+function recortarSeg([x1, y1, x2, y2], u0, u1, v0, v1) {
+  const dx = x2 - x1, dy = y2 - y1;
+  let t0 = 0, t1 = 1;
+  for (const [p, q] of [[-dx, x1 - u0], [dx, u1 - x1], [-dy, y1 - v0], [dy, v1 - y1]]) {
+    if (Math.abs(p) < 1e-9) { if (q < -1e-6) return null; continue; }
+    const r = q / p;
+    if (p < 0) { if (r > t1) return null; t0 = Math.max(t0, r); } else { if (r < t0) return null; t1 = Math.min(t1, r); }
+  }
+  if ((t1 - t0) * Math.hypot(dx, dy) < 0.01) return null;
+  return [x1 + t0 * dx, y1 + t0 * dy, x1 + t1 * dx, y1 + t1 * dy];
+}
+
+// Trozo del contorno entre u0..u1 y v0..v1, en las coordenadas de las piezas del empate (x = v − v0, y = u − u0),
+// con los cortes nuevos `cierres` ([u1, v1, u2, v2] en coordenadas del contorno).
+function trozoContorno(c, u0, u1, v0, v1, cierres) {
+  const p = pieza(v1 - v0, u1 - u0);
+  for (const l of [...c.lineas, ...cierres]) {
+    const s = recortarSeg(l, u0, u1, v0, v1);
+    if (s) seg(p, s[1] - v0, s[0] - u0, s[3] - v0, s[2] - u0);
+  }
+  return p;
+}
+
+function trapecioConEmpate(c, n, pre, entera) {
+  const g = c.geo, A = c.w, H = c.h, s = A - ROLLO + EMPATE, desde = A - s, fin = A - (g.reb ?? 0);
+  const m = EMPATE / 2, punta = 10, uu = ROLLO - m, u = (k) => `${pre}${n + k}`;
+  const grande = trozoContorno(c, 0, ROLLO, 0, H, [[ROLLO, g.yb(ROLLO), ROLLO, g.yt(ROLLO)]]);
+  numero(grande, g.yb(uu) + punta, uu, u(0)); numero(grande, g.yt(uu) - punta, uu, u(entera ? 0 : 1));
+  if (entera) {
+    const tira = trozoContorno(c, desde, A, 0, H, [[desde, g.yb(desde), desde, g.yt(desde)]]);
+    for (const [pu, pv] of c.ollaos) (pu <= ROLLO - 10 ? grande : tira).ollaos.push(pu <= ROLLO - 10 ? [pv, pu] : [pv, pu - desde]);
+    for (const [u1, v1, u2, v2] of c.rot) {
+      if (u1 <= ROLLO) marca(grande, v1, u1, v2, u2); else marca(tira, v1, u1 - desde, v2, u2 - desde);
+    }
+    numero(tira, g.yb(uu) + punta, uu - desde, u(0)); numero(tira, g.yt(uu) - punta, uu - desde, u(0));
+    return { grande, tira };
+  }
+  // Empatada en dos a lo largo del centro: cada media tira, con 1 cm del empate pasado del centro.
+  const mitad = H / 2 + m, dv = H / 2 - m;
+  const tiras = [
+    trozoContorno(c, desde, A, 0, mitad, [[desde, g.yb(desde), desde, mitad], [desde, mitad, fin, mitad]]),
+    trozoContorno(c, desde, A, dv, H, [[desde, dv, desde, g.yt(desde)], [desde, dv, fin, dv]]),
+  ];
+  for (const [pu, pv] of c.ollaos) {
+    if (pu <= ROLLO - 10) grande.ollaos.push([pv, pu]);
+    else if (pv < H / 2) tiras[0].ollaos.push([pv, pu - desde]);
+    else tiras[1].ollaos.push([pv - dv, pu - desde]);
+  }
+  for (const [u1, v1, u2, v2] of c.rot) {
+    if (u1 <= ROLLO) marca(grande, v1, u1, v2, u2);
+    else if (v1 < H / 2) marca(tiras[0], v1, u1 - desde, v2, u2 - desde);
+    else if (v1 > H / 2) marca(tiras[1], v1 - dv, u1 - desde, v2 - dv, u2 - desde);
+  }
+  numero(tiras[0], g.yb(uu) + punta, uu - desde, u(0)); numero(tiras[0], mitad - m, s / 2, u(2), 90);
+  numero(tiras[1], g.yt(uu) - punta - dv, uu - desde, u(1)); numero(tiras[1], m, s / 2, u(2), 90);
+  return { grande, tiras };
 }
 
 // Coloca una pieza: `giro` 0 (tal cual), -90 (la base pasa a la izquierda, como en AR2605120) o -180 (boca
