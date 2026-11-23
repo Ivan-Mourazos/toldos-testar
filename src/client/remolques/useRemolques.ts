@@ -42,7 +42,7 @@ import { clienteDeLinea } from './guardarEnFicha';
 import { decidirFicha, notaFicha, preguntaSugerencia } from './fichaAlObtener';
 import { AVISO_FICHAS_ILEGIBLES, guardarDesdePedido, leerFichas, nombreClienteRps } from './fichasClientes';
 import type { PlanoCorte } from './CorteRemolques';
-import { guardarToldosEditable } from '../toldosEditable';
+import { AVISO_SIN_CAMBIOS, guardarToldosEditable } from '../toldosEditable';
 import { abrirCorteDwg } from '../abrirCorte';
 import { primeraLineaInicio } from '../modelosInicio';
 import { debePreguntarAlCorregir } from '../correccionPedido';
@@ -835,6 +835,10 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
           () => abrirCorteDwg({ ruta: '/api/remolques/borrador-corte', orderCode: actual.numeroPedido, cuerpo, usuario, preguntar: confirmar,
             notify: notificar.current.notify, editable: true }), '/api/remolques/pedidos');
         if (!datos) return;
+        if (datos.unchanged) {
+          notificar.current.notify(AVISO_SIN_CAMBIOS, { tone: 'info', title: 'Sin cambios' });
+          return;
+        }
         alGuardar.current?.();
         if (regenerar) {
           formularioGuardado.current = apuntarFormularioGuardado('remolques', firmaFormulario(actual));

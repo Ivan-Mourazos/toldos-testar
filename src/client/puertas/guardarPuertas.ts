@@ -1,7 +1,7 @@
 import type { CabeceraPuertas, PedidoPuertasGuardado } from '../../puertas/flujo/tipos.ts';
 import type { PedidoPuertas, Puerta } from '../../puertas/tipos.ts';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
-import { guardarToldosEditable } from '../toldosEditable';
+import { AVISO_SIN_CAMBIOS, guardarToldosEditable } from '../toldosEditable';
 import { abrirCorteDwg } from '../abrirCorte';
 
 // «Guardar para revisión» de Puertas y volver a la pantalla un pedido guardado (fase 2, 22/10/2026).
@@ -61,6 +61,10 @@ export async function guardarPuertasParaRevision({ pedido, usuario, preguntar, n
       () => abrirCorteDwg({ ruta: '/api/puertas/borrador-corte', orderCode: pedido.orderCode, cuerpo: { pedido }, usuario, preguntar, notify, editable: true }),
       '/api/puertas/pedidos');
     if (!datos) return false;
+    if (datos.unchanged) {
+      notify(AVISO_SIN_CAMBIOS, { tone: 'info', title: 'Sin cambios' });
+      return false;
+    }
     const codigo = datos.review?.orderCode ?? pedido.orderCode;
     const plano: Plano = datos.plano ?? null;
     const planos = plano?.files.map((fichero) => fichero.filename) ?? [];

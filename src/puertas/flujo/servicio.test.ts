@@ -449,4 +449,29 @@ describe('corte confirmado desde el borrador', () => {
     expect(cuerpo).toMatchObject({ avisos: [expect.stringContaining('ya está en el bot')] });
     expect(await fs.readdir(path.join(raiz, 'bot/Ivan.Sanchez'))).toEqual(['AR2605134.dxf']);
   });
+
+  // AR2605256 (Iván, 23/11/2026): generado antes de las entregas, con los mismos datos y un corte nuevo en la web.
+  // «Regenerar corte» al corregir no puede responder «sin cambios»: sustituye el plano y lo que sale es lo nuevo.
+  it('regenerar un pedido generado sin cambiar datos sustituye el plano antiguo por el corte de ahora', async () => {
+    await abrir(); await confirmar(); await guardar();
+    await alBot();
+    const generado = await flujo.obtener('AR2605134');
+    expect(generado.status).toBe('PRODUCED');
+    await dibujarEnBorrador(false, enAnio());
+    const viejo = corteDelPlano((await fs.readFile(enAnio(), 'utf8')).replace(/\r\n/g, '\n')).huella;
+    const comoEstaba = pedidoParaEditar(generado);
+    expect((await guardar({ pedido: comoEstaba })).cuerpo).toMatchObject({ unchanged: true });
+    const regenerar = { pedido: comoEstaba, decisionCorte: 'regenerar', confirmOverwrite: true };
+    expect((await guardar(regenerar)).cuerpo).toMatchObject({ needsEntradaEntregaConfirmation: true });
+    const { status, cuerpo } = await guardar({ ...regenerar, confirmarEntradaEntrega: true });
+    expect(status).toBe(200);
+    expect(cuerpo).not.toHaveProperty('unchanged');
+    const corregido = await flujo.obtener('AR2605134');
+    expect(corregido).toMatchObject({ status: 'PENDING_REVIEW', entregaActual: generado.entregas?.at(-1)?.numero ?? 10 });
+    const nuevo = corteDelPlano((await fs.readFile(enAnio(), 'utf8')).replace(/\r\n/g, '\n')).huella;
+    expect(nuevo).not.toBe(viejo);
+    expect(corregido.corteConfirmado?.huella).toBe(nuevo);
+    expect(await alBot()).toMatchObject({ status: 200 });
+    expect((await flujo.obtener('AR2605134')).status).toBe('PRODUCED');
+  });
 });

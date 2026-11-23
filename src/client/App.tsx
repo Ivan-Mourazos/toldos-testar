@@ -33,7 +33,7 @@ import { OrderView } from './views/OrderView';
 import { CmtView } from './views/CmtView';
 import { CorteLona, toldosConCorte } from './components/CorteLona';
 import { BotonesFlujoCorte, useFlujoCorteDwg } from './flujoCorteDwg';
-import { abrirCorteToldos, guardarToldosEditable } from './toldosEditable';
+import { AVISO_SIN_CAMBIOS, abrirCorteToldos, guardarToldosEditable } from './toldosEditable';
 import { autoriaToldos, avisoAprobacionToldos } from '../toldosEditable.js';
 import { useCoordinaStatus } from './hooks/useCoordinaStatus';
 import './coordina/flujo-editable.css';
@@ -725,6 +725,10 @@ export default function App() {
         ...(regenerar ? { decisionCorte: 'regenerar' } : {}) };
       const data = await guardarToldosEditable(cuerpo, askForConfirmation, () => abrirCorteToldos(draft.orderCode, cuerpo));
       if (!data) return;
+      if (data.unchanged) {
+        notify(AVISO_SIN_CAMBIOS, { tone: 'info', title: 'Sin cambios' });
+        return;
+      }
       setReviewRefresh((value) => value + 1);
       if (regenerar) {
         draft.loadOrder({ ...data.review.order, corteLona: data.review.corteLona }, { guardado: true });

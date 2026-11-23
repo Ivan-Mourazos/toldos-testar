@@ -3,7 +3,7 @@ import { pasarAProduccion, prepararPlanoProduccion } from '../../produccion.js';
 import { numerarEntrega, aplicarDestino, necesitaPrepararDestino } from '../../entregasRps.js';
 import { mkdir, stat } from "node:fs/promises";
 import path from "node:path";
-import { avisoEntradaEntrega, codigoCorteEditable, cerrarEntrega, codigoAnual, codigoEntrega, ofsEntrega, pedidoEntrega, numeroEntrega, abrirEntrega } from '../../entregas.js';
+import { avisoEntradaEntrega, codigoCorteEditable, cerrarEntrega, codigoAnual, codigoEntrega, ofsEntrega, pedidoEntrega, numeroEntrega, abrirEntrega, regenerarEntregaGenerada } from '../../entregas.js';
 import { materialesPuertas } from '../../materialesEntrega.js';
 import { adjuntarPedido } from '../../adjuntosPedido.js';
 import { enviarCorte as enviarCorteCompartido } from "../../corteEnvios.js";
@@ -206,6 +206,7 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
         if (existente?.entregaActual !== pedido.entregaActual) delete pedido.corteConfirmado;
       }
       pedido.entregaPorPreparar = false;
+      if (existente?.status === 'PRODUCED' && !ofsEntrega(pedido).length && c.decisionCorte === 'regenerar') pedido = regenerarEntregaGenerada(pedido, existente);
       if (existente?.status === 'PRODUCED' && !ofsEntrega(pedido).length) return { status: 200, cuerpo: { ok: true, unchanged: true, review: resumenBandeja(existente) } };
       const avisoEntrada = avisoEntradaEntrega(pedido, existente, c);
       if (avisoEntrada) return { status: 409, cuerpo: avisoEntrada };
@@ -546,7 +547,9 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
     const base = carpeta.replaceAll("{YYYY}", String(anioDelPlanteamiento(pedido.numeroPedido, pedido.summary.orderDate)));
     if (pedido.entregaActual) {
       const ruta = path.join(base, `${codigoEntrega(pedido)}.pdf`);
-      if (pedido.presentacionesPdf?.ruta !== ruta && modo !== 'sustituir' && await existeFichero(ruta)) return { respuesta: {
+      // Al corregir una entrega se pierde el apunte del PDF, pero el de esa misma entrega es suyo: se rehace (AR2605256).
+      const deLaEntrega = pedido.entregas?.some((e) => e.numero === pedido.entregaActual && e.archivos?.some((f: { savedPath?: string }) => f.savedPath === ruta));
+      if (pedido.presentacionesPdf?.ruta !== ruta && !deLaEntrega && modo !== 'sustituir' && await existeFichero(ruta)) return { respuesta: {
         status: 409, cuerpo: { needsConfirmation: true, motivo: 'pdf', existing: [path.basename(ruta)],
           error: 'Ya hay un PDF de esta entrega que no está apuntado en el pedido. Comprueba si se puede sustituir.' } } };
       return { ruta, numero: numeroEntrega(pedido) };

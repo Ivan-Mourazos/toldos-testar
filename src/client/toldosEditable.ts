@@ -67,6 +67,9 @@ export async function abrirCorteGuardado(ruta: string, cuerpo?: Record<string, u
   }
 }
 
+/** El servidor no ha guardado nada (pedido generado sin cambios): no se dice «Guardado» (Iván, 23/11/2026, AR2605256). */
+export const AVISO_SIN_CAMBIOS = 'Este pedido ya está generado y no ha cambiado: no se ha guardado nada. Para rehacer el corte con lo que ves, usa «Regenerar corte».';
+
 /** Cada reintento conserva las decisiones del técnico y la huella que ha visto. */
 export async function guardarToldosEditable(cuerpo: Record<string, unknown>, preguntar: AskForConfirmation, abrir: () => Promise<unknown>, ruta = '/api/reviews') {
   const entrada = { ...cuerpo };

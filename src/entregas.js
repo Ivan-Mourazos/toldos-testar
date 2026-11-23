@@ -121,6 +121,17 @@ export function ofsEntrega(p) {
   return pasosEntrega(p)[0]?.ofs ?? [];
 }
 
+/**
+ * «Regenerar corte» en un pedido ya generado y sin datos cambiados: se corrige su última entrega con el corte que se
+ * ve ahora, no se responde «sin cambios» (Iván, 23/11/2026, AR2605256: «no puedo ver una cosa y que se guarde otra»).
+ */
+export function regenerarEntregaGenerada(p, existente) {
+  const ultima = entregasPedido(existente).at(-1);
+  const numero = ultima?.numero ?? numeroEntrega(existente);
+  const ofs = ultima?.ofs?.length ? ultima.ofs : [...new Set(elementos(p).map(ofElemento).filter(Boolean))];
+  return { ...p, entregaActual: numero, destinoEntrega: { numero, modo: 'sustituir' }, ofsSeleccionadas: ofs };
+}
+
 export function numeroEntrega(p) {
   return p.entregaActual ?? (p.status === 'PRODUCED' ? entregasPedido(p).at(-1)?.numero ?? inicioSerie(p) : pasosEntrega(p)[0]?.numero ?? inicioSerie(p));
 }

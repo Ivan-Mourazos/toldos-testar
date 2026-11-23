@@ -2,7 +2,7 @@ import { registrarDescargasCorte, convertirCmtRemolques } from './corteMaquina.j
 import { registrarRutasCmtMaquina } from './cmtMaquinaRoutes.js';
 import { pasarAProduccion, prepararPlanoProduccion } from './produccion.js';
 import { catalogoEntregas, numerarEntrega, aplicarDestino, necesitaPrepararDestino } from './entregasRps.js';
-import { avisoEntradaEntrega, codigoCorteEditable, abrirEntrega, codigoAnual, codigoEntrega, ofsEntrega, pedidoEntrega } from './entregas.js';
+import { avisoEntradaEntrega, codigoCorteEditable, abrirEntrega, codigoAnual, codigoEntrega, ofsEntrega, pedidoEntrega, regenerarEntregaGenerada } from './entregas.js';
 import { materialesReserva } from './materialesEntrega.js';
 import { adjuntarPedido } from './adjuntosPedido.js';
 import { leerPdfParaActualizarDatos } from './workflow.js';
@@ -1289,6 +1289,7 @@ app.post('/api/reviews', async (req, res, next) => {
       if (existing?.entregaActual !== review.entregaActual) { delete review.corteConfirmado; existing = null; }
     }
     review.entregaPorPreparar = false;
+    if (existing?.status === 'PRODUCED' && !ofsEntrega(review).length && req.body?.decisionCorte === 'regenerar') review = regenerarEntregaGenerada(review, existing);
     if (existing?.status === 'PRODUCED' && !ofsEntrega(review).length) return res.json({ ok: true, unchanged: true, review: existing });
     // Solo los planos que la web escribió para este pedido se pueden sustituir en la carpeta del año (Iván, 19/11/2026).
     const planosWebPrevios = [...new Set([...(existing?.planosWeb ?? []), ...(existing?.corteConfirmado ? planosDe(existing.corteConfirmado).map(p => p.plano) : [])])];
