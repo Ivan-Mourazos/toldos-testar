@@ -13,6 +13,7 @@ import { crearServicioPedidosPuertas, type PlanoPuertas } from './servicio.ts';
 import { crearPlanoPuertas } from './archivos.ts';
 import { crearAlmacenConfirmaciones } from '../../flujoDwg/confirmaciones.js';
 import { corteDelPlano } from '../../flujoDwg/corteDwg.js';
+import { ofsEntrega } from '../../entregas.js';
 import { TIPO_PEDIDO_PUERTAS, type PedidoPuertasGuardado } from './tipos.ts';
 
 // AR2605134 (el caso más común): tres enrollables iguales configuradas desde el PDF del pedido.
@@ -471,6 +472,12 @@ describe('corte confirmado desde el borrador', () => {
     const nuevo = corteDelPlano((await fs.readFile(enAnio(), 'utf8')).replace(/\r\n/g, '\n')).huella;
     expect(nuevo).not.toBe(viejo);
     expect(corregido.corteConfirmado?.huella).toBe(nuevo);
+    expect(ofsEntrega(corregido)).toEqual(['0233175']);
+    // Guardarlo otra vez en revisión (lo que hizo Iván) no lo deja sin OF que generar: «Generar archivos» sigue abierto.
+    expect((await guardar({ pedido: pedidoParaEditar(corregido), confirmarEntradaEntrega: true, confirmOverwrite: true })).status).toBe(200);
+    const otraVez = await flujo.obtener('AR2605134');
+    expect(otraVez.status).toBe('PENDING_REVIEW');
+    expect(ofsEntrega(otraVez)).toEqual(['0233175']);
     expect(await alBot()).toMatchObject({ status: 200 });
     expect((await flujo.obtener('AR2605134')).status).toBe('PRODUCED');
   });

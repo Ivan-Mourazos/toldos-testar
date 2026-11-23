@@ -57,7 +57,12 @@ export function abrirEntrega(pedido, existente = null) {
   const paso = pasosEntrega(p)[0];
   const numero = paso?.numero ?? existente?.entregaActual ?? inicioSerie(p);
   const anterior = entregas.find(e => e.numero === numero) ?? (existente?.status !== 'PRODUCED' && existente?.entregaActual === numero ? existente : null);
-  return { ...p, entregaActual: numero,
+  // Guardar otra vez un pedido en revisión no pierde las OF que ya tenía elegidas para esta entrega: sin ellas, una
+  // entrega regenerada con los mismos datos se queda sin nada que generar (AR2605256, 23/11/2026).
+  const seguida = existente && existente.status !== 'PRODUCED' && existente.entregaActual === numero && existente.ofsSeleccionadas?.length
+    ? { ofsSeleccionadas: [...new Set([...existente.ofsSeleccionadas, ...(paso?.ofs ?? [])])],
+      ...(existente.destinoEntrega ? { destinoEntrega: structuredClone(existente.destinoEntrega) } : {}) } : {};
+  return { ...p, entregaActual: numero, ...seguida,
     ...(anterior?.corteConfirmado ? { corteConfirmado: structuredClone(anterior.corteConfirmado) } : {}) };
 }
 
