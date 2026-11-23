@@ -70,7 +70,7 @@ function errorPeticion(error, _req, res, _next) {
 }
 
 /** Registrar antes del parser general: 30 MB de DXF ocupan 40 MB en base64. Todo queda en memoria. */
-export function registrarRutasCmtHerramienta(app, { convertir = dxfACmt, preparar = prepararPlano, oda, tablaCapas } = {}) {
+export function registrarRutasCmtHerramienta(app, { convertir = dxfACmt, preparar = prepararPlano, oda, tablaCapas, planos } = {}) {
   app.post('/api/cmt/preparar', express.json({ limit: '41mb' }), async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
     const { nombre, archivoBase64, decisiones = {}, sinTextos = false, generar = false, huella } = req.body ?? {};
@@ -117,6 +117,31 @@ export function registrarRutasCmtHerramienta(app, { convertir = dxfACmt, prepara
       return res.status(422).json({ ok: false, error: `No se pudo preparar el plano: ${error.message}` });
     }
   }, errorPeticion);
+
+  if (planos) {
+    // Buscador de la carpeta del año: lista paginada y lectura del plano elegido (solo lectura).
+    app.get('/api/cmt/planos', async (req, res) => {
+      res.setHeader('Cache-Control', 'no-store');
+      const texto = typeof req.query.texto === 'string' ? req.query.texto.slice(0, 200) : '';
+      const pagina = Number.parseInt(String(req.query.pagina ?? '1'), 10);
+      try {
+        res.json(await planos.listar({ texto, pagina: Number.isFinite(pagina) ? pagina : 1, fresco: req.query.actualizar === '1' }));
+      } catch (error) {
+        res.status(error.status ?? 500).json({ error: error.status ? error.message : 'No se pudo leer la carpeta de planos.' });
+      }
+    });
+    app.get('/api/cmt/planos/archivo', async (req, res) => {
+      res.setHeader('Cache-Control', 'no-store');
+      try {
+        const { nombre, contenido } = await planos.leer(req.query.ruta);
+        res.setHeader('Content-Type', 'application/octet-stream');
+        res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(nombre)}`);
+        res.send(contenido);
+      } catch (error) {
+        res.status(error.status ?? 500).json({ error: error.status ? error.message : 'No se pudo leer el plano.' });
+      }
+    });
+  }
 
   if (tablaCapas) {
     app.get('/api/cmt/capas', async (_req, res) => {
