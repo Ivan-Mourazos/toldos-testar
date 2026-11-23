@@ -73,7 +73,7 @@ export function dxfACmt(dxfTexto: string, opciones: OpcionesCmt = {}): Resultado
     }
     if (resultado.dudas.length) return resultado;
     const g = generarGeometria(d, {font, compatibilidadRobot: opciones.compatibilidadRobot, preparacionMtext: opciones.preparacionMtext}); resultado.avisos.push(...g.avisos); resultado.dudas.push(...g.issues); resultado.objetos = g.objects;
-    if (sinLeyenda) recolocar(g.objects);
+    if (sinLeyenda || opciones.recolocar) recolocar(g.objects);
     if (opciones.compatibilidadRobot !== false) resultado.avisos.push({motivo: 'Se reproduce el redondeo SVG del robot (seis cifras, 96 dpi); compatibilidadRobot:false conserva la precisión del DXF y puede mostrar rellenos distintos'});
     if (!resultado.dudas.length) resultado.cmt = escribir(g.objects);
   } catch (error) {

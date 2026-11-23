@@ -22,6 +22,8 @@ export interface Dxf {
   sections: Record<string, EntidadDxf[]>;
 }
 export interface OpcionesCmt {
+  /** Lleva la geometría a 300 y 20 mm tras convertir un DXF limpio. */
+  recolocar?: boolean;
   /** Remolques (máquina vieja): las curvas de DISCO1 con radio menor que este, en mm, van a CUTTER. */
   curvasACutter?: number;
   /** Arial del sistema o una copia proporcionada por el administrador. No se distribuye. */
