@@ -3,6 +3,7 @@ import { BotonMandarMaquina, type EnvioMaquina } from '../components/CorteMaquin
 import { controlLabel } from '../components/controlLabels';
 import { medidas, medidasCmt, mm, permiteSinTextos, prepararArchivo, type PlanoPreparado } from '../cmt/conversion';
 import { descargarCmt, descargarDxf, descargarPlanos } from '../cmt/descarga';
+import { BuscadorPlanos } from '../cmt/BuscadorPlanos';
 import { hayPendientes, Pendientes } from '../cmt/Pendientes';
 import { VistaPreparacion } from '../cmt/VistaPreparacion';
 import type { DecisionesPreparacion } from '../../cmt/preparacion/index.ts';
@@ -73,7 +74,7 @@ export function CmtView() {
 
   return <section className="cmt-vista" aria-label="Conversión de DXF a CMT">
     <div className="cmt-introduccion">
-      <p>Sube un DWG o un DXF. En los DWG se corta lo que hay dentro del rectángulo de la capa 0. Antes de generar verás el corte y lo que haya que decidir.</p>
+      <p>Elige el plano en la lista de la oficina o arrastra un DWG o un DXF. En los DWG se corta lo que hay dentro del rectángulo de la capa 0. Antes de generar verás el corte y lo que haya que decidir.</p>
       {filas.length > 0 && <div className="cmt-acciones">
         <button type="button" className="ghost-button" disabled={procesando || descarga.ocupado} onClick={() => {
           setFilas([]); setDescarga({ ocupado: false, error: '', mensaje: '' });
@@ -82,6 +83,7 @@ export function CmtView() {
           onClick={() => void guardar(guardarTodos)}>Descargar todos{listos ? ` (${listos})` : ''}</button>}
       </div>}
     </div>
+    <BuscadorPlanos onElegir={archivo => void agregar([archivo])} />
     <div className={`cmt-entrada panel-vidrio${arrastrando ? ' cmt-arrastrando' : ''}`}
       onDragOver={e => { e.preventDefault(); setArrastrando(true); }}
       onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setArrastrando(false); }}

@@ -131,3 +131,35 @@
 .cmt-resultado-acciones .cmt-mandar { margin-top: 0; }
 
 .cmt-mandar { margin-top: 0; }
+
+/* Buscador de planos de la carpeta del año (23/11/2026): lista corta y paginada, estilo HeroUI. */
+.cmt-buscador { display: grid; gap: 14px; padding: 20px 24px; border-radius: 14px; }
+.cmt-buscador-cabecera { display: flex; align-items: center; gap: 12px; }
+.cmt-buscador-cabecera > div { flex: 1; min-width: 0; }
+.cmt-buscador-cabecera strong { font-size: 16px; }
+.cmt-buscador-cabecera p { margin: 4px 0 0; color: var(--hero-texto-suave, var(--text-muted)); font-size: 13px; }
+.cmt-buscador-campo { display: flex; align-items: center; width: min(360px, 40%); padding: 0 16px; border-radius: 999px;
+  background: var(--hero-superficie, var(--surface-1)); box-shadow: var(--hero-sombra-campo, 0 0 0 1px var(--control-border)); transition: box-shadow 150ms ease; }
+.cmt-buscador-campo:focus-within { box-shadow: var(--hero-sombra-campo, 0 0 0 1px var(--control-border)), 0 0 0 2px var(--hero-anillo, var(--focus, currentColor)); }
+/* Gana al estilo general de los campos de HeroUI: aquí la píldora es la etiqueta y el campo va dentro, transparente. */
+html:root #root .cmt-buscador .cmt-buscador-cabecera .cmt-buscador-campo > input[type="search"],
+html:root #root .cmt-buscador .cmt-buscador-cabecera .cmt-buscador-campo > input[type="search"]:focus {
+  flex: 1; min-width: 0; height: 40px; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none;
+  color: var(--text); font: inherit; font-size: 14px; outline: none; }
+.cmt-buscador-lista { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.cmt-buscador-plano { display: flex; align-items: center; gap: 12px; width: 100%; padding: 9px 12px; border: 0; border-radius: 10px;
+  background: transparent; color: var(--text); font: inherit; text-align: left; cursor: pointer; transition: background-color 120ms ease; }
+.cmt-buscador-plano:hover:not(:disabled) { background: var(--hero-relleno, var(--surface-2)); }
+.cmt-buscador-plano:active:not(:disabled) { background: var(--hero-relleno-pulsado, var(--surface-2)); }
+.cmt-buscador-plano:focus-visible { outline: 2px solid var(--hero-anillo, var(--focus, currentColor)); outline-offset: 1px; }
+.cmt-buscador-plano:disabled { cursor: progress; opacity: 0.7; }
+.cmt-buscador-nombre { display: flex; align-items: baseline; gap: 10px; flex: 1; min-width: 0; }
+.cmt-buscador-nombre strong { font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.cmt-buscador-nombre small, .cmt-buscador-fecha { color: var(--hero-texto-suave, var(--text-muted)); font-size: 13px; }
+.cmt-buscador-fecha { flex-shrink: 0; min-width: 96px; text-align: right; font-variant-numeric: tabular-nums; }
+.cmt-buscador-vacio { margin: 0; padding: 12px; color: var(--hero-texto-suave, var(--text-muted)); font-size: 14px; }
+.cmt-buscador-paginas { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.cmt-buscador-paginas .segmented-control { display: flex; align-items: center; width: auto; }
+.cmt-buscador-paginas .segmented-option { min-width: 36px; padding-inline: 10px; font-variant-numeric: tabular-nums; }
+.cmt-buscador-hueco { padding: 0 6px; color: var(--hero-texto-suave, var(--text-muted)); }
+.cmt-buscador .cmt-error { margin: 0; }

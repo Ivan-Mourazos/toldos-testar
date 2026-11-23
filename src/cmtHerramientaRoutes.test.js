@@ -144,3 +144,48 @@ describe('DXF a CMT en memoria, sin usuario ni permisos de escritura', () => {
     expect(resumen.porHerramienta[0].etiqueta).toBe('Rotulador');
   });
 });
+
+describe('buscador de planos de la carpeta del año', () => {
+  let servidor, base, planos;
+  beforeEach(async () => {
+    planos = {
+      listar: vi.fn(async () => ({ anio: 2026, total: 1, pagina: 1, paginas: 1, porPagina: 10, planos: [{ ruta: 'AR2605626.dwg' }] })),
+      leer: vi.fn(async () => ({ nombre: 'AR 5626 ñ.dwg', contenido: Buffer.from([0, 1, 2, 255]) })),
+    };
+    const app = express();
+    registrarRutasCmtHerramienta(app, { convertir, oda, tablaCapas, preparar, planos });
+    servidor = app.listen(0, '127.0.0.1');
+    await new Promise(resolve => servidor.once('listening', resolve));
+    base = `http://127.0.0.1:${servidor.address().port}/api/cmt/planos`;
+  });
+  afterEach(async () => { await new Promise(resolve => servidor.close(resolve)); });
+
+  it('lista con texto y página, y corrige una página que no es número', async () => {
+    const r = await fetch(`${base}?texto=5626&pagina=3`);
+    expect(r.status).toBe(200);
+    expect((await r.json()).planos).toEqual([{ ruta: 'AR2605626.dwg' }]);
+    expect(planos.listar).toHaveBeenLastCalledWith({ texto: '5626', pagina: 3, fresco: false });
+    await fetch(`${base}?pagina=abc&texto=${'x'.repeat(300)}&actualizar=1`);
+    expect(planos.listar).toHaveBeenLastCalledWith({ texto: 'x'.repeat(200), pagina: 1, fresco: true });
+  });
+  it('devuelve el plano elegido tal cual, con su nombre', async () => {
+    const r = await fetch(`${base}/archivo?ruta=${encodeURIComponent('AR2600050/AR 5626 ñ.dwg')}`);
+    expect(r.status).toBe(200);
+    expect(planos.leer).toHaveBeenCalledWith('AR2600050/AR 5626 ñ.dwg');
+    expect(r.headers.get('content-disposition')).toBe("attachment; filename*=UTF-8''AR%205626%20%C3%B1.dwg");
+    expect([...new Uint8Array(await r.arrayBuffer())]).toEqual([0, 1, 2, 255]);
+  });
+  it('explica los errores de la carpeta y no enseña los internos', async () => {
+    planos.listar.mockRejectedValueOnce(Object.assign(new Error('Falta configurar la carpeta de planos del corte en Configuración.'), { status: 409 }));
+    let r = await fetch(base);
+    expect(r.status).toBe(409);
+    expect((await r.json()).error).toContain('Falta configurar');
+    planos.listar.mockRejectedValueOnce(new Error('EACCES /mnt/secreto'));
+    r = await fetch(base);
+    expect(r.status).toBe(500);
+    expect((await r.json()).error).not.toContain('/mnt');
+    planos.leer.mockRejectedValueOnce(Object.assign(new Error('Elige un plano DWG o DXF de la lista.'), { status: 400 }));
+    r = await fetch(`${base}/archivo?ruta=../x.dwg`);
+    expect(r.status).toBe(400);
+  });
+});
