@@ -15,7 +15,7 @@ const hash = (x: unknown) => createHash('sha256').update(typeof x === 'string' ?
 // ARAUJO: actualizadas con la colocación legible del 04/11; el cálculo y las rayas del bot se conservan.
 const casos = [
   ['5036', () => puertaPlanoReal('AR2605036'), 'b57ce1e0009ce0e94569cbf0a7f28e56799c7897002611139b4275f8c25ddc67', 'aa5aee411959167812ce42fd29ee976acadf0ee43d42a069f913464c408f8169'],
-  ['apilable300', apilable, 'f225c9965437b0fb4ce6a9ee47d6dad3a70e5052f68cf754460e651954a8c987', '5bd8ab3e6c7305d7a59e0e89cba359f2d607b0f02a136a68ccb9543622e69270'],
+  ['apilable300', apilable, 'ef12077f398bfdb0cc721549a9390012659c2cbe90a64edb453b662157b1673d', '90227bce6fbd40b625a044b22e1f59fcfc8e5a71d432d2ab54d68759a91b8c9f'],
   ['apilable600', () => ({ ...apilable(), frente: 600 }), '39ab08c5e4c3093cad07f9bc860cb22f54f81dab038bcbaae776b9efc0001b03', '266a2a5635d41b41a59161a3f49d723da7f4b970c1f4988596a80cb2e45b4f48'],
   // 19/11/2026: el cálculo de la enrollable de ejemplo lleva el aviso ET_FALTA (una sola E.T.); bot y plano, iguales.
   ['enrollable', puerta4638, '6462b323bae25334a08edcf715c13cfd26eb103b845effae8aa9f58f7fd32d36', '9ce02b80e3990e29839f58c8b7a38d61f68297a50b7ba2b6f0b68170ee258ed9'],

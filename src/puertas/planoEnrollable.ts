@@ -8,7 +8,7 @@ import { notaPlanoEnrollable, panoContinuoEnrollable, ventanalesEnrollable } fro
 import { dibujarVentanasPlano } from './ventanasPlano.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
 import { SEPARACION_EXTRA_FILAS, TITULO_MATERIAL_MM } from './corte.ts';
-import { corteEnPlano, entidadesDePieza, textosFuera } from './corteEnPlano.ts';
+import { cajaRestos, corteEnPlano, cotasRestos, entidadesDePieza, textosFuera } from './corteEnPlano.ts';
 import { textoMlPuerta } from './metrosPorOf.ts';
 import type { CortePuertas, EntidadesPuertas, PedidoPuertas, Puerta, Punto } from './tipos.ts';
 export { sumarLienzo } from './lienzo.ts';
@@ -429,6 +429,8 @@ export function dibujarCorte(cortes: CortePuertas[], _pedido: PedidoPuertas): { 
     linea(l, 'cotas', 0, borde, Math.min(12, c.largo / 10), borde);
     cota(l, 0, yc, c.largo / 10, yc, yc - 25.8375, CORTE_COTAS);
     cota(l, 0, yc, 0, borde, -35.1317, CORTE_COTAS);
+    const restos = cajaRestos(c, yc);
+    if (restos) { const r = cotasRestos(restos, 25.8375, 35.1317, CORTE_COTAS); l.cotas.push(...r.cotas); anchoMax = Math.max(anchoMax, r.hasta); }
     anchoMax = Math.max(anchoMax, (c.extensionDibujo ?? c.largo) / 10);
     // Sitio para el título del bot («MATERIAL · CORTE»), que va encima del rollo.
     techo = yc - 100 - SEPARACION_EXTRA_FILAS;

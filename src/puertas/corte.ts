@@ -477,14 +477,18 @@ function distribuirEntradas(grupo: PiezaPuerta[], completo: CortePuertas, anidar
   if (!aparte.length) return principal;
   const x = principal.largo + 1500;
   let y = 0;
-  const separacion = Math.min(50, (principal.anchoRollo - anchoAparte) / aparte.length);
   const ancho = Math.max(...aparte.map(p => mm(p.ancho)));
+  // Apiladas sin hueco, con la raya común cortada una vez, y sin la de abajo del todo: es el borde del resto
+  // (Iván, 23/11/2026, AR2605694).
   for (const pieza of aparte) {
-    // Después de fusionar el rollo: el borde inferior de un retal también se corta.
     dibujar(pieza, x, y, principal.entidades);
     principal.colocadas.push({ pieza, x, y, girada: false, aparte: true });
-    y += mm(pieza.alto) + separacion;
+    y += mm(pieza.alto);
   }
+  const capa = grupo[0].abrigo?.capa ?? 'DISCO1';
+  principal.entidades.lineas = principal.entidades.lineas.filter(l => !(l.capa === capa && Math.abs(l.y1) < .001
+    && Math.abs(l.y2) < .001 && Math.min(l.x1, l.x2) >= x - .001));
+  fusionarCortesPuertas(principal.entidades, undefined, capa);
   principal.extensionDibujo = x + ancho;
   principal.entidades.textos.push({ capa: 'texto', valor: 'CORTAR DE RESTOS', centrado: true,
     x: x + ancho / 2, y: y + 100, h: Math.min(150, ancho / anchoArial('CORTAR DE RESTOS', 1)) });

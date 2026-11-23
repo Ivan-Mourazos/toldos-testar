@@ -3,7 +3,7 @@ import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { geometriaAlzado } from './alzado.ts';
 import { calcularPuerta } from './calcular.ts';
 import { cotasImpresionAraujo, esImpresionAraujo, presentarImpresionAraujo } from './cotasImpresionAraujo.ts';
-import { corteEnPlano, entidadesDePieza, textosFuera } from './corteEnPlano.ts';
+import { cajaRestos, corteEnPlano, cotasRestos, entidadesDePieza, textosFuera } from './corteEnPlano.ts';
 import { ENTRE_MUESTRAS } from './planoTaller.ts';
 import { textoMlPuerta } from './metrosPorOf.ts';
 import { bloqueFlechaEnrollable, dibujarCorte, hojasPuertas, lienzoAMetros, origenCorte, sumarLienzo, type LienzoEnrollable } from './planoEnrollable.ts';
@@ -90,8 +90,11 @@ export function escribirPlanoAraujo(pedido:PedidoPuertas,cortes:CortePuertas[],c
     if(!impresa)lc.cotas.push({capa:'cotas',estilo:'XERA 20',x1:0,y1:yc,x2:c.largo/10,y2:yc,d:yc-45,giro:0,valor:c.largo/10,posicionTexto:[c.largo/20,yc-65]},
       {capa:'cotas',estilo:'XERA 20',x1:0,y1:yc,x2:0,y2:yc+ocupado,d:-35,giro:90,valor:ocupado});
     zonasCorte.push({x0:Math.min(impresa?Math.min(-100,...lc.cotas.filter(q=>q.giro===90).map(q=>q.d-15)):-75,c.largo/20-anchoArial(titulo,hTitulo)/2-5),y0:yc-80,
-      x1:Math.max((c.extensionDibujo??c.largo)/10+40,c.largo/20+anchoArial(titulo,hTitulo)/2+5),y1:yc+ocupado+50});
-    wc=Math.max(wc,(c.extensionDibujo??c.largo)/10);yc-=140;
+      x1:Math.max((c.extensionDibujo??c.largo)/10+40,(cajaRestos(c,yc)?.x1??-Infinity)+85,c.largo/20+anchoArial(titulo,hTitulo)/2+5),y1:yc+ocupado+50});
+    const restos=impresa?null:cajaRestos(c,yc);
+    const cotasR=restos?cotasRestos(restos,45,35):null;
+    if(cotasR)lc.cotas.push(...cotasR.cotas);
+    wc=Math.max(wc,(c.extensionDibujo??c.largo)/10,cotasR?cotasR.hasta:0);yc-=140;
   }
   const santaPau=pedido.elementos.every(e=>e.input.santapau),corteSanta=santaPau?dibujarCorte(cortes,pedido):null;
   const zona=corteSanta?.zona??{x0:-70,y0:yc+60,x1:wc+40,y1:100},[ox,oy]=origenCorte(za,zona);

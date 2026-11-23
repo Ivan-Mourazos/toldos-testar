@@ -204,18 +204,18 @@
     },
     {
       "pedido": "AR2604906",
-      "corte": "65f61bd8e0ca354b6a77af0afc641854eb123887bb7ceeff96f71cf84ff6b8d4",
-      "archivo": "c5fb147f534f1db21812288ed7658cc176008747144cb7b3150b9156269d6223"
+      "corte": "5a31ceb6452138394c367f04770b8b741693875dd80c6988c97076c80b52ec87",
+      "archivo": "d21e3e8fa6b27a3be6d814388523552a5e451c5e342d7dd5e7cbdcfa906cd045"
     },
     {
       "pedido": "AR2604904",
-      "corte": "a1e21d7776c9dc0a92cd3ffdf08a711fe6d9ecbb19c9c7d9fe7ef538cc8739fd",
-      "archivo": "52295e8ad1afbce22d86e7c085b98d4fc36cf2ffc9cc580ca846f6dbf81b2a3f"
+      "corte": "6cf0fe0c1ac2ed5be38ee4ebde53f99ffbb5b6f77f9b35c4afcadb3fa20219cb",
+      "archivo": "913c500f1e94340290070b54c7390a3f9d6520009bf99e4a9d02254aa54c582c"
     },
     {
       "pedido": "AR2605246",
-      "corte": "26e2ad91a35ccdba7d6bbf295dc7868d1dcd2d27ed21837e8a160357c778331d",
-      "archivo": "14a98abc804b901a4016bdb1e1aadd77b33a4c3f06b978a60cfadacd8a970abe"
+      "corte": "88ee865f8b5837fcaa44c6072690cc0b7cdab0f7bd0c07740e06c119985f93f2",
+      "archivo": "03610e9f68892e81251954f65132f2118ba902597298cf0cb36e0834c136006c"
     },
     {
       "pedido": "AR2605220",
@@ -259,13 +259,13 @@
     },
     {
       "pedido": "AR2604815",
-      "corte": "968ea402b653eaff0c8677a28e45c15920b97d624c8a9189e952a8d27ac633b8",
-      "archivo": "637df76680ac9246e3c0e419536b57fb9d9e28e1ca716784df312a1742d74566"
+      "corte": "3c41435c12181f218d7439caffb673622a7124a97324cbeea5553fd58cd22f98",
+      "archivo": "76fcb80365805c59cec858af4cd9b369154f790fcdbe9fb3515e1337395f001d"
     },
     {
       "pedido": "AR2605363",
-      "corte": "a5e1b34e91f9fe83532918a6db6076e626c40f6e80b23e3c210b09f3a2230cbb",
-      "archivo": "5d7b264d5ceb55eb95667e0142e5063615a4ce086e4c41122707ddd1265b91de"
+      "corte": "09a060754d579d782cd8512697279f8d01744317b6b4741642aec15b22beaac2",
+      "archivo": "e34eb46800c1d0486e5ec477e9ffacfb3015aed7d126ac0cf7be6eb6ad15acae"
     },
     {
       "pedido": "AR2604615",
@@ -1625,12 +1625,12 @@
     {
       "familia": "Puertas / Portanova Apilable",
       "ejemplo": "AR2604906",
-      "dxf": "33362c095684570acd6c5631f3f262b5f76ee43efe39e8fb180981a7820cd579",
-      "geometria": "af72dd02a6bff8b7743da2f2886763ad175977e7072b2f466677e84bd1dd2440",
-      "textosFijos": "699fca3ca26a756927dc8f42edd4fda564d055dce7dcb51efbc5df80345f5d24",
+      "dxf": "cf9683458bc420317e39ddd89600d6b9bdac1ab2bca9298a5208b0b50781c96d",
+      "geometria": "5d4272d795ac92929a5ad616cca4a6fbd33dbecaa24c3c0238b38509b9084bf6",
+      "textosFijos": "f58de3293b4a818a1248dbe5b5cf8588fba1a1ddcb0dbf39cd40c7833424bb6e",
       "textos": "db82050a46131fa9fb21d31d6a49e91814abbf87a2c6a5206f18ed852b8c43ad",
-      "cotas": "4684089ef253e8b68e036910454f213f6cdc95359055e39ca3c23574a2724efc",
-      "cotasPosicionHash": "07ef0e03597c809ecbf10ed3aa7ddafe6dd17954795dd5087df413fb8088ac6b",
+      "cotas": "40a612e6c2e6bf5792c8710764c7e54fff5027f6d970448f98e6115a01b90ba9",
+      "cotasPosicionHash": "ebd5fbd81777f5dd2af282c39925c9797fe1d77af8383fa9aed41b567ab57cc2",
       "ordenTextos": "35fafe5db8ca495616937a954d83c2087246b7129e44e83a30c9893f0ee19ac4",
       "textosEnHoja": [
         0,
@@ -1699,12 +1699,12 @@
     {
       "familia": "Puertas / Portanova Autorreparable",
       "ejemplo": "AR2604904",
-      "dxf": "5477fef368dcfa42d66dbd7920fce0a3c5a6032a73f4f923cc841cc2d9047bdd",
-      "geometria": "f923d89f6864ef46ae48bfe3d1e281f9a9f54f5e967f50f5362b0074766d3280",
-      "textosFijos": "5f21f90bfce6f24c26567fae34e1da96e1781af4a73c22b66b1a7f7ab6e01213",
+      "dxf": "a35f3729dc8b4f69fd6fe5421c043e50783cf612bb2056677d8d6dac495298d5",
+      "geometria": "55b38fd5642efdae099b652e44a9b8a6a64f4eca5a693ef646bac20931e88d09",
+      "textosFijos": "23c2cefaf96e954d7738115bcf29b34cb5cdd141bf03d78623f6315776b322fe",
       "textos": "6e0d66fcebb7f844e7aab1130faa5b10d000d0320305066bb9cdb450aae8e1c5",
-      "cotas": "94f31582d9551b4ba75bc5b667e2b5a9814a45eb7eb43c1a65b32e8e1acdc660",
-      "cotasPosicionHash": "62dc52b85c2cff22b0629c345f50688094751d72d1c359d6bab64098f3d396b0",
+      "cotas": "12bc926aa92f94f97d1fef6e1bc3d717cc7a40a616b55647163ad4a0b676b112",
+      "cotasPosicionHash": "d7964c399806cf5ceb048a9f8f6f30150b583aa60bda8489634f47f67c170d0d",
       "ordenTextos": "80be5de13a2dbf80e79675c7f1c582dd638336f7468883b3034f796f13b36e43",
       "textosEnHoja": [
         0,
@@ -1769,12 +1769,12 @@
     {
       "familia": "Puertas / Portanova compatibilidad",
       "ejemplo": "AR2605246",
-      "dxf": "905c6ede46174921a8a8fb95054834fc984368a9bc3a27fd449a99b3a096f2e7",
-      "geometria": "fe39f28d660a2356fe2d0fefd1fcde7c2ff4287a94036f960b787eab0d05e36d",
-      "textosFijos": "91669f62da1a486e7a2223f8d8074b99c34a684e1ceff4524bd64c3b988d3be0",
+      "dxf": "9355453c20549b72026e2319bae08bc05315649bbd13f7d4dca1c4862f6856e0",
+      "geometria": "20c3064d55b7755d9379c0a0b01684822a48677e9dc8caed29b0e5728124f75e",
+      "textosFijos": "ccfe7cd11c999df423aa0b769ce52f77bef1929c8d2f25de664b9e28195300e4",
       "textos": "c6d4d115fc6ef525aee0bae5ac42cde2d6c0db0a0e51a2fe40bccb9d05de8d5e",
-      "cotas": "3c8a080ccb41e502b067e0aef53ade6681acf3d29dcee1e29c2ad7373679e680",
-      "cotasPosicionHash": "52e29212bb6846e5c704b2aca469738c6728d1f508c5685440aa429a7b53c456",
+      "cotas": "5b7d255f7471bb406f5e8081fe67154e3c96b392f1ee6435c78d0c8b98c8f83e",
+      "cotasPosicionHash": "8125fe8006a3ac59cf069b8785874f9be76439eb7ad631e8c6136b27ede5c9dc",
       "ordenTextos": "1999de942f80469466199c93f637d9dc0138e91aed9a8af8284b6838416451cd",
       "textosEnHoja": [
         0,
@@ -2635,12 +2635,12 @@
     {
       "familia": "Puertas / Santa Pau",
       "ejemplo": "AR2604815",
-      "dxf": "e46adc901e1e1d320628bf8e6ce564f35749cdece71670172ab67ec6e9c30f55",
-      "geometria": "e6d3de1615762f7231e086ea8a4ee918afea690874dbf3604e49bd29765a505a",
-      "textosFijos": "ca8d99e34f8d015b18acddd676f6633d216559102e1740f4daf26530e5507064",
+      "dxf": "e238b76d105b2efaf40ceb5e0b5a0c0e309025167ff44bedee9699ac512f6cbe",
+      "geometria": "5ca2476540df73d460ef81df50ddaaaf5569631e86007f63a3daaa4099284d2e",
+      "textosFijos": "05ac021516a5c86a0512288adccd7286b232e955c1f29558f2c02bc955021125",
       "textos": "676f08c35ae5654ee9a9abd8e2f82d33fbd322a349524249a6bbc89904abc790",
-      "cotas": "8895271f6c19e494d975eb9cc7a732a0cc15e1152416f6d3eff7487e68bc6e9a",
-      "cotasPosicionHash": "4655cefb9bbb99e59fd56f128ad396edbfed6240f2fe02ca693a1086a9356d53",
+      "cotas": "7cd63478884d8b9e1adb91151b3aaeb06ed8fa0d3a3c1966b1c46375d25bbc3d",
+      "cotasPosicionHash": "5651bf24c9c3cbe3b5fb60cf5043e6c17c30fb1e5930300d29da5e240028d414",
       "ordenTextos": "d6837906bf957317a5d456224333febaf13913557ed5160f1743ecc83e770d99",
       "textosEnHoja": [
         0,
@@ -2716,12 +2716,12 @@
     {
       "familia": "Puertas / Santa Pau",
       "ejemplo": "AR2605363",
-      "dxf": "b8aa1c3a342c61ba0c24784b26c4d1ecb294b0fd83ca0742692b1a215f9c167f",
-      "geometria": "0fdd87192f11969aab8a3bb546f8580a3757b6ea2cdd93d6c5915ae35f2a439d",
-      "textosFijos": "3f2c845dc6f8f1bf9cf297f7403e9f087e50c5e9c02fc21abe895d5ef9413005",
+      "dxf": "d737cf721a8bb2c08b919668f262e180a9ea10354ae3a4fa9f2394712fa99bec",
+      "geometria": "3e790bc747ea59bf464fd036c82f4dc05fd9144b0eb9d71623573d5baa0cb7e2",
+      "textosFijos": "6cb7c8583b99282f0bad4b622de6ddc3421e457e48e5937d4420b99d53e85440",
       "textos": "48b758ea274bd69f97584e07b9dc0436bf3cbdc871e691c7441dbd7cb2833b43",
-      "cotas": "bebd06b9bea75520c552df3036f6400fc505715066fdbf62c225f3199581c3d4",
-      "cotasPosicionHash": "de43506f93bdac5281ea86c93e69495775ad7256655242ef5bedb339b123ce97",
+      "cotas": "52f3f22779ca202ece7bc1fa7d89bdfaf729d10bf2b401f0382df387b4794d65",
+      "cotasPosicionHash": "0386177cfc932f0041c711ad5d4c4f089ec4cfd9a03dd35f3faa83cf07493e87",
       "ordenTextos": "5d46c2ef120741231b7b61a8dc82a4bbec179d4d23383fe6ddb29e68650d3b72",
       "textosEnHoja": [
         0,

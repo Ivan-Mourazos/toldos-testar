@@ -11,7 +11,7 @@ import { fusionarCortesPuertas, SEPARACION_EXTRA_FILAS, TITULO_MATERIAL_MM } fro
 import { esClientePortanova } from './clientePortanova.ts';
 import { fichaDePuerta } from './clientes.ts';
 import { bajoDobleSaco, desnivelSuelo, envoltorioDobleSaco, pestanaDerecha, rotuloSaco, sacoApilable, sacoPuerta, sacoUtil } from './saco.ts';
-import { corteEnPlano, entidadesDePieza, textosFuera } from './corteEnPlano.ts';
+import { cajaRestos, corteEnPlano, cotasRestos, entidadesDePieza, textosFuera } from './corteEnPlano.ts';
 import { bloqueFlechaEnrollable, dibujarAlzadoEnrollable, ENTRE_PUERTAS, hojasPuertas, lienzoAMetros, origenCorte, sumarLienzo, type LienzoEnrollable } from './planoEnrollable.ts';
 import { DISPOSICIONES_PORTANOVA, presentacionPortanova, type DisposicionPortanova } from './plantillaPortanova.ts';
 import type { CortePuertas, EntidadesPuertas, Hueco, PedidoPuertas, PiezaPuerta, Puerta, Punto } from './tipos.ts';
@@ -689,6 +689,8 @@ function dibujarCorteTaller(cortes: CortePuertas[], pedido: PedidoPuertas, ancho
     // son corte; como en las enrollables (planos a mano 4638 y 5220).
     const ocupado = Math.max(0, ...c.colocadas.filter(t => !t.aparte).map(t => t.y / 10 + (t.girada ? t.pieza.ancho : t.pieza.alto)));
     cota(l, 0, yc, c.largo / 10, yc, yc - 30, 'XERA 20'); cota(l, 0, yc, 0, yc + ocupado, -35, 'XERA 20');
+    const restos = cajaRestos(c, yc);
+    if (restos) { const r = cotasRestos(restos, 30, 35); l.cotas.push(...r.cotas); anchoMax = Math.max(anchoMax, r.hasta); }
     anchoMax = Math.max(anchoMax, (c.extensionDibujo ?? c.largo) / 10);
     // Sin partir por el texto de la cota del largo, que va en medio.
     filas.push({ y0: yc - 45, y1: techo + 40, evitar: [c.largo / 20],

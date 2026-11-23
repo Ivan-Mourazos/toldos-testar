@@ -1,4 +1,4 @@
-import type { CortePuertas, EntidadesPuertas } from './tipos.ts';
+import type { CortePuertas, EntidadesPuertas, Punto } from './tipos.ts';
 
 // El corte del plano es el del bot (Iván, 24/10/2026, flujo del DWG): lo que se toque en ZWCAD es lo que se corta. Estas
 // funciones pasan las entidades del bot (mm) al plano (cm): un corte entero en su rollo, o lo que cae dentro de una pieza
@@ -15,6 +15,31 @@ export function corteEnPlano(c: CortePuertas, yc: number): EntidadesPuertas {
     arcos: e.arcos.map(a => ({ ...a, x: a.x / 10, y: yc + a.y / 10, r: a.r / 10 })),
     circulos: e.circulos.map(a => ({ ...a, x: a.x / 10, y: yc + a.y / 10, r: a.r / 10 })),
     textos: e.textos.map(a => ({ ...a, x: a.x / 10, y: yc + a.y / 10, h: a.h / 10 })),
+  };
+}
+
+/** La caja (cm, con el rollo en `yc`) de las piezas que se cortan de restos, para acotar su ancho y alto totales
+ * (Iván, 23/11/2026, AR2605694). Nada si no hay. */
+export function cajaRestos(c: CortePuertas, yc: number): { x0: number; y0: number; x1: number; y1: number } | null {
+  const r = c.colocadas.filter(t => t.aparte);
+  if (!r.length) return null;
+  const w = (t: Colocada) => t.girada ? t.pieza.alto : t.pieza.ancho, h = (t: Colocada) => t.girada ? t.pieza.ancho : t.pieza.alto;
+  return { x0: Math.min(...r.map(t => t.x / 10)), y0: yc + Math.min(...r.map(t => t.y / 10)),
+    x1: Math.max(...r.map(t => t.x / 10 + w(t))), y1: yc + Math.max(...r.map(t => t.y / 10 + h(t))) };
+}
+
+/** Las dos cotas del bloque de restos: el ancho debajo, a `abajo` cm, y el alto a la derecha, a `derecha` cm. El texto del
+ * alto va tumbado al lado de su línea: con 20 cm de letra no cabe girado entre las rayas de un bloque de 12 (AR2604906).
+ * Devuelve también hasta dónde llega a la derecha. */
+export function cotasRestos(caja: { x0: number; y0: number; x1: number; y1: number }, abajo: number, derecha: number, estilo = 'XERA 20') {
+  const d = caja.x1 + derecha;
+  return {
+    hasta: d + 45,
+    cotas: [
+      { capa: 'cotas', estilo, x1: caja.x0, y1: caja.y0, x2: caja.x1, y2: caja.y0, d: caja.y0 - abajo, giro: 0, valor: caja.x1 - caja.x0 },
+      { capa: 'cotas', estilo, x1: caja.x1, y1: caja.y0, x2: caja.x1, y2: caja.y1, d, giro: 90, valor: caja.y1 - caja.y0,
+        textoHorizontal: true, posicionTexto: [d + 25, (caja.y0 + caja.y1) / 2] as Punto },
+    ],
   };
 }
 

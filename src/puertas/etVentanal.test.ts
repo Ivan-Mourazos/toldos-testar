@@ -5,6 +5,7 @@ import { generarCortePuertas } from './corte.ts';
 import { pedidoDe } from './__fixtures__/ejemplos.ts';
 import { escribirPlanoPuertas } from './plano.ts';
 import { dxfACmt } from '../cmt/index.ts';
+import { numero, registrosDxf, valor } from '../domain/corteLona/dxfTestHelpers.js';
 import type { Puerta } from './tipos.ts';
 
 // AR2605639 (Portanova): T 154, D 60 en 345 de alto; la hoja pide E.T. a 60, 131 y 191 y se guardó solo la de 60.
@@ -66,12 +67,29 @@ describe('E.T. enteras de restos en el mismo corte', () => {
     expect(aparte.every(t => t.pieza.clase === 'entrada')).toBe(true);
     const ids = cortes.flatMap(c => c.colocadas.filter(t=>!t.pieza.id.startsWith('stock-')).map(t=>t.pieza.id)).sort();
     expect(ids).toEqual(resultados.flatMap(r=>r.piezas.flatMap(p=>Array(p.cantidad).fill(p.id))).sort());
+    // Apiladas sin hueco y sin la raya de abajo del todo, que es el borde del resto (Iván, 23/11/2026, AR2605694).
+    const bordes = lona.entidades.lineas.filter(l=>l.capa==='DISCO1' && Math.min(l.x1,l.x2)>=lona.largo+1500);
+    const pila = [...aparte].sort((a,b)=>a.y-b.y);
+    expect(pila[0].y).toBe(0);
+    pila.slice(1).forEach((t,i)=>expect(t.y).toBe(pila[i].y+10*pila[i].pieza.alto));
+    expect(bordes.some(l=>l.y1===0 && l.y2===0)).toBe(false);
     for (const t of aparte) {
-      const bordes = lona.entidades.lineas.filter(l=>l.capa==='DISCO1' && l.x1>=lona.largo+1500);
-      for (const y of [t.y, t.y+10*t.pieza.alto])
-        expect(bordes.some(l=>l.y1===y && l.y2===y && Math.min(l.x1,l.x2)<=t.x && Math.max(l.x1,l.x2)>=t.x+10*t.pieza.ancho)).toBe(true);
+      for (const y of [t.y, t.y+10*t.pieza.alto].filter(y=>y>0)) {
+        const rayas = bordes.filter(l=>l.y1===y && l.y2===y && Math.min(l.x1,l.x2)<t.x+10*t.pieza.ancho && Math.max(l.x1,l.x2)>t.x);
+        expect(rayas).toHaveLength(1);
+        expect(Math.min(rayas[0].x1,rayas[0].x2)<=t.x && Math.max(rayas[0].x1,rayas[0].x2)>=t.x+10*t.pieza.ancho).toBe(true);
+      }
     }
-    expect(escribirPlanoPuertas({pedido,...stock,cabecera:{cliente:'PORTANOVA',tecnico:'IVÁN',revisor:'',fecha:'2026-11-19'}})).toContain('CORTAR DE RESTOS');
+    const plano = escribirPlanoPuertas({pedido,...stock,cabecera:{cliente:'PORTANOVA',tecnico:'IVÁN',revisor:'',fecha:'2026-11-19'}});
+    expect(plano).toContain('CORTAR DE RESTOS');
+    // Cotas del ancho y del alto totales de lo que se corta de restos.
+    const altoPila = pila.reduce((s,t)=>s+t.pieza.alto,0), anchoPila = Math.max(...pila.map(t=>t.pieza.ancho));
+    const cotas = registrosDxf(plano).filter(r => r.tipo === 'DIMENSION' && valor(r, 3) === 'XERA 20');
+    // El plano va en metros: el rollo empieza donde su cota vertical y las de restos van pasado su largo.
+    const inicioRollo = Math.min(...cotas.map(r => Math.min(numero(r, 13), numero(r, 14))));
+    const derechaRollo = inicioRollo + lona.largo / 1000;
+    const deRestos = cotas.filter(r => Math.min(numero(r, 13), numero(r, 14)) > derechaRollo);
+    expect(deRestos.map(r => Math.round(numero(r, 42) * 10) / 10).sort((a, b) => a - b)).toEqual([anchoPila, altoPila].sort((a, b) => a - b));
     const convertido=dxfACmt(archivo!.dxf,{sinTextos:true});
     expect(convertido.dudas).toEqual([]);
     expect(convertido.cmt).toBeTruthy();
