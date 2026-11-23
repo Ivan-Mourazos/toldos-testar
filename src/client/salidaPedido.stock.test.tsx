@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, expect, it, vi } from 'vitest';
 import { NotificationCenter, type NotifyOptions } from './components/NotificationCenter';
 import { ejecutarSalidaPedido } from './salidaPedido';
+import { aprobarLonas } from './components/LonasEntrega';
 
 vi.mock('react-dom', async importOriginal => ({
   ...await importOriginal<typeof import('react-dom')>(),
@@ -40,4 +41,22 @@ it('sin faltas muestra los demás avisos y omite el texto de stock', async () =>
   expect(html).toContain('Revisa el plano.');
   expect(html).not.toContain('No llega el stock');
   expect(html).not.toContain(ultima);
+});
+
+it('manda las lonas aprobadas con decimal en coma y las conserva si se confirma una sustitución', async () => {
+  const lonasAprobadas = aprobarLonas([
+    { codigo: 'LAC900AZ02P300', descripcion: 'Azul', metros: '12,75', ofs: ['0290001'], origen: 'corte' },
+  ])!;
+  const fetch = vi.fn()
+    .mockResolvedValueOnce(Response.json({ needsConfirmation: true, paso: 'Plano' }, { status: 409 }))
+    .mockResolvedValueOnce(Response.json({ ok: true }));
+  vi.stubGlobal('fetch', fetch);
+  await ejecutarSalidaPedido({ ruta: '/api/reviews/AR2600001/produccion', usuario: 'IVÁN', lonasAprobadas,
+    preguntar: vi.fn().mockResolvedValue('confirm'), notify: vi.fn(), terminado: vi.fn() });
+  expect(fetch.mock.calls.map(([, req]) => JSON.parse(req.body))).toMatchObject([
+    { lonasAprobadas: [{ codigo: 'LAC900AZ02P300', ml: 12.75, ofs: ['0290001'] }] },
+    { lonasAprobadas, confirmPlanoOverwrite: true },
+  ]);
+  expect(aprobarLonas([{ codigo: 'LONA', descripcion: '', metros: '0', ofs: [], origen: 'manual' }])).toBeNull();
+  expect(aprobarLonas([])).toEqual([]);
 });
