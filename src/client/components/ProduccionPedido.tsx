@@ -6,7 +6,7 @@ import { MenuMas } from './MenuMas';
 import { ElegirDestinoEntrega } from './DestinoEntrega';
 import { CorteMaquinaContexto } from './CorteMaquina';
 import { EnviosCorte } from './EnviosCorte';
-import { ejecutarSalidaPedido } from '../salidaPedido';
+import { ejecutarSalidaPedido, type LonaAprobada } from '../salidaPedido';
 
 /** Las tres familias comparten acciones, confirmaciones y vuelta al listado. */
 export function ProduccionPedido({ ruta, rutaPdf, rutaPlano, rutaCorte, tecnico, codigo, generado, permitido, motivo, ocupado,
@@ -18,14 +18,14 @@ export function ProduccionPedido({ ruta, rutaPdf, rutaPlano, rutaCorte, tecnico,
   const { settings } = useContext(CorteMaquinaContexto);
   const [trabajando, setTrabajando] = useState(false);
   const [eleccion, elegir] = useState<'produccion' | 'pdf' | 'dxf' | null>(null);
-  async function ejecutar(accion: 'produccion' | 'pdf' | 'plano' | 'dxf', destinoEntrega?: DestinoEntrega, destino?: 'bot' | 'dxfs', tecnicoDestino?: string) {
+  async function ejecutar(accion: 'produccion' | 'pdf' | 'plano' | 'dxf', destinoEntrega?: DestinoEntrega, destino?: 'bot' | 'dxfs', tecnicoDestino?: string, lonasAprobadas?: LonaAprobada[]) {
     if (trabajando || ocupado) return;
     elegir(null);
     setTrabajando(true);
     try {
       await ejecutarSalidaPedido({ ruta: accion === 'produccion' ? ruta + '/produccion' : accion === 'pdf' ? rutaPdf : accion === 'plano' ? rutaPlano : rutaCorte + '/enviar',
         usuario, preguntar, notify, guardado, maquina: settings?.corteDirectoEnabled, actualizado: onChanged, destinoEntrega, bot: accion === 'produccion' ? Boolean(rutaCorte) : destino === 'bot',
-        cuerpo: { soloPdf: accion === 'pdf', sinPdf: true, destino, tecnicoDestino },
+        cuerpo: { soloPdf: accion === 'pdf', sinPdf: true, destino, tecnicoDestino }, lonasAprobadas,
         terminado: () => { onChanged?.(); if (accion === 'produccion') onVolver(); } });
     } finally { setTrabajando(false); }
   }
@@ -40,7 +40,8 @@ export function ProduccionPedido({ ruta, rutaPdf, rutaPlano, rutaCorte, tecnico,
       {mas}
     </MenuMas>
     {(eleccion === 'produccion' || eleccion === 'pdf') && <ElegirDestinoEntrega ruta={ruta + '/destinos-entrega'} codigo={codigo} preguntar={preguntar} cancelar={() => elegir(null)}
-      etiqueta={eleccion === 'produccion' ? 'Pasar a producción' : 'Generar PDF'} generar={d => void ejecutar(eleccion, d)} />}
+      rutaStock={eleccion === 'produccion' ? ruta + '/stock-lona/propuesta' : undefined}
+      etiqueta={eleccion === 'produccion' ? 'Pasar a producción' : 'Generar PDF'} generar={(d, lonas) => void ejecutar(eleccion, d, undefined, undefined, lonas)} />}
     {eleccion === 'dxf' && rutaCorte && <EnviosCorte tecnicoPedido={tecnico} descarga={rutaCorte + '/descargar/dxf'} cancelar={() => elegir(null)} enviar={(d, t) => {
       if (!permitido) { notify(motivo, { tone: 'warning' }); return; }
       void ejecutar('dxf', undefined, d, t);

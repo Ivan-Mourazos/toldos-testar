@@ -1,6 +1,7 @@
 import { ultimoEnvioCorte, convertirCmtRemolques } from '../../corteMaquina.js';
 import { prepararPlanoProduccion } from '../../produccion.js';
-import { lineasLonaRemolques } from '../../stockLona.js';
+import { entregaStockLona, lineasLonaRemolques, necesidadesLona, type CorteStockRemolque } from '../../stockLona.js';
+import { generarCorteRemolques } from '../corte/index.js';
 import { pasarAProduccionConStock, type ServiciosStockLona } from '../../stockLonaProduccion.js';
 import type { Material } from '../calc/materiales-seed.ts';
 import { numerarEntrega, aplicarDestino, necesitaPrepararDestino } from '../../entregasRps.js';
@@ -56,6 +57,7 @@ export interface DependenciasPedidosRemolques {
   coordina: { statusOf(ofs: string[], opciones?: { fresh?: boolean }): Promise<EstadoCoordina> };
   stockLona?: ServiciosStockLona;
   materialesStock?: () => Promise<Material[]>;
+  materialesPropuesta?: () => Material[] | Promise<Material[]>;
   /** La lista de técnicos de toldos (la de «Soy»): da el nombre del revisor de CoordinaOT. */
   tecnicos: string[];
   /** La hoja de taller en PDF (servicio de Chromium de la fase 4). */
@@ -664,6 +666,13 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     } finally { if (!bloqueado) ocupados.delete(orderCode); }
   }
 
+  async function propuestaStockLona(orderCode: string) {
+    const actual = pedidoEntrega(await obtener(orderCode));
+    const materiales = await deps.materialesPropuesta?.() ?? [];
+    const { cortes } = generarCorteRemolques(actual);
+    return { ofs: uniqueOfs(elementosAprobacion(actual)), lonas: necesidadesLona(lineasLonaRemolques(cortes, materiales)) };
+  }
+
   async function produccion(orderCodeBruto: string, cuerpo: unknown): Promise<Respuesta> {
     const codigo = codigoPedido(orderCodeBruto);
     if (ocupados.has(codigo)) return { status: 409, cuerpo: { error: MENSAJE_GUARDANDO } };
@@ -673,8 +682,9 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       const pedido = await obtener(codigo);
       if (pedido.status === 'PRODUCED') return { status: 200, cuerpo: { ok: true, unchanged: true, mensaje: 'Este pedido ya está en producción.' } };
       // `vista` es asíncrona desde los sacos de stock (lee la OF de stock): sin esperarla no se veía el corte.
-      const conCorte = Boolean(deps.corte && ((await deps.corte.vista(pedidoEntrega(pedido)) as { cortes?: unknown[] } | null)?.cortes?.length || pedido.corteConfirmado));
       const actual = pedidoEntrega(pedido);
+      const vista = deps.corte ? await deps.corte.vista(actual) as { cortes?: Array<CorteStockRemolque & { materialOriginal?: string }> } | null : null;
+      const conCorte = Boolean(deps.corte && (vista?.cortes?.length || pedido.corteConfirmado));
       const { stockLona, materialesStock } = deps;
       return await pasarAProduccionConStock([
         { nombre: "PDF", preparar: () => generar(codigo, { ...entrada, soloPdf: false, confirmOverwrite: entrada.confirmPdfOverwrite === true }, true, true) },
@@ -685,9 +695,13 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
           { nombre: (await deps.ajustes()).corteDirectoEnabled ? 'DXF y CMT a la máquina' : 'DXF al bot', preparar: () => enviarCorte(codigo, { ...entrada, usuario: entrada.savedBy, destino: "bot", confirmOverwrite: entrada.confirmDxfOverwrite === true }, true, true) },
         ] : []),
       ], stockLona && materialesStock ? {
-        ...stockLona, pedido: codigo, cliente: pedido.summary.customer, ofs: uniqueOfs(elementosAprobacion(actual)),
+        ...stockLona, pedido: codigo, entrega: entregaStockLona(pedido), cliente: pedido.summary.customer, ofs: uniqueOfs(elementosAprobacion(actual)),
         consultadoPor: typeof entrada.savedBy === 'string' ? entrada.savedBy : null,
-        lineas: async () => lineasLonaRemolques(actual, await materialesStock()),
+        lineas: async () => {
+          const cortes = vista?.cortes?.map(c => ({ ...c, material: c.materialOriginal ?? c.material })) ?? [];
+          return lineasLonaRemolques(cortes, await materialesStock());
+        },
+        lonasAprobadas: entrada.lonasAprobadas,
       } : undefined);
     } finally { ocupados.delete(codigo); }
   }
@@ -701,5 +715,5 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     return pedido.corteConfirmado ? prepararPlanoProduccion({ confirmado: pedido.corteConfirmado }) : planoCorte(codigo, cuerpo);
   }
 
-  return { guardarPlano, produccion, listar, obtener, guardar, borradorCorte, confirmarCorte, estadoCorte, enlacesCorte, generar, vistaPrevia, archivo, buscar, corte, vistaPreviaCorte, metrosCorteDeLaPantalla, planoCorte, enviarCorte, descargarCorte };
+  return { guardarPlano, produccion, propuestaStockLona, listar, obtener, guardar, borradorCorte, confirmarCorte, estadoCorte, enlacesCorte, generar, vistaPrevia, archivo, buscar, corte, vistaPreviaCorte, metrosCorteDeLaPantalla, planoCorte, enviarCorte, descargarCorte };
 }

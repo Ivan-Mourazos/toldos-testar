@@ -26,6 +26,17 @@
 .destino-entrega fieldset { margin-block: 16px; border: 1px solid var(--border); border-radius: 8px; }
 .destino-entrega label { display: inline-flex; gap: 8px; align-items: center; padding: 10px 16px 10px 0; }
 .destino-entrega footer { display: flex; justify-content: flex-end; gap: 12px; }
+.destino-entrega .lonas-entrega td { vertical-align: top; }
+.lonas-entrega .lona-descripcion { display: block; }
+.lonas-entrega small { color: var(--text-muted); }
+.lonas-entrega td > input { width: 7rem; padding: 8px 10px; color: var(--text); background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; font: inherit; }
+.lonas-entrega td > input[aria-invalid="true"] { border-color: var(--danger); }
+.lonas-entrega td:last-child { width: 1%; }
+.lonas-entrega details label { display: flex; padding: 4px 0; }
+.lonas-entrega details summary { cursor: pointer; }
+.lonas-entrega > button { margin-top: 8px; }
+.lonas-entrega-buscar { display: flex; align-items: end; gap: 12px; padding-top: 8px; }
+.lonas-entrega-buscar .field { flex: 1; }
 
 .destino-dxf { width: 36rem; }
 .destino-dxf label { display: block; padding-bottom: 6px; }

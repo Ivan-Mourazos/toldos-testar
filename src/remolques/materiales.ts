@@ -1,6 +1,7 @@
 import sql from "mssql";
 import { MATERIALES_SEED, type Material } from "./calc/materiales-seed.ts";
 import { getRpsPool } from "./rps/pool.ts";
+import fabrics from '../domain/data/fabrics.json' with { type: 'json' };
 
 // Subfamilia "PLASTICA (LONA)" (lonas PVC) de la empresa 001 en RPSNext.
 const SUBFAMILIA_PLASTICA_LONA = "8fcf241e-fcfa-4760-8992-26e35c031ffc";
@@ -19,6 +20,13 @@ export function esLonaPvcProduccion(descripcion: string): boolean {
 
 const materialesSeedProduccion = () =>
   MATERIALES_SEED.filter((material) => esLonaPvcProduccion(material.nombre));
+
+/** Catálogo ya disponible para detectar bobinas sin consultar RPS ni su stock. */
+export function materialesParaPropuesta(): Material[] {
+  return [...(cache?.data ?? []), ...materialesSeedProduccion(),
+    ...fabrics.filter(f => f.width && esLonaPvcProduccion(f.description))
+      .map(f => ({ nombre: f.description, codigoBobina: f.code }))];
+}
 export function rowsToMateriales(
   rows: Array<{ CodArticle: string; Description: string; StockArzua?: number | null }>,
 ): Material[] {

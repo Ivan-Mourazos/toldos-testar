@@ -1,20 +1,27 @@
-import { textoAvisoStock } from '../stockLona.js';
+import { textoAvisoStock } from '../stockLonaAviso.js';
 import type { DestinoEntrega } from '../entregasTipos';
 import type { AskForConfirmation, Notify } from './components/NotificationCenter';
 import { decidirCortePendiente } from './toldosEditable';
+
+export interface LonaAprobada { codigo: string; ml: number; ofs?: string[] }
+export interface PropuestaStockLona {
+  ofs: string[];
+  lonas: (LonaAprobada & { ofs: string[]; descripcion: string; origen: 'corte' | 'reserva' | 'manual' })[];
+}
 
 export interface SalidaPedido {
   ruta: string; usuario: string; preguntar: AskForConfirmation; notify: Notify;
   maquina?: boolean; recibido?: (datos: Record<string, unknown>) => void;
   cuerpo?: Record<string, unknown>; destinoEntrega?: DestinoEntrega; bot?: boolean;
+  lonasAprobadas?: LonaAprobada[];
   guardado?: { ruta: string; cuerpo: Record<string, unknown>; usuario: string };
   actualizado?: () => void;
   terminado: () => void;
 }
 
 /** Las preguntas siempre se resuelven en el servidor antes de publicar las salidas. */
-export async function ejecutarSalidaPedido({ ruta, usuario, preguntar, notify, cuerpo, destinoEntrega, bot, maquina, guardado, actualizado, terminado, recibido }: SalidaPedido) {
-  const entrada: Record<string, unknown> = { ...cuerpo, savedBy: usuario, usuario, destinoEntrega, confirmarEntrega: Boolean(destinoEntrega) };
+export async function ejecutarSalidaPedido({ ruta, usuario, preguntar, notify, cuerpo, destinoEntrega, lonasAprobadas, bot, maquina, guardado, actualizado, terminado, recibido }: SalidaPedido) {
+  const entrada: Record<string, unknown> = { ...cuerpo, savedBy: usuario, usuario, destinoEntrega, confirmarEntrega: Boolean(destinoEntrega), lonasAprobadas };
   try {
     if (bot) {
       if (await preguntar({ title: maquina ? 'Mandar corte a la máquina' : 'Pasar el corte al bot', message: maquina ? 'Se mandarán el DXF y el CMT a la máquina de corte. Si ya se mandaron, volverán a salir. Comprueba el pedido antes de confirmar.' : 'El corte irá al bot y se cortará. Si ya se mandó, volverá a salir: la web no puede saber si ya se cortó.',

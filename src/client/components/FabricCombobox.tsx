@@ -27,9 +27,10 @@ type Props = {
   // que la tela»); si no, «—».
   readEmptyAs?: string;
   onlyPvc?: boolean;
+  soloReferencia?: boolean;
 };
 
-export function FabricCombobox({ label, value, onChange, placeholder = 'Código, color o nombre…', disabled = false, missing = false, readEmptyAs = '', onlyPvc = false }: Props) {
+export function FabricCombobox({ label, value, onChange, placeholder = 'Código, color o nombre…', disabled = false, missing = false, readEmptyAs = '', onlyPvc = false, soloReferencia = false }: Props) {
   const reading = useReadMode();
   const labelId = useId();
   const [query, setQuery] = useState(() => fabricSelectionLabel(value));
@@ -40,6 +41,7 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
   const [open, setOpen] = useState(false);
   const { montado, alTerminar } = useSalidaAnimada(open);
   const [loading, setLoading] = useState(false);
+  const [portal, setPortal] = useState<HTMLDialogElement | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -90,7 +92,7 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
   }
 
   const selectedFabric = resolveFabric(value);
-  const needsRollWidth = selectedFabric && !resolveFabric(selectedFabric.code)?.width;
+  const needsRollWidth = !soloReferencia && selectedFabric && !resolveFabric(selectedFabric.code)?.width;
   const widthLabel = label === 'Tela bamba' ? 'Ancho de rollo de bamba (cm)' : 'Ancho de rollo (cm)';
   if (reading) return <>
     <ReadPair label={label} value={value ? fabricSelectionLabel(value) : readEmptyAs} />
@@ -130,11 +132,13 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
           aria-expanded={open}
           aria-controls={listId}
           autoComplete="off"
+          autoFocus={soloReferencia}
           disabled={disabled}
           value={open || typed ? query : value ? fabricSelectionLabel(value) : ''}
           placeholder={placeholder}
-          onFocus={() => {
+          onFocus={event => {
             if (disabled) return;
+            setPortal(event.currentTarget.closest('dialog'));
             if (!typed) setQuery(fabricSelectionLabel(value));
             setOpen(true);
           }}
@@ -147,10 +151,10 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
             setOpen(true);
           }}
           onKeyDown={(event) => {
-            if (event.key === 'Escape') setOpen(false);
-            if (event.key === 'Enter' && options[0]) {
+            if (event.key === 'Escape' && open) { event.preventDefault(); setOpen(false); }
+            if (event.key === 'Enter' && open) {
               event.preventDefault();
-              choose(options[0]);
+              if (!loading && options[0]) choose(options[0]);
             }
           }}
         />
@@ -186,7 +190,7 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
             </button>
           ))}
         </div>,
-        document.body
+        portal ?? document.body
       )}
     </div>
   );

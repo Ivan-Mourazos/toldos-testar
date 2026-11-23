@@ -93,7 +93,10 @@ describe('enviar el stock de lona a CoordinaOT', () => {
   it('envía el cuerpo JSON y la clave a la ruta de integración', async () => {
     const fetchImpl = reply([]);
     const client = createCoordinaClient({ url: 'http://coordina:4300/', key: 'clave', fetchImpl });
-    const datos = { pedido: 'AR2600001', cliente: 'Cliente', ofs: ['0290001'], lonas: [], faltas: [],
+    const material = { codigo: 'LAC900GR38P300', descripcion: 'Lona gris', ofs: ['0290001'] };
+    const datos = { pedido: 'AR2600001', entrega: 11, cliente: 'Cliente', ofs: ['0290001', '0290002'],
+      lonas: [{ ...material, ml: 8.75, origen: 'manual' }],
+      faltas: [{ ...material, necesita: 8.75, disponible: 3 }],
       consultado: '2026-11-23T10:00:00.000Z', consultadoPor: 'IVÁN' };
     expect(await client.enviarStockLona(datos)).toEqual({ ok: true });
     expect(fetchImpl).toHaveBeenCalledExactlyOnceWith('http://coordina:4300/api/integracion/stock-lona', {

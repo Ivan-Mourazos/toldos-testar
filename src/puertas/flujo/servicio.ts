@@ -1,6 +1,6 @@
 import { ultimoEnvioCorte } from '../../corteMaquina.js';
 import { prepararPlanoProduccion } from '../../produccion.js';
-import { lineasLonaPuertas } from '../../stockLona.js';
+import { entregaStockLona, lineasLonaPuertas, necesidadesLona } from '../../stockLona.js';
 import { pasarAProduccionConStock, type ServiciosStockLona } from '../../stockLonaProduccion.js';
 import { numerarEntrega, aplicarDestino, necesitaPrepararDestino } from '../../entregasRps.js';
 import { mkdir, stat } from "node:fs/promises";
@@ -640,6 +640,19 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
     } finally { ocupados.delete(codigo); }
   }
 
+  // Los tramos de una puerta Araujo pueden llevar su propia OF dentro de la entrega.
+  function ofsStockPuertas(actual: PedidoPuertasGuardado) {
+    return uniqueOfs([...elementosAprobacion(actual),
+      ...actual.elementos.flatMap(e => (e.input.araujo?.tramos ?? []).map(t => ({ letter: '', of: t.of ?? '' })))]);
+  }
+
+  async function propuestaStockLona(orderCode: string) {
+    const actual = pedidoEntrega(await obtener(orderCode));
+    const ofs = ofsStockPuertas(actual);
+    const corte = generarCortePuertas({ ...actual, summary: undefined });
+    return { ofs, lonas: necesidadesLona(lineasLonaPuertas(corte, ofs)) };
+  }
+
   async function produccion(orderCode: string, cuerpo: unknown): Promise<Respuesta> {
     const codigo = codigoPedido(orderCode);
     if (ocupados.has(codigo)) return { status: 409, cuerpo: { error: MENSAJE_OCUPADO } };
@@ -651,6 +664,7 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
       const actual = pedidoEntrega(pedido);
       const aprobacion = elementosAprobacion(actual);
       const ofs = uniqueOfs(aprobacion);
+      const ofsStock = ofsStockPuertas(actual);
       const revisor = approvalReviewers(aprobacion, aprobacionToldos(await deps.coordina.statusOf(ofs, { fresh: true })), deps.tecnicos);
       return await pasarAProduccionConStock([
         { nombre: 'PDF', preparar: () => prepararPdfProduccion(codigo, { ...entrada, confirmOverwrite: entrada.confirmPdfOverwrite === true }) },
@@ -659,9 +673,10 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
           escribir: async (ficheros: (FicheroPlanoPuertas & { contenido: Uint8Array })[]) => { for (const f of ficheros) await deps.plano!.escribir(f); } }) },
         { nombre: (await deps.ajustes()).corteDirectoEnabled ? 'DXF y CMT a la máquina' : 'DXF al bot', preparar: () => enviarCorte(codigo, { ...entrada, usuario: entrada.savedBy, destino: 'bot', sinPdf: true, confirmOverwrite: entrada.confirmDxfOverwrite === true }, true, true) },
       ], deps.stockLona && {
-        ...deps.stockLona, pedido: codigo, cliente: pedido.summary.customer, ofs,
+        ...deps.stockLona, pedido: codigo, entrega: entregaStockLona(pedido), cliente: pedido.summary.customer, ofs: ofsStock,
         consultadoPor: typeof entrada.savedBy === 'string' ? entrada.savedBy : null,
-        lineas: async () => lineasLonaPuertas(generarCortePuertas({ ...actual, summary: undefined }, { ofStockSacos: await ofStock(), incluirMetrosLona: true })),
+        lineas: async () => lineasLonaPuertas(generarCortePuertas({ ...actual, summary: undefined }, { ofStockSacos: await ofStock() }), ofsStock),
+        lonasAprobadas: entrada.lonasAprobadas,
       });
     } finally { ocupados.delete(codigo); }
   }
@@ -674,5 +689,5 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
     return pedido.corteConfirmado ? prepararPlanoProduccion({ confirmado: pedido.corteConfirmado }) : planoRevision(codigo, cuerpo);
   }
 
-  return { guardarPlano, produccion, pdfPedido, listar, obtener, guardar, borradorCorte, confirmarCorte, estadoCorte, enlacesCorte, planoRevision, generar, corte, descargarCorte, enviarCorte, rehacerPdf };
+  return { guardarPlano, produccion, propuestaStockLona, pdfPedido, listar, obtener, guardar, borradorCorte, confirmarCorte, estadoCorte, enlacesCorte, planoRevision, generar, corte, descargarCorte, enviarCorte, rehacerPdf };
 }
