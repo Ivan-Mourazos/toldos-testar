@@ -6,6 +6,7 @@ import { calculateFabricUsage } from './fabricMath.js';
 import { normalizeCambioCortinaParameters } from './cambioCortinaParameters.js';
 import { cambioTelaExtraError, normalizeFabricJobParameters, resolveCambioTelaExtraCm, resolveFabricJobAllowance } from './fabricJobParameters.js';
 import { normalizeAnticaVariant, resolveAnticaRoundEntry } from './anticaRules.js';
+import { BASTILLA_ABAJO_TIRA_CM, formaBambalina, normalizarBastillasBamba } from './corteLona/bambalina.js';
 
 const supportedModels = new Set(['CAMBIO TELA', 'CAMBIO CORTINA', 'ENROLLABLE', 'BAMBALINA', 'CAMBIO ANTICA']);
 
@@ -30,7 +31,7 @@ export function calculateFabricOnly({ order, awning }) {
   const cambioAnticaExtra = model === 'CAMBIO ANTICA' ? Number(awning.cambioAnticaExtraCm) || 0 : 0;
   const cambioTelaError = model === 'CAMBIO TELA' ? cambioTelaExtraError(awning) : '';
   const widthAdjustment = modified ? Number(awning.fabricJobWidthAdjustmentCm) || 0 : 0;
-  const fabricWidth = round1(Math.max(0, Number(awning.width) + widthAdjustment));
+  const fabricWidth = round1(Math.max(0, Number(awning.width) + widthAdjustment + (model === 'BAMBALINA' ? puntasBambaCm(awning) : 0)));
   const bodyAllowance = model === 'CAMBIO ANTICA'
     ? cambioAnticaExtra
     : model === 'CAMBIO TELA'
@@ -120,8 +121,33 @@ export function calculateFabricOnly({ order, awning }) {
   };
 }
 
+/** Bastilla de cada punta en el corte de la tira, sin tocar (B.N(2), como `tiraExtraLargoCm` del corte). */
+const PUNTA_BAMBA_CM = 2;
+
+/**
+ * Lo que suman las bastillas de las puntas al frente de la bambalina suelta. Sin elegir ninguna, nada: el frente
+ * bruto de siempre. Con alguna elegida, el frente real de corte: la elegida y B.N(2) en la otra (Iván, 23/11/2026:
+ * «los textos de la bambalina no se adaptan a las opciones de las bastillas o medidas reales»).
+ */
+function puntasBambaCm(awning) {
+  const b = normalizarBastillasBamba(awning.bambaBastillas) ?? {};
+  if (!('izq' in b) && !('der' in b)) return 0;
+  return (b.izq ?? PUNTA_BAMBA_CM) + (b.der ?? PUNTA_BAMBA_CM);
+}
+
+/**
+ * Lo que se suma a la bamba: el remate de siempre (B.N(2) abajo y el resto arriba, para la varilla), con las
+ * bastillas elegidas en el formulario en su lugar. Con onda, abajo no se toca: lleva remate aparte.
+ */
+function altoBastillasBambaCm(awning, valanceExtra) {
+  const b = normalizarBastillasBamba(awning.bambaBastillas) ?? {};
+  const abajo = Math.min(BASTILLA_ABAJO_TIRA_CM, valanceExtra);
+  const onda = Boolean(formaBambalina(awning.valanceCurve));
+  return (b.arriba ?? valanceExtra - abajo) + (onda ? abajo : b.abajo ?? abajo);
+}
+
 function calculateBodyDrop({ model, awning, bodyAllowance, valanceHeight, valanceExtra, separateValance, curtainParameters, curtainDeduction }) {
-  if (model === 'BAMBALINA') return valanceHeight + valanceExtra;
+  if (model === 'BAMBALINA') return valanceHeight + altoBastillasBambaCm(awning, valanceExtra);
   if (model === 'CAMBIO CORTINA') {
     // El margen de 45 incluye el remate de 5 de la bamba: sin bamba de la misma
     // tela no se suma (Iván, 22/09/2026; mismo criterio que Cambio de tela).

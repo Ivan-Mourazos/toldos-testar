@@ -2112,7 +2112,7 @@ function drawValancePanel(doc, x, y, w, h, spec, options = {}) {
     }
   }
   doc.stroke();
-  doc.rect(x, y, w, Math.min(5, h / 4)).fillAndStroke('#edf3f0', '#4f6e63');
+  if (!options.sinBandaArriba) doc.rect(x, y, w, Math.min(5, h / 4)).fillAndStroke('#edf3f0', '#4f6e63');
   if (options.topSeamColor) {
     doc.moveTo(x + 5, y + Math.min(5, h / 4)).lineTo(x + w - 5, y + Math.min(5, h / 4))
       .strokeColor(options.topSeamColor).lineWidth(0.6).stroke();
@@ -2374,6 +2374,27 @@ function notaBastillasBamba(awning) {
     .map(([borde, nombre]) => `${nombre} ${textoBastilla(elegidas[borde])}`).join(' · ');
 }
 
+/**
+ * La raya discontinua del doblez de cada borde que lleva bastilla (Iván, 23/11/2026: «el dibujo debe adaptarse
+ * también»); el que va al corte se queda sin ella. Sin elegir, las de siempre: puntas, varilla arriba y, si es recta,
+ * abajo (con onda abajo lleva remate aparte).
+ */
+function dobladillosBamba(doc, x, y, w, h, elegidas, onda) {
+  const lleva = (borde, siempre = true) => (borde in elegidas ? elegidas[borde] > 0 : siempre);
+  const d = 6;
+  const rayas = [
+    lleva('izq') && [[x + d, y], [x + d, y + h]],
+    lleva('der') && [[x + w - d, y], [x + w - d, y + h]],
+    lleva('arriba') && [[x, y + Math.min(5, h / 4) + 3], [x + w, y + Math.min(5, h / 4) + 3]],
+    !onda && lleva('abajo') && [[x, y + h - d], [x + w, y + h - d]]
+  ].filter(Boolean);
+  doc.save();
+  for (const [[x1, y1], [x2, y2]] of rayas) {
+    doc.moveTo(x1, y1).lineTo(x2, y2).strokeColor('#4f6e63').lineWidth(0.5).dash(2, { space: 2 }).stroke().undash();
+  }
+  doc.restore();
+}
+
 function drawValanceDiagram(doc, x, y, w, h, awning = {}, calculation = {}) {
   const valance = buildValanceDiagramSpec({ ...awning, model: 'BAMBALINA' });
   const elegidas = bastillasBambaElegidas(awning);
@@ -2385,9 +2406,11 @@ function drawValanceDiagram(doc, x, y, w, h, awning = {}, calculation = {}) {
   const arriba = !('arriba' in elegidas) ? 'VARILLA BLANCA' : elegidas.arriba > 0 ? `VARILLA BLANCA · ${textoBastilla(elegidas.arriba)}` : 'ARRIBA AL CORTE';
   drawValancePanel(doc, stripX, stripY, stripW, stripH, valance, {
     topLabel: arriba,
+    sinBandaArriba: elegidas.arriba === 0,
     bodyLabel: `${bambaDiagramLabel(valance)} · CORTE ${formatInstructionMeasure(calculation.fabricDrop)} CM`,
     measurement: ''
   });
+  dobladillosBamba(doc, stripX, stripY, stripW, stripH, elegidas, Boolean(formaBambalina(awning.valanceCurve)));
   const punta = (borde) => (borde in elegidas ? textoBastilla(elegidas[borde]) : 'BASTILLA');
   drawRotatedDiagramText(doc, punta('izq'), stripX - 10, stripY + stripH / 2, stripH - 18);
   drawRotatedDiagramText(doc, punta('der'), stripX + stripW + 10, stripY + stripH / 2, stripH - 18);

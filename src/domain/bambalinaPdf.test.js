@@ -3,7 +3,7 @@ import { describe, test, expect } from 'vitest';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { calculateOrder } from './rules.js';
 import { buildFinalRows } from './reservationWorkbook.js';
-import { buildOrderPlanteamientoPdf, buildPlanteamientoPlan } from './planteamientoPdf.js';
+import { buildFabricDiagramSvg, buildOrderPlanteamientoPdf, buildPlanteamientoPlan } from './planteamientoPdf.js';
 
 const baseAwning = { id: 'a', of: '0230001', model: 'BAMBALINA', units: 1, width: 300, projection: 0, valanceHeight: 30, valanceCurve: 'RECTA' };
 const baseOrder = { orderCode: 'PRUEBA-BAMBA', fabric: 'ACR NEGRO', awnings: [baseAwning] };
@@ -92,6 +92,33 @@ describe('Bambalina: las bastillas elegidas salen en el dibujo', () => {
     const [text] = await pages({ ...baseOrder, awnings: [{ ...baseAwning, fabricImage, bambaBastillas: { izq: 0, abajo: 3 } }] });
     expect(text).toContain('PUNTA IZQ. AL CORTE');
     expect(text).toContain('ABAJO BASTILLA 3 CM');
+  });
+
+  // Iván, 23/11/2026: «los textos de la bambalina no se adaptan a las opciones de las bastillas o medidas reales;
+  // y el dibujo debe adaptarse también». Las medidas de corte salen de las bastillas elegidas.
+  const medidas = (bambaBastillas, extra = {}) => calculateOrder({ ...baseOrder, awnings: [{ ...baseAwning, bambaBastillas, ...extra }] }).ofs[0].calculation;
+  test('las medidas de corte cuentan las bastillas elegidas', async () => {
+    expect(medidas(undefined)).toMatchObject({ fabricWidth: 300, fabricDrop: 35 });
+    expect(medidas({ izq: 0, der: 3.5, abajo: 4, arriba: 6 })).toMatchObject({ fabricWidth: 303.5, fabricDrop: 40 });
+    expect(medidas({ abajo: 0, arriba: 0 })).toMatchObject({ fabricWidth: 300, fabricDrop: 30 });
+    expect(medidas({ arriba: 1 })).toMatchObject({ fabricDrop: 33 });
+    expect(medidas({ izq: 2 })).toMatchObject({ fabricWidth: 304 });
+    // Con onda, abajo no lleva bastilla (remate aparte): se queda como siempre.
+    expect(medidas({ abajo: 0, arriba: 0 }, { valanceCurve: 'NORMAL' })).toMatchObject({ fabricDrop: 32 });
+    const [text] = await pages({ ...baseOrder, awnings: [{ ...baseAwning, bambaBastillas: { izq: 0, der: 3.5, abajo: 4, arriba: 6 } }] });
+    expect(text).toContain('CORTE 40 CM');
+    expect(text).toContain('303,5');
+  });
+  test('el dibujo pinta las bastillas que lleva y no las que van al corte', () => {
+    const discontinuas = (bambaBastillas) => {
+      const awning = { ...baseAwning, bambaBastillas };
+      const calculation = calculateOrder({ ...baseOrder, awnings: [awning] }).ofs[0].calculation;
+      return buildFabricDiagramSvg({ diagram: 'BAMBALINA', awning, calculation }).nodes
+        .filter((n) => n.tag === 'path' && n.attrs.strokeDasharray).length;
+    };
+    expect(discontinuas(undefined)).toBe(4);
+    expect(discontinuas({ izq: 0, der: 0, abajo: 0, arriba: 0 })).toBe(0);
+    expect(discontinuas({ izq: 0, abajo: 0 })).toBe(2);
   });
 });
 
