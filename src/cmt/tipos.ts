@@ -28,7 +28,7 @@ export interface OpcionesCmt {
   curvasACutter?: number;
   /** Arial del sistema o una copia proporcionada por el administrador. No se distribuye. */
   rutaFuente?: string;
-  /** Reproduce las seis cifras del paso SVG del robot. Por defecto, true salvo al recolocar un DXF limpio. */
+  /** Reproduce las seis cifras del paso SVG del robot. Por defecto, true. */
   compatibilidadRobot?: boolean;
   /** Quita la leyenda completa reconocida de la web u oficina y lleva el dibujo a 300 y 20 mm. */
   sinLeyenda?: boolean;
