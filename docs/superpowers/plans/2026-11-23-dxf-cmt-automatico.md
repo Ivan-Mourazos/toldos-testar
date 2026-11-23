@@ -13,7 +13,9 @@
 ## Global Constraints
 
 - Marco del corte = rectángulo (eje X/Y) en la capa `0`; en la oficina nunca se dibuja en la capa 0.
-- DWG siempre ×1000 (planos en metros). DXF: `$INSUNITS` 6 → ×1000, 5 → ×10; si no, por tamaño (lado mayor < 100 unidades → ×1000, si no ×1). Resultado fuera de 10 mm…100 000 mm → no se genera.
+- DWG siempre ×1000 (planos en metros). DXF: `$INSUNITS` 6 → ×1000, 5 → ×10, 4 → ×1; otro código distinto de 0 → duda; sin unidades, por tamaño (lado mayor < 100 unidades → ×1000, si no ×1). Resultado fuera de 10 mm…`LARGO_MAXIMO_MM` (provisional 60 000, se fija con la Task 0) → no se genera.
+- Nunca sale un DXF o CMT vacío: si no queda nada que cortar, es una duda.
+- Las correcciones marcadas «Revisión 23/11» en cada tarea son obligatorias y mandan sobre el código de ejemplo de esa tarea.
 - Salida siempre en mm, DXF 2004 (AC1018), solo capas `DISCO1, DISCO2, CUTTER, ROTULADOR, taladro, texto`.
 - Capas desconocidas: las elige el técnico y se guardan en la tabla. Nunca por color automático.
 - Solapes en la misma capa (tras asignar capas): se quitan solos, tolerancia 0,01 mm. Entre capas distintas: decide el técnico (por pareja de capas).
@@ -110,6 +112,12 @@ export function dxfPrueba({ insunits, capas = {}, entidades = [], bloques = [] }
 ---
 
 ### Task 2: Hornear (descomponer a piezas en el mundo)
+
+**Revisión 23/11 (obligatorio, con prueba por punto):**
+- `hornear` conserva las validaciones de `src/cmt/validacion.ts`: códigos obligatorios ausentes, `r > 0`, `h > 0` y polilíneas con anchura (`40/41/43` ≠ 0) → duda, nunca `0` ni `NaN` en silencio.
+- `INSERT` con normal `230 < 0` en `src/cmt/entidades.ts:31-32`: hoy niega `sx` antes de girar y deja sin negar el punto de inserción, con lo que el bloque queda mal colocado cuando `10 ≠ 0` o `50 ≠ 0`. Correcto: matriz del INSERT en OCS y luego espejo `(-x, y)` por la izquierda. Es un fallo también del conversor actual: prueba con un bloque girado y desplazado en `230 = -1` comparando con el resultado de ZWCAD (o con el cálculo a mano), y comprobar que `pnpm vitest run src/cmt` sigue en verde.
+- `TEXT`: si `72` y `73` son 0, el punto es `10/20` y no se transforma ni se emite `11/21`; si no, el ancla es `11/21`.
+- Estilo de texto (`7`): copiar al `TEXT` el ancho (`41`) y el oblicuo (`51`) del estilo cuando la entidad no los traiga, y avisar si el estilo usa una fuente `.shx`.
 
 **Files:**
 - Create: `src/cmt/preparacion/hornear.ts`
@@ -319,6 +327,12 @@ export function hornear(entidades: EntidadDxf[]): { piezas: Pieza[]; avisos: Dud
 
 ### Task 3: Marco del corte en la capa 0
 
+**Revisión 23/11 (obligatorio, con prueba por punto):**
+- `clasificar`: para «cruza» o «fuera», intersección real entre segmento o arco y rectángulo, no solo cajas. Una diagonal fuera cuya caja toca una esquina del marco es «fuera».
+- `cajaPieza` de `TEXT`: usar `11/21` cuando `72` o `73` ≠ 0, si no `10/20`. Para arcos, `normGrados(hasta - desde) || 360`.
+- `esBorde`: además de la coordenada perpendicular, el tramo tiene que caer dentro del lado del marco.
+- `toleranciaDe`: relativa al tamaño del marco candidato, no a la caja de todo el dibujo; así una entidad olvidada lejos no infla la tolerancia.
+
 **Files:**
 - Create: `src/cmt/preparacion/marco.ts`
 - Test: `src/cmt/preparacion/marco.test.ts`
@@ -432,6 +446,13 @@ export function buscarMarcos(piezas: Pieza[]): Caja[] {
 
 ### Task 4: Unidades y capas
 
+**Revisión 23/11 (obligatorio):**
+- Pruebas añadidas para `decidirEscala`:
+  - DXF con `$INSUNITS = 4` y 80 mm → ×1.
+  - `$INSUNITS = 1` → error.
+  - DWG de 50 unidades (50 m) → error si supera `LARGO_MAXIMO_MM`.
+- `asignarCapas` busca en la tabla y en `capasDxf` por `claveCapa` (sin distinguir mayúsculas). Nunca devuelve como desconocida una capa vacía `""`, ni una de las 6 capas fijas del bot.
+
 **Files:**
 - Create: `src/cmt/preparacion/unidades.ts`, `src/cmt/preparacion/capas.ts`
 - Test: `src/cmt/preparacion/unidades.test.ts`, `src/cmt/preparacion/capas.test.ts`
@@ -484,16 +505,21 @@ describe('asignarCapas', () => {
 ```ts
 // unidades.ts
 import type { Caja } from './tipos.ts';
+/** Lado mayor admitido tras escalar. Provisional: se fija con el estudio de la Task 0 (corte real más largo × 1,5)
+ *  para que un DWG en cm o en mm escalado ×1000 no pase como si fuera un corte largo. */
+export const LARGO_MAXIMO_MM = 60_000;
 export function decidirEscala(origen: 'dwg' | 'dxf', insunits: number | undefined, caja: Caja): { factor: number; motivo: string } | { error: string } {
   const lado = Math.max(caja.x1 - caja.x0, caja.y1 - caja.y0);
   let factor: number, motivo: string;
   if (origen === 'dwg') { factor = 1000; motivo = 'Plano DWG en metros: se pasa a mm (×1000)'; }
   else if (insunits === 6) { factor = 1000; motivo = 'El DXF está en metros: se pasa a mm (×1000)'; }
   else if (insunits === 5) { factor = 10; motivo = 'El DXF está en centímetros: se pasa a mm (×10)'; }
+  else if (insunits === 4) { factor = 1; motivo = 'El DXF está en mm'; }
+  else if (insunits !== undefined && insunits !== 0) return { error: `El DXF tiene unas unidades que no se usan en la oficina (código ${insunits}): guárdalo en metros o en mm desde ZWCAD` };
   else if (lado < 100) { factor = 1000; motivo = 'Por su tamaño, el DXF está en metros: se pasa a mm (×1000)'; }
   else { factor = 1; motivo = 'El DXF ya está en mm'; }
   const mm = lado * factor;
-  if (mm < 10 || mm > 100_000) return { error: `Con esa escala el corte mediría ${Math.round(mm).toLocaleString('es-ES')} mm: revisa las unidades del plano en ZWCAD` };
+  if (mm < 10 || mm > LARGO_MAXIMO_MM) return { error: `Con esa escala el corte mediría ${Math.round(mm).toLocaleString('es-ES')} mm: revisa las unidades del plano en ZWCAD` };
   return { factor, motivo };
 }
 ```
@@ -523,6 +549,11 @@ export function asignarCapas(piezas: Pieza[], tabla: Record<string, Herramienta>
 ---
 
 ### Task 5: Solapes
+
+**Revisión 23/11 (obligatorio, con prueba por punto):**
+- Colinealidad simétrica: medir siempre la distancia de los extremos del tramo corto a la recta del largo. `restar(p, q)` y `restar(q, p)` tienen que detectar el mismo solape. Prueba: tramo de 10 mm desviado 0,005 mm sobre uno de 3 000 mm, en los dos órdenes.
+- En `buscarSolapes`, `zonas` es la caja del tramo realmente pisado, no la de la pieza entera.
+- `aplicarSolapes` lanza un error si `gana` no es ni `a` ni `b`.
 
 **Files:**
 - Create: `src/cmt/preparacion/solapes.ts`
@@ -685,6 +716,10 @@ export function aplicarSolapes(piezas: Pieza[], decisiones: Record<string, strin
 
 ### Task 6: DXF limpio y CMT recolocado
 
+**Revisión 23/11 (obligatorio):**
+- Añadir `textosCad?: Array<{capa:string, pares:[number,string][]}>` al `@param` JSDoc de `escribirDxf2004` (`src/domain/corteLona/dxfCorte.js:16`). Sin esto, `pnpm typecheck` falla.
+- `textosCad` no emite `11/21` cuando `72` y `73` son 0.
+
 **Files:**
 - Modify: `src/domain/corteLona/dxfCorte.js` (nuevo parámetro `textosCad`)
 - Modify: `src/cmt/tipos.ts` (`OpcionesCmt.recolocar`), `src/cmt/index.ts`
@@ -775,6 +810,15 @@ export function escribirDxfLimpio(piezas: Pieza[]): string {
 ---
 
 ### Task 7: Orquestador `preparar()`
+
+**Revisión 23/11 (obligatorio, con prueba por punto; manda sobre el código del paso 3):**
+- **Orden de las dudas.** Las dudas de entidades (SPLINE, ELLIPSE, escala desigual, texto en espejo, anchura…) no cortan el proceso antes del marco. Se guarda cada duda con su caja y su capa. Solo bloquean las que quedan dentro del marco, o que cruzan y se incluyen, y cuya capa no es `NO_CORTAR`. Prueba: SPLINE en el cajetín fuera del marco → `listo`.
+- **Corte vacío.** Si `finales` está vacío → duda «No queda nada que cortar dentro del marco» y `listo: false`.
+- **MTEXT.** Tras `descomponerMtext`, poner a cada entidad generada la capa (`8`) y el handle (`5`) del MTEXT de origen si no los trae. Las barras de fracción salen de `rule()` en `src/cmt/textos-cad.ts:193` sin capa.
+- **Cruces.** Mientras `pendientes.cruces` esté sin decidir, las piezas que cruzan se quedan en `vista` marcadas (`cruza: true`) para que el técnico las vea.
+- **Varios marcos.** La escala de la vista se calcula con `decidirEscala` sobre el marco mayor, no con `origen === 'dwg' ? 1000 : 1`.
+- **Medidas.** `medidasMm` se calcula después de `asignarCapas` y `aplicarSolapes`, sin las capas `NO_CORTAR`.
+- **Fuente.** `leerFuente(ruta)` va en `try/catch` con el mismo mensaje de falta de Arial que `src/cmt/index.ts:71`.
 
 **Files:**
 - Create: `src/cmt/preparacion/index.ts`
@@ -985,6 +1029,19 @@ Comprobar al implementar: que `conReservas(fuente, {}, avisos)` acepta un objeto
 
 ### Task 8: Tabla de capas y rutas del servidor
 
+**Revisión 23/11 (obligatorio):**
+- **`/api/cmt/enviar`.** Pasar `recolocar` a `convertir` solo si llega `true` (`...(recolocar ? { recolocar: true } : {})`). La prueba de `src/cmtMaquinaRoutes.test.js:45` espera exactamente `{ sinLeyenda: true, sinTextos: true }`.
+- **JSON en `src/server.js`.** Importarlo con `import inicial from './cmt/preparacion/capasIniciales.json' with { type: 'json' };`, como ya hace `src/cmt/index.ts`.
+- **Validación de `/api/cmt/preparar`:**
+  - `nombre` saneado con `nombreBaseDxf` y con longitud acotada.
+  - `decisiones` tiene que ser un objeto: ni `null` ni array → 400.
+  - Manejador de errores de 4 argumentos: 413 si el cuerpo es demasiado grande, 400 si el JSON está roto, siempre en JSON.
+- **Respuesta.** Con `listo: false` no van ficheros. Con `listo` van `nombreDxf` y `nombreCmt`, ya con su extensión.
+- **`cmtTablaCapas`:**
+  - No guarda claves vacías ni las 6 capas fijas del bot.
+  - Crea la carpeta con `fs.mkdir(..., { recursive: true })`.
+  - Pone en cola las escrituras para que dos guardados a la vez no se pisen. Prueba con dos `guardar` simultáneos.
+
 **Files:**
 - Create: `src/cmtTablaCapas.js`
 - Modify: `src/cmtHerramientaRoutes.js`, `src/cmtMaquinaRoutes.js`, `src/server.js`
@@ -1064,6 +1121,17 @@ Envolver el cuerpo en `try/catch` → 422 «No se pudo preparar el plano: …»,
 
 ### Task 9: Página «DXF a CMT» con vista previa y decisiones
 
+**Revisión 23/11 (obligatorio; manda sobre el paso 1 y sobre «Comportamiento»):**
+- **Pruebas.** El repo no tiene Testing Library ni jsdom, y no hay que instalarlos.
+  - Las pruebas de componentes usan `renderToStaticMarkup` de `react-dom/server`, como `src/client/components/CorteMaquina.test.tsx`.
+  - Las transiciones de estado se prueban como funciones puras: `completas`, aplicar una decisión, decisiones pendientes.
+  - La interacción real se comprueba en el navegador en el paso 5.
+- **`BotonMandarMaquina`.** `cuerpo` es una función: `cuerpo={async () => ({ nombre: nombreDxf, dxfBase64, sinTextos, recolocar: true })}`.
+- **Vista previa.** Los círculos completos se pintan con `<circle>`. El `large-arc-flag` se calcula con `((hasta - desde + 360) % 360) > 180`. No copiar el cálculo de `CorteLona.tsx:186`.
+- **Descargas.**
+  - `descarga.ts` comprueba `listo` y usa `nombreDxf` y `nombreCmt`.
+  - «Descargar todos» baja el DXF y el CMT de cada plano que esté `listo` y se salta los que tienen algo pendiente, diciéndolo.
+
 **Files:**
 - Modify: `src/client/cmt/conversion.ts`, `src/client/views/CmtView.tsx`, `src/client/cmt/cmt.css`, `src/client/cmt/descarga.ts`
 - Create: `src/client/cmt/VistaPreparacion.tsx`, `src/client/cmt/Pendientes.tsx`
@@ -1097,6 +1165,8 @@ Comportamiento:
 
 ### Task 10: Tabla de capas en Configuración
 
+**Revisión 23/11:** sin Testing Library ni jsdom. Pruebas con `renderToStaticMarkup` y con la lógica de edición extraída a funciones puras.
+
 **Files:**
 - Create: `src/client/components/TablaCapasCorte.tsx`
 - Modify: `src/client/views/SettingsView.tsx`
@@ -1114,5 +1184,5 @@ Comportamiento:
 - [ ] **Step 1:** Con 10 DWG del estudio (toldos, remolques, puertas), pasar por `preparar` (script en `tmp/dxf-auto-estudio/verificar.mjs`) y comparar el CMT resultante con el CMT del robot del mismo pedido (`tmp/cmt-estudio/comparar-forma.mjs` y `cruce-herramientas.mjs`): mismas herramientas y forma ±0,1 mm, salvo diferencias explicadas (líneas repetidas quitadas).
 - [ ] **Step 2:** Abrir 2 CMT en Cutmatic de este PC (`tmp/cmt-estudio/abrir-en-cutmatic.ps1`) y 2 DXF limpios en ZWCAD (copias en `tmp`).
 - [ ] **Step 3:** Pruebas acotadas, `pnpm typecheck`, `pnpm lint`; `git status` limpio salvo lo de `tmp/`.
-- [ ] **Step 4:** Informe a Iván: qué se probó, diferencias, y pasos para el .90: `comprobarOda` responde (Configuración ya enseña su estado) y la variable `ODA_FILE_CONVERTER`. Merge, push y despliegue solo con su permiso; dar los comandos de despliegue en una línea con `&&`.
+- [ ] **Step 4:** Informe a Iván: qué se probó, diferencias, y pasos para el .90: ODA comprobado en el .90. `comprobarOda` solo se usa en `pnpm deploy:check` y solo prueba dxf → dwg, así que además hay que convertir allí un DWG real a DXF. También hay que revisar la variable `ODA_FILE_CONVERTER`. Configuración no enseña el estado de ODA. Merge, push y despliegue solo con su permiso; dar los comandos de despliegue en una línea con `&&`.
 - [ ] **Step 5:** Corte de prueba real en la máquina (lo decide Iván), en `maqcorte\2026\CMT PRUEBA\`.
