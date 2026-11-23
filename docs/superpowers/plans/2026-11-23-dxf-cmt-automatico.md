@@ -17,7 +17,8 @@
 - Nunca sale un DXF o CMT vacío: si no queda nada que cortar, es una duda.
 - Las correcciones marcadas «Revisión 23/11» en cada tarea son obligatorias y mandan sobre el código de ejemplo de esa tarea.
 - Salida siempre en mm, DXF 2004 (AC1018), solo capas `DISCO1, DISCO2, CUTTER, ROTULADOR, taladro, texto`.
-- Capas desconocidas: las elige el técnico y se guardan en la tabla. Nunca por color automático.
+- Capas desconocidas: las elige el técnico y se guardan en la tabla. El color de la capa solo preselecciona el desplegable (7 → DISCO1, 6 → DISCO2, 112 → CUTTER, 1 → ROTULADOR, 106 → texto); no cuenta como decisión hasta que el técnico pulsa «Confirmar capas» (Iván, 23/11). Nunca se asigna por color sin confirmar.
+- Capa 0 con algo que no es el marco: aviso, no bloquea; si sigue, eso queda fuera del corte (Iván, 23/11).
 - Solapes en la misma capa (tras asignar capas): se quitan solos, tolerancia 0,01 mm. Entre capas distintas: decide el técnico (por pareja de capas).
 - Nada se genera ni se manda con algo pendiente o con dudas.
 - No escribir nunca en carpetas de producción ni en `maqcorte` durante pruebas; los DWG de la oficina solo se leen, y siempre a través de copias en `tmp/`.
@@ -31,7 +32,7 @@
 
 **Files:**
 - Create: `tmp/dxf-auto-estudio/estudio.mjs`, `tmp/dxf-auto-estudio/INFORME.md` (sin versionar)
-- Create: `src/cmt/preparacion/capasIniciales.json` (propuesta; se revisa con Iván antes de usarla)
+- Create: `src/cmt/preparacion/capasIniciales.json` (cerrada con Iván el 23/11: solo lo que él confirmó; el resto lo elige el técnico la primera vez)
 
 **Interfaces:**
 - Produces: `capasIniciales.json` con forma `{ "NOMBRE EN MAYÚSCULAS": "DISCO1"|"DISCO2"|"CUTTER"|"ROTULADOR"|"taladro"|"texto"|"NO_CORTAR" }`.
@@ -462,7 +463,8 @@ export function buscarMarcos(piezas: Pieza[]): Caja[] {
 - Produces:
   - `decidirEscala(origen: 'dwg' | 'dxf', insunits: number | undefined, caja: Caja): { factor: number; motivo: string } | { error: string }`
   - `CAPAS_FIJAS: Record<string, Herramienta>`, `claveCapa(capa: string): string`
-  - `interface CapaDesconocida { capa: string; color: number; piezas: number }`
+  - `interface CapaDesconocida { capa: string; color: number; piezas: number; sugerida?: Herramienta }` — `sugerida` sale de `COLOR_SUGERIDO` (solo los colores de las capas del bot); sin clave si el color no es uno de ellos.
+  - `COLOR_SUGERIDO: Record<number, Herramienta>` = `{ 7: 'DISCO1', 6: 'DISCO2', 112: 'CUTTER', 1: 'ROTULADOR', 106: 'texto' }`
   - `asignarCapas(piezas: Pieza[], tabla: Record<string, Herramienta>, decisiones: Record<string, Herramienta>, capasDxf: Record<string, { color: number }>): { piezas: Pieza[]; desconocidas: CapaDesconocida[]; descartadas: number }` — las piezas conocidas salen con la capa de destino; las de capas desconocidas se devuelven con su capa original; `NO_CORTAR` se descarta.
 
 - [ ] **Step 1: Pruebas que fallan**
@@ -493,6 +495,11 @@ describe('asignarCapas', () => {
     expect(r.piezas.map(p => p.capa)).toEqual(['DISCO1', 'DISCO1', 'ROTULADOR', 'raro']);
     expect(r.desconocidas).toEqual([{ capa: 'raro', color: 3, piezas: 1 }]);
     expect(r.descartadas).toBe(1);
+  });
+  it('sugiere la herramienta por el color, pero la capa sigue desconocida', () => {
+    const r = asignarCapas([l('NUEVA'), l('VERDE')], {}, {}, { NUEVA: { color: 112 }, VERDE: { color: 3 } });
+    expect(r.desconocidas).toEqual([{ capa: 'NUEVA', color: 112, piezas: 1, sugerida: 'CUTTER' }, { capa: 'VERDE', color: 3, piezas: 1 }]);
+    expect(r.desconocidas[1]).not.toHaveProperty('sugerida');
   });
   it('taladro y texto salen en minúsculas como las capas del bot', () => {
     expect(asignarCapas([l('TALADRO'), l('Texto')], {}, {}, {}).piezas.map(p => p.capa)).toEqual(['taladro', 'texto']);
@@ -530,14 +537,20 @@ export function decidirEscala(origen: 'dwg' | 'dxf', insunits: number | undefine
 import type { Herramienta, Pieza } from './tipos.ts';
 export const CAPAS_FIJAS: Record<string, Herramienta> = { DISCO1: 'DISCO1', DISCO2: 'DISCO2', CUTTER: 'CUTTER', ROTULADOR: 'ROTULADOR', TALADRO: 'taladro', TEXTO: 'texto' };
 export const claveCapa = (capa: string) => capa.trim().toUpperCase();
-export interface CapaDesconocida { capa: string; color: number; piezas: number }
+export interface CapaDesconocida { capa: string; color: number; piezas: number; sugerida?: Herramienta }
+/** Colores de las capas del bot. Solo preseleccionan el desplegable: el técnico confirma (Iván, 23/11). */
+export const COLOR_SUGERIDO: Record<number, Herramienta> = { 7: 'DISCO1', 6: 'DISCO2', 112: 'CUTTER', 1: 'ROTULADOR', 106: 'texto' };
 export function asignarCapas(piezas: Pieza[], tabla: Record<string, Herramienta>, decisiones: Record<string, Herramienta>, capasDxf: Record<string, { color: number }>) {
   const salida: Pieza[] = [], desconocidas = new Map<string, CapaDesconocida>(); let descartadas = 0;
   for (const p of piezas) {
     const k = claveCapa(p.capa), h = CAPAS_FIJAS[k] ?? decisiones[k] ?? tabla[k];
     if (h === 'NO_CORTAR') { descartadas++; continue; }
     if (h) { salida.push({ ...p, capa: h }); continue; }
-    const d = desconocidas.get(k) ?? { capa: p.capa, color: Math.abs(capasDxf[p.capa]?.color ?? 7), piezas: 0 };
+    let d = desconocidas.get(k);
+    if (!d) {
+      const color = Math.abs(capasDxf[p.capa]?.color ?? 7), sugerida = COLOR_SUGERIDO[color];
+      d = sugerida ? { capa: p.capa, color, piezas: 0, sugerida } : { capa: p.capa, color, piezas: 0 };
+    }
     d.piezas++; desconocidas.set(k, d); salida.push(p);
   }
   return { piezas: salida, desconocidas: [...desconocidas.values()], descartadas };
@@ -1148,14 +1161,14 @@ Comportamiento:
 - Si hay pendientes, panel «Antes de generar»:
   - **Marcos:** botones de opción «Marco 1 (6.000 × 2.500 mm)»…, resaltando el elegido en la vista.
   - **Cruces:** «N elementos cruzan el borde del marco» → «Incluirlos» / «Dejarlos fuera».
-  - **Capas nuevas:** por capa, su muestra de color, «N elementos» y un desplegable (Disco 1, Disco 2, Cutter, Rotulador, Taladro, Texto, No cortar). Nota: «Se recordará para la próxima vez».
+  - **Capas nuevas:** por capa, su muestra de color, «N elementos» y un desplegable (Disco 1, Disco 2, Cutter, Rotulador, Taladro, Texto, «No cortar (solo en el plano)»). Si la capa trae `sugerida`, el desplegable sale con ella y la etiqueta «por su color»; si no, sale en «Elegir…». Debajo, botón **«Confirmar capas»**: solo al pulsarlo pasan a `decisiones.capas` (las sugeridas sin tocar también). Hasta entonces `completas()` es falso. Nota: «Se recordará para la próxima vez».
   - **Solapes:** por grupo, «DISCO1 y ROTULADOR se pisan en X mm» → «Se queda DISCO1» / «Se queda ROTULADOR». Las zonas se marcan en la vista.
   - Botón **«Aplicar y generar»**, desactivado mientras `completas()` sea falso. Vuelve a llamar con las decisiones acumuladas; si salen pendientes nuevos (por ejemplo, solapes tras asignar capas), se muestran igual.
 - Con `listo`: resumen actual (herramientas, trazos), **Descargar DXF**, **Descargar CMT** y `BotonMandarMaquina` con `cuerpo = { nombre: base + '.dxf', dxfBase64: resultado.dxfBase64, sinTextos, recolocar: true }`.
 - El texto de introducción pasa a: «Sube un DWG o un DXF. En los DWG se corta lo que hay dentro del rectángulo de la capa 0. Antes de generar verás el corte y lo que haya que decidir.»
 - Mantener «Convertir sin textos» cuando las dudas sean de textos.
 
-- [ ] **Step 1: Pruebas que fallan.** `conversion.test.ts`: `prepararArchivo` rechaza `.pdf`, manda `{nombre, archivoBase64, decisiones, sinTextos}` a `/api/cmt/preparar`; `completas()` es falso con una capa sin elegir y verdadero cuando todo está elegido. `Pendientes.test.tsx` (Testing Library, como `src/client/components/CorteMaquina.test.tsx`): elegir «Disco 1» en el desplegable de `LINEAS` llama a `onCambio` con `{ capas: { LINEAS: 'DISCO1' } }`, y el botón «Aplicar y generar» está desactivado hasta elegir todo.
+- [ ] **Step 1: Pruebas que fallan.** `conversion.test.ts`: `prepararArchivo` rechaza `.pdf`, manda `{nombre, archivoBase64, decisiones, sinTextos}` a `/api/cmt/preparar`; `completas()` es falso con una capa sin elegir y verdadero cuando todo está elegido; una capa con `sugerida` no cuenta como elegida hasta «Confirmar capas», y una sin `sugerida` en «Elegir…» impide confirmar. `Pendientes.test.tsx` (Testing Library, como `src/client/components/CorteMaquina.test.tsx`): elegir «Disco 1» en el desplegable de `LINEAS` llama a `onCambio` con `{ capas: { LINEAS: 'DISCO1' } }`, y el botón «Aplicar y generar» está desactivado hasta elegir todo.
 - [ ] **Step 2: Ejecutar y ver que fallan.**
 - [ ] **Step 3: Implementar** `conversion.ts` (tipos y `prepararArchivo`, reutilizando `archivoBase64`; límite de 30 MB), `VistaPreparacion.tsx` (SVG como `corte-dibujo` de `src/client/components/CorteLona.tsx`: `viewBox` con Y invertida, `vectorEffect="non-scaling-stroke"`; arcos con `path` `A`), `Pendientes.tsx`, `descarga.ts` (`descargarDxf` análogo a `descargarCmt`) y `CmtView.tsx`.
 - [ ] **Step 4: Ejecutar** las pruebas de cliente, `pnpm typecheck` y `pnpm lint` → PASS.
