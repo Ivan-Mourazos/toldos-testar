@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { dxfACmt } from '../index.ts';
+import { UNIDADES } from '../geometria.ts';
 import { leerDxf, value } from '../dxf.ts';
 import { escribirDxfLimpio } from './salida.ts';
 import type { Pieza } from './tipos.ts';
@@ -20,6 +21,22 @@ describe('escribirDxfLimpio', () => {
     expect([Number(value(linea, 10)), Number(value(linea, 20))]).toEqual([1000, 1000]);
     expect([Number(value(linea, 11)), Number(value(linea, 21))]).toEqual([2000, 1000]);
   });
+  it('conserva la medida de corte de una línea larga al recolocar el CMT limpio', () => {
+    const largo = 30_000.3;
+    const dxf = escribirDxfLimpio([
+      { tipo: 'linea', capa: 'DISCO1', id: '1', a: { x: 0, y: 0 }, b: { x: largo, y: 0 } },
+    ]);
+    const medida = (opciones: Parameters<typeof dxfACmt>[1]) => {
+      const r = dxfACmt(dxf, opciones);
+      expect(r.dudas).toEqual([]);
+      const [a, b] = r.objetos[0].paths[0];
+      return Math.abs(b.x - a.x) / UNIDADES;
+    };
+    expect(medida({ recolocar: true })).toBeCloseTo(largo, 4);
+    expect(medida({ recolocar: true, compatibilidadRobot: true })).toBeCloseTo(30_000.170187, 4);
+    expect(medida({})).toBeCloseTo(30_000.170187, 4);
+  });
+
   it('el CMT del DXF limpio sale sin dudas y recolocado', () => {
     const r = dxfACmt(escribirDxfLimpio(piezas), { recolocar: true });
     expect(r.dudas).toEqual([]); expect(r.cmt).not.toBeNull();

@@ -72,9 +72,11 @@ export function dxfACmt(dxfTexto: string, opciones: OpcionesCmt = {}): Resultado
       }
     }
     if (resultado.dudas.length) return resultado;
-    const g = generarGeometria(d, {font, compatibilidadRobot: opciones.compatibilidadRobot, preparacionMtext: opciones.preparacionMtext}); resultado.avisos.push(...g.avisos); resultado.dudas.push(...g.issues); resultado.objetos = g.objects;
+    // El DXF limpio ya está en mm. Su traslado cambiaría el redondeo SVG de coordenadas absolutas.
+    const compatibilidadRobot = opciones.compatibilidadRobot ?? !opciones.recolocar;
+    const g = generarGeometria(d, {font, compatibilidadRobot, preparacionMtext: opciones.preparacionMtext}); resultado.avisos.push(...g.avisos); resultado.dudas.push(...g.issues); resultado.objetos = g.objects;
     if (sinLeyenda || opciones.recolocar) recolocar(g.objects);
-    if (opciones.compatibilidadRobot !== false) resultado.avisos.push({motivo: 'Se reproduce el redondeo SVG del robot (seis cifras, 96 dpi); compatibilidadRobot:false conserva la precisión del DXF y puede mostrar rellenos distintos'});
+    if (compatibilidadRobot) resultado.avisos.push({motivo: 'Se reproduce el redondeo SVG del robot (seis cifras, 96 dpi); compatibilidadRobot:false conserva la precisión del DXF y puede mostrar rellenos distintos'});
     if (!resultado.dudas.length) resultado.cmt = escribir(g.objects);
   } catch (error) {
     resultado.dudas.push({motivo: `${error instanceof Error ? error.message : String(error)}. Revisa el plano en ZWCAD y vuelve a exportar el DXF`});
