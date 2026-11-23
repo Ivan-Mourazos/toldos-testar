@@ -44,7 +44,7 @@ haya resuelto lo dudoso.
      técnico la confirma con «Confirmar capas». Hay capas de referencia con colores de corte
      (REFERENCIAS es color 6, DEFPOINTS color 7), por eso nunca se asigna sin confirmar.
    - **Tabla inicial** (Iván, 23/11/2026): las 6 capas del bot más CORTES - LONA, CORTE y
-     CORTE (VENT) → Disco 1, MARCA → Rotulador, CURV → Cutter; REFERENCIAS y DEFPOINTS → No cortar
+     CORTE (VENT) → Disco 1, MARCA → Rotulador, CURV → Cutter; REFERENCIAS, REFERENCIA-1 y DEFPOINTS → No cortar
      (tienen colores de corte). Las demás las elige quien plantea la primera vez que salen.
 5. **Solapes.**
    - Misma capa: las líneas repetidas o los tramos colineales que se pisan se quitan solos
