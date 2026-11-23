@@ -96,6 +96,13 @@ it('conserva la falta si falla el aviso a CoordinaOT', async () => {
   expect(resultado.avisos.at(-1)).toBe('No se pudo avisar a CoordinaOT del stock de lona.');
 });
 
+it('dice el motivo cuando CoordinaOT rechaza el aviso', async () => {
+  const { coordina, comprobar } = preparar();
+  coordina.enviarStockLona.mockResolvedValueOnce({ ok: false, motivo: 'CoordinaOT respondió 400: Stock de lona no válido' });
+  const resultado = await comprobar();
+  expect(resultado.avisos.at(-1)).toBe('No se pudo avisar a CoordinaOT del stock de lona (CoordinaOT respondió 400: Stock de lona no válido).');
+});
+
 it('sin lonas que comprobar no consulta ni avisa', async () => {
   const { stock, coordina, comprobar } = preparar();
   expect(await comprobar([])).toEqual({ consultado: null, faltas: [], avisos: [] });

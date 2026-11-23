@@ -57,9 +57,11 @@ export function createCoordinaClient({ url, key, fetchImpl = fetch, timeoutMs = 
         body: JSON.stringify(datos),
         signal: AbortSignal.timeout(timeoutMs),
       });
-      return response.ok ? { ok: true } : { ok: false, motivo: `CoordinaOT respondió ${response.status}.` };
+      if (response.ok) return { ok: true };
+      const detalle = await response.json().then(c => (typeof c?.error === 'string' ? `: ${c.error}` : ''), () => '');
+      return { ok: false, motivo: `CoordinaOT respondió ${response.status}${detalle}` };
     } catch {
-      return { ok: false, motivo: 'CoordinaOT no responde.' };
+      return { ok: false, motivo: 'CoordinaOT no responde' };
     }
   }
 

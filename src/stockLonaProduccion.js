@@ -86,12 +86,17 @@ async function informarStock(pedido, { lonas, consultado, faltas, avisos }, coor
       return { ...fila, ofs: ofs.length ? ofs : [...pedido.ofs] };
     };
     const datos = { ...pedido, lonas: lonas.map(ajustar), faltas: faltas.map(ajustar), consultado };
+    // Un fallo al avisar tampoco invalida la comprobación ni los archivos generados.
+    let motivo;
     try {
-      if ((await coordina.enviarStockLona(datos)).ok) return { consultado, faltas, avisos };
-    } catch {
-      // Un fallo al avisar tampoco invalida la comprobación ni los archivos generados.
+      const respuesta = await coordina.enviarStockLona(datos);
+      if (respuesta.ok) return { consultado, faltas, avisos };
+      motivo = respuesta.motivo;
+    } catch (error) {
+      motivo = error instanceof Error ? error.message : String(error);
     }
-    return { consultado, faltas, avisos: [...avisos, avisoEnvio] };
+    console.warn(`[stock] CoordinaOT no aceptó el stock de lona de ${pedido.pedido}: ${motivo ?? 'sin motivo'}`, JSON.stringify(datos));
+    return { consultado, faltas, avisos: [...avisos, motivo ? `${avisoEnvio.slice(0, -1)} (${motivo}).` : avisoEnvio] };
   }
   return { consultado, faltas, avisos };
 }
