@@ -5,7 +5,7 @@ import { pasarAProduccionConStock, type ServiciosStockLona } from '../../stockLo
 import { numerarEntrega, aplicarDestino, necesitaPrepararDestino } from '../../entregasRps.js';
 import { mkdir, stat } from "node:fs/promises";
 import path from "node:path";
-import { avisoEntradaEntrega, codigoCorteEditable, cerrarEntrega, codigoAnual, codigoEntrega, ofsEntrega, pedidoEntrega, numeroEntrega, abrirEntrega, regenerarEntregaGenerada } from '../../entregas.js';
+import { avisoEntradaEntrega, codigoCorteEditable, cerrarEntrega, codigoAnual, codigoEntrega, ofsEntrega, pedidoEntrega, numeroEntrega, abrirEntrega, entregaSinCambios } from '../../entregas.js';
 import { materialesPuertas } from '../../materialesEntrega.js';
 import { adjuntarPedido } from '../../adjuntosPedido.js';
 import { enviarCorte as enviarCorteCompartido } from "../../corteEnvios.js";
@@ -209,7 +209,7 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
         if (existente?.entregaActual !== pedido.entregaActual) delete pedido.corteConfirmado;
       }
       pedido.entregaPorPreparar = false;
-      if (existente?.status === 'PRODUCED' && !ofsEntrega(pedido).length && c.decisionCorte === 'regenerar') pedido = regenerarEntregaGenerada(pedido, existente);
+      pedido = entregaSinCambios(pedido, existente, c.decisionCorte);
       if (existente?.status === 'PRODUCED' && !ofsEntrega(pedido).length) return { status: 200, cuerpo: { ok: true, unchanged: true, review: resumenBandeja(existente) } };
       const avisoEntrada = avisoEntradaEntrega(pedido, existente, c);
       if (avisoEntrada) return { status: 409, cuerpo: avisoEntrada };

@@ -478,6 +478,15 @@ describe('corte confirmado desde el borrador', () => {
     const otraVez = await flujo.obtener('AR2605134');
     expect(otraVez.status).toBe('PENDING_REVIEW');
     expect(ofsEntrega(otraVez)).toEqual(['0233175']);
+    // Como quedó el 5256 en el servidor: en revisión, con su entrega 10 y sin las OF apuntadas. Guardar las recupera.
+    const fichero = path.join(raiz, 'pedidos/puertas', 'AR2605134.json');
+    const perdido = JSON.parse(await fs.readFile(fichero, 'utf8'));
+    delete perdido.ofsSeleccionadas;
+    delete perdido.destinoEntrega;
+    await fs.writeFile(fichero, JSON.stringify(perdido));
+    expect(ofsEntrega(await flujo.obtener('AR2605134'))).toEqual([]);
+    expect((await guardar({ pedido: pedidoParaEditar(otraVez), confirmarEntradaEntrega: true, confirmOverwrite: true })).status).toBe(200);
+    expect(ofsEntrega(await flujo.obtener('AR2605134'))).toEqual(['0233175']);
     expect(await alBot()).toMatchObject({ status: 200 });
     expect((await flujo.obtener('AR2605134')).status).toBe('PRODUCED');
   });

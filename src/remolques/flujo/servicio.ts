@@ -6,7 +6,7 @@ import type { Material } from '../calc/materiales-seed.ts';
 import { numerarEntrega, aplicarDestino, necesitaPrepararDestino } from '../../entregasRps.js';
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
-import { avisoEntradaEntrega, codigoCorteEditable, cerrarEntrega, codigoAnual, codigoEntrega, ofsEntrega, pedidoEntrega, numeroEntrega, regenerarEntregaGenerada } from '../../entregas.js';
+import { avisoEntradaEntrega, codigoCorteEditable, cerrarEntrega, codigoAnual, codigoEntrega, ofsEntrega, pedidoEntrega, numeroEntrega, entregaSinCambios } from '../../entregas.js';
 import { materialesRemolques } from '../../materialesEntrega.js';
 import { enviarCorte as enviarCorteCompartido } from "../../corteEnvios.js";
 import { aprobacionDeTodas, crearFlujoDwg, huellaDatos, type AjustesFlujoDwg, type ConfirmacionesCorte } from "../../flujoDwg/flujo.ts";
@@ -365,7 +365,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
         if (existente?.entregaActual !== pedido.entregaActual) delete pedido.corteConfirmado;
       }
       pedido.entregaPorPreparar = false;
-      if (existente?.status === 'PRODUCED' && !ofsEntrega(pedido).length && c.decisionCorte === 'regenerar') pedido = regenerarEntregaGenerada(pedido, existente);
+      pedido = entregaSinCambios(pedido, existente, c.decisionCorte);
       if (existente?.status === 'PRODUCED' && !ofsEntrega(pedido).length) return { status: 200, cuerpo: { ok: true, unchanged: true, review: resumenBandeja(existente) } };
       const avisoEntrada = avisoEntradaEntrega(pedido, existente, c);
       if (avisoEntrada) return { status: 409, cuerpo: avisoEntrada };

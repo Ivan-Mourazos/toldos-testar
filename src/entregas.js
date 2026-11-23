@@ -131,10 +131,23 @@ export function ofsEntrega(p) {
  * ve ahora, no se responde «sin cambios» (Iván, 23/11/2026, AR2605256: «no puedo ver una cosa y que se guarde otra»).
  */
 export function regenerarEntregaGenerada(p, existente) {
-  const ultima = entregasPedido(existente).at(-1);
+  const entregas = entregasPedido(existente);
+  const ultima = entregas.find(e => e.numero === existente?.entregaActual) ?? entregas.at(-1);
   const numero = ultima?.numero ?? numeroEntrega(existente);
   const ofs = ultima?.ofs?.length ? ultima.ofs : [...new Set(elementos(p).map(ofElemento).filter(Boolean))];
   return { ...p, entregaActual: numero, destinoEntrega: { numero, modo: 'sustituir' }, ofsSeleccionadas: ofs };
+}
+
+/**
+ * Al guardar sin datos cambiados no puede quedar un pedido sin OF que generar:
+ * - generado: solo «Regenerar corte» rehace su entrega (sin regenerar responde «sin cambios»);
+ * - en revisión corrigiendo una entrega ya hecha: sigue siendo esa entrega con sus OF. Si no, «Generar archivos» se
+ *   queda bloqueado aunque CoordinaOT lo haya aprobado (AR2605256, 23/11/2026).
+ */
+export function entregaSinCambios(p, existente, decisionCorte) {
+  if (!existente || ofsEntrega(p).length) return p;
+  if (existente.status === 'PRODUCED') return decisionCorte === 'regenerar' ? regenerarEntregaGenerada(p, existente) : p;
+  return entregasPedido(existente).some(e => e.numero === existente.entregaActual) ? regenerarEntregaGenerada(p, existente) : p;
 }
 
 export function numeroEntrega(p) {
