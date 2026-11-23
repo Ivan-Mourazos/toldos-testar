@@ -1,5 +1,6 @@
 import { nombreBaseDxf } from './corteMaquina.js';
 import express from 'express';
+import { createHash } from 'node:crypto';
 import { dxfACmt } from './cmt/index.ts';
 import { preparar as prepararPlano } from './cmt/preparacion/index.ts';
 import { HERRAMIENTAS } from './cmt/preparacion/tipos.ts';
@@ -71,10 +72,11 @@ function errorPeticion(error, _req, res, _next) {
 export function registrarRutasCmtHerramienta(app, { convertir = dxfACmt, preparar = prepararPlano, oda, tablaCapas } = {}) {
   app.post('/api/cmt/preparar', express.json({ limit: '41mb' }), async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
-    const { nombre, archivoBase64, decisiones = {}, sinTextos = false, generar = false } = req.body ?? {};
+    const { nombre, archivoBase64, decisiones = {}, sinTextos = false, generar = false, huella } = req.body ?? {};
     const tipo = typeof nombre === 'string' && nombre.length <= 1024 && /\.(dwg|dxf)$/i.exec(nombre)?.[1]?.toLowerCase();
     if (!tipo || typeof archivoBase64 !== 'string' || !archivoBase64
-      || typeof sinTextos !== 'boolean' || typeof generar !== 'boolean' || !decisionesValidas(decisiones)) {
+      || typeof sinTextos !== 'boolean' || typeof generar !== 'boolean' || (huella !== undefined && (typeof huella !== 'string' || !/^[0-9a-f]{64}$/.test(huella)))
+      || !decisionesValidas(decisiones)) {
       return res.status(400).json({ ok: false, error: 'Elige un fichero DWG o DXF y revisa las decisiones del corte.' });
     }
     if (archivoBase64.length > Math.ceil(MAX_DXF / 3) * 4) return res.status(413).json({ ok: false, error: ERROR_TAMANO });
@@ -84,17 +86,21 @@ export function registrarRutasCmtHerramienta(app, { convertir = dxfACmt, prepara
     let contenido = Buffer.from(archivoBase64, 'base64');
     if (contenido.length > MAX_DXF) return res.status(413).json({ ok: false, error: ERROR_TAMANO });
     try {
+      const tabla = tablaCapas ? await tablaCapas.leer() : {};
+      const huellaActual = createHash('sha256').update(contenido)
+        .update(JSON.stringify({ tipo, sinTextos, decisiones, tabla })).digest('hex');
+      const confirmada = generar && huella === huellaActual;
       if (tipo === 'dwg') {
         if (!oda?.disponible) return res.status(409).json({ ok: false, error: 'Para abrir DWG hace falta ODA en el servidor: avisa a informática o sube un DXF.' });
         contenido = await oda.convertir(contenido, { desde: 'dwg', hasta: 'dxf' });
       }
-      const tabla = tablaCapas ? await tablaCapas.leer() : {};
-      const r = preparar(textoDxf(contenido), { origen: tipo, tabla, decisiones, sinTextos, soloAnalisis: !generar });
+      const r = preparar(textoDxf(contenido), { origen: tipo, tabla, decisiones, sinTextos, soloAnalisis: !confirmada });
       const base = nombreBaseDxf(nombre.replace(/\.dwg$/i, '.dxf'));
-      const salida = { ok: true, listo: false, preparado: r.listo && !r.dudas.length, nombre: base,
+      const salida = { ok: true, listo: false, preparado: r.listo && !r.dudas.length, nombre: base, huella: huellaActual,
         escala: r.escala, medidasMm: r.medidasMm, pendientes: r.pendientes, vista: r.vista,
         avisos: avisosLegibles(r.avisos), dudas: [...new Set(r.dudas.map(lineaDuda))] };
-      if (!generar || !salida.preparado || !r.dxf) return res.json(salida);
+      if (generar && !confirmada && salida.preparado) salida.revisarVista = 'La preparación ha cambiado. Revisa la vista previa y confirma de nuevo.';
+      if (!confirmada || !salida.preparado || !r.dxf) return res.json(salida);
       const limpio = Buffer.from(r.dxf, 'latin1');
       if (limpio.length > MAX_DXF) return res.json({ ...salida, preparado: false, dudas: [ERROR_TAMANO] });
       const c = await convertir(textoDxf(limpio), { recolocar: true, sinTextos });

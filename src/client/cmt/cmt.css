@@ -71,6 +71,18 @@
 .cmt-resultado-acciones { margin-top: 14px; }
 .cmt-resultado-acciones .cmt-mandar { margin-top: 0; }
 
+.cmt-config-capas { margin-top: 24px; padding: 18px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); }
+.cmt-config-capas h3 { margin: 0; font-size: 15px; }
+.cmt-config-capas > p { margin: 8px 0 16px; color: var(--text-muted); font-size: 13px; }
+.cmt-tabla-capas { width: 100%; max-width: 780px; border-collapse: collapse; font-size: 13px; }
+.cmt-tabla-capas :is(th, td) { padding: 6px 10px 6px 0; border-bottom: 1px solid var(--border); text-align: left; }
+.cmt-tabla-capas th { font-weight: 600; overflow-wrap: anywhere; }
+.cmt-tabla-capas td:nth-child(2) { width: 42%; }
+.cmt-tabla-capas td:last-child { width: 1%; }
+.cmt-tabla-capas td:last-child button { white-space: nowrap; }
+.cmt-capa-nueva { display: grid; grid-template-columns: minmax(160px, 1fr) minmax(180px, 1fr) auto; align-items: end; gap: 12px; margin-top: 14px; }
+.cmt-capa-nueva label { display: grid; gap: 5px; font-weight: 500; }
+
 .cmt-mandar { display: grid; justify-items: start; gap: 6px; margin-top: 12px; }
 .cmt-mandar small { color: var(--text-muted); font-size: 13px; line-height: 1.5; }
 .corte-maquina-acciones { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; margin: 16px 0; }

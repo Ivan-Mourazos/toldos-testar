@@ -37,7 +37,7 @@ export function CmtView() {
     const decisiones = sinTextos === fila.sinTextos ? fila.decisiones : {};
     actualizar(fila.id, { ocupado: generar ? 'Generando…' : 'Analizando…', decisiones, sinTextos, envio: undefined, error: undefined });
     try {
-      const resultado = await prepararArchivo(fila.archivo, decisiones, sinTextos, fetch, generar);
+      const resultado = await prepararArchivo(fila.archivo, decisiones, sinTextos, fetch, generar, generar ? fila.resultado?.huella : undefined);
       actualizar(fila.id, { resultado, revision: fila.revision + 1 });
     } catch (error) {
       actualizar(fila.id, { error: error instanceof Error ? error.message : 'No se pudo leer el plano.' });
@@ -113,6 +113,7 @@ export function CmtView() {
             {hayPendientes(r.pendientes) && <Pendientes key={fila.revision} pendientes={r.pendientes} valor={fila.decisiones}
               ocupado={Boolean(fila.ocupado)} onCambio={decisiones => actualizar(fila.id, { decisiones })} onAplicar={() => void procesar(fila)} />}
           </div>}
+          {r?.revisarVista && <p className="cmt-notas" role="status">{r.revisarVista}</p>}
           {r?.preparado && !r.listo && <div className="cmt-resultado-acciones">
             <button type="button" className="primary-button" disabled={Boolean(fila.ocupado)} onClick={() => void procesar(fila, { generar: true })}>Generar DXF y CMT</button>
           </div>}

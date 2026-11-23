@@ -31,11 +31,13 @@ const prepararPost = (body, raw = false) => fetch(url.replace('/convertir', '/pr
 const archivo = { nombre: 'C:/planos/CON.dwg', archivoBase64: Buffer.from('DWG').toString('base64') };
 
 describe('preparación DWG/DXF', () => {
-  it.each([{ nombre: 'corte.txt' }, { decisiones: null }, { decisiones: [] }, { decisiones: { cruces: 'sí' } }, { archivoBase64: '!!!!' }])
-    ('rechaza entradas inválidas: %j', async datos => {
-      expect((await prepararPost({ ...archivo, ...datos })).status).toBe(400);
-      expect(oda.convertir).not.toHaveBeenCalled();
-    });
+  it.each([
+    { nombre: 'corte.txt' }, { decisiones: null }, { decisiones: [] },
+    { decisiones: { cruces: 'sí' } }, { archivoBase64: '!!!!' },
+  ])('rechaza entradas inválidas: %j', async datos => {
+    expect((await prepararPost({ ...archivo, ...datos })).status).toBe(400);
+    expect(oda.convertir).not.toHaveBeenCalled();
+  });
   it('devuelve JSON si el cuerpo está roto', async () => {
     const r = await prepararPost('{a:', true);
     expect(r.status).toBe(400);
@@ -63,10 +65,15 @@ describe('preparación DWG/DXF', () => {
     expect(vista).toMatchObject({ listo: false, preparado: true });
     expect(vista).not.toHaveProperty('dxfBase64');
     expect(convertir).not.toHaveBeenCalled();
-    const r = await (await prepararPost({ ...archivo, generar: true })).json();
+    const r = await (await prepararPost({ ...archivo, generar: true, huella: vista.huella })).json();
     expect(r).toMatchObject({ listo: true, nombreDxf: '_CON.dxf', nombreCmt: '_CON.cmt', dxfBase64: 'RFhGIGxpbXBpbw==', cmtBase64: 'AP+ACg==' });
     expect(convertir).toHaveBeenCalledWith('DXF limpio', { recolocar: true, sinTextos: false });
     expect(tablaCapas.guardar).toHaveBeenCalledWith({ NUEVA: 'DISCO2' });
+    tablaCapas.leer.mockResolvedValue({ NUEVA: 'CUTTER' });
+    const nuevaVista = await (await prepararPost({ ...archivo, generar: true, huella: vista.huella })).json();
+    expect(nuevaVista).toMatchObject({ listo: false, preparado: true });
+    expect(nuevaVista).not.toHaveProperty('dxfBase64');
+    expect(convertir).toHaveBeenCalledTimes(1);
   });
 });
 
