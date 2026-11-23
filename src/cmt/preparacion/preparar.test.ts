@@ -1,4 +1,6 @@
+import { existsSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { leerDxf, value } from '../dxf.ts';
 import { preparar } from './index.ts';
 import { dxfPrueba } from './pruebaDxf.ts';
 
@@ -75,6 +77,39 @@ it('escala los marcos en metros aunque la cabecera de DXF indique mm', () => {
 it('excluye referencias de las medidas y del cálculo de escala sin marco', () => {
   const t = dxfPrueba({ entidades: [L('DISCO1', 1, 1, 4, 1), L('REF', 1000, 1, 2000, 1)] });
   expect(preparar(t, { origen: 'dxf', tabla: { REF: 'NO_CORTAR' } }).medidasMm).toEqual({ ancho: 3000, alto: 0 });
+});
+
+it('excluye del análisis una polilínea con anchura que queda fuera del marco', () => {
+  const ancha = '0\nLWPOLYLINE\n8\nDISCO1\n90\n2\n43\n1\n10\n20\n20\n20\n10\n25\n20\n25';
+  const t = dxfPrueba({ entidades: [marco(0, 0, 10, 5), L('DISCO1', 1, 1, 4, 1), ancha] });
+  expect(preparar(t, { origen: 'dwg', tabla: {} }).listo).toBe(true);
+});
+
+it('no usa el contorno de un bloque de capa 0 como marco', () => {
+  const bloque = ['0', 'BLOCK', '2', 'CAJETIN', marco(0, 0, 10, 5), '0', 'ENDBLK'].join('\n');
+  const referencia = ['0', 'INSERT', '2', 'CAJETIN', '8', '0', '10', '0', '20', '0'].join('\n');
+  const t = dxfPrueba({ bloques: [bloque], entidades: [referencia, L('DISCO1', 1, 1, 4, 1)] });
+  expect(preparar(t, { origen: 'dwg', tabla: {} }).dudas[0]?.motivo).toMatch(/No hay marco/);
+});
+
+it('un bloque con normal no admitida bloquea aunque se inserte en capa 0', () => {
+  const t = dxfPrueba({ entidades: [marco(0, 0, 10, 5), L('DISCO1', 1, 1, 4, 1), '0\nINSERT\n8\n0\n230\n-1'] });
+  const r = preparar(t, { origen: 'dwg', tabla: {} });
+  expect(r.listo).toBe(false);
+  expect(r.dudas[0]?.tipo).toBe('INSERT');
+});
+
+const arial = process.env.CMT_ARIAL_PATH ?? 'C:/Windows/Fonts/arial.ttf';
+
+it.skipIf(!existsSync(arial))('conserva la capa de las barras de fracción al descomponer MTEXT', () => {
+  const mtext = ['0', 'MTEXT', '8', 'ROTULADOR', '5', 'A1', '10', '2', '20', '2', '40', '0.1', '1', '\\S12/34;'].join('\n');
+  const t = dxfPrueba({ entidades: [marco(0, 0, 10, 5), L('DISCO1', 1, 1, 4, 1), mtext] });
+  const r = preparar(t, { origen: 'dwg', tabla: {}, rutaFuente: arial });
+  expect(r.dudas).toEqual([]);
+  expect(r.dxf).not.toBeNull();
+  const entidades = leerDxf(r.dxf!).entities;
+  expect(entidades.some(e => e.type === 'LINE' && value(e, 8) === 'ROTULADOR')).toBe(true);
+  expect(entidades.filter(e => e.type === 'TEXT').map(e => value(e, 8))).toEqual(['ROTULADOR', 'ROTULADOR']);
 });
 
 it('captura el fallo al leer la fuente del MTEXT', () => {

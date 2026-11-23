@@ -57,12 +57,13 @@ export function transformarPieza(p: Pieza, m: Matriz): Pieza {
 }
 export const transformarPiezas = (piezas: Pieza[], m: Matriz) => piezas.map(p => transformarPieza(p, m));
 
-function vertices(e: EntidadDxf): { x: number; y: number; bulge: number }[] {
+export function vertices(e: EntidadDxf): { x: number; y: number; bulge: number }[] {
   const out: { x: number; y: number; bulge: number }[] = [];
   for (const [c, v] of e.pairs) {
-    if (c === 10) out.push({ x: Number(v), y: NaN, bulge: 0 });
-    else if (c === 20 && out.length) out[out.length - 1].y = Number(v);
-    else if (c === 42 && out.length) out[out.length - 1].bulge = Number(v);
+    const dato = v.trim() ? Number(v) : NaN;
+    if (c === 10) out.push({ x: dato, y: NaN, bulge: 0 });
+    else if (c === 20 && out.length) out[out.length - 1].y = dato;
+    else if (c === 42 && out.length) out[out.length - 1].bulge = dato;
   }
   return out;
 }
@@ -166,7 +167,7 @@ export function hornear(entidades: EntidadDxf[], estilos: Dxf['styles'] = {}): {
         fuentes.add(fuente);
         avisos.push({ handle, capa, tipo: e.type, motivo: `El estilo usa la fuente ${fuente}: revisa el texto en la vista previa` });
       }
-      for (const pieza of nuevas) piezas.push(pieza);
+      for (const pieza of nuevas) piezas.push(e.transformacion && capa === '0' ? { ...pieza, deBloque: true } : pieza);
     } catch (error) {
       dudas.push({ indice: i, handle, tipo: e.type, capa, motivo: error instanceof Error ? error.message : String(error) });
     }

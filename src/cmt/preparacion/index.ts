@@ -89,6 +89,7 @@ export function preparar(dxfTexto: string, o: OpcionesPreparacion): ResultadoPre
   const avisos: Duda[] = [], dudas: Duda[] = [], pendientes: Pendientes = {};
   const resultado: ResultadoPreparacion = { listo: false, dxf: null, escala: null, medidasMm: null, pendientes, avisos, dudas, vista: [], capasNuevas: {} };
   const noCorta = (capa: string) => herramientaCapa(capa, tabla, decisionesCapas) === 'NO_CORTAR';
+  const afectaAlCorte = ({ duda, capa }: DudaLocal) => duda.tipo === 'INSERT' || !noCorta(capa);
   const vacio = () => {
     dudas.push({ motivo: 'No queda nada que cortar dentro del marco o del plano' });
     return resultado;
@@ -116,7 +117,7 @@ export function preparar(dxfTexto: string, o: OpcionesPreparacion): ResultadoPre
     const cajaEscala = marco ?? marcos.reduce<Caja | null>((mayor, caja) => !mayor || lado(caja) > lado(mayor) ? caja : mayor, null)
       ?? cajaDe(h.piezas.filter(p => !noCorta(p.capa)));
     if (!cajaEscala) {
-      for (const { duda, capa } of errores) if (!noCorta(capa)) dudas.push(duda);
+      for (const error of errores) if (afectaAlCorte(error)) dudas.push(error.duda);
       return dudas.length ? resultado : vacio();
     }
     const escala = decidirEscala(o.origen, insunits(d), cajaEscala);
@@ -151,7 +152,7 @@ export function preparar(dxfTexto: string, o: OpcionesPreparacion): ResultadoPre
       const posicion = marco ? clasificar(p, marco, tol) : 'dentro';
       if (incluir(posicion)) elegibles.push(escalarPieza({ ...p, cruza: posicion === 'cruza' && !dec.cruces }, k));
     }
-    const dudasIncluidas = errores.filter(({ caja, capa }) => !noCorta(capa) && incluir(posicionDuda(caja, marco)));
+    const dudasIncluidas = errores.filter(error => afectaAlCorte(error) && incluir(posicionDuda(error.caja, marco)));
     if (cruces && !dec.cruces) pendientes.cruces = cruces;
     const simuladas: Pieza[] = dudasIncluidas.map(({ capa }, i) => ({ id: `d${i}`, capa, tipo: 'linea', a: { x: 0, y: 0 }, b: { x: 0, y: 0 } }));
     const asignadas = asignarCapas([...elegibles, ...simuladas], tabla, decisionesCapas, d.layers);

@@ -66,7 +66,7 @@ export function clasificar(p: Pieza, marco: Caja, tol: number): 'dentro' | 'fuer
 }
 
 export function esBorde(p: Pieza, m: Caja, tol: number): boolean {
-  if (p.tipo !== 'linea' || p.capa !== '0') return false;
+  if (p.tipo !== 'linea' || p.capa !== '0' || p.deBloque) return false;
   const sobre = (lado: number, a: number, b: number) => Math.abs(a - lado) <= tol && Math.abs(b - lado) <= tol;
   const horizontal = entre(p.a.x, m.x0 - tol, m.x1 + tol) && entre(p.b.x, m.x0 - tol, m.x1 + tol)
     && [m.y0, m.y1].some(y => sobre(y, p.a.y, p.b.y));
@@ -76,7 +76,7 @@ export function esBorde(p: Pieza, m: Caja, tol: number): boolean {
 }
 
 export function buscarMarcos(piezas: Pieza[]): Caja[] {
-  const lineas = piezas.filter((p): p is Extract<Pieza, { tipo: 'linea' }> => p.tipo === 'linea' && p.capa === '0');
+  const lineas = piezas.filter((p): p is Extract<Pieza, { tipo: 'linea' }> => p.tipo === 'linea' && p.capa === '0' && !p.deBloque);
   const corte = piezas.filter(p => p.capa !== '0');
   const horizontales = lineas.filter(p => Math.abs(p.a.y - p.b.y) < 1e-5 * Math.abs(p.a.x - p.b.x));
   const verticales = lineas.filter(p => Math.abs(p.a.x - p.b.x) < 1e-5 * Math.abs(p.a.y - p.b.y));
