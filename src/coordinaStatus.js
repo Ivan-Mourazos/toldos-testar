@@ -47,5 +47,21 @@ export function createCoordinaClient({ url, key, fetchImpl = fetch, timeoutMs = 
     return { disponible: true, ofs: result };
   }
 
-  return { statusOf };
+  /** @param {import('./stockLonaProduccion.js').DatosStockLona} datos */
+  async function enviarStockLona(datos) {
+    if (!base || !key) return { ok: false, motivo: COORDINA_NOT_CONFIGURED_MOTIVO };
+    try {
+      const response = await fetchImpl(`${base}/api/integracion/stock-lona`, {
+        method: 'POST',
+        headers: { 'X-Clave-Integracion': key, 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos),
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+      return response.ok ? { ok: true } : { ok: false, motivo: `CoordinaOT respondió ${response.status}.` };
+    } catch {
+      return { ok: false, motivo: 'CoordinaOT no responde.' };
+    }
+  }
+
+  return { statusOf, enviarStockLona };
 }

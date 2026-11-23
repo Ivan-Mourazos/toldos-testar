@@ -8,6 +8,9 @@ import { crearAlmacenPedidosRemolques } from '../almacen.ts';
 import { crearServicioPedidosRemolques } from '../servicio.ts';
 import type { PedidoRemolques } from '../tipos.ts';
 
+const getStock = vi.fn(async () => [{ code: 'NS86GR38P250', disponible: 1 }]);
+const prepararPdf = vi.fn();
+const enviarStockLona = vi.fn(async () => ({ ok: true }));
 let raiz: string;
 let activa: boolean;
 let aprobada: boolean;
@@ -16,6 +19,7 @@ let almacen: ReturnType<typeof crearAlmacenPedidosRemolques>;
 beforeEach(async () => {
   await fs.mkdir(path.resolve('tmp'), { recursive: true });
   raiz = await fs.mkdtemp(path.resolve('tmp/remolques-envios-'));
+  vi.clearAllMocks();
   activa = true;
   aprobada = true;
   almacen = crearAlmacenPedidosRemolques({ carpeta: async () => path.join(raiz, 'pedidos') });
@@ -25,7 +29,9 @@ beforeEach(async () => {
     remolquesPlanteamientosDirectory: path.join(raiz, 'pdf'), remolquesOficinaTecnicaDirectory: path.join(raiz, '{YYYY}/oficina') });
   servicio = crearServicioPedidosRemolques({ almacen, ajustes, parametros: async () => fixture.params,
     coordina: { statusOf: async (ofs) => ({ disponible: true, ofs: Object.fromEntries(ofs.map((of) => [of, { estado: aprobada ? 'aprobada' : 'en_revision' }])) }) },
-    tecnicos: ['IVÁN'], hacerPdf: async () => { const pdf = await pdfLib.PDFDocument.create(); pdf.addPage(); return pdf.save(); },
+    stockLona: { stock: { reset: vi.fn(), getStock }, coordina: { enviarStockLona } },
+    materialesStock: async () => [{ nombre: fixture.elementos[0].input.material, codigoBobina: 'NS86GR38P250' }],
+    tecnicos: ['IVÁN'], hacerPdf: async () => { prepararPdf(); const pdf = await pdfLib.PDFDocument.create(); pdf.addPage(); return pdf.save(); },
     esPedidoDeToldos: async () => false, corte: crearCorteRemolques({ ajustes, oda: { disponible: false } }),
   });
 });
@@ -72,7 +78,18 @@ it('pasar a producción guarda PDF y plano y manda al bot; solo entonces cierra 
   await fs.mkdir(path.join(raiz, 'pdf'), { recursive: true });
   await fs.mkdir(path.join(raiz, 'bot/Ivan.Sanchez'), { recursive: true });
   const r = await servicio.produccion(fixture.orderCode, { savedBy: 'IVÁN', confirmBot: true });
-  expect(r).toMatchObject({ status: 200, cuerpo: { hechos: ['PDF', 'Plano', 'DXF al bot'] } });
+  expect(r).toMatchObject({ status: 200, cuerpo: { hechos: ['PDF', 'Plano', 'DXF al bot'],
+    stockLona: { consultado: expect.any(String), faltas: [{ codigo: 'NS86GR38P250', necesita: 10.76, disponible: 1 }] },
+  } });
+  const { avisos } = r.cuerpo as { avisos: string[] };
+  expect(avisos.slice(0, 2)).toEqual([
+    expect.stringContaining('No llega el stock de NS86GR38P250'), expect.stringContaining('Compras y Almacén'),
+  ]);
+  expect(getStock).toHaveBeenCalledBefore(prepararPdf);
+  expect(prepararPdf).toHaveBeenCalledBefore(enviarStockLona);
+  expect(enviarStockLona).toHaveBeenCalledWith(expect.objectContaining({
+    pedido: fixture.orderCode, cliente: 'REMOLCAR', ofs: ['0233152', '0233153'], consultadoPor: 'IVÁN',
+  }));
   const p = await servicio.obtener(fixture.orderCode);
   expect(p.status).toBe('PRODUCED');
   expect(p.enviosCorte).toHaveLength(1);
@@ -89,6 +106,7 @@ it('bot inexistente o plano pendiente de sobrescribir no deja PDF ni cierra la e
   await servicio.planoCorte(fixture.orderCode);
   const r = await servicio.produccion(fixture.orderCode, { savedBy: 'IVÁN', confirmBot: true });
   expect(r).toMatchObject({ status: 409, cuerpo: { paso: 'Plano', needsConfirmation: true } });
+  expect(enviarStockLona).not.toHaveBeenCalled();
   expect(await fs.readdir(path.join(raiz, 'pdf'))).toEqual([]);
   expect(await fs.readdir(path.join(raiz, 'bot/Ivan.Sanchez'))).toEqual([]);
 });

@@ -1,5 +1,8 @@
 import { ultimoEnvioCorte, convertirCmtRemolques } from '../../corteMaquina.js';
-import { pasarAProduccion, prepararPlanoProduccion } from '../../produccion.js';
+import { prepararPlanoProduccion } from '../../produccion.js';
+import { lineasLonaRemolques } from '../../stockLona.js';
+import { pasarAProduccionConStock, type ServiciosStockLona } from '../../stockLonaProduccion.js';
+import type { Material } from '../calc/materiales-seed.ts';
 import { numerarEntrega, aplicarDestino, necesitaPrepararDestino } from '../../entregasRps.js';
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
@@ -51,6 +54,8 @@ export interface DependenciasPedidosRemolques {
   /** Los parámetros comunes de remolques, si la pantalla no manda los suyos. */
   parametros: () => Promise<CalcParams>;
   coordina: { statusOf(ofs: string[], opciones?: { fresh?: boolean }): Promise<EstadoCoordina> };
+  stockLona?: ServiciosStockLona;
+  materialesStock?: () => Promise<Material[]>;
   /** La lista de técnicos de toldos (la de «Soy»): da el nombre del revisor de CoordinaOT. */
   tecnicos: string[];
   /** La hoja de taller en PDF (servicio de Chromium de la fase 4). */
@@ -668,7 +673,9 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       if (pedido.status === 'PRODUCED') return { status: 200, cuerpo: { ok: true, unchanged: true, mensaje: 'Este pedido ya está en producción.' } };
       // `vista` es asíncrona desde los sacos de stock (lee la OF de stock): sin esperarla no se veía el corte.
       const conCorte = Boolean(deps.corte && ((await deps.corte.vista(pedidoEntrega(pedido)) as { cortes?: unknown[] } | null)?.cortes?.length || pedido.corteConfirmado));
-      return await pasarAProduccion([
+      const actual = pedidoEntrega(pedido);
+      const { stockLona, materialesStock } = deps;
+      return await pasarAProduccionConStock([
         { nombre: "PDF", preparar: () => generar(codigo, { ...entrada, soloPdf: false, confirmOverwrite: entrada.confirmPdfOverwrite === true }, true, true) },
         ...(conCorte ? [
           { nombre: "Plano", preparar: () => prepararPlanoProduccion({ confirmado: pedido.corteConfirmado, confirmOverwrite: entrada.confirmPlanoOverwrite === true,
@@ -676,7 +683,11 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
             escribir: (ficheros: ArchivoCorte[]) => deps.corte!.escribir(ficheros) }) },
           { nombre: (await deps.ajustes()).corteDirectoEnabled ? 'DXF y CMT a la máquina' : 'DXF al bot', preparar: () => enviarCorte(codigo, { ...entrada, usuario: entrada.savedBy, destino: "bot", confirmOverwrite: entrada.confirmDxfOverwrite === true }, true, true) },
         ] : []),
-      ]);
+      ], stockLona && materialesStock ? {
+        ...stockLona, pedido: codigo, cliente: pedido.summary.customer, ofs: uniqueOfs(elementosAprobacion(actual)),
+        consultadoPor: typeof entrada.savedBy === 'string' ? entrada.savedBy : null,
+        lineas: async () => lineasLonaRemolques(actual, await materialesStock()),
+      } : undefined);
     } finally { ocupados.delete(codigo); }
   }
 

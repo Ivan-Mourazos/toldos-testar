@@ -88,3 +88,32 @@ describe('cliente de CoordinaOT', () => {
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 });
+
+describe('enviar el stock de lona a CoordinaOT', () => {
+  it('envía el cuerpo JSON y la clave a la ruta de integración', async () => {
+    const fetchImpl = reply([]);
+    const client = createCoordinaClient({ url: 'http://coordina:4300/', key: 'clave', fetchImpl });
+    const datos = { pedido: 'AR2600001', cliente: 'Cliente', ofs: ['0290001'], lonas: [], faltas: [],
+      consultado: '2026-11-23T10:00:00.000Z', consultadoPor: 'IVÁN' };
+    expect(await client.enviarStockLona(datos)).toEqual({ ok: true });
+    expect(fetchImpl).toHaveBeenCalledExactlyOnceWith('http://coordina:4300/api/integracion/stock-lona', {
+      method: 'POST', headers: { 'X-Clave-Integracion': 'clave', 'Content-Type': 'application/json' },
+      body: JSON.stringify(datos), signal: expect.any(AbortSignal),
+    });
+  });
+
+  it('sin URL o clave no intenta enviar', async () => {
+    const fetchImpl = reply([]);
+    for (const [url, key] of [['', 'k'], ['http://coordina', '']]) {
+      expect(await createCoordinaClient({ url, key, fetchImpl }).enviarStockLona({})).toMatchObject({ ok: false });
+    }
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it('un error HTTP o de red devuelve un resultado sin lanzar', async () => {
+    const opciones = { url: 'http://coordina', key: 'k' };
+    expect(await createCoordinaClient({ ...opciones, fetchImpl: reply([], 500) }).enviarStockLona({})).toMatchObject({ ok: false });
+    const fetchImpl = vi.fn().mockRejectedValue(new Error('Tiempo agotado'));
+    expect(await createCoordinaClient({ ...opciones, fetchImpl }).enviarStockLona({})).toMatchObject({ ok: false });
+  });
+});

@@ -1,5 +1,7 @@
 import { ultimoEnvioCorte } from '../../corteMaquina.js';
-import { pasarAProduccion, prepararPlanoProduccion } from '../../produccion.js';
+import { prepararPlanoProduccion } from '../../produccion.js';
+import { lineasLonaPuertas } from '../../stockLona.js';
+import { pasarAProduccionConStock, type ServiciosStockLona } from '../../stockLonaProduccion.js';
 import { numerarEntrega, aplicarDestino, necesitaPrepararDestino } from '../../entregasRps.js';
 import { mkdir, stat } from "node:fs/promises";
 import path from "node:path";
@@ -55,6 +57,7 @@ export interface DependenciasPedidosPuertas {
   ajustes: () => Promise<{ productionEnabled?: boolean; corteDirectoEnabled?: boolean; corteMaquinaDxfDirectory?: string; corteMaquinaCmtDirectory?: string; corteLonaBotDirectory?: string; corteLonaPlanoDirectory?: string; corteLonaDxfDirectory?: string;
     corteBorradoresDirectory?: string; corteBorradoresRed?: string; remolquesPlanteamientosDirectory?: string; remolquesOficinaTecnicaDirectory?: string; rpsPlanteamientosDirectory?: string; planteamientosDirectory?: string }>;
   coordina: { statusOf(ofs: string[], opciones?: { fresh?: boolean }): Promise<EstadoCoordina> };
+  stockLona?: ServiciosStockLona;
   /** La lista de técnicos (la de «Soy»). */
   tecnicos: string[];
   /** La OF de los sacos de stock (src/ofStockSacos.js): sin ella, el corte va sin sacos. */
@@ -642,15 +645,21 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
       const entrada = (cuerpo ?? {}) as Record<string, unknown>;
       const pedido = await obtener(codigo);
       if (pedido.status === 'PRODUCED') return { status: 200, cuerpo: { ok: true, unchanged: true, mensaje: 'Este pedido ya está en producción.' } };
-      const aprobacion = elementosAprobacion(pedidoEntrega(pedido));
-      const revisor = approvalReviewers(aprobacion, aprobacionToldos(await deps.coordina.statusOf(uniqueOfs(aprobacion), { fresh: true })), deps.tecnicos);
-      return await pasarAProduccion([
+      const actual = pedidoEntrega(pedido);
+      const aprobacion = elementosAprobacion(actual);
+      const ofs = uniqueOfs(aprobacion);
+      const revisor = approvalReviewers(aprobacion, aprobacionToldos(await deps.coordina.statusOf(ofs, { fresh: true })), deps.tecnicos);
+      return await pasarAProduccionConStock([
         { nombre: 'PDF', preparar: () => prepararPdfProduccion(codigo, { ...entrada, confirmOverwrite: entrada.confirmPdfOverwrite === true }) },
         { nombre: 'Plano', preparar: () => prepararPlanoProduccion({ confirmado: pedido.corteConfirmado, confirmOverwrite: entrada.confirmPlanoOverwrite === true,
           preparar: async () => { const p = await deps.plano!.preparar(pedidoEntrega(pedido, 'anual'), revisor); return { ficheros: p.fichero ? [p.fichero] : [], avisos: p.avisos }; },
           escribir: async (ficheros: (FicheroPlanoPuertas & { contenido: Uint8Array })[]) => { for (const f of ficheros) await deps.plano!.escribir(f); } }) },
         { nombre: (await deps.ajustes()).corteDirectoEnabled ? 'DXF y CMT a la máquina' : 'DXF al bot', preparar: () => enviarCorte(codigo, { ...entrada, usuario: entrada.savedBy, destino: 'bot', sinPdf: true, confirmOverwrite: entrada.confirmDxfOverwrite === true }, true, true) },
-      ]);
+      ], deps.stockLona && {
+        ...deps.stockLona, pedido: codigo, cliente: pedido.summary.customer, ofs,
+        consultadoPor: typeof entrada.savedBy === 'string' ? entrada.savedBy : null,
+        lineas: async () => lineasLonaPuertas(generarCortePuertas({ ...actual, summary: undefined }, { ofStockSacos: await ofStock(), incluirMetrosLona: true })),
+      });
     } finally { ocupados.delete(codigo); }
   }
 
