@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { dxfACmt } from '../index.ts';
-import { leerDxf } from '../dxf.ts';
+import { leerDxf, value } from '../dxf.ts';
 import { escribirDxfLimpio } from './salida.ts';
 import type { Pieza } from './tipos.ts';
 
@@ -11,13 +11,14 @@ const piezas: Pieza[] = [
 ];
 
 describe('escribirDxfLimpio', () => {
-  it('escribe AC1018 en mm, sin leyenda, con el dibujo en el origen y solo capas del bot', () => {
+  it('escribe AC1018 en mm, sin leyenda, con el dibujo en (1000, 1000) y solo capas del bot', () => {
     const texto = escribirDxfLimpio(piezas);
     expect(texto).toContain('AC1018');
     const d = leerDxf(texto);
     expect(d.entities.map(e => e.type).sort()).toEqual(['ARC', 'CIRCLE', 'LINE']);
-    const xs = d.entities.filter(e => e.type === 'LINE').flatMap(e => e.pairs.filter(([c]) => c === 10 || c === 11).map(([, v]) => Number(v)));
-    expect(Math.min(...xs)).toBeCloseTo(0);
+    const linea = d.entities.find(e => e.type === 'LINE')!;
+    expect([Number(value(linea, 10)), Number(value(linea, 20))]).toEqual([1000, 1000]);
+    expect([Number(value(linea, 11)), Number(value(linea, 21))]).toEqual([2000, 1000]);
   });
   it('el CMT del DXF limpio sale sin dudas y recolocado', () => {
     const r = dxfACmt(escribirDxfLimpio(piezas), { recolocar: true });
@@ -33,5 +34,5 @@ it('conserva el formato del texto y solo emite ancla para texto justificado', ()
   const [normal, justificado] = d.entities.filter(e => e.type === 'TEXT');
   expect(normal.pairs).not.toContainEqual([11, expect.anything()]);
   expect(normal.pairs).toContainEqual([51, '12']);
-  expect(justificado.pairs.some(([c, v]) => c === 11 && Number(v) === 10)).toBe(true);
+  expect(justificado.pairs.some(([c, v]) => c === 11 && Number(v) === 1010)).toBe(true);
 });

@@ -3,7 +3,7 @@ import { barridoArco, cajaDe } from './marco.ts';
 import type { Pieza } from './tipos.ts';
 
 /** Esquina inferior izquierda del dibujo en el DXF limpio. */
-export const ORIGEN_DXF = { x: 0, y: 0 };
+export const ORIGEN_DXF = { x: 1000, y: 1000 };
 
 export function escribirDxfLimpio(piezas: Pieza[]): string {
   if (!piezas.length) throw new Error('No queda nada que cortar.');
