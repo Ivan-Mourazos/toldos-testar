@@ -103,3 +103,11 @@ it('sin lonas que comprobar no consulta ni avisa', async () => {
   expect(stock.getStock).not.toHaveBeenCalled();
   expect(coordina.enviarStockLona).not.toHaveBeenCalled();
 });
+
+it('quita de cada lona las OF que no son de la entrega antes de avisar a CoordinaOT', async () => {
+  const { coordina, comprobar } = preparar();
+  await comprobar([{ ...linea, ofs: ['0290001', '0299999'] }, { ...linea, codigo: 'LAC900AZ02P300', ofs: ['0299999'] }]);
+  const { lonas, faltas } = coordina.enviarStockLona.mock.calls[0][0];
+  expect(lonas.map(l => l.ofs)).toEqual([['0290001'], datos.ofs]);
+  expect(faltas[0].ofs).toEqual(['0290001']);
+});

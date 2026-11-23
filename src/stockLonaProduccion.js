@@ -78,7 +78,14 @@ async function consultarStock({ lineas, lonasAprobadas, stock, resolverTela, now
  * @param {ServiciosStockLona['coordina']} coordina */
 async function informarStock(pedido, { lonas, consultado, faltas, avisos }, coordina) {
   if (consultado) {
-    const datos = { ...pedido, lonas, faltas, consultado };
+    // CoordinaOT rechaza el envío entero si una lona trae una OF que no es de la entrega.
+    const deLaEntrega = new Set(pedido.ofs);
+    /** @template {{ ofs: string[] }} T @param {T} fila @returns {T} */
+    const ajustar = fila => {
+      const ofs = fila.ofs.filter(of => deLaEntrega.has(of));
+      return { ...fila, ofs: ofs.length ? ofs : [...pedido.ofs] };
+    };
+    const datos = { ...pedido, lonas: lonas.map(ajustar), faltas: faltas.map(ajustar), consultado };
     try {
       if ((await coordina.enviarStockLona(datos)).ok) return { consultado, faltas, avisos };
     } catch {
