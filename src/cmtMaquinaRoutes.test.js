@@ -45,6 +45,11 @@ it('los nombres manuales se sanean; conserva bytes, año actual y registro del t
   expect(convertir).toHaveBeenCalledWith('Aá\0\n', { sinLeyenda: true, sinTextos: true });
   expect(JSON.parse(await fs.readFile(path.join(raiz, 'registro', `${envio.id}.json`), 'utf8'))).toEqual(envio);
 });
+it('recoloca el DXF preparado sin volver a quitar la leyenda', async () => {
+  expect((await enviar({ recolocar: 'true' })).status).toBe(400);
+  expect((await enviar({ recolocar: true })).status).toBe(200);
+  expect(convertir).toHaveBeenCalledExactlyOnceWith('Aá\0\n', { sinLeyenda: false, sinTextos: false, recolocar: true });
+});
 it('dudas no escriben ni registro ni carpetas y repetir pregunta por ambos archivos', async () => {
   convertir.mockReturnValueOnce({ cmt: null, dudas: [{ motivo: 'Falta la herramienta' }] });
   const duda = await enviar();

@@ -1,0 +1,16 @@
+{
+  "DISCO1": "DISCO1",
+  "DISCO2": "DISCO2",
+  "CUTTER": "CUTTER",
+  "ROTULADOR": "ROTULADOR",
+  "TALADRO": "taladro",
+  "TEXTO": "texto",
+  "CORTES - LONA": "DISCO1",
+  "CORTE": "DISCO1",
+  "CORTE (VENT)": "DISCO1",
+  "MARCA": "ROTULADOR",
+  "CURV": "CUTTER",
+  "REFERENCIAS": "NO_CORTAR",
+  "REFERENCIA-1": "NO_CORTAR",
+  "DEFPOINTS": "NO_CORTAR"
+}
