@@ -155,8 +155,8 @@ export function presentacionPortanova(pedido: PedidoPuertas,
   const bloque = bloqueNotasPortanova(materiales);
   const soloSacos = puertas.length>0&&puertas.every(p=>p.modelo==='SACOARENA');
   if(puertas.length && puertas.every(p=>p.modelo==='ABRIGO')){
-    bloque.textos=[{x:164,y:70,h:2.5,ancho:121,valor:'ABRIGO DE CARGA · PORTANOVA'},
-      {x:164,y:62,h:2.3,ancho:121,valor:'Laterales B y C: un ollao N14 con arandela N30 por lateral.'}];
+    // Sin la nota del ollao: ya sale en el dibujo de cada lateral (Iván, 23/11/2026).
+    bloque.textos=[{x:164,y:70,h:2.5,ancho:121,valor:'ABRIGO DE CARGA · PORTANOVA'}];
     bloque.lineas=[];
     bloque.quitarVentanas=[3,5];
   }
