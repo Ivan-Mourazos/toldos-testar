@@ -308,7 +308,7 @@ function SacoUtil({valor,cambiar,titulo='Saco útil del pedido (mm)',habituales=
 function AyudaDobleSaco({p}:{p:Puerta}) {
   const mm=(cm:number)=>(cm*10).toLocaleString('es-ES',{maximumFractionDigits:1});
   const interior=sacoApilable(p), env=envoltorioDobleSaco(p);
-  return <p className="puerta-ayuda">El saco interior de {p.apilable.saco??80} queda rematado de {mm(interior.rematado)} mm: el paño empieza {mm(-bajoDobleSaco(p))} mm por debajo del bajo. Envoltorio exterior de {env.util}{p.apilable.sacoExterior==null?' (interior + 50)':''}: (F − 60) × {mm(env.corte)} mm, pestaña 120 × {mm(env.altoPestana)} mm.</p>;
+  return <p className="puerta-ayuda">El saco interior de {p.apilable.saco??80} queda rematado de {mm(interior.rematado)} mm: el paño empieza {mm(-bajoDobleSaco(p))} mm por debajo del bajo y lleva la solapa y los velcros. Envoltorio exterior de {env.util}{p.apilable.sacoExterior==null?' (interior + 50)':''}: tira lisa de (F − 60) × {mm(env.corte)} mm, centrada al ancho de la puerta.</p>;
 }
 /** Las E.T. de la enrollable con los tramos de la hoja (Iván, 26/10/2026): la web hace las sumas. */
 function TramosET({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {

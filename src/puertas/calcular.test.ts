@@ -99,38 +99,42 @@ describe('Comprobaciones y reglas confirmadas', () => {
     p.medidasBolsillo.altoSuperior=44;
     expect(calcularPuerta(p).bolsillo).toEqual({x:20,y:27,ancho:30,alto:17});
   });
-  // Iván, 23/10/2026: el 80 integrado queda rematado de 9 y no de 11, así que el paño inferior sale 2 cm más corto
-  // que en estos cortes reales (281,5 → 279,5…): H + 35,5 con la entrada incorporada.
+  // Iván, 23/10/2026 y 23/11/2026 (AR2605641): el 80 integrado queda rematado de 9 y el paño arranca −(rematado + 2) = −11
+  // (de la raya al borde de corte hay 2 × (9 + 2) = 22 cm, conservando H): H + 35 con la entrada incorporada.
+  // Plantilla Portanova y AR2605641: el envoltorio exterior es una tira rectangular lisa (F − 6) × corte, sin pestaña,
+  // y la solapa lateral de cierre se corta aparte en la lona (12 × rematado).
   it.each([
-    ['AR2601036',424,500,42,[58,52,58,52,58,52,58],279.5,256],
-    ['AR2600520',430,475,41,[52,52,52,52,52,52,52],266.5,244],
-    ['AR2600236',382,450,37,[49,49,49,49,49,49,49],250.5,235],
-  ] as const)('doble saco %s: la entrada incorporada ya cuenta en H + 35,5', (_pedido,F,H,pie,pasos,inferior,superior) => {
+    ['AR2601036',424,500,42,[58,52,58,52,58,52,58],279,256],
+    ['AR2600520',430,475,41,[52,52,52,52,52,52,52],266,244],
+    ['AR2600236',382,450,37,[49,49,49,49,49,49,49],250,235],
+  ] as const)('doble saco %s: la entrada incorporada ya cuenta en H + 35, solapa 12 × 9 aparte y envoltorio liso', (_pedido,F,H,pie,pasos,inferior,superior) => {
     const p=base('PUERTAPLE',F,H);
     p.apilable={...p.apilable,pie,pasos:[...pasos],cabecera:70,saco:80,doble:true,empates:[5]};
     p.entradas=alturasTubos(p).map(altura=>({altura,diametro:30,largo:F,alto:12,huecos:[]}));
     const r=calcularPuerta(p);
     expect(r.piezas.filter(x=>x.clase==='pano').map(x=>x.alto)).toEqual([inferior,superior]);
-    expect(r.alternativasSaco!.entero[0]).toMatchObject({ancho:F-6+12,alto:37});
-    // La pestaña 12 × 14 a 2 cm del borde de arriba, como en el dibujo (Iván, 28/10/2026, AR2605035).
-    expect(r.alternativasSaco!.entero[0].contorno.slice(4)).toEqual([[12,35],[0,35],[0,21],[12,21]]);
+    expect(r.piezas.find(x=>x.clase==='refuerzo')).toMatchObject({nombre:'Solapa de cierre del saco',ancho:12,alto:9,material:'LAC900 AZUL 5002'});
+    expect(r.alternativasSaco!.entero[0]).toMatchObject({ancho:F-6,alto:37});
+    expect(r.alternativasSaco!.entero[0].contorno).toEqual([[0,0],[F-6,0],[F-6,37],[0,37]]);
   });
-  // Iván, 19/11/2026 (AR2605641, Portanova): doble saco con el interior y el exterior del pedido (120 y 170). El 37 de
-  // siempre es un exterior de 130 (80 + 50): rematado = útil/10 + 1, corte 2 × rematado + 9 y pestaña 12 × rematado.
+  // Iván, 19/11/2026 y 23/11/2026 (AR2605641, Portanova): doble saco con el interior y el exterior del pedido (120 y 170).
+  // El 37 de siempre es un exterior de 130 (80 + 50): rematado = útil/10 + 1, corte 2 × rematado + 9, tira lisa sin pestaña;
+  // la solapa de cierre (12 × rematado interior) sale aparte en la lona.
   it.each([
-    [120,170,45,18],
-    [120,undefined,45,18], // el exterior, sin poner, es el interior + 50
-    [80,130,37,14],
-  ] as const)('doble saco libre: interior %s y exterior %s → envoltorio %s con pestaña 12 × %s', (interior,exterior,alto,altoPestana) => {
+    [120,170,45,13],
+    [120,undefined,45,13], // el exterior, sin poner, es el interior + 50
+    [80,130,37,9],
+  ] as const)('doble saco libre: interior %s y exterior %s → envoltorio liso %s y solapa 12 × %s', (interior,exterior,alto,remInterior) => {
     const p=base('PUERTAPLE',286,463);
     p.apilable={...p.apilable,pie:38,pasos:[50,50,50,50,50,50,50],cabecera:75,saco:interior,doble:true,empates:null,...(exterior?{sacoExterior:exterior}:{})};
     p.entradas=alturasTubos(p).map(altura=>({altura,diametro:30,largo:p.frente,alto:12,huecos:[]}));
     const r=calcularPuerta(p);
     const envoltorio=r.alternativasSaco!.entero[0];
-    expect(envoltorio).toMatchObject({ancho:286-6+12,alto});
-    expect(envoltorio.contorno.slice(4)).toEqual([[12,alto-2],[0,alto-2],[0,alto-2-altoPestana],[12,alto-2-altoPestana]]);
+    expect(envoltorio).toMatchObject({ancho:286-6,alto});
+    expect(envoltorio.contorno).toEqual([[0,0],[280,0],[280,alto],[0,alto]]);
+    expect(r.piezas.find(x=>x.clase==='refuerzo')).toMatchObject({ancho:12,alto:remInterior});
     expect(r.avisos.map(a=>a.codigo)).not.toContain('SACO_DOBLE');
-    // El interior sale del paño: arranca su rematado + 2,5 por debajo del bajo.
+    // El interior sale del paño: arranca su rematado + 2 por debajo del bajo.
     const conOchenta=structuredClone(p); conOchenta.apilable.saco=80; delete conOchenta.apilable.sacoExterior;
     const alto0=(q:typeof p)=>calcularPuerta(q).piezas.filter(x=>x.clase==='pano').reduce((s,x)=>s+x.alto,0);
     expect(alto0(p)-alto0(conOchenta)).toBeCloseTo((interior-80)/10);

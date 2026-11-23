@@ -84,7 +84,7 @@ function etiquetaClasePieza(pieza: PiezaPuerta, codigoPano?: string): string {
     return codigoPano || 'PAÑO';
   }
   if (pieza.clase === 'cacho') return 'CACHO';
-  if (pieza.clase === 'refuerzo') return 'REFUERZO';
+  if (pieza.clase === 'refuerzo') return /solapa/i.test(pieza.nombre) ? 'SOLAPA' : 'REFUERZO';
   // «ET» y no «ENTRADA» (Iván, 26/10/2026).
   if (pieza.clase === 'entrada') {
     const n = /(\d+)\s*$/.exec(pieza.nombre)?.[1];

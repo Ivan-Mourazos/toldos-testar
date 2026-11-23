@@ -4,7 +4,7 @@ import { abajoRejillaTgm, envoltorioTgm, SANDWICH_TGM } from './tgm.ts';
 import { alzadoAraujo } from './alzadoAraujo.ts';
 import { alzadoSantaPau } from './alzadoSantaPau.ts';
 import { colocarTextosPuerta } from './textosPlano.ts';
-import { desnivelSuelo, envoltorioDobleSaco, pestanaDerecha, rotuloSaco, sacoPuerta } from './saco.ts';
+import { bajoDobleSaco, desnivelSuelo, envoltorioDobleSaco, pestanaDerecha, rotuloSaco, sacoPuerta } from './saco.ts';
 import { medidaSystemDock, REGLAS_SYSTEM_DOCK } from './systemDock.ts';
 import { NOTA_CACHOS_CRISTAL, notaPlanoEnrollable, panoContinuoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
@@ -168,11 +168,13 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
       : [];
 
   // Pieza desplegada del saco debajo del alzado
-  const yDesplegado = Math.max(H,altoDerecho) + 48;
-  const env = envoltorioDobleSaco(p), hCorteSaco = ple && p.apilable.doble ? env.corte : saco.corte;
-  const pestanaSaco = enr ? 6.5 : auto ? 0 : p.apilable.doble ? env.pestana : 10;
-  const altoPestana = ple && p.apilable.doble ? env.altoPestana : saco.altoPestana;
-  const wSaco = ple && p.apilable.doble ? Math.max(20, F - 6) : F;
+  const doble = ple && p.apilable.doble;
+  const bajoDoble = doble ? -bajoDobleSaco(p) : 0;
+  const yDesplegado = Math.max(H,altoDerecho) + (doble ? bajoDoble + 52 : 48);
+  const env = envoltorioDobleSaco(p), hCorteSaco = doble ? env.corte : saco.corte;
+  const pestanaSaco = enr ? 6.5 : auto ? 0 : doble ? env.pestana : 10;
+  const altoPestana = doble ? env.altoPestana : saco.altoPestana;
+  const wSaco = doble ? Math.max(20, F - 6) : F;
 
   const textosTaller = colocarTextosPuerta({ ...p, frente: F, alto: H }, resultado)
     .filter(t => !sinSaco || (t.id !== 'saco' && t.id !== 'soldar-saco'));
@@ -184,8 +186,14 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   const letraBase = Math.min(10.5, Math.max(7.5, Math.min(F / 24, H / 38)));
 
   // Contorno general de la puerta
-  if (desnivel) formas.push({tipo:'poligono',clase:'puerta-lona',puntos:[[0,0],[F,0],[F,altoDerecho],[0,H]]});
-  else rect('puerta-lona', -margen, 0, F + margen * 2, pie);
+  if (desnivel) formas.push({tipo:'poligono',clase:'puerta-lona',puntos:[[0,0],[F,0],[F,altoDerecho+bajoDoble],[0,H+bajoDoble]]});
+  else rect('puerta-lona', -margen, 0, F + margen * 2, pie + bajoDoble);
+  if (doble) {
+    // Pestaña del saco interior integrado y línea de doblez en el bajo terminado.
+    const dr = pestanaDerecha(p);
+    rect('puerta-lona', dr ? F + margen : -10 - margen, H - saco.rematado, 10, saco.rematado);
+    linea('puerta-cota', 0, H, F, H, '5 3');
+  }
   if (bastilla > 0) {
     const fin = sinSaco ? pie + (p.enrollable.cierreBajo ?? 0) : H - saco.rematado;
     for (const x of [-bastilla, F]) rect('puerta-pano', x, -3.5, bastilla, fin + 3.5);
@@ -275,7 +283,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   }
   marca(auto ? 30 : ple ? p.apilable.bolsillo / 2 : 3.5);
   const inicioMarcaSaco = formas.length;
-  if (!sinSaco) marca(H - hSaco, -1);
+  if (!sinSaco) marca(H - (doble ? saco.rematado + 2 : hSaco), -1);
   else {
     const cierre = p.enrollable.cierreBajo ?? 0;
     if (cierre > 0) rect('puerta-pano', 0, pie, F, cierre);
@@ -451,17 +459,23 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   }
   cota({ x1: wSaco, y1: y0, x2: wSaco, y2: y1, linea: wSaco + 12, valor: hCorteSaco, marcas: 4, texto: { x: wSaco + 18, y: y0 + hCorteSaco / 2 + 3, ancla: 'start' } });
   const altoVelcro = auto ? 4 : 8;
-  nota(enr ? 'COSER VELCRO REVÉS DE 3 BRAVO' : ple ? 'COSER VELCRO REVÉS DE 5 BRAVO' : 'VELCRO BRAVO REVÉS DE 3',
-    wSaco / 2, y0 - 16, altoVelcro, [wSaco * 0.2, y0 - 12, 0, y0]);
+  if (!doble) {
+    nota(enr ? 'COSER VELCRO REVÉS DE 3 BRAVO' : ple ? 'COSER VELCRO REVÉS DE 5 BRAVO' : 'VELCRO BRAVO REVÉS DE 3',
+      wSaco / 2, y0 - 16, altoVelcro, [wSaco * 0.2, y0 - 12, 0, y0]);
+  }
   nota(rotuloSaco(p), wSaco / 2, y0 + 11, 10);
   cota({ x1: 0, y1: y1 - 8, x2: wSaco, y2: y1 - 8, linea: y1 - 8, valor: wSaco, estilo: 'XERAL 5', marcas: 0,
     texto: { x: wSaco / 2, y: y1 - 10, ancla: 'middle' } });
   if (enr) cota({ x1: 0, y1, x2: 4.5, y2: y1, linea: y1 + 12, valor: 4.5, estilo: 'XERAL', marcas: 2,
     texto: { x: -10, y: y1 + 16, ancla: 'end' } });
-  if (ple) cota({ x1: 0, y1, x2: 3, y2: y1, linea: y1 + 9, valor: 3, estilo: 'XERAL 5', marcas: 2,
+  if (ple && !doble) cota({ x1: 0, y1, x2: 3, y2: y1, linea: y1 + 9, valor: 3, estilo: 'XERAL 5', marcas: 2,
     texto: { x: -6, y: y1 + 13, ancla: 'end' } });
-  nota(enr ? 'COSER VELCRO DERECHO DE 3 SUAVE' : ple ? 'COSER VELCRO DERECHO DE 5 SUAVE' : 'VELCRO SUAVE REVÉS DE 3',
-    wSaco / 2, y1 + 25, altoVelcro, [wSaco * 0.2, y1 + 20, 4.5, y1]);
+  if (doble) {
+    nota('CENTRAR EL SACO AL ANCHO DE LA PUERTA', wSaco / 2, y1 + 18, 8);
+  } else {
+    nota(enr ? 'COSER VELCRO DERECHO DE 3 SUAVE' : ple ? 'COSER VELCRO DERECHO DE 5 SUAVE' : 'VELCRO SUAVE REVÉS DE 3',
+      wSaco / 2, y1 + 25, altoVelcro, [wSaco * 0.2, y1 + 20, 4.5, y1]);
+  }
   const notaEnr = enr ? notaPlanoEnrollable(p) : '';
   if (notaEnr) {
     formas.push({ tipo: 'texto', x: F / 2, y: y1 + 46, tamano: 7.5, ancla: 'middle',
@@ -470,7 +484,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   if (auto) nota('CREMALLERA SOLDADA HASTA MITAD DE SACO', F / 2, y1 + 47, Math.min(10, F / 32));
 
   const derecha = pestanaDerecha(p);
-  if (derecha) {
+  if (derecha && !doble) {
     // Pestaña a la derecha: la pieza desplegada dada la vuelta; las letras no se espejan.
     const x = (v: number) => wSaco - v;
     const ancla = (a: TextoAlzado['ancla']) => a === 'start' ? 'end' : a === 'end' ? 'start' : a;

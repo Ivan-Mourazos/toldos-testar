@@ -12,11 +12,18 @@ export function bloquesNotas(textos) {
   for (const t of textos) {
     if (usados.has(t)) continue;
     const bloque = [t]; usados.add(t);
-    const segunda = /^REFUERZO DE /.test(t.valor) ? /^SOLDADO ·/ : /^COSER VELCRO /.test(t.valor) ? /^DE 5 / : /^CERRAR E\.T/.test(t.valor) ? /^2 CM MÁXIMO$/ : null;
+    const segunda = /^REFUERZO DE /.test(t.valor) ? /^SOLDADO ·/ : /^SOLDAR 2 CM SOLAPA/.test(t.valor) ? /^COSER VELCRO / : /^COSER VELCRO /.test(t.valor) ? /^DE 5 |^DERECHO DE 5 / : /^CERRAR E\.T/.test(t.valor) ? /^2 CM MÁXIMO$/ : null;
     if (segunda) {
       const pareja = textos.filter(q => !usados.has(q) && segunda.test(q.valor) && Math.abs(q.x - t.x) < 1e-6 && Math.abs(q.y - t.y) < 4 * t.h)
         .sort((a, b) => Math.abs(a.y - t.y) - Math.abs(b.y - t.y))[0];
-      if (pareja) { bloque.push(pareja); usados.add(pareja); }
+      if (pareja) {
+        bloque.push(pareja); usados.add(pareja);
+        if (/^SOLDAR 2 CM SOLAPA/.test(t.valor)) {
+          const tercera = textos.filter(q => !usados.has(q) && /^DE 5 /.test(q.valor) && Math.abs(q.x - t.x) < 1e-6 && Math.abs(q.y - pareja.y) < 4 * pareja.h)
+            .sort((a, b) => Math.abs(a.y - pareja.y) - Math.abs(b.y - pareja.y))[0];
+          if (tercera) { bloque.push(tercera); usados.add(tercera); }
+        }
+      }
     }
     bloques.push(bloque);
   }

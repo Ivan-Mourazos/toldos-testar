@@ -369,33 +369,42 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
     }
     const ultimo = paneles.at(-1)!.pieza;
     ultimo.marcas.push([1.5,ultimo.alto-a.bolsillo,ancho-1.5,ultimo.alto-a.bolsillo]);
+    const s = sacoApilable(p);
+    // Soldadura del saco en el paño de abajo: sin doble saco, a 2 cm de su borde inferior (Iván, 18/11/2026, AR2605391);
+    // con doble saco, el faldón baja rematado + 2 y al doblarse sobre el bajo llega a +(rematado + 2), soldando 2 cm
+    // hacia abajo para que quede el rematado exacto: 2 × (rematado + 2) desde el borde de corte (Iván, 23/11/2026, AR2605641).
+    const ySoldadura = a.doble ? 2 * (s.rematado + 2) : 2;
     if (desnivel) {
       const primero = paneles[0], x = primero.pieza;
       const bajoEn = (posicion:number) => n(bajo+pendiente*(posicion-lateral)-primero.desde);
       x.contorno = [[0,bajoEn(0)],[ancho,bajoEn(ancho)],[ancho,x.alto],[0,x.alto]];
       const m = p.margenMarcas;
-      x.marcas.push([m,bajoEn(m)+2,ancho-m,bajoEn(ancho-m)+2]);
-    } else marca(paneles[0].pieza,2); // Soldadura del saco a 2 del bajo, como en el plano (Iván, 18/11/2026, AR2605391).
-    const s = sacoApilable(p), env = envoltorioDobleSaco(p), h = a.doble ? env.corte : s.corte;
+      x.marcas.push([m,bajoEn(m)+ySoldadura,ancho-m,bajoEn(ancho-m)+ySoldadura]);
+    } else marca(paneles[0].pieza,ySoldadura);
+    // Iván, 23/11/2026 (AR2605641 y plantilla Portanova): la pestaña lateral del cierre se corta aparte en la lona
+    // (10 cm de pestaña + 2 cm para soldar en la lona × rematado) para no desperdiciar material en el paño grande.
+    if (a.doble) agregar(pieza('Solapa de cierre del saco', 'refuerzo', 12, s.rematado, lona, p.rollo));
+    const env = envoltorioDobleSaco(p), h = a.doble ? env.corte : s.corte;
     const w = a.doble ? env.ancho : ancho;
     const pestana = a.doble ? env.pestana : 10, altoPestana = a.doble ? env.altoPestana : s.altoPestana;
     // La pestaña a 2 cm del borde de arriba, como en el dibujo (Iván, 28/10/2026, AR2605035: en el corte salía a 2 del de
     // abajo, el saco volteado). El corte dibuja la pieza con la y hacia arriba.
+    // En doble saco el envoltorio exterior es una tira lisa sin pestaña ni velcros (plantilla Portanova y AR2605641).
     const desdePestana = h - 2 - altoPestana;
-    const entero = sacoConPestana(w,h,pestana,altoPestana,desdePestana,a.doble?'Envoltorio del doble saco':'Saco');
-    if(a.doble) {
-      entero.textos.push({x:pestana+2,y:5,valor:'CENTRAR EL SACO · DOBLAR A LA MITAD · SOLDAR 2 CM'});
-      paneles[0].pieza.textos.push({x:ancho/2,y:15,valor:`SACO ${a.saco ?? 80} INTEGRADO · VELCRO REVÉS 5 BRAVO / DERECHO 5 SUAVE`});
-    }
+    const entero = a.doble
+      ? pieza('Envoltorio del doble saco', 'saco', w, h, materialSaco, rolloSaco)
+      : sacoConPestana(w, h, pestana, altoPestana, desdePestana, 'Saco');
     if (/negro|9005|\bblack\b/i.test(p.color)) { entero.material=lona; entero.rollo=p.rollo; agregar(entero); }
     else {
-      const izquierdo = sacoConPestana(w/2+1,h,pestana,altoPestana,desdePestana,a.doble?'Envoltorio partido · con pestaña':'Saco partido · con pestaña');
-      const derecho = pieza(a.doble?'Envoltorio partido · sin pestaña':'Saco partido · sin pestaña','saco',w/2+1,h,p.materialSaco,p.rolloSaco);
+      const izquierdo = a.doble
+        ? pieza('Envoltorio partido · izquierda', 'saco', w / 2 + 1, h, p.materialSaco, p.rolloSaco)
+        : sacoConPestana(w / 2 + 1, h, pestana, altoPestana, desdePestana, 'Saco partido · con pestaña');
+      const derecho = pieza(a.doble ? 'Envoltorio partido · derecha' : 'Saco partido · sin pestaña', 'saco', w / 2 + 1, h, p.materialSaco, p.rolloSaco);
       numerarBorde(izquierdo,++numeroUnion,'derecha');
       numerarBorde(derecho,numeroUnion,'izquierda');
       r.alternativasSaco = { entero: [entero], partido: [izquierdo,derecho] };
     }
-    if (pestanaDerecha(p)) {
+    if (pestanaDerecha(p) && !a.doble) {
       espejarPieza(entero);
       const mitades = r.alternativasSaco?.partido;
       // La mitad con pestaña pasa a la derecha; la lista sigue de izquierda a derecha.
@@ -409,7 +418,7 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
         inclinarSaco(mitades[1],pendiente,w/2-1);
       }
     }
-    if (a.doble) aviso('DOBLE_SACO', `Doble saco: saco interior de ${a.saco ?? 80} integrado en el paño y envoltorio de ${env.util} aparte (F − 6) × ${numero(env.corte)}, centrado al ancho, doblado a la mitad y soldado 2 cm. Pestaña 12 × ${numero(env.altoPestana)}; velcro de 5 bravo al revés y suave al derecho. Cerrar E.T. 2 cm máximo.`, 'aviso');
+    if (a.doble) aviso('DOBLE_SACO', `Doble saco: saco interior de ${a.saco ?? 80} integrado en el paño (solapa aparte de 12 × ${numero(s.rematado)} con velcro de 5 bravo al revés y velcro de 5 suave al derecho en la lona) y envoltorio liso de ${env.util} aparte (F − 6) × ${numero(env.corte)}, centrado al ancho de la puerta. Cerrar E.T. 2 cm máximo.`, 'aviso');
   } else {
     const empates = p.autorreparable.empates;
     // El cuerpo arranca en el rematado del saco (12 con el de 120 antes del 23/10/2026); los empates, desde ahí.

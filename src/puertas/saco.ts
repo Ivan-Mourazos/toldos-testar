@@ -36,18 +36,20 @@ export function sacoUtil(p: Puerta): number | null {
 /** Medidas del saco de la puerta; sin saco puesto se dibuja el habitual de su modelo y el cálculo avisa. */
 export const sacoPuerta = (p: Puerta) => medidasSaco(sacoUtil(p) ?? (p.modelo === 'PUERTAPLE' ? 80 : 120), p.modelo);
 
-/** Doble saco: el de 80 integrado sale del propio paño, que empieza 2,5 más abajo que su rematado
- * (antes −13,5 con el rematado de 11; con el de 9, −11,5). */
-export const bajoDobleSaco = (p: Puerta) => -(sacoApilable(p).rematado + 2.5);
+/** Doble saco: el saco interior sale del propio paño, que baja rematado + 2 por debajo del bajo terminado
+ * para que, al doblarlo hasta la raya de rotulador en +(rematado + 2), suelde 2 cm y quede el rematado exacto
+ * conservando H (Iván, 23/11/2026, AR2605641: de la raya al borde de corte hay 2 × (rematado + 2) = 30 cm). */
+export const bajoDobleSaco = (p: Puerta) => -(sacoApilable(p).rematado + 2);
 
 /** Útil del saco exterior del doble saco en mm; sin poner, el interior + 50, como pide Portanova. */
 export const utilSacoExterior = (p: Puerta) => p.apilable.sacoExterior ?? (p.apilable.saco ?? 80) + 50;
 
-/** Envoltorio del doble saco (Iván, 19/11/2026, AR2605641): el de 37 × pestaña 12 × 14 de siempre es un exterior de
- * 130 (80 + 50). Rematado = útil/10 + 1, corte 2 × rematado + 9 y pestaña 12 × rematado; ancho F − 6. */
+/** Envoltorio del doble saco (Iván, 19/11/2026, AR2605641; plantilla Portanova): el de 37 de siempre es un exterior de
+ * 130 (80 + 50). Rematado = útil/10 + 1, corte 2 × rematado + 9, ancho F − 6, tira lisa sin pestaña ni velcros
+ * (el cierre con solapa y velcros va en el saco interior integrado en el paño). */
 export function envoltorioDobleSaco(p: Puerta) {
   const rematado = utilSacoExterior(p) / 10 + 1;
-  return { util: utilSacoExterior(p), ancho: p.frente - 6, corte: 2 * rematado + 9, pestana: 12, altoPestana: rematado };
+  return { util: utilSacoExterior(p), ancho: p.frente - 6, corte: 2 * rematado + 9, pestana: 0, altoPestana: 0 };
 }
 
 /** Pestaña del saco a la derecha mirando por el revés, como la pinte el pedido (Iván, 23/10/2026). */
