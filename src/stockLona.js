@@ -51,6 +51,22 @@ export function lineasLonaRemolques(pedido, materialesCatalogo) {
   });
 }
 
+// El cajetín usa el nombre corto. Esta equivalencia usa el RAL y la bobina de 300 del catálogo.
+const bobinasPuertas = [{ nombre: 'LAC900 AZUL 5002', codigoBobina: 'LAC900AZ02P300' }];
+
+/** @param {Pick<ReturnType<typeof import('./puertas/corte.ts').generarCortePuertas>, 'metrosLona'>} resultadoCorte
+ * @returns {LineaLona[]}
+ */
+export function lineasLonaPuertas({ metrosLona = [] }) {
+  return metrosLona.flatMap(({ material, of, anchoRollo, cm }) => {
+    const alias = codigoStockMaterial(material, bobinasPuertas);
+    const catalogada = resolveFabric(alias || material);
+    const coincide = catalogada?.width * 10 === anchoRollo && (alias || catalogada.description === material);
+    return coincide && CODIGO_RPS.test(catalogada.code) && cm > 0
+      ? [{ of, codigo: catalogada.code, descripcion: material, ml: cm / 100 }] : [];
+  });
+}
+
 /** @param {FaltaLona[]} faltas */
 export function textoAvisoStock(faltas) {
   if (!faltas.length) return [];

@@ -31,12 +31,30 @@ export function metrosPorOf(cortes: CortePuertas[], material: string): Map<strin
  * material), cada una con su OF y su material. Solo apilables, enrollables y autorreparables, también las de Araujo y
  * Santa Pau; ni System Dock ni sacos confeccionados (Iván, 17/11/2026).
  */
-export function textoMlPuerta(cortes: CortePuertas[], elemento: { id: string; input: { modelo: string } }): string {
-  if (!['PUERTAPLE', 'PUERTAENR', 'PUERTAUTO'].includes(elemento.input.modelo)) return '';
+function paresLonaPuerta(cortes: CortePuertas[], elemento: { id: string; input: { modelo: string } }) {
+  if (!['PUERTAPLE', 'PUERTAENR', 'PUERTAUTO'].includes(elemento.input.modelo)) return new Map<string, { material: string; of: string }>();
   const pares = new Map<string, { material: string; of: string }>();
   for (const c of cortes) if (c.opcion === 'principal') for (const { pieza: p } of c.colocadas)
     if (p.clase === 'pano' && p.id.startsWith(`${elemento.id}:`)) pares.set(JSON.stringify([c.material, p.of]), { material: c.material, of: p.of });
-  const lista = [...pares.values()];
+  return pares;
+}
+
+/** El mismo reparto que se muestra en los cajetines, con cada par de material y OF una sola vez. */
+export function metrosLonaPuertas(cortes: CortePuertas[], elementos: Array<{ id: string; input: { modelo: string } }>) {
+  const pares = new Map(elementos.flatMap(elemento => [...paresLonaPuerta(cortes, elemento)]));
+  const porMaterial = new Map([...new Set([...pares.values()].map(p => p.material))].map(material => {
+    const anchos = new Set(cortes.filter(c => c.opcion === 'principal' && c.material === material).map(c => c.anchoRollo));
+    const anchoRollo = anchos.size === 1 ? [...anchos][0] : undefined;
+    return [material, { anchoRollo, porOf: metrosPorOf(cortes, material) }];
+  }));
+  return [...pares.values()].map(({ material, of }) => {
+    const metraje = porMaterial.get(material);
+    return { material, of, anchoRollo: metraje?.anchoRollo, cm: metraje?.porOf.get(of) ?? 0 };
+  });
+}
+
+export function textoMlPuerta(cortes: CortePuertas[], elemento: { id: string; input: { modelo: string } }): string {
+  const lista = [...paresLonaPuerta(cortes, elemento).values()];
   const variasOf = new Set(lista.map(x => x.of)).size > 1, variosMat = new Set(lista.map(x => x.material)).size > 1;
   return lista.map(({ material, of }) => {
     const cm = metrosPorOf(cortes, material).get(of) ?? 0;

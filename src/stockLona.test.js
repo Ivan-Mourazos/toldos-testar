@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { apilable, base, pedidoDe } from './puertas/__fixtures__/ejemplos.ts';
+import { generarCortePuertas } from './puertas/corte.ts';
+import { hojasPuertas } from './puertas/planoEnrollable.ts';
 import { materialesReserva } from './materialesEntrega.js';
-import { faltasLona, lineasLonaRemolques, lineasLonaToldos, necesidadesLona, textoAvisoStock } from './stockLona.js';
+import { faltasLona, lineasLonaPuertas, lineasLonaRemolques, lineasLonaToldos, necesidadesLona, textoAvisoStock } from './stockLona.js';
 
 describe('necesidades de lona', () => {
   it('suma cada código por OF y redondea al final', () => {
@@ -63,4 +66,20 @@ describe('faltas de lona', () => {
     ]);
     expect(textoAvisoStock([])).toEqual([]);
   });
+});
+
+it('usa los ML de los cajetines de dos OF de puertas y omite la lona sin código', () => {
+  const grande = { ...apilable(), of: '0290001' };
+  const pequena = { ...base('PUERTAPLE', 150, 250), of: '0290002',
+    apilable: { ...grande.apilable, pasos: [60, 60] }, entradas: [], ventanas: [] };
+  const manual = { ...apilable(), of: '0290003', material: 'LONA MANUAL' };
+  const pedido = pedidoDe('AR2600001', grande, pequena, manual);
+  const resultado = generarCortePuertas(pedido, { incluirMetrosLona: true });
+  const hojas = hojasPuertas(pedido, [], resultado.cortes);
+  expect(lineasLonaPuertas(resultado)).toEqual(hojas.slice(0, 2).map((hoja, index) => ({
+    of: pedido.elementos[index].input.of, codigo: 'LAC900AZ02P300', descripcion: 'LAC900 AZUL 5002',
+    ml: Number(/(\d+,\d{2}) ML$/.exec(hoja.cajetin.MATERIAL)[1].replace(',', '.')),
+  })));
+  const otroAncho = generarCortePuertas(pedidoDe('AR2600001', { ...grande, rollo: 2500 }), { incluirMetrosLona: true });
+  expect(lineasLonaPuertas(otroAncho)).toEqual([]);
 });
