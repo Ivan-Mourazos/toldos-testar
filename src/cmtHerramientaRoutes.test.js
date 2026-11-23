@@ -2,7 +2,7 @@ import express from 'express';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { registrarRutasCmtHerramienta, resumirObjetos } from './cmtHerramientaRoutes.js';
 
-let server, url, convertir;
+let server, url, convertir, oda, tablaCapas, preparar;
 const punto = (x, y, type = 4) => ({ x, y, type });
 beforeEach(async () => {
   convertir = vi.fn(() => ({ cmt: Buffer.from([0, 255, 128, 10]), objetos: [
@@ -12,7 +12,10 @@ beforeEach(async () => {
   ], avisos: [], dudas: [] }));
   const app = express();
   // El límite de la herramienta debe actuar antes del parser general del servidor.
-  registrarRutasCmtHerramienta(app, { convertir });
+  oda = { disponible: true, convertir: vi.fn(async () => Buffer.from('DXF de ODA')) };
+  tablaCapas = { leer: vi.fn(async () => ({})), guardar: vi.fn(), reemplazar: vi.fn(async tabla => tabla) };
+  preparar = vi.fn(() => ({ listo: false, dxf: null, escala: 1000, medidasMm: null, pendientes: { cruces: 1 }, avisos: [], dudas: [], vista: [], capasNuevas: {} }));
+  registrarRutasCmtHerramienta(app, { convertir, oda, tablaCapas, preparar });
   app.use(express.json({ limit: '20mb' }));
   server = app.listen(0, '127.0.0.1');
   await new Promise(resolve => server.once('listening', resolve));
@@ -21,6 +24,58 @@ beforeEach(async () => {
 afterEach(async () => { await new Promise(resolve => server.close(resolve)); });
 const entrada = (extra = {}) => ({ nombre: 'corte.dxf', dxfBase64: Buffer.from('DXF á').toString('base64'), ...extra });
 const post = body => fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+
+const prepararPost = (body, raw = false) => fetch(url.replace('/convertir', '/preparar'), {
+  method: 'POST', headers: { 'Content-Type': 'application/json' }, body: raw ? body : JSON.stringify(body),
+});
+const archivo = { nombre: 'C:/planos/CON.dwg', archivoBase64: Buffer.from('DWG').toString('base64') };
+
+describe('preparación DWG/DXF', () => {
+  it.each([
+    { nombre: 'corte.txt' }, { decisiones: null }, { decisiones: [] },
+    { decisiones: { cruces: 'sí' } }, { archivoBase64: '!!!!' },
+  ])('rechaza entradas inválidas: %j', async datos => {
+    expect((await prepararPost({ ...archivo, ...datos })).status).toBe(400);
+    expect(oda.convertir).not.toHaveBeenCalled();
+  });
+  it('devuelve JSON si el cuerpo está roto', async () => {
+    const r = await prepararPost('{a:', true);
+    expect(r.status).toBe(400);
+    expect(await r.json()).toHaveProperty('error');
+  });
+  it('avisa si ODA no está configurado', async () => {
+    oda.disponible = false;
+    const r = await prepararPost(archivo);
+    expect(r.status).toBe(409);
+    expect((await r.json()).error).toContain('hace falta ODA');
+  });
+  it('pasa por ODA y no genera ni guarda con cruces pendientes', async () => {
+    const r = await (await prepararPost({ ...archivo, generar: true })).json();
+    expect(oda.convertir).toHaveBeenCalledWith(Buffer.from('DWG'), { desde: 'dwg', hasta: 'dxf' });
+    expect(r).toMatchObject({ listo: false, pendientes: { cruces: 1 } });
+    expect(r).not.toHaveProperty('cmtBase64');
+    expect(convertir).not.toHaveBeenCalled();
+    expect(tablaCapas.guardar).not.toHaveBeenCalled();
+  });
+  it('analiza sin emitir y genera los dos archivos al confirmar', async () => {
+    preparar.mockImplementation((_texto, { soloAnalisis }) => ({
+      listo: true, dxf: soloAnalisis ? null : 'DXF limpio', escala: 1000, pendientes: {}, avisos: [], dudas: [], vista: [], capasNuevas: { NUEVA: 'DISCO2' },
+    }));
+    const vista = await (await prepararPost(archivo)).json();
+    expect(vista).toMatchObject({ listo: false, preparado: true });
+    expect(vista).not.toHaveProperty('dxfBase64');
+    expect(convertir).not.toHaveBeenCalled();
+    const r = await (await prepararPost({ ...archivo, generar: true, huella: vista.huella })).json();
+    expect(r).toMatchObject({ listo: true, nombreDxf: '_CON.dxf', nombreCmt: '_CON.cmt', dxfBase64: 'RFhGIGxpbXBpbw==', cmtBase64: 'AP+ACg==' });
+    expect(convertir).toHaveBeenCalledWith('DXF limpio', { recolocar: true, sinTextos: false });
+    expect(tablaCapas.guardar).toHaveBeenCalledWith({ NUEVA: 'DISCO2' });
+    tablaCapas.leer.mockResolvedValue({ NUEVA: 'CUTTER' });
+    const nuevaVista = await (await prepararPost({ ...archivo, generar: true, huella: vista.huella })).json();
+    expect(nuevaVista).toMatchObject({ listo: false, preparado: true });
+    expect(nuevaVista).not.toHaveProperty('dxfBase64');
+    expect(convertir).toHaveBeenCalledTimes(1);
+  });
+});
 
 describe('DXF a CMT en memoria, sin usuario ni permisos de escritura', () => {
   it('conserva bytes, excluye leyenda y pasa sinTextos al conversor inyectado', async () => {
@@ -49,6 +104,11 @@ describe('DXF a CMT en memoria, sin usuario ni permisos de escritura', () => {
     const r = convertir();
     convertir.mockReturnValue({ ...r, avisos: [{ motivo: 'Se reproduce el redondeo SVG del robot (seis cifras, 96 dpi); compatibilidadRobot:false conserva la precisión del DXF y puede mostrar rellenos distintos' }] });
     expect((await (await post(entrada())).json()).avisos).toEqual([]);
+  });
+  it('no enseña los POINT de las cotas: nunca se cortan y en un plano real salen decenas', async () => {
+    const punto = h => ({ handle: h, tipo: 'POINT', capa: 'Defpoints', motivo: 'El POINT no se dibuja, igual que en los ejemplos del robot' });
+    preparar.mockReturnValueOnce({ listo: false, dxf: null, escala: 1000, medidasMm: null, pendientes: { cruces: 1 }, avisos: [punto('A1'), punto('A2'), { motivo: 'Se han descompuesto 25 cotas' }], dudas: [], vista: [], capasNuevas: {} });
+    expect((await (await prepararPost(archivo)).json()).avisos).toEqual(['Se han descompuesto 25 cotas']);
   });
   it.each([
     {}, entrada({ nombre: 'corte.txt' }), entrada({ dxfBase64: '!!!' }), entrada({ dxfBase64: '' }),

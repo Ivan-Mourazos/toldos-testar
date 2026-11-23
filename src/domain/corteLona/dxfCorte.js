@@ -13,10 +13,10 @@ const MODEL_SPACE = '1F';
  *  ollaos de remolque): { capa, x, y, r }; arcos (esquinas redondeadas): { capa, x, y, r, desde, hasta }
  *  en grados, en sentido antihorario. Desplaza todo a (dx, dy). Con `escala` 0,001 y `leyenda` false sale el
  *  plano de revisión de remolques en metros (Iván, 20/10/2026), sin la leyenda del bot. */
-/** @param {{lineas: Array<{capa:string,x1:number,y1:number,x2:number,y2:number}>, textos: Array<{capa:string,x:number,y:number,h:number,valor:string,giro?:number,centrado?:boolean,literal?:boolean}>, circulos?: Array<{capa:string,x:number,y:number,r:number}>, arcos?: Array<{capa:string,x:number,y:number,r:number,desde:number,hasta:number}>}} entidades */
-export function escribirDxf2004({ lineas, textos, circulos = [], arcos = [] }, { dx = 1000, dy = 1000, escala = 1, leyenda = true } = {}) {
+/** @param {{lineas: Array<{capa:string,x1:number,y1:number,x2:number,y2:number}>, textos: Array<{capa:string,x:number,y:number,h:number,valor:string,giro?:number,centrado?:boolean,literal?:boolean}>, circulos?: Array<{capa:string,x:number,y:number,r:number}>, arcos?: Array<{capa:string,x:number,y:number,r:number,desde:number,hasta:number}>, textosCad?: Array<{capa:string, pares:[number,string][]}>}} entidades */
+export function escribirDxf2004({ lineas, textos, circulos = [], arcos = [], textosCad = [] }, { dx = 1000, dy = 1000, escala = 1, leyenda = true } = {}) {
   const src = leerPlantilla('base-corte.dxf');
-  if ([...lineas, ...textos, ...circulos, ...arcos].some((e) => !CAPAS_BOT.includes(e.capa))) throw new Error('El DXF de corte solo admite capas del bot.');
+  if ([...lineas, ...textos, ...circulos, ...arcos, ...textosCad].some((e) => !CAPAS_BOT.includes(e.capa))) throw new Error('El DXF de corte solo admite capas del bot.');
   const start = src.indexOf('\nENTITIES\n') + '\nENTITIES\n'.length;
   const head = src.slice(0, start);
   const tail = src.slice(src.indexOf('  0\nENDSEC\n', start));
@@ -54,6 +54,13 @@ export function escribirDxf2004({ lineas, textos, circulos = [], arcos = [] }, {
   for (const t of textos) body += texto(t.capa, (t.x + dx) * k, (t.y + dy) * k, t.h * k, t.valor, t.giro, t.centrado, t.literal);
   for (const c of circulos) body += circulo(c.capa, (c.x + dx) * k, (c.y + dy) * k, c.r * k);
   for (const a of arcos) body += arco(a.capa, (a.x + dx) * k, (a.y + dy) * k, a.r * k, a.desde, a.hasta);
+  for (const t of textosCad) {
+    const g = (c) => t.pares.find((p) => p[0] === c)?.[1];
+    const valor = String(g(1) ?? '').replace(/[^\x20-\xff]/gu, (ch) => '\\U+' + ch.codePointAt(0).toString(16).toUpperCase().padStart(4, '0'));
+    const pt = (cx, cy) => g(cx) === undefined ? '' : ` ${cx}\n${n((Number(g(cx)) + dx) * k)}\n ${cy}\n${n((Number(g(cy)) + dy) * k)}\n ${cx + 20}\n0.0\n`;
+    const opc = (c) => g(c) === undefined ? '' : `${String(c).padStart(3)}\n${g(c)}\n`;
+    body += ent('TEXT', t.capa, 'AcDbText', `${pt(10, 20)} 40\n${n(Number(g(40)) * k)}\n  1\n${valor}\n${opc(50)}${opc(41)}${opc(51)}${opc(71)}${opc(72)}${Number(g(72) ?? 0) || Number(g(73) ?? 0) ? pt(11, 21) : ''}100\nAcDbText\n${opc(73)}`);
+  }
   let cabecera = head;
   if (k !== 1) cabecera = cabecera.replace(/(\$INSUNITS\n\s*70\n\s*)\d+/, `$1${k === 0.001 ? 6 : 0}`);
   const out = encuadrarModelo(cabecera.replace(/(\$HANDSEED\n\s*5\n)[0-9A-F]+/, `$1${handle.toString(16).toUpperCase()}`) + body + tail);

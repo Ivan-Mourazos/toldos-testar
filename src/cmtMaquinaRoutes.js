@@ -15,10 +15,10 @@ export function registrarRutasCmtMaquina(app, { ajustes, tecnicos, carpetaRegist
     try {
       const settings = await ajustes();
       if (!settings.productionEnabled) return res.status(403).json({ error: 'Modo simulación: no se ha escrito ni enviado el corte.' });
-      const { nombre, dxfBase64, usuario, confirmBot, confirmOverwrite, sinTextos = false } = req.body ?? {};
+      const { nombre, dxfBase64, usuario, confirmBot, confirmOverwrite, sinTextos = false, recolocar = false } = req.body ?? {};
       if (!tecnicos.includes(usuario)) return res.status(400).json({ error: 'Elige quién eres en «Soy» antes de mandar el corte.' });
       if (!settings.corteDirectoEnabled || !settings.corteMaquinaDxfDirectory || !settings.corteMaquinaCmtDirectory) return res.status(409).json({ error: 'Envío directo a la máquina sin activar en Configuración.' });
-      if (typeof nombre !== 'string' || !/\.dxf$/i.test(nombre) || nombre.length > 1024 || typeof sinTextos !== 'boolean' || typeof dxfBase64 !== 'string' || !dxfBase64 || dxfBase64.length % 4 || !/^[A-Za-z0-9+/]+={0,2}$/.test(dxfBase64)) return res.status(400).json({ error: 'No se pudo leer el fichero .dxf.' });
+      if (typeof nombre !== 'string' || !/\.dxf$/i.test(nombre) || nombre.length > 1024 || typeof sinTextos !== 'boolean' || typeof recolocar !== 'boolean' || typeof dxfBase64 !== 'string' || !dxfBase64 || dxfBase64.length % 4 || !/^[A-Za-z0-9+/]+={0,2}$/.test(dxfBase64)) return res.status(400).json({ error: 'No se pudo leer el fichero .dxf.' });
       if (dxfBase64.length > Math.ceil(30 * 1024 * 1024 / 3) * 4) return res.status(413).json({ error: 'El DXF supera el máximo de 30 MB por fichero.' });
       if (confirmBot !== true) return res.status(409).json({ needsBotConfirmation: true, error: 'Se mandarán el DXF y el CMT a la máquina de corte. ¿Seguro?' });
       const base = nombreBaseDxf(nombre);
@@ -27,7 +27,7 @@ export function registrarRutasCmtMaquina(app, { ajustes, tecnicos, carpetaRegist
       ocupados.add(clave);
       const contents = Buffer.from(dxfBase64, 'base64');
       const fecha = ahora().toISOString();
-      const files = await prepararMaquina([{ filename: `${base}.dxf`, contents }], settings, { orderCode: ahora().getFullYear() }, (texto, opciones) => convertir(texto, { ...opciones, sinTextos }));
+      const files = await prepararMaquina([{ filename: `${base}.dxf`, contents }], settings, { orderCode: ahora().getFullYear() }, (texto, opciones) => convertir(texto, { ...opciones, sinTextos, ...(recolocar ? { sinLeyenda: false, recolocar: true } : {}) }));
       const registro = carpetaRegistro();
       // Comprobar antes de publicar: si el registro local no está disponible, no sale ningún archivo.
       await fs.mkdir(registro, { recursive: true });

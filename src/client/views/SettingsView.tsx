@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Scissors, AlertTriangle, CheckCircle2, FolderCheck, FolderCog, LoaderCircle, ShieldCheck, XCircle } from 'lucide-react';
 import type { WorkflowDirectoryCheck, WorkflowReadiness, WorkflowSettings } from '../types';
 import type { Notify } from '../components/NotificationCenter';
+import { TablaCapasCorte } from '../components/TablaCapasCorte';
 
 const estaConfigurado = (s: WorkflowSettings) =>
   s.productionEnabled && Boolean(s.reviewDirectory && s.planteamientosDirectory && s.rpsUploadDirectory);
@@ -275,6 +276,7 @@ export function SettingsView({
           </button>
         </div>
       </div>
+      <TablaCapasCorte />
     </section>
   );
 }
