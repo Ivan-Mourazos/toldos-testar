@@ -81,7 +81,8 @@ function locales(e: EntidadDxf, capa: string, id: string, estilo?: Record<number
       const p = v[i], q = v[(i + 1) % v.length];
       if (Math.hypot(q.x - p.x, q.y - p.y) < 1e-12) continue;
       const tramo = tramoPolilinea(p, q, p.bulge);
-      out.push({ ...tramo, capa, id: `${id}#${i}`, circulo: false });
+      const base = { capa, id: `${id}#${i}` };
+      out.push(tramo.tipo === 'arco' ? { ...tramo, ...base, circulo: false } : { ...tramo, ...base });
     }
     return out;
   }
@@ -137,8 +138,8 @@ export function descomponer(d: Dxf, avisos: Duda[]) {
   d.entities = d.entities.map(e => e.type === 'INSERT_NO_ADMITIDO' ? { ...e, type: 'INSERT' } : e);
 }
 
-export function hornear(entidades: EntidadDxf[], estilos: Dxf['styles'] = {}): { piezas: Pieza[]; avisos: Duda[]; dudas: Duda[] } {
-  const piezas: Pieza[] = [], avisos: Duda[] = [], dudas: Duda[] = [];
+export function hornear(entidades: EntidadDxf[], estilos: Dxf['styles'] = {}): { piezas: Pieza[]; avisos: Duda[]; dudas: (Duda & { indice: number })[] } {
+  const piezas: Pieza[] = [], avisos: Duda[] = [], dudas: (Duda & { indice: number })[] = [];
   const omitidas = new Map<string, number>();
   const fuentes = new Set<string>();
   const tablaEstilos = new Map(Object.entries(estilos).map(([nombre, estilo]) => [nombre.toUpperCase(), estilo]));
@@ -161,13 +162,13 @@ export function hornear(entidades: EntidadDxf[], estilos: Dxf['styles'] = {}): {
       const estilo = tablaEstilos.get(value(e, 7, 'Standard').toUpperCase());
       const nuevas = locales(e, capa, `e${i}`, estilo).map(p => transformarPieza(p, total));
       const fuente = estilo?.[3];
-      if (e.type === 'TEXT' && /\.shx$/i.test(fuente ?? '') && !fuentes.has(fuente)) {
+      if (e.type === 'TEXT' && fuente && /\.shx$/i.test(fuente) && !fuentes.has(fuente)) {
         fuentes.add(fuente);
         avisos.push({ handle, capa, tipo: e.type, motivo: `El estilo usa la fuente ${fuente}: revisa el texto en la vista previa` });
       }
       for (const pieza of nuevas) piezas.push(pieza);
     } catch (error) {
-      dudas.push({ handle, tipo: e.type, capa, motivo: error instanceof Error ? error.message : String(error) });
+      dudas.push({ indice: i, handle, tipo: e.type, capa, motivo: error instanceof Error ? error.message : String(error) });
     }
   }
   for (const [tipo, n] of omitidas) avisos.push({ tipo, motivo: `Se han omitido ${n} ${tipo} (no se cortan)` });
