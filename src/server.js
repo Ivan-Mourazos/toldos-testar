@@ -1,7 +1,7 @@
 import { registrarDescargasCorte, convertirCmtRemolques } from './corteMaquina.js';
 import { registrarRutasCmtMaquina } from './cmtMaquinaRoutes.js';
 import { prepararPlanoProduccion } from './produccion.js';
-import { lineasLonaToldos } from './stockLona.js';
+import { entregaStockLona, lineasLonaToldos, necesidadesLona } from './stockLona.js';
 import { pasarAProduccionConStock } from './stockLonaProduccion.js';
 import { catalogoEntregas, numerarEntrega, aplicarDestino, necesitaPrepararDestino } from './entregasRps.js';
 import { avisoEntradaEntrega, codigoCorteEditable, abrirEntrega, codigoAnual, codigoEntrega, ofsEntrega, pedidoEntrega, entregaSinCambios } from './entregas.js';
@@ -58,7 +58,7 @@ import { createRemolquesClientesStore } from './remolquesClientesStore.js';
 import { paramsConFichas } from './remolques/clientes/params-efectivos.ts';
 import { errorPorRecogidasEnUso, normalizarNombre as normalizarNombreFicha } from './remolques/clientes/reglas.ts';
 import { fichasSemilla } from './remolques/clientes/semilla.ts';
-import { getMaterialesConOrigen } from './remolques/materiales.ts';
+import { getMaterialesConOrigen, materialesParaPropuesta } from './remolques/materiales.ts';
 import { filasPedidoRps, pedidoRpsPorNumero } from './remolques/rps/pedido-rps.ts';
 import { puertasDesdeRps } from './puertas/rps.ts';
 import { materialPreferidoRps } from './remolques/rps/material-rps.ts';
@@ -179,7 +179,8 @@ app.use((req, res, next) => {
 });
 const coordina = createCoordinaClient({ url: config.coordinaUrl, key: config.coordinaClave });
 const fabricStock = createFabricStockService({ loadRows: queryRpsFabricStockRows });
-const stockLona = { stock: fabricStock, coordina };
+const stockLona = { stock: fabricStock, coordina, resolverTela: async codigo =>
+  (await searchCatalogFabrics(codigo, 10)).items.find(tela => tela.code === codigo)?.description };
 const generationLocks = new Set();
 // Hoja de taller de remolques (fase 4): los datos de cada PDF esperan aquí, en memoria y un
 // minuto como mucho, a que la página interna los pida una sola vez; Chromium la imprime.
@@ -241,7 +242,8 @@ const pedidosRemolques = crearServicioPedidosRemolques({
   parametros: parametrosRemolques,
   coordina,
   stockLona,
-  materialesStock: async () => (await getMaterialesConOrigen()).materiales,
+  materialesPropuesta: materialesParaPropuesta,
+  materialesStock: async () => [...(await getMaterialesConOrigen()).materiales, ...materialesParaPropuesta()],
   tecnicos: formOptions.tecnicos,
   hacerPdf: hojaRemolquesPdf,
   // Sin carpeta de toldos configurada no puede haber pedidos de toldos que comprobar. Tampoco puede ser de puertas.
@@ -1040,6 +1042,10 @@ app.get('/api/remolques/pedidos/:orderCode/destinos-entrega', rutaRemolques(asyn
   res.set('Cache-Control', 'no-store').json(await catalogoEntregas(await pedidosRemolques.obtener(req.params.orderCode), await workflowStore.getSettings()));
 }));
 
+app.get('/api/remolques/pedidos/:orderCode/stock-lona/propuesta', rutaRemolques(async (req, res) => {
+  res.set('Cache-Control', 'no-store').json(await pedidosRemolques.propuestaStockLona(req.params.orderCode));
+}));
+
 app.post('/api/remolques/pedidos/:orderCode/generar', rutaRemolques(async (req, res) => {
   const { status, cuerpo } = await pedidosRemolques.generar(req.params.orderCode, req.body);
   res.status(status).json(cuerpo);
@@ -1136,6 +1142,10 @@ app.get('/api/puertas/pedidos/:orderCode/destinos-entrega', rutaRemolques(async 
   res.set('Cache-Control', 'no-store').json(await catalogoEntregas(await pedidosPuertas.obtener(req.params.orderCode), await workflowStore.getSettings()));
 }));
 
+app.get('/api/puertas/pedidos/:orderCode/stock-lona/propuesta', rutaRemolques(async (req, res) => {
+  res.set('Cache-Control', 'no-store').json(await pedidosPuertas.propuestaStockLona(req.params.orderCode));
+}));
+
 app.post('/api/puertas/pedidos/:orderCode/generar', rutaRemolques(async (req, res) => {
   const { status, cuerpo } = await pedidosPuertas.generar(req.params.orderCode, req.body);
   res.status(status).json(cuerpo);
@@ -1202,6 +1212,18 @@ app.get('/api/reviews', async (req, res, next) => {
 app.get('/api/reviews/:orderCode/destinos-entrega', async (req, res, next) => {
   try { res.set('Cache-Control', 'no-store').json(await catalogoEntregas(await workflowStore.getReview(req.params.orderCode), await workflowStore.getSettings())); }
   catch (e) { next(e); }
+});
+
+app.get('/api/reviews/:orderCode/stock-lona/propuesta', async (req, res, next) => {
+  try {
+    const pedido = pedidoEntrega(await workflowStore.getReview(req.params.orderCode));
+    const order = normalizeOrder(pedido.order);
+    const reserva = normalizeReservation({ orderCode: order.orderCode, ofs: calculateOrder(order).ofs });
+    const lonas = necesidadesLona(lineasLonaToldos({ ...pedido, order }, materialesReserva(reserva)));
+    res.set('Cache-Control', 'no-store').json({ ofs: uniqueOfs(order.awnings), lonas });
+  } catch (error) {
+    next(error.code === 'ENOENT' ? httpError(404, 'No se encontró el pedido de revisión.') : error);
+  }
 });
 
 app.get('/api/reviews/:orderCode', async (req, res, next) => {
@@ -1633,7 +1655,7 @@ async function generarArchivosToldos(orderCode, cuerpo, prepararSolo = false) {
     };
     return prepararSolo ? {
       status: 200, cuerpo: { ok: true }, ejecutar, finalizar,
-      datosStock: { cliente: order.customer || '', ofs: uniqueOfs(reservation.ofs), materiales },
+      datosStock: { cliente: order.customer || '', ofs: uniqueOfs(approvalAwnings), materiales, pedido: { order, corteLona: review.corteLona } },
     } : await ejecutar();
   } catch (error) {
     if (error.code === 'ENOENT') throw httpError(404, 'No se encontró el pedido de revisión.');
@@ -1669,9 +1691,10 @@ app.post('/api/reviews/:orderCode/produccion', async (req, res, next) => {
         { nombre: settings.corteDirectoEnabled ? 'DXF y CMT a la máquina' : 'DXF al bot', preparar: () => enviarCorteToldos(codigo, { ...entrada, usuario: entrada.savedBy, destino: 'bot', confirmOverwrite: entrada.confirmDxfOverwrite === true }, true) },
       ] : []),
     ], pdf.datosStock && {
-      ...stockLona, pedido: codigo, cliente: pdf.datosStock.cliente, ofs: pdf.datosStock.ofs,
+      ...stockLona, pedido: codigo, entrega: entregaStockLona(pedido), cliente: pdf.datosStock.cliente, ofs: pdf.datosStock.ofs,
       consultadoPor: typeof entrada.savedBy === 'string' ? entrada.savedBy : null,
-      lineas: () => lineasLonaToldos(pdf.datosStock.materiales),
+      lineas: () => lineasLonaToldos(pdf.datosStock.pedido, pdf.datosStock.materiales),
+      lonasAprobadas: entrada.lonasAprobadas,
     });
     res.status(r.status).json(r.cuerpo);
   } catch (error) { next(error); }

@@ -515,3 +515,30 @@ Estudio en `abrigo-portanova.md` (ejemplo AR2605646 y nueve pedidos de 2024 a 20
 Para LAC900 AZUL 5002 se identifica la bobina de 300 cm por su RAL en el
 catálogo. Los demás nombres cortos sin equivalencia confirmada se omiten
 en la comprobación de stock.
+
+## Bobinas de lona en puertas
+
+**Q-PU-STOCK-01 (23/11/2026).** ¿Son estas las bobinas que hay que consultar en RPS al generar una entrega de puertas? Las activas coinciden con el ancho y el RAL o con la referencia ya contrastada. Las pendientes requieren confirmar el color, el nombre comercial o el ancho. En el diálogo se puede añadir la referencia correcta del catálogo con sus metros.
+
+| Nombre en el corte | Ancho (cm) | Código propuesto | Estado |
+|---|---:|---|---|
+| LAC900 AZUL 5002 | 300 | `LAC900AZ02P300` | Confirmada |
+| LAC900 AZUL 5010 | 300 | `LAC900AZ10P300` | Activa |
+| LAC900 BLANCO 9016 | 300 | `LAC900BLANP300` | Activa |
+| LAC900 GRIS 7037 | 300 | `LAC900GROSP300` | Activa |
+| LAC900 GRIS 7038 | 300 | `LAC900GR38P300` | Activa |
+| LAC900 GRIS 9006 / PLATA 9006 | 300 | `LAC900PL06P300` | Activa. El catálogo lo llama plata |
+| LAC900 NEGRO 9005 | 300 | `LAC900NE05P300` | Activa |
+| LAC900 ROJO 3002 | 300 | `LAC900RO02P300` | Activa |
+| LAC650 VERDE 6026 | 300 | `LAC650VE26P300` | Activa |
+| PVC G650 NEGRO (System Dock) | 250 | `G650NEGRP250` | Activa, conforme al expediente |
+| PVC ALPHA 580 GR NEGRO (abrigo) | 250 | `ALPHANEGRP250` | Activa |
+| LAC900 AMARILLO | 300 | `LAC900AM03P300` | Pendiente de confirmar RAL 1003 |
+| LAC900 BLANCO | 300 | `LAC900BLANP300` | Pendiente de confirmar RAL 9016 |
+| LAC900 NEGRO | 300 | `LAC900NE05P300` | Pendiente de confirmar RAL 9005 también para sacos |
+| LAC900 IGNÍFUGA M2 ROJO 3002 | 300 | `PANAIGRO20P300` | Pendiente de confirmar si la bobina PANAMA 900 M2 es la misma |
+| LAC900 IGNÍFUGA M2 BLANCO | 300 | `PANAIGBLANP300` | Pendiente por el mismo motivo |
+| LAC900 sin color, AZUL sin RAL o GRIS 7016 | 300 | | Falta una bobina que coincida |
+| TENTALU PLATA/NEGRO | 300 | | Solo consta `TENTALUP/NP250` de 250 cm |
+| REJILLA | Variable | | Falta tipo, color o ancho para elegir una bobina |
+| RESTO LONA 3 MM NEGRO (abrigo) | 160 | | Hay una referencia genérica para restos de 3 mm. Falta una bobina con ancho y color |

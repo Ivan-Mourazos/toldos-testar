@@ -74,7 +74,7 @@ export function crearCorteRemolques({ ajustes, oda, aprovecharStock = false, ofS
       sinOf: elementosSinOf(pedido),
       avisos: [...avisosStock, ...elementosSinOf(pedido).map((letra) => `Elemento ${letra}: sin OF, es solo una vista previa; escribe la OF antes de guardarlo.`)],
       cortes: cortes.map((c) => ({
-        nombre: c.nombre, material: c.materialCorto, largo: c.largo, refuerzos: c.refuerzos, ...(c.opcion ? { opcion: c.opcion } : {}),
+        nombre: c.nombre, material: c.materialCorto, materialOriginal: c.material, largo: c.largo, refuerzos: c.refuerzos, ...(c.opcion ? { opcion: c.opcion } : {}),
         elementos: c.elementos, versiones: c.versiones, avisos: c.avisos, entidades: c.entidades,
         sacos: c.sacos,
           refuerzosStock: c.refuerzosStock,

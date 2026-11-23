@@ -1,30 +1,78 @@
 import { expect, it, vi } from 'vitest';
-import { comprobarStockLona } from './stockLonaProduccion.js';
+import { comprobarStockLona, pasarAProduccionConStock } from './stockLonaProduccion.js';
 
 const consultado = '2026-11-23T10:00:00.000Z';
-const datos = { pedido: 'AR2600001', cliente: 'Cliente', ofs: ['0290001'], consultadoPor: 'IVÁN' };
-const linea = { of: '0290001', codigo: 'LONA', descripcion: 'Lona gris', ml: 42.3 };
-const falta = { codigo: 'LONA', descripcion: 'Lona gris', necesita: 42.3, disponible: 18.75 };
+const datos = { pedido: 'AR2600001', entrega: 11, cliente: 'Cliente', ofs: ['0290001', '0290002'], consultadoPor: 'IVÁN' };
+const linea = { ofs: ['0290001'], codigo: 'LAC900GR38P300', descripcion: 'Lona gris', ml: 42.3, origen: 'corte' };
+const falta = { codigo: linea.codigo, descripcion: linea.descripcion, necesita: 42.3, disponible: 18.75, ofs: linea.ofs };
 function preparar(disponible = 18.75) {
-  const stock = { reset: vi.fn(), getStock: vi.fn(async () => [{ code: 'LONA', disponible }]) };
+  const stock = { reset: vi.fn(), getStock: vi.fn(async () => [{ code: linea.codigo, disponible }]) };
   const coordina = { enviarStockLona: vi.fn(async () => ({ ok: true })) };
-  const comprobar = (lineas = [linea]) => comprobarStockLona({ ...datos, lineas, stock, coordina, now: () => new Date(consultado) });
-  return { stock, coordina, comprobar };
+  const opciones = { ...datos, lineas: [linea], stock, coordina, now: () => new Date(consultado) };
+  const comprobar = (lineas = [linea], lonasAprobadas) => comprobarStockLona({ ...opciones, lineas, lonasAprobadas });
+  return { stock, coordina, comprobar, opciones };
 }
 
-it('consulta stock fresco y manda los ML, el desglose y las faltas a CoordinaOT', async () => {
+it('consulta stock fresco y manda la entrega, los metros y las OF de cada lona a CoordinaOT', async () => {
   const { stock, coordina, comprobar } = preparar();
   expect(await comprobar()).toEqual({
     consultado, faltas: [falta], avisos: [
-      'No llega el stock de LONA Lona gris: necesita 42,30 m, disponible 18,75 m.',
+      'No llega el stock de LAC900GR38P300 Lona gris: necesita 42,30 m, disponible 18,75 m.',
       'Al pasar el pedido en CoordinaOT podrás mandar el correo a Compras y Almacén.',
     ],
   });
   expect(stock.reset).toHaveBeenCalledBefore(stock.getStock);
-  expect(stock.getStock).toHaveBeenCalledExactlyOnceWith(['LONA']);
+  expect(stock.getStock).toHaveBeenCalledExactlyOnceWith([linea.codigo]);
   expect(coordina.enviarStockLona).toHaveBeenCalledExactlyOnceWith({ ...datos,
-    consultado, faltas: [falta], lonas: [{ codigo: 'LONA', descripcion: 'Lona gris', ml: 42.3, porOf: { '0290001': 42.3 } }],
+    consultado, faltas: [falta], lonas: [linea],
   });
+});
+
+it.each(['corte', 'reserva'])('conserva el origen %s al aprobar los metros y OF propuestos', async origen => {
+  const { coordina, comprobar } = preparar();
+  await comprobar([{ ...linea, origen }], [{ codigo: linea.codigo, ml: linea.ml, ofs: linea.ofs }]);
+  expect(coordina.enviarStockLona).toHaveBeenCalledWith(expect.objectContaining({
+    lonas: [{ ...linea, origen, descripcion: 'LONA LAC900 2L 900G :GRIS CLARO 7374 RAL7038 :300AN' }],
+  }));
+});
+
+it('usa los metros corregidos, descarta las filas quitadas y añade telas con las OF de la entrega por defecto', async () => {
+  const { stock, coordina, comprobar } = preparar();
+  const quitada = { ...linea, codigo: 'LAC900AZ02P300' };
+  await comprobar([linea, quitada], [{ codigo: linea.codigo, ml: 20.125 }, { codigo: 'LAC900AZ10P300', ml: 5 }]);
+  expect(stock.getStock).toHaveBeenCalledExactlyOnceWith([linea.codigo, 'LAC900AZ10P300']);
+  expect(coordina.enviarStockLona).toHaveBeenCalledWith(expect.objectContaining({
+    lonas: [
+      { codigo: linea.codigo, ml: 20.125, origen: 'manual', ofs: linea.ofs, descripcion: expect.stringContaining('RAL7038') },
+      { codigo: 'LAC900AZ10P300', ml: 5, origen: 'manual', ofs: datos.ofs, descripcion: expect.stringContaining('RAL5010') },
+    ],
+    faltas: [
+      { codigo: linea.codigo, necesita: 20.125, disponible: 18.75, ofs: linea.ofs, descripcion: expect.stringContaining('RAL7038') },
+      { codigo: 'LAC900AZ10P300', necesita: 5, disponible: 0, ofs: datos.ofs, descripcion: expect.stringContaining('RAL5010') },
+    ],
+  }));
+});
+
+it('permite quitar toda la propuesta sin consultar stock', async () => {
+  const { stock, coordina, comprobar } = preparar();
+  await comprobar([linea], []);
+  expect(stock.getStock).not.toHaveBeenCalled();
+  expect(coordina.enviarStockLona).toHaveBeenCalledExactlyOnceWith({ ...datos, consultado, lonas: [], faltas: [] });
+});
+
+it.each([
+  [null], [1], [[null]], [[{ codigo: 'MAL FORMATO', ml: 1 }]], [[{ codigo: 'INEXISTENTE', ml: 1 }]],
+  [[{ codigo: linea.codigo, ml: 0 }]], [[{ codigo: linea.codigo, ml: -1 }]], [[{ codigo: linea.codigo, ml: '4' }]],
+  [[{ codigo: linea.codigo, ml: Infinity }]], [[{ codigo: linea.codigo, ml: 4, ofs: ['0290003'] }]],
+  [[{ codigo: linea.codigo, ml: 4, ofs: '0290001' }]], [[{ codigo: linea.codigo, ml: 4 }, { codigo: linea.codigo, ml: 3 }]],
+])('rechaza la lista inválida %j antes de consultar o preparar archivos', async lonasAprobadas => {
+  const { stock, coordina, opciones } = preparar();
+  const paso = { nombre: 'PDF', preparar: vi.fn() };
+  await expect(pasarAProduccionConStock([paso], { ...opciones, lonasAprobadas })).rejects.toMatchObject({ statusCode: 400 });
+  expect(stock.reset).not.toHaveBeenCalled();
+  expect(stock.getStock).not.toHaveBeenCalled();
+  expect(coordina.enviarStockLona).not.toHaveBeenCalled();
+  expect(paso.preparar).not.toHaveBeenCalled();
 });
 
 it('manda una comprobación sin faltas para reemplazar la anterior', async () => {

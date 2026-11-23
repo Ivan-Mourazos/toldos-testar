@@ -11,6 +11,7 @@ import type { PedidoRemolques } from '../tipos.ts';
 const getStock = vi.fn(async () => [{ code: 'NS86GR38P250', disponible: 1 }]);
 const prepararPdf = vi.fn();
 const enviarStockLona = vi.fn(async () => ({ ok: true }));
+const materialesStock = vi.fn(async () => [{ nombre: fixture.elementos[0].input.material, codigoBobina: 'NS86GR38P250' }]);
 let raiz: string;
 let activa: boolean;
 let aprobada: boolean;
@@ -30,7 +31,7 @@ beforeEach(async () => {
   servicio = crearServicioPedidosRemolques({ almacen, ajustes, parametros: async () => fixture.params,
     coordina: { statusOf: async (ofs) => ({ disponible: true, ofs: Object.fromEntries(ofs.map((of) => [of, { estado: aprobada ? 'aprobada' : 'en_revision' }])) }) },
     stockLona: { stock: { reset: vi.fn(), getStock }, coordina: { enviarStockLona } },
-    materialesStock: async () => [{ nombre: fixture.elementos[0].input.material, codigoBobina: 'NS86GR38P250' }],
+    materialesStock, materialesPropuesta: () => [{ nombre: fixture.elementos[0].input.material, codigoBobina: 'NS86GR38P250' }],
     tecnicos: ['IVÁN'], hacerPdf: async () => { prepararPdf(); const pdf = await pdfLib.PDFDocument.create(); pdf.addPage(); return pdf.save(); },
     esPedidoDeToldos: async () => false, corte: crearCorteRemolques({ ajustes, oda: { disponible: false } }),
   });
@@ -79,7 +80,7 @@ it('pasar a producción guarda PDF y plano y manda al bot; solo entonces cierra 
   await fs.mkdir(path.join(raiz, 'bot/Ivan.Sanchez'), { recursive: true });
   const r = await servicio.produccion(fixture.orderCode, { savedBy: 'IVÁN', confirmBot: true });
   expect(r).toMatchObject({ status: 200, cuerpo: { hechos: ['PDF', 'Plano', 'DXF al bot'],
-    stockLona: { consultado: expect.any(String), faltas: [{ codigo: 'NS86GR38P250', necesita: 10.76, disponible: 1 }] },
+    stockLona: { consultado: expect.any(String), faltas: [{ codigo: 'NS86GR38P250', necesita: 8.03, disponible: 1, ofs: ['0233152', '0233153'] }] },
   } });
   const { avisos } = r.cuerpo as { avisos: string[] };
   expect(avisos.slice(0, 2)).toEqual([
@@ -88,7 +89,7 @@ it('pasar a producción guarda PDF y plano y manda al bot; solo entonces cierra 
   expect(getStock).toHaveBeenCalledBefore(prepararPdf);
   expect(prepararPdf).toHaveBeenCalledBefore(enviarStockLona);
   expect(enviarStockLona).toHaveBeenCalledWith(expect.objectContaining({
-    pedido: fixture.orderCode, cliente: 'REMOLCAR', ofs: ['0233152', '0233153'], consultadoPor: 'IVÁN',
+    pedido: fixture.orderCode, entrega: null, cliente: 'REMOLCAR', ofs: ['0233152', '0233153'], consultadoPor: 'IVÁN',
   }));
   const p = await servicio.obtener(fixture.orderCode);
   expect(p.status).toBe('PRODUCED');
@@ -96,6 +97,22 @@ it('pasar a producción guarda PDF y plano y manda al bot; solo entonces cierra 
   expect(await fs.readFile(path.join(raiz, 'bot/Ivan.Sanchez/AR2605132.dxf'), 'utf8')).toContain('AC1018');
   expect((await fs.readdir(path.join(raiz, 'pdf'))).some(f => f.endsWith('-10.pdf'))).toBe(true);
   expect((await fs.readdir(path.join(raiz, 'planos'))).some(f => f.endsWith('.dxf'))).toBe(true);
+});
+
+it('propone el corte de la entrega sin consultar stock ni producir archivos', async () => {
+  const pedido = await servicio.obtener(fixture.orderCode);
+  const entrega = { ...pedido, entregaActual: 11, ofsSeleccionadas: ['0233152'],
+    elementos: [...pedido.elementos, { ...pedido.elementos[0], input: { ...pedido.elementos[0].input,
+      cabecera: { ...pedido.elementos[0].input.cabecera, ordenFabricacion: '0233154' } } }] };
+  await almacen.guardar(entrega);
+  expect(await servicio.propuestaStockLona(fixture.orderCode)).toEqual({ ofs: ['0233152'], lonas: [
+    { codigo: 'NS86GR38P250', descripcion: fixture.elementos[0].input.material, ml: expect.any(Number), ofs: ['0233152'], origen: 'corte' },
+  ] });
+  expect(getStock).not.toHaveBeenCalled();
+  expect(materialesStock).not.toHaveBeenCalled();
+  expect(enviarStockLona).not.toHaveBeenCalled();
+  expect(prepararPdf).not.toHaveBeenCalled();
+  expect(await fs.readdir(raiz)).toEqual(['pedidos']);
 });
 it('bot inexistente o plano pendiente de sobrescribir no deja PDF ni cierra la entrega', async () => {
   await fs.mkdir(path.join(raiz, 'pdf'), { recursive: true });
