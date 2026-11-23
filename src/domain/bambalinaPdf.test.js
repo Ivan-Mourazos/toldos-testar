@@ -99,15 +99,15 @@ describe('Bambalina: las bastillas elegidas salen en el dibujo', () => {
   const medidas = (bambaBastillas, extra = {}) => calculateOrder({ ...baseOrder, awnings: [{ ...baseAwning, bambaBastillas, ...extra }] }).ofs[0].calculation;
   test('las medidas de corte cuentan las bastillas elegidas', async () => {
     expect(medidas(undefined)).toMatchObject({ fabricWidth: 300, fabricDrop: 35 });
-    expect(medidas({ izq: 0, der: 3.5, abajo: 4, arriba: 6 })).toMatchObject({ fabricWidth: 303.5, fabricDrop: 40 });
+    // Las puntas no cambian el frente: en acrílico las cabezas ya cuentan al repartir los paños (seamBaseCm).
+    expect(medidas({ izq: 0, der: 3.5, abajo: 4, arriba: 6 })).toMatchObject({ fabricWidth: 300, fabricDrop: 40 });
     expect(medidas({ abajo: 0, arriba: 0 })).toMatchObject({ fabricWidth: 300, fabricDrop: 30 });
     expect(medidas({ arriba: 1 })).toMatchObject({ fabricDrop: 33 });
-    expect(medidas({ izq: 2 })).toMatchObject({ fabricWidth: 304 });
+    expect(medidas({ izq: 2, der: 5 })).toMatchObject({ fabricWidth: 300, fabricMl: medidas(undefined).fabricMl });
     // Con onda, abajo no lleva bastilla (remate aparte): se queda como siempre.
     expect(medidas({ abajo: 0, arriba: 0 }, { valanceCurve: 'NORMAL' })).toMatchObject({ fabricDrop: 32 });
     const [text] = await pages({ ...baseOrder, awnings: [{ ...baseAwning, bambaBastillas: { izq: 0, der: 3.5, abajo: 4, arriba: 6 } }] });
     expect(text).toContain('CORTE 40 CM');
-    expect(text).toContain('303,5');
   });
   test('el dibujo pinta las bastillas que lleva y no las que van al corte', () => {
     const discontinuas = (bambaBastillas) => {

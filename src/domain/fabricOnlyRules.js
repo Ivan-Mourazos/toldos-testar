@@ -31,7 +31,7 @@ export function calculateFabricOnly({ order, awning }) {
   const cambioAnticaExtra = model === 'CAMBIO ANTICA' ? Number(awning.cambioAnticaExtraCm) || 0 : 0;
   const cambioTelaError = model === 'CAMBIO TELA' ? cambioTelaExtraError(awning) : '';
   const widthAdjustment = modified ? Number(awning.fabricJobWidthAdjustmentCm) || 0 : 0;
-  const fabricWidth = round1(Math.max(0, Number(awning.width) + widthAdjustment + (model === 'BAMBALINA' ? puntasBambaCm(awning) : 0)));
+  const fabricWidth = round1(Math.max(0, Number(awning.width) + widthAdjustment));
   const bodyAllowance = model === 'CAMBIO ANTICA'
     ? cambioAnticaExtra
     : model === 'CAMBIO TELA'
@@ -119,20 +119,6 @@ export function calculateFabricOnly({ order, awning }) {
     }), ...extraErrors],
     calculation
   };
-}
-
-/** Bastilla de cada punta en el corte de la tira, sin tocar (B.N(2), como `tiraExtraLargoCm` del corte). */
-const PUNTA_BAMBA_CM = 2;
-
-/**
- * Lo que suman las bastillas de las puntas al frente de la bambalina suelta. Sin elegir ninguna, nada: el frente
- * bruto de siempre. Con alguna elegida, el frente real de corte: la elegida y B.N(2) en la otra (Iván, 23/11/2026:
- * «los textos de la bambalina no se adaptan a las opciones de las bastillas o medidas reales»).
- */
-function puntasBambaCm(awning) {
-  const b = normalizarBastillasBamba(awning.bambaBastillas) ?? {};
-  if (!('izq' in b) && !('der' in b)) return 0;
-  return (b.izq ?? PUNTA_BAMBA_CM) + (b.der ?? PUNTA_BAMBA_CM);
 }
 
 /**
