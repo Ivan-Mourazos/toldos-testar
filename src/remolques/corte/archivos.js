@@ -10,6 +10,7 @@ import { OF_STOCK_POR_DEFECTO } from '../../ofStockSacos.js';
 // `aprovecharStock`: llenar los huecos del corte con sacos y tiras de refuerzo de stock. Apagado de entrada
 // (Iván, 11/11/2026: «de principio en los cortes de remolques no vamos a aprovechar con cosas de stock»); el
 // cálculo se conserva (sacos.js, refuerzos.js) por si la situación cambia: basta con pasar `true`.
+// 23/11/2026: el servidor lo vuelve a pasar a `true` (Iván, a raíz del AR2605686).
 export function crearCorteRemolques({ ajustes, oda, aprovecharStock = false, ofStockSacos = async () => ({ of: OF_STOCK_POR_DEFECTO, avisos: [] }) }) {
   async function generar(pedido) {
     // Sin stock no hace falta su OF ni sus avisos.
