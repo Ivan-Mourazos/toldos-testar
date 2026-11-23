@@ -11,7 +11,8 @@ const MAX_DXF = 30 * 1024 * 1024;
 const ERROR_TAMANO = 'El DXF supera el máximo de 30 MB por fichero.';
 const etiquetas = { 'CM-CUTW-Def': 'Disco 1', 'CM-CUTW-6': 'Disco 2', 'CM-CUTK-Def': 'Cutter', 'CM-PEN-Def': 'Rotulador', '': 'Sin herramienta' };
 // Al técnico solo le sirven los avisos sobre su dibujo; los internos del conversor no se enseñan.
-const AVISO_INTERNO = /^(Se reproduce el redondeo SVG del robot|Entidad de espacio papel excluida|Ventana de presentación excluida)/;
+// Los POINT (puntos de definición de las cotas) nunca se cortan y un plano real trae decenas.
+const AVISO_INTERNO = /^(Se reproduce el redondeo SVG del robot|Entidad de espacio papel excluida|Ventana de presentación excluida|El POINT no se dibuja)/;
 const avisosLegibles = avisos => [...new Set(avisos.filter(a => !AVISO_INTERNO.test(a.motivo)).map(lineaDuda))];
 
 // Extremos reales de una Bézier cúbica: sus controles pueden sobresalir del dibujo.

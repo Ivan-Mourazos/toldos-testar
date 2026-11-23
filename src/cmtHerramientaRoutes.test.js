@@ -105,6 +105,11 @@ describe('DXF a CMT en memoria, sin usuario ni permisos de escritura', () => {
     convertir.mockReturnValue({ ...r, avisos: [{ motivo: 'Se reproduce el redondeo SVG del robot (seis cifras, 96 dpi); compatibilidadRobot:false conserva la precisión del DXF y puede mostrar rellenos distintos' }] });
     expect((await (await post(entrada())).json()).avisos).toEqual([]);
   });
+  it('no enseña los POINT de las cotas: nunca se cortan y en un plano real salen decenas', async () => {
+    const punto = h => ({ handle: h, tipo: 'POINT', capa: 'Defpoints', motivo: 'El POINT no se dibuja, igual que en los ejemplos del robot' });
+    preparar.mockReturnValueOnce({ listo: false, dxf: null, escala: 1000, medidasMm: null, pendientes: { cruces: 1 }, avisos: [punto('A1'), punto('A2'), { motivo: 'Se han descompuesto 25 cotas' }], dudas: [], vista: [], capasNuevas: {} });
+    expect((await (await prepararPost(archivo)).json()).avisos).toEqual(['Se han descompuesto 25 cotas']);
+  });
   it.each([
     {}, entrada({ nombre: 'corte.txt' }), entrada({ dxfBase64: '!!!' }), entrada({ dxfBase64: '' }),
     entrada({ sinTextos: 'true' }), entrada({ nombre: 42 }),
