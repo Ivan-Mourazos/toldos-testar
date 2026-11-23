@@ -2895,7 +2895,13 @@ textarea,
   min-width: 0;
 }
 
-.notification-copy > span { font-size: 11px; overflow-wrap: anywhere; }
+.notification-copy > span {
+  font-size: 11px;
+  max-block-size: 42vh;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
 
 .notification-close,
 .confirmation-close {

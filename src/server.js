@@ -1,6 +1,8 @@
 import { registrarDescargasCorte, convertirCmtRemolques } from './corteMaquina.js';
 import { registrarRutasCmtMaquina } from './cmtMaquinaRoutes.js';
-import { pasarAProduccion, prepararPlanoProduccion } from './produccion.js';
+import { prepararPlanoProduccion } from './produccion.js';
+import { lineasLonaToldos } from './stockLona.js';
+import { pasarAProduccionConStock } from './stockLonaProduccion.js';
 import { catalogoEntregas, numerarEntrega, aplicarDestino, necesitaPrepararDestino } from './entregasRps.js';
 import { avisoEntradaEntrega, codigoCorteEditable, abrirEntrega, codigoAnual, codigoEntrega, ofsEntrega, pedidoEntrega, regenerarEntregaGenerada } from './entregas.js';
 import { materialesReserva } from './materialesEntrega.js';
@@ -176,6 +178,8 @@ app.use((req, res, next) => {
   next();
 });
 const coordina = createCoordinaClient({ url: config.coordinaUrl, key: config.coordinaClave });
+const fabricStock = createFabricStockService({ loadRows: queryRpsFabricStockRows });
+const stockLona = { stock: fabricStock, coordina };
 const generationLocks = new Set();
 // Hoja de taller de remolques (fase 4): los datos de cada PDF esperan aquí, en memoria y un
 // minuto como mucho, a que la página interna los pida una sola vez; Chromium la imprime.
@@ -236,6 +240,8 @@ const pedidosRemolques = crearServicioPedidosRemolques({
   despertarCarpetas: waitForDirectories,
   parametros: parametrosRemolques,
   coordina,
+  stockLona,
+  materialesStock: async () => (await getMaterialesConOrigen()).materiales,
   tecnicos: formOptions.tecnicos,
   hacerPdf: hojaRemolquesPdf,
   // Sin carpeta de toldos configurada no puede haber pedidos de toldos que comprobar. Tampoco puede ser de puertas.
@@ -258,6 +264,7 @@ const pedidosPuertas = crearServicioPedidosPuertas({
   almacen: almacenPedidosPuertas,
   ajustes: () => workflowStore.getSettings(),
   coordina,
+  stockLona,
   tecnicos: formOptions.tecnicos,
   otroProducto: async (orderCode) => {
     if (await esPedidoDeToldos(orderCode)) return 'toldos';
@@ -524,7 +531,6 @@ app.get('/api/catalog/fabrics', async (req, res) => {
 });
 
 // Stock de las telas elegidas (informe tela-0930): solo lectura de RPS, 60 s en caché.
-const fabricStock = createFabricStockService({ loadRows: queryRpsFabricStockRows });
 app.get('/api/catalog/fabrics/stock', fabricStockHandler(fabricStock));
 
 
@@ -1625,7 +1631,10 @@ async function generarArchivosToldos(orderCode, cuerpo, prepararSolo = false) {
         throw httpError(500, `${escritos.length ? `Archivos guardados: ${escritos.join(', ')}.` : 'No se ha guardado ningún archivo.'} No se completaron los PDF y las reservas: ${error.message}`);
       }
     };
-    return prepararSolo ? { status: 200, cuerpo: { ok: true }, ejecutar, finalizar } : await ejecutar();
+    return prepararSolo ? {
+      status: 200, cuerpo: { ok: true }, ejecutar, finalizar,
+      datosStock: { cliente: order.customer || '', ofs: uniqueOfs(reservation.ofs), materiales },
+    } : await ejecutar();
   } catch (error) {
     if (error.code === 'ENOENT') throw httpError(404, 'No se encontró el pedido de revisión.');
     throw error;
@@ -1650,15 +1659,20 @@ app.post('/api/reviews/:orderCode/produccion', async (req, res, next) => {
     const pedido = await workflowStore.getReview(codigo), entrada = req.body ?? {}, settings = await workflowStore.getSettings();
     if (pedido.status === 'PRODUCED') return res.json({ ok: true, unchanged: true, mensaje: 'Este pedido ya está en producción.' });
     const conCorte = Boolean(pedido.corteConfirmado || pedido.corteLona?.toldos?.length);
-    const r = await pasarAProduccion([
-      { nombre: 'PDF y reservas de RPS', preparar: () => generarArchivosToldos(codigo, { ...entrada, soloPdf: false, confirmOverwrite: entrada.confirmPdfOverwrite === true }, true) },
+    const pdf = await generarArchivosToldos(codigo, { ...entrada, soloPdf: false, confirmOverwrite: entrada.confirmPdfOverwrite === true }, true);
+    const r = await pasarAProduccionConStock([
+      { nombre: 'PDF y reservas de RPS', preparar: () => pdf },
       ...(conCorte ? [
         { nombre: 'Plano', preparar: () => prepararPlanoProduccion({ confirmado: pedido.corteConfirmado, confirmOverwrite: entrada.confirmPlanoOverwrite === true,
           preparar: async () => { const p = await prepararArchivosCorte({ order: pedidoEntrega(pedido).order, corteLona: pedido.corteLona, settings, oda, tipo: 'plano', codigoSalida: codigoAnual(pedido) }); return { ficheros: p.files, avisos: p.avisos }; },
           escribir: async files => { for (const f of files) { await fs.mkdir(path.dirname(f.savedPath), { recursive: true }); await writeFileAtomic(f.savedPath, f.contents, { conservarAnterior: true }); } } }) },
         { nombre: settings.corteDirectoEnabled ? 'DXF y CMT a la máquina' : 'DXF al bot', preparar: () => enviarCorteToldos(codigo, { ...entrada, usuario: entrada.savedBy, destino: 'bot', confirmOverwrite: entrada.confirmDxfOverwrite === true }, true) },
       ] : []),
-    ]);
+    ], pdf.datosStock && {
+      ...stockLona, pedido: codigo, cliente: pdf.datosStock.cliente, ofs: pdf.datosStock.ofs,
+      consultadoPor: typeof entrada.savedBy === 'string' ? entrada.savedBy : null,
+      lineas: () => lineasLonaToldos(pdf.datosStock.materiales),
+    });
     res.status(r.status).json(r.cuerpo);
   } catch (error) { next(error); }
   finally { generationLocks.delete(codigo); }

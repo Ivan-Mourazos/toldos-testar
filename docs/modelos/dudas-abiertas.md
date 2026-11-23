@@ -508,3 +508,10 @@ Estudio en `abrigo-portanova.md` (ejemplo AR2605646 y nueve pedidos de 2024 a 20
 - **Q-AB05 · Colocación en el rollo (contestada).** Iván, 19/11: la web lo coloca de la mejor manera (manda la lona),
   pero separando materiales (lona de 3 mm, PVC 580 y tiras de resto) y con las notas de cada bloque (material, OF,
   «X n», «AL CORTE ALREDEDOR», «MARCA DERECHO», «OLLAO GRANDE EN ESQUINA»).
+
+## Stock de lona en puertas · 23/11/2026
+
+¿Qué códigos de bobina corresponden al resto de nombres cortos del cajetín?
+Para LAC900 AZUL 5002 se identifica la bobina de 300 cm por su RAL en el
+catálogo. Los demás nombres cortos sin equivalencia confirmada se omiten
+en la comprobación de stock.

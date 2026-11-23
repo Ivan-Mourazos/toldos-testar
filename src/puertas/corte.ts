@@ -1,3 +1,4 @@
+import { metrosLonaPuertas } from './metrosPorOf.ts';
 import { columnasPanos } from './columnasPanos.ts';
 import { escribirDxf2004 } from '../domain/corteLona/dxfCorte.js';
 import { anchoArial } from '../domain/corteLona/texto.js';
@@ -686,8 +687,8 @@ function colocar(
 
 export function generarCortePuertas(
   pedido: PedidoPuertas,
-  { ofStockSacos }: { ofStockSacos?: string } = {},
-): VistaPuertas & { archivo: { nombre: string; dxf: string; entidades: EntidadesPuertas } | null } {
+  { ofStockSacos, incluirMetrosLona = false }: { ofStockSacos?: string; incluirMetrosLona?: boolean } = {},
+): VistaPuertas & { metrosLona?: ReturnType<typeof metrosLonaPuertas>; archivo: { nombre: string; dxf: string; entidades: EntidadesPuertas } | null } {
   // El id de una pieza se repite entre puertas (clase-n-nombre): se le pone delante el de su puerta para que
   // cada paño se rotule con la letra de la suya (con dos puertas salían todos como B).
   const resultados = pedido.elementos.map(e => {
@@ -764,5 +765,6 @@ export function generarCortePuertas(
     }
     archivo = { nombre: pedido.orderCode, dxf: escribirDxf2004(entidades), entidades };
   }
-  return { resultados, cortes, avisos, sinOf, archivo };
+  return { resultados, cortes, avisos, sinOf, archivo,
+    ...(incluirMetrosLona ? { metrosLona: metrosLonaPuertas(cortes, pedido.elementos) } : {}) };
 }

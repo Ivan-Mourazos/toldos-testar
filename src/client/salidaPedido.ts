@@ -1,3 +1,4 @@
+import { textoAvisoStock } from '../stockLona.js';
 import type { DestinoEntrega } from '../entregasTipos';
 import type { AskForConfirmation, Notify } from './components/NotificationCenter';
 import { decidirCortePendiente } from './toldosEditable';
@@ -70,7 +71,15 @@ export async function ejecutarSalidaPedido({ ruta, usuario, preguntar, notify, c
       }
       if (!respuesta.ok) throw new Error(datos.error || 'No se pudo completar la salida del pedido.');
       notify(datos.mensaje || (datos.presentaciones ? 'PDF guardado en planteamientos y en la carpeta del año.' : cuerpo?.destino === 'bot' ? 'DXF mandado al bot.' : cuerpo?.destino === 'dxfs' ? 'DXF guardado en la carpeta del año.' : cuerpo?.soloPdf ? 'PDF guardado.' : 'Plano guardado.'), { tone: 'success' });
-      for (const aviso of datos.avisos ?? []) notify(aviso, { tone: 'warning' });
+      const avisos: string[] = datos.avisos ?? [];
+      const avisosStock = textoAvisoStock(datos.stockLona?.faltas ?? []);
+      if (avisosStock.length) {
+        const [title, ...detalle] = avisosStock;
+        const otrosAvisos = avisos.filter(aviso => !avisosStock.includes(aviso));
+        notify([...detalle, ...otrosAvisos].join('\n'), { tone: 'warning', title, duration: 0 });
+      } else {
+        for (const aviso of avisos) notify(aviso, { tone: 'warning' });
+      }
       recibido?.(datos);
       terminado();
       return;
