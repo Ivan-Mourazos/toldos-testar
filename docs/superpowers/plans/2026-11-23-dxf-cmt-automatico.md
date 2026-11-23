@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - Marco del corte = rectángulo (eje X/Y) en la capa `0`; en la oficina nunca se dibuja en la capa 0.
-- DWG siempre ×1000 (planos en metros). DXF: `$INSUNITS` 6 → ×1000, 5 → ×10, 4 → ×1; otro código distinto de 0 → duda; sin unidades, por tamaño (lado mayor < 100 unidades → ×1000, si no ×1). Resultado fuera de 10 mm…`LARGO_MAXIMO_MM` (provisional 60 000, se fija con la Task 0) → no se genera.
+- DWG siempre ×1000 (planos en metros), sin mirar `$INSUNITS`. DXF: `$INSUNITS` 6 → ×1000, 5 → ×10; un código distinto de 0, 4, 5 o 6 → duda. Con 0, 4 o sin unidades, por tamaño: lado mayor < 100 unidades → ×1000, si no ×1. El 4 no es fiable: los planos de la oficina dicen mm y están en metros. Resultado fuera de 10 mm…`LARGO_MAXIMO_MM` (250 000) → no se genera.
 - Nunca sale un DXF o CMT vacío: si no queda nada que cortar, es una duda.
 - Las correcciones marcadas «Revisión 23/11» en cada tarea son obligatorias y mandan sobre el código de ejemplo de esa tarea.
 - Salida siempre en mm, DXF 2004 (AC1018), solo capas `DISCO1, DISCO2, CUTTER, ROTULADOR, taladro, texto`.
@@ -115,7 +115,8 @@ export function dxfPrueba({ insunits, capas = {}, entidades = [], bloques = [] }
 
 **Revisión 23/11 (obligatorio, con prueba por punto):**
 - `hornear` conserva las validaciones de `src/cmt/validacion.ts`: códigos obligatorios ausentes, `r > 0`, `h > 0` y polilíneas con anchura (`40/41/43` ≠ 0) → duda, nunca `0` ni `NaN` en silencio.
-- `INSERT` con normal `230 < 0` en `src/cmt/entidades.ts:31-32`: hoy niega `sx` antes de girar y deja sin negar el punto de inserción, con lo que el bloque queda mal colocado cuando `10 ≠ 0` o `50 ≠ 0`. Correcto: matriz del INSERT en OCS y luego espejo `(-x, y)` por la izquierda. Es un fallo también del conversor actual: prueba con un bloque girado y desplazado en `230 = -1` comparando con el resultado de ZWCAD (o con el cálculo a mano), y comprobar que `pnpm vitest run src/cmt` sigue en verde.
+- `INSERT` con normal `230 < 0`: `src/cmt/entidades.ts:31-32` lo coloca mal cuando `10 ≠ 0` o `50 ≠ 0`. El estudio da 0 casos en 4.124 referencias de los DWG; los espejos de la oficina vienen como escala X = −1, que sí funciona. No se toca `entidades.ts`: `hornear` da una duda bloqueante si encuentra un INSERT con `230 < 0`. Hace falta una prueba.
+- `SPLINE` y `ELLIPSE`: el conversor solo admite la spline cúbica de 4 controles. El estudio encuentra 642 SPLINE en un plano y 184 ELLIPSE en dos, todas en `CORTES - LONA`. Por ahora son una duda con el mensaje actual, «conviértela a polilínea en ZWCAD». Solo bloquean si quedan dentro del marco y en una capa que se corta (Task 7).
 - `TEXT`: si `72` y `73` son 0, el punto es `10/20` y no se transforma ni se emite `11/21`; si no, el ancla es `11/21`.
 - Estilo de texto (`7`): copiar al `TEXT` el ancho (`41`) y el oblicuo (`51`) del estilo cuando la entidad no los traiga, y avisar si el estilo usa una fuente `.shx`.
 
@@ -448,9 +449,9 @@ export function buscarMarcos(piezas: Pieza[]): Caja[] {
 
 **Revisión 23/11 (obligatorio):**
 - Pruebas añadidas para `decidirEscala`:
-  - DXF con `$INSUNITS = 4` y 80 mm → ×1.
+  - DXF con `$INSUNITS = 4` y lado de 10 unidades → ×1000, como los planos reales de la oficina.
   - `$INSUNITS = 1` → error.
-  - DWG de 50 unidades (50 m) → error si supera `LARGO_MAXIMO_MM`.
+  - DWG de 300 unidades (300 m) → error, porque supera `LARGO_MAXIMO_MM`.
 - `asignarCapas` busca en la tabla y en `capasDxf` por `claveCapa` (sin distinguir mayúsculas). Nunca devuelve como desconocida una capa vacía `""`, ni una de las 6 capas fijas del bot.
 
 **Files:**
@@ -505,17 +506,17 @@ describe('asignarCapas', () => {
 ```ts
 // unidades.ts
 import type { Caja } from './tipos.ts';
-/** Lado mayor admitido tras escalar. Provisional: se fija con el estudio de la Task 0 (corte real más largo × 1,5)
- *  para que un DWG en cm o en mm escalado ×1000 no pase como si fuera un corte largo. */
-export const LARGO_MAXIMO_MM = 60_000;
+/** Lado mayor admitido tras escalar. Estudio Task 0: en 1.782 cortes a mano, mediana 8,6 m, P99 64 m y máximo 232,7 m.
+ *  Para un plano en cm o en mm escalado ×1000, que da kilómetros. La vista previa enseña siempre las medidas en mm. */
+export const LARGO_MAXIMO_MM = 250_000;
 export function decidirEscala(origen: 'dwg' | 'dxf', insunits: number | undefined, caja: Caja): { factor: number; motivo: string } | { error: string } {
   const lado = Math.max(caja.x1 - caja.x0, caja.y1 - caja.y0);
   let factor: number, motivo: string;
   if (origen === 'dwg') { factor = 1000; motivo = 'Plano DWG en metros: se pasa a mm (×1000)'; }
   else if (insunits === 6) { factor = 1000; motivo = 'El DXF está en metros: se pasa a mm (×1000)'; }
   else if (insunits === 5) { factor = 10; motivo = 'El DXF está en centímetros: se pasa a mm (×10)'; }
-  else if (insunits === 4) { factor = 1; motivo = 'El DXF está en mm'; }
-  else if (insunits !== undefined && insunits !== 0) return { error: `El DXF tiene unas unidades que no se usan en la oficina (código ${insunits}): guárdalo en metros o en mm desde ZWCAD` };
+  // $INSUNITS = 4 no es fiable: 58 de 68 DWG de la oficina dicen mm y están dibujados en metros (estudio Task 0).
+  else if (insunits !== undefined && insunits !== 0 && insunits !== 4) return { error: `El DXF tiene unas unidades que no se usan en la oficina (código ${insunits}): guárdalo en metros o en mm desde ZWCAD` };
   else if (lado < 100) { factor = 1000; motivo = 'Por su tamaño, el DXF está en metros: se pasa a mm (×1000)'; }
   else { factor = 1; motivo = 'El DXF ya está en mm'; }
   const mm = lado * factor;
