@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { convertirArchivo, medidasCmt, permiteSinTextos, textoEstado, type ResultadoCmt } from './conversion';
-import { blobCmt, descargarCmt, descargarTodos, type DestinoDescarga } from './descarga';
+import { prepararArchivo, convertirArchivo, medidasCmt, permiteSinTextos, textoEstado, type ResultadoCmt } from './conversion';
+import { descargarDxf, descargarPlanos, blobCmt, descargarCmt, descargarTodos, type DestinoDescarga } from './descarga';
 
 const resultado: ResultadoCmt = { ok: true, nombre: 'corte.cmt', cmtBase64: 'AP+ACg==',
   resumen: { objetos: 1, porHerramienta: [], anchoMm: 1234.5, altoMm: 19.05 }, avisos: [], dudas: [] };
@@ -38,7 +38,30 @@ describe('Conversión de los ficheros de la pantalla', () => {
   });
 });
 
+it('envía el DWG para analizar y solo pide generar al confirmarlo', async () => {
+  const pedir = vi.fn<typeof fetch>(async () => new Response(JSON.stringify({ listo: false })));
+  const dwg = new File(['DWG'], 'plano.dwg');
+  await prepararArchivo(dwg, { marco: 1 }, true, pedir);
+  expect(pedir.mock.calls[0][0]).toBe('/api/cmt/preparar');
+  expect(JSON.parse(String(pedir.mock.calls[0][1]?.body))).toEqual({ nombre: 'plano.dwg', archivoBase64: 'RFdH', decisiones: { marco: 1 }, sinTextos: true, generar: false });
+  await prepararArchivo(dwg, {}, false, pedir, true);
+  expect(JSON.parse(String(pedir.mock.calls[1][1]?.body)).generar).toBe(true);
+  await expect(prepararArchivo(new File(['PDF'], 'plano.pdf'), {}, false, pedir)).rejects.toThrow(/DWG o DXF/);
+  expect(pedir).toHaveBeenCalledTimes(2);
+});
+
 const destino = (extra: Partial<DestinoDescarga> = {}): DestinoDescarga => ({ seguro: true, descargar: vi.fn(), ...extra });
+it('descarga el DXF y el CMT preparados con sus nombres y cuenta los omitidos', async () => {
+  const d = destino();
+  const listo = { ok: true, nombre: 'nuevo', preparado: true, escala: 1, medidasMm: null, pendientes: {}, vista: [],
+    listo: true, nombreCmt: 'nuevo.cmt', nombreDxf: 'nuevo.dxf', dxfBase64: 'RFhG', cmtBase64: 'Q01U', avisos: [], dudas: [] };
+  const pendiente = { ...listo, listo: false };
+  await expect(descargarDxf(pendiente, d)).rejects.toThrow(/listo/);
+  expect(await descargarPlanos([listo, pendiente], d)).toEqual({ descargados: 1, omitidos: 1 });
+  expect(d.descargar).toHaveBeenNthCalledWith(1, expect.any(Blob), 'nuevo.dxf');
+  expect(d.descargar).toHaveBeenNthCalledWith(2, expect.any(Blob), 'nuevo.cmt');
+});
+
 describe('Guardar el CMT desde el navegador', () => {
   it('el blob conserva todos los bytes, incluidos nulos y valores superiores a 127', async () => {
     expect(new Uint8Array(await blobCmt(resultado).arrayBuffer())).toEqual(new Uint8Array([0, 255, 128, 10]));
