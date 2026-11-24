@@ -45,7 +45,7 @@ export async function fuenteCorte(pedido, preparar) {
         if (Number.isFinite(Date.parse(envio.fecha)) && stat.mtimeMs > Date.parse(envio.fecha) + 2000) throw fallo('El fichero enviado ha cambiado después del envío.');
         contents = await fs.readFile(archivo.savedPath);
       }
-      catch { throw fallo('El DXF enviado ya no está disponible en su carpeta. No se puede asegurar el mismo corte; recupera el DXF original y usa «DXF a CMT».'); }
+      catch { throw fallo('El DXF enviado ya no está disponible en su carpeta. No se puede asegurar el mismo corte; recupera el DXF original y usa «Planos a corte».'); }
     }
   } else {
     if (pedido.corteNoRegenerado) throw fallo('El corte no está regenerado con los últimos datos. Revísalo antes de descargarlo.');

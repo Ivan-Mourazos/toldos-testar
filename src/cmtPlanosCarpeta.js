@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { resolveDirectoryTemplate } from './workflow.js';
 
-// Buscador de planos de la carpeta del año (Iván, 23/11/2026): en «DXF a CMT» se elige el DWG de la oficina en una
+// Buscador de planos de la carpeta del año (Iván, 23/11/2026): en «Planos a corte» se elige el DWG de la oficina en una
 // lista paginada, sin arrastrarlo. Solo se lee: nunca se escribe en la carpeta compartida.
 
 export const POR_PAGINA = 10;

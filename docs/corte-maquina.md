@@ -17,7 +17,7 @@ Las descargas de la ficha usan `corte/cmt` y `corte/descargar/dxf` (en toldos, `
 
 Un corte pendiente de regenerar no se ofrece como nuevo corte listo. Los nombres descargados y los publicados en las máquinas son los del pedido, sin sufijo de entrega. El envío normal de producción utiliza el DXF actual aceptado del DWG o del generador, exactamente igual que el bot. La acción explícita de máquina en la ficha utiliza el original enviado si ya existe.
 
-La pestaña «DXF a CMT» y la entrada del diálogo «Soy» se conservan por indicación de Iván. Sus tarjetas ofrecen descargar el CMT y mandar ambos ficheros a la máquina. La ficha de cada pedido con corte ofrece las mismas acciones y la descarga del DXF original. Las dudas de una descarga CMT llegan en un 409 de texto llano.
+La pestaña «Planos a corte» (antes «DXF a CMT») y la entrada del diálogo «Soy» se conservan por indicación de Iván. Sus tarjetas ofrecen descargar el CMT y mandar ambos ficheros a la máquina. La ficha de cada pedido con corte ofrece las mismas acciones y la descarga del DXF original. Las dudas de una descarga CMT llegan en un 409 de texto llano.
 
 ## Configuración
 
@@ -58,7 +58,7 @@ Se guardan en Configuración. El interruptor del envío directo se enciende apar
 
 ## Revisión pendiente de Iván
 
-Cortar un pedido de prueba con el CMT de la web antes de encender el envío directo. Para pedidos antiguos cuyo DXF ya retiró el bot, recuperar el original y utilizar «DXF a CMT». La conversión sigue dependiendo de las dudas que señale el módulo CMT, que este cambio no modifica.
+Cortar un pedido de prueba con el CMT de la web antes de encender el envío directo. Para pedidos antiguos cuyo DXF ya retiró el bot, recuperar el original y utilizar «Planos a corte». La conversión sigue dependiendo de las dudas que señale el módulo CMT, que este cambio no modifica.
 
 ## Verificación realizada
 
