@@ -188,6 +188,16 @@ Las cinco dudas concretas están en [dudas-abiertas.md](./dudas-abiertas.md#comb
 
 ## Contraste con fabricación y expedición (24/11/2026)
 
+El [estudio de colocación de noviembre](./assa-combursa-colocacion-noviembre.md)
+incluye las variantes del 07-11, los lotes posteriores del 14, 21 y 28 y el
+31-10 como comparación histórica. Los tres lotes posteriores tienen franjas
+mixtas. En el 28-11 también se reconocen seis parejas y una única zona de
+palet. Esas observaciones se apoyan en archivos dudosos para fijar medidas:
+RPS todavía no da fin real para esas tres entregas en la foto del 24/11.
+Los huecos y los posibles grupos de canalones sirven para estudiar el orden
+y el aprovechamiento. Las fórmulas y autorizaciones siguen las pruebas de
+fabricación de cada referencia.
+
 Las [tablas generadas del contraste](./assa-combursa-contraste-0711.md) recogen las
 nueve referencias, todos los archivos de lote 2025–2026 disponibles en las dos
 carpetas, los pedidos y OF, las medidas, los rótulos, los consumos imputados y las
