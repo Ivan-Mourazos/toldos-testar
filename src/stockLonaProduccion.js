@@ -8,8 +8,7 @@ import { CODIGO_RPS } from './remolques/stockMaterial.ts';
 /** @typedef {import('./stockLona.js').FaltaLona} FaltaLona */
 /** @typedef {import('./stockLona.js').NecesidadLona} NecesidadLona */
 /** @typedef {{ pedido: string, entrega: number | null, cliente: string, ofs: string[], consultadoPor: string | null }} PedidoStockLona */
-/** @typedef {{ codigo: string, descripcion: string, necesita: number, disponible: number, ofs: string[] }} FaltaLonaCoordina */
-/** @typedef {PedidoStockLona & { lonas: NecesidadLona[], faltas: FaltaLonaCoordina[], consultado: string }} DatosStockLona */
+/** @typedef {PedidoStockLona & { lonas: NecesidadLona[], faltas: FaltaLona[], consultado: string }} DatosStockLona */
 /** @typedef {{ stock: { reset: () => void, getStock: (codigos: string[], opciones?: { ofs?: string[] }) => Promise<{ code: string, metros?: number, reservado?: number, reservadoPropio?: number, disponible: number }[]> },
  * coordina: { enviarStockLona: (datos: DatosStockLona) => Promise<{ ok: boolean, motivo?: string }> }, now?: () => Date,
  * resolverTela?: (codigo: string) => Promise<string | undefined> }} ServiciosStockLona */
@@ -86,13 +85,8 @@ async function informarStock(pedido, { lonas, consultado, faltas, avisos }, coor
       const ofs = fila.ofs.filter(of => deLaEntrega.has(of));
       return { ...fila, ofs: ofs.length ? ofs : [...pedido.ofs] };
     };
-    // CoordinaOT valida las claves exactas: la cuenta completa va cuando acepte los campos nuevos (Task 6).
-    const datos = {
-      ...pedido,
-      lonas: lonas.map(ajustar),
-      faltas: faltas.map(ajustar).map(({ codigo, descripcion, necesita, disponible, ofs }) => ({ codigo, descripcion, necesita, disponible, ofs })),
-      consultado,
-    };
+    // Cada falta lleva la cuenta (stock − reservado por otros = disponible) para el correo de CoordinaOT.
+    const datos = { ...pedido, lonas: lonas.map(ajustar), faltas: faltas.map(ajustar), consultado };
     // Un fallo al avisar tampoco invalida la comprobación ni los archivos generados.
     let motivo;
     try {

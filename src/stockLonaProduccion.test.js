@@ -25,11 +25,11 @@ it('consulta stock fresco y manda la entrega, los metros y las OF de cada lona a
   expect(stock.reset).toHaveBeenCalledBefore(stock.getStock);
   expect(stock.getStock).toHaveBeenCalledExactlyOnceWith([linea.codigo], { ofs: datos.ofs });
   expect(coordina.enviarStockLona).toHaveBeenCalledExactlyOnceWith({ ...datos,
-    consultado, faltas: [faltaCoordina], lonas: [linea],
+    consultado, faltas: [falta], lonas: [linea],
   });
 });
 
-it('pasa las OF de la entrega a getStock y recorta las faltas enviadas a CoordinaOT a las 5 claves actuales', async () => {
+it('pasa las OF de la entrega a getStock y manda a CoordinaOT la cuenta completa de cada falta', async () => {
   const stock = {
     reset: vi.fn(),
     getStock: vi.fn(async () => [{ code: linea.codigo, metros: 100, reservado: 81.25, reservadoPropio: 15, disponible: 18.75 }]),
@@ -39,8 +39,8 @@ it('pasa las OF de la entrega a getStock y recorta las faltas enviadas a Coordin
   expect(stock.getStock).toHaveBeenCalledExactlyOnceWith([linea.codigo], { ofs: datos.ofs });
   expect(resultado.faltas).toEqual([{ ...faltaCoordina, stock: 100, reservado: 81.25, reservadoPropio: 15 }]);
   const [enviado] = coordina.enviarStockLona.mock.calls[0];
-  expect(enviado.faltas).toEqual([faltaCoordina]);
-  expect(Object.keys(enviado.faltas[0]).sort()).toEqual(['codigo', 'descripcion', 'disponible', 'necesita', 'ofs']);
+  expect(enviado.faltas).toEqual([{ ...faltaCoordina, stock: 100, reservado: 81.25, reservadoPropio: 15 }]);
+  expect(Object.keys(enviado.faltas[0]).sort()).toEqual(['codigo', 'descripcion', 'disponible', 'necesita', 'ofs', 'reservado', 'reservadoPropio', 'stock']);
 });
 
 it.each(['corte', 'reserva'])('conserva el origen %s al aprobar los metros y OF propuestos', async origen => {
@@ -62,8 +62,8 @@ it('usa los metros corregidos, descarta las filas quitadas y añade telas con la
       { codigo: 'LAC900AZ10P300', ml: 5, origen: 'manual', ofs: datos.ofs, descripcion: expect.stringContaining('RAL5010') },
     ],
     faltas: [
-      { codigo: linea.codigo, necesita: 20.125, disponible: 18.75, ofs: linea.ofs, descripcion: expect.stringContaining('RAL7038') },
-      { codigo: 'LAC900AZ10P300', necesita: 5, disponible: 0, ofs: datos.ofs, descripcion: expect.stringContaining('RAL5010') },
+      { codigo: linea.codigo, necesita: 20.125, disponible: 18.75, stock: 18.75, reservado: 0, reservadoPropio: 0, ofs: linea.ofs, descripcion: expect.stringContaining('RAL7038') },
+      { codigo: 'LAC900AZ10P300', necesita: 5, disponible: 0, stock: 0, reservado: 0, reservadoPropio: 0, ofs: datos.ofs, descripcion: expect.stringContaining('RAL5010') },
     ],
   }));
 });
