@@ -83,5 +83,23 @@ describe('GET /api/catalog/fabrics/stock', () => {
     expect(res.statusCode).toBe(400);
     expect(loadRows).not.toHaveBeenCalled();
   });
+
+  it('getStock no resta las reservas de las OF indicadas', async () => {
+    const service = createFabricStockService({
+      loadRows: async () => [{ stockId: 7, code: 'X1', warehouseCode: '1', warehouseName: 'ARZÚA', roll: 'A', meters: 100, reserved: 30 }],
+      loadReserves: async () => [{ stockId: 7, of: '0234125', quantity: 30 }],
+    });
+    const [con] = await service.getStock(['X1'], { ofs: ['0234125'] });
+    const [sin] = await service.getStock(['X1']);
+    expect(con).toMatchObject({ disponible: 100, reservado: 0, reservadoPropio: 30 });
+    expect(sin).toMatchObject({ disponible: 70, reservado: 30, reservadoPropio: 0 });
+  });
+
+  it('la ruta pasa las OF de la consulta y descarta las que no son números', async () => {
+    const getStock = vi.fn(async () => []);
+    const res = { json: vi.fn(), status: vi.fn(() => res) };
+    await fabricStockHandler({ getStock })({ query: { codes: 'X1', ofs: '234125,abc;drop,0234124' } }, res);
+    expect(getStock).toHaveBeenCalledWith(['X1'], { ofs: ['0234125', '0234124'] });
+  });
 });
 
