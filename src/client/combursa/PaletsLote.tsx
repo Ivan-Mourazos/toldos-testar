@@ -65,7 +65,7 @@ export function PaletsLote({ lote, ocupado, sueltas, onPalet, onSueltas }: Props
       <header>
         <div><h2 id="combursa-listado-titulo">{seleccionado ? seleccionado.titulo : 'Piezas por palet'}</h2>
           <small>{resumen(seleccionado?.lineas ?? lineas)}</small>
-          {seleccionado && seleccionado.palets.length > 1 && <small>Cantidad conjunta · reparto pendiente</small>}
+          {seleccionado && seleccionado.palets.length > 1 && <small>Corte conjunto · bultos en expedición</small>}
         </div>
         {lote.paletsOficina && <span className="combursa-origen glass-chip">Plano de oficina</span>}
       </header>
@@ -77,7 +77,7 @@ export function PaletsLote({ lote, ocupado, sueltas, onPalet, onSueltas }: Props
           </tr></thead>
           {visibles.map(g => <tbody key={g.clave}>
             {!seleccionado && <tr className="combursa-grupo"><th scope="rowgroup" colSpan={8}>
-              <span>{g.titulo}</span><small>{g.palets.length > 1 ? 'Cantidad conjunta · reparto pendiente' : resumen(g.lineas)}</small>
+              <span>{g.titulo}</span><small>{g.palets.length > 1 ? 'Corte conjunto · bultos en expedición' : resumen(g.lineas)}</small>
             </th></tr>}
             {g.lineas.map(l => {
               const identificador = `${l.CodArticle} ${l.CodOrder} línea ${l.NumLine ?? '—'}`;

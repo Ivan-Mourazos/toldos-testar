@@ -50,4 +50,16 @@ describe('contraste de formas y herramientas, tolerancia de 1 mm', () => {
     expect(compararOperaciones(esperado, ops).coincide).toBe(false);
     expect(compararOperaciones(esperado, ops.slice(0, 2)).coincide).toBe(true);
   });
+
+  // Q-AS0711-05 (24/11/2026): las plantillas de 430129/430172 dejan rabillos de 3 mm en ROTULADOR
+  // (CM-PEN-Def en máquina), nunca en herramientas de corte (DISCO1/DISCO2/CUTTER).
+  it('tolera rabillos superpuestos de 3 mm en ROTULADOR pero rechaza trazos largos o cortes duplicados', () => {
+    const conRabillo = [...esperado, raya([10, 20], [13, 20], 'ROTULADOR')];
+    expect(compararOperaciones(esperado, conRabillo).coincide).toBe(true);
+    const conMarcaLargaDuplicada = [...esperado, raya([10, 20], [30, 20], 'ROTULADOR')];
+    expect(compararOperaciones(esperado, conMarcaLargaDuplicada).coincide).toBe(false);
+    const corteCortoEsperado = [raya([0, 0], [50, 0], 'CUTTER')];
+    const corteCortoDuplicado = [raya([0, 0], [50, 0], 'CUTTER'), raya([0, 0], [3, 0], 'CUTTER')];
+    expect(compararOperaciones(corteCortoEsperado, corteCortoDuplicado).coincide).toBe(false);
+  });
 });

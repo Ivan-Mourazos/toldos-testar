@@ -92,4 +92,27 @@ describe('paños unidos de dos en dos', () => {
     expect(grupos[0].panos.length * grupos[0].repeticiones).toBe(36);
     expect(grupos[0].panos.every(p => p.uniones.length === 1 && p.uniones[0] === 4010)).toBe(true);
   });
+
+  // Lotes 21-06-2025 y 03-10-2026 (420102-0021): tiras de tres paños de 3610 unidos (10830 × 666),
+  // con marcas de rotulador a 1/3 y 2/3, y rótulo a veces centrado sobre el paño intermedio.
+  it('lee tiras de tres paños unidos con dos marcas de rotulador y rótulo sobre el paño central', () => {
+    const modelo = [texto('HOK420102-0021', [4200, 2200]), texto('X3', [5400, 2500])];
+    for (const y of [666, 1332, 1998]) {
+      modelo.push(raya([0, y], [3610, y]), raya([3610, y], [7220, y]), raya([7220, y], [10830, y]));
+    }
+    modelo.push(
+      raya([0, 0], [0, 1998]),
+      raya([10830, 0], [10830, 1998]),
+      raya([3610, 20], [3610, 1998], 'ROTULADOR'),
+      raya([7220, 20], [7220, 1998], 'ROTULADOR'),
+    );
+    const grupos = extraerPanos(modelo);
+    expect(grupos).toHaveLength(1);
+    expect(grupos[0].codigo).toBe('420102-0021');
+    expect(grupos[0].repeticiones).toBe(3);
+    expect(grupos[0].panos.map(p => p.medidasMm)).toEqual(Array(9).fill([3610, 666]));
+    expect(grupos[0].panos.length * grupos[0].repeticiones).toBe(27);
+    const porX0 = grupos[0].panos.filter(p => p.caja.y0 === 0).sort((a, b) => a.caja.x0 - b.caja.x0);
+    expect(porX0.map(p => p.uniones)).toEqual([[3610], [3610, 7220], [7220]]);
+  });
 });
