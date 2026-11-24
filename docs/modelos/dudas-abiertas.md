@@ -168,39 +168,52 @@ derecha, otras pilas de tres y de una unidad. RPS pide 18. ¿Son alternativas de
 cortar también esas sueltas? Mientras tanto, la web conserva todos los dibujos y rótulos del definitivo,
 pero no da por demostradas 22 unidades ni las convierte en stock.
 
-**Q-AS0711-02 · contrastada con RPS (24/11/2026).** Tamara indicó que se mirara en RPS.
-La lista de expedición PL0000793 tiene las 54 unidades de AR.26.05142/4 en el
-palet 5 y el DWG dice «PALET 5 y 6». ¿El 6 fue un grupo de corte que se juntó
-después en el palet 5? Si hay que separar la preparación de las 54 unidades,
-¿dónde está anotada la cantidad de cada grupo? La revisión conserva «5 y 6».
+**Q-AS0711-02 · resuelta por pedidos anteriores (24/11/2026).** En corte nunca se parte una línea por palet: siempre se corta entera en un solo grupo y el reparto en bultos se hace solo en expedición (sin fórmula fija: 90 uds de `420150-0090` salieron `45+45`, `65+25` y `70+20`). En el 07-11 (`PL0000793`), las 54 uds de `AR.26.05142/4` entraron completas en el palet 5; el «PALET 5 y 6» del plano era previsión de volumen. La pantalla (`PaletsLote.tsx`) sustituye «reparto pendiente» por «Corte conjunto · bultos en expedición». Script: `scripts/assa-investigacion/analizar-palets-historico.mjs` (34 líneas multi-palet en RPS 2021–2026 y 9 lotes en oficina 2025–2026).
 
-**Q-AS0711-03 · sigue abierta (Tamara, 05/11/2026: «ni idea»).**  En las cortinas y los accesorios de lona de 1, 2 y 3 mm, ¿qué cantidad de cada pieza
-corresponde a una unidad y qué repetición se aplica al juego? Por ejemplo, la superior 410129-0117 lleva
-«X8» para un pedido de 27. Mientras tanto, el papel nuevo muestra las cantidades de RPS y los rótulos
-de repetición por separado: no afirma que ocho dibujos sean ocho cortinas ni inventa la cuenta restante.
+| Lote fabricado | Pedido / referencia | Uds | Corte | Expedición / nota de palets |
+| --- | --- | --- | --- | --- |
+| 18-01-2025 | AR.24.06097/3 · `420150-0002` | 81 | Conjunto `X27` | «16 UDS PALET 1» / «65 UDS PALET 2» |
+| 08-03-2025 | AR.25.00792/2 · `420150-0090` | 84 | Conjunto `x28` | «PALET 1 24 UD» / «PALET 2 60 UD» |
+| 11-04-2026 | `410134-0002` | 45 | Conjunto `x22` | «PALET 3/4/5 15 uds» |
+| 22-08-2026 | AR.26.03639/3 · `420150-0090` | 90 | Conjunto `x30` | 45 + 45 en P2 y P3 (oficina y RPS) |
+| 07-11-2026 | AR.26.05142/4 · `410130-0175` | 54 | Conjunto | Plano «PALET 5 y 6»; `PL0000793` todo en P5 (54/54) |
 
-**Contraste del 24/11/2026.** El 07-11 de la 410129-0117 lleva «X8» junto a
-PLASTEL y «X5» junto a 3 mm para las 27 unidades. ¿Qué piezas salen de cada
-repetición y qué sueltas completan la cuenta? Para la 410130-0175, ¿cuándo se
-usa PVC de 650 g o de 900 g, y cuántas piezas de cada material lleva un
-lateral? Para 410170-0001 y 410171-0001, ¿cuántas solapas de 1 mm y cuántas
-piezas de 2 mm van en cada mano? Los consumos RPS son por OF y las cantidades
-de los rótulos cambian entre zonas del programa.
+**Q-AS0711-03 · resuelta por pedidos anteriores (24/11/2026).**
+- **PVC 650 g vs 900 g (`410130-0175` y familia `410130`):** nunca se usa PVC 650 g (0 imputaciones en 44 líneas RPS 2021–2026; plano ASSA ABLOY `OK410130`: `0,9 mm / 850 g/m²`; 100 % de los DWG de oficina y maqcorte dicen «PVC 900 GR NEGRO»; RPS imputa `LAC900NE05P300`, `PANAMANE05P300` o `RESTOPVC`). La mención a «650 g» en la nota del 03/11 era errata.
+- **Piezas por 1 unidad:**
+  - `410129-0117`: **1 cuerpo PLASTEL** (`2000 × 900`, 4×Ø40) + **2 tapas PLASTEL** (`320 × 340`) + **1 frente 3 mm** (`2000 × 300`). En el 07-11 (27 uds), el «X8» sobre los 8 cuerpos es errata por **«X3»** (`3 × 8 + 3 = 27`, confirmado por RPS `30,70 m` frente a `30,60 m` teóricos); 3 mm = `5 × X5 + 2 = 27`.
+  - `410130-0175`: **1 cuerpo PLASTEL** (`2300 × 900`) + **2 tapas PVC 900 g negro** (`324,1 × 340`, 1 lisa + 1 con 6×Ø40) + **1 frente 3 mm** (`2250 × 300`). En el 07-11 (54 uds), el «x2» sobre los 2 cuerpos es errata por **«x27»** (`27 × 2 = 54`); maqcorte corta 112 tapas (54 pares + 2 relleno, RPS `4,70 m`) y `5 × x10 + 4 = 54` frentes de 3 mm.
+  - `410170-0001` (der.) y `410171-0001` (izq.): **1 cuerpo 2 mm** (`2600 × 1116`) + **2 tapas 2 mm** (`370 × 447,75`, 1 lisa + 1 con 6×Ø40, en bloque `2974 × 1116` repetido `× uds`) + **1 tira 1 mm** (`2600 × 416,2`) + **12 solapas 1 mm** (`350 × 400`: **8 sin marca + 4 con marca** de parking guide; las 22/mano del 07-11 son caso aislado).
+- Las cuatro cortinas siguen **a mano** en la web porque mezclan 2–3 materiales distintos (la web genera solo PLASTEL 2040). Scripts: `scripts/assa-investigacion/analizar-rps-cortinas.mjs`, `analizar-cortinas-0711.mjs`, `verificar-cuentas-q03.mjs` e `inspeccion-exacta-q03.mjs`.
 
-**Q-AS0711-04.** Para cerrar el largo real de rollo del lote completo, falta saber qué alternativas de
-corte se usan y qué repeticiones/materiales corresponden a los juegos manuales. Mientras tanto, se
-conserva la colocación exacta de oficina; la web solo puede sumar de forma certificada los programas
-automáticos de sus 16 líneas, 786,975 m. Esa suma parcial no es el consumo total del lote.
+| Referencia | Lotes fabricados contrastados (2023–2026) | Piezas por unidad verificadas |
+| --- | --- | --- |
+| `410129-0117` | 26-07-2025 (12), 13-09-2025 (6), 07-11-2026 (27) | PLASTEL: 1 cuerpo + 2 tapas · 3 mm: 1 frente |
+| `410130-0175` | 09-08-2025 (24), 13-09-2025 (12), 07-11-2026 (54) | PLASTEL: 1 cuerpo · PVC 900 g: 2 tapas · 3 mm: 1 frente |
+| `410170-0001` / `410171-0001` | 28-07-2023 (10+10), 18-08-2023 (10+10), 08-06-2024 (16+16), 23-08-2025 (1+1), 25-07-2026 (26+26), 07-11-2026 (1+1) | 2 mm: 1 cuerpo + 2 tapas · 1 mm: 1 tira + 12 solapas (8 lisas + 4 marcadas) |
 
-**Q-AS0711-05 · contrastada (24/11/2026).** Siguen a mano las nueve referencias.
-Para 420102-0021, ¿cuándo se envarillan tres seguidas como el 21-06 y el 03-10 y qué
-indica que hay que cortar las cuatro sueltas adicionales del 07-11? Para
-430129-0002, 430172-0005 y 430172-0034, ¿las pasadas superpuestas de los
-cuerpos se ejecutan dos veces en máquina o vienen de copias del plano?
-420148-0040 tiene un solo lote fabricado contrastable. Las cuatro referencias
-de cortinas y laterales especiales quedan pendientes de las cantidades de
-Q-AS0711-03. El 07-11 reproduce sus dibujos exactos. Si cambian referencia,
-descripción, cantidad, OF, palet u opción de sueltas, se retira esa revisión.
+**Q-AS0711-04 · resuelta por pedidos anteriores (24/11/2026).** Con las 25 OF del 07-11 ya fabricadas (`finReal = 2026-11-20`) y resueltas Q-02, Q-03 y Q-05 (`scripts/assa-investigacion/consumo-lote-0711.mjs`), queda cerrado el largo real de rollo del lote completo separado por material:
+
+| Material (ancho rollo) | Cálculo teórico 07-11 | Imputado real en RPS (25 OF) |
+| --- | --- | --- |
+| PLASTEL 8800 TE62 (2040 mm) | **956,153 m** (20 automáticas web `853,398 m` + `420148-0040` `10,055 m` + cortinas `92,700 m`; `963,266 m` con piezas extra del 07-11) | **920,79 m** (`888,70 m` rollo + `32,09 m` restos; ahorro ~35 m por filas mixtas) |
+| Lona 3 mm (1600 mm) | **36,750 m** cortinas (`0117`: `12,000` + `0175`: `24,750`) + refuerzos de canalones | **56,05 m** (`53,05 m` rollo + `3,00 m` restos) |
+| PVC 900 g negro (3000 mm) | **4,537 m** (`410130-0175`, 112 tapas) | **4,70 m** (`PANAMANE05P300`) |
+| Lona 2 mm (2100 mm) | **5,948 m** (`410170-0001` + `410171-0001`, `2 × 2,974 m`) | **6,40 m** (`MUCA76NEGRP210`) |
+| Lona 1 / 1,2 mm (1500 mm) | **8,000 m** por separado (`2 × [2,600 + 1,400]`) | **1,09 m** (`RESTOMUELLEC1,2`, cortado de restos) |
+
+**Q-AS0711-05 · resuelta por pedidos anteriores (24/11/2026) para `420102-0021`, `430129-0002`, `430172-0005` y `430172-0034`; `420148-0040` sigue a mano por falta de histórico.**
+- **Pasadas superpuestas (`430129-0002`, `430172-0005`, `430172-0034`):** analizados 55 lotes DXF (107 paños) y 24 lotes CMT legibles en máquina (36 paños) con `scripts/assa-investigacion/analizar-cmt-duplicados.mjs`, hay **0 pasadas dobles de corte** (`DISCO1`, `DISCO2` ni `CUTTER`). El 100 % son rabillos de **3 mm solo en `ROTULADOR`** (`CM-PEN-Def` en CMT) heredados de las plantillas de oficina. `compararOperaciones()` tolera rabillos ≤ 3,5 mm solo en `ROTULADOR` y mantiene estricto cualquier trazo largo o herramienta de corte. Además `430129-0002` valida su juego de canalón en 15/16 lotes (incluido el 07-11).
+- **`420102-0021` (triples y +4 sueltas):** en 30 lotes de `0021` y 1.134 filas de toda la familia `420102` (`scripts/assa-investigacion/analizar-420102-0021.mjs`), manda **en parejas de 2**; las tiras de 3 solo aparecen en el 4,6 % de filas (2 de 30 lotes en `0021`: `21-06-2025` y `03-10-2026`), sin regla fija. `extraerPanos()` ya lee tiras triples de 3 paños, validando la referencia hasta el último lote. Las +4 sueltas del 07-11 (`22` vs `18` RPS) son un caso único (`1/30` lotes, sin nota en pedido ni OF): la web sigue cortando la cantidad de RPS en parejas de 2.
+- **Qué queda a mano en la web (5 de las 9 anteriores):** `420148-0040` sigue abierta porque solo tiene **un lote fabricado** en todo 2021–2026 (`AR.26.05240/3`, `07-11-2026`, 1 ud; cuerpo `10055 × 961 mm` compatible, pero falta que se repita en varios lotes fabricados); y las 4 cortinas (`410129-0117`, `410130-0175`, `410170-0001`, `410171-0001`) quedan a mano por ser multimaterial (despiece ya cerrado en Q-AS0711-03). El 07-11 pasa de 9 a **5 líneas a mano** y conserva la revisión exacta de oficina si no cambian sus datos.
+
+| Referencia | Lotes contrastados (geometría / líneas) | Canalón | CMT en máquina sin dobles de corte | Estado en web |
+| --- | --- | --- | --- | --- |
+| `420102-0021` | 29 / 32 (últimos 2026: `01-08`, `15-08`, `03-10`, `07-11`) | No lleva | — | **Validada** (parejas de 2) |
+| `430129-0002` | 14 / 17 (últimos 2026: `18-07`, `26-09`, `07-11`) | 15 / 16 | 4 / 4 lotes | **Validada** |
+| `430172-0005` | 27 / 32 (últimos 2026: `03-10`, `17-10`, `24-10`, `07-11`) | 28 / 30 | 15 / 15 lotes | **Validada** |
+| `430172-0034` | 9 / 13 (últimos 2026: `15-08`, `26-09`, `07-11`) | 11 / 12 | 5 / 5 lotes | **Validada** |
+| `420148-0040` | 1 / 1 (`07-11-2026`, 1 ud) | No lleva | — | **A mano** (un solo lote) |
 
 ## Embudo · contraste del planteamiento CAD (03/11/2026)
 
