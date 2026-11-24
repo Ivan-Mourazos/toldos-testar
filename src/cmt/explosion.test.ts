@@ -36,6 +36,10 @@ describe('descomposición para corte por semántica CAD',()=>{
   expect(explode('AA BB',[[41,'40']]).map(t=>value(t,1))).toEqual(['AA','BB']);
   expect(explode('AA\\~BB',[[41,'40']]).map(t=>value(t,1))).toEqual(['AA\u00a0BB']);
  });
+ it('AR2605701: el «Embedded Object» de ZWCAD (101) repite 11/21 con el punto de inserción y no gira el texto',()=>{
+  const t=explode('ATRÁS',[[71,'5'],[11,'-1.0'],[21,'3.67e-16'],[101,'Embedded Object'],[70,'1'],[10,'-1.0'],[20,'3.67e-16'],[11,'-5597.52'],[21,'-1338.96']]);
+  expect(((number(t[0],50)%360)+360)%360).toBeCloseTo(180,6);
+ });
  it('rota todo el desplazamiento a un ángulo libre y acepta dirección sin normalizar',()=>{
   const t=explode('A',[[11,'2'],[21,'2']])[0];
   expect(number(t,50)).toBeCloseTo(45);expect(number(t,10)).toBeCloseTo(12/Math.sqrt(2));

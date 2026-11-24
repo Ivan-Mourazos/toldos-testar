@@ -51,11 +51,12 @@ export function interpretarMtext(raw:string,alto:number,initial:Partial<Formato>
  }
  return {lineas,alineaciones,rayas,desconocidos};
 }
-/** El último dato 50 o vector 11/21 manda según el orden del registro DXF. */
+/** El último dato 50 o vector 11/21 manda según el orden del registro DXF.
+ * Se para en el «Embedded Object» (101) de ZWCAD/AutoCAD: allí 11/21 es el punto de inserción, no la dirección (AR2605701). */
 export function giroMtext(e:EntidadDxf):number {
  let angle=0;
  for(let i=0;i<e.pairs.length;i++){
-  const [code,v]=e.pairs[i];if(code===50)angle=Number(v);
+  const [code,v]=e.pairs[i];if(code===101)break;if(code===50)angle=Number(v);
   if(code===11){const y=e.pairs.slice(i+1).find(([c])=>c===21)?.[1];if(y!==undefined&&Math.hypot(Number(v),Number(y)))angle=Math.atan2(Number(y),Number(v))*180/Math.PI;}
  }
  return angle;
