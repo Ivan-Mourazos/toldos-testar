@@ -1,4 +1,22 @@
 # Dudas abiertas
+## Enrollado de puertas con tubos interiores · 12/11/2026
+
+Iván confirma eje Ø80, LAC900, refuerzos Ø30 o Ø42 y entradas orientadas hacia el eje.
+El arranque se estima en tres vueltas, sin cota fija. Se busca repartir los tubos alrededor
+sin pisarlos. [Estudio geométrico preliminar](./puertas-enrollado-tubos.md).
+
+- **Q-ENR-P01:** espesor real de lona, abultamiento de la entrada y referencia de su eje pendientes de medir.
+- **Q-ENR-P02:** recorrido y contacto de la lona pendientes de contrastar con un enrollado físico.
+- **Q-ENR-P03:** pendiente incorporar crecimiento entre tubos, comprobar dos/tres/cuatro vueltas iniciales y continuar el patrón si se supera el primer grupo.
+- **Q-ENR-P04:** pendiente confirmar la separación admisible entre refuerzos por funcionamiento y resistencia. El ajuste geométrico no certifica esa condición.
+
+Los cinco tubos de Ø30 a 72° y cuatro de Ø42 a 90° son candidatos del modelo ideal;
+sus separaciones calculadas todavía no son cotas de fabricación. La web conserva las medidas del pedido.
+
+Iván precisa después que el **alto es entrada** y deben adaptarse la cantidad y las posiciones
+de E.T. Se preparan ejemplos CAD de 250, 300 y 400 cm con el generador habitual, todavía
+provisionales; el rango de búsqueda del prototipo no es una altura máxima de fabricación.
+
 
 ## Saco confeccionado de Portanova · 17/11/2026
 
