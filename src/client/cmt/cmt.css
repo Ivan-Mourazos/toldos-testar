@@ -1,113 +1,131 @@
-.cmt-vista { display: grid; gap: 16px; color: var(--text); }
-.cmt-introduccion, .cmt-acciones, .cmt-entrada, .cmt-fichero-cabecera { display: flex; align-items: center; gap: 12px; }
-.cmt-introduccion { justify-content: space-between; }
-.cmt-introduccion > p { margin: 0; color: var(--text-muted); font-size: 14px; line-height: 1.6; }
-.cmt-acciones { flex-shrink: 0; }
-.cmt-entrada { justify-content: space-between; padding: 24px; border: 2px dashed var(--control-border); border-radius: 12px; }
-.cmt-entrada strong { font-size: 16px; }
-.cmt-entrada p { margin: 6px 0 0; color: var(--text-muted); font-size: 13px; }
-.cmt-entrada.cmt-arrastrando { border-color: var(--control-active-border); background: var(--surface-2); }
-.cmt-progreso { margin: 0; color: var(--text-muted); font-size: 13px; }
-.cmt-resultados { display: grid; gap: 16px; }
-.cmt-fichero { padding: 20px 24px; border-radius: 12px; min-width: 0; }
+/* Planos a corte como mesa de trabajo (Iván, 24/11/2026): a la izquierda se eligen los planos y a la derecha está solo el
+   elegido. Ocupa el alto de la ventana bajo la cabecera (58 px), la barra de la pestaña (36 + 18 px) y el margen de abajo
+   (44 px); cada columna desplaza lo suyo y la página no crece al abrir planos. */
+.cmt-vista { color: var(--text); }
+.cmt-mesa { display: grid; grid-template-columns: minmax(320px, 360px) minmax(0, 1fr); gap: 16px;
+  height: max(540px, calc(100dvh - var(--topnav-height) - 98px)); }
+.cmt-lateral { display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  scrollbar-gutter: stable; padding-right: 2px; }
+.cmt-panel { display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: 18px 22px; border-radius: 14px; }
+.cmt-panel > .cmt-error { margin: 0 0 10px; }
+
+/* Zona de arrastrar: compacta; se resalta al arrastrar ficheros a cualquier parte de la mesa. */
+.cmt-entrada { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1.5px dashed var(--control-border);
+  border-radius: 12px; transition: border-color 120ms ease, background-color 120ms ease; }
+.cmt-entrada > svg { flex: none; width: 20px; height: 20px; color: var(--text-muted); }
+.cmt-entrada > div { flex: 1; min-width: 0; }
+.cmt-entrada strong { font-size: 14px; }
+.cmt-entrada p { margin: 2px 0 0; color: var(--text-muted); font-size: 12px; line-height: 1.4; }
+.cmt-entrada button { flex: none; }
+.cmt-mesa.cmt-arrastrando .cmt-entrada { border-color: var(--control-active-border); background: var(--surface-2); }
+
+/* Planos abiertos: uno por línea, el elegido marcado; la × lo cierra. */
+.cmt-abiertos { display: grid; gap: 8px; padding: 14px; border-radius: 14px; }
+.cmt-abiertos-cabecera { display: flex; align-items: center; gap: 10px; }
+.cmt-abiertos-cabecera > div { flex: 1; min-width: 0; }
+.cmt-abiertos-cabecera strong { font-size: 15px; }
+.cmt-abiertos-cabecera p { margin: 2px 0 0; color: var(--text-muted); font-size: 12px; }
+.cmt-abiertos ul { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.cmt-abiertos li { display: flex; align-items: center; gap: 4px; border-radius: 10px; transition: background-color 120ms ease; }
+.cmt-abiertos li:hover { background: var(--hero-relleno, var(--surface-2)); }
+.cmt-abiertos li.cmt-abierto-activo { background: var(--hero-relleno-pulsado, var(--surface-2)); box-shadow: inset 3px 0 0 var(--tgm-yellow, var(--focus)); }
+.cmt-abierto { display: grid; flex: 1; min-width: 0; gap: 4px; justify-items: start; padding: 8px 10px; border: 0; border-radius: 10px;
+  background: transparent; color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.cmt-abierto strong { font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
+.cmt-abierto:focus-visible, .cmt-cerrar:focus-visible { outline: 2px solid var(--hero-anillo, var(--focus, currentColor)); outline-offset: 1px; }
+.cmt-cerrar { display: grid; place-items: center; flex: none; width: 28px; height: 28px; margin-right: 4px; padding: 0; border: 0;
+  border-radius: 8px; background: transparent; color: var(--text-muted); cursor: pointer; }
+.cmt-cerrar:hover:not(:disabled) { background: var(--hero-relleno-pulsado, var(--surface-2)); color: var(--text); }
+.cmt-cerrar:disabled { cursor: progress; opacity: 0.4; }
+.cmt-cerrar svg { width: 16px; height: 16px; }
+
+/* Sin plano elegido. */
+.cmt-vacio { display: grid; place-content: center; justify-items: center; gap: 8px; height: 100%; padding: 24px; text-align: center; }
+.cmt-vacio svg { width: 36px; height: 36px; color: var(--text-muted); }
+.cmt-vacio strong { font-size: 16px; }
+.cmt-vacio p { max-width: 460px; margin: 0; color: var(--text-muted); font-size: 14px; line-height: 1.6; }
+
+/* El plano elegido: cabecera con las acciones, la vista previa estirada al alto que queda y el pie. */
+.cmt-fichero { display: flex; flex-direction: column; gap: 12px; flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.cmt-fichero-cabecera { display: flex; align-items: flex-start; gap: 16px; }
 .cmt-nombre { flex: 1; min-width: 0; }
-.cmt-nombre h3 { margin: 0; overflow-wrap: anywhere; font-size: 16px; }
-.cmt-nombre > span { display: block; margin-top: 4px; color: var(--text-muted); font-size: 13px; }
-.cmt-estado { padding: 4px 10px; border: 1px solid; border-radius: 6px; font-size: 12px; white-space: nowrap; }
-.cmt-resumen { display: flex; gap: 24px; margin-top: 14px; color: var(--text-muted); font-size: 13px; }
-.cmt-resumen strong { color: var(--text); font-weight: 600; }
-.cmt-herramientas { display: flex; flex-wrap: wrap; gap: 12px 32px; margin: 16px 0 0; padding: 14px 0 0; border-top: 1px solid var(--border); }
-.cmt-herramientas > div { display: flex; align-items: baseline; gap: 10px; }
-.cmt-herramientas dt { font-size: 13px; color: var(--text-muted); }
-.cmt-herramientas dd { margin: 0; font-family: var(--font-mono), monospace; font-size: 13px; }
-.cmt-notas { margin-top: 16px; font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+.cmt-nombre h3 { margin: 0; overflow-wrap: anywhere; font-size: 18px; line-height: 1.3; }
+.cmt-resumen { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; margin: 6px 0 0; color: var(--text-muted); font-size: 13px; }
+.cmt-resumen strong { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+.cmt-fichero-acciones { display: flex; align-items: flex-start; gap: 10px; flex: none; }
+.cmt-fichero-acciones .cmt-mandar { justify-items: end; max-width: 300px; text-align: right; }
+.cmt-estado { padding: 3px 9px; border: 1px solid; border-radius: 6px; font-size: 12px; white-space: nowrap; }
+.cmt-enviado, .cmt-cargando, .cmt-progreso { margin: 0; color: var(--text-muted); font-size: 13px; }
+.cmt-cargando { display: grid; place-items: center; flex: 1; }
+.cmt-error { margin: 0; color: var(--tramo-ajustado); font-size: 14px; }
+.cmt-notas { margin: 0; font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
 .cmt-notas h4 { margin: 0; font-size: 13px; font-weight: 600; }
 .cmt-notas ul { margin: 6px 0 0; padding-left: 20px; }
-.cmt-dudas { padding: 14px 16px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--surface-2); }
-.cmt-dudas button { margin-top: 12px; }
-.cmt-error { margin: 12px 0 0; color: var(--tramo-ajustado); font-size: 14px; }
+.cmt-notas summary { color: var(--text-muted); cursor: pointer; }
+.cmt-dudas { padding: 12px 16px; border: 1px solid var(--border-strong); border-radius: 10px; background: var(--surface-2); }
+.cmt-dudas button { margin-top: 10px; }
+.cmt-fichero-pie { display: grid; gap: 10px; padding-top: 12px; border-top: 1px solid var(--border); }
+.cmt-herramientas { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 0; }
+.cmt-herramientas > div { display: flex; align-items: baseline; gap: 8px; }
+.cmt-herramientas dt { font-size: 13px; color: var(--text-muted); }
+.cmt-herramientas dd { margin: 0; font-family: var(--font-mono), monospace; font-size: 13px; }
 
-.cmt-revision { display: grid; gap: 18px; margin-top: 16px; align-items: start; }
-.cmt-revision-decisiones { grid-template-columns: minmax(0, 1fr) minmax(320px, 38%); }
-.cmt-vista-corte, .cmt-pendientes { margin: 0; min-width: 0; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); }
-.cmt-vista-corte { padding: 12px 16px; }
+/* Vista previa y decisiones: llenan el alto libre del panel; las decisiones desplazan lo suyo si no caben. */
+.cmt-revision { display: grid; gap: 16px; flex: 1 1 auto; min-height: 320px; }
+.cmt-revision-decisiones { grid-template-columns: minmax(0, 1fr) minmax(300px, 34%); }
+.cmt-vista-corte, .cmt-pendientes { margin: 0; min-width: 0; min-height: 0; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); }
+.cmt-vista-corte { display: flex; flex-direction: column; padding: 12px 16px; --cmt-solape: #b25507; --cmt-tinta: #000; }
+:root[data-theme="dark"] .cmt-vista-corte { --cmt-solape: #f0a64c; --cmt-tinta: #fff; }
 .cmt-vista-corte figcaption, .cmt-pendientes h4 { margin: 0; font-size: 14px; font-weight: 600; }
-.cmt-vista-corte svg { display: block; width: 100%; height: clamp(220px, 35vh, 360px); margin: 8px 0; }
+.cmt-vista-corte svg { display: block; flex: 1 1 0; width: 100%; min-height: 220px; height: auto; margin: 8px 0; }
 .cmt-trazo { fill: none; stroke: var(--cmt-color, var(--cmt-tinta)); stroke-width: 1.65; }
+.cmt-letra { fill: var(--cmt-color, var(--cmt-tinta)); stroke: none; font-family: Arial, Helvetica, sans-serif; white-space: pre; }
 .cmt-marco, .cmt-zona { fill: none; stroke: var(--text-muted); stroke-width: 1.25; stroke-dasharray: 4 3; }
 .cmt-marco-elegido { stroke: var(--focus, var(--text)); stroke-width: 2.5; }
 .cmt-zona { stroke: var(--cmt-solape); stroke-width: 2; }
-.cmt-vista-corte { --cmt-solape: #b25507; --cmt-tinta: #000; }
 .cmt-cruce { --cmt-color: var(--cmt-solape); stroke-dasharray: 6 3; stroke-width: 2.5; }
 .cmt-solape { --cmt-color: var(--cmt-solape); }
-:root[data-theme="dark"] .cmt-vista-corte { --cmt-solape: #f0a64c; --cmt-tinta: #fff; }
 .cmt-vista-corte ul { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0; padding: 0; list-style: none; color: var(--text-muted); font-size: 12px; }
 .cmt-vista-corte li { display: flex; align-items: center; gap: 6px; }
 .cmt-vista-corte li i { width: 14px; height: 2px; background: var(--cmt-color, var(--cmt-tinta)); }
-.cmt-pendientes { padding: 14px 16px; display: grid; gap: 14px; justify-items: start; font-size: 13px; }
-.cmt-pendientes fieldset { display: grid; width: 100%; min-width: 0; gap: 8px; padding: 8px 0 0; margin: 0; border: 0; border-top: 1px solid var(--border); }
-.cmt-pendientes legend { font-weight: 600; padding: 0 7px 0 0; }
-.cmt-opcion { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-.cmt-opcion input { margin: 0; }
-.cmt-capa { display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 8px; overflow-wrap: anywhere; }
-.cmt-muestra { width: 12px; height: 12px; border-radius: 3px; border: 1px solid var(--border-strong); }
-.cmt-capa small { display: block; color: var(--text-muted); }
-.cmt-capa select, .cmt-tabla-capas select, .cmt-tabla-capas input { width: 100%; min-width: 0; padding: 7px 8px; border: 1px solid var(--control-border); border-radius: 6px; background: var(--surface-1); color: var(--text); font: inherit; }
-.cmt-confirmar, .cmt-resultado-acciones { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; }
-.cmt-confirmar small, .cmt-notas summary { color: var(--text-muted); }
-.cmt-notas summary { cursor: pointer; }
-.cmt-resultado-acciones { margin-top: 14px; }
-.cmt-resultado-acciones .cmt-mandar { margin-top: 0; }
+/* Color del plano en la vista previa (VistaPreparacion): el del CAD, retocado para que se lea en cada fondo. */
+.cmt-vista-corte .cmt-plano { --cmt-color: var(--cmt-claro); }
+:root[data-theme="dark"] .cmt-vista-corte .cmt-plano { --cmt-color: var(--cmt-oscuro); }
 
+/* Decisiones con los controles de la web (SegmentedField y SelectField); la pregunta se lee a tamaño normal. */
+.cmt-pendientes { display: flex; flex-direction: column; align-items: stretch; gap: 14px; padding: 14px 16px; overflow-y: auto; font-size: 13px; }
+.cmt-pendientes fieldset { display: grid; min-width: 0; gap: 10px; margin: 0; padding: 12px 0 0; border: 0; border-top: 1px solid var(--border); }
+.cmt-pendientes legend { float: left; width: 100%; padding: 0; font-weight: 600; }
+.cmt-pendientes .segmented-field > span { color: var(--text); font-size: 13px; font-weight: 600; line-height: 1.4; }
+.cmt-pendientes .segmented-control { display: flex; flex-wrap: wrap; width: fit-content; max-width: 100%; }
+.cmt-pendientes .segmented-option { white-space: normal; text-align: center; }
+.cmt-pendientes > .primary-button { align-self: flex-start; }
+.cmt-capa { display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(130px, 46%); align-items: center; gap: 10px; overflow-wrap: anywhere; }
+.cmt-capa small { display: block; color: var(--text-muted); }
+.cmt-muestra { width: 12px; height: 12px; border-radius: 3px; border: 1px solid var(--border-strong); }
+/* La etiqueta del desplegable se lee con el lector de pantalla; a la vista ya está el nombre de la capa al lado. */
+:is(.cmt-capa, .cmt-tabla-capas) .select-field > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.cmt-confirmar, .cmt-resultado-acciones { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; }
+.cmt-confirmar small { color: var(--text-muted); }
+
+/* Capas del corte en Configuración. */
 .cmt-config-capas { margin-top: 24px; padding: 18px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); }
 .cmt-config-capas h3 { margin: 0; font-size: 15px; }
 .cmt-config-capas > p { margin: 8px 0 16px; color: var(--text-muted); font-size: 13px; }
-.cmt-tabla-capas { width: 100%; max-width: 780px; border-collapse: collapse; font-size: 13px; }
+.cmt-capas-campos { display: grid; gap: 14px; min-width: 0; max-width: 820px; margin: 0; padding: 0; border: 0; }
+.cmt-tabla-capas { width: 100%; border-collapse: collapse; font-size: 13px; }
 .cmt-tabla-capas :is(th, td) { padding: 6px 10px 6px 0; border-bottom: 1px solid var(--border); text-align: left; }
 .cmt-tabla-capas th { font-weight: 600; overflow-wrap: anywhere; }
 .cmt-tabla-capas td:nth-child(2) { width: 42%; }
 .cmt-tabla-capas td:last-child { width: 1%; }
 .cmt-tabla-capas td:last-child button { white-space: nowrap; }
-.cmt-capa-nueva { display: grid; grid-template-columns: minmax(160px, 1fr) minmax(180px, 1fr) auto; align-items: end; gap: 12px; margin-top: 14px; }
-.cmt-capa-nueva label { display: grid; gap: 5px; font-weight: 500; }
+.cmt-capa-nueva { display: grid; grid-template-columns: minmax(160px, 1fr) minmax(180px, 1fr) auto; align-items: end; gap: 12px; }
+.cmt-config-capas .cmt-resultado-acciones { margin-top: 14px; }
 
-.cmt-mandar { display: grid; justify-items: start; gap: 6px; margin-top: 12px; }
+/* Botón de mandar a la máquina (CorteMaquina.tsx), también en los pedidos. */
+.cmt-mandar { display: grid; justify-items: start; gap: 6px; }
 .cmt-mandar small { color: var(--text-muted); font-size: 13px; line-height: 1.5; }
 .corte-maquina-acciones { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; margin: 16px 0; }
-.corte-maquina-acciones .cmt-revision { display: grid; gap: 18px; margin-top: 16px; align-items: start; }
-.cmt-revision-decisiones { grid-template-columns: minmax(0, 1fr) minmax(320px, 38%); }
-.cmt-vista-corte, .cmt-pendientes { margin: 0; min-width: 0; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); }
-.cmt-vista-corte { padding: 12px 16px; }
-.cmt-vista-corte figcaption, .cmt-pendientes h4 { margin: 0; font-size: 14px; font-weight: 600; }
-.cmt-vista-corte svg { display: block; width: 100%; height: clamp(220px, 35vh, 360px); margin: 8px 0; }
-.cmt-trazo { fill: none; stroke: var(--cmt-color, var(--cmt-tinta)); stroke-width: 1.65; }
-.cmt-marco, .cmt-zona { fill: none; stroke: var(--text-muted); stroke-width: 1.25; stroke-dasharray: 4 3; }
-.cmt-marco-elegido { stroke: var(--focus, var(--text)); stroke-width: 2.5; }
-.cmt-zona { stroke: var(--cmt-solape); stroke-width: 2; }
-.cmt-vista-corte { --cmt-solape: #b25507; --cmt-tinta: #000; }
-.cmt-cruce { --cmt-color: var(--cmt-solape); stroke-dasharray: 6 3; stroke-width: 2.5; }
-.cmt-letra { fill: var(--cmt-color, var(--cmt-tinta)); stroke: none; font-family: Arial, Helvetica, sans-serif; white-space: pre; }
-.cmt-solape { --cmt-color: var(--cmt-solape); }
-:root[data-theme="dark"] .cmt-vista-corte { --cmt-solape: #f0a64c; --cmt-tinta: #fff; }
-.cmt-vista-corte ul { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0; padding: 0; list-style: none; color: var(--text-muted); font-size: 12px; }
-.cmt-vista-corte li { display: flex; align-items: center; gap: 6px; }
-.cmt-vista-corte li i { width: 14px; height: 2px; background: var(--cmt-color, var(--cmt-tinta)); }
-.cmt-pendientes { padding: 14px 16px; display: grid; gap: 14px; justify-items: start; font-size: 13px; }
-.cmt-pendientes fieldset { display: grid; width: 100%; min-width: 0; gap: 8px; padding: 8px 0 0; margin: 0; border: 0; border-top: 1px solid var(--border); }
-.cmt-pendientes legend { font-weight: 600; padding: 0 7px 0 0; }
-.cmt-opcion { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-.cmt-opcion input { margin: 0; }
-.cmt-capa { display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 8px; overflow-wrap: anywhere; }
-.cmt-muestra { width: 12px; height: 12px; border-radius: 3px; border: 1px solid var(--border-strong); }
-.cmt-capa small { display: block; color: var(--text-muted); }
-.cmt-capa select, .cmt-tabla-capas select, .cmt-tabla-capas input { width: 100%; min-width: 0; padding: 7px 8px; border: 1px solid var(--control-border); border-radius: 6px; background: var(--surface-1); color: var(--text); font: inherit; }
-.cmt-confirmar, .cmt-resultado-acciones { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; }
-.cmt-confirmar small, .cmt-notas summary { color: var(--text-muted); }
-.cmt-notas summary { cursor: pointer; }
-.cmt-resultado-acciones { margin-top: 14px; }
-.cmt-resultado-acciones .cmt-mandar { margin-top: 0; }
-
-.cmt-mandar { margin-top: 0; }
 
 /* Buscador de planos de la carpeta del año (23/11/2026): lista corta y paginada, estilo HeroUI. */
 .cmt-buscador { display: grid; gap: 14px; padding: 20px 24px; border-radius: 14px; }
@@ -141,6 +159,17 @@ html:root #root .cmt-buscador .cmt-buscador-cabecera .cmt-buscador-campo > input
 .cmt-buscador-hueco { padding: 0 6px; color: var(--hero-texto-suave, var(--text-muted)); }
 .cmt-buscador .cmt-error { margin: 0; }
 
-/* Color del plano en la vista previa (VistaPreparacion): el del CAD, retocado para que se lea en cada fondo. */
-.cmt-vista-corte .cmt-plano { --cmt-color: var(--cmt-claro); }
-:root[data-theme="dark"] .cmt-vista-corte .cmt-plano { --cmt-color: var(--cmt-oscuro); }
+/* En la columna de la mesa el buscador va apilado: título y «Actualizar», el campo a todo el ancho y la lista. */
+.cmt-lateral .cmt-buscador { flex: none; gap: 10px; padding: 14px; }
+.cmt-lateral .cmt-buscador-cabecera { flex-wrap: wrap; gap: 8px; }
+.cmt-lateral .cmt-buscador-cabecera strong { font-size: 15px; }
+.cmt-lateral .cmt-buscador-cabecera p { font-size: 12px; }
+.cmt-lateral .cmt-buscador-campo { order: 3; width: 100%; }
+.cmt-lateral .cmt-buscador-plano { gap: 4px 10px; padding: 8px 10px; }
+.cmt-lateral .cmt-buscador-nombre { flex-direction: column; align-items: flex-start; gap: 1px; }
+.cmt-lateral .cmt-buscador-nombre strong { font-size: 13px; }
+.cmt-lateral .cmt-buscador-nombre small, .cmt-lateral .cmt-buscador-fecha { font-size: 12px; }
+.cmt-lateral .cmt-buscador-fecha { min-width: 0; }
+.cmt-lateral .cmt-buscador-paginas { gap: 6px; }
+.cmt-lateral .cmt-buscador-paginas .ghost-button { padding-inline: 10px; }
+.cmt-lateral .cmt-buscador-paginas .segmented-option { min-width: 30px; padding-inline: 6px; }

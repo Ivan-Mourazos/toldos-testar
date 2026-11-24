@@ -15,7 +15,8 @@ export function motivoMaquina(settings: WorkflowSettings | null, usuario: string
   return '';
 }
 
-export function BotonMandarMaquina({ ruta, cuerpo, onEnviado }: { ruta: string; cuerpo?: () => Promise<Record<string, unknown>>; onEnviado?: (envio: EnvioMaquina) => void }) {
+/** `principal`: el botón amarillo, para cuando mandar a la máquina es el paso que toca (Planos a corte, Iván 24/11/2026). */
+export function BotonMandarMaquina({ ruta, cuerpo, onEnviado, principal = false }: { ruta: string; cuerpo?: () => Promise<Record<string, unknown>>; onEnviado?: (envio: EnvioMaquina) => void; principal?: boolean }) {
   const { settings, usuario, preguntar, notify } = useContext(CorteMaquinaContexto);
   const [ocupado, setOcupado] = useState(false);
   const motivo = motivoMaquina(settings, usuario);
@@ -30,7 +31,7 @@ export function BotonMandarMaquina({ ruta, cuerpo, onEnviado }: { ruta: string; 
     finally { setOcupado(false); }
   }
   return <div className="cmt-mandar">
-    <button type="button" className="ghost-button boton-3d" disabled={Boolean(motivo) || ocupado} title={motivo || undefined} onClick={() => void mandar()}>{ocupado ? 'Mandando…' : 'Mandar a la máquina de corte'}</button>
+    <button type="button" className={`${principal ? 'primary-button' : 'ghost-button'} boton-3d`} disabled={Boolean(motivo) || ocupado} title={motivo || undefined} onClick={() => void mandar()}>{ocupado ? 'Mandando…' : 'Mandar a la máquina de corte'}</button>
     {motivo && <small>{motivo}</small>}
   </div>;
 }

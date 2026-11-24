@@ -1,6 +1,9 @@
-import { useId, useState } from 'react';
+import { useState } from 'react';
 import { HERRAMIENTAS, type Herramienta } from '../../cmt/preparacion/tipos.ts';
 import type { DecisionesPreparacion, Pendientes as DatosPendientes } from '../../cmt/preparacion/index.ts';
+import { colorAci } from '../../cmt/colorAci.ts';
+import { SegmentedField } from '../components/SegmentedField';
+import { SelectField } from '../components/SelectField';
 import { medidas, mm } from './conversion';
 
 export const ETIQUETAS: Record<Herramienta, string> = {
@@ -41,14 +44,6 @@ export function confirmarCapas(p: DatosPendientes, valor: DecisionesPreparacion,
   return aplicarDecision(valor, { capas: Object.fromEntries(capas) });
 }
 
-const colores = ['transparent', '#e23336', '#d9b900', '#1ca23d', '#00a7ad', '#3263e5', '#c83abd', 'var(--text)', '#72757b', '#a8aaad'];
-function colorAci(aci: number) {
-  if (aci < 10) return colores[aci] ?? colores[0];
-  if (aci >= 250) return `hsl(0 0% ${25 + (aci - 250) * 13}%)`;
-  const brillo = [50, 40, 30, 25, 15][Math.floor((aci % 10) / 2)];
-  return `hsl(${Math.floor((aci - 10) / 10) * 15} ${aci % 2 ? 55 : 90}% ${brillo}%)`;
-}
-
 interface Props {
   pendientes: DatosPendientes;
   valor: DecisionesPreparacion;
@@ -57,45 +52,46 @@ interface Props {
   ocupado?: boolean;
 }
 
+const CRUCES = { incluir: 'Incluirlos', excluir: 'Dejarlos fuera' } as const;
+const quedaCapa = (capa: string) => `Se queda ${capa}`;
+
+/** Lo que hay que decidir antes de generar, con los mismos controles que el resto de la web (Iván, 24/11/2026). */
 export function Pendientes({ pendientes, valor, onCambio, onAplicar, ocupado }: Props) {
-  const id = useId();
   const [borrador, setBorrador] = useState(() => borradorInicial(pendientes, valor));
   const confirmadas = (pendientes.capas ?? []).every(({ capa }) => valor.capas?.[capa] && valor.capas[capa] === borrador[capa]);
   const confirmacion = confirmarCapas(pendientes, valor, borrador);
+  const nombreMarco = (i: number) => {
+    const m = pendientes.marcos![i];
+    return `Marco ${i + 1} (${medidas(m.x1 - m.x0, m.y1 - m.y0)})`;
+  };
   return <div className="cmt-pendientes">
     <h4>Antes de generar</h4>
     {!!pendientes.marcos?.length && <fieldset disabled={ocupado}>
-      <legend>Elige el marco del corte</legend>
-      {pendientes.marcos.map((m, i) => <label className="cmt-opcion" key={i}>
-        <input type="radio" name={`${id}-marco`} checked={valor.marco === i} onChange={() => onCambio(aplicarDecision(valor, { marco: i }))} />
-        Marco {i + 1} ({medidas(m.x1 - m.x0, m.y1 - m.y0)})
-      </label>)}
+      <SegmentedField label="Elige el marco del corte" value={valor.marco === undefined ? '' : nombreMarco(valor.marco)}
+        options={pendientes.marcos.map((_, i) => nombreMarco(i))}
+        onChange={opcion => onCambio(aplicarDecision(valor, { marco: pendientes.marcos!.findIndex((_, i) => nombreMarco(i) === opcion) }))} />
     </fieldset>}
     {!!pendientes.cruces && <fieldset disabled={ocupado}>
-      <legend>{pendientes.cruces === 1 ? 'Un elemento cruza' : `${mm(pendientes.cruces)} elementos cruzan`} el borde del marco</legend>
-      {(['incluir', 'excluir'] as const).map(cruces => <label className="cmt-opcion" key={cruces}>
-        <input type="radio" name={`${id}-cruces`} checked={valor.cruces === cruces} onChange={() => onCambio(aplicarDecision(valor, { cruces }))} />
-        {cruces === 'incluir' ? 'Incluirlos' : 'Dejarlos fuera'}
-      </label>)}
+      <SegmentedField label={`${pendientes.cruces === 1 ? 'Un elemento cruza' : `${mm(pendientes.cruces)} elementos cruzan`} el borde del marco`}
+        value={valor.cruces ? CRUCES[valor.cruces] : ''} options={Object.values(CRUCES)}
+        onChange={opcion => onCambio(aplicarDecision(valor, { cruces: opcion === CRUCES.incluir ? 'incluir' : 'excluir' }))} />
     </fieldset>}
     {!!pendientes.capas?.length && <fieldset disabled={ocupado}>
       <legend>Capas nuevas</legend>
-      {pendientes.capas.map(({ capa, color, piezas, sugerida }) => <label className="cmt-capa" key={capa}>
-        <span className="cmt-muestra" style={{ backgroundColor: colorAci(color) }} title={color ? `Color ACI ${color}` : 'Sin color de capa'} />
+      {pendientes.capas.map(({ capa, color, piezas, sugerida }) => <div className="cmt-capa" key={capa}>
+        <span className="cmt-muestra" style={{ backgroundColor: color === 7 ? 'var(--text)' : colorAci(color) ?? 'transparent' }} title={color ? `Color ACI ${color}` : 'Sin color de capa'} />
         <span><strong>{capa}</strong><small>{mm(piezas)} {piezas === 1 ? 'elemento' : 'elementos'}{sugerida && sugerida === borrador[capa] && !valor.capas?.[capa] ? ' · Sugerida por su color' : ''}</small></span>
-        <select aria-label={`Herramienta para ${capa}`} value={borrador[capa] ?? ''} onChange={e => {
-          const herramienta = e.target.value as Borrador[string];
-          setBorrador(actual => ({ ...actual, [capa]: herramienta }));
-          if (valor.capas?.[capa]) {
-            const capas = { ...valor.capas };
-            delete capas[capa];
-            onCambio(aplicarDecision(valor, { capas }));
-          }
-        }}>
-          <option value="">Elegir…</option>
-          {HERRAMIENTAS.map(h => <option key={h} value={h}>{ETIQUETAS[h]}</option>)}
-        </select>
-      </label>)}
+        <SelectField label={`Herramienta para ${capa}`} value={borrador[capa] ?? ''} options={[...HERRAMIENTAS]}
+          optionLabel={h => h ? ETIQUETAS[h as Herramienta] : ''} placeholder="Elegir…" onChange={h => {
+            const herramienta = h as Borrador[string];
+            setBorrador(actual => ({ ...actual, [capa]: herramienta }));
+            if (valor.capas?.[capa]) {
+              const capas = { ...valor.capas };
+              delete capas[capa];
+              onCambio(aplicarDecision(valor, { capas }));
+            }
+          }} />
+      </div>)}
       <div className="cmt-confirmar">
         <button type="button" className="ghost-button" disabled={!confirmacion || confirmadas}
           onClick={() => { if (confirmacion) onCambio(confirmacion); }}>Confirmar capas</button>
@@ -103,13 +99,10 @@ export function Pendientes({ pendientes, valor, onCambio, onAplicar, ocupado }: 
       </div>
     </fieldset>}
     {pendientes.solapes?.map(({ clave, capas, mm: largo }) => <fieldset key={clave} disabled={ocupado}>
-      <legend>{capas.join(' y ')} se pisan en {mm(largo)} mm</legend>
-      {capas.map(capa => <label className="cmt-opcion" key={capa}>
-        <input type="radio" name={`${id}-${clave}`} checked={valor.solapes?.[clave] === capa}
-          onChange={() => onCambio(aplicarDecision(valor, { solapes: { ...valor.solapes, [clave]: capa } }))} />
-        Se queda {capa}
-      </label>)}
+      <SegmentedField label={`${capas.join(' y ')} se pisan en ${mm(largo)} mm`}
+        value={valor.solapes?.[clave] ? quedaCapa(valor.solapes[clave]) : ''} options={capas.map(quedaCapa)}
+        onChange={opcion => onCambio(aplicarDecision(valor, { solapes: { ...valor.solapes, [clave]: capas.find(c => quedaCapa(c) === opcion)! } }))} />
     </fieldset>)}
-    <button type="button" className="primary-button" disabled={ocupado || !completas(pendientes, valor)} onClick={onAplicar}>Aplicar decisiones</button>
+    <button type="button" className="primary-button boton-3d" disabled={ocupado || !completas(pendientes, valor)} onClick={onAplicar}>Aplicar decisiones</button>
   </div>;
 }

@@ -7,7 +7,7 @@ import { useSalidaAnimada } from '../hooks/useSalidaAnimada';
  * (Iván, 26/10/2026: «en las revisiones hay que revisar qué botones son necesarios o sobran»). Los hijos son los
  * elementos del menú (botones o enlaces con la clase `menu-mas-item`); se cierra al elegir, al pulsar fuera o con Esc.
  */
-export function MenuMas({ children, etiqueta = 'Más' }: { children: React.ReactNode; etiqueta?: string }) {
+export function MenuMas({ children, etiqueta = 'Más', icono }: { children: React.ReactNode; etiqueta?: string; icono?: React.ReactNode }) {
   const [abierto, setAbierto] = useState(false);
   const { montado, alTerminar } = useSalidaAnimada(abierto);
   const raiz = useRef<HTMLDivElement>(null);
@@ -25,7 +25,7 @@ export function MenuMas({ children, etiqueta = 'Más' }: { children: React.React
   if (!hayAlgo) return null;
   return <div className="menu-mas" ref={raiz}>
     <button ref={boton} type="button" className="ghost-button boton-3d" aria-haspopup="menu" aria-expanded={abierto} aria-controls={id}
-      onClick={() => setAbierto((v) => !v)}><Ellipsis size={16} aria-hidden="true" />{etiqueta}</button>
+      onClick={() => setAbierto((v) => !v)}>{icono ?? <Ellipsis size={16} aria-hidden="true" />}{etiqueta}</button>
     {montado && <div id={id} className={`menu-mas-panel glass-pop${abierto ? '' : ' pop-out'}`} role="menu"
       aria-hidden={!abierto} inert={!abierto} onAnimationEnd={alTerminar} onClick={(evento) => {
       if ((evento.target as HTMLElement).closest('.menu-mas-item')) setAbierto(false);

@@ -27,8 +27,22 @@ describe('decisiones del corte', () => {
     const html = renderToStaticMarkup(<Pendientes pendientes={pendientes} valor={{}} onCambio={() => {}} onAplicar={() => {}} />);
     expect(html).toContain('Confirmar capas');
     expect(html).toContain('por su color');
-    expect(html).toMatch(/<option value="DISCO1" selected="">Disco 1/);
+    // Desplegables de la web (SelectField): la sugerida ya elegida y la otra capa pendiente de elegir.
+    expect(html).toMatch(/role="combobox"[^>]*title="Disco 1"[^>]*><span>Disco 1<\/span>/);
+    expect(html).toMatch(/<span[^>]*>Herramienta para GUIAS<\/span><button[^>]*class="select-control is-placeholder"[^>]*><span>Elegir…<\/span>/);
+    expect(html).not.toContain('<select');
     expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Aplicar decisiones/);
+  });
+
+  it('marco, cruces y solapes con opciones seguidas como el resto de la web', () => {
+    const html = renderToStaticMarkup(<Pendientes valor={{ marco: 1, cruces: 'excluir', solapes: { 'CUTTER|DISCO1': 'CUTTER' } }} onCambio={() => {}} onAplicar={() => {}}
+      pendientes={{ marcos: [{ x0: 0, y0: 0, x1: 1000, y1: 500 }, { x0: 0, y0: 0, x1: 2000, y1: 900 }], cruces: 3,
+        solapes: [{ clave: 'CUTTER|DISCO1', capas: ['CUTTER', 'DISCO1'], mm: 120, zonas: [] }] }} />);
+    expect(html).not.toContain('type="radio"');
+    expect(html).toMatch(/class="segmented-option tecla-3d active" aria-pressed="true">Marco 2 \(/);
+    expect(html).toMatch(/aria-pressed="true">Dejarlos fuera</);
+    expect(html).toMatch(/aria-pressed="true">Se queda CUTTER</);
+    expect(html).toContain('3 elementos cruzan el borde del marco');
   });
 });
 
