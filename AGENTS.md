@@ -40,6 +40,18 @@ Técnica, y habla castellano.
 - **Solo escritorio** (1280×720 a 1920). No adaptes a móvil.
 - **Diseño igual que CoordinaOT**: usa los tokens y piezas de `src/client/coordina/`
   (`tokens.css`, `piezas.css`…), en claro y oscuro.
+- **Pantallas y piezas nuevas** (igual que en `docs/ESTILO-HEROUI.md` de CoordinaOT; el
+  acabado aprobado manda sobre cualquier idea de «dar personalidad»):
+  - Plan corto antes de construir: quién la usa, cuál es la acción principal y qué datos
+    ve primero. Repásalo buscando lo genérico y luego construye. Si cambia cómo se
+    trabaja, Iván lo decide con capturas.
+  - Bordes, chips, numeración e iconos solo si distinguen algo, no para decorar.
+  - Nada de clichés por inercia: filas de tarjetas iguales donde una tabla se lee mejor,
+    una palabra del título resaltada en color, flechas o iconos de adorno en botones,
+    degradados o brillos, animaciones que no explican nada.
+  - Movimiento solo si explica un cambio, y siempre con `prefers-reduced-motion`.
+  - Textos largos (ayudas, notas, correos) a menos de ~80 caracteres por línea.
+  - Errores que dicen qué falló y cómo seguir, sin «Error 500» ni nombres internos.
 - Textos de la interfaz y comentarios en castellano llano. Decimales con coma
   (`toLocaleString('es-ES')`). No cites el Excel en la interfaz: la web manda.
 - Para cualquier decisión sobre piezas o medidas de un modelo, mira su expediente en
