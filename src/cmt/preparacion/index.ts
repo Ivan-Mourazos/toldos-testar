@@ -1,3 +1,4 @@
+import { colorAci, colorVerdadero } from '../colorAci.ts';
 import { leerDxf, number, value } from '../dxf.ts';
 import { leerFuente } from '../fuente.ts';
 import { quitarLeyendaWeb } from '../leyenda.ts';
@@ -19,7 +20,9 @@ export interface Pendientes { marcos?: Caja[]; cruces?: number; capas?: CapaDesc
 export interface ResultadoPreparacion {
   listo: boolean; dxf: string | null; escala: number | null; medidasMm: { ancho: number; alto: number } | null;
   pendientes: Pendientes; avisos: Duda[]; dudas: Duda[];
-  vista: (Pieza & { cruza?: boolean })[]; // Líneas, arcos y textos del corte en mm, para la vista previa.
+  // Líneas, arcos y textos del corte en mm, para la vista previa, con el color CSS que tienen en el plano
+  // (sin color = tinta: el 7 de CAD, negro en fondo claro y blanco en oscuro).
+  vista: (Pieza & { cruza?: boolean; color?: string })[];
   capasNuevas: Record<string, Herramienta>; // decisiones de capa aplicadas, para guardar en la tabla
 }
 
@@ -35,6 +38,28 @@ function insunits(d: Dxf): number | undefined {
   const i = cab.findIndex(([c, v]) => c === 9 && v === '$INSUNITS');
   if (i < 0) return undefined;
   return cab[i + 1]?.[0] === 70 && cab[i + 1][1] !== '' ? Number(cab[i + 1][1]) : NaN;
+}
+
+/** Color de cada pieza como en ZWCAD: el suyo (verdadero o ACI) y, si es PorCapa o PorBloque, el de su capa. */
+function coloreador(entidades: EntidadDxf[], d: Dxf) {
+  const capas = normalizarCapas(d.layers), cache = new Map<number, string | undefined>();
+  const deEntidad = (e: EntidadDxf | undefined) => {
+    if (!e) return undefined;
+    if (value(e, 420)) return colorVerdadero(number(e, 420));
+    const propio = Math.abs(number(e, 62, 256));
+    if (propio >= 1 && propio <= 255) return colorAci(propio);
+    const capa = capas[claveCapa(value(e, 8).trim() || '0')];
+    return capa ? colorAci(capa.color) : undefined;
+  };
+  const de = (id: string) => {
+    const i = Number(/^e(\d+)/.exec(id)?.[1] ?? NaN);
+    if (!cache.has(i)) cache.set(i, deEntidad(entidades[i]));
+    return cache.get(i);
+  };
+  return (piezas: PiezaVista[]): PiezaVista[] => piezas.map(p => {
+    const color = de(p.id);
+    return color ? { ...p, color } : p;
+  });
 }
 
 function expandirTextos(d: Dxf, o: OpcionesPreparacion, avisos: Duda[], errores: DudaLocal[]): EntidadDxf[] {
@@ -102,6 +127,7 @@ export function preparar(dxfTexto: string, o: OpcionesPreparacion): ResultadoPre
     const errores: DudaLocal[] = [];
     const entidades = expandirTextos(d, o, avisos, errores);
     const h = hornear(entidades, d.styles);
+    const conColor = coloreador(entidades, d);
     for (const aviso of h.avisos) avisos.push(aviso);
     for (const { indice, ...duda } of h.dudas) {
       errores.push({ duda, caja: cajaDudosa(entidades[indice]), capa: duda.capa ?? '0' });
@@ -135,8 +161,8 @@ export function preparar(dxfTexto: string, o: OpcionesPreparacion): ResultadoPre
 
     if (marcos.length > 1 && !marco) {
       pendientes.marcos = marcos.map(m => escalarCaja(m, k));
-      resultado.vista = h.piezas.filter(p => !noCorta(p.capa)
-        && marcos.some(m => clasificar(p, m, toleranciaDe(m)) !== 'fuera')).map(p => escalarPieza(p, k));
+      resultado.vista = conColor(h.piezas.filter(p => !noCorta(p.capa)
+        && marcos.some(m => clasificar(p, m, toleranciaDe(m)) !== 'fuera')).map(p => escalarPieza(p, k)));
       return resultado;
     }
 
@@ -157,7 +183,7 @@ export function preparar(dxfTexto: string, o: OpcionesPreparacion): ResultadoPre
     const asignadas = asignarCapas([...elegibles, ...simuladas], tabla, decisionesCapas, d.layers);
     if (asignadas.desconocidas.length) pendientes.capas = asignadas.desconocidas;
     const asignadasValidas = asignadas.piezas.filter(p => p.id.startsWith('e'));
-    resultado.vista = asignadasValidas;
+    resultado.vista = conColor(asignadasValidas);
     resultado.medidasMm = medidasDe(asignadasValidas);
     if (pendientes.cruces || pendientes.capas) return resultado;
     for (const { duda } of dudasIncluidas) dudas.push(duda);
@@ -172,13 +198,13 @@ export function preparar(dxfTexto: string, o: OpcionesPreparacion): ResultadoPre
       if (gana && grupo.capas.includes(gana)) elegidos[grupo.clave] = gana;
       else (pendientes.solapes ??= []).push(grupo);
     }
-    resultado.vista = unicas.piezas;
+    resultado.vista = conColor(unicas.piezas);
     resultado.medidasMm = medidasDe(unicas.piezas);
     if (pendientes.solapes) return resultado;
 
     const finales = aplicarSolapes(unicas.piezas, elegidos).filter(p => p.tipo === 'texto' || longitud(p) > 1e-6);
     resultado.medidasMm = medidasDe(finales);
-    resultado.vista = finales;
+    resultado.vista = conColor(finales);
     if (!finales.length) return vacio();
     if (Math.max(resultado.medidasMm?.ancho ?? 0, resultado.medidasMm?.alto ?? 0) > LARGO_MAXIMO_MM) {
       dudas.push({ motivo: 'Las piezas seleccionadas superan el tamaño máximo del corte. Revisa el marco y sus cruces.' });

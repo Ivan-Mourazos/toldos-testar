@@ -127,3 +127,14 @@ it('la vista previa lleva los textos del corte en mm y deja fuera los del plano 
   expect(Number(textos[0].pares.find(([c]) => c === 40)?.[1])).toBeCloseTo(100);
   expect(Number(textos[0].pares.find(([c]) => c === 10)?.[1])).toBeCloseTo(2000);
 });
+
+it('cada raya de la vista previa lleva el color que tiene en el plano (Iván, 24/11/2026)', () => {
+  const t = dxfPrueba({
+    capas: { DISCO1: 7, ROTULADOR: 1, CUTTER: 112 },
+    entidades: [marco(0, 0, 10, 5), L('DISCO1', 1, 1, 4, 1), L('ROTULADOR', 1, 2, 4, 2), L('CUTTER', 1, 3, 4, 3),
+      '0\nLINE\n8\nCUTTER\n62\n5\n10\n1\n20\n4\n11\n4\n21\n4', '0\nLINE\n8\nDISCO1\n62\n256\n10\n5\n20\n1\n11\n8\n21\n1'],
+  });
+  const r = preparar(t, { origen: 'dwg', tabla: {} });
+  expect(r.vista.map(p => [p.capa, p.color])).toEqual([
+    ['DISCO1', undefined], ['ROTULADOR', '#ff0000'], ['CUTTER', '#00a552'], ['CUTTER', '#0000ff'], ['DISCO1', undefined]]);
+});

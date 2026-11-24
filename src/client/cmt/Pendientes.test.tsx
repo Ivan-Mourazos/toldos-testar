@@ -65,3 +65,17 @@ describe('textos en la vista previa (Iván, 24/11/2026)', () => {
     expect(html).toContain('Texto');
   });
 });
+
+describe('colores del plano en la vista previa (Iván, 24/11/2026)', () => {
+  it('cada raya con su color del plano y DISCO1 siempre con la tinta (negro en claro, blanco en oscuro)', () => {
+    const html = renderToStaticMarkup(<VistaPreparacion vista={[
+      { tipo: 'linea', capa: 'DISCO1', id: 'a', a: { x: 0, y: 0 }, b: { x: 500, y: 0 }, color: '#0000ff' },
+      { tipo: 'linea', capa: 'ROTULADOR', id: 'b', a: { x: 0, y: 10 }, b: { x: 500, y: 10 }, color: '#ff0000' },
+      { tipo: 'texto', capa: 'texto', id: 'c', pares: [[10, '10'], [20, '10'], [40, '50'], [1, 'A1']], color: '#004c13' },
+    ]} />);
+    expect(html).toMatch(/<line class="cmt-trazo cmt-disco1"(?![^>]*--cmt-claro)[^>]*>/);
+    expect(html).toMatch(/<line class="cmt-trazo cmt-rotulador cmt-plano"[^>]*style="--cmt-claro:#ff0000;--cmt-oscuro:#ff0000"/);
+    expect(html).toMatch(/<text class="cmt-letra cmt-texto cmt-plano"[^>]*style="--cmt-claro:#004c13;--cmt-oscuro:#(?!004c13)/);
+    expect(html).toMatch(/<li><i class="cmt-rotulador cmt-plano" style="--cmt-claro:#ff0000;--cmt-oscuro:#ff0000"/);
+  });
+});

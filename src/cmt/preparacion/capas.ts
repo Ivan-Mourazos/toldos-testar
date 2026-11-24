@@ -1,5 +1,7 @@
 import type { Herramienta, Pieza } from './tipos.ts';
-export const CAPAS_FIJAS: Record<string, Herramienta> = { DISCO1: 'DISCO1', DISCO2: 'DISCO2', CUTTER: 'CUTTER', ROTULADOR: 'ROTULADOR', TALADRO: 'taladro', TEXTO: 'texto' };
+export const CAPAS_FIJAS: Record<string, Herramienta> = { DISCO1: 'DISCO1', DISCO2: 'DISCO2', CUTTER: 'CUTTER', ROTULADOR: 'ROTULADOR', TALADRO: 'taladro', TEXTO: 'texto',
+  // Las cotas del plano no se cortan nunca: se quitan solas sin preguntar (Iván, 24/11/2026).
+  COTAS: 'NO_CORTAR' };
 export const claveCapa = (capa: string) => capa.trim().toUpperCase();
 export interface CapaDesconocida { capa: string; color: number; piezas: number; sugerida?: Herramienta }
 /** Colores de las capas del bot. Solo preseleccionan el desplegable: el técnico confirma (Iván, 23/11). */
