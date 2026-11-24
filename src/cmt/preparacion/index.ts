@@ -8,7 +8,7 @@ import type { Dxf, Duda, EntidadDxf } from '../tipos.ts';
 import { asignarCapas, claveCapa, herramientaCapa, normalizarCapas, type CapaDesconocida } from './capas.ts';
 import { cajaDudosa } from './cajaDudosa.ts';
 import { descomponer, hornear, transformarPieza } from './hornear.ts';
-import { buscarMarcos, cajaDe, clasificar, esBorde, toleranciaDe } from './marco.ts';
+import { buscarMarcos, cajaDe, clasificar, esBorde, marcosWeb, toleranciaDe, unirMarcos } from './marco.ts';
 import { escribirDxfLimpio } from './salida.ts';
 import { aplicarSolapes, buscarSolapes, longitud, quitarRepetidos, type GrupoSolape } from './solapes.ts';
 import type { Caja, Herramienta, Pieza } from './tipos.ts';
@@ -125,6 +125,7 @@ export function preparar(dxfTexto: string, o: OpcionesPreparacion): ResultadoPre
     if (leyenda.quitada) avisos.push({ motivo: 'Se ha quitado la leyenda del bot o de oficina' });
     descomponer(d, avisos);
     const errores: DudaLocal[] = [];
+    const originales = d.entities;
     const entidades = expandirTextos(d, o, avisos, errores);
     const h = hornear(entidades, d.styles);
     const conColor = coloreador(entidades, d);
@@ -133,9 +134,9 @@ export function preparar(dxfTexto: string, o: OpcionesPreparacion): ResultadoPre
       errores.push({ duda, caja: cajaDudosa(entidades[indice]), capa: duda.capa ?? '0' });
     }
 
-    const marcos = buscarMarcos(h.piezas);
+    const marcos = unirMarcos(buscarMarcos(h.piezas), marcosWeb(originales, h.piezas));
     if (!marcos.length && o.origen === 'dwg') {
-      dudas.push({ motivo: 'No hay marco del corte: dibuja un rectángulo en la capa 0 alrededor del corte' });
+      dudas.push({ motivo: 'No hay marco del corte: dibuja un rectángulo en la capa 0 alrededor del corte o deja el recuadro CORTE de la web' });
       return resultado;
     }
     const marco = marcos.length === 1 ? marcos[0] : dec.marco === undefined ? undefined : marcos[dec.marco];

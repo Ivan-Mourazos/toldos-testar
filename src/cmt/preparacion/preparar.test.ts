@@ -138,3 +138,29 @@ it('cada raya de la vista previa lleva el color que tiene en el plano (Iván, 24
   expect(r.vista.map(p => [p.capa, p.color])).toEqual([
     ['DISCO1', undefined], ['ROTULADOR', '#ff0000'], ['CUTTER', '#00a552'], ['CUTTER', '#0000ff'], ['DISCO1', undefined]]);
 });
+
+describe('recuadro CORTE de la web como marco', () => {
+  // Como presentacion.js: polilínea cerrada con anchura en RECUADROS y el rótulo encima, pegada al de DIBUJO.
+  const recuadro = (x0: number, y0: number, x1: number, y1: number) =>
+    marco(x0, y0, x1, y1).replace('8\n0\n', '8\nRECUADROS\n').replace('70\n1\n', '70\n1\n43\n0.1\n');
+  const rotulo = (texto: string, x: number, y: number) => `0\nMTEXT\n8\nRECUADROS\n10\n${x}\n20\n${y}\n40\n0.5\n71\n7\n1\n${texto}`;
+  const plano = (rotuloCorte = 'CORTE') => dxfPrueba({ capas: { RECUADROS: 30 }, entidades: [
+    recuadro(0, 0, 10, 5), rotulo('DIBUJO', 0, 6), L('ROTULADOR', 1, 1, 4, 4),
+    recuadro(10, 0, 20, 5), rotulo(rotuloCorte, 10, 6), L('DISCO1', 11, 1, 14, 1),
+  ] });
+
+  it('vale igual que el rectángulo de la capa 0 y se queda solo con lo de dentro', () => {
+    const r = preparar(plano(), { origen: 'dwg', tabla: {} });
+    expect(r.dudas).toEqual([]);
+    expect(r.listo).toBe(true);
+    expect(r.vista.map(p => p.capa)).toEqual(['DISCO1']);
+  });
+
+  it('también con el rótulo con formato de MTEXT', () => {
+    expect(preparar(plano(String.raw`{\fArial|b0;CORTE}`), { origen: 'dwg', tabla: {} }).listo).toBe(true);
+  });
+
+  it('el recuadro DIBUJO solo no vale como marco', () => {
+    expect(preparar(plano('OTRO'), { origen: 'dwg', tabla: {} }).dudas[0]?.motivo).toMatch(/No hay marco.*recuadro CORTE/);
+  });
+});
