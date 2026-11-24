@@ -1,12 +1,44 @@
 # Recogidas de ganado y caballos: estudio de pedidos fabricados
 
-Estudio del **04/11/2026**, sin cambios en la aplicación. Estado previo limpio de trabajo
-propio, commit `aacb955`; el `paseo.json` ajeno no se ha tocado. Medidas en **cm**, salvo
-diámetros y mediciones CAD expresamente indicados en mm.
+Estudio del **04/11/2026**. Medidas en **cm**, salvo diámetros y mediciones CAD
+expresamente indicados en mm. Las seis preguntas del estudio están contestadas.
 
-Respuestas de Iván del **04/11/2026** incorporadas: **Q-GANR01, 02, 03, 05 y 06
-contestadas**. Solo sigue abierta **04**, con imagen que señala su procedencia.
-Este seguimiento sigue siendo documental; no cambia los valores de la aplicación.
+## Uso en la web
+
+En **Remolques → Remolque de ganado → Caballos Cal por medidas**, activa
+**Configurar las recogidas de este pedido**. Elige el cierre trasero y, si hay
+puerta lateral, el cierre de la puerta. El canal de goma o cuerda empieza en
+5 cm, es editable y lleva una marca continua como en el 1124 y el 1621. Se pueden
+elegir marcas en los extremos, como en el 5319. El diámetro y el sobrante se toman
+del pedido. Para un trasero con orejas, la oreja útil empieza en 10 cm por lado y
+los remates se introducen aparte.
+
+Las medidas de solapa se introducen terminadas. La web añade 1 cm de doblez
+por cada borde. En la puerta trasera de puentes, marca los recortes para añadir
+la tira de la oreja inferior y escribe su medida de corte. En el AR2604709 es
+95 × 8,5. Introduce en **Trazados del pedido** los contornos, rebajes, marcas
+y centros de ollaos de la revisión rectificada. El reparto MFD en el tramo
+corregido es **143 / 151 / 171**. Los trazados son específicos de cada pedido.
+
+En **Hebillas para sujetar los paños enrollados**, indica la pieza, centro
+y giro de cada hebilla para su zona. En **Situación del velcro en el plano**,
+indica los tramos de cada pieza. El plano recoge ambos. El bot recibe los
+contornos y las marcas de confección de las piezas de lona. El AR2504631 usa
+la receta de correas de la lona convencional, con las rayas de cosido de esa
+receta.
+
+### Contraste y archivos de prueba
+
+Desde el worktree, coloca las copias de los cortes en
+`tmp/ganado-recogidas/fuentes/<pedido>-bot.dxf` y los planos de oficina convertidos
+a DXF en `tmp/ganado-recogidas/planos/<pedido>.dxf`. Ejecuta
+`node scripts/ganado/contrastar-recogidas.mjs`. El informe queda en
+`tmp/ganado-recogidas/contraste.md`. Con `ODA_FILE_CONVERTER` configurado el script
+también produce el DWG de prueba del AR2605319 en `tmp/ganado-recogidas/ejemplos`.
+El contraste distingue la comparación de inventario por capa de las medidas
+verificadas sobre piezas concretas. La disposición en rollo de la web es por
+piezas enteras. Los casos de puentes y las posiciones completas de velcro y
+hebillas siguen pendientes de cotejo. Véanse Q-GANR07 y Q-GANR08.
 
 La propuesta es distinguir **cómo cierra cada paño** de **cómo se mantiene enrollado**.
 La goma fruncida de Cal forma parte del cuerpo y puede prescindir del paño trasero;
@@ -211,7 +243,8 @@ paridad completa entre el bot archivado y la última revisión anotada del DWG.
   propios son **16B0 = 85 mm, 16B1 = 950 mm, 16B2 = 85 mm**; el cuarto coincide con
   el borde contiguo. También está en la preparación de corte del DWG, **22003** y
   duplicados **32E32/32E88**. No es una pieza suelta identificada y acotada en ese PDF.
-  Sigue pendiente saber qué es, dónde se cose y qué remate lleva.
+  Iván confirmó el 05/11 que es la tira de la oreja inferior de la puerta trasera
+  con recortes para los postes. Solo se corta cuando el pedido lleva esos recortes.
 - **Q-GANR06, contestada:** [nota original señalada](../../tmp/ganado-recogidas/senalar-4709-nota.png)
   de **`fuentes/AR2604709-dwg.dwg`**, convertida a `fuentes/AR2604709.dxf`, entidad
   **27045**, capa **`vent-pre-noimpr`**. Es la nota final de devolución y ollaos,
@@ -310,8 +343,8 @@ comerciales deben figurar como materiales/acabados, no como falsas piezas de lon
    último, fijar antes la revisión final de puerta y reparto. Para lo no documentado,
    conservar aviso y revisión manual en lugar de producir un corte supuesto.
 
-Las respuestas y la única pregunta pendiente (**Q-GANR04**) están en
-[dudas-abiertas.md](./dudas-abiertas.md). No se ha programado esta propuesta.
+Las respuestas y las comprobaciones pendientes de la web están en
+[dudas-abiertas.md](./dudas-abiertas.md).
 
 ## Reproducción y límites del estudio
 

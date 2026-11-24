@@ -49,7 +49,7 @@ function anclarNotasGanado(g) {
     if (t.capa !== 'texto') continue;
     let p = t === titulo ? piezas[0] : proxima([t.x, t.y]);
     if (/ · corte/.test(t.valor)) { t.x = (p.caja.x0 + p.caja.x1) / 2; t.encimaDe = p.caja.y1; }
-    const nombre = /^Bajos /.test(t.valor) ? 'Cuerpo' : /^Ventana \d/.test(t.valor) ? 'Frente'
+    const nombre = /^(Bajos |Atrás · (Cuerda|Goma) fruncida)/.test(t.valor) ? 'Cuerpo' : /^Ventana \d/.test(t.valor) ? 'Frente'
       : /^(Lona por el exterior|Puerta |Refuerzo MFD de Cal)/.test(t.valor) ? 'Morro' : null;
     if (nombre && nombres.has(nombre)) {
       p = nombres.get(nombre);

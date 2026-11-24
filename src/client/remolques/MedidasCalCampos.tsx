@@ -2,6 +2,7 @@ import React from 'react';
 import { MEDIDAS_CAL_VACIAS, type MedidasCal } from '../../remolques/ganado/medidas.ts';
 import { DEFAULT_PARAMS } from '../../remolques/calc/params.ts';
 import { CampoNum, CampoSelect, CampoSiNo, PasoFormulario } from './Campos';
+import { RecogidasGanadoCampos } from './RecogidasGanadoCampos';
 
 export const MEDIDAS_VACIAS = MEDIDAS_CAL_VACIAS;
 
@@ -14,14 +15,14 @@ const CAMPOS = [
 export function MedidasCalCampos({ value, error, onChange }: { value?: MedidasCal; error?: string; onChange: (m: MedidasCal) => void }) {
   const m = value ?? MEDIDAS_VACIAS;
   const set = <K extends keyof MedidasCal>(k: K, v: MedidasCal[K]) => onChange({ ...m, [k]: v });
-  return <PasoFormulario titulo="Medidas de Cal (cm)" columnas={4}>
+  return <><PasoFormulario titulo="Medidas de Cal (cm)" columnas={4}>
     <p className="gan-dibujo-nota rem-span-4">Altos hasta la intersección teórica del lateral y las aguas. Radio por el exterior del arco. El cálculo añade 1 cm de lona hecha a anchos, recto y diagonal.</p>
-    {CAMPOS.map(([k, label]) => <CampoNum key={k} name={k} label={label} value={m[k]} onChange={v => set(k, v)} />)}
+    {CAMPOS.filter(([k]) => !m.recogidas || k !== 'fruncir').map(([k, label]) => <CampoNum key={k} name={k} label={label} value={m[k]} onChange={v => set(k, v)} />)}
     <CampoNum name="margenBajoCal" label="Añadido de corte por bajo" value={m.margenBajo ?? DEFAULT_PARAMS.ajusteContornoBase / 2} onChange={v => set('margenBajo', v)} />
     <CampoNum name="divisionesCurvaCal" label="Divisiones por curva del morro" value={m.divisionesCurva ?? 5} onChange={v => set('divisionesCurva', v)} />
-    <CampoSelect name="recogidaAtrasCal" label="Fruncido de atrás" value={m.recogidaAtras ?? ''} sinElegir="Según pedido"
+    {!m.recogidas && <CampoSelect name="recogidaAtrasCal" label="Fruncido de atrás" value={m.recogidaAtras ?? ''} sinElegir="Según pedido"
       opciones={[{ value: 'CUERDA', label: 'Cuerda fruncida' }, { value: 'GOMA', label: 'Goma fruncida' }]}
-      onChange={v => set('recogidaAtras', v as MedidasCal['recogidaAtras'])} />
+      onChange={v => set('recogidaAtras', (v || undefined) as MedidasCal['recogidaAtras'])} />}
     <CampoSiNo name="ventanaCal" label="Ventana delantera" value={m.ventana} onChange={v => set('ventana', v)} />
     {m.ventana && <>
       <CampoSiNo name="ventanaPedidoCal" label="Medida de ventana en pedido" value={Boolean(m.ventanaMedidas)}
@@ -35,7 +36,7 @@ export function MedidasCalCampos({ value, error, onChange }: { value?: MedidasCa
     <CampoSelect name="puertaCal" label="Puerta lateral" value={m.puerta} opciones={[
       { value: 'NINGUNA', label: 'Sin puerta' }, { value: 'MFI', label: 'MFI' }, { value: 'MFD', label: 'MFD' },
     ]} onChange={v => set('puerta', v as MedidasCal['puerta'])} />
-    {m.puerta !== 'NINGUNA' && <>
+    {m.puerta !== 'NINGUNA' && !m.recogidas?.puerta && <>
       <CampoSiNo name="puertaMorroCal" label="Puerta en diagonal del morro" value={Boolean(m.puertaMorro)}
         onChange={v => set('puertaMorro', v ? { separacionBorde: 4 } : undefined)} />
       {m.puertaMorro && <CampoNum name="separacionCremallerasCal" label="Cremalleras desde los extremos (cm)" value={m.puertaMorro.separacionBorde}
@@ -52,5 +53,5 @@ export function MedidasCalCampos({ value, error, onChange }: { value?: MedidasCa
     </label>
     <p className="gan-dibujo-nota rem-span-4">Sin posiciones manuales, se reparten al paso indicado. Ventana estándar 50 × 35 si cabe; se adapta al espacio bajo la curva, salvo medida indicada en el pedido. La puerta de la diagonal va integrada en el morro, sin solapas; las demás puertas necesitan definir su confección.</p>
     {error && <p className="gan-aviso rem-span-4" role="alert">{error}</p>}
-  </PasoFormulario>;
+  </PasoFormulario><RecogidasGanadoCampos m={m} onChange={onChange} /></>;
 }
