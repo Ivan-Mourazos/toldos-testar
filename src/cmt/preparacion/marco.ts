@@ -1,4 +1,5 @@
 import { anclaTexto, normGrados } from './hornear.ts';
+import type { EntidadDxf } from '../tipos.ts';
 import type { Caja, P, Pieza } from './tipos.ts';
 
 const RAD = Math.PI / 180;
@@ -75,9 +76,18 @@ export function esBorde(p: Pieza, m: Caja, tol: number): boolean {
   return horizontal || vertical;
 }
 
+const mismaCaja = (o: Caja, m: Caja, tol: number) =>
+  Math.abs(o.x0 - m.x0) <= tol && Math.abs(o.y0 - m.y0) <= tol && Math.abs(o.x1 - m.x1) <= tol && Math.abs(o.y1 - m.y1) <= tol;
+
+/** Rectángulo del marco en la capa 0, con algo del corte dentro o cruzándolo. */
 export function buscarMarcos(piezas: Pieza[]): Caja[] {
-  const lineas = piezas.filter((p): p is Extract<Pieza, { tipo: 'linea' }> => p.tipo === 'linea' && p.capa === '0' && !p.deBloque);
-  const corte = piezas.filter(p => p.capa !== '0');
+  const corte = piezas.filter(p => p.capa !== '0' && !esCapaRecuadros(p.capa));
+  return rectangulos(piezas, '0').filter(m => corte.some(p => clasificar(p, m, toleranciaDe(m)) !== 'fuera'));
+}
+
+/** Rectángulos hechos con cuatro líneas sueltas de la capa dada (no de bloques). */
+function rectangulos(piezas: Pieza[], capa: string): Caja[] {
+  const lineas = piezas.filter((p): p is Extract<Pieza, { tipo: 'linea' }> => p.tipo === 'linea' && p.capa === capa && !p.deBloque);
   const horizontales = lineas.filter(p => Math.abs(p.a.y - p.b.y) < 1e-5 * Math.abs(p.a.x - p.b.x));
   const verticales = lineas.filter(p => Math.abs(p.a.x - p.b.x) < 1e-5 * Math.abs(p.a.y - p.b.y));
   const marcos: Caja[] = [];
@@ -92,9 +102,62 @@ export function buscarMarcos(piezas: Pieza[]): Caja[] {
       const lado = (x: number) => verticales.some(({ a, b }) => en(a.x, x) && en(b.x, x)
         && en(Math.min(a.y, b.y), m.y0) && en(Math.max(a.y, b.y), m.y1));
       if (!lado(m.x0) || !lado(m.x1)) continue;
-      if (marcos.some(o => en(o.x0, m.x0) && en(o.y0, m.y0) && en(o.x1, m.x1) && en(o.y1, m.y1))) continue;
-      if (corte.some(p => clasificar(p, m, tol) !== 'fuera')) marcos.push(m);
+      if (!marcos.some(o => mismaCaja(o, m, tol))) marcos.push(m);
     }
   }
   return marcos;
+}
+
+const esCapaRecuadros = (capa: string) => capa.trim().toUpperCase() === 'RECUADROS';
+const valor = (e: EntidadDxf, codigo: number) => e.pairs.find(([c]) => c === codigo)?.[1] ?? '';
+
+/** Rectángulo de una polilínea cerrada de cuatro vértices con los lados en horizontal y vertical. */
+function cajaPolilinea(e: EntidadDxf): Caja | null {
+  const xs = e.pairs.filter(([c]) => c === 10).map(([, v]) => Number(v));
+  const ys = e.pairs.filter(([c]) => c === 20).map(([, v]) => Number(v));
+  const cerrada = (Number(valor(e, 70)) & 1) === 1;
+  if (xs.length !== ys.length || !(xs.length === 4 && cerrada || xs.length === 5 && xs[0] === xs[4] && ys[0] === ys[4])) return null;
+  if (e.pairs.some(([c, v]) => c === 42 && Number(v) !== 0) || [...xs, ...ys].some(v => !Number.isFinite(v))) return null;
+  const c = { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) };
+  const tol = toleranciaDe(c);
+  if (c.x1 - c.x0 <= tol || c.y1 - c.y0 <= tol) return null;
+  const enBorde = xs.slice(0, 4).every((x, i) => (Math.abs(x - c.x0) <= tol || Math.abs(x - c.x1) <= tol)
+    && (Math.abs(ys[i] - c.y0) <= tol || Math.abs(ys[i] - c.y1) <= tol));
+  return enBorde ? c : null;
+}
+
+/** Texto de un TEXT o MTEXT sin los códigos de formato de MTEXT. */
+const textoPlano = (e: EntidadDxf) => e.pairs.filter(([c]) => c === 3 || c === 1).map(([, v]) => v).join('')
+  .replace(/\\[A-Za-z][^;\\{}]*;/g, '').replace(/\\P/g, ' ').replace(/[{}]/g, '').trim().toUpperCase();
+
+/**
+ * El recuadro CORTE que deja la web en sus planos (capa RECUADROS, con el rótulo «CORTE» encima y por fuera, ver
+ * presentacion.js). Vale igual que el rectángulo de la capa 0 (Iván, 24/11/2026). El de DIBUJO no cuenta.
+ */
+export function marcosWeb(entidades: EntidadDxf[], piezas: Pieza[]): Caja[] {
+  const enModelo = (e: EntidadDxf) => esCapaRecuadros(valor(e, 8)) && Number(valor(e, 67) || 0) !== 1;
+  const rotulos = entidades.filter(e => enModelo(e) && (e.type === 'MTEXT' || e.type === 'TEXT') && textoPlano(e) === 'CORTE')
+    .map(e => {
+      const ancla = e.type === 'TEXT' ? anclaTexto(e.pairs) : 10;
+      return { x: Number(valor(e, ancla)), y: Number(valor(e, ancla + 10)) };
+    });
+  if (!rotulos.length) return [];
+  const candidatos = [
+    ...entidades.filter(e => enModelo(e) && e.type === 'LWPOLYLINE').map(cajaPolilinea).filter((c): c is Caja => c !== null),
+    ...rectangulos(piezas.filter(p => esCapaRecuadros(p.capa)).map(p => ({ ...p, capa: 'RECUADROS' })), 'RECUADROS'),
+  ];
+  const marcos: Caja[] = [];
+  for (const m of candidatos) {
+    const alto = m.y1 - m.y0, ancho = m.x1 - m.x0, tol = toleranciaDe(m);
+    const rotulado = rotulos.some(({ x, y }) => y >= m.y1 - tol && y <= m.y1 + alto && x >= m.x0 - 0.1 * ancho && x <= m.x0 + 0.5 * ancho);
+    if (rotulado && !marcos.some(o => mismaCaja(o, m, tol))) marcos.push(m);
+  }
+  return marcos;
+}
+
+/** Junta los marcos de la capa 0 y los de la web sin repetir el mismo rectángulo. */
+export function unirMarcos(...grupos: Caja[][]): Caja[] {
+  const todos: Caja[] = [];
+  for (const m of grupos.flat()) if (!todos.some(o => mismaCaja(o, m, toleranciaDe(m)))) todos.push(m);
+  return todos;
 }
