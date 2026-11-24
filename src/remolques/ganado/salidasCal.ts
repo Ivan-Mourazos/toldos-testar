@@ -7,8 +7,22 @@ const limites = (p: PuntoCal[]) => {
   const xs = p.map(p => p[0]), ys = p.map(p => p[1]);
   return { x: Math.min(...xs), y: Math.min(...ys), w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys) };
 };
+const vuelta = (a: number) => (a % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+function limitesPieza(p: PiezaCal, terminado = false) {
+  const vertices = (terminado ? p.terminado : undefined) ?? p.contorno;
+  if (!p.bordeTerminado) return limites(vertices);
+  const bordes = terminado ? p.bordeTerminado : p.corte;
+  const extremos = bordes.flatMap((q): PuntoCal[] => {
+    if (q.tipo !== 'arco') return [];
+    const sentido = Math.sign(q.barrido);
+    return [0, Math.PI / 2, Math.PI, 3 * Math.PI / 2]
+      .filter(a => vuelta((a - q.inicio) * sentido) <= Math.abs(q.barrido))
+      .map(a => [q.c[0] + q.r * Math.cos(a), q.c[1] + q.r * Math.sin(a)]);
+  });
+  return limites([...vertices, ...extremos]);
+}
 export const medidaPiezaCal = (p: PiezaCal, terminado = false) => {
-  const b = limites(terminado && p.terminado ? p.terminado : p.contorno);
+  const b = limitesPieza(p, terminado);
   return `${fmt(b.w)} × ${fmt(b.h)}${p.nombre === 'Morro' ? ' (envolvente)' : ''}`;
 };
 
@@ -18,7 +32,7 @@ export function juegoCorteCal(m: MedidasCal, of = '', cantidad = 1) {
   const out = { w: 0, h: 0, lineas: [] as number[][], arcos: [] as { x: number; y: number; r: number; desde: number; hasta: number }[],
     rot: [] as number[][], ollaos: [] as number[][], numeros: [], textos: [] as { x: number; y: number; h: number; valor: string }[] };
   for (const p of g.piezas) {
-    const b = limites(p.contorno), girar = b.h > 2500;
+    const b = limitesPieza(p), girar = b.h > 2500;
     const h = girar ? b.w : b.h, w = girar ? b.h : b.w;
     if (h > 2500) throw Error(`${p.nombre}: no cabe entero en el rollo de 250; hace falta definir el empate.`);
     const tx = out.w;
@@ -66,27 +80,32 @@ export function dibujoCal(m: MedidasCal, paraHoja = false): Dibujo {
       if (paraHoja) y = 0;
       else { x = 0; y += fila + 55; fila = 0; }
     }
-    if (paraHoja && i > 2) y += (limites(g.piezas[i - 1].contorno).h / 10) + 45;
-    const b = limites(p.contorno), w = b.w / 10, h = b.h / 10;
+    if (paraHoja && i > 2) y += (limitesPieza(g.piezas[i - 1]).h / 10) + 45;
+    const b = limitesPieza(p), w = b.w / 10, h = b.h / 10;
     const T = ([a, c]: PuntoCal): PuntoCal => [x + (a - b.x) / 10, y + (c - b.y) / 10];
     for (const q of p.corte) primitiva(q, 'DISCO1', T);
     for (const q of [...p.marcas, ...p.ollaos]) primitiva(q, 'ROTULADOR', T);
-    if (p.terminado) d.polilineas.push({ capa: 'referencias', puntos: p.terminado.map(T), cerrada: p.nombre === 'Cuerpo' || p.nombre === 'Morro' });
+    if (p.bordeTerminado) for (const q of p.bordeTerminado) primitiva(q, 'referencias', T);
+    else if (p.terminado) d.polilineas.push({ capa: 'referencias', puntos: p.terminado.map(T), cerrada: Boolean(m.recogidas) || p.nombre === 'Cuerpo' || p.nombre === 'Morro' });
+    const referencias = g.referenciasRecogidas?.filter(q => q.pieza === p.nombre) ?? [];
+    for (const q of referencias) d.polilineas.push({ capa: 'referencia-1', puntos: q.puntos.map(T), cerrada: true });
+    const rotulos = [...new Set(referencias.map(q => q.rotulo))];
+    rotulos.forEach((valor, j) => d.textos.push({ valor, x: x + w / 2, y: y + h + 25 + j * 10, h: 6.5, giro: 0 }));
     d.textos.push({ valor: `${p.nombre} · corte ${medidaPiezaCal(p)}`, x: x + w / 2, y: y + h + 15, h: 6.5, giro: 0 });
     d.cotas.push({ x1: x, y1: y, x2: x + w, y2: y, valor: w, giro: 0, d: y - 12 },
       { x1: x + w, y1: y, x2: x + w, y2: y + h, valor: h, giro: 90, d: x + w + 10 });
     d.ancho = Math.max(d.ancho, x + w + 20);
-    d.alto = Math.max(d.alto, y + h + 25);
-    fila = Math.max(fila, h);
+    d.alto = Math.max(d.alto, y + h + 25 + rotulos.length * 10);
+    fila = Math.max(fila, h + rotulos.length * 10);
     if (!paraHoja || i < 2) x += w + 45;
   });
   const notas = [
     `Lona por el exterior del arco · R${m.radio.toLocaleString('es-ES')} · medidas en cm`,
-    'Bajos B.N.(3) + ollaos · costura 1 · ' + (m.recogidaAtras === 'CUERDA' ? 'cuerda fruncida' : m.recogidaAtras === 'GOMA' ? 'goma fruncida' : 'fruncido') + ' atrás ' + m.fruncir.toLocaleString('es-ES'),
+    ...(g.notasRecogidas ?? ['Bajos B.N.(3) + ollaos · costura 1 · ' + (m.recogidaAtras === 'CUERDA' ? 'cuerda fruncida' : m.recogidaAtras === 'GOMA' ? 'goma fruncida' : 'fruncido') + ' atrás ' + m.fruncir.toLocaleString('es-ES')]),
     ...(g.ventana ? [`Ventana ${g.ventana.ancho.toLocaleString('es-ES')} × ${g.ventana.alto.toLocaleString('es-ES')} · 5 bajo tangencia`] : []),
     ...(g.puerta ? [`Puerta ${g.puerta.lado} en diagonal ${g.puerta.ancho.toLocaleString('es-ES', { maximumFractionDigits: 2 })} · cremalleras a ${g.puerta.separacionBorde.toLocaleString('es-ES')} · sin solapas`] : []),
     ...(m.refuerzoMfd ? ['Refuerzo MFD de Cal · pieza aparte y posición marcada en el morro'] : []),
-    ...(g.pendientes.length ? ['PARCIAL · FALTA DEFINIR LA PUERTA · CORTE COMPLETO A MANO'] : []),
+    ...(g.pendientes.length ? [m.recogidas ? 'PARCIAL · REVISAR RECOGIDAS · CORTE COMPLETO A MANO' : 'PARCIAL · FALTA DEFINIR LA PUERTA · CORTE COMPLETO A MANO'] : []),
   ];
   // En papel, los acabados ya están a la izquierda; se conservan el radio y los avisos pendientes.
   for (const nota of paraHoja ? notas.filter((n, i) => i === 0 || n.startsWith('PARCIAL')) : notas) { d.alto += 10; d.textos.push({ valor: nota, x: d.ancho / 2, y: d.alto, h: 6.5, giro: 0 }); }
@@ -103,6 +122,8 @@ export function dibujoCorteCal(m: MedidasCal): Dibujo {
     circulos: c.ollaos.map(([x, y]) => ({ capa: 'ROTULADOR', x: x / 10, y: y / 10, r: 0.25 })),
     polilineas: [], cotas: [],
     textos: [...c.textos.map(t => ({ ...t, x: t.x / 10, y: t.y / 10, h: t.h / 10, giro: 0 })),
-      { x: c.w / 20, y: c.h / 10 + 20, h: 7, giro: 0, valor: g.pendientes.length ? 'CORTE PARCIAL · FALTA LA PUERTA · PEDIDO COMPLETO A MANO' : 'CORTE POR PIEZAS ENTERAS · ROLLO DE 250' }],
+      { x: c.w / 20, y: c.h / 10 + 20, h: 7, giro: 0, valor: g.pendientes.length
+        ? (m.recogidas ? 'CORTE PARCIAL · REVISAR RECOGIDAS' : 'CORTE PARCIAL · FALTA LA PUERTA · PEDIDO COMPLETO A MANO')
+        : 'CORTE POR PIEZAS ENTERAS · ROLLO DE 250' }],
   };
 }

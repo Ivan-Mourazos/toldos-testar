@@ -21,12 +21,19 @@ function repartir(a,b,paso,r){
  const largo=d(a,b),n=Math.max(1,Math.round((largo-2*r.inicioOllao)/paso)),v=b.map((x,i)=>(x-a[i])/largo);
  return Array.from({length:n+1},(_,i)=>circulo(a.map((x,k)=>x+v[k]*(r.inicioOllao+i*(largo-2*r.inicioOllao)/n)),r.radioOllao));
 }
+export function cuerpoCal(L,C,h,r){
+ const atras=h.fruncir??r.fruncir;
+ const body=[[-atras,-r.bastilla],[L+r.costura,-r.bastilla],[L+r.costura,C+r.bastilla],[-atras,C+r.bastilla]];
+ const x=r.marcaAtras,marcaAtras=r.marcaAtrasContinua ? [linea([x,0],[x,C])]
+   : [linea([x,0],[x,r.largoMarca]),linea([x,C-r.largoMarca],[x,C])];
+ const cuerpo={terminado:[[0,0],[L,0],[L,C],[0,C]],nombre:'Cuerpo',corte:poligono(body),contorno:body,ollaos:[...repartir([0,r.dentroOllao],[L,r.dentroOllao],h.pasoOllaos,r),...repartir([0,C-r.dentroOllao],[L,C-r.dentroOllao],h.pasoOllaos,r)],marcas:[...marcaAtras,linea([L,C/2],[L-r.largoMarca,C/2])]};
+ if(h.laterales?.length) cuerpo.ollaos=[r.dentroOllao,C-r.dentroOllao].flatMap(y=>h.laterales.map(x=>circulo([x,y],r.radioOllao)));
+ return cuerpo;
+}
 export function generarCal(h,r){
  const m={ancho:h.ancho+r.lonaHecha,frente:h.frente+r.lonaHecha,diagonal:h.diagonal+r.lonaHecha,largoCuerpo:h.recto+r.lonaHecha,altoA:h.alto,altoB:h.altoFrente,aguasA:h.aguas,aguasB:h.aguasFrente,radioA:h.radio,radioB:h.radio,pasos:h.divisionesCurva??r.pasos};
  const modelo=construirMorro(m),{a,b}=modelo.desarrollo,L=m.largoCuerpo,recorrido=desglosePerfil({ancho:m.ancho,alto:m.altoA,aguas:m.aguasA,radio:m.radioA}),C=recorrido.total+r.holguraContorno;
- const atras=h.fruncir??r.fruncir;
- const body=[[-atras,-r.bastilla],[L+r.costura,-r.bastilla],[L+r.costura,C+r.bastilla],[-atras,C+r.bastilla]];
- const cuerpo={terminado:[[0,0],[L,0],[L,C],[0,C]],nombre:'Cuerpo',corte:poligono(body),contorno:body,ollaos:[...repartir([0,r.dentroOllao],[L,r.dentroOllao],h.pasoOllaos,r),...repartir([0,C-r.dentroOllao],[L,C-r.dentroOllao],h.pasoOllaos,r)],marcas:[linea([r.marcaAtras,0],[r.marcaAtras,r.largoMarca]),linea([r.marcaAtras,C-r.largoMarca],[r.marcaAtras,C]),linea([L,C/2],[L-r.largoMarca,C/2])]};
+ const cuerpo=cuerpoCal(L,C,h,r);
  const contorno=[...a,...b.toReversed()],margenes=contorno.map((_,i)=>i===a.length-1||i===contorno.length-1?r.bastilla:r.costura),offset=offsetPoligono(contorno,margenes),centro=(a.length-1)/2;
  const interp=(p,q,l)=>p.map((x,i)=>x+(q[i]-x)*l/d(p,q));
  const morro={terminado:contorno,nombre:'Morro',corte:poligono(offset),contorno:offset,marcas:[linea(a[centro],interp(a[centro],b[centro],r.largoMarca)),linea(b[centro],interp(b[centro],a[centro],r.largoMarca))],ollaos:[]};
@@ -36,7 +43,6 @@ export function generarCal(h,r){
  }
  const frente=cabeza(m,r); frente.terminado=perfil({ancho:m.frente,alto:m.altoB,aguas:m.aguasB,radio:m.radioB,pasos:m.pasos});frente.ollaos=repartir([0,r.dentroOllao],[m.frente,r.dentroOllao],(h.frenteOllaos ? (m.frente-2*r.inicioOllao)/(h.frenteOllaos-1) : r.repartoFrente),r);
  frente.marcas.push(linea([m.frente/2,m.altoB+m.aguasB],[m.frente/2,m.altoB+m.aguasB-r.largoMarca]));
- if(h.laterales?.length) cuerpo.ollaos=[r.dentroOllao,C-r.dentroOllao].flatMap(y=>h.laterales.map(x=>circulo([x,y],r.radioOllao)));
  const piezas=[cuerpo,morro,frente]; let ventana=null;
  if(h.ventana){
   const top=frente.zTangencia-r.ventana.separacionTangencia;

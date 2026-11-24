@@ -185,7 +185,7 @@ export function hojaGanado(i: GanadoInput, r: GanadoResult): CuerpoHoja {
   return {
     banda: [
       { titulo: "MODELO", lineas: [oRaya(r.modelo)], notas: [i.ganado === "CAL_MEDIDAS" ? "POR MEDIDAS · EXTERIOR DEL ARCO" : "SEGÚN PLANTILLA DE LA OFICINA"] },
-      { titulo: parcial ? "PIEZAS CALCULADAS" : "JUEGOS A CORTAR", lineas: [cantidad === 1 ? "1 JUEGO" : `1 JUEGO · X${cantidad}`], notas: parcial ? ['PARCIAL · FALTA LA PUERTA'] : cantidad > 1 ? [`EL CORTADOR LO REPITE ${cantidad} VECES`] : [] },
+      { titulo: parcial ? "PIEZAS CALCULADAS" : "JUEGOS A CORTAR", lineas: [cantidad === 1 ? "1 JUEGO" : `1 JUEGO · X${cantidad}`], notas: parcial ? [r.recogidas ? 'PARCIAL · REVISAR RECOGIDAS' : 'PARCIAL · FALTA LA PUERTA'] : cantidad > 1 ? [`EL CORTADOR LO REPITE ${cantidad} VECES`] : [] },
       { titulo: parcial ? "LARGO PARCIAL DE ROLLO" : "LARGO DE ROLLO", lineas: [`${fmt(r.largoJuego)} CM POR JUEGO`], notas: [`OCUPA ${fmt(r.anchoJuego)} DE ANCHO`] },
     ],
     grupos: [
@@ -199,7 +199,12 @@ export function hojaGanado(i: GanadoInput, r: GanadoResult): CuerpoHoja {
       },
       ...(estandar ? [{ titulo: 'STOCK', datos: [{ etiqueta: 'REFUERZOS', valores: r.piezas
         .filter(p => p.nombre.toLowerCase().includes('stock')).map(p => `${p.nombre.startsWith('T.O.') ? 'T.O. / REF. 20' : 'REF. 16,5'}: ${p.corte}`) }] }] : []),
-      ...(cal ? [{ titulo: "ACABADOS DE CAL", datos: [
+      ...(r.recogidas ? [{ titulo: 'RECOGIDAS', datos: [...r.recogidas.map(nota => {
+        const [etiqueta, ...valores] = nota.split(' · ');
+        return { etiqueta: etiqueta.toUpperCase(), valores: valores.map(v => v.toUpperCase()) };
+      }), ...(!i.medidasCal?.recogidas?.puerta && i.medidasCal?.puertaMorro && i.medidasCal.puerta !== 'NINGUNA' ? [{
+        etiqueta: `PUERTA ${i.medidasCal.puerta}`, valores: [`CREMALLERAS A ${fmt(i.medidasCal.puertaMorro.separacionBorde)}`, 'SIN SOLAPAS'],
+      }] : [])] }] : cal ? [{ titulo: "ACABADOS DE CAL", datos: [
         { etiqueta: "CUERPO", valores: i.medidasCal?.recogidaAtras
           ? [`FRUNCIDO ${fmt(i.medidasCal.fruncir)} · ${i.medidasCal.recogidaAtras}`, 'B.N.(3); COSTURA 1']
           : [`B.N.(3); FRUNCIR ${fmt(i.medidasCal?.fruncir ?? 0)} ATRÁS`, 'COSTURA 1 DELANTE'] },

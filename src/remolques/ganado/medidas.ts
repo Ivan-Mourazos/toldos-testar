@@ -1,5 +1,6 @@
 import { generarCal } from './generarCal.js';
 import { ajusteContorno, DEFAULT_PARAMS } from '../calc/params.ts';
+import { aplicarRecogidas, esFruncidoGanado, type ReferenciaRecogida, type RecogidasGanado } from './recogidas.ts';
 
 /** Medidas en cm, hasta la intersección teórica del lateral y las aguas. */
 export interface MedidasCal {
@@ -15,6 +16,7 @@ export interface MedidasCal {
   radio: number;
   fruncir: number;
   recogidaAtras?: 'CUERDA' | 'GOMA';
+  recogidas?: RecogidasGanado;
   /** Añadido de corte en cada bajo, en cm; sin valor, el general de parámetros. */
   margenBajo?: number;
   /** Cuerdas de cada curva en el desarrollo del morro; el recorrido del paño usa arcos exactos. */
@@ -65,6 +67,7 @@ export interface PiezaCal {
   nombre: string;
   contorno: PuntoCal[];
   terminado?: PuntoCal[];
+  bordeTerminado?: PrimitivaCal[];
   corte: PrimitivaCal[];
   marcas: PrimitivaCal[];
   ollaos: { tipo: 'ollao'; c: PuntoCal; r: number }[];
@@ -76,6 +79,8 @@ export interface DesarrolloCal {
   ventana: { ancho: number; alto: number } | null;
   medidas: { radioA: number; radioB: number; altoA: number; altoB: number; aguasA: number; aguasB: number };
   pendientes: string[];
+  notasRecogidas?: string[];
+  referenciasRecogidas?: ReferenciaRecogida[];
   desarrolloCuerpo: { laterales: number; aguas: number; curvas: number; total: number; holgura: number; bastillas: number; corte: number };
   puerta: { lado: 'MFI' | 'MFD'; ancho: number; alto: number; separacionBorde: number } | null;
 }
@@ -115,11 +120,21 @@ export function calcularMedidasCal(m: MedidasCal): DesarrolloCal {
     holguraContorno: (ajusteContorno(DEFAULT_PARAMS, m.radio > 0 ? (m.aguas > 0 ? 'TIPO 03' : 'TIPO 05') : (m.aguas > 0 ? 'TIPO 02' : 'TIPO 01')) - DEFAULT_PARAMS.ajusteContornoBase) * 10,
     costura: 10, bastilla: (m.margenBajo ?? DEFAULT_PARAMS.ajusteContornoBase / 2) * 10, fruncir: 50, pasos: 5,
     inicioOllao: 25, dentroOllao: 10, radioOllao: 2.5,
-    largoMarca: 20, marcaAtras: 50, repartoFrente: 350,
+    largoMarca: 20, marcaAtras: 50, marcaAtrasContinua: false, repartoFrente: 350,
     ventana: { ancho: 500, alto: 350, separacionTangencia: 50 },
   };
+  const recogidas = m.recogidas;
+  if (recogidas) {
+    const fruncido = esFruncidoGanado(recogidas);
+    h.fruncir = (fruncido ? m.fruncir : 1) * 10;
+    r.marcaAtras = fruncido ? h.fruncir : 0;
+    r.marcaAtrasContinua = fruncido && recogidas.marcaContinua !== false;
+    if (recogidas.puerta) h.puertaMorro = undefined;
+  }
   const g = generarCal(h, r) as unknown as DesarrolloCal;
-  return { ...g, pendientes: m.puerta === 'NINGUNA' || m.puertaMorro ? [] : [
+  if (recogidas && !esFruncidoGanado(recogidas)) g.piezas[0].marcas.splice(0, 2);
+  const base = { ...g, pendientes: m.puerta === 'NINGUNA' || m.puertaMorro || recogidas?.puerta ? [] : [
     `Falta definir la puerta ${m.puerta}: ancho terminado, cremallera hasta arriba, solapas y su unión con el morro. El dibujo muestra cuerpo, morro y frente; el corte completo queda a mano.`,
   ] };
+  return recogidas ? aplicarRecogidas(base, m, recogidas) : base;
 }

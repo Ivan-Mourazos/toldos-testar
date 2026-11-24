@@ -88,10 +88,9 @@ Revisión del AR2605385 contra 33 OF desde 2023, con prioridad a 2025–2026. [T
 
 ## Recogidas de ganado y caballos · estudio 04/11/2026
 
-Evidencia, pedidos terminados y propuesta sin programar en
-[ganado-recogidas.md](./ganado-recogidas.md). Las medidas de Cal ya confirmadas se mantienen;
-las respuestas siguientes fijan las reglas de la propuesta. Sigue siendo un estudio,
-sin cambios en la aplicación. **01, 02, 03, 05 y 06 contestadas; solo 04 abierta.**
+Evidencia y pedidos terminados en [ganado-recogidas.md](./ganado-recogidas.md).
+**Q-GANR01 a Q-GANR06 contestadas.** La configuración de recogidas de la web se activa por pedido.
+Los datos de confección que varían por pedido se introducen con sus medidas y trazados.
 
 | Código | Pregunta para Iván / taller | Qué se propone mientras tanto |
 | --- | --- | --- |
@@ -101,6 +100,11 @@ sin cambios en la aplicación. **01, 02, 03, 05 y 06 contestadas; solo 04 abiert
 | Q-GANR04 · contestada por Iván, 05/11 | **La tira es por los recortes de la puerta**: la puerta trasera del 4709 lleva recortes abajo en las esquinas, alrededor de los postes, y la tira de 95 × 8,5 es la tira de la oreja de abajo, que empieza más arriba por esos recortes (foto del remolque, 05/11/2026). Los recortes los pide el pedido; la puerta es la pieza normal con los recortes hechos. No es una pieza fija del ganado: solo va cuando la puerta lleva recortes. | Está en el **corte del bot**, DISCO1 **16B0/16B1/16B2**, y en la preparación de corte del DWG, no identificada como pieza suelta acotada en el PDF de 29/09. [Imagen señalada](../../tmp/ganado-recogidas/senalar-4709-tira.png). No convertirla en tira genérica sin conocer su función. |
 | Q-GANR05 · contestada por Iván, 04/11 | Las correas del 4038 son **HEBILLAS compradas**. En el planteamiento se dibujan como **rectángulos pequeños rosas**, no solo texto. El ejemplo de Iván, **AR2605331**, tiene cuatro de **2 × 10 cm**, capa **`referencia-1`**, color PorCapa **ACI 11**, con texto **«CORREAS DE RECOLLER»**. | **Solo plano**, según zona y posición del pedido; sin piezas de lona ni marcas en el corte del bot. [Imagen y posiciones medidas](./ganado-recogidas.md#cómo-dibujar-las-hebillas-ejemplo-de-iván-ar2605331). Los 2 × 10 describen el símbolo, no una medida de corte comercial. |
 | Q-GANR06 · contestada por Iván, 04/11 | El **«51» es una errata de la nota final del 4709**: el lateral MFD debe decir **«143 - 151 - 171»**. | Usar **151** en ese reparto. La [imagen de la nota original](../../tmp/ganado-recogidas/senalar-4709-nota.png) conserva el literal de la entidad **27045**, capa **`vent-pre-noimpr`**, para mantener la evidencia de la errata. Las revisiones del plano y del bot siguen identificadas por separado. |
+
+| Código | Dato pendiente de verificar | Qué hace la web |
+| --- | --- | --- |
+| Q-GANR07 · puentes | ¿Cuál es el trazado final de la puerta MFI, los rebajes del cuerpo y las posiciones de las parejas de ollaos para cada pedido? En el AR2604709, el corte archivado es anterior al reparto final. El AR2604038 tiene puentes a 33 y el trasero va fuera de línea. | Pide los trazados del pedido, con los rebajes, marcas y ollaos de su revisión. Deja el corte a mano si faltan. La tira de la oreja inferior se añade solo al marcar recortes y dar sus medidas. |
+| Q-GANR08 · velcro y hebillas | Falta contrastar la posición de las contrapartes de velcro y las hebillas por pieza en los pedidos completos. ¿Qué cotas de montaje acompañarán a cada pedido nuevo? | Las posiciones se introducen por pieza y zona. Las hebillas y el velcro se representan en el plano. |
 
 ## Cal: seguimiento del levantamiento 3D · 04/11/2026
 
