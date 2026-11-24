@@ -10,4 +10,4 @@ export type LineaLote = { IDOrderLine: string; CodOrder: string; NumLine?: numbe
   estado: 'validado' | 'a-mano'; motivos: string[]; avisos: string[]; corteMm?: number[]; terminadoMm?: number[]; palet?: number | null };
 /** Una fila del papel del cortador: lo que se corta de una referencia (o de un juego de canalones) en un palet. */
 export type FilaCortador = { palet: number | null; referencia: string; referencias?: string[]; unidades: number; como: string[]; pedidas: number; cuadra: boolean };
-export type Lote = { nombre: string; fecha: string; lineas: LineaLote[]; programas: Programa[]; cortador: FilaCortador[]; avisos: string[]; paletsCompletos: boolean; totalUnidades: number; aMano: number; dwgDisponible: boolean; destino: string };
+export type Lote = { nombre: string; fecha: string; lineas: LineaLote[]; programas: Programa[]; cortador: FilaCortador[]; avisos: string[]; paletsCompletos: boolean; paletsOficina?: Record<string, number[]> | null; totalUnidades: number; aMano: number; dwgDisponible: boolean; destino: string };

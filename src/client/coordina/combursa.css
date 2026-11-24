@@ -2,49 +2,78 @@
    El diálogo nativo conserva el foco dentro de esta pantalla de trabajo. */
 .combursa-dialogo { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: var(--hero-fondo, var(--bg)); color: var(--text); }
 .combursa-dialogo::backdrop { background: var(--bg); }
-.combursa-pagina { box-sizing: border-box; max-width: 1860px; height: 100%; margin: auto; padding: 16px 24px; display: flex; flex-direction: column; gap: 12px; }
-.combursa-cabecera { display: flex; align-items: center; justify-content: space-between; padding: 0 0 8px; }
-.combursa-cliente { color: var(--text-muted); font-size: 11px; font-weight: 600; letter-spacing: .08em; }
-.combursa-cabecera h1 { margin: 2px 0; font-size: 22px; }
-.combursa-cabecera p { margin: 0; font-size: 12px; color: var(--text-muted); }
+.combursa-pagina { box-sizing: border-box; max-width: 1860px; height: 100%; margin: auto; padding: 18px 24px; display: flex; flex-direction: column; gap: 12px; }
+.combursa-cabecera { display: flex; align-items: center; justify-content: space-between; padding: 0 0 6px; }
+.combursa-cliente { color: var(--text-muted); font-size: 11px; font-weight: 650; letter-spacing: .08em; }
+.combursa-cabecera h1 { margin: 3px 0 0; font-size: 26px; letter-spacing: -.03em; }
 .combursa-dialogo .ghost-button, .combursa-dialogo .primary-button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; font: inherit; font-size: 12px; padding: 8px 14px; }
-.combursa-pasos { display: flex; gap: 24px; list-style: none; margin: 0; padding: 0; font-size: 12px; color: var(--text-muted); }
-.combursa-pasos li { display: flex; gap: 6px; align-items: center; }
-.combursa-pasos span { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--surface-2); }
-.combursa-pasos [aria-current], .combursa-pasos .completado { color: var(--accent-text); font-weight: 600; }
-.combursa-pasos [aria-current] span { background: var(--tgm-yellow); color: var(--tgm-black); }
 .combursa-fecha { display: flex; gap: 12px; align-items: center; padding: 10px 14px; border-radius: var(--radius); }
-.combursa-fecha label { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; }
-.combursa-fecha input { width: 150px; padding: 7px 10px; }
-.combursa-fecha p { margin: 0 0 0 auto; color: var(--text-muted); font-size: 12px; }
-.combursa-dialogo input { border: 1px solid var(--control-border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font: inherit; }
-.combursa-resumen { display: flex; gap: 24px; }
-.combursa-dialogo .combursa-resumen > div.glass-panel { display: flex; align-items: center; gap: 8px; background: transparent; border: 0; box-shadow: none; }
-.combursa-resumen svg { width: 16px; color: var(--text-muted); }
-.combursa-resumen strong { font-size: 18px; font-variant-numeric: tabular-nums; }
-.combursa-resumen span { color: var(--text-muted); font-size: 12px; }
+.combursa-fecha label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }
+.combursa-fecha input { width: 144px; padding: 7px 10px; }
+.combursa-dialogo :is(input, select) { border: 1px solid var(--control-border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font: inherit; }
+.combursa-resumen { margin: 0 0 0 auto; display: flex; gap: 0; }
+.combursa-resumen > div { min-width: 77px; display: grid; gap: 1px; padding-inline: 14px; border-inline-start: 1px solid var(--border); }
+.combursa-resumen dt { color: var(--text-muted); font-size: 11px; }
+.combursa-resumen dd { margin: 0; font-weight: 650; font-size: 18px; font-variant-numeric: tabular-nums; }
 .combursa-vistas { display: flex; align-self: start; gap: 4px; padding: 4px; border-radius: var(--radius); }
-.combursa-vistas button { padding: 7px 14px; font: inherit; font-size: 12px; border-radius: var(--radius-sm); border: 0; background: transparent; color: var(--text); }
+.combursa-vistas button { padding: 7px 14px; font: inherit; font-weight: 550; font-size: 13px; border-radius: var(--radius-sm); border: 0; background: transparent; color: var(--text); }
 .combursa-contenido { flex: 1; min-height: 120px; overflow: auto; }
+.combursa-reparto { display: grid; grid-template-columns: 214px minmax(0, 1fr); gap: 12px; height: 100%; }
+.combursa-selector-palets { display: flex; flex-direction: column; min-height: 0; border-radius: var(--radius); }
+.combursa-selector-cabecera { display: grid; gap: 6px; padding: 12px 14px; border-bottom: 1px solid var(--border); }
+.combursa-selector-cabecera h2 { margin: 0 0 4px; font-size: 16px; }
+.combursa-selector-cabecera label { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+.combursa-selector-cabecera select { min-height: 34px; width: 100%; padding-inline: 8px; font-size: 13px; }
+.combursa-selector-lista { overflow: auto; padding: 8px; display: grid; gap: 3px; align-content: start; }
+.combursa-selector-lista button {
+  display: flex; align-items: center; gap: 10px; text-align: start; padding: 8px 9px; min-height: 45px; min-width: 0;
+  border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; color: var(--text); font: inherit; font-size: 13px;
+}
+.combursa-selector-lista button:hover { background: var(--surface-2); }
+.combursa-selector-lista button[aria-pressed="true"] { border-color: var(--control-active-border); background: var(--glass-chip); }
+.combursa-selector-lista svg { color: var(--text-muted); flex: none; }
+.combursa-selector-lista button[aria-pressed="true"] svg { color: var(--accent-text); }
+.combursa-selector-lista small { display: block; margin-top: 2px; color: var(--text-muted); font-size: 11px; }
 .combursa-listado { border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; max-height: 100%; }
 .combursa-listado > header { padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.combursa-listado h2, .combursa-corte h2 { margin: 0; font-size: 15px; }
+.combursa-listado h2, .combursa-corte h2 { margin: 0; font-size: 16px; }
 .combursa-listado > header span { color: var(--text-muted); font-size: 12px; }
+.combursa-origen { padding: 4px 9px; border-radius: var(--radius-sm); font-weight: 550; }
 .combursa-tabla-scroll { overflow: auto; }
-.combursa-listado table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
-.combursa-listado th { position: sticky; top: 0; text-align: left; background: var(--surface-2); color: var(--text-muted); z-index: 1; font-size: 11px; }
-.combursa-listado td, .combursa-listado th { padding: 7px 8px; border-top: 1px solid var(--border); vertical-align: top; overflow-wrap: anywhere; }
-.combursa-lineas th:nth-child(1) { width: 10%; } .combursa-lineas th:nth-child(2) { width: 9%; } .combursa-lineas th:nth-child(3) { width: 23%; }
-.combursa-lineas th:nth-child(4) { width: 6%; } .combursa-lineas th:nth-child(5) { width: 7%; } .combursa-lineas th:nth-child(6) { width: 13%; }
-.combursa-lineas th:nth-child(7) { width: 16%; } .combursa-lineas th:nth-child(8) { width: 7%; } .combursa-lineas th:nth-child(9) { width: 9%; }
+.combursa-tabla-scroll:focus-visible { outline-offset: -2px; }
+.combursa-listado table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; table-layout: fixed; }
+.combursa-listado th { text-align: left; }
+.combursa-listado thead th { position: sticky; top: 0; background: var(--surface-2); color: var(--text-muted); z-index: 2; font-size: 12px; }
+.combursa-listado td, .combursa-listado th { padding: 8px 10px; border-top: 1px solid var(--border); vertical-align: top; overflow-wrap: anywhere; }
+.combursa-lineas { min-width: 880px; }
+.combursa-lineas th:nth-child(1) { width: 122px; }
+.combursa-lineas th:nth-child(2) { width: 146px; }
+.combursa-lineas th:nth-child(4) { width: 57px; }
+.combursa-lineas th:nth-child(5) { width: 82px; }
+.combursa-lineas th:nth-child(6) { width: 96px; }
+.combursa-lineas th:nth-child(7) { width: 100px; }
+.combursa-lineas th:nth-child(8) { width: 66px; }
+.combursa-lineas th:nth-child(4), .combursa-lineas .combursa-numero { text-align: right; }
+.combursa-lineas tbody th[scope="row"] { position: sticky; left: 0; z-index: 1; background: var(--surface); font-weight: 600; }
+.combursa-listado-palets .combursa-grupo th { background: var(--zone); padding: 6px 10px; }
+.combursa-listado .combursa-grupo small { display: inline; margin-inline-start: 10px; font-weight: 400; }
+.combursa-of { font-variant-numeric: tabular-nums; }
+.combursa-estado { display: inline-block; padding: 2px 6px; border-radius: var(--radius-sm); font-size: 12px; white-space: nowrap; }
+.combursa-estado.pildora-aviso { border: 1px solid currentColor; }
+.combursa-estado.combursa-validado { background: var(--surface-2); }
+.combursa-listado details summary { display: list-item; width: fit-content; }
+.combursa-listado .combursa-grupo th span { color: var(--text); font-weight: 700; }
+.combursa-listado .combursa-suelta { justify-content: center; min-height: 26px; }
+.combursa-cortador .combursa-manual { color: var(--tramo-trabajo); }
+.combursa-dialogo .combursa-vacio { max-width: 100%; }
 .combursa-cortador th:nth-child(1) { width: 7%; } .combursa-cortador th:nth-child(2) { width: 24%; } .combursa-cortador th:nth-child(3) { width: 9%; }
 .combursa-cortador th:nth-child(4) { width: 48%; } .combursa-cortador th:nth-child(5) { width: 12%; }
 .combursa-listado small, .combursa-acciones small { display: block; color: var(--text-muted); margin-top: 3px; font-size: 11px; }
 .combursa-referencia, .combursa-numero { font-variant-numeric: tabular-nums; font-weight: 600; }
 .combursa-validado { color: var(--tramo-holgado); font-weight: 600; }
-.combursa-manual, .combursa-listado summary { color: var(--tramo-trabajo); }
+
 .combursa-listado details p { margin: 6px 0; }
-.combursa-dialogo input.combursa-palet { box-sizing: border-box; width: 100%; min-width: 48px; padding: 4px; text-align: center; }
+.combursa-dialogo input.combursa-palet { box-sizing: border-box; width: 100%; min-width: 48px; padding: 4px; text-align: center; border-color: var(--control-border); }
 .combursa-suelta { display: flex; gap: 4px; align-items: center; font-size: 11px; }
 .combursa-suelta input { accent-color: var(--color-brand-600); }
 .combursa-ayuda { color: var(--text-muted); margin: 4px 0; font-size: 12px; }
