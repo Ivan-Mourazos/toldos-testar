@@ -28,3 +28,10 @@ it('normaliza claves y descarta una capa sin nombre', () => {
 it('no sugiere herramienta si falta el color de la capa', () => {
   expect(asignarCapas([l('rara')], {}, {}, {}).desconocidas[0]).not.toHaveProperty('sugerida');
 });
+
+it('la capa cotas se quita siempre, aunque no esté en la tabla ni se haya elegido otra cosa (Iván, 24/11)', () => {
+  const r = asignarCapas([l('cotas'), l('COTAS'), l(' Cotas ')], {}, { COTAS: 'DISCO1' }, { cotas: { color: 3 } });
+  expect(r.piezas).toEqual([]);
+  expect(r.desconocidas).toEqual([]);
+  expect(r.descartadas).toBe(3);
+});

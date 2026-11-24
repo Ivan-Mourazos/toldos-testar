@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { CAPAS_FIJAS, claveCapa } from '../../cmt/preparacion/capas.ts';
 import { HERRAMIENTAS, type Herramienta } from '../../cmt/preparacion/tipos.ts';
 import { ETIQUETAS } from '../cmt/Pendientes';
+import { SelectField } from './SelectField';
 import '../cmt/cmt.css';
 
 type Tabla = Record<string, Herramienta>;
@@ -65,29 +66,29 @@ export function TablaCapasCorteForm({ tabla, ocupado, onCambio, onGuardar, sucio
   return <section className="cmt-config-capas" aria-label="Capas del corte">
     <h3>Capas del corte</h3>
     <p>Asigna una herramienta a las capas que usas al preparar DWG y DXF.</p>
-    <table className="cmt-tabla-capas">
-      <thead><tr><th scope="col">Capa</th><th scope="col">Herramienta</th><th scope="col"><span className="sr-only">Acciones</span></th></tr></thead>
-      <tbody>
-        {filas.map(([capa, h]) => <tr key={capa}>
-          <th scope="row">{capa}</th>
-          <td><select aria-label={`Herramienta para ${capa}`} value={h} disabled={ocupado}
-            onChange={e => onCambio(editarCapa(tabla, capa, e.target.value as Herramienta))}>
-            {HERRAMIENTAS.map(opcion => <option key={opcion} value={opcion}>{ETIQUETAS[opcion]}</option>)}
-          </select></td>
-          <td><button type="button" className="ghost-button" aria-label={`Quitar ${capa}`} disabled={ocupado}
-            onClick={() => onCambio(editarCapa(tabla, capa, null))}>Quitar</button></td>
-        </tr>)}
-        {!filas.length && <tr><td colSpan={3}>Aún no hay capas guardadas.</td></tr>}
-      </tbody>
-    </table>
-    <form className="cmt-tabla-capas cmt-capa-nueva" onSubmit={anadir}>
-      <label>Nombre de capa<input value={nombre} maxLength={255} disabled={ocupado} onChange={e => setNombre(e.target.value)} /></label>
-      <label>Herramienta<select aria-label="Herramienta de la capa nueva" value={herramienta} disabled={ocupado} onChange={e => setHerramienta(e.target.value as Herramienta | '')}>
-        <option value="">Elegir…</option>
-        {HERRAMIENTAS.map(h => <option key={h} value={h}>{ETIQUETAS[h]}</option>)}
-      </select></label>
-      <button type="submit" className="ghost-button" disabled={ocupado || !nombre.trim() || !herramienta}>Añadir capa</button>
-    </form>
+    {/* Los desplegables son los de la web (SelectField); el fieldset los bloquea mientras se guarda. */}
+    <fieldset className="cmt-capas-campos" disabled={ocupado}>
+      <table className="cmt-tabla-capas">
+        <thead><tr><th scope="col">Capa</th><th scope="col">Herramienta</th><th scope="col"><span className="sr-only">Acciones</span></th></tr></thead>
+        <tbody>
+          {filas.map(([capa, h]) => <tr key={capa}>
+            <th scope="row">{capa}</th>
+            <td><SelectField label={`Herramienta para ${capa}`} value={h} options={[...HERRAMIENTAS]}
+              optionLabel={opcion => opcion ? ETIQUETAS[opcion as Herramienta] : ''}
+              onChange={opcion => onCambio(editarCapa(tabla, capa, opcion as Herramienta))} /></td>
+            <td><button type="button" className="ghost-button" aria-label={`Quitar ${capa}`}
+              onClick={() => onCambio(editarCapa(tabla, capa, null))}>Quitar</button></td>
+          </tr>)}
+          {!filas.length && <tr><td colSpan={3}>Aún no hay capas guardadas.</td></tr>}
+        </tbody>
+      </table>
+      <form className="cmt-capa-nueva" onSubmit={anadir}>
+        <label className="field"><span>Nombre de capa</span><input value={nombre} maxLength={255} onChange={e => setNombre(e.target.value)} /></label>
+        <SelectField label="Herramienta de la capa nueva" value={herramienta} options={[...HERRAMIENTAS]} placeholder="Elegir…"
+          optionLabel={opcion => opcion ? ETIQUETAS[opcion as Herramienta] : ''} onChange={opcion => setHerramienta(opcion as Herramienta)} />
+        <button type="submit" className="ghost-button boton-3d" disabled={!nombre.trim() || !herramienta}>Añadir capa</button>
+      </form>
+    </fieldset>
     {error && <p className="cmt-error" role="alert">{error}</p>}
     <div className="cmt-resultado-acciones">
       <button type="button" className="primary-button" disabled={ocupado || !sucio} onClick={onGuardar}>{ocupado ? 'Guardando…' : 'Guardar capas'}</button>

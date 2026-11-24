@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { Pendientes, aplicarDecision, borradorInicial, completas, confirmarCapas } from './Pendientes';
-import { VistaPreparacion } from './VistaPreparacion';
+import { VistaPreparacion, textoVista } from './VistaPreparacion';
 import type { Pendientes as DatosPendientes } from '../../cmt/preparacion/index.ts';
 
 const pendientes: DatosPendientes = { capas: [{ capa: 'LINEAS', color: 7, piezas: 3, sugerida: 'DISCO1' }, { capa: 'GUIAS', color: 3, piezas: 1 }] };
@@ -27,8 +27,22 @@ describe('decisiones del corte', () => {
     const html = renderToStaticMarkup(<Pendientes pendientes={pendientes} valor={{}} onCambio={() => {}} onAplicar={() => {}} />);
     expect(html).toContain('Confirmar capas');
     expect(html).toContain('por su color');
-    expect(html).toMatch(/<option value="DISCO1" selected="">Disco 1/);
+    // Desplegables de la web (SelectField): la sugerida ya elegida y la otra capa pendiente de elegir.
+    expect(html).toMatch(/role="combobox"[^>]*title="Disco 1"[^>]*><span>Disco 1<\/span>/);
+    expect(html).toMatch(/<span[^>]*>Herramienta para GUIAS<\/span><button[^>]*class="select-control is-placeholder"[^>]*><span>Elegir…<\/span>/);
+    expect(html).not.toContain('<select');
     expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Aplicar decisiones/);
+  });
+
+  it('marco, cruces y solapes con opciones seguidas como el resto de la web', () => {
+    const html = renderToStaticMarkup(<Pendientes valor={{ marco: 1, cruces: 'excluir', solapes: { 'CUTTER|DISCO1': 'CUTTER' } }} onCambio={() => {}} onAplicar={() => {}}
+      pendientes={{ marcos: [{ x0: 0, y0: 0, x1: 1000, y1: 500 }, { x0: 0, y0: 0, x1: 2000, y1: 900 }], cruces: 3,
+        solapes: [{ clave: 'CUTTER|DISCO1', capas: ['CUTTER', 'DISCO1'], mm: 120, zonas: [] }] }} />);
+    expect(html).not.toContain('type="radio"');
+    expect(html).toMatch(/class="segmented-option tecla-3d active" aria-pressed="true">Marco 2 \(/);
+    expect(html).toMatch(/aria-pressed="true">Dejarlos fuera</);
+    expect(html).toMatch(/aria-pressed="true">Se queda CUTTER</);
+    expect(html).toContain('3 elementos cruzan el borde del marco');
   });
 });
 
@@ -40,4 +54,42 @@ it('pinta el círculo completo y el arco largo con la Y invertida', () => {
   ]} />);
   expect(html).toContain('<circle');
   expect(html).toContain('A 10 10 0 1 0');
+});
+
+describe('textos en la vista previa (Iván, 24/11/2026)', () => {
+  const texto = (capa: string, pares: [number, string][]) => ({ tipo: 'texto', capa, id: capa, pares } as const);
+  it('coloca el texto en su punto, con la altura de mayúscula y el giro del CAD', () => {
+    expect(textoVista(texto('texto', [[10, '100'], [20, '50'], [40, '71.6'], [50, '90'], [1, 'E.T.%%C33']]))).toEqual({
+      x: 100, y: -50, tamano: 100, giro: -90, ancho: 1, texto: 'E.T.∅33', alineacion: 'start', base: 'alphabetic' });
+  });
+  it('los justificados usan el segundo punto y su alineación', () => {
+    const v = textoVista(texto('ROTULADOR', [[10, '0'], [20, '0'], [11, '30'], [21, '40'], [40, '10'], [41, '0.8'], [72, '1'], [73, '2'], [1, 'A1']]));
+    expect(v).toMatchObject({ x: 30, y: -40, ancho: 0.8, alineacion: 'middle', base: 'central' });
+    expect(textoVista(texto('texto', [[10, '0'], [20, '0'], [11, '5'], [21, '6'], [40, '10'], [72, '2'], [73, '3'], [1, 'X']])))
+      .toMatchObject({ x: 5, y: -6, alineacion: 'end', base: 'hanging' });
+  });
+  it('pinta los textos con el color de su capa y los pone en la leyenda', () => {
+    const html = renderToStaticMarkup(<VistaPreparacion vista={[
+      { tipo: 'linea', capa: 'DISCO1', id: 'l', a: { x: 0, y: 0 }, b: { x: 500, y: 0 } },
+      texto('texto', [[10, '10'], [20, '10'], [40, '50'], [1, 'REVÉS']]),
+      texto('ROTULADOR', [[10, '100'], [20, '10'], [40, '50'], [1, 'A1']]),
+    ]} />);
+    expect(html).toMatch(/<text[^>]*class="cmt-letra cmt-texto"[^>]*>REVÉS<\/text>/);
+    expect(html).toMatch(/<text[^>]*class="cmt-letra cmt-rotulador"[^>]*>A1<\/text>/);
+    expect(html).toContain('Texto');
+  });
+});
+
+describe('colores del plano en la vista previa (Iván, 24/11/2026)', () => {
+  it('cada raya con su color del plano y DISCO1 siempre con la tinta (negro en claro, blanco en oscuro)', () => {
+    const html = renderToStaticMarkup(<VistaPreparacion vista={[
+      { tipo: 'linea', capa: 'DISCO1', id: 'a', a: { x: 0, y: 0 }, b: { x: 500, y: 0 }, color: '#0000ff' },
+      { tipo: 'linea', capa: 'ROTULADOR', id: 'b', a: { x: 0, y: 10 }, b: { x: 500, y: 10 }, color: '#ff0000' },
+      { tipo: 'texto', capa: 'texto', id: 'c', pares: [[10, '10'], [20, '10'], [40, '50'], [1, 'A1']], color: '#004c13' },
+    ]} />);
+    expect(html).toMatch(/<line class="cmt-trazo cmt-disco1"(?![^>]*--cmt-claro)[^>]*>/);
+    expect(html).toMatch(/<line class="cmt-trazo cmt-rotulador cmt-plano"[^>]*style="--cmt-claro:#ff0000;--cmt-oscuro:#ff0000"/);
+    expect(html).toMatch(/<text class="cmt-letra cmt-texto cmt-plano"[^>]*style="--cmt-claro:#004c13;--cmt-oscuro:#(?!004c13)/);
+    expect(html).toMatch(/<li><i class="cmt-rotulador cmt-plano" style="--cmt-claro:#ff0000;--cmt-oscuro:#ff0000"/);
+  });
 });
