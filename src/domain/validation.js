@@ -120,6 +120,10 @@ function materialKey(of, code) {
 }
 
 function normalizeAwning(awning, _index, legacyOrder = {}) {
+  const letra = awning?.letra;
+  if (letra != null && letra !== '' && (typeof letra !== 'string' || !/^[A-Z]{1,2}$/.test(letra))) {
+    throw new Error('La letra del toldo debe tener una o dos letras de la A a la Z en mayúsculas.');
+  }
   const of = cleanText(awning?.of);
   const rawModel = cleanText(awning?.model).toUpperCase();
   const model = normalizeModelName(rawModel);
@@ -142,6 +146,8 @@ function normalizeAwning(awning, _index, legacyOrder = {}) {
 
   return {
     id: cleanText(awning?.id),
+    ...(letra ? { letra } : {}),
+    ...(Number.isSafeInteger(awning?.posicionLetra) && awning.posicionLetra >= 0 ? { posicionLetra: awning.posicionLetra } : {}),
     workType: getModelWorkType(model),
     of,
     model,

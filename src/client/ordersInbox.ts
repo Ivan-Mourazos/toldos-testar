@@ -1,7 +1,7 @@
 import type { CoordinaStatus, PedidoBandeja } from './types';
 import type { ResumenBorrador } from '../borradores/tipos.ts';
 import { productoDeModelos } from '../puertas/producto.ts';
-import { authorNames, coordinaGroup, isPendingGeneration, normalizeOf } from '../reviewRules.js';
+import { TERMINADO_SIN_GENERAR, authorNames, coordinaGroup, isPendingGeneration, normalizeOf } from '../reviewRules.js';
 import { generarToldosPermitido } from '../toldosEditable.js';
 
 // Bandeja de Pedidos (diseño 24/09/2026, apartado 4): pendientes de generar (todo lo
@@ -91,7 +91,7 @@ export function inboxSections<T extends PedidoBandeja>(
   const pending = (scope === 'mine' ? pendingMineList : pendingAllList).filter((review) => matches(review, query));
   // Toldos y remolques llegan en dos listas seguidas: sin reordenar, los días de remolques que no tienen
   // toldos (p. ej. el de hoy) quedaban al final del historial (Iván, 21/10/2026).
-  const history = historySource.filter((review) => review.status === 'PRODUCED' && ofProduct(review) && matches(review, query))
+  const history = historySource.filter((review) => (review.status === 'PRODUCED' || review.status === TERMINADO_SIN_GENERAR) && ofProduct(review) && matches(review, query))
     .sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
   return { pending, history, pendingMine: pendingMineList.length, pendingAll: pendingAllList.length };
 }
@@ -163,7 +163,7 @@ export const nombreMes = (clave: string) => {
   return `${nombre.charAt(0).toUpperCase()}${nombre.slice(1)} ${anio}`;
 };
 
-export function recortarPorMeses<T extends { updatedAt?: string }>(history: T[], meses: number, buscando: boolean) {
+export function recortarPorMeses<T extends { updatedAt?: string; status?: string }>(history: T[], meses: number, buscando: boolean) {
   const claves = [...new Set(history.map((p) => claveMes(p.updatedAt)).filter((c): c is string => c !== null))].sort().reverse();
   if (buscando || claves.length <= meses) return { visibles: history, ocultos: 0, siguiente: null as string | null };
   const enVista = new Set(claves.slice(0, meses));
@@ -184,10 +184,10 @@ export function groupByMonth<T extends PedidoBandeja>(reviews: T[]) {
 }
 
 /** Pedidos: lo que se ha generado hoy (día local), para ver que salió lo que se acaba de pasar. */
-export function generadosDeHoy<T extends { updatedAt?: string }>(history: T[], ahora = new Date()) {
+export function generadosDeHoy<T extends { updatedAt?: string; status?: string }>(history: T[], ahora = new Date()) {
   return history.filter((p) => {
     const d = new Date(p.updatedAt || '');
-    return !Number.isNaN(d.getTime()) && d.toDateString() === ahora.toDateString();
+    return p.status !== TERMINADO_SIN_GENERAR && !Number.isNaN(d.getTime()) && d.toDateString() === ahora.toDateString();
   });
 }
 
@@ -213,12 +213,17 @@ export function groupByDay<T extends PedidoBandeja>(reviews: T[]) {
 // Etiquetas de toldos de una fila (Iván, 01/10/2026: «no caben si hay varios toldos»).
 // Hasta `limit` toldos se enseña una etiqueta por toldo; con más, los toldos vecinos que
 // tienen el mismo estado se juntan en una sola («A–C»), y el detalle va en el título.
-export function collapseAwnings<T extends { letter: string }>(items: T[], keyOf: (item: T) => string, limit = 6) {
+const numeroDeLetra = (letra: string) => [...letra].reduce((n, c) => n * 26 + c.charCodeAt(0) - 64, 0);
+const letrasSeguidas = (anterior: string, siguiente: string) => numeroDeLetra(anterior) + 1 === numeroDeLetra(siguiente);
+
+export function collapseAwnings<T extends { letter: string }>(items: T[], keyOf: (item: T) => string, limit = 6, comprobarLetras = false) {
   const groups: { label: string; items: T[] }[] = [];
   const crowded = items.length > limit;
   for (const item of items) {
     const last = groups[groups.length - 1];
-    if (crowded && last && keyOf(last.items[0]) === keyOf(item)) last.items.push(item);
+    const previo = last?.items.at(-1);
+    if (crowded && last && keyOf(last.items[0]) === keyOf(item)
+      && (!comprobarLetras || (previo && letrasSeguidas(previo.letter, item.letter)))) last.items.push(item);
     else groups.push({ label: item.letter, items: [item] });
     const group = groups[groups.length - 1];
     if (group.items.length > 1) group.label = `${group.items[0].letter}–${item.letter}`;
@@ -229,7 +234,7 @@ export function collapseAwnings<T extends { letter: string }>(items: T[], keyOf:
 // Nota de devolución de CoordinaOT por toldo. CoordinaOT la guarda por OF, y varios toldos pueden
 // compartir OF (AR2604890: 18 cortinas en la 0232762). Iván, 21/10/2026: salía en todos y no debe;
 // va una vez, en el primer toldo de la OF, con las letras de los que la comparten.
-export function notasDevolucion(items: { letter: string; of?: string | null }[], status: CoordinaStatus | null) {
+export function notasDevolucion(items: { letter: string; of?: string | null }[], status: CoordinaStatus | null, comprobarLetras = false) {
   const notas: Record<string, { nota: string; letras: string }> = {};
   if (!status?.disponible) return notas;
   const porOf = new Map<string, number[]>();
@@ -240,7 +245,8 @@ export function notasDevolucion(items: { letter: string; of?: string | null }[],
   for (const [of, indices] of porOf) {
     const estado = status.ofs?.[of];
     if (estado?.estado !== 'devuelta' || !estado.nota) continue;
-    const seguidos = indices.every((n, k) => k === 0 || n === indices[k - 1] + 1);
+    const seguidos = indices.every((n, k) => k === 0 || n === indices[k - 1] + 1
+      && (!comprobarLetras || letrasSeguidas(items[indices[k - 1]].letter, items[n].letter)));
     const letras = indices.length === 1 ? '' : seguidos && indices.length > 2
       ? `${items[indices[0]].letter}–${items[indices.at(-1)!].letter}`
       : indices.map((n) => items[n].letter).join(', ');

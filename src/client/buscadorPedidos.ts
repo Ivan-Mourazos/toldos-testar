@@ -57,6 +57,7 @@ function puntua(i: Indice, q: string, separado: string | null, busca: string[]):
 
 const dos = (n: number) => String(n).padStart(2, '0');
 function donde(p: PedidoBandeja) {
+  if (p.status === 'TERMINADO_SIN_GENERAR') return 'Terminado sin generar · en Historial';
   if (p.status !== 'PRODUCED') return 'Pendiente · en Pedidos';
   const d = new Date(p.updatedAt);
   return Number.isNaN(d.getTime()) ? 'Generado' : `Generado el ${dos(d.getDate())}/${dos(d.getMonth() + 1)}/${String(d.getFullYear()).slice(2)}`;

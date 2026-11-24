@@ -23,6 +23,11 @@ describe('System Dock en Pedidos', () => {
   });
 });
 
+it('agrupa letras consecutivas sin incluir toldos que se quitaron', () => {
+  const toldos = ['A', 'B', 'C', 'D', 'E', 'J', 'K'].map(letter => ({ letter }));
+  expect(collapseAwnings(toldos, () => 'ok', 6, true).map(g => g.label)).toEqual(['A–E', 'J–K']);
+});
+
 describe('inboxSections', () => {
   const pending = [
     review('AR1', 'PENDING_REVIEW', 'IVÁN'),
@@ -39,6 +44,16 @@ describe('inboxSections', () => {
     expect(result.pending.map((r) => r.orderCode)).toEqual(['AR1', 'AR2', 'AR3']);
     // AR5 está en la lista del año del Historial, pero no está generado: no entra.
     expect(result.history.map((r) => r.orderCode)).toEqual(['AR4']);
+  });
+
+  it('incluye el cierre manual en el historial y lo excluye de Generados hoy', () => {
+    const ahora = new Date(2026, 10, 24, 12);
+    const cerrado = review('AR6', 'TERMINADO_SIN_GENERAR', 'IVÁN', { updatedAt: ahora.toISOString() });
+    const generado = review('AR7', 'PRODUCED', 'IVÁN', { updatedAt: ahora.toISOString() });
+    const result = inboxSections({ pending: [cerrado], history: [cerrado, generado] }, { me: 'IVÁN', scope: 'all', query: '' });
+    expect(result.pending).toEqual([]);
+    expect(result.history).toEqual([cerrado, generado]);
+    expect(generadosDeHoy(result.history, ahora)).toEqual([generado]);
   });
 
   it('el año del Historial no filtra los pendientes', () => {

@@ -1,3 +1,4 @@
+import { avisoLetrasDuplicadas } from './domain/awningCompleteness.js';
 import { approvalReviewers, generationBlock, normalizeOf } from './reviewRules.js';
 
 export const AVISO_APROBADO = 'Ya está aprobado en CoordinaOT; estos cambios no los ha revisado nadie.';
@@ -12,7 +13,8 @@ export function aprobacionToldos(estado) {
   return estado ? { ...estado, ofs } : estado;
 }
 
-export const generarToldosPermitido = (elementos, estado) => generationBlock(elementos, aprobacionToldos(estado));
+export const generarToldosPermitido = (elementos, estado) =>
+  avisoLetrasDuplicadas(elementos) ?? generationBlock(elementos, aprobacionToldos(estado));
 
 /** Editar y guardar no es revisar: el cajetín solo recoge revisores de CoordinaOT. */
 export function autoriaToldos(order, savedBy, estado, tecnicos = []) {

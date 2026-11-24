@@ -1,4 +1,4 @@
-import { awningLetter, getMissingFields } from '../domain/awningCompleteness.js';
+import { letraToldo, getMissingFields } from '../domain/awningCompleteness.js';
 import type { Awning } from './types';
 
 // Toldos por bloques (rediseño 24/09/2026, §6): una fila de tarjetas que pasa de
@@ -20,12 +20,16 @@ export function pageOfIndex(index: number, perPage: number) {
   return Math.floor(index / perPage);
 }
 
-export function pageLabel(page: number, perPage: number, count: number) {
+export function pageLabel(page: number, perPage: number, count: number, awnings?: Pick<Awning, 'letra'>[]) {
   const first = page * perPage;
   const last = Math.min(first + perPage, count) - 1;
+  const visibles = awnings?.slice(first, last + 1);
+  if (visibles?.some(toldo => toldo.letra)) {
+    return `${visibles.map((toldo, i) => letraToldo(toldo, first + i)).join(', ')} de ${count}`;
+  }
   return first === last
-    ? `${awningLetter(first)} de ${count}`
-    : `${awningLetter(first)} – ${awningLetter(last)} de ${count}`;
+    ? `${letraToldo(awnings?.[first], first)} de ${count}`
+    : `${letraToldo(awnings?.[first], first)} – ${letraToldo(awnings?.[last], last)} de ${count}`;
 }
 
 // El índice dice primero lo que falta, luego los errores y por último los avisos.

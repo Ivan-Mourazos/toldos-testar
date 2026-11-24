@@ -193,6 +193,26 @@ export function describeMissing(missing) {
   return `${labels.slice(0, -1).join(', ')} y ${labels.at(-1)}`;
 }
 
+/** @param {{ letra?: string, posicionLetra?: number } | null | undefined} toldo @param {number} indice */
+export function letraToldo(toldo, indice) {
+  return (typeof toldo?.letra === 'string' && toldo.letra) || awningLetter(toldo?.posicionLetra ?? indice);
+}
+
+export function avisoLetrasDuplicadas(elementos) {
+  const vistas = new Set();
+  const repetidas = new Set();
+  for (const { letter } of elementos) {
+    if (vistas.has(letter)) repetidas.add(letter);
+    vistas.add(letter);
+  }
+  if (repetidas.size === 1) return `La letra ${[...repetidas][0]} está repetida. Cambia la letra de uno de esos toldos.`;
+  if (repetidas.size > 1) return `Las letras ${[...repetidas].join(', ')} están repetidas. Cambia las letras de esos toldos.`;
+  return null;
+}
+
+export const avisoLetrasPedido = (toldos) =>
+  avisoLetrasDuplicadas(toldos.map((toldo, indice) => ({ letter: letraToldo(toldo, indice) })));
+
 export function awningLetter(index) {
   let value = index + 1;
   let label = '';

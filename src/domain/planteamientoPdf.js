@@ -1,3 +1,4 @@
+import { letraToldo } from './awningCompleteness.js';
 import { planteamientoConEmbudoCad } from './embudoPlanteamientoCad.js';
 import { createReviewPackage } from '../workflow.js';
 import { normalizeFabricImage } from './fabricImage.js';
@@ -327,7 +328,7 @@ function buildPdfkitPlanteamiento({ order: fullOrder, calculation, review, onlyA
           doc.addPage({ size: 'A5', layout: 'landscape', margin: 0 });
           drawStructureHeader(doc, { order, awning, index, margin: 14, pageW: doc.page.width });
           remaining = drawNotesBox(doc, 14, 88, doc.page.width - 28, doc.page.height - 24, remaining, true);
-          drawPageFooter(doc, 14, doc.page.width, doc.page.height, `Toldo ${awningLetter(index)} · Observaciones (continuación)`);
+          drawPageFooter(doc, 14, doc.page.width, doc.page.height, `Toldo ${letraToldo(awning, index)} · Observaciones (continuación)`);
         }
       }
       structureRanges[structureIndex] = { start, end: pageCount };
@@ -540,7 +541,7 @@ function drawStructurePage(doc, { order, awning, ofBlock, index, continuation = 
       ? drawNotesBox(doc, margin, notesTop, leftW, dinamicas ? Math.min(notesBottom, notesTop + altoNotas) : notesBottom, notas)
       : iris ? notas : drawNotesBox(doc, rightX, 336, rightW, notesBottom, notas);
   }
-  drawPageFooter(doc, margin, pageW, pageH, `Toldo ${awningLetter(index)} · Estructura${continuation}`);
+  drawPageFooter(doc, margin, pageW, pageH, `Toldo ${letraToldo(awning, index)} · Estructura${continuation}`);
   return remaining;
 }
 
@@ -573,7 +574,7 @@ function drawStructureHeader(doc, { order, awning, index, margin, pageW }) {
     .text(value(awning.model === 'ELECTRA' ? 'ELECTRA / ELIT VERTICAL' : awning.model === 'MAXISCREEM' ? 'DIANA VERTICAL / MAXISCREEN' : isHeraAwning(awning) ? heraHeading(awning) : awning.model), bodyX + 52, 69, { width: bodyW - orderW - 52, align: 'center' });
   doc.fontSize(8).text(value(isHeraAwning(awning) ? heraDevice(awning) : awning.device), orderX, 69, { width: orderW, align: 'center' });
   doc.fillColor(colors.yellow).font(fonts.bold).fontSize(6.5)
-    .text(`TOLDO ${awningLetter(index)}`, bodyX + 7, 69.5, { width: 50 });
+    .text(`TOLDO ${letraToldo(awning, index)}`, bodyX + 7, 69.5, { width: 50 });
 }
 
 function drawDespieceTable(doc, x, y, w, rows, maxBottom = Infinity, measuredRowH = null) {
@@ -950,7 +951,7 @@ export function buildFabricSheetPages({ order: fullOrder, calculation, onlyAwnin
         const detail = buildFabricLineDetail(line.awning, line.calc, order);
         const work = works.size > 1 ? detail.workLabel : '';
         return {
-          letter: awningLetter(line.index),
+          letter: letraToldo(line.awning, line.index),
           fabricWidth: dash(detail.fabricWidth),
           dropLabel: isVerticalAwningModel(line.awning.model) ? 'CAÍDA' : 'SALIDA',
           fabricDrop: dash(detail.fabricDrop),
@@ -984,7 +985,7 @@ export function buildStructureSheetPages({ order: fullOrder, calculation, onlyAw
     const split = splitDespiece(ofBlock?.despiece?.rows || []);
     const anchoring = ofBlock?.despiece?.anchoring;
     const vertical = isVerticalAwningModel(awning.model);
-    const letter = awningLetter(index);
+    const letter = letraToldo(awning, index);
     const modelName = String(awning.model ?? '').trim().toUpperCase();
     const model = awning.model === 'ELECTRA'
       ? 'ELECTRA / ELIT VERTICAL'
@@ -1127,7 +1128,7 @@ function drawExcelFabricBody(doc, { order, lines, diagram, diagramAwning, diagra
   lines.forEach((line, localIndex) => {
     const y = rowY + localIndex * (rowH + rowGap);
     const detail = buildFabricLineDetail(line.awning, line.calc, order);
-    drawCell(doc, contentX, y, letterW, rowH, awningLetter(line.index), {
+    drawCell(doc, contentX, y, letterW, rowH, letraToldo(line.awning, line.index), {
       bold: true, size: 26, align: 'center', fill: colors.yellow
     });
 
@@ -1275,7 +1276,7 @@ export function fabricPageNotes(order = {}, lines = []) {
         ...comentarios(awning.fabricNotes),
         ...(special ? comentarios(awning.structureNotes).map((text) => `ACLARACIONES: ${text}`) : [])
       ].filter(Boolean);
-      return parts.map((text) => lines.length > 1 ? `${awningLetter(index)}: ${text}` : text);
+      return parts.map((text) => lines.length > 1 ? `${letraToldo(awning, index)}: ${text}` : text);
     });
   return [...comentarios(order.notes), ...awningNotes].join('\n');
 }
@@ -3048,16 +3049,7 @@ function chunkItems(items, size) {
   return groups;
 }
 
-export function awningLetter(index) {
-  let number = index + 1;
-  let label = '';
-  while (number > 0) {
-    number -= 1;
-    label = String.fromCharCode(65 + (number % 26)) + label;
-    number = Math.floor(number / 26);
-  }
-  return label;
-}
+export { awningLetter } from './awningCompleteness.js';
 
 function registerFonts(doc) {
   if (!hasEmbeddedFonts) return;

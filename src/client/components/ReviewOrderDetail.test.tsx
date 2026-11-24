@@ -16,10 +16,20 @@ const pedido = (fabric: string, model = 'GALICIA'): ReviewPackage => ({
 const pintar = (review: ReviewPackage, currentUser = 'JAIME') => renderToStaticMarkup(
   <ReviewOrderDetail review={review} parameters={normalizeRuleParameters() as RuleParameters} loading={false} currentUser={currentUser}
     coordinaStatus={{ disponible: true, ofs: { '0232568': { estado: 'por_revisar' } } }} disabled={false} generating={false}
-    onBack={nada} onEdit={nada} onReuse={nada} onGenerate={nada} onGuardarCorte={nada} />,
+    onBack={nada} onEdit={nada} onReuse={nada} onGenerate={nada} onGuardarCorte={nada} onGestion={nada} />,
 );
 
 describe('los documentos del pedido de toldos', () => {
+  it('abre un pedido terminado sin archivos y permite volver a pendiente', () => {
+    const review: ReviewPackage = { ...pedido('ACRILI2018P120'), status: 'TERMINADO_SIN_GENERAR', production: null,
+      terminadoSinGenerar: { usuario: 'IVÁN', motivo: 'Hecho en taller', fecha: '2026-11-24T11:00:00Z', estadoAnterior: 'PENDING_REVIEW' } };
+    const html = pintar(review);
+    expect(html).toContain('Terminado sin generar');
+    expect(html).toContain('Hecho en taller');
+    expect(html).toContain('Volver a pendiente');
+    expect(html).not.toContain('Pasar a producción');
+    expect(html).not.toContain('Entrega 1 · En curso');
+  });
   it('un corte marcado no muestra éxito verde en su bloque', () => {
     const review = { ...pedido('PVC|||250|||LONA PVC|||PLASTICA (LONA)'), corteNoRegenerado: true,
       corteConfirmado: { por: 'ANA', fecha: '', filename: 'corte.dwg' } };

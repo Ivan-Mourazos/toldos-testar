@@ -3216,6 +3216,13 @@ dialog.review-inline-preview:modal { position: fixed; inset: 0; margin: 0; width
 
 .awning-column.is-flash { box-shadow: 0 0 0 3px #efb51b; transition: box-shadow 0.3s; }
 /* Al saltar a un toldo (Qué revisar, avisos), la barra superior fija no tapa su cabecera. */
+.awning-letter-input {
+  width: 3.6ch;
+  padding: 0;
+  text-align: center;
+  color: var(--text);
+  font: inherit;
+}
 .awning-column[data-awning-letter] { scroll-margin-top: calc(var(--topnav-height) + 16px); }
 
 /* Solo lectura con aspecto de texto: antes parecía que se podía editar. */

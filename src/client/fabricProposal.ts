@@ -1,5 +1,5 @@
 import type { Awning, FabricProposal } from './types';
-import { awningLetter } from '../domain/awningCompleteness.js';
+import { letraToldo } from '../domain/awningCompleteness.js';
 
 // Aplica una tela propuesta (Tarea 3, rediseño 4 §10): el técnico elige una opción
 // de un bloque de propuestas y esto la pone en el pedido.
@@ -118,6 +118,6 @@ export function sanitizeFabricProposals(value: unknown): FabricProposal[] {
   });
 }
 
-function lettersOf(awnings: Pick<Awning, 'id'>[], keep: (awning: Pick<Awning, 'id'>) => boolean) {
-  return awnings.flatMap((awning, index) => (keep(awning) ? [awningLetter(index)] : [])).join(', ');
+function lettersOf(awnings: Pick<Awning, 'id' | 'letra'>[], keep: (awning: Pick<Awning, 'id' | 'letra'>) => boolean) {
+  return awnings.flatMap((awning, index) => (keep(awning) ? [letraToldo(awning, index)] : [])).join(', ');
 }

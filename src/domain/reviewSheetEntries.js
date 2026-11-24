@@ -1,3 +1,4 @@
+import { letraToldo } from './awningCompleteness.js';
 import { formatNumber } from './math.js';
 import { fabricDropAdjustmentCm } from './fabricDropAdjustment.js';
 import { resolveCambioTelaExtraCm } from './fabricJobParameters.js';
@@ -205,7 +206,7 @@ export function buildReviewSheetEntries(order, calculation) {
     }
 
     return {
-      awning, letter: awningLetter(index), tag: `${fabricOnly ? 'TELA' : 'TOLDO'} ${awningLetter(index)}`,
+      awning, letter: letraToldo(awning, index), tag: `${fabricOnly ? 'TELA' : 'TOLDO'} ${letraToldo(awning, index)}`,
       title: reviewDisplayLabel(awning.model || 'MODELO SIN INDICAR'),
       legacyTitle: legacyModelNames[String(awning.model || '').toUpperCase()] || '',
       status: reviewStatus(awning, ofBlock, diagnostics), fields: cardFields,
@@ -263,5 +264,3 @@ export function fabricLabel(selection) {
   if (!fabric) return String(selection);
   return `${fabric.description || 'TELA'} · ${fabric.code}`;
 }
-
-function awningLetter(index) { return String.fromCharCode(65 + (index % 26)); }

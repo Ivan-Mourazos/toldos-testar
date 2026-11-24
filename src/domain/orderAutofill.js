@@ -1,3 +1,4 @@
+import { letraToldo } from './awningCompleteness.js';
 import { serializeFabricSelection } from './fabricCatalog.js';
 import { normalizeEmbudo } from './embudoConfiguration.js';
 import { getFieldVisibility, getModelBehavior } from './modelBehavior.js';
@@ -72,7 +73,7 @@ export function buildOrderAutofill({ header = {}, lines = [], materials = [], pu
       warnings.push(`OF ${awning.of}: RPS contiene más de una tela, pero falta confirmar la bambalina; solo se ha propuesto la principal y debes revisar la otra referencia.`);
     }
     recovered.push(...describeRecoveredAwning(awning, index));
-    if (purchasedMotor) recovered.push(`${letter(index)} · ${awning.model}: motor (pedido de compra)`);
+    if (purchasedMotor) recovered.push(`${letraToldo(awning, index)} · ${awning.model}: motor (pedido de compra)`);
     return awning;
   });
 
@@ -556,7 +557,7 @@ function inferOrderModelDescription(model) {
 }
 
 function describeRecoveredAwning(awning, index) {
-  const prefix = `${letter(index)} · ${awning.model}`;
+  const prefix = `${letraToldo(awning, index)} · ${awning.model}`;
   const fields = [
     [awning.of, 'OF'], [awning.units, 'unidades'], [awning.width, 'frente'],
     [awning.projection, usesDropDimension(awning.model) ? 'caída' : 'salida'],
@@ -615,7 +616,7 @@ function describePendingAwning(awning, index) {
   if (curtainLike && !awning.curtainFinish) pending.push(awning.model.includes('CORTINA') ? 'laterales' : 'confección inferior');
   if (awning.model === 'HERA') pending.push('lado respecto a ventana');
   if (!awning.fabric && !awning.irisGlassCurtain) pending.push('tela');
-  return pending.map((field) => `${letter(index)} · ${awning.model}: ${field}`);
+  return pending.map((field) => `${letraToldo(awning, index)} · ${awning.model}: ${field}`);
 }
 
 function isAuxiliaryLine(line) {

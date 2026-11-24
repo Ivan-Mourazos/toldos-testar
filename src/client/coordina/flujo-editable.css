@@ -26,6 +26,11 @@
 .destino-entrega fieldset { margin-block: 16px; border: 1px solid var(--border); border-radius: 8px; }
 .destino-entrega label { display: inline-flex; gap: 8px; align-items: center; padding: 10px 16px 10px 0; }
 .destino-entrega footer { display: flex; justify-content: flex-end; gap: 12px; }
+.gestion-toldos { width: min(28rem, calc(100vw - 64px)); }
+.gestion-toldos:modal { overscroll-behavior: contain; }
+.gestion-toldos::backdrop { overflow: hidden; overscroll-behavior: contain; }
+.gestion-toldos label { display: grid; padding: 0; margin-bottom: 16px; }
+.motivo-cierre-toldos { max-width: 75ch; overflow-wrap: anywhere; margin-block: 6px 0; }
 .destino-entrega .lonas-entrega td { vertical-align: top; }
 .lonas-entrega .lona-descripcion { display: block; }
 .lonas-entrega small { color: var(--text-muted); }

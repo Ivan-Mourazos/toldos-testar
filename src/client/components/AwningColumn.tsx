@@ -5,7 +5,7 @@ import { withoutAwningPrefix } from '../diagnosticText';
 import type { Awning, BoxDevice, Calculation, CortinaDevice, ElectraSupport, RuleParameters } from '../types';
 import { formOptions, getFabricDiagramOptions, normalizeValanceFinish } from '../../domain/modelBehavior.js';
 import { useVisibleFields } from '../hooks/useVisibleFields';
-import { awningLetter, getMissingFields } from '../../domain/awningCompleteness.js';
+import { awningLetter, letraToldo, getMissingFields } from '../../domain/awningCompleteness.js';
 import { TextField } from './TextField';
 import { NumberField } from './NumberField';
 import { curtainConfigurationFields } from './CurtainConfigurationFields';
@@ -372,19 +372,24 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
     <fieldset
       className={`awning-column panel${fabricOnly ? ' fabric-only-column' : ''}${readOnly ? ' is-readonly' : ''}`}
       disabled={readOnly}
-      aria-label={`${fabricOnly ? 'Trabajo de tela' : 'Toldo'} ${String.fromCharCode(65 + index)} · ${controlLabel(awning.model)}`}
+      aria-label={`${fabricOnly ? 'Trabajo de tela' : 'Toldo'} ${letraToldo(awning, index)} · ${controlLabel(awning.model)}`}
       aria-readonly={readOnly || undefined}
-      data-awning-letter={awningLetter(index)}
+      data-awning-letter={letraToldo(awning, index)}
       onKeyDown={avanzarConIntro}
     >
       {/* Cabecera en una línea: «TOLDO A · Arzúa Pro» y el estado. El nombre antiguo ya sale
           en Parámetros y en «Añadir toldo»; aquí solo ocupaba sitio (Iván, 25/09/2026). */}
       <header className="awning-column-header">
         <span className="awning-column-heading">
-          <span className="awning-column-tag">{`${awning.model === 'EMBUDO' ? 'EMBUDO' : fabricOnly ? 'TELA' : 'TOLDO'} ${awningLetter(index)}`}</span>
+          <span className="awning-column-tag">{awning.model === 'EMBUDO' ? 'EMBUDO' : fabricOnly ? 'TELA' : 'TOLDO'}{' '}
+            {readOnly ? letraToldo(awning, index) : <input className="awning-letter-input" type="text"
+              aria-label={`Letra del elemento ${awningLetter(index)}`} title="Letra del elemento. Vacío: automática."
+              autoComplete="off" spellCheck={false} placeholder={awningLetter(index)} maxLength={2}
+              value={awning.letra ?? ''} onChange={event => update({ letra: event.target.value.replace(/[^A-Za-z]/g, '').toUpperCase().slice(0, 2) })} />}
+          </span>
           {!readOnly && onChangeModel
             ? (
-              <button type="button" className="awning-model-title awning-model-change" title="Cambiar el modelo: sigue en el mismo puesto" aria-label={`Cambiar el modelo del ${fabricOnly ? 'trabajo' : 'toldo'} ${awningLetter(index)}: ${controlLabel(awning.model)}`} onClick={() => onChangeModel(awning.id)}>
+              <button type="button" className="awning-model-title awning-model-change" title="Cambiar el modelo: sigue en el mismo puesto" aria-label={`Cambiar el modelo del ${fabricOnly ? 'trabajo' : 'toldo'} ${letraToldo(awning, index)}: ${controlLabel(awning.model)}`} onClick={() => onChangeModel(awning.id)}>
                 {controlLabel(awning.model)}<ChevronDown aria-hidden="true" />
               </button>
             )

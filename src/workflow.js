@@ -1,3 +1,5 @@
+import { adjuntarPedido } from './adjuntosPedido.js';
+import { isPendingGeneration, TERMINADO_SIN_GENERAR } from './reviewRules.js';
 import fs from 'node:fs/promises';
 import { abrirEntrega, cerrarEntrega, pedidoEntrega, ofsEntrega } from './entregas.js';
 import { renombrarAtomico, sustituirApartando } from './renombrarAtomico.js';
@@ -468,17 +470,90 @@ export function createWorkflowStore({ settingsFile, defaults }) {
     return next;
   }
 
-  async function getReview(orderCode) {
+  async function leerRegistro(orderCode) {
     const settings = await getSettings();
     if (!settings.reviewDirectory) throw new Error('Configura primero la carpeta TOLDOS para revisión.');
     const reviewPath = buildReviewPath(settings.reviewDirectory, orderCode);
     try {
-      return await extractReviewPackageFromPdf(await fs.readFile(reviewPath));
+      const pdf = await fs.readFile(reviewPath);
+      return { review: await extractReviewPackageFromPdf(pdf), ruta: reviewPath, pdf };
     } catch (error) {
       if (error.code !== 'ENOENT') throw error;
       const legacyPath = buildLegacyReviewPath(settings.reviewDirectory, orderCode);
-      return JSON.parse(await fs.readFile(legacyPath, 'utf8'));
+      return { review: JSON.parse(await fs.readFile(legacyPath, 'utf8')), ruta: legacyPath, pdf: null };
     }
+  }
+
+  async function getReview(orderCode) {
+    const { review } = await leerRegistro(orderCode);
+    return review;
+  }
+
+  async function leerRegistroEditable(orderCode) {
+    const registro = await leerRegistro(orderCode);
+    const { review } = registro;
+    // Un PDF de una entrega puede llevar dentro los datos del pedido original.
+    if (!review.order || !review.orderCode || sanitizeOrderCode(review.orderCode) !== sanitizeOrderCode(orderCode)) {
+      throw Object.assign(new Error('No se encontró el registro editable de este pedido.'), { code: 'ENOENT' });
+    }
+    return registro;
+  }
+
+  async function actualizarRegistro(registro, review) {
+    if (registro.pdf) {
+      await writeFileAtomic(registro.ruta, await adjuntarPedido(registro.pdf, review, 'toldos'), { apartarAntes: true });
+    } else {
+      await writeFileAtomic(registro.ruta, `${JSON.stringify(review, null, 2)}\n`, { apartarAntes: true });
+    }
+    return review;
+  }
+
+  async function terminarRevision(orderCode, { usuario, motivo, fecha = new Date().toISOString() }) {
+    const texto = typeof motivo === 'string' ? motivo.trim() : '';
+    if (!texto || texto.length > 200) throw errorRegistro(400, 'Escribe un motivo de hasta 200 caracteres.');
+    const registro = await leerRegistroEditable(orderCode);
+    const { review } = registro;
+    if (!isPendingGeneration(review.status)) throw errorRegistro(409, 'Solo puedes marcar como terminado un pedido pendiente.');
+    return actualizarRegistro(registro, {
+      ...review, status: TERMINADO_SIN_GENERAR, updatedAt: fecha, updatedBy: usuario,
+      terminadoSinGenerar: { usuario, motivo: texto, fecha, estadoAnterior: review.status }
+    });
+  }
+
+  async function reabrirRevision(orderCode, { usuario, fecha = new Date().toISOString() }) {
+    const registro = await leerRegistroEditable(orderCode);
+    const { terminadoSinGenerar, ...review } = registro.review;
+    if (review.status !== TERMINADO_SIN_GENERAR) throw errorRegistro(409, 'Este pedido no está terminado sin generar.');
+    const anterior = terminadoSinGenerar?.estadoAnterior;
+    return actualizarRegistro(registro, {
+      ...review, status: isPendingGeneration(anterior) ? anterior : 'PENDING_REVIEW', updatedAt: fecha, updatedBy: usuario
+    });
+  }
+
+  async function enviarRevisionAPapelera(orderCode, { usuario, confirmacion, fecha = new Date().toISOString() }) {
+    const codigo = sanitizeOrderCode(orderCode);
+    if (confirmacion !== codigo) throw errorRegistro(400, 'Escribe el código completo del pedido para enviarlo a la papelera.');
+    const registro = await leerRegistroEditable(codigo);
+    const carpeta = path.dirname(registro.ruta);
+    const legacy = path.join(carpeta, `${codigo}${LEGACY_REVIEW_FILE_SUFFIX}`);
+    // Si existe un JSON anterior, también se aparta para que el pedido no reaparezca al quitar el PDF.
+    const rutas = registro.pdf && await fileExists(legacy) ? [legacy, registro.ruta] : [registro.ruta];
+    const papelera = path.join(carpeta, 'papelera');
+    await fs.mkdir(papelera, { recursive: true });
+    const destino = await fs.mkdtemp(path.join(papelera, `${codigo}-${fecha.slice(0, 10)}-`));
+    await writeJsonAtomic(path.join(destino, 'papelera.json'), { codigo, usuario, fecha });
+    const movidos = [];
+    try {
+      for (const ruta of rutas) {
+        const apartada = path.join(destino, path.basename(ruta));
+        await renombrarAtomico(ruta, apartada);
+        movidos.push({ ruta, apartada });
+      }
+    } catch (error) {
+      for (const { ruta, apartada } of movidos.reverse()) await renombrarAtomico(apartada, ruta);
+      throw error;
+    }
+    return destino;
   }
 
   async function saveReview(review, pdf) {
@@ -546,6 +621,11 @@ export function createWorkflowStore({ settingsFile, defaults }) {
           const review = name.toLowerCase().endsWith(REVIEW_FILE_SUFFIX)
             ? await extractReviewPackageFromPdf(await fs.readFile(filePath))
             : JSON.parse(await fs.readFile(filePath, 'utf8'));
+          if (name.toLowerCase().endsWith(REVIEW_FILE_SUFFIX) && name.toUpperCase() !== reviewFilename(review.orderCode).toUpperCase()) {
+            // El PDF de una entrega numerada también puede llevar los datos del pedido.
+            recordados.set(name, { huella, resumen: null });
+            continue;
+          }
           const resumen = reviewSummary(review);
           recordados.set(name, { huella, resumen });
           reviews.push(resumen);
@@ -564,7 +644,11 @@ export function createWorkflowStore({ settingsFile, defaults }) {
     return reviews.filter(Boolean).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   }
 
-  return { getSettings, saveSettings, getReview, saveReview, listReviews };
+  return { getSettings, saveSettings, getReview, saveReview, listReviews, terminarRevision, reabrirRevision, enviarRevisionAPapelera };
+}
+
+function errorRegistro(statusCode, message) {
+  return Object.assign(new Error(message), { statusCode });
 }
 
 export function buildReviewPath(template, orderCode) {

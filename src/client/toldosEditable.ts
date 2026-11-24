@@ -83,8 +83,9 @@ export async function guardarToldosEditable(cuerpo: Record<string, unknown>, pre
     }
     if (respuesta.status === 409 && datos.needsRegenerateConfirmation) {
       const choice = await preguntar({ title: 'Este pedido ya tiene corte', amplio: true,
-        message: 'Has cambiado datos y este pedido ya tiene corte. ¿Generar el corte de nuevo?',
-        confirmLabel: 'Sí, regenerar (se pierden los retoques de ZWCAD)', alternativeLabel: 'No, mantener mi corte', alternativeTone: 'neutral',
+        message: datos.cambiaronLetras ? 'Han cambiado las letras de los toldos. Hay que regenerar el corte para actualizar los rótulos.'
+          : 'Has cambiado datos y este pedido ya tiene corte. ¿Generar el corte de nuevo?',
+        confirmLabel: 'Sí, regenerar (se pierden los retoques de ZWCAD)', alternativeLabel: datos.cambiaronLetras ? undefined : 'No, mantener mi corte', alternativeTone: 'neutral',
         cancelLabel: 'Cancelar', tone: 'warning' });
       if (choice !== 'confirm' && choice !== 'alternative') return null;
       entrada.decisionCorte = choice === 'confirm' ? 'regenerar' : 'mantener';

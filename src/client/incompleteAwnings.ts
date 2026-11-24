@@ -1,4 +1,4 @@
-import { awningLetter, describeMissing, getMissingFields } from '../domain/awningCompleteness.js';
+import { letraToldo, describeMissing, getMissingFields } from '../domain/awningCompleteness.js';
 import { controlLabel } from './components/controlLabels';
 import type { Awning } from './types';
 
@@ -8,7 +8,7 @@ export function incompleteAwningLines(awnings: Awning[], order: { fabric: string
     const missing = getMissingFields(awning, order);
     if (!missing.length) return [];
     const kind = awning.workType === 'FABRIC_ONLY' ? 'Tela' : 'Toldo';
-    return [`${kind} ${awningLetter(index)} · ${controlLabel(awning.model) || 'sin modelo'}: falta ${describeMissing(missing)}`];
+    return [`${kind} ${letraToldo(awning, index)} · ${controlLabel(awning.model) || 'sin modelo'}: falta ${describeMissing(missing)}`];
   });
 }
 

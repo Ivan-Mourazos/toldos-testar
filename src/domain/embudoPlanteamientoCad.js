@@ -1,5 +1,5 @@
 import { generarCorteLona } from './corteLona/index.js';
-import { awningLetter } from './awningCompleteness.js';
+import { letraToldo } from './awningCompleteness.js';
 import { htmlPresentaciones, presentacionesDxf } from '../flujoDwg/planoDxf.js';
 import { conHojasDelante } from '../flujoDwg/unirPdf.js';
 import pdfLib from 'pdf-lib';
@@ -8,7 +8,7 @@ import pdfLib from 'pdf-lib';
 export async function planteamientoConEmbudoCad(opciones, buildWeb) {
   const { order, onlyAwningId, sinHojaTelas, cadEmbudo, review, onSheetError } = opciones;
   const letras = new Set(order.awnings.flatMap((t, i) => t.model === 'EMBUDO'
-    && (!onlyAwningId || t.id === onlyAwningId) && !sinHojaTelas?.(t, i) ? [awningLetter(i)] : []));
+    && (!onlyAwningId || t.id === onlyAwningId) && !sinHojaTelas?.(t, i) ? [letraToldo(t, i)] : []));
   if (!cadEmbudo || !letras.size) return buildWeb(opciones);
   let cad;
   try {
@@ -29,7 +29,7 @@ export async function planteamientoConEmbudoCad(opciones, buildWeb) {
       return pdf;
     }));
     // Solo se quitan las hojas de telas después de imprimir todas las presentaciones.
-    const base = await buildWeb({ ...opciones, sinHojaTelas: (t, i) => letras.has(awningLetter(i)) || sinHojaTelas?.(t, i) });
+    const base = await buildWeb({ ...opciones, sinHojaTelas: (t, i) => letras.has(letraToldo(t, i)) || sinHojaTelas?.(t, i) });
     return await conHojasDelante(base, cad);
   } catch (error) {
     const aviso = `No se pudieron sacar las presentaciones del CAD del embudo. Se incluye el planteamiento completo: ${error.message}`;
