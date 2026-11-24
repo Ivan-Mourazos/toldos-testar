@@ -8,7 +8,7 @@ import { cuerpoCal } from '../../src/remolques/ganado/generarCal.js';
 import { calcularMedidasCal, MEDIDAS_CAL_5319 } from '../../src/remolques/ganado/medidas.ts';
 import { dibujoCal } from '../../src/remolques/ganado/salidasCal.ts';
 import { crearOdaConverter } from '../../src/odaConverter.js';
-import { leerDxf, vertices, texto, punto } from './medidas-dxf.mjs';
+import { leerDxf, vertices, bulges, texto, punto } from './medidas-dxf.mjs';
 
 const dir = path.resolve('tmp/ganado-recogidas');
 const ejemplos = path.join(dir, 'ejemplos');
@@ -73,7 +73,7 @@ const tabla = ['| Pedido | Archivo | Capa | Original | Web | Faltan¹ | Sobran¹
 const casos = [];
 function caballo5319(es, archivo) {
   const enZona = ([x, y], [x0, y0, x1, y1]) => x >= x0 && x <= x1 && y >= y0 && y <= y1;
-  const zonas = archivo === 'Bot' ? [[19000, 2220, 24000, 5100], [-100, 0, 100, 500]]
+  const zonas = archivo === 'Bot' ? [[19000, 2220, 24000, 5100], [-250, -100, 250, 850]]
     : [[99.8, 88.7, 106.5, 92.7], [110, 88.7, 116.8, 92.7]];
   return es.filter(e => {
     const v = vertices(e);
@@ -119,7 +119,10 @@ for (const pedido of pedidos) {
     const p = muestra({ atras: 'VELCRO', velcro: { anchoVelcro: 5, color: 'blanco' },
       trasero: { ancho: 151, alto: 65, altoOreja: 39.613, aguas: 20, radio: 7, margenBajo: 3, margenSuperior: 0 } }).piezas.find(p => p.nombre === 'Trasero');
     const par = [p.terminado, p.contorno].map(ps => cm(caja(ps)[0] / 10));
-    casos.push(`- ${pedido} · Trasero: DWG 171/177, web ${par.join('/')} cm entre extremos de las orejas. Falta verificar el contorno completo, los tramos de velcro y sus contrapartes.`);
+    const lados = p.corte.filter(q => q.tipo === 'tramo' && q.a[0] === q.b[0] && (q.a[0] === -130 || q.a[0] === 1640))
+      .map(q => cm(distancia(q.a, q.b) / 10));
+    const real = medidas(plan, ['16BC3', '16BC6'], 100).map(cm);
+    casos.push(`- ${pedido} · Trasero: DWG 171/177, web ${par.join('/')} cm entre extremos de las orejas. Lados de corte del DWG ${real.join(' / ')} cm, web ${lados.join(' / ')} cm. Falta cotejar el resto del contorno y los tramos de velcro.`);
   }
   if (pedido === 'AR2605060') {
     const p = muestra({ atras: 'OREJA',
@@ -127,7 +130,9 @@ for (const pedido of pedidos) {
       puerta: { cierre: 'VELCRO', solapas: { largo: 60, ancho: 12.5 } } }).piezas;
     const tipo = p.find(p => p.nombre === 'Trasero');
     const solapas = p.filter(p => p.nombre.startsWith('Solapa'));
-    casos.push(`- ${pedido} · DISCO1: DWG 181 cm de ancho trasero y dos solapas de 62 × 14,5; web ${cm(caja(tipo.contorno)[0] / 10)} y dos solapas de ${caja(solapas[0].contorno).map(x => cm(x / 10)).join(' × ')}. Puerta y conjunto pendientes de contraste.`);
+    const corte = plan.find(e => e.id === '17F31'), puntos = vertices(corte);
+    const radios = bulges(corte).flatMap((b, i) => b ? [distancia(puntos[i], puntos[(i + 1) % puntos.length]) * 100 / (2 * Math.abs(Math.sin(2 * Math.atan(b))))] : []);
+    casos.push(`- ${pedido} · DISCO1: ancho trasero de ${cm(caja(puntos)[1] * 100)} cm en DWG y ${cm(caja(tipo.contorno)[0] / 10)} en web. Radios de corte ${radios.map(cm).join(' / ')} cm en DWG y ${tipo.corte.filter(q => q.tipo === 'arco').map(q => cm(q.r / 10)).join(' / ')} cm en web. Dos solapas de ${caja(solapas[0].contorno).map(x => cm(x / 10)).join(' × ')} cm como en el plano. Puerta y conjunto pendientes de contraste.`);
   }
   if (pedido === 'AR2604709') {
     const tramos = medidas(bot, ['16B0', '16B1', '16B2'], 0.1);
@@ -170,7 +175,7 @@ for (const pedido of pedidos) {
 }
 const informe = [
   '# Contraste de recogidas de ganado', '',
-  '¹ Solo para AR2605319, recortado a la confección y opción individual de la OF 0233492. Se casan líneas y arcos por longitud, círculos por radio y textos por literal (una entidad cada vez, tolerancia de 0,1 mm). Cotas y polilíneas quedan en los recuentos sin casar. Un emparejamiento por longitud o radio no certifica posición ni contorno. Los demás pedidos se inventarían enteros.', '',
+  '¹ Solo para AR2605319, recortado a la confección y opción individual de la OF 0233492. Se casan líneas y arcos por longitud, círculos por radio y textos por literal (una entidad cada vez, tolerancia de 0,1 mm). Cotas y polilíneas quedan en los recuentos sin casar. Un emparejamiento por longitud o radio no certifica posición ni contorno. Para los demás pedidos se cuentan las entidades de los originales completos.', '',
   ...tabla, '', '## Medidas comprobadas en piezas concretas', '', ...casos, '',
   '- AR2600267 y AR2602777 · Inventario disponible. Velcro en puerta, recogida trasera con oreja/goma. Falta cotejar ambos conjuntos.',
   '- AR2504631 · Caso de correas de cierre de lona convencional. Usa la receta existente y sus pruebas, con sus rayas de cosido.',
