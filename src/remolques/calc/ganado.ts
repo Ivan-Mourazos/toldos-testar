@@ -1,5 +1,7 @@
 import { excelRound } from "./redondeo.ts";
 import type { CabeceraInput } from "./lona.ts";
+import { colocarTodo } from "../corte/lonaAlta.js";
+import { piezasEconomico } from "../ganado/economicoPiezas.js";
 import { CORTE_ECONOMICO } from "../ganado/economicoDatos.ts";
 import { CORTE_ESTANDAR } from "../ganado/estandarDatos.ts";
 import { PIEZAS_ESTANDAR_CONFECCION } from "../ganado/estandarConfeccion.ts";
@@ -44,6 +46,7 @@ export interface GanadoResult {
   piezas: PiezaGanado[];
   /** Largo de rollo de un juego, en cm, y lo que ocupa de ancho (rollo de 250). */
   largoJuego: number;
+  corteConjunto?: boolean;
   anchoJuego: number;
   metrosTela: number;
   notas: string[];
@@ -131,15 +134,17 @@ export function calcGanado(input: GanadoInput): GanadoResult {
   const corte = input.ganado === "REMOLCAR_ESTANDAR" ? CORTE_ESTANDAR : CORTE_ECONOMICO;
   const largoJuego = excelRound(corte.ancho / 10, 1);
   const notas: string[] = [];
-  // El corte lleva un juego y «X2», «X3»…: el cortador lo repite, como en AR2600752.
-  if (cantidad > 1) notas.push(`Se corta un juego con «X${cantidad}»: el cortador lo repite ${cantidad} veces.`);
+  const corteConjunto = input.ganado === "REMOLCAR_ECONOMICO" && cantidad > 1;
+  const largoColocado = corteConjunto ? colocarTodo(piezasEconomico(cantidad, ""))?.largo : undefined;
+  if (input.ganado === "REMOLCAR_ESTANDAR" && cantidad > 1) notas.push(`Se corta un juego con «X${cantidad}»: el cortador lo repite ${cantidad} veces.`);
   if (!input.arcosComprobados) notas.push("Comprueba los arcos del remolque antes de cortar: hay remolques que llegaron con medidas distintas.");
   return {
     modelo: ficha?.nombre ?? "",
     piezas: ficha?.piezas ?? [],
     largoJuego,
     anchoJuego: excelRound(corte.alto / 10, 1),
-    metrosTela: ficha ? excelRound((cantidad * largoJuego) / 100, 2) : 0,
+    ...(corteConjunto ? { corteConjunto } : {}),
+    metrosTela: ficha ? excelRound((largoColocado ?? cantidad * largoJuego * 10) / 1000, 2) : 0,
     notas,
   };
 }

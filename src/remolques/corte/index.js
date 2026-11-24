@@ -5,7 +5,7 @@
 import { escribirDxf2004 } from '../../domain/corteLona/dxfCorte.js';
 import { ofElemento, OF_PROVISIONAL } from './of.js';
 import { cabeEnRollo, cortarBaquetones, piezasBaqueton } from './baqueton.js';
-import { descripcionGanado, piezaGanado, soportadaGanado } from './ganado.js';
+import { descripcionGanado, piezasGanado, soportadaGanado } from './ganado.js';
 import { cortarLonasAltas, soportada, R_OLLAO } from './lonaAlta.js';
 import { escribirPlanoRemolques } from './plano.js';
 import { sacosDeStock } from './sacos.js';
@@ -87,8 +87,8 @@ export function generarCorteRemolques(pedido, { ofStockSacos, largoMinimoRefuerz
   const cliente = `${pedido.summary?.customer ?? ''} ${pedido.clienteRps?.nombre ?? ''}`.toUpperCase();
   // Copias con su OF: no se toca el pedido que llega.
   const elementos = pedido.elementos.map((el) => ({ ...el, of: ofDe(el) }));
-  // Varios remolques: letras A, B, C… por unidad (Iván, 20/10/2026); con uno solo, sin letras. El de ganado no
-  // lleva letras: es un juego de su plantilla con «X2»… (ganado.js).
+  // Varios remolques: letras A, B, C… por unidad (Iván, 20/10/2026); con uno solo, sin letras. El de ganado se
+  // identifica en el corte por su OF.
   const conLetrasPosibles = elementos.filter((e) => e.tipo !== 'ganado');
   const unidades = conLetrasPosibles.reduce((n, e) => n + (e.input.cantidad || 1), 0);
   const letras = new Map();
@@ -123,8 +123,8 @@ export function generarCorteRemolques(pedido, { ofStockSacos, largoMinimoRefuerz
     // AR2605088: las cabezas encima de los baquetones); los que llevan empate van detrás, como siempre.
     const juntos = lonas.length ? baqs.filter((e) => cabeEnRollo(e, params)) : [];
     const aparte = baqs.filter((e) => !juntos.includes(e));
-    // El juego del remolque de ganado se coloca con las lonas, como una pieza más.
-    const extras = [...ganados.map(piezaGanado), ...juntos.flatMap((e) => piezasBaqueton(e, params, letras.get(e) ?? [], llevaRefuerzos(e), marcarBaquetones))];
+    // El ganado comparte el colocador por huecos con las lonas y los baquetones.
+    const extras = [...ganados.flatMap(piezasGanado), ...juntos.flatMap((e) => piezasBaqueton(e, params, letras.get(e) ?? [], llevaRefuerzos(e), marcarBaquetones))];
     const cb = aparte.length ? cortarBaquetones(codigo, aparte, params, llevaRefuerzos, letras, marcarBaquetones) : { lineas: [], marcas: [], textos: [], avisos: [], largo: 0, ocupadas: [] };
     const sinLonas = { lineas: [], rot: [], ollaos: [], arcos: [], textos: [], avisos: [], largo: 0, conTira: false, apartes: [], ocupadas: [] };
     const conTira = lonas.length || ganados.length ? cortarLonasAltas(lonas, 0, conLetras, extras, marcarLonas) : sinLonas;
@@ -144,7 +144,7 @@ export function generarCorteRemolques(pedido, { ofStockSacos, largoMinimoRefuerz
     for (const [la, opcion] of opciones) {
       const dx = la.largo;
       const ocupadas = [...la.ocupadas, ...cb.ocupadas.map(p => ({ ...p, x: p.x + dx }))];
-      // Las plantillas de ganado conservan su stock y su juego originales, sin completar sus huecos interiores.
+      // Los bloques de plantilla que entraron enteros conservan sus huecos interiores.
       const stock = sacosDeStock(ocupadas, ROLLO, lonas.length || baqs.length ? ofStockSacos : undefined, la.largo + cb.largo);
       // Primero sacos; las tiras usan únicamente lo que queda, siempre a lo largo del rollo. El ganado
       // conserva íntegro su stock histórico, también en pedidos que comparten lona con otras piezas.

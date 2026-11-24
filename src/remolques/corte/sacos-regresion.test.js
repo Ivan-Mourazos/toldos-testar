@@ -35,10 +35,12 @@ describe('el stock de remolques no cambia los DXF de los otros cortes', () => {
     expect(sha(generarCortePuertas(pedido, stock).archivo.dxf)).toBe('23a65e280e8848ec13bab90364b84883dbb147168a30965fca7734994d1fb2d3');
   });
 
+  // El económico coloca por duplicado cuerpo, trasero, cuña, frente, tapa y las dos solapas.
+  // Cada pieza conserva sus marcas originales y recupera las aristas compartidas al separarla.
   it.each([
-    ['REMOLCAR_ECONOMICO', 'baac40a95dd9f849c81d6f3933aa42760dd6dcc995cbc7577ccb40cd8528437d'],
+    ['REMOLCAR_ECONOMICO', '2c861f3bfa6cf245040de6bed78eb38ba5aeb15cfba1b56804fbc7c48c020737'],
     ['REMOLCAR_ESTANDAR', '4c195d6f8fdd728e157e8c099195f7c297079fa23a09bf9fba20417178286849'],
-  ])('%s: conserva por SHA el juego de ganado X2 con su propio stock', (modelo, esperado) => {
+  ])('%s: conserva por SHA el corte de ganado sin añadir stock', (modelo, esperado) => {
     const input = { ...emptyGanado(modelo), cantidad: 2, material: base.elementos[0].input.material };
     input.cabecera.ordenFabricacion = '0227492';
     const pedido = { ...base, elementos: [{ tipo: 'ganado', input, result: calcGanado(input), paramsSnapshot: base.params }] };

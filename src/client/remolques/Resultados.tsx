@@ -332,8 +332,8 @@ export function ResultadosGanado({ res, cantidad }: { res: GanadoResult; cantida
     <div className="rem-resultados" aria-label="Resultados del remolque de ganado" role="group">
       <div className="rem-datos">
         <Dato label="Modelo" valor={res.modelo || '—'} />
-        <Dato label="Corte" valor={cantidad > 1 ? `1 juego · X${cantidad}` : '1 juego'} />
-        <Dato label="Largo de rollo" valor={`${fmt(res.largoJuego)} cm por juego`} />
+        <Dato label="Corte" valor={res.corteConjunto ? `${cantidad} juegos juntos` : cantidad > 1 ? `1 juego · X${cantidad}` : '1 juego'} />
+        <Dato label={res.corteConjunto ? 'Plantilla' : 'Largo de rollo'} valor={`${fmt(res.largoJuego)} cm por juego`} />
         <Dato label="Metros de tela" valor={res.metrosTela > 0 ? `${fmt(res.metrosTela)} m` : '—'} />
       </div>
       <table className="gan-piezas">

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import AR2605071 from './__fixtures__/AR2605071.json' with { type: 'json' };
 import { calcGanado } from '../calc/ganado.ts';
+import { hojaGanado } from '../hoja/datos-hoja.ts';
 import { emptyGanado } from '../entradas-vacias.ts';
 import { CORTE_ECONOMICO } from '../ganado/economicoDatos.ts';
 import { OLLAO_AL_BORDE, piezaGanado, soportadaGanado } from './ganado.js';
@@ -38,9 +39,8 @@ describe('piezaGanado (económico de Remolcar)', () => {
     for (const o of p.ollaos) expect(distanciaAlBorde(o, CORTE_ECONOMICO.lineas)).toBeCloseTo(OLLAO_AL_BORDE, 0);
   });
 
-  it('lleva la OF en el cuerpo y, con varias unidades, «X2» (un juego que el cortador repite)', () => {
+  it('lleva la OF en el cuerpo de la plantilla', () => {
     expect(piezaGanado({ ...elementoGanado(1), of: '0227757' }).textos.map((t) => t.valor)).toEqual(['0227757']);
-    expect(piezaGanado({ ...elementoGanado(2), of: '0225519' }).textos.map((t) => t.valor)).toEqual(['0225519', 'X2']);
   });
 
   it('sin modelo con plantilla se deja a mano', () => {
@@ -51,22 +51,55 @@ describe('piezaGanado (económico de Remolcar)', () => {
 
 describe('generarCorteRemolques con un remolque de ganado', () => {
   it('corta el juego en un DXF del bot, pegado al orillo, sin letras y con su plano', () => {
-    const { cortes, aMano, archivo } = generarCorteRemolques(pedidoCon(elementoGanado(2)));
+    const { cortes, aMano, archivo } = generarCorteRemolques(pedidoCon(elementoGanado()));
     expect(aMano).toEqual([]);
     expect(cortes).toHaveLength(1);
     const [c] = cortes;
     expect(c.largo).toBeCloseTo(6335.3, 1);
-    expect(c.elementos).toEqual([{ of: '0225519', descripcion: 'remolque de ganado 300×150 X2', cantidad: 2 }]);
+    expect(c.elementos).toEqual([{ of: '0225519', descripcion: 'remolque de ganado 300×150', cantidad: 1 }]);
     // Pegado al orillo: el corte del orillo se quita, como en todos los remolques.
     expect(c.entidades.lineas.some((l) => l.capa === 'DISCO1' && l.y1 === 0 && l.y2 === 0)).toBe(false);
     expect(c.entidades.circulos).toHaveLength(17);
     const textos = c.entidades.textos.map((t) => t.valor);
-    expect(textos).toEqual(expect.arrayContaining(['0225519', 'X2', 'DERECHO', 'LONA PVC 580 GRIS CLARO 7038']));
+    expect(textos).toEqual(expect.arrayContaining(['0225519', 'DERECHO', 'LONA PVC 580 GRIS CLARO 7038']));
     // Sin letras de remolque (A1, B1…): el de ganado no las lleva.
     expect(textos.some((v) => /^[A-W]\d$/.test(v))).toBe(false);
-    expect(archivo.dxf).toContain('X2');
+    expect(archivo.dxf).toContain('0225519');
     expect(archivo.plano.dxf).toContain('REMOLQUE DE GANADO');
     expect(archivo.plano.dxf).toContain('ENFUNDAR');
+  });
+
+  it('coloca las catorce piezas enteras de AR2605708 juntas y rotula cada pieza con su OF', () => {
+    const of = '0234277';
+    const elemento = elementoGanado(2, of);
+    elemento.input.cabecera.numeroPedido = 'AR2605708';
+    const pedido = { ...pedidoCon(elemento), orderCode: 'AR2605708', numeroPedido: 'AR2605708' };
+    const { cortes, aMano, archivo } = generarCorteRemolques(pedido);
+    const unaUnidad = generarCorteRemolques(pedidoCon(elementoGanado(1, of))).cortes[0];
+    expect(aMano).toEqual([]);
+    expect(cortes).toHaveLength(1);
+    const [c] = cortes;
+    expect(c.ocupadas).toHaveLength(14);
+    expect(c.largo).toBeLessThan(2 * unaUnidad.largo);
+    expect(elemento.result.metrosTela).toBeCloseTo(c.largo / 1000, 2);
+    expect(hojaGanado(elemento.input, elemento.result).banda).toContainEqual(
+      { titulo: 'JUEGOS A CORTAR', lineas: ['2 JUEGOS'], notas: [] },
+    );
+    for (const [i, p] of c.ocupadas.entries()) {
+      expect(p.x + p.ancho).toBeLessThanOrEqual(c.largo + 0.01);
+      expect(p.y + p.hueco).toBeLessThanOrEqual(2500.01);
+      expect(c.ocupadas.slice(i + 1).some(q => Math.min(p.x + p.ancho, q.x + q.ancho) - Math.max(p.x, q.x) > 0.01
+        && Math.min(p.y + p.hueco, q.y + q.hueco) - Math.max(p.y, q.y) > 0.01)).toBe(false);
+    }
+    expect(c.apartes).toEqual([]);
+    expect(c.avisos).toEqual([]);
+    expect(c.entidades.circulos).toHaveLength(2 * unaUnidad.entidades.circulos.length);
+    expect(c.entidades.arcos).toHaveLength(2 * unaUnidad.entidades.arcos.length);
+    expect(c.entidades.lineas.filter(l => l.capa === 'ROTULADOR')).toHaveLength(2 * CORTE_ECONOMICO.rot.length);
+    const textos = c.entidades.textos.filter(t => t.valor.includes(of));
+    const piezas = ['Cuerpo', 'Trasero', 'Zona en cuña', 'Frente', 'Tapa de ventana', 'Solapa 1', 'Solapa 2'];
+    expect(textos.map(t => t.valor).sort()).toEqual([...piezas, ...piezas].map(p => p + ' · ' + of).sort());
+    expect(archivo.dxf).not.toContain('X2');
   });
 
   it('con una lona del mismo material, se cortan juntos y las letras son solo de las lonas', () => {
