@@ -266,6 +266,7 @@ const formatoStock = (n: number) => n.toLocaleString('es-ES', { maximumFractionD
  */
 export function CampoMaterial(props: {
   value: string; opciones: Material[]; onChange: (v: string) => void; span?: Rejilla; error?: string; metrosTela?: number;
+  ofsPedido?: readonly string[];
   delCliente?: boolean;
 }) {
   const [abierto, setAbierto] = useState(false);
@@ -410,7 +411,7 @@ export function CampoMaterial(props: {
       <MensajeError id={errorId} mensaje={props.error} />
       {props.delCliente && <MarcaDelCliente />}
       {/* Sin código de RPS (texto manual) no hay stock que enseñar: nada. */}
-      <FabricStockCodeLine code={codigo} neededMl={props.metrosTela ?? 0}
+      <FabricStockCodeLine code={codigo} neededMl={props.metrosTela ?? 0} ofs={props.ofsPedido}
         prefix={<><strong className="rem-material-codigo">{codigo}</strong>{' · '}</>} />
     </div>
   );

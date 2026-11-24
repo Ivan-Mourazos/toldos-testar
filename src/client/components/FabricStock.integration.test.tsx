@@ -8,8 +8,8 @@ import { normalizeRuleParameters } from '../../domain/ruleParameters.js';
 import type { Awning, RuleParameters } from '../types';
 
 const { stocks } = vi.hoisted(() => ({ stocks: {
-  ACRILI2170P120: { status: 'ready', stock: { code: 'ACRILI2170P120', metros: 12.5, reservado: 0, disponible: 12.5, bobinasConDisponible: 2, mayorBobinaDisponible: 10, consignacion: 0, almacenes: [] } },
-  ACRILI2018P120: { status: 'ready', stock: { code: 'ACRILI2018P120', metros: 0, reservado: 0, disponible: 0, bobinasConDisponible: 0, mayorBobinaDisponible: 0, consignacion: 0, almacenes: [] } }
+  ACRILI2170P120: { status: 'ready', stock: { code: 'ACRILI2170P120', metros: 12.5, reservado: 0, reservadoPropio: 0, disponible: 12.5, bobinasConDisponible: 2, mayorBobinaDisponible: 10, consignacion: 0, almacenes: [] } },
+  ACRILI2018P120: { status: 'ready', stock: { code: 'ACRILI2018P120', metros: 0, reservado: 0, reservadoPropio: 0, disponible: 0, bobinasConDisponible: 0, mayorBobinaDisponible: 0, consignacion: 0, almacenes: [] } }
 } }));
 vi.mock('../hooks/useFabricStock', () => ({
   useFabricStocks: vi.fn(() => stocks),

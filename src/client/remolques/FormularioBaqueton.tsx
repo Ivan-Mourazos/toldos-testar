@@ -18,13 +18,14 @@ const MODOS_CAIDA = [
   { value: 'MEDIDA', label: 'Medida diferente' },
 ];
 
-export function FormularioBaqueton({ input, materiales, params, errores = {}, metrosTela = 0, delCliente = [], refuerzosPorDefecto = false, onChange, onCampoTocado }: {
+export function FormularioBaqueton({ input, materiales, params, errores = {}, metrosTela = 0, ofsPedido, delCliente = [], refuerzosPorDefecto = false, onChange, onCampoTocado }: {
   input: BaquetonInput;
   materiales: Material[];
   params?: CalcParams;
   errores?: Record<string, string>;
   /** Metros de tela que pide este elemento: el stock de la bobina avisa si no llegan. */
   metrosTela?: number;
+  ofsPedido?: readonly string[];
   onChange: (i: BaquetonInput) => void;
   onCampoTocado?: (campo: string) => void;
   /** Campos que puso la ficha del cliente (marca «del cliente»). */
@@ -80,7 +81,7 @@ export function FormularioBaqueton({ input, materiales, params, errores = {}, me
         <CampoSiNo name="rotulacion" delCliente={dc('rotulacion')} label="Rotulación" error={errores.rotulacion}
           value={input.rotulacion} onChange={(v) => set('rotulacion', v)} />
         <CampoMaterial span={4} delCliente={dc('material')} value={input.material} opciones={materiales} error={errores.material}
-          metrosTela={metrosTela} onChange={(v) => set('material', v)} />
+          metrosTela={metrosTela} ofsPedido={ofsPedido} onChange={(v) => set('material', v)} />
         <AvisoOllaosAdaptados propuesta={input.ollaosAdaptados} modo={input.modoOllaos} />
         <div className="rem-banda rem-span-4">
           <CampoSelect name="modoOllaos" delCliente={dc('modoOllaos')} label="Distribución de ollaos" span={input.modoOllaos === 'REPARTIDOS' ? 4 : 2} value={input.modoOllaos} opciones={MODOS_OLLAOS}

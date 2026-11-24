@@ -4,15 +4,15 @@ import { useFabricStock, type FabricStockState } from '../hooks/useFabricStock';
 
 // Stock en RPS de la tela elegida, bajo su buscador (informe tela-0930): «¿hay o no
 // hay, y cuánto?». Nunca bloquea: si RPS no responde, lo dice y ya está.
-export function FabricStockLine({ selection, neededMl = 0 }: { selection: string; neededMl?: number }) {
-  return <FabricStockCodeLine code={fabricCodeOf(selection)} neededMl={neededMl} />;
+export function FabricStockLine({ selection, neededMl = 0, ofs }: { selection: string; neededMl?: number; ofs?: readonly string[] }) {
+  return <FabricStockCodeLine code={fabricCodeOf(selection)} neededMl={neededMl} ofs={ofs} />;
 }
 
 // La misma línea a partir del código de artículo de RPS. La usan también las lonas de
 // remolque, que guardan el nombre de la bobina y sacan el código de su propia lista;
 // `prefix` va delante del texto (el código de la bobina, allí).
-export function FabricStockCodeLine({ code, neededMl = 0, prefix }: { code: string; neededMl?: number; prefix?: ReactNode }) {
-  const state = useFabricStock(code);
+export function FabricStockCodeLine({ code, neededMl = 0, prefix, ofs }: { code: string; neededMl?: number; prefix?: ReactNode; ofs?: readonly string[] }) {
+  const state = useFabricStock(code, ofs);
   return <FabricStockText state={state} neededMl={neededMl} prefix={prefix} />;
 }
 
