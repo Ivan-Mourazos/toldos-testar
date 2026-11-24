@@ -283,6 +283,7 @@ export async function queryRpsFabricStockRows() {
     .input('company', sql.VarChar(10), config.db.company)
     .query(`
     SELECT
+      s.IDStock AS stockId,
       a.CodArticle AS code,
       CONVERT(varchar(20), w.CodWarehouse) AS warehouseCode,
       w.Description AS warehouseName,
@@ -304,6 +305,26 @@ export async function queryRpsFabricStockRows() {
     WHERE s.CodCompany = @company
       AND s.Stock <> 0
       AND pf.Description = 'LONA';
+  `);
+  return result.recordset;
+}
+
+// Reservas de lona de Almacén con su OF (reserva → material de OF → tarea → OF). Solo
+// lectura. Sirve para no restar lo que ya está reservado para el propio pedido.
+export async function queryRpsFabricReserveRows() {
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company', sql.VarChar(10), config.db.company)
+    .query(`
+    SELECT r.IDStock AS stockId, mo.CodManufacturingOrder AS [of], r.Quantity AS quantity
+    FROM dbo.STKStockReserve r
+    JOIN dbo.STKStock s ON s.IDStock = r.IDStock AND s.CodCompany = r.CodCompany
+    JOIN dbo.STKArticle a ON a.IDArticle = s.IDArticle AND a.CodCompany = s.CodCompany
+    JOIN dbo.GENProductFamily pf ON pf.IDProductFamily = a.IDProductFamily AND pf.CodCompany = a.CodCompany
+    JOIN dbo.CPRMOMaterial m ON r.ItemType = 5 AND m.IDMOMaterial = r.IDItem AND m.CodCompany = r.CodCompany
+    JOIN dbo.CPRMOTask t ON t.IDMOTask = m.IDMOTask AND t.CodCompany = m.CodCompany
+    JOIN dbo.CPRManufacturingOrder mo ON mo.IDManufacturingOrder = t.IDManufacturingOrder AND mo.CodCompany = t.CodCompany
+    WHERE r.CodCompany = @company AND pf.Description = 'LONA';
   `);
   return result.recordset;
 }

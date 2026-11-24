@@ -73,6 +73,7 @@ type Props = {
   // Metros que el pedido pide de la tela de este toldo, para compararlos con su stock.
   fabricNeedMl?: number;
   valanceFabricNeedMl?: number;
+  ofsPedido?: readonly string[];
   parameters: RuleParameters;
   readOnly?: boolean;
   // Estado del toldo en el pedido abierto, el mismo que enseña el índice de bloques: en
@@ -147,7 +148,7 @@ function ExceptionBlock({ readOnly, exception, message, children }: { readOnly: 
   );
 }
 
-export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], parameters, sameFabric, knownOfs = null, orderFabric = '', fabricNeedMl = 0, valanceFabricNeedMl = 0, readOnly = false, readStatus, onUpdate, onDuplicate, onRemove, onOpenPanel, onChangeModel }: Props) {
+export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], parameters, sameFabric, knownOfs = null, orderFabric = '', fabricNeedMl = 0, valanceFabricNeedMl = 0, ofsPedido, readOnly = false, readStatus, onUpdate, onDuplicate, onRemove, onOpenPanel, onChangeModel }: Props) {
   const fields = useVisibleFields(awning);
   // El aviso de la excepción técnica sale en su bloque (motivo y cambios): no se repite abajo.
   const exceptionNotice = awning.reglasModificadas ? diagnostics.find((item) => /^Excepción técnica en OF /.test(item.message || '')) : undefined;
@@ -683,7 +684,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
               <SelectField label="Curva bamba" missing={isMissing('valanceCurve')} value={awning.valanceCurve} options={formOptions.curvasBamba} placeholder="Elegir…" onChange={(valanceCurve) => update({ valanceCurve })} />
               {!standaloneValance && <div className="awning-valance-fabric">
                 <FabricCombobox label="Tela bamba" value={awning.valanceFabric} placeholder="Igual que la tela" readEmptyAs="Igual que la tela" disabled={readOnly} onChange={(valanceFabric) => update({ valanceFabric })} />
-                {!readOnly && <FabricStockLine selection={awning.valanceFabric} neededMl={valanceFabricNeedMl} />}
+                {!readOnly && <FabricStockLine selection={awning.valanceFabric} neededMl={valanceFabricNeedMl} ofs={ofsPedido} />}
               </div>}
               <SegmentedField label="Remate" missing={isMissing('remate')} value={valanceFinish} options={['COMO TELA', 'OTRO']} onChange={(remate) => update({ remate, remateColor: remate === 'COMO TELA' ? '' : awning.remateColor })} />
               {valanceFinish === 'OTRO' && <TextField label="Color remate" missing={isMissing('remateColor')} value={awning.remateColor} onChange={(remateColor) => update({ remateColor })} />}
@@ -853,7 +854,7 @@ export function AwningColumn({ awning, index, ofCalculation, diagnostics = [], p
           )}
           {!sameFabric && <div className="awning-wide-field">
             <FabricCombobox label="Tela" value={awning.fabric} onlyPvc={awning.model === 'EMBUDO'} disabled={readOnly} missing={isMissing('fabric')} onChange={(fabric) => update({ fabric })} />
-            {!readOnly && <FabricStockLine selection={awning.fabric} neededMl={fabricNeedMl} />}
+            {!readOnly && <FabricStockLine selection={awning.fabric} neededMl={fabricNeedMl} ofs={ofsPedido} />}
           </div>}
           {(fields.device || fields.sensor || fields.motorLocation || fields.machineLocation || fields.crankHeight) && (
             <div className="awning-actuation-row awning-wide-field">

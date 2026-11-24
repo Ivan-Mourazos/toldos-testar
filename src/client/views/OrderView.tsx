@@ -108,6 +108,7 @@ export function OrderView({
   const enabledModels = new Set(availableModelNames);
   // Metros que el cálculo pide de cada tela, para compararlos con el stock.
   const needByCode = fabricNeedByCode(calculation);
+  const ofsPedido = awnings.map((awning) => awning.of).filter(Boolean);
 
   function chooseModel(model: string) {
     if (!pickerType) return;
@@ -190,6 +191,7 @@ export function OrderView({
             autofillLoading={autofillLoading}
             autofill={autofill}
             fabricNeedMl={needByCode.get(fabricCodeOf(fabric)) ?? 0}
+            ofsPedido={ofsPedido}
             readOnly={readOnly}
             set={setOrderField}
           />
@@ -235,6 +237,7 @@ export function OrderView({
               orderFabric={fabric}
               fabricNeedMl={needByCode.get(fabricCodeOf(awning.fabric)) ?? 0}
               valanceFabricNeedMl={needByCode.get(fabricCodeOf(awning.valanceFabric)) ?? 0}
+              ofsPedido={ofsPedido}
               parameters={parameters}
               readOnly={readOnly}
               readStatus={statuses[index]}

@@ -83,23 +83,38 @@ it.each([
 });
 
 describe('faltas de lona', () => {
-  const falta = { codigo: 'LV6002G', descripcion: 'Lona PVC 680 g gris', necesita: 42.3, disponible: 18.75, ofs: ['0234001'] };
+  const falta = { codigo: 'LV6002G', descripcion: 'Lona PVC 680 g gris', necesita: 42.3, stock: 18.75, reservado: 0, reservadoPropio: 0, disponible: 18.75, ofs: ['0234001'] };
   it('solo avisa si necesita más de lo disponible y toma como cero un código ausente', () => {
     expect(faltasLona([
       { codigo: 'LV6002G', descripcion: falta.descripcion, ml: 42.3, ofs: falta.ofs, origen: 'corte' },
       { codigo: 'JUSTA', descripcion: '', ml: 10, ofs: [], origen: 'corte' },
       { codigo: 'AUSENTE', descripcion: '', ml: 5, ofs: [], origen: 'reserva' },
-    ], [{ code: 'LV6002G', disponible: 18.75 }, { code: 'JUSTA', disponible: 10 }])).toEqual([
-      falta, { codigo: 'AUSENTE', descripcion: '', necesita: 5, disponible: 0, ofs: [] },
+    ], [{ code: 'LV6002G', metros: 18.75, reservado: 0, reservadoPropio: 0, disponible: 18.75 }, { code: 'JUSTA', disponible: 10 }])).toEqual([
+      falta, { codigo: 'AUSENTE', descripcion: '', necesita: 5, stock: 0, reservado: 0, reservadoPropio: 0, disponible: 0, ofs: [] },
     ]);
   });
 
   it('formatea los metros con dos decimales y explica dónde se puede avisar', () => {
     expect(textoAvisoStock([falta])).toEqual([
-      'No llega el stock de LV6002G Lona PVC 680 g gris: necesita 42,30 m, disponible 18,75 m.',
+      'No llega el stock de LV6002G Lona PVC 680 g gris: stock 18,75 m − reservado por otros pedidos 0,00 m = disponible 18,75 m; necesita 42,30 m, faltan 23,55 m.',
       'Al pasar el pedido en CoordinaOT podrás mandar el correo a Compras y Almacén.',
     ]);
     expect(textoAvisoStock([])).toEqual([]);
+  });
+
+  it('la falta lleva la cuenta completa', () => {
+    const faltas = faltasLona(
+      [{ codigo: 'PLAST880NEGRP204', descripcion: 'PVC negro 204', ml: 410.2, ofs: ['0234125'], origen: 'corte' }],
+      [{ code: 'PLAST880NEGRP204', metros: 1257.8, reservado: 860, reservadoPropio: 40, disponible: 397.8 }],
+    );
+    expect(faltas).toEqual([{ codigo: 'PLAST880NEGRP204', descripcion: 'PVC negro 204', necesita: 410.2,
+      stock: 1257.8, reservado: 860, reservadoPropio: 40, disponible: 397.8, ofs: ['0234125'] }]);
+  });
+
+  it('el aviso enseña stock menos reservas de otros pedidos', () => {
+    expect(textoAvisoStock([{ codigo: 'PLAST880NEGRP204', descripcion: 'PVC negro 204', necesita: 410.2,
+      stock: 1257.8, reservado: 860, reservadoPropio: 40, disponible: 397.8, ofs: ['0234125'] }])[0]).toBe(
+      'No llega el stock de PLAST880NEGRP204 PVC negro 204: stock 1.257,80 m − reservado por otros pedidos 860,00 m = disponible 397,80 m; necesita 410,20 m, faltan 12,40 m. Reservado para este pedido: 40,00 m (no se resta).');
   });
 });
 

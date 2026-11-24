@@ -11,12 +11,13 @@ import { MedidasCalCampos } from './MedidasCalCampos';
 
 const MODELOS = Object.entries(MODELOS_GANADO).map(([value, m]) => ({ value, label: m.nombre }));
 
-export function FormularioGanado({ input, materiales, errores = {}, metrosTela = 0, onChange, onCampoTocado }: {
+export function FormularioGanado({ input, materiales, errores = {}, metrosTela = 0, ofsPedido, onChange, onCampoTocado }: {
   input: GanadoInput;
   materiales: Material[];
   errores?: Record<string, string>;
   /** Metros de tela que pide este elemento: el stock de la bobina avisa si no llegan. */
   metrosTela?: number;
+  ofsPedido?: readonly string[];
   onChange: (i: GanadoInput) => void;
   onCampoTocado?: (campo: string) => void;
 }) {
@@ -56,7 +57,7 @@ export function FormularioGanado({ input, materiales, errores = {}, metrosTela =
 
       <PasoFormulario numero={2} titulo="Material y comprobación" columnas={4}>
         <CampoMaterial span={4} value={input.material} opciones={materiales} error={errores.material}
-          metrosTela={metrosTela} onChange={(v) => set('material', v)} />
+          metrosTela={metrosTela} ofsPedido={ofsPedido} onChange={(v) => set('material', v)} />
         {/* Iván, 23/10/2026: hay remolques que llegaron con los arcos distintos; se comprueban antes de cortar. */}
         <CampoSiNo name="arcosComprobados" span={2} label="Arcos del remolque comprobados" value={input.arcosComprobados}
           onChange={(v) => set('arcosComprobados', v)} />

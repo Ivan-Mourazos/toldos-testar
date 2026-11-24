@@ -3,7 +3,7 @@ import { fabricCodeOf, fabricNeedByCode, fabricStockLine, type FabricStock } fro
 import type { Calculation } from './types';
 
 const PLAST: FabricStock = {
-  code: 'PLAST880NEGRP204', metros: 1257.8, reservado: 860, disponible: 397.8,
+  code: 'PLAST880NEGRP204', metros: 1257.8, reservado: 860, reservadoPropio: 0, disponible: 397.8,
   bobinasConDisponible: 10, mayorBobinaDisponible: 65, consignacion: 0,
   almacenes: [{ codigo: '5', nombre: 'NUEVA SEDE ARZÚA', disponible: 397.8, bobinas: 10 }]
 };
@@ -11,14 +11,14 @@ const PLAST: FabricStock = {
 describe('fabricStockLine · lo que se lee bajo la tela (informe tela-0930)', () => {
   it('con stock: disponible, bobinas, la mayor, reservado y lo que pide el pedido', () => {
     expect(fabricStockLine(PLAST, 9)).toMatchObject({
-      text: 'Stock RPS: 397,8 m disponibles en 10 bobinas (la mayor, 65 m) · 860 m reservados · este pedido necesita 9 ml',
+      text: 'Stock RPS: 1.257,8 m − 860 m reservados por otros pedidos = 397,8 m disponibles en 10 bobinas (la mayor, 65 m) · este pedido necesita 9 ml',
       tone: 'normal'
     });
   });
 
   it('sin disponible: «Sin stock en RPS» en aviso', () => {
     expect(fabricStockLine({ ...PLAST, disponible: 0, bobinasConDisponible: 0, mayorBobinaDisponible: 0 }, 9)).toMatchObject({
-      text: 'Sin stock en RPS · 860 m reservados · este pedido necesita 9 ml', tone: 'aviso'
+      text: 'Sin stock en RPS (1.257,8 m − 860 m reservados por otros pedidos) · este pedido necesita 9 ml', tone: 'aviso'
     });
   });
 
@@ -34,12 +34,24 @@ describe('fabricStockLine · lo que se lee bajo la tela (informe tela-0930)', ()
   });
 
   it('la consignación va aparte y solo si hay', () => {
-    expect(fabricStockLine({ ...PLAST, consignacion: 30 }, 0).text).toBe('Stock RPS: 397,8 m disponibles en 10 bobinas (la mayor, 65 m) · 860 m reservados · + 30 m en consignación');
+    expect(fabricStockLine({ ...PLAST, consignacion: 30 }, 0).text).toBe('Stock RPS: 1.257,8 m − 860 m reservados por otros pedidos = 397,8 m disponibles en 10 bobinas (la mayor, 65 m) · + 30 m en consignación');
     expect(fabricStockLine(PLAST, 0).text).not.toContain('consignación');
   });
 
   it('el detalle por almacén va en el texto al pasar el ratón', () => {
     expect(fabricStockLine(PLAST, 9).title).toContain('NUEVA SEDE ARZÚA: 397,8 m en 10 bobinas');
+  });
+});
+
+describe('fabricStockLine con la cuenta', () => {
+  it('enseña stock menos reservas de otros pedidos', () => {
+    expect(fabricStockLine(PLAST).text).toBe('Stock RPS: 1.257,8 m − 860 m reservados por otros pedidos = 397,8 m disponibles en 10 bobinas (la mayor, 65 m)');
+  });
+  it('sin reservas no enseña la resta', () => {
+    expect(fabricStockLine({ ...PLAST, reservado: 0, disponible: 1257.8 }).text).toBe('Stock RPS: 1.257,8 m disponibles en 10 bobinas (la mayor, 65 m)');
+  });
+  it('lo reservado para este pedido sale aparte y no resta', () => {
+    expect(fabricStockLine({ ...PLAST, reservadoPropio: 40 }).text).toContain(' · 40 m reservados para este pedido (no se restan)');
   });
 });
 

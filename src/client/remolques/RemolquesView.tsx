@@ -136,6 +136,9 @@ export function RemolquesView({ controlRef, usuario, notify, askForConfirmation,
   // como en puertas: «Abrir corte», «Confirmar corte» y, con el corte confirmado, «Guardar para revisión».
   const faltaOfCorte = lineas.some(l => !l.input.cabecera.ordenFabricacion?.trim()
     || l.input.cabecera.ordenFabricacion.trim().toUpperCase() === 'SIN OF');
+  const ofsPedido = lineas
+    .map((l) => l.input.cabecera.ordenFabricacion?.trim() ?? '')
+    .filter((of) => Boolean(of) && of.toUpperCase() !== 'SIN OF');
   const bloqueoCorte = faltaOfCorte ? 'Falta la OF de algún elemento' : ws.bloqueoParams.motivo ?? faltaPdf;
   const entrada = entradaCorte(lineas, params);
   const vistaCorte = useVistaCorteRemolques(lineas.length ? entrada : '', lineas.length ? bloqueoCorte : 'Añade un elemento');
@@ -259,16 +262,16 @@ export function RemolquesView({ controlRef, usuario, notify, askForConfirmation,
                 // key: los «Sí» pulsados a mano en el formulario son de cada elemento, no pasan al siguiente.
                 <FormularioLona key={lineaActiva.version} input={lona} materiales={ws.materiales} params={params}
                   errores={ws.erroresVisibles} metrosTela={ws.medidasSuficientes ? resLona.metrosTela : 0}
-                  delCliente={lineaActiva.delCliente?.campos}
+                  ofsPedido={ofsPedido} delCliente={lineaActiva.delCliente?.campos}
                   onChange={ws.cambiarInput} onCampoTocado={ws.marcarCampoTocado}
                   onConfirm={askForConfirmation} />
               ) : lineaActiva.tipo === 'ganado' ? (
                 <FormularioGanado input={ws.gan} materiales={ws.materiales} errores={ws.erroresVisibles}
-                  metrosTela={ws.medidasSuficientes ? ws.resGan.metrosTela : 0}
+                  metrosTela={ws.medidasSuficientes ? ws.resGan.metrosTela : 0} ofsPedido={ofsPedido}
                   onChange={ws.cambiarInput} onCampoTocado={ws.marcarCampoTocado} />
               ) : (
                 <FormularioBaqueton input={baq} materiales={ws.materiales} params={params} errores={ws.erroresVisibles}
-                  metrosTela={ws.medidasSuficientes ? resBaq.metrosTela : 0} refuerzosPorDefecto={/PAMILAKAN/i.test(cliente ?? '')}
+                  metrosTela={ws.medidasSuficientes ? resBaq.metrosTela : 0} ofsPedido={ofsPedido} refuerzosPorDefecto={/PAMILAKAN/i.test(cliente ?? '')}
                   delCliente={lineaActiva.delCliente?.campos}
                   onChange={ws.cambiarInput} onCampoTocado={ws.marcarCampoTocado} />
               )}

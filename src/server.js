@@ -85,6 +85,7 @@ import {
 import {
   closeRpsCatalog,
   getRpsOrder,
+  queryRpsFabricReserveRows,
   queryRpsFabricStockRows,
   searchRpsFabrics,
   searchRpsArticles,
@@ -181,7 +182,7 @@ app.use((req, res, next) => {
   next();
 });
 const coordina = createCoordinaClient({ url: config.coordinaUrl, key: config.coordinaClave });
-const fabricStock = createFabricStockService({ loadRows: queryRpsFabricStockRows });
+const fabricStock = createFabricStockService({ loadRows: queryRpsFabricStockRows, loadReserves: queryRpsFabricReserveRows });
 const stockLona = { stock: fabricStock, coordina, resolverTela: async codigo =>
   (await searchCatalogFabrics(codigo, 10)).items.find(tela => tela.code === codigo)?.description };
 const generationLocks = new Set();

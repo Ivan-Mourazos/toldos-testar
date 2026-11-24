@@ -19,6 +19,7 @@ type Props = {
   autofill: OrderAutofill | null;
   // Metros que el pedido pide de la tela común, para compararlos con su stock.
   fabricNeedMl?: number;
+  ofsPedido?: readonly string[];
   onlyPvc?: boolean;
   elemento?: 'toldo' | 'embudo';
   readOnly?: boolean;
@@ -76,7 +77,7 @@ export function OrderHeader(props: Props) {
                 </label>}
             </div>
             {props.sameFabric && !props.readOnly && props.fabric && <div className="order-fabric-common-meta">
-              <FabricStockLine selection={props.fabric} neededMl={props.fabricNeedMl} />
+              <FabricStockLine selection={props.fabric} neededMl={props.fabricNeedMl} ofs={props.ofsPedido} />
             </div>}
           </section>
         </div>

@@ -2,11 +2,12 @@ import type { Calculation } from './types';
 import { resolveFabric } from '../domain/fabricCatalog.js';
 
 // Stock de la tela elegida, tal como lo devuelve GET /api/catalog/fabrics/stock
-// (domain/fabricStock.js). «Disponible» es según RPS: metros menos lo reservado por OF.
+// (domain/fabricStock.js). «Disponible» es según RPS: metros menos lo reservado por otros pedidos.
 export type FabricStock = {
   code: string;
   metros: number;
   reservado: number;
+  reservadoPropio: number;
   disponible: number;
   bobinasConDisponible: number;
   mayorBobinaDisponible: number;
@@ -46,15 +47,20 @@ export function fabricNeedByCode(calculation: Calculation | null | undefined): M
 // partida de tinte).
 export function fabricStockLine(stock: FabricStock, neededMl = 0): FabricStockLineText {
   const need = neededMl > 0 ? ` · este pedido necesita ${meters(neededMl)} ml` : '';
-  const reserved = stock.reservado > 0 ? ` · ${meters(stock.reservado)} m reservados` : '';
+  const resta = stock.reservado > 0 ? `${meters(stock.metros)} m − ${meters(stock.reservado)} m reservados por otros pedidos = ` : '';
+  const propio = stock.reservadoPropio > 0 ? ` · ${meters(stock.reservadoPropio)} m reservados para este pedido (no se restan)` : '';
   const consignment = stock.consignacion > 0 ? ` · + ${meters(stock.consignacion)} m en consignación` : '';
   const title = stockTitle(stock);
   if (stock.disponible <= 0) {
-    return { text: `Sin stock en RPS${reserved}${need}${consignment}`, tone: 'aviso', title };
+    return {
+      text: `Sin stock en RPS${stock.reservado > 0 ? ` (${meters(stock.metros)} m − ${meters(stock.reservado)} m reservados por otros pedidos)` : ''}${propio}${need}${consignment}`,
+      tone: 'aviso',
+      title
+    };
   }
   const rolls = stock.bobinasConDisponible === 1 ? '1 bobina' : `${stock.bobinasConDisponible} bobinas`;
   const biggest = stock.bobinasConDisponible > 1 ? ` (la mayor, ${meters(stock.mayorBobinaDisponible)} m)` : '';
-  let text = `Stock RPS: ${meters(stock.disponible)} m disponibles en ${rolls}${biggest}${reserved}${need}`;
+  let text = `Stock RPS: ${resta}${meters(stock.disponible)} m disponibles en ${rolls}${biggest}${propio}${need}`;
   let tone: FabricStockLineText['tone'] = 'normal';
   if (neededMl > 0 && stock.disponible < neededMl) {
     text += ' · no llega';
@@ -69,11 +75,14 @@ export function fabricStockLine(stock: FabricStock, neededMl = 0): FabricStockLi
 function stockTitle(stock: FabricStock) {
   const lines = stock.almacenes.map((almacen) => `${almacen.nombre || almacen.codigo}: ${meters(almacen.disponible)} m en ${almacen.bobinas} ${almacen.bobinas === 1 ? 'bobina' : 'bobinas'}`);
   if (stock.consignacion > 0) lines.push(`Consignación (no cuenta como disponible): ${meters(stock.consignacion)} m`);
-  lines.push('Disponible = metros en almacén menos lo reservado por OF en RPS.');
+  lines.push('Disponible = stock en almacén menos lo reservado por otros pedidos en RPS. Lo reservado para este pedido no se resta.');
   if (stock.consultado) lines.push(`Consultado a las ${new Date(stock.consultado).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`);
   return lines.join('\n');
 }
 
+// ES2023 admite useGrouping: 'always' (en es-ES pone el punto de miles también en 4 cifras).
+const metersFormat = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 1, useGrouping: 'always' } as unknown as Intl.NumberFormatOptions);
+
 function meters(value: number) {
-  return value.toLocaleString('es-ES', { maximumFractionDigits: 1 });
+  return metersFormat.format(value);
 }

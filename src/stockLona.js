@@ -8,7 +8,7 @@ export { textoAvisoStock } from './stockLonaAviso.js';
 
 /** @typedef {{ ofs: string[], codigo: string, descripcion?: string, ml: number, origen: 'corte' | 'reserva' }} LineaLona */
 /** @typedef {{ codigo: string, descripcion: string, ml: number, ofs: string[], origen: LineaLona['origen'] | 'manual' }} NecesidadLona */
-/** @typedef {{ codigo: string, descripcion: string, necesita: number, disponible: number, ofs: string[] }} FaltaLona */
+/** @typedef {{ codigo: string, descripcion: string, necesita: number, disponible: number, stock: number, reservado: number, reservadoPropio: number, ofs: string[] }} FaltaLona */
 /** @typedef {Pick<ReturnType<typeof import('./remolques/corte/index.js').generarCorteRemolques>['cortes'][number], 'material' | 'largo' | 'opcion' | 'elementos'>} CorteStockRemolque */
 
 const redondear = ml => Math.round(ml * 100) / 100;
@@ -32,12 +32,16 @@ export function necesidadesLona(lineas) {
   }));
 }
 
-/** @param {NecesidadLona[]} necesidades @param {{code: string, disponible: number}[]} stock @returns {FaltaLona[]} */
+/** @param {NecesidadLona[]} necesidades @param {{ code: string, metros?: number, reservado?: number, reservadoPropio?: number, disponible: number }[]} stock @returns {FaltaLona[]} */
 export function faltasLona(necesidades, stock) {
-  const porCodigo = new Map(stock.map(({ code, disponible }) => [code, disponible]));
+  const porCodigo = new Map(stock.map(s => [s.code, s]));
   return necesidades.flatMap(({ codigo, descripcion, ml, ofs }) => {
-    const disponible = porCodigo.get(codigo) ?? 0;
-    return disponible < ml ? [{ codigo, descripcion, necesita: ml, disponible, ofs }] : [];
+    const s = porCodigo.get(codigo);
+    const disponible = s?.disponible ?? 0;
+    return disponible < ml ? [{
+      codigo, descripcion, necesita: ml, stock: s?.metros ?? 0, reservado: s?.reservado ?? 0,
+      reservadoPropio: s?.reservadoPropio ?? 0, disponible, ofs,
+    }] : [];
   });
 }
 

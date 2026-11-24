@@ -32,4 +32,18 @@ describe('stock de las propuestas', () => {
     expect(fetchStock).not.toHaveBeenCalled();
     expect(await loadFabricStocks(['PRUEBA-E', 'PRUEBA-F'])).toEqual({ 'PRUEBA-E': { status: 'error' }, 'PRUEBA-F': { status: 'error' } });
   });
+
+  it('envía las OF del pedido en la consulta y separa la caché por juego de OF', async () => {
+    const fetchStock = vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [{ code: 'PRUEBA-OF', disponible: 100, reservadoPropio: 40 }] }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [{ code: 'PRUEBA-OF', disponible: 60, reservadoPropio: 0 }] }) });
+    vi.stubGlobal('fetch', fetchStock);
+    const conOfs = await loadFabricStocks(['PRUEBA-OF'], ['0234125', '0234124', '0234125', '']);
+    expect(fetchStock).toHaveBeenNthCalledWith(1, '/api/catalog/fabrics/stock?codes=PRUEBA-OF&ofs=0234124%2C0234125');
+    expect(conOfs['PRUEBA-OF']).toMatchObject({ status: 'ready', stock: { disponible: 100, reservadoPropio: 40 } });
+    // Misma lona con otras OF (o sin OF) no reutiliza el resultado con OF propias.
+    const sinOfs = await loadFabricStocks(['PRUEBA-OF']);
+    expect(fetchStock).toHaveBeenNthCalledWith(2, '/api/catalog/fabrics/stock?codes=PRUEBA-OF');
+    expect(sinOfs['PRUEBA-OF']).toMatchObject({ status: 'ready', stock: { disponible: 60, reservadoPropio: 0 } });
+  });
 });

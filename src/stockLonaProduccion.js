@@ -8,9 +8,10 @@ import { CODIGO_RPS } from './remolques/stockMaterial.ts';
 /** @typedef {import('./stockLona.js').FaltaLona} FaltaLona */
 /** @typedef {import('./stockLona.js').NecesidadLona} NecesidadLona */
 /** @typedef {{ pedido: string, entrega: number | null, cliente: string, ofs: string[], consultadoPor: string | null }} PedidoStockLona */
-/** @typedef {PedidoStockLona & { lonas: NecesidadLona[], faltas: FaltaLona[], consultado: string }} DatosStockLona */
-/** @typedef {{ stock: { reset: () => void, getStock: (codigos: string[]) => Promise<{ code: string, disponible: number }[]> },
- * coordina: { enviarStockLona: (datos: DatosStockLona) => Promise<{ ok: boolean }> }, now?: () => Date,
+/** @typedef {{ codigo: string, descripcion: string, necesita: number, disponible: number, ofs: string[] }} FaltaLonaCoordina */
+/** @typedef {PedidoStockLona & { lonas: NecesidadLona[], faltas: FaltaLonaCoordina[], consultado: string }} DatosStockLona */
+/** @typedef {{ stock: { reset: () => void, getStock: (codigos: string[], opciones?: { ofs?: string[] }) => Promise<{ code: string, metros?: number, reservado?: number, reservadoPropio?: number, disponible: number }[]> },
+ * coordina: { enviarStockLona: (datos: DatosStockLona) => Promise<{ ok: boolean, motivo?: string }> }, now?: () => Date,
  * resolverTela?: (codigo: string) => Promise<string | undefined> }} ServiciosStockLona */
 
 const sinConsulta = () => ({ consultado: null, faltas: [], avisos: [] });
@@ -65,7 +66,7 @@ async function consultarStock({ lineas, lonasAprobadas, stock, resolverTela, now
   try {
     if (!lonas.length) return { lonas, ...sinConsulta(), consultado: propuesta.length ? now().toISOString() : null };
     stock.reset();
-    const disponible = await stock.getStock(lonas.map(lona => lona.codigo));
+    const disponible = await stock.getStock(lonas.map(lona => lona.codigo), { ofs });
     const consultado = now().toISOString();
     const faltas = faltasLona(lonas, disponible);
     return { lonas, consultado, faltas, avisos: textoAvisoStock(faltas) };
@@ -85,7 +86,13 @@ async function informarStock(pedido, { lonas, consultado, faltas, avisos }, coor
       const ofs = fila.ofs.filter(of => deLaEntrega.has(of));
       return { ...fila, ofs: ofs.length ? ofs : [...pedido.ofs] };
     };
-    const datos = { ...pedido, lonas: lonas.map(ajustar), faltas: faltas.map(ajustar), consultado };
+    // CoordinaOT valida las claves exactas: la cuenta completa va cuando acepte los campos nuevos (Task 6).
+    const datos = {
+      ...pedido,
+      lonas: lonas.map(ajustar),
+      faltas: faltas.map(ajustar).map(({ codigo, descripcion, necesita, disponible, ofs }) => ({ codigo, descripcion, necesita, disponible, ofs })),
+      consultado,
+    };
     // Un fallo al avisar tampoco invalida la comprobación ni los archivos generados.
     let motivo;
     try {

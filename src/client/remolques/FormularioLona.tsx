@@ -35,11 +35,12 @@ const ETIQUETAS_RADIO = {
 } as const;
 const PERFILES_VISIBLES = PERFILES.map(({ value, label }) => ({ value, label }));
 
-export function FormularioLona({ input, materiales, params, errores = {}, metrosTela = 0, delCliente = [], onChange, onCampoTocado, onConfirm }: {
+export function FormularioLona({ input, materiales, params, errores = {}, metrosTela = 0, ofsPedido, delCliente = [], onChange, onCampoTocado, onConfirm }: {
   input: LonaInput;
   materiales: Material[];
   /** Metros de tela que pide este elemento: el stock de la bobina avisa si no llegan. */
   metrosTela?: number;
+  ofsPedido?: readonly string[];
   params?: CalcParams;
   errores?: Record<string, string>;
   onChange: (i: LonaInput) => void;
@@ -212,7 +213,7 @@ export function FormularioLona({ input, materiales, params, errores = {}, metros
           </div>
         )}
         <CampoMaterial span={4} delCliente={dc('material')} value={input.material} opciones={materiales} error={errores.material}
-          metrosTela={metrosTela} onChange={(v) => set('material', v)} />
+          metrosTela={metrosTela} ofsPedido={ofsPedido} onChange={(v) => set('material', v)} />
       </PasoFormulario>
 
       {/* Las dos recogidas se reparten el ancho que deja el Sí / No; un nombre largo («Puentes Hijos de
