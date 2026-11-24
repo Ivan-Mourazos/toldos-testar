@@ -10,6 +10,8 @@ import type { PedidoRemolques } from '../../remolques/flujo/tipos.ts';
 import type { PedidoPuertasGuardado } from '../../puertas/flujo/tipos.ts';
 import { PedidoPuertasDetalle } from '../puertas/PedidoPuertasDetalle';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
+import type { GestionToldos } from '../components/ConfirmarGestionToldos';
+import { TERMINADO_SIN_GENERAR } from '../../reviewRules.js';
 import { ReviewOrderDetail } from '../components/ReviewOrderDetail';
 import { OrdersInbox } from '../components/OrdersInbox';
 import { useCoordinaStatus } from '../hooks/useCoordinaStatus';
@@ -162,7 +164,7 @@ export function ReviewsView({ modo = 'pedidos', todos = [], onIrHistorial, refre
   // Segunda consulta a CoordinaOT: la de las OF del pedido abierto (la de la bandeja solo
   // corre en la lista). Un pedido ya generado no necesita preguntar.
   const detailOfs = selectedReview ? (selectedReview.order.awnings || []).map((awning) => String(awning.of || '')) : [];
-  const { status: detailCoordina } = useCoordinaStatus(detailOfs, Boolean(selectedReview));
+  const { status: detailCoordina } = useCoordinaStatus(detailOfs, Boolean(selectedReview && selectedReview.status !== TERMINADO_SIN_GENERAR));
   const detailLoading = Boolean(selectedCode && !detailIsCurrent);
 
   useEffect(() => {
@@ -180,6 +182,33 @@ export function ReviewsView({ modo = 'pedidos', todos = [], onIrHistorial, refre
       });
     return () => { cancelled = true; };
   }, [selectedCode, refreshKey, onToast]);
+
+  async function gestionarRegistro(accion: GestionToldos, texto: string) {
+    if (!selectedCode || working) return;
+    setWorking(true);
+    try {
+      const respuesta = await fetch(`/api/reviews/${encodeURIComponent(selectedCode)}/${accion}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usuario: currentUser, motivo: accion === 'terminar' ? texto : undefined,
+          confirmacion: accion === 'papelera' ? texto : undefined })
+      });
+      const datos = await respuesta.json();
+      if (!respuesta.ok) throw new Error(datos.error || 'No se pudo actualizar el pedido.');
+      if (accion === 'papelera') {
+        setDetail(null);
+        volverALista();
+      } else {
+        setDetail({ orderCode: selectedCode, review: datos.review as ReviewPackage });
+      }
+      onChanged();
+      const mensaje = { terminar: 'Pedido terminado sin generar.', reabrir: 'El pedido vuelve a estar pendiente.', papelera: 'Pedido enviado a la papelera.' };
+      onToast(mensaje[accion], { tone: 'success' });
+    } catch (error) {
+      onToast(error instanceof Error ? error.message : 'No se pudo actualizar el pedido.', { tone: 'error' });
+    } finally {
+      setWorking(false);
+    }
+  }
 
   async function openSelected() {
     if (!selectedCode) return;
@@ -427,6 +456,7 @@ export function ReviewsView({ modo = 'pedidos', todos = [], onIrHistorial, refre
             onEdit={() => void openSelected()}
             onReuse={() => void reuseSelected()}
             onGenerate={d => void generateSelected(d)}
+            onGestion={(accion, texto) => void gestionarRegistro(accion, texto)}
             notify={onToast}
             onConfirm={onConfirm}
             onGuardarCorte={(estado) => selectedReview ? guardarCorte(selectedReview, estado) : undefined}

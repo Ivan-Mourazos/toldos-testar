@@ -93,7 +93,7 @@ export function BuscadorCabecera({ pedidos, cargando, onElegir }: {
                 <li key={`${r.producto}:${r.pedido.orderCode}`}>
                   <button type="button" id={`cabecera-buscador-op-${i}`} role="option" aria-selected={i === activo}
                     className={i === activo ? 'es-activo' : undefined} onClick={() => elegir(r)} onMouseEnter={() => setCursor(i)}>
-                    <span className={`cabecera-buscador-punto ${r.pedido.status === 'PRODUCED' ? 'es-generado' : 'es-pendiente'}`} aria-hidden="true" />
+                    <span className={`cabecera-buscador-punto ${r.pedido.status === 'PRODUCED' || r.pedido.status === 'TERMINADO_SIN_GENERAR' ? 'es-generado' : 'es-pendiente'}`} aria-hidden="true" />
                     <span className="cabecera-buscador-texto">
                       <span><b>{r.pedido.orderCode}</b> · {r.pedido.summary.customer || 'Sin cliente'}</span>
                       <small>{r.donde} · {r.producto}{r.pedido.summary.models?.length ? ` · ${[...new Set(r.pedido.summary.models)].map(controlLabel).join(', ')}` : ''}</small>

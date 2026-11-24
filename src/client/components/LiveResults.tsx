@@ -1,4 +1,4 @@
-import { awningLetter } from '../../domain/awningCompleteness.js';
+import { letraToldo } from '../../domain/awningCompleteness.js';
 import React from 'react';
 import { AlertCircle, ChevronDown, FileSpreadsheet } from 'lucide-react';
 import type { Awning, Calculation, CalculationState } from '../types';
@@ -27,7 +27,7 @@ export function LiveResults({ calculation, state, awnings }: Props) {
   const orderDiagnostics = diagnostics.filter((item) => !awnings.some((awning) => awning.id === item.awningId));
   const awningSummaries = awnings.flatMap((awning, index) => {
     const own = diagnostics.filter((item) => item.awningId === awning.id);
-    return own.length ? [{ letter: awningLetter(index), count: own.length, errors: own.some((item) => item.level === 'error' || item.level === 'pending') }] : [];
+    return own.length ? [{ letter: letraToldo(awning, index), count: own.length, errors: own.some((item) => item.level === 'error' || item.level === 'pending') }] : [];
   });
   const warningCount = orderDiagnostics.length + awningSummaries.reduce((total, item) => total + item.count, 0);
 
@@ -135,7 +135,7 @@ function FabricRows({ block, index, awning }: { block: OfBlock; index: number; a
   return (
     <>
       <tr>
-        <td><strong className="result-letter">{awningLetter(block.awningIndex ?? index)}</strong></td>
+        <td><strong className="result-letter">{letraToldo(awning, block.awningIndex ?? index)}</strong></td>
         <td><strong>{controlLabel(awning?.model || calc.model)}</strong>{legacyModelName(awning?.model || calc.model) && <small>{legacyModelName(awning?.model || calc.model)}</small>}{heraVariant && <small>{controlLabel(heraVariant)}</small>}</td>
         <td>{block.of || '-'}</td><td className="code">{calc.fabricCode || '-'}</td>
         <td className="num">{formatDecimal(calc.fabricWidth)} cm</td><td className="num">{formatDecimal(calc.fabricDrop)} cm</td><td className="num">{mainFabricPanels || '-'}</td><td className="num"><strong>{formatDecimal(mainFabricMl)} ml</strong></td>
@@ -143,7 +143,7 @@ function FabricRows({ block, index, awning }: { block: OfBlock; index: number; a
       </tr>
       {hasSeparateValance && (
         <tr className="fabric-valance-row">
-          <td><small>{awningLetter(block.awningIndex ?? index)} · bamba</small></td>
+          <td><small>{letraToldo(awning, block.awningIndex ?? index)} · bamba</small></td>
           <td><strong>Bambalina</strong><small>tejido independiente</small></td>
           <td>{block.of || '-'}</td><td className="code">{calc.valanceFabricCode}</td>
           <td className="num">{formatDecimal(calc.valanceFabricWidth ?? calc.fabricWidth)} cm</td><td className="num">{formatDecimal(calc.valanceDrop)} cm</td><td className="num">{calc.valanceFabricPanels || '-'}</td><td className="num"><strong>{formatDecimal(calc.valanceFabricMl)} ml</strong></td>

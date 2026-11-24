@@ -441,6 +441,7 @@ export function useDraft() {
       const sourceUnits = Math.max(1, Number(source.units) || 1);
       const clone = {
         ...source,
+        letra: undefined,
         id: uid(),
         units: 1,
         of: sourceUnits > 1 ? source.of : '',
@@ -591,6 +592,7 @@ export function switchAwningModel(awning: Awning, model: string, armCount?: numb
     structureEdit: awning.structureEdit,
     structureArmCount: null,
     id: awning.id,
+    letra: awning.letra,
     of: awning.of,
     model,
     units: awning.units,

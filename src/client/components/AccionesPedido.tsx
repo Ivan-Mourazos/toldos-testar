@@ -65,9 +65,11 @@ export function CabeceraPedidoGuardado({ volver, titulo, datos, acciones, corteN
 
 export function EntregasPedido({ pedido }: { pedido: { orderCode: string; status: string } }) {
   const entregas = entregasPedido(pedido) as EntregaPedido[];
+  const cerradoSinGenerar = pedido.status === 'TERMINADO_SIN_GENERAR';
+  if (cerradoSinGenerar && !entregas.length) return null;
   return <section className="entregas-pedido bloque-3d" aria-label="Entregas del pedido">
-    <strong>{`Entrega ${numeroEntrega(pedido)}${pedido.status === 'PRODUCED' ? ' · Generada' : ' · En curso'}`}</strong>
-    {pedido.status !== 'PRODUCED' && <p>{ofsEntrega(pedido).length ? `OF de esta entrega: ${ofsEntrega(pedido).join(', ')}` : 'No hay OF nuevas o cambiadas para generar.'}</p>}
+    {!cerradoSinGenerar && <strong>{`Entrega ${numeroEntrega(pedido)}${pedido.status === 'PRODUCED' ? ' · Generada' : ' · En curso'}`}</strong>}
+    {!cerradoSinGenerar && pedido.status !== 'PRODUCED' && <p>{ofsEntrega(pedido).length ? `OF de esta entrega: ${ofsEntrega(pedido).join(', ')}` : 'No hay OF nuevas o cambiadas para generar.'}</p>}
     {entregas.length > 0 && <table><thead><tr><th>Entrega</th><th>OF generadas</th><th>Fecha y autor</th><th>Archivos</th></tr></thead><tbody>
       {entregas.map(e => <tr key={e.numero}><td>{e.numero}</td><td>{e.ofs.join(', ')}</td>
         <td>{new Date(e.fecha).toLocaleString('es-ES')} · {e.autor || 'Sin autor registrado'}

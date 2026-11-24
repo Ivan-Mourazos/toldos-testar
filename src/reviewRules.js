@@ -3,6 +3,7 @@
 //
 // Aprobar y devolver se hacen en CoordinaOT (diseño 24/09/2026, apartado 3): aquí todo
 // pedido guardado y no generado está pendiente de generar, venga del estado que venga.
+export const TERMINADO_SIN_GENERAR = 'TERMINADO_SIN_GENERAR';
 const pendingGenerationStatuses = new Set(['PENDING_REVIEW', 'CHANGES_REQUESTED', 'APPROVED']);
 
 /** @param {string} status */

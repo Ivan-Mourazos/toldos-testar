@@ -15,7 +15,7 @@ import { fabricOnlyModelNames, fullAwningModelNames } from '../../domain/modelBe
 import { fabricCodeOf, fabricNeedByCode } from '../fabricStock';
 import { planFabricToggle } from '../orderFabricToggle';
 import { fabricSelectionLabel } from '../../domain/fabricCatalog.js';
-import { awningLetter } from '../../domain/awningCompleteness.js';
+import { letraToldo } from '../../domain/awningCompleteness.js';
 import { controlLabel } from '../components/controlLabels';
 
 export function OrderView({
@@ -114,7 +114,7 @@ export function OrderView({
     if (!pickerType) return;
     if (changingIndex >= 0) {
       updateAwning(awnings[changingIndex].id, { model });
-      onNotify?.(`El elemento ${awningLetter(changingIndex)} ahora es ${controlLabel(model)}: mantiene su OF, unidades, medidas y tela.`, { tone: 'success', title: 'Modelo cambiado' });
+      onNotify?.(`El elemento ${letraToldo(awnings[changingIndex], changingIndex)} ahora es ${controlLabel(model)}: mantiene su OF, unidades, medidas y tela.`, { tone: 'success', title: 'Modelo cambiado' });
     } else {
       addAwning(pickerType, model);
     }
@@ -202,7 +202,7 @@ export function OrderView({
         <div className="section-header">
           <div>
             <h2>{embudos ? 'Embudos del pedido' : 'Elementos del pedido'}</h2>
-            <span>{awnings.length ? `${awnings.length} ${awnings.length === 1 ? 'elemento' : 'elementos'} · orden A, B, C…` : embudos ? 'Añade el primer embudo.' : 'Añade el primer toldo o trabajo de tela.'}</span>
+            <span>{awnings.length ? `${awnings.length} ${awnings.length === 1 ? 'elemento' : 'elementos'}` : embudos ? 'Añade el primer embudo.' : 'Añade el primer toldo o trabajo de tela.'}</span>
             {!readOnly && <OrderProgress total={awnings.length} ready={statuses.filter(status => status.kind === 'ok' || status.kind === 'warn').length} avisos={statuses.filter(status => status.kind === 'warn').length} />}
           </div>
           {/* Antes eran una fila entera en la cabecera del pedido (espaciado, 25/09/2026). */}
@@ -274,7 +274,7 @@ export function OrderView({
             .filter((model) => enabledModels.has(model))}
           onSelect={chooseModel}
           onClose={closePicker}
-          cambio={changingIndex >= 0 ? { letra: awningLetter(changingIndex), actual: awnings[changingIndex].model, onWorkType: setPickerType } : undefined}
+          cambio={changingIndex >= 0 ? { letra: letraToldo(awnings[changingIndex], changingIndex), actual: awnings[changingIndex].model, onWorkType: setPickerType } : undefined}
         />
       )}
     </>

@@ -1,3 +1,5 @@
+import { letraToldo } from './awningCompleteness.js';
+import { normalizeOf } from '../reviewRules.js';
 import ExcelJS from 'exceljs';
 import { lacadoPrintName } from './lacados.js';
 import { roundQuantity } from './math.js';
@@ -61,12 +63,22 @@ export async function buildOrderArchiveWorkbook(reservation, order = null) {
     headerRowCount = 2 + headerFields.length;
   }
 
+  const letrasPorOf = new Map();
+  if (order?.awnings?.some(t => t.letra)) {
+    order.awnings.forEach((toldo, indice) => {
+      const of = normalizeOf(toldo.of);
+      const letras = letrasPorOf.get(of) ?? [];
+      letras.push(letraToldo(toldo, indice));
+      letrasPorOf.set(of, letras);
+    });
+  }
+
   let rowIndex = headerRowCount + 2;
   for (const ofBlock of reservation.ofs) {
     sheet.mergeCells(rowIndex, 1, rowIndex, 3);
-    sheet.getCell(rowIndex, 1).value = ofBlock.description
-      ? `OF ${numericOf(ofBlock.of)} - ${ofBlock.description}`
-      : `OF ${numericOf(ofBlock.of)}`;
+    const letras = letrasPorOf.get(normalizeOf(ofBlock.of));
+    const toldos = letras?.length ? `${letras.length === 1 ? 'Toldo' : 'Toldos'} ${letras.join(', ')}` : '';
+    sheet.getCell(rowIndex, 1).value = [`OF ${numericOf(ofBlock.of)}`, toldos, ofBlock.description].filter(Boolean).join(' - ');
     sheet.getCell(rowIndex, 1).font = { bold: true, size: 13 };
     sheet.getCell(rowIndex, 1).alignment = { vertical: 'middle' };
     sheet.getRow(rowIndex).fill = {

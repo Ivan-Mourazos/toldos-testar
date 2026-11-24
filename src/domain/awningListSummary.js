@@ -2,7 +2,7 @@
 // fila se ven las letras (A ✓, D 1 aviso…) y, al desplegar, qué le pasa a cada uno.
 // Se calcula al listar, desde el pedido guardado, así que vale también para los pedidos
 // que se guardaron antes de existir.
-import { awningLetter } from './awningCompleteness.js';
+import { letraToldo } from './awningCompleteness.js';
 
 const prefix = /^[^:]{0,80}\bOF\s*[\w-]+\)?\s*:\s*/i;
 
@@ -25,7 +25,7 @@ export function summarizeAwnings(order, calculation) {
     const warnings = own.filter((item) => item.level === 'warn' || item.level === 'warning');
     const invalid = block?.calculation && block.calculation.valid === false;
     return {
-      letter: awningLetter(index),
+      letter: letraToldo(awning, index),
       model: String(awning.model || ''),
       of: String(awning.of || ''),
       state: errors.length || invalid ? 'error' : warnings.length ? 'warn' : 'ok',

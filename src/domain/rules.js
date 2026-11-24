@@ -22,7 +22,7 @@ import { calculateSolapas } from './solapasRules.js';
 import { calculateEmbudo } from './embudoRules.js';
 import { normalizeOrder } from './validation.js';
 import { getRequiredDimensions } from './modelBehavior.js';
-import { awningLetter, describeMissing, getMissingFields, getMissingFabricWidths } from './awningCompleteness.js';
+import { avisoLetrasPedido, letraToldo, describeMissing, getMissingFields, getMissingFabricWidths } from './awningCompleteness.js';
 import { applyLegacyRpsFabricReservation } from './legacyRpsReservation.js';
 import { withRpsCodes } from './rpsIrregularCodes.js';
 import { beginRuleOverrides, finishRuleOverrides } from './ruleOverrides.js';
@@ -94,7 +94,8 @@ function formatOverride(value) {
 export function calculateOrder(payload) {
   const order = normalizeOrder(payload);
   const ofs = [];
-  const diagnostics = [];
+  const avisoLetras = avisoLetrasPedido(order.awnings);
+  const diagnostics = avisoLetras ? [{ level: 'error', message: avisoLetras }] : [];
 
   for (const [awningIndex, awning] of order.awnings.entries()) {
     if (isIncompleteAwning(awning)) continue;
@@ -131,7 +132,7 @@ export function calculateOrder(payload) {
     const unknownWidths = getMissingFabricWidths(awning, order);
     if (unknownWidths.length) {
       diagnostics.push({ level: 'error', awningId: awning.id, awningIndex, missingFields: unknownWidths,
-        message: `Toldo ${awningLetter(awningIndex)} (${awning.model}, OF ${awning.of}): falta ${describeMissing(unknownWidths)}.` });
+        message: `Toldo ${letraToldo(awning, awningIndex)} (${awning.model}, OF ${awning.of}): falta ${describeMissing(unknownWidths)}.` });
       ofs.push({ awningId: awning.id, awningIndex, of: awning.of, description: buildAwningDescription(awning),
         materials: [], despiece: null, calculation: { valid: false, fabricDrop: undefined, missingFields: unknownWidths } });
       continue;
@@ -189,7 +190,7 @@ export function calculateOrder(payload) {
         awningId: awning.id,
         awningIndex,
         missingFields,
-        message: `Toldo ${awningLetter(awningIndex)} (${awning.model}, OF ${awning.of}): falta ${describeMissing(missingFields)}.`
+        message: `Toldo ${letraToldo(awning, awningIndex)} (${awning.model}, OF ${awning.of}): falta ${describeMissing(missingFields)}.`
       });
       result = { ...result, calculation: { ...result.calculation, valid: false, missingFields } };
     }

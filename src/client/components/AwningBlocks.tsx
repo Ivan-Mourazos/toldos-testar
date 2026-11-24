@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Awning } from '../types';
-import { awningLetter } from '../../domain/awningCompleteness.js';
+import { letraToldo } from '../../domain/awningCompleteness.js';
 import { BLOCK_GAP, cardsPerPage, pageCount, pageLabel, pageOfIndex, type AwningStatus } from '../awningBlocks';
 import { onAwningFocus, revealAwningCard, scrollBehavior } from '../awningFocus';
 
@@ -117,7 +117,7 @@ export function AwningBlocks({ awnings, statuses, reading = false, renderCard }:
   // goTo y revealableCardAt se crean en cada render pero solo leen awnings, page, perPage
   // y pages: con ellos en las dependencias el oyente siempre ve los valores actuales.
   useEffect(() => onAwningFocus((letter) => {
-    const index = awnings.findIndex((_, position) => awningLetter(position) === letter);
+    const index = awnings.findIndex((awning, position) => letraToldo(awning, position) === letter);
     if (index < 0) return;
     const target = pageOfIndex(index, perPage);
     const track = trackRef.current;
@@ -206,10 +206,10 @@ export function AwningBlocks({ awnings, statuses, reading = false, renderCard }:
                 type="button"
                 className={`awning-index-item is-${status.kind}${isVisible(index) ? ' is-visible' : ''}`}
                 aria-current={isVisible(index) ? 'true' : undefined}
-                aria-label={`Toldo ${awningLetter(index)}: ${status.kind === 'ok' ? 'completo' : status.label}`}
+                aria-label={`Toldo ${letraToldo(awnings[index], index)}: ${status.kind === 'ok' ? 'completo' : status.label}`}
                 onClick={() => goTo(pageOfIndex(index, perPage))}
               >
-                <strong>{awningLetter(index)}</strong>
+                <strong>{letraToldo(awnings[index], index)}</strong>
                 <span>{status.label}</span>
               </button>
             );
@@ -249,7 +249,7 @@ export function AwningBlocks({ awnings, statuses, reading = false, renderCard }:
           <button type="button" className="ghost-button" aria-label="Toldos anteriores" disabled={page === 0} onClick={() => goTo(page - 1)}>
             <ChevronLeft aria-hidden="true" />
           </button>
-          <span className="awning-blocks-label" aria-live="polite">{pageLabel(page, perPage, awnings.length)}</span>
+          <span className="awning-blocks-label" aria-live="polite">{pageLabel(page, perPage, awnings.length, awnings)}</span>
           <button type="button" className="ghost-button" aria-label="Toldos siguientes" disabled={page >= pages - 1} onClick={() => goTo(page + 1)}>
             <ChevronRight aria-hidden="true" />
           </button>

@@ -175,7 +175,17 @@ export function codigoCorteEditable(p, codigo) {
 export function pedidoEntrega(p, salida = false) {
   const ofs = new Set(ofsEntrega(p));
   const codigo = salida === 'anual' ? codigoAnual(p) : salida ? codigoEntrega(p) : p.orderCode;
-  if (p.order) return { ...p, orderCode: codigo, order: { ...p.order, orderCode: codigo, awnings: p.order.awnings.filter(e => ofs.has(ofElemento(e))) } };
+  if (p.order) {
+    // Si el pedido tiene letras fijadas, las automáticas también conservan su posición
+    // al sacar una parte del pedido, para que no coincidan con las fijadas a mano.
+    const conLetras = p.order.awnings.some(t => t.letra);
+    const awnings = [];
+    for (const [i, t] of p.order.awnings.entries()) {
+      if (!ofs.has(ofElemento(t))) continue;
+      awnings.push(conLetras && !t.letra && i !== awnings.length ? { ...t, posicionLetra: t.posicionLetra ?? i } : t);
+    }
+    return { ...p, orderCode: codigo, order: { ...p.order, orderCode: codigo, awnings } };
+  }
   return { ...p, orderCode: codigo, elementos: (p.elementos ?? []).filter(e => ofs.has(ofElemento(e))) };
 }
 

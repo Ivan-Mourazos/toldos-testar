@@ -18,7 +18,7 @@ export function ReviewPlanteamientoPreview({ review, parameters, onClose }: {
   parameters: RuleParameters;
   onClose?: () => void;
 }) {
-  const pdfIndex = review.production?.files.findIndex((file) => file.type === 'pdf') ?? -1;
+  const pdfIndex = review.production?.files?.findIndex((file) => file.type === 'pdf') ?? -1;
   if (review.status === 'PRODUCED' && pdfIndex >= 0) {
     return <GeneratedReviewPreview review={review} pdfIndex={pdfIndex} onClose={onClose} />;
   }

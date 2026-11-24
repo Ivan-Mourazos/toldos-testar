@@ -22,8 +22,9 @@ import { registrarRutaPuertas } from './puertas/rutas.js';
 import { crearPlanoPuertas } from './puertas/flujo/archivos.ts';
 import { crearServicioPedidosPuertas } from './puertas/flujo/servicio.ts';
 import { crearAlmacenConfirmaciones } from './flujoDwg/confirmaciones.js';
-import { firmasCorteLona, corteLonaPendiente, crearEstadoCorteLona } from './corteLonaEstado.js';
+import { firmasCorteLona, corteLonaPendiente, crearEstadoCorteLona, letrasCorteCambiadas } from './corteLonaEstado.js';
 import { generarCorteLona } from './domain/corteLona/index.js';
+import { TERMINADO_SIN_GENERAR } from './reviewRules.js';
 import { aprobacionToldos, autoriaToldos, decisionRegenerar, generarToldosPermitido } from './toldosEditable.js';
 import { aprobacionDeTodas, crearFlujoDwg, huellaDatos, planosDe } from './flujoDwg/flujo.ts';
 import { comprobarCorteNoRegenerado } from './flujoDwg/salidaEditable.ts';
@@ -41,7 +42,7 @@ import { exigirCorteAlDia, exigirCorteParaSalir, escribirPlanosCorte, prepararAr
 import { registrarRutasEnviosCorte } from './corteEnviosRoutes.js';
 import { estadoBotCompartido } from './botEstado.js';
 import { createCoordinaClient } from './coordinaStatus.js';
-import { awningLetter } from './domain/awningCompleteness.js';
+import { avisoLetrasPedido, letraToldo } from './domain/awningCompleteness.js';
 import { getCatalog } from './domain/catalog.js';
 import { searchStaticFabrics } from './domain/fabricCatalog.js';
 import { buildFabricDiagramPreviewPdf, buildOrderPlanteamientoPdf } from './domain/planteamientoPdf.js';
@@ -378,7 +379,9 @@ app.post('/api/corte-lona/borrador', async (req, res, next) => {
     lockKey = orderCode;
     let existente = null;
     try { existente = await workflowStore.getReview(orderCode); } catch { existente = null; }
+    exigirToldosAbierto(existente);
     const entrega = await numerarEntrega(abrirEntrega({ kind: 'toldos-testar-review', orderCode, order, status: 'PENDING_REVIEW' }, existente), await workflowStore.getSettings());
+    comprobarLetrasToldos(entrega.order);
     const actual = pedidoEntrega(entrega).order;
     if (existente?.status === 'PRODUCED' && !entrega.entregas.some(e => e.numero === entrega.entregaActual)) existente = null;
     let corteLona = req.body?.corteLona;
@@ -433,25 +436,34 @@ app.get('/api/reviews/:orderCode/corte-dwg', async (req, res, next) => {
 
 // Fase 2: el corte de los borradores, tal como quedaron en ZWCAD, confirmado para poder guardar para revisión.
 app.post('/api/corte-lona/borrador/confirmar', async (req, res, next) => {
+  const soltar = bloquearRegistroToldos(req.body?.orderCode);
   try {
     const savedBy = typeof req.body?.savedBy === 'string' ? req.body.savedBy.trim() : '';
     if (!formOptions.tecnicos.includes(savedBy)) throw httpError(400, 'Elige quién eres en «Soy» antes de confirmar el corte.');
     const codigo = sanitizeOrderCode(String(req.body?.orderCode ?? ''));
     let review = null;
     try { review = await workflowStore.getReview(codigo); } catch (error) { if (error.code !== 'ENOENT') throw error; }
+    exigirToldosAbierto(review);
     const { status, cuerpo } = await flujoToldos.confirmar(codigoCorteEditable(review, codigo), savedBy);
     res.status(status).json(cuerpo);
   } catch (error) {
     next(error);
+  } finally {
+    soltar();
   }
 });
 
 const enviarCorteToldos = registrarRutasEnviosCorte(app, {
   ruta: '/api/reviews/:orderCode/corte-lona', obtener: (codigo) => workflowStore.getReview(codigo),
   ajustes: () => workflowStore.getSettings(), coordina, tecnicos: formOptions.tecnicos, locks: generationLocks,
-  contexto: (review) => ({ order: { ...pedidoEntrega(review).order, orderCode: codigoEntrega(review) },
-    elementos: pedidoEntrega(review).order.awnings.map((a, i) => ({ letter: awningLetter(i), of: a.of })),
-    comprobarCorte: () => exigirCorteParaSalir(review, pedidoEntrega(review).order) }),
+  contexto: (review) => {
+    exigirToldosAbierto(review);
+    comprobarLetrasToldos(review.order);
+    const { order } = pedidoEntrega(review);
+    return { order: { ...order, orderCode: codigoEntrega(review) },
+      elementos: order.awnings.map((a, i) => ({ letter: letraToldo(a, i), of: a.of })),
+      comprobarCorte: () => exigirCorteParaSalir(review, order) };
+  },
   preparar: async (review) => (await prepararArchivosCorte({ order: pedidoEntrega(review).order, codigoSalida: codigoEntrega(review), corteLona: review.corteLona,
     settings: await workflowStore.getSettings(), tipo: 'bot', soloContenido: true })).files,
   // Flujo del DWG, fase 3: con el corte confirmado, el DXF sale del DWG revisado; si cambió después, se pregunta.
@@ -1297,6 +1309,8 @@ app.post('/api/reviews', async (req, res, next) => {
       if (error.code !== 'ENOENT') throw error;
     }
 
+    exigirToldosAbierto(existing);
+    comprobarLetrasToldos(normalizedOrder);
     const decision = saveReviewDecision(existing, existing?.status === 'PRODUCED' || req.body?.confirmOverwrite === true);
     if (decision.action === 'refuse') throw httpError(decision.statusCode, decision.error);
     if (decision.action === 'confirm') {
@@ -1324,6 +1338,7 @@ app.post('/api/reviews', async (req, res, next) => {
     }
     review.entregaPorPreparar = false;
     review = entregaSinCambios(review, existing, req.body?.decisionCorte);
+    comprobarLetrasToldos(review.order);
     if (existing?.status === 'PRODUCED' && !ofsEntrega(review).length) return res.json({ ok: true, unchanged: true, review: existing });
     // Solo los planos que la web escribió para este pedido se pueden sustituir en la carpeta del año (Iván, 19/11/2026).
     const planosWebPrevios = [...new Set([...(existing?.planosWeb ?? []), ...(existing?.corteConfirmado ? planosDe(existing.corteConfirmado).map(p => p.plano) : [])])];
@@ -1344,6 +1359,10 @@ app.post('/api/reviews', async (req, res, next) => {
     const ajustesCorte = await workflowStore.getSettings();
     const estadoDwg = await flujoToldos.estado(codigoCorte);
     const hayCorte = Boolean(existing?.corteConfirmado || existing?.corteLona || estadoDwg.borrador);
+    const cambiaronLetras = letrasCorteCambiadas(order, existing?.corteLona);
+    if (cambiaronLetras && req.body?.decisionCorte !== 'regenerar') {
+      return res.status(409).json({ needsRegenerateConfirmation: true, cambiaronLetras: true });
+    }
     const cambio = decisionRegenerar(existing ? { ...existing, order: normalizeOrder(existing.order) } : null,
       normalizeOrder(order), hayCorte, req.body?.decisionCorte,
       Boolean(existing?.corteLona) && datosCorteToldos(existing.corteLona) !== datosCorteToldos(review.corteLona));
@@ -1430,9 +1449,48 @@ app.post('/api/reviews', async (req, res, next) => {
   }
 });
 
+function exigirToldosAbierto(review) {
+  if (review?.status === TERMINADO_SIN_GENERAR) throw httpError(409, 'El pedido está terminado sin generar. Vuelve a abrirlo para continuar.');
+}
+
+function comprobarLetrasToldos(order) {
+  const aviso = avisoLetrasPedido(order.awnings);
+  if (aviso) throw httpError(409, aviso);
+}
+
+function bloquearRegistroToldos(orderCode) {
+  const codigo = sanitizeOrderCode(orderCode);
+  if (generationLocks.has(codigo)) throw httpError(409, 'Este pedido está ocupado. Espera un momento.');
+  generationLocks.add(codigo);
+  return () => generationLocks.delete(codigo);
+}
+
+for (const [ruta, actualizar] of [
+  ['terminar', workflowStore.terminarRevision],
+  ['reabrir', workflowStore.reabrirRevision],
+  ['papelera', workflowStore.enviarRevisionAPapelera]
+]) {
+  app.post(`/api/reviews/:orderCode/${ruta}`, async (req, res, next) => {
+    const codigo = sanitizeOrderCode(req.params.orderCode);
+    const usuario = typeof req.body?.usuario === 'string' ? req.body.usuario.trim() : '';
+    if (!formOptions.tecnicos.includes(usuario)) return next(httpError(400, 'Elige quién eres en «Soy» antes de continuar.'));
+    const soltar = bloquearRegistroToldos(codigo);
+    try {
+      const resultado = await actualizar(codigo, { usuario, motivo: req.body?.motivo, confirmacion: req.body?.confirmacion });
+      res.json(ruta === 'papelera' ? { ok: true } : { ok: true, review: resultado });
+    } catch (error) {
+      next(error.code === 'ENOENT' ? httpError(404, 'No se encontró el pedido de revisión.') : error);
+    } finally {
+      soltar();
+    }
+  });
+}
+
 app.post('/api/reviews/:orderCode/request-changes', async (req, res, next) => {
+  const soltar = bloquearRegistroToldos(req.params.orderCode);
   try {
     const review = await workflowStore.getReview(req.params.orderCode);
+    exigirToldosAbierto(review);
     if (review.status === 'APPROVED' || review.status === 'PRODUCED') {
       throw httpError(409, 'La revisión ya está cerrada y no se puede devolver sin guardar antes una nueva versión del pedido.');
     }
@@ -1448,12 +1506,16 @@ app.post('/api/reviews/:orderCode/request-changes', async (req, res, next) => {
   } catch (error) {
     if (error.code === 'ENOENT') return next(httpError(404, 'No se encontró el pedido de revisión.'));
     next(error);
+  } finally {
+    soltar();
   }
 });
 
 app.post(['/api/reviews/:orderCode/mark-approved', '/api/reviews/:orderCode/approve'], async (req, res, next) => {
+  const soltar = bloquearRegistroToldos(req.params.orderCode);
   try {
     const review = await workflowStore.getReview(req.params.orderCode);
+    exigirToldosAbierto(review);
     if (review.status === 'PRODUCED') {
       throw httpError(409, 'Este pedido ya pertenece al histórico de producción y no se puede cambiar desde la revisión web.');
     }
@@ -1471,14 +1533,18 @@ app.post(['/api/reviews/:orderCode/mark-approved', '/api/reviews/:orderCode/appr
   } catch (error) {
     if (error.code === 'ENOENT') return next(httpError(404, 'No se encontró el pedido de revisión.'));
     next(error);
+  } finally {
+    soltar();
   }
 });
 
 async function generarArchivosToldos(orderCode, cuerpo, prepararSolo = false) {
-  const req = { params: { orderCode }, body: cuerpo };
+  const req = { body: cuerpo };
   const res = { codigo: 200, status(codigo) { this.codigo = codigo; return this; }, json(cuerpo) { return { status: this.codigo, cuerpo }; } };
   try {
-
+    let review = await workflowStore.getReview(orderCode);
+    exigirToldosAbierto(review);
+    comprobarLetrasToldos(review.order);
     const settings = await workflowStore.getSettings();
     const readiness = workflowReadiness(settings);
     if (!readiness.productionReady) {
@@ -1490,7 +1556,6 @@ async function generarArchivosToldos(orderCode, cuerpo, prepararSolo = false) {
     // por Configuración. Si alguna sigue sin llegar, se sigue igual: el fallo lo dirá su paso.
     await waitForDirectories([settings.reviewDirectory, settings.planteamientosDirectory, settings.rpsUploadDirectory].map(directoryTemplateRoot));
 
-    let review = await workflowStore.getReview(req.params.orderCode);
     if (review.status === 'PRODUCED' && !cuerpo.soloPdf) return res.json({ ok: true, review, unchanged: true, saved: review.production?.files || [] });
     const destino = review.status === 'PRODUCED' ? { pedido: review } : await aplicarDestino(review, settings, req.body);
     if (destino.respuesta) return res.status(destino.respuesta.status).json(destino.respuesta.cuerpo);
@@ -1510,7 +1575,7 @@ async function generarArchivosToldos(orderCode, cuerpo, prepararSolo = false) {
 
     // Solo se genera lo que CoordinaOT ha aprobado, OF por OF, preguntando en el momento.
     // Si CoordinaOT no responde, no se genera (diseño 29/09/2026, opción A).
-    const approvalAwnings = order.awnings.map((awning, index) => ({ letter: awningLetter(index), of: awning.of }));
+    const approvalAwnings = order.awnings.map((awning, index) => ({ letter: letraToldo(awning, index), of: awning.of }));
     const approval = await coordina.statusOf(uniqueOfs(approvalAwnings), { fresh: true });
     const approvalBlock = generarToldosPermitido(approvalAwnings, approval);
     if (approvalBlock) throw httpError(approval.disponible ? 409 : 503, approvalBlock);
@@ -1625,7 +1690,7 @@ async function generarArchivosToldos(orderCode, cuerpo, prepararSolo = false) {
     const enElCad = new Set((review.corteLona?.toldos ?? []).filter((t) => !t.manual).map((t) => t.letra));
     pdfTarget.contents = await buildOrderPlanteamientoPdf({ order: { ...order, orderCode: cleanOrder, reviewer }, calculation, review: updated, ...opcionesHojaTelas({ codigoPedido: cleanOrder }),
       ...(updated.corteConfirmado ? { cadEmbudo: null } : {}),
-      ...(cad.length ? { sinHojaTelas: (_toldo, indice) => enElCad.has(awningLetter(indice)) } : {}) });
+      ...(cad.length ? { sinHojaTelas: (toldo, indice) => enElCad.has(letraToldo(toldo, indice)) } : {}) });
     if (cad.length) pdfTarget.contents = await conHojasDelante(pdfTarget.contents, cad);
     pdfTarget.contents = await adjuntarPedido(pdfTarget.contents, cuerpo.soloPdf ? { ...review, production: updated.production } : updated, 'toldos');
     const conCad = cad.length > 0;
@@ -1712,7 +1777,11 @@ app.post('/api/reviews/:orderCode/plano', async (req, res, next) => {
   generationLocks.add(codigo);
   try {
     const pedido = await workflowStore.getReview(codigo), settings = await workflowStore.getSettings();
+    exigirToldosAbierto(pedido);
+    comprobarLetrasToldos(pedido.order);
     if (!settings.productionEnabled) throw httpError(403, 'La generación de archivos está desactivada.');
+    const { order } = pedidoEntrega(pedido);
+    if (letrasCorteCambiadas(order, pedido.corteLona)) throw httpError(409, 'Han cambiado las letras de los toldos. Regenera el corte antes de guardar el plano.');
     const plan = await prepararPlanoProduccion({ confirmado: pedido.corteConfirmado, confirmOverwrite: req.body?.confirmOverwrite === true,
       preparar: async () => { const p = await prepararArchivosCorte({ order: pedidoEntrega(pedido).order, corteLona: pedido.corteLona, settings, oda, tipo: 'plano', codigoSalida: codigoAnual(pedido) }); return { ficheros: p.files, avisos: p.avisos }; },
       escribir: async files => { for (const f of files) { await fs.mkdir(path.dirname(f.savedPath), { recursive: true }); await writeFileAtomic(f.savedPath, f.contents, { conservarAnterior: true }); } } });

@@ -2,7 +2,7 @@ import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } f
 import { CheckCircle2, Scissors, RefreshCw } from 'lucide-react';
 import { corteReadiness, telaConCorte } from '../../domain/corteReadiness.js';
 import { resolveFabric } from '../../domain/fabricCatalog.js';
-import { awningLetter } from '../../domain/awningCompleteness.js';
+import { letraToldo } from '../../domain/awningCompleteness.js';
 import { AJUSTES_POR_DEFECTO } from '../../domain/corteLona/despiece.js';
 import type { DraftState } from '../types';
 import { textoEstadoCorte, type AjustesCorte, type CorteRespuesta, type EstadoCorte, type PendienteCorte, type VistaCorte } from '../corteLona';
@@ -20,7 +20,7 @@ const numero = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits:
 /** Los toldos del pedido que llevan corte de lona: PVC de un modelo con corte. */
 export function toldosConCorte(order: DraftState) {
   return order.awnings.flatMap((t, i) => corteReadiness(t.model).ready &&
-    telaConCorte(resolveFabric(order.sameFabric ? order.fabric : t.fabric)) ? [{ t, letra: awningLetter(i) }] : []);
+    telaConCorte(resolveFabric(order.sameFabric ? order.fabric : t.fabric)) ? [{ t, letra: letraToldo(t, i) }] : []);
 }
 
 /** Para generar el corte desde la barra de arriba del pedido guardado. */

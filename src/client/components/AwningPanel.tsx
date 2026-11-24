@@ -2,7 +2,7 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 're
 import { useContenidoFluido } from '../hooks/useContenidoFluido';
 import { FileSpreadsheet, Layers3, Scissors, X } from 'lucide-react';
 import type { Awning, Calculation } from '../types';
-import { awningLetter, describeMissing, getMissingFields } from '../../domain/awningCompleteness.js';
+import { letraToldo, describeMissing, getMissingFields } from '../../domain/awningCompleteness.js';
 import { controlLabel, legacyModelName } from './controlLabels';
 import { FabricSheet, StructureSheet } from './LiveResults';
 import { awningReservationRows } from '../awningPanel';
@@ -37,7 +37,7 @@ type Props = {
 // como la vista previa de la revisión: Esc, la X o un clic fuera lo cierran y el foco
 // vuelve al botón que lo abrió. Reutiliza las hojas de «Planteamientos».
 export function AwningPanel({ awning, index, calculation, order, onUpdate, onClose, onConfirm }: Props) {
-  const letter = awningLetter(index);
+  const letter = letraToldo(awning, index);
   const fabricOnly = awning.workType === 'FABRIC_ONLY';
   // Como la tarjeta: «Tela A» para un trabajo de tela, «Toldo A» para un toldo.
   const elementName = `${fabricOnly ? 'Tela' : 'Toldo'} ${letter}`;

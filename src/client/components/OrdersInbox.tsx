@@ -1,3 +1,4 @@
+import { TERMINADO_SIN_GENERAR } from '../../reviewRules.js';
 import React, { useEffect, useRef, useState } from 'react';
 import { AlertTriangle, ArrowUp, Check, ChevronDown, CircleAlert, FilePen, FileSearch, FolderOpen, Search, Trash2 } from 'lucide-react';
 import type { CoordinaStatus, PedidoBandeja } from '../types';
@@ -148,12 +149,12 @@ export function OrdersInbox({ modo = 'pedidos', onIrHistorial, pending, history,
           ))}
       {historialModo ? <>
         <header className="orders-inbox-bar">
-          <h2>Generados</h2>
+          <h2>Terminados</h2>
           <input className="review-year" type="number" min="2000" max="2100" value={year} onChange={(event) => onYear(Number(event.target.value))} aria-label="Año" />
           <span className="orders-count">{sections.history.length}</span>
         </header>
         {historyLoading ? <p className="review-empty">Cargando historial…</p>
-          : sections.history.length === 0 ? <p className="review-empty">{query.trim() ? 'Nada con eso en los generados de ' + year + '.' : 'No hay pedidos generados en ' + year + '.'}</p>
+          : sections.history.length === 0 ? <p className="review-empty">{query.trim() ? 'Ningún pedido coincide en el historial de ' + year + '.' : 'No hay pedidos terminados en ' + year + '.'}</p>
             : <>{columns(false)}{groupByMonth(historial.visibles).map((mes) => (
               <section key={mes.key} className="orders-month" aria-label={`${mes.label}: ${mes.reviews.length} pedidos`}>
                 <h3 className="orders-group-title orders-month-title tone-history"><span className="orders-dot" aria-hidden="true" />{mes.label}<span className="orders-count">{mes.reviews.length}</span></h3>
@@ -216,11 +217,12 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
 }) {
   const detailId = `orders-detail-${productoDe(review)}-${review.orderCode}`;
   const awnings = review.summary.awningList;
-  const notas = awnings?.length ? notasDevolucion(awnings, coordinaStatus) : {};
+  const toldos = productoDe(review) === 'toldos';
+  const notas = awnings?.length ? notasDevolucion(awnings, coordinaStatus, toldos) : {};
   const author = review.summary.technician ? controlLabel(review.summary.technician) : '—';
   const filaRef = useAjustarAlDesplegar(open);
   // Lo generado ya no tiene prioridad que atender: su borde queda sin color.
-  const prioridad = review.status === 'PRODUCED' ? null : prioridadDe(review, coordinaStatus);
+  const prioridad = review.status === 'PRODUCED' || review.status === TERMINADO_SIN_GENERAR ? null : prioridadDe(review, coordinaStatus);
   return (
     <li ref={filaRef} className={`orders-row ${open ? 'bloque-3d-hundido is-open' : 'bloque-3d'}${tone ? ` tone-${tone}` : ''}${prioridad ? ` prioridad-${prioridad}` : ''}`}
       title={prioridad ? `Prioridad ${PRIORIDAD_TEXTO[prioridad]} en CoordinaOT` : undefined}>
@@ -236,7 +238,9 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
       <div className="orders-row-cells">
         <ChevronDown className="orders-chevron" aria-hidden="true" />
         <CodigoPedido codigo={review.orderCode} titulo="Abrir el pedido" onAbrir={onOpen} />
-        <span className="orders-customer">{review.summary.customer || 'Sin cliente'}{'corteNoRegenerado' in review && review.corteNoRegenerado
+        <span className="orders-customer">{review.summary.customer || 'Sin cliente'}{'terminadoSinGenerar' in review && review.terminadoSinGenerar
+          ? <small className="corte-lista" title={review.terminadoSinGenerar.motivo}>Terminado sin generar · {review.terminadoSinGenerar.motivo}</small>
+          : 'corteNoRegenerado' in review && review.corteNoRegenerado
           ? <small className="corte-lista is-viejo">{CORTE_NO_REGENERADO}</small>
           : 'corteLonaEstado' in review && review.corteLonaEstado && <small className={`corte-lista is-${review.corteLonaEstado}`}>Corte: {review.corteLonaEstado === 'hecho' ? 'hecho' : review.corteLonaEstado === 'viejo' ? 'viejo' : 'falta'}</small>}</span>
         <ModelTags models={review.summary.models} producto={productoDe(review)} />
@@ -244,7 +248,7 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
         {withDate && <span className="orders-date">{formatListDate(review.updatedAt)}</span>}
         <span className="orders-awnings">
           {awnings?.length
-            ? collapseAwnings(awnings, (item) => `${item.state}|${coordinaOf(item, coordinaStatus, productoDe(review) === 'toldos') ?? ''}`).map((group) => <AwningChip key={group.items[0].letter} item={group.items[0]} group={group} coordinaStatus={coordinaStatus} toldos={productoDe(review) === 'toldos'} />)
+            ? collapseAwnings(awnings, (item) => `${item.state}|${coordinaOf(item, coordinaStatus, toldos) ?? ''}`, 6, toldos).map((group, indice) => <AwningChip key={indice} item={group.items[0]} group={group} coordinaStatus={coordinaStatus} toldos={toldos} />)
             : <span className="orders-models">{review.summary.awnings} {review.summary.awnings === 1 ? 'elemento' : 'elementos'}</span>}
         </span>
       </div>
@@ -253,15 +257,15 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
         <div className="orders-detail" id={detailId}>
           {awnings?.length ? (
             <ul className={detalleEnColumnas(awnings.length) ? 'orders-detail-list is-columns' : 'orders-detail-list'}>
-              {awnings.map((item) => {
+              {awnings.map((item, indice) => {
                 const returned = coordinaStatus?.disponible ? coordinaStatus.ofs?.[normalizeOf(item.of)] : undefined;
                 // La nota de devolución, si CoordinaOT la tiene devuelta: una vez por OF (ver notasDevolucion).
                 const devolucion = notas[item.letter];
                 // Quién aprobó en CoordinaOT; es el que quedará de revisor al generar.
                 const approvedBy = aprobadaOPasada(returned?.estado) && returned?.revisor ? reviewerName(returned.revisor, formOptions.tecnicos as string[]) : '';
                 return (
-                <li key={item.letter} className={`is-${item.state}`}>
-                  <AwningChip item={item} coordinaStatus={coordinaStatus} toldos={productoDe(review) === 'toldos'} />
+                <li key={indice} className={`is-${item.state}`}>
+                  <AwningChip item={item} coordinaStatus={coordinaStatus} toldos={toldos} />
                   <strong>{controlLabel(item.model)}</strong>
                   <span>OF {item.of || '—'}</span>
                   {/* Solo si hay avisos (Iván, 02/10/2026: «Sin avisos» repetido en cada OF sobraba). */}
@@ -274,6 +278,7 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
             </ul>
           ) : <p className="orders-detail-empty">{(review.summary.models || []).map(controlLabel).join(' + ')} · {review.summary.awnings} elementos</p>}
           <div className="orders-detail-actions">
+            {'terminadoSinGenerar' in review && review.terminadoSinGenerar && <p className="orders-detail-note motivo-cierre-toldos">{review.terminadoSinGenerar.motivo}</p>}
             {review.reviewNote && <p className="orders-detail-note"><strong>Nota de revisión:</strong> {review.reviewNote}</p>}
             <button type="button" className="primary-button boton-3d" onClick={onOpen}><FolderOpen aria-hidden="true" />Abrir el pedido</button>
           </div>

@@ -3,7 +3,7 @@ import { CARPETA_TECNICO } from './corteTecnicos.js';
 import path from 'node:path';
 import { generarCorteLona } from './domain/corteLona/index.js';
 import { archivoCorte } from './domain/corteLona/opcionesArchivo.js';
-import { corteLonaPendiente } from './corteLonaEstado.js';
+import { corteLonaPendiente, letrasCorteCambiadas } from './corteLonaEstado.js';
 import { authorNames } from './reviewRules.js';
 import { resolveDirectoryTemplate, sanitizeOrderCode, writeFileAtomic } from './workflow.js';
 
@@ -21,6 +21,9 @@ export function exigirCorteAlDia(order, corteLona) {
  * («Usar este corte igualmente»). Sin plano, el cálculo guardado tiene que ser el de los datos del pedido.
  */
 export function exigirCorteParaSalir(pedido, order) {
+  if (letrasCorteCambiadas(order, pedido.corteLona)) {
+    throw Object.assign(new Error('Han cambiado las letras de los toldos. Regenera el corte antes de continuar.'), { statusCode: 409 });
+  }
   if (!pedido.corteConfirmado) exigirCorteAlDia(order, pedido.corteLona);
 }
 

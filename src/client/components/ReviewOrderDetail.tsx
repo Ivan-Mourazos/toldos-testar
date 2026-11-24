@@ -2,6 +2,9 @@ import { AccionesCorteMaquina } from './CorteMaquina';
 import { ProduccionPedido } from './ProduccionPedido';
 import type { DestinoEntrega } from '../../entregasTipos';
 import React, { useEffect, useMemo, useState } from 'react';
+import { isPendingGeneration, TERMINADO_SIN_GENERAR } from '../../reviewRules.js';
+import { MenuMas } from './MenuMas';
+import { ConfirmarGestionToldos, type GestionToldos } from './ConfirmarGestionToldos';
 import { CopyPlus, Download, ExternalLink, Factory, FileSearch, FileSpreadsheet, FileText } from 'lucide-react';
 import type { Calculation, CoordinaStatus, ReviewPackage, RuleParameters } from '../types';
 import type { EstadoCorte } from '../corteLona';
@@ -12,7 +15,7 @@ import { BotonAbrirCorteRevisado, BotonesFlujoCorte, useFlujoCorteDwg } from '..
 import { PlanteamientoPedido } from './PlanteamientoPedido';
 import { controlLabel } from './controlLabels';
 import { generateState, puedeCorregir } from '../generatePermission';
-import { awningLetter } from '../../domain/awningCompleteness.js';
+import { letraToldo } from '../../domain/awningCompleteness.js';
 import { AccionesPedido, CabeceraPedidoGuardado } from './AccionesPedido';
 import { HistorialEnvios } from './EnviosCorte';
 import { pedidoEntrega } from '../../entregas.js';
@@ -38,6 +41,7 @@ export function ReviewOrderDetail({
   notify = noop,
   onConfirm = async () => 'cancel',
   onGuardarCorte,
+  onGestion,
   onChanged
 }: {
   review: ReviewPackage | null;
@@ -55,6 +59,7 @@ export function ReviewOrderDetail({
   onConfirm?: AskForConfirmation;
   onGuardarCorte?: (estado: EstadoCorte | null) => Promise<void> | void;
   onChanged?: () => void;
+  onGestion?: (accion: GestionToldos, texto: string) => void;
 }) {
   const availableModels = useMemo(
     () => Array.from(new Set(review?.order.awnings.map((awning) => awning.model).filter(Boolean) || [])),
@@ -73,7 +78,9 @@ export function ReviewOrderDetail({
   // Confirmar la regeneración guarda el corte directamente; no queda una versión local pendiente.
   const [generandoCorte, setGenerandoCorte] = useState(false);
   const estadoCorte = review?.corteLona ?? null;
-  const autorDelCorte = Boolean(review && order && review.status !== 'PRODUCED' && onGuardarCorte && currentUser);
+  const terminado = review?.status === TERMINADO_SIN_GENERAR;
+  const [gestion, setGestion] = useState<GestionToldos | null>(null);
+  const autorDelCorte = Boolean(review && order && isPendingGeneration(review.status) && onGuardarCorte && currentUser);
   const conFlujoCorte = autorDelCorte && Boolean(review && toldosConCorte(review.order).length > 0)
     && !review?.corteConfirmado;
   const flujoCorte = useFlujoCorteDwg({ base: '/api/corte-lona/borrador', codigo: review?.orderCode ?? '',
@@ -112,13 +119,19 @@ export function ReviewOrderDetail({
   // CoordinaOT solo decide si todas las OF permiten generar; no importa el autor.
   const { allowed: canGenerate, note: generateNote } = generateState(review, currentUser, coordinaStatus);
   // Cualquier usuario de oficina puede corregir; CoordinaOT solo condiciona la salida.
-  const corregible = puedeCorregir(review.status, (order.awnings || []).map((a, i) => ({ letter: awningLetter(i), of: String(a.of || '') })),
+  const corregible = !terminado && puedeCorregir(review.status, (order.awnings || []).map((a, i) => ({ letter: letraToldo(a, i), of: String(a.of || '') })),
     order.technician || '', currentUser, coordinaStatus, true);
   const cortePermitido = generateState(Object.assign({}, pedidoEntrega(review), { status: 'PENDING_REVIEW' as const, entregas: [] }), currentUser, coordinaStatus);
   const puedeEnviar = Boolean(currentUser.trim());
   const conCorteLona = toldosConCorte(review.order).length > 0;
-  const pdfIndex = review.production?.files.findIndex(file => file.type === 'pdf') ?? -1;
+  const pdfIndex = review.production?.files?.findIndex(file => file.type === 'pdf') ?? -1;
   const pdfGenerado = isProduced && pdfIndex >= 0;
+
+  const pendiente = isPendingGeneration(review.status);
+  const accionesRegistro = onGestion && <MenuMas>
+    <button type="button" role="menuitem" className="menu-mas-item" disabled={disabled || !currentUser}
+      onClick={() => setGestion('papelera')}>Enviar a la papelera</button>
+  </MenuMas>;
 
   async function regenerarCorte() {
     setGenerandoCorte(true);
@@ -134,20 +147,36 @@ export function ReviewOrderDetail({
             review.order.technician && `autor ${controlLabel(review.order.technician)}`,
             review.updatedAt && `guardado ${formatDateTime(review.updatedAt)}${review.updatedBy ? ` por ${controlLabel(review.updatedBy)}` : ''}`
           ].filter(Boolean).join(' · ')} corteNoRegenerado={review.corteNoRegenerado} corteSimulado={review.corteSimulado}
-        acciones={<AccionesPedido generado={isProduced} ocupado={disabled || generandoCorte} enviando={generating} editandoPermitido={corregible}
+        acciones={<AccionesPedido generado={isProduced || terminado} ocupado={disabled || generandoCorte} enviando={generating} editandoPermitido={corregible}
           onEditar={onEdit} elementos={order.awnings.map(a => ({ of: String(a.of || '') }))} coordina={coordinaStatus} preguntar={onConfirm}
-          abrir={review.corteConfirmado && !conFlujoCorte
+          abrir={!terminado && review.corteConfirmado && !conFlujoCorte
             ? <BotonAbrirCorteRevisado ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-dwg`} notify={notify} />
             : conFlujoCorte ? <BotonesFlujoCorte flujo={flujoCorte} ocupado={disabled || generandoCorte} /> : null}
           regenerar={autorDelCorte && conCorteLona ? () => void regenerarCorte() : undefined}
           codigo={review.orderCode} rutaDestinos={`/api/reviews/${encodeURIComponent(review.orderCode)}/destinos-entrega`} generar={onGenerate} generarPermitido={canGenerate} motivoGenerar={generateNote}
-          produccion={<ProduccionPedido ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}`} rutaPdf={`/api/reviews/${encodeURIComponent(review.orderCode)}/generate-files`}
+          envios={<>
+            {onGestion && (pendiente || terminado) && <button type="button" className="ghost-button boton-3d"
+              disabled={disabled || generandoCorte || !currentUser} onClick={() => setGestion(terminado ? 'reabrir' : 'terminar')}>
+              {terminado ? 'Volver a pendiente' : 'Marcar como terminado'}
+            </button>}
+            {accionesRegistro}
+          </>}
+          produccion={!terminado && <ProduccionPedido ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}`} rutaPdf={`/api/reviews/${encodeURIComponent(review.orderCode)}/generate-files`}
             rutaPlano={`/api/reviews/${encodeURIComponent(review.orderCode)}/plano`} rutaCorte={conCorteLona ? `/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona` : undefined}
             tecnico={order.technician || ''} codigo={review.orderCode} generado={isProduced} permitido={puedeEnviar && (isProduced ? cortePermitido.allowed : canGenerate)} motivo={generateNote}
             ocupado={disabled || generandoCorte} usuario={currentUser} notify={notify} preguntar={onConfirm} onChanged={onChanged} onVolver={onBack}
             guardado={{ ruta: '/api/reviews', cuerpo: { order: review.order, corteLona: review.corteLona }, usuario: currentUser }}
             mas={produced ? <button type="button" role="menuitem" className="menu-mas-item" disabled={disabled} onClick={onReuse}><CopyPlus size={16} aria-hidden="true" />Reutilizar datos</button> : null} />} />} />
 
+      {gestion && onGestion && <ConfirmarGestionToldos accion={gestion} codigo={review.orderCode} onClose={() => setGestion(null)}
+        onConfirmar={texto => { setGestion(null); onGestion(gestion, texto); }} />}
+      {review.terminadoSinGenerar && <div className="review-production-block bloque-3d">
+        <div className="review-production-summary"><span>
+          <strong>Terminado sin generar</strong>
+          <small>{formatDateTime(review.terminadoSinGenerar.fecha)} · {controlLabel(review.terminadoSinGenerar.usuario)}</small>
+          <p className="motivo-cierre-toldos">{review.terminadoSinGenerar.motivo}</p>
+        </span></div>
+      </div>}
       {produced && review.production && (
         <div className="review-production-block bloque-3d" role="status">
           <div className="review-production-summary">
@@ -158,7 +187,7 @@ export function ReviewOrderDetail({
             </span>
           </div>
           <div className="review-generated-files">
-            {review.production.files.map((file, index) => (
+            {(review.production.files ?? []).map((file, index) => (
               <GeneratedFileLink key={`${file.type}-${file.of || ''}-${file.filename}`} review={review} file={file} index={index} />
             ))}
           </div>
@@ -205,7 +234,7 @@ export function ReviewOrderDetail({
 
       <DocumentosPedido planteamiento={<PlanteamientoPedido
         origen={pdfGenerado ? `/api/reviews/${encodeURIComponent(review.orderCode)}/generated-files/${pdfIndex}` : '/api/planteamiento'}
-        cuerpo={pdfGenerado ? undefined : JSON.stringify({ order: { ...pedidoEntrega(review).order, parameters: reviewParameters } })}
+        cuerpo={pdfGenerado ? undefined : JSON.stringify({ order: { ...(terminado ? review.order : pedidoEntrega(review).order), parameters: reviewParameters } })}
         version={review.updatedAt} />}
         corte={<CorteLona key={review.orderCode} order={pedidoEntrega(review).order} estado={estadoCorte} reviewCode={review.orderCode}
         dwgGuardado={Boolean(review.corteConfirmado && !review.corteNoRegenerado)}
@@ -213,7 +242,7 @@ export function ReviewOrderDetail({
         generarArriba={autorDelCorte}
         regenerable={autorDelCorte}
         onListo={setFaltaCorte} />} />
-      {conCorteLona && <AccionesCorteMaquina ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona`} codigo={review.orderCode} onEnviado={onChanged} />}
+      {!terminado && conCorteLona && <AccionesCorteMaquina ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona`} codigo={review.orderCode} onEnviado={onChanged} />}
       <HistorialEnvios envios={review.enviosCorte} />
       {review.planosCorte && <div className="corte-ayuda">{review.planosCorte.files.map(f => <p key={f.savedPath}>Plano: {f.savedPath} · {formatDateTime(f.writtenAt)}</p>)}{review.planosCorte.avisos.map((a, i) => <p key={i}>{a}</p>)}</div>}
     </section>

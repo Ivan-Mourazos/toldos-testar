@@ -57,6 +57,7 @@ export type EmbudoConfiguration = {
 };
 
 export type Awning = {
+  letra?: string;
   id: string;
   workType: 'FULL_AWNING' | 'FABRIC_ONLY';
   of: string;
@@ -730,7 +731,7 @@ export type WorkflowDirectoryCheck = {
   }[];
 };
 
-export type ReviewStatus = 'PENDING_REVIEW' | 'CHANGES_REQUESTED' | 'APPROVED' | 'PRODUCED';
+export type ReviewStatus = 'PENDING_REVIEW' | 'CHANGES_REQUESTED' | 'APPROVED' | 'PRODUCED' | 'TERMINADO_SIN_GENERAR';
 
 // Estado de las OF en CoordinaOT (respuesta de /api/coordina/ofs).
 export type CoordinaStatus = {
@@ -742,6 +743,7 @@ export type CoordinaStatus = {
 };
 
 export type ReviewSummary = {
+  terminadoSinGenerar?: { usuario: string; motivo: string; fecha: string; estadoAnterior: ReviewStatus };
   ofsEntregaActual?: string[];
   entregas?: import('../entregasTipos').EntregaPedido[];
   entregaActual?: number;

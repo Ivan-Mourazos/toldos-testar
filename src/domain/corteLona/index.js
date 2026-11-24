@@ -3,7 +3,8 @@ import { ajustesDeBastillas, formaBambalina } from './bambalina.js';
 import { normalizeOrder } from '../validation.js';
 import { resolveFabric } from '../fabricCatalog.js';
 import { shortFabricName } from '../fabricShortName.js';
-import { awningLetter } from '../awningCompleteness.js';
+import { ajustesDeToldo } from './ajustesToldo.js';
+import { avisoLetrasPedido, letraToldo } from '../awningCompleteness.js';
 import { corteReadiness, motivoCorteManual, telaConCorte } from '../corteReadiness.js';
 import { opcionesCorte, PRESUPUESTO_TETRIS } from './colocacion.js';
 import { dibujo } from './dibujoCorte.js';
@@ -30,10 +31,12 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
   // Vista previa sin OF (Iván, 21/10/2026: «ver una vista previa del corte» de un pedido inventado): el cálculo agrupa
   // por OF, así que el toldo sin OF se calcula con «SIN OF» en sus piezas. Nunca se escriben archivos así
   // (`sinOf`, ver corteLonaArchivos.js).
-  const sinOf = (order.awnings ?? []).flatMap((t, i) => (String(t.of ?? '').trim() ? [] : [awningLetter(i)]));
+  const sinOf = (order.awnings ?? []).flatMap((t, i) => (String(t.of ?? '').trim() ? [] : [letraToldo(t, i)]));
   const orden = normalizeOrder(sinOf.length
     ? { ...order, awnings: order.awnings.map((t) => (String(t.of ?? '').trim() ? t : { ...t, of: OF_PROVISIONAL })) }
     : order);
+  const avisoLetras = avisoLetrasPedido(orden.awnings);
+  if (avisoLetras) throw Object.assign(new Error(avisoLetras), { statusCode: 409 });
   const calculo = calculateOrder(orden);
   const avisos = sinOf.map((letra) => `Toldo ${letra}: sin OF, es solo una vista previa; escribe la OF antes de guardarlo.`);
   const grupos = new Map();
@@ -46,7 +49,7 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
   };
   const avisar = (letra, of, mensaje) => avisos.push(`Toldo ${letra}, OF ${of || 'sin indicar'}: ${mensaje}`);
   for (const [i, toldo] of orden.awnings.entries()) {
-    const letra = awningLetter(i);
+    const letra = letraToldo(toldo, i);
     if (!corteReadiness(toldo.model).ready) {
       avisar(letra, toldo.of, 'el corte de este modelo está pendiente.');
       continue;
@@ -81,7 +84,7 @@ export function generarCorteLona(order, { ajustes = {}, ofStockSacos } = {}) {
       ...(bambalina ? { soloBamba: true } : {}),
       unidades: Number(toldo.units), tela: c.fabricDescription,
       // Las bastillas de la bambalina suelta se eligen en el formulario y mandan sobre las del corte.
-      ajustes: { ...(ajustes[toldo.id] ?? ajustes[toldo.of] ?? ajustes[letra] ?? {}), ...(bambalina ? ajustesDeBastillas(toldo.bambaBastillas) : {}) },
+      ajustes: { ...(ajustesDeToldo(ajustes, toldo, i)), ...(bambalina ? ajustesDeBastillas(toldo.bambaBastillas) : {}) },
       ...(toldo.model === 'CORTINA' || toldo.model === 'CAMBIO CORTINA' ? { cortina: datosCortina(toldo) } : {}),
       ...(toldo.model === 'SOLAPAS' ? { solapas: datosSolapas(toldo) } : {}),
       ...(toldo.model === 'EMBUDO' ? { embudo: normalizeEmbudo(toldo.embudo), notas: [orden.notes, toldo.fabricNotes].filter(Boolean).join('\n') } : {})

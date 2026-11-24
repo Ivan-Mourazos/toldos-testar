@@ -1,5 +1,5 @@
 import { isPendingGeneration } from '../reviewRules.js';
-import { awningLetter } from '../domain/awningCompleteness.js';
+import { avisoLetrasPedido, letraToldo } from '../domain/awningCompleteness.js';
 import type { CoordinaStatus, ReviewPackage } from './types';
 import { generarToldosPermitido } from '../toldosEditable.js';
 import { pedidoEntrega } from '../entregas.js';
@@ -21,7 +21,9 @@ export function canGenerateReview(status: string, _technician: string, _currentU
 // Toldos: cualquiera genera cuando todas las OF están aprobadas o pasadas en CoordinaOT.
 export function generateState(review: Pick<ReviewPackage, 'status' | 'order'>, _currentUser: string, status: CoordinaStatus | null) {
   if (review.status === 'PRODUCED' || !isPendingGeneration(review.status)) return { allowed: false, note: '' };
-  const awnings = (pedidoEntrega(review).order.awnings || []).map((awning, index) => ({ letter: awningLetter(index), of: String(awning.of || '') }));
+  const awnings = (pedidoEntrega(review).order.awnings || []).map((awning, index) => ({ letter: letraToldo(awning, index), of: String(awning.of || '') }));
+  const letras = avisoLetrasPedido(review.order.awnings);
+  if (letras) return { allowed: false, note: letras };
   if (!status) return { allowed: false, note: 'Comprobando la aprobación en CoordinaOT…' };
   const block = generarToldosPermitido(awnings, status);
   return block ? { allowed: false, note: block } : { allowed: true, note: '' };

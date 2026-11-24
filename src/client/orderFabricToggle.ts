@@ -1,5 +1,5 @@
 import type { Awning } from './types';
-import { awningLetter } from '../domain/awningCompleteness.js';
+import { letraToldo } from '../domain/awningCompleteness.js';
 
 // Qué pasa con la tela al marcar o desmarcar «Por toldo» (informe tela-0930, F1).
 //
@@ -12,7 +12,7 @@ import { awningLetter } from '../domain/awningCompleteness.js';
 //   para preguntar (antes se quedaba la común vacía y todos daban «FALTA · tela»).
 export type FabricToggleState = {
   fabric: string;
-  awnings: Pick<Awning, 'id' | 'fabric'>[];
+  awnings: Pick<Awning, 'id' | 'fabric' | 'letra'>[];
 };
 
 export type FabricToggleGroup = { fabric: string; letters: string; count: number };
@@ -47,7 +47,7 @@ export function planFabricToggle(state: FabricToggleState, nextSameFabric: boole
 
 // Telas distintas de los toldos, de la más repetida a la menos (a igualdad, la del
 // primer toldo), con las letras de los toldos que la llevan.
-export function fabricGroups(awnings: Pick<Awning, 'id' | 'fabric'>[]): FabricToggleGroup[] {
+export function fabricGroups(awnings: Pick<Awning, 'id' | 'fabric' | 'letra'>[]): FabricToggleGroup[] {
   const byFabric = new Map<string, { indexes: number[]; first: number }>();
   awnings.forEach((awning, index) => {
     const fabric = String(awning.fabric || '').trim();
@@ -60,7 +60,7 @@ export function fabricGroups(awnings: Pick<Awning, 'id' | 'fabric'>[]): FabricTo
     .sort((a, b) => b[1].indexes.length - a[1].indexes.length || a[1].first - b[1].first)
     .map(([fabric, entry]) => ({
       fabric,
-      letters: entry.indexes.map((index) => awningLetter(index)).join(', '),
+      letters: entry.indexes.map((index) => letraToldo(awnings[index], index)).join(', '),
       count: entry.indexes.length
     }));
 }
