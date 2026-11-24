@@ -8,6 +8,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import sql from 'mssql';
 import { crearOdaConverter } from '../src/odaConverter.js';
+import { leerPlanoTexto, textoDxf } from '../src/flujoDwg/planoDxf.js';
 
 const DIR = 'tmp/belts-luz';
 const ODA_EXE = process.env.ODA_FILE_CONVERTER || 'C:/Users/ivan.sanchez/tools/oda/ODAFileConverter.exe';
@@ -54,7 +55,8 @@ if (process.argv.includes('--rps')) {
             l.Description descripcion,
             l.Comment comentario,
             l.Quantity cantidad,
-            CONVERT(varchar(40), mo.CodManufacturingOrder) of_
+            CONVERT(varchar(40), mo.CodManufacturingOrder) of_,
+            CONVERT(varchar(10), mo.RealEndDate, 120) ofFin
           FROM dbo.FACOrderSL o
           JOIN dbo.FACCustomer c ON c.IDCustomer=o.IDCustomer AND c.CodCompany=o.CodCompany
           JOIN dbo.FACOrderLineSL l ON l.IDOrder=o.IDOrder AND l.CodCompany=o.CodCompany
@@ -190,4 +192,102 @@ if (process.argv.includes('--recolectar')) {
     }
   }
   fs.writeFileSync(path.join(DIR, 'manifiesto-pedidos.json'), JSON.stringify(manifiesto, null, 2));
+}
+
+function extraerAtributosCajetin(dxfTxt) {
+  const lineas = dxfTxt.replace(/\r\n/g, '\n').split('\n');
+  const attrs = {};
+  for (let i = 0; i < lineas.length - 1; i += 2) {
+    if (lineas[i].trim() === '0' && lineas[i + 1].trim() === 'ATTRIB') {
+      let tag = '';
+      let val = '';
+      for (let j = i + 2; j < lineas.length - 1; j += 2) {
+        const c = lineas[j].trim();
+        const v = lineas[j + 1].trim();
+        if (c === '0') break;
+        if (c === '2') tag = v.toUpperCase();
+        if (c === '1') val = v;
+      }
+      if (tag && val && !attrs[tag]) attrs[tag] = val;
+    }
+  }
+  return attrs;
+}
+
+function extraerTextosYDimensionesPlano(rutaDxf) {
+  const txt = fs.readFileSync(rutaDxf, 'utf8');
+  const attrs = extraerAtributosCajetin(txt);
+  const plano = leerPlanoTexto(txt);
+  const textos = [...new Set(plano.modelo.filter(p => p.tipo === 'texto').map(p => textoDxf(p.valor || p.texto || '').replace(/\s+/g, ' ').trim()).filter(Boolean))];
+  const relevante = textos.filter(t => /E\.?T|Ø|30X|40X|50X|60X|SACO|FALD|ARENA|VELCRO|CORD|VARILLA|B\.?N\.?|B\.?D\.?|PISAR|SOLDAR|CERRAR|DEJAR|CINTA|REFUERZO|HUECO|CORTE|CRISTAL|TRANSP/i.test(t));
+  // Valores de cotas reales (código 42 en entidades DIMENSION)
+  const lineas = txt.replace(/\r\n/g, '\n').split('\n');
+  const cotas = [];
+  for (let i = 0; i < lineas.length - 1; i += 2) {
+    if (lineas[i].trim() === '0' && lineas[i + 1].trim() === 'DIMENSION') {
+      let real = null;
+      let override = '';
+      for (let j = i + 2; j < lineas.length - 1; j += 2) {
+        const c = lineas[j].trim();
+        const v = lineas[j + 1].trim();
+        if (c === '0') break;
+        if (c === '42') real = Number(v);
+        if (c === '1') override = v;
+      }
+      if (Number.isFinite(real)) cotas.push({ real: Math.round(real * 100) / 100, override });
+    }
+  }
+  return {
+    tecnico: attrs.TECNICO || attrs['TÉCNICO'] || attrs.DIBUJADO || attrs.AUTOR || '',
+    revisor: attrs.REVISION || attrs['REVISIÓN'] || attrs.REVISOR || '',
+    fechaCajetin: attrs.FECHA || '',
+    ofCajetin: attrs.OF || '',
+    attrs,
+    relevante,
+    cotasPequenas: [...new Set(cotas.filter(c => c.real >= 4 && c.real <= 80).map(c => c.override ? `${c.real}[${c.override}]` : String(c.real)))],
+  };
+}
+
+if (process.argv.includes('--auditar-dudas')) {
+  const manifiesto = JSON.parse(fs.readFileSync(path.join(DIR, 'manifiesto-pedidos.json'), 'utf8'));
+  const piezasData = JSON.parse(fs.readFileSync(path.join(DIR, 'piezas-maqcorte.json'), 'utf8'));
+  const rpsBelts = JSON.parse(fs.readFileSync(path.join(DIR, 'rps-038908.json'), 'utf8'));
+  const rpsLuz = JSON.parse(fs.readFileSync(path.join(DIR, 'rps-052082.json'), 'utf8'));
+  const rpsMap = { belts: rpsBelts, luz: rpsLuz };
+  const salida = { belts: [], luz: [] };
+
+  for (const slug of ['belts', 'luz']) {
+    console.log(`\n==================== ${slug.toUpperCase()} ====================`);
+    for (const ped of manifiesto[slug]) {
+      const rpsLineas = rpsMap[slug].filter(r => r.pedido === ped.pedido && r.articulo.startsWith('PUERTA'));
+      const dxfPlano = ped.dwgs[0] ? path.join(DIR, slug, 'dxf-plano', ped.dwgs[0].nombre.replace(/\.dwg$/i, '.dxf')) : null;
+      const infoPlano = dxfPlano && fs.existsSync(dxfPlano) ? extraerTextosYDimensionesPlano(dxfPlano) : null;
+      const recMaq = piezasData[slug]?.find(x => x.pedido === ped.pedido);
+      const piezasMaq = recMaq?.archivos?.flatMap(a => a.islas.flatMap(is => is.subpiezas.map(p => ({ w: p.w, h: p.h, mH: p.marcasH, mV: p.marcasV, txt: p.textos })))) ?? [];
+      const row = {
+        pedido: ped.pedido,
+        fecha: ped.fecha,
+        articulos: [...new Set(rpsLineas.map(l => l.articulo))],
+        ofs: rpsLineas.map(l => ({ of: l.of_, fin: l.ofFin, uds: l.cantidad })),
+        comentariosRps: rpsLineas.map(l => l.comentario.replace(/\s+/g, ' ').trim()),
+        tecnico: infoPlano?.tecnico || '?',
+        revisor: infoPlano?.revisor || '',
+        fechaCajetin: infoPlano?.fechaCajetin || '',
+        notasPlano: infoPlano?.relevante || [],
+        cotasPequenas: infoPlano?.cotasPequenas || [],
+        piezasMaq,
+        pedPdfs: ped.pedPdfs.map(p => p.nombre),
+        plantPdfs: ped.plantPdfs.map(p => p.nombre),
+      };
+      salida[slug].push(row);
+      const estados = row.ofs.map(o => `${o.of || '-'}:${o.fin || '-'}`).join(',');
+      console.log(`${row.pedido} | ${row.fecha} | ${row.articulos.join('+')} | tec=${row.tecnico} rev=${row.revisor} | OF=${estados}`);
+      console.log(`   notas: ${row.notasPlano.slice(0, 12).join(' | ')}`);
+      const etysaco = piezasMaq.filter(p => Math.min(p.w, p.h) <= 75).map(p => `${p.w}x${p.h}`);
+      const panos = piezasMaq.filter(p => Math.min(p.w, p.h) > 75).map(p => `${p.w}x${p.h}`);
+      console.log(`   panos: ${panos.join(', ')} || et/saco/cristal: ${etysaco.slice(0, 14).join(', ')}`);
+    }
+  }
+  fs.writeFileSync(path.join(DIR, 'auditoria-dudas.json'), JSON.stringify(salida, null, 2));
+  console.log('\nGuardado en', path.join(DIR, 'auditoria-dudas.json'));
 }
