@@ -65,3 +65,35 @@ describe('summarizeFabricStock · stock de una lona según RPS (informe tela-093
     expect(summarizeFabricStock([], 'X')).toMatchObject({ metros: 0, disponible: 0, bobinasConDisponible: 0, mayorBobinaDisponible: 0, almacenes: [] });
   });
 });
+
+describe('reservas del propio pedido', () => {
+  const rows = [
+    { stockId: 1, code: 'PLAST880NEGRP204', warehouseCode: '5', warehouseName: 'NUEVA SEDE', roll: 'A', meters: 65, reserved: 50 },
+    { stockId: 2, code: 'PLAST880NEGRP204', warehouseCode: '5', warehouseName: 'NUEVA SEDE', roll: 'B', meters: 65, reserved: 0 },
+  ];
+  const reservas = [
+    { stockId: 1, of: '0234125', quantity: 40 },
+    { stockId: 1, of: '234999', quantity: 10 },
+  ];
+
+  it('sin OF propias resta todas las reservas, como hasta ahora', () => {
+    const s = summarizeFabricStock(rows, 'PLAST880NEGRP204', { reservas });
+    expect(s).toMatchObject({ metros: 130, reservado: 50, reservadoPropio: 0, disponible: 80 });
+  });
+
+  it('las reservas de las OF del pedido no restan y se cuentan aparte', () => {
+    const s = summarizeFabricStock(rows, 'PLAST880NEGRP204', { reservas, ofsPropias: ['234125'] });
+    expect(s).toMatchObject({ metros: 130, reservado: 10, reservadoPropio: 40, disponible: 120 });
+    expect(s.mayorBobinaDisponible).toBe(65);
+  });
+
+  it('compara la OF normalizada a 7 cifras en los dos lados', () => {
+    const s = summarizeFabricStock(rows, 'PLAST880NEGRP204', { reservas, ofsPropias: ['0234999'] });
+    expect(s).toMatchObject({ reservado: 40, reservadoPropio: 10 });
+  });
+
+  it('sin lista de reservas por OF se comporta igual que antes', () => {
+    const s = summarizeFabricStock(rows, 'PLAST880NEGRP204', { ofsPropias: ['0234125'] });
+    expect(s).toMatchObject({ reservado: 50, reservadoPropio: 0, disponible: 80 });
+  });
+});

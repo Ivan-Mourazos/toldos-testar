@@ -1,9 +1,12 @@
+import { normalizeOf } from '../reviewRules.js';
+
 // Stock de una lona según RPS (informe tmp/tela-0930, sección c). Cada fila es una
 // bobina (`roll`, la «Series» de STKStock) en un almacén, con sus metros y lo que
 // tiene reservado por OF (STKStockReserve).
 //
-// - «Disponible» = metros − reservado, bobina a bobina (nunca negativo). Solo resta
-//   lo reservado en RPS: no es el físico.
+// - Disponible = metros − reservado por otros pedidos. Lo reservado por las OF del
+//   propio pedido (`ofsPropias`) no resta: va en `reservadoPropio`. Las asignaciones
+//   no cuentan.
 // - No cuentan «No_Usar» ni «PROVEEDORES», ni las filas negativas.
 // - La consignación no es género nuestro hasta que se confirme: va aparte, en
 //   `consignacion`, y no suma en «disponible».
@@ -12,10 +15,17 @@
 const excludedWarehouse = /NO_?USAR|PROVEEDOR/i;
 const consignmentWarehouse = /CONSIGNA/i;
 
-export function summarizeFabricStock(rows = [], code = '') {
+export function summarizeFabricStock(rows = [], code = '', { reservas = [], ofsPropias = [] } = {}) {
   const wanted = String(code || '').trim().toUpperCase();
+  const propias = new Set(ofsPropias.map(normalizeOf).filter(Boolean));
+  const propioPorBobina = new Map();
+  for (const r of reservas) {
+    if (r?.stockId == null || !propias.has(normalizeOf(r?.of))) continue;
+    propioPorBobina.set(r.stockId, (propioPorBobina.get(r.stockId) || 0) + (Number(r.quantity) || 0));
+  }
   let metros = 0;
   let reservado = 0;
+  let reservadoPropio = 0;
   let disponible = 0;
   let consignacion = 0;
   let bobinasConDisponible = 0;
@@ -28,14 +38,17 @@ export function summarizeFabricStock(rows = [], code = '') {
     if (excludedWarehouse.test(warehouse)) continue;
     const meters = Number(row.meters) || 0;
     if (meters <= 0) continue;
-    const reserved = Math.min(Math.max(Number(row.reserved) || 0, 0), meters);
-    const free = meters - reserved;
+    const total = Math.max(Number(row.reserved) || 0, 0);
+    const propio = row.stockId == null ? 0 : Math.min(propioPorBobina.get(row.stockId) || 0, total);
+    const otros = Math.min(total - propio, meters);
+    const free = meters - otros;
     if (consignmentWarehouse.test(warehouse)) {
       consignacion += free;
       continue;
     }
     metros += meters;
-    reservado += reserved;
+    reservado += otros;
+    reservadoPropio += propio;
     if (free <= 0) continue;
     disponible += free;
     bobinasConDisponible += 1;
@@ -51,6 +64,7 @@ export function summarizeFabricStock(rows = [], code = '') {
     code: wanted,
     metros: round(metros),
     reservado: round(reservado),
+    reservadoPropio: round(reservadoPropio),
     disponible: round(disponible),
     bobinasConDisponible,
     mayorBobinaDisponible: round(mayorBobinaDisponible),
