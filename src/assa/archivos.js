@@ -31,9 +31,10 @@ export function crearServicioLotes({ carpeta = path.resolve('tmp/combursa'), oda
     const palets = input.palets ?? {};
     if (typeof palets !== 'object' || Array.isArray(palets) || Object.values(palets).some(v => !Number.isSafeInteger(v) || v < 1 || v > 99)) throw error('El palet de cada línea debe ser un número del 1 al 99.');
     const lote = preparar(input.fecha, lineas, sueltas, undefined, { palets });
+    const revision = revisionOficinaDelLote(lote);
     const ordenadas = o => Object.entries(o).sort(([a], [b]) => a.localeCompare(b));
     const firma = huella({ lineas, sueltas: ordenadas(sueltas), palets: ordenadas(palets), version: 3,
-      revisionOficina: revisionOficinaDelLote(lote)?.sha256Dxf ?? null });
+      revisionOficina: revision?.sha256Dxf ?? null });
     const raiz = path.join(base, 'COMBURSA', input.fecha.slice(0, 4));
     const borradores = path.join(raiz, 'Borradores'), interno = path.join(raiz, 'Registro');
     const manifest = path.join(interno, input.fecha + '.json');
@@ -42,7 +43,7 @@ export function crearServicioLotes({ carpeta = path.resolve('tmp/combursa'), oda
       corteBorradoresRed: rutaParaTgmPedidos(borradores), corteLonaPlanoDirectory: borradores }), confirmaciones,
       leer: async ruta => (await oda.convertir(await fs.readFile(ruta), { desde: 'dwg', hasta: 'dxf' })).toString('utf8'),
       escribir: async f => { await fs.mkdir(path.dirname(f.savedPath), { recursive: true }); await writeFileAtomic(f.savedPath, f.contenido); } });
-    return { lote, firma, raiz, borradores, manifest, flujo, confirmaciones };
+    return { lote, revision, firma, raiz, borradores, manifest, flujo, confirmaciones };
   };
   const leerManifest = async ruta => {
     try { return JSON.parse(await fs.readFile(ruta, 'utf8')); }
@@ -65,7 +66,10 @@ export function crearServicioLotes({ carpeta = path.resolve('tmp/combursa'), oda
   return {
     async vista(input) {
       const ctx = await obtener(input);
-      return { ...ctx.lote, destino: base, dwgDisponible: oda.disponible };
+      const paletsOficina = ctx.revision && Object.fromEntries(ctx.lote.lineas.map(l => [
+        l.IDOrderLine, ctx.revision.lineas.find(r => r.CodOrder === l.CodOrder && r.NumLine === l.NumLine).palets,
+      ]));
+      return { ...ctx.lote, paletsOficina, destino: base, dwgDisponible: oda.disponible };
     },
     abrir: accion(async (ctx, input) => {
       if (!ctx.lote.programas.length) throw error('No hay corte validado para preparar: todas las líneas quedan a mano.');

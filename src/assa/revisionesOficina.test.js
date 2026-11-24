@@ -2,12 +2,25 @@ import { expect, it } from 'vitest';
 import lineas from './fixtures/lote0711.json' with { type: 'json' };
 import { prepararLote } from './lote.js';
 import { revisionOficinaDelLote } from './revisionesOficina.js';
-import { planoDelLote } from './archivos.js';
+import { crearServicioLotes, planoDelLote } from './archivos.js';
 import { maquetarLote } from './documentoLote.js';
 import { leerPlanoTexto, presentacionesDxf } from '../flujoDwg/planoDxf.js';
 
 const lote = () => prepararLote('2026-11-07', lineas, {}, undefined,
   { palets: Object.fromEntries(lineas.map(l => [l.IDOrderLine, l.palets[0]])) });
+
+it('la vista muestra el grupo 5 y 6 una sola vez y mantiene la asignación manual de corte', async () => {
+  const servicio = crearServicioLotes({ leer: async () => lineas.map(({ palets: _palets, ...l }) => l) });
+  const fecha = '2026-11-07';
+  const lineaDoble = lineas.find(l => l.palets.length === 2);
+  const vista = await servicio.vista({ fecha });
+  expect(vista.paletsOficina[lineaDoble.IDOrderLine]).toEqual([5, 6]);
+  expect(vista.lineas.filter(l => l.CodArticle.includes('410130-0175'))).toHaveLength(1);
+  expect(vista.totalUnidades).toBe(314);
+  expect(vista.paletsCompletos).toBe(false);
+  expect((await servicio.vista({ fecha, palets: { [lineaDoble.IDOrderLine]: 9 } })).paletsOficina).toBeNull();
+  expect((await servicio.vista({ fecha, sueltas: { '420150-0087': true } })).paletsOficina).toBeNull();
+});
 
 it('reproduce el lote completo de oficina solo con las 25 líneas exactas de RPS', () => {
   const l = lote(), revision = revisionOficinaDelLote(l);

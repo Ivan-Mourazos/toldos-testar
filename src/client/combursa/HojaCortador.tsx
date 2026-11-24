@@ -26,7 +26,7 @@ export function HojaCortador({ lote }: { lote: Lote }) {
       <button type="button" className="ghost-button" onClick={imprimir}><Printer size={16} aria-hidden="true" /> Imprimir</button></header>
     <div className="combursa-tabla-scroll"><table className="combursa-cortador">
       <thead><tr><th>Palet</th><th>Referencia</th><th>Cantidad</th><th>Cómo va en el corte</th><th>Pedido en RPS</th></tr></thead>
-      <tbody>{lote.cortador.map(f => <tr key={`${f.palet}-${f.referencia}`}>
+      <tbody>{lote.cortador.map(f => <tr key={JSON.stringify([f.palet, f.referencia, f.referencias])}>
         <td>{f.palet ?? 'Sin palet'}</td>
         <td className="combursa-referencia">{f.referencia.replace(/^CANALÓN /, 'Canalón ')}{f.referencias && <small>{f.referencias.join(' · ')}</small>}</td>
         <td className="combursa-numero">{numero(f.unidades)}</td>
