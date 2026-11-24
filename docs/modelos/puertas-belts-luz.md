@@ -1,6 +1,6 @@
 # Puertas de Belts Vigo (RPS 038908) y Puertas Luz (RPS 052082)
 
-Estudio del 24/11/2026. Las hojas de ambos clientes vienen en **mm**; la pantalla de puertas trabaja en **mm**, el cálculo interno y los planos de oficina en **cm**, y el DXF de máquina en **mm**. La entrada es **Puertas → cliente → tipo**, sin tocar el comportamiento de Portanova, Araujo, Santa Pau, TGM ni System Dock.
+Estudio del 24/11/2026 (ampliado el 24/11/2026 con las hojas escaneadas de `RPS\VENTAS\PEDIDOS\{año}`, planteamientos PDF y técnico de cada plano; las 40 líneas de los 31 pedidos tienen `RealEndDate` cerrada en RPS). Las hojas de ambos clientes vienen en **mm**; la pantalla de puertas trabaja en **mm**, el cálculo interno y los planos de oficina en **cm**, y el DXF de máquina en **mm**. **Confirmado por Iván (24/11/2026):** todas las puertas se dibujan por el revés (la «vista por el revés» de Belts Vigo y Puertas Luz queda confirmada). La entrada es **Puertas → cliente → tipo**, sin tocar el comportamiento de Portanova, Araujo, Santa Pau, TGM ni System Dock.
 
 ## Fuentes, plantillas y metodología reproducible
 
@@ -36,12 +36,12 @@ Todas las carpetas de red y RPS se han consultado en **solo lectura**; las copia
 3. **Cabecera**:
    - **Enrollable**: normalmente `VARILLA NEGRA (4,5)` → **+3,5 cm** sobre el alto terminado `H`, marca de rotulador a **7 cm** del borde de corte (`AR2604762`, `AR2604618`, `AR2602598`, `AR2505965`, `AR2501549`, `AR2500554`, `AR2400462`). En `AR2505886` va `AL CORTE` (+0 cm, sin marca); queda editable entre varilla 4,5 y al corte.
    - **Apilable**: bolsillo superior (`E.T. Ø35/Ø40/Ø50`) → **+bolsillo/2** sobre `H`, marca a **bolsillo** del borde superior (`AR2403480`: 28 cm; `AR2505363`: 24 cm; editable, 240 mm por defecto).
-4. **Bajo con E.T. inferior integrada y pestaña de 3 cm + saco rectangular sin pestaña** (constante en **todas** las enrollables con saco y **todas** las apilables de 2023–2026):
-   - El paño inferior **baja `bajoEt` cm por debajo del bajo terminado** para envolver el tubo inferior (`16` cm en `AR2604762`/`4618` con E.T. 30×80, `13` cm en `AR2602598` Ø60 y `AR2505965` Ø40, `14` cm en `AR2505886` Ø50 y `AR2403480` Ø40, `12` cm en `AR2505363` Ø40), con marca de soldadura en rotulador a **`2 × bajoEt`** desde el borde de corte (editable, p. ej. `32`, `26`, `28` cm).
+4. **Bajo con E.T. inferior integrada y pestaña de 3 cm + saco rectangular sin pestaña** (constante en **todas** las enrollables con saco y **todas** las apilables de 2023–2026; **Q-BV01 resuelta el 24/11/2026**):
+   - El paño inferior **baja `bajoEt` cm según el tubo inferior pedido en la hoja**: **Ø40 → 13 cm** (`12` en `AR2505363`, `13` en `AR2505965`/`1549`/`0554`/`2400462`, `14` en `AR2403480`), **Ø50 → 14 cm** (`AR2505886`, `AR2600478`), **Ø60 → 13 cm** (`AR2602598`) y **tubo rectangular 30×80 → 16 cm** (`AR2604762`, `AR2604618`), con marca de soldadura en rotulador a **`2 × bajoEt`** desde el borde de corte (`32`, `26`, `28` cm).
    - **Pestaña lateral de 3 cm** a la izquierda del paño inferior en la zona de la E.T. inferior (`F + 3` cm en maqcorte: `291`, `369`, `323`, `433`, `286`, `283`), con los rótulos `DEJAR 3 CM MÁS PARA CERRAR DESPUÉS E.T` y `CERRAR E.T · 2 CM MÁXIMO`.
-   - **Saco exterior rectangular sin pestaña**: ancho exacto **`F`** (sin pestaña de velcro de Portanova), alto de corte editable, **39 cm por defecto** (`AR2604762`/`4618` maqcorte, `AR2505965`, `AR2505886`, `AR2505363`, `AR2501549`, `AR2500554`, `AR2403480`, `AR2400462`; `34` cm en `AR2602598` por pedir 150 mm colgando; `58` cm en `AR2600478`). Rótulo `SACO 900 GR NEGRO` o `SACO 900 GR AMARILLO/NEGRO` (si lleva franjas amarillo/negro).
-5. **E.T. intermedias y empates**:
-   - Ancho de corte **editable** según el tubo del pedido: `10 cm` por defecto en enrollable (`AR2505965`, `AR2604762`/`4618` maqcorte; `13,5` cm en `AR2602598` con Ø40; `10,5` en `AR2505886`), `13,5 cm` por defecto en apilable (`AR2505363`, `AR2403480`; `12,5` cm en `AR2600478` con Ø35).
+   - **Saco exterior rectangular sin pestaña**: ancho exacto **`F`** (sin pestaña de velcro de Portanova), alto de corte **39 cm por defecto** (detalle de `AR2501549` rev. Jaime: bolsillo de 17 cm en la misma soldadura de la E.T., verificado en 9 de 11 pedidos: `AR2604762`/`4618`, `AR2505965`, `AR2505886`, `AR2505363`, `AR2501549`, `AR2500554`, `AR2403480`, `AR2400462`), o **`2 × faldón + 4 cm`** cuando la hoja acota otra medida (`150 mm → 34 cm` en `AR2602598`; `58 cm` en `AR2600478` al envolver faldón + Ø50). Rótulo `SACO 900 GR NEGRO` o `SACO 900 GR AMARILLO/NEGRO`.
+5. **E.T. intermedias y empates** (**Q-BV02 resuelta el 24/11/2026**):
+   - En enrollable con pletina `30×10` o `40 mm`, la nota impresa de `AR2501549` (rev. Jaime) fija hueco útil de `5–5,5 cm` + soldadura de `2 cm` (`9,5 cm` acotado) y en `maqcorte` se corta de **`10 cm`** en 6 de 7 pedidos (`AR2400462`, `AR2500554`, `AR2501549`, `AR2505965`, `AR2604618`, `AR2604762` de Iván; solo `AR2505886` de Lucía G cortó `10,5 cm`). Con tubo Ø40 → `13,5 cm` (`AR2602598`, `AR2505363`, `AR2403480`); con Ø35 → `12,5 cm` (`AR2600478`). Siempre editable.
    - En enrollable, rótulo lateral `DE ESTE LADO PISAR LAS E.T. 1 CM` (activo por defecto, editable) y opción `CIERRE VELCRO (3)` (`AR2604762`/`4618`).
    - En apilable, **sin muescas laterales de 5 cm** en las E.T. (a diferencia de Portanova). Los recortes de cintas son **opcionales** (`AR2505363` no lleva; `AR2600478` lleva `10 × 8 cm` R0,5; `AR2403480` lleva `9,5 × 9 cm` R0,5) y sus medidas quedan editables (100 × 80 mm R5 por defecto).
    - Los empates aprovechan el tubo más alto que cabe en el rollo incorporando su E.T. al paño inferior (comprobado en `AR2602598`, `AR2505965`, `AR2505886`, `AR2600478`).
@@ -68,15 +68,14 @@ Todas las carpetas de red y RPS se han consultado en **solo lectura**; las copia
 2. **Faldón / saco exterior**:
    - Normalmente en `LAC900 AMARILLO` con franjas amarillo/negro (`SACO 900 GR AMARILLO/NEGRO`).
    - Alto de corte = **`2 × altoFaldon`**: `30 cm` para faldón de 150 mm (`AR2600508`, `AR2600374`, `AR2600326`, `AR2503726`, `AR2501810`), `36 cm` para 180 mm (`AR2602927`), `70 cm` para saco de 350 mm en enrollables transparentes (`AR2604660`, `AR2603463`, `AR2602586`, `AR2501810` L4/L5).
-   - Ancho: **`F`** en apilables y enrollables de lona 2026 (`AR2602927`, `AR2600508`, `AR2600374`, `AR2600326`) y **`F + 3`** en todas las enrollables transparentes (y apilables 2025); el añadido de ancho (0 o 30 mm) queda editable (Q-PL01).
-3. **Saco contrapeso interior para arena (en 10 de los 11 pedidos — todos los de 2025–2026)**:
+   - Ancho (**Q-PL01 resuelta el 24/11/2026**): **`F` exacto** en 4 de 4 puertas de lona de 2026 (`AR2602927` Adrián, `AR2600508`/`00374`/`00326` Lucía G; en 2025 Lucía G cortaba `F + 3`) y **`F + 3`** en 5 de 5 enrollables transparentes de 2025–2026 (`AR2501810` L4/L5, `AR2602586`, `AR2603463`, `AR2604660`) porque la pestaña de cierre de 3 cm va en el propio `SACO DE 350`.
+3. **Saco contrapeso interior para arena (**Q-PL02 resuelta el 24/11/2026** — pedido en la hoja en 10 de 10 pedidos de 2025–2026)**:
    - Rectángulo de **`22 cm`** de alto en la lona de la puerta (o color indicado), con los rótulos `SACO PARA CLIENTE RELLENE DE ARENA`, `SOLDAR 3CM PARA CERRAR EL CILINDRO` y `PISAR 3CM`.
-   - Marcas de rotulador: línea vertical a **3 cm** del borde corto (`PISAR 3CM`) y línea horizontal a **`soldaduraSacoArena`** del borde superior (`3 cm` → marca en `19 cm` en 2026: `AR2602927`, `AR2600508`, `AR2600374`, `AR2600326`; `5 cm` → marca en `17 cm` en transparentes y `AR2505627`).
-   - Ancho: **`F`** en apilables/enrollables de lona 2026 y **`F − 6`** en enrollables transparentes y 2025 (editable, Q-PL02).
+   - En 2026, por tipo: en **lona** (apilable y enrollable, 4 de 4 pedidos: `AR2602927`, `AR2600508`, `AR2600374`, `AR2600326`), ancho **`F` exacto** y marcas de rotulador a **3 cm** (`19 cm` y `3 cm`). En **enrollable transparente** (5 de 5 puertas 2025–2026: `AR2501810` L4/L5, `AR2602586`, `AR2603463`, `AR2604660`), ancho **`F − 6 cm`** y marcas a **5 cm** (`17 cm`) y **3 cm**.
 4. **Apilables (`PUERTAPLE`)**:
    - Bolsillo superior `E.T. Ø40 mm` (`24 cm` por defecto, editable).
-   - E.T. intermedias de **`12 cm`** (`AR2602927`, `AR2600508`, `AR2600374`, `AR2505627`, `AR2501810`; `13,5 cm` en `AR2503726` >5 m, editable). **Sin muescas laterales de 5 cm**.
-   - Recortes de cintas en E.T. alternas (1, 3, 5…): **`8 × 7,5 cm`, radio 0,5 cm** en todos los de 2026 y `AR2505627` (`12,5 × 7,5 cm` en `AR2503726`/`AR2501810` >5 m, editable, Q-PL03).
+   - E.T. intermedias de **`12 cm`** (`AR2602927`, `AR2600508`, `AR2600374`, `AR2505627`, `AR2501810`; `13,5 cm` en `AR2503726`, editable). **Sin muescas laterales de 5 cm**.
+   - Recortes de cintas en E.T. alternas (1, 3, 5…; **Q-PL03 resuelta el 24/11/2026**): **siempre vienen acotados en la hoja del cliente** (no por umbral de 5 m: `AR2505627` mide 5060 mm y pide `80 × 70` sin parches). Hojas con `80 × 70` sin parches (`AR2505627`, `AR2600374`, `AR2600508`, `AR2602927`) → corte **`8 × 7,5 cm` R0,5**; hojas con `125 × 70` y `PARCHE REFUERZO` (`AR2501810` L1/L2, `AR2503726` L1/L2) → **`12,5 × 7,5 cm`** + parches.
    - Paño inferior con E.T. inferior integrada (`bajoEt` cm bajo el bajo de la puerta, `8` cm en `AR2600374`/`508` y `11` cm en `AR2602927`, editable) + **pestaña lateral de 3 cm** (`DEJAR 3 CM MÁS PARA CERRAR DESPUÉS E.T` / `CERRAR E.T 2 CM MÁXIMO`) y marca `SOLDAR SACO 2CM`.
    - Ventanas: cristal = **hueco + 4 cm**, radio **2 cm hueco / 4 cm cristal** (constante en todos los pedidos).
 5. **Enrollables de lona (`PUERTAENR`)**:
@@ -86,8 +85,8 @@ Todas las carpetas de red y RPS se han consultado en **solo lectura**; las copia
 6. **Enrollables transparentes (`enrollable-transparente`)**:
    - Demostrado en 5 puertas (`AR2604660`, `AR2603463`, `AR2602586`, `AR2501810` L4/L5):
      - Tramos de cristal `TRANSP. 1000MI` de ancho **`F − 2 × margenLateral + 4`** (`199` para F=207 m=6; `190` para F=198 m=6; `172` para F=180 m=6; `347` para F=373 m=15) y altos editables según el croquis.
-     - Dos tiras laterales de lona por cada tramo transparente de **`(margenLateral + 1) × altoTramo`** (`7 cm` con margen 6; `16 cm` con margen 15).
-     - Tiras horizontales de lona de largo `F`: cabecera (`13,5 cm`, marca a `6,5` para `VARILLA NEGRA (4,5)`), por cada unión intermedia `20 cm` (marca a `14,5`) + E.T. de `9 cm` (`3 CM (HUECOS)`), y tira inferior de unión al saco (`10 cm`, marca a `2,5`).
+     - Dos tiras laterales de lona por cada tramo transparente de **`(margenLateral + 1) × altoTramo`** (`7 cm` con margen 6 en 4 de 5 puertas; `16 cm` con margen 15 en `AR2603463` — **Q-PL04 sigue abierta** porque comercial anotó 15 cm tanto en `AR2603463` como en `AR2602586`).
+     - Tiras horizontales de lona de largo `F`: cabecera (`13,5 cm` en 4 de 5 puertas, `22,5 cm` en `AR2604660`, editable en «Tramos», marca a `7` del borde superior para `VARILLA NEGRA (4,5)`), por cada unión intermedia `20 cm` (marca a `14,5`) + E.T. de `9 cm` (`3 CM (HUECOS)`), y tira inferior de unión al saco (`10 cm`, marca a `2,5`).
      - Faldón `SACO DE 350` amarillo/negro de **`(F + 3) × 70 cm`** y saco de arena de **`(F − 6) × 22 cm`** con marcas a `5 cm` (`17`) y `3 cm`.
 
 ---

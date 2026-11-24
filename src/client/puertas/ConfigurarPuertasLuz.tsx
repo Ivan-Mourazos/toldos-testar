@@ -174,6 +174,7 @@ export function ConfigurarPuertasLuz({ p, cambiar, corte, derecha, letra, vistas
                   </div>
                 </div>
                 <Numero titulo="Ancho E.T. entre tramos (mm)" valor={pl.anchoEt} cambiar={anchoEt => setLuz({ anchoEt })} />
+                <Numero titulo="Alto tira cabecera (mm)" valor={pl.altoCabecera ?? REGLAS_PUERTAS_LUZ.tiraCabeceraTransp} cambiar={altoCabecera => setLuz({ altoCabecera })} />
               </div>
               <p className="puerta-ayuda">
                 {p.frente > 2 * margen

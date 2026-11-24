@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { calcularPuerta } from './calcular.ts';
+import { altoSacoBelts, BAJADA_TUBO_INFERIOR_BELTS } from './belts.ts';
 import { fichaPorCodigo, fichaPorId } from './clientes.ts';
 import { generarCortePuertas } from './corte.ts';
 import { nuevaPuertaDeCliente } from './nuevaPuertaCliente.ts';
@@ -137,6 +138,13 @@ describe('Puertas Belts Vigo (038908)', () => {
     expect(res.puertas[0]).toMatchObject({ clientePuertas: 'belts', tipoPuerta: 'enrollable', frente: 288, alto: 521, sacoDiagonalesAmarillas: true });
     expect(res.puertas[1]).toMatchObject({ clientePuertas: 'belts', tipoPuerta: 'apilable', frente: 430, alto: 450 });
     expect(res.avisos.some(a => /PUERTAPLET/.test(a))).toBe(true);
+  });
+
+  it('Q-BV01: bajada E.T. inferior según tubo y alto de saco 2 × faldón + 4 cm (39 estándar, 34 con 150 mm)', () => {
+    expect(BAJADA_TUBO_INFERIOR_BELTS).toEqual({ 'Ø40': 13, 'Ø50': 14, 'Ø60': 13, '30×80': 16 });
+    expect(altoSacoBelts()).toBe(39);
+    expect(altoSacoBelts(15)).toBe(34);
+    expect(altoSacoBelts(17.5)).toBe(39);
   });
 
   it('valida el documento guardado y genera DXF de máquina y plano con cajetín en cm', () => {

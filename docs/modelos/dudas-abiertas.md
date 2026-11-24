@@ -2,17 +2,39 @@
 
 ## Puertas de Belts Vigo y Puertas Luz · 24/11/2026
 
-Estudio de las plantillas `BELTS VIGO.dwg` y `PUERTAS LUZ.dwg` y de los 31 pedidos históricos reales (20 de Belts Vigo y 11 de Puertas Luz). Expediente completo y tabla de contraste en [puertas-belts-luz.md](./puertas-belts-luz.md). Lo no deducible con certeza se deja editable en pantalla.
+Estudio de las plantillas `BELTS VIGO.dwg` y `PUERTAS LUZ.dwg`, las hojas escaneadas de pedido (`RPS\VENTAS\PEDIDOS\{año}`), los PDF de planteamientos y los cortes reales de `maqcorte` de los 31 pedidos históricos ya fabricados (todas las OF cerradas con `RealEndDate` en RPS: 20 de Belts Vigo y 11 de Puertas Luz). Expediente y contraste en [puertas-belts-luz.md](./puertas-belts-luz.md).
+
+**Confirmado por Iván (24/11/2026):** todas las puertas se dibujan por el revés; la «vista por el revés» de Belts Vigo y Puertas Luz es correcta.
+
+### Dudas que siguen abiertas (2)
 
 | Código | Cliente | Pregunta para Iván / taller | Qué hace la web mientras tanto |
 | --- | --- | --- | --- |
-| Q-BV01 | Belts Vigo | ¿Hay una fórmula fija para la bajada de la E.T. inferior del paño (12 a 16 cm según el tubo) y el alto de corte del saco exterior (39 cm habitual, 34 cm en AR2602598, 58 cm en AR2600478)? | Propone 130 mm de bajada en enrollable (140 mm en apilable) y 390 mm de alto de corte de saco, ambos editables en pantalla. |
-| Q-BV02 | Belts Vigo | En AR2604762, AR2604618 y AR2505886 el alzado acota E.T. de 9,5 cm, pero en maqcorte se cortaron de 10 y 10,5 cm (en AR2505965 acota 10 y corta 10). ¿En las de pletina 30×10 se suma siempre 0,5 cm al corte o se corta la medida indicada? | Propone 100 mm de ancho de corte de E.T. en enrollable (135 mm en apilable), editable en pantalla y en cada entrada. |
-| Q-BV03 | Belts Vigo | Las 3 enrollables sencillas sin saco con cordón 4,5 y tira inferior B.N. de 19 cm (AR2600848, AR2401252, AR2400015) y los tramos/ventanas enmarcadas (PUERTAPLET: AR2601567, AR2506338, AR2501450, AR2406439): ¿queréis un tipo propio para ellas o se siguen haciendo a mano? | Quedan fuera de los dos tipos automáticos (Enrollable y Apilable); RPS avisa cuando entra un `PUERTAPLET`/`PUERTAPLETRAM`. |
-| Q-PL01 | Puertas Luz | En las apilables de 2026 (AR2602927, AR2600508, AR2600374) el faldón exterior se corta de ancho igual al frente `F`, pero en 2025 (AR2505627, AR2503726, AR2501810) y en todas las enrollables transparentes lleva `F + 3 cm`. ¿Queda fijo `F` en apilables y `F + 3` en transparentes? | Propone `F` (extra 0 mm) en apilables y enrollables de lona y `F + 30 mm` en enrollables transparentes, editable en pantalla. |
-| Q-PL02 | Puertas Luz | El saco interior de 22 cm para arena se corta de ancho `F` y raya a 3 cm en las puertas de lona de 2026 (AR2602927, AR2600508, AR2600374, AR2600326), y de `F − 6 cm` con raya a 5 cm en las enrollables transparentes (y en las apilables de 2025). ¿Se mantiene ese criterio por tipo? | Propone `F` con marca a 30 mm en apilable y enrollable de lona, y `F − 60 mm` con marca a 50 mm en enrollable transparente; ambos editables (y el saco de arena se puede desactivar). |
-| Q-PL03 | Puertas Luz | En las apilables de más de 5 m (AR2503726, AR2501810) los recortes de cintas miden 12,5 × 7,5 cm y llevan refuerzos de lona de 2 mm; en las menores de 5 m de 2026 miden 8 × 7,5 cm y no llevan refuerzos. ¿Depende del ancho de la puerta o siempre de lo que pida la hoja? | Propone 80 × 75 mm sin refuerzos, con el ancho y alto del recorte editables para cambiarlo a 125 × 75 mm cuando la hoja lo pida. |
-| Q-PL04 | Puertas Luz | En las enrollables transparentes el margen lateral de lona blanca es de 6 cm (tira de 7 cm) en puertas ≤ 210 cm (AR2604660, AR2602586, AR2501810 L4/L5) y de 15 cm (tira de 16 cm) en la de 373 cm (AR2603463); la cabecera fue 13,5 cm salvo 22,5 cm en AR2604660. ¿Hay un umbral fijo para ese margen lateral? | Propone 60 mm de margen lateral (tira de 70 mm) y cabecera de 135 mm, editables en pantalla junto con los altos de cada tramo transparente. |
+| Q-BV03 | Belts Vigo | En 3 años han repetido 3 veces el mismo croquis fotocopiado de enrollable sencilla sin saco (`AR2400015`, `AR2401252`, `AR2600848`: cordón Ø4,5 arriba, ventana de 700 mm sin E.T. intermedias, vaina Ø40 abajo y remate doble de 50 mm / tira B.N. de 190 mm), aparte de 4 `PUERTAPLET` sueltos. ¿Queréis un tipo propio para esa puerta o se sigue haciendo a mano? | Queda fuera de Enrollable y Apilable; RPS avisa cuando entra un `PUERTAPLET`/`PUERTAPLETRAM`. |
+| Q-PL04 | Puertas Luz | En las enrollables transparentes 4 de 5 puertas llevan **60 mm** de margen lateral blanco (como la foto del cliente). En las dos hojas donde comercial anotó a mano *«15 cm de blanco en laterales»*, Tamara puso **150 mm** (`AR2603463`, 3730 mm) pero tú dejaste **60 mm** (`AR2602586`, 1980 mm). ¿Se deja siempre 60 mm salvo que se pidan 150 mm expresamente, o depende del ancho? *(La cabecera es 135 mm en 4 de 5 puertas y 225 mm en `AR2604660` por ajuste del tramo superior; queda editable.)* | Propone 60 mm de margen lateral (con botón rápido 150 mm) y 135 mm de cabecera, ambos editables en «Tramos». |
+
+### Dudas resueltas por pedidos anteriores (24/11/2026)
+
+- **Q-BV01 · resuelta por pedidos anteriores (24/11/2026):** la bajada de la E.T. inferior depende del tubo inferior pedido en la hoja (**Ø40 → 130 mm**, **Ø50 → 140 mm**, **Ø60 → 130 mm**, **30×80 → 160 mm**, con marca a `2 × bajada`) y el saco exterior mide **390 mm** por defecto (bolsillo estándar de 170–180 mm, en 9 de 11 pedidos) o **`2 × faldón + 40 mm`** cuando la hoja acota otra altura (`150 mm → 340 mm` en `AR2602598`; `580 mm` en `AR2600478` al envolver faldón + tubo Ø50). La web ofrece botones rápidos por tubo inferior (`Ø40`, `Ø50`, `Ø60`, `30×80`) y saco editable.
+
+| Pedido (OF cerrada) | Técnico / rev. | Qué pidió la hoja | Bajada E.T. inf. | Saco maqcorte |
+| --- | --- | --- | --- | --- |
+| AR.26.04762 (2026-10-14) | IVÁN | Tubo rectangular 30×80, faldón negro/amarillo | 16 cm (marca 32) | 288 × 39 cm |
+| AR.26.04618 (2026-10-14) | IVÁN | Tubo rectangular 30×80, faldón negro/amarillo | 16 cm (marca 32) | 288 × 39 cm |
+| AR.26.02598 (2026-07-28) | IVÁN / JAIME | Tubo Ø60 + **faldón 150 mm** | 13 cm (marca 26) | 366 × 34 cm (`2×15+4`) |
+| AR.26.00478 (2026-03-26) | TAMARA / ALBERTO | Tubo Ø50 + faldón 150 mm | 14 cm (marca 28) | 430 × 58 cm (envuelve todo) |
+| AR.25.05965 / 01549 / 00554 / 24.00462 | LUCÍA G / PAULA (rev. JAIME) | Tubo Ø40, bolsillo negro 17 cm | 13 cm (marca 26) | 320 × 39 cm |
+| AR.25.05886 (2025-12-09) | LUCÍA G / JAIME | Tubo Ø50, faldón negro 180 mm | 14 cm (marca 28) | 320 × 39 cm |
+| AR.25.05363 (2025-11-12) | ALBERTO | Tubo Ø40 | 12 cm (marca 24) | 283 × 39 cm |
+| AR.24.03480 (2024-07-15) | JAIME | Tubo Ø40 | 14 cm (marca 28) | 280 × 39 cm |
+
+- **Q-BV02 · resuelta por pedidos anteriores (24/11/2026):** en enrollables con pletina `30×10` o `40 mm` la E.T. se corta de **100 mm (`10 cm`)**. La nota de taller de `AR2501549` (rev. Jaime) exige un hueco útil de `5–5,5 cm` con electrodo de `2 cm` (`9,5 cm` acotado) y en `maqcorte` se corta de `10 cm` (+0,5 cm de seguridad) en **6 de 7 pedidos** (`AR2400462`, `AR2500554`, `AR2501549`, `AR2505965`, `AR2604618` y `AR2604762` de Iván en sep 2026; solo `AR2505886` de Lucía G cortó `10,5 cm`). La web mantiene **100 mm** por defecto en enrollable (`135 mm` en Ø40, `125 mm` en Ø35).
+
+- **Q-PL01 · resuelta por pedidos anteriores (24/11/2026):** práctica vigente 2026 confirmada: en **apilables y enrollables de lona** el faldón exterior se corta a ancho **`F` exacto** (4 de 4 pedidos en 2026: `AR2600326`, `AR2600374`, `AR2600508` de Lucía G y `AR2602927` de Adrián; en 2025 Lucía G cortaba `F+3` en `AR2501810`, `AR2503726` y `AR2505627`). En **enrollables transparentes** va siempre **`F + 30 mm`** (5 de 5 puertas en 2025–2026, 3 técnicos: `AR2501810` L4/L5, `AR2602586`, `AR2603463`, `AR2604660`) porque la pestaña de 3 cm para cerrar la E.T. va en el propio `SACO DE 350`. Ya coincide con el valor por defecto de la web.
+
+- **Q-PL02 · resuelta por pedidos anteriores (24/11/2026):** el saco de arena de `220 mm` lo piden **10 de 10 pedidos de 2025–2026** en la hoja (*«+ BOLSA APARTE PARA LLENARLA DE ARENA»*; solo faltó en el primero de dic 2024, `AR2406937`). Por tipo en 2026: en **lona** (apilable y enrollable), **`F` exacto y marca a 30 mm** (`190 mm`, 4 de 4 pedidos: `AR2600326`, `AR2600374`, `AR2600508`, `AR2602927`); en **enrollable transparente**, **`F − 60 mm` y marca a 50 mm** (`170 mm`, 5 de 5 puertas en 2025–2026: `AR2501810` L4/L5, `AR2602586`, `AR2603463`, `AR2604660`). Ya coincide con el valor por defecto de la web.
+
+- **Q-PL03 · resuelta por pedidos anteriores (24/11/2026):** no depende de un umbral de 5 m (`AR2505627` mide 5060 mm y pide `80 × 70` sin parches): **siempre viene acotado en la hoja escaneada de Puertas Luz**. Hojas con `RECORTE PARA PASACINTA 80.00 × 70.00` sin parches (`AR2505627`, `AR2600374`, `AR2600508`, `AR2602927`) → corte `80 × 75 mm`, E.T. `120 mm`. Hojas con `125.00 × 70.00` y `PARCHE REFUERZO` (`AR2501810` L1/L2, `AR2503726` L1/L2) → corte `125 × 75 mm` + parches de refuerzo. La web mantiene `80 × 75 mm` por defecto con acceso rápido `80 / 125`.
 
 ## Enrollado de puertas con tubos interiores · 12/11/2026
 

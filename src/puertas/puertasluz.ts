@@ -115,8 +115,9 @@ export function calcularPuertasLuz(p: Puerta): ResultadoPuerta {
       agregar(pieza(`Tramo transparente ${i + 1}`, 'cristal', anchoCristal, hTramo, p.materialCristal, p.rolloCristal));
       agregar(pieza(`Tira lateral tramo ${i + 1}`, 'cacho', anchoTiraLateral, hTramo, lona, p.rollo, 2));
     }
-    // Cabecera de lona con varilla negra 4,5
-    const cab = agregar(pieza('Cabecera varilla', 'pano', p.frente, REGLAS_PUERTAS_LUZ.tiraCabeceraTransp, lona, p.rollo));
+    // Cabecera de lona con varilla negra 4,5 (13,5 cm estándar; 22,5 cm en AR2604660, editable)
+    const altoCab = pl.altoCabecera && positivo(pl.altoCabecera) ? pl.altoCabecera : REGLAS_PUERTAS_LUZ.tiraCabeceraTransp;
+    const cab = agregar(pieza('Cabecera varilla', 'pano', p.frente, altoCab, lona, p.rollo));
     cab.marcas.push([p.margenMarcas, n(cab.alto - REGLAS_PUERTAS_LUZ.varillaMarca), n(p.frente - p.margenMarcas), n(cab.alto - REGLAS_PUERTAS_LUZ.varillaMarca)]);
     // Tiras horizontales entre tramos (20 cm con marca a 14,5 + E.T. de 9 cm)
     const nUniones = Math.max(0, tramos.length - 1);
