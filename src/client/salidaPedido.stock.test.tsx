@@ -11,8 +11,8 @@ vi.mock('react-dom', async importOriginal => ({
 }));
 afterEach(() => vi.unstubAllGlobals());
 
-const falta = { codigo: 'LV6002G', descripcion: 'Lona PVC 680 g gris', necesita: 42.3, disponible: 18.75 };
-const primera = 'No llega el stock de LV6002G Lona PVC 680 g gris: necesita 42,30 m, disponible 18,75 m.';
+const falta = { codigo: 'LV6002G', descripcion: 'Lona PVC 680 g gris', necesita: 42.3, stock: 18.75, reservado: 0, reservadoPropio: 0, disponible: 18.75 };
+const primera = 'No llega el stock de LV6002G Lona PVC 680 g gris: stock 18,75 m − reservado por otros pedidos 0,00 m = disponible 18,75 m; necesita 42,30 m, faltan 23,55 m.';
 const ultima = 'Al pasar el pedido en CoordinaOT podrás mandar el correo a Compras y Almacén.';
 
 async function renderizarRespuesta(faltas: typeof falta[], avisos: string[]) {

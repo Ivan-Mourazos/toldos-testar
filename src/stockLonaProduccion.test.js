@@ -4,9 +4,10 @@ import { comprobarStockLona, pasarAProduccionConStock } from './stockLonaProducc
 const consultado = '2026-11-23T10:00:00.000Z';
 const datos = { pedido: 'AR2600001', entrega: 11, cliente: 'Cliente', ofs: ['0290001', '0290002'], consultadoPor: 'IVÁN' };
 const linea = { ofs: ['0290001'], codigo: 'LAC900GR38P300', descripcion: 'Lona gris', ml: 42.3, origen: 'corte' };
-const falta = { codigo: linea.codigo, descripcion: linea.descripcion, necesita: 42.3, disponible: 18.75, ofs: linea.ofs };
+const faltaCoordina = { codigo: linea.codigo, descripcion: linea.descripcion, necesita: 42.3, disponible: 18.75, ofs: linea.ofs };
+const falta = { ...faltaCoordina, stock: 18.75, reservado: 0, reservadoPropio: 0 };
 function preparar(disponible = 18.75) {
-  const stock = { reset: vi.fn(), getStock: vi.fn(async () => [{ code: linea.codigo, disponible }]) };
+  const stock = { reset: vi.fn(), getStock: vi.fn(async () => [{ code: linea.codigo, metros: disponible, reservado: 0, reservadoPropio: 0, disponible }]) };
   const coordina = { enviarStockLona: vi.fn(async () => ({ ok: true })) };
   const opciones = { ...datos, lineas: [linea], stock, coordina, now: () => new Date(consultado) };
   const comprobar = (lineas = [linea], lonasAprobadas) => comprobarStockLona({ ...opciones, lineas, lonasAprobadas });
@@ -17,15 +18,29 @@ it('consulta stock fresco y manda la entrega, los metros y las OF de cada lona a
   const { stock, coordina, comprobar } = preparar();
   expect(await comprobar()).toEqual({
     consultado, faltas: [falta], avisos: [
-      'No llega el stock de LAC900GR38P300 Lona gris: necesita 42,30 m, disponible 18,75 m.',
+      'No llega el stock de LAC900GR38P300 Lona gris: stock 18,75 m − reservado por otros pedidos 0,00 m = disponible 18,75 m; necesita 42,30 m, faltan 23,55 m.',
       'Al pasar el pedido en CoordinaOT podrás mandar el correo a Compras y Almacén.',
     ],
   });
   expect(stock.reset).toHaveBeenCalledBefore(stock.getStock);
-  expect(stock.getStock).toHaveBeenCalledExactlyOnceWith([linea.codigo]);
+  expect(stock.getStock).toHaveBeenCalledExactlyOnceWith([linea.codigo], { ofs: datos.ofs });
   expect(coordina.enviarStockLona).toHaveBeenCalledExactlyOnceWith({ ...datos,
-    consultado, faltas: [falta], lonas: [linea],
+    consultado, faltas: [faltaCoordina], lonas: [linea],
   });
+});
+
+it('pasa las OF de la entrega a getStock y recorta las faltas enviadas a CoordinaOT a las 5 claves actuales', async () => {
+  const stock = {
+    reset: vi.fn(),
+    getStock: vi.fn(async () => [{ code: linea.codigo, metros: 100, reservado: 81.25, reservadoPropio: 15, disponible: 18.75 }]),
+  };
+  const coordina = { enviarStockLona: vi.fn(async () => ({ ok: true })) };
+  const resultado = await comprobarStockLona({ ...datos, lineas: [linea], stock, coordina, now: () => new Date(consultado) });
+  expect(stock.getStock).toHaveBeenCalledExactlyOnceWith([linea.codigo], { ofs: datos.ofs });
+  expect(resultado.faltas).toEqual([{ ...faltaCoordina, stock: 100, reservado: 81.25, reservadoPropio: 15 }]);
+  const [enviado] = coordina.enviarStockLona.mock.calls[0];
+  expect(enviado.faltas).toEqual([faltaCoordina]);
+  expect(Object.keys(enviado.faltas[0]).sort()).toEqual(['codigo', 'descripcion', 'disponible', 'necesita', 'ofs']);
 });
 
 it.each(['corte', 'reserva'])('conserva el origen %s al aprobar los metros y OF propuestos', async origen => {
@@ -40,7 +55,7 @@ it('usa los metros corregidos, descarta las filas quitadas y añade telas con la
   const { stock, coordina, comprobar } = preparar();
   const quitada = { ...linea, codigo: 'LAC900AZ02P300' };
   await comprobar([linea, quitada], [{ codigo: linea.codigo, ml: 20.125 }, { codigo: 'LAC900AZ10P300', ml: 5 }]);
-  expect(stock.getStock).toHaveBeenCalledExactlyOnceWith([linea.codigo, 'LAC900AZ10P300']);
+  expect(stock.getStock).toHaveBeenCalledExactlyOnceWith([linea.codigo, 'LAC900AZ10P300'], { ofs: datos.ofs });
   expect(coordina.enviarStockLona).toHaveBeenCalledWith(expect.objectContaining({
     lonas: [
       { codigo: linea.codigo, ml: 20.125, origen: 'manual', ofs: linea.ofs, descripcion: expect.stringContaining('RAL7038') },
