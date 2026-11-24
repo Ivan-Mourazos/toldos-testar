@@ -17,6 +17,7 @@ it.each([
   ['lona.dxf', 'Año/AR2600001_5 cliente/Subcarpeta', 'AR2600001', 5],
   ['AR2600001.dxf', '', 'AR2600001', null],
   ['AR2600001-2.dxf', 'AR2600002', '', null],
+  ['AR2700001.dxf', '', 'AR2700001', null],
 ])('detecta el pedido y la entrega de %s en %s', (nombre, carpeta, pedido, entrega) => {
   expect(detectar(nombre, carpeta)).toEqual({ aplica: true, pedido, entrega, mlPropuesto: 4.27 });
 });

@@ -6,7 +6,7 @@ import { comprobarStockLona } from './stockLonaProduccion.js';
 const entregaValida = n => Number.isSafeInteger(n) && n > 0;
 
 function pedidoEn(texto) {
-  const coincidencia = /(?<![a-z0-9])(AR26\d{5})(?!\d)(?:[-._](\d+)(?!\d))?/i.exec(texto);
+  const coincidencia = /(?<![a-z0-9])(AR\d{7})(?!\d)(?:[-._](\d+)(?!\d))?/i.exec(texto);
   if (!coincidencia) return null;
   const entrega = Number(coincidencia[2]);
   return { pedido: coincidencia[1].toUpperCase(), entrega: entregaValida(entrega) ? entrega : null };

@@ -7,7 +7,7 @@ export interface OrdenStockPlano { of: string; telas: TelaPlano[] }
 export interface PedidoStockPlano { cliente: string; ordenes: OrdenStockPlano[] }
 export interface LonaPlano { codigo: string; descripcion: string; ml: number | null; ofs: string[] }
 
-export const PEDIDO_PLANO = /^AR26\d{5}$/;
+export const PEDIDO_PLANO = /^AR\d{7}$/;
 export const ERROR_STOCK_PLANO = 'No se pudo comprobar el stock de lona.';
 const redondear = (n: number) => Math.round(n * 100) / 100;
 

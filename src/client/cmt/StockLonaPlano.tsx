@@ -146,7 +146,7 @@ export function StockLonaPlano({ deteccion, cerrar }: { deteccion: Extract<Detec
         <fieldset disabled={enviando} className="stock-plano-campos">
           <div className="stock-plano-pedido">
             <label className="field">Pedido<input value={textoPedido} onChange={e => cambiarPedido(e.target.value)} autoFocus
-              autoComplete="off" placeholder="AR26…" aria-invalid={Boolean(textoPedido && !pedidoValido)} /></label>
+              autoComplete="off" placeholder="AR…" aria-invalid={Boolean(textoPedido && !pedidoValido)} /></label>
             <label className="field">Entrega<input value={entrega} onChange={e => setEntrega(e.target.value)} inputMode="numeric"
               placeholder="Sin entrega" aria-invalid={!entregaValida} /></label>
           </div>
