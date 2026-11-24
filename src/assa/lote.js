@@ -1,39 +1,48 @@
-import catalogo from './validacionCatalogo.json' with { type: 'json' };
 import { codigoAssa } from './leerCorte.js';
 import { calcularFamilia, fechaLote, generarProgramas, entidadesVacias, desplazarEntidades, unirEntidades } from './faseA.js';
-import { bloqueCanalon, canalonDe, juegosCanalon, pilaDePlantilla } from './canalon.js';
+import { bloqueCanalon, canalonDe, firmaCanalon, juegosCanalon, pilaDePlantilla } from './canalon.js';
+import { calcularDesdePlantilla, CANALON_SIN_PLANTILLA } from './modeloCorte.js';
+
+export { CANALON_SIN_PLANTILLA };
 
 // Textos como en los cortes mandados: rótulos de 20 cm, números de línea y palet de 3 m, listado de 40 cm.
 const ROTULO = 200, GRANDE = 3000, LISTA = 400, PASO_FILA = 2040 + 5000, HUECO = 500, SEPARACION_PALETS = 15000;
 
-export const CANALON_SIN_PLANTILLA = 'Canalón a mano: falta un juego de plantilla contrastado para esta referencia y sus medidas.';
+// Reproduce el criterio anterior al pasar una foto histórica expresamente, para poder comparar ambos resultados.
+function calcularConHistorico(l, certificados, fecha) {
+  const ref = certificados.referencias[codigoAssa(l.CodArticle)];
+  const prueba = ref?.descripciones.find(p => p.descripcion === String(l.descripcion).trim());
+  const g = calcularFamilia(l, prueba);
+  const motivos = [...g.motivos];
+  if (!prueba || !prueba.geometria || !prueba.ultimaGeometria || !g.pieza?.medidasMm.every((n, i) => Math.abs(n - prueba.corteMm[i]) < .01)) {
+    motivos.push('Referencia y medidas sin validación completa vigente contra los lotes reales.');
+  }
+  const historico = ref?.fechas?.[fecha];
+  if (historico && !(historico.forma ?? historico.coincide)) motivos.push(...historico.motivos.filter(m => !m.startsWith('Cantidad agrupada:')));
+  const conCanalon = ['420150', '430127', '430129', '430172'].includes(g.familia);
+  const canalon = conCanalon ? canalonDe(g.codigo, g.medidas?.NB) : null;
+  if (conCanalon && (!canalon || (g.familia !== '420150' && !prueba?.canalonValidado))) motivos.push(CANALON_SIN_PLANTILLA);
+  return { ...g, motivos, canalon };
+}
 
 /** Los datos enviados por el navegador son solo opciones: las líneas siempre vienen del SELECT. */
-export function prepararLote(fecha, lineasRps, sueltas = {}, certificados = catalogo, { palets = {} } = {}) {
+export function prepararLote(fecha, lineasRps, sueltas = {}, certificados, { palets = {} } = {}) {
   const nombre = fechaLote(fecha);
   if (new Set(lineasRps.map(l => l.IDOrderLine)).size !== lineasRps.length) throw new Error('Hay líneas duplicadas en el lote.');
   if (lineasRps.some(l => l.entregaSolicitada !== fecha)) throw new Error('Hay líneas de otra fecha de entrega.');
   const lineas = lineasRps.map(l => {
-    const ref = certificados.referencias[codigoAssa(l.CodArticle)];
-    const prueba = ref?.descripciones.find(p => p.descripcion === String(l.descripcion).trim());
-    const g = calcularFamilia(l, prueba);
-    const motivos = [...g.motivos];
-    // Habilita la forma igual a la de los lotes reales: en alguno y en el último. La cantidad la manda RPS; la del lote
-    // real puede ser menor porque el stock se pone en corte (Q-AS03, Iván 26/10/2026).
-    if (!prueba || !prueba.geometria || !prueba.ultimaGeometria || !g.pieza?.medidasMm.every((n, i) => Math.abs(n - prueba.corteMm[i]) < .01)) motivos.push('Referencia y medidas sin validación completa vigente contra los lotes reales.');
-    const historico = ref?.fechas?.[fecha];
-    if (historico && !(historico.forma ?? historico.coincide)) motivos.push(...historico.motivos.filter(m => !m.startsWith('Cantidad agrupada:')));
-    const conCanalon = ['420150', '430127', '430129', '430172'].includes(g.familia);
-    const canalon = conCanalon ? canalonDe(g.codigo, g.medidas?.NB) : null;
-    if (conCanalon && (!canalon || (g.familia !== '420150' && !prueba?.canalonValidado))) motivos.push(CANALON_SIN_PLANTILLA);
+    const g = certificados ? calcularConHistorico(l, certificados, fecha) : calcularDesdePlantilla(l);
+    const { motivos } = g;
     return { ...l, codigo: g.codigo, familia: g.familia, estado: motivos.length ? 'a-mano' : 'validado', motivos: [...new Set(motivos)],
-      avisos: g.avisos, terminadoMm: g.terminadoMm, corteMm: g.pieza?.medidasMm, canalon, calculo: g };
+      avisos: g.avisos, terminadoMm: g.terminadoMm, corteMm: g.pieza?.medidasMm, canalon: g.canalon ?? null,
+      fuentePlantilla: g.fuentePlantilla, calculo: g };
   });
   // El palet lo pone el técnico del correo de Producción (Iván, 28/10/2026: «de principio ponemos el palet a mano»).
   for (const l of lineas) l.palet = Number.isSafeInteger(palets[l.IDOrderLine]) && palets[l.IDOrderLine] > 0 ? palets[l.IDOrderLine] : null;
   for (const [, ls] of Map.groupBy(lineas.filter(l => l.estado === 'validado'), l => l.codigo)) {
-    if (new Set(ls.map(l => JSON.stringify(l.corteMm))).size === 1) continue;
-    for (const l of ls) { l.estado = 'a-mano'; l.motivos.push('La referencia tiene medidas distintas en el mismo lote.'); }
+    const firma = l => JSON.stringify([l.calculo.pieza, l.calculo.unidos, firmaCanalon(l.canalon)]);
+    if (new Set(ls.map(firma)).size === 1) continue;
+    for (const l of ls) { l.estado = 'a-mano'; l.motivos.push('La referencia tiene dibujos de corte distintos en el mismo lote.'); }
   }
   const validadas = lineas.filter(l => l.estado === 'validado');
   const reparto = validadas.map(l => ({ pedido: l.CodOrder, numeroLinea: l.NumLine, linea: l.IDOrderLine, referencia: l.CodArticle, of: l.of_, cantidad: l.cantidad, palet: l.palet }));
@@ -52,7 +61,7 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados = cata
     // Un canalón por unidad, entero o dos mitades (taller, 28/10/2026). Las referencias del palet con el mismo juego de la
     // plantilla comparten bloques («en los cortes se pueden mezclar»); van en la fila de la primera que lo lleva.
     let grupoCanalon = 0;
-    for (const conJuego of Map.groupBy(deCorte.filter(l => l.canalon), l => JSON.stringify(l.canalon)).values()) {
+    for (const conJuego of Map.groupBy(deCorte.filter(l => l.canalon), l => firmaCanalon(l.canalon)).values()) {
       grupoCanalon++;
       const canalon = conJuego[0].canalon, juegos = juegosCanalon(conJuego.reduce((s, l) => s + l.cantidad, 0), canalon);
       const refs = [...new Set(conJuego.map(l => l.CodArticle))], fila = filas.find(f => f.grupo.includes(conJuego[0]));

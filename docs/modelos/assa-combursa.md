@@ -1,5 +1,7 @@
 # ASSA ABLOY / COMBURSA: estudio del pedido y del corte
 
+El criterio vigente desde el 24/11/2026 es el del [catálogo de plantillas](assa-combursa-catalogo.md). Las fases y tablas de validación anteriores quedan como historial del estudio.
+
 Fecha de corte del estudio: 2026-10-25. Destinatarios: Iván y Tamara. **No se ha programado la web ni se ha enviado nada al bot.**
 
 ## Qué conviene automatizar

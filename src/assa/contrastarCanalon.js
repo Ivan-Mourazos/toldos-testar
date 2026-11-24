@@ -2,7 +2,7 @@ import { bloqueCanalon } from './canalon.js';
 import { compararOperaciones, operacionesEnPano } from './comparar.js';
 
 /** Busca un combinado completo por sus cortes, sin deducir cantidades de los bloques del original. */
-export function contrastarCanalon(modelo, canalon) {
+export function contrastarCanalon(modelo, canalon, { soloCoincidencia = false } = {}) {
   if (!canalon) return { coincide: false, motivo: 'Sin juego en la plantilla.' };
   const b = bloqueCanalon(canalon, 'combinado');
   const caida = canalon.caida ?? 50, tolerancia = 1;
@@ -15,7 +15,7 @@ export function contrastarCanalon(modelo, canalon) {
   for (const p of semillas) {
     const caja = { x0: p.a[0], y0: p.a[1], x1: p.a[0] + b.largoMm, y1: p.a[1] + b.altoMm };
     const operaciones = operacionesEnPano(modelo, caja, [], { conBordes: true });
-    const comparacion = compararOperaciones(esperado, operaciones);
+    const comparacion = compararOperaciones(esperado, operaciones, tolerancia, { soloCoincidencia });
     if (comparacion.coincide) return { ...comparacion, caja };
     if (comparacion.desviacionMm !== null && (!mejor || comparacion.desviacionMm < mejor.desviacionMm)) mejor = comparacion;
   }

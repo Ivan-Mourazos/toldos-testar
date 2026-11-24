@@ -38,22 +38,34 @@ function muestras(p, otras = []) {
 }
 
 /** Compara cada herramienta en ambos sentidos; acepta entidades partidas, detecta trazos duplicados. */
-export function compararOperaciones(esperadas, reales, toleranciaMm = 1) {
+export function compararOperaciones(esperadas, reales, toleranciaMm = 1, { soloCoincidencia = false } = {}) {
   const a = esperadas.map(sinBulge), b = reales.map(sinBulge), diferencias = [];
-  const dirigida = (origen, destino) => origen.reduce((max, p) => {
-    const candidatos = destino.filter(q => q.capa === p.capa);
-    if (!candidatos.length) return Infinity;
-    return Math.max(max, ...muestras(p, candidatos).map(q => Math.min(...candidatos.map(s => distancia(q, s)))));
-  }, 0);
-  const desviacionMm = Math.max(dirigida(a, b), dirigida(b, a));
+  const dirigida = (origen, destino, limite = Infinity) => {
+    let max = 0;
+    for (const p of origen) {
+      const candidatos = destino.filter(q => q.capa === p.capa);
+      if (!candidatos.length) return Infinity;
+      for (const q of muestras(p, candidatos)) {
+        let cercano = Infinity;
+        for (const s of candidatos) cercano = Math.min(cercano, distancia(q, s));
+        max = Math.max(max, cercano);
+        if (max > limite) return max;
+      }
+    }
+    return max;
+  };
+  const limite = soloCoincidencia ? toleranciaMm + 1e-7 : Infinity;
+  const ida = dirigida(a, b, limite);
+  const desviacionMm = ida > limite ? ida : Math.max(ida, dirigida(b, a, limite));
   if (desviacionMm > toleranciaMm + 1e-7) diferencias.push('Forma, posición o herramienta de cortes y marcas distinta.');
   // En las plantillas de 430129/430172, las marcas de refuerzo dejan rabillos de 3 mm en ROTULADOR
   // (CM-PEN-Def en máquina) sin afectar nunca a DISCO1, DISCO2 ni CUTTER (Q-AS0711-05, 24/11/2026).
   const esRabilloRotulador = p => p.capa === 'ROTULADOR' && p.tipo === 'raya' && Math.hypot(p.b[0] - p.a[0], p.b[1] - p.a[1]) <= 3.5;
-  if (b.some((p, i) => !esRabilloRotulador(p) && dirigida([p], b.filter((_, j) => i !== j)) < .01)) {
+  if ((!soloCoincidencia || !diferencias.length) &&
+      b.some((p, i) => !esRabilloRotulador(p) && dirigida([p], b.filter((_, j) => i !== j), .01) < .01)) {
     diferencias.push('El corte real contiene recorridos duplicados en una misma herramienta.');
   }
-  return { coincide: !diferencias.length, desviacionMm: Number.isFinite(desviacionMm) ? desviacionMm : null, diferencias };
+  return { coincide: !diferencias.length, desviacionMm: !soloCoincidencia && Number.isFinite(desviacionMm) ? desviacionMm : null, diferencias };
 }
 
 /** Lo que hay dentro del paño; `uniones`: las x de sus bordes de rotulador con el paño unido (no son una marca suya). */
@@ -87,7 +99,9 @@ export function operacionesEnPano(modelo, b, uniones = [], { conBordes = false }
 
 export function operacionesGeneradas(entidades) {
   return [
-    ...entidades.lineas.filter(l => l.capa !== 'DISCO1').map(l => ({ tipo: 'raya', capa: l.capa, a: [l.x1, l.y1], b: [l.x2, l.y2] })),
+    // Los tres primeros trazos de un paño son sus bordes de disco; puede haber más recorridos de disco dentro.
+    ...entidades.lineas.slice(3).map(l => sinBulge({ tipo: 'raya', capa: l.capa,
+      a: [l.x1, l.y1], b: [l.x2, l.y2], curva: l.curva })),
     ...entidades.arcos.map(a => ({ ...a, tipo: 'arco', punto: [a.x, a.y] })),
     ...entidades.circulos.map(c => ({ ...c, tipo: 'arco', punto: [c.x, c.y], desde: 0, hasta: 360 })),
   ];
