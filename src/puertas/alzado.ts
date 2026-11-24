@@ -2,6 +2,7 @@ import { alturasTubos, desfaseCintas, solapeEntradaEnrollable } from './calcular
 import { huecosSinEscuadrado, llevaEscuadrado } from './escuadrado.ts';
 import { abajoRejillaTgm, envoltorioTgm, SANDWICH_TGM } from './tgm.ts';
 import { alzadoAraujo } from './alzadoAraujo.ts';
+import { alzadoBelts, alzadoPuertasLuz } from './alzadoBeltsLuz.ts';
 import { alzadoSantaPau } from './alzadoSantaPau.ts';
 import { colocarTextosPuerta } from './textosPlano.ts';
 import { bajoDobleSaco, desnivelSuelo, envoltorioDobleSaco, pestanaDerecha, rotuloSaco, sacoPuerta } from './saco.ts';
@@ -85,6 +86,8 @@ export const esVertical = (c: Pick<CotaAlzado, 'x1' | 'x2' | 'y1' | 'y2'>) => Ma
 
 export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = 'A'): GeometriaAlzado {
   if (p.santapau) return alzadoSantaPau(p,resultado,letra);
+  if (p.belts) return alzadoBelts(p, resultado, letra);
+  if (p.puertasluz) return alzadoPuertasLuz(p, resultado, letra);
   if (p.araujo) return alzadoAraujo(p, letra);
   if (p.modelo === 'SYSTEMDOCK') return alzadoSystemDock(p);
   const F = p.frente > 0 ? p.frente : 400;

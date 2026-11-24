@@ -72,26 +72,32 @@ export function puertasDesdeRps(lineas: LineaPuertaRps[], { clienteCodigo = '' }
     const sd = lonaSystemDock(l, clienteCodigo);
     if (sd) { puertas.push(sd); continue; }
     if (!articulo.startsWith('PUERTA')) continue;
-    const tipo=ficha.tipos.find(t=>t.id===ficha.articulos[articulo]);
+    const texto = `${l.descripcion} ${l.comentario}`.replace(/\s+/g, ' ').trim();
+    const tipoId = ficha.calculo==='puertasluz' && articulo==='PUERTAENR' && /(?:PVC\s+)?TRANSPART?ENTE\s*1000\s*MICRAS\s+Y\s+LONA|PVC\s+TRANSPART?ENTE.*Y\s+LONA/i.test(texto)
+      ? 'enrollable-transparente' : ficha.articulos[articulo];
+    const tipo=ficha.tipos.find(t=>t.id===tipoId);
     if (!tipo) {
       avisos.push(`Línea ${articulo} (tramo o pieza suelta): no es una puerta completa, se hace aparte.`);
       continue;
     }
-    const texto = `${l.descripcion} ${l.comentario}`.replace(/\s+/g, ' ').trim();
-    const medidas = /MEDIDAS?\s+(\d+(?:[.,]\d+)?)\s*(?:CM)?\s*X\s*(\d+(?:[.,]\d+)?)/i.exec(texto);
+    const medidas = /MEDIDAS?\s+(\d+(?:[.,]\d+)?)\s*(?:CM)?(?:\s+DE\s+FRENTE)?\s*[X×]\s*(\d+(?:[.,]\d+)?)/i.exec(texto);
     const color = /COLOR\s+([A-ZÁÉÍÓÚÑ]+(?:\s+[A-ZÁÉÍÓÚÑ]+)*\s+\d{4})/i.exec(texto);
+    const colorSimple = ['santapau','belts','puertasluz'].includes(ficha.calculo)
+      ? /COLOR\s+(BLANC[OA]|ROJ[OA]|VERDE|AZUL|GRIS|NEGRO|AMARILL[OA])\b/i.exec(texto)?.[1].toUpperCase() ?? '' : '';
     const cantidad = Number.isInteger(l.cantidad) && l.cantidad >= 1 && l.cantidad <= 50 ? l.cantidad : 1;
-    const base = ficha.calculo==='santapau'||ficha.calculo==='tgm' ? nuevaPuertaDeCliente(ficha.id,tipo.id) : nuevaPuerta(tipo.modelo);
+    const base = ['santapau','tgm','belts','puertasluz'].includes(ficha.calculo) ? nuevaPuertaDeCliente(ficha.id,tipo.id) : nuevaPuerta(tipo.modelo);
+    const diagonales = ['belts','puertasluz'].includes(ficha.calculo) && /NEGRO\s*[-/Y]\s*AMARILL[OA]|AMARILL[OA]\s*[-/Y]\s*NEGRO|FRANJAS/i.test(texto);
     puertas.push({
       ...base,
       clientePuertas:ficha.id,tipoPuerta:tipo.id,...ficha.rollos,
       articuloOrigen: articulo as ModeloPuerta,
       frente: medidas ? numero(medidas[1]) : 0,
       alto: medidas ? numero(medidas[2]) : 0,
-      color: color ? color[1].toUpperCase() : ficha.calculo==='santapau'?(/COLOR\s+(BLANC[OA]|ROJ[OA]|VERDE|AZUL|GRIS|NEGRO|AMARILL[OA])\b/i.exec(texto)?.[1].toUpperCase()??''):'',
+      color: color ? color[1].toUpperCase() : colorSimple,
       cantidad,
       of: l.of.trim(),
       observaciones: l.comentario.trim(),
+      ...(diagonales?{materialSaco:'LAC900 AMARILLO',sacoDiagonalesAmarillas:true}:{}),
       ...(base.tgm&&/\blona\s+(?:de\s+)?rejilla\b/i.test(texto)?{material:'REJILLA',tgm:{...base.tgm,lona:'rejilla' as const}}:{}),
       ...(ficha.calculo==='santapau'&&/IGN[IÍ]FUGA?\s+M2/i.test(texto)?{material:'LAC900 IGNÍFUGA M2'}:{}),
     });
