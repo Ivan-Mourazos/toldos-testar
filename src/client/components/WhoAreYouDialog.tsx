@@ -38,7 +38,7 @@ export function WhoAreYouDialog({ current, onChoose, onCancel, onAbrirCmt }: {
             );
           })}
         </div>
-        {onAbrirCmt && <button type="button" className="ghost-button" onClick={onAbrirCmt}>DXF a CMT · Sin elegir técnico</button>}
+        {onAbrirCmt && <button type="button" className="ghost-button" onClick={onAbrirCmt}>Planos a corte · Sin elegir técnico</button>}
       </section>
     </div>
   );

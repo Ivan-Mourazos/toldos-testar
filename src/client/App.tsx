@@ -857,7 +857,7 @@ export default function App() {
         ? 'Pedidos'
         : activeTab === 'historial'
           ? 'Historial'
-          : activeTab === 'cmt' ? 'DXF a CMT' : 'Configuración de carpetas';
+          : activeTab === 'cmt' ? 'Planos a corte' : 'Configuración de carpetas';
 
   // El flujo del corte de lona con el DWG, arriba junto a «Guardar para revisión», como en puertas y remolques.
   const [faltaCorteLona, setFaltaCorteLona] = useState<string | null>('Genera el corte de lona');
@@ -886,8 +886,9 @@ export default function App() {
           <TabButton active={activeTab === 'reviews'} disabled={working === 'review'} label="Pedidos" count={pendingCount} onClick={() => irAPestana('reviews')} />
           {/* Iván, 11/11/2026: los generados en su propia pestaña; en Pedidos, lo pendiente y lo de hoy. */}
           <TabButton active={activeTab === 'historial'} disabled={working === 'review'} label="Historial" onClick={() => irAPestana('historial')} />
+          {/* Iván, 24/11/2026: «Planos a corte» (antes «DXF a CMT»), junto al trabajo diario y antes de los ajustes. */}
+          <TabButton active={activeTab === 'cmt'} disabled={working === 'review'} label="Planos a corte" onClick={() => irAPestana('cmt')} />
           <TabButton active={activeTab === 'parameters'} disabled={working === 'review'} label="Parámetros" onClick={() => irAPestana('parameters')} />
-          <TabButton active={activeTab === 'cmt'} disabled={working === 'review'} label="DXF a CMT" onClick={() => irAPestana('cmt')} />
           <TabButton active={activeTab === 'settings'} disabled={working === 'review'} label="Configuración" onClick={() => irAPestana('settings')} />
           {/* Iván, 02/10/2026: fuera el enlace a la web vieja de remolques; se hacen en Nuevo pedido. */}
         </nav>

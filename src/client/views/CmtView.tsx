@@ -72,7 +72,7 @@ export function CmtView() {
     setDescarga(actual => ({ ...actual, mensaje: omitidos ? `Se han omitido ${mm(omitidos)} ${omitidos === 1 ? 'plano sin generar' : 'planos sin generar'}.` : '' }));
   }
 
-  return <section className="cmt-vista" aria-label="Conversión de DXF a CMT">
+  return <section className="cmt-vista" aria-label="Planos a corte">
     <div className="cmt-introduccion">
       <p>Elige el plano en la lista de la oficina o arrastra un DWG o un DXF. En los DWG se corta lo que hay dentro del rectángulo de la capa 0. Antes de generar verás el corte y lo que haya que decidir.</p>
       {filas.length > 0 && <div className="cmt-acciones">
