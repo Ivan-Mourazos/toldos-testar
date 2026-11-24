@@ -25,6 +25,20 @@ export const REGLAS_BELTS = {
   cintaRadio: 0.5,
 } as const;
 
+/** Bajada de la E.T. inferior del paño (cm) según el tubo inferior pedido en la hoja (Q-BV01, resuelta 24/11/2026). */
+export const BAJADA_TUBO_INFERIOR_BELTS = {
+  'Ø40': 13,
+  'Ø50': 14,
+  'Ø60': 13,
+  '30×80': 16,
+} as const;
+
+/** Alto de corte del saco exterior (cm): 39 cm por defecto (bolsillo 170–180 mm) o 2 × faldón + 4 cm si la hoja acota otro. */
+export function altoSacoBelts(altoFaldonCm?: number): number {
+  if (altoFaldonCm === undefined || !Number.isFinite(altoFaldonCm) || altoFaldonCm <= 0) return REGLAS_BELTS.altoSacoDefecto;
+  return n(2 * altoFaldonCm + 4);
+}
+
 /** Crea los recortes de cintas para una E.T. de Belts Vigo: sin muescas laterales de 5 cm. */
 export function huecosCintasBelts(xs: number[], altoEt: number, ancho: number, alto: number, radio = REGLAS_BELTS.cintaRadio): Hueco[] {
   const y = n((altoEt - alto) / 2);

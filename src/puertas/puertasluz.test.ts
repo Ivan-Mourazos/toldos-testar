@@ -119,6 +119,15 @@ describe('Puertas Luz (052082)', () => {
     expect(res.puertas[2]).toMatchObject({ clientePuertas: 'puertasluz', tipoPuerta: 'enrollable', frente: 342, alto: 450, cantidad: 4 });
   });
 
+  it('AR2604660 con cabecera editable de 22,5 cm (Q-PL04) corta la tira superior de 22,5 cm y pasa leerPedidoPuertas', () => {
+    const ped0 = pedidoLuz4660();
+    ped0.elementos[0].input.puertasluz!.altoCabecera = 22.5;
+    const ped = leerPedidoPuertas(ped0);
+    const r = calcularPuerta(ped.elementos[0].input);
+    expect(r.avisos.filter(a => a.nivel === 'error')).toEqual([]);
+    expect(r.piezas.find(x => x.nombre === 'Cabecera varilla')).toMatchObject({ ancho: 207, alto: 22.5 });
+  });
+
   it('valida el documento guardado y genera DXF de máquina y plano con cajetín en cm', () => {
     for (const ped0 of [pedidoLuz2927(), pedidoLuz4660()]) {
       const ped = leerPedidoPuertas(ped0);

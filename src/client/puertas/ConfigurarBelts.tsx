@@ -1,6 +1,6 @@
 import React, { useId, useState } from 'react';
 import { alturasTubos, calcularPuerta, yEnTramo } from '../../puertas/calcular.ts';
-import { huecosCintasBelts, REGLAS_BELTS } from '../../puertas/belts.ts';
+import { BAJADA_TUBO_INFERIOR_BELTS, huecosCintasBelts, REGLAS_BELTS } from '../../puertas/belts.ts';
 import { fichaDePuerta, tipoDePuerta } from '../../puertas/clientes.ts';
 import { cambiarTipoDelCliente } from '../../puertas/nuevaPuertaCliente.ts';
 import { panoContinuoEnrollable } from '../../puertas/ventanalesEnrollable.ts';
@@ -290,7 +290,15 @@ export function ConfigurarBelts({ p, cambiar, corte, derecha, letra, vistas }: {
           <fieldset>
             <legend>E.T. inferior integrada en el paño</legend>
             <div className="puerta-campos">
-              <Numero titulo="Bajada bajo puerta (mm)" valor={b.bajoEt} cambiar={bajoEt => setBelts({ bajoEt, marcaBajoEt: bajoEt * 2 })} />
+              <div className="puerta-saco-util">
+                <Numero titulo="Bajada bajo puerta (mm)" valor={b.bajoEt} cambiar={bajoEt => setBelts({ bajoEt, marcaBajoEt: bajoEt * 2 })} />
+                <div className="puerta-saco-rapido" role="group" aria-label="Bajada según tubo inferior">
+                  {(Object.entries(BAJADA_TUBO_INFERIOR_BELTS) as Array<[keyof typeof BAJADA_TUBO_INFERIOR_BELTS, number]>).map(([tubo, cm]) => (
+                    <button type="button" key={tubo} className={`chip-3d ${Math.abs(b.bajoEt - cm) < 0.01 && (b.etiquetaEtInferior ?? '').includes(tubo.replace('×', 'X')) ? 'glass-chip-activo' : ''}`}
+                      onClick={() => setBelts({ bajoEt: cm, marcaBajoEt: cm * 2, etiquetaEtInferior: `E.T ${tubo.replace('×', 'X')}` })}>{tubo}</button>
+                  ))}
+                </div>
+              </div>
               <Numero titulo="Marca desde borde inferior (mm)" valor={b.marcaBajoEt ?? b.bajoEt * 2} cambiar={marcaBajoEt => setBelts({ marcaBajoEt })} />
               <label className="field puerta-campo">
                 <span>Etiqueta E.T. inferior</span>

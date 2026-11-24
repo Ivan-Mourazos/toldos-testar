@@ -86,7 +86,7 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
         ||!cotas(pl,['altoFaldon','extraAnchoFaldon','bajoEt','anchoEt','descuentoSacoArena','soldaduraSacoArena'])
         ||typeof pl.pestana3!=='boolean'||typeof pl.sacoArena!=='boolean'
         ||typeof pl.materialSacoArena!=='string'||pl.materialSacoArena.length>200)return error();
-      if(['cintaAncho','cintaAlto','margenLateral'].some(k=>pl[k]!==undefined&&!cotas(pl,[k])))return error();
+      if(['cintaAncho','cintaAlto','margenLateral','altoCabecera'].some(k=>pl[k]!==undefined&&!cotas(pl,[k])))return error();
       if(pl.tramosTransparentes!==undefined&&!numeros(pl.tramosTransparentes,30))return error();
     }
     if(p.araujo!==undefined) {

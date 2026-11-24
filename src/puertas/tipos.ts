@@ -65,6 +65,7 @@ export interface ConfiguracionPuertasLuz {
   soldaduraSacoArena: number;
   materialSacoArena: string;
   margenLateral?: number;
+  altoCabecera?: number;
   tramosTransparentes?: number[];
 }
 export interface Puerta {
