@@ -67,7 +67,7 @@ export function crearServicioLotes({ carpeta = path.resolve('tmp/combursa'), oda
     async vista(input) {
       const ctx = await obtener(input);
       const paletsOficina = ctx.revision && Object.fromEntries(ctx.lote.lineas.map(l => [
-        l.IDOrderLine, ctx.revision.lineas.find(r => r.CodOrder === l.CodOrder && r.NumLine === l.NumLine).palets,
+        l.IDOrderLine, ctx.revision.lineas.find(r => r.CodOrder === l.CodOrder && r.NumLine === l.NumLine)?.palets,
       ]));
       return { ...ctx.lote, paletsOficina, destino: base, dwgDisponible: oda.disponible };
     },
