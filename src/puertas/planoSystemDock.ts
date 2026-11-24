@@ -22,7 +22,7 @@ function dibujarAlzado(l: Lienzo, p: Puerta, y: number) {
   const w = L + R.largo, h = A + R.ancho, dx = R.largo / 2, dy = R.ancho / 2;
   rect(l, 'DISCO1', 0, y, w, h);
   rect(l, 'referencias', dx, y + dy, L, A);
-  cota(l, dx, y + h, dx + L, y + h, y + h + 22);
+  cota(l, dx, y + h, dx + L, y + h, y + h + 32);
   cota(l, w, y + dy, w, y + dy + A, w + 22);
   texto(l, 'VARILLA NEGRA 4,5 mm', w / 2, y + h + 7, 9);
   texto(l, 'VARILLA NEGRA 4,5 mm', w / 2, y - 8, 9);
@@ -53,12 +53,12 @@ export function escribirPlanoSystemDock(pedido: PedidoPuertas, cortes: CortePuer
   const zonasPuertas: Zona[] = [];
   for (const e of pedido.elementos) {
     const h = dibujarAlzado(l, e.input, y - (e.input.alto + REGLAS_SYSTEM_DOCK.ancho));
-    zonasPuertas.push({ x0: -40, x1: e.input.frente + REGLAS_SYSTEM_DOCK.largo + 45, y0: y - h - 40, y1: y + (zonasPuertas.length ? 40 : 75) });
+    zonasPuertas.push({ x0: -40, x1: e.input.frente + REGLAS_SYSTEM_DOCK.largo + 45, y0: y - h - 30, y1: y + (zonasPuertas.length ? 40 : 75) });
     y -= h + 70; ancho = Math.max(ancho, e.input.frente + REGLAS_SYSTEM_DOCK.largo);
   }
   // Arriba del todo, las unidades totales del pedido (Iván, 23/10/2026).
   const unidades = pedido.elementos.reduce((s, e) => s + e.input.cantidad, 0);
-  // Por encima de la cota del frente de la primera lona, que queda a 22.
+  // Por encima de la cota del frente de la primera lona, que queda a 32.
   texto(l, `UNIDADES TOTALES: ${unidades}`, ancho / 2, 50, 16);
   const alzados = vacio(); sumarLienzo(alzados, l);
   const zonaM = (z: Zona, x: number, yy: number): Zona => ({ x0: x + z.x0 / 100, x1: x + z.x1 / 100, y0: yy + z.y0 / 100, y1: yy + z.y1 / 100 });
