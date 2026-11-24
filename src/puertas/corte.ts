@@ -98,6 +98,7 @@ function etiquetaClasePieza(pieza: PiezaPuerta, codigoPano?: string): string {
   }
   if (pieza.clase === 'saco') {
     if (pieza.nombre.startsWith('Bolsa ')) return 'BOLSA';
+    if (pieza.nombre === 'Saco para arena') return 'SACO ARENA';
     const nombre=pieza.nombre==='Faldón'?'FALDÓN':'SACO';
     return pieza.sacoDiagonalesAmarillas ? `${nombre} AMARILLO/NEGRO` : nombre;
   }
@@ -694,7 +695,7 @@ export function generarCortePuertas(
   const resultados = pedido.elementos.map(e => {
     const r = calcularPuerta(e.input);
     const propia = (x: PiezaPuerta) => ({ ...x, id: `${e.id}:${x.id}`,
-      ...(x.clase === 'saco' && e.input.sacoDiagonalesAmarillas ? { sacoDiagonalesAmarillas: true } : {}) });
+      ...(x.clase === 'saco' && e.input.sacoDiagonalesAmarillas && x.sacoDiagonalesAmarillas !== false ? { sacoDiagonalesAmarillas: true } : {}) });
     return { ...r, piezas: r.piezas.map(propia),
       alternativasSaco: r.alternativasSaco && { entero: r.alternativasSaco.entero.map(propia), partido: r.alternativasSaco.partido.map(propia) } };
   });

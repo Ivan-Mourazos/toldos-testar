@@ -1,5 +1,19 @@
 # Dudas abiertas
 
+## Puertas de Belts Vigo y Puertas Luz · 24/11/2026
+
+Estudio de las plantillas `BELTS VIGO.dwg` y `PUERTAS LUZ.dwg` y de los 31 pedidos históricos reales (20 de Belts Vigo y 11 de Puertas Luz). Expediente completo y tabla de contraste en [puertas-belts-luz.md](./puertas-belts-luz.md). Lo no deducible con certeza se deja editable en pantalla.
+
+| Código | Cliente | Pregunta para Iván / taller | Qué hace la web mientras tanto |
+| --- | --- | --- | --- |
+| Q-BV01 | Belts Vigo | ¿Hay una fórmula fija para la bajada de la E.T. inferior del paño (12 a 16 cm según el tubo) y el alto de corte del saco exterior (39 cm habitual, 34 cm en AR2602598, 58 cm en AR2600478)? | Propone 130 mm de bajada en enrollable (140 mm en apilable) y 390 mm de alto de corte de saco, ambos editables en pantalla. |
+| Q-BV02 | Belts Vigo | En AR2604762, AR2604618 y AR2505886 el alzado acota E.T. de 9,5 cm, pero en maqcorte se cortaron de 10 y 10,5 cm (en AR2505965 acota 10 y corta 10). ¿En las de pletina 30×10 se suma siempre 0,5 cm al corte o se corta la medida indicada? | Propone 100 mm de ancho de corte de E.T. en enrollable (135 mm en apilable), editable en pantalla y en cada entrada. |
+| Q-BV03 | Belts Vigo | Las 3 enrollables sencillas sin saco con cordón 4,5 y tira inferior B.N. de 19 cm (AR2600848, AR2401252, AR2400015) y los tramos/ventanas enmarcadas (PUERTAPLET: AR2601567, AR2506338, AR2501450, AR2406439): ¿queréis un tipo propio para ellas o se siguen haciendo a mano? | Quedan fuera de los dos tipos automáticos (Enrollable y Apilable); RPS avisa cuando entra un `PUERTAPLET`/`PUERTAPLETRAM`. |
+| Q-PL01 | Puertas Luz | En las apilables de 2026 (AR2602927, AR2600508, AR2600374) el faldón exterior se corta de ancho igual al frente `F`, pero en 2025 (AR2505627, AR2503726, AR2501810) y en todas las enrollables transparentes lleva `F + 3 cm`. ¿Queda fijo `F` en apilables y `F + 3` en transparentes? | Propone `F` (extra 0 mm) en apilables y enrollables de lona y `F + 30 mm` en enrollables transparentes, editable en pantalla. |
+| Q-PL02 | Puertas Luz | El saco interior de 22 cm para arena se corta de ancho `F` y raya a 3 cm en las puertas de lona de 2026 (AR2602927, AR2600508, AR2600374, AR2600326), y de `F − 6 cm` con raya a 5 cm en las enrollables transparentes (y en las apilables de 2025). ¿Se mantiene ese criterio por tipo? | Propone `F` con marca a 30 mm en apilable y enrollable de lona, y `F − 60 mm` con marca a 50 mm en enrollable transparente; ambos editables (y el saco de arena se puede desactivar). |
+| Q-PL03 | Puertas Luz | En las apilables de más de 5 m (AR2503726, AR2501810) los recortes de cintas miden 12,5 × 7,5 cm y llevan refuerzos de lona de 2 mm; en las menores de 5 m de 2026 miden 8 × 7,5 cm y no llevan refuerzos. ¿Depende del ancho de la puerta o siempre de lo que pida la hoja? | Propone 80 × 75 mm sin refuerzos, con el ancho y alto del recorte editables para cambiarlo a 125 × 75 mm cuando la hoja lo pida. |
+| Q-PL04 | Puertas Luz | En las enrollables transparentes el margen lateral de lona blanca es de 6 cm (tira de 7 cm) en puertas ≤ 210 cm (AR2604660, AR2602586, AR2501810 L4/L5) y de 15 cm (tira de 16 cm) en la de 373 cm (AR2603463); la cabecera fue 13,5 cm salvo 22,5 cm en AR2604660. ¿Hay un umbral fijo para ese margen lateral? | Propone 60 mm de margen lateral (tira de 70 mm) y cabecera de 135 mm, editables en pantalla junto con los altos de cada tramo transparente. |
+
 ## Enrollado de puertas con tubos interiores · 12/11/2026
 
 Iván confirma eje Ø80, LAC900, refuerzos Ø30 o Ø42 y entradas orientadas hacia el eje.

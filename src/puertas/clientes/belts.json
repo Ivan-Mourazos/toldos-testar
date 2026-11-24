@@ -1,0 +1,18 @@
+{
+  "id": "belts",
+  "nombre": "Belts Vigo",
+  "codigoRps": "038908",
+  "unidadHoja": "mm",
+  "habilitado": true,
+  "calculo": "belts",
+  "rollos": { "rollo": 300, "rolloCristal": 140, "rolloSaco": 300 },
+  "rollosConfirmados": true,
+  "remates": "E.T. inferior integrada con pestaña de 3 cm y saco rectangular sin pestaña (39 cm por defecto, editable); laterales al corte; sin muescas laterales en E.T. de apilable",
+  "perfiles": {},
+  "rotulos": { "espaciador": "", "cremallera": "", "plantilla": "general" },
+  "tipos": [
+    { "id": "enrollable", "nombre": "Enrollable", "modelo": "PUERTAENR" },
+    { "id": "apilable", "nombre": "Apilable", "modelo": "PUERTAPLE" }
+  ],
+  "articulos": { "PUERTAENR": "enrollable", "PUERTAPLE": "apilable" }
+}

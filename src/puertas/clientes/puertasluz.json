@@ -1,0 +1,19 @@
+{
+  "id": "puertasluz",
+  "nombre": "Puertas Luz",
+  "codigoRps": "052082",
+  "unidadHoja": "mm",
+  "habilitado": true,
+  "calculo": "puertasluz",
+  "rollos": { "rollo": 300, "rolloCristal": 140, "rolloSaco": 300 },
+  "rollosConfirmados": true,
+  "remates": "Faldón exterior (2 × alto de faldón) y saco contrapeso interior para arena de 22 cm con marcas a 3 cm; en apilables E.T. de 12 cm con recortes de cinta 8 × 7,5 cm sin muescas laterales",
+  "perfiles": {},
+  "rotulos": { "espaciador": "", "cremallera": "", "plantilla": "general" },
+  "tipos": [
+    { "id": "apilable", "nombre": "Apilable", "modelo": "PUERTAPLE" },
+    { "id": "enrollable", "nombre": "Enrollable", "modelo": "PUERTAENR" },
+    { "id": "enrollable-transparente", "nombre": "Enrollable transparente", "modelo": "PUERTAENR" }
+  ],
+  "articulos": { "PUERTAPLE": "apilable", "PUERTAENR": "enrollable" }
+}

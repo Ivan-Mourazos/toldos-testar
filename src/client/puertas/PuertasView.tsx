@@ -24,6 +24,8 @@ import { conEntradasDePuerta } from './ventanasPuertas';
 import type { ResumenPedido } from '../remolques/SelectorProducto';
 import { AlzadoPuerta } from './AlzadoPuerta';
 import { ConfigurarAraujo } from './ConfigurarAraujo';
+import { ConfigurarBelts } from './ConfigurarBelts';
+import { ConfigurarPuertasLuz } from './ConfigurarPuertasLuz';
 import { ConfigurarSantaPau } from './ConfigurarSantaPau';
 import { ConfigurarTgm } from './ConfigurarTgm';
 import { fichaDePuerta, fichaPorCodigo, fichaPorId, tipoDePuerta } from '../../puertas/clientes.ts';
@@ -73,6 +75,8 @@ function Configurar({p,cambiar,corte,derecha='alzado',letra='A',vistas}:{p:Puert
   if(p.clientePuertas&&!ficha.habilitado)return <section className="puerta-config panel panel-vidrio" aria-label="Cliente sin reglas de confección"><h2>{ficha.nombre} · confección pendiente</h2><p className="puerta-ayuda">{textoMedidasMm(ficha.aviso??'')}</p><p className="puerta-ayuda">Artículo {p.articuloOrigen||'sin indicar'} · OF {p.of||'SIN OF'} · {num(p.frente)} × {num(p.alto)} mm</p><p className="puerta-ayuda">{p.observaciones}</p></section>;
   if(p.araujo)return <ConfigurarAraujo p={p} cambiar={cambiar} corte={corte} derecha={derecha} letra={letra} vistas={vistas}/>;
   if(p.santapau)return <ConfigurarSantaPau p={p} cambiar={cambiar} corte={corte} derecha={derecha} letra={letra} vistas={vistas}/>;
+  if(p.belts)return <ConfigurarBelts p={p} cambiar={cambiar} corte={corte} derecha={derecha} letra={letra} vistas={vistas}/>;
+  if(p.puertasluz)return <ConfigurarPuertasLuz p={p} cambiar={cambiar} corte={corte} derecha={derecha} letra={letra} vistas={vistas}/>;
   if(p.tgm)return <ConfigurarTgm p={p} cambiar={cambiar} corte={corte} derecha={derecha} letra={letra} vistas={vistas}/>;
   const resultado=calcularPuerta(p);
   // System Dock: una lona rectangular; sin cristal, saco, tubos ni ventanas (src/puertas/systemDock.ts).
@@ -604,7 +608,7 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
     <section className="puerta-cabecera order-header panel rem-cabecera"><div className="order-header-group order-header-general"><h3>Datos del pedido</h3><div className="order-header-grid">
       <div className="puerta-pedido"><label className="field puerta-campo"><span>Número de pedido</span><input aria-label={`Número de pedido de ${nombre}`} value={pedido.orderCode} placeholder="AR2600000" onChange={e=>setPedido({...pedido,orderCode:e.target.value})}/></label>
       <button type="button" className="ghost-button" disabled={trayendo || !pedido.orderCode.trim()} onClick={() => void traerDeRps()}>{trayendo ? 'Consultando…' : 'Traer de RPS'}</button>
-      </div><label className="field puerta-campo"><span>Cliente</span><input aria-label={`Cliente de ${nombre}`} value={pedido.cabecera.cliente.replace(/DISTRIBUCIONS INDUSTRIALS SANTA PAU,?\s*S\.?L\.?/g,'Santa Pau').replace(/SANTA PAU/g,'Santa Pau').replace(/ARAUJO/g,'Araujo').replace(/PORTANOVA/g,'Portanova')} onChange={e=>cabecera({cliente:e.target.value,clienteRps:undefined})}/></label>
+      </div><label className="field puerta-campo"><span>Cliente</span><input aria-label={`Cliente de ${nombre}`} value={pedido.cabecera.cliente.replace(/DISTRIBUCIONS INDUSTRIALS SANTA PAU,?\s*S\.?L\.?/g,'Santa Pau').replace(/SANTA PAU/g,'Santa Pau').replace(/FABRICADOS LA SELVA PUERTAS LUZ,?\s*S\.?L\.?/g,'Puertas Luz').replace(/BELTS VIGO,?\s*S\.?L\.?/g,'Belts Vigo').replace(/ARAUJO/g,'Araujo').replace(/PORTANOVA/g,'Portanova')} onChange={e=>cabecera({cliente:e.target.value,clienteRps:undefined})}/></label>
       <label className="field puerta-campo"><span>Fecha</span><input type="date" aria-label={`Fecha del pedido de ${nombre}`} value={pedido.cabecera.fecha} onChange={e=>cabecera({fecha:e.target.value})}/></label>
     </div></div>
     </section>

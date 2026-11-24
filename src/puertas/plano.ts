@@ -12,6 +12,8 @@ export function escribirPlanoPuertas({ pedido, cabecera, ofStockSacos }: {
 }): string {
   const { cortes } = generarCortePuertas(pedido, { ofStockSacos });
   if (pedido.elementos.length && pedido.elementos.every(e=>e.input.santapau)) return escribirPlanoAraujo(pedido,cortes,{...cabecera,cliente:cabecera.cliente.toUpperCase()},'MEDIDAS EN CM · SANTA PAU · ENROLLABLE');
+  if (pedido.elementos.length && pedido.elementos.every(e=>e.input.belts)) return escribirPlanoAraujo(pedido,cortes,{...cabecera,cliente:cabecera.cliente.toUpperCase()},'MEDIDAS EN CM · BELTS VIGO');
+  if (pedido.elementos.length && pedido.elementos.every(e=>e.input.puertasluz)) return escribirPlanoAraujo(pedido,cortes,{...cabecera,cliente:cabecera.cliente.toUpperCase()},'MEDIDAS EN CM · PUERTAS LUZ');
   if (pedido.elementos.some(e => e.input.araujo)) return escribirPlanoAraujo(pedido,cortes,cabecera);
   if (pedido.elementos.length && pedido.elementos.every(e => e.input.modelo === 'SYSTEMDOCK')) {
     return escribirPlanoSystemDock(pedido, cortes, cabecera);

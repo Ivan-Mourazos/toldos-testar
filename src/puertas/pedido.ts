@@ -26,8 +26,10 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
       if(!tipo||tipo.modelo!==p.modelo||tipo.forma&&(!objeto(p.araujo)||tipo.forma!==p.araujo.forma))return error();
       if((ficha.calculo==='araujo')!==Boolean(p.araujo))return error();
       if((ficha.calculo==='santapau')!==Boolean(p.santapau))return error();
+      if((ficha.calculo==='belts')!==Boolean(p.belts))return error();
+      if((ficha.calculo==='puertasluz')!==Boolean(p.puertasluz))return error();
       if((ficha.calculo==='tgm')!==(p.tgm!==undefined))return error();
-    }else if(p.tipoPuerta!==undefined||p.tgm!==undefined)return error();
+    }else if(p.tipoPuerta!==undefined||p.tgm!==undefined||p.belts!==undefined||p.puertasluz!==undefined)return error();
     if(typeof p.modelo!=='string' || !Object.hasOwn(MODELOS_PUERTAS,p.modelo)) return error();
     if(p.articuloOrigen!=='' && (typeof p.articuloOrigen!=='string'||!Object.hasOwn(MODELOS_PUERTAS,p.articuloOrigen)&&!(ARTICULOS_TRAMOS_ARAUJO as readonly string[]).includes(p.articuloOrigen)))return error();
     if(p.notaPlano!==undefined && (typeof p.notaPlano!=='string' || p.notaPlano.length>1000)) return error();
@@ -68,6 +70,24 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
       if(p.clientePuertas!=='santapau'||!objeto(s)||!cotas(s,['aumentoBajo','altoFaldon'])||!['izquierda','derecha','sin confirmar'].includes(s.ladoCerrado as string)||typeof s.refuerzos!=='boolean')return error();
       if(s.anchoRefuerzo!==undefined&&!cotas(s,['anchoRefuerzo']))return error();
         if(s.revision!==undefined&&!['4815','5363'].includes(s.revision as string))return error();
+    }
+    if(p.belts!==undefined){
+      const b=p.belts;
+      if(p.clientePuertas!=='belts'||!objeto(b)||!['varilla','corte'].includes(b.cabecera as string)
+        ||!cotas(b,['bajoEt','altoSaco','anchoEt'])||typeof b.pestana3!=='boolean')return error();
+      if(['marcaBajoEt','cintaAncho','cintaAlto'].some(k=>b[k]!==undefined&&!cotas(b,[k])))return error();
+      if(['etiquetaEtInferior','etiquetaEt'].some(k=>b[k]!==undefined&&(typeof b[k]!=='string'||(b[k] as string).length>200)))return error();
+      if(['pisarEt1cm','cierreVelcro'].some(k=>b[k]!==undefined&&typeof b[k]!=='boolean'))return error();
+    }
+    if(p.puertasluz!==undefined){
+      const pl=p.puertasluz;
+      if(p.clientePuertas!=='puertasluz'||!objeto(pl)||!['apilable','enrollable','transparente'].includes(pl.variante as string)
+        ||!['varilla','bd'].includes(pl.cabecera as string)
+        ||!cotas(pl,['altoFaldon','extraAnchoFaldon','bajoEt','anchoEt','descuentoSacoArena','soldaduraSacoArena'])
+        ||typeof pl.pestana3!=='boolean'||typeof pl.sacoArena!=='boolean'
+        ||typeof pl.materialSacoArena!=='string'||pl.materialSacoArena.length>200)return error();
+      if(['cintaAncho','cintaAlto','margenLateral'].some(k=>pl[k]!==undefined&&!cotas(pl,[k])))return error();
+      if(pl.tramosTransparentes!==undefined&&!numeros(pl.tramosTransparentes,30))return error();
     }
     if(p.araujo!==undefined) {
       const a=p.araujo;

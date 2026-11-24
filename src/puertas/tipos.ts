@@ -34,12 +34,47 @@ export interface ConfiguracionAraujo {
   tramos: TramoAraujo[];
 }
 export type ParteAbrigo = 'frente' | 'laterales' | 'perimetral' | 'tiras';
+/** Belts Vigo (RPS 038908): enrollables y apilables contrastadas en docs/modelos/puertas-belts-luz.md. */
+export interface ConfiguracionBelts {
+  cabecera: 'varilla' | 'corte';
+  bajoEt: number;
+  marcaBajoEt?: number;
+  etiquetaEtInferior?: string;
+  pestana3: boolean;
+  altoSaco: number;
+  anchoEt: number;
+  etiquetaEt?: string;
+  pisarEt1cm?: boolean;
+  cierreVelcro?: boolean;
+  cintaAncho?: number;
+  cintaAlto?: number;
+}
+/** Puertas Luz (RPS 052082): apilable, enrollable de lona y enrollable transparente (docs/modelos/puertas-belts-luz.md). */
+export interface ConfiguracionPuertasLuz {
+  variante: 'apilable' | 'enrollable' | 'transparente';
+  cabecera: 'varilla' | 'bd';
+  altoFaldon: number;
+  extraAnchoFaldon: number;
+  bajoEt: number;
+  pestana3: boolean;
+  anchoEt: number;
+  cintaAncho?: number;
+  cintaAlto?: number;
+  sacoArena: boolean;
+  descuentoSacoArena: number;
+  soldaduraSacoArena: number;
+  materialSacoArena: string;
+  margenLateral?: number;
+  tramosTransparentes?: number[];
+}
 export interface Puerta {
   abrigo?: { parte: ParteAbrigo; corto: number };
   /** Santa Pau: los bordes visibles de mirilla van en ventanas; ejes de tubo en entradas. */
   santapau?: { /** Sin revisión, se conserva el corte anterior si el documento guardó +5. */
     revision?: '4815' | '5363';
     aumentoBajo: number; altoFaldon: number; ladoCerrado: 'izquierda'|'derecha'|'sin confirmar'; refuerzos: boolean; anchoRefuerzo?: number };
+  belts?: ConfiguracionBelts;
+  puertasluz?: ConfiguracionPuertasLuz;
   tgm?: {
     altoHueco: number; // cm
     altoTotal: number | null; // cm; si falta, se suma el añadido al alto del hueco

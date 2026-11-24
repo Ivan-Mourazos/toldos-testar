@@ -7,6 +7,8 @@ import { calcularSystemDock } from './systemDock.ts';
 import { calcularAbrigo } from './abrigo.ts';
 import { calcularSacoArena, REGLAS_SACO_ARENA } from './sacoArena.ts';
 import { calcularAraujo } from './araujo.ts';
+import { calcularBelts } from './belts.ts';
+import { calcularPuertasLuz } from './puertasluz.ts';
 import { calcularSantaPau } from './santapau.ts';
 import { abajoRejillaTgm, calcularTgm, envoltorioTgm } from './tgm.ts';
 import { fichaDePuerta } from './clientes.ts';
@@ -62,6 +64,8 @@ export function calcularPuerta(p: Puerta): ResultadoPuerta {
   if(p.clientePuertas&&!fichaDePuerta(p).habilitado)return {version:1,piezas:[],alternativasSaco:null,empates:[],uniones:[],bolsillo:null,avisos:[{codigo:'CLIENTE_SIN_REGLAS',nivel:'error',texto:fichaDePuerta(p).aviso??'Falta contrastar las reglas de este cliente.'}]};
   if (p.araujo) return calcularAraujo(p);
   if (p.santapau) return calcularSantaPau(p);
+  if (p.belts) return calcularBelts(p);
+  if (p.puertasluz) return calcularPuertasLuz(p);
   if (p.tgm) return calcularTgm(p, calcularPuertaDerivada);
   if (p.modelo === 'SYSTEMDOCK') return calcularSystemDock(p);
   return calcularPuertaDerivada(p);
