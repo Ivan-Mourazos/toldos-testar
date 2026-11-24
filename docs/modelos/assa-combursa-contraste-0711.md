@@ -18,11 +18,11 @@ Los recuentos son fechas distintas del archivo o de la entrega RPS, según la co
 | --- | --- | --- | --- | --- | --- |
 | 410129-0117 | 4 | 3 | 3 | 0 | 0 |
 | 410130-0175 | 3 | 3 | 3 | 0 | 0 |
-| 420102-0021 | 31 | 30 | 30 | 25 | 21 |
+| 420102-0021 | 31 | 30 | 30 | 26 | 22 |
 | 420148-0040 | 1 | 1 | 1 | 1 | 1 |
-| 430129-0002 | 20 | 17 | 18 | 3 | 3 |
-| 430172-0005 | 32 | 30 | 30 | 4 | 4 |
-| 430172-0034 | 15 | 12 | 12 | 2 | 2 |
+| 430129-0002 | 20 | 17 | 18 | 14 | 13 |
+| 430172-0005 | 32 | 30 | 30 | 25 | 25 |
+| 430172-0034 | 15 | 12 | 12 | 9 | 7 |
 | 410170-0001 | 4 | 3 | 3 | 0 | 0 |
 | 410171-0001 | 4 | 3 | 3 | 0 | 0 |
 
@@ -151,7 +151,7 @@ DXF de oficina con el rótulo. oficina-dxf/2025/LOTE 01-03.dxf; oficina-dxf/2025
 | cortes/2025/LOTE 17-05.dxf | AR.25.02106/2 | 2 de 3610 × 666 (×1; 2C4C) | — | — | RPS 2 / lectura 2; cuerpo igual |
 | cortes/2025/LOTE 18-10.dxf | AR.25.04654/15 | 3 de 3610 × 666 (×4; 5949F); 1 de 3610 × 666 (×1; 594AA) | — | x4 | RPS 13 / lectura 13; cuerpo igual |
 | cortes/2025/LOTE 19-07.dxf | AR.25.03355/12 | 6 de 3610 × 666 (×1; 3EC7) | — | — | RPS 6 / lectura 6; cuerpo igual |
-| cortes/2025/LOTE 21-06.dxf | AR.25.02778/1 | 3 de 10830 × 666 (×3; 27CF); 1 de 3610 × 666 (×1; 2395) | — | X3 | RPS 28 / lectura 10; cuerpo sin certificar; Forma, posición o herramienta de cortes y marcas distinta. |
+| cortes/2025/LOTE 21-06.dxf | AR.25.02778/1 | 9 de 3610 × 666 (×3; 27CF); 1 de 3610 × 666 (×1; 2395) | — | X3 | RPS 28 / lectura 28; cuerpo sin certificar; Forma, posición o herramienta de cortes y marcas distinta. |
 | cortes/2025/LOTE 22-02.dxf | AR.25.00348/1 | 1 de 3610 × 666 (×1; 6171); 1 de 3610 × 666 (×1; 6175) | — | — | RPS 2 / lectura 2; cuerpo igual |
 | cortes/2025/LOTE 24-05.dxf | AR.25.02108/1 | 6 de 3610 × 666 (×7; 54EA) | — | x7 | RPS 42 / lectura 42; cuerpo igual |
 | cortes/2025/LOTE 25-10.dxf | AR.25.05203/1 | 1 de 3610 × 666 (×1; 5EFE8); 1 de 3610 × 666 (×1; 5EFE1) | — | — | RPS 2 / lectura 2; cuerpo igual |
@@ -159,7 +159,7 @@ DXF de oficina con el rótulo. oficina-dxf/2025/LOTE 01-03.dxf; oficina-dxf/2025
 | cortes/2025/LOTE 28-06.dxf | AR.25.02995/1 | 6 de 3610 × 666 (×1; 1EA1) | — | — | RPS 6 / lectura 6; cuerpo igual |
 | cortes/2026/LOTE 01-08.dxf | AR.26.03638/1 | 6 de 3610 × 666 (×4; 4B80) | — | x4 | RPS 24 / lectura 24; cuerpo igual |
 | cortes/2026/LOTE 02-05.dxf | AR.26.01723/1 | 6 de 3610 × 666 (×1; 61C4); 3 de 3610 × 666 (×1; 61DD) | — | — | RPS 10 / lectura 9; cuerpo igual |
-| cortes/2026/LOTE 03-10.dxf | AR.26.04399/1 | 1 de 3610 × 666 (×1; 2849); 3 de 10830 × 666 (×1; 2822) | — | X4 | RPS 10 / lectura 4; cuerpo sin certificar; Forma, posición o herramienta de cortes y marcas distinta. |
+| cortes/2026/LOTE 03-10.dxf | AR.26.04399/1 | 1 de 3610 × 666 (×1; 2849); 9 de 3610 × 666 (×1; 2822) | — | X4 | RPS 10 / lectura 10; cuerpo igual |
 | cortes/2026/LOTE 07-11_.dxf | AR.26.05234/1 | 6 de 3610 × 666 (×3; 28A6); 3 de 3610 × 666 (×1; 28C3); 1 de 3610 × 666 (×1; 28C4) | — | X3 | RPS 18 / lectura 22; cuerpo igual |
 | cortes/2026/LOTE 09-05.dxf | — | 6 de 3610 × 666 (×5; 4337); 3 de 3610 × 666 (×1; 4348); 2 de 3610 × 666 (×1; 4358) | — | x5 | — |
 | cortes/2026/LOTE 10-01_2.dxf | AR.25.06151/1 | 3 de 3610 × 666 (×8; 5DF9); 2 de 3610 × 666 (×1; 5E04) | — | x8 | RPS 26 / lectura 26; cuerpo igual |
@@ -218,23 +218,23 @@ DXF de oficina con el rótulo. oficina-dxf/2025/LOTE 04-10.dxf; oficina-dxf/2025
 
 | DXF de maqcorte | Candidatos RPS | Paños mm, repetición y rótulo | Caras próximas mm | Rótulos próximos | Contraste |
 | --- | --- | --- | --- | --- | --- |
-| cortes/2025/LOTE 04-10.dxf | AR.25.04645/15 | 1 de 3503 × 991 (×1; 10AC4) | — | 3 MM | RPS 1 / lectura 1; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2025/LOTE 07-06.dxf | AR.25.02741/11 | 1 de 3503 × 991 (×1; 3642); 1 de 3503 × 991 (×1; 47F4); 1 de 3503 × 991 (×1; 4806); 2 de 3503 × 991 (×1; 362E) | — | 3 MM | RPS 5 / lectura 5; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
+| cortes/2025/LOTE 04-10.dxf | AR.25.04645/15 | 1 de 3503 × 991 (×1; 10AC4) | — | 3 MM | RPS 1 / lectura 1; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2025/LOTE 07-06.dxf | AR.25.02741/11 | 1 de 3503 × 991 (×1; 3642); 1 de 3503 × 991 (×1; 47F4); 1 de 3503 × 991 (×1; 4806); 2 de 3503 × 991 (×1; 362E) | — | 3 MM | RPS 5 / lectura 5; cuerpo igual; Juego de canalón de plantilla presente |
 | cortes/2025/LOTE 13-09.dxf | AR.25.04242/11 | 2 de 3503 × 991 (×3; 61D9) | — | 3 MM; x3 | RPS 6 / lectura 6; cuerpo igual; Juego de canalón de plantilla presente |
-| cortes/2025/LOTE 15-03.dxf | AR.25.00887/15 | 2 de 3503 × 991 (×2; 2C16); 1 de 3503 × 991 (×1; 2C2B) | — | x2; 3 MM | RPS 5 / lectura 5; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
+| cortes/2025/LOTE 15-03.dxf | AR.25.00887/15 | 2 de 3503 × 991 (×2; 2C16); 1 de 3503 × 991 (×1; 2C2B) | — | x2; 3 MM | RPS 5 / lectura 5; cuerpo igual; Juego de canalón de plantilla presente |
 | cortes/2025/LOTE 22-03.dxf | — | 2 de 3503 × 991 (×1; 14D7) | — | 3 MM | — |
 | cortes/2025/LOTE 22-11.dxf | AR.25.05712/2 | 1 de 3503 × 991 (×1; 4AAB) | — | PLASTEL TE62; 3 MM | RPS 1 / lectura 1; cuerpo igual; Juego de canalón de plantilla presente |
-| cortes/2025/LOTE 25-10.dxf | AR.25.04747/3; AR.25.05108/5 | 2 de 3503 × 991 (×1; 5ECAD); 2 de 3503 × 991 (×1; 5F441); 2 de 3503 × 991 (×1; 5F4A6) | — | 3 MM | RPS 14 / lectura 6; cuerpo sin certificar; Forma, posición o herramienta de cortes y marcas distinta.; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
+| cortes/2025/LOTE 25-10.dxf | AR.25.04747/3; AR.25.05108/5 | 2 de 3503 × 991 (×1; 5ECAD); 2 de 3503 × 991 (×1; 5F441); 2 de 3503 × 991 (×1; 5F4A6) | — | 3 MM | RPS 14 / lectura 6; cuerpo sin certificar; Forma, posición o herramienta de cortes y marcas distinta.; Juego de canalón de plantilla presente |
 | cortes/2025/LOTE 29-11.dxf | AR.25.05818/4 | 2 de 3503 × 991 (×3; 4EA0); 1 de 3503 × 991 (×1; 4EB5) | — | x3; 3 MM | RPS 7 / lectura 7; cuerpo igual; Juego de canalón de plantilla presente |
-| cortes/2025/LOTE 31-05.dxf | AR.25.02369/8 | 1 de 3503 × 991 (×1; 3F2B); 1 de 3503 × 991 (×1; 3F3D); 2 de 3503 × 991 (×3; 304C) | — | x3; 3 MM | RPS 8 / lectura 8; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2026/LOTE 07-03.dxf | AR.26.00584/9 | 1 de 3503 × 991 (×1; 5541) | — | 3 MM | RPS 1 / lectura 1; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2026/LOTE 07-11_.dxf | AR.26.05240/7 | 1 de 3503 × 991 (×1; 343D); 1 de 3503 × 991 (×1; 2C47) | — | 3 MM | RPS 1 / lectura 2; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2026/LOTE 17-01.dxf | AR.25.06388/5 | 2 de 3503 × 991 (×2; 3DAC); 1 de 3503 × 991 (×1; 3DC1) | — | 3 MM; X2 | RPS 5 / lectura 5; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2026/LOTE 18-07.dxf | AR.26.02847/12 | 1 de 3503 × 991 (×1; 128E) | — | 3 MM | RPS 1 / lectura 1; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2026/LOTE 25-04.dxf | AR.26.01408/3 | 1 de 3503 × 991 (×1; 57C0) | — | 3 MM | RPS 1 / lectura 1; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2026/LOTE 26-09.dxf | AR.26.04503/11 | 2 de 3503 × 991 (×3; 1CAD6); 1 de 3503 × 991 (×1; 1CC5A); 1 de 3503 × 991 (×1; 1CBEC); 1 de 3503 × 991 (×1; 1CBFD); 1 de 3503 × 991 (×1; 1CC0E) | — | 3 MM; X3 | RPS 10 / lectura 10; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
+| cortes/2025/LOTE 31-05.dxf | AR.25.02369/8 | 1 de 3503 × 991 (×1; 3F2B); 1 de 3503 × 991 (×1; 3F3D); 2 de 3503 × 991 (×3; 304C) | — | x3; 3 MM | RPS 8 / lectura 8; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE 07-03.dxf | AR.26.00584/9 | 1 de 3503 × 991 (×1; 5541) | — | 3 MM | RPS 1 / lectura 1; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE 07-11_.dxf | AR.26.05240/7 | 1 de 3503 × 991 (×1; 343D); 1 de 3503 × 991 (×1; 2C47) | — | 3 MM | RPS 1 / lectura 2; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE 17-01.dxf | AR.25.06388/5 | 2 de 3503 × 991 (×2; 3DAC); 1 de 3503 × 991 (×1; 3DC1) | — | 3 MM; X2 | RPS 5 / lectura 5; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE 18-07.dxf | AR.26.02847/12 | 1 de 3503 × 991 (×1; 128E) | — | 3 MM | RPS 1 / lectura 1; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE 25-04.dxf | AR.26.01408/3 | 1 de 3503 × 991 (×1; 57C0) | — | 3 MM | RPS 1 / lectura 1; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE 26-09.dxf | AR.26.04503/11 | 2 de 3503 × 991 (×3; 1CAD6); 1 de 3503 × 991 (×1; 1CC5A); 1 de 3503 × 991 (×1; 1CBEC); 1 de 3503 × 991 (×1; 1CBFD); 1 de 3503 × 991 (×1; 1CC0E) | — | 3 MM; X3 | RPS 10 / lectura 10; cuerpo igual; Juego de canalón de plantilla presente |
 | cortes/2026/LOTE 27-06 (2).dxf | AR.26.02676/7 | — | — | 3 MM; x2 | No se encuentra un combinado completo igual, tramo a tramo y por herramienta. |
-| cortes/2026/LOTE13-06.dxf | AR.26.02446/5 | 2 de 3503 × 991 (×1; 30E7) | — | 3 MM | RPS 2 / lectura 2; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE13-06.dxf | AR.26.02446/5 | 2 de 3503 × 991 (×1; 30E7) | — | 3 MM | RPS 2 / lectura 2; cuerpo igual; Juego de canalón de plantilla presente |
 
 ## 430172-0005
 
@@ -281,36 +281,36 @@ DXF de oficina con el rótulo. oficina-dxf/2025/LOTE 01-11.dxf; oficina-dxf/2025
 
 | DXF de maqcorte | Candidatos RPS | Paños mm, repetición y rótulo | Caras próximas mm | Rótulos próximos | Contraste |
 | --- | --- | --- | --- | --- | --- |
-| cortes/2025/LOTE 01-11.dxf | AR.25.04952/13 | 1 de 9660 × 966 (×1; 1AEB8) | — | — | RPS 1 / lectura 1; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2025/LOTE 06-12.dxf | AR.25.06079/3 | 1 de 9660 × 966 (×1; 3FE1) | — | — | RPS 1 / lectura 1; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2025/LOTE 10-05.dxf | AR.25.01976/25 | 1 de 9660 × 966 (×1; 14CD3) | — | — | RPS 1 / lectura 1; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2025/LOTE 11-01.dxf | AR.24.06908/9 | 2 de 9660 × 966 (×3; 158E9); 1 de 9660 × 966 (×1; 15CAD) | — | X3 | RPS 7 / lectura 7; cuerpo sin certificar; Forma, posición o herramienta de cortes y marcas distinta.; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
+| cortes/2025/LOTE 01-11.dxf | AR.25.04952/13 | 1 de 9660 × 966 (×1; 1AEB8) | — | — | RPS 1 / lectura 1; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2025/LOTE 06-12.dxf | AR.25.06079/3 | 1 de 9660 × 966 (×1; 3FE1) | — | — | RPS 1 / lectura 1; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2025/LOTE 10-05.dxf | AR.25.01976/25 | 1 de 9660 × 966 (×1; 14CD3) | — | — | RPS 1 / lectura 1; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2025/LOTE 11-01.dxf | AR.24.06908/9 | 2 de 9660 × 966 (×3; 158E9); 1 de 9660 × 966 (×1; 15CAD) | — | X3 | RPS 7 / lectura 7; cuerpo sin certificar; Forma, posición o herramienta de cortes y marcas distinta.; Juego de canalón de plantilla presente |
 | cortes/2025/LOTE 13-09.dxf | AR.25.04242/13 | 2 de 9660 × 966 (×2; 65AF) | — | x2 | RPS 4 / lectura 4; cuerpo igual; Juego de canalón de plantilla presente |
-| cortes/2025/LOTE 18-01.dxf | AR.24.06967/12 | 1 de 9660 × 966 (×1; 2BB7) | — | — | RPS 1 / lectura 1; cuerpo sin certificar; Forma, posición o herramienta de cortes y marcas distinta.; El corte real contiene recorridos duplicados en una misma herramienta.; No se encuentra un combinado completo igual, tramo a tramo y por herramienta. |
-| cortes/2025/LOTE 18-10.dxf | AR.25.04654/14 | 2 de 9660 × 966 (×2; 595FF) | — | X2 | RPS 4 / lectura 4; cuerpo sin certificar; Forma, posición o herramienta de cortes y marcas distinta.; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2025/LOTE 21-06.dxf | AR.25.02778/3 | 1 de 9660 × 966 (×1; 23B8) | — | — | RPS 1 / lectura 1; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2025/LOTE 22-11.dxf | AR.25.05712/3; AR.25.05773/1 | 1 de 9660 × 966 (×1; 3D8C); 2 de 9660 × 966 (×1; 4002); 1 de 9660 × 966 (×1; 4131) | — | — | RPS 4 / lectura 4; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2025/LOTE 25-10.dxf | AR.25.04747/5 | 1 de 9660 × 966 (×1; 5F93A) | — | — | RPS 1 / lectura 1; cuerpo sin certificar; Forma, posición o herramienta de cortes y marcas distinta.; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2025/LOTE 29-03.dxf | AR.25.01015/10 | 1 de 9660 × 966 (×1; 2B59) | — | — | RPS 1 / lectura 1; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
+| cortes/2025/LOTE 18-01.dxf | AR.24.06967/12 | 1 de 9660 × 966 (×1; 2BB7) | — | — | RPS 1 / lectura 1; cuerpo sin certificar; Forma, posición o herramienta de cortes y marcas distinta.; No se encuentra un combinado completo igual, tramo a tramo y por herramienta. |
+| cortes/2025/LOTE 18-10.dxf | AR.25.04654/14 | 2 de 9660 × 966 (×2; 595FF) | — | X2 | RPS 4 / lectura 4; cuerpo sin certificar; Forma, posición o herramienta de cortes y marcas distinta.; Juego de canalón de plantilla presente |
+| cortes/2025/LOTE 21-06.dxf | AR.25.02778/3 | 1 de 9660 × 966 (×1; 23B8) | — | — | RPS 1 / lectura 1; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2025/LOTE 22-11.dxf | AR.25.05712/3; AR.25.05773/1 | 1 de 9660 × 966 (×1; 3D8C); 2 de 9660 × 966 (×1; 4002); 1 de 9660 × 966 (×1; 4131) | — | — | RPS 4 / lectura 4; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2025/LOTE 25-10.dxf | AR.25.04747/5 | 1 de 9660 × 966 (×1; 5F93A) | — | — | RPS 1 / lectura 1; cuerpo sin certificar; Forma, posición o herramienta de cortes y marcas distinta.; Juego de canalón de plantilla presente |
+| cortes/2025/LOTE 29-03.dxf | AR.25.01015/10 | 1 de 9660 × 966 (×1; 2B59) | — | — | RPS 1 / lectura 1; cuerpo igual; Juego de canalón de plantilla presente |
 | cortes/2025/LOTE 29-11.dxf | AR.25.05818/5 | 1 de 9660 × 966 (×1; 5614) | — | — | RPS 1 / lectura 1; cuerpo igual; Juego de canalón de plantilla presente |
-| cortes/2025/LOTE 30-08.dxf | AR.25.03354/9 | 1 de 9660 × 966 (×1; 489D) | — | — | RPS 1 / lectura 1; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2026/LOTE 01-08.dxf | AR.26.03638/6 | 1 de 9660 × 966 (×1; 4F65) | — | — | RPS 1 / lectura 1; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2026/LOTE 02-05.dxf | AR.26.01387/4 | 2 de 9660 × 966 (×1; 6F5D) | — | — | RPS 2 / lectura 2; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2026/LOTE 03-10.dxf | AR.26.04399/13 | 2 de 9660 × 966 (×1; 31E8) | — | — | RPS 2 / lectura 2; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2026/LOTE 06-06.dxf | AR.26.02092/1 | 1 de 9660 × 966 (×1; 2ADE) | — | — | RPS 1 / lectura 1; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2026/LOTE 07-02.dxf | AR.26.00274/9 | 1 de 9660 × 966 (×1; 5510) | — | — | RPS 1 / lectura 1; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2026/LOTE 07-03.dxf | AR.26.00584/11 | 1 de 9660 × 966 (×1; 5643) | — | — | RPS 1 / lectura 1; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2026/LOTE 07-11_.dxf | AR.26.05240/8 | 1 de 9660 × 966 (×1; 28C6) | — | — | RPS 1 / lectura 1; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
+| cortes/2025/LOTE 30-08.dxf | AR.25.03354/9 | 1 de 9660 × 966 (×1; 489D) | — | — | RPS 1 / lectura 1; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE 01-08.dxf | AR.26.03638/6 | 1 de 9660 × 966 (×1; 4F65) | — | — | RPS 1 / lectura 1; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE 02-05.dxf | AR.26.01387/4 | 2 de 9660 × 966 (×1; 6F5D) | — | — | RPS 2 / lectura 2; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE 03-10.dxf | AR.26.04399/13 | 2 de 9660 × 966 (×1; 31E8) | — | — | RPS 2 / lectura 2; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE 06-06.dxf | AR.26.02092/1 | 1 de 9660 × 966 (×1; 2ADE) | — | — | RPS 1 / lectura 1; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE 07-02.dxf | AR.26.00274/9 | 1 de 9660 × 966 (×1; 5510) | — | — | RPS 1 / lectura 1; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE 07-03.dxf | AR.26.00584/11 | 1 de 9660 × 966 (×1; 5643) | — | — | RPS 1 / lectura 1; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE 07-11_.dxf | AR.26.05240/8 | 1 de 9660 × 966 (×1; 28C6) | — | — | RPS 1 / lectura 1; cuerpo igual; Juego de canalón de plantilla presente |
 | cortes/2026/LOTE 10-01_2.dxf | AR.25.06229/3 | 2 de 9660 × 966 (×1; 66E2) | — | — | RPS 2 / lectura 2; cuerpo igual; Juego de canalón de plantilla presente |
 | cortes/2026/LOTE 14-03.dxf | AR.26.00624/3 | 1 de 9660 × 966 (×1; 5C12) | — | LONA DE 3 MM; PLASTEL TE62 | RPS 1 / lectura 1; cuerpo igual; Juego de canalón de plantilla presente |
-| cortes/2026/LOTE 17-10.dxf | AR.26.04917/3 | 1 de 9660 × 966 (×1; 244A) | — | — | RPS 1 / lectura 1; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2026/LOTE 22-08.dxf | AR.26.03911/2 | 1 de 9660 × 966 (×1; 2510) | — | — | RPS 1 / lectura 1; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2026/LOTE 24-10.dxf | AR.26.04504/2 | 1 de 9660 × 966 (×1; 27BB) | — | — | RPS 1 / lectura 1; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2026/LOTE 25-04.dxf | AR.26.01295/3 | 2 de 9660 × 966 (×1; 5DDA) | — | — | RPS 2 / lectura 2; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2026/LOTE 25-07.dxf | AR.26.03261/1; AR.26.03453/8 | 1 de 9660 × 966 (×1; 21A4); 1 de 9660 × 966 (×1; 2C34) | — | — | RPS 2 / lectura 2; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE 17-10.dxf | AR.26.04917/3 | 1 de 9660 × 966 (×1; 244A) | — | — | RPS 1 / lectura 1; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE 22-08.dxf | AR.26.03911/2 | 1 de 9660 × 966 (×1; 2510) | — | — | RPS 1 / lectura 1; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE 24-10.dxf | AR.26.04504/2 | 1 de 9660 × 966 (×1; 27BB) | — | — | RPS 1 / lectura 1; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE 25-04.dxf | AR.26.01295/3 | 2 de 9660 × 966 (×1; 5DDA) | — | — | RPS 2 / lectura 2; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE 25-07.dxf | AR.26.03261/1; AR.26.03453/8 | 1 de 9660 × 966 (×1; 21A4); 1 de 9660 × 966 (×1; 2C34) | — | — | RPS 2 / lectura 2; cuerpo igual; Juego de canalón de plantilla presente |
 | cortes/2026/LOTE 27-06 (2).dxf | AR.26.02676/8 | — | — | 3 MM | No se encuentra un combinado completo igual, tramo a tramo y por herramienta. |
-| cortes/2026/LOTE13-06.dxf | AR.26.02483/1 | 2 de 9660 × 966 (×2; 2D08) | — | x2 | RPS 4 / lectura 4; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2026/LOTE18-04.dxf | AR.26.01385/7 | 1 de 9660 × 966 (×1; 6A3F) | — | — | RPS 1 / lectura 1; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE13-06.dxf | AR.26.02483/1 | 2 de 9660 × 966 (×2; 2D08) | — | x2 | RPS 4 / lectura 4; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE18-04.dxf | AR.26.01385/7 | 1 de 9660 × 966 (×1; 6A3F) | — | — | RPS 1 / lectura 1; cuerpo igual; Juego de canalón de plantilla presente |
 
 ## 430172-0034
 
@@ -338,17 +338,17 @@ DXF de oficina con el rótulo. oficina-dxf/2025/LOTE 08-11.dxf; oficina-dxf/2025
 
 | DXF de maqcorte | Candidatos RPS | Paños mm, repetición y rótulo | Caras próximas mm | Rótulos próximos | Contraste |
 | --- | --- | --- | --- | --- | --- |
-| cortes/2025/LOTE 08-11.dxf | AR.25.05105/4 | 2 de 10420 × 966 (×2; 1D057) | — | X2 | RPS 4 / lectura 4; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2025/LOTE 10-05.dxf | AR.25.01976/28 | 2 de 10420 × 966 (×1; 13F55) | — | — | RPS 3 / lectura 2; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
+| cortes/2025/LOTE 08-11.dxf | AR.25.05105/4 | 2 de 10420 × 966 (×2; 1D057) | — | X2 | RPS 4 / lectura 4; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2025/LOTE 10-05.dxf | AR.25.01976/28 | 2 de 10420 × 966 (×1; 13F55) | — | — | RPS 3 / lectura 2; cuerpo igual; Juego de canalón de plantilla presente |
 | cortes/2025/LOTE 12-04.dxf | AR.25.01183/23 | 2 de 10420 × 966 (×6; 264B); 1 de 10420 × 966 (×1; 278C) | — | x6; x4 | RPS 13 / lectura 13; cuerpo igual; Juego de canalón de plantilla presente |
 | cortes/2025/LOTE 13-09.dxf | AR.25.04173/20 | 2 de 10420 × 966 (×1; 5C62) | — | — | RPS 2 / lectura 2; cuerpo igual; Juego de canalón de plantilla presente |
-| cortes/2025/LOTE 22-11_ADICIONALES.dxf | AR.25.05912/2 | 1 de 10420 × 966 (×1; 2D3D) | — | — | RPS 1 / lectura 1; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2026/LOTE 02-05.dxf | AR.26.01723/11 | 2 de 10420 × 966 (×1; 5C53) | — | — | RPS 30 / lectura 2; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2026/LOTE 07-11_.dxf | AR.26.05240/10 | 2 de 10420 × 966 (×2; 29CD) | — | X2 | RPS 4 / lectura 4; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
-| cortes/2026/LOTE 15-08.dxf | AR.26.03631/9 | 2 de 10420 × 966 (×2; 49C7) | — | x2 | RPS 4 / lectura 4; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
+| cortes/2025/LOTE 22-11_ADICIONALES.dxf | AR.25.05912/2 | 1 de 10420 × 966 (×1; 2D3D) | — | — | RPS 1 / lectura 1; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE 02-05.dxf | AR.26.01723/11 | 2 de 10420 × 966 (×1; 5C53) | — | — | RPS 30 / lectura 2; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE 07-11_.dxf | AR.26.05240/10 | 2 de 10420 × 966 (×2; 29CD) | — | X2 | RPS 4 / lectura 4; cuerpo igual; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE 15-08.dxf | AR.26.03631/9 | 2 de 10420 × 966 (×2; 49C7) | — | x2 | RPS 4 / lectura 4; cuerpo igual; Juego de canalón de plantilla presente |
 | cortes/2026/LOTE 21-03.dxf | AR.26.00843/14 | — | — | — | Juego de canalón de plantilla presente |
-| cortes/2026/LOTE 25-04.dxf | AR.26.01171/1; AR.26.01408/4 | 2 de 10420 × 966 (×2; 4FF2); 1 de 10420 × 966 (×1; 511F); 2 de 10420 × 966 (×2; 5427) | — | X2; x2 | RPS 9 / lectura 9; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Forma, posición o herramienta de cortes y marcas distinta.; Juego de canalón de plantilla presente |
-| cortes/2026/LOTE 26-09.dxf | AR.26.04503/13 | 1 de 10420 × 966 (×1; 1BA56) | — | — | RPS 1 / lectura 1; cuerpo sin certificar; El corte real contiene recorridos duplicados en una misma herramienta.; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE 25-04.dxf | AR.26.01171/1; AR.26.01408/4 | 2 de 10420 × 966 (×2; 4FF2); 1 de 10420 × 966 (×1; 511F); 2 de 10420 × 966 (×2; 5427) | — | X2; x2 | RPS 9 / lectura 9; cuerpo sin certificar; Forma, posición o herramienta de cortes y marcas distinta.; Juego de canalón de plantilla presente |
+| cortes/2026/LOTE 26-09.dxf | AR.26.04503/13 | 1 de 10420 × 966 (×1; 1BA56) | — | — | RPS 1 / lectura 1; cuerpo igual; Juego de canalón de plantilla presente |
 | cortes/2026/LOTE 27-06 (2).dxf | AR.26.02535/3 | — | — | x8 | No se encuentra un combinado completo igual, tramo a tramo y por herramienta. |
 
 ## 410170-0001

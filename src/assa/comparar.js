@@ -47,7 +47,12 @@ export function compararOperaciones(esperadas, reales, toleranciaMm = 1) {
   }, 0);
   const desviacionMm = Math.max(dirigida(a, b), dirigida(b, a));
   if (desviacionMm > toleranciaMm + 1e-7) diferencias.push('Forma, posición o herramienta de cortes y marcas distinta.');
-  if (b.some((p, i) => dirigida([p], b.filter((_, j) => i !== j)) < .01)) diferencias.push('El corte real contiene recorridos duplicados en una misma herramienta.');
+  // En las plantillas de 430129/430172, las marcas de refuerzo dejan rabillos de 3 mm en ROTULADOR
+  // (CM-PEN-Def en máquina) sin afectar nunca a DISCO1, DISCO2 ni CUTTER (Q-AS0711-05, 24/11/2026).
+  const esRabilloRotulador = p => p.capa === 'ROTULADOR' && p.tipo === 'raya' && Math.hypot(p.b[0] - p.a[0], p.b[1] - p.a[1]) <= 3.5;
+  if (b.some((p, i) => !esRabilloRotulador(p) && dirigida([p], b.filter((_, j) => i !== j)) < .01)) {
+    diferencias.push('El corte real contiene recorridos duplicados en una misma herramienta.');
+  }
   return { coincide: !diferencias.length, desviacionMm: Number.isFinite(desviacionMm) ? desviacionMm : null, diferencias };
 }
 

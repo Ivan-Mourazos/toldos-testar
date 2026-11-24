@@ -104,7 +104,8 @@ requieren algo más de margen de encuadre.
   430125-0002 y laterales 420102-0089 comparten otro conjunto; 420150-0021 y
   430127-0002 comparten otro. También están 430127-0014, 430172-0031,
   420148-0040 y 410171-0001 con todos sus dibujos y accesorios.
-- Palets 5 y 6: 410130-0175, con sus indicaciones de PVC 650 g negro y lonas de
+- Palets 5 y 6: 410130-0175, con sus indicaciones de PVC 900 g negro (la mención
+  inicial a 650 g era errata; todos los DWG y RPS confirman PVC 900 g negro) y lonas de
   otros espesores; no se convierte el grupo en PLASTEL por defecto.
 
 La revisión conserva giros, reflejos, contornos, empates/uniones dibujados,
@@ -286,9 +287,46 @@ de DWG con ODA a `tmp/assa-0711-historico/oficina-dxf/<año>/`. Los programas
 leen las copias, guardan la foto SELECT y el detalle en `tmp/` y regeneran las
 tablas con `--informe`.
 
+### Resolución con pedidos anteriores 2021–2026 (24/11/2026)
+
+Al ampliar el contraste a RPS 2021–2026 (`rps-historico-dudas.mjs`), los CMT de
+máquina (`analizar-cmt-duplicados.mjs`), los 30 lotes de `420102-0021`
+(`analizar-420102-0021.mjs`), los cortes de 2023–2026 y planos de cliente de las
+cortinas (`analizar-rps-cortinas.mjs`, `analizar-cortinas-0711.mjs`,
+`verificar-cuentas-q03.mjs`, `inspeccion-exacta-q03.mjs`) y los consumos reales
+imputados de las 25 OF ya fabricadas del 07-11 (`consumo-lote-0711.mjs`), quedan
+cerradas **Q-AS0711-02**, **Q-AS0711-03**, **Q-AS0711-04** y la parte automática
+de **Q-AS0711-05**:
+
+- **Habilitadas en la web (`420102-0021`, `430129-0002`, `430172-0005`, `430172-0034`):**
+  el 07-11 pasa de 9 a **5 líneas a mano** (`420148-0040`, que solo tiene un lote
+  fabricado, más las 4 cortinas multimaterial). El largo automático web sube de
+  `786,975 m` (16 líneas) a **853,398 m** (20 líneas).
+- **Largo total de rollo del lote 07-11 por material:**
+  - PLASTEL 2040 mm: **956,153 m** teóricos (20 automáticas `853,398 m` + `420148-0040`
+    `10,055 m` + cortinas `410129-0117` `30,600 m` y `410130-0175` `62,100 m`;
+    `963,266 m` con las piezas extra del 07-11) frente a **920,79 m** reales imputados
+    en RPS (`888,70 m` rollo + `32,09 m` restos).
+  - Lona 3 mm (1600 mm): **36,750 m** de cortinas + refuerzos de canalones (RPS:
+    `53,05 m` rollo + `3,00 m` restos).
+  - PVC 900 g negro (3000 mm): **4,537 m** teóricos (`410130-0175`, 112 tapas; RPS
+    `PANAMANE05P300`: `4,70 m`).
+  - Lona 2 mm (2100 mm): **5,948 m** teóricos (`410170-0001` + `410171-0001`,
+    `2 × 2,974 m`; RPS `MUCA76NEGRP210`: `6,40 m`).
+  - Lona 1 / 1,2 mm (1500 mm): **8,000 m** teóricos por separado; en el 07-11 cortado
+    de restos (RPS `RESTOMUELLEC1,2`: `1,09 m`).
+
 ```powershell
 node --env-file="C:/Users/ivan.sanchez/Documents/Proyectos DEV/toldos-testar/.env" scripts/assa-investigacion/rps-0711.mjs
 node scripts/assa-investigacion/contrastar-0711.mjs --informe
+node scripts/assa-investigacion/actualizar-validacion-dudas.mjs
+node --env-file="C:/Users/ivan.sanchez/Documents/Proyectos DEV/toldos-testar/.env" scripts/assa-investigacion/rps-historico-dudas.mjs
+node scripts/assa-investigacion/analizar-palets-historico.mjs
+node scripts/assa-investigacion/analizar-rps-cortinas.mjs
+node scripts/assa-investigacion/verificar-cuentas-q03.mjs
+node scripts/assa-investigacion/analizar-cmt-duplicados.mjs
+node scripts/assa-investigacion/analizar-420102-0021.mjs
+node --env-file="C:/Users/ivan.sanchez/Documents/Proyectos DEV/toldos-testar/.env" scripts/assa-investigacion/consumo-lote-0711.mjs --rps
 ```
 
 ## Verificación, capturas y reproducción

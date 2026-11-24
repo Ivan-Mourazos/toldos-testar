@@ -52,13 +52,22 @@ export function extraerPanos(modelo) {
       const clave = [x0, x1, y0, y1].map(red).join('|');
       if (vistos.has(clave)) continue;
       vistos.add(clave);
-      const medio = (x0 + x1) / 2, margen = (y1 - y0) * 0.1,
-        // La raya puede empezar o acabar un poco dentro del paño (en el 31-10, 2 cm por encima del orillo).
-        union = uniones.find(v => Math.abs(v.x - medio) < 1 && v.y0 <= y0 + margen + EPS && v.y1 >= y1 - margen - EPS);
-      if (union && medio - x0 > 2000) {
+      const margen = (y1 - y0) * 0.1;
+      // La raya puede empezar o acabar un poco dentro del paño (en el 31-10, 2 cm por encima del orillo).
+      // Se admiten parejas (2) y tiras triples (3, p. ej. 420102-0021 en 21-06-2025 y 03-10-2026).
+      const unionEn = x => uniones.find(v => Math.abs(v.x - x) < 1 && v.y0 <= y0 + margen + EPS && v.y1 >= y1 - margen - EPS);
+      const cortes = [2, 3].map(n => {
+        if ((x1 - x0) / n <= 2000) return null;
+        const us = Array.from({ length: n - 1 }, (_, k) => unionEn(x0 + (k + 1) * (x1 - x0) / n));
+        return us.every(Boolean) ? [x0, ...us.map(u => u.x), x1] : null;
+      }).find(Boolean);
+      if (cortes) {
         const orilloSuperior = !!h.orillo, orilloInferior = !hs.some(q => cerca(q.y, y0) && cubre(q, x0, x1));
-        for (const [a, b, u] of [[x0, union.x, [union.x]], [union.x, x1, [union.x]]]) {
-          panos.push({ caja: { x0: a, x1: b, y0, y1 }, medidasMm: [red(b - a), red(y1 - y0)], uniones: u, orilloSuperior, orilloInferior });
+        for (let k = 0; k < cortes.length - 1; k++) {
+          const a = cortes[k], b = cortes[k + 1];
+          const u = [k > 0 ? cortes[k] : null, k < cortes.length - 2 ? cortes[k + 1] : null].filter(v => v !== null);
+          panos.push({ caja: { x0: a, x1: b, y0, y1 }, medidasMm: [red(b - a), red(y1 - y0)], uniones: u,
+            tira: { x0, x1 }, orilloSuperior, orilloInferior });
         }
         continue;
       }
@@ -76,11 +85,12 @@ export function extraerPanos(modelo) {
   for (const p of panos) p.orilloDelConjunto = llegaAlOrillo(p);
   const grupos = new Map(), grupoDe = new Map();
   for (const p of [...panos].sort((a, b) => a.caja.x0 - b.caja.x0 || a.caja.y0 - b.caja.y0)) {
-    // El de la derecha de una pareja unida va con el de su izquierda: mismo rótulo y mismas repeticiones.
+    // El siguiente de una tira unida (de 2 o 3 paños) va con el de su izquierda: mismo rótulo y mismas repeticiones.
     const pareja = p.uniones.some(x => cerca(x, p.caja.x0)) && panos.find(q => cerca(q.caja.x1, p.caja.x0) && cerca(q.caja.y0, p.caja.y0) && cerca(q.caja.y1, p.caja.y1));
     if (pareja && grupoDe.has(pareja)) { grupos.get(grupoDe.get(pareja)).panos.push(p); grupoDe.set(p, grupoDe.get(pareja)); continue; }
     const { x0, x1, y0, y1 } = p.caja;
-    const interiores = titulos.filter(t => t.punto[0] >= x0 && t.punto[0] <= x1 && t.punto[1] > y0 && t.punto[1] < y1);
+    const rx0 = p.tira?.x0 ?? x0, rx1 = p.tira?.x1 ?? x1;
+    const interiores = titulos.filter(t => t.punto[0] >= rx0 && t.punto[0] <= rx1 && t.punto[1] > y0 && t.punto[1] < y1);
     // Un único código interior sirve de rótulo común de las sueltas contiguas.
     // Si hay códigos distintos, cada paño necesita su título propio.
     const pila = new Set([p]), pendientes = [p];
@@ -88,14 +98,14 @@ export function extraerPanos(modelo) {
       if (!pila.has(q)) { pila.add(q); pendientes.push(q); }
     }
     const techo = Math.max(...[...pila].map(q => q.caja.y1));
-    const interioresPila = titulos.filter(t => [...pila].some(q => t.punto[0] >= x0 && t.punto[0] <= x1 && t.punto[1] > q.caja.y0 && t.punto[1] < q.caja.y1));
+    const interioresPila = titulos.filter(t => [...pila].some(q => t.punto[0] >= rx0 && t.punto[0] <= rx1 && t.punto[1] > q.caja.y0 && t.punto[1] < q.caja.y1));
     const comun = new Set(interioresPila.map(t => codigoAssa(t.valor))).size === 1 ? interioresPila[0] : null;
-    const superiores = titulos.filter(t => t.punto[0] >= x0 && t.punto[0] <= x1 && t.punto[1] >= techo && t.punto[1] - techo < 700)
+    const superiores = titulos.filter(t => t.punto[0] >= rx0 && t.punto[0] <= rx1 && t.punto[1] >= techo && t.punto[1] - techo < 700)
       .sort((a, b) => a.punto[1] - b.punto[1]);
     const titulo = interiores.length === 1 ? interiores[0] : interiores.length ? null : comun ?? superiores[0];
     if (!titulo) continue;
-    const clave = [titulo.handle ?? modelo.indexOf(titulo), red(x0), red(x1)].join('|');
-    if (!grupos.has(clave)) grupos.set(clave, { codigo: codigoAssa(titulo.valor), titulo, x0, x1, panos: [], repeticiones: 1, multiplicador: null });
+    const clave = [titulo.handle ?? modelo.indexOf(titulo), red(rx0), red(rx1)].join('|');
+    if (!grupos.has(clave)) grupos.set(clave, { codigo: codigoAssa(titulo.valor), titulo, x0: rx0, x1: rx1, panos: [], repeticiones: 1, multiplicador: null });
     grupos.get(clave).panos.push(p);
     grupoDe.set(p, clave);
   }

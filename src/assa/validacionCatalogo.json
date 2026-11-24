@@ -2775,11 +2775,11 @@
             9660,
             966
           ],
-          "lineas": 31,
-          "cuadran": 4,
-          "geometria": 4,
-          "ultimaFecha": "2026-10-24",
-          "ultimaGeometria": false,
+          "lineas": 32,
+          "cuadran": 27,
+          "geometria": 27,
+          "ultimaFecha": "2026-11-07",
+          "ultimaGeometria": true,
           "nkValidado": false,
           "unidos": false,
           "pruebasUnidos": [],
@@ -2805,36 +2805,28 @@
           ]
         },
         "2025-03-29": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 1,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-05-10": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 1,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-06-21": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 1,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-08-30": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 1,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-09-13": {
           "coincide": true,
@@ -2859,20 +2851,16 @@
           ]
         },
         "2025-11-01": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 1,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-11-22": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 4,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-11-29": {
           "coincide": true,
@@ -2881,12 +2869,10 @@
           "motivos": []
         },
         "2025-12-06": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 1,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-01-10": {
           "coincide": true,
@@ -2895,20 +2881,16 @@
           "motivos": []
         },
         "2026-02-07": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 1,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-03-07": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 1,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-03-14": {
           "coincide": true,
@@ -2917,44 +2899,34 @@
           "motivos": []
         },
         "2026-04-18": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 1,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-04-25": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 2,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-05-02": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 2,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-06-06": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 1,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-06-13": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 4,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-06-27": {
           "coincide": false,
@@ -2966,52 +2938,46 @@
           ]
         },
         "2026-07-25": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 2,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-08-01": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 1,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-08-22": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 1,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-10-03": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 2,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-10-17": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 1,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-10-24": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 1,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
+        },
+        "2026-11-07": {
+          "coincide": true,
+          "cantidad": 1,
+          "forma": true,
+          "motivos": []
         }
       }
     },
@@ -7484,10 +7450,10 @@
             666
           ],
           "lineas": 32,
-          "cuadran": 23,
-          "geometria": 27,
-          "ultimaFecha": "2026-10-03",
-          "ultimaGeometria": false,
+          "cuadran": 24,
+          "geometria": 29,
+          "ultimaFecha": "2026-11-07",
+          "ultimaGeometria": true,
           "nkValidado": false,
           "unidos": false,
           "canalonValidado": false,
@@ -7554,8 +7520,6 @@
           "cantidad": 28,
           "forma": false,
           "motivos": [
-            "Cantidad agrupada: RPS 28; paños identificados × repeticiones 10.",
-            "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
             "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
           ]
         },
@@ -7657,7 +7621,7 @@
         "2026-07-18": {
           "coincide": false,
           "cantidad": 14,
-          "forma": false,
+          "forma": true,
           "motivos": [
             "Hay varios DXF de la misma fecha: no se supone que sean acumulables ni revisiones.",
             "Cantidad agrupada: RPS 14; paños identificados × repeticiones 18."
@@ -7685,13 +7649,17 @@
           ]
         },
         "2026-10-03": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 10,
-          "forma": false,
+          "forma": true,
+          "motivos": []
+        },
+        "2026-11-07": {
+          "coincide": false,
+          "cantidad": 18,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 10; paños identificados × repeticiones 4.",
-            "Las medidas del contorno real difieren más de 1 mm de la regla de la familia.",
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
+            "Cantidad agrupada: RPS 18; paños identificados × repeticiones 22."
           ]
         }
       }
@@ -9559,26 +9527,24 @@
             3503,
             991
           ],
-          "lineas": 18,
-          "cuadran": 3,
-          "geometria": 3,
-          "ultimaFecha": "2026-10-10",
-          "ultimaGeometria": false,
+          "lineas": 17,
+          "cuadran": 13,
+          "geometria": 14,
+          "ultimaFecha": "2026-11-07",
+          "ultimaGeometria": true,
           "nkValidado": false,
           "unidos": false,
           "pruebasUnidos": [],
-          "canalonValidado": false,
+          "canalonValidado": true,
           "terminadoMm": null
         }
       ],
       "fechas": {
         "2025-03-15": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 5,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-03-29": {
           "coincide": false,
@@ -9590,20 +9556,16 @@
           ]
         },
         "2025-05-31": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 8,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-06-07": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 5,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-09-13": {
           "coincide": true,
@@ -9612,12 +9574,10 @@
           "motivos": []
         },
         "2025-10-04": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 1,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-10-25": {
           "coincide": false,
@@ -9641,36 +9601,28 @@
           "motivos": []
         },
         "2026-01-17": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 5,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-03-07": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 1,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-04-25": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 1,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-06-13": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 2,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-06-27": {
           "coincide": false,
@@ -9682,20 +9634,16 @@
           ]
         },
         "2026-07-18": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 1,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-09-26": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 10,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-10-10": {
           "coincide": false,
@@ -9704,6 +9652,14 @@
           "motivos": [
             "No se ha identificado un paño rectangular con ese código en el lote.",
             "Cantidad agrupada: RPS 1; paños identificados × repeticiones 0."
+          ]
+        },
+        "2026-11-07": {
+          "coincide": false,
+          "cantidad": 1,
+          "forma": true,
+          "motivos": [
+            "Cantidad agrupada: RPS 1; paños identificados × repeticiones 2."
           ]
         }
       }
@@ -10299,11 +10255,11 @@
             10420,
             966
           ],
-          "lineas": 12,
-          "cuadran": 2,
-          "geometria": 2,
-          "ultimaFecha": "2026-09-26",
-          "ultimaGeometria": false,
+          "lineas": 13,
+          "cuadran": 7,
+          "geometria": 9,
+          "ultimaFecha": "2026-11-07",
+          "ultimaGeometria": true,
           "nkValidado": false,
           "unidos": false,
           "pruebasUnidos": [],
@@ -10321,10 +10277,9 @@
         "2025-05-10": {
           "coincide": false,
           "cantidad": 3,
-          "forma": false,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 3; paños identificados × repeticiones 2.",
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
+            "Cantidad agrupada: RPS 3; paños identificados × repeticiones 2."
           ]
         },
         "2025-09-13": {
@@ -10334,20 +10289,16 @@
           "motivos": []
         },
         "2025-11-08": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 4,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2025-11-22": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 1,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-03-21": {
           "coincide": false,
@@ -10369,10 +10320,9 @@
         "2026-05-02": {
           "coincide": false,
           "cantidad": 30,
-          "forma": false,
+          "forma": true,
           "motivos": [
-            "Cantidad agrupada: RPS 30; paños identificados × repeticiones 2.",
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
+            "Cantidad agrupada: RPS 30; paños identificados × repeticiones 2."
           ]
         },
         "2026-06-27": {
@@ -10385,20 +10335,22 @@
           ]
         },
         "2026-08-15": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 4,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
         },
         "2026-09-26": {
-          "coincide": false,
+          "coincide": true,
           "cantidad": 1,
-          "forma": false,
-          "motivos": [
-            "Hay ranuras, agujeros, marcas o herramientas que no coinciden con la regla."
-          ]
+          "forma": true,
+          "motivos": []
+        },
+        "2026-11-07": {
+          "coincide": true,
+          "cantidad": 4,
+          "forma": true,
+          "motivos": []
         }
       }
     },

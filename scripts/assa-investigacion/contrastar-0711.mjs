@@ -44,16 +44,6 @@ const generar = l => {
   return { ...g, programas: generarProgramas(g) };
 };
 
-function marcasDeTercio(pano) {
-  const [largo, alto] = pano.medidasMm;
-  return [largo / 3, 2 * largo / 3].flatMap(x => {
-    const marca = pano.operaciones.find(p => p.tipo === 'raya' && p.capa === 'ROTULADOR' &&
-      cerca(p.a[0], x) && cerca(p.b[0], x) && Math.min(p.a[1], p.b[1]) <= 21 &&
-      cerca(Math.max(p.a[1], p.b[1]), alto));
-    return marca ? [red(x)] : [];
-  });
-}
-
 for (const anio of [2025, 2026]) {
   for (const carpeta of ['cortes', 'oficina-dxf']) {
     const dir = path.join(base, carpeta, String(anio));
@@ -114,9 +104,13 @@ for (const anio of [2025, 2026]) {
         }));
         programas.push(...reales);
         for (const g of reales.filter(g => g.codigo === '420102-0021')) {
-          for (const p of g.panos.filter(p => cerca(p.medidasMm[0], 10830) && cerca(p.medidasMm[1], 666))) {
-            const marcas = marcasDeTercio(p);
-            if (marcas.length === 2) triples.push({ fichero, id: g.rotulo, medidasMm: p.medidasMm, marcas, repeticiones: g.repeticiones });
+          const filasTriples = Map.groupBy(g.panos.filter(p => p.tira && cerca(p.tira.x1 - p.tira.x0, 10830) && cerca(p.medidasMm[1], 666)), p => red(p.caja.y0));
+          for (const [, ps] of filasTriples) {
+            if (ps.length !== 3) continue;
+            const orden = [...ps].sort((a, b) => a.caja.x0 - b.caja.x0);
+            const x0 = orden[0].tira.x0;
+            triples.push({ fichero, id: g.rotulo, medidasMm: [10830, 666],
+              marcas: [red(orden[0].caja.x1 - x0), red(orden[1].caja.x1 - x0)], repeticiones: g.repeticiones });
           }
         }
         // Caras cerradas medidas en máquina. La proximidad al rótulo es solo una pista de atribución.
