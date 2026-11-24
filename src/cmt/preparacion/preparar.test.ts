@@ -117,3 +117,13 @@ it('captura el fallo al leer la fuente del MTEXT', () => {
   const r = preparar(t, { origen: 'dxf', tabla: {}, rutaFuente: 'fuente-que-no-existe.ttf' });
   expect(r.dudas[0].motivo).toMatch(/Arial/);
 });
+
+it('la vista previa lleva los textos del corte en mm y deja fuera los del plano (Iván, 24/11/2026)', () => {
+  const T = (capa: string, x: number, y: number, texto: string) => `0\nTEXT\n8\n${capa}\n10\n${x}\n20\n${y}\n40\n0.1\n1\n${texto}`;
+  const t = dxfPrueba({ entidades: [marco(0, 0, 10, 5), L('DISCO1', 1, 1, 4, 1), T('texto', 2, 2, 'A1'), T('ROTULADOR', 3, 3, 'B1'), T('texto', 20, 20, 'NOTA DEL PLANO')] });
+  const r = preparar(t, { origen: 'dwg', tabla: {} });
+  const textos = r.vista.filter(p => p.tipo === 'texto');
+  expect(textos.map(p => [p.capa, p.pares.find(([c]) => c === 1)?.[1]])).toEqual([['texto', 'A1'], ['ROTULADOR', 'B1']]);
+  expect(Number(textos[0].pares.find(([c]) => c === 40)?.[1])).toBeCloseTo(100);
+  expect(Number(textos[0].pares.find(([c]) => c === 10)?.[1])).toBeCloseTo(2000);
+});

@@ -3,16 +3,13 @@ import {fuenteCad} from './fuentes-cad.ts';
 import {anchoArial} from '../domain/corteLona/texto.js';
 import type {Fuente} from './fuente.ts';
 import type {Dxf,Duda,EntidadDxf,Punto} from './tipos.ts';
+import {caracteresCad} from './caracteres-cad.ts';
+export {caracteresCad};
 interface Formato {alto:number;ancho:number;tracking:number;oblicuo:number;fuente:string;bold:boolean;italic:boolean;base:number}
 export interface TrozoCad extends Formato {texto:string;fraccion?:{arriba:string;abajo:string;separador:string}}
 interface ParrafoCad {lineas:TrozoCad[][];alineaciones:(number|undefined)[];rayas:boolean;desconocidos:string[]}
 const rad=(n:number)=>n*Math.PI/180;
 const estilo=(e:EntidadDxf,d:Pick<Dxf,'styles'>)=>d.styles[value(e,7,'Standard')]??{};
-/** Controles de TEXT, también válidos dentro de MTEXT. Las rayas no se cortan. */
-export function caracteresCad(texto:string):string {
- return texto.replace(/\\U\+([a-f\d]{4})/gi,(_:string,n:string)=>String.fromCharCode(parseInt(n,16)))
-  .replace(/%%([cdpuo])/gi,(_:string,c:string)=>({c:'∅',d:'°',p:'±',u:'',o:''})[c.toLowerCase()]!);
-}
 /** Parser con pila de formatos y párrafos; 3/1 se concatenan antes de interpretar. */
 export function interpretarMtext(raw:string,alto:number,initial:Partial<Formato>={}):ParrafoCad {
  let f:Formato={alto,ancho:1,tracking:1,oblicuo:0,fuente:'',bold:false,italic:false,base:0,...initial};

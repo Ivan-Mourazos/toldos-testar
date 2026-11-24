@@ -19,7 +19,7 @@ export interface Pendientes { marcos?: Caja[]; cruces?: number; capas?: CapaDesc
 export interface ResultadoPreparacion {
   listo: boolean; dxf: string | null; escala: number | null; medidasMm: { ancho: number; alto: number } | null;
   pendientes: Pendientes; avisos: Duda[]; dudas: Duda[];
-  vista: (Pieza & { cruza?: boolean })[]; // Líneas y arcos en mm, para la vista previa.
+  vista: (Pieza & { cruza?: boolean })[]; // Líneas, arcos y textos del corte en mm, para la vista previa.
   capasNuevas: Record<string, Herramienta>; // decisiones de capa aplicadas, para guardar en la tabla
 }
 
@@ -29,7 +29,6 @@ const lado = (c: Caja) => Math.max(c.x1 - c.x0, c.y1 - c.y0);
 const r2 = (v: number) => Math.round(v * 100) / 100;
 const escalarCaja = (c: Caja, k: number): Caja => ({ x0: c.x0 * k, y0: c.y0 * k, x1: c.x1 * k, y1: c.y1 * k });
 const escalarPieza = (p: PiezaVista, k: number): PiezaVista => transformarPieza(p, [k, 0, 0, k, 0, 0]);
-const vistaDe = (piezas: PiezaVista[]) => piezas.filter(p => p.tipo !== 'texto');
 
 function insunits(d: Dxf): number | undefined {
   const cab = d.sections.HEADER?.[0]?.pairs ?? [];
@@ -136,8 +135,8 @@ export function preparar(dxfTexto: string, o: OpcionesPreparacion): ResultadoPre
 
     if (marcos.length > 1 && !marco) {
       pendientes.marcos = marcos.map(m => escalarCaja(m, k));
-      resultado.vista = vistaDe(h.piezas.filter(p => !noCorta(p.capa)
-        && marcos.some(m => clasificar(p, m, toleranciaDe(m)) !== 'fuera'))).map(p => escalarPieza(p, k));
+      resultado.vista = h.piezas.filter(p => !noCorta(p.capa)
+        && marcos.some(m => clasificar(p, m, toleranciaDe(m)) !== 'fuera')).map(p => escalarPieza(p, k));
       return resultado;
     }
 
@@ -158,7 +157,7 @@ export function preparar(dxfTexto: string, o: OpcionesPreparacion): ResultadoPre
     const asignadas = asignarCapas([...elegibles, ...simuladas], tabla, decisionesCapas, d.layers);
     if (asignadas.desconocidas.length) pendientes.capas = asignadas.desconocidas;
     const asignadasValidas = asignadas.piezas.filter(p => p.id.startsWith('e'));
-    resultado.vista = vistaDe(asignadasValidas);
+    resultado.vista = asignadasValidas;
     resultado.medidasMm = medidasDe(asignadasValidas);
     if (pendientes.cruces || pendientes.capas) return resultado;
     for (const { duda } of dudasIncluidas) dudas.push(duda);
@@ -173,13 +172,13 @@ export function preparar(dxfTexto: string, o: OpcionesPreparacion): ResultadoPre
       if (gana && grupo.capas.includes(gana)) elegidos[grupo.clave] = gana;
       else (pendientes.solapes ??= []).push(grupo);
     }
-    resultado.vista = vistaDe(unicas.piezas);
+    resultado.vista = unicas.piezas;
     resultado.medidasMm = medidasDe(unicas.piezas);
     if (pendientes.solapes) return resultado;
 
     const finales = aplicarSolapes(unicas.piezas, elegidos).filter(p => p.tipo === 'texto' || longitud(p) > 1e-6);
     resultado.medidasMm = medidasDe(finales);
-    resultado.vista = vistaDe(finales);
+    resultado.vista = finales;
     if (!finales.length) return vacio();
     if (Math.max(resultado.medidasMm?.ancho ?? 0, resultado.medidasMm?.alto ?? 0) > LARGO_MAXIMO_MM) {
       dudas.push({ motivo: 'Las piezas seleccionadas superan el tamaño máximo del corte. Revisa el marco y sus cruces.' });

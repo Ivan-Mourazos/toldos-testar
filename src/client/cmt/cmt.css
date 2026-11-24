@@ -104,6 +104,7 @@
 .cmt-taladro { --cmt-color: #a73d9a; }
 .cmt-texto { --cmt-color: #7352a3; }
 .cmt-cruce { --cmt-color: var(--cmt-solape); stroke-dasharray: 6 3; stroke-width: 2.5; }
+.cmt-letra { fill: var(--cmt-color, var(--text-muted)); stroke: none; font-family: Arial, Helvetica, sans-serif; white-space: pre; }
 .cmt-solape { --cmt-color: var(--cmt-solape); }
 :root[data-theme="dark"] .cmt-vista-corte { --cmt-solape: #f0a64c; }
 :root[data-theme="dark"] .cmt-disco1 { --cmt-color: #88a4ff; }
