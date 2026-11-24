@@ -1,12 +1,13 @@
 // Corte del remolque de ganado (docs/modelos/remolque-ganado.md): el juego de piezas de su plantilla tal como
 // se cortó a mano (economicoDatos.ts, del DXF del bot de AR2600752), como una sola pieza para el colocador:
-// así sus piezas siguen encajadas unas con otras como en el corte real. Con varias unidades, un juego con
-// «X2», «X3»…, que el cortador repite (AR2600752, cantidad 2).
+// así sus piezas siguen encajadas unas con otras como en el corte real. Para varias unidades del
+// económico se recuperan sus piezas sueltas y se colocan juntas (AR2605708).
 import { CORTE_ECONOMICO } from '../ganado/economicoDatos.ts';
 import { CORTE_ESTANDAR } from '../ganado/estandarDatos.ts';
 import { calcularMedidasCal } from '../ganado/medidas.ts';
 import { juegoCorteCal } from '../ganado/salidasCal.ts';
 import { RECTANGULOS_ESTANDAR_PENDIENTES } from '../ganado/estandarConfeccion.ts';
+import { piezasEconomico } from '../ganado/economicoPiezas.js';
 
 /** Iván, 27/10/2026: en el económico, los ollaos a 4,5 cm del borde de corte, como en sus cortes a mano. */
 export const OLLAO_AL_BORDE = 45;
@@ -48,7 +49,7 @@ export function piezaGanado(el) {
     rot: c.rot.map((l) => [...l]),
     numeros: [],
   };
-  // La OF y la cantidad, en el cuerpo, donde van en el corte real.
+  // La OF en el cuerpo. El estándar conserva la indicación histórica de repetir el juego.
   const cx = (c.cuerpo.x0 + c.cuerpo.x1) / 2, cy = (c.cuerpo.y0 + c.cuerpo.y1) / 2;
   p.textos = [
     ...(c.textos ?? []),
@@ -56,10 +57,17 @@ export function piezaGanado(el) {
       x: (r.x0 + r.x1) / 2, y: (r.y0 + r.y1) / 2, h: 40, valor: r.nombre,
     })) : []),
     { x: cx, y: cy + 200, h: 150, valor: el.of },
-    ...(cantidad > 1 ? [{ x: cx, y: cy - 250, h: 150, valor: `X${cantidad}` }] : []),
+    ...(el.input.ganado === 'REMOLCAR_ESTANDAR' && cantidad > 1 ? [{ x: cx, y: cy - 250, h: 150, valor: `X${cantidad}` }] : []),
   ];
   return p;
 }
 
+export function piezasGanado(el) {
+  const cantidad = Math.max(1, Math.round(el.input.cantidad || 1));
+  return el.input.ganado === 'REMOLCAR_ECONOMICO' && cantidad > 1
+    ? piezasEconomico(cantidad, el.of)
+    : [piezaGanado(el)];
+}
+
 /** Lo que se dice en la lista de lonas del corte. */
-export const descripcionGanado = (el) => `remolque de ganado ${el.input.largo}×${el.input.ancho}${(el.input.cantidad || 1) > 1 ? ` X${el.input.cantidad}` : ''}`;
+export const descripcionGanado = (el) => `remolque de ganado ${el.input.largo}×${el.input.ancho}${el.input.ganado !== 'REMOLCAR_ECONOMICO' && (el.input.cantidad || 1) > 1 ? ` X${el.input.cantidad}` : ''}`;

@@ -181,12 +181,13 @@ export function hojaGanado(i: GanadoInput, r: GanadoResult): CuerpoHoja {
   const estandar = i.ganado === "REMOLCAR_ESTANDAR";
   const cal = i.ganado === "CAL_MEDIDAS";
   const parcial = cal && r.incompleto;
+  const corteConjunto = i.ganado === "REMOLCAR_ECONOMICO" && cantidad > 1;
   const piezasColumna = estandar ? r.piezas.filter(p => !p.nombre.toLowerCase().includes('stock')) : r.piezas;
   return {
     banda: [
       { titulo: "MODELO", lineas: [oRaya(r.modelo)], notas: [i.ganado === "CAL_MEDIDAS" ? "POR MEDIDAS · EXTERIOR DEL ARCO" : "SEGÚN PLANTILLA DE LA OFICINA"] },
-      { titulo: parcial ? "PIEZAS CALCULADAS" : "JUEGOS A CORTAR", lineas: [cantidad === 1 ? "1 JUEGO" : `1 JUEGO · X${cantidad}`], notas: parcial ? [r.recogidas ? 'PARCIAL · REVISAR RECOGIDAS' : 'PARCIAL · FALTA LA PUERTA'] : cantidad > 1 ? [`EL CORTADOR LO REPITE ${cantidad} VECES`] : [] },
-      { titulo: parcial ? "LARGO PARCIAL DE ROLLO" : "LARGO DE ROLLO", lineas: [`${fmt(r.largoJuego)} CM POR JUEGO`], notas: [`OCUPA ${fmt(r.anchoJuego)} DE ANCHO`] },
+      { titulo: parcial ? "PIEZAS CALCULADAS" : "JUEGOS A CORTAR", lineas: [corteConjunto ? `${cantidad} JUEGOS` : cantidad === 1 ? "1 JUEGO" : `1 JUEGO · X${cantidad}`], notas: parcial ? [r.recogidas ? 'PARCIAL · REVISAR RECOGIDAS' : 'PARCIAL · FALTA LA PUERTA'] : cantidad > 1 && !corteConjunto ? [`EL CORTADOR LO REPITE ${cantidad} VECES`] : [] },
+      { titulo: parcial ? "LARGO PARCIAL DE ROLLO" : corteConjunto ? "PLANTILLA" : "LARGO DE ROLLO", lineas: [`${fmt(r.largoJuego)} CM POR JUEGO`], notas: [`OCUPA ${fmt(r.anchoJuego)} DE ANCHO`] },
     ],
     grupos: [
       {

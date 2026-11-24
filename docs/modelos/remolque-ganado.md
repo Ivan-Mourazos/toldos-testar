@@ -21,8 +21,8 @@ Los datos salen por script de los originales: `node scripts/ganado/extraer-econo
 | Piezas: cuerpo 196 × 280 (corte 198 × 287), trasero, zona en cuña, frente con ventana 50 × 35, tapa 53 × 38 y dos solapas de 12,5 | Plantilla y corte real |
 | El contorno lleva 7 cm más: 3,5 en cada borde | Iván, 23/10/2026 |
 | Ollaos a 4,5 cm del borde de corte, como en los cortes a mano (la regla general de 4 cm del 23/10 no se aplica al económico) | Iván, 27/10/2026 |
-| Varias unidades: un juego con «X2», «X3»…, que el cortador repite | Corte real de AR2600752 (cantidad 2) |
-| El corte es un solo bloque de 633,5 × 216,5, con el orillo abajo; si no va pegado al orillo, lleva también ese corte | Corte real; `src/remolques/corte/ganado.js` |
+| Una unidad del económico conserva el corte de plantilla como un bloque de 633,5 × 216,5, con el orillo abajo. Si se separa del orillo, se cierra ese borde | Corte real de AR2600752, en `src/remolques/corte/ganado.js` |
+| Varias unidades del económico: se colocan juntas todas las piezas enteras, con nombre y OF en cada pieza. Se recuperan las aristas compartidas y los bordes del orillo para mover las piezas conservando su forma | Iván, 24/11/2026, AR2605708. El corte histórico de AR2600752 llevaba un juego con «X2» |
 | La cantidad sale de RPS; el «X2» de AR2601976 era una nota arrastrada | Iván, 23/10/2026 |
 | NS86 cuenta como PVC 580 | Iván, 23/10/2026 |
 | Se comprueban los arcos del remolque antes de cortar: la tarjeta avisa mientras no se marca, pero no bloquea | Iván, 23/10/2026 |
@@ -56,7 +56,7 @@ web con los del pedido. Resultado con AR2600752:
 - Diferencias: ninguna en ollaos (a 4,5 cm, como a mano, desde el 27/10); el texto del material va
   resumido, como en los demás remolques («LONA PVC 580 GRIS CLARO 7038» por «LONA NS86 630 GRIS 7038»).
 - AR2601976 se cortó a mano junto con piezas de otra OF y tiras de stock, con la zona en cuña colocada de otra forma.
-  La web corta siempre el juego como en AR2600752: mismas piezas y el mismo largo, 6,34 m.
+  El corte de una unidad conserva la colocación de AR2600752 y sus 6,34 m de rollo.
 
 ## Remolcar estándar 300 × 160 (AR2601847)
 
