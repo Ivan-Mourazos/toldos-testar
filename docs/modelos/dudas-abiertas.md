@@ -150,26 +150,39 @@ derecha, otras pilas de tres y de una unidad. RPS pide 18. ¿Son alternativas de
 cortar también esas sueltas? Mientras tanto, la web conserva todos los dibujos y rótulos del definitivo,
 pero no da por demostradas 22 unidades ni las convierte en stock.
 
-**Q-AS0711-02 · contestada (Tamara, 05/11/2026): «hay que mirar cómo se distribuye en RPS»**: el reparto entre palet 5 y 6 sale de RPS (pendiente de leerlo de ahí).  La 410130-0175, 54 unidades de AR.26.05142/4, está bajo «PALET 5 y 6». ¿Cuántas
-van en cada uno? Mientras tanto, el documento mantiene «5 y 6», sin repartirlas por la mitad. El campo
-manual de palet de la pantalla sigue admitiendo un solo número; el reparto doble está en la revisión de oficina.
+**Q-AS0711-02 · contrastada con RPS (24/11/2026).** Tamara indicó que se mirara en RPS.
+La lista de expedición PL0000793 tiene las 54 unidades de AR.26.05142/4 en el
+palet 5 y el DWG dice «PALET 5 y 6». ¿El 6 fue un grupo de corte que se juntó
+después en el palet 5? Si hay que separar la preparación de las 54 unidades,
+¿dónde está anotada la cantidad de cada grupo? La revisión conserva «5 y 6».
 
 **Q-AS0711-03 · sigue abierta (Tamara, 05/11/2026: «ni idea»).**  En las cortinas y los accesorios de lona de 1, 2 y 3 mm, ¿qué cantidad de cada pieza
 corresponde a una unidad y qué repetición se aplica al juego? Por ejemplo, la superior 410129-0117 lleva
 «X8» para un pedido de 27. Mientras tanto, el papel nuevo muestra las cantidades de RPS y los rótulos
 de repetición por separado: no afirma que ocho dibujos sean ocho cortinas ni inventa la cuenta restante.
 
+**Contraste del 24/11/2026.** El 07-11 de la 410129-0117 lleva «X8» junto a
+PLASTEL y «X5» junto a 3 mm para las 27 unidades. ¿Qué piezas salen de cada
+repetición y qué sueltas completan la cuenta? Para la 410130-0175, ¿cuándo se
+usa PVC de 650 g o de 900 g, y cuántas piezas de cada material lleva un
+lateral? Para 410170-0001 y 410171-0001, ¿cuántas solapas de 1 mm y cuántas
+piezas de 2 mm van en cada mano? Los consumos RPS son por OF y las cantidades
+de los rótulos cambian entre zonas del programa.
+
 **Q-AS0711-04.** Para cerrar el largo real de rollo del lote completo, falta saber qué alternativas de
 corte se usan y qué repeticiones/materiales corresponden a los juegos manuales. Mientras tanto, se
 conserva la colocación exacta de oficina; la web solo puede sumar de forma certificada los programas
 automáticos de sus 16 líneas, 786,975 m. Esa suma parcial no es el consumo total del lote.
 
-**Q-AS0711-05.** Siguen sin regla automática contrastada 410129-0117, 410130-0175, 420102-0021,
-420148-0040, 430129-0002, 430172-0005, 430172-0034, 410170-0001 y 410171-0001. ¿Qué juego completo
-debe conservarse como plantilla para futuros pedidos, incluidos materiales y cantidades? Mientras tanto,
-el 07-11 reproduce sus dibujos exactos; si cambian referencia, descripción, cantidad, OF, palet o la opción
-de sueltas, se retira esa revisión y se mantienen las comprobaciones normales. No se habilitan referencias
-nuevas solo por haber copiado su dibujo.
+**Q-AS0711-05 · contrastada (24/11/2026).** Siguen a mano las nueve referencias.
+Para 420102-0021, ¿cuándo se envarillan tres seguidas como el 21-06 y el 03-10 y qué
+indica que hay que cortar las cuatro sueltas adicionales del 07-11? Para
+430129-0002, 430172-0005 y 430172-0034, ¿las pasadas superpuestas de los
+cuerpos se ejecutan dos veces en máquina o vienen de copias del plano?
+420148-0040 tiene un solo lote fabricado contrastable. Las cuatro referencias
+de cortinas y laterales especiales quedan pendientes de las cantidades de
+Q-AS0711-03. El 07-11 reproduce sus dibujos exactos. Si cambian referencia,
+descripción, cantidad, OF, palet u opción de sueltas, se retira esa revisión.
 
 ## Embudo · contraste del planteamiento CAD (03/11/2026)
 

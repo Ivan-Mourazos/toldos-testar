@@ -186,6 +186,101 @@ Se mantienen las fórmulas, parejas y reducción a 680 ya documentadas en
 [assa-combursa.md](./assa-combursa.md) y [assa-combursa-lotes.md](./assa-combursa-lotes.md).
 Las cinco dudas concretas están en [dudas-abiertas.md](./dudas-abiertas.md#combursa--lote-07-11-03112026).
 
+## Contraste con fabricación y expedición (24/11/2026)
+
+Las [tablas generadas del contraste](./assa-combursa-contraste-0711.md) recogen las
+nueve referencias, todos los archivos de lote 2025–2026 disponibles en las dos
+carpetas, los pedidos y OF, las medidas, los rótulos, los consumos imputados y las
+diferencias de herramienta. El cotejo de reglas usa solo OF con fin real y lotes
+fechados hasta el día de la consulta. Un rótulo en el archivo puede proceder de
+una copia histórica. La fecha pedida de RPS puede diferir de la del archivo.
+
+### Palets de expedición y del corte
+
+RPS enlaza `FACPackingListBoxDetailSL` a la línea del pedido directamente o por
+`FACDeliveryNoteLineSL`. El detalle da la cantidad y
+`FACPackingListBoxSL` guarda el número y el comentario del bulto. La cabecera
+`FACPackingListSL` identifica la lista. En AR.26.05142/4 hay un albarán
+AR26/04962 de 54 unidades y un único detalle de 54 en «PALET 5» de PL0000793.
+La lista enumera cinco palets y figura sin cerrar. El comentario de línea y
+de albarán es ROBA011505.
+La OF 0233209 tiene 54 unidades, con notas vacías y sin entrada en
+`tgm_detalles_paquetes_olanet` en la consulta inicial. El reparto del corte
+«PALET 5 y 6» del DWG sigue sin cantidades por palet.
+
+En el 22-08 de 2026, el plano escribe 45 unidades en cada palet 2 y 3 y RPS
+registra ese mismo 45/45 para AR.26.03639/3. AR.26.03453/12 y /11 tienen repartos
+13/13 en RPS, en listas distintas, para sus líneas izquierda y derecha. El DXF
+del 25-07 contiene zonas con «PALET 1 13 uds», «PALET 2 13 uds», «PALET 3 13 uds»
+y «PALET 4 13 uds». El rótulo de zona por sí solo no identifica la línea.
+También hay un desacuerdo de un solo palet en el 07-11: para AR.26.05263/1
+(410170-0001), RPS registra palet 4 y el plano, palet 3. La web conserva la
+asignación de corte de la revisión y el campo de palet manual.
+
+### Referencias y cantidades
+
+- **420102-0021.** El lateral de 3610 × 666 mm (NH − 190 por NT + 66)
+  cuadra en geometría por paño y cantidad total en varios lotes.
+  Las tiras de 10830 × 666 mm, con marcas a 3610 y 7220 mm, explican otros dos
+  lotes. En el 21-06 de 2025 hay tres tiras con «X3» y una suelta
+  para las 28 unidades de AR.25.02778/1. En el 03-10 de 2026 hay tres
+  tiras y una suelta para las diez unidades de AR.26.04399/1. El 05-07 de
+  2025 usa una pila de tres paños sin unir con «x9» y uno suelto para
+  las 28 unidades de AR.25.02994/1. En el 07-11 hay
+  18 unidades en parejas y cuatro sueltas que Tamara confirma que se
+  cortan. La descripción RPS es la misma y la cantidad no permite elegir
+  la preparación. El lector de parejas y la web solo manejan una unión central.
+- **420148-0040.** Un único caso fabricado, AR.26.05240/3. El cuerpo de
+  10055 × 961 mm cuadra a ±1 mm con NB + 2NH + 5 por NT + 61 usando las
+  medidas base de RPS. La OF solo tiene macarrón imputado en esta foto.
+- **430129-0002, 430172-0005 y 430172-0034.** Coinciden las medidas nominales
+  de 3503 × 991, 9660 × 966 y 10420 × 966 mm en varios cortes. El 07-11 tiene
+  los tres juegos de canalón de la plantilla. Los cuerpos presentan pasadas
+  duplicadas en ese lote y en otros, con la misma descripción RPS que los
+  cortes que sí coinciden. Para 430129-0002 el lector atribuye dos cuerpos a
+  una unidad en el 07-11. Se mantiene la comprobación de multiplicidad.
+- **410129-0117.** RPS registra 12, 6 y 27 unidades. El cuerpo candidato de
+  PLASTEL mide 2000 × 900 y el refuerzo de 3 mm, aproximadamente 2000 × 300.
+  En maqcorte, el 13-09 de 2025 divide el conjunto de 6000 × 1800 en
+  tres columnas y dos filas de PLASTEL (6 cuerpos para 6 uds de AR.25.04275/1).
+  Cerca hay tres caras de 2000 × 300. El 07-11 sitúa «X8» sobre una fila con
+  cuatro contornos de PLASTEL de 2000 × 900 y «X5» en la zona de 3 mm.
+  Aplicar «X8» a los cuatro daría 32 cuerpos para un pedido de 27.
+  El dibujo de 26-07 de 2025
+  contiene «x6», con fecha distinta de la línea de 12 unidades pedida
+  para el 09-08. Falta una cuenta por material que cuadre con el pedido
+  en varios lotes.
+- **410130-0175.** El contorno candidato de 2300 × 900, las piezas de
+  2250 × 300 y los rótulos «PVC 900 GR NEGRO» y «LONA 3 MM» reaparecen.
+  El 09-08 y el 13-09 de 2025 dibujan dos cuerpos especulares por juego,
+  con un entrante de 50 mm, idénticos en medidas y marcas. «x12» y «x6»
+  dan las 24 y 12 unidades pedidas de cuerpo, respectivamente.
+  Los juegos de otros materiales requieren su propia cuenta. Para 54,
+  el DWG definitivo tiene «x2» y «x8» en las zonas
+  próximas y el DXF auxiliar tiene «x2» y «x10». La revisión del definitivo
+  también recoge la indicación de PVC 650 g. RPS imputa PLASTEL, lona de
+  3 mm y restos PVC en 2025, y PLASTEL, lona de 3 mm y PANAMA 900 en el
+  07-11. Los consumos imputados son totales por OF.
+- **410170-0001 y 410171-0001.** Hay tres OF terminadas por referencia,
+  con 1, 26 y 1 unidades. El 23-08 de 2025, el 25-07 de 2026 y el 07-11
+  repiten indicaciones de 1 y 2 mm y una cara de 370 × 447,749 mm
+  en ambos lados. Las zonas de 26 unidades llevan «X26» junto a lona de
+  2 mm y «X4» o «X8» en zonas vecinas. Las formas compuestas y el cambio
+  de consumos entre OF impiden contar el juego completo por mano.
+
+Para reproducir la foto, copia los `LOTE*.dwg` de `Oficina Tecnica\<año>\COMBURSA`
+a `tmp/assa-0711-historico/oficina/<año>/`, y los `LOTE*.dxf` y `LOTE*.cmt`
+de `maqcorte\<año>\COMBURSA` a `tmp/assa-0711-historico/cortes/<año>/`.
+Ambas carpetas de origen están en el recurso `Oftecnica`. Convierte las copias
+de DWG con ODA a `tmp/assa-0711-historico/oficina-dxf/<año>/`. Los programas
+leen las copias, guardan la foto SELECT y el detalle en `tmp/` y regeneran las
+tablas con `--informe`.
+
+```powershell
+node --env-file="C:/Users/ivan.sanchez/Documents/Proyectos DEV/toldos-testar/.env" scripts/assa-investigacion/rps-0711.mjs
+node scripts/assa-investigacion/contrastar-0711.mjs --informe
+```
+
 ## Verificación, capturas y reproducción
 
 SHA-256 del DXF definitivo:
@@ -238,6 +333,6 @@ node scripts/capturar-combursa-0711.mjs --fuente=<carpeta-copias>/lote-0711.dxf
 ```
 
 Para contrastar la salida ordinaria: `planoDelLote(lote, { usarRevisionOficina: false })`.
-No se ha llamado a borrador, confirmar ni envío del servidor de producción. No hay push,
-merge ni despliegue. No se ha probado máquina ni impresión física, el reparto 5/6,
-la cuenta final de accesorios ni el consumo completo por material; siguen abiertos.
+La verificación del 03/11 se hizo con copias. Siguen pendientes la prueba en
+máquina e impresión física, la cantidad por grupo de corte del 5/6, la cuenta
+final de accesorios y el consumo completo por material.
