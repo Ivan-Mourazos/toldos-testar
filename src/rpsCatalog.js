@@ -3,6 +3,7 @@ import { config } from './config.js';
 import { rankFabricMatches } from './domain/fabricSearch.js';
 import { inferRollWidth, inferFabricDetails } from './domain/fabricRps.js';
 import { medirConsultas } from './medir-consultas.js';
+import { normalizeOf } from './reviewRules.js';
 
 // Cada consulta a RPS queda apuntada con su tiempo en .logs/consultas-sql
 // (petición de IT, 20/11/2026). El informe está en coordina-ot: `pnpm consultas-sql`.
@@ -327,4 +328,58 @@ export async function queryRpsFabricReserveRows() {
     WHERE r.CodCompany = @company AND pf.Description = 'LONA';
   `);
   return result.recordset;
+}
+
+// OF del pedido y códigos de lona asignados o reservados por Almacén. La reserva
+// toma el artículo de la bobina, que puede ser distinto del material asignado.
+export async function getRpsStockPlano(pedido) {
+  const pool = await getPool();
+  const { recordset } = await pool.request()
+    .input('company', sql.VarChar(10), config.db.company)
+    .input('pedido', sql.VarChar(40), pedido)
+    .query(`
+    WITH ordenes AS (
+      SELECT DISTINCT mo.IDManufacturingOrder, mo.CodManufacturingOrder AS [of], c.Description AS cliente
+      FROM dbo.FACOrderSL o
+      LEFT JOIN dbo.FACCustomer c ON c.IDCustomer = o.IDCustomer AND c.CodCompany = o.CodCompany
+      LEFT JOIN dbo.FACOrderLineSL l ON l.IDOrder = o.IDOrder AND l.CodCompany = o.CodCompany
+      LEFT JOIN dbo.CPRManufacturingOrder mo ON mo.IDManufacturingOrder = l.IDManufacturingOrder AND mo.CodCompany = l.CodCompany
+      WHERE o.CodCompany = @company
+        AND REPLACE(REPLACE(REPLACE(UPPER(o.CodOrder), '.', ''), '/', ''), '-', '') = @pedido
+    ), materiales AS (
+      SELECT t.IDManufacturingOrder, m.IDMOMaterial, m.IDArticle
+      FROM ordenes o
+      JOIN dbo.CPRMOTask t ON t.IDManufacturingOrder = o.IDManufacturingOrder AND t.CodCompany = @company
+      JOIN dbo.CPRMOMaterial m ON m.IDMOTask = t.IDMOTask AND m.CodCompany = @company
+    ), articulos AS (
+      SELECT m.IDManufacturingOrder, m.IDArticle, 1 AS asignada, 0 AS reservada FROM materiales m
+      UNION ALL
+      SELECT m.IDManufacturingOrder, s.IDArticle, 0, 1
+      FROM materiales m
+      JOIN dbo.STKStockReserve r ON r.ItemType = 5 AND r.IDItem = m.IDMOMaterial AND r.CodCompany = @company AND r.Quantity > 0
+      JOIN dbo.STKStock s ON s.IDStock = r.IDStock AND s.CodCompany = @company
+    ), lonas AS (
+      SELECT x.IDManufacturingOrder, a.CodArticle AS codigo, a.Description AS descripcion,
+        MAX(x.asignada) AS asignada, MAX(x.reservada) AS reservada
+      FROM articulos x
+      JOIN dbo.STKArticle a ON a.IDArticle = x.IDArticle AND a.CodCompany = @company
+      JOIN dbo.GENProductFamily pf ON pf.IDProductFamily = a.IDProductFamily AND pf.CodCompany = @company
+      WHERE pf.Description = 'LONA'
+      GROUP BY x.IDManufacturingOrder, a.CodArticle, a.Description
+    )
+    SELECT o.[of], o.cliente, l.codigo, l.descripcion, l.asignada, l.reservada
+    FROM ordenes o LEFT JOIN lonas l ON l.IDManufacturingOrder = o.IDManufacturingOrder
+    ORDER BY o.[of], l.codigo;
+  `);
+  const ordenes = new Map();
+  for (const fila of recordset) {
+    const of = normalizeOf(fila.of);
+    if (!/^\d{7,9}$/.test(of)) continue;
+    if (!ordenes.has(of)) ordenes.set(of, { of, telas: [] });
+    if (fila.codigo) ordenes.get(of).telas.push({
+      codigo: fila.codigo.trim().toUpperCase(), descripcion: String(fila.descripcion ?? '').trim(),
+      asignada: Boolean(fila.asignada), reservada: Boolean(fila.reservada),
+    });
+  }
+  return { cliente: String(recordset[0]?.cliente ?? '').trim(), ordenes: [...ordenes.values()] };
 }

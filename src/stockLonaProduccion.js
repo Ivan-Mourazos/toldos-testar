@@ -7,7 +7,8 @@ import { CODIGO_RPS } from './remolques/stockMaterial.ts';
 /** @typedef {import('./stockLona.js').LineaLona} LineaLona */
 /** @typedef {import('./stockLona.js').FaltaLona} FaltaLona */
 /** @typedef {import('./stockLona.js').NecesidadLona} NecesidadLona */
-/** @typedef {{ pedido: string, entrega: number | null, cliente: string, ofs: string[], consultadoPor: string | null }} PedidoStockLona */
+/** @typedef {{ pedido: string, entrega: number | null, cliente: string, ofs: string[], consultadoPor: string | null,
+ * origen?: 'plano-manual' }} PedidoStockLona */
 /** @typedef {PedidoStockLona & { lonas: NecesidadLona[], faltas: FaltaLona[], consultado: string }} DatosStockLona */
 /** @typedef {{ stock: { reset: () => void, getStock: (codigos: string[], opciones?: { ofs?: string[] }) => Promise<{ code: string, metros?: number, reservado?: number, reservadoPropio?: number, disponible: number }[]> },
  * coordina: { enviarStockLona: (datos: DatosStockLona) => Promise<{ ok: boolean, motivo?: string }> }, now?: () => Date,
@@ -52,8 +53,8 @@ async function validarLonasAprobadas(lonas, aprobadas, ofsEntrega, resolverTela)
   }));
 }
 
-/** @param {ServiciosStockLona & { lineas: LineasStock, lonasAprobadas?: unknown }} opciones @param {string[]} ofs */
-async function consultarStock({ lineas, lonasAprobadas, stock, resolverTela, now = () => new Date() }, ofs) {
+/** @param {ServiciosStockLona & { lineas: LineasStock, lonasAprobadas?: unknown, ofsStock?: string[] }} opciones @param {string[]} ofs */
+async function consultarStock({ lineas, lonasAprobadas, stock, resolverTela, ofsStock, now = () => new Date() }, ofs) {
   let propuesta;
   try {
     propuesta = necesidadesLona(typeof lineas === 'function' ? await lineas() : lineas);
@@ -65,7 +66,7 @@ async function consultarStock({ lineas, lonasAprobadas, stock, resolverTela, now
   try {
     if (!lonas.length) return { lonas, ...sinConsulta(), consultado: propuesta.length ? now().toISOString() : null };
     stock.reset();
-    const disponible = await stock.getStock(lonas.map(lona => lona.codigo), { ofs });
+    const disponible = await stock.getStock(lonas.map(lona => lona.codigo), { ofs: ofsStock ?? ofs });
     const consultado = now().toISOString();
     const faltas = faltasLona(lonas, disponible);
     return { lonas, consultado, faltas, avisos: textoAvisoStock(faltas) };
@@ -91,7 +92,7 @@ async function informarStock(pedido, { lonas, consultado, faltas, avisos }, coor
     let motivo;
     try {
       const respuesta = await coordina.enviarStockLona(datos);
-      if (respuesta.ok) return { consultado, faltas, avisos };
+      if (respuesta.ok) return { consultado, faltas, avisos, ...(pedido.origen && { enviado: true }) };
       motivo = respuesta.motivo;
     } catch (error) {
       motivo = error instanceof Error ? error.message : String(error);
@@ -103,8 +104,9 @@ async function informarStock(pedido, { lonas, consultado, faltas, avisos }, coor
 }
 
 /** @param {PedidoStockLona & Parameters<typeof consultarStock>[0]} opciones */
-export async function comprobarStockLona({ pedido, entrega, cliente, ofs, consultadoPor, ...opciones }) {
-  return informarStock({ pedido, entrega, cliente, ofs, consultadoPor }, await consultarStock(opciones, ofs), opciones.coordina);
+export async function comprobarStockLona({ pedido, entrega, cliente, ofs, consultadoPor, origen, ...opciones }) {
+  const consulta = await consultarStock(opciones, ofs);
+  return informarStock({ pedido, entrega, cliente, ofs, consultadoPor, ...(origen && { origen }) }, consulta, opciones.coordina);
 }
 
 /** Consulta antes de publicar las reservas. Solo deja constancia en CoordinaOT al cerrar la entrega.

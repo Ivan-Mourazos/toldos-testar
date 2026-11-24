@@ -6,6 +6,7 @@ import { preparar as prepararPlano } from './cmt/preparacion/index.ts';
 import { HERRAMIENTAS } from './cmt/preparacion/tipos.ts';
 import { esObjeto } from './cmtTablaCapas.js';
 import { lineaDuda, textoDxf } from './cmtPiloto.js';
+import { detectarStockPlano } from './cmtStockLona.js';
 
 const MAX_DXF = 30 * 1024 * 1024;
 const ERROR_TAMANO = 'El DXF supera el máximo de 30 MB por fichero.';
@@ -73,11 +74,11 @@ function errorPeticion(error, _req, res, _next) {
 export function registrarRutasCmtHerramienta(app, { convertir = dxfACmt, preparar = prepararPlano, oda, tablaCapas, planos } = {}) {
   app.post('/api/cmt/preparar', express.json({ limit: '41mb' }), async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
-    const { nombre, archivoBase64, decisiones = {}, sinTextos = false, generar = false, huella } = req.body ?? {};
+    const { nombre, carpeta = '', archivoBase64, decisiones = {}, sinTextos = false, generar = false, huella } = req.body ?? {};
     const tipo = typeof nombre === 'string' && nombre.length <= 1024 && /\.(dwg|dxf)$/i.exec(nombre)?.[1]?.toLowerCase();
     if (!tipo || typeof archivoBase64 !== 'string' || !archivoBase64
       || typeof sinTextos !== 'boolean' || typeof generar !== 'boolean' || (huella !== undefined && (typeof huella !== 'string' || !/^[0-9a-f]{64}$/.test(huella)))
-      || !decisionesValidas(decisiones)) {
+      || typeof carpeta !== 'string' || carpeta.length > 2048 || !decisionesValidas(decisiones)) {
       return res.status(400).json({ ok: false, error: 'Elige un fichero DWG o DXF y revisa las decisiones del corte.' });
     }
     if (archivoBase64.length > Math.ceil(MAX_DXF / 3) * 4) return res.status(413).json({ ok: false, error: ERROR_TAMANO });
@@ -111,6 +112,7 @@ export function registrarRutasCmtHerramienta(app, { convertir = dxfACmt, prepara
       }
       if (tablaCapas && Object.keys(r.capasNuevas).length) await tablaCapas.guardar(r.capasNuevas);
       return res.json({ ...salida, listo: true, nombreDxf: `${base}.dxf`, nombreCmt: `${base}.cmt`,
+        stockLona: detectarStockPlano(nombre, carpeta, r),
         dxfBase64: limpio.toString('base64'), cmtBase64: c.cmt.toString('base64'),
         resumen: resumirObjetos(c.objetos), avisos: [...new Set([...salida.avisos, ...avisosLegibles(c.avisos)])] });
     } catch (error) {
