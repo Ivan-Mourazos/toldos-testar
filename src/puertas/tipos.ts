@@ -92,6 +92,10 @@ export interface Puerta {
     anchoEt: number; // cm de corte
     lona: 'pvc' | 'rejilla';
     materialEt: 'LAC650' | 'LAC900'; // Solo para las tiras aparte de la rejilla.
+    arriba?: 'varilla' | 'bastilla';
+    bastillaArriba?: number | null; // cm de aumento sobre el doblez.
+    soldaduraEt?: number | null; // cm de soldadura en cada borde de la E.T.
+    ventanal?: { tramo: number }; // Tramo entre E.T., numerado desde abajo.
     varilla?: 'blanca' | 'negra'; // Varilla de arriba: blanca 5,5 o negra 4,5; la web la pregunta.
     cierreBajo: number; // cm de lona por debajo del bajo terminado (Q-TGM05)
     marcaCierre: number; // cm desde el borde del corte (Q-TGM05)
@@ -101,6 +105,7 @@ export interface Puerta {
     soldadura?: number | null;
     abajo: 'tubo' | 'saco' | 'envolvente'; // La medida del saco se guarda en enrollable.saco.
     grosor: number; // mm
+    cotasHoja?: number[] | null; // cm de centro a centro, de abajo arriba.
     tubosManual: number[] | null; // mm desde el perfil; null para reparto automático
     ajustes: { margen: number; desvio: number; altoPerfil: number; anchoPerfil: number; anguloPerfil: number }; // mm y grados
   };

@@ -10,13 +10,13 @@ import { calcularAraujo } from './araujo.ts';
 import { calcularBelts } from './belts.ts';
 import { calcularPuertasLuz } from './puertasluz.ts';
 import { calcularSantaPau } from './santapau.ts';
-import { abajoRejillaTgm, calcularTgm, envoltorioTgm } from './tgm.ts';
-import { fichaDePuerta } from './clientes.ts';
-import { anchoCristalVentanal, EXTRA_CACHO_VENTANAL, panoContinuoEnrollable, SOLAPE_VENTANAL, ventanalesEnrollable } from './ventanalesEnrollable.ts';
+import { abajoRejillaTgm, aumentoArribaTgm, calcularTgm, envoltorioTgm, soldaduraEtTgm } from './tgm.ts';
+import { fichaDePuerta, puertaHabilitada } from './clientes.ts';
+import { anchoCristalVentanal, EXTRA_CACHO_VENTANAL, panoContinuoEnrollable, semianchoEtVentanal, SOLAPE_VENTANAL, ventanalesEnrollable } from './ventanalesEnrollable.ts';
 import { ventanalesApilable } from './ventanalesApilable.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
 import { ensancharPieza, huecosSinEscuadrado, llevaEscuadrado } from './escuadrado.ts';
-import { bajoDobleSaco, desnivelSuelo, envoltorioDobleSaco, espejarPieza, inclinarSaco, pestanaDerecha, sacoApilable, sacoPuerta, sacoUtil, utilSacoExterior } from './saco.ts';
+import { bajoDobleSaco, desnivelSuelo, envoltorioDobleSaco, espejarPieza, inclinarSaco, pestanaDerecha, sacoApilable, sacoIntegradoEnrollable, sacoPuerta, sacoSoldadoEnEtTgm, sacoUtil, anchoSoldaduraSacoEnrollable, utilSacoExterior } from './saco.ts';
 
 export const MODELOS_PUERTAS: Record<ModeloPuerta, string> = { PUERTAENR: 'Enrollable', PUERTAPLE: 'Apilable', PUERTAUTO: 'Autorreparable', SYSTEMDOCK: 'System Dock', ABRIGO: 'Abrigo', SACOARENA: 'Saco confeccionado' };
 export const REGLAS_ENROLLABLE = { solapeEntrada:7.5, corteEntrada:8, unionNormal:2 };
@@ -62,7 +62,7 @@ const seCruzan = (a: Hueco, b: Hueco) => a.x < b.x + b.ancho - 0.001 && b.x < a.
 export function calcularPuerta(p: Puerta): ResultadoPuerta {
   if (p.modelo === 'ABRIGO') return calcularAbrigo(p);
   if (p.modelo === 'SACOARENA') return calcularSacoArena(p);
-  if(p.clientePuertas&&!fichaDePuerta(p).habilitado)return {version:1,piezas:[],alternativasSaco:null,empates:[],uniones:[],bolsillo:null,avisos:[{codigo:'CLIENTE_SIN_REGLAS',nivel:'error',texto:fichaDePuerta(p).aviso??'Falta contrastar las reglas de este cliente.'}]};
+  if(p.clientePuertas&&!puertaHabilitada(p))return {version:1,piezas:[],alternativasSaco:null,empates:[],uniones:[],bolsillo:null,avisos:[{codigo:'CLIENTE_SIN_REGLAS',nivel:'error',texto:fichaDePuerta(p).aviso??'Falta contrastar las reglas de este cliente.'}]};
   if (p.araujo) return calcularAraujo(p);
   if (p.santapau) return calcularSantaPau(p);
   if (p.belts) return calcularBelts(p);
@@ -113,7 +113,7 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
   // Puerta negra (9005) con saco negro: es el mismo material, así que el saco se corta en la lona de la puerta, entero y
   // sin la alternativa en dos (Iván, 20/11/2026, AR2605669). Antes solo lo hacían las apilables.
   const esNegro = (texto: string) => /negro|9005|\bblack\b/i.test(texto);
-  const sacoEnLona = esNegro(p.color) && esNegro(p.materialSaco);
+  const sacoEnLona = !sacoSoldadoEnEtTgm(p) && esNegro(p.color) && esNegro(p.materialSaco);
   const materialSaco = sacoEnLona ? lona : p.materialSaco, rolloSaco = sacoEnLona ? p.rollo : p.rolloSaco;
   function pieza(nombre: string, clase: PiezaPuerta['clase'], w: number, h: number, material = lona, rollo = p.rollo, cantidad = 1): PiezaPuerta {
     return { id: `${clase}-${piezas.length}-${nombre}`, nombre, clase, ancho: n(w), alto: n(h), material, rollo, cantidad: cantidad * p.cantidad,
@@ -207,21 +207,24 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
   if (p.modelo === 'PUERTAENR') {
     const e = p.enrollable, ventanales=ventanalesEnrollable(p);
     const solapeEt = solapeEntradaEnrollable(p);
+    const mitadEt = semianchoEtVentanal(p), aumentoArriba = aumentoArribaTgm(p);
+    const soldaduraEt = soldaduraEtTgm(p);
     const altoVentanales=ventanales.reduce((s,v)=>s+v.D,0), s = sacoPuerta(p);
+    const sacoIntegrado = sacoIntegradoEnrollable(p);
     // Sin saco, se corta lona por debajo del bajo terminado para doblarla y soldarla alrededor del tubo (Q-TGM04).
     const bajoRejilla = abajoRejillaTgm(p);
     const origenInferior = bajoRejilla ? bajoRejilla.bajoLona
-      : sinSaco ? (envoltorio?.bajoLona ?? 0) - (e.cierreBajo ?? 0) : s.rematado;
+      : sinSaco ? (envoltorio?.bajoLona ?? 0) - (e.cierreBajo ?? 0) : sacoIntegrado?.bordeCorte ?? s.rematado;
     // La E.T. que no lleva el ventanal, arriba o abajo (Iván, 27/10/2026, AR2605247): ni se corta ni se marca.
     const ciega=panoContinuoEnrollable(p);
     const etVentanal=(t:Entrada)=>!ciega&&(Boolean(e.sinEtArriba)&&Math.abs(t.altura-(p.alto-e.T))<.01
       ||Boolean(e.sinEtAbajo)&&Math.abs(t.altura-(p.alto-e.T-altoVentanales))<.01);
     // El paño inferior arranca en el rematado del saco, lo libre (13 con el de 120), y acaba donde siempre; el saco
     // sube 2 más para la soldadura (Iván, 24/10/2026).
-    const bordeSuperior = p.alto - e.T - (e.sinEtArriba ? 0 : 3.75);
-    const bordeInferior = p.alto - e.T - altoVentanales + (e.sinEtAbajo ? 0 : 3.75);
+    const bordeSuperior = p.alto - e.T - (e.sinEtArriba ? 0 : mitadEt);
+    const bordeInferior = p.alto - e.T - altoVentanales + (e.sinEtAbajo ? 0 : mitadEt);
     const inferior = n(bordeInferior - origenInferior);
-    if (!ciega && (!positivo(e.T) || ventanales.some(v=>!positivo(v.D)||v.altoVisible<=0||!positivo(v.margen)||2*v.margen>=p.frente) || e.T + altoVentanales >= p.alto)) aviso('VENTANAL', 'Revisa T, las cotas de los ventanales y los márgenes laterales.');
+    if (!ciega && (!positivo(e.T) || ventanales.some(v=>!positivo(v.D)||v.altoVisible<=0||!Number.isFinite(v.margen)||v.margen<0||2*v.margen>=p.frente) || e.T + altoVentanales >= p.alto)) aviso('VENTANAL', 'Revisa T, las cotas de los ventanales y los márgenes laterales.');
     // Las E.T. de los bordes del ventanal salen de «Entradas de tubo», no de T y D: si falta alguna, la web cortaba
     // menos E.T. de las que lleva la puerta sin avisar (AR2605639: solo la de 60, faltaban las de 131 y 191).
     if (!ciega && !rejilla && positivo(e.T)) {
@@ -234,16 +237,17 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
     const incorporadas=new Set<number>();
     // Sin ventanal, un solo paño del rematado del saco a la cabecera (Iván, 06/11/2026, AR2605429).
     const panos=ciega
-      ? [['inferior',n(p.alto+3.5-origenInferior),origenInferior]] as const
-      : [['superior',p.alto+3.5-bordeSuperior,bordeSuperior],['inferior',inferior,origenInferior]] as const;
+      ? [['inferior',n(p.alto+aumentoArriba-origenInferior),origenInferior]] as const
+      : [['superior',p.alto+aumentoArriba-bordeSuperior,bordeSuperior],['inferior',inferior,origenInferior]] as const;
     for (const [nombre,h,origen] of panos) {
       // En rejilla los paños se reparten por el ancho del rollo, con la unión normal de 2 cm.
       const manual=rejilla?[]:e.empates.filter(u=>u.pano===nombre);
       const tubos=rejilla?[]:p.entradas.map((t,i)=>({eje:t.altura-origen,solape:solapeEt,tubo:i+1})).filter(t=>!etVentanal(p.entradas[t.tubo-1]));
+      const aumentoBajo = sacoIntegrado && nombre === 'inferior' ? s.rematado - origen : 0;
       const indicados = manual.map(u => {
         // En PVC TGM, un empate en la E.T. sigue la posición y el ancho actuales del tubo.
         const tubo = p.tgm?.lona === 'pvc' && u.tubo ? tubos.find(t => t.tubo === u.tubo) : undefined;
-        return tubo ?? { eje: u.altura, solape: u.solape, tubo: u.tubo };
+        return tubo ?? { eje: u.altura + aumentoBajo, solape: u.solape, tubo: u.tubo };
       });
       const plan=repartirPanos({desde:0,hasta:h,frente:ancho + 2 * bastilla,rollo:p.rollo,tubos,normal:true,indicados:indicados.length?indicados:undefined});
       const antes=paneles.length;
@@ -256,22 +260,41 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
       for(const panel of grupo) {panel.desde+=origen;panel.hasta+=origen;panel.pieza.origenAlzado=[-lateral,panel.desde];}
       const marcarEn=(y:number,dir?:1|-1)=>{const panel=grupo.find(t=>y>=t.desde&&y<=t.hasta);if(panel)marca(panel.pieza,y-panel.desde,dir);};
       if(nombre==='inferior') {
-        if(!sinSaco) marcarEn(origen + 2);
+        if(sacoIntegrado) {
+          marcarEn(0);
+          marcarEn(sacoIntegrado.soldarHasta);
+        } else if(!sinSaco) marcarEn(origen + anchoSoldaduraSacoEnrollable(p));
         else if(e.marcaCierre!==undefined) marcarEn(origen + e.marcaCierre);
       }
-      else if(!e.sinEtArriba) marcarEn(origen + 7.5, -1);
-      // Sin ventanal, la raya de arriba es la de la cabecera, como en el paño superior.
-      if(ciega) marcarEn(origen+h-7);
-      else if(nombre==='superior'||!e.sinEtAbajo) marcarEn(origen+h-(nombre==='superior'?7:7.5),nombre==='inferior'?1:undefined);
+      else if(!e.sinEtArriba && !soldaduraEt) marcarEn(origen + 7.5, -1);
+      const cabecera = ciega || nombre === 'superior';
+      if(cabecera) marcarEn(origen+h-2*aumentoArriba);
+      else if(!e.sinEtAbajo && !soldaduraEt) marcarEn(origen+h-7.5,1);
       for(const [i,t] of p.entradas.entries()) {
         if(plan.uniones.some(u=>u.tubo===i+1)||etVentanal(t))continue;
-        const y=t.altura-solapeEt/2;
-        if(y>origen+7.5 && y<origen+h-(nombre==='superior'||ciega?7:7.5)-.001)marcarEn(y,1);
+        if(soldaduraEt) {
+          const mediaLuz = solapeEt / 2 - soldaduraEt;
+          for(const y of [t.altura-mediaLuz,t.altura+mediaLuz]) marcarEn(y);
+        } else {
+          const y=t.altura-solapeEt/2;
+          if(y>origen+7.5 && y<origen+h-(cabecera?2*aumentoArriba:7.5)-.001)marcarEn(y,1);
+        }
       }
     }
     if(ventanales.length===1) {
-      agregar(pieza('Cristal del ventanal', 'cristal', anchoCristalVentanal(p.frente,e.margen), ventanales[0].altoCorte, p.materialCristal,p.rolloCristal));
-      agregar(pieza('Cachos laterales', 'cacho', e.margen+EXTRA_CACHO_VENTANAL,ventanales[0].altoCorte,lona,p.rollo,2));
+      const altoCristal = ventanales[0].altoCorte;
+      const anchoCristal = anchoCristalVentanal(p.frente,e.margen) + (e.margen===0 ? 2*bastilla : 0);
+      const cristal = agregar(pieza('Cristal del ventanal', 'cristal', anchoCristal, altoCristal, p.materialCristal,p.rolloCristal));
+      if(e.margen===0 && bastilla)
+        for(const x of [bastilla, cristal.ancho-bastilla]) cristal.marcas.push([x,0,x,cristal.alto]);
+      if(e.margen>0 && !bastilla) agregar(pieza('Cachos laterales', 'cacho', e.margen+EXTRA_CACHO_VENTANAL,altoCristal,lona,p.rollo,2));
+      if(e.margen>0 && bastilla) {
+        for(const lado of ['izquierdo','derecho']) {
+          const cacho = agregar(pieza(`Cacho lateral ${lado}`, 'cacho', e.margen+EXTRA_CACHO_VENTANAL+bastilla,altoCristal));
+          const x = lado==='izquierdo' ? bastilla+EXTRA_CACHO_VENTANAL : e.margen;
+          cacho.marcas.push([x,0,x,cacho.alto]);
+        }
+      }
     } else if (ventanales.length > 1) {
       // AR2605065 (A) y AR2605038 (D): los cachos son piezas sueltas, no huecos de un paño entero.
       const separaciones: PiezaPuerta[] = [];
@@ -285,6 +308,7 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
       const inferior=paneles.find(t=>t.desde<bordeInferior&&t.hasta>=bordeInferior-.001)!;
       for(const [i,v] of ventanales.entries()) {
         agregar(pieza(`Cristal del ventanal ${i+1}`,'cristal',anchoCristalVentanal(p.frente,v.margen),v.altoCorte,p.materialCristal,p.rolloCristal));
+        if(v.margen===0) continue;
         for(const [lado,nombre] of ['izquierdo','derecho'].entries()) {
           const cacho=agregar(pieza(`Cacho ${nombre} · ventanal ${i+1}`,'cacho',v.margen+EXTRA_CACHO_VENTANAL,v.altoCorte));
           cacho.origenAlzado=[lado===0?-1:p.frente-v.margen,n(p.alto-v.corteHasta)];
@@ -314,7 +338,7 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
         r.alternativasSaco = { entero: [entero], partido: [izquierda, derecha] };
       }
     }
-    if(!sinSaco){
+    if(!sinSaco && !sacoIntegrado){
       const mitad=(p.frente+6.5+2)/2;
       if(e.sacoPartido){
         const izquierda=agregar(sacoConPestana(mitad-6.5,s.corte,6.5,s.altoPestana,s.corte/2,'Saco partido · con pestaña'));

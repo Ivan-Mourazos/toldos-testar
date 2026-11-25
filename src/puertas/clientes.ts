@@ -2,6 +2,7 @@ import type { ModeloPuerta, Puerta } from './tipos.ts';
 
 export interface TipoPuertaCliente {
   id: string; nombre: string; modelo: Exclude<ModeloPuerta,'SYSTEMDOCK'>;
+  calculo?: 'medidas';
   forma?: 'sueltos'|'continua'; piezaInicial?: 'tramo'|'bolsa';
 }
 export interface FichaClientePuertas {
@@ -31,7 +32,7 @@ export function validarFichaClientePuertas(valor:unknown):FichaClientePuertas {
   const f=valor as FichaClientePuertas;
   if(!f||!f.id||!f.nombre||typeof f.codigoRps!=='string'||!['cm','mm'].includes(f.unidadHoja)||typeof f.habilitado!=='boolean'||!['portanova','araujo','santapau','tgm','belts','puertasluz','pendiente'].includes(f.calculo)
     ||!f.rollos||!Object.values(f.rollos).every(n=>Number.isFinite(n)&&n>0)||!f.rotulos||!f.perfiles||!Array.isArray(f.tipos)||!f.tipos.length||!f.articulos
-    ||f.tipos.some(t=>!t.id||!t.nombre||!['PUERTAENR','PUERTAPLE','PUERTAUTO',...(f.id==='portanova'?['SACOARENA','ABRIGO']:[])].includes(t.modelo))||Object.values(f.articulos).some(t=>!f.tipos.some(x=>x.id===t))
+    ||f.tipos.some(t=>!t.id||!t.nombre||!['PUERTAENR','PUERTAPLE','PUERTAUTO',...(f.id==='portanova'?['SACOARENA','ABRIGO']:[])].includes(t.modelo))||f.tipos.some(t=>t.calculo!==undefined&&(t.calculo!=='medidas'||t.modelo!=='PUERTAENR'))||Object.values(f.articulos).some(t=>!f.tipos.some(x=>x.id===t))
     ||f.calculo==='tgm'&&!valoresEnrolleValidos(f.enrolle))throw new Error('Ficha de cliente de Puertas inválida. Revisa src/puertas/clientes/.');
   return f;
 }
@@ -54,3 +55,11 @@ export const tipoDePuerta=(p:Puerta)=>{
   const f=fichaDePuerta(p);
   return f.tipos.find(t=>t.id===p.tipoPuerta)??f.tipos.find(t=>t.modelo===p.modelo&&(!p.araujo||t.forma===p.araujo.forma))??f.tipos[0];
 };
+
+export const tipoHabilitado = (ficha: FichaClientePuertas, tipo: TipoPuertaCliente) =>
+  ficha.habilitado && (ficha.calculo !== 'pendiente' || tipo.calculo === 'medidas');
+
+export const puertaHabilitada = (p: Puerta) => tipoHabilitado(fichaDePuerta(p), tipoDePuerta(p));
+
+export const usaCotasCliente = (p: Pick<Puerta, 'clientePuertas' | 'tipoPuerta'>) =>
+  p.clientePuertas !== undefined && fichaPorId(p.clientePuertas)?.tipos.some(t => t.id === p.tipoPuerta && t.calculo === 'medidas') === true;

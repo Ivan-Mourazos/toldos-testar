@@ -1,3 +1,4 @@
+import { usaCotasCliente } from './clientes.ts';
 import type { PiezaPuerta, Punto, Puerta } from './tipos.ts';
 
 /** Diferencia firmada del bajo en coordenadas de confección (y hacia arriba). */
@@ -33,8 +34,30 @@ export function sacoUtil(p: Puerta): number | null {
   return saco === undefined ? (p.modelo === 'PUERTAENR' ? 100 : 120) : saco;
 }
 
+type DatosSacoTgm = Pick<Puerta, 'tgm' | 'clientePuertas' | 'tipoPuerta'>;
+export const sacoSoldadoEnEtTgm = (p: DatosSacoTgm) => Boolean(p.tgm?.abajo === 'saco' && p.tgm.lona === 'pvc' && (p.tgm.ventanal || usaCotasCliente(p)));
+
+export const anchoSoldaduraSacoEnrollable = (p: DatosSacoTgm) => sacoSoldadoEnEtTgm(p) ? p.tgm!.soldaduraEt ?? 0 : 2;
+
 /** Medidas del saco de la puerta; sin saco puesto se dibuja el habitual de su modelo y el cálculo avisa. */
-export const sacoPuerta = (p: Puerta) => medidasSaco(sacoUtil(p) ?? (p.modelo === 'PUERTAPLE' ? 80 : 120), p.modelo);
+export function sacoPuerta(p: Puerta) {
+  const util = sacoUtil(p) ?? (p.modelo === 'PUERTAPLE' ? 80 : 120);
+  if (!sacoSoldadoEnEtTgm(p)) return medidasSaco(util, p.modelo);
+  // Con ventanal TGM la medida escrita es la que cuelga bajo la E.T. y la soldadura se comparte.
+  const rematado = util / 10;
+  return { rematado, corte: 2 * (rematado + anchoSoldaduraSacoEnrollable(p)), altoPestana: rematado };
+}
+
+/** Cotas del saco de la enrollable integrado en el paño, desde el bajo terminado. */
+export function sacoIntegradoEnrollable(p: Puerta) {
+  if (!sacoSoldadoEnEtTgm(p)) return null;
+  const normalizar = (valor: string) => valor.trim().replace(/\s+/g, ' ').toUpperCase();
+  const lona = normalizar(`${p.material} ${p.color}`);
+  if (!p.color.trim() || !p.material.trim() || normalizar(p.materialSaco) !== lona) return null;
+  const soldarHasta = sacoPuerta(p).rematado + anchoSoldaduraSacoEnrollable(p);
+  // El borde libre queda a la misma distancia que la raya de soldar respecto al doblez.
+  return { bordeCorte: -soldarHasta, soldarHasta };
+}
 
 /** Doble saco: el saco interior sale del propio paño, que baja rematado + 2 por debajo del bajo terminado
  * para que, al doblarlo hasta la raya de rotulador en +(rematado + 2), suelde 2 cm y quede el rematado exacto
@@ -129,7 +152,11 @@ export function invertirPanoInclinado(pieza: PiezaPuerta): PiezaPuerta {
 /** Iván, 22/10/2026: las diagonales se imprimen después de cortar el saco negro. */
 export const MATERIAL_SACO_AMARILLO = 'LAC900 AMARILLO';
 
-export function soldaduraSacoEnrollable(p: Pick<Puerta, 'materialSaco' | 'sacoDiagonalesAmarillas'>): string {
+export function soldaduraSacoEnrollable(p: Puerta): string {
+  if (sacoSoldadoEnEtTgm(p)) {
+    const accion = sacoIntegradoEnrollable(p) ? 'DOBLAR SACO Y SOLDAR EN LA E.T.' : 'SOLDAR SACO EN LA E.T.';
+    return `${accion} (${anchoSoldaduraSacoEnrollable(p).toLocaleString('es-ES')} CM)`;
+  }
   const amarillo = !p.sacoDiagonalesAmarillas && p.materialSaco.trim().toUpperCase() === MATERIAL_SACO_AMARILLO;
   return `SOLDAR SACO ${amarillo ? 'AMARILLO' : 'NEGRO'} 2 CM MÁXIMO`;
 }

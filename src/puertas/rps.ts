@@ -85,7 +85,7 @@ export function puertasDesdeRps(lineas: LineaPuertaRps[], { clienteCodigo = '' }
     const colorSimple = ['santapau','belts','puertasluz'].includes(ficha.calculo)
       ? /COLOR\s+(BLANC[OA]|ROJ[OA]|VERDE|AZUL|GRIS|NEGRO|AMARILL[OA])\b/i.exec(texto)?.[1].toUpperCase() ?? '' : '';
     const cantidad = Number.isInteger(l.cantidad) && l.cantidad >= 1 && l.cantidad <= 50 ? l.cantidad : 1;
-    const base = ['santapau','tgm','belts','puertasluz'].includes(ficha.calculo) ? nuevaPuertaDeCliente(ficha.id,tipo.id) : nuevaPuerta(tipo.modelo);
+    const base = tipo.calculo === 'medidas' || ['santapau','tgm','belts','puertasluz'].includes(ficha.calculo) ? nuevaPuertaDeCliente(ficha.id,tipo.id) : nuevaPuerta(tipo.modelo);
     const diagonales = ['belts','puertasluz'].includes(ficha.calculo) && /NEGRO\s*[-/Y]\s*AMARILL[OA]|AMARILL[OA]\s*[-/Y]\s*NEGRO|FRANJAS/i.test(texto);
     puertas.push({
       ...base,

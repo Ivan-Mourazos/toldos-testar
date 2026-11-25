@@ -574,6 +574,9 @@ Comparado el DWG de Jaime (4 portales en rejilla especial verde: A 575, B 587, C
   Iván, 20/11: la web lo calcula bien; Jaime le quitó medio centímetro solo para que el corte le entrara en el rollo de
   300. En rejilla el saco va siempre en PVC, también con «tubo con saco envolvente». Las puertas de PVC normalmente no
   llevan E.T. sándwich: siguen con el cierre doblado.
+- **Q-TGM15 · Enrolle del AR2605743 (cerrada).** Iván confirma que es un recambio hecho con las medidas
+  del cliente. Se configura en General → Enrollable y se corta con las cotas de la hoja. La comprobación
+  de enrolle corresponde a TGM cuando se fabrica con su propio tubo.
 
 ## Puertas · Portanova · Abrigo de carga · 19/11/2026
 

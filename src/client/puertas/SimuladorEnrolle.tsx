@@ -108,12 +108,14 @@ function dibujar(canvas: HTMLCanvasElement, trayectoria: ReturnType<typeof prepa
   tubos.forEach(({ x, y }, i) => ctx.fillText(`T${i + 1}`, cx + escala * (x * cos - y * sin), cy - escala * (x * sin + y * cos)));
 }
 
-export function SimuladorEnrolle({ enrolle, manual = false, cambiarManual }: {
+export function SimuladorEnrolle({ enrolle, manual = false, soloManual = false, cambiarManual }: {
   enrolle: EnrolleTgm;
   manual?: boolean;
+  soloManual?: boolean;
   cambiarManual?: (marcas: number[] | null) => void;
 }) {
   const { largo, cfg, colocacion, ajustes, conSaco } = enrolle;
+  const ultimoFijo = enrolle.ultimoFijo ?? !conSaco;
   const modelo = useMemo(() => construir(cfg, colocacion.marcas, largo), [cfg, colocacion.marcas, largo]);
   const radio = radioMedioTubo(cfg);
   const extension = conSaco ? 0 : radio + Math.max(0, (enrolle.cierreBajo * 10 - Math.PI * radio) / 2);
@@ -231,7 +233,7 @@ export function SimuladorEnrolle({ enrolle, manual = false, cambiarManual }: {
           </div>
           <div><dt>Diámetro final</dt><dd>{numero(colocacion.diametroFinal)} mm</dd></div>
         </dl>
-        {cambiarManual && <label className="puerta-casilla">
+        {cambiarManual && !soloManual && <label className="puerta-casilla">
           <input type="checkbox" checked={manual} onChange={e => { setError(''); cambiarManual(e.target.checked ? [...colocacion.marcas] : null); }} />
           Colocar los tubos a mano
         </label>}
@@ -241,14 +243,14 @@ export function SimuladorEnrolle({ enrolle, manual = false, cambiarManual }: {
           <tbody>{colocacion.marcas.map((m, k) => <tr key={k}>
             <th scope="row">{k + 1}</th>
             <td>{numero(colocacion.iguales[k])}</td>
-            <td>{manual && (conSaco || k !== colocacion.marcas.length - 1)
+            <td>{manual && (!ultimoFijo || k !== colocacion.marcas.length - 1)
               ? <InputDecimal aria-label={`Marca del tubo ${k + 1} (mm)`} value={m} onValor={v => cambiarMarca(k, v)} />
               : numero(m)}</td>
             <td>{numero(m - colocacion.iguales[k])}</td>
             <td>{numero(colocacion.angulos[k])}°</td>
           </tr>)}</tbody>
         </table>
-        {manual && !conSaco && <p className="puerta-ayuda">El último tubo queda fijo en el cierre.</p>}
+        {manual && ultimoFijo && <p className="puerta-ayuda">{conSaco ? 'La E.T. inferior queda fija en la soldadura del saco.' : 'El último tubo queda fijo en el cierre.'}</p>}
         {error && <p className="simulador-enrolle__error" role="status">{error}</p>}
       </div>
     </div>

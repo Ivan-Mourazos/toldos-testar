@@ -36,8 +36,8 @@ describe('ficha TGM', () => {
     });
   });
 
-  it('General sigue deshabilitada para los códigos que no son de ningún cliente', () => {
-    expect(fichaPorId('general')!.habilitado).toBe(false);
+  it('General reserva la confección por medidas al tipo Enrollable', () => {
+    expect(fichaPorId('general')!.tipos.filter(t => t.calculo === 'medidas').map(t => t.id)).toEqual(['enrollable']);
   });
 });
 

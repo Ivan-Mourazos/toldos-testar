@@ -32,7 +32,7 @@ import { ConfigurarBelts } from './ConfigurarBelts';
 import { ConfigurarPuertasLuz } from './ConfigurarPuertasLuz';
 import { ConfigurarSantaPau } from './ConfigurarSantaPau';
 import { ConfigurarTgm } from './ConfigurarTgm';
-import { fichaDePuerta, fichaPorCodigo, fichaPorId, tipoDePuerta } from '../../puertas/clientes.ts';
+import { fichaDePuerta, fichaPorCodigo, fichaPorId, puertaHabilitada, tipoDePuerta } from '../../puertas/clientes.ts';
 import { cambiarTipoDelCliente, nuevaPuertaDeCliente, otraPuertaDelCliente } from '../../puertas/nuevaPuertaCliente.ts';
 import { CorteResumen, useVistaCortePuertas } from './VistaCortePuertas';
 import { faltaParaAbrir, useFlujoCorte } from './flujoCorte';
@@ -76,7 +76,7 @@ function Configurar({p,cambiar,corte,derecha='alzado',letra='A',vistas}:{p:Puert
   const ficha=fichaDePuerta(p);
   if(p.modelo==='ABRIGO')return <ConfigurarAbrigo p={p} cambiar={cambiar} vista={vistas} corte={derecha==='corte'?corte:null}/>;
   if(p.modelo==='SACOARENA')return <ConfigurarSacoArena p={p} cambiar={cambiar} corte={corte} derecha={derecha} vistas={vistas}/>;
-  if(p.clientePuertas&&!ficha.habilitado)return <section className="puerta-config panel panel-vidrio" aria-label="Cliente sin reglas de confección"><h2>{ficha.nombre} · confección pendiente</h2><p className="puerta-ayuda">{textoMedidasMm(ficha.aviso??'')}</p><p className="puerta-ayuda">Artículo {p.articuloOrigen||'sin indicar'} · OF {p.of||'SIN OF'} · {num(p.frente)} × {num(p.alto)} mm</p><p className="puerta-ayuda">{p.observaciones}</p></section>;
+  if(p.clientePuertas&&!puertaHabilitada(p))return <section className="puerta-config panel panel-vidrio" aria-label="Cliente sin reglas de confección"><h2>{ficha.nombre} · confección pendiente</h2><p className="puerta-ayuda">{textoMedidasMm(ficha.aviso??'')}</p><p className="puerta-ayuda">Artículo {p.articuloOrigen||'sin indicar'} · OF {p.of||'SIN OF'} · {num(p.frente)} × {num(p.alto)} mm</p><p className="puerta-ayuda">{p.observaciones}</p></section>;
   if(p.araujo)return <ConfigurarAraujo p={p} cambiar={cambiar} corte={corte} derecha={derecha} letra={letra} vistas={vistas}/>;
   if(p.santapau)return <ConfigurarSantaPau p={p} cambiar={cambiar} corte={corte} derecha={derecha} letra={letra} vistas={vistas}/>;
   if(p.belts)return <ConfigurarBelts p={p} cambiar={cambiar} corte={corte} derecha={derecha} letra={letra} vistas={vistas}/>;

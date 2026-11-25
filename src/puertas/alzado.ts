@@ -1,13 +1,13 @@
 import { alturasTubos, desfaseCintas, solapeEntradaEnrollable } from './calcular.ts';
 import { huecosSinEscuadrado, llevaEscuadrado } from './escuadrado.ts';
-import { abajoRejillaTgm, envoltorioTgm, SANDWICH_TGM } from './tgm.ts';
+import { abajoRejillaTgm, aumentoArribaTgm, envoltorioTgm, SANDWICH_TGM, soldaduraEtTgm } from './tgm.ts';
 import { alzadoAraujo } from './alzadoAraujo.ts';
 import { alzadoBelts, alzadoPuertasLuz } from './alzadoBeltsLuz.ts';
 import { alzadoSantaPau } from './alzadoSantaPau.ts';
 import { colocarTextosPuerta } from './textosPlano.ts';
-import { bajoDobleSaco, desnivelSuelo, envoltorioDobleSaco, pestanaDerecha, rotuloSaco, sacoPuerta } from './saco.ts';
+import { bajoDobleSaco, desnivelSuelo, envoltorioDobleSaco, pestanaDerecha, rotuloSaco, sacoIntegradoEnrollable, sacoPuerta, anchoSoldaduraSacoEnrollable } from './saco.ts';
 import { medidaSystemDock, REGLAS_SYSTEM_DOCK } from './systemDock.ts';
-import { NOTA_CACHOS_CRISTAL, notaPlanoEnrollable, panoContinuoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
+import { anchoCristalVentanal, NOTA_CACHOS_CRISTAL, notaPlanoEnrollable, panoContinuoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
 import { notaPlanoApilable, ventanalesApilable } from './ventanalesApilable.ts';
 import type { Hueco, Puerta, Punto, ResultadoPuerta } from './tipos.ts';
@@ -133,7 +133,9 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   const D = p.enrollable.D;
   // La autorreparable acota el saco con sus 2 de soldadura encima (14 con el de 120 de antes). La enrollable dibuja
   // también los 2 de soldar, pero acota lo libre bajo el paño (Iván, 24/10/2026).
-  const saco = sacoPuerta(p), hSaco = auto || enr ? saco.rematado + 2 : saco.rematado, hCota = enr ? saco.rematado : hSaco;
+  const soldaduraSaco = enr ? anchoSoldaduraSacoEnrollable(p) : 2;
+  const sacoIntegrado = enr ? sacoIntegradoEnrollable(p) : null;
+  const saco = sacoPuerta(p), hSaco = auto || enr ? saco.rematado + soldaduraSaco : saco.rematado, hCota = enr ? saco.rematado : hSaco;
 
   // Cadena derecha de pasos verticales (suma exactamente H; sin duplicar H).
   const hitosDerecha = ple
@@ -186,7 +188,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   const xMin = Math.min(desnivel ? -116 : envoltorio ? -80 : -56, ...textosTaller.map(t => t.x - 8));
   const yMin = -62;
   const anchoVista = Math.max(F + (desnivel ? 150 : 110), ...textosTaller.map(t => t.x + t.ancho + 8)) - xMin;
-  const altoVista = sinSaco ? H + (p.enrollable.cierreBajo ?? 0) + 25 - yMin
+  const altoVista = sinSaco || sacoIntegrado ? H + (p.enrollable.cierreBajo ?? 0) + 25 - yMin
     : yDesplegado + hCorteSaco + Math.abs(desnivel) + (enr ? 80 : 55) - yMin;
   const letraBase = Math.min(10.5, Math.max(7.5, Math.min(F / 24, H / 38)));
 
@@ -199,15 +201,22 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
     rect('puerta-lona', dr ? F + margen : -10 - margen, H - saco.rematado, 10, saco.rematado);
     linea('puerta-cota', 0, H, F, H, '5 3');
   }
+  const bastillaArriba = enr && p.tgm?.arriba === 'bastilla';
+  const aumentoArriba = aumentoArribaTgm(p);
+  const soldaduraEt = soldaduraEtTgm(p);
   if (bastilla > 0) {
-    const fin = sinSaco ? pie + (p.enrollable.cierreBajo ?? 0) : H - saco.rematado;
-    for (const x of [-bastilla, F]) rect('puerta-pano', x, -3.5, bastilla, fin + 3.5);
+    const fin = sinSaco ? pie + (p.enrollable.cierreBajo ?? 0) : sacoIntegrado ? H : H - saco.rematado;
+    for (const x of [-bastilla, F]) rect('puerta-pano', x, -aumentoArriba, bastilla, fin + aumentoArriba);
     cota({ x1: -bastilla, y1: 0, x2: 0, y2: 0, linea: -17, valor: bastilla, estilo: 'XERAL 5', marcas: 2,
       texto: { x: -bastilla - 6, y: -18, ancla: 'end' } });
   }
 
   // Cabecera según modelo
-  if (enr || auto) {
+  if (bastillaArriba) {
+    rect('puerta-pano', 0, -aumentoArriba, F, aumentoArriba);
+    linea('puerta-cota', 0, 0, F, 0);
+    texto(`BASTILLA NORMAL (${aumentoArriba.toLocaleString('es-ES')} cm)`, F / 2, -10, 'middle', 'puerta-texto-cabecera');
+  } else if (enr || auto) {
     linea('puerta-varilla', 0, 0, F, 0);
     texto(p.tgm ? (p.tgm.varilla === 'blanca' ? 'VARILLA BLANCA (5,5 mm)' : 'VARILLA NEGRA (4,5 mm)') : 'VARILLA NEGRA (4,5)', F / 2, -10, 'middle', 'puerta-texto-cabecera');
   }
@@ -239,8 +248,10 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   // Ventanal enrollable: cachos laterales acotados y cristal acotado con su ancho de corte
   for (const [i, v] of ventanales.entries()) {
     const { margen: m, D } = v, T = ejesVentanal[i], alto = Math.max(0, v.altoVisible);
-    rect('puerta-cacho', 0, v.visibleDesde, m, alto);
-    rect('puerta-cacho', Math.max(0, F - m), v.visibleDesde, m, alto);
+    if (m > 0) {
+      rect('puerta-cacho', 0, v.visibleDesde, m, alto);
+      rect('puerta-cacho', Math.max(0, F - m), v.visibleDesde, m, alto);
+    }
     rect('puerta-cristal', m, v.visibleDesde, Math.max(0, F - 2 * m), alto);
     if (m > 0) {
       cota({ x1: 0, y1: T - 8, x2: m, y2: T - 8, linea: T - 8, valor: m, estilo: 'XERAL', marcas: 0, texto: { x: m / 2, y: T - 10, ancla: 'middle' } });
@@ -249,7 +260,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
     // El cristal se acota con su ancho de corte (hueco + 4).
     if (F - 2 * m > 12) {
       const y = T + Math.min(18.5, D / 2);
-      cota({ x1: m - 2, y1: y, x2: F - m + 2, y2: y, linea: y, valor: F - 2 * m + 4, marcas: 4, texto: { x: F / 2, y: y - 3, ancla: 'middle' } });
+      cota({ x1: m === 0 ? 0 : m - 2, y1: y, x2: m === 0 ? F : F - m + 2, y2: y, linea: y, valor: anchoCristalVentanal(F, m), marcas: 4, texto: { x: F / 2, y: y - 3, ancla: 'middle' } });
     }
   }
 
@@ -295,14 +306,22 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
     rect('puerta-entrada-alzado', 0 - margen, b.y - b.alto / 2, F + margen * 2, b.alto);
     linea('puerta-tubo', 0, b.y, F, b.y);
     cota({ x1: -12, y1: b.y - b.alto / 2, x2: -12, y2: b.y + b.alto / 2, linea: -12, valor: b.alto, estilo: enr ? 'XERAL 5' : 'XERAL', marcas: 4, texto: { x: -18, y: b.y + 3, ancla: 'end' } });
-    if (!pvcTgm || !resultado.uniones.some(u => u.tubo && Math.abs(H - b.y - u.altura) < .01)) {
+    if (soldaduraEt) {
+      for (const y of [b.y - b.alto / 2 + soldaduraEt, b.y + b.alto / 2 - soldaduraEt]) {
+        if (sinSaco || Math.abs(y - (H - hSaco)) > .001) linea('puerta-rotulador', p.margenMarcas, y, F - p.margenMarcas, y);
+      }
+    } else if (!pvcTgm || !resultado.uniones.some(u => u.tubo && Math.abs(H - b.y - u.altura) < .01)) {
       const sentido = ejesSobreVentanal.has(b.y) ? 1 : -1;
       marca(b.y - sentido * (p.tgm && enr ? solapeEntradaEnrollable(p) : b.alto) / 2, sentido);
     }
   }
-  marca(auto ? 30 : ple ? p.apilable.bolsillo / 2 : 3.5);
+  if (bastillaArriba) linea('puerta-rotulador', p.margenMarcas, aumentoArriba, F - p.margenMarcas, aumentoArriba);
+  else marca(auto ? 30 : ple ? p.apilable.bolsillo / 2 : 3.5);
   const inicioMarcaSaco = formas.length;
-  if (!sinSaco) marca(H - (doble ? saco.rematado + 2 : hSaco), -1);
+  if (sacoIntegrado) {
+    linea('puerta-rotulador', p.margenMarcas, H, F - p.margenMarcas, H);
+    marca(H - sacoIntegrado.soldarHasta, -1);
+  } else if (!sinSaco) marca(H - (doble ? saco.rematado + 2 : hSaco), -1);
   else {
     const cierre = p.enrollable.cierreBajo ?? 0;
     if (cierre > 0) rect('puerta-pano', 0, pie, F, cierre);
@@ -384,7 +403,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   // Saco en el bajo de la puerta terminada y su cota
   if (!sinSaco) {
     if (desnivel) formas.push({tipo:'poligono',clase:'puerta-saco',puntos:[[0,H-hSaco],[F,altoDerecho-hSaco],[F,altoDerecho],[0,H]]});
-    else rect('puerta-saco', 0, H - hSaco, F, hSaco);
+    else if (!sacoIntegrado) rect('puerta-saco', 0, H - hSaco, F, hSaco);
     cota({ x1: F + 12, y1: altoDerecho - hCota, x2: F + 12, y2: altoDerecho, linea: F + 12, valor: hCota, marcas: 4, texto: { x: F + 18, y: altoDerecho - hCota / 2 + 3, ancla: 'start' } });
   }
 
@@ -461,10 +480,20 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
     cota({x1:F,y1:0,x2:F,y2:altoDerecho,linea:F+115,valor:altoDerecho,sufijo:' cm',marcas:5,estilo:'XERA 15',texto:{x:F+125,y:altoDerecho/2,ancla:'middle',giro:-90}});
   }
 
+  const notaPlano = enr ? notaPlanoEnrollable(p) : ventanalesPle.length ? notaPlanoApilable(p) : '';
+  const dibujarNotaPlano = (y: number) => {
+    if (!notaPlano) return;
+    formas.push({ tipo: 'texto', x: F / 2, y, tamano: 7.5, ancla: 'middle',
+      lineas: notaPlano === NOTA_CACHOS_CRISTAL ? ['LOS CACHOS DE LOS LATERALES DEL CRISTAL', 'VAN 1CM MÁS GRANDE PARA DESPUÉS ESCUADRARLO'] : [notaPlano], taller: { guia: null } });
+  };
+
   // Pieza desplegada del saco con su pestaña debajo del alzado
   const inicioDesplegado = formas.length;
   const y0 = yDesplegado, y1 = yDesplegado + hCorteSaco;
-  if (sinSaco) return { formas, vista: { xMin, yMin, ancho: anchoVista, alto: altoVista }, letraBase, F, H };
+  if (sinSaco || sacoIntegrado) {
+    if (sacoIntegrado) dibujarNotaPlano(H + 13);
+    return { formas, vista: { xMin, yMin, ancho: anchoVista, alto: altoVista }, letraBase, F, H };
+  }
   formas.push({
     tipo: 'poligono', clase: 'puerta-saco-pieza',
     puntos: pestanaSaco > 0
@@ -495,11 +524,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
     nota(enr ? 'COSER VELCRO DERECHO DE 3 SUAVE' : ple ? 'COSER VELCRO DERECHO DE 5 SUAVE' : 'VELCRO SUAVE REVÉS DE 3',
       wSaco / 2, y1 + 25, altoVelcro, [wSaco * 0.2, y1 + 20, 4.5, y1]);
   }
-  const notaPlano = enr ? notaPlanoEnrollable(p) : ventanalesPle.length ? notaPlanoApilable(p) : '';
-  if (notaPlano) {
-    formas.push({ tipo: 'texto', x: F / 2, y: y1 + 46, tamano: 7.5, ancla: 'middle',
-      lineas: notaPlano === NOTA_CACHOS_CRISTAL ? ['LOS CACHOS DE LOS LATERALES DEL CRISTAL', 'VAN 1CM MÁS GRANDE PARA DESPUÉS ESCUADRARLO'] : [notaPlano], taller: { guia: null } });
-  }
+  dibujarNotaPlano(y1 + 46);
   if (auto) nota('CREMALLERA SOLDADA HASTA MITAD DE SACO', F / 2, y1 + 47, Math.min(10, F / 32));
 
   const derecha = pestanaDerecha(p);

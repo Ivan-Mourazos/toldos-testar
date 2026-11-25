@@ -1,7 +1,7 @@
 import { alturasTubos, calcularPuerta } from './calcular.ts';
 import { anchoArial } from '../domain/corteLona/texto.js';
 import type { Puerta, ResultadoPuerta } from './tipos.ts';
-import { sacoPuerta, sacoUtil, soldaduraSacoEnrollable, utilSacoExterior } from './saco.ts';
+import { sacoPuerta, sacoSoldadoEnEtTgm, sacoUtil, soldaduraSacoEnrollable, utilSacoExterior } from './saco.ts';
 import { fichaDePuerta } from './clientes.ts';
 import { abajoRejillaTgm, rotuloCierreTgm } from './tgm.ts';
 import { rotuloEntradaApilable, ventanalesApilable } from './ventanalesApilable.ts';
@@ -174,7 +174,7 @@ export function plantillaTextosPuerta(p: Puerta, resultado: ResultadoPuerta = ca
     const rejilla = abajoRejillaTgm(p);
     if (!rejilla) add('soldar-saco', soldaduraSacoEnrollable(p), F / 2, H - 6.5, 7,
       { x: 3, y: H - 12, ancho: F - 6, alto: 11 });
-    if (!rejilla) add('cerrar-et', rotuloCierreTgm(p)?.join('\n') ?? 'CERRAR E.T\n2 CM MÁXIMO', F + 75, H + 6, 5,
+    if (!rejilla && !sacoSoldadoEnEtTgm(p)) add('cerrar-et', rotuloCierreTgm(p)?.join('\n') ?? 'CERRAR E.T\n2 CM MÁXIMO', F + 75, H + 6, 5,
       { x: F + 20, y: H - 7, ancho: 110, alto: 25 });
   } else if (p.modelo === 'PUERTAPLE') {
     const ys = alturasTubos(p);
