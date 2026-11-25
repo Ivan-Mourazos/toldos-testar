@@ -17,7 +17,13 @@ cd "$(dirname "$0")/.."
 
 PUERTO=4400
 t0=$SECONDS
-paso() { echo; echo "── $1  ($((SECONDS - t0)) s)"; }
+# Colores solo si la salida es una pantalla (no en logs ni tuberías): pasos en cian,
+# el final bueno en verde y los errores en rojo, para encontrarlos entre la salida del build.
+if [ -t 1 ]; then c_paso=$'\e[1;36m'; c_ok=$'\e[1;32m'; c_mal=$'\e[1;31m'; c_fin=$'\e[0m'
+else c_paso=; c_ok=; c_mal=; c_fin=; fi
+paso() { echo; echo "${c_paso}── $1  ($((SECONDS - t0)) s)${c_fin}"; }
+ok() { echo; echo "${c_ok}── $1  ($((SECONDS - t0)) s)${c_fin}"; }
+mal() { echo "${c_mal}!! $1${c_fin}"; }
 
 activa=$(cat .dist-activa 2>/dev/null || echo dist)
 if [ "$activa" = "dist-a" ]; then nueva=dist-b; else nueva=dist-a; fi
@@ -25,7 +31,7 @@ if [ "$activa" = "dist-a" ]; then nueva=dist-b; else nueva=dist-a; fi
 paso "git pull"
 # El árbol de producción llegó a tener commits propios (Codex, 15/09/2026): el pull fallaría.
 if [ -n "$(git log --oneline origin/main..HEAD)" ]; then
-  echo "!! Hay commits locales que no están en origin/main. Resuélvelo antes de desplegar:"
+  mal "Hay commits locales que no están en origin/main. Resuélvelo antes de desplegar:"
   git log --oneline origin/main..HEAD
   exit 1
 fi
@@ -55,7 +61,7 @@ paso "esperando a la comprobación de tipos"
 if ! wait "$pid_tipos"; then
   cat "$log_tipos"
   rm -f "$log_tipos"
-  echo "!! La comprobación de tipos ha fallado: no se cambia de versión."
+  mal "La comprobación de tipos ha fallado: no se cambia de versión."
   exit 1
 fi
 rm -f "$log_tipos"
@@ -73,22 +79,23 @@ DIST_DIR=$nueva pnpm deploy:smoke
 
 paso "cambio a $nueva y recarga"
 echo "$nueva" > .dist-activa
-pnpm pm2:reload
+# La tabla de PM2 solo tapa los pasos; si falla, el error sigue saliendo.
+pnpm -s pm2:reload > /dev/null
 # pm2 save solo guarda la lista de PM2 para cuando arranque la máquina: hace falta si cambió
 # ecosystem.config.cjs (variables o forma de arrancar), no en cada despliegue.
 if [ "$(git rev-parse HEAD:ecosystem.config.cjs)" != "$pm2_antes" ]; then pm2 save; fi
 
 for _ in $(seq 1 60); do
   if curl -fsS -m 2 "http://127.0.0.1:$PUERTO/api/health" >/dev/null 2>&1; then
-    paso "listo: la web responde con $nueva"
+    ok "listo: la web responde con $nueva"
     exit 0
   fi
   sleep 1
 done
 
 echo
-echo "!! La web no responde tras 60 s. Mira: pnpm pm2:logs"
-echo "!! Para volver a la versión anterior: echo $activa > .dist-activa && pnpm pm2:reload"
+mal "La web no responde tras 60 s. Mira: pnpm pm2:logs"
+mal "Para volver a la versión anterior: echo $activa > .dist-activa && pnpm pm2:reload"
 exit 1
 }
 exit
