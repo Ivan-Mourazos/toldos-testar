@@ -420,7 +420,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     try {
       const existente = await deps.almacen.obtener(orderCode);
       if ((!registro || !existente) && await deps.esPedidoDeToldos(orderCode)) {
-        throw new ErrorPedidoRemolques(mensajePedidoDeRemolques(orderCode), 409);
+        throw new ErrorPedidoRemolques(`${orderCode} ya está guardado como pedido de toldos: un pedido es de toldos o de remolques. Revisa el número.`, 409);
       }
       const nuevas = registro && existente?.status === 'PRODUCED' ? ofsNuevas(existente, datos.elementos) : [];
       if (registro && existente && nuevas.length === 0) {
