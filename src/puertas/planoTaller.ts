@@ -1,6 +1,7 @@
 import { rotuloEnCajaAbrigo, rotulosAbrigo } from './rotulosAbrigo.ts';
 import { retocarPortanova } from './retoquesPortanova.js';
 import { dibujarVentanasPlano } from './ventanasPlano.ts';
+import { notaPlanoApilable, ventanalesApilable } from './ventanalesApilable.ts';
 import { dibujarSacoConfeccionado, dibujarOpcionesSacoArena } from './planoSacoArena.ts';
 import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
@@ -319,7 +320,23 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
   const hSaco = sacoPuerta(p).rematado, doble = ple && p.apilable.doble, bajoDoble = doble ? bajoDobleSaco(p) : 0;
   const derecha = pestanaDerecha(p);
   const arriba = ple ? p.apilable.bolsillo / 2 : 3.5;
-  if (doble) {
+  const tubos = ple ? alturasTubos(p) : [];
+  const ventanales = ple ? ventanalesApilable(p, tubos).ventanales : [];
+  const panos = r.piezas.filter(x => x.clase === 'pano');
+  if (ventanales.length) {
+    for (const pieza of r.piezas) {
+      if (!pieza.origenAlzado || !['pano', 'cacho', 'cristal'].includes(pieza.clase)) continue;
+      const [x, y] = pieza.origenAlzado;
+      contorno(l, pieza.clase === 'cristal' ? 'corte (vent)' : 'DISCO1',
+        pieza.contorno.map(([px, py]) => [x + px, -H + y + py]));
+    }
+    for (const v of ventanales) {
+      const y = -H + (v.visibleDesde + v.visibleHasta) / 2;
+      cota(l, 0, y, v.margen, y, y, 'XERAL 5');
+      cota(l, v.margen, y, F - v.margen, y, y);
+      cota(l, F - v.margen, y, F, y, y, 'XERAL 5');
+    }
+  } else if (doble) {
     // Plantilla Portanova (dibujos válidos del recuadro bueno): el contorno DISCO1 baja hasta bajoDoble y lleva la
     // pestaña lateral de 10 × rematado del saco interior; su borde exterior va en referencias.
     const xIzq = -margen, xDer = F + margen, yInf = -H + bajoDoble, ySup = arriba;
@@ -346,7 +363,7 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
     rect(l, 'DISCO1', 0 - margen, -H + hSaco, F + 2 * margen, H - hSaco + arriba);
   }
   for (const y of [0, -H]) linea(l, 'referencias', 0, y, F, y);
-  const tubos = ple ? alturasTubos(p) : [], obstaculos: Array<[number, number]> = [];
+  const obstaculos: Array<[number, number]> = [];
   // La autorreparable también marca dónde se suelda el saco, 2 cm por encima del bajo del paño, como la enrollable
   // (Iván, 27/10/2026, AR2605249: faltaba la marca en la puerta).
   if (!ple) {
@@ -403,10 +420,15 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
     const subirEt1 = doble && idxCintas === 0 && (tubos.length < 2 || tubos[1] - tubos[0] >= 36);
     for (const [i, e] of p.entradas.entries()) {
       const y = -H + (tubos[i] ?? e.altura), a = e.alto;
+      const sobreVentanal = ventanales.some(v => v.tramo === i);
+      const marcaEt = y + (sobreVentanal ? a / 2 : -a / 2);
       linea(l, 'ejes', 0, y, F, y);
-      if (!r.uniones.some(u => u.tubo === i + 1)) linea(l, 'borrar', 0, y + a / 2, F, y + a / 2);
-      if (!r.uniones.some(u => u.tubo === i + 1)) linea(l, 'ROTULADOR', 0, y - a / 2, F, y - a / 2);
-      flecha(l, F / 2, y - a / 2, 180, -1);
+      if (!r.uniones.some(u => u.tubo === i + 1)) {
+        const borde = y + (sobreVentanal ? -a / 2 : a / 2);
+        linea(l, 'borrar', 0, borde, F, borde);
+        linea(l, 'ROTULADOR', 0, marcaEt, F, marcaEt);
+      }
+      flecha(l, F / 2, marcaEt, sobreVentanal ? 0 : 180, -1);
       texto(l, `E.T Ø${e.diametro} mm`, F / 2, i === 0 && subirEt1 ? y + a / 2 + 5 : y, Math.min(8, a * .65));
       cota(l, 0, y - a / 2, 0, y + a / 2, -14);
       for (const h of escuadrado ? huecosSinEscuadrado(e, F) : huecosEnPuerta(e, F)) huecoEntrada(l, h, y, a, F);
@@ -492,7 +514,7 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
     obstaculos.push([-30, 0]);
   }
   for (const u of r.uniones) {
-    for (const signo of [-1, 1]) linea(l, ple ? 'DISCO1' : 'referencia-1', 0 - margen, -H + u.altura + signo * u.solape / 2, F + margen, -H + u.altura + signo * u.solape / 2);
+    if (!ventanales.length) for (const signo of [-1, 1]) linea(l, ple ? 'DISCO1' : 'referencia-1', 0 - margen, -H + u.altura + signo * u.solape / 2, F + margen, -H + u.altura + signo * u.solape / 2);
     if (!u.tubo) {
       const y = -H + u.altura + u.solape / 2;
       linea(l, 'ROTULADOR', 0, y, F, y);
@@ -507,7 +529,12 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
   for (const v of p.ventanas) obstaculos.push([-H + v.y - 3, -H + v.y + v.alto + 3]);
   const limites = [arriba, ...r.uniones.map(u => -H + u.altura).sort((a, b) => b - a), -H + hSaco];
   const central = !ple && p.autorreparable.espaciadorCentral;
-  limites.slice(1).forEach((y, i) => rotulos(l, p, `${letra}${i + 1}`, central ? F * .75 : F / 2, y, limites[i], central ? F / 2 - 20 : F, obstaculos, i === 0));
+  if (ventanales.length) {
+    [...panos].reverse().forEach((pieza, i) => {
+      const y = -H + pieza.origenAlzado![1];
+      rotulos(l, p, `${letra}${i + 1}`, F / 2, y, y + pieza.alto, F, obstaculos, i === 0);
+    });
+  } else limites.slice(1).forEach((y, i) => rotulos(l, p, `${letra}${i + 1}`, central ? F * .75 : F / 2, y, limites[i], central ? F / 2 - 20 : F, obstaculos, i === 0));
   cota(l, 0, arriba, F, arriba, arriba + 25, ple ? 'XERA 15' : 'XERAL');
   if (escuadrado) {
     // Iván, 05/11/2026: anotar la medida de la puerta y la del corte real (1 cm más por lado para escuadrar).
@@ -547,7 +574,7 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
     const soldadura = -H+hSaco+2;
     const bordeSaco = -H+hSaco;
     for (const a of l.lineas) {
-      const inferior = a.capa==='DISCO1' && (Math.abs(a.y1-bajoCorte)<.001||Math.abs(a.y2-bajoCorte)<.001);
+      const inferior = !ventanales.length && a.capa==='DISCO1' && (Math.abs(a.y1-bajoCorte)<.001||Math.abs(a.y2-bajoCorte)<.001);
       const referencia = a.capa==='referencias' && (a.y1===-H||a.y2===-H);
       const marca = a.capa==='ROTULADOR' && Math.abs(a.y1-soldadura)<.001 && Math.abs(a.y2-soldadura)<.001;
       const lineaSaco = doble && a.capa==='borrar' && Math.abs(a.y1-bordeSaco)<.001 && Math.abs(a.y2-bordeSaco)<.001;
@@ -572,9 +599,14 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
     cota(l,F,0,F,-altoDerecho,F+78,'XERA 15');
   }
   const abajo = dibujarSaco(l, p, identificar ? letra : '');
+  const mininumeros = new Set<number>();
   for (const pieza of r.piezas.filter(p => p.origenAlzado)) {
     const [x, y] = pieza.origenAlzado!;
-    for (const m of pieza.unionesCorte ?? []) texto(l, `${letra.toLowerCase()}${m.numero}`, x + m.x, -H + y + m.y, 1, m.giro ?? 0, 'ROTULADOR');
+    for (const m of pieza.unionesCorte ?? []) {
+      if (ventanales.length && mininumeros.has(m.numero)) continue;
+      mininumeros.add(m.numero);
+      texto(l, `${letra.toLowerCase()}${m.numero}`, x + m.x, -H + y + m.y, 1, m.giro ?? 0, 'ROTULADOR');
+    }
   }
   // El dibujo del saco es el saco entero: las marcas de unión del saco partido («a2») solo van en su corte
   // (Iván, 23/10/2026: «unas marcas de rotulador que no tienen sentido»).
@@ -712,10 +744,11 @@ export function escribirPlanoTaller(pedido: PedidoPuertas, cortes: CortePuertas[
     let suelo = d.zona.y0;
     // Solo la nota que el técnico quiera ver en el plano; el texto de RPS sobraba (Iván, 23/10/2026).
     // En las enrollables la nota va en su alzado (la de los cachos, de serie con ventanal).
-    if (e.input.modelo !== 'PUERTAENR' && e.input.notaPlano?.trim()) {
+    const notaPlano = e.input.modelo === 'PUERTAPLE' ? notaPlanoApilable(e.input) : e.input.notaPlano ?? '';
+    if (e.input.modelo !== 'PUERTAENR' && notaPlano.trim()) {
       let actual = '';
       const lineas: string[] = [], ancho = d.zona.x1 - d.zona.x0;
-      for (const palabra of textoSeguro(`OBSERVACIONES: ${e.input.notaPlano}`).split(/\s+/)) {
+      for (const palabra of textoSeguro(`OBSERVACIONES: ${notaPlano}`).split(/\s+/)) {
         if (actual && anchoArial(`${actual} ${palabra}`, 6) > ancho) { lineas.push(actual); actual = palabra; }
         else actual += (actual ? ' ' : '') + palabra;
       }

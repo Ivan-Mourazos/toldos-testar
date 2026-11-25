@@ -1,7 +1,7 @@
 import { alturasTubos, calcularPuerta } from './calcular.ts';
 import { anchoArial } from '../domain/corteLona/texto.js';
 import type { Puerta, ResultadoPuerta } from './tipos.ts';
-import { sacoPuerta, sacoUtil, utilSacoExterior } from './saco.ts';
+import { sacoPuerta, sacoUtil, soldaduraSacoEnrollable, utilSacoExterior } from './saco.ts';
 import { fichaDePuerta } from './clientes.ts';
 import { abajoRejillaTgm, rotuloCierreTgm } from './tgm.ts';
 
@@ -171,7 +171,7 @@ export function plantillaTextosPuerta(p: Puerta, resultado: ResultadoPuerta = ca
     // TGM no lleva «PISAR LAS E.T.»; en rejilla tampoco el saco soldado ni el cierre (plano de Jaime, AR2605499).
     if (!p.tgm) lateral('pisar-et', 'DE ESTE LADO PISAR LAS E.T. 1 CM', F + 105, H / 2 + 20, 10);
     const rejilla = abajoRejillaTgm(p);
-    if (!rejilla) add('soldar-saco', 'SOLDAR SACO NEGRO 2 CM MÁXIMO', F / 2, H - 6.5, 7,
+    if (!rejilla) add('soldar-saco', soldaduraSacoEnrollable(p), F / 2, H - 6.5, 7,
       { x: 3, y: H - 12, ancho: F - 6, alto: 11 });
     if (!rejilla) add('cerrar-et', rotuloCierreTgm(p)?.join('\n') ?? 'CERRAR E.T\n2 CM MÁXIMO', F + 75, H + 6, 5,
       { x: F + 20, y: H - 7, ancho: 110, alto: 25 });
@@ -181,7 +181,9 @@ export function plantillaTextosPuerta(p: Puerta, resultado: ResultadoPuerta = ca
     add('reves', 'REVÉS', F * 0.77, techo / 2, grande);
     const uniones = resultado.uniones.map(u => H - u.altura).sort((a, b) => a - b);
     const limites = [0, ...uniones, H];
-    limites.slice(1).forEach((y, i) => add(`pano-${i}`, `A${i + 1}`, F / 2, (limites[i] + y) / 2, grande));
+    if (p.apilable.ventanales?.length) resultado.piezas.filter(x => x.clase === 'pano' && x.origenAlzado)
+      .reverse().forEach((x, i) => add(`pano-${i}`, `A${i + 1}`, F / 2, H - x.origenAlzado![1] - x.alto / 2, grande));
+    else limites.slice(1).forEach((y, i) => add(`pano-${i}`, `A${i + 1}`, F / 2, (limites[i] + y) / 2, grande));
     const idxCintas = p.entradas.findIndex(t => t.huecos.length > 2);
     const yCintas = idxCintas >= 0 && ys[idxCintas] !== undefined ? H - (ys[Math.min(ys.length - 1, idxCintas + 4)] ?? ys[idxCintas]) - 24 : H * 0.4;
     add('cortes-et', 'CORTES EN ENTRADA DE TUBO (SOLO POR REVÉS)', F / 2, yCintas, 8);
@@ -280,6 +282,8 @@ export function colocarTextosPuerta(p: Puerta, resultado?: ResultadoPuerta): Tex
     ...(p.modelo === 'PUERTAUTO' && p.autorreparable.espaciadorCentral
       ? [{ x: F / 2 - 15, y: 30, ancho: 17, alto: Math.max(0, H - 44) }] : []),
     ...ventanas,
+    ...(p.modelo === 'PUERTAPLE' ? (resultado?.piezas ?? []).flatMap(x => x.clase === 'cristal' && x.origenAlzado
+      ? [{ x: 0, y: H - x.origenAlzado[1] - x.alto, ancho: F, alto: x.alto }] : []) : []),
     ...bandasTubos,
     ...cajaBolsillo,
     { x: 0, y: H - hSaco - 1, ancho: F, alto: hSaco + 1 },

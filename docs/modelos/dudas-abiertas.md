@@ -604,6 +604,16 @@ en la comprobación de stock.
 
 **Q-PU-STOCK-01 (23/11/2026).** ¿Son estas las bobinas que hay que consultar en RPS al generar una entrega de puertas? Las activas coinciden con el ancho y el RAL o con la referencia ya contrastada. Las pendientes requieren confirmar el color, el nombre comercial o el ancho. En el diálogo se puede añadir la referencia correcta del catálogo con sus metros.
 
+### Ventanal corrido en apilables · 25/11/2026
+
+- **Q-PU05.** Para AR2605731, ¿queda la E.T. de Ø42 en 13,5 también junto al cristal?
+  El DWG de AR2605136 confirma 2 cm de solape arriba y abajo con E.T. de Ø30.
+  Aplicado a la medida de Ø42 del pedido da cristal de 504 × 42,5 y cachos de 16 × 42,5.
+  En la plantilla antigua hay una nota genérica de 14 cm para ventanales de lado a lado.
+- **Q-PU06.** Si dos ventanales seguidos comparten tubo, ¿basta la E.T. habitual entre
+  los dos cristales o necesita una segunda tira? En la apilable la web conserva una
+  E.T. con los recortes del pedido. Falta un corte de apilable con ambos tramos.
+
 | Nombre en el corte | Ancho (cm) | Código propuesto | Estado |
 |---|---:|---|---|
 | LAC900 AZUL 5002 | 300 | `LAC900AZ02P300` | Confirmada |

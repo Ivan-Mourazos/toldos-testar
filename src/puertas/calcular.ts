@@ -12,7 +12,8 @@ import { calcularPuertasLuz } from './puertasluz.ts';
 import { calcularSantaPau } from './santapau.ts';
 import { abajoRejillaTgm, calcularTgm, envoltorioTgm } from './tgm.ts';
 import { fichaDePuerta } from './clientes.ts';
-import { panoContinuoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
+import { anchoCristalVentanal, EXTRA_CACHO_VENTANAL, panoContinuoEnrollable, SOLAPE_VENTANAL, ventanalesEnrollable } from './ventanalesEnrollable.ts';
+import { ventanalesApilable } from './ventanalesApilable.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
 import { ensancharPieza, huecosSinEscuadrado, llevaEscuadrado } from './escuadrado.ts';
 import { bajoDobleSaco, desnivelSuelo, envoltorioDobleSaco, espejarPieza, inclinarSaco, pestanaDerecha, sacoApilable, sacoPuerta, sacoUtil, utilSacoExterior } from './saco.ts';
@@ -89,7 +90,9 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
   if (p.confirmada && !p.ventanasConfirmadas) aviso('VENTANAS', 'Falta confirmar las ventanas con el dibujo (o que la puerta es ciega).');
   if (!p.of.trim() || p.of.trim().toUpperCase()==='SIN OF') aviso('SIN_OF', 'Sin OF: se puede ver y revisar, pero no se guardan archivos hasta poner la OF.', 'aviso');
   if (p.modelo === 'PUERTAPLE' && /enrollable|varilla\s+superior/i.test(p.observaciones)) aviso('TEXTO_MODELO', 'El texto del pedido habla de enrollable o de varilla superior: comprueba en el dibujo que es apilable.', 'aviso');
-  if ((!rejilla && /rejilla/i.test(p.observaciones)) || /mosquitera|antivand[aá]lica|franja corrida|recambio/i.test(p.observaciones)) aviso('FUERA_FASE', 'El texto del pedido pide algo que la web todavía no despieza (rejilla, mosquitera, antivandálica…): hazlo a mano.');
+  const franjaApilable = p.modelo === 'PUERTAPLE' && Boolean(p.apilable.ventanales?.length);
+  if ((!rejilla && /rejilla/i.test(p.observaciones)) || (!franjaApilable && /franja corrida/i.test(p.observaciones))
+    || /mosquitera|antivand[aá]lica|recambio/i.test(p.observaciones)) aviso('FUERA_FASE', 'El texto del pedido pide algo que la web todavía no despieza (rejilla, mosquitera, antivandálica…): hazlo a mano.');
   if (avisos.some(a => ['MEDIDAS', 'CANTIDAD'].includes(a.codigo))) return r;
   const bastilla = p.tgm?.laterales === 'bastilla' ? p.tgm.bastilla ?? 0 : 0;
   const envoltorio = envoltorioTgm(p);
@@ -176,6 +179,14 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
     const x = agregar(pieza(`Entrada de tubo ${i + 1}`, 'entrada', e.largo - (escuadrado ? 2 : 0), alto, materialEntrada));
     x.huecos = huecosET(e);
     x.origenAlzado = [0, e.altura - alto / 2];
+    return x;
+  }
+  function numerarCacho(cacho: PiezaPuerta, otra: PiezaPuerta, x: number) {
+    const [ax, ay] = cacho.origenAlzado!, [bx, by] = otra.origenAlzado!;
+    const y = n((Math.max(ay, by) + Math.min(ay + cacho.alto, by + otra.alto)) / 2);
+    const numero = ++numeroUnion;
+    for (const [destino, ox, oy] of [[cacho, ax, ay], [otra, bx, by]] as const)
+      (destino.unionesCorte ??= []).push({ x: n(x - ox), y: n(y - oy), numero });
   }
   function sacoConPestana(w: number, h: number, pestana: number, altoPestana: number, desde: number, nombre = 'Saco') {
     const x = pieza(nombre, 'saco', w + pestana, h, materialSaco, rolloSaco);
@@ -248,8 +259,8 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
       }
     }
     if(ventanales.length===1) {
-      agregar(pieza('Cristal del ventanal', 'cristal', p.frente-2*e.margen+4, ventanales[0].altoCorte, p.materialCristal,p.rolloCristal));
-      agregar(pieza('Cachos laterales', 'cacho', e.margen+1,ventanales[0].altoCorte,lona,p.rollo,2));
+      agregar(pieza('Cristal del ventanal', 'cristal', anchoCristalVentanal(p.frente,e.margen), ventanales[0].altoCorte, p.materialCristal,p.rolloCristal));
+      agregar(pieza('Cachos laterales', 'cacho', e.margen+EXTRA_CACHO_VENTANAL,ventanales[0].altoCorte,lona,p.rollo,2));
     } else if (ventanales.length > 1) {
       // AR2605065 (A) y AR2605038 (D): los cachos son piezas sueltas, no huecos de un paño entero.
       const separaciones:Array<{delantera:PiezaPuerta;trasera:PiezaPuerta}>=[];
@@ -267,26 +278,21 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
       const superior=paneles.find(t=>t.desde<=bordeSuperior+.001&&t.hasta>bordeSuperior)!;
       const inferior=paneles.find(t=>t.desde<bordeInferior&&t.hasta>=bordeInferior-.001)!;
       for(const [i,v] of ventanales.entries()) {
-        agregar(pieza(`Cristal del ventanal ${i+1}`,'cristal',p.frente-2*v.margen+4,v.altoCorte,p.materialCristal,p.rolloCristal));
+        agregar(pieza(`Cristal del ventanal ${i+1}`,'cristal',anchoCristalVentanal(p.frente,v.margen),v.altoCorte,p.materialCristal,p.rolloCristal));
         for(const [lado,nombre] of ['izquierdo','derecho'].entries()) {
-          const cacho=agregar(pieza(`Cacho ${nombre} · ventanal ${i+1}`,'cacho',v.margen+1,v.altoCorte));
+          const cacho=agregar(pieza(`Cacho ${nombre} · ventanal ${i+1}`,'cacho',v.margen+EXTRA_CACHO_VENTANAL,v.altoCorte));
           cacho.origenAlzado=[lado===0?-1:p.frente-v.margen,n(p.alto-v.corteHasta)];
           // Cada pareja de mininúmeros en el mismo punto de la puerta (Iván, 27/10/2026: «no quedan exactos»): a 4 cm del
           // borde de la puerta, no del de cada pieza (el cacho es 1 cm más ancho para escuadrar), y en medio de lo que se
           // solapan las dos piezas. Antes el del cacho quedaba 1 cm hacia fuera y, en la E.T. del medio, 0,25 desplazado.
           const xPuerta=lado===0?4:p.frente-4;
-          const enPuerta=(x:PiezaPuerta)=>{const [ox,oy]=x.origenAlzado??[0,0];return {ox,desde:oy,hasta:oy+x.alto};};
-          const juntar=(otra:PiezaPuerta,numero:number)=>{
-            const a=enPuerta(cacho),b=enPuerta(otra),y=n((Math.max(a.desde,b.desde)+Math.min(a.hasta,b.hasta))/2);
-            for(const [destino,o] of [[cacho,a],[otra,b]] as const)
-              destino.unionesCorte=[...destino.unionesCorte??[],{x:n(xPuerta-o.ox),y:n(y-o.desde),numero}];
-          };
-          const arriba=++numeroUnion,abajo=++numeroUnion;
-          if(i===0&&superior)juntar(superior.pieza,arriba);
           // En la E.T. del medio solo se numera la delantera; la de detrás no hace falta (Iván, 22/10/2026).
-          else if(i>0)juntar(separaciones[i-1].delantera,arriba);
-          if(i===ventanales.length-1&&inferior)juntar(inferior.pieza,abajo);
-          else if(i<separaciones.length)juntar(separaciones[i].delantera,abajo);
+          const unirArriba=i===0?superior?.pieza:separaciones[i-1].delantera;
+          const unirAbajo=i===ventanales.length-1?inferior?.pieza:separaciones[i].delantera;
+          if(unirArriba) numerarCacho(cacho,unirArriba,xPuerta);
+          else numeroUnion++;
+          if(unirAbajo) numerarCacho(cacho,unirAbajo,xPuerta);
+          else numeroUnion++;
         }
       }
     }
@@ -355,20 +361,68 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
       aviso('EMPATE', 'Los tubos de empate deben existir, estar ordenados y no repetirse.');
       empates=[];
     }
-    const tubos=alturas.map((eje,i)=>({eje,solape:entradaEn(i+1),tubo:i+1}));
+    const { ventanales, avisos: avisosVentanales } = ventanalesApilable(p, alturas);
+    avisos.push(...avisosVentanales);
+    const tubosVentanal = new Set(ventanales.flatMap(v => [v.tramo, v.tramo + 1]));
+    if (empates?.some(t => tubosVentanal.has(t))) {
+      aviso('EMPATE_VENTANAL', 'Hay un empate en una E.T. del ventanal. Elige otro tubo en «Otros ajustes».');
+      empates = empates.filter(t => !tubosVentanal.has(t));
+    }
+    const tubos=alturas.map((eje,i)=>({eje,solape:entradaEn(i+1),tubo:i+1})).filter(t=>!tubosVentanal.has(t.tubo));
     // La caja incluye el extremo más bajo; los tubos y empates conservan su cota horizontal.
     const pendiente = desnivel / p.frente;
     const minimoBajo = Math.min(-lateral*pendiente,(ancho-lateral)*pendiente);
-    const plan=repartirPanos({desde:bajo+minimoBajo,hasta:arriba,frente:ancho,rollo:p.rollo,tubos,indicados:empates?.map(t=>tubos[t-1])});
-    reparto(plan,'Paño'); empates=plan.uniones.flatMap(u=>u.tubo?[u.tubo]:[]); r.empates=empates;
-    r.uniones.push(...plan.uniones.map(u=>({altura:u.eje,solape:u.solape,tubo:u.tubo})));
+    const base = bajo + minimoBajo;
+    if (ventanales.length && (ventanales[0].corteDesde <= bajo + Math.max(-lateral*pendiente,(ancho-lateral)*pendiente)
+      || ventanales.at(-1)!.corteHasta >= arriba)) {
+      aviso('VENTANAL_REMATE', 'El ventanal invade el saco o la cabecera. Revisa las cotas de los tubos.');
+    }
+    const grupos: Array<{ desde: number; hasta: number; nombre: string }> = [];
+    let desde = base;
+    for (const [i, v] of ventanales.entries()) {
+      // Dos tramos seguidos se encuentran en su E.T. común, sin un paño entre ellos.
+      if (ventanales[i-1]?.tramo !== v.tramo - 1 && v.visibleDesde > desde)
+        grupos.push({ desde, hasta: v.visibleDesde, nombre: `Paño bajo ventanal ${v.tramo}` });
+      desde = v.visibleHasta;
+    }
+    grupos.push({ desde, hasta: arriba, nombre: ventanales.length ? 'Paño superior' : 'Paño' });
+    for (const g of grupos) {
+      const plan = repartirPanos({ ...g, frente:ancho, rollo:p.rollo, tubos,
+        indicados: empates === null ? undefined : tubos.filter(t => empates?.includes(t.tubo)
+          && (!ventanales.length || t.eje > g.desde && t.eje < g.hasta)) });
+      reparto(plan, g.nombre);
+      r.empates.push(...plan.uniones.flatMap(u => u.tubo ? [u.tubo] : []));
+      r.uniones.push(...plan.uniones.map(u => ({ altura:u.eje, solape:u.solape, tubo:u.tubo })));
+    }
+    empates = r.empates;
+    const entradasSueltas = new Map<number, PiezaPuerta>();
     for (const [i,e] of p.entradas.entries()) {
-      if (!empates.includes(i+1)) entrada(e,i);
+      if (!empates.includes(i+1)) entradasSueltas.set(i+1, entrada(e,i));
       const esperado = e.diametro === 42 ? 13.5 : 12;
       if (Math.abs(e.alto-esperado)>0.01) aviso('DIAMETRO', `Tubo ${i+1}: Ø${e.diametro} propone entrada de ${numero(esperado)} cm; revisa la excepción de ${numero(e.alto)} cm.`, 'aviso');
       for (const panel of paneles) {
-        const y = alturas[i]-e.alto/2-panel.desde;
-        if (y>=0 && y<=panel.pieza.alto && !empates.includes(i+1)) marca(panel.pieza,y,1);
+        const abreArriba = ventanales.some(v => v.tramo === i && v.visibleHasta === panel.desde);
+        const y = alturas[i] + (abreArriba ? e.alto/2 : -e.alto/2) - panel.desde;
+        if (y>=0 && y<=panel.pieza.alto && !empates.includes(i+1)) marca(panel.pieza,y,abreArriba ? -1 : 1);
+      }
+    }
+    for (const v of ventanales) {
+      p.ventanas.forEach((ventana, i) => {
+        if (ventana.y < v.visibleHasta && ventana.y + ventana.alto > v.visibleDesde)
+          aviso('VENTANAL_VENTANA', `La ventana individual ${i+1} invade el ventanal del tramo ${v.tramo}. Cambia una de tramo o quítala.`);
+      });
+      const altoCorte = v.corteHasta - v.corteDesde;
+      const cristal = agregar(pieza(`Cristal del ventanal ${v.tramo}`, 'cristal', anchoCristalVentanal(p.frente,v.margen), altoCorte, p.materialCristal, p.rolloCristal));
+      cristal.origenAlzado = [v.margen - SOLAPE_VENTANAL, v.corteDesde];
+      const arriba = paneles.find(t => t.desde === v.visibleHasta)?.pieza ?? entradasSueltas.get(v.tramo + 1);
+      const abajo = paneles.find(t => t.hasta === v.visibleDesde)?.pieza ?? entradasSueltas.get(v.tramo);
+      for (const [lado, nombre] of ['izquierdo', 'derecho'].entries()) {
+        const cacho = agregar(pieza(`Cacho ${nombre} · ventanal ${v.tramo}`, 'cacho', v.margen + EXTRA_CACHO_VENTANAL, altoCorte));
+        cacho.origenAlzado = [lado === 0 ? -EXTRA_CACHO_VENTANAL : p.frente - v.margen, v.corteDesde];
+        const distancia = Math.min(4, v.margen / 2);
+        const x = lado === 0 ? distancia : p.frente - distancia;
+        if (arriba) numerarCacho(cacho, arriba, x);
+        if (abajo) numerarCacho(cacho, abajo, x);
       }
     }
     const ultimo = paneles.at(-1)!.pieza;
@@ -398,7 +452,7 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
     const entero = a.doble
       ? pieza('Envoltorio del doble saco', 'saco', w, h, materialSaco, rolloSaco)
       : sacoConPestana(w, h, pestana, altoPestana, desdePestana, 'Saco');
-    if (/negro|9005|\bblack\b/i.test(p.color)) { entero.material=lona; entero.rollo=p.rollo; agregar(entero); }
+    if (sacoEnLona || esNegro(p.color) && p.sacoDiagonalesAmarillas) { entero.material=lona; entero.rollo=p.rollo; agregar(entero); }
     else {
       const izquierdo = a.doble
         ? pieza('Envoltorio partido · izquierda', 'saco', w / 2 + 1, h, p.materialSaco, p.rolloSaco)

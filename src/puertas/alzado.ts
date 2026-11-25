@@ -9,6 +9,7 @@ import { bajoDobleSaco, desnivelSuelo, envoltorioDobleSaco, pestanaDerecha, rotu
 import { medidaSystemDock, REGLAS_SYSTEM_DOCK } from './systemDock.ts';
 import { NOTA_CACHOS_CRISTAL, notaPlanoEnrollable, panoContinuoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
+import { notaPlanoApilable, ventanalesApilable } from './ventanalesApilable.ts';
 import type { Hueco, Puerta, Punto, ResultadoPuerta } from './tipos.ts';
 import type { LienzoEnrollable } from './planoEnrollable.ts';
 
@@ -126,6 +127,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   // Sin ventanal (puerta ciega), como si no hubiera T: un solo paño.
   const T = enr && p.enrollable.T > 0 && !panoContinuoEnrollable(p) ? p.enrollable.T : 0;
   const ventanales = enr && T > 0 ? ventanalesEnrollable(p) : [];
+  const ventanalesPle = ple ? ventanalesApilable(p, tubos).ventanales : [];
   const ejesVentanal = [T];
   for (const v of ventanales) ejesVentanal.push(ejesVentanal.at(-1)! + v.D);
   const D = p.enrollable.D;
@@ -251,6 +253,18 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
     }
   }
 
+  for (const v of ventanalesPle) {
+    const y = H - v.visibleHasta, { margen: m, altoVisible } = v;
+    rect('puerta-cacho', 0, y, m, altoVisible);
+    rect('puerta-cacho', F - m, y, m, altoVisible);
+    rect('puerta-cristal', m, y, F - 2 * m, altoVisible);
+    const centro = y + altoVisible / 2;
+    for (const [x1, x2] of [[0, m], [m, F - m], [F - m, F]]) {
+      cota({ x1, y1: centro, x2, y2: centro, linea: centro, valor: x2 - x1, marcas: 0,
+        texto: { x: (x1 + x2) / 2, y: centro - 3, ancla: 'middle' } });
+    }
+  }
+
   // Ventanas individuales en apilable y autorreparable
   if (!enr || p.enrollable.ventanasPequenas) {
     const filas = new Map<number, typeof p.ventanas>();
@@ -276,12 +290,14 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   }
 
   // Bandas de entrada de tubo (enrollable y apilable) y sus cotas de alto a la izquierda
+  const ejesSobreVentanal = new Set(ventanalesPle.map(v => H - tubos[v.tramo]));
   for (const b of bandasIzquierda) {
     rect('puerta-entrada-alzado', 0 - margen, b.y - b.alto / 2, F + margen * 2, b.alto);
     linea('puerta-tubo', 0, b.y, F, b.y);
     cota({ x1: -12, y1: b.y - b.alto / 2, x2: -12, y2: b.y + b.alto / 2, linea: -12, valor: b.alto, estilo: enr ? 'XERAL 5' : 'XERAL', marcas: 4, texto: { x: -18, y: b.y + 3, ancla: 'end' } });
     if (!pvcTgm || !resultado.uniones.some(u => u.tubo && Math.abs(H - b.y - u.altura) < .01)) {
-      marca(b.y + (p.tgm && enr ? solapeEntradaEnrollable(p) : b.alto) / 2, -1);
+      const sentido = ejesSobreVentanal.has(b.y) ? 1 : -1;
+      marca(b.y - sentido * (p.tgm && enr ? solapeEntradaEnrollable(p) : b.alto) / 2, sentido);
     }
   }
   marca(auto ? 30 : ple ? p.apilable.bolsillo / 2 : 3.5);
@@ -320,7 +336,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
 
   // La tira entre ventanales lleva los mismos mininúmeros que el corte y el plano.
   // Una pareja coincidente se escribe una sola vez en pantalla.
-  if (enr && ventanales.length > 1) {
+  if (ventanales.length > 1 || ventanalesPle.length) {
     const escritas = new Set<string>();
     for (const pieza of resultado.piezas) {
       if (!pieza.origenAlzado) continue;
@@ -479,10 +495,10 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
     nota(enr ? 'COSER VELCRO DERECHO DE 3 SUAVE' : ple ? 'COSER VELCRO DERECHO DE 5 SUAVE' : 'VELCRO SUAVE REVÉS DE 3',
       wSaco / 2, y1 + 25, altoVelcro, [wSaco * 0.2, y1 + 20, 4.5, y1]);
   }
-  const notaEnr = enr ? notaPlanoEnrollable(p) : '';
-  if (notaEnr) {
+  const notaPlano = enr ? notaPlanoEnrollable(p) : ventanalesPle.length ? notaPlanoApilable(p) : '';
+  if (notaPlano) {
     formas.push({ tipo: 'texto', x: F / 2, y: y1 + 46, tamano: 7.5, ancla: 'middle',
-      lineas: notaEnr === NOTA_CACHOS_CRISTAL ? ['LOS CACHOS DE LOS LATERALES DEL CRISTAL', 'VAN 1CM MÁS GRANDE PARA DESPUÉS ESCUADRARLO'] : [notaEnr], taller: { guia: null } });
+      lineas: notaPlano === NOTA_CACHOS_CRISTAL ? ['LOS CACHOS DE LOS LATERALES DEL CRISTAL', 'VAN 1CM MÁS GRANDE PARA DESPUÉS ESCUADRARLO'] : [notaPlano], taller: { guia: null } });
   }
   if (auto) nota('CREMALLERA SOLDADA HASTA MITAD DE SACO', F / 2, y1 + 47, Math.min(10, F / 32));
 

@@ -71,11 +71,53 @@ Los huecos laterales propuestos son 5 × 7,5 para Ø30 y 5 × 9,5 para Ø42, a 1
 
 Las ventanas se pueden introducir una a una o por filas de columnas iguales. Tienen posición desde izquierda y desde abajo, dimensiones y radios de hueco y cristal. El cristal suma 4 por dimensión, 2 por lado. Las curvas del hueco van a CUTTER; los tramos rectos del cristal van a DISCO1 y sus curvas a CUTTER.
 
+### Ventanal corrido entre dos entradas
+
+En «Ventanas» se añade un ventanal eligiendo el tramo entre dos tubos, contado desde abajo,
+y el margen lateral `m` que indica la hoja. Se pueden añadir varios tramos y conservar ventanas
+individuales en otros. La altura del ventanal sigue los ejes y los altos de las E.T. al editarlos.
+
+**Contraste del 25/11/2026.** RPS identifica AR.26.05731, OF 0234313, Portanova, tres apilables
+de 530 × 575 en negro 9005. La hoja sitúa el ventanal entre los ejes 141 y 193, con 15 de
+margen a ambos lados y E.T. de 13,5 (Ø42). No apareció su DWG en la carpeta anual.
+El antecedente de Portanova AR.26.05136, OF 0233187, es de seis puertas de las mismas medidas.
+RPS registra el fin real de la OF el 10/11/2026.
+En `2026/AR2605136.dwg`, convertido a DXF desde una copia local, el dibujo de esas seis
+puertas trae la misma cadena, los mismos márgenes y E.T. de 12 (Ø30). La geometría
+del dibujo permite comprobar lo siguiente, en cm y con alturas desde el bajo terminado.
+
+| Pieza o cota | AR2605136, DWG | AR2605731, cálculo con E.T. de 13,5 |
+| --- | --- | --- |
+| Ejes que enmarcan el ventanal | 141 y 193 | 141 y 193 |
+| Bordes de los paños que dan al ventanal | 147 y 187 | 147,75 y 186,25 |
+| Hueco visible | 500 × 40 | 500 × 38,5 |
+| Cristal | 504 × 44, de 145 a 189 | 504 × 42,5, de 145,75 a 188,25 |
+| Cachos | Dos de 16 × 44 | Dos de 16 × 42,5 |
+| Saco | Rotulado «SACO 900 GR AMARILLO», geometría histórica | Útil 80, corte 26, con las dos alternativas vigentes |
+
+Cada paño cubre la E.T. hasta el borde que da al ventanal. El cristal y los cachos pisan 2 cm
+de paño por arriba y por abajo. El cristal mide `F − 2m + 4` y cada cacho `m + 1`, con ese
+centímetro por fuera para escuadrar. Son los mismos aumentos que en las enrollables
+AR2604638 y AR2605134. Las E.T. conservan sus recortes de extremos y cintas. Si dos
+ventanales comparten tubo, se conserva su E.T. como pieza común y se numeran las cuatro
+uniones con ella. El bot coloca el cristal en el rollo de transparente y los cachos en el de
+lona. Los paños se reparten por rollo dentro de cada zona de lona, con los tubos del ventanal
+fuera de la propuesta de empates. El corte y el plano conservan los mininúmeros de unión.
+Las comprobaciones pendientes de confección están en [dudas-abiertas.md](./dudas-abiertas.md).
+
 ### Saco sencillo y doble saco
 
-**Saco del pedido (Iván, 23/10/2026):** se pone el saco útil que indica el pedido, en mm, y rematado queda 1 cm más grande: 80 → 9 cm, 110 → 12 cm, 120 → 13 cm. Corte = 2 × rematado + 8 y pestaña 10 × (rematado + 2): 80 → corte 26, pestaña 10 × 11; 110 → 32 y 10 × 14; 120 → 34 y 10 × 15. Antes el de 80 se cortaba de 30 y quedaba de 11 (se daba de más); el paño de abajo crece lo que encoge el saco. En el plano se rotula el saco del pedido («SACO DE 110»), no el rematado. Las pruebas que copian cortes reales anteriores usan el saco de 100, que es el rematado de 11 de entonces. La pestaña queda a 2 de un borde y **va al lado que pinte el pedido**, mirando por el revés (izquierda por defecto): con la derecha, el saco entero, el partido (la mitad con pestaña pasa a la derecha), el plano y el alzado se dan la vuelta, también con suelo inclinado. En el doble saco, el de 80 integrado también queda de 9: el paño arranca 11 por debajo del bajo (rematado + 2, antes 13,5); el envoltorio (F − 6) × 37 no cambia. Si el cuerpo es negro, se coloca el saco en el corte de ese material. Con otro color se muestran entero y partido como **alternativas del mismo saco**, sin sumarlas a la cantidad nominal. Al partir, cada mitad incorpora 1 para la unión de 2; solo una lleva la pestaña.
+**Saco del pedido (Iván, 23/10/2026):** se pone el saco útil que indica el pedido, en mm, y rematado queda 1 cm más grande: 80 → 9 cm, 110 → 12 cm, 120 → 13 cm. Corte = 2 × rematado + 8 y pestaña 10 × (rematado + 2): 80 → corte 26, pestaña 10 × 11; 110 → 32 y 10 × 14; 120 → 34 y 10 × 15. Antes el de 80 se cortaba de 30 y quedaba de 11 (se daba de más); el paño de abajo crece lo que encoge el saco. En el plano se rotula el saco del pedido («SACO DE 110»), no el rematado. Las pruebas que copian cortes reales anteriores usan el saco de 100, que es el rematado de 11 de entonces. La pestaña queda a 2 de un borde y **va al lado que pinte el pedido**, mirando por el revés (izquierda por defecto): con la derecha, el saco entero, el partido (la mitad con pestaña pasa a la derecha), el plano y el alzado se dan la vuelta, también con suelo inclinado. En el doble saco, el de 80 integrado también queda de 9: el paño arranca 11 por debajo del bajo (rematado + 2, antes 13,5); el envoltorio (F − 6) × 37 no cambia. Si el cuerpo y el saco son negros, el saco va en el corte de la propia lona. Cuando el saco lleva su propio material se muestran entero y partido como **alternativas del mismo saco**, sin sumarlas a la cantidad nominal. Al partir, cada mitad incorpora 1 para la unión de 2; solo una lleva la pestaña.
 
 **Raya de soldar el saco (Iván, 18/11/2026, AR2605391):** en el corte del bot, el paño de abajo de la apilable lleva una raya de rotulador a 2 cm de su bajo, donde se suelda el saco (también con doble saco). Con suelo inclinado la raya sigue el bajo. El plano ya la dibujaba; la enrollable y la autorreparable ya la llevaban en el corte.
+
+**Acabado del saco (25/11/2026).** El formulario genérico de apilable, enrollable y
+autorreparable permite elegir Negro, Amarillo o Negro con diagonales amarillas. Amarillo
+selecciona `LAC900 AMARILLO` y rollo de 300, con el rótulo «SACO 900 GR AMARILLO».
+Ofrece el saco entero y en dos piezas en su propio rollo aunque la puerta sea negra.
+El saco negro de puerta negra va entero en el rollo de la propia lona. La opción con
+diagonales parte de material negro y conserva la marca de impresión. En «Materiales y
+rollos» se pueden escribir otros materiales o anchos.
 
 **Doble saco (plantilla PORTANOVA (NAVE NOVA), recuadro azul; Iván, 19/11/2026 y 23/11/2026, AR2605641):** el pedido da el útil de los dos sacos (interior 120, exterior 170: «que pise esos 50 mm mayores»; si no se pone el exterior, se toma el interior + 50, y si no es mayor que el interior la web avisa).
 - **Saco interior integrado en el paño**: el interior se remata como un saco normal (`rematado = útil/10 + 1`; 80 → 9, 120 → 13). El paño arranca `rematado + 2` por debajo del bajo terminado (`bajoDobleSaco = −(rematado + 2)`: −11 en el de 80, −15 en el de 120) y lleva la raya de rotulador a `2 × (rematado + 2)` desde su borde de corte (`+(rematado + 2)` sobre el bajo: 22 en el de 80, 30 en el de 120), de modo que al doblar la lona hasta esa raya suelda 2 cm hacia abajo y queda el rematado exacto conservando H.

@@ -3,9 +3,26 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { enrollable5470 } from '../../puertas/__fixtures__/enrollable5470.ts';
 import { apilable } from '../../puertas/__fixtures__/ejemplos.ts';
-import { VentanasEntreTubos } from './PuertasView';
+import { AcabadoSaco, VentanalesEntreTubos, VentanasEntreTubos } from './PuertasView';
+import { apilableVentanal } from '../../puertas/__fixtures__/apilableVentanal.ts';
 import { conEntradasDePuerta } from './ventanasPuertas';
 import { textoCotaMm, textoAlzadoMm } from './alzadoEnMm';
+
+it('configura el tramo y margen del ventanal y el acabado del saco', () => {
+  const p = apilableVentanal();
+  const html = renderToStaticMarkup(<VentanalesEntreTubos p={p} cambiar={()=>undefined}/>);
+  expect(html).toContain('Entre tubo 3 y 4');
+  expect(html).toContain('Margen lateral ventanal del tramo 3 (mm)');
+  expect(html).toContain('value="150"');
+  let editada = p;
+  const selector = AcabadoSaco({ p, cambiar: nueva => { editada = nueva; } });
+  expect(selector.props.options).toEqual(['Negro', 'Amarillo', 'Negro con diagonales amarillas']);
+  expect(selector.props.value).toBe('Amarillo');
+  selector.props.onChange('Negro con diagonales amarillas');
+  expect(editada).toMatchObject({ materialSaco: 'LAC900 NEGRO', sacoDiagonalesAmarillas: true });
+  AcabadoSaco({ p: editada, cambiar: nueva => { editada = nueva; } }).props.onChange('Amarillo');
+  expect(editada).toMatchObject({ materialSaco: 'LAC900 AMARILLO', rolloSaco: 300, sacoDiagonalesAmarillas: false });
+});
 
 describe('Ventanas entre tubos, bloque común de apilable y enrollable',()=>{
   it.each([enrollable5470,apilable])('presenta los mismos campos en mm y permite editar alturas antiguas',crear=>{
