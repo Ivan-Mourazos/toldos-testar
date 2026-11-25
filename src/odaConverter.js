@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
+import { medirFaseGenerar } from './tiemposGenerar.js';
 
 const ejecutar = promisify(execFile);
 
@@ -19,10 +20,10 @@ export function crearOdaConverter({ executable = '', executableArgs = [], tempRo
       await fs.mkdir(entrada);
       await fs.mkdir(salida);
       await fs.writeFile(path.join(entrada, `plano.${desde}`), contenido);
-      await ejecutar(executable, [...executableArgs, entrada, salida, 'ACAD2018', hasta.toUpperCase(), '0', '1', `*.${desde}`], {
+      await medirFaseGenerar('oda', () => ejecutar(executable, [...executableArgs, entrada, salida, 'ACAD2018', hasta.toUpperCase(), '0', '1', `*.${desde}`], {
         timeout: timeoutMs, windowsHide: true, maxBuffer: 1024 * 1024,
         env: { ...process.env, ...(process.platform === 'linux' ? { QT_QPA_PLATFORM: 'offscreen' } : {}), ...env }
-      });
+      }));
       const archivos = await archivosEn(temporal);
       if (archivos.some((p) => /\.err$/i.test(p))) throw new Error('ODA dejó un fichero .err.');
       const resultados = archivos.filter((p) => p.startsWith(salida + path.sep) && p.toLowerCase().endsWith(`.${hasta}`));

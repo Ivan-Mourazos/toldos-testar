@@ -2,6 +2,7 @@ import { adjuntarPedido } from './adjuntosPedido.js';
 import { normalizeOf } from './reviewRules.js';
 import { comprobarConfirmacionPapelera, errorRegistro, moverRegistroAPapelera, reabrirRegistro, terminarRegistro } from './gestionRegistro.js';
 import fs from 'node:fs/promises';
+import { medirFaseGenerar, registrarBytesGenerados } from './tiemposGenerar.js';
 import { abrirEntrega, cerrarEntrega, conservarOfsGeneradas, entregasPedido, pedidoEntrega, ofsEntrega } from './entregas.js';
 import { renombrarAtomico, sustituirApartando } from './renombrarAtomico.js';
 import path from 'node:path';
@@ -697,15 +698,18 @@ export async function fileExists(target) {
 // `conservarAnterior` (planos) y `apartarAntes` (pedido de TOLDOS): nunca se renombra encima del existente;
 // el anterior se aparta como .bakdwg/.bakpdf y se borra al terminar bien (ver sustituirApartando).
 export async function writeFileAtomic(targetPath, contents, { conservarAnterior = false, apartarAntes = false } = {}) {
-  const tmpPath = `${targetPath}.tmp-${process.pid}-${Date.now()}`;
-  await fs.writeFile(tmpPath, contents);
-  try {
-    if (apartarAntes || conservarAnterior) await sustituirApartando(tmpPath, targetPath);
-    else await renombrarAtomico(tmpPath, targetPath);
-  } catch (error) {
-    await fs.unlink(tmpPath).catch(() => {});
-    throw error;
-  }
+  return medirFaseGenerar('escrituras', async () => {
+    const tmpPath = `${targetPath}.tmp-${process.pid}-${Date.now()}`;
+    await fs.writeFile(tmpPath, contents);
+    try {
+      if (apartarAntes || conservarAnterior) await sustituirApartando(tmpPath, targetPath);
+      else await renombrarAtomico(tmpPath, targetPath);
+    } catch (error) {
+      await fs.unlink(tmpPath).catch(() => {});
+      throw error;
+    }
+    registrarBytesGenerados(contents);
+  });
 }
 
 async function writeJsonAtomic(targetPath, value) {

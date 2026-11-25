@@ -333,6 +333,23 @@ pnpm pm2:status
 pnpm pm2:logs
 ```
 
+### Medir «Generar archivos»
+
+En el servidor .90, añade `TIEMPOS_GENERAR=1` al `.env` de la aplicación y
+recarga el proceso con `pm2 reload toldos-testar --update-env`. Para desactivarlo,
+borra la línea o pon `TIEMPOS_GENERAR=0` y vuelve a recargar.
+
+```bash
+pm2 logs toldos-testar --raw --lines 200 | grep '"evento":"tiempos-generar"'
+```
+
+Cada respuesta de «Generar archivos» o «Pasar a producción» deja una línea JSON.
+Incluye el pedido, la ruta, el estado HTTP, la pregunta si hubo un 409, el total
+y los tiempos por fase en milisegundos. `conversionesOda` cuenta las conversiones
+intentadas y `bytesEscritos` suma los datos de los archivos publicados. Las fases
+pueden solaparse (por ejemplo, ODA dentro de la comprobación del DWG o una
+escritura dentro de `saveReview`). La medida está apagada por defecto.
+
 El rollback consiste en volver al commit anterior, repetir `pnpm install`,
 `pnpm build`, `pnpm deploy:check` y `pnpm pm2:reload`. No se debe tocar el JSON
 persistente ni los archivos de las carpetas compartidas.
