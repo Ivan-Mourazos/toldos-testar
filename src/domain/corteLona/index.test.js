@@ -7,8 +7,11 @@ import { registrosDxf, valor, numero } from './dxfTestHelpers.js';
 const generar = (order = revision.order, opciones = {}) => generarCorteLona(order, { ofStockSacos: '0230811', ...opciones });
 
 describe('Del pedido guardado al corte de lona', () => {
+  let revisionCalculada;
+  const corteRevision = () => revisionCalculada ??= generar();
+
   it('recalcula AR2604784 y conserva sus medidas reales', () => {
-    const resultado = generar();
+    const resultado = corteRevision();
     expect(resultado.modelos).toEqual(['GALICIA']);
     expect(resultado.avisos).toEqual([]);
     expect(resultado.cortes.conSacos).toHaveLength(1);
@@ -86,7 +89,7 @@ describe('Del pedido guardado al corte de lona', () => {
     for (const of of ['0232568', '0232569', '0232570']) expect(plano).toContain(of);
   });
   it('nombra la presentación de un solo toldo «TOLDO A»', () => {
-    const plano = generar().plano[0];
+    const plano = corteRevision().plano[0];
     expect(plano.geometria.hojas.map((h) => h.nombre)).toEqual(['TOLDO A']);
     expect(plano.dxf.replace(/\r\n/g, '\n')).toContain('AcDbLayout\n  1\nTOLDO A\n');
   });
@@ -102,8 +105,9 @@ describe('Del pedido guardado al corte de lona', () => {
     expect(generar(order).cortes.conSacos).toEqual([]);
     order.awnings[0].model = 'GALICIA';
     order.fabric = 'ACRILICO|||120|||TELA ACRILICA|||ACRILICA';
-    expect(generar(order).cortes.conSacos).toEqual([]);
-    expect(generar(order).avisos.length).toBeGreaterThan(0);
+    const resultado = generar(order);
+    expect(resultado.cortes.conSacos).toEqual([]);
+    expect(resultado.avisos.length).toBeGreaterThan(0);
   });
   it('sin la OF del toldo hace la vista previa con «SIN OF» y lo avisa (Iván, 21/10/2026)', () => {
     // Un pedido inventado en la web, con el toldo válido pero sin OF: «ver una vista previa del corte».
@@ -115,7 +119,7 @@ describe('Del pedido guardado al corte de lona', () => {
     expect(resultado.avisos).toEqual(['Toldo A: sin OF, es solo una vista previa; escribe la OF antes de guardarlo.']);
     expect(resultado.cortes.conSacos[0].dibujo.textos.map((t) => t.valor)).toContain('SIN OF');
     // Con OF, nada de eso.
-    expect(generar().sinOf).toEqual([]);
+    expect(corteRevision().sinOf).toEqual([]);
   });
 
   it('corta un toldo de PVC azul con la bamba en PVC blanco en dos cortes, uno por tela', () => {
@@ -257,7 +261,7 @@ describe('Del pedido guardado al corte de lona', () => {
   });
   it('aplica ajustes por id y elige vertical solo al solicitarlo', () => {
     const order = structuredClone(revision.order);
-    const normal = generar(order);
+    const normal = corteRevision();
     expect(normal.cortes.conSacos[0].piezas[0].piezas[0].nombre).toBe('A');
     const salida = generar(order, { ajustes: { [order.awnings[0].id]: { empate: 'vertical', tiraPartida: false, lateralVerticalCm: 6 } } });
     const cuerpos = salida.cortes.conSacos[0].piezas[0].piezas.filter((p) => !p.nombre.includes('BAMBA'));
@@ -334,18 +338,19 @@ describe('Del pedido guardado al corte de lona', () => {
     expect(salida.avisos).toEqual([]);
     expect(salida.plano[0].dxf).toContain('B.N(4) · VELCRO BRAVO (5) NEGRO POR REVÉS HASTA 215');
     // Y dibujado (Iván, 27/10/2026): una franja de 5 en cada lateral, después de la bastilla, rellena por ser bravo.
-    const franjas = (o) => registrosDxf(generar(o).plano[0].dxf).filter((r) => r.tipo === 'HATCH' && valor(r, 8) === 'referencia-1');
-    const bravo = franjas(order);
+    const franjas = (dxf) => registrosDxf(dxf).filter((r) => r.tipo === 'HATCH' && valor(r, 8) === 'referencia-1');
+    const bravo = franjas(salida.plano[0].dxf);
     expect(bravo).toHaveLength(2);
     expect(bravo.every((r) => valor(r, 2) === 'SOLID')).toBe(true);
     const anchos = bravo.map((r) => { const xs = r.pares.filter(([k]) => k === 10).map(([, v]) => Number(v)).slice(1); return Math.round((Math.max(...xs) - Math.min(...xs)) * 1000) / 10; });
     expect(anchos).toEqual([5, 5]);
     const suave = { ...order, awnings: [{ ...order.awnings[0], curtainVelcroType: 'SUAVE' }] };
-    expect(franjas(suave).every((r) => valor(r, 2) === 'ANGLE')).toBe(true);
+    expect(franjas(generar(suave).plano[0].dxf).every((r) => valor(r, 2) === 'ANGLE')).toBe(true);
     // Sin velcro en los laterales, ni texto ni franjas.
     const normal = { ...order, awnings: [{ ...order.awnings[0], curtainFinish: 'NORMAL' }] };
-    expect(franjas(normal)).toHaveLength(0);
-    expect(generar(normal).plano[0].dxf).not.toContain('· VELCRO');
+    const planoNormal = generar(normal).plano[0].dxf;
+    expect(franjas(planoNormal)).toHaveLength(0);
+    expect(planoNormal).not.toContain('· VELCRO');
   }, 20000);
 
   it('corta las 7 solapas de AR2604205 con empate en la oblicua D y avisa si lleva bastilla', () => {
@@ -415,8 +420,10 @@ describe('Bambalina y Soltis en el corte (Iván, 19/11/2026)', () => {
     awnings: [{ id: 'b-1', of: '0231679', model: 'BAMBALINA', workType: 'FABRIC_ONLY', units: 1,
       width: 480, projection: 0, hasValance: true, valanceHeight: 30, valanceCurve: 'RECTA', rotValance: 'NO', ...extra }]
   });
-  it.each([['PVC', pvc], ['Soltis', soltis]])('corta la bambalina en %s como una tira, con B.N(2) en las puntas y bamba + 5', (_n, fabric) => {
-    const salida = generar(bambalina(fabric));
+  let bambalinaSoltis;
+  const corteSoltis = () => bambalinaSoltis ??= generar(bambalina(soltis));
+  it.each([['PVC', () => generar(bambalina(pvc))], ['Soltis', corteSoltis]])('corta la bambalina en %s como una tira, con B.N(2) en las puntas y bamba + 5', (_n, calcular) => {
+    const salida = calcular();
     expect(salida.avisos).toEqual([]);
     expect(salida.modelos).toEqual(['BAMBALINA']);
     const corte = salida.cortes.conSacos[0];
@@ -430,7 +437,7 @@ describe('Bambalina y Soltis en el corte (Iván, 19/11/2026)', () => {
     expect(corte.dxf).toContain('CUTTER');
   });
   it('el plano de Soltis no dice lona de PVC', () => {
-    const plano = generar(bambalina(soltis)).plano[0].dxf;
+    const plano = corteSoltis().plano[0].dxf;
     expect(plano).toContain('SOLTIS');
     expect(plano).not.toContain('LONA DE PVC');
   });

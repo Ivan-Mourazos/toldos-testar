@@ -21,6 +21,10 @@ import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 const raices: string[] = [];
 let pruebaEnCurso: Promise<void> | undefined;
 
+async function comprobarBytes(ruta: string, anteriores: Buffer, iguales = true) {
+  expect((await fs.readFile(ruta)).equals(anteriores), ruta).toBe(iguales);
+}
+
 function esperarAntesDeLimpiar<Args extends unknown[]>(prueba: (...args: Args) => Promise<void>) {
   return (...args: Args) => {
     pruebaEnCurso = prueba(...args);
@@ -99,7 +103,7 @@ it.each(['EPERM', 'EACCES', 'EBUSY'])('al regenerar con %s explica el fallo y co
     statusCode: 500, message: expect.stringContaining(antes.corteConfirmado!.filename),
   });
   expect(await t.obtener()).toEqual(antes);
-  expect(await fs.readFile(antes.corteConfirmado!.plano)).toEqual(bytes);
+  await comprobarBytes(antes.corteConfirmado!.plano, bytes);
   expect(t.intentosPlano()).toBe(1);
   t.fallarPlano(null);
   expect((await t.servicio.guardar(t.cuerpo(true, { decisionCorte: 'regenerar' }))).status).toBe(200);
@@ -123,7 +127,7 @@ it('si falla publicar y restaurar el plano, el error del pedido indica dónde es
   const carpeta = path.dirname(ruta);
   const copias = (await fs.readdir(carpeta)).filter(n => n.endsWith(`.bak${path.extname(ruta).slice(1)}`));
   expect(copias).toHaveLength(1);
-  expect(await fs.readFile(path.join(carpeta, copias[0]))).toEqual(bytes);
+  await comprobarBytes(path.join(carpeta, copias[0]), bytes);
 }));
 
 it('regenera dos apilables al quitar una fila de ventanas de la segunda puerta', esperarAntesDeLimpiar(async () => {
@@ -138,11 +142,11 @@ it('regenera dos apilables al quitar una fila de ventanas de la segunda puerta',
   const original = await fs.readFile(antes.corteConfirmado!.plano);
   pedido.elementos[1].input.ventanas.splice(3);
   expect((await t.servicio.guardar({ pedido, savedBy: 'ANA' })).cuerpo).toMatchObject({ needsRegenerateConfirmation: true });
-  expect(await fs.readFile(antes.corteConfirmado!.plano)).toEqual(original);
+  await comprobarBytes(antes.corteConfirmado!.plano, original);
   expect((await t.servicio.guardar({ pedido, savedBy: 'ANA', decisionCorte: 'regenerar' })).status).toBe(200);
   const corregido = await t.obtener();
   expect(corregido.elementos.map(e => (e.input as Puerta).ventanas.length)).toEqual([6, 3]);
-  expect(await fs.readFile(corregido.corteConfirmado!.plano)).not.toEqual(original);
+  await comprobarBytes(corregido.corteConfirmado!.plano, original, false);
 }));
 
 // Integración con archivos y PDF reales: el límite no mide rendimiento del servicio.
@@ -165,10 +169,10 @@ describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido 
       t.fallar();
       await expect(guardar()).rejects.toThrow('Fallo al guardar');
       expect(await t.obtener()).toEqual(antes);
-      expect(await fs.readFile(ruta)).toEqual(bytes);
+      await comprobarBytes(ruta, bytes);
     } else {
       expect((await guardar()).status).toBe(200);
-      expect(await fs.readFile(ruta)).not.toEqual(bytes);
+      await comprobarBytes(ruta, bytes, false);
       expect((await t.obtener()).corteConfirmado!.datos).not.toBe(antes.corteConfirmado!.datos);
     }
     // Iván, 10/11/2026: sin carpeta «_anteriores» ni copias; el anterior se borra al terminar.
@@ -208,11 +212,11 @@ describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido 
     expect((await t.servicio.guardar({ ...entrada, decisionCorte: 'regenerar' })).status).toBe(200);
     expect((await generar(11, 'nuevo')).status).toBe(200);
     const segunda = await comprobar(11);
-    for (const f of originales) expect(await fs.readFile(f.ruta)).toEqual(f.bytes);
+    for (const f of originales) await comprobarBytes(f.ruta, f.bytes);
     expect((await t.servicio.guardar(t.cuerpo(true, { decisionCorte: 'regenerar' }))).status).toBe(200);
     expect((await generar(10, 'sustituir')).status).toBe(200);
     await comprobar(10);
-    for (const f of segunda) expect(await fs.readFile(f.ruta)).toEqual(f.bytes);
+    for (const f of segunda) await comprobarBytes(f.ruta, f.bytes);
   }));
   it('guardar un generado sin cambiar sus datos no abre una entrega vacía ni toca archivos', esperarAntesDeLimpiar(async () => {
     const t = await preparar(tipo);
@@ -222,7 +226,7 @@ describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido 
     const bytes = await fs.readFile(antes.corteConfirmado!.plano);
     expect((await t.servicio.guardar(t.cuerpo())).cuerpo).toMatchObject({ unchanged: true });
     expect(await t.obtener()).toEqual(antes);
-    expect(await fs.readFile(antes.corteConfirmado!.plano)).toEqual(bytes);
+    await comprobarBytes(antes.corteConfirmado!.plano, bytes);
   }));
   it('las dos copias del PDF llevan el pedido completo con su entrega y permiten recuperarlo', esperarAntesDeLimpiar(async () => {
     const t = await preparar(tipo, true);
@@ -231,7 +235,7 @@ describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido 
     const pedido = await t.obtener();
     const archivos = pedido.production!.files.filter(f => f.type === 'pdf');
     expect(archivos).toHaveLength(2);
-    expect(await fs.readFile(archivos[0].savedPath)).toEqual(await fs.readFile(archivos[1].savedPath));
+    await comprobarBytes(archivos[0].savedPath, await fs.readFile(archivos[1].savedPath));
     for (const f of archivos) {
       const tarea = getDocument({ data: new Uint8Array(await fs.readFile(f.savedPath)) });
       const doc = await tarea.promise;
@@ -274,7 +278,7 @@ describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido 
     const segunda = await t.obtener();
     expect(segunda.entregas).toHaveLength(2);
     expect(segunda.entregas![1].ofs).toEqual(['0239998']);
-    for (const f of originales) expect(await fs.readFile(f.ruta)).toEqual(f.bytes);
+    for (const f of originales) await comprobarBytes(f.ruta, f.bytes);
     const archivosSegunda = await Promise.all(segunda.entregas![1].archivos.filter(f => f.savedPath).map(async f => ({ ruta: f.savedPath!, bytes: await fs.readFile(f.savedPath!) })));
     const correccion = t.cuerpo(true, { decisionCorte: 'regenerar' });
     expect((await t.servicio.guardar(correccion)).status).toBe(200);
@@ -284,7 +288,7 @@ describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido 
     expect((await t.servicio.generar(t.codigo, { savedBy: 'IVÁN', confirmOverwrite: true, confirmarEntrega: true })).status).toBe(200);
     expect((await t.obtener()).entregas).toHaveLength(2);
     expect((await t.obtener()).entregas![0].revisiones).toHaveLength(1);
-    for (const f of archivosSegunda) expect(await fs.readFile(f.ruta)).toEqual(f.bytes);
+    for (const f of archivosSegunda) await comprobarBytes(f.ruta, f.bytes);
   }), 30000);
   it('separa una corrección y una OF nueva en dos generaciones con sus propios cortes', esperarAntesDeLimpiar(async () => {
     const t = await preparar(tipo, true);
@@ -306,7 +310,7 @@ describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido 
     expect((await t.servicio.guardar({ ...mixto, destinoEntrega: { numero: 11, modo: 'nuevo' }, confirmarEntrega: true })).status).toBe(200);
     expect((await t.servicio.generar(t.codigo, { savedBy: 'IVÁN', confirmOverwrite: true })).status).toBe(200);
     expect(await t.obtener()).toMatchObject({ status: 'PRODUCED', entregaActual: 11, entregas: [{ numero: 10 }, { numero: 11, ofs: ['0239998'] }] });
-    for (const f of archivos) expect(await fs.readFile(f.ruta)).toEqual(f.bytes);
+    for (const f of archivos) await comprobarBytes(f.ruta, f.bytes);
   }), 30000);
   it.each(['generar', 'bot'] as const)('con la marca activa, %s exige decidir antes de escribir y usar el corte queda registrado', esperarAntesDeLimpiar(async accion => {
     const t = await preparar(tipo);
@@ -328,7 +332,7 @@ describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido 
     const pedido = await t.obtener();
     expect(pedido.corteNoRegenerado).toBe(false);
     expect(pedido.corteConfirmado).toMatchObject({ por: 'IVÁN', aceptadoSinRegenerar: { por: 'IVÁN' } });
-    expect(await fs.readFile(pedido.corteConfirmado!.plano)).toEqual(bytes);
+    await comprobarBytes(pedido.corteConfirmado!.plano, bytes);
     if (accion === 'generar' || tipo === 'puertas') expect(pedido.status).toBe('PRODUCED');
   }), 20000);
 
@@ -424,10 +428,10 @@ describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido 
     const original = (await t.obtener()).corteConfirmado!;
     const bytes = await fs.readFile(original.plano);
     expect((await t.servicio.guardar(t.cuerpo(true))).cuerpo).toMatchObject({ needsRegenerateConfirmation: true });
-    expect(await fs.readFile(original.plano)).toEqual(bytes);
+    await comprobarBytes(original.plano, bytes);
     expect((await t.servicio.guardar(t.cuerpo(true, { decisionCorte: 'mantener' }))).status).toBe(200);
     expect(await t.obtener()).toMatchObject({ corteNoRegenerado: true, corteConfirmado: { huella: original.huella } });
-    expect(await fs.readFile(original.plano)).toEqual(bytes);
+    await comprobarBytes(original.plano, bytes);
     expect((await t.servicio.listar(2026)).reviews[0]).toMatchObject({ corteNoRegenerado: true });
     const pregunta = (await t.servicio.generar(t.codigo, { savedBy: 'IVÁN' })).cuerpo as { tokenCorte: string };
     expect(pregunta).toMatchObject({ corteNoRegenerado: true });
@@ -445,7 +449,7 @@ describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido 
     const bytes = await fs.readFile(pedido.corteConfirmado!.plano);
     t.fallar();
     await expect(t.servicio.guardar(t.cuerpo(false, { decisionCorte: 'regenerar' }))).rejects.toThrow('Fallo al guardar');
-    expect(await fs.readFile(pedido.corteConfirmado!.plano)).toEqual(bytes);
+    await comprobarBytes(pedido.corteConfirmado!.plano, bytes);
   }), 20000);
 
   it('en simulación regenerar guarda la decisión sin modificar el plano anterior', esperarAntesDeLimpiar(async () => {
@@ -456,7 +460,7 @@ describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido 
     expect((await t.servicio.guardar(t.cuerpo(true, { decisionCorte: 'regenerar' }))).status).toBe(200);
     expect(await t.obtener()).toMatchObject({ corteSimulado: true, corteNoRegenerado: false });
     expect((await t.obtener()).corteConfirmado).toBeUndefined();
-    expect(await fs.readFile(ruta)).toEqual(bytes);
+    await comprobarBytes(ruta, bytes);
     t.produccion(true);
     await expect(t.servicio.generar(t.codigo, { savedBy: 'IVÁN' })).rejects.toMatchObject({ statusCode: 409, message: expect.stringMatching(/simulación.*regenera/i) });
   }));
@@ -483,7 +487,7 @@ describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido 
     const bytes = await fs.readFile((await t.obtener()).corteConfirmado!.plano);
     const abierto = await t.servicio.borradorCorte({ orderCode: t.codigo, savedBy: 'IVÁN' });
     expect(abierto).toMatchObject({ status: 200, cuerpo: { existente: true } });
-    expect(await fs.readFile((await t.obtener()).corteConfirmado!.plano)).toEqual(bytes);
+    await comprobarBytes((await t.obtener()).corteConfirmado!.plano, bytes);
   }));
 
   it('también pregunta al cambiar la cabecera, que forma parte del plano', esperarAntesDeLimpiar(async () => {
