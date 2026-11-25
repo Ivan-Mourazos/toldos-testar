@@ -10,7 +10,6 @@ import { calcularPuerta, MODELOS_PUERTAS } from '../../puertas/calcular.ts';
 import { elementosAprobacion } from '../../puertas/flujo/pedido.ts';
 import type { PedidoPuertasGuardado } from '../../puertas/flujo/tipos.ts';
 import { productoDeElementos } from '../../puertas/producto.ts';
-import { numeroSacoArena } from '../../puertas/sacoArena.ts';
 import type { VistaPuertas } from '../../puertas/tipos.ts';
 import { normalizeOf, isPendingGeneration, reviewerName, TERMINADO_SIN_GENERAR } from '../../reviewRules.js';
 import { CabeceraDocumento, DocumentosPedido } from '../components/DocumentosPedido';
@@ -113,7 +112,7 @@ function FilaPuerta({ letra, puerta, coordina }: { letra: string; puerta: Pedido
     <li className="rem-pedido-elemento bloque-3d">
       <strong className="rem-pedido-letra">{letra}</strong>
       <span>{`${puerta.abrigo?`Abrigo · ${puerta.abrigo.parte}`:puerta.modelo==='SYSTEMDOCK'?'Lona System Dock':puerta.modelo==='SACOARENA'?'Saco confeccionado':`Puerta ${MODELOS_PUERTAS[puerta.modelo].toLowerCase()}`}${puerta.cantidad > 1 ? ` · ${puerta.cantidad} iguales` : ''}`}</span>
-      <span>{puerta.modelo==='SACOARENA'?`${numeroSacoArena(puerta.frente)} × ${numeroSacoArena(puerta.alto)} cm aplastado`:`${medidaPuerta(puerta.frente)}${puerta.abrigo?.parte==='laterales'?` / ${medidaPuerta(puerta.abrigo.corto)}`:''} × ${medidaPuerta(puerta.alto)} mm`}</span>
+      <span>{puerta.modelo==='SACOARENA'?`${medidaPuerta(puerta.frente)} × ${medidaPuerta(puerta.alto)} mm aplastado`:`${medidaPuerta(puerta.frente)}${puerta.abrigo?.parte==='laterales'?` / ${medidaPuerta(puerta.abrigo.corto)}`:''} × ${medidaPuerta(puerta.alto)} mm`}</span>
       <span>{`OF ${of || '—'}`}</span>
       <span className="rem-pedido-material" title={puerta.material}>{[puerta.material, puerta.color].filter(Boolean).join(' · ') || 'Sin material'}</span>
       {aprobadoPor && <span className="orders-detail-approved">{`Aprobado por ${controlLabel(aprobadoPor)}`}</span>}

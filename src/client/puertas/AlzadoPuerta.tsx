@@ -2,34 +2,54 @@ import React, { useState } from 'react';
 import { VistaAbrigo } from './Abrigo';
 import { VistaSacoArena } from './SacoArena';
 import { SelectField } from '../components/SelectField';
+import { anchoArial } from '../../domain/corteLona/texto.js';
 import { MODELOS_PUERTAS } from '../../puertas/calcular.ts';
 import { tipoDePuerta } from '../../puertas/clientes.ts';
-import { esVertical, geometriaAlzado, type CotaAlzado, type FormaAlzado, type TextoAlzado } from '../../puertas/alzado.ts';
+import { esVertical, type CotaAlzado, type FormaAlzado, type TextoAlzado } from '../../puertas/alzado.ts';
 import type { Puerta, ResultadoPuerta } from '../../puertas/tipos.ts';
-import { tramosCota } from '../../puertas/tramosCota.ts';
 import { medidaPuerta } from './medidasPuertas';
 import { textoAlzadoMm, textoCotaMm } from './alzadoEnMm';
+import { geometriaPantallaPuerta } from './alzadoPantalla';
 
-// Pinta el alzado de src/puertas/alzado.ts: el mismo dibujo que sale en el plano DWG.
+// Pinta el alzado en vivo de pantalla (estilo plano GENERAL, medidas en mm, cotas agarradas a sus piezas).
 
 const puntos = (ps: [number, number][]) => ps.map(([x, y]) => `${x},${y}`).join(' ');
 
-function Texto({ t, araujo }: { t: TextoAlzado; araujo:boolean }) {
-  const lineas=textoAlzadoMm(t.lineas.join('\n')).split('\n');
+/** Hueco de la línea de cota adaptado al ancho real del texto en mm. */
+function tramosCotaMm(c: CotaAlzado, etiqueta: string): Array<[number, number]> {
+  const v = esVertical(c);
+  const a = Math.min(v ? c.y1 : c.x1, v ? c.y2 : c.x2);
+  const b = Math.max(v ? c.y1 : c.x1, v ? c.y2 : c.x2);
+  const t = c.texto;
+  const perpendicular = v ? t.x : t.y;
+  const centro = v ? t.y : t.x;
+  if (!c.tamanoTexto || Math.abs(perpendicular - c.linea) > 0.01) return [[a, b]];
+  const mitad = anchoArial(etiqueta, c.tamanoTexto) / 2 + 1.2;
+  return [[a, Math.max(a, centro - mitad)], [Math.min(b, centro + mitad), b]].filter(([u, w]) => w > u) as Array<[number, number]>;
+}
+
+function Texto({ t, araujo, minTamano }: { t: TextoAlzado; araujo: boolean; minTamano: number }) {
+  const lineas = textoAlzadoMm(t.lineas.join('\n')).split('\n');
+  // Los mininúmeros de unión entre ventanales (tamano <= 1.5) conservan su tamaño pequeño.
+  const tamEfectivo = t.tamano !== undefined
+    ? (t.tamano <= 1.5 ? t.tamano : Math.max(t.tamano, minTamano))
+    : undefined;
+  const multilinea = lineas.length > 1;
+  const paso = (tamEfectivo ?? 10) * 1.22;
   const texto = (
     <text
       x={t.x}
-      y={t.y - (t.alineacionVertical === 'middle' && t.taller ? (lineas.length - 1) * (t.tamano ?? 10) * .6 : 0)}
-      dy={araujo?(t.tamano??5)*.36:undefined}
+      y={t.y - (t.alineacionVertical === 'middle' && multilinea ? (lineas.length - 1) * (tamEfectivo ?? 10) * 0.6 : 0)}
+      dy={araujo ? (tamEfectivo ?? 5) * 0.36 : undefined}
       textAnchor={t.ancla === 'start' ? undefined : t.ancla}
       className={t.clase}
       dominantBaseline={t.alineacionVertical}
-      style={t.tamano ? { fontSize: `${t.tamano/(araujo ? .716 : 1)}px` } : undefined}
+      style={tamEfectivo ? { fontSize: `${tamEfectivo / (araujo ? 0.716 : 1)}px` } : undefined}
       transform={t.giro ? `rotate(${t.giro} ${t.x} ${t.y})` : undefined}
     >
-      {t.taller
+      {multilinea
         ? lineas.map((linea, idx) => (
-            <tspan key={idx} x={t.x} dy={idx === 0 ? 0 : (t.tamano ?? 10) * 1.2}>
+            <tspan key={idx} x={t.x} dy={idx === 0 ? 0 : paso}>
               {linea}
             </tspan>
           ))
@@ -46,37 +66,49 @@ function Texto({ t, araujo }: { t: TextoAlzado; araujo:boolean }) {
   );
 }
 
-function Cota({ c, araujo }: { c: CotaAlzado; araujo:boolean }) {
+function Cota({ c, araujo }: { c: CotaAlzado; araujo: boolean }) {
   const v = esVertical(c);
   const [a, b] = v ? [c.y1, c.y2] : [c.x1, c.x2];
-  const linea = (s1: number, t1: number, s2: number, t2: number) =>
-    v ? <line className="puerta-cota" x1={t1} x2={t2} y1={s1} y2={s2} /> : <line className="puerta-cota" x1={s1} x2={s2} y1={t1} y2={t2} />;
+  const linea = (s1: number, t1: number, s2: number, t2: number, clase = 'puerta-cota') =>
+    v ? <line className={clase} x1={t1} x2={t2} y1={s1} y2={s2} /> : <line className={clase} x1={s1} x2={s2} y1={t1} y2={t2} />;
   const t = c.texto;
-  const h=c.estilo==='XERAL 5'?5:10;
+  const h = c.estilo === 'XERAL 5' ? 5 : 10;
+  const etiqueta = textoCotaMm(c);
+  const auxiliares: Array<[number, number]> = [[a, v ? c.x1 : c.y1], [b, v ? c.x2 : c.y2]];
+  const saltoAux = araujo ? 5 : 2;
+  const sobresalir = araujo ? 1.75 : Math.max(1.5, c.marcas * 0.5);
   return (
     <g>
-      {tramosCota(c).map(([u, w], i) => <React.Fragment key={i}>{linea(u, c.linea, w, c.linea)}</React.Fragment>)}
+      {tramosCotaMm(c, etiqueta).map(([u, w], i) => <React.Fragment key={i}>{linea(u, c.linea, w, c.linea)}</React.Fragment>)}
       {c.marcas > 0 && linea(a, c.linea - c.marcas, a, c.linea + c.marcas)}
       {c.marcas > 0 && linea(b, c.linea - c.marcas, b, c.linea + c.marcas)}
-      {araujo&&[[a,v?c.x1:c.y1],[b,v?c.x2:c.y2]].map(([s,p],i)=>Math.abs(c.linea-p)>5
-        ?<React.Fragment key={i}>{linea(s,p+Math.sign(c.linea-p)*5,s,c.linea+Math.sign(c.linea-p)*1.75)}</React.Fragment>:null)}
+      {auxiliares.map(([s, p], i) => {
+        const dist = c.linea - p;
+        if (Math.abs(dist) <= saltoAux + 1) return null;
+        const dir = Math.sign(dist);
+        return (
+          <React.Fragment key={i}>
+            {linea(s, p + dir * saltoAux, s, c.linea + dir * sobresalir, 'puerta-cota puerta-cota-aux')}
+          </React.Fragment>
+        );
+      })}
       <text
         x={t.x}
         y={t.y}
-        dy={araujo?h*.36:undefined}
-        style={araujo?{fontSize:`${h/.716}px`}:c.tamanoTexto?{fontSize:`${c.tamanoTexto}px`}:undefined}
+        dy={araujo ? h * 0.36 : undefined}
+        style={araujo ? { fontSize: `${h / 0.716}px` } : c.tamanoTexto ? { fontSize: `${c.tamanoTexto}px` } : undefined}
         textAnchor={t.ancla === 'start' ? undefined : t.ancla}
         className={t.clase}
         dominantBaseline={c.tamanoTexto ? 'middle' : undefined}
         transform={t.giro ? `rotate(${t.giro} ${t.x} ${t.y})` : undefined}
       >
-        {textoCotaMm(c)}
+        {etiqueta}
       </text>
     </g>
   );
 }
 
-function Forma({ f, araujo }: { f: FormaAlzado; araujo:boolean }) {
+function Forma({ f, araujo, minTamano }: { f: FormaAlzado; araujo: boolean; minTamano: number }) {
   switch (f.tipo) {
     case 'rect':
       return <rect className={f.clase} x={f.x} y={f.y} width={f.ancho} height={f.alto} rx={f.radio} />;
@@ -87,42 +119,59 @@ function Forma({ f, araujo }: { f: FormaAlzado; araujo:boolean }) {
     case 'polilinea':
       return <polyline className={f.clase} points={puntos(f.puntos)} />;
     case 'texto':
-      return <Texto t={f} araujo={araujo} />;
+      return <Texto t={f} araujo={araujo} minTamano={minTamano} />;
     case 'cota':
       return <Cota c={f} araujo={araujo} />;
   }
 }
 
 export function AlzadoPuerta({ puerta: p, resultado, letra = 'A' }: { puerta: Puerta; resultado: ResultadoPuerta; letra?: string }) {
-  const [pieza,setPieza]=useState('todas');
-  if(p.modelo==='ABRIGO') return <VistaAbrigo p={p}/>;
-  if(p.modelo==='SACOARENA') return <VistaSacoArena puerta={p}/>;
-  if(p.modelo==='SYSTEMDOCK'&&!(p.frente>0&&p.alto>0)) return <section className="puerta-alzado panel panel-vidrio" aria-label="Alzado de la lona"><h2>Alzado</h2><p>Completa el largo y el ancho de la lona para ver sus medidas reales.</p></section>;
-  const { formas: todas, grupos, vista: conjunto, vistas, letraBase, F, H } = geometriaAlzado(p, resultado, letra);
-  const seleccion=pieza!=='todas'&&vistas?.[Number(pieza)]?pieza:'todas';
-  const vista=seleccion==='todas'?conjunto:vistas![Number(seleccion)];
-  const formas=seleccion==='todas'?todas:grupos?.[Number(seleccion)]??todas;
+  const [pieza, setPieza] = useState('todas');
+  if (p.modelo === 'ABRIGO') return <VistaAbrigo p={p} />;
+  if (p.modelo === 'SACOARENA') return <VistaSacoArena puerta={p} />;
+  if (p.modelo === 'SYSTEMDOCK' && !(p.frente > 0 && p.alto > 0)) {
+    return (
+      <section className="puerta-alzado panel panel-vidrio" aria-label="Alzado de la lona">
+        <h2>Alzado</h2>
+        <p>Completa el largo y el ancho de la lona para ver sus medidas reales.</p>
+      </section>
+    );
+  }
+  const { formas: todas, grupos, vista: conjunto, vistas, letraBase, F, H } = geometriaPantallaPuerta(p, resultado, letra);
+  const seleccion = pieza !== 'todas' && vistas?.[Number(pieza)] ? pieza : 'todas';
+  const vista = seleccion === 'todas' ? conjunto : vistas![Number(seleccion)];
+  const formas = seleccion === 'todas' ? todas : grupos?.[Number(seleccion)] ?? todas;
+  const minTamano = p.araujo || p.santapau ? 0 : Math.min(7, Math.max(5.2, Math.max(vista.ancho, vista.alto) * 0.0115));
+  const letraEfectiva = p.araujo || p.santapau ? letraBase : Math.max(letraBase, Math.max(vista.ancho, vista.alto) * 0.0145);
   return (
-    <section className="puerta-alzado panel panel-vidrio" aria-label={p.modelo==='SYSTEMDOCK'?'Alzado de la lona':'Alzado de la puerta'}>
+    <section className="puerta-alzado panel panel-vidrio" aria-label={p.modelo === 'SYSTEMDOCK' ? 'Alzado de la lona' : 'Alzado de la puerta'}>
       <header>
         <h2>Alzado</h2>
         <span>
-          {p.clientePuertas||p.araujo?tipoDePuerta(p).nombre:MODELOS_PUERTAS[p.modelo]} · {p.of || 'SIN OF'}
+          {p.clientePuertas || p.araujo ? tipoDePuerta(p).nombre : MODELOS_PUERTAS[p.modelo]} · {p.of || 'SIN OF'}
         </span>
       </header>
-      <p>Medidas terminadas · mm · {p.araujo||p.santapau||p.belts||p.puertasluz?'vista por el revés':'vista de frente'}</p>
-      {vistas&&vistas.length>1&&<SelectField label="Ampliar pieza del alzado" value={seleccion} options={['todas',...vistas.map((_,i)=>String(i))]} optionLabel={v=>v==='todas'?'Todas las piezas':vistas[Number(v)].nombre} onChange={setPieza}/>}
+      <p>Medidas terminadas · mm{p.modelo === 'SYSTEMDOCK' ? '' : ' · vista por el revés'}</p>
+      {vistas && vistas.length > 1 && (
+        <SelectField
+          label="Ampliar pieza del alzado"
+          value={seleccion}
+          options={['todas', ...vistas.map((_, i) => String(i))]}
+          optionLabel={v => (v === 'todas' ? 'Todas las piezas' : vistas[Number(v)].nombre)}
+          onChange={setPieza}
+        />
+      )}
       <svg
         role="img"
-        aria-label={`Alzado ${p.clientePuertas||p.araujo?tipoDePuerta(p).nombre:MODELOS_PUERTAS[p.modelo]} ${medidaPuerta(F)} por ${medidaPuerta(H)} milímetros`}
-        style={{ '--puerta-letra': `${letraBase}px`, ...(p.modelo==='SYSTEMDOCK'?{aspectRatio:`${vista.ancho} / ${vista.alto}`}:{}) } as React.CSSProperties}
+        aria-label={`Alzado ${p.clientePuertas || p.araujo ? tipoDePuerta(p).nombre : MODELOS_PUERTAS[p.modelo]} ${medidaPuerta(F)} por ${medidaPuerta(H)} milímetros`}
+        style={{ '--puerta-letra': `${letraEfectiva}px`, ...(p.modelo === 'SYSTEMDOCK' ? { aspectRatio: `${vista.ancho} / ${vista.alto}` } : {}) } as React.CSSProperties}
         viewBox={`${vista.xMin} ${vista.yMin} ${vista.ancho} ${vista.alto}`}
       >
         {formas.map((f, i) => (
-          <Forma key={i} f={f} araujo={Boolean(p.araujo)} />
+          <Forma key={i} f={f} araujo={Boolean(p.araujo)} minTamano={minTamano} />
         ))}
       </svg>
-      <small>{p.modelo==='SYSTEMDOCK'?'Compara las medidas y el texto con el pedido del cliente.':'Compara tubos, huecos, ventanal y textos de taller con el dibujo del cliente.'}</small>
+      <small>{p.modelo === 'SYSTEMDOCK' ? 'Compara las medidas y el texto con el pedido del cliente.' : 'Compara tubos, huecos, ventanal y textos de taller con el dibujo del cliente.'}</small>
       {/* Iván, 10/11/2026: la descripción de la OF no hace falta junto al dibujo; sigue en la pestaña Texto. */}
     </section>
   );

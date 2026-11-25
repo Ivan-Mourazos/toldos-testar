@@ -42,6 +42,10 @@
 .puerta-cristal { fill:color-mix(in srgb,var(--tramo-holgado) 15%,var(--surface)); stroke:var(--tramo-holgado); stroke-width:1; }
 .puerta-tubo { stroke:var(--text-muted); stroke-width:1; stroke-dasharray:4 2; }
 .puerta-cota { stroke:var(--text-muted); stroke-width:.8; }
+.puerta-cota-aux { stroke:var(--text-muted); stroke-width:.55; opacity:.65; }
+.puerta-saco-tabla { width:100%; border-collapse:collapse; font-size:12px; margin:4px 0 8px; }
+.puerta-saco-tabla th, .puerta-saco-tabla td { padding:5px 8px; border-bottom:1px solid var(--border); text-align:left; }
+.puerta-saco-svg { width:100%; height:auto; max-height:420px; }
 .puerta-linea-guia { stroke:var(--tramo-trabajo); stroke-width:.9; stroke-dasharray:3 2; }
 .puerta-guia { stroke:var(--color-brand-600); stroke-width:4; stroke-dasharray:3 2; }
 .puerta-saco { fill:var(--text-muted); opacity:.72; }
