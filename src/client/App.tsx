@@ -725,8 +725,8 @@ export default function App() {
       draft.loadOrder({ ...review.order, corteLona: review.corteLona }, { guardado: true });
       setCorrigiendo(review.orderCode);
       setReviewRefresh(value => value + 1);
-      setRevisarAlCargar({ orderCode: review.orderCode });
-      setActiveTab(review.status === 'PRODUCED' ? 'historial' : 'reviews');
+      // Se queda en el formulario con lo guardado (Iván, 25/11/2026): saltar a Pedidos y abrir allí
+      // el pedido parecía que se volvía a abrir solo.
       notify(data.nuevaEntrega ? 'Las OF nuevas quedan pendientes de generar.' : 'Se han guardado los cambios del pedido.',
         { tone: 'success', title: 'Pedido guardado' });
     } catch (error) {
