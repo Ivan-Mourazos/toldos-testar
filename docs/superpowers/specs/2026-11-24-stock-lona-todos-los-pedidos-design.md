@@ -110,6 +110,24 @@ Al confirmar, el mismo `POST /api/integracion/stock-lona` que la web, con las lo
 3. **Modal en «Planos a corte»** con la detección afinada por el estudio.
 4. **CoordinaOT:** `origen`, casilla según cambios y aviso de OF sin comprobar.
 
+## Resultado del estudio y decisiones (25/11/2026)
+
+Estudio en `tmp/estudio-lona-planos/` (453 planos de 2026, revisado):
+
+- En los planos a mano el «recuadro» es una plantilla fija (11,89 / 12,89 / 13,05 × 2,75 m en 81 de 82), no el corte. **Los ML salen de la caja de las piezas que van a la máquina** (`medidasMm` de `preparar`, lado largo), nunca del recuadro.
+- La lona escrita junto al corte: 0 de 269 planos a mano. **Lona por este orden:** la única lona reservada por Almacén para esa OF (`STKStockReserve`); si no, la única lona de la familia LONA asignada a la OF (`CPRMOMaterial`); si no, la elige el técnico. Si la OF tiene varias, una fila por lona con los ML vacíos para que los reparta el técnico.
+- Pedido desde el nombre del fichero o la carpeta (93 %). Con varias OF en el pedido, el técnico marca las suyas. Entrega = sufijo del nombre (`-2`, `.2`, `_2`) o vacía.
+- Varias lonas pueden ir en el mismo DXF (Iván): el modal deja añadir filas y repartir los ML.
+- **Planos de la web** (recuadro `CORTE` de la web o `CAJETIN TGM`): no abren el modal; ya se comprobaron en «Generar archivos».
+- **COMBURSA** queda fuera («es otro mundo»): sin pedido en el nombre, no abre el modal.
+
+### Contrato con CoordinaOT
+
+- El envío admite una clave más de primer nivel, `origen`: `"web"` | `"plano-manual"` (sin ella = `"web"`, para no romper lo desplegado). CoordinaOT se despliega antes.
+- `lonas[].origen` sigue siendo `corte` | `reserva` | `manual`.
+- Con `origen: "plano-manual"` la comprobación **sustituye solo a las OF que trae**: CoordinaOT conserva, del registro del mismo pedido y entrega, las lonas, faltas y OF de otras OF.
+- Casilla del correo: el aviso guarda los ML avisados (`necesita`); si la falta vuelve con la misma lona y los mismos ML, la casilla sale sin marcar con «Ya se avisó el … (técnico)»; si cambian, marcada. Requiere una columna nueva opcional en `stock_lona_aviso` (`ALTER TABLE … ADD COLUMN`, sin tocar datos).
+
 ## Fuera de alcance
 
 - Asignaciones de material (`CPRMOMaterial` sin reserva).
