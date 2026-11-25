@@ -1,4 +1,4 @@
-import { number } from '../dxf.ts';
+import { number, value } from '../dxf.ts';
 import type { EntidadDxf } from '../tipos.ts';
 import { cajaPieza } from './marco.ts';
 import type { Caja, Pieza } from './tipos.ts';
@@ -32,6 +32,31 @@ export function cotasDelPlano(entidades: EntidadDxf[], k: number): CotaPlano[] {
     if (!eje) continue;
     const largo = eje === 'x' ? dx : dy;
     if (largo > 1) out.push({ eje, a, b, largo });
+  }
+  return out;
+}
+
+/** Cota para la vista previa, en mm: lo que mide (a → b), dónde va su línea y el número que pone el CAD. */
+export interface CotaVista { eje: 'x' | 'y'; a: { x: number; y: number }; b: { x: number; y: number }; linea: { x: number; y: number }; texto: string }
+
+/**
+ * Las cotas lineales que caen dentro de `caja` (unidades del plano), en mm con `k`, para enseñarlas en la vista previa.
+ * El número es el del CAD: la medida guardada en la cota (42) o el texto que le hayan puesto encima.
+ */
+export function cotasParaVista(entidades: EntidadDxf[], k: number, caja?: Caja): CotaVista[] {
+  const out: CotaVista[] = [];
+  for (const e of entidades) {
+    if (e.type !== 'DIMENSION' || number(e, 67)) continue;
+    const a = { x: number(e, 13), y: number(e, 23) }, b = { x: number(e, 14), y: number(e, 24) };
+    if (caja && ![a, b].every(p => dentro(p, caja))) continue;
+    const [cota] = cotasDelPlano([e], k);
+    if (!cota) continue;
+    const medida = Number(value(e, 42));
+    const numero = Number.isFinite(medida) && medida > 0
+      ? (Math.round(medida * 100) / 100).toLocaleString('es-ES') : (cota.largo / k).toLocaleString('es-ES');
+    const encima = textoLimpio([[1, value(e, 1)]]);
+    const texto = !encima ? numero : encima.replace('<>', numero);
+    out.push({ eje: cota.eje, a: cota.a, b: cota.b, linea: { x: number(e, 10) * k, y: number(e, 20) * k }, texto });
   }
   return out;
 }

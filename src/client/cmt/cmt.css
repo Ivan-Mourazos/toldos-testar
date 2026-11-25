@@ -74,8 +74,8 @@
 .cmt-revision { display: grid; gap: 16px; flex: 1 1 auto; min-height: 320px; }
 .cmt-revision-decisiones { grid-template-columns: minmax(0, 1fr) minmax(300px, 34%); }
 .cmt-vista-corte, .cmt-pendientes { margin: 0; min-width: 0; min-height: 0; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); }
-.cmt-vista-corte { display: flex; flex-direction: column; padding: 12px 16px; --cmt-solape: #b25507; --cmt-tinta: #000; }
-:root[data-theme="dark"] .cmt-vista-corte { --cmt-solape: #f0a64c; --cmt-tinta: #fff; }
+.cmt-vista-corte { display: flex; flex-direction: column; padding: 12px 16px; --cmt-solape: #b25507; --cmt-tinta: #000; --cmt-cota: #13803a; }
+:root[data-theme="dark"] .cmt-vista-corte { --cmt-solape: #f0a64c; --cmt-tinta: #fff; --cmt-cota: #5fd38a; }
 .cmt-vista-corte figcaption, .cmt-pendientes h4 { margin: 0; font-size: 14px; font-weight: 600; }
 .cmt-vista-corte svg { display: block; flex: 1 1 0; width: 100%; min-height: 220px; height: auto; margin: 8px 0; }
 .cmt-trazo { fill: none; stroke: var(--cmt-color, var(--cmt-tinta)); stroke-width: 1.65; }
@@ -85,6 +85,10 @@
 .cmt-zona { stroke: var(--cmt-solape); stroke-width: 2; }
 .cmt-cruce { --cmt-color: var(--cmt-solape); stroke-dasharray: 6 3; stroke-width: 2.5; }
 .cmt-solape { --cmt-color: var(--cmt-solape); }
+/* Cotas del bloque del corte: no se cortan, solo se leen. */
+.cmt-cota { --cmt-color: var(--cmt-cota); }
+.cmt-cota line { stroke: var(--cmt-cota); stroke-width: 1; }
+.cmt-cota-texto { fill: var(--cmt-cota); font-family: Arial, Helvetica, sans-serif; font-weight: 600; }
 .cmt-vista-corte ul { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0; padding: 0; list-style: none; color: var(--text-muted); font-size: 12px; }
 .cmt-vista-corte li { display: flex; align-items: center; gap: 6px; }
 .cmt-vista-corte li i { width: 14px; height: 2px; background: var(--cmt-color, var(--cmt-tinta)); }

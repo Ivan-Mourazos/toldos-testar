@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import { barridoArco, cajaPieza } from '../../cmt/preparacion/marco.ts';
 import type { ResultadoPreparacion } from '../../cmt/preparacion/index.ts';
 import type { Caja } from '../../cmt/preparacion/tipos.ts';
+import type { CotaVista } from '../../cmt/preparacion/lonasCorte.ts';
 import type { GrupoSolape } from '../../cmt/preparacion/solapes.ts';
 import { caracteresCad } from '../../cmt/caracteres-cad.ts';
 import { legible } from '../../cmt/colorAci.ts';
@@ -76,17 +77,50 @@ function rectangulo(c: Caja, min = 0) {
   return { x: c.x0, y: -c.y1, width: Math.max(min, c.x1 - c.x0), height: Math.max(min, c.y1 - c.y0), vectorEffect: 'non-scaling-stroke' };
 }
 
+/**
+ * Cota del bloque del corte (Iván, 25/11/2026): la misma que lleva el plano, con su número, pero dibujada
+ * a un tamaño que se lea en la pantalla. La letra va en proporción a la vista, no a la del CAD.
+ */
+function geometriaCota(c: CotaVista, letra: number) {
+  const x = c.eje === 'x';
+  const lado = (x ? c.linea.y - (c.a.y + c.b.y) / 2 : c.linea.x - (c.a.x + c.b.x) / 2) >= 0 ? 1 : -1;
+  const pasa = letra * 0.3, hueco = letra * 0.75, raya = letra * 0.3;
+  const [p, q] = x ? [{ x: c.a.x, y: c.linea.y }, { x: c.b.x, y: c.linea.y }] : [{ x: c.linea.x, y: c.a.y }, { x: c.linea.x, y: c.b.y }];
+  const extension = (desde: { x: number; y: number }, hasta: { x: number; y: number }) => x
+    ? { a: desde, b: { x: hasta.x, y: hasta.y + lado * pasa } } : { a: desde, b: { x: hasta.x + lado * pasa, y: hasta.y } };
+  const centro = x ? { x: (p.x + q.x) / 2, y: c.linea.y + lado * hueco } : { x: c.linea.x + lado * hueco, y: (p.y + q.y) / 2 };
+  const largo = c.texto.length * letra * 0.6;
+  const caja: Caja = x
+    ? { x0: Math.min(p.x, q.x, centro.x - largo / 2), x1: Math.max(p.x, q.x, centro.x + largo / 2), y0: Math.min(c.a.y, c.b.y, centro.y - letra / 2), y1: Math.max(c.a.y, c.b.y, centro.y + letra / 2) }
+    : { y0: Math.min(p.y, q.y, centro.y - largo / 2), y1: Math.max(p.y, q.y, centro.y + largo / 2), x0: Math.min(c.a.x, c.b.x, centro.x - letra / 2), x1: Math.max(c.a.x, c.b.x, centro.x + letra / 2) };
+  // Trazo oblicuo en cada extremo, como las cotas de arquitectura del CAD.
+  const marca = (m: { x: number; y: number }) => ({ a: { x: m.x - raya, y: m.y - raya }, b: { x: m.x + raya, y: m.y + raya } });
+  return { lineas: [{ a: p, b: q }, extension(c.a, p), extension(c.b, q), marca(p), marca(q)], centro, caja };
+}
+
+function cota(c: CotaVista, letra: number, i: number) {
+  const g = geometriaCota(c, letra);
+  return <g key={`cota-${i}`} className="cmt-cota">
+    {g.lineas.map((l, j) => <line key={j} x1={l.a.x} y1={-l.a.y} x2={l.b.x} y2={-l.b.y} vectorEffect="non-scaling-stroke" />)}
+    <text className="cmt-cota-texto" transform={`translate(${g.centro.x} ${-g.centro.y})${c.eje === 'y' ? ' rotate(-90)' : ''}`}
+      fontSize={letra} textAnchor="middle" dominantBaseline="central">{c.texto}</text>
+  </g>;
+}
+
 interface Props {
   vista: PiezaVista[];
+  cotas?: CotaVista[];
   marcos?: Caja[];
   marco?: number;
   zonas?: GrupoSolape[];
 }
 
-export function VistaPreparacion({ vista, marcos = [], marco, zonas = [] }: Props) {
+export function VistaPreparacion({ vista, cotas = [], marcos = [], marco, zonas = [] }: Props) {
   const cajas = [...vista.map(cajaPieza), ...marcos];
   if (!cajas.length) return null;
-  const c = limites(cajas);
+  const pieza = limites(cajas);
+  const letra = Math.max(pieza.x1 - pieza.x0, pieza.y1 - pieza.y0, 10) * 0.045;
+  const c = limites([pieza, ...cotas.map(x => geometriaCota(x, letra).caja)]);
   const margen = Math.max(c.x1 - c.x0, c.y1 - c.y0, 10) * 0.05;
   const capas = new Map<string, { nombre: string; color?: string }>();
   for (const p of vista) {
@@ -96,12 +130,14 @@ export function VistaPreparacion({ vista, marcos = [], marco, zonas = [] }: Prop
   }
   if (vista.some(p => p.cruza)) capas.set('cruce', { nombre: 'Cruza el marco' });
   if (zonas.length) capas.set('solape', { nombre: 'Solape' });
+  if (cotas.length) capas.set('cota', { nombre: 'Cota' });
   return <figure className="cmt-vista-corte">
     <figcaption>Vista previa del corte</figcaption>
     <svg role="img" aria-label="Geometría del corte en milímetros" viewBox={`${c.x0 - margen} ${-c.y1 - margen} ${c.x1 - c.x0 + 2 * margen} ${c.y1 - c.y0 + 2 * margen}`}>
       {marcos.map((m, i) => <rect key={i} {...rectangulo(m)}
         className={`cmt-marco${marco === i ? ' cmt-marco-elegido' : ''}`} />)}
       {vista.map((p, i) => <g key={`${p.id}-${i}`}>{trazo(p)}</g>)}
+      {cotas.map((x, i) => cota(x, letra, i))}
       {zonas.flatMap(({ clave, zonas: cajas }) => cajas.map((m, i) =>
         <rect key={`${clave}-${i}`} {...rectangulo(m, margen * 0.035)} className="cmt-zona" />))}
     </svg>

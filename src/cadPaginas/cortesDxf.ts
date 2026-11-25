@@ -8,6 +8,7 @@ import type { Herramienta } from '../cmt/preparacion/tipos.ts';
 export interface CorteDelPlano {
   vista: ResultadoPreparacion['vista'];
   medidasMm: ResultadoPreparacion['medidasMm'];
+  cotas: NonNullable<ResultadoPreparacion['cotas']>;
 }
 
 const TABLA = capasIniciales as Record<string, Herramienta>;
@@ -23,5 +24,5 @@ export function cortesDelDxf(dxf: Uint8Array | string): CorteDelPlano[] {
     : [primero];
   return resultados
     .filter(r => r.vista.length > 0)
-    .map(({ vista, medidasMm }) => ({ vista, medidasMm }));
+    .map(({ vista, medidasMm, cotas }) => ({ vista, medidasMm, cotas: cotas ?? [] }));
 }

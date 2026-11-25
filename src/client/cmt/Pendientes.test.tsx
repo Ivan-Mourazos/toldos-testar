@@ -93,3 +93,18 @@ describe('colores del plano en la vista previa (Iván, 24/11/2026)', () => {
     expect(html).toMatch(/<li><i class="cmt-rotulador cmt-plano" style="--cmt-claro:#ff0000;--cmt-oscuro:#ff0000"/);
   });
 });
+describe('cotas del corte en la vista previa (Iván, 25/11/2026)', () => {
+  it('pinta la cota del bloque con el número del CAD, en vertical si mide el alto, y sale en la leyenda', () => {
+    const html = renderToStaticMarkup(<VistaPreparacion vista={[
+      { tipo: 'linea', capa: 'DISCO1', id: 'a', a: { x: 0, y: 0 }, b: { x: 2710, y: 0 } },
+      { tipo: 'linea', capa: 'DISCO1', id: 'b', a: { x: 0, y: 390 }, b: { x: 2710, y: 390 } },
+    ]} cotas={[
+      { eje: 'x', a: { x: 0, y: 390 }, b: { x: 2710, y: 390 }, linea: { x: 1355, y: 600 }, texto: '271' },
+      { eje: 'y', a: { x: 2710, y: 0 }, b: { x: 2710, y: 390 }, linea: { x: 2900, y: 195 }, texto: '39' },
+    ]} />);
+    expect(html.match(/<g class="cmt-cota">/g)).toHaveLength(2);
+    expect(html).toMatch(/<text class="cmt-cota-texto"[^>]*>271<\/text>/);
+    expect(html).toMatch(/<text class="cmt-cota-texto"[^>]*rotate\(-90\)[^>]*>39<\/text>/);
+    expect(html).toContain('<li><i class="cmt-cota" aria-hidden="true"></i>Cota</li>');
+  });
+});

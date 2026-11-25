@@ -9,6 +9,7 @@ export interface CorteDelPlanoCliente {
   archivo: string;
   vista: ResultadoPreparacion['vista'];
   medidasMm: ResultadoPreparacion['medidasMm'];
+  cotas?: ResultadoPreparacion['cotas'];
 }
 
 /**
@@ -33,7 +34,7 @@ export function CortesDelPlano({ cortes, atenuado = false }: { cortes: CorteDelP
       <button type="button" className="icon-button" aria-label="Corte siguiente" disabled={actual >= cortes.length - 1}
         onClick={() => setIndice(actual + 1)}><ChevronRight aria-hidden="true" /></button>
     </div>}
-    <VistaPreparacion key={actual} vista={corte.vista} />
+    <VistaPreparacion key={actual} vista={corte.vista} cotas={corte.cotas} />
     {pie && <p className="corte-ayuda">{pie}</p>}
   </div>;
 }

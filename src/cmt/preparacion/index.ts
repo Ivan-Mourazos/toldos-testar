@@ -8,7 +8,7 @@ import type { Dxf, Duda, EntidadDxf } from '../tipos.ts';
 import { asignarCapas, claveCapa, herramientaCapa, normalizarCapas, type CapaDesconocida } from './capas.ts';
 import { cajaDudosa } from './cajaDudosa.ts';
 import { descomponer, hornear, transformarPieza } from './hornear.ts';
-import { cotasDelPlano, textoLimpio, tramosDelCorte, type TramoCorte } from './lonasCorte.ts';
+import { cotasDelPlano, cotasParaVista, textoLimpio, tramosDelCorte, type CotaVista, type TramoCorte } from './lonasCorte.ts';
 import { buscarMarcos, cajaDe, clasificar, esBorde, marcosWeb, toleranciaDe, unirMarcos } from './marco.ts';
 import { escribirDxfLimpio } from './salida.ts';
 import { aplicarSolapes, buscarSolapes, longitud, quitarRepetidos, type GrupoSolape } from './solapes.ts';
@@ -27,6 +27,8 @@ export interface ResultadoPreparacion {
   // Líneas, arcos y textos del corte en mm, para la vista previa, con el color CSS que tienen en el plano
   // (sin color = tinta: el 7 de CAD, negro en fondo claro y blanco en oscuro).
   vista: (Pieza & { cruza?: boolean; color?: string })[];
+  // Cotas del plano dentro del marco, en mm, para enseñarlas en la vista previa (no se cortan).
+  cotas?: CotaVista[];
   capasNuevas: Record<string, Herramienta>; // decisiones de capa aplicadas, para guardar en la tabla
 }
 
@@ -165,6 +167,8 @@ export function preparar(dxfTexto: string, o: OpcionesPreparacion): ResultadoPre
     avisos.push({ motivo: escala.motivo });
 
     const tol = marco ? toleranciaDe(marco) : 0;
+    resultado.cotas = cotasParaVista(dimensiones, k,
+      marco && { x0: marco.x0 - tol, y0: marco.y0 - tol, x1: marco.x1 + tol, y1: marco.y1 + tol });
     const capa0 = errores.filter(({ capa }) => capa === '0').length + h.piezas.filter(p => p.capa === '0'
       && !marcos.some(m => esBorde(p, m, toleranciaDe(m)))).length;
     if (capa0) avisos.push({ motivo: `Hay ${capa0} elementos en la capa 0 que no son el marco: no se cortan` });
