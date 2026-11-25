@@ -8,6 +8,7 @@ import { leerPedidoPuertas } from './pedido.ts';
 import { dibujarAlzadoEnrollable } from './planoEnrollable.ts';
 import { geometriaAlzado } from './alzado.ts';
 import { escribirPlanoPuertas } from './plano.ts';
+import { sacoIntegradoEnrollable } from './saco.ts';
 import { derivarPuertaTgm, enrolleTgm } from './tgm.ts';
 
 describe('General · enrollable con las medidas del cliente', () => {
@@ -109,5 +110,32 @@ describe('General · enrollable con las medidas del cliente', () => {
     const p = nuevaPuertaDeCliente('general', tipo);
     expect(p.tgm).toBeUndefined();
     expect(calcularPuerta(p).avisos).toContainEqual(expect.objectContaining({ codigo: 'CLIENTE_SIN_REGLAS' }));
+  });
+});
+
+describe('Puertas genéricas · rayas de las E.T. como en Portanova', () => {
+  it('cada E.T. lleva una sola raya con su flecha, aunque tenga soldadura', () => {
+    const p = puerta5743('general');
+    expect(p.tgm?.soldaduraEt).toBe(3);
+    const d = derivarPuertaTgm(p)!;
+    const ejes = d.entradas.map(e => e.altura);
+    const { lienzo } = dibujarAlzadoEnrollable(p, 'A');
+    expect(lienzo.inserciones.filter(i => i.nombre === 'FLECHA2')).toHaveLength(ejes.length);
+    // Ninguna raya de soldadura a 3 cm del borde de la E.T. (6 − 3 = 3 cm del eje).
+    // La soldadura del saco unido cae dentro de la E.T. de abajo: esa raya sí va.
+    const saco = -p.alto + sacoIntegradoEnrollable(p)!.soldarHasta;
+    const rayas = lienzo.lineas.filter(l => l.capa === 'ROTULADOR' && l.y1 === l.y2 && l.y1 !== saco).map(l => l.y1);
+    for (const eje of ejes) for (const y of [-(p.alto - eje) - 3, -(p.alto - eje) + 3]) expect(rayas).not.toContain(y);
+    const r = calcularPuerta(p);
+    const formas = geometriaAlzado(d, r).formas;
+    for (const eje of ejes) for (const y of [p.alto - eje - 3, p.alto - eje + 3].filter(y => y !== -saco))
+      expect(formas.some(f => f.tipo === 'linea' && f.clase === 'puerta-rotulador' && f.y1 === y && f.y2 === y)).toBe(false);
+    // El corte lleva las mismas rayas: una por E.T., en su borde lejos del ventanal (185, 126, 58 y 20 cm).
+    const [superior, inferior] = r.piezas;
+    const horizontales = (x: typeof superior) => x.marcas.filter(([a, b, c, d]) => b === d && c - a > 100).map(m => m[1]);
+    expect(horizontales(superior)).toEqual([12, 92.5]);
+    expect(horizontales(inferior)).toEqual([23, 46, 149, 81, 43]);
+    // La nota de soldar sigue en el plano.
+    expect(lienzo.textos.some(t => t.valor.includes('SOLDAR 3 CM ARRIBA Y ABAJO DE CADA E.T.'))).toBe(true);
   });
 });

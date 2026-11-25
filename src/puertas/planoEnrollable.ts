@@ -1,7 +1,7 @@
 import { separacionCorte } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { calcularPuerta, calcularPuertaDerivada, solapeEntradaEnrollable } from './calcular.ts';
-import { abajoRejillaTgm, aumentoArribaTgm, derivarPuertaTgm, envoltorioTgm, rotuloCierreTgm, soldaduraEtTgm } from './tgm.ts';
+import { abajoRejillaTgm, aumentoArribaTgm, derivarPuertaTgm, envoltorioTgm, rayasSoldaduraEtTgm, rotuloCierreTgm, soldaduraEtTgm } from './tgm.ts';
 import { anchoSoldaduraSacoEnrollable, rotuloSaco, sacoIntegradoEnrollable, sacoPuerta, sacoSoldadoEnEtTgm, sacoUtil, soldaduraSacoEnrollable } from './saco.ts';
 import { anclarCotas } from './cotasPuertas.ts';
 import { anchoCristalVentanal, notaPlanoEnrollable, panoContinuoEnrollable, semianchoEtVentanal, ventanalesEnrollable } from './ventanalesEnrollable.ts';
@@ -88,7 +88,7 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
   const l = vacio(), F = p.frente, H = p.alto, T = panoContinuoEnrollable(p) ? 0 : p.enrollable.T;
   const r = derivada ? calcularPuertaDerivada(p) : calcularPuerta(p);
   const saco = sacoPuerta(p), hs = saco.corte, hp = saco.altoPestana;
-  const soldaduraSaco = anchoSoldaduraSacoEnrollable(p), soldaduraEt = soldaduraEtTgm(p);
+  const soldaduraSaco = anchoSoldaduraSacoEnrollable(p), soldaduraEt = rayasSoldaduraEtTgm(p);
   const sacoEnEt = sacoSoldadoEnEtTgm(p);
   const sacoIntegrado = sacoIntegradoEnrollable(p);
   const aumentoArriba = aumentoArribaTgm(p), mitadVentanal = semianchoEtVentanal(p);
@@ -307,7 +307,7 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
   if (p.tgm) {
     // Las notas de Jaime, una por línea y a la izquierda (Iván, 19/11/2026: no son las de Portanova).
     if (!bastillaArriba) lineas.push(`- COSER VARILLA ${varilla} EN LAS ESQUINAS`);
-    if (soldaduraEt) lineas.push(`- SOLDAR ${numeroEs(soldaduraEt)} CM ARRIBA Y ABAJO DE CADA E.T.`);
+    if (soldaduraEtTgm(p)) lineas.push(`- SOLDAR ${numeroEs(soldaduraEtTgm(p))} CM ARRIBA Y ABAJO DE CADA E.T.`);
     else lineas.push('- COSER E.T. EN LAS ESQUINAS');
     lineas.forEach((v, i) => texto(l, v, 0, yNota - i * hNota * 1.4, hNota));
   } else {

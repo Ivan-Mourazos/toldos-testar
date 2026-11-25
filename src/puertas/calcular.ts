@@ -10,8 +10,8 @@ import { calcularAraujo } from './araujo.ts';
 import { calcularBelts } from './belts.ts';
 import { calcularPuertasLuz } from './puertasluz.ts';
 import { calcularSantaPau } from './santapau.ts';
-import { abajoRejillaTgm, aumentoArribaTgm, calcularTgm, envoltorioTgm, soldaduraEtTgm } from './tgm.ts';
-import { fichaDePuerta, puertaHabilitada } from './clientes.ts';
+import { abajoRejillaTgm, aumentoArribaTgm, calcularTgm, envoltorioTgm, rayasSoldaduraEtTgm } from './tgm.ts';
+import { fichaDePuerta, puertaHabilitada, usaCotasCliente } from './clientes.ts';
 import { anchoCristalVentanal, EXTRA_CACHO_VENTANAL, panoContinuoEnrollable, semianchoEtVentanal, SOLAPE_VENTANAL, ventanalesEnrollable } from './ventanalesEnrollable.ts';
 import { ventanalesApilable } from './ventanalesApilable.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
@@ -208,7 +208,9 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
     const e = p.enrollable, ventanales=ventanalesEnrollable(p);
     const solapeEt = solapeEntradaEnrollable(p);
     const mitadEt = semianchoEtVentanal(p), aumentoArriba = aumentoArribaTgm(p);
-    const soldaduraEt = soldaduraEtTgm(p);
+    const soldaduraEt = rayasSoldaduraEtTgm(p);
+    // Puertas genéricas: la raya va en el otro borde de su E.T., al ancho que tenga; Portanova, a 7,5.
+    const bordeEt = usaCotasCliente(p) ? solapeEt : 7.5;
     const altoVentanales=ventanales.reduce((s,v)=>s+v.D,0), s = sacoPuerta(p);
     const sacoIntegrado = sacoIntegradoEnrollable(p);
     // Sin saco, se corta lona por debajo del bajo terminado para doblarla y soldarla alrededor del tubo (Q-TGM04).
@@ -266,10 +268,10 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
         } else if(!sinSaco) marcarEn(origen + anchoSoldaduraSacoEnrollable(p));
         else if(e.marcaCierre!==undefined) marcarEn(origen + e.marcaCierre);
       }
-      else if(!e.sinEtArriba && !soldaduraEt) marcarEn(origen + 7.5, -1);
+      else if(!e.sinEtArriba && !soldaduraEt) marcarEn(origen + bordeEt, -1);
       const cabecera = ciega || nombre === 'superior';
       if(cabecera) marcarEn(origen+h-2*aumentoArriba);
-      else if(!e.sinEtAbajo && !soldaduraEt) marcarEn(origen+h-7.5,1);
+      else if(!e.sinEtAbajo && !soldaduraEt) marcarEn(origen+h-bordeEt,1);
       for(const [i,t] of p.entradas.entries()) {
         if(plan.uniones.some(u=>u.tubo===i+1)||etVentanal(t))continue;
         if(soldaduraEt) {
@@ -277,7 +279,7 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
           for(const y of [t.altura-mediaLuz,t.altura+mediaLuz]) marcarEn(y);
         } else {
           const y=t.altura-solapeEt/2;
-          if(y>origen+7.5 && y<origen+h-(cabecera?2*aumentoArriba:7.5)-.001)marcarEn(y,1);
+          if(y>origen+bordeEt && y<origen+h-(cabecera?2*aumentoArriba:bordeEt)-.001)marcarEn(y,1);
         }
       }
     }

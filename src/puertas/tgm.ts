@@ -61,6 +61,9 @@ export const aumentoArribaTgm = (p: Puerta) => p.tgm?.arriba === 'bastilla'
   : 3.5;
 
 export const soldaduraEtTgm = (p: Puerta) => p.tgm?.ventanal || usaCotasCliente(p) ? p.tgm?.soldaduraEt ?? 0 : 0;
+/** Rayas de soldadura en las E.T. (TGM con ventanal). Puertas genéricas las marca como Portanova: una raya en el
+ * borde de la E.T. con su flecha, aunque lleve soldadura (Iván, 25/11/2026). */
+export const rayasSoldaduraEtTgm = (p: Puerta) => usaCotasCliente(p) ? 0 : soldaduraEtTgm(p);
 
 function medidasEnrolleTgm(p: Puerta) {
   const t = p.tgm;

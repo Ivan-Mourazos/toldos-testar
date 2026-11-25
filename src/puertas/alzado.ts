@@ -1,6 +1,6 @@
 import { alturasTubos, desfaseCintas, solapeEntradaEnrollable } from './calcular.ts';
 import { huecosSinEscuadrado, llevaEscuadrado } from './escuadrado.ts';
-import { abajoRejillaTgm, aumentoArribaTgm, envoltorioTgm, SANDWICH_TGM, soldaduraEtTgm } from './tgm.ts';
+import { abajoRejillaTgm, aumentoArribaTgm, envoltorioTgm, rayasSoldaduraEtTgm, SANDWICH_TGM } from './tgm.ts';
 import { alzadoAraujo } from './alzadoAraujo.ts';
 import { alzadoBelts, alzadoPuertasLuz } from './alzadoBeltsLuz.ts';
 import { alzadoSantaPau } from './alzadoSantaPau.ts';
@@ -203,7 +203,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   }
   const bastillaArriba = enr && p.tgm?.arriba === 'bastilla';
   const aumentoArriba = aumentoArribaTgm(p);
-  const soldaduraEt = soldaduraEtTgm(p);
+  const soldaduraEt = rayasSoldaduraEtTgm(p);
   if (bastilla > 0) {
     const fin = sinSaco ? pie + (p.enrollable.cierreBajo ?? 0) : sacoIntegrado ? H : H - saco.rematado;
     for (const x of [-bastilla, F]) rect('puerta-pano', x, -aumentoArriba, bastilla, fin + aumentoArriba);
