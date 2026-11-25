@@ -1,5 +1,6 @@
 import { pasarAProduccion } from './produccion.js';
 import { faltasLona, necesidadesLona } from './stockLona.js';
+import { esLonaAcrilica, fueraDeReservas, ofsEnReservas } from './domain/stockSinComprobar.js';
 import { textoAvisoStock } from './stockLonaAviso.js';
 import { resolveFabric } from './domain/fabricCatalog.js';
 import { CODIGO_RPS } from './remolques/stockMaterial.ts';
@@ -12,7 +13,8 @@ import { CODIGO_RPS } from './remolques/stockMaterial.ts';
 /** @typedef {PedidoStockLona & { lonas: NecesidadLona[], faltas: FaltaLona[], consultado: string }} DatosStockLona */
 /** @typedef {{ stock: { reset: () => void, getStock: (codigos: string[], opciones?: { ofs?: string[] }) => Promise<{ code: string, metros?: number, reservado?: number, reservadoPropio?: number, disponible: number }[]> },
  * coordina: { enviarStockLona: (datos: DatosStockLona) => Promise<{ ok: boolean, motivo?: string }> }, now?: () => Date,
- * resolverTela?: (codigo: string) => Promise<string | undefined> }} ServiciosStockLona */
+ * resolverTela?: (codigo: string) => Promise<string | undefined>,
+ * articulosVenta?: (pedido: string) => Promise<{ of: string, codigo?: string | null, generico?: string | null, subfamilia?: string | null }[]> }} ServiciosStockLona */
 
 const sinConsulta = () => ({ consultado: null, faltas: [], avisos: [] });
 const avisoConsulta = 'No se pudo comprobar el stock de lona.';
@@ -53,8 +55,11 @@ async function validarLonasAprobadas(lonas, aprobadas, ofsEntrega, resolverTela)
   }));
 }
 
-/** @param {ServiciosStockLona & { lineas: LineasStock, lonasAprobadas?: unknown, ofsStock?: string[] }} opciones @param {string[]} ofs */
-async function consultarStock({ lineas, lonasAprobadas, stock, resolverTela, ofsStock, now = () => new Date() }, ofs) {
+/** `enExcel`: códigos que ya van en el Excel de asignación (reservas de toldos); esos tampoco se comprueban.
+ * Tampoco las OF con un artículo incluido en reservas.
+ * @param {ServiciosStockLona & { lineas: LineasStock, lonasAprobadas?: unknown, ofsStock?: string[], enExcel?: string[] }} opciones @param {string[]} ofs
+ * @param {string} [cliente] @param {string} [pedido] */
+async function consultarStock({ lineas, lonasAprobadas, stock, resolverTela, articulosVenta, ofsStock, enExcel = [], now = () => new Date() }, ofs, cliente, pedido) {
   let propuesta;
   try {
     propuesta = necesidadesLona(typeof lineas === 'function' ? await lineas() : lineas);
@@ -62,9 +67,18 @@ async function consultarStock({ lineas, lonasAprobadas, stock, resolverTela, ofs
     if (lonasAprobadas !== undefined) throw error;
     return { ...sinConsulta(), lonas: [], avisos: [avisoConsulta] };
   }
-  const lonas = await validarLonasAprobadas(propuesta, lonasAprobadas, ofs, resolverTela);
+  const aprobadas = await validarLonasAprobadas(propuesta, lonasAprobadas, ofs, resolverTela);
+  // Lo que se asigna con el Excel (y las acrílicas, que siempre van en él) ya lo comprueba esa asignación.
+  // Si no queda nada, la entrega queda comprobada y sin faltas.
+  const asignadas = new Set(enExcel);
+  let lonas = aprobadas.filter(lona => !esLonaAcrilica(lona) && !asignadas.has(lona.codigo));
+  // Si RPS no responde se comprueba todo: mejor un aviso de más que uno de menos.
+  if (lonas.length && articulosVenta && pedido) {
+    const enReservas = ofsEnReservas(await articulosVenta(pedido).catch(() => []));
+    lonas = fueraDeReservas(lonas, enReservas.map(({ of }) => of));
+  }
   try {
-    if (!lonas.length) return { lonas, ...sinConsulta(), consultado: propuesta.length ? now().toISOString() : null };
+    if (!lonas.length) return { lonas, ...sinConsulta(), consultado: propuesta.length || aprobadas.length ? now().toISOString() : null };
     stock.reset();
     const disponible = await stock.getStock(lonas.map(lona => lona.codigo), { ofs: ofsStock ?? ofs });
     const consultado = now().toISOString();
@@ -105,7 +119,7 @@ async function informarStock(pedido, { lonas, consultado, faltas, avisos }, coor
 
 /** @param {PedidoStockLona & Parameters<typeof consultarStock>[0]} opciones */
 export async function comprobarStockLona({ pedido, entrega, cliente, ofs, consultadoPor, origen, ...opciones }) {
-  const consulta = await consultarStock(opciones, ofs);
+  const consulta = await consultarStock(opciones, ofs, cliente, pedido);
   return informarStock({ pedido, entrega, cliente, ofs, consultadoPor, ...(origen && { origen }) }, consulta, opciones.coordina);
 }
 
@@ -115,7 +129,7 @@ export async function comprobarStockLona({ pedido, entrega, cliente, ofs, consul
 export async function pasarAProduccionConStock(pasos, opciones) {
   if (!opciones) return pasarAProduccion(pasos);
   const { pedido, entrega, cliente, ofs, consultadoPor, ...servicios } = opciones;
-  const consulta = await consultarStock(servicios, ofs);
+  const consulta = await consultarStock(servicios, ofs, cliente, pedido);
   const resultado = await pasarAProduccion(pasos);
   if (resultado.status !== 200) return resultado;
   const { avisos, ...stockLona } = await informarStock({ pedido, entrega, cliente, ofs, consultadoPor }, consulta, servicios.coordina);

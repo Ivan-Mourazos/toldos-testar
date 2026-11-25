@@ -8,7 +8,7 @@ export interface TelaPlano { codigo: string; descripcion: string; reservada: boo
 export interface OrdenStockPlano { of: string; telas: TelaPlano[] }
 export interface PedidoStockPlano { cliente: string; ordenes: OrdenStockPlano[] }
 /** Lo que el servidor propone para el aviso: lonas leídas del plano con sus ML y las OF del pedido. */
-export interface PropuestaStockPlano { cliente: string; ofs: string[]; lonas: LonaPropuesta[] }
+export interface PropuestaStockPlano { cliente: string; ofs: string[]; lonas: LonaPropuesta[]; /** OF con un artículo incluido en reservas: sus lonas no se comprueban. */ enReservas?: { of: string; codigo: string }[] }
 export interface LonaPropuesta { codigo: string; descripcion: string; ml: number }
 
 export const PEDIDO_PLANO = /^AR\d{7}$/;

@@ -383,3 +383,30 @@ export async function getRpsStockPlano(pedido) {
   }
   return { cliente: String(recordset[0]?.cliente ?? '').trim(), ordenes: [...ordenes.values()] };
 }
+
+// Artículo de venta de cada OF del pedido (código, genérico y subfamilia): algunos van incluidos en
+// reservas y no comprueban la lona (ver `ofsEnReservas`).
+export async function getRpsArticulosVenta(pedido) {
+  const codigo = normalizeOrderCode(pedido);
+  if (!codigo) return [];
+  const pool = await getPool();
+  const { recordset } = await pool.request()
+    .input('company', sql.VarChar(10), config.db.company)
+    .input('pedido', sql.VarChar(40), codigo)
+    .query(`
+    SELECT CONVERT(varchar(40), mo.CodManufacturingOrder) AS [of], a.CodArticle AS codigo,
+      g.CodArticle AS generico, psf.Description AS subfamilia
+    FROM dbo.FACOrderSL o
+    JOIN dbo.FACOrderLineSL l ON l.IDOrder = o.IDOrder AND l.CodCompany = o.CodCompany
+    JOIN dbo.CPRManufacturingOrder mo ON mo.IDManufacturingOrder = l.IDManufacturingOrder AND mo.CodCompany = l.CodCompany
+    JOIN dbo.STKArticle a ON a.IDArticle = l.IDArticle AND a.CodCompany = l.CodCompany
+    LEFT JOIN dbo.STKArticle g ON g.IDArticle = a.IDArticleGeneric AND g.CodCompany = a.CodCompany
+    LEFT JOIN dbo.GENProductSubFamily psf ON psf.IDProductSubFamily = a.IDProductSubFamily AND psf.CodCompany = a.CodCompany
+    WHERE o.CodCompany = @company
+      AND REPLACE(REPLACE(REPLACE(UPPER(o.CodOrder), '.', ''), '/', ''), '-', '') = @pedido;
+  `);
+  return recordset.map(fila => ({
+    of: normalizeOf(fila.of), codigo: String(fila.codigo ?? '').trim(),
+    generico: fila.generico ? String(fila.generico).trim() : null, subfamilia: fila.subfamilia ? String(fila.subfamilia).trim() : null,
+  })).filter(fila => fila.of);
+}

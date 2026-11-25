@@ -1,6 +1,7 @@
 import React, { useId, useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import { resolveFabric } from '../../domain/fabricCatalog.js';
+import { esLonaAcrilica, TEXTO_ACRILICA, TEXTO_RESERVAS } from '../../domain/stockSinComprobar.js';
 import { FabricCombobox } from './FabricCombobox';
 import { ReadModeContext } from './ReadMode';
 import type { LonaAprobada, PropuestaStockLona } from '../salidaPedido';
@@ -23,8 +24,10 @@ export function aprobarLonas(lonas: LonaEditable[]): LonaAprobada[] | null {
   return aprobadas;
 }
 
-export function LonasEntrega({ lonas, ofs, cambiar, enviado }: {
+export function LonasEntrega({ lonas, ofs, cambiar, enviado, acrilicas = [], enReservas = [] }: {
   lonas: LonaEditable[]; ofs: string[]; cambiar: (lonas: LonaEditable[]) => void; enviado: boolean;
+  acrilicas?: PropuestaStockLona['acrilicas'];
+  enReservas?: PropuestaStockLona['enReservas'];
 }) {
   const id = useId();
   const [buscando, setBuscando] = useState(false);
@@ -32,6 +35,10 @@ export function LonasEntrega({ lonas, ofs, cambiar, enviado }: {
   function agregar(seleccion: string) {
     const tela = resolveFabric(seleccion);
     if (!tela) return;
+    if (esLonaAcrilica({ codigo: tela.code, descripcion: tela.description })) {
+      setAviso(`${tela.code} · ${TEXTO_ACRILICA}`);
+      return;
+    }
     if (lonas.some(lona => lona.codigo === tela.code)) {
       setAviso('Esta lona ya está en la lista.');
       return;
@@ -66,7 +73,11 @@ export function LonasEntrega({ lonas, ofs, cambiar, enviado }: {
             onClick={() => { cambiar(lonas.filter(fila => fila.codigo !== lona.codigo)); setAviso(''); }}><X size={16} aria-hidden="true" /></button></td>
         </tr>;
       })}</tbody>
-    </table> : <p>La lista de lonas está vacía.</p>}
+    </table> : <p>{acrilicas?.length || enReservas?.length ? 'No hay lonas que comprobar.' : 'La lista de lonas está vacía.'}</p>}
+    {acrilicas?.length ? <ul className="lonas-entrega-acrilicas">{acrilicas.map(lona =>
+      <li key={lona.codigo}><strong>{lona.codigo}</strong> {lona.descripcion} · {TEXTO_ACRILICA}</li>)}</ul> : null}
+    {enReservas?.length ? <ul className="lonas-entrega-acrilicas">{enReservas.map(({ of, codigo }) =>
+      <li key={of}>OF <strong>{of}</strong> ({codigo}) · {TEXTO_RESERVAS}</li>)}</ul> : null}
     {enviado && !aprobarLonas(lonas) && <p id={`${id}-error`} role="alert">Indica un número de metros mayor que cero en cada lona.</p>}
     {buscando ? <div className="lonas-entrega-buscar">
       <ReadModeContext.Provider value={false}>

@@ -100,6 +100,7 @@
 .stock-plano-estado .fabric-stock-line { font-size: inherit; margin: 0; }
 .stock-plano-llega { color: var(--tramo-holgado); }
 .stock-plano-error { color: var(--tramo-ajustado); }
+.stock-plano-reservas { margin: 8px 0 0; padding-left: 1.1rem; color: var(--text-muted); }
 
 .stock-plano footer {
   display: flex;
