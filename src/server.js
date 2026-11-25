@@ -1880,13 +1880,17 @@ async function generarArchivosToldos(orderCode, cuerpo, prepararSolo = false) {
       ...(updated.corteConfirmado ? { cadEmbudo: null } : {}),
       ...(cad.length ? { sinHojaTelas: (toldo, indice) => enElCad.has(letraToldo(toldo, indice)) } : {}) }));
     if (cad.length) pdfTarget.contents = await medirFaseGenerar('unirPdf', () => conHojasDelante(pdfTarget.contents, cad));
-    pdfTarget.contents = await medirFaseGenerar('adjuntos', () => adjuntarPedido(pdfTarget.contents, cuerpo.soloPdf ? { ...review, production: updated.production } : updated, 'toldos'));
+    const pedidoPdf = cuerpo.soloPdf ? { ...review, production: updated.production } : updated;
+    pdfTarget.contents = await medirFaseGenerar('adjuntos', () => adjuntarPedido(pdfTarget.contents, pedidoPdf, 'toldos'));
     const conCad = cad.length > 0;
 
     const finalizar = async () => {
       const actual = await workflowStore.getReview(orderCode);
+      // El envío al bot puede haber añadido datos a la ficha entre ejecutar y finalizar.
+      const mismosEnvios = JSON.stringify(updated.enviosCorte) === JSON.stringify(actual.enviosCorte);
       updated.enviosCorte = actual.enviosCorte;
-      const pdf = await medirFaseGenerar('adjuntos', () => adjuntarPedido(pdfTarget.contents, updated, 'toldos'));
+      const pdf = pedidoPdf === updated && mismosEnvios ? pdfTarget.contents
+        : await medirFaseGenerar('adjuntos', () => adjuntarPedido(pdfTarget.contents, updated, 'toldos'));
       await medirFaseGenerar('saveReview', () => workflowStore.saveReview(updated, pdf));
     };
     const ejecutar = async () => {
@@ -1906,8 +1910,9 @@ async function generarArchivosToldos(orderCode, cuerpo, prepararSolo = false) {
         }
 
         // El PDF conserva las mismas páginas en ambos destinos y en la ficha editable.
-        const guardado = prepararSolo || cuerpo.soloPdf ? { ...review, production: updated.production } : updated;
-        const pdf = await medirFaseGenerar('adjuntos', () => adjuntarPedido(pdfTarget.contents, guardado, 'toldos'));
+        const guardado = prepararSolo && !cuerpo.soloPdf ? { ...review, production: updated.production } : pedidoPdf;
+        const pdf = guardado === pedidoPdf ? pdfTarget.contents
+          : await medirFaseGenerar('adjuntos', () => adjuntarPedido(pdfTarget.contents, guardado, 'toldos'));
         await medirFaseGenerar('saveReview', () => workflowStore.saveReview(guardado, pdf));
         return res.json({ ok: true, review: updated, saved, excludedNonAcrylicFabrics, conCad, avisos });
       } catch (error) {
