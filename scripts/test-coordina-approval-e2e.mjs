@@ -52,11 +52,11 @@ try {
   // El cálculo llega tras rellenar el formulario; con él pendiente, guardar avisa «Faltan datos».
   await page.waitForLoadState('networkidle');
   await page.waitForTimeout(1500);
-  await page.getByRole('button', { name: 'Guardar para revisión' }).click();
+  await page.getByRole('button', { name: 'Guardar', exact: true }).click();
   // Si el pedido ya estaba guardado de una vuelta anterior, pide confirmar la sustitución.
   const update = page.getByRole('button', { name: 'Actualizar pedido', exact: true });
   if (await update.waitFor({ timeout: 3000 }).then(() => true, () => false)) await update.click();
-  await page.getByText(/Guardado en Pedidos para revisión: AR2603332\.pdf/).waitFor();
+  await page.getByText(/Guardado en Pedidos: AR2603332/).waitFor();
 
   await untilOrders(inGroup(/Por revisar/), 'en revisión');
   console.log('OK: en revisión en CoordinaOT → «Por revisar»');

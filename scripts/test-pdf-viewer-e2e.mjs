@@ -103,7 +103,7 @@ for (const viewport of [{ width: 1280, height: 720 }, { width: 1600, height: 100
       if (!(await page.getByRole('button', { name: 'Vista previa', exact: true }).evaluate((node) => node === document.activeElement))) {
         throw new Error('Esc no devolvió el foco a Vista previa');
       }
-      await page.getByRole('button', { name: 'Guardar para revisión', exact: true }).click();
+      await page.getByRole('button', { name: 'Guardar', exact: true }).click();
       await page.waitForTimeout(500);
       const confirm = page.getByRole('button', { name: 'Guardar igualmente' });
       if (await confirm.count()) await confirm.click();

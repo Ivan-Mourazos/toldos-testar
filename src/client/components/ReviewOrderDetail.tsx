@@ -15,8 +15,7 @@ import { DocumentosPedido } from './DocumentosPedido';
 import { BotonAbrirCorteRevisado, BotonesFlujoCorte, useFlujoCorteDwg } from '../flujoCorteDwg';
 import { PlanteamientoPedido } from './PlanteamientoPedido';
 import { controlLabel } from './controlLabels';
-import { generateState, puedeCorregir } from '../generatePermission';
-import { letraToldo } from '../../domain/awningCompleteness.js';
+import { generateState, puedeEditarToldos } from '../generatePermission';
 import { AccionesPedido, CabeceraPedidoGuardado } from './AccionesPedido';
 import { HistorialEnvios } from './EnviosCorte';
 import { pedidoEntrega } from '../../entregas.js';
@@ -120,8 +119,8 @@ export function ReviewOrderDetail({
   // CoordinaOT solo decide si todas las OF permiten generar; no importa el autor.
   const { allowed: canGenerate, note: generateNote } = generateState(review, currentUser, coordinaStatus);
   // Cualquier usuario de oficina puede corregir; CoordinaOT solo condiciona la salida.
-  const corregible = !terminado && puedeCorregir(review.status, (order.awnings || []).map((a, i) => ({ letter: letraToldo(a, i), of: String(a.of || '') })),
-    order.technician || '', currentUser, coordinaStatus, true);
+  const editable = puedeEditarToldos(currentUser);
+  const edicion = review.ediciones?.at(-1);
   const cortePermitido = generateState(Object.assign({}, pedidoEntrega(review), { status: 'PENDING_REVIEW' as const, entregas: [] }), currentUser, coordinaStatus);
   const puedeEnviar = Boolean(currentUser.trim());
   const conCorteLona = toldosConCorte(review.order).length > 0;
@@ -146,9 +145,11 @@ export function ReviewOrderDetail({
             review.summary.customer || 'Sin cliente',
             review.order.orderDate && `pedido del ${review.order.orderDate.split('-').reverse().join('/')}`,
             review.order.technician && `autor ${controlLabel(review.order.technician)}`,
-            review.updatedAt && `guardado ${formatDateTime(review.updatedAt)}${review.updatedBy ? ` por ${controlLabel(review.updatedBy)}` : ''}`
+            edicion && `Editado por ${controlLabel(edicion.usuario)} el ${new Date(edicion.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}`,
+            review.updatedAt && (!edicion || edicion.fecha !== review.updatedAt)
+              && `guardado ${formatDateTime(review.updatedAt)}${review.updatedBy ? ` por ${controlLabel(review.updatedBy)}` : ''}`
           ].filter(Boolean).join(' · ')} corteNoRegenerado={review.corteNoRegenerado} corteSimulado={review.corteSimulado}
-        acciones={<AccionesPedido generado={isProduced || terminado} ocupado={disabled || generandoCorte} enviando={generating} editandoPermitido={corregible}
+        acciones={<AccionesPedido generado={isProduced || terminado} ocupado={disabled || generandoCorte} enviando={generating} editandoPermitido={editable} etiquetaEditar="Editar"
           onEditar={onEdit} elementos={order.awnings.map(a => ({ of: String(a.of || '') }))} coordina={coordinaStatus} preguntar={onConfirm}
           abrir={!terminado && review.corteConfirmado && !conFlujoCorte
             ? <BotonAbrirCorteRevisado ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-dwg`} notify={notify} />

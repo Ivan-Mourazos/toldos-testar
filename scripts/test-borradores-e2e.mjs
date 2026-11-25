@@ -97,7 +97,8 @@ try {
   await addAwning(page, 'Arzúa Pro');
   await fillArzuaAR2603332(page);
   await page.waitForLoadState('networkidle');
-  await page.getByRole('button', { name: 'Guardar borrador', exact: true }).click();
+  await page.getByRole('button', { name: 'Más opciones' }).click();
+  await page.getByRole('menuitem', { name: 'Guardar borrador', exact: true }).click();
   await page.getByText(`Borrador guardado: ${T1}.`).waitFor();
   assert.equal(await toldos(page).getByLabel('Pedido', { exact: true }).inputValue(), '', 'tras guardar el borrador, el formulario queda limpio');
   const b1 = (await api(`/api/borradores/${T1}`)).datos;
@@ -174,7 +175,8 @@ try {
   assert.equal(await toldos(pj).getByLabel('Pedido', { exact: true }).inputValue(), T1);
   assert.equal(await toldos(pj).getByLabel('OF', { exact: true }).inputValue(), '0230194');
   await capturas(pj, '3-seguir-con-el-borrador');
-  await pj.getByRole('button', { name: 'Guardar borrador', exact: true }).click();
+  await pj.getByRole('button', { name: 'Más opciones' }).click();
+  await pj.getByRole('menuitem', { name: 'Guardar borrador', exact: true }).click();
   await dialogo(pj).getByText('Este borrador es de Iván, ¿lo sustituyes?').waitFor();
   await capturas(pj, '4-sustituir-borrador-de-otro');
   await dialogo(pj).getByRole('button', { name: 'Sustituir borrador', exact: true }).click();
@@ -196,15 +198,15 @@ try {
   assert.equal(await toldos(page).getByLabel('OF', { exact: true }).inputValue(), '0230194');
   await calculado;
   await page.waitForFunction(() => {
-    const boton = [...document.querySelectorAll('button')].find((b) => b.checkVisibility({ checkVisibilityCSS: true }) && b.textContent.trim() === 'Guardar para revisión');
+    const boton = [...document.querySelectorAll('button')].find((b) => b.checkVisibility({ checkVisibilityCSS: true }) && b.textContent.trim() === 'Guardar');
     return Boolean(boton) && !boton.disabled;
   });
-  await page.getByRole('button', { name: 'Guardar para revisión' }).click();
-  await page.getByText(`Guardado en Pedidos para revisión: ${T1}.pdf`).waitFor();
+  await page.getByRole('button', { name: 'Guardar' }).click();
+  await page.getByText(`Guardado en Pedidos: ${T1}`).waitFor();
   assert.equal((await api(`/api/borradores/${T1}`)).datos, null, 'al pasar a revisión, el borrador de toldos desaparece');
   const yaEnPedidos = await api(`/api/borradores/${T1}`, enviar('PUT', { kind: 'toldos', savedBy: 'IVÁN', contenido: { order: { orderCode: T1, awnings: [] } } }));
   assert.equal(yaEnPedidos.status, 409);
-  assert.equal(yaEnPedidos.datos.error, 'Este pedido ya está en Pedidos: ábrelo y usa «Corregir».');
+  assert.equal(yaEnPedidos.datos.error, 'Este pedido ya está en Pedidos. Ábrelo desde allí para editarlo.');
   console.log('OK: «Abrir borrador» al obtener el pedido, y pasado a revisión el borrador desaparece');
 
   // ── 8. Remolques: «Empezar de cero» deja el borrador; Jaime lo sigue y lo pasa a revisión ──

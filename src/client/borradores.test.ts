@@ -73,9 +73,9 @@ describe('guardarBorradorPreguntando', () => {
   });
 
   it('los demás errores dan el texto del servidor, y sin red un texto propio', async () => {
-    const yaEnPedidos = async () => respuesta(409, { error: 'Este pedido ya está en Pedidos: ábrelo y usa «Corregir».' });
+    const yaEnPedidos = async () => respuesta(409, { error: 'Este pedido ya está en Pedidos. Ábrelo desde allí para editarlo.' });
     expect(await guardarBorradorPreguntando({ numero: 'AR2604286', cuerpo, confirmar: vi.fn(), pedir: yaEnPedidos }))
-      .toEqual({ ok: false, mensaje: 'Este pedido ya está en Pedidos: ábrelo y usa «Corregir».' });
+      .toEqual({ ok: false, mensaje: 'Este pedido ya está en Pedidos. Ábrelo desde allí para editarlo.' });
     const sinRed = async () => { throw new TypeError('Failed to fetch'); };
     expect(await guardarBorradorPreguntando({ numero: 'AR2604286', cuerpo, confirmar: vi.fn(), pedir: sinRed }))
       .toEqual({ ok: false, mensaje: 'No se pudo guardar el borrador.' });

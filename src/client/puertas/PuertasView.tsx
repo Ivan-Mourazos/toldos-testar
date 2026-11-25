@@ -514,10 +514,10 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
       return;
     }
     if(n>0&&rps.puertas.every(p=>p.modelo==='SACOARENA')) {
-      notify(`${n} ${n===1?'saco confeccionado traído':'sacos confeccionados traídos'} de RPS con largo, aplastado, cantidad y OF. Confirma las medidas con el pedido.${rps.avisos.length?` ${rps.avisos.join(' ')}`:''}`,{tone:'success',title:nombre});
+      notify(`${n} ${n===1?'saco traído':'sacos traídos'} de RPS. Revisa las medidas con el pedido.${rps.avisos.length?` ${rps.avisos.join(' ')}`:''}`,{tone:'success',title:nombre});
       return;
     }
-    notify(`${n} ${lonas ? (n === 1 ? 'lona de SYSTEM DOCK traída' : 'lonas de SYSTEM DOCK traídas') : n === 1 ? 'puerta traída' : 'puertas traídas'} de RPS con sus medidas, ${lonas ? '' : 'color, '}cantidad y OF. Confirma ${lonas ? 'las medidas con el pedido' : 'el modelo y las medidas con el dibujo'} del cliente.${rps.avisos.length ? ` ${rps.avisos.join(' ')}` : ''}`,
+    notify(`${n} ${lonas ? (n === 1 ? 'lona traída' : 'lonas traídas') : n === 1 ? 'puerta traída' : 'puertas traídas'} de RPS. Revisa ${lonas ? 'las medidas con el pedido' : 'modelo y medidas con el dibujo del cliente'}.${rps.avisos.length ? ` ${rps.avisos.join(' ')}` : ''}`,
       { tone: 'success', title: nombre });
   }, [notify, nombre]);
   const ultimoRps = useRef<number | null>(null);

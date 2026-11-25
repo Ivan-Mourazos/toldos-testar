@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { abrirEntrega, cerrarEntrega, codigoAnual, codigoCorteEditable, codigoEntrega, entregasPedido, ofsEntrega, pedidoEntrega, cambiosMateriales } from './entregas.js';
+import { abrirEntrega, cerrarEntrega, codigoAnual, codigoCorteEditable, codigoEntrega, entregasPedido, ofsEntrega, pedidoEntrega, cambiosMateriales, ofsSinGenerar, conservarOfsGeneradas, pasosEntrega } from './entregas.js';
 import { rpsPlanteamientoFilename } from './workflow.js';
 
 const toldo = (of, width = 300) => ({ id: of, of, model: 'BAMBALINA', width });
@@ -46,6 +46,21 @@ describe('entregas comunes a toldos, puertas y remolques', () => {
     expect(codigoEntrega(segunda)).toBe('AR2603626-2');
     expect(primera).toEqual(copia);
     expect(finalizar(segunda).entregas).toHaveLength(2);
+  });
+  it('deja pendiente solo la OF nueva aunque también se hayan editado las fabricadas', () => {
+    const primera = finalizar(abrirEntrega(base));
+    const order = { ...base.order, awnings: [{ ...toldo('230001', 350), letra: 'J' }, toldo('230002')] };
+    expect(ofsSinGenerar(primera, order)).toEqual(['0230002']);
+    const pendiente = conservarOfsGeneradas(abrirEntrega({ ...base, order }, primera));
+    expect(pasosEntrega(pendiente)).toMatchObject([{ numero: 2, modo: 'nuevo', ofs: ['0230002'] }]);
+    const preparada = abrirEntrega({ ...base, order }, { ...pendiente, entregaActual: 2,
+      destinoEntrega: { numero: 2, modo: 'nuevo' }, ofsSeleccionadas: ['0230002'] });
+    expect(preparada.entregaActual).toBe(2);
+    expect(ofsEntrega(preparada)).toEqual(['0230002']);
+    const segunda = finalizar(preparada);
+    expect(segunda.status).toBe('PRODUCED');
+    expect(segunda.entregas[0]).toEqual(primera.entregas[0]);
+    expect(segunda.entregas[1].ofs).toEqual(['0230002']);
   });
   it('agrupa todos los elementos de una OF corregida y compara con su última entrega', () => {
     const primera = finalizar(abrirEntrega(base));

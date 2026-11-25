@@ -1,4 +1,5 @@
 import type { AskForConfirmation, Notify } from './components/NotificationCenter';
+import type { EstadoCorte } from './corteLona';
 
 // «Abrir corte» (flujo del DWG, fase 1, plan del 24/10/2026): el servidor deja el plano del pedido en la carpeta de
 // borradores y devuelve el enlace tgm-pedidos:, que abre el DWG en ZWCAD como en historial de pedidos (el protocolo ya
@@ -8,6 +9,8 @@ interface RespuestaBorrador {
   error?: string;
   existente?: boolean;
   sustituido?: boolean;
+  corteDesactualizado?: boolean;
+  corteLona?: EstadoCorte;
   filename?: string;
   ruta?: string;
   url?: string;
@@ -53,23 +56,33 @@ export async function abrirCorteDwg({ ruta, orderCode, cuerpo, usuario, pregunta
   notify: Notify;
   abrir?: (url: string) => void;
   /** Qué borrador se abrió: uno nuevo con los datos de la pantalla, el que había o uno generado de nuevo. */
-  alAbrir?: (tipo: 'creado' | 'existente' | 'regenerado') => void;
+  alAbrir?: (tipo: 'creado' | 'existente' | 'regenerado', corteLona?: EstadoCorte) => void;
 }): Promise<boolean> {
   if (!usuario) {
     notify('Elige quién eres en «Soy» antes de abrir el corte.', { tone: 'warning' });
     return false;
   }
-  const pedir = async (regenerar: boolean) => {
+  const pedir = async (regenerar: boolean, abrirCorteIgual = false) => {
     const respuesta = await fetch(ruta, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...cuerpo, orderCode, savedBy: usuario, regenerar }),
+      body: JSON.stringify({ ...cuerpo, orderCode, savedBy: usuario, regenerar, ...(abrirCorteIgual ? { abrirCorteIgual } : {}) }),
     });
     const datos = await respuesta.json().catch(() => ({})) as RespuestaBorrador;
-    if (!respuesta.ok) throw new Error(datos.error || 'No se pudo preparar el borrador del corte.');
+    if (!respuesta.ok && !datos.corteDesactualizado) throw new Error(datos.error || 'No se pudo preparar el borrador del corte.');
     return datos;
   };
   try {
     let datos = await pedir(false);
+    if (datos.corteDesactualizado) {
+      const eleccion = await preguntar({
+        title: 'Has cambiado datos y el corte no está actualizado',
+        message: 'Puedes abrir el plano guardado o rehacer el borrador con los datos del formulario.',
+        confirmLabel: 'Abrir igual', alternativeLabel: 'Regenerar y abrir', alternativeTone: 'neutral',
+        cancelLabel: 'Cancelar', tone: 'warning', amplio: true
+      });
+      if (eleccion !== 'confirm' && eleccion !== 'alternative') return false;
+      datos = await pedir(eleccion === 'alternative', eleccion === 'confirm');
+    }
     // Si ya hay un borrador, puede llevar cambios hechos en ZWCAD: no se pisa sin preguntar.
     if (datos.existente && !editable) {
       const eleccion = await preguntar({
@@ -87,9 +100,9 @@ export async function abrirCorteDwg({ ruta, orderCode, cuerpo, usuario, pregunta
       if (i > 0) await new Promise((resolver) => setTimeout(resolver, 1000));
       abrir(fichero.url);
     }
-    alAbrir?.(datos.existente ? 'existente' : datos.sustituido ? 'regenerado' : 'creado');
+    alAbrir?.(datos.existente ? 'existente' : datos.sustituido ? 'regenerado' : 'creado', datos.corteLona);
     const avisos = datos.avisos?.length ? ` ${datos.avisos.join(' ')}` : '';
-    notify(`Abriendo en ZWCAD: ${ficheros.map((f) => f.ruta).join(' · ')}.${avisos}`, { tone: 'success', title: datos.existente ? 'Borrador del corte' : datos.sustituido ? 'Borrador generado de nuevo' : 'Borrador del corte creado' });
+    notify(`Abriendo en ZWCAD: ${ficheros.map((f) => f.ruta.split(/[\\/]/).pop()).join(' · ')}.${avisos}`, { tone: 'success', title: datos.existente ? 'Borrador del corte' : datos.sustituido ? 'Borrador generado de nuevo' : 'Borrador del corte creado' });
     return true;
   } catch (error) {
     notify(error instanceof Error ? error.message : 'No se pudo abrir el corte.', { tone: 'error' });

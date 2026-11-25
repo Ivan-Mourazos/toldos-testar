@@ -204,8 +204,8 @@ async function verifyBrowserCase(browserInstance, url) {
   await preview.getByRole('img', { name: 'Página 2 de 2' }).waitFor({ timeout: 20_000 });
 
   await preview.getByRole('button', { name: 'Cerrar vista previa' }).click();
-  await page.getByRole('button', { name: 'Guardar para revisión' }).click();
-  await page.getByText(/Guardado en Pedidos para revisión: AR2603332\.pdf/).waitFor();
+  await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+  await page.getByText(/Guardado en Pedidos: AR2603332/).waitFor();
 
   await page.getByRole('button', { name: /^Pedidos/ }).click();
   const inboxRow = page.locator('.orders-row', { hasText: 'AR2603332' });
@@ -290,11 +290,12 @@ async function verifyBrowserCase(browserInstance, url) {
   await page.getByRole('button', { name: 'Reutilizar datos' }).click();
   await page.getByRole('button', { name: 'Reutilizar datos', exact: true }).last().click();
   await page.getByText(/cargados en el formulario/).waitFor();
-  await page.getByRole('button', { name: 'Limpiar' }).click();
+  await page.getByRole('button', { name: 'Más opciones' }).click();
+  await page.getByRole('menuitem', { name: 'Limpiar' }).click();
   await page.getByRole('button', { name: 'Limpiar formulario', exact: true }).click();
   assert.equal(await page.getByRole('textbox', { name: 'Pedido', exact: true }).inputValue(), '');
   assert.equal(await page.locator('.awning-column').count(), 0);
-  assert.equal(await page.getByRole('button', { name: 'Guardar para revisión' }).isDisabled(), true);
+  assert.equal(await page.getByRole('button', { name: 'Guardar', exact: true }).isDisabled(), true);
 
   const screenshotPath = path.join(artifactDirectory, 'AR2603332-final.png');
   await page.screenshot({ path: screenshotPath, fullPage: true });

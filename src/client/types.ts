@@ -789,6 +789,9 @@ export type ReviewSummary = {
 /** Una fila de Pedidos: un pedido de toldos o uno de remolques (fase 5). */
 export type PedidoBandeja = ReviewSummary | ResumenPedidoRemolques | ResumenPedidoPuertas;
 
-export type ReviewPackage = ReviewSummary & { order: DraftState & { parameters?: RuleParameters; parametersVersion?: number | null } };
+export type ReviewPackage = ReviewSummary & {
+  order: DraftState & { parameters?: RuleParameters; parametersVersion?: number | null };
+  ediciones?: { usuario: string; fecha: string; nota: string }[];
+};
 
 export type ActiveTab = 'order' | 'parameters' | 'reviews' | 'historial' | 'settings' | 'cmt';
