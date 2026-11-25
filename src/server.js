@@ -43,6 +43,7 @@ import { TERMINADO_SIN_GENERAR } from './reviewRules.js';
 import { aprobacionToldos, autoriaToldos, decisionRegenerar, generarToldosPermitido } from './toldosEditable.js';
 import { aprobacionDeTodas, crearFlujoDwg, huellaDatos, planosDe } from './flujoDwg/flujo.ts';
 import { comprobarCorteNoRegenerado } from './flujoDwg/salidaEditable.ts';
+import { conConversionesDwg, convertirDwgUnaVez } from './flujoDwg/conversionesPeticion.js';
 import { conRevisor, htmlPresentaciones, sinDibujarEnPdf } from './flujoDwg/planoDxf.js';
 import { conHojasDelante } from './flujoDwg/unirPdf.js';
 import { SUBCARPETA_PUERTAS, TIPO_PEDIDO_PUERTAS } from './puertas/flujo/tipos.ts';
@@ -387,7 +388,7 @@ const flujoToldos = crearFlujoDwg({
     const contenido = await fs.readFile(ruta);
     if (!ruta.toLowerCase().endsWith('.dwg')) return contenido.toString('utf8');
     if (!oda.disponible) throw new Error('ODA no está disponible: no se puede leer el DWG del corte.');
-    return Buffer.from(await oda.convertir(contenido, { desde: 'dwg', hasta: 'dxf' })).toString('utf8');
+    return convertirDwgUnaVez(ruta, contenido, async bytes => Buffer.from(await oda.convertir(bytes, { desde: 'dwg', hasta: 'dxf' })).toString('utf8'));
   },
   async escribir(fichero) {
     await fs.mkdir(path.dirname(fichero.savedPath), { recursive: true });
@@ -1923,7 +1924,7 @@ async function generarArchivosToldos(orderCode, cuerpo, prepararSolo = false) {
   }
 }
 
-app.post('/api/reviews/:orderCode/generate-files', tiemposGenerar('generate-files', sanitizeOrderCode), async (req, res, next) => {
+app.post('/api/reviews/:orderCode/generate-files', tiemposGenerar('generate-files', sanitizeOrderCode), (_req, _res, next) => conConversionesDwg(next), async (req, res, next) => {
   const clave = sanitizeOrderCode(req.params.orderCode);
   if (generationLocks.has(clave)) return res.status(409).json({ error: 'Este pedido está ocupado.' });
   generationLocks.add(clave);
@@ -1933,7 +1934,7 @@ app.post('/api/reviews/:orderCode/generate-files', tiemposGenerar('generate-file
 });
 
 
-app.post('/api/reviews/:orderCode/produccion', tiemposGenerar('produccion', sanitizeOrderCode), async (req, res, next) => {
+app.post('/api/reviews/:orderCode/produccion', tiemposGenerar('produccion', sanitizeOrderCode), (_req, _res, next) => conConversionesDwg(next), async (req, res, next) => {
   const codigo = sanitizeOrderCode(req.params.orderCode);
   if (generationLocks.has(codigo)) return res.status(409).json({ error: 'Este pedido está ocupado.' });
   generationLocks.add(codigo);
