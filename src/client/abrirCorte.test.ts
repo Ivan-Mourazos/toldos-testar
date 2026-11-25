@@ -50,4 +50,28 @@ describe('Abrir corte', () => {
     expect(await r.hecho).toBe(false);
     expect(r.avisos[0]).toContain('Soy');
   });
+  it.each([
+    ['confirm', { regenerar: false, abrirCorteIgual: true }],
+    ['alternative', { regenerar: true }],
+    ['cancel', null]
+  ] as const)('después del aviso de corte desactualizado aplica %s', async (eleccion, reintento) => {
+    const fetch = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ corteDesactualizado: true }), { status: 409 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ url, existente: eleccion === 'confirm' })));
+    vi.stubGlobal('fetch', fetch);
+    const preguntar = vi.fn().mockResolvedValue(eleccion);
+    const abrir = vi.fn();
+    const ok = await abrirCorteDwg({ ruta: '/api/corte-lona/borrador', orderCode: 'AR2605134', cuerpo: {},
+      usuario: 'JAIME', editable: true, preguntar, notify: vi.fn(), abrir });
+    expect(preguntar).toHaveBeenCalledOnce();
+    expect(preguntar).toHaveBeenCalledWith(expect.objectContaining({ confirmLabel: 'Abrir igual', alternativeLabel: 'Regenerar y abrir' }));
+    expect(ok).toBe(Boolean(reintento));
+    if (reintento) {
+      expect(JSON.parse(fetch.mock.calls[1][1].body)).toMatchObject(reintento);
+      expect(abrir).toHaveBeenCalledWith(url);
+    } else {
+      expect(fetch).toHaveBeenCalledOnce();
+      expect(abrir).not.toHaveBeenCalled();
+    }
+  });
 });

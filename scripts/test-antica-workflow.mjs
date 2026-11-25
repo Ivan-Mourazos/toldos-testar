@@ -57,8 +57,8 @@ try {
   const color = page.getByRole('combobox', { name: 'Color manivela', exact: true });
   async function reopen() {
     await openFromInbox(order.orderCode);
-    await page.getByRole('button', { name: 'Corregir', exact: true }).click();
-    const replace = page.getByRole('button', { name: 'Abrir para corregir', exact: true });
+    await page.getByRole('button', { name: 'Editar', exact: true }).click();
+    const replace = page.getByRole('button', { name: 'Abrir para editar', exact: true });
     await Promise.race([color.waitFor(), replace.waitFor()]);
     if (await replace.isVisible()) await replace.click();
     await color.waitFor();
@@ -67,13 +67,10 @@ try {
   assert.ok((await color.innerText()).toLowerCase().includes('blanca'));
   const recalculated = page.waitForResponse(r => r.url().endsWith('/api/calculate') && r.request().postDataJSON()?.awnings?.[0]?.anticaCrankColor === 'NEGRA');
   await color.click(); await page.getByRole('option', { name: 'Negra', exact: true }).click(); await recalculated;
-  const savedResponse = page.waitForResponse(r => r.url().endsWith('/api/reviews') && r.request().method() === 'POST');
-  await page.getByRole('button', { name: 'Guardar para revisión', exact: true }).click();
+  const savedResponse = page.waitForResponse(r => r.url().endsWith('/guardar-registro') && r.request().method() === 'POST');
+  await page.getByRole('button', { name: 'Guardar', exact: true }).click();
   const saved = await savedResponse;
-  if (saved.status() === 409) {
-    const updated = page.waitForResponse(r => r.url().endsWith('/api/reviews') && r.status() === 200 && r.request().method() === 'POST');
-    await page.getByRole('button', {name:'Actualizar pedido', exact:true}).click(); await updated;
-  }
+  assert.equal(saved.status(), 200, await saved.text());
   await page.reload(); await reopen();
   assert.ok((await color.innerText()).toLowerCase().includes('negra'));
   const whiteCalc = page.waitForResponse(r => r.url().endsWith('/api/calculate') && r.request().postDataJSON()?.awnings?.[0]?.anticaCrankColor === 'BLANCA');
@@ -139,15 +136,15 @@ try {
   assert.equal(produced.status, 'PRODUCED');
   assert.equal(produced.order.technician, 'IVÁN');
   assert.equal(produced.order.reviewer, 'JAIME');
-  // Ya generado: desde Historial se ve, pero no se corrige ni se vuelve a generar.
+  // Desde Historial se puede editar un pedido generado.
   await openFromInbox(order.orderCode, 'Ver');
-  await page.getByRole('button', { name: 'Reutilizar datos', exact: true }).waitFor();
-  assert.equal(await page.getByRole('button', { name: 'Corregir', exact: true }).count(), 0);
+  await page.getByRole('button', { name: 'Hacer por separado', exact: true }).waitFor();
+  assert.equal(await page.getByRole('button', { name: 'Editar', exact: true }).count(), 1);
   assert.equal(await page.getByRole('button', { name: 'Generar archivos', exact: true }).count(), 0);
   await page.screenshot({ path: path.join(directory, 'pedido-generado.png'), fullPage: false });
-  // Y el servidor no deja pisarlo al guardar, ni confirmando.
-  const refused = await request('/api/reviews', { order, confirmOverwrite: true }, 'POST', 409);
-  assert.equal(refused.error, 'Este pedido ya está generado. Cambia el número de pedido para guardarlo como uno nuevo.');
+  // El servidor pide identificarse antes de guardar.
+  const refused = await request('/api/reviews', { order, confirmOverwrite: true }, 'POST', 400);
+  assert.match(refused.error, /Elige quién eres en «Soy»/);
   assert.deepEqual(errors, []);
-  console.log('OK: seis variantes, cuatro brazos, selector y persistencia de color, Pedidos → Abrir → Corregir/guardar, generar sin aprobar (API y web), pedido generado sin Corregir ni Generar, imagen, notas vacías, PDF y reserva. ' + directory);
+  console.log('OK: seis variantes, cuatro brazos, color guardado, pedido generado editable, imagen, notas vacías, PDF y reserva. ' + directory);
 } finally { await browser?.close(); server.kill(); await coordina.close(); }

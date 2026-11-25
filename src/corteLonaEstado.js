@@ -74,6 +74,13 @@ export function letrasCorteCambiadas(order, corteLona) {
   });
 }
 
+export function corteLonaDesactualizado(order, corteLona) {
+  const claves = new Set(order.awnings.map(claveToldo));
+  return (corteLona?.toldos ?? []).some(t => !claves.has(t.clave))
+    || letrasCorteCambiadas(order, corteLona)
+    || corteLonaPendiente(order, corteLona).length > 0;
+}
+
 /** La firma de cada toldo: lo mismo en el corte de la pantalla que en el guardado en la revisión. */
 export const firmasCorteLona = (corteLona) => (corteLona?.toldos ?? []).map(({ clave, letra, firma }) => [clave, letra, firma].map((v) => String(v || '')));
 

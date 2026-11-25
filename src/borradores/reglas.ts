@@ -22,7 +22,7 @@ export class ErrorBorrador extends Error {
 
 export const MENSAJE_SIN_NUMERO = "Falta el número de pedido: sin número no hay borrador.";
 export const MENSAJE_SIN_AUTOR = "Elige quién eres en «Soy» antes de guardar el borrador.";
-export const MENSAJE_YA_EN_PEDIDOS = "Este pedido ya está en Pedidos: ábrelo y usa «Corregir».";
+export const MENSAJE_YA_EN_PEDIDOS = "Este pedido ya está en Pedidos. Ábrelo desde allí para editarlo.";
 export const MENSAJE_OCUPADO = "Se está guardando o descartando este borrador: vuelve a intentarlo en un momento.";
 export const MENSAJE_OTRO_NUMERO = "El número del borrador no coincide con el de la dirección.";
 export const MENSAJE_NO_HAY = "No hay borrador de este pedido.";

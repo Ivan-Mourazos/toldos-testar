@@ -4,6 +4,7 @@ import { CheckCircle2, FolderOpen, RefreshCw } from 'lucide-react';
 import { regenerarCortePedido } from './toldosEditable';
 import { abrirCorteDwg, confirmarCorteDwg } from './abrirCorte';
 import type { AskForConfirmation, Notify } from './components/NotificationCenter';
+import type { EstadoCorte } from './corteLona';
 
 // El flujo del corte con los botones arriba, junto a «Guardar para revisión», igual en puertas, remolques y toldos (Iván,
 // 26/10/2026: «que los botones salgan cuando deban, según se cambien cosas se actualicen y según se vaya abriendo el corte,
@@ -81,10 +82,11 @@ export const esperaAlCorte = (p: Paso, editable = false) => (editable || p.paso 
  * `/api/corte-lona/borrador`), con `/estado` y `/confirmar` debajo. `aplica`: el pedido lleva corte (en toldos y remolques,
  * solo con lona de corte). `entrada`: los datos de la pantalla, para saber si cambiaron después de abrir el corte.
  */
-export function useFlujoCorteDwg({ base, codigo: codigoBruto, entrada, cuerpo, aplica = true, falta, usuario, notify, askForConfirmation, activo, editable = false }: {
+export function useFlujoCorteDwg({ base, codigo: codigoBruto, entrada, cuerpo, aplica = true, falta, usuario, notify, askForConfirmation, activo, editable = false, alRegenerarCorte }: {
   base: string; codigo: string; entrada: string; cuerpo: () => Record<string, unknown>; aplica?: boolean; falta: string | null;
   usuario: string; notify: Notify; askForConfirmation: AskForConfirmation; activo: boolean;
   editable?: boolean;
+  alRegenerarCorte?: (estado: EstadoCorte) => void;
 }) {
   const codigo = codigoBruto.trim().toUpperCase();
   // Cada respuesta va con su pedido: la de otro número, o la que llega tarde, no cuenta.
@@ -134,7 +136,10 @@ export function useFlujoCorteDwg({ base, codigo: codigoBruto, entrada, cuerpo, a
     try {
       await abrirCorteDwg({ ruta: base, orderCode: codigoBruto, cuerpo: cuerpo(), usuario, preguntar: askForConfirmation, notify, editable,
         // El que había conserva sus datos; uno nuevo lleva los de la pantalla.
-        alAbrir: tipo => { if (tipo !== 'existente' || abiertoCon === null) { escribir(base, codigo, entrada); setAbierto({ codigo, valor: entrada }); } } });
+        alAbrir: (tipo, corteLona) => {
+          if (corteLona) alRegenerarCorte?.(corteLona);
+          if (tipo !== 'existente' || abiertoCon === null) { escribir(base, codigo, entrada); setAbierto({ codigo, valor: entrada }); }
+        } });
     } finally { setOcupado(false); await refrescar(); }
   }
   async function confirmar() {
@@ -142,7 +147,7 @@ export function useFlujoCorteDwg({ base, codigo: codigoBruto, entrada, cuerpo, a
     try { await confirmarCorteDwg({ ruta: `${base}/confirmar`, orderCode: codigoBruto, usuario, notify }); }
     finally { setOcupado(false); await refrescar(); }
   }
-  return { paso, ocupado, abrir, confirmar, refrescar, editable, falta, usuario, preguntar: askForConfirmation };
+  return { paso, ocupado, abrir, confirmar, refrescar, editable, falta, usuario, preguntar: askForConfirmation, hayPlano: Boolean(estado?.borrador || estado?.revisado) };
 }
 
 export type FlujoCorteDwg = ReturnType<typeof useFlujoCorteDwg>;

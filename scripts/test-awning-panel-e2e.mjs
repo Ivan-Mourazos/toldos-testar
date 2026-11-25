@@ -18,22 +18,24 @@ try {
   await page.waitForTimeout(500);
 
   // «Limpiar» pregunta; al salir con Esc o con «Volver al pedido» el foco vuelve a
-  // «Limpiar», no al <body>.
-  const clearButton = page.getByRole('button', { name: 'Limpiar', exact: true });
+  // «Más opciones».
+  const menu = page.getByRole('button', { name: 'Más opciones', exact: true });
+  const clearButton = page.getByRole('menuitem', { name: 'Limpiar', exact: true });
   const clearDialog = page.getByRole('alertdialog', { name: 'Limpiar el formulario' });
   for (const [how, leave] of [
     ['Esc', () => page.keyboard.press('Escape')],
     ['«Volver al pedido»', () => clearDialog.getByRole('button', { name: 'Volver al pedido', exact: true }).click()]
   ]) {
+    await menu.click();
     await clearButton.click();
     await clearDialog.waitFor();
     await leave();
     await clearDialog.waitFor({ state: 'hidden' });
     await page.waitForTimeout(100);
     const focused = await page.evaluate(() => document.activeElement?.textContent?.trim() || document.activeElement?.tagName);
-    assert.equal(focused, 'Limpiar', `tras cerrar «Limpiar» con ${how} el foco vuelve al botón (está en "${focused}")`);
+    assert.equal(focused, 'Más opciones', `tras cerrar «Limpiar» con ${how} el foco vuelve al botón (está en "${focused}")`);
   }
-  console.log('OK: tras la confirmación de «Limpiar» (Esc y «Volver al pedido») el foco vuelve a «Limpiar»');
+  console.log('OK: tras la confirmación de «Limpiar» (Esc y «Volver al pedido») el foco vuelve a «Más opciones»');
 
   // La línea resumen de Planteamientos: «1 estructura · 1 tela · N líneas RPS · 9 ml».
   await page.waitForFunction(
@@ -126,7 +128,7 @@ try {
   console.log(`OK: la reserva de la línea resumen enseña 2 para ${row1Code}`);
 
   // Guarda el pedido y ábrelo desde Pedidos → Abrir.
-  await page.getByRole('button', { name: 'Guardar para revisión', exact: true }).click();
+  await page.getByRole('button', { name: 'Guardar', exact: true }).click();
   await page.waitForTimeout(600);
   for (const name of ['Guardar igualmente', 'Actualizar pedido']) {
     const confirmButton = page.getByRole('button', { name, exact: true });
