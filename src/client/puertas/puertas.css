@@ -113,6 +113,7 @@
 .puerta-ventana { fill:var(--surface); stroke:var(--text); stroke-width:0.8; }
 .puerta-cutter-texto { color:var(--capa-cutter); }
 .puerta-corte-dibujo { height:auto; max-height:330px; min-height:140px; }
+.puerta-corte-dibujo.is-ajustado { min-height:0; }
 .puerta-corte-desplazamiento { overflow:auto; max-height:520px; }
 .puerta-corte-desplazamiento:focus-visible { outline:2px solid var(--color-brand-500); outline-offset:2px; }
 .puerta-corte-ampliacion { display:flex; align-items:center; gap:8px; margin-top:10px; }

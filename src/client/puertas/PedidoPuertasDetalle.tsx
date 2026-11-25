@@ -23,7 +23,7 @@ import { HistorialEnvios } from '../components/EnviosCorte';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { controlLabel } from '../components/controlLabels';
 import { puedeEditarToldos } from '../generatePermission';
-import { medidaPuerta, numeroPuerta } from './medidasPuertas';
+import { medidaPuerta } from './medidasPuertas';
 import { useCoordinaStatus } from '../hooks/useCoordinaStatus';
 import { useContenidoFluido } from '../hooks/useContenidoFluido';
 import type { CoordinaStatus } from '../types';
@@ -31,7 +31,7 @@ import { AlzadoPuerta } from './AlzadoPuerta';
 import { CadPaginasPuertas } from './CadPaginasPuertas';
 import { ConfirmarGestionPuertas, type GestionPuertas } from './ConfirmarGestionPuertas';
 import { estadoGenerarPuertas } from './generarPuertas';
-import { DibujoCortePuertas } from './VistaCortePuertas';
+import { DibujoCortePuertas, textoCabeceraCorte } from './VistaCortePuertas';
 import '../coordina/corte-lona.css';
 import './puertas.css';
 
@@ -94,9 +94,9 @@ function CortePuertasGuardado({ ruta, version, historial, acciones, confirmado, 
       {datos?.avisos.some((aviso) => aviso.nivel === 'error') && <p role="alert" className="corte-aviso">Hay medidas pendientes de corregir: el corte está incompleto.</p>}
       {datos?.cortes.map((c, i) => (
         <article className="corte-material" key={i}>
-          <header><h3>{c.material}</h3><span>{`Rollo de ${numeroPuerta(c.anchoRollo)} mm · ${numeroPuerta(c.largo)} mm`}</span></header>
+          <header><h3>{c.material}</h3><span>{textoCabeceraCorte(c)}</span></header>
           {c.opcion !== 'principal' && <p className="corte-aviso">{c.opcion === 'saco-entero' ? 'Opción saco entero' : 'Opción saco en dos piezas'} · Alternativas de un mismo saco: elige una.</p>}
-          <DibujoCortePuertas corte={c} />
+          <DibujoCortePuertas corte={c} ajustado />
           <small className="corte-leyenda"><span>DISCO1 · corte</span>{!systemDock&&<><span className="puerta-cutter-texto">CUTTER · huecos y curvas</span><span>ROTULADOR · marcas</span></>}</small>
         </article>
       ))}
