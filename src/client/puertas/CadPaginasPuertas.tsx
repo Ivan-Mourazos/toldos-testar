@@ -7,11 +7,12 @@ import { CortesDelPlano } from '../components/CortesDelPlano';
 import { PdfPreviewToolbar, type PdfZoom } from '../components/PdfPreviewToolbar';
 import '../coordina/cad-paginas.css';
 
-// Adaptador de vista real del DWG para pedidos de puertas (y System Dock, abrigo y sacos).
-// Reutiliza exactamente el mismo visor, barra, clases y avisos que CadPaginas.tsx, apuntando a /api/puertas/pedidos/:orderCode/cad-paginas.
+// Adaptador de vista real del DWG para pedidos de puertas (y System Dock, abrigo y sacos) y de remolques.
+// Reutiliza exactamente el mismo visor, barra, clases y avisos que CadPaginas.tsx, apuntando a /api/<producto>/pedidos/:orderCode/cad-paginas.
 const PX_POR_MM = 96 / 25.4;
 
 export function CadPaginasPuertas({
+  producto = 'puertas',
   orderCode,
   version = '',
   noRegenerado = false,
@@ -25,6 +26,7 @@ export function CadPaginasPuertas({
   actions,
   fallback,
 }: {
+  producto?: 'puertas' | 'remolques';
   orderCode: string;
   version?: string;
   noRegenerado?: boolean;
@@ -67,7 +69,7 @@ export function CadPaginasPuertas({
         setError('');
       }
       try {
-        const respuesta = await fetch(`/api/puertas/pedidos/${encodeURIComponent(codigo)}/cad-paginas`, {
+        const respuesta = await fetch(`/api/${producto}/pedidos/${encodeURIComponent(codigo)}/cad-paginas`, {
           cache: 'no-store',
           signal: controller.signal,
         });
@@ -97,7 +99,7 @@ export function CadPaginasPuertas({
       window.removeEventListener('focus', alVolver);
       document.removeEventListener('visibilitychange', alVolver);
     };
-  }, [codigo, version, intento, datosIniciales]);
+  }, [producto, codigo, version, intento, datosIniciales]);
 
   const datosActivos = codigo ? datos : null;
   const cargandoActivo = Boolean(codigo && cargando);

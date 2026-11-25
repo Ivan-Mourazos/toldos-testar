@@ -1,7 +1,7 @@
 import React from 'react';
 import { useContenidoFluido } from '../hooks/useContenidoFluido';
 import { createPortal } from 'react-dom';
-import { ArrowLeftRight, BookUser, Save } from 'lucide-react';
+import { ArrowLeftRight, BookUser, FolderOpen, Save } from 'lucide-react';
 import { MenuOpcionesPedido } from '../components/MenuOpcionesPedido';
 import { OrderActions } from '../components/OrderActions';
 import { OrderEmptyState } from '../components/OrderEmptyState';
@@ -23,7 +23,8 @@ import { rotuloElemento } from './rotulo';
 import { VistaPreviaPdf } from './VistaPreviaPdf';
 import { avisoCorteAMano } from './CorteRemolques';
 import { entradaCorte, useVistaCorteRemolques, VistaPreviaCorte } from './VistaPreviaCorte';
-import { BotonesFlujoCorte, useFlujoCorteDwg } from '../flujoCorteDwg';
+import { useFlujoCorteDwg } from '../flujoCorteDwg';
+import { CadPaginasPuertas } from '../puertas/CadPaginasPuertas';
 import { faltaParaPdf } from './vistaPrevia';
 import type { ModoCarga } from './guardarPedido';
 import { useRemolques } from './useRemolques';
@@ -133,7 +134,7 @@ export function RemolquesView({ controlRef, usuario, notify, askForConfirmation,
   const clienteActivo = lineaActiva ? clienteDeLinea(lineaActiva, numeroPedido, rps.pedido) : null;
   // Solo comunica los datos del rótulo; el pedido y sus operaciones siguen en este editor.
   // El corte del pedido, calculado solo (pestaña «Corte» junto al dibujo), y su flujo con el DWG en la barra de arriba,
-  // como en puertas: «Abrir corte», «Confirmar corte» y, con el corte confirmado, «Guardar para revisión».
+  // como en toldos y puertas: Vista previa · Más opciones · Abrir corte · Guardar (Iván, 25/11/2026).
   const faltaOfCorte = lineas.some(l => !l.input.cabecera.ordenFabricacion?.trim()
     || l.input.cabecera.ordenFabricacion.trim().toUpperCase() === 'SIN OF');
   const ofsPedido = lineas
@@ -159,20 +160,33 @@ export function RemolquesView({ controlRef, usuario, notify, askForConfirmation,
   }, [numeroPedido, lineas.length, onResumenChange]);
   const acciones = (
     <OrderActions hidden={!accionesVisibles}>
-      <VistaPreviaPdf label="Vista previa" lineas={lineas} params={ws.conParamsGuardados ? params : undefined}
-        bloqueo={faltaPdf} notify={notify} />
       {avisoAMano && <span className="flujo-corte-paso" role="status" title={avisoAMano}>{avisoAMano}</span>}
-      <BotonesFlujoCorte flujo={flujo} ocupado={ws.guardando} />
+      <VistaPreviaPdf label="Vista previa" lineas={lineas} params={ws.conParamsGuardados ? params : undefined}
+        bloqueo={faltaPdf} notify={notify}
+        dibujoCad={hayPedido && tieneCorte ? (accionesModal) => <CadPaginasPuertas
+          producto="remolques"
+          orderCode={numeroPedido.trim()}
+          onActualizarCorte={usuario && !bloqueoCorte ? regenerar : undefined}
+          actualizando={ws.guardando}
+          enModal
+          heading={<strong>Vista previa del planteamiento</strong>}
+          actions={accionesModal}
+        /> : undefined} />
+      <MenuOpcionesPedido corte={flujo} ocupado={ws.guardando || ws.guardandoBorrador || flujo.ocupado}
+        motivoBorrador={ws.conParamsGuardados ? 'El pedido ya está en Pedidos. Usa «Guardar».' : !hayPedido ? 'Escribe el número de pedido.' : !usuario ? 'Elige quién eres en «Soy».' : undefined}
+        motivoRegenerar={bloqueoCorte ?? (!tieneCorte ? 'Este pedido no tiene corte.' : undefined)}
+        guardarBorrador={ws.guardarBorrador} regenerar={regenerar} limpiar={onLimpiar ?? ws.limpiarFormulario} />
+      <button type="button" className="ghost-button" disabled={ws.guardando || flujo.ocupado || ['incompleto', 'sin-flujo'].includes(flujo.paso.paso)}
+        title={flujo.paso.paso === 'incompleto' ? flujo.paso.motivo : flujo.paso.paso === 'sin-flujo' ? (lineas.length ? 'Este pedido no tiene lona que cortar.' : 'Añade un elemento.') : undefined}
+        onClick={() => void flujo.abrir()}>
+        <FolderOpen aria-hidden="true" />{flujo.ocupado ? 'Abriendo…' : 'Abrir corte'}
+      </button>
       <button type="button" className="primary-button rem-guardar-boton"
         disabled={lineas.length === 0 || Boolean(faltaPdf) || ws.guardando || ws.guardandoBorrador || Boolean(ws.bloqueoParams.motivo)}
         aria-busy={ws.guardando} title={ws.bloqueoParams.motivo ?? faltaPdf ?? undefined}
         onClick={() => void ws.guardar()}>
         <Save aria-hidden="true" />{ws.guardando ? 'Guardando…' : 'Guardar'}
       </button>
-      <MenuOpcionesPedido corte={flujo} ocupado={ws.guardando || ws.guardandoBorrador || flujo.ocupado}
-        motivoBorrador={ws.conParamsGuardados ? 'El pedido ya está en Pedidos. Usa «Guardar».' : !hayPedido ? 'Escribe el número de pedido.' : !usuario ? 'Elige quién eres en «Soy».' : undefined}
-        motivoRegenerar={bloqueoCorte ?? (!tieneCorte ? 'Este pedido no tiene corte.' : undefined)}
-        guardarBorrador={ws.guardarBorrador} regenerar={regenerar} limpiar={onLimpiar ?? ws.limpiarFormulario} />
     </OrderActions>
   );
 

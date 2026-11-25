@@ -15,6 +15,7 @@ import { controlLabel } from '../components/controlLabels';
 import { useCoordinaStatus } from '../hooks/useCoordinaStatus';
 import type { CoordinaStatus } from '../types';
 import { CorteRemolques, type VistaCorteRemolques } from './CorteRemolques';
+import { CadPaginasPuertas } from '../puertas/CadPaginasPuertas';
 import { estadoGenerarRemolques, ficherosPrevistos, opcionesCorteRemolques } from './generarPedido';
 import { puedeEditarToldos } from '../generatePermission';
 import { ConfirmarGestionRegistro, type GestionRegistro } from '../components/ConfirmarGestionRegistro';
@@ -189,10 +190,21 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
           return elemento ? <DatosElemento elemento={elemento} coordina={coordina} /> : null;
         }} />
 
-      {/* Debajo de los datos (Iván, 20/10/2026). Se vuelve a calcular si el pedido cambia (guardado o generado). */}
+      {/* Debajo de los datos (Iván, 20/10/2026). El corte es el plano del CAD, como en toldos y puertas (Iván, 25/11/2026);
+          sin DWG, el corte que calcula la web. */}
       <DocumentosPedido planteamiento={<PlanteamientoPedido origen={`${ruta}/vista-previa`} version={pedido.updatedAt} />}
-        corte={<CorteRemolques ruta={ruta} version={pedido.updatedAt} generado notify={notify} onConfirm={onConfirm} onVista={recibirVista}
-        acciones={<>{!terminado && opcionesCorte.aplica && <AccionesCorteMaquina ruta={ruta + "/corte"} codigo={pedido.orderCode} onEnviado={onEnviado} />}<HistorialEnvios envios={pedido.enviosCorte} /></>} />} />
+        corte={<CadPaginasPuertas
+          producto="remolques"
+          key={pedido.orderCode}
+          orderCode={pedido.orderCode}
+          version={pedido.updatedAt}
+          noRegenerado={pedido.corteNoRegenerado}
+          onActualizarCorte={corregible && !terminado && !generando ? () => corte.regenerar() : undefined}
+          actualizando={corte.ocupado}
+          fallback={<CorteRemolques ruta={ruta} version={pedido.updatedAt} generado notify={notify} onConfirm={onConfirm} onVista={recibirVista} />}
+        />} />
+      {!terminado && opcionesCorte.aplica && <AccionesCorteMaquina ruta={ruta + "/corte"} codigo={pedido.orderCode} onEnviado={onEnviado} />}
+      <HistorialEnvios envios={pedido.enviosCorte} />
     </section>
   );
 }

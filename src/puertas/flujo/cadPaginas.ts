@@ -1,4 +1,5 @@
-// Adaptador de páginas CAD reales para pedidos de puertas (y System Dock, abrigo y sacos).
+// Adaptador de páginas CAD reales para pedidos de puertas (y System Dock, abrigo y sacos) y de remolques:
+// los dos guardan el plano con el mismo flujo del DWG (src/flujoDwg); solo cambian el tipo de fichero y la huella.
 // Reutiliza el renderizador DXF→SVG y la detección de cambios manuales de src/cadPaginas/ sin modificar las piezas comunes.
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -35,10 +36,19 @@ async function statSiExiste(ruta: string, filename = path.basename(ruta)): Promi
   }
 }
 
+/** Lo que el adaptador lee de un pedido guardado con el flujo del DWG (puertas o remolques). */
+interface PedidoCadFlujo {
+  corteConfirmado?: PedidoPuertasGuardado['corteConfirmado'];
+  corteNoRegenerado?: boolean;
+  production?: { files?: { type: string; filename: string; savedPath: string }[] } | null;
+  summary: { technician: string };
+}
+
 async function listarRevisadosPuertas(
-  pedido: PedidoPuertasGuardado | null,
+  pedido: PedidoCadFlujo | null,
   codigoCorte: string,
-  settings: AjustesCadMinimos
+  settings: AjustesCadMinimos,
+  tipoPlano: string
 ): Promise<FicheroCadReferencia[]> {
   if (!pedido) return [];
   const salida: FicheroCadReferencia[] = [];
@@ -50,7 +60,7 @@ async function listarRevisadosPuertas(
     if (salida.length) return salida;
   }
   for (const f of pedido.production?.files ?? []) {
-    if (f.type !== 'plano-puertas') continue;
+    if (f.type !== tipoPlano) continue;
     const reg = await statSiExiste(f.savedPath, f.filename);
     if (reg) salida.push(reg);
   }
@@ -68,13 +78,16 @@ async function listarRevisadosPuertas(
   return [];
 }
 
-function estadoActualizacionPuertas(pedido: PedidoPuertasGuardado | null): {
+/** La huella de puertas: los datos de cada puerta de la entrega en curso. */
+const huellaPuertas = (pedido: PedidoPuertasGuardado) =>
+  huellaDatos((pedidoEntrega(pedido) as PedidoPuertasGuardado).elementos.map((e) => e.input));
+
+function estadoActualizacionPuertas<T extends PedidoCadFlujo>(pedido: T | null, huella: (pedido: T) => string): {
   actualizado: boolean;
   motivoDesactualizado: string | null;
 } {
   if (!pedido) return { actualizado: true, motivoDesactualizado: null };
-  const actual = pedidoEntrega(pedido) as PedidoPuertasGuardado;
-  const huellaActual = huellaDatos(actual.elementos.map((e) => e.input));
+  const huellaActual = huella(pedido);
   const datosDiferentes = Boolean(pedido.corteConfirmado?.datos && huellaActual !== pedido.corteConfirmado.datos);
   if (pedido.corteNoRegenerado) {
     return { actualizado: false, motivoDesactualizado: 'Los datos del pedido cambiaron después de generar el DWG.' };
@@ -85,18 +98,33 @@ function estadoActualizacionPuertas(pedido: PedidoPuertasGuardado | null): {
   return { actualizado: true, motivoDesactualizado: null };
 }
 
-export function crearServicioCadPaginasPuertas({
-  obtenerPedido,
-  ajustes,
-  oda,
-  almacenEscritos,
-  maxCache = 50,
-}: {
+export function crearServicioCadPaginasPuertas(deps: {
   obtenerPedido: (orderCode: string) => Promise<PedidoPuertasGuardado | null>;
   ajustes: () => Promise<AjustesCadMinimos>;
   oda: OdaMinimo;
   almacenEscritos?: AlmacenEscritos;
   maxCache?: number;
+}) {
+  return crearServicioCadPaginasFlujo({ ...deps, tipoPlano: 'plano-puertas', huella: huellaPuertas });
+}
+
+/** Igual que puertas, para cualquier producto con el flujo del DWG: remolques usa «plano-corte-lona» y su firma del corte. */
+export function crearServicioCadPaginasFlujo<T extends PedidoCadFlujo>({
+  obtenerPedido,
+  ajustes,
+  oda,
+  almacenEscritos,
+  maxCache = 50,
+  tipoPlano,
+  huella,
+}: {
+  obtenerPedido: (orderCode: string) => Promise<T | null>;
+  ajustes: () => Promise<AjustesCadMinimos>;
+  oda: OdaMinimo;
+  almacenEscritos?: AlmacenEscritos;
+  maxCache?: number;
+  tipoPlano: string;
+  huella: (pedido: T) => string;
 }) {
   const cache = new Map<string, PlanoCad>();
   const enCurso = new Map<string, Promise<PlanoCad>>();
@@ -141,13 +169,13 @@ export function crearServicioCadPaginasPuertas({
   async function obtenerPaginas(orderCodeBruto: string): Promise<RespuestaCadPaginas> {
     const orderCode = codigoPedido(orderCodeBruto);
     const [pedido, settings] = await Promise.all([obtenerPedido(orderCode), ajustes()]);
-    const codigoCorte = pedido ? codigoAnual(pedido) : orderCode;
+    const codigoCorte = pedido ? codigoAnual(pedido as Parameters<typeof codigoAnual>[0]) : orderCode;
 
-    const revisados = await listarRevisadosPuertas(pedido, codigoCorte, settings);
+    const revisados = await listarRevisadosPuertas(pedido, codigoCorte, settings, tipoPlano);
     const borradores = revisados.length ? [] : await listarBorradoresCad(settings.corteBorradoresDirectory, codigoCorte);
     const ficheros = revisados.length ? revisados : borradores;
     const origen: 'revisado' | 'borrador' | null = revisados.length ? 'revisado' : borradores.length ? 'borrador' : null;
-    const estado = estadoActualizacionPuertas(pedido);
+    const estado = estadoActualizacionPuertas(pedido, huella);
 
     if (!ficheros.length) {
       return {

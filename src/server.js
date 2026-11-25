@@ -89,8 +89,9 @@ import { nombrePdf } from './remolques/salida/nombre-pdf.ts';
 import { crearAlmacenPedidos, crearAlmacenPedidosRemolques } from './remolques/flujo/almacen.ts';
 import { ErrorPedidoRemolques } from './remolques/flujo/pedido.ts';
 import {
-  comprobadorPedidoToldos, crearServicioPedidosRemolques, mensajePedidoDeRemolques, paramsDeLaPantalla, yaEsPedidoDeRemolques
+  comprobadorPedidoToldos, crearServicioPedidosRemolques, firmaCorteRemolques, mensajePedidoDeRemolques, paramsDeLaPantalla, yaEsPedidoDeRemolques
 } from './remolques/flujo/servicio.ts';
+import { crearServicioCadPaginasFlujo } from './puertas/flujo/cadPaginas.ts';
 import { crearAlmacenBorradores } from './borradores/almacen.ts';
 import { crearServicioBorradores } from './borradores/servicio.ts';
 import {
@@ -1130,6 +1131,19 @@ app.get('/api/remolques/pedidos/:orderCode/corte-dwg', rutaRemolques(async (req,
 app.post('/api/remolques/borrador-corte/confirmar', rutaRemolques(async (req, res) => {
   const { status, cuerpo } = await pedidosRemolques.confirmarCorte(req.body);
   res.status(status).json(cuerpo);
+}));
+
+// El plano del corte tal como está en el CAD (presentaciones y corte), como en toldos y puertas.
+const cadPaginasRemolques = crearServicioCadPaginasFlujo({
+  obtenerPedido: (codigo) => almacenPedidosRemolques.obtener(codigo),
+  ajustes: () => workflowStore.getSettings(),
+  oda,
+  almacenEscritos: confirmacionesRemolques,
+  tipoPlano: 'plano-corte-lona',
+  huella: firmaCorteRemolques
+});
+app.get('/api/remolques/pedidos/:orderCode/cad-paginas', rutaRemolques(async (req, res) => {
+  res.set('Cache-Control', 'no-store').json(await cadPaginasRemolques.obtenerPaginas(String(req.params.orderCode ?? '')));
 }));
 
 app.get('/api/remolques/pedidos/:orderCode', rutaRemolques(async (req, res) => {
