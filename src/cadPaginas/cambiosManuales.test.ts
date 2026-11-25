@@ -23,9 +23,11 @@ afterEach(async () => {
 });
 
 describe('detección de cambios hechos a mano en el DWG', () => {
-  it('detecta ediciones por bytes (sha256) incluso con mismo tamaño y no da falso positivo si solo cambia mtime', async () => {
+  it('detecta ediciones con el mismo tamaño y fecha, y tolera un cambio solo de fecha', async () => {
     const ruta = path.join(raiz, 'AR2601234 (plano).dwg');
     await fs.writeFile(ruta, 'CONTENIDO-AAAA');
+    const fechaOriginal = new Date('2026-11-24T10:00:00Z');
+    await fs.utimes(ruta, fechaOriginal, fechaOriginal);
     const escritos = await registrarArchivosEscritos([{ filename: 'AR2601234 (plano).dwg', plano: ruta }]);
     const confirmado = {
       huella: 'h1',
@@ -50,8 +52,9 @@ describe('detección de cambios hechos a mano en el DWG', () => {
       archivosModificados: []
     });
 
-    // Mismo tamaño pero bytes distintos -> true
+    // Algunos sistemas de archivos conservan la misma marca de tiempo al editar.
     await fs.writeFile(ruta, 'CONTENIDO-BBBB');
+    await fs.utimes(ruta, fechaOriginal, fechaOriginal);
     expect(await detectarCambiosManualesDwg({ corteConfirmado: confirmado })).toEqual({
       modificadoAMano: true,
       archivosModificados: ['AR2601234 (plano).dwg']

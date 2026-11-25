@@ -1,6 +1,5 @@
 // Detección de cambios hechos a mano en el DWG (ZWCAD) después de que la web lo escribiera.
-// Guarda sha256 + mtimeMs + size al escribirlo; al comprobar, si mtimeMs+size no cambiaron se evita leer
-// el fichero entero, y si cambiaron se verifica el sha256 real de los bytes para evitar falsos positivos.
+// La huella de los bytes distingue una edición de un cambio en los metadatos del fichero.
 import { createHash } from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -112,9 +111,7 @@ async function archivoModificadoAMano(ruta: string, esperado: RegistroArchivoEsc
     throw error;
   }
   if (esperado) {
-    // Camino rápido: misma fecha exacta y mismo tamaño → sin cambios.
-    if (info.mtimeMs === esperado.mtimeMs && info.size === esperado.size) return false;
-    // Si cambió tamaño, es seguro que cambió el contenido; si solo cambió mtime, verificamos sha256.
+    // Una edición puede conservar la fecha de modificación y el tamaño.
     if (info.size !== esperado.size) return true;
     const bytes = await fs.readFile(ruta);
     const shaActual = createHash('sha256').update(bytes).digest('hex');
