@@ -174,12 +174,23 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
   }
   // La E.T. de TGM se corta al ancho del pedido y se suelda 2-3 cm arriba y abajo, con el tubo en el centro (Q-TGM03).
   const corteEt = p.modelo === 'PUERTAENR' ? p.enrollable.anchoEt ?? REGLAS_ENROLLABLE.corteEntrada : 0;
-  function entrada(e: Entrada, i: number) {
-    const alto=p.modelo==='PUERTAENR'?corteEt:e.alto;
-    const x = agregar(pieza(`Entrada de tubo ${i + 1}`, 'entrada', e.largo - (escuadrado ? 2 : 0), alto, materialEntrada));
-    x.huecos = huecosET(e);
-    x.origenAlzado = [0, e.altura - alto / 2];
+  function piezaEntrada(nombre: string, eje: number, largo: number, alto: number, material: string, huecos: Hueco[] = []) {
+    const x = agregar(pieza(nombre, 'entrada', largo, alto, material));
+    x.huecos = [...huecos];
+    x.origenAlzado = [0, eje - alto / 2];
     return x;
+  }
+  function entrada(e: Entrada, i: number) {
+    const alto = p.modelo === 'PUERTAENR' ? corteEt : e.alto;
+    return piezaEntrada(`Entrada de tubo ${i + 1}`, e.altura, e.largo - (escuadrado ? 2 : 0), alto, materialEntrada, huecosET(e));
+  }
+  /** Iván, 25/11/2026: entre dos ventanales corridos siempre van una E.T. delantera y otra trasera. */
+  function entradaEntreVentanales(numero: number, eje: number, largo: number, alto: number, huecos: Hueco[] = []) {
+    const nombre = `Entrada entre ventanales ${numero}`;
+    const delantera = piezaEntrada(`${nombre} · delantera`, eje, largo, alto, lona, huecos);
+    piezaEntrada(`${nombre} · trasera`, eje, largo, alto, lona, huecos);
+    // Los cachos se emparejan con la delantera. La trasera no lleva mininúmeros.
+    return delantera;
   }
   function numerarCacho(cacho: PiezaPuerta, otra: PiezaPuerta, x: number) {
     const [ax, ay] = cacho.origenAlzado!, [bx, by] = otra.origenAlzado!;
@@ -263,16 +274,11 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
       agregar(pieza('Cachos laterales', 'cacho', e.margen+EXTRA_CACHO_VENTANAL,ventanales[0].altoCorte,lona,p.rollo,2));
     } else if (ventanales.length > 1) {
       // AR2605065 (A) y AR2605038 (D): los cachos son piezas sueltas, no huecos de un paño entero.
-      const separaciones:Array<{delantera:PiezaPuerta;trasera:PiezaPuerta}>=[];
+      const separaciones: PiezaPuerta[] = [];
       let eje=p.alto-e.T;
       for(let i=0;i<ventanales.length-1;i++) {
         eje=n(eje-ventanales[i].D);
-        const crear=(cara:string)=>{
-          const x=agregar(pieza(`Entrada entre ventanales ${i+1} · ${cara}`,'entrada',p.frente,corteEt));
-          x.origenAlzado=[0,eje-corteEt/2]; return x;
-        };
-        const delantera=crear('delantera'),trasera=crear('trasera');
-        separaciones.push({delantera,trasera});
+        separaciones.push(entradaEntreVentanales(i+1, eje, p.frente, corteEt));
         p.entradas.forEach((t,j)=>{if(Math.abs(t.altura-eje)<.001)incorporadas.add(j+1);});
       }
       const superior=paneles.find(t=>t.desde<=bordeSuperior+.001&&t.hasta>bordeSuperior)!;
@@ -287,8 +293,8 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
           // solapan las dos piezas. Antes el del cacho quedaba 1 cm hacia fuera y, en la E.T. del medio, 0,25 desplazado.
           const xPuerta=lado===0?4:p.frente-4;
           // En la E.T. del medio solo se numera la delantera; la de detrás no hace falta (Iván, 22/10/2026).
-          const unirArriba=i===0?superior?.pieza:separaciones[i-1].delantera;
-          const unirAbajo=i===ventanales.length-1?inferior?.pieza:separaciones[i].delantera;
+          const unirArriba=i===0?superior?.pieza:separaciones[i-1];
+          const unirAbajo=i===ventanales.length-1?inferior?.pieza:separaciones[i];
           if(unirArriba) numerarCacho(cacho,unirArriba,xPuerta);
           else numeroUnion++;
           if(unirAbajo) numerarCacho(cacho,unirAbajo,xPuerta);
@@ -361,7 +367,7 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
       aviso('EMPATE', 'Los tubos de empate deben existir, estar ordenados y no repetirse.');
       empates=[];
     }
-    const { ventanales, avisos: avisosVentanales } = ventanalesApilable(p, alturas);
+    const { ventanales, tubosCompartidos, avisos: avisosVentanales } = ventanalesApilable(p, alturas);
     avisos.push(...avisosVentanales);
     const tubosVentanal = new Set(ventanales.flatMap(v => [v.tramo, v.tramo + 1]));
     if (empates?.some(t => tubosVentanal.has(t))) {
@@ -379,9 +385,9 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
     }
     const grupos: Array<{ desde: number; hasta: number; nombre: string }> = [];
     let desde = base;
-    for (const [i, v] of ventanales.entries()) {
-      // Dos tramos seguidos se encuentran en su E.T. común, sin un paño entre ellos.
-      if (ventanales[i-1]?.tramo !== v.tramo - 1 && v.visibleDesde > desde)
+    for (const v of ventanales) {
+      // Dos tramos seguidos se encuentran en las E.T. del tubo común, sin un paño entre ellos.
+      if (!tubosCompartidos.has(v.tramo) && v.visibleDesde > desde)
         grupos.push({ desde, hasta: v.visibleDesde, nombre: `Paño bajo ventanal ${v.tramo}` });
       desde = v.visibleHasta;
     }
@@ -397,7 +403,9 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
     empates = r.empates;
     const entradasSueltas = new Map<number, PiezaPuerta>();
     for (const [i,e] of p.entradas.entries()) {
-      if (!empates.includes(i+1)) entradasSueltas.set(i+1, entrada(e,i));
+      if (tubosCompartidos.has(i+1)) {
+        entradasSueltas.set(i+1, entradaEntreVentanales(i+1, e.altura, e.largo - (escuadrado ? 2 : 0), e.alto, huecosET(e)));
+      } else if (!empates.includes(i+1)) entradasSueltas.set(i+1, entrada(e,i));
       const esperado = e.diametro === 42 ? 13.5 : 12;
       if (Math.abs(e.alto-esperado)>0.01) aviso('DIAMETRO', `Tubo ${i+1}: Ø${e.diametro} propone entrada de ${numero(esperado)} cm; revisa la excepción de ${numero(e.alto)} cm.`, 'aviso');
       for (const panel of paneles) {

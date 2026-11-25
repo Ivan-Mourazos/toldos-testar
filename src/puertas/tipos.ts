@@ -161,6 +161,8 @@ export interface Puerta {
     /** Saco útil del pedido en mm (80, 110, 120…); se remata 1 cm más grande. */
     saco: number | null; doble: boolean; empates: number[] | null;
     ventanales?: VentanalApilable[];
+    /** Margen propuesto al marcar tramos. Cada ventanal guarda también su propio margen. */
+    margenVentanales?: number;
     /** Doble saco: útil del saco exterior (envoltorio) en mm; sin poner, el interior + 50. */
     sacoExterior?: number | null;
     /** Lado de la pestaña del saco mirando por el revés, como el pedido; sin poner, izquierda. */

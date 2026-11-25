@@ -362,37 +362,41 @@ export function AcabadoSaco({ p, cambiar }: { p: Puerta; cambiar: (p: Puerta) =>
   }}/>;
 }
 
+const nombreTramoEntreTubos = (tubos: number[], tramo: number) =>
+  tramo < tubos.length ? `Entre tubo ${tramo} y ${tramo + 1} · ${num(n2(tubos[tramo] - tubos[tramo - 1]))} mm`
+    : `Tramo ${tramo} fuera de la cadena`;
+
 export function VentanalesEntreTubos({ p, cambiar }: { p: Puerta; cambiar: (p: Puerta) => void }) {
-  const [nuevo, setNuevo] = useState<{ tramo: string; margen: number | null }>({ tramo: '', margen: null });
+  const a = p.apilable;
   const tubos = alturasTubos(p);
-  const ventanales = p.apilable.ventanales ?? [];
-  const poner = (vs: NonNullable<Puerta['apilable']['ventanales']>) =>
-    cambiar({ ...p, apilable: { ...p.apilable, ventanales: vs } });
-  const opciones = tubos.slice(1).map((_,i)=>String(i+1)).filter(t=>!ventanales.some(v=>String(v.tramo)===t));
-  const tramo = opciones.includes(nuevo.tramo) ? nuevo.tramo : opciones[0] ?? '';
-  const nombreTramo = (t: string) => {
-    const n = Number(t);
-    return n < tubos.length ? `Entre tubo ${n} y ${n+1} · ${num(n2(tubos[n]-tubos[n-1]))} mm` : `Tramo ${n} fuera de la cadena`;
+  const ventanales = a.ventanales ?? [];
+  const margen = a.margenVentanales ?? ventanales[0]?.margen ?? 0;
+  const tramos = [...new Set([...tubos.slice(1).map((_, i) => i + 1), ...ventanales.map(v => v.tramo)])].sort((a, b) => a - b);
+  const poner = (parche: Partial<Puerta['apilable']>) => cambiar({ ...p, apilable: { ...a, ...parche } });
+  const marcar = (tramo: number, activo: boolean) => {
+    const resto = ventanales.filter(v => v.tramo !== tramo);
+    if (activo) resto.push({ tramo, margen });
+    poner({ margenVentanales: margen, ventanales: resto.sort((a, b) => a.tramo - b.tramo) });
   };
   return <fieldset><legend>Ventanales corridos</legend>
-    <p className="puerta-ayuda">Cada ventanal ocupa un tramo entre dos E.T. El margen es el mismo a ambos lados.</p>
-    {ventanales.map((v,i)=><fieldset key={i}><legend>{nombreTramo(String(v.tramo))}</legend>
-      <div className="puerta-campos">
-        <Numero titulo={`Margen lateral ventanal del tramo ${v.tramo} (mm)`} valor={v.margen}
-          cambiar={m=>poner(ventanales.map((otro,j)=>i===j?{...otro,margen:m??0}:otro))}/>
-        <button type="button" className="ghost-button" onClick={()=>poner(ventanales.filter((_,j)=>i!==j))}>Quitar ventanal {v.tramo}</button>
-      </div>
-    </fieldset>)}
-    {opciones.length>0&&<div className="puerta-campos">
-      <SelectField label="Tramo del ventanal" value={tramo} options={opciones} optionLabel={nombreTramo} onChange={v=>setNuevo({...nuevo,tramo:v})}/>
-      <Numero titulo="Margen lateral del ventanal (mm)" valor={nuevo.margen} cambiar={v=>setNuevo({...nuevo,margen:v})}/>
-      <button type="button" className="ghost-button" disabled={!nuevo.margen || nuevo.margen<=0 || 2*nuevo.margen>=p.frente} onClick={()=>{
-        if (nuevo.margen===null) return;
-        poner([...ventanales,{tramo:Number(tramo),margen:nuevo.margen}]);
-        setNuevo({tramo:'',margen:null});
-      }}>Añadir ventanal</button>
+    <p className="puerta-ayuda">Marca los tramos que llevan ventanal. El margen se mide a cada lado.</p>
+    <div className="puerta-campos">
+      <Numero titulo="Margen común (mm)" valor={margen || null} cambiar={m => {
+        const comun = m ?? 0;
+        poner({ margenVentanales: comun, ventanales: ventanales.map(v => v.margen === margen ? { ...v, margen: comun } : v) });
+      }}/>
+    </div>
+    {tramos.length > 0 ? <div className="puerta-tramos-ventanal">
+      {tramos.map(tramo => <label className="puerta-casilla" key={tramo}>
+        <input type="checkbox" name="tramosVentanal" value={tramo} checked={ventanales.some(v => v.tramo === tramo)}
+          onChange={e => marcar(tramo, e.currentTarget.checked)}/>
+        {nombreTramoEntreTubos(tubos, tramo)}
+      </label>)}
+    </div> : <p className="puerta-ayuda">Añade los tubos en «E.T.» para poder marcar los tramos.</p>}
+    {ventanales.length > 0 && <div className="puerta-campos">
+      {ventanales.map((v, i) => <Numero key={v.tramo} titulo={`Margen lateral ventanal del tramo ${v.tramo} (mm)`} valor={v.margen}
+        cambiar={m => poner({ margenVentanales: margen, ventanales: ventanales.map((otro, j) => i === j ? { ...otro, margen: m ?? 0 } : otro) })}/>)}
     </div>}
-    {tubos.length<2&&<p className="puerta-ayuda">Añade los tubos en «E.T.» para poder elegir el tramo.</p>}
   </fieldset>;
 }
 
@@ -403,7 +407,7 @@ export function VentanalesEntreTubos({ p, cambiar }: { p: Puerta; cambiar: (p: P
  */
 export function VentanasEntreTubos({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
   const tubos=p.modelo==='PUERTAENR'?p.entradas.map(e=>e.altura):alturasTubos(p), tramos=tubos.slice(1).map((_,i)=>i+1);
-  const nombreTramo=(t:number)=>`Entre tubo ${t} y ${t+1} · ${num(n2(tubos[t]-tubos[t-1]))} mm`;
+  const nombreTramo=(t:number)=>nombreTramoEntreTubos(tubos,t);
   const [nueva,setNueva]=useState({tramo:0,x:0,ancho:0,alto:0,cuantas:1,separacion:0});
   const radio=p.ventanas[0]?.radio??2, radioCristal=p.ventanas[0]?.radioCristal??4;
   const poner=(ventanas:Ventana[])=>cambiar({...p,ventanas});

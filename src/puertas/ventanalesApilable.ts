@@ -4,6 +4,9 @@ import { bordesVentanal, NOTA_CACHOS_CRISTAL } from './ventanalesEnrollable.ts';
 export const notaPlanoApilable = (p: Puerta): string =>
   p.notaPlano?.trim() ?? (p.apilable.ventanales?.length ? NOTA_CACHOS_CRISTAL : '');
 
+export const rotuloEntradaApilable = (diametro: number, doble: boolean): string =>
+  doble ? `2 E.T. Ø${diametro} mm · DELANTERA Y TRASERA` : `E.T Ø${diametro} mm`;
+
 export function ventanalesApilable(p: Puerta, ejes: number[]) {
   const vistos = new Set<number>();
   const avisos: AvisoPuerta[] = [];
@@ -29,5 +32,6 @@ export function ventanalesApilable(p: Puerta, ejes: number[]) {
     return [{ ...b, tramo, margen }];
   };
   const ventanales = (p.apilable.ventanales ?? []).flatMap(revisar).sort((a, b) => a.tramo - b.tramo);
-  return { ventanales, avisos };
+  const tubosCompartidos = new Set(ventanales.filter((v, i) => ventanales[i - 1]?.tramo === v.tramo - 1).map(v => v.tramo));
+  return { ventanales, tubosCompartidos, avisos };
 }

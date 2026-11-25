@@ -118,6 +118,7 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
     if(p.apilable.sacoExterior!==undefined && !saco(p.apilable.sacoExterior)) return error();
     if(p.apilable.ventanales!==undefined && (!lista(p.apilable.ventanales,100)
       || !p.apilable.ventanales.every(v=>objeto(v) && cotas(v,['tramo','margen']) && Number.isInteger(v.tramo) && Number(v.tramo)>=1))) return error();
+    if(p.apilable.margenVentanales!==undefined && !cotas(p.apilable,['margenVentanales'])) return error();
     if(p.apilable.ladoPestana!==undefined &&!['izquierda','derecha'].includes(p.apilable.ladoPestana as string)) return error();
     if(p.apilable.sueloInclinado!==undefined && !cotas(p.apilable.sueloInclinado,['altoIzquierdo','altoDerecho'])) return error();
     if(!objeto(p.enrollable) || !cotas(p.enrollable,['T','D','margen']) || !lista(p.enrollable.empates,100) || !p.enrollable.empates.every(u=>objeto(u) && ['superior','inferior'].includes(u.pano as string) && cotas(u,['altura','solape']) && (u.tubo===undefined || (typeof u.tubo==='number'&&Number.isInteger(u.tubo)&&u.tubo>0&&u.tubo<=(p.entradas as unknown[]).length)))) return error();

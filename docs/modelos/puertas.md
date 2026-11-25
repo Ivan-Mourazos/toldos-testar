@@ -73,9 +73,10 @@ Las ventanas se pueden introducir una a una o por filas de columnas iguales. Tie
 
 ### Ventanal corrido entre dos entradas
 
-En «Ventanas» se añade un ventanal eligiendo el tramo entre dos tubos, contado desde abajo,
-y el margen lateral `m` que indica la hoja. Se pueden añadir varios tramos y conservar ventanas
-individuales en otros. La altura del ventanal sigue los ejes y los altos de las E.T. al editarlos.
+En «Ventanas» se marcan juntos los tramos entre tubos que llevan ventanal, contados desde
+abajo. El margen común es la distancia a cada lateral. Se puede cambiar por tramo y editar
+el margen común sin pisar los márgenes distintos. Las ventanas individuales pueden ir en
+otros tramos. La altura del ventanal sigue los ejes y los altos de las E.T. al editarlos.
 
 **Contraste del 25/11/2026.** RPS identifica AR.26.05731, OF 0234313, Portanova, tres apilables
 de 530 × 575 en negro 9005. La hoja sitúa el ventanal entre los ejes 141 y 193, con 15 de
@@ -98,9 +99,12 @@ del dibujo permite comprobar lo siguiente, en cm y con alturas desde el bajo ter
 Cada paño cubre la E.T. hasta el borde que da al ventanal. El cristal y los cachos pisan 2 cm
 de paño por arriba y por abajo. El cristal mide `F − 2m + 4` y cada cacho `m + 1`, con ese
 centímetro por fuera para escuadrar. Son los mismos aumentos que en las enrollables
-AR2604638 y AR2605134. Las E.T. conservan sus recortes de extremos y cintas. Si dos
-ventanales comparten tubo, se conserva su E.T. como pieza común y se numeran las cuatro
-uniones con ella. El bot coloca el cristal en el rollo de transparente y los cachos en el de
+AR2604638 y AR2605134. Las E.T. conservan sus recortes de extremos y cintas.
+**Iván, 25/11/2026 (Q-PU06):** si dos ventanales corridos comparten tubo, se cortan dos E.T.,
+delantera y trasera, como en la enrollable. En la apilable ambas llevan los recortes del tubo.
+La delantera lleva los cuatro mininúmeros de los cachos. Entre dos tramos con ventanas
+individuales sigue yendo una sola E.T. El alzado y el plano identifican el tubo con dos caras.
+El bot coloca el cristal en el rollo de transparente y los cachos en el de
 lona. Los paños se reparten por rollo dentro de cada zona de lona, con los tubos del ventanal
 fuera de la propuesta de empates. El corte y el plano conservan los mininúmeros de unión.
 Las comprobaciones pendientes de confección están en [dudas-abiertas.md](./dudas-abiertas.md).
@@ -118,6 +122,11 @@ Ofrece el saco entero y en dos piezas en su propio rollo aunque la puerta sea ne
 El saco negro de puerta negra va entero en el rollo de la propia lona. La opción con
 diagonales parte de material negro y conserva la marca de impresión. En «Materiales y
 rollos» se pueden escribir otros materiales o anchos.
+
+En el saco amarillo en dos, el corte coloca las mitades a lo largo del rollo cuando el
+anidado horizontal gasta lo mismo o menos. Para AR2605731, de pie consume 520 mm y en
+horizontal necesita 2760 mm, así que el DXF conserva los 520 mm. La web muestra entonces
+las dos piezas horizontales para revisar su forma y empates, con el consumo real del DXF.
 
 **Doble saco (plantilla PORTANOVA (NAVE NOVA), recuadro azul; Iván, 19/11/2026 y 23/11/2026, AR2605641):** el pedido da el útil de los dos sacos (interior 120, exterior 170: «que pise esos 50 mm mayores»; si no se pone el exterior, se toma el interior + 50, y si no es mayor que el interior la web avisa).
 - **Saco interior integrado en el paño**: el interior se remata como un saco normal (`rematado = útil/10 + 1`; 80 → 9, 120 → 13). El paño arranca `rematado + 2` por debajo del bajo terminado (`bajoDobleSaco = −(rematado + 2)`: −11 en el de 80, −15 en el de 120) y lleva la raya de rotulador a `2 × (rematado + 2)` desde su borde de corte (`+(rematado + 2)` sobre el bajo: 22 en el de 80, 30 en el de 120), de modo que al doblar la lona hasta esa raya suelda 2 cm hacia abajo y queda el rematado exacto conservando H.

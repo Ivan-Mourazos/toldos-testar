@@ -4,6 +4,7 @@ import type { Puerta, ResultadoPuerta } from './tipos.ts';
 import { sacoPuerta, sacoUtil, soldaduraSacoEnrollable, utilSacoExterior } from './saco.ts';
 import { fichaDePuerta } from './clientes.ts';
 import { abajoRejillaTgm, rotuloCierreTgm } from './tgm.ts';
+import { rotuloEntradaApilable, ventanalesApilable } from './ventanalesApilable.ts';
 
 export interface CajaTexto {
   x: number;
@@ -177,6 +178,7 @@ export function plantillaTextosPuerta(p: Puerta, resultado: ResultadoPuerta = ca
       { x: F + 20, y: H - 7, ancho: 110, alto: 25 });
   } else if (p.modelo === 'PUERTAPLE') {
     const ys = alturasTubos(p);
+    const tubosCompartidos = p.apilable.ventanales?.length ? ventanalesApilable(p, ys).tubosCompartidos : undefined;
     add('of', of, F * 0.2, techo / 2, grande);
     add('reves', 'REVÉS', F * 0.77, techo / 2, grande);
     const uniones = resultado.uniones.map(u => H - u.altura).sort((a, b) => a - b);
@@ -192,7 +194,7 @@ export function plantillaTextosPuerta(p: Puerta, resultado: ResultadoPuerta = ca
     p.entradas.forEach((t, i) => {
       const yTubo = H - (ys[i] ?? t.altura);
       const alto = t.alto || (t.diametro === 42 ? 13.5 : 12);
-      add(`et-${i}`, `E.T Ø${t.diametro} mm`, F / 2, yTubo, 8, {
+      add(`et-${i}`, rotuloEntradaApilable(t.diametro, tubosCompartidos?.has(i + 1) ?? false), F / 2, yTubo, 8, {
         x: 4,
         y: yTubo - alto / 2,
         ancho: Math.max(20, F - 8),

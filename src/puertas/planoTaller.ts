@@ -1,7 +1,7 @@
 import { rotuloEnCajaAbrigo, rotulosAbrigo } from './rotulosAbrigo.ts';
 import { retocarPortanova } from './retoquesPortanova.js';
 import { dibujarVentanasPlano } from './ventanasPlano.ts';
-import { notaPlanoApilable, ventanalesApilable } from './ventanalesApilable.ts';
+import { notaPlanoApilable, rotuloEntradaApilable, ventanalesApilable } from './ventanalesApilable.ts';
 import { dibujarSacoConfeccionado, dibujarOpcionesSacoArena } from './planoSacoArena.ts';
 import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
@@ -321,7 +321,7 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
   const derecha = pestanaDerecha(p);
   const arriba = ple ? p.apilable.bolsillo / 2 : 3.5;
   const tubos = ple ? alturasTubos(p) : [];
-  const ventanales = ple ? ventanalesApilable(p, tubos).ventanales : [];
+  const { ventanales, tubosCompartidos } = ple ? ventanalesApilable(p, tubos) : { ventanales: [], tubosCompartidos: new Set<number>() };
   const panos = r.piezas.filter(x => x.clase === 'pano');
   if (ventanales.length) {
     for (const pieza of r.piezas) {
@@ -429,7 +429,10 @@ export function dibujarAlzadoTaller(p: Puerta, letra: string, identificar = fals
         linea(l, 'ROTULADOR', 0, marcaEt, F, marcaEt);
       }
       flecha(l, F / 2, marcaEt, sobreVentanal ? 0 : 180, -1);
-      texto(l, `E.T Ø${e.diametro} mm`, F / 2, i === 0 && subirEt1 ? y + a / 2 + 5 : y, Math.min(8, a * .65));
+      const dosCaras = tubosCompartidos.has(i + 1);
+      const rotulo = rotuloEntradaApilable(e.diametro, dosCaras);
+      const h = dosCaras ? Math.min(8, a * .65, F * .9 / anchoArial(rotulo, 1)) : Math.min(8, a * .65);
+      texto(l, rotulo, F / 2, i === 0 && subirEt1 ? y + a / 2 + 5 : y, h);
       cota(l, 0, y - a / 2, 0, y + a / 2, -14);
       for (const h of escuadrado ? huecosSinEscuadrado(e, F) : huecosEnPuerta(e, F)) huecoEntrada(l, h, y, a, F);
       obstaculos.push([y - a / 2, y + a / 2]);

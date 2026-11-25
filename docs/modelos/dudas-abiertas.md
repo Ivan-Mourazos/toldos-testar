@@ -610,9 +610,9 @@ en la comprobación de stock.
   El DWG de AR2605136 confirma 2 cm de solape arriba y abajo con E.T. de Ø30.
   Aplicado a la medida de Ø42 del pedido da cristal de 504 × 42,5 y cachos de 16 × 42,5.
   En la plantilla antigua hay una nota genérica de 14 cm para ventanales de lado a lado.
-- **Q-PU06.** Si dos ventanales seguidos comparten tubo, ¿basta la E.T. habitual entre
-  los dos cristales o necesita una segunda tira? En la apilable la web conserva una
-  E.T. con los recortes del pedido. Falta un corte de apilable con ambos tramos.
+- **Q-PU06 · contestada por Iván el 25/11/2026.** Un tubo entre dos ventanales
+  corridos lleva dos E.T., delantera y trasera, tanto en apilable como en enrollable.
+  Si los tramos llevan ventanas individuales, el tubo sigue llevando una sola E.T.
 
 | Nombre en el corte | Ancho (cm) | Código propuesto | Estado |
 |---|---:|---|---|
