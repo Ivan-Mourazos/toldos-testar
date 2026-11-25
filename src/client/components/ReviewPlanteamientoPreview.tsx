@@ -2,6 +2,8 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 're
 import { Maximize2, RefreshCw, X } from 'lucide-react';
 import type { ReviewPackage, RuleParameters } from '../types';
 import { PdfPreviewViewer } from './PdfPreviewViewer';
+import { CadPaginas } from './CadPaginas';
+import { toldosConCorte } from './CorteLona';
 
 type PreviewState = {
   source: string;
@@ -22,7 +24,7 @@ export function ReviewPlanteamientoPreview({ review, parameters, onClose }: {
   if (review.status === 'PRODUCED' && pdfIndex >= 0) {
     return <GeneratedReviewPreview review={review} pdfIndex={pdfIndex} onClose={onClose} />;
   }
-  return <CalculatedReviewPreview order={review.order} parameters={parameters} onClose={onClose} />;
+  return <CalculatedReviewPreview review={review} order={review.order} parameters={parameters} onClose={onClose} />;
 }
 
 function GeneratedReviewPreview({ review, pdfIndex, onClose }: { review: ReviewPackage; pdfIndex: number; onClose?: () => void }) {
@@ -118,11 +120,14 @@ function ReservationPreview({ url, filename }: { url: string; filename: string }
   );
 }
 
-function CalculatedReviewPreview({ order, parameters, onClose }: {
+function CalculatedReviewPreview({ review, order, parameters, onClose }: {
+  review: ReviewPackage;
   order: ReviewPackage['order'];
   parameters: RuleParameters;
   onClose?: () => void;
 }) {
+  const conCad = Boolean(review.orderCode && (toldosConCorte(order).length > 0 || review.corteConfirmado));
+  const [vista, setVista] = useState<'datos' | 'cad'>(conCad && review.corteConfirmado ? 'cad' : 'datos');
   const [refreshKey, setRefreshKey] = useState(0);
   const [preview, setPreview] = useState<PreviewState>({ source: '', refreshKey: -1, status: 'loading', url: '', error: '' });
   const requestBody = useMemo(() => JSON.stringify({
@@ -176,17 +181,41 @@ function CalculatedReviewPreview({ order, parameters, onClose }: {
   return (
     <PreviewShell
       title="Vista previa del planteamiento"
-      refreshing={visiblePreview.status === 'loading'}
-      retry={visiblePreview.status === 'error'}
+      refreshing={vista === 'datos' && visiblePreview.status === 'loading'}
+      retry={vista === 'datos' && visiblePreview.status === 'error'}
       onRefresh={() => setRefreshKey((value) => value + 1)}
       onClose={onClose}
     >
-      {({ heading, actions }) => <>
-      {visiblePreview.status !== 'ready' && <header>{heading}{actions}</header>}
-      {visiblePreview.status === 'loading' && <div className="review-preview-placeholder">Preparando la vista previa…</div>}
-      {visiblePreview.status === 'error' && <div className="review-preview-placeholder is-error" role="alert">{visiblePreview.error}</div>}
-      {visiblePreview.status === 'ready' && visiblePreview.url && <PdfPreviewViewer key={visiblePreview.url} url={visiblePreview.url} heading={heading} actions={actions} />}
-      </>}
+      {({ heading, actions }) => {
+        const selector = conCad ? (
+          <div className="orders-scope tira-3d glass-chip" role="group" aria-label="Contenido de la vista previa">
+            <button type="button" className={vista === 'datos' ? 'pestana-activa' : undefined} aria-pressed={vista === 'datos'} onClick={() => setVista('datos')}>Hojas de datos</button>
+            <button type="button" className={vista === 'cad' ? 'pestana-activa' : undefined} aria-pressed={vista === 'cad'} onClick={() => setVista('cad')}>Dibujo CAD</button>
+          </div>
+        ) : null;
+        const accionesConSelector = <>{selector}{actions}</>;
+        if (vista === 'cad' && conCad) {
+          return (
+            <CadPaginas
+              orderCode={review.orderCode}
+              order={order}
+              estado={review.corteLona ?? null}
+              version={review.updatedAt}
+              dwgGuardado={Boolean(review.corteConfirmado && !review.corteNoRegenerado)}
+              noRegenerado={review.corteNoRegenerado}
+              enModal
+              heading={heading}
+              actions={accionesConSelector}
+            />
+          );
+        }
+        return <>
+          {visiblePreview.status !== 'ready' && <header>{heading}{accionesConSelector}</header>}
+          {visiblePreview.status === 'loading' && <div className="review-preview-placeholder">Preparando la vista previa…</div>}
+          {visiblePreview.status === 'error' && <div className="review-preview-placeholder is-error" role="alert">{visiblePreview.error}</div>}
+          {visiblePreview.status === 'ready' && visiblePreview.url && <PdfPreviewViewer key={visiblePreview.url} url={visiblePreview.url} heading={heading} actions={accionesConSelector} />}
+        </>;
+      }}
     </PreviewShell>
   );
 }
@@ -235,7 +264,7 @@ function PreviewShell({ title, refreshing, retry = false, onRefresh, onClose, ch
   }, [expanded, refreshing]);
 
   return (
-    <dialog ref={dialogRef} className="review-inline-preview" role={expanded ? 'dialog' : 'region'} aria-modal={expanded || undefined} aria-label={title} aria-busy={refreshing}
+    <dialog ref={dialogRef} className="review-inline-preview" data-fluido="" role={expanded ? 'dialog' : 'region'} aria-modal={expanded || undefined} aria-label={title} aria-busy={refreshing}
       onCancel={(event) => { event.preventDefault(); collapse(); }}>
       {children({ heading: <strong>{title}</strong>, actions: <div className="review-preview-actions">
         {/* Solo cuando falla: la vista previa ya se rehace sola al cambiar el pedido (Iván, 16/10/2026). */}

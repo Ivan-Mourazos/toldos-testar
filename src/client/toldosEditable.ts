@@ -91,6 +91,19 @@ export async function guardarToldosEditable(cuerpo: Record<string, unknown>, pre
       entrada.decisionCorte = choice === 'confirm' ? 'regenerar' : 'mantener';
       continue;
     }
+    if (respuesta.status === 409 && datos.needsManualDwgConfirmation) {
+      const choice = await preguntar({
+        title: 'El DWG tiene cambios hechos a mano',
+        message: datos.error || 'El DWG tiene cambios hechos a mano; si regeneras se pierden',
+        details: datos.archivosModificados,
+        confirmLabel: 'Regenerar igual',
+        cancelLabel: 'Cancelar',
+        tone: 'warning'
+      });
+      if (choice !== 'confirm') return null;
+      entrada.confirmarPerderCambiosDwg = true;
+      continue;
+    }
     if (respuesta.status === 409 && datos.cambioCorte) {
       if (!await preguntarCambioCorte(preguntar, abrir)) return null;
       entrada.aceptarHuellaCorte = datos.huella;

@@ -31,6 +31,7 @@ import { controlLabel } from './components/controlLabels';
 import { OrderView } from './views/OrderView';
 import { CmtView } from './views/CmtView';
 import { CorteLona, toldosConCorte } from './components/CorteLona';
+import { CadPaginas } from './components/CadPaginas';
 import { pedidoValido, useFlujoCorteDwg } from './flujoCorteDwg';
 import { MenuOpcionesToldos } from './components/MenuOpcionesToldos';
 import { AVISO_SIN_CAMBIOS, abrirCorteToldos, guardarToldosEditable } from './toldosEditable';
@@ -140,6 +141,7 @@ export default function App() {
   }
   const [working, setWorking] = useState<'review' | 'preview' | 'draft' | null>(null);
   const [previewUrl, setPreviewUrl] = useState('');
+  const [previewTab, setPreviewTab] = useState<'datos' | 'cad'>('datos');
   const previewButtonRef = useRef<HTMLButtonElement>(null);
   const previewDialogRef = useRef<HTMLDivElement>(null);
   const [workflowSettings, setWorkflowSettings] = useState<WorkflowSettings | null>(null);
@@ -849,6 +851,7 @@ export default function App() {
         return;
       }
       const blob = await response.blob();
+      setPreviewTab('datos');
       setPreviewUrl(URL.createObjectURL(blob));
     } catch {
       notify('No se pudo generar la vista previa.', { tone: 'error' });
@@ -1215,16 +1218,41 @@ export default function App() {
         onDismissToast={dismissToast}
         onResolveDialog={resolveDialog}
       />
-      {previewUrl && (
-        <div ref={previewDialogRef} className="pdf-preview-backdrop" role="dialog" aria-modal="true" aria-label="Vista previa del planteamiento">
-          <div className="pdf-preview-window">
-            {/* Sin «Actualizar»: con la vista previa abierta el pedido no cambia (Iván, 16/10/2026). */}
-            <PdfPreviewViewer key={previewUrl} url={previewUrl} heading={<strong>Vista previa del planteamiento</strong>} actions={
-              <button className="icon-button" type="button" onClick={closePreview} aria-label="Cerrar vista previa"><X aria-hidden="true" /></button>
-            } />
+      {previewUrl && (() => {
+        const conCad = Boolean(draft.orderCode.trim() && toldosConCorte(pedidoToldos).length > 0);
+        const acciones = (
+          <>
+            {conCad && (
+              <div className="orders-scope tira-3d glass-chip" role="group" aria-label="Contenido de la vista previa">
+                <button type="button" className={previewTab === 'datos' ? 'pestana-activa' : undefined} aria-pressed={previewTab === 'datos'} onClick={() => setPreviewTab('datos')}>Hojas de datos</button>
+                <button type="button" className={previewTab === 'cad' ? 'pestana-activa' : undefined} aria-pressed={previewTab === 'cad'} onClick={() => setPreviewTab('cad')}>Dibujo CAD</button>
+              </div>
+            )}
+            <button className="icon-button" type="button" onClick={closePreview} aria-label="Cerrar vista previa"><X aria-hidden="true" /></button>
+          </>
+        );
+        return (
+          <div ref={previewDialogRef} className="pdf-preview-backdrop" role="dialog" aria-modal="true" aria-label="Vista previa del planteamiento">
+            <div className="pdf-preview-window" data-fluido="">
+              {/* Sin «Actualizar»: con la vista previa abierta el pedido no cambia (Iván, 16/10/2026). */}
+              {previewTab === 'cad' && conCad ? (
+                <CadPaginas
+                  orderCode={draft.orderCode.trim()}
+                  order={pedidoToldos}
+                  estado={draft.corteLona ?? null}
+                  onActualizarCorte={currentUser ? () => saveForReview(true) : undefined}
+                  actualizando={working === 'review'}
+                  enModal
+                  heading={<strong>Vista previa del planteamiento</strong>}
+                  actions={acciones}
+                />
+              ) : (
+                <PdfPreviewViewer key={previewUrl} url={previewUrl} heading={<strong>Vista previa del planteamiento</strong>} actions={acciones} />
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
       {((!currentUser && activeTab !== 'cmt') || choosingUser) && (
         <WhoAreYouDialog onAbrirCmt={!currentUser ? () => { setChoosingUser(false); irAPestana('cmt'); } : undefined} current={currentUser} onChoose={chooseUser} onCancel={currentUser ? () => setChoosingUser(false) : undefined} />
       )}

@@ -22,6 +22,16 @@ import { registrarRutaPuertas } from './puertas/rutas.js';
 import { crearPlanoPuertas } from './puertas/flujo/archivos.ts';
 import { crearServicioPedidosPuertas } from './puertas/flujo/servicio.ts';
 import { crearAlmacenConfirmaciones } from './flujoDwg/confirmaciones.js';
+import { registrarRutasCadPaginas } from './cadPaginas/rutas.ts';
+import { listarBorradoresCad } from './cadPaginas/servicioCadPaginas.ts';
+import {
+  MENSAJE_CAMBIOS_A_MANO,
+  borrarEscritosBorrador,
+  detectarCambiosManualesDwg,
+  guardarEscritosBorrador,
+  leerEscritosBorrador,
+  registrarArchivosEscritos
+} from './cadPaginas/cambiosManuales.ts';
 import { firmasCorteLona, corteLonaPendiente, crearEstadoCorteLona, letrasCorteCambiadas, corteLonaDesactualizado } from './corteLonaEstado.js';
 import { generarCorteLona } from './domain/corteLona/index.js';
 import { TERMINADO_SIN_GENERAR } from './reviewRules.js';
@@ -333,6 +343,12 @@ app.use('/api/puertas', (req, res, next) => {
 
 app.get('/favicon.ico', (_req, res) => res.redirect(308, '/favicon.png'));
 
+// Junto a los pedidos de remolques (carpeta interna, no la que ven los PC), aparte de los de remolques y puertas.
+const confirmacionesToldos = crearAlmacenConfirmaciones({ carpeta: async () => {
+  const carpeta = (await workflowStore.getSettings()).remolquesRevisionDirectory;
+  return carpeta ? path.join(carpeta, 'toldos', 'cortes-confirmados') : '';
+} });
+
 // Flujo del DWG en toldos (plan del 24/10/2026), como en puertas y remolques: un plano por tela, en la carpeta de borradores
 // para abrirlo en ZWCAD, «Confirmar corte», al guardar para revisión pasa a la carpeta del año y el bot sale del DWG revisado.
 const flujoToldos = crearFlujoDwg({
@@ -353,13 +369,19 @@ const flujoToldos = crearFlujoDwg({
     await fs.mkdir(path.dirname(fichero.savedPath), { recursive: true });
     await writeFileAtomic(fichero.savedPath, fichero.contenido, { conservarAnterior: true });
   },
-  // Junto a los pedidos de remolques (carpeta interna, no la que ven los PC), aparte de los de remolques y puertas.
-  confirmaciones: crearAlmacenConfirmaciones({ carpeta: async () => {
-    const carpeta = (await workflowStore.getSettings()).remolquesRevisionDirectory;
-    return carpeta ? path.join(carpeta, 'toldos', 'cortes-confirmados') : '';
-  } })
+  confirmaciones: confirmacionesToldos
 });
 const dxfToldosDesdeDwg = async (review) => (await flujoToldos.corteDelDwg(review.corteConfirmado)).dxf;
+
+registrarRutasCadPaginas(app, {
+  obtenerReview: async (codigo) => {
+    try { return await workflowStore.getReview(codigo); }
+    catch (error) { if (error.code === 'ENOENT') return null; throw error; }
+  },
+  ajustes: () => workflowStore.getSettings(),
+  oda,
+  almacenEscritos: confirmacionesToldos
+});
 
 registrarRutasCorteLona(app, { workflowStore, oda, ofStockSacos, dxfDesdeDwg: dxfToldosDesdeDwg });
 registrarRutasAssa(app, { oda });
@@ -425,15 +447,37 @@ app.post('/api/corte-lona/borrador', async (req, res, next) => {
       const ajustes = corteLona?.ajustes || {};
       corteLona = crearEstadoCorteLona(actual, { ajustes, resultado: generarCorteLona(actual, { ajustes, ofStockSacos: stock.of }), ofStockSacos: stock.of });
     }
+    const codigoBorrador = codigoAnual(entrega);
+    const ajustesBorrador = await workflowStore.getSettings();
+    if (regenerar && req.body?.confirmarPerderCambiosDwg !== true) {
+      const borradoresExistentes = await listarBorradoresCad(ajustesBorrador.corteBorradoresDirectory, codigoBorrador);
+      const escritosBorrador = await leerEscritosBorrador(confirmacionesToldos, codigoBorrador);
+      const manuales = await detectarCambiosManualesDwg({
+        corteConfirmado: existente?.corteConfirmado,
+        borradores: borradoresExistentes.map(b => ({ filename: b.filename, ruta: b.ruta })),
+        escritosBorrador
+      });
+      if (manuales.modificadoAMano) {
+        return res.status(409).json({
+          needsManualDwgConfirmation: true,
+          archivosModificados: manuales.archivosModificados,
+          error: MENSAJE_CAMBIOS_A_MANO
+        });
+      }
+    }
     const { status, cuerpo } = await flujoToldos.borrador({
-      orderCode: codigoAnual(entrega), regenerar, datos: datosCorteToldos(corteLona), datosRevisado: existente?.corteConfirmado?.datos,
+      orderCode: codigoBorrador, regenerar, datos: datosCorteToldos(corteLona), datosRevisado: existente?.corteConfirmado?.datos,
       revisado: existente?.corteConfirmado ? planosDe(existente.corteConfirmado).map((p) => p.plano) : undefined,
       preparar: async (carpeta) => {
-        const salida = await prepararArchivosCorte({ order: actual, codigoSalida: codigoAnual(entrega), corteLona, settings: await workflowStore.getSettings(), oda, tipo: 'plano', carpeta });
+        const salida = await prepararArchivosCorte({ order: actual, codigoSalida: codigoBorrador, corteLona, settings: ajustesBorrador, oda, tipo: 'plano', carpeta });
         return { ficheros: salida.files.map((f) => ({ filename: f.filename, savedPath: f.savedPath, contenido: f.contents })),
           avisos: salida.files.length || salida.avisos.length ? salida.avisos : ['Este pedido no tiene corte de lona.'] };
       }
     });
+    if (status === 200 && cuerpo?.existente === false && ajustesBorrador.corteBorradoresDirectory) {
+      const escritosAhora = await listarBorradoresCad(ajustesBorrador.corteBorradoresDirectory, codigoBorrador);
+      await guardarEscritosBorrador(confirmacionesToldos, codigoBorrador, escritosAhora.map(f => ({ filename: f.filename, plano: f.ruta })));
+    }
     res.status(status).json(regenerar && req.body?.avisarCorteDesactualizado === true && status === 200 ? { ...cuerpo, corteLona } : cuerpo);
   } catch (error) {
     next(error);
@@ -1450,6 +1494,22 @@ app.post(['/api/reviews', '/api/reviews/:orderCode/guardar-registro'], async (re
       && (decisionCorte === 'regenerar' || (!estadoDwg.borrador && !existing?.corteConfirmado));
     let desdeBorrador = null;
     if (generarPlano && ajustesCorte.productionEnabled) {
+      if (decisionCorte === 'regenerar' && req.body?.confirmarPerderCambiosDwg !== true) {
+        const borradoresExistentes = await listarBorradoresCad(ajustesCorte.corteBorradoresDirectory, codigoCorte);
+        const escritosBorrador = await leerEscritosBorrador(confirmacionesToldos, codigoCorte);
+        const manuales = await detectarCambiosManualesDwg({
+          corteConfirmado: existing?.corteConfirmado,
+          borradores: borradoresExistentes.map(b => ({ filename: b.filename, ruta: b.ruta })),
+          escritosBorrador
+        });
+        if (manuales.modificadoAMano) {
+          return res.status(409).json({
+            needsManualDwgConfirmation: true,
+            archivosModificados: manuales.archivosModificados,
+            error: MENSAJE_CAMBIOS_A_MANO
+          });
+        }
+      }
       desdeBorrador = await flujoToldos.prepararRegeneracion({ orderCode: codigoCorte, technician: order.technician, usuario: savedBy,
         datos: datosCorteToldos(review.corteLona), revisado: existing?.corteConfirmado, propios: planosWebPrevios,
         preparar: async carpeta => {
@@ -1490,16 +1550,41 @@ app.post(['/api/reviews', '/api/reviews/:orderCode/guardar-registro'], async (re
       }
     }
     review.planosCorte = planosCorte;
-    const pdf = await buildOrderReviewPdf({ order, calculation: await calculateConfiguredOrder(order), review });
+    let pdf = await buildOrderReviewPdf({ order, calculation: await calculateConfiguredOrder(order), review });
     let savedPath;
     try {
       if (desdeBorrador) await desdeBorrador.escribir();
+      if (desdeBorrador && review.corteConfirmado) {
+        if (generarPlano && ajustesCorte.productionEnabled) {
+          review.corteConfirmado = {
+            ...review.corteConfirmado,
+            archivosEscritos: await registrarArchivosEscritos(planosDe(review.corteConfirmado))
+          };
+          pdf = await adjuntarPedido(pdf, review, 'toldos');
+        } else if (!review.corteConfirmado.archivosEscritos?.length) {
+          const previos = existing?.corteConfirmado?.archivosEscritos?.length
+            ? existing.corteConfirmado.archivosEscritos
+            : await leerEscritosBorrador(confirmacionesToldos, codigoCorte);
+          const destino = planosDe(review.corteConfirmado);
+          const trasladados = previos.length
+            ? previos.map(r => {
+              const par = destino.find(p => p.filename.toLowerCase() === r.filename.toLowerCase());
+              return par ? { ...r, plano: par.plano } : r;
+            })
+            : await registrarArchivosEscritos(destino);
+          review.corteConfirmado = { ...review.corteConfirmado, archivosEscritos: trasladados };
+          pdf = await adjuntarPedido(pdf, review, 'toldos');
+        }
+      }
       savedPath = await workflowStore.saveReview(review, pdf);
     } catch (error) {
       await desdeBorrador?.deshacer?.();
       throw error;
     }
-    if (desdeBorrador) planosCorte.avisos.push(...await desdeBorrador.limpiar());
+    if (desdeBorrador) {
+      planosCorte.avisos.push(...await desdeBorrador.limpiar());
+      await borrarEscritosBorrador(confirmacionesToldos, codigoCorte);
+    }
     // Pasado a revisión, su borrador sobra (diseño 01/10/2026). Si no se puede borrar, se apunta
     // y el pedido queda guardado igual.
     await borradores.borrarTrasRevision(orderCode, 'toldos');

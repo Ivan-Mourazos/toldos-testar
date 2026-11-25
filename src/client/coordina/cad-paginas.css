@@ -1,0 +1,45 @@
+/* Ajustes mínimos del visor CAD; el resto reutiliza planteamiento-pedido, pdf-carousel, corte-estado y corte-aviso. */
+.cad-aviso-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.cad-aviso-fila .corte-aviso {
+  margin: 0;
+  max-width: 72ch;
+}
+
+.cad-aviso-fila.is-modal {
+  margin-top: 0;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+}
+
+.documento-corte > .planteamiento-pedido {
+  scroll-margin-top: 78px;
+}
+
+.cad-paginas-sin-dwg {
+  margin: 0 0 10px;
+}
+
+.cad-paginas-atenuado {
+  opacity: 0.52;
+  transition: opacity 0.15s ease;
+}
+
+.cad-paginas-pie {
+  margin: 0;
+  padding: 6px 12px;
+  border-top: 1px solid var(--border);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cad-paginas-atenuado {
+    transition: none;
+  }
+}
