@@ -11,6 +11,10 @@ import { SEPARACION_EXTRA_FILAS, TITULO_MATERIAL_MM } from './corte.ts';
 import { cajaRestos, corteEnPlano, cotasRestos, entidadesDePieza, textosFuera } from './corteEnPlano.ts';
 import { textoMlPuerta } from './metrosPorOf.ts';
 import type { CortePuertas, EntidadesPuertas, PedidoPuertas, Puerta, Punto } from './tipos.ts';
+import { usaCotasCliente } from './clientes.ts';
+
+// Con las medidas del cliente (General) no sabemos el tubo: el plano no lo cita (Iván, 25/11/2026).
+const tuboConocido = (p: Puerta) => !usaCotasCliente(p);
 export { sumarLienzo } from './lienzo.ts';
 
 // Referencia: AR2605134 de Iván, 22/10/2026 (mano3). Dibujo en cm, con el origen en la
@@ -177,7 +181,7 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
     }
     cota(l, 0, -b - mitadEt, 0, -b + mitadEt, -9.15 + i, 'XERAL 5');
     if (!p.tgm) texto(l, '3 CM (HUECOS)', F / 2, -b + (superior ? 14.7311 : segundo ? -7.59 : 14.187) - 3.5, 7, { centrado: true });
-    else texto(l, `ET Ø${p.tgm.diametroTubo} MM (CORTADA DE ${numeroEs(p.tgm.anchoEt)} CM)`, F / 2, -b + 14.187 - 3.5, 7, { centrado: true });
+    else texto(l, `ET${tuboConocido(p) ? ` Ø${p.tgm.diametroTubo} MM` : ''} (CORTADA DE ${numeroEs(p.tgm.anchoEt)} CM)`, F / 2, -b + 14.187 - 3.5, 7, { centrado: true });
   });
   if (!sinSaco) linea(l, 'ROTULADOR', 0, -H + bajo + soldaduraSaco, F, -H + bajo + soldaduraSaco);
   linea(l, sacoIntegrado ? 'ROTULADOR' : 'referencias', 0, -H, F, -H);
@@ -247,10 +251,10 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
       cota(l, F, y - alto, F, y, F + 9.79, 'XERAL 5');
       cota(l, 0, y - alto, F, y - alto, y - alto - 9.49, 'XERAL 5');
     };
-    const nota = `E.T. Ø${p.tgm.diametroTubo} EN PVC TIPO SÁNDWICH CORTADA DE ${numeroEs(rejilla.corteSandwich)} CM EN PVC ${gramaje} ${color}`;
+    const nota = `E.T.${tuboConocido(p) ? ` Ø${p.tgm.diametroTubo}` : ''} EN PVC TIPO SÁNDWICH CORTADA DE ${numeroEs(rejilla.corteSandwich)} CM EN PVC ${gramaje} ${color}`;
     const yTira = -H - 30;
     texto(l, nota, F / 2, yTira + 8, Math.min(6, F * .95 / anchoArial(nota, 1)), { centrado: true });
-    caja(yTira, rejilla.corteSandwich, `E.T. Ø${p.tgm.diametroTubo} EN PVC ${color}`);
+    caja(yTira, rejilla.corteSandwich, `E.T.${tuboConocido(p) ? ` Ø${p.tgm.diametroTubo}` : ''} EN PVC ${color}`);
     bajoPiezas = yTira - rejilla.corteSandwich - 28;
     if (rejilla.corteSaco) {
       const ySaco = bajoPiezas - 10;

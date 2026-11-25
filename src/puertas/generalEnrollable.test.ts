@@ -32,6 +32,8 @@ describe('General · enrollable con las medidas del cliente', () => {
       { capa: 'ROTULADOR', x1: 0, y1: -247, x2: 271, y2: -247 },
     ]));
     expect(lienzo.textos.some(t => t.valor.includes('COSER VELCRO'))).toBe(false);
+    // No sabemos el tubo del cliente: la E.T. no cita el diámetro (Iván, 25/11/2026).
+    expect(lienzo.textos.map(t => t.valor).filter(v => v.startsWith('ET'))).toEqual(Array(4).fill('ET (CORTADA DE 12 CM)'));
     const formas = geometriaAlzado(derivarPuertaTgm(p)!, r).formas;
     expect(formas).toContainEqual({ tipo: 'linea', clase: 'puerta-rotulador', x1: 1.5, y1: 270, x2: 269.5, y2: 270 });
     expect(formas.some(f => f.tipo === 'texto' && f.lineas.some(t => t.includes('COSER VELCRO')))).toBe(false);
