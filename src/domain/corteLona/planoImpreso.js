@@ -28,10 +28,11 @@ export function escribirPlanoImpreso(plano, cabecera, opciones = {}) {
     Object.assign(plano, structuredClone(guardado.copia));
     return structuredClone(guardado.resultado);
   }
+  const inicial = prepararPlanoInicial(plano, cabecera);
   const candidatos = []; let error;
   for (const variante of ['auto', 'lado144', 'lado', 'debajo64', 'debajo80', 'debajo40']) {
     try {
-      const copia = structuredClone(plano), resultado = resolverPlano(copia, cabecera, { ...opciones, variante });
+      const copia = structuredClone(plano), resultado = resolverPlano(copia, cabecera, { ...opciones, variante }, inicial);
       const a = auditarDxf(resultado.dxf, { capasTextosExcluidas: ['ROTULADOR'] });
       if (a.hojas.some(h => h.solapes.length || h.cruces.length || h.recortes.length || h.encimaCajetin.length)) continue;
       const ts = a.hojas.flatMap(h => h.textos).filter(t => t.ventana && t.capa !== 'ROTULADOR');
@@ -53,15 +54,20 @@ export function escribirPlanoImpreso(plano, cabecera, opciones = {}) {
   return mejor.resultado;
 }
 
-function resolverPlano(plano, cabecera, { familia = 'toldos', conservarDisposicion = false, variante = 'auto', usarHojaCompleta = false } = {}) {
-  const inicial = escribirDxfPlano(plano, cabecera);
-  const modelo = leerPlanoTexto(inicial.dxf), originales = presentacionesDxf(inicial.dxf);
+function prepararPlanoInicial(plano, cabecera) {
+  const { dxf } = escribirDxfPlano(plano, cabecera);
+  const modelo = leerPlanoTexto(dxf), originales = presentacionesDxf(dxf);
   const bandasCorte = plano.gruposCorte ? plano.gruposCorte.toSorted((a, b) => b.y1 - a.y1).reduce((zs, z) => {
     const previo = zs.at(-1);
     if (previo && z.y1 >= previo.y0) { previo.y0 = Math.min(previo.y0, z.y0); previo.y1 = Math.max(previo.y1, z.y1); }
     else zs.push({ ...z });
     return zs;
   }, []) : null;
+  return { dxf, modelo, originales, bandasCorte };
+}
+
+function resolverPlano(plano, cabecera, { familia = 'toldos', conservarDisposicion = false, variante = 'auto', usarHojaCompleta = false }, inicial = prepararPlanoInicial(plano, cabecera)) {
+  const { modelo, originales, bandasCorte } = inicial;
   const textos = [...plano.textos ?? [], ...plano.corte.textos ?? []];
   const cotas = [...plano.cotas ?? [], ...plano.corte.cotas ?? []];
   const marcados = familia === 'puertas' && !usarHojaCompleta ? handlesRotulosMarcados(auditarDxf(inicial.dxf, { capasTextosExcluidas: ['ROTULADOR'] })) : new Set();
