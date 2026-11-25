@@ -120,6 +120,15 @@ describe('CadPaginasPuertas', () => {
     );
     expect(sinDwg).toContain('Aún no hay dibujo del CAD.');
     expect(sinDwg).toContain('RESPALDO_CORTE');
+
+    // Plano antiguo sin recuadro CORTE: el corte de la web en vez de un aviso sin dibujo.
+    const sinRecuadro = renderToStaticMarkup(
+      <CadPaginasPuertas orderCode="AR2605134" datosIniciales={respuestaBase()} fallback={<div>RESPALDO_CORTE</div>} />
+    );
+    expect(sinRecuadro).toContain('CAD al día');
+    expect(sinRecuadro).toContain('este es el corte que calcula la web');
+    expect(sinRecuadro).toContain('RESPALDO_CORTE');
+    expect(sinRecuadro).not.toContain('no se puede enseñar solo el corte');
   });
 });
 

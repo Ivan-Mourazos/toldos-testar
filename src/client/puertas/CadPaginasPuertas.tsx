@@ -149,6 +149,8 @@ export function CadPaginasPuertas({
 
   const desactualizado = Boolean(noRegenerado || desactualizadoLocal || (datosActivos?.tieneDwg && !datosActivos.actualizado));
   const ocupadoActualizar = actualizando || actualizandoLocal;
+  // Planos antiguos sin recuadro CORTE: mejor el corte de la web que un aviso sin dibujo.
+  const sinRecuadroCorte = Boolean(datosActivos?.tieneDwg && !datosActivos.cortes?.length && fallback);
 
   if (!enModal && !cargandoActivo && !errorActivo && datosActivos && !datosActivos.tieneDwg && fallback) {
     return (
@@ -372,7 +374,12 @@ export function CadPaginasPuertas({
         <p className="documento-espera" role="status">Cargando dibujo del CAD…</p>
       )}
 
-      {datosActivos?.tieneDwg && <CortesDelPlano cortes={datosActivos.cortes ?? []} atenuado={desactualizado} />}
+      {datosActivos?.tieneDwg && (sinRecuadroCorte
+        ? <>
+          <p className="corte-aviso" role="status">El plano no tiene recuadro CORTE: este es el corte que calcula la web.</p>
+          {fallback}
+        </>
+        : <CortesDelPlano cortes={datosActivos.cortes ?? []} atenuado={desactualizado} />)}
     </dialog>
   );
 }
