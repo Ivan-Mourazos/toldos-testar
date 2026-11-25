@@ -1,4 +1,4 @@
-import { abrirEntrega, ofsEntrega } from '../../entregas.js';
+import { abrirEntrega, entregasPedido, ofsEntrega } from '../../entregas.js';
 import { awningLetter } from "../../domain/awningCompleteness.js";
 import { normalizeOf } from "../../reviewRules.js";
 import { codigoPedido, ErrorPedidoRemolques, validarClienteRps } from "../../remolques/flujo/pedido.ts";
@@ -106,10 +106,27 @@ export function crearPedidoPuertas({ pedido, cabecera, autoria, existente, ahora
     reviewedBy: "",
     reviewNote: "",
     production: null,
+    ...(existente?.ediciones ? { ediciones: structuredClone(existente.ediciones) } : {}),
     enviosCorte: structuredClone(existente?.enviosCorte ?? []),
     summary: resumenPedido(pedido, conCliente, autoria),
     elementos: pedido.elementos.map(({ id, input }) => ({ id, input })),
   }, existente);
+}
+
+/** Apunta una edición del registro sin cambiar el autor original ni el estado. */
+export function apuntarEdicionPuertas(pedido: PedidoPuertasGuardado, usuario: string, fecha: string): PedidoPuertasGuardado {
+  return {
+    ...pedido,
+    updatedAt: fecha,
+    updatedBy: usuario,
+    ediciones: [...(pedido.ediciones ?? []), { usuario, fecha, nota: "Editado sin revisar" }],
+  };
+}
+
+/** OF nuevas del formulario que todavía no están en ninguna entrega generada del pedido. */
+export function ofsSinGenerarPuertas(existente: PedidoPuertasGuardado, enviado: Pick<PedidoPuertas, "elementos">): string[] {
+  const hechas = new Set((entregasPedido(existente) as Array<{ ofs: string[] }>).flatMap((e) => e.ofs));
+  return unicos(enviado.elementos.map((e) => ofDe(e.input)).filter((of) => of && of.toUpperCase() !== OF_PROVISIONAL && !hechas.has(of)));
 }
 
 /** Generado: PRODUCED, con su plano y el revisor de CoordinaOT (si no da ninguno, no se nombra a nadie). */

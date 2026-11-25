@@ -42,6 +42,10 @@
 .puerta-cristal { fill:color-mix(in srgb,var(--tramo-holgado) 15%,var(--surface)); stroke:var(--tramo-holgado); stroke-width:1; }
 .puerta-tubo { stroke:var(--text-muted); stroke-width:1; stroke-dasharray:4 2; }
 .puerta-cota { stroke:var(--text-muted); stroke-width:.8; }
+.puerta-cota-aux { stroke:var(--text-muted); stroke-width:.55; opacity:.65; }
+.puerta-saco-tabla { width:100%; border-collapse:collapse; font-size:12px; margin:4px 0 8px; }
+.puerta-saco-tabla th, .puerta-saco-tabla td { padding:5px 8px; border-bottom:1px solid var(--border); text-align:left; }
+.puerta-saco-svg { width:100%; height:auto; max-height:420px; }
 .puerta-linea-guia { stroke:var(--tramo-trabajo); stroke-width:.9; stroke-dasharray:3 2; }
 .puerta-guia { stroke:var(--color-brand-600); stroke-width:4; stroke-dasharray:3 2; }
 .puerta-saco { fill:var(--text-muted); opacity:.72; }
@@ -109,6 +113,7 @@
 .puerta-ventana { fill:var(--surface); stroke:var(--text); stroke-width:0.8; }
 .puerta-cutter-texto { color:var(--capa-cutter); }
 .puerta-corte-dibujo { height:auto; max-height:330px; min-height:140px; }
+.puerta-corte-dibujo.is-ajustado { min-height:0; }
 .puerta-corte-desplazamiento { overflow:auto; max-height:520px; }
 .puerta-corte-desplazamiento:focus-visible { outline:2px solid var(--color-brand-500); outline-offset:2px; }
 .puerta-corte-ampliacion { display:flex; align-items:center; gap:8px; margin-top:10px; }
@@ -214,3 +219,5 @@ html:root #root .puerta-editor .puerta-dibujo .puerta-vistas { position:absolute
 .puerta-editor .puerta-campos { grid-template-columns:repeat(3,minmax(0,1fr)); }
 .puerta-editor .puerta-config .puerta-tubo-fila, .puerta-editor .puerta-config .puerta-ventana-fila { grid-template-columns:repeat(2,minmax(0,1fr)); }
 .puerta-editor .segmented-control { flex-wrap:wrap; }
+.puerta-modal-corte { align-items:stretch; justify-content:flex-start; overflow:auto; }
+.puerta-modal-corte > .puerta-corte-resumen { width:100%; max-width:1100px; margin:0 auto; }

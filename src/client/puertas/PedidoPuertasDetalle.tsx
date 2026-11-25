@@ -10,11 +10,11 @@ import { calcularPuerta, MODELOS_PUERTAS } from '../../puertas/calcular.ts';
 import { elementosAprobacion } from '../../puertas/flujo/pedido.ts';
 import type { PedidoPuertasGuardado } from '../../puertas/flujo/tipos.ts';
 import { productoDeElementos } from '../../puertas/producto.ts';
-import { numeroSacoArena } from '../../puertas/sacoArena.ts';
 import type { VistaPuertas } from '../../puertas/tipos.ts';
-import { normalizeOf, reviewerName } from '../../reviewRules.js';
+import { normalizeOf, isPendingGeneration, reviewerName, TERMINADO_SIN_GENERAR } from '../../reviewRules.js';
 import { CabeceraDocumento, DocumentosPedido } from '../components/DocumentosPedido';
 import { AccionesPedido, CabeceraPedidoGuardado } from '../components/AccionesPedido';
+import { MenuMas } from '../components/MenuMas';
 import { useCortePedidoEditable } from '../useCortePedidoEditable';
 import { faltaParaAbrir } from './flujoCorte';
 import { abrirCorteGuardado, preguntarCambioCorte, decidirCortePendiente, type CortePendiente } from '../toldosEditable';
@@ -22,14 +22,16 @@ import { aprobadaOPasada } from '../../toldosEditable.js';
 import { HistorialEnvios } from '../components/EnviosCorte';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { controlLabel } from '../components/controlLabels';
-import { puedeCorregir } from '../generatePermission';
-import { medidaPuerta, numeroPuerta } from './medidasPuertas';
+import { puedeEditarToldos } from '../generatePermission';
+import { medidaPuerta } from './medidasPuertas';
 import { useCoordinaStatus } from '../hooks/useCoordinaStatus';
 import { useContenidoFluido } from '../hooks/useContenidoFluido';
 import type { CoordinaStatus } from '../types';
 import { AlzadoPuerta } from './AlzadoPuerta';
+import { CadPaginasPuertas } from './CadPaginasPuertas';
+import { ConfirmarGestionPuertas, type GestionPuertas } from './ConfirmarGestionPuertas';
 import { estadoGenerarPuertas } from './generarPuertas';
-import { DibujoCortePuertas } from './VistaCortePuertas';
+import { DibujoCortePuertas, largoReferenciaCortes, textoCabeceraCorte } from './VistaCortePuertas';
 import '../coordina/corte-lona.css';
 import './puertas.css';
 
@@ -83,6 +85,7 @@ function CortePuertasGuardado({ ruta, version, historial, acciones, confirmado, 
   }, [ruta, clave]);
   const estado = leido?.clave === clave ? leido : null;
   const datos = estado?.datos;
+  const largoReferencia = datos ? largoReferenciaCortes(datos.cortes) : 0;
   return (
     <section className="corte-lona panel bloque-3d" aria-label="Corte" aria-busy={!estado}>
       <CabeceraDocumento titulo="Corte" icono={<Scissors aria-hidden="true" />} />{(confirmado || Boolean(datos?.cortes.length)) && acciones}{historial}
@@ -92,9 +95,9 @@ function CortePuertasGuardado({ ruta, version, historial, acciones, confirmado, 
       {datos?.avisos.some((aviso) => aviso.nivel === 'error') && <p role="alert" className="corte-aviso">Hay medidas pendientes de corregir: el corte está incompleto.</p>}
       {datos?.cortes.map((c, i) => (
         <article className="corte-material" key={i}>
-          <header><h3>{c.material}</h3><span>{`Rollo de ${numeroPuerta(c.anchoRollo)} mm · ${numeroPuerta(c.largo)} mm`}</span></header>
+          <header><h3>{c.material}</h3><span>{textoCabeceraCorte(c)}</span></header>
           {c.opcion !== 'principal' && <p className="corte-aviso">{c.opcion === 'saco-entero' ? 'Opción saco entero' : 'Opción saco en dos piezas'} · Alternativas de un mismo saco: elige una.</p>}
-          <DibujoCortePuertas corte={c} />
+          <DibujoCortePuertas corte={c} ajustado largoReferencia={largoReferencia} />
           <small className="corte-leyenda"><span>DISCO1 · corte</span>{!systemDock&&<><span className="puerta-cutter-texto">CUTTER · huecos y curvas</span><span>ROTULADOR · marcas</span></>}</small>
         </article>
       ))}
@@ -110,7 +113,7 @@ function FilaPuerta({ letra, puerta, coordina }: { letra: string; puerta: Pedido
     <li className="rem-pedido-elemento bloque-3d">
       <strong className="rem-pedido-letra">{letra}</strong>
       <span>{`${puerta.abrigo?`Abrigo · ${puerta.abrigo.parte}`:puerta.modelo==='SYSTEMDOCK'?'Lona System Dock':puerta.modelo==='SACOARENA'?'Saco confeccionado':`Puerta ${MODELOS_PUERTAS[puerta.modelo].toLowerCase()}`}${puerta.cantidad > 1 ? ` · ${puerta.cantidad} iguales` : ''}`}</span>
-      <span>{puerta.modelo==='SACOARENA'?`${numeroSacoArena(puerta.frente)} × ${numeroSacoArena(puerta.alto)} cm aplastado`:`${medidaPuerta(puerta.frente)}${puerta.abrigo?.parte==='laterales'?` / ${medidaPuerta(puerta.abrigo.corto)}`:''} × ${medidaPuerta(puerta.alto)} mm`}</span>
+      <span>{puerta.modelo==='SACOARENA'?`${medidaPuerta(puerta.frente)} × ${medidaPuerta(puerta.alto)} mm aplastado`:`${medidaPuerta(puerta.frente)}${puerta.abrigo?.parte==='laterales'?` / ${medidaPuerta(puerta.abrigo.corto)}`:''} × ${medidaPuerta(puerta.alto)} mm`}</span>
       <span>{`OF ${of || '—'}`}</span>
       <span className="rem-pedido-material" title={puerta.material}>{[puerta.material, puerta.color].filter(Boolean).join(' · ') || 'Sin material'}</span>
       {aprobadoPor && <span className="orders-detail-approved">{`Aprobado por ${controlLabel(aprobadoPor)}`}</span>}
@@ -133,10 +136,13 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
 }) {
   const [detalle, setDetalle] = useState<{ orderCode: string; pedido: PedidoPuertasGuardado | null } | null>(()=>pedidoInicial?.orderCode===orderCode?{orderCode,pedido:pedidoInicial}:null);
   const [generando, setGenerando] = useState(false);
+  const [gestion, setGestion] = useState<GestionPuertas | null>(null);
+  const [gestionando, setGestionando] = useState(false);
   const cargando = detalle?.orderCode !== orderCode;
   const pedido = detalle && detalle.orderCode === orderCode ? detalle.pedido : null;
+  const terminado = pedido?.status === TERMINADO_SIN_GENERAR;
   const ofs = pedido ? elementosAprobacion(pedido).map((item) => item.of) : [];
-  const { status: coordina } = useCoordinaStatus(ofs, Boolean(pedido));
+  const { status: coordina } = useCoordinaStatus(ofs, Boolean(pedido && !terminado));
   const ruta = `/api/puertas/pedidos/${encodeURIComponent(orderCode)}`;
   const corte = useCortePedidoEditable({ tipo: 'puertas', pedido, cuerpo: { pedido }, falta: pedido ? faltaParaAbrir(pedido) : 'Cargando el pedido…',
     usuario: currentUser, notify: onToast, preguntar: onConfirm, onChanged });
@@ -218,35 +224,98 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
     }
   }
 
+  async function gestionarRegistro(accion: GestionPuertas, texto: string) {
+    if (!pedido || gestionando) return;
+    setGestionando(true);
+    try {
+      const respuesta = await fetch(`${ruta}/${accion}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          usuario: currentUser,
+          confirmacion: accion === 'papelera' ? texto : undefined,
+        }),
+      });
+      const datos = await respuesta.json().catch(() => ({})) as { error?: string; review?: PedidoPuertasGuardado };
+      if (!respuesta.ok) throw new Error(datos.error || 'No se pudo actualizar el pedido.');
+      if (accion === 'papelera') {
+        setDetalle(null);
+        onChanged();
+        onBack();
+      } else {
+        setDetalle({ orderCode, pedido: datos.review ?? pedido });
+        onChanged();
+      }
+      const mensajes: Record<GestionPuertas, string> = {
+        terminar: 'Pedido terminado sin generar.',
+        reabrir: 'El pedido vuelve a estar pendiente.',
+        papelera: 'Pedido enviado a la papelera.',
+      };
+      onToast(mensajes[accion], { tone: 'success' });
+    } catch (error) {
+      onToast(error instanceof Error ? error.message : 'No se pudo actualizar el pedido.', { tone: 'error' });
+    } finally {
+      setGestionando(false);
+    }
+  }
+
   const volver = <button type="button" className="ghost-button boton-3d reviews-back-button" onClick={onBack}>← Pedidos</button>;
   if (cargando) return <section className="review-reader">{volver}<div className="review-empty"><FileSearch aria-hidden="true" />Cargando el pedido…</div></section>;
   if (!pedido) return <section className="review-reader">{volver}<div className="review-empty"><FileSearch aria-hidden="true" />No se pudo abrir el pedido.</div></section>;
 
   const generado = pedido.status === 'PRODUCED';
+  const pendiente = isPendingGeneration(pedido.status);
   const { allowed, note } = estadoGenerarPuertas(pedido, currentUser, coordina);
-  const corregible = puedeCorregir(pedido.status, elementosAprobacion(pedido), pedido.summary.technician || '', currentUser, coordina);
+  const editable = puedeEditarToldos(currentUser);
+  const edicion = pedido.ediciones?.at(-1);
   const permisoCorte = estadoGenerarPuertas(Object.assign({}, pedidoEntrega(pedido), { status: 'PENDING_REVIEW' as const, entregas: [] }), currentUser, coordina);
   const letras = elementosAprobacion(pedido).map((item) => item.letter);
+  const ocupadoAcciones = generando || corte.ocupado || gestionando;
   const datos = [
     pedido.summary.customer || 'Sin cliente',
     pedido.summary.orderDate && `pedido del ${pedido.summary.orderDate.split('-').reverse().join('/')}`,
     pedido.summary.technician && `autor ${controlLabel(pedido.summary.technician)}`,
-    pedido.updatedAt && `guardado ${fechaHora(pedido.updatedAt)}${pedido.updatedBy ? ` por ${controlLabel(pedido.updatedBy)}` : ''}`,
+    edicion && `Editado por ${controlLabel(edicion.usuario)} el ${new Date(edicion.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}`,
+    pedido.updatedAt && (!edicion || edicion.fecha !== pedido.updatedAt)
+      && `guardado ${fechaHora(pedido.updatedAt)}${pedido.updatedBy ? ` por ${controlLabel(pedido.updatedBy)}` : ''}`,
   ].filter(Boolean).join(' · ');
 
   return (
     <section className="review-reader rem-pedido-guardado" aria-label={`Pedido de ${productoDeElementos(pedido.elementos)==='systemdock'?'System Dock':'puertas'} ${pedido.orderCode}`}>
       <CabeceraPedidoGuardado pedido={pedido} volver={volver} titulo={<>{pedido.orderCode}<span className="orders-kind-tag familia-tag is-puertas">{productoDeElementos(pedido.elementos)==='systemdock'?'Lona System Dock':'Puerta'}</span></>}
         datos={datos} corteNoRegenerado={pedido.corteNoRegenerado} corteSimulado={pedido.corteSimulado}
-        acciones={<AccionesPedido generado={generado} ocupado={generando || corte.ocupado} enviando={generando} editandoPermitido={corregible}
+        acciones={<AccionesPedido generado={generado || terminado} ocupado={ocupadoAcciones} enviando={generando} editandoPermitido={editable} etiquetaEditar="Editar"
           onEditar={() => onCorregir(pedido)} elementos={elementosAprobacion(pedido)} coordina={coordina} preguntar={onConfirm}
-          abrir={corte.abrir} regenerar={currentUser && corte.abrir ? () => void corte.regenerar() : undefined} codigo={pedido.orderCode} rutaDestinos={`${ruta}/destinos-entrega`} generar={d => void generar(d)}
+          abrir={!terminado ? corte.abrir : null} regenerar={!terminado && !generado && currentUser && corte.abrir ? () => void corte.regenerar() : undefined} codigo={pedido.orderCode} rutaDestinos={`${ruta}/destinos-entrega`} generar={d => void generar(d)}
           generarPermitido={allowed} motivoGenerar={note}
-          produccion={<ProduccionPedido ruta={ruta} rutaPdf={ruta + '/pdf'} rutaPlano={ruta + '/guardar-plano'} rutaCorte={ruta + '/corte'}
+          envios={<>
+            {(pendiente || terminado) && <button type="button" className="ghost-button boton-3d"
+              disabled={ocupadoAcciones || !currentUser} onClick={() => setGestion(terminado ? 'reabrir' : 'terminar')}>
+              {terminado ? 'Volver a pendiente' : 'Marcar como terminado'}
+            </button>}
+            <MenuMas>
+              <button type="button" role="menuitem" className="menu-mas-item" disabled={ocupadoAcciones || !currentUser}
+                onClick={() => setGestion('papelera')}>Enviar a la papelera</button>
+            </MenuMas>
+          </>}
+          produccion={!terminado && <ProduccionPedido ruta={ruta} rutaPdf={ruta + '/pdf'} rutaPlano={ruta + '/guardar-plano'} rutaCorte={ruta + '/corte'}
             tecnico={pedido.summary.technician || ''} codigo={pedido.orderCode} generado={generado} permitido={Boolean(currentUser.trim()) && (generado ? permisoCorte.allowed : allowed)} motivo={note}
-            ocupado={generando || corte.ocupado} usuario={currentUser} notify={onToast} preguntar={onConfirm} onChanged={onChanged} onVolver={onBack}
+            ocupado={ocupadoAcciones} usuario={currentUser} notify={onToast} preguntar={onConfirm} onChanged={onChanged} onVolver={onBack}
             guardado={{ ruta: '/api/puertas/pedidos', cuerpo: { pedido }, usuario: currentUser }}
             mas={generado ? <button type="button" role="menuitem" className="menu-mas-item" onClick={() => onReutilizar(pedido)}><CopyPlus size={16} aria-hidden="true" />Reutilizar datos</button> : null} />} />} />
+      {gestion && <ConfirmarGestionPuertas accion={gestion} codigo={pedido.orderCode} onClose={() => setGestion(null)}
+        onConfirmar={(texto) => { const accion = gestion; setGestion(null); void gestionarRegistro(accion, texto); }} />}
+      {pedido.terminadoSinGenerar && (
+        <div className="review-production-block bloque-3d" role="status">
+          <div className="review-production-summary">
+            <span>
+              <strong>Terminado sin generar</strong>
+              <small>{`${fechaHora(pedido.terminadoSinGenerar.fecha)} · ${controlLabel(pedido.terminadoSinGenerar.usuario)}`}</small>
+              {pedido.terminadoSinGenerar.motivo && <p className="motivo-cierre-toldos">{pedido.terminadoSinGenerar.motivo}</p>}
+            </span>
+          </div>
+        </div>
+      )}
       {generado && pedido.production && (
         <div className="review-production-block bloque-3d" role="status">
           <div className="review-production-summary">
@@ -273,8 +342,17 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
 
       <DocumentosPedido
         planteamiento={<PlanteamientoPuertas pedido={pedido} />}
-        corte={<CortePuertasGuardado ruta={ruta} version={pedido.updatedAt} systemDock={productoDeElementos(pedido.elementos)==='systemdock'}
-          confirmado={Boolean(pedido.corteConfirmado || pedido.enviosCorte?.length)} acciones={<AccionesCorteMaquina ruta={ruta + "/corte"} codigo={pedido.orderCode} onEnviado={onChanged} />} historial={<HistorialEnvios envios={pedido.enviosCorte} />} />} />
+        corte={<CadPaginasPuertas
+          key={pedido.orderCode}
+          orderCode={pedido.orderCode}
+          version={pedido.updatedAt}
+          noRegenerado={pedido.corteNoRegenerado}
+          onActualizarCorte={!terminado && !generando && Boolean(currentUser) ? () => corte.regenerar() : undefined}
+          actualizando={corte.ocupado}
+          fallback={<CortePuertasGuardado ruta={ruta} version={pedido.updatedAt} systemDock={productoDeElementos(pedido.elementos) === 'systemdock'} />}
+        />} />
+      {!terminado && <AccionesCorteMaquina ruta={ruta + '/corte'} codigo={pedido.orderCode} onEnviado={onChanged} />}
+      <HistorialEnvios envios={pedido.enviosCorte} />
     </section>
   );
 }

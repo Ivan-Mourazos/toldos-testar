@@ -21,6 +21,8 @@ import { registrarRutaVistaPreviaCorte } from './remolques/corte/rutas.js';
 import { registrarRutaPuertas } from './puertas/rutas.js';
 import { crearPlanoPuertas } from './puertas/flujo/archivos.ts';
 import { crearServicioPedidosPuertas } from './puertas/flujo/servicio.ts';
+import { crearServicioBorradoresPuertas } from './puertas/flujo/borradores.ts';
+import { crearCarpetaPedidosPuertas, registrarRutasExtraPuertas } from './puertas/flujo/rutasPedidos.ts';
 import { crearAlmacenConfirmaciones } from './flujoDwg/confirmaciones.js';
 import { registrarRutasCadPaginas } from './cadPaginas/rutas.ts';
 import { listarBorradoresCad } from './cadPaginas/servicioCadPaginas.ts';
@@ -236,11 +238,9 @@ const almacenPedidosRemolques = crearAlmacenPedidosRemolques({
 const oda = crearOdaConverter({ executable: config.odaFileConverter });
 // Pedidos de puertas (fase 2, 22/10/2026): como los de remolques, en la subcarpeta «puertas» de su carpeta
 // interna (así no hace falta otra ruta en Configuración). Un número es de un solo producto.
+const carpetaPedidosPuertas = crearCarpetaPedidosPuertas(() => workflowStore.getSettings());
 const almacenPedidosPuertas = crearAlmacenPedidos({
-  carpeta: async () => {
-    const carpeta = (await workflowStore.getSettings()).remolquesRevisionDirectory;
-    return carpeta ? path.join(carpeta, SUBCARPETA_PUERTAS) : '';
-  },
+  carpeta: carpetaPedidosPuertas,
   tipo: TIPO_PEDIDO_PUERTAS,
   nombre: 'puertas',
   sinCarpeta: 'Falta la carpeta interna de remolques en Configuración: los pedidos de puertas se guardan en su subcarpeta «puertas».'
@@ -280,8 +280,20 @@ const pedidosRemolques = crearServicioPedidosRemolques({
   // Flujo del DWG: los cortes confirmados, junto a los pedidos de remolques (carpeta interna, no la que ven los PC).
   confirmaciones: confirmacionesRemolques
 });
+const confirmacionesPuertas = crearAlmacenConfirmaciones({ carpeta: async () => {
+  const carpeta = (await workflowStore.getSettings()).remolquesRevisionDirectory;
+  return carpeta ? path.join(carpeta, SUBCARPETA_PUERTAS, 'cortes-confirmados') : '';
+} });
+const borradoresPuertas = crearServicioBorradoresPuertas({
+  carpeta: async () => (await workflowStore.getSettings()).draftsDirectory || '',
+  tecnicos: formOptions.tecnicos,
+  existePedido: async (orderCode) => (await yaEsPedidoDePuertas(orderCode)) || (await esPedidoDeToldos(orderCode)) || (await yaEsPedidoDeRemolques(almacenPedidosRemolques, orderCode)),
+});
 const pedidosPuertas = crearServicioPedidosPuertas({
   almacen: almacenPedidosPuertas,
+  carpetaPedidos: carpetaPedidosPuertas,
+  borradores: borradoresPuertas,
+  avisarCambiosManualesDwg: true,
   ajustes: () => workflowStore.getSettings(),
   coordina,
   stockLona,
@@ -294,10 +306,7 @@ const pedidosPuertas = crearServicioPedidosPuertas({
   plano: crearPlanoPuertas({ ajustes: () => workflowStore.getSettings(), oda, ofStockSacos }),
   // Flujo del DWG: los cortes confirmados, junto a los pedidos de puertas (carpeta interna, no la que ven los PC).
   presentacionesPdf,
-  confirmaciones: crearAlmacenConfirmaciones({ carpeta: async () => {
-    const carpeta = (await workflowStore.getSettings()).remolquesRevisionDirectory;
-    return carpeta ? path.join(carpeta, SUBCARPETA_PUERTAS, 'cortes-confirmados') : '';
-  } })
+  confirmaciones: confirmacionesPuertas
 });
 
 // Borradores en el servidor (diseño 01/10/2026): un JSON por número de pedido en la carpeta de
@@ -1256,6 +1265,16 @@ app.post('/api/puertas/pedidos/:orderCode/generar', rutaRemolques(async (req, re
   const { status, cuerpo } = await pedidosPuertas.generar(req.params.orderCode, req.body);
   res.status(status).json(cuerpo);
 }));
+
+registrarRutasExtraPuertas(app, {
+  pedidosPuertas,
+  obtenerPedidoOptional: (orderCode) => almacenPedidosPuertas.obtener(orderCode),
+  borradoresPuertas,
+  ajustes: () => workflowStore.getSettings(),
+  oda,
+  confirmaciones: confirmacionesPuertas,
+  rutaRemolques,
+});
 
 // Buscador de remolques (diseño 02/10/2026): todos los pedidos guardados, de todos los años, con
 // los filtros en el cuerpo. Unos filtros mal hechos son un 400 que dice cuál.

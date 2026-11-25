@@ -1,15 +1,15 @@
-import type { CabeceraPuertas, PedidoPuertasGuardado } from '../../puertas/flujo/tipos.ts';
+import type { CabeceraPuertas, PedidoPuertasGuardado, ResumenPedidoPuertas } from '../../puertas/flujo/tipos.ts';
 import type { PedidoPuertas, Puerta } from '../../puertas/tipos.ts';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { AVISO_SIN_CAMBIOS, guardarToldosEditable } from '../toldosEditable';
-import { abrirCorteDwg } from '../abrirCorte';
+import { abrirCortePuertas } from './flujoCorte';
 
-// «Guardar para revisión» de Puertas y volver a la pantalla un pedido guardado (fase 2, 22/10/2026).
+// Guardar pedidos de Puertas (nuevo, edición sin revisión, o regeneración de corte) y volver a la pantalla uno guardado.
 
 export type PedidoPantallaPuertas = PedidoPuertas & { cabecera: CabeceraPuertas };
 export type ModoCargaPuertas = 'corregir' | 'reutilizar';
 
-/** «Corregir» lo deja tal cual; «Reutilizar datos» es otro pedido con la fecha de hoy, como en remolques. */
+/** «Editar» lo deja tal cual; «Reutilizar datos» es otro pedido con la fecha de hoy, como en remolques. */
 export function pedidoDesdeGuardado(pedido: PedidoPuertasGuardado, modo: ModoCargaPuertas, hoy: string): PedidoPantallaPuertas {
   return {
     schemaVersion: 1, kind: 'puertas', orderCode: pedido.numeroPedido,
@@ -49,31 +49,85 @@ export function pedidoDesdeRps(rps: PuertasRps, numero: string, hoy: string): Pe
 
 type Plano = { files: Array<{ filename: string }>; avisos: string[]; existentes?: string[] } | null;
 
+export interface ResultadoGuardadoPuertas {
+  ok: boolean;
+  editado?: boolean;
+  review?: ResumenPedidoPuertas;
+  nuevaEntrega?: boolean;
+}
+
 /**
- * Guarda con las mismas decisiones de corte que toldos y remolques, antes de modificar nada en disco.
- * true si se ha guardado.
+ * Guarda un pedido nuevo o regenera su corte con las mismas decisiones de corte que toldos y remolques.
  */
-export async function guardarPuertasParaRevision({ pedido, usuario, preguntar, notify, regenerar = false }: {
-  pedido: PedidoPantallaPuertas; usuario: string; preguntar: AskForConfirmation; notify: Notify; regenerar?: boolean;
-}): Promise<boolean> {
+export async function guardarPuertasParaRevision({ pedido, usuario, preguntar, notify, regenerar = false, soloNuevo = false }: {
+  pedido: PedidoPantallaPuertas; usuario: string; preguntar: AskForConfirmation; notify: Notify; regenerar?: boolean; soloNuevo?: boolean;
+}): Promise<ResultadoGuardadoPuertas> {
   try {
-    const datos = await guardarToldosEditable({ pedido, savedBy: usuario, ...(regenerar ? { decisionCorte: 'regenerar', confirmOverwrite: true } : {}) }, preguntar,
-      () => abrirCorteDwg({ ruta: '/api/puertas/borrador-corte', orderCode: pedido.orderCode, cuerpo: { pedido }, usuario, preguntar, notify, editable: true }),
-      '/api/puertas/pedidos');
-    if (!datos) return false;
+    const datos = await guardarToldosEditable(
+      {
+        pedido,
+        savedBy: usuario,
+        ...(soloNuevo ? { soloNuevo: true } : {}),
+        ...(regenerar ? { decisionCorte: 'regenerar', confirmOverwrite: true } : {}),
+      },
+      preguntar,
+      () => abrirCortePuertas({ orderCode: pedido.orderCode, cuerpo: { pedido, avisarCorteDesactualizado: true }, usuario, preguntar, notify }),
+      '/api/puertas/pedidos'
+    );
+    if (!datos) return { ok: false };
     if (datos.unchanged) {
       notify(AVISO_SIN_CAMBIOS, { tone: 'info', title: 'Sin cambios' });
-      return false;
+      return { ok: false };
     }
     const codigo = datos.review?.orderCode ?? pedido.orderCode;
     const plano: Plano = datos.plano ?? null;
     const planos = plano?.files.map((fichero) => fichero.filename) ?? [];
     const avisos = plano?.avisos ?? [];
-    notify(`Guardado en Pedidos para revisión: ${codigo}.${planos.length ? ` Plano: ${planos.join(' · ')}.` : ''}${avisos.length ? ` ${avisos.join(' ')}` : ''}`,
-      { tone: 'success', title: 'Guardado para revisión' });
-    return true;
+    if (regenerar) {
+      notify('Pedido guardado y corte regenerado.', { tone: 'success', title: 'Corte regenerado' });
+    } else {
+      notify(`Guardado en Pedidos: ${codigo}.${planos.length ? ` Plano: ${planos.join(' · ')}.` : ''}${avisos.length ? ` ${avisos.join(' ')}` : ''}`,
+        { tone: 'success', title: 'Pedido guardado' });
+    }
+    return { ok: true, review: datos.review as ResumenPedidoPuertas | undefined };
   } catch (error) {
-    notify(error instanceof Error ? error.message : 'No se pudo guardar el pedido para revisión.', { tone: 'error' });
-    return false;
+    notify(error instanceof Error ? error.message : 'No se pudo guardar el pedido.', { tone: 'error' });
+    return { ok: false };
+  }
+}
+
+/**
+ * Un único «Guardar»: si el pedido ya existe, guarda el registro sin pasar a revisión ni cambiar estado;
+ * si no existe todavía, lo crea en Pedidos.
+ */
+export async function guardarPuertas({ pedido, usuario, enEdicion, preguntar, notify }: {
+  pedido: PedidoPantallaPuertas;
+  usuario: string;
+  enEdicion: boolean;
+  preguntar: AskForConfirmation;
+  notify: Notify;
+}): Promise<ResultadoGuardadoPuertas> {
+  const codigo = pedido.orderCode.trim();
+  try {
+    const respuesta = await fetch(`/api/puertas/pedidos/${encodeURIComponent(codigo)}/guardar-registro`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pedido, usuario, siExiste: !enEdicion }),
+    });
+    if (respuesta.status === 204) {
+      return guardarPuertasParaRevision({ pedido, usuario, preguntar, notify, soloNuevo: true });
+    }
+    const datos = await respuesta.json().catch(() => ({})) as Record<string, unknown>;
+    if (respuesta.status === 409 && (datos.needsEntradaEntregaConfirmation || datos.needsRegenerateConfirmation || datos.needsManualDwgConfirmation || datos.cambioCorte)) {
+      return guardarPuertasParaRevision({ pedido, usuario, preguntar, notify });
+    }
+    if (!respuesta.ok) throw new Error(typeof datos.error === 'string' ? datos.error : 'No se pudo guardar el pedido.');
+    const nuevaEntrega = Boolean(datos.nuevaEntrega);
+    notify(nuevaEntrega ? 'Las OF nuevas quedan pendientes de generar.' : 'Se han guardado los cambios del pedido.',
+      { tone: 'success', title: 'Pedido guardado' });
+    return { ok: true, editado: true, review: datos.review as ResumenPedidoPuertas | undefined, nuevaEntrega };
+  } catch (error) {
+    notify(error instanceof Error ? error.message : 'No se pudo guardar el pedido.', { tone: 'error' });
+    return { ok: false };
   }
 }
