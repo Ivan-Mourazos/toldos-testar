@@ -24,6 +24,18 @@ describe('Del pedido guardado al corte de lona', () => {
     expect(resultado.cortes.trozoSeparado).toBeNull();
     expect(resultado.plano[0].dxf).toContain('AC1032');
   });
+  it('nombra la presentación de un solo toldo «TOLDO A»', () => {
+    const plano = corteRevision().plano[0];
+    expect(plano.geometria.hojas.map((h) => h.nombre)).toEqual(['TOLDO A']);
+    expect(plano.dxf.replace(/\r\n/g, '\n')).toContain('AcDbLayout\n  1\nTOLDO A\n');
+  });
+  it('avisa de ventana y excluye solo ese toldo', () => {
+    const order = structuredClone(revision.order);
+    order.awnings.push({ ...order.awnings[0], id: 'ventana', of: '0232569', curtainHasWindow: true });
+    const salida = generar(order);
+    expect(salida.cortes.conSacos[0].piezas).toHaveLength(1);
+    expect(salida.avisos).toEqual([expect.stringContaining('ventana')]);
+  });
   it('agrupa solo la misma tela y conserva las letras y OF del pedido', () => {
     const order = structuredClone(revision.order);
     order.sameFabric = false;
@@ -88,11 +100,6 @@ describe('Del pedido guardado al corte de lona', () => {
     for (const nombre of ['TOLDO A', 'TOLDO B', 'TOLDO C']) expect(plano).toContain(`AcDbLayout\n  1\n${nombre}\n`);
     for (const of of ['0232568', '0232569', '0232570']) expect(plano).toContain(of);
   });
-  it('nombra la presentación de un solo toldo «TOLDO A»', () => {
-    const plano = corteRevision().plano[0];
-    expect(plano.geometria.hojas.map((h) => h.nombre)).toEqual(['TOLDO A']);
-    expect(plano.dxf.replace(/\r\n/g, '\n')).toContain('AcDbLayout\n  1\nTOLDO A\n');
-  });
   it.each(['HERA', 'IRIS', 'ANTICA', '', undefined])('no anuncia corte para %s', (modelo) => {
     expect(corteReadiness(modelo).ready).toBe(false);
   });
@@ -146,13 +153,6 @@ describe('Del pedido guardado al corte de lona', () => {
     expect(tira.onda).toBe(forma);
     expect(corte.dibujo.lineas.filter((l) => l.capa === 'CUTTER').length).toBeGreaterThan(20);
     expect(corte.dxf).toContain('CUTTER');
-  });
-  it('avisa de ventana y excluye solo ese toldo', () => {
-    const order = structuredClone(revision.order);
-    order.awnings.push({ ...order.awnings[0], id: 'ventana', of: '0232569', curtainHasWindow: true });
-    const salida = generar(order);
-    expect(salida.cortes.conSacos[0].piezas).toHaveLength(1);
-    expect(salida.avisos).toEqual([expect.stringContaining('ventana')]);
   });
   it('el plano agarra las cotas a las piezas y lleva los mininúmeros de los empates (Iván, 22/10/2026)', () => {
     const order = structuredClone(revision.order);
