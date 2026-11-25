@@ -22,6 +22,9 @@ export default defineConfig({
     }
   },
   test: {
+    // Varios agentes comparten el PC (6 núcleos). Sin límite, Vitest abre 11 procesos por
+    // agente y las pruebas CAD agotan su tiempo. `pnpm test:completo` sube a 4 al subir a main.
+    maxWorkers: 2,
     // La comprobación de varias maquetas A4 completas puede superar 5 s con seis trabajadores en Windows.
     testTimeout: 30000,
     // Alineado con eslint.config.js: .claude/ y output/releases/ alojan worktrees de otras

@@ -43,8 +43,18 @@ No des `pnpm build && pnpm pm2:reload`: la web sirve desde `dist-a`/`dist-b` (`.
 
 ## Cómo se trabaja
 
-- Pruebas primero (TDD) para la lógica. Antes de subir:
-  `pnpm test && pnpm typecheck && pnpm lint`, y `pnpm exec vite build` si tocas el cliente.
+- Pruebas primero (TDD) para la lógica. Varios agentes comparten el PC: la batería completa
+  tarda minutos y, si coinciden dos, se satura. Valida por niveles:
+  - **Tras cada cambio:** solo las pruebas de lo que tocas, por ruta:
+    `pnpm exec vitest run <ruta.test>` (o `pnpm exec vitest related --run <fichero>` si no
+    sabes cuáles lo cubren; `-t "caso"` para un solo caso). Nunca `pnpm test` sin filtro.
+  - **Antes del commit:** `pnpm test:cambios && pnpm typecheck && pnpm lint:cache`.
+    `--changed` sigue los imports: si cambias fixtures, plantillas o datos que se leen con
+    `fs`, añade por ruta las pruebas que los usan.
+  - **Antes de subir a `main`:** solo quien sube, tras el `git pull --rebase` y sin otra
+    batería completa en marcha: `pnpm test:completo && pnpm typecheck && pnpm lint`, y
+    `pnpm exec vite build` si el cambio toca el cliente (`src/client/`, los `.html`, Vite).
+    Si algo cambia después, se repite antes de subir.
 - Si cambias pantallas, haz capturas con Playwright en la instancia aislada, en claro y
   oscuro, a 1280×720 y 1600×1000, en `tmp/ui-audit/<tarea>/`, y míralas. La guía y las
   ayudas están en `.claude/skills/running-toldos-testar/` (`SKILL.md`, `drive.mjs`).
