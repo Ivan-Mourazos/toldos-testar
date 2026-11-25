@@ -14,7 +14,7 @@ import { esPedidoMixto, productoDeElementos } from '../../puertas/producto.ts';
 import { bajoDobleSaco, envoltorioDobleSaco, medidasSaco, sacoApilable, sacoPuerta, sacoUtil } from '../../puertas/saco.ts';
 import type { Entrada, Hueco, ModeloPuerta, Puerta, Ventana } from '../../puertas/tipos.ts';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
-import { MenuOpcionesToldos } from '../components/MenuOpcionesToldos';
+import { MenuOpcionesPedido } from '../components/MenuOpcionesPedido';
 import { OrderActions } from '../components/OrderActions';
 import { SelectField } from '../components/SelectField';
 import { SegmentedField } from '../components/SegmentedField';
@@ -703,7 +703,7 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
         onClick={() => { setVistaPreviaTab(pedidoValido(pedido.orderCode) ? 'cad' : 'corte'); setVistaPreviaAbierta(true); }}>
         <Eye aria-hidden="true" />Vista previa
       </button>
-      <MenuOpcionesToldos
+      <MenuOpcionesPedido
         corte={flujo}
         ocupado={guardando || flujo.ocupado}
         motivoBorrador={motivoBorrador}

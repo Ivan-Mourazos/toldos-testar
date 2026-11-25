@@ -6,7 +6,7 @@ import type { PedidoPuertasGuardado } from '../../puertas/flujo/tipos.ts';
 import type { RespuestaCadPaginasCliente } from '../components/CadPaginas';
 import type { AskForConfirmation } from '../components/NotificationCenter';
 import { CadPaginasPuertas } from './CadPaginasPuertas';
-import { ConfirmarGestionPuertas } from './ConfirmarGestionPuertas';
+import { ConfirmarGestionRegistro } from '../components/ConfirmarGestionRegistro';
 import { abrirCortePuertas } from './flujoCorte';
 import { PedidoPuertasDetalle } from './PedidoPuertasDetalle';
 
@@ -61,10 +61,10 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('ConfirmarGestionPuertas', () => {
+describe('ConfirmarGestionRegistro', () => {
   it('terminar NO pide motivo y permite confirmar con un clic', () => {
     const html = renderToStaticMarkup(
-      <ConfirmarGestionPuertas accion="terminar" codigo="AR2605134" onClose={() => undefined} onConfirmar={() => undefined} />
+      <ConfirmarGestionRegistro accion="terminar" codigo="AR2605134" onClose={() => undefined} onConfirmar={() => undefined} />
     );
     expect(html).toContain('Marcar como terminado · AR2605134');
     expect(html).toContain('El pedido pasará al Historial como terminado sin generar.');
@@ -75,7 +75,7 @@ describe('ConfirmarGestionPuertas', () => {
 
   it('papelera exige escribir el código del pedido', () => {
     const html = renderToStaticMarkup(
-      <ConfirmarGestionPuertas accion="papelera" codigo="AR2605134" onClose={() => undefined} onConfirmar={() => undefined} />
+      <ConfirmarGestionRegistro accion="papelera" codigo="AR2605134" onClose={() => undefined} onConfirmar={() => undefined} />
     );
     expect(html).toContain('Enviar a la papelera · AR2605134');
     expect(html).toContain('Escribe AR2605134 para confirmar');

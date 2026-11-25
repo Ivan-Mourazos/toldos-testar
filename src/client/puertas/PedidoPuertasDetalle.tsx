@@ -29,7 +29,8 @@ import { useContenidoFluido } from '../hooks/useContenidoFluido';
 import type { CoordinaStatus } from '../types';
 import { AlzadoPuerta } from './AlzadoPuerta';
 import { CadPaginasPuertas } from './CadPaginasPuertas';
-import { ConfirmarGestionPuertas, type GestionPuertas } from './ConfirmarGestionPuertas';
+import { ConfirmarGestionRegistro, type GestionRegistro } from '../components/ConfirmarGestionRegistro';
+import { mensajeGestionRegistro, solicitarGestionRegistro } from '../gestionRegistro';
 import { estadoGenerarPuertas } from './generarPuertas';
 import { DibujoCortePuertas, largoReferenciaCortes, textoCabeceraCorte } from './VistaCortePuertas';
 import '../coordina/corte-lona.css';
@@ -136,7 +137,7 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
 }) {
   const [detalle, setDetalle] = useState<{ orderCode: string; pedido: PedidoPuertasGuardado | null } | null>(()=>pedidoInicial?.orderCode===orderCode?{orderCode,pedido:pedidoInicial}:null);
   const [generando, setGenerando] = useState(false);
-  const [gestion, setGestion] = useState<GestionPuertas | null>(null);
+  const [gestion, setGestion] = useState<GestionRegistro | null>(null);
   const [gestionando, setGestionando] = useState(false);
   const cargando = detalle?.orderCode !== orderCode;
   const pedido = detalle && detalle.orderCode === orderCode ? detalle.pedido : null;
@@ -224,34 +225,20 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
     }
   }
 
-  async function gestionarRegistro(accion: GestionPuertas, texto: string) {
+  async function gestionarRegistro(accion: GestionRegistro, texto: string) {
     if (!pedido || gestionando) return;
     setGestionando(true);
     try {
-      const respuesta = await fetch(`${ruta}/${accion}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          usuario: currentUser,
-          confirmacion: accion === 'papelera' ? texto : undefined,
-        }),
-      });
-      const datos = await respuesta.json().catch(() => ({})) as { error?: string; review?: PedidoPuertasGuardado };
-      if (!respuesta.ok) throw new Error(datos.error || 'No se pudo actualizar el pedido.');
+      const review = await solicitarGestionRegistro<PedidoPuertasGuardado | undefined>(ruta, accion, currentUser, texto);
       if (accion === 'papelera') {
         setDetalle(null);
         onChanged();
         onBack();
       } else {
-        setDetalle({ orderCode, pedido: datos.review ?? pedido });
+        setDetalle({ orderCode, pedido: review ?? pedido });
         onChanged();
       }
-      const mensajes: Record<GestionPuertas, string> = {
-        terminar: 'Pedido terminado sin generar.',
-        reabrir: 'El pedido vuelve a estar pendiente.',
-        papelera: 'Pedido enviado a la papelera.',
-      };
-      onToast(mensajes[accion], { tone: 'success' });
+      onToast(mensajeGestionRegistro[accion], { tone: 'success' });
     } catch (error) {
       onToast(error instanceof Error ? error.message : 'No se pudo actualizar el pedido.', { tone: 'error' });
     } finally {
@@ -303,7 +290,7 @@ export function PedidoPuertasDetalle({ orderCode, refreshKey, currentUser, onBac
             ocupado={ocupadoAcciones} usuario={currentUser} notify={onToast} preguntar={onConfirm} onChanged={onChanged} onVolver={onBack}
             guardado={{ ruta: '/api/puertas/pedidos', cuerpo: { pedido }, usuario: currentUser }}
             mas={generado ? <button type="button" role="menuitem" className="menu-mas-item" onClick={() => onReutilizar(pedido)}><CopyPlus size={16} aria-hidden="true" />Reutilizar datos</button> : null} />} />} />
-      {gestion && <ConfirmarGestionPuertas accion={gestion} codigo={pedido.orderCode} onClose={() => setGestion(null)}
+      {gestion && <ConfirmarGestionRegistro accion={gestion} codigo={pedido.orderCode} onClose={() => setGestion(null)}
         onConfirmar={(texto) => { const accion = gestion; setGestion(null); void gestionarRegistro(accion, texto); }} />}
       {pedido.terminadoSinGenerar && (
         <div className="review-production-block bloque-3d" role="status">
