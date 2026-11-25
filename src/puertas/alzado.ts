@@ -319,7 +319,8 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   else marca(auto ? 30 : ple ? p.apilable.bolsillo / 2 : 3.5);
   const inicioMarcaSaco = formas.length;
   if (sacoIntegrado) {
-    linea('puerta-rotulador', p.margenMarcas, H, F - p.margenMarcas, H);
+    // El doblez del saco unido es la puerta rematada: raya rosa, sin rotulador (Iván, 25/11/2026).
+    linea('puerta-referencia', 0, H, F, H);
     marca(H - sacoIntegrado.soldarHasta, -1);
   } else if (!sinSaco) marca(H - (doble ? saco.rematado + 2 : hSaco), -1);
   else {

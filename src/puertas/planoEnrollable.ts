@@ -184,7 +184,8 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
     else texto(l, `ET${tuboConocido(p) ? ` Ø${p.tgm.diametroTubo} MM` : ''} (CORTADA DE ${numeroEs(p.tgm.anchoEt)} CM)`, F / 2, -b + 14.187 - 3.5, 7, { centrado: true });
   });
   if (!sinSaco) linea(l, 'ROTULADOR', 0, -H + bajo + soldaduraSaco, F, -H + bajo + soldaduraSaco);
-  linea(l, sacoIntegrado ? 'ROTULADOR' : 'referencias', 0, -H, F, -H);
+  // Iván, 25/11/2026: con el saco unido, el doblez es la puerta rematada y va en rosa, sin rotulador.
+  linea(l, 'referencias', 0, -H, F, -H);
   if (sinSaco) {
     if (corteBajo < -H + bajo) {
       linea(l, 'referencias', 0, -H + bajo, 0, corteBajo);

@@ -262,10 +262,8 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
       for(const panel of grupo) {panel.desde+=origen;panel.hasta+=origen;panel.pieza.origenAlzado=[-lateral,panel.desde];}
       const marcarEn=(y:number,dir?:1|-1)=>{const panel=grupo.find(t=>y>=t.desde&&y<=t.hasta);if(panel)marca(panel.pieza,y-panel.desde,dir);};
       if(nombre==='inferior') {
-        if(sacoIntegrado) {
-          marcarEn(0);
-          marcarEn(sacoIntegrado.soldarHasta);
-        } else if(!sinSaco) marcarEn(origen + anchoSoldaduraSacoEnrollable(p));
+        // El doblez del saco unido no lleva raya: solo donde llega el borde al soldar (Iván, 25/11/2026).
+        if(sacoIntegrado) marcarEn(sacoIntegrado.soldarHasta); else if(!sinSaco) marcarEn(origen + anchoSoldaduraSacoEnrollable(p));
         else if(e.marcaCierre!==undefined) marcarEn(origen + e.marcaCierre);
       }
       else if(!e.sinEtArriba && !soldaduraEt) marcarEn(origen + bordeEt, -1);

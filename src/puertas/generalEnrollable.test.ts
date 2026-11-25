@@ -9,7 +9,7 @@ import { dibujarAlzadoEnrollable } from './planoEnrollable.ts';
 import { geometriaAlzado } from './alzado.ts';
 import { escribirPlanoPuertas } from './plano.ts';
 import { sacoIntegradoEnrollable } from './saco.ts';
-import { derivarPuertaTgm, enrolleTgm } from './tgm.ts';
+import { derivarPuertaTgm, enrolleTgm, puertaParaAlzadoTgm } from './tgm.ts';
 
 describe('General · enrollable con las medidas del cliente', () => {
   it('emplea el alto terminado y las cotas de la hoja sin calcular el enrolle', () => {
@@ -25,18 +25,23 @@ describe('General · enrollable con las medidas del cliente', () => {
     ]);
     const inferior = r.piezas[1];
     expect(inferior.contorno).toEqual([[0, 0], [271, 0], [271, 161], [0, 161]]);
-    expect(inferior.marcas).toEqual(expect.arrayContaining([[1.5, 23, 269.5, 23], [1.5, 46, 269.5, 46]]));
+    // Iván, 25/11/2026: el doblez del saco no lleva raya; solo la de soldar.
+    expect(inferior.marcas).toEqual(expect.arrayContaining([[1.5, 46, 269.5, 46]]));
+    expect(inferior.marcas).not.toContainEqual([1.5, 23, 269.5, 23]);
     expect(r.alternativasSaco).toBeNull();
     const { lienzo } = dibujarAlzadoEnrollable(p, 'A');
     expect(lienzo.lineas).toEqual(expect.arrayContaining([
-      { capa: 'ROTULADOR', x1: 0, y1: -270, x2: 271, y2: -270 },
+      { capa: 'referencias', x1: 0, y1: -270, x2: 271, y2: -270 },
       { capa: 'ROTULADOR', x1: 0, y1: -247, x2: 271, y2: -247 },
     ]));
+    // Donde queda la puerta rematada va en rosa, no en rotulador.
+    expect(lienzo.lineas.some(l => l.capa === 'ROTULADOR' && l.y1 === -270 && l.y2 === -270)).toBe(false);
     expect(lienzo.textos.some(t => t.valor.includes('COSER VELCRO'))).toBe(false);
     // No sabemos el tubo del cliente: la E.T. no cita el diámetro (Iván, 25/11/2026).
     expect(lienzo.textos.map(t => t.valor).filter(v => v.startsWith('ET'))).toEqual(Array(4).fill('ET (CORTADA DE 12 CM)'));
     const formas = geometriaAlzado(derivarPuertaTgm(p)!, r).formas;
-    expect(formas).toContainEqual({ tipo: 'linea', clase: 'puerta-rotulador', x1: 1.5, y1: 270, x2: 269.5, y2: 270 });
+    expect(formas).toContainEqual({ tipo: 'linea', clase: 'puerta-referencia', x1: 0, y1: 270, x2: 271, y2: 270 });
+    expect(formas.some(f => f.tipo === 'linea' && f.clase === 'puerta-rotulador' && f.y1 === 270 && f.y2 === 270)).toBe(false);
     expect(formas.some(f => f.tipo === 'texto' && f.lineas.some(t => t.includes('COSER VELCRO')))).toBe(false);
     const pedido = pedidoDe('AR2605743', p);
     expect(generarCortePuertas(pedido).archivo).not.toBeNull();
@@ -134,7 +139,7 @@ describe('Puertas genéricas · rayas de las E.T. como en Portanova', () => {
     const [superior, inferior] = r.piezas;
     const horizontales = (x: typeof superior) => x.marcas.filter(([a, b, c, d]) => b === d && c - a > 100).map(m => m[1]);
     expect(horizontales(superior)).toEqual([12, 92.5]);
-    expect(horizontales(inferior)).toEqual([23, 46, 149, 81, 43]);
+    expect(horizontales(inferior)).toEqual([46, 149, 81, 43]);
     // La nota de soldar sigue en el plano.
     expect(lienzo.textos.some(t => t.valor.includes('SOLDAR 3 CM ARRIBA Y ABAJO DE CADA E.T.'))).toBe(true);
   });
@@ -166,5 +171,19 @@ describe('Puertas genéricas · soldadura de la E.T. opcional', () => {
     const p = puerta5743('general');
     const r = calcularPuerta({ ...p, tgm: { ...p.tgm!, soldaduraEt: 5 } });
     expect(r.avisos.map(a => a.codigo)).toContain('TGM_SOLDADURA_ET');
+  });
+});
+
+describe('Puertas genéricas · alzado al abrir el pedido para revisar', () => {
+  // Iván, 25/11/2026: al abrir el pedido guardado no salían las E.T. ni el ventanal.
+  it('dibuja las mismas E.T. y el ventanal que el configurador', () => {
+    const p = puerta5743('general');
+    const r = calcularPuerta(p);
+    const clases = (q: typeof p) => geometriaAlzado(q, r).formas.map(f => ('clase' in f ? f.clase : f.tipo)).sort();
+    expect(puertaParaAlzadoTgm(p).entradas.map(e => e.altura)).toEqual([179, 132, 64, 26]);
+    expect(clases(puertaParaAlzadoTgm(p))).toEqual(clases(derivarPuertaTgm(p)!));
+    expect(clases(puertaParaAlzadoTgm(p))).toContain('puerta-cristal');
+    // Con la puerta tal cual se guarda no salen: es lo que pasaba en la revisión.
+    expect(clases(p)).not.toEqual(clases(puertaParaAlzadoTgm(p)));
   });
 });

@@ -10,6 +10,7 @@ import { calcularPuerta, MODELOS_PUERTAS } from '../../puertas/calcular.ts';
 import { elementosAprobacion } from '../../puertas/flujo/pedido.ts';
 import type { PedidoPuertasGuardado } from '../../puertas/flujo/tipos.ts';
 import { productoDeElementos } from '../../puertas/producto.ts';
+import { puertaParaAlzadoTgm } from '../../puertas/tgm.ts';
 import type { VistaPuertas } from '../../puertas/tipos.ts';
 import { normalizeOf, isPendingGeneration, reviewerName, TERMINADO_SIN_GENERAR } from '../../reviewRules.js';
 import { CabeceraDocumento, DocumentosPedido } from '../components/DocumentosPedido';
@@ -63,7 +64,7 @@ function PlanteamientoPuertas({ pedido }: { pedido: PedidoPuertasGuardado }) {
           className={`pestana ${i === indice ? 'pestana-activa' : ''}`} onClick={() => setIndice(i)}>{`${letras[i] ?? i + 1} · ${input.of || 'SIN OF'}`}</button>)}
       </div>}
       <div className="puerta-planteamiento-alzados" ref={alzadoFluido}>
-        {elegido && <AlzadoPuerta key={elegido.id} puerta={elegido.input} resultado={calcularPuerta(elegido.input)} letra={letras[indice]} />}
+        {elegido && <AlzadoPuerta key={elegido.id} puerta={puertaParaAlzadoTgm(elegido.input)} resultado={calcularPuerta(elegido.input)} letra={letras[indice]} />}
       </div>
     </section>
   );

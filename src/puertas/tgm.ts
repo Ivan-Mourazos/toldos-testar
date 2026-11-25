@@ -150,6 +150,12 @@ export function derivarPuertaTgm(p: Puerta, enrolle = enrolleTgm(p)): Puerta | n
   return puertaTgmDerivada(p, { ...medidas, cierreBajo: aumentoCierreTgm(t), colocacion: { marcas } });
 }
 
+/** Puerta que se dibuja en el alzado: con TGM, las E.T. y el ventanal salen de las cotas o del enrolle. */
+export function puertaParaAlzadoTgm(p: Puerta): Puerta {
+  if (!p.tgm) return p;
+  return derivarPuertaTgm(p) ?? { ...p, enrollable: { ...p.enrollable, sinVentanal: true } };
+}
+
 /** Configuración de la enrollable con los ejes de la hoja o los del simulador. */
 export function puertaTgmDerivada(p: Puerta, e: Pick<EnrolleTgm, 'altoLona' | 'conSaco' | 'cierreBajo'> & {
   colocacion: Pick<Colocacion, 'marcas'>;
