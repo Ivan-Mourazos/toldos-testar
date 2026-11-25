@@ -308,7 +308,12 @@ registrarRutasCmtHerramienta(app, { oda, tablaCapas, planos: carpetaPlanosCorte 
 registrarRutasCmtMaquina(app, { ajustes: () => workflowStore.getSettings(), tecnicos: formOptions.tecnicos,
   carpetaRegistro: () => path.join(path.dirname(config.workflowSettingsFile), 'corte-maquina-envios') });
 app.use(express.json({ limit: '20mb' }));
-registrarRutasStockPlano(app, { ...stockLona, consultar: getRpsStockPlano, tecnicos: formOptions.tecnicos });
+registrarRutasStockPlano(app, {
+  ...stockLona,
+  consultar: getRpsStockPlano,
+  buscar: query => searchRpsFabrics({ query, limit: 40 }),
+  tecnicos: formOptions.tecnicos,
+});
 
 app.use('/api', (req, _res, next) => {
   try {

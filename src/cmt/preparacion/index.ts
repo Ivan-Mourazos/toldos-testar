@@ -8,6 +8,7 @@ import type { Dxf, Duda, EntidadDxf } from '../tipos.ts';
 import { asignarCapas, claveCapa, herramientaCapa, normalizarCapas, type CapaDesconocida } from './capas.ts';
 import { cajaDudosa } from './cajaDudosa.ts';
 import { descomponer, hornear, transformarPieza } from './hornear.ts';
+import { cotasDelPlano, textoLimpio, tramosDelCorte, type TramoCorte } from './lonasCorte.ts';
 import { buscarMarcos, cajaDe, clasificar, esBorde, marcosWeb, toleranciaDe, unirMarcos } from './marco.ts';
 import { escribirDxfLimpio } from './salida.ts';
 import { aplicarSolapes, buscarSolapes, longitud, quitarRepetidos, type GrupoSolape } from './solapes.ts';
@@ -20,6 +21,8 @@ export interface Pendientes { marcos?: Caja[]; cruces?: number; capas?: CapaDesc
 export interface ResultadoPreparacion {
   listo: boolean; dxf: string | null; escala: number | null; medidasMm: { ancho: number; alto: number } | null;
   planoWeb?: boolean;
+  // Trozos de lona del corte con la cota que los mide y lo que pone dentro, para el aviso de stock.
+  tramos?: TramoCorte[];
   pendientes: Pendientes; avisos: Duda[]; dudas: Duda[];
   // Líneas, arcos y textos del corte en mm, para la vista previa, con el color CSS que tienen en el plano
   // (sin color = tinta: el 7 de CAD, negro en fondo claro y blanco en oscuro).
@@ -126,6 +129,7 @@ export function preparar(dxfTexto: string, o: OpcionesPreparacion): ResultadoPre
     const leyenda = quitarLeyendaWeb(d);
     d.entities = leyenda.entidades;
     if (leyenda.quitada) avisos.push({ motivo: 'Se ha quitado la leyenda del bot o de oficina' });
+    const dimensiones = d.entities.filter(e => e.type === 'DIMENSION');
     descomponer(d, avisos);
     const errores: DudaLocal[] = [];
     const originales = d.entities;
@@ -212,6 +216,13 @@ export function preparar(dxfTexto: string, o: OpcionesPreparacion): ResultadoPre
     resultado.medidasMm = medidasDe(finales);
     resultado.vista = conColor(finales);
     if (!finales.length) return vacio();
+    resultado.tramos = tramosDelCorte(finales, h.piezas.flatMap(p => {
+      if (p.tipo !== 'texto' || (marco && clasificar(p, marco, tol) === 'fuera')) return [];
+      const q = escalarPieza(p, k);
+      if (q.tipo !== 'texto') return [];
+      const x = Number(q.pares.find(([c]) => c === 10)?.[1]), y = Number(q.pares.find(([c]) => c === 20)?.[1]);
+      return Number.isFinite(x) && Number.isFinite(y) ? [{ x, y, texto: textoLimpio(q.pares) }] : [];
+    }), cotasDelPlano(dimensiones, k));
     if (Math.max(resultado.medidasMm?.ancho ?? 0, resultado.medidasMm?.alto ?? 0) > LARGO_MAXIMO_MM) {
       dudas.push({ motivo: 'Las piezas seleccionadas superan el tamaño máximo del corte. Revisa el marco y sus cruces.' });
       return resultado;

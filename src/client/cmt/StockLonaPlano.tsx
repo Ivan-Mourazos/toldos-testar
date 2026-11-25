@@ -1,10 +1,9 @@
 import { useContext, useEffect, useId, useRef, useState } from 'react';
 import {
-  cuentaStockPlano, ERROR_STOCK_PLANO, PEDIDO_PLANO, propuestaLonasPlano, sumarLonasPlano,
-  type DeteccionStockPlano, type PedidoStockPlano,
+  cuentaStockPlano, ERROR_STOCK_PLANO, PEDIDO_PLANO, sumarLonasPlano,
+  type DeteccionStockPlano, type PropuestaStockPlano,
 } from '../../cmt/stockPlano';
 import { resolveFabric, serializeFabricSelection } from '../../domain/fabricCatalog.js';
-import { normalizeOf } from '../../reviewRules.js';
 import { CorteMaquinaContexto } from '../components/CorteMaquina';
 import { FabricCombobox } from '../components/FabricCombobox';
 import { metrosLona } from '../components/LonasEntrega';
@@ -14,7 +13,7 @@ import { useFabricStocks } from '../hooks/useFabricStock';
 import './stock-lona.css';
 
 interface FilaLona { id: number; tela: string; metros: string }
-interface Consulta { pedido: string; datos?: PedidoStockPlano; error?: string }
+interface Consulta { pedido: string; datos?: PropuestaStockPlano; error?: string }
 
 const RUTA = '/api/cmt/stock-lona';
 const metros = (n: number, maximos = 1) => n.toLocaleString('es-ES', {
@@ -49,38 +48,31 @@ export function StockLonaPlano({ deteccion, cerrar }: { deteccion: Extract<Detec
   const contador = useRef(0);
   const titulo = useId();
   const [textoPedido, setTextoPedido] = useState(deteccion.pedido);
-  const [entrega, setEntrega] = useState(deteccion.entrega?.toString() ?? '');
   const [consulta, setConsulta] = useState<Consulta | null>(null);
-  const [seleccion, setSeleccion] = useState<string[] | null>(null);
-  const [textoOf, setTextoOf] = useState('');
   const [editadas, setEditadas] = useState<FilaLona[] | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState('');
   const pedido = textoPedido.trim().toUpperCase();
   const pedidoValido = PEDIDO_PLANO.test(pedido);
   const resultado = consulta?.pedido === pedido ? consulta : null;
-  const ordenes = resultado?.datos?.ordenes ?? [];
   const consultando = pedidoValido && !resultado;
-  const manuales = textoOf.trim().split(/[\s,;]+/).filter(Boolean).map(normalizeOf);
-  const ofValida = manuales.every(of => /^\d{7,9}$/.test(of));
-  const marcadas = seleccion ?? (ordenes.length === 1 ? [ordenes[0].of] : []);
-  const ofs = [...new Set([...marcadas, ...manuales.filter(of => /^\d{7,9}$/.test(of))])];
-  const propuestas = propuestaLonasPlano(ordenes, ofs, deteccion.mlPropuesto);
-  const filas = editadas ?? propuestas.map(({ codigo, descripcion, ml }, i) => ({
+  // Todas las OF del pedido: su reserva cuenta como propia.
+  const ofsPedido = resultado?.datos?.ofs ?? [];
+  const filas = editadas ?? (resultado?.datos?.lonas ?? []).map(({ codigo, descripcion, ml }, i) => ({
     id: -i - 1, tela: codigo ? serializeFabricSelection({ code: codigo, description: descripcion, family: 'LONA' }) : '',
-    metros: ml?.toLocaleString('es-ES', { useGrouping: false, maximumFractionDigits: 2 }) ?? '',
+    metros: ml.toLocaleString('es-ES', { useGrouping: false, maximumFractionDigits: 2 }),
   }));
   const lineas = filas.map(fila => {
     const tela = resolveFabric(fila.tela);
-    return { codigo: tela?.code.toUpperCase() ?? '', descripcion: tela?.description, ml: metrosLona(fila.metros), ofs };
+    return { codigo: tela?.code.toUpperCase() ?? '', descripcion: tela?.description, ml: metrosLona(fila.metros) };
   });
   const necesidad = new Map(sumarLonasPlano(lineas).map(lona => [lona.codigo, lona.ml]));
   const telas = new Map(lineas.filter(fila => fila.codigo).map(fila => [fila.codigo, fila.descripcion]));
-  const stocks = useFabricStocks(!consultando && ofs.length ? [...telas.keys()] : [], [...ordenes.map(o => o.of), ...ofs]);
+  const stocks = useFabricStocks(!consultando && ofsPedido.length ? [...telas.keys()] : [], ofsPedido);
   const sinStock = Object.values(stocks).some(stock => stock.status === 'error');
   const cargandoStock = Object.values(stocks).some(stock => stock.status === 'loading');
-  const entregaValida = entrega === '' || (/^\d+$/.test(entrega) && Number.isSafeInteger(Number(entrega)) && Number(entrega) > 0);
   const filasValidas = lineas.length > 0 && lineas.every(fila => fila.codigo && fila.ml !== null && fila.ml >= 0.01);
+  const sinOf = Boolean(resultado?.datos && !ofsPedido.length);
 
   useEffect(() => {
     const modal = dialogo.current;
@@ -92,23 +84,24 @@ export function StockLonaPlano({ deteccion, cerrar }: { deteccion: Extract<Detec
     const control = new AbortController();
     const espera = window.setTimeout(async () => {
       try {
-        const respuesta = await fetch(RUTA + '?' + new URLSearchParams({ pedido }), { signal: control.signal });
+        const respuesta = await fetch(RUTA + '/propuesta', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: control.signal,
+          body: JSON.stringify({ pedido, tramos: deteccion.tramos }),
+        });
         if (!respuesta.ok) throw new Error(ERROR_STOCK_PLANO);
-        const datos: PedidoStockPlano = await respuesta.json();
+        const datos: PropuestaStockPlano = await respuesta.json();
         if (!control.signal.aborted) setConsulta({ pedido, datos });
       } catch {
         if (!control.signal.aborted) setConsulta({ pedido, error: ERROR_STOCK_PLANO });
       }
     }, 200);
     return () => { window.clearTimeout(espera); control.abort(); };
-  }, [pedido, pedidoValido]);
+  }, [pedido, pedidoValido, deteccion.tramos]);
 
   function cambiarPedido(value: string) {
     setTextoPedido(value);
     if (value.trim().toUpperCase() === pedido) return;
     setConsulta(null);
-    setSeleccion(null);
-    setTextoOf('');
     setEditadas(null);
     setError('');
   }
@@ -125,8 +118,7 @@ export function StockLonaPlano({ deteccion, cerrar }: { deteccion: Extract<Detec
     try {
       const respuesta = await fetch(RUTA, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pedido, entrega: entrega === '' ? null : Number(entrega), usuario, ofs,
-          mlPropuesto: deteccion.mlPropuesto, lonas: lineas.map(({ codigo, ml }) => ({ codigo, ml })) }),
+        body: JSON.stringify({ pedido, usuario, tramos: deteccion.tramos, lonas: lineas.map(({ codigo, ml }) => ({ codigo, ml })) }),
       });
       const datos = await respuesta.json().catch(() => ({}));
       if (!respuesta.ok) throw new Error(datos.error || ERROR_STOCK_PLANO);
@@ -147,25 +139,8 @@ export function StockLonaPlano({ deteccion, cerrar }: { deteccion: Extract<Detec
           <div className="stock-plano-pedido">
             <label className="field">Pedido<input value={textoPedido} onChange={e => cambiarPedido(e.target.value)} autoFocus
               autoComplete="off" placeholder="AR…" aria-invalid={Boolean(textoPedido && !pedidoValido)} /></label>
-            <label className="field">Entrega<input value={entrega} onChange={e => setEntrega(e.target.value)} inputMode="numeric"
-              placeholder="Sin entrega" aria-invalid={!entregaValida} /></label>
+            {consultando && <p role="status">Leyendo las lonas del plano…</p>}
           </div>
-          <fieldset className="stock-plano-ofs">
-            <legend>OF del corte</legend>
-            {consultando && <p role="status">Consultando las OF del pedido…</p>}
-            <div className="stock-plano-ofs-campos">
-              {ordenes.length > 0 && <div className="stock-plano-ofs-opciones">{ordenes.map(({ of }) => <label key={of}>
-                <input type="checkbox" checked={marcadas.includes(of)} onChange={e => {
-                  setSeleccion(e.target.checked ? [...marcadas, of] : marcadas.filter(n => n !== of));
-                  setError('');
-                }} />{of}
-              </label>)}</div>}
-              <label className="field">{ordenes.length ? 'Otras OF' : 'Introduce las OF'}
-                <input value={textoOf} onChange={e => { setTextoOf(e.target.value); setError(''); }}
-                  placeholder="Separa las OF con comas" aria-invalid={!ofValida} />
-              </label>
-            </div>
-          </fieldset>
           <ReadModeContext.Provider value={false}>
             {filas.map((fila, i) => <div key={fila.id} className="stock-plano-lona">
               <FabricCombobox label={i === 0 ? 'Lona' : `Lona ${i + 1}`} value={fila.tela} soloReferencia enfocarAlMontar={false}
@@ -183,13 +158,11 @@ export function StockLonaPlano({ deteccion, cerrar }: { deteccion: Extract<Detec
               setEditadas([...filas, { id: contador.current++, tela: '', metros: '' }]);
               setError('');
             }}>Añadir lona</button>
-            {deteccion.mlPropuesto !== null && propuestas.every(lona => lona.ml === null) &&
-              <small>Largo de las piezas: {metros(deteccion.mlPropuesto, 2)} m</small>}
           </div>
         </fieldset>
         {cargandoStock && <p role="status">Consultando stock en RPS…</p>}
-        {(error || resultado?.error || sinStock) && <p className="stock-plano-error" role="alert">
-          {error || resultado?.error || ERROR_STOCK_PLANO}
+        {(error || resultado?.error || sinStock || sinOf) && <p className="stock-plano-error" role="alert">
+          {error || resultado?.error || (sinOf ? `El pedido ${pedido} no tiene OF en RPS.` : ERROR_STOCK_PLANO)}
         </p>}
         {telas.size > 0 && <div className="stock-plano-cuentas">
           {[...telas].map(([codigo, descripcion]) => {
@@ -203,7 +176,7 @@ export function StockLonaPlano({ deteccion, cerrar }: { deteccion: Extract<Detec
       <footer>
         <button type="button" className="ghost-button boton-3d" onClick={() => dialogo.current?.close()}>Ahora no</button>
         <button type="submit" className="primary-button boton-3d"
-          disabled={!pedidoValido || !entregaValida || !ofValida || !ofs.length || !filasValidas || consultando || cargandoStock || enviando}>
+          disabled={!pedidoValido || sinOf || !filasValidas || consultando || cargandoStock || enviando}>
           {enviando ? 'Avisando a CoordinaOT…' : 'Confirmar y avisar a CoordinaOT'}
         </button>
       </footer>
