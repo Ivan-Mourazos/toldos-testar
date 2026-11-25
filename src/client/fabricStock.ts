@@ -49,7 +49,7 @@ export function fabricStockLine(stock: FabricStock, neededMl = 0): FabricStockLi
   const need = neededMl > 0 ? ` · este pedido necesita ${meters(neededMl)} ml` : '';
   const resta = stock.reservado > 0 ? `${meters(stock.metros)} m − ${meters(stock.reservado)} m reservados por otros pedidos = ` : '';
   const propio = stock.reservadoPropio > 0 ? ` · ${meters(stock.reservadoPropio)} m reservados para este pedido (no se restan)` : '';
-  const consignment = stock.consignacion > 0 ? ` · + ${meters(stock.consignacion)} m en consignación` : '';
+  const consignment = stock.consignacion > 0 ? ` · ${meters(stock.consignacion)} m de ellos en consignación` : '';
   const title = stockTitle(stock);
   if (stock.disponible <= 0) {
     return {
@@ -74,7 +74,7 @@ export function fabricStockLine(stock: FabricStock, neededMl = 0): FabricStockLi
 
 function stockTitle(stock: FabricStock) {
   const lines = stock.almacenes.map((almacen) => `${almacen.nombre || almacen.codigo}: ${meters(almacen.disponible)} m en ${almacen.bobinas} ${almacen.bobinas === 1 ? 'bobina' : 'bobinas'}`);
-  if (stock.consignacion > 0) lines.push(`Consignación (no cuenta como disponible): ${meters(stock.consignacion)} m`);
+  if (stock.consignacion > 0) lines.push(`De ello en consignación (cuenta como stock): ${meters(stock.consignacion)} m`);
   lines.push('Disponible = stock en almacén menos lo reservado por otros pedidos en RPS. Lo reservado para este pedido no se resta.');
   if (stock.consultado) lines.push(`Consultado a las ${new Date(stock.consultado).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`);
   return lines.join('\n');

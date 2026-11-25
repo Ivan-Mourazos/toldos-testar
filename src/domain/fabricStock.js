@@ -8,8 +8,9 @@ import { normalizeOf } from '../reviewRules.js';
 //   propio pedido (`ofsPropias`) no resta: va en `reservadoPropio`. Las asignaciones
 //   no cuentan.
 // - No cuentan «No_Usar» ni «PROVEEDORES», ni las filas negativas.
-// - La consignación no es género nuestro hasta que se confirme: va aparte, en
-//   `consignacion`, y no suma en «disponible».
+// - La consignación SÍ cuenta como stock (Compras, 25/11/2026: «temos stock, non
+//   hai que avisar»). Suma en «disponible» como cualquier almacén; `consignacion`
+//   solo dice cuánto de ese disponible está en consignación.
 // - Importa la bobina mayor, no solo el total: bobinas distintas pueden ser de
 //   distinta partida de tinte.
 const excludedWarehouse = /NO_?USAR|PROVEEDOR/i;
@@ -42,10 +43,7 @@ export function summarizeFabricStock(rows = [], code = '', { reservas = [], ofsP
     const propio = row.stockId == null ? 0 : Math.min(propioPorBobina.get(row.stockId) || 0, total);
     const otros = Math.min(total - propio, meters);
     const free = meters - otros;
-    if (consignmentWarehouse.test(warehouse)) {
-      consignacion += free;
-      continue;
-    }
+    if (consignmentWarehouse.test(warehouse) && free > 0) consignacion += free;
     metros += meters;
     reservado += otros;
     reservadoPropio += propio;

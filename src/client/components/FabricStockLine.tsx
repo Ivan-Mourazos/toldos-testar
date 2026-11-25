@@ -25,7 +25,7 @@ export function FabricStockText({ state, neededMl = 0, prefix, compact = false }
     text: state.status === 'loading' ? 'Consultando stock en RPS…' : 'Stock no disponible ahora', tone: 'apagado', title: undefined
   };
   const text = compact && state.status === 'ready' && state.stock.disponible > 0
-    ? `${state.stock.disponible.toLocaleString('es-ES', { maximumFractionDigits: 1 })} m disponibles${state.stock.consignacion > 0 ? ` · + ${state.stock.consignacion.toLocaleString('es-ES', { maximumFractionDigits: 1 })} m en consignación` : ''}`
+    ? `${state.stock.disponible.toLocaleString('es-ES', { maximumFractionDigits: 1 })} m disponibles${state.stock.consignacion > 0 ? ` · ${state.stock.consignacion.toLocaleString('es-ES', { maximumFractionDigits: 1 })} m de ellos en consignación` : ''}`
     : line.text;
   return (
     <Tag className={`${compact ? 'fabric-stock-option' : 'fabric-stock-line'} is-${line.tone}`} title={compact ? `${line.text}\n${line.title ?? ''}` : line.title} aria-live="polite">

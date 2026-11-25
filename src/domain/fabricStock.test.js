@@ -44,7 +44,7 @@ describe('summarizeFabricStock · stock de una lona según RPS (informe tela-093
     expect(stock.almacenes).toEqual([{ codigo: '5', nombre: 'NUEVA SEDE ARZÚA', disponible: 397.8, bobinas: 10 }]);
   });
 
-  it('no cuenta No_Usar, PROVEEDORES ni filas negativas; la consignación va aparte', () => {
+  it('no cuenta No_Usar, PROVEEDORES ni filas negativas; la consignación sí cuenta y se dice cuánta es', () => {
     const stock = summarizeFabricStock([
       row('ACRILI2170P120', '1', 'ARZÚA', 'A1', 40, 10),
       row('ACRILI2170P120', 'No_Usar', 'No_Usar', 'X1', 50),
@@ -53,7 +53,7 @@ describe('summarizeFabricStock · stock de una lona según RPS (informe tela-093
       row('ACRILI2170P120', '10', 'CONSIGNACION ARZUA', 'C1', 30, 5),
       row('OTRA', '1', 'ARZÚA', 'O1', 99)
     ], 'acrili2170p120');
-    expect(stock).toMatchObject({ metros: 40, reservado: 10, disponible: 30, bobinasConDisponible: 1, mayorBobinaDisponible: 30, consignacion: 25 });
+    expect(stock).toMatchObject({ metros: 70, reservado: 15, disponible: 55, bobinasConDisponible: 2, mayorBobinaDisponible: 30, consignacion: 25 });
   });
 
   it('una bobina con más reservado que metros no resta de las demás', () => {

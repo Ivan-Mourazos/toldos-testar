@@ -11,7 +11,7 @@ describe('stock bajo la tela y dentro de las opciones', () => {
     const markup = renderToStaticMarkup(<FabricStockText state={{ status: 'ready', stock }} compact />);
     expect(markup).toContain('<span');
     expect(markup).toContain('12,5 m disponibles');
-    expect(markup).toContain('+ 30 m en consignación');
+    expect(markup).toContain('30 m de ellos en consignación');
     expect(markup).toContain('Stock RPS: 15,5 m − 3 m reservados por otros pedidos = 12,5 m disponibles en 2 bobinas (la mayor, 10 m)');
   });
 

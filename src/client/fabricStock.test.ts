@@ -33,8 +33,8 @@ describe('fabricStockLine · lo que se lee bajo la tela (informe tela-0930)', ()
     expect(fabricStockLine({ ...PLAST, mayorBobinaDisponible: 8 }, 9).text).toContain('ninguna bobina sola llega');
   });
 
-  it('la consignación va aparte y solo si hay', () => {
-    expect(fabricStockLine({ ...PLAST, consignacion: 30 }, 0).text).toBe('Stock RPS: 1.257,8 m − 860 m reservados por otros pedidos = 397,8 m disponibles en 10 bobinas (la mayor, 65 m) · + 30 m en consignación');
+  it('dice cuánto del disponible está en consignación, solo si hay', () => {
+    expect(fabricStockLine({ ...PLAST, consignacion: 30 }, 0).text).toBe('Stock RPS: 1.257,8 m − 860 m reservados por otros pedidos = 397,8 m disponibles en 10 bobinas (la mayor, 65 m) · 30 m de ellos en consignación');
     expect(fabricStockLine(PLAST, 0).text).not.toContain('consignación');
   });
 
