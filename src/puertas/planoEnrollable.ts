@@ -1,7 +1,7 @@
 import { separacionCorte } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { calcularPuerta, calcularPuertaDerivada, solapeEntradaEnrollable } from './calcular.ts';
-import { abajoRejillaTgm, aumentoArribaTgm, enrolleTgm, envoltorioTgm, puertaTgmDerivada, rotuloCierreTgm, soldaduraEtTgm } from './tgm.ts';
+import { abajoRejillaTgm, aumentoArribaTgm, derivarPuertaTgm, envoltorioTgm, rotuloCierreTgm, soldaduraEtTgm } from './tgm.ts';
 import { anchoSoldaduraSacoEnrollable, rotuloSaco, sacoPuerta, sacoSoldadoEnEtTgm, sacoUtil, soldaduraSacoEnrollable } from './saco.ts';
 import { anclarCotas } from './cotasPuertas.ts';
 import { anchoCristalVentanal, notaPlanoEnrollable, panoContinuoEnrollable, semianchoEtVentanal, ventanalesEnrollable } from './ventanalesEnrollable.ts';
@@ -79,10 +79,10 @@ function huecoRotulo(abajo: number, arriba: number, obstaculos: number[], margen
 }
 
 export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identificarSaco = false): { lienzo: Lienzo; zona: Zona } {
-  const enrolle = puerta.tgm ? enrolleTgm(puerta) : null;
-  const p = enrolle ? puertaTgmDerivada(puerta, enrolle) : puerta;
+  const derivada = puerta.tgm ? derivarPuertaTgm(puerta) : null;
+  const p = derivada ?? puerta;
   const l = vacio(), F = p.frente, H = p.alto, T = panoContinuoEnrollable(p) ? 0 : p.enrollable.T;
-  const r = enrolle ? calcularPuertaDerivada(p) : calcularPuerta(p);
+  const r = derivada ? calcularPuertaDerivada(p) : calcularPuerta(p);
   const saco = sacoPuerta(p), hs = saco.corte, hp = saco.altoPestana;
   const soldaduraSaco = anchoSoldaduraSacoEnrollable(p), soldaduraEt = soldaduraEtTgm(p);
   const sacoEnEt = sacoSoldadoEnEtTgm(p);
@@ -126,16 +126,17 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
   for (const [i, v] of ventanales.entries()) {
     const t = ejes[i], m = v.margen, alto = v.altoCorte;
     // El cristal y los cachos son su corte completo: solapan 2 arriba y 2 abajo.
-    if (m > 0) rectangulo(l, 'DISCO1', -1, -v.corteHasta, m + 1, alto);
-    if (m > 0) rectangulo(l, 'DISCO1', F - m, -v.corteHasta, m + 1, alto);
-    const desdeCristal = m === 0 ? 0 : m - 2, anchoCristal = anchoCristalVentanal(F, m);
+    if (m > 0) rectangulo(l, 'DISCO1', -1 - bastilla, -v.corteHasta, m + 1 + bastilla, alto);
+    if (m > 0) rectangulo(l, 'DISCO1', F - m, -v.corteHasta, m + 1 + bastilla, alto);
+    const desdeCristal = m === 0 ? 0 - bastilla : m - 2;
+    const anchoCristal = anchoCristalVentanal(F, m) + (m === 0 ? 2 * bastilla : 0);
     rectangulo(l, 'DISCO1', desdeCristal, -v.corteHasta, anchoCristal, alto, 5);
     if (m > 0) {
       cota(l, 0, -t - 12.57, m, -t - 12.57, -t + 11.67);
       cota(l, F - m, -t - 5.89, F, -t - 5.89, -t + 13.22);
     }
     // Conserva las coordenadas de cota de Portanova.
-    cota(l, desdeCristal, -t - 26.48, m === 0 ? F : F - m + 2, -t - 26.48, -t - 18.56);
+    cota(l, desdeCristal, -t - 26.48, m === 0 ? F + bastilla : F - m + 2, -t - 26.48, -t - 18.56);
   }
   // AR2605065: la tira intermedia va de 0 a F; los cachos sobresalen 1 cm por cada lado.
   // Sus cuatro bordes y los mininúmeros del despiece se ven también en el alzado del plano.

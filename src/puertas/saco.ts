@@ -1,3 +1,4 @@
+import { usaCotasCliente } from './clientes.ts';
 import type { PiezaPuerta, Punto, Puerta } from './tipos.ts';
 
 /** Diferencia firmada del bajo en coordenadas de confección (y hacia arriba). */
@@ -33,9 +34,10 @@ export function sacoUtil(p: Puerta): number | null {
   return saco === undefined ? (p.modelo === 'PUERTAENR' ? 100 : 120) : saco;
 }
 
-export const sacoSoldadoEnEtTgm = (p: Pick<Puerta, 'tgm'>) => Boolean(p.tgm?.ventanal && p.tgm.abajo === 'saco' && p.tgm.lona === 'pvc');
+type DatosSacoTgm = Pick<Puerta, 'tgm' | 'clientePuertas' | 'tipoPuerta'>;
+export const sacoSoldadoEnEtTgm = (p: DatosSacoTgm) => Boolean(p.tgm?.abajo === 'saco' && p.tgm.lona === 'pvc' && (p.tgm.ventanal || usaCotasCliente(p)));
 
-export const anchoSoldaduraSacoEnrollable = (p: Pick<Puerta, 'tgm'>) => sacoSoldadoEnEtTgm(p) ? p.tgm!.soldaduraEt ?? 0 : 2;
+export const anchoSoldaduraSacoEnrollable = (p: DatosSacoTgm) => sacoSoldadoEnEtTgm(p) ? p.tgm!.soldaduraEt ?? 0 : 2;
 
 /** Medidas del saco de la puerta; sin saco puesto se dibuja el habitual de su modelo y el cálculo avisa. */
 export function sacoPuerta(p: Puerta) {
@@ -139,7 +141,7 @@ export function invertirPanoInclinado(pieza: PiezaPuerta): PiezaPuerta {
 /** Iván, 22/10/2026: las diagonales se imprimen después de cortar el saco negro. */
 export const MATERIAL_SACO_AMARILLO = 'LAC900 AMARILLO';
 
-export function soldaduraSacoEnrollable(p: Pick<Puerta, 'materialSaco' | 'sacoDiagonalesAmarillas' | 'tgm'>): string {
+export function soldaduraSacoEnrollable(p: Pick<Puerta, 'materialSaco' | 'sacoDiagonalesAmarillas'> & DatosSacoTgm): string {
   if (sacoSoldadoEnEtTgm(p)) return `SOLDAR SACO EN LA E.T. (${anchoSoldaduraSacoEnrollable(p).toLocaleString('es-ES')} CM)`;
   const amarillo = !p.sacoDiagonalesAmarillas && p.materialSaco.trim().toUpperCase() === MATERIAL_SACO_AMARILLO;
   return `SOLDAR SACO ${amarillo ? 'AMARILLO' : 'NEGRO'} 2 CM MÁXIMO`;

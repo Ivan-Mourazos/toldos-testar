@@ -11,7 +11,7 @@ import { ventanalesEnrollable } from './ventanalesEnrollable.ts';
 
 describe('ventanal TGM del pedido AR2605743', () => {
   it('traslada las cotas de la hoja a las marcas sin recolocar las E.T.', () => {
-    const p = puerta5743();
+    const p = puerta5743('tgm');
     expect(marcasDesdeCotasTgm(p, cotas5743)).toEqual([910, 1380, 2060, 2440]);
     expect(marcasDesdeCotasTgm(p, [38, 68])).toBeNull();
     expect(marcasDesdeCotasTgm(p, [38, 68, 500])).toBeNull();
@@ -23,7 +23,7 @@ describe('ventanal TGM del pedido AR2605743', () => {
   });
 
   it('corta el plástico de lado a lado, conserva las cuatro E.T. y pasa las rayas al corte y al plano', () => {
-    const p = puerta5743();
+    const p = puerta5743('tgm');
     const r = calcularPuerta(p);
     const [superior, inferior] = r.piezas.filter(x => x.clase === 'pano');
     const raya = (y: number) => [p.margenMarcas, y, p.frente - p.margenMarcas, y];
@@ -59,12 +59,12 @@ describe('ventanal TGM del pedido AR2605743', () => {
       [{ soldaduraEt: null }, 'TGM_SOLDADURA_ET'],
       [{ tubosManual: null }, 'TGM_COTAS_HOJA'],
     ] as const) {
-      const p = puerta5743();
+      const p = puerta5743('tgm');
       const r = calcularPuerta({ ...p, tgm: { ...p.tgm!, ...cambio } });
       expect(r.piezas).toEqual([]);
       expect(r.avisos.map(a => a.codigo)).toContain(codigo);
     }
-    const p = puerta5743();
+    const p = puerta5743('tgm');
     p.tgm!.tubosManual = [5, 6, 2060, 2440];
     const e = enrolleTgm(p)!;
     expect(e.colocacion.marcas).toEqual([5, 6, 2060, 2440]);
@@ -72,7 +72,7 @@ describe('ventanal TGM del pedido AR2605743', () => {
   });
 
   it('propone 4,5 cm de bastilla y conserva los pasos si cambia el alto total', () => {
-    const p = puerta5743();
+    const p = puerta5743('tgm');
     p.tgm!.bastillaArriba = undefined;
     expect(calcularPuerta(p).piezas.find(x => x.nombre === 'Paño superior')?.alto).toBe(101.5);
     p.tgm!.altoTotal = 280;
@@ -80,7 +80,7 @@ describe('ventanal TGM del pedido AR2605743', () => {
   });
 
   it('conserva los campos del ventanal al abrir el pedido guardado', () => {
-    const p = puerta5743();
+    const p = puerta5743('tgm');
     const pedido = pedidoDe('AR2605743', p);
     expect(leerPedidoPuertas(JSON.parse(JSON.stringify(pedido)))).toMatchObject({
       elementos: [expect.objectContaining({ input: p })],

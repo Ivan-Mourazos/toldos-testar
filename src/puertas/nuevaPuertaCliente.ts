@@ -48,7 +48,8 @@ export function nuevaPuertaDeCliente(cliente:string,tipo:string):Puerta {
   const f=fichaPorId(cliente),t=f?.tipos.find(t=>t.id===tipo);
   if(!f||!t)throw new Error('Ese cliente no permite el tipo de puerta elegido.');
   const base=nuevaPuerta(t.modelo);
-  const e=f.calculo==='tgm'?f.enrolle:undefined;
+  const medidas = t.calculo === 'medidas';
+  const e = medidas ? fichaPorId('tgm')!.enrolle : f.calculo === 'tgm' ? f.enrolle : undefined;
   return {...base,clientePuertas:f.id,tipoPuerta:t.id,...f.rollos,...(base.abrigo?{rollo:base.rollo}:{}),
     ...(f.calculo==='santapau'?{santapau:{revision:'5363' as const,aumentoBajo:REGLAS_SANTA_PAU.aumentoBajo,altoFaldon:35,ladoCerrado:'sin confirmar' as const,refuerzos:true,anchoRefuerzo:REGLAS_SANTA_PAU.anchoRefuerzo},sacoDiagonalesAmarillas:true}:{}),
     ...(f.calculo==='belts'?{belts:configBeltsInicial(t.id),enrollable:{...base.enrollable,ventanasPequenas:true,sinVentanal:false}}:{}),
@@ -61,6 +62,7 @@ export function nuevaPuertaDeCliente(cliente:string,tipo:string):Puerta {
         altoHueco:0,altoTotal:null,anadido:e.anadido,diametroEnrolle:e.diametroEnrolle,nTubos:e.nTubos,
         diametroTubo:e.diametroTubo,anchoEt:e.anchoEt,abajo:'saco' as const,grosor:e.grosor,tubosManual:null,
         lona:e.lona,materialEt:e.materialEt,
+        ...(medidas ? { cotasHoja: null, anchoEt: 0, nTubos: 0 } : {}),
         cierreBajo:e.cierreBajo,marcaCierre:e.marcaCierre,
         ajustes:{margen:e.margen,desvio:e.desvio,altoPerfil:e.altoPerfil,anchoPerfil:e.anchoPerfil,anguloPerfil:e.anguloPerfil},
       },
@@ -73,6 +75,8 @@ export function otraPuertaDelCliente(p:Puerta):Puerta {
 export function cambiarTipoDelCliente(p:Puerta,tipo:string):Puerta {
   const f=fichaPorId(p.clientePuertas??(p.araujo?'araujo':'portanova'))!,t=f.tipos.find(t=>t.id===tipo);
   if(!t)throw new Error('Tipo no permitido por la ficha del cliente.');
+  if (t.id !== p.tipoPuerta && (t.calculo === 'medidas' || tipoDePuerta(p).calculo === 'medidas'))
+    return {...nuevaPuertaDeCliente(f.id,t.id),of:p.of,cantidad:p.cantidad,observaciones:p.observaciones};
   if ((p.modelo==='ABRIGO') !== (t.modelo==='ABRIGO') || (p.modelo==='SACOARENA') !== (t.modelo==='SACOARENA')) return {...nuevaPuertaDeCliente(f.id,t.id),of:p.of,cantidad:p.cantidad,observaciones:p.observaciones};
   return {...p,tipoPuerta:p.clientePuertas?t.id:undefined,modelo:t.modelo,confirmada:false,ventanasConfirmadas:false,
     ...(!p.araujo&&p.modelo!==t.modelo?{entradas:[],ventanas:[]} : {}),

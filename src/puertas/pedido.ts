@@ -1,7 +1,9 @@
 import type { PedidoPuertas, Puerta } from './tipos.ts';
 import { MODELOS_PUERTAS, nuevaPuerta } from './calcular.ts';
 import { ARTICULOS_TRAMOS_ARAUJO } from './araujo.ts';
-import { fichaPorId, fichaDePuerta } from './clientes.ts';
+import { fichaPorId, fichaDePuerta, usaCotasCliente } from './clientes.ts';
+
+import { nuevaPuertaDeCliente } from './nuevaPuertaCliente.ts';
 
 const camposTgmConValorDeFicha = ['cierreBajo', 'marcaCierre', 'lona', 'materialEt'] as const;
 
@@ -28,7 +30,8 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
       if((ficha.calculo==='santapau')!==Boolean(p.santapau))return error();
       if((ficha.calculo==='belts')!==Boolean(p.belts))return error();
       if((ficha.calculo==='puertasluz')!==Boolean(p.puertasluz))return error();
-      if((ficha.calculo==='tgm')!==(p.tgm!==undefined))return error();
+      if(tipo.calculo==='medidas') faltanDatosTgm ||= p.tgm===undefined;
+      else if((ficha.calculo==='tgm')!==(p.tgm!==undefined)) return error();
     }else if(p.tipoPuerta!==undefined||p.tgm!==undefined||p.belts!==undefined||p.puertasluz!==undefined)return error();
     if(typeof p.modelo!=='string' || !Object.hasOwn(MODELOS_PUERTAS,p.modelo)) return error();
     if(p.articuloOrigen!=='' && (typeof p.articuloOrigen!=='string'||!Object.hasOwn(MODELOS_PUERTAS,p.articuloOrigen)&&!(ARTICULOS_TRAMOS_ARAUJO as readonly string[]).includes(p.articuloOrigen)))return error();
@@ -56,6 +59,7 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
         ||!Number.isFinite(t.diametroEnrolle)||t.diametroTubo!==42||!Number.isFinite(t.grosor)||!Number.isInteger(t.nTubos)
         ||(t.abajo!=='tubo'&&t.abajo!=='saco'&&t.abajo!=='envolvente')||!objeto(ajustes)
         ||!['margen','desvio','altoPerfil','anchoPerfil','anguloPerfil'].every(k=>Number.isFinite(ajustes[k])))return error();
+      if(t.cotasHoja!=null&&(!lista(t.cotasHoja,99)||!t.cotasHoja.every(n=>Number.isFinite(n))))return error();
       if(t.tubosManual!==null&&(!Array.isArray(t.tubosManual)||!t.tubosManual.every(n=>Number.isFinite(n))))return error();
       if(['cierreBajo','marcaCierre'].some(k=>t[k]!==undefined&&!cotas(t,[k])))return error();
       if(t.laterales!==undefined && t.laterales!=='corte' && t.laterales!=='bastilla')return error();
@@ -150,6 +154,7 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
   const enrolle=fichaPorId('tgm')!.enrolle!;
   return {...pedido,elementos:pedido.elementos.map(e=>{
     const {tgm}=e.input;
+    if(!tgm && usaCotasCliente(e.input)) return {...e,input:{...e.input,tgm:nuevaPuertaDeCliente(e.input.clientePuertas!,e.input.tipoPuerta!).tgm}};
     if(!tgm || camposTgmConValorDeFicha.every(k=>tgm[k]!==undefined))return e;
     return {...e,input:{...e.input,tgm:{...tgm,
       cierreBajo:tgm.cierreBajo??enrolle.cierreBajo,marcaCierre:tgm.marcaCierre??enrolle.marcaCierre,

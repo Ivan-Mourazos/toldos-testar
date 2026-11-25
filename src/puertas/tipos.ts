@@ -105,6 +105,7 @@ export interface Puerta {
     soldadura?: number | null;
     abajo: 'tubo' | 'saco' | 'envolvente'; // La medida del saco se guarda en enrollable.saco.
     grosor: number; // mm
+    cotasHoja?: number[] | null; // cm de centro a centro, de abajo arriba.
     tubosManual: number[] | null; // mm desde el perfil; null para reparto automático
     ajustes: { margen: number; desvio: number; altoPerfil: number; anchoPerfil: number; anguloPerfil: number }; // mm y grados
   };

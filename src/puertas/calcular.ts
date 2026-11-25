@@ -11,7 +11,7 @@ import { calcularBelts } from './belts.ts';
 import { calcularPuertasLuz } from './puertasluz.ts';
 import { calcularSantaPau } from './santapau.ts';
 import { abajoRejillaTgm, aumentoArribaTgm, calcularTgm, envoltorioTgm, soldaduraEtTgm } from './tgm.ts';
-import { fichaDePuerta } from './clientes.ts';
+import { fichaDePuerta, puertaHabilitada } from './clientes.ts';
 import { anchoCristalVentanal, EXTRA_CACHO_VENTANAL, panoContinuoEnrollable, semianchoEtVentanal, SOLAPE_VENTANAL, ventanalesEnrollable } from './ventanalesEnrollable.ts';
 import { ventanalesApilable } from './ventanalesApilable.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
@@ -62,7 +62,7 @@ const seCruzan = (a: Hueco, b: Hueco) => a.x < b.x + b.ancho - 0.001 && b.x < a.
 export function calcularPuerta(p: Puerta): ResultadoPuerta {
   if (p.modelo === 'ABRIGO') return calcularAbrigo(p);
   if (p.modelo === 'SACOARENA') return calcularSacoArena(p);
-  if(p.clientePuertas&&!fichaDePuerta(p).habilitado)return {version:1,piezas:[],alternativasSaco:null,empates:[],uniones:[],bolsillo:null,avisos:[{codigo:'CLIENTE_SIN_REGLAS',nivel:'error',texto:fichaDePuerta(p).aviso??'Falta contrastar las reglas de este cliente.'}]};
+  if(p.clientePuertas&&!puertaHabilitada(p))return {version:1,piezas:[],alternativasSaco:null,empates:[],uniones:[],bolsillo:null,avisos:[{codigo:'CLIENTE_SIN_REGLAS',nivel:'error',texto:fichaDePuerta(p).aviso??'Falta contrastar las reglas de este cliente.'}]};
   if (p.araujo) return calcularAraujo(p);
   if (p.santapau) return calcularSantaPau(p);
   if (p.belts) return calcularBelts(p);
@@ -277,8 +277,20 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
       }
     }
     if(ventanales.length===1) {
-      agregar(pieza('Cristal del ventanal', 'cristal', anchoCristalVentanal(p.frente,e.margen), ventanales[0].altoCorte, p.materialCristal,p.rolloCristal));
-      if(e.margen>0) agregar(pieza('Cachos laterales', 'cacho', e.margen+EXTRA_CACHO_VENTANAL,ventanales[0].altoCorte,lona,p.rollo,2));
+      const altoCristal = ventanales[0].altoCorte;
+      const cristal = agregar(pieza('Cristal del ventanal', 'cristal', anchoCristalVentanal(p.frente,e.margen), altoCristal, p.materialCristal,p.rolloCristal));
+      if(e.margen===0 && bastilla) {
+        ensancharPieza(cristal, bastilla);
+        for(const x of [bastilla, cristal.ancho-bastilla]) cristal.marcas.push([x,0,x,cristal.alto]);
+      }
+      if(e.margen>0 && !bastilla) agregar(pieza('Cachos laterales', 'cacho', e.margen+EXTRA_CACHO_VENTANAL,altoCristal,lona,p.rollo,2));
+      if(e.margen>0 && bastilla) {
+        for(const lado of ['izquierdo','derecho']) {
+          const cacho = agregar(pieza(`Cacho lateral ${lado}`, 'cacho', e.margen+EXTRA_CACHO_VENTANAL+bastilla,altoCristal));
+          const x = lado==='izquierdo' ? bastilla+EXTRA_CACHO_VENTANAL : e.margen;
+          cacho.marcas.push([x,0,x,cacho.alto]);
+        }
+      }
     } else if (ventanales.length > 1) {
       // AR2605065 (A) y AR2605038 (D): los cachos son piezas sueltas, no huecos de un paño entero.
       const separaciones: PiezaPuerta[] = [];

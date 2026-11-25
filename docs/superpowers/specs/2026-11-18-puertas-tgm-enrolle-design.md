@@ -164,6 +164,17 @@ con 2 cm de más arriba y abajo para soldarlo a los paños, como en Portanova, a
 39 de alto en el 5743; Iván lo consultó en el taller el 25/11: «siempre se suelda 2 cm»); en esa franja del paño van juntas
 la soldadura del cristal y la de la E.T. El 38 y el 68 van de centro a centro e incluyen los 12 de las E.T. (no se suman aparte).
 
+### Recambios con las medidas del cliente
+
+Iván confirma que AR2605743 es un recambio y se configura en **Puertas → General → Enrollable**. En ese tipo,
+la altura terminada y las cotas centro a centro de la hoja determinan las E.T. y el despiece, con o sin ventanal.
+La ficha reutiliza la confección de TGM y permite elegir margen lateral, laterales al corte o con bastilla,
+varilla o bastilla arriba y material del saco. Con bastilla lateral, el aumento y la raya pasan al material
+que llega a cada borde.
+
+General no pide los datos de enrolle ni genera avisos del simulador. Plegable, apilable y autorreparable
+de General siguen pendientes. La enrollable de TGM mantiene el simulador para las puertas que usan su tubo.
+
 ## Partes del código
 
 | Parte | Qué hace | Depende de |
