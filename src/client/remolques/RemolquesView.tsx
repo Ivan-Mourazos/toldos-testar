@@ -2,7 +2,6 @@ import React from 'react';
 import { useContenidoFluido } from '../hooks/useContenidoFluido';
 import { createPortal } from 'react-dom';
 import { ArrowLeftRight, BookUser, Save } from 'lucide-react';
-import { CadPaginas } from '../components/CadPaginas';
 import { MenuOpcionesPedido } from '../components/MenuOpcionesPedido';
 import { OrderActions } from '../components/OrderActions';
 import { OrderEmptyState } from '../components/OrderEmptyState';
@@ -24,7 +23,7 @@ import { rotuloElemento } from './rotulo';
 import { VistaPreviaPdf } from './VistaPreviaPdf';
 import { avisoCorteAMano } from './CorteRemolques';
 import { entradaCorte, useVistaCorteRemolques, VistaPreviaCorte } from './VistaPreviaCorte';
-import { BotonesFlujoCorte, pedidoValido, useFlujoCorteDwg } from '../flujoCorteDwg';
+import { BotonesFlujoCorte, useFlujoCorteDwg } from '../flujoCorteDwg';
 import { faltaParaPdf } from './vistaPrevia';
 import type { ModoCarga } from './guardarPedido';
 import { useRemolques } from './useRemolques';
@@ -146,16 +145,11 @@ export function RemolquesView({ controlRef, usuario, notify, askForConfirmation,
   const flujo = useFlujoCorteDwg({ base: '/api/remolques/borrador-corte', codigo: numeroPedido, entrada,
     cuerpo: () => JSON.parse(entrada) as Record<string, unknown>, aplica: bloqueoCorte ? lineas.length > 0 : Boolean(vistaCorte.actual?.datos?.cortes.length),
     falta: bloqueoCorte, usuario, notify, askForConfirmation, activo: accionesVisibles && lineas.length > 0, editable: true });
-  const [revisionCad, setRevisionCad] = React.useState(0);
   const regenerar = async () => {
     await ws.guardar(true);
     await flujo.refrescar();
-    setRevisionCad(actual => actual + 1);
   };
-  const cad = pedidoValido(numeroPedido) && (flujo.hayPlano || vistaCorte.actual?.datos?.cortes.length)
-    ? { producto: 'remolques' as const, orderCode: numeroPedido, version: String(revisionCad),
-      noRegenerado: flujo.datosCambiados, onActualizarCorte: usuario && !bloqueoCorte ? regenerar : undefined }
-    : undefined;
+  const tieneCorte = flujo.hayPlano || Boolean(vistaCorte.actual?.datos?.cortes.length);
   const avisoAMano = bloqueoCorte ? null : avisoCorteAMano(vistaCorte.actual?.datos);
   const [derecha, setDerecha] = React.useState<'dibujo' | 'corte'>('dibujo');
   const elementoFluido=useContenidoFluido<HTMLElement>(String(versionActiva));
@@ -166,7 +160,7 @@ export function RemolquesView({ controlRef, usuario, notify, askForConfirmation,
   const acciones = (
     <OrderActions hidden={!accionesVisibles}>
       <VistaPreviaPdf label="Vista previa" lineas={lineas} params={ws.conParamsGuardados ? params : undefined}
-        bloqueo={faltaPdf} notify={notify} cad={cad} />
+        bloqueo={faltaPdf} notify={notify} />
       {avisoAMano && <span className="flujo-corte-paso" role="status" title={avisoAMano}>{avisoAMano}</span>}
       <BotonesFlujoCorte flujo={flujo} ocupado={ws.guardando} />
       <button type="button" className="primary-button rem-guardar-boton"
@@ -177,7 +171,7 @@ export function RemolquesView({ controlRef, usuario, notify, askForConfirmation,
       </button>
       <MenuOpcionesPedido corte={flujo} ocupado={ws.guardando || ws.guardandoBorrador || flujo.ocupado}
         motivoBorrador={ws.conParamsGuardados ? 'El pedido ya está en Pedidos. Usa «Guardar».' : !hayPedido ? 'Escribe el número de pedido.' : !usuario ? 'Elige quién eres en «Soy».' : undefined}
-        motivoRegenerar={bloqueoCorte ?? (!cad ? 'Este pedido no tiene corte.' : undefined)}
+        motivoRegenerar={bloqueoCorte ?? (!tieneCorte ? 'Este pedido no tiene corte.' : undefined)}
         guardarBorrador={ws.guardarBorrador} regenerar={regenerar} limpiar={onLimpiar ?? ws.limpiarFormulario} />
     </OrderActions>
   );
@@ -304,7 +298,7 @@ export function RemolquesView({ controlRef, usuario, notify, askForConfirmation,
             >
               {/* El render 3D (fase 2b) y, de respaldo, el dibujo de la web de remolques (DibujoElemento,
                   el mismo que el del pedido guardado abierto en Pedidos). */}
-              {derecha === 'corte' ? (cad ? <CadPaginas key={numeroPedido} {...cad} sinDwg={<VistaPreviaCorte vista={vistaCorte} />} /> : <VistaPreviaCorte vista={vistaCorte} />) : <>
+              {derecha === 'corte' ? <VistaPreviaCorte vista={vistaCorte} /> : <>
               {lineaActiva.tipo === 'ganado'
                 ? <DibujoGanado modelo={ws.gan.ganado} medidas={ws.gan.medidasCal} cantidad={ws.gan.cantidad} />
                 : <DibujoElemento params={params} elemento={lineaActiva.tipo === 'lona'

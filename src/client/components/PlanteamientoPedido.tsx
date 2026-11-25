@@ -3,19 +3,14 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { FileText, Maximize2, RefreshCw, X } from 'lucide-react';
 import { CabeceraDocumento } from './DocumentosPedido';
 import { PdfPreviewViewer } from './PdfPreviewViewer';
-import { CadPaginas } from './CadPaginas';
-import { PestanasVistaPedido, type VistaPedido } from './PestanasVistaPedido';
-
-type PropsCad = React.ComponentProps<typeof CadPaginas>;
 
 /** Mantiene el mismo visor al ampliar: ni se vuelve a pedir el PDF ni se pierde la página. */
-export function PlanteamientoPedido({ origen, cuerpo, version = '', cad }: { origen: string; cuerpo?: string; version?: string; cad?: PropsCad }) {
+export function PlanteamientoPedido({ origen, cuerpo, version = '' }: { origen: string; cuerpo?: string; version?: string }) {
   const clave = JSON.stringify([origen, cuerpo, version]);
-  return <Planteamiento key={clave} origen={origen} cuerpo={cuerpo} cad={cad} />;
+  return <Planteamiento key={clave} origen={origen} cuerpo={cuerpo} />;
 }
 
-function Planteamiento({ origen, cuerpo, cad }: { origen: string; cuerpo?: string; cad?: PropsCad }) {
-  const [vista, setVista] = useState<VistaPedido>('datos');
+function Planteamiento({ origen, cuerpo }: { origen: string; cuerpo?: string }) {
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
   const [reintentando, setReintentando] = useState(false);
@@ -75,16 +70,13 @@ function Planteamiento({ origen, cuerpo, cad }: { origen: string; cuerpo?: strin
     onCancel={(evento) => { evento.preventDefault(); setAmpliado(false); }}>
     <CabeceraDocumento titulo="Planteamiento" icono={<FileText aria-hidden="true" />}>
       <div className="documento-acciones">
-        {cad && <PestanasVistaPedido vista={vista} onChange={setVista} />}
         {error && <button type="button" className="ghost-button boton-3d" onClick={() => { setError(''); setReintentando(false); setIntento(i => i + 1); }}><RefreshCw aria-hidden="true" />Reintentar</button>}
         <button ref={abrir} type="button" hidden={ampliado} className="ghost-button boton-3d" onClick={() => setAmpliado(true)}><Maximize2 aria-hidden="true" />Abrir en grande</button>
         <button ref={cerrar} type="button" hidden={!ampliado} className="icon-button" aria-label="Cerrar vista previa" onClick={() => setAmpliado(false)}><X aria-hidden="true" /></button>
       </div>
     </CabeceraDocumento>
-    {vista === 'cad' && cad ? <CadPaginas {...cad} enModal /> : <>
     {!url && !error && <p className="documento-espera" role="status">{reintentando ? 'Reintentando…' : 'Preparando el planteamiento…'}</p>}
     {error && <p className="corte-aviso" role="alert">{error}</p>}
     {url && <PdfPreviewViewer url={url} ariaLabel="Planteamiento del pedido" />}
-    </>}
   </dialog>;
 }

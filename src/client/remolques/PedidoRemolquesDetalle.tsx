@@ -17,7 +17,6 @@ import type { CoordinaStatus } from '../types';
 import { CorteRemolques, type VistaCorteRemolques } from './CorteRemolques';
 import { estadoGenerarRemolques, ficherosPrevistos, opcionesCorteRemolques } from './generarPedido';
 import { puedeEditarToldos } from '../generatePermission';
-import { CadPaginas } from '../components/CadPaginas';
 import { ConfirmarGestionRegistro, type GestionRegistro } from '../components/ConfirmarGestionRegistro';
 import { MenuMas } from '../components/MenuMas';
 import { mensajeGestionRegistro, solicitarGestionRegistro } from '../gestionRegistro';
@@ -111,10 +110,6 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
   const corregible = puedeEditarToldos(currentUser);
   const permisoCorte = estadoGenerarRemolques(Object.assign({}, pedidoEntrega(pedido), { status: 'PENDING_REVIEW' as const, entregas: [] }), currentUser, coordina);
   const ruta = `/api/remolques/pedidos/${encodeURIComponent(pedido.orderCode)}`;
-  const cad = opcionesCorte.aplica && {
-    producto: 'remolques' as const, orderCode: pedido.orderCode, version: pedido.updatedAt, noRegenerado: pedido.corteNoRegenerado,
-    onActualizarCorte: corregible && !terminado ? corte.regenerar : undefined,
-  };
   const letras = elementosAprobacion(pedido).map((item) => item.letter);
   const datos = [
     pedido.summary.customer || 'Sin cliente',
@@ -197,9 +192,8 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
       <LecturaPedidoRemolques key={pedido.orderCode} pedido={pedido} versionInicial={elementoInicial} />
 
       {/* Debajo de los datos (Iván, 20/10/2026). Se vuelve a calcular si el pedido cambia (guardado o generado). */}
-      <DocumentosPedido planteamiento={<PlanteamientoPedido origen={`${ruta}/vista-previa`} version={pedido.updatedAt} cad={cad || undefined} />}
+      <DocumentosPedido planteamiento={<PlanteamientoPedido origen={`${ruta}/vista-previa`} version={pedido.updatedAt} />}
         corte={<CorteRemolques ruta={ruta} version={pedido.updatedAt} generado notify={notify} onConfirm={onConfirm} onVista={recibirVista}
-        cad={cad ? sinDwg => <CadPaginas {...cad} sinDwg={sinDwg} /> : undefined}
         acciones={<>{!terminado && opcionesCorte.aplica && <AccionesCorteMaquina ruta={ruta + "/corte"} codigo={pedido.orderCode} onEnviado={onEnviado} />}<HistorialEnvios envios={pedido.enviosCorte} /></>} />} />
     </section>
   );

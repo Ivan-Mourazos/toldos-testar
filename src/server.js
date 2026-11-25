@@ -49,7 +49,7 @@ import { crearCarpetaPlanos, plantillaPlanos } from './cmtPlanosCarpeta.js';
 import capasIniciales from './cmt/preparacion/capasIniciales.json' with { type: 'json' };
 import { registrarRutasCorteLona } from './corteLonaRoutes.js';
 import { registrarRutasAssa } from './assa/rutas.js';
-import { carpetaCorte, exigirCorteAlDia, exigirCorteParaSalir, escribirPlanosCorte, prepararArchivosCorte } from './corteLonaArchivos.js';
+import { exigirCorteAlDia, exigirCorteParaSalir, escribirPlanosCorte, prepararArchivosCorte } from './corteLonaArchivos.js';
 import { registrarRutasEnviosCorte } from './corteEnviosRoutes.js';
 import { estadoBotCompartido } from './botEstado.js';
 import { createCoordinaClient } from './coordinaStatus.js';
@@ -84,7 +84,7 @@ import { nombrePdf } from './remolques/salida/nombre-pdf.ts';
 import { crearAlmacenPedidos, crearAlmacenPedidosRemolques } from './remolques/flujo/almacen.ts';
 import { ErrorPedidoRemolques } from './remolques/flujo/pedido.ts';
 import {
-  comprobadorPedidoToldos, crearServicioPedidosRemolques, firmaCorteRemolques, mensajePedidoDeRemolques, paramsDeLaPantalla, yaEsPedidoDeRemolques
+  comprobadorPedidoToldos, crearServicioPedidosRemolques, mensajePedidoDeRemolques, paramsDeLaPantalla, yaEsPedidoDeRemolques
 } from './remolques/flujo/servicio.ts';
 import { crearAlmacenBorradores } from './borradores/almacen.ts';
 import { crearServicioBorradores } from './borradores/servicio.ts';
@@ -382,21 +382,6 @@ registrarRutasCadPaginas(app, {
   ajustes: () => workflowStore.getSettings(),
   oda,
   almacenEscritos: confirmacionesToldos
-});
-
-registrarRutasCadPaginas(app, {
-  producto: 'remolques',
-  obtenerReview: codigo => almacenPedidosRemolques.obtener(codigo),
-  ajustes: () => workflowStore.getSettings(),
-  resolverCorte: (codigo, pedido, ajustes) => {
-    const orderCode = codigoCorteEditable(pedido, codigo);
-    return { codigo: orderCode, carpeta: ajustes.corteBorradoresDirectory,
-      carpetaRevisada: pedido && ajustes.corteLonaPlanoDirectory
-        ? carpetaCorte(ajustes.corteLonaPlanoDirectory, { orderCode, technician: pedido.summary.technician }) : undefined };
-  },
-  firmaCorte: firmaCorteRemolques,
-  oda,
-  almacenEscritos: confirmacionesRemolques
 });
 
 registrarRutasCorteLona(app, { workflowStore, oda, ofStockSacos, dxfDesdeDwg: dxfToldosDesdeDwg });

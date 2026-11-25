@@ -225,7 +225,7 @@ async function prepararCorte(corte: CorteRemolques, pedido: PedidoRemolques, reg
 /** Del cajetín solo cuenta la OF, que va en el corte. */
 const datosCorte = (datos: { elementos: { input: PedidoRemolques['elementos'][number]['input'] }[]; params: CalcParams }) => huellaDatos({ params: datos.params,
   elementos: datos.elementos.map(({ input }) => ({ ...input, cabecera: input.cabecera.ordenFabricacion })) });
-export const firmaCorteRemolques = (pedido: PedidoRemolques) => datosCorte(pedidoEntrega(pedido));
+const firmaCorteRemolques = (pedido: PedidoRemolques) => datosCorte(pedidoEntrega(pedido));
 
 export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques) {
   const reloj = deps.ahora ?? (() => new Date());

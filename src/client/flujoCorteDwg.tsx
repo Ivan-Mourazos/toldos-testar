@@ -147,7 +147,7 @@ export function useFlujoCorteDwg({ base, codigo: codigoBruto, entrada, cuerpo, a
     try { await confirmarCorteDwg({ ruta: `${base}/confirmar`, orderCode: codigoBruto, usuario, notify }); }
     finally { setOcupado(false); await refrescar(); }
   }
-  return { paso, ocupado, abrir, confirmar, refrescar, editable, falta, usuario, datosCambiados, preguntar: askForConfirmation, hayPlano: Boolean(estado?.borrador || estado?.revisado) };
+  return { paso, ocupado, abrir, confirmar, refrescar, editable, falta, usuario, preguntar: askForConfirmation, hayPlano: Boolean(estado?.borrador || estado?.revisado) };
 }
 
 export type FlujoCorteDwg = ReturnType<typeof useFlujoCorteDwg>;
