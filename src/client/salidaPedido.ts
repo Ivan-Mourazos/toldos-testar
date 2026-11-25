@@ -7,6 +7,10 @@ export interface LonaAprobada { codigo: string; ml: number; ofs?: string[] }
 export interface PropuestaStockLona {
   ofs: string[];
   lonas: (LonaAprobada & { ofs: string[]; descripcion: string; origen: 'corte' | 'reserva' | 'manual' })[];
+  /** Toldos: las acrílicas no se comprueban (se asignan con el Excel); solo se enseñan. */
+  acrilicas?: { codigo: string; descripcion: string }[];
+  /** OF con un artículo incluido en reservas: sus lonas no se comprueban. */
+  enReservas?: { of: string; codigo: string }[];
 }
 
 export interface SalidaPedido {

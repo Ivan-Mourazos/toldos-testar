@@ -4,6 +4,7 @@ import {
   type DeteccionStockPlano, type PropuestaStockPlano,
 } from '../../cmt/stockPlano';
 import { resolveFabric, serializeFabricSelection } from '../../domain/fabricCatalog.js';
+import { esLonaAcrilica, TEXTO_ACRILICA, TEXTO_RESERVAS } from '../../domain/stockSinComprobar.js';
 import { CorteMaquinaContexto } from '../components/CorteMaquina';
 import { FabricCombobox } from '../components/FabricCombobox';
 import { metrosLona } from '../components/LonasEntrega';
@@ -68,7 +69,12 @@ export function StockLonaPlano({ deteccion, cerrar }: { deteccion: Extract<Detec
   });
   const necesidad = new Map(sumarLonasPlano(lineas).map(lona => [lona.codigo, lona.ml]));
   const telas = new Map(lineas.filter(fila => fila.codigo).map(fila => [fila.codigo, fila.descripcion]));
-  const stocks = useFabricStocks(!consultando && ofsPedido.length ? [...telas.keys()] : [], ofsPedido);
+  // Las acrílicas (se asignan con el Excel) y las OF incluidas en reservas no se comprueban: ni se consulta su stock ni el servidor las cuenta.
+  // Si solo algunas OF están incluidas en reservas, el servidor quita sus lonas.
+  const enReservas = resultado?.datos?.enReservas ?? [];
+  const todoEnReservas = ofsPedido.length > 0 && ofsPedido.every(of => enReservas.some(fila => fila.of === of));
+  const noSeComprueba = (codigo: string) => todoEnReservas || esLonaAcrilica({ codigo, descripcion: telas.get(codigo) });
+  const stocks = useFabricStocks(!consultando && ofsPedido.length ? [...telas.keys()].filter(codigo => !noSeComprueba(codigo)) : [], ofsPedido);
   const sinStock = Object.values(stocks).some(stock => stock.status === 'error');
   const cargandoStock = Object.values(stocks).some(stock => stock.status === 'loading');
   const filasValidas = lineas.length > 0 && lineas.every(fila => fila.codigo && fila.ml !== null && fila.ml >= 0.01);
@@ -164,8 +170,14 @@ export function StockLonaPlano({ deteccion, cerrar }: { deteccion: Extract<Detec
         {(error || resultado?.error || sinStock || sinOf) && <p className="stock-plano-error" role="alert">
           {error || resultado?.error || (sinOf ? `El pedido ${pedido} no tiene OF en RPS.` : ERROR_STOCK_PLANO)}
         </p>}
+        {enReservas.length > 0 && !todoEnReservas && <ul className="stock-plano-reservas">{enReservas.map(({ of, codigo }) =>
+          <li key={of}>OF <strong>{of}</strong> ({codigo}) · {TEXTO_RESERVAS}</li>)}</ul>}
         {telas.size > 0 && <div className="stock-plano-cuentas">
           {[...telas].map(([codigo, descripcion]) => {
+            if (noSeComprueba(codigo)) return <section key={codigo} className="stock-plano-cuenta">
+              <h3>{codigo}{descripcion && descripcion !== codigo ? ` · ${descripcion}` : ''}</h3>
+              <p>{todoEnReservas ? `Pedido ${TEXTO_RESERVAS[0].toLowerCase()}${TEXTO_RESERVAS.slice(1)}` : TEXTO_ACRILICA}</p>
+            </section>;
             const estado = stocks[codigo];
             const sinMetros = lineas.some(fila => fila.codigo === codigo && (fila.ml === null || fila.ml < 0.01));
             return estado?.status === 'ready' ? <CuentaLona key={codigo} codigo={codigo} descripcion={descripcion} stock={estado.stock}

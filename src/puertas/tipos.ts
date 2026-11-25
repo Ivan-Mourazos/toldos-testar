@@ -10,6 +10,12 @@ export interface Ventana extends Hueco {
    * (Iván, 26/10/2026: «a nosotros esa medida [desde abajo] no nos la dan»). La y se calcula de él. */
   tramo?: number;
 }
+
+export interface VentanalApilable {
+  /** Tramo entre el tubo n y el n + 1, desde abajo. */
+  tramo: number;
+  margen: number;
+}
 export interface Entrada { altura: number; diametro: 30 | 42; largo: number; alto: number; huecos: Hueco[] }
 export interface MedidasBolsillo { distancia:number; ancho:number; lado:'izquierdo'|'derecho'; altoSuperior:number|null }
 /** ARAUJO: medidas terminadas en cm, por el revés; cada bolsa conserva su propio frente. */
@@ -158,6 +164,9 @@ export interface Puerta {
   apilable: { pie: number; pasos: number[]; cabecera: number; bolsillo: number;
     /** Saco útil del pedido en mm (80, 110, 120…); se remata 1 cm más grande. */
     saco: number | null; doble: boolean; empates: number[] | null;
+    ventanales?: VentanalApilable[];
+    /** Margen propuesto al marcar tramos. Cada ventanal guarda también su propio margen. */
+    margenVentanales?: number;
     /** Doble saco: útil del saco exterior (envoltorio) en mm; sin poner, el interior + 50. */
     sacoExterior?: number | null;
     /** Lado de la pestaña del saco mirando por el revés, como el pedido; sin poner, izquierda. */

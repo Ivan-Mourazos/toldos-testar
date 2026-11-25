@@ -2,7 +2,7 @@ import { separacionCorte } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { calcularPuerta, calcularPuertaDerivada, solapeEntradaEnrollable } from './calcular.ts';
 import { abajoRejillaTgm, enrolleTgm, envoltorioTgm, puertaTgmDerivada, rotuloCierreTgm } from './tgm.ts';
-import { rotuloSaco, sacoPuerta, sacoUtil } from './saco.ts';
+import { rotuloSaco, sacoPuerta, sacoUtil, soldaduraSacoEnrollable } from './saco.ts';
 import { anclarCotas } from './cotasPuertas.ts';
 import { notaPlanoEnrollable, panoContinuoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
 import { dibujarVentanasPlano } from './ventanasPlano.ts';
@@ -181,7 +181,7 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
   } else {
     linea(l, 'referencias', 0, -H, 0, -H + bajo + 2);
     linea(l, 'referencias', F, -H, F, -H + bajo);
-    texto(l, 'SOLDAR SACO NEGRO 2 CM MÁXIMO', F / 2, -H + 1.6012 + Math.min(7, F / 28) / 2, Math.min(7, F / 28), { centrado: true });
+    texto(l, soldaduraSacoEnrollable(p), F / 2, -H + 1.6012 + Math.min(7, F / 28) / 2, Math.min(7, F / 28), { centrado: true });
   }
   // Iván, 06/11/2026 (AR2605429): «AL CORTE» centrado en el paño de arriba (hasta el ventanal o la primera E.T.), como en
   // las apilables; sin ventanal salía pegado arriba. «PISAR LAS E.T.», centrado en el alto de la puerta.

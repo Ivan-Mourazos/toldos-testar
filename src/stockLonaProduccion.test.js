@@ -133,3 +133,47 @@ it('quita de cada lona las OF que no son de la entrega antes de avisar a Coordin
   expect(lonas.map(l => l.ofs)).toEqual([['0290001'], datos.ofs]);
   expect(faltas[0].ofs).toEqual(['0290001']);
 });
+
+it('no comprueba las lonas acrílicas: ya se asignan con la reserva', async () => {
+  const { stock, coordina, comprobar } = preparar();
+  const acrilica = { ofs: ['0290002'], codigo: 'ACRILI2427P120', descripcion: 'ACR ACQUAMARINA', ml: 12, origen: 'reserva' };
+  const resultado = await comprobar([linea, acrilica]);
+  expect(stock.getStock).toHaveBeenCalledExactlyOnceWith([linea.codigo], { ofs: datos.ofs });
+  expect(resultado.faltas).toEqual([falta]);
+  expect(coordina.enviarStockLona.mock.calls[0][0].lonas).toEqual([linea]);
+});
+
+it('si solo hay acrílicas deja la entrega comprobada, sin faltas ni consulta de stock', async () => {
+  const { stock, coordina, comprobar } = preparar();
+  const acrilica = { ofs: ['0290001'], codigo: 'ACRILI2427P120', descripcion: 'ACR ACQUAMARINA', ml: 12, origen: 'reserva' };
+  expect(await comprobar([acrilica])).toEqual({ consultado, faltas: [], avisos: [] });
+  expect(stock.getStock).not.toHaveBeenCalled();
+  expect(coordina.enviarStockLona).toHaveBeenCalledExactlyOnceWith({ ...datos, consultado, faltas: [], lonas: [] });
+});
+
+it('no comprueba lo que ya va en el Excel de asignación', async () => {
+  const { stock, coordina, opciones } = preparar();
+  const pvc = { ofs: ['0290002'], codigo: 'ALPHAAM03P250', descripcion: 'PVC 580 AMARILLO 1003', ml: 8, origen: 'corte' };
+  const resultado = await comprobarStockLona({ ...opciones, lineas: [linea, pvc], enExcel: ['ALPHAAM03P250'] });
+  expect(stock.getStock).toHaveBeenCalledExactlyOnceWith([linea.codigo], { ofs: datos.ofs });
+  expect(resultado.faltas).toEqual([falta]);
+  expect(coordina.enviarStockLona.mock.calls[0][0].lonas).toEqual([linea]);
+});
+
+
+it('no comprueba las lonas de OF con un artículo incluido en reservas', async () => {
+  const { stock, coordina, opciones } = preparar();
+  const pvc = { ofs: ['0290002'], codigo: 'ALPHAAM03P250', descripcion: 'PVC 580 AMARILLO 1003', ml: 8, origen: 'corte' };
+  const articulosVenta = vi.fn(async () => [{ of: '0290002', codigo: 'H0K400111-0', generico: 'H0K', subfamilia: null }]);
+  const resultado = await comprobarStockLona({ ...opciones, lineas: [linea, pvc], articulosVenta });
+  expect(articulosVenta).toHaveBeenCalledExactlyOnceWith(datos.pedido);
+  expect(stock.getStock).toHaveBeenCalledExactlyOnceWith([linea.codigo], { ofs: datos.ofs });
+  expect(resultado.faltas).toEqual([falta]);
+  expect(coordina.enviarStockLona.mock.calls[0][0].lonas).toEqual([linea]);
+});
+
+it('si RPS no dice el artículo de cada OF, se comprueba todo', async () => {
+  const { stock, opciones } = preparar();
+  await comprobarStockLona({ ...opciones, articulosVenta: async () => { throw new Error('RPS caído'); } });
+  expect(stock.getStock).toHaveBeenCalledOnce();
+});

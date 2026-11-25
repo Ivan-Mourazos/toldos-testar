@@ -36,6 +36,7 @@
 .lonas-entrega small { color: var(--text-muted); }
 .lonas-entrega td > input { width: 7rem; padding: 8px 10px; color: var(--text); background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; font: inherit; }
 .lonas-entrega td > input[aria-invalid="true"] { border-color: var(--danger); }
+.lonas-entrega-acrilicas { margin: 8px 0 0; padding-left: 1.1rem; color: var(--text-muted); }
 .lonas-entrega td:last-child { width: 1%; }
 .lonas-entrega details label { display: flex; padding: 4px 0; }
 .lonas-entrega details summary { cursor: pointer; }

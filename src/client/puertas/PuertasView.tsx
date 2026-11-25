@@ -10,8 +10,9 @@ import { REGLAS_SYSTEM_DOCK } from '../../puertas/systemDock.ts';
 import { ConfigurarAbrigo } from './Abrigo';
 import { ConfigurarSacoArena } from './SacoArena';
 import { notaPlanoEnrollable, panoContinuoEnrollable } from '../../puertas/ventanalesEnrollable.ts';
+import { notaPlanoApilable } from '../../puertas/ventanalesApilable.ts';
 import { esPedidoMixto, productoDeElementos } from '../../puertas/producto.ts';
-import { bajoDobleSaco, envoltorioDobleSaco, medidasSaco, sacoApilable, sacoPuerta, sacoUtil } from '../../puertas/saco.ts';
+import { bajoDobleSaco, envoltorioDobleSaco, MATERIAL_SACO_AMARILLO, medidasSaco, sacoApilable, sacoPuerta, sacoUtil } from '../../puertas/saco.ts';
 import type { Entrada, Hueco, ModeloPuerta, Puerta, Ventana } from '../../puertas/tipos.ts';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { OrderActions } from '../components/OrderActions';
@@ -176,10 +177,12 @@ function Configurar({p,cambiar,corte,derecha='alzado',letra='A',vistas}:{p:Puert
           {Boolean(p.enrollable.ventanales?.length)&&<p className="puerta-ayuda">Ventanales consecutivos: comparten el eje intermedio. Se cortan sus cachos por separado y dos entradas entre ventanales, una por delante y otra por detrás. Indica las cotas del dibujo para cada uno.</p>}
           <p className="puerta-ayuda">Paño inferior: {propuestaInferior>0?`${num(propuestaInferior)} mm`:'pendiente de medidas'} </p></>}
         </fieldset>}
+        {ple&&<VentanalesEntreTubos p={p} cambiar={cambiar}/>}
         {(ple||enr&&p.enrollable.ventanasPequenas)&&<VentanasEntreTubos p={p} cambiar={cambiar}/>}
         {aut&&<fieldset><legend>Ventanas individuales · {p.ventanas.length}</legend><p className="puerta-ayuda">Desde izquierda y desde abajo de la puerta terminada. Cristal = hueco + 40 mm en cada dimensión.</p>{p.ventanas.map((v,i)=><fieldset key={i}><legend>Ventana {i+1}</legend><div className="puerta-campos">{(['x','y','ancho','alto','radio','radioCristal'] as const).map(k=><Numero key={k} titulo={`${k==='x'?'Desde izquierda':k==='y'?'Desde abajo':k==='radioCristal'?'Radio cristal':k} ventana ${i+1}`} valor={v[k]} cambiar={n=>set('ventanas',p.ventanas.map((w,j)=>j===i?{...w,[k]:n??0}:w))}/>)}<button type="button" className="ghost-button" onClick={()=>set('ventanas',p.ventanas.filter((_,j)=>j!==i))}>Quitar ventana</button></div></fieldset>)}<button type="button" className="ghost-button" onClick={()=>set('ventanas',[...p.ventanas,{x:0,y:0,ancho:0,alto:0,radio:2,radioCristal:4}])}>Añadir ventana</button><FilasVentanas cambiar={v=>set('ventanas',[...p.ventanas,...v])}/></fieldset>}
         </>}
         {ver('saco')&&<fieldset><legend>Saco</legend>
+          <AcabadoSaco p={p} cambiar={cambiar}/>
           {enr&&<><div className="puerta-campos"><SacoUtil valor={sacoUtil(p)} cambiar={v=>set('enrollable',{...p.enrollable,saco:v})}/></div><AyudaSaco p={p}/><label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.enrollable.sacoPartido)} onChange={e=>set('enrollable',{...p.enrollable,sacoPartido:e.target.checked})}/>Saco en dos piezas con unión de 20 mm</label></>}
           {ple&&<div className="puerta-campos">
             <SacoUtil titulo={p.apilable.doble?'Saco interior útil (mm)':undefined} valor={p.apilable.saco} cambiar={v=>cadena({saco:v})}/>
@@ -188,7 +191,6 @@ function Configurar({p,cambiar,corte,derecha='alzado',letra='A',vistas}:{p:Puert
             <label className="puerta-casilla"><input type="checkbox" checked={p.apilable.doble} onChange={e=>cadena({doble:e.target.checked})}/>Doble saco</label>
             {p.apilable.doble?<AyudaDobleSaco p={p}/>:<AyudaSaco p={p}/>}</div>}
           {aut&&<><div className="puerta-campos"><SacoUtil valor={sacoUtil(p)} cambiar={v=>set('autorreparable',{...p.autorreparable,saco:v})}/></div><AyudaSaco p={p}/></>}
-          <label className="puerta-casilla"><input type="checkbox" checked={Boolean(p.sacoDiagonalesAmarillas)} onChange={e=>set('sacoDiagonalesAmarillas',e.target.checked)}/>Saco con diagonales amarillas (impresión digital)</label>
         </fieldset>}
         {(sd||ver('otros'))&&<fieldset><legend>Materiales y rollos · {p.material||'sin material'} · rollo {p.rollo?`${num(p.rollo)} mm`:'sin poner'}</legend><div className="puerta-campos">
           <label className="puerta-campo"><span>Material de lona</span><input aria-label="Material de lona" value={p.material} onChange={e=>set('material',e.target.value)}/></label>
@@ -215,7 +217,7 @@ function Configurar({p,cambiar,corte,derecha='alzado',letra='A',vistas}:{p:Puert
           <Numero titulo="Altura superior del bolsillo desde el bajo terminado (mm)" valor={p.medidasBolsillo.altoSuperior??18} cambiar={v=>set('medidasBolsillo',{...p.medidasBolsillo,altoSuperior:v})}/>
           <button type="button" className="ghost-button" onClick={()=>set('medidasBolsillo',{...p.medidasBolsillo,altoSuperior:null})}>Usar altura propuesta</button>
         </div><p className="puerta-ayuda">Propuesta: 10 mm sobre el saco doblado + 170 mm de bolsillo = 180 mm. Puedes corregirla. Solo se marcan dos esquinas en L de 5 mm.</p></fieldset>}
-        <label className="field puerta-campo puerta-campo-ancho"><span>Nota en el plano (opcional)</span><textarea aria-label="Nota en el plano" placeholder="Solo si queréis que salga en el plano" value={p.notaPlano??(enr?notaPlanoEnrollable(p):'')} onChange={e=>set('notaPlano',e.target.value)}/></label>
+        <label className="field puerta-campo puerta-campo-ancho"><span>Nota en el plano (opcional)</span><textarea aria-label="Nota en el plano" placeholder="Solo si queréis que salga en el plano" value={p.notaPlano??(enr?notaPlanoEnrollable(p):ple?notaPlanoApilable(p):'')} onChange={e=>set('notaPlano',e.target.value)}/></label>
         </>}
         {/* Una casilla para todo (Iván, 25/10/2026): modelo, medidas y ventanas se miran a la vez en el dibujo. */}
         <div className="puerta-confirmaciones">
@@ -346,6 +348,58 @@ function CadenaDibujo({p,cadena}:{p:Puerta;cadena:(parche:Partial<Puerta['apilab
       onBlur={aplicar} onKeyDown={e=>{ if(e.key==='Enter') aplicar(); }}/>
     <small>{aviso||(inclinado?'Rellena los pasos y la cabecera; el pie izquierdo va en su campo.':'Rellena el pie, los pasos y la cabecera de una vez. Se pueden corregir debajo.')}</small></label>;
 }
+export function AcabadoSaco({ p, cambiar }: { p: Puerta; cambiar: (p: Puerta) => void }) {
+  const negro = 'LAC900 NEGRO', diagonales = 'Negro con diagonales amarillas';
+  const material = p.materialSaco.trim().toUpperCase();
+  const acabado = p.sacoDiagonalesAmarillas ? diagonales
+    : material === MATERIAL_SACO_AMARILLO ? 'Amarillo' : material === negro ? 'Negro' : 'Personalizado';
+  const opciones = ['Negro', 'Amarillo', diagonales];
+  if (acabado === 'Personalizado') opciones.push(acabado);
+  return <SelectField label="Acabado del saco" value={acabado} options={opciones} onChange={v=>{
+    if (v === acabado || v === 'Personalizado') return;
+    cambiar({ ...p, materialSaco: v === 'Amarillo' ? MATERIAL_SACO_AMARILLO : negro,
+      rolloSaco: v === 'Amarillo' ? 300 : p.rolloSaco, sacoDiagonalesAmarillas: v === diagonales });
+  }}/>;
+}
+
+const nombreTramoEntreTubos = (tubos: number[], tramo: number) =>
+  tramo < tubos.length ? `Entre tubo ${tramo} y ${tramo + 1} · ${num(n2(tubos[tramo] - tubos[tramo - 1]))} mm`
+    : `Tramo ${tramo} fuera de la cadena`;
+
+export function VentanalesEntreTubos({ p, cambiar }: { p: Puerta; cambiar: (p: Puerta) => void }) {
+  const a = p.apilable;
+  const tubos = alturasTubos(p);
+  const ventanales = a.ventanales ?? [];
+  const margen = a.margenVentanales ?? ventanales[0]?.margen ?? 0;
+  const tramos = [...new Set([...tubos.slice(1).map((_, i) => i + 1), ...ventanales.map(v => v.tramo)])].sort((a, b) => a - b);
+  const poner = (parche: Partial<Puerta['apilable']>) => cambiar({ ...p, apilable: { ...a, ...parche } });
+  const marcar = (tramo: number, activo: boolean) => {
+    const resto = ventanales.filter(v => v.tramo !== tramo);
+    if (activo) resto.push({ tramo, margen });
+    poner({ margenVentanales: margen, ventanales: resto.sort((a, b) => a.tramo - b.tramo) });
+  };
+  return <fieldset><legend>Ventanales corridos</legend>
+    <p className="puerta-ayuda">Marca los tramos que llevan ventanal. El margen se mide a cada lado.</p>
+    <div className="puerta-campos">
+      <Numero titulo="Margen común (mm)" valor={margen || null} cambiar={m => {
+        const comun = m ?? 0;
+        poner({ margenVentanales: comun, ventanales: ventanales.map(v => v.margen === margen ? { ...v, margen: comun } : v) });
+      }}/>
+    </div>
+    {tramos.length > 0 ? <div className="puerta-tramos-ventanal">
+      {tramos.map(tramo => <label className="puerta-casilla" key={tramo}>
+        <input type="checkbox" name="tramosVentanal" value={tramo} checked={ventanales.some(v => v.tramo === tramo)}
+          onChange={e => marcar(tramo, e.currentTarget.checked)}/>
+        {nombreTramoEntreTubos(tubos, tramo)}
+      </label>)}
+    </div> : <p className="puerta-ayuda">Añade los tubos en «E.T.» para poder marcar los tramos.</p>}
+    {ventanales.length > 0 && <div className="puerta-campos">
+      {ventanales.map((v, i) => <Numero key={v.tramo} titulo={`Margen lateral ventanal del tramo ${v.tramo} (mm)`} valor={v.margen}
+        cambiar={m => poner({ margenVentanales: margen, ventanales: ventanales.map((otro, j) => i === j ? { ...otro, margen: m ?? 0 } : otro) })}/>)}
+    </div>}
+  </fieldset>;
+}
+
 /**
  * Ventanas de las apilables como vienen en la hoja (Iván, 26/10/2026: «no es cómodo, y me pide la medida desde abajo,
  * que a nosotros no nos la dan»): en qué tramo, entre qué tubos, van; a cuánto del borde izquierdo; ancho y alto. Se
@@ -353,7 +407,7 @@ function CadenaDibujo({p,cadena}:{p:Puerta;cadena:(parche:Partial<Puerta['apilab
  */
 export function VentanasEntreTubos({p,cambiar}:{p:Puerta;cambiar:(p:Puerta)=>void}) {
   const tubos=p.modelo==='PUERTAENR'?p.entradas.map(e=>e.altura):alturasTubos(p), tramos=tubos.slice(1).map((_,i)=>i+1);
-  const nombreTramo=(t:number)=>`Entre tubo ${t} y ${t+1} · ${num(n2(tubos[t]-tubos[t-1]))} mm`;
+  const nombreTramo=(t:number)=>nombreTramoEntreTubos(tubos,t);
   const [nueva,setNueva]=useState({tramo:0,x:0,ancho:0,alto:0,cuantas:1,separacion:0});
   const radio=p.ventanas[0]?.radio??2, radioCristal=p.ventanas[0]?.radioCristal??4;
   const poner=(ventanas:Ventana[])=>cambiar({...p,ventanas});

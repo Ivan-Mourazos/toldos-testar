@@ -6,7 +6,7 @@ import remolque from './remolques/corte/__fixtures__/AR2605132.json';
 import toldo from './domain/corteLona/fixtures/revision-AR2604784.json';
 import { pedidoEntrega } from './entregas.js';
 import { materialesReserva } from './materialesEntrega.js';
-import { faltasLona, lineasLonaPuertas, lineasLonaRemolques, lineasLonaToldos, necesidadesLona, textoAvisoStock } from './stockLona.js';
+import { esLonaAcrilica, faltasLona, lineasLonaPuertas, lineasLonaRemolques, lineasLonaToldos, necesidadesLona, textoAvisoStock } from './stockLona.js';
 
 describe('necesidades de lona', () => {
   it('suma los rollos por código, reúne sus OF y redondea al final', () => {
@@ -146,4 +146,37 @@ it('suma solo los rollos principales con la bobina correcta y deja fuera las E.T
   expect(lonas).toEqual([
     { codigo: 'LAC900AZ02P300', descripcion: principal.material, ml: 9.11, ofs: ['0290001', '0290002'], origen: 'corte' },
   ]);
+});
+
+describe('esLonaAcrilica', () => {
+  it('reconoce las acrílicas por el material del catálogo y las demás no', () => {
+    expect(esLonaAcrilica({ codigo: 'ACRILI2427P120' })).toBe(true);
+    expect(esLonaAcrilica({ codigo: 'ALPHAAM03P250', descripcion: 'PVC 580 AMARILLO 1003' })).toBe(false);
+    expect(esLonaAcrilica({ codigo: 'B8000AM21P250', descripcion: 'PVC 650 AMARILLO 1021' })).toBe(false);
+  });
+
+  it('fuera del catálogo decide la descripción', () => {
+    expect(esLonaAcrilica({ codigo: 'NOEXISTE01', descripcion: 'LONA ACRÍLICA BEIGE' })).toBe(true);
+    expect(esLonaAcrilica({ codigo: 'NOEXISTE02', descripcion: 'ACR ADMIRAL' })).toBe(true);
+    expect(esLonaAcrilica({ codigo: 'NOEXISTE03', descripcion: 'LONA GRIS' })).toBe(false);
+  });
+});
+
+
+it('artículos de venta incluidos en reservas', async () => {
+  const { esArticuloEnReservas, ofsEnReservas, fueraDeReservas } = await import('./domain/stockSinComprobar.js');
+  expect(esArticuloEnReservas({ codigo: 'H0K400111-0', generico: 'H0K' })).toBe(true);
+  expect(esArticuloEnReservas({ codigo: 'YURTAVIP', subfamilia: 'YURTAS' })).toBe(true);
+  expect(esArticuloEnReservas({ codigo: 'LEMVISE', generico: 'LEM' })).toBe(true);
+  expect(esArticuloEnReservas({ codigo: 'DUCHAMOVIL' })).toBe(true);
+  expect(esArticuloEnReservas({ codigo: 'LOSEPMONARD247ESVERD', generico: 'LOSEPMONARD' })).toBe(true);
+  // LEMANS (lona PVC) y LEMC (genérico L) empiezan por LEM pero no son del genérico LEM.
+  expect(esArticuloEnReservas({ codigo: 'LEMANSBLANP150', generico: 'LEMANS' })).toBe(false);
+  expect(esArticuloEnReservas({ codigo: 'LEMC', generico: 'L' })).toBe(false);
+  expect(esArticuloEnReservas({ codigo: 'TOLDO', generico: null, subfamilia: null })).toBe(false);
+  expect(ofsEnReservas([
+    { of: '0290002', codigo: 'DUCHAMOVIL' }, { of: '0290001', codigo: 'TOLDO' }, { of: '0290002', codigo: 'OTRO' },
+  ])).toEqual([{ of: '0290002', codigo: 'DUCHAMOVIL' }]);
+  const lonas = [{ codigo: 'A', ofs: ['1'] }, { codigo: 'B', ofs: ['1', '2'] }, { codigo: 'C', ofs: [] }];
+  expect(fueraDeReservas(lonas, ['1']).map(l => l.codigo)).toEqual(['B', 'C']);
 });
