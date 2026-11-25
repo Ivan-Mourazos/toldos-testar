@@ -32,6 +32,7 @@ import { ConfigurarBelts } from './ConfigurarBelts';
 import { ConfigurarPuertasLuz } from './ConfigurarPuertasLuz';
 import { ConfigurarSantaPau } from './ConfigurarSantaPau';
 import { ConfigurarTgm } from './ConfigurarTgm';
+import { cabeceraInicialPuertas } from '../components/clientesInicioPuertas';
 import { fichaDePuerta, fichaPorCodigo, fichaPorId, puertaHabilitada, tipoDePuerta } from '../../puertas/clientes.ts';
 import { cambiarTipoDelCliente, nuevaPuertaDeCliente, otraPuertaDelCliente } from '../../puertas/nuevaPuertaCliente.ts';
 import { CorteResumen, useVistaCortePuertas } from './VistaCortePuertas';
@@ -564,7 +565,7 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
       if(tieneDatos(pedido)&&await askForConfirmation({title:'Empezar otro pedido de Puertas',message:'Se sustituirá el pedido a medias de Puertas por uno nuevo con el modelo elegido.',confirmLabel:'Empezar pedido',cancelLabel:'Conservar formulario',tone:'warning'})!=='confirm')return;
       const ficha=modeloInicialSolicitado.cliente?fichaPorId(modeloInicialSolicitado.cliente):undefined;
       setEditandoCodigo(null);
-      setPedido({...pedidoVacio('puertas'),...(ficha?{cabecera:{cliente:ficha.nombre,fecha:hoy(),clienteRps:{codigo:ficha.codigoRps,nombre:ficha.nombre}}}:{}),elementos:[{id:uid(),input:ficha&&modeloInicialSolicitado.tipo?nuevaPuertaDeCliente(ficha.id,modeloInicialSolicitado.tipo):nuevaPuerta(modeloInicialSolicitado.modelo)}]});
+      setPedido({...pedidoVacio('puertas'),...(ficha?{cabecera:cabeceraInicialPuertas(ficha,hoy())}:{}),elementos:[{id:uid(),input:ficha&&modeloInicialSolicitado.tipo?nuevaPuertaDeCliente(ficha.id,modeloInicialSolicitado.tipo):nuevaPuerta(modeloInicialSolicitado.modelo)}]});
       setIndice(0);
     })();
   },[modeloInicialSolicitado,pedido,askForConfirmation]);

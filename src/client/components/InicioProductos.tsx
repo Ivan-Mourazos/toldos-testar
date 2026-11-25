@@ -4,7 +4,8 @@ import { ArrowLeft, Caravan, DoorOpen, Search, Store, Boxes } from 'lucide-react
 import { SelectorProducto, type Producto, type ResumenPedido } from '../remolques/SelectorProducto';
 import { modelosInicio, type CategoriaConModelos, type ModeloInicio } from '../modelosInicio';
 import '../coordina/modelos-inicio.css';
-import { fichaPorId, fichasClientesPuertas } from '../../puertas/clientes.ts';
+import { fichaPorId } from '../../puertas/clientes.ts';
+import { clientesInicioPuertas } from './clientesInicioPuertas';
 
 const LoteSabado = lazy(() => import('../combursa/LoteSabado'));
 
@@ -57,8 +58,8 @@ export function InicioProductos({ producto, onChange, onModelo, pedidos, puertas
         const pedido=tipo==='toldos'&&!embudos?undefined:pedidos[tipo];
         return pedido && (pedido.numero.trim()||pedido.elementos) ? <button key={tipo} className="ghost-button cat-seguir" type="button" data-cambio-fluido onClick={()=>onChange(tipo)}>Seguir con {tipo==='systemdock'?'System Dock':'Embudos'} · {pedido.numero||'el pedido a medias'} · {pedido.elementos} {pedido.elementos===1?'elemento':'elementos'}</button> : null;
       })}
-      {eligiendoCliente?<section aria-label="Clientes de Puertas"><h3 className="cat-sec">Elige el cliente</h3><div className="cat-rejilla">{fichasClientesPuertas.filter(f=>f.id!=='general'&&f.nombre.toLocaleLowerCase('es').includes(busqueda.toLocaleLowerCase('es'))).map(f=><button type="button" className="cat-modelo" key={f.id} aria-label={f.nombre} disabled={disabled} onClick={()=>{setClientePuertas(f.id);setBusqueda('');}}>
-        <span className="cat-iniciales" aria-hidden="true">{f.nombre.slice(0,2).toUpperCase()}</span><span>{f.nombre}{f.codigoRps?<small>RPS {f.codigoRps} · hoja en {f.unidadHoja}</small>:!f.habilitado&&<small>Otros clientes · reglas pendientes</small>}</span>
+      {eligiendoCliente?<section aria-label="Clientes de Puertas"><h3 className="cat-sec">Elige el cliente</h3><div className="cat-rejilla">{clientesInicioPuertas(busqueda).map(f=><button type="button" className="cat-modelo" key={f.id} aria-label={f.nombre} disabled={disabled} onClick={()=>{setClientePuertas(f.id);setBusqueda('');}}>
+        <span className="cat-iniciales" aria-hidden="true">{f.id==='general'?'PG':f.nombre.slice(0,2).toUpperCase()}</span><span>{f.nombre}{f.codigoRps?<small>RPS {f.codigoRps} · hoja en {f.unidadHoja}</small>:f.id==='general'?<small>Otros clientes · sin RPS</small>:!f.habilitado&&<small>Otros clientes · reglas pendientes</small>}</span>
       </button>)}</div></section>:<>
       {ficha&&!ficha.habilitado&&<p className="cat-vacio" role="status">{ficha.aviso}</p>}
       {grupos.length?grupos.map(grupo=><section key={grupo.nombre} aria-label={grupo.nombre}>

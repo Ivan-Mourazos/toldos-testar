@@ -25,7 +25,7 @@ export function ConfigurarTgm({ p, cambiar, corte, derecha, letra, vistas }: {
 }) {
   const t = p.tgm!;
   const deLaHoja = usaCotasCliente(p);
-  const cliente = deLaHoja ? 'General' : 'TGM';
+  const cliente = deLaHoja ? 'Puertas genéricas' : 'TGM';
   const ayudaCotas = useId();
   const [pestana, setPestana] = useState<PestanaTgm>('medidas');
   const [borradorCotas, setBorradorCotas] = useState<string | null>(null);

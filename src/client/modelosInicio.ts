@@ -1,5 +1,5 @@
 import { fabricOnlyModelNames, fullAwningModelNames } from '../domain/modelBehavior.js';
-import { fichaPorId } from '../puertas/clientes.ts';
+import { fichaPorId, tipoHabilitado } from '../puertas/clientes.ts';
 import type { ModeloPuerta } from '../puertas/tipos.ts';
 import { emptyBaqueton, emptyGanado, emptyLona } from '../remolques/entradas-vacias.ts';
 import type { LineaPedido } from '../remolques/workspace/lineas.ts';
@@ -34,7 +34,7 @@ export function modelosInicio(categoria: CategoriaConModelos, disponibles: strin
     }));
   } else if (categoria === 'puertas') {
     const ficha=fichaPorId(clientePuertas)!;
-    grupos = [{nombre:'Tipos de puerta',modelos:ficha.tipos.map(t=>({nombre:t.nombre,proximamente:!ficha.habilitado,valor:{producto:'puertas',modelo:t.modelo,cliente:ficha.id,tipo:t.id}}))}];
+    grupos = [{nombre:'Tipos de puerta',modelos:ficha.tipos.map(t=>({nombre:t.nombre,proximamente:!tipoHabilitado(ficha,t),valor:{producto:'puertas',modelo:t.modelo,cliente:ficha.id,tipo:t.id}}))}];
   } else {
     grupos = [{nombre:'Tipos de elemento',modelos:[
       {nombre:'Remolque',valor:{producto:'remolques',modelo:'lona'}},
