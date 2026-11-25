@@ -9,37 +9,51 @@ export interface RotuloAuditable {
 }
 export interface CajaRotulo { texto: string; cota: boolean; x0: number; x1: number; y0: number; y1: number }
 
-/** Caja conservadora de Arial, también para MTEXT envuelto y números de cota.
- * Las unidades son las del dibujo recibido (cm en lienzo, mm en papel).
- */
+/** Prepara la caja de Arial del rótulo para colocarla en varios puntos con la misma altura y giro. */
+export function prepararCajaRotulo(p: RotuloAuditable) {
+  const { h, valor, recorte } = p;
+  if (p.tipo !== 'texto' || !h || !valor?.trim()) return undefined;
+  const filas: string[] = [];
+  for (const parrafo of valor.split('\n')) {
+    let fila = '';
+    for (const palabra of parrafo.split(/\s+/)) {
+      const candidata = `${fila}${fila ? ' ' : ''}${palabra}`;
+      if (fila && p.ancho && anchoArial(candidata, h) > p.ancho) { filas.push(fila); fila = palabra; }
+      else fila = candidata;
+    }
+    filas.push(fila);
+  }
+  const ancho = Math.max(...filas.map(f => anchoArial(f, h))) * (p.escalaX ?? 1);
+  const ancla = p.ancla ?? 5, columna = (ancla - 1) % 3, fila = Math.floor((ancla - 1) / 3);
+  const base = fila === 0 ? h : fila === 1 ? -(filas.length - 1) * h * .7 + h * .36 : -(filas.length - 1) * h * 1.4;
+  const descenso = /[gjpqy]/.test(valor) ? h * .25 : 0;
+  const alto = h + (filas.length - 1) * h * 1.4 + descenso;
+  const x = -ancho * columna / 2, y = -base - (filas.length - 1) * h * 1.4 - descenso;
+  const r = (p.giro ?? 0) * Math.PI / 180, c = Math.cos(r), s = Math.sin(r);
+  const esquinas = [[x, y], [x + ancho, y], [x + ancho, y + alto], [x, y + alto]]
+    .map(([a, b]) => [a * c, b * s, a * s, b * c]);
+  const cota = Boolean(p.deCota);
+  return ([px, py]: number[]): CajaRotulo | undefined => {
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    for (const [ax, bx, ay, by] of esquinas) {
+      // Conserva el orden de las operaciones para no mover los contactos por redondeo.
+      const ex = px + ax - bx, ey = py + ay + by;
+      x0 = Math.min(x0, ex); x1 = Math.max(x1, ex);
+      y0 = Math.min(y0, ey); y1 = Math.max(y1, ey);
+    }
+    if (recorte) {
+      x0 = Math.max(x0, recorte.centro[0] - recorte.ancho / 2); x1 = Math.min(x1, recorte.centro[0] + recorte.ancho / 2);
+      y0 = Math.max(y0, recorte.centro[1] - recorte.alto / 2); y1 = Math.min(y1, recorte.centro[1] + recorte.alto / 2);
+    }
+    return x1 > x0 && y1 > y0 ? { texto: valor, cota, x0, x1, y0, y1 } : undefined;
+  };
+}
+
+/** Las unidades son las del dibujo recibido (cm en lienzo, mm en papel). */
 export function cajasRotulos(primitivas: RotuloAuditable[]): CajaRotulo[] {
-  return primitivas.filter(p => p.tipo === 'texto' && p.punto && p.h && p.valor?.trim()).flatMap(p => {
-    const h = p.h!, filas: string[] = [];
-    for (const parrafo of p.valor!.split('\n')) {
-      let fila = '';
-      for (const palabra of parrafo.split(/\s+/)) {
-        const candidata = `${fila}${fila ? ' ' : ''}${palabra}`;
-        if (fila && p.ancho && anchoArial(candidata, h) > p.ancho) { filas.push(fila); fila = palabra; }
-        else fila = candidata;
-      }
-      filas.push(fila);
-    }
-    const ancho = Math.max(...filas.map(f => anchoArial(f, h))) * (p.escalaX ?? 1);
-    const ancla = p.ancla ?? 5, columna = (ancla - 1) % 3, fila = Math.floor((ancla - 1) / 3);
-    const base = fila === 0 ? h : fila === 1 ? -(filas.length - 1) * h * .7 + h * .36 : -(filas.length - 1) * h * 1.4;
-    const descenso = /[gjpqy]/.test(p.valor!) ? h * .25 : 0;
-    const alto = h + (filas.length - 1) * h * 1.4 + descenso;
-    const x = -ancho * columna / 2, y = -base - (filas.length - 1) * h * 1.4 - descenso;
-    const r = (p.giro ?? 0) * Math.PI / 180, c = Math.cos(r), s = Math.sin(r);
-    const puntos = [[x, y], [x + ancho, y], [x + ancho, y + alto], [x, y + alto]]
-      .map(([a, b]) => [p.punto![0] + a * c - b * s, p.punto![1] + a * s + b * c]);
-    const caja = { texto: p.valor!, cota: Boolean(p.deCota), x0: Math.min(...puntos.map(a => a[0])), x1: Math.max(...puntos.map(a => a[0])), y0: Math.min(...puntos.map(a => a[1])), y1: Math.max(...puntos.map(a => a[1])) };
-    if (p.recorte) {
-      const v = p.recorte;
-      caja.x0 = Math.max(caja.x0, v.centro[0] - v.ancho / 2); caja.x1 = Math.min(caja.x1, v.centro[0] + v.ancho / 2);
-      caja.y0 = Math.max(caja.y0, v.centro[1] - v.alto / 2); caja.y1 = Math.min(caja.y1, v.centro[1] + v.alto / 2);
-    }
-    return caja.x1 > caja.x0 && caja.y1 > caja.y0 ? [caja] : [];
+  return primitivas.flatMap(p => {
+    const caja = p.punto && prepararCajaRotulo(p)?.(p.punto);
+    return caja ? [caja] : [];
   });
 }
 
@@ -66,10 +80,10 @@ export function recortesRotulos(primitivas: RotuloAuditable[], tolerancia = .1) 
 /** Cruces reales por el interior de una caja, no simples contactos con su borde.
  * Se comprueban las líneas de confección y las del bloque de cada cota.
  */
-export function crucesRotulosLineas(primitivas: RotuloAuditable[], margen = .08) {
+export function crucesRotulosLineas(primitivas: RotuloAuditable[], margen = .08, cajas = cajasRotulos(primitivas)) {
   const lineas = primitivas.filter(p => p.tipo === 'raya' && p.a && p.b && (p.deCota || ['DISCO1', 'ROTULADOR', 'cortes - lona', 'corte', 'corte (vent)', 'marca', 'ejes', 'borrar', 'referencias', 'referencia-1'].includes(p.capa ?? '')));
   const cruces: Array<{ texto: string; capa: string; a: number[]; b: number[]; caja: CajaRotulo; handle?: string }> = [];
-  for (const c of cajasRotulos(primitivas)) for (const l of lineas) {
+  for (const c of cajas) for (const l of lineas) {
     const a = l.a!, b = l.b!, dx = b[0] - a[0], dy = b[1] - a[1];
     let t0 = 0, t1 = 1;
     const caja = { x0: c.x0 + margen, x1: c.x1 - margen, y0: c.y0 + margen, y1: c.y1 - margen };

@@ -1,6 +1,6 @@
 // Motor de rótulos en papel: no modifica contornos ni anidados.
 import { escribirDxfPlano } from './presentacion.js';
-import { cajasRotulos, crucesRotulosLineas } from './auditoriaRotulos.ts';
+import { cajasRotulos, crucesRotulosLineas, prepararCajaRotulo } from './auditoriaRotulos.ts';
 import { transformarPrimitiva } from '../../flujoDwg/planoDxf.js';
 
 const PAPEL = { ancho: 276, alto: 151, centro: [148.5, 118.5] }, LETRA = 2.2;
@@ -220,12 +220,11 @@ function colocar(v, lineas, plano) {
     { tipo: 'texto', valor: t.valor, punto: T(t.x, t.y), h: t.h * s, giro: t.giro ?? 0, ancho: t.ancho == null ? undefined : t.ancho * s, ancla: t.ancla ?? (t.centrado ? 5 : 7) }
   ]));
   ocupadas.push(...cajasRotulos((v.entidades.fijos ?? []).map(p => transformarPrimitiva(p, T, s))));
-  const libre = (p, cota, enlace) => {
-    const b = cajasRotulos([p])[0];
-    const separacion = v.interioresObligatorios ? Math.min(.25, p.h * .1) : .25;
-    const guardia = v.interioresObligatorios ? Math.min(.22, p.h * .08) : .22;
+  const libre = (b, h, cota, enlace) => {
+    const separacion = v.interioresObligatorios ? Math.min(.25, h * .1) : .25;
+    const guardia = v.interioresObligatorios ? Math.min(.22, h * .08) : .22;
     if (!b || b.x0 < limite.x0 || b.x1 > limite.x1 || b.y0 < limite.y0 || b.y1 > limite.y1 || ocupadas.some(c => interseca(b, c, separacion))) return null;
-    if (crucesRotulosLineas([p, ...cerca(b).filter(l => !(l.esBase && l.cota === cota && !enlace))], -guardia).length) return null;
+    if (crucesRotulosLineas(cerca(b).filter(l => !(l.esBase && l.cota === cota && !enlace)), -guardia, [b]).length) return null;
     if (enlace && ocupadas.some(b => cruzaCaja(enlace, b))) return null;
     return b;
   };
@@ -270,14 +269,15 @@ function colocar(v, lineas, plano) {
       .sort((a, b) => Math.hypot(...a) - Math.hypot(...b)) : desplazamientos;
     for (const fase of fases) {
     for (const factor of fase.factores) {
+    const h = base.h * factor, medir = prepararCajaRotulo({ ...base, h });
     for (const [dx, dy] of pasos) {
       if (Math.hypot(dx, dy) > fase.radio) continue;
-      const p = { ...base, h: base.h * factor, punto: [centro[0] + dx, centro[1] + dy] }, b0 = cajasRotulos([p])[0];
+      const p = { ...base, h, punto: [centro[0] + dx, centro[1] + dy] }, b0 = medir?.(p.punto);
       if (cara && (b0.x0 < cara.x0 + margenCara || b0.x1 > cara.x1 - margenCara || b0.y0 < cara.y0 + margenCara || b0.y1 > cara.y1 - margenCara
         || bordes.some(l => atraviesa(origen, p.punto, l.a, l.b)))) continue;
       if (t === v.titulo && b0.y0 < (v.pieza.y1 - cy) * s + 1) continue;
       if (t.encimaDe != null && b0.y0 < (t.encimaDe - cy) * s + .4) continue;
-      if (!libre(p, null)) continue;
+      if (!libre(b0, h, null)) continue;
       let enlace;
       const desplazamientoSinEnlace = v.notasSinReferencia ? 8 : /\s/.test(t.valor) ? 5.5 : 1.8;
       const interior = Boolean(cara) || v.interiores && /^(?:[A-Z]\d*(?:-\d+)?|\d{6,}|\d+X\d+)$/.test(t.valor)
@@ -289,7 +289,7 @@ function colocar(v, lineas, plano) {
         if (!a) continue;
         enlace = { a, b: hastaCaja(a, b0), capa: 'cotas' };
       }
-      const b = libre(p, null, enlace);
+      const b = libre(b0, h, null, enlace);
       if (b) { elegida = p; enlaceElegido = enlace; guardar(b); break; }
     }
     if (elegida) break;
@@ -317,28 +317,29 @@ function colocar(v, lineas, plano) {
     const h = alturaObjetivo * factor;
     c.alturaTexto = h / s;
     const medir = cajasRotulos([{ tipo: 'texto', valor, punto: [0, 0], h, ancla: 5 }])[0];
+      const preparar = prepararCajaRotulo({ tipo: 'texto', valor, h, giro, ancla: 5 });
     const ancho = medir.x1 - medir.x0, guardia = ((c.estilo === 'XERAL 5' ? .015 : .025) + .003) * s + .6 * h + .2;
     const lo = ancho / 2 + guardia, hi = e.largo * s - lo;
     const posiciones = [0.5, .72, .28, .88, .12].map(f => e.largo * s * f);
     if (lo < hi) for (let t = lo; t <= hi; t += h * .6) posiciones.push(t);
     for (const along of posiciones.filter(t => t >= lo && t <= hi)) {
-      const p = { tipo: 'texto', valor, punto: T(...e.punto(along / s)), h, giro, ancla: 5 };
-      const b = libre(p, c); if (b) { elegida = p; guardar(b); break; }
+      const punto = T(...e.punto(along / s)), b = libre(preparar?.(punto), h, c);
+      if (b) { elegida = punto; guardar(b); break; }
     }
     if (!elegida) {
       for (const distancia of [1.3, 2, 2.8, 3.6, 5, 7, 10, 14]) { for (const f of [.5, .8, .2, 1, 0, -(ancho / 2 + 1) / (e.largo * s), 1 + (ancho / 2 + 1) / (e.largo * s)]) { for (const signo of [1, -1]) {
         const ancla = T(...e.punto(e.largo * Math.max(0, Math.min(1, f)))), centro = T(...e.punto(e.largo * f));
         const punto = [centro[0] + e.normal[0] * h * distancia * signo, centro[1] + e.normal[1] * h * distancia * signo];
-        const p = { tipo: 'texto', valor, punto, h, giro, ancla: 5 }, b0 = cajasRotulos([p])[0];
+        const b0 = preparar?.(punto);
         if (ancla[0] >= b0.x0 - .4 && ancla[0] <= b0.x1 + .4 && ancla[1] >= b0.y0 - .4 && ancla[1] <= b0.y1 + .4) continue;
-        const enlace = { a: ancla, b: hastaCaja(ancla, b0), capa: 'cotas' }, b = libre(p, c, enlace);
-        if (b) { elegida = p; guardar(b); c.enlaceTexto = [M(enlace.a), M(enlace.b)]; cerca.anadir({ ...enlace, tipo: 'raya', deCota: true }); break; }
+        const enlace = { a: ancla, b: hastaCaja(ancla, b0), capa: 'cotas' }, b = libre(b0, h, c, enlace);
+        if (b) { elegida = punto; guardar(b); c.enlaceTexto = [M(enlace.a), M(enlace.b)]; cerca.anadir({ ...enlace, tipo: 'raya', deCota: true }); break; }
       } if (elegida) break; } if (elegida) break; }
     }
     if (elegida) break;
     }
     if (!elegida) throw Error(`No hay sitio junto a la línea de cota ${valor} en ${v.nombre}`);
-    c.posicionTexto = M(elegida.punto);
+    c.posicionTexto = M(elegida);
   }
   }
   if (!v.corte && !v.cotasFijas) colocarCotas();
