@@ -1,5 +1,6 @@
 import type { AskForConfirmation, Notify } from './components/NotificationCenter';
 import type { EstadoCorte } from './corteLona';
+import { confirmarRegeneracionDwg } from './toldosEditable';
 
 // «Abrir corte» (flujo del DWG, fase 1, plan del 24/10/2026): el servidor deja el plano del pedido en la carpeta de
 // borradores y devuelve el enlace tgm-pedidos:, que abre el DWG en ZWCAD como en historial de pedidos (el protocolo ya
@@ -11,6 +12,8 @@ interface RespuestaBorrador {
   sustituido?: boolean;
   corteDesactualizado?: boolean;
   corteLona?: EstadoCorte;
+  needsManualDwgConfirmation?: boolean;
+  archivosModificados?: string[];
   filename?: string;
   ruta?: string;
   url?: string;
@@ -62,13 +65,13 @@ export async function abrirCorteDwg({ ruta, orderCode, cuerpo, usuario, pregunta
     notify('Elige quién eres en «Soy» antes de abrir el corte.', { tone: 'warning' });
     return false;
   }
-  const pedir = async (regenerar: boolean, abrirCorteIgual = false) => {
+  const pedir = async (regenerar: boolean, abrirCorteIgual = false, confirmarPerderCambiosDwg = false) => {
     const respuesta = await fetch(ruta, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...cuerpo, orderCode, savedBy: usuario, regenerar, ...(abrirCorteIgual ? { abrirCorteIgual } : {}) }),
+      body: JSON.stringify({ ...cuerpo, orderCode, savedBy: usuario, regenerar, ...(abrirCorteIgual ? { abrirCorteIgual } : {}), ...(confirmarPerderCambiosDwg ? { confirmarPerderCambiosDwg } : {}) }),
     });
     const datos = await respuesta.json().catch(() => ({})) as RespuestaBorrador;
-    if (!respuesta.ok && !datos.corteDesactualizado) throw new Error(datos.error || 'No se pudo preparar el borrador del corte.');
+    if (!respuesta.ok && !datos.corteDesactualizado && !(respuesta.status === 409 && datos.needsManualDwgConfirmation)) throw new Error(datos.error || 'No se pudo preparar el borrador del corte.');
     return datos;
   };
   try {
@@ -93,7 +96,11 @@ export async function abrirCorteDwg({ ruta, orderCode, cuerpo, usuario, pregunta
       if (eleccion === 'alternative') datos = await pedir(true);
       else if (eleccion !== 'confirm') return false;
     }
-    if (!datos.url) throw new Error('El servidor no ha dado la ruta del borrador.');
+    if (datos.needsManualDwgConfirmation) {
+      if (await confirmarRegeneracionDwg(preguntar, datos) !== 'confirm') return false;
+      datos = await pedir(true, false, true);
+    }
+    if (!datos.url) throw new Error(datos.error || 'El servidor no ha dado la ruta del borrador.');
     const ficheros = datos.ficheros?.length ? datos.ficheros : [{ filename: datos.filename ?? '', ruta: datos.ruta ?? '', url: datos.url }];
     // Uno detrás de otro, con un respiro: el navegador no lanza dos enlaces tgm-pedidos a la vez.
     for (const [i, fichero] of ficheros.entries()) {

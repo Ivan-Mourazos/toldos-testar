@@ -385,7 +385,12 @@ describe.each(['puertas', 'remolques'] as const)('%s: reglas comunes del pedido 
     await t.servicio.guardar(t.cuerpo());
     const plano = (await t.obtener()).corteConfirmado!.plano;
     await fs.writeFile(plano, 'Retocado en ZWCAD');
-    expect((await t.servicio.guardar(t.cuerpo(true, { decisionCorte: 'regenerar' }))).status).toBe(200);
+    if (tipo === 'remolques') {
+      const pregunta = await t.servicio.guardar(t.cuerpo(true, { decisionCorte: 'regenerar' }));
+      expect(pregunta).toMatchObject({ status: 409, cuerpo: { needsManualDwgConfirmation: true } });
+      expect(await fs.readFile(plano, 'utf8')).toBe('Retocado en ZWCAD');
+    }
+    expect((await t.servicio.guardar(t.cuerpo(true, { decisionCorte: 'regenerar', confirmarPerderCambiosDwg: true }))).status).toBe(200);
     expect(await fs.readFile(plano, 'utf8')).not.toBe('Retocado en ZWCAD');
   });
 

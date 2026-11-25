@@ -91,14 +91,14 @@ describe('Registro de toldos', () => {
 
   it.each(['PDF', 'JSON'])('termina y reabre un pedido %s dentro del registro', async formato => {
     await fs.writeFile(formato === 'PDF' ? rutaPdf : rutaLegacy, formato === 'PDF' ? pdf : JSON.stringify(pedido));
-    await expect(almacen.terminarRevision(codigo, { usuario: 'IVÁN', motivo: '  ', fecha })).rejects.toThrow(/motivo/i);
-    await almacen.terminarRevision(codigo, { usuario: 'IVÁN', motivo: '  Hecho en taller  ', fecha });
+    await almacen.terminarRevision(codigo, { usuario: 'IVÁN', fecha });
     const cerrado = await almacen.getReview(codigo);
-    expect(cerrado.terminadoSinGenerar).toMatchObject({ usuario: 'IVÁN', motivo: 'Hecho en taller', fecha });
+    expect(cerrado.terminadoSinGenerar).toMatchObject({ usuario: 'IVÁN', fecha, estadoAnterior: 'APPROVED' });
     expect(cerrado.production).toBeNull();
     expect(entregasPedido(cerrado)).toEqual([]);
     expect(isPendingGeneration(cerrado.status)).toBe(false);
-    expect(await almacen.listReviews()).toMatchObject([{ terminadoSinGenerar: { motivo: 'Hecho en taller' } }]);
+    expect(cerrado.terminadoSinGenerar).not.toHaveProperty('motivo');
+    expect(await almacen.listReviews()).toMatchObject([{ terminadoSinGenerar: { usuario: 'IVÁN' } }]);
     expect(await fs.readdir(carpeta)).toEqual([formato === 'PDF' ? `${codigo}.pdf` : `${codigo}.toldos.json`]);
     if (formato === 'PDF') expect((await pdfLib.PDFDocument.load(await fs.readFile(rutaPdf))).getPageCount()).toBe(2);
     await almacen.reabrirRevision(codigo, { usuario: 'OTRO', fecha });

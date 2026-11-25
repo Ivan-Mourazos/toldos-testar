@@ -4,14 +4,17 @@ import { createPortal } from 'react-dom';
 import { Eye, X } from 'lucide-react';
 import type { Notify } from '../components/NotificationCenter';
 import { PdfPreviewViewer } from '../components/PdfPreviewViewer';
+import { CadPaginas } from '../components/CadPaginas';
+import { PestanasVistaPedido, type VistaPedido } from '../components/PestanasVistaPedido';
 import type { CalcParams } from '../../remolques/calc/params.ts';
 import type { LineaPedido } from '../../remolques/workspace/lineas.ts';
 import { crearGuardaPeticion, peticionVistaPrevia } from './vistaPrevia';
 
 // «Vista previa del PDF» de remolques (fase 4): pide al servidor la hoja de taller del pedido y la
 // abre en el mismo visor que toldos. No guarda nada en ninguna carpeta.
-export function VistaPreviaPdf({ lineas, params, origen, bloqueo, notify, label = 'Vista previa del PDF' }: {
+export function VistaPreviaPdf({ lineas, params, origen, bloqueo, notify, cad, label = 'Vista previa del PDF' }: {
   label?: string;
+  cad?: React.ComponentProps<typeof CadPaginas>;
   lineas?: LineaPedido[];
   /** Los parámetros con que se calcula si no son los comunes («Corregir» un pedido guardado). */
   params?: CalcParams;
@@ -22,6 +25,7 @@ export function VistaPreviaPdf({ lineas, params, origen, bloqueo, notify, label 
   notify: Notify;
 }) {
   const [url, setUrl] = useState('');
+  const [vista, setVista] = useState<VistaPedido>('datos');
   const [preparando, setPreparando] = useState(false);
   const boton = useRef<HTMLButtonElement>(null);
   const peticion = useRef('');
@@ -94,12 +98,19 @@ export function VistaPreviaPdf({ lineas, params, origen, bloqueo, notify, label 
     guarda.current.invalidar();
     setPreparando(false);
     setUrl('');
+    setVista('datos');
     requestAnimationFrame(() => boton.current?.focus());
   }
 
   useEffect(() => {
     cerrarRef.current = cerrar;
   });
+
+  const heading = <strong>Vista previa de la hoja de taller</strong>;
+  const actions = <>
+    {cad && <PestanasVistaPedido vista={vista} onChange={setVista} />}
+    <button className="icon-button" type="button" onClick={cerrar} aria-label="Cerrar vista previa"><X aria-hidden="true" /></button>
+  </>;
 
   return (
     <>
@@ -112,10 +123,8 @@ export function VistaPreviaPdf({ lineas, params, origen, bloqueo, notify, label 
       {url && createPortal(
         <div ref={dialogo} className="pdf-preview-backdrop" role="dialog" aria-modal="true" aria-label="Vista previa de la hoja de taller">
           <div className="pdf-preview-window">
-            {/* Sin «Actualizar»: con la vista previa abierta el pedido no cambia (Iván, 16/10/2026). */}
-            <PdfPreviewViewer key={url} url={url} ariaLabel="Hoja de taller de remolques" heading={<strong>Vista previa de la hoja de taller</strong>} actions={
-              <button className="icon-button" type="button" onClick={cerrar} aria-label="Cerrar vista previa"><X aria-hidden="true" /></button>
-            } />
+            {vista === 'cad' && cad ? <CadPaginas {...cad} enModal heading={heading} actions={actions} />
+              : <PdfPreviewViewer key={url} url={url} ariaLabel="Hoja de taller de remolques" heading={heading} actions={actions} />}
           </div>
         </div>,
         document.body,

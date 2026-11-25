@@ -644,3 +644,54 @@ describe("ver la hoja guardada y el PDF generado", () => {
     expect(await falla(servicio.archivo("AR2604286"))).toEqual([404, "El PDF generado ya no está en sus carpetas de archivo."]);
   });
 });
+
+it("guarda datos de un producido sin revisión y conserva su autor, estado y entrega", async () => {
+  const { servicio, llamadas } = montar();
+  const elementos = ELEMENTOS();
+  await servicio.guardar({ elementos, savedBy: "JAIME" });
+  await servicio.generar("AR2604286", { savedBy: "JAIME" });
+  const anterior = await servicio.obtener("AR2604286");
+  const consultas = llamadas.coordina.length;
+  elementos[0].input.cabecera.cliente = "TALLERES CAL EDITADO";
+  await servicio.guardar({ elementos, savedBy: "IVÁN" }, { registro: true });
+  expect(await servicio.obtener("AR2604286")).toMatchObject({
+    status: "PRODUCED", createdBy: "JAIME", reviewedBy: anterior.reviewedBy, production: anterior.production,
+    entregas: anterior.entregas, updatedBy: "IVÁN",
+    summary: { technician: "JAIME", customer: "TALLERES CAL EDITADO" },
+    ediciones: [{ usuario: "IVÁN" }],
+  });
+  expect(llamadas.coordina).toHaveLength(consultas);
+});
+
+it("termina sin motivo, reabre y mueve solo el registro de remolques a su papelera", async () => {
+  const { servicio, interna } = montar();
+  await servicio.guardar({ elementos: ELEMENTOS(), savedBy: "JAIME" });
+  const codigo = "AR2604286";
+  const otraCarpeta = path.join(interna, "puertas");
+  mkdirSync(otraCarpeta);
+  const otro = path.join(otraCarpeta, codigo + ".json");
+  writeFileSync(otro, "otro producto");
+  await expect(servicio.gestionar(codigo, "terminar", { usuario: "IVÁN" })).resolves.toMatchObject({
+    status: "TERMINADO_SIN_GENERAR", terminadoSinGenerar: { usuario: "IVÁN" },
+  });
+  await expect(servicio.gestionar(codigo, "reabrir", { usuario: "IVÁN" })).resolves.toMatchObject({ status: "PENDING_REVIEW" });
+  await expect(servicio.gestionar(codigo, "papelera", { usuario: "IVÁN", confirmacion: "incorrecto" })).rejects.toMatchObject({ statusCode: 400 });
+  await servicio.gestionar(codigo, "papelera", { usuario: "IVÁN", confirmacion: codigo });
+  expect((await servicio.listar(2026)).reviews).toEqual([]);
+  expect(existsSync(path.join(interna, "papelera"))).toBe(true);
+  expect(readFileSync(otro, "utf8")).toBe("otro producto");
+});
+
+it("al añadir una OF a un producido prepara solo esa OF como entrega nueva", async () => {
+  const { servicio } = montar();
+  const elementos = ELEMENTOS();
+  await servicio.guardar({ elementos, savedBy: "JAIME" });
+  await servicio.generar("AR2604286", { savedBy: "JAIME" });
+  elementos[0].input.cabecera.cliente = "TALLERES CAL EDITADO";
+  elementos.push(elemento("lona-02", "12", "231782"));
+  const guardado = await servicio.guardar({ elementos, savedBy: "IVÁN", confirmarEntradaEntrega: true }, { registro: true });
+  expect(guardado).toMatchObject({ status: 200, cuerpo: { review: {
+    status: "PENDING_REVIEW", entregaActual: 11, ofsEntregaActual: ["0231782"], createdBy: "JAIME",
+  } } });
+  expect((await servicio.obtener("AR2604286")).entregas).toHaveLength(1);
+});

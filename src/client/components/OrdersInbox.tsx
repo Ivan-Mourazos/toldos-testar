@@ -239,7 +239,7 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
         <ChevronDown className="orders-chevron" aria-hidden="true" />
         <CodigoPedido codigo={review.orderCode} titulo="Abrir el pedido" onAbrir={onOpen} />
         <span className="orders-customer">{review.summary.customer || 'Sin cliente'}{'terminadoSinGenerar' in review && review.terminadoSinGenerar
-          ? <small className="corte-lista" title={review.terminadoSinGenerar.motivo}>Terminado sin generar · {review.terminadoSinGenerar.motivo}</small>
+          ? <small className="corte-lista" title={review.terminadoSinGenerar.motivo}>Terminado sin generar{review.terminadoSinGenerar.motivo && ` · ${review.terminadoSinGenerar.motivo}`}</small>
           : 'corteNoRegenerado' in review && review.corteNoRegenerado
           ? <small className="corte-lista is-viejo">{CORTE_NO_REGENERADO}</small>
           : 'corteLonaEstado' in review && review.corteLonaEstado && <small className={`corte-lista is-${review.corteLonaEstado}`}>Corte: {review.corteLonaEstado === 'hecho' ? 'hecho' : review.corteLonaEstado === 'viejo' ? 'viejo' : 'falta'}</small>}</span>
@@ -278,7 +278,7 @@ function OrderRow({ review, mine, open, onToggle, onOpen, withDate, coordinaStat
             </ul>
           ) : <p className="orders-detail-empty">{(review.summary.models || []).map(controlLabel).join(' + ')} · {review.summary.awnings} elementos</p>}
           <div className="orders-detail-actions">
-            {'terminadoSinGenerar' in review && review.terminadoSinGenerar && <p className="orders-detail-note motivo-cierre-toldos">{review.terminadoSinGenerar.motivo}</p>}
+            {'terminadoSinGenerar' in review && review.terminadoSinGenerar?.motivo && <p className="orders-detail-note motivo-cierre-toldos">{review.terminadoSinGenerar.motivo}</p>}
             {review.reviewNote && <p className="orders-detail-note"><strong>Nota de revisión:</strong> {review.reviewNote}</p>}
             <button type="button" className="primary-button boton-3d" onClick={onOpen}><FolderOpen aria-hidden="true" />Abrir el pedido</button>
           </div>

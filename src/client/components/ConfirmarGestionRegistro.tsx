@@ -1,6 +1,6 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 
-export type GestionToldos = 'terminar' | 'reabrir' | 'papelera';
+export type GestionRegistro = 'terminar' | 'reabrir' | 'papelera';
 
 const etiquetas = {
   terminar: 'Marcar como terminado',
@@ -8,20 +8,20 @@ const etiquetas = {
   papelera: 'Enviar a la papelera'
 };
 
-export function ConfirmarGestionToldos({ accion, codigo, onClose, onConfirmar }: {
-  accion: GestionToldos; codigo: string; onClose: () => void; onConfirmar: (texto: string) => void;
+export function ConfirmarGestionRegistro({ accion, codigo, onClose, onConfirmar }: {
+  accion: GestionRegistro; codigo: string; onClose: () => void; onConfirmar: (texto: string) => void;
 }) {
   const dialogo = useRef<HTMLDialogElement>(null);
   const titulo = useId();
   const [texto, setTexto] = useState('');
   const papelera = accion === 'papelera';
   const terminar = accion === 'terminar';
-  const puedeConfirmar = papelera ? texto === codigo : !terminar || Boolean(texto.trim());
+  const puedeConfirmar = !papelera || texto === codigo;
   useEffect(() => {
     const modal = dialogo.current;
     modal?.showModal();
-    if (!terminar) modal?.querySelector<HTMLButtonElement>('footer button')?.focus();
-  }, [terminar]);
+    if (!papelera) modal?.querySelector<HTMLButtonElement>('footer button')?.focus();
+  }, [papelera]);
 
   return <dialog ref={dialogo} className="destino-entrega gestion-toldos bloque-3d" aria-labelledby={titulo} onClose={onClose}>
     <h2 id={titulo}>{etiquetas[accion]} · {codigo}</h2>
@@ -34,10 +34,10 @@ export function ConfirmarGestionToldos({ accion, codigo, onClose, onConfirmar }:
       <p>{papelera ? 'El registro quedará en la papelera y podrá recuperarse. Se conservarán sus archivos de producción.'
         : terminar ? 'El pedido pasará al Historial como terminado sin generar.'
           : 'El pedido volverá a aparecer en la bandeja de pendientes.'}</p>
-      {accion !== 'reabrir' && <label>
-        {papelera ? `Escribe ${codigo} para confirmar` : 'Motivo'}
+      {papelera && <label>
+        {`Escribe ${codigo} para confirmar`}
         <input type="text" value={texto} onChange={event => setTexto(event.target.value)}
-          maxLength={papelera ? codigo.length : 200} required autoComplete="off" />
+          maxLength={codigo.length} required autoComplete="off" />
       </label>}
       <footer>
         <button type="button" className="ghost-button boton-3d" onClick={() => dialogo.current?.close()}>Cancelar</button>

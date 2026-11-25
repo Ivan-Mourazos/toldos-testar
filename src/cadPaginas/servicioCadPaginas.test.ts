@@ -30,23 +30,29 @@ afterEach(async () => {
 async function montarApp({
   reviewRef,
   borradoresDir,
-  convertir
+  convertir,
+  producto,
+  resolverCorte
 }: {
   reviewRef: { valor: ReviewMinima | null };
   borradoresDir: string;
   convertir: (bytes: Uint8Array) => Promise<Buffer>;
+  producto?: 'remolques';
+  resolverCorte?: () => { carpeta: string; codigo: string };
 }) {
-  let handlerRegistrado: Parameters<RutaAppMinima['get']>[1] | null = null;
+  const rutas = new Map<string, Parameters<RutaAppMinima['get']>[1]>();
   const app: RutaAppMinima = {
-    get: (_ruta, handler) => { handlerRegistrado = handler; }
+    get: (ruta, handler) => { rutas.set(ruta, handler); }
   };
   const servicio = registrarRutasCadPaginas(app, {
+    producto, resolverCorte,
     obtenerReview: async () => reviewRef.valor,
     ajustes: async () => ({ corteBorradoresDirectory: borradoresDir }),
     oda: { disponible: true, convertir }
   });
   const server = http.createServer((req, res) => {
-    const match = /^\/api\/reviews\/([^/]+)\/cad-paginas$/.exec(req.url ?? '');
+    const match = /^(.*)\/([^/]+)\/cad-paginas$/.exec(req.url ?? '');
+    const handlerRegistrado = match && rutas.get(`${match[1]}/:orderCode/cad-paginas`);
     if (!match || !handlerRegistrado) {
       res.writeHead(404, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'No encontrado' }));
@@ -58,7 +64,7 @@ async function montarApp({
       res.end(JSON.stringify(cuerpo));
     };
     void handlerRegistrado(
-      { params: { orderCode: decodeURIComponent(match[1]) } },
+      { params: { orderCode: decodeURIComponent(match[2]) } },
       {
         set: (k, v) => {
           headers[k] = v;
@@ -204,4 +210,23 @@ describe('GET /api/reviews/:orderCode/cad-paginas', () => {
     expect(rLetra.letrasCambiadas).toBe(true);
     expect(rLetra.motivoDesactualizado).toContain('letras');
   });
+});
+
+it('abre las presentaciones del código de corte en la carpeta de remolques', async () => {
+  const carpeta = path.join(raiz, 'borradores-remolques');
+  const codigo = 'AR2604286-11';
+  await fs.mkdir(carpeta);
+  const dxf = calcularCorte({ ...pedidoVariasTelas(), orderCode: 'AR2604286' }, { ofStockSacos: '0230811' }).plano[0].dxf;
+  await fs.writeFile(path.join(carpeta, codigo + '.dwg'), dxf);
+  const convertir = vi.fn(async (bytes: Uint8Array) => Buffer.from(bytes));
+  const { url } = await montarApp({
+    producto: 'remolques', reviewRef: { valor: null }, borradoresDir: path.join(raiz, 'borradores-toldos'), convertir,
+    resolverCorte: () => ({ carpeta, codigo }),
+  });
+  const ruta = '/api/remolques/pedidos/AR2604286/cad-paginas';
+  const datos = await (await fetch(url + ruta)).json();
+  expect(datos).toMatchObject({ tieneDwg: true, origen: 'borrador', ficheros: [{ filename: codigo + '.dwg' }] });
+  expect(datos.paginas.length).toBeGreaterThan(0);
+  expect(convertir).toHaveBeenCalledTimes(1);
+  expect((await fetch(url + ruta.replace('remolques', 'puertas'))).status).toBe(404);
 });

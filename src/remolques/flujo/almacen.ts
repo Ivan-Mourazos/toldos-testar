@@ -1,6 +1,7 @@
 import { link, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { renombrarAtomico } from '../../renombrarAtomico.js';
 import path from "node:path";
+import { comprobarConfirmacionPapelera, moverRegistroAPapelera } from "../../gestionRegistro.js";
 import { codigoPedido, ErrorPedidoRemolques } from "./pedido.ts";
 import { TIPO_PEDIDO_REMOLQUES, type PedidoRemolques } from "./tipos.ts";
 
@@ -25,6 +26,7 @@ export interface AlmacenPedidos<T extends PedidoJson> {
   crear(pedido: T): Promise<"creado" | "ya-existe">;
   /** Todos, del más reciente al más antiguo. Un fichero que no es un pedido se salta (y se avisa). */
   listar(): Promise<T[]>;
+  enviarAPapelera?(orderCode: string, opciones: { usuario: string; confirmacion?: unknown; fecha?: string }): Promise<string>;
 }
 
 export type AlmacenPedidosRemolques = AlmacenPedidos<PedidoRemolques>;
@@ -62,7 +64,7 @@ export function crearAlmacenPedidos<T extends PedidoJson>({ carpeta, tipo, nombr
   /** El error al guardar sin carpeta. */
   sinCarpeta: string;
   registrar?: (mensaje: string) => void;
-}): AlmacenPedidos<T> {
+}): AlmacenPedidos<T> & Required<Pick<AlmacenPedidos<T>, "enviarAPapelera">> {
   const esPedido = esPedidoDe(tipo);
   async function leer(fichero: string): Promise<T> {
     const datos: unknown = JSON.parse(await readFile(fichero, "utf8"));
@@ -78,6 +80,22 @@ export function crearAlmacenPedidos<T extends PedidoJson>({ carpeta, tipo, nombr
   }
 
   return {
+    async enviarAPapelera(orderCode, { usuario, confirmacion, fecha }) {
+      const codigo = codigoPedido(orderCode);
+      comprobarConfirmacionPapelera(codigo, confirmacion);
+      const dir = (await carpeta()).trim();
+      if (!dir) throw new ErrorPedidoRemolques(sinCarpeta);
+      const fichero = ficheroPedido(dir, codigo);
+      try {
+        const pedido = await leer(fichero);
+        if (pedido.orderCode !== codigo) throw new ErrorPedidoRemolques("El código del registro no coincide.", 409);
+        return await moverRegistroAPapelera([fichero], { codigo, usuario, fecha });
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") throw new ErrorPedidoRemolques("No se encontró el pedido.", 404);
+        throw error;
+      }
+    },
+
     async obtener(orderCode) {
       const dir = (await carpeta()).trim();
       if (!dir) return null;

@@ -12,7 +12,7 @@ export const TIPO_PEDIDO_REMOLQUES = "remolques";
 export const ESQUEMA_PEDIDO_REMOLQUES = 1;
 
 /** Los mismos estados que toldos (src/reviewRules.js). */
-export type EstadoPedidoRemolques = "PENDING_REVIEW" | "CHANGES_REQUESTED" | "APPROVED" | "PRODUCED";
+export type EstadoPedidoRemolques = "PENDING_REVIEW" | "CHANGES_REQUESTED" | "APPROVED" | "PRODUCED" | "TERMINADO_SIN_GENERAR";
 
 export interface ElementoGuardado {
   version: string;
@@ -103,6 +103,10 @@ export interface PedidoRemolques {
   /** El autor: quien lo guardó la primera vez. */
   createdBy: string;
   updatedBy?: string;
+  ediciones?: { usuario: string; fecha: string; nota: string }[];
+  terminadoSinGenerar?: { usuario: string; fecha: string; estadoAnterior: EstadoPedidoRemolques; motivo?: string };
+  planosWeb?: string[];
+  datosOfsConservadas?: Record<string, string>;
   corteNoRegenerado?: boolean;
   corteSimulado?: boolean;
   reviewedAt: string | null;
@@ -119,7 +123,7 @@ export interface PedidoRemolques {
   /** Solo en los que vienen de la web vieja (comando de migración). */
   origen?: OrigenMigracion;
   /** Flujo del DWG: el corte que confirmó el autor en su borrador y dónde quedó el DWG al guardar para revisión. */
-  corteConfirmado?: import("../../flujoDwg/flujo.ts").CorteConfirmado;
+  corteConfirmado?: import("../../cadPaginas/cambiosManuales.ts").CorteConfirmadoConEscritos;
 }
 
 /** Lo que lista Pedidos: el pedido sin los elementos ni los parámetros. */

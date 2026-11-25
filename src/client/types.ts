@@ -743,7 +743,7 @@ export type CoordinaStatus = {
 };
 
 export type ReviewSummary = {
-  terminadoSinGenerar?: { usuario: string; motivo: string; fecha: string; estadoAnterior: ReviewStatus };
+  terminadoSinGenerar?: { usuario: string; motivo?: string; fecha: string; estadoAnterior: ReviewStatus };
   ofsEntregaActual?: string[];
   entregas?: import('../entregasTipos').EntregaPedido[];
   entregaActual?: number;

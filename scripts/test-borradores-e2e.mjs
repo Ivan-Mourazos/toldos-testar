@@ -116,7 +116,8 @@ try {
   await teclearCaso(page, caso('lona-02'));
   await editor(page).locator('input[data-campo="ordenFabricacion"]').fill(OF_R1);
   await capturas(page, '1-remolques-guardar-borrador');
-  await page.getByRole('button', { name: 'Guardar borrador', exact: true }).click();
+  await page.getByRole('button', { name: 'Más opciones', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Guardar borrador', exact: true }).click();
   await page.getByText(`Borrador guardado: ${R1.codigo}.`).waitFor();
   assert.equal(await page.locator('.rem-pestana').count(), 0, 'tras guardar el borrador, la pantalla queda para un pedido nuevo');
   assert.equal((await api(`/api/borradores/${R1.codigo}`)).datos.kind, 'remolques');
@@ -225,8 +226,8 @@ try {
   assert.equal(await remolques(pj).getByLabel('Pedido', { exact: true }).inputValue(), R1.pedido);
   assert.equal(await pj.locator('.rem-pestana').count(), 1);
   await capturas(pj, '6-seguir-remolques');
-  await pj.getByRole('button', { name: 'Guardar para revisión', exact: true }).click();
-  await pj.getByText(`Guardado en Pedidos para revisión: ${R1.codigo}.`).waitFor();
+  await pj.getByRole('button', { name: 'Guardar', exact: true }).click();
+  await pj.getByText(`Pedido ${R1.codigo} guardado.`).waitFor();
   assert.equal((await api(`/api/borradores/${R1.codigo}`)).datos, null, 'al pasar a revisión, el borrador de remolques desaparece');
   console.log('OK: remolques: «Empezar de cero», «Seguir con el borrador» y pasado a revisión');
 
@@ -239,8 +240,8 @@ try {
   await editor(page).waitFor();
   await teclearCaso(page, caso('lona-02'));
   await editor(page).locator('input[data-campo="ordenFabricacion"]').fill(OF_R3);
-  await page.getByRole('button', { name: 'Guardar para revisión', exact: true }).click();
-  await page.getByText(`Guardado en Pedidos para revisión: ${R3.codigo}.`).waitFor();
+  await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+  await page.getByText(`Pedido ${R3.codigo} guardado.`).waitFor();
   const sigueDeToldos = (await api(`/api/borradores/${R3.codigo}`)).datos;
   assert.equal(sigueDeToldos?.kind, 'toldos', 'guardar remolques para revisión no borra un borrador de toldos del mismo número');
   console.log('OK: el pedido de remolques pasa a revisión y el borrador de toldos del mismo número se conserva');

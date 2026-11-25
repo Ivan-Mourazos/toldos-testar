@@ -49,7 +49,7 @@ import { crearCarpetaPlanos, plantillaPlanos } from './cmtPlanosCarpeta.js';
 import capasIniciales from './cmt/preparacion/capasIniciales.json' with { type: 'json' };
 import { registrarRutasCorteLona } from './corteLonaRoutes.js';
 import { registrarRutasAssa } from './assa/rutas.js';
-import { exigirCorteAlDia, exigirCorteParaSalir, escribirPlanosCorte, prepararArchivosCorte } from './corteLonaArchivos.js';
+import { carpetaCorte, exigirCorteAlDia, exigirCorteParaSalir, escribirPlanosCorte, prepararArchivosCorte } from './corteLonaArchivos.js';
 import { registrarRutasEnviosCorte } from './corteEnviosRoutes.js';
 import { estadoBotCompartido } from './botEstado.js';
 import { createCoordinaClient } from './coordinaStatus.js';
@@ -84,7 +84,7 @@ import { nombrePdf } from './remolques/salida/nombre-pdf.ts';
 import { crearAlmacenPedidos, crearAlmacenPedidosRemolques } from './remolques/flujo/almacen.ts';
 import { ErrorPedidoRemolques } from './remolques/flujo/pedido.ts';
 import {
-  comprobadorPedidoToldos, crearServicioPedidosRemolques, mensajePedidoDeRemolques, paramsDeLaPantalla, yaEsPedidoDeRemolques
+  comprobadorPedidoToldos, crearServicioPedidosRemolques, firmaCorteRemolques, mensajePedidoDeRemolques, paramsDeLaPantalla, yaEsPedidoDeRemolques
 } from './remolques/flujo/servicio.ts';
 import { crearAlmacenBorradores } from './borradores/almacen.ts';
 import { crearServicioBorradores } from './borradores/servicio.ts';
@@ -252,6 +252,10 @@ const yaEsPedidoDePuertas = (orderCode) => yaEsPedidoDeRemolques(almacenPedidosP
 const esPedidoDeToldos = comprobadorPedidoToldos(workflowStore);
 // La OF de los sacos de stock (MATERIAL PARA STOCK.dwg): la usan el corte de toldos y el de puertas.
 const ofStockSacos = crearOfStockSacos({ oficinaTecnicaDirectory: config.oficinaTecnicaDirectory, oda });
+const confirmacionesRemolques = crearAlmacenConfirmaciones({ carpeta: async () => {
+  const carpeta = (await workflowStore.getSettings()).remolquesRevisionDirectory;
+  return carpeta ? path.join(carpeta, 'cortes-confirmados') : '';
+} });
 const pedidosRemolques = crearServicioPedidosRemolques({
   almacen: almacenPedidosRemolques,
   ajustes: () => workflowStore.getSettings(),
@@ -274,10 +278,7 @@ const pedidosRemolques = crearServicioPedidosRemolques({
   // Huecos del corte con sacos de stock y, de último recurso, tiras de 1,5 m o más: encendido de nuevo el 23/11/2026 (Iván, a raíz del AR2605686).
   corte: crearCorteRemolques({ ajustes: () => workflowStore.getSettings(), oda, ofStockSacos, aprovecharStock: true }),
   // Flujo del DWG: los cortes confirmados, junto a los pedidos de remolques (carpeta interna, no la que ven los PC).
-  confirmaciones: crearAlmacenConfirmaciones({ carpeta: async () => {
-    const carpeta = (await workflowStore.getSettings()).remolquesRevisionDirectory;
-    return carpeta ? path.join(carpeta, 'cortes-confirmados') : '';
-  } })
+  confirmaciones: confirmacionesRemolques
 });
 const pedidosPuertas = crearServicioPedidosPuertas({
   almacen: almacenPedidosPuertas,
@@ -381,6 +382,21 @@ registrarRutasCadPaginas(app, {
   ajustes: () => workflowStore.getSettings(),
   oda,
   almacenEscritos: confirmacionesToldos
+});
+
+registrarRutasCadPaginas(app, {
+  producto: 'remolques',
+  obtenerReview: codigo => almacenPedidosRemolques.obtener(codigo),
+  ajustes: () => workflowStore.getSettings(),
+  resolverCorte: (codigo, pedido, ajustes) => {
+    const orderCode = codigoCorteEditable(pedido, codigo);
+    return { codigo: orderCode, carpeta: ajustes.corteBorradoresDirectory,
+      carpetaRevisada: pedido && ajustes.corteLonaPlanoDirectory
+        ? carpetaCorte(ajustes.corteLonaPlanoDirectory, { orderCode, technician: pedido.summary.technician }) : undefined };
+  },
+  firmaCorte: firmaCorteRemolques,
+  oda,
+  almacenEscritos: confirmacionesRemolques
 });
 
 registrarRutasCorteLona(app, { workflowStore, oda, ofStockSacos, dxfDesdeDwg: dxfToldosDesdeDwg });
@@ -1073,12 +1089,20 @@ app.get('/api/remolques/pedidos', rutaRemolques(async (req, res) => {
   res.set('Cache-Control', 'no-store').json(await pedidosRemolques.listar(year));
 }));
 
-app.post('/api/remolques/pedidos', rutaRemolques(async (req, res) => {
-  const { status, cuerpo } = await pedidosRemolques.guardar(req.body);
+app.post(['/api/remolques/pedidos', '/api/remolques/pedidos/guardar-registro'], rutaRemolques(async (req, res) => {
+  const { status, cuerpo } = await pedidosRemolques.guardar(req.body, { registro: /\/guardar-registro\/?$/.test(req.path) });
   // Guardado para revisión: su borrador sobra (diseño 01/10/2026). Nunca falla.
   if (status === 200) await borradores.borrarTrasRevision(cuerpo.review.orderCode, 'remolques');
   res.status(status).json(cuerpo);
 }));
+
+for (const accion of ['terminar', 'reabrir', 'papelera']) {
+  app.post(`/api/remolques/pedidos/:orderCode/${accion}`, rutaRemolques(async (req, res) => {
+    const usuario = typeof req.body?.usuario === 'string' ? req.body.usuario.trim() : '';
+    const review = await pedidosRemolques.gestionar(req.params.orderCode, accion, { usuario, confirmacion: req.body?.confirmacion });
+    res.json(review ? { ok: true, review } : { ok: true });
+  }));
+}
 
 // Flujo del DWG, fase 1: el borrador del plano en su carpeta y el enlace para abrirlo en ZWCAD (tgm-pedidos).
 app.post('/api/remolques/borrador-corte', rutaRemolques(async (req, res) => {
@@ -1618,7 +1642,7 @@ for (const [ruta, actualizar] of [
     if (!formOptions.tecnicos.includes(usuario)) return next(httpError(400, 'Elige quién eres en «Soy» antes de continuar.'));
     const soltar = bloquearRegistroToldos(codigo);
     try {
-      const resultado = await actualizar(codigo, { usuario, motivo: req.body?.motivo, confirmacion: req.body?.confirmacion });
+      const resultado = await actualizar(codigo, { usuario, confirmacion: req.body?.confirmacion });
       res.json(ruta === 'papelera' ? { ok: true } : { ok: true, review: resultado });
     } catch (error) {
       next(error.code === 'ENOENT' ? httpError(404, 'No se encontró el pedido de revisión.') : error);

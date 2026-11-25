@@ -61,7 +61,7 @@ export async function escribirPlanoCorte(ruta: string, existentes: string[], pre
 const ROLLO = 2500;
 const metros = (mm: number) => (mm / 1000).toLocaleString('es-ES', { maximumFractionDigits: 2 });
 
-export function CorteRemolques({ ruta, version, generado = false, notify, onConfirm, acciones, onVista }: { ruta: string; version: string; generado?: boolean; notify: Notify; onConfirm: AskForConfirmation; acciones?: React.ReactNode; onVista?: (vista: VistaCorteRemolques) => void }) {
+export function CorteRemolques({ ruta, version, generado = false, notify, onConfirm, acciones, onVista, cad }: { ruta: string; version: string; generado?: boolean; notify: Notify; onConfirm: AskForConfirmation; acciones?: React.ReactNode; onVista?: (vista: VistaCorteRemolques) => void; cad?: (sinDwg: React.ReactNode) => React.ReactNode }) {
   // El resultado lleva para qué pedido y versión es: si cambian, se ve «Calculando…» hasta el nuevo.
   const clave = `${ruta}|${version}`;
   const [leido, setLeido] = useState<{ clave: string; datos?: VistaCorteRemolques; error?: string } | null>(null);
@@ -107,7 +107,13 @@ export function CorteRemolques({ ruta, version, generado = false, notify, onConf
 
   const estado = leido?.clave === clave ? leido : null;
   const datos = estado?.datos;
-  if (datos && datos.cortes.length === 0) return null;
+  if (datos && datos.cortes.length === 0 && !cad) return null;
+  const calculado = <>
+    {!estado && <p className="corte-ayuda">Calculando el corte…</p>}
+    {estado?.error && <p role="alert" className="corte-aviso">{estado.error}</p>}
+    {datos && <CorteRemolquesVista datos={datos} />}
+  </>;
+  if (cad) return <div className="corte-lona">{cad(calculado)}{Boolean(datos?.cortes.length) && acciones}</div>;
   return (
     <section className="corte-lona panel bloque-3d" aria-label="Corte" aria-busy={!estado}>
       <CabeceraDocumento titulo="Corte" icono={<Scissors aria-hidden="true" />}>
@@ -119,9 +125,7 @@ export function CorteRemolques({ ruta, version, generado = false, notify, onConf
       </CabeceraDocumento>
       <p className="corte-ayuda">El plano sale al guardar para revisión. Puedes descargar el corte o mandarlo desde sus acciones.</p>
       {Boolean(datos?.cortes.length) && acciones}
-      {!estado && <p className="corte-ayuda">Calculando el corte…</p>}
-      {estado?.error && <p role="alert" className="corte-aviso">{estado.error}</p>}
-      {datos && <CorteRemolquesVista datos={datos} />}
+      {calculado}
     </section>
   );
 }

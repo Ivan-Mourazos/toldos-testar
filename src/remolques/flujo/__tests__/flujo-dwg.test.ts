@@ -73,7 +73,9 @@ describe('borrador del corte', () => {
     await fs.writeFile(borrador(), 'CAMBIADO EN ZWCAD');
     expect((await abrir()).cuerpo).toMatchObject({ existente: true });
     expect(await fs.readFile(borrador(), 'utf8')).toBe('CAMBIADO EN ZWCAD');
-    expect((await abrir({ regenerar: true })).cuerpo).toMatchObject({ existente: false, sustituido: true });
+    expect((await abrir({ regenerar: true })).cuerpo).toMatchObject({ needsManualDwgConfirmation: true });
+    expect(await fs.readFile(borrador(), 'utf8')).toBe('CAMBIADO EN ZWCAD');
+    expect((await abrir({ regenerar: true, confirmarPerderCambiosDwg: true })).cuerpo).toMatchObject({ existente: false, sustituido: true });
   });
   it('abrir un borrador exige Soy y carpeta; guardar sin borradores conserva el acceso al plano', async () => {
     await expect(abrir({ savedBy: '' })).rejects.toMatchObject({ message: expect.stringContaining('Soy') });

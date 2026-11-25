@@ -1,5 +1,6 @@
 import { adjuntarPedido } from './adjuntosPedido.js';
-import { isPendingGeneration, normalizeOf, TERMINADO_SIN_GENERAR } from './reviewRules.js';
+import { normalizeOf } from './reviewRules.js';
+import { comprobarConfirmacionPapelera, errorRegistro, moverRegistroAPapelera, reabrirRegistro, terminarRegistro } from './gestionRegistro.js';
 import fs from 'node:fs/promises';
 import { abrirEntrega, cerrarEntrega, conservarOfsGeneradas, entregasPedido, pedidoEntrega, ofsEntrega } from './entregas.js';
 import { renombrarAtomico, sustituirApartando } from './renombrarAtomico.js';
@@ -552,52 +553,23 @@ export function createWorkflowStore({ settingsFile, defaults }) {
     return actualizarRegistro(registro, review.datosOfsConservadas ? conservarOfsGeneradas(actualizado) : actualizado);
   }
 
-  async function terminarRevision(orderCode, { usuario, motivo, fecha = new Date().toISOString() }) {
-    const texto = typeof motivo === 'string' ? motivo.trim() : '';
-    if (!texto || texto.length > 200) throw errorRegistro(400, 'Escribe un motivo de hasta 200 caracteres.');
+  async function terminarRevision(orderCode, opciones) {
     const registro = await leerRegistroEditable(orderCode);
-    const { review } = registro;
-    if (!isPendingGeneration(review.status)) throw errorRegistro(409, 'Solo puedes marcar como terminado un pedido pendiente.');
-    return actualizarRegistro(registro, {
-      ...review, status: TERMINADO_SIN_GENERAR, updatedAt: fecha, updatedBy: usuario,
-      terminadoSinGenerar: { usuario, motivo: texto, fecha, estadoAnterior: review.status }
-    });
+    return actualizarRegistro(registro, terminarRegistro(registro.review, opciones));
   }
 
-  async function reabrirRevision(orderCode, { usuario, fecha = new Date().toISOString() }) {
+  async function reabrirRevision(orderCode, opciones) {
     const registro = await leerRegistroEditable(orderCode);
-    const { terminadoSinGenerar, ...review } = registro.review;
-    if (review.status !== TERMINADO_SIN_GENERAR) throw errorRegistro(409, 'Este pedido no está terminado sin generar.');
-    const anterior = terminadoSinGenerar?.estadoAnterior;
-    return actualizarRegistro(registro, {
-      ...review, status: isPendingGeneration(anterior) ? anterior : 'PENDING_REVIEW', updatedAt: fecha, updatedBy: usuario
-    });
+    return actualizarRegistro(registro, reabrirRegistro(registro.review, opciones));
   }
 
-  async function enviarRevisionAPapelera(orderCode, { usuario, confirmacion, fecha = new Date().toISOString() }) {
+  async function enviarRevisionAPapelera(orderCode, { usuario, confirmacion, fecha }) {
     const codigo = sanitizeOrderCode(orderCode);
-    if (confirmacion !== codigo) throw errorRegistro(400, 'Escribe el código completo del pedido para enviarlo a la papelera.');
+    comprobarConfirmacionPapelera(codigo, confirmacion);
     const registro = await leerRegistroEditable(codigo);
-    const carpeta = path.dirname(registro.ruta);
-    const legacy = path.join(carpeta, `${codigo}${LEGACY_REVIEW_FILE_SUFFIX}`);
-    // Si existe un JSON anterior, también se aparta para que el pedido no reaparezca al quitar el PDF.
+    const legacy = path.join(path.dirname(registro.ruta), `${codigo}${LEGACY_REVIEW_FILE_SUFFIX}`);
     const rutas = registro.pdf && await fileExists(legacy) ? [legacy, registro.ruta] : [registro.ruta];
-    const papelera = path.join(carpeta, 'papelera');
-    await fs.mkdir(papelera, { recursive: true });
-    const destino = await fs.mkdtemp(path.join(papelera, `${codigo}-${fecha.slice(0, 10)}-`));
-    await writeJsonAtomic(path.join(destino, 'papelera.json'), { codigo, usuario, fecha });
-    const movidos = [];
-    try {
-      for (const ruta of rutas) {
-        const apartada = path.join(destino, path.basename(ruta));
-        await renombrarAtomico(ruta, apartada);
-        movidos.push({ ruta, apartada });
-      }
-    } catch (error) {
-      for (const { ruta, apartada } of movidos.reverse()) await renombrarAtomico(apartada, ruta);
-      throw error;
-    }
-    return destino;
+    return moverRegistroAPapelera(rutas, { codigo, usuario, fecha });
   }
 
   async function saveReview(review, pdf) {
@@ -689,10 +661,6 @@ export function createWorkflowStore({ settingsFile, defaults }) {
   }
 
   return { getSettings, saveSettings, getReview, saveReview, listReviews, guardarRegistroSinRevisar, terminarRevision, reabrirRevision, enviarRevisionAPapelera };
-}
-
-function errorRegistro(statusCode, message) {
-  return Object.assign(new Error(message), { statusCode });
 }
 
 export function buildReviewPath(template, orderCode) {

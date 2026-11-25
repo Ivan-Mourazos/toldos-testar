@@ -4,7 +4,7 @@ import type { DestinoEntrega } from '../../entregasTipos';
 import React, { useEffect, useMemo, useState } from 'react';
 import { isPendingGeneration, TERMINADO_SIN_GENERAR } from '../../reviewRules.js';
 import { MenuMas } from './MenuMas';
-import { ConfirmarGestionToldos, type GestionToldos } from './ConfirmarGestionToldos';
+import { ConfirmarGestionRegistro, type GestionRegistro } from './ConfirmarGestionRegistro';
 import { CopyPlus, Download, ExternalLink, Factory, FileSearch, FileSpreadsheet, FileText } from 'lucide-react';
 import type { Calculation, CoordinaStatus, ReviewPackage, RuleParameters } from '../types';
 import type { EstadoCorte } from '../corteLona';
@@ -59,7 +59,7 @@ export function ReviewOrderDetail({
   onConfirm?: AskForConfirmation;
   onGuardarCorte?: (estado: EstadoCorte | null) => Promise<void> | void;
   onChanged?: () => void;
-  onGestion?: (accion: GestionToldos, texto: string) => void;
+  onGestion?: (accion: GestionRegistro, texto: string) => void;
 }) {
   const availableModels = useMemo(
     () => Array.from(new Set(review?.order.awnings.map((awning) => awning.model).filter(Boolean) || [])),
@@ -79,7 +79,7 @@ export function ReviewOrderDetail({
   const [generandoCorte, setGenerandoCorte] = useState(false);
   const estadoCorte = review?.corteLona ?? null;
   const terminado = review?.status === TERMINADO_SIN_GENERAR;
-  const [gestion, setGestion] = useState<GestionToldos | null>(null);
+  const [gestion, setGestion] = useState<GestionRegistro | null>(null);
   const autorDelCorte = Boolean(review && order && isPendingGeneration(review.status) && onGuardarCorte && currentUser);
   const conFlujoCorte = autorDelCorte && Boolean(review && toldosConCorte(review.order).length > 0)
     && !review?.corteConfirmado;
@@ -170,13 +170,13 @@ export function ReviewOrderDetail({
             guardado={{ ruta: '/api/reviews', cuerpo: { order: review.order, corteLona: review.corteLona }, usuario: currentUser }}
             mas={produced ? <button type="button" role="menuitem" className="menu-mas-item" disabled={disabled} onClick={onReuse}><CopyPlus size={16} aria-hidden="true" />Reutilizar datos</button> : null} />} />} />
 
-      {gestion && onGestion && <ConfirmarGestionToldos accion={gestion} codigo={review.orderCode} onClose={() => setGestion(null)}
+      {gestion && onGestion && <ConfirmarGestionRegistro accion={gestion} codigo={review.orderCode} onClose={() => setGestion(null)}
         onConfirmar={texto => { setGestion(null); onGestion(gestion, texto); }} />}
       {review.terminadoSinGenerar && <div className="review-production-block bloque-3d">
         <div className="review-production-summary"><span>
           <strong>Terminado sin generar</strong>
           <small>{formatDateTime(review.terminadoSinGenerar.fecha)} · {controlLabel(review.terminadoSinGenerar.usuario)}</small>
-          <p className="motivo-cierre-toldos">{review.terminadoSinGenerar.motivo}</p>
+          {review.terminadoSinGenerar.motivo && <p className="motivo-cierre-toldos">{review.terminadoSinGenerar.motivo}</p>}
         </span></div>
       </div>}
       {produced && review.production && (

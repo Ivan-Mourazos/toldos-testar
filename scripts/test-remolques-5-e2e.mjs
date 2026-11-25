@@ -1,6 +1,6 @@
 // Prueba e2e de la fase 5 de remolques: guardar para revisión en Remolques, Pedidos con toldos y
 // remolques (etiqueta, filtro, grupos de CoordinaOT), «Generar archivos» con los dos PDF iguales,
-// sus datos dentro y «REVISADO POR», lo que no se puede hacer, «Reutilizar datos» y «Corregir».
+// sus datos dentro y «REVISADO POR», lo que no se puede hacer, «Reutilizar datos» y «Editar».
 // Va en una aislada con su propia carpeta de prueba, porque activa la generación de archivos (solo
 // dentro de tmp/) y no debe tocar la configuración de la de 4310:
 //   ISOLATED_DIR="$PWD/tmp/remolques-5" PORT=4311 FAKE_COORDINA_PORT=4321 bash .claude/skills/running-toldos-testar/start-isolated.sh
@@ -111,10 +111,10 @@ try {
     await teclearCaso(page, caso(id));
     await editor(page).locator('input[data-campo="ordenFabricacion"]').fill(of);
   }
-  await botonActivo('Guardar para revisión');
+  await botonActivo('Guardar');
   await capturas('1-remolques-listo');
-  await page.getByRole('button', { name: 'Guardar para revisión', exact: true }).click();
-  await page.getByText(`Guardado en Pedidos para revisión: ${P1.codigo}.`).waitFor();
+  await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+  await page.getByText(`Pedido ${P1.codigo} guardado.`).waitFor();
   assert.equal(await page.locator('.rem-pestana').count(), 0, 'al guardar, la pantalla queda para un pedido nuevo');
   const guardado = (await api(`/api/remolques/pedidos/${P1.codigo}`)).datos;
   assert.equal(guardado.status, 'PENDING_REVIEW');
@@ -219,21 +219,18 @@ try {
   await page.reload();
   await irAPedidos();
   await abrir(P2.codigo);
-  await page.getByRole('button', { name: 'Corregir', exact: true }).click();
+  await page.getByRole('button', { name: 'Editar', exact: true }).click();
   // Solo pregunta si Remolques tiene algo (tras recargar está vacío).
-  const abrirParaCorregir = page.getByRole('alertdialog').getByRole('button', { name: 'Abrir para corregir', exact: true });
+  const abrirParaCorregir = page.getByRole('alertdialog').getByRole('button', { name: 'Editar pedido', exact: true });
   if (await abrirParaCorregir.waitFor({ timeout: 3000 }).then(() => true, () => false)) await abrirParaCorregir.click();
   await page.locator('.rem-aviso-params').waitFor();
   assert.equal(await page.getByLabel('Pedido', { exact: true }).inputValue(), P2.pedido);
   assert.equal(await editor(page).locator('input[data-campo="ordenFabricacion"]').inputValue(), OF.c);
   await capturas('5-corregir');
-  await page.getByRole('button', { name: 'Guardar para revisión', exact: true }).click();
-  await page.getByRole('alertdialog').getByRole('button', { name: 'Actualizar pedido', exact: true }).click();
-  const sustituirPlano = page.getByRole('alertdialog').getByRole('button', { name: 'Sustituir plano', exact: true });
-  if (await sustituirPlano.waitFor({ timeout: 3000 }).then(() => true, () => false)) await sustituirPlano.click();
-  await page.getByText(`Guardado en Pedidos para revisión: ${P2.codigo}.`).waitFor();
-  assert.equal((await api(`/api/remolques/pedidos/${P2.codigo}`)).datos.params.demasiaAlto, propios.demasiaAlto, '«Corregir» guarda con los parámetros con que se guardó');
-  console.log('OK: «Corregir» abre el pedido con sus datos y sus parámetros, y se vuelve a guardar');
+  await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+  await page.getByText(`Pedido ${P2.codigo} guardado.`).waitFor();
+  assert.equal((await api(`/api/remolques/pedidos/${P2.codigo}`)).datos.params.demasiaAlto, propios.demasiaAlto, '«Editar» guarda con los parámetros con que se guardó');
+  console.log('OK: «Editar» abre el pedido con sus datos y sus parámetros, y se vuelve a guardar');
 } finally {
   await ponerGeneracion(false).catch(() => {});
   await fetch(`${FAKE}/__reset`, json()).catch(() => {});

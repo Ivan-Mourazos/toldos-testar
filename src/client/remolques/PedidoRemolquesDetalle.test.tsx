@@ -45,7 +45,7 @@ describe('el pedido de remolques abierto en Pedidos', () => {
     expect(html).toContain('OF 0231780');
     expect(html).toContain('Aprobado por Jaime');
     // Fase 2: un aprobado también se edita, con aviso al entrar.
-    expect(html).toContain('Corregir');
+    expect(html).toContain('Editar');
     expect(html).toContain('Pasar a producción');
     expect(html).not.toMatch(/review-generate-button" type="button" disabled=""/);
   });
@@ -61,9 +61,9 @@ describe('el pedido de remolques abierto en Pedidos', () => {
     const html = pintar({ coordina: { disponible: true, ofs: { '0231780': { estado: 'devuelta', nota: 'Falta cota del alto' }, '0231781': { estado: 'aprobada', revisor: 'jaime' } } } });
     expect(html).toContain('Falta cota del alto');
     expect(html).toContain('Sin aprobar en CoordinaOT: A (0231780) devuelta.');
-    expect(html).toContain('Corregir');
+    expect(html).toContain('Editar');
     // Fase 2: también lo corrige un compañero.
-    expect(pintar({ currentUser: 'JAIME', coordina: { disponible: true, ofs: { '0231780': { estado: 'devuelta', nota: 'x' } } } })).toContain('Corregir');
+    expect(pintar({ currentUser: 'JAIME', coordina: { disponible: true, ofs: { '0231780': { estado: 'devuelta', nota: 'x' } } } })).toContain('Editar');
   });
 
   it('generado: sin «Generar archivos», con el PDF, quién lo revisó y «Reutilizar datos»', () => {
@@ -73,7 +73,7 @@ describe('el pedido de remolques abierto en Pedidos', () => {
     });
     const html = pintar({ pedido: generado });
     expect(html).not.toContain('Pasar a producción');
-    expect(html).toContain('Corregir');
+    expect(html).toContain('Editar');
     // «Reutilizar datos» va en el menú «Más ⋯» de arriba.
     expect(html).toContain('aria-haspopup="menu"');
     expect(html).toContain('href="/api/remolques/pedidos/AR2604286/archivo"');

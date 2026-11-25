@@ -5,22 +5,26 @@ import { generarCorteRemolques } from '../corte/index.js';
 import { pasarAProduccionConStock, type ServiciosStockLona } from '../../stockLonaProduccion.js';
 import type { Material } from '../calc/materiales-seed.ts';
 import { numerarEntrega, aplicarDestino, necesitaPrepararDestino } from '../../entregasRps.js';
+import { apuntarEdicion } from "../../workflow.js";
+import { reabrirRegistro, terminarRegistro } from "../../gestionRegistro.js";
+import { guardarEscritosBorrador, leerEscritosBorrador, detectarCambiosManualesDwg, registrarArchivosEscritos, MENSAJE_CAMBIOS_A_MANO } from "../../cadPaginas/cambiosManuales.ts";
+import { listarBorradoresCad } from "../../cadPaginas/servicioCadPaginas.ts";
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
-import { avisoEntradaEntrega, codigoCorteEditable, cerrarEntrega, codigoAnual, codigoEntrega, ofsEntrega, pedidoEntrega, numeroEntrega, entregaSinCambios } from '../../entregas.js';
+import { abrirEntrega, conservarOfsGeneradas, ofsNuevas, avisoEntradaEntrega, codigoCorteEditable, cerrarEntrega, codigoAnual, codigoEntrega, entregasPedido, ofsEntrega, pedidoEntrega, numeroEntrega, entregaSinCambios } from '../../entregas.js';
 import { materialesRemolques } from '../../materialesEntrega.js';
 import { enviarCorte as enviarCorteCompartido } from "../../corteEnvios.js";
-import { aprobacionDeTodas, crearFlujoDwg, huellaDatos, type AjustesFlujoDwg, type ConfirmacionesCorte } from "../../flujoDwg/flujo.ts";
+import { aprobacionDeTodas, crearFlujoDwg, huellaDatos, planosDe, type AjustesFlujoDwg, type ConfirmacionesCorte } from "../../flujoDwg/flujo.ts";
 import { prepararGuardadoEditable, type DecisionCorteEditable } from "../../flujoDwg/guardarEditable.ts";
 import { comprobarCorteNoRegenerado } from "../../flujoDwg/salidaEditable.ts";
 import { aprobacionToldos } from "../../toldosEditable.js";
 import {
-  approvalReviewers, ELEMENT_NOUNS, generateFilesDecision, generationBlock, saveReviewDecision, uniqueOfs,
+  approvalReviewers, ELEMENT_NOUNS, generateFilesDecision, generationBlock, saveReviewDecision, uniqueOfs, TERMINADO_SIN_GENERAR,
 } from "../../reviewRules.js";
 import type { CalcParams } from "../calc/params.ts";
 import { exigirOfsCorte } from "../corte/of.js";
 import { validarParams } from "../calc/validar-params.ts";
-import { prepararPedidoHoja } from "../hoja/pedido.ts";
+import { ErrorPedidoHoja, prepararPedidoHoja } from "../hoja/pedido.ts";
 import { metrosCortePorElemento, type VistaCorteMetros } from "../hoja/metros-corte.ts";
 import type { DatosHojaPedido } from "../hoja/tipos.ts";
 import { archivarPdfRemolques, destinosPdfRemolques, ErrorArchivoPdf, mensajeCarpetaNoDisponible, type CarpetasRemolques } from "../salida/archivo.ts";
@@ -218,6 +222,11 @@ async function prepararCorte(corte: CorteRemolques, pedido: PedidoRemolques, reg
   }
 }
 
+/** Del cajetín solo cuenta la OF, que va en el corte. */
+const datosCorte = (datos: { elementos: { input: PedidoRemolques['elementos'][number]['input'] }[]; params: CalcParams }) => huellaDatos({ params: datos.params,
+  elementos: datos.elementos.map(({ input }) => ({ ...input, cabecera: input.cabecera.ordenFabricacion })) });
+export const firmaCorteRemolques = (pedido: PedidoRemolques) => datosCorte(pedidoEntrega(pedido));
+
 export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques) {
   const reloj = deps.ahora ?? (() => new Date());
   const registrar = deps.registrar ?? ((mensaje: string) => console.error(mensaje));
@@ -234,16 +243,14 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     escribir: (fichero) => deps.corte!.escribir([{ type: "plano-corte-lona", material: "", ...fichero }]) });
 
   /** Los elementos de la pantalla, completos y calculados aquí: nunca se guarda un resultado que no salga del cálculo. */
-  async function deLaPantalla(c: { elementos?: unknown; params?: unknown }) {
+  async function deLaPantalla(c: { elementos?: unknown; params?: unknown }, exigirOf = true) {
     const params = c.params == null ? await deps.parametros() : paramsDeLaPantalla(c.params);
     const datos = prepararPedidoHoja(c.elementos, params);
-    exigirOfsCorte(datos);
+    if (exigirOf) exigirOfsCorte(datos);
     return { datos, orderCode: codigoPedido(datos.elementos[0].input.cabecera.numeroPedido) };
   }
 
-  /** Los datos de los que sale el corte, para comprobarlos desde cualquier PC al guardar. De la cabecera solo cuenta la OF, que va en el corte. */
-  const datosCorte = (datos: { elementos: { input: PedidoRemolques['elementos'][number]['input'] }[]; params: CalcParams }) => huellaDatos({ params: datos.params,
-    elementos: datos.elementos.map(({ input }) => ({ ...input, cabecera: input.cabecera.ordenFabricacion })) });
+
   const datosEdicion = (pedido: PedidoRemolques) => huellaDatos({ params: pedido.params, clienteRps: pedido.clienteRps,
     elementos: pedido.elementos.map(({ input }) => ({ ...input, cabecera: { ...input.cabecera, realizadoPor: '', revision: '' } })) });
 
@@ -252,17 +259,33 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
    * Si ya hay uno, se abre el que hay, salvo que el autor pida generarlo de nuevo (`regenerar`).
    */
   async function borradorCorte(cuerpo: unknown): Promise<Respuesta> {
-    const c = (cuerpo ?? {}) as { elementos?: unknown; params?: unknown; orderCode?: unknown; savedBy?: unknown; clienteRps?: unknown; regenerar?: unknown };
+    const c = (cuerpo ?? {}) as { elementos?: unknown; params?: unknown; orderCode?: unknown; savedBy?: unknown; clienteRps?: unknown; regenerar?: unknown; abrirCorteIgual?: unknown; confirmarPerderCambiosDwg?: unknown };
     const autor = typeof c.savedBy === "string" ? c.savedBy.trim() : "";
     if (!autor || !deps.tecnicos.includes(autor)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de abrir el corte.");
     const codigoExistente = typeof c.orderCode === 'string' ? codigoPedido(c.orderCode) : '';
     if (codigoExistente && c.regenerar !== true) {
       const pedido = await deps.almacen.obtener(codigoExistente);
-      const revisado = pedido?.status === 'PRODUCED' ? undefined : pedido?.corteConfirmado;
+      const revisado = pedido?.corteConfirmado;
       const codigo = codigoCorteEditable(pedido, codigoExistente);
       const estado = await flujo.estado(codigo);
-      if (pedido?.status !== 'PRODUCED' && (revisado || (estado.activo && estado.borrador))) return flujo.borrador({ orderCode: codigo, revisado: revisado?.plano,
-        preparar: async () => ({ fichero: null, avisos: [] }) });
+      const hayBorrador = estado.activo && estado.borrador;
+      if (revisado || hayBorrador) {
+        const firmaGuardada = (hayBorrador ? estado.datos : revisado?.datos) ?? (pedido ? firmaCorteRemolques(pedido) : undefined);
+        if (c.abrirCorteIgual !== true) {
+          const pantalla = Array.isArray(c.elementos) && c.elementos.length ? await deLaPantalla(c, false).catch(error => {
+            if (error instanceof ErrorPedidoHoja || (error instanceof ErrorPedidoRemolques && error.statusCode === 400)) return null;
+            throw error;
+          }) : null;
+          if (pantalla && pantalla.orderCode !== codigoExistente) throw new ErrorPedidoRemolques('El número del formulario debe coincidir con el del corte.');
+          const preparado = pantalla && crearPedidoRemolques({ datos: pantalla.datos, autoria: { technician: '', reviewer: '' }, existente: pedido, ahora: ahora() });
+          const firmaPantalla = preparado && firmaCorteRemolques(pedido ? { ...pedido, elementos: preparado.elementos, params: preparado.params } : preparado);
+          if ((pedido?.corteNoRegenerado && !hayBorrador) || (firmaPantalla && firmaGuardada && firmaGuardada !== firmaPantalla)) {
+            return { status: 409, cuerpo: { corteDesactualizado: true } };
+          }
+        }
+        return flujo.borrador({ orderCode: codigo, revisado: revisado && planosDe(revisado).map(p => p.plano),
+          preparar: async () => ({ fichero: null, avisos: [] }) });
+      }
     }
     if (!deps.corte) throw new ErrorPedidoRemolques("El corte de lona no está disponible en este servidor.", 404);
     const { datos, orderCode } = await deLaPantalla(c);
@@ -272,13 +295,25 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       const existente = await deps.almacen.obtener(orderCode);
       const pedido = await numerarEntrega(crearPedidoRemolques({ datos, autoria: { technician: datos.elementos[0].input.cabecera.realizadoPor || autor, reviewer: "" },
         existente, ahora: ahora(), clienteRps: validarClienteRps(c.clienteRps) }), await deps.ajustes());
-      const confirmado = pedido.corteConfirmado;
-      return await flujo.borrador({ orderCode: codigoAnual(pedido), regenerar: c.regenerar === true, revisado: confirmado?.plano, datos: datosCorte(pedidoEntrega(pedido)), datosRevisado: confirmado?.datos,
+      const mismoCorte = existente && ofsNuevas(existente, datos.elementos).length === 0;
+      const seleccionado = mismoCorte ? { ...existente, elementos: pedido.elementos, params: pedido.params } : pedido;
+      const codigo = codigoAnual(seleccionado);
+      const confirmado = seleccionado.corteConfirmado;
+      if (c.regenerar === true && c.confirmarPerderCambiosDwg !== true) {
+        const aviso = await comprobarCambiosManuales(codigo, confirmado);
+        if (aviso) return aviso;
+      }
+      const respuesta = await flujo.borrador({ orderCode: codigo, regenerar: c.regenerar === true, revisado: confirmado?.plano, datos: firmaCorteRemolques(seleccionado), datosRevisado: confirmado?.datos,
         preparar: async (carpeta) => {
-          const { ficheros, avisos } = await deps.corte!.preparar(pedidoEntrega(pedido, 'anual'), carpeta);
+          const { ficheros, avisos } = await deps.corte!.preparar(pedidoEntrega(seleccionado, 'anual'), carpeta);
           const plano = ficheros.find((fichero) => fichero.type === "plano-corte-lona") ?? null;
           return { fichero: plano, avisos: plano || avisos.length ? avisos : ["Este pedido no tiene corte de lona."] };
         } });
+      if (respuesta.status === 200 && !(respuesta.cuerpo as { existente?: boolean }).existente) {
+        const archivos = await listarBorradoresCad((await deps.ajustes()).corteBorradoresDirectory, codigo);
+        await guardarEscritosBorrador(deps.confirmaciones, codigo, archivos.map(f => ({ filename: f.filename, plano: f.ruta })), ahora());
+      }
+      return respuesta;
     } finally {
       ocupados.delete(orderCode);
     }
@@ -290,7 +325,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     const codigo = typeof orderCode === "string" ? orderCode.trim() : "";
     if (!codigo) return { activo: false as const };
     const pedido = await deps.almacen.obtener(codigoPedido(codigo));
-    return { ...await flujo.estado(codigoCorteEditable(pedido, codigoPedido(codigo))), revisado: pedido?.status !== 'PRODUCED' && Boolean(pedido?.corteConfirmado), corteSimulado: pedido?.status !== 'PRODUCED' && Boolean(pedido?.corteSimulado) };
+    return { ...await flujo.estado(codigoCorteEditable(pedido, codigoPedido(codigo))), revisado: Boolean(pedido?.corteConfirmado), corteSimulado: Boolean(pedido?.corteSimulado) };
   }
 
   async function confirmarCorte(cuerpo: unknown): Promise<Respuesta> {
@@ -336,8 +371,42 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     }
   }
 
-  async function guardar(cuerpo: unknown): Promise<Respuesta> {
-    const c = (cuerpo ?? {}) as DecisionCorteEditable & { elementos?: unknown; params?: unknown; savedBy?: unknown; confirmOverwrite?: unknown; clienteRps?: unknown };
+  async function gestionar(orderCode: string, accion: 'terminar' | 'reabrir' | 'papelera',
+    { usuario, confirmacion }: { usuario: string; confirmacion?: unknown }) {
+    if (!deps.tecnicos.includes(usuario)) throw new ErrorPedidoRemolques('Elige quién eres en «Soy» antes de continuar.');
+    const codigo = codigoPedido(orderCode);
+    if (ocupados.has(codigo)) throw new ErrorPedidoRemolques(MENSAJE_GUARDANDO, 409);
+    ocupados.set(codigo, 'guardando');
+    try {
+      const opciones = { usuario, fecha: ahora() };
+      if (accion === 'papelera') {
+        if (!deps.almacen.enviarAPapelera) throw new ErrorPedidoRemolques('La papelera no está disponible.', 409);
+        await deps.almacen.enviarAPapelera(codigo, { ...opciones, confirmacion });
+        return null;
+      }
+      const pedido = await obtener(codigo);
+      const actualizado: PedidoRemolques = accion === 'terminar' ? terminarRegistro(pedido, opciones) : reabrirRegistro(pedido, opciones);
+      await deps.almacen.guardar(actualizado);
+      return actualizado;
+    } finally {
+      ocupados.delete(codigo);
+    }
+  }
+
+  async function comprobarCambiosManuales(codigo: string, confirmado: PedidoRemolques['corteConfirmado']): Promise<Respuesta | null> {
+    const ajustes = await deps.ajustes();
+    const [borradores, escritosBorrador] = await Promise.all([
+      listarBorradoresCad(ajustes.corteBorradoresDirectory, codigo),
+      leerEscritosBorrador(deps.confirmaciones, codigo),
+    ]);
+    const manuales = await detectarCambiosManualesDwg({ corteConfirmado: confirmado, borradores, escritosBorrador });
+    return manuales.modificadoAMano ? { status: 409, cuerpo: {
+      needsManualDwgConfirmation: true, archivosModificados: manuales.archivosModificados, error: MENSAJE_CAMBIOS_A_MANO,
+    } } : null;
+  }
+
+  async function guardar(cuerpo: unknown, { registro = false } = {}): Promise<Respuesta> {
+    const c = (cuerpo ?? {}) as DecisionCorteEditable & { elementos?: unknown; params?: unknown; savedBy?: unknown; confirmOverwrite?: unknown; clienteRps?: unknown; confirmarPerderCambiosDwg?: unknown };
     const salvador = typeof c.savedBy === "string" ? c.savedBy.trim() : "";
     if (!salvador || !deps.tecnicos.includes(salvador)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de guardar.");
     const clienteRps = validarClienteRps(c.clienteRps);
@@ -349,10 +418,17 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     if (ocupado === "guardando") return { status: 409, cuerpo: { error: MENSAJE_GUARDANDO } };
     ocupados.set(orderCode, "guardando");
     try {
-      if (await deps.esPedidoDeToldos(orderCode)) {
-        throw new ErrorPedidoRemolques(`${orderCode} ya está guardado como pedido de toldos: un pedido es de toldos o de remolques. Revisa el número.`, 409);
-      }
       const existente = await deps.almacen.obtener(orderCode);
+      if ((!registro || !existente) && await deps.esPedidoDeToldos(orderCode)) {
+        throw new ErrorPedidoRemolques(mensajePedidoDeRemolques(orderCode), 409);
+      }
+      const nuevas = registro && existente?.status === 'PRODUCED' ? ofsNuevas(existente, datos.elementos) : [];
+      if (registro && existente && nuevas.length === 0) {
+        return await guardarRegistro(existente, datos, salvador, clienteRps, c);
+      }
+      if (existente?.status === TERMINADO_SIN_GENERAR) {
+        throw new ErrorPedidoRemolques('Vuelve a abrir el pedido para preparar otra entrega.', 409);
+      }
       // Las OF nuevas abren otra entrega; las correcciones conservan su número.
       const decision = saveReviewDecision(existente, true);
       if (decision.action === "refuse") throw new ErrorPedidoRemolques(decision.error, decision.statusCode);
@@ -360,6 +436,11 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       const estado = aprobacionToldos(await deps.coordina.statusOf(uniqueOfs(aprobacion)));
       const autoria = { technician: existente?.summary.technician || salvador, reviewer: approvalReviewers(aprobacion, estado, deps.tecnicos) };
       let pedido = await numerarEntrega({ ...crearPedidoRemolques({ datos, autoria, existente, ahora: ahora(), clienteRps }), updatedBy: salvador }, await deps.ajustes());
+      if (nuevas.length) {
+        pedido = await numerarEntrega(abrirEntrega(conservarOfsGeneradas(pedido), existente), await deps.ajustes());
+        pedido = apuntarEdicion({ ...pedido, ediciones: existente?.ediciones }, salvador, pedido.updatedAt);
+        delete pedido.corteConfirmado;
+      }
       if ((cuerpo as { destinoEntrega?: unknown })?.destinoEntrega) {
         const destino = await aplicarDestino(pedido, await deps.ajustes(), cuerpo);
         if (destino.respuesta) return destino.respuesta;
@@ -378,6 +459,10 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       const estadoCorte = await flujo.estado(codigoAnual(pedido));
       const conCorteLona = Boolean(ofsEntrega(pedido).length && deps.corte && ((await deps.corte.vista(pedidoEntrega(pedido)) as { cortes?: unknown[] } | null)?.cortes?.length
         || anteriorCorte?.corteConfirmado || anteriorCorte?.corteSimulado || (estadoCorte.activo && estadoCorte.borrador)));
+      if (conCorteLona && c.decisionCorte === 'regenerar' && c.confirmarPerderCambiosDwg !== true && (await deps.ajustes()).productionEnabled) {
+        const aviso = await comprobarCambiosManuales(codigoAnual(pedido), anteriorCorte?.corteConfirmado);
+        if (aviso) return aviso;
+      }
       const desdeBorrador = conCorteLona ? await prepararGuardadoEditable({ flujo, orderCode: codigoAnual(pedido), technician: autoria.technician, usuario: salvador,
         datos: datosCorte(pedidoEntrega(pedido)), datosAnteriores: anteriorCorte ? datosCorte(pedidoEntrega(anteriorCorte)) : undefined, existente: anteriorCorte, entrada: c,
         cambiosPedido: existente ? datosEdicion(pedido) !== datosEdicion(existente) : undefined,
@@ -388,7 +473,13 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
       if (desdeBorrador && "respuesta" in desdeBorrador) return desdeBorrador.respuesta;
       if (desdeBorrador) {
         const conCorte = { ...pedido, ...desdeBorrador.metadata };
-        try { await desdeBorrador.escribir(); await deps.almacen.guardar(conCorte); }
+        try {
+          await desdeBorrador.escribir();
+          if (conCorte.corteConfirmado) {
+            conCorte.corteConfirmado = await registrarPlano(conCorte.corteConfirmado);
+          }
+          await deps.almacen.guardar(conCorte);
+        }
         catch (error) { await desdeBorrador.deshacer(); throw error; }
         const avisos = [...desdeBorrador.avisos, ...await desdeBorrador.limpiar()];
         const confirmado = conCorte.corteConfirmado;
@@ -403,6 +494,59 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     } finally {
       ocupados.delete(orderCode);
     }
+  }
+
+  async function registrarPlano(confirmado: NonNullable<PedidoRemolques['corteConfirmado']>) {
+    return { ...confirmado, archivosEscritos: await registrarArchivosEscritos(planosDe(confirmado)) };
+  }
+
+  async function guardarRegistro(existente: PedidoRemolques, datos: DatosHojaPedido, usuario: string,
+    clienteRps: PedidoRemolques['clienteRps'], entrada: DecisionCorteEditable & { confirmarPerderCambiosDwg?: unknown }): Promise<Respuesta> {
+    const autoria = { technician: existente.summary.technician, reviewer: existente.summary.reviewer };
+    const editado = crearPedidoRemolques({ datos, autoria, existente, ahora: ahora(), clienteRps });
+    let pedido: PedidoRemolques = apuntarEdicion({
+      ...existente, elementos: editado.elementos, params: editado.params, numeroPedido: editado.numeroPedido,
+      summary: editado.summary, clienteRps: editado.clienteRps, entregas: entregasPedido(existente),
+    }, usuario, editado.updatedAt);
+    if (existente.datosOfsConservadas) pedido = conservarOfsGeneradas(pedido);
+    const codigo = codigoAnual(existente);
+    const estado = await flujo.estado(codigo);
+    const firma = firmaCorteRemolques(pedido);
+    const firmaAnterior = existente.corteConfirmado?.datos ?? (estado.activo ? estado.datos : undefined) ?? firmaCorteRemolques(existente);
+    const hayCorte = existente.corteConfirmado || (estado.activo && estado.borrador) || existente.corteSimulado;
+    if (hayCorte && (firma !== firmaAnterior || datosEdicion(pedido) !== datosEdicion(existente))) {
+      pedido.corteNoRegenerado = true;
+    }
+
+    if (entrada.decisionCorte === 'regenerar') {
+      if (existente.status === TERMINADO_SIN_GENERAR) throw new ErrorPedidoRemolques('Vuelve a abrir el pedido para regenerar el corte.', 409);
+      if (!deps.corte) throw new ErrorPedidoRemolques('El corte no está disponible.', 409);
+      const ajustes = await deps.ajustes();
+      if (entrada.confirmarPerderCambiosDwg !== true && ajustes.productionEnabled) {
+        const aviso = await comprobarCambiosManuales(codigo, existente.corteConfirmado);
+        if (aviso) return aviso;
+      }
+      const preparado = await prepararGuardadoEditable({ flujo, orderCode: codigo, technician: autoria.technician, usuario,
+        datos: firma, existente, entrada, produccion: Boolean(ajustes.productionEnabled), preparar: async carpeta => {
+          const salida = await deps.corte!.preparar({ ...pedidoEntrega(pedido), orderCode: codigo }, carpeta);
+          return { ...salida, ficheros: salida.ficheros.filter(f => f.type === 'plano-corte-lona') };
+        } });
+      if (!preparado) throw new ErrorPedidoRemolques('Configura la carpeta del corte para regenerar el plano.', 409);
+      if ('respuesta' in preparado) return preparado.respuesta;
+      pedido = { ...pedido, ...preparado.metadata };
+      try {
+        await preparado.escribir();
+        if (pedido.corteConfirmado) pedido.corteConfirmado = await registrarPlano(pedido.corteConfirmado);
+        await deps.almacen.guardar(pedido);
+      } catch (error) {
+        await preparado.deshacer();
+        throw error;
+      }
+      await preparado.limpiar();
+    } else {
+      await deps.almacen.guardar(pedido);
+    }
+    return { status: 200, cuerpo: { ok: true, review: resumenBandeja(pedido) } };
   }
 
   async function generar(orderCodeBruto: string, cuerpo: unknown, prepararSolo = false, bloqueado = false): Promise<Respuesta> {
@@ -715,5 +859,5 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
     return pedido.corteConfirmado ? prepararPlanoProduccion({ confirmado: pedido.corteConfirmado }) : planoCorte(codigo, cuerpo);
   }
 
-  return { guardarPlano, produccion, propuestaStockLona, listar, obtener, guardar, borradorCorte, confirmarCorte, estadoCorte, enlacesCorte, generar, vistaPrevia, archivo, buscar, corte, vistaPreviaCorte, metrosCorteDeLaPantalla, planoCorte, enviarCorte, descargarCorte };
+  return { guardarPlano, produccion, propuestaStockLona, listar, obtener, guardar, gestionar, borradorCorte, confirmarCorte, estadoCorte, enlacesCorte, generar, vistaPrevia, archivo, buscar, corte, vistaPreviaCorte, metrosCorteDeLaPantalla, planoCorte, enviarCorte, descargarCorte };
 }

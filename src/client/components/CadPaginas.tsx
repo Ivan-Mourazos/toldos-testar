@@ -47,6 +47,9 @@ const PX_POR_MM = 96 / 25.4;
 export function CadPaginas({
   orderCode,
   order,
+  producto,
+  rutaCad,
+  sinDwg,
   estado = null,
   version = '',
   noRegenerado = false,
@@ -62,7 +65,10 @@ export function CadPaginas({
   actions
 }: {
   orderCode: string;
-  order: DraftState;
+  order?: DraftState;
+  producto?: 'toldos' | 'remolques' | 'puertas';
+  rutaCad?: string;
+  sinDwg?: React.ReactNode;
   estado?: EstadoCorte | null;
   version?: string;
   noRegenerado?: boolean;
@@ -77,8 +83,11 @@ export function CadPaginas({
   heading?: React.ReactNode;
   actions?: React.ReactNode;
 }) {
-  const toldos = toldosConCorte(order);
-  const requerido = toldos.length > 0 || dwgGuardado || Boolean(datosIniciales?.tieneDwg);
+  const toldos = order ? toldosConCorte(order) : [];
+  const codigo = encodeURIComponent(orderCode);
+  const origenCad = rutaCad ?? (producto && producto !== 'toldos'
+    ? `/api/${producto}/pedidos/${codigo}/cad-paginas` : `/api/reviews/${codigo}/cad-paginas`);
+  const requerido = Boolean(producto && producto !== 'toldos' || rutaCad || toldos.length || dwgGuardado || datosIniciales?.tieneDwg);
 
   const [datos, setDatos] = useState<RespuestaCadPaginasCliente | null>(datosIniciales);
   const [cargando, setCargando] = useState(!datosIniciales && Boolean(orderCode.trim()));
@@ -108,7 +117,7 @@ export function CadPaginas({
         setError('');
       }
       try {
-        const respuesta = await fetch(`/api/reviews/${encodeURIComponent(orderCode)}/cad-paginas`, {
+        const respuesta = await fetch(origenCad, {
           cache: 'no-store',
           signal: controller.signal
         });
@@ -139,7 +148,7 @@ export function CadPaginas({
       window.removeEventListener('focus', alVolver);
       document.removeEventListener('visibilitychange', alVolver);
     };
-  }, [orderCode, version, intento, requerido, datosIniciales]);
+  }, [orderCode, origenCad, version, intento, requerido, datosIniciales]);
 
   const paginas = datos?.paginas ?? [];
   const paginaSegura = Math.max(0, Math.min(indicePagina, Math.max(0, paginas.length - 1)));
@@ -208,10 +217,17 @@ export function CadPaginas({
 
   // Caso 6 (panel de detalle): todavía no hay DWG -> aviso corto y vista anterior (CorteLona).
   if (!enModal && !cargando && !error && datos && !datos.tieneDwg) {
+    if (!order) return (
+      <section className="planteamiento-pedido panel bloque-3d" aria-label="Corte">
+        <CabeceraDocumento titulo="Corte" icono={<Scissors aria-hidden="true" />} />
+        <p className="corte-aviso cad-paginas-sin-dwg" role="status">Aún no hay dibujo del CAD.</p>
+        {sinDwg}
+      </section>
+    );
     return (
       <>
         <p className="corte-aviso cad-paginas-sin-dwg" role="status">Aún no hay dibujo del CAD.</p>
-        <CorteLona
+        {sinDwg ?? <CorteLona
           order={order}
           estado={estado}
           reviewCode={orderCode}
@@ -220,7 +236,7 @@ export function CadPaginas({
           generarArriba={generarArriba}
           regenerable={regenerable}
           onListo={onListo}
-        />
+        />}
       </>
     );
   }

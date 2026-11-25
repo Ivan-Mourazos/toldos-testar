@@ -104,8 +104,12 @@ export function pasosEntrega(p) {
 }
 
 export function ofsSinGenerar(pedido, order) {
+  return ofsNuevas(pedido, order.awnings);
+}
+
+export function ofsNuevas(pedido, items) {
   const hechas = new Set(entregasPedido(pedido).flatMap(e => e.ofs));
-  return [...new Set(order.awnings.map(ofElemento).filter(of => of && !hechas.has(of)))];
+  return [...new Set(items.map(ofElemento).filter(of => of && !hechas.has(of)))];
 }
 
 // Las ediciones de OF ya entregadas quedan en el formulario. Sus entregas conservan

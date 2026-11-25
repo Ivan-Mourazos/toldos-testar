@@ -41,7 +41,6 @@ import { cambiarTipoLinea, type TipoCambiable } from '../../remolques/workspace/
 import { clienteDeLinea } from './guardarEnFicha';
 import { decidirFicha, notaFicha, preguntaSugerencia } from './fichaAlObtener';
 import { AVISO_FICHAS_ILEGIBLES, guardarDesdePedido, leerFichas, nombreClienteRps } from './fichasClientes';
-import type { PlanoCorte } from './CorteRemolques';
 import { AVISO_SIN_CAMBIOS, guardarToldosEditable } from '../toldosEditable';
 import { abrirCorteDwg } from '../abrirCorte';
 import { primeraLineaInicio } from '../modelosInicio';
@@ -815,7 +814,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
    * Pedidos, se aplican las decisiones comunes de mantener o regenerar el corte. Guardado, la pantalla queda para un pedido nuevo y se
    * borra el borrador del navegador de ese pedido, como en toldos.
    */
-  const guardarParaRevision = useCallback(async (regenerar = false) => {
+  const guardar = useCallback(async (regenerar = false) => {
     const actual = estadoRef.current;
     const estados = Object.fromEntries(actual.lineas.map((linea) => [linea.version, estadoLinea(linea)]));
     const falta = faltaParaPdf(actual.lineas, estados);
@@ -833,7 +832,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
         const cuerpo = cuerpoGuardar(actual.lineas, params, usuario, true);
         const datos = await guardarToldosEditable({ ...cuerpo, ...(regenerar ? { decisionCorte: 'regenerar', confirmOverwrite: true } : {}) }, confirmar,
           () => abrirCorteDwg({ ruta: '/api/remolques/borrador-corte', orderCode: actual.numeroPedido, cuerpo, usuario, preguntar: confirmar,
-            notify: notificar.current.notify, editable: true }), '/api/remolques/pedidos');
+            notify: notificar.current.notify, editable: true }), '/api/remolques/pedidos/guardar-registro');
         if (!datos) return;
         if (datos.unchanged) {
           notificar.current.notify(AVISO_SIN_CAMBIOS, { tone: 'info', title: 'Sin cambios' });
@@ -847,7 +846,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
         }
         if (!pantallaSigueIgual(estadoRef.current, actual)) {
           // Mientras se guardaba se cambió o cargó otro pedido: la pantalla no se toca.
-          notificar.current.notify(`${datos.review?.orderCode ?? actual.numeroPedido} guardado. No se ha tocado lo que tienes en pantalla.`, { tone: 'info', title: 'Guardado para revisión' });
+          notificar.current.notify(`${datos.review?.orderCode ?? actual.numeroPedido} guardado. No se ha tocado lo que tienes en pantalla.`, { tone: 'info', title: 'Pedido guardado' });
           return;
         }
         consultaEnCurso.current?.abort();
@@ -855,19 +854,11 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
         limpiarBorradores(almacen, actual.numeroPedido);
         setParamsGuardados(null);
         despachar({ tipo: 'PEDIDO_LIMPIADO' });
-        // Como en toldos: se dice qué plano del corte ha quedado para revisar y lo que hay que mirar. Si el
-        // plano ya estaba en su carpeta, el pedido queda guardado igual y se pregunta antes de sustituirlo.
-        const planoCorte: PlanoCorte | null = datos.planoCorte ?? null;
         const codigo = datos.review?.orderCode ?? actual.numeroPedido;
-        const planos = planoCorte?.files.map((fichero) => fichero.filename) ?? [];
-        const avisosCorte = planoCorte?.avisos ?? [];
-        notificar.current.notify(
-          `Guardado en Pedidos para revisión: ${codigo}.${planos.length ? ` Plano del corte: ${planos.join(' · ')}.` : ''}${avisosCorte.length ? ` ${avisosCorte.join(' ')}` : ''}`,
-          { tone: 'success', title: 'Guardado para revisión' },
-        );
+        notificar.current.notify(`Pedido ${codigo} guardado.`, { tone: 'success' });
         return;
     } catch (error) {
-      avisar('error', error instanceof Error ? error.message : 'No se pudo guardar el pedido para revisión.');
+      avisar('error', error instanceof Error ? error.message : 'No se pudo guardar el pedido.');
     } finally {
       setGuardando(false);
     }
@@ -885,9 +876,9 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
       hayDatos && firmaFormulario(actual) !== formularioGuardado.current)) {
       const respuesta = await confirmar(modo === 'corregir'
         ? {
-            title: `Corregir ${pedido.orderCode}`,
-            message: 'Los datos que haya ahora en Remolques se sustituirán por los de este pedido, con los parámetros con que se guardó. Lo guardado no cambia hasta que vuelvas a guardar.',
-            confirmLabel: 'Abrir para corregir',
+            title: `Editar ${pedido.orderCode}`,
+            message: 'El formulario se sustituirá por los datos guardados de este pedido.',
+            confirmLabel: 'Editar pedido',
             cancelLabel: 'Conservar formulario',
             tone: 'warning',
           }
@@ -922,7 +913,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
       lineas,
     });
     avisar(modo === 'corregir' ? 'info' : 'exito', modo === 'corregir'
-      ? `Pedido ${pedido.orderCode} cargado para corregirlo, con los parámetros con que se guardó.`
+      ? `Pedido ${pedido.orderCode} abierto para editar.`
       : `Datos de ${pedido.orderCode} cargados como un pedido nuevo, con los parámetros actuales.`);
   }, [almacen, avisar, confirmar, usuario, volcar]);
 
@@ -1092,7 +1083,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
     abrirPedido,
     hayDatos,
     limpiarFormulario,
-    guardarParaRevision,
+    guardar,
     cargarPedidoGuardado,
     guardarBorrador,
     cargarBorrador,

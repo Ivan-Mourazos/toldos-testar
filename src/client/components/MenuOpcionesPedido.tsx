@@ -16,9 +16,9 @@ function Opcion({ icono: Icono, titulo, detalle, motivo, peligro = false, accion
   </button>;
 }
 
-export function MenuOpcionesToldos({ corte, ocupado, motivoBorrador, motivoRegenerar, guardarBorrador, regenerar, limpiar }: {
-  corte: FlujoCorteDwg; ocupado: boolean; motivoBorrador?: string; motivoRegenerar?: string;
-  guardarBorrador: () => Promise<boolean>; regenerar: () => Promise<void>; limpiar: () => Promise<void>;
+export function MenuOpcionesPedido({ corte, ocupado, motivoBorrador, motivoRegenerar, guardarBorrador, regenerar, limpiar }: {
+  corte: Pick<FlujoCorteDwg, 'usuario' | 'preguntar'>; ocupado: boolean; motivoBorrador?: string; motivoRegenerar?: string;
+  guardarBorrador: () => Promise<boolean>; regenerar: () => Promise<void>; limpiar: () => void | Promise<void>;
 }) {
   const espera = ocupado ? 'Espera a que termine la operación.' : undefined;
   return <MenuMas etiqueta="Más opciones">

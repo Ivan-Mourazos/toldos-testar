@@ -10,7 +10,8 @@ import type { PedidoRemolques } from '../../remolques/flujo/tipos.ts';
 import type { PedidoPuertasGuardado } from '../../puertas/flujo/tipos.ts';
 import { PedidoPuertasDetalle } from '../puertas/PedidoPuertasDetalle';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
-import type { GestionToldos } from '../components/ConfirmarGestionToldos';
+import { mensajeGestionRegistro, solicitarGestionRegistro } from '../gestionRegistro';
+import type { GestionRegistro } from '../components/ConfirmarGestionRegistro';
 import { TERMINADO_SIN_GENERAR } from '../../reviewRules.js';
 import { ReviewOrderDetail } from '../components/ReviewOrderDetail';
 import { OrdersInbox } from '../components/OrdersInbox';
@@ -190,26 +191,19 @@ export function ReviewsView({ modo = 'pedidos', todos = [], onIrHistorial, refre
     return () => { cancelled = true; };
   }, [selectedCode, refreshKey, onToast]);
 
-  async function gestionarRegistro(accion: GestionToldos, texto: string) {
+  async function gestionarRegistro(accion: GestionRegistro, texto: string) {
     if (!selectedCode || working) return;
     setWorking(true);
     try {
-      const respuesta = await fetch(`/api/reviews/${encodeURIComponent(selectedCode)}/${accion}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ usuario: currentUser, motivo: accion === 'terminar' ? texto : undefined,
-          confirmacion: accion === 'papelera' ? texto : undefined })
-      });
-      const datos = await respuesta.json();
-      if (!respuesta.ok) throw new Error(datos.error || 'No se pudo actualizar el pedido.');
+      const review = await solicitarGestionRegistro<ReviewPackage>(`/api/reviews/${encodeURIComponent(selectedCode)}`, accion, currentUser, texto);
       if (accion === 'papelera') {
         setDetail(null);
         volverALista();
       } else {
-        setDetail({ orderCode: selectedCode, review: datos.review as ReviewPackage });
+        setDetail({ orderCode: selectedCode, review });
       }
       onChanged();
-      const mensaje = { terminar: 'Pedido terminado sin generar.', reabrir: 'El pedido vuelve a estar pendiente.', papelera: 'Pedido enviado a la papelera.' };
-      onToast(mensaje[accion], { tone: 'success' });
+      onToast(mensajeGestionRegistro[accion], { tone: 'success' });
     } catch (error) {
       onToast(error instanceof Error ? error.message : 'No se pudo actualizar el pedido.', { tone: 'error' });
     } finally {

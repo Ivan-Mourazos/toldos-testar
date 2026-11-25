@@ -1,4 +1,4 @@
-// Servicio de páginas CAD reales (solo pedidos de toldos):
+// Servicio de páginas CAD reales por producto:
 // resuelve el DWG de referencia (revisado de la carpeta del año o borrador),
 // convierte DWG → DXF con ODA y renderiza cada presentación a SVG con caché por mtime+tamaño.
 import fs from 'node:fs/promises';
@@ -50,7 +50,7 @@ export interface RespuestaCadPaginas {
 export interface ReviewMinima {
   orderCode: string;
   status?: string;
-  order: Record<string, unknown>;
+  order?: Record<string, unknown>;
   corteLona?: Record<string, unknown> | null;
   corteConfirmado?: CorteConfirmadoConEscritos;
   corteNoRegenerado?: boolean;
@@ -108,13 +108,15 @@ async function listarRevisadosCad(confirmado: CorteConfirmadoConEscritos | undef
   return salida;
 }
 
-function estadoActualizacionPedido(review: ReviewMinima | null): {
+interface EstadoActualizacionCad {
   actualizado: boolean;
   motivoDesactualizado: string | null;
   letrasCambiadas: boolean;
   pendientes: Array<{ id?: string; letra: string; of?: string; modelo: string; motivo: string }>;
-} {
-  if (!review) {
+}
+
+function estadoToldos(review: ReviewMinima | null): EstadoActualizacionCad {
+  if (!review?.order) {
     return { actualizado: true, motivoDesactualizado: null, letrasCambiadas: false, pendientes: [] };
   }
   const actual = pedidoEntrega(review).order;
@@ -149,19 +151,27 @@ function estadoActualizacionPedido(review: ReviewMinima | null): {
   return { actualizado: !desactualizado, motivoDesactualizado, letrasCambiadas, pendientes };
 }
 
-export function crearServicioCadPaginas({
-  obtenerReview,
-  ajustes,
-  oda,
-  almacenEscritos,
-  maxCache = 50
-}: {
-  obtenerReview: (orderCode: string) => Promise<ReviewMinima | null>;
+export interface DependenciasCadPaginas<T extends ReviewMinima = ReviewMinima> {
+  obtenerReview: (orderCode: string) => Promise<T | null>;
   ajustes: () => Promise<AjustesCadMinimos>;
   oda: OdaMinimo;
   almacenEscritos?: AlmacenEscritos;
   maxCache?: number;
-}) {
+  resolverCorte?: (codigo: string, pedido: T | null, ajustes: AjustesCadMinimos) => { carpeta?: string; codigo: string; carpetaRevisada?: string };
+  firmaCorte?: (pedido: T) => string;
+}
+
+export function crearServicioCadPaginas<T extends ReviewMinima>({
+  obtenerReview,
+  ajustes,
+  oda,
+  almacenEscritos,
+  maxCache = 50,
+  resolverCorte = (codigo, pedido, ajustes) => ({
+    carpeta: ajustes.corteBorradoresDirectory, codigo: pedido ? codigoAnual(pedido) : codigo
+  }),
+  firmaCorte
+}: DependenciasCadPaginas<T>) {
   const cache = new Map<string, PaginaCadSvg[]>();
   const enCurso = new Map<string, Promise<PaginaCadSvg[]>>();
 
@@ -208,13 +218,18 @@ export function crearServicioCadPaginas({
   async function obtenerPaginas(orderCodeBruto: string): Promise<RespuestaCadPaginas> {
     const orderCode = sanitizeOrderCode(orderCodeBruto);
     const [review, settings] = await Promise.all([obtenerReview(orderCode), ajustes()]);
-    const codigoCorte = review ? codigoAnual(review) : orderCode;
+    const { codigo: codigoCorte, carpeta, carpetaRevisada } = resolverCorte(orderCode, review, settings);
 
-    const revisados = await listarRevisadosCad(review?.corteConfirmado);
-    const borradores = revisados.length ? [] : await listarBorradoresCad(settings.corteBorradoresDirectory, codigoCorte);
+    const confirmados = await listarRevisadosCad(review?.corteConfirmado);
+    const revisados = confirmados.length ? confirmados : await listarBorradoresCad(carpetaRevisada, codigoCorte);
+    const borradores = revisados.length ? [] : await listarBorradoresCad(carpeta, codigoCorte);
     const ficheros = revisados.length ? revisados : borradores;
     const origen: 'revisado' | 'borrador' | null = revisados.length ? 'revisado' : borradores.length ? 'borrador' : null;
-    const estado = estadoActualizacionPedido(review);
+    const estado = estadoToldos(review);
+    if (firmaCorte && review && (review.corteNoRegenerado || (review.corteConfirmado?.datos && firmaCorte(review) !== review.corteConfirmado.datos))) {
+      estado.actualizado = false;
+      estado.motivoDesactualizado = 'Los datos del pedido cambiaron después de generar el DWG.';
+    }
 
     if (!ficheros.length) {
       return {

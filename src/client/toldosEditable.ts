@@ -70,6 +70,15 @@ export async function abrirCorteGuardado(ruta: string, cuerpo?: Record<string, u
 /** El servidor no ha guardado nada (pedido generado sin cambios): no se dice «Guardado» (Iván, 23/11/2026, AR2605256). */
 export const AVISO_SIN_CAMBIOS = 'Este pedido ya está generado y no ha cambiado: no se ha guardado nada. Para rehacer el corte con lo que ves, usa «Regenerar corte».';
 
+export function confirmarRegeneracionDwg(preguntar: AskForConfirmation, datos: { error?: string; archivosModificados?: string[] }) {
+  return preguntar({
+    title: 'El DWG tiene cambios hechos a mano',
+    message: datos.error || 'Si regeneras el corte, se perderán los cambios de ZWCAD.',
+    details: datos.archivosModificados,
+    confirmLabel: 'Regenerar igual', cancelLabel: 'Cancelar', tone: 'warning',
+  });
+}
+
 /** Cada reintento conserva las decisiones del técnico y la huella que ha visto. */
 export async function guardarToldosEditable(cuerpo: Record<string, unknown>, preguntar: AskForConfirmation, abrir: () => Promise<unknown>, ruta = '/api/reviews') {
   const entrada = { ...cuerpo };
@@ -92,14 +101,7 @@ export async function guardarToldosEditable(cuerpo: Record<string, unknown>, pre
       continue;
     }
     if (respuesta.status === 409 && datos.needsManualDwgConfirmation) {
-      const choice = await preguntar({
-        title: 'El DWG tiene cambios hechos a mano',
-        message: datos.error || 'El DWG tiene cambios hechos a mano; si regeneras se pierden',
-        details: datos.archivosModificados,
-        confirmLabel: 'Regenerar igual',
-        cancelLabel: 'Cancelar',
-        tone: 'warning'
-      });
+      const choice = await confirmarRegeneracionDwg(preguntar, datos);
       if (choice !== 'confirm') return null;
       entrada.confirmarPerderCambiosDwg = true;
       continue;

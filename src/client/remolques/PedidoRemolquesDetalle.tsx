@@ -9,14 +9,18 @@ import { CopyPlus, ExternalLink, Factory, FileSearch, FileText, Scissors } from 
 import { formOptions } from '../../domain/modelBehavior.js';
 import { elementosAprobacion, modeloElemento } from '../../remolques/flujo/pedido.ts';
 import type { ElementoGuardado, PedidoRemolques } from '../../remolques/flujo/tipos.ts';
-import { normalizeOf, reviewerName } from '../../reviewRules.js';
+import { isPendingGeneration, normalizeOf, reviewerName, TERMINADO_SIN_GENERAR } from '../../reviewRules.js';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import { controlLabel } from '../components/controlLabels';
 import { useCoordinaStatus } from '../hooks/useCoordinaStatus';
 import type { CoordinaStatus } from '../types';
 import { CorteRemolques, type VistaCorteRemolques } from './CorteRemolques';
 import { estadoGenerarRemolques, ficherosPrevistos, opcionesCorteRemolques } from './generarPedido';
-import { puedeCorregir } from '../generatePermission';
+import { puedeEditarToldos } from '../generatePermission';
+import { CadPaginas } from '../components/CadPaginas';
+import { ConfirmarGestionRegistro, type GestionRegistro } from '../components/ConfirmarGestionRegistro';
+import { MenuMas } from '../components/MenuMas';
+import { mensajeGestionRegistro, solicitarGestionRegistro } from '../gestionRegistro';
 import { LecturaPedidoRemolques } from './LecturaPedidoRemolques';
 import { formatearNumeroEs } from './numeroEs';
 import { DocumentosPedido } from '../components/DocumentosPedido';
@@ -61,13 +65,14 @@ function FilaElemento({ elemento, letra, coordina }: { elemento: ElementoGuardad
   );
 }
 
-export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, generando, onBack, onCorregir, onReutilizar, onGenerar, onEnviado, onProduccionTerminada, notify, onConfirm, elementoInicial, textoVolver = '← Pedidos' }: {
+export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, generando, onBack, onCorregir, onReutilizar, onGenerar, onEnviado, onGestion, onProduccionTerminada, notify, onConfirm, elementoInicial, textoVolver = '← Pedidos' }: {
   pedido: PedidoRemolques | null;
   cargando: boolean;
   coordina: CoordinaStatus | null;
   currentUser: string;
   generando: boolean;
   onProduccionTerminada?: () => void;
+  onGestion?: (accion: GestionRegistro, texto: string) => void;
   onBack: () => void;
   onCorregir: () => void;
   onReutilizar: () => void;
@@ -81,6 +86,7 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
   /** El texto del botón de volver: «← Buscar remolques» si se abrió desde el buscador. */
   textoVolver?: string;
 }) {
+  const [gestion, setGestion] = useState<GestionRegistro | null>(null);
   const claveCorte = `${pedido?.orderCode}|${pedido?.updatedAt}`;
   const [vistaCorte, setVistaCorte] = useState<{ clave: string; datos: VistaCorteRemolques } | null>(null);
   const recibirVista = useCallback((datos: VistaCorteRemolques) => setVistaCorte({ clave: claveCorte, datos }), [claveCorte]);
@@ -88,7 +94,7 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
     : { falta: 'Cargando el pedido…', aplica: false };
   const corte = useCortePedidoEditable({ tipo: 'remolques', pedido, cuerpo: { elementos: pedido?.elementos, params: pedido?.params, clienteRps: pedido?.clienteRps },
     ...opcionesCorte,
-    usuario: currentUser, notify, preguntar: onConfirm, onChanged: onEnviado });
+    usuario: currentUser, notify, preguntar: onConfirm, onChanged: onEnviado, gestionRegistro: true });
   const volver = <button type="button" className="ghost-button boton-3d reviews-back-button" onClick={onBack}>{textoVolver}</button>;
   if (cargando) {
     return <section className="review-reader">{volver}<div className="review-empty"><FileSearch aria-hidden="true" />Cargando el pedido…</div></section>;
@@ -97,31 +103,59 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
     return <section className="review-reader">{volver}<div className="review-empty"><FileSearch aria-hidden="true" />No se pudo abrir el pedido.</div></section>;
   }
   const generado = pedido.status === 'PRODUCED';
+  const terminado = pedido.status === TERMINADO_SIN_GENERAR;
+  const edicion = pedido.ediciones?.at(-1);
+  const bloqueado = generando || corte.ocupado;
   const { allowed, note } = estadoGenerarRemolques(pedido, currentUser, coordina);
   // Cualquier técnico edita; el aviso de aprobación se muestra desde la barra común.
-  const corregible = puedeCorregir(pedido.status, elementosAprobacion(pedido), pedido.summary.technician || '', currentUser, coordina);
+  const corregible = puedeEditarToldos(currentUser);
   const permisoCorte = estadoGenerarRemolques(Object.assign({}, pedidoEntrega(pedido), { status: 'PENDING_REVIEW' as const, entregas: [] }), currentUser, coordina);
   const ruta = `/api/remolques/pedidos/${encodeURIComponent(pedido.orderCode)}`;
+  const cad = opcionesCorte.aplica && {
+    producto: 'remolques' as const, orderCode: pedido.orderCode, version: pedido.updatedAt, noRegenerado: pedido.corteNoRegenerado,
+    onActualizarCorte: corregible && !terminado ? corte.regenerar : undefined,
+  };
   const letras = elementosAprobacion(pedido).map((item) => item.letter);
   const datos = [
     pedido.summary.customer || 'Sin cliente',
     pedido.summary.orderDate && `pedido del ${pedido.summary.orderDate.split('-').reverse().join('/')}`,
     pedido.summary.technician && `autor ${controlLabel(pedido.summary.technician)}`,
-    pedido.updatedAt && `guardado ${fechaHora(pedido.updatedAt)}${pedido.updatedBy ? ` por ${controlLabel(pedido.updatedBy)}` : ''}`,
+    edicion && `Editado por ${controlLabel(edicion.usuario)} el ${new Date(edicion.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}`,
+    !edicion && pedido.updatedAt && `guardado ${fechaHora(pedido.updatedAt)}${pedido.updatedBy ? ` por ${controlLabel(pedido.updatedBy)}` : ''}`,
   ].filter(Boolean).join(' · ');
 
   return (
     <section className="review-reader rem-pedido-guardado" aria-label={`Pedido de remolques ${pedido.orderCode}`}>
       <CabeceraPedidoGuardado pedido={pedido} volver={volver} titulo={<>{pedido.orderCode}<span className="orders-kind-tag familia-tag is-remolques">Remolque</span></>}
         datos={datos} corteNoRegenerado={pedido.corteNoRegenerado} corteSimulado={pedido.corteSimulado}
-        acciones={<AccionesPedido generado={generado} ocupado={generando || corte.ocupado} enviando={generando} editandoPermitido={corregible}
-          onEditar={onCorregir} elementos={elementosAprobacion(pedido)} coordina={coordina} preguntar={onConfirm} abrir={corte.abrir}
-          regenerar={currentUser && corte.abrir ? () => void corte.regenerar() : undefined} codigo={pedido.orderCode} rutaDestinos={`${ruta}/destinos-entrega`} generar={onGenerar} generarPermitido={allowed} motivoGenerar={note}
-          produccion={<ProduccionPedido ruta={ruta} rutaPdf={ruta + '/generar'} rutaPlano={ruta + '/guardar-plano'} rutaCorte={opcionesCorte.aplica ? ruta + '/corte' : undefined}
+        acciones={<AccionesPedido generado={generado || terminado} ocupado={bloqueado} enviando={generando} editandoPermitido={corregible} etiquetaEditar="Editar"
+          onEditar={onCorregir} elementos={elementosAprobacion(pedido)} coordina={coordina} preguntar={onConfirm} abrir={terminado ? null : corte.abrir}
+          regenerar={corregible && !terminado && corte.abrir ? () => void corte.regenerar() : undefined} codigo={pedido.orderCode} rutaDestinos={`${ruta}/destinos-entrega`} generar={onGenerar} generarPermitido={allowed} motivoGenerar={note}
+          envios={onGestion && <>
+            {(terminado || isPendingGeneration(pedido.status)) && <button type="button" className="ghost-button boton-3d"
+              disabled={bloqueado || !corregible} onClick={() => setGestion(terminado ? 'reabrir' : 'terminar')}>
+              {terminado ? 'Volver a pendiente' : 'Marcar como terminado'}
+            </button>}
+            <MenuMas>
+              <button type="button" role="menuitem" className="menu-mas-item" disabled={bloqueado || !corregible}
+                onClick={() => setGestion('papelera')}>Enviar a la papelera</button>
+            </MenuMas>
+          </>}
+          produccion={!terminado && <ProduccionPedido ruta={ruta} rutaPdf={ruta + '/generar'} rutaPlano={ruta + '/guardar-plano'} rutaCorte={opcionesCorte.aplica ? ruta + '/corte' : undefined}
             tecnico={pedido.summary.technician || ''} codigo={pedido.orderCode} generado={generado} permitido={Boolean(currentUser.trim()) && (generado ? permisoCorte.allowed : allowed)} motivo={note}
             ocupado={generando || corte.ocupado} usuario={currentUser} notify={notify} preguntar={onConfirm} onChanged={onEnviado} onVolver={onProduccionTerminada ?? onBack}
-            guardado={{ ruta: '/api/remolques/pedidos', cuerpo: { elementos: pedido.elementos, params: pedido.params, clienteRps: pedido.clienteRps }, usuario: currentUser }}
+            guardado={{ ruta: '/api/remolques/pedidos/guardar-registro', cuerpo: { elementos: pedido.elementos, params: pedido.params, clienteRps: pedido.clienteRps }, usuario: currentUser }}
             mas={generado ? <button type="button" role="menuitem" className="menu-mas-item" onClick={onReutilizar}><CopyPlus size={16} aria-hidden="true" />Reutilizar datos</button> : null} />} />} />
+
+      {gestion && onGestion && <ConfirmarGestionRegistro accion={gestion} codigo={pedido.orderCode} onClose={() => setGestion(null)}
+        onConfirmar={texto => { setGestion(null); onGestion(gestion, texto); }} />}
+      {pedido.terminadoSinGenerar && <div className="review-production-block bloque-3d">
+        <div className="review-production-summary"><span>
+          <strong>Terminado sin generar</strong>
+          <small>{fechaHora(pedido.terminadoSinGenerar.fecha)} · {controlLabel(pedido.terminadoSinGenerar.usuario)}</small>
+          {pedido.terminadoSinGenerar.motivo && <p>{pedido.terminadoSinGenerar.motivo}</p>}
+        </span></div>
+      </div>}
 
       {generado && pedido.production && (
         <div className="review-production-block bloque-3d" role="status">
@@ -163,9 +197,10 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
       <LecturaPedidoRemolques key={pedido.orderCode} pedido={pedido} versionInicial={elementoInicial} />
 
       {/* Debajo de los datos (Iván, 20/10/2026). Se vuelve a calcular si el pedido cambia (guardado o generado). */}
-      <DocumentosPedido planteamiento={<PlanteamientoPedido origen={`${ruta}/vista-previa`} version={pedido.updatedAt} />}
+      <DocumentosPedido planteamiento={<PlanteamientoPedido origen={`${ruta}/vista-previa`} version={pedido.updatedAt} cad={cad || undefined} />}
         corte={<CorteRemolques ruta={ruta} version={pedido.updatedAt} generado notify={notify} onConfirm={onConfirm} onVista={recibirVista}
-        acciones={<>{opcionesCorte.aplica && <AccionesCorteMaquina ruta={ruta + "/corte"} codigo={pedido.orderCode} onEnviado={onEnviado} />}<HistorialEnvios envios={pedido.enviosCorte} /></>} />} />
+        cad={cad ? sinDwg => <CadPaginas {...cad} sinDwg={sinDwg} /> : undefined}
+        acciones={<>{!terminado && opcionesCorte.aplica && <AccionesCorteMaquina ruta={ruta + "/corte"} codigo={pedido.orderCode} onEnviado={onEnviado} />}<HistorialEnvios envios={pedido.enviosCorte} /></>} />} />
     </section>
   );
 }
@@ -210,6 +245,23 @@ export function PedidoRemolquesDetalle({ orderCode, refreshKey, currentUser, onB
       });
     return () => { cancelado = true; };
   }, [orderCode, refreshKey, onToast]);
+
+  async function gestionar(accion: GestionRegistro, texto: string) {
+    if (!pedido || generando) return;
+    setGenerando(true);
+    try {
+      const actualizado = await solicitarGestionRegistro<PedidoRemolques>(
+        `/api/remolques/pedidos/${encodeURIComponent(orderCode)}`, accion, currentUser, texto);
+      if (accion === 'papelera') onBack();
+      else setDetalle({ orderCode, pedido: actualizado });
+      onChanged();
+      onToast(mensajeGestionRegistro[accion], { tone: 'success' });
+    } catch (error) {
+      onToast(error instanceof Error ? error.message : 'No se pudo actualizar el pedido.', { tone: 'error' });
+    } finally {
+      setGenerando(false);
+    }
+  }
 
   async function generar(destinoEntrega?: DestinoEntrega) {
     if (!pedido || !estadoGenerarRemolques(pedido, currentUser, coordina).allowed) return;
@@ -294,6 +346,7 @@ export function PedidoRemolquesDetalle({ orderCode, refreshKey, currentUser, onB
       onReutilizar={() => { if (pedido) onReutilizar(pedido); }}
       onGenerar={d => void generar(d)}
       onEnviado={onChanged}
+      onGestion={(accion, texto) => void gestionar(accion, texto)}
       notify={onToast}
       onConfirm={onConfirm}
       elementoInicial={elementoInicial}

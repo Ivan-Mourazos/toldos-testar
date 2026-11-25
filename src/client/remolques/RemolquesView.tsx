@@ -1,7 +1,9 @@
 import React from 'react';
 import { useContenidoFluido } from '../hooks/useContenidoFluido';
 import { createPortal } from 'react-dom';
-import { ArrowLeftRight, BookUser, Eraser, FilePen, Save } from 'lucide-react';
+import { ArrowLeftRight, BookUser, Save } from 'lucide-react';
+import { CadPaginas } from '../components/CadPaginas';
+import { MenuOpcionesPedido } from '../components/MenuOpcionesPedido';
 import { OrderActions } from '../components/OrderActions';
 import { OrderEmptyState } from '../components/OrderEmptyState';
 import type { ResumenPedido } from './SelectorProducto';
@@ -22,14 +24,13 @@ import { rotuloElemento } from './rotulo';
 import { VistaPreviaPdf } from './VistaPreviaPdf';
 import { avisoCorteAMano } from './CorteRemolques';
 import { entradaCorte, useVistaCorteRemolques, VistaPreviaCorte } from './VistaPreviaCorte';
-import { BotonesFlujoCorte, esperaAlCorte, useFlujoCorteDwg } from '../flujoCorteDwg';
+import { BotonesFlujoCorte, pedidoValido, useFlujoCorteDwg } from '../flujoCorteDwg';
 import { faltaParaPdf } from './vistaPrevia';
 import type { ModoCarga } from './guardarPedido';
 import { useRemolques } from './useRemolques';
 import { GuardarEnFicha } from './VentanaGuardarEnFicha';
 import { clienteDeLinea } from './guardarEnFicha';
 import { useGuardarEnFicha } from './useGuardarEnFicha';
-import { TITULO_BORRADOR_EN_CORRECCION } from '../borradores';
 
 // Nuevo pedido de remolques (fase 2a de la unificación): cabecera, importación de RPS,
 // pestañas de elementos y, debajo, el editor del elemento activo: el formulario a la izquierda
@@ -145,7 +146,16 @@ export function RemolquesView({ controlRef, usuario, notify, askForConfirmation,
   const flujo = useFlujoCorteDwg({ base: '/api/remolques/borrador-corte', codigo: numeroPedido, entrada,
     cuerpo: () => JSON.parse(entrada) as Record<string, unknown>, aplica: bloqueoCorte ? lineas.length > 0 : Boolean(vistaCorte.actual?.datos?.cortes.length),
     falta: bloqueoCorte, usuario, notify, askForConfirmation, activo: accionesVisibles && lineas.length > 0, editable: true });
-  const esperaCorte = esperaAlCorte(flujo.paso, true);
+  const [revisionCad, setRevisionCad] = React.useState(0);
+  const regenerar = async () => {
+    await ws.guardar(true);
+    await flujo.refrescar();
+    setRevisionCad(actual => actual + 1);
+  };
+  const cad = pedidoValido(numeroPedido) && (flujo.hayPlano || vistaCorte.actual?.datos?.cortes.length)
+    ? { producto: 'remolques' as const, orderCode: numeroPedido, version: String(revisionCad),
+      noRegenerado: flujo.datosCambiados, onActualizarCorte: usuario && !bloqueoCorte ? regenerar : undefined }
+    : undefined;
   const avisoAMano = bloqueoCorte ? null : avisoCorteAMano(vistaCorte.actual?.datos);
   const [derecha, setDerecha] = React.useState<'dibujo' | 'corte'>('dibujo');
   const elementoFluido=useContenidoFluido<HTMLElement>(String(versionActiva));
@@ -155,22 +165,20 @@ export function RemolquesView({ controlRef, usuario, notify, askForConfirmation,
   }, [numeroPedido, lineas.length, onResumenChange]);
   const acciones = (
     <OrderActions hidden={!accionesVisibles}>
-      <button className="ghost-button clear-form-button" type="button" onClick={onLimpiar ?? (() => void ws.limpiarFormulario())}><Eraser aria-hidden="true" />Limpiar</button>
-      <VistaPreviaPdf label="Vista previa" lineas={lineas} params={ws.conParamsGuardados ? params : undefined} bloqueo={faltaPdf} notify={notify} />
-      <button type="button" className="ghost-button rem-borrador-boton"
-        disabled={!hayPedido || ws.guardandoBorrador || ws.guardando || ws.conParamsGuardados} aria-busy={ws.guardandoBorrador}
-        title={ws.conParamsGuardados ? TITULO_BORRADOR_EN_CORRECCION : undefined}
-        onClick={() => void ws.guardarBorrador()}>
-        <FilePen aria-hidden="true" />{ws.guardandoBorrador ? 'Guardando…' : 'Guardar borrador'}
-      </button>
+      <VistaPreviaPdf label="Vista previa" lineas={lineas} params={ws.conParamsGuardados ? params : undefined}
+        bloqueo={faltaPdf} notify={notify} cad={cad} />
       {avisoAMano && <span className="flujo-corte-paso" role="status" title={avisoAMano}>{avisoAMano}</span>}
-      <BotonesFlujoCorte flujo={flujo} ocupado={ws.guardando} regenerar={async () => { await ws.guardarParaRevision(true); await flujo.refrescar(); }} />
+      <BotonesFlujoCorte flujo={flujo} ocupado={ws.guardando} />
       <button type="button" className="primary-button rem-guardar-boton"
-        disabled={lineas.length === 0 || Boolean(faltaPdf) || ws.guardando || ws.guardandoBorrador || Boolean(ws.bloqueoParams.motivo) || Boolean(esperaCorte)}
-        aria-busy={ws.guardando} title={ws.bloqueoParams.motivo ?? faltaPdf ?? esperaCorte ?? undefined}
-        onClick={() => void ws.guardarParaRevision()}>
-        <Save aria-hidden="true" />{ws.guardando ? 'Guardando…' : 'Guardar para revisión'}
+        disabled={lineas.length === 0 || Boolean(faltaPdf) || ws.guardando || ws.guardandoBorrador || Boolean(ws.bloqueoParams.motivo)}
+        aria-busy={ws.guardando} title={ws.bloqueoParams.motivo ?? faltaPdf ?? undefined}
+        onClick={() => void ws.guardar()}>
+        <Save aria-hidden="true" />{ws.guardando ? 'Guardando…' : 'Guardar'}
       </button>
+      <MenuOpcionesPedido corte={flujo} ocupado={ws.guardando || ws.guardandoBorrador || flujo.ocupado}
+        motivoBorrador={ws.conParamsGuardados ? 'El pedido ya está en Pedidos. Usa «Guardar».' : !hayPedido ? 'Escribe el número de pedido.' : !usuario ? 'Elige quién eres en «Soy».' : undefined}
+        motivoRegenerar={bloqueoCorte ?? (!cad ? 'Este pedido no tiene corte.' : undefined)}
+        guardarBorrador={ws.guardarBorrador} regenerar={regenerar} limpiar={onLimpiar ?? ws.limpiarFormulario} />
     </OrderActions>
   );
 
@@ -203,7 +211,7 @@ export function RemolquesView({ controlRef, usuario, notify, askForConfirmation,
         )}
         {ws.conParamsGuardados && (
           <p className="rem-aviso-materiales rem-aviso-params" role="status">
-            Corrigiendo un pedido guardado: se calcula con los parámetros con que se guardó, no con los actuales.
+            Se usan los parámetros guardados con el pedido.
           </p>
         )}
       </section>
@@ -296,7 +304,7 @@ export function RemolquesView({ controlRef, usuario, notify, askForConfirmation,
             >
               {/* El render 3D (fase 2b) y, de respaldo, el dibujo de la web de remolques (DibujoElemento,
                   el mismo que el del pedido guardado abierto en Pedidos). */}
-              {derecha === 'corte' ? <VistaPreviaCorte vista={vistaCorte} /> : <>
+              {derecha === 'corte' ? (cad ? <CadPaginas key={numeroPedido} {...cad} sinDwg={<VistaPreviaCorte vista={vistaCorte} />} /> : <VistaPreviaCorte vista={vistaCorte} />) : <>
               {lineaActiva.tipo === 'ganado'
                 ? <DibujoGanado modelo={ws.gan.ganado} medidas={ws.gan.medidasCal} cantidad={ws.gan.cantidad} />
                 : <DibujoElemento params={params} elemento={lineaActiva.tipo === 'lona'

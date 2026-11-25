@@ -33,7 +33,7 @@ import { CmtView } from './views/CmtView';
 import { CorteLona, toldosConCorte } from './components/CorteLona';
 import { CadPaginas } from './components/CadPaginas';
 import { pedidoValido, useFlujoCorteDwg } from './flujoCorteDwg';
-import { MenuOpcionesToldos } from './components/MenuOpcionesToldos';
+import { MenuOpcionesPedido } from './components/MenuOpcionesPedido';
 import { AVISO_SIN_CAMBIOS, abrirCorteToldos, guardarToldosEditable } from './toldosEditable';
 import { autoriaToldos, avisoAprobacionToldos } from '../toldosEditable.js';
 import { useCoordinaStatus } from './hooks/useCoordinaStatus';
@@ -981,7 +981,7 @@ export default function App() {
                 <Eye aria-hidden="true" />
                 {working === 'preview' ? 'Preparando…' : 'Vista previa'}
               </button>
-              <MenuOpcionesToldos corte={corteToldos} ocupado={Boolean(working) || corteToldos.ocupado}
+              <MenuOpcionesPedido corte={corteToldos} ocupado={Boolean(working) || corteToldos.ocupado}
                 motivoBorrador={enCorreccion ? 'El pedido ya existe. Usa «Guardar».' : autofillLoading ? 'Espera a que se cargue el pedido.'
                   : !currentOrderCode ? 'Escribe el número de pedido.' : undefined}
                 motivoRegenerar={motivoRegenerar}
