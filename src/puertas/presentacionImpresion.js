@@ -24,13 +24,15 @@ export function separarNumeroCotaDetalle(src) {
 }
 
 export function corregirRotulosPuertas(plano, cabecera) {
-  const inicial = escribirDxfPlano(plano, cabecera), a = auditarDxf(inicial.dxf, { capasTextosExcluidas: ['ROTULADOR'] });
+  const inicial = escribirDxfPlano(plano, cabecera);
+  const modelo = leerPlanoTexto(inicial.dxf), hojas = presentacionesDxf(inicial.dxf, modelo);
+  const a = auditarDxf(inicial.dxf, { capasTextosExcluidas: ['ROTULADOR'], plano: modelo, presentaciones: hojas });
   const malos = handlesRotulosMarcados(a);
   if (!malos.size) return inicial;
-  const modelo = leerPlanoTexto(inicial.dxf), ps = modelo.modelo, fuentes = [...plano.textos, ...plano.corte.textos];
+  const ps = modelo.modelo, fuentes = [...plano.textos, ...plano.corte.textos];
   const reparar = ps.filter(p => p.tipo === 'texto' && !p.deCota && p.capa === 'texto' && malos.has(p.handle));
   const usados = new Set();
-  for (const h of presentacionesDxf(inicial.dxf)) {
+  for (const h of hojas) {
     const vs = [...new Map(h.primitivas.filter(p => p.recorte).map(p => [p.recorte.id, p.recorte])).values()];
     for (const v of vs) {
       const marcados = reparar.filter(p => enZona(p, v.zona) && !usados.has(p.handle));

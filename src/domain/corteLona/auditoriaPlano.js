@@ -128,8 +128,7 @@ export function medirRecuadros(marcos, zonas) {
     margenEsperadoM: [mx, my], diferenciaAltosM, diferenciaTechosM, errores, marcos, zonas };
 }
 
-export function auditarDxf(dxf, { capasTextosExcluidas = [] } = {}) {
-  const plano = leerPlanoTexto(dxf);
+export function auditarDxf(dxf, { capasTextosExcluidas = [], plano = leerPlanoTexto(dxf), presentaciones = presentacionesDxf(dxf, plano) } = {}) {
   const grupos = new Map();
   for (const p of plano.modelo.filter(p => p.capa === 'RECUADROS' && p.tipo === 'raya')) {
     const ps = grupos.get(p.handle) ?? []; ps.push(p); grupos.set(p.handle, ps);
@@ -149,7 +148,7 @@ export function auditarDxf(dxf, { capasTextosExcluidas = [] } = {}) {
   const handlesCajetin = (bloque?.entidades ?? []).map(r => valor(r, 5));
   const inserciones = new Set(plano.entidades.filter(r => r.tipo === 'INSERT' && valor(r, 2) === 'CAJETIN TGM').map(r => valor(r, 5)));
   handlesCajetin.push(...plano.entidades.filter(r => r.tipo === 'ATTRIB' && inserciones.has(valor(r, 330))).map(r => valor(r, 5)));
-  const hojas = presentacionesDxf(dxf).map(h => {
+  const hojas = presentaciones.map(h => {
     // El visor elige textos por su ancla. Para auditar se recuperan también cajas que entran en la ventana
     // con el ancla fuera: de otro modo un rótulo cortado podría desaparecer del diagnóstico.
     const ventanas = [...new Map(h.primitivas.filter(p => p.recorte).map(p => [p.recorte.id, p.recorte])).values()];
@@ -176,5 +175,5 @@ export function auditarDxf(dxf, { capasTextosExcluidas = [] } = {}) {
     const cajetin = caj ? { x0: caj.punto[0], y0: caj.punto[1], x1: caj.punto[0] + ANCHO_CAJETIN * caj.sx, y1: caj.punto[1] + ALTO_CAJETIN * caj.sy } : null;
     return { nombre: h.nombre, cajetin, ...auditarHoja(primitivas, { cajetin, handlesCajetin: propios, capasTextosExcluidas }) };
   });
-  return { criterios: CRITERIOS, recuadros, textosFueraRecuadro, tiposNoInterpretados: sinDibujarEnPdf(dxf), hojas };
+  return { criterios: CRITERIOS, recuadros, textosFueraRecuadro, tiposNoInterpretados: sinDibujarEnPdf(dxf, plano), hojas };
 }

@@ -43,6 +43,18 @@ export function puntosSpline(r) {
   return Array.from({ length: pasos + 1 }, (_, i) => enT(t0 + (t1 - t0) * Math.min(i / pasos, 1 - 1e-9)));
 }
 
+// Se reutiliza la curva del logo en sus coordenadas locales. Cada inserción conserva su transformación.
+const splinesLogo = new Map();
+function puntosSplineLogo(registro) {
+  const clave = JSON.stringify(registro.pares);
+  const puntos = splinesLogo.get(clave);
+  if (puntos) return puntos;
+  const calculados = puntosSpline(registro);
+  if (splinesLogo.size >= 64) splinesLogo.delete(splinesLogo.keys().next().value);
+  splinesLogo.set(clave, calculados);
+  return calculados;
+}
+
 // Lo que el visor dibuja y lo que nunca se imprime (puntos de Defpoints, definiciones de atributos, marcas de bloque).
 const DIBUJADAS = new Set(['LINE', 'LWPOLYLINE', 'TEXT', 'MTEXT', 'ATTRIB', 'INSERT', 'DIMENSION', 'SOLID', 'HATCH', 'ARC', 'CIRCLE', 'SPLINE', 'VIEWPORT']);
 const NO_SE_IMPRIMEN = new Set(['POINT', 'ATTDEF', 'SEQEND', 'BLOCK', 'ENDBLK', 'SECTION', 'ENDSEC', 'EOF']);
@@ -50,10 +62,10 @@ const NO_SE_IMPRIMEN = new Set(['POINT', 'ATTDEF', 'SEQEND', 'BLOCK', 'ENDBLK', 
  * Lo que lleva el DWG y el PDF no sabría dibujar, por tipo y cuántas (Iván, 26/10/2026: «hay que asegurarse de que el PDF
  * lleve todo lo del DWG»). Vacío si el PDF lo lleva todo.
  */
-export function sinDibujarEnPdf(src) {
+export function sinDibujarEnPdf(src, { entidades = registrosDxf(src), registrosBloques } = {}) {
   const cuenta = {};
   const conBloques = /\n\s*2\r?\nBLOCKS\r?\n/.test(src);
-  for (const r of [...registrosDxf(src), ...(conBloques ? registrosDxf(src, 'BLOCKS') : [])]) {
+  for (const r of [...entidades, ...(conBloques ? registrosBloques ?? registrosDxf(src, 'BLOCKS') : [])]) {
     if (!DIBUJADAS.has(r.tipo) && !NO_SE_IMPRIMEN.has(r.tipo)) cuenta[r.tipo] = (cuenta[r.tipo] ?? 0) + 1;
   }
   return cuenta;
@@ -65,14 +77,15 @@ export function textoDxf(bytes) {
 }
 export function leerPlanoTexto(src) {
   const tablas = registrosDxf(src, 'TABLES'), entidades = registrosDxf(src), bloques = new Map();
+  const registrosBloques = registrosDxf(src, 'BLOCKS');
   const capas = new Map(tablas.filter(r => r.tipo === 'LAYER').map(r => [valor(r, 2), { color: Math.abs(n(r, 62)), imprime: n(r, 290, 1) !== 0, visible: n(r, 62) > 0 && !(n(r, 70) & 1), handle: valor(r, 5) }]));
   let b;
-  for (const r of registrosDxf(src, 'BLOCKS')) {
+  for (const r of registrosBloques) {
     if (r.tipo === 'BLOCK') { b = { base: [n(r, 10), n(r, 20)], entidades: [] }; bloques.set(valor(r, 2), b); }
     else if (r.tipo === 'ENDBLK') b = undefined;
     else b?.entidades.push(r);
   }
-  const primitivas = (regs, T = identidad, padre = '', profundidad = 0, colorPadre) => {
+  const primitivas = (regs, T = identidad, padre = '', profundidad = 0, colorPadre, nombreBloque) => {
     if (profundidad > 10) throw new Error('Bloque CAD recursivo o demasiado anidado.');
     const salida = [];
     for (const r of regs) {
@@ -104,11 +117,11 @@ export function leerPlanoTexto(src) {
           ancla: r.tipo === 'MTEXT' ? n(r, 71, 1) : alineado ? anclaTexto : 7,
           valor: limpiarTextoDxf((r.tipo === 'MTEXT' ? todos(r, 3).join('') : '') + (valor(r, 1) ?? '')) });
       } else if (r.tipo === 'INSERT') {
-        const bloque = bloques.get(valor(r, 2)); if (!bloque) continue;
+        const nombre = valor(r, 2), bloque = bloques.get(nombre); if (!bloque) continue;
         const a = n(r, 50) * Math.PI / 180, sx = n(r, 41, 1), sy = n(r, 42, 1);
         const t = (x, y) => { const u = (x - bloque.base[0]) * sx, v = (y - bloque.base[1]) * sy; return T(n(r, 10) + u * Math.cos(a) - v * Math.sin(a), n(r, 20) + u * Math.sin(a) + v * Math.cos(a)); };
-        salida.push({ ...comun, tipo: 'bloque', nombre: valor(r, 2), punto: P(), giro: n(r, 50), sx, sy });
-        salida.push(...primitivas(bloque.entidades, t, capa, profundidad + 1, color));
+        salida.push({ ...comun, tipo: 'bloque', nombre, punto: P(), giro: n(r, 50), sx, sy });
+        salida.push(...primitivas(bloque.entidades, t, capa, profundidad + 1, color, nombre));
       } else if (r.tipo === 'DIMENSION') {
         salida.push({ ...comun, tipo: 'cota', medida: n(r, 42), valor: valor(r, 1), estilo: valor(r, 3), a: P(13, 23), b: P(14, 24), punto: P(), texto: P(11, 21) });
         const bloque = bloques.get(valor(r, 2));
@@ -126,14 +139,14 @@ export function leerPlanoTexto(src) {
         salida.push({ ...comun, tipo: 'arco', punto: p, r: Math.hypot(q[0] - p[0], q[1] - p[1]), desde: n(r, 50), hasta: n(r, 51, 360) });
       } else if (r.tipo === 'SPLINE') {
         // Las curvas del logo y del cajetín (Iván, 26/10/2026: «que el PDF lleve todo lo del DWG»), en tramos rectos.
-        const pts = puntosSpline(r);
+        const pts = nombreBloque === 'LOGO TGM' ? puntosSplineLogo(r) : puntosSpline(r);
         for (let i = 1; i < pts.length; i++) segmento(T(...pts[i - 1]), T(...pts[i]));
       }
     }
     return salida;
   };
   const modelo = primitivas(entidades.filter(r => valor(r, 67) !== '1'));
-  const papel = primitivas(entidades.filter(r => valor(r, 67) === '1' && r.tipo !== 'VIEWPORT'));
+  let papel;
   const ventanasDe = (regs) => regs.filter(r => r.tipo === 'VIEWPORT' && n(r, 69) > 1).map(r => {
     const escala = n(r, 41) / n(r, 45), centro = [n(r, 10), n(r, 20)], ancho = n(r, 40), alto = n(r, 41);
     // Vista girada (51, en grados, antihorario): centrada en su objetivo (17/27) más el centro de la vista.
@@ -145,7 +158,10 @@ export function leerPlanoTexto(src) {
   });
   const ventanas = ventanasDe(entidades.filter(r => valor(r, 67) === '1'));
   const imprime = p => capas.get(p.capa)?.imprime !== false && capas.get(p.capa)?.visible !== false;
-  return { src, entidades, bloques, capas, modelo, papel, ventanas, imprime, primitivas, ventanasDe };
+  return {
+    src, tablas, entidades, registrosBloques, bloques, capas, modelo, ventanas, imprime, primitivas, ventanasDe,
+    get papel() { return papel ??= primitivas(entidades.filter(r => valor(r, 67) === '1' && r.tipo !== 'VIEWPORT')); },
+  };
 }
 
 /**
@@ -153,9 +169,8 @@ export function leerPlanoTexto(src) {
  * sus ventanas). La activa tiene su papel en ENTITIES (67 = 1); las demás, en su bloque *Paper_SpaceN. La ventana que es la
  * hoja entera (la del LAYOUT, 331) no enseña el modelo.
  */
-export function presentacionesDxf(src) {
-  const plano = leerPlanoTexto(src);
-  const registros = new Map(registrosDxf(src, 'TABLES').filter(r => r.tipo === 'BLOCK_RECORD').map(r => [valor(r, 5), valor(r, 2)]));
+export function presentacionesDxf(src, plano = leerPlanoTexto(src)) {
+  const registros = new Map(plano.tablas.filter(r => r.tipo === 'BLOCK_RECORD').map(r => [valor(r, 5), valor(r, 2)]));
   const hojas = registrosDxf(src, 'OBJECTS').filter(r => r.tipo === 'LAYOUT').map(r => ({
     nombre: todos(r, 1).at(-1) ?? '', orden: n(r, 71), bloque: registros.get(todos(r, 330).at(-1)) ?? '', hoja: valor(r, 331),
   })).filter(h => /^\*paper_space/i.test(h.bloque)).sort((a, b) => a.orden - b.orden);
@@ -163,7 +178,7 @@ export function presentacionesDxf(src) {
     const regs = /^\*paper_space$/i.test(h.bloque) ? plano.entidades.filter(r => valor(r, 67) === '1') : plano.bloques.get(h.bloque)?.entidades ?? [];
     const ventanas = plano.ventanasDe(regs).filter(v => v.handle !== h.hoja && !(v.ancho >= 250 && v.alto >= 180));
     const papel = plano.primitivas(regs.filter(r => r.tipo !== 'VIEWPORT'));
-    return { nombre: h.nombre, primitivas: proyectarPagina({ ...plano, papel, ventanas }) };
+    return { nombre: h.nombre, primitivas: proyectarPagina({ papel, ventanas, modelo: plano.modelo, imprime: plano.imprime }) };
   });
 }
 

@@ -33,8 +33,9 @@ export function bloquesNotas(textos) {
 /** Solo traslaciones locales de notas del alzado. El corte, los títulos y las cotas quedan intactos. */
 export function retocarPortanova(plano, cabecera) {
   const inicial = escribirDxfPlano(plano, cabecera);
-  const auditoria = auditarDxf(inicial.dxf, { capasTextosExcluidas: ['ROTULADOR'] }), malos = handlesRotulosMarcados(auditoria);
-  const modelo = leerPlanoTexto(inicial.dxf).modelo;
+  const leido = leerPlanoTexto(inicial.dxf), hojas = presentacionesDxf(inicial.dxf, leido);
+  const auditoria = auditarDxf(inicial.dxf, { capasTextosExcluidas: ['ROTULADOR'], plano: leido, presentaciones: hojas });
+  const malos = handlesRotulosMarcados(auditoria), modelo = leido.modelo;
   const fuentes = new Map(plano.textos.filter(t => t.capa === 'texto').map(t => [t,
     modelo.find(p => p.tipo === 'texto' && !p.deCota && p.capa === t.capa && p.valor === t.valor && Math.hypot(p.punto[0] - t.x, p.punto[1] - t.y) < 2e-6)]));
   const bloques = bloquesNotas([...fuentes.keys()]).filter(g => g.some(t => malos.has(fuentes.get(t)?.handle))
@@ -43,7 +44,7 @@ export function retocarPortanova(plano, cabecera) {
   for (let dx = -10; dx <= 10; dx += .5) for (let dy = -10; dy <= 10; dy += .5) candidatos.push([dx, dy]);
   candidatos.sort((a, b) => Math.hypot(...a) - Math.hypot(...b));
   const usados = new Set();
-  for (const [i, hoja] of presentacionesDxf(inicial.dxf).entries()) {
+  for (const [i, hoja] of hojas.entries()) {
     // Las copias de la plantilla numeran de nuevo las ventanas (2, 11, 20, 29...).
     const v = hoja.primitivas.find(p => p.recorte)?.recorte;
     if (!v) continue;

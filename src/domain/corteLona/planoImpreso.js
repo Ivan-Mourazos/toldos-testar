@@ -56,7 +56,7 @@ export function escribirPlanoImpreso(plano, cabecera, opciones = {}) {
 
 function prepararPlanoInicial(plano, cabecera) {
   const { dxf } = escribirDxfPlano(plano, cabecera);
-  const modelo = leerPlanoTexto(dxf), originales = presentacionesDxf(dxf);
+  const modelo = leerPlanoTexto(dxf), originales = presentacionesDxf(dxf, modelo);
   const bandasCorte = plano.gruposCorte ? plano.gruposCorte.toSorted((a, b) => b.y1 - a.y1).reduce((zs, z) => {
     const previo = zs.at(-1);
     if (previo && z.y1 >= previo.y0) { previo.y0 = Math.min(previo.y0, z.y0); previo.y1 = Math.max(previo.y1, z.y1); }
@@ -70,7 +70,9 @@ function resolverPlano(plano, cabecera, { familia = 'toldos', conservarDisposici
   const { modelo, originales, bandasCorte } = inicial;
   const textos = [...plano.textos ?? [], ...plano.corte.textos ?? []];
   const cotas = [...plano.cotas ?? [], ...plano.corte.cotas ?? []];
-  const marcados = familia === 'puertas' && !usarHojaCompleta ? handlesRotulosMarcados(auditarDxf(inicial.dxf, { capasTextosExcluidas: ['ROTULADOR'] })) : new Set();
+  const marcados = familia === 'puertas' && !usarHojaCompleta
+    ? handlesRotulosMarcados(auditarDxf(inicial.dxf, { capasTextosExcluidas: ['ROTULADOR'], plano: modelo, presentaciones: originales }))
+    : new Set();
   const moviles = new Set(), glifosMoviles = new Set();
   // La vista histórica gira ciertos rótulos del corte al escribir. Conservamos esa dirección en el modelo.
   for (const t of textos) {
