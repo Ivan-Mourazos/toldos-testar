@@ -45,7 +45,6 @@ import { aprobacionDeTodas, crearFlujoDwg, huellaDatos, planosDe } from './flujo
 import { comprobarCorteNoRegenerado } from './flujoDwg/salidaEditable.ts';
 import { conConversionesDwg, convertirDwgUnaVez } from './flujoDwg/conversionesPeticion.js';
 import { conRevisor, htmlPresentaciones, sinDibujarEnPdf } from './flujoDwg/planoDxf.js';
-import { conHojasDelante } from './flujoDwg/unirPdf.js';
 import { SUBCARPETA_PUERTAS, TIPO_PEDIDO_PUERTAS } from './puertas/flujo/tipos.ts';
 import { crearOfStockSacos, OF_STOCK_POR_DEFECTO } from './ofStockSacos.js';
 import { registrarRutasCmtHerramienta } from './cmtHerramientaRoutes.js';
@@ -1879,9 +1878,8 @@ async function generarArchivosToldos(orderCode, cuerpo, prepararSolo = false) {
     pdfTarget.contents = await medirFaseGenerar('planteamientoPdf', () => buildOrderPlanteamientoPdf({ order: { ...order, orderCode: cleanOrder, reviewer }, calculation, review: updated, ...opcionesHojaTelas({ codigoPedido: cleanOrder }),
       ...(updated.corteConfirmado ? { cadEmbudo: null } : {}),
       ...(cad.length ? { sinHojaTelas: (toldo, indice) => enElCad.has(letraToldo(toldo, indice)) } : {}) }));
-    if (cad.length) pdfTarget.contents = await medirFaseGenerar('unirPdf', () => conHojasDelante(pdfTarget.contents, cad));
     const pedidoPdf = cuerpo.soloPdf ? { ...review, production: updated.production } : updated;
-    pdfTarget.contents = await medirFaseGenerar('adjuntos', () => adjuntarPedido(pdfTarget.contents, pedidoPdf, 'toldos'));
+    pdfTarget.contents = await medirFaseGenerar('adjuntos', () => adjuntarPedido(pdfTarget.contents, pedidoPdf, 'toldos', cad));
     const conCad = cad.length > 0;
 
     const finalizar = async () => {

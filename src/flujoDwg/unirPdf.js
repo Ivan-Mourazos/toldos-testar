@@ -10,10 +10,14 @@ const { PDFDocument } = pdfLib;
 export async function conHojasDelante(pdf, delante) {
   if (!delante.length) return pdf;
   const base = await PDFDocument.load(pdf);
+  await insertarHojasDelante(base, delante);
+  return Buffer.from(await base.save());
+}
+
+export async function insertarHojasDelante(base, delante) {
   let posicion = 0;
   for (const otro of delante) {
     const origen = await PDFDocument.load(otro);
     for (const hoja of await base.copyPages(origen, origen.getPageIndices())) base.insertPage(posicion++, hoja);
   }
-  return Buffer.from(await base.save());
 }

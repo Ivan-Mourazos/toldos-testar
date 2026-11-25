@@ -1,4 +1,6 @@
 import pdfLib from 'pdf-lib';
+import { insertarHojasDelante } from './flujoDwg/unirPdf.js';
+import { medirFaseGenerar } from './tiemposGenerar.js';
 
 /** PDFKit usa un árbol Kids; pdf-lib añade Names en la raíz. Se conserva un único adjunto por nombre. */
 function sustituirAdjunto(documento, nombre) {
@@ -27,9 +29,10 @@ function sustituirAdjunto(documento, nombre) {
   }
 }
 
-/** Se adjunta al final, después de unir o imprimir páginas: todas las copias conservan el paquete completo. */
-export async function adjuntarPedido(pdf, pedido, sufijo) {
-  const documento = await pdfLib.PDFDocument.load(pdf, { updateMetadata: false });
+/** Si hay presentaciones, se anteponen en el mismo documento antes de adjuntar y guardar. */
+export async function adjuntarPedido(pdf, pedido, sufijo, delante = []) {
+  const documento = await pdfLib.PDFDocument.load(pdf, { updateMetadata: delante.length > 0 });
+  if (delante.length) await medirFaseGenerar('unirPdf', () => insertarHojasDelante(documento, delante));
   const nombre = `${pedido.orderCode}.${sufijo}.json`;
   sustituirAdjunto(documento, nombre);
   await documento.attach(Buffer.from(`${JSON.stringify(pedido, null, 2)}\n`, 'utf8'), nombre, {

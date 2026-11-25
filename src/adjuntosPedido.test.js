@@ -21,6 +21,30 @@ it('actualizar el pedido sustituye su adjunto y conserva páginas y otros archiv
   } finally { await tarea.destroy(); }
 });
 
+it('inserta las presentaciones y sustituye el pedido en la misma pasada', async () => {
+  const base = await pdfLib.PDFDocument.create();
+  base.addPage([400, 400]);
+  await base.attach(Buffer.from('manual'), 'manual.txt');
+  await base.attach(Buffer.from('{}'), 'AR2600001.toldos.json');
+  const cad = await pdfLib.PDFDocument.create();
+  cad.addPage([300, 400]);
+  cad.addPage([350, 400]);
+  await cad.attach(Buffer.from('solo CAD'), 'cad.txt');
+  const pedido = { orderCode: 'AR2600001', status: 'PRODUCED' };
+  const bytes = await adjuntarPedido(await base.save(), pedido, 'toldos', [await cad.save()]);
+  const doc = await pdfLib.PDFDocument.load(bytes);
+  expect(doc.getPages().map(page => page.getWidth())).toEqual([300, 350, 400]);
+  const tarea = getDocument({ data: new Uint8Array(bytes), verbosity: 0 });
+  try {
+    const pdf = await tarea.promise;
+    const adjuntos = await pdf.getAttachments();
+    const entradas = adjuntos instanceof Map ? new Map(adjuntos) : new Map(Object.entries(adjuntos));
+    expect([...entradas.keys()].sort()).toEqual(['AR2600001.toldos.json', 'manual.txt']);
+    const clave = 'AR2600001.toldos.json';
+    expect(Buffer.from(entradas.get(clave).content ?? await pdf.getAttachmentContent(clave)).toString()).toBe(`${JSON.stringify(pedido, null, 2)}\n`);
+  } finally { await tarea.destroy(); }
+});
+
 it('actualiza también el adjunto de un PDF de revisión creado con PDFKit', async () => {
   const bytes = await new Promise(resolve => {
     const doc = new PdfKit(); const partes = [];
