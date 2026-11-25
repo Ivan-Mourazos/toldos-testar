@@ -80,7 +80,7 @@ DIST_DIR=$nueva pnpm deploy:smoke
 paso "cambio a $nueva y recarga"
 echo "$nueva" > .dist-activa
 # La tabla de PM2 solo tapa los pasos; si falla, el error sigue saliendo.
-pnpm -s pm2:reload > /dev/null
+pnpm pm2:reload > /dev/null
 # pm2 save solo guarda la lista de PM2 para cuando arranque la máquina: hace falta si cambió
 # ecosystem.config.cjs (variables o forma de arrancar), no en cada despliegue.
 if [ "$(git rev-parse HEAD:ecosystem.config.cjs)" != "$pm2_antes" ]; then pm2 save; fi
