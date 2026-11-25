@@ -138,7 +138,7 @@ async function run1280() {
 
     // Modo lectura del pedido abierto: guarda (con el error de la E, «Guardar igualmente»),
     // ábrelo desde Pedidos y comprueba índice, flechas, teclas y «Qué revisar».
-    await page.getByRole('button', { name: 'Guardar para revisión', exact: true }).click();
+    await page.getByRole('button', { name: 'Guardar', exact: true }).click();
     for (const name of ['Guardar igualmente', 'Actualizar pedido']) {
       const confirmButton = page.getByRole('button', { name, exact: true });
       await confirmButton.waitFor({ timeout: 2000 }).then(() => confirmButton.click()).catch(() => undefined);

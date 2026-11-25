@@ -3,7 +3,7 @@ import path from 'node:path';
 import pdfLib from 'pdf-lib';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { adjuntarPedido } from './adjuntosPedido.js';
-import { createWorkflowStore } from './workflow.js';
+import { createWorkflowStore, resolveGeneratedReviewFiles } from './workflow.js';
 import { entregasPedido } from './entregas.js';
 import { isPendingGeneration } from './reviewRules.js';
 
@@ -31,6 +31,64 @@ afterEach(async () => {
 });
 
 describe('Registro de toldos', () => {
+  const order = { orderCode: codigo, customer: 'Cliente', awnings: [{ model: 'GALICIA', of: '0232568', letra: 'A' }] };
+  const editado = { ...order, customer: 'Cliente editado', awnings: [{ ...order.awnings[0], letra: 'J' }] };
+  const guardar = (entrada = editado) => almacen.guardarRegistroSinRevisar(codigo, { order: entrada, usuario: 'IVÁN', fecha });
+
+  it.each(['PENDING_REVIEW', 'PRODUCED', 'TERMINADO_SIN_GENERAR'])('edita el registro %s sin modificar entregas ni archivos existentes', async status => {
+    const nombreGenerado = `${codigo}-1.pdf`;
+    const rutaGenerada = path.join(carpeta, nombreGenerado);
+    const production = status === 'PRODUCED' ? { createdAt: fecha, files: [{ type: 'pdf', filename: nombreGenerado }] } : null;
+    const original = {
+      ...pedido, order, status, production, entregas: [{ numero: 1, ofs: ['0232568'] }],
+      reviewedBy: 'JAIME', corteLona: { toldos: [{ letra: 'A' }] },
+      corteConfirmado: { filename: 'corte.dwg' }, planosWeb: ['corte.dwg'],
+      ...(status === 'TERMINADO_SIN_GENERAR' ? { terminadoSinGenerar: { motivo: 'Hecho', usuario: 'JAIME', fecha } } : {})
+    };
+    await fs.writeFile(rutaPdf, await adjuntarPedido(pdf, original, 'toldos'));
+    await fs.writeFile(rutaGenerada, pdf);
+    const archivos = await fs.readdir(carpeta);
+    await almacen.listReviews();
+
+    await guardar();
+    const registro = await almacen.getReview(codigo);
+    expect(registro).toMatchObject({
+      status, production, entregas: original.entregas, reviewedBy: original.reviewedBy,
+      corteLona: original.corteLona, corteConfirmado: original.corteConfirmado, planosWeb: original.planosWeb,
+      updatedAt: fecha, updatedBy: 'IVÁN', order: editado,
+      summary: { customer: 'Cliente editado', awnings: 1, models: ['GALICIA'], awningList: [{ letter: 'J' }] },
+      ediciones: [{ usuario: 'IVÁN', fecha, nota: 'Editado sin revisar' }]
+    });
+    expect(registro.terminadoSinGenerar).toEqual(original.terminadoSinGenerar);
+    expect(await almacen.listReviews()).toMatchObject([{ status, summary: { customer: 'Cliente editado' } }]);
+    expect(await fs.readdir(carpeta)).toEqual(archivos);
+    expect(await fs.readFile(rutaGenerada)).toEqual(pdf);
+    expect((await pdfLib.PDFDocument.load(await fs.readFile(rutaPdf))).getPageCount()).toBe(2);
+    if (production) {
+      const [archivo] = resolveGeneratedReviewFiles(registro, { planteamientosDirectory: carpeta }, 0);
+      expect(archivo.savedPath).toBe(rutaGenerada);
+    }
+    await guardar();
+    expect((await almacen.getReview(codigo)).ediciones).toHaveLength(2);
+  });
+
+  it('conserva la entrega de un producido antiguo al editar su JSON', async () => {
+    const original = { ...pedido, order, status: 'PRODUCED',
+      production: { createdAt: fecha, files: [{ type: 'pdf', filename: `${codigo}-2.pdf` }] } };
+    await fs.writeFile(rutaLegacy, JSON.stringify(original));
+    await guardar({ ...editado, awnings: [{ ...editado.awnings[0], of: '0232569' }] });
+    expect(entregasPedido(await almacen.getReview(codigo))).toEqual(entregasPedido(original));
+    expect(await fs.readdir(carpeta)).toEqual([`${codigo}.toldos.json`]);
+  });
+
+  it('rechaza un número distinto y letras repetidas sin tocar el registro', async () => {
+    await fs.writeFile(rutaPdf, pdf);
+    await expect(guardar({ ...editado, orderCode: 'AR2604442' })).rejects.toMatchObject({ statusCode: 400 });
+    await expect(guardar({ ...editado, awnings: [...editado.awnings, { ...editado.awnings[0] }] }))
+      .rejects.toMatchObject({ statusCode: 409 });
+    expect(await fs.readFile(rutaPdf)).toEqual(pdf);
+  });
+
   it.each(['PDF', 'JSON'])('termina y reabre un pedido %s dentro del registro', async formato => {
     await fs.writeFile(formato === 'PDF' ? rutaPdf : rutaLegacy, formato === 'PDF' ? pdf : JSON.stringify(pedido));
     await expect(almacen.terminarRevision(codigo, { usuario: 'IVÁN', motivo: '  ', fecha })).rejects.toThrow(/motivo/i);

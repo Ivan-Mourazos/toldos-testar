@@ -355,7 +355,7 @@ html[data-estilo="hero"][data-theme="dark"]:root {
 }
 
 /* ── Notificaciones y diálogos como los de HeroUI (Iván, 26/10/2026: «el sistema de notificaciones… aplicarle el nuevo
-   diseño; mirar en HeroUI»). Abajo en el centro, tarjeta blanca muy redondeada sin borde y con sombra suave; el icono y
+   diseño; mirar en HeroUI»). Arriba en el centro (antes abajo; cambiado el 25/11/2026), tarjeta blanca muy redondeada sin borde y con sombra suave; el icono y
    el título en el color del tono, la explicación en gris, y una barrita fina del mismo color con el tiempo que queda.
    Van fuera de #root (createPortal a body), así que se anclan a la página. */
 html[data-estilo="hero"]:root {
@@ -365,17 +365,17 @@ html[data-estilo="hero"][data-theme="dark"]:root {
   --aviso-ok: #45d483; --aviso-mal: #ff6b72; --aviso-ojo: #f5c451; --aviso-info: var(--color-brand-300);
 }
 html[data-estilo="hero"]:root .notification-stack {
-  bottom: 22px;
+  top: 72px;
   gap: 10px;
   left: 50%;
-  max-width: min(440px, calc(100vw - 28px));
+  max-width: min(340px, calc(100vw - 28px));
   right: auto;
   transform: translateX(-50%);
 }
 html[data-estilo="hero"]:root .app-notification {
   --tono: var(--aviso-info);
   align-items: center;
-  animation: aviso-hero-entra 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: aviso-hero-baja 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   backdrop-filter: none;
   background: var(--hero-superficie);
   border: 0;
@@ -397,6 +397,8 @@ html[data-estilo="hero"]:root .app-notification .notification-close { background
 html[data-estilo="hero"]:root .app-notification .notification-close:hover { background: var(--hero-relleno); }
 html[data-estilo="hero"]:root .app-notification .notification-timer { background: var(--tono); color: var(--tono); height: 3px; opacity: 0.55; }
 @keyframes aviso-hero-entra { from { opacity: 0; transform: translateY(14px) scale(0.96); } }
+/* Las notificaciones salen arriba, debajo de la cabecera, y bajan al entrar (Iván, 25/11/2026). */
+@keyframes aviso-hero-baja { from { opacity: 0; transform: translateY(-14px) scale(0.96); } }
 
 /* Diálogos de confirmación: misma tarjeta, más grande y centrada, sobre un fondo oscurecido y desenfocado. */
 html[data-estilo="hero"]:root .confirmation-backdrop { backdrop-filter: blur(6px); background: rgba(9, 9, 11, 0.38); }
@@ -423,23 +425,24 @@ html[data-estilo="hero"]:root .confirmation-dialog :is(.ghost-button, .primary-b
   html[data-estilo="hero"]:root :is(.app-notification, .confirmation-dialog) { animation: none; }
 }
 
-/* «Más ⋯» de las revisiones (MenuMas.tsx): un desplegable como los de HeroUI, pegado al botón por la derecha. */
-html[data-estilo="hero"]:root #root .menu-mas { position: relative; }
+/* Menús de acciones, alineados con el lado derecho del botón. */
 html[data-estilo="hero"]:root #root .menu-mas-panel {
-  animation: aviso-hero-entra 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   background: var(--hero-superficie);
   border: 0;
   border-radius: 14px;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 18px 40px -14px rgba(0, 0, 0, 0.3);
-  display: grid;
   gap: 2px;
+  inset: auto;
+  margin: 6px 0 0;
+  max-height: calc(100dvh - 16px);
   min-width: 220px;
   padding: 6px;
-  position: absolute;
-  right: 0;
-  top: calc(100% + 6px);
-  z-index: 40;
+  position: fixed;
+  position-area: block-end span-inline-start;
+  position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
 }
+html[data-estilo="hero"]:root #root .menu-mas-panel:popover-open { display: grid; }
+html[data-estilo="hero"]:root #root .menu-mas > button[aria-expanded="true"] { background: var(--hero-relleno); }
 html[data-estilo="hero"][data-theme="dark"]:root #root .menu-mas-panel { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 18px 40px -14px rgba(0, 0, 0, 0.8); }
 html[data-estilo="hero"]:root #root .menu-mas-item {
   align-items: center;
@@ -458,9 +461,13 @@ html[data-estilo="hero"]:root #root .menu-mas-item {
 }
 html[data-estilo="hero"]:root #root .menu-mas-item:hover:not(:disabled),
 html[data-estilo="hero"]:root #root .menu-mas-item:focus-visible { background: var(--hero-relleno); outline: none; }
-html[data-estilo="hero"]:root #root .menu-mas-item:disabled { cursor: not-allowed; opacity: 0.5; }
+html[data-estilo="hero"]:root #root .menu-mas-item:disabled { cursor: not-allowed; opacity: 0.6; }
 html[data-estilo="hero"]:root #root .menu-mas-item svg { color: var(--hero-texto-suave); flex: none; }
-@media (prefers-reduced-motion: reduce) { html[data-estilo="hero"]:root #root .menu-mas-panel { animation: none; } }
+html[data-estilo="hero"]:root #root .menu-mas-opcion { align-items: start; min-width: 250px; max-width: 300px; }
+html[data-estilo="hero"]:root #root .menu-mas-opcion small { color: var(--text-muted); display: block; margin-top: 2px; }
+html[data-estilo="hero"]:root #root .menu-mas-peligro,
+html[data-estilo="hero"]:root #root .menu-mas-peligro svg { color: var(--danger); }
+html[data-estilo="hero"]:root #root .menu-mas-separador { border: 0; border-top: 1px solid var(--hero-relleno); margin: 3px 4px; }
 
 /* ── Repaso de lo que se quedó con el metal (Iván, 27/10/2026: «falta el nuevo estilo en un montón de apartados») ──
    Se midió en el navegador qué tenía aún relieve, degradado o borde de tarjeta: Parámetros, Configuración, la fila

@@ -50,10 +50,13 @@ export function entregasPedido(p) {
 export function abrirEntrega(pedido, existente = null) {
   const entregas = structuredClone(entregasPedido(existente));
   const completo = mezclarPedido(pedido, existente);
-  const p = { ...completo, entregas, siguienteEntrega: existente?.siguienteEntrega,
+  const base = { ...completo, entregas, siguienteEntrega: existente?.siguienteEntrega,
     ...(completo.summary ? { summary: { ...completo.summary, awnings: elementos(completo).length,
       ofs: [...new Set(elementos(completo).map(ofElemento).filter(Boolean))],
       models: [...new Set([...(existente?.summary?.models ?? []), ...(completo.summary.models ?? [])])] } } : {}) };
+  // Si se vuelve a preparar una entrega nueva en curso, sigue usando solo sus OF.
+  const p = existente?.status !== 'PRODUCED' && existente?.destinoEntrega?.modo === 'nuevo' && existente?.datosOfsConservadas
+    ? conservarOfsGeneradas(base) : base;
   const paso = pasosEntrega(p)[0];
   const numero = paso?.numero ?? existente?.entregaActual ?? inicioSerie(p);
   const anterior = entregas.find(e => e.numero === numero) ?? (existente?.status !== 'PRODUCED' && existente?.entregaActual === numero ? existente : null);
@@ -86,7 +89,7 @@ export function mezclarPedido(p, existente) {
 
 export function pasosEntrega(p) {
   const entregas = ordenGeneracion(p);
-  const anteriores = Object.assign({}, ...entregas.map(e => e.datos));
+  const anteriores = Object.assign({}, ...entregas.map(e => e.datos), p.datosOfsConservadas);
   const cambios = Object.entries(datosPorOf(p)).filter(([of, datos]) => anteriores[of] !== datos).map(([of]) => of);
   const pasos = [];
   for (const of of cambios) {
@@ -98,6 +101,19 @@ export function pasosEntrega(p) {
     paso.ofs = [...new Set([...(anterior?.ofs ?? []), ...paso.cambiadas])];
   }
   return pasos.sort((a, b) => (a.modo === 'nuevo') - (b.modo === 'nuevo') || a.numero - b.numero);
+}
+
+export function ofsSinGenerar(pedido, order) {
+  const hechas = new Set(entregasPedido(pedido).flatMap(e => e.ofs));
+  return [...new Set(order.awnings.map(ofElemento).filter(of => of && !hechas.has(of)))];
+}
+
+// Las ediciones de OF ya entregadas quedan en el formulario. Sus entregas conservan
+// los datos de fabricación y no vuelven a quedar pendientes al añadir una entrega nueva.
+export function conservarOfsGeneradas(pedido) {
+  const hechas = new Set(entregasPedido(pedido).flatMap(e => e.ofs));
+  const datosOfsConservadas = Object.fromEntries(Object.entries(datosPorOf(pedido)).filter(([of]) => hechas.has(of)));
+  return { ...pedido, datosOfsConservadas };
 }
 
 const ordenGeneracion = p => entregasPedido(p).map((e, i) => ({ e, orden: e.ordenGeneracion ?? i + 1 }))
@@ -204,6 +220,9 @@ export function cerrarEntrega(p, materiales = []) {
   entrega.destino = p.destinoEntrega ?? { numero, modo: anterior ? 'sustituir' : 'nuevo' };
   entrega.revisiones = [...(anterior?.revisiones ?? []), ...(anterior ? [{ fecha: anterior.fecha, autor: anterior.autor, archivos: anterior.archivos, destino: anterior.destino }] : [])];
   const actualizado = { ...p, entregas: [...historial.filter(e => e.numero !== numero), entrega].sort((a, b) => a.numero - b.numero) };
+  if (actualizado.datosOfsConservadas) {
+    actualizado.datosOfsConservadas = Object.fromEntries(Object.entries(actualizado.datosOfsConservadas).filter(([of]) => !ofs.includes(of)));
+  }
   delete actualizado.ofsSeleccionadas;
   delete actualizado.destinoEntrega;
   const pendiente = pasosEntrega(actualizado)[0];

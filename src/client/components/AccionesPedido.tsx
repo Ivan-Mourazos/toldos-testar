@@ -12,9 +12,9 @@ import { ElegirDestinoEntrega } from './DestinoEntrega';
 
 /** El mismo orden y la misma barra para las tres familias de pedidos. */
 export function AccionesPedido({ generado, ocupado, editandoPermitido, onEditar, elementos, coordina, preguntar, abrir,
-  regenerar, generar, enviando, generarPermitido, motivoGenerar, envios, reutilizar, rutaDestinos, codigo, produccion }: {
+  regenerar, generar, enviando, generarPermitido, motivoGenerar, envios, reutilizar, rutaDestinos, codigo, produccion, etiquetaEditar = 'Corregir' }: {
   produccion?: React.ReactNode;
-  generado: boolean; ocupado: boolean; editandoPermitido: boolean; onEditar: () => void;
+  generado: boolean; ocupado: boolean; editandoPermitido: boolean; onEditar: () => void; etiquetaEditar?: string;
   elementos: { of: string }[]; coordina: CoordinaStatus | null; preguntar: AskForConfirmation;
   abrir?: React.ReactNode; regenerar?: () => void; generar: (destino?: DestinoEntrega) => void; enviando?: boolean;
   rutaDestinos?: string; codigo?: string;
@@ -33,7 +33,7 @@ export function AccionesPedido({ generado, ocupado, editandoPermitido, onEditar,
   }
   return <div className="review-reader-actions" aria-label="Acciones del pedido">
     {editandoPermitido && <button className="ghost-button boton-3d" type="button" disabled={ocupado || consultando} onClick={() => void editar()}>
-      <PencilLine aria-hidden="true" />Corregir
+      <PencilLine aria-hidden="true" />{etiquetaEditar}
     </button>}
     {abrir}
     {!generado && regenerar && <button className="ghost-button boton-3d" type="button" disabled={ocupado} onClick={() => void regenerarCortePedido(preguntar, regenerar)}>

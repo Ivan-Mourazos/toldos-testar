@@ -1,5 +1,6 @@
 import { isPendingGeneration } from '../reviewRules.js';
 import { avisoLetrasPedido, letraToldo } from '../domain/awningCompleteness.js';
+import { formOptions } from '../domain/modelBehavior.js';
 import type { CoordinaStatus, ReviewPackage } from './types';
 import { generarToldosPermitido } from '../toldosEditable.js';
 import { pedidoEntrega } from '../entregas.js';
@@ -32,4 +33,8 @@ export function generateState(review: Pick<ReviewPackage, 'status' | 'order'>, _
 /** Cualquier técnico de oficina edita; CoordinaOT solo decide si se puede generar. */
 export function puedeCorregir(_status: string, _elementos: { letter: string; of: string }[], _autor: string, usuario: string, _coordina: CoordinaStatus | null, _editable = true) {
   return Boolean(usuario.trim());
+}
+
+export function puedeEditarToldos(usuario: string) {
+  return formOptions.tecnicos.includes(usuario.trim());
 }

@@ -56,7 +56,7 @@ export function ReviewsView({ modo = 'pedidos', todos = [], onIrHistorial, refre
   onConfirm: AskForConfirmation;
   /** Pedido que pide abrir CoordinaOT (`?revisar=`), sin puntos. Se abre en cuanto la bandeja
    *  lo tiene, y se avisa a App para que no se repita al volver a esta pestaña. */
-  abrirAlCargar?: string | null;
+  abrirAlCargar?: string | { orderCode: string } | null;
   onAbiertoAlCargar?: () => void;
 }) {
   const [year, setYear] = useState(new Date().getFullYear());
@@ -144,20 +144,27 @@ export function ReviewsView({ modo = 'pedidos', todos = [], onIrHistorial, refre
   useEffect(() => {
     // Sin pedido pedido se olvida el último: buscar otra vez el mismo debe abrirlo de nuevo.
     if (!abrirAlCargar) { atendidoAlCargar.current = null; return; }
-    if (pendingLoading || historyLoading || atendidoAlCargar.current === abrirAlCargar) return;
-    atendidoAlCargar.current = abrirAlCargar;
+    const codigo = typeof abrirAlCargar === 'string' ? abrirAlCargar : abrirAlCargar.orderCode;
+    if (atendidoAlCargar.current === codigo) return;
+    if (typeof abrirAlCargar !== 'string') {
+      atendidoAlCargar.current = codigo;
+      queueMicrotask(() => { onAbiertoAlCargar?.(); void abrirCodigo(codigo, 'toldos'); });
+      return;
+    }
+    if (pendingLoading || historyLoading) return;
+    atendidoAlCargar.current = codigo;
     const sinPuntos = (codigo: string) => codigo.replace(/[.\s-]/g, '').toUpperCase();
     // También en todos: lo que se busca en la cabecera puede ser un generado del año anterior.
     const encontrado = [...pending, ...history, ...todos].find((p) => sinPuntos(p.orderCode) === abrirAlCargar);
     queueMicrotask(() => {
       onAbiertoAlCargar?.();
       if (!encontrado) {
-        onToast(`El pedido ${abrirAlCargar} no está guardado para revisión en Planteamientos.`, { tone: 'warning', title: 'No encuentro el pedido' });
+        onToast(`El pedido ${abrirAlCargar} no está guardado en Planteamientos.`, { tone: 'warning', title: 'No encuentro el pedido' });
         return;
       }
       abrir(encontrado);
     });
-  }, [abrirAlCargar, pendingLoading, historyLoading, pending, history, todos, onAbiertoAlCargar, onToast, abrir]);
+  }, [abrirAlCargar, pendingLoading, historyLoading, pending, history, todos, onAbiertoAlCargar, onToast, abrir, abrirCodigo]);
 
   const detailIsCurrent = detail?.orderCode === selectedCode;
   const selectedReview = detailIsCurrent ? detail.review : null;

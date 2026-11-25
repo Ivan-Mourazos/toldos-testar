@@ -27,6 +27,7 @@ describe('los documentos del pedido de toldos', () => {
     expect(html).toContain('Terminado sin generar');
     expect(html).toContain('Hecho en taller');
     expect(html).toContain('Volver a pendiente');
+    expect(html).toContain('>Editar<');
     expect(html).not.toContain('Pasar a producción');
     expect(html).not.toContain('Entrega 1 · En curso');
   });
@@ -43,6 +44,12 @@ describe('los documentos del pedido de toldos', () => {
     expect(html).toContain('El corte no está regenerado con los últimos datos');
     expect(html).toContain('por Jaime');
   });
+  it('muestra la edición en la ficha y pide un técnico de la lista para editar', () => {
+    const review = { ...pedido('ACRILI2018P120'), ediciones: [{ usuario: 'JAIME', fecha: '2026-11-24T11:00:00Z', nota: 'Editado sin revisar' }] };
+    expect(pintar(review)).toContain('Editado por Jaime el 24/11');
+    expect(pintar(review, '')).not.toContain('>Editar<');
+    expect(pintar(review, 'DESCONOCIDO')).not.toContain('>Editar<');
+  });
   it.each(['IVÁN', 'JAIME'])('muestra planteamiento y corte debajo de los datos para %s', (usuario) => {
     const html = pintar(pedido('PVC|||250|||LONA PVC|||PLASTICA (LONA)'), usuario);
     expect(html.indexOf('aria-label="Planteamiento"')).toBeGreaterThan(html.indexOf('Formulario del pedido en solo lectura'));
@@ -56,8 +63,7 @@ describe('los documentos del pedido de toldos', () => {
     expect(html).not.toContain('Mandar corte al bot');
     expect(html.match(/Abrir en grande/g)).toHaveLength(1);
     expect(html).not.toContain('>Vista previa<');
-    // Fase 1 editable (05/11): cualquier usuario de oficina corrige.
-    expect(html.includes('>Corregir<')).toBe(true);
+    expect(html).toContain('>Editar<');
     // «Generar corte» ya no va abajo del corte (Iván, 29/10/2026): sale arriba cuando la comprobación dice que falta o
     // está viejo, y en este pintado estático aún se está comprobando.
     expect(html).not.toContain('>Generar corte<');

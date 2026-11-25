@@ -119,7 +119,8 @@ export function NotificationCenter({
   return createPortal(
     <>
       <div className="notification-stack" aria-label="Notificaciones">
-        {toasts.map((toast) => (
+        {/* Arriba, la más nueva primero. */}
+        {[...toasts].reverse().map((toast) => (
           <NotificationToast key={toast.id} toast={toast} onDismiss={onDismissToast} />
         ))}
       </div>

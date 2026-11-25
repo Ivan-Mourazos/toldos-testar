@@ -4,10 +4,10 @@ import { prepararPlanoProduccion } from './produccion.js';
 import { entregaStockLona, lineasLonaToldos, necesidadesLona } from './stockLona.js';
 import { pasarAProduccionConStock } from './stockLonaProduccion.js';
 import { catalogoEntregas, numerarEntrega, aplicarDestino, necesitaPrepararDestino } from './entregasRps.js';
-import { avisoEntradaEntrega, codigoCorteEditable, abrirEntrega, codigoAnual, codigoEntrega, ofsEntrega, pedidoEntrega, entregaSinCambios } from './entregas.js';
+import { avisoEntradaEntrega, codigoCorteEditable, abrirEntrega, codigoAnual, codigoEntrega, ofsEntrega, pedidoEntrega, entregaSinCambios, ofsSinGenerar, conservarOfsGeneradas } from './entregas.js';
 import { materialesReserva } from './materialesEntrega.js';
 import { adjuntarPedido } from './adjuntosPedido.js';
-import { leerPdfParaActualizarDatos } from './workflow.js';
+import { apuntarEdicion, comprobarLetrasToldos, leerPdfParaActualizarDatos } from './workflow.js';
 import { crearCierreHttp } from './cierreHttp.js';
 import compression from 'compression';
 import express from 'express';
@@ -22,7 +22,7 @@ import { registrarRutaPuertas } from './puertas/rutas.js';
 import { crearPlanoPuertas } from './puertas/flujo/archivos.ts';
 import { crearServicioPedidosPuertas } from './puertas/flujo/servicio.ts';
 import { crearAlmacenConfirmaciones } from './flujoDwg/confirmaciones.js';
-import { firmasCorteLona, corteLonaPendiente, crearEstadoCorteLona, letrasCorteCambiadas } from './corteLonaEstado.js';
+import { firmasCorteLona, corteLonaPendiente, crearEstadoCorteLona, letrasCorteCambiadas, corteLonaDesactualizado } from './corteLonaEstado.js';
 import { generarCorteLona } from './domain/corteLona/index.js';
 import { TERMINADO_SIN_GENERAR } from './reviewRules.js';
 import { aprobacionToldos, autoriaToldos, decisionRegenerar, generarToldosPermitido } from './toldosEditable.js';
@@ -31,7 +31,7 @@ import { comprobarCorteNoRegenerado } from './flujoDwg/salidaEditable.ts';
 import { conRevisor, htmlPresentaciones, sinDibujarEnPdf } from './flujoDwg/planoDxf.js';
 import { conHojasDelante } from './flujoDwg/unirPdf.js';
 import { SUBCARPETA_PUERTAS, TIPO_PEDIDO_PUERTAS } from './puertas/flujo/tipos.ts';
-import { crearOfStockSacos } from './ofStockSacos.js';
+import { crearOfStockSacos, OF_STOCK_POR_DEFECTO } from './ofStockSacos.js';
 import { registrarRutasCmtHerramienta } from './cmtHerramientaRoutes.js';
 import { registrarRutasStockPlano } from './cmtStockLona.js';
 import { crearTablaCapas } from './cmtTablaCapas.js';
@@ -43,7 +43,7 @@ import { exigirCorteAlDia, exigirCorteParaSalir, escribirPlanosCorte, prepararAr
 import { registrarRutasEnviosCorte } from './corteEnviosRoutes.js';
 import { estadoBotCompartido } from './botEstado.js';
 import { createCoordinaClient } from './coordinaStatus.js';
-import { avisoLetrasPedido, letraToldo } from './domain/awningCompleteness.js';
+import { letraToldo } from './domain/awningCompleteness.js';
 import { getCatalog } from './domain/catalog.js';
 import { searchStaticFabrics } from './domain/fabricCatalog.js';
 import { buildFabricDiagramPreviewPdf, buildOrderPlanteamientoPdf } from './domain/planteamientoPdf.js';
@@ -386,20 +386,47 @@ app.post('/api/corte-lona/borrador', async (req, res, next) => {
     generationLocks.add(orderCode);
     lockKey = orderCode;
     let existente = null;
-    try { existente = await workflowStore.getReview(orderCode); } catch { existente = null; }
+    try { existente = await workflowStore.getReview(orderCode); } catch (error) { if (error.code !== 'ENOENT') throw error; }
     exigirToldosAbierto(existente);
+    const regenerar = req.body?.regenerar === true;
+    if (req.body?.avisarCorteDesactualizado === true && !regenerar) {
+      const codigo = codigoCorteEditable(existente, orderCode);
+      const estado = await flujoToldos.estado(codigo);
+      const confirmado = existente?.corteConfirmado;
+      if (estado.borrador || confirmado) {
+        const actual = existente ? pedidoEntrega({ ...existente, order }).order : order;
+        const corte = estado.borrador ? req.body.corteLona ?? existente?.corteLona : existente.corteLona;
+        let desactualizado = !actual.awnings.length;
+        if (!desactualizado && estado.borrador && estado.datos) {
+          const opciones = { ajustes: corte?.ajustes || {}, ofStockSacos: corte?.ofStockSacos || OF_STOCK_POR_DEFECTO };
+          const actualizado = crearEstadoCorteLona(actual, { ...opciones, resultado: generarCorteLona(actual, opciones) });
+          desactualizado = estado.datos !== datosCorteToldos(actualizado);
+        } else if (!desactualizado) {
+          desactualizado = corteLonaDesactualizado(actual, corte)
+            || Boolean(confirmado?.datos && confirmado.datos !== datosCorteToldos(corte));
+        }
+        if (desactualizado && req.body?.abrirCorteIgual !== true) {
+          return res.status(409).json({ corteDesactualizado: true });
+        }
+        const resultado = await flujoToldos.borrador({
+          orderCode: codigo, revisado: confirmado ? planosDe(confirmado).map(p => p.plano) : undefined,
+          preparar: async () => { throw httpError(409, 'El plano se ha movido. Vuelve a abrir el corte.'); }
+        });
+        return res.status(resultado.status).json(resultado.cuerpo);
+      }
+    }
     const entrega = await numerarEntrega(abrirEntrega({ kind: 'toldos-testar-review', orderCode, order, status: 'PENDING_REVIEW' }, existente), await workflowStore.getSettings());
     comprobarLetrasToldos(entrega.order);
-    const actual = pedidoEntrega(entrega).order;
+    const actual = pedidoEntrega(!ofsEntrega(entrega).length && existente?.status === 'PRODUCED' ? { ...existente, order } : entrega).order;
     if (existente?.status === 'PRODUCED' && !entrega.entregas.some(e => e.numero === entrega.entregaActual)) existente = null;
     let corteLona = req.body?.corteLona;
-    if (entrega.entregas.length) {
+    if (entrega.entregas.length || (regenerar && req.body?.avisarCorteDesactualizado === true)) {
       const stock = await ofStockSacos();
       const ajustes = corteLona?.ajustes || {};
       corteLona = crearEstadoCorteLona(actual, { ajustes, resultado: generarCorteLona(actual, { ajustes, ofStockSacos: stock.of }), ofStockSacos: stock.of });
     }
     const { status, cuerpo } = await flujoToldos.borrador({
-      orderCode: codigoAnual(entrega), regenerar: req.body?.regenerar === true, datos: datosCorteToldos(corteLona), datosRevisado: existente?.corteConfirmado?.datos,
+      orderCode: codigoAnual(entrega), regenerar, datos: datosCorteToldos(corteLona), datosRevisado: existente?.corteConfirmado?.datos,
       revisado: existente?.corteConfirmado ? planosDe(existente.corteConfirmado).map((p) => p.plano) : undefined,
       preparar: async (carpeta) => {
         const salida = await prepararArchivosCorte({ order: actual, codigoSalida: codigoAnual(entrega), corteLona, settings: await workflowStore.getSettings(), oda, tipo: 'plano', carpeta });
@@ -407,7 +434,7 @@ app.post('/api/corte-lona/borrador', async (req, res, next) => {
           avisos: salida.files.length || salida.avisos.length ? salida.avisos : ['Este pedido no tiene corte de lona.'] };
       }
     });
-    res.status(status).json(cuerpo);
+    res.status(status).json(regenerar && req.body?.avisarCorteDesactualizado === true && status === 200 ? { ...cuerpo, corteLona } : cuerpo);
   } catch (error) {
     next(error);
   } finally {
@@ -423,7 +450,7 @@ app.get('/api/corte-lona/borrador/estado', async (req, res, next) => {
     if (codigo) try { review = await workflowStore.getReview(sanitizeOrderCode(codigo)); }
     catch (error) { if (error.code !== 'ENOENT') throw error; }
     const estado = codigo ? await flujoToldos.estado(codigoCorteEditable(review, sanitizeOrderCode(codigo))) : { activo: false };
-    const revisado = review?.status !== 'PRODUCED' && Boolean(review?.corteConfirmado);
+    const revisado = Boolean(review?.corteConfirmado);
     const corteSimulado = review?.status !== 'PRODUCED' && review?.corteSimulado === true;
     res.set('Cache-Control', 'no-store').json({ ...estado, revisado, corteSimulado });
   } catch (error) {
@@ -1296,20 +1323,20 @@ app.get('/api/reviews/:orderCode/generated-files/:fileIndex', async (req, res, n
   }
 });
 
-app.post('/api/reviews', async (req, res, next) => {
-  let lockKey = '';
+app.post(['/api/reviews', '/api/reviews/:orderCode/guardar-registro'], async (req, res, next) => {
+  const guardarRegistro = req.params.orderCode !== undefined;
+  let soltar;
   try {
-    const rawOrder = req.body?.order || req.body;
+    const rawOrder = guardarRegistro ? req.body?.order : req.body?.order || req.body;
     const normalizedOrder = normalizeOrder(rawOrder);
     const orderCode = sanitizeOrderCode(normalizedOrder.orderCode);
-    if (generationLocks.has(orderCode)) throw httpError(409, 'Este pedido está ocupado: espera antes de guardarlo.');
-    generationLocks.add(orderCode);
-    lockKey = orderCode;
-    // Un pedido es de toldos o de remolques. Si la carpeta interna de remolques falla, toldos sigue.
-    if (await yaEsPedidoDeRemolques(almacenPedidosRemolques, orderCode)) {
-      throw httpError(409, mensajePedidoDeRemolques(orderCode));
+    if (guardarRegistro && sanitizeOrderCode(req.params.orderCode) !== orderCode) {
+      throw httpError(400, 'El número del formulario debe coincidir con el del pedido guardado.');
     }
-    if (await yaEsPedidoDePuertas(orderCode)) throw httpError(409, mensajePedidoDePuertas(orderCode));
+    const autorGuardado = guardarRegistro ? req.body?.usuario : req.body?.savedBy;
+    const savedBy = typeof autorGuardado === 'string' ? autorGuardado.trim() : '';
+    if (!formOptions.tecnicos.includes(savedBy)) throw httpError(400, 'Elige quién eres en «Soy» antes de guardar.');
+    soltar = bloquearRegistroToldos(orderCode);
     let existing = null;
     try {
       existing = await workflowStore.getReview(orderCode);
@@ -1317,8 +1344,27 @@ app.post('/api/reviews', async (req, res, next) => {
       if (error.code !== 'ENOENT') throw error;
     }
 
-    exigirToldosAbierto(existing);
+    if (guardarRegistro && !existing && req.body?.siExiste === true) return res.sendStatus(204);
+    if (guardarRegistro && (!existing?.order || !existing.orderCode || sanitizeOrderCode(existing.orderCode) !== orderCode)) {
+      throw httpError(404, 'No se encontró el registro editable de este pedido.');
+    }
     comprobarLetrasToldos(normalizedOrder);
+    const nuevas = guardarRegistro && existing.status === 'PRODUCED' ? ofsSinGenerar(existing, normalizedOrder) : [];
+    if (guardarRegistro && nuevas.length === 0) {
+      const review = await workflowStore.guardarRegistroSinRevisar(orderCode, { order: rawOrder, usuario: savedBy });
+      return res.json({ ok: true, review });
+    }
+    if (req.body?.soloNuevo === true && existing) {
+      throw httpError(409, 'El pedido se acaba de guardar en otro puesto. Pulsa «Guardar» de nuevo para actualizarlo.');
+    }
+    if (!guardarRegistro) {
+      // Un pedido es de toldos o de remolques. Si la carpeta interna de remolques falla, toldos sigue.
+      if (await yaEsPedidoDeRemolques(almacenPedidosRemolques, orderCode)) {
+        throw httpError(409, mensajePedidoDeRemolques(orderCode));
+      }
+      if (await yaEsPedidoDePuertas(orderCode)) throw httpError(409, mensajePedidoDePuertas(orderCode));
+    }
+    exigirToldosAbierto(existing);
     const decision = saveReviewDecision(existing, existing?.status === 'PRODUCED' || req.body?.confirmOverwrite === true);
     if (decision.action === 'refuse') throw httpError(decision.statusCode, decision.error);
     if (decision.action === 'confirm') {
@@ -1331,14 +1377,21 @@ app.post('/api/reviews', async (req, res, next) => {
     }
 
     // Quien guarda queda en updatedBy; el cajetín recoge solo revisores de CoordinaOT.
-    const savedBy = typeof req.body?.savedBy === 'string' ? req.body.savedBy.trim() : '';
-    if (!formOptions.tecnicos.includes(savedBy)) throw httpError(400, 'Elige quién eres en «Soy» antes de guardar.');
     const estadoRevision = await coordina.statusOf(uniqueOfs(normalizedOrder.awnings));
-    const authorship = autoriaToldos({ ...rawOrder, technician: existing?.order?.technician || savedBy }, savedBy, estadoRevision, formOptions.tecnicos);
+    const authorship = autoriaToldos({ ...rawOrder, technician: existing ? existing.order?.technician : savedBy }, savedBy, estadoRevision, formOptions.tecnicos);
+    if (existing) authorship.technician = existing.order?.technician ?? '';
     const completo = structuredClone({ ...rawOrder, orderCode, ...authorship });
     const calculation = await calculateConfiguredOrder(completo);
-    let review = await numerarEntrega(createReviewPackage({ order: completo, calculation, existing, corteLona: req.body?.corteLona, savedBy }), await workflowStore.getSettings());
-    if (req.body?.destinoEntrega) {
+    let review = createReviewPackage({ order: completo, calculation, existing, corteLona: nuevas.length ? undefined : req.body?.corteLona, savedBy });
+    if (nuevas.length) {
+      review = apuntarEdicion(conservarOfsGeneradas(review), savedBy, review.updatedAt);
+      delete review.corteConfirmado;
+    }
+    review = await numerarEntrega(review, await workflowStore.getSettings());
+    if (nuevas.length) {
+      review.destinoEntrega = { modo: 'nuevo', numero: review.entregaActual };
+      review.ofsSeleccionadas = nuevas;
+    } else if (req.body?.destinoEntrega) {
       const destino = await aplicarDestino(review, await workflowStore.getSettings(), req.body);
       if (destino.respuesta) return res.status(destino.respuesta.status).json(destino.respuesta.cuerpo);
       review = destino.pedido;
@@ -1351,14 +1404,14 @@ app.post('/api/reviews', async (req, res, next) => {
     // Solo los planos que la web escribió para este pedido se pueden sustituir en la carpeta del año (Iván, 19/11/2026).
     const planosWebPrevios = [...new Set([...(existing?.planosWeb ?? []), ...(existing?.corteConfirmado ? planosDe(existing.corteConfirmado).map(p => p.plano) : [])])];
     if (planosWebPrevios.length) review.planosWeb = planosWebPrevios;
-    const avisoEntrada = avisoEntradaEntrega(review, existing, req.body);
+    const avisoEntrada = nuevas.length ? null : avisoEntradaEntrega(review, existing, req.body);
     if (avisoEntrada) return res.status(409).json(avisoEntrada);
     // Las correcciones parten del corte de su entrega; una entrega nueva prepara otro plano.
     if (existing?.status === 'PRODUCED' && !review.entregas.some(e => e.numero === review.entregaActual)) existing = null;
     else if (existing) existing = { ...existing, ...review.entregas.find(e => e.numero === review.entregaActual)?.instantanea, corteConfirmado: review.corteConfirmado ?? existing.corteConfirmado };
     const order = normalizeOrder(pedidoEntrega(review).order);
     const codigoCorte = codigoAnual(review);
-    if (review.entregas.length && ofsEntrega(review).length) {
+    if (!nuevas.length && review.entregas.length && ofsEntrega(review).length) {
       const ajustes = review.corteLona?.ajustes || {};
       const stock = await ofStockSacos();
       review.corteLona = crearEstadoCorteLona(order, { ajustes, resultado: generarCorteLona(order, { ajustes, ofStockSacos: stock.of }), ofStockSacos: stock.of });
@@ -1368,14 +1421,15 @@ app.post('/api/reviews', async (req, res, next) => {
     const estadoDwg = await flujoToldos.estado(codigoCorte);
     const hayCorte = Boolean(existing?.corteConfirmado || existing?.corteLona || estadoDwg.borrador);
     const cambiaronLetras = letrasCorteCambiadas(order, existing?.corteLona);
-    if (cambiaronLetras && req.body?.decisionCorte !== 'regenerar') {
+    if (!nuevas.length && cambiaronLetras && req.body?.decisionCorte !== 'regenerar') {
       return res.status(409).json({ needsRegenerateConfirmation: true, cambiaronLetras: true });
     }
     const cambio = decisionRegenerar(existing ? { ...existing, order: normalizeOrder(existing.order) } : null,
       normalizeOrder(order), hayCorte, req.body?.decisionCorte,
       Boolean(existing?.corteLona) && datosCorteToldos(existing.corteLona) !== datosCorteToldos(review.corteLona));
     // Un pedido nuevo con borrador solo pregunta si el formulario dejó atrás su corte.
-    const decisionCorte = !existing && !corteLonaPendiente(order, review.corteLona).length ? 'seguir' : cambio;
+    const decisionCorte = nuevas.length || req.body?.decisionCorte === 'regenerar' ? 'regenerar'
+      : !existing && !corteLonaPendiente(order, review.corteLona).length ? 'seguir' : cambio;
     if (decisionCorte === 'preguntar') return res.status(409).json({ needsRegenerateConfirmation: true });
     const regeneradoConDatos = estadoDwg.borrador && estadoDwg.datos === datosCorteToldos(review.corteLona) && !corteLonaPendiente(order, review.corteLona).length;
     if (regeneradoConDatos) review.corteNoRegenerado = false;
@@ -1449,21 +1503,16 @@ app.post('/api/reviews', async (req, res, next) => {
     // Pasado a revisión, su borrador sobra (diseño 01/10/2026). Si no se puede borrar, se apunta
     // y el pedido queda guardado igual.
     await borradores.borrarTrasRevision(orderCode, 'toldos');
-    res.json({ ok: true, review, savedPath, planosCorte, overwritten: Boolean(existing) });
+    res.json({ ok: true, review, savedPath, planosCorte, overwritten: Boolean(existing), ...(nuevas.length ? { nuevaEntrega: true } : {}) });
   } catch (error) {
-    next(error);
+    next(guardarRegistro && error.code === 'ENOENT' ? httpError(404, 'No se encontró el registro editable de este pedido.') : error);
   } finally {
-    if (lockKey) generationLocks.delete(lockKey);
+    soltar?.();
   }
 });
 
 function exigirToldosAbierto(review) {
   if (review?.status === TERMINADO_SIN_GENERAR) throw httpError(409, 'El pedido está terminado sin generar. Vuelve a abrirlo para continuar.');
-}
-
-function comprobarLetrasToldos(order) {
-  const aviso = avisoLetrasPedido(order.awnings);
-  if (aviso) throw httpError(409, aviso);
 }
 
 function bloquearRegistroToldos(orderCode) {

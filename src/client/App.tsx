@@ -1,11 +1,10 @@
 import { CorteMaquinaContexto } from './components/CorteMaquina';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { debePreguntarAlCorregir } from './correccionPedido';
 import { useContenidoFluido } from './hooks/useContenidoFluido';
 import {
-  Eraser,
   Eye,
-  FilePen,
+  FolderOpen,
   Save,
   UserRound,
   X, Undo2, Moon, Sun, ArrowLeft, History } from 'lucide-react';
@@ -32,7 +31,8 @@ import { controlLabel } from './components/controlLabels';
 import { OrderView } from './views/OrderView';
 import { CmtView } from './views/CmtView';
 import { CorteLona, toldosConCorte } from './components/CorteLona';
-import { BotonesFlujoCorte, useFlujoCorteDwg } from './flujoCorteDwg';
+import { pedidoValido, useFlujoCorteDwg } from './flujoCorteDwg';
+import { MenuOpcionesToldos } from './components/MenuOpcionesToldos';
 import { AVISO_SIN_CAMBIOS, abrirCorteToldos, guardarToldosEditable } from './toldosEditable';
 import { autoriaToldos, avisoAprobacionToldos } from '../toldosEditable.js';
 import { useCoordinaStatus } from './hooks/useCoordinaStatus';
@@ -53,7 +53,7 @@ import { EstadoBotContexto, SemaforoBot, useEstadoBot } from './components/Semaf
 import { BuscadorCabecera } from './components/BuscadorCabecera';
 import { personaDe, tintaSobre } from './personas';
 import { usePendingReviews } from './hooks/usePendingReviews';
-import { buscarBorradorAlObtener, contenidoBorradorToldos, guardarBorradorPreguntando, TITULO_BORRADOR_EN_CORRECCION } from './borradores';
+import { buscarBorradorAlObtener, contenidoBorradorToldos, guardarBorradorPreguntando } from './borradores';
 import type { PedidoRemolques } from '../remolques/flujo/tipos.ts';
 import type { Borrador, BorradorRemolques } from '../borradores/tipos.ts';
 import type { ModoCarga } from './remolques/guardarPedido';
@@ -91,7 +91,7 @@ export default function App() {
   const puertasActivas = catalog?.features.puertasEnabled === true;
   // Con `?revisar=` (CoordinaOT, pedido ya mandado a revisión) se entra directamente en Pedidos,
   // y la bandeja abre ese pedido en cuanto lo tiene (ver `abrirAlCargar` en ReviewsView).
-  const [revisarAlCargar, setRevisarAlCargar] = useState<string | null>(() => revisionDeEnlace(window.location.search));
+  const [revisarAlCargar, setRevisarAlCargar] = useState<string | { orderCode: string } | null>(() => revisionDeEnlace(window.location.search));
   // El pedido de CoordinaOT que se está cargando, para el aviso «Cargando…» (Iván, 10/11/2026: parecía trabado).
   const [cargandoCoordina, setCargandoCoordina] = useState<string | null>(() => revisionDeEnlace(window.location.search));
   const [activeTab, setActiveTab] = useState<ActiveTab>(() => (revisarAlCargar ? 'reviews' : new URLSearchParams(window.location.search).get('herramienta') === 'cmt' ? 'cmt' : 'order'));
@@ -113,6 +113,7 @@ export default function App() {
   const [entradaEmbudos, setEntradaEmbudos] = useState(false);
   const soloEmbudos = draft.awnings.length > 0 && draft.awnings.every(a => a.model === 'EMBUDO');
   const [editorPedidoAbierto, setEditorPedidoAbierto] = useState(false);
+  const identificadorSolicitud = useRef(0);
   function chooseProducto(next: Producto) {
     setEntradaEmbudos(false);
     setEditorPedidoAbierto(true);
@@ -133,7 +134,7 @@ export default function App() {
       draft.addAwning(valor.workType,valor.modelo);
       ruleSettings.restoreParameters();
       setCorrigiendo(null);setAutofill(null);setReturnNote(null);setFormularioAntiguo(null);
-    } else setModeloInicio({id:Date.now(),valor});
+    } else setModeloInicio({id:++identificadorSolicitud.current,valor});
     chooseProducto(valor.producto);
     setEntradaEmbudos(valor.producto === 'toldos' && valor.modelo === 'EMBUDO');
   }
@@ -293,20 +294,20 @@ export default function App() {
 
   function openInTrailers(numero: string, pedidoRps: PedidoRps) {
     chooseProducto('remolques');
-    setPedidoSolicitado({ numero, id: Date.now(), pedidoRps });
+    setPedidoSolicitado({ numero, id: ++identificadorSolicitud.current, pedidoRps });
   }
 
   // La pregunta de si sustituir lo que haya en Remolques la hace la propia pantalla, que es quien lo sabe.
   function abrirPedidoRemolques(pedido: PedidoRemolques, modo: ModoCarga) {
     chooseProducto('remolques');
     setActiveTab('order');
-    setPedidoGuardadoSolicitado({ id: Date.now(), pedido, modo });
+    setPedidoGuardadoSolicitado({ id: ++identificadorSolicitud.current, pedido, modo });
   }
 
   function abrirPedidoPuertas(pedido: PedidoPuertasGuardado, modo: ModoCargaPuertas) {
     chooseProducto(productoDeElementos(pedido.elementos));
     setActiveTab('order');
-    setPedidoPuertasSolicitado({ id: Date.now(), pedido, modo });
+    setPedidoPuertasSolicitado({ id: ++identificadorSolicitud.current, pedido, modo });
   }
 
   // Abrir un borrador del servidor (diseño 01/10/2026): «Seguir con el borrador» de Pedidos o «Abrir
@@ -316,7 +317,7 @@ export default function App() {
     if (borrador.kind === 'remolques') {
       chooseProducto('remolques');
       setActiveTab('order');
-      setBorradorRemolquesSolicitado({ id: Date.now(), borrador, preguntar });
+      setBorradorRemolquesSolicitado({ id: ++identificadorSolicitud.current, borrador, preguntar });
       return;
     }
     const hasDraftData = Boolean(
@@ -414,7 +415,7 @@ export default function App() {
             return;
           }
           chooseProducto(productoDeElementos(puertas.puertas.map(input => ({ input }))));
-          setPedidoPuertasRps({ id: Date.now(), numero: orderCode, rps: puertas });
+          setPedidoPuertasRps({ id: ++identificadorSolicitud.current, numero: orderCode, rps: puertas });
           return;
         }
       }
@@ -450,24 +451,6 @@ export default function App() {
     }
   }
 
-  // La web abierta con un pedido en la dirección (`?pedido=AR2604351`, el botón «Plantear» de
-  // CoordinaOT): se busca solo, por el mismo camino que «Buscar pedido», así que pregunta por
-  // el borrador y manda a Remolques si toca. Una vez por carga, y el número se quita de la
-  // barra para que recargar no lo repita.
-  const enlaceAtendido = useRef(false);
-  useEffect(() => {
-    if (enlaceAtendido.current) return;
-    enlaceAtendido.current = true;
-    const numero = pedidoDeEnlace(window.location.search);
-    if (numero || revisionDeEnlace(window.location.search)) window.history.replaceState(null, '', sinPedidoEnEnlace(window.location.href));
-    if (!numero) return;
-    // Si ya está guardado en Pedidos, se abre allí, como con «Revisar», sin cargarlo en Nuevo pedido.
-    // Si no, se busca: fuera del efecto, porque la búsqueda cambia estado nada más empezar («Buscando…»).
-    irAlPedido({ numero, modo: 'pedido' });
-    // Solo al cargar: `autofillOrder` cambia en cada pintado y no debe relanzar la búsqueda.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   function irAlPedido({ numero, modo }: PedidoDeCoordina) {
     // Desde el clic hasta tenerlo cargado: en Pedidos lo quita `onAbiertoAlCargar`; al plantear, el final de la búsqueda.
     setCargandoCoordina(numero);
@@ -485,6 +468,24 @@ export default function App() {
       else return autofillOrder(numero).finally(() => setCargandoCoordina(null));
     }).catch(() => setCargandoCoordina(null));
   }
+
+  // La web abierta con un pedido en la dirección (`?pedido=AR2604351`, el botón «Plantear» de
+  // CoordinaOT): se busca solo, por el mismo camino que «Buscar pedido», así que pregunta por
+  // el borrador y manda a Remolques si toca. Una vez por carga, y el número se quita de la
+  // barra para que recargar no lo repita.
+  const enlaceAtendido = useRef(false);
+  useEffect(() => {
+    if (enlaceAtendido.current) return;
+    enlaceAtendido.current = true;
+    const numero = pedidoDeEnlace(window.location.search);
+    if (numero || revisionDeEnlace(window.location.search)) window.history.replaceState(null, '', sinPedidoEnEnlace(window.location.href));
+    if (!numero) return;
+    // Si ya está guardado en Pedidos, se abre allí, como con «Revisar», sin cargarlo en Nuevo pedido.
+    // Si no, se busca: fuera del efecto, porque la búsqueda cambia estado nada más empezar («Buscando…»).
+    queueMicrotask(() => irAlPedido({ numero, modo: 'pedido' }));
+    // Solo al cargar: `autofillOrder` cambia en cada pintado y no debe relanzar la búsqueda.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // El botón de CoordinaOT con esta pestaña ya abierta (Iván, 02/11/2026): llega el pedido sin
   // recargar y, si hay un pedido a medias, se pregunta qué hacer con él.
@@ -534,7 +535,7 @@ export default function App() {
           await trabajo.limpiar();
         } else return;
       }
-      setPedidoPendiente({ id: Date.now(), pedido });
+      setPedidoPendiente({ id: ++identificadorSolicitud.current, pedido });
     } finally {
       atendiendoCoordina.current = false;
     }
@@ -575,7 +576,7 @@ export default function App() {
   // fallo deja el estado en desconocido y en silencio: se puede plantear un pedido
   // sin RPS y eso no cambia.
   const currentOrderCode = draft.orderCode.trim();
-  orderCodeRef.current = currentOrderCode;
+  useLayoutEffect(() => { orderCodeRef.current = currentOrderCode; }, [currentOrderCode]);
   const enCorreccion = corrigiendo !== null && corrigiendo === currentOrderCode;
   const { status: aprobacionEdicion } = useCoordinaStatus(draft.awnings.map(a => String(a.of || '')), enCorreccion);
   const avisoAprobado = enCorreccion ? avisoAprobacionToldos(draft.awnings, aprobacionEdicion) : '';
@@ -607,9 +608,9 @@ export default function App() {
     );
     if (debePreguntarAlCorregir(draft.orderCode, review.orderCode, hasDraftData && draft.hayCambiosSinGuardar())) {
       const choice = await askForConfirmation({
-        title: `Corregir ${review.orderCode}`,
+      title: `Editar ${review.orderCode}`,
         message: 'Los datos que haya ahora en Nuevo pedido se sustituirán por los de este pedido. Los archivos ya guardados no se modificarán hasta que vuelvas a guardar.',
-        confirmLabel: 'Abrir para corregir',
+        confirmLabel: 'Abrir para editar',
         cancelLabel: 'Conservar formulario',
         tone: 'warning'
       });
@@ -624,7 +625,7 @@ export default function App() {
     if (review.order.parameters) ruleSettings.loadParameters(review.order.parameters, review.order.parametersVersion ?? null);
     chooseProducto('toldos');
     setActiveTab('order');
-    notify(`Pedido ${review.orderCode} cargado en el formulario para corregirlo.`, { tone: 'info', title: 'Modo de corrección' });
+    notify(`Cambia lo que necesites y pulsa «Guardar».`, { tone: 'info', title: `Editando ${review.orderCode}` });
   }
 
   async function reuseReview(review: ReviewPackage) {
@@ -696,18 +697,55 @@ export default function App() {
     if (calculationState === 'error') recalcular();
   }
 
-  async function saveForReview(regenerar = false) {
+  async function guardarToldos() {
+    if (!currentUser) {
+      setChoosingUser(true);
+      return;
+    }
+    if (!currentOrderCode) {
+      notify('Indica el número de pedido para guardar.', { tone: 'warning' });
+      return;
+    }
+    setWorking('review');
+    try {
+      const order = { ...currentOrderPayload(), reviewer: draft.reviewer };
+      const response = await fetch(`/api/reviews/${encodeURIComponent(currentOrderCode)}/guardar-registro`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order, usuario: currentUser, siExiste: !enCorreccion })
+      });
+      if (response.status === 204) {
+        await saveForReview(false, true);
+        return;
+      }
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'No se pudo guardar el pedido.');
+      const review: ReviewPackage = data.review;
+      draft.loadOrder({ ...review.order, corteLona: review.corteLona }, { guardado: true });
+      setCorrigiendo(review.orderCode);
+      setReviewRefresh(value => value + 1);
+      setRevisarAlCargar({ orderCode: review.orderCode });
+      setActiveTab(review.status === 'PRODUCED' ? 'historial' : 'reviews');
+      notify(data.nuevaEntrega ? 'Las OF nuevas quedan pendientes de generar.' : 'Se han guardado los cambios del pedido.',
+        { tone: 'success', title: 'Pedido guardado' });
+    } catch (error) {
+      notify(error instanceof Error ? error.message : 'No se pudo guardar el pedido.', { tone: 'error' });
+    } finally {
+      setWorking(null);
+    }
+  }
+
+  async function saveForReview(regenerar = false, soloNuevo = false) {
     const incomplete = incompleteAwningLines(draft.awnings, { fabric: draft.fabric, sameFabric: draft.sameFabric });
     // Sin ningún toldo calculado no se manda a revisar (Iván, 01/10/2026): saldría en «Por
     // revisar» sin despiece ni reserva. Para dejar un pedido a medias, el borrador.
     if (!calculation || calculation.ofs.length === 0) {
-      avisarSinCalculo('antes de guardarlo para revisión');
+      avisarSinCalculo('antes de guardar el pedido');
       return;
     }
     if (incomplete.length) {
       const choice = await askForConfirmation({
         title: 'Hay elementos sin completar',
-        message: 'Se puede guardar como borrador para revisión, pero no se podrán generar los archivos definitivos hasta completarlos.',
+        message: 'Puedes guardar el pedido ahora y completar los elementos antes de generar los archivos definitivos.',
         confirmLabel: 'Guardar igualmente',
         cancelLabel: 'Seguir completando',
         tone: 'warning',
@@ -721,7 +759,7 @@ export default function App() {
     }
     setWorking('review');
     try {
-      const cuerpo = { order: currentOrderPayload(), corteLona: draft.corteLona, savedBy: currentUser, confirmOverwrite: enCorreccion || regenerar,
+      const cuerpo = { order: currentOrderPayload(), corteLona: draft.corteLona, savedBy: currentUser, confirmOverwrite: enCorreccion || regenerar, soloNuevo,
         ...(regenerar ? { decisionCorte: 'regenerar' } : {}) };
       const data = await guardarToldosEditable(cuerpo, askForConfirmation, () => abrirCorteToldos(draft.orderCode, cuerpo));
       if (!data) return;
@@ -743,9 +781,9 @@ export default function App() {
       setAutofill(null);
       ruleSettings.restoreParameters();
       const planos = data.planosCorte?.files?.map((f: { savedPath: string }) => f.savedPath) || [];
-      notify(`Guardado en Pedidos para revisión: ${data.review.orderCode}.pdf${planos.length ? `. Plano del corte: ${planos.join(' · ')}` : ''}${data.planosCorte?.avisos?.length ? `. ${data.planosCorte.avisos.join(' ')}` : ''}`, { tone: 'success', title: 'Guardado para revisión' });
+      notify(`Guardado en Pedidos: ${data.review.orderCode}${planos.length ? `. Plano del corte: ${planos.join(' · ')}` : ''}${data.planosCorte?.avisos?.length ? `. ${data.planosCorte.avisos.join(' ')}` : ''}`, { tone: 'success', title: 'Pedido guardado' });
     } catch (error) {
-      notify(error instanceof Error ? error.message : 'No se pudo guardar el pedido para revisión.', { tone: 'error' });
+      notify(error instanceof Error ? error.message : 'No se pudo guardar el pedido.', { tone: 'error' });
     } finally {
       setWorking(null);
     }
@@ -859,14 +897,22 @@ export default function App() {
           ? 'Historial'
           : activeTab === 'cmt' ? 'Planos a corte' : 'Configuración de carpetas';
 
-  // El flujo del corte de lona con el DWG, arriba junto a «Guardar para revisión», como en puertas y remolques.
+  // El flujo del corte de lona con el DWG, en «Más opciones».
   const [faltaCorteLona, setFaltaCorteLona] = useState<string | null>('Genera el corte de lona');
   const pedidoToldos = currentOrderPayload();
+  const toldosConCorteEditor = toldosConCorte(pedidoToldos);
   const corteToldos = useFlujoCorteDwg({ base: '/api/corte-lona/borrador', codigo: draft.orderCode,
     entrada: JSON.stringify({ order: pedidoToldos, corteLona: draft.corteLona ?? null }),
-    cuerpo: () => ({ order: pedidoToldos, corteLona: draft.corteLona }), aplica: toldosConCorte(pedidoToldos).length > 0,
+    cuerpo: () => ({ order: pedidoToldos, corteLona: draft.corteLona, avisarCorteDesactualizado: true }), aplica: toldosConCorteEditor.length > 0,
+    alRegenerarCorte: draft.setCorteLona,
     falta: faltaCorteLona, usuario: currentUser, notify, askForConfirmation,
     activo: activeTab === 'order' && editorPedidoAbierto && producto === 'toldos', editable: true });
+  const motivoAbrirCorte = !pedidoValido(currentOrderCode) ? 'Escribe un número de pedido válido.'
+    : !corteToldos.hayPlano && corteToldos.paso.paso === 'sin-flujo' ? 'No hay corte de lona disponible.'
+      : !corteToldos.hayPlano && corteToldos.paso.paso === 'incompleto' ? corteToldos.paso.motivo : undefined;
+  const motivoRegenerar = !toldosConCorteEditor.length ? 'No hay corte de lona disponible.'
+    : !pedidoValido(currentOrderCode) ? 'Escribe un número de pedido válido.'
+      : toldosConCorteEditor.some(({ t }) => !t.of?.trim()) ? 'Falta la OF de algún toldo.' : undefined;
 
   return (
     <CorteMaquinaContexto.Provider value={{ settings: workflowSettings, usuario: currentUser, preguntar: askForConfirmation, notify }}>
@@ -928,23 +974,24 @@ export default function App() {
           <div className="order-actions-host" ref={setAccionesPedido} hidden={activeTab !== 'order' || !editorPedidoAbierto}>
           {activeTab === 'order' && producto === 'toldos' && (
             <OrderActions>
-              <button className="ghost-button clear-form-button" type="button" disabled={Boolean(working)} onClick={() => void clearForm()}>
-                <Eraser aria-hidden="true" />
-                Limpiar
-              </button>
               <button ref={previewButtonRef} className="ghost-button" type="button" disabled={Boolean(working) || calculationState === 'validating' || draft.awnings.length === 0} onClick={openPlanteamientoPreview}>
                 <Eye aria-hidden="true" />
                 {working === 'preview' ? 'Preparando…' : 'Vista previa'}
               </button>
-              <button className="ghost-button" type="button" disabled={Boolean(working) || autofillLoading || !draft.orderCode.trim() || enCorreccion} title={enCorreccion ? TITULO_BORRADOR_EN_CORRECCION : draft.orderCode.trim() ? undefined : 'Escribe el número de pedido para guardar el borrador.'} onClick={() => void saveDraftToServer()}>
-                <FilePen aria-hidden="true" />
-                {working === 'draft' ? 'Guardando…' : 'Guardar borrador'}
+              <MenuOpcionesToldos corte={corteToldos} ocupado={Boolean(working) || corteToldos.ocupado}
+                motivoBorrador={enCorreccion ? 'El pedido ya existe. Usa «Guardar».' : autofillLoading ? 'Espera a que se cargue el pedido.'
+                  : !currentOrderCode ? 'Escribe el número de pedido.' : undefined}
+                motivoRegenerar={motivoRegenerar}
+                guardarBorrador={saveDraftToServer} regenerar={() => saveForReview(true)} limpiar={clearForm} />
+              <button className="ghost-button" type="button" disabled={Boolean(working) || corteToldos.ocupado || draft.awnings.length === 0 || Boolean(motivoAbrirCorte)}
+                title={motivoAbrirCorte} onClick={() => void corteToldos.abrir()}>
+                <FolderOpen aria-hidden="true" />{corteToldos.ocupado ? 'Abriendo…' : 'Abrir corte'}
               </button>
-              <BotonesFlujoCorte flujo={corteToldos} ocupado={Boolean(working)} regenerar={() => saveForReview(true)} />
-              <button className="primary-button" type="button" disabled={Boolean(working) || calculationState === 'validating' || draft.awnings.length === 0}
-                onClick={() => void saveForReview()}>
+              <button className="primary-button" type="button" disabled={Boolean(working) || corteToldos.ocupado || draft.awnings.length === 0
+                || (!enCorreccion && calculationState === 'validating')}
+                onClick={() => void guardarToldos()}>
                 <Save aria-hidden="true" />
-                {working === 'review' ? 'Guardando…' : 'Guardar para revisión'}
+                {working === 'review' ? 'Guardando…' : 'Guardar'}
               </button>
             </OrderActions>
           )}
@@ -1145,7 +1192,7 @@ export default function App() {
               onSeguirBorrador={(borrador) => abrirBorrador(borrador)}
               onToast={notify}
               onConfirm={askForConfirmation}
-              abrirAlCargar={activeTab === 'reviews' ? revisarAlCargar : null}
+              abrirAlCargar={revisarAlCargar}
               onAbiertoAlCargar={() => { setRevisarAlCargar(null); setCargandoCoordina(null); }}
             />
           )}

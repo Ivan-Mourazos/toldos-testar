@@ -140,13 +140,13 @@ try {
     };
     const abrir = async () => {
       await page.goto(`${base}/?revisar=${codigo}`);
-      await page.getByRole('button', { name: 'Corregir', exact: true }).waitFor();
+      await page.getByRole('button', { name: tipo === 'toldos' ? 'Editar' : 'Corregir', exact: true }).waitFor();
       await page.getByRole('region', { name: 'Entregas del pedido', exact: true }).waitFor();
     };
     await abrir(); await foto('entrega-1');
-    await page.getByRole('button', { name: 'Corregir', exact: true }).click();
+    await page.getByRole('button', { name: tipo === 'toldos' ? 'Editar' : 'Corregir', exact: true }).click();
     await page.getByRole('button', { name: 'Editar pedido', exact: true }).click();
-    await page.getByRole('button', { name: 'Guardar para revisión', exact: true }).waitFor();
+    await page.getByRole('button', { name: tipo === 'toldos' ? 'Guardar' : 'Guardar para revisión', exact: true }).waitFor();
     await foto('editor-generado');
     // La ampliación pasa por la API real del editor; los datos de cada familia conservan sus validaciones.
     if (tipo === 'toldos') {
@@ -204,11 +204,14 @@ try {
     await abrir(); await foto('entrega-2-generada');
     // Corregir desde la ficha generada y guardar desde el formulario del navegador.
     await fetch(`${fake}/__reset`, { method: 'POST' });
-    await page.getByRole('button', { name: 'Corregir', exact: true }).click();
+    await page.getByRole('button', { name: tipo === 'toldos' ? 'Editar' : 'Corregir', exact: true }).click();
     await page.getByRole('button', { name: 'Editar pedido', exact: true }).click();
     const campo = page.getByLabel(tipo === 'remolques' ? 'Largo' : tipo === 'puertas' ? 'Frente (cm)' : 'Frente', { exact: true }).first();
     await campo.waitFor(); await campo.fill(tipo === 'remolques' ? String(cuerpo.elementos[0].input.largo + 10) : tipo === 'puertas' ? '215' : '710'); await campo.press('Tab');
-    await page.getByRole('button', { name: 'Guardar para revisión', exact: true }).click();
+    if (tipo === 'toldos') {
+      await page.getByRole('button', { name: 'Más opciones' }).click();
+      await page.getByRole('menuitem', { name: 'Regenerar corte' }).click();
+    } else await page.getByRole('button', { name: 'Guardar para revisión', exact: true }).click();
     for (let intento = 0; intento < 20; intento++) {
       const regenerar = page.getByRole('button', { name: /Sí, regenerar|Guardar igualmente|Continuar en este pedido/, exact: true });
       if (await regenerar.isVisible()) await regenerar.click();

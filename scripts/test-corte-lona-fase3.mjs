@@ -85,7 +85,7 @@ try {
     if (nombre !== 'sin-corte') {
       await section.getByText('Falta generar el corte', { exact: true }).waitFor();
       if (nombre === 'AR2604784') {
-        await page.getByRole('button', { name: 'Guardar para revisión', exact: true }).click();
+        await page.getByRole('button', { name: 'Guardar', exact: true }).click();
         await page.getByRole('button', { name: 'Actualizar pedido', exact: true }).click();
         await page.getByText(/No se puede continuar sin el corte de lona al día/).waitFor();
         await page.getByRole('button', { name: 'Cerrar notificación', exact: true }).last().click();

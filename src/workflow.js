@@ -1,7 +1,7 @@
 import { adjuntarPedido } from './adjuntosPedido.js';
-import { isPendingGeneration, TERMINADO_SIN_GENERAR } from './reviewRules.js';
+import { isPendingGeneration, normalizeOf, TERMINADO_SIN_GENERAR } from './reviewRules.js';
 import fs from 'node:fs/promises';
-import { abrirEntrega, cerrarEntrega, pedidoEntrega, ofsEntrega } from './entregas.js';
+import { abrirEntrega, cerrarEntrega, conservarOfsGeneradas, entregasPedido, pedidoEntrega, ofsEntrega } from './entregas.js';
 import { renombrarAtomico, sustituirApartando } from './renombrarAtomico.js';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
@@ -10,6 +10,7 @@ import { calculateOrder } from './domain/rules.js';
 import { normalizeOrder } from './domain/validation.js';
 import { abreTgmPedidos, rutaParaTgmPedidos } from './flujoDwg/rutaPc.js';
 import { summarizeAwnings } from './domain/awningListSummary.js';
+import { avisoLetrasPedido } from './domain/awningCompleteness.js';
 import { copiarEstadoCorteLona, corteLonaPendiente } from './corteLonaEstado.js';
 import { corteReadiness, telaConCorte } from './domain/corteReadiness.js';
 import { resolveFabric } from './domain/fabricCatalog.js';
@@ -275,8 +276,6 @@ export function reviewFilename(orderCode) {
 
 export function createReviewPackage({ order, calculation, existing = null, corteLona, savedBy = '', now = new Date().toISOString() }) {
   const orderCode = sanitizeOrderCode(order.orderCode);
-  const ofs = Array.from(new Set(calculation.ofs.map((item) => item.of).filter(Boolean)));
-  const models = Array.from(new Set(order.awnings.map((item) => item.model).filter(Boolean)));
   return abrirEntrega({
     schemaVersion: 1,
     kind: 'toldos-testar-review',
@@ -290,27 +289,45 @@ export function createReviewPackage({ order, calculation, existing = null, corte
     reviewedBy: '',
     reviewNote: '',
     production: null,
+    ...(existing?.ediciones ? { ediciones: existing.ediciones } : {}),
     enviosCorte: structuredClone(existing?.enviosCorte || []),
     ...(existing?.status !== 'PRODUCED' && existing?.corteConfirmado ? { corteConfirmado: structuredClone(existing.corteConfirmado) } : {}),
     corteNoRegenerado: existing?.status !== 'PRODUCED' && existing?.corteNoRegenerado === true,
     corteLona: copiarEstadoCorteLona(corteLona === undefined ? existing?.corteLona : corteLona),
-    summary: {
-      customer: order.customer || '',
-      orderDate: order.orderDate || '',
-      technician: order.technician || '',
-      reviewer: order.reviewer || '',
-      awnings: order.awnings.length,
-      ofs,
-      models,
-      diagnostics: calculation.diagnostics.length
-    },
+    summary: resumenPedido(order, calculation),
     order: structuredClone(order)
   }, existing);
+}
+
+function resumenPedido(order, calculation) {
+  return {
+    customer: order.customer || '',
+    orderDate: order.orderDate || '',
+    technician: order.technician || '',
+    reviewer: order.reviewer || '',
+    awnings: order.awnings.length,
+    ofs: [...new Set(order.awnings.map(item => normalizeOf(item.of)).filter(Boolean))],
+    models: [...new Set(order.awnings.map(item => item.model).filter(Boolean))],
+    diagnostics: calculation.diagnostics.length
+  };
+}
+
+export function comprobarLetrasToldos(order) {
+  const aviso = avisoLetrasPedido(order.awnings);
+  if (aviso) throw errorRegistro(409, aviso);
+}
+
+export function apuntarEdicion(review, usuario, fecha = new Date().toISOString()) {
+  return {
+    ...review, updatedAt: fecha, updatedBy: usuario,
+    ediciones: [...(review.ediciones ?? []), { usuario, fecha, nota: 'Editado sin revisar' }]
+  };
 }
 
 export function reviewSummary(review) {
   const summary = { ...review, ofsEntregaActual: ofsEntrega(review) };
   delete summary.order;
+  delete summary.datosOfsConservadas;
   // Estado de cada toldo para la lista de Pedidos (28/09/2026). Se calcula desde el
   // pedido guardado; si no se puede, la lista enseña solo los modelos.
   try {
@@ -508,6 +525,33 @@ export function createWorkflowStore({ settingsFile, defaults }) {
     return review;
   }
 
+  async function guardarRegistroSinRevisar(orderCode, { order, usuario, fecha = new Date().toISOString() }) {
+    const normalizado = normalizeOrder(order);
+    const codigo = sanitizeOrderCode(orderCode);
+    if (!normalizado.orderCode || sanitizeOrderCode(normalizado.orderCode) !== codigo) {
+      throw errorRegistro(400, 'El número del formulario debe coincidir con el del pedido guardado.');
+    }
+    comprobarLetrasToldos(normalizado);
+    const registro = await leerRegistroEditable(codigo);
+    const { review } = registro;
+    // Las entregas antiguas se reconstruyen desde el formulario original la primera vez.
+    const entregas = review.status === 'PRODUCED' && !Array.isArray(review.entregas)
+      ? { entregas: entregasPedido(review) } : {};
+    const technician = review.order.technician ?? '';
+    const calculation = calculateOrder(normalizado);
+    const actualizado = apuntarEdicion({
+      ...review, ...entregas,
+      // Igual que al crear el registro, se guardan también los campos propios del formulario.
+      order: { ...order, orderCode: codigo, technician },
+      summary: {
+        ...review.summary,
+        ...resumenPedido({ ...normalizado, technician }, calculation),
+        awningList: summarizeAwnings(normalizado, calculation)
+      }
+    }, usuario, fecha);
+    return actualizarRegistro(registro, review.datosOfsConservadas ? conservarOfsGeneradas(actualizado) : actualizado);
+  }
+
   async function terminarRevision(orderCode, { usuario, motivo, fecha = new Date().toISOString() }) {
     const texto = typeof motivo === 'string' ? motivo.trim() : '';
     if (!texto || texto.length > 200) throw errorRegistro(400, 'Escribe un motivo de hasta 200 caracteres.');
@@ -644,7 +688,7 @@ export function createWorkflowStore({ settingsFile, defaults }) {
     return reviews.filter(Boolean).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   }
 
-  return { getSettings, saveSettings, getReview, saveReview, listReviews, terminarRevision, reabrirRevision, enviarRevisionAPapelera };
+  return { getSettings, saveSettings, getReview, saveReview, listReviews, guardarRegistroSinRevisar, terminarRevision, reabrirRevision, enviarRevisionAPapelera };
 }
 
 function errorRegistro(statusCode, message) {

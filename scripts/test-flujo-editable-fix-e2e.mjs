@@ -298,11 +298,18 @@ try {
         const foto = nombre => shot(`${f.tipo}-${nombre}`);
         const abrir = async () => { await page.goto(base); await abrirPedido(codigo); };
         const corregir = async () => {
-          await page.getByRole('button', { name: 'Corregir', exact: true }).click();
+          await page.getByRole('button', { name: f.tipo === 'toldos' ? 'Editar' : 'Corregir', exact: true }).click();
           await page.getByRole('button', { name: 'Editar pedido', exact: true }).click();
           await f.campo(page).waitFor();
           await page.getByRole('button', { name: 'Abrir corte', exact: true }).waitFor();
           assert.equal(await page.getByRole('alertdialog').count(), 0, `${f.tipo}: no debe pedir otra confirmación al corregir`);
+        };
+        const regenerar = () => f.tipo === 'toldos'
+          ? page.getByRole('menuitem', { name: 'Regenerar corte', exact: true })
+          : page.getByRole('button', { name: 'Regenerar corte', exact: true });
+        const mostrarRegenerar = async () => {
+          const menu = page.getByRole('button', { name: 'Más opciones', exact: true });
+          if (f.tipo === 'toldos' && await menu.isVisible() && !await regenerar().isVisible()) await menu.click();
         };
         // 2: vacío y mismo pedido, incluso tocado, no repiten la pregunta de sustitución.
         await request('/api/workflow/settings', { ...fullSettings, productionEnabled: false }, 'PUT');
@@ -311,11 +318,11 @@ try {
           : f.tipo === 'remolques' ? page.locator('input[data-campo="numeroPedido"]') : page.getByRole('textbox', { name: 'Pedido', exact: true });
         await numero.fill('AR2699998'); await numero.press('Tab');
         await abrirPedido(codigo);
-        await page.getByRole('button', { name: 'Corregir', exact: true }).click();
+        await page.getByRole('button', { name: f.tipo === 'toldos' ? 'Editar' : 'Corregir', exact: true }).click();
         await page.getByRole('button', { name: 'Editar pedido', exact: true }).click();
         const avisoOtro = page.getByRole('alertdialog'); await avisoOtro.waitFor();
         assert.match(await avisoOtro.innerText(), /sustituir/i); await foto('otro-pedido-con-cambios-protegido');
-        await avisoOtro.getByRole('button', { name: /Abrir pedido|Abrir para corregir/ }).click(); await f.campo(page).waitFor();
+        await avisoOtro.getByRole('button', { name: /Abrir pedido|Abrir para corregir|Abrir para editar/ }).click(); await f.campo(page).waitFor();
         // Un pedido distinto que solo se abrió y no se tocó tampoco necesita otro aviso.
         const otro = structuredClone(f.original); otro.orderCode = { puertas: 'AR2699997', remolques: 'AR2699996', toldos: 'AR2699995' }[f.tipo]; otro.numeroPedido = otro.orderCode;
         if (otro.order) otro.order.orderCode = otro.orderCode;
@@ -324,8 +331,13 @@ try {
         const campo = f.campo(page); const of = await campo.inputValue();
         assert.ok(of, `${f.tipo}: localizar la OF`);
         await campo.fill(''); await campo.press('Tab');
-        await page.waitForFunction(() => [...document.querySelectorAll('button')].some(b => b.textContent === 'Abrir corte' && b.disabled && /OF/.test(b.title)));
-        assert.equal(await page.getByRole('button', { name: 'Regenerar corte', exact: true }).isDisabled(), true);
+        if (f.tipo === 'toldos') {
+          await mostrarRegenerar();
+          await page.waitForFunction(() => document.querySelector('[aria-label="Regenerar corte"]')?.disabled);
+        } else {
+          await page.waitForFunction(() => [...document.querySelectorAll('button')].some(b => b.textContent === 'Abrir corte' && b.disabled && /OF/.test(b.title)));
+          assert.equal(await regenerar().isDisabled(), true);
+        }
         await foto('editor-sin-of');
         await abrirPedido(codigo); await corregir(); await foto('corregir-sin-segundo-dialogo');
         // 5: el corte simulado explica por qué no hay DWG y permite regenerar desde el editor.
@@ -334,9 +346,10 @@ try {
         const botonAbrir = page.getByRole('button', { name: 'Abrir corte', exact: true });
         await page.waitForFunction(() => [...document.querySelectorAll('button')].some(b => b.textContent === 'Abrir corte' && /no hay DWG/.test(b.title)));
         assert.equal(await botonAbrir.isDisabled(), true);
-        assert.equal(await page.getByRole('button', { name: 'Regenerar corte', exact: true }).isEnabled(), true);
+        await mostrarRegenerar();
+        assert.equal(await regenerar().isEnabled(), true);
         await foto('editor-simulacion-con-regenerar');
-        await page.getByRole('button', { name: 'Regenerar corte', exact: true }).click();
+        await regenerar().click();
         const guardadoSimulado = page.waitForResponse(r => r.url().endsWith(f.ruta) && r.request().method() === 'POST');
         await page.getByRole('button', { name: 'Sí, regenerar', exact: true }).click();
         assert.equal((await guardadoSimulado).status(), 200);

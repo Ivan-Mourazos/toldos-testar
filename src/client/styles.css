@@ -2843,7 +2843,7 @@ textarea,
 /* ---------- Notificaciones y confirmaciones ---------- */
 
 .notification-stack {
-  bottom: 18px;
+  top: 72px;
   display: grid;
   gap: 9px;
   max-width: min(420px, calc(100vw - 28px));
