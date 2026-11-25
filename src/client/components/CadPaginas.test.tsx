@@ -35,12 +35,21 @@ const respuestaBase = (extra: Partial<RespuestaCadPaginasCliente> = {}): Respues
   ...extra
 });
 
+const corteEjemplo = {
+  archivo: 'AR2604784 (plano).dwg',
+  medidasMm: { ancho: 1250, alto: 300 },
+  vista: [
+    { id: 'e0', capa: 'DISCO1', tipo: 'linea' as const, a: { x: 0, y: 0 }, b: { x: 1250, y: 0 } },
+    { id: 'e1', capa: 'DISCO1', tipo: 'linea' as const, a: { x: 0, y: 300 }, b: { x: 1250, y: 300 } }
+  ]
+};
+
 afterEach(() => {
   vi.unstubAllGlobals();
 });
 
 describe('CadPaginas (vista previa real del DWG)', () => {
-  it('reutiliza el visor PDF (toolbar, paginación y escenario) sin chips de presentaciones ni vista de piezas de CorteLona', () => {
+  it('en el panel Corte enseña solo el corte del plano, como «Planos a corte», sin las presentaciones del CAD', () => {
     const html = renderToStaticMarkup(
       <CadPaginas
         orderCode="AR2604784"
@@ -49,18 +58,19 @@ describe('CadPaginas (vista previa real del DWG)', () => {
           paginas: [
             { nombre: 'TOLDO A', archivo: 'AR2604784 (plano).dwg', anchoMm: 297, altoMm: 210, svg: '<svg/>' },
             { nombre: 'TOLDO B', archivo: 'AR2604784 (plano).dwg', anchoMm: 297, altoMm: 210, svg: '<svg/>' }
-          ]
+          ],
+          cortes: [corteEjemplo, corteEjemplo]
         })}
       />
     );
     expect(html).toContain('planteamiento-pedido');
-    expect(html).toContain('pdf-carousel-toolbar');
-    expect(html).toContain('pdf-carousel-pages');
-    expect(html).toContain('pdf-carousel-stage');
-    expect(html).toContain('pdf-carousel-page hoja-3d');
+    expect(html).toContain('cmt-vista-corte');
+    expect(html).toContain('Corte 1 de 2');
+    expect(html).toContain('1250 × 300 mm · AR2604784 (plano).dwg');
     expect(html).toContain('CAD al día');
-    expect(html).toContain('TOLDO A · AR2604784 (plano).dwg');
-    expect(html).toContain('Página 1 de 2');
+    expect(html).not.toContain('pdf-carousel');
+    expect(html).not.toContain('hoja-3d');
+    expect(html).not.toContain('TOLDO A');
     expect(html).not.toContain('cad-paginas-etiquetas');
     expect(html).not.toContain('Piezas por toldo');
     expect(html).not.toContain('Aún no hay dibujo del CAD');
@@ -74,7 +84,8 @@ describe('CadPaginas (vista previa real del DWG)', () => {
         order={pedidoPvc()}
         datosIniciales={respuestaBase({
           actualizado: false,
-          motivoDesactualizado: 'Han cambiado las medidas o ajustes (A) desde que se generó el DWG.'
+          motivoDesactualizado: 'Han cambiado las medidas o ajustes (A) desde que se generó el DWG.',
+          cortes: [corteEjemplo]
         })}
         onActualizarCorte={() => undefined}
       />
@@ -131,6 +142,8 @@ describe('CadPaginas (vista previa real del DWG)', () => {
       />
     );
     expect(html).toContain('pdf-carousel-heading');
+    // La vista previa «Dibujo CAD» sigue enseñando las presentaciones.
+    expect(html).toContain('pdf-carousel-page hoja-3d');
     expect(html).toContain('Vista previa del planteamiento');
     expect(html).toContain('pdf-carousel-actions');
     expect(html).toContain('Cerrar');

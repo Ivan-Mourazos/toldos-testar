@@ -117,6 +117,11 @@ describe('GET /api/reviews/:orderCode/cad-paginas', () => {
     expect(r1.cacheado).toBe(false);
     expect(r1.paginas.length).toBeGreaterThanOrEqual(1);
     expect(r1.paginas[0].svg).toContain('fill="#ffffff"');
+    // La pestaña Corte enseña solo lo de dentro del recuadro CORTE, como «Planos a corte».
+    expect(r1.cortes.length).toBeGreaterThanOrEqual(1);
+    expect(r1.cortes[0].archivo).toBe('AR2600096 (plano).dwg');
+    expect(r1.cortes[0].vista.length).toBeGreaterThan(0);
+    expect(r1.cortes[0].medidasMm.ancho).toBeGreaterThan(0);
     expect(convertir).toHaveBeenCalledTimes(1);
 
     // Segunda petición sin cambios: sirve de caché sin llamar a ODA

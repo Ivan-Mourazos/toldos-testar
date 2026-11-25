@@ -43,3 +43,30 @@
     transition: none;
   }
 }
+
+/* Pestaña Corte: solo el corte del plano, como «Planos a corte» (Iván, 25/11/2026). */
+.cortes-del-plano {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.cortes-del-plano .cmt-vista-corte {
+  flex: 1 1 auto;
+}
+
+/* El corte a la altura de la pantalla, como la hoja que había antes. */
+.cortes-del-plano .cmt-vista-corte svg {
+  flex: none;
+  height: clamp(320px, 64vh, 820px);
+}
+
+.cortes-del-plano-paso {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+}

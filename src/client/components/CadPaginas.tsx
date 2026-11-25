@@ -13,6 +13,7 @@ import type { EstadoCorte } from '../corteLona';
 import { CORTE_NO_REGENERADO } from '../../toldosEditable.js';
 import { CabeceraDocumento } from './DocumentosPedido';
 import { CorteLona, toldosConCorte } from './CorteLona';
+import { CortesDelPlano, type CorteDelPlanoCliente } from './CortesDelPlano';
 import { PdfPreviewToolbar, type PdfZoom } from './PdfPreviewToolbar';
 import '../coordina/cad-paginas.css';
 
@@ -38,6 +39,8 @@ export interface RespuestaCadPaginasCliente {
   archivosModificadosAMano: string[];
   ficheros: Array<{ filename: string; mtimeMs: number; size: number }>;
   paginas: PaginaCadCliente[];
+  /** Solo lo de dentro de cada recuadro CORTE, para la pestaña Corte. */
+  cortes?: CorteDelPlanoCliente[];
   cacheado: boolean;
 }
 
@@ -452,22 +455,7 @@ export function CadPaginas({
         <p className="documento-espera" role="status">Cargando dibujo del CAD…</p>
       )}
 
-      {datos?.tieneDwg && paginaActual && (
-        <>
-          <div className="pdf-carousel" ref={raizRef} aria-label="Dibujo real del CAD" tabIndex={0} onKeyDown={manejarTeclado}>
-            <PdfPreviewToolbar
-              zoom={zoom}
-              pageNumber={paginaSegura + 1}
-              pageCount={paginas.length}
-              onZoom={setZoom}
-              onZoomStep={cambiarZoom}
-              onPage={n => cambiarPagina(n - 1)}
-            />
-            {escenarioHojas}
-          </div>
-          {pieTexto && <p className="corte-ayuda">{pieTexto}</p>}
-        </>
-      )}
+      {datos?.tieneDwg && <CortesDelPlano cortes={datos.cortes ?? []} atenuado={desactualizado} />}
     </dialog>
   );
 }

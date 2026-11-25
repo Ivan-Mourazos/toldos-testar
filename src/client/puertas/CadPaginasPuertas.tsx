@@ -3,6 +3,7 @@ import { CheckCircle2, ChevronLeft, ChevronRight, Maximize2, RefreshCw, Scissors
 import { CORTE_NO_REGENERADO } from '../../toldosEditable.js';
 import type { RespuestaCadPaginasCliente } from '../components/CadPaginas';
 import { CabeceraDocumento } from '../components/DocumentosPedido';
+import { CortesDelPlano } from '../components/CortesDelPlano';
 import { PdfPreviewToolbar, type PdfZoom } from '../components/PdfPreviewToolbar';
 import '../coordina/cad-paginas.css';
 
@@ -371,22 +372,7 @@ export function CadPaginasPuertas({
         <p className="documento-espera" role="status">Cargando dibujo del CAD…</p>
       )}
 
-      {datosActivos?.tieneDwg && paginaActual && (
-        <>
-          <div className="pdf-carousel" ref={raizRef} aria-label="Dibujo real del CAD" tabIndex={0} onKeyDown={manejarTeclado}>
-            <PdfPreviewToolbar
-              zoom={zoom}
-              pageNumber={paginaSegura + 1}
-              pageCount={paginas.length}
-              onZoom={setZoom}
-              onZoomStep={cambiarZoom}
-              onPage={(n) => cambiarPagina(n - 1)}
-            />
-            {escenarioHojas}
-          </div>
-          {pieTexto && <p className="corte-ayuda">{pieTexto}</p>}
-        </>
-      )}
+      {datosActivos?.tieneDwg && <CortesDelPlano cortes={datosActivos.cortes ?? []} atenuado={desactualizado} />}
     </dialog>
   );
 }

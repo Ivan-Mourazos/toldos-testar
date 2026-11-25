@@ -90,14 +90,24 @@ describe('CadPaginasPuertas', () => {
       <CadPaginasPuertas orderCode="AR2605134" datosIniciales={respuestaBase()} />
     );
     expect(alDia).toContain('planteamiento-pedido');
-    expect(alDia).toContain('pdf-carousel-toolbar');
+    expect(alDia).not.toContain('pdf-carousel');
     expect(alDia).toContain('CAD al día');
-    expect(alDia).toContain('PUERTA A · AR2605134.dwg');
+    // Sin recuadro CORTE no se enseña la presentación: se avisa.
+    expect(alDia).toContain('no tiene recuadro CORTE');
+
+    const conCorte = renderToStaticMarkup(
+      <CadPaginasPuertas orderCode="AR2605134" datosIniciales={respuestaBase({ cortes: [{ archivo: 'AR2605134.dwg', medidasMm: { ancho: 2000, alto: 1000 },
+        vista: [{ id: 'e0', capa: 'DISCO1', tipo: 'linea', a: { x: 0, y: 0 }, b: { x: 2000, y: 1000 } }] }] })} />
+    );
+    expect(conCorte).toContain('cmt-vista-corte');
+    expect(conCorte).toContain('2000 × 1000 mm · AR2605134.dwg');
+    expect(conCorte).not.toContain('PUERTA A');
 
     const viejo = renderToStaticMarkup(
       <CadPaginasPuertas
         orderCode="AR2605134"
-        datosIniciales={respuestaBase({ actualizado: false, motivoDesactualizado: 'Los datos actuales del pedido no coinciden con los del DWG guardado.' })}
+        datosIniciales={respuestaBase({ actualizado: false, motivoDesactualizado: 'Los datos actuales del pedido no coinciden con los del DWG guardado.',
+          cortes: [{ archivo: 'AR2605134.dwg', medidasMm: null, vista: [{ id: 'e0', capa: 'DISCO1', tipo: 'linea', a: { x: 0, y: 0 }, b: { x: 10, y: 0 } }] }] })}
         onActualizarCorte={() => undefined}
       />
     );

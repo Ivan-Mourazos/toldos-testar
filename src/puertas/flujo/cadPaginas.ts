@@ -10,13 +10,16 @@ import {
   leerEscritosBorrador,
   type AlmacenEscritos,
 } from '../../cadPaginas/cambiosManuales.ts';
-import { renderizarPaginasDxf, type PaginaCadSvg } from '../../cadPaginas/renderDxfSvg.ts';
+import { cortesDelDxf } from '../../cadPaginas/cortesDxf.ts';
+import { renderizarPaginasDxf } from '../../cadPaginas/renderDxfSvg.ts';
 import {
   listarBorradoresCad,
   type AjustesCadMinimos,
+  type CorteCadRespuesta,
   type FicheroCadReferencia,
   type OdaMinimo,
   type PaginaCadRespuesta,
+  type PlanoCad,
   type RespuestaCadPaginas,
 } from '../../cadPaginas/servicioCadPaginas.ts';
 import { codigoPedido } from '../../remolques/flujo/pedido.ts';
@@ -95,21 +98,21 @@ export function crearServicioCadPaginasPuertas({
   almacenEscritos?: AlmacenEscritos;
   maxCache?: number;
 }) {
-  const cache = new Map<string, PaginaCadSvg[]>();
-  const enCurso = new Map<string, Promise<PaginaCadSvg[]>>();
+  const cache = new Map<string, PlanoCad>();
+  const enCurso = new Map<string, Promise<PlanoCad>>();
 
   const claveArchivo = (f: FicheroCadReferencia) => `${path.resolve(f.ruta).toLowerCase()}|${f.mtimeMs}|${f.size}`;
 
-  async function renderizarFichero(f: FicheroCadReferencia): Promise<{ paginas: PaginaCadSvg[]; cacheado: boolean }> {
+  async function renderizarFichero(f: FicheroCadReferencia): Promise<{ plano: PlanoCad; cacheado: boolean }> {
     const clave = claveArchivo(f);
     const hit = cache.get(clave);
     if (hit) {
       cache.delete(clave);
       cache.set(clave, hit);
-      return { paginas: hit, cacheado: true };
+      return { plano: hit, cacheado: true };
     }
     const pendiente = enCurso.get(clave);
-    if (pendiente) return { paginas: await pendiente, cacheado: false };
+    if (pendiente) return { plano: await pendiente, cacheado: false };
     const tarea = (async () => {
       const bytes = await fs.readFile(f.ruta);
       let dxfBytes: Uint8Array = bytes;
@@ -119,17 +122,17 @@ export function crearServicioCadPaginasPuertas({
         }
         dxfBytes = await oda.convertir(bytes, { desde: 'dwg', hasta: 'dxf' });
       }
-      const paginas = renderizarPaginasDxf(dxfBytes);
+      const plano: PlanoCad = { paginas: renderizarPaginasDxf(dxfBytes), cortes: cortesDelDxf(dxfBytes) };
       if (cache.size >= maxCache) {
         const masVieja = cache.keys().next().value;
         if (masVieja !== undefined) cache.delete(masVieja);
       }
-      cache.set(clave, paginas);
-      return paginas;
+      cache.set(clave, plano);
+      return plano;
     })();
     enCurso.set(clave, tarea);
     try {
-      return { paginas: await tarea, cacheado: false };
+      return { plano: await tarea, cacheado: false };
     } finally {
       enCurso.delete(clave);
     }
@@ -160,6 +163,7 @@ export function crearServicioCadPaginasPuertas({
         archivosModificadosAMano: [],
         ficheros: [],
         paginas: [],
+        cortes: [],
         cacheado: false,
       };
     }
@@ -172,11 +176,13 @@ export function crearServicioCadPaginasPuertas({
     });
 
     const paginas: PaginaCadRespuesta[] = [];
+    const cortes: CorteCadRespuesta[] = [];
     let todosCacheados = true;
     for (const f of ficheros) {
-      const { paginas: delArchivo, cacheado } = await renderizarFichero(f);
+      const { plano, cacheado } = await renderizarFichero(f);
       if (!cacheado) todosCacheados = false;
-      for (const p of delArchivo) paginas.push({ ...p, archivo: f.filename });
+      for (const p of plano.paginas) paginas.push({ ...p, archivo: f.filename });
+      for (const c of plano.cortes) cortes.push({ ...c, archivo: f.filename });
     }
 
     return {
@@ -192,6 +198,7 @@ export function crearServicioCadPaginasPuertas({
       archivosModificadosAMano: manuales.archivosModificados,
       ficheros: ficheros.map(({ filename, mtimeMs, size }) => ({ filename, mtimeMs, size })),
       paginas,
+      cortes,
       cacheado: todosCacheados,
     };
   }

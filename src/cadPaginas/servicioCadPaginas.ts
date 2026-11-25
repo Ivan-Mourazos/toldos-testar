@@ -13,6 +13,7 @@ import {
   type AlmacenEscritos,
   type CorteConfirmadoConEscritos
 } from './cambiosManuales.ts';
+import { cortesDelDxf, type CorteDelPlano } from './cortesDxf.ts';
 import { renderizarPaginasDxf, type PaginaCadSvg } from './renderDxfSvg.ts';
 
 export interface OdaMinimo {
@@ -31,6 +32,17 @@ export interface PaginaCadRespuesta extends PaginaCadSvg {
   archivo: string;
 }
 
+/** Lo de dentro de un recuadro del corte, para la pestaña Corte. */
+export interface CorteCadRespuesta extends CorteDelPlano {
+  archivo: string;
+}
+
+/** Lo que se guarda en caché de cada DWG: sus presentaciones y sus cortes. */
+export interface PlanoCad {
+  paginas: PaginaCadSvg[];
+  cortes: CorteDelPlano[];
+}
+
 export interface RespuestaCadPaginas {
   ok: true;
   orderCode: string;
@@ -44,6 +56,7 @@ export interface RespuestaCadPaginas {
   archivosModificadosAMano: string[];
   ficheros: Array<{ filename: string; mtimeMs: number; size: number }>;
   paginas: PaginaCadRespuesta[];
+  cortes: CorteCadRespuesta[];
   cacheado: boolean;
 }
 
@@ -172,23 +185,23 @@ export function crearServicioCadPaginas<T extends ReviewMinima>({
   }),
   firmaCorte
 }: DependenciasCadPaginas<T>) {
-  const cache = new Map<string, PaginaCadSvg[]>();
-  const enCurso = new Map<string, Promise<PaginaCadSvg[]>>();
+  const cache = new Map<string, PlanoCad>();
+  const enCurso = new Map<string, Promise<PlanoCad>>();
 
   const claveArchivo = (f: FicheroCadReferencia) => `${path.resolve(f.ruta).toLowerCase()}|${f.mtimeMs}|${f.size}`;
 
-  async function renderizarFichero(f: FicheroCadReferencia): Promise<{ paginas: PaginaCadSvg[]; cacheado: boolean }> {
+  async function renderizarFichero(f: FicheroCadReferencia): Promise<{ plano: PlanoCad; cacheado: boolean }> {
     const clave = claveArchivo(f);
     const hit = cache.get(clave);
     if (hit) {
       // Refrescar posición LRU.
       cache.delete(clave);
       cache.set(clave, hit);
-      return { paginas: hit, cacheado: true };
+      return { plano: hit, cacheado: true };
     }
     const pendiente = enCurso.get(clave);
     if (pendiente) {
-      return { paginas: await pendiente, cacheado: false };
+      return { plano: await pendiente, cacheado: false };
     }
     const tarea = (async () => {
       const bytes = await fs.readFile(f.ruta);
@@ -199,17 +212,17 @@ export function crearServicioCadPaginas<T extends ReviewMinima>({
         }
         dxfBytes = await oda.convertir(bytes, { desde: 'dwg', hasta: 'dxf' });
       }
-      const paginas = renderizarPaginasDxf(dxfBytes);
+      const plano: PlanoCad = { paginas: renderizarPaginasDxf(dxfBytes), cortes: cortesDelDxf(dxfBytes) };
       if (cache.size >= maxCache) {
         const masVieja = cache.keys().next().value;
         if (masVieja !== undefined) cache.delete(masVieja);
       }
-      cache.set(clave, paginas);
-      return paginas;
+      cache.set(clave, plano);
+      return plano;
     })();
     enCurso.set(clave, tarea);
     try {
-      return { paginas: await tarea, cacheado: false };
+      return { plano: await tarea, cacheado: false };
     } finally {
       enCurso.delete(clave);
     }
@@ -245,6 +258,7 @@ export function crearServicioCadPaginas<T extends ReviewMinima>({
         archivosModificadosAMano: [],
         ficheros: [],
         paginas: [],
+        cortes: [],
         cacheado: false
       };
     }
@@ -257,11 +271,13 @@ export function crearServicioCadPaginas<T extends ReviewMinima>({
     });
 
     const paginas: PaginaCadRespuesta[] = [];
+    const cortes: CorteCadRespuesta[] = [];
     let todosCacheados = true;
     for (const f of ficheros) {
-      const { paginas: delArchivo, cacheado } = await renderizarFichero(f);
+      const { plano, cacheado } = await renderizarFichero(f);
       if (!cacheado) todosCacheados = false;
-      for (const p of delArchivo) paginas.push({ ...p, archivo: f.filename });
+      for (const p of plano.paginas) paginas.push({ ...p, archivo: f.filename });
+      for (const c of plano.cortes) cortes.push({ ...c, archivo: f.filename });
     }
 
     return {
@@ -277,6 +293,7 @@ export function crearServicioCadPaginas<T extends ReviewMinima>({
       archivosModificadosAMano: manuales.archivosModificados,
       ficheros: ficheros.map(({ filename, mtimeMs, size }) => ({ filename, mtimeMs, size })),
       paginas,
+      cortes,
       cacheado: todosCacheados
     };
   }
