@@ -278,11 +278,10 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
     }
     if(ventanales.length===1) {
       const altoCristal = ventanales[0].altoCorte;
-      const cristal = agregar(pieza('Cristal del ventanal', 'cristal', anchoCristalVentanal(p.frente,e.margen), altoCristal, p.materialCristal,p.rolloCristal));
-      if(e.margen===0 && bastilla) {
-        ensancharPieza(cristal, bastilla);
+      const anchoCristal = anchoCristalVentanal(p.frente,e.margen) + (e.margen===0 ? 2*bastilla : 0);
+      const cristal = agregar(pieza('Cristal del ventanal', 'cristal', anchoCristal, altoCristal, p.materialCristal,p.rolloCristal));
+      if(e.margen===0 && bastilla)
         for(const x of [bastilla, cristal.ancho-bastilla]) cristal.marcas.push([x,0,x,cristal.alto]);
-      }
       if(e.margen>0 && !bastilla) agregar(pieza('Cachos laterales', 'cacho', e.margen+EXTRA_CACHO_VENTANAL,altoCristal,lona,p.rollo,2));
       if(e.margen>0 && bastilla) {
         for(const lado of ['izquierdo','derecho']) {

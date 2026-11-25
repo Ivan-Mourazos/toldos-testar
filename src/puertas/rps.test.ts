@@ -24,7 +24,7 @@ describe('puertasDesdeRps', () => {
     const { puertas } = puertasDesdeRps([linea('PUERTAENR', 'MEDIDAS 366 X 410 CM')], { clienteCodigo });
     expect(puertas).toHaveLength(1);
     expect(puertas[0]).toMatchObject({ clientePuertas: 'general', tipoPuerta: 'enrollable', confirmada: false });
-    expect(puertas[0].tgm).toBeUndefined();
+    expect(puertas[0].tgm).toMatchObject({ cotasHoja: null, anchoEt: 0 });
   });
   it('AR2605036: una apilable con frente, alto, color y OF del comentario, sin dar el modelo por confirmado', () => {
     const { puertas, avisos } = puertasDesdeRps([linea('PUERTAPLE', 'REFERENCIA: 330-2026/BETILAN POR CONFECCION DE LONA PARA PUERTA APILABLE, DE MEDIDAS 620 X 450 CM , CON ENTRADAS DE TUBO Y VENTANAS DE PVC TRANSPARENTE, FABRICADA EN LONA POLIESTER RECUBIERTA DE PVC , COLOR BLANCO 9016')]);
