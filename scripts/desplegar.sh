@@ -37,11 +37,25 @@ if [ "$(git rev-parse HEAD:pnpm-lock.yaml)" != "$lock_antes" ]; then
   PLAYWRIGHT_SKIP_BROWSER_GC=1 pnpm exec playwright-core install chromium
 fi
 
-paso "tipos (con caché en node_modules/.cache/tsc: no borrarla)"
-pnpm typecheck
-
-paso "build en $nueva (la web sigue sirviendo desde $activa)"
-pnpm exec vite build --outDir "$nueva" --emptyOutDir
+# Tipos y build a la vez: no dependen uno del otro. Los tipos van con caché
+# (node_modules/.cache/tsc): no borrarla. Si falla cualquiera de los dos, no se cambia nada.
+paso "tipos y build en $nueva a la vez (la web sigue sirviendo desde $activa)"
+log_tipos=$(mktemp)
+pnpm typecheck > "$log_tipos" 2>&1 &
+pid_tipos=$!
+if ! pnpm exec vite build --outDir "$nueva" --emptyOutDir; then
+  wait "$pid_tipos" || true
+  rm -f "$log_tipos"
+  exit 1
+fi
+paso "esperando a la comprobación de tipos"
+if ! wait "$pid_tipos"; then
+  cat "$log_tipos"
+  rm -f "$log_tipos"
+  echo "!! La comprobación de tipos ha fallado: no se cambia de versión."
+  exit 1
+fi
+rm -f "$log_tipos"
 
 # Quien tenga Planteamientos abierto sigue pidiendo los ficheros de su versión al entrar en una
 # parte que aún no había cargado. Se conservan los de la versión anterior de los últimos 7 días
