@@ -59,7 +59,7 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
       if(t.tubosManual!==null&&(!Array.isArray(t.tubosManual)||!t.tubosManual.every(n=>Number.isFinite(n))))return error();
       if(['cierreBajo','marcaCierre'].some(k=>t[k]!==undefined&&!cotas(t,[k])))return error();
       if(t.laterales!==undefined && t.laterales!=='corte' && t.laterales!=='bastilla')return error();
-      if(['bastilla','bastillaArriba','trozoSaco','terminado','soldadura'].some(k=>t[k]!=null && !cotas(t,[k])))return error();
+      if(['bastilla','bastillaArriba','soldaduraEt','terminado','soldadura'].some(k=>t[k]!=null && !cotas(t,[k])))return error();
       if(t.lona!==undefined&&t.lona!=='pvc'&&t.lona!=='rejilla')return error();
       if(t.materialEt!==undefined&&t.materialEt!=='LAC650'&&t.materialEt!=='LAC900')return error();
       if(t.varilla!==undefined&&t.varilla!=='blanca'&&t.varilla!=='negra')return error();

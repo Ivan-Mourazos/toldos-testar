@@ -1,6 +1,6 @@
 import { colocarTubos, type AjustesEnrolle, type Colocacion } from './enrolle/colocar.ts';
 import type { ConfigEnrolle } from './enrolle/geometria.ts';
-import { sacoPuerta, sacoUtil } from './saco.ts';
+import { sacoPuerta, sacoSoldadoEnEtTgm, sacoUtil } from './saco.ts';
 import type { Puerta, ResultadoPuerta } from './tipos.ts';
 
 export interface EnrolleTgm {
@@ -11,6 +11,7 @@ export interface EnrolleTgm {
   altoLona: number;
   anchoEt: number;
   cierreBajo: number;
+  ultimoFijo?: boolean;
   colocacion: Colocacion;
 }
 
@@ -52,9 +53,13 @@ export function envoltorioTgm(p: Puerta) {
     eje: bajoLona + t.diametroTubo / 20 };
 }
 
-export const aumentoArribaTgm = (p: Puerta) => p.tgm?.arriba === 'bastilla' ? p.tgm.bastillaArriba ?? 0 : 3.5;
+export const BASTILLA_ARRIBA_TGM = 4.5;
+// El aumento sube desde el borde terminado y la raya queda a esa misma distancia hacia dentro.
+export const aumentoArribaTgm = (p: Puerta) => p.tgm?.arriba === 'bastilla'
+  ? p.tgm.bastillaArriba === undefined ? BASTILLA_ARRIBA_TGM : p.tgm.bastillaArriba ?? 0
+  : 3.5;
 
-export const sacoConTrozoTgm = (p: Puerta) => Boolean(p.tgm?.ventanal && p.tgm.abajo === 'saco' && p.tgm.lona === 'pvc');
+export const soldaduraEtTgm = (p: Puerta) => p.tgm?.ventanal ? p.tgm.soldaduraEt ?? 0 : 0;
 
 function medidasEnrolleTgm(p: Puerta) {
   const t = p.tgm;
@@ -71,14 +76,17 @@ function medidasEnrolleTgm(p: Puerta) {
   const largo = decima((altoLona - bajo) * 10);
   if (!positivo(largo)) return null;
 
-  return { altoLona, largo, conSaco };
+  const sacoEnEt = sacoSoldadoEnEtTgm(p);
+  const ultimoFijo = !conSaco || sacoEnEt;
+  const marcaInferior = sacoEnEt ? decima(largo - t.anchoEt * 5) : largo;
+  return { altoLona, largo, conSaco, ultimoFijo, marcaInferior };
 }
 
 /** Cotas entre ejes, desde el tubo inferior hasta el superior, en cm. */
 export function marcasDesdeCotasTgm(p: Puerta, cotas: number[]): number[] | null {
   const m = medidasEnrolleTgm(p), t = p.tgm;
   if (!m || !t || cotas.length !== t.nTubos - 1 || !cotas.every(positivo)) return null;
-  let marca = sacoConTrozoTgm(p) ? decima(m.largo - ((t.trozoSaco ?? 0) + t.anchoEt / 2) * 10) : m.largo;
+  let marca = m.marcaInferior;
   const marcas = [marca, ...cotas.map(cota => (marca = decima(marca - cota * 10)))].reverse();
   return marcas[0] > 0 && marcas.every((x, i) => i === 0 || x > marcas[i - 1]) ? marcas : null;
 }
@@ -86,35 +94,39 @@ export function marcasDesdeCotasTgm(p: Puerta, cotas: number[]): number[] | null
 export function enrolleTgm(p: Puerta): EnrolleTgm | null {
   const m = medidasEnrolleTgm(p), t = p.tgm;
   if (!m || !t) return null;
-  const { altoLona, largo, conSaco } = m;
+  const { altoLona, largo, conSaco, ultimoFijo, marcaInferior } = m;
   const { margen, desvio, altoPerfil, anchoPerfil, anguloPerfil } = t.ajustes;
   const cfg: ConfigEnrolle = {
     diametroEnrolle: t.diametroEnrolle, diametroTubo: t.diametroTubo, grosor: t.grosor, altoPerfil, anchoPerfil, conFunda: true,
   };
   const ajustes: AjustesEnrolle = { margen, desvio, anguloPerfil };
-  // También en manual, el cierre queda fijo aunque cambie el alto de la lona.
-  const fijo = sacoConTrozoTgm(p) ? decima(largo - ((t.trozoSaco ?? 0) + t.anchoEt / 2) * 10) : largo;
-  const manual = (!conSaco || sacoConTrozoTgm(p)) && t.tubosManual?.length === t.nTubos
-    ? [...t.tubosManual.slice(0, -1), fijo]
-    : t.tubosManual;
+  // El último eje sigue el bajo. Si cambia el alto o el saco, conserva los pasos de la hoja.
+  const guardadas = t.tubosManual;
+  const manual = ultimoFijo && guardadas?.length === t.nTubos
+    ? t.ventanal
+      ? guardadas.map(x => decima(x + marcaInferior - guardadas.at(-1)!))
+      : [...guardadas.slice(0, -1), marcaInferior]
+    : guardadas;
   if (t.ventanal && (manual?.length !== t.nTubos || manual.some((x, i) =>
     !positivo(x) || x > largo || (i > 0 && x <= manual[i - 1])))) return null;
   const colocacion = colocarTubos(cfg, ajustes, { largo, nTubos: t.nTubos, conSaco, manual });
   const cierreBajo = t.cierreBajo + ((t.soldadura ?? SOLDADURA_BASE_TGM) - SOLDADURA_BASE_TGM);
-  return { cfg, ajustes, largo, conSaco, altoLona, anchoEt: t.anchoEt, cierreBajo, colocacion };
+  return { cfg, ajustes, largo, conSaco, ultimoFijo, altoLona, anchoEt: t.anchoEt, cierreBajo, colocacion };
 }
 
 /** Configuración de la enrollable con los ejes que usa el simulador. */
 export function puertaTgmDerivada(p: Puerta, e: EnrolleTgm): Puerta {
-  const { anchoEt, diametroTubo, cierreBajo, marcaCierre, lona } = p.tgm!;
+  const { anchoEt, diametroTubo, cierreBajo, marcaCierre, lona, ventanal: ventanalTgm } = p.tgm!;
   // El último tubo sin saco va en el cierre y no lleva E.T.
   const marcas = e.conSaco ? e.colocacion.marcas : e.colocacion.marcas.slice(0, -1);
   const rejilla = abajoRejillaTgm(p);
-  const tramo = p.tgm!.ventanal?.tramo;
-  const inferior = tramo === undefined ? undefined : marcas.at(-tramo);
-  const superior = tramo === undefined ? undefined : marcas.at(-tramo - 1);
+  const tramo = ventanalTgm?.tramo;
+  const precision = tramo === undefined ? decima : (x: number) => Math.round(x * 100) / 100;
+  const tramoValido = tramo !== undefined && Number.isInteger(tramo) && tramo >= 1 && tramo < marcas.length;
+  const inferior = tramoValido ? marcas.at(-tramo) : undefined;
+  const superior = tramoValido ? marcas.at(-tramo - 1) : undefined;
   const ventanal = inferior !== undefined && superior !== undefined
-    ? { T: decima(superior / 10), D: decima((inferior - superior) / 10), margen: 0,
+    ? { T: precision(superior / 10), D: precision((inferior - superior) / 10), margen: 0,
       ventanales: [], sinEtArriba: false, sinEtAbajo: false } : undefined;
   return {
     ...p,
@@ -132,7 +144,7 @@ export function puertaTgmDerivada(p: Puerta, e: EnrolleTgm): Puerta {
       marcaCierre: rejilla ? rejilla.marca : e.conSaco ? undefined : marcaCierre + (e.cierreBajo - cierreBajo),
     },
     entradas: marcas.map(marca => ({
-      altura: decima(e.altoLona - marca / 10), diametro: diametroTubo, largo: p.frente, alto: anchoEt,
+      altura: precision(e.altoLona - marca / 10), diametro: diametroTubo, largo: p.frente, alto: anchoEt,
       huecos: [],
     })),
   };
@@ -145,7 +157,7 @@ export function calcularTgm(p: Puerta, calcularEnrollable: (p: Puerta) => Result
   });
   const t = p.tgm;
   if (t?.arriba === 'bastilla') {
-    if (!positivo(t.bastillaArriba ?? 0)) return vacio('TGM_BASTILLA_ARRIBA', 'Escribe cuánto mide la bastilla de arriba en cm.');
+    if (!positivo(aumentoArribaTgm(p))) return vacio('TGM_BASTILLA_ARRIBA', 'Escribe cuánto mide la bastilla en «Bastilla de arriba».');
   } else if (t && !t.varilla) {
     return vacio('TGM_VARILLA', 'Elige la varilla de arriba: blanca (5,5) o negra (4,5).');
   }
@@ -155,8 +167,9 @@ export function calcularTgm(p: Puerta, calcularEnrollable: (p: Puerta) => Result
       return vacio('TGM_VENTANAL', 'El ventanal de lado a lado se confecciona en PVC con los laterales al corte.');
     if (!Number.isInteger(tramo) || tramo < 1 || tramo >= entradas)
       return vacio('TGM_TRAMO_VENTANAL', 'Indica en qué tramo entre dos E.T. va el ventanal, contando desde abajo.');
-    if (sacoConTrozoTgm(p) && !positivo(t.trozoSaco ?? 0))
-      return vacio('TGM_TROZO_SACO', 'Escribe en cm el trozo de lona bajo la última E.T. para soldar el saco.');
+    const soldadura = soldaduraEtTgm(p);
+    if (!positivo(soldadura) || t.anchoEt - 2 * soldadura < t.diametroTubo / 10)
+      return vacio('TGM_SOLDADURA_ET', 'Indica la soldadura de cada borde en «Soldadura de la E.T.» y deja hueco para el tubo entre las dos franjas.');
   }
   const e = enrolle === undefined ? enrolleTgm(p) : enrolle;
   if (!e) {

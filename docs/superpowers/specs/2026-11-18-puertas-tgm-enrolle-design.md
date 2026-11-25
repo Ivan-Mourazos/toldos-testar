@@ -133,24 +133,36 @@ Decisiones de Iván (25/11):
   sin romper Portanova.
 - **Laterales al corte** (lona y plástico).
 - **Arriba, bastilla normal** en lugar de la varilla: nueva opción «Arriba: varilla / bastilla». Con bastilla, el
-  técnico escribe cuánto mide (cm, sin valor por defecto: se pregunta como la varilla); se suma de aumento al alto
+  técnico escribe cuánto mide (cm, 4,5 por defecto: la bastilla normal); se suma de aumento al alto
   del corte y se pone una raya de rotulador donde se dobla, en el corte y en el plano.
-- **Abajo**: la última E.T. normal y, debajo, un trozo de lona donde se suelda el saco; el saco (20 aquí) va soldado.
-  La medida del trozo para soldar el saco la escribe el técnico (campo nuevo, cm, se pregunta). Raya de soldar el saco
-  como en el resto de enrollables.
+- **Soldadura de la E.T.** (corregido por Iván, 25/11): «SOLDAR 3 CMS» de la hoja es lo que el cliente quiere soldar
+  de cada E.T.: de los 12, 3 arriba y 3 abajo, y quedan 6 en el medio para el tubo. Campo nuevo «Soldadura de la E.T.
+  (cm)», lo dice el pedido (3 en el 5743).
+- **Abajo**: la última E.T. normal y el saco (20 aquí) soldado en la MISMA franja de 3 cm de abajo de esa E.T. (sin
+  trozo de lona aparte, como la soldadura compartida del envolvente). La lona acaba en el borde de abajo de la E.T. y
+  el saco cuelga su medida por debajo. Raya de soldar el saco como en el resto de enrollables.
 - **Las E.T. se ponen a mano** cuando hay ventanal (las fija la hoja); el simulador solo comprueba que los tubos no se
   monten ni caigan sobre el perfil, con los mismos avisos. Grosor de lona y de plástico: el de por defecto, sin campo nuevo.
 - **Las cotas de la hoja van de centro a centro de las E.T.** Mejorar la entrada a mano: hoy se escriben marcas en mm
   desde el perfil fleco, que no es como viene la hoja. Nueva entrada «Cotas de la hoja (cm, centro a centro, de abajo
   arriba)», como la «Cadena del dibujo» de Portanova, que se convierte a las marcas del simulador; la tabla actual se
   queda para ver/ajustar.
-- «SOLDAR 3 CMS» de la hoja = cerrar las E.T. en la cabeza (en los extremos); no cambia el corte.
 
 Suposiciones del 25/11, pendientes de que Iván las confirme (se dejan editables):
 
 - El 35 es el plástico **visible** entre las dos E.T. que lo encierran, así que sus centros quedan a 35 + 12 = 47.
-- El alto 270 es la puerta terminada con el saco; la bastilla de arriba se suma aparte. Por encima de la entrada de
-  tubo queda la lona lisa que se enrolla (≈ 61 cm en el 5743).
+- (Confirmado por Iván, 25/11) El alto 270 es la puerta terminada con todo incluido, también el saco; la bastilla
+  de arriba se suma aparte como aumento del corte. Por encima de la entrada de
+  tubo queda la lona lisa que se enrolla (≈ 85 cm en el 5743: saco 20 + medio E.T. 6 + 38 + 68 + 47 + medio E.T. 6 = 185 desde abajo).
+
+Bastilla normal (Iván, 25/11): si no se indica otra cosa, 4,5 cm. Se suman 4,5 a la lona y la raya de rotulador va
+4,5 hacia dentro desde el borde terminado (a 9 del borde del corte): la lona se dobla una sola vez (sin doble
+vuelta), el doblez es el borde terminado y el borde del corte llega a la raya. El campo de la bastilla lleva 4,5 por defecto.
+
+Confirmado por Iván (25/11): el 35 es el hueco (plástico visible entre las dos E.T.). El plástico se corta SIEMPRE
+con 2 cm de más arriba y abajo para soldarlo a los paños, como en Portanova, aunque la E.T. se suelde 3 (35 + 2 + 2 =
+39 de alto en el 5743; Iván lo consultó en el taller el 25/11: «siempre se suelda 2 cm»); en esa franja del paño van juntas
+la soldadura del cristal y la de la E.T. El 38 y el 68 van de centro a centro e incluyen los 12 de las E.T. (no se suman aparte).
 
 ## Partes del código
 

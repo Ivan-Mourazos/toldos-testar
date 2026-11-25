@@ -94,7 +94,7 @@ export interface Puerta {
     materialEt: 'LAC650' | 'LAC900'; // Solo para las tiras aparte de la rejilla.
     arriba?: 'varilla' | 'bastilla';
     bastillaArriba?: number | null; // cm de aumento sobre el doblez.
-    trozoSaco?: number | null; // cm de lona entre el saco rematado y la E.T. inferior.
+    soldaduraEt?: number | null; // cm de soldadura en cada borde de la E.T.
     ventanal?: { tramo: number }; // Tramo entre E.T., numerado desde abajo.
     varilla?: 'blanca' | 'negra'; // Varilla de arriba: blanca 5,5 o negra 4,5; la web la pregunta.
     cierreBajo: number; // cm de lona por debajo del bajo terminado (Q-TGM05)

@@ -1,13 +1,13 @@
 import { alturasTubos, desfaseCintas, solapeEntradaEnrollable } from './calcular.ts';
 import { huecosSinEscuadrado, llevaEscuadrado } from './escuadrado.ts';
-import { abajoRejillaTgm, envoltorioTgm, SANDWICH_TGM } from './tgm.ts';
+import { abajoRejillaTgm, aumentoArribaTgm, envoltorioTgm, SANDWICH_TGM, soldaduraEtTgm } from './tgm.ts';
 import { alzadoAraujo } from './alzadoAraujo.ts';
 import { alzadoBelts, alzadoPuertasLuz } from './alzadoBeltsLuz.ts';
 import { alzadoSantaPau } from './alzadoSantaPau.ts';
 import { colocarTextosPuerta } from './textosPlano.ts';
-import { bajoDobleSaco, desnivelSuelo, envoltorioDobleSaco, pestanaDerecha, rotuloSaco, sacoPuerta } from './saco.ts';
+import { bajoDobleSaco, desnivelSuelo, envoltorioDobleSaco, pestanaDerecha, rotuloSaco, sacoPuerta, anchoSoldaduraSacoEnrollable } from './saco.ts';
 import { medidaSystemDock, REGLAS_SYSTEM_DOCK } from './systemDock.ts';
-import { NOTA_CACHOS_CRISTAL, notaPlanoEnrollable, panoContinuoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
+import { anchoCristalVentanal, NOTA_CACHOS_CRISTAL, notaPlanoEnrollable, panoContinuoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
 import { notaPlanoApilable, ventanalesApilable } from './ventanalesApilable.ts';
 import type { Hueco, Puerta, Punto, ResultadoPuerta } from './tipos.ts';
@@ -133,7 +133,8 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   const D = p.enrollable.D;
   // La autorreparable acota el saco con sus 2 de soldadura encima (14 con el de 120 de antes). La enrollable dibuja
   // también los 2 de soldar, pero acota lo libre bajo el paño (Iván, 24/10/2026).
-  const saco = sacoPuerta(p), hSaco = auto || enr ? saco.rematado + 2 : saco.rematado, hCota = enr ? saco.rematado : hSaco;
+  const soldaduraSaco = enr ? anchoSoldaduraSacoEnrollable(p) : 2;
+  const saco = sacoPuerta(p), hSaco = auto || enr ? saco.rematado + soldaduraSaco : saco.rematado, hCota = enr ? saco.rematado : hSaco;
 
   // Cadena derecha de pasos verticales (suma exactamente H; sin duplicar H).
   const hitosDerecha = ple
@@ -199,15 +200,22 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
     rect('puerta-lona', dr ? F + margen : -10 - margen, H - saco.rematado, 10, saco.rematado);
     linea('puerta-cota', 0, H, F, H, '5 3');
   }
+  const bastillaArriba = enr && p.tgm?.arriba === 'bastilla';
+  const aumentoArriba = aumentoArribaTgm(p);
+  const soldaduraEt = soldaduraEtTgm(p);
   if (bastilla > 0) {
     const fin = sinSaco ? pie + (p.enrollable.cierreBajo ?? 0) : H - saco.rematado;
-    for (const x of [-bastilla, F]) rect('puerta-pano', x, -3.5, bastilla, fin + 3.5);
+    for (const x of [-bastilla, F]) rect('puerta-pano', x, -aumentoArriba, bastilla, fin + aumentoArriba);
     cota({ x1: -bastilla, y1: 0, x2: 0, y2: 0, linea: -17, valor: bastilla, estilo: 'XERAL 5', marcas: 2,
       texto: { x: -bastilla - 6, y: -18, ancla: 'end' } });
   }
 
   // Cabecera según modelo
-  if (enr || auto) {
+  if (bastillaArriba) {
+    rect('puerta-pano', 0, -aumentoArriba, F, aumentoArriba);
+    linea('puerta-cota', 0, 0, F, 0);
+    texto(`BASTILLA NORMAL (${aumentoArriba.toLocaleString('es-ES')} cm)`, F / 2, -10, 'middle', 'puerta-texto-cabecera');
+  } else if (enr || auto) {
     linea('puerta-varilla', 0, 0, F, 0);
     texto(p.tgm ? (p.tgm.varilla === 'blanca' ? 'VARILLA BLANCA (5,5 mm)' : 'VARILLA NEGRA (4,5 mm)') : 'VARILLA NEGRA (4,5)', F / 2, -10, 'middle', 'puerta-texto-cabecera');
   }
@@ -239,8 +247,10 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
   // Ventanal enrollable: cachos laterales acotados y cristal acotado con su ancho de corte
   for (const [i, v] of ventanales.entries()) {
     const { margen: m, D } = v, T = ejesVentanal[i], alto = Math.max(0, v.altoVisible);
-    rect('puerta-cacho', 0, v.visibleDesde, m, alto);
-    rect('puerta-cacho', Math.max(0, F - m), v.visibleDesde, m, alto);
+    if (m > 0) {
+      rect('puerta-cacho', 0, v.visibleDesde, m, alto);
+      rect('puerta-cacho', Math.max(0, F - m), v.visibleDesde, m, alto);
+    }
     rect('puerta-cristal', m, v.visibleDesde, Math.max(0, F - 2 * m), alto);
     if (m > 0) {
       cota({ x1: 0, y1: T - 8, x2: m, y2: T - 8, linea: T - 8, valor: m, estilo: 'XERAL', marcas: 0, texto: { x: m / 2, y: T - 10, ancla: 'middle' } });
@@ -249,7 +259,7 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
     // El cristal se acota con su ancho de corte (hueco + 4).
     if (F - 2 * m > 12) {
       const y = T + Math.min(18.5, D / 2);
-      cota({ x1: m - 2, y1: y, x2: F - m + 2, y2: y, linea: y, valor: F - 2 * m + 4, marcas: 4, texto: { x: F / 2, y: y - 3, ancla: 'middle' } });
+      cota({ x1: m === 0 ? 0 : m - 2, y1: y, x2: m === 0 ? F : F - m + 2, y2: y, linea: y, valor: anchoCristalVentanal(F, m), marcas: 4, texto: { x: F / 2, y: y - 3, ancla: 'middle' } });
     }
   }
 
@@ -295,12 +305,17 @@ export function geometriaAlzado(p: Puerta, resultado: ResultadoPuerta, letra = '
     rect('puerta-entrada-alzado', 0 - margen, b.y - b.alto / 2, F + margen * 2, b.alto);
     linea('puerta-tubo', 0, b.y, F, b.y);
     cota({ x1: -12, y1: b.y - b.alto / 2, x2: -12, y2: b.y + b.alto / 2, linea: -12, valor: b.alto, estilo: enr ? 'XERAL 5' : 'XERAL', marcas: 4, texto: { x: -18, y: b.y + 3, ancla: 'end' } });
-    if (!pvcTgm || !resultado.uniones.some(u => u.tubo && Math.abs(H - b.y - u.altura) < .01)) {
+    if (soldaduraEt) {
+      for (const y of [b.y - b.alto / 2 + soldaduraEt, b.y + b.alto / 2 - soldaduraEt]) {
+        if (sinSaco || Math.abs(y - (H - hSaco)) > .001) linea('puerta-rotulador', p.margenMarcas, y, F - p.margenMarcas, y);
+      }
+    } else if (!pvcTgm || !resultado.uniones.some(u => u.tubo && Math.abs(H - b.y - u.altura) < .01)) {
       const sentido = ejesSobreVentanal.has(b.y) ? 1 : -1;
       marca(b.y - sentido * (p.tgm && enr ? solapeEntradaEnrollable(p) : b.alto) / 2, sentido);
     }
   }
-  marca(auto ? 30 : ple ? p.apilable.bolsillo / 2 : 3.5);
+  if (bastillaArriba) linea('puerta-rotulador', p.margenMarcas, aumentoArriba, F - p.margenMarcas, aumentoArriba);
+  else marca(auto ? 30 : ple ? p.apilable.bolsillo / 2 : 3.5);
   const inicioMarcaSaco = formas.length;
   if (!sinSaco) marca(H - (doble ? saco.rematado + 2 : hSaco), -1);
   else {

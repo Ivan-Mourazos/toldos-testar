@@ -33,8 +33,18 @@ export function sacoUtil(p: Puerta): number | null {
   return saco === undefined ? (p.modelo === 'PUERTAENR' ? 100 : 120) : saco;
 }
 
+export const sacoSoldadoEnEtTgm = (p: Pick<Puerta, 'tgm'>) => Boolean(p.tgm?.ventanal && p.tgm.abajo === 'saco' && p.tgm.lona === 'pvc');
+
+export const anchoSoldaduraSacoEnrollable = (p: Pick<Puerta, 'tgm'>) => sacoSoldadoEnEtTgm(p) ? p.tgm!.soldaduraEt ?? 0 : 2;
+
 /** Medidas del saco de la puerta; sin saco puesto se dibuja el habitual de su modelo y el cálculo avisa. */
-export const sacoPuerta = (p: Puerta) => medidasSaco(sacoUtil(p) ?? (p.modelo === 'PUERTAPLE' ? 80 : 120), p.modelo);
+export function sacoPuerta(p: Puerta) {
+  const util = sacoUtil(p) ?? (p.modelo === 'PUERTAPLE' ? 80 : 120);
+  if (!sacoSoldadoEnEtTgm(p)) return medidasSaco(util, p.modelo);
+  // Con ventanal TGM la medida escrita es la que cuelga bajo la E.T. y la soldadura se comparte.
+  const rematado = util / 10;
+  return { rematado, corte: 2 * (rematado + anchoSoldaduraSacoEnrollable(p)), altoPestana: rematado };
+}
 
 /** Doble saco: el saco interior sale del propio paño, que baja rematado + 2 por debajo del bajo terminado
  * para que, al doblarlo hasta la raya de rotulador en +(rematado + 2), suelde 2 cm y quede el rematado exacto
@@ -129,7 +139,8 @@ export function invertirPanoInclinado(pieza: PiezaPuerta): PiezaPuerta {
 /** Iván, 22/10/2026: las diagonales se imprimen después de cortar el saco negro. */
 export const MATERIAL_SACO_AMARILLO = 'LAC900 AMARILLO';
 
-export function soldaduraSacoEnrollable(p: Pick<Puerta, 'materialSaco' | 'sacoDiagonalesAmarillas'>): string {
+export function soldaduraSacoEnrollable(p: Pick<Puerta, 'materialSaco' | 'sacoDiagonalesAmarillas' | 'tgm'>): string {
+  if (sacoSoldadoEnEtTgm(p)) return `SOLDAR SACO EN LA E.T. (${anchoSoldaduraSacoEnrollable(p).toLocaleString('es-ES')} CM)`;
   const amarillo = !p.sacoDiagonalesAmarillas && p.materialSaco.trim().toUpperCase() === MATERIAL_SACO_AMARILLO;
   return `SOLDAR SACO ${amarillo ? 'AMARILLO' : 'NEGRO'} 2 CM MÁXIMO`;
 }

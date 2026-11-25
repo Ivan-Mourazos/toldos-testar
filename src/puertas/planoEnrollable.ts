@@ -1,10 +1,10 @@
 import { separacionCorte } from '../domain/corteLona/presentacion.js';
 import { anchoArial, textoSeguro } from '../domain/corteLona/texto.js';
 import { calcularPuerta, calcularPuertaDerivada, solapeEntradaEnrollable } from './calcular.ts';
-import { abajoRejillaTgm, enrolleTgm, envoltorioTgm, puertaTgmDerivada, rotuloCierreTgm } from './tgm.ts';
-import { rotuloSaco, sacoPuerta, sacoUtil, soldaduraSacoEnrollable } from './saco.ts';
+import { abajoRejillaTgm, aumentoArribaTgm, enrolleTgm, envoltorioTgm, puertaTgmDerivada, rotuloCierreTgm, soldaduraEtTgm } from './tgm.ts';
+import { anchoSoldaduraSacoEnrollable, rotuloSaco, sacoPuerta, sacoSoldadoEnEtTgm, sacoUtil, soldaduraSacoEnrollable } from './saco.ts';
 import { anclarCotas } from './cotasPuertas.ts';
-import { notaPlanoEnrollable, panoContinuoEnrollable, ventanalesEnrollable } from './ventanalesEnrollable.ts';
+import { anchoCristalVentanal, notaPlanoEnrollable, panoContinuoEnrollable, semianchoEtVentanal, ventanalesEnrollable } from './ventanalesEnrollable.ts';
 import { dibujarVentanasPlano } from './ventanasPlano.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
 import { SEPARACION_EXTRA_FILAS, TITULO_MATERIAL_MM } from './corte.ts';
@@ -84,6 +84,9 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
   const l = vacio(), F = p.frente, H = p.alto, T = panoContinuoEnrollable(p) ? 0 : p.enrollable.T;
   const r = enrolle ? calcularPuertaDerivada(p) : calcularPuerta(p);
   const saco = sacoPuerta(p), hs = saco.corte, hp = saco.altoPestana;
+  const soldaduraSaco = anchoSoldaduraSacoEnrollable(p), soldaduraEt = soldaduraEtTgm(p);
+  const sacoEnEt = sacoSoldadoEnEtTgm(p);
+  const aumentoArriba = aumentoArribaTgm(p), mitadVentanal = semianchoEtVentanal(p);
   const { sinSaco, marcaCierre } = p.enrollable;
   const envoltorio = envoltorioTgm(p);
   const bastilla = p.tgm?.laterales === 'bastilla' ? p.tgm.bastilla ?? 0 : 0;
@@ -99,7 +102,9 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
   // Los contornos son los paños cortados: 3,5 sobre la cabecera y, abajo, en el rematado del saco (13 con el de 120);
   // el saco sube 2 más para soldar (Iván, 24/10/2026, AR2605220).
   const paños: Array<[number, number]> = ventanales.length
-    ? [[-T - (p.enrollable.sinEtArriba ? 0 : 3.75), 3.5], [-H + bajo, -ejes.at(-1)! + (p.enrollable.sinEtAbajo ? 0 : 3.75)]] : [[-H + bajo, 3.5]];
+    ? [[-T - (p.enrollable.sinEtArriba ? 0 : mitadVentanal), aumentoArriba],
+      [p.tgm && sinSaco ? corteBajo : -H + bajo, -ejes.at(-1)! + (p.enrollable.sinEtAbajo ? 0 : mitadVentanal)]]
+    : [[-H + bajo, aumentoArriba]];
   for (const [abajo, arriba] of paños) contorno(l, 'DISCO1', [[0, abajo], [F, abajo], [F, arriba], [0, arriba]]);
   // Cada paño que se corta lleva su código, de arriba abajo como en el corte: con empates, A1, A2, A3… (Iván, 06/11/2026).
   const piezasPano = r.piezas.filter(x => x.clase === 'pano' && x.origenAlzado).sort((a, b) => b.origenAlzado![1] - a.origenAlzado![1]);
@@ -110,21 +115,27 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
     identificar(l, p, `${letra}${i + 1}`, F / 2, (a + b) / 2, F, b - a, { cantidad: i === 0, reves: i === 0, of: i === 0 });
   });
   linea(l, 'referencias', 0, 0, F, 0);
-  linea(l, 'ROTULADOR', 0, -3.5, F, -3.5);
+  linea(l, 'ROTULADOR', 0, -aumentoArriba, F, -aumentoArriba);
   // Iván, 06/11/2026: los textos de una línea, centrados en la puerta, como el de soldar el saco.
   // Iván, 19/11/2026: en TGM la varilla de arriba la elige el técnico (blanca 5,5 o negra 4,5).
   const varilla = p.tgm?.varilla === 'blanca' ? 'BLANCA' : 'NEGRA';
-  texto(l, varilla === 'BLANCA' ? 'VARILLA BLANCA (5,5)' : 'VARILLA NEGRA (4,5)', F / 2, 13.5486 - 3.5, 7, { centrado: true });
+  const bastillaArriba = p.tgm?.arriba === 'bastilla';
+  texto(l, bastillaArriba ? `BASTILLA NORMAL (${numeroEs(aumentoArriba)} CM)`
+    : varilla === 'BLANCA' ? 'VARILLA BLANCA (5,5)' : 'VARILLA NEGRA (4,5)', F / 2, 13.5486 - 3.5, 7, { centrado: true });
   if (p.enrollable.ventanasPequenas) dibujarVentanasPlano(l, p, letra, identificarSaco);
   for (const [i, v] of ventanales.entries()) {
     const t = ejes[i], m = v.margen, alto = v.altoCorte;
     // El cristal y los cachos son su corte completo: solapan 2 arriba y 2 abajo.
-    rectangulo(l, 'DISCO1', -1, -v.corteHasta, m + 1, alto);
-    rectangulo(l, 'DISCO1', F - m, -v.corteHasta, m + 1, alto);
-    rectangulo(l, 'DISCO1', m - 2, -v.corteHasta, F - 2 * m + 4, alto, 5);
-    cota(l, 0, -t - 12.57, m, -t - 12.57, -t + 11.67);
-    cota(l, F - m, -t - 5.89, F, -t - 5.89, -t + 13.22);
-    cota(l, m - 2, -t - 26.48, F - m + 2, -t - 26.48, -t - 18.56);
+    if (m > 0) rectangulo(l, 'DISCO1', -1, -v.corteHasta, m + 1, alto);
+    if (m > 0) rectangulo(l, 'DISCO1', F - m, -v.corteHasta, m + 1, alto);
+    const desdeCristal = m === 0 ? 0 : m - 2, anchoCristal = anchoCristalVentanal(F, m);
+    rectangulo(l, 'DISCO1', desdeCristal, -v.corteHasta, anchoCristal, alto, 5);
+    if (m > 0) {
+      cota(l, 0, -t - 12.57, m, -t - 12.57, -t + 11.67);
+      cota(l, F - m, -t - 5.89, F, -t - 5.89, -t + 13.22);
+    }
+    // Conserva las coordenadas de cota de Portanova.
+    cota(l, desdeCristal, -t - 26.48, m === 0 ? F : F - m + 2, -t - 26.48, -t - 18.56);
   }
   // AR2605065: la tira intermedia va de 0 a F; los cachos sobresalen 1 cm por cada lado.
   // Sus cuatro bordes y los mininúmeros del despiece se ven también en el alzado del plano.
@@ -151,14 +162,22 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
     const rayaArriba = superior || empateEt;
     const yMarca = -b + (rayaArriba ? mitadEt : -mitadEt);
     linea(l, 'ejes', 0, -b, F, -b);
-    linea(l, 'ROTULADOR', 0, yMarca, F, yMarca);
-    flecha(l, F / 2, yMarca, rayaArriba ? 0 : 180, segundo ? -1 : 1);
-    if (!empateEt && !ejes.some(e => Math.abs(e - b) < .01)) linea(l, 'borrar', 0, -b + mitadEt, F, -b + mitadEt);
+    if (soldaduraEt) {
+      for (const y of [-b - mitadEt, -b + mitadEt]) linea(l, 'referencias', 0, y, F, y);
+      for (const y of [-b - mitadEt + soldaduraEt, -b + mitadEt - soldaduraEt]) {
+        if (!(sacoEnEt && Math.abs(y - (-H + bajo + soldaduraSaco)) < .001))
+          linea(l, 'ROTULADOR', 0, y, F, y);
+      }
+    } else {
+      linea(l, 'ROTULADOR', 0, yMarca, F, yMarca);
+      flecha(l, F / 2, yMarca, rayaArriba ? 0 : 180, segundo ? -1 : 1);
+      if (!empateEt && !ejes.some(e => Math.abs(e - b) < .01)) linea(l, 'borrar', 0, -b + mitadEt, F, -b + mitadEt);
+    }
     cota(l, 0, -b - mitadEt, 0, -b + mitadEt, -9.15 + i, 'XERAL 5');
     if (!p.tgm) texto(l, '3 CM (HUECOS)', F / 2, -b + (superior ? 14.7311 : segundo ? -7.59 : 14.187) - 3.5, 7, { centrado: true });
     else texto(l, `ET Ø${p.tgm.diametroTubo} MM (CORTADA DE ${numeroEs(p.tgm.anchoEt)} CM)`, F / 2, -b + 14.187 - 3.5, 7, { centrado: true });
   });
-  if (!sinSaco) linea(l, 'ROTULADOR', 0, -H + bajo + 2, F, -H + bajo + 2);
+  if (!sinSaco) linea(l, 'ROTULADOR', 0, -H + bajo + soldaduraSaco, F, -H + bajo + soldaduraSaco);
   linea(l, 'referencias', 0, -H, F, -H);
   if (sinSaco) {
     if (corteBajo < -H + bajo) {
@@ -179,7 +198,7 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
       }
     }
   } else {
-    linea(l, 'referencias', 0, -H, 0, -H + bajo + 2);
+    linea(l, 'referencias', 0, -H, 0, -H + bajo + soldaduraSaco);
     linea(l, 'referencias', F, -H, F, -H + bajo);
     texto(l, soldaduraSacoEnrollable(p), F / 2, -H + 1.6012 + Math.min(7, F / 28) / 2, Math.min(7, F / 28), { centrado: true });
   }
@@ -188,8 +207,8 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
   const techo = Math.min(H, ...(T > 0 ? [T] : []), ...p.entradas.map(e => H - e.altura).filter(y => y > 0 && y < H));
   if (bastilla > 0) {
     const pie = sinSaco ? corteBajo : -H + bajo;
-    for (const x of [-bastilla, F]) rectangulo(l, 'referencias', x, pie, bastilla, 3.5 - pie);
-    cota(l, -bastilla, 3.5, 0, 3.5, 12, 'XERAL 5');
+    for (const x of [-bastilla, F]) rectangulo(l, 'referencias', x, pie, bastilla, aumentoArriba - pie);
+    cota(l, -bastilla, aumentoArriba, 0, aumentoArriba, 12, 'XERAL 5');
   }
   if (envoltorio && envoltorio.terminado > 0) {
     const y = -H + envoltorio.terminado + envoltorio.soldadura;
@@ -206,7 +225,7 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
   texto(l, rotuloLateral, F + bastilla + 5.46, p.tgm && bandas.length ? -bandas[0] : -techo / 2, 7, { giro: 90, centrado: true });
   if (!p.tgm) texto(l, 'DE ESTE LADO PISAR LAS E.T. 1 CM', F + 58, -H / 2, 10, { giro: 90, centrado: true });
   const rotulo = rotuloCierreTgm(p);
-  if (!rejilla) {
+  if (!rejilla && !sacoEnEt) {
     linea(l, 'texto', F + 12.17, -H - 5.32, F - .79, rotulo && marcaCierre !== undefined ? corteBajo + marcaCierre : -H + 7.90);
     // La nota de la raya, que faltaba (Iván, 24/10/2026, AR2605220), como en las apilables.
     texto(l, rotulo?.[0] ?? 'CERRAR E.T', F + 38, -H - 11, rotulo ? 5 : 7, { centrado: true });
@@ -251,15 +270,15 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
 
     // Saco desplegado, con escalón y los dos velcros en su capa original. Con el de 120: corte 26, pestaña y velcros
     // de 11 a 2 de cada lado; con otro saco, sus medidas (Iván, 23/10/2026).
-    contorno(l, 'referencias', [[0, ys], [F, ys], [F, ys - hs], [0, ys - hs], [0, ys - 2 - hp], [-6.5, ys - 2 - hp], [-6.5, ys - 2], [0, ys - 2]]);
-    for (const y of [ys - 2, ys - hs / 2, ys - hs + 2]) linea(l, 'vent-pre-noimpr', 0, y, F, y);
-    const bravo = rectangulo(l, 'referencia-1', -6.5, ys - 2 - hp, 3, hp);
-    const suave = rectangulo(l, 'referencia-1', 1.5, ys - hs + 2, 3, hp);
+    contorno(l, 'referencias', [[0, ys], [F, ys], [F, ys - hs], [0, ys - hs], [0, ys - soldaduraSaco - hp], [-6.5, ys - soldaduraSaco - hp], [-6.5, ys - soldaduraSaco], [0, ys - soldaduraSaco]]);
+    for (const y of [ys - soldaduraSaco, ys - hs / 2, ys - hs + soldaduraSaco]) linea(l, 'vent-pre-noimpr', 0, y, F, y);
+    const bravo = rectangulo(l, 'referencia-1', -6.5, ys - soldaduraSaco - hp, 3, hp);
+    const suave = rectangulo(l, 'referencia-1', 1.5, ys - hs + soldaduraSaco, 3, hp);
     l.sombreados.push({ capa: 'referencia-1', puntos: bravo, solido: true }, { capa: 'referencia-1', puntos: suave, solido: false });
     cota(l, 0, ys - hs, F, ys - hs, ys - hs + 9.49, 'XERAL 5');
     cota(l, 0, ys - hs, 0, ys, -32.47);
-    cota(l, -6.5, ys - 2, 0, ys - 2, ys + 7.82);
-    cota(l, 0, ys - hs + 2, 4.5, ys - hs + 2, ys - hs - 17.25);
+    cota(l, -6.5, ys - soldaduraSaco, 0, ys - soldaduraSaco, ys + 7.82);
+    cota(l, 0, ys - hs + soldaduraSaco, 4.5, ys - hs + soldaduraSaco, ys - hs - 17.25);
     // Con varias puertas, el saco dice de cuál es, con su letra (Iván, 24/10/2026), en su sitio: a la izquierda de la cota.
     const rotulo = identificarSaco ? `${rotuloSaco(p)} · ${letra}` : rotuloSaco(p), centrado = p.sacoDiagonalesAmarillas;
     texto(l, rotulo, centrado ? F / 2 : F / 2 - 71.5081, ys - hs / 2 + 1.1207,
@@ -269,8 +288,8 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
     // llegando a cada velcro (el bravo en la pestaña y el suave en el saco), no sueltos en el aire.
     const hVelcro = 5, xVelcro = 20, dVelcro = 23;
     for (const [valor, y, velcro] of [
-      ['COSER VELCRO REVÉS DE 3 BRAVO', ys - hs / 2 + dVelcro, [-5, ys - 2]],
-      ['COSER VELCRO DERECHO DE 3 SUAVE', ys - hs / 2 - dVelcro, [3, ys - hs + 2]],
+      ['COSER VELCRO REVÉS DE 3 BRAVO', ys - hs / 2 + dVelcro, [-5, ys - soldaduraSaco]],
+      ['COSER VELCRO DERECHO DE 3 SUAVE', ys - hs / 2 - dVelcro, [3, ys - hs + soldaduraSaco]],
     ] as const) {
       texto(l, valor, xVelcro, y, hVelcro, { ancla: 4 });
       linea(l, 'texto', xVelcro - 1.5, y, velcro[0], velcro[1]);
@@ -281,7 +300,9 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
   const yNota = rejilla ? bajoPiezas : sinSaco ? Math.min(-H, corteBajo) - 30 : ys - hs - 48;
   if (p.tgm) {
     // Las notas de Jaime, una por línea y a la izquierda (Iván, 19/11/2026: no son las de Portanova).
-    lineas.push(`- COSER VARILLA ${varilla} EN LAS ESQUINAS`, '- COSER E.T. EN LAS ESQUINAS');
+    if (!bastillaArriba) lineas.push(`- COSER VARILLA ${varilla} EN LAS ESQUINAS`);
+    if (soldaduraEt) lineas.push(`- SOLDAR ${numeroEs(soldaduraEt)} CM ARRIBA Y ABAJO DE CADA E.T.`);
+    else lineas.push('- COSER E.T. EN LAS ESQUINAS');
     lineas.forEach((v, i) => texto(l, v, 0, yNota - i * hNota * 1.4, hNota));
   } else {
     // Iván confirmó que el recorte de esta nota en su ventana era un descuido: debe leerse entera.
