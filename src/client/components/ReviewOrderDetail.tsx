@@ -9,7 +9,8 @@ import { CopyPlus, Download, ExternalLink, Factory, FileSearch, FileSpreadsheet,
 import type { Calculation, CoordinaStatus, ReviewPackage, RuleParameters } from '../types';
 import type { EstadoCorte } from '../corteLona';
 import { OrderView } from '../views/OrderView';
-import { CorteLona, toldosConCorte } from './CorteLona';
+import { toldosConCorte } from './CorteLona';
+import { CadPaginas } from './CadPaginas';
 import { DocumentosPedido } from './DocumentosPedido';
 import { BotonAbrirCorteRevisado, BotonesFlujoCorte, useFlujoCorteDwg } from '../flujoCorteDwg';
 import { PlanteamientoPedido } from './PlanteamientoPedido';
@@ -236,12 +237,14 @@ export function ReviewOrderDetail({
         origen={pdfGenerado ? `/api/reviews/${encodeURIComponent(review.orderCode)}/generated-files/${pdfIndex}` : '/api/planteamiento'}
         cuerpo={pdfGenerado ? undefined : JSON.stringify({ order: { ...(terminado ? review.order : pedidoEntrega(review).order), parameters: reviewParameters } })}
         version={review.updatedAt} />}
-        corte={<CorteLona key={review.orderCode} order={pedidoEntrega(review).order} estado={estadoCorte} reviewCode={review.orderCode}
+        corte={<CadPaginas key={review.orderCode} orderCode={review.orderCode} order={pedidoEntrega(review).order} estado={estadoCorte} version={review.updatedAt}
         dwgGuardado={Boolean(review.corteConfirmado && !review.corteNoRegenerado)}
         noRegenerado={review.corteNoRegenerado}
         generarArriba={autorDelCorte}
         regenerable={autorDelCorte}
-        onListo={setFaltaCorte} />} />
+        onListo={setFaltaCorte}
+        onActualizarCorte={autorDelCorte && !disabled ? regenerarCorte : undefined}
+        actualizando={generandoCorte} />} />
       {!terminado && conCorteLona && <AccionesCorteMaquina ruta={`/api/reviews/${encodeURIComponent(review.orderCode)}/corte-lona`} codigo={review.orderCode} onEnviado={onChanged} />}
       <HistorialEnvios envios={review.enviosCorte} />
       {review.planosCorte && <div className="corte-ayuda">{review.planosCorte.files.map(f => <p key={f.savedPath}>Plano: {f.savedPath} · {formatDateTime(f.writtenAt)}</p>)}{review.planosCorte.avisos.map((a, i) => <p key={i}>{a}</p>)}</div>}

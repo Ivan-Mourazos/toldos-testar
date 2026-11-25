@@ -32,6 +32,7 @@ import { controlLabel } from './components/controlLabels';
 import { OrderView } from './views/OrderView';
 import { CmtView } from './views/CmtView';
 import { CorteLona, toldosConCorte } from './components/CorteLona';
+import { CadPaginas } from './components/CadPaginas';
 import { BotonesFlujoCorte, useFlujoCorteDwg } from './flujoCorteDwg';
 import { AVISO_SIN_CAMBIOS, abrirCorteToldos, guardarToldosEditable } from './toldosEditable';
 import { autoriaToldos, avisoAprobacionToldos } from '../toldosEditable.js';
@@ -139,6 +140,7 @@ export default function App() {
   }
   const [working, setWorking] = useState<'review' | 'preview' | 'draft' | null>(null);
   const [previewUrl, setPreviewUrl] = useState('');
+  const [previewTab, setPreviewTab] = useState<'datos' | 'cad'>('datos');
   const previewButtonRef = useRef<HTMLButtonElement>(null);
   const previewDialogRef = useRef<HTMLDivElement>(null);
   const [workflowSettings, setWorkflowSettings] = useState<WorkflowSettings | null>(null);
@@ -811,6 +813,7 @@ export default function App() {
         return;
       }
       const blob = await response.blob();
+      setPreviewTab('datos');
       setPreviewUrl(URL.createObjectURL(blob));
     } catch {
       notify('No se pudo generar la vista previa.', { tone: 'error' });
@@ -1172,9 +1175,40 @@ export default function App() {
         <div ref={previewDialogRef} className="pdf-preview-backdrop" role="dialog" aria-modal="true" aria-label="Vista previa del planteamiento">
           <div className="pdf-preview-window">
             {/* Sin «Actualizar»: con la vista previa abierta el pedido no cambia (Iván, 16/10/2026). */}
-            <PdfPreviewViewer key={previewUrl} url={previewUrl} heading={<strong>Vista previa del planteamiento</strong>} actions={
-              <button className="icon-button" type="button" onClick={closePreview} aria-label="Cerrar vista previa"><X aria-hidden="true" /></button>
-            } />
+            {previewTab === 'cad' && draft.orderCode.trim() && toldosConCorte(pedidoToldos).length > 0 ? (
+              <>
+                <header>
+                  <div><strong>Vista previa del planteamiento</strong><span>Dibujo real del DWG</span></div>
+                  <div className="pdf-preview-actions">
+                    <div className="vista-previa-pestanas" role="group" aria-label="Contenido de la vista previa">
+                      <button type="button" aria-pressed={false} onClick={() => setPreviewTab('datos')}>Hojas de datos</button>
+                      <button type="button" aria-pressed={true} onClick={() => setPreviewTab('cad')}>Dibujo CAD</button>
+                    </div>
+                    <button className="icon-button" type="button" onClick={closePreview} aria-label="Cerrar vista previa"><X aria-hidden="true" /></button>
+                  </div>
+                </header>
+                <CadPaginas
+                  orderCode={draft.orderCode.trim()}
+                  order={pedidoToldos}
+                  estado={draft.corteLona ?? null}
+                  onActualizarCorte={currentUser ? () => saveForReview(true) : undefined}
+                  actualizando={working === 'review'}
+                  enModal
+                />
+              </>
+            ) : (
+              <PdfPreviewViewer key={previewUrl} url={previewUrl} heading={<strong>Vista previa del planteamiento</strong>} actions={
+                <>
+                  {draft.orderCode.trim() && toldosConCorte(pedidoToldos).length > 0 && (
+                    <div className="vista-previa-pestanas" role="group" aria-label="Contenido de la vista previa">
+                      <button type="button" aria-pressed={true} onClick={() => setPreviewTab('datos')}>Hojas de datos</button>
+                      <button type="button" aria-pressed={false} onClick={() => setPreviewTab('cad')}>Dibujo CAD</button>
+                    </div>
+                  )}
+                  <button className="icon-button" type="button" onClick={closePreview} aria-label="Cerrar vista previa"><X aria-hidden="true" /></button>
+                </>
+              } />
+            )}
           </div>
         </div>
       )}

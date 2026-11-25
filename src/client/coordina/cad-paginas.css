@@ -1,0 +1,269 @@
+/* Vista previa de las presentaciones reales del DWG (solo pedidos de toldos).
+   Tokens de CoordinaOT en claro y oscuro; el papel del CAD siempre es blanco. */
+.cad-paginas {
+  position: static;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 18px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+}
+
+.cad-paginas[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.cad-paginas button[hidden] {
+  display: none;
+}
+
+.cad-paginas:modal {
+  position: fixed;
+  inset: 12px;
+  width: calc(100vw - 24px);
+  height: calc(100dvh - 24px);
+  max-height: none;
+  margin: 0;
+  z-index: 40;
+}
+
+.cad-paginas:modal::backdrop {
+  background: rgb(0 0 0 / 65%);
+}
+
+.cad-paginas-en-modal {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 12px 16px 16px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.cad-paginas-aviso-desactualizado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--tramo-trabajo);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--tramo-trabajo) 12%, var(--surface));
+  color: var(--text);
+}
+
+.cad-paginas-aviso-texto {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 72ch;
+}
+
+.cad-paginas-aviso-texto svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--tramo-trabajo);
+}
+
+.cad-paginas-aviso-texto strong {
+  display: block;
+  font-size: 13px;
+}
+
+.cad-paginas-aviso-texto p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.cad-paginas-sin-dwg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.cad-paginas-sin-dwg svg {
+  flex: 0 0 auto;
+  color: var(--tramo-trabajo);
+}
+
+.cad-paginas-fallback {
+  min-width: 0;
+}
+
+.cad-paginas-fallback > .corte-lona {
+  margin-block: 0;
+}
+
+.cad-paginas-visor {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin-top: 12px;
+}
+
+.cad-paginas:modal .cad-paginas-visor,
+.cad-paginas-en-modal .cad-paginas-visor {
+  flex: 1;
+  min-height: 0;
+}
+
+.cad-paginas-etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.cad-paginas-etiqueta {
+  padding: 4px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.cad-paginas-etiqueta[aria-current="page"] {
+  border-color: var(--control-active-border);
+  background: var(--tgm-yellow-soft);
+  font-weight: 600;
+}
+
+.cad-paginas-escenario {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 460px;
+  padding: 14px 44px;
+  overflow: auto;
+  box-sizing: border-box;
+  background: var(--recuadro);
+  border: 1px solid var(--border);
+  border-radius: 0 0 8px 8px;
+}
+
+.cad-paginas:modal .cad-paginas-escenario,
+.cad-paginas-en-modal .cad-paginas-escenario {
+  flex: 1;
+  height: auto;
+  min-height: 360px;
+}
+
+.cad-paginas-escenario.is-desactualizado {
+  border-style: dashed;
+  border-color: var(--tramo-trabajo);
+}
+
+.cad-paginas-escenario.is-desactualizado .cad-paginas-hoja {
+  opacity: 0.45;
+  filter: grayscale(25%);
+}
+
+.cad-paginas-hoja {
+  flex: 0 0 auto;
+  margin: auto;
+  background: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 4px 16px rgb(17 21 34 / 18%);
+  overflow: hidden;
+  transition: opacity 0.15s ease;
+}
+
+.cad-paginas-hoja img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+}
+
+.cad-paginas-pie {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.cad-paginas-espera {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 360px;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.cad-paginas-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--text);
+  border-radius: 50%;
+  animation: cad-girar 0.8s linear infinite;
+}
+
+@keyframes cad-girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cad-paginas-spinner {
+    animation: none;
+  }
+  .cad-paginas-hoja {
+    transition: none;
+  }
+}
+
+/* Selector de pestañas dentro del modal «Vista previa» (Hojas de datos / Dibujo CAD). */
+.vista-previa-pestanas {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+
+.vista-previa-pestanas button {
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.vista-previa-pestanas button[aria-pressed="true"] {
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgb(17 21 34 / 15%);
+  font-weight: 600;
+}
