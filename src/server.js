@@ -1,7 +1,8 @@
 import { registrarDescargasCorte, convertirCmtRemolques } from './corteMaquina.js';
 import { registrarRutasCmtMaquina } from './cmtMaquinaRoutes.js';
 import { prepararPlanoProduccion } from './produccion.js';
-import { entregaStockLona, lineasLonaToldos, necesidadesLona } from './stockLona.js';
+import { entregaStockLona, esLonaAcrilica, lineasLonaToldos, necesidadesLona } from './stockLona.js';
+import { fueraDeReservas, ofsEnReservas } from './domain/stockSinComprobar.js';
 import { pasarAProduccionConStock } from './stockLonaProduccion.js';
 import { catalogoEntregas, numerarEntrega, aplicarDestino, necesitaPrepararDestino } from './entregasRps.js';
 import { avisoEntradaEntrega, codigoCorteEditable, abrirEntrega, codigoAnual, codigoEntrega, ofsEntrega, pedidoEntrega, entregaSinCambios, ofsSinGenerar, conservarOfsGeneradas } from './entregas.js';
@@ -99,6 +100,7 @@ import {
   getRpsOrder,
   queryRpsFabricReserveRows,
   getRpsStockPlano,
+  getRpsArticulosVenta,
   queryRpsFabricStockRows,
   searchRpsFabrics,
   searchRpsArticles,
@@ -196,8 +198,18 @@ app.use((req, res, next) => {
 });
 const coordina = createCoordinaClient({ url: config.coordinaUrl, key: config.coordinaClave });
 const fabricStock = createFabricStockService({ loadRows: queryRpsFabricStockRows, loadReserves: queryRpsFabricReserveRows });
-const stockLona = { stock: fabricStock, coordina, resolverTela: async codigo =>
+const stockLona = { stock: fabricStock, coordina, articulosVenta: getRpsArticulosVenta, resolverTela: async codigo =>
   (await searchCatalogFabrics(codigo, 10)).items.find(tela => tela.code === codigo)?.description };
+
+// La propuesta de lonas no enseña las de OF con un artículo incluido en reservas: las lista aparte
+// para que la ventana diga que no se comprueban. Si RPS no responde, se propone todo.
+async function sinOfsEnReservas(pedido, propuesta) {
+  const enReservas = ofsEnReservas(await getRpsArticulosVenta(pedido).catch(() => []))
+    .filter(({ of }) => propuesta.ofs.includes(of));
+  return enReservas.length
+    ? { ...propuesta, lonas: fueraDeReservas(propuesta.lonas, enReservas.map(({ of }) => of)), enReservas }
+    : propuesta;
+}
 const generationLocks = new Set();
 // Hoja de taller de remolques (fase 4): los datos de cada PDF esperan aquí, en memoria y un
 // minuto como mucho, a que la página interna los pida una sola vez; Chromium la imprime.
@@ -1140,7 +1152,7 @@ app.get('/api/remolques/pedidos/:orderCode/destinos-entrega', rutaRemolques(asyn
 }));
 
 app.get('/api/remolques/pedidos/:orderCode/stock-lona/propuesta', rutaRemolques(async (req, res) => {
-  res.set('Cache-Control', 'no-store').json(await pedidosRemolques.propuestaStockLona(req.params.orderCode));
+  res.set('Cache-Control', 'no-store').json(await sinOfsEnReservas(req.params.orderCode, await pedidosRemolques.propuestaStockLona(req.params.orderCode)));
 }));
 
 app.post('/api/remolques/pedidos/:orderCode/generar', rutaRemolques(async (req, res) => {
@@ -1240,7 +1252,7 @@ app.get('/api/puertas/pedidos/:orderCode/destinos-entrega', rutaRemolques(async 
 }));
 
 app.get('/api/puertas/pedidos/:orderCode/stock-lona/propuesta', rutaRemolques(async (req, res) => {
-  res.set('Cache-Control', 'no-store').json(await pedidosPuertas.propuestaStockLona(req.params.orderCode));
+  res.set('Cache-Control', 'no-store').json(await sinOfsEnReservas(req.params.orderCode, await pedidosPuertas.propuestaStockLona(req.params.orderCode)));
 }));
 
 app.post('/api/puertas/pedidos/:orderCode/generar', rutaRemolques(async (req, res) => {
@@ -1316,8 +1328,11 @@ app.get('/api/reviews/:orderCode/stock-lona/propuesta', async (req, res, next) =
     const pedido = pedidoEntrega(await workflowStore.getReview(req.params.orderCode));
     const order = normalizeOrder(pedido.order);
     const reserva = normalizeReservation({ orderCode: order.orderCode, ofs: calculateOrder(order).ofs });
-    const lonas = necesidadesLona(lineasLonaToldos({ ...pedido, order }, materialesReserva(reserva)));
-    res.set('Cache-Control', 'no-store').json({ ofs: uniqueOfs(order.awnings), lonas });
+    const todas = necesidadesLona(lineasLonaToldos({ ...pedido, order }, materialesReserva(reserva)));
+    // Las acrílicas no se comprueban (se asignan con el Excel): van aparte para que la ventana lo diga.
+    const lonas = todas.filter(lona => !esLonaAcrilica(lona));
+    const acrilicas = todas.filter(lona => esLonaAcrilica(lona)).map(({ codigo, descripcion }) => ({ codigo, descripcion }));
+    res.set('Cache-Control', 'no-store').json(await sinOfsEnReservas(req.params.orderCode, { ofs: uniqueOfs(order.awnings), lonas, acrilicas }));
   } catch (error) {
     next(error.code === 'ENOENT' ? httpError(404, 'No se encontró el pedido de revisión.') : error);
   }
@@ -1907,6 +1922,7 @@ app.post('/api/reviews/:orderCode/produccion', async (req, res, next) => {
       ...stockLona, pedido: codigo, entrega: entregaStockLona(pedido), cliente: pdf.datosStock.cliente, ofs: pdf.datosStock.ofs,
       consultadoPor: typeof entrada.savedBy === 'string' ? entrada.savedBy : null,
       lineas: () => lineasLonaToldos(pdf.datosStock.pedido, pdf.datosStock.materiales),
+      enExcel: pdf.datosStock.materiales.map(m => m.codigo),
       lonasAprobadas: entrada.lonasAprobadas,
     });
     res.status(r.status).json(r.cuerpo);

@@ -2,6 +2,7 @@ import { cuentaStockPlano, ERROR_STOCK_PLANO, PEDIDO_PLANO, sumarLonasPlano } fr
 import { CODIGO_RPS } from './remolques/stockMaterial.ts';
 import { lonaDeTramo } from './stockLonaTextos.js';
 import { comprobarStockLona } from './stockLonaProduccion.js';
+import { ofsEnReservas } from './domain/stockSinComprobar.js';
 
 const pedidoEn = texto => /(?<![a-z0-9])(AR\d{7})(?!\d)/i.exec(texto)?.[1].toUpperCase() ?? null;
 
@@ -57,7 +58,7 @@ const ofsDe = (ordenes, codigo) => {
   return (suyas.length ? suyas : ordenes.map(orden => orden.of)).sort();
 };
 
-export function registrarRutasStockPlano(app, { consultar, buscar, stock, coordina, resolverTela, tecnicos }) {
+export function registrarRutasStockPlano(app, { consultar, buscar, stock, coordina, resolverTela, articulosVenta, tecnicos }) {
   // Propuesta del modal: lonas leídas del plano con sus ML y todas las OF del pedido (cuentan como reserva propia).
   app.post('/api/cmt/stock-lona/propuesta', async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
@@ -68,7 +69,10 @@ export function registrarRutasStockPlano(app, { consultar, buscar, stock, coordi
     try {
       const { cliente, ordenes } = await consultar(pedido);
       const lonas = await proponerLonasPlano({ tramos, ordenes, buscar });
-      return res.json({ cliente, ofs: ordenes.map(orden => orden.of).sort(), lonas });
+      // Si RPS no dice qué artículo lleva cada OF, se comprueba todo.
+      const enReservas = articulosVenta ? ofsEnReservas(await articulosVenta(pedido).catch(() => [])) : [];
+      return res.json({ cliente, ofs: ordenes.map(orden => orden.of).sort(), lonas,
+        ...(enReservas.length && { enReservas }) });
     } catch {
       return res.status(503).json({ error: ERROR_STOCK_PLANO });
     }
@@ -97,7 +101,7 @@ export function registrarRutasStockPlano(app, { consultar, buscar, stock, coordi
       const lineas = detectadas.filter(lona => lona.codigo).map(lona => ({ ...lona, ofs: ofsDe(ordenes, lona.codigo), origen: 'corte' }));
       const lonasAprobadas = sumarLonasPlano(lonas.map(({ codigo, ml }) => ({ codigo, ml, ofs: ofsDe(ordenes, codigo) })));
       const { consultado, enviado } = await comprobarStockLona({
-        pedido, entrega: null, cliente, ofs, ofsStock: ofs, consultadoPor: usuario, origen: 'plano-manual', lineas, lonasAprobadas, coordina, resolverTela,
+        pedido, entrega: null, cliente, ofs, ofsStock: ofs, consultadoPor: usuario, origen: 'plano-manual', lineas, lonasAprobadas, coordina, resolverTela, articulosVenta,
         stock: {
           reset: () => stock.reset(),
           getStock: async (codigos, opciones) => (await stock.getStock(codigos, opciones)).map(s => {

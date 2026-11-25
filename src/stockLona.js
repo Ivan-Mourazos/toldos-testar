@@ -5,6 +5,7 @@ import { generarCorteLona } from './domain/corteLona/index.js';
 import { OF_STOCK_POR_DEFECTO } from './ofStockSacos.js';
 import { normalizeOf } from './reviewRules.js';
 export { textoAvisoStock } from './stockLonaAviso.js';
+export { esLonaAcrilica } from './domain/stockSinComprobar.js';
 
 /** @typedef {{ ofs: string[], codigo: string, descripcion?: string, ml: number, origen: 'corte' | 'reserva' }} LineaLona */
 /** @typedef {{ codigo: string, descripcion: string, ml: number, ofs: string[], origen: LineaLona['origen'] | 'manual' }} NecesidadLona */
