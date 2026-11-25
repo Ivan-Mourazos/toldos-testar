@@ -188,15 +188,14 @@ function CalculatedReviewPreview({ review, order, parameters, onClose }: {
     >
       {({ heading, actions }) => {
         const selector = conCad ? (
-          <div className="vista-previa-pestanas" role="group" aria-label="Contenido de la vista previa">
-            <button type="button" aria-pressed={vista === 'cad'} onClick={() => setVista('cad')}>Dibujo CAD</button>
-            <button type="button" aria-pressed={vista === 'datos'} onClick={() => setVista('datos')}>Hojas de datos</button>
+          <div className="orders-scope tira-3d glass-chip" role="group" aria-label="Contenido de la vista previa">
+            <button type="button" className={vista === 'datos' ? 'pestana-activa' : undefined} aria-pressed={vista === 'datos'} onClick={() => setVista('datos')}>Hojas de datos</button>
+            <button type="button" className={vista === 'cad' ? 'pestana-activa' : undefined} aria-pressed={vista === 'cad'} onClick={() => setVista('cad')}>Dibujo CAD</button>
           </div>
         ) : null;
         const accionesConSelector = <>{selector}{actions}</>;
         if (vista === 'cad' && conCad) {
-          return <>
-            <header>{heading}{accionesConSelector}</header>
+          return (
             <CadPaginas
               orderCode={review.orderCode}
               order={order}
@@ -205,8 +204,10 @@ function CalculatedReviewPreview({ review, order, parameters, onClose }: {
               dwgGuardado={Boolean(review.corteConfirmado && !review.corteNoRegenerado)}
               noRegenerado={review.corteNoRegenerado}
               enModal
+              heading={heading}
+              actions={accionesConSelector}
             />
-          </>;
+          );
         }
         return <>
           {visiblePreview.status !== 'ready' && <header>{heading}{accionesConSelector}</header>}
@@ -263,7 +264,7 @@ function PreviewShell({ title, refreshing, retry = false, onRefresh, onClose, ch
   }, [expanded, refreshing]);
 
   return (
-    <dialog ref={dialogRef} className="review-inline-preview" role={expanded ? 'dialog' : 'region'} aria-modal={expanded || undefined} aria-label={title} aria-busy={refreshing}
+    <dialog ref={dialogRef} className="review-inline-preview" data-fluido="" role={expanded ? 'dialog' : 'region'} aria-modal={expanded || undefined} aria-label={title} aria-busy={refreshing}
       onCancel={(event) => { event.preventDefault(); collapse(); }}>
       {children({ heading: <strong>{title}</strong>, actions: <div className="review-preview-actions">
         {/* Solo cuando falla: la vista previa ya se rehace sola al cambiar el pedido (Iván, 16/10/2026). */}

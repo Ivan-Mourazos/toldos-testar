@@ -40,7 +40,7 @@ afterEach(() => {
 });
 
 describe('CadPaginas (vista previa real del DWG)', () => {
-  it('muestra las presentaciones del DWG real y no enseña la vista de piezas por secciones de CorteLona', () => {
+  it('reutiliza el visor PDF (toolbar, paginación y escenario) sin chips de presentaciones ni vista de piezas de CorteLona', () => {
     const html = renderToStaticMarkup(
       <CadPaginas
         orderCode="AR2604784"
@@ -53,16 +53,21 @@ describe('CadPaginas (vista previa real del DWG)', () => {
         })}
       />
     );
-    expect(html).toContain('Dibujo real del CAD');
-    expect(html).toContain('TOLDO A');
-    expect(html).toContain('TOLDO B');
+    expect(html).toContain('planteamiento-pedido');
+    expect(html).toContain('pdf-carousel-toolbar');
+    expect(html).toContain('pdf-carousel-pages');
+    expect(html).toContain('pdf-carousel-stage');
+    expect(html).toContain('pdf-carousel-page hoja-3d');
+    expect(html).toContain('CAD al día');
+    expect(html).toContain('TOLDO A · AR2604784 (plano).dwg');
     expect(html).toContain('Página 1 de 2');
+    expect(html).not.toContain('cad-paginas-etiquetas');
     expect(html).not.toContain('Piezas por toldo');
     expect(html).not.toContain('Aún no hay dibujo del CAD');
-    expect(html).not.toContain('is-desactualizado');
+    expect(html).not.toContain('cad-paginas-atenuado');
   });
 
-  it('marca el dibujo como no actualizado (aviso encima, dibujo atenuado y botón «Actualizar corte»)', () => {
+  it('marca el dibujo como no actualizado con corte-estado, corte-aviso, lienzo atenuado y botón «Actualizar corte»', () => {
     const html = renderToStaticMarkup(
       <CadPaginas
         orderCode="AR2604784"
@@ -74,11 +79,12 @@ describe('CadPaginas (vista previa real del DWG)', () => {
         onActualizarCorte={() => undefined}
       />
     );
-    expect(html).toContain('El dibujo del CAD no está actualizado');
+    expect(html).toContain('corte-estado is-viejo');
+    expect(html).toContain('No actualizado');
+    expect(html).toContain('corte-aviso');
     expect(html).toContain('Han cambiado las medidas o ajustes (A)');
     expect(html).toContain('Actualizar corte');
-    expect(html).toContain('is-desactualizado');
-    expect(html).toContain('corte-estado is-viejo');
+    expect(html).toContain('cad-paginas-atenuado');
   });
 
   it('muestra el aviso «Aún no hay dibujo del CAD» y la vista anterior cuando no existe DWG todavía', () => {
@@ -94,7 +100,8 @@ describe('CadPaginas (vista previa real del DWG)', () => {
         })}
       />
     );
-    expect(html).toContain('Aún no hay dibujo del CAD');
+    expect(html).toContain('corte-aviso');
+    expect(html).toContain('Aún no hay dibujo del CAD.');
     expect(html).toContain('PVC y Soltis · piezas y marcas de confección');
   });
 
@@ -110,7 +117,24 @@ describe('CadPaginas (vista previa real del DWG)', () => {
       />
     );
     expect(html).toContain('Editado en ZWCAD');
-    expect(html).toContain('Con cambios de ZWCAD');
+  });
+
+  it('en modo modal reutiliza PdfPreviewToolbar con heading y actions en la misma barra', () => {
+    const html = renderToStaticMarkup(
+      <CadPaginas
+        orderCode="AR2604784"
+        order={pedidoPvc()}
+        datosIniciales={respuestaBase()}
+        enModal
+        heading={<strong>Vista previa del planteamiento</strong>}
+        actions={<button type="button">Cerrar</button>}
+      />
+    );
+    expect(html).toContain('pdf-carousel-heading');
+    expect(html).toContain('Vista previa del planteamiento');
+    expect(html).toContain('pdf-carousel-actions');
+    expect(html).toContain('Cerrar');
+    expect(html).not.toContain('documento-cabecera');
   });
 
   it('no renderiza nada para pedidos sin corte (acrílica o HERA)', () => {

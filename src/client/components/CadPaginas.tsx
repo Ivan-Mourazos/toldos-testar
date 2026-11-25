@@ -1,13 +1,9 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
-  AlertTriangle,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  Info,
   Maximize2,
-  Minus,
-  Plus,
   RefreshCw,
   Scissors,
   X
@@ -17,7 +13,7 @@ import type { EstadoCorte } from '../corteLona';
 import { CORTE_NO_REGENERADO } from '../../toldosEditable.js';
 import { CabeceraDocumento } from './DocumentosPedido';
 import { CorteLona, toldosConCorte } from './CorteLona';
-import type { PdfZoom } from './PdfPreviewToolbar';
+import { PdfPreviewToolbar, type PdfZoom } from './PdfPreviewToolbar';
 import '../coordina/cad-paginas.css';
 
 export interface PaginaCadCliente {
@@ -61,7 +57,9 @@ export function CadPaginas({
   onActualizarCorte,
   actualizando = false,
   datosIniciales = null,
-  enModal = false
+  enModal = false,
+  heading,
+  actions
 }: {
   orderCode: string;
   order: DraftState;
@@ -76,6 +74,8 @@ export function CadPaginas({
   actualizando?: boolean;
   datosIniciales?: RespuestaCadPaginasCliente | null;
   enModal?: boolean;
+  heading?: React.ReactNode;
+  actions?: React.ReactNode;
 }) {
   const toldos = toldosConCorte(order);
   const requerido = toldos.length > 0 || dwgGuardado || Boolean(datosIniciales?.tieneDwg);
@@ -169,7 +169,7 @@ export function CadPaginas({
     const observer = new ResizeObserver(medir);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [datos?.tieneDwg, ampliado]);
+  }, [datos?.tieneDwg, ampliado, enModal]);
 
   // Pantalla completa en el mismo <dialog>, como PlanteamientoPedido.
   useLayoutEffect(() => {
@@ -206,27 +206,22 @@ export function CadPaginas({
 
   if (!requerido) return null;
 
-  // Caso 6: todavía no hay DWG (pedido sin generar o en simulación) -> aviso y vista anterior (CorteLona).
-  if (!cargando && !error && datos && !datos.tieneDwg) {
+  // Caso 6 (panel de detalle): todavía no hay DWG -> aviso corto y vista anterior (CorteLona).
+  if (!enModal && !cargando && !error && datos && !datos.tieneDwg) {
     return (
-      <div className="cad-paginas-fallback">
-        <div className="cad-paginas-sin-dwg" role="status">
-          <Info size={16} aria-hidden="true" />
-          <span>Aún no hay dibujo del CAD</span>
-        </div>
-        {!enModal && (
-          <CorteLona
-            order={order}
-            estado={estado}
-            reviewCode={orderCode}
-            dwgGuardado={false}
-            noRegenerado={noRegenerado}
-            generarArriba={generarArriba}
-            regenerable={regenerable}
-            onListo={onListo}
-          />
-        )}
-      </div>
+      <>
+        <p className="corte-aviso cad-paginas-sin-dwg" role="status">Aún no hay dibujo del CAD.</p>
+        <CorteLona
+          order={order}
+          estado={estado}
+          reviewCode={orderCode}
+          dwgGuardado={false}
+          noRegenerado={noRegenerado}
+          generarArriba={generarArriba}
+          regenerable={regenerable}
+          onListo={onListo}
+        />
+      </>
     );
   }
 
@@ -265,191 +260,137 @@ export function CadPaginas({
       ? 'is-hecho'
       : 'is-aviso';
   const estadoTexto = ocupadoActualizar
-    ? 'Actualizando corte…'
+    ? 'Actualizando…'
     : desactualizado
-      ? 'Dibujo no actualizado'
+      ? 'No actualizado'
       : cargando
-        ? 'Cargando dibujo del CAD…'
+        ? 'Cargando…'
         : datos?.modificadoAMano
           ? 'Editado en ZWCAD'
           : datos?.origen === 'borrador'
-            ? 'Borrador del CAD'
+            ? 'Borrador CAD'
             : datos?.tieneDwg
-              ? 'Dibujo real del CAD'
-              : 'Comprobando dibujo del CAD…';
+              ? 'CAD al día'
+              : 'Comprobando…';
 
   const srcSvg = svgBlobUrl || (paginaActual?.svg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(paginaActual.svg)}` : '');
-  const variosArchivos = (datos?.ficheros.length ?? 0) > 1;
 
-  const contenido = (
-    <>
-      {!enModal && (
-        <CabeceraDocumento titulo="Corte" icono={<Scissors aria-hidden="true" />}>
-          <span className={`corte-estado ${estadoClase}`} role="status">
-            {!desactualizado && datos?.tieneDwg && !cargando && <CheckCircle2 size={16} aria-hidden="true" />}
-            {estadoTexto}
-          </span>
-          <div className="documento-acciones">
-            {error && (
-              <button type="button" className="ghost-button boton-3d" onClick={() => setIntento(i => i + 1)}>
-                <RefreshCw size={16} aria-hidden="true" />Reintentar
-              </button>
-            )}
-            {datos?.tieneDwg && (
-              <>
-                <button ref={abrirRef} type="button" hidden={ampliado} className="ghost-button boton-3d" onClick={() => setAmpliado(true)}>
-                  <Maximize2 aria-hidden="true" />Abrir en grande
-                </button>
-                <button ref={cerrarRef} type="button" hidden={!ampliado} className="icon-button" aria-label="Cerrar vista previa del CAD" onClick={() => setAmpliado(false)}>
-                  <X aria-hidden="true" />
-                </button>
-              </>
-            )}
-          </div>
-        </CabeceraDocumento>
-      )}
+  const pieTexto = paginaActual
+    ? [
+      paginaActual.nombre,
+      paginaActual.archivo,
+      datos?.origen === 'borrador' ? 'Borrador' : null,
+      datos?.modificadoAMano ? 'Editado en ZWCAD' : null
+    ].filter(Boolean).join(' · ')
+    : '';
 
-      {desactualizado && (
-        <div className="cad-paginas-aviso-desactualizado" role="status">
-          <div className="cad-paginas-aviso-texto">
-            <AlertTriangle size={16} aria-hidden="true" />
-            <div>
-              <strong>El dibujo del CAD no está actualizado</strong>
-              <p>{datos?.motivoDesactualizado || CORTE_NO_REGENERADO}</p>
-            </div>
-          </div>
-          {onActualizarCorte && (
-            <button
-              type="button"
-              className="primary-button boton-3d"
-              disabled={ocupadoActualizar}
-              onClick={() => void actualizarCorte()}
-            >
-              <RefreshCw size={16} aria-hidden="true" />
-              {ocupadoActualizar ? 'Actualizando corte…' : 'Actualizar corte'}
-            </button>
-          )}
-        </div>
-      )}
-
-      {error && (
-        <div className="corte-aviso" role="alert">
-          {error}
-        </div>
-      )}
-
-      {cargando && !datos?.tieneDwg && !error && (
-        <p className="cad-paginas-espera" role="status">
-          <span className="cad-paginas-spinner" aria-hidden="true" />
-          Cargando dibujo del CAD…
-        </p>
-      )}
-
-      {datos?.tieneDwg && paginaActual && (
-        <div
-          className="cad-paginas-visor"
-          ref={raizRef}
-          tabIndex={0}
-          onKeyDown={event => {
-            if (event.key === 'ArrowLeft') { cambiarPagina(paginaSegura - 1); event.preventDefault(); }
-            else if (event.key === 'ArrowRight') { cambiarPagina(paginaSegura + 1); event.preventDefault(); }
-            else if (event.key === '+' || event.key === '=') { cambiarZoom(1); event.preventDefault(); }
-            else if (event.key === '-') { cambiarZoom(-1); event.preventDefault(); }
-          }}
+  const avisoDesactualizado = desactualizado && (
+    <div className={`cad-aviso-fila${enModal ? ' is-modal' : ''}`} role="status">
+      <p className="corte-aviso">{datos?.motivoDesactualizado || CORTE_NO_REGENERADO}</p>
+      {onActualizarCorte && (
+        <button
+          type="button"
+          className="primary-button boton-3d"
+          disabled={ocupadoActualizar}
+          onClick={() => void actualizarCorte()}
         >
-          <div className="pdf-carousel-toolbar">
-            <div className="pdf-carousel-zoom" role="group" aria-label="Zoom del dibujo CAD">
-              <button type="button" className="tecla-3d" onClick={() => setZoom('height')} aria-pressed={zoom === 'height'}>Página entera</button>
-              <button type="button" className="tecla-3d" onClick={() => setZoom('fit')} aria-pressed={zoom === 'fit'}>Ajustar al ancho</button>
-              <button type="button" onClick={() => cambiarZoom(-1)} aria-label="Reducir zoom"><Minus aria-hidden="true" /></button>
-              <button type="button" onClick={() => cambiarZoom(1)} aria-label="Ampliar zoom"><Plus aria-hidden="true" /></button>
-              <span className="pdf-carousel-zoom-value">{zoom === 'height' ? 'Entera' : zoom === 'fit' ? 'Ancho' : `${zoom} %`}</span>
-            </div>
-            {paginas.length > 1 && (
-              <div className="pdf-carousel-pagination">
-                <div className="pdf-carousel-footer">
-                  <button type="button" onClick={() => cambiarPagina(paginaSegura - 1)} disabled={paginaSegura <= 0} aria-label="Presentación anterior">
-                    <ChevronLeft aria-hidden="true" />
-                  </button>
-                  <strong>Página {paginaSegura + 1} de {paginas.length}</strong>
-                  <button type="button" onClick={() => cambiarPagina(paginaSegura + 1)} disabled={paginaSegura >= paginas.length - 1} aria-label="Presentación siguiente">
-                    <ChevronRight aria-hidden="true" />
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {paginas.length > 1 && (
-            <nav className="cad-paginas-etiquetas" aria-label="Presentaciones del DWG">
-              {paginas.map((p, i) => (
-                <button
-                  key={`${p.archivo}-${p.nombre}-${i}`}
-                  type="button"
-                  className="cad-paginas-etiqueta"
-                  aria-current={i === paginaSegura ? 'page' : undefined}
-                  onClick={() => setIndicePagina(i)}
-                >
-                  {variosArchivos ? `${p.nombre} · ${p.archivo.replace(/\.(dwg|dxf)$/i, '')}` : p.nombre}
-                </button>
-              ))}
-            </nav>
-          )}
-
-          <div
-            className={`cad-paginas-escenario${desactualizado ? ' is-desactualizado' : ''}`}
-            ref={escenarioRef}
-            onWheel={event => {
-              if (!event.ctrlKey || event.deltaY === 0) return;
-              event.preventDefault();
-              cambiarZoom(event.deltaY < 0 ? 1 : -1);
-            }}
-          >
-            <div className="cad-paginas-hoja" style={{ width: hojaW, height: hojaH }}>
-              <img
-                src={srcSvg}
-                alt={`Presentación CAD ${paginaActual.nombre} (${paginaActual.archivo})`}
-                width={hojaW}
-                height={hojaH}
-              />
-            </div>
-            {paginas.length > 1 && (
-              <>
-                <button
-                  className="pdf-carousel-arrow is-previous"
-                  type="button"
-                  onClick={() => cambiarPagina(paginaSegura - 1)}
-                  disabled={paginaSegura <= 0}
-                  aria-label="Presentación anterior"
-                >
-                  <ChevronLeft aria-hidden="true" />
-                </button>
-                <button
-                  className="pdf-carousel-arrow is-next"
-                  type="button"
-                  onClick={() => cambiarPagina(paginaSegura + 1)}
-                  disabled={paginaSegura >= paginas.length - 1}
-                  aria-label="Presentación siguiente"
-                >
-                  <ChevronRight aria-hidden="true" />
-                </button>
-              </>
-            )}
-          </div>
-
-          <div className="cad-paginas-pie">
-            <span>{paginaActual.archivo} · {paginaActual.nombre}</span>
-            <span>{datos.origen === 'borrador' ? 'Borrador del CAD' : 'DWG en carpeta del año'}{datos.modificadoAMano ? ' · Con cambios de ZWCAD' : ''}</span>
-          </div>
-        </div>
+          <RefreshCw size={16} aria-hidden="true" />
+          {ocupadoActualizar ? 'Actualizando…' : 'Actualizar corte'}
+        </button>
       )}
-    </>
+    </div>
   );
 
+  const manejarTeclado = (event: React.KeyboardEvent) => {
+    if (!datos?.tieneDwg) return;
+    if (event.key === 'ArrowLeft') { cambiarPagina(paginaSegura - 1); event.preventDefault(); }
+    else if (event.key === 'ArrowRight') { cambiarPagina(paginaSegura + 1); event.preventDefault(); }
+    else if (event.key === '+' || event.key === '=') { cambiarZoom(1); event.preventDefault(); }
+    else if (event.key === '-') { cambiarZoom(-1); event.preventDefault(); }
+  };
+
+  const manejarRueda = (event: React.WheelEvent) => {
+    if (!event.ctrlKey || event.deltaY === 0 || !datos?.tieneDwg) return;
+    event.preventDefault();
+    cambiarZoom(event.deltaY < 0 ? 1 : -1);
+  };
+
+  const escenarioHojas = (
+    <div className="pdf-carousel-stage" ref={escenarioRef} aria-live="polite" onWheel={manejarRueda}>
+      {cargando && !datos?.tieneDwg && !error && (
+        <div className="pdf-carousel-state" role="status">Cargando dibujo del CAD…</div>
+      )}
+      {error && (
+        <div className="pdf-carousel-state is-error" role="alert">{error}</div>
+      )}
+      {!cargando && !error && datos && !datos.tieneDwg && (
+        <div className="pdf-carousel-state" role="status">Aún no hay dibujo del CAD.</div>
+      )}
+      {datos?.tieneDwg && paginaActual && (
+        <>
+          <div
+            className={`pdf-carousel-canvas${desactualizado ? ' cad-paginas-atenuado' : ''}`}
+            style={{ width: hojaW, height: hojaH }}
+          >
+            <img
+              className="pdf-carousel-page hoja-3d"
+              src={srcSvg}
+              alt={`Presentación CAD ${paginaActual.nombre} (${paginaActual.archivo})`}
+              width={hojaW}
+              height={hojaH}
+            />
+          </div>
+          {paginas.length > 1 && (
+            <>
+              <button
+                className="pdf-carousel-arrow is-previous"
+                type="button"
+                onClick={() => cambiarPagina(paginaSegura - 1)}
+                disabled={paginaSegura <= 0}
+                aria-label="Página anterior"
+              >
+                <ChevronLeft aria-hidden="true" />
+              </button>
+              <button
+                className="pdf-carousel-arrow is-next"
+                type="button"
+                onClick={() => cambiarPagina(paginaSegura + 1)}
+                disabled={paginaSegura >= paginas.length - 1}
+                aria-label="Página siguiente"
+              >
+                <ChevronRight aria-hidden="true" />
+              </button>
+            </>
+          )}
+        </>
+      )}
+    </div>
+  );
+
+  // En el modal «Vista previa», devuelve directamente el mismo `.pdf-carousel` que PdfPreviewViewer.
   if (enModal) {
     return (
-      <div className="cad-paginas-en-modal" aria-label="Dibujo real del CAD" aria-busy={cargando || ocupadoActualizar}>
-        {contenido}
+      <div
+        className="pdf-carousel"
+        ref={raizRef}
+        aria-label="Dibujo real del CAD"
+        aria-busy={cargando || ocupadoActualizar}
+        tabIndex={0}
+        onKeyDown={manejarTeclado}
+      >
+        <PdfPreviewToolbar
+          heading={heading}
+          actions={actions}
+          zoom={zoom}
+          pageNumber={paginaSegura + 1}
+          pageCount={datos?.tieneDwg ? paginas.length : 0}
+          onZoom={setZoom}
+          onZoomStep={cambiarZoom}
+          onPage={n => cambiarPagina(n - 1)}
+        />
+        {avisoDesactualizado}
+        {escenarioHojas}
+        {pieTexto && <p className="corte-ayuda cad-paginas-pie">{pieTexto}</p>}
       </div>
     );
   }
@@ -458,14 +399,59 @@ export function CadPaginas({
     <dialog
       ref={dialogoRef}
       open={!ampliado}
-      className="cad-paginas corte-lona panel bloque-3d"
+      className="planteamiento-pedido panel bloque-3d"
       role={ampliado ? 'dialog' : 'region'}
       aria-modal={ampliado || undefined}
       aria-label="Corte"
       aria-busy={cargando || ocupadoActualizar}
       onCancel={evento => { evento.preventDefault(); setAmpliado(false); }}
     >
-      {contenido}
+      <CabeceraDocumento titulo="Corte" icono={<Scissors aria-hidden="true" />}>
+        <span className={`corte-estado ${estadoClase}`} role="status">
+          {!desactualizado && datos?.tieneDwg && !cargando && <CheckCircle2 size={16} aria-hidden="true" />}
+          {estadoTexto}
+        </span>
+        <div className="documento-acciones">
+          {error && (
+            <button type="button" className="ghost-button boton-3d" onClick={() => setIntento(i => i + 1)}>
+              <RefreshCw size={16} aria-hidden="true" />Reintentar
+            </button>
+          )}
+          {datos?.tieneDwg && (
+            <>
+              <button ref={abrirRef} type="button" hidden={ampliado} className="ghost-button boton-3d" onClick={() => setAmpliado(true)}>
+                <Maximize2 aria-hidden="true" />Abrir en grande
+              </button>
+              <button ref={cerrarRef} type="button" hidden={!ampliado} className="icon-button" aria-label="Cerrar vista previa del CAD" onClick={() => setAmpliado(false)}>
+                <X aria-hidden="true" />
+              </button>
+            </>
+          )}
+        </div>
+      </CabeceraDocumento>
+
+      {avisoDesactualizado}
+      {error && <p className="corte-aviso" role="alert">{error}</p>}
+      {cargando && !datos?.tieneDwg && !error && (
+        <p className="documento-espera" role="status">Cargando dibujo del CAD…</p>
+      )}
+
+      {datos?.tieneDwg && paginaActual && (
+        <>
+          <div className="pdf-carousel" ref={raizRef} aria-label="Dibujo real del CAD" tabIndex={0} onKeyDown={manejarTeclado}>
+            <PdfPreviewToolbar
+              zoom={zoom}
+              pageNumber={paginaSegura + 1}
+              pageCount={paginas.length}
+              onZoom={setZoom}
+              onZoomStep={cambiarZoom}
+              onPage={n => cambiarPagina(n - 1)}
+            />
+            {escenarioHojas}
+          </div>
+          {pieTexto && <p className="corte-ayuda">{pieTexto}</p>}
+        </>
+      )}
     </dialog>
   );
 }

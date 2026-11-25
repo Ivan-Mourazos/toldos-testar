@@ -1218,22 +1218,24 @@ export default function App() {
         onDismissToast={dismissToast}
         onResolveDialog={resolveDialog}
       />
-      {previewUrl && (
-        <div ref={previewDialogRef} className="pdf-preview-backdrop" role="dialog" aria-modal="true" aria-label="Vista previa del planteamiento">
-          <div className="pdf-preview-window">
-            {/* Sin «Actualizar»: con la vista previa abierta el pedido no cambia (Iván, 16/10/2026). */}
-            {previewTab === 'cad' && draft.orderCode.trim() && toldosConCorte(pedidoToldos).length > 0 ? (
-              <>
-                <header>
-                  <div><strong>Vista previa del planteamiento</strong><span>Dibujo real del DWG</span></div>
-                  <div className="pdf-preview-actions">
-                    <div className="vista-previa-pestanas" role="group" aria-label="Contenido de la vista previa">
-                      <button type="button" aria-pressed={false} onClick={() => setPreviewTab('datos')}>Hojas de datos</button>
-                      <button type="button" aria-pressed={true} onClick={() => setPreviewTab('cad')}>Dibujo CAD</button>
-                    </div>
-                    <button className="icon-button" type="button" onClick={closePreview} aria-label="Cerrar vista previa"><X aria-hidden="true" /></button>
-                  </div>
-                </header>
+      {previewUrl && (() => {
+        const conCad = Boolean(draft.orderCode.trim() && toldosConCorte(pedidoToldos).length > 0);
+        const acciones = (
+          <>
+            {conCad && (
+              <div className="orders-scope tira-3d glass-chip" role="group" aria-label="Contenido de la vista previa">
+                <button type="button" className={previewTab === 'datos' ? 'pestana-activa' : undefined} aria-pressed={previewTab === 'datos'} onClick={() => setPreviewTab('datos')}>Hojas de datos</button>
+                <button type="button" className={previewTab === 'cad' ? 'pestana-activa' : undefined} aria-pressed={previewTab === 'cad'} onClick={() => setPreviewTab('cad')}>Dibujo CAD</button>
+              </div>
+            )}
+            <button className="icon-button" type="button" onClick={closePreview} aria-label="Cerrar vista previa"><X aria-hidden="true" /></button>
+          </>
+        );
+        return (
+          <div ref={previewDialogRef} className="pdf-preview-backdrop" role="dialog" aria-modal="true" aria-label="Vista previa del planteamiento">
+            <div className="pdf-preview-window" data-fluido="">
+              {/* Sin «Actualizar»: con la vista previa abierta el pedido no cambia (Iván, 16/10/2026). */}
+              {previewTab === 'cad' && conCad ? (
                 <CadPaginas
                   orderCode={draft.orderCode.trim()}
                   order={pedidoToldos}
@@ -1241,24 +1243,16 @@ export default function App() {
                   onActualizarCorte={currentUser ? () => saveForReview(true) : undefined}
                   actualizando={working === 'review'}
                   enModal
+                  heading={<strong>Vista previa del planteamiento</strong>}
+                  actions={acciones}
                 />
-              </>
-            ) : (
-              <PdfPreviewViewer key={previewUrl} url={previewUrl} heading={<strong>Vista previa del planteamiento</strong>} actions={
-                <>
-                  {draft.orderCode.trim() && toldosConCorte(pedidoToldos).length > 0 && (
-                    <div className="vista-previa-pestanas" role="group" aria-label="Contenido de la vista previa">
-                      <button type="button" aria-pressed={true} onClick={() => setPreviewTab('datos')}>Hojas de datos</button>
-                      <button type="button" aria-pressed={false} onClick={() => setPreviewTab('cad')}>Dibujo CAD</button>
-                    </div>
-                  )}
-                  <button className="icon-button" type="button" onClick={closePreview} aria-label="Cerrar vista previa"><X aria-hidden="true" /></button>
-                </>
-              } />
-            )}
+              ) : (
+                <PdfPreviewViewer key={previewUrl} url={previewUrl} heading={<strong>Vista previa del planteamiento</strong>} actions={acciones} />
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
       {((!currentUser && activeTab !== 'cmt') || choosingUser) && (
         <WhoAreYouDialog onAbrirCmt={!currentUser ? () => { setChoosingUser(false); irAPestana('cmt'); } : undefined} current={currentUser} onChoose={chooseUser} onCancel={currentUser ? () => setChoosingUser(false) : undefined} />
       )}
