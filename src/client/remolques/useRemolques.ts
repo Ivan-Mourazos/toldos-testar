@@ -847,7 +847,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
         }
         if (!pantallaSigueIgual(estadoRef.current, actual)) {
           // Mientras se guardaba se cambió o cargó otro pedido: la pantalla no se toca.
-          notificar.current.notify(`El pedido ${datos.review?.orderCode ?? actual.numeroPedido} se ha guardado para revisión, pero la pantalla ha cambiado mientras tanto y se conserva tal cual.`, { tone: 'info', title: 'Guardado para revisión' });
+          notificar.current.notify(`${datos.review?.orderCode ?? actual.numeroPedido} guardado. No se ha tocado lo que tienes en pantalla.`, { tone: 'info', title: 'Guardado para revisión' });
           return;
         }
         consultaEnCurso.current?.abort();
@@ -956,7 +956,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
       }
       alGuardar.current?.();
       if (!pantallaSigueIgual(estadoRef.current, actual)) {
-        notificar.current.notify(`El borrador de ${resultado.borrador.orderCode} se ha guardado, pero la pantalla ha cambiado mientras tanto y se conserva tal cual.`, { tone: 'info', title: 'Borrador guardado' });
+        notificar.current.notify(`Borrador de ${resultado.borrador.orderCode} guardado. No se ha tocado lo que tienes en pantalla.`, { tone: 'info', title: 'Borrador guardado' });
         return false;
       }
       consultaEnCurso.current?.abort();

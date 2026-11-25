@@ -102,7 +102,7 @@ export async function abrirCorteDwg({ ruta, orderCode, cuerpo, usuario, pregunta
     }
     alAbrir?.(datos.existente ? 'existente' : datos.sustituido ? 'regenerado' : 'creado', datos.corteLona);
     const avisos = datos.avisos?.length ? ` ${datos.avisos.join(' ')}` : '';
-    notify(`Abriendo en ZWCAD: ${ficheros.map((f) => f.ruta).join(' · ')}.${avisos}`, { tone: 'success', title: datos.existente ? 'Borrador del corte' : datos.sustituido ? 'Borrador generado de nuevo' : 'Borrador del corte creado' });
+    notify(`Abriendo en ZWCAD: ${ficheros.map((f) => f.ruta.split(/[\\/]/).pop()).join(' · ')}.${avisos}`, { tone: 'success', title: datos.existente ? 'Borrador del corte' : datos.sustituido ? 'Borrador generado de nuevo' : 'Borrador del corte creado' });
     return true;
   } catch (error) {
     notify(error instanceof Error ? error.message : 'No se pudo abrir el corte.', { tone: 'error' });

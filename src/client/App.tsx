@@ -625,7 +625,7 @@ export default function App() {
     if (review.order.parameters) ruleSettings.loadParameters(review.order.parameters, review.order.parametersVersion ?? null);
     chooseProducto('toldos');
     setActiveTab('order');
-    notify(`Pedido ${review.orderCode} cargado en el formulario.`, { tone: 'info', title: 'Editando pedido' });
+    notify(`Cambia lo que necesites y pulsa «Guardar».`, { tone: 'info', title: `Editando ${review.orderCode}` });
   }
 
   async function reuseReview(review: ReviewPackage) {
