@@ -33,6 +33,7 @@
 .puerta-casilla input:focus-visible { outline:2px solid var(--focus-ring); outline-offset:2px; }
 .puerta-tramos-ventanal { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0 12px; margin-block:4px 10px; }
 .puerta-tramos-ventanal .puerta-casilla { min-height:44px; cursor:pointer; }
+.puerta-tramo-hoja { display:grid; grid-template-columns:subgrid; align-items:end; }
 .puerta-derecha { position:sticky; top:18px; }
 .puerta-alzado > svg { width:100%; height:calc(100vh - 190px); min-height:400px; display:block; margin:10px 0; background:var(--zone); border-radius:6px; }
 .puerta-alzado svg text { fill:var(--text); font-family:Arial,sans-serif; font-size:var(--puerta-letra,10px); }

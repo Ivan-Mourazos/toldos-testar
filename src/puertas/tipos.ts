@@ -104,6 +104,7 @@ export interface Puerta {
     terminado?: number | null;
     soldadura?: number | null;
     abajo: 'tubo' | 'saco' | 'envolvente'; // La medida del saco se guarda en enrollable.saco.
+    sacoUnido?: boolean; // Saco en la lona de la puerta (true) o pieza aparte (false); sin valor decide el material.
     grosor: number; // mm
     cotasHoja?: number[] | null; // cm de centro a centro, de abajo arriba.
     tubosManual: number[] | null; // mm desde el perfil; null para reparto automático

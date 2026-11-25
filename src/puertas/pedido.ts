@@ -68,6 +68,7 @@ export function leerPedidoPuertas(valor: unknown): PedidoPuertas {
       if(t.materialEt!==undefined&&t.materialEt!=='LAC650'&&t.materialEt!=='LAC900')return error();
       if(t.varilla!==undefined&&t.varilla!=='blanca'&&t.varilla!=='negra')return error();
       if(t.arriba!==undefined&&t.arriba!=='varilla'&&t.arriba!=='bastilla')return error();
+      if(t.sacoUnido!==undefined&&typeof t.sacoUnido!=='boolean')return error();
       if(t.ventanal!==undefined&&(!objeto(t.ventanal)||!Number.isInteger(t.ventanal.tramo)))return error();
       faltanDatosTgm ||= camposTgmConValorDeFicha.some(k=>t[k]===undefined);
     }

@@ -5,6 +5,8 @@ export const cotas5743 = [38, 68, 47];
 
 export function puerta5743(cliente: 'tgm' | 'general' = 'general'): Puerta {
   const p = nuevaPuertaDeCliente(cliente, 'enrollable');
+  // Pedido anterior a elegir saco unido o aparte: lo decide el material.
+  delete p.tgm!.sacoUnido;
   return {
     ...p, frente: 271, alto: 270, of: 'PRUEBA-5743', material: 'LAC900', color: 'BLANCO', materialSaco: 'LAC900 BLANCO',
     confirmada: true, ventanasConfirmadas: true,

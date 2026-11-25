@@ -56,13 +56,14 @@ export function nuevaPuertaDeCliente(cliente:string,tipo:string):Puerta {
     ...(f.calculo==='puertasluz'?{puertasluz:configPuertasLuzInicial(t.id),materialSaco:'LAC900 AMARILLO',sacoDiagonalesAmarillas:true,enrollable:{...base.enrollable,ventanasPequenas:true,sinVentanal:false}}:{}),
     ...(f.calculo==='araujo'?{materialSaco:'LAC900 AMARILLO',araujo:{forma:t.forma??'sueltos',perfil:f.perfilInicial??Object.keys(f.perfiles)[0],tramos:[nuevoTramoAraujo(t.piezaInicial??'tramo')]}}:{}),
     ...(e?{
-      enrollable:{...base.enrollable,sinVentanal:true,anchoEt:e.anchoEt},
+      // Puertas genéricas empieza sin saco: el tubo de abajo va en el cierre hasta que se elija saco.
+      enrollable:{...base.enrollable,sinVentanal:true,anchoEt:e.anchoEt,...(medidas?{sinSaco:true}:{})},
       ventanasConfirmadas:true,
       tgm:{
         altoHueco:0,altoTotal:null,anadido:e.anadido,diametroEnrolle:e.diametroEnrolle,nTubos:e.nTubos,
         diametroTubo:e.diametroTubo,anchoEt:e.anchoEt,abajo:'saco' as const,grosor:e.grosor,tubosManual:null,
         lona:e.lona,materialEt:e.materialEt,
-        ...(medidas ? { cotasHoja: null, anchoEt: 0, nTubos: 0 } : {}),
+        ...(medidas ? { cotasHoja: null, anchoEt: 0, nTubos: 0, abajo: 'tubo' as const, sacoUnido: true } : {}),
         cierreBajo:e.cierreBajo,marcaCierre:e.marcaCierre,
         ajustes:{margen:e.margen,desvio:e.desvio,altoPerfil:e.altoPerfil,anchoPerfil:e.anchoPerfil,anguloPerfil:e.anguloPerfil},
       },

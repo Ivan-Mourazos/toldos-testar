@@ -50,11 +50,13 @@ export function sacoPuerta(p: Puerta) {
 
 /** Cotas del saco de la enrollable integrado en el paño, desde el bajo terminado. */
 export function sacoIntegradoEnrollable(p: Puerta) {
-  if (!sacoSoldadoEnEtTgm(p)) return null;
+  if (!sacoSoldadoEnEtTgm(p) || p.tgm?.sacoUnido === false) return null;
+  const soldarHasta = sacoPuerta(p).rematado + anchoSoldaduraSacoEnrollable(p);
+  // Unido a la puerta (Puertas genéricas): va en la misma lona aunque el material del saco diga otra cosa.
+  if (p.tgm?.sacoUnido) return { bordeCorte: -soldarHasta, soldarHasta };
   const normalizar = (valor: string) => valor.trim().replace(/\s+/g, ' ').toUpperCase();
   const lona = normalizar(`${p.material} ${p.color}`);
   if (!p.color.trim() || !p.material.trim() || normalizar(p.materialSaco) !== lona) return null;
-  const soldarHasta = sacoPuerta(p).rematado + anchoSoldaduraSacoEnrollable(p);
   // El borde libre queda a la misma distancia que la raya de soldar respecto al doblez.
   return { bordeCorte: -soldarHasta, soldarHasta };
 }

@@ -1,13 +1,15 @@
 import React, { useId, useMemo, useState } from 'react';
 import { calcularPuertaDerivada } from '../../puertas/calcular.ts';
 import { fichaPorId, usaCotasCliente } from '../../puertas/clientes.ts';
-import { BASTILLA_ARRIBA_TGM, calcularTgm, derivarPuertaTgm, enrolleTgm, marcasDesdeCotasTgm, SOLDADURA_BASE_TGM } from '../../puertas/tgm.ts';
+import { sacoIntegradoEnrollable } from '../../puertas/saco.ts';
+import { BASTILLA_ARRIBA_TGM, calcularTgm, cotaDelVentanalTgm, derivarPuertaTgm, enrolleTgm, marcasDesdeCotasTgm, SOLDADURA_BASE_TGM, tramoVentanalDesdeCota } from '../../puertas/tgm.ts';
 import type { Puerta } from '../../puertas/tipos.ts';
 import { SelectField } from '../components/SelectField';
 import { SegmentedField } from '../components/SegmentedField';
 import { AlzadoPuerta } from './AlzadoPuerta';
 import { NumeroPuerta as Numero } from './NumeroPuerta';
 import { SimuladorEnrolle } from './SimuladorEnrolle';
+import { TramosHoja } from './TramosHoja';
 import { medidaPuerta, numeroPuerta, textoMedidasMm } from './medidasPuertas';
 
 type Tgm = NonNullable<Puerta['tgm']>;
@@ -44,10 +46,11 @@ export function ConfigurarTgm({ p, cambiar, corte, derecha, letra, vistas }: {
   const ajustes = (cambios: Partial<Tgm['ajustes']>) => medidas({ ajustes: { ...t.ajustes, ...cambios } });
   const alternativas = t.abajo === 'envolvente' ? resultado.alternativasSaco : null;
   const piezas = [...resultado.piezas, ...(alternativas?.entero ?? [])];
+  // Sin elegir (pedidos anteriores), lo decide el material: unido si el saco es de la misma lona.
+  const sacoUnido = t.sacoUnido ?? sacoIntegradoEnrollable(p) !== null;
   const errores = resultado.avisos.filter(a => a.nivel === 'error').length;
   const marcas = enrolle?.colocacion.marcas ?? [];
-  const cotas = deLaHoja ? t.cotasHoja?.map(numeroPuerta).join(' ') ?? ''
-    : t.ventanal ? marcas.slice(1).map((m, i) => numeroPuerta((m - marcas[i]) / 10)).reverse().join(' ') : '';
+  const cotas = t.ventanal ?marcas.slice(1).map((m, i) => numeroPuerta((m - marcas[i]) / 10)).reverse().join(' ') : '';
   const texto = (titulo: string, campo: 'of' | 'material' | 'color' | 'materialSaco') => <label className="field puerta-campo">
     <span>{titulo}</span><input value={p[campo]} onChange={e => datos({ [campo]: e.target.value })} />
   </label>;
@@ -56,11 +59,10 @@ export function ConfigurarTgm({ p, cambiar, corte, derecha, letra, vistas }: {
     const valores = (borradorCotas ?? cotas).trim().split(/[\s;]+/).filter(Boolean).map(v => Number(v.replace(',', '.')));
     const tubosManual = marcasDesdeCotasTgm(p, valores);
     if (!tubosManual) {
-      setErrorCotas(deLaHoja ? 'Escribe cotas positivas que quepan en el alto terminado. Comprueba el ancho de la E.T. y las medidas del bajo.'
-        : `Escribe ${Math.max(1, t.nTubos - 1)} cotas positivas que quepan en el alto de la puerta. Comprueba antes las medidas del bajo.`);
+      setErrorCotas(`Escribe ${Math.max(1, t.nTubos - 1)} cotas positivas que quepan en el alto de la puerta. Comprueba antes las medidas del bajo.`);
       return;
     }
-    medidas(deLaHoja ? { cotasHoja: valores } : { tubosManual });
+    medidas({ tubosManual });
     setErrorCotas('');
     setBorradorCotas(null);
   }
@@ -102,14 +104,14 @@ export function ConfigurarTgm({ p, cambiar, corte, derecha, letra, vistas }: {
             cambiar={bastillaArriba => medidas({ bastillaArriba })} />
             : <SegmentedField label="Varilla de arriba" value={t.varilla === 'blanca' ? 'Blanca 5,5' : t.varilla === 'negra' ? 'Negra 4,5' : ''}
               options={['Blanca 5,5', 'Negra 4,5']} missing={!t.varilla} onChange={v => medidas({ varilla: v === 'Blanca 5,5' ? 'blanca' : 'negra' })} />}
-          <label className="puerta-casilla puerta-campo-ancho">
+          {!deLaHoja && <label className="puerta-casilla puerta-campo-ancho">
             <input type="checkbox" checked={Boolean(t.ventanal)} onChange={e => {
               setBorradorCotas(null);
               setErrorCotas('');
-              medidas({ ventanal: e.target.checked ? { tramo: deLaHoja ? 0 : Math.max(1, t.nTubos - (t.abajo === 'saco' ? 1 : 2)) } : undefined });
+              medidas({ ventanal: e.target.checked ? { tramo: Math.max(1, t.nTubos - (t.abajo === 'saco' ? 1 : 2)) } : undefined });
             }} />
-            {deLaHoja ? 'Con ventanal' : 'Ventanal de lado a lado'}
-          </label>
+            Ventanal de lado a lado
+          </label>}
         </div>}
         {pestana === 'et' && <div className="puerta-campos">
           {!deLaHoja && <>
@@ -121,20 +123,24 @@ export function ConfigurarTgm({ p, cambiar, corte, derecha, letra, vistas }: {
           <Numero titulo="Añadido para enrollar (mm)" valor={t.anadido} cambiar={v => medidas({ anadido: v ?? 0 })} />
           <Numero titulo="Diámetro de enrolle (mm)" unidad="mm" valor={t.diametroEnrolle || null} cambiar={v => medidas({ diametroEnrolle: v ?? 0 })} />
           </>}
-          {(deLaHoja || t.ventanal) && <>
+          {deLaHoja && <>
           <Numero titulo="Soldadura de la E.T. (cm)" unidad="cantidad" valor={t.soldaduraEt ?? null}
             cambiar={soldaduraEt => medidas({ soldaduraEt })} />
-          {t.ventanal && <Numero titulo="Tramo del ventanal desde abajo" unidad="cantidad" valor={t.ventanal.tramo || null}
-            cambiar={v => medidas({ ventanal: { tramo: v ?? 0 } })} />}
-          {deLaHoja && t.ventanal && <Numero titulo="Margen lateral del ventanal (mm)" valor={p.enrollable.margen}
+          {t.ventanal && <Numero titulo="Margen lateral del ventanal (mm)" valor={p.enrollable.margen}
             cambiar={v => datos({ enrollable: { ...p.enrollable, margen: v ?? 0 } })} />}
+          <TramosHoja key={letra} p={p} medidas={medidas} entradas={derivada.entradas.length} />
+          </>}
+          {!deLaHoja && t.ventanal && <>
+          <Numero titulo="Soldadura de la E.T. (cm)" unidad="cantidad" valor={t.soldaduraEt ?? null}
+            cambiar={soldaduraEt => medidas({ soldaduraEt })} />
+          <Numero titulo="Tramo del ventanal desde abajo" unidad="cantidad" valor={t.ventanal.tramo || null}
+            cambiar={v => medidas({ ventanal: { tramo: v ?? 0 } })} />
           <label className="field puerta-campo puerta-campo-ancho">
             <span>Cotas de la hoja (cm, centro a centro, de abajo arriba)</span>
             <input aria-describedby={ayudaCotas} aria-invalid={Boolean(errorCotas)} value={borradorCotas ?? cotas} onChange={e => { setBorradorCotas(e.currentTarget.value); setErrorCotas(''); }}
               onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); aplicarCotas(); } }} />
           </label>
-          <p id={ayudaCotas} className="puerta-ayuda puerta-campo-ancho">Separa las cotas con espacios. {t.ventanal ? 'En el tramo del ventanal, suma el ancho de una E.T. al plástico visible.'
-            : 'Si solo hay un tubo, deja el campo vacío y pulsa Aplicar cotas.'}</p>
+          <p id={ayudaCotas} className="puerta-ayuda puerta-campo-ancho">Separa las cotas con espacios. En el tramo del ventanal, suma el ancho de una E.T. al plástico visible.</p>
           <div className="puerta-campo-ancho"><button type="button" className="ghost-button" onClick={aplicarCotas}>Aplicar cotas</button></div>
           {errorCotas && <p role="status" className="simulador-enrolle__error puerta-campo-ancho">{errorCotas}</p>}
           </>}
@@ -142,13 +148,23 @@ export function ConfigurarTgm({ p, cambiar, corte, derecha, letra, vistas }: {
         {pestana === 'saco' && <div className="puerta-campos">
           <SegmentedField label="Abajo" value={t.abajo === 'envolvente' ? 'Tubo con saco envolvente' : t.abajo === 'saco' ? 'Saco' : 'Tubo'} options={['Saco', 'Tubo', 'Tubo con saco envolvente']} onChange={v => {
             const abajo = v === 'Saco' ? 'saco' : v === 'Tubo' ? 'tubo' : 'envolvente';
-            if (abajo !== t.abajo) medidas({ abajo }, { enrollable: { ...p.enrollable, sinSaco: abajo !== 'saco' } });
+            if (abajo === t.abajo) return;
+            // En la hoja, el ventanal sigue en la misma cota aunque cambie lo de abajo.
+            const cota = deLaHoja ? cotaDelVentanalTgm(p) : null;
+            const tramo = cota === null ? null : tramoVentanalDesdeCota({ ...p, tgm: { ...t, abajo } }, cota);
+            medidas({ abajo, ...(deLaHoja && t.ventanal ? { ventanal: tramo === null ? undefined : { tramo } } : {}) },
+              { enrollable: { ...p.enrollable, sinSaco: abajo !== 'saco' } });
           }} />
+          {deLaHoja && t.abajo === 'saco' && t.lona !== 'rejilla' && <SegmentedField label="Saco" value={sacoUnido ? 'Unido a la puerta' : 'Aparte'}
+            options={['Unido a la puerta', 'Aparte']} onChange={v => medidas({ sacoUnido: v === 'Unido a la puerta' })} />}
+          {deLaHoja && t.abajo === 'saco' && t.lona !== 'rejilla' && <p className="puerta-ayuda puerta-campo-ancho">
+            {sacoUnido ? 'Unido: sale de la misma lona de la puerta, doblado y soldado en la E.T. de abajo.' : 'Aparte: pieza suelta que se une con velcro.'}
+          </p>}
           {t.abajo === 'saco' && <Numero titulo="Saco útil (mm)" unidad="mm" valor={p.enrollable.saco ?? null}
             cambiar={saco => datos({ enrollable: { ...p.enrollable, saco } })} />}
           {t.abajo === 'envolvente' && <Numero titulo="Saco terminado (mm)" valor={t.terminado ?? null} cambiar={terminado => medidas({ terminado })} />}
           {t.abajo !== 'saco' && t.lona !== 'rejilla' && <Numero titulo="Soldadura del último tubo (mm)" valor={t.soldadura === undefined ? SOLDADURA_BASE_TGM : t.soldadura} cambiar={soldadura => medidas({ soldadura })} />}
-          {t.abajo !== 'tubo' && t.lona !== 'rejilla' && texto('Material del saco', 'materialSaco')}
+          {t.abajo !== 'tubo' && t.lona !== 'rejilla' && !(deLaHoja && t.abajo === 'saco' && sacoUnido) && texto('Material del saco', 'materialSaco')}
         </div>}
         {pestana === 'otros' && <>
         <div className="puerta-campos">

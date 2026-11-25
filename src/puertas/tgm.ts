@@ -94,6 +94,21 @@ export function marcasDesdeCotasTgm(p: Puerta, cotas: number[]): number[] | null
   return marcas[0] > 0 && marcas.every((x, i) => i === 0 || x > marcas[i - 1]) ? marcas : null;
 }
 
+/** Con saco, la cota de abajo ya va entre dos E.T.; sin saco (o en rejilla) el tubo de abajo va en el cierre. */
+const tramosBajoCota = (p: Puerta) => p.tgm?.lona !== 'rejilla' && p.tgm?.abajo === 'saco' ? 1 : 0;
+
+/** Tramo del ventanal (entre E.T., desde abajo) que corresponde a la cota «indice» de la hoja; null si no cabe. */
+export function tramoVentanalDesdeCota(p: Puerta, indice: number): number | null {
+  const tramo = indice + tramosBajoCota(p);
+  return tramo >= 1 ? tramo : null;
+}
+
+/** Cota de la hoja en la que cae el ventanal, o null si no hay. */
+export function cotaDelVentanalTgm(p: Puerta): number | null {
+  const tramo = p.tgm?.ventanal?.tramo;
+  return tramo ? tramo - tramosBajoCota(p) : null;
+}
+
 export function enrolleTgm(p: Puerta): EnrolleTgm | null {
   if (usaCotasCliente(p)) return null;
   const m = medidasEnrolleTgm(p), t = p.tgm;
