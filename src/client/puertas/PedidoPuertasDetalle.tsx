@@ -31,7 +31,7 @@ import { AlzadoPuerta } from './AlzadoPuerta';
 import { CadPaginasPuertas } from './CadPaginasPuertas';
 import { ConfirmarGestionPuertas, type GestionPuertas } from './ConfirmarGestionPuertas';
 import { estadoGenerarPuertas } from './generarPuertas';
-import { DibujoCortePuertas, textoCabeceraCorte } from './VistaCortePuertas';
+import { DibujoCortePuertas, largoReferenciaCortes, textoCabeceraCorte } from './VistaCortePuertas';
 import '../coordina/corte-lona.css';
 import './puertas.css';
 
@@ -85,6 +85,7 @@ function CortePuertasGuardado({ ruta, version, historial, acciones, confirmado, 
   }, [ruta, clave]);
   const estado = leido?.clave === clave ? leido : null;
   const datos = estado?.datos;
+  const largoReferencia = datos ? largoReferenciaCortes(datos.cortes) : 0;
   return (
     <section className="corte-lona panel bloque-3d" aria-label="Corte" aria-busy={!estado}>
       <CabeceraDocumento titulo="Corte" icono={<Scissors aria-hidden="true" />} />{(confirmado || Boolean(datos?.cortes.length)) && acciones}{historial}
@@ -96,7 +97,7 @@ function CortePuertasGuardado({ ruta, version, historial, acciones, confirmado, 
         <article className="corte-material" key={i}>
           <header><h3>{c.material}</h3><span>{textoCabeceraCorte(c)}</span></header>
           {c.opcion !== 'principal' && <p className="corte-aviso">{c.opcion === 'saco-entero' ? 'Opción saco entero' : 'Opción saco en dos piezas'} · Alternativas de un mismo saco: elige una.</p>}
-          <DibujoCortePuertas corte={c} ajustado />
+          <DibujoCortePuertas corte={c} ajustado largoReferencia={largoReferencia} />
           <small className="corte-leyenda"><span>DISCO1 · corte</span>{!systemDock&&<><span className="puerta-cutter-texto">CUTTER · huecos y curvas</span><span>ROTULADOR · marcas</span></>}</small>
         </article>
       ))}

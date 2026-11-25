@@ -101,7 +101,13 @@ export function geometriaCorteAjustado(corte: CortePuertas) {
 }
 
 /** `ajustado`: solo lo que ocupan las piezas y sus rótulos, sin el espacio vacío del resto del rollo. */
-export function DibujoCortePuertas({ corte, zoom = 1, ajustado = false }: { corte: CortePuertas; zoom?: number; ajustado?: boolean }) {
+/** Todos los cortes de una ficha a la misma escala: el más largo ocupa el ancho entero y los demás su parte
+ *  (Iván, 25/11/2026: un cristal de 1,5 m no puede salir tan grande como una lona de 12 m). */
+export function largoReferenciaCortes(cortes: CortePuertas[]): number {
+  return Math.max(0, ...cortes.map(c => geometriaCorteAjustado(c).vista.ancho));
+}
+
+export function DibujoCortePuertas({ corte, zoom = 1, ajustado = false, largoReferencia }: { corte: CortePuertas; zoom?: number; ajustado?: boolean; largoReferencia?: number }) {
   const { corte: c, ocupado, textos, vista } = geometriaCorteAjustado(corte);
   const alto = Math.max(c.anchoRollo + 430, ...c.entidades.textos.map(t => t.y + t.h + 20));
   const titulosAparte = c.extensionDibujo ? c.entidades.textos.filter(t => t.x >= c.largo + 1500).map(t => t.y + t.h) : [];
@@ -122,7 +128,8 @@ export function DibujoCortePuertas({ corte, zoom = 1, ajustado = false }: { cort
       role="img"
       aria-label={`Corte ${c.material}`}
       className={`corte-dibujo puerta-corte-dibujo${ajustado ? ' is-ajustado' : ''}`}
-      style={zoom > 1 ? { width: `${zoom * 100}%`, maxHeight: 'none' } : undefined}
+      style={zoom > 1 ? { width: `${zoom * 100}%`, maxHeight: 'none' }
+        : ajustado && largoReferencia ? { width: `${Math.min(100, Math.max(30, vista.ancho / largoReferencia * 100))}%` } : undefined}
       viewBox={viewBox}
     >
       <rect className="corte-rollo" width={c.largo} height={altoRollo} y={-altoRollo} />
