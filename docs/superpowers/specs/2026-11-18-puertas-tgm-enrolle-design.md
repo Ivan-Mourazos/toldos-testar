@@ -175,6 +175,13 @@ que llega a cada borde.
 General no pide los datos de enrolle ni genera avisos del simulador. Plegable, apilable y autorreparable
 de General siguen pendientes. La enrollable de TGM mantiene el simulador para las puertas que usan su tubo.
 
+Si el saco soldado en la E.T. coincide en material y color con la lona, sale del paño inferior. El paño baja
+la medida del saco desde la última E.T., se dobla en el bajo terminado y vuelve a subir esa medida más la
+soldadura hasta la raya de la E.T. El corte lleva una raya en el doblez y otra donde llega el borde al soldar.
+No lleva pieza aparte ni pestaña. Iván confirma que el AR2605743 lleva LAC900 blanco también en el saco,
+por lo que el paño inferior mide 271 × 161 cm (118 + 20 + 20 + 3). Para otro material o color, el mismo pedido
+llevaría el paño inferior de 271 × 118 y el saco aparte de 277,5 × 46, con pestaña.
+
 ## Partes del código
 
 | Parte | Qué hace | Depende de |

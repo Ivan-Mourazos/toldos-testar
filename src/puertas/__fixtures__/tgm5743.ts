@@ -6,7 +6,7 @@ export const cotas5743 = [38, 68, 47];
 export function puerta5743(cliente: 'tgm' | 'general' = 'general'): Puerta {
   const p = nuevaPuertaDeCliente(cliente, 'enrollable');
   return {
-    ...p, frente: 271, alto: 270, of: 'PRUEBA-5743', material: 'LAC900', color: 'BLANCO',
+    ...p, frente: 271, alto: 270, of: 'PRUEBA-5743', material: 'LAC900', color: 'BLANCO', materialSaco: 'LAC900 BLANCO',
     confirmada: true, ventanasConfirmadas: true,
     enrollable: { ...p.enrollable, saco: 200 },
     tgm: {

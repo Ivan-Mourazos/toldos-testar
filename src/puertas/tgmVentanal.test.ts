@@ -23,7 +23,7 @@ describe('ventanal TGM del pedido AR2605743', () => {
   });
 
   it('corta el plástico de lado a lado, conserva las cuatro E.T. y pasa las rayas al corte y al plano', () => {
-    const p = puerta5743('tgm');
+    const p = { ...puerta5743('tgm'), materialSaco: 'LAC900 NEGRO' };
     const r = calcularPuerta(p);
     const [superior, inferior] = r.piezas.filter(x => x.clase === 'pano');
     const raya = (y: number) => [p.margenMarcas, y, p.frente - p.margenMarcas, y];

@@ -16,7 +16,7 @@ import { anchoCristalVentanal, EXTRA_CACHO_VENTANAL, panoContinuoEnrollable, sem
 import { ventanalesApilable } from './ventanalesApilable.ts';
 import { flechaEmpate } from './marcasEmpate.ts';
 import { ensancharPieza, huecosSinEscuadrado, llevaEscuadrado } from './escuadrado.ts';
-import { bajoDobleSaco, desnivelSuelo, envoltorioDobleSaco, espejarPieza, inclinarSaco, pestanaDerecha, sacoApilable, sacoPuerta, sacoUtil, anchoSoldaduraSacoEnrollable, utilSacoExterior } from './saco.ts';
+import { bajoDobleSaco, desnivelSuelo, envoltorioDobleSaco, espejarPieza, inclinarSaco, pestanaDerecha, sacoApilable, sacoIntegradoEnrollable, sacoPuerta, sacoSoldadoEnEtTgm, sacoUtil, anchoSoldaduraSacoEnrollable, utilSacoExterior } from './saco.ts';
 
 export const MODELOS_PUERTAS: Record<ModeloPuerta, string> = { PUERTAENR: 'Enrollable', PUERTAPLE: 'Apilable', PUERTAUTO: 'Autorreparable', SYSTEMDOCK: 'System Dock', ABRIGO: 'Abrigo', SACOARENA: 'Saco confeccionado' };
 export const REGLAS_ENROLLABLE = { solapeEntrada:7.5, corteEntrada:8, unionNormal:2 };
@@ -113,7 +113,7 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
   // Puerta negra (9005) con saco negro: es el mismo material, así que el saco se corta en la lona de la puerta, entero y
   // sin la alternativa en dos (Iván, 20/11/2026, AR2605669). Antes solo lo hacían las apilables.
   const esNegro = (texto: string) => /negro|9005|\bblack\b/i.test(texto);
-  const sacoEnLona = esNegro(p.color) && esNegro(p.materialSaco);
+  const sacoEnLona = !sacoSoldadoEnEtTgm(p) && esNegro(p.color) && esNegro(p.materialSaco);
   const materialSaco = sacoEnLona ? lona : p.materialSaco, rolloSaco = sacoEnLona ? p.rollo : p.rolloSaco;
   function pieza(nombre: string, clase: PiezaPuerta['clase'], w: number, h: number, material = lona, rollo = p.rollo, cantidad = 1): PiezaPuerta {
     return { id: `${clase}-${piezas.length}-${nombre}`, nombre, clase, ancho: n(w), alto: n(h), material, rollo, cantidad: cantidad * p.cantidad,
@@ -210,10 +210,11 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
     const mitadEt = semianchoEtVentanal(p), aumentoArriba = aumentoArribaTgm(p);
     const soldaduraEt = soldaduraEtTgm(p);
     const altoVentanales=ventanales.reduce((s,v)=>s+v.D,0), s = sacoPuerta(p);
+    const sacoIntegrado = sacoIntegradoEnrollable(p);
     // Sin saco, se corta lona por debajo del bajo terminado para doblarla y soldarla alrededor del tubo (Q-TGM04).
     const bajoRejilla = abajoRejillaTgm(p);
     const origenInferior = bajoRejilla ? bajoRejilla.bajoLona
-      : sinSaco ? (envoltorio?.bajoLona ?? 0) - (e.cierreBajo ?? 0) : s.rematado;
+      : sinSaco ? (envoltorio?.bajoLona ?? 0) - (e.cierreBajo ?? 0) : sacoIntegrado?.bordeCorte ?? s.rematado;
     // La E.T. que no lleva el ventanal, arriba o abajo (Iván, 27/10/2026, AR2605247): ni se corta ni se marca.
     const ciega=panoContinuoEnrollable(p);
     const etVentanal=(t:Entrada)=>!ciega&&(Boolean(e.sinEtArriba)&&Math.abs(t.altura-(p.alto-e.T))<.01
@@ -242,10 +243,11 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
       // En rejilla los paños se reparten por el ancho del rollo, con la unión normal de 2 cm.
       const manual=rejilla?[]:e.empates.filter(u=>u.pano===nombre);
       const tubos=rejilla?[]:p.entradas.map((t,i)=>({eje:t.altura-origen,solape:solapeEt,tubo:i+1})).filter(t=>!etVentanal(p.entradas[t.tubo-1]));
+      const aumentoBajo = sacoIntegrado && nombre === 'inferior' ? s.rematado - origen : 0;
       const indicados = manual.map(u => {
         // En PVC TGM, un empate en la E.T. sigue la posición y el ancho actuales del tubo.
         const tubo = p.tgm?.lona === 'pvc' && u.tubo ? tubos.find(t => t.tubo === u.tubo) : undefined;
-        return tubo ?? { eje: u.altura, solape: u.solape, tubo: u.tubo };
+        return tubo ?? { eje: u.altura + aumentoBajo, solape: u.solape, tubo: u.tubo };
       });
       const plan=repartirPanos({desde:0,hasta:h,frente:ancho + 2 * bastilla,rollo:p.rollo,tubos,normal:true,indicados:indicados.length?indicados:undefined});
       const antes=paneles.length;
@@ -258,7 +260,10 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
       for(const panel of grupo) {panel.desde+=origen;panel.hasta+=origen;panel.pieza.origenAlzado=[-lateral,panel.desde];}
       const marcarEn=(y:number,dir?:1|-1)=>{const panel=grupo.find(t=>y>=t.desde&&y<=t.hasta);if(panel)marca(panel.pieza,y-panel.desde,dir);};
       if(nombre==='inferior') {
-        if(!sinSaco) marcarEn(origen + anchoSoldaduraSacoEnrollable(p));
+        if(sacoIntegrado) {
+          marcarEn(0);
+          marcarEn(sacoIntegrado.soldarHasta);
+        } else if(!sinSaco) marcarEn(origen + anchoSoldaduraSacoEnrollable(p));
         else if(e.marcaCierre!==undefined) marcarEn(origen + e.marcaCierre);
       }
       else if(!e.sinEtArriba && !soldaduraEt) marcarEn(origen + 7.5, -1);
@@ -333,7 +338,7 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
         r.alternativasSaco = { entero: [entero], partido: [izquierda, derecha] };
       }
     }
-    if(!sinSaco){
+    if(!sinSaco && !sacoIntegrado){
       const mitad=(p.frente+6.5+2)/2;
       if(e.sacoPartido){
         const izquierda=agregar(sacoConPestana(mitad-6.5,s.corte,6.5,s.altoPestana,s.corte/2,'Saco partido · con pestaña'));

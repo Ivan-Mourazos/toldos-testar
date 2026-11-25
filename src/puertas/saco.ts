@@ -48,6 +48,17 @@ export function sacoPuerta(p: Puerta) {
   return { rematado, corte: 2 * (rematado + anchoSoldaduraSacoEnrollable(p)), altoPestana: rematado };
 }
 
+/** Cotas del saco de la enrollable integrado en el paño, desde el bajo terminado. */
+export function sacoIntegradoEnrollable(p: Puerta) {
+  if (!sacoSoldadoEnEtTgm(p)) return null;
+  const normalizar = (valor: string) => valor.trim().replace(/\s+/g, ' ').toUpperCase();
+  const lona = normalizar(`${p.material} ${p.color}`);
+  if (!p.color.trim() || !p.material.trim() || normalizar(p.materialSaco) !== lona) return null;
+  const soldarHasta = sacoPuerta(p).rematado + anchoSoldaduraSacoEnrollable(p);
+  // El borde libre queda a la misma distancia que la raya de soldar respecto al doblez.
+  return { bordeCorte: -soldarHasta, soldarHasta };
+}
+
 /** Doble saco: el saco interior sale del propio paño, que baja rematado + 2 por debajo del bajo terminado
  * para que, al doblarlo hasta la raya de rotulador en +(rematado + 2), suelde 2 cm y quede el rematado exacto
  * conservando H (Iván, 23/11/2026, AR2605641: de la raya al borde de corte hay 2 × (rematado + 2) = 30 cm). */
@@ -141,8 +152,11 @@ export function invertirPanoInclinado(pieza: PiezaPuerta): PiezaPuerta {
 /** Iván, 22/10/2026: las diagonales se imprimen después de cortar el saco negro. */
 export const MATERIAL_SACO_AMARILLO = 'LAC900 AMARILLO';
 
-export function soldaduraSacoEnrollable(p: Pick<Puerta, 'materialSaco' | 'sacoDiagonalesAmarillas'> & DatosSacoTgm): string {
-  if (sacoSoldadoEnEtTgm(p)) return `SOLDAR SACO EN LA E.T. (${anchoSoldaduraSacoEnrollable(p).toLocaleString('es-ES')} CM)`;
+export function soldaduraSacoEnrollable(p: Puerta): string {
+  if (sacoSoldadoEnEtTgm(p)) {
+    const accion = sacoIntegradoEnrollable(p) ? 'DOBLAR SACO Y SOLDAR EN LA E.T.' : 'SOLDAR SACO EN LA E.T.';
+    return `${accion} (${anchoSoldaduraSacoEnrollable(p).toLocaleString('es-ES')} CM)`;
+  }
   const amarillo = !p.sacoDiagonalesAmarillas && p.materialSaco.trim().toUpperCase() === MATERIAL_SACO_AMARILLO;
   return `SOLDAR SACO ${amarillo ? 'AMARILLO' : 'NEGRO'} 2 CM MÁXIMO`;
 }
