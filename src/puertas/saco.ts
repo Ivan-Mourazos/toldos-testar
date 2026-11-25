@@ -37,7 +37,7 @@ export function sacoUtil(p: Puerta): number | null {
 type DatosSacoTgm = Pick<Puerta, 'tgm' | 'clientePuertas' | 'tipoPuerta'>;
 export const sacoSoldadoEnEtTgm = (p: DatosSacoTgm) => Boolean(p.tgm?.abajo === 'saco' && p.tgm.lona === 'pvc' && (p.tgm.ventanal || usaCotasCliente(p)));
 
-export const anchoSoldaduraSacoEnrollable = (p: DatosSacoTgm) => sacoSoldadoEnEtTgm(p) ? p.tgm!.soldaduraEt ?? 0 : 2;
+export const anchoSoldaduraSacoEnrollable = (p: DatosSacoTgm) => sacoSoldadoEnEtTgm(p) && p.tgm!.soldaduraEt ? p.tgm!.soldaduraEt : 2;
 
 /** Medidas del saco de la puerta; sin saco puesto se dibuja el habitual de su modelo y el cálculo avisa. */
 export function sacoPuerta(p: Puerta) {

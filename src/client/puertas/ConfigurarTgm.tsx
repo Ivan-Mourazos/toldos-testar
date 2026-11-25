@@ -124,7 +124,7 @@ export function ConfigurarTgm({ p, cambiar, corte, derecha, letra, vistas }: {
           <Numero titulo="Diámetro de enrolle (mm)" unidad="mm" valor={t.diametroEnrolle || null} cambiar={v => medidas({ diametroEnrolle: v ?? 0 })} />
           </>}
           {deLaHoja && <>
-          <Numero titulo="Soldadura de la E.T. (cm)" unidad="cantidad" valor={t.soldaduraEt ?? null}
+          <Numero titulo="Soldadura de la E.T. (cm, opcional)" unidad="cantidad" valor={t.soldaduraEt ?? null}
             cambiar={soldaduraEt => medidas({ soldaduraEt })} />
           {t.ventanal && <Numero titulo="Margen lateral del ventanal (mm)" valor={p.enrollable.margen}
             cambiar={v => datos({ enrollable: { ...p.enrollable, margen: v ?? 0 } })} />}

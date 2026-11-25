@@ -203,7 +203,9 @@ export function calcularTgm(p: Puerta, calcularEnrollable: (p: Puerta) => Result
   if (t?.ventanal && (t.lona !== 'pvc' || (!manual && t.laterales === 'bastilla')))
     return vacio('TGM_VENTANAL', manual ? 'Selecciona lona de PVC para confeccionar el ventanal.'
       : 'El ventanal de lado a lado se confecciona en PVC con los laterales al corte.');
-  if (t && (t.ventanal || manual)) {
+  // Iván, 25/11/2026: la hoja del cliente no dice si las E.T. se cierran; en Puertas genéricas es opcional.
+  const soldaduraOpcional = manual && !positivo(soldaduraEtTgm(p));
+  if (t && (t.ventanal || manual) && !soldaduraOpcional) {
     const soldadura = soldaduraEtTgm(p);
     if (!positivo(soldadura) || t.anchoEt - 2 * soldadura < t.diametroTubo / 10)
       return vacio('TGM_SOLDADURA_ET', 'Indica la soldadura de cada borde en «Soldadura de la E.T.» y deja hueco para el tubo entre las dos franjas.');

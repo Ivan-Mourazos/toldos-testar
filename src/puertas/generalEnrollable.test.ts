@@ -139,3 +139,32 @@ describe('Puertas genéricas · rayas de las E.T. como en Portanova', () => {
     expect(lienzo.textos.some(t => t.valor.includes('SOLDAR 3 CM ARRIBA Y ABAJO DE CADA E.T.'))).toBe(true);
   });
 });
+
+describe('Puertas genéricas · soldadura de la E.T. opcional', () => {
+  // Iván, 25/11/2026: la hoja del cliente no dice si las E.T. se cierran, así que no se exige.
+  const sinSoldadura = (sacoUnido?: boolean) => {
+    const p = puerta5743('general');
+    return { ...p, tgm: { ...p.tgm!, soldaduraEt: null, ...(sacoUnido === undefined ? {} : { sacoUnido }) } };
+  };
+  const notas = (p: ReturnType<typeof sinSoldadura>) => dibujarAlzadoEnrollable(p, 'A').lienzo.textos.map(t => t.valor).join(' | ');
+
+  it('sin soldadura calcula y dibuja sin avisar ni poner notas de cerrar las E.T.', () => {
+    for (const p of [sinSoldadura(false), sinSoldadura(true)]) {
+      const r = calcularPuerta(p);
+      expect(r.avisos.map(a => a.codigo)).not.toContain('TGM_SOLDADURA_ET');
+      expect(r.piezas.length).toBeGreaterThan(0);
+      expect(notas(p)).not.toMatch(/COSER E\.T\.|CM ARRIBA Y ABAJO DE CADA E\.T\./);
+    }
+  });
+
+  it('sin soldadura, el saco se suelda a 2 cm como el resto de sacos', () => {
+    expect(sacoIntegradoEnrollable(sinSoldadura(true))!.soldarHasta).toBe(20 + 2);
+    expect(notas(sinSoldadura(true))).toContain('DOBLAR SACO Y SOLDAR EN LA E.T. (2 CM)');
+  });
+
+  it('si se escribe, sigue comprobando que deja hueco para el tubo', () => {
+    const p = puerta5743('general');
+    const r = calcularPuerta({ ...p, tgm: { ...p.tgm!, soldaduraEt: 5 } });
+    expect(r.avisos.map(a => a.codigo)).toContain('TGM_SOLDADURA_ET');
+  });
+});

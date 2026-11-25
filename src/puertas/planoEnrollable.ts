@@ -308,7 +308,7 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
     // Las notas de Jaime, una por línea y a la izquierda (Iván, 19/11/2026: no son las de Portanova).
     if (!bastillaArriba) lineas.push(`- COSER VARILLA ${varilla} EN LAS ESQUINAS`);
     if (soldaduraEtTgm(p)) lineas.push(`- SOLDAR ${numeroEs(soldaduraEtTgm(p))} CM ARRIBA Y ABAJO DE CADA E.T.`);
-    else lineas.push('- COSER E.T. EN LAS ESQUINAS');
+    else if (!usaCotasCliente(p)) lineas.push('- COSER E.T. EN LAS ESQUINAS');
     lineas.forEach((v, i) => texto(l, v, 0, yNota - i * hNota * 1.4, hNota));
   } else {
     // Iván confirmó que el recorte de esta nota en su ventana era un descuido: debe leerse entera.
