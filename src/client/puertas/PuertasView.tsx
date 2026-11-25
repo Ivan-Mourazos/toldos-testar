@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useId, useLayoutEffect, useRef, useState
 import { debePreguntarAlCorregir } from '../correccionPedido';
 import { apuntarFormularioGuardado, leerFormularioGuardado } from '../formularioGuardado';
 import { createPortal } from 'react-dom';
-import { Eraser, Plus, Save, Trash2 } from 'lucide-react';
+import { Eye, FolderOpen, Plus, Save, Trash2, X } from 'lucide-react';
 import { alturasTubos, calcularPuerta, huecosEntrada, MODELOS_PUERTAS, nuevaPuerta, yEnTramo } from '../../puertas/calcular.ts';
 import { awningLetter } from '../../domain/awningCompleteness.js';
 import type { PedidoPuertasGuardado } from '../../puertas/flujo/tipos.ts';
@@ -14,10 +14,13 @@ import { esPedidoMixto, productoDeElementos } from '../../puertas/producto.ts';
 import { bajoDobleSaco, envoltorioDobleSaco, medidasSaco, sacoApilable, sacoPuerta, sacoUtil } from '../../puertas/saco.ts';
 import type { Entrada, Hueco, ModeloPuerta, Puerta, Ventana } from '../../puertas/tipos.ts';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
+import { MenuOpcionesToldos } from '../components/MenuOpcionesToldos';
 import { OrderActions } from '../components/OrderActions';
 import { SelectField } from '../components/SelectField';
 import { SegmentedField } from '../components/SegmentedField';
-import { guardarPuertasParaRevision, pedidoDesdeGuardado, pedidoDesdeRps, type ModoCargaPuertas, type PedidoPantallaPuertas, type PuertasRps } from './guardarPuertas';
+import { guardarPuertas, guardarPuertasParaRevision, pedidoDesdeGuardado, pedidoDesdeRps, type ModoCargaPuertas, type PedidoPantallaPuertas, type PuertasRps } from './guardarPuertas';
+import { guardarBorradorPuertas, leerBorradorPuertas } from './borradoresPuertas';
+import { CadPaginasPuertas } from './CadPaginasPuertas';
 import { NumeroPuerta as Numero } from './NumeroPuerta';
 import { desdeMilimetros, medidaPuerta as num, numeroPuerta, textoMedidasMm } from './medidasPuertas';
 import { conEntradasDePuerta } from './ventanasPuertas';
@@ -31,8 +34,8 @@ import { ConfigurarTgm } from './ConfigurarTgm';
 import { fichaDePuerta, fichaPorCodigo, fichaPorId, tipoDePuerta } from '../../puertas/clientes.ts';
 import { cambiarTipoDelCliente, nuevaPuertaDeCliente, otraPuertaDelCliente } from '../../puertas/nuevaPuertaCliente.ts';
 import { CorteResumen, useVistaCortePuertas } from './VistaCortePuertas';
-import { useFlujoCorte } from './flujoCorte';
-import { BotonesFlujoCorte } from '../flujoCorteDwg';
+import { faltaParaAbrir, useFlujoCorte } from './flujoCorte';
+import { pedidoValido } from '../flujoCorteDwg';
 import { cintasDesdeFila, ejesDesdeTramos, leerCadena } from './cadenaDibujo';
 import { avanzarConIntro } from '../avanzarConIntro';
 import { uid } from '../constants';
@@ -431,6 +434,7 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
   const abrigo=pedido.elementos.every(e=>e.input.modelo==='ABRIGO');
   const sacos=pedido.elementos.length>0&&pedido.elementos.every(e=>e.input.modelo==='SACOARENA');
   const formularioGuardado = useRef(leerFormularioGuardado('puertas'));
+  const [fotoGuardada, setFotoGuardada] = useState<string | null>(() => leerFormularioGuardado('puertas'));
   const [indice, setIndice] = useState(0);
   const elementoFluido=useContenidoFluido(String(indice));
   const vistaCorte = useVistaCortePuertas(pedido, activo);
@@ -438,7 +442,31 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
   const [derecha, setDerecha] = useState<'alzado' | 'corte'>('alzado');
   const [guardando, setGuardando] = useState(false);
   const [trayendo, setTrayendo] = useState(false);
+  const [editandoCodigo, setEditandoCodigo] = useState<string | null>(null);
+  const [cadVersion, setCadVersion] = useState(0);
+  const [vistaPreviaAbierta, setVistaPreviaAbierta] = useState(false);
+  const [vistaPreviaTab, setVistaPreviaTab] = useState<'cad' | 'corte'>('cad');
+  const vistaPreviaRef = useRef<HTMLButtonElement>(null);
+  const vistaPreviaDialogRef = useRef<HTMLDivElement>(null);
   const espacio = useRef<HTMLDivElement>(null);
+  const codigoNormal = (v: string) => v.replace(/[.\s]/g, '').trim().toUpperCase();
+  const enEdicion = Boolean(editandoCodigo && codigoNormal(pedido.orderCode) === codigoNormal(editandoCodigo));
+
+  useEffect(() => {
+    if (!vistaPreviaAbierta) return;
+    const focusFrame = requestAnimationFrame(() => vistaPreviaDialogRef.current?.querySelector<HTMLElement>('.pdf-carousel, button')?.focus());
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      setVistaPreviaAbierta(false);
+      requestAnimationFrame(() => vistaPreviaRef.current?.focus());
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      cancelAnimationFrame(focusFrame);
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [vistaPreviaAbierta]);
   useLayoutEffect(() => {
     const zona = espacio.current;
     if (!zona) return;
@@ -481,6 +509,7 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
     void (async()=>{
       if(tieneDatos(pedido)&&await askForConfirmation({title:'Empezar otro pedido de Puertas',message:'Se sustituirá el pedido a medias de Puertas por uno nuevo con el modelo elegido.',confirmLabel:'Empezar pedido',cancelLabel:'Conservar formulario',tone:'warning'})!=='confirm')return;
       const ficha=modeloInicialSolicitado.cliente?fichaPorId(modeloInicialSolicitado.cliente):undefined;
+      setEditandoCodigo(null);
       setPedido({...pedidoVacio('puertas'),...(ficha?{cabecera:{cliente:ficha.nombre,fecha:hoy(),clienteRps:{codigo:ficha.codigoRps,nombre:ficha.nombre}}}:{}),elementos:[{id:uid(),input:ficha&&modeloInicialSolicitado.tipo?nuevaPuertaDeCliente(ficha.id,modeloInicialSolicitado.tipo):nuevaPuerta(modeloInicialSolicitado.modelo)}]});
       setIndice(0);
     })();
@@ -496,15 +525,19 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
         tieneDatos(pedido) && JSON.stringify(pedido) !== formularioGuardado.current)) && await askForConfirmation({ title: `Abrir ${guardado.orderCode} en ${nombre}`,
         message: `Se sustituirá lo que hay ahora en ${nombre} por el pedido guardado.`, confirmLabel: 'Abrir pedido', cancelLabel: 'Conservar pantalla', tone: 'warning' }) !== 'confirm') return;
       const cargado = pedidoDesdeGuardado(guardado, modo, hoy());
-      formularioGuardado.current = apuntarFormularioGuardado('puertas', modo === 'corregir' ? JSON.stringify(cargado) : null);
+      const foto = apuntarFormularioGuardado('puertas', modo === 'corregir' ? JSON.stringify(cargado) : null);
+      formularioGuardado.current = foto;
+      setFotoGuardada(foto);
+      setEditandoCodigo(modo === 'corregir' ? guardado.orderCode : null);
       setPedido(cargado);
       setIndice(0);
-      notify(modo === 'corregir' ? `Pedido ${guardado.orderCode} cargado para corregirlo.` : `Datos de ${guardado.orderCode} cargados.`,
-        { tone: 'info', title: modo === 'corregir' ? 'Modo de corrección' : 'Datos reutilizados' });
+      notify(modo === 'corregir' ? `Pedido ${guardado.orderCode} cargado para editar.` : `Datos de ${guardado.orderCode} cargados.`,
+        { tone: 'info', title: modo === 'corregir' ? 'Modo de edición' : 'Datos reutilizados' });
     })();
   }, [pedidoGuardadoSolicitado, pedido, askForConfirmation, notify, producto, nombre]);
 
   const cargarDeRps = useCallback((rps: PuertasRps, numero: string) => {
+    setEditandoCodigo(null);
     setPedido(pedidoDesdeRps(rps, numero, hoy()));
     setIndice(0);
     const n = rps.puertas.length;
@@ -535,10 +568,30 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
 
   const cabecera = (cambios: Partial<PedidoPantallaPuertas['cabecera']>) => setPedido({ ...pedido, cabecera: { ...pedido.cabecera, ...cambios } });
 
-  // El pedido en RPS (solo lectura): el cliente y la fecha y, si la pantalla aún no tiene puertas, las de RPS.
+  // El pedido en RPS (solo lectura): si existe un borrador de puertas para ese número, ofrece abrirlo antes.
   async function traerDeRps() {
     setTrayendo(true);
     try {
+      const borrador = await leerBorradorPuertas(pedido.orderCode);
+      if (borrador) {
+        const eleccion = await askForConfirmation({
+          title: `${borrador.orderCode} tiene un borrador`,
+          message: 'Puedes seguir con ese borrador o traer los datos de RPS.',
+          confirmLabel: 'Abrir borrador',
+          alternativeLabel: 'Traer de RPS',
+          alternativeTone: 'neutral',
+          cancelLabel: 'Cancelar',
+          tone: 'warning',
+        });
+        if (eleccion === 'cancel' || eleccion === 'dismiss') return;
+        if (eleccion === 'confirm') {
+          setEditandoCodigo(null);
+          setPedido(borrador.contenido.pedido);
+          setIndice(0);
+          notify(`Borrador ${borrador.orderCode} cargado.`, { tone: 'info', title: 'Borrador' });
+          return;
+        }
+      }
       const respuesta = await fetch(`/api/puertas/rps-pedido?numero=${encodeURIComponent(pedido.orderCode.trim())}`);
       const datos = await respuesta.json().catch(() => ({})) as { error?: string; pedido?: PuertasRps | null };
       if (!respuesta.ok) throw new Error(datos.error || 'No se pudo consultar RPS.');
@@ -568,17 +621,51 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
 
   async function guardar(regenerar = false) {
     if (!usuario) { notify('Elige quién eres en «Soy» antes de guardar.', { tone: 'warning' }); return; }
+    if (!pedido.orderCode.trim()) { notify('Indica el número de pedido para guardar.', { tone: 'warning' }); return; }
     setGuardando(true);
     try {
-      if (await guardarPuertasParaRevision({ pedido, usuario, preguntar: askForConfirmation, notify, regenerar })) {
+      const resultado = regenerar
+        ? await guardarPuertasParaRevision({ pedido, usuario, preguntar: askForConfirmation, notify, regenerar: true })
+        : await guardarPuertas({ pedido, usuario, enEdicion, preguntar: askForConfirmation, notify });
+      if (resultado.ok) {
         onGuardado?.();
         void flujo.refrescar();
-        formularioGuardado.current = apuntarFormularioGuardado('puertas', JSON.stringify(pedido));
-        if (!regenerar) setPedido(pedidoVacio(producto,pedido.elementos[0]?.input));
-        setIndice(0);
+        setCadVersion((v) => v + 1);
+        const foto = apuntarFormularioGuardado('puertas', JSON.stringify(pedido));
+        formularioGuardado.current = foto;
+        setFotoGuardada(foto);
+        if (regenerar || resultado.editado) {
+          setEditandoCodigo(resultado.review?.orderCode ?? pedido.orderCode);
+        } else {
+          setEditandoCodigo(null);
+          setPedido(pedidoVacio(producto, pedido.elementos[0]?.input));
+          setIndice(0);
+        }
       }
     } catch {
-      notify('No se pudo guardar el pedido para revisión.', { tone: 'error' });
+      notify('No se pudo guardar el pedido.', { tone: 'error' });
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  async function guardarBorrador(): Promise<boolean> {
+    const numero = pedido.orderCode.trim();
+    if (!numero) { notify('Indica el número de pedido para guardar el borrador.', { tone: 'warning', title: 'Falta el número' }); return false; }
+    if (!usuario) { notify('Elige quién eres en «Soy» antes de guardar el borrador.', { tone: 'warning' }); return false; }
+    setGuardando(true);
+    try {
+      const resultado = await guardarBorradorPuertas({ numero, pedido, usuario, confirmar: askForConfirmation });
+      if (!resultado.ok) {
+        if (resultado.mensaje) notify(resultado.mensaje, { tone: 'error' });
+        return false;
+      }
+      onGuardado?.();
+      setEditandoCodigo(null);
+      setPedido(pedidoVacio(producto, pedido.elementos[0]?.input));
+      setIndice(0);
+      notify(`Borrador guardado: ${resultado.borrador.orderCode}.`, { tone: 'success', title: 'Borrador guardado' });
+      return true;
     } finally {
       setGuardando(false);
     }
@@ -587,20 +674,68 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
   async function limpiar() {
     if (tieneDatos(pedido) && await askForConfirmation({ title: `Limpiar ${nombre}`, message: 'Se borrarán los elementos y los datos de esta pantalla.',
       confirmLabel: 'Limpiar', cancelLabel: 'Conservar', tone: 'warning' }) !== 'confirm') return;
-    setPedido(pedidoVacio(producto,pedido.elementos[0]?.input));
+    setEditandoCodigo(null);
+    setPedido(pedidoVacio(producto, pedido.elementos[0]?.input));
     setIndice(0);
+    notify('Formulario listo para un pedido nuevo.', { tone: 'success', title: 'Formulario limpio' });
   }
+
+  const faltaCorte = faltaParaAbrir(pedido);
+  const motivoBorrador = enEdicion
+    ? 'El pedido ya existe. Usa «Guardar».'
+    : trayendo
+      ? 'Espera a que se cargue el pedido.'
+      : !pedido.orderCode.trim()
+        ? 'Escribe el número de pedido.'
+        : undefined;
+  const motivoAbrirCorte = !pedidoValido(pedido.orderCode)
+    ? 'Escribe un número de pedido válido.'
+    : !flujo.hayPlano && flujo.paso.paso === 'sin-flujo'
+      ? 'No hay corte disponible.'
+      : !flujo.hayPlano && flujo.paso.paso === 'incompleto'
+        ? flujo.paso.motivo
+        : undefined;
+  const motivoRegenerar = faltaCorte ?? undefined;
 
   const acciones = (
     <OrderActions hidden={!accionesVisibles}>
-      <button className="ghost-button clear-form-button" type="button" disabled={guardando} onClick={() => void limpiar()}><Eraser aria-hidden="true" />Limpiar</button>
-      {/* El flujo del corte, aquí arriba y en orden: cada botón se habilita cuando toca (Iván, 26/10/2026). */}
-      <BotonesFlujoCorte flujo={flujo} ocupado={guardando} regenerar={() => guardar(true)} />
-      <button type="button" className="primary-button" disabled={guardando || !pedido.orderCode.trim()} aria-busy={guardando}
+      <button ref={vistaPreviaRef} className="ghost-button" type="button" disabled={guardando || flujo.ocupado}
+        onClick={() => { setVistaPreviaTab(pedidoValido(pedido.orderCode) ? 'cad' : 'corte'); setVistaPreviaAbierta(true); }}>
+        <Eye aria-hidden="true" />Vista previa
+      </button>
+      <MenuOpcionesToldos
+        corte={flujo}
+        ocupado={guardando || flujo.ocupado}
+        motivoBorrador={motivoBorrador}
+        motivoRegenerar={motivoRegenerar}
+        guardarBorrador={guardarBorrador}
+        regenerar={() => guardar(true)}
+        limpiar={limpiar}
+      />
+      <button type="button" className="ghost-button" disabled={guardando || flujo.ocupado || Boolean(motivoAbrirCorte)}
+        title={motivoAbrirCorte} onClick={() => void flujo.abrir()}>
+        <FolderOpen aria-hidden="true" />{flujo.ocupado ? 'Abriendo…' : 'Abrir corte'}
+      </button>
+      <button type="button" className="primary-button" disabled={guardando || flujo.ocupado || !pedido.orderCode.trim()} aria-busy={guardando}
         title={!pedido.orderCode.trim() ? 'Escribe el número de pedido.' : undefined} onClick={() => void guardar()}>
-        <Save aria-hidden="true" />{guardando ? 'Guardando…' : 'Guardar para revisión'}
+        <Save aria-hidden="true" />{guardando ? 'Guardando…' : 'Guardar'}
       </button>
     </OrderActions>
+  );
+
+  const cerrarVistaPrevia = () => {
+    setVistaPreviaAbierta(false);
+    requestAnimationFrame(() => vistaPreviaRef.current?.focus());
+  };
+
+  const accionesModal = (
+    <>
+      <div className="orders-scope tira-3d glass-chip" role="group" aria-label="Contenido de la vista previa">
+        <button type="button" className={vistaPreviaTab === 'cad' ? 'pestana-activa' : undefined} aria-pressed={vistaPreviaTab === 'cad'} onClick={() => setVistaPreviaTab('cad')}>Dibujo CAD</button>
+        <button type="button" className={vistaPreviaTab === 'corte' ? 'pestana-activa' : undefined} aria-pressed={vistaPreviaTab === 'corte'} onClick={() => setVistaPreviaTab('corte')}>Corte calculado</button>
+      </div>
+      <button className="icon-button" type="button" onClick={cerrarVistaPrevia} aria-label="Cerrar vista previa"><X aria-hidden="true" /></button>
+    </>
   );
 
   return <div ref={espacio} className={`puertas-pantalla puerta-editor${sd?' systemdock-pantalla':''}`} onKeyDown={avanzarConIntro}>
@@ -617,5 +752,34 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
     {/* El conmutador va dentro de la columna del dibujo y lo acompaña al bajar por el formulario. */}
     <div className="puerta-espacio" ref={elementoFluido}><Configurar key={pedido.elementos[indice].id} p={pedido.elementos[indice].input} cambiar={p=>setPedido({...pedido,elementos:pedido.elementos.map((e,i)=>i===indice?{...e,input:p}:e)})} corte={<CorteResumen vista={vistaCorte}/>} derecha={derecha} letra={awningLetter(indice)}
       vistas={<div className="tira-3d puerta-vistas" role="group" aria-label="Ver junto al configurador">{(['alzado','corte'] as const).map(v=><button type="button" key={v} className={`pestana ${derecha===v?'pestana-activa':''}`} aria-pressed={derecha===v} onClick={()=>setDerecha(v)}>{v==='alzado'?'Alzado':'Corte'}</button>)}</div>}/></div>
+    {vistaPreviaAbierta && (
+      <div ref={vistaPreviaDialogRef} className="pdf-preview-backdrop" role="dialog" aria-modal="true" aria-label="Vista previa del planteamiento">
+        <div className="pdf-preview-window" data-fluido="">
+          {vistaPreviaTab === 'cad' ? (
+            <CadPaginasPuertas
+              orderCode={pedido.orderCode.trim()}
+              version={String(cadVersion)}
+              desactualizadoLocal={enEdicion && JSON.stringify(pedido) !== fotoGuardada}
+              motivoLocal="Has cambiado datos del formulario después de generar el DWG."
+              onActualizarCorte={usuario && !faltaCorte ? () => guardar(true) : undefined}
+              actualizando={guardando}
+              enModal
+              heading={<strong>Vista previa del planteamiento</strong>}
+              actions={accionesModal}
+            />
+          ) : (
+            <div className="pdf-carousel">
+              <div className="pdf-carousel-toolbar">
+                <div className="pdf-carousel-heading"><strong>Vista previa del planteamiento</strong></div>
+                <div className="pdf-carousel-actions">{accionesModal}</div>
+              </div>
+              <div className="pdf-carousel-stage puerta-modal-corte">
+                <CorteResumen vista={vistaCorte} />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    )}
   </div>;
 }

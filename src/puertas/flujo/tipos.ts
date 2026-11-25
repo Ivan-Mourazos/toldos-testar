@@ -30,17 +30,34 @@ export interface ProduccionPuertas {
   files: (FicheroPlanoPuertas | { type: 'pdf'; filename: string; savedPath: string })[];
 }
 
+export type EstadoPedidoPuertas = EstadoPedidoRemolques | "TERMINADO_SIN_GENERAR";
+
+export interface EdicionPedidoPuertas {
+  usuario: string;
+  fecha: string;
+  nota?: string;
+}
+
+export interface TerminadoSinGenerarPuertas {
+  usuario: string;
+  fecha: string;
+  motivo?: string;
+  estadoAnterior?: string;
+}
+
 export interface PedidoPuertasGuardado extends Omit<PedidoPuertas, "summary"> {
   ofsEntregaActual?: string[];
   entregas?: import('../../entregasTipos.ts').EntregaPedido[];
   entregaActual?: number;
   updatedBy?: string;
+  ediciones?: EdicionPedidoPuertas[];
+  terminadoSinGenerar?: TerminadoSinGenerarPuertas;
   corteNoRegenerado?: boolean;
   corteSimulado?: boolean;
   /** El número tal como se escribió (AR.26.05134). */
   numeroPedido: string;
   cabecera: CabeceraPuertas;
-  status: EstadoPedidoRemolques;
+  status: EstadoPedidoPuertas;
   createdAt: string;
   updatedAt: string;
   /** El autor: quien lo guardó la primera vez. */
@@ -67,6 +84,8 @@ export interface CorteConfirmado {
   plano: string;
   /** La huella de los datos del pedido con que salió este corte. */
   datos?: string;
+  /** Huella de los archivos escritos por la web, para avisar antes de pisar cambios a mano en ZWCAD. */
+  archivosEscritos?: import('../../cadPaginas/cambiosManuales.ts').RegistroArchivoEscrito[];
 }
 
 /** Lo que lista Pedidos: el pedido sin las puertas. */

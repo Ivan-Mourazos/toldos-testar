@@ -3,31 +3,37 @@ import { prepararPlanoProduccion } from '../../produccion.js';
 import { entregaStockLona, lineasLonaPuertas, necesidadesLona } from '../../stockLona.js';
 import { pasarAProduccionConStock, type ServiciosStockLona } from '../../stockLonaProduccion.js';
 import { numerarEntrega, aplicarDestino, necesitaPrepararDestino } from '../../entregasRps.js';
-import { mkdir, stat } from "node:fs/promises";
+import { mkdir, mkdtemp, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { avisoEntradaEntrega, codigoCorteEditable, cerrarEntrega, codigoAnual, codigoEntrega, ofsEntrega, pedidoEntrega, numeroEntrega, abrirEntrega, entregaSinCambios } from '../../entregas.js';
+import { avisoEntradaEntrega, codigoCorteEditable, cerrarEntrega, codigoAnual, codigoEntrega, entregasPedido, ofsEntrega, pedidoEntrega, numeroEntrega, abrirEntrega, entregaSinCambios } from '../../entregas.js';
 import { materialesPuertas } from '../../materialesEntrega.js';
 import { adjuntarPedido } from '../../adjuntosPedido.js';
 import { enviarCorte as enviarCorteCompartido } from "../../corteEnvios.js";
-import { aprobacionDeTodas, crearFlujoDwg, huellaDatos } from "../../flujoDwg/flujo.ts";
+import { aprobacionDeTodas, crearFlujoDwg, huellaDatos, planosDe } from "../../flujoDwg/flujo.ts";
 import { conRevisor, htmlPresentaciones, sinDibujarEnPdf } from "../../flujoDwg/planoDxf.js";
 import { prepararGuardadoEditable, type DecisionCorteEditable } from "../../flujoDwg/guardarEditable.ts";
 import { comprobarCorteNoRegenerado } from "../../flujoDwg/salidaEditable.ts";
 import { aprobacionToldos } from "../../toldosEditable.js";
 import { writeFileAtomic } from "../../workflow.js";
+import { renombrarAtomico } from "../../renombrarAtomico.js";
 import { normalizarNumeroPedido } from "../../remolques/pedidos/numero-pedido.ts";
 import { anioDelPlanteamiento } from "../../remolques/salida/nombre-pdf.ts";
 import {
-  approvalReviewers, generateFilesDecision, generationBlock, saveReviewDecision, uniqueOfs,
+  approvalReviewers, generateFilesDecision, generationBlock, isPendingGeneration, saveReviewDecision, TERMINADO_SIN_GENERAR, uniqueOfs,
 } from "../../reviewRules.js";
-import type { AlmacenPedidos } from "../../remolques/flujo/almacen.ts";
+import { ficheroPedido, type AlmacenPedidos } from "../../remolques/flujo/almacen.ts";
 import { codigoPedido, ErrorPedidoRemolques } from "../../remolques/flujo/pedido.ts";
 import type { EstadoCoordina, Respuesta } from "../../remolques/flujo/servicio.ts";
+import { listarBorradoresCad } from "../../cadPaginas/servicioCadPaginas.ts";
+import {
+  MENSAJE_CAMBIOS_A_MANO, borrarEscritosBorrador, detectarCambiosManualesDwg, guardarEscritosBorrador,
+  leerEscritosBorrador, registrarArchivosEscritos, type AlmacenEscritos, type RegistroArchivoEscrito,
+} from "../../cadPaginas/cambiosManuales.ts";
 import { generarCortePuertas } from "../corte.ts";
 import { leerPedidoPuertas } from "../pedido.ts";
 import {
-  anioPedido, crearPedidoPuertas, nombresElementosPuertas, elementosAprobacion, exigirOfsPuertas, marcarPedidoGenerado, puertasSinOf, resumenBandeja,
-  validarCabeceraPuertas,
+  anioPedido, apuntarEdicionPuertas, crearPedidoPuertas, nombresElementosPuertas, elementosAprobacion, exigirOfsPuertas,
+  marcarPedidoGenerado, ofsSinGenerarPuertas, puertasSinOf, resumenBandeja, resumenPedido, validarCabeceraPuertas,
 } from "./pedido.ts";
 import type { FicheroPlanoPuertas, PedidoPuertasGuardado, ResumenPedidoPuertas } from "./tipos.ts";
 
@@ -54,6 +60,12 @@ export interface ConfirmacionesCorte {
 
 export interface DependenciasPedidosPuertas {
   almacen: AlmacenPedidos<PedidoPuertasGuardado>;
+  /** Carpeta donde se guardan los JSON de puertas (para apartar registros a la papelera sin tocar almacen.ts). */
+  carpetaPedidos?: () => Promise<string>;
+  /** Borradores de puertas: se borran al guardar un pedido nuevo en Pedidos. */
+  borradores?: { borrarTrasRevision(orderCode: string): Promise<void> };
+  /** Si true, regenerar un DWG editado a mano en ZWCAD devuelve 409 needsManualDwgConfirmation antes de pisarlo. */
+  avisarCambiosManualesDwg?: boolean;
   ajustes: () => Promise<{ productionEnabled?: boolean; corteDirectoEnabled?: boolean; corteMaquinaDxfDirectory?: string; corteMaquinaCmtDirectory?: string; corteLonaBotDirectory?: string; corteLonaPlanoDirectory?: string; corteLonaDxfDirectory?: string;
     corteBorradoresDirectory?: string; corteBorradoresRed?: string; remolquesPlanteamientosDirectory?: string; remolquesOficinaTecnicaDirectory?: string; rpsPlanteamientosDirectory?: string; planteamientosDirectory?: string }>;
   coordina: { statusOf(ofs: string[], opciones?: { fresh?: boolean }): Promise<EstadoCoordina> };
@@ -101,6 +113,13 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
   // Un bloqueo por pedido, como en remolques: guardar, generar y mandar el corte nunca se cruzan.
   const ocupados = new Map<string, "guardando" | "generando">();
   const MENSAJE_OCUPADO = "Se está guardando este pedido: vuelve a intentarlo en un momento.";
+  const almacenEscritos = deps.confirmaciones as unknown as AlmacenEscritos | undefined;
+
+  function exigirAbierto(pedido: PedidoPuertasGuardado | null | undefined) {
+    if (pedido?.status === TERMINADO_SIN_GENERAR) {
+      throw new ErrorPedidoRemolques("El pedido está terminado sin generar. Vuelve a abrirlo para continuar.", 409);
+    }
+  }
 
   async function obtener(orderCode: string): Promise<PedidoPuertasGuardado> {
     const pedido = await deps.almacen.obtener(codigoPedido(orderCode));
@@ -169,7 +188,7 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
   }
 
   async function guardar(cuerpo: unknown): Promise<Respuesta> {
-    const c = (cuerpo ?? {}) as DecisionCorteEditable & { pedido?: unknown; savedBy?: unknown; confirmOverwrite?: unknown };
+    const c = (cuerpo ?? {}) as DecisionCorteEditable & { pedido?: unknown; savedBy?: unknown; confirmOverwrite?: unknown; soloNuevo?: unknown; confirmarPerderCambiosDwg?: unknown };
     const salvador = typeof c.savedBy === "string" ? c.savedBy.trim() : "";
     if (!salvador || !deps.tecnicos.includes(salvador)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de guardar.");
     let enviado;
@@ -196,14 +215,19 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
       const otro = await deps.otroProducto(orderCode);
       if (otro) throw new ErrorPedidoRemolques(`${orderCode} ya está guardado como pedido de ${otro}: un pedido es de un solo producto. Revisa el número.`, 409);
       const existente = await deps.almacen.obtener(orderCode);
+      if (c.soloNuevo === true && existente) {
+        throw new ErrorPedidoRemolques("El pedido se acaba de guardar en otro puesto. Pulsa «Guardar» de nuevo para actualizarlo.", 409);
+      }
+      exigirAbierto(existente);
       const decision = saveReviewDecision(existente, true);
       if (decision.action === "refuse") throw new ErrorPedidoRemolques(decision.error, decision.statusCode);
       const aprobacion = enviado.elementos.map((e, i) => ({ letter: String(i + 1), of: e.input.of }));
       const estado = aprobacionToldos(await deps.coordina.statusOf(uniqueOfs(aprobacion)));
       const autoria = { technician: existente?.summary.technician || salvador, reviewer: approvalReviewers(aprobacion, estado, deps.tecnicos) };
-      let pedido = await numerarEntrega({ ...crearPedidoPuertas({ pedido: enviado, cabecera, autoria, existente, ahora: ahora() }), updatedBy: salvador }, await deps.ajustes());
+      const ajustesActuales = await deps.ajustes();
+      let pedido = await numerarEntrega({ ...crearPedidoPuertas({ pedido: enviado, cabecera, autoria, existente, ahora: ahora() }), updatedBy: salvador }, ajustesActuales);
       if ((cuerpo as { destinoEntrega?: unknown })?.destinoEntrega) {
-        const destino = await aplicarDestino(pedido, await deps.ajustes(), cuerpo);
+        const destino = await aplicarDestino(pedido, ajustesActuales, cuerpo);
         if (destino.respuesta) return destino.respuesta;
         pedido = destino.pedido;
         if (existente?.entregaActual !== pedido.entregaActual) delete pedido.corteConfirmado;
@@ -214,24 +238,67 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
       const avisoEntrada = avisoEntradaEntrega(pedido, existente, c);
       if (avisoEntrada) return { status: 409, cuerpo: avisoEntrada };
       const anteriorCorte = existente?.status === 'PRODUCED' ? (pedido.entregas?.some((e: { numero: number }) => e.numero === pedido.entregaActual) ? { ...existente, corteConfirmado: pedido.corteConfirmado } : null) : existente;
-      const desdeBorrador = deps.plano && ofsEntrega(pedido).length ? await prepararGuardadoEditable({ flujo, orderCode: codigoAnual(pedido), technician: autoria.technician, usuario: salvador,
+      const codigoCorte = codigoAnual(pedido);
+      const estadoDwgPrevio = deps.plano && ofsEntrega(pedido).length ? await flujo.estado(codigoCorte) : null;
+      if (deps.avisarCambiosManualesDwg && deps.plano && ofsEntrega(pedido).length && ajustesActuales.productionEnabled && c.decisionCorte === "regenerar" && c.confirmarPerderCambiosDwg !== true) {
+        const borradoresExistentes = await listarBorradoresCad(ajustesActuales.corteBorradoresDirectory, codigoCorte);
+        const escritosBorrador = await leerEscritosBorrador(almacenEscritos, codigoCorte);
+        const manuales = await detectarCambiosManualesDwg({
+          corteConfirmado: anteriorCorte?.corteConfirmado,
+          borradores: borradoresExistentes.map((b) => ({ filename: b.filename, ruta: b.ruta })),
+          escritosBorrador,
+        });
+        if (manuales.modificadoAMano) {
+          return {
+            status: 409,
+            cuerpo: { needsManualDwgConfirmation: true, archivosModificados: manuales.archivosModificados, error: MENSAJE_CAMBIOS_A_MANO },
+          };
+        }
+      }
+      const desdeBorrador = deps.plano && ofsEntrega(pedido).length ? await prepararGuardadoEditable({ flujo, orderCode: codigoCorte, technician: autoria.technician, usuario: salvador,
         datos: datosCorte(pedidoEntrega(pedido)), datosAnteriores: anteriorCorte ? datosCorte(pedidoEntrega(anteriorCorte)) : undefined, existente: anteriorCorte, entrada: c,
         cambiosPedido: existente ? huellaDatos({ cabecera: pedido.cabecera, elementos: pedido.elementos }) !== huellaDatos({ cabecera: existente.cabecera, elementos: existente.elementos }) : undefined,
-        produccion: Boolean((await deps.ajustes()).productionEnabled), preparar: async carpeta => {
+        produccion: Boolean(ajustesActuales.productionEnabled), preparar: async carpeta => {
           const { fichero, avisos } = await deps.plano!.preparar(pedidoEntrega(pedido, 'anual'), autoria.reviewer, carpeta);
           return { ficheros: fichero ? [fichero] : [], avisos };
         } }) : null;
       if (desdeBorrador && "respuesta" in desdeBorrador) return desdeBorrador.respuesta;
       if (desdeBorrador) {
-        const conCorte = { ...pedido, ...desdeBorrador.metadata };
-        try { await desdeBorrador.escribir(); await deps.almacen.guardar(conCorte); }
-        catch (error) { await desdeBorrador.deshacer(); throw error; }
+        const conCorte: PedidoPuertasGuardado = { ...pedido, ...desdeBorrador.metadata };
+        try {
+          await desdeBorrador.escribir();
+          if (conCorte.corteConfirmado && ajustesActuales.productionEnabled) {
+            const regeneradoAhora = c.decisionCorte === "regenerar" || (!anteriorCorte?.corteConfirmado && !(estadoDwgPrevio?.activo && estadoDwgPrevio.borrador));
+            if (regeneradoAhora) {
+              conCorte.corteConfirmado = {
+                ...conCorte.corteConfirmado,
+                archivosEscritos: await registrarArchivosEscritos(planosDe(conCorte.corteConfirmado)),
+              };
+            } else if (!conCorte.corteConfirmado.archivosEscritos?.length) {
+              const previos: RegistroArchivoEscrito[] = anteriorCorte?.corteConfirmado?.archivosEscritos?.length
+                ? anteriorCorte.corteConfirmado.archivosEscritos
+                : await leerEscritosBorrador(almacenEscritos, codigoCorte);
+              const destino = planosDe(conCorte.corteConfirmado);
+              const trasladados = previos.length
+                ? previos.map((r) => {
+                  const par = destino.find((p) => p.filename.toLowerCase() === r.filename.toLowerCase());
+                  return par ? { ...r, plano: par.plano } : r;
+                })
+                : await registrarArchivosEscritos(destino);
+              conCorte.corteConfirmado = { ...conCorte.corteConfirmado, archivosEscritos: trasladados };
+            }
+          }
+          await deps.almacen.guardar(conCorte);
+        } catch (error) { await desdeBorrador.deshacer(); throw error; }
         const avisos = [...desdeBorrador.avisos, ...await desdeBorrador.limpiar()];
+        await borrarEscritosBorrador(almacenEscritos, codigoCorte);
+        await deps.borradores?.borrarTrasRevision(orderCode);
         const confirmado = conCorte.corteConfirmado;
         const files = confirmado ? [{ type: "plano-puertas", filename: confirmado.filename, savedPath: confirmado.plano }] : [];
         return { status: 200, cuerpo: { ok: true, review: resumenBandeja(conCorte), overwritten: Boolean(existente), plano: { files, avisos } } };
       }
       await deps.almacen.guardar(pedido);
+      await deps.borradores?.borrarTrasRevision(orderCode);
       // El plano sale ya al guardar, para revisarlo antes de aprobar (como el corte de toldos y remolques).
       const plano = await escribirPlano(pedido, "", false);
       return { status: 200, cuerpo: { ok: true, review: resumenBandeja(pedido), overwritten: Boolean(existente), plano } };
@@ -241,17 +308,213 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
   }
 
   /**
+   * Un único «Guardar» en pedidos existentes: guarda los cambios del registro sin pasar a revisión,
+   * sin cambiar el estado ni el autor original y apuntando quién editó y cuándo.
+   */
+  async function guardarRegistroSinRevisar(orderCodeBruto: string, cuerpo: unknown): Promise<Respuesta> {
+    const c = (cuerpo ?? {}) as { pedido?: unknown; usuario?: unknown; siExiste?: unknown };
+    const usuario = typeof c.usuario === "string" ? c.usuario.trim() : "";
+    if (!usuario || !deps.tecnicos.includes(usuario)) {
+      throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de guardar.");
+    }
+    let enviado;
+    try {
+      enviado = leerPedidoPuertas(c.pedido);
+    } catch (error) {
+      throw new ErrorPedidoRemolques((error as Error).message);
+    }
+    const orderCode = codigoPedido(orderCodeBruto);
+    if (codigoPedido(enviado.orderCode) !== orderCode) {
+      throw new ErrorPedidoRemolques("El número del formulario debe coincidir con el del pedido guardado.");
+    }
+    const cabecera = validarCabeceraPuertas((c.pedido as { cabecera?: unknown }).cabecera ?? {}, ahora().slice(0, 10));
+    const ocupado = ocupados.get(orderCode);
+    if (ocupado === "generando") {
+      return { status: 409, cuerpo: { error: "Se están generando los archivos de este pedido: espera a que terminen antes de volver a guardarlo." } };
+    }
+    if (ocupado === "guardando") return { status: 409, cuerpo: { error: MENSAJE_OCUPADO } };
+    ocupados.set(orderCode, "guardando");
+    let delegarNuevaEntrega = false;
+    try {
+      const existente = await deps.almacen.obtener(orderCode);
+      if (!existente && c.siExiste === true) return { status: 204, cuerpo: null };
+      if (!existente) throw new ErrorPedidoRemolques("No se encontró el pedido de puertas.", 404);
+      const nuevas = existente.status === "PRODUCED" ? ofsSinGenerarPuertas(existente, enviado) : [];
+      if (nuevas.length > 0) {
+        delegarNuevaEntrega = true;
+      } else {
+        const entregas = existente.status === "PRODUCED" && !Array.isArray(existente.entregas)
+          ? { entregas: entregasPedido(existente) } : {};
+        const conCliente = cabecera.clienteRps || !existente.cabecera.clienteRps
+          ? cabecera
+          : { ...cabecera, clienteRps: existente.cabecera.clienteRps };
+        const actualizado = apuntarEdicionPuertas({
+          ...existente,
+          ...entregas,
+          numeroPedido: enviado.orderCode.trim(),
+          cabecera: conCliente,
+          elementos: enviado.elementos.map(({ id, input }) => ({ id, input })),
+          summary: resumenPedido(enviado, conCliente, {
+            technician: existente.summary.technician,
+            reviewer: existente.summary.reviewer,
+          }),
+        }, usuario, ahora());
+        await deps.almacen.guardar(actualizado);
+        return { status: 200, cuerpo: { ok: true, review: resumenBandeja(actualizado), pedido: actualizado } };
+      }
+    } finally {
+      ocupados.delete(orderCode);
+    }
+    if (delegarNuevaEntrega) {
+      const res = await guardar({ pedido: c.pedido, savedBy: usuario, confirmOverwrite: true, confirmarEntradaEntrega: true });
+      if (res.status === 200 && res.cuerpo && typeof res.cuerpo === "object") {
+        return { status: 200, cuerpo: { ...(res.cuerpo as object), nuevaEntrega: true } };
+      }
+      return res;
+    }
+    return { status: 500, cuerpo: { error: "No se pudo guardar el pedido." } };
+  }
+
+  /** «Marcar como terminado» sin pedir motivo obligatorio (un clic con confirmación). */
+  async function terminar(orderCodeBruto: string, cuerpo: unknown): Promise<Respuesta> {
+    const c = (cuerpo ?? {}) as { usuario?: unknown; motivo?: unknown };
+    const usuario = typeof c.usuario === "string" ? c.usuario.trim() : "";
+    if (!usuario || !deps.tecnicos.includes(usuario)) {
+      throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de continuar.");
+    }
+    const motivo = typeof c.motivo === "string" ? c.motivo.trim().slice(0, 200) : "";
+    const codigo = codigoPedido(orderCodeBruto);
+    if (ocupados.has(codigo)) return { status: 409, cuerpo: { error: MENSAJE_OCUPADO } };
+    ocupados.set(codigo, "guardando");
+    try {
+      const pedido = await obtener(codigo);
+      if (!isPendingGeneration(pedido.status)) {
+        throw new ErrorPedidoRemolques("Solo puedes marcar como terminado un pedido pendiente.", 409);
+      }
+      const fecha = ahora();
+      const actualizado: PedidoPuertasGuardado = {
+        ...pedido,
+        status: TERMINADO_SIN_GENERAR,
+        updatedAt: fecha,
+        updatedBy: usuario,
+        terminadoSinGenerar: {
+          usuario,
+          fecha,
+          ...(motivo ? { motivo } : {}),
+          estadoAnterior: pedido.status,
+        },
+      };
+      await deps.almacen.guardar(actualizado);
+      return { status: 200, cuerpo: { ok: true, review: actualizado } };
+    } finally {
+      ocupados.delete(codigo);
+    }
+  }
+
+  /** Vuelve a pendiente un pedido marcado como terminado sin generar. */
+  async function reabrir(orderCodeBruto: string, cuerpo: unknown): Promise<Respuesta> {
+    const c = (cuerpo ?? {}) as { usuario?: unknown };
+    const usuario = typeof c.usuario === "string" ? c.usuario.trim() : "";
+    if (!usuario || !deps.tecnicos.includes(usuario)) {
+      throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de continuar.");
+    }
+    const codigo = codigoPedido(orderCodeBruto);
+    if (ocupados.has(codigo)) return { status: 409, cuerpo: { error: MENSAJE_OCUPADO } };
+    ocupados.set(codigo, "guardando");
+    try {
+      const pedido = await obtener(codigo);
+      if (pedido.status !== TERMINADO_SIN_GENERAR) {
+        throw new ErrorPedidoRemolques("Este pedido no está terminado sin generar.", 409);
+      }
+      const anterior = pedido.terminadoSinGenerar?.estadoAnterior;
+      const sinCierre = { ...pedido };
+      delete sinCierre.terminadoSinGenerar;
+      const actualizado: PedidoPuertasGuardado = {
+        ...sinCierre,
+        status: anterior && isPendingGeneration(anterior) ? (anterior as PedidoPuertasGuardado["status"]) : "PENDING_REVIEW",
+        updatedAt: ahora(),
+        updatedBy: usuario,
+      };
+      await deps.almacen.guardar(actualizado);
+      return { status: 200, cuerpo: { ok: true, review: actualizado } };
+    } finally {
+      ocupados.delete(codigo);
+    }
+  }
+
+  /** Envía el registro JSON a la subcarpeta «papelera», conservando sus archivos de producción. */
+  async function papelera(orderCodeBruto: string, cuerpo: unknown): Promise<Respuesta> {
+    const c = (cuerpo ?? {}) as { usuario?: unknown; confirmacion?: unknown };
+    const usuario = typeof c.usuario === "string" ? c.usuario.trim() : "";
+    if (!usuario || !deps.tecnicos.includes(usuario)) {
+      throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de continuar.");
+    }
+    const codigo = codigoPedido(orderCodeBruto);
+    if (c.confirmacion !== codigo) {
+      throw new ErrorPedidoRemolques("Escribe el código completo del pedido para enviarlo a la papelera.");
+    }
+    if (ocupados.has(codigo)) return { status: 409, cuerpo: { error: MENSAJE_OCUPADO } };
+    ocupados.set(codigo, "guardando");
+    try {
+      await obtener(codigo);
+      const carpeta = (await deps.carpetaPedidos?.())?.trim() ?? "";
+      if (!carpeta) throw new ErrorPedidoRemolques("No se conoce la carpeta de pedidos de puertas.", 500);
+      const ruta = ficheroPedido(carpeta, codigo);
+      const fecha = ahora();
+      const carpetaPapelera = path.join(carpeta, "papelera");
+      await mkdir(carpetaPapelera, { recursive: true });
+      const destino = await mkdtemp(path.join(carpetaPapelera, `${codigo}-${fecha.slice(0, 10)}-`));
+      await writeFile(path.join(destino, "papelera.json"), `${JSON.stringify({ codigo, usuario, fecha }, null, 2)}\n`);
+      await renombrarAtomico(ruta, path.join(destino, path.basename(ruta)));
+      return { status: 200, cuerpo: { ok: true, destino } };
+    } finally {
+      ocupados.delete(codigo);
+    }
+  }
+
+  /**
    * Flujo del DWG, fase 1 (plan del 24/10/2026): el plano del pedido tal como está en pantalla, en la carpeta de
    * borradores, para abrirlo en ZWCAD y perfilarlo. Si ya hay uno, no se pisa: se abre el que hay, salvo que el autor
    * pida generarlo de nuevo (`regenerar`). Devuelve el enlace `tgm-pedidos:` con su ruta de red.
    */
   async function borradorCorte(cuerpo: unknown): Promise<Respuesta> {
-    const c = (cuerpo ?? {}) as { pedido?: unknown; orderCode?: unknown; savedBy?: unknown; regenerar?: unknown };
+    const c = (cuerpo ?? {}) as {
+      pedido?: unknown; orderCode?: unknown; savedBy?: unknown; regenerar?: unknown;
+      avisarCorteDesactualizado?: unknown; abrirCorteIgual?: unknown; confirmarPerderCambiosDwg?: unknown;
+    };
     const autor = typeof c.savedBy === "string" ? c.savedBy.trim() : "";
     if (!autor || !deps.tecnicos.includes(autor)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de abrir el corte.");
     const codigoExistente = typeof c.orderCode === 'string' ? codigoPedido(c.orderCode) : '';
+    if (c.avisarCorteDesactualizado === true && c.regenerar !== true) {
+      let enviado;
+      try { enviado = leerPedidoPuertas(c.pedido); }
+      catch (error) { throw new ErrorPedidoRemolques((error as Error).message); }
+      const orderCode = codigoPedido(enviado.orderCode);
+      const existente = await deps.almacen.obtener(orderCode);
+      exigirAbierto(existente);
+      const codigo = codigoCorteEditable(existente, orderCode);
+      const estado = await flujo.estado(codigo);
+      const confirmado = existente?.status === 'PRODUCED' ? undefined : existente?.corteConfirmado;
+      const hayBorrador = estado.activo && estado.borrador;
+      if (hayBorrador || confirmado) {
+        const actual = existente ? pedidoEntrega({ ...existente, elementos: enviado.elementos }) : enviado;
+        const huellaActual = datosCorte(actual);
+        const desactualizado = estado.activo && estado.borrador && estado.datos
+          ? estado.datos !== huellaActual
+          : Boolean(existente?.corteNoRegenerado || (confirmado?.datos && confirmado.datos !== huellaActual));
+        if (desactualizado && c.abrirCorteIgual !== true) {
+          return { status: 409, cuerpo: { corteDesactualizado: true } };
+        }
+        return flujo.borrador({
+          orderCode: codigo,
+          revisado: confirmado?.plano,
+          preparar: async () => { throw new ErrorPedidoRemolques("El plano se ha movido. Vuelve a abrir el corte.", 409); },
+        });
+      }
+    }
     if (codigoExistente && c.regenerar !== true) {
       const pedido = await deps.almacen.obtener(codigoExistente);
+      exigirAbierto(pedido);
       const revisado = pedido?.status === 'PRODUCED' ? undefined : pedido?.corteConfirmado;
       const codigo = codigoCorteEditable(pedido, codigoExistente);
       const estado = await flujo.estado(codigo);
@@ -276,11 +539,34 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
     try {
       const cabecera = validarCabeceraPuertas((c.pedido as { cabecera?: unknown }).cabecera ?? {}, ahora().slice(0, 10));
       const existente = await deps.almacen.obtener(orderCode);
+      exigirAbierto(existente);
+      const ajustesActuales = await deps.ajustes();
       const borrador = await numerarEntrega(abrirEntrega({ ...enviado, orderCode, status: 'PENDING_REVIEW', cabecera, summary: { customer: cabecera.cliente || cabecera.clienteRps?.nombre || "", technician: autor,
-        orderDate: cabecera.fecha } } as unknown as PedidoPuertasGuardado, existente), await deps.ajustes());
+        orderDate: cabecera.fecha } } as unknown as PedidoPuertasGuardado, existente), ajustesActuales);
       const confirmado = borrador.corteConfirmado;
-      return await flujo.borrador({ orderCode: codigoAnual(borrador), regenerar: c.regenerar === true, revisado: confirmado?.plano, datos: datosCorte(pedidoEntrega(borrador)), datosRevisado: confirmado?.datos,
+      const codigoBorrador = codigoAnual(borrador);
+      if (deps.avisarCambiosManualesDwg && c.regenerar === true && c.confirmarPerderCambiosDwg !== true) {
+        const borradoresExistentes = await listarBorradoresCad(ajustesActuales.corteBorradoresDirectory, codigoBorrador);
+        const escritosBorrador = await leerEscritosBorrador(almacenEscritos, codigoBorrador);
+        const manuales = await detectarCambiosManualesDwg({
+          corteConfirmado: existente?.status === 'PRODUCED' ? null : confirmado,
+          borradores: borradoresExistentes.map((b) => ({ filename: b.filename, ruta: b.ruta })),
+          escritosBorrador,
+        });
+        if (manuales.modificadoAMano) {
+          return {
+            status: 409,
+            cuerpo: { needsManualDwgConfirmation: true, archivosModificados: manuales.archivosModificados, error: MENSAJE_CAMBIOS_A_MANO },
+          };
+        }
+      }
+      const resultado = await flujo.borrador({ orderCode: codigoBorrador, regenerar: c.regenerar === true, revisado: confirmado?.plano, datos: datosCorte(pedidoEntrega(borrador)), datosRevisado: confirmado?.datos,
         preparar: (carpeta) => deps.plano!.preparar(pedidoEntrega(borrador, 'anual'), "", carpeta) });
+      if (resultado.status === 200 && (resultado.cuerpo as { existente?: boolean })?.existente === false && ajustesActuales.corteBorradoresDirectory) {
+        const escritosAhora = await listarBorradoresCad(ajustesActuales.corteBorradoresDirectory, codigoBorrador);
+        await guardarEscritosBorrador(almacenEscritos, codigoBorrador, escritosAhora.map((f) => ({ filename: f.filename, plano: f.ruta })), ahora());
+      }
+      return resultado;
     } finally {
       ocupados.delete(orderCode);
     }
@@ -320,6 +606,7 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
       }
       if (!deps.plano) throw new ErrorPedidoRemolques("El plano de puertas no está disponible en este servidor.", 404);
       let pedido = await obtener(orderCode);
+      exigirAbierto(pedido);
       if (pedido.status === 'PRODUCED') return { status: 200, cuerpo: { ok: true, unchanged: true, review: resumenBandeja(pedido), saved: pedido.production?.files ?? [] } };
       const destinoEntrega = await aplicarDestino(pedido, await deps.ajustes(), cuerpo);
       if (destinoEntrega.respuesta) return destinoEntrega.respuesta;
@@ -426,6 +713,7 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
       const usuario = typeof c.usuario === "string" ? c.usuario.trim() : "";
       if (!deps.tecnicos.includes(usuario)) throw new ErrorPedidoRemolques("Elige quién eres en «Soy» antes de mandar o guardar el corte.");
       const pedido = await obtener(orderCode);
+      exigirAbierto(pedido);
       exigirOfsPuertas(pedido);
       const salida = await comprobarCorteNoRegenerado(flujo, pedido, c, usuario);
       if ('respuesta' in salida) return salida.respuesta;
@@ -578,6 +866,7 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
     if (!(await deps.ajustes()).productionEnabled) throw new ErrorPedidoRemolques('La generación de archivos está desactivada.', 403);
     if (!deps.presentacionesPdf || !deps.plano) throw new ErrorPedidoRemolques('El PDF de las presentaciones no está disponible.', 404);
     let pedido = await obtener(codigo);
+    exigirAbierto(pedido);
     if (pedido.status !== 'PRODUCED') {
       const elegido = await aplicarDestino(pedido, await deps.ajustes(), entrada);
       if (elegido.respuesta) return elegido.respuesta;
@@ -660,6 +949,7 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
     try {
       const entrada = (cuerpo ?? {}) as Record<string, unknown>;
       const pedido = await obtener(codigo);
+      exigirAbierto(pedido);
       if (pedido.status === 'PRODUCED') return { status: 200, cuerpo: { ok: true, unchanged: true, mensaje: 'Este pedido ya está en producción.' } };
       const actual = pedidoEntrega(pedido);
       const aprobacion = elementosAprobacion(actual);
@@ -689,5 +979,9 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
     return pedido.corteConfirmado ? prepararPlanoProduccion({ confirmado: pedido.corteConfirmado }) : planoRevision(codigo, cuerpo);
   }
 
-  return { guardarPlano, produccion, propuestaStockLona, pdfPedido, listar, obtener, guardar, borradorCorte, confirmarCorte, estadoCorte, enlacesCorte, planoRevision, generar, corte, descargarCorte, enviarCorte, rehacerPdf };
+  return {
+    guardarPlano, produccion, propuestaStockLona, pdfPedido, listar, obtener, guardar, guardarRegistroSinRevisar,
+    terminar, reabrir, papelera, borradorCorte, confirmarCorte, estadoCorte, enlacesCorte, planoRevision, generar,
+    corte, descargarCorte, enviarCorte, rehacerPdf,
+  };
 }
