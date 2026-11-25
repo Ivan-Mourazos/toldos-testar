@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { normalizeOrder } from './validation.js';
 import { calculateOrder } from './rules.js';
 import { fabricDropAdjustmentCm, fabricDropSummary, supportsFabricDropAdjustment } from './fabricDropAdjustment.js';
-import { sampleAwnings, SAMPLE_FABRIC } from '../../scripts/lib/model-samples.mjs';
+import { firstSampleAwning, SAMPLE_FABRIC } from '../../scripts/lib/model-samples.mjs';
 
 // Iván, 09/10/2026 (AR2604955): poder sumar o quitar centímetros a la caída de la tela en la
 // tarjeta, sin candado, como ya hace la Cortina. Por ejemplo, una bambalina pisada doble.
@@ -20,7 +20,7 @@ describe('ajuste de la caída de tela en la tarjeta', () => {
     'AMBAR BOX', 'AGATA BOX', 'MAXISCREEM', 'ELECTRA', 'SELENA', 'IRIS', 'HERA', 'ANTICA'];
 
   test.each(models)('%s: +10 suma 10 cm a la caída y −5 quita 5, sin excepción técnica', (model) => {
-    const [{ awning }] = sampleAwnings(model);
+    const { awning } = firstSampleAwning(model);
     const base = run(awning);
     const more = run(awning, { fabricDropAdjustmentCm: 10 });
     const less = run(awning, { fabricDropAdjustmentCm: -5 });
@@ -31,7 +31,7 @@ describe('ajuste de la caída de tela en la tarjeta', () => {
   });
 
   test('avisa en la tarjeta de cuánto se ha ajustado', () => {
-    const [{ awning }] = sampleAwnings('ARZUA PRO');
+    const { awning } = firstSampleAwning('ARZUA PRO');
     const messages = run(awning, { fabricDropAdjustmentCm: 10 }).diagnostics.map((item) => `${item.level}: ${item.message}`).join(' | ');
     expect(messages).toMatch(/warn: .*10 cm.*caída de tela/);
     expect(run(awning).diagnostics.map((item) => item.message).join(' ')).not.toMatch(/caída de tela/);
@@ -55,7 +55,7 @@ describe('ajuste de la caída de tela en la tarjeta', () => {
 
 describe('resumen de aumentos de la caída de tela', () => {
   const summary = (model, patch = {}) => {
-    const [{ awning }] = sampleAwnings(model);
+    const { awning } = firstSampleAwning(model);
     const result = run(awning, patch);
     return fabricDropSummary(normalizeOrder({ orderCode: 'X', awnings: [{ ...awning, ...patch }] }).awnings[0], result.ofs[0].calculation);
   };

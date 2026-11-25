@@ -195,8 +195,8 @@ function controls(markup: string) {
 }
 
 function samplesFor(model: string): Awning[] {
-  const samples = sampleAwnings(model).map((item: { awning: unknown }) => item.awning as Awning);
-  const base = samples.length ? samples.slice(0, 3) : (extraSamples[model] ? [{ ...extraSamples[model], id: 'x' } as Awning] : []);
+  const samples = sampleAwnings(model, 'BLANCO', { limit: 3 }).map(({ awning }) => awning as Awning);
+  const base = samples.length ? samples : (extraSamples[model] ? [{ ...extraSamples[model], id: 'x' } as Awning] : []);
   // Cada muestra lleva también su observación de estructura, para comprobar un valor de
   // texto libre y no solo medidas de listas cerradas (revisión de la tarea 4). workType
   // también se fuerza aquí: sampleAwnings() (pensado para el barrido del cálculo, que
@@ -446,9 +446,6 @@ function expectFabricsShown(model: string, awning: Awning, sameFabric: boolean) 
 describe('tarjeta de lectura: salen todos los datos (rediseño §5)', () => {
   const models = [...fullAwningModelNames, ...fabricOnlyModelNames];
 
-  // Recorre calculateOrder para cada modelo (sampleAwnings): con la suite completa en
-  // paralelo, otros ficheros compiten por CPU y el valor por defecto (5 s) a veces no
-  // llega, aunque en solitario tarda ~1 s.
   it('cubre los 24 modelos', () => {
     expect(models).toHaveLength(24);
     for (const model of models) expect(samplesFor(model).length, model).toBeGreaterThan(0);

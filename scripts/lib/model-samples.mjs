@@ -87,12 +87,7 @@ function calculate(awning, structureColor) {
   }
 }
 
-/**
- * Todos los casos válidos de un modelo con el lacado indicado. Cada uno trae
- * el toldo de entrada y el resultado de `calculateOrder`.
- */
-export function sampleAwnings(model, structureColor = 'BLANCO') {
-  const samples = [];
+function* generateSamples(model, structureColor) {
   for (const submodel of submodelsOf(model)) {
     for (const device of devicesOf(model)) {
       for (const extra of modelExtras(model, device)) {
@@ -106,13 +101,45 @@ export function sampleAwnings(model, structureColor = 'BLANCO') {
             };
             const result = calculate(awning, structureColor);
             const block = result?.ofs[0];
-            if (block?.calculation?.valid && block.materials.length) samples.push({ awning, result });
+            if (block?.calculation?.valid && block.materials.length) yield { awning, result };
           }
         }
       }
     }
   }
-  return samples;
+}
+
+// Los barridos de RPS recorren decenas de lacados por modelo.
+// Conservamos las consultas recientes para no acumular todo el catálogo en memoria.
+const MAX_CACHED_QUERIES = 32;
+const sampleCache = new Map();
+
+/**
+ * Casos válidos de un modelo con el lacado indicado, en el orden del catálogo.
+ * Con un límite se guarda el punto del barrido para poder continuarlo más tarde.
+ * Cada consulta devuelve copias del toldo y del resultado de calculateOrder.
+ * @returns {Array<{ awning: object, result: ReturnType<typeof calculateOrder> }>}
+ */
+export function sampleAwnings(model, structureColor = 'BLANCO', { limit = Infinity } = {}) {
+  const key = JSON.stringify([model, structureColor]);
+  const cached = sampleCache.get(key) ?? { samples: [], remaining: generateSamples(model, structureColor) };
+  sampleCache.delete(key);
+  sampleCache.set(key, cached);
+  if (sampleCache.size > MAX_CACHED_QUERIES) sampleCache.delete(sampleCache.keys().next().value);
+  while (cached.remaining && cached.samples.length < limit) {
+    const { value, done } = cached.remaining.next();
+    if (done) cached.remaining = null;
+    else cached.samples.push(value);
+  }
+  return structuredClone(cached.samples.slice(0, limit));
+}
+
+/** Primer caso válido que cumple el filtro, si se indica uno. */
+export function firstSampleAwning(model, matches, structureColor = 'BLANCO') {
+  if (!matches) return sampleAwnings(model, structureColor, { limit: 1 })[0];
+  for (const sample of generateSamples(model, structureColor)) {
+    if (matches(sample)) return sample;
+  }
 }
 
 export { fullAwningModelNames };

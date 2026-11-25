@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { normalizeOrder } from './validation.js';
 import { calculateOrder } from './rules.js';
-import { sampleAwnings, SAMPLE_FABRIC } from '../../scripts/lib/model-samples.mjs';
+import { firstSampleAwning, SAMPLE_FABRIC } from '../../scripts/lib/model-samples.mjs';
 
 // Iván, 22/09/2026 (Cambio de tela y Cortina) y 08/10/2026 (el resto): los 5 cm de remate solo
 // se suman cuando la bamba va en la misma tela. Sin bamba, la caída de tela no los lleva. Entre
@@ -21,14 +21,14 @@ describe('sin bamba no se suman los 5 cm de remate', () => {
     'ARZUA PRO', 'GALICIA', 'XACOBEO', 'PUNTO RECTO', 'MONOBLOCK 350', 'PERLA BOX', 'CORAL BOX', 'CUARZO BOX',
     'AMBAR BOX', 'AGATA BOX', 'MAXISCREEM', 'ELECTRA', 'CORTINA', 'SELENA', 'CAMBIO TELA'
   ])('%s', (model) => {
-    const [{ awning }] = sampleAwnings(model);
+    const { awning } = firstSampleAwning(model);
     const withValance = fabricDrop(awning, 10);
     const without = fabricDrop(awning, 0);
     expect(Math.round((withValance - without) * 10) / 10).toBe(15);
   });
 
   test('Arzúa de 300 de salida sin bamba: salida + 40', () => {
-    const [{ awning }] = sampleAwnings('ARZUA PRO').filter(({ awning: a }) => a.projection === 300);
+    const { awning } = firstSampleAwning('ARZUA PRO', ({ awning: a }) => a.projection === 300);
     expect(fabricDrop(awning, 0)).toBe(340);
   });
 });
