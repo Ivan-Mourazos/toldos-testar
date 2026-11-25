@@ -19,6 +19,7 @@ export interface OpcionesPreparacion { origen: 'dwg' | 'dxf'; tabla: Record<stri
 export interface Pendientes { marcos?: Caja[]; cruces?: number; capas?: CapaDesconocida[]; solapes?: GrupoSolape[] }
 export interface ResultadoPreparacion {
   listo: boolean; dxf: string | null; escala: number | null; medidasMm: { ancho: number; alto: number } | null;
+  planoWeb?: boolean;
   pendientes: Pendientes; avisos: Duda[]; dudas: Duda[];
   // Líneas, arcos y textos del corte en mm, para la vista previa, con el color CSS que tienen en el plano
   // (sin color = tinta: el 7 de CAD, negro en fondo claro y blanco en oscuro).
@@ -120,6 +121,8 @@ export function preparar(dxfTexto: string, o: OpcionesPreparacion): ResultadoPre
   };
   try {
     const d = leerDxf(dxfTexto);
+    resultado.planoWeb = d.sections.BLOCKS?.some(e => e.type === 'BLOCK' && value(e, 2).trim().toUpperCase() === 'CAJETIN TGM')
+      || d.entities.some(e => e.type === 'INSERT' && value(e, 2).trim().toUpperCase() === 'CAJETIN TGM');
     const leyenda = quitarLeyendaWeb(d);
     d.entities = leyenda.entidades;
     if (leyenda.quitada) avisos.push({ motivo: 'Se ha quitado la leyenda del bot o de oficina' });
@@ -134,7 +137,9 @@ export function preparar(dxfTexto: string, o: OpcionesPreparacion): ResultadoPre
       errores.push({ duda, caja: cajaDudosa(entidades[indice]), capa: duda.capa ?? '0' });
     }
 
-    const marcos = unirMarcos(buscarMarcos(h.piezas), marcosWeb(originales, h.piezas));
+    const deLaWeb = marcosWeb(originales, h.piezas);
+    resultado.planoWeb ||= deLaWeb.length > 0;
+    const marcos = unirMarcos(buscarMarcos(h.piezas), deLaWeb);
     if (!marcos.length && o.origen === 'dwg') {
       dudas.push({ motivo: 'No hay marco del corte: dibuja un rectángulo en la capa 0 alrededor del corte o deja el recuadro CORTE de la web' });
       return resultado;

@@ -153,7 +153,13 @@ describe('recuadro CORTE de la web como marco', () => {
     const r = preparar(plano(), { origen: 'dwg', tabla: {} });
     expect(r.dudas).toEqual([]);
     expect(r.listo).toBe(true);
+    expect(r.planoWeb).toBe(true);
     expect(r.vista.map(p => p.capa)).toEqual(['DISCO1']);
+  });
+
+  it('reconoce el cajetín de la web aunque esté en la presentación', () => {
+    const dxf = dxfPrueba({ entidades: [marco(0, 0, 10, 5), L('DISCO1', 1, 1, 4, 1), '0\nINSERT\n67\n1\n2\nCAJETIN TGM'] });
+    expect(preparar(dxf, { origen: 'dxf', tabla: {} }).planoWeb).toBe(true);
   });
 
   it('también con el rótulo con formato de MTEXT', () => {

@@ -28,9 +28,10 @@ type Props = {
   readEmptyAs?: string;
   onlyPvc?: boolean;
   soloReferencia?: boolean;
+  enfocarAlMontar?: boolean;
 };
 
-export function FabricCombobox({ label, value, onChange, placeholder = 'Código, color o nombre…', disabled = false, missing = false, readEmptyAs = '', onlyPvc = false, soloReferencia = false }: Props) {
+export function FabricCombobox({ label, value, onChange, placeholder = 'Código, color o nombre…', disabled = false, missing = false, readEmptyAs = '', onlyPvc = false, soloReferencia = false, enfocarAlMontar = soloReferencia }: Props) {
   const reading = useReadMode();
   const labelId = useId();
   const [query, setQuery] = useState(() => fabricSelectionLabel(value));
@@ -132,7 +133,7 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
           aria-expanded={open}
           aria-controls={listId}
           autoComplete="off"
-          autoFocus={soloReferencia}
+          autoFocus={enfocarAlMontar}
           disabled={disabled}
           value={open || typed ? query : value ? fabricSelectionLabel(value) : ''}
           placeholder={placeholder}

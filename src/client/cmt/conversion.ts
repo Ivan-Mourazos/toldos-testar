@@ -1,4 +1,5 @@
 import type { DecisionesPreparacion, ResultadoPreparacion } from '../../cmt/preparacion/index.ts';
+import type { DeteccionStockPlano } from '../../cmt/stockPlano';
 
 export interface PlanoPreparado extends Omit<ResultadoPreparacion, 'dxf' | 'avisos' | 'dudas' | 'capasNuevas'> {
   ok: boolean;
@@ -13,16 +14,17 @@ export interface PlanoPreparado extends Omit<ResultadoPreparacion, 'dxf' | 'avis
   avisos: string[];
   dudas: string[];
   resumen?: ResumenCmt;
+  stockLona?: DeteccionStockPlano;
 }
 
 export async function prepararArchivo(archivo: File, decisiones: DecisionesPreparacion, sinTextos = false,
-  pedir: typeof fetch = fetch, generar = false, huella?: string): Promise<PlanoPreparado> {
+  pedir: typeof fetch = fetch, generar = false, huella?: string, carpeta?: string): Promise<PlanoPreparado> {
   if (!/\.(dxf|dwg)$/i.test(archivo.name)) throw new Error('Elige un fichero DWG o DXF.');
   if (archivo.size > 30 * 1024 * 1024) throw new Error('El plano supera el máximo de 30 MB por fichero.');
   const contenido = await archivoBase64(archivo);
   const respuesta = await pedir('/api/cmt/preparar', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nombre: archivo.name, archivoBase64: contenido, decisiones, sinTextos, generar, huella }),
+    body: JSON.stringify({ nombre: archivo.name, archivoBase64: contenido, decisiones, sinTextos, generar, huella, carpeta }),
   });
   const datos = await respuesta.json();
   if (!respuesta.ok) throw new Error(datos.error || 'No se pudo preparar el plano.');

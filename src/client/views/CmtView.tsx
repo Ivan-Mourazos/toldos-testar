@@ -8,6 +8,7 @@ import { descargarCmt, descargarDxf, descargarPlanos } from '../cmt/descarga';
 import { BuscadorPlanos } from '../cmt/BuscadorPlanos';
 import { hayPendientes, Pendientes } from '../cmt/Pendientes';
 import { VistaPreparacion } from '../cmt/VistaPreparacion';
+import { StockLonaPlano } from '../cmt/StockLonaPlano';
 import type { DecisionesPreparacion } from '../../cmt/preparacion/index.ts';
 import '../cmt/cmt.css';
 
@@ -15,6 +16,7 @@ interface FilaCmt {
   id: number;
   revision: number;
   archivo: File;
+  carpeta?: string;
   ocupado?: 'Analizando…' | 'Generando…';
   sinTextos: boolean;
   decisiones: DecisionesPreparacion;
@@ -43,6 +45,7 @@ export function CmtView() {
   const [activa, setActiva] = useState<number | null>(null);
   const [arrastrando, setArrastrando] = useState(false);
   const [descarga, setDescarga] = useState({ ocupado: false, error: '', mensaje: '' });
+  const [colaStock, setColaStock] = useState<number[]>([]);
   const siguienteId = useRef(0);
   const selector = useRef<HTMLInputElement>(null);
   const filasActuales = useRef(filas);
@@ -51,6 +54,9 @@ export function CmtView() {
   const listos = planos.filter(p => p.listo).length;
   const procesando = filas.some(f => f.ocupado);
   const fila = filas.find(f => f.id === activa);
+  const planoStock = colaStock[0];
+  const deteccionStock = filas.find(f => f.id === planoStock)?.resultado?.stockLona;
+  const abrirStock = (id: number) => setColaStock(cola => cola.includes(id) ? cola : [...cola, id]);
 
   const actualizar = (id: number, cambios: Partial<FilaCmt>) =>
     setFilas(actuales => actuales.map(f => f.id === id ? { ...f, ...cambios } : f));
@@ -59,8 +65,9 @@ export function CmtView() {
     const decisiones = sinTextos === fila.sinTextos ? fila.decisiones : {};
     actualizar(fila.id, { ocupado: generar ? 'Generando…' : 'Analizando…', decisiones, sinTextos, envio: undefined, error: undefined });
     try {
-      const resultado = await prepararArchivo(fila.archivo, decisiones, sinTextos, fetch, generar, generar ? fila.resultado?.huella : undefined);
+      const resultado = await prepararArchivo(fila.archivo, decisiones, sinTextos, fetch, generar, generar ? fila.resultado?.huella : undefined, fila.carpeta);
       actualizar(fila.id, { resultado, revision: fila.revision + 1 });
+      if (resultado.listo && resultado.stockLona?.aplica) abrirStock(fila.id);
     } catch (error) {
       actualizar(fila.id, { error: error instanceof Error ? error.message : 'No se pudo leer el plano.' });
     } finally {
@@ -72,21 +79,22 @@ export function CmtView() {
    * Un plano que ya está abierto no se repite: se vuelve a él. Si el fichero ha cambiado (se guardó otra vez en ZWCAD),
    * se lee de nuevo en su sitio.
    */
-  async function agregar(archivos: File[]) {
+  async function agregar(archivos: File[], carpeta?: string) {
     if (!archivos.length) return;
     const actuales = filasActuales.current;
     const aLeer: FilaCmt[] = [];
     const nuevas: FilaCmt[] = [];
     let primera: number | undefined;
     for (const archivo of archivos) {
-      const abierta = actuales.find(f => f.archivo.name.toLowerCase() === archivo.name.toLowerCase());
+      const origen = carpeta ?? archivo.webkitRelativePath?.split('/').slice(0, -1).join('/');
+      const abierta = actuales.find(f => f.carpeta === origen && f.archivo.name.toLowerCase() === archivo.name.toLowerCase());
       if (abierta && (abierta.ocupado || mismoArchivo(abierta.archivo, archivo))) {
         primera ??= abierta.id;
         continue;
       }
       const fila: FilaCmt = abierta
         ? { ...abierta, archivo, decisiones: {}, sinTextos: false, resultado: undefined, error: undefined, envio: undefined, ocupado: 'Analizando…' }
-        : { id: siguienteId.current++, revision: 0, archivo, ocupado: 'Analizando…', sinTextos: false, decisiones: {} };
+        : { id: siguienteId.current++, revision: 0, archivo, carpeta: origen, ocupado: 'Analizando…', sinTextos: false, decisiones: {} };
       primera ??= fila.id;
       aLeer.push(fila);
       if (!abierta) nuevas.push(fila);
@@ -100,6 +108,7 @@ export function CmtView() {
     const indice = filas.findIndex(f => f.id === id);
     const quedan = filas.filter(f => f.id !== id);
     setFilas(quedan);
+    setColaStock(cola => cola.filter(enCola => enCola !== id));
     if (activa === id) setActiva(quedan[Math.min(indice, quedan.length - 1)]?.id ?? null);
   }
 
@@ -125,7 +134,7 @@ export function CmtView() {
     onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setArrastrando(false); }}
     onDrop={e => { e.preventDefault(); setArrastrando(false); void agregar(Array.from(e.dataTransfer.files)); }}>
     <aside className="cmt-lateral" aria-label="Elegir planos">
-      <BuscadorPlanos onElegir={archivo => void agregar([archivo])} />
+      <BuscadorPlanos onElegir={(archivo, carpeta) => void agregar([archivo], carpeta)} />
       <div className="cmt-entrada">
         <Upload aria-hidden="true" />
         <div><strong>Arrastra DWG o DXF</strong><p>Aquí o en cualquier parte de la pantalla. Máximo 30 MB.</p></div>
@@ -140,7 +149,7 @@ export function CmtView() {
             <p role="status">{`${mm(listos)} de ${mm(filas.length)} listos${procesando ? ' · Procesando…' : ''}`}{descarga.mensaje && ` ${descarga.mensaje}`}</p>
           </div>
           <button type="button" className="ghost-button" disabled={procesando || descarga.ocupado} onClick={() => {
-            setFilas([]); setActiva(null); setDescarga({ ocupado: false, error: '', mensaje: '' });
+            setFilas([]); setActiva(null); setColaStock([]); setDescarga({ ocupado: false, error: '', mensaje: '' });
           }}>Limpiar lista</button>
         </div>
         <ul>
@@ -160,6 +169,7 @@ export function CmtView() {
       {fila ? <Ficha key={fila.id} fila={fila} listos={listos} descargando={descarga.ocupado}
         onProcesar={opciones => void procesar(fila, opciones)}
         onCambio={cambios => actualizar(fila.id, cambios)}
+        onStock={() => abrirStock(fila.id)}
         onGuardar={operacion => void guardar(operacion)}
         onGuardarTodos={() => void guardar(guardarTodos)} />
         : <div className="cmt-vacio">
@@ -168,15 +178,17 @@ export function CmtView() {
           <p>Búscalo en los planos de la oficina o arrastra un DWG o un DXF. En los DWG se corta lo que hay dentro del rectángulo de la capa 0. Antes de generar verás el corte y lo que haya que decidir.</p>
         </div>}
     </div>
+    {deteccionStock?.aplica && <StockLonaPlano key={planoStock} deteccion={deteccionStock} cerrar={() => setColaStock(cola => cola.slice(1))} />}
   </section>;
 }
 
-function Ficha({ fila, listos, descargando, onProcesar, onCambio, onGuardar, onGuardarTodos }: {
+function Ficha({ fila, listos, descargando, onProcesar, onCambio, onStock, onGuardar, onGuardarTodos }: {
   fila: FilaCmt;
   listos: number;
   descargando: boolean;
   onProcesar: (opciones?: { generar?: boolean; sinTextos?: boolean }) => void;
   onCambio: (cambios: Partial<FilaCmt>) => void;
+  onStock: () => void;
   onGuardar: (operacion: () => Promise<unknown>) => void;
   onGuardarTodos: () => void;
 }) {
@@ -199,6 +211,7 @@ function Ficha({ fila, listos, descargando, onProcesar, onCambio, onGuardar, onG
         {r?.preparado && !r.listo && <button type="button" className="primary-button boton-3d" disabled={Boolean(fila.ocupado)}
           onClick={() => onProcesar({ generar: true })}>{fila.ocupado === 'Generando…' ? 'Generando…' : 'Generar DXF y CMT'}</button>}
         {r && terminado && <>
+          {r.stockLona?.aplica && <button type="button" className="ghost-button boton-3d" onClick={onStock}>Comprobar stock</button>}
           <MenuMas etiqueta="Descargas" icono={<Download size={16} aria-hidden="true" />}>
             <button type="button" role="menuitem" className="menu-mas-item" disabled={descargando} onClick={() => onGuardar(() => descargarDxf(r))}>
               <FileDown size={16} aria-hidden="true" />Descargar DXF</button>

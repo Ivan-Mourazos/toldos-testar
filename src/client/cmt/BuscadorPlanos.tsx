@@ -82,7 +82,7 @@ export function ListaPlanos({ datos, cargandoRuta, onElegir, onPagina }: {
   </>;
 }
 
-export function BuscadorPlanos({ onElegir, buscar = fetch }: { onElegir: (archivo: File) => void; buscar?: Buscar }) {
+export function BuscadorPlanos({ onElegir, buscar = fetch }: { onElegir: (archivo: File, carpeta: string) => void; buscar?: Buscar }) {
   const [texto, setTexto] = useState('');
   const [consulta, setConsulta] = useState({ texto: '', pagina: 1, actualizar: false });
   const [datos, setDatos] = useState<PaginaPlanos | null>(null);
@@ -119,7 +119,7 @@ export function BuscadorPlanos({ onElegir, buscar = fetch }: { onElegir: (archiv
     try {
       const respuesta = await buscar(`/api/cmt/planos/archivo?${new URLSearchParams({ ruta: plano.ruta })}`);
       if (!respuesta.ok) throw new Error(await leerError(respuesta, 'No se pudo leer el plano.'));
-      onElegir(new File([await respuesta.blob()], plano.nombre, { lastModified: Date.parse(plano.modificado) }));
+      onElegir(new File([await respuesta.blob()], plano.nombre, { lastModified: Date.parse(plano.modificado) }), plano.subcarpeta);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No se pudo leer el plano.');
     } finally {
