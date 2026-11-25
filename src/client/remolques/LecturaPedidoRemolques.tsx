@@ -51,10 +51,12 @@ function ResultadosElemento({ elemento, params }: { elemento: ElementoEscena; pa
     : <ResultadosBaqueton res={elemento.res} {...comunes} />;
 }
 
-export function LecturaPedidoRemolques({ pedido, versionInicial }: {
+export function LecturaPedidoRemolques({ pedido, versionInicial, datosElemento }: {
   pedido: PedidoRemolques;
   /** El elemento que se abre primero (por su versión); sin él, el primero del pedido. */
   versionInicial?: string;
+  /** Una línea con lo que no dicen las pestañas (OF, lona, revisor); sin ella, solo el rótulo. */
+  datosElemento?: (version: string) => React.ReactNode;
 }) {
   const lineas = useMemo<LineaPedido[]>(
     () => pedido.elementos.map(({ version, tipo, input }) => ({ version, tipo, input })),
@@ -93,10 +95,9 @@ export function LecturaPedidoRemolques({ pedido, versionInicial }: {
         soloLectura
       />
       <section ref={contenidoFluido} className="panel-vidrio rem-editor" aria-label={`Datos de ${rotulo}`}>
-        <header className="rem-editor-cabecera">
-          <p className="rem-editor-etiqueta">{`Solo lectura · ${pedido.numeroPedido}`}</p>
-          <h2>{rotulo}</h2>
-        </header>
+        {datosElemento ? datosElemento(linea.version) : (
+          <header className="rem-editor-cabecera"><h2>{rotulo}</h2></header>
+        )}
         <div className="rem-editor-cuerpo">
           <div className="rem-editor-izquierda">
             {/* Las observaciones se leen como nota, igual que en la ficha de lectura de los toldos. */}

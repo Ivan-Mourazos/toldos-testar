@@ -43,25 +43,26 @@ function fechaHora(valor: string) {
 const nombreElemento = (elemento: ElementoGuardado) => (elemento.tipo === 'lona' ? `Remolque · ${modeloElemento(elemento)}`
   : elemento.tipo === 'ganado' ? `Ganado · ${modeloElemento(elemento)}` : 'Baquetón');
 
-function FilaElemento({ elemento, letra, coordina }: { elemento: ElementoGuardado; letra: string; coordina: CoordinaStatus | null }) {
+/** Lo que no dicen las pestañas, en una línea encima de los datos del elemento (Iván, 25/11/2026:
+ *  la lista de elementos de antes repetía las pestañas y ocupaba sitio). */
+function DatosElemento({ elemento, coordina }: { elemento: ElementoGuardado; coordina: CoordinaStatus | null }) {
   const of = normalizeOf(elemento.input.cabecera.ordenFabricacion ?? '');
   const enCoordina = coordina?.disponible && of ? coordina.ofs?.[of] : undefined;
   const aprobadoPor = aprobadaOPasada(enCoordina?.estado) && enCoordina?.revisor
     ? reviewerName(enCoordina.revisor, formOptions.tecnicos as string[])
     : '';
-  return (
-    <li className="rem-pedido-elemento bloque-3d">
-      <strong className="rem-pedido-letra">{letra}</strong>
-      <span>{nombreElemento(elemento)}</span>
+  return <>
+    <p className="rem-editor-datos">
+      <strong>{nombreElemento(elemento)}</strong>
       <span>{`${formatearNumeroEs(elemento.input.largo)} × ${formatearNumeroEs(elemento.input.ancho)} cm`}</span>
       <span>{`OF ${of || '—'}`}</span>
       <span className="rem-pedido-material" title={elemento.input.material}>{elemento.input.material || 'Sin material'}</span>
       {aprobadoPor && <span className="orders-detail-approved">{`Aprobado por ${controlLabel(aprobadoPor)}`}</span>}
-      {enCoordina?.estado === 'devuelta' && (
-        <span className="orders-detail-returned"><strong>Devuelta en CoordinaOT:</strong> {enCoordina.nota || 'sin nota'}</span>
-      )}
-    </li>
-  );
+    </p>
+    {enCoordina?.estado === 'devuelta' && (
+      <p className="orders-detail-returned"><strong>Devuelta en CoordinaOT:</strong> {enCoordina.nota || 'sin nota'}</p>
+    )}
+  </>;
 }
 
 export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, generando, onBack, onCorregir, onReutilizar, onGenerar, onEnviado, onGestion, onProduccionTerminada, notify, onConfirm, elementoInicial, textoVolver = '← Pedidos' }: {
@@ -110,7 +111,6 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
   const corregible = puedeEditarToldos(currentUser);
   const permisoCorte = estadoGenerarRemolques(Object.assign({}, pedidoEntrega(pedido), { status: 'PENDING_REVIEW' as const, entregas: [] }), currentUser, coordina);
   const ruta = `/api/remolques/pedidos/${encodeURIComponent(pedido.orderCode)}`;
-  const letras = elementosAprobacion(pedido).map((item) => item.letter);
   const datos = [
     pedido.summary.customer || 'Sin cliente',
     pedido.summary.orderDate && `pedido del ${pedido.summary.orderDate.split('-').reverse().join('/')}`,
@@ -182,14 +182,12 @@ export function FichaPedidoRemolques({ pedido, cargando, coordina, currentUser, 
       )}
 
 
-      <ul className="rem-pedido-elementos" aria-label="Elementos del pedido">
-        {pedido.elementos.map((elemento, indice) => (
-          <FilaElemento key={elemento.version} elemento={elemento} letra={letras[indice]} coordina={coordina} />
-        ))}
-      </ul>
-
       {/* key: otro pedido empieza otra vez por su primer elemento. */}
-      <LecturaPedidoRemolques key={pedido.orderCode} pedido={pedido} versionInicial={elementoInicial} />
+      <LecturaPedidoRemolques key={pedido.orderCode} pedido={pedido} versionInicial={elementoInicial}
+        datosElemento={(version) => {
+          const elemento = pedido.elementos.find((e) => e.version === version);
+          return elemento ? <DatosElemento elemento={elemento} coordina={coordina} /> : null;
+        }} />
 
       {/* Debajo de los datos (Iván, 20/10/2026). Se vuelve a calcular si el pedido cambia (guardado o generado). */}
       <DocumentosPedido planteamiento={<PlanteamientoPedido origen={`${ruta}/vista-previa`} version={pedido.updatedAt} />}

@@ -889,3 +889,7 @@
 .gan-piezas th, .gan-piezas td { border-bottom: 1px solid var(--border); padding: 0.375rem 0.5rem; text-align: left; vertical-align: top; }
 .gan-piezas th { color: var(--text-muted); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
 .gan-aviso { color: var(--danger); font-size: 13px; margin: 0.5rem 0 0; }
+/* Encima de los datos del elemento guardado: lo que no dicen las pestañas, en una línea. */
+.rem-editor-datos { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; margin: 0 0 8px; font-size: 13px; }
+.rem-editor-datos .rem-pedido-material { max-width: 32rem; }
+.rem-pedido-guardado .rem-lectura, .rem-pedido-guardado .rem-lectura .rem-elementos { margin-top: 0; }

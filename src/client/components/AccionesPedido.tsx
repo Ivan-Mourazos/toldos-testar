@@ -57,20 +57,29 @@ export function CabeceraPedidoGuardado({ volver, titulo, datos, acciones, corteN
 }) {
   return <>
     <header className="review-reader-header">{volver}<div className="review-reader-title"><h2>{titulo}</h2><small>{datos}</small></div>{acciones}</header>
-    {pedido && <EntregasPedido pedido={pedido} />}
-    {corteNoRegenerado && <p role="status" className="review-state-note aviso-flujo-editable">{CORTE_NO_REGENERADO}</p>}
-    {corteSimulado && <p role="status" className="review-state-note aviso-flujo-editable">Corte calculado en simulación; no se ha escrito ningún plano.</p>}
+    {(pedido || corteNoRegenerado || corteSimulado) && <EntregasPedido pedido={pedido} avisos={(corteNoRegenerado || corteSimulado) && <>
+      {corteNoRegenerado && <span role="status" className="aviso-chip">{CORTE_NO_REGENERADO}</span>}
+      {corteSimulado && <span role="status" className="aviso-chip">Corte calculado en simulación, sin plano escrito</span>}
+    </>} />}
   </>;
 }
 
-export function EntregasPedido({ pedido }: { pedido: { orderCode: string; status: string } }) {
-  const entregas = entregasPedido(pedido) as EntregaPedido[];
-  const cerradoSinGenerar = pedido.status === 'TERMINADO_SIN_GENERAR';
-  if (cerradoSinGenerar && !entregas.length) return null;
-  return <section className="entregas-pedido bloque-3d" aria-label="Entregas del pedido">
-    {!cerradoSinGenerar && <strong>{`Entrega ${numeroEntrega(pedido)}${pedido.status === 'PRODUCED' ? ' · Generada' : ' · En curso'}`}</strong>}
-    {!cerradoSinGenerar && pedido.status !== 'PRODUCED' && <p>{ofsEntrega(pedido).length ? `OF de esta entrega: ${ofsEntrega(pedido).join(', ')}` : 'No hay OF nuevas o cambiadas para generar.'}</p>}
-    {entregas.length > 0 && <table><thead><tr><th>Entrega</th><th>OF generadas</th><th>Fecha y autor</th><th>Archivos</th></tr></thead><tbody>
+/** La entrega en curso y los avisos del corte en una sola línea; el historial, plegado (Iván, 25/11/2026:
+ *  eran tres bloques grandes encima de los datos de cada elemento). */
+export function EntregasPedido({ pedido, avisos }: { pedido?: { orderCode: string; status: string }; avisos?: React.ReactNode }) {
+  const entregas = (pedido ? entregasPedido(pedido) : []) as EntregaPedido[];
+  const cerradoSinGenerar = !pedido || pedido.status === 'TERMINADO_SIN_GENERAR';
+  if (cerradoSinGenerar && !entregas.length && !avisos) return null;
+  const ofs = pedido && !cerradoSinGenerar && pedido.status !== 'PRODUCED' ? ofsEntrega(pedido) : null;
+  return <section className="entregas-pedido" aria-label="Entregas del pedido">
+    <div className="entregas-linea">
+      {pedido && !cerradoSinGenerar && <span>
+        <strong>{`Entrega ${numeroEntrega(pedido)}${pedido.status === 'PRODUCED' ? ' · Generada' : ' · En curso'}`}</strong>
+        {ofs && (ofs.length ? ` · OF ${ofs.join(', ')}` : ' · sin OF nuevas o cambiadas')}
+      </span>}
+      {avisos}
+    </div>
+    {entregas.length > 0 && <details><summary>{entregas.length === 1 ? 'Historial: 1 entrega' : `Historial: ${entregas.length} entregas`}</summary><table><thead><tr><th>Entrega</th><th>OF generadas</th><th>Fecha y autor</th><th>Archivos</th></tr></thead><tbody>
       {entregas.map(e => <tr key={e.numero}><td>{e.numero}</td><td>{e.ofs.join(', ')}</td>
         <td>{new Date(e.fecha).toLocaleString('es-ES')} · {e.autor || 'Sin autor registrado'}
           {e.destino && <small className="entrega-archivo">{e.destino.modo === 'sustituir' ? 'Sustitución' : 'Entrega nueva'} · -{e.destino.numero}</small>}
@@ -82,6 +91,6 @@ export function EntregasPedido({ pedido }: { pedido: { orderCode: string; status
             {a.archivedFilename || a.filename}{copias.length > 1 ? ` · ${copias.length} copias` : ''}
           </span>;
         })}</td></tr>)}
-    </tbody></table>}
+    </tbody></table></details>}
   </section>;
 }
