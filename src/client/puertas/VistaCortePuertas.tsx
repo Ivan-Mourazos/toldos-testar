@@ -1,9 +1,46 @@
 import React, { useEffect, useRef, useState } from 'react';
-import type { CortePuertas, PedidoPuertas, VistaPuertas } from '../../puertas/tipos.ts';
+import type { CortePuertas, EntidadesPuertas, PedidoPuertas, VistaPuertas } from '../../puertas/tipos.ts';
 import { anchoArial } from '../../domain/corteLona/texto.js';
 import { presentarImpresionAraujo } from '../../puertas/cotasImpresionAraujo.ts';
+import { entidadesDePieza } from '../../puertas/corteEnPlano.ts';
+import { MATERIAL_SACO_AMARILLO } from '../../puertas/saco.ts';
 import '../coordina/corte-lona.css';
 import { numeroPuerta, textoMedidasMm } from './medidasPuertas';
+
+function TrazosCorte({ entidades, factorMm = 1 }: { entidades: EntidadesPuertas; factorMm?: number }) {
+  return <>
+    {entidades.lineas.map((l,i)=><line key={i} x1={l.x1} y1={-l.y1} x2={l.x2} y2={-l.y2} data-capa={l.capa} className={l.capa==='ROTULADOR'?'corte-marca':l.capa==='CUTTER'?'puerta-cutter':'corte-linea'} vectorEffect="non-scaling-stroke"/>)}
+    {entidades.arcos.map((a,i)=>{
+      const rad=(v:number)=>v*Math.PI/180;
+      const x0=a.x+a.r*Math.cos(rad(a.desde)),y0=-a.y-a.r*Math.sin(rad(a.desde));
+      const x1=a.x+a.r*Math.cos(rad(a.hasta)),y1=-a.y-a.r*Math.sin(rad(a.hasta));
+      return <path key={i} d={`M ${x0} ${y0} A ${a.r} ${a.r} 0 0 0 ${x1} ${y1}`} data-capa={a.capa} className={a.capa==='CUTTER'?'puerta-cutter':'corte-linea'} vectorEffect="non-scaling-stroke"/>;
+    })}
+    {entidades.textos.map((t,i)=><text key={i} data-capa={t.capa} x={t.x} y={-t.y} fontSize={t.h} className={t.capa==='ROTULADOR'?'puerta-texto-rotulador':undefined} textAnchor={t.centrado?'middle':'start'} dominantBaseline={t.centrado?'central':'auto'} transform={t.giro?`rotate(${-t.giro} ${t.x} ${-t.y})`:undefined}>{textoMedidasMm(t.valor)}<title>{t.capa} · {textoMedidasMm(t.valor)} · {(t.h * factorMm).toLocaleString('es-ES')} mm</title></text>)}
+  </>;
+}
+
+/** Recupera cada mitad del corte real en sus propias coordenadas, con sus marcas de unión. */
+function SacoPartidoHorizontal({ corte }: { corte: CortePuertas }) {
+  let alto = 0;
+  const piezas = [];
+  for (const t of corte.colocadas) {
+    const base = alto + t.pieza.alto;
+    piezas.push({ base, entidades: entidadesDePieza(corte, t) });
+    alto = base + 4;
+  }
+  const ancho = Math.max(...corte.colocadas.map(t => t.pieza.ancho));
+  return <>
+    <p className="corte-ayuda">Piezas en horizontal · La colocación en el rollo se conserva en el DXF.</p>
+    <svg role="img" aria-label={`Piezas del saco en horizontal · ${corte.material}`} className="corte-dibujo puerta-corte-dibujo"
+      viewBox={`-2 -2 ${ancho + 4} ${alto}`}>
+      {piezas.map(({ base, entidades }, i) => <g key={i} transform={`translate(0 ${base})`}>
+        <TrazosCorte entidades={entidades} factorMm={10}/>
+      </g>)}
+    </svg>
+  </>;
+}
+
 
 /** Ancho real ocupado en el rollo (mm) por las piezas colocadas, tal como se dibujan. */
 export function anchoOcupadoCorte(corte: CortePuertas): number {
@@ -108,6 +145,8 @@ export function largoReferenciaCortes(cortes: CortePuertas[]): number {
 }
 
 export function DibujoCortePuertas({ corte, zoom = 1, ajustado = false, largoReferencia }: { corte: CortePuertas; zoom?: number; ajustado?: boolean; largoReferencia?: number }) {
+  if (corte.opcion === 'saco-partido' && corte.material.trim().toUpperCase() === MATERIAL_SACO_AMARILLO
+    && corte.colocadas.some(t => t.girada)) return <SacoPartidoHorizontal corte={corte} />;
   const { corte: c, ocupado, textos, vista } = geometriaCorteAjustado(corte);
   const alto = Math.max(c.anchoRollo + 430, ...c.entidades.textos.map(t => t.y + t.h + 20));
   const titulosAparte = c.extensionDibujo ? c.entidades.textos.filter(t => t.x >= c.largo + 1500).map(t => t.y + t.h) : [];
@@ -133,21 +172,7 @@ export function DibujoCortePuertas({ corte, zoom = 1, ajustado = false, largoRef
       viewBox={viewBox}
     >
       <rect className="corte-rollo" width={c.largo} height={altoRollo} y={-altoRollo} />
-      {c.entidades.lineas.map((l, i) => (
-        <line key={i} x1={l.x1} y1={-l.y1} x2={l.x2} y2={-l.y2} data-capa={l.capa} className={l.capa === 'ROTULADOR' ? 'corte-marca' : l.capa === 'CUTTER' ? 'puerta-cutter' : 'corte-linea'} vectorEffect="non-scaling-stroke" />
-      ))}
-      {c.entidades.arcos.map((a, i) => {
-        const rad = (v: number) => v * Math.PI / 180;
-        const x0 = a.x + a.r * Math.cos(rad(a.desde)), y0 = -a.y - a.r * Math.sin(rad(a.desde));
-        const x1 = a.x + a.r * Math.cos(rad(a.hasta)), y1 = -a.y - a.r * Math.sin(rad(a.hasta));
-        return <path key={i} d={`M ${x0} ${y0} A ${a.r} ${a.r} 0 0 0 ${x1} ${y1}`} data-capa={a.capa} className={a.capa === 'CUTTER' ? 'puerta-cutter' : 'corte-linea'} vectorEffect="non-scaling-stroke" />;
-      })}
-      {textosPintar.map((t, i) => (
-        <text key={i} data-capa={t.capa} x={t.x} y={-t.y} fontSize={t.h} className={t.capa === 'ROTULADOR' ? 'puerta-texto-rotulador' : undefined} textAnchor={t.centrado ? 'middle' : 'start'} dominantBaseline={t.centrado ? 'central' : 'auto'} transform={t.giro ? `rotate(${-t.giro} ${t.x} ${-t.y})` : undefined}>
-          {textoMedidasMm(t.valor)}
-          <title>{`${t.capa} · ${textoMedidasMm(t.valor)} · ${t.h.toLocaleString('es-ES')} mm`}</title>
-        </text>
-      ))}
+      <TrazosCorte entidades={{ ...c.entidades, textos: textosPintar }} />
     </svg>
   );
 }

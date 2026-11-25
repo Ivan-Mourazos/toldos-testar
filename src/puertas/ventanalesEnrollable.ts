@@ -1,5 +1,18 @@
 import type { Puerta } from './tipos.ts';
 
+export const SOLAPE_VENTANAL = 2;
+export const EXTRA_CACHO_VENTANAL = 1;
+export const anchoCristalVentanal = (frente: number, margen: number): number => frente - 2 * margen + 2 * SOLAPE_VENTANAL;
+
+/** El borde del paño cubre su E.T. hasta el lado que da al cristal. */
+export function bordesVentanal(desde: number, hasta: number, semibandaInicial: number, semibandaFinal: number) {
+  const visibleDesde = desde + semibandaInicial, visibleHasta = hasta - semibandaFinal;
+  return {
+    visibleDesde, visibleHasta, altoVisible: visibleHasta - visibleDesde,
+    corteDesde: visibleDesde - SOLAPE_VENTANAL, corteHasta: visibleHasta + SOLAPE_VENTANAL,
+  };
+}
+
 export const NOTA_CACHOS_CRISTAL = 'LOS CACHOS DE LOS LATERALES DEL CRISTAL VAN 1 CM MÁS GRANDE PARA DESPUÉS ESCUADRARLO';
 /** La nota del plano de una enrollable: la que escriba el técnico; si no ha escrito nada, la de los cachos, de serie
  * con ventanal (Iván, 06/11/2026). Borrarla en el formulario la quita del plano. */
@@ -20,11 +33,11 @@ export function ventanalesEnrollable(p: Puerta) {
   let desde = e.T;
   return vs.map((v, i) => {
     const hasta = desde + v.D, etArriba = !(i === 0 && e.sinEtArriba), etAbajo = !(i === vs.length - 1 && e.sinEtAbajo);
-    const visibleDesde = desde + (etArriba ? 3.75 : 0);
+    const b = bordesVentanal(desde, hasta, etArriba ? 3.75 : 0, etAbajo ? 3.75 : 0);
     const ventana = { ...v, desde, hasta, etArriba, etAbajo,
-      corteDesde: desde + (etArriba ? 1.75 : -2), corteHasta: hasta + (etAbajo ? -1.75 : 2),
+      corteDesde: b.corteDesde, corteHasta: b.corteHasta,
       altoCorte: v.D - 3.5 + (etArriba ? 0 : 3.75) + (etAbajo ? 0 : 3.75),
-      visibleDesde, altoVisible: v.D - (etArriba ? 3.75 : 0) - (etAbajo ? 3.75 : 0) };
+      visibleDesde: b.visibleDesde, altoVisible: v.D - (etArriba ? 3.75 : 0) - (etAbajo ? 3.75 : 0) };
     desde = hasta;
     return ventana;
   });

@@ -7,7 +7,7 @@ import { calcularPuerta } from './calcular.ts';
 import { cortarSystemDock, medidaSystemDock } from './systemDock.ts';
 import { rotulosAbrigo } from './rotulosAbrigo.ts';
 import { cortarSacosArena } from './sacoArena.ts';
-import { enderezarSaco, invertirPanoInclinado } from './saco.ts';
+import { enderezarSaco, invertirPanoInclinado, MATERIAL_SACO_AMARILLO } from './saco.ts';
 import { centroLibre } from './unionesCorte.ts';
 import { piezaSinMargenes } from './escuadrado.ts';
 import { colocacionSantaPau } from './colocacionSantaPau.ts';
@@ -385,6 +385,21 @@ function empaquetar(grupo: PiezaPuerta[], rollo: number, nueva: (p: PiezaPuerta)
 }
 
 const anchoEnFila = (f: Columna['piezas'][number]) => mm(f.girada ? f.pieza.alto : f.pieza.ancho);
+
+function situarColumnas(columnas: Columna[]) {
+  let largo = 0;
+  const sitios: Array<{ t: Columna['piezas'][number]; x: number; y: number; c: number; anchoColumna: number; junta?: boolean }> = [];
+  columnas.forEach((columna, c) => {
+    let y = 0, x = largo, alto = 0;
+    for (const t of columna.piezas) {
+      if (t.alLado) x += anchoEnFila(sitios.at(-1)!.t);
+      else { y += alto; x = largo; alto = t.h; }
+      sitios.push({ t, x, y, c, anchoColumna: columna.ancho });
+    }
+    largo += columna.ancho;
+  });
+  return { largo, sitios };
+}
 /** La última fila de la columna: la última pieza apilada y las que tiene al lado. */
 function filaFinal(columna: Columna) {
   let inicio = columna.piezas.length - 1;
@@ -581,17 +596,7 @@ function colocar(
       const incompleta = (f: Columna['piezas']) => f.length > 1 && f.reduce((s, t) => s + anchoEnFila(t), 0) < columna.ancho - 0.001;
       columna.piezas = [...filas.filter(f => !incompleta(f)), ...filas.filter(incompleta)].flat();
     }
-    let largo = 0;
-    const sitios: Array<{ t: Columna['piezas'][number]; x: number; y: number; c: number; xc: number; anchoColumna: number; junta?: boolean }> = [];
-    columnas.forEach((columna, c) => {
-      let y = 0, x = largo, alto = 0;
-      for (const t of columna.piezas) {
-        if (t.alLado) x += anchoEnFila(sitios.at(-1)!.t);
-        else { y += alto; x = largo; alto = t.h; }
-        sitios.push({ t, x, y, c, xc: largo, anchoColumna: columna.ancho });
-      }
-      largo += columna.ancho;
-    });
+    const { largo: largoColumnas, sitios } = situarColumnas(columnas);
     // Las piezas iguales en fila que son más estrechas que su columna (los cachos de pie encima de las E.T.) van
     // pegadas, compartiendo el corte, y no sueltas con un hueco cada una (Iván, 22/10/2026, AR2605134).
     const ancho = (s: (typeof sitios)[number]) => mm(s.t.girada ? s.t.pieza.alto : s.t.pieza.ancho);
@@ -629,17 +634,25 @@ function colocar(
     const conStock = Boolean(!grupo[0].abrigo && ofStock && opcion === 'principal' && grupo.some(p => p.clase === 'pano'));
     const alternativa = grupo.some(p => p.clase === 'entrada') && grupo.filter(p => p.clase === 'pano').length > 2
       ? columnasPanos(piezasBusqueda, id => sitios[Number(id)].t.pieza.clase === 'pano', rollo) : null;
-    const semilla = alternativa && Math.max(...alternativa.map(r=>r.x+r.w)) < largo ? alternativa : inicial;
+    const semilla = alternativa && Math.max(...alternativa.map(r=>r.x+r.w)) < largoColumnas ? alternativa : inicial;
     const elegidas = buscarColocacion(piezasBusqueda, rollo, semilla, presupuesto, valida, conStock ? aprovechamiento : undefined);
     // Las franjas que llenan el rollo separan el anidado: trasladarlas al inicio no altera su consumo.
     const completas = elegidas.filter(s => Math.abs(s.h - rollo) < .001).sort((a, b) => a.x - b.x);
-    const seleccionadas = elegidas.map(s => {
+    let seleccionadas = elegidas.map(s => {
       const completa = completas.includes(s);
       const antes = completas.filter(t => t.x < s.x).reduce((n, t) => n + t.w, 0);
       const x = completa ? antes : s.x - antes + completas.reduce((n, t) => n + t.w, 0);
       return { t: { pieza: sitios[Number(s.id)].t.pieza, h: s.h, girada: s.girada }, x, y: s.y };
     });
-    largo = Math.max(0, ...seleccionadas.map(s => s.x + mm(s.t.girada ? s.t.pieza.alto : s.t.pieza.ancho)));
+    let largo = Math.max(0, ...seleccionadas.map(s => s.x + anchoEnFila(s.t)));
+    if (opcion === 'saco-partido' && grupo[0].material.trim().toUpperCase() === MATERIAL_SACO_AMARILLO
+      && seleccionadas.some(s => s.t.girada) && grupo.every(p => mm(p.alto) <= rollo)) {
+      // Las mitades a lo largo del rollo son preferibles si cuestan los mismos metros o menos.
+      const horizontal = (['corto', 'largo'] as const)
+        .map(orden => empaquetar(grupo, rollo, () => 'ancha', orden, () => true))
+        .reduce((a, b) => largoDe(a) <= largoDe(b) ? a : b);
+      if (largoDe(horizontal) <= largo) ({ sitios: seleccionadas, largo } = situarColumnas(horizontal));
+    }
     const primerPano = seleccionadas.find(s => s.t.pieza.clase === 'pano');
     for (const s of seleccionadas) {
       colocadas.push({ pieza: s.t.pieza, x: s.x, y: s.y, girada: s.t.girada });

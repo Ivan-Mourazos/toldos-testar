@@ -127,6 +127,13 @@ export function invertirPanoInclinado(pieza: PiezaPuerta): PiezaPuerta {
 }
 
 /** Iván, 22/10/2026: las diagonales se imprimen después de cortar el saco negro. */
+export const MATERIAL_SACO_AMARILLO = 'LAC900 AMARILLO';
+
+export function soldaduraSacoEnrollable(p: Pick<Puerta, 'materialSaco' | 'sacoDiagonalesAmarillas'>): string {
+  const amarillo = !p.sacoDiagonalesAmarillas && p.materialSaco.trim().toUpperCase() === MATERIAL_SACO_AMARILLO;
+  return `SOLDAR SACO ${amarillo ? 'AMARILLO' : 'NEGRO'} 2 CM MÁXIMO`;
+}
+
 export function rotuloSaco(p: Pick<Puerta, 'materialSaco' | 'sacoDiagonalesAmarillas'>): string {
   return p.sacoDiagonalesAmarillas ? 'SACO 900 GR AMARILLO/NEGRO' : p.materialSaco.replace(/^LAC\s*900\s*/i, 'SACO 900 GR ');
 }

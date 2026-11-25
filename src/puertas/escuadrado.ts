@@ -18,7 +18,8 @@ export function huecosSinEscuadrado(e: Entrada, frente: number): Hueco[] {
 
 /** Primero se confecciona a frente; al final se añade lona y se traslada su contenido local el margen de un lado. */
 export function ensancharPieza(x: PiezaPuerta, margen = 1): void {
-  if (x.clase === 'cristal' || x.clase === 'refuerzo') return;
+  // Cada cacho del ventanal ya lleva su centímetro de escuadrado en el lado exterior.
+  if (x.clase === 'cristal' || x.clase === 'refuerzo' || x.clase === 'cacho') return;
   const ancho = x.ancho;
   x.contorno = x.contorno.map(([a, b]) => [a === 0 ? 0 : a === ancho ? ancho + 2 * margen : a + margen, b]);
   x.marcas = x.marcas.map(([a, b, c, d]) => [a + margen, b, c + margen, d]);

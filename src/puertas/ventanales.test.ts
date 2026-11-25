@@ -39,6 +39,24 @@ describe('Varios ventanales continuos del corte manual', () => {
     expect(new Set(laterales.flatMap(p => p.unionesCorte!.map(t => t.numero))).size).toBe(8);
   });
 
+  it('con tres ventanales, cada eje compartido sustituye su entrada por dos caras de corte', () => {
+    const p = base('PUERTAENR', 214, 420);
+    p.enrollable = { T: 130, D: 60, margen: 8, empates: [], ventanales: [{ D: 60, margen: 8 }, { D: 60, margen: 8 }] };
+    p.entradas = [110, 170, 230, 290].map(altura => ({ altura, largo: 214, alto: 8, diametro: 30, huecos: [] }));
+    const r = calcularPuerta(p);
+    expect(r.avisos.filter(a => a.nivel === 'error')).toEqual([]);
+    const entradas = r.piezas.filter(x => x.clase === 'entrada');
+    expect(entradas).toHaveLength(6);
+    for (const [indice, eje] of [230, 170].entries()) {
+      const caras = entradas.filter(x => x.origenAlzado?.[1] === eje - 4);
+      expect(caras.map(x => x.nombre)).toEqual([
+        `Entrada entre ventanales ${indice + 1} · delantera`, `Entrada entre ventanales ${indice + 1} · trasera`,
+      ]);
+      expect(caras[0].unionesCorte).toHaveLength(4);
+      expect(caras[1].unionesCorte ?? []).toEqual([]);
+    }
+  });
+
   it('valida el nuevo dato al recibir documentos, sin aceptar listas ilimitadas ni cotas inválidas', () => {
     const p = base('PUERTAENR',214,400);
     p.enrollable = {T:209,D:60,margen:8,empates:[],ventanales:[{D:71,margen:8}]};
