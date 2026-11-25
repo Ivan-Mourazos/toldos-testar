@@ -287,7 +287,7 @@ cd /webs/toldos-testar && bash scripts/desplegar.sh
 
 Hace lo mismo que antes (comprobar que no hay commits locales, `git pull --ff-only`,
 dependencias y Chromium solo si cambió el lockfile, tipos, build, `deploy:check`,
-`deploy:smoke`, `pm2:reload` y `pm2 save`), pero sin dejar la web en blanco: compila en
+`deploy:smoke`, `pm2:reload`, y `pm2 save` solo si cambió `ecosystem.config.cjs`), pero sin dejar la web en blanco: compila en
 `dist-a` o `dist-b`, la que no está sirviendo, pasa las comprobaciones sobre ella con la web en
 pie y solo al final apunta `.dist-activa` a la nueva y recarga. Antes `vite build` vaciaba
 `dist/` con la web en marcha. Conserva además los ficheros de la versión anterior de los

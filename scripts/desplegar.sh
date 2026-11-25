@@ -27,6 +27,7 @@ if [ -n "$(git log --oneline origin/main..HEAD)" ]; then
   exit 1
 fi
 lock_antes=$(git rev-parse HEAD:pnpm-lock.yaml)
+pm2_antes=$(git rev-parse HEAD:ecosystem.config.cjs)
 git pull --ff-only
 
 # Dependencias y Chromium solo si cambió el lockfile: tocan node_modules con la web en marcha.
@@ -56,7 +57,9 @@ DIST_DIR=$nueva pnpm deploy:smoke
 paso "cambio a $nueva y recarga"
 echo "$nueva" > .dist-activa
 pnpm pm2:reload
-pm2 save
+# pm2 save solo guarda la lista de PM2 para cuando arranque la máquina: hace falta si cambió
+# ecosystem.config.cjs (variables o forma de arrancar), no en cada despliegue.
+if [ "$(git rev-parse HEAD:ecosystem.config.cjs)" != "$pm2_antes" ]; then pm2 save; fi
 
 for _ in $(seq 1 60); do
   if curl -fsS -m 2 "http://127.0.0.1:$PUERTO/api/health" >/dev/null 2>&1; then
