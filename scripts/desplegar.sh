@@ -9,6 +9,9 @@
 #
 # Volver a la versión anterior (sigue compilada en la otra carpeta):
 #   echo dist-a > .dist-activa && pnpm pm2:reload      (o dist-b)
+# Todo va entre llaves: bash lee el bloque entero antes de empezar. Sin ellas lee el fichero
+# a medida que avanza, y el git pull de abajo lo cambia a mitad de camino (25/11/2026).
+{
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -87,3 +90,5 @@ echo
 echo "!! La web no responde tras 60 s. Mira: pnpm pm2:logs"
 echo "!! Para volver a la versión anterior: echo $activa > .dist-activa && pnpm pm2:reload"
 exit 1
+}
+exit
