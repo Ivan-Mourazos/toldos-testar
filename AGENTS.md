@@ -30,6 +30,17 @@ Técnica, y habla castellano.
 - Mantén los finales de línea de cada fichero.
 - Commits en castellano que expliquen el porqué.
 
+## Despliegue
+
+Iván despliega a mano por SSH; los agentes no despliegan nunca. Tras subir a main, termina
+la respuesta con este comando listo para pegar (detalles y vuelta atrás en el README):
+
+```bash
+cd /webs/toldos-testar && bash scripts/desplegar.sh
+```
+
+No des `pnpm build && pnpm pm2:reload`: la web sirve desde `dist-a`/`dist-b` (`.dist-activa`).
+
 ## Cómo se trabaja
 
 - Pruebas primero (TDD) para la lógica. Antes de subir:

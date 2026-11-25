@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { comprobarOda } from '../src/odaConverter.js';
+import { carpetaDist } from '../src/carpetaDist.js';
 import { comprobarCarpetaBorradores, comprobarCarpetaInternaRemolques, comprobarCarpetasRemolques, comprobarChromium } from './lib/deploy-remolques.mjs';
 
 // 22.18: desde la pantalla de remolques, `node src/server.js` importa ficheros .ts (materiales,
@@ -118,7 +119,9 @@ async function checkPackageMetadata() {
 }
 
 async function checkProductionBuild() {
-  const indexFile = path.join(projectDirectory, 'dist', 'index.html');
+  const indexFile = path.join(carpetaDist(projectDirectory), 'index.html');
+  // Las comprobaciones dicen «dist/» por costumbre: la carpeta real puede ser dist-a o dist-b.
+  console.log(`Build revisado en ${path.relative(projectDirectory, carpetaDist(projectDirectory))}/`);
 
   try {
     const details = await stat(indexFile);
@@ -137,7 +140,7 @@ async function checkProductionBuild() {
 // `?muestra=…` sin pasar por el servidor; en producción esa puerta no puede existir.
 async function checkHojaRemolques() {
   try {
-    await stat(path.join(projectDirectory, 'dist', 'hoja-remolques.html'));
+    await stat(path.join(carpetaDist(projectDirectory), 'hoja-remolques.html'));
   } catch {
     fail('Falta dist/hoja-remolques.html (hoja de taller de remolques). Ejecuta pnpm build.');
     return;
@@ -145,12 +148,12 @@ async function checkHojaRemolques() {
   // Sin la hoja de telas el servidor sirve index.html, que nunca avisa de que está lista:
   // cada PDF de toldos esperaría 30 s antes de salir con la página de pdfkit.
   try {
-    await stat(path.join(projectDirectory, 'dist', 'hoja-telas.html'));
+    await stat(path.join(carpetaDist(projectDirectory), 'hoja-telas.html'));
   } catch {
     fail('Falta dist/hoja-telas.html (hoja de telas de toldos). Ejecuta pnpm build.');
     return;
   }
-  const carpeta = path.join(projectDirectory, 'dist', 'assets');
+  const carpeta = path.join(carpetaDist(projectDirectory), 'assets');
   let trozos;
   try {
     trozos = (await readdir(carpeta)).filter((nombre) => nombre.endsWith('.js'));

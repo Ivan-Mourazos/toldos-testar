@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   // Alineado con .gitignore: tmp/ y output/ son borradores locales y .claude/worktrees otras ramas.
-  { ignores: ['dist', 'tmp', 'output', 'exports', '.claude'] },
+  { ignores: ['dist', 'dist-a', 'dist-b', 'tmp', 'output', 'exports', '.claude'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

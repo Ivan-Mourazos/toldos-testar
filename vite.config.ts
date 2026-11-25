@@ -26,6 +26,6 @@ export default defineConfig({
     testTimeout: 30000,
     // Alineado con eslint.config.js: .claude/ y output/releases/ alojan worktrees de otras
     // ramas y tmp/ borradores locales; sus tests no son evidencia de main.
-    exclude: ['**/node_modules/**', '**/dist/**', '.claude/**', 'output/**', 'tmp/**']
+    exclude: ['**/node_modules/**', '**/dist/**', 'dist-a/**', 'dist-b/**', '.claude/**', 'output/**', 'tmp/**']
   }
 });

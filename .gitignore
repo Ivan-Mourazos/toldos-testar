@@ -1,5 +1,8 @@
 node_modules
 dist
+dist-a/
+dist-b/
+.dist-activa
 .env
 .toldos-testar-settings.json
 exports

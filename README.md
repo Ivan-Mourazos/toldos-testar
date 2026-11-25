@@ -282,24 +282,22 @@ de permisos sobre los montajes ni la comprobación del acceso a SQL.
 ### 5. Actualizar
 
 ```bash
-cd /webs/toldos-testar
-# El árbol de producción llegó a tener commits propios (Codex, 15/09/2026).
-# Si esto lista algo, resolverlo antes de seguir: el pull fallaría.
-git log --oneline origin/main..HEAD
-git pull --ff-only
-# Dependencias y Chromium solo si cambió el lockfile: si no, no hacen nada y gastan tiempo.
-git diff --quiet HEAD@{1} HEAD -- pnpm-lock.yaml || {
-  pnpm install --frozen-lockfile
-  PLAYWRIGHT_SKIP_BROWSER_GC=1 pnpm exec playwright-core install chromium
-}
-# Los tipos se comprueban con caché (node_modules/.cache/tsc): no borrar esa carpeta,
-# o el build vuelve a tardar más de un minuto en el .90 (17/11/2026).
-pnpm build
-pnpm deploy:check
-pnpm deploy:smoke
-pnpm pm2:reload
-pm2 save
+cd /webs/toldos-testar && bash scripts/desplegar.sh
 ```
+
+Hace lo mismo que antes (comprobar que no hay commits locales, `git pull --ff-only`,
+dependencias y Chromium solo si cambió el lockfile, tipos, build, `deploy:check`,
+`deploy:smoke`, `pm2:reload` y `pm2 save`), pero sin dejar la web en blanco: compila en
+`dist-a` o `dist-b`, la que no está sirviendo, pasa las comprobaciones sobre ella con la web en
+pie y solo al final apunta `.dist-activa` a la nueva y recarga. Antes `vite build` vaciaba
+`dist/` con la web en marcha. Conserva además los ficheros de la versión anterior de los
+últimos 7 días, para que quien tenga la web abierta no se quede con errores. Si algo falla,
+sigue la versión de antes. Para volver atrás: `echo dist-a > .dist-activa && pnpm pm2:reload`
+(la otra carpeta).
+
+Los tipos se comprueban con caché (`node_modules/.cache/tsc`): no borrar esa carpeta, o el
+build vuelve a tardar más de un minuto en el .90 (17/11/2026). No usar `pnpm build` a mano en
+el servidor para desplegar: compila en `dist/`, que ya no es la que sirve la web.
 
 **Una vez (borradores)**, antes del primer `pnpm pm2:reload` con esta versión. En el .90 se es
 root, sin `sudo`. Se crea la carpeta de los borradores con el mismo dueño que la carpeta de datos:

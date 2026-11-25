@@ -11,6 +11,7 @@ import { adjuntarPedido } from './adjuntosPedido.js';
 import { apuntarEdicion, comprobarLetrasToldos, leerPdfParaActualizarDatos } from './workflow.js';
 import { crearCierreHttp } from './cierreHttp.js';
 import compression from 'compression';
+import { carpetaDist } from './carpetaDist.js';
 import express from 'express';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -133,7 +134,7 @@ import { generateFilesDecision, approvalReviewers, saveReviewDecision, uniqueOfs
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const distDir = path.join(__dirname, '..', 'dist');
+const distDir = carpetaDist(path.join(__dirname, '..'));
 const isProduction = process.env.NODE_ENV === 'production';
 const workflowStore = createWorkflowStore({
   settingsFile: config.workflowSettingsFile,
