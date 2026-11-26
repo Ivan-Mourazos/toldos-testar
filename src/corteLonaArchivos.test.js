@@ -157,14 +157,15 @@ describe('Reglas y salidas del corte', () => {
     expect(planos.files).toHaveLength(2);
     expect(planos.files.map(f => f.filename).join()).toMatch(/2500.*3000/);
   });
-  it('prepara un solo DXF con todas las telas y las dos opciones rotuladas (Iván, 22/10/2026: el técnico de la máquina elige)', async () => {
+  it('prepara un solo DXF con todas las telas; con paño pequeño, solo la opción separada (Iván, 26/11/2026)', async () => {
     const otro = pedidoVariasTelas();
     const estado = crearEstadoCorteLona(otro, { resultado: generarCorteLona(otro, { ofStockSacos: '0230811' }), ofStockSacos: '0230811' });
     const { files } = await prepararArchivosCorte({ order: otro, corteLona: estado,
       settings: { productionEnabled: true }, tipo: 'bot', soloContenido: true });
     expect(files.map(f => f.filename)).toEqual([`${otro.orderCode}.dxf`]);
     const dxf = files[0].contents.toString('latin1');
-    for (const texto of ['AZUL 5010', 'BLANCO 9016', '0232568', 'REVÉS', 'A BAMBA', 'CORTAR DE RESTOS', 'OPCIÓN 1 · CON SACOS', 'OPCIÓN 2 · TROZO SEPARADO']) expect(dxf).toContain(texto);
+    for (const texto of ['AZUL 5010', 'BLANCO 9016', '0232568', 'REVÉS', 'A BAMBA', 'CORTAR DE RESTOS']) expect(dxf).toContain(texto);
+    expect(dxf).not.toContain('ELEGIR SOLO UNA');
     // La bamba sola va una vez, sin opciones.
     expect(dxf.match(/BLANCO 9016 · OPCIÓN/g)).toBeNull();
   });

@@ -29,7 +29,20 @@ afterEach(async () => {
 const post = (ruta, body) => fetch(url + ruta, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 
 describe('Rutas del corte de lona, sin escribir archivos de producción', () => {
-  it('descarga un solo DXF con todas las telas y las dos opciones, igual desde el editor y el pedido guardado', async () => {
+  // Iván, 26/11/2026: el panel Corte enseña el recuadro CORTE del plano que escribiría la web, con sus cotas.
+  it('devuelve el corte del plano de cada tela, con cotas, sin escribir el DWG', async () => {
+    const respuesta = await post('/api/corte-lona', { order: pedidoVariasTelas() });
+    const datos = await respuesta.json();
+    expect(respuesta.status).toBe(200);
+    expect(datos.cortesPlano.length).toBeGreaterThan(1);
+    for (const c of datos.cortesPlano) {
+      expect(c.archivo).toBeTruthy();
+      expect(c.vista.length).toBeGreaterThan(0);
+      expect(c.cotas.length).toBeGreaterThan(0);
+    }
+    expect(convertir).not.toHaveBeenCalled();
+  });
+  it('descarga un solo DXF con todas las telas, igual desde el editor y el pedido guardado', async () => {
     const order = pedidoVariasTelas();
     getReview.mockResolvedValue({ ...revision, order });
     const directo = await post('/api/corte-lona/dxf', { order });
@@ -40,7 +53,9 @@ describe('Rutas del corte de lona, sin escribir archivos de producción', () => 
     const contenido = Buffer.from(await directo.arrayBuffer());
     expect(Buffer.from(await guardado.arrayBuffer())).toEqual(contenido);
     const texto = contenido.toString('latin1');
-    for (const valor of ['AZUL 5010', 'BLANCO 9016', 'A BAMBA', 'CORTAR DE RESTOS', 'OPCIÓN 1 · CON SACOS', 'OPCIÓN 2 · TROZO SEPARADO']) expect(texto).toContain(valor);
+    for (const valor of ['AZUL 5010', 'BLANCO 9016', 'A BAMBA', 'CORTAR DE RESTOS']) expect(texto).toContain(valor);
+    // Iván, 26/11/2026: con paño pequeño, solo la opción separada; nada que elegir.
+    expect(texto).not.toContain('ELEGIR SOLO UNA');
     // Clientes antiguos que aún mandan «opcion»: el mismo archivo.
     const antiguo = await post('/api/corte-lona/dxf', { order, opcion: 'trozoSeparado' });
     expect(Buffer.from(await antiguo.arrayBuffer())).toEqual(contenido);
@@ -71,7 +86,7 @@ describe('Rutas del corte de lona, sin escribir archivos de producción', () => 
     const json = await (await post('/api/corte-lona', { order })).json();
     expect(json.cortes.conSacos[0].piezas.map((p) => p.letra)).toEqual(['A', 'B', 'C']);
     expect(json.corteLona.toldos.map((t) => t.of)).toEqual(['0232568', '0232569', '0232570']);
-    expect(json.cortes.trozoSeparado[0].largo).toBeLessThanOrEqual(json.cortes.conSacos[0].largo);
+    expect(json.cortes.trozoSeparado).toBeNull();
   });
   it('descarga el DXF del corte de un pedido guardado, como remolques', async () => {
     const res = await fetch(url + '/api/reviews/AR2604784/corte-lona/dxf?opcion=conSacos');
@@ -190,7 +205,6 @@ describe('Rutas del corte de lona, sin escribir archivos de producción', () => 
     order.awnings[0].projection = 350;
     const json = await (await post('/api/corte-lona', { order })).json();
     expect(json.corteLona.ofStockSacos).toBe('0230811');
-    expect(json.cortes.conSacos[0].sacos.length).toBeGreaterThan(0);
     const guardado = { ...json.corteLona, ofStockSacos: '1234567' };
     getReview.mockResolvedValue({ ...revision, order, corteLona: guardado });
     const vista = await (await fetch(url + '/api/reviews/AR2604784/corte-lona')).json();

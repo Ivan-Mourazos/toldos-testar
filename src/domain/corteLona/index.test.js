@@ -268,15 +268,19 @@ describe('Del pedido guardado al corte de lona', () => {
     expect(cuerpos.map((p) => p.nombre)).toEqual(['A1', 'A2']);
     expect(cuerpos[0].largo).toBe(2475);
   });
-  it('genera las dos opciones desde un pedido con empate horizontal', () => {
+  // Iván, 26/11/2026 (AR2604784 con Soltis): con paño pequeño, nada de sacos; siempre la opción separada, sola.
+  it('con empate horizontal y paño pequeño, solo la opción separada y sin sacos', () => {
     const order = structuredClone(revision.order);
     order.awnings[0].projection = 350;
     order.awnings[0].width = 700;
     const salida = generar(order);
-    expect(salida.cortes.trozoSeparado).toHaveLength(1);
-    expect(salida.cortes.trozoSeparado[0].dxf).toContain('CORTAR DE RESTOS');
-    expect(salida.cortes.trozoSeparado[0].dibujo.textos.filter((t) => t.x > salida.cortes.trozoSeparado[0].largo && t.valor === salida.cortes.conSacos[0].material.toUpperCase())).toHaveLength(1);
-    expect(salida.cortes.conSacos[0].colocadas.filter((p) => p.saco).every((p) => p.of === '0230811')).toBe(true);
+    expect(salida.cortes.trozoSeparado).toBeNull();
+    const [corte] = salida.cortes.conSacos;
+    expect(corte.dxf).toContain('CORTAR DE RESTOS');
+    expect(corte.dxf).not.toContain('ELEGIR SOLO UNA');
+    expect(corte.colocadas.some((p) => p.saco)).toBe(false);
+    expect(corte.colocadas.some((p) => p.aparte)).toBe(true);
+    expect(corte.dibujo.textos.filter((t) => t.x > corte.largo && t.valor === corte.material.toUpperCase())).toHaveLength(1);
   });
   it('no genera corte para un planteamiento inválido ni sin medidas', () => {
     const order = structuredClone(revision.order);

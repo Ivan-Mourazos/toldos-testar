@@ -321,7 +321,9 @@ export function opcionesCorte(toldos, ofStockSacos, presupuesto = { restantes: P
   if (!todas.some(pequena)) return { conSacos, trozoSeparado: null };
   const principal = colocar(todas.filter((p) => !pequena(p)), anchoRollo, { presupuesto });
   const restos = colocar(todas.filter(pequena), anchoRollo, { presupuesto });
-  return { conSacos, trozoSeparado: corteConRestos(corte, principal, restos, anchoRollo) };
+  // Iván, 26/11/2026 (AR2604784 con Soltis): con paño pequeño, nada de sacos; siempre la opción separada, sola,
+  // sin «elegir solo una». Se devuelve como el único corte; `trozoSeparado` queda para pedidos guardados antes.
+  return { conSacos: corteConRestos(corte, principal, restos, anchoRollo), trozoSeparado: null };
 }
 
 function separarBambalinas(corte, esBamba, anchoRollo) {

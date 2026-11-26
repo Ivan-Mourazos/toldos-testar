@@ -250,9 +250,13 @@ function colocar(v, lineas, plano) {
         const b = cajasRotulos([{ ...base, punto: [0, 0], h: 1, giro }])[0];
         const cabe = Math.min((cara.x1 - cara.x0 - 2 * margenCara) / (b.x1 - b.x0), (cara.y1 - cara.y0 - 2 * margenCara) / (b.y1 - b.y0));
         return { giro, cabe };
-      }).sort((a, b) => b.cabe - a.cabe);
-      base.giro = opciones[0].giro;
-      base.h = Math.min(base.h, opciones[0].cabe * .92);
+      });
+      // Toldos (Iván, 26/11/2026): el rótulo va como en el corte y solo se gira si derecho no cabe a su tamaño
+      // (una «A» sola cabía más grande girada y salía de lado). Si gira la vista entera, gira con ella.
+      const elegida = v.giroSoloSiHaceFalta && opciones[0].cabe * .92 >= base.h ? opciones[0]
+        : opciones.toSorted((a, b) => b.cabe - a.cabe)[0];
+      base.giro = elegida.giro;
+      base.h = Math.min(base.h, elegida.cabe * .92);
     }
     const encabezadoCorte = v.corte && (/^(DERECHO|LONA |CRISTAL|PVC |OPCIÓN |SI NO HAY RESTO)/.test(t.valor)
       || v.cabecerasAmpliadas && /OPCIÓN|^PVC[: ]/.test(t.valor)

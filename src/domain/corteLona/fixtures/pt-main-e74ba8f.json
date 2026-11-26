@@ -188,7 +188,7 @@
       "modelos": [
         "GALICIA"
       ],
-      "corte": "699a3949f85b6fae5a75e864d57d8d09db46e3f424e0439a1d5eb9a924b7c964"
+      "corte": "643d577f03921e9a85db7b09b57ab7410639c49f4164e28051863f959e21239b"
     }
   ],
   "integridadPuertas": [
@@ -726,12 +726,12 @@
       "familia": "Toldos / BAMBALINAS",
       "ejemplo": "Bamba separada por material / material 1",
       "dxf": "4ebae8e599f91eb7aefeebd6472f737eb817846725e8b74194e7daf3615b9958",
-      "geometria": "cac9497f4b1013909fabdeb6df850f73bc9c87982d73671f7330fa4d35e74b25",
-      "textosFijos": "fc16c66681893af0250ad864e41230eb783f69619a284a7b91f1300e0badcb97",
-      "textos": "472f9e6174a11cf9d177c6dd3bef45c0ac1ebc29a41bdbb3fe37b4095eef7723",
-      "cotas": "6e627d5e8c7cba4ff3333e7cc92fbcbda8eaf2e7d342c4389782a95af8027599",
+      "geometria": "eae74d3727ff4c8d8d3f06032ca14f1779c864b4789dbf5eb2735b58cdfb9937",
+      "textosFijos": "27fbf88255238355d27f3e98ce9f8653a15ad09d1df4a662d0156ce549847a8f",
+      "textos": "2cb8469e0b655fe77e4b69abaf4f268124c3fc30ba0dd202ddec189d22211ff0",
+      "cotas": "8ef769cd36317b8b92b1236e9147234201b9ebd78b59f955b2c6d7817e80ca02",
       "cotasPosicionHash": "b4c0a37a65c32508c71b9f1e363a845bd3bc8c02ddb215edbbc98e39977658ac",
-      "ordenTextos": "d71a49ee346188c4a0920a14c34c44dbc3cc0421a1a4b12840a98079f2359871",
+      "ordenTextos": "0f9bfffbf58e7f7514d7b8fceccf5711aba4fb31b4f70b9bb979219d74052b62",
       "textosEnHoja": [
         0,
         1,
@@ -760,30 +760,7 @@
         24,
         25,
         26,
-        27,
-        28,
-        29,
-        30,
-        31,
-        32,
-        33,
-        34,
-        35,
-        36,
-        37,
-        38,
-        39,
-        40,
-        41,
-        42,
-        43,
-        44,
-        45,
-        46,
-        47,
-        48,
-        49,
-        50
+        27
       ]
     },
     {

@@ -32,7 +32,10 @@ describe('DXF del bot', () => {
     const toldos = f.toldos.map(t => f.verticales.includes(t.letra)
       ? { ...t, ajustes: { ...t.ajustes, empate: 'vertical' } } : t);
     const corte = opcionesCorte(toldos, '0230811').conSacos;
-    expect(corte.largo).toBe(f.largoConBambalinasDeRestosMm ?? f.esperado.largoRolloMm);
+    // Iván, 26/11/2026: con paño pequeño va solo la opción separada; el rollo baja y el paño sale de restos.
+    const panoDeRestos = corte.colocadas.some(p => p.aparte && !p.nombre.includes('BAMBA'));
+    if (!panoDeRestos) expect(corte.largo).toBe(f.largoConBambalinasDeRestosMm ?? f.esperado.largoRolloMm);
+    else expect(corte.colocadas.some(p => p.saco)).toBe(false);
     expect(corte.largo).toBeLessThanOrEqual(f.esperado.largoRolloMm);
   });
   it('AR2505753 consume 5,36 m y dibuja las dos bambalinas de restos en el mismo corte', () => {
@@ -103,10 +106,12 @@ describe('DXF del bot', () => {
   });
   it('separa el paño pequeño, lo cierra por los cuatro lados y rotula las dos partes', () => {
     const t = fixtures.find((f) => f.pedido === 'AR2502093').toldos;
-    const { conSacos, trozoSeparado: resto } = opcionesCorte(t, '0230811');
+    // Iván, 26/11/2026: es el único corte, sin la opción con sacos (antes 7,96 m de rollo).
+    const { conSacos: resto, trozoSeparado } = opcionesCorte(t, '0230811');
+    expect(trozoSeparado).toBeNull();
     expect(resto.largo).toBe(3980);
     expect(resto.largoRestos).toBe(3980);
-    expect(conSacos.largo).toBe(7960);
+    expect(resto.colocadas.some((p) => p.saco)).toBe(false);
     expect(resto.colocadas.filter((p) => p.aparte).map((p) => p.nombre).sort()).toEqual(['A BAMBA', 'A2']);
     const d = dibujo(resto.colocadas, 2500, { of: t[0].of, tela: 'PVC' });
     const aparte = resto.colocadas.find((p) => p.aparte && p.y === 0);

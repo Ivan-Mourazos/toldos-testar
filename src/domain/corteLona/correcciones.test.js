@@ -60,18 +60,12 @@ describe('Correcciones de confección tras la revisión', () => {
     order.awnings.push({ ...order.awnings[0], id: 'cambio', of: '0232569', model: 'CAMBIO TELA', workType: 'FABRIC_ONLY' });
     expect(generar(order).plano[0].dxf.includes('TOLDO Y CAMBIO DE TELA')).toBe(true);
   });
-  it('deja aire entre la cota inferior y el título y aviso de la siguiente opción', () => {
+  // Iván, 26/11/2026: con paño pequeño, un solo corte con su trozo de restos (antes, dos opciones apiladas).
+  it('el corte con el paño de restos se imprime sin solapes y con su aviso', () => {
     const order = structuredClone(revision.order);
     Object.assign(order.awnings[0], { width: 700, projection: 350 });
-    const { plano, cortes } = generar(order);
-    const { textos, cotas } = plano[0].geometria.corte;
-    const titulo2 = textos.find(t => t.valor.startsWith('OPCIÓN 2'));
-    // La cota del largo de la opción 1 (cota de verdad: su texto va centrado en la línea de cota).
-    const cota1 = cotas.find(c => !c.giro && Math.round(c.valor * 10) === Math.round(cortes.conSacos[0].largo));
-    const debajo = cota1.d - (cota1.alturaTexto ?? ({ 'XERAL 15': 0.15, 'XERA 20': 0.2 }[cota1.estilo] ?? 0.1)) / 2;
-    const aviso = textos.find(t => t.valor === 'CORTAR DE RESTOS');
-    expect(debajo - titulo2.y - titulo2.h).toBeGreaterThan(0);
-    expect(debajo - aviso.y - aviso.h).toBeGreaterThan(0);
+    const { plano } = generar(order);
+    expect(plano[0].geometria.corte.textos.some(t => t.valor === 'CORTAR DE RESTOS')).toBe(true);
     // La distancia en metros cambia al ampliar las letras; se comprueba además la presentación real en papel.
     for (const h of auditarDxf(plano[0].dxf, { capasTextosExcluidas: ['ROTULADOR'] }).hojas) {
       expect(h.solapes).toEqual([]); expect(h.cruces).toEqual([]); expect(h.recortes).toEqual([]);

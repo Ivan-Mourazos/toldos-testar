@@ -118,7 +118,7 @@ function resolverPlano(plano, cabecera, { familia = 'toldos', conservarDisposici
         const lineas = visibles.flatMap(p => segmentos(p, .0002)).map(p => ({ capa: p.capa, x1: p.a[0], y1: p.a[1], x2: p.b[0], y2: p.b[1] }));
         const entidades = { lineas, polilineas: [], arcos: [], circulos: [], textos: ts, cotas: qs, fijos };
         g = { nombre: `${h.nombre} · ${v.id}`, corte, sinTitulo: true, interiores: corte, cabecerasAmpliadas: true, cotasFijas: familia === 'puertas', margenPapel: 6,
-          ...(familia === 'toldos' ? { cercaPrimero: true, enlacesSinCruces: true, interioresObligatorios: corte,
+          ...(familia === 'toldos' ? { cercaPrimero: true, enlacesSinCruces: true, interioresObligatorios: corte, giroSoloSiHaceFalta: true,
             factoresTexto: [1, .92, .84, .76, .68, .6, .52, .44, .36, .28, .2, .15, .1, .075, .05, .03, .02, .01] } : {}),
           ...(familia === 'puertas' ? { cotasRecolocables: qs.filter(c => moviles.has(c)), interioresObligatorios: corte,
             factoresTexto: [1, .92, .84, .76, .68, .6, .52, .44, .36, .28, .2, .15, .1, .075, .05, .03, .02, .01] } : {}),

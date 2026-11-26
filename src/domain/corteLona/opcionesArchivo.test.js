@@ -4,7 +4,7 @@ import { archivoCorte } from './opcionesArchivo.js';
 import { pedidoVariasTelas, blanca } from './fixtures/variasTelas.js';
 import { anchoArial } from './texto.js';
 
-it('apila en un solo DXF cada tela y sus dos opciones rotuladas, sin pisar líneas ni textos ni alterar medidas o rótulos', () => {
+it('apila en un solo DXF cada tela, sin pisar líneas ni textos ni alterar medidas o rótulos', () => {
   const resultado = generarCorteLona(pedidoVariasTelas(), { ofStockSacos: '0230811' });
   const originales = structuredClone(resultado.cortes);
   const archivo = archivoCorte(resultado.cortes, 'AR2604784');
@@ -14,7 +14,8 @@ it('apila en un solo DXF cada tela y sus dos opciones rotuladas, sin pisar líne
     const separado = originales.trozoSeparado?.find(o => o.codigoTela === c.codigoTela && o.anchoRollo === c.anchoRollo);
     return separado ? [[c, 'OPCIÓN 1 · CON SACOS'], [separado, 'OPCIÓN 2 · TROZO SEPARADO']] : [[c, null]];
   });
-  expect(grupos.filter(([, etiqueta]) => etiqueta)).toHaveLength(2);
+  // Iván, 26/11/2026: con paño pequeño va solo la opción separada, así que ya no hay opciones que elegir.
+  expect(grupos.filter(([, etiqueta]) => etiqueta)).toHaveLength(0);
   const alcance = t => t.giro ? anchoArial(t.valor, t.h) : t.h;
   let linea = 0, texto = 0, techoAnterior = -1000;
   for (const [grupo, etiqueta] of grupos) {
