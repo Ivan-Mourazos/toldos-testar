@@ -177,6 +177,9 @@ export function ConfigurarTgm({ p, cambiar, corte, derecha, letra, vistas }: {
             onChange={v => medidas({ laterales: v === 'Bastilla' ? 'bastilla' : 'corte' })} />
           {t.laterales === 'bastilla' && <Numero titulo="Bastilla por lado (mm)" valor={t.bastilla ?? null}
             cambiar={bastilla => medidas({ bastilla })} />}
+          <label className="field puerta-campo puerta-campo-ancho"><span>Nota en el plano (opcional)</span>
+            <textarea aria-label="Nota en el plano" placeholder="Indicaciones que saldrán debajo del dibujo de la puerta"
+              value={p.notaPlano ?? ''} onChange={e => datos({ notaPlano: e.target.value })} /></label>
         </div>
         {!deLaHoja && <details className="puerta-tgm-ajustes" open>
           <summary>Ajustes del enrolle</summary>

@@ -231,8 +231,11 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
   // En TGM la bastilla se rotula como Jaime: «B.N. (10)».
   const rotuloLateral = bastilla > 0 ? (p.tgm ? `B.N. (${numeroEs(bastilla)})` : `BASTILLA DE ${numeroEs(bastilla)} CM`) : 'AL CORTE';
   texto(l, rotuloLateral, -bastilla - 6.04, -techo / 2, 7, { giro: 90, centrado: true });
-  // En TGM, el de la derecha a la altura de la primera E.T., para no pisar el texto de la cota del primer tramo.
-  texto(l, rotuloLateral, F + bastilla + 5.46, p.tgm && bandas.length ? -bandas[0] : -techo / 2, 7, { giro: 90, centrado: true });
+  // En TGM, la bastilla de la derecha va a la altura de la primera E.T., para no pisar el texto de la cota del primer
+  // tramo. «AL CORTE» queda pegado al paño y no la pisa: centrado en el paño de arriba, como el de la izquierda
+  // (Iván, 26/11/2026: a la altura de la E.T. salía muy abajo).
+  const rotuloDerechoEnEt = p.tgm && bandas.length && bastilla > 0;
+  texto(l, rotuloLateral, F + bastilla + 5.46, rotuloDerechoEnEt ? -bandas[0] : -techo / 2, 7, { giro: 90, centrado: true });
   if (!p.tgm) texto(l, 'DE ESTE LADO PISAR LAS E.T. 1 CM', F + 58, -H / 2, 10, { giro: 90, centrado: true });
   const rotulo = rotuloCierreTgm(p);
   if (!rejilla && !sacoEnEt) {
@@ -313,6 +316,15 @@ export function dibujarAlzadoEnrollable(puerta: Puerta, letra: string, identific
     if (!bastillaArriba) lineas.push(`- COSER VARILLA ${varilla} EN LAS ESQUINAS`);
     if (soldaduraEtTgm(p)) lineas.push(`- SOLDAR ${numeroEs(soldaduraEtTgm(p))} CM ARRIBA Y ABAJO DE CADA E.T.`);
     else if (!usaCotasCliente(p)) lineas.push('- COSER E.T. EN LAS ESQUINAS');
+    // Iván, 26/11/2026: las indicaciones del formulario, debajo de las notas fijas, en el ancho del dibujo.
+    for (const parrafo of (p.notaPlano ?? '').split(/\r?\n/).map(s => s.trim()).filter(Boolean)) {
+      let actual = '';
+      for (const palabra of parrafo.split(/\s+/)) {
+        if (actual && anchoArial(`${actual} ${palabra}`, hNota) > Math.max(F, 200)) { lineas.push(actual); actual = palabra; }
+        else actual += (actual ? ' ' : '') + palabra;
+      }
+      lineas.push(actual);
+    }
     lineas.forEach((v, i) => texto(l, v, 0, yNota - i * hNota * 1.4, hNota));
   } else {
     // Iván confirmó que el recorte de esta nota en su ventana era un descuido: debe leerse entera.

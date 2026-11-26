@@ -179,6 +179,23 @@ describe('Puertas genéricas · soldadura de la E.T. opcional', () => {
     expect(rotulador.some(y => Math.abs(y - (ySaco - 2)) < .01)).toBe(false);
   });
 
+  it('los dos «AL CORTE» van a la misma altura, en el paño de arriba', () => {
+    // Iván, 26/11/2026: el de la derecha salía a la altura de la E.T., muy abajo.
+    const { lienzo } = dibujarAlzadoEnrollable(sinSoldadura(true), 'A');
+    const alCorte = lienzo.textos.filter(t => t.valor === 'AL CORTE');
+    expect(alCorte).toHaveLength(2);
+    expect(alCorte[1].y).toBeCloseTo(alCorte[0].y);
+  });
+
+  it('la nota del formulario sale debajo de las notas fijas, una línea por renglón', () => {
+    // Iván, 26/11/2026: hacía falta poder escribir indicaciones debajo del dibujo.
+    const p = { ...sinSoldadura(true), notaPlano: 'Cremallera a la izquierda\n\n  saco corto  ' };
+    const textos = dibujarAlzadoEnrollable(p, 'A').lienzo.textos.map(t => t.valor);
+    const i = textos.indexOf('CREMALLERA A LA IZQUIERDA') >= 0 ? textos.indexOf('CREMALLERA A LA IZQUIERDA') : textos.indexOf('Cremallera a la izquierda');
+    expect(i).toBeGreaterThan(textos.findIndex(t => t.startsWith('- COSER')));
+    expect(textos[i + 1].toLowerCase()).toBe('saco corto');
+  });
+
   it('si se escribe, sigue comprobando que deja hueco para el tubo', () => {
     const p = puerta5743('general');
     const r = calcularPuerta({ ...p, tgm: { ...p.tgm!, soldaduraEt: 5 } });
