@@ -277,12 +277,12 @@ if (!hayRps) {
       assert.equal(await page.locator('.rem-cabecera .order-header-group').count(), 1, 'la cabecera tiene un solo grupo de datos');
       assert.equal(await page.getByRole('button', { name: /^(Usar|Volver a aplicar) línea|^Cambiar línea$/ }).count(), 0, 'ya no se aplican las líneas una a una');
       assert.equal(await page.locator('.rem-cabecera').getByLabel('Cliente', { exact: true }).inputValue(), 'TALLERES CAL, C. B.', 'el cliente viene de RPS');
-      assert.match(await page.locator('.rem-rps-estado').innerText(), /3 líneas de remolque/, 'la cabecera resume las líneas');
+      // Iván, 26/11/2026: el aviso de RPS solo sale si hay algo que mirar.
       const porRevisar = lineasRps.filter((l) => l.requiereRevision).length;
-      const textoEstado = await page.locator('.rem-rps-estado').innerText();
-      if (porRevisar > 0) assert.match(textoEstado, new RegExp(`${porRevisar} ${porRevisar === 1 ? 'línea' : 'líneas'} por revisar`, 'i'), 'y avisa de las líneas que hay que revisar');
-      else assert.doesNotMatch(textoEstado, /por revisar/i, 'y no avisa de revisión si no la hay');
-      assert.doesNotMatch(await page.locator('.rem-rps-estado').innerText(), /sin elemento/, 'no falta ningún elemento');
+      const textoEstado = (await page.locator('.rem-rps-estado').count()) ? await page.locator('.rem-rps-estado').innerText() : '';
+      if (porRevisar > 0) assert.match(textoEstado, new RegExp(`${porRevisar} ${porRevisar === 1 ? 'línea' : 'líneas'} de RPS por revisar`, 'i'), 'y avisa de las líneas que hay que revisar');
+      else assert.equal(textoEstado, '', 'sin nada que revisar ni que falte, no hay aviso');
+      assert.doesNotMatch(textoEstado, /sin elemento/, 'no falta ningún elemento');
       for (const [i, linea] of lineasRps.entries()) {
         await pestanas(page).nth(i).click();
         assert.equal(await ofAbierta(page), linea.ordenFabricacion, `${'ABC'[i]}: la O.F. de la línea ${linea.numeroLinea}`);
@@ -423,7 +423,7 @@ if (!hayRps) {
         await page.waitForTimeout(600);
         await page.screenshot({ path: `${CAPTURAS_OBTENER}/creados-${tema}.png` });
         await page.locator('.rem-cabecera').screenshot({ path: `${CAPTURAS_OBTENER}/cabecera-${tema}.png` });
-        assert.match(await page.locator('.rem-rps-estado').innerText(), /4 líneas de remolque/, `${tema}: el resumen compacto de RPS`);
+        assert.equal(await page.locator('.rem-cabecera .rem-traer-rps').count(), 1, `${tema}: «Traer de RPS» en la fila de los datos`);
 
         // Sin el D, «Obtener» ofrece las tres salidas.
         await page.getByRole('button', { name: /^Eliminar D · .* del pedido/ }).click();

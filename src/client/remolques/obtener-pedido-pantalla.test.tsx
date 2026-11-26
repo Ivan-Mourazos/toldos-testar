@@ -76,17 +76,35 @@ describe('cabecera: el pedido en RPS', () => {
     expect(html).not.toContain('cm · 1 ud.');
   });
 
-  it('con todas creadas, resume cuántas líneas hay y avisa de las que piden revisión', () => {
+  // Iván, 26/11/2026: «simplifica esta zona». Sin el recuadro «Datos obtenidos de RPS»: solo un aviso
+  // cuando hay algo que mirar, y «Traer de RPS» en la fila de los datos.
+  it('con todas creadas, solo avisa de las que piden revisión', () => {
     const html = cabecera();
-    expect(html).toContain('Datos obtenidos de RPS');
-    expect(html).toContain('3 líneas de remolque');
-    expect(html).toContain('1 línea por revisar');
+    expect(html).not.toContain('Datos obtenidos de RPS');
+    expect(html).toContain('1 línea de RPS por revisar.');
     expect(html).not.toContain('sin elemento');
+  });
+
+  it('con todo creado y nada que revisar, no enseña ningún aviso', () => {
+    const html = renderToStaticMarkup(
+      <CabeceraPedido
+        numeroPedido="AR.26.04286" cliente="TALLERES CAL, C. B." fecha="2026-09-01" cargando={false}
+        onNumeroPedidoChange={() => {}} onClienteChange={() => {}} onFechaChange={() => {}}
+        estadoRps="encontrado" pedidoRps={{ ...pedido, lineas: pedido.lineas.map((l) => ({ ...l, requiereRevision: false })) }} errorRps={null}
+        lineas={creadas} onConsultarRps={() => {}}
+      />,
+    );
+    expect(html).not.toContain('rem-rps-aviso');
+    expect(html).toContain('Traer de RPS');
+  });
+
+  it('«Traer de RPS» va en la fila de los datos, detrás de la fecha', () => {
+    expect(cabecera()).toMatch(/class="order-header-grid con-accion".*type="date".*class="order-header-accion"><button[^>]*rem-traer-rps/);
   });
 
   it('si falta algún elemento, lo dice y explica cómo traerlo', () => {
     const html = cabecera([creadas[0]]);
-    expect(html).toContain('2 de 3 líneas de remolque sin elemento: pulsa «Buscar» para traerlas.');
+    expect(html).toContain('2 de 3 líneas de remolque sin elemento: pulsa «Traer de RPS» para traerlas.');
   });
 
   it('sin consultar no enseña resumen ni repite el buscador en la cabecera', () => {
@@ -138,7 +156,7 @@ describe('el elemento creado desde RPS', () => {
       />,
     );
     expect(html.match(/>Revisar</g)).toHaveLength(1);
-    expect(html).toContain('3 elementos');
+    expect(html).toContain('de 3 listo');
     // Lo que RPS no da queda pendiente, como siempre: «falta N» en la pestaña.
     expect(html).toContain('falta');
   });

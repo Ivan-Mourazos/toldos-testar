@@ -38,13 +38,13 @@ export function PestanasElementos({
       <div className="section-header">
         <div>
           <h2>{soloLectura ? 'Datos de cada elemento' : 'Elementos del pedido'}</h2>
-          <span>
-            {lineas.length
-              ? `${lineas.length} ${lineas.length === 1 ? 'elemento' : 'elementos'} · ${listas} de ${lineas.length} ${listas === 1 ? 'listo' : 'listos'}`
-              : 'Añade el primer remolque o baquetón.'}
-            {soloLectura && lineas.length > 0 && ' · solo lectura'}
-          </span>
-          {!soloLectura && <OrderProgress total={lineas.length} ready={listas} />}
+          {/* Al editar, una sola línea con lo listo («0 de 1 listos»); antes se repetía tres veces
+              (Iván, 26/11/2026). */}
+          {soloLectura
+            ? lineas.length > 0 && <span>{lineas.length} {lineas.length === 1 ? 'elemento' : 'elementos'} · solo lectura</span>
+            : lineas.length
+              ? <OrderProgress total={lineas.length} ready={listas} />
+              : <span>Añade el primer remolque o baquetón.</span>}
         </div>
         {!soloLectura && (
           <div className="order-add-actions">

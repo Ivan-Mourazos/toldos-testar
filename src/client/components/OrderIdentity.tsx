@@ -2,17 +2,19 @@ import React, { useRef } from 'react';
 import { enUnRenglon, useAltoAjustado } from '../hooks/useAltoAjustado';
 
 // La cabecera común conserva los campos y las condiciones de cada pantalla.
-export function OrderIdentity({ pedido, cliente, fecha, onClienteChange, onFechaChange, clientDisabled = false, dateDisabled = false }: {
+// `accion`: un botón en la misma fila, detrás de la fecha (remolques: «Traer de RPS»).
+export function OrderIdentity({ pedido, cliente, fecha, onClienteChange, onFechaChange, clientDisabled = false, dateDisabled = false, accion }: {
   pedido: React.ReactNode; cliente: string; fecha: string;
   onClienteChange: (value: string) => void; onFechaChange: (value: string) => void;
-  clientDisabled?: boolean; dateDisabled?: boolean;
+  clientDisabled?: boolean; dateDisabled?: boolean; accion?: React.ReactNode;
 }) {
   return <div className="order-header-group order-header-general">
     <h3>Datos del pedido</h3>
-    <div className="order-header-grid">
+    <div className={`order-header-grid${accion ? ' con-accion' : ''}`}>
       {pedido}
       <label className="field"><span>Cliente</span><OrderCustomer value={cliente} disabled={clientDisabled} onChange={onClienteChange} /></label>
       <label className="field"><span>Fecha</span><input type="date" value={fecha} disabled={dateDisabled} onChange={e => onFechaChange(e.target.value)} /></label>
+      {accion && <div className="order-header-accion">{accion}</div>}
     </div>
   </div>;
 }

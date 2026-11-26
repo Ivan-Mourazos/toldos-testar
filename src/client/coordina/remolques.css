@@ -53,9 +53,14 @@
   color: var(--error-texto);
 }
 .order-autofill-action .is-spinning { flex: none; }
-/* El resumen de lo que dio RPS es el de toldos; el ámbar si falta algún elemento. */
-.rem-rps-estado span.is-falta { color: var(--aviso-texto); font-weight: 600; }
-.rem-rps-estado .rem-etiqueta { white-space: nowrap; }
+/* «Traer de RPS» en la fila de los datos, detrás de la fecha, a la altura de los campos (Iván, 26/11/2026). */
+.is-new-order .rem-cabecera .order-header-grid.con-accion,
+.rem-cabecera .order-header-grid.con-accion { grid-template-columns: 8.5rem minmax(0, 1fr) 8.5rem auto; }
+.rem-cabecera .order-header-accion { align-self: end; display: flex; }
+/* Pedido, cliente, fecha y botón con la misma altura, la del cliente (2rem). */
+.app-shell .rem-cabecera .order-header-grid input { box-sizing: border-box; height: 2rem; }
+.rem-cabecera .rem-traer-rps { height: 2rem; min-height: 0; padding-block: 0; white-space: nowrap; }
+.rem-cabecera .rem-traer-rps svg { flex: none; height: 14px; width: 14px; }
 .rem-etiqueta {
   border: 1px solid;
   border-radius: 0.25rem;

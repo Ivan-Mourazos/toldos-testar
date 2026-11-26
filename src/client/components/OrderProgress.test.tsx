@@ -6,8 +6,9 @@ import { OrderProgress } from './OrderProgress';
 describe('resumen de elementos del pedido', () => {
   it('distingue completos de pendientes sin afirmar que el pedido pueda guardarse', () => {
     const html = renderToStaticMarkup(<OrderProgress total={4} ready={1} />);
-    expect(html).toContain('1 de 4');
-    expect(html).toContain('3 por completar o revisar');
+    expect(html).toContain('1 de 4 listo');
+    // Sin repetir lo pendiente: «1 de 4» ya lo dice (Iván, 26/11/2026).
+    expect(html).not.toContain('por completar');
     expect(html).not.toContain('Listo para revisión');
   });
   it('un elemento válido con aviso cuenta como listo y el aviso se menciona', () => {

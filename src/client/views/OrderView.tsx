@@ -202,8 +202,9 @@ export function OrderView({
         <div className="section-header">
           <div>
             <h2>{embudos ? 'Embudos del pedido' : 'Elementos del pedido'}</h2>
-            <span>{awnings.length ? `${awnings.length} ${awnings.length === 1 ? 'elemento' : 'elementos'}` : embudos ? 'Añade el primer embudo.' : 'Añade el primer toldo o trabajo de tela.'}</span>
-            {!readOnly && <OrderProgress total={awnings.length} ready={statuses.filter(status => status.kind === 'ok' || status.kind === 'warn').length} avisos={statuses.filter(status => status.kind === 'warn').length} />}
+            {/* Al editar, «0 de 2 listos» ya dice cuántos hay: sin repetirlo encima (Iván, 26/11/2026). */}
+            {(!awnings.length || readOnly) && <span>{awnings.length ? `${awnings.length} ${awnings.length === 1 ? 'elemento' : 'elementos'}` : embudos ? 'Añade el primer embudo.' : 'Añade el primer toldo o trabajo de tela.'}</span>}
+            {!readOnly && awnings.length > 0 && <OrderProgress total={awnings.length} ready={statuses.filter(status => status.kind === 'ok' || status.kind === 'warn').length} avisos={statuses.filter(status => status.kind === 'warn').length} />}
           </div>
           {/* Antes eran una fila entera en la cabecera del pedido (espaciado, 25/09/2026). */}
           {!readOnly && (
