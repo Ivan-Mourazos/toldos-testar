@@ -92,6 +92,14 @@ describe('reservas del propio pedido', () => {
     expect(s).toMatchObject({ reservado: 40, reservadoPropio: 10 });
   });
 
+  it('dice cuánto reserva cada otro pedido; sin pedido, la OF', () => {
+    const conPedido = [{ ...reservas[0], pedido: 'AR.26.05330' }, { ...reservas[1], pedido: '' }, { stockId: 2, of: '0234126', quantity: 5, pedido: 'AR.26.05330' }];
+    expect(summarizeFabricStock(rows, 'PLAST880NEGRP204', { reservas: conPedido, ofsPropias: ['0234999'] }).reservas)
+      .toEqual([{ pedido: 'AR.26.05330', ml: 45 }]);
+    expect(summarizeFabricStock(rows, 'PLAST880NEGRP204', { reservas: conPedido }).reservas)
+      .toEqual([{ pedido: 'AR.26.05330', ml: 45 }, { pedido: 'OF 0234999', ml: 10 }]);
+  });
+
   it('sin lista de reservas por OF se comporta igual que antes', () => {
     const s = summarizeFabricStock(rows, 'PLAST880NEGRP204', { ofsPropias: ['0234125'] });
     expect(s).toMatchObject({ reservado: 50, reservadoPropio: 0, disponible: 80 });

@@ -199,10 +199,10 @@ describe('una sola bobina por lona', () => {
       + 'y necesita 40,00 m. En total hay 66,00 m, pero no se pueden juntar bobinas ni marcas.');
   });
 
-  it('a CoordinaOT le manda la bobina mayor como disponible, con la explicación', () => {
+  it('a CoordinaOT le manda el total como disponible y la bobina mayor aparte', () => {
     const [falta] = evaluarStockLona([necesidad('ALPHAAZ15P250', 40)], [stock('ALPHAAZ15P250', 66, 24)], [grupo]).faltas;
-    expect(faltaParaCoordina(falta)).toEqual({ codigo: 'ALPHAAZ15P250', necesita: 40, disponible: 24, ofs: ['0234001'],
-      descripcion: 'PVC 580 AZUL 5015 · 250 AN — ninguna bobina sola llega (la mayor, 24 m; en total 66 m)' });
+    expect(faltaParaCoordina(falta)).toEqual({ codigo: 'ALPHAAZ15P250', descripcion: 'PVC 580 AZUL 5015 · 250 AN', necesita: 40,
+      stock: 66, reservado: 0, reservadoPropio: 0, disponible: 66, bobinaMayor: 24, ofs: ['0234001'] });
     const sinStock = { codigo: 'X', descripcion: 'x', necesita: 5, stock: 0, reservado: 0, reservadoPropio: 0, disponible: 0, ofs: [] };
     expect(faltaParaCoordina(sinStock)).toEqual(sinStock);
   });
@@ -212,6 +212,15 @@ describe('una sola bobina por lona', () => {
       [necesidad('ALPHAAZ15P250', 30, ['0234001']), necesidad('NS86AZ15P250', 30, ['0234002'])],
       [stock('ALPHAAZ15P250', 40, 40), stock('NS86AZ15P250', 50, 50)], [grupo, grupo]);
     expect(faltas).toEqual([expect.objectContaining({ necesita: 60, ofs: ['0234001', '0234002'], bobinaMayor: 50 })]);
+  });
+
+  it('suma lo reservado por cada otro pedido en todas las marcas', () => {
+    const conReservas = (codigo, metros, reservas) => ({ ...stock(codigo, metros, metros), reservas });
+    const { faltas } = evaluarStockLona([necesidad('ALPHAAZ15P250', 100)], [
+      conReservas('ALPHAAZ15P250', 30, [{ pedido: 'AR.26.05330', ml: 20 }]),
+      conReservas('NS86AZ15P250', 40, [{ pedido: 'AR.26.05330', ml: 5 }, { pedido: 'AR.26.05401', ml: 50 }]),
+    ], [grupo]);
+    expect(faltas[0].reservas).toEqual([{ pedido: 'AR.26.05401', ml: 50 }, { pedido: 'AR.26.05330', ml: 25 }]);
   });
 
   it('si solo llega una bobina más ancha, es una duda y no una falta', () => {

@@ -9,7 +9,7 @@ export { esLonaAcrilica } from './domain/stockSinComprobar.js';
 
 /** @typedef {{ ofs: string[], codigo: string, descripcion?: string, ml: number, origen: 'corte' | 'reserva' }} LineaLona */
 /** @typedef {{ codigo: string, descripcion: string, ml: number, ofs: string[], origen: LineaLona['origen'] | 'manual' }} NecesidadLona */
-/** @typedef {{ codigo: string, descripcion: string, necesita: number, disponible: number, stock: number, reservado: number, reservadoPropio: number, ofs: string[] }} FaltaLona */
+/** @typedef {{ codigo: string, descripcion: string, necesita: number, disponible: number, stock: number, reservado: number, reservadoPropio: number, ofs: string[], reservas?: { pedido: string, ml: number }[] }} FaltaLona */
 /** @typedef {Pick<ReturnType<typeof import('./remolques/corte/index.js').generarCorteRemolques>['cortes'][number], 'material' | 'largo' | 'opcion' | 'elementos'>} CorteStockRemolque */
 
 const redondear = ml => Math.round(ml * 100) / 100;
@@ -33,7 +33,7 @@ export function necesidadesLona(lineas) {
   }));
 }
 
-/** @typedef {{ code: string, metros?: number, reservado?: number, reservadoPropio?: number, disponible: number, mayorBobinaDisponible?: number }} StockCodigo */
+/** @typedef {{ code: string, metros?: number, reservado?: number, reservadoPropio?: number, disponible: number, mayorBobinaDisponible?: number, reservas?: { pedido: string, ml: number }[] }} StockCodigo */
 /** La misma lona de otras marcas (domain/lonaSimple.js `lonasDelGrupo`).
  * @typedef {{ nombre: string | null, mismoAncho: string[], masAnchas: { codigo: string, ancho: number }[] }} GrupoLona */
 /** @typedef {FaltaLona & { masAncha: { codigo: string, ancho: number, bobina: number } }} DudaAncho */
@@ -72,9 +72,14 @@ export function evaluarStockLona(necesidades, stock, grupos = []) {
     if (mayor >= ml) continue;
     const suma = clave => redondear(mismas.reduce((total, s) => total + (s[clave] ?? 0), 0));
     const disponible = suma('disponible');
+    // Lo reservado por cada otro pedido, sumando todas las marcas (para el correo a Compras).
+    const porPedido = new Map();
+    for (const s of mismas) for (const r of s.reservas ?? []) porPedido.set(r.pedido, redondear((porPedido.get(r.pedido) ?? 0) + r.ml));
+    const reservas = [...porPedido].map(([pedido, metros]) => ({ pedido, ml: metros }))
+      .sort((a, b) => b.ml - a.ml || a.pedido.localeCompare(b.pedido)).slice(0, 30);
     const falta = {
       codigo, descripcion, necesita: ml, stock: suma('metros'), reservado: suma('reservado'), reservadoPropio: suma('reservadoPropio'),
-      disponible, ...(disponible >= ml && { bobinaMayor: redondear(mayor) }), ofs: [...ofs].sort(),
+      disponible, ...(disponible >= ml && { bobinaMayor: redondear(mayor) }), ...(reservas.length && { reservas }), ofs: [...ofs].sort(),
     };
     const ancha = grupo.masAnchas
       .map(({ codigo: otro, ancho }) => ({ codigo: otro, ancho, bobina: bobinaMayor(porCodigo.get(otro)) }))
@@ -89,16 +94,11 @@ export function evaluarStockLona(necesidades, stock, grupos = []) {
 /** @param {NecesidadLona[]} necesidades @param {StockCodigo[]} stock @param {GrupoLona[]} [grupos] */
 export const faltasLona = (necesidades, stock, grupos) => evaluarStockLona(necesidades, stock, grupos).faltas;
 
-/** CoordinaOT valida que «disponible» sea menor que lo que se necesita. Cuando sumando
- * bobinas llegaría pero ninguna sola llega, manda la bobina mayor y lo explica en la descripción.
- * @param {FaltaLona & { bobinaMayor?: number }} falta */
-export function faltaParaCoordina({ bobinaMayor: mayor, ...falta }) {
-  if (mayor === undefined) return falta;
-  const m = n => `${new Intl.NumberFormat('es-ES', { maximumFractionDigits: 2 }).format(n)} m`;
-  return {
-    codigo: falta.codigo, necesita: falta.necesita, disponible: mayor, ofs: falta.ofs,
-    descripcion: `${falta.descripcion} — ninguna bobina sola llega (la mayor, ${m(mayor)}; en total ${m(falta.disponible)})`.slice(0, 250),
-  };
+/** Lo que recibe CoordinaOT (desde el 26/11/2026 acepta `reservas` y `bobinaMayor`): con
+ * `bobinaMayor`, sumando llega y `disponible` es el total; lo que falta es una bobina con el largo.
+ * @param {FaltaLona & { bobinaMayor?: number, reservas?: { pedido: string, ml: number }[] }} falta */
+export function faltaParaCoordina(falta) {
+  return { ...falta, descripcion: String(falta.descripcion ?? '').slice(0, 250) };
 }
 
 /** @param {{ order?: any, corteLona?: { toldos?: unknown[], ajustes?: Record<string, any>, ofStockSacos?: string } }} pedido

@@ -20,10 +20,18 @@ export function summarizeFabricStock(rows = [], code = '', { reservas = [], ofsP
   const wanted = String(code || '').trim().toUpperCase();
   const propias = new Set(ofsPropias.map(normalizeOf).filter(Boolean));
   const propioPorBobina = new Map();
+  const otrasPorBobina = new Map();
   for (const r of reservas) {
-    if (r?.stockId == null || !propias.has(normalizeOf(r?.of))) continue;
+    if (r?.stockId == null) continue;
+    if (!propias.has(normalizeOf(r?.of))) {
+      if (!otrasPorBobina.has(r.stockId)) otrasPorBobina.set(r.stockId, []);
+      otrasPorBobina.get(r.stockId).push(r);
+      continue;
+    }
     propioPorBobina.set(r.stockId, (propioPorBobina.get(r.stockId) || 0) + (Number(r.quantity) || 0));
   }
+  // Metros reservados por cada otro pedido, para el correo a Compras (Iván, 26/11/2026).
+  const porPedido = new Map();
   let metros = 0;
   let reservado = 0;
   let reservadoPropio = 0;
@@ -47,6 +55,10 @@ export function summarizeFabricStock(rows = [], code = '', { reservas = [], ofsP
     metros += meters;
     reservado += otros;
     reservadoPropio += propio;
+    for (const r of otrasPorBobina.get(row.stockId) ?? []) {
+      const pedido = String(r.pedido || '').trim() || `OF ${normalizeOf(r.of)}`;
+      porPedido.set(pedido, (porPedido.get(pedido) || 0) + Math.max(Number(r.quantity) || 0, 0));
+    }
     if (free <= 0) continue;
     disponible += free;
     bobinasConDisponible += 1;
@@ -67,6 +79,8 @@ export function summarizeFabricStock(rows = [], code = '', { reservas = [], ofsP
     bobinasConDisponible,
     mayorBobinaDisponible: round(mayorBobinaDisponible),
     consignacion: round(consignacion),
+    reservas: [...porPedido].map(([pedido, ml]) => ({ pedido, ml: round(ml) })).filter(r => r.ml > 0)
+      .sort((a, b) => b.ml - a.ml || a.pedido.localeCompare(b.pedido)),
     almacenes: [...almacenes.values()]
       .map((entry) => ({ ...entry, disponible: round(entry.disponible) }))
       .sort((a, b) => b.disponible - a.disponible)
