@@ -227,9 +227,9 @@ export function CadPaginas({
         {sinDwg}
       </section>
     );
+    // Sin aviso suelto encima: bajaba el bloque y lo descuadraba con el planteamiento (Iván, 26/11/2026).
     return (
       <>
-        <p className="corte-aviso cad-paginas-sin-dwg" role="status">Aún no hay dibujo del CAD.</p>
         {sinDwg ?? <CorteLona
           order={order}
           estado={estado}

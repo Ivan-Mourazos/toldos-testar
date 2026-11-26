@@ -1,7 +1,7 @@
 .review-documentos { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; align-items: start; margin-block: 18px; }
 .review-documentos > div { min-width: 0; }
 .documento-corte:empty { display: none; }
-.documento-corte > .corte-lona, .planteamiento-pedido { min-width: 0; margin: 0; padding: 18px; color: var(--text); background: var(--surface); border: 1px solid var(--border-strong); border-radius: 12px; }
+.documento-corte > .corte-lona, .documento-planteamiento > .corte-lona, .planteamiento-pedido { min-width: 0; margin: 0; padding: 18px; color: var(--text); background: var(--surface); border: 1px solid var(--border-strong); border-radius: 12px; }
 .planteamiento-pedido { position: static; width: 100%; max-width: none; box-sizing: border-box; }
 .planteamiento-pedido[open] { display: flex; flex-direction: column; }
 .documento-cabecera { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
@@ -26,6 +26,10 @@
 .planteamiento-pedido:modal .pdf-carousel-stage { flex: 1; min-height: 0; height: auto; }
 @media (min-width: 1600px) {
   .review-documentos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* Planteamiento y corte, uno al lado del otro: empiezan a la vez y miden lo mismo (Iván, 26/11/2026). */
+  .review-documentos { align-items: stretch; }
+  .review-documentos > div { display: flex; flex-direction: column; }
+  .review-documentos > div > * { flex: 1 1 auto; }
 }
 /* Sin corte conserva el ancho de una columna y queda centrado (Iván, 21/10/2026). */
 .review-documentos:not(:has(> .documento-corte:not(:empty))) { grid-template-columns: minmax(0, 1fr); }

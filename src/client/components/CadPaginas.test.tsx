@@ -98,7 +98,7 @@ describe('CadPaginas (vista previa real del DWG)', () => {
     expect(html).toContain('cad-paginas-atenuado');
   });
 
-  it('muestra el aviso «Aún no hay dibujo del CAD» y la vista anterior cuando no existe DWG todavía', () => {
+  it('sin DWG todavía enseña la vista anterior, sin aviso suelto que baje el bloque', () => {
     const html = renderToStaticMarkup(
       <CadPaginas
         orderCode="AR2604784"
@@ -111,8 +111,7 @@ describe('CadPaginas (vista previa real del DWG)', () => {
         })}
       />
     );
-    expect(html).toContain('corte-aviso');
-    expect(html).toContain('Aún no hay dibujo del CAD.');
+    expect(html).not.toContain('Aún no hay dibujo del CAD.');
     expect(html).toContain('PVC y Soltis · piezas y marcas de confección');
   });
 

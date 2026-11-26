@@ -118,7 +118,7 @@ describe('CadPaginasPuertas', () => {
     const sinDwg = renderToStaticMarkup(
       <CadPaginasPuertas orderCode="AR2605134" datosIniciales={respuestaBase({ tieneDwg: false, origen: null, paginas: [] })} fallback={<div>RESPALDO_CORTE</div>} />
     );
-    expect(sinDwg).toContain('Aún no hay dibujo del CAD.');
+    expect(sinDwg).not.toContain('Aún no hay dibujo del CAD.');
     expect(sinDwg).toContain('RESPALDO_CORTE');
 
     // Plano antiguo sin recuadro CORTE: el corte de la web en vez de un aviso sin dibujo.

@@ -155,12 +155,8 @@ export function CadPaginasPuertas({
   const sinRecuadroCorte = Boolean(datosActivos?.tieneDwg && !datosActivos.cortes?.length && fallback);
 
   if (!enModal && !cargandoActivo && !errorActivo && datosActivos && !datosActivos.tieneDwg && fallback) {
-    return (
-      <>
-        <p className="corte-aviso cad-paginas-sin-dwg" role="status">Aún no hay dibujo del CAD.</p>
-        {fallback}
-      </>
-    );
+    // Sin aviso suelto encima: bajaba el bloque y lo descuadraba con el planteamiento (Iván, 26/11/2026).
+    return <>{fallback}</>;
   }
 
   async function actualizarCorte() {
