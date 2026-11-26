@@ -163,7 +163,8 @@ export function VistaPreparacion({ vista, cotas = [], marcos = [], marco, zonas 
   const letra = Math.max(pieza.x1 - pieza.x0, pieza.y1 - pieza.y0, 10) * 0.03;
   const colocadas = colocarCotas(cotas, vista, letra);
   const c = limites([pieza, ...colocadas.map(g => g.caja)]);
-  const margen = Math.max(c.x1 - c.x0, c.y1 - c.y0, 10) * 0.05;
+  // Lo justo para el grosor de las líneas: el corte, lo más grande posible en su recuadro (Iván, 26/11/2026).
+  const margen = Math.max(c.x1 - c.x0, c.y1 - c.y0, 10) * 0.015;
   const capas = new Map<string, { nombre: string; color?: string }>();
   for (const p of vista) {
     const clase = estilo(p.capa);

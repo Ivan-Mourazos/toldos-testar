@@ -57,10 +57,16 @@
   flex: 1 1 auto;
 }
 
-/* El corte a la altura de la pantalla, como la hoja que había antes. */
+/* El corte a la altura de la pantalla, como la hoja que había antes, y hasta los bordes del recuadro
+   (Iván, 26/11/2026: «se puede aprovechar más el cuadrado del corte»). */
+.cortes-del-plano .cmt-vista-corte {
+  padding: 10px 8px;
+}
+
 .cortes-del-plano .cmt-vista-corte svg {
   flex: none;
   height: clamp(320px, 64vh, 820px);
+  margin: 4px 0;
 }
 
 .cortes-del-plano-paso {
