@@ -41,13 +41,20 @@ export function plantillaVigente(ref) {
 }
 
 export function calcularDesdePlantilla(linea) {
-  const codigo = codigoAssa(linea.CodArticle), ref = catalogo.referencias[codigo];
+  const codigo = codigoAssa(linea.CodArticle), articulo = catalogo.referencias[codigo];
+  const alias = articulo?.corteComo;
+  const ref = alias ? catalogo.referencias[alias.codigo] : articulo;
   const medidas = ref?.medidasTerminadas.map(m => m.mm) ?? [];
   const terminados = [...new Map(medidas.map(m => [m.join('|'), m])).values()];
   const terminadoMm = terminados.length === 1 ? terminados[0] : undefined;
-  const g = calcularFamilia(linea, { soloMedidas: true, terminadoMm, nkValidado: codigo === '420148-0105' });
+  const material = articulo?.materialBase ?? undefined;
+  const g = calcularFamilia(linea, { soloMedidas: true, terminadoMm, material, nkValidado: codigo === '420148-0105' });
   const manual = motivo => ({ ...g, estado: 'a-mano', motivos: [...g.motivos, motivo], pieza: undefined, terminadoMm, canalon: null });
   if (!ref) return manual('La referencia no aparece en los archivos de modelos de Combursa.');
+  if (articulo.motivoManual) return manual(articulo.motivoManual);
+  if (alias && Object.entries(alias.medidas).some(([clave, mm]) => g.medidas[clave] !== mm)) {
+    return manual('Las medidas de RPS difieren de las confirmadas por el taller para esta referencia.');
+  }
   const fuente = plantillaVigente(ref);
   if (!fuente) return manual('La referencia está inventariada, pero falta un programa de corte identificable en las plantillas de producción.');
   if (g.estado !== 'generado') return g;
@@ -68,7 +75,7 @@ export function calcularDesdePlantilla(linea) {
   // El cuerpo 420150 tiene un patrón confirmado por NB. Cuando el catálogo solo tiene sus medidas terminadas,
   // se puede aplicar ese patrón a la variante sin trasladar agujeros desde otro dibujo.
   const patron = !cuerpo && !candidatos.length && g.familia === '420150' && confirmadoPorMedidas ?
-    calcularFamilia(linea, { terminadoMm }) : null;
+    calcularFamilia(linea, { terminadoMm, material }) : null;
   if (!cuerpo && patron?.estado !== 'generado') return manual(candidatos.length ?
     'El cuerpo de la plantilla vigente tiene otras medidas y falta una ficha que confirme el dibujo aplicable.' :
     'El código está rotulado, pero falta un contorno de cuerpo que se pueda atribuir con esas medidas.');
@@ -84,5 +91,6 @@ export function calcularDesdePlantilla(linea) {
     terminadoMm : acabado(cuerpo).map(precision)) : patron.terminadoMm;
   const avisos = [...g.avisos];
   if (!iguales(pieza.medidasMm, esperado)) avisos.push('Se aplican las medidas del dibujo vigente de la plantilla.');
-  return { ...g, avisos, pieza, terminadoMm: acabadoDibujo, canalon, fuentePlantilla: { fichero: fuente, rotulo: cuerpo?.rotulo ?? null } };
+  return { ...g, avisos, pieza, terminadoMm: acabadoDibujo, canalon,
+    fuentePlantilla: { fichero: fuente, rotulo: cuerpo?.rotulo ?? null, ...(alias && { referencia: alias.codigo }) } };
 }

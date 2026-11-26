@@ -88,7 +88,8 @@ export function maquetarLote(lote, revision = null) {
       instrucciones.push(`${palet?.valor ?? 'PALET —'} · ${proximas[0]?.valor ?? 'Ver rótulo en el plano'} · ${p.valor}`);
     }
   } else for (const c of lote.cortador) {
-    instrucciones.push(`P${c.palet ?? '—'} · ${c.referencia} · ${c.unidades}/${c.pedidas} UDS · ${c.como.join(' + ')}`);
+    const material = c.material ? ` · ${c.material}` : '';
+    instrucciones.push(`P${c.palet ?? '—'} · ${c.referencia}${material} · ${c.unidades}/${c.pedidas} UDS · ${c.como.join(' + ')}`);
   }
   const hojasCortador = [], series = [['Cantidades RPS', renglones], ['Repeticiones del corte', instrucciones]];
   const paginasPapel = series.reduce((n, [, rs]) => n + Math.ceil(rs.length / 13), 0);

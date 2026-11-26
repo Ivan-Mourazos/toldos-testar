@@ -1,5 +1,8 @@
 import { expect, it } from 'vitest';
 import { prepararLote } from './lote.js';
+import { calcularDesdePlantilla } from './modeloCorte.js';
+import { maquetarLote } from './documentoLote.js';
+import { firmaCanalon } from './canalon.js';
 
 const fecha = '2026-10-31';
 const techo = { IDOrderLine: 'a', CodOrder: 'AR.26.05047', NumLine: 1, of_: '0232434',
@@ -33,4 +36,42 @@ it('retiene una referencia ausente de la plantilla y explica el motivo', () => {
   const lote = prepararLote(fecha, [{ ...techo, CodArticle: '0K430129-9999' }]);
   expect(lote.lineas[0].motivos.join(' ')).toMatch(/no aparece/i);
   expect(lote.programas).toEqual([]);
+});
+
+it('mantiene a mano la 430127-0023 mientras Jaime confirma las medidas', () => {
+  const linea = { ...techo, CodArticle: '0K430127-0023', descripcion: 'NT600NB3450NH3600' };
+  expect(calcularDesdePlantilla(linea)).toMatchObject({ estado: 'a-mano', motivos: [expect.stringContaining('Jaime')] });
+});
+
+it('usa el cuerpo y el canalón de la 0005 para la 0010 con las cotas confirmadas', () => {
+  const base = { ...techo, CodArticle: 'HOK430172-0005', descripcion: 'NT900 NB3250 NH3200' };
+  const alias = { ...base, IDOrderLine: 'b', CodArticle: 'HOK430172-0010' };
+  const lote = prepararLote(fecha, [base, alias]);
+  expect(lote.lineas[1]).toMatchObject({ estado: 'validado', codigo: '430172-0010',
+    corteMm: lote.lineas[0].corteMm, canalon: lote.lineas[0].canalon, fuentePlantilla: { referencia: '430172-0005' } });
+  expect(calcularDesdePlantilla(alias).pieza).toEqual(calcularDesdePlantilla(base).pieza);
+  expect(lote.programas.find(p => p.tipo === 'canalon').referencias).toEqual([base.CodArticle, alias.CodArticle]);
+  expect(prepararLote(fecha, [{ ...alias, descripcion: 'NT900 NB3250 NH3300' }]).lineas[0].estado).toBe('a-mano');
+});
+
+it('identifica paño y canalón de la 0133 y los rotula y agrupa por separado de la lona negra', () => {
+  const negra = { ...techo, CodArticle: '0K420150-0090', descripcion: 'NW3450 NH3480 NT600 SCHWARZ' };
+  const roja = { ...negra, IDOrderLine: 'b', CodArticle: '0K420150-0133',
+    descripcion: 'CLAD W.R.C. NW3450 NH3480 NT600 RED RAL 3002 PVC CONFIGURATION:' };
+  const mismoCanalon = { ...negra, IDOrderLine: 'c', CodArticle: 'H0K420150-0002', descripcion: 'NT=600 NB=3450 NH=3600' };
+  const lote = prepararLote(fecha, [negra, roja, mismoCanalon], {}, undefined, { palets: { a: 1, b: 1, c: 1 } });
+  expect(lote.lineas[0].estado).toBe('validado');
+  expect(lote.lineas[1]).toMatchObject({ estado: 'validado', corteMm: lote.lineas[0].corteMm, canalon: { mitad: 1800 } });
+  expect(lote.lineas[2].estado).toBe('validado');
+  expect(firmaCanalon(lote.lineas[2].canalon)).toBe(firmaCanalon(lote.lineas[1].canalon));
+  const programas = Map.groupBy(lote.programas, p => p.material);
+  expect([...programas.keys()]).toEqual(['PLASTEL 8800 TE62 negra', 'PLASTEL roja']);
+  const filasNegras = programas.get('PLASTEL 8800 TE62 negra').map(p => p.y);
+  expect(programas.get('PLASTEL roja').every(p => !filasNegras.includes(p.y))).toBe(true);
+  expect(programas.get('PLASTEL roja').every(p => p.entidades.textos.some(t => t.valor === 'PLASTEL roja'))).toBe(true);
+  expect(programas.get('PLASTEL roja').find(p => p.tipo === 'canalon').referencias).toEqual([roja.CodArticle]);
+  expect(lote.cortador.filter(f => f.material === 'PLASTEL roja')).toHaveLength(2);
+  expect(lote.cortador.every(f => f.cuadra)).toBe(true);
+  expect(maquetarLote(lote).primitivas.some(p => p.valor?.startsWith('P1 · 0K420150-0133 · PLASTEL roja'))).toBe(true);
+  expect(prepararLote(fecha, [{ ...roja, descripcion: roja.descripcion + ' BLUE' }]).aMano).toBe(1);
 });
