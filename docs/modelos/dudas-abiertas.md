@@ -1,5 +1,36 @@
 # Dudas abiertas
 
+## Combursa · 26/11/2026
+
+Respuestas de Jaime y comprobaciones en el
+[catálogo de corte](./assa-combursa-catalogo.md#respuestas-de-taller).
+
+| Duda | Pendiente | Mientras tanto |
+| --- | --- | --- |
+| Q-ASC04 | Jaime tiene que confirmar la `430127-0023`. Según taller no debería llevar NH. Los cinco pedidos de RPS traen NT 600, NB 3.450 y NH 3.600 mm. | Corte a mano. |
+| Q-ASC06 | Tamara tiene que guardar el dibujo de la `420148-0115`. | Corte a mano. |
+| Q-ASC08 | Tamara tiene que confirmar qué dibujo se usa en la `420148-0118`. | Corte a mano. |
+| Q-ASC09 | Tamara tiene que guardar el dibujo de la `430127-0068`. | Corte a mano. |
+| Q-ASC11 | Preguntar a Tamara qué hacer cuando difieren la plantilla y el último corte guardado. | Se mantiene el criterio vigente del catálogo. |
+
+- **Q-ASC01 y Q-ASC02.** Las cortinas `410xxx` se cortan a máquina, se cosen
+  y van en sus palets, sin envarillar. El dibujo corresponde a la referencia
+  y las cotas se toman de TWB, TWT, OP, etc. La preparación multimaterial
+  por separado corresponde a esa fase. La web las mantiene a mano.
+- **Q-ASC03.** `420150-0133` habilitada en PLASTEL roja de 2.040 mm.
+  La `410130-0172` sigue a mano. Lleva PLASTEL negra de 2.040 mm, PVC
+  negro de 900 g y lona de 3 mm. Los materiales comparten DXF con tiradas
+  separadas.
+- **Q-ASC05.** La `430172-0010` usa el dibujo y canalón de la
+  `430172-0005` cuando RPS indica NT 900, NB 3.250 y NH 3.200 mm.
+- **Q-ASC07 y Q-ASC10.** Reconocidos los rótulos de tres cifras
+  `-049`, `-059` y `-105`, y las equivalencias de nombres `H7A` con
+  `7A` y `D00…-001` con `P…`. Se habilitan la `420102-0049` y la
+  `420102-0059`. La `420102-0102` sigue sin pedidos localizados.
+  Se confirma que se hizo la `410122-0006` en `AR.21.02474` (56 uds.)
+  y `AR.25.01976` (18 uds.). Las muestras `MUESTRALONA` son siempre
+  manuales.
+
 ## Puertas de Belts Vigo y Puertas Luz · 24/11/2026
 
 Estudio de las plantillas `BELTS VIGO.dwg` y `PUERTAS LUZ.dwg`, las hojas escaneadas de pedido (`RPS\VENTAS\PEDIDOS\{año}`), los PDF de planteamientos y los cortes reales de `maqcorte` de los 31 pedidos históricos ya fabricados (todas las OF cerradas con `RealEndDate` en RPS: 20 de Belts Vigo y 11 de Puertas Luz). Expediente y contraste en [puertas-belts-luz.md](./puertas-belts-luz.md).

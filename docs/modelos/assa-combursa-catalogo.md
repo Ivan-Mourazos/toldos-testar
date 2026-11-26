@@ -10,6 +10,53 @@ La parte de corte de los siete grupos ya estudiados usa el maestro con la fecha 
 
 `geometriasPlantilla.json` y `canalones420150.json` se conservan para reproducir la fase anterior y sus comprobaciones. El catálogo nuevo reutiliza esos dos extractores y es la fuente del corte automático. `dibujosConfeccion.json` contiene vistas de confección de oficina y se usa fuera del recuadro de corte. `validacionCatalogo.json` permite ejecutar la comparación con el criterio anterior.
 
+## Respuestas de taller
+
+Jaime, 26/11/2026. Las dudas pendientes se recogen en
+[dudas-abiertas.md](./dudas-abiertas.md#combursa--26112026).
+
+| Duda | Respuesta y efecto en el corte |
+| --- | --- |
+| Q-ASC01 | Las `410xxx` pasan por la máquina para cortar lonas que después se cosen. Se preparan en sus palets, sin envarillar. El dibujo se busca por referencia en la carpeta de Combursa y las medidas salen de TWB, TWT, OP y las demás cotas de la descripción. La web las deja a mano hasta la fase de cortinas. |
+| Q-ASC02 | Las cortinas multimaterial pasan siempre por máquina. La fase de cortinas deberá preparar cada material por separado en el mismo DXF del lote. |
+| Q-ASC03 | La `420150-0133` usa PLASTEL roja en rollo de 2.040 mm. Tiene el mismo paño de 10.412 × 666 mm que la `420150-0090` y conserva los recorridos y el canalón de su dibujo vigente. La `410130-0172` usa PLASTEL negra en rollo de 2.040 mm, PVC 900 g negro y lona de 3 mm. Sigue a mano en esta fase. |
+| Q-ASC04 | Según Jaime, la `430127-0023` debería venir sin NH. Los cinco pedidos localizados traen `NT600NB3450NH3600`. Sigue a mano hasta que Jaime confirme las medidas. |
+| Q-ASC05 | Jaime confirma que la `430172-0010` se fabrica como la `430172-0005`. Las 21 líneas históricas de la primera y las 87 de la segunda llevan NT 900, NB 3.250 y NH 3.200 mm. Solo con esas cotas se toma el cuerpo y el canalón de la `0005`. En pedidos, rótulos y papel se conserva la referencia de RPS. |
+| Q-ASC06 | La `420148-0115` queda a mano hasta que Tamara guarde el dibujo. |
+| Q-ASC07 | `HOK420102-049` y `HOK420102-059` del maestro corresponden a `420102-0049` y `420102-0059`. `OK410129-105` de `OK410129.dwg` corresponde a `H0K410129-0105` en RPS. La `420102-0102` figura en la hoja de medidas y sigue sin pedidos localizados ni cuerpo en los maestros. La `410122-0006` se hizo en `AR.21.02474` (56 uds.) y `AR.25.01976` (18 uds.). Queda en la fase de cortinas, pendiente de localizar un dibujo atribuible. `MUESTRALONA` son muestras sueltas y siempre se prepara a mano. |
+| Q-ASC08 | La `420148-0118` sigue a mano. Tamara tiene que confirmar qué dibujo corresponde a las medidas del pedido. |
+| Q-ASC09 | La `430127-0068` sigue a mano hasta que Tamara guarde el cuerpo de corte. El maestro aporta rótulo y canalón. |
+| Q-ASC10 | `H7A006014` se vincula con `7A006014.dwg` y su PDF. `H7A006007` tiene DWG y PDF con el mismo código. `D001602298-001` y `D001602304-001` también aparecen en `P1602298.dwg` y `P1602304.dwg`. La `D001624514-001` está rotulada en `D001624514.dwg`. En la carpeta inventariada no se encontró `P1624514.dwg`. Estas cinco referencias tienen contornos vinculados y siguen a mano, a falta de una regla de corte para sus familias. |
+| Q-ASC11 | Pendiente de Tamara el criterio entre plantilla y último corte guardado cuando difieren. Se mantiene el criterio vigente del catálogo. |
+
+Para cada palet, el DXF del lote coloca cada material en sus propias filas.
+Los canalones solo comparten una pila cuando coinciden el material y el juego
+de corte. Cada programa indica su material en el DXF y en el papel del cortador.
+
+### Cobertura después de las respuestas de Jaime
+
+El inventario regenerado a partir de las 298 fuentes reúne **490 referencias**.
+De ellas, 434 tienen algún contorno o cuerpo vinculado y 258 aparecen en al
+menos uno de los dos maestros (254 en el de 2026 y 177 en el de 2023).
+
+En los sábados de 2025 y 2026 de la lectura del 26/11 hay 1.804 líneas de RPS.
+Con esa misma lectura, el catálogo previo habilitaba **1.642 líneas de 102
+referencias**. El catálogo actualizado habilita **1.654 de 106**.
+
+| Referencia | Líneas habilitadas antes → después | Corte habilitado |
+| --- | --- | --- |
+| `420102-0049` | 0 → 3 | Paño de 3.910 × 666 mm. |
+| `420102-0059` | 0 → 1 | Paño de 3.060 × 966 mm. |
+| `420150-0133` | 0 → 1 | Paño y canalón en PLASTEL roja. |
+| `430172-0010` | 0 → 7 | Paño y canalón de la `430172-0005`. |
+
+En el contraste repetido del 31/10, 21/11 y 28/11 de 2026 coinciden todas las
+filas con el resultado previo. Son 49 líneas habilitadas de 50, con 49 paños
+iguales y 46 de igual paño y cantidad. El 28/11 sigue a mano la
+`420148-0115`. En el DXF del 26/09, la `420150-0133` coincide en medidas,
+marcas de rotulador y canalón. Hay diferencias en el recorrido de cúter y se
+identifican 60 paños frente a los 62 que pide RPS.
+
 ## Cómo repetir el inventario y el contraste
 
 1. Copiar los DWG, XLSX, PDF y CMT de la carpeta de modelos a `tmp/combursa-catalogo/modelos/`, respetando las rutas relativas y la fecha de guardado. Convertir las copias DWG con ODA a DXF 2018 en `tmp/combursa-catalogo/dxf/`, con la misma estructura.
@@ -19,7 +66,7 @@ La parte de corte de los siete grupos ya estudiados usa el maestro con la fecha 
 
 Los archivos de oficina y máquina se abren en solo lectura. La generación y las pruebas se pueden repetir desde las copias locales sin arrancar la web.
 
-## Resultado del inventario y de la lectura de RPS
+## Resultado del inventario y de la lectura previos a las respuestas de taller
 
 Se inventariaron **470 referencias** en 298 archivos (89 DWG, 164 PDF, un XLSX y 44 CMT). El maestro de 2026 contiene 251 referencias y el de 2023 contiene 175. En conjunto son **255 referencias distintas en los dos maestros**. Hay contornos o cuerpos vinculados para 413 referencias. El lector de CMT pudo interpretar 12 de los 44 programas antiguos.
 
@@ -62,9 +109,9 @@ En el 31-10, la `430125-0012` se genera a 3.563 × 691 mm, como figura en el mae
 - **Combinado de canalón completo sin coincidencia (35)**. `420150-0001`, `420150-0002`, `420150-0007`, `420150-0033`, `420150-0064`, `420150-0087`, `420150-0088`, `420150-0089`, `420150-0090`, `420150-0091`, `420150-0129`, `420150-0130`, `420150-0131`, `430127-0001`, `430127-0002`, `430127-0004`, `430127-0005`, `430127-0007`, `430127-0014`, `430127-0016`, `430127-0019`, `430129-0002`, `430129-0008`, `430129-0014`, `430129-0017`, `430172-0002`, `430172-0005`, `430172-0007`, `430172-0009`, `430172-0030`, `430172-0031`, `430172-0032`, `430172-0034`, `430172-0041`, `430172-0042`.
 - **Sin paño atribuible en el DXF (50)**. `420102-0001`, `420102-0017`, `420102-0021`, `420102-0022`, `420102-0030`, `420102-0034`, `420102-0050`, `420102-0085`, `420102-0086`, `420102-0089`, `420102-0092`, `420102-0172`, `420148-0002`, `420148-0003`, `420148-0033`, `420148-0099`, `420148-0104`, `420148-0105`, `420150-0001`, `420150-0020`, `420150-0021`, `420150-0033`, `420150-0064`, `420150-0088`, `420150-0089`, `420150-0090`, `420150-0091`, `420150-0092`, `420150-0132`, `430125-0001`, `430125-0002`, `430125-0012`, `430125-0020`, `430127-0001`, `430127-0002`, `430127-0004`, `430127-0007`, `430127-0014`, `430127-0016`, `430127-0019`, `430129-0002`, `430129-0006`, `430172-0002`, `430172-0005`, `430172-0007`, `430172-0009`, `430172-0030`, `430172-0031`, `430172-0032`, `430172-0034`.
 
-## Referencias a mano
+## Referencias a mano en la lectura previa a las respuestas de taller
 
-La lista siguiente reúne las causas que aparecieron en la lectura de RPS para los sábados de 2025 y 2026. Una referencia puede figurar por varios motivos según el pedido.
+La lista siguiente reúne las causas de la lectura original de los sábados de 2025 y 2026. Una referencia puede figurar por varios motivos según el pedido. La cobertura vigente y los motivos actualizados de las referencias consultadas a Jaime se recogen arriba, en las respuestas de taller.
 
 | Motivo | Referencias |
 | --- | --- |
