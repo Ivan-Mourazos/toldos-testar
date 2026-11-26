@@ -1,9 +1,11 @@
 // Lectura del corte real, sin consultar medidas esperadas ni el generador.
+import { codigoAssa } from './codigos.js';
+
+export { codigoAssa };
+
 const EPS = 0.01;
 const cerca = (a, b) => Math.abs(a - b) < EPS;
 const red = n => Math.round(n * 1000) / 1000;
-export const codigoAssa = texto => String(texto ?? '').toUpperCase()
-  .match(/\b(?:H?[0O]K)\s*(4\d{5})\s*-\s*(\d{4})(?!\d)/)?.slice(1).join('-') ?? null;
 
 export function extraerPanos(modelo) {
   const discos = modelo.filter(p => !p.deCota && p.tipo === 'raya' && p.capa === 'DISCO1' && !p.curva);

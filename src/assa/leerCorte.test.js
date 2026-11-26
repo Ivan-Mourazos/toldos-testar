@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { extraerPanos } from './leerCorte.js';
+import { codigosAssa } from './codigos.js';
 
 const raya = (a, b, capa = 'DISCO1') => ({ tipo: 'raya', a, b, capa, curva: 0 });
 const texto = (valor, punto) => ({ tipo: 'texto', valor, punto, h: 200, capa: 'texto' });
@@ -115,4 +116,16 @@ describe('paños unidos de dos en dos', () => {
     const porX0 = grupos[0].panos.filter(p => p.caja.y0 === 0).sort((a, b) => a.caja.x0 - b.caja.x0);
     expect(porX0.map(p => p.uniones)).toEqual([[3610], [3610, 7220], [7220]]);
   });
+});
+it('normaliza las referencias de RPS y los nombres de los dibujos sin truncar variantes', () => {
+  expect(codigosAssa('HOK420102-049, 0K420102-0490, H420102-059, OK410129-105, H0K410129-0105')).toEqual([
+    '420102-0049', '420102-0490', '420102-0059', '410129-0105',
+  ]);
+  expect(codigosAssa('H7A006007 7A006007.pdf H7A006014 7A006014.dwg H7A006007-0002')).toEqual([
+    'H7A006007', 'H7A006014', 'H7A006007-0002',
+  ]);
+  expect(codigosAssa('D001602298-001 P1602298.dwg D001602304.dwg P1602304.dwg')).toEqual([
+    'D001602298-001', 'D001602304-001',
+  ]);
+  expect(codigosAssa('HOK420102-04900 HOK420102-049A 410170-2 XP1602298 D001602298-002')).toEqual([]);
 });
