@@ -43,7 +43,7 @@ export type ControlRemolques = {
   limpiar: () => Promise<void>;
 };
 
-export function RemolquesView({ controlRef, usuario, notify, askForConfirmation, pedidoSolicitado, limpiarSolicitado = 0, pedidoGuardadoSolicitado, onGuardado, borradorSolicitado, onAbrirBorradorToldos, accionesDestino, accionesVisibles = true, onResumenChange, onLimpiar, modeloInicialSolicitado }: {
+export function RemolquesView({ controlRef, usuario, notify, askForConfirmation, pedidoSolicitado, limpiarSolicitado = 0, pedidoGuardadoSolicitado, onGuardado, onVerGuardado, borradorSolicitado, onAbrirBorradorToldos, accionesDestino, accionesVisibles = true, onResumenChange, onLimpiar, modeloInicialSolicitado }: {
   modeloInicialSolicitado?:{id:number;tipo:'lona'|'baqueton'|'ganado'}|null;
   usuario: string;
   notify: Notify;
@@ -57,6 +57,7 @@ export function RemolquesView({ controlRef, usuario, notify, askForConfirmation,
   pedidoGuardadoSolicitado?: { id: number; pedido: PedidoRemolques; modo: ModoCarga } | null;
   /** Tras «Guardar para revisión»: Pedidos vuelve a leer sus listas. */
   onGuardado?: () => void;
+  onVerGuardado?: (orderCode: string) => void;
   /** Un borrador que la aplicación manda abrir aquí (Pedidos › «Seguir con el borrador», o desde Toldos). */
   borradorSolicitado?: { id: number; borrador: BorradorRemolques; preguntar: boolean } | null;
   /** «Abrir borrador» de un número cuyo borrador es de toldos. */
@@ -66,7 +67,7 @@ export function RemolquesView({ controlRef, usuario, notify, askForConfirmation,
   onResumenChange?: (resumen: ResumenPedido) => void;
   onLimpiar?: () => void;
 }) {
-  const ws = useRemolques({ usuario, notify, askForConfirmation, onGuardado, onAbrirBorradorToldos });
+  const ws = useRemolques({ usuario, notify, askForConfirmation, onGuardado, onVerGuardado, onAbrirBorradorToldos });
   const { hayDatos, guardarBorrador, limpiarFormulario: limpiarPantalla } = ws;
   const numeroActual = ws.estado.numeroPedido;
   React.useEffect(() => {

@@ -227,13 +227,15 @@ function useCatalogos() {
  * guardado van por la API de Pedidos (fase 5); no hay dibujo que capturar ni «completar pedido».
  * `RemolquesView` se limita a pintar lo que devuelve.
  */
-export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, onAbrirBorradorToldos }: {
+export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, onVerGuardado, onAbrirBorradorToldos }: {
   /** El «Soy» de la web: es quien figura como «Realizado por» en las líneas nuevas. */
   usuario: string;
   notify: Notify;
   askForConfirmation: AskForConfirmation;
   /** Tras guardar para revisión: Pedidos vuelve a leer sus listas. */
   onGuardado?: () => void;
+  /** Tras «Guardar»: abre el pedido en su ficha, como si se entrara de nuevo (Iván, 26/11/2026). */
+  onVerGuardado?: (orderCode: string) => void;
   /** «Abrir borrador» al obtener un número cuyo borrador es de toldos: lo abre la aplicación en Toldos. */
   onAbrirBorradorToldos?: (borrador: BorradorToldos) => void;
 }) {
@@ -281,6 +283,8 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
   );
   const alGuardar = useRef(onGuardado);
   useEffect(() => { alGuardar.current = onGuardado; });
+  const alVerGuardado = useRef(onVerGuardado);
+  useEffect(() => { alVerGuardado.current = onVerGuardado; });
   const alAbrirBorradorToldos = useRef(onAbrirBorradorToldos);
   useEffect(() => { alAbrirBorradorToldos.current = onAbrirBorradorToldos; });
 
@@ -856,6 +860,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
         despachar({ tipo: 'PEDIDO_LIMPIADO' });
         const codigo = datos.review?.orderCode ?? actual.numeroPedido;
         notificar.current.notify(`Pedido ${codigo} guardado.`, { tone: 'success' });
+        alVerGuardado.current?.(codigo);
         return;
     } catch (error) {
       avisar('error', error instanceof Error ? error.message : 'No se pudo guardar el pedido.');

@@ -57,7 +57,7 @@ export function ReviewsView({ modo = 'pedidos', todos = [], onIrHistorial, refre
   onConfirm: AskForConfirmation;
   /** Pedido que pide abrir CoordinaOT (`?revisar=`), sin puntos. Se abre en cuanto la bandeja
    *  lo tiene, y se avisa a App para que no se repita al volver a esta pestaña. */
-  abrirAlCargar?: string | { orderCode: string } | null;
+  abrirAlCargar?: string | { orderCode: string; producto?: string } | null;
   onAbiertoAlCargar?: () => void;
 }) {
   const [year, setYear] = useState(new Date().getFullYear());
@@ -149,7 +149,8 @@ export function ReviewsView({ modo = 'pedidos', todos = [], onIrHistorial, refre
     if (atendidoAlCargar.current === codigo) return;
     if (typeof abrirAlCargar !== 'string') {
       atendidoAlCargar.current = codigo;
-      queueMicrotask(() => { onAbiertoAlCargar?.(); void abrirCodigo(codigo, 'toldos'); });
+      const producto = abrirAlCargar.producto ?? 'toldos';
+      queueMicrotask(() => { onAbiertoAlCargar?.(); void abrirCodigo(codigo, producto); });
       return;
     }
     if (pendingLoading || historyLoading) return;

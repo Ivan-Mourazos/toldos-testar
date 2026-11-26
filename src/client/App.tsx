@@ -92,7 +92,7 @@ export default function App() {
   const puertasActivas = catalog?.features.puertasEnabled === true;
   // Con `?revisar=` (CoordinaOT, pedido ya mandado a revisión) se entra directamente en Pedidos,
   // y la bandeja abre ese pedido en cuanto lo tiene (ver `abrirAlCargar` en ReviewsView).
-  const [revisarAlCargar, setRevisarAlCargar] = useState<string | { orderCode: string } | null>(() => revisionDeEnlace(window.location.search));
+  const [revisarAlCargar, setRevisarAlCargar] = useState<string | { orderCode: string; producto?: string } | null>(() => revisionDeEnlace(window.location.search));
   // El pedido de CoordinaOT que se está cargando, para el aviso «Cargando…» (Iván, 10/11/2026: parecía trabado).
   const [cargandoCoordina, setCargandoCoordina] = useState<string | null>(() => revisionDeEnlace(window.location.search));
   const [activeTab, setActiveTab] = useState<ActiveTab>(() => (revisarAlCargar ? 'reviews' : new URLSearchParams(window.location.search).get('herramienta') === 'cmt' ? 'cmt' : 'order'));
@@ -297,6 +297,14 @@ export default function App() {
   function openInTrailers(numero: string, pedidoRps: PedidoRps) {
     chooseProducto('remolques');
     setPedidoSolicitado({ numero, id: ++identificadorSolicitud.current, pedidoRps });
+  }
+
+  // Tras «Guardar», el pedido se abre como si se entrara de nuevo: su ficha con «Editar», sin el formulario
+  // (Iván, 26/11/2026: «cuando guardas desaparezca el botón de guardar y aparezca la vista como si entrara de nuevo»).
+  function verPedidoGuardado(orderCode: string, productoPedido: string) {
+    setReviewRefresh((value) => value + 1);
+    setRevisarAlCargar({ orderCode, producto: productoPedido });
+    setActiveTab('reviews');
   }
 
   // La pregunta de si sustituir lo que haya en Remolques la hace la propia pantalla, que es quien lo sabe.
@@ -722,13 +730,15 @@ export default function App() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'No se pudo guardar el pedido.');
       const review: ReviewPackage = data.review;
-      draft.loadOrder({ ...review.order, corteLona: review.corteLona }, { guardado: true });
-      setCorrigiendo(review.orderCode);
-      setReviewRefresh(value => value + 1);
-      // Se queda en el formulario con lo guardado (Iván, 25/11/2026): saltar a Pedidos y abrir allí
-      // el pedido parecía que se volvía a abrir solo.
+      // El formulario se vacía y el pedido se abre en su ficha, con «Editar» (Iván, 26/11/2026).
+      setReturnNote(null);
+      setCorrigiendo(null);
+      draft.resetDraft();
+      setAutofill(null);
+      ruleSettings.restoreParameters();
       notify(data.nuevaEntrega ? 'Las OF nuevas quedan pendientes de generar.' : 'Se han guardado los cambios del pedido.',
         { tone: 'success', title: 'Pedido guardado' });
+      verPedidoGuardado(review.orderCode, 'toldos');
     } catch (error) {
       notify(error instanceof Error ? error.message : 'No se pudo guardar el pedido.', { tone: 'error' });
     } finally {
@@ -784,6 +794,7 @@ export default function App() {
       ruleSettings.restoreParameters();
       const planos = data.planosCorte?.files?.map((f: { savedPath: string }) => f.savedPath) || [];
       notify(`Guardado en Pedidos: ${data.review.orderCode}${planos.length ? `. Plano del corte: ${planos.join(' · ')}` : ''}${data.planosCorte?.avisos?.length ? `. ${data.planosCorte.avisos.join(' ')}` : ''}`, { tone: 'success', title: 'Pedido guardado' });
+      verPedidoGuardado(data.review.orderCode, 'toldos');
     } catch (error) {
       notify(error instanceof Error ? error.message : 'No se pudo guardar el pedido.', { tone: 'error' });
     } finally {
@@ -1088,13 +1099,15 @@ export default function App() {
               modeloInicialSolicitado={modeloInicio?.valor.producto==='puertas'?{id:modeloInicio.id,modelo:modeloInicio.valor.modelo,cliente:modeloInicio.valor.cliente,tipo:modeloInicio.valor.tipo}:null}
               usuario={currentUser} notify={notify} askForConfirmation={askForConfirmation}
               accionesDestino={accionesPedido} accionesVisibles={activeTab === 'order' && editorPedidoAbierto && producto === 'puertas'}
-              pedidoGuardadoSolicitado={pedidoPuertasSolicitado} pedidoRpsSolicitado={pedidoPuertasRps} onGuardado={() => setReviewRefresh((value) => value + 1)} />
+              pedidoGuardadoSolicitado={pedidoPuertasSolicitado} pedidoRpsSolicitado={pedidoPuertasRps} onGuardado={() => setReviewRefresh((value) => value + 1)}
+              onVerGuardado={(codigo) => verPedidoGuardado(codigo, 'puertas')} />
           </div>}
           {puertasActivas && systemDockMontado && <div hidden={activeTab !== 'order' || !editorPedidoAbierto || producto !== 'systemdock'}>
             <PuertasView producto="systemdock" activo={activeTab === 'order' && editorPedidoAbierto && producto === 'systemdock'} onResumenChange={setResumenSystemDock}
               usuario={currentUser} notify={notify} askForConfirmation={askForConfirmation}
               accionesDestino={accionesPedido} accionesVisibles={activeTab === 'order' && editorPedidoAbierto && producto === 'systemdock'}
-              pedidoGuardadoSolicitado={pedidoPuertasSolicitado} pedidoRpsSolicitado={pedidoPuertasRps} onGuardado={() => setReviewRefresh((value) => value + 1)} />
+              pedidoGuardadoSolicitado={pedidoPuertasSolicitado} pedidoRpsSolicitado={pedidoPuertasRps} onGuardado={() => setReviewRefresh((value) => value + 1)}
+              onVerGuardado={(codigo) => verPedidoGuardado(codigo, 'puertas')} />
           </div>}
           {remolquesMontado && (
             <div className="remolques-pantalla" hidden={activeTab !== 'order' || !editorPedidoAbierto || producto !== 'remolques'}>
@@ -1105,7 +1118,8 @@ export default function App() {
                 pedidoGuardadoSolicitado={pedidoGuardadoSolicitado}
                 borradorSolicitado={borradorRemolquesSolicitado}
                 onAbrirBorradorToldos={(borrador) => void abrirBorrador(borrador)}
-                onGuardado={() => setReviewRefresh((value) => value + 1)} />
+                onGuardado={() => setReviewRefresh((value) => value + 1)}
+                onVerGuardado={(codigo) => verPedidoGuardado(codigo, 'remolques')} />
             </div>
           )}
 

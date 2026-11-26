@@ -465,7 +465,7 @@ const nuevaLona = (): Puerta => ({ ...nuevaPuerta('SYSTEMDOCK'), material: REGLA
 const pedidoVacio = (producto: 'puertas' | 'systemdock', origen?:Puerta): PedidoPantallaPuertas => ({ schemaVersion: 1, kind: 'puertas', orderCode: '', cabecera: { cliente: '', fecha: hoy() }, elementos: [{ id: 'puerta-1', input: producto === 'systemdock' ? nuevaLona() : origen?otraPuertaDelCliente(origen):nuevaPuerta() }] });
 const tieneDatos = (p: PedidoPantallaPuertas) => Boolean(p.orderCode.trim() || p.cabecera.cliente.trim() || p.elementos.some(e => e.input.frente || e.input.alto || e.input.of));
 
-export function PuertasView({ producto = 'puertas', activo, onResumenChange, usuario, notify, askForConfirmation, accionesDestino, accionesVisibles = true, pedidoGuardadoSolicitado, pedidoRpsSolicitado, onGuardado, modeloInicialSolicitado }: {
+export function PuertasView({ producto = 'puertas', activo, onResumenChange, usuario, notify, askForConfirmation, accionesDestino, accionesVisibles = true, pedidoGuardadoSolicitado, pedidoRpsSolicitado, onGuardado, onVerGuardado, modeloInicialSolicitado }: {
   modeloInicialSolicitado?: {id:number;modelo:Exclude<ModeloPuerta,'SYSTEMDOCK'>;cliente?:string;tipo?:string}|null;
   producto?: 'puertas' | 'systemdock';
   activo: boolean;
@@ -482,6 +482,8 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
   pedidoRpsSolicitado?: { id: number; numero: string; rps: PuertasRps } | null;
   /** Tras «Guardar para revisión»: Pedidos vuelve a leer sus listas. */
   onGuardado?: () => void;
+  /** Tras «Guardar»: abre el pedido en su ficha, como si se entrara de nuevo (Iván, 26/11/2026). */
+  onVerGuardado?: (orderCode: string) => void;
 }) {
   const sd = producto === 'systemdock';
   const nombre = sd ? 'System Dock' : 'Puertas';
@@ -689,12 +691,13 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
         const foto = apuntarFormularioGuardado('puertas', JSON.stringify(pedido));
         formularioGuardado.current = foto;
         setFotoGuardada(foto);
-        if (regenerar || resultado.editado) {
+        if (regenerar) {
           setEditandoCodigo(resultado.review?.orderCode ?? pedido.orderCode);
         } else {
           setEditandoCodigo(null);
           setPedido(pedidoVacio(producto, pedido.elementos[0]?.input));
           setIndice(0);
+          onVerGuardado?.(resultado.review?.orderCode ?? pedido.orderCode);
         }
       }
     } catch {
