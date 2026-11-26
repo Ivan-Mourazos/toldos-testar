@@ -568,20 +568,20 @@ html::-webkit-scrollbar-track { background: transparent; }
   z-index: 30;
 }
 
+/* Caballo y línea de coordina-solo-claro.png. El nombre conserva la geometría
+   del original y cambia de negro a blanco con el tema de la aplicación. */
 .cabecera-logo {
-  align-items: center;
-  color: var(--text);
-  display: inline-flex;
+  color: #000;
   flex-shrink: 0;
-  gap: 0.5rem;
+  height: 52px;
   margin-block: -0.75rem;
+  padding-top: 7px;
+  text-align: center;
 }
-.cabecera-logo img { display: block; height: 1.75rem; width: auto; }
-/* «Planteamientos» como el «Coordina» del logo de CoordinaOT (public/coordina-*.png): una
-   geométrica fina, Century Gothic, a unos 15 px (el «Coordina» mide 11 px de mayúscula y
-   8 de x en la cabecera). Didact Gothic, servida desde el proyecto, la sustituye donde
-   Century Gothic no está instalada. */
+:root[data-theme="dark"] .cabecera-logo { color: #fff; }
+.cabecera-logo img { display: block; }
 .cabecera-logo h1 {
+  color: inherit;
   font-family: 'Century Gothic', 'Didact Gothic', var(--font-sans), sans-serif;
   font-size: 0.9375rem;
   font-weight: 400;

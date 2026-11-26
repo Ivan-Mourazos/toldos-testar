@@ -9,7 +9,7 @@ import {
   UserRound,
   X, Undo2, Moon, Sun, ArrowLeft, History } from 'lucide-react';
 // Letra de CoordinaOT (Geist y Geist Mono) servida desde el proyecto; Didact Gothic es la
-// sustituta de Century Gothic para «Planteamientos» en la cabecera (ver coordina/piezas.css).
+// sustituta de Century Gothic para «ACOPLA» en la cabecera (ver coordina/piezas.css).
 import '@fontsource-variable/geist';
 import '@fontsource-variable/geist-mono';
 import '@fontsource/didact-gothic/latin-400.css';
@@ -951,8 +951,8 @@ export default function App() {
       <CargandoPedido numero={cargandoCoordina} />
       <header className="cabecera glass-header">
         <div className="cabecera-logo">
-          <img src="/logo-tgm-transparent.png" alt="TGM" />
-          <h1>Planteamientos</h1>
+          <img src="/acopla-marca.png" alt="" width="72" height="17" />
+          <h1>ACOPLA</h1>
         </div>
         <nav className="cabecera-pestanas tira-3d glass-chip" aria-label="Vistas">
           <TabButton active={activeTab === 'order'} disabled={working === 'review'} label="Nuevo pedido" onClick={() => irAPestana('order')} />
