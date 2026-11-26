@@ -92,6 +92,7 @@ import {
   comprobadorPedidoToldos, crearServicioPedidosRemolques, firmaCorteRemolques, mensajePedidoDeRemolques, paramsDeLaPantalla, yaEsPedidoDeRemolques
 } from './remolques/flujo/servicio.ts';
 import { crearServicioCadPaginasFlujo } from './puertas/flujo/cadPaginas.ts';
+import { generarCorteRemolques } from './remolques/corte/index.js';
 import { crearAlmacenBorradores } from './borradores/almacen.ts';
 import { crearServicioBorradores } from './borradores/servicio.ts';
 import {
@@ -1140,7 +1141,9 @@ const cadPaginasRemolques = crearServicioCadPaginasFlujo({
   oda,
   almacenEscritos: confirmacionesRemolques,
   tipoPlano: 'plano-corte-lona',
-  huella: firmaCorteRemolques
+  huella: firmaCorteRemolques,
+  // Sin DWG todavía: el plano que escribiría la web, con el corte y sus cotas como en el CAD (Iván, 26/11/2026).
+  planoDeLaWeb: async (pedido) => generarCorteRemolques(pedidoEntrega(pedido, 'anual'))?.archivo?.plano?.dxf ?? null
 });
 app.get('/api/remolques/pedidos/:orderCode/cad-paginas', rutaRemolques(async (req, res) => {
   res.set('Cache-Control', 'no-store').json(await cadPaginasRemolques.obtenerPaginas(String(req.params.orderCode ?? '')));

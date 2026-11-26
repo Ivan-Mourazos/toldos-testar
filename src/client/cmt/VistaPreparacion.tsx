@@ -81,25 +81,66 @@ function rectangulo(c: Caja, min = 0) {
  * Cota del bloque del corte (Iván, 25/11/2026): la misma que lleva el plano, con su número, pero dibujada
  * a un tamaño que se lea en la pantalla. La letra va en proporción a la vista, no a la del CAD.
  */
-function geometriaCota(c: CotaVista, letra: number) {
+function geometriaCota(c: CotaVista, letra: number, empuje = 0) {
   const x = c.eje === 'x';
   const lado = (x ? c.linea.y - (c.a.y + c.b.y) / 2 : c.linea.x - (c.a.x + c.b.x) / 2) >= 0 ? 1 : -1;
   const pasa = letra * 0.3, hueco = letra * 0.75, raya = letra * 0.3;
-  const [p, q] = x ? [{ x: c.a.x, y: c.linea.y }, { x: c.b.x, y: c.linea.y }] : [{ x: c.linea.x, y: c.a.y }, { x: c.linea.x, y: c.b.y }];
+  // `empuje`: la cota se aparta hacia fuera si su número pisa un texto del plano u otra cota.
+  const linea = x ? { x: c.linea.x, y: c.linea.y + lado * empuje } : { x: c.linea.x + lado * empuje, y: c.linea.y };
+  const [p, q] = x ? [{ x: c.a.x, y: linea.y }, { x: c.b.x, y: linea.y }] : [{ x: linea.x, y: c.a.y }, { x: linea.x, y: c.b.y }];
   const extension = (desde: { x: number; y: number }, hasta: { x: number; y: number }) => x
     ? { a: desde, b: { x: hasta.x, y: hasta.y + lado * pasa } } : { a: desde, b: { x: hasta.x + lado * pasa, y: hasta.y } };
-  const centro = x ? { x: (p.x + q.x) / 2, y: c.linea.y + lado * hueco } : { x: c.linea.x + lado * hueco, y: (p.y + q.y) / 2 };
+  const centro = x ? { x: (p.x + q.x) / 2, y: linea.y + lado * hueco } : { x: linea.x + lado * hueco, y: (p.y + q.y) / 2 };
   const largo = c.texto.length * letra * 0.6;
+  const cajaNumero: Caja = x
+    ? { x0: centro.x - largo / 2, x1: centro.x + largo / 2, y0: centro.y - letra / 2, y1: centro.y + letra / 2 }
+    : { x0: centro.x - letra / 2, x1: centro.x + letra / 2, y0: centro.y - largo / 2, y1: centro.y + largo / 2 };
   const caja: Caja = x
     ? { x0: Math.min(p.x, q.x, centro.x - largo / 2), x1: Math.max(p.x, q.x, centro.x + largo / 2), y0: Math.min(c.a.y, c.b.y, centro.y - letra / 2), y1: Math.max(c.a.y, c.b.y, centro.y + letra / 2) }
     : { y0: Math.min(p.y, q.y, centro.y - largo / 2), y1: Math.max(p.y, q.y, centro.y + largo / 2), x0: Math.min(c.a.x, c.b.x, centro.x - letra / 2), x1: Math.max(c.a.x, c.b.x, centro.x + letra / 2) };
   // Trazo oblicuo en cada extremo, como las cotas de arquitectura del CAD.
   const marca = (m: { x: number; y: number }) => ({ a: { x: m.x - raya, y: m.y - raya }, b: { x: m.x + raya, y: m.y + raya } });
-  return { lineas: [{ a: p, b: q }, extension(c.a, p), extension(c.b, q), marca(p), marca(q)], centro, caja };
+  return { lineas: [{ a: p, b: q }, extension(c.a, p), extension(c.b, q), marca(p), marca(q)], centro, caja, cajaNumero };
 }
 
-function cota(c: CotaVista, letra: number, i: number) {
-  const g = geometriaCota(c, letra);
+type GeometriaCota = ReturnType<typeof geometriaCota>;
+const chocan = (a: Caja, b: Caja) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+
+/** Lo que ocupa un texto del plano, en mm (aproximado: 0,6 de la altura por letra), girado si va girado. */
+function cajaTexto(p: TextoVista): Caja | null {
+  const t = textoVista(p);
+  if (!t.texto.trim() || !(t.tamano > 0)) return null;
+  const ancho = t.longitud ?? t.texto.length * t.tamano * 0.55 * t.ancho;
+  const x0 = t.alineacion === 'middle' ? -ancho / 2 : t.alineacion === 'end' ? -ancho : 0;
+  const y0 = t.base === 'central' ? -t.tamano / 2 : t.base === 'hanging' ? 0 : -t.tamano * 0.8;
+  const giro = (t.giro || 0) * RAD;
+  const esquinas = [[x0, y0], [x0 + ancho, y0], [x0, y0 + t.tamano], [x0 + ancho, y0 + t.tamano]]
+    .map(([u, v]) => [t.x + u * Math.cos(giro) - v * Math.sin(giro), t.y + u * Math.sin(giro) + v * Math.cos(giro)]);
+  // En pantalla y va hacia abajo: se vuelve a las coordenadas del plano.
+  const xs = esquinas.map(e => e[0]), ys = esquinas.map(e => -e[1]);
+  return { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) };
+}
+
+/**
+ * Coloca las cotas ordenadas (Iván, 26/11/2026: «las cotas se mezclan con textos… iguala textos y posiciones para que
+ * se vea ordenado»): todas con la misma letra, en su lado del plano, y apartadas hacia fuera si el número pisa algo.
+ */
+function colocarCotas(cotas: CotaVista[], vista: PiezaVista[], letra: number): GeometriaCota[] {
+  // Los textos y las rayas del corte: el número no puede caer encima de nada.
+  const ocupado = vista.flatMap(p => p.tipo === 'texto' ? [cajaTexto(p)].filter((c): c is Caja => c !== null) : [cajaPieza(p)]);
+  return cotas.map(c => {
+    const libre = (g: GeometriaCota) => !ocupado.some(o => chocan(o, g.cajaNumero));
+    let g = geometriaCota(c, letra);
+    for (let paso = 1; paso <= 10 && !libre(g); paso++) {
+      const otra = geometriaCota(c, letra, paso * letra * 0.5);
+      if (libre(otra)) g = otra;
+    }
+    ocupado.push(g.cajaNumero);
+    return g;
+  });
+}
+
+function cota(c: CotaVista, g: GeometriaCota, letra: number, i: number) {
   return <g key={`cota-${i}`} className="cmt-cota">
     {g.lineas.map((l, j) => <line key={j} x1={l.a.x} y1={-l.a.y} x2={l.b.x} y2={-l.b.y} vectorEffect="non-scaling-stroke" />)}
     <text className="cmt-cota-texto" transform={`translate(${g.centro.x} ${-g.centro.y})${c.eje === 'y' ? ' rotate(-90)' : ''}`}
@@ -119,8 +160,9 @@ export function VistaPreparacion({ vista, cotas = [], marcos = [], marco, zonas 
   const cajas = [...vista.map(cajaPieza), ...marcos];
   if (!cajas.length) return null;
   const pieza = limites(cajas);
-  const letra = Math.max(pieza.x1 - pieza.x0, pieza.y1 - pieza.y0, 10) * 0.045;
-  const c = limites([pieza, ...cotas.map(x => geometriaCota(x, letra).caja)]);
+  const letra = Math.max(pieza.x1 - pieza.x0, pieza.y1 - pieza.y0, 10) * 0.03;
+  const colocadas = colocarCotas(cotas, vista, letra);
+  const c = limites([pieza, ...colocadas.map(g => g.caja)]);
   const margen = Math.max(c.x1 - c.x0, c.y1 - c.y0, 10) * 0.05;
   const capas = new Map<string, { nombre: string; color?: string }>();
   for (const p of vista) {
@@ -137,7 +179,7 @@ export function VistaPreparacion({ vista, cotas = [], marcos = [], marco, zonas 
       {marcos.map((m, i) => <rect key={i} {...rectangulo(m)}
         className={`cmt-marco${marco === i ? ' cmt-marco-elegido' : ''}`} />)}
       {vista.map((p, i) => <g key={`${p.id}-${i}`}>{trazo(p)}</g>)}
-      {cotas.map((x, i) => cota(x, letra, i))}
+      {cotas.map((x, i) => cota(x, colocadas[i], letra, i))}
       {zonas.flatMap(({ clave, zonas: cajas }) => cajas.map((m, i) =>
         <rect key={`${clave}-${i}`} {...rectangulo(m, margen * 0.035)} className="cmt-zona" />))}
     </svg>

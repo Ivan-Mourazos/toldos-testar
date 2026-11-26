@@ -182,7 +182,10 @@
 .systemdock-pantalla .puerta-derecha .puerta-avisos { max-height:none; overflow:visible; }
 /* Revisión en Pedidos: una puerta o lona cada vez con pestañas, y el alzado del tamaño de la pieza (Iván, 26/10/2026). */
 .puerta-planteamiento-pestanas { display:inline-flex; flex-wrap:wrap; align-self:flex-start; margin:4px 0 10px; }
-.puerta-planteamiento .puerta-alzado > svg { height:auto; max-height:calc(100vh - 300px); min-height:0; }
+/* Ficha del pedido: el alzado lo más grande posible, sin marco dentro del marco (Iván, 26/11/2026). */
+.puerta-planteamiento .puerta-alzado { padding:0; border:0; background:none; box-shadow:none; }
+.puerta-planteamiento .puerta-alzado > header, .puerta-planteamiento .puerta-alzado > p, .puerta-planteamiento .puerta-alzado > small { display:none; }
+.puerta-planteamiento .puerta-alzado > svg { height:calc(100vh - 110px); max-height:none; min-height:420px; margin:0; }
 
 /* Fuera del editor (p. ej. Pedidos) la caja del dibujo no cambia nada. */
 .puerta-dibujo { display:contents; }

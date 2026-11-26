@@ -108,3 +108,18 @@ describe('cotas del corte en la vista previa (Iván, 25/11/2026)', () => {
     expect(html).toContain('<li><i class="cmt-cota" aria-hidden="true"></i>Cota</li>');
   });
 });
+
+describe('cotas ordenadas en la vista previa (Iván, 26/11/2026)', () => {
+  it('si el número de la cota pisaría un texto del plano, la cota se aparta hacia fuera', () => {
+    const vista = [
+      { tipo: 'linea' as const, capa: 'DISCO1', id: 'a', a: { x: 0, y: 0 }, b: { x: 2000, y: 0 } },
+      { tipo: 'linea' as const, capa: 'DISCO1', id: 'b', a: { x: 0, y: 1000 }, b: { x: 2000, y: 1000 } },
+    ];
+    const cota = { eje: 'x' as const, a: { x: 0, y: 0 }, b: { x: 2000, y: 0 }, linea: { x: 1000, y: -100 }, texto: '200' };
+    const y = (html: string) => Number(/class="cmt-cota-texto" transform="translate\([\d.-]+ ([\d.-]+)\)/.exec(html)![1]);
+    const libre = y(renderToStaticMarkup(<VistaPreparacion vista={vista} cotas={[cota]} />));
+    const conTexto = y(renderToStaticMarkup(<VistaPreparacion vista={[...vista,
+      { tipo: 'texto' as const, capa: 'texto', id: 't', pares: [[10, '900'], [20, '-160'], [40, '80'], [72, '1'], [73, '2'], [11, '1000'], [21, '-160'], [1, 'LAC900 AZUL']] }]} cotas={[cota]} />));
+    expect(conTexto).toBeGreaterThan(libre);
+  });
+});
