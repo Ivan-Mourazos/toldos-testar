@@ -6,6 +6,7 @@ import type { CalcParams } from "../calc/params.ts";
 import { notaRecogida } from "../etiquetas.ts";
 import type { TipoPlanteamiento } from "../store/types.ts";
 import { datosHoja, type DatosHoja } from "./datos-hoja.ts";
+import { lineasObservaciones } from "./observaciones.ts";
 import type { ElementoHoja } from "./tipos.ts";
 
 // Todo lo que lleva una hoja de taller, en texto: lo de la web vieja (cabecera, título, banda,
@@ -127,6 +128,36 @@ export function nivelVistas(pagina: Pick<PaginaHojaDatos, "ganchos" | "ollaos">)
   return alto === 0 ? 0 : alto <= ALTO_LIBERADO_MM ? 1 : 2;
 }
 
+// Iván, 26/11/2026: «en todos los remolques que llevan empate, a partir de ahora debe incluir en las
+// observaciones en mayúsculas que necesita soldadura». Mismo criterio que el corte (src/remolques/corte):
+// el contorno de la lona se empata si no cabe en el rollo ni a lo largo ni a lo ancho (lonaAlta.js, conEmpate;
+// en trapecio con su holgura de 1 cm a cada lado), y el baquetón igual (baqueton.js, cabeEnRollo). El contorno
+// soldado de las aguas a lo largo no se empata (lo que no cabe se corta a mano).
+export const LINEA_SOLDADURA = "NECESITA SOLDADURA";
+const ROLLO_CM = 250, HOLGURA_TRAPECIO_CM = 1;
+
+/** true si algún paño del elemento no cabe en el rollo y el corte lo empata. */
+export function llevaEmpate(elemento: ElementoHoja): boolean {
+  if (elemento.tipo === "baqueton") {
+    const p = elemento.result.panoUnico;
+    return p.largo > ROLLO_CM && p.ancho > ROLLO_CM;
+  }
+  if (elemento.tipo !== "lona" || elemento.result.contornoSoldado) return false;
+  const c = elemento.result.panoContorno;
+  if (!c) return false;
+  const atras = c.altoAtras ?? c.alto;
+  const alto = Math.max(c.alto, atras) + (atras !== c.alto ? 2 * HOLGURA_TRAPECIO_CM : 0);
+  return c.ancho > ROLLO_CM && alto > ROLLO_CM;
+}
+
+/** Las observaciones con «NECESITA SOLDADURA» al final si lleva empate (una vez, aunque ya la escribieran). */
+function observacionesConSoldadura(elemento: ElementoHoja, observaciones: string): string {
+  if (!llevaEmpate(elemento)) return observaciones;
+  const lineas = lineasObservaciones(observaciones === "—" ? "" : observaciones);
+  if (lineas.some((l) => /SOLDADURA/i.test(l))) return observaciones;
+  return [...lineas, LINEA_SOLDADURA].join("\n");
+}
+
 export function paginaHoja(elemento: ElementoHoja, indice: number, total: number, params: CalcParams, revisadoPor = "", metrosCorte = ""): PaginaHojaDatos {
   // El de ganado no reparte ollaos: van en su dibujo de confección y en el corte.
   if (elemento.tipo === "ganado") {
@@ -142,8 +173,10 @@ export function paginaHoja(elemento: ElementoHoja, indice: number, total: number
       ganado: { modelo: elemento.input.ganado, cantidad: elemento.input.cantidad, medidasCal: elemento.input.medidasCal },
     };
   }
+  const datos = datosHoja(elemento, indice, total);
   return {
-    ...datosHoja(elemento, indice, total),
+    ...datos,
+    observaciones: observacionesConSoldadura(elemento, datos.observaciones),
     metrosCorte,
     clave: elemento.version,
     tipo: elemento.tipo,
