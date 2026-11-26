@@ -57,7 +57,7 @@ export function RemolquesView({ controlRef, usuario, notify, askForConfirmation,
   pedidoGuardadoSolicitado?: { id: number; pedido: PedidoRemolques; modo: ModoCarga } | null;
   /** Tras «Guardar para revisión»: Pedidos vuelve a leer sus listas. */
   onGuardado?: () => void;
-  onVerGuardado?: (orderCode: string) => void;
+  onVerGuardado?: (orderCode: string, limpiar: () => void) => void;
   /** Un borrador que la aplicación manda abrir aquí (Pedidos › «Seguir con el borrador», o desde Toldos). */
   borradorSolicitado?: { id: number; borrador: BorradorRemolques; preguntar: boolean } | null;
   /** «Abrir borrador» de un número cuyo borrador es de toldos. */

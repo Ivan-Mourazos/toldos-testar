@@ -57,18 +57,25 @@ export function ReviewsView({ modo = 'pedidos', todos = [], onIrHistorial, refre
   onConfirm: AskForConfirmation;
   /** Pedido que pide abrir CoordinaOT (`?revisar=`), sin puntos. Se abre en cuanto la bandeja
    *  lo tiene, y se avisa a App para que no se repita al volver a esta pestaña. */
-  abrirAlCargar?: string | { orderCode: string; producto?: string } | null;
+  /** `datos`: el pedido ya leído (tras «Guardar»): se pinta su ficha a la primera, sin pasar por la lista. */
+  abrirAlCargar?: string | { orderCode: string; producto?: string; datos?: unknown } | null;
   onAbiertoAlCargar?: () => void;
 }) {
   const [year, setYear] = useState(new Date().getFullYear());
   const [history, setHistory] = useState<PedidoBandeja[]>([]);
-  const [selectedCode, setSelectedCode] = useState('');
+  // Tras «Guardar» llega el pedido ya leído: la ficha sale en el primer pintado (Iván, 26/11/2026: «debería quedar
+  // en la misma pantalla y de manera fluida hacer la transición»).
+  const [inicial] = useState(() => typeof abrirAlCargar === 'object' && abrirAlCargar?.datos
+    ? { orderCode: abrirAlCargar.orderCode, producto: abrirAlCargar.producto ?? 'toldos', datos: abrirAlCargar.datos } : null);
+  const de = (producto: 'toldos' | 'remolques' | 'puertas') => inicial && (inicial.producto === producto
+    || (producto === 'puertas' && inicial.producto === 'systemdock')) ? inicial : null;
+  const [selectedCode, setSelectedCode] = useState(() => de('toldos')?.orderCode ?? '');
   // El pedido de remolques abierto (fase 5); el de toldos sigue en selectedCode.
-  const [selectedRemolques, setSelectedRemolques] = useState('');
+  const [selectedRemolques, setSelectedRemolques] = useState(() => de('remolques')?.orderCode ?? '');
   // El de puertas (fase 2, 22/10/2026).
-  const [selectedPuertas, setSelectedPuertas] = useState('');
-  const [puertasLeido,setPuertasLeido] = useState<PedidoPuertasGuardado>();
-  const [remolquesLeido,setRemolquesLeido] = useState<PedidoRemolques>();
+  const [selectedPuertas, setSelectedPuertas] = useState(() => de('puertas')?.orderCode ?? '');
+  const [puertasLeido,setPuertasLeido] = useState<PedidoPuertasGuardado | undefined>(() => de('puertas')?.datos as PedidoPuertasGuardado | undefined);
+  const [remolquesLeido,setRemolquesLeido] = useState<PedidoRemolques | undefined>(() => de('remolques')?.datos as PedidoRemolques | undefined);
   const contenidoFluido=useContenidoFluido<HTMLElement>(`${selectedCode}/${selectedRemolques}/${selectedPuertas}`);
   const solicitudApertura=useRef(0);
   const origenApertura=useRef<{boton:HTMLElement|null;scroll:number}>({boton:null,scroll:0});
@@ -89,7 +96,10 @@ export function ReviewsView({ modo = 'pedidos', todos = [], onIrHistorial, refre
   const [buscadorAbierto, setBuscadorAbierto] = useState(false);
   const [estadoBuscador, setEstadoBuscador] = useState<EstadoBuscador>(estadoBuscadorInicial);
   const [elementoRemolques, setElementoRemolques] = useState<string | undefined>(undefined);
-  const [detail, setDetail] = useState<{ orderCode: string; review: ReviewPackage | null } | null>(null);
+  const [detail, setDetail] = useState<{ orderCode: string; review: ReviewPackage | null } | null>(() => {
+    const t = de('toldos');
+    return t ? { orderCode: t.orderCode, review: t.datos as ReviewPackage } : null;
+  });
   const [historyLoading, setHistoryLoading] = useState(true);
   const [working, setWorking] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -149,6 +159,8 @@ export function ReviewsView({ modo = 'pedidos', todos = [], onIrHistorial, refre
     if (atendidoAlCargar.current === codigo) return;
     if (typeof abrirAlCargar !== 'string') {
       atendidoAlCargar.current = codigo;
+      // Ya abierto en el primer pintado con los datos que traía.
+      if (inicial && inicial.orderCode === codigo) { queueMicrotask(() => onAbiertoAlCargar?.()); return; }
       const producto = abrirAlCargar.producto ?? 'toldos';
       queueMicrotask(() => { onAbiertoAlCargar?.(); void abrirCodigo(codigo, producto); });
       return;
@@ -166,7 +178,7 @@ export function ReviewsView({ modo = 'pedidos', todos = [], onIrHistorial, refre
       }
       abrir(encontrado);
     });
-  }, [abrirAlCargar, pendingLoading, historyLoading, pending, history, todos, onAbiertoAlCargar, onToast, abrir, abrirCodigo]);
+  }, [abrirAlCargar, inicial, pendingLoading, historyLoading, pending, history, todos, onAbiertoAlCargar, onToast, abrir, abrirCodigo]);
 
   const detailIsCurrent = detail?.orderCode === selectedCode;
   const selectedReview = detailIsCurrent ? detail.review : null;

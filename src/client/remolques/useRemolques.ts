@@ -235,7 +235,7 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
   /** Tras guardar para revisión: Pedidos vuelve a leer sus listas. */
   onGuardado?: () => void;
   /** Tras «Guardar»: abre el pedido en su ficha, como si se entrara de nuevo (Iván, 26/11/2026). */
-  onVerGuardado?: (orderCode: string) => void;
+  onVerGuardado?: (orderCode: string, limpiar: () => void) => void;
   /** «Abrir borrador» al obtener un número cuyo borrador es de toldos: lo abre la aplicación en Toldos. */
   onAbrirBorradorToldos?: (borrador: BorradorToldos) => void;
 }) {
@@ -853,14 +853,17 @@ export function useRemolques({ usuario, notify, askForConfirmation, onGuardado, 
           notificar.current.notify(`${datos.review?.orderCode ?? actual.numeroPedido} guardado. No se ha tocado lo que tienes en pantalla.`, { tone: 'info', title: 'Pedido guardado' });
           return;
         }
-        consultaEnCurso.current?.abort();
-        pendienteRef.current = null;
         limpiarBorradores(almacen, actual.numeroPedido);
-        setParamsGuardados(null);
-        despachar({ tipo: 'PEDIDO_LIMPIADO' });
+        const limpiar = () => {
+          consultaEnCurso.current?.abort();
+          pendienteRef.current = null;
+          setParamsGuardados(null);
+          despachar({ tipo: 'PEDIDO_LIMPIADO' });
+        };
         const codigo = datos.review?.orderCode ?? actual.numeroPedido;
         notificar.current.notify(`Pedido ${codigo} guardado.`, { tone: 'success' });
-        alVerGuardado.current?.(codigo);
+        if (alVerGuardado.current) alVerGuardado.current(codigo, limpiar);
+        else limpiar();
         return;
     } catch (error) {
       avisar('error', error instanceof Error ? error.message : 'No se pudo guardar el pedido.');

@@ -483,7 +483,7 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
   /** Tras «Guardar para revisión»: Pedidos vuelve a leer sus listas. */
   onGuardado?: () => void;
   /** Tras «Guardar»: abre el pedido en su ficha, como si se entrara de nuevo (Iván, 26/11/2026). */
-  onVerGuardado?: (orderCode: string) => void;
+  onVerGuardado?: (orderCode: string, limpiar: () => void) => void;
 }) {
   const sd = producto === 'systemdock';
   const nombre = sd ? 'System Dock' : 'Puertas';
@@ -694,10 +694,13 @@ export function PuertasView({ producto = 'puertas', activo, onResumenChange, usu
         if (regenerar) {
           setEditandoCodigo(resultado.review?.orderCode ?? pedido.orderCode);
         } else {
-          setEditandoCodigo(null);
-          setPedido(pedidoVacio(producto, pedido.elementos[0]?.input));
-          setIndice(0);
-          onVerGuardado?.(resultado.review?.orderCode ?? pedido.orderCode);
+          const limpiar = () => {
+            setEditandoCodigo(null);
+            setPedido(pedidoVacio(producto, pedido.elementos[0]?.input));
+            setIndice(0);
+          };
+          if (onVerGuardado) onVerGuardado(resultado.review?.orderCode ?? pedido.orderCode, limpiar);
+          else limpiar();
         }
       }
     } catch {
