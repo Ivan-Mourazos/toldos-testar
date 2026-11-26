@@ -92,7 +92,6 @@ import {
   comprobadorPedidoToldos, crearServicioPedidosRemolques, firmaCorteRemolques, mensajePedidoDeRemolques, paramsDeLaPantalla, yaEsPedidoDeRemolques
 } from './remolques/flujo/servicio.ts';
 import { crearServicioCadPaginasFlujo } from './puertas/flujo/cadPaginas.ts';
-import { generarCorteRemolques } from './remolques/corte/index.js';
 import { crearAlmacenBorradores } from './borradores/almacen.ts';
 import { crearServicioBorradores } from './borradores/servicio.ts';
 import {
@@ -273,6 +272,9 @@ const confirmacionesRemolques = crearAlmacenConfirmaciones({ carpeta: async () =
   const carpeta = (await workflowStore.getSettings()).remolquesRevisionDirectory;
   return carpeta ? path.join(carpeta, 'cortes-confirmados') : '';
 } });
+// Huecos del corte con sacos de stock y, de último recurso, tiras de 1,5 m o más: encendido de nuevo el 23/11/2026
+// (Iván, a raíz del AR2605686). Lo comparten la generación y el plano de la web de la ficha.
+const corteRemolques = crearCorteRemolques({ ajustes: () => workflowStore.getSettings(), oda, ofStockSacos, aprovecharStock: true });
 const pedidosRemolques = crearServicioPedidosRemolques({
   almacen: almacenPedidosRemolques,
   ajustes: () => workflowStore.getSettings(),
@@ -292,8 +294,7 @@ const pedidosRemolques = crearServicioPedidosRemolques({
   // El buscador busca también por el nombre de una ficha (sus códigos de RPS).
   fichas: () => remolquesClientesStore.get(),
   // Al generar, también el corte de lona: DXF del bot y plano, en las carpetas del corte de toldos.
-  // Huecos del corte con sacos de stock y, de último recurso, tiras de 1,5 m o más: encendido de nuevo el 23/11/2026 (Iván, a raíz del AR2605686).
-  corte: crearCorteRemolques({ ajustes: () => workflowStore.getSettings(), oda, ofStockSacos, aprovecharStock: true }),
+  corte: corteRemolques,
   // Flujo del DWG: los cortes confirmados, junto a los pedidos de remolques (carpeta interna, no la que ven los PC).
   confirmaciones: confirmacionesRemolques
 });
@@ -1145,7 +1146,7 @@ const cadPaginasRemolques = crearServicioCadPaginasFlujo({
   tipoPlano: 'plano-corte-lona',
   huella: firmaCorteRemolques,
   // Sin DWG todavía: el plano que escribiría la web, con el corte y sus cotas como en el CAD (Iván, 26/11/2026).
-  planoDeLaWeb: async (pedido) => generarCorteRemolques(pedidoEntrega(pedido, 'anual'))?.archivo?.plano?.dxf ?? null
+  planoDeLaWeb: async (pedido) => corteRemolques.planoDxf(pedidoEntrega(pedido, 'anual'))
 });
 app.get('/api/remolques/pedidos/:orderCode/cad-paginas', rutaRemolques(async (req, res) => {
   res.set('Cache-Control', 'no-store').json(await cadPaginasRemolques.obtenerPaginas(String(req.params.orderCode ?? '')));
@@ -1307,6 +1308,7 @@ registrarRutasExtraPuertas(app, {
   oda,
   confirmaciones: confirmacionesPuertas,
   rutaRemolques,
+  ofStockSacos,
 });
 
 // Buscador de remolques (diseño 02/10/2026): todos los pedidos guardados, de todos los años, con

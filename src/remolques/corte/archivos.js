@@ -5,6 +5,7 @@ import { writeFileAtomic } from '../../workflow.js';
 import { generarCorteRemolques } from './index.js';
 import { elementosSinOf, exigirOfsCorte } from './of.js';
 import { OF_STOCK_POR_DEFECTO } from '../../ofStockSacos.js';
+import { cortesDelDxf } from '../../cadPaginas/cortesDxf.ts';
 
 // El plano se guarda para revisar. El DXF se prepara aparte para descargarlo o enviarlo con su botón.
 // `aprovecharStock`: llenar los huecos del corte con sacos y tiras de refuerzo de stock. Apagado de entrada
@@ -69,8 +70,12 @@ export function crearCorteRemolques({ ajustes, oda, aprovecharStock = false, ofS
 
   // Para la pantalla: lo que se va a cortar, sin los archivos (las entidades en mm, para dibujarlo).
   async function vista(pedido) {
-    const { cortes, aMano, avisosStock } = await generar(pedido);
+    const { cortes, aMano, avisosStock, archivo } = await generar(pedido);
+    // Iván, 26/11/2026: el panel Corte enseña el recuadro CORTE del plano que escribiría la web, con sus cotas y
+    // en su orden. El plano ya se escribe en memoria al generar; aquí solo se lee, sin guardarlo ni pisar el DWG.
+    const cortesPlano = archivo?.plano?.dxf ? cortesDelDxf(archivo.plano.dxf) : [];
     return {
+      cortesPlano,
       sinOf: elementosSinOf(pedido),
       avisos: [...avisosStock, ...elementosSinOf(pedido).map((letra) => `Elemento ${letra}: sin OF, es solo una vista previa; escribe la OF antes de guardarlo.`)],
       cortes: cortes.map((c) => ({
@@ -95,5 +100,10 @@ export function crearCorteRemolques({ ajustes, oda, aprovecharStock = false, ofS
     return Buffer.from(await oda.convertir(contenido, { desde: 'dwg', hasta: 'dxf' })).toString('utf8');
   }
 
-  return { preparar, prepararDxf, escribir, vista, leer, leerContenido };
+  /** El plano que escribiría la web, con los mismos sacos de stock que al generar; sin escribirlo. */
+  async function planoDxf(pedido) {
+    return (await generar(pedido)).archivo?.plano?.dxf ?? null;
+  }
+
+  return { preparar, prepararDxf, escribir, vista, leer, leerContenido, planoDxf };
 }

@@ -68,6 +68,10 @@ it.each([
   const json = await res.json();
   expect(obtener).not.toHaveBeenCalled();
   expect(json.cortes.length).toBeGreaterThan(0);
+  // Iván, 26/11/2026: el panel enseña el recuadro CORTE del plano que escribiría la web, con sus cotas.
+  expect(json.cortesPlano.length).toBeGreaterThan(0);
+  expect(json.cortesPlano[0].vista.length).toBeGreaterThan(0);
+  expect(json.cortesPlano[0].cotas.length).toBeGreaterThan(0);
   expect(JSON.stringify(json)).not.toMatch(/"dxf"|"archivo"|"plano"|AC1018|AC1032/);
   if (sinOf) {
     expect(json.avisos).toContain('Elemento A: sin OF, es solo una vista previa; escribe la OF antes de guardarlo.');

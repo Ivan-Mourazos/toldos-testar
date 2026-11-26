@@ -30,6 +30,8 @@ import {
   leerEscritosBorrador, registrarArchivosEscritos, type AlmacenEscritos, type RegistroArchivoEscrito,
 } from "../../cadPaginas/cambiosManuales.ts";
 import { generarCortePuertas } from "../corte.ts";
+import { escribirPlanoPuertas } from "../plano.ts";
+import { cortesDelDxf } from "../../cadPaginas/cortesDxf.ts";
 import { leerPedidoPuertas } from "../pedido.ts";
 import {
   anioPedido, apuntarEdicionPuertas, crearPedidoPuertas, nombresElementosPuertas, elementosAprobacion, exigirOfsPuertas,
@@ -683,8 +685,14 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
 
   async function corte(orderCode: string) {
     const pedido = await obtener(orderCode);
-    const { resultados, cortes, avisos } = generarCortePuertas({ ...pedidoEntrega(pedido), summary: undefined }, { ofStockSacos: await ofStock() });
-    return { resultados, cortes, avisos, sinOf: puertasSinOf(pedido) };
+    const entrega = { ...pedidoEntrega(pedido), summary: undefined }, ofStockSacos = await ofStock();
+    const calculado = generarCortePuertas(entrega, { ofStockSacos });
+    const { resultados, cortes, avisos } = calculado;
+    // Iván, 26/11/2026: el recuadro CORTE del plano que escribiría la web, con sus cotas, como el panel del formulario.
+    const s = pedido.summary;
+    const cortesPlano = cortesDelDxf(escribirPlanoPuertas({ pedido: entrega, calculado, ofStockSacos,
+      cabecera: { cliente: s.customer, tecnico: s.technician, revisor: "", fecha: s.orderDate } }));
+    return { resultados, cortes, avisos, sinOf: puertasSinOf(pedido), cortesPlano };
   }
 
   /** Fase 3: con el corte confirmado, el DXF del bot sale del DWG revisado tal como está ahora. */

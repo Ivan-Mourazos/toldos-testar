@@ -3,6 +3,7 @@ import { FileDown, Scissors } from 'lucide-react';
 import type { AskForConfirmation, Notify } from '../components/NotificationCenter';
 import '../coordina/corte-lona.css';
 import { CabeceraDocumento } from '../components/DocumentosPedido';
+import { CortesDelPlano, type CorteDelPlanoCliente } from '../components/CortesDelPlano';
 
 // El corte de lona de un pedido de remolques (20/10/2026), como saldrá al generar: por lona, el rollo
 // con las piezas, los ollaos y las marcas, los metros de rollo y lo que hay que revisar. Lo que todavía
@@ -16,6 +17,8 @@ export type EntidadesCorte = { lineas: Linea[]; textos: Texto[]; circulos: Circu
 
 export type VistaCorteRemolques = {
   sinOf?: string[];
+  /** El recuadro CORTE del plano que escribiría la web, con sus cotas. */
+  cortesPlano?: Omit<CorteDelPlanoCliente, 'archivo'>[];
   avisos?: string[];
   cortes: Array<{
     nombre: string;
@@ -132,6 +135,15 @@ export function CorteRemolques({ ruta, version, generado = false, notify, onConf
 export function CorteRemolquesVista({ datos, avisosAlFondo = false }: { datos: VistaCorteRemolques; avisosAlFondo?: boolean }) {
   const todos = [...(datos.avisos ?? []), ...datos.aMano.map((a) => `${a.material}: se corta a mano (${a.motivo}).`),
     ...datos.cortes.flatMap((c) => c.avisos)];
+  // Iván, 26/11/2026: el recuadro CORTE del plano que escribiría la web, con sus cotas y en su orden, como puertas
+  // y toldos; los avisos, plegados debajo. Sin ese recuadro, cada lona con su rollo.
+  if (datos.cortesPlano?.length) return <>
+    <CortesDelPlano cortes={datos.cortesPlano.map((c) => ({ ...c, archivo: '' }))} />
+    {todos.length > 0 && <details className="corte-avisos-plegados">
+      <summary>Avisos del corte ({todos.length})</summary>
+      <ul className="corte-avisos">{todos.map((aviso, i) => <li key={i}>{aviso}</li>)}</ul>
+    </details>}
+  </>;
   return (
     <>
       {!avisosAlFondo && Boolean(datos.avisos?.length) && <ul className="corte-avisos">{datos.avisos!.map((aviso) => <li key={aviso}>{aviso}</li>)}</ul>}

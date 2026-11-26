@@ -3,6 +3,7 @@ import { generarCorteLona } from './domain/corteLona/index.js';
 import { archivoCorte } from './domain/corteLona/opcionesArchivo.js';
 import { crearEstadoCorteLona, corteLonaPendiente } from './corteLonaEstado.js';
 import { sanitizeOrderCode } from './workflow.js';
+import { cortesDelDxf } from './cadPaginas/cortesDxf.ts';
 
 /** Las mismas rutas se prueban con Express sin arrancar el servidor ni cargar su .env. */
 // `dxfDesdeDwg` (flujo del DWG): el DXF de un pedido con el corte confirmado, sacado del DWG revisado.
@@ -51,7 +52,11 @@ export function registrarRutasCorteLona(app, { workflowStore, ofStockSacos, oda,
         const resumir = (c) => ({ ...sinArchivo(c), sacos: c.colocadas.filter((p) => p.saco) });
         return res.json({ modelos: resultado.modelos, avisos: resultado.avisos, ofStockSacos: stock,
           cortes: { conSacos: resultado.cortes.conSacos.map(resumir), trozoSeparado: resultado.cortes.trozoSeparado?.map(resumir) || null },
-          plano: resultado.plano.map(sinArchivo), corteLona, pendientes });
+          plano: resultado.plano.map(sinArchivo), corteLona, pendientes,
+          // Iván, 26/11/2026: el panel Corte enseña el recuadro CORTE del plano de cada tela que escribiría la web,
+          // con sus cotas y en su orden. El plano ya está escrito en memoria; aquí solo se lee, sin tocar el DWG.
+          // El cristal de la cortina va dentro del plano de su lona (`incluidoEn`).
+          cortesPlano: resultado.plano.filter((p) => p && !p.incluidoEn).flatMap((p) => cortesDelDxf(p.dxf).map((c) => ({ ...c, archivo: p.material }))) });
       }
       // La vista previa sin OF se ve en la web, pero no se descarga: el archivo diría «SIN OF».
       if (resultado.sinOf.length) {

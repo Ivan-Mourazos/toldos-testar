@@ -179,6 +179,15 @@ describe('POST /api/puertas/corte/vista-previa', () => {
     expect(JSON.stringify(r)).not.toMatch(/AC1018|"archivo"|"dxf"/);
     expect(escribir).not.toHaveBeenCalled(); expect(mkdir).not.toHaveBeenCalled();
   });
+  // Iván, 26/11/2026: el panel Corte del formulario enseña lo que irá en el corte real, el recuadro CORTE del plano
+  // que escribe la web, con sus cotas y en su orden; no el dibujo suelto de cada rollo.
+  it('devuelve el corte del plano que escribiría la web, con cotas', async () => {
+    const r=await (await post(pedido())).json();
+    expect(r.cortesPlano.length).toBeGreaterThan(0);
+    expect(r.cortesPlano[0].vista.length).toBeGreaterThan(0);
+    expect(r.cortesPlano[0].cotas.length).toBeGreaterThan(0);
+    expect(r.cortesPlano[0].medidasMm.ancho).toBeGreaterThan(0);
+  });
   it.each([{}, {elementos:'mal'}, { ...pedido(), elementos: [{id:'x',input:{modelo:'otro'}}] }, { ...pedido(), elementos:Array(51).fill(pedido().elementos[0]) }])('rechaza estructuras inválidas sin calcular (%j)', async body=>{
     expect((await post(body)).status).toBe(400);
   });

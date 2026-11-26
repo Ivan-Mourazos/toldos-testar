@@ -30,6 +30,7 @@ import { useContenidoFluido } from '../hooks/useContenidoFluido';
 import type { CoordinaStatus } from '../types';
 import { AlzadoPuerta } from './AlzadoPuerta';
 import { CadPaginasPuertas } from './CadPaginasPuertas';
+import { CortesDelPlano, type CorteDelPlanoCliente } from '../components/CortesDelPlano';
 import { ConfirmarGestionRegistro, type GestionRegistro } from '../components/ConfirmarGestionRegistro';
 import { mensajeGestionRegistro, solicitarGestionRegistro } from '../gestionRegistro';
 import { estadoGenerarPuertas } from './generarPuertas';
@@ -71,14 +72,14 @@ function PlanteamientoPuertas({ pedido }: { pedido: PedidoPuertasGuardado }) {
 
 function CortePuertasGuardado({ ruta, version, historial, acciones, confirmado, systemDock = false }: { ruta: string; version: string; historial?: React.ReactNode; acciones?: React.ReactNode; confirmado?: boolean; systemDock?: boolean }) {
   const clave = `${ruta}|${version}`;
-  const [leido, setLeido] = useState<{ clave: string; datos?: VistaPuertas; error?: string } | null>(null);
+  const [leido, setLeido] = useState<{ clave: string; datos?: VistaPuertas & { cortesPlano?: Omit<CorteDelPlanoCliente, 'archivo'>[] }; error?: string } | null>(null);
   useEffect(() => {
     let cancelado = false;
     fetch(`${ruta}/corte`, { cache: 'no-store' })
       .then(async (respuesta) => {
         const datos = await respuesta.json().catch(() => ({}));
         if (!respuesta.ok) throw new Error(datos.error || 'No se pudo calcular el corte.');
-        return datos as VistaPuertas;
+        return datos as VistaPuertas & { cortesPlano?: Omit<CorteDelPlanoCliente, 'archivo'>[] };
       })
       .then((datos) => { if (!cancelado) setLeido({ clave, datos }); })
       .catch((error) => { if (!cancelado) setLeido({ clave, error: error instanceof Error ? error.message : 'No se pudo calcular el corte.' }); });
@@ -93,7 +94,9 @@ function CortePuertasGuardado({ ruta, version, historial, acciones, confirmado, 
       {!estado && <p className="corte-ayuda">Calculando el corte…</p>}
       {estado?.error && <p role="alert" className="corte-aviso">{estado.error}</p>}
       {datos?.avisos.some((aviso) => aviso.nivel === 'error') && <p role="alert" className="corte-aviso">Hay medidas pendientes de corregir: el corte está incompleto.</p>}
-      {datos?.cortes.map((c, i) => (
+      {/* Iván, 26/11/2026: el recuadro CORTE del plano que escribiría la web, con sus cotas; sin él, cada rollo. */}
+      {Boolean(datos?.cortesPlano?.length) && <CortesDelPlano cortes={datos!.cortesPlano!.map((c) => ({ ...c, archivo: '' }))} />}
+      {!datos?.cortesPlano?.length && datos?.cortes.map((c, i) => (
         <article className="corte-material" key={i}>
           <header><h3>{c.material}</h3><span>{textoCabeceraCorte(c)}</span></header>
           {c.opcion !== 'principal' && <p className="corte-aviso">{c.opcion === 'saco-entero' ? 'Opción saco entero' : 'Opción saco en dos piezas'} · Alternativas de un mismo saco: elige una.</p>}

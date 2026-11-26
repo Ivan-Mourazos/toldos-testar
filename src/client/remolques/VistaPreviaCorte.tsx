@@ -49,7 +49,11 @@ export function useVistaCorteRemolques(entrada: string, bloqueo: string | null) 
 
 export type VistaCorte = ReturnType<typeof useVistaCorteRemolques>;
 
-/** El corte de todo el pedido, en la pestaña «Corte» junto al dibujo del elemento. */
+/**
+ * El corte de todo el pedido, en la pestaña «Corte» junto al dibujo del elemento. Iván, 26/11/2026: enseña lo que irá
+ * en el corte real, el recuadro CORTE del plano que escribiría la web con estos datos, con sus cotas y en su orden,
+ * como la ficha del pedido (CorteRemolquesVista). Si ese plano no tiene recuadro, cada lona con su rollo.
+ */
 export function VistaPreviaCorte({ vista }: { vista: VistaCorte }) {
   const { actual, bloqueo } = vista;
   return <section className="corte-lona rem-corte-junto" aria-label="Corte del pedido" aria-busy={Boolean(actual?.cargando)}>

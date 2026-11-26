@@ -6,6 +6,7 @@ import { entidadesDePieza } from '../../puertas/corteEnPlano.ts';
 import { MATERIAL_SACO_AMARILLO } from '../../puertas/saco.ts';
 import '../coordina/corte-lona.css';
 import { numeroPuerta, textoMedidasMm } from './medidasPuertas';
+import { CortesDelPlano, type CorteDelPlanoCliente } from '../components/CortesDelPlano';
 
 function TrazosCorte({ entidades, factorMm = 1 }: { entidades: EntidadesPuertas; factorMm?: number }) {
   return <>
@@ -177,7 +178,9 @@ export function DibujoCortePuertas({ corte, zoom = 1, ajustado = false, largoRef
   );
 }
 
-type EstadoVista = { entrada: string; datos?: VistaPuertas; error?: string; cargando?: boolean };
+/** Con el recuadro CORTE del plano que escribiría la web (cotas y orden del corte real). */
+type DatosVista = VistaPuertas & { cortesPlano?: Omit<CorteDelPlanoCliente, 'archivo'>[] };
+type EstadoVista = { entrada: string; datos?: DatosVista; error?: string; cargando?: boolean };
 export type VistaCorte = { actual: EstadoVista | null; anticuada: boolean; calcular: () => Promise<void> };
 
 /** El corte del pedido, calculado solo al cambiar los datos (Iván, 26/10/2026: «que salga ya el corte tal cual, con
@@ -191,7 +194,7 @@ export function useVistaCortePuertas(pedido: PedidoPuertas, activo: boolean): Vi
     setVista({ entrada, cargando: true });
     try {
       const r = await fetch('/api/puertas/corte/vista-previa', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: entrada, signal: abortar.signal });
-      const datos = await r.json() as VistaPuertas & { error?: string };
+      const datos = await r.json() as DatosVista & { error?: string };
       if (!r.ok) throw new Error(datos.error || 'No se pudo calcular el corte.');
       if (!abortar.signal.aborted) setVista({ entrada, datos });
     } catch (error) { if (!abortar.signal.aborted) setVista({ entrada, error: error instanceof Error ? error.message : 'No se pudo calcular el corte.' }); else setVista(v => v?.cargando ? null : v); }
@@ -208,20 +211,27 @@ export function useVistaCortePuertas(pedido: PedidoPuertas, activo: boolean): Vi
 
 const nombreOpcion = (c: CortePuertas) => c.opcion === 'saco-entero' ? ' · saco entero (alternativa)' : c.opcion === 'saco-partido' ? ' · saco en dos' : '';
 
-/** Todo el corte de un vistazo, junto al alzado: cada material con su rollo, uno debajo de otro. */
+/**
+ * El corte junto al alzado. Iván, 26/11/2026: enseña lo que irá en el corte real, el recuadro CORTE del plano que
+ * escribiría la web con estos datos, con sus cotas y en su orden, como la ficha del pedido. Si ese plano no tiene
+ * recuadro, cada material con su rollo, uno debajo de otro.
+ */
 export function CorteResumen({ vista }: { vista: VistaCorte }) {
   const { actual } = vista;
+  const cortesPlano = actual?.datos?.cortesPlano ?? [];
   return (
     <section className="puerta-corte-resumen panel panel-vidrio" aria-label="Corte del pedido" aria-busy={Boolean(actual?.cargando)}>
-      <h2>Corte <span>{actual?.cargando ? 'calculando…' : actual?.datos ? `${actual.datos.cortes.length} ${actual.datos.cortes.length === 1 ? 'rollo' : 'rollos'}` : ''}</span></h2>
+      <h2>Corte <span>{actual?.cargando ? 'calculando…' : actual?.datos && !cortesPlano.length ? `${actual.datos.cortes.length} ${actual.datos.cortes.length === 1 ? 'rollo' : 'rollos'}` : ''}</span></h2>
       {actual?.error && <p role="alert" className="corte-aviso">{actual.error}</p>}
       {actual?.datos && !actual.datos.cortes.length && <p className="puerta-ayuda">Completa las medidas y los anchos de rollo para colocar las piezas.</p>}
-      {actual?.datos?.cortes.map((c, i) => (
-        <figure key={i}>
-          <figcaption>{c.material}{nombreOpcion(c)} · {textoCabeceraCorte(c)}</figcaption>
-          <DibujoCortePuertas corte={c} ajustado />
-        </figure>
-      ))}
+      {cortesPlano.length > 0
+        ? <CortesDelPlano cortes={cortesPlano.map(c => ({ ...c, archivo: '' }))} />
+        : actual?.datos?.cortes.map((c, i) => (
+          <figure key={i}>
+            <figcaption>{c.material}{nombreOpcion(c)} · {textoCabeceraCorte(c)}</figcaption>
+            <DibujoCortePuertas corte={c} ajustado />
+          </figure>
+        ))}
     </section>
   );
 }

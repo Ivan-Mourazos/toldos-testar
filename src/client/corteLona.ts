@@ -1,3 +1,4 @@
+import type { CorteDelPlanoCliente } from './components/CortesDelPlano';
 export type AjustesCorte = {
   empate?: 'horizontal' | 'vertical'; empateCm?: number; aumentoEscuadrarCm?: number;
   lateralVerticalCm?: number; tiraExtraLargoCm?: number; tiraExtraAltoCm?: number;
@@ -26,6 +27,8 @@ export type VistaCorte = {
 export type CorteRespuesta = {
   corteLona: EstadoCorte | null; pendientes: PendienteCorte[]; avisos: string[];
   cortes: { conSacos: VistaCorte[]; trozoSeparado: VistaCorte[] | null };
+  /** El recuadro CORTE del plano de cada tela que escribiría la web, con sus cotas (`archivo`: la tela). */
+  cortesPlano?: CorteDelPlanoCliente[];
 };
 
 export function textoEstadoCorte(estado: 'hecho' | 'falta' | 'viejo') {

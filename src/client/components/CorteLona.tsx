@@ -8,6 +8,7 @@ import type { DraftState } from '../types';
 import { textoEstadoCorte, type AjustesCorte, type CorteRespuesta, type EstadoCorte, type PendienteCorte, type VistaCorte } from '../corteLona';
 import '../coordina/corte-lona.css';
 import { CabeceraDocumento } from './DocumentosPedido';
+import { CortesDelPlano } from './CortesDelPlano';
 import { CORTE_NO_REGENERADO } from '../../toldosEditable.js';
 
 const numero = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 3 });
@@ -138,9 +139,15 @@ export const CorteLona = forwardRef<CorteLonaControl, {
   </section>;
 });
 
+/**
+ * Iván, 26/11/2026: el corte enseña lo que irá en el corte real, el recuadro CORTE del plano de cada tela que
+ * escribiría la web, con sus cotas y en su orden, como puertas y remolques. Sin ese recuadro, cada tela con sus opciones.
+ */
 export function CorteLonaVista({ datos }: { datos: CorteRespuesta }) {
+  const avisos = datos.avisos.length > 0 && <ul className="corte-avisos">{datos.avisos.map((aviso, i) => <li key={i}>{aviso}</li>)}</ul>;
+  if (datos.cortesPlano?.length) return <>{avisos}<CortesDelPlano cortes={datos.cortesPlano} /></>;
   return <>
-    {datos.avisos.length > 0 && <ul className="corte-avisos">{datos.avisos.map((aviso, i) => <li key={i}>{aviso}</li>)}</ul>}
+    {avisos}
     {datos.cortes.conSacos.map(corte => {
       const separado = datos.cortes.trozoSeparado?.find(c => c.idMaterial === corte.idMaterial);
       const soloBamba = corte.piezas.every(t => t.piezas.every(p => p.nombre.includes('BAMBA')));

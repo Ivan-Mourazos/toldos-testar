@@ -48,6 +48,7 @@ export function registrarRutasExtraPuertas(app: AppExpressMinima, {
   oda,
   confirmaciones,
   rutaRemolques,
+  ofStockSacos,
 }: {
   pedidosPuertas: ServicioPuertas;
   obtenerPedidoOptional: (orderCode: string) => Promise<PedidoPuertasGuardado | null>;
@@ -56,6 +57,8 @@ export function registrarRutasExtraPuertas(app: AppExpressMinima, {
   oda: OdaMinimo;
   confirmaciones?: AlmacenEscritos;
   rutaRemolques: EnvolturaRuta;
+  /** Los mismos sacos de stock que el plano que se guarda. */
+  ofStockSacos?: () => Promise<{ of: string }>;
 }) {
   const servicioCad = crearServicioCadPaginasPuertas({
     obtenerPedido: obtenerPedidoOptional,
@@ -69,6 +72,7 @@ export function registrarRutasExtraPuertas(app: AppExpressMinima, {
       return escribirPlanoPuertas({
         pedido: { ...pedido, summary: undefined } as unknown as Parameters<typeof escribirPlanoPuertas>[0]['pedido'],
         cabecera: { cliente: s.customer, tecnico: s.technician, revisor: '', fecha: s.orderDate },
+        ofStockSacos: (await ofStockSacos?.())?.of || undefined,
       });
     },
   });

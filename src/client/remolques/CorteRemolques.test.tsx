@@ -9,10 +9,22 @@ import { avisoCorteAMano, CorteRemolquesVista, escribirPlanoCorte, type VistaCor
 // La vista que da el servidor (la misma función que usa la ruta /corte), sin escribir nada.
 const { vista } = crearCorteRemolques({ ajustes: async () => ({}), oda: { disponible: false } });
 const pintar = async (pedido: unknown) => renderToStaticMarkup(<CorteRemolquesVista datos={await vista(pedido) as VistaCorteRemolques} />);
+// Un plano sin recuadro CORTE: cada lona con su rollo, como antes.
+const pintarSinRecuadro = async (pedido: unknown) => renderToStaticMarkup(<CorteRemolquesVista datos={{ ...await vista(pedido) as VistaCorteRemolques, cortesPlano: [] }} />);
 
 describe('el corte de lona del pedido de remolques', () => {
-  it('enseña cada lona con sus metros de rollo, el dibujo, los avisos y las OF', async () => {
+  // Iván, 26/11/2026: lo que irá en el corte real, el recuadro CORTE del plano de la web, con cotas; avisos plegados.
+  it('enseña el recuadro CORTE del plano de la web, con cotas y los avisos plegados', async () => {
     const html = await pintar(AR2605132);
+    expect(html).toContain('cortes-del-plano');
+    expect(html).toMatch(/cmt-cota|class="[^"]*cota/);
+    expect(html).toContain('Avisos del corte');
+    expect(html).toContain('el contorno no cabe en el rollo');
+    expect(html).not.toContain('corte-material');
+  });
+
+  it('sin recuadro CORTE, enseña cada lona con sus metros de rollo, el dibujo, los avisos y las OF', async () => {
+    const html = await pintarSinRecuadro(AR2605132);
     expect(html).toContain('LONA PVC 580 GRIS CLARO 7038');
     expect(html).toContain('AR2605132.dxf');
     expect(html).toMatch(/<b>8,03 m<\/b> de rollo/);

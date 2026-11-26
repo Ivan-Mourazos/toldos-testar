@@ -5,12 +5,14 @@ import { escribirPlanoSystemDock } from './planoSystemDock.ts';
 import type { PedidoPuertas } from './tipos.ts';
 
 /** Planos CAD de oficina: cada modelo conserva sus capas; el corte recibe su anidado del bot. */
-export function escribirPlanoPuertas({ pedido, cabecera, ofStockSacos }: {
+export function escribirPlanoPuertas({ pedido, cabecera, ofStockSacos, calculado }: {
   pedido: PedidoPuertas;
   ofStockSacos?: string;
   cabecera: { cliente: string; tecnico: string; revisor: string; fecha: string };
+  /** El corte ya calculado con este mismo pedido y OF de stock, para no repetir el anidado. */
+  calculado?: Pick<ReturnType<typeof generarCortePuertas>, 'cortes'>;
 }): string {
-  const { cortes } = generarCortePuertas(pedido, { ofStockSacos });
+  const { cortes } = calculado ?? generarCortePuertas(pedido, { ofStockSacos });
   if (pedido.elementos.length && pedido.elementos.every(e=>e.input.santapau)) return escribirPlanoAraujo(pedido,cortes,{...cabecera,cliente:cabecera.cliente.toUpperCase()},'MEDIDAS EN CM · SANTA PAU · ENROLLABLE');
   if (pedido.elementos.length && pedido.elementos.every(e=>e.input.belts)) return escribirPlanoAraujo(pedido,cortes,{...cabecera,cliente:cabecera.cliente.toUpperCase()},'MEDIDAS EN CM · BELTS VIGO');
   if (pedido.elementos.length && pedido.elementos.every(e=>e.input.puertasluz)) return escribirPlanoAraujo(pedido,cortes,{...cabecera,cliente:cabecera.cliente.toUpperCase()},'MEDIDAS EN CM · PUERTAS LUZ');
