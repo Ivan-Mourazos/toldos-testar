@@ -221,9 +221,17 @@ html:root #root .puerta-editor .puerta-dibujo .puerta-vistas { position:absolute
 .puerta-editor .puerta-corte-resumen figure { flex:1 0 160px; min-height:0; display:flex; flex-direction:column; margin-top:12px; }
 .puerta-editor .puerta-corte-resumen figcaption { flex:none; }
 .puerta-editor .puerta-corte-resumen .puerta-corte-dibujo { flex:1; width:100%; height:0; min-height:0; max-height:none; margin:4px 0 0; }
+/* El recuadro CORTE del plano cabe entero en el panel: el dibujo ocupa el hueco que queda, no 64vh fijos (Iván, 26/11/2026). */
+.puerta-editor .puerta-corte-resumen .cortes-del-plano { flex:1; min-height:0; }
+.puerta-editor .puerta-corte-resumen .cortes-del-plano .cmt-vista-corte { flex:1 1 0; min-height:0; margin-top:0; }
+.puerta-editor .puerta-corte-resumen .cortes-del-plano .cmt-vista-corte svg { flex:1 1 0; height:0; min-height:0; }
 .puerta-editor .puerta-config header { flex-wrap:wrap; gap:4px 12px; }
 .puerta-editor .puerta-campos { grid-template-columns:repeat(3,minmax(0,1fr)); }
 .puerta-editor .puerta-config .puerta-tubo-fila, .puerta-editor .puerta-config .puerta-ventana-fila { grid-template-columns:repeat(2,minmax(0,1fr)); }
 .puerta-editor .segmented-control { flex-wrap:wrap; }
 .puerta-modal-corte { align-items:stretch; justify-content:flex-start; overflow:auto; }
 .puerta-modal-corte > .puerta-corte-resumen { width:100%; max-width:1100px; margin:0 auto; }
+/* «Recalcular corte»: junto al título del panel Corte, sin tocar el DWG (Iván, 26/11/2026). */
+.puerta-corte-resumen > h2 { display:flex; align-items:center; gap:8px; }
+.puerta-corte-resumen .puerta-corte-recalcular { margin-left:auto; font-size:13px; padding:4px 10px; }
+.puerta-editor .puerta-corte-resumen .puerta-corte-recalcular { margin-left:8px; }

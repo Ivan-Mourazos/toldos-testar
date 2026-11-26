@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { RefreshCw } from 'lucide-react';
 import type { CortePuertas, EntidadesPuertas, PedidoPuertas, VistaPuertas } from '../../puertas/tipos.ts';
 import { anchoArial } from '../../domain/corteLona/texto.js';
 import { presentarImpresionAraujo } from '../../puertas/cotasImpresionAraujo.ts';
@@ -221,7 +222,12 @@ export function CorteResumen({ vista }: { vista: VistaCorte }) {
   const cortesPlano = actual?.datos?.cortesPlano ?? [];
   return (
     <section className="puerta-corte-resumen panel panel-vidrio" aria-label="Corte del pedido" aria-busy={Boolean(actual?.cargando)}>
-      <h2>Corte <span>{actual?.cargando ? 'calculando…' : actual?.datos && !cortesPlano.length ? `${actual.datos.cortes.length} ${actual.datos.cortes.length === 1 ? 'rollo' : 'rollos'}` : ''}</span></h2>
+      <h2>Corte <span>{actual?.cargando ? 'calculando…' : actual?.datos && !cortesPlano.length ? `${actual.datos.cortes.length} ${actual.datos.cortes.length === 1 ? 'rollo' : 'rollos'}` : ''}</span>
+        {/* Iván, 26/11/2026: rehacer el corte con el código de hoy sin tocar el DWG real ni guardar nada. */}
+        <button type="button" className="ghost-button boton-3d puerta-corte-recalcular" disabled={Boolean(actual?.cargando)}
+          title="Rehace el corte con la web actual. No guarda nada ni toca el DWG." onClick={() => void vista.calcular()}>
+          <RefreshCw size={14} aria-hidden="true" />Recalcular corte
+        </button></h2>
       {actual?.error && <p role="alert" className="corte-aviso">{actual.error}</p>}
       {actual?.datos && !actual.datos.cortes.length && <p className="puerta-ayuda">Completa las medidas y los anchos de rollo para colocar las piezas.</p>}
       {cortesPlano.length > 0
