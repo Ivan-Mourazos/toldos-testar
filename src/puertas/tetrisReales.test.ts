@@ -26,7 +26,8 @@ describe('Tetris contra todos los pedidos configurables de las fixtures', () => 
         expect(a.y).toBeGreaterThanOrEqual(0);
         const aparte = c.colocadas[j].aparte;
         if (aparte) {
-          expect(c.colocadas[j].pieza.clase).toBe('entrada');
+          // Iván, 26/11/2026: de restos puede salir cualquier pieza que no llegue a medio rollo, nunca un paño.
+          expect(c.colocadas[j].pieza.clase).not.toBe('pano');
           expect(a.x).toBeGreaterThanOrEqual(c.largo + 1500);
         }
         expect(a.x + a.w).toBeLessThanOrEqual((aparte ? c.extensionDibujo! : c.largo) + .001);

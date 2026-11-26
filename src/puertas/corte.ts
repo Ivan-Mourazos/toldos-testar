@@ -433,12 +433,28 @@ function sacosDeStock(ocupadas: Array<{ x: number; y: number; ancho: number; hue
   });
 }
 
-// Umbral provisional de Iván: a partir de medio rollo se cortan todas las E.T. en la lona.
+// Umbral de Iván: lo que no cabe junto a los paños sale suelto, de restos, si no llega a medio rollo; si llega, va
+// todo en la lona.
 const FRACCION_ROLLO_ET_DE_RESTOS = 0.5;
+
+// Iván, 20/11/2026 (bambalinas de toldos): solo compensa buscar un resto si el rollo baja al menos 30 cm.
+const AHORRO_MINIMO_RESTOS_MM = 300;
 
 function distribuirEntradas(grupo: PiezaPuerta[], completo: CortePuertas, anidar: (piezas: PiezaPuerta[]) => CortePuertas,
   dibujar: (p: PiezaPuerta, x: number, y: number, entidades: EntidadesPuertas, girada?: boolean) => void): CortePuertas {
-  const principales = grupo.filter(p => p.clase !== 'entrada');
+  const soloEntradas = repartirRestos(grupo, completo, anidar, dibujar, p => p.clase === 'entrada');
+  // Iván, 26/11/2026 (AR2605742): «sean cachos o lo que sea, debería ir separado»: con paños, todo lo demás (E.T.,
+  // cachos, sacos, refuerzos…) puede salir de restos si no llega a medio rollo. Solo cuando el rollo baja al menos
+  // 30 cm: si no, sería trabajo de más (AR2605669: el saco y las E.T. caben de pie en 1,76 m).
+  if (!grupo.some(p => p.clase === 'pano')) return soloEntradas;
+  const general = repartirRestos(grupo, completo, anidar, dibujar, p => p.clase !== 'pano');
+  return soloEntradas.largo - general.largo >= AHORRO_MINIMO_RESTOS_MM ? general : soloEntradas;
+}
+
+function repartirRestos(grupo: PiezaPuerta[], completo: CortePuertas, anidar: (piezas: PiezaPuerta[]) => CortePuertas,
+  dibujar: (p: PiezaPuerta, x: number, y: number, entidades: EntidadesPuertas, girada?: boolean) => void,
+  apartable: (p: PiezaPuerta) => boolean): CortePuertas {
+  const principales = grupo.filter(p => !apartable(p));
   if (principales.length === grupo.length) return completo;
   let principal: CortePuertas = principales.length ? anidar(principales) : {
     material: completo.material, anchoRollo: completo.anchoRollo, opcion: completo.opcion, largo: 0,
@@ -448,7 +464,8 @@ function distribuirEntradas(grupo: PiezaPuerta[], completo: CortePuertas, anidar
   if (completo.largo <= limite + .001) return completo;
 
   const sobran: PiezaPuerta[] = [];
-  for (const p of grupo.filter(p => p.clase === 'entrada')) {
+  // Primero las E.T. y después el resto, en el orden del pedido.
+  for (const p of [...grupo.filter(p => apartable(p) && p.clase === 'entrada'), ...grupo.filter(p => apartable(p) && p.clase !== 'entrada')]) {
     // Las copias tienen la misma geometría. Buscar cuántas entran evita una búsqueda por unidad.
     let dentro = 0, maximo = p.cantidad;
     while (limite > 0 && dentro < maximo) {
@@ -489,18 +506,30 @@ function distribuirEntradas(grupo: PiezaPuerta[], completo: CortePuertas, anidar
   }
   // Las líneas que comparten con sus vecinas se cortan una vez, como en el anidado.
   if (metidas) fusionarCortesPuertas(principal.entidades, grupo.some(p => p.clase === 'pano') && !grupo[0].abrigo ? rollo : undefined, grupo[0].abrigo?.capa);
-  const anchoAparte = aparte.reduce((s, p) => s + mm(p.alto), 0);
-  if (anchoAparte >= completo.anchoRollo * FRACCION_ROLLO_ET_DE_RESTOS) return completo;
   if (!aparte.length) return principal;
+  // El bloque de restos, por filas: las E.T. apiladas sin hueco, con la raya común cortada una vez y sin la de abajo
+  // del todo, que es el borde del resto (Iván, 23/11/2026, AR2605694); encima, lo demás tumbado (el lado largo a lo
+  // largo del rollo, para que ocupe menos) y en fila (Iván, 26/11/2026, AR2605742: los cachos de los ventanales).
+  const formas = aparte.map(pieza => {
+    const tumbar = pieza.clase !== 'entrada' && !pieza.sinGiro && pieza.alto > pieza.ancho;
+    return { pieza, girada: tumbar, w: mm(tumbar ? pieza.alto : pieza.ancho), h: mm(tumbar ? pieza.ancho : pieza.alto) };
+  });
+  const largoFila = Math.max(principal.largo, ...formas.map(f => f.w));
+  const filas: Array<{ y: number; alto: number; largo: number; piezas: Array<(typeof formas)[number] & { x: number }> }> = [];
+  for (const f of formas) {
+    const ultima = filas.at(-1);
+    const otraFila = !ultima || f.pieza.clase === 'entrada' || ultima.piezas[0].pieza.clase === 'entrada' || ultima.largo + f.w > largoFila + .001;
+    const fila = otraFila ? (filas.push({ y: ultima ? ultima.y + ultima.alto : 0, alto: 0, largo: 0, piezas: [] }), filas.at(-1)!) : ultima;
+    fila.piezas.push({ ...f, x: fila.largo });
+    fila.largo += f.w; fila.alto = Math.max(fila.alto, f.h);
+  }
+  const y = filas.reduce((s, f) => s + f.alto, 0);
+  if (y >= completo.anchoRollo * FRACCION_ROLLO_ET_DE_RESTOS) return completo;
   const x = principal.largo + 1500;
-  let y = 0;
-  const ancho = Math.max(...aparte.map(p => mm(p.ancho)));
-  // Apiladas sin hueco, con la raya común cortada una vez, y sin la de abajo del todo: es el borde del resto
-  // (Iván, 23/11/2026, AR2605694).
-  for (const pieza of aparte) {
-    dibujar(pieza, x, y, principal.entidades);
-    principal.colocadas.push({ pieza, x, y, girada: false, aparte: true });
-    y += mm(pieza.alto);
+  const ancho = Math.max(...filas.map(f => f.largo));
+  for (const fila of filas) for (const f of fila.piezas) {
+    dibujar(f.pieza, x + f.x, fila.y, principal.entidades, f.girada);
+    principal.colocadas.push({ pieza: f.pieza, x: x + f.x, y: fila.y, girada: f.girada, aparte: true });
   }
   const capa = grupo[0].abrigo?.capa ?? 'DISCO1';
   principal.entidades.lineas = principal.entidades.lineas.filter(l => !(l.capa === capa && Math.abs(l.y1) < .001
