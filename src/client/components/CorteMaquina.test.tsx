@@ -18,7 +18,8 @@ it('configurado, muestra las dos descargas y el botón de envío habilitado', ()
   const html = renderToStaticMarkup(<CorteMaquinaContexto.Provider value={{ settings: activo, usuario: 'IVÁN', preguntar: async () => 'confirm', notify: () => {} }}>
     <AccionesCorteMaquina ruta="/corte" codigo="AR2600001" />
   </CorteMaquinaContexto.Provider>);
-  for (const texto of ['Descargar DXF', 'Descargar CMT', 'Mandar a la máquina de corte']) expect(html).toContain(texto);
+  expect(html).toContain('Mandar a la máquina de corte');
+  for (const texto of ['Descargar DXF', 'Descargar CMT']) expect(html).not.toContain(texto);
   expect(html).not.toContain('disabled');
 });
 it('el envío directo oculta el semáforo del bot', () => {

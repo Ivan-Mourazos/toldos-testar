@@ -117,21 +117,26 @@ export function CorteRemolques({ ruta, version, generado = false, notify, onConf
           </button>
         )}
       </CabeceraDocumento>
-      <p className="corte-ayuda">El plano sale al guardar para revisión. Puedes descargar el corte o mandarlo desde sus acciones.</p>
       {Boolean(datos?.cortes.length) && acciones}
       {!estado && <p className="corte-ayuda">Calculando el corte…</p>}
       {estado?.error && <p role="alert" className="corte-aviso">{estado.error}</p>}
-      {datos && <CorteRemolquesVista datos={datos} />}
+      {datos && <CorteRemolquesVista datos={datos} avisosAlFondo={generado} />}
     </section>
   );
 }
 
-export function CorteRemolquesVista({ datos }: { datos: VistaCorteRemolques }) {
+/**
+ * `avisosAlFondo`: en la ficha del pedido los avisos no tapan el corte; van plegados al final
+ * (Iván, 26/11/2026: «estas explicaciones sobran, o por lo menos escóndelas en el fondo»).
+ */
+export function CorteRemolquesVista({ datos, avisosAlFondo = false }: { datos: VistaCorteRemolques; avisosAlFondo?: boolean }) {
+  const todos = [...(datos.avisos ?? []), ...datos.aMano.map((a) => `${a.material}: se corta a mano (${a.motivo}).`),
+    ...datos.cortes.flatMap((c) => c.avisos)];
   return (
     <>
-      {Boolean(datos.avisos?.length) && <ul className="corte-avisos">{datos.avisos!.map((aviso) => <li key={aviso}>{aviso}</li>)}</ul>}
+      {!avisosAlFondo && Boolean(datos.avisos?.length) && <ul className="corte-avisos">{datos.avisos!.map((aviso) => <li key={aviso}>{aviso}</li>)}</ul>}
       {datos.cortes.length === 0 && datos.aMano.length === 0 && <p className="corte-ayuda">Este pedido no tiene lona que cortar.</p>}
-      {datos.aMano.length > 0 && (
+      {!avisosAlFondo && datos.aMano.length > 0 && (
         <ul className="corte-avisos">
           {datos.aMano.map((a) => <li key={a.nombre}>{`${a.material}: se corta a mano (${a.motivo}).`}</li>)}
         </ul>
@@ -140,7 +145,7 @@ export function CorteRemolquesVista({ datos }: { datos: VistaCorteRemolques }) {
         <article className="corte-material" key={`${corte.nombre}-${i}`}>
           <header><h3>{corte.material}</h3><span>{`Rollo de 250 cm · ${corte.nombre}.dxf`}</span></header>
           {corte.opcion && <p className="corte-aviso">{corte.opcion.replace(' · ELEGIR SOLO UNA', '')} · las dos van en el mismo DXF y el técnico de la máquina elige una.</p>}
-          {corte.avisos.length > 0 && <ul className="corte-avisos">{corte.avisos.map((aviso, i) => <li key={i}>{aviso}</li>)}</ul>}
+          {!avisosAlFondo && corte.avisos.length > 0 && <ul className="corte-avisos">{corte.avisos.map((aviso, i) => <li key={i}>{aviso}</li>)}</ul>}
           <section className="corte-opcion">
             <header><strong>{corte.refuerzos ? 'Con refuerzos en las esquinas' : 'Corte'}</strong><span><b>{metros(corte.largo)} m</b> de rollo</span></header>
             <DibujoCorteRemolques entidades={corte.entidades} largo={corte.largo} material={corte.material} />
@@ -149,6 +154,12 @@ export function CorteRemolquesVista({ datos }: { datos: VistaCorteRemolques }) {
           </section>
         </article>
       ))}
+      {avisosAlFondo && todos.length > 0 && (
+        <details className="corte-avisos-plegados">
+          <summary>Avisos del corte ({todos.length})</summary>
+          <ul className="corte-avisos">{todos.map((aviso, i) => <li key={i}>{aviso}</li>)}</ul>
+        </details>
+      )}
     </>
   );
 }

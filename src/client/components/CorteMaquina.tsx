@@ -36,29 +36,9 @@ export function BotonMandarMaquina({ ruta, cuerpo, onEnviado, principal = false 
   </div>;
 }
 
-export function AccionesCorteMaquina({ ruta, codigo, onEnviado }: { ruta: string; codigo: string; onEnviado?: () => void }) {
-  const { notify } = useContext(CorteMaquinaContexto);
-  const [ocupado, setOcupado] = useState(false);
-  async function descargar(tipo: 'cmt' | 'dxf') {
-    setOcupado(true);
-    try {
-      const respuesta = await fetch(`${ruta}/${tipo === 'cmt' ? 'cmt' : 'descargar/dxf'}`, { cache: 'no-store' });
-      if (!respuesta.ok) {
-        const texto = await respuesta.text();
-        let mensaje = texto;
-        try { mensaje = JSON.parse(texto).error || texto; } catch { /* Las dudas del CMT llegan en texto llano. */ }
-        throw new Error(mensaje);
-      }
-      const url = URL.createObjectURL(await respuesta.blob());
-      const enlace = document.createElement('a'); enlace.href = url; enlace.download = `${codigo}.${tipo}`;
-      document.body.append(enlace); enlace.click(); enlace.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 60000);
-    } catch (error) { notify(error instanceof Error ? error.message : 'No se pudo descargar el corte.', { tone: 'error' }); }
-    finally { setOcupado(false); }
-  }
+// En la ficha solo «Mandar a la máquina»: descargar el DXF y el CMT ahí no pinta nada (Iván, 26/11/2026).
+export function AccionesCorteMaquina({ ruta, onEnviado }: { ruta: string; codigo?: string; onEnviado?: () => void }) {
   return <div className="corte-maquina-acciones" aria-label="Archivos del corte">
-    <button type="button" className="ghost-button boton-3d" disabled={ocupado} onClick={() => void descargar('dxf')}>Descargar DXF</button>
-    <button type="button" className="ghost-button boton-3d" disabled={ocupado} onClick={() => void descargar('cmt')}>Descargar CMT</button>
     <BotonMandarMaquina ruta={ruta + '/enviar'} onEnviado={onEnviado} />
   </div>;
 }

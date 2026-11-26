@@ -34,3 +34,8 @@
 /* Sin corte conserva el ancho de una columna y queda centrado (Iván, 21/10/2026). */
 .review-documentos:not(:has(> .documento-corte:not(:empty))) { grid-template-columns: minmax(0, 1fr); }
 .review-documentos:not(:has(> .documento-corte:not(:empty))) > .documento-planteamiento { width: calc((100% - 18px) / 2); justify-self: center; }
+
+/* Avisos del corte plegados al fondo del bloque (Iván, 26/11/2026). */
+.corte-avisos-plegados { margin-top: 12px; color: var(--text-muted); font-size: 13px; }
+.corte-avisos-plegados > summary { cursor: pointer; width: fit-content; }
+.corte-avisos-plegados > .corte-avisos { margin-top: 8px; }

@@ -4,6 +4,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import pedido4390 from '../../corte/__fixtures__/AR2604390.json';
 import { generarCorteRemolques } from '../../corte/index.js';
 import { crearServicioCadPaginasFlujo } from '../../../puertas/flujo/cadPaginas.ts';
+import { puerta5743 } from '../../../puertas/__fixtures__/tgm5743.ts';
+import { pedidoDe } from '../../../puertas/__fixtures__/ejemplos.ts';
+import { escribirPlanoPuertas } from '../../../puertas/plano.ts';
 
 // Iván, 25/11/2026: «quiero que la web tenga en todo el nuevo flujo y el nuevo dibujo». Remolques enseña el plano del
 // CAD como toldos y puertas: las presentaciones y la pestaña Corte con las cotas de cada bloque.
@@ -45,5 +48,22 @@ describe('dibujo del CAD de un pedido de remolques', () => {
     const r = await servicio({ orderCode: 'AR2604390', summary: { technician: 'IVÁN' }, firma: '' }).obtenerPaginas('AR2604390');
     expect(r.tieneDwg).toBe(false);
     expect(r.paginas).toEqual([]);
+  });
+
+  it('sin DWG, enseña el plano que escribiría la web: el corte todo junto, con sus cotas', async () => {
+    // Iván, 26/11/2026: «que salga el corte tal cual en el CAD, no hace falta un apartado para el saco y otro para el cristal».
+    const dxf = escribirPlanoPuertas({ pedido: pedidoDe('AR2605743', puerta5743('general')), cabecera: { cliente: 'General', tecnico: 'IVÁN', revisor: '', fecha: '26/11/2026' } });
+    const r = await crearServicioCadPaginasFlujo<Pedido>({
+      obtenerPedido: async () => ({ orderCode: 'AR2605743', summary: { technician: 'IVÁN' }, firma: '' }),
+      ajustes: async () => ({ corteBorradoresDirectory: path.join(raiz, 'borradores') }) as never,
+      oda: { disponible: false, convertir: async (b) => Buffer.from(b) },
+      tipoPlano: 'plano-puertas',
+      huella: () => '',
+      planoDeLaWeb: async () => dxf,
+    }).obtenerPaginas('AR2605743');
+    expect(r.origen).toBe('web');
+    expect(r.paginas.length).toBeGreaterThan(0);
+    expect(r.cortes).toHaveLength(1);
+    expect(r.cortes[0].cotas.map(c => c.texto)).toEqual(expect.arrayContaining(['39', '262,5']));
   });
 });

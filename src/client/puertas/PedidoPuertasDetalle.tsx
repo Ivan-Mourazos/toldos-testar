@@ -56,7 +56,6 @@ function PlanteamientoPuertas({ pedido }: { pedido: PedidoPuertasGuardado }) {
   return (
     <section className="corte-lona panel bloque-3d puerta-planteamiento" aria-label="Planteamiento">
       <CabeceraDocumento titulo="Planteamiento" icono={<DoorOpen aria-hidden="true" />} />
-      <p className="corte-ayuda">Lo mismo que va al plano DWG: el alzado de cada elemento con sus cotas y textos. El plano sale al guardar para revisión.</p>
       {/* Una puerta o lona cada vez, con pestañas (Iván, 26/10/2026: «no quiero que salgan todas las puertas una debajo
           de otra»), y el dibujo del tamaño de la pieza, sin hueco. */}
       {pedido.elementos.length > 1 && <div className="tira-3d puerta-planteamiento-pestanas" role="tablist" aria-label="Elemento del planteamiento">
@@ -91,7 +90,6 @@ function CortePuertasGuardado({ ruta, version, historial, acciones, confirmado, 
   return (
     <section className="corte-lona panel bloque-3d" aria-label="Corte" aria-busy={!estado}>
       <CabeceraDocumento titulo="Corte" icono={<Scissors aria-hidden="true" />} />{(confirmado || Boolean(datos?.cortes.length)) && acciones}{historial}
-      <p className="corte-ayuda">{systemDock?'Un solo DXF por pedido con las tandas de lonas perimetrales.':'Un solo DXF por pedido; si hay saco entero y saco en dos, van las dos opciones y el técnico de la máquina elige.'}</p>
       {!estado && <p className="corte-ayuda">Calculando el corte…</p>}
       {estado?.error && <p role="alert" className="corte-aviso">{estado.error}</p>}
       {datos?.avisos.some((aviso) => aviso.nivel === 'error') && <p role="alert" className="corte-aviso">Hay medidas pendientes de corregir: el corte está incompleto.</p>}

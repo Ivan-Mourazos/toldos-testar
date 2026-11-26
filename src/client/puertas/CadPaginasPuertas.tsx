@@ -203,6 +203,8 @@ export function CadPaginasPuertas({
           ? 'Editado en ZWCAD'
           : datosActivos?.origen === 'borrador'
             ? 'Borrador CAD'
+            : datosActivos?.origen === 'web'
+              ? 'Sin DWG todavía'
             : datosActivos?.tieneDwg
               ? 'CAD al día'
               : 'Comprobando…';
@@ -213,7 +215,7 @@ export function CadPaginasPuertas({
     ? [
       paginaActual.nombre,
       paginaActual.archivo,
-      datosActivos?.origen === 'borrador' ? 'Borrador' : null,
+      datosActivos?.origen === 'borrador' ? 'Borrador' : datosActivos?.origen === 'web' ? 'Plano de la web, aún sin DWG' : null,
       datosActivos?.modificadoAMano ? 'Editado en ZWCAD' : null,
     ].filter(Boolean).join(' · ')
     : '';

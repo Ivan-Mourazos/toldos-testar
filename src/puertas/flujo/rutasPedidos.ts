@@ -5,6 +5,8 @@ import type { AlmacenEscritos } from '../../cadPaginas/cambiosManuales.ts';
 import type { AjustesCadMinimos, OdaMinimo } from '../../cadPaginas/servicioCadPaginas.ts';
 import { crearServicioBorradoresPuertas } from './borradores.ts';
 import { crearServicioCadPaginasPuertas } from './cadPaginas.ts';
+import { pedidoEntrega } from '../../entregas.js';
+import { escribirPlanoPuertas } from '../plano.ts';
 import type { crearServicioPedidosPuertas } from './servicio.ts';
 import { SUBCARPETA_PUERTAS, type PedidoPuertasGuardado } from './tipos.ts';
 
@@ -60,6 +62,15 @@ export function registrarRutasExtraPuertas(app: AppExpressMinima, {
     ajustes,
     oda,
     almacenEscritos: confirmaciones,
+    // El mismo plano que se escribe al guardar, sin escribirlo: para ver el corte antes de tener el DWG.
+    planoDeLaWeb: async (guardado) => {
+      const pedido = pedidoEntrega(guardado, 'anual') as PedidoPuertasGuardado;
+      const s = pedido.summary;
+      return escribirPlanoPuertas({
+        pedido: { ...pedido, summary: undefined } as unknown as Parameters<typeof escribirPlanoPuertas>[0]['pedido'],
+        cabecera: { cliente: s.customer, tecnico: s.technician, revisor: '', fecha: s.orderDate },
+      });
+    },
   });
 
   app.post('/api/puertas/pedidos/:orderCode/guardar-registro', rutaRemolques(async (req, res) => {

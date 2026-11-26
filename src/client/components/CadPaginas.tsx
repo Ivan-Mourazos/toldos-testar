@@ -30,7 +30,7 @@ export interface RespuestaCadPaginasCliente {
   ok: true;
   orderCode: string;
   tieneDwg: boolean;
-  origen: 'revisado' | 'borrador' | null;
+  origen: 'revisado' | 'borrador' | 'web' | null;
   actualizado: boolean;
   motivoDesactualizado: string | null;
   letrasCambiadas: boolean;

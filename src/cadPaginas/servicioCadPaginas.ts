@@ -47,7 +47,8 @@ export interface RespuestaCadPaginas {
   ok: true;
   orderCode: string;
   tieneDwg: boolean;
-  origen: 'revisado' | 'borrador' | null;
+  /** «web»: aún sin DWG, el plano que escribiría la web. */
+  origen: 'revisado' | 'borrador' | 'web' | null;
   actualizado: boolean;
   motivoDesactualizado: string | null;
   letrasCambiadas: boolean;

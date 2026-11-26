@@ -104,6 +104,8 @@ export function crearServicioCadPaginasPuertas(deps: {
   oda: OdaMinimo;
   almacenEscritos?: AlmacenEscritos;
   maxCache?: number;
+  /** Sin DWG todavía: el plano que escribiría la web (DXF), para enseñar el corte tal cual saldrá en el CAD. */
+  planoDeLaWeb?: (pedido: PedidoPuertasGuardado) => Promise<string | null>;
 }) {
   return crearServicioCadPaginasFlujo({ ...deps, tipoPlano: 'plano-puertas', huella: huellaPuertas });
 }
@@ -117,6 +119,7 @@ export function crearServicioCadPaginasFlujo<T extends PedidoCadFlujo>({
   maxCache = 50,
   tipoPlano,
   huella,
+  planoDeLaWeb,
 }: {
   obtenerPedido: (orderCode: string) => Promise<T | null>;
   ajustes: () => Promise<AjustesCadMinimos>;
@@ -125,6 +128,7 @@ export function crearServicioCadPaginasFlujo<T extends PedidoCadFlujo>({
   maxCache?: number;
   tipoPlano: string;
   huella: (pedido: T) => string;
+  planoDeLaWeb?: (pedido: T) => Promise<string | null>;
 }) {
   const cache = new Map<string, PlanoCad>();
   const enCurso = new Map<string, Promise<PlanoCad>>();
@@ -176,6 +180,31 @@ export function crearServicioCadPaginasFlujo<T extends PedidoCadFlujo>({
     const ficheros = revisados.length ? revisados : borradores;
     const origen: 'revisado' | 'borrador' | null = revisados.length ? 'revisado' : borradores.length ? 'borrador' : null;
     const estado = estadoActualizacionPuertas(pedido, huella);
+
+    // Sin DWG: el plano que escribiría la web, con el corte todo junto como en el CAD (Iván, 26/11/2026:
+    // «que salga el corte tal cual en el CAD, no hace falta un apartado para el saco y otro para el cristal»).
+    if (!ficheros.length && pedido && planoDeLaWeb) {
+      const dxf = await planoDeLaWeb(pedido).catch(() => null);
+      if (dxf) {
+        const archivo = `${codigoCorte}.dxf`;
+        return {
+          ok: true,
+          orderCode,
+          tieneDwg: true,
+          origen: 'web',
+          actualizado: true,
+          motivoDesactualizado: null,
+          letrasCambiadas: false,
+          pendientes: [],
+          modificadoAMano: false,
+          archivosModificadosAMano: [],
+          ficheros: [],
+          paginas: renderizarPaginasDxf(dxf).map((p) => ({ ...p, archivo })),
+          cortes: cortesDelDxf(dxf).map((c) => ({ ...c, archivo })),
+          cacheado: false,
+        };
+      }
+    }
 
     if (!ficheros.length) {
       return {
