@@ -50,7 +50,8 @@ fi
 # (node_modules/.cache/tsc): no borrarla. Si falla cualquiera de los dos, no se cambia nada.
 paso "tipos y build en $nueva a la vez (la web sigue sirviendo desde $activa)"
 log_tipos=$(mktemp)
-pnpm typecheck > "$log_tipos" 2>&1 &
+# tsc pasa de los 2 GB de memoria por defecto de Node y se cortaba (26/11/2026): se le dan 4 GB.
+NODE_OPTIONS="${NODE_OPTIONS:-} --max-old-space-size=4096" pnpm typecheck > "$log_tipos" 2>&1 &
 pid_tipos=$!
 if ! pnpm exec vite build --outDir "$nueva" --emptyOutDir; then
   wait "$pid_tipos" || true
