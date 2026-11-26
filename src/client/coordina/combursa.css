@@ -66,8 +66,8 @@
 .combursa-listado .combursa-suelta { justify-content: center; min-height: 26px; }
 .combursa-cortador .combursa-manual { color: var(--tramo-trabajo); }
 .combursa-dialogo .combursa-vacio { max-width: 100%; }
-.combursa-cortador th:nth-child(1) { width: 7%; } .combursa-cortador th:nth-child(2) { width: 24%; } .combursa-cortador th:nth-child(3) { width: 9%; }
-.combursa-cortador th:nth-child(4) { width: 48%; } .combursa-cortador th:nth-child(5) { width: 12%; }
+.combursa-cortador th:nth-child(1) { width: 7%; } .combursa-cortador th:nth-child(2) { width: 23%; } .combursa-cortador th:nth-child(3) { width: 18%; }
+.combursa-cortador th:nth-child(4) { width: 9%; } .combursa-cortador th:nth-child(5) { width: 31%; } .combursa-cortador th:nth-child(6) { width: 12%; }
 .combursa-listado small, .combursa-acciones small { display: block; color: var(--text-muted); margin-top: 3px; font-size: 11px; }
 .combursa-referencia, .combursa-numero { font-variant-numeric: tabular-nums; font-weight: 600; }
 .combursa-validado { color: var(--tramo-holgado); font-weight: 600; }
