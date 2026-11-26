@@ -167,6 +167,18 @@ describe('Puertas genéricas · soldadura de la E.T. opcional', () => {
     expect(notas(sinSoldadura(true))).toContain('DOBLAR SACO Y SOLDAR EN LA E.T. (2 CM)');
   });
 
+  it('si la raya del saco monta sobre la E.T. de abajo, la de la E.T. va arriba con la flecha hacia abajo', () => {
+    // Iván, 26/11/2026: E.T. a 26 cortada de 12 y saco doblado y soldado a 22: se pisaban.
+    const { lienzo } = dibujarAlzadoEnrollable(sinSoldadura(true), 'A');
+    const rotulador = lienzo.lineas.filter(l => l.capa === 'ROTULADOR' && l.y1 === l.y2 && l.x2 - l.x1 > 100).map(l => l.y1);
+    const ySaco = Math.min(...rotulador);
+    const flechas = lienzo.inserciones.filter(i => i.nombre === 'FLECHA2');
+    const baja = flechas.reduce((m, f) => f.y < m.y ? f : m);
+    expect(baja.y - ySaco).toBeCloseTo(26 + 6 - 22);
+    expect(baja.giro).toBe(0);
+    expect(rotulador.some(y => Math.abs(y - (ySaco - 2)) < .01)).toBe(false);
+  });
+
   it('si se escribe, sigue comprobando que deja hueco para el tubo', () => {
     const p = puerta5743('general');
     const r = calcularPuerta({ ...p, tgm: { ...p.tgm!, soldaduraEt: 5 } });
