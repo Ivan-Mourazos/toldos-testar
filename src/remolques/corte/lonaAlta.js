@@ -171,6 +171,11 @@ export function aguasArquilladas(f, w, h) {
 const BASE_HECHA = 35;
 export const rayasCorreas = (altoOreja) => alturasCorreas((altoOreja - BASE_HECHA) / 10).map((a) => BASE_HECHA + a * 10);
 
+// Recto con aguas (AR2605769, Iván, 26/11/2026; como a mano en AR2505086): las aguas son las del terminado, 1 cm
+// por dentro de cada lado del perfil de corte de ancho `w` (mm). El corte va paralelo, así que en su mitad
+// baja algo más: aguas × w / (w − 2 cm). Antes bajaba `aguas` justas y el terminado se quedaba en 12,8 de 13.
+export const caidaCorteAguas = (aguas, w) => (aguas * w) / (w - 20);
+
 // Cabeza: perfil de ancho `w` (sin orejas) y alto `h`, con orejas de `oreja` mm a cada lado. `puentes`: las
 // orejas son de los puentes de Hijos de Pedro López (sin ollaos, con sus marcas). `correas`: orejas sin ollaos y
 // una raya bajo cada cinta.
@@ -180,13 +185,14 @@ function cabeza(f, w, h, oreja, ollaos, hecha, ventana, cremallera = false, puen
   const ch = f.tipo === 'TIPO 04' ? esquinasChaflan(f, w, h) : null;
   // Hasta dónde llega el lado recto: el arquillado y el arquillado con aguas, hasta donde empieza la curva; el
   // chaflán, hasta donde empieza (o su arco).
-  const hombro = f.tipo === 'TIPO 05' ? h - f.r : ag ? ag.cyH : ch ? ch.hombro : h - f.aguas;
+  const hombro = f.tipo === 'TIPO 05' ? h - f.r : ag ? ag.cyH : ch ? ch.hombro : f.tipo === 'TIPO 02' ? h - caidaCorteAguas(f.aguas, w) : h;
   // Alto de la oreja (Iván, 20/10/2026): en el recto, a 5 cm del borde de arriba; con hombro en curva, hasta
   // donde acaba la curva. Con aguas (sin curva), el hombro − 6 cm, como en los cortes a mano (AR2604843, AR2604959).
   // Con los puentes de HPL, en el recto, a 6 cm (AR2605103: 535 con un paño de 595).
   // El chaflán, como las aguas: con arco, hasta el arco; con la arista viva, el hombro − 6 cm.
   const curva = f.tipo === 'TIPO 05' || (ag && ag.rh > 0) || (ch && ch.radioAbajo > 0);
-  const altoOreja = curva ? hombro : f.tipo === 'TIPO 02' || ag || ch ? hombro - 60 : h - (puentes ? 60 : 50);
+  // En el recto con aguas, la oreja sigue a `aguas` + 6 cm del pico (53,5 con 72,5 y 13 en AR2505086 a mano).
+  const altoOreja = curva ? hombro : f.tipo === 'TIPO 02' ? h - f.aguas - 60 : ag || ch ? hombro - 60 : h - (puentes ? 60 : 50);
   const x0 = oreja, x1 = oreja + w;
   seg(p, 0, 0, W, 0);
   // Lados: oreja (si hay) y lado del perfil hasta el hombro.

@@ -256,8 +256,9 @@ describe('generarCorteRemolques', () => {
       && Math.abs(Math.hypot(numero(r, 11) - numero(r, 10), numero(r, 21) - numero(r, 20)) - 2.6) < 0.001);
     expect(dobleces).toHaveLength(2);
     // Y la cremallera entera en la trasera: de 3,5 cm sobre la base a 4,5 por debajo de las aguas (a 5 cm del lado).
+    // Con las aguas exactas en el terminado (AR2605769) el corte baja 1,7 mm más en el hombro: 53,16, antes 53,31.
     const cremallera = registrosDxf(archivo.plano.dxf).filter((r) => r.tipo === 'LINE' && valor(r, 8) === 'ROTULADOR'
-      && Math.abs(Math.hypot(numero(r, 11) - numero(r, 10), numero(r, 21) - numero(r, 20)) - 0.5331) < 0.001);
+      && Math.abs(Math.hypot(numero(r, 11) - numero(r, 10), numero(r, 21) - numero(r, 20)) - 0.5316) < 0.001);
     expect(cremallera).toHaveLength(2);
   });
 

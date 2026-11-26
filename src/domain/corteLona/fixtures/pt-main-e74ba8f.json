@@ -33,8 +33,8 @@
     },
     {
       "pedido": "AR2604990",
-      "bot": "0cbea7ec2e6b7259662fc28d750075c91c5c6933a575842e17c10cb8c3992f12",
-      "colocacion": "5721bb404f3f5f5f8056ef19c219c93d0bdef9d16eaff9b306f356fd0664fdd4"
+      "bot": "d77af25e17167aca9fa16c28e8e40f562134ad21d29bb87c069a952af193e62b",
+      "colocacion": "d196984c2689a75cd5799671a2177f3d8e502ea5e4ac9ae014eaa4023735a818"
     },
     {
       "pedido": "AR2605000",
@@ -63,8 +63,8 @@
     },
     {
       "pedido": "AR2605088",
-      "bot": "3d6830f7d910f7ba17b03c11247e228d5a35d65426f44bfa4800e02072c4254e",
-      "colocacion": "9aba2e31888ae3606a07ca80b40ae4a98882f930c7aa256abbf76e4883d7cead"
+      "bot": "f70bbab79019b2e55703b663635a4d9430f001ff078e97b7a4b96739aa773a76",
+      "colocacion": "4aa3a288fb8d08f7a666a5f30df8d022d533405ca6298fb2b3083b12e019824c"
     },
     {
       "pedido": "AR2605120",
@@ -895,7 +895,7 @@
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2604990",
-      "dxf": "cf0be9c725e469dc48e427fd7a3b1467ecedc6c9898b19496749b6dbf8d1720f",
+      "dxf": "7bff862ffb3f4c84e30d0c2342507c086a69094918025d63120e823aaf3a6d6d",
       "geometria": "978e78d1b867ad9c499486909070e0c331937e58a3fd50e0d5d6bacec902c1cc",
       "textosFijos": "3207327bdf55e65aef5394f88aa023df674f2b5cb93dfb899317e8b68e3e8cee",
       "textos": "2eebd264ff35b6d3044db9798a0ff56e729c17be2a6b4d220c46e4d9e3fc6e7f",
@@ -1056,7 +1056,7 @@
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2605088",
-      "dxf": "70f0bb49dd9ab263c91cec8919146cb796718a26cd1a8f6bb142ff4a74f81e99",
+      "dxf": "97503e6231494f7d21fb2650fb7e15c41e4f7b730521139479db173fae1bb8f6",
       "geometria": "d4f39cee8f45b5edb611bd145fbc8bece2c020003b1ae6564c050f2f3ca265f7",
       "textosFijos": "f043f31d72fcd64cd7b72821e79695ad989ad7d64864c8c2e62163137aa62cbc",
       "textos": "d5b00e1ebe4a636e7d9d49ed05efcef82aae5bf73992d9ff520f6301e38e1f1e",

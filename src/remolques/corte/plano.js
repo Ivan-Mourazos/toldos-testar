@@ -5,7 +5,7 @@
 import { cruz, medidasRefuerzo, piezaBaqueton } from './baqueton.js';
 import { dibujoGanado } from '../ganado/dibujo.ts';
 import { MODELOS_GANADO } from '../calc/ganado.ts';
-import { aguasArquilladas, DOBLEZ_BASTILLA, esquinasChaflan, marcaOrejaPuentes, piezasLona } from './lonaAlta.js';
+import { aguasArquilladas, caidaCorteAguas, DOBLEZ_BASTILLA, esquinasChaflan, marcaOrejaPuentes, piezasLona } from './lonaAlta.js';
 import { escribirDxfPlano, separacionCorte } from '../../domain/corteLona/presentacion.js';
 import { presentarGanadoA4 } from './presentacionGanado.js';
 
@@ -94,9 +94,10 @@ function rosaCabeza(L, f, x0, w, h, t) {
   }
   // Recto con aguas: las pendientes de dentro van paralelas a las del corte, a 1 cm medido en perpendicular, como
   // en el arquillado (TIPO 03). Bajar la esquina 1 cm en vertical la dejaba ~2 mm más separada (AR2605358, Iván).
-  const m = ag / (w / 2), sec = Math.hypot(1, m);
+  // Las aguas son las del terminado (AR2605769): la pendiente sale de su ancho y la esquina queda `ag` bajo el pico.
+  const m = caidaCorteAguas(ag, w) / (w / 2), sec = Math.hypot(1, m);
   const pts = f.tipo === 'TIPO 02'
-    ? [[x0 + i, base], [x0 + i, h - ag + i * m - i * sec], [x0 + w / 2, h - i * sec], [x0 + w - i, h - ag + i * m - i * sec], [x0 + w - i, base]]
+    ? [[x0 + i, base], [x0 + i, h - ag - i * sec], [x0 + w / 2, h - i * sec], [x0 + w - i, h - ag - i * sec], [x0 + w - i, base]]
     : [[x0 + i, base], [x0 + i, h - i], [x0 + w - i, h - i], [x0 + w - i, base]];
   L.g.polilineas.push({ capa: 'referencias', puntos: pts.map(([a, b]) => t(a, b)), cerrada: true });
 }

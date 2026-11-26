@@ -29,4 +29,34 @@ describe('rosa del terminado en el recto con aguas (TIPO 02)', () => {
       expect(Math.min(...distancias)).toBeCloseTo(0.01, 4);
     }
   });
+
+  // AR2605769 (Iván, 26/11/2026): Camacho, 204 × 138 × 78 con 13 de aguas («65 + 13»). La raya del terminado
+  // bajaba 12,8 y el lado quedaba en 65,2: la pendiente salía del ancho del corte (141), no del terminado (139).
+  // Como a mano (AR2505086): las aguas exactas en el terminado y el corte paralelo, 1 cm por fuera.
+  it('el terminado tiene las aguas exactas y mide lo mismo que el contorno (AR2605769)', () => {
+    const input = { ...emptyLona(), largo: 204, ancho: 138, altoDelante: 78, altoAtras: 78, tipoPerfil: 'TIPO 02', aguas: 13,
+      recogeDelante: 'NO', recogeAtras: 'GOMA' };
+    const result = calcLona(input, DEFAULT_PARAMS);
+    const corte = generarCorteRemolques({ orderCode: 'AR2605769', params: DEFAULT_PARAMS, elementos: [{ tipo: 'lona', input, result, paramsSnapshot: DEFAULT_PARAMS }] });
+    const regs = registrosDxf(corte.archivo.plano.dxf);
+    const puntos = (r) => { const xs = r.pares.filter(([c]) => c === 10).map(([, v]) => Number(v)); const ys = r.pares.filter(([c]) => c === 20).map(([, v]) => Number(v)); return xs.map((x, k) => [x, ys[k]]); };
+    const rosas = regs.filter(r => r.tipo === 'LWPOLYLINE' && valor(r, 8) === 'referencias').map(puntos).filter(p => p.length === 5);
+    expect(rosas.length).toBe(2);
+    for (const [base, esquina, pico, esquinaDcha] of rosas) {
+      // En el plano, 1 unidad = 1 m: aguas de 13 cm y lado de 65 cm, al milímetro.
+      expect(pico[1] - esquina[1]).toBeCloseTo(0.13, 3);
+      expect(pico[1] - esquinaDcha[1]).toBeCloseTo(0.13, 3);
+      expect(esquina[1] - base[1]).toBeCloseTo(0.65, 3);
+      expect(esquinaDcha[0] - esquina[0]).toBeCloseTo(1.39, 4);
+      // Lado + pendiente + pendiente + lado = el contorno que calcula la web.
+      const perimetro = 2 * (esquina[1] - base[1]) + 2 * Math.hypot(pico[0] - esquina[0], pico[1] - esquina[1]);
+      expect(perimetro * 100).toBeCloseTo(result.contornoIntroducido, 1);
+    }
+    // El corte, paralelo al terminado y 1 cm por fuera en perpendicular: baja 13 × 141 / 139 en la mitad del paño.
+    const cortes = regs.filter(r => r.tipo === 'LINE' && valor(r, 8) === 'DISCO1')
+      .map(r => [[Number(valor(r, 10)), Number(valor(r, 20))], [Number(valor(r, 11)), Number(valor(r, 21))]]);
+    const pendientes = cortes.filter(([a, b]) => Math.abs(Math.abs(b[0] - a[0]) - 0.705) < 1e-6 && Math.abs(b[1] - a[1]) > 0.1);
+    expect(pendientes.length).toBeGreaterThan(0);
+    for (const [a, b] of pendientes) expect(Math.abs(b[1] - a[1])).toBeCloseTo(0.13 * 141 / 139, 4);
+  });
 });

@@ -84,7 +84,7 @@
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2604990",
-      "dxf": "cf0be9c725e469dc48e427fd7a3b1467ecedc6c9898b19496749b6dbf8d1720f"
+      "dxf": "7bff862ffb3f4c84e30d0c2342507c086a69094918025d63120e823aaf3a6d6d"
     },
     {
       "familia": "Remolques / rectos y aguas",
@@ -114,7 +114,7 @@
     {
       "familia": "Remolques / rectos y aguas",
       "ejemplo": "AR2605088",
-      "dxf": "70f0bb49dd9ab263c91cec8919146cb796718a26cd1a8f6bb142ff4a74f81e99"
+      "dxf": "97503e6231494f7d21fb2650fb7e15c41e4f7b730521139479db173fae1bb8f6"
     },
     {
       "familia": "Remolques / rectos y aguas",
@@ -284,8 +284,8 @@
     },
     {
       "pedido": "AR2604990",
-      "bot": "0cbea7ec2e6b7259662fc28d750075c91c5c6933a575842e17c10cb8c3992f12",
-      "colocacion": "5721bb404f3f5f5f8056ef19c219c93d0bdef9d16eaff9b306f356fd0664fdd4"
+      "bot": "d77af25e17167aca9fa16c28e8e40f562134ad21d29bb87c069a952af193e62b",
+      "colocacion": "d196984c2689a75cd5799671a2177f3d8e502ea5e4ac9ae014eaa4023735a818"
     },
     {
       "pedido": "AR2605000",
@@ -314,8 +314,8 @@
     },
     {
       "pedido": "AR2605088",
-      "bot": "3d6830f7d910f7ba17b03c11247e228d5a35d65426f44bfa4800e02072c4254e",
-      "colocacion": "9aba2e31888ae3606a07ca80b40ae4a98882f930c7aa256abbf76e4883d7cead"
+      "bot": "f70bbab79019b2e55703b663635a4d9430f001ff078e97b7a4b96739aa773a76",
+      "colocacion": "4aa3a288fb8d08f7a666a5f30df8d022d533405ca6298fb2b3083b12e019824c"
     },
     {
       "pedido": "AR2605120",
