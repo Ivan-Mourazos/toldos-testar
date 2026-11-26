@@ -18,14 +18,19 @@ export const ALTO_BLOQUE_MM = (FILAS - 1) * PASO + GRUESO;
  * si la referencia tiene dos juegos, manda el que va con el NB, y sin ninguno cerca el canalón va a mano.
  * @returns {{ mitad: number, pestana: number } | null}
  */
-export function canalonDe(codigo, NB) {
-  if (/^430(?:127|129|172)-/.test(codigo)) {
-    const margen = codigo.startsWith('430127') ? 160 : 200;
-    const juegos = plantilla.canalones[codigo] ?? [];
-    return juegos.filter(j => Math.abs(2 * j.mitad - NB - margen) <= 10)
-      .sort((a, b) => Math.abs(2 * a.mitad - NB - margen) - Math.abs(2 * b.mitad - NB - margen))[0] ?? null;
+export function canalonDe(codigo, NB, juegosPlantilla) {
+  const margen = /^430(?:129|172)-/.test(codigo) ? 200 : 160;
+  const desvio = j => Math.abs(2 * j.mitad - NB - margen);
+  if (juegosPlantilla) {
+    const candidatos = juegosPlantilla.filter(j => desvio(j) <= 10).sort((a, b) => desvio(a) - desvio(b));
+    const mejores = candidatos.filter(j => desvio(j) === desvio(candidatos[0]));
+    return new Set(mejores.map(firmaCanalon)).size === 1 ? mejores[0] : null;
   }
-  const juegos = largos.canalonMm[codigo] ?? [], desvio = j => Math.abs(2 * j.mitad - NB - 160);
+  if (/^430(?:127|129|172)-/.test(codigo)) {
+    const juegos = plantilla.canalones[codigo] ?? [];
+    return juegos.filter(j => desvio(j) <= 10).sort((a, b) => desvio(a) - desvio(b))[0] ?? null;
+  }
+  const juegos = largos.canalonMm[codigo] ?? [];
   return juegos.filter(j => desvio(j) <= 10).sort((a, b) => desvio(a) - desvio(b))[0] ?? null;
 }
 
@@ -59,6 +64,12 @@ function mitadIzquierda(L, largoPestana, enteros = FILAS, parejas = FILAS - 1) {
 const espejo = (L, e) => e.map(l => ({ ...l, x1: 2 * L - l.x1, x2: 2 * L - l.x2 }));
 const clave = l => [l.capa, ...[[l.x1, l.y1], [l.x2, l.y2]].map(p => p.map(v => Math.round(v * 10)).join(',')).sort()].join('|');
 const unicas = e => [...new Map(e.map(l => [clave(l), l])).values()];
+
+export function firmaCanalon(juego) {
+  if (!juego?.entero) return JSON.stringify(juego);
+  const { mitad, grueso, paso, caida, filas, entero, pareja } = juego;
+  return JSON.stringify([mitad, grueso, paso, caida, filas, entero.map(clave).sort(), pareja.map(clave).sort()]);
+}
 
 /** Pila de `enteros` canalones en V con `parejas` parejas de mitades encajadas (parejas = enteros o enteros − 1). */
 export function pilaCanalon({ mitad: L, pestana }, enteros, parejas) {

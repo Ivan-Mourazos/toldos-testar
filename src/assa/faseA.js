@@ -13,8 +13,10 @@ export function fechaLote(fecha) {
 
 export const entidadesVacias = () => ({ lineas: [], arcos: [], circulos: [], textos: [] });
 
-/** Reglas candidatas: la autorización para fabricar exige además el contraste del catálogo. */
-export function calcularFamilia(l, { nkValidado = false, terminadoMm, indiceCuerpo = 0, unidos = false } = {}) {
+export const MATERIAL_COMBURSA = { nombre: 'PLASTEL 8800 TE62 negra', anchoRolloMm: 2040, permitirEmpates: false, permitirGiro: false };
+
+/** Lee las medidas de RPS y calcula el paño teórico para poder identificar el dibujo adecuado. */
+export function calcularFamilia(l, { nkValidado = false, terminadoMm, indiceCuerpo = 0, unidos = false, soloMedidas = false } = {}) {
   const codigo = codigoAssa(l.CodArticle), familia = codigo?.slice(0, 6);
   const motivos = [], avisos = [], medidas = {};
   const texto = String(l.descripcion ?? '').toUpperCase().replace(/NW(?=\s*=?\s*\d)/g, 'NB');
@@ -44,34 +46,40 @@ export function calcularFamilia(l, { nkValidado = false, terminadoMm, indiceCuer
   }
   const trazabilidad = { referencia: l.CodArticle, pedido: l.CodOrder, linea: l.IDOrderLine, of: l.of_, numeroLinea: l.NumLine };
   const resultado = { estado: 'a-mano', familia, codigo, motivos, avisos, medidas, trazabilidad, cantidadPedida: l.cantidad, unidos,
-    material: { nombre: 'PLASTEL 8800 TE62 negra', anchoRolloMm: 2040, permitirEmpates: false, permitirGiro: false } };
+    material: MATERIAL_COMBURSA };
   if (motivos.length) return resultado;
-  if (familia === '420150') {
+  if (familia === '420150' && !soloMedidas) {
     const g = generarPanos420150({ ...l, descripcion: `NT${medidas.NT} NB${medidas.NB} NH${medidas.NH}` });
     return { ...resultado, ...g, avisos, familia, codigo };
   }
   const { NB, NH, NT } = medidas;
-  const largo = esTecho(familia) ? NB + 53 : familia === '420102' ? NH - 190 : NB + 2 * NH + (familia === '430172' ? 10 : 5);
+  const margen = { '430172': 10, '420150': 2, '420148': 5 }[familia];
+  const largo = esTecho(familia) ? NB + 53 : familia === '420102' ? NH - 190 : NB + 2 * NH + margen;
   const ancho = NT + (esTecho(familia) ? 91 : familia === '420148' ? 61 : 66);
   if (ancho > 2040) return { ...resultado, motivos: ['La pieza no cabe en el rollo de 2040 mm sin girar ni empatar.'] };
+  if (soloMedidas) return { ...resultado, estado: 'generado',
+    terminadoMm: [largo - (esTecho(familia) ? 50 : 10), ancho - 66], pieza: { tipo: 'pano', medidasMm: [largo, ancho] } };
+  const cuerpo = plantilla.cuerpos[codigo]?.[indiceCuerpo];
+  if (['430127', '430129', '430172'].includes(familia) &&
+    !cuerpo?.medidasMm.every((n, i) => Math.abs(n - [largo, ancho][i]) <= 1)) {
+    return { ...resultado, motivos: ['Cuerpo sin forma de plantilla para estas medidas: agujeros y marcas a mano.'] };
+  }
+  return { ...resultado, estado: 'generado', terminadoMm: [largo - (esTecho(familia) ? 50 : 10), ancho - 66],
+    pieza: piezaDePlantilla([largo, ancho], cuerpo?.operaciones ?? []) };
+}
+
+export function piezaDePlantilla([largo, ancho], operaciones) {
   const entidades = entidadesVacias();
   entidades.lineas.push(
     { capa: 'DISCO1', x1: 0, y1: 0, x2: 0, y2: ancho },
     { capa: 'DISCO1', x1: largo, y1: 0, x2: largo, y2: ancho },
     { capa: 'DISCO1', x1: 0, y1: ancho, x2: largo, y2: ancho });
-  if (['430127', '430129', '430172'].includes(familia)) {
-    const cuerpo = plantilla.cuerpos[codigo]?.[indiceCuerpo];
-    if (!cuerpo || !cuerpo.medidasMm.every((n, i) => Math.abs(n - [largo, ancho][i]) <= 1)) {
-      return { ...resultado, motivos: ['Cuerpo sin forma de plantilla para estas medidas: agujeros y marcas a mano.'] };
-    }
-    for (const p of cuerpo.operaciones) {
-      if (p.tipo === 'raya') entidades.lineas.push({ capa: p.capa, x1: p.a[0], y1: p.a[1], x2: p.b[0], y2: p.b[1], ...(p.curva ? { curva: p.curva } : {}) });
-      else if (Math.abs((p.hasta - p.desde) % 360) < 1e-7) entidades.circulos.push({ capa: p.capa, x: p.punto[0], y: p.punto[1], r: p.r });
-      else entidades.arcos.push({ capa: p.capa, x: p.punto[0], y: p.punto[1], r: p.r, desde: p.desde, hasta: p.hasta });
-    }
+  for (const p of operaciones) {
+    if (p.tipo === 'raya') entidades.lineas.push({ capa: p.capa, x1: p.a[0], y1: p.a[1], x2: p.b[0], y2: p.b[1], ...(p.curva ? { curva: p.curva } : {}) });
+    else if (Math.abs((p.hasta - p.desde) % 360) < 1e-7) entidades.circulos.push({ capa: p.capa, x: p.punto[0], y: p.punto[1], r: p.r });
+    else entidades.arcos.push({ capa: p.capa, x: p.punto[0], y: p.punto[1], r: p.r, desde: p.desde, hasta: p.hasta });
   }
-  return { ...resultado, estado: 'generado', terminadoMm: [largo - (esTecho(familia) ? 50 : 10), ancho - 66],
-    pieza: { tipo: 'pano', medidasMm: [largo, ancho], entidades } };
+  return { tipo: 'pano', medidasMm: [largo, ancho], entidades };
 }
 
 export function desplazarEntidades(e, dx, dy) {
@@ -97,7 +105,8 @@ export function piezaConAlto(pieza, alto) {
   if (alto === pieza.medidasMm[1]) return pieza;
   const dy = (alto - pieza.medidasMm[1]) / 2;
   const e = desplazarEntidades(pieza.entidades, 0, dy);
-  e.lineas = pieza.entidades.lineas.map((l, i) => l.capa === 'DISCO1' ?
+  // Los tres primeros trazos son el borde exterior; el resto conserva su distancia al eje.
+  e.lineas = pieza.entidades.lineas.map((l, i) => i < 3 ?
     { ...l, y1: l.y1 === pieza.medidasMm[1] ? alto : l.y1, y2: l.y2 === pieza.medidasMm[1] ? alto : l.y2 } : e.lineas[i]);
   return { ...pieza, medidasMm: [pieza.medidasMm[0], alto], entidades: e };
 }

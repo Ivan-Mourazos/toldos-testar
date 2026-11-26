@@ -179,6 +179,14 @@ Q-GAN05–09 permanecen contestadas; estas preguntas no reabren sus respuestas.
 - **Q-FF04:** en AR2602384 la ventana se dejó en 109 para que tuviera sitio la entrada de tubo (E.T.) de arriba.
 - **Q-FF05:** son cierres independientes, colgados de un tubo en una estructura (foto de Iván: pérgola con parra), no de un toldo. Si llevan mordazas o algo parecido, es para ir sujetos a algún sitio.
 
+## COMBURSA · catálogo de plantillas (24/11/2026)
+
+- **430127-0023.** El maestro dibuja un techo de 2.953 × 691 mm con un canalón de 3.063 mm. La línea de RPS pide una envolvente con NB 3.450 y NH 3.600 mm. Falta identificar el plano de la envolvente o corregir la referencia de esa línea.
+- **430172-0010.** El maestro dibuja 9.860 × 966 mm y un canalón de 3.660 mm. Con NB 3.250 y NH 3.200 mm, la línea necesita otro juego. Falta confirmar si la referencia del pedido corresponde al dibujo.
+- **420148-0115.** La ficha da un terminado de 9.805 × 595 mm. Falta localizar el contorno de corte de la variante en los maestros.
+- **Cortinas 410129-0117, 410130-0175, 410170-0001 y 410171-0001.** Hay planos de oficina y constan el despiece y los materiales en Q-AS0711-03. Falta asociar cada pieza con el material y su cantidad en un programa repetible, incluido el tapajuntas, las tiras y los refuerzos.
+- El [informe del catálogo](assa-combursa-catalogo.md) identifica el resto de referencias inventariadas que requieren revisión y separa las discrepancias de los DXF históricos de las dudas de plantilla.
+
 ## COMBURSA · lote 07-11 (03/11/2026)
 
 El DWG completo se conserva como revisión de oficina para las 25 líneas exactas del lote. No se han
@@ -224,10 +232,10 @@ pero no da por demostradas 22 unidades ni las convierte en stock.
 | Lona 2 mm (2100 mm) | **5,948 m** (`410170-0001` + `410171-0001`, `2 × 2,974 m`) | **6,40 m** (`MUCA76NEGRP210`) |
 | Lona 1 / 1,2 mm (1500 mm) | **8,000 m** por separado (`2 × [2,600 + 1,400]`) | **1,09 m** (`RESTOMUELLEC1,2`, cortado de restos) |
 
-**Q-AS0711-05 · resuelta por pedidos anteriores (24/11/2026) para `420102-0021`, `430129-0002`, `430172-0005` y `430172-0034`; `420148-0040` sigue a mano por falta de histórico.**
+**Q-AS0711-05 · resuelta por pedidos anteriores (24/11/2026) para `420102-0021`, `430129-0002`, `430172-0005` y `430172-0034`.** El catálogo vigente habilita también `420148-0040`, con un cuerpo de 10.055 × 961 mm registrado en los dos maestros.
 - **Pasadas superpuestas (`430129-0002`, `430172-0005`, `430172-0034`):** analizados 55 lotes DXF (107 paños) y 24 lotes CMT legibles en máquina (36 paños) con `scripts/assa-investigacion/analizar-cmt-duplicados.mjs`, hay **0 pasadas dobles de corte** (`DISCO1`, `DISCO2` ni `CUTTER`). El 100 % son rabillos de **3 mm solo en `ROTULADOR`** (`CM-PEN-Def` en CMT) heredados de las plantillas de oficina. `compararOperaciones()` tolera rabillos ≤ 3,5 mm solo en `ROTULADOR` y mantiene estricto cualquier trazo largo o herramienta de corte. Además `430129-0002` valida su juego de canalón en 15/16 lotes (incluido el 07-11).
 - **`420102-0021` (triples y +4 sueltas):** en 30 lotes de `0021` y 1.134 filas de toda la familia `420102` (`scripts/assa-investigacion/analizar-420102-0021.mjs`), manda **en parejas de 2**; las tiras de 3 solo aparecen en el 4,6 % de filas (2 de 30 lotes en `0021`: `21-06-2025` y `03-10-2026`), sin regla fija. `extraerPanos()` ya lee tiras triples de 3 paños, validando la referencia hasta el último lote. Las +4 sueltas del 07-11 (`22` vs `18` RPS) son un caso único (`1/30` lotes, sin nota en pedido ni OF): la web sigue cortando la cantidad de RPS en parejas de 2.
-- **Qué queda a mano en la web (5 de las 9 anteriores):** `420148-0040` sigue abierta porque solo tiene **un lote fabricado** en todo 2021–2026 (`AR.26.05240/3`, `07-11-2026`, 1 ud; cuerpo `10055 × 961 mm` compatible, pero falta que se repita en varios lotes fabricados); y las 4 cortinas (`410129-0117`, `410130-0175`, `410170-0001`, `410171-0001`) quedan a mano por ser multimaterial (despiece ya cerrado en Q-AS0711-03). El 07-11 pasa de 9 a **5 líneas a mano** y conserva la revisión exacta de oficina si no cambian sus datos.
+- **Qué queda a mano en la web.** Las cuatro cortinas (`410129-0117`, `410130-0175`, `410170-0001`, `410171-0001`) siguen a mano por el programa multimaterial pendiente. La copia exacta del 07-11 se conserva para el contraste. El DWG nuevo sale del catálogo y las cantidades de RPS.
 
 | Referencia | Lotes contrastados (geometría / líneas) | Canalón | CMT en máquina sin dobles de corte | Estado en web |
 | --- | --- | --- | --- | --- |
@@ -235,7 +243,7 @@ pero no da por demostradas 22 unidades ni las convierte en stock.
 | `430129-0002` | 14 / 17 (últimos 2026: `18-07`, `26-09`, `07-11`) | 15 / 16 | 4 / 4 lotes | **Validada** |
 | `430172-0005` | 27 / 32 (últimos 2026: `03-10`, `17-10`, `24-10`, `07-11`) | 28 / 30 | 15 / 15 lotes | **Validada** |
 | `430172-0034` | 9 / 13 (últimos 2026: `15-08`, `26-09`, `07-11`) | 11 / 12 | 5 / 5 lotes | **Validada** |
-| `420148-0040` | 1 / 1 (`07-11-2026`, 1 ud) | No lleva | — | **A mano** (un solo lote) |
+| `420148-0040` | 1 / 1 (`07-11-2026`, 1 ud) | No lleva | — | Habilitada por plantilla |
 
 ## Embudo · contraste del planteamiento CAD (03/11/2026)
 

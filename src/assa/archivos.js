@@ -16,7 +16,7 @@ const error = mensaje => Object.assign(new Error(mensaje), { statusCode: 409 });
 const huella = dato => createHash('sha256').update(JSON.stringify(dato)).digest('hex');
 
 /** Documento de oficina completo; el corte se mantiene en su recuadro independiente. */
-export function planoDelLote(lote, { usarRevisionOficina = true } = {}) {
+export function planoDelLote(lote, { usarRevisionOficina = false } = {}) {
   return escribirDocumentoLote(lote, usarRevisionOficina ? revisionOficinaDelLote(lote) : null);
 }
 
@@ -33,8 +33,8 @@ export function crearServicioLotes({ carpeta = path.resolve('tmp/combursa'), oda
     const lote = preparar(input.fecha, lineas, sueltas, undefined, { palets });
     const revision = revisionOficinaDelLote(lote);
     const ordenadas = o => Object.entries(o).sort(([a], [b]) => a.localeCompare(b));
-    const firma = huella({ lineas, sueltas: ordenadas(sueltas), palets: ordenadas(palets), version: 3,
-      revisionOficina: revision?.sha256Dxf ?? null });
+    const firma = huella({ lineas, sueltas: ordenadas(sueltas), palets: ordenadas(palets), version: 4,
+      corte: lote.entidades });
     const raiz = path.join(base, 'COMBURSA', input.fecha.slice(0, 4));
     const borradores = path.join(raiz, 'Borradores'), interno = path.join(raiz, 'Registro');
     const manifest = path.join(interno, input.fecha + '.json');
@@ -76,9 +76,8 @@ export function crearServicioLotes({ carpeta = path.resolve('tmp/combursa'), oda
       if (!ctx.lote.paletsCompletos) throw error('Pon el palet de todas las líneas del corte antes de abrirlo.');
       if (!oda.disponible) throw error('Configura ODA para preparar y abrir el DWG del lote.');
       const respuesta = await ctx.flujo.borrador({ orderCode: ctx.lote.nombre, regenerar: input.regenerar === true,
-        preparar: async carpeta => ({ avisos: ctx.lote.aMano ? [revisionOficinaDelLote(ctx.lote)
-          ? `El DWG conserva la revisión de oficina. ${ctx.lote.aMano} líneas siguen sin regla automática de corte.`
-          : `${ctx.lote.aMano} líneas a mano: no están incluidas en este corte.`] : [],
+        preparar: async carpeta => ({ avisos: ctx.lote.aMano ?
+          [`${ctx.lote.aMano} líneas a mano: no están incluidas en este corte.`] : [],
           fichero: { filename: ctx.lote.nombre + '.dwg', savedPath: path.join(carpeta, ctx.lote.nombre + '.dwg'),
             contenido: await oda.convertir(Buffer.from(planoDelLote(ctx.lote), 'utf8')) } }) });
       if (!respuesta.cuerpo.existente) {
