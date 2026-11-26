@@ -6,7 +6,7 @@ import remolque from './remolques/corte/__fixtures__/AR2605132.json';
 import toldo from './domain/corteLona/fixtures/revision-AR2604784.json';
 import { pedidoEntrega } from './entregas.js';
 import { materialesReserva } from './materialesEntrega.js';
-import { esLonaAcrilica, evaluarStockLona, faltaParaCoordina, faltasLona, lineasLonaPuertas, lineasLonaRemolques, lineasLonaToldos, necesidadesLona, textoAvisoStock } from './stockLona.js';
+import { esLonaAcrilica, evaluarStockLona, faltaParaCoordina, faltasLona, lineasLonaPuertas, lineasLonaRemolques, lonasPorElegirPuertas, lineasLonaToldos, necesidadesLona, textoAvisoStock } from './stockLona.js';
 
 describe('necesidades de lona', () => {
   it('suma los rollos por código, reúne sus OF y redondea al final', () => {
@@ -72,14 +72,41 @@ it.each([
   ['LAC650 VERDE 6026', 3000, 'LAC650VE26P300'],
   ['PVC G650 NEGRO', 2500, 'G650NEGRP250'],
   ['PVC ALPHA 580 GR NEGRO', 2500, 'ALPHANEGRP250'],
-  ['LAC900 NEGRO', 3000, undefined],
-  ['LAC900 IGNÍFUGA M2 ROJO 3002', 3000, undefined],
+  // Sin RAL, por los grupos de lonas: si en ese gramaje y ancho solo hay un grupo del color, es ese
+  // (Iván, 26/11/2026, AR2605743: «900 blanco solo hay la 9016»). Se prefiere la marca del nombre.
+  ['LAC900 BLANCO', 3000, 'LAC900BLANP300'],
+  ['LAC900 NEGRO', 3000, 'LAC900NE05P300'],
+  ['LAC900 AMARILLO', 3000, 'LAC900AM03P300'],
+  ['LAC900 BLANCO · Impresa', 3000, 'LAC900BLANP300'],
+  ['LAC900 AZUL', 3000, undefined],
+  ['LAC900 BLANCO', 2500, undefined],
+  ['LAC900 IGNÍFUGA M2 ROJO 3002', 3000, 'PANAIGRO20P300'],
   ['TENTALU PLATA/NEGRO', 3000, undefined],
   ['LAC900 GRIS 7038', 2500, undefined],
 ])('asocia %s al código de su ancho de bobina', (material, anchoRollo, codigo) => {
   const lonas = lineasLonaPuertas({ cortes: [{ material, anchoRollo, largo: 1000,
     opcion: 'principal', colocadas: [{ pieza: { of: '0290001' } }] }] });
   expect(lonas.map(lona => lona.codigo)).toEqual(codigo ? [codigo] : []);
+});
+
+it('una lona sin RAL con varios grupos posibles queda por elegir, con sus opciones y sus metros', () => {
+  const corte = { cortes: [
+    { material: 'LAC900 AZUL', anchoRollo: 3000, largo: 6254, opcion: 'principal', colocadas: [{ pieza: { of: '0290001' } }] },
+    { material: 'LAC900 AZUL', anchoRollo: 3000, largo: 2854, opcion: 'principal', colocadas: [{ pieza: { of: '0290002' } }] },
+    { material: 'LAC900 BLANCO', anchoRollo: 3000, largo: 1000, opcion: 'principal', colocadas: [{ pieza: { of: '0290003' } }] },
+  ] };
+  expect(lonasPorElegirPuertas(corte)).toEqual([{
+    descripcion: 'LAC900 AZUL', ml: 9.11, ofs: ['0290001', '0290002'],
+    opciones: [
+      { codigo: 'LAC900AZ02P300', nombre: 'PVC 900 AZUL 5002 · 300 AN' },
+      { codigo: 'LAC900AZ03P300', nombre: 'PVC 900 AZUL 5003 · 300 AN' },
+      { codigo: 'LAC900AZ10P300', nombre: 'PVC 900 AZUL 5010 · 300 AN' },
+      { codigo: 'LAC900AZ13P300', nombre: 'PVC 900 AZUL 5013 · 300 AN' },
+      { codigo: 'LAC900AZCLP300', nombre: 'PVC 900 AZUL 5015 · 300 AN' },
+      { codigo: 'LAC900AZEUP300', nombre: 'PVC 900 AZUL EUROPA · 300 AN' },
+    ],
+  }]);
+  expect(lonasPorElegirPuertas(corte, ['0290002'])).toMatchObject([{ ml: 2.85, ofs: ['0290002'] }]);
 });
 
 describe('faltas de lona', () => {
@@ -131,7 +158,8 @@ it('usa el largo entero de cada rollo en un pedido de tres puertas grises y una 
     { codigo: 'LAC900GR38P300', descripcion: gris, ml: Math.round(rollos[0].largo / 10) / 100, ofs: ofsGrises, origen: 'corte' },
     { codigo: 'LAC900AZ02P300', descripcion: 'LAC900 AZUL 5002', ml: Math.round(rollos[1].largo / 10) / 100, ofs: ['0290004'], origen: 'corte' },
   ]);
-  expect(lineasLonaPuertas(generarCortePuertas(pedidoDe('AR2600001', { ...base, color: 'GRIS 7016' })))).toEqual([]);
+  // Sin la marca del nombre en ese grupo, la primera por código: la ventana enseña después todas.
+  expect(lineasLonaPuertas(generarCortePuertas(pedidoDe('AR2600001', { ...base, color: 'GRIS 7016' }))).map(l => l.codigo)).toEqual(['B6000PGROSP300']);
   expect(lineasLonaPuertas(generarCortePuertas(pedidoDe('AR2600001', { ...base, rollo: 250 })))).toEqual([]);
 });
 

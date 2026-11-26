@@ -213,7 +213,8 @@ async function sinOfsEnReservas(pedido, propuesta) {
   const enReservas = ofsEnReservas(await getRpsArticulosVenta(pedido).catch(() => []))
     .filter(({ of }) => propuesta.ofs.includes(of));
   return enReservas.length
-    ? { ...propuesta, lonas: fueraDeReservas(propuesta.lonas, enReservas.map(({ of }) => of)), enReservas }
+    ? { ...propuesta, lonas: fueraDeReservas(propuesta.lonas, enReservas.map(({ of }) => of)), enReservas,
+      ...(propuesta.porElegir && { porElegir: fueraDeReservas(propuesta.porElegir, enReservas.map(({ of }) => of)) }) }
     : propuesta;
 }
 const generationLocks = new Set();

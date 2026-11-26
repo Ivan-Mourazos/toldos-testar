@@ -57,3 +57,7 @@
 .lonas-entrega .lona-desglose { display: flex; flex-direction: column; gap: 1px; margin-top: 4px; }
 .lonas-entrega .lona-desglose small { font-variant-numeric: tabular-nums; }
 .lonas-entrega .lona-desglose-nombre { font-weight: 700; }
+.lonas-entrega-elegir { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
+.lonas-entrega-elegir > p { margin: 0 0 4px; }
+.lonas-entrega-elegir ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: 8px; margin: 8px 0 0; padding: 0; list-style: none; }
+.lonas-entrega-elegir li { display: flex; flex-direction: column; align-items: start; gap: 4px; }

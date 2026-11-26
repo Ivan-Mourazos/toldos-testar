@@ -1,6 +1,6 @@
 import { ultimoEnvioCorte } from '../../corteMaquina.js';
 import { prepararPlanoProduccion } from '../../produccion.js';
-import { entregaStockLona, lineasLonaPuertas, necesidadesLona } from '../../stockLona.js';
+import { entregaStockLona, lineasLonaPuertas, lonasPorElegirPuertas, necesidadesLona } from '../../stockLona.js';
 import { pasarAProduccionConStock, type ServiciosStockLona } from '../../stockLonaProduccion.js';
 import { numerarEntrega, aplicarDestino, necesitaPrepararDestino } from '../../entregasRps.js';
 import { mkdir, mkdtemp, stat, writeFile } from "node:fs/promises";
@@ -939,7 +939,7 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
     const actual = pedidoEntrega(await obtener(orderCode));
     const ofs = ofsStockPuertas(actual);
     const corte = generarCortePuertas({ ...actual, summary: undefined });
-    return { ofs, lonas: necesidadesLona(lineasLonaPuertas(corte, ofs)) };
+    return { ofs, lonas: necesidadesLona(lineasLonaPuertas(corte, ofs)), porElegir: lonasPorElegirPuertas(corte, ofs) };
   }
 
   async function produccion(orderCode: string, cuerpo: unknown): Promise<Respuesta> {

@@ -42,6 +42,7 @@ export function ElegirDestinoEntrega({ ruta, rutaStock, codigo, preguntar, cance
   const [lonas, setLonas] = useState<LonaEditable[] | null>(null);
   const [acrilicas, setAcrilicas] = useState<PropuestaStockLona['acrilicas']>([]);
   const [enReservas, setEnReservas] = useState<PropuestaStockLona['enReservas']>([]);
+  const [porElegir, setPorElegir] = useState<NonNullable<PropuestaStockLona['porElegir']>>([]);
   const [intento, setIntento] = useState(false);
   useEffect(() => { dialogo.current?.showModal(); }, []);
   useEffect(() => {
@@ -63,6 +64,7 @@ export function ElegirDestinoEntrega({ ruta, rutaStock, codigo, preguntar, cance
       setOfs(d.ofs);
       setAcrilicas(d.acrilicas ?? []);
       setEnReservas(d.enReservas ?? []);
+      setPorElegir(d.porElegir ?? []);
       setLonas(d.lonas.map(({ ml, ...lona }) => ({ ...lona, metros: String(ml).replace('.', ',') })));
     }).catch(e => { if (!controller.signal.aborted) setErrorStock(e.message); });
     return () => controller.abort();
@@ -88,7 +90,8 @@ export function ElegirDestinoEntrega({ ruta, rutaStock, codigo, preguntar, cance
     <form onSubmit={e => { e.preventDefault(); void confirmar(); }}>
       {error ? <p role="alert">{error}</p> : datos && destino ? <OpcionesEntrega datos={datos} destino={destino} elegir={setDestino} /> : <p role="status">Consultando planteamientos…</p>}
       {rutaStock && (errorStock ? <p role="alert">{errorStock}</p> : lonas
-        ? <LonasEntrega lonas={lonas} ofs={ofs} cambiar={setLonas} enviado={intento} acrilicas={acrilicas} enReservas={enReservas} />
+        ? <LonasEntrega lonas={lonas} ofs={ofs} cambiar={setLonas} enviado={intento} acrilicas={acrilicas} enReservas={enReservas}
+          porElegir={porElegir} elegido={hecho => setPorElegir(actuales => actuales.filter(p => p !== hecho))} />
         : <p role="status">Preparando la propuesta de lonas…</p>)}
       <footer><button type="button" className="ghost-button boton-3d" onClick={cancelar}>Cancelar</button><button type="submit" className="primary-button boton-3d" disabled={!destino || Boolean(error) || Boolean(rutaStock && !lonas)}>{etiqueta}</button></footer>
     </form>

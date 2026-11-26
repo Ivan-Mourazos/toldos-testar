@@ -11,6 +11,8 @@ export interface PropuestaStockLona {
   acrilicas?: { codigo: string; descripcion: string }[];
   /** OF con un artículo incluido en reservas: sus lonas no se comprueban. */
   enReservas?: { of: string; codigo: string }[];
+  /** Puertas: lonas sin RAL que pueden ser de varios grupos; el técnico elige cuál. */
+  porElegir?: { descripcion: string; ml: number; ofs: string[]; opciones: { codigo: string; nombre: string }[] }[];
 }
 
 export interface SalidaPedido {

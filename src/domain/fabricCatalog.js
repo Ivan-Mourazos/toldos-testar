@@ -71,6 +71,9 @@ export function fabricSelectionLabel(value) {
   return `${fabric.code} · ${shortName || fabric.description}`;
 }
 
+/** Las telas activas del catálogo, tal cual. */
+export const activeFabrics = () => fabrics.filter((fabric) => !fabric.inactive);
+
 export function searchStaticFabrics(query = '', limit = 25) {
   return rankFabricMatches(fabrics.filter((fabric) => !fabric.inactive), query, limit);
 }

@@ -1,4 +1,5 @@
-import { resolveFabric } from './domain/fabricCatalog.js';
+import { activeFabrics, resolveFabric } from './domain/fabricCatalog.js';
+import { claveLona, leerLona, nombreLona } from './domain/lonaSimple.js';
 import { CODIGO_RPS, codigoStockMaterial } from './remolques/stockMaterial.ts';
 import { entregasPedido, numeroEntrega } from './entregas.js';
 import { generarCorteLona } from './domain/corteLona/index.js';
@@ -152,22 +153,85 @@ const bobinasPuertas = {
   // 'TENTALU PLATA/NEGRO': 'TENTALUP/NP250' (el corte usa 300 cm).
 };
 
-/** @param {Pick<ReturnType<typeof import('./puertas/corte.ts').generarCortePuertas>, 'cortes'>} resultadoCorte
- * @param {string[]} [ofsEntrega]
- * @returns {LineaLona[]}
- */
-export function lineasLonaPuertas({ cortes }, ofsEntrega) {
+// Lo que en el nombre del corte va con la marca y no es color: «LAC900 IGNÍFUGA M2», «ALPHA 580 GR».
+const PALABRA_DE_MARCA = /^(IGN[IÍ]FUGA|IGN|M2|B1|FR|GR)$/i;
+const primeraPalabra = texto => String(texto ?? '').split(' ')[0];
+
+/** «LAC900 BLANCO» en un rollo de 3000 mm, leído como lona simple (900, BLANCO, sin RAL, 300 AN).
+ * null si no es una lona de PVC de las de siempre (TENTALU, LAC450…). */
+function lonaDelCorte(nombre, anchoRollo) {
+  const palabras = nombre.replace(/^PVC\s+/i, '').split(/\s+/).filter(Boolean);
+  let marca = 1;
+  while (marca < palabras.length && ((/\d/.test(palabras[marca]) && !/^\d{4}$/.test(palabras[marca])) || PALABRA_DE_MARCA.test(palabras[marca]))) marca++;
+  if (marca >= palabras.length) return null;
+  return leerLona(`LONA ${palabras.slice(0, marca).join(' ')} :${palabras.slice(marca).join(' ')} :${anchoRollo / 10}AN`);
+}
+
+/** Las lonas del catálogo que pueden ser la del corte, una por grupo (nombre simple). Con RAL, solo
+ * ese RAL; sin RAL, todos los grupos de ese color. De cada grupo, la marca del nombre si la hay. */
+function opcionesLonaCorte(nombre, anchoRollo) {
+  const lona = lonaDelCorte(nombre, anchoRollo);
+  if (!lona?.ancho) return [];
+  const marca = primeraPalabra(nombre.replace(/^PVC\s+/i, '').toUpperCase());
+  const grupos = new Map();
+  for (const tela of activeFabrics()) {
+    if (!CODIGO_RPS.test(tela.code)) continue;
+    const otra = leerLona(tela.description, tela.width);
+    if (!otra || otra.ancho !== lona.ancho || otra.gramaje !== lona.gramaje || otra.ignifuga !== lona.ignifuga) continue;
+    if (lona.ral ? otra.ral !== lona.ral : primeraPalabra(otra.color) !== primeraPalabra(lona.color)) continue;
+    const clave = claveLona(otra);
+    if (!grupos.has(clave)) grupos.set(clave, { nombre: nombreLona(otra), telas: [] });
+    grupos.get(clave).telas.push(tela);
+  }
+  return [...grupos.values()].map(({ nombre: simple, telas }) => {
+    const porCodigo = [...telas].sort((a, b) => a.code.localeCompare(b.code));
+    return { codigo: (porCodigo.find(t => t.description.toUpperCase().includes(marca)) ?? porCodigo[0]).code, nombre: simple };
+  }).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+}
+
+/** Cada rollo principal con sus OF y las bobinas que le corresponden: la de la tabla o la del catálogo
+ * con el mismo nombre; si no, las de su grupo de lonas (Iván, 26/11/2026). */
+function rollosPuertas({ cortes }, ofsEntrega) {
   const seleccionadas = ofsEntrega && new Set(ofsEntrega);
   return cortes.flatMap(({ material, opcion, anchoRollo, largo, colocadas }) => {
     if (opcion !== 'principal') return [];
+    const ofs = colocadas.filter(t => !t.aparte && t.pieza.clase !== 'cristal').map(t => normalizeOf(t.pieza.of))
+      .filter(of => of && (!seleccionadas || seleccionadas.has(of)));
+    if (!ofs.length) return [];
     const nombre = material.replace(/\s*·\s*impresa$/i, '').trim();
     const clave = nombre.toUpperCase();
     const alias = Object.hasOwn(bobinasPuertas, clave) && bobinasPuertas[clave];
     const catalogada = resolveFabric(alias || nombre);
     const coincide = catalogada?.width * 10 === anchoRollo && (alias || catalogada.description === nombre);
-    if (!coincide || !CODIGO_RPS.test(catalogada.code)) return [];
-    const ofs = colocadas.filter(t => !t.aparte && t.pieza.clase !== 'cristal').map(t => normalizeOf(t.pieza.of))
-      .filter(of => of && (!seleccionadas || seleccionadas.has(of)));
-    return ofs.length ? [{ ofs, codigo: catalogada.code, descripcion: material, ml: largo / 1000, origen: 'corte' }] : [];
+    const opciones = coincide && CODIGO_RPS.test(catalogada.code)
+      ? [{ codigo: catalogada.code, nombre: material }]
+      : opcionesLonaCorte(nombre, anchoRollo);
+    return [{ ofs, material, ml: largo / 1000, opciones }];
   });
+}
+
+/** @param {Pick<ReturnType<typeof import('./puertas/corte.ts').generarCortePuertas>, 'cortes'>} resultadoCorte
+ * @param {string[]} [ofsEntrega]
+ * @returns {LineaLona[]}
+ */
+export function lineasLonaPuertas(resultadoCorte, ofsEntrega) {
+  return rollosPuertas(resultadoCorte, ofsEntrega).flatMap(({ ofs, material, ml, opciones }) =>
+    opciones.length === 1 ? [{ ofs, codigo: opciones[0].codigo, descripcion: material, ml, origen: 'corte' }] : []);
+}
+
+/** Rollos cuya lona puede ser de varios grupos («LAC900 AZUL» sin RAL: 5002 o 5010): el técnico elige
+ * en la ventana. Los rollos del mismo material se suman.
+ * @param {Pick<ReturnType<typeof import('./puertas/corte.ts').generarCortePuertas>, 'cortes'>} resultadoCorte
+ * @param {string[]} [ofsEntrega]
+ * @returns {{ descripcion: string, ml: number, ofs: string[], opciones: { codigo: string, nombre: string }[] }[]} */
+export function lonasPorElegirPuertas(resultadoCorte, ofsEntrega) {
+  const porMaterial = new Map();
+  for (const { ofs, material, ml, opciones } of rollosPuertas(resultadoCorte, ofsEntrega)) {
+    if (opciones.length < 2) continue;
+    if (!porMaterial.has(material)) porMaterial.set(material, { descripcion: material, ml: 0, ofs: new Set(), opciones });
+    const lona = porMaterial.get(material);
+    lona.ml += ml;
+    for (const of of ofs) lona.ofs.add(of);
+  }
+  return [...porMaterial.values()].map(lona => ({ ...lona, ml: redondear(lona.ml), ofs: [...lona.ofs] }));
 }

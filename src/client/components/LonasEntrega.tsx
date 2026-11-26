@@ -30,7 +30,7 @@ const formatoM = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigit
 
 /** La lona con todas sus marcas: lo disponible de cada una, su bobina mayor y si llega con una sola
  * bobina. Es la misma cuenta que hace el aviso a Compras al pasar a producción. */
-export function DesgloseLona({ codigo, ml, ofs }: { codigo: string; ml: number | null; ofs: readonly string[] }) {
+export function DesgloseLona({ codigo, ml, ofs, sinNombre = false }: { codigo: string; ml: number | null; ofs: readonly string[]; sinNombre?: boolean }) {
   const estadoGrupo = useGruposLona([codigo])[codigo];
   const grupo = estadoGrupo?.status === 'ready' ? estadoGrupo.grupo : null;
   const listo = Boolean(estadoGrupo && estadoGrupo.status !== 'loading');
@@ -38,24 +38,50 @@ export function DesgloseLona({ codigo, ml, ofs }: { codigo: string; ml: number |
   const stocks: Record<string, FabricStock> = Object.fromEntries(Object.entries(estados).flatMap(([c, e]) => e.status === 'ready' ? [[c, e.stock]] : []));
   if (!listo || Object.values(estados).some(e => e.status === 'loading')) return <small className="lona-desglose">Consultando stock en RPS…</small>;
   if (!stocks[codigo] && !grupo?.mismoAncho.some(c => stocks[c])) return <small className="lona-desglose">Stock no disponible ahora</small>;
-  return <DesgloseLonaTexto codigo={codigo} grupo={grupo} stocks={stocks} ml={ml} />;
+  return <DesgloseLonaTexto codigo={codigo} grupo={grupo} stocks={stocks} ml={ml} sinNombre={sinNombre} />;
 }
 
-export function DesgloseLonaTexto({ codigo, grupo, stocks, ml }: {
-  codigo: string; grupo: Parameters<typeof resumenGrupoLona>[1]; stocks: Record<string, FabricStock>; ml: number | null;
+export function DesgloseLonaTexto({ codigo, grupo, stocks, ml, sinNombre = false }: {
+  codigo: string; grupo: Parameters<typeof resumenGrupoLona>[1]; stocks: Record<string, FabricStock>; ml: number | null; sinNombre?: boolean;
 }) {
   const { marcas, veredicto } = resumenGrupoLona(codigo, grupo, stocks, ml);
   return <div className="lona-desglose">
-    {grupo?.nombre && <span className="lona-desglose-nombre">{grupo.nombre}</span>}
+    {grupo?.nombre && !sinNombre && <span className="lona-desglose-nombre">{grupo.nombre}</span>}
     {marcas.map(s => <small key={s.code}>{s.code} · {formatoM(s.disponible)} m · bobina mayor {formatoM(s.mayorBobinaDisponible)} m</small>)}
     {veredicto && <small className={`fabric-stock-line ${veredicto.llega ? 'is-normal' : 'is-aviso'}`}>{veredicto.texto}</small>}
   </div>;
 }
 
-export function LonasEntrega({ lonas, ofs, cambiar, enviado, acrilicas = [], enReservas = [] }: {
+type PorElegir = NonNullable<PropuestaStockLona['porElegir']>[number];
+
+/** Una lona del corte sin RAL que puede ser de varios grupos: cada opción con su stock y sus bobinas. */
+function ElegirLona({ lona, elegir }: { lona: PorElegir; elegir: (codigo: string) => void }) {
+  return <div className="lonas-entrega-elegir">
+    <p><strong>{lona.descripcion}</strong> · {lona.ml.toLocaleString('es-ES')} m · OF {lona.ofs.join(', ')}</p>
+    <small>El corte no dice el RAL. Elige la lona; si no eliges, esta no se comprueba.</small>
+    <ul>{lona.opciones.map(opcion => <li key={opcion.codigo}>
+      <button type="button" className="ghost-button boton-3d" onClick={() => elegir(opcion.codigo)}>{opcion.nombre}</button>
+      <DesgloseLona codigo={opcion.codigo} ml={lona.ml} ofs={lona.ofs} sinNombre />
+    </li>)}</ul>
+  </div>;
+}
+
+/** Pasa una lona por elegir a la lista con la opción elegida; si ya estaba, suma metros y OF. */
+export function elegirLona(lonas: LonaEditable[], pendiente: PorElegir, codigo: string): LonaEditable[] {
+  const existente = lonas.find(lona => lona.codigo === codigo);
+  if (!existente) return [...lonas, { codigo, descripcion: pendiente.descripcion, metros: String(pendiente.ml).replace('.', ','), ofs: pendiente.ofs, origen: 'corte' }];
+  const suma = Math.round(((metrosLona(existente.metros) ?? 0) + pendiente.ml) * 100) / 100;
+  return lonas.map(lona => lona === existente
+    ? { ...lona, metros: String(suma).replace('.', ','), ofs: [...new Set([...lona.ofs, ...pendiente.ofs])] } : lona);
+}
+
+export function LonasEntrega({ lonas, ofs, cambiar, enviado, acrilicas = [], enReservas = [], porElegir = [], elegido }: {
   lonas: LonaEditable[]; ofs: string[]; cambiar: (lonas: LonaEditable[]) => void; enviado: boolean;
   acrilicas?: PropuestaStockLona['acrilicas'];
   enReservas?: PropuestaStockLona['enReservas'];
+  porElegir?: PorElegir[];
+  /** La lona por elegir ya resuelta: quien guarda la lista la quita de las pendientes. */
+  elegido?: (pendiente: PorElegir) => void;
 }) {
   const id = useId();
   const [buscando, setBuscando] = useState(false);
@@ -102,7 +128,9 @@ export function LonasEntrega({ lonas, ofs, cambiar, enviado, acrilicas = [], enR
             onClick={() => { cambiar(lonas.filter(fila => fila.codigo !== lona.codigo)); setAviso(''); }}><X size={16} aria-hidden="true" /></button></td>
         </tr>;
       })}</tbody>
-    </table> : <p>{acrilicas?.length || enReservas?.length ? 'No hay lonas que comprobar.' : 'La lista de lonas está vacía.'}</p>}
+    </table> : porElegir.length ? null : <p>{acrilicas?.length || enReservas?.length ? 'No hay lonas que comprobar.' : 'La lista de lonas está vacía.'}</p>}
+    {porElegir.map(pendiente => <ElegirLona key={pendiente.descripcion} lona={pendiente}
+      elegir={codigo => { cambiar(elegirLona(lonas, pendiente, codigo)); elegido?.(pendiente); }} />)}
     {acrilicas?.length ? <ul className="lonas-entrega-acrilicas">{acrilicas.map(lona =>
       <li key={lona.codigo}><strong>{lona.codigo}</strong> {lona.descripcion} · {TEXTO_ACRILICA}</li>)}</ul> : null}
     {enReservas?.length ? <ul className="lonas-entrega-acrilicas">{enReservas.map(({ of, codigo }) =>
