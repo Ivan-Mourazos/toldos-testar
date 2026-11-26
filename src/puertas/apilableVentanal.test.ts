@@ -99,6 +99,15 @@ describe('Ventanal de apilable y saco amarillo', () => {
         expect(cachos).toHaveLength(1);
       }
     }
+    // Iván, 26/11/2026 (AR2605742): la trasera no lleva ningún recorte en el corte, tampoco los de las cabezas.
+    for (const c of generarCortePuertas(pedidoDe('MUESTRA', p)).cortes) {
+      for (const t of c.colocadas.filter(t => / · trasera$/.test(t.pieza.nombre))) {
+        const w = (t.girada ? t.pieza.alto : t.pieza.ancho) * 10, h = (t.girada ? t.pieza.ancho : t.pieza.alto) * 10;
+        const dentro = (x: number, y: number) => x > t.x && x < t.x + w && y > t.y && y < t.y + h;
+        expect(c.entidades.lineas.filter(l => l.capa === 'CUTTER' && (dentro(l.x1, l.y1) || dentro(l.x2, l.y2)))).toEqual([]);
+        expect(c.entidades.arcos.filter(a => a.capa === 'CUTTER' && dentro(a.x, a.y))).toEqual([]);
+      }
+    }
     const alzado = geometriaAlzado(p, r).formas;
     expect(alzado.filter(f => f.tipo === 'texto' && f.lineas.join(' ').includes('DELANTERA Y TRASERA'))).toHaveLength(2);
     const plano = dibujarAlzadoTaller(p, 'A').lienzo;
