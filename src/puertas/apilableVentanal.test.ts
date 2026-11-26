@@ -90,7 +90,8 @@ describe('Ventanal de apilable y saco amarillo', () => {
         `Entrada entre ventanales ${tubo} · delantera`, `Entrada entre ventanales ${tubo} · trasera`,
       ]);
       for (const cara of caras) expect(cara).toMatchObject({ alto: 13.5, ancho: 530, cantidad: 3 });
-      expect(caras.map(x => x.huecos.length)).toEqual([e.huecos.length, e.huecos.length]);
+      // Iván, 26/11/2026 (AR2605742): solo la delantera lleva recortes.
+      expect(caras.map(x => x.huecos.length)).toEqual([e.huecos.length, 0]);
       expect(caras[0].unionesCorte).toHaveLength(4);
       expect(caras[1].unionesCorte ?? []).toEqual([]);
       for (const u of caras[0].unionesCorte!) {

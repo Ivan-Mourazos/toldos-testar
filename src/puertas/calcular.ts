@@ -188,7 +188,8 @@ export function calcularPuertaDerivada(p: Puerta): ResultadoPuerta {
   function entradaEntreVentanales(numero: number, eje: number, largo: number, alto: number, huecos: Hueco[] = []) {
     const nombre = `Entrada entre ventanales ${numero}`;
     const delantera = piezaEntrada(`${nombre} · delantera`, eje, largo, alto, lona, huecos);
-    piezaEntrada(`${nombre} · trasera`, eje, largo, alto, lona, huecos);
+    // Iván, 26/11/2026 (AR2605742): solo la delantera lleva los recortes; la trasera va entera.
+    piezaEntrada(`${nombre} · trasera`, eje, largo, alto, lona);
     // Los cachos se emparejan con la delantera. La trasera no lleva mininúmeros.
     return delantera;
   }
