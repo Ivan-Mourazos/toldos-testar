@@ -79,3 +79,27 @@ export function useFabricStocks(codes: string[], ofs: readonly string[] = []): R
 export function useFabricStock(code: string, ofs: readonly string[] = []): FabricStockState {
   return useFabricStocks([code], ofs)[code] ?? { status: 'idle' };
 }
+
+// La misma lona de otras marcas (GET /api/catalog/fabrics/grupo; domain/lonaSimple.js).
+export interface GrupoLona { code: string; nombre: string | null; mismoAncho: string[]; masAnchas: { codigo: string; ancho: number }[] }
+export type GrupoLonaState = { status: 'loading' } | { status: 'ready'; grupo: GrupoLona } | { status: 'error' };
+
+export function useGruposLona(codes: string[]): Record<string, GrupoLonaState> {
+  const key = [...new Set(codes.filter(Boolean))].sort().join(',');
+  const [state, setState] = useState<{ key: string; value: Record<string, GrupoLonaState> }>({ key: '', value: {} });
+  useEffect(() => {
+    if (!key) return undefined;
+    let active = true;
+    fetch(`/api/catalog/fabrics/grupo?codes=${encodeURIComponent(key)}`)
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || !Array.isArray(data.items)) throw new Error(data.error || 'Stock no disponible ahora');
+        return Object.fromEntries((data.items as GrupoLona[]).map((grupo) => [grupo.code, { status: 'ready', grupo } as GrupoLonaState]));
+      })
+      .catch(() => Object.fromEntries(key.split(',').map((code) => [code, { status: 'error' } as GrupoLonaState])))
+      .then((value) => { if (active) setState({ key, value }); });
+    return () => { active = false; };
+  }, [key]);
+  if (!key) return {};
+  return state.key === key ? state.value : Object.fromEntries(key.split(',').map((code) => [code, { status: 'loading' } as GrupoLonaState]));
+}

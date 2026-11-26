@@ -1,1 +1,1 @@
-export { codigoStockMaterial } from '../../remolques/stockMaterial.ts';
+export { codigoStockMaterial, materialElegido, opcionesSimples } from '../../remolques/stockMaterial.ts';

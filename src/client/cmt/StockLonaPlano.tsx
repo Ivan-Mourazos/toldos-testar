@@ -9,8 +9,8 @@ import { CorteMaquinaContexto } from '../components/CorteMaquina';
 import { FabricCombobox } from '../components/FabricCombobox';
 import { metrosLona } from '../components/LonasEntrega';
 import { ReadModeContext } from '../components/ReadMode';
-import type { FabricStock } from '../fabricStock';
-import { useFabricStocks } from '../hooks/useFabricStock';
+import { resumenGrupoLona, type FabricStock } from '../fabricStock';
+import { useFabricStocks, useGruposLona, type FabricStockState, type GrupoLona } from '../hooks/useFabricStock';
 import './stock-lona.css';
 
 interface FilaLona { id: number; tela: string; metros: string }
@@ -21,24 +21,31 @@ const metros = (n: number, maximos = 1) => n.toLocaleString('es-ES', {
   minimumFractionDigits: 1, maximumFractionDigits: maximos, useGrouping: 'always',
 } as unknown as Intl.NumberFormatOptions);
 
-function CuentaLona({ codigo, descripcion, stock, necesita }: {
-  codigo: string; descripcion?: string; stock: FabricStock; necesita: number | null;
+// La lona y todas sus marcas del mismo ancho (domain/lonaSimple.js). El pedido sale de una sola
+// bobina (Iván, 26/11/2026): llega si alguna bobina sola tiene sitio, no por el total.
+export function CuentaLona({ codigo, descripcion, grupo, stocks, necesita }: {
+  codigo: string; descripcion?: string; grupo: GrupoLona | null; stocks: Record<string, FabricStock>; necesita: number | null;
 }) {
-  const cuenta = cuentaStockPlano(stock);
-  const falta = necesita === null ? 0 : Math.round((necesita - cuenta.disponible) * 100) / 100;
+  const { marcas, mayor, mejor, veredicto } = resumenGrupoLona(codigo, grupo, stocks, necesita);
+  const cuentas = marcas.map(stock => ({ stock, cuenta: cuentaStockPlano(stock) }));
+  const suma = (clave: 'stock' | 'reservado' | 'disponible' | 'reservadoPropio') => cuentas.reduce((total, m) => total + m.cuenta[clave], 0);
+  const titulo = grupo?.nombre ?? `${codigo}${descripcion && descripcion !== codigo ? ` · ${descripcion}` : ''}`;
   return <section className="stock-plano-cuenta">
-    <h3>{codigo}{descripcion && descripcion !== codigo ? ` · ${descripcion}` : ''}</h3>
+    <h3>{titulo}</h3>
+    {cuentas.length > 1 && <ul className="stock-plano-marcas">{cuentas.map(m => <li key={m.stock.code}>
+      <span>{m.stock.code}</span>
+      <span>{metros(m.cuenta.disponible)} m · bobina mayor {metros(m.stock.mayorBobinaDisponible)} m</span>
+    </li>)}</ul>}
     <dl>
-      <div><dt>Stock en almacén</dt><dd>{metros(cuenta.stock)} m</dd></div>
-      <div><dt>− Reservado (otros pedidos)</dt><dd>{metros(cuenta.reservado)} m</dd></div>
-      <div className="stock-plano-disponible"><dt>= Disponible</dt><dd>{metros(cuenta.disponible)} m</dd></div>
+      <div><dt>Stock en almacén</dt><dd>{metros(suma('stock'))} m</dd></div>
+      <div><dt>− Reservado (otros pedidos)</dt><dd>{metros(suma('reservado'))} m</dd></div>
+      <div className="stock-plano-disponible"><dt>= Disponible</dt><dd>{metros(suma('disponible'))} m</dd></div>
+      <div><dt>Bobina mayor</dt><dd>{metros(mayor)} m{cuentas.length > 1 && mejor ? ` (${mejor.code})` : ''}</dd></div>
       <div><dt>Necesita este pedido</dt><dd>{necesita === null ? 'Por indicar' : `${metros(necesita, 2)} m`}</dd></div>
     </dl>
     <div className="stock-plano-estado">
-      {cuenta.reservadoPropio > 0 && <small>Reservado para este pedido: {metros(cuenta.reservadoPropio)} m (no se resta)</small>}
-      {necesita !== null && (falta > 0
-        ? <strong className="fabric-stock-line is-aviso">No llega: faltan {metros(falta, 2)} m</strong>
-        : <strong className="stock-plano-llega">✔ Llega</strong>)}
+      {suma('reservadoPropio') > 0 && <small>Reservado para este pedido: {metros(suma('reservadoPropio'))} m (no se resta)</small>}
+      {veredicto && <strong className={veredicto.llega ? 'stock-plano-llega' : 'fabric-stock-line is-aviso'}>{veredicto.texto}</strong>}
     </div>
   </section>;
 }
@@ -74,9 +81,17 @@ export function StockLonaPlano({ deteccion, cerrar }: { deteccion: Extract<Detec
   const enReservas = resultado?.datos?.enReservas ?? [];
   const todoEnReservas = ofsPedido.length > 0 && ofsPedido.every(of => enReservas.some(fila => fila.of === of));
   const noSeComprueba = (codigo: string) => todoEnReservas || esLonaAcrilica({ codigo, descripcion: telas.get(codigo) });
-  const stocks = useFabricStocks(!consultando && ofsPedido.length ? [...telas.keys()].filter(codigo => !noSeComprueba(codigo)) : [], ofsPedido);
+  const aComprobar = !consultando && ofsPedido.length ? [...telas.keys()].filter(codigo => !noSeComprueba(codigo)) : [];
+  // Cada lona trae las de otras marcas y anchos: su stock también se enseña.
+  const grupos = useGruposLona(aComprobar);
+  const grupoDe = (codigo: string) => { const g = grupos[codigo]; return g?.status === 'ready' ? g.grupo : null; };
+  const gruposListos = aComprobar.every(codigo => grupos[codigo] && grupos[codigo].status !== 'loading');
+  const stocks: Record<string, FabricStockState> = useFabricStocks(gruposListos ? aComprobar.flatMap(codigo => {
+    const g = grupoDe(codigo);
+    return g ? [codigo, ...g.mismoAncho, ...g.masAnchas.map(a => a.codigo)] : [codigo];
+  }) : [], ofsPedido);
   const sinStock = Object.values(stocks).some(stock => stock.status === 'error');
-  const cargandoStock = Object.values(stocks).some(stock => stock.status === 'loading');
+  const cargandoStock = !gruposListos || Object.values(stocks).some(stock => stock.status === 'loading');
   const filasValidas = lineas.length > 0 && lineas.every(fila => fila.codigo && fila.ml !== null && fila.ml >= 0.01);
   const sinOf = Boolean(resultado?.datos && !ofsPedido.length);
 
@@ -180,8 +195,9 @@ export function StockLonaPlano({ deteccion, cerrar }: { deteccion: Extract<Detec
             </section>;
             const estado = stocks[codigo];
             const sinMetros = lineas.some(fila => fila.codigo === codigo && (fila.ml === null || fila.ml < 0.01));
-            return estado?.status === 'ready' ? <CuentaLona key={codigo} codigo={codigo} descripcion={descripcion} stock={estado.stock}
-              necesita={sinMetros ? null : necesidad.get(codigo) ?? null} /> : null;
+            const listos = Object.fromEntries(Object.entries(stocks).flatMap(([c, s]) => s.status === 'ready' ? [[c, s.stock]] : []));
+            return estado?.status === 'ready' ? <CuentaLona key={codigo} codigo={codigo} descripcion={descripcion} grupo={grupoDe(codigo)}
+              stocks={listos} necesita={sinMetros ? null : necesidad.get(codigo) ?? null} /> : null;
           })}
         </div>}
       </div>

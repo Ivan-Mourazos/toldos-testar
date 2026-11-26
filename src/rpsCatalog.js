@@ -286,6 +286,7 @@ export async function queryRpsFabricStockRows() {
     SELECT
       s.IDStock AS stockId,
       a.CodArticle AS code,
+      a.Description AS description,
       CONVERT(varchar(20), w.CodWarehouse) AS warehouseCode,
       w.Description AS warehouseName,
       s.Series AS roll,

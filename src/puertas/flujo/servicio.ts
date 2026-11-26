@@ -967,6 +967,7 @@ export function crearServicioPedidosPuertas(deps: DependenciasPedidosPuertas) {
         consultadoPor: typeof entrada.savedBy === 'string' ? entrada.savedBy : null,
         lineas: async () => lineasLonaPuertas(generarCortePuertas({ ...actual, summary: undefined }, { ofStockSacos: await ofStock() }), ofsStock),
         lonasAprobadas: entrada.lonasAprobadas,
+        avisarAncho: entrada.avisarAncho,
       });
     } finally { ocupados.delete(codigo); }
   }

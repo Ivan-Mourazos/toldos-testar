@@ -1,4 +1,6 @@
 import { summarizeFabricStock } from './domain/fabricStock.js';
+import { lonasDelGrupo } from './domain/lonaSimple.js';
+import { resolveFabric } from './domain/fabricCatalog.js';
 import { normalizeOf } from './reviewRules.js';
 
 // Lecturas de RPS para la tela (informe tmp/tela-0930) con caché en memoria. La
@@ -46,6 +48,14 @@ export function createFabricStockService({ loadRows, loadReserves = async () => 
       const { rows: stockRows, reservas, consultado } = await rows.get();
       return codes.map((code) => ({ ...summarizeFabricStock(stockRows, code, { reservas, ofsPropias: ofs }), consultado }));
     },
+    // La misma lona de otras marcas (domain/lonaSimple.js), del mismo ancho y más anchas.
+    async grupoLona(code, descripcion = '', ancho = null) {
+      const { rows: stockRows } = await rows.get();
+      // Sin bobinas en stock, la descripción sale del catálogo de telas (o de la del pedido).
+      const tela = resolveFabric(code);
+      const catalogo = tela?.code === code ? tela : null;
+      return lonasDelGrupo(stockRows, code, [catalogo?.description, descripcion], ancho ?? catalogo?.width ?? null);
+    },
     reset: rows.reset
   };
 }
@@ -60,6 +70,21 @@ export function fabricStockHandler(service) {
       return res.json({ source: 'RPSNext', items: await service.getStock(codes, { ofs: parseOfs(req.query?.ofs) }) });
     } catch (error) {
       console.error('RPSNext no disponible para el stock de telas:', error?.message || error);
+      return res.status(503).json({ error: 'Stock no disponible ahora' });
+    }
+  };
+}
+
+// GET /api/catalog/fabrics/grupo?codes=A,B: la misma lona de otras marcas (nombre simple, códigos
+// del mismo ancho y más anchos). Con su stock se ve qué bobina llega (Planos a corte, 26/11/2026).
+export function fabricGroupHandler(service) {
+  return async (req, res) => {
+    const codes = parseCodes(req.query?.codes);
+    if (codes.length === 0) return res.status(400).json({ error: 'Indica al menos un código de tela.' });
+    try {
+      return res.json({ items: await Promise.all(codes.map(async (code) => ({ code, ...(await service.grupoLona(code)) }))) });
+    } catch (error) {
+      console.error('RPSNext no disponible para el grupo de telas:', error?.message || error);
       return res.status(503).json({ error: 'Stock no disponible ahora' });
     }
   };

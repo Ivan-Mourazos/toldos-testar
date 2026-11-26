@@ -112,7 +112,7 @@ import {
   searchRpsArticles,
   getRpsArticle
 } from './rpsCatalog.js';
-import { createFabricStockService, fabricStockHandler } from './fabricRpsServices.js';
+import { createFabricStockService, fabricGroupHandler, fabricStockHandler } from './fabricRpsServices.js';
 import { crearImpresoraHojaTelas } from './hojaTelasPdf.js';
 import {
   checkWorkflowDirectories,
@@ -657,6 +657,7 @@ app.get('/api/catalog/fabrics', async (req, res) => {
 
 // Stock de las telas elegidas (informe tela-0930): solo lectura de RPS, 60 s en caché.
 app.get('/api/catalog/fabrics/stock', fabricStockHandler(fabricStock));
+app.get('/api/catalog/fabrics/grupo', fabricGroupHandler(fabricStock));
 
 
 app.get('/api/catalog/articles', async (req, res) => {
@@ -1977,6 +1978,7 @@ app.post('/api/reviews/:orderCode/produccion', tiemposGenerar('produccion', sani
       lineas: () => lineasLonaToldos(pdf.datosStock.pedido, pdf.datosStock.materiales),
       enExcel: pdf.datosStock.materiales.map(m => m.codigo),
       lonasAprobadas: entrada.lonasAprobadas,
+      avisarAncho: entrada.avisarAncho,
     });
     res.status(r.status).json(r.cuerpo);
   } catch (error) { next(error); }

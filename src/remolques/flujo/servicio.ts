@@ -847,6 +847,7 @@ export function crearServicioPedidosRemolques(deps: DependenciasPedidosRemolques
           return lineasLonaRemolques(cortes, await materialesStock());
         },
         lonasAprobadas: entrada.lonasAprobadas,
+        avisarAncho: entrada.avisarAncho,
       } : undefined);
     } finally { ocupados.delete(codigo); }
   }

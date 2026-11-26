@@ -894,3 +894,5 @@
 .rem-editor-datos { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; margin: 0 0 8px; font-size: 13px; }
 .rem-editor-datos .rem-pedido-material { max-width: 32rem; }
 .rem-pedido-guardado .rem-lectura, .rem-pedido-guardado .rem-lectura .rem-elementos { margin-top: 0; }
+/* Desglose de una opción simple: cada marca con su código y su stock en Arzúa. */
+.fabric-option .rem-material-marca { display: block; font-family: var(--font-mono), monospace; }

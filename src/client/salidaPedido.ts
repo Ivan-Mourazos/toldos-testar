@@ -56,6 +56,13 @@ export async function ejecutarSalidaPedido({ ruta, usuario, preguntar, notify, c
         entrada.aceptarCambioCorte = true;
         continue;
       }
+      if (respuesta.status === 409 && datos.needsAnchoDecision) {
+        const decision = await preguntar({ title: 'Lona de otro ancho', message: 'No llega ninguna bobina del ancho pedido, pero sí una más ancha. ¿Aviso a Compras?',
+          details: datos.detalles ?? [], confirmLabel: 'Avisar a Compras', alternativeLabel: 'No avisar, se corta de la más ancha', alternativeTone: 'neutral', cancelLabel: 'Cancelar', tone: 'warning' });
+        if (decision !== 'confirm' && decision !== 'alternative') return;
+        entrada.avisarAncho = decision === 'confirm';
+        continue;
+      }
       if (respuesta.status === 409 && datos.needsFabricConfirmation) {
         const decision = await preguntar({ title: 'Telas no acrílicas', message: 'Decide si deben incluirse en la reserva de material.',
           details: (datos.fabrics ?? []).map((f: { code: string; description: string }) => f.code + ' · ' + f.description), confirmLabel: 'Incluir en la reserva', alternativeLabel: 'No incluir', alternativeTone: 'neutral', cancelLabel: 'Cancelar', tone: 'warning' });

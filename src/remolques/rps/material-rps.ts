@@ -1,5 +1,6 @@
 import type { Material } from "../calc/materiales-seed.ts";
 import type { LineaPedidoRps } from "./types.ts";
+import { opcionesSimples } from "../stockMaterial.ts";
 
 const normalizar = (value: string) => value
   .normalize("NFD")
@@ -8,7 +9,7 @@ const normalizar = (value: string) => value
   .trim()
   .toLocaleUpperCase("es-ES");
 
-/** Bobina compatible con gramaje/color de RPS que tiene más stock en Arzúa. */
+/** Lona compatible con gramaje/color de RPS: la de la bobina con más stock en Arzúa, por su nombre simple. */
 export function materialPreferidoRps(linea: LineaPedidoRps, materiales: Material[]): string {
   const { gramaje, color } = linea.materialRps;
   if (!color) return "";
@@ -25,6 +26,8 @@ export function materialPreferidoRps(linea: LineaPedidoRps, materiales: Material
     const stockB = b.stockArzua == null ? Number.NEGATIVE_INFINITY : Number(b.stockArzua);
     return stockB - stockA || a.nombre.localeCompare(b.nombre, "es");
   });
-  return candidatas[0].nombre;
+  // Se propone el nombre simple de esa lona (todas las marcas), como en el buscador.
+  const elegida = candidatas[0];
+  return opcionesSimples(materiales).find((o) => o.marcas?.some((m) => m.codigoBobina === elegida.codigoBobina))?.nombre ?? elegida.nombre;
 }
 

@@ -36,15 +36,15 @@ describe("crearInputDesdeRps", () => {
     });
   });
 
-  it("selecciona la bobina compatible con más stock", () => {
+  it("propone por su nombre simple la lona de la bobina compatible con más stock", () => {
     const materiales = [
       { nombre: "LONA ALPHA 580 :GRIS 7038 :250 AN", codigoBobina: "A", stockArzua: 35 },
       { nombre: "LONA ALPHA 580 :ROJO 3002 :250 AN", codigoBobina: "B" },
     ];
-    expect(materialPreferidoRps(linea, materiales)).toBe(materiales[0].nombre);
+    expect(materialPreferidoRps(linea, materiales)).toBe("PVC 580 GRIS 7038 · 250 AN");
     expect(materialPreferidoRps(linea, [...materiales, {
       nombre: "LONA RECORD 580 :GRIS 7038 :220 AN", codigoBobina: "C", stockArzua: 80,
-    }])).toBe("LONA RECORD 580 :GRIS 7038 :220 AN");
+    }])).toBe("PVC 580 GRIS 7038 · 220 AN");
   });
 
   describe("RPS resuelve lo que sabe y deja sin elegir lo que no", () => {

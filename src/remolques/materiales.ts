@@ -73,7 +73,7 @@ export async function getMaterialesConOrigen(): Promise<{ materiales: Material[]
       .input("sub", sql.VarChar, SUBFAMILIA_PLASTICA_LONA)
       .input("alm", sql.VarChar, ALMACEN_ARZUA)
       .query(`
-        SELECT a.CodArticle, a.Description, st.StockArzua
+        SELECT a.CodArticle, a.Description, ISNULL(st.StockArzua, 0) AS StockArzua
         FROM STKArticle a
         LEFT JOIN (
           SELECT IDArticle, SUM(Stock) AS StockArzua

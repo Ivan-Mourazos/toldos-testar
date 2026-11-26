@@ -5,6 +5,8 @@ import { esLonaAcrilica, TEXTO_ACRILICA, TEXTO_RESERVAS } from '../../domain/sto
 import { FabricCombobox } from './FabricCombobox';
 import { ReadModeContext } from './ReadMode';
 import type { LonaAprobada, PropuestaStockLona } from '../salidaPedido';
+import { resumenGrupoLona, type FabricStock } from '../fabricStock';
+import { useFabricStocks, useGruposLona } from '../hooks/useFabricStock';
 
 export type LonaEditable = Omit<PropuestaStockLona['lonas'][number], 'ml'> & { metros: string };
 
@@ -22,6 +24,32 @@ export function aprobarLonas(lonas: LonaEditable[]): LonaAprobada[] | null {
     aprobadas.push({ codigo, ml, ofs });
   }
   return aprobadas;
+}
+
+const formatoM = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 1 });
+
+/** La lona con todas sus marcas: lo disponible de cada una, su bobina mayor y si llega con una sola
+ * bobina. Es la misma cuenta que hace el aviso a Compras al pasar a producción. */
+export function DesgloseLona({ codigo, ml, ofs }: { codigo: string; ml: number | null; ofs: readonly string[] }) {
+  const estadoGrupo = useGruposLona([codigo])[codigo];
+  const grupo = estadoGrupo?.status === 'ready' ? estadoGrupo.grupo : null;
+  const listo = Boolean(estadoGrupo && estadoGrupo.status !== 'loading');
+  const estados = useFabricStocks(listo ? [codigo, ...(grupo?.mismoAncho ?? []), ...(grupo?.masAnchas.map(a => a.codigo) ?? [])] : [], ofs);
+  const stocks: Record<string, FabricStock> = Object.fromEntries(Object.entries(estados).flatMap(([c, e]) => e.status === 'ready' ? [[c, e.stock]] : []));
+  if (!listo || Object.values(estados).some(e => e.status === 'loading')) return <small className="lona-desglose">Consultando stock en RPS…</small>;
+  if (!stocks[codigo] && !grupo?.mismoAncho.some(c => stocks[c])) return <small className="lona-desglose">Stock no disponible ahora</small>;
+  return <DesgloseLonaTexto codigo={codigo} grupo={grupo} stocks={stocks} ml={ml} />;
+}
+
+export function DesgloseLonaTexto({ codigo, grupo, stocks, ml }: {
+  codigo: string; grupo: Parameters<typeof resumenGrupoLona>[1]; stocks: Record<string, FabricStock>; ml: number | null;
+}) {
+  const { marcas, veredicto } = resumenGrupoLona(codigo, grupo, stocks, ml);
+  return <div className="lona-desglose">
+    {grupo?.nombre && <span className="lona-desglose-nombre">{grupo.nombre}</span>}
+    {marcas.map(s => <small key={s.code}>{s.code} · {formatoM(s.disponible)} m · bobina mayor {formatoM(s.mayorBobinaDisponible)} m</small>)}
+    {veredicto && <small className={`fabric-stock-line ${veredicto.llega ? 'is-normal' : 'is-aviso'}`}>{veredicto.texto}</small>}
+  </div>;
 }
 
 export function LonasEntrega({ lonas, ofs, cambiar, enviado, acrilicas = [], enReservas = [] }: {
@@ -59,7 +87,8 @@ export function LonasEntrega({ lonas, ofs, cambiar, enviado, acrilicas = [], enR
         const invalido = enviado && metrosLona(lona.metros) === null;
         return <tr key={lona.codigo}>
           <td><strong>{lona.codigo}</strong><span className="lona-descripcion">{lona.descripcion}</span>
-            <small>{lona.origen === 'manual' ? 'Añadido' : lona.origen === 'reserva' ? 'Detectado · reserva' : 'Detectado · corte'}</small></td>
+            <small>{lona.origen === 'manual' ? 'Añadido' : lona.origen === 'reserva' ? 'Detectado · reserva' : 'Del formulario · metros del corte'}</small>
+            <DesgloseLona codigo={lona.codigo} ml={metrosLona(lona.metros)} ofs={ofs} /></td>
           <td><label className="sr-only" htmlFor={campo}>Metros de {lona.codigo}</label>
             <input id={campo} type="text" inputMode="decimal" value={lona.metros} aria-invalid={invalido || undefined}
               aria-describedby={invalido ? `${id}-error` : undefined}

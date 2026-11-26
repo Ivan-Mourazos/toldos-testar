@@ -3,6 +3,8 @@ export interface Material {
   codigoBobina: string;
   /** Stock en la Nueva sede de Arzúa (null si no se pudo leer de RPS). */
   stockArzua?: number | null;
+  /** Opción simple («PVC 580 AZUL 5015 · 250 AN»): las bobinas de cada marca que engloba. */
+  marcas?: { nombre: string; codigoBobina: string; stockArzua?: number | null }[];
 }
 
 export const MATERIALES_SEED: Material[] = [

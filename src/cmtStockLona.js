@@ -104,6 +104,7 @@ export function registrarRutasStockPlano(app, { consultar, buscar, stock, coordi
         pedido, entrega: null, cliente, ofs, ofsStock: ofs, consultadoPor: usuario, origen: 'plano-manual', lineas, lonasAprobadas, coordina, resolverTela, articulosVenta,
         stock: {
           reset: () => stock.reset(),
+          grupoLona: (...datos) => stock.grupoLona?.(...datos),
           getStock: async (codigos, opciones) => (await stock.getStock(codigos, opciones)).map(s => {
             const cuenta = cuentaStockPlano(s);
             return { ...s, metros: cuenta.stock, reservado: cuenta.reservado, disponible: cuenta.disponible, reservadoPropio: cuenta.reservadoPropio };

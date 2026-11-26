@@ -109,3 +109,7 @@
   border-top: 1px solid var(--border);
   padding: 12px 24px;
 }
+/* Las marcas de la misma lona: cada una con lo disponible y su bobina mayor. */
+.stock-plano-marcas { list-style: none; margin: 0 0 8px; padding: 0; font-size: 12px; font-variant-numeric: tabular-nums; }
+.stock-plano-marcas li { display: flex; justify-content: space-between; gap: 12px; }
+.stock-plano-marcas li span:first-child { font-family: var(--font-mono), monospace; font-weight: 700; }

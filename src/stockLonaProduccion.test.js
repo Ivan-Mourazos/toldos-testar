@@ -1,4 +1,4 @@
-import { expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { comprobarStockLona, pasarAProduccionConStock } from './stockLonaProduccion.js';
 
 const consultado = '2026-11-23T10:00:00.000Z';
@@ -176,4 +176,55 @@ it('si RPS no dice el artículo de cada OF, se comprueba todo', async () => {
   const { stock, opciones } = preparar();
   await comprobarStockLona({ ...opciones, articulosVenta: async () => { throw new Error('RPS caído'); } });
   expect(stock.getStock).toHaveBeenCalledOnce();
+});
+
+describe('otras marcas y otro ancho', () => {
+  const azul = { ofs: ['0290001'], codigo: 'ALPHAAZ15P250', descripcion: 'PVC 580 AZUL 5015 · 250 AN', ml: 40, origen: 'corte' };
+  const grupo = { nombre: 'PVC 580 AZUL 5015 · 250 AN', mismoAncho: ['ALPHAAZ15P250', 'NS86AZ15P250'], masAnchas: [{ codigo: 'ALPHAAZ15P300', ancho: 300 }] };
+  const fila = (code, disponible) => ({ code, metros: disponible, reservado: 0, reservadoPropio: 0, disponible, mayorBobinaDisponible: disponible });
+  function montar(filas) {
+    const stock = { reset: vi.fn(), grupoLona: vi.fn(async () => grupo), getStock: vi.fn(async codigos => filas.filter(f => codigos.includes(f.code))) };
+    const coordina = { enviarStockLona: vi.fn(async () => ({ ok: true })) };
+    const paso = { nombre: 'PDF', preparar: vi.fn(async () => ({ status: 200, cuerpo: {} })) };
+    const pasar = avisarAncho => pasarAProduccionConStock([paso], { ...datos, lineas: [azul], stock, coordina, now: () => new Date(consultado), avisarAncho });
+    return { stock, coordina, paso, pasar };
+  }
+
+  it('pide el stock de toda la lona, de todas las marcas y anchos', async () => {
+    const { stock, coordina, pasar } = montar([fila('ALPHAAZ15P250', 0), fila('NS86AZ15P250', 65)]);
+    const resultado = await pasar();
+    expect(stock.grupoLona).toHaveBeenCalledWith('ALPHAAZ15P250', 'PVC 580 AZUL 5015 · 250 AN', 250);
+    expect(stock.getStock).toHaveBeenCalledWith(['ALPHAAZ15P250', 'NS86AZ15P250', 'ALPHAAZ15P300'], { ofs: datos.ofs });
+    expect(resultado.status).toBe(200);
+    expect(coordina.enviarStockLona.mock.calls[0][0].faltas).toEqual([]);
+  });
+
+  it('si solo llega una más ancha, pregunta antes de preparar nada', async () => {
+    const { paso, coordina, pasar } = montar([fila('ALPHAAZ15P250', 10), fila('ALPHAAZ15P300', 65)]);
+    expect(await pasar()).toEqual({ status: 409, cuerpo: { needsAnchoDecision: true, error: 'Hay lona de otro ancho', detalles: [
+      'No llega ninguna bobina de ALPHAAZ15P250 PVC 580 AZUL 5015 · 250 AN (necesita 40,00 m), pero hay una de 300 AN con 65,00 m (ALPHAAZ15P300).',
+    ] } });
+    expect(paso.preparar).not.toHaveBeenCalled();
+    expect(coordina.enviarStockLona).not.toHaveBeenCalled();
+  });
+
+  it('decidido avisar, va como falta a CoordinaOT', async () => {
+    const { coordina, pasar } = montar([fila('ALPHAAZ15P250', 10), fila('ALPHAAZ15P300', 65)]);
+    const resultado = await pasar(true);
+    expect(resultado.status).toBe(200);
+    expect(coordina.enviarStockLona.mock.calls[0][0].faltas).toEqual([expect.objectContaining({ codigo: 'ALPHAAZ15P250', necesita: 40, disponible: 10 })]);
+  });
+
+  it('decidido no avisar, no hay falta y se dice de qué bobina se corta', async () => {
+    const { coordina, pasar } = montar([fila('ALPHAAZ15P250', 10), fila('ALPHAAZ15P300', 65)]);
+    const resultado = await pasar(false);
+    expect(coordina.enviarStockLona.mock.calls[0][0].faltas).toEqual([]);
+    expect(resultado.cuerpo.avisos).toContain('ALPHAAZ15P250 PVC 580 AZUL 5015 · 250 AN: no se avisa a Compras; se cortará de la bobina de 300 AN (ALPHAAZ15P300, 65,00 m).');
+  });
+
+  it('en el plano manual no hay a quién preguntar: avisa', async () => {
+    const { stock, coordina } = montar([fila('ALPHAAZ15P250', 10), fila('ALPHAAZ15P300', 65)]);
+    await comprobarStockLona({ ...datos, lineas: [azul], stock, coordina, now: () => new Date(consultado) });
+    expect(coordina.enviarStockLona.mock.calls[0][0].faltas).toEqual([expect.objectContaining({ codigo: 'ALPHAAZ15P250' })]);
+  });
 });

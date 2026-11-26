@@ -33,17 +33,72 @@ export function necesidadesLona(lineas) {
   }));
 }
 
-/** @param {NecesidadLona[]} necesidades @param {{ code: string, metros?: number, reservado?: number, reservadoPropio?: number, disponible: number }[]} stock @returns {FaltaLona[]} */
-export function faltasLona(necesidades, stock) {
+/** @typedef {{ code: string, metros?: number, reservado?: number, reservadoPropio?: number, disponible: number, mayorBobinaDisponible?: number }} StockCodigo */
+/** La misma lona de otras marcas (domain/lonaSimple.js `lonasDelGrupo`).
+ * @typedef {{ nombre: string | null, mismoAncho: string[], masAnchas: { codigo: string, ancho: number }[] }} GrupoLona */
+/** @typedef {FaltaLona & { masAncha: { codigo: string, ancho: number, bobina: number } }} DudaAncho */
+
+const soloElla = codigo => ({ nombre: null, mismoAncho: [codigo], masAnchas: [] });
+// Lo que queda libre en la bobina mayor. Sin el dato (pruebas antiguas), el total.
+const bobinaMayor = s => s?.mayorBobinaDisponible ?? s?.disponible ?? 0;
+
+/** Cada lona del pedido tiene que salir de una sola bobina (Iván, 26/11/2026: «no se pueden
+ * utilizar paños diferentes ni marcas diferentes en un mismo pedido»), de la marca que sea.
+ * Las lonas que son la misma (mismo nombre simple) se juntan antes de mirar.
+ * - Llega si una bobina del mismo ancho tiene sitio para todo: no se avisa.
+ * - Si no, pero llega una bobina más ancha: es una duda; quien pasa el pedido decide si avisar.
+ * - Si no: falta. Lleva la cuenta del ancho pedido sumando todas sus marcas.
+ * @param {NecesidadLona[]} necesidades @param {StockCodigo[]} stock @param {GrupoLona[]} [grupos] (uno por necesidad)
+ * @returns {{ faltas: (FaltaLona & { bobinaMayor?: number })[], dudas: DudaAncho[] }} */
+export function evaluarStockLona(necesidades, stock, grupos = []) {
   const porCodigo = new Map(stock.map(s => [s.code, s]));
-  return necesidades.flatMap(({ codigo, descripcion, ml, ofs }) => {
-    const s = porCodigo.get(codigo);
-    const disponible = s?.disponible ?? 0;
-    return disponible < ml ? [{
-      codigo, descripcion, necesita: ml, stock: s?.metros ?? 0, reservado: s?.reservado ?? 0,
-      reservadoPropio: s?.reservadoPropio ?? 0, disponible, ofs,
-    }] : [];
+  const juntas = new Map();
+  necesidades.forEach((lona, i) => {
+    const grupo = grupos[i] ?? soloElla(lona.codigo);
+    const clave = grupo.nombre ?? `código ${lona.codigo}`;
+    const junta = juntas.get(clave);
+    if (!junta) {
+      juntas.set(clave, { codigo: lona.codigo, descripcion: grupo.nombre ?? lona.descripcion, ml: lona.ml, ofs: new Set(lona.ofs), grupo });
+      return;
+    }
+    junta.ml = redondear(junta.ml + lona.ml);
+    for (const of of lona.ofs) junta.ofs.add(of);
   });
+  const faltas = [];
+  const dudas = [];
+  for (const { codigo, descripcion, ml, ofs, grupo } of juntas.values()) {
+    const mismas = grupo.mismoAncho.map(c => porCodigo.get(c)).filter(Boolean);
+    const mayor = Math.max(0, ...mismas.map(bobinaMayor));
+    if (mayor >= ml) continue;
+    const suma = clave => redondear(mismas.reduce((total, s) => total + (s[clave] ?? 0), 0));
+    const disponible = suma('disponible');
+    const falta = {
+      codigo, descripcion, necesita: ml, stock: suma('metros'), reservado: suma('reservado'), reservadoPropio: suma('reservadoPropio'),
+      disponible, ...(disponible >= ml && { bobinaMayor: redondear(mayor) }), ofs: [...ofs].sort(),
+    };
+    const ancha = grupo.masAnchas
+      .map(({ codigo: otro, ancho }) => ({ codigo: otro, ancho, bobina: bobinaMayor(porCodigo.get(otro)) }))
+      .filter(opcion => opcion.bobina >= ml)
+      .sort((a, b) => a.ancho - b.ancho || b.bobina - a.bobina)[0];
+    if (ancha) dudas.push({ ...falta, masAncha: { ...ancha, bobina: redondear(ancha.bobina) } });
+    else faltas.push(falta);
+  }
+  return { faltas, dudas };
+}
+
+/** @param {NecesidadLona[]} necesidades @param {StockCodigo[]} stock @param {GrupoLona[]} [grupos] */
+export const faltasLona = (necesidades, stock, grupos) => evaluarStockLona(necesidades, stock, grupos).faltas;
+
+/** CoordinaOT valida que «disponible» sea menor que lo que se necesita. Cuando sumando
+ * bobinas llegaría pero ninguna sola llega, manda la bobina mayor y lo explica en la descripción.
+ * @param {FaltaLona & { bobinaMayor?: number }} falta */
+export function faltaParaCoordina({ bobinaMayor: mayor, ...falta }) {
+  if (mayor === undefined) return falta;
+  const m = n => `${new Intl.NumberFormat('es-ES', { maximumFractionDigits: 2 }).format(n)} m`;
+  return {
+    codigo: falta.codigo, necesita: falta.necesita, disponible: mayor, ofs: falta.ofs,
+    descripcion: `${falta.descripcion} — ninguna bobina sola llega (la mayor, ${m(mayor)}; en total ${m(falta.disponible)})`.slice(0, 250),
+  };
 }
 
 /** @param {{ order?: any, corteLona?: { toldos?: unknown[], ajustes?: Record<string, any>, ofStockSacos?: string } }} pedido

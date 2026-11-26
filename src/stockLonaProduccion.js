@@ -1,7 +1,7 @@
 import { pasarAProduccion } from './produccion.js';
-import { faltasLona, necesidadesLona } from './stockLona.js';
+import { evaluarStockLona, faltaParaCoordina, necesidadesLona } from './stockLona.js';
 import { esLonaAcrilica, fueraDeReservas, ofsEnReservas } from './domain/stockSinComprobar.js';
-import { textoAvisoStock } from './stockLonaAviso.js';
+import { textoAnchoSinAviso, textoAvisoStock, textoDudasAncho } from './stockLonaAviso.js';
 import { resolveFabric } from './domain/fabricCatalog.js';
 import { CODIGO_RPS } from './remolques/stockMaterial.ts';
 
@@ -11,12 +11,13 @@ import { CODIGO_RPS } from './remolques/stockMaterial.ts';
 /** @typedef {{ pedido: string, entrega: number | null, cliente: string, ofs: string[], consultadoPor: string | null,
  * origen?: 'plano-manual' }} PedidoStockLona */
 /** @typedef {PedidoStockLona & { lonas: NecesidadLona[], faltas: FaltaLona[], consultado: string }} DatosStockLona */
-/** @typedef {{ stock: { reset: () => void, getStock: (codigos: string[], opciones?: { ofs?: string[] }) => Promise<{ code: string, metros?: number, reservado?: number, reservadoPropio?: number, disponible: number }[]> },
+/** @typedef {{ stock: { reset: () => void, getStock: (codigos: string[], opciones?: { ofs?: string[] }) => Promise<import('./stockLona.js').StockCodigo[]>,
+ *   grupoLona?: (codigo: string, descripcion?: string, ancho?: number | null) => Promise<import('./stockLona.js').GrupoLona | undefined> },
  * coordina: { enviarStockLona: (datos: DatosStockLona) => Promise<{ ok: boolean, motivo?: string }> }, now?: () => Date,
  * resolverTela?: (codigo: string) => Promise<string | undefined>,
  * articulosVenta?: (pedido: string) => Promise<{ of: string, codigo?: string | null, generico?: string | null, subfamilia?: string | null }[]> }} ServiciosStockLona */
 
-const sinConsulta = () => ({ consultado: null, faltas: [], avisos: [] });
+const sinConsulta = () => ({ consultado: null, faltas: [], dudas: [], avisos: [] });
 const avisoConsulta = 'No se pudo comprobar el stock de lona.';
 const avisoEnvio = 'No se pudo avisar a CoordinaOT del stock de lona.';
 
@@ -80,10 +81,15 @@ async function consultarStock({ lineas, lonasAprobadas, stock, resolverTela, art
   try {
     if (!lonas.length) return { lonas, ...sinConsulta(), consultado: propuesta.length || aprobadas.length ? now().toISOString() : null };
     stock.reset();
-    const disponible = await stock.getStock(lonas.map(lona => lona.codigo), { ofs: ofsStock ?? ofs });
+    // La misma lona de otras marcas cuenta (domain/lonaSimple.js); las más anchas, solo si se decide no avisar.
+    const grupos = await Promise.all(lonas.map(async lona =>
+      (await stock.grupoLona?.(lona.codigo, lona.descripcion, resolveFabric(lona.codigo)?.width ?? null))
+        ?? { nombre: null, mismoAncho: [lona.codigo], masAnchas: [] }));
+    const codigos = [...new Set(grupos.flatMap(g => [...g.mismoAncho, ...g.masAnchas.map(a => a.codigo)]))];
+    const disponible = await stock.getStock(codigos, { ofs: ofsStock ?? ofs });
     const consultado = now().toISOString();
-    const faltas = faltasLona(lonas, disponible);
-    return { lonas, consultado, faltas, avisos: textoAvisoStock(faltas) };
+    const { faltas, dudas } = evaluarStockLona(lonas, disponible, grupos);
+    return { lonas, consultado, faltas, dudas, avisos: textoAvisoStock(faltas) };
   } catch {
     return { ...sinConsulta(), lonas: [], avisos: [avisoConsulta] };
   }
@@ -101,7 +107,7 @@ async function informarStock(pedido, { lonas, consultado, faltas, avisos }, coor
       return { ...fila, ofs: ofs.length ? ofs : [...pedido.ofs] };
     };
     // Cada falta lleva la cuenta (stock − reservado por otros = disponible) para el correo de CoordinaOT.
-    const datos = { ...pedido, lonas: lonas.map(ajustar), faltas: faltas.map(ajustar), consultado };
+    const datos = { ...pedido, lonas: lonas.map(ajustar), faltas: faltas.map(faltaParaCoordina).map(ajustar), consultado };
     // Un fallo al avisar tampoco invalida la comprobación ni los archivos generados.
     let motivo;
     try {
@@ -117,19 +123,37 @@ async function informarStock(pedido, { lonas, consultado, faltas, avisos }, coor
   return { consultado, faltas, avisos };
 }
 
+/** Avisar: las dudas de ancho pasan a ser faltas. No avisar: se dice de qué bobina se cortará.
+ * @param {Awaited<ReturnType<typeof consultarStock>>} consulta @param {boolean} avisar */
+function decidirAncho(consulta, avisar) {
+  const { dudas = [], ...resto } = consulta;
+  if (!dudas.length) return resto;
+  if (avisar) {
+    const faltas = [...resto.faltas, ...dudas.map(({ masAncha: _, ...falta }) => falta)];
+    return { ...resto, faltas, avisos: textoAvisoStock(faltas) };
+  }
+  return { ...resto, avisos: [...resto.avisos, ...textoAnchoSinAviso(dudas)] };
+}
+
 /** @param {PedidoStockLona & Parameters<typeof consultarStock>[0]} opciones */
 export async function comprobarStockLona({ pedido, entrega, cliente, ofs, consultadoPor, origen, ...opciones }) {
-  const consulta = await consultarStock(opciones, ofs, cliente, pedido);
+  // Sin nadie a quien preguntar (plano manual), una bobina más ancha no quita el aviso.
+  const consulta = decidirAncho(await consultarStock(opciones, ofs, cliente, pedido), true);
   return informarStock({ pedido, entrega, cliente, ofs, consultadoPor, ...(origen && { origen }) }, consulta, opciones.coordina);
 }
 
 /** Consulta antes de publicar las reservas. Solo deja constancia en CoordinaOT al cerrar la entrega.
  * @param {Parameters<typeof pasarAProduccion>[0]} pasos
- * @param {(PedidoStockLona & Parameters<typeof consultarStock>[0]) | undefined} opciones */
+ * @param {(PedidoStockLona & Parameters<typeof consultarStock>[0] & { avisarAncho?: unknown }) | undefined} opciones */
 export async function pasarAProduccionConStock(pasos, opciones) {
   if (!opciones) return pasarAProduccion(pasos);
-  const { pedido, entrega, cliente, ofs, consultadoPor, ...servicios } = opciones;
-  const consulta = await consultarStock(servicios, ofs, cliente, pedido);
+  const { pedido, entrega, cliente, ofs, consultadoPor, avisarAncho, ...servicios } = opciones;
+  const comprobada = await consultarStock(servicios, ofs, cliente, pedido);
+  // No llega en su ancho pero sí en uno más ancho: lo decide quien pasa el pedido (Iván, 26/11/2026).
+  if (comprobada.dudas.length && typeof avisarAncho !== 'boolean') {
+    return { status: 409, cuerpo: { needsAnchoDecision: true, error: 'Hay lona de otro ancho', detalles: textoDudasAncho(comprobada.dudas) } };
+  }
+  const consulta = decidirAncho(comprobada, avisarAncho !== false);
   const resultado = await pasarAProduccion(pasos);
   if (resultado.status !== 200) return resultado;
   const { avisos, ...stockLona } = await informarStock({ pedido, entrega, cliente, ofs, consultadoPor }, consulta, servicios.coordina);

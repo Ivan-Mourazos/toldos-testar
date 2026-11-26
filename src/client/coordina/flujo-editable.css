@@ -53,3 +53,7 @@
 .entregas-linea strong { color: var(--text); }
 .entregas-pedido summary { cursor: pointer; font-size: 12px; color: var(--text-muted); margin-top: 4px; }
 .aviso-chip { padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--text); background: var(--surface-2); border: 1px solid var(--tramo-ajustado); }
+/* Desglose de la lona: nombre simple, cada marca con su stock y si llega con una bobina. */
+.lonas-entrega .lona-desglose { display: flex; flex-direction: column; gap: 1px; margin-top: 4px; }
+.lonas-entrega .lona-desglose small { font-variant-numeric: tabular-nums; }
+.lonas-entrega .lona-desglose-nombre { font-weight: 700; }

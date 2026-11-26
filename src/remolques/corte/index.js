@@ -18,6 +18,8 @@ const TIRA_MAX_EMPATADA = 300;
 // Material resumido (Iván, 20/10/2026): LONA PVC, el gramaje del paréntesis (el de verdad; si no hay, el de
 // g/m²) y el color con su RAL. «LONA NS86 2L 630 g/m² :GRIS CLARO 7038 :250 AN (580)» → «LONA PVC 580 GRIS CLARO 7038».
 export function resumirMaterial(material) {
+  // El nombre simple («PVC 580 AZUL 5015 · 250 AN») ya lo dice todo: fuera el ancho.
+  if (/^PVC \d{3}(?!\d)/i.test(String(material ?? '').trim())) return `LONA ${String(material).trim().replace(/\s*·\s*\d{3}\s*AN$/i, '')}`;
   const partes = String(material ?? '').split(':').map((s) => s.trim());
   const gramaje = /\((\d{3,4})\)/.exec(material)?.[1] ?? /(\d{3,4})\s*(?:G\/M|GR|$)/i.exec(partes[0])?.[1] ?? /(\d{3,4})/.exec(partes[0])?.[1] ?? '';
   const color = (partes[1] ?? '').replace(/\bRAL\b/gi, '').replace(/\s+/g, ' ').trim().toUpperCase();

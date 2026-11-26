@@ -6,7 +6,7 @@ import { FabricStockCodeLine } from '../components/FabricStockLine';
 import { enUnRenglon, useAltoAjustado } from '../hooks/useAltoAjustado';
 import { useFloatingMenu } from '../hooks/useFloatingMenu';
 import { InputDecimal } from './InputDecimal';
-import { codigoStockMaterial } from './stockMaterial';
+import { codigoStockMaterial, materialElegido, opcionesSimples } from './stockMaterial';
 
 // Los campos del formulario de remolques (los de `campos.tsx` de la web de remolques) hechos con
 // el marcado y las clases de los campos de las tarjetas de toldo: `field`, `select-field` /
@@ -275,20 +275,23 @@ export function CampoMaterial(props: {
   const menu = useRef<HTMLDivElement>(null);
   const area = useRef<HTMLTextAreaElement>(null);
   const codigo = codigoStockMaterial(props.value, props.opciones);
+  // Una opción por lona («PVC 580 AZUL 5015 · 250 AN»), con las marcas que engloba y su stock (Iván, 26/11/2026).
+  const simples = useMemo(() => opcionesSimples(props.opciones), [props.opciones]);
   useAltoAjustado(area, props.value);
   const labelId = useId();
   const listaId = useId();
   const errorId = useId();
   const estiloMenu = useFloatingMenu(abierto, raiz, { maxHeight: 290, preferredWidth: 460 });
-  const material = props.opciones.find((o) => o.nombre === props.value);
+  const material = materialElegido(props.value, props.opciones);
   const visibles = useMemo(() => {
     // Al abrir una bobina ya elegida se enseña el catálogo entero, para cambiarla al momento;
     // al escribir, se filtra por todas las palabras.
     const consulta = material ? '' : normalizar(props.value).trim();
     const palabras = consulta.split(/\s+/).filter(Boolean);
-    return [...props.opciones]
+    return [...simples]
       .filter((o) => {
-        const texto = normalizar(`${o.nombre} ${o.codigoBobina}`);
+        // También se encuentra por la marca o el código de cualquiera de sus bobinas.
+        const texto = normalizar([o.nombre, o.codigoBobina, ...(o.marcas ?? []).flatMap(m => [m.nombre, m.codigoBobina])].join(' '));
         return palabras.every((palabra) => texto.includes(palabra));
       })
       .sort((a, b) => {
@@ -297,7 +300,7 @@ export function CampoMaterial(props: {
         return stockB - stockA || a.nombre.localeCompare(b.nombre, 'es');
       })
       .slice(0, 10);
-  }, [material, props.opciones, props.value]);
+  }, [material, simples, props.value]);
 
   useEffect(() => {
     if (!abierto) return undefined;
@@ -390,15 +393,22 @@ export function CampoMaterial(props: {
                 type="button"
                 className={`fabric-option${indice === indiceActivo ? ' is-active' : ''}`}
                 role="option"
-                aria-selected={opcion.nombre === props.value}
+                aria-selected={opcion.nombre === material?.nombre}
                 onMouseDown={(evento) => evento.preventDefault()}
                 onMouseEnter={() => setIndiceActivo(indice)}
                 onClick={() => elegir(opcion)}
               >
-                <span><strong>{opcion.nombre}</strong><small>{opcion.codigoBobina}</small></span>
+                <span>
+                  <strong>{opcion.nombre}</strong>
+                  {opcion.marcas ? opcion.marcas.map((marca) => (
+                    <small key={marca.codigoBobina} className="rem-material-marca" title={marca.nombre}>
+                      {marca.codigoBobina} · {marca.stockArzua == null ? 'sin dato' : `${formatoStock(Number(marca.stockArzua))} m`}
+                    </small>
+                  )) : <small>{opcion.codigoBobina}</small>}
+                </span>
                 <span className={`fabric-option-meta${sinStock ? ' rem-sin-stock' : ''}`}>
                   {opcion.stockArzua == null ? 'Sin dato' : `Stock · ${formatoStock(Number(opcion.stockArzua))}`}
-                  {opcion.nombre === props.value && <Check aria-hidden="true" />}
+                  {opcion.nombre === material?.nombre && <Check aria-hidden="true" />}
                 </span>
               </button>
             );
@@ -410,9 +420,12 @@ export function CampoMaterial(props: {
       )}
       <MensajeError id={errorId} mensaje={props.error} />
       {props.delCliente && <MarcaDelCliente />}
-      {/* Sin código de RPS (texto manual) no hay stock que enseñar: nada. */}
-      <FabricStockCodeLine code={codigo} neededMl={props.metrosTela ?? 0} ofs={props.ofsPedido}
-        prefix={<><strong className="rem-material-codigo">{codigo}</strong>{' · '}</>} />
+      {/* Sin código de RPS (texto manual) no hay stock que enseñar: nada. Con un nombre simple, una
+          línea por marca: cada pedido sale de una sola bobina, así que se ve cuál llega. */}
+      {(material?.marcas?.map((marca) => marca.codigoBobina) ?? [codigo]).map((codigoMarca) => (
+        <FabricStockCodeLine key={codigoMarca || 'manual'} code={codigoMarca} neededMl={props.metrosTela ?? 0} ofs={props.ofsPedido}
+          prefix={<><strong className="rem-material-codigo">{codigoMarca}</strong>{' · '}</>} />
+      ))}
     </div>
   );
 }

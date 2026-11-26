@@ -6,7 +6,7 @@ import remolque from './remolques/corte/__fixtures__/AR2605132.json';
 import toldo from './domain/corteLona/fixtures/revision-AR2604784.json';
 import { pedidoEntrega } from './entregas.js';
 import { materialesReserva } from './materialesEntrega.js';
-import { esLonaAcrilica, faltasLona, lineasLonaPuertas, lineasLonaRemolques, lineasLonaToldos, necesidadesLona, textoAvisoStock } from './stockLona.js';
+import { esLonaAcrilica, evaluarStockLona, faltaParaCoordina, faltasLona, lineasLonaPuertas, lineasLonaRemolques, lineasLonaToldos, necesidadesLona, textoAvisoStock } from './stockLona.js';
 
 describe('necesidades de lona', () => {
   it('suma los rollos por código, reúne sus OF y redondea al final', () => {
@@ -179,4 +179,50 @@ it('artículos de venta incluidos en reservas', async () => {
   ])).toEqual([{ of: '0290002', codigo: 'DUCHAMOVIL' }]);
   const lonas = [{ codigo: 'A', ofs: ['1'] }, { codigo: 'B', ofs: ['1', '2'] }, { codigo: 'C', ofs: [] }];
   expect(fueraDeReservas(lonas, ['1']).map(l => l.codigo)).toEqual(['B', 'C']);
+});
+
+describe('una sola bobina por lona', () => {
+  const necesidad = (codigo, ml, ofs = ['0234001']) => ({ codigo, descripcion: codigo, ml, ofs, origen: /** @type {const} */ ('corte') });
+  const grupo = { nombre: 'PVC 580 AZUL 5015 · 250 AN', mismoAncho: ['ALPHAAZ15P250', 'NS86AZ15P250'], masAnchas: [{ codigo: 'ALPHAAZ15P300', ancho: 300 }] };
+  const stock = (code, disponible, mayor, extra = {}) => ({ code, metros: disponible, reservado: 0, reservadoPropio: 0, disponible, mayorBobinaDisponible: mayor, ...extra });
+
+  it('llega si una bobina de cualquier marca del mismo ancho tiene sitio para todo', () => {
+    expect(evaluarStockLona([necesidad('ALPHAAZ15P250', 40)], [stock('ALPHAAZ15P250', 36, 24), stock('NS86AZ15P250', 243, 65)], [grupo]))
+      .toEqual({ faltas: [], dudas: [] });
+  });
+
+  it('es falta si en total llega pero ninguna bobina sola, y dice la mayor', () => {
+    const { faltas } = evaluarStockLona([necesidad('ALPHAAZ15P250', 40)], [stock('ALPHAAZ15P250', 36, 24), stock('NS86AZ15P250', 30, 20)], [grupo]);
+    expect(faltas).toEqual([{ codigo: 'ALPHAAZ15P250', descripcion: 'PVC 580 AZUL 5015 · 250 AN', necesita: 40,
+      stock: 66, reservado: 0, reservadoPropio: 0, disponible: 66, bobinaMayor: 24, ofs: ['0234001'] }]);
+    expect(textoAvisoStock(faltas)[0]).toBe('No llega ninguna bobina de ALPHAAZ15P250 PVC 580 AZUL 5015 · 250 AN: la mayor tiene 24,00 m '
+      + 'y necesita 40,00 m. En total hay 66,00 m, pero no se pueden juntar bobinas ni marcas.');
+  });
+
+  it('a CoordinaOT le manda la bobina mayor como disponible, con la explicación', () => {
+    const [falta] = evaluarStockLona([necesidad('ALPHAAZ15P250', 40)], [stock('ALPHAAZ15P250', 66, 24)], [grupo]).faltas;
+    expect(faltaParaCoordina(falta)).toEqual({ codigo: 'ALPHAAZ15P250', necesita: 40, disponible: 24, ofs: ['0234001'],
+      descripcion: 'PVC 580 AZUL 5015 · 250 AN — ninguna bobina sola llega (la mayor, 24 m; en total 66 m)' });
+    const sinStock = { codigo: 'X', descripcion: 'x', necesita: 5, stock: 0, reservado: 0, reservadoPropio: 0, disponible: 0, ofs: [] };
+    expect(faltaParaCoordina(sinStock)).toEqual(sinStock);
+  });
+
+  it('junta en una las lonas que son la misma, aunque se pidieran con marcas distintas', () => {
+    const { faltas } = evaluarStockLona(
+      [necesidad('ALPHAAZ15P250', 30, ['0234001']), necesidad('NS86AZ15P250', 30, ['0234002'])],
+      [stock('ALPHAAZ15P250', 40, 40), stock('NS86AZ15P250', 50, 50)], [grupo, grupo]);
+    expect(faltas).toEqual([expect.objectContaining({ necesita: 60, ofs: ['0234001', '0234002'], bobinaMayor: 50 })]);
+  });
+
+  it('si solo llega una bobina más ancha, es una duda y no una falta', () => {
+    const { faltas, dudas } = evaluarStockLona([necesidad('ALPHAAZ15P250', 40)],
+      [stock('ALPHAAZ15P250', 10, 10), stock('ALPHAAZ15P300', 65, 65)], [grupo]);
+    expect(faltas).toEqual([]);
+    expect(dudas).toEqual([expect.objectContaining({ codigo: 'ALPHAAZ15P250', masAncha: { codigo: 'ALPHAAZ15P300', ancho: 300, bobina: 65 } })]);
+  });
+
+  it('sin grupo, cada lona va sola como antes', () => {
+    expect(evaluarStockLona([necesidad('A', 5)], [stock('A', 10, 10), stock('B', 50, 50)]).faltas).toEqual([]);
+    expect(faltasLona([necesidad('A', 20)], [stock('A', 30, 10)])).toEqual([expect.objectContaining({ codigo: 'A', bobinaMayor: 10 })]);
+  });
 });

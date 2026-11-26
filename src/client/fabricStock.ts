@@ -86,3 +86,29 @@ const metersFormat = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 1, 
 function meters(value: number) {
   return metersFormat.format(value);
 }
+
+// Una lona y sus marcas del mismo ancho (GET /api/catalog/fabrics/grupo). Cada pedido sale de una
+// sola bobina (Iván, 26/11/2026): llega si alguna bobina sola tiene sitio, no por el total. Lo usan
+// Planos a corte y la ventana de lonas al generar.
+export interface GrupoLonaStock { nombre: string | null; mismoAncho: string[]; masAnchas: { codigo: string; ancho: number }[] }
+
+export function resumenGrupoLona(codigo: string, grupo: GrupoLonaStock | null, stocks: Record<string, FabricStock>, necesita: number | null) {
+  const marcas = (grupo?.mismoAncho ?? [codigo]).filter((c) => stocks[c]).map((c) => stocks[c]);
+  const disponible = Math.round(marcas.reduce((total, s) => total + s.disponible, 0) * 10) / 10;
+  const mejor = [...marcas].sort((a, b) => b.mayorBobinaDisponible - a.mayorBobinaDisponible)[0];
+  const mayor = mejor?.mayorBobinaDisponible ?? 0;
+  const ancha = necesita === null || mayor >= necesita ? undefined : (grupo?.masAnchas ?? [])
+    .map((a) => ({ ...a, bobina: stocks[a.codigo]?.mayorBobinaDisponible ?? 0 }))
+    .filter((a) => a.bobina >= necesita).sort((a, b) => a.ancho - b.ancho || b.bobina - a.bobina)[0];
+  let veredicto: { texto: string; llega: boolean } | null = null;
+  if (necesita !== null) {
+    veredicto = mayor >= necesita
+      ? { llega: true, texto: `✔ Llega con una bobina${marcas.length > 1 && mejor ? ` de ${mejor.code}` : ''}` }
+      : { llega: false, texto: ancha
+        ? `No llega ninguna bobina de este ancho; hay una de ${ancha.ancho} AN con ${meters(ancha.bobina)} m (${ancha.codigo})`
+        : disponible >= necesita
+          ? `No llega: ninguna bobina sola tiene ${meters(necesita)} m (la mayor, ${meters(mayor)} m)`
+          : `No llega: faltan ${meters(Math.round((necesita - disponible) * 100) / 100)} m` };
+  }
+  return { marcas, disponible, mayor, mejor, ancha, veredicto };
+}
