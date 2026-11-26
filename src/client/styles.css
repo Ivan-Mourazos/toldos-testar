@@ -1985,6 +1985,7 @@ textarea:focus {
 
 .fabric-option strong { font-size: 11px; }
 .fabric-option small { color: var(--text-muted); font-size: 10px; }
+.fabric-option .fabric-option-marca { display: block; font-family: var(--font-mono), monospace; }
 .fabric-option-meta {
   align-items: center;
   display: flex;

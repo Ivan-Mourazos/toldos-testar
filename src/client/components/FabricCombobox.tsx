@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import { Check, Search, X } from 'lucide-react';
 import { fabricSelectionLabel, resolveFabric, serializeFabricSelection } from '../../domain/fabricCatalog.js';
 import { useFloatingMenu } from '../hooks/useFloatingMenu';
+import { useFabricStocks } from '../hooks/useFabricStock';
+import { agruparTelas } from '../agruparTelas';
 import { useSalidaAnimada } from '../hooks/useSalidaAnimada';
 import { ReadPair, useReadMode } from './ReadMode';
 import { NumberField } from './NumberField';
@@ -48,6 +50,11 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
   const menuRef = useRef<HTMLDivElement>(null);
   const listId = useId();
   const menuStyle = useFloatingMenu(open, rootRef, { maxHeight: 290, preferredWidth: 520 });
+  // En todos los buscadores de tela se elige la lona, no la marca: las marcas de la misma lona
+  // salen juntas con su stock y se coge la que más tiene, como en remolques (Iván, 26/11/2026).
+  const estadosStock = useFabricStocks(open && !loading ? options.map(o => o.code) : []);
+  const stocks = Object.fromEntries(Object.entries(estadosStock).flatMap(([c, e]) => e.status === 'ready' ? [[c, e.stock.disponible]] : []));
+  const grupos = agruparTelas(options, stocks);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -155,7 +162,7 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
             if (event.key === 'Escape' && open) { event.preventDefault(); setOpen(false); }
             if (event.key === 'Enter' && open) {
               event.preventDefault();
-              if (!loading && options[0]) choose(options[0]);
+              if (!loading && grupos[0]) choose(grupos[0].marcas[0]);
             }
           }}
         />
@@ -184,15 +191,29 @@ export function FabricCombobox({ label, value, onChange, placeholder = 'Código,
           role="listbox" aria-hidden={!open} inert={!open} onAnimationEnd={alTerminar}>
           {loading && <div className="fabric-option-state">Buscando en RPSNext…</div>}
           {!loading && options.length === 0 && <div className="fabric-option-state">Sin coincidencias</div>}
-          {!loading && options.map((option) => (
+          {!loading && grupos.map(({ clave, nombre, marcas, stock }) => nombre ? (
+            <button key={clave} type="button" className="fabric-option" role="option" onClick={() => choose(marcas[0])}>
+              <span>
+                <strong>{nombre}</strong>
+                {marcas.map(m => <small key={m.code} className="fabric-option-marca" title={m.description}>
+                  {m.code}{estadosStock[m.code]?.status === 'ready' ? ` · ${formatoM(stocks[m.code])} m` : ''}
+                </small>)}
+              </span>
+              <span className="fabric-option-meta">{stock == null ? '' : `Stock · ${formatoM(stock)} m`}<Check aria-hidden="true" /></span>
+            </button>
+          ) : marcas.map((option) => (
             <button key={option.code} type="button" className="fabric-option" role="option" onClick={() => choose(option)}>
               <span><strong>{option.code}</strong><small>{option.description}</small></span>
-              <span className="fabric-option-meta">{option.width ? `${option.width.toLocaleString('es-ES')} cm` : 'Ancho sin indicar'}<Check aria-hidden="true" /></span>
+              <span className="fabric-option-meta">{estadosStock[option.code]?.status === 'ready'
+                ? `Stock · ${formatoM(stocks[option.code])} m`
+                : option.width ? `${option.width.toLocaleString('es-ES')} cm` : 'Ancho sin indicar'}<Check aria-hidden="true" /></span>
             </button>
-          ))}
+          )))}
         </div>,
         portal ?? document.body
       )}
     </div>
   );
 }
+
+const formatoM = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits: 1 });
