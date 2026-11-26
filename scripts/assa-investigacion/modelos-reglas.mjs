@@ -1,8 +1,9 @@
 // Geometría de las copias locales. No completa bordes abiertos ni gira piezas.
+import { codigosAssa as codigos } from '../../src/assa/codigos.js';
+
+export { codigos };
+
 const redondear = (n, d = 6) => Number(n.toFixed(d));
-export function codigos(texto) {
-  return [...new Set([...String(texto).matchAll(/\b(?:H?[0O]K|H?7A)\s*-?\s*(4\d{5})\s*-\s*(\d{4})(?!\d)/gi)].map(m => `${m[1]}-${m[2]}`))];
-}
 export const esCorte = p => !p.deCota && /^(?:corte|cortes\s*-?\s*lona|DISCO[12]|CUTTER)$/i.test(p.capa);
 function cajaPuntos(pts) {
   return { x0: Math.min(...pts.map(p => p[0])), x1: Math.max(...pts.map(p => p[0])), y0: Math.min(...pts.map(p => p[1])), y1: Math.max(...pts.map(p => p[1])) };

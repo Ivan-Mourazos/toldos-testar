@@ -52,16 +52,18 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados, { pal
   // Como los cortes mandados (LOTE 31-10): una zona por palet con «PALET n» enorme; dentro, una fila por referencia con el
   // número de su línea de pedido (RPS) en grande, y debajo todo lo que lleva el palet.
   for (const [palet, ls] of [...Map.groupBy(lineas.filter(l => l.estado === 'validado' || l.palet), l => l.palet ?? 0)].sort((a, b) => (a[0] || 1e9) - (b[0] || 1e9))) {
-    const deCorte = ls.filter(l => l.estado === 'validado').sort(orden);
+    const materialDe = l => l.calculo.material.nombre;
+    const deCorte = ls.filter(l => l.estado === 'validado')
+      .sort((a, b) => materialDe(a).localeCompare(materialDe(b), 'es') || orden(a, b));
     const filas = [...Map.groupBy(deCorte, l => l.codigo).values()].map(grupo => ({ grupo, programas: [] }));
     for (const fila of filas) {
       const cantidad = fila.grupo.reduce((n, l) => n + l.cantidad, 0), g = { ...fila.grupo[0].calculo, cantidadPedida: cantidad };
       fila.programas.push(...generarProgramas(g, { sueltas: sueltas[fila.grupo[0].codigo] === true }).map(p => ({ ...p, codigo: fila.grupo[0].codigo, palet })));
     }
     // Un canalón por unidad, entero o dos mitades (taller, 28/10/2026). Las referencias del palet con el mismo juego de la
-    // plantilla comparten bloques («en los cortes se pueden mezclar»); van en la fila de la primera que lo lleva.
+    // plantilla y material comparten bloques; van en la fila de la primera que lo lleva.
     let grupoCanalon = 0;
-    for (const conJuego of Map.groupBy(deCorte.filter(l => l.canalon), l => firmaCanalon(l.canalon)).values()) {
+    for (const conJuego of Map.groupBy(deCorte.filter(l => l.canalon), l => JSON.stringify([materialDe(l), firmaCanalon(l.canalon)])).values()) {
       grupoCanalon++;
       const canalon = conJuego[0].canalon, juegos = juegosCanalon(conJuego.reduce((s, l) => s + l.cantidad, 0), canalon);
       const refs = [...new Set(conJuego.map(l => l.CodArticle))], fila = filas.find(f => f.grupo.includes(conJuego[0]));
@@ -84,6 +86,11 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados, { pal
       const y = -i * PASO_FILA;
       let x = x0;
       for (const p of fila.programas) {
+        // Los certificados reproducen el DXF guardado con el criterio anterior.
+        if (!certificados) {
+          p.material = materialDe(fila.grupo[0]);
+          p.entidades.textos.push({ capa: 'texto', x: 100, y: p.anchoOcupadoMm + 720, h: ROTULO, literal: true, valor: p.material });
+        }
         p.x = x; p.y = y; x += p.largoMm + HUECO;
         unirEntidades(entidades, desplazarEntidades(p.entidades, p.x, p.y));
         programas.push(p);
@@ -112,15 +119,16 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados, { pal
   // El papel del cortador (Iván, 28/10/2026: «solo le llega el papel donde le ponen las cantidades que debe cortar de
   // cada referencia, y debe coincidir con las cantidades que salen en el corte»): sale de los mismos programas del corte,
   // con sus repeticiones, por palet; y se comprueba contra lo que pide RPS.
-  const cortador = [...Map.groupBy(programas, p => `${p.palet ?? 0}|${p.codigo}|${p.grupoCanalon ?? ''}`).values()].map(ps => {
+  const cortador = [...Map.groupBy(programas, p => JSON.stringify([p.palet, p.material, p.codigo, p.grupoCanalon])).values()].map(ps => {
     const p0 = ps[0], canalon = p0.tipo === 'canalon';
     const unidades = ps.reduce((s, p) => s + (canalon ? p.canalones : p.panos) * p.repeticiones, 0);
-    const pedidas = validadas.filter(l => (l.palet ?? 0) === (p0.palet ?? 0) && (canalon ? p0.referencias.includes(l.CodArticle) : l.codigo === p0.codigo))
+    const pedidas = validadas.filter(l => (l.palet ?? 0) === (p0.palet ?? 0) && (!p0.material || l.calculo.material.nombre === p0.material) &&
+      (canalon ? p0.referencias.includes(l.CodArticle) : l.codigo === p0.codigo))
       .reduce((s, l) => s + l.cantidad, 0);
     const como = ps.map(p => canalon ? `x${p.repeticiones} pila de ${p.enteros} ${p.enteros === 1 ? 'entero' : 'enteros'} + ${2 * p.parejas} mitades`
       : `x${p.repeticiones} de ${p.unidos ? `${p.filas} ${p.filas === 1 ? 'fila' : 'filas'} de 2 unidos` : `${p.panos} ${p.panos === 1 ? 'paño' : 'paños'}`}`);
     return { palet: p0.palet ?? null, referencia: canalon ? p0.codigo : validadas.find(l => l.codigo === p0.codigo)?.CodArticle ?? p0.codigo,
-      referencias: canalon ? p0.referencias : undefined, unidades, como, pedidas, cuadra: unidades === pedidas };
+      referencias: canalon ? p0.referencias : undefined, material: p0.material, unidades, como, pedidas, cuadra: unidades === pedidas };
   }).sort((a, b) => (a.palet ?? 1e9) - (b.palet ?? 1e9) || String(a.referencia).localeCompare(String(b.referencia)));
   return { nombre, fecha, sueltas: { ...sueltas }, lineas: lineas.map(({ calculo: _calculo, ...l }) => l), programas, reparto, entidades, cortador,
     avisos: sinPalet ? [`Falta el palet de ${sinPalet} ${sinPalet === 1 ? 'línea' : 'líneas'}: ponlo del correo de Producción.`] : [],

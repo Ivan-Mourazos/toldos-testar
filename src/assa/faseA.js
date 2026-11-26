@@ -16,14 +16,20 @@ export const entidadesVacias = () => ({ lineas: [], arcos: [], circulos: [], tex
 export const MATERIAL_COMBURSA = { nombre: 'PLASTEL 8800 TE62 negra', anchoRolloMm: 2040, permitirEmpates: false, permitirGiro: false };
 
 /** Lee las medidas de RPS y calcula el paño teórico para poder identificar el dibujo adecuado. */
-export function calcularFamilia(l, { nkValidado = false, terminadoMm, indiceCuerpo = 0, unidos = false, soloMedidas = false } = {}) {
+export function calcularFamilia(l, { nkValidado = false, terminadoMm, indiceCuerpo = 0, unidos = false, soloMedidas = false,
+  material = MATERIAL_COMBURSA } = {}) {
   const codigo = codigoAssa(l.CodArticle), familia = codigo?.slice(0, 6);
   const motivos = [], avisos = [], medidas = {};
   const texto = String(l.descripcion ?? '').toUpperCase().replace(/NW(?=\s*=?\s*\d)/g, 'NB');
   if (!['420102', '420148', '420150', '430125', '430127', '430129', '430172'].includes(familia)) motivos.push('Familia sin regla contrastada: preparación a mano.');
   if (!String(l.of_ ?? '').trim()) motivos.push('Falta la OF de RPS.');
   if (!Number.isSafeInteger(l.cantidad) || l.cantidad <= 0) motivos.push('La cantidad de RPS debe ser un entero positivo.');
-  if (/\b(?:RED|BLUE|ROT|BLAU|ROJ[OA]|AZUL|WHITE|WEISS|BLANC[OA])\b|RAL\s*(?!9005\b)\d{4}/.test(texto)) motivos.push('Material o color distinto de PLASTEL negra: sin validación de material.');
+  const roja = material.color === 'roja';
+  const color = roja ? texto.replace(/\b(?:(?:RED|ROT|ROJ[OA])\b|RAL\s*3002\b)/g, '') : texto;
+  if (/\b(?:RED|BLUE|ROT|BLAU|ROJ[OA]|AZUL|WHITE|WEISS|BLANC[OA])\b|RAL\s*(?!9005\b)\d{4}/.test(color) ||
+    (roja && /\b(?:BLACK|NEGR[OA]|SCHWA(?:RZ?)?|RAL\s*9005)\b/.test(color))) {
+    motivos.push(`Material o color distinto de PLASTEL ${roja ? 'roja' : 'negra'}: sin validación de material.`);
+  }
   for (const m of texto.matchAll(/(NT|NB|NH|NK)\s*=?\s*(\d+(?:[.,]\d+)?)(\s*[+-]\s*\d+(?:[.,]\d+)?)?/g)) {
     const clave = m[1] === 'NK' && nkValidado ? 'NH' : m[1];
     const valor = Number(m[2].replace(',', '.'));
@@ -46,17 +52,17 @@ export function calcularFamilia(l, { nkValidado = false, terminadoMm, indiceCuer
   }
   const trazabilidad = { referencia: l.CodArticle, pedido: l.CodOrder, linea: l.IDOrderLine, of: l.of_, numeroLinea: l.NumLine };
   const resultado = { estado: 'a-mano', familia, codigo, motivos, avisos, medidas, trazabilidad, cantidadPedida: l.cantidad, unidos,
-    material: MATERIAL_COMBURSA };
+    material };
   if (motivos.length) return resultado;
   if (familia === '420150' && !soloMedidas) {
     const g = generarPanos420150({ ...l, descripcion: `NT${medidas.NT} NB${medidas.NB} NH${medidas.NH}` });
-    return { ...resultado, ...g, avisos, familia, codigo };
+    return { ...resultado, ...g, avisos, familia, codigo, material };
   }
   const { NB, NH, NT } = medidas;
   const margen = { '430172': 10, '420150': 2, '420148': 5 }[familia];
   const largo = esTecho(familia) ? NB + 53 : familia === '420102' ? NH - 190 : NB + 2 * NH + margen;
   const ancho = NT + (esTecho(familia) ? 91 : familia === '420148' ? 61 : 66);
-  if (ancho > 2040) return { ...resultado, motivos: ['La pieza no cabe en el rollo de 2040 mm sin girar ni empatar.'] };
+  if (ancho > material.anchoRolloMm) return { ...resultado, motivos: [`La pieza no cabe en el rollo de ${material.anchoRolloMm} mm sin girar ni empatar.`] };
   if (soloMedidas) return { ...resultado, estado: 'generado',
     terminadoMm: [largo - (esTecho(familia) ? 50 : 10), ancho - 66], pieza: { tipo: 'pano', medidasMm: [largo, ancho] } };
   const cuerpo = plantilla.cuerpos[codigo]?.[indiceCuerpo];
@@ -125,7 +131,7 @@ function pareja(pieza) {
 export function generarProgramas(g, { sueltas = false } = {}) {
   if (g.estado !== 'generado') return [];
   const ajustable = esTecho(g.familia) && g.medidas.NT === 600;
-  const capacidad = sueltas ? 1 : ajustable ? 3 : Math.min(3, Math.floor(2040 / g.pieza.medidasMm[1]));
+  const capacidad = sueltas ? 1 : ajustable ? 3 : Math.min(3, Math.floor(g.material.anchoRolloMm / g.pieza.medidasMm[1]));
   const porFila = vanUnidos(g) ? 2 : 1, total = g.cantidadPedida, juegos = Math.floor(total / (capacidad * porFila));
   const resto = total - juegos * capacidad * porFila;
   const cantidades = [[capacidad, porFila, juegos], [Math.floor(resto / porFila), porFila, 1], [resto % porFila, 1, 1]];

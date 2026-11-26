@@ -166,6 +166,13 @@ for (const [codigo, ref] of Object.entries(referencias)) {
   ref.materialBase = familiasPlastel.test(codigo) ? { ...MATERIAL_COMBURSA, fuente: 'docs/modelos/assa-combursa.md' } : null;
 }
 
+// Decisiones de taller por referencia, documentadas en el expediente del catálogo.
+referencia('430172-0010').corteComo = { codigo: '430172-0005', medidas: { NT: 900, NB: 3250, NH: 3200 } };
+referencia('430127-0023').motivoManual = 'Jaime tiene que confirmar las medidas: RPS indica NH para este techo.';
+referencia('420150-0133').materialBase = { ...MATERIAL_COMBURSA, nombre: 'PLASTEL roja', color: 'roja',
+  fuente: 'docs/modelos/assa-combursa-catalogo.md#respuestas-de-taller' };
+referencia('410130-0172').materiales = ['PLASTEL negra de 2040 mm', 'PVC 900 g negro', 'Lona de 3 mm'];
+
 const ordenar = o => Object.fromEntries(Object.entries(o).sort(([a], [b]) => a.localeCompare(b, 'es')));
 const tabla = o => '{\n' + Object.entries(ordenar(o)).map(([k, v]) => `    ${JSON.stringify(k)}: ${JSON.stringify(v)}`).join(',\n') + '\n  }';
 const catalogo = `{\n  "version": 1,\n  "plantillasCorte": ${tabla(fechas)},\n  "fuentes": ${tabla(fuentes)},\n  "referencias": ${tabla(referencias)},\n  "geometria": ${tabla(geometria)}\n}\n`;
