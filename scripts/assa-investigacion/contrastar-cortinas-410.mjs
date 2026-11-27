@@ -57,6 +57,12 @@ const casos = [
   ['410171-0001', 'tiras', 1, '2025/LOTE 23-08', 143617.27, 83040.99],
   ['410171-0001', 'tiras', 1, '2026/LOTE 07-11_', 163011.94, 46534.15],
   ['410171-0001', 'juegos de 8 solapas', 1, '2025/LOTE 23-08', 140108.88, 82173.04],
+  ['410182-0037', 'cuerpos', 1, '2025/LOTE 23-08', 136527.01783, 72608.83405],
+  ['410182-0037', 'tapas lisas', 2, '2025/LOTE 23-08', 141091.48120, 72738.83405, { unidades: 1 }],
+  ['410182-0037', 'cuerpos', 1, '2026/LOTE 25-07', 284389.26998, 191910.67594],
+  ['410182-0037', 'tapas lisas', 8, '2026/LOTE 25-07', 288953.73336, 192040.67594, { unidades: 4 }],
+  ['410182-0037', 'cuerpos', 1, '2023/LOTE 21-07', 146021.64256, 189525.45664, { bordeInferior: true }],
+  ['410182-0037', 'tapas lisas', 6, '2023/LOTE 21-07', 155353.37944, 188655.45664, { unidades: 3 }],
 ];
 
 const base = process.argv[2] ?? 'tmp/assa-410/cortes';
@@ -72,13 +78,16 @@ const adicionales = {
     descripcion: 'PLANE SC IN COMPLETE WIDTH WB400xWT300xB3350 OP=600 PVC BACLK, 2MM REINFORCED' },
   '410143-0007': { CodArticle: 'H0K410143-0007', of_: '0223600',
     descripcion: 'PLANE SC IN COMPLETE WIDTH WB300XWT300XB3000 OP=700 PVC BLACK, 2mm REINFORCED' },
+  '410182-0037': { CodArticle: 'H0K410182-0037', of_: '0230371',
+    descripcion: 'PLANE OBEN 2MM SC WB=300 WT=300 B=3100 SCHWARZ' },
 };
 for (const [ref, nombre, cantidad, fichero, x0, y0, opciones] of casos) {
   const linea = adicionales[ref] ?? lineas.find(l => l.CodArticle.endsWith(ref));
-  const programa = generarProgramasCortina(calcularDesdePlantilla({ ...linea, cantidad }), false)
+  const programa = generarProgramasCortina(calcularDesdePlantilla({ ...linea, cantidad: opciones?.unidades ?? cantidad }), false)
     .find(p => p.nombrePiezas.startsWith(nombre) && p.gruposDePiezas === cantidad);
   if (!modelos.has(fichero)) modelos.set(fichero, leerPlanoDxf(path.join(base, fichero + '.dxf')).modelo
-    .map(p => /^cutter$/i.test(p.capa) ? { ...p, capa: 'CUTTER' } : p));
+    .map(p => /^cutter$/i.test(p.capa) ? { ...p, capa: 'CUTTER' } :
+      p.capa === 'Disco' ? { ...p, capa: 'DISCO1' } : p));
   const caja = { x0, y0, x1: x0 + programa.largoMm, y1: y0 + programa.anchoOcupadoMm };
   const reales = operacionesEnPano(modelos.get(fichero), caja, [], { conBordes: true })
     // El recorte con orígenes redondeados puede arrastrar menos de 0,02 mm de la columna vecina.

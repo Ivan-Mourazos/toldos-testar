@@ -11,6 +11,8 @@ const rectangulo = (capa, largo, alto) => [
   [capa, 0, 0, 0, alto], [capa, largo, 0, largo, alto], [capa, 0, alto, largo, alto],
 ];
 const marcasLaterales = (x, fin, alturas = [300, 600]) => alturas.map(y => ['ROTULADOR', x, y, fin, y]);
+const agujerosDeCuerpo = (ancho, cantidad, y) =>
+  Array.from({ length: cantidad }, (_, i) => ['CUTTER', 400 + i * (ancho - 800) / (cantidad - 1), y, 20]);
 const grupo = (material, nombre, piezasPorGrupo, porTirada, medidasMm, operaciones, gruposPorUnidad = 1) =>
   ({ material, nombre, piezasPorGrupo, gruposPorUnidad, porTirada, medidasMm, operaciones });
 
@@ -92,7 +94,7 @@ function tapasEnFilas(columnas, ancho, filas) {
 function superiorConAbertura(ancho, { altoCuerpo, agujeros, porTirada, anchoTapa, tapasEnDosFilas, borde, fondo }) {
   const cuerpo = grupo(lona2, 'cuerpos', 1, porTirada, [ancho, altoCuerpo], [
     ...rectangulo('CUTTER', ancho, altoCuerpo),
-    ...Array.from({ length: agujeros }, (_, i) => ['CUTTER', 400 + i * (ancho - 800) / (agujeros - 1), 150, 20]),
+    ...agujerosDeCuerpo(ancho, agujeros, 150),
     ...[350, altoCuerpo - 350].flatMap(y => [['ROTULADOR', 0, y, 20, y], ['ROTULADOR', ancho - 20, y, ancho, y]]),
   ]);
   const tapas = tapasEnDosFilas
@@ -178,6 +180,16 @@ const modelos = {
     descripcion: 'PLANE LEFT SCHUPOEN/REINFORCED 2MM H=2600 SWB FRONT=400 SWB REAR=300 SWT=300 PKG STD 750MM, SIMILAR DRAW. OK410172BUT WITH SWB FRONT AND SWB REAR',
     fichero: 'OK410171.dwg', medidasMm: [2600, 1116.2], grupos: conMano('410171-0001', false),
   },
+  '410182-0037': {
+    descripcion: 'PLANE OBEN 2MM SC WB=300 WT=300 B=3100 SCHWARZ',
+    fichero: 'OK410182.dwg', medidasMm: [3100, 1000],
+    grupos: [
+      grupo({ ...lona2, anchoRolloMm: 1200 }, 'cuerpos', 1, 1, [3100, 1000], [
+        ...rectangulo('CUTTER', 3100, 1000), ...agujerosDeCuerpo(3100, 8, 250),
+      ]),
+      grupo(pvc, 'tapas lisas', 1, 8, [340, 370], rectangulo('DISCO1', 340, 370), 2),
+    ],
+  },
 };
 
 const pendientes = {
@@ -189,7 +201,6 @@ const pendientes = {
   '410143-0003': 'Los dos círculos pequeños del frente aparecen cortados en un lote y rotulados en otro. Falta confirmar la herramienta.',
   '410172-0104': 'Falta confirmar si la máquina separa las solapas de 1 mm o las marca para separarlas después.',
   '410173-0104': 'Falta confirmar si la máquina separa las solapas de 1 mm o las marca para separarlas después.',
-  '410182-0037': 'El maestro muestra dos tapas por cortina. Falta cuadrar la cantidad con las tapas del corte real.',
   '410241-0011': 'El plano marca D y el corte reciente marca D1 a D5. Falta confirmar qué rotular en las piezas.',
   '410242-0004': 'El plano marca C y el corte reciente marca C1 a C5. Falta confirmar qué rotular en las piezas.',
   '410245-0005': 'Falta contrastar el despiece y las marcas D1, D2 y D3 del PVC negro.',

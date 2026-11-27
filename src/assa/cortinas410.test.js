@@ -79,6 +79,24 @@ it('la 410143-0007 conserva los dos giros del frente corregido y cuenta las tapa
   expect(frentes[0].entidades.circulos).toHaveLength(4);
 });
 
+it('cuenta solo dos tapas lisas de PVC por cada cuerpo de la 410182-0037', () => {
+  const linea = { ...cortinas[0], CodArticle: 'H0K410182-0037', cantidad: 26,
+    descripcion: 'PLANE OBEN 2MM SC WB=300 WT=300 B=3100 SCHWARZ' };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [3100, 1000] });
+  expect(lote.cortador.map(f => [f.material, f.unidades, f.pedidas, f.cuadra])).toEqual([
+    ['Lona 2 mm', 26, 26, true], ['PVC 900 g negro', 52, 52, true],
+  ]);
+  const [cuerpo, llena, resto] = lote.programas;
+  expect(cuerpo.anchoRolloMm).toBe(1200);
+  expect(cuerpo.entidades.circulos).toHaveLength(8);
+  expect(cuerpo.entidades.circulos.every(c => c.capa === 'CUTTER' && c.y === 250 && c.r === 20)).toBe(true);
+  expect([llena, resto].map(p => [p.piezas, p.repeticiones, p.anchoOcupadoMm]))
+    .toEqual([[8, 6, 2960], [4, 1, 1480]]);
+  expect([llena, resto].every(p => p.entidades.circulos.length === 0 &&
+    p.entidades.lineas.every(l => l.capa === 'DISCO1'))).toBe(true);
+});
+
 it('corta las cuatro cortinas del 07-11 y cuenta cada pieza por material y palet', () => {
   const lote = prepararLote(fecha, cortinas, {}, undefined, { palets });
   expect(lote.aMano).toBe(0);

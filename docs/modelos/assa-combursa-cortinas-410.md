@@ -23,6 +23,7 @@ de corte tal como en los lotes. Las cortinas nunca se empatan para envarillar.
 | `410143-0002` | Lona 2 mm: 1 cuerpo de 3.350 × 1.100 con 8 agujeros Ø40 y 2 tapas de 440 × 370. Lona 3 mm: 1 frente de 3.350 × 575, con abertura y dos marcas Ø8. |
 | `410143-0007` | Lona 2 mm: 1 cuerpo de 3.000 × 1.000 con 7 agujeros Ø40 y 2 tapas de 340 × 370. Lona 3 mm: 1 frente de 3.000 × 675, con los hombros de 300 mm del maestro y dos marcas Ø8. Dos cuerpos o dos frentes por tirada cuando hay unidades suficientes. |
 | `410170-0001` y `410171-0001` | Lona 2 mm 2.100: 1 cuerpo de 2.600 × 1.116,2 y 2 tapas, una con 6 agujeros Ø40. Lona 1 mm 1.500: 1 tira de 2.600 × 416,2 y 12 solapas de 350 × 400, 8 lisas y 4 marcadas. Cuerpo y tira de mano derecha o izquierda según referencia. |
+| `410182-0037` | Lona 2 mm 1.200: 1 cuerpo de 3.100 × 1.000 con 8 agujeros Ø40. PVC negro 900 g 3.000: 2 tapas lisas de 340 × 370. Se cortan hasta 8 tapas por ancho de rollo con DISCO1. |
 
 Las variantes `0117` y `0175` están rotuladas en
 `COMBURSA (CRAWFORD)2.dwg`. Las dos manos tienen dibujo de familia
@@ -32,7 +33,7 @@ separada de las tiradas y multiplicadores antiguos.
 
 ## Contraste de máquina
 
-Se leyeron 49 bloques de DXF de maqcorte. Se contrastaron los contornos y
+Se leyeron 55 bloques de DXF de maqcorte. Se contrastaron los contornos y
 las marcas en ambos sentidos por herramienta, con tolerancia de 1 mm. Se
 admiten tramos consecutivos en un solo trazo o en varios cuando cubren el
 mismo recorrido. La cuenta por unidad y las incidencias de los rótulos
@@ -50,6 +51,7 @@ históricos están descritas en
 | `410143-0007` | 01-11-2025 (cuerpo y frente doble), 10-01-2026 (cuerpo y frente, sueltos y dobles, y tapas) | **Igual** con el maestro `HOK410143.dwg` y el corte rectificado del 10-01, dentro de 0,001 mm por herramienta frente a máquina. **Difiere** del 01-11 en el frente. El cuerpo coincide dentro de 0,001 mm, pero los hombros antiguos miden 400 mm y desplazan los cortes y las marcas 100 mm. Las OF `0221907` y `0223600` imputan lona negra de 2 y 3 mm. La segunda corresponde al pedido de rectificación del mismo muelle. |
 | `410170-0001` | 23-08-2025, 25-07 y 07-11 de 2026 | **Difiere** en un trazo de rotulador duplicado en el conjunto de 2 mm antiguo. Se dibuja una vez. Contorno y marcas hasta 0,005 mm. Se cortan 12 solapas por unidad, frente a las 22 del caso aislado de noviembre. |
 | `410171-0001` | 23-08-2025, 25-07 y 07-11 de 2026 | **Difiere** en el mismo trazo duplicado de rotulador. Contorno y marcas hasta 0,012 mm. Misma regla de 12 solapas, con el dibujo de la mano izquierda. |
+| `410182-0037` | 21-07-2023, 23-08-2025 y 25-07-2026 (cuerpo y tapas en los tres) | **Igual** en las piezas y herramientas según el maestro `OK410182.dwg`, dentro de 0,001 mm frente a máquina. La cantidad **difiere** en 2023, con 66 tapas para 31 cuerpos. En 2025 se ven 2 tapas y 1 cuerpo. En 2026 el cuerpo lleva «X26» y la malla tiene 52 tapas, tal como pide el maestro. Las OF imputan lona de 2 mm y resto de PVC. Los DXF rotulan ese PVC como negro de 900 g. |
 
 Para repetir el contraste, con las copias de máquina en
 `tmp/assa-410/cortes/<año>/`, ejecuta
@@ -146,6 +148,20 @@ SHA-256.
 \\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 10-01 - 20261127-084924
 ```
 
+## Prueba con el lote 15-08-2026
+
+Se regeneraron las 14 líneas de RPS. La prueba desglosó otra línea del
+lote, la `410170-0001`, por sus dos palets de expedición. Salieron 39
+programas y cuadraron las 24 filas del papel. La línea 13 de
+`AR.26.03453`, OF `0230371`, aporta al palet 3 los 26 cuerpos en lona de
+2 mm y 52 tapas de PVC negro de 900 g. Los tres programas de la cortina
+coinciden con el DXF extraído del DWG confirmado con ODA dentro de
+0,00047 mm. Se cotejaron por SHA-256 las copias de oficina y máquina.
+
+```text
+\\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 15-08 - 20261127-085456
+```
+
 ## Siguientes referencias a mano
 
 El SELECT de RPS entre 2023 y 2026 devolvió 216 líneas para 116 referencias
@@ -168,7 +184,6 @@ prepara a mano.
 | `410245-0005` | 4 / 55 | Las cuatro OF imputan ALPHA negro de 580 g. El 22-06-2024 identifica D1, D2 y D3. Falta contrastar cada contorno y marca con el maestro. |
 | `410129-0005` | 4 / 9 | Maestro y cortes de 27-07-2024 y 23-08-2025 dan 3.000 mm de largo. RPS dice 300. Q-A410-07. |
 | `410129-0002` | 4 / 7 | El maestro incluye marcas laterales ausentes en 13-04-2024 y 11-01-2025. Q-A410-06. |
-| `410182-0037` | 3 / 58 | El maestro muestra dos tapas de PVC 900 g por unidad. El lote de 21-07-2023 trae una malla de 66 para 31 cuerpos. Falta localizar otro corte que aclare las cuatro tapas adicionales. |
 | `410143-0003` | 3 / 29 | Los círculos Ø8 del frente cambian de herramienta entre 18-08-2023 y 08-06-2024. Q-A410-08. |
 
 Las preguntas para Taller están en
