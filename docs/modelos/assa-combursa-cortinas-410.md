@@ -277,6 +277,8 @@ El SELECT de RPS entre 2023 y 2026 devolvió 216 líneas para 116 referencias
 | `410129-0211` | 1 / 2 | RPS y el cuerpo del maestro dan 2.200 mm. El frente de 3 mm mide 3.100 mm en el maestro y bajo el rótulo del 14-03-2026. Q-A410-07. |
 | `410241-0017`, `410242-0008`, `410245-0001`, `410252-0003` | 1 / 1 cada una salvo `410245-0001` (2 / 5) | Los maestros indican la letra B, C o D. El DXF del 30-11-2024 marca B1 a B5 y C1 a C5. El del 09-11-2024 marca D1 a D3 en `410245-0001` y C1 a C5 en `410252-0003`. Q-A410-04. |
 | `410252-0002` | 2 / 20 | En 10-05 y 05-07 de 2025 el corte dice PVC negro de 580 g. La OF `0215988` imputa `POLY50NEGRO250C`, descrito con «620» y «(580)». Q-A410-10. |
+| `410122-0007` | 1 / 1 | El maestro `HOK410122.dwg` pone D en número de paño. El 09-11-2024 máquina marca A1, A2 y A3 sobre el PVC de 580 g. Q-A410-04. |
+| `410122-0008` | 2 / 20 | El maestro pone D en número de paño. Los DXF del 10-05 y 17-05 de 2025 dejan A1, A2 y A3 como texto del plano. Q-A410-09. |
 | `410179-0053` | 1 / 90 | `OK410179.dwg` indica rotulación continua. El 30-08-2025 el cuerpo de 2 mm se corta con DISCO1 y llevan marcas los dos cuerpos de la tirada. Los círculos de la tapa de PVC de 900 g son de ROTULADOR. El 01-10-2025, el cuerpo y los círculos son de CUTTER y solo se rotula el primer cuerpo. RPS reparte la OF `0218643` en bultos de 34, 28 y 28. El DXF de agosto indica 30 unidades para el 30-08 y el de octubre indica dos palets de 28. Q-A410-13. |
 | `410245-0005` | 4 / 55 | Las cuatro OF imputan ALPHA negro de 580 g. El 22-06-2024 la D está en ROTULADOR. En 08-02-2025 (palets 1–2), está en la capa de texto. Los números de pieza están en la capa de texto en ambos. Q-A410-09. |
 | `410129-0005` | 4 / 9 | Maestro y cortes de 27-07-2024 y 23-08-2025 dan 3.000 mm de largo. RPS dice 300. Q-A410-07. |
@@ -307,6 +309,7 @@ motivo que muestra la web es «Sin corte de taller para contrastar».
 | `410122-0006` | 10-05-2025 | `AR.25.01976 / 1` | 18 |
 | `410129-0116` | 01-03-2025 | `AR.25.00896 / 1` | 1 |
 | `410129-0200` | 25-07-2026 | `AR.26.03261 / 3` | 12 |
+| `410129-0210` | 18-10-2025 | `AR.25.05208 / 1` | 1 |
 | `410129-0213` | 16-05-2026 | `AR.26.02090 / 1` | 1 |
 | `410130-0088` | 19-06-2026 | `AR.26.02857 / 1` | 14 |
 | `410130-0176` | 21-03-2026 | `AR.26.00703 / 2` | 16 |
@@ -318,20 +321,23 @@ motivo que muestra la web es «Sin corte de taller para contrastar».
 | `410241-0014` | 20-06-2026 | `AR.26.02150 / 2` | 7 |
 | `410242-0007` | 20-06-2026 | `AR.26.02150 / 3` | 7 |
 
+El único DXF rotulado `410129-0210` es el del 18-10-2025. El frente
+está en la capa de oficina `curv`. Del cuerpo hay tramos de disco y
+marcas laterales, pero no se localizó el juego completo de máquina.
+
 ## Siguientes contrastes por volumen
 
 | Referencia | Líneas / unidades de RPS | Contraste pendiente |
 | --- | --- | --- |
-| `410122-0008` | 2 / 20 | El DXF y las OF tienen PVC de 580 g y lona de 3 mm. Queda por separar A1, A2 y A3 y contar el refuerzo por unidad. |
 | `410174-0062` | 1 / 16 | El 26-07-2025 lleva el rótulo y tiene solapas separadas con disco. Falta ligar el DXF a la OF del 16-08-2025 y contrastar el despiece completo. |
 | `410300-0001` | 2 / 10 | El DXF del 07-07-2023 corta un contorno distinto al de las `0005` y `0006`. Falta ligar el contorno al maestro de esta variante. |
 
 | Estado | Referencias |
 | --- | ---: |
 | Habilitadas | 50 |
-| A mano por duda de Taller | 40 |
-| A mano sin corte de taller localizado | 14 |
-| Pendientes de revisar | 12 |
+| A mano por duda de Taller | 42 |
+| A mano sin corte de taller localizado | 15 |
+| Pendientes de revisar | 9 |
 | Total `410xxx` en RPS | 116 |
 
 ## Criba de la cuarta tanda
@@ -488,9 +494,9 @@ cantidad se toma de RPS.
 | `410129-0115` / `0207029` | 27-07-2024 | 2.550 × 1.300, 6 | 470 × 440 sobre el cuerpo. Frente 2.550 × 400. |
 | `410129-0209` / `0218642` y `0222484` | 05-07-2025 (cuerpo), 22-11-2025 (tapas y frente) | 3.400 × 1.000, 9 | 340 × 370. Frente 3.400 × 300. |
 
-Sigue pendiente `410129-0210`. Aparece con operaciones en capas de
-dibujo de oficina y la OF solo imputa PLASTEL. La `410129-0211` se pasó
-a mano por el largo del frente (Q-A410-07).
+En la sexta tanda, la `410129-0210` quedó a mano por falta de un corte
+completo de taller, y la `410129-0211` por el largo del frente
+(Q-A410-07).
 
 Se regeneraron las 22 líneas del 23-08-2025. Salieron 43 programas y
 cuadraron las 35 filas del papel. En el palet 3 la `410129-0015` lleva

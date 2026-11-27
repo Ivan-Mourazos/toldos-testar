@@ -422,6 +422,8 @@ it('retiene un cambio de cotas o de marca de RPS y las muestras de lona', () => 
 
 it.each([
   ['410129-0105', /cinco agujeros.*seis/],
+  ['410122-0007', /letra D.*A1/],
+  ['410122-0008', /letra D.*texto del plano/],
   ['410129-0003', /figura como puerta y como cortina/],
   ['410174-0049', /solapas lisas y tiras para rotular/],
   ['410241-0011', /marca D.*D1 a D5/],
@@ -462,7 +464,7 @@ it.each([
   expect(lote.programas).toEqual([]);
 });
 
-it.each(['410121-0001', '410129-0200', '410182-0038'])('explica que el pedido de %s no tiene un corte localizado', codigo => {
+it.each(['410121-0001', '410129-0200', '410129-0210', '410182-0038'])('explica que el pedido de %s no tiene un corte localizado', codigo => {
   const lote = prepararLote(fecha, [{ ...cortinas[0], CodArticle: `H0K${codigo}` }]);
   expect(lote.lineas[0]).toMatchObject({ estado: 'a-mano', motivos: ['Sin corte de taller para contrastar.'] });
   expect(lote.programas).toEqual([]);

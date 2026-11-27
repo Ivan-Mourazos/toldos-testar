@@ -632,6 +632,8 @@ const separacionSolapasSinConfirmar = 'Falta confirmar si las solapas se entrega
 const rotuladoConNumeroSinConfirmar = letra =>
   `El plano indica la letra ${letra}. Falta confirmar si hay que marcar también el número de pieza como en el DXF de máquina.`;
 const pendientes = {
+  '410122-0007': 'El plano indica la letra D y máquina marca A1, A2 y A3. Falta confirmar el texto de cada paño.',
+  '410122-0008': 'El plano indica la letra D y en máquina solo figuran los números como texto del plano. Falta confirmar si se marca la lona.',
   '410123-0005': gramajeSinConfirmar,
   '410129-0002': marcasLateralesSinConfirmar,
   '410129-0005': 'La descripción de RPS indica 300 de largo y el dibujo de corte mide 3.000 mm. Falta confirmar el largo.',
@@ -675,7 +677,7 @@ const pendientes = {
 };
 
 const sinCorteLocalizado = new Set([
-  '410121-0001', '410122-0006', '410129-0116', '410129-0200', '410129-0213',
+  '410121-0001', '410122-0006', '410129-0116', '410129-0200', '410129-0210', '410129-0213',
   '410130-0088', '410130-0176', '410130-0177', '410172-0107', '410182-0036',
   '410182-0038', '410185-0001', '410241-0014', '410242-0007',
 ]);
