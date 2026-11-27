@@ -270,6 +270,7 @@ El SELECT de RPS entre 2023 y 2026 devolvió 216 líneas para 116 referencias
 | `410129-0105` | 5 / 66 | El juego de máquina del 04-10-2025 tiene dos tapas de 470 × 340 por cuerpo y un frente de 2.500 × 300. El cuerpo de 2.500 × 1.200 lleva seis agujeros, a diferencia de los cinco del maestro. Q-A410-03. |
 | `410172-0104`, `410173-0104` | 5 / 14 cada una | El maestro indica 12 solapas. Se ven cortes de separación con disco en 11-05-2024 y marcas de separación con rotulador en 25-10-2025. Q-A410-05. |
 | `410174-0060` | 2 / 114 | El maestro pide diez solapas sin marca y cuatro con marca por unidad. En 16-11 y 23-11 de 2024 el disco separa 560 y 580 solapas lisas, las cantidades de RPS. En las tiras marcadas, el disco corta las filas y el rotulador divide cada fila cada 350 mm. Se marcan 230 y 240 posiciones frente a 224 y 232 solapas del pedido. Q-A410-05. |
+| `410179-0053` | 1 / 90 | `OK410179.dwg` indica rotulación continua. El 30-08-2025 el cuerpo de 2 mm se corta con DISCO1 y llevan marcas los dos cuerpos de la tirada. Los círculos de la tapa de PVC de 900 g son de ROTULADOR. El 01-10-2025, el cuerpo y los círculos son de CUTTER y solo se rotula el primer cuerpo. RPS reparte la OF `0218643` en bultos de 34, 28 y 28. El DXF de agosto indica 30 unidades para el 30-08 y el de octubre indica dos palets de 28. Q-A410-13. |
 | `410245-0005` | 4 / 55 | Las cuatro OF imputan ALPHA negro de 580 g. El 22-06-2024 la D está en ROTULADOR. En 08-02-2025 (palets 1–2), está en la capa de texto. Los números de pieza están en la capa de texto en ambos. Q-A410-09. |
 | `410129-0005` | 4 / 9 | Maestro y cortes de 27-07-2024 y 23-08-2025 dan 3.000 mm de largo. RPS dice 300. Q-A410-07. |
 | `410129-0002` | 4 / 7 | El maestro incluye marcas laterales ausentes en 13-04-2024 y 11-01-2025. Q-A410-06. |
@@ -315,14 +316,14 @@ motivo que muestra la web es «Sin corte de taller para contrastar».
 | Referencia | Líneas / unidades de RPS | Contraste pendiente |
 | --- | --- | --- |
 | `410172-0105` y `410173-0105` | 3 / 38 cada una | Los maestros y los lotes 03-05 y 17-05 de 2025 muestran las dos manos. Queda por cuadrar el despiece completo y las solapas de lona de 1 mm por OF. |
-| `410179-0053` y `410179-0054` | 1 / 90 y 1 / 30 | En 01-10 y 29-11 de 2025 aparecen el cuerpo de 2 mm y las tapas de PVC de 900 g. En la `0054`, el maestro y el corte indican hacer primero un cuerpo marcado y el resto sin marcar. El DXF localizado de la `0053` indica 28 unidades en cada uno de dos palets, y faltan los cortes del resto de las 90 de RPS. |
+| `410179-0054` | 1 / 30 | El maestro y el DXF del 29-11-2025 indican hacer primero un cuerpo marcado y dejar los demás sin marcar. RPS reparte las 30 unidades entre dos palets. Queda por llevar al generador el cuerpo marcado único y contrastar el conjunto de tapas. |
 
 | Estado | Referencias |
 | --- | ---: |
 | Habilitadas | 39 |
-| A mano por duda de Taller | 24 |
+| A mano por duda de Taller | 25 |
 | A mano sin corte de taller localizado | 14 |
-| Pendientes de revisar | 39 |
+| Pendientes de revisar | 38 |
 | Total `410xxx` en RPS | 116 |
 
 ## Criba de la cuarta tanda

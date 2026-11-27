@@ -16,6 +16,7 @@
 | Q-A410-10 | `410251-0002`. Los tres cortes guardados piden PVC negro de 580 g. La OF `0216014` del 10-05-2025 imputó POLYMAR negro de 650 g. En el lote 16-04-2025 pasa lo mismo en el bloque de `410123-0005`, `410241-0007`, `410242-0003` y `410245-0002`. El artículo POLYMAR de RPS lleva tanto «650» como «(580)» en su descripción. ¿Qué gramaje preparamos para el siguiente lote de estas referencias? | A mano hasta confirmar el material. |
 | Q-A410-11 | `410143-0004` y `410143-0005`. El maestro `HOK410143.dwg` deja 300 mm de lona a cada lado de la abertura del frente. El DXF del 23-03-2024 de la `0004` y los del 26-04 y 03-05 de 2025 de la `0005` dejan 400 mm. ¿Qué medida se corta en el siguiente pedido de cada referencia? | A mano hasta confirmar la abertura. |
 | Q-A410-12 | `410186-0001` y `410187-0001`. Los maestros dan una tira de lona de 1 mm de 416,2 mm de ancho. Las dos manos se cortaron a 400 mm en el 21-07-2023. El 14-10-2023 se cortó a 416,2 mm la `410187-0001`. ¿Qué ancho se prepara para cada mano en el siguiente lote? | A mano hasta confirmar el ancho. |
+| Q-A410-13 | `410179-0053`. El 30-08-2025 se cortan los cuerpos con disco y los círculos de las tapas se dibujan con rotulador. El 01-10-2025 ambas operaciones se hacen con cuchilla. En agosto los dos cuerpos del bloque llevan trazos de rotulador y en octubre solo los lleva el primero. ¿Con qué herramienta se corta el cuerpo, se perforan o se marcan las tapas y cuántos cuerpos van rotulados? | A mano hasta confirmar el corte. |
 
 ## Cortinas de túnel de Combursa
 

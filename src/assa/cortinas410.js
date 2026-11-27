@@ -467,6 +467,7 @@ const pendientes = {
   '410172-0104': 'Falta confirmar si la máquina separa las solapas de 1 mm o las marca para separarlas después.',
   '410173-0104': 'Falta confirmar si la máquina separa las solapas de 1 mm o las marca para separarlas después.',
   '410174-0060': 'Falta confirmar si las solapas se entregan separadas o en tiras marcadas.',
+  '410179-0053': 'Un lote corta los cuerpos con disco y otro con cuchilla. Falta confirmar cómo cortar el cuerpo y si se perforan las tapas en máquina.',
   '410186-0001': anchoTiraSinConfirmar,
   '410187-0001': anchoTiraSinConfirmar,
   '410241-0007': gramajeSinConfirmar,
