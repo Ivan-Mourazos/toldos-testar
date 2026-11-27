@@ -331,7 +331,7 @@ marcas laterales, pero no se localizó el juego completo de máquina.
 | --- | --- | --- |
 | `410174-0062` | 1 / 16 | El 26-07-2025 lleva el rótulo y tiene solapas separadas con disco. Falta ligar el DXF a la OF del 16-08-2025 y contrastar el despiece completo. |
 | `410241-0019`, `410242-0019` | 1 / 6 cada una | El 19-10-2024 máquina marca B y C. Queda por contrastar el contorno y las operaciones interiores de los cinco paños de cada mano. |
-| `410300-0001` | 2 / 10 | El DXF del 07-07-2023 corta un contorno distinto al de las `0005` y `0006`. Falta ligar el contorno al maestro de esta variante. |
+| `410300-0001` | 2 / 10 | El DXF del 07-07-2023 y el contorno girado de `OK410300.dwg` dan 1.144 × 985,16 mm. La segunda fila del DXF pasa por encima del contorno de la primera y comparte parte del corte. Falta aislar ese recorrido para contrastar una pieza completa. |
 | `410251-0006`, `410252-0006` | 1 / 4 cada una | El 09-03-2024 rotula B y C en el PVC de 580 g. Falta cotejar los cinco paños y las marcas de la ventana de cada mano. |
 | `410155-0002` | 1 / 4 | El 10-10-2026 distingue el cuerpo de 2 mm y el bloque de solapas rotulado «1 MM NEGRA». La OF registra resto de 1,2 mm. Falta completar el contraste del cuerpo y el despiece de solapas. |
 
