@@ -60,6 +60,25 @@ it('corta la 410143-0002 con ocho agujeros en el cuerpo y un frente con abertura
   expect(prepararLote(fecha, [{ ...linea, descripcion: linea.descripcion.replace('OP=600', 'OP=700') }]).aMano).toBe(1);
 });
 
+it('la 410143-0007 conserva los dos giros del frente corregido y cuenta las tapas por unidad', () => {
+  const linea = { ...cortinas[0], CodArticle: 'H0K410143-0007', cantidad: 17,
+    descripcion: 'PLANE SC IN COMPLETE WIDTH WB300XWT300XB3000 OP=700 PVC BLACK, 2mm REINFORCED' };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [3000, 1000] });
+  expect(lote.cortador.map(f => [f.material, f.unidades, f.pedidas, f.cuadra])).toEqual([
+    ['Lona 2 mm', 51, 51, true], ['Lona 3 mm', 17, 17, true],
+  ]);
+  const tapas = lote.programas.filter(p => p.nombrePiezas === 'pares de tapas');
+  expect(tapas.map(p => [p.largoMm, p.anchoOcupadoMm, p.piezas, p.repeticiones]))
+    .toEqual([[2380, 740, 14, 2], [1020, 740, 6, 1]]);
+  const frentes = lote.programas.filter(p => p.nombrePiezas === 'frentes con abertura');
+  expect(frentes.map(p => [p.piezas, p.repeticiones])).toEqual([[2, 8], [1, 1]]);
+  expect(frentes[0].entidades.circulos.map(c => [c.capa, c.x, c.y])).toEqual(expect.arrayContaining([
+    ['ROTULADOR', 500, 355], ['ROTULADOR', 2500, 355], ['ROTULADOR', 500, 995], ['ROTULADOR', 2500, 995],
+  ]));
+  expect(frentes[0].entidades.circulos).toHaveLength(4);
+});
+
 it('corta las cuatro cortinas del 07-11 y cuenta cada pieza por material y palet', () => {
   const lote = prepararLote(fecha, cortinas, {}, undefined, { palets });
   expect(lote.aMano).toBe(0);

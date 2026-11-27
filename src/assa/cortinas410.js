@@ -68,27 +68,52 @@ const techoConEntrante = [
   },
 ];
 
-function superiorConAbertura(ancho, abertura, agujeros) {
-  const borde = 400, base = 400, alto = base + abertura;
+function frenteConAbertura(ancho, borde, base, fondo) {
+  const alto = base + fondo;
   return [
-    grupo(lona2, 'cuerpos', 1, 1, [ancho, 1100], [
-      ...rectangulo('CUTTER', ancho, 1100),
-      ...Array.from({ length: agujeros }, (_, i) => ['CUTTER', borde + i * (ancho - 2 * borde) / (agujeros - 1), 150, 20]),
-      ...[350, 750].flatMap(y => [['ROTULADOR', 0, y, 20, y], ['ROTULADOR', ancho - 20, y, ancho, y]]),
-    ]),
-    grupo(lona2, 'pares de tapas', 2, 1, [880, 370], [
-      ['CUTTER', 0, 370, 880, 370], ...[0, 440, 880].map(x => ['CUTTER', x, 0, x, 370]),
-    ]),
-    grupo(lona3, 'frentes con abertura', 1, 1, [ancho, alto], [
-      ['CUTTER', 0, 0, 0, base], ['CUTTER', 0, base, borde, base],
-      ['CUTTER', borde, base, borde, alto], ['CUTTER', borde, alto, ancho - borde, alto],
-      ['CUTTER', ancho - borde, alto, ancho - borde, base], ['CUTTER', ancho - borde, base, ancho, base],
-      ['CUTTER', ancho, base, ancho, 0], ['ROTULADOR', borde, base, ancho - borde, base],
-      ...[borde + 200, ancho - borde - 200].flatMap(x => [
-        ['CUTTER', x, base + 20, x, alto], ['ROTULADOR', x, base + 20, 4],
-      ]),
+    ['CUTTER', 0, 0, 0, base], ['CUTTER', 0, base, borde, base],
+    ['CUTTER', borde, base, borde, alto], ['CUTTER', borde, alto, ancho - borde, alto],
+    ['CUTTER', ancho - borde, alto, ancho - borde, base], ['CUTTER', ancho - borde, base, ancho, base],
+    ['CUTTER', ancho, base, ancho, 0], ['ROTULADOR', borde, base, ancho - borde, base],
+    ...[borde + 200, ancho - borde - 200].flatMap(x => [
+      ['CUTTER', x, base + 20, x, alto], ['ROTULADOR', x, base + 20, 4],
     ]),
   ];
+}
+
+function tapasEnFilas(columnas, ancho, filas) {
+  const altoTapa = 370, largo = columnas * ancho, alto = filas * altoTapa;
+  return [
+    ...Array.from({ length: columnas + 1 }, (_, i) => ['CUTTER', i * ancho, 0, i * ancho, alto]),
+    ...Array.from({ length: filas }, (_, i) => ['CUTTER', 0, (i + 1) * altoTapa, largo, (i + 1) * altoTapa]),
+  ];
+}
+
+function superiorConAbertura(ancho, { altoCuerpo, agujeros, porTirada, anchoTapa, tapasEnDosFilas, borde, fondo }) {
+  const cuerpo = grupo(lona2, 'cuerpos', 1, porTirada, [ancho, altoCuerpo], [
+    ...rectangulo('CUTTER', ancho, altoCuerpo),
+    ...Array.from({ length: agujeros }, (_, i) => ['CUTTER', 400 + i * (ancho - 800) / (agujeros - 1), 150, 20]),
+    ...[350, altoCuerpo - 350].flatMap(y => [['ROTULADOR', 0, y, 20, y], ['ROTULADOR', ancho - 20, y, ancho, y]]),
+  ]);
+  const tapas = tapasEnDosFilas
+    ? { ...grupo(lona2, 'pares de tapas', 2, 7, [anchoTapa, 740], []), anchoTapa }
+    : grupo(lona2, 'pares de tapas', 2, 1, [2 * anchoTapa, 370], tapasEnFilas(2, anchoTapa, 1));
+  const frente = grupo(lona3, 'frentes con abertura', 1, porTirada, [ancho, borde + fondo],
+    frenteConAbertura(ancho, borde, borde, fondo));
+  return [cuerpo, tapas, porTirada === 2 ? { ...frente, frentesEnfrentados: true } : frente];
+}
+
+// Las dos bocas quedan en los extremos de la tirada y comparten el corte recto central.
+function cortarFrentesEnfrentados(n, largo, alto, operaciones) {
+  if (n === 1) return entidadesDe([...operaciones, ['CUTTER', 0, 0, largo, 0]]);
+  const invertir = (x, y) => [largo - x, alto - y];
+  const primero = operaciones.filter(([, , y1, , y2]) => y1 !== alto || y2 !== alto)
+    .map(([capa, x1, y1, x2, y2]) => y2 === undefined
+      ? [capa, ...invertir(x1, y1), x2]
+      : [capa, ...invertir(x1, y1), ...invertir(x2, y2)]);
+  const entidades = entidadesDe([...primero, ['CUTTER', 0, alto, largo, alto]]);
+  unirEntidades(entidades, desplazarEntidades(entidadesDe(operaciones), 0, alto));
+  return entidades;
 }
 
 function conMano(codigo, derecha) {
@@ -134,7 +159,16 @@ const modelos = {
   },
   '410143-0002': {
     descripcion: 'PLANE SC IN COMPLETE WIDTH WB400XWT300XB3350 OP=600 PVC BACLK, 2MM REINFORCED',
-    fichero: 'HOK410143.dwg', medidasMm: [3350, 1100], grupos: superiorConAbertura(3350, 175, 8),
+    fichero: 'HOK410143.dwg', medidasMm: [3350, 1100], grupos: superiorConAbertura(3350, {
+      altoCuerpo: 1100, agujeros: 8, porTirada: 1, anchoTapa: 440, borde: 400, fondo: 175,
+    }),
+  },
+  '410143-0007': {
+    descripcion: 'PLANE SC IN COMPLETE WIDTH WB300XWT300XB3000 OP=700 PVC BLACK, 2MM REINFORCED',
+    fichero: 'HOK410143.dwg', medidasMm: [3000, 1000],
+    grupos: superiorConAbertura(3000, {
+      altoCuerpo: 1000, agujeros: 7, porTirada: 2, anchoTapa: 340, tapasEnDosFilas: true, borde: 300, fondo: 375,
+    }),
   },
   '410170-0001': {
     descripcion: 'PLANE RIGHT SCHUPPEN/REINFORCED 2MM H=2600 SWB FRONT=400 SWB=300, SWT=300 PKG 750MM, SIMILAR DRAW. OK410173 BUT WITH SWB FRONT AND SWB REAR',
@@ -207,16 +241,21 @@ export function generarProgramasCortina(g, sueltas) {
     return [[capacidad, Math.floor(cantidad / capacidad)], [cantidad % capacidad, 1]]
       .filter(([n, repeticiones]) => n && repeticiones)
       .map(([n, repeticiones]) => {
-        const entidades = p.tapa ? columnaPvc(n, p.tapa) : entidadesVacias();
-        if (!p.tapa) {
+        const largoTotal = p.anchoTapa ? largoMm * n : largoMm;
+        const anchoOcupadoMm = p.anchoTapa ? alto : alto * n;
+        let entidades;
+        if (p.tapa) entidades = columnaPvc(n, p.tapa);
+        else if (p.anchoTapa) entidades = entidadesDe(tapasEnFilas(n, p.anchoTapa, 2));
+        else if (p.frentesEnfrentados) entidades = cortarFrentesEnfrentados(n, largoMm, alto, p.operaciones);
+        else {
+          entidades = entidadesVacias();
           const base = entidadesDe(p.operaciones, p.rotulos);
           for (let i = 0; i < n; i++) unirEntidades(entidades, desplazarEntidades(base, 0, i * alto));
         }
-        const anchoOcupadoMm = alto * n;
         entidades.textos.push({ capa: 'texto', x: 100, y: anchoOcupadoMm + 120, h: 200, literal: true, valor: g.referencia },
           { capa: 'texto', x: 100, y: anchoOcupadoMm + 420, h: 200, literal: true, valor: `x${repeticiones}` });
         return { tipo: 'cortina', panos: 0, piezas: p.piezasPorGrupo * n, gruposDePiezas: n, nombrePiezas: p.nombre,
-          material: p.material.nombre, anchoRolloMm: p.material.anchoRolloMm, largoMm, anchoOcupadoMm, repeticiones, entidades };
+          material: p.material.nombre, anchoRolloMm: p.material.anchoRolloMm, largoMm: largoTotal, anchoOcupadoMm, repeticiones, entidades };
       });
   });
 }

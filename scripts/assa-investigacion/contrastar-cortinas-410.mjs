@@ -40,6 +40,13 @@ const casos = [
   ['410143-0002', 'cuerpos', 1, '2025/LOTE 08-11', -79805349.30, 28349955.02],
   ['410143-0002', 'pares de tapas', 1, '2025/LOTE 08-11', -79801520.95, 28350589.07],
   ['410143-0002', 'frentes', 1, '2025/LOTE 08-11', -79800097.67, 28349955.02],
+  ['410143-0007', 'cuerpos', 2, '2025/LOTE 01-11', -30548.83159, 237695.36829],
+  ['410143-0007', 'frentes', 2, '2025/LOTE 01-11', -13103.60023, 237695.36829, { diferenciaMm: 100 }],
+  ['410143-0007', 'cuerpos', 2, '2026/LOTE 10-01', 4498.26176, 3562.03284],
+  ['410143-0007', 'cuerpos', 1, '2026/LOTE 10-01', 8949.70615, 3562.03284],
+  ['410143-0007', 'pares de tapas', 7, '2026/LOTE 10-01', 14254.28682, 3562.03284],
+  ['410143-0007', 'frentes', 2, '2026/LOTE 10-01', 19049.12468, 3562.03284],
+  ['410143-0007', 'frentes', 1, '2026/LOTE 10-01', 23554.00114, 3562.03284],
   ['410170-0001', 'juegos de cuerpo', 1, '2025/LOTE 23-08', 134366.06, 94244.14],
   ['410170-0001', 'juegos de cuerpo', 1, '2026/LOTE 25-07', 155661.2438, 190729.9961],
   ['410170-0001', 'tiras', 1, '2025/LOTE 23-08', 142635.2, 94079.66],
@@ -63,6 +70,8 @@ const adicionales = {
     descripcion: 'SC SIDE CURTAIN 300X300X2400 ANFAHRSTREIFEN: WEIS/STANDARD' },
   '410143-0002': { CodArticle: 'H0K410143-0002', of_: '0221850',
     descripcion: 'PLANE SC IN COMPLETE WIDTH WB400xWT300xB3350 OP=600 PVC BACLK, 2MM REINFORCED' },
+  '410143-0007': { CodArticle: 'H0K410143-0007', of_: '0223600',
+    descripcion: 'PLANE SC IN COMPLETE WIDTH WB300XWT300XB3000 OP=700 PVC BLACK, 2mm REINFORCED' },
 };
 for (const [ref, nombre, cantidad, fichero, x0, y0, opciones] of casos) {
   const linea = adicionales[ref] ?? lineas.find(l => l.CodArticle.endsWith(ref));
@@ -77,6 +86,12 @@ for (const [ref, nombre, cantidad, fichero, x0, y0, opciones] of casos) {
       !(opciones?.bordeInferior && Math.abs(p.a[1]) < .02 && Math.abs(p.b[1]) < .02)));
   const esperadas = primitivasDeEntidades(programa.entidades, 1).filter(p => p.tipo !== 'texto');
   const resultado = compararOperaciones(esperadas, reales, 1);
+  if (opciones?.diferenciaMm !== undefined) {
+    if (resultado.coincide || resultado.desviacionMm === null ||
+      Math.abs(resultado.desviacionMm - opciones.diferenciaMm) > 1) process.exitCode = 1;
+    console.log(ref, fichero, nombre, resultado.coincide ? 'Igual' : 'Difiere', resultado.desviacionMm?.toFixed(3), 'mm');
+    continue;
+  }
   if (opciones?.rotulos) {
     const rotulos = modelos.get(fichero).filter(p => p.tipo === 'texto' && p.capa === 'ROTULADOR' &&
       p.punto[0] >= caja.x0 && p.punto[0] < caja.x1 && p.punto[1] >= caja.y0 && p.punto[1] < caja.y1);
