@@ -317,10 +317,10 @@ motivo que muestra la web es «Sin corte de taller para contrastar».
 
 | Estado | Referencias |
 | --- | ---: |
-| Habilitadas | 37 |
+| Habilitadas | 39 |
 | A mano por duda de Taller | 20 |
 | A mano sin corte de taller localizado | 14 |
-| Pendientes de revisar | 45 |
+| Pendientes de revisar | 43 |
 | Total `410xxx` en RPS | 116 |
 
 ## Criba de la cuarta tanda
@@ -504,4 +504,33 @@ La otra cortina de ese pedido quedó a mano y sin palet de expedición.
 
 ~~~text
 \\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 04-10 - 20261127-095310
+~~~
+
+## Quinta tanda de superiores de PLASTEL con abertura 410135
+
+El maestro `OK410135.dwg` y las OF indican un cuerpo y dos tapas de
+PLASTEL TE62, y un frente de lona de 3 mm por unidad. Los dos frentes
+quedan con las bocas hacia dentro y comparten un corte central. Los
+taladros junto a la abertura se marcan con rotulador.
+
+| Referencia / OF | Lote de máquina | Despiece en mm | Resultado |
+| --- | --- | --- | --- |
+| `410135-0108` / `0214987` | 05-04-2025 | Cuerpo 3.200 × 1.000 con siete agujeros. Dos tapas de 340 × 370 por cuerpo. Frente 3.200 × 575. | **Igual** en dos cuerpos con cuatro tapas y en el par de frentes. |
+| `410135-0109` / `0222598` | 29-11-2025 | Cuerpo 3.400 × 1.000 con ocho agujeros. Dos tapas de 340 × 370 por cuerpo. Frente 3.400 × 575. | **Igual** en dos cuerpos y las primeras cuatro tapas de la columna, en el par de frentes y en el suelto. El bloque histórico incluye una quinta tapa y se comparó hasta el cuarto corte. La cantidad final se toma de RPS. |
+
+Los cinco bloques quedan dentro de 0,001 mm por herramienta. La
+`410135-0106` sigue pendiente. En el 06-04-2024 el frente doble tiene
+los cortes de la abertura y en el bloque suelto faltan el corte
+central y sus dos cortes cortos. Falta localizar el frente suelto
+completo para contrastarlo.
+
+En la prueba del 29-11-2025, una de las 27 líneas de RPS se repartió
+entre dos palets. Salieron 55 programas y cuadraron las 39 filas del
+cortador. La `410135-0109`, en el palet 1, suma nueve piezas de
+PLASTEL y tres frentes de 3 mm. Los cuatro programas de la referencia
+se verificaron tras confirmar con ODA, dentro de 0,001 mm. Las dos
+copias publicadas se cotejaron por SHA-256.
+
+~~~text
+\\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 29-11 - 20261127-100715
 ~~~

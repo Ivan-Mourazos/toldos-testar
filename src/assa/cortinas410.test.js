@@ -95,6 +95,26 @@ it('corta la 410129-0212 con las tapas unidas al borde del cuerpo de PLASTEL', (
 });
 
 it.each([
+  ['0108', 3200, 7, 2],
+  ['0109', 3400, 8, 3],
+])('corta el superior 410135-%s con los frentes enfrentados hacia dentro', (sufijo, largo, agujeros, cantidad) => {
+  const linea = { ...cortinas[0], CodArticle: `H0K410135-${sufijo}`, cantidad,
+    descripcion: `PLANE TWP OBEN WB300XWT300X${largo} OP=600 SCHWARZ SCHWARZ` };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [largo, 1000] });
+  const cuerpo = lote.programas.find(p => p.material === 'PLASTEL 8800 TE62 negra');
+  expect(cuerpo).toMatchObject({ largoMm: largo + 340, anchoOcupadoMm: 2000, piezas: 6 });
+  expect(cuerpo.entidades.circulos).toHaveLength(agujeros * 2);
+  const frente = lote.programas.find(p => p.material === 'Lona 3 mm');
+  expect(frente).toMatchObject({ anchoOcupadoMm: 1150, piezas: 2 });
+  expect(frente.entidades.lineas).toContainEqual({ capa: 'CUTTER', x1: 300, y1: 575, x2: largo - 300, y2: 575 });
+  expect(frente.entidades.circulos.map(c => c.y).sort((a, b) => a - b)).toEqual([320, 320, 830, 830]);
+  expect(lote.cortador.map(f => [f.material, f.unidades, f.pedidas, f.cuadra])).toEqual([
+    ['Lona 3 mm', cantidad, cantidad, true], ['PLASTEL 8800 TE62 negra', cantidad * 3, cantidad * 3, true],
+  ]);
+});
+
+it.each([
   ['410130-0004', 'PLANE SC SEITLICH300X300X2900 ANFAHRSTREIFEN:WEIßS', 2900, 50, 50, 100],
   ['410130-0017', 'SC SIDE CURTAIN 300X300X2500 PARK GUIDE=WHITE', 2500, 60, 10, 50],
 ])('corta el lateral %s con las marcas de su maestro', (codigo, descripcion, largo, inicio, fin, marca) => {

@@ -134,13 +134,13 @@ const techoConEntrante = [
   },
 ];
 
-function frenteConAbertura(ancho, borde, base, fondo) {
+function frenteConAbertura(ancho, borde, base, fondo, marcarPliegue = true) {
   const alto = base + fondo;
   return [
     ['CUTTER', 0, 0, 0, base], ['CUTTER', 0, base, borde, base],
     ['CUTTER', borde, base, borde, alto], ['CUTTER', borde, alto, ancho - borde, alto],
     ['CUTTER', ancho - borde, alto, ancho - borde, base], ['CUTTER', ancho - borde, base, ancho, base],
-    ['CUTTER', ancho, base, ancho, 0], ['ROTULADOR', borde, base, ancho - borde, base],
+    ['CUTTER', ancho, base, ancho, 0], ...(marcarPliegue ? [['ROTULADOR', borde, base, ancho - borde, base]] : []),
     ...[borde + 200, ancho - borde - 200].flatMap(x => [
       ['CUTTER', x, base + 20, x, alto], ['ROTULADOR', x, base + 20, 4],
     ]),
@@ -190,16 +190,25 @@ const superiorConTapasJuntas = [
   },
 ];
 
-// Las dos bocas quedan en los extremos de la tirada y comparten el corte recto central.
-function cortarFrentesEnfrentados(n, largo, alto, operaciones, cerrarFrenteSuelto) {
+function superiorPlastelConAbertura(ancho, agujeros) {
+  const [cuerpo] = superiorPerforada(ancho, { alto: 1000, agujeros, tapa: [340, 370], tapasJuntas: true, alturaAgujeros: 150 });
+  return [cuerpo, {
+    ...grupo(lona3, 'frentes con abertura', 1, 2, [ancho, 575], frenteConAbertura(ancho, 300, 300, 275, false)),
+    frentesEnfrentados: 'centro',
+  }];
+}
+
+function cortarFrentesEnfrentados(n, largo, alto, operaciones, cerrarFrenteSuelto, ladoBocas) {
   if (n === 1) return entidadesDe(cerrarFrenteSuelto ? [...operaciones, ['CUTTER', 0, 0, largo, 0]] : operaciones);
   const invertir = (x, y) => [largo - x, alto - y];
-  const primero = operaciones.filter(([, , y1, , y2]) => y1 !== alto || y2 !== alto)
+  const invertidas = operaciones.filter(([, , y1, , y2]) => y1 !== alto || y2 !== alto)
     .map(([capa, x1, y1, x2, y2]) => y2 === undefined
       ? [capa, ...invertir(x1, y1), x2]
       : [capa, ...invertir(x1, y1), ...invertir(x2, y2)]);
-  const entidades = entidadesDe([...primero, ['CUTTER', 0, alto, largo, alto]]);
-  unirEntidades(entidades, desplazarEntidades(entidadesDe(operaciones), 0, alto));
+  const alCentro = ladoBocas === 'centro';
+  const entidades = entidadesDe(alCentro ? [...operaciones, ['CUTTER', 0, 2 * alto, largo, 2 * alto]]
+    : [...invertidas, ['CUTTER', 0, alto, largo, alto]]);
+  unirEntidades(entidades, desplazarEntidades(entidadesDe(alCentro ? invertidas : operaciones), 0, alto));
   return entidades;
 }
 
@@ -391,6 +400,14 @@ const modelos = {
     descripcion: 'PLANE SC STANDARD 300X300X2500 OP=600 PVC SCHWARZ, REINFORCED',
     fichero: 'OK410134.dwg', medidasMm: [2500, 1000], grupos: superiorConTapasJuntas,
   },
+  '410135-0108': {
+    descripcion: 'PLANE TWP OBEN WB300XWT300X3200 OP=600 SCHWARZ SCHWARZ',
+    fichero: 'OK410135.dwg', medidasMm: [3200, 1000], grupos: superiorPlastelConAbertura(3200, 7),
+  },
+  '410135-0109': {
+    descripcion: 'PLANE TWP OBEN WB300XWT300X3400 OP=600 SCHWARZ SCHWARZ',
+    fichero: 'OK410135.dwg', medidasMm: [3400, 1000], grupos: superiorPlastelConAbertura(3400, 8),
+  },
   '410143-0002': {
     descripcion: 'PLANE SC IN COMPLETE WIDTH WB400XWT300XB3350 OP=600 PVC BACLK, 2MM REINFORCED',
     fichero: 'HOK410143.dwg', medidasMm: [3350, 1100], grupos: superiorConAbertura(3350, {
@@ -526,7 +543,9 @@ export function generarProgramasCortina(g, sueltas) {
         let entidades;
         if (p.tapa) entidades = columnaPvc(n, p.tapa);
         else if (p.anchoTapa) entidades = entidadesDe(tapasEnFilas(n, p.anchoTapa, 2));
-        else if (p.frentesEnfrentados) entidades = cortarFrentesEnfrentados(n, largoMm, alto, p.operaciones, p.cerrarFrenteSuelto);
+        else if (p.frentesEnfrentados) {
+          entidades = cortarFrentesEnfrentados(n, largoMm, alto, p.operaciones, p.cerrarFrenteSuelto, p.frentesEnfrentados);
+        }
         else {
           entidades = entidadesVacias();
           const base = entidadesDe(p.operaciones, p.rotulos);

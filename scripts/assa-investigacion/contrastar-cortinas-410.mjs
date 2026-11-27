@@ -8,6 +8,11 @@ import { primitivasDeEntidades } from '../../src/assa/documentoLote.js';
 import lineas from '../../src/assa/fixtures/lote0711.json' with { type: 'json' };
 
 const casos = [
+  ['410135-0108', 'juegos de cuerpo', 2, '2025/LOTE 05-04', 172066.7448, 31122.53325],
+  ['410135-0108', 'frentes', 2, '2025/LOTE 05-04', 178314.68001, 31122.53325],
+  ['410135-0109', 'juegos de cuerpo', 2, '2025/LOTE 29-11', 87747.32077, 155486.61867, { tapasAlLado: [3400, 1480] }],
+  ['410135-0109', 'frentes', 2, '2025/LOTE 29-11', 98952.32719, 155420.04426],
+  ['410135-0109', 'frentes', 1, '2025/LOTE 29-11', 103519.27332, 155420.04426],
   ['410143-0006', 'juegos de cuerpo', 1, '2025/LOTE 04-10', 42271.94187, 73341.71471],
   ['410143-0006', 'frentes', 2, '2025/LOTE 04-10', 47080.61653, 73233.47403],
   ['410143-0006', 'frentes', 1, '2025/LOTE 04-10', 51656.75881, 73808.47403],
@@ -154,7 +159,15 @@ const base = process.argv[2] ?? 'tmp/assa-410/cortes';
 const modelos = new Map();
 const enCaja = (modelo, caja) => operacionesEnPano(modelo, caja, [], { conBordes: true });
 const bordeInferior = p => p.tipo === 'raya' && Math.abs(p.a[1]) < .02 && Math.abs(p.b[1]) < .02;
-function operacionesDelBloque(modelo, caja, tapasArriba) {
+function operacionesDelBloque(modelo, caja, { tapasArriba, tapasAlLado } = {}) {
+  if (tapasAlLado) {
+    const [anchoCuerpo, altoTapas] = tapasAlLado;
+    const cuerpo = enCaja(modelo, { ...caja, x1: caja.x0 + anchoCuerpo });
+    const tapas = enCaja(modelo, { ...caja, y1: caja.y0 + altoTapas })
+      .filter(p => p.tipo === 'raya' && [p.a, p.b].every(([x]) => x >= anchoCuerpo - .01) &&
+        [p.a, p.b].some(([x]) => x > anchoCuerpo + .01));
+    return [...cuerpo, ...tapas];
+  }
   if (!tapasArriba) return enCaja(modelo, caja);
   const [alto, anchoTapas] = tapasArriba;
   const y = caja.y0 + alto;
@@ -166,6 +179,10 @@ function operacionesDelBloque(modelo, caja, tapasArriba) {
   return [...cuerpo, ...tapas];
 }
 const adicionales = {
+  '410135-0108': { CodArticle: 'H0K410135-0108', of_: '0214987',
+    descripcion: 'PLANE TWP OBEN WB300XWT300X3200 OP=600 SCHWARZ SCHWARZ' },
+  '410135-0109': { CodArticle: 'H0K410135-0109', of_: '0222598',
+    descripcion: 'PLANE TWP OBEN WB300XWT300X3400 OP=600 SCHWARZ SCHWARZ' },
   '410143-0006': { CodArticle: 'H0K410143-0006', of_: '0220718',
     descripcion: 'PLANE TWP OBEN TWB250XTWT350XB3100 OP=600 PVC BLACK 2MM REINFORCED' },
   '410129-0053': { CodArticle: 'H0K410129-0053', of_: '0215982',
@@ -242,7 +259,7 @@ for (const [ref, nombre, cantidad, fichero, x0, y0, opciones] of casos) {
       p.capa === 'Disco' ? { ...p, capa: 'DISCO1' } :
         p.capa === 'Rotulador' ? { ...p, capa: 'ROTULADOR' } : p));
   const caja = { x0, y0, x1: x0 + programa.largoMm, y1: y0 + programa.anchoOcupadoMm };
-  const reales = operacionesDelBloque(modelos.get(fichero), caja, opciones?.tapasArriba)
+  const reales = operacionesDelBloque(modelos.get(fichero), caja, opciones)
     // El recorte con orígenes redondeados puede arrastrar menos de 0,02 mm de la columna vecina.
     .filter(p => p.tipo !== 'raya' || (Math.hypot(p.a[0] - p.b[0], p.a[1] - p.b[1]) >= .02 &&
       !(opciones?.bordeInferior && bordeInferior(p))));
