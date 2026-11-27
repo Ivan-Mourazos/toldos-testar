@@ -244,7 +244,9 @@ export function notasDevolucion(items: { letter: string; of?: string | null }[],
   });
   for (const [of, indices] of porOf) {
     const estado = status.ofs?.[of];
-    if (estado?.estado !== 'devuelta' || !estado.nota) continue;
+    // CoordinaOT manda la nota también mientras el autor la corrige (en curso,
+    // 27/11/2026): justo cuando viene aquí a corregir. Sin nota no hay nada que enseñar.
+    if (!estado?.nota) continue;
     const seguidos = indices.every((n, k) => k === 0 || n === indices[k - 1] + 1
       && (!comprobarLetras || letrasSeguidas(items[indices[k - 1]].letter, items[n].letter)));
     const letras = indices.length === 1 ? '' : seguidos && indices.length > 2

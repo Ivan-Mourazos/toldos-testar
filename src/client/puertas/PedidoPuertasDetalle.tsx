@@ -120,7 +120,7 @@ function FilaPuerta({ letra, puerta, coordina }: { letra: string; puerta: Pedido
       <span>{`OF ${of || '—'}`}</span>
       <span className="rem-pedido-material" title={puerta.material}>{[puerta.material, puerta.color].filter(Boolean).join(' · ') || 'Sin material'}</span>
       {aprobadoPor && <span className="orders-detail-approved">{`Aprobado por ${controlLabel(aprobadoPor)}`}</span>}
-      {enCoordina?.estado === 'devuelta' && <span className="orders-detail-returned"><strong>Devuelta en CoordinaOT:</strong> {enCoordina.nota || 'sin nota'}</span>}
+      {(enCoordina?.estado === 'devuelta' || enCoordina?.nota) && <span className="orders-detail-returned"><strong>Devuelta en CoordinaOT:</strong> {enCoordina.nota || 'sin nota'}</span>}
     </li>
   );
 }

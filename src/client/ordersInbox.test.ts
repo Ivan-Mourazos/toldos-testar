@@ -217,6 +217,12 @@ describe('notasDevolucion — la nota de CoordinaOT, una vez por OF', () => {
     expect(notas).toEqual({ A: { nota: 'uno', letras: '' }, C: { nota: 'tres', letras: '' } });
   });
 
+  it('la nota sigue saliendo mientras el autor la corrige (en curso)', () => {
+    const status = { disponible: true, ofs: { '0230001': { estado: 'en_curso', nota: 'Faltan 3 cm' }, '0230002': { estado: 'en_curso', nota: '' } } } as CoordinaStatus;
+    const notas = notasDevolucion([{ letter: 'A', of: '0230001' }, { letter: 'B', of: '0230002' }], status);
+    expect(notas).toEqual({ A: { nota: 'Faltan 3 cm', letras: '' } });
+  });
+
   it('toldos de la misma OF que no son seguidos se nombran uno a uno', () => {
     const notas = notasDevolucion([{ letter: 'A', of: '0232762' }, { letter: 'B', of: '0232764' }, { letter: 'C', of: '0232762' }], devuelta);
     expect(notas).toEqual({ A: { nota: 'Falta la medida de la solapa', letras: 'A, C' } });

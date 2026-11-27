@@ -60,7 +60,7 @@ function DatosElemento({ elemento, coordina }: { elemento: ElementoGuardado; coo
       <span className="rem-pedido-material" title={elemento.input.material}>{elemento.input.material || 'Sin material'}</span>
       {aprobadoPor && <span className="orders-detail-approved">{`Aprobado por ${controlLabel(aprobadoPor)}`}</span>}
     </p>
-    {enCoordina?.estado === 'devuelta' && (
+    {(enCoordina?.estado === 'devuelta' || enCoordina?.nota) && (
       <p className="orders-detail-returned"><strong>Devuelta en CoordinaOT:</strong> {enCoordina.nota || 'sin nota'}</p>
     )}
   </>;
