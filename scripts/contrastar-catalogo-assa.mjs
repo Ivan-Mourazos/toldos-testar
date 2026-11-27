@@ -25,7 +25,9 @@ const sha = b => createHash('sha256').update(b).digest('hex');
 const nuevo = new Map(), programas = [], archivos = [], canalones = new Map();
 for (const l of rps) {
   const g = calcularDesdePlantilla(l);
-  nuevo.set(l.IDOrderLine, { ...g, programas: generarProgramas(g) });
+  // El lector de paños rectangulares no identifica el despiece multimaterial.
+  // Las cortinas se comprueban por bloque en contrastar-cortinas-410.mjs.
+  if (!g.grupos) nuevo.set(l.IDOrderLine, { ...g, programas: generarProgramas(g) });
 }
 const porFecha = Map.groupBy(rps, l => l.entregaSolicitada);
 for (const e of entradas) {
@@ -42,7 +44,7 @@ for (const e of entradas) {
     panos: g.panos.map(p => ({ ...p, operaciones: operacionesEnPano(modelo, p.caja, p.uniones) })) });
   const juegos = new Map();
   for (const l of porFecha.get(fecha) ?? []) {
-    const { canalon } = nuevo.get(l.IDOrderLine);
+    const canalon = nuevo.get(l.IDOrderLine)?.canalon;
     if (!canalon) continue;
     const clave = firmaCanalon(canalon);
     if (!juegos.has(clave)) juegos.set(clave, contrastarCanalon(modelo, canalon, { soloCoincidencia: true }));
@@ -53,7 +55,7 @@ for (const e of entradas) {
 }
 const fechas = new Set(archivos.map(a => a.fecha));
 const lineas = rps.filter(l => fechas.has(l.entregaSolicitada) && new Date(l.entregaSolicitada + 'T12:00Z').getUTCDay() === 6);
-const filas = validarLineasLote(lineas, programas, { generar: l => nuevo.get(l.IDOrderLine) });
+const filas = validarLineasLote(lineas.filter(l => nuevo.has(l.IDOrderLine)), programas, { generar: l => nuevo.get(l.IDOrderLine) });
 const previo = new Map(), actual = new Map();
 for (const [fecha, ls] of Map.groupBy(lineas, l => l.entregaSolicitada)) {
   for (const l of prepararLote(fecha, ls, {}, anterior).lineas) previo.set(l.IDOrderLine, l);
@@ -65,6 +67,11 @@ for (const f of filas) {
   f.actual = { estado: a.estado, corteMm: a.corteMm, motivos: a.motivos, fuente: a.fuentePlantilla };
   f.canalones = canalones.get(f.linea) ?? [];
 }
+const cortinas = lineas.filter(l => !nuevo.has(l.IDOrderLine)).map(l => {
+  const a = actual.get(l.IDOrderLine);
+  return { fecha: l.entregaSolicitada, pedido: l.CodOrder, numeroLinea: l.NumLine, referencia: l.CodArticle,
+    estado: a.estado, motivos: a.motivos, fuente: a.fuentePlantilla };
+});
 const codigos = fs => new Set(fs.map(f => codigoAssa(f.referencia)).filter(Boolean)).size;
 const resumen = fs => {
   const habilitadas = fs.filter(f => f.actual.estado === 'validado');
@@ -86,8 +93,9 @@ const panorama = {
   plantillas: Object.fromEntries(Object.keys(catalogo.plantillasCorte).map(ruta => [ruta, Object.values(catalogo.referencias).filter(r => r.fuentes[ruta]).length])),
   enPlantillas: Object.values(catalogo.referencias).filter(plantillaVigente).length,
   archivosHistoricos: archivos.length, global: resumen(filas),
+  cortinasMultimaterial: { lineas: cortinas.length, referencias: codigos(cortinas) },
   lotes: Object.fromEntries(['2026-10-31', '2026-11-21', [...fechas].sort().at(-1)].map(fecha => [fecha, resumen(filas.filter(f => f.fecha === fecha))])),
 };
 const nombre = fechasPedidas.length ? 'contraste-seleccion.json' : 'contraste.json';
-await fs.writeFile(path.join(base, nombre), JSON.stringify({ panorama, archivos, filas }, null, 2) + '\n');
+await fs.writeFile(path.join(base, nombre), JSON.stringify({ panorama, archivos, filas, cortinas }, null, 2) + '\n');
 console.log(JSON.stringify(panorama, null, 2));

@@ -45,6 +45,8 @@ históricos están descritas en
 Para repetir el contraste, con las copias de máquina en
 `tmp/assa-410/cortes/<año>/`, ejecuta
 `node scripts/assa-investigacion/contrastar-cortinas-410.mjs`.
+El contraste general del catálogo lista aparte las cortinas multimaterial
+que se comprueban con ese programa.
 
 ## Prueba con las 25 líneas del 07-11-2026
 
@@ -64,14 +66,30 @@ indicaba «5 y 6» y situaba la mano derecha en el 3.
 
 Se abrió, confirmó y extrajo el corte del DWG mediante ODA. El DXF de
 máquina releído contiene 1.988 líneas (12 de la leyenda estándar) y
-651 círculos o arcos. Se verificó la copia de prueba por SHA-256. En la
-misma carpeta se dejó el DXF de oficina, con hojas de pedido y de cortador.
+651 círculos o arcos. Los 16 programas de cortinas releídos coinciden por
+herramienta con el plano generado, con una desviación máxima de
+0,00049 mm. Se verificó la copia de prueba por SHA-256. En la misma
+carpeta se dejó el DXF de oficina, con hojas de pedido y de cortador.
 
 ```text
 \\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 07-11 - 20261127-075605
 ```
 
-Las demás `410xxx` quedan a mano mientras falte verificar el despiece, las
-herramientas o el material con su corte real. El número de líneas RPS
-2023–2026 sitúa a las dos manos `0001` y a la `410174-0049` en cabeza
-(7 cada una). `MUESTRALONA` se prepara siempre a mano.
+## Siguientes referencias a mano
+
+El SELECT de RPS entre 2023 y 2026 devolvió 216 líneas para 116 referencias
+`410xxx`. Las dos manos `0001` y la `410174-0049` empatan en número de líneas.
+La tabla recoge los siguientes contrastes, ordenados por número de líneas
+y, a igualdad, por unidades. Las demás referencias quedan a mano hasta
+contrastar sus piezas, herramientas y materiales. `MUESTRALONA` siempre se
+prepara a mano.
+
+| Referencia | Líneas / unidades de RPS | Evidencia y motivo |
+| --- | --- | --- |
+| `410174-0049` | 7 / 39 | Los cortes 04-10, 25-10 y 06-12 rectificado de 2025 rotulan lona de 2 mm, PVC 900 g y lona de 1 mm. La lona de 1 mm mezcla solapas lisas y tiras para rotular. Pendiente confirmar la cantidad de cada una y el uso de la tira que se corta primero. Q-A410-01. |
+| `410129-0003` | 6 / 16 | Dos líneas de 2023 y 2024 son de puerta plegable. Cuatro de 2025 son de cortina superior. Falta asignar el dibujo y el despiece a la segunda descripción. Q-A410-02. |
+| `410241-0011`, `410242-0004` | 5 / 69 cada una | Las diez OF imputan ALPHA negro 580 g de 2.500 mm. En el 22-06-2024 se cuentan cuatro piezas de cada uno de los cinco tipos por mano, para cuatro cortinas por mano. Se marcó D o C, como figura en los maestros. El 26-09-2026 añade el número de pieza al texto de rotulador. Q-A410-04. |
+| `410129-0105` | 5 / 66 | El juego de máquina del 04-10-2025 tiene dos tapas de 470 × 340 por cuerpo y un frente de 2.500 × 300. El cuerpo de 2.500 × 1.200 lleva seis agujeros, a diferencia de los cinco del maestro. Q-A410-03. |
+
+Las cuatro preguntas para Taller están en
+[Dudas abiertas](./dudas-abiertas.md#combursa--siguientes-cortinas-410-por-volumen).

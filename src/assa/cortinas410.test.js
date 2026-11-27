@@ -50,3 +50,15 @@ it('retiene un cambio de cotas o de marca de RPS y las muestras de lona', () => 
     expect(lote.programas).toEqual([]);
   }
 });
+
+it.each([
+  ['410129-0105', /cinco agujeros.*seis/],
+  ['410129-0003', /figura como puerta y como cortina/],
+  ['410174-0049', /solapas lisas y tiras para rotular/],
+  ['410241-0011', /marca D.*D1 a D5/],
+  ['410242-0004', /marca C.*C1 a C5/],
+])('muestra por qué %s requiere una decisión de taller', (codigo, motivo) => {
+  const lote = prepararLote(fecha, [{ ...cortinas[0], CodArticle: `H0K${codigo}` }]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'a-mano', motivos: [expect.stringMatching(motivo)] });
+  expect(lote.programas).toEqual([]);
+});

@@ -75,13 +75,21 @@ const modelos = {
   },
 };
 
+const pendientes = {
+  '410174-0049': 'Falta confirmar cuántas solapas lisas y tiras para rotular se cortan en lona de 1 mm por cortina.',
+  '410129-0003': 'La misma referencia de RPS figura como puerta y como cortina. Falta confirmar el dibujo y el despiece.',
+  '410129-0105': 'El maestro dibuja cinco agujeros y el corte real lleva seis. Taller tiene que confirmar el dibujo de corte.',
+  '410241-0011': 'El plano marca D y el corte reciente marca D1 a D5. Falta confirmar qué rotular en las piezas.',
+  '410242-0004': 'El plano marca C y el corte reciente marca C1 a C5. Falta confirmar qué rotular en las piezas.',
+};
+
 export function calcularCortina410(linea, codigo) {
   const modelo = modelos[codigo];
   const familia = codigo.slice(0, 6);
   const motivos = [];
   if (!String(linea.of_ ?? '').trim()) motivos.push('Falta la OF de RPS.');
   if (!Number.isSafeInteger(linea.cantidad) || linea.cantidad <= 0) motivos.push('La cantidad de RPS debe ser un entero positivo.');
-  if (!modelo) motivos.push('Falta contrastar las piezas, los materiales y las herramientas de esta cortina con un corte de taller.');
+  if (!modelo) motivos.push(pendientes[codigo] ?? 'Falta contrastar las piezas, los materiales y las herramientas de esta cortina con un corte de taller.');
   else if (String(linea.descripcion ?? '').trim().toUpperCase().replace(/\s+/g, ' ').replace(/\.+$/, '') !== modelo.descripcion) {
     motivos.push('La descripción de RPS difiere de la variante de cortina contrastada. Revisa las medidas, la mano y los materiales.');
   }
