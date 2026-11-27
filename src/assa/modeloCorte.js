@@ -2,6 +2,7 @@ import catalogo from './catalogoModelos.json' with { type: 'json' };
 import { codigoAssa } from './leerCorte.js';
 import { calcularFamilia, esTecho, piezaConAlto, piezaDePlantilla } from './faseA.js';
 import { canalonDe } from './canalon.js';
+import { familiaTunel } from './tuneles.js';
 
 export const CANALON_SIN_PLANTILLA = 'Canalón a mano: falta un juego de plantilla inequívoco para esta referencia y sus medidas.';
 const requiereCanalon = familia => ['420150', '430127', '430129', '430172'].includes(familia);
@@ -41,7 +42,9 @@ export function plantillaVigente(ref) {
 }
 
 export function calcularDesdePlantilla(linea) {
-  const codigo = codigoAssa(linea.CodArticle), articulo = catalogo.referencias[codigo];
+  const codigo = codigoAssa(linea.CodArticle);
+  if (familiaTunel(codigo) || codigo === 'D001624514-001') return calcularFamilia(linea);
+  const articulo = catalogo.referencias[codigo];
   const alias = articulo?.corteComo;
   const ref = alias ? catalogo.referencias[alias.codigo] : articulo;
   const medidas = ref?.medidasTerminadas.map(m => m.mm) ?? [];

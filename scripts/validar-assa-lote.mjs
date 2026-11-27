@@ -13,6 +13,7 @@ import { escribirDxf2004 } from '../src/domain/corteLona/dxfCorte.js';
 import { codigoAssa, extraerPanos } from '../src/assa/leerCorte.js';
 import { leerPlanoDxf } from './lib/plano-dxf.mjs';
 import { CARPETA_PRUEBAS_ASSA } from '../src/assa/archivos.js';
+import { familiaTunel } from '../src/assa/tuneles.js';
 
 const fecha = process.env.ASSA_FECHA || '2026-10-31';
 const carpeta = path.resolve('tmp/assa-fase-a/lote-' + fecha);
@@ -47,16 +48,15 @@ const contrasteReal = validarLineasLote(seleccion, programas(reales, modeloReal,
 const contrasteNuevo = validarLineasLote(seleccion, programas(nuevos, modeloNuevo, local), { generar });
 // Se vuelve a leer cada programa por sus coordenadas, con todos sus bordes, curvas y marcas. Las columnas de una o
 // dos sueltas no dependen así del lector de rótulos de oficina. El escritor desplaza el corte 1000 mm en ambos ejes.
+const operacionesPrograma = e => [
+  ...e.lineas.map(l => ({ tipo: 'raya', capa: l.capa, a: [l.x1, l.y1], b: [l.x2, l.y2] })),
+  ...e.arcos.map(a => ({ ...a, tipo: 'arco', punto: [a.x, a.y] })),
+  ...e.circulos.map(c => ({ ...c, tipo: 'arco', punto: [c.x, c.y], desde: 0, hasta: 360 })),
+];
 const programasEscritos = lote.programas.map(p => {
-  const e = p.entidades;
-  const esperado = [
-    ...e.lineas.map(l => ({ tipo: 'raya', capa: l.capa, a: [l.x1, l.y1], b: [l.x2, l.y2] })),
-    ...e.arcos.map(a => ({ ...a, tipo: 'arco', punto: [a.x, a.y] })),
-    ...e.circulos.map(c => ({ ...c, tipo: 'arco', punto: [c.x, c.y], desde: 0, hasta: 360 })),
-  ];
   const caja = { x0: p.x + 1000, y0: p.y + 1000, x1: p.x + 1000 + p.largoMm, y1: p.y + 1000 + p.anchoOcupadoMm };
-  return { codigo: p.codigo, palet: p.palet, ...compararOperaciones(esperado,
-    operacionesEnPano(modeloNuevo, caja, [], { conBordes: true })) };
+  return { codigo: p.codigo, palet: p.palet, ...compararOperaciones(operacionesPrograma(p.entidades),
+    operacionesEnPano(modeloNuevo, caja, [], { conBordes: true, conTaladro: !!familiaTunel(p.codigo) })) };
 });
 const canalesReales = [...new Map(lote.lineas.filter(l => l.estado === 'validado' && l.canalon)
   .map(l => [JSON.stringify(l.canalon), l])).values()].map(l => ({ codigo: l.codigo,
@@ -80,11 +80,54 @@ const filas = [...Map.groupBy(lineas.filter(l => familias.has(codigoAssa(l.CodAr
     estado: manuales.length ? 'a-mano' : 'generado', motivos: [...new Set(manuales.flatMap(l => l.motivos))],
     diferencias: [...new Set(rs.flatMap(f => f.motivos))] };
 });
+
+for (const [codigo, ls] of Map.groupBy(lote.lineas.filter(l => familiaTunel(l.codigo)), l => l.codigo)) {
+  const pedida = ls.reduce((n, l) => n + l.cantidad, 0);
+  const ps = lote.programas.filter(p => p.codigo === codigo);
+  const gs = reales.filter(g => g.codigo === codigo);
+  const manuales = ls.filter(l => l.estado === 'a-mano');
+  const [largo, ancho] = ls.find(l => l.corteMm)?.corteMm ?? [];
+  const nueva = ps.reduce((n, p) => n + p.panos * p.repeticiones, 0);
+  const leidaNueva = nuevos.filter(g => g.codigo === codigo).reduce((n, g) => n + g.panos.length * g.repeticiones, 0);
+  const real = gs.reduce((n, g) => n + g.panos.length * g.repeticiones, 0);
+  const motivos = [...new Set(manuales.flatMap(l => l.motivos))], diferencias = [];
+  const programasReales = gs.map(g => {
+    const n = g.panos.length / 2;
+    const y0 = Math.min(...g.panos.map(p => p.caja.y0)), y1 = Math.max(...g.panos.map(p => p.caja.y1));
+    const caja = { x0: g.x0, x1: g.x1, y0, y1 };
+    const pareja = ps.find(p => p.unidos);
+    const opciones = { conBordes: true, conTaladro: true };
+    // Una pareja del programa nuevo sirve de patrón por fila. Para comparar se repite
+    // en las filas del original, que puede haber usado tiradas más anchas que el rollo.
+    const base = pareja ? operacionesEnPano(operacionesPrograma(pareja.entidades),
+      { x0: 0, x1: 2 * largo, y0: 0, y1: ancho }, [], opciones) : [];
+    const esperado = Array.from({ length: n }, (_, i) => {
+      const mover = ([x, y]) => [x, y + i * ancho];
+      return base.map(p => p.tipo === 'raya' ? { ...p, a: mover(p.a), b: mover(p.b) } : { ...p, punto: mover(p.punto) });
+    }).flat();
+    const forma = compararOperaciones(esperado, operacionesEnPano(modeloReal, caja, [], opciones));
+    const medidas = Number.isInteger(n) && g.panos.every(p => p.uniones.length === 1 &&
+      p.medidasMm.every((v, j) => Math.abs(v - [largo, ancho][j]) <= 1));
+    return { panos: g.panos.length, repeticiones: g.repeticiones, anchoMm: Math.round(y1 - y0), medidas, ...forma };
+  });
+  const geometriaReal = programasReales.length > 0 && programasReales.every(p => p.medidas && p.coincide);
+  if (!geometriaReal) diferencias.push('El contorno o las herramientas del DXF real difieren o no se han podido comprobar.');
+  if (pedida !== real) diferencias.push(`El DXF de Tamara contiene ${real} unidades y RPS pide ${pedida}.`);
+  const sobreancho = [...new Set(programasReales.map(p => p.anchoMm))].filter(mm => mm > 2040);
+  if (sobreancho.length) diferencias.push(`El DXF de Tamara ocupa ${sobreancho.join(', ')} mm de ancho; la web mantiene las cotas del paño con menos filas por tirada.`);
+  const geometriaNueva = ps.length > 0 && nueva === leidaNueva &&
+    ps.every(p => p.anchoOcupadoMm <= 2040) && programasEscritos.filter(p => p.codigo === codigo).every(p => p.coincide);
+  if (ps.length && !geometriaNueva) diferencias.push('El DXF nuevo no cuadra al releer sus paños, herramientas o ancho de rollo.');
+  filas.push({ codigo, pedida, nueva, leidaNueva, real, geometriaReal, geometriaNueva, motivos, diferencias, programasReales,
+    programasNuevos: ps.map(p => ({ panos: p.panos, repeticiones: p.repeticiones, anchoMm: p.anchoOcupadoMm })),
+    estado: manuales.length ? 'a-mano' : 'generado' });
+}
 // La cantidad del lote real puede ser menor: el stock se pone en corte (Q-AS03). Se exige la forma real y la cantidad de RPS.
-if (filas.some(f => f.estado === 'generado' && (!f.geometriaReal || f.nueva !== f.pedida))) {
+const sinContraste = filas.filter(f => f.estado === 'generado' &&
+  (!f.geometriaReal || f.nueva !== f.pedida || (familiaTunel(f.codigo) && !f.geometriaNueva)));
+if (sinContraste.length) {
   throw new Error('Una referencia habilitada no coincide en contorno, herramienta, orillo o cantidad: no se publica. ' +
-    JSON.stringify(contrasteNuevo.filter(f => lote.lineas.some(l => l.IDOrderLine === f.linea && l.estado === 'validado'))
-      .map(f => ({ referencia: f.referencia, motivos: f.motivos, comprobaciones: f.comprobaciones }))));
+    JSON.stringify(sinContraste));
 }
 let publicado = null;
 if (process.argv.includes('--red')) {
@@ -99,7 +142,7 @@ const tabla = [
   '| --- | --- | --- | --- | --- | --- |',
   ...filas.map(f => `| ${f.codigo} | ${f.pedida} | ${f.nueva} | ${f.real} | ${f.geometriaReal ? 'Igual' : 'Difiere'} / ${f.nueva ? (f.geometriaNueva ? 'Igual' : 'Difiere') : 'Excluida'} | ${f.estado}: ${[...new Set([...f.motivos, ...f.diferencias])].join(' ').replaceAll('|', '\\|')} |`),
 ].join('\n');
-const informe = `# ${lote.nombre} · ${fecha}\n\nComparación generada por \`scripts/validar-assa-lote.mjs\`. Medidas y herramientas dentro de ±1 mm; cantidades exactas de RPS, sin completar stock ni ocultar las líneas a mano. NumLine, OF y palet se conservan en el listado.\n\n${tabla}\n\nOriginal leído: ${real}\n\nSHA-256 original: ${hash(real)}\n\nSHA-256 nuevo: ${hash(local)}\n\nPrueba publicada: ${publicado || 'No solicitada'}\n\nSe han releído y contrastado ${programasEscritos.length} programas escritos y ${canalesReales.length} juegos reales de canalón. El papel del cortador cuadra en sus ${lote.cortador.length} filas. Las líneas sin certificado vigente siguen a mano; la lona de 3 mm sigue pendiente de especificación.\n`;
+const informe = `# ${lote.nombre} · ${fecha}\n\nComparación generada por \`scripts/validar-assa-lote.mjs\`. Medidas y herramientas dentro de ±1 mm; cantidades exactas de RPS, sin completar stock ni ocultar las líneas a mano. NumLine, OF y palet se conservan en el listado.\n\n${tabla}\n\nOriginal leído: ${real}\n\nSHA-256 original: ${hash(real)}\n\nSHA-256 nuevo: ${hash(local)}\n\nPrueba publicada: ${publicado || 'No solicitada'}\n\nSe han releído y contrastado ${programasEscritos.length} programas escritos y ${canalesReales.length} juegos reales de canalón. El papel del cortador cuadra en sus ${lote.cortador.length} filas. Líneas a mano: ${lote.aMano}.\n`;
 fs.writeFileSync(path.join(carpeta, 'diferencias.md'), informe);
 fs.writeFileSync(path.join(carpeta, 'comparacion.json'), JSON.stringify({ fecha, lineas: filas, hashReal: hash(real), hashNuevo: hash(local), corteReal: real, publicado, parcial: lote.aMano > 0,
   programasEscritos, canalesReales, cortador: lote.cortador, contrasteReal, contrasteNuevo }, null, 2));
