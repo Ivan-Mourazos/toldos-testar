@@ -951,8 +951,20 @@ export default function App() {
       <CargandoPedido numero={cargandoCoordina} />
       <header className="cabecera glass-header">
         <div className="cabecera-logo">
-          <img src="/acopla-marca.png" alt="" width="72" height="17" />
-          <h1>ACOPLA</h1>
+          <img src="/acopla-marca.png?v=2" alt="" width="104" height="26" />
+          {/* Letras a trazo fino; las A llevan de travesaño una bambalina festoneada, como un toldo. */}
+          <h1 aria-label="ACOPLA">
+            <svg viewBox="0 0 102 20" width="80" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M0.8 18 6.5 2 12.2 18" />
+              <path d="M2.6 11.4H10.4V12a1.95 1.95 0 0 1-3.9 0a1.95 1.95 0 0 1-3.9 0Z" fill="#eea925" stroke="none" />
+              <path d="M31.66 4.34A8 8 0 1 0 31.66 15.66" />
+              <circle cx="46" cy="10" r="8" />
+              <path d="M60.8 18V2h4.7a4.5 4.5 0 0 1 0 9h-4.7" />
+              <path d="M76 2v16h8" />
+              <path d="M89.8 18 95.5 2 101.2 18" />
+              <path d="M91.6 11.4H99.4V12a1.95 1.95 0 0 1-3.9 0a1.95 1.95 0 0 1-3.9 0Z" fill="#eea925" stroke="none" />
+            </svg>
+          </h1>
         </div>
         <nav className="cabecera-pestanas tira-3d glass-chip" aria-label="Vistas">
           <TabButton active={activeTab === 'order'} disabled={working === 'review'} label="Nuevo pedido" onClick={() => irAPestana('order')} />

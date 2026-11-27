@@ -575,11 +575,12 @@ html::-webkit-scrollbar-track { background: transparent; }
   flex-shrink: 0;
   height: 52px;
   margin-block: -0.75rem;
-  padding-top: 7px;
+  padding-top: 4px;
   text-align: center;
 }
 :root[data-theme="dark"] .cabecera-logo { color: #fff; }
 .cabecera-logo img { display: block; }
+.cabecera-logo h1 svg { display: block; margin: 2px auto 0; }
 .cabecera-logo h1 {
   color: inherit;
   font-family: 'Century Gothic', 'Didact Gothic', var(--font-sans), sans-serif;
