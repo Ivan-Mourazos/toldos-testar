@@ -69,12 +69,18 @@ function superiorPerforada(ancho, {
     frente,
   ];
 }
+function contornoLateral(capa, largo, alto, inicio, fin) {
+  return [
+    [capa, 0, alto, largo, alto], [capa, largo, 0, largo, alto],
+    [capa, 0, 0, 50, inicio], [capa, 50, inicio, 50, fin], [capa, 50, fin, 0, alto],
+  ];
+}
+
 function lateral(largo, alto, [marcaInicio, marcaFin, longitudMarca], tapa, nombreFrente, frentesPorTirada,
   { material = lona3, ancho = 300, continua = false, rotulo } = {}) {
   const [inicio, fin] = [(alto - ancho) / 2, (alto + ancho) / 2], alturas = [inicio, fin];
   const cuerpo = grupo(MATERIAL_COMBURSA, 'cuerpos', 1, Math.floor(MATERIAL_COMBURSA.anchoRolloMm / alto), [largo, alto], [
-    ['DISCO1', 0, alto, largo, alto], ['DISCO1', largo, 0, largo, alto],
-    ['DISCO1', 0, 0, 50, inicio], ['DISCO1', 50, inicio, 50, fin], ['DISCO1', 50, fin, 0, alto],
+    ...contornoLateral('DISCO1', largo, alto, inicio, fin),
     ...marcasLaterales(marcaInicio, marcaInicio + longitudMarca, alturas),
     ...marcasLaterales(largo - marcaFin, largo - marcaFin - longitudMarca, alturas),
   ]);
@@ -104,6 +110,19 @@ function tapasPvcSeparadas({ ancho, alto, xs, ys, lisa: [anchoLisa, altoLisa] })
       rectangulo('DISCO1', anchoLisa, altoLisa)),
   ];
 }
+
+const lateralConMuestra = [
+  {
+    ...grupo(lona2, 'cuerpos', 1, 2, [2900, 1000], contornoLateral('CUTTER', 2900, 1000, 350, 650)),
+    marcasDeMuestra: [400, 1150].flatMap((x, i) => [450, 550].flatMap((y, j) => [
+      ['ROTULADOR', x, y, x + (i ? -20 : 20), y], ['ROTULADOR', x, y, x, y + (j ? -20 : 20)],
+    ])),
+  },
+  {
+    ...grupo(pvc, 'pares de tapas (lisa y perforada)', 2, 4, [340, 744]),
+    tapa: { ancho: 340, alto: 374, altoLisa: 370, travesano: 'DISCO1', xs: [70, 170, 270], ys: [170, 270] },
+  },
+];
 const solapas = grupo(lona1, 'juegos de 8 solapas lisas y 4 marcadas', 12, 1, [1400, 1200], [
   ...[0, 350, 700, 1050, 1400].map(x => ['DISCO1', x, 0, x, 1200]),
   ...[400, 800, 1200].map(y => ['DISCO1', 0, y, 1400, y]),
@@ -437,6 +456,10 @@ const modelos = {
     descripcion: 'PLANE LEFT SCHUPOEN/REINFORCED 2MM H=2600 SWB FRONT=400 SWB REAR=300 SWT=300 PKG STD 750MM, SIMILAR DRAW. OK410172BUT WITH SWB FRONT AND SWB REAR',
     fichero: 'OK410171.dwg', medidasMm: [2600, 1116.2], grupos: conMano('410171-0001', false),
   },
+  '410179-0054': {
+    descripcion: 'PLANE 2MM WB=300 WT=300 H=2900 SCHWARZ PVC, WHITE PKG 750MM',
+    fichero: 'OK410179.dwg', medidasMm: [2900, 1000], grupos: lateralConMuestra,
+  },
   '410182-0031': {
     descripcion: 'PLANE OBEN 2MM SC WB=300 WT=300 B=2500 SCHWARZ',
     fichero: 'OK410182.dwg', medidasMm: [2500, 1000], grupos: superiorConTapasPvc(2500, 6, 150, 2040, 2),
@@ -536,14 +559,15 @@ function columnaPvc(pares, { ancho, alto: altoTapa, altoLisa = altoTapa, travesa
   return entidadesDe(operaciones);
 }
 
-export function generarProgramasCortina(g, sueltas) {
+export function generarProgramasCortina(g, sueltas, muestras = 1) {
   return g.grupos.flatMap(p => {
-    const cantidad = g.cantidadPedida * p.gruposPorUnidad;
+    const marcados = p.marcasDeMuestra ? muestras : 0;
+    const cantidad = g.cantidadPedida * p.gruposPorUnidad - marcados;
     const capacidad = sueltas && (p.nombre === 'cuerpos' || p.tapasJuntoAlCuerpo) ? 1 : p.porTirada;
     const [largoMm, alto] = p.medidasMm;
-    return [[capacidad, Math.floor(cantidad / capacidad)], [cantidad % capacidad, 1]]
+    return [[1, marcados, p.marcasDeMuestra], [capacidad, Math.floor(cantidad / capacidad)], [cantidad % capacidad, 1]]
       .filter(([n, repeticiones]) => n && repeticiones)
-      .map(([n, repeticiones]) => {
+      .map(([n, repeticiones, marcas]) => {
         const largoTotal = p.anchoTapa ? largoMm * n : largoMm + (p.tapasJuntoAlCuerpo?.ancho ?? 0);
         const anchoOcupadoMm = p.anchoTapa ? alto : alto * n;
         let entidades;
@@ -554,7 +578,7 @@ export function generarProgramasCortina(g, sueltas) {
         }
         else {
           entidades = entidadesVacias();
-          const base = entidadesDe(p.operaciones, p.rotulos);
+          const base = entidadesDe(marcas ? [...p.operaciones, ...marcas] : p.operaciones, p.rotulos);
           for (let i = 0; i < n; i++) unirEntidades(entidades, desplazarEntidades(base, 0, i * alto));
           if (p.tapasJuntoAlCuerpo) {
             const { ancho, alto: altoTapa, capa, cerrarBase } = p.tapasJuntoAlCuerpo;
@@ -568,7 +592,8 @@ export function generarProgramasCortina(g, sueltas) {
         }
         entidades.textos.push({ capa: 'texto', x: 100, y: anchoOcupadoMm + 120, h: 200, literal: true, valor: g.referencia },
           { capa: 'texto', x: 100, y: anchoOcupadoMm + 420, h: 200, literal: true, valor: `x${repeticiones}` });
-        return { tipo: 'cortina', panos: 0, piezas: p.piezasPorGrupo * n, gruposDePiezas: n, nombrePiezas: p.nombre,
+        return { tipo: 'cortina', panos: 0, piezas: p.piezasPorGrupo * n, gruposDePiezas: n,
+          nombrePiezas: marcas ? 'cuerpos con marca de muestra (cortar primero)' : p.nombre,
           material: p.material.nombre, anchoRolloMm: p.material.anchoRolloMm, largoMm: largoTotal, anchoOcupadoMm, repeticiones, entidades };
       });
   });

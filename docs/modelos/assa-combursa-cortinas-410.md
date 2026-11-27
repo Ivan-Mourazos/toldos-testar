@@ -316,14 +316,13 @@ motivo que muestra la web es «Sin corte de taller para contrastar».
 | Referencia | Líneas / unidades de RPS | Contraste pendiente |
 | --- | --- | --- |
 | `410172-0105` y `410173-0105` | 3 / 38 cada una | Los maestros y los lotes 03-05 y 17-05 de 2025 muestran las dos manos. Queda por cuadrar el despiece completo y las solapas de lona de 1 mm por OF. |
-| `410179-0054` | 1 / 30 | El maestro y el DXF del 29-11-2025 indican hacer primero un cuerpo marcado y dejar los demás sin marcar. RPS reparte las 30 unidades entre dos palets. Queda por llevar al generador el cuerpo marcado único y contrastar el conjunto de tapas. |
 
 | Estado | Referencias |
 | --- | ---: |
-| Habilitadas | 39 |
+| Habilitadas | 40 |
 | A mano por duda de Taller | 25 |
 | A mano sin corte de taller localizado | 14 |
-| Pendientes de revisar | 38 |
+| Pendientes de revisar | 37 |
 | Total `410xxx` en RPS | 116 |
 
 ## Criba de la cuarta tanda
@@ -536,4 +535,26 @@ copias publicadas se cotejaron por SHA-256.
 
 ~~~text
 \\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 29-11 - 20261127-100715
+~~~
+
+## Sexta tanda de laterales de 2 mm con muestra
+
+| Referencia / OF | Lote de máquina | Despiece en mm | Resultado |
+| --- | --- | --- | --- |
+| `410179-0054` / `0222276` | 29-11-2025 | Cuerpo de 2 mm de 2.900 × 1.000 y dos tapas de PVC de 900 g, lisa de 340 × 370 y perforada de 340 × 374. | **Igual** en los cuatro bloques comparados, dentro de 0,001 mm. Se contrastaron un cuerpo marcado, uno suelto sin marcar, una tirada doble sin marcas y una columna de cuatro pares de tapas. |
+
+El maestro `OK410179.dwg` y el DXF indican cortar primero un cuerpo
+marcado y dejar el resto sin marcas. La OF pide 30 unidades y las
+reparte entre los palets 2 y 3. El papel saca una muestra por OF en
+su primer palet. El DXF de máquina dibuja 32 pares de tapas y el
+generador usa los 30 pares que pide RPS.
+
+La prueba regeneró las 27 líneas de RPS en 28 líneas de reparto, 63
+programas y 43 filas de cortador cuadradas. En cada palet salieron 15
+cuerpos y 30 tapas. Se cotejaron los ocho programas de esta referencia
+tras confirmar con ODA, dentro de 0,003 mm. Las dos copias publicadas
+se cotejaron por SHA-256.
+
+~~~text
+\\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 29-11 - 20261127-101905
 ~~~

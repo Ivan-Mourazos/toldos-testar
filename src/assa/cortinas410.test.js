@@ -7,6 +7,22 @@ const fecha = '2026-11-07';
 const cortinas = lineas.filter(l => /410(129-0117|130-0175|17[01]-0001)/.test(l.CodArticle));
 const palets = Object.fromEntries(cortinas.map((l, i) => [l.IDOrderLine, i + 3]));
 
+it('la 410179-0054 marca un cuerpo por OF aunque se reparta entre palets', () => {
+  const base = { ...cortinas[0], CodArticle: 'H0K410179-0054', cantidad: 15,
+    descripcion: 'PLANE 2MM WB=300 WT=300 H=2900 SCHWARZ PVC, WHITE PKG 750MM' };
+  const lineas = [base, { ...base, IDOrderLine: 'otro-palet' }];
+  const lote = prepararLote(fecha, lineas, {}, undefined, { palets: { [base.IDOrderLine]: 2, 'otro-palet': 3 } });
+  const cuerpos = lote.programas.filter(p => p.material === 'Lona 2 mm');
+  const marcados = cuerpos.filter(p => p.entidades.lineas.some(l => l.capa === 'ROTULADOR'));
+  expect(marcados).toHaveLength(1);
+  expect(marcados[0]).toMatchObject({ palet: 2, piezas: 1, repeticiones: 1 });
+  expect(marcados[0].entidades.lineas.filter(l => l.capa === 'ROTULADOR')).toHaveLength(8);
+  expect(lote.cortador.map(f => [f.palet, f.material, f.unidades, f.pedidas, f.cuadra])).toEqual([
+    [2, 'Lona 2 mm', 15, 15, true], [2, 'PVC 900 g negro', 30, 30, true],
+    [3, 'Lona 2 mm', 15, 15, true], [3, 'PVC 900 g negro', 30, 30, true],
+  ]);
+});
+
 it('la 410124-0003 corta y rotula A1, A2 y A3 una vez por unidad', () => {
   const linea = { ...cortinas[0], CodArticle: 'H0K410124-0003', cantidad: 17,
     descripcion: 'TOP PVC 0,5MM GLOSSY BLK TNB2080XTWB300XTWT400_W/O OP_480X200_OPEN RECESS' };

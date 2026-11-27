@@ -8,6 +8,10 @@ import { primitivasDeEntidades } from '../../src/assa/documentoLote.js';
 import lineas from '../../src/assa/fixtures/lote0711.json' with { type: 'json' };
 
 const casos = [
+  ['410179-0054', 'cuerpos con marca', 1, '2025/LOTE 29-11', 200646.65002, 165134.1831],
+  ['410179-0054', 'cuerpos', 1, '2025/LOTE 29-11', 204965.42775, 165134.1831, { muestras: 0 }],
+  ['410179-0054', 'cuerpos', 2, '2025/LOTE 29-11', 209958.75304, 165134.1831, { muestras: 0 }],
+  ['410179-0054', 'pares', 4, '2025/LOTE 29-11', 215727.39605, 165134.1831],
   ['410135-0108', 'juegos de cuerpo', 2, '2025/LOTE 05-04', 172066.7448, 31122.53325],
   ['410135-0108', 'frentes', 2, '2025/LOTE 05-04', 178314.68001, 31122.53325],
   ['410135-0109', 'juegos de cuerpo', 2, '2025/LOTE 29-11', 87747.32077, 155486.61867, { tapasAlLado: [3400, 1480] }],
@@ -179,6 +183,8 @@ function operacionesDelBloque(modelo, caja, { tapasArriba, tapasAlLado } = {}) {
   return [...cuerpo, ...tapas];
 }
 const adicionales = {
+  '410179-0054': { CodArticle: 'H0K410179-0054', of_: '0222276',
+    descripcion: 'PLANE 2MM WB=300 WT=300 H=2900 SCHWARZ PVC, WHITE PKG 750MM' },
   '410135-0108': { CodArticle: 'H0K410135-0108', of_: '0214987',
     descripcion: 'PLANE TWP OBEN WB300XWT300X3200 OP=600 SCHWARZ SCHWARZ' },
   '410135-0109': { CodArticle: 'H0K410135-0109', of_: '0222598',
@@ -252,7 +258,7 @@ const adicionales = {
 };
 for (const [ref, nombre, cantidad, fichero, x0, y0, opciones] of casos) {
   const linea = adicionales[ref] ?? lineas.find(l => l.CodArticle.endsWith(ref));
-  const programa = generarProgramasCortina(calcularDesdePlantilla({ ...linea, cantidad: opciones?.unidades ?? cantidad }), false)
+  const programa = generarProgramasCortina(calcularDesdePlantilla({ ...linea, cantidad: opciones?.unidades ?? cantidad }), false, opciones?.muestras)
     .find(p => p.nombrePiezas.startsWith(nombre) && p.gruposDePiezas === cantidad);
   if (!modelos.has(fichero)) modelos.set(fichero, leerPlanoDxf(path.join(base, fichero + '.dxf')).modelo
     .map(p => /^cutter$/i.test(p.capa) ? { ...p, capa: 'CUTTER' } :

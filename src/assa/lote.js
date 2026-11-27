@@ -50,6 +50,7 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados, { pal
   const reparto = validadas.map(l => ({ pedido: l.CodOrder, numeroLinea: l.NumLine, linea: l.IDOrderLine, referencia: l.CodArticle, of: l.of_, cantidad: l.cantidad, palet: l.palet }));
   const orden = (a, b) => String(a.CodOrder).localeCompare(String(b.CodOrder)) || (a.NumLine ?? 0) - (b.NumLine ?? 0);
   const programas = [], entidades = entidadesVacias();
+  const ofConMuestra = new Set();
   let x0 = 0;
   // Como los cortes mandados (LOTE 31-10): una zona por palet con «PALET n» enorme; dentro, una fila por referencia con el
   // número de su línea de pedido (RPS) en grande, y debajo todo lo que lleva el palet.
@@ -62,7 +63,16 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados, { pal
       const cantidadPedida = grupo.reduce((n, l) => n + l.cantidad, 0);
       const g = { ...grupo[0].calculo, cantidadPedida };
       if (g.grupos) {
-        const corte = generarProgramasCortina(g, sueltas[codigo] === true);
+        let muestras = 0;
+        if (g.grupos.some(p => p.marcasDeMuestra)) {
+          for (const l of grupo) {
+            const clave = JSON.stringify([codigo, String(l.of_).trim()]);
+            if (ofConMuestra.has(clave)) continue;
+            ofConMuestra.add(clave);
+            muestras++;
+          }
+        }
+        const corte = generarProgramasCortina(g, sueltas[codigo] === true, muestras);
         for (const [material, programas] of Map.groupBy(corte, p => p.material)) {
           filas.push({ grupo, material, programas: programas.map(p => ({ ...p, codigo, palet })) });
         }
