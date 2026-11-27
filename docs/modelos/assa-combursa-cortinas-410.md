@@ -24,6 +24,7 @@ de corte tal como en los lotes. Las cortinas nunca se empatan para envarillar.
 | `410143-0002` | Lona 2 mm: 1 cuerpo de 3.350 × 1.100 con 8 agujeros Ø40 y 2 tapas de 440 × 370. Lona 3 mm: 1 frente de 3.350 × 575, con abertura y dos marcas Ø8. |
 | `410143-0007` | Lona 2 mm: 1 cuerpo de 3.000 × 1.000 con 7 agujeros Ø40 y 2 tapas de 340 × 370. Lona 3 mm: 1 frente de 3.000 × 675, con los hombros de 300 mm del maestro y dos marcas Ø8. Dos cuerpos o dos frentes por tirada cuando hay unidades suficientes. |
 | `410170-0001` y `410171-0001` | Lona 2 mm 2.100: 1 cuerpo de 2.600 × 1.116,2 y 2 tapas, una con 6 agujeros Ø40. Lona 1 mm 1.500: 1 tira de 2.600 × 416,2 y 12 solapas de 350 × 400, 8 lisas y 4 marcadas. Cuerpo y tira de mano derecha o izquierda según referencia. |
+| `410182-0031` | Lona 2 mm 2.040: 1 cuerpo de 2.500 × 1.000 con 6 agujeros Ø40. PVC negro 900 g 3.000: 2 tapas lisas de 340 × 370. Caben dos cuerpos o hasta ocho tapas en el ancho de su rollo. |
 | `410182-0037` | Lona 2 mm 1.200: 1 cuerpo de 3.100 × 1.000 con 8 agujeros Ø40. PVC negro 900 g 3.000: 2 tapas lisas de 340 × 370. Se cortan hasta 8 tapas por ancho de rollo con DISCO1. |
 
 Las variantes `0117` y `0175` están rotuladas en
@@ -34,7 +35,7 @@ separada de las tiradas y multiplicadores antiguos.
 
 ## Contraste de máquina
 
-Se leyeron 61 bloques de DXF de maqcorte. Se contrastaron los contornos y
+Se leyeron 65 bloques de DXF de maqcorte. Se contrastaron los contornos y
 las marcas en ambos sentidos por herramienta, con tolerancia de 1 mm. Se
 admiten tramos consecutivos en un solo trazo o en varios cuando cubren el
 mismo recorrido. La cuenta por unidad y las incidencias de los rótulos
@@ -53,6 +54,7 @@ históricos están descritas en
 | `410143-0007` | 01-11-2025 (cuerpo y frente doble), 10-01-2026 (cuerpo y frente, sueltos y dobles, y tapas) | **Igual** con el maestro `HOK410143.dwg` y el corte rectificado del 10-01, dentro de 0,001 mm por herramienta frente a máquina. **Difiere** del 01-11 en el frente. El cuerpo coincide dentro de 0,001 mm, pero los hombros antiguos miden 400 mm y desplazan los cortes y las marcas 100 mm. Las OF `0221907` y `0223600` imputan lona negra de 2 y 3 mm. La segunda corresponde al pedido de rectificación del mismo muelle. |
 | `410170-0001` | 23-08-2025, 25-07 y 07-11 de 2026 | **Difiere** en un trazo de rotulador duplicado en el conjunto de 2 mm antiguo. Se dibuja una vez. Contorno y marcas hasta 0,005 mm. Se cortan 12 solapas por unidad, frente a las 22 del caso aislado de noviembre. |
 | `410171-0001` | 23-08-2025, 25-07 y 07-11 de 2026 | **Difiere** en el mismo trazo duplicado de rotulador. Contorno y marcas hasta 0,012 mm. Misma regla de 12 solapas, con el dibujo de la mano izquierda. |
+| `410182-0031` | 23-08-2025 (cuerpo doble y suelto y dos columnas de tapas) | **Igual** al maestro `OK410182.dwg` y al DXF de máquina por herramienta dentro de 0,001 mm. El DXF trae 22 cuerpos dobles, 1 suelto y 90 tapas. Coincide con las 45 unidades del único pedido, solicitado el 25-10. La OF `0218644` imputa lona de 2 mm de 2.040 mm y PVC negro de 900 g de 3.000 mm. |
 | `410182-0037` | 21-07-2023, 23-08-2025 y 25-07-2026 (cuerpo y tapas en los tres) | **Igual** en las piezas y herramientas según el maestro `OK410182.dwg`, dentro de 0,001 mm frente a máquina. La cantidad **difiere** en 2023, con 66 tapas para 31 cuerpos. En 2025 se ven 2 tapas y 1 cuerpo. En 2026 el cuerpo lleva «X26» y la malla tiene 52 tapas, tal como pide el maestro. Las OF imputan lona de 2 mm y resto de PVC. Los DXF rotulan ese PVC como negro de 900 g. |
 
 Para repetir el contraste, con las copias de máquina en
@@ -178,6 +180,19 @@ las dos copias por SHA-256.
 \\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 11-04 - 20261127-085907
 ```
 
+## Prueba con el lote 25-10-2025
+
+Se regeneraron 58 líneas de RPS, desglosando cinco líneas por sus palets
+de expedición. Salieron 114 programas y cuadraron las 87 filas del
+papel. La `410182-0031` lleva 23 cuerpos y 46 tapas en el palet 1, y
+22 cuerpos y 44 tapas en el palet 2. Se releyeron sus siete programas
+del DXF extraído del DWG confirmado con ODA, con desviación máxima de
+0,00041 mm. Se verificaron por SHA-256 las dos copias de prueba.
+
+```text
+\\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 25-10 - 20261127-091151
+```
+
 ## A mano por duda de Taller
 
 El SELECT de RPS entre 2023 y 2026 devolvió 216 líneas para 116 referencias
@@ -237,10 +252,10 @@ motivo que muestra la web es «Sin corte de taller para contrastar».
 
 | Estado | Referencias |
 | --- | ---: |
-| Habilitadas | 11 |
+| Habilitadas | 12 |
 | A mano por duda de Taller | 13 |
 | A mano sin corte de taller localizado | 14 |
-| Pendientes de revisar | 78 |
+| Pendientes de revisar | 77 |
 | Total `410xxx` en RPS | 116 |
 
 ## Criba de la cuarta tanda

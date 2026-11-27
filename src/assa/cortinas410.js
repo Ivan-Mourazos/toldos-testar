@@ -24,6 +24,15 @@ function cuerpoReforzado(ancho, alto, agujeros, margen) {
   ];
 }
 
+function superiorConTapasPvc(ancho, agujeros, alturaAgujeros, anchoRolloMm, porTirada) {
+  return [
+    grupo({ ...lona2, anchoRolloMm }, 'cuerpos', 1, porTirada, [ancho, 1000], [
+      ...rectangulo('CUTTER', ancho, 1000), ...agujerosDeCuerpo(ancho, agujeros, alturaAgujeros),
+    ]),
+    grupo(pvc, 'tapas lisas', 1, 8, [340, 370], rectangulo('DISCO1', 340, 370), 2),
+  ];
+}
+
 const superior = [
   grupo(MATERIAL_COMBURSA, 'cuerpos', 1, 2, [2000, 900], [
     ...rectangulo('DISCO1', 2000, 900), ...marcasLaterales(0, 20), ...marcasLaterales(2000, 1980),
@@ -202,15 +211,13 @@ const modelos = {
     descripcion: 'PLANE LEFT SCHUPOEN/REINFORCED 2MM H=2600 SWB FRONT=400 SWB REAR=300 SWT=300 PKG STD 750MM, SIMILAR DRAW. OK410172BUT WITH SWB FRONT AND SWB REAR',
     fichero: 'OK410171.dwg', medidasMm: [2600, 1116.2], grupos: conMano('410171-0001', false),
   },
+  '410182-0031': {
+    descripcion: 'PLANE OBEN 2MM SC WB=300 WT=300 B=2500 SCHWARZ',
+    fichero: 'OK410182.dwg', medidasMm: [2500, 1000], grupos: superiorConTapasPvc(2500, 6, 150, 2040, 2),
+  },
   '410182-0037': {
     descripcion: 'PLANE OBEN 2MM SC WB=300 WT=300 B=3100 SCHWARZ',
-    fichero: 'OK410182.dwg', medidasMm: [3100, 1000],
-    grupos: [
-      grupo({ ...lona2, anchoRolloMm: 1200 }, 'cuerpos', 1, 1, [3100, 1000], [
-        ...rectangulo('CUTTER', 3100, 1000), ...agujerosDeCuerpo(3100, 8, 250),
-      ]),
-      grupo(pvc, 'tapas lisas', 1, 8, [340, 370], rectangulo('DISCO1', 340, 370), 2),
-    ],
+    fichero: 'OK410182.dwg', medidasMm: [3100, 1000], grupos: superiorConTapasPvc(3100, 8, 250, 1200, 1),
   },
 };
 

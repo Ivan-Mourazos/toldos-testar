@@ -97,6 +97,21 @@ it('cuenta solo dos tapas lisas de PVC por cada cuerpo de la 410182-0037', () =>
     p.entidades.lineas.every(l => l.capa === 'DISCO1'))).toBe(true);
 });
 
+it('apila la 410182-0031 de dos en dos y prepara dos tapas de PVC por cuerpo', () => {
+  const linea = { ...cortinas[0], CodArticle: 'H0K410182-0031', cantidad: 45,
+    descripcion: 'PLANE OBEN 2MM SC WB=300 WT=300 B=2500 SCHWARZ' };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [2500, 1000] });
+  expect(lote.cortador.map(f => [f.material, f.unidades, f.pedidas, f.cuadra])).toEqual([
+    ['Lona 2 mm', 45, 45, true], ['PVC 900 g negro', 90, 90, true],
+  ]);
+  const cuerpos = lote.programas.filter(p => p.nombrePiezas === 'cuerpos');
+  expect(cuerpos.map(p => [p.repeticiones, p.piezas, p.anchoRolloMm]))
+    .toEqual([[22, 2, 2040], [1, 1, 2040]]);
+  expect(cuerpos[1].entidades.circulos.map(c => [c.capa, c.x, c.y, c.r]))
+    .toEqual([400, 740, 1080, 1420, 1760, 2100].map(x => ['CUTTER', x, 150, 20]));
+});
+
 it('la 410134-0002 aprovecha el borde de los cuerpos para cortar sus tapas', () => {
   const linea = { ...cortinas[0], CodArticle: 'H0K410134-0002', cantidad: 15,
     descripcion: 'PLANE SC STANDARD 300X300X2500 OP=600 PVC SCHWARZ, REINFORCED' };
