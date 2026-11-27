@@ -7,6 +7,30 @@ const fecha = '2026-11-07';
 const cortinas = lineas.filter(l => /410(129-0117|130-0175|17[01]-0001)/.test(l.CodArticle));
 const palets = Object.fromEntries(cortinas.map((l, i) => [l.IDOrderLine, i + 3]));
 
+it('la 410130-0018 conserva DISCO2 entre tapas y cuenta las parejas del resto', () => {
+  const linea = { ...cortinas[0], CodArticle: 'H0K410130-0018', cantidad: 5,
+    descripcion: 'SC SIDE CURTAIN 300X300X2400 ANFAHRSTREIFEN: WEIS/STANDARD' };
+  const lote = prepararLote(fecha, [linea], {}, undefined, { palets: { [linea.IDOrderLine]: 2 } });
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [2400, 1000] });
+  const tapas = lote.programas.filter(p => p.material === 'PVC 900 g negro');
+  expect(tapas.map(p => [p.piezas, p.anchoOcupadoMm, p.entidades.circulos.length])).toEqual([[8, 2960, 24], [2, 740, 6]]);
+  expect(tapas[0].entidades.lineas.filter(l => l.capa === 'DISCO2')).toHaveLength(8);
+  expect(lote.cortador.map(f => [f.material, f.unidades, f.pedidas])).toEqual([
+    ['Lona 3 mm', 5, 5], ['PLASTEL 8800 TE62 negra', 5, 5], ['PVC 900 g negro', 10, 10],
+  ]);
+});
+
+it('la 410130-0006 alterna tapas lisas y perforadas con DISCO1', () => {
+  const linea = { ...cortinas[0], CodArticle: 'H0K410130-0006', cantidad: 6,
+    descripcion: 'SC SIDE CURTAIN 300X300X3000 ANFAHRSTREIFEN:WEI?/S' };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [3000, 1000] });
+  const pvc = lote.programas.filter(p => p.material === 'PVC 900 g negro');
+  expect(pvc.map(p => p.piezas)).toEqual([8, 4]);
+  expect(pvc[0].entidades.lineas.every(l => l.capa === 'DISCO1')).toBe(true);
+  expect([...new Set(pvc[0].entidades.circulos.map(c => Math.floor(c.y / 370)))]).toEqual([1, 3, 5, 7]);
+});
+
 it('corta la 410143-0002 con ocho agujeros en el cuerpo y un frente con abertura por unidad', () => {
   const linea = { ...cortinas[0], CodArticle: 'H0K410143-0002', cantidad: 5,
     descripcion: 'PLANE SC IN COMPLETE WIDTH WB400xWT300xB3350 OP=600 PVC BACLK, 2MM REINFORCED' };
