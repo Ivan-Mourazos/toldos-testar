@@ -123,3 +123,17 @@ describe('cotas ordenadas en la vista previa (Iván, 26/11/2026)', () => {
     expect(conTexto).toBeGreaterThan(libre);
   });
 });
+
+describe('encuadre de la vista previa (Iván, 27/11/2026: «se echa por fuera y se corta»)', () => {
+  it('los textos del plano caben enteros, con su altura, no solo su punto de inserción', () => {
+    const html = renderToStaticMarkup(<VistaPreparacion vista={[
+      { tipo: 'linea', capa: 'DISCO1', id: 'a', a: { x: 0, y: 0 }, b: { x: 1500, y: 0 } },
+      { tipo: 'linea', capa: 'DISCO1', id: 'b', a: { x: 0, y: 2500 }, b: { x: 1500, y: 2500 } },
+      // Título encima del paño, alineado abajo a la izquierda: la letra sube 120 mm desde y = 2600.
+      { tipo: 'texto', capa: 'texto', id: 't', pares: [[10, '0'], [20, '2600'], [40, '120'], [1, 'LONA PVC 650 GRIS 7038']] },
+    ]} />);
+    const [, y0] = /viewBox="[\d.-]+ ([\d.-]+)/.exec(html)!.map(Number);
+    // En pantalla y va hacia abajo: lo más alto del texto es -(2600 + 120) o más arriba.
+    expect(y0).toBeLessThanOrEqual(-2720);
+  });
+});
