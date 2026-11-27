@@ -23,6 +23,21 @@ it('la 410179-0054 marca un cuerpo por OF aunque se reparta entre palets', () =>
   ]);
 });
 
+it.each([
+  ['0001', 'TRWB500XTFWB400XTWT300XB3400', 3400, 4, true],
+  ['0002', 'TRWB500XTFWB400XTWT300XB3350', 3350, 4, true],
+  ['0003', 'TRWB500XTFWB400TWT300XB3100', 3100, 8, false],
+])('corta un cuerpo y dos tapas trapezoidales de PLASTEL para la 410149-%s', (sufijo, medidas, ancho, cantidad, juntas) => {
+  const linea = { ...cortinas[0], CodArticle: `H0K410149-${sufijo}`, cantidad, descripcion: `PLANE TWP OBEN ${medidas}` };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [ancho, 1116.2] });
+  expect(lote.cortador).toMatchObject([{ material: 'PLASTEL 8800 TE62 negra', unidades: 3 * cantidad, pedidas: 3 * cantidad, cuadra: true }]);
+  const cuerpo = lote.programas.find(p => p.nombrePiezas.startsWith(juntas ? 'juegos de cuerpo' : 'cuerpos'));
+  expect(cuerpo).toMatchObject({ anchoOcupadoMm: juntas ? 1486.2 : 1116.2, largoMm: ancho });
+  const tapas = juntas ? cuerpo : lote.programas.find(p => p.nombrePiezas.startsWith('pares'));
+  expect(tapas.entidades.lineas.some(l => l.x1 !== l.x2 && l.y1 !== l.y2)).toBe(true);
+});
+
 it('la 410124-0003 corta y rotula A1, A2 y A3 una vez por unidad', () => {
   const linea = { ...cortinas[0], CodArticle: 'H0K410124-0003', cantidad: 17,
     descripcion: 'TOP PVC 0,5MM GLOSSY BLK TNB2080XTWB300XTWT400_W/O OP_480X200_OPEN RECESS' };

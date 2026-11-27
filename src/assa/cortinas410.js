@@ -130,6 +130,27 @@ const solapas = grupo(lona1, 'juegos de 8 solapas lisas y 4 marcadas', 12, 1, [1
 ]);
 
 const tramosDisco = puntos => puntos.slice(1).map((punto, i) => ['DISCO1', ...puntos[i], ...punto]);
+
+function superiorConTapasTrapezoidales(ancho, tapasJuntas = true) {
+  const alto = 1116.2, fondoTapa = 370, baseTapa = 557.74851;
+  const recorteTapa = fondoTapa / 3;
+  const ladoCorto = baseTapa - recorteTapa;
+  const operaciones = rectangulo('DISCO1', ancho, alto);
+  if (tapasJuntas) {
+    const tapas = tramosDisco([[0, alto], [recorteTapa, alto + fondoTapa], [baseTapa + ladoCorto, alto + fondoTapa],
+      [2 * baseTapa, alto]]);
+    return [grupo(MATERIAL_COMBURSA, 'juegos de cuerpo y 2 tapas', 3, 1, [ancho, alto + fondoTapa],
+      [...operaciones, ...tapas, ['DISCO1', baseTapa, alto, baseTapa, alto + fondoTapa]])];
+  }
+  const anchoPar = baseTapa + ladoCorto;
+  return [
+    grupo(MATERIAL_COMBURSA, 'cuerpos', 1, 1, [ancho, alto], operaciones),
+    grupo(MATERIAL_COMBURSA, 'pares de tapas trapezoidales', 2, 5, [anchoPar, fondoTapa], [
+      ...rectangulo('DISCO1', anchoPar, fondoTapa), ['DISCO1', baseTapa, 0, ladoCorto, fondoTapa],
+    ]),
+  ];
+}
+
 const techoConEntrante = [
   {
     ...grupo(alpha, 'pares A1 y A2', 2, 1, [864, 2100], [
@@ -447,6 +468,18 @@ const modelos = {
     grupos: superiorConAbertura(3000, {
       altoCuerpo: 1000, agujeros: 7, porTirada: 2, anchoTapa: 340, tapasEnDosFilas: true, borde: 300, fondo: 375,
     }),
+  },
+  '410149-0001': {
+    descripcion: 'PLANE TWP OBEN TRWB500XTFWB400XTWT300XB3400',
+    fichero: 'HOK410149.dwg', medidasMm: [3400, 1116.2], grupos: superiorConTapasTrapezoidales(3400),
+  },
+  '410149-0002': {
+    descripcion: 'PLANE TWP OBEN TRWB500XTFWB400XTWT300XB3350',
+    fichero: 'HOK410149.dwg', medidasMm: [3350, 1116.2], grupos: superiorConTapasTrapezoidales(3350),
+  },
+  '410149-0003': {
+    descripcion: 'PLANE TWP OBEN TRWB500XTFWB400TWT300XB3100',
+    fichero: 'HOK410149.dwg', medidasMm: [3100, 1116.2], grupos: superiorConTapasTrapezoidales(3100, false),
   },
   '410170-0001': {
     descripcion: 'PLANE RIGHT SCHUPPEN/REINFORCED 2MM H=2600 SWB FRONT=400 SWB=300, SWT=300 PKG 750MM, SIMILAR DRAW. OK410173 BUT WITH SWB FRONT AND SWB REAR',

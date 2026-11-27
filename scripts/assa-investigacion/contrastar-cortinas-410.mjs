@@ -8,6 +8,10 @@ import { primitivasDeEntidades } from '../../src/assa/documentoLote.js';
 import lineas from '../../src/assa/fixtures/lote0711.json' with { type: 'json' };
 
 const casos = [
+  ['410149-0001', 'juegos de cuerpo', 1, '2025/LOTE 19-07', 83232.32844, 66055.91236],
+  ['410149-0002', 'juegos de cuerpo', 1, '2025/LOTE 19-07', 81828.36016, 78375.87346],
+  ['410149-0003', 'cuerpos', 1, '2025/LOTE 11-10', 39997.66912, 141964.40792],
+  ['410149-0003', 'pares', 1, '2025/LOTE 11-10', 34343.11148, 143080.60792, { bordeInferior: true }],
   ['410179-0054', 'cuerpos con marca', 1, '2025/LOTE 29-11', 200646.65002, 165134.1831],
   ['410179-0054', 'cuerpos', 1, '2025/LOTE 29-11', 204965.42775, 165134.1831, { muestras: 0 }],
   ['410179-0054', 'cuerpos', 2, '2025/LOTE 29-11', 209958.75304, 165134.1831, { muestras: 0 }],
@@ -183,6 +187,12 @@ function operacionesDelBloque(modelo, caja, { tapasArriba, tapasAlLado } = {}) {
   return [...cuerpo, ...tapas];
 }
 const adicionales = {
+  '410149-0001': { CodArticle: 'H0K410149-0001', of_: '0218921',
+    descripcion: 'PLANE TWP OBEN TRWB500XTFWB400XTWT300XB3400' },
+  '410149-0002': { CodArticle: 'H0K410149-0002', of_: '0218920',
+    descripcion: 'PLANE TWP OBEN TRWB500XTFWB400XTWT300XB3350' },
+  '410149-0003': { CodArticle: 'H0K410149-0003', of_: '0221421',
+    descripcion: 'PLANE TWP OBEN TRWB500XTFWB400TWT300XB3100' },
   '410179-0054': { CodArticle: 'H0K410179-0054', of_: '0222276',
     descripcion: 'PLANE 2MM WB=300 WT=300 H=2900 SCHWARZ PVC, WHITE PKG 750MM' },
   '410135-0108': { CodArticle: 'H0K410135-0108', of_: '0214987',

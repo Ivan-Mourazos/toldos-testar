@@ -319,10 +319,10 @@ motivo que muestra la web es «Sin corte de taller para contrastar».
 
 | Estado | Referencias |
 | --- | ---: |
-| Habilitadas | 40 |
+| Habilitadas | 43 |
 | A mano por duda de Taller | 25 |
 | A mano sin corte de taller localizado | 14 |
-| Pendientes de revisar | 37 |
+| Pendientes de revisar | 34 |
 | Total `410xxx` en RPS | 116 |
 
 ## Criba de la cuarta tanda
@@ -557,4 +557,27 @@ se cotejaron por SHA-256.
 
 ~~~text
 \\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 29-11 - 20261127-101905
+~~~
+
+## Sexta tanda de superiores con tapas trapezoidales
+
+Para las tres variantes de `HOK410149.dwg`, las OF imputan PLASTEL
+TE62 de 2.040 mm. El cuerpo mide 1.116,2 mm de alto. Cada tapa tiene
+370 mm de fondo, una base de 557,749 mm y un lado paralelo de
+434,415 mm. Todas las operaciones son de DISCO1.
+
+| Referencia / OF | Lote de máquina | Despiece | Resultado |
+| --- | --- | --- | --- |
+| `410149-0001` / `0218921` | 19-07-2025 | Cuerpo de 3.400 mm con dos tapas junto al borde superior. | **Igual**. El DXF indica cuatro tiradas. |
+| `410149-0002` / `0218920` | 19-07-2025 | Cuerpo de 3.350 mm con dos tapas junto al borde superior. | **Igual**. El DXF indica cuatro tiradas. |
+| `410149-0003` / `0221421` | 11-10-2025 | Cuerpo de 3.100 mm. Las tapas se cortan por parejas giradas que comparten una diagonal. | **Igual** en el cuerpo y un par. El DXF rotula los cuerpos con ×1 y ×7. Para las ocho unidades de RPS salen ocho pares de tapas. |
+
+El contraste de los cuatro bloques da menos de 0,001 mm. Se
+regeneraron las 20 líneas del 19-07-2025, con 36 programas y las 29
+filas de cortador cuadradas. Las dos referencias del palet 1 llevan
+12 piezas cada una. Se verificó el programa de la `410149-0001`
+tras confirmar con ODA y se cotejaron las copias por SHA-256.
+
+~~~text
+\\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 19-07 - 20261127-102334
 ~~~
