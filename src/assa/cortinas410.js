@@ -180,11 +180,23 @@ const modelos = {
     grupos: lateral(2400, 1000, [50, 50, 100],
       { ancho: 340, alto: 370, travesano: 'DISCO2', recorteLisa: 0, xs: [70, 170, 270], ys: [170, 270] }, 'frentes con marca blanca', 4),
   },
+  '410130-0017': {
+    descripcion: 'SC SIDE CURTAIN 300X300X2500 PARK GUIDE=WHITE',
+    fichero: 'OK410130.dwg', medidasMm: [2500, 1000],
+    grupos: lateral(2500, 1000, [60, 10, 50],
+      { ancho: 340, alto: 370, travesano: 'DISCO1', recorteLisa: 0, xs: [70, 170, 270], ys: [170, 270] }, 'frentes con marca blanca', 5),
+  },
   '410130-0006': {
     descripcion: 'SC SIDE CURTAIN 300X300X3000 ANFAHRSTREIFEN:WEI?/S',
     fichero: 'OK410130.dwg', medidasMm: [3000, 1000],
     grupos: lateral(3000, 1000, [50, 0, 50],
       { ancho: 340, alto: 370, travesano: 'DISCO1', recorteLisa: 0, xs: [70, 170, 270], ys: [170, 270], alternas: true }, 'frentes con marca blanca', 5),
+  },
+  '410130-0004': {
+    descripcion: 'PLANE SC SEITLICH300X300X2900 ANFAHRSTREIFEN:WEISSS',
+    fichero: 'OK410130.dwg', medidasMm: [2900, 1000],
+    grupos: lateral(2900, 1000, [50, 50, 100],
+      { ancho: 340, alto: 370, travesano: 'DISCO1', recorteLisa: 0, xs: [70, 170, 270], ys: [170, 270] }, 'frentes con marca blanca', 4),
   },
   '410134-0002': {
     descripcion: 'PLANE SC STANDARD 300X300X2500 OP=600 PVC SCHWARZ, REINFORCED',

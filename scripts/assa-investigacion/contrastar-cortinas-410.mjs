@@ -16,12 +16,22 @@ const casos = [
   ['410129-0117', 'tapas', 6, '2025/LOTE 13-09', 614055.83, 218094.35],
   ['410129-0117', 'frentes', 5, '2025/LOTE 26-07', 9460.78, 2123.75],
   ['410129-0117', 'frentes', 5, '2026/LOTE 07-11_', 122197.69, 89326.49],
+  ['410130-0004', 'cuerpos', 2, '2024/LOTE 06-04', 1020611.79666, 167027.03661],
+  ['410130-0004', 'pares', 4, '2024/LOTE 06-04', 1029279.95379, 167027.03661],
+  ['410130-0004', 'frentes', 4, '2024/LOTE 06-04', 1033774.53637, 167203.91105, { rotulos: true }],
+  ['410130-0004', 'cuerpos', 2, '2024/LOTE 17-08', 65350.89929, 112340.56302],
+  ['410130-0004', 'frentes', 2, '2024/LOTE 17-08', 74738.14165, 112517.43746, { rotulos: true, difierenRotulos: true, diferenciaMm: 300 }],
   ['410130-0006', 'cuerpos', 2, '2024/LOTE 06-04', 1020636.80, 153885.29],
   ['410130-0006', 'pares', 4, '2024/LOTE 06-04', 1045715.76, 154112.29],
   ['410130-0006', 'frentes', 5, '2024/LOTE 06-04', 1035943, 154306.31],
   ['410130-0006', 'cuerpos', 2, '2024/LOTE 13-04', -83487.77, 476414.28],
   ['410130-0006', 'pares', 4, '2024/LOTE 13-04', -67426.56, 476641.28],
   ['410130-0006', 'frentes', 4, '2024/LOTE 13-04', -73876.99, 476835.30],
+  ['410130-0017', 'cuerpos', 2, '2023/LOTE 30-06', -30136.55100, 155462.72931],
+  ['410130-0017', 'frentes', 4, '2023/LOTE 30-06', -19444.39414, 155832.34946, { diferenciaMm: 372.5 }],
+  ['410130-0017', 'cuerpos', 2, '2024/LOTE 01-06', -39747.03079, 131621.38847],
+  ['410130-0017', 'pares', 2, '2024/LOTE 01-06', -23465.80410, 131901.38847],
+  ['410130-0017', 'frentes', 5, '2024/LOTE 01-06', -21821.17008, 131991.00863, { rotulos: true, difierenRotulos: true }],
   ['410130-0018', 'cuerpos', 2, '2025/LOTE 11-01', 37753.86, 159991.57],
   ['410130-0018', 'frentes', 2, '2025/LOTE 11-01', 45857.09, 160990.98, { bordeInferior: true }],
   ['410130-0018', 'cuerpos', 2, '2025/LOTE 23-08', 133546.01, 27000.16],
@@ -80,8 +90,12 @@ const modelos = new Map();
 const adicionales = {
   '410124-0003': { CodArticle: 'H0K410124-0003', of_: '0232002',
     descripcion: 'TOP PVC 0,5MM GLOSSY BLK TNB2080XTWB300XTWT400_W/O OP_480X200_OPEN RECESS' },
+  '410130-0004': { CodArticle: 'H0K410130-0004', of_: '0202637',
+    descripcion: 'PLANE SC SEITLICH300X300X2900 ANFAHRSTREIFEN:WEIßS' },
   '410130-0006': { CodArticle: 'H0K410130-0006', of_: '0202631',
     descripcion: 'SC SIDE CURTAIN 300X300X3000 ANFAHRSTREIFEN:WEI?/S' },
+  '410130-0017': { CodArticle: 'H0K410130-0017', of_: '0204748',
+    descripcion: 'SC SIDE CURTAIN 300X300X2500 PARK GUIDE=WHITE' },
   '410130-0018': { CodArticle: 'H0K410130-0018', of_: '0219216',
     descripcion: 'SC SIDE CURTAIN 300X300X2400 ANFAHRSTREIFEN: WEIS/STANDARD' },
   '410134-0002': { CodArticle: 'H0K410134-0002', of_: '0226166',
@@ -101,7 +115,8 @@ for (const [ref, nombre, cantidad, fichero, x0, y0, opciones] of casos) {
     .find(p => p.nombrePiezas.startsWith(nombre) && p.gruposDePiezas === cantidad);
   if (!modelos.has(fichero)) modelos.set(fichero, leerPlanoDxf(path.join(base, fichero + '.dxf')).modelo
     .map(p => /^cutter$/i.test(p.capa) ? { ...p, capa: 'CUTTER' } :
-      p.capa === 'Disco' ? { ...p, capa: 'DISCO1' } : p));
+      p.capa === 'Disco' ? { ...p, capa: 'DISCO1' } :
+        p.capa === 'Rotulador' ? { ...p, capa: 'ROTULADOR' } : p));
   const caja = { x0, y0, x1: x0 + programa.largoMm, y1: y0 + programa.anchoOcupadoMm };
   const reales = operacionesEnPano(modelos.get(fichero), caja, [], { conBordes: true })
     // El recorte con orígenes redondeados puede arrastrar menos de 0,02 mm de la columna vecina.
@@ -109,21 +124,20 @@ for (const [ref, nombre, cantidad, fichero, x0, y0, opciones] of casos) {
       !(opciones?.bordeInferior && Math.abs(p.a[1]) < .02 && Math.abs(p.b[1]) < .02)));
   const esperadas = primitivasDeEntidades(programa.entidades, 1).filter(p => p.tipo !== 'texto');
   const resultado = compararOperaciones(esperadas, reales, 1);
+  if (opciones?.rotulos) {
+    const rotulos = modelos.get(fichero).filter(p => p.tipo === 'texto' && p.capa === 'ROTULADOR' &&
+      p.punto[0] >= caja.x0 && p.punto[0] < caja.x1 && p.punto[1] >= caja.y0 && p.punto[1] < caja.y1);
+    const buscados = programa.entidades.textos.filter(t => t.capa === 'ROTULADOR');
+    const coincide = rotulos.length === buscados.length && buscados.every(t => rotulos.some(p => p.valor === t.valor &&
+      Math.hypot(p.punto[0] - x0 - t.x, p.punto[1] - y0 - t.y) <= 1 && Math.abs(p.h - t.h) <= 1 && p.giro === t.giro));
+    if (coincide === Boolean(opciones.difierenRotulos)) process.exitCode = 1;
+    if (!coincide) console.log(ref, fichero, nombre, 'Difiere en los textos de rotulador');
+  }
   if (opciones?.diferenciaMm !== undefined) {
     if (resultado.coincide || resultado.desviacionMm === null ||
       Math.abs(resultado.desviacionMm - opciones.diferenciaMm) > 1) process.exitCode = 1;
     console.log(ref, fichero, nombre, resultado.coincide ? 'Igual' : 'Difiere', resultado.desviacionMm?.toFixed(3), 'mm');
     continue;
-  }
-  if (opciones?.rotulos) {
-    const rotulos = modelos.get(fichero).filter(p => p.tipo === 'texto' && p.capa === 'ROTULADOR' &&
-      p.punto[0] >= caja.x0 && p.punto[0] < caja.x1 && p.punto[1] >= caja.y0 && p.punto[1] < caja.y1);
-    const buscados = programa.entidades.textos.filter(t => t.capa === 'ROTULADOR');
-    if (rotulos.length !== buscados.length || !buscados.every(t => rotulos.some(p => p.valor === t.valor &&
-      Math.hypot(p.punto[0] - x0 - t.x, p.punto[1] - y0 - t.y) <= 1 && Math.abs(p.h - t.h) <= 1 && p.giro === t.giro))) {
-      process.exitCode = 1;
-      console.log(ref, fichero, nombre, 'Difiere en los textos de rotulador');
-    }
   }
   if (resultado.coincide) {
     console.log(ref, fichero, nombre, 'Igual', resultado.desviacionMm.toFixed(3), 'mm');

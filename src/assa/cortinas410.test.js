@@ -44,6 +44,24 @@ it('la 410130-0006 alterna tapas lisas y perforadas con DISCO1', () => {
   expect([...new Set(pvc[0].entidades.circulos.map(c => Math.floor(c.y / 370)))]).toEqual([1, 3, 5, 7]);
 });
 
+it.each([
+  ['410130-0004', 'PLANE SC SEITLICH300X300X2900 ANFAHRSTREIFEN:WEIßS', 2900, 50, 50, 100],
+  ['410130-0017', 'SC SIDE CURTAIN 300X300X2500 PARK GUIDE=WHITE', 2500, 60, 10, 50],
+])('corta el lateral %s con las marcas de su maestro', (codigo, descripcion, largo, inicio, fin, marca) => {
+  const linea = { ...cortinas[0], CodArticle: `H0K${codigo}`, descripcion, cantidad: 4 };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [largo, 1000] });
+  const cuerpo = lote.programas.find(p => p.nombrePiezas === 'cuerpos');
+  expect(cuerpo.entidades.lineas.filter(l => l.capa === 'ROTULADOR' && l.y1 < 1000)
+    .map(l => [l.x1, l.x2])).toEqual([
+    [inicio, inicio + marca], [inicio, inicio + marca],
+    [largo - fin, largo - fin - marca], [largo - fin, largo - fin - marca],
+  ]);
+  expect(lote.cortador.map(f => [f.material, f.unidades, f.pedidas, f.cuadra])).toEqual([
+    ['Lona 3 mm', 4, 4, true], ['PLASTEL 8800 TE62 negra', 4, 4, true], ['PVC 900 g negro', 8, 8, true],
+  ]);
+});
+
 it('corta la 410143-0002 con ocho agujeros en el cuerpo y un frente con abertura por unidad', () => {
   const linea = { ...cortinas[0], CodArticle: 'H0K410143-0002', cantidad: 5,
     descripcion: 'PLANE SC IN COMPLETE WIDTH WB400xWT300xB3350 OP=600 PVC BACLK, 2MM REINFORCED' };
