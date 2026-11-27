@@ -39,7 +39,7 @@ separada de las tiradas y multiplicadores antiguos.
 
 ## Contraste de máquina
 
-Se leyeron 85 bloques de DXF de maqcorte. Se contrastaron los contornos y
+Se leyeron 113 bloques de DXF de maqcorte. Se contrastaron los contornos y
 las marcas en ambos sentidos por herramienta, con tolerancia de 1 mm. Se
 admiten tramos consecutivos en un solo trazo o en varios cuando cubren el
 mismo recorrido. La cuenta por unidad y las incidencias de los rótulos
@@ -314,10 +314,10 @@ motivo que muestra la web es «Sin corte de taller para contrastar».
 
 | Estado | Referencias |
 | --- | ---: |
-| Habilitadas | 17 |
+| Habilitadas | 26 |
 | A mano por duda de Taller | 15 |
 | A mano sin corte de taller localizado | 14 |
-| Pendientes de revisar | 70 |
+| Pendientes de revisar | 61 |
 | Total `410xxx` en RPS | 116 |
 
 ## Criba de la cuarta tanda
@@ -419,3 +419,35 @@ Para regenerar la tabla tras copiar los DXF en tmp, ejecuta
 | `410241-0017` | 1 / 1 | HOK410241-0015.dwg | 2024-11-30 | Forma por revisar |
 | `410242-0008` | 1 / 1 | HOK410242-0004.dwg | 2024-11-30 | Forma por revisar |
 | `410252-0003` | 1 / 1 | HOK410121.dwg | 2024-11-09 | Forma por revisar |
+
+## Quinta tanda de laterales 410130
+
+Se habilitaron las nueve variantes pendientes de `OK410130.dwg`.
+Cada unidad lleva un cuerpo de PLASTEL, una tapa lisa y una perforada
+de PVC negro de 900 g, y un frente de lona de 3 mm. Las OF imputan los
+materiales de la tabla o sus restos. Cuando RPS imputa un recorte
+genérico o solo parte del despiece, el DXF identifica los materiales del
+juego completo. El método mide corte y marcas con tolerancia de 1 mm.
+
+| Referencia / OF | Lote de máquina | Cuerpo y frente en mm | Tapas lisa / perforada en mm | Resultado |
+| --- | --- | --- | --- | --- |
+| `410130-0003` / `0219214` | 23-08-2025 | 2.800 × 1.000 / 2.750 × 300 | 340 × 370 ambas | **Igual** en geometría. **Difiere** por trazos duplicados de DISCO1 en las tapas. La web sigue el recorrido una vez. |
+| `410130-0015` / `0200467` | 03-02-2024 | 2.650 × 1.000 / 2.600 × 300 | 340 × 370 ambas | **Igual**. La descripción de RPS empieza por «00», y el maestro y la máquina coinciden en el despiece. |
+| `410130-0098` / `0223004` | 06-12-2025 | 2.700 × 1.000 / 2.650 × 300 | 340 × 370 / 340 × 373 | **Igual** en geometría. **Difiere** la letra B. La web indica guía blanca en el rótulo del programa y dibuja dos marcas longitudinales para la guía continua. |
+| `410130-0167` / `0201346` | 24-02-2024 | 2.900 × 1.100 / 2.850 × 400 | 370 × 440 / 373 × 440, giradas | **Igual**. El cuerpo se corta de uno en uno. La guía amarilla RAL 1021 se indica en el rótulo del programa. |
+| `410130-0169` / `0203528` | 11-05-2024 | 3.400 × 1.000 / 3.350 × 300 | 340 × 370 / 340 × 373 | **Igual** en geometría. **Difiere** la letra B. Se usa el cuerpo de 3.400 mm del juego, también rotulado `0166` en ese fichero. |
+| `410130-0170` / `0204972` y `0205128` | 01-06-2024 | 2.780 × 1.000 / 2.730 × 300 | 340 × 370 / 340 × 373 | **Igual**, con la A de la guía amarilla RAL 1021 en rotulador. |
+| `410130-0171` / `0205130` | 01-06-2024 | 4.300 × 1.000 / 4.250 × 300 | 340 × 370 / 340 × 373 | **Igual** en geometría. **Difiere** la letra B. La web indica guía blanca en el rótulo del programa. |
+| `410130-0172` / `0213037` | 01-02-2025 | 2.780 × 1.050 / 2.730 × 350 | 390 × 370 / 390 × 373 | **Igual**, con la A de la guía amarilla RAL 1021 en rotulador. Dos cuerpos superan los 2.040 mm del rollo, así que salen de uno en uno. |
+| `410130-0173` / `0214986` | 05-04-2025 | 3.100 × 1.000 / 3.050 × 300 | 340 × 370 / 340 × 373 | **Igual** en geometría. **Difiere** la letra B. La web indica guía blanca y rotula las dos líneas longitudinales. |
+
+Se regeneraron las 21 líneas del lote del 03-02-2024. Salieron 41
+programas y cuadraron las 33 filas del papel. En el palet 1, la
+`410130-0015` lleva cuatro cuerpos de PLASTEL, ocho tapas de PVC y cuatro
+frentes de 3 mm. Los tres programas de la referencia se releyeron tras
+confirmar el DWG con ODA, con desviación menor de 0,001 mm. Las dos
+copias se cotejaron por SHA-256.
+
+~~~text
+\\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 03-02 - 20261127-093946
+~~~

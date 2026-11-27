@@ -54,22 +54,30 @@ function superiorPerforada(ancho, { tapasJuntas = false, frentesPorTirada = 5 } 
     frente,
   ];
 }
-function lateral(largo, alto, [marcaInicio, marcaFin, longitudMarca], tapa, nombreFrente, frentesPorTirada, materialFrente = lona3) {
-  const [inicio, fin] = [(alto - 300) / 2, (alto + 300) / 2], alturas = [inicio, fin];
-  const cuerpo = grupo(MATERIAL_COMBURSA, 'cuerpos', 1, 2, [largo, alto], [
+function lateral(largo, alto, [marcaInicio, marcaFin, longitudMarca], tapa, nombreFrente, frentesPorTirada,
+  { material = lona3, ancho = 300, continua = false, rotulo } = {}) {
+  const [inicio, fin] = [(alto - ancho) / 2, (alto + ancho) / 2], alturas = [inicio, fin];
+  const cuerpo = grupo(MATERIAL_COMBURSA, 'cuerpos', 1, Math.floor(MATERIAL_COMBURSA.anchoRolloMm / alto), [largo, alto], [
     ['DISCO1', 0, alto, largo, alto], ['DISCO1', largo, 0, largo, alto],
     ['DISCO1', 0, 0, 50, inicio], ['DISCO1', 50, inicio, 50, fin], ['DISCO1', 50, fin, 0, alto],
     ...marcasLaterales(marcaInicio, marcaInicio + longitudMarca, alturas),
     ...marcasLaterales(largo - marcaFin, largo - marcaFin - longitudMarca, alturas),
   ]);
   const tapas = tapa.lisa ? tapasPvcSeparadas(tapa)
-    : [{ ...grupo(pvc, 'pares de tapas (lisa y perforada)', 2, 4, [tapa.ancho, 2 * tapa.alto]), tapa }];
-  const frente = grupo(materialFrente, nombreFrente, 1, frentesPorTirada, [largo - 50, 300], [
-    ...rectangulo('CUTTER', largo - 50, 300),
-    ['ROTULADOR', 350, 100, 350, 200], ['ROTULADOR', 350, 100, 1100, 100],
-    ['ROTULADOR', 350, 200, 1100, 200], ['ROTULADOR', 1100, 100, 1100, 200],
+    : [{ ...grupo(pvc, 'pares de tapas (lisa y perforada)', 2, 4, [tapa.ancho, tapa.alto + (tapa.altoLisa ?? tapa.alto)]), tapa }];
+  const largoFrente = largo - 50, y0 = (ancho - 100) / 2, y1 = y0 + 100;
+  const marcas = continua ? [
+    ['ROTULADOR', 0, y0, largoFrente, y0], ['ROTULADOR', 0, y1, largoFrente, y1],
+  ] : [
+    ['ROTULADOR', 350, y0, 350, y1], ['ROTULADOR', 350, y0, 1100, y0],
+    ['ROTULADOR', 350, y1, 1100, y1], ['ROTULADOR', 1100, y0, 1100, y1],
+  ];
+  const frente = grupo(material, nombreFrente, 1, frentesPorTirada, [largoFrente, ancho], [
+    ...rectangulo('CUTTER', largoFrente, ancho), ...marcas,
   ]);
-  return [cuerpo, ...tapas, frente];
+  return [cuerpo, ...tapas, rotulo ? {
+    ...frente, rotulos: [{ valor: rotulo, x: 355.2732, y: y0 + 4.4298, giro: 0 }],
+  } : frente];
 }
 
 function tapasPvcSeparadas({ ancho, alto, xs, ys, lisa: [anchoLisa, altoLisa] }) {
@@ -207,7 +215,56 @@ const modelos = {
     fichero: 'OK410130.dwg', medidasMm: [2450, 1000],
     grupos: lateral(2450, 1000, [60, 10, 50],
       { ancho: 340, alto: 373, xs: [70, 170, 270], ys: [170, 270], lisa: [340, 370] },
-      'frentes con marca blanca', 3, { ...lona3, anchoRolloMm: 1000 }),
+      'frentes con marca blanca', 3, { material: { ...lona3, anchoRolloMm: 1000 } }),
+  },
+  '410130-0167': {
+    descripcion: 'PLANE SC SEITLICH WB400XWT300XH2900 PARKING GUIDE YELLOW RAL 1021 STANDARD (750MM)',
+    fichero: 'OK410130.dwg', medidasMm: [2900, 1100],
+    grupos: lateral(2900, 1100, [60, 10, 50],
+      { ancho: 373, alto: 440, xs: [103, 203], ys: [120, 220, 320], lisa: [370, 440] },
+      'frentes con marca amarilla RAL 1021', 4, { ancho: 400 }),
+  },
+  '410130-0169': {
+    descripcion: 'PLANE SC SEITLICH WB300XWT300XH3400 PARKIING GUIDE WHITE/STANDARD (750MM)',
+    fichero: 'OK410130.dwg', medidasMm: [3400, 1000],
+    grupos: lateral(3400, 1000, [60, 10, 50],
+      { ancho: 340, alto: 373, altoLisa: 370, travesano: 'DISCO1', xs: [70, 170, 270], ys: [170, 270], lisasPorBloque: 2 },
+      'frentes con marca blanca', 4),
+  },
+  '410130-0171': {
+    descripcion: 'PLANE SC SEITLICH WB300 X WT300 X H4300 PARKING GUIDE WHITE / STANDARD (750MM)',
+    fichero: 'OK410130.dwg', medidasMm: [4300, 1000],
+    grupos: lateral(4300, 1000, [60, 10, 50],
+      { ancho: 340, alto: 373, altoLisa: 370, travesano: 'DISCO1', xs: [70, 170, 270], ys: [170, 270], lisasPorBloque: 2 },
+      'frentes con marca blanca', 4),
+  },
+  '410130-0098': {
+    descripcion: 'PLANE SC SEITLICH 300X300X2700 PKG WHITE/CONTINUOUSLLY H=2700',
+    fichero: 'OK410130.dwg', medidasMm: [2700, 1000],
+    grupos: lateral(2700, 1000, [50, 10, 50],
+      { ancho: 340, alto: 373, altoLisa: 370, travesano: 'DISCO1', xs: [70, 170, 270], ys: [170, 270], alternas: true },
+      'frentes con marca blanca continua', 5, { continua: true }),
+  },
+  '410130-0170': {
+    descripcion: 'PLANE SC SEITLICH WB300XWT300XH2780 PARKING GUIDE YELLOW RAL 1021/STANDARD (750MM)',
+    fichero: 'OK410130.dwg', medidasMm: [2780, 1000],
+    grupos: lateral(2780, 1000, [60, 10, 50],
+      { ancho: 340, alto: 373, altoLisa: 370, travesano: 'DISCO1', xs: [70, 170, 270], ys: [170, 270], lisasPorBloque: 2 },
+      'frentes con marca amarilla RAL 1021', 2, { rotulo: 'A' }),
+  },
+  '410130-0172': {
+    descripcion: 'PLANE SC SEITLICH WB350XWT300XH2780 PARKIING GUIDE YELLOW RAL1021/STANDARD (750MM)',
+    fichero: 'OK410130.dwg', medidasMm: [2780, 1050],
+    grupos: lateral(2780, 1050, [60, 10, 50],
+      { ancho: 390, alto: 373, altoLisa: 370, travesano: 'DISCO1', xs: [95, 195, 295], ys: [103, 203], alternas: true },
+      'frentes con marca amarilla RAL 1021', 2, { ancho: 350, rotulo: 'A' }),
+  },
+  '410130-0173': {
+    descripcion: 'PLANE SC SEITLICH 300X300X3100 PARKING GUIDE WHITE/CONTINUOSUSLY WITH H=3100MM',
+    fichero: 'OK410130.dwg', medidasMm: [3100, 1000],
+    grupos: lateral(3100, 1000, [50, 10, 50],
+      { ancho: 340, alto: 373, altoLisa: 370, travesano: 'DISCO1', xs: [70, 170, 270], ys: [170, 270], alternas: true },
+      'frentes con marca blanca continua', 4, { continua: true }),
   },
   '410130-0175': {
     descripcion: 'PLANE SC SEITLICH WB300XWT250XH2300 PARKING GUIDE WHITE/STANDARD (750MM)',
@@ -221,6 +278,12 @@ const modelos = {
     grupos: lateral(2400, 1000, [50, 50, 100],
       { ancho: 340, alto: 370, travesano: 'DISCO2', recorteLisa: 0, xs: [70, 170, 270], ys: [170, 270] }, 'frentes con marca blanca', 4),
   },
+  '410130-0015': {
+    descripcion: 'SC SIDE CURTAIN 00X300X2650 PARKING GUIDE:WHITE/ST',
+    fichero: 'OK410130.dwg', medidasMm: [2650, 1000],
+    grupos: lateral(2650, 1000, [50, 10, 50],
+      { ancho: 340, alto: 370, travesano: 'DISCO1', xs: [70, 170, 270], ys: [170, 270], alternas: true }, 'frentes con marca blanca', 4),
+  },
   '410130-0017': {
     descripcion: 'SC SIDE CURTAIN 300X300X2500 PARK GUIDE=WHITE',
     fichero: 'OK410130.dwg', medidasMm: [2500, 1000],
@@ -232,6 +295,13 @@ const modelos = {
     fichero: 'OK410130.dwg', medidasMm: [3000, 1000],
     grupos: lateral(3000, 1000, [50, 0, 50],
       { ancho: 340, alto: 370, travesano: 'DISCO1', recorteLisa: 0, xs: [70, 170, 270], ys: [170, 270], alternas: true }, 'frentes con marca blanca', 5),
+  },
+  '410130-0003': {
+    descripcion: 'PLANE SC SEITLICH300X300X2800ANFAHRSTREIFEN:WEISS:S',
+    fichero: 'OK410130.dwg', medidasMm: [2800, 1000],
+    grupos: lateral(2800, 1000, [50, 50, 100],
+      { ancho: 340, alto: 370, travesano: 'DISCO1', xs: [70, 170, 270], ys: [170, 270],
+        alternas: true, perforadaPrimero: true }, 'frentes con marca blanca', 4),
   },
   '410130-0004': {
     descripcion: 'PLANE SC SEITLICH300X300X2900 ANFAHRSTREIFEN:WEISSS',
@@ -327,14 +397,25 @@ function entidadesDe(operaciones, rotulos = []) {
   return e;
 }
 
-function columnaPvc(pares, { ancho, alto: altoTapa, travesano, recorteLisa, xs, ys, alternas }) {
-  const alto = 2 * pares * altoTapa;
+function columnaPvc(pares, { ancho, alto: altoTapa, altoLisa = altoTapa, travesano, recorteLisa = 0,
+  xs, ys, alternas, perforadaPrimero = false, lisasPorBloque }) {
+  const alto = pares * (altoTapa + altoLisa);
   const operaciones = [['DISCO1', 0, 0, 0, alto], ['DISCO1', ancho, 0, ancho, alto]];
-  for (let i = 0; i < 2 * pares; i++) {
-    const y = altoTapa * (i + 1);
-    const perforada = alternas ? i % 2 === 1 : i < pares;
+  const orden = [];
+  if (lisasPorBloque) {
+    for (let quedan = pares; quedan > 0; quedan -= lisasPorBloque) {
+      const bloque = Math.min(quedan, lisasPorBloque);
+      orden.push(...Array(bloque).fill(false), ...Array(bloque).fill(true));
+    }
+  } else {
+    for (let i = 0; i < 2 * pares; i++) orden.push(alternas ? (i % 2 === 0) === perforadaPrimero : i < pares);
+  }
+  let y = 0;
+  for (const perforada of orden) {
+    const inicio = y;
+    y += perforada ? altoTapa : altoLisa;
     operaciones.push([travesano, !perforada && y < alto ? recorteLisa : 0, y, ancho, y]);
-    if (perforada) operaciones.push(...xs.flatMap(x => ys.map(centro => ['CUTTER', x, centro + altoTapa * i, 20])));
+    if (perforada) operaciones.push(...xs.flatMap(x => ys.map(centro => ['CUTTER', x, centro + inicio, 20])));
   }
   return entidadesDe(operaciones);
 }

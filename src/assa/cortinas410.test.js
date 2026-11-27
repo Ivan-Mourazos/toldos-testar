@@ -90,6 +90,53 @@ it.each([
   expect(lote.cortador.find(f => f.material === 'PVC 900 g negro')).toMatchObject({ unidades: 16, pedidas: 16, cuadra: true });
 });
 
+it.each([
+  ['410130-0003', 'PLANE SC SEITLICH300X300X2800ANFAHRSTREIFEN:WEIß:S', 2, 2800, [170, 270, 910, 1010]],
+  ['410130-0015', 'SC SIDE CURTAIN 00X300X2650 PARKING GUIDE:WHITE/ST', 4, 2650, [540, 640, 1280, 1380, 2020, 2120, 2760, 2860]],
+  ['410130-0169', 'PLANE SC SEITLICH WB300XWT300XH3400 PARKIING GUIDE WHITE/STANDARD (750MM)', 2, 3400, [910, 1010, 1283, 1383]],
+  ['410130-0171', 'PLANE SC SEITLICH WB300 X WT300 X H4300 PARKING GUIDE WHITE / STANDARD (750MM)', 4, 4300,
+    [910, 1010, 1283, 1383, 2396, 2496, 2769, 2869]],
+])('conserva el orden y la altura de las tapas de %s', (codigo, descripcion, cantidad, largo, ys) => {
+  const linea = { ...cortinas[0], CodArticle: `H0K${codigo}`, descripcion, cantidad };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [largo, 1000] });
+  const tapas = lote.programas.find(p => p.material === 'PVC 900 g negro');
+  expect([...new Set(tapas.entidades.circulos.map(c => c.y))].sort((a, b) => a - b)).toEqual(ys);
+  expect(lote.cortador.find(f => f.material === 'PVC 900 g negro')).toMatchObject({
+    unidades: 2 * cantidad, pedidas: 2 * cantidad, cuadra: true,
+  });
+});
+
+it.each([
+  ['410130-0098', 'PLANE SC SEITLICH 300X300X2700 PKG WHITE/CONTINUOUSLLY H=2700', 2700, 1000, 300, true],
+  ['410130-0170', 'PLANE SC SEITLICH WB300xWT300xH2780 PARKING GUIDE YELLOW RAL 1021/STANDARD (750MM)', 2780, 1000, 300, false],
+  ['410130-0172', 'PLANE SC SEITLICH WB350XWT300XH2780 PARKIING GUIDE YELLOW RAL1021/STANDARD (750MM)', 2780, 1050, 350, false],
+  ['410130-0173', 'PLANE SC SEITLICH 300X300X3100 PARKING GUIDE WHITE/CONTINUOSUSLY WITH H=3100mm', 3100, 1000, 300, true],
+])('conserva la guía de aparcamiento del lateral %s', (codigo, descripcion, largo, alto, anchoFrente, continua) => {
+  const linea = { ...cortinas[0], CodArticle: `H0K${codigo}`, descripcion, cantidad: 2 };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [largo, alto] });
+  expect(lote.programas.every(p => p.anchoOcupadoMm <= p.anchoRolloMm)).toBe(true);
+  const frente = lote.programas.find(p => p.material === 'Lona 3 mm');
+  expect(frente.anchoOcupadoMm).toBe(anchoFrente * 2);
+  const marcas = frente.entidades.lineas.filter(l => l.capa === 'ROTULADOR');
+  if (continua) expect(marcas.map(l => l.x2 - l.x1)).toEqual(Array(4).fill(largo - 50));
+  else expect(frente.entidades.textos.filter(t => t.capa === 'ROTULADOR').map(t => t.valor)).toEqual(['A', 'A']);
+});
+
+it('corta las tapas de la 410130-0167 giradas y los cuerpos de uno en uno', () => {
+  const linea = { ...cortinas[0], CodArticle: 'H0K410130-0167', cantidad: 2,
+    descripcion: 'PLANE SC SEITLICH WB400xWT300xH2900 PARKING GUIDE YELLOW RAL 1021 STANDARD (750mm)' };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [2900, 1100] });
+  expect(lote.programas).toEqual(expect.arrayContaining([
+    expect.objectContaining({ nombrePiezas: 'cuerpos', anchoOcupadoMm: 1100, repeticiones: 2 }),
+    expect.objectContaining({ nombrePiezas: 'tapas perforadas', largoMm: 373, anchoOcupadoMm: 880, piezas: 2 }),
+    expect.objectContaining({ nombrePiezas: 'tapas lisas', largoMm: 370, anchoOcupadoMm: 880, piezas: 2 }),
+    expect.objectContaining({ nombrePiezas: 'frentes con marca amarilla RAL 1021', anchoOcupadoMm: 800, piezas: 2 }),
+  ]));
+});
+
 it('corta la 410143-0002 con ocho agujeros en el cuerpo y un frente con abertura por unidad', () => {
   const linea = { ...cortinas[0], CodArticle: 'H0K410143-0002', cantidad: 5,
     descripcion: 'PLANE SC IN COMPLETE WIDTH WB400xWT300xB3350 OP=600 PVC BACLK, 2MM REINFORCED' };
