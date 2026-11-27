@@ -231,6 +231,19 @@ const techoConEntrante = [
   },
 ];
 
+const techoConEntranteCerrado = [{
+  ...grupo(alpha, 'juegos de tres paños A1, A2 y A3', 3, 1, [3101.5, 1185.5], [
+    ...tramosDisco([[1.5, 0], [1.5, 410], [11.5, 410], [33.5, 432], [2769.5, 432]]),
+    ...[311.5, 1111.5, 1311.5, 1791.5, 1991.5, 2791.5].flatMap(x => tramosDisco([[x - 22, 432], [x, 410], [x + 22, 432]])),
+    ...tramosDisco([[2813.5, 432], [3069.5, 432], [3091.5, 410], [3101.5, 410], [3101.5, 0]]),
+    ...tramosDisco([[33.5, 432], [10, 455.5], [0, 455.5], [0, 1185.5], [820, 1185.5],
+      [820, 985.5], [1280, 985.5], [1280, 1185.5], [2100, 1185.5], [2100, 455.5], [2090, 455.5], [2066.5, 432]]),
+    ['DISCO1', 0, 865.5, 2100, 865.5],
+    ...[85, 185, 285, 1815, 1915, 2015].map(x => ['CUTTER', x, 655.5, 12.5]),
+  ]),
+  rotulos: [[3.33, 2.775], [5.178, 869.193], [5.576, 851.166]].map(([x, y]) => ({ valor: 'A', x, y, giro: 0 })),
+}];
+
 function techoSinEntrante(fondo, chaflanInterior) {
   const alto = 2100, anchoPar = 860, largoCentro = 2924;
   const chaflan = x => [[x, 0], [x, 10], [x + 20, 30], [x + 20, 2070], [x, 2090], [x, alto]];
@@ -370,6 +383,10 @@ const modelos = {
   '410121-0006': {
     descripcion: 'TOP PVC 0,5MM GLOSSY BLK. TNB2080XTWB450XTWT400_WITHOUT OP_WITHOUT CAMERA RECESS',
     fichero: 'HOK410121.dwg', medidasMm: [2924, 470], grupos: techoSinEntrante(470, false),
+  },
+  '410123-0004': {
+    descripcion: 'TOP PVC 0,5MM GLOSSY BLK TNB2080XTWB300XTWT400_W/O OP_480X200_CLOSED RECESS',
+    fichero: 'HOK410123.dwg', medidasMm: [3101.5, 1185.5], grupos: techoConEntranteCerrado,
   },
   '410124-0003': {
     descripcion: 'TOP PVC 0,5MM GLOSSY BLK TNB2080XTWB300XTWT400_W/O OP_480X200_OPEN RECESS',

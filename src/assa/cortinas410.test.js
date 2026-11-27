@@ -7,6 +7,18 @@ const fecha = '2026-11-07';
 const cortinas = lineas.filter(l => /410(129-0117|130-0175|17[01]-0001)/.test(l.CodArticle));
 const palets = Object.fromEntries(cortinas.map((l, i) => [l.IDOrderLine, i + 3]));
 
+it('corta juntos los tres paños de la 410123-0004 y respeta el entrante', () => {
+  const linea = { ...cortinas[0], CodArticle: 'H0K410123-0004', cantidad: 1,
+    descripcion: 'TOP PVC 0,5mm GLOSSY BLK TNB2080XTWB300XTWT400_W/O OP_480X200_CLOSED RECESS' };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [3101.5, 1185.5] });
+  expect(lote.cortador).toMatchObject([{ material: 'ALPHA negro 580 g', unidades: 3, pedidas: 3, cuadra: true }]);
+  const [programa] = lote.programas;
+  expect(programa.entidades.circulos).toHaveLength(6);
+  expect(programa.entidades.lineas).toContainEqual({ capa: 'DISCO1', x1: 820, y1: 985.5, x2: 1280, y2: 985.5 });
+  expect(programa.entidades.textos.filter(t => t.capa === 'ROTULADOR').map(t => t.valor)).toEqual(['A', 'A', 'A']);
+});
+
 it.each([
   ['0004', 300, 320, ' TNB2080xTWB300xTWT400_without OP_without camera recess', 210],
   ['0006', 450, 470, ' TNB2080xTWB450xTWT400_WITHOUT OP_WITHOUT CAMERA RECESS', 220],

@@ -8,6 +8,7 @@ import { primitivasDeEntidades } from '../../src/assa/documentoLote.js';
 import lineas from '../../src/assa/fixtures/lote0711.json' with { type: 'json' };
 
 const casos = [
+  ['410123-0004', 'juegos de tres paños', 1, '2024/LOTE 30-11', -26298.44776, 205046.41762, { rotulos: true }],
   ['410135-0106', 'cuerpos', 2, '2024/LOTE 06-04', 1020219.01513, 142760.80898],
   ['410135-0106', 'tapas', 2, '2024/LOTE 06-04', 1027419.01513, 142760.80898, { unidades: 1, bordeInferior: true }],
   ['410135-0106', 'frentes', 2, '2024/LOTE 06-04', 1030358.40789, 143003.35215],
@@ -204,6 +205,8 @@ function operacionesDelBloque(modelo, caja, { tapasArriba, tapasAlLado } = {}) {
   return [...cuerpo, ...tapas];
 }
 const adicionales = {
+  '410123-0004': { CodArticle: 'H0K410123-0004', of_: '0210938',
+    descripcion: 'TOP PVC 0,5mm GLOSSY BLK TNB2080XTWB300XTWT400_W/O OP_480X200_CLOSED RECESS' },
   '410135-0106': { CodArticle: 'H0K410135-0106', of_: '0202633',
     descripcion: 'PLANE TWP OBEN WB300xWT300x3600 OP=600 SCHWARZ' },
   '410121-0004': { CodArticle: 'H0K410121-0004', of_: '0205936',

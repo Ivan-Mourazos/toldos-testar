@@ -332,16 +332,15 @@ marcas laterales, pero no se localizó el juego completo de máquina.
 | `410174-0062` | 1 / 16 | El 26-07-2025 lleva el rótulo y tiene solapas separadas con disco. Falta ligar el DXF a la OF del 16-08-2025 y contrastar el despiece completo. |
 | `410241-0019`, `410242-0019` | 1 / 6 cada una | El 19-10-2024 máquina marca B y C. Queda por contrastar el contorno y las operaciones interiores de los cinco paños de cada mano. |
 | `410300-0001` | 2 / 10 | El DXF del 07-07-2023 corta un contorno distinto al de las `0005` y `0006`. Falta ligar el contorno al maestro de esta variante. |
-| `410123-0004` | 2 / 8 | El 30-11-2024 marca A en los tres paños. Queda por contrastar el contorno del entrante cerrado. |
 | `410251-0006`, `410252-0006` | 1 / 4 cada una | El 09-03-2024 rotula B y C en el PVC de 580 g. Falta cotejar los cinco paños y las marcas de la ventana de cada mano. |
 | `410155-0002` | 1 / 4 | El 10-10-2026 distingue el cuerpo de 2 mm y el bloque de solapas rotulado «1 MM NEGRA». La OF registra resto de 1,2 mm. Falta completar el contraste del cuerpo y el despiece de solapas. |
 
 | Estado | Referencias |
 | --- | ---: |
-| Habilitadas | 51 |
+| Habilitadas | 52 |
 | A mano por duda de Taller | 42 |
 | A mano sin corte de taller localizado | 15 |
-| Pendientes de revisar | 8 |
+| Pendientes de revisar | 7 |
 | Total `410xxx` en RPS | 116 |
 
 ## Criba de la cuarta tanda
@@ -687,4 +686,22 @@ y las copias publicadas se cotejaron por SHA-256.
 
 ~~~text
 \\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 06-04 - 20261127-105159
+~~~
+
+## Sexta tanda de cubierta con entrante cerrado 410123
+
+| Referencia / OF | Lote de máquina | Corte | Resultado |
+| --- | --- | --- | --- |
+| `410123-0004` / `0210938` | 30-11-2024 | Tres paños de ALPHA negro de 580 g en un bloque de 3.101,5 × 1.185,5 mm. A2 lleva un recorte de 460 × 200 mm y cada paño se marca con A. | **Igual** en DISCO1, CUTTER y ROTULADOR, con menos de 0,001 mm. |
+
+Se usó `HOK410123.dwg`, rótulo `410123-0004`. El recorte de 460 mm
+es la medida de corte del entrante de 480 mm que figura en la
+descripción de RPS. Se regeneraron las 45 líneas del 30-11-2024 en
+46 líneas de reparto. Salieron 83 programas y cuadraron 63 filas
+del cortador, incluidas las tres piezas de esta referencia en el
+palet 3. Se releyó el programa confirmado con ODA y se cotejaron
+las dos copias por SHA-256.
+
+~~~text
+\\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 30-11 - 20261127-105532
 ~~~
