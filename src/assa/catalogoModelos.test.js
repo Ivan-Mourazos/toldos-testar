@@ -47,6 +47,18 @@ it('corta la 430127-0023 con las medidas del pedido del cliente y no con la desc
   expect(lote.programas.some(p => p.tipo === 'canalon')).toBe(true);
 });
 
+it('corta la 420150-0126 con NB2900 de la plantilla del 27/11/2026 aunque RPS siga diciendo NB2950', () => {
+  const linea = { ...techo, CodArticle: 'H0K420150-0126',
+    descripcion: 'ABDECKPLANE MIT REGENRINNE NT=600 NB=2950 NH=3400 SCHWARZ' };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [9702, 666],
+    fuentePlantilla: { fichero: 'COMBURSA (CRAWFORD).dwg' } });
+  expect(lote.lineas[0].canalon.mitad).toBe(1530);
+  expect(lote.lineas[0].avisos.join(' ')).toMatch(/ROBA012908/);
+  const agujeros = calcularDesdePlantilla(linea).pieza.entidades.arcos.filter(a => a.r === 7 && a.desde === 0 && a.hasta === 360);
+  expect(agujeros.length + calcularDesdePlantilla(linea).pieza.entidades.circulos.filter(c => c.r === 7).length).toBe(12);
+});
+
 it('usa el cuerpo y el canalón de la 0005 para la 0010 con las cotas confirmadas', () => {
   const base = { ...techo, CodArticle: 'HOK430172-0005', descripcion: 'NT900 NB3250 NH3200' };
   const alias = { ...base, IDOrderLine: 'b', CodArticle: 'HOK430172-0010' };

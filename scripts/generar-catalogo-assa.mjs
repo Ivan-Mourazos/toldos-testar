@@ -171,6 +171,9 @@ referencia('430172-0010').corteComo = { codigo: '430172-0005', medidas: { NT: 90
 // La descripción de RPS (NT600NB3450NH3600) está mal; el pedido del cliente y la plantilla dicen NT600 NB2900.
 referencia('430127-0023').medidasPedidoCliente = { descripcion: 'NT600 NB2900',
   fuente: 'pedido de cliente CRW3 022074 (AR.25.01183, línea 17)' };
+// 27/11/2026: ASSA cambió la 0126 a NW2900 (pedido ROBA012908) y la oficina actualizó CRAWFORD; RPS sigue con NB2950.
+referencia('420150-0126').medidasPedidoCliente = { descripcion: 'NT600 NB2900 NH3400',
+  fuente: 'pedido de cliente ROBA012908 (AR.26.05801, posición 90) y plantilla del 27/11/2026' };
 referencia('420150-0133').materialBase = { ...MATERIAL_COMBURSA, nombre: 'PLASTEL roja', color: 'roja',
   fuente: 'docs/modelos/assa-combursa-catalogo.md#respuestas-de-taller' };
 referencia('410130-0172').materiales = ['PLASTEL negra de 2040 mm', 'PVC 900 g negro', 'Lona de 3 mm'];
