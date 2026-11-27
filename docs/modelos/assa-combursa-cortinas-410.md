@@ -328,10 +328,10 @@ motivo que muestra la web es «Sin corte de taller para contrastar».
 
 | Estado | Referencias |
 | --- | ---: |
-| Habilitadas | 48 |
+| Habilitadas | 50 |
 | A mano por duda de Taller | 40 |
 | A mano sin corte de taller localizado | 14 |
-| Pendientes de revisar | 14 |
+| Pendientes de revisar | 12 |
 | Total `410xxx` en RPS | 116 |
 
 ## Criba de la cuarta tanda
@@ -635,4 +635,25 @@ confirmar con ODA, y se cotejaron las copias por SHA-256.
 
 ~~~text
 \\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 15-03 - 20261127-103822
+~~~
+
+## Sexta tanda de cubiertas sin entrante 410121
+
+El maestro `HOK410121.dwg` y las OF dan tres paños de ALPHA negro de
+580 g por unidad. A1 y A3 se cortan por parejas de 860 × 2.100 mm.
+A1 lleva seis agujeros de 25 mm. Los números de paño identifican los
+programas y el rotulador escribe la letra A en los tres paños.
+
+| Referencia / OF | Lote de máquina | Paño A2 en mm | Resultado |
+| --- | --- | --- | --- |
+| `410121-0004` / `0205936` | 22-06-2024 | 2.924 × 320 | **Igual** en el par A1/A3 y el paño A2, incluida la letra A. Los chaflanes del par quedan por dentro. |
+| `410121-0006` / `0209391` | 19-10-2024 | 2.924 × 470 | **Igual** en el par y el paño A2, incluida la letra A. Los chaflanes del par quedan por fuera. |
+
+Se regeneraron las 25 líneas del 19-10-2024. Salieron 42 programas
+y cuadraron las 33 filas del cortador. En el palet 1, la `0006` lleva
+18 paños. Se releyeron sus tres programas tras confirmar con ODA y se
+verificaron las copias publicadas por SHA-256.
+
+~~~text
+\\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 19-10 - 20261127-104534
 ~~~

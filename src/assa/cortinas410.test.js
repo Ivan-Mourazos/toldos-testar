@@ -7,6 +7,23 @@ const fecha = '2026-11-07';
 const cortinas = lineas.filter(l => /410(129-0117|130-0175|17[01]-0001)/.test(l.CodArticle));
 const palets = Object.fromEntries(cortinas.map((l, i) => [l.IDOrderLine, i + 3]));
 
+it.each([
+  ['0004', 300, 320, ' TNB2080xTWB300xTWT400_without OP_without camera recess', 210],
+  ['0006', 450, 470, ' TNB2080xTWB450xTWT400_WITHOUT OP_WITHOUT CAMERA RECESS', 220],
+])('corta la cubierta 410121-%s con tres paños A y seis agujeros', (sufijo, fondoNominal, fondo, descripcion, xAgujero) => {
+  const linea = { ...cortinas[0], CodArticle: `H0K410121-${sufijo}`, cantidad: 1,
+    descripcion: `TOP PVC 0,5mm GLOSSY BLK.${descripcion}` };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [2924, fondoNominal + 20] });
+  expect(lote.cortador).toMatchObject([{ material: 'ALPHA negro 580 g', unidades: 3, pedidas: 3, cuadra: true }]);
+  const [laterales, centro] = lote.programas;
+  expect(laterales).toMatchObject({ largoMm: 860, anchoOcupadoMm: 2100, piezas: 2 });
+  expect(laterales.entidades.circulos).toHaveLength(6);
+  expect(laterales.entidades.circulos.every(c => c.x === xAgujero && c.r === 12.5)).toBe(true);
+  expect(centro).toMatchObject({ largoMm: 2924, anchoOcupadoMm: fondo, piezas: 1 });
+  expect(lote.programas.flatMap(p => p.entidades.textos.filter(t => t.capa === 'ROTULADOR').map(t => t.valor))).toEqual(['A', 'A', 'A']);
+});
+
 it('la 410179-0054 marca un cuerpo por OF aunque se reparta entre palets', () => {
   const base = { ...cortinas[0], CodArticle: 'H0K410179-0054', cantidad: 15,
     descripcion: 'PLANE 2MM WB=300 WT=300 H=2900 SCHWARZ PVC, WHITE PKG 750MM' };

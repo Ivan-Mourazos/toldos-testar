@@ -8,6 +8,10 @@ import { primitivasDeEntidades } from '../../src/assa/documentoLote.js';
 import lineas from '../../src/assa/fixtures/lote0711.json' with { type: 'json' };
 
 const casos = [
+  ['410121-0004', 'pares A1', 1, '2024/LOTE 22-06', -4581.54567, 261950.85051, { rotulos: true }],
+  ['410121-0004', 'paños A2', 1, '2024/LOTE 22-06', -2861.54567, 262590.85051, { rotulos: true, bordeInferior: true }],
+  ['410121-0006', 'pares A1', 1, '2024/LOTE 19-10', 12220.95328, 97044.44633, { rotulos: true }],
+  ['410121-0006', 'paños A2', 1, '2024/LOTE 19-10', 13940.95328, 98924.44633, { rotulos: true, bordeInferior: true }],
   ['410300-0005', 'piezas soldadas', 1, '2025/LOTE 15-03', 81570.45667, 84897.56347],
   ['410300-0006', 'piezas soldadas', 1, '2025/LOTE 15-03', 82175.18544, 69307.32788],
   ['410137-0037', 'cuerpos', 1, '2023/LOTE 28-04', 17019.24443, 192085.95361],
@@ -196,6 +200,10 @@ function operacionesDelBloque(modelo, caja, { tapasArriba, tapasAlLado } = {}) {
   return [...cuerpo, ...tapas];
 }
 const adicionales = {
+  '410121-0004': { CodArticle: 'H0K410121-0004', of_: '0205936',
+    descripcion: 'TOP PVC 0,5mm GLOSSY BLK. TNB2080xTWB300xTWT400_without OP_without camera recess' },
+  '410121-0006': { CodArticle: 'H0K410121-0006', of_: '0209391',
+    descripcion: 'TOP PVC 0,5MM GLOSSY BLK. TNB2080xTWB450xTWT400_WITHOUT OP_WITHOUT CAMERA RECESS' },
   '410300-0005': { CodArticle: 'H0K410300-0005', of_: '0214194', descripcion: 'SPECIAL PVC 2MM BLACK, 430X370- 170/200MM WELDED' },
   '410300-0006': { CodArticle: 'H0K410300-0006', of_: '0214195', descripcion: 'SPECIAL PVC 2MM BLACK, 430X360- 170/200MM WELDED' },
   '410137-0037': { CodArticle: 'H0K410137-0037', of_: '0190850', descripcion: 'PLANE SC STANDARD WB300xWT400xB2500' },

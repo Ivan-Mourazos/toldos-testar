@@ -231,6 +231,42 @@ const techoConEntrante = [
   },
 ];
 
+function techoSinEntrante(fondo, chaflanInterior) {
+  const alto = 2100, anchoPar = 860, largoCentro = 2924;
+  const chaflan = x => [[x, 0], [x, 10], [x + 20, 30], [x + 20, 2070], [x, 2090], [x, alto]];
+  const reflejar = puntos => puntos.map(([x, y]) => [anchoPar - x, y]);
+  const mitades = chaflanInterior
+    ? [
+      [[0, 0], [0, alto], [410, alto], ...chaflan(410).slice(0, -1).reverse()],
+      [[860, 0], [860, alto], [450, alto], [450, 2090], [430, 2070]],
+      [[430, 30], [450, 10], [450, 0]],
+    ]
+    : [
+      [[20, 0], [20, 10], [0, 30], [0, 2070], [20, 2090], [20, alto], [430, alto]],
+      reflejar([[20, 0], [20, 10], [0, 30], [0, 2070], [20, 2090], [20, alto], [430, alto]]),
+      [[430, 0], [430, alto]],
+    ];
+  const anchoTaladro = chaflanInterior ? 210 : 220;
+  const rotulos = chaflanInterior ? [[7.788, 2.849, 90], [441.79, 28.353, 90]] : [[422.212, 2097.151, 270], [848.21, 2071.647, 270]];
+  const trazosCentro = tramosDisco([[20, 0], [20, 10], [0, 30]])
+    .concat(tramosDisco([[0, fondo - 30], [20, fondo - 10], [20, fondo], [largoCentro - 20, fondo],
+      [largoCentro - 20, fondo - 10], [largoCentro, fondo - 30], [largoCentro, 30], [largoCentro - 20, 10], [largoCentro - 20, 0]]));
+  const bordesCentro = chaflanInterior ? [['DISCO1', 0, 0, 0, fondo]]
+    : [['DISCO1', 0, 0, 0, fondo - 30], ['DISCO1', largoCentro, 0, largoCentro, 30]];
+  return [
+    {
+      ...grupo(alpha, 'pares A1 y A3', 2, 1, [anchoPar, alto], [
+        ...mitades.flatMap(tramosDisco), ...[85, 185, 285, 1815, 1915, 2015].map(y => ['CUTTER', anchoTaladro, y, 12.5]),
+      ]),
+      rotulos: rotulos.map(([x, y, giro]) => ({ valor: 'A', x, y, giro, h: 5 })),
+    },
+    {
+      ...grupo(alpha, 'paños A2', 1, Math.floor(alpha.anchoRolloMm / fondo), [largoCentro, fondo], [...trazosCentro, ...bordesCentro]),
+      rotulos: [{ valor: 'A', x: 24.768, y: fondo - 7.478, giro: 0, h: 5 }],
+    },
+  ];
+}
+
 function frenteConAbertura(ancho, borde, base, fondo, marcarPliegue = true) {
   const alto = base + fondo;
   return [
@@ -324,6 +360,14 @@ function conMano(codigo, derecha) {
 }
 
 const modelos = {
+  '410121-0004': {
+    descripcion: 'TOP PVC 0,5MM GLOSSY BLK. TNB2080XTWB300XTWT400_WITHOUT OP_WITHOUT CAMERA RECESS',
+    fichero: 'HOK410121.dwg', medidasMm: [2924, 320], grupos: techoSinEntrante(320, true),
+  },
+  '410121-0006': {
+    descripcion: 'TOP PVC 0,5MM GLOSSY BLK. TNB2080XTWB450XTWT400_WITHOUT OP_WITHOUT CAMERA RECESS',
+    fichero: 'HOK410121.dwg', medidasMm: [2924, 470], grupos: techoSinEntrante(470, false),
+  },
   '410124-0003': {
     descripcion: 'TOP PVC 0,5MM GLOSSY BLK TNB2080XTWB300XTWT400_W/O OP_480X200_OPEN RECESS',
     fichero: 'HOK410124.dwg', medidasMm: [3330, 320], grupos: techoConEntrante,
@@ -660,7 +704,7 @@ function entidadesDe(operaciones, rotulos = []) {
     if (y2 === undefined) e.circulos.push({ capa, x: x1, y: y1, r: x2 });
     else e.lineas.push({ capa, x1, y1, x2, y2 });
   }
-  for (const rotulo of rotulos) e.textos.push({ ...rotulo, capa: 'ROTULADOR', h: 10, literal: true });
+  for (const rotulo of rotulos) e.textos.push({ h: 10, ...rotulo, capa: 'ROTULADOR', literal: true });
   return e;
 }
 
