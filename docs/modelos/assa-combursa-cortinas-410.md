@@ -271,6 +271,8 @@ El SELECT de RPS entre 2023 y 2026 devolvió 216 líneas para 116 referencias
 | `410172-0104`, `410173-0104` | 5 / 14 cada una | El maestro indica 12 solapas. Se ven cortes de separación con disco en 11-05-2024 y marcas de separación con rotulador en 25-10-2025. Q-A410-05. |
 | `410174-0060` | 2 / 114 | El maestro pide diez solapas sin marca y cuatro con marca por unidad. En 16-11 y 23-11 de 2024 el disco separa 560 y 580 solapas lisas, las cantidades de RPS. En las tiras marcadas, el disco corta las filas y el rotulador divide cada fila cada 350 mm. Se marcan 230 y 240 posiciones frente a 224 y 232 solapas del pedido. Q-A410-05. |
 | `410172-0105`, `410173-0105` | 3 / 38 cada una | Los dos maestros indican diez solapas lisas y cuatro marcadas por unidad. En 17-05-2025, el rotulador divide una parte de cada bloque de lona de 1 mm cada 350 mm. Q-A410-05. |
+| `410170-0002`, `410171-0002`, `410170-0003`, `410171-0003` | 1 / 4 las `0002` y 1 / 5 las `0003` | En 23-03-2024 y 04-10-2025 se cortan tiras de 400 mm de ancho y se marcan las separaciones interiores cada 350 mm en ambos pares de manos. Q-A410-05. |
+| `410173-0106` | 1 / 1 | En 21-03-2026 se cortan tiras de 200 mm, con separaciones de 350 mm a rotulador. Q-A410-05. |
 | `410174-0025`, `410174-0063` | 2 / 16 y 1 / 16 | El DXF rotulado `0025` del 27-07-2024 y el de `0063` del 11-10-2025 llevan divisiones de solapas en la capa del rotulador. En la `0025`, el DXF queda fuera de las dos fechas de entrega. Q-A410-05. |
 | `410129-0211` | 1 / 2 | RPS y el cuerpo del maestro dan 2.200 mm. El frente de 3 mm mide 3.100 mm en el maestro y bajo el rótulo del 14-03-2026. Q-A410-07. |
 | `410241-0017`, `410242-0008`, `410245-0001`, `410252-0003` | 1 / 1 cada una salvo `410245-0001` (2 / 5) | Los maestros indican la letra B, C o D. El DXF del 30-11-2024 marca B1 a B5 y C1 a C5. El del 09-11-2024 marca D1 a D3 en `410245-0001` y C1 a C5 en `410252-0003`. Q-A410-04. |
@@ -320,13 +322,16 @@ motivo que muestra la web es «Sin corte de taller para contrastar».
 
 | Referencia | Líneas / unidades de RPS | Contraste pendiente |
 | --- | --- | --- |
+| `410122-0008` | 2 / 20 | El DXF y las OF tienen PVC de 580 g y lona de 3 mm. Queda por separar A1, A2 y A3 y contar el refuerzo por unidad. |
+| `410174-0062` | 1 / 16 | El 26-07-2025 lleva el rótulo y tiene solapas separadas con disco. Falta ligar el DXF a la OF del 16-08-2025 y contrastar el despiece completo. |
+| `410300-0001` | 2 / 10 | El DXF del 07-07-2023 corta un contorno distinto al de las `0005` y `0006`. Falta ligar el contorno al maestro de esta variante. |
 
 | Estado | Referencias |
 | --- | ---: |
 | Habilitadas | 48 |
-| A mano por duda de Taller | 35 |
+| A mano por duda de Taller | 40 |
 | A mano sin corte de taller localizado | 14 |
-| Pendientes de revisar | 19 |
+| Pendientes de revisar | 14 |
 | Total `410xxx` en RPS | 116 |
 
 ## Criba de la cuarta tanda
