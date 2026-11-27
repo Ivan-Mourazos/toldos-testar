@@ -490,6 +490,7 @@ it('retiene un cambio de cotas o de marca de RPS y las muestras de lona', () => 
 
 it.each([
   ['410129-0105', /cinco agujeros.*seis/],
+  ['410155-0002', /solapas.*cuatro cortinas/],
   ['410122-0007', /letra D.*A1/],
   ['410122-0008', /letra D.*texto del plano/],
   ['410129-0003', /figura como puerta y como cortina/],

@@ -775,6 +775,7 @@ const pendientes = {
   '410143-0003': 'Los dos círculos pequeños del frente aparecen cortados en un lote y rotulados en otro. Falta confirmar la herramienta.',
   '410143-0004': hombrosSinConfirmar,
   '410143-0005': hombrosSinConfirmar,
+  '410155-0002': 'Falta confirmar cuántas solapas se cortan para las cuatro cortinas del pedido. El dibujo y el lote no dan la misma cantidad.',
   '410170-0002': separacionSolapasSinConfirmar,
   '410170-0003': separacionSolapasSinConfirmar,
   '410171-0002': separacionSolapasSinConfirmar,

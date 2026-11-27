@@ -1,10 +1,10 @@
 # Dudas abiertas
 
-## Combursa · siguientes cortinas 410 por volumen
+## Combursa · decisiones de Taller sobre cortinas 410
 
 | Duda | Pendiente | Mientras tanto |
 | --- | --- | --- |
-| Q-A410-01 | `410174-0049`. ¿Cuántas solapas lisas de 350 × 300 y cuántas tiras de 300 × 1.400 lleva cada cortina? En 25-10-2025 hay una tira con marcas extra y la nota «cortar primero» en el lote de 6. En 06-12-2025 rectificado figuran dos tiras de 300 × 1.400 para una sola cortina. ¿La primera sirve de muestra para rotular el resto? | A mano. |
+| Q-A410-01 | `410174-0049`. ¿Cuántas solapas lisas de 350 × 300 y cuántas tiras de 300 × 1.400 lleva cada cortina? En 25-10-2025 hay una tira con marcas extra y la nota «cortar primero» en el lote de 6. En 06-12-2025 rectificado figuran dos tiras de 300 × 1.400 para una sola cortina. ¿La primera sirve de muestra para rotular el resto? En `410155-0002`, el maestro anota ×4 y el bloque rotulado de máquina del 10-10-2026 dibuja once solapas en total sin multiplicador para un pedido de cuatro cortinas. ¿Cuántas solapas se cortan por unidad y se repite el bloque? | A mano. |
 | Q-A410-02 | `410129-0003`. RPS usa la referencia para una puerta plegable `410120-0003` y para una cortina superior `TWP 300×300×2500`. ¿Qué dibujo y despiece corresponden a la cortina? | A mano. |
 | Q-A410-03 | `410129-0105`. El maestro `OK410129.dwg`, rótulo `OK410129-105`, dibuja cinco agujeros Ø40 con paso de 425 mm. Máquina lleva seis con paso de 340 mm en 09-11-2024, 16-11-2024 y 04-10-2025. ¿Qué dibujo manda para el próximo corte? | A mano hasta confirmar el patrón. |
 | Q-A410-04 | `410241-0011` y `410242-0004`. Los maestros y el DXF de 22-06-2024 rotulan la letra D o C en las cinco piezas. El DXF de 26-09-2026 lleva también el número. Se ve la misma diferencia entre plano y máquina en `410241-0017` y `410242-0008` (30-11-2024), y `410245-0001` y `410252-0003` (09-11-2024). En `410122-0007`, el maestro indica D y máquina rotula A1, A2 y A3. ¿Qué se marca sobre cada pieza? | A mano hasta confirmar el rotulado. |

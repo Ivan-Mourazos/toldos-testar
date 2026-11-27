@@ -6,7 +6,71 @@ palet tiene filas separadas por material en el mismo DXF. El papel del
 cortador cuenta las piezas físicas a partir de los programas y las coteja
 con el despiece por unidad y la cantidad de RPS.
 
-## Variantes activas
+## Estado final de las 116 referencias
+
+La web corta **58** referencias. Quedan **43** a mano hasta que Taller
+resuelva una duda y **15** a mano porque falta un corte de taller
+completo para contrastar. Las **116** están clasificadas.
+
+En la tabla se leen las referencias uniendo la familia y la terminación.
+Por ejemplo, 410121 y 0004 forman 410121-0004.
+Los motivos de cada duda están en la tabla siguiente. En la última
+columna se aplica el aviso «Sin corte de taller para contrastar».
+
+| Familia | Corta la web | A mano por duda | A mano sin corte |
+| --- | --- | --- | --- |
+| 410121 | `0004`, `0006` | — | `0001` |
+| 410122 | — | `0007` (Q-A410-04), `0008` (Q-A410-09) | `0006` |
+| 410123 | `0004` | `0005` (Q-A410-10) | — |
+| 410124 | `0003` | — | — |
+| 410129 | `0010`, `0013`, `0015`, `0052`, `0053`, `0056`, `0091`, `0112`, `0115`, `0117`, `0209`, `0212` | `0002` (Q-A410-06), `0003` (Q-A410-02), `0005` (Q-A410-07), `0051` (Q-A410-06), `0105` (Q-A410-03), `0205` (Q-A410-06), `0206` (Q-A410-06), `0211` (Q-A410-07) | `0116`, `0200`, `0210`, `0213` |
+| 410130 | `0003`, `0004`, `0006`, `0015`, `0017`, `0018`, `0098`, `0165`, `0166`, `0167`, `0169`, `0170`, `0171`, `0172`, `0173`, `0175` | — | `0088`, `0176`, `0177` |
+| 410134 | `0002` | — | — |
+| 410135 | `0106`, `0108`, `0109` | — | — |
+| 410137 | `0037`, `0038`, `0039` | — | — |
+| 410143 | `0002`, `0006`, `0007` | `0003` (Q-A410-08), `0004` (Q-A410-11), `0005` (Q-A410-11) | — |
+| 410149 | `0001`, `0002`, `0003` | — | — |
+| 410155 | — | `0002` (Q-A410-01) | — |
+| 410170 | `0001` | `0002` (Q-A410-05), `0003` (Q-A410-05) | — |
+| 410171 | `0001` | `0002` (Q-A410-05), `0003` (Q-A410-05) | — |
+| 410172 | — | `0104` (Q-A410-05), `0105` (Q-A410-05) | `0107` |
+| 410173 | — | `0104` (Q-A410-05), `0105` (Q-A410-05), `0106` (Q-A410-05) | — |
+| 410174 | `0062` | `0025` (Q-A410-05), `0049` (Q-A410-01), `0060` (Q-A410-05), `0063` (Q-A410-05) | — |
+| 410179 | `0054` | `0053` (Q-A410-13) | — |
+| 410182 | `0031`, `0037` | — | `0036`, `0038` |
+| 410185 | — | — | `0001` |
+| 410186 | — | `0001` (Q-A410-12) | — |
+| 410187 | — | `0001` (Q-A410-12) | — |
+| 410241 | `0019` | `0007` (Q-A410-10), `0011` (Q-A410-04), `0017` (Q-A410-04) | `0014` |
+| 410242 | `0019` | `0003` (Q-A410-10), `0004` (Q-A410-04), `0008` (Q-A410-04) | `0007` |
+| 410245 | — | `0001` (Q-A410-04), `0002` (Q-A410-10), `0005` (Q-A410-09) | — |
+| 410251 | `0006` | `0002` (Q-A410-10) | — |
+| 410252 | `0006` | `0002` (Q-A410-10), `0003` (Q-A410-04) | — |
+| 410300 | `0001`, `0005`, `0006` | — | — |
+
+### Decisiones pendientes de Taller
+
+Cada respuesta permite retomar las referencias de su fila. El motivo
+y los lotes en que se vio la diferencia figuran en
+[Dudas abiertas](dudas-abiertas.md).
+
+| Duda | Qué tiene que confirmar Taller | Referencias que desbloquea |
+| --- | --- | --- |
+| Q-A410-01 | Cuántas solapas y tiras se cortan por cortina. En la 410174-0049, si la primera tira sirve de muestra. En la 410155-0002, si se repite el bloque de solapas. | `410155-0002`, `410174-0049` |
+| Q-A410-02 | Qué dibujo y despiece corresponden a la cortina con una referencia que RPS también usa para una puerta. | `410129-0003` |
+| Q-A410-03 | Qué patrón de agujeros se corta, el de cinco del maestro o el de seis de máquina. | `410129-0105` |
+| Q-A410-04 | Qué se marca en la lona de cada paño, la letra, el número o ambos. | `410122-0007`, `410241-0011`, `410241-0017`, `410242-0004`, `410242-0008`, `410245-0001`, `410252-0003` |
+| Q-A410-05 | Si las solapas se entregan ya separadas o en tiras con las separaciones marcadas. | `410170-0002`, `410170-0003`, `410171-0002`, `410171-0003`, `410172-0104`, `410172-0105`, `410173-0104`, `410173-0105`, `410173-0106`, `410174-0025`, `410174-0060`, `410174-0063` |
+| Q-A410-06 | Si máquina tiene que hacer las cuatro marcas laterales del maestro. | `410129-0002`, `410129-0051`, `410129-0205`, `410129-0206` |
+| Q-A410-07 | Qué largo manda cuando el pedido y el corte del frente dan medidas distintas. | `410129-0005`, `410129-0211` |
+| Q-A410-08 | Si los dos círculos del frente se cortan con cuchilla o se hacen con rotulador. | `410143-0003` |
+| Q-A410-09 | Si la D va marcada sobre la lona o figura como texto del plano. | `410122-0008`, `410245-0005` |
+| Q-A410-10 | Qué lona negra se prepara cuando la ficha de RPS y el DXF indican gramajes distintos. | `410123-0005`, `410241-0007`, `410242-0003`, `410245-0002`, `410251-0002`, `410252-0002` |
+| Q-A410-11 | Si se dejan 300 o 400 mm de lona a cada lado de la abertura. | `410143-0004`, `410143-0005` |
+| Q-A410-12 | Si la tira de lona de 1 mm se corta a 400 o a 416,2 mm en cada mano. | `410186-0001`, `410187-0001` |
+| Q-A410-13 | Con qué herramienta se corta el cuerpo, si las tapas se perforan o se marcan y cuántos cuerpos se rotulan. | `410179-0053` |
+
+## Despieces de las primeras variantes habilitadas
 
 Se identifica la variante por referencia y descripción de RPS. Se aceptan
 diferencias de mayúsculas, espacios y puntos finales. Un cambio de cotas,
@@ -40,8 +104,9 @@ separada de las tiradas y multiplicadores antiguos.
 
 ## Contraste de máquina
 
-Se leyeron 140 bloques de DXF de maqcorte. Se contrastaron los contornos y
-las marcas en ambos sentidos por herramienta, con tolerancia de 1 mm. Se
+El contraste acumulado de DXF de maqcorte da **168 bloques iguales** y
+**12 diferencias documentadas**. Se contrastaron los contornos y las
+marcas en ambos sentidos por herramienta, con tolerancia de 1 mm. Se
 admiten tramos consecutivos en un solo trazo o en varios cuando cubren el
 mismo recorrido. La cuenta por unidad y las incidencias de los rótulos
 históricos están descritas en
@@ -277,6 +342,7 @@ El SELECT de RPS entre 2023 y 2026 devolvió 216 líneas para 116 referencias
 | `410129-0211` | 1 / 2 | RPS y el cuerpo del maestro dan 2.200 mm. El frente de 3 mm mide 3.100 mm en el maestro y bajo el rótulo del 14-03-2026. Q-A410-07. |
 | `410241-0017`, `410242-0008`, `410245-0001`, `410252-0003` | 1 / 1 cada una salvo `410245-0001` (2 / 5) | Los maestros indican la letra B, C o D. El DXF del 30-11-2024 marca B1 a B5 y C1 a C5. El del 09-11-2024 marca D1 a D3 en `410245-0001` y C1 a C5 en `410252-0003`. Q-A410-04. |
 | `410252-0002` | 2 / 20 | En 10-05 y 05-07 de 2025 el corte dice PVC negro de 580 g. La OF `0215988` imputa `POLY50NEGRO250C`, descrito con «620» y «(580)». Q-A410-10. |
+| `410155-0002` | 1 / 4 | `0K410155.dwg` anota ×4 en la solapa de lona fina. El bloque rotulado del 10-10-2026 tiene diez solapas en una cuadrícula y una más aparte, sin multiplicador. La OF `0232559` pide cuatro cortinas y registra resto de lona de 1,2 mm. Q-A410-01. |
 | `410122-0007` | 1 / 1 | El maestro `HOK410122.dwg` pone D en número de paño. El 09-11-2024 máquina marca A1, A2 y A3 sobre el PVC de 580 g. Q-A410-04. |
 | `410122-0008` | 2 / 20 | El maestro pone D en número de paño. Los DXF del 10-05 y 17-05 de 2025 dejan A1, A2 y A3 como texto del plano. Q-A410-09. |
 | `410179-0053` | 1 / 90 | `OK410179.dwg` indica rotulación continua. El 30-08-2025 el cuerpo de 2 mm se corta con DISCO1 y llevan marcas los dos cuerpos de la tirada. Los círculos de la tapa de PVC de 900 g son de ROTULADOR. El 01-10-2025, el cuerpo y los círculos son de CUTTER y solo se rotula el primer cuerpo. RPS reparte la OF `0218643` en bultos de 34, 28 y 28. El DXF de agosto indica 30 unidades para el 30-08 y el de octubre indica dos palets de 28. Q-A410-13. |
@@ -324,20 +390,6 @@ motivo que muestra la web es «Sin corte de taller para contrastar».
 El único DXF rotulado `410129-0210` es el del 18-10-2025. El frente
 está en la capa de oficina `curv`. Del cuerpo hay tramos de disco y
 marcas laterales, pero no se localizó el juego completo de máquina.
-
-## Siguientes contrastes por volumen
-
-| Referencia | Líneas / unidades de RPS | Contraste pendiente |
-| --- | --- | --- |
-| `410155-0002` | 1 / 4 | El 10-10-2026 distingue el cuerpo de 2 mm y el bloque de solapas rotulado «1 MM NEGRA». La OF registra resto de 1,2 mm. Falta completar el contraste del cuerpo y el despiece de solapas. |
-
-| Estado | Referencias |
-| --- | ---: |
-| Habilitadas | 58 |
-| A mano por duda de Taller | 42 |
-| A mano sin corte de taller localizado | 15 |
-| Pendientes de revisar | 1 |
-| Total `410xxx` en RPS | 116 |
 
 ## Criba de la cuarta tanda
 
