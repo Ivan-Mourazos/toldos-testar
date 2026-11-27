@@ -44,6 +44,42 @@ it('la 410130-0006 alterna tapas lisas y perforadas con DISCO1', () => {
   expect([...new Set(pvc[0].entidades.circulos.map(c => Math.floor(c.y / 370)))]).toEqual([1, 3, 5, 7]);
 });
 
+it.each([
+  ['0010', 'PLANE TWP OBEN 300x300x1900', 1900, 4, [370, 340], false],
+  ['0013', 'TOP CURTAIN TWP 300x300x2250', 2250, 5, [340, 370], true],
+  ['0015', 'PLANE TWP OBEN 300x300x2600', 2600, 6, [340, 370], true],
+  ['0052', 'TOP CURTAIN TWP 300X300X3200 U=BLACK/A=BLACK', 3200, 8, [340, 370], true],
+  ['0056', 'TOP CURTAIN TWP 300X300X1850 U=BLACK/A=BLANCK', 1850, 4, [340, 370], false],
+  ['0091', 'PLANE TWP OBEN 300x300X3600 PVC SCHWARZ', 3600, 9, [340, 370], false],
+  ['0209', 'PLANE TWP OBEN WB300XWT300X3400', 3400, 9, [340, 370], false],
+])('corta el superior de PLASTEL 410129-%s con su patrón de agujeros', (sufijo, descripcion, ancho, agujeros, tapa, juntas) => {
+  const linea = { ...cortinas[0], CodArticle: `H0K410129-${sufijo}`, descripcion, cantidad: 2 };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [ancho, 1000] });
+  const cuerpo = lote.programas.find(p => p.entidades.circulos.length > 0);
+  expect(cuerpo.entidades.circulos).toHaveLength(2 * agujeros);
+  expect(cuerpo.largoMm).toBe(ancho + (juntas ? tapa[0] : 0));
+  expect(lote.cortador.map(f => [f.material, f.unidades, f.pedidas, f.cuadra])).toEqual([
+    ['Lona 3 mm', 2, 2, true], ['PLASTEL 8800 TE62 negra', 6, 6, true],
+  ]);
+});
+
+it.each([
+  ['0053', 'TOP CURTAIN TWP WB300xWT250x3100 BLACK', 3100, 900, 7, [320, 340], 300, 3100, 1240],
+  ['0112', 'PLANE TWP OBEN WB400xWT300xB=2500 PVC BLACK', 2500, 1100, 6, [370, 440], 400, 2870, 1100],
+  ['0115', 'PLANE TWP OBEN WB400xWT400xB=2550 MATTE PVC BLACK', 2550, 1300, 6, [470, 440], 400, 2550, 1740],
+])('corta las variantes altas del superior 410129-%s con su colocación de tapas', (sufijo, descripcion, ancho, alto, agujeros, tapa, anchoFrente, largoBloque, altoBloque) => {
+  const linea = { ...cortinas[0], CodArticle: `H0K410129-${sufijo}`, descripcion, cantidad: 1 };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [ancho, alto] });
+  const cuerpo = lote.programas.find(p => p.entidades.circulos.length > 0);
+  expect(cuerpo.entidades.circulos).toHaveLength(agujeros);
+  expect(cuerpo).toMatchObject({ largoMm: largoBloque, anchoOcupadoMm: altoBloque, piezas: 3 });
+  const largoCierre = largoBloque === ancho ? 2 * tapa[0] : tapa[0];
+  expect(cuerpo.entidades.lineas.some(l => Math.abs(l.x1 - l.x2) === largoCierre && l.y1 === l.y2)).toBe(true);
+  expect(lote.programas.find(p => p.material === 'Lona 3 mm').anchoOcupadoMm).toBe(anchoFrente);
+});
+
 it('corta la 410129-0212 con las tapas unidas al borde del cuerpo de PLASTEL', () => {
   const linea = { ...cortinas[0], CodArticle: '0K410129-0212', cantidad: 8,
     descripcion: 'Top PVC WB300xWT250X1900 black' };

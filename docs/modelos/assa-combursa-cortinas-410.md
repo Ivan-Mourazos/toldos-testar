@@ -39,7 +39,7 @@ separada de las tiradas y multiplicadores antiguos.
 
 ## Contraste de máquina
 
-Se leyeron 113 bloques de DXF de maqcorte. Se contrastaron los contornos y
+Se leyeron 137 bloques de DXF de maqcorte. Se contrastaron los contornos y
 las marcas en ambos sentidos por herramienta, con tolerancia de 1 mm. Se
 admiten tramos consecutivos en un solo trazo o en varios cuando cubren el
 mismo recorrido. La cuenta por unidad y las incidencias de los rótulos
@@ -314,10 +314,10 @@ motivo que muestra la web es «Sin corte de taller para contrastar».
 
 | Estado | Referencias |
 | --- | ---: |
-| Habilitadas | 26 |
+| Habilitadas | 36 |
 | A mano por duda de Taller | 15 |
 | A mano sin corte de taller localizado | 14 |
-| Pendientes de revisar | 61 |
+| Pendientes de revisar | 51 |
 | Total `410xxx` en RPS | 116 |
 
 ## Criba de la cuarta tanda
@@ -450,4 +450,41 @@ copias se cotejaron por SHA-256.
 
 ~~~text
 \\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 03-02 - 20261127-093946
+~~~
+
+## Quinta tanda de superiores de PLASTEL 410129
+
+El maestro de las diez altas es `OK410129.dwg`. Cada unidad lleva un
+cuerpo perforado y dos tapas lisas de PLASTEL negro de 2.040 mm,
+más un frente de lona de 3 mm. Los cortes y marcas de los bloques
+comparados son **iguales** por herramienta dentro de 0,001 mm. Para
+verificar las piezas se usan zonas de los bloques originales. La
+cantidad se toma de RPS.
+
+| Referencia / OF contrastada | DXF comparados | Cuerpo y agujeros Ø40 | Tapas y frente en mm |
+| --- | --- | --- | --- |
+| `410129-0010` / `0204747` | 01-06-2024 | 1.900 × 1.000, 4 | 370 × 340. Frente 1.900 × 300. Se usó el cuerpo suelto para el contraste. En una tirada múltiple del DXF hay un solape de 2,558 mm entre cuerpos. |
+| `410129-0013` / `0202636` | 06-04-2024 | 2.250 × 1.000, 5 | 340 × 370 junto al cuerpo. Frente 2.250 × 300, identificado en el DXF. La OF imputa PLASTEL. |
+| `410129-0015` / `0219213` | 23-08-2025 | 2.600 × 1.000, 6 | 340 × 370 junto al cuerpo. Frente 2.600 × 300. |
+| `410129-0052` / `0214985` | 05-04-2025 | 3.200 × 1.000, 8 | 340 × 370 junto al cuerpo. Frente 3.200 × 300. |
+| `410129-0053` / `0215982` | 10-05-2025 | 3.100 × 900, 7 | 320 × 340 sobre el cuerpo. Frente 3.100 × 300. El contraste delimita el cuerpo y las tapas porque hay otros cortes en el hueco de la tirada. |
+| `410129-0056` / `0197602` | 28-10-2023 | 1.850 × 1.000, 4 | 340 × 370 en su propia tirada. Frente 1.850 × 300. |
+| `410129-0091` / `0202634` | 06-04-2024 | 3.600 × 1.000, 9 | 340 × 370. Se contrastó una columna de cuatro tapas. Frente 3.600 × 300. |
+| `410129-0112` / `0201344` | 24-02-2024 | 2.500 × 1.100, 6 | 370 × 440 junto al cuerpo. Frente 2.500 × 400. El rótulo del 01-02-2025 aparece en otra zona sin el juego de 2.500 mm. |
+| `410129-0115` / `0207029` | 27-07-2024 | 2.550 × 1.300, 6 | 470 × 440 sobre el cuerpo. Frente 2.550 × 400. |
+| `410129-0209` / `0218642` y `0222484` | 05-07-2025 (cuerpo), 22-11-2025 (tapas y frente) | 3.400 × 1.000, 9 | 340 × 370. Frente 3.400 × 300. |
+
+Siguen pendientes `410129-0210` y `410129-0211`. La primera aparece con
+operaciones en capas de dibujo de oficina y la OF solo imputa PLASTEL.
+En la segunda se localizó un frente de 3.100 mm bajo el rótulo. El
+pedido indica 2.200 mm y falta su juego completo de máquina.
+
+Se regeneraron las 22 líneas del 23-08-2025. Salieron 43 programas y
+cuadraron las 35 filas del papel. En el palet 3 la `410129-0015` lleva
+tres piezas de PLASTEL y un frente de 3 mm. Los dos programas de la
+referencia se releyeron del DXF extraído del DWG confirmado con ODA,
+con desviación menor de 0,001 mm. Se verificaron las copias por SHA-256.
+
+~~~text
+\\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 23-08 - 20261127-094912
 ~~~

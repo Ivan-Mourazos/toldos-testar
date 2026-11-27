@@ -8,6 +8,30 @@ import { primitivasDeEntidades } from '../../src/assa/documentoLote.js';
 import lineas from '../../src/assa/fixtures/lote0711.json' with { type: 'json' };
 
 const casos = [
+  ['410129-0053', 'juegos de cuerpo', 1, '2025/LOTE 10-05', -438537.39245, 300494.19225, { tapasArriba: [900, 640] }],
+  ['410129-0053', 'frentes', 1, '2025/LOTE 10-05', -415564.74251, 300311.0078],
+  ['410129-0112', 'juegos de cuerpo', 1, '2024/LOTE 24-02', 168302.76961, 99035.81787],
+  ['410129-0112', 'frentes', 1, '2024/LOTE 24-02', 176724.89757, 98564.70884],
+  ['410129-0115', 'juegos de cuerpo', 1, '2024/LOTE 27-07', 1379093.18249, 166625.93573],
+  ['410129-0115', 'frentes', 1, '2024/LOTE 27-07', 1383444.29049, 166479.65753],
+  ['410129-0010', 'cuerpos', 1, '2024/LOTE 01-06', 16507.67326, 134994.6791],
+  ['410129-0010', 'tapas', 2, '2024/LOTE 01-06', 16877.67326, 135994.6791, { unidades: 1, bordeInferior: true }],
+  ['410129-0010', 'frentes', 5, '2024/LOTE 01-06', 20883.72, 134994.6791],
+  ['410129-0013', 'juegos de cuerpo', 2, '2024/LOTE 06-04', 946960.16193, 137893.59534],
+  ['410129-0013', 'frentes', 2, '2024/LOTE 06-04', 951466.81124, 138405.44922],
+  ['410129-0015', 'juegos de cuerpo', 1, '2025/LOTE 23-08', 133904.54853, 62048.3086],
+  ['410129-0015', 'frentes', 1, '2025/LOTE 23-08', 139015.98706, 62387.98029],
+  ['410129-0052', 'juegos de cuerpo', 2, '2025/LOTE 05-04', 170040.80725, 17733.17556],
+  ['410129-0052', 'frentes', 2, '2025/LOTE 05-04', 175361.49397, 18160.69767],
+  ['410129-0056', 'cuerpos', 2, '2023/LOTE 28-10', 67962.12155, 20674.20976],
+  ['410129-0056', 'tapas', 4, '2023/LOTE 28-10', 71662.12155, 20674.20976, { unidades: 2 }],
+  ['410129-0056', 'frentes', 3, '2023/LOTE 28-10', 79013.89377, 21012.25623],
+  ['410129-0091', 'cuerpos', 2, '2024/LOTE 06-04', 1020244.01513, 129935.74152],
+  ['410129-0091', 'tapas', 4, '2024/LOTE 06-04', 1023844.01513, 129935.74152, { unidades: 2 }],
+  ['410129-0091', 'frentes', 3, '2024/LOTE 06-04', 1029882.4768, 130430.80315],
+  ['410129-0209', 'cuerpos', 1, '2025/LOTE 05-07', 287982.70089, 529879.32519],
+  ['410129-0209', 'tapas', 4, '2025/LOTE 22-11', 39196.69825, 63194.50053, { unidades: 2 }],
+  ['410129-0209', 'frentes', 3, '2025/LOTE 22-11', 49167.61445, 63322.66992],
   ['410130-0167', 'cuerpos', 1, '2024/LOTE 24-02', 168317.76961, 87464.63059],
   ['410130-0167', 'tapas perforadas', 2, '2024/LOTE 24-02', 176839.43044, 87377.84264],
   ['410130-0167', 'tapas lisas', 2, '2024/LOTE 24-02', 176839.43044, 88257.84264, { bordeInferior: true }],
@@ -125,7 +149,40 @@ const casos = [
 
 const base = process.argv[2] ?? 'tmp/assa-410/cortes';
 const modelos = new Map();
+const enCaja = (modelo, caja) => operacionesEnPano(modelo, caja, [], { conBordes: true });
+const bordeInferior = p => p.tipo === 'raya' && Math.abs(p.a[1]) < .02 && Math.abs(p.b[1]) < .02;
+function operacionesDelBloque(modelo, caja, tapasArriba) {
+  if (!tapasArriba) return enCaja(modelo, caja);
+  const [alto, anchoTapas] = tapasArriba;
+  const y = caja.y0 + alto;
+  const cuerpo = enCaja(modelo, { ...caja, y1: y });
+  const tapas = enCaja(modelo, { ...caja, x1: caja.x0 + anchoTapas, y0: y })
+    .filter(p => !bordeInferior(p))
+    .map(p => ({ ...p, a: p.a?.map((n, i) => i ? n + alto : n),
+      b: p.b?.map((n, i) => i ? n + alto : n), punto: p.punto?.map((n, i) => i ? n + alto : n) }));
+  return [...cuerpo, ...tapas];
+}
 const adicionales = {
+  '410129-0053': { CodArticle: 'H0K410129-0053', of_: '0215982',
+    descripcion: 'TOP CURTAIN TWP WB300xWT250x3100 BLACK' },
+  '410129-0112': { CodArticle: 'H0K410129-0112', of_: '0201344',
+    descripcion: 'PLANE TWP OBEN WB400xWT300xB=2500 PVC BLACK' },
+  '410129-0115': { CodArticle: 'H0K410129-0115', of_: '0207029',
+    descripcion: 'PLANE TWP OBEN WB400xWT400xB=2550 MATTE PVC BLACK' },
+  '410129-0010': { CodArticle: 'H0K410129-0010', of_: '0204747',
+    descripcion: 'PLANE TWP OBEN 300x300x1900' },
+  '410129-0013': { CodArticle: 'H0K410129-0013', of_: '0202636',
+    descripcion: 'TOP CURTAIN TWP 300x300x2250' },
+  '410129-0015': { CodArticle: 'H0K410129-0015', of_: '0219213',
+    descripcion: 'PLANE TWP OBEN 300x300x2600' },
+  '410129-0052': { CodArticle: 'H0K410129-0052', of_: '0214985',
+    descripcion: 'TOP CURTAIN TWP 300X300X3200 U=BLACK/A=BLACK' },
+  '410129-0056': { CodArticle: 'H0K410129-0056', of_: '0197602',
+    descripcion: 'TOP CURTAIN TWP 300X300X1850 U=BLACK/A=BLANCK' },
+  '410129-0091': { CodArticle: 'H0K410129-0091', of_: '0202634',
+    descripcion: 'PLANE TWP OBEN 300x300X3600 PVC SCHWARZ' },
+  '410129-0209': { CodArticle: 'H0K410129-0209', of_: '0222484',
+    descripcion: 'PLANE TWP OBEN WB300XWT300X3400' },
   '410130-0167': { CodArticle: 'H0K410130-0167', of_: '0201346',
     descripcion: 'PLANE SC SEITLICH WB400xWT300xH2900 PARKING GUIDE YELLOW RAL 1021 STANDARD (750mm)' },
   '410130-0098': { CodArticle: 'H0K410130-0098', of_: '0223004',
@@ -180,10 +237,10 @@ for (const [ref, nombre, cantidad, fichero, x0, y0, opciones] of casos) {
       p.capa === 'Disco' ? { ...p, capa: 'DISCO1' } :
         p.capa === 'Rotulador' ? { ...p, capa: 'ROTULADOR' } : p));
   const caja = { x0, y0, x1: x0 + programa.largoMm, y1: y0 + programa.anchoOcupadoMm };
-  const reales = operacionesEnPano(modelos.get(fichero), caja, [], { conBordes: true })
+  const reales = operacionesDelBloque(modelos.get(fichero), caja, opciones?.tapasArriba)
     // El recorte con orígenes redondeados puede arrastrar menos de 0,02 mm de la columna vecina.
     .filter(p => p.tipo !== 'raya' || (Math.hypot(p.a[0] - p.b[0], p.a[1] - p.b[1]) >= .02 &&
-      !(opciones?.bordeInferior && Math.abs(p.a[1]) < .02 && Math.abs(p.b[1]) < .02)));
+      !(opciones?.bordeInferior && bordeInferior(p))));
   const esperadas = primitivasDeEntidades(programa.entidades, 1).filter(p => p.tipo !== 'texto');
   const resultado = compararOperaciones(esperadas, reales, 1);
   if (opciones?.rotulos) {

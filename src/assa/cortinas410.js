@@ -33,24 +33,39 @@ function superiorConTapasPvc(ancho, agujeros, alturaAgujeros, anchoRolloMm, porT
   ];
 }
 
-function superiorPerforada(ancho, { tapasJuntas = false, frentesPorTirada = 5 } = {}) {
+function superiorPerforada(ancho, {
+  alto = 900, agujeros = 4, tapa = [320, 340], tapasJuntas = false, cerrarBase = false, frentesPorTirada = 5,
+  alturaAgujeros = alto === 900 ? 800 : 850, anchoFrente = 300, tapasArriba = false,
+} = {}) {
+  const alturas = [(alto - anchoFrente) / 2, (alto + anchoFrente) / 2];
+  const [anchoTapa, altoTapa] = tapa;
+  const cuerposPorTirada = Math.floor(MATERIAL_COMBURSA.anchoRolloMm / alto);
   const operaciones = [
-    ...rectangulo('DISCO1', ancho, 900), ...marcasLaterales(0, 20), ...marcasLaterales(ancho, ancho - 20),
-    ...agujerosDeCuerpo(ancho, 4, 800),
+    ...rectangulo('DISCO1', ancho, alto), ...marcasLaterales(0, 20, alturas), ...marcasLaterales(ancho, ancho - 20, alturas),
+    ...agujerosDeCuerpo(ancho, agujeros, alturaAgujeros),
   ];
-  const frente = grupo(lona3, 'frentes', 1, frentesPorTirada, [ancho, 300], rectangulo('CUTTER', ancho, 300));
+  const frente = grupo(lona3, 'frentes', 1, Math.min(frentesPorTirada, Math.floor(lona3.anchoRolloMm / anchoFrente)),
+    [ancho, anchoFrente], rectangulo('CUTTER', ancho, anchoFrente));
+  if (tapasArriba) {
+    const cortesTapas = tapasEnFilas(2, anchoTapa, 1, altoTapa, 'DISCO1')
+      .map(([capa, x1, y1, x2, y2]) => [capa, x1, y1 + alto, x2, y2 + alto]);
+    if (cerrarBase) cortesTapas.push(['DISCO1', 0, 0, ancho, 0]);
+    return [grupo(MATERIAL_COMBURSA, 'juegos de cuerpo y 2 tapas', 3, 1, [ancho, alto + altoTapa],
+      [...operaciones, ...cortesTapas]), frente];
+  }
   if (tapasJuntas) {
     return [
       {
-        ...grupo(MATERIAL_COMBURSA, 'juegos de cuerpo y 2 tapas', 3, 2, [ancho, 900], operaciones),
-        tapasJuntoAlCuerpo: { ancho: 320, alto: 340, capa: 'DISCO1', cerrarBase: true },
+        ...grupo(MATERIAL_COMBURSA, 'juegos de cuerpo y 2 tapas', 3, cuerposPorTirada, [ancho, alto], operaciones),
+        tapasJuntoAlCuerpo: { ancho: anchoTapa, alto: altoTapa, capa: 'DISCO1', cerrarBase },
       },
       frente,
     ];
   }
   return [
-    grupo(MATERIAL_COMBURSA, 'cuerpos', 1, 2, [ancho, 900], operaciones),
-    grupo(MATERIAL_COMBURSA, 'tapas', 1, 6, [320, 340], rectangulo('DISCO1', 320, 340), 2),
+    grupo(MATERIAL_COMBURSA, 'cuerpos', 1, cuerposPorTirada, [ancho, alto], operaciones),
+    grupo(MATERIAL_COMBURSA, 'tapas', 1, Math.floor(MATERIAL_COMBURSA.anchoRolloMm / altoTapa),
+      tapa, rectangulo('DISCO1', anchoTapa, altoTapa), 2),
     frente,
   ];
 }
@@ -196,13 +211,65 @@ const modelos = {
     descripcion: 'TOP PVC 0,5MM GLOSSY BLK TNB2080XTWB300XTWT400_W/O OP_480X200_OPEN RECESS',
     fichero: 'HOK410124.dwg', medidasMm: [3330, 320], grupos: techoConEntrante,
   },
+  '410129-0010': {
+    descripcion: 'PLANE TWP OBEN 300X300X1900',
+    fichero: 'OK410129.dwg', medidasMm: [1900, 1000],
+    grupos: superiorPerforada(1900, { alto: 1000, tapa: [370, 340] }),
+  },
+  '410129-0013': {
+    descripcion: 'TOP CURTAIN TWP 300X300X2250',
+    fichero: 'OK410129.dwg', medidasMm: [2250, 1000],
+    grupos: superiorPerforada(2250, { alto: 1000, agujeros: 5, tapa: [340, 370], tapasJuntas: true }),
+  },
+  '410129-0015': {
+    descripcion: 'PLANE TWP OBEN 300X300X2600',
+    fichero: 'OK410129.dwg', medidasMm: [2600, 1000],
+    grupos: superiorPerforada(2600, { alto: 1000, agujeros: 6, tapa: [340, 370], tapasJuntas: true }),
+  },
+  '410129-0052': {
+    descripcion: 'TOP CURTAIN TWP 300X300X3200 U=BLACK/A=BLACK',
+    fichero: 'OK410129.dwg', medidasMm: [3200, 1000],
+    grupos: superiorPerforada(3200, { alto: 1000, agujeros: 8, tapa: [340, 370], tapasJuntas: true }),
+  },
+  '410129-0053': {
+    descripcion: 'TOP CURTAIN TWP WB300XWT250X3100 BLACK',
+    fichero: 'OK410129.dwg', medidasMm: [3100, 900],
+    grupos: superiorPerforada(3100, { agujeros: 7, tapasArriba: true, cerrarBase: true }),
+  },
+  '410129-0056': {
+    descripcion: 'TOP CURTAIN TWP 300X300X1850 U=BLACK/A=BLANCK',
+    fichero: 'OK410129.dwg', medidasMm: [1850, 1000], grupos: superiorPerforada(1850, { alto: 1000, tapa: [340, 370] }),
+  },
+  '410129-0091': {
+    descripcion: 'PLANE TWP OBEN 300X300X3600 PVC SCHWARZ',
+    fichero: 'OK410129.dwg', medidasMm: [3600, 1000],
+    grupos: superiorPerforada(3600, { alto: 1000, agujeros: 9, tapa: [340, 370] }),
+  },
+  '410129-0112': {
+    descripcion: 'PLANE TWP OBEN WB400XWT300XB=2500 PVC BLACK',
+    fichero: 'OK410129.dwg', medidasMm: [2500, 1100],
+    grupos: superiorPerforada(2500, { alto: 1100, agujeros: 6, alturaAgujeros: 950,
+      tapa: [370, 440], anchoFrente: 400, tapasJuntas: true, cerrarBase: true }),
+  },
+  '410129-0115': {
+    descripcion: 'PLANE TWP OBEN WB400XWT400XB=2550 MATTE PVC BLACK',
+    fichero: 'OK410129.dwg', medidasMm: [2550, 1300],
+    grupos: superiorPerforada(2550, { alto: 1300, agujeros: 6, alturaAgujeros: 1050,
+      tapa: [470, 440], anchoFrente: 400, tapasArriba: true }),
+  },
   '410129-0117': {
     descripcion: 'TOP CURTAIN TWP TWB300XTWT250X2000',
     fichero: 'COMBURSA (CRAWFORD)2.dwg', medidasMm: [2000, 900], grupos: superiorPerforada(2000),
   },
+  '410129-0209': {
+    descripcion: 'PLANE TWP OBEN WB300XWT300X3400',
+    fichero: 'OK410129.dwg', medidasMm: [3400, 1000],
+    grupos: superiorPerforada(3400, { alto: 1000, agujeros: 9, tapa: [340, 370] }),
+  },
   '410129-0212': {
     descripcion: 'TOP PVC WB300XWT250X1900 BLACK',
-    fichero: 'OK410129.dwg', medidasMm: [1900, 900], grupos: superiorPerforada(1900, { tapasJuntas: true, frentesPorTirada: 2 }),
+    fichero: 'OK410129.dwg', medidasMm: [1900, 900],
+    grupos: superiorPerforada(1900, { tapasJuntas: true, cerrarBase: true, frentesPorTirada: 2 }),
   },
   '410130-0165': {
     descripcion: 'PLANE SC SEITLICH WB300XWT250XH2500 PARKING GUIDE WHITE/STANDARD (750MM)',
