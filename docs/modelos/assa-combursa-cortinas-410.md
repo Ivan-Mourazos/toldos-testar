@@ -323,10 +323,10 @@ motivo que muestra la web es «Sin corte de taller para contrastar».
 
 | Estado | Referencias |
 | --- | ---: |
-| Habilitadas | 43 |
+| Habilitadas | 46 |
 | A mano por duda de Taller | 35 |
 | A mano sin corte de taller localizado | 14 |
-| Pendientes de revisar | 24 |
+| Pendientes de revisar | 21 |
 | Total `410xxx` en RPS | 116 |
 
 ## Criba de la cuarta tanda
@@ -583,4 +583,28 @@ tras confirmar con ODA y se cotejaron las copias por SHA-256.
 
 ~~~text
 \\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 19-07 - 20261127-102334
+~~~
+
+## Sexta tanda de superiores con frente 410137
+
+Las tres referencias de `OK410137.dwg` llevan cuerpo y dos tapas de
+PLASTEL, más un frente de lona de 3 mm. En la `0037` se usan rollos de
+3 mm de 1.000 mm de ancho, como indican sus OF. En las dos anchas el
+rollo de 3 mm mide 1.600 mm. La cantidad de cada programa sale de RPS.
+
+| Referencia / OF | Lote de máquina | Cuerpo, tapas y frente en mm | Resultado |
+| --- | --- | --- | --- |
+| `410137-0037` / `0190850` | 28-04-2023 | Cuerpo 2.500 × 1.200 con seis agujeros. Tapas sueltas de 470 × 340. Frente 2.500 × 975 con dos cortes de 655 mm y dos puntos de rotulador. | **Igual** en cuerpo, columna de tapas y frente. Las capas antiguas DISCO y MARCA corresponden a DISCO1 y ROTULADOR. |
+| `410137-0038` / `0204913` | 01-06-2024 | Cuerpo 4.500 × 1.000 con doce agujeros. Tapas de 340 × 370. Frente 4.500 × 675 con dos marcas de 355 mm y dos puntos de rotulador. | **Igual** en el juego de cuerpo y tapas y en el frente. Se delimitaron los bordes compartidos con la siguiente referencia. |
+| `410137-0039` / `0204915` | 01-06-2024 | Cuerpo 4.580 × 1.000 con doce agujeros. Tapas de 340 × 370. Frente 4.580 × 675 con las mismas marcas. | **Igual** en el juego y en el frente. Desviación máxima de 0,422 mm en un agujero. |
+
+En la prueba del 01-06-2024 se regeneraron las 35 líneas con bulto de
+expedición. La OF `0204972` de `410130-0170` quedó fuera de esta prueba
+porque no consta su palet. Salieron 78 programas y cuadraron las 61
+filas de cortador. En el palet 3, ambas `410137` aportan cada una tres
+piezas de PLASTEL y un frente. Se verificaron los dos programas de la
+`0039` tras confirmar con ODA, y las copias se cotejaron por SHA-256.
+
+~~~text
+\\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 01-06 - 20261127-103414
 ~~~

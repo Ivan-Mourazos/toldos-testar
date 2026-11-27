@@ -8,6 +8,13 @@ import { primitivasDeEntidades } from '../../src/assa/documentoLote.js';
 import lineas from '../../src/assa/fixtures/lote0711.json' with { type: 'json' };
 
 const casos = [
+  ['410137-0037', 'cuerpos', 1, '2023/LOTE 28-04', 17019.24443, 192085.95361],
+  ['410137-0037', 'tapas', 2, '2023/LOTE 28-04', 14989.24443, 193285.95361, { unidades: 1, bordeInferior: true }],
+  ['410137-0037', 'frentes', 1, '2023/LOTE 28-04', 7667.27257, 192300.04892],
+  ['410137-0038', 'juegos de cuerpo', 1, '2024/LOTE 01-06', 52906.82254, 132183.54795, { bordeInferior: true }],
+  ['410137-0038', 'frentes', 1, '2024/LOTE 01-06', 60223.76498, 132185.57843, { bordeInferior: true }],
+  ['410137-0039', 'juegos de cuerpo', 1, '2024/LOTE 01-06', 52906.82254, 131183.54795, { tapasAlLado: [4580, 740] }],
+  ['410137-0039', 'frentes', 1, '2024/LOTE 01-06', 60223.76498, 131510.57843],
   ['410149-0001', 'juegos de cuerpo', 1, '2025/LOTE 19-07', 83232.32844, 66055.91236],
   ['410149-0002', 'juegos de cuerpo', 1, '2025/LOTE 19-07', 81828.36016, 78375.87346],
   ['410149-0003', 'cuerpos', 1, '2025/LOTE 11-10', 39997.66912, 141964.40792],
@@ -187,6 +194,11 @@ function operacionesDelBloque(modelo, caja, { tapasArriba, tapasAlLado } = {}) {
   return [...cuerpo, ...tapas];
 }
 const adicionales = {
+  '410137-0037': { CodArticle: 'H0K410137-0037', of_: '0190850', descripcion: 'PLANE SC STANDARD WB300xWT400xB2500' },
+  '410137-0038': { CodArticle: 'H0K410137-0038', of_: '0204913',
+    descripcion: 'PLANE SC STANDARD WB300xWT300xB4500, OP=700 SCHWARZ SCHWARZ' },
+  '410137-0039': { CodArticle: 'H0K410137-0039', of_: '0204915',
+    descripcion: 'PLANE SC STANDARD WB300xWT300xB4580, OP=700 SCHWARZ SCHWARZ' },
   '410149-0001': { CodArticle: 'H0K410149-0001', of_: '0218921',
     descripcion: 'PLANE TWP OBEN TRWB500XTFWB400XTWT300XB3400' },
   '410149-0002': { CodArticle: 'H0K410149-0002', of_: '0218920',
@@ -272,8 +284,8 @@ for (const [ref, nombre, cantidad, fichero, x0, y0, opciones] of casos) {
     .find(p => p.nombrePiezas.startsWith(nombre) && p.gruposDePiezas === cantidad);
   if (!modelos.has(fichero)) modelos.set(fichero, leerPlanoDxf(path.join(base, fichero + '.dxf')).modelo
     .map(p => /^cutter$/i.test(p.capa) ? { ...p, capa: 'CUTTER' } :
-      p.capa === 'Disco' ? { ...p, capa: 'DISCO1' } :
-        p.capa === 'Rotulador' ? { ...p, capa: 'ROTULADOR' } : p));
+      /^disco$/i.test(p.capa) ? { ...p, capa: 'DISCO1' } :
+        p.capa === 'Rotulador' || p.capa === 'MARCA' && fichero === '2023/LOTE 28-04' ? { ...p, capa: 'ROTULADOR' } : p));
   const caja = { x0, y0, x1: x0 + programa.largoMm, y1: y0 + programa.anchoOcupadoMm };
   const reales = operacionesDelBloque(modelos.get(fichero), caja, opciones)
     // El recorte con orígenes redondeados puede arrastrar menos de 0,02 mm de la columna vecina.

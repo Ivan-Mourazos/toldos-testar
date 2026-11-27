@@ -38,6 +38,25 @@ it.each([
   expect(tapas.entidades.lineas.some(l => l.x1 !== l.x2 && l.y1 !== l.y2)).toBe(true);
 });
 
+it.each([
+  ['0037', 'WB300xWT400xB2500', 2500, 1200, 6, 975, 'CUTTER'],
+  ['0038', 'WB300xWT300xB4500, OP=700 SCHWARZ SCHWARZ', 4500, 1000, 12, 675, 'ROTULADOR'],
+  ['0039', 'WB300xWT300xB4580, OP=700 SCHWARZ SCHWARZ', 4580, 1000, 12, 675, 'ROTULADOR'],
+])('corta el superior 410137-%s con la herramienta de su frente', (sufijo, medidas, ancho, alto, agujeros, fondo, herramienta) => {
+  const linea = { ...cortinas[0], CodArticle: `H0K410137-${sufijo}`, cantidad: 1, descripcion: `PLANE SC STANDARD ${medidas}` };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [ancho, alto] });
+  const cuerpo = lote.programas.find(p => p.nombrePiezas.includes('cuerpo'));
+  expect(cuerpo.entidades.circulos).toHaveLength(agujeros);
+  const frente = lote.programas.find(p => p.material === 'Lona 3 mm');
+  expect(frente).toMatchObject({ largoMm: ancho, anchoOcupadoMm: fondo });
+  expect(frente.entidades.lineas.filter(l => l.x1 === 200 || l.x1 === ancho - 200).map(l => l.capa)).toEqual([herramienta, herramienta]);
+  expect(lote.cortador).toMatchObject([
+    { material: 'Lona 3 mm', unidades: 1, pedidas: 1, cuadra: true },
+    { material: 'PLASTEL 8800 TE62 negra', unidades: 3, pedidas: 3, cuadra: true },
+  ]);
+});
+
 it('la 410124-0003 corta y rotula A1, A2 y A3 una vez por unidad', () => {
   const linea = { ...cortinas[0], CodArticle: 'H0K410124-0003', cantidad: 17,
     descripcion: 'TOP PVC 0,5MM GLOSSY BLK TNB2080XTWB300XTWT400_W/O OP_480X200_OPEN RECESS' };

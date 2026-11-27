@@ -35,14 +35,14 @@ function superiorConTapasPvc(ancho, agujeros, alturaAgujeros, anchoRolloMm, porT
 
 function superiorPerforada(ancho, {
   alto = 900, agujeros = 4, tapa = [320, 340], tapasJuntas = false, cerrarBase = false, frentesPorTirada = 5,
-  alturaAgujeros = alto === 900 ? 800 : 850, anchoFrente = 300, tapasArriba = false,
+  alturaAgujeros = alto === 900 ? 800 : 850, anchoFrente = 300, tapasArriba = false, margenAgujeros = 400,
 } = {}) {
   const alturas = [(alto - anchoFrente) / 2, (alto + anchoFrente) / 2];
   const [anchoTapa, altoTapa] = tapa;
   const cuerposPorTirada = Math.floor(MATERIAL_COMBURSA.anchoRolloMm / alto);
   const operaciones = [
     ...rectangulo('DISCO1', ancho, alto), ...marcasLaterales(0, 20, alturas), ...marcasLaterales(ancho, ancho - 20, alturas),
-    ...agujerosDeCuerpo(ancho, agujeros, alturaAgujeros),
+    ...agujerosDeCuerpo(ancho, agujeros, alturaAgujeros, margenAgujeros),
   ];
   const frente = grupo(lona3, 'frentes', 1, Math.min(frentesPorTirada, Math.floor(lona3.anchoRolloMm / anchoFrente)),
     [ancho, anchoFrente], rectangulo('CUTTER', ancho, anchoFrente));
@@ -69,6 +69,27 @@ function superiorPerforada(ancho, {
     frente,
   ];
 }
+
+function frenteConDosTrazos(ancho, fondo, alturaMarca, herramienta, { material = lona3, desdeArriba = false } = {}) {
+  const inicio = desdeArriba ? fondo : 0;
+  return grupo(material, 'frentes', 1, Math.floor(material.anchoRolloMm / fondo), [ancho, fondo], [
+    ...rectangulo('CUTTER', ancho, fondo),
+    ...[200, ancho - 200].flatMap(x => [[herramienta, x, inicio, x, alturaMarca], ['ROTULADOR', x, alturaMarca, 4]]),
+  ]);
+}
+
+function superiorPlastelConFrenteMarcado(ancho) {
+  const [cuerpo] = superiorPerforada(ancho, { alto: 1000, agujeros: 12, margenAgujeros: 150, tapa: [340, 370], tapasJuntas: true });
+  return [cuerpo, frenteConDosTrazos(ancho, 675, 320, 'ROTULADOR', { desdeArriba: true })];
+}
+
+const superiorPlastelConFrenteAlto = [
+  grupo(MATERIAL_COMBURSA, 'cuerpos', 1, 1, [2500, 1200], [
+    ...rectangulo('DISCO1', 2500, 1200), ...agujerosDeCuerpo(2500, 6, 1000),
+  ]),
+  grupo(MATERIAL_COMBURSA, 'tapas', 1, 6, [470, 340], rectangulo('DISCO1', 470, 340), 2),
+  frenteConDosTrazos(2500, 975, 655, 'CUTTER', { material: { ...lona3, anchoRolloMm: 1000 } }),
+];
 function contornoLateral(capa, largo, alto, inicio, fin) {
   return [
     [capa, 0, alto, largo, alto], [capa, largo, 0, largo, alto],
@@ -447,6 +468,18 @@ const modelos = {
   '410135-0109': {
     descripcion: 'PLANE TWP OBEN WB300XWT300X3400 OP=600 SCHWARZ SCHWARZ',
     fichero: 'OK410135.dwg', medidasMm: [3400, 1000], grupos: superiorPlastelConAbertura(3400, 8),
+  },
+  '410137-0037': {
+    descripcion: 'PLANE SC STANDARD WB300XWT400XB2500',
+    fichero: 'OK410137.dwg', medidasMm: [2500, 1200], grupos: superiorPlastelConFrenteAlto,
+  },
+  '410137-0038': {
+    descripcion: 'PLANE SC STANDARD WB300XWT300XB4500, OP=700 SCHWARZ SCHWARZ',
+    fichero: 'OK410137.dwg', medidasMm: [4500, 1000], grupos: superiorPlastelConFrenteMarcado(4500),
+  },
+  '410137-0039': {
+    descripcion: 'PLANE SC STANDARD WB300XWT300XB4580, OP=700 SCHWARZ SCHWARZ',
+    fichero: 'OK410137.dwg', medidasMm: [4580, 1000], grupos: superiorPlastelConFrenteMarcado(4580),
   },
   '410143-0002': {
     descripcion: 'PLANE SC IN COMPLETE WIDTH WB400XWT300XB3350 OP=600 PVC BACLK, 2MM REINFORCED',
