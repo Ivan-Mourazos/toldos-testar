@@ -9,9 +9,11 @@
 | Q-A410-03 | `410129-0105`. El maestro `OK410129.dwg`, rótulo `OK410129-105`, dibuja cinco agujeros Ø40 con paso de 425 mm. Máquina lleva seis con paso de 340 mm en 09-11-2024, 16-11-2024 y 04-10-2025. ¿Qué dibujo manda para el próximo corte? | A mano hasta confirmar el patrón. |
 | Q-A410-04 | `410241-0011` y `410242-0004`. Los maestros y el DXF de 22-06-2024 rotulan la letra D o C en las cinco piezas. El DXF de 26-09-2026 lleva también el número de pieza en la capa del rotulador. ¿Se marca solo la letra o también el número? | A mano hasta confirmar el rotulado. |
 | Q-A410-05 | `410172-0104` y `410173-0104`. Los maestros dibujan 12 solapas y en 11-05-2024 se ven los cortes de separación con disco. En 25-10-2025 las separaciones se dibujan con rotulador. ¿Se entregan las solapas ya cortadas o en tiras marcadas? | A mano. |
-| Q-A410-06 | `410129-0002`. El maestro dibuja dos marcas de 20 mm a cada lado. Los cortes de 13-04-2024 y 11-01-2025 traen los cinco agujeros, pero faltan las marcas laterales. ¿Hay que rotularlas en máquina? | A mano. |
+| Q-A410-06 | `410129-0002` y `410129-0051`. El maestro dibuja dos marcas de 20 mm a cada lado. En los cortes de 13-04-2024 y 11-01-2025 de la `0002` y en los de 30-06-2023 y 03-02-2024 de la `0051` se ven los agujeros, pero faltan las marcas laterales. ¿Hay que rotularlas en máquina en estas dos referencias? | A mano. |
 | Q-A410-07 | `410129-0005`. RPS trae `300×300×300` en las cuatro líneas localizadas. El maestro y los cortes de 27-07-2024 y 23-08-2025 tienen 3.000 mm de largo. ¿Confirma Taller que el largo de estas líneas es 3.000 mm? | A mano. |
 | Q-A410-08 | `410143-0003`. En 18-08-2023 los dos círculos de Ø8 del frente se cortaron con CUTTER. En 08-06-2024 se hicieron con ROTULADOR. El maestro los dibuja como marcas. ¿Qué herramienta se usa para esta referencia? | A mano. |
+| Q-A410-09 | `410245-0005`. El 22-06-2024 aparece la letra D en la capa del rotulador. En el palet 1–2 del 08-02-2025, D y los números de pieza están como rótulos del plano. ¿Hay que marcar la D sobre la lona? | A mano hasta confirmar el rotulado. |
+| Q-A410-10 | `410251-0002`. Los tres cortes guardados piden PVC negro de 580 g. La OF `0216014` del 10-05-2025 imputó POLYMAR negro de 650 g. ¿Qué gramaje preparamos para el siguiente lote? | A mano hasta confirmar el material. |
 
 ## Cortinas de túnel de Combursa
 

@@ -217,6 +217,7 @@ const modelos = {
 const pendientes = {
   '410129-0002': 'El plano lleva marcas laterales que faltan en los cortes guardados. Falta confirmar si se rotulan.',
   '410129-0005': 'La descripción de RPS indica 300 de largo y el dibujo de corte mide 3.000 mm. Falta confirmar el largo.',
+  '410129-0051': 'El plano lleva marcas laterales que faltan en los cortes guardados. Falta confirmar si se rotulan.',
   '410174-0049': 'Falta confirmar cuántas solapas lisas y tiras para rotular se cortan en lona de 1 mm por cortina.',
   '410129-0003': 'La misma referencia de RPS figura como puerta y como cortina. Falta confirmar el dibujo y el despiece.',
   '410129-0105': 'El maestro dibuja cinco agujeros y el corte real lleva seis. Taller tiene que confirmar el dibujo de corte.',
@@ -225,8 +226,15 @@ const pendientes = {
   '410173-0104': 'Falta confirmar si la máquina separa las solapas de 1 mm o las marca para separarlas después.',
   '410241-0011': 'El plano marca D y el corte reciente marca D1 a D5. Falta confirmar qué rotular en las piezas.',
   '410242-0004': 'El plano marca C y el corte reciente marca C1 a C5. Falta confirmar qué rotular en las piezas.',
-  '410245-0005': 'Falta contrastar el despiece y las marcas D1, D2 y D3 del PVC negro.',
+  '410245-0005': 'Un corte lleva la letra D en rotulador y otro solo como rótulo del plano. Falta confirmar si se marca la lona.',
+  '410251-0002': 'El corte indica PVC negro de 580 g y una OF consumió lona de 650 g. Falta confirmar qué lona se prepara.',
 };
+
+const sinCorteLocalizado = new Set([
+  '410121-0001', '410122-0006', '410129-0116', '410129-0200', '410129-0213',
+  '410130-0088', '410130-0176', '410130-0177', '410172-0107', '410182-0036',
+  '410182-0038', '410185-0001', '410241-0014', '410242-0007',
+]);
 
 export function calcularCortina410(linea, codigo) {
   const modelo = modelos[codigo];
@@ -234,7 +242,9 @@ export function calcularCortina410(linea, codigo) {
   const motivos = [];
   if (!String(linea.of_ ?? '').trim()) motivos.push('Falta la OF de RPS.');
   if (!Number.isSafeInteger(linea.cantidad) || linea.cantidad <= 0) motivos.push('La cantidad de RPS debe ser un entero positivo.');
-  if (!modelo) motivos.push(pendientes[codigo] ?? 'Falta contrastar las piezas, los materiales y las herramientas de esta cortina con un corte de taller.');
+  if (!modelo) motivos.push(pendientes[codigo] ?? (sinCorteLocalizado.has(codigo)
+    ? 'Sin corte de taller para contrastar.'
+    : 'Falta contrastar las piezas, los materiales y las herramientas de esta cortina con un corte de taller.'));
   else if (String(linea.descripcion ?? '').trim().toUpperCase().replace(/\s+/g, ' ').replace(/\.+$/, '') !== modelo.descripcion) {
     motivos.push('La descripción de RPS difiere de la variante de cortina contrastada. Revisa las medidas, la mano y los materiales.');
   }

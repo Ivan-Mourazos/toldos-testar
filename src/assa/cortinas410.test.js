@@ -165,8 +165,17 @@ it.each([
   ['410174-0049', /solapas lisas y tiras para rotular/],
   ['410241-0011', /marca D.*D1 a D5/],
   ['410242-0004', /marca C.*C1 a C5/],
+  ['410129-0051', /marcas laterales.*faltan/],
+  ['410245-0005', /letra D.*rotulador/],
+  ['410251-0002', /580 g.*650 g/],
 ])('muestra por qué %s requiere una decisión de taller', (codigo, motivo) => {
   const lote = prepararLote(fecha, [{ ...cortinas[0], CodArticle: `H0K${codigo}` }]);
   expect(lote.lineas[0]).toMatchObject({ estado: 'a-mano', motivos: [expect.stringMatching(motivo)] });
+  expect(lote.programas).toEqual([]);
+});
+
+it.each(['410121-0001', '410129-0200', '410182-0038'])('explica que el pedido de %s no tiene un corte localizado', codigo => {
+  const lote = prepararLote(fecha, [{ ...cortinas[0], CodArticle: `H0K${codigo}` }]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'a-mano', motivos: ['Sin corte de taller para contrastar.'] });
   expect(lote.programas).toEqual([]);
 });

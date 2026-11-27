@@ -178,14 +178,10 @@ las dos copias por SHA-256.
 \\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 11-04 - 20261127-085907
 ```
 
-## Siguientes referencias a mano
+## A mano por duda de Taller
 
 El SELECT de RPS entre 2023 y 2026 devolvió 216 líneas para 116 referencias
-`410xxx`. Las dos manos `0001` y la `410174-0049` empatan en número de líneas.
-La tabla recoge los siguientes contrastes, ordenados por número de líneas
-y, a igualdad, por unidades. Las demás referencias quedan a mano hasta
-contrastar sus piezas, herramientas y materiales. `MUESTRALONA` siempre se
-prepara a mano.
+`410xxx`. `MUESTRALONA` se prepara a mano y queda fuera de este recuento.
 
 | Referencia | Líneas / unidades de RPS | Evidencia y motivo |
 | --- | --- | --- |
@@ -193,14 +189,56 @@ prepara a mano.
 | `410129-0003` | 6 / 16 | Dos líneas de 2023 y 2024 son de puerta plegable. Cuatro de 2025 son de cortina superior. Falta asignar el dibujo y el despiece a la segunda descripción. Q-A410-02. |
 | `410241-0011`, `410242-0004` | 5 / 69 cada una | Las diez OF imputan ALPHA negro 580 g de 2.500 mm. En el 22-06-2024 se cuentan cuatro piezas de cada uno de los cinco tipos por mano, para cuatro cortinas por mano. Se marcó D o C, como figura en los maestros. El 26-09-2026 añade el número de pieza al texto de rotulador. Q-A410-04. |
 | `410129-0105` | 5 / 66 | El juego de máquina del 04-10-2025 tiene dos tapas de 470 × 340 por cuerpo y un frente de 2.500 × 300. El cuerpo de 2.500 × 1.200 lleva seis agujeros, a diferencia de los cinco del maestro. Q-A410-03. |
-
-| Referencia | Líneas / unidades de RPS | Evidencia y motivo en la segunda tanda |
-| --- | --- | --- |
 | `410172-0104`, `410173-0104` | 5 / 14 cada una | El maestro indica 12 solapas. Se ven cortes de separación con disco en 11-05-2024 y marcas de separación con rotulador en 25-10-2025. Q-A410-05. |
-| `410245-0005` | 4 / 55 | Las cuatro OF imputan ALPHA negro de 580 g. El 22-06-2024 identifica D1, D2 y D3. Falta contrastar cada contorno y marca con el maestro. |
+| `410245-0005` | 4 / 55 | Las cuatro OF imputan ALPHA negro de 580 g. El 22-06-2024 la D está en ROTULADOR. En 08-02-2025 (palets 1–2), está en la capa de texto. Los números de pieza están en la capa de texto en ambos. Q-A410-09. |
 | `410129-0005` | 4 / 9 | Maestro y cortes de 27-07-2024 y 23-08-2025 dan 3.000 mm de largo. RPS dice 300. Q-A410-07. |
 | `410129-0002` | 4 / 7 | El maestro incluye marcas laterales ausentes en 13-04-2024 y 11-01-2025. Q-A410-06. |
 | `410143-0003` | 3 / 29 | Los círculos Ø8 del frente cambian de herramienta entre 18-08-2023 y 08-06-2024. Q-A410-08. |
+| `410251-0002` | 3 / 21 | Los cortes del 16-11-2024, 10-05-2025 y 05-07-2025 indican PVC negro de 580 g. RPS imputa ALPHA 580 g, POLYMAR 650 g y resto de PVC, respectivamente. Q-A410-10. |
+| `410129-0051` | 3 / 5 | Los cortes del 30-06-2023 y 03-02-2024 traen los ocho agujeros y omiten las marcas laterales del maestro `OK410129.dwg`. Q-A410-06. |
 
 Las preguntas para Taller están en
 [Dudas abiertas](./dudas-abiertas.md#combursa--siguientes-cortinas-410-por-volumen).
+
+## A mano sin corte de taller para contrastar
+
+Estas referencias tienen un solo pedido. Se buscó la referencia en el
+índice de 434 archivos de máquina entre 2023 y 2026 y se revisaron los
+rótulos de los DXF de las fechas próximas a la entrega por referencia,
+pedido e identificador del muelle. En el 10-05-2025 aparece la
+`410122-0008`, que es otra variante. Para los pedidos de esta tabla, el
+motivo que muestra la web es «Sin corte de taller para contrastar».
+
+| Referencia | Fecha solicitada | Pedido / línea | Unidades |
+| --- | --- | --- | ---: |
+| `410121-0001` | 28-02-2026 | `AR.26.00526 / 1` | 4 |
+| `410122-0006` | 10-05-2025 | `AR.25.01976 / 1` | 18 |
+| `410129-0116` | 01-03-2025 | `AR.25.00896 / 1` | 1 |
+| `410129-0200` | 25-07-2026 | `AR.26.03261 / 3` | 12 |
+| `410129-0213` | 16-05-2026 | `AR.26.02090 / 1` | 1 |
+| `410130-0088` | 19-06-2026 | `AR.26.02857 / 1` | 14 |
+| `410130-0176` | 21-03-2026 | `AR.26.00703 / 2` | 16 |
+| `410130-0177` | 03-10-2026 | `AR.26.04650 / 1` | 14 |
+| `410172-0107` | 21-03-2026 | `AR.26.00703 / 3` | 1 |
+| `410182-0036` | 04-01-2023 | `AR.22.06332 / 5` | 3 |
+| `410182-0038` | 21-03-2026 | `AR.26.00703 / 5` | 1 |
+| `410185-0001` | 27-06-2026 | `AR.26.02851 / 1` | 4 |
+| `410241-0014` | 20-06-2026 | `AR.26.02150 / 2` | 7 |
+| `410242-0007` | 20-06-2026 | `AR.26.02150 / 3` | 7 |
+
+## Siguientes contrastes por volumen
+
+| Referencia | Líneas / unidades de RPS | Contraste pendiente |
+| --- | --- | --- |
+| `410172-0105` y `410173-0105` | 3 / 38 cada una | Los maestros y los lotes 03-05 y 17-05 de 2025 muestran las dos manos. Queda por cuadrar el despiece completo y las solapas de lona de 1 mm por OF. |
+| `410174-0060` | 2 / 114 | Los DXF del 16-11 y 23-11 de 2024 identifican los tres materiales. Queda por contrastar las cantidades de tiras y solapas y las marcas de aparcamiento. |
+| `410130-0017` | 2 / 38 | Los pedidos corresponden al 30-06-2023 y al 01-06-2024. Queda por cotejar el cuerpo, las tapas y el frente. |
+| `410143-0005` | 2 / 35 | Los pedidos corresponden al 03-05 y al 17-05 de 2025. Queda por cotejar las herramientas y la colocación de los cortes del frente. |
+
+| Estado | Referencias |
+| --- | ---: |
+| Habilitadas | 11 |
+| A mano por duda de Taller | 13 |
+| A mano sin corte de taller localizado | 14 |
+| Pendientes de revisar | 78 |
+| Total `410xxx` en RPS | 116 |
