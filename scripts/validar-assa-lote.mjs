@@ -101,8 +101,11 @@ for (const [codigo, ls] of Map.groupBy(lote.lineas.filter(l => familiaTunel(l.co
     // en las filas del original, que puede haber usado tiradas más anchas que el rollo.
     const base = pareja ? operacionesEnPano(operacionesPrograma(pareja.entidades),
       { x0: 0, x1: 2 * largo, y0: 0, y1: ancho }, [], opciones) : [];
+    // Las filas se colocan con el paso del original: el techo NT900 se corta 1 mm más estrecho (Iván, 27/11/2026)
+    // y cada fila se compara con su patrón dentro de la tolerancia.
+    const paso = n > 0 ? (y1 - y0) / n : ancho;
     const esperado = Array.from({ length: n }, (_, i) => {
-      const mover = ([x, y]) => [x, y + i * ancho];
+      const mover = ([x, y]) => [x, y + i * paso];
       return base.map(p => p.tipo === 'raya' ? { ...p, a: mover(p.a), b: mover(p.b) } : { ...p, punto: mover(p.punto) });
     }).flat();
     const forma = compararOperaciones(esperado, operacionesEnPano(modeloReal, caja, [], opciones));

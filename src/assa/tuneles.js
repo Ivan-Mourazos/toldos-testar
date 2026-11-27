@@ -6,6 +6,9 @@ const lateral = {
 };
 const techo = {
   cota: 'NB', margenLargo: 610, margenCuerpo: 55,
+  // Iván, 27/11/2026: al NT900 se le quita 1 mm (1021 → 1020) para cortar dos en el ancho del rollo de 2040.
+  // El NT600 (721) va de dos en dos: las tres filas del LOTE 05-12 (2163 mm) no caben.
+  recorteCorte: { 900: 1 },
   variantes: [[3250, 600, 'E8AF'], [3250, 900, 'E91F'], [3450, 600, 'E940'], [3450, 900, 'E961']],
 };
 const antiguos = {
@@ -18,7 +21,7 @@ export const familiaTunel = codigo => antiguos[codigo]?.familia ?? codigo?.match
 
 export function medidasTunel(codigo, texto, leidas) {
   const familia = familiaTunel(codigo);
-  const { cota, margenLargo, margenCuerpo, variantes } = familias[familia];
+  const { cota, margenLargo, margenCuerpo, variantes, recorteCorte = {} } = familias[familia];
   const antiguo = antiguos[codigo];
   const variante = antiguo?.variante ?? Number(codigo.split('-')[1]);
   const nominal = variantes[variante - 1];
@@ -33,7 +36,7 @@ export function medidasTunel(codigo, texto, leidas) {
   }
   const largo = nominalLargo + margenLargo, cuerpo = NT + margenCuerpo;
   return {
-    corteMm: [largo, cuerpo + 2 * 33],
+    corteMm: [largo, cuerpo + 2 * 33 - (recorteCorte[NT] ?? 0)],
     terminadoMm: [largo, cuerpo],
     fuentePlantilla: { fichero: (antiguo ? codigo.split('-')[0] : familia) + '.dwg', rotulo: antiguo?.rotulo ?? rotulo },
   };

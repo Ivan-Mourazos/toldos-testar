@@ -4,9 +4,12 @@
 
 | Duda | Pendiente | Mientras tanto |
 | --- | --- | --- |
-| Q-ATU01 | ¿Por qué se dibujaron filas de techo de 2163 mm y 2042 mm de ancho en el lote del 05/12 si el rollo es de 2040 mm? | Se conserva cada paño y se cortan menos filas por tirada. |
 | Q-ATU02 | ¿Las seis unidades de más de la línea 8 del lote del 05/12 se prepararon para stock? | El corte y el papel del cortador usan las 18 unidades de RPS. |
 | Q-ATU03 | Confirmar el juego completo y la herramienta de cada marca, agujero y accesorio del techo con vierteaguas `D001624514-001`. | Se prepara a mano con su propio plano. |
+
+- **Q-ATU01 (Iván, 27/11/2026).** Los techos NT 600 no caben de tres en
+  tres: el LOTE 05-12 estaba mal y van de dos en dos. Al NT 900 se le
+  quita 1 mm (1020) para que vayan dos en el rollo de 2040 mm.
 
 [Regla y comparación de las cortinas de túnel](./assa-combursa-tuneles.md).
 

@@ -25,9 +25,9 @@ también usa el prefijo `P001602304`.
 | P1602298-0005 | NH 3600, NT 600 | 3453 × 661 | E99A |
 | P1602298-0006 | NH 3600, NT 900 | 3453 × 961 | E9BE |
 | P1602304-0001 | NW 3250, NT 600 | 3860 × 721 | E8AF |
-| P1602304-0002 | NW 3250, NT 900 | 3860 × 1021 | E91F |
+| P1602304-0002 | NW 3250, NT 900 | 3860 × 1020 | E91F |
 | P1602304-0003 | NW 3450, NT 600 | 4060 × 721 | E940 |
-| P1602304-0004 | NW 3450, NT 900 | 4060 × 1021 | E961 |
+| P1602304-0004 | NW 3450, NT 900 | 4060 × 1020 | E961 |
 
 La vista de corte de los maestros fija el contorno DISCO1. El DXF
 del 05/12 añade ROTULADOR en la unión longitudinal de los dos
@@ -40,8 +40,10 @@ leyenda, fuera de los paños.
 
 El rollo de PLASTEL 8800 TE62 negra mide 2040 mm. Sin girar ni
 empatar, caben tres filas de parejas en el lateral de 661 mm y dos
-en el de 961 mm. En el techo caben dos filas de 721 mm o una de
-1021 mm. Cada repetición conserva las medidas del paño. El papel
+en el de 961 mm. En el techo caben dos filas de 721 mm (NT 600) y dos de 1020 mm
+(NT 900). Iván, 27/11/2026: el plano da 1021 mm al NT 900 y se le
+quita 1 mm para que quepan dos en el rollo; las tres filas de NT 600
+del LOTE 05-12 (2163 mm) estaban mal y no caben. El papel
 del cortador usa los números de línea, las OF y las cantidades de
 RPS, con el palet que indica Oficina Técnica.
 
