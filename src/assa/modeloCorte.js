@@ -3,6 +3,7 @@ import { codigoAssa } from './leerCorte.js';
 import { calcularFamilia, esTecho, piezaConAlto, piezaDePlantilla } from './faseA.js';
 import { canalonDe } from './canalon.js';
 import { calcularCortina410 } from './cortinas410.js';
+import { familiaTunel } from './tuneles.js';
 
 export const CANALON_SIN_PLANTILLA = 'Canalón a mano: falta un juego de plantilla inequívoco para esta referencia y sus medidas.';
 const requiereCanalon = familia => ['420150', '430127', '430129', '430172'].includes(familia);
@@ -41,12 +42,17 @@ export function plantillaVigente(ref) {
     .sort((a, b) => catalogo.plantillasCorte[b].localeCompare(catalogo.plantillasCorte[a]))[0];
 }
 
-export function calcularDesdePlantilla(linea) {
-  const codigo = codigoAssa(linea.CodArticle), articulo = catalogo.referencias[codigo];
-  if (codigo?.startsWith('410')) return calcularCortina410(linea, codigo);
-  if (String(linea.CodArticle ?? '').trim().toUpperCase() === 'MUESTRALONA') {
+export function calcularDesdePlantilla(lineaRps) {
+  const codigo = codigoAssa(lineaRps.CodArticle);
+  if (familiaTunel(codigo) || codigo === 'D001624514-001') return calcularFamilia(lineaRps);
+  if (codigo?.startsWith('410')) return calcularCortina410(lineaRps, codigo);
+  if (String(lineaRps.CodArticle ?? '').trim().toUpperCase() === 'MUESTRALONA') {
     return { estado: 'a-mano', motivos: ['Las muestras de lona se preparan a mano.'], avisos: [] };
   }
+  const articulo = catalogo.referencias[codigo];
+  // Si la descripción de RPS está mal, mandan las medidas del pedido del cliente registradas en el catálogo.
+  const corregidas = articulo?.medidasPedidoCliente;
+  const linea = corregidas ? { ...lineaRps, descripcion: corregidas.descripcion } : lineaRps;
   const alias = articulo?.corteComo;
   const ref = alias ? catalogo.referencias[alias.codigo] : articulo;
   const medidas = ref?.medidasTerminadas.map(m => m.mm) ?? [];
@@ -95,6 +101,7 @@ export function calcularDesdePlantilla(linea) {
   const acabadoDibujo = cuerpo ? (terminadoMm && (iguales(acabado(cuerpo), terminadoMm) || confirmadoPorMedidas) ?
     terminadoMm : acabado(cuerpo).map(precision)) : patron.terminadoMm;
   const avisos = [...g.avisos];
+  if (corregidas) avisos.push(`RPS dice «${String(lineaRps.descripcion ?? '').trim()}»; se cortan las medidas del ${corregidas.fuente}: ${corregidas.descripcion}.`);
   if (!iguales(pieza.medidasMm, esperado)) avisos.push('Se aplican las medidas del dibujo vigente de la plantilla.');
   return { ...g, avisos, pieza, terminadoMm: acabadoDibujo, canalon,
     fuentePlantilla: { fichero: fuente, rotulo: cuerpo?.rotulo ?? null, ...(alias && { referencia: alias.codigo }) } };

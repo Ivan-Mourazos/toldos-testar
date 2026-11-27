@@ -82,6 +82,18 @@ describe('lectura independiente de los paños del lote', () => {
 // Tamara, 28/10/2026 (LOTE 31-10, 420102-0034): dos paños unidos a lo largo, con una raya de rotulador entre ellos, para
 // envarillar dos de un golpe y separarlos después. La raya de arriba de cada fila va en dos tramos.
 describe('paños unidos de dos en dos', () => {
+  it('lee el rótulo de túnel separado 1126 mm del último corte', () => {
+    const modelo = [texto('P001602304-002', [1200, 3168]), texto('x3', [3000, 3872])];
+    for (const y of [1021, 2042]) {
+      modelo.push(raya([0, y], [3860, y]), raya([3860, y], [7720, y]));
+    }
+    modelo.push(raya([0, 0], [0, 2042]), raya([7720, 0], [7720, 2042]), raya([3860, 0], [3860, 2042], 'ROTULADOR'));
+    const [grupo] = extraerPanos(modelo);
+    expect(grupo?.codigo).toBe('P1602304-0002');
+    expect(grupo.panos.map(p => p.medidasMm)).toEqual(Array(4).fill([3860, 1021]));
+    expect(grupo.repeticiones).toBe(3);
+  });
+
   it('lee la pareja entera y la cuenta como dos paños, con el rótulo y las repeticiones de la de la izquierda', () => {
     const modelo = [texto('HOK420102-0034', [2800, 2200]), texto('x6', [4000, 2400])];
     for (const y of [666, 1332, 1998]) modelo.push(raya([0, y], [4010, y]), raya([4010, y], [8020, y]));

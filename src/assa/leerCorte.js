@@ -1,5 +1,6 @@
 // Lectura del corte real, sin consultar medidas esperadas ni el generador.
 import { codigoAssa } from './codigos.js';
+import { familiaTunel } from './tuneles.js';
 
 export { codigoAssa };
 
@@ -102,7 +103,9 @@ export function extraerPanos(modelo) {
     const techo = Math.max(...[...pila].map(q => q.caja.y1));
     const interioresPila = titulos.filter(t => [...pila].some(q => t.punto[0] >= rx0 && t.punto[0] <= rx1 && t.punto[1] > q.caja.y0 && t.punto[1] < q.caja.y1));
     const comun = new Set(interioresPila.map(t => codigoAssa(t.valor))).size === 1 ? interioresPila[0] : null;
-    const superiores = titulos.filter(t => t.punto[0] >= rx0 && t.punto[0] <= rx1 && t.punto[1] >= techo && t.punto[1] - techo < 700)
+    // En LOTE 05-12 el rótulo del techo -0002 está 1126 mm por encima de la pila.
+    const distanciaRotulo = t => familiaTunel(codigoAssa(t.valor)) ? 1400 : 700;
+    const superiores = titulos.filter(t => t.punto[0] >= rx0 && t.punto[0] <= rx1 && t.punto[1] >= techo && t.punto[1] - techo < distanciaRotulo(t))
       .sort((a, b) => a.punto[1] - b.punto[1]);
     const titulo = interiores.length === 1 ? interiores[0] : interiores.length ? null : comun ?? superiores[0];
     if (!titulo) continue;

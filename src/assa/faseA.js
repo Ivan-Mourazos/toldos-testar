@@ -1,6 +1,7 @@
 import { codigoAssa } from './leerCorte.js';
 import { generarPanos420150 } from './generar420150.js';
 import plantilla from './geometriasPlantilla.json' with { type: 'json' };
+import { familiaTunel, medidasTunel } from './tuneles.js';
 
 export const esTecho = familia => ['430125', '430127', '430129'].includes(familia);
 
@@ -18,10 +19,13 @@ export const MATERIAL_COMBURSA = { nombre: 'PLASTEL 8800 TE62 negra', anchoRollo
 /** Lee las medidas de RPS y calcula el paño teórico para poder identificar el dibujo adecuado. */
 export function calcularFamilia(l, { nkValidado = false, terminadoMm, indiceCuerpo = 0, unidos = false, soloMedidas = false,
   material = MATERIAL_COMBURSA } = {}) {
-  const codigo = codigoAssa(l.CodArticle), familia = codigo?.slice(0, 6);
+  const codigo = codigoAssa(l.CodArticle), tunel = familiaTunel(codigo);
+  const familia = tunel ?? codigo?.slice(0, 6);
   const motivos = [], avisos = [], medidas = {};
   const texto = String(l.descripcion ?? '').toUpperCase().replace(/NW(?=\s*=?\s*\d)/g, 'NB');
-  if (!['420102', '420148', '420150', '430125', '430127', '430129', '430172'].includes(familia)) motivos.push('Familia sin regla contrastada: preparación a mano.');
+  const vierteaguas = codigo === 'D001624514-001';
+  if (vierteaguas) motivos.push('Techo con vierteaguas: pendiente de validar el corte de su propia plantilla.');
+  else if (!tunel && !['420102', '420148', '420150', '430125', '430127', '430129', '430172'].includes(familia)) motivos.push('Familia sin regla contrastada: preparación a mano.');
   if (!String(l.of_ ?? '').trim()) motivos.push('Falta la OF de RPS.');
   if (!Number.isSafeInteger(l.cantidad) || l.cantidad <= 0) motivos.push('La cantidad de RPS debe ser un entero positivo.');
   const roja = material.color === 'roja';
@@ -47,12 +51,21 @@ export function calcularFamilia(l, { nkValidado = false, terminadoMm, indiceCuer
     medidas.NH = (terminadoMm[0] - medidas.NB + 8) / 2;
     avisos.push('Descripción de RPS recortada: medida recuperada de la ficha de medidas de producción del cliente.');
   }
-  for (const k of familia === '420102' ? ['NH', 'NT'] : esTecho(familia) ? ['NB', 'NT'] : ['NB', 'NH', 'NT']) {
+  const requeridas = tunel || vierteaguas ? [] : familia === '420102' ? ['NH', 'NT'] : esTecho(familia) ? ['NB', 'NT'] : ['NB', 'NH', 'NT'];
+  for (const k of requeridas) {
     if (!Number.isFinite(medidas[k]) || medidas[k] < (k === 'NT' ? 100 : 1000)) motivos.push(`Falta ${k} completa en la línea de RPS.`);
   }
   const trazabilidad = { referencia: l.CodArticle, pedido: l.CodOrder, linea: l.IDOrderLine, of: l.of_, numeroLinea: l.NumLine };
   const resultado = { estado: 'a-mano', familia, codigo, motivos, avisos, medidas, trazabilidad, cantidadPedida: l.cantidad, unidos,
     material };
+  if (tunel) {
+    const { corteMm, terminadoMm: cuerpoMm, fuentePlantilla, motivo } = medidasTunel(codigo, texto, medidas);
+    if (motivo) motivos.push(motivo);
+    if (corteMm?.[1] > material.anchoRolloMm) motivos.push('El paño de túnel no cabe en el rollo sin girar ni empatar.');
+    if (motivos.length) return resultado;
+    return { ...resultado, estado: 'generado', terminadoMm: cuerpoMm, fuentePlantilla, unidos: true,
+      pieza: piezaDePlantilla(corteMm, []) };
+  }
   if (motivos.length) return resultado;
   if (familia === '420150' && !soloMedidas) {
     const g = generarPanos420150({ ...l, descripcion: `NT${medidas.NT} NB${medidas.NB} NH${medidas.NH}` });
@@ -104,7 +117,7 @@ export function unirEntidades(destino, origen) {
 // Dos paños unidos a lo largo con una raya de rotulador en medio, para envarillar dos de un golpe y separarlos después
 // (Tamara, 28/10/2026). Siempre en la 420102; en la 420150 solo con menos de 5 m de largo.
 export const vanUnidos = g => g.familia === '420102' || (g.familia === '420150' && g.pieza.medidasMm[0] < 5000) ||
-  (esTecho(g.familia) && g.unidos === true);
+  ((esTecho(g.familia) || familiaTunel(g.codigo)) && g.unidos === true);
 
 // La reducción del techo mantiene agujeros y marcas centrados; las dimensiones de los accesorios no se escalan.
 export function piezaConAlto(pieza, alto) {
