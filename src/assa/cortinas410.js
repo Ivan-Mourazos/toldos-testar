@@ -432,6 +432,7 @@ const modelos = {
 
 const marcasLateralesSinConfirmar = 'El plano lleva marcas laterales que faltan en los cortes guardados. Falta confirmar si se rotulan.';
 const hombrosSinConfirmar = 'El plano deja 300 mm a cada lado de la abertura del frente y el corte deja 400 mm. Falta confirmar la medida.';
+const anchoTiraSinConfirmar = 'El corte de julio lleva una tira de 400 mm y el plano de 416,2 mm. Falta confirmar el ancho de corte.';
 const pendientes = {
   '410129-0002': marcasLateralesSinConfirmar,
   '410129-0005': 'La descripción de RPS indica 300 de largo y el dibujo de corte mide 3.000 mm. Falta confirmar el largo.',
@@ -446,6 +447,9 @@ const pendientes = {
   '410143-0005': hombrosSinConfirmar,
   '410172-0104': 'Falta confirmar si la máquina separa las solapas de 1 mm o las marca para separarlas después.',
   '410173-0104': 'Falta confirmar si la máquina separa las solapas de 1 mm o las marca para separarlas después.',
+  '410174-0060': 'Falta confirmar si las solapas se entregan separadas o en tiras marcadas.',
+  '410186-0001': anchoTiraSinConfirmar,
+  '410187-0001': anchoTiraSinConfirmar,
   '410241-0011': 'El plano marca D y el corte reciente marca D1 a D5. Falta confirmar qué rotular en las piezas.',
   '410242-0004': 'El plano marca C y el corte reciente marca C1 a C5. Falta confirmar qué rotular en las piezas.',
   '410245-0005': 'Un corte lleva la letra D en rotulador y otro solo como rótulo del plano. Falta confirmar si se marca la lona.',

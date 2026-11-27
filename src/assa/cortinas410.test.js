@@ -330,6 +330,9 @@ it.each([
   ['410129-0206', /marcas laterales.*faltan/],
   ['410143-0004', /300 mm.*400 mm/],
   ['410143-0005', /300 mm.*400 mm/],
+  ['410186-0001', /400 mm.*416,2 mm/],
+  ['410187-0001', /400 mm.*416,2 mm/],
+  ['410174-0060', /tiras marcadas/],
   ['410245-0005', /letra D.*rotulador/],
   ['410251-0002', /580 g.*650 g/],
 ])('muestra por qué %s requiere una decisión de taller', (codigo, motivo) => {

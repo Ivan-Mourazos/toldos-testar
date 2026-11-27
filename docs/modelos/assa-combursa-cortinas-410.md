@@ -269,6 +269,7 @@ El SELECT de RPS entre 2023 y 2026 devolvió 216 líneas para 116 referencias
 | `410241-0011`, `410242-0004` | 5 / 69 cada una | Las diez OF imputan ALPHA negro 580 g de 2.500 mm. En el 22-06-2024 se cuentan cuatro piezas de cada uno de los cinco tipos por mano, para cuatro cortinas por mano. Se marcó D o C, como figura en los maestros. El 26-09-2026 añade el número de pieza al texto de rotulador. Q-A410-04. |
 | `410129-0105` | 5 / 66 | El juego de máquina del 04-10-2025 tiene dos tapas de 470 × 340 por cuerpo y un frente de 2.500 × 300. El cuerpo de 2.500 × 1.200 lleva seis agujeros, a diferencia de los cinco del maestro. Q-A410-03. |
 | `410172-0104`, `410173-0104` | 5 / 14 cada una | El maestro indica 12 solapas. Se ven cortes de separación con disco en 11-05-2024 y marcas de separación con rotulador en 25-10-2025. Q-A410-05. |
+| `410174-0060` | 2 / 114 | El maestro pide diez solapas sin marca y cuatro con marca por unidad. En 16-11 y 23-11 de 2024 el disco separa 560 y 580 solapas lisas, las cantidades de RPS. En las tiras marcadas, el disco corta las filas y el rotulador divide cada fila cada 350 mm. Se marcan 230 y 240 posiciones frente a 224 y 232 solapas del pedido. Q-A410-05. |
 | `410245-0005` | 4 / 55 | Las cuatro OF imputan ALPHA negro de 580 g. El 22-06-2024 la D está en ROTULADOR. En 08-02-2025 (palets 1–2), está en la capa de texto. Los números de pieza están en la capa de texto en ambos. Q-A410-09. |
 | `410129-0005` | 4 / 9 | Maestro y cortes de 27-07-2024 y 23-08-2025 dan 3.000 mm de largo. RPS dice 300. Q-A410-07. |
 | `410129-0002` | 4 / 7 | El maestro incluye marcas laterales ausentes en 13-04-2024 y 11-01-2025. Q-A410-06. |
@@ -277,6 +278,7 @@ El SELECT de RPS entre 2023 y 2026 devolvió 216 líneas para 116 referencias
 | `410251-0002` | 3 / 21 | Los cortes del 16-11-2024, 10-05-2025 y 05-07-2025 indican PVC negro de 580 g. RPS imputa ALPHA 580 g, POLYMAR 650 g y resto de PVC, respectivamente. Q-A410-10. |
 | `410129-0051` | 3 / 5 | Los cortes del 30-06-2023 y 03-02-2024 traen los ocho agujeros y omiten las marcas laterales del maestro `OK410129.dwg`. Q-A410-06. |
 | `410129-0205` y `410129-0206` | 1 / 25 y 1 / 4 | El maestro `OK410129.dwg` lleva cuatro marcas laterales por cuerpo. El 14-07-2023 corta los agujeros y omite esas marcas en las dos referencias. Q-A410-06. |
+| `410186-0001` y `410187-0001` | 2 / 33 cada una | El corte de los dos cuerpos y sus tapas del 14-10-2023 coincide con las manos perforadas de 2 mm de la `410170-0001` y la `410171-0001` dentro de 0,001 mm. Las cortinas sin solapas llevan una marca rectangular. La tira de 1 mm mide 400 mm en el 21-07-2023 y 416,2 mm en los maestros. La `410187-0001` de octubre también mide 416,2 mm. Q-A410-12. |
 
 Las preguntas para Taller están en
 [Dudas abiertas](./dudas-abiertas.md#combursa--siguientes-cortinas-410-por-volumen).
@@ -312,14 +314,13 @@ motivo que muestra la web es «Sin corte de taller para contrastar».
 | Referencia | Líneas / unidades de RPS | Contraste pendiente |
 | --- | --- | --- |
 | `410172-0105` y `410173-0105` | 3 / 38 cada una | Los maestros y los lotes 03-05 y 17-05 de 2025 muestran las dos manos. Queda por cuadrar el despiece completo y las solapas de lona de 1 mm por OF. |
-| `410174-0060` | 2 / 114 | Los DXF del 16-11 y 23-11 de 2024 identifican los tres materiales. Queda por contrastar las cantidades de tiras y solapas y las marcas de aparcamiento. |
 
 | Estado | Referencias |
 | --- | ---: |
 | Habilitadas | 37 |
-| A mano por duda de Taller | 17 |
+| A mano por duda de Taller | 20 |
 | A mano sin corte de taller localizado | 14 |
-| Pendientes de revisar | 48 |
+| Pendientes de revisar | 45 |
 | Total `410xxx` en RPS | 116 |
 
 ## Criba de la cuarta tanda
