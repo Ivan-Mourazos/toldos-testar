@@ -11,10 +11,18 @@ const rectangulo = (capa, largo, alto) => [
   [capa, 0, 0, 0, alto], [capa, largo, 0, largo, alto], [capa, 0, alto, largo, alto],
 ];
 const marcasLaterales = (x, fin, alturas = [300, 600]) => alturas.map(y => ['ROTULADOR', x, y, fin, y]);
-const agujerosDeCuerpo = (ancho, cantidad, y) =>
-  Array.from({ length: cantidad }, (_, i) => ['CUTTER', 400 + i * (ancho - 800) / (cantidad - 1), y, 20]);
+const agujerosDeCuerpo = (ancho, cantidad, y, margen = 400) =>
+  Array.from({ length: cantidad }, (_, i) => ['CUTTER', margen + i * (ancho - 2 * margen) / (cantidad - 1), y, 20]);
 const grupo = (material, nombre, piezasPorGrupo, porTirada, medidasMm, operaciones, gruposPorUnidad = 1) =>
   ({ material, nombre, piezasPorGrupo, gruposPorUnidad, porTirada, medidasMm, operaciones });
+
+function cuerpoReforzado(ancho, alto, agujeros, margen) {
+  const alturas = [350, alto - 350];
+  return [
+    ...rectangulo('CUTTER', ancho, alto), ...agujerosDeCuerpo(ancho, agujeros, 150, margen),
+    ...marcasLaterales(0, 20, alturas), ...marcasLaterales(ancho, ancho - 20, alturas),
+  ];
+}
 
 const superior = [
   grupo(MATERIAL_COMBURSA, 'cuerpos', 1, 2, [2000, 900], [
@@ -92,11 +100,7 @@ function tapasEnFilas(columnas, ancho, filas) {
 }
 
 function superiorConAbertura(ancho, { altoCuerpo, agujeros, porTirada, anchoTapa, tapasEnDosFilas, borde, fondo }) {
-  const cuerpo = grupo(lona2, 'cuerpos', 1, porTirada, [ancho, altoCuerpo], [
-    ...rectangulo('CUTTER', ancho, altoCuerpo),
-    ...agujerosDeCuerpo(ancho, agujeros, 150),
-    ...[350, altoCuerpo - 350].flatMap(y => [['ROTULADOR', 0, y, 20, y], ['ROTULADOR', ancho - 20, y, ancho, y]]),
-  ]);
+  const cuerpo = grupo(lona2, 'cuerpos', 1, porTirada, [ancho, altoCuerpo], cuerpoReforzado(ancho, altoCuerpo, agujeros));
   const tapas = tapasEnDosFilas
     ? { ...grupo(lona2, 'pares de tapas', 2, 7, [anchoTapa, 740], []), anchoTapa }
     : grupo(lona2, 'pares de tapas', 2, 1, [2 * anchoTapa, 370], tapasEnFilas(2, anchoTapa, 1));
@@ -104,6 +108,20 @@ function superiorConAbertura(ancho, { altoCuerpo, agujeros, porTirada, anchoTapa
     frenteConAbertura(ancho, borde, borde, fondo));
   return [cuerpo, tapas, porTirada === 2 ? { ...frente, frentesEnfrentados: true } : frente];
 }
+
+const superiorConTapasJuntas = [
+  {
+    ...grupo(lona2, 'juegos de cuerpo y 2 tapas', 3, 2, [2500, 1000], cuerpoReforzado(2500, 1000, 7, 150)),
+    tapasJuntoAlCuerpo: 340,
+  },
+  {
+    ...grupo(lona3, 'frentes', 1, 2, [2500, 575], [
+      ...rectangulo('CUTTER', 2500, 575),
+      ...[200, 2300].flatMap(x => [['CUTTER', x, 0, x, 255], ['ROTULADOR', x, 255, 4]]),
+    ]),
+    cerrarSiSuelto: true,
+  },
+];
 
 // Las dos bocas quedan en los extremos de la tirada y comparten el corte recto central.
 function cortarFrentesEnfrentados(n, largo, alto, operaciones) {
@@ -158,6 +176,10 @@ const modelos = {
     fichero: 'OK410130.dwg', medidasMm: [3000, 1000],
     grupos: lateral(3000, 1000, [50, 0, 50],
       { ancho: 340, alto: 370, travesano: 'DISCO1', recorteLisa: 0, xs: [70, 170, 270], ys: [170, 270], alternas: true }, 'frentes con marca blanca', 5),
+  },
+  '410134-0002': {
+    descripcion: 'PLANE SC STANDARD 300X300X2500 OP=600 PVC SCHWARZ, REINFORCED',
+    fichero: 'OK410134.dwg', medidasMm: [2500, 1000], grupos: superiorConTapasJuntas,
   },
   '410143-0002': {
     descripcion: 'PLANE SC IN COMPLETE WIDTH WB400XWT300XB3350 OP=600 PVC BACLK, 2MM REINFORCED',
@@ -247,12 +269,12 @@ function columnaPvc(pares, { ancho, alto: altoTapa, travesano, recorteLisa, xs, 
 export function generarProgramasCortina(g, sueltas) {
   return g.grupos.flatMap(p => {
     const cantidad = g.cantidadPedida * p.gruposPorUnidad;
-    const capacidad = sueltas && p.nombre === 'cuerpos' ? 1 : p.porTirada;
+    const capacidad = sueltas && (p.nombre === 'cuerpos' || p.tapasJuntoAlCuerpo) ? 1 : p.porTirada;
     const [largoMm, alto] = p.medidasMm;
     return [[capacidad, Math.floor(cantidad / capacidad)], [cantidad % capacidad, 1]]
       .filter(([n, repeticiones]) => n && repeticiones)
       .map(([n, repeticiones]) => {
-        const largoTotal = p.anchoTapa ? largoMm * n : largoMm;
+        const largoTotal = p.anchoTapa ? largoMm * n : largoMm + (p.tapasJuntoAlCuerpo ?? 0);
         const anchoOcupadoMm = p.anchoTapa ? alto : alto * n;
         let entidades;
         if (p.tapa) entidades = columnaPvc(n, p.tapa);
@@ -262,6 +284,13 @@ export function generarProgramasCortina(g, sueltas) {
           entidades = entidadesVacias();
           const base = entidadesDe(p.operaciones, p.rotulos);
           for (let i = 0; i < n; i++) unirEntidades(entidades, desplazarEntidades(base, 0, i * alto));
+          if (p.tapasJuntoAlCuerpo) {
+            const cortes = tapasEnFilas(1, p.tapasJuntoAlCuerpo, 2 * n).slice(1);
+            unirEntidades(entidades, desplazarEntidades(entidadesDe(cortes), largoMm, 0));
+          }
+          if (p.cerrarSiSuelto && n === 1) {
+            unirEntidades(entidades, entidadesDe([['CUTTER', 0, 0, largoMm, 0]]));
+          }
         }
         entidades.textos.push({ capa: 'texto', x: 100, y: anchoOcupadoMm + 120, h: 200, literal: true, valor: g.referencia },
           { capa: 'texto', x: 100, y: anchoOcupadoMm + 420, h: 200, literal: true, valor: `x${repeticiones}` });
