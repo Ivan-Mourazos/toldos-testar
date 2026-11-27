@@ -18,6 +18,7 @@ de corte tal como en los lotes. Las cortinas nunca se empatan para envarillar.
 | --- | --- |
 | `410129-0117` | PLASTEL negra 2.040: 1 cuerpo de 2.000 × 900 con 4 agujeros Ø40 y marcas laterales, y 2 tapas de 320 × 340. Lona 3 mm 1.600: 1 frente de 2.000 × 300. |
 | `410130-0175` | PLASTEL negra 2.040: 1 cuerpo de 2.300 × 900 con entrante de 50 mm y marcas. PVC negro 900 g 3.000: 1 tapa lisa y 1 de 6 agujeros Ø40, de 324,1 × 340. Lona 3 mm 1.600: 1 frente de 2.250 × 300 con marca de 750 × 100. |
+| `410143-0002` | Lona 2 mm: 1 cuerpo de 3.350 × 1.100 con 8 agujeros Ø40 y 2 tapas de 440 × 370. Lona 3 mm: 1 frente de 3.350 × 575, con abertura y dos marcas Ø8. |
 | `410170-0001` y `410171-0001` | Lona 2 mm 2.100: 1 cuerpo de 2.600 × 1.116,2 y 2 tapas, una con 6 agujeros Ø40. Lona 1 mm 1.500: 1 tira de 2.600 × 416,2 y 12 solapas de 350 × 400, 8 lisas y 4 marcadas. Cuerpo y tira de mano derecha o izquierda según referencia. |
 
 Las variantes `0117` y `0175` están rotuladas en
@@ -28,7 +29,7 @@ separada de las tiradas y multiplicadores antiguos.
 
 ## Contraste de máquina
 
-Se leyeron 20 bloques de DXF de maqcorte. Se contrastaron los contornos y
+Se leyeron 27 bloques de DXF de maqcorte. Se contrastaron los contornos y
 las marcas en ambos sentidos por herramienta, con tolerancia de 1 mm. Se
 admiten tramos consecutivos en un solo trazo o en varios cuando cubren el
 mismo recorrido. La cuenta por unidad y las incidencias de los rótulos
@@ -39,6 +40,7 @@ históricos están descritas en
 | --- | --- | --- |
 | `410129-0117` | 26-07 y 13-09 de 2025, 07-11-2026 | **Igual** en piezas y herramientas. Máximo 0,690 mm en los frentes de 3 mm. El «X8» del 07-11 elevaría la cantidad sobre las 27 de RPS. |
 | `410130-0175` | 09-08 y 13-09 de 2025, 07-11-2026 (fichero PALET 4-5) | **Igual** en piezas y herramientas. Máximo 0,012 mm. El 07-11 histórico incluye dos tapas de relleno y un «x2» donde la cuenta de 54 cuerpos da «x27». |
+| `410143-0002` | 11-05-2024 (cuerpo), 25-10 y 08-11 de 2025 (juego completo) | **Igual**. Máximo 0,006 mm. El maestro `HOK410143.dwg` da el cuerpo, las tapas de 370 × 440 y el frente. Los dos lotes de 2025 cortan las tapas en pareja de 880 × 370. Las cinco OF imputan lona negra de 2 y 3 mm. |
 | `410170-0001` | 23-08-2025, 25-07 y 07-11 de 2026 | **Difiere** en un trazo de rotulador duplicado en el conjunto de 2 mm antiguo. Se dibuja una vez. Contorno y marcas hasta 0,005 mm. Se cortan 12 solapas por unidad, frente a las 22 del caso aislado de noviembre. |
 | `410171-0001` | 23-08-2025, 25-07 y 07-11 de 2026 | **Difiere** en el mismo trazo duplicado de rotulador. Contorno y marcas hasta 0,012 mm. Misma regla de 12 solapas, con el dibujo de la mano izquierda. |
 
@@ -73,6 +75,20 @@ carpeta se dejó el DXF de oficina, con hojas de pedido y de cortador.
 
 ```text
 \\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 07-11 - 20261127-075605
+```
+
+## Prueba con el lote 13-06-2026
+
+Se regeneraron las 20 líneas del lote con los palets de RPS. Salieron 38
+programas y cuadraron las 29 filas del papel del cortador. La
+`410143-0002`, pedido `AR.26.02532` línea 1, OF `0228780`, aporta dos
+unidades en el palet 2. Son seis piezas en lona de 2 mm y dos frentes en
+lona de 3 mm. Las dos líneas de las manos `0104` siguen a mano en
+esta prueba. Se extrajo el DXF de máquina desde el DWG confirmado con ODA y
+se verificaron por SHA-256 las copias de máquina y de oficina.
+
+```text
+\\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 13-06 - 20261127-082105
 ```
 
 ## Siguientes referencias a mano

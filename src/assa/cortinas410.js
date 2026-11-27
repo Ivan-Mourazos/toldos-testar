@@ -42,6 +42,29 @@ const solapas = grupo(lona1, 'juegos de 8 solapas lisas y 4 marcadas', 12, 1, [1
   ...[0, 350].flatMap(x => [150, 250, 550, 650].map(y => ['ROTULADOR', x, y, x + 350, y])),
 ]);
 
+function superiorConAbertura(ancho, abertura, agujeros) {
+  const borde = 400, base = 400, alto = base + abertura;
+  return [
+    grupo(lona2, 'cuerpos', 1, 1, [ancho, 1100], [
+      ...rectangulo('CUTTER', ancho, 1100),
+      ...Array.from({ length: agujeros }, (_, i) => ['CUTTER', borde + i * (ancho - 2 * borde) / (agujeros - 1), 150, 20]),
+      ...[350, 750].flatMap(y => [['ROTULADOR', 0, y, 20, y], ['ROTULADOR', ancho - 20, y, ancho, y]]),
+    ]),
+    grupo(lona2, 'pares de tapas', 2, 1, [880, 370], [
+      ['CUTTER', 0, 370, 880, 370], ...[0, 440, 880].map(x => ['CUTTER', x, 0, x, 370]),
+    ]),
+    grupo(lona3, 'frentes con abertura', 1, 1, [ancho, alto], [
+      ['CUTTER', 0, 0, 0, base], ['CUTTER', 0, base, borde, base],
+      ['CUTTER', borde, base, borde, alto], ['CUTTER', borde, alto, ancho - borde, alto],
+      ['CUTTER', ancho - borde, alto, ancho - borde, base], ['CUTTER', ancho - borde, base, ancho, base],
+      ['CUTTER', ancho, base, ancho, 0], ['ROTULADOR', borde, base, ancho - borde, base],
+      ...[borde + 200, ancho - borde - 200].flatMap(x => [
+        ['CUTTER', x, base + 20, x, alto], ['ROTULADOR', x, base + 20, 4],
+      ]),
+    ]),
+  ];
+}
+
 function conMano(codigo, derecha) {
   const { medidasMm, operaciones } = cuerpos[codigo];
   const x = n => derecha ? n : 2600 - n;
@@ -64,6 +87,10 @@ const modelos = {
   '410130-0175': {
     descripcion: 'PLANE SC SEITLICH WB300XWT250XH2300 PARKING GUIDE WHITE/STANDARD (750MM)',
     fichero: 'COMBURSA (CRAWFORD)2.dwg', medidasMm: [2300, 900], grupos: lateral,
+  },
+  '410143-0002': {
+    descripcion: 'PLANE SC IN COMPLETE WIDTH WB400XWT300XB3350 OP=600 PVC BACLK, 2MM REINFORCED',
+    fichero: 'HOK410143.dwg', medidasMm: [3350, 1100], grupos: superiorConAbertura(3350, 175, 8),
   },
   '410170-0001': {
     descripcion: 'PLANE RIGHT SCHUPPEN/REINFORCED 2MM H=2600 SWB FRONT=400 SWB=300, SWT=300 PKG 750MM, SIMILAR DRAW. OK410173 BUT WITH SWB FRONT AND SWB REAR',

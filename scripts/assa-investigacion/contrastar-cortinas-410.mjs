@@ -18,6 +18,13 @@ const casos = [
   ['410130-0175', 'pares', 4, '2026/LOTE 07-11_PALET 4-5', 5839.13, 1285.36],
   ['410130-0175', 'frentes', 5, '2025/LOTE 09-08', 14785.68, 1691.11],
   ['410130-0175', 'frentes', 5, '2026/LOTE 07-11_PALET 4-5', 11279.99, 1223.79],
+  ['410143-0002', 'cuerpos', 1, '2024/LOTE 11-05', 52037.99, 26667.59],
+  ['410143-0002', 'cuerpos', 1, '2025/LOTE 25-10', 63547.76, 157754.15],
+  ['410143-0002', 'pares de tapas', 1, '2025/LOTE 25-10', 63547.76, 158854.15, { bordeInferior: true }],
+  ['410143-0002', 'frentes', 1, '2025/LOTE 25-10', 68799.38, 157754.15],
+  ['410143-0002', 'cuerpos', 1, '2025/LOTE 08-11', -79805349.30, 28349955.02],
+  ['410143-0002', 'pares de tapas', 1, '2025/LOTE 08-11', -79801520.95, 28350589.07],
+  ['410143-0002', 'frentes', 1, '2025/LOTE 08-11', -79800097.67, 28349955.02],
   ['410170-0001', 'juegos de cuerpo', 1, '2025/LOTE 23-08', 134366.06, 94244.14],
   ['410170-0001', 'juegos de cuerpo', 1, '2026/LOTE 25-07', 155661.2438, 190729.9961],
   ['410170-0001', 'tiras', 1, '2025/LOTE 23-08', 142635.2, 94079.66],
@@ -32,15 +39,21 @@ const casos = [
 
 const base = process.argv[2] ?? 'tmp/assa-410/cortes';
 const modelos = new Map();
-for (const [ref, nombre, cantidad, fichero, x0, y0] of casos) {
-  const linea = lineas.find(l => l.CodArticle.endsWith(ref));
+const adicionales = {
+  '410143-0002': { CodArticle: 'H0K410143-0002', of_: '0221850',
+    descripcion: 'PLANE SC IN COMPLETE WIDTH WB400xWT300xB3350 OP=600 PVC BACLK, 2MM REINFORCED' },
+};
+for (const [ref, nombre, cantidad, fichero, x0, y0, opciones] of casos) {
+  const linea = adicionales[ref] ?? lineas.find(l => l.CodArticle.endsWith(ref));
   const programa = generarProgramasCortina(calcularDesdePlantilla({ ...linea, cantidad }), false)
     .find(p => p.nombrePiezas.startsWith(nombre) && p.gruposDePiezas === cantidad);
-  if (!modelos.has(fichero)) modelos.set(fichero, leerPlanoDxf(path.join(base, fichero + '.dxf')).modelo);
+  if (!modelos.has(fichero)) modelos.set(fichero, leerPlanoDxf(path.join(base, fichero + '.dxf')).modelo
+    .map(p => /^cutter$/i.test(p.capa) ? { ...p, capa: 'CUTTER' } : p));
   const caja = { x0, y0, x1: x0 + programa.largoMm, y1: y0 + programa.anchoOcupadoMm };
   const reales = operacionesEnPano(modelos.get(fichero), caja, [], { conBordes: true })
     // El recorte con orígenes redondeados puede arrastrar menos de 0,02 mm de la columna vecina.
-    .filter(p => p.tipo !== 'raya' || Math.hypot(p.a[0] - p.b[0], p.a[1] - p.b[1]) >= .02);
+    .filter(p => p.tipo !== 'raya' || (Math.hypot(p.a[0] - p.b[0], p.a[1] - p.b[1]) >= .02 &&
+      !(opciones?.bordeInferior && Math.abs(p.a[1]) < .02 && Math.abs(p.b[1]) < .02)));
   const esperadas = primitivasDeEntidades(programa.entidades, 1).filter(p => p.tipo !== 'texto');
   const resultado = compararOperaciones(esperadas, reales, 1);
   if (resultado.coincide) {
