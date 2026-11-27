@@ -181,6 +181,25 @@ for (const cuerpo of referencia('420148-0118').cuerpos['COMBURSA (CRAWFORD).dwg'
 }
 referencia('420148-0118').correccionPlantilla = 'La plantilla dibuja la 0118 a NT600 (661); el pedido ROBA010646 ' +
   '(AR.26.04884, pos. 70) es NT900 y se corta a 961, como las NT900 de la familia (Iván, 27/11/2026).';
+// 27/11/2026, Iván: la 0115 no está en las plantillas; se corta por el dibujo del LOTE 23-05 (AR.26.02151, dibujo 2,
+// 4 uds.), la única vez que se hizo. Contorno de «cortes - lona» de src/assa/dibujosConfeccion.json: rectángulo sin
+// operaciones (las rayas DISCO1 del lote son cotas fuera de la pieza).
+{
+  const LOTE_0115 = 'LOTE 23-05.dwg';
+  const dibujos = JSON.parse(await fs.readFile(path.join(raiz, 'src/assa/dibujosConfeccion.json'), 'utf8'));
+  const dibujo = dibujos['420148-0115'];
+  const corte = dibujo.entidades.lineas.filter(l => l.capa === 'cortes - lona');
+  const xs = corte.flatMap(l => [l.x1, l.x2]), ys = corte.flatMap(l => [l.y1, l.y2]);
+  const medidasMm = [Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)].map(n => Math.round(n * 10) / 10);
+  if (dibujo.fuente !== LOTE_0115 || corte.length !== 4 || medidasMm.join('x') !== '9815x661') {
+    throw new Error(`420148-0115: el dibujo del ${LOTE_0115} ya no es el rectángulo 9815 x 661 esperado`);
+  }
+  fechas[LOTE_0115] = `${dibujo.fecha}T00:00:00.000Z`;
+  evidencia('420148-0115', LOTE_0115).dibujoLote = { pedido: dibujo.pedidoRotulado, dibujo: dibujo.numeroDibujo };
+  referencia('420148-0115').cuerpos[LOTE_0115] = [{ medidasMm, operaciones: [], rotulo: 'HOK420148-0115' }];
+  referencia('420148-0115').correccionPlantilla = 'La 0115 no está en la plantilla; se corta como en el LOTE 23-05 ' +
+    '(AR.26.02151, dibujo 2), la única vez que se hizo (Iván, 27/11/2026).';
+}
 referencia('420150-0133').materialBase = { ...MATERIAL_COMBURSA, nombre: 'PLASTEL roja', color: 'roja',
   fuente: 'docs/modelos/assa-combursa-catalogo.md#respuestas-de-taller' };
 referencia('410130-0172').materiales = ['PLASTEL negra de 2040 mm', 'PVC 900 g negro', 'Lona de 3 mm'];

@@ -67,6 +67,14 @@ it('corta la 420148-0118 a NT900 (10615 × 961) aunque la plantilla la dibuje a 
   expect(prepararLote(fecha, [{ ...linea, descripcion: 'CLADDING NW3250 NH3680 NT600' }]).lineas[0].estado).toBe('a-mano');
 });
 
+it('corta la 420148-0115 por el dibujo del LOTE 23-05 aunque no esté en la plantilla', () => {
+  const linea = { ...techo, CodArticle: 'H0K420148-0115', descripcion: 'CLADDING NW3250 NH3280 NT600 CONFIGURATION:' };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [9815, 661] });
+  expect(lote.lineas[0].avisos.join(' ')).toMatch(/LOTE 23-05/);
+  expect(calcularDesdePlantilla(linea).fuentePlantilla.fichero).toBe('LOTE 23-05.dwg');
+});
+
 it('usa el cuerpo y el canalón de la 0005 para la 0010 con las cotas confirmadas', () => {
   const base = { ...techo, CodArticle: 'HOK430172-0005', descripcion: 'NT900 NB3250 NH3200' };
   const alias = { ...base, IDOrderLine: 'b', CodArticle: 'HOK430172-0010' };

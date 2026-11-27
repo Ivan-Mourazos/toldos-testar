@@ -38,7 +38,6 @@ Respuestas de Jaime y comprobaciones en el
 
 | Duda | Pendiente | Mientras tanto |
 | --- | --- | --- |
-| Q-ASC06 | Tamara tiene que guardar el dibujo de la `420148-0115`. | Corte a mano. |
 | Q-ASC09 | Tamara tiene que guardar el dibujo de la `430127-0068`. | Corte a mano. |
 | Q-ASC11 | Preguntar a Tamara qué hacer cuando difieren la plantilla y el último corte guardado. | Se mantiene el criterio vigente del catálogo. |
 
@@ -50,6 +49,10 @@ Respuestas de Jaime y comprobaciones en el
   La `410130-0172` sigue a mano. Lleva PLASTEL negra de 2.040 mm, PVC
   negro de 900 g y lona de 3 mm. Los materiales comparten DXF con tiradas
   separadas.
+- **Q-ASC06 · 420148-0115 (Iván, 27/11/2026).** No está en las plantillas. Se hizo una
+  sola vez, en el LOTE 23-05 (`AR.26.02151`, dibujo 2, 4 uds.): rectángulo de 9.815 × 661
+  (terminado 9.805 × 595, el de la ficha). La web la corta así y avisa del origen.
+  Tamara lo verá al contestar sus dudas.
 - **Q-ASC08 · 420148-0118 (Iván, 27/11/2026).** La plantilla la dibuja a NT 600
   (10.615 × 661) y así se cortó en el LOTE 17-10, pero el pedido ROBA010646
   (`AR.26.04884`, posición 70) y RPS dicen NT 900: se hizo mal. La web la corta a
@@ -258,7 +261,7 @@ Q-GAN05–09 permanecen contestadas; estas preguntas no reabren sus respuestas.
 
 - **430127-0023.** Resuelta en Q-ASC04 (27/11/2026): NT 600 y NB 2.900 según el pedido del cliente.
 - **430172-0010.** El maestro dibuja 9.860 × 966 mm y un canalón de 3.660 mm. Con NB 3.250 y NH 3.200 mm, la línea necesita otro juego. Falta confirmar si la referencia del pedido corresponde al dibujo.
-- **420148-0115.** La ficha da un terminado de 9.805 × 595 mm. Falta localizar el contorno de corte de la variante en los maestros.
+- **420148-0115.** Resuelta en Q-ASC06 (27/11/2026): se corta a 9.815 × 661 mm por el dibujo del LOTE 23-05.
 - **Cortinas 410129-0117, 410130-0175, 410170-0001 y 410171-0001.** Resuelta
   la preparación por materiales el 27/11/2026. Véase el
   [contraste de cortinas](./assa-combursa-cortinas-410.md).
