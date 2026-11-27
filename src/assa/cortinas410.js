@@ -150,7 +150,43 @@ const solapas = grupo(lona1, 'juegos de 8 solapas lisas y 4 marcadas', 12, 1, [1
   ...[0, 350].flatMap(x => [150, 250, 550, 650].map(y => ['ROTULADOR', x, y, x + 350, y])),
 ]);
 
-const tramosDisco = puntos => puntos.slice(1).map((punto, i) => ['DISCO1', ...puntos[i], ...punto]);
+const tramos = (capa, puntos) => puntos.slice(1).map((punto, i) => [capa, ...puntos[i], ...punto]);
+const tramosDisco = puntos => tramos('DISCO1', puntos);
+
+function piezaSoldada(ancho, extremoSuperior) {
+  const diferencia = 370 - ancho;
+  const alto = 862.828 - diferencia;
+  const perfilInferior = [
+    [[396.09, 245.914], [384.157, 76.326], [559.028, 64.126], [605.427, 10.767]],
+    [[605.782, 10.742], [759.199, .038]],
+    [[759.756, 0], [813.114, 46.399], [827.034, 245.914]],
+  ];
+  const reflejar = ([x, y]) => [x, alto - y];
+  // El maestro de 360 mm prolonga este corte junto al chaflán superior.
+  const [primerTramo, ...otrosTramos] = perfilInferior;
+  const perfilSuperior = [
+    [...primerTramo.slice(0, 2).map(reflejar), extremoSuperior], primerTramo.slice(2).map(reflejar),
+    ...otrosTramos.map(puntos => puntos.map(reflejar)),
+  ];
+  const costados = [
+    [[394.619, 225.019], [50, 225.019], [50, 245.914], [0, 295.019],
+      [0, 566.019 - diferencia], [50, 616.914 - diferencia], [50, 636.019 - diferencia], [394.656, 636.019 - diferencia]],
+    [[824.89, 225.914], [1027.09, 225.914], [1027.09, 245.914], [1077.09, 295.914],
+      [1077.09, 566.914 - diferencia], [1027.09, 616.914 - diferencia], [1027.09, 636.914 - diferencia],
+      [824.89, 636.914 - diferencia]],
+  ];
+  const marcas = [
+    ...[395.989, 826.09, 1027.09].map(x => [x, 245.914, x, 255.914]),
+    [226.057, 246.651, 226.057, 256.651], [50, 245.914, 50, 255.019],
+    ...[50, 395.989, 826.09, 1027.09].map(x => [x, 616.914 - diferencia, x, 606.914 - diferencia]),
+    [226.057, 617.651 - diferencia, 226.057, 607.651 - diferencia],
+  ];
+  const cortes = [...costados, ...perfilInferior, ...perfilSuperior]
+    .flatMap(puntos => tramos('CUTTER', puntos));
+  return [grupo(lona2, 'piezas soldadas', 1, 1, [1077.09, alto], [
+    ...cortes, ...marcas.map(marca => ['ROTULADOR', ...marca]),
+  ])];
+}
 
 function superiorConTapasTrapezoidales(ancho, tapasJuntas = true) {
   const alto = 1116.2, fondoTapa = 370, baseTapa = 557.74851;
@@ -525,6 +561,14 @@ const modelos = {
   '410179-0054': {
     descripcion: 'PLANE 2MM WB=300 WT=300 H=2900 SCHWARZ PVC, WHITE PKG 750MM',
     fichero: 'OK410179.dwg', medidasMm: [2900, 1000], grupos: lateralConMuestra,
+  },
+  '410300-0005': {
+    descripcion: 'SPECIAL PVC 2MM BLACK, 430X370- 170/200MM WELDED',
+    fichero: 'OK410300.dwg', medidasMm: [1077.09, 862.828], grupos: piezaSoldada(370, [559.028, 798.702]),
+  },
+  '410300-0006': {
+    descripcion: 'SPECIAL PVC 2MM BLACK, 430X360- 170/200MM WELDED',
+    fichero: 'OK410300.dwg', medidasMm: [1077.09, 852.828], grupos: piezaSoldada(360, [571.316, 789.559]),
   },
   '410182-0031': {
     descripcion: 'PLANE OBEN 2MM SC WB=300 WT=300 B=2500 SCHWARZ',

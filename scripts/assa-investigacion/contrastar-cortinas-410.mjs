@@ -8,6 +8,8 @@ import { primitivasDeEntidades } from '../../src/assa/documentoLote.js';
 import lineas from '../../src/assa/fixtures/lote0711.json' with { type: 'json' };
 
 const casos = [
+  ['410300-0005', 'piezas soldadas', 1, '2025/LOTE 15-03', 81570.45667, 84897.56347],
+  ['410300-0006', 'piezas soldadas', 1, '2025/LOTE 15-03', 82175.18544, 69307.32788],
   ['410137-0037', 'cuerpos', 1, '2023/LOTE 28-04', 17019.24443, 192085.95361],
   ['410137-0037', 'tapas', 2, '2023/LOTE 28-04', 14989.24443, 193285.95361, { unidades: 1, bordeInferior: true }],
   ['410137-0037', 'frentes', 1, '2023/LOTE 28-04', 7667.27257, 192300.04892],
@@ -194,6 +196,8 @@ function operacionesDelBloque(modelo, caja, { tapasArriba, tapasAlLado } = {}) {
   return [...cuerpo, ...tapas];
 }
 const adicionales = {
+  '410300-0005': { CodArticle: 'H0K410300-0005', of_: '0214194', descripcion: 'SPECIAL PVC 2MM BLACK, 430X370- 170/200MM WELDED' },
+  '410300-0006': { CodArticle: 'H0K410300-0006', of_: '0214195', descripcion: 'SPECIAL PVC 2MM BLACK, 430X360- 170/200MM WELDED' },
   '410137-0037': { CodArticle: 'H0K410137-0037', of_: '0190850', descripcion: 'PLANE SC STANDARD WB300xWT400xB2500' },
   '410137-0038': { CodArticle: 'H0K410137-0038', of_: '0204913',
     descripcion: 'PLANE SC STANDARD WB300xWT300xB4500, OP=700 SCHWARZ SCHWARZ' },

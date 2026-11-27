@@ -323,10 +323,10 @@ motivo que muestra la web es «Sin corte de taller para contrastar».
 
 | Estado | Referencias |
 | --- | ---: |
-| Habilitadas | 46 |
+| Habilitadas | 48 |
 | A mano por duda de Taller | 35 |
 | A mano sin corte de taller localizado | 14 |
-| Pendientes de revisar | 21 |
+| Pendientes de revisar | 19 |
 | Total `410xxx` en RPS | 116 |
 
 ## Criba de la cuarta tanda
@@ -607,4 +607,27 @@ piezas de PLASTEL y un frente. Se verificaron los dos programas de la
 
 ~~~text
 \\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 01-06 - 20261127-103414
+~~~
+
+## Sexta tanda de piezas soldadas 410300
+
+Las OF de ambas referencias imputan restos de lona negra de 2 mm.
+El maestro `OK410300.dwg` da el mismo contorno con dos anchos y
+una prolongación de corte junto al chaflán en la `0006`. El DXF
+agrupa las piezas de dos en dos y rotula ×2 por referencia. La web
+saca una pieza por programa repetido cuatro veces, con los cortes
+y las diez marcas de la pieza.
+
+| Referencia / OF | Lote de máquina | Medida de corte en mm | Resultado |
+| --- | --- | --- | --- |
+| `410300-0005` / `0214194` | 15-03-2025 | 1.077,09 × 862,828 | **Igual**, con 0,001 mm de desviación. |
+| `410300-0006` / `0214195` | 15-03-2025 | 1.077,09 × 852,828 | **Igual**, con 0,001 mm de desviación. |
+
+El lote de prueba del 15-03-2025 tiene 27 líneas, 48 programas y 38
+filas de cortador cuadradas. Las dos referencias llevan cuatro
+piezas para el palet 1. Se releyó el programa de la `0005` tras
+confirmar con ODA, y se cotejaron las copias por SHA-256.
+
+~~~text
+\\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 15-03 - 20261127-103822
 ~~~

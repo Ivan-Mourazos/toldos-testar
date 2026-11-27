@@ -57,6 +57,20 @@ it.each([
   ]);
 });
 
+it.each([['0005', 370, 862.828], ['0006', 360, 852.828]])(
+  'corta y marca la pieza soldada 410300-%s de lona de 2 mm', (sufijo, ancho, fondo) => {
+    const linea = { ...cortinas[0], CodArticle: `H0K410300-${sufijo}`, cantidad: 4,
+      descripcion: `SPECIAL PVC 2MM BLACK, 430X${ancho}- 170/200MM WELDED` };
+    const lote = prepararLote(fecha, [linea]);
+    expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [1077.09, fondo] });
+    expect(lote.cortador).toMatchObject([{ material: 'Lona 2 mm', unidades: 4, pedidas: 4, cuadra: true }]);
+    expect(lote.programas).toHaveLength(1);
+    const [corte] = lote.programas;
+    expect(corte).toMatchObject({ piezas: 1, repeticiones: 4 });
+    expect(corte.entidades.lineas.filter(l => l.capa === 'ROTULADOR')).toHaveLength(10);
+  },
+);
+
 it('la 410124-0003 corta y rotula A1, A2 y A3 una vez por unidad', () => {
   const linea = { ...cortinas[0], CodArticle: 'H0K410124-0003', cantidad: 17,
     descripcion: 'TOP PVC 0,5MM GLOSSY BLK TNB2080XTWB300XTWT400_W/O OP_480X200_OPEN RECESS' };
