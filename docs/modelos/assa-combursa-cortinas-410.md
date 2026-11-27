@@ -16,6 +16,7 @@ de corte tal como en los lotes. Las cortinas nunca se empatan para envarillar.
 
 | Referencia | Despiece por unidad, medidas de corte y rollos en mm |
 | --- | --- |
+| `410124-0003` | ALPHA negro 580 g 2.500: 1 A1, 1 A2 y 1 frontal A3. El par A1/A2 ocupa 864 × 2.100, con abertura compartida. El A3 mide 3.330 × 320. Máquina corta con DISCO1 y marca las tres identificaciones de 10 mm con rotulador. |
 | `410129-0117` | PLASTEL negra 2.040: 1 cuerpo de 2.000 × 900 con 4 agujeros Ø40 y marcas laterales, y 2 tapas de 320 × 340. Lona 3 mm 1.600: 1 frente de 2.000 × 300. |
 | `410130-0006` y `410130-0018` | PLASTEL negra 2.040: 1 cuerpo de 3.000 × 1.000 o 2.400 × 1.000, con entrante y marcas de su variante. PVC negro 900 g 3.000: 1 tapa lisa y 1 de 6 agujeros Ø40, de 340 × 370. Lona 3 mm 1.600: 1 frente de 2.950 × 300 o 2.350 × 300 con marca de 750 × 100. |
 | `410130-0175` | PLASTEL negra 2.040: 1 cuerpo de 2.300 × 900 con entrante de 50 mm y marcas. PVC negro 900 g 3.000: 1 tapa lisa y 1 de 6 agujeros Ø40, de 324,1 × 340. Lona 3 mm 1.600: 1 frente de 2.250 × 300 con marca de 750 × 100. |
@@ -30,7 +31,7 @@ separada de las tiradas y multiplicadores antiguos.
 
 ## Contraste de máquina
 
-Se leyeron 38 bloques de DXF de maqcorte. Se contrastaron los contornos y
+Se leyeron 42 bloques de DXF de maqcorte. Se contrastaron los contornos y
 las marcas en ambos sentidos por herramienta, con tolerancia de 1 mm. Se
 admiten tramos consecutivos en un solo trazo o en varios cuando cubren el
 mismo recorrido. La cuenta por unidad y las incidencias de los rótulos
@@ -39,6 +40,7 @@ históricos están descritas en
 
 | Referencia | Lotes comprobados | Resultado y motivo |
 | --- | --- | --- |
+| `410124-0003` | 08-02-2025 (geometría) y 26-09-2026 (geometría y letras) | **Igual** en geometría por herramienta, dentro de 0,001 mm. El maestro identifica A1, A2 y A3 en la capa de números de paño. El corte de 2026 las lleva en rotulador, 17 de cada una. En el de 2025 aparecen como rótulos de plano. Las tres OF imputan ALPHA 580 g negro de 2.500 mm. |
 | `410129-0117` | 26-07 y 13-09 de 2025, 07-11-2026 | **Igual** en piezas y herramientas. Máximo 0,690 mm en los frentes de 3 mm. El «X8» del 07-11 elevaría la cantidad sobre las 27 de RPS. |
 | `410130-0006` | 06-04 y 13-04 de 2024 | **Igual** en contorno y herramientas geométricas. Máximo 0,023 mm. Usa la columna alternada con DISCO1. El 13-04 añade una letra B en rotulador. La web conserva la marca rectangular del maestro y del 06-04, con el blanco indicado en el rótulo del programa. |
 | `410130-0018` | 11-01-2025 (cuerpo y frente), 23-08-2025 (juego completo) | **Igual**. Máximo 0,033 mm. El 23-08 corta las cuatro tapas perforadas y luego las cuatro lisas con travesaños DISCO2. El 11-01 usa un recorte de PVC con alturas de 374 y 378 mm en dos tapas. |
@@ -107,6 +109,19 @@ verificaron por SHA-256 los dos DXF de prueba.
 \\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 23-08 - 20261127-082709
 ```
 
+## Prueba con el lote 26-09-2026
+
+Se regeneraron 21 líneas de RPS con palets de expedición. Salieron 38
+programas y cuadraron 28 filas del papel. Cuatro líneas quedaron a mano.
+Las 17 unidades de `410124-0003` del pedido `AR.26.04400` línea 1 y OF
+`0232002` van al palet 4. El papel da 51 piezas en ALPHA negro 580 g.
+La relectura del DXF de máquina tras ODA conservó las marcas A1, A2 y A3,
+su giro y su altura. Se cotejaron los dos DXF de prueba por SHA-256.
+
+```text
+\\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 26-09 - 20261127-083244
+```
+
 ## Siguientes referencias a mano
 
 El SELECT de RPS entre 2023 y 2026 devolvió 216 líneas para 116 referencias
@@ -123,5 +138,14 @@ prepara a mano.
 | `410241-0011`, `410242-0004` | 5 / 69 cada una | Las diez OF imputan ALPHA negro 580 g de 2.500 mm. En el 22-06-2024 se cuentan cuatro piezas de cada uno de los cinco tipos por mano, para cuatro cortinas por mano. Se marcó D o C, como figura en los maestros. El 26-09-2026 añade el número de pieza al texto de rotulador. Q-A410-04. |
 | `410129-0105` | 5 / 66 | El juego de máquina del 04-10-2025 tiene dos tapas de 470 × 340 por cuerpo y un frente de 2.500 × 300. El cuerpo de 2.500 × 1.200 lleva seis agujeros, a diferencia de los cinco del maestro. Q-A410-03. |
 
-Las cuatro preguntas para Taller están en
+| Referencia | Líneas / unidades de RPS | Evidencia y motivo en la segunda tanda |
+| --- | --- | --- |
+| `410172-0104`, `410173-0104` | 5 / 14 cada una | El maestro indica 12 solapas. Se ven cortes de separación con disco en 11-05-2024 y marcas de separación con rotulador en 25-10-2025. Q-A410-05. |
+| `410245-0005` | 4 / 55 | Las cuatro OF imputan ALPHA negro de 580 g. El 22-06-2024 identifica D1, D2 y D3. Falta contrastar cada contorno y marca con el maestro. |
+| `410129-0005` | 4 / 9 | Maestro y cortes de 27-07-2024 y 23-08-2025 dan 3.000 mm de largo. RPS dice 300. Q-A410-07. |
+| `410129-0002` | 4 / 7 | El maestro incluye marcas laterales ausentes en 13-04-2024 y 11-01-2025. Q-A410-06. |
+| `410182-0037` | 3 / 58 | El maestro muestra dos tapas de PVC 900 g por unidad. El lote de 21-07-2023 trae una malla de 66 para 31 cuerpos. Falta localizar otro corte que aclare las cuatro tapas adicionales. |
+| `410143-0003` | 3 / 29 | Los círculos Ø8 del frente cambian de herramienta entre 18-08-2023 y 08-06-2024. Q-A410-08. |
+
+Las preguntas para Taller están en
 [Dudas abiertas](./dudas-abiertas.md#combursa--siguientes-cortinas-410-por-volumen).

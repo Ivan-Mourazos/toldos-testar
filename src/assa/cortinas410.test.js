@@ -7,6 +7,19 @@ const fecha = '2026-11-07';
 const cortinas = lineas.filter(l => /410(129-0117|130-0175|17[01]-0001)/.test(l.CodArticle));
 const palets = Object.fromEntries(cortinas.map((l, i) => [l.IDOrderLine, i + 3]));
 
+it('la 410124-0003 corta y rotula A1, A2 y A3 una vez por unidad', () => {
+  const linea = { ...cortinas[0], CodArticle: 'H0K410124-0003', cantidad: 17,
+    descripcion: 'TOP PVC 0,5MM GLOSSY BLK TNB2080XTWB300XTWT400_W/O OP_480X200_OPEN RECESS' };
+  const lote = prepararLote(fecha, [linea], {}, undefined, { palets: { [linea.IDOrderLine]: 4 } });
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado' });
+  expect(lote.cortador).toMatchObject([{ material: 'ALPHA negro 580 g', unidades: 51, pedidas: 51, cuadra: true }]);
+  for (const valor of ['A1', 'A2', 'A3']) {
+    const hechos = lote.programas.reduce((n, p) => n + p.entidades.textos.filter(t =>
+      t.capa === 'ROTULADOR' && t.valor === valor).length * p.repeticiones, 0);
+    expect(hechos).toBe(17);
+  }
+});
+
 it('la 410130-0018 conserva DISCO2 entre tapas y cuenta las parejas del resto', () => {
   const linea = { ...cortinas[0], CodArticle: 'H0K410130-0018', cantidad: 5,
     descripcion: 'SC SIDE CURTAIN 300X300X2400 ANFAHRSTREIFEN: WEIS/STANDARD' };

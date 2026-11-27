@@ -8,6 +8,10 @@ import { primitivasDeEntidades } from '../../src/assa/documentoLote.js';
 import lineas from '../../src/assa/fixtures/lote0711.json' with { type: 'json' };
 
 const casos = [
+  ['410124-0003', 'pares A1', 1, '2025/LOTE 08-02 (PALET 3_4_5)', 214215.26791, 53795.11857],
+  ['410124-0003', 'frentes A3', 1, '2025/LOTE 08-02 (PALET 3_4_5)', 233097.26791, 53795.11857],
+  ['410124-0003', 'pares A1', 1, '2026/LOTE 26-09', 120655.32666, 122857.33078, { rotulos: true }],
+  ['410124-0003', 'frentes A3', 6, '2026/LOTE 26-09', 138673.32666, 122857.33078, { rotulos: true }],
   ['410129-0117', 'cuerpos', 2, '2025/LOTE 26-07', 5475.64, 2300.97],
   ['410129-0117', 'tapas', 6, '2025/LOTE 13-09', 614055.83, 218094.35],
   ['410129-0117', 'frentes', 5, '2025/LOTE 26-07', 9460.78, 2123.75],
@@ -51,6 +55,8 @@ const casos = [
 const base = process.argv[2] ?? 'tmp/assa-410/cortes';
 const modelos = new Map();
 const adicionales = {
+  '410124-0003': { CodArticle: 'H0K410124-0003', of_: '0232002',
+    descripcion: 'TOP PVC 0,5MM GLOSSY BLK TNB2080XTWB300XTWT400_W/O OP_480X200_OPEN RECESS' },
   '410130-0006': { CodArticle: 'H0K410130-0006', of_: '0202631',
     descripcion: 'SC SIDE CURTAIN 300X300X3000 ANFAHRSTREIFEN:WEI?/S' },
   '410130-0018': { CodArticle: 'H0K410130-0018', of_: '0219216',
@@ -71,6 +77,16 @@ for (const [ref, nombre, cantidad, fichero, x0, y0, opciones] of casos) {
       !(opciones?.bordeInferior && Math.abs(p.a[1]) < .02 && Math.abs(p.b[1]) < .02)));
   const esperadas = primitivasDeEntidades(programa.entidades, 1).filter(p => p.tipo !== 'texto');
   const resultado = compararOperaciones(esperadas, reales, 1);
+  if (opciones?.rotulos) {
+    const rotulos = modelos.get(fichero).filter(p => p.tipo === 'texto' && p.capa === 'ROTULADOR' &&
+      p.punto[0] >= caja.x0 && p.punto[0] < caja.x1 && p.punto[1] >= caja.y0 && p.punto[1] < caja.y1);
+    const buscados = programa.entidades.textos.filter(t => t.capa === 'ROTULADOR');
+    if (rotulos.length !== buscados.length || !buscados.every(t => rotulos.some(p => p.valor === t.valor &&
+      Math.hypot(p.punto[0] - x0 - t.x, p.punto[1] - y0 - t.y) <= 1 && Math.abs(p.h - t.h) <= 1 && p.giro === t.giro))) {
+      process.exitCode = 1;
+      console.log(ref, fichero, nombre, 'Difiere en los textos de rotulador');
+    }
+  }
   if (resultado.coincide) {
     console.log(ref, fichero, nombre, 'Igual', resultado.desviacionMm.toFixed(3), 'mm');
     continue;
@@ -85,4 +101,11 @@ for (const [ref, nombre, cantidad, fichero, x0, y0, opciones] of casos) {
   if (!marcaRepetida) process.exitCode = 1;
   console.log(ref, fichero, nombre, 'Difiere', resultado.desviacionMm?.toFixed(3), 'mm',
     marcaRepetida ? 'Un trazo de rotulador repetido en el original.' : resultado.diferencias.join(' '));
+}
+
+const marcasAlfa = modelos.get('2026/LOTE 26-09').filter(p => p.tipo === 'texto' && p.capa === 'ROTULADOR' && /^A[123]$/.test(p.valor));
+for (const valor of ['A1', 'A2', 'A3']) {
+  const cantidad = marcasAlfa.filter(p => p.valor === valor).length;
+  console.log('410124-0003 2026/LOTE 26-09', valor, `${cantidad}/17`);
+  if (cantidad !== 17) process.exitCode = 1;
 }

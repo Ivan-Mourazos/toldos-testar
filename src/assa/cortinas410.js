@@ -5,6 +5,7 @@ const lona1 = { nombre: 'Lona 1 mm', anchoRolloMm: 1500 };
 const lona2 = { nombre: 'Lona 2 mm', anchoRolloMm: 2100 };
 const lona3 = { nombre: 'Lona 3 mm', anchoRolloMm: 1600 };
 const pvc = { nombre: 'PVC 900 g negro', anchoRolloMm: 3000 };
+const alpha = { nombre: 'ALPHA negro 580 g', anchoRolloMm: 2500 };
 
 const rectangulo = (capa, largo, alto) => [
   [capa, 0, 0, 0, alto], [capa, largo, 0, largo, alto], [capa, 0, alto, largo, alto],
@@ -42,6 +43,30 @@ const solapas = grupo(lona1, 'juegos de 8 solapas lisas y 4 marcadas', 12, 1, [1
   ...[400, 800, 1200].map(y => ['DISCO1', 0, y, 1400, y]),
   ...[0, 350].flatMap(x => [150, 250, 550, 650].map(y => ['ROTULADOR', x, y, x + 350, y])),
 ]);
+
+const tramosDisco = puntos => puntos.slice(1).map((punto, i) => ['DISCO1', ...puntos[i], ...punto]);
+const techoConEntrante = [
+  {
+    ...grupo(alpha, 'pares A1 y A2', 2, 1, [864, 2100], [
+      ...tramosDisco([[22, 0], [22, 10], [0, 32], [0, 2068], [22, 2090], [22, 2100], [864, 2100]]),
+      ...tramosDisco([[842, 0], [842, 10], [864, 32], [864, 2068], [842, 2090], [842, 2100]]),
+      ...tramosDisco([[432, 0], [432, 820], [232, 820], [232, 1280], [432, 1280], [432, 2100]]),
+      ...tramosDisco([[432, 1280], [632, 1280], [632, 820], [432, 820]]),
+    ]),
+    rotulos: [
+      { valor: 'A1', x: 437.151, y: 2094.901, giro: 270 },
+      { valor: 'A2', x: 414.935, y: 2096.169, giro: 270 },
+    ],
+  },
+  {
+    ...grupo(alpha, 'frentes A3', 1, 7, [3330, 320], [
+      ...tramosDisco([[25, 0], [25, 10], [0, 35], [0, 285], [25, 310], [25, 320],
+        [3305, 320], [3305, 310], [3330, 285], [3330, 35], [3305, 10], [3305, 0]]),
+      ...[425, 1225, 1425, 1905, 2105, 2905].map(x => ['ROTULADOR', x, 10, x, 20]),
+    ]),
+    rotulos: [{ valor: 'A3', x: 8.454, y: 274.034, giro: 0 }],
+  },
+];
 
 function superiorConAbertura(ancho, abertura, agujeros) {
   const borde = 400, base = 400, alto = base + abertura;
@@ -81,6 +106,10 @@ function conMano(codigo, derecha) {
 }
 
 const modelos = {
+  '410124-0003': {
+    descripcion: 'TOP PVC 0,5MM GLOSSY BLK TNB2080XTWB300XTWT400_W/O OP_480X200_OPEN RECESS',
+    fichero: 'HOK410124.dwg', medidasMm: [3330, 320], grupos: techoConEntrante,
+  },
   '410129-0117': {
     descripcion: 'TOP CURTAIN TWP TWB300XTWT250X2000',
     fichero: 'COMBURSA (CRAWFORD)2.dwg', medidasMm: [2000, 900], grupos: superior,
@@ -118,11 +147,18 @@ const modelos = {
 };
 
 const pendientes = {
+  '410129-0002': 'El plano lleva marcas laterales que faltan en los cortes guardados. Falta confirmar si se rotulan.',
+  '410129-0005': 'La descripción de RPS indica 300 de largo y el dibujo de corte mide 3.000 mm. Falta confirmar el largo.',
   '410174-0049': 'Falta confirmar cuántas solapas lisas y tiras para rotular se cortan en lona de 1 mm por cortina.',
   '410129-0003': 'La misma referencia de RPS figura como puerta y como cortina. Falta confirmar el dibujo y el despiece.',
   '410129-0105': 'El maestro dibuja cinco agujeros y el corte real lleva seis. Taller tiene que confirmar el dibujo de corte.',
+  '410143-0003': 'Los dos círculos pequeños del frente aparecen cortados en un lote y rotulados en otro. Falta confirmar la herramienta.',
+  '410172-0104': 'Falta confirmar si la máquina separa las solapas de 1 mm o las marca para separarlas después.',
+  '410173-0104': 'Falta confirmar si la máquina separa las solapas de 1 mm o las marca para separarlas después.',
+  '410182-0037': 'El maestro muestra dos tapas por cortina. Falta cuadrar la cantidad con las tapas del corte real.',
   '410241-0011': 'El plano marca D y el corte reciente marca D1 a D5. Falta confirmar qué rotular en las piezas.',
   '410242-0004': 'El plano marca C y el corte reciente marca C1 a C5. Falta confirmar qué rotular en las piezas.',
+  '410245-0005': 'Falta contrastar el despiece y las marcas D1, D2 y D3 del PVC negro.',
 };
 
 export function calcularCortina410(linea, codigo) {
@@ -141,12 +177,13 @@ export function calcularCortina410(linea, codigo) {
     fuentePlantilla: { fichero: modelo.fichero, rotulo: codigo }, referencia: linea.CodArticle };
 }
 
-function entidadesDe(operaciones) {
+function entidadesDe(operaciones, rotulos = []) {
   const e = entidadesVacias();
   for (const [capa, x1, y1, x2, y2] of operaciones) {
     if (y2 === undefined) e.circulos.push({ capa, x: x1, y: y1, r: x2 });
     else e.lineas.push({ capa, x1, y1, x2, y2 });
   }
+  for (const rotulo of rotulos) e.textos.push({ ...rotulo, capa: 'ROTULADOR', h: 10, literal: true });
   return e;
 }
 
@@ -172,7 +209,7 @@ export function generarProgramasCortina(g, sueltas) {
       .map(([n, repeticiones]) => {
         const entidades = p.tapa ? columnaPvc(n, p.tapa) : entidadesVacias();
         if (!p.tapa) {
-          const base = entidadesDe(p.operaciones);
+          const base = entidadesDe(p.operaciones, p.rotulos);
           for (let i = 0; i < n; i++) unirEntidades(entidades, desplazarEntidades(base, 0, i * alto));
         }
         const anchoOcupadoMm = alto * n;
