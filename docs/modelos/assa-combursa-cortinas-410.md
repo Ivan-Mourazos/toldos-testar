@@ -329,17 +329,16 @@ marcas laterales, pero no se localizó el juego completo de máquina.
 
 | Referencia | Líneas / unidades de RPS | Contraste pendiente |
 | --- | --- | --- |
-| `410174-0062` | 1 / 16 | El 26-07-2025 lleva el rótulo y tiene solapas separadas con disco. Falta ligar el DXF a la OF del 16-08-2025 y contrastar el despiece completo. |
 | `410241-0019`, `410242-0019` | 1 / 6 cada una | El 19-10-2024 máquina marca B y C. Queda por contrastar el contorno y las operaciones interiores de los cinco paños de cada mano. |
 | `410251-0006`, `410252-0006` | 1 / 4 cada una | El 09-03-2024 rotula B y C en el PVC de 580 g. Falta cotejar los cinco paños y las marcas de la ventana de cada mano. |
 | `410155-0002` | 1 / 4 | El 10-10-2026 distingue el cuerpo de 2 mm y el bloque de solapas rotulado «1 MM NEGRA». La OF registra resto de 1,2 mm. Falta completar el contraste del cuerpo y el despiece de solapas. |
 
 | Estado | Referencias |
 | --- | ---: |
-| Habilitadas | 53 |
+| Habilitadas | 54 |
 | A mano por duda de Taller | 42 |
 | A mano sin corte de taller localizado | 15 |
-| Pendientes de revisar | 6 |
+| Pendientes de revisar | 5 |
 | Total `410xxx` en RPS | 116 |
 
 ## Criba de la cuarta tanda
@@ -724,4 +723,30 @@ copias publicadas por SHA-256.
 
 ~~~text
 \\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 07-07 con fecha de prueba 08-07 - 20261127-111709
+~~~
+
+## Tanda final del lateral 410174-0062
+
+`OK410174.dwg` prescribe un cuerpo de 3.060 × 1.000 mm, dos tapas y
+doce solapas de 350 × 300 por unidad, ocho lisas y cuatro marcadas.
+El DXF rotulado del 26-07-2025 tiene dos cuerpos por tirada y repite
+la tirada ocho veces. Las 32 tapas y las 64 solapas marcadas ligan
+el corte con las 16 unidades de la OF `0218919` del 16-08-2025.
+El bloque de solapas de máquina tiene ocho lisas de sobra.
+
+Las tapas y la solapa lisa dan **Igual**. En el cuerpo y la solapa
+marcada, **Igual** en geometría a 0,001 mm y **Difiere** por un
+recorrido repetido en cada original. La web corta ese recorrido
+una vez. El cuerpo usa lona de 2 mm de 2.040 mm de ancho, las
+tapas PVC de 900 g y las solapas VALMEX de 1,2 mm, el material
+identificado en la OF bajo el rótulo «LONA 1 MM» de máquina.
+
+En el lote de prueba del 16-08-2025 se regeneraron cinco líneas,
+con 12 programas y siete filas de cortador cuadradas. El palet 1
+lleva 16 cuerpos, 32 tapas y 192 solapas de esta referencia.
+Se releyeron sus seis programas tras confirmar con ODA y se
+cotejaron las copias publicadas por SHA-256.
+
+~~~text
+\\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 16-08 - 20261127-112128
 ~~~

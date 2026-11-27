@@ -8,6 +8,11 @@ import { primitivasDeEntidades } from '../../src/assa/documentoLote.js';
 import lineas from '../../src/assa/fixtures/lote0711.json' with { type: 'json' };
 
 const casos = [
+  ['410174-0062', 'cuerpos', 2, '2025/LOTE 26-07', 5617.94735, 11582.39135, { duplicado: true }],
+  ['410174-0062', 'pares', 4, '2025/LOTE 26-07', 14699.03149, 11773.9986],
+  ['410174-0062', 'solapas lisas', 1, '2025/LOTE 26-07', 17608.17525, 12775.73976, { unidades: 2, bordeInferior: true }],
+  ['410174-0062', 'solapas marcadas', 1, '2025/LOTE 26-07', 18308.17525, 12775.73976,
+    { unidades: 4, bordeInferior: true, duplicado: true }],
   // Las dos filas del original comparten recorridos. El contraste incluye las ocho piezas.
   ['410300-0001', 'piezas soldadas', 1, '2023/LOTE 07-07', 1697914.12043, -326728.99306,
     { filasGiradas: { columnas: 4, dx: 5.87633, dy: 904.07819 } }],
@@ -208,6 +213,8 @@ function operacionesDelBloque(modelo, caja, { tapasArriba, tapasAlLado } = {}) {
   return [...cuerpo, ...tapas];
 }
 const adicionales = {
+  '410174-0062': { CodArticle: 'H0K410174-0062', of_: '0218919',
+    descripcion: 'PLANE SEITE MIT SCHUPPEN WB300XWT300XH3060 WHITE PARKING GUIDE 750MM, BLACK PVC' },
   '410300-0001': { CodArticle: 'H0K410300-0001', of_: '0194119', descripcion: 'SPECIAL PVC 2MM BLACK, 500x490 - 200/170MM WELDED' },
   '410123-0004': { CodArticle: 'H0K410123-0004', of_: '0210938',
     descripcion: 'TOP PVC 0,5mm GLOSSY BLK TNB2080XTWB300XTWT400_W/O OP_480X200_CLOSED RECESS' },

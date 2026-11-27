@@ -112,6 +112,19 @@ it('corta una pieza soldada 410300-0001 por unidad de RPS', () => {
   expect(lote.cortador).toMatchObject([{ material: 'Lona 2 mm', unidades: 8, pedidas: 8, cuadra: true }]);
 });
 
+it('la 410174-0062 corta ocho solapas lisas y cuatro marcadas por unidad', () => {
+  const linea = { ...cortinas[0], CodArticle: 'H0K410174-0062', cantidad: 16,
+    descripcion: 'PLANE SEITE MIT SCHUPPEN WB300XWT300XH3060 WHITE PARKING GUIDE 750MM, BLACK PVC' };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [3060, 1000] });
+  expect(lote.cortador.map(f => [f.material, f.unidades, f.pedidas, f.cuadra])).toEqual([
+    ['Lona 2 mm', 16, 16, true], ['Lona VALMEX 1,2 mm negra', 192, 192, true], ['PVC 900 g negro', 32, 32, true],
+  ]);
+  const solapas = lote.programas.filter(p => p.material === 'Lona VALMEX 1,2 mm negra');
+  expect(solapas.filter(p => p.entidades.lineas.some(l => l.capa === 'ROTULADOR'))
+    .reduce((n, p) => n + p.piezas * p.repeticiones, 0)).toBe(64);
+});
+
 it('la 410124-0003 corta y rotula A1, A2 y A3 una vez por unidad', () => {
   const linea = { ...cortinas[0], CodArticle: 'H0K410124-0003', cantidad: 17,
     descripcion: 'TOP PVC 0,5MM GLOSSY BLK TNB2080XTWB300XTWT400_W/O OP_480X200_OPEN RECESS' };

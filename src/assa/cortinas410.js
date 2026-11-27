@@ -153,6 +153,31 @@ const solapas = grupo(lona1, 'juegos de 8 solapas lisas y 4 marcadas', 12, 1, [1
 const tramos = (capa, puntos) => puntos.slice(1).map((punto, i) => [capa, ...puntos[i], ...punto]);
 const tramosDisco = puntos => tramos('DISCO1', puntos);
 
+const lateralConSolapasSeparadas = (() => {
+  const largo = 3060;
+  const cuerpo = [
+    ...tramos('CUTTER', [[0, 0], [0, 50], [50, 350], [50, 650], [0, 950], [0, 1000], [largo, 1000], [largo, 0]]),
+    ...Array.from({ length: 14 }, (_, i) => 260 + 200 * i).flatMap(x => [
+      ['ROTULADOR', x, 350, x, 650], ['ROTULADOR', x - 10, 650, x, 650],
+    ]),
+    ['ROTULADOR', 3045, 650, 3055, 650],
+    ...tramos('ROTULADOR', [[largo, 500], [3049.2, 500], [3049.2, 494.6], [3039.847, 500], [3049.2, 505.4], [3049.2, 500]]),
+  ];
+  const valmex = { nombre: 'Lona VALMEX 1,2 mm negra', anchoRolloMm: 1500 };
+  const bordes = rectangulo('DISCO1', 350, 300);
+  return [
+    grupo({ ...lona2, anchoRolloMm: 2040 }, 'cuerpos', 1, 2, [largo, 1000], cuerpo),
+    {
+      ...grupo(pvc, 'pares de tapas (lisa y perforada)', 2, 4, [340, 743]),
+      tapa: { ancho: 340, alto: 373, altoLisa: 370, travesano: 'DISCO1', xs: [70, 170, 270], ys: [103, 203], lisasPorBloque: 4 },
+    },
+    grupo(valmex, 'solapas lisas', 1, 5, [350, 300], bordes, 8),
+    grupo(valmex, 'solapas marcadas', 1, 5, [350, 300], [
+      ...bordes, ['ROTULADOR', 0, 100, 350, 100], ['ROTULADOR', 0, 200, 350, 200],
+    ], 4),
+  ];
+})();
+
 function piezaSoldada(ancho, extremoSuperior) {
   const diferencia = 370 - ancho;
   const alto = 862.828 - diferencia;
@@ -639,6 +664,10 @@ const modelos = {
   '410171-0001': {
     descripcion: 'PLANE LEFT SCHUPOEN/REINFORCED 2MM H=2600 SWB FRONT=400 SWB REAR=300 SWT=300 PKG STD 750MM, SIMILAR DRAW. OK410172BUT WITH SWB FRONT AND SWB REAR',
     fichero: 'OK410171.dwg', medidasMm: [2600, 1116.2], grupos: conMano('410171-0001', false),
+  },
+  '410174-0062': {
+    descripcion: 'PLANE SEITE MIT SCHUPPEN WB300XWT300XH3060 WHITE PARKING GUIDE 750MM, BLACK PVC',
+    fichero: 'OK410174.dwg', medidasMm: [3060, 1000], grupos: lateralConSolapasSeparadas,
   },
   '410179-0054': {
     descripcion: 'PLANE 2MM WB=300 WT=300 H=2900 SCHWARZ PVC, WHITE PKG 750MM',
