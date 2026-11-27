@@ -41,7 +41,7 @@ const superior = [
   grupo(MATERIAL_COMBURSA, 'tapas', 1, 6, [320, 340], rectangulo('DISCO1', 320, 340), 2),
   grupo(lona3, 'frentes', 1, 5, [2000, 300], rectangulo('CUTTER', 2000, 300)),
 ];
-function lateral(largo, alto, [marcaInicio, marcaFin, longitudMarca], tapa, nombreFrente, frentesPorTirada) {
+function lateral(largo, alto, [marcaInicio, marcaFin, longitudMarca], tapa, nombreFrente, frentesPorTirada, materialFrente = lona3) {
   const [inicio, fin] = [(alto - 300) / 2, (alto + 300) / 2], alturas = [inicio, fin];
   const cuerpo = grupo(MATERIAL_COMBURSA, 'cuerpos', 1, 2, [largo, alto], [
     ['DISCO1', 0, alto, largo, alto], ['DISCO1', largo, 0, largo, alto],
@@ -49,13 +49,24 @@ function lateral(largo, alto, [marcaInicio, marcaFin, longitudMarca], tapa, nomb
     ...marcasLaterales(marcaInicio, marcaInicio + longitudMarca, alturas),
     ...marcasLaterales(largo - marcaFin, largo - marcaFin - longitudMarca, alturas),
   ]);
-  const pares = { ...grupo(pvc, 'pares de tapas (lisa y perforada)', 2, 4, [tapa.ancho, 2 * tapa.alto]), tapa };
-  const frente = grupo(lona3, nombreFrente, 1, frentesPorTirada, [largo - 50, 300], [
+  const tapas = tapa.lisa ? tapasPvcSeparadas(tapa)
+    : [{ ...grupo(pvc, 'pares de tapas (lisa y perforada)', 2, 4, [tapa.ancho, 2 * tapa.alto]), tapa }];
+  const frente = grupo(materialFrente, nombreFrente, 1, frentesPorTirada, [largo - 50, 300], [
     ...rectangulo('CUTTER', largo - 50, 300),
     ['ROTULADOR', 350, 100, 350, 200], ['ROTULADOR', 350, 100, 1100, 100],
     ['ROTULADOR', 350, 200, 1100, 200], ['ROTULADOR', 1100, 100, 1100, 200],
   ]);
-  return [cuerpo, pares, frente];
+  return [cuerpo, ...tapas, frente];
+}
+
+function tapasPvcSeparadas({ ancho, alto, xs, ys, lisa: [anchoLisa, altoLisa] }) {
+  return [
+    grupo(pvc, 'tapas perforadas', 1, Math.floor(pvc.anchoRolloMm / alto), [ancho, alto], [
+      ...rectangulo('DISCO1', ancho, alto), ...xs.flatMap(x => ys.map(y => ['CUTTER', x, y, 20])),
+    ]),
+    grupo(pvc, 'tapas lisas', 1, Math.floor(pvc.anchoRolloMm / altoLisa), [anchoLisa, altoLisa],
+      rectangulo('DISCO1', anchoLisa, altoLisa)),
+  ];
 }
 const solapas = grupo(lona1, 'juegos de 8 solapas lisas y 4 marcadas', 12, 1, [1400, 1200], [
   ...[0, 350, 700, 1050, 1400].map(x => ['DISCO1', x, 0, x, 1200]),
@@ -167,6 +178,19 @@ const modelos = {
   '410129-0117': {
     descripcion: 'TOP CURTAIN TWP TWB300XTWT250X2000',
     fichero: 'COMBURSA (CRAWFORD)2.dwg', medidasMm: [2000, 900], grupos: superior,
+  },
+  '410130-0165': {
+    descripcion: 'PLANE SC SEITLICH WB300XWT250XH2500 PARKING GUIDE WHITE/STANDARD (750MM)',
+    fichero: 'OK410130.dwg', medidasMm: [2500, 900],
+    grupos: lateral(2500, 900, [60, 10, 50],
+      { ancho: 324.1, alto: 340, xs: [104.1, 204.1], ys: [70, 170, 270], lisa: [320, 340] }, 'frentes con marca blanca', 5),
+  },
+  '410130-0166': {
+    descripcion: 'PLANE SC SEITLICH WB300 X WT300 X H2450 PARKING GUIDE WHITE/STANDAR (750MM)',
+    fichero: 'OK410130.dwg', medidasMm: [2450, 1000],
+    grupos: lateral(2450, 1000, [60, 10, 50],
+      { ancho: 340, alto: 373, xs: [70, 170, 270], ys: [170, 270], lisa: [340, 370] },
+      'frentes con marca blanca', 3, { ...lona3, anchoRolloMm: 1000 }),
   },
   '410130-0175': {
     descripcion: 'PLANE SC SEITLICH WB300XWT250XH2300 PARKING GUIDE WHITE/STANDARD (750MM)',

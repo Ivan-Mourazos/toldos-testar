@@ -62,6 +62,20 @@ it.each([
   ]);
 });
 
+it.each([
+  ['410130-0165', 'PLANE SC SEITLICH WB300xWT250xH2500 PARKING GUIDE WHITE/STANDARD (750mm)', 2500, 900, [320, 340], [324.1, 340], 1600],
+  ['410130-0166', 'PLANE SC SEITLICH WB300 X WT300 X H2450 PARKING GUIDE WHITE/STANDAR (750MM)', 2450, 1000, [340, 370], [340, 373], 1000],
+])('corta por separado las tapas lisas y perforadas de la %s', (codigo, descripcion, largo, alto, lisa, perforada, anchoFrente) => {
+  const linea = { ...cortinas[0], CodArticle: `H0K${codigo}`, descripcion, cantidad: 8 };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [largo, alto] });
+  const tapas = lote.programas.filter(p => p.material === 'PVC 900 g negro');
+  expect(tapas.map(p => [p.largoMm, p.anchoOcupadoMm, p.piezas, p.entidades.circulos.length]))
+    .toEqual([[perforada[0], perforada[1] * 8, 8, 48], [lisa[0], lisa[1] * 8, 8, 0]]);
+  expect(lote.programas.filter(p => p.material === 'Lona 3 mm').every(p => p.anchoRolloMm === anchoFrente)).toBe(true);
+  expect(lote.cortador.find(f => f.material === 'PVC 900 g negro')).toMatchObject({ unidades: 16, pedidas: 16, cuadra: true });
+});
+
 it('corta la 410143-0002 con ocho agujeros en el cuerpo y un frente con abertura por unidad', () => {
   const linea = { ...cortinas[0], CodArticle: 'H0K410143-0002', cantidad: 5,
     descripcion: 'PLANE SC IN COMPLETE WIDTH WB400xWT300xB3350 OP=600 PVC BACLK, 2MM REINFORCED' };

@@ -20,6 +20,8 @@ de corte tal como en los lotes. Las cortinas nunca se empatan para envarillar.
 | `410129-0117` | PLASTEL negra 2.040: 1 cuerpo de 2.000 × 900 con 4 agujeros Ø40 y marcas laterales, y 2 tapas de 320 × 340. Lona 3 mm 1.600: 1 frente de 2.000 × 300. |
 | `410130-0006` y `410130-0018` | PLASTEL negra 2.040: 1 cuerpo de 3.000 × 1.000 o 2.400 × 1.000, con entrante y marcas de su variante. PVC negro 900 g 3.000: 1 tapa lisa y 1 de 6 agujeros Ø40, de 340 × 370. Lona 3 mm 1.600: 1 frente de 2.950 × 300 o 2.350 × 300 con marca de 750 × 100. |
 | `410130-0004` y `410130-0017` | PLASTEL negra 2.040: 1 cuerpo de 2.900 × 1.000 o 2.500 × 1.000, con entrante y marcas de su variante. PVC negro 900 g 3.000: 1 tapa lisa y 1 de 6 agujeros Ø40, de 340 × 370. Lona 3 mm 1.600: 1 frente de 2.850 × 300 o 2.450 × 300, con marca de 750 × 100 para la guía blanca. |
+| `410130-0165` | PLASTEL negra 2.040: 1 cuerpo de 2.500 × 900. PVC negro 900 g 3.000: 1 tapa lisa de 320 × 340 y 1 perforada de 324,1 × 340. Lona 3 mm 1.600: 1 frente de 2.450 × 300 con marca de 750 × 100. |
+| `410130-0166` | PLASTEL negra 2.040: 1 cuerpo de 2.450 × 1.000. PVC negro 900 g 3.000: 1 tapa lisa de 340 × 370 y 1 perforada de 340 × 373. Lona 3 mm 1.000: 1 frente de 2.400 × 300 con marca de 750 × 100. |
 | `410130-0175` | PLASTEL negra 2.040: 1 cuerpo de 2.300 × 900 con entrante de 50 mm y marcas. PVC negro 900 g 3.000: 1 tapa lisa y 1 de 6 agujeros Ø40, de 324,1 × 340. Lona 3 mm 1.600: 1 frente de 2.250 × 300 con marca de 750 × 100. |
 | `410134-0002` | Lona 2 mm 2.100: 1 cuerpo de 2.500 × 1.000 con 7 agujeros Ø40 y 2 tapas de 340 × 370, al lado del cuerpo en la misma tirada. Lona 3 mm 1.600: 1 frente rectangular de 2.500 × 575, con dos cortes interiores y dos marcas Ø8. |
 | `410143-0002` | Lona 2 mm: 1 cuerpo de 3.350 × 1.100 con 8 agujeros Ø40 y 2 tapas de 440 × 370. Lona 3 mm: 1 frente de 3.350 × 575, con abertura y dos marcas Ø8. |
@@ -36,7 +38,7 @@ separada de las tiradas y multiplicadores antiguos.
 
 ## Contraste de máquina
 
-Se leyeron 75 bloques de DXF de maqcorte. Se contrastaron los contornos y
+Se leyeron 83 bloques de DXF de maqcorte. Se contrastaron los contornos y
 las marcas en ambos sentidos por herramienta, con tolerancia de 1 mm. Se
 admiten tramos consecutivos en un solo trazo o en varios cuando cubren el
 mismo recorrido. La cuenta por unidad y las incidencias de los rótulos
@@ -51,6 +53,8 @@ históricos están descritas en
 | `410130-0006` | 06-04 y 13-04 de 2024 | **Igual** en contorno y herramientas geométricas. Máximo 0,023 mm. Usa la columna alternada con DISCO1. El 13-04 añade una letra B en rotulador. La web conserva la marca rectangular del maestro y del 06-04, con el blanco indicado en el rótulo del programa. |
 | `410130-0017` | 30-06-2023 y 01-06-2024 | **Igual** en el cuerpo de los dos lotes y en el juego de tapas y el frente del 01-06, dentro de 0,001 mm en geometría. **Difiere** del frente de 2023, marcado con cuatro círculos Ø5 en las esquinas. El 01-06 añade la B en rotulador. Se conserva el rectángulo del maestro `OK410130.dwg` y se indica blanco en el nombre del programa. Las OF imputan PLASTEL, lona de 3 mm y PVC negro de 900 g de 3.000 mm o resto de PVC. |
 | `410130-0018` | 11-01-2025 (cuerpo y frente), 23-08-2025 (juego completo) | **Igual**. Máximo 0,033 mm. El 23-08 corta las cuatro tapas perforadas y luego las cuatro lisas con travesaños DISCO2. El 11-01 usa un recorte de PVC con alturas de 374 y 378 mm en dos tapas. |
+| `410130-0165` | 14-07-2023 (cuerpo doble, tapa lisa, tapa perforada y frente) | **Igual** a `OK410130.dwg` y a máquina por herramienta, dentro de 0,001 mm. El bloque corta las tapas de 320 y 324,1 mm en columnas separadas. La OF `0192925` imputa PLASTEL y lona de 3 mm. Máquina identifica el resto de PVC como negro de 900 g. |
+| `410130-0166` | 28-10-2023 (cuerpo doble, tapa lisa, tapa perforada y frente) | **Igual** a `OK410130.dwg` y a máquina por herramienta, dentro de 0,001 mm. Los 373 mm de alto de la tapa perforada coinciden con el maestro. El rótulo homónimo del 11-05-2024 lleva un cuerpo de 3.400 mm, frente a los 2.450 mm de esta referencia. La OF `0197603` imputa los tres materiales y el rollo de 3 mm de 1.000 mm. |
 | `410130-0175` | 09-08 y 13-09 de 2025, 07-11-2026 (fichero PALET 4-5) | **Igual** en piezas y herramientas. Máximo 0,012 mm. El 07-11 histórico incluye dos tapas de relleno y un «x2» donde la cuenta de 54 cuerpos da «x27». |
 | `410134-0002` | 29-11-2025 y 11-04-2026 (cuerpos, tapas y frentes) | **Igual** al maestro `OK410134.dwg` y al 11-04 por herramienta, dentro de 0,001 mm frente a máquina. El frente doble también coincide con el 29-11. **Difiere** el juego doble de 2025, que añade el quinto corte de una tapa (340 mm de desviación). El cuerpo suelto de ese lote carece de tapas y de una marca lateral. Se usan dos tapas por cuerpo y las cuatro marcas del maestro, como en 2026. Las OF `0222044` y `0226166` imputan lona negra de 2 y 3 mm. |
 | `410143-0002` | 11-05-2024 (cuerpo), 25-10 y 08-11 de 2025 (juego completo) | **Igual**. Máximo 0,006 mm. El maestro `HOK410143.dwg` da el cuerpo, las tapas de 370 × 440 y el frente. Los dos lotes de 2025 cortan las tapas en pareja de 880 × 370. Las cinco OF imputan lona negra de 2 y 3 mm. |
@@ -215,6 +219,27 @@ extraídos tras confirmar los DWG con ODA. La desviación máxima fue de
 \\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 01-06 - 20261127-091723
 ```
 
+## Pruebas con los lotes de julio y octubre de 2023
+
+Se regeneraron las 25 líneas del viernes 14-07 con la cabecera del sábado
+15-07 para pasar por el servicio de lotes. Las cantidades y palets se
+tomaron de RPS. Salieron 59 programas y cuadraron las 37 filas. La
+`410130-0165` lleva 19, 19 y 20 unidades en los palets 2, 3 y 4.
+
+Se regeneraron las 26 líneas del 28-10. Salieron 69 programas y cuadraron
+las 48 filas. La `410130-0166` lleva 19, 19 y 20 unidades en los palets
+1, 2 y 3. En cada palet las dos cortinas producen un cuerpo, dos tapas y
+un frente por unidad.
+
+Se releyeron los 45 programas de ambas referencias en los DXF extraídos
+de los DWG confirmados con ODA. La desviación máxima fue de 0,00337 mm.
+Se cotejaron por SHA-256 las copias de oficina y máquina.
+
+```text
+\\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 15-07 - 20261127-092300
+\\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 28-10 - 20261127-092306
+```
+
 ## A mano por duda de Taller
 
 El SELECT de RPS entre 2023 y 2026 devolvió 216 líneas para 116 referencias
@@ -273,10 +298,10 @@ motivo que muestra la web es «Sin corte de taller para contrastar».
 
 | Estado | Referencias |
 | --- | ---: |
-| Habilitadas | 14 |
+| Habilitadas | 16 |
 | A mano por duda de Taller | 13 |
 | A mano sin corte de taller localizado | 14 |
-| Pendientes de revisar | 75 |
+| Pendientes de revisar | 73 |
 | Total `410xxx` en RPS | 116 |
 
 ## Criba de la cuarta tanda
