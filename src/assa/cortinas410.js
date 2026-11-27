@@ -188,6 +188,19 @@ function piezaSoldada(ancho, extremoSuperior) {
   ])];
 }
 
+const piezaSoldada500 = (() => {
+  const largo = 1144, alto = 985.16;
+  const perfil = [[252, 246.58], [263.978, 46.939], [316.848, 0], [551.499, 14.079],
+    [598.377, 67.003], [763.081, 76.885], [752.899, 246.58]];
+  const contornos = [
+    [[253.2, 226.58], [50, 226.58], [50, 246.58], [0, 296.58], [0, 688.58], [50, 738.58], [50, 758.58], [253.2, 758.58]],
+    [[754.099, 226.58], [1094, 226.58], [1094, 246.58], [1144, 296.58], [1144, 688.58],
+      [1094, 738.58], [1094, 758.58], [754.099, 758.58]],
+    perfil, perfil.map(([x, y]) => [x, alto - y]),
+  ];
+  return [grupo(lona2, 'piezas soldadas', 1, 1, [largo, alto], contornos.flatMap(puntos => tramos('CUTTER', puntos)))];
+})();
+
 function superiorConTapasTrapezoidales(ancho, tapasJuntas = true) {
   const alto = 1116.2, fondoTapa = 370, baseTapa = 557.74851;
   const recorteTapa = fondoTapa / 3;
@@ -630,6 +643,10 @@ const modelos = {
   '410179-0054': {
     descripcion: 'PLANE 2MM WB=300 WT=300 H=2900 SCHWARZ PVC, WHITE PKG 750MM',
     fichero: 'OK410179.dwg', medidasMm: [2900, 1000], grupos: lateralConMuestra,
+  },
+  '410300-0001': {
+    descripcion: 'SPECIAL PVC 2MM BLACK, 500X490 - 200/170MM WELDED',
+    fichero: 'OK410300.dwg', medidasMm: [1144, 985.16], grupos: piezaSoldada500,
   },
   '410300-0005': {
     descripcion: 'SPECIAL PVC 2MM BLACK, 430X370- 170/200MM WELDED',

@@ -8,6 +8,9 @@ import { primitivasDeEntidades } from '../../src/assa/documentoLote.js';
 import lineas from '../../src/assa/fixtures/lote0711.json' with { type: 'json' };
 
 const casos = [
+  // Las dos filas del original comparten recorridos. El contraste incluye las ocho piezas.
+  ['410300-0001', 'piezas soldadas', 1, '2023/LOTE 07-07', 1697914.12043, -326728.99306,
+    { filasGiradas: { columnas: 4, dx: 5.87633, dy: 904.07819 } }],
   ['410123-0004', 'juegos de tres paños', 1, '2024/LOTE 30-11', -26298.44776, 205046.41762, { rotulos: true }],
   ['410135-0106', 'cuerpos', 2, '2024/LOTE 06-04', 1020219.01513, 142760.80898],
   ['410135-0106', 'tapas', 2, '2024/LOTE 06-04', 1027419.01513, 142760.80898, { unidades: 1, bordeInferior: true }],
@@ -205,6 +208,7 @@ function operacionesDelBloque(modelo, caja, { tapasArriba, tapasAlLado } = {}) {
   return [...cuerpo, ...tapas];
 }
 const adicionales = {
+  '410300-0001': { CodArticle: 'H0K410300-0001', of_: '0194119', descripcion: 'SPECIAL PVC 2MM BLACK, 500x490 - 200/170MM WELDED' },
   '410123-0004': { CodArticle: 'H0K410123-0004', of_: '0210938',
     descripcion: 'TOP PVC 0,5mm GLOSSY BLK TNB2080XTWB300XTWT400_W/O OP_480X200_CLOSED RECESS' },
   '410135-0106': { CodArticle: 'H0K410135-0106', of_: '0202633',
@@ -307,12 +311,24 @@ for (const [ref, nombre, cantidad, fichero, x0, y0, opciones] of casos) {
     .map(p => /^cutter$/i.test(p.capa) ? { ...p, capa: 'CUTTER' } :
       /^disco$/i.test(p.capa) ? { ...p, capa: 'DISCO1' } :
         p.capa === 'Rotulador' || p.capa === 'MARCA' && fichero === '2023/LOTE 28-04' ? { ...p, capa: 'ROTULADOR' } : p));
-  const caja = { x0, y0, x1: x0 + programa.largoMm, y1: y0 + programa.anchoOcupadoMm };
+  const { largoMm, anchoOcupadoMm } = programa;
+  const filas = opciones?.filasGiradas;
+  const caja = { x0, y0,
+    x1: x0 + (filas ? filas.columnas * largoMm + filas.dx : largoMm),
+    y1: y0 + anchoOcupadoMm + (filas?.dy ?? 0) };
   const reales = operacionesDelBloque(modelos.get(fichero), caja, opciones)
     // El recorte con orígenes redondeados puede arrastrar menos de 0,02 mm de la columna vecina.
     .filter(p => p.tipo !== 'raya' || (Math.hypot(p.a[0] - p.b[0], p.a[1] - p.b[1]) >= .02 &&
       !(opciones?.bordeInferior && bordeInferior(p))));
-  const esperadas = primitivasDeEntidades(programa.entidades, 1).filter(p => p.tipo !== 'texto');
+  let esperadas = primitivasDeEntidades(programa.entidades, 1).filter(p => p.tipo !== 'texto');
+  if (filas) {
+    const base = esperadas;
+    esperadas = Array.from({ length: filas.columnas }, (_, i) => {
+      const normal = ([x, y]) => [x + i * largoMm, y];
+      const girada = ([x, y]) => [(i + 1) * largoMm - x + filas.dx, anchoOcupadoMm - y + filas.dy];
+      return [normal, girada].flatMap(mover => base.map(p => ({ ...p, a: mover(p.a), b: mover(p.b) })));
+    }).flat();
+  }
   const resultado = compararOperaciones(esperadas, reales, 1);
   if (opciones?.rotulos) {
     const rotulos = modelos.get(fichero).filter(p => p.tipo === 'texto' && p.capa === 'ROTULADOR' &&

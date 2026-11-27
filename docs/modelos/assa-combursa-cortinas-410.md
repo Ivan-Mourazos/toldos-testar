@@ -331,16 +331,15 @@ marcas laterales, pero no se localizó el juego completo de máquina.
 | --- | --- | --- |
 | `410174-0062` | 1 / 16 | El 26-07-2025 lleva el rótulo y tiene solapas separadas con disco. Falta ligar el DXF a la OF del 16-08-2025 y contrastar el despiece completo. |
 | `410241-0019`, `410242-0019` | 1 / 6 cada una | El 19-10-2024 máquina marca B y C. Queda por contrastar el contorno y las operaciones interiores de los cinco paños de cada mano. |
-| `410300-0001` | 2 / 10 | El DXF del 07-07-2023 y el contorno girado de `OK410300.dwg` dan 1.144 × 985,16 mm. La segunda fila del DXF pasa por encima del contorno de la primera y comparte parte del corte. Falta aislar ese recorrido para contrastar una pieza completa. |
 | `410251-0006`, `410252-0006` | 1 / 4 cada una | El 09-03-2024 rotula B y C en el PVC de 580 g. Falta cotejar los cinco paños y las marcas de la ventana de cada mano. |
 | `410155-0002` | 1 / 4 | El 10-10-2026 distingue el cuerpo de 2 mm y el bloque de solapas rotulado «1 MM NEGRA». La OF registra resto de 1,2 mm. Falta completar el contraste del cuerpo y el despiece de solapas. |
 
 | Estado | Referencias |
 | --- | ---: |
-| Habilitadas | 52 |
+| Habilitadas | 53 |
 | A mano por duda de Taller | 42 |
 | A mano sin corte de taller localizado | 15 |
-| Pendientes de revisar | 7 |
+| Pendientes de revisar | 6 |
 | Total `410xxx` en RPS | 116 |
 
 ## Criba de la cuarta tanda
@@ -704,4 +703,25 @@ las dos copias por SHA-256.
 
 ~~~text
 \\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 30-11 - 20261127-105532
+~~~
+
+## Tanda final de la pieza soldada 410300-0001
+
+La OF `0194119` del 07-07-2023 pide ocho piezas de lona negra de
+2 mm. El contorno girado de `OK410300.dwg` y el DXF dan un corte de
+1.144 × 985,16 mm. Se contrastó el conjunto completo de dos filas
+de cuatro piezas, con la segunda fila girada, para incluir los
+recorridos que ambas filas comparten. Resultado **Igual** en CUTTER,
+con 0,003 mm de desviación. La web saca una pieza por corte y repite
+el programa según la cantidad de RPS.
+
+Para la prueba se usaron las 24 líneas y los bultos del viernes
+07-07-2023, con fecha de prueba del sábado 08-07, que admite el
+generador. Se obtuvieron 30 líneas de reparto, 54 programas y 37
+filas de cortador cuadradas. El palet 6 incluye las ocho piezas.
+Se releyó el programa tras confirmar con ODA y se cotejaron las
+copias publicadas por SHA-256.
+
+~~~text
+\\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 07-07 con fecha de prueba 08-07 - 20261127-111709
 ~~~
