@@ -39,7 +39,6 @@ Respuestas de Jaime y comprobaciones en el
 | Duda | Pendiente | Mientras tanto |
 | --- | --- | --- |
 | Q-ASC06 | Tamara tiene que guardar el dibujo de la `420148-0115`. | Corte a mano. |
-| Q-ASC08 | Tamara tiene que confirmar qué dibujo se usa en la `420148-0118`. | Corte a mano. |
 | Q-ASC09 | Tamara tiene que guardar el dibujo de la `430127-0068`. | Corte a mano. |
 | Q-ASC11 | Preguntar a Tamara qué hacer cuando difieren la plantilla y el último corte guardado. | Se mantiene el criterio vigente del catálogo. |
 
@@ -51,6 +50,10 @@ Respuestas de Jaime y comprobaciones en el
   La `410130-0172` sigue a mano. Lleva PLASTEL negra de 2.040 mm, PVC
   negro de 900 g y lona de 3 mm. Los materiales comparten DXF con tiradas
   separadas.
+- **Q-ASC08 · 420148-0118 (Iván, 27/11/2026).** La plantilla la dibuja a NT 600
+  (10.615 × 661) y así se cortó en el LOTE 17-10, pero el pedido ROBA010646
+  (`AR.26.04884`, posición 70) y RPS dicen NT 900: se hizo mal. La web la corta a
+  10.615 × 961, el ancho de las NT 900 de la familia. Falta corregir la plantilla.
 - **420150-0126 (27/11/2026).** ASSA cambió la referencia a NW 2.900
   (pedido ROBA012908, `AR.26.05801`, posición 90: «Clad w.r.c NW2900 NH3400
   NT600») y la oficina actualizó `COMBURSA (CRAWFORD).dwg`: cuerpo de

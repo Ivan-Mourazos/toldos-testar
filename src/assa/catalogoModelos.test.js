@@ -59,6 +59,14 @@ it('corta la 420150-0126 con NB2900 de la plantilla del 27/11/2026 aunque RPS si
   expect(agujeros.length + calcularDesdePlantilla(linea).pieza.entidades.circulos.filter(c => c.r === 7).length).toBe(12);
 });
 
+it('corta la 420148-0118 a NT900 (10615 × 961) aunque la plantilla la dibuje a NT600', () => {
+  const linea = { ...techo, CodArticle: '0K420148-0118', descripcion: 'CLADDING NW3250 NH3680 NT900' };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [10615, 961] });
+  expect(lote.lineas[0].avisos.join(' ')).toMatch(/NT900/);
+  expect(prepararLote(fecha, [{ ...linea, descripcion: 'CLADDING NW3250 NH3680 NT600' }]).lineas[0].estado).toBe('a-mano');
+});
+
 it('usa el cuerpo y el canalón de la 0005 para la 0010 con las cotas confirmadas', () => {
   const base = { ...techo, CodArticle: 'HOK430172-0005', descripcion: 'NT900 NB3250 NH3200' };
   const alias = { ...base, IDOrderLine: 'b', CodArticle: 'HOK430172-0010' };

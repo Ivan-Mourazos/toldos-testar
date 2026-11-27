@@ -174,6 +174,13 @@ referencia('430127-0023').medidasPedidoCliente = { descripcion: 'NT600 NB2900',
 // 27/11/2026: ASSA cambió la 0126 a NW2900 (pedido ROBA012908) y la oficina actualizó CRAWFORD; RPS sigue con NB2950.
 referencia('420150-0126').medidasPedidoCliente = { descripcion: 'NT600 NB2900 NH3400',
   fuente: 'pedido de cliente ROBA012908 (AR.26.05801, posición 90) y plantilla del 27/11/2026' };
+// 27/11/2026, Iván: la plantilla dibuja la 0118 a NT600 por error; es NT900 (pedido ROBA010646). En la familia 420148
+// la NT900 es el mismo paño con 961 de ancho en lugar de 661 (0001/0026, 0002/0031, 0105/0108…).
+for (const cuerpo of referencia('420148-0118').cuerpos['COMBURSA (CRAWFORD).dwg'] ?? []) {
+  if (cuerpo.medidasMm[1] === 661) cuerpo.medidasMm = [cuerpo.medidasMm[0], 961];
+}
+referencia('420148-0118').correccionPlantilla = 'La plantilla dibuja la 0118 a NT600 (661); el pedido ROBA010646 ' +
+  '(AR.26.04884, pos. 70) es NT900 y se corta a 961, como las NT900 de la familia (Iván, 27/11/2026).';
 referencia('420150-0133').materialBase = { ...MATERIAL_COMBURSA, nombre: 'PLASTEL roja', color: 'roja',
   fuente: 'docs/modelos/assa-combursa-catalogo.md#respuestas-de-taller' };
 referencia('410130-0172').materiales = ['PLASTEL negra de 2040 mm', 'PVC 900 g negro', 'Lona de 3 mm'];

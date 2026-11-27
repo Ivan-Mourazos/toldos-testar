@@ -101,6 +101,7 @@ export function calcularDesdePlantilla(lineaRps) {
   const acabadoDibujo = cuerpo ? (terminadoMm && (iguales(acabado(cuerpo), terminadoMm) || confirmadoPorMedidas) ?
     terminadoMm : acabado(cuerpo).map(precision)) : patron.terminadoMm;
   const avisos = [...g.avisos];
+  if (articulo?.correccionPlantilla) avisos.push(articulo.correccionPlantilla);
   if (corregidas) avisos.push(`RPS dice «${String(lineaRps.descripcion ?? '').trim()}»; se cortan las medidas del ${corregidas.fuente}: ${corregidas.descripcion}.`);
   if (!iguales(pieza.medidasMm, esperado)) avisos.push('Se aplican las medidas del dibujo vigente de la plantilla.');
   return { ...g, avisos, pieza, terminadoMm: acabadoDibujo, canalon,
