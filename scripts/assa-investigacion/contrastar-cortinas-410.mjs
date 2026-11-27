@@ -8,6 +8,9 @@ import { primitivasDeEntidades } from '../../src/assa/documentoLote.js';
 import lineas from '../../src/assa/fixtures/lote0711.json' with { type: 'json' };
 
 const casos = [
+  ['410143-0006', 'juegos de cuerpo', 1, '2025/LOTE 04-10', 42271.94187, 73341.71471],
+  ['410143-0006', 'frentes', 2, '2025/LOTE 04-10', 47080.61653, 73233.47403],
+  ['410143-0006', 'frentes', 1, '2025/LOTE 04-10', 51656.75881, 73808.47403],
   ['410129-0053', 'juegos de cuerpo', 1, '2025/LOTE 10-05', -438537.39245, 300494.19225, { tapasArriba: [900, 640] }],
   ['410129-0053', 'frentes', 1, '2025/LOTE 10-05', -415564.74251, 300311.0078],
   ['410129-0112', 'juegos de cuerpo', 1, '2024/LOTE 24-02', 168302.76961, 99035.81787],
@@ -163,6 +166,8 @@ function operacionesDelBloque(modelo, caja, tapasArriba) {
   return [...cuerpo, ...tapas];
 }
 const adicionales = {
+  '410143-0006': { CodArticle: 'H0K410143-0006', of_: '0220718',
+    descripcion: 'PLANE TWP OBEN TWB250XTWT350XB3100 OP=600 PVC BLACK 2MM REINFORCED' },
   '410129-0053': { CodArticle: 'H0K410129-0053', of_: '0215982',
     descripcion: 'TOP CURTAIN TWP WB300xWT250x3100 BLACK' },
   '410129-0112': { CodArticle: 'H0K410129-0112', of_: '0201344',

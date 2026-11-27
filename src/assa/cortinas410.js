@@ -16,10 +16,10 @@ const agujerosDeCuerpo = (ancho, cantidad, y, margen = 400) =>
 const grupo = (material, nombre, piezasPorGrupo, porTirada, medidasMm, operaciones, gruposPorUnidad = 1) =>
   ({ material, nombre, piezasPorGrupo, gruposPorUnidad, porTirada, medidasMm, operaciones });
 
-function cuerpoReforzado(ancho, alto, agujeros, margen) {
-  const alturas = [350, alto - 350];
+function cuerpoReforzado(ancho, alto, agujeros, margen, { alturaAgujeros = 150, marcaInferior = 350 } = {}) {
+  const alturas = [marcaInferior, alto - marcaInferior];
   return [
-    ...rectangulo('CUTTER', ancho, alto), ...agujerosDeCuerpo(ancho, agujeros, 150, margen),
+    ...rectangulo('CUTTER', ancho, alto), ...agujerosDeCuerpo(ancho, agujeros, alturaAgujeros, margen),
     ...marcasLaterales(0, 20, alturas), ...marcasLaterales(ancho, ancho - 20, alturas),
   ];
 }
@@ -155,14 +155,25 @@ function tapasEnFilas(columnas, ancho, filas, altoTapa = 370, capa = 'CUTTER') {
   ];
 }
 
-function superiorConAbertura(ancho, { altoCuerpo, agujeros, porTirada, anchoTapa, tapasEnDosFilas, borde, fondo }) {
-  const cuerpo = grupo(lona2, 'cuerpos', 1, porTirada, [ancho, altoCuerpo], cuerpoReforzado(ancho, altoCuerpo, agujeros));
+function superiorConAbertura(ancho, {
+  altoCuerpo, agujeros, porTirada, anchoTapa, tapasEnDosFilas, borde, fondo,
+  alturaAgujeros, marcaInferior, tapasJuntas, cerrarFrenteSuelto = true,
+}) {
+  const operaciones = cuerpoReforzado(ancho, altoCuerpo, agujeros, undefined, { alturaAgujeros, marcaInferior });
+  const frente = grupo(lona3, 'frentes con abertura', 1, porTirada, [ancho, borde + fondo],
+    frenteConAbertura(ancho, borde, borde, fondo));
+  const frentes = porTirada === 2 ? { ...frente, frentesEnfrentados: true, cerrarFrenteSuelto } : frente;
+  if (tapasJuntas) {
+    return [
+      { ...grupo(lona2, 'juegos de cuerpo y 2 tapas', 3, 1, [ancho, altoCuerpo], operaciones), tapasJuntoAlCuerpo: tapasJuntas },
+      frentes,
+    ];
+  }
+  const cuerpo = grupo(lona2, 'cuerpos', 1, porTirada, [ancho, altoCuerpo], operaciones);
   const tapas = tapasEnDosFilas
     ? { ...grupo(lona2, 'pares de tapas', 2, 7, [anchoTapa, 740], []), anchoTapa }
     : grupo(lona2, 'pares de tapas', 2, 1, [2 * anchoTapa, 370], tapasEnFilas(2, anchoTapa, 1));
-  const frente = grupo(lona3, 'frentes con abertura', 1, porTirada, [ancho, borde + fondo],
-    frenteConAbertura(ancho, borde, borde, fondo));
-  return [cuerpo, tapas, porTirada === 2 ? { ...frente, frentesEnfrentados: true } : frente];
+  return [cuerpo, tapas, frentes];
 }
 
 const superiorConTapasJuntas = [
@@ -180,8 +191,8 @@ const superiorConTapasJuntas = [
 ];
 
 // Las dos bocas quedan en los extremos de la tirada y comparten el corte recto central.
-function cortarFrentesEnfrentados(n, largo, alto, operaciones) {
-  if (n === 1) return entidadesDe([...operaciones, ['CUTTER', 0, 0, largo, 0]]);
+function cortarFrentesEnfrentados(n, largo, alto, operaciones, cerrarFrenteSuelto) {
+  if (n === 1) return entidadesDe(cerrarFrenteSuelto ? [...operaciones, ['CUTTER', 0, 0, largo, 0]] : operaciones);
   const invertir = (x, y) => [largo - x, alto - y];
   const primero = operaciones.filter(([, , y1, , y2]) => y1 !== alto || y2 !== alto)
     .map(([capa, x1, y1, x2, y2]) => y2 === undefined
@@ -386,6 +397,14 @@ const modelos = {
       altoCuerpo: 1100, agujeros: 8, porTirada: 1, anchoTapa: 440, borde: 400, fondo: 175,
     }),
   },
+  '410143-0006': {
+    descripcion: 'PLANE TWP OBEN TWB250XTWT350XB3100 OP=600 PVC BLACK 2MM REINFORCED',
+    fichero: 'HOK410143.dwg', medidasMm: [3100, 1050],
+    grupos: superiorConAbertura(3100, {
+      altoCuerpo: 1050, agujeros: 7, alturaAgujeros: 200, marcaInferior: 400, porTirada: 2, borde: 250, fondo: 325,
+      tapasJuntas: { ancho: 290, alto: 420, capa: 'CUTTER' }, cerrarFrenteSuelto: false,
+    }),
+  },
   '410143-0007': {
     descripcion: 'PLANE SC IN COMPLETE WIDTH WB300XWT300XB3000 OP=700 PVC BLACK, 2MM REINFORCED',
     fichero: 'HOK410143.dwg', medidasMm: [3000, 1000],
@@ -412,6 +431,7 @@ const modelos = {
 };
 
 const marcasLateralesSinConfirmar = 'El plano lleva marcas laterales que faltan en los cortes guardados. Falta confirmar si se rotulan.';
+const hombrosSinConfirmar = 'El plano deja 300 mm a cada lado de la abertura del frente y el corte deja 400 mm. Falta confirmar la medida.';
 const pendientes = {
   '410129-0002': marcasLateralesSinConfirmar,
   '410129-0005': 'La descripción de RPS indica 300 de largo y el dibujo de corte mide 3.000 mm. Falta confirmar el largo.',
@@ -422,6 +442,8 @@ const pendientes = {
   '410129-0003': 'La misma referencia de RPS figura como puerta y como cortina. Falta confirmar el dibujo y el despiece.',
   '410129-0105': 'El maestro dibuja cinco agujeros y el corte real lleva seis. Taller tiene que confirmar el dibujo de corte.',
   '410143-0003': 'Los dos círculos pequeños del frente aparecen cortados en un lote y rotulados en otro. Falta confirmar la herramienta.',
+  '410143-0004': hombrosSinConfirmar,
+  '410143-0005': hombrosSinConfirmar,
   '410172-0104': 'Falta confirmar si la máquina separa las solapas de 1 mm o las marca para separarlas después.',
   '410173-0104': 'Falta confirmar si la máquina separa las solapas de 1 mm o las marca para separarlas después.',
   '410241-0011': 'El plano marca D y el corte reciente marca D1 a D5. Falta confirmar qué rotular en las piezas.',
@@ -500,7 +522,7 @@ export function generarProgramasCortina(g, sueltas) {
         let entidades;
         if (p.tapa) entidades = columnaPvc(n, p.tapa);
         else if (p.anchoTapa) entidades = entidadesDe(tapasEnFilas(n, p.anchoTapa, 2));
-        else if (p.frentesEnfrentados) entidades = cortarFrentesEnfrentados(n, largoMm, alto, p.operaciones);
+        else if (p.frentesEnfrentados) entidades = cortarFrentesEnfrentados(n, largoMm, alto, p.operaciones, p.cerrarFrenteSuelto);
         else {
           entidades = entidadesVacias();
           const base = entidadesDe(p.operaciones, p.rotulos);

@@ -14,6 +14,7 @@
 | Q-A410-08 | `410143-0003`. En 18-08-2023 los dos círculos de Ø8 del frente se cortaron con CUTTER. En 08-06-2024 se hicieron con ROTULADOR. El maestro los dibuja como marcas. ¿Qué herramienta se usa para esta referencia? | A mano. |
 | Q-A410-09 | `410245-0005`. El 22-06-2024 aparece la letra D en la capa del rotulador. En el palet 1–2 del 08-02-2025, D y los números de pieza están como rótulos del plano. ¿Hay que marcar la D sobre la lona? | A mano hasta confirmar el rotulado. |
 | Q-A410-10 | `410251-0002`. Los tres cortes guardados piden PVC negro de 580 g. La OF `0216014` del 10-05-2025 imputó POLYMAR negro de 650 g. ¿Qué gramaje preparamos para el siguiente lote? | A mano hasta confirmar el material. |
+| Q-A410-11 | `410143-0004` y `410143-0005`. El maestro `HOK410143.dwg` deja 300 mm de lona a cada lado de la abertura del frente. El DXF del 23-03-2024 de la `0004` y los del 26-04 y 03-05 de 2025 de la `0005` dejan 400 mm. ¿Qué medida se corta en el siguiente pedido de cada referencia? | A mano hasta confirmar la abertura. |
 
 ## Cortinas de túnel de Combursa
 

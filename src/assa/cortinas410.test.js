@@ -189,6 +189,22 @@ it('corta la 410143-0002 con ocho agujeros en el cuerpo y un frente con abertura
   expect(prepararLote(fecha, [{ ...linea, descripcion: linea.descripcion.replace('OP=600', 'OP=700') }]).aMano).toBe(1);
 });
 
+it('corta la 410143-0006 con tapas de 420 mm y el frente del maestro', () => {
+  const linea = { ...cortinas[0], CodArticle: 'H0K410143-0006', cantidad: 5,
+    descripcion: 'PLANE TWP OBEN TWB250XTWT350XB3100 OP=600 PVC BLACK 2MM REINFORCED' };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [3100, 1050] });
+  expect(lote.cortador.map(f => [f.material, f.unidades, f.pedidas, f.cuadra])).toEqual([
+    ['Lona 2 mm', 15, 15, true], ['Lona 3 mm', 5, 5, true],
+  ]);
+  const [cuerpo, doble, suelto] = lote.programas;
+  expect(cuerpo).toMatchObject({ largoMm: 3390, anchoOcupadoMm: 1050, piezas: 3, repeticiones: 5 });
+  expect(cuerpo.entidades.circulos).toHaveLength(7);
+  expect(cuerpo.entidades.circulos.every(c => c.y === 200)).toBe(true);
+  expect([doble.anchoOcupadoMm, suelto.anchoOcupadoMm]).toEqual([1150, 575]);
+  expect(suelto.entidades.circulos.map(c => [c.x, c.y])).toEqual([[450, 270], [2650, 270]]);
+});
+
 it('la 410143-0007 conserva los dos giros del frente corregido y cuenta las tapas por unidad', () => {
   const linea = { ...cortinas[0], CodArticle: 'H0K410143-0007', cantidad: 17,
     descripcion: 'PLANE SC IN COMPLETE WIDTH WB300XWT300XB3000 OP=700 PVC BLACK, 2mm REINFORCED' };
@@ -312,6 +328,8 @@ it.each([
   ['410129-0051', /marcas laterales.*faltan/],
   ['410129-0205', /marcas laterales.*faltan/],
   ['410129-0206', /marcas laterales.*faltan/],
+  ['410143-0004', /300 mm.*400 mm/],
+  ['410143-0005', /300 mm.*400 mm/],
   ['410245-0005', /letra D.*rotulador/],
   ['410251-0002', /580 g.*650 g/],
 ])('muestra por qué %s requiere una decisión de taller', (codigo, motivo) => {
