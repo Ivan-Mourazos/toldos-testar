@@ -157,7 +157,9 @@ interface Props {
 }
 
 export function VistaPreparacion({ vista, cotas = [], marcos = [], marco, zonas = [] }: Props) {
-  const cajas = [...vista.map(cajaPieza), ...marcos];
+  // Los textos cuentan con su altura y su largo, no solo con el punto de inserción: si no, con poco
+  // margen se salen del recuadro y se cortan (Iván, 27/11/2026).
+  const cajas = [...vista.map(p => (p.tipo === 'texto' && cajaTexto(p)) || cajaPieza(p)), ...marcos];
   if (!cajas.length) return null;
   const pieza = limites(cajas);
   const letra = Math.max(pieza.x1 - pieza.x0, pieza.y1 - pieza.y0, 10) * 0.03;
