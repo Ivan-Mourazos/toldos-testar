@@ -213,6 +213,14 @@ function operacionesDelBloque(modelo, caja, { tapasArriba, tapasAlLado } = {}) {
   return [...cuerpo, ...tapas];
 }
 const adicionales = {
+  '410241-0019': { CodArticle: 'H0K410241-0019', of_: '0209393',
+    descripcion: 'SIDE LEFT SNH2400 SWBO400_SWBU300_SWTO400_SWTU250_WTM310_WTMH1350 GLOSSY BLK PVC' },
+  '410242-0019': { CodArticle: 'H0K410242-0019', of_: '0209394',
+    descripcion: 'SIDE RIGHT SNH2400_SWBO400_SWBU300_SWTO400_SWTU250_WTM310_WTMH1350 GLOSSYBLK PVC' },
+  '410251-0006': { CodArticle: 'H0K410251-0006', of_: '0202012',
+    descripcion: 'LEFT PVC glossy black_WS 1200X200_SNH2100_SWBO400_SWBU300_SWTO400_SWTU250_WTM310_WTMH1350' },
+  '410252-0006': { CodArticle: 'H0K410252-0006', of_: '0202013',
+    descripcion: 'RIGHT PVC glossy black_WS 1200X200_SNH2100_SWBO400_SWBU300_SWTO400_SWTU250_WTM310_WTMH1350' },
   '410174-0062': { CodArticle: 'H0K410174-0062', of_: '0218919',
     descripcion: 'PLANE SEITE MIT SCHUPPEN WB300XWT300XH3060 WHITE PARKING GUIDE 750MM, BLACK PVC' },
   '410300-0001': { CodArticle: 'H0K410300-0001', of_: '0194119', descripcion: 'SPECIAL PVC 2MM BLACK, 500x490 - 200/170MM WELDED' },
@@ -310,6 +318,66 @@ const adicionales = {
   '410182-0037': { CodArticle: 'H0K410182-0037', of_: '0230371',
     descripcion: 'PLANE OBEN 2MM SC WB=300 WT=300 B=3100 SCHWARZ' },
 };
+
+// Cada fila recoge las posiciones y giros de un paño en la tirada real.
+const lateralesCincoPanos = [
+  ['410241-0019', '2024/LOTE 19-10', [10525.953, 86758.498, 18225.994, 89200.498], [
+    [[4274.726, 0, 0], [3098.125, 0, 180], [5770.774, 0, 0], [4594.172, 0, 180], [7266.821, 0, 0], [6090.22, 0, 180]],
+    [[1160, 0, 0], [840, 0, 180], [1900, 0, 0], [1580, 0, 180], [2640, 0, 0], [2320, 0, 180]],
+    [[3841.506, 0, 0], [3531.345, 0, 180], [5337.553, 0, 0], [5027.392, 0, 180], [6833.601, 0, 0], [6523.44, 0, 180]],
+    [[420, 1728, 0], [420, 864, 0], [420, 1296, 180], [420, 0, 0], [420, 432, 180], [0, 0, 0]],
+    [[100, 432, 0], [520, 2160, 0], [100, 714, 180], [100, 996, 0], [100, 1278, 180], [100, 1560, 0]],
+  ]],
+  ['410242-0019', '2024/LOTE 19-10', [10525.953, 76721.814, 18325.102, 79163.814], [
+    [[3874.542, 0, 0], [3543.22, 0, 180], [5403.626, 0, 0], [5072.304, 0, 180], [6932.709, 0, 0], [6601.388, 0, 180]],
+    [[1160, 0, 0], [840, 0, 180], [1900, 0, 0], [1580, 0, 180], [2640, 0, 0], [2320, 0, 180]],
+    [[4307.762, 0, 0], [3110, 0, 180], [5836.846, 0, 0], [4639.084, 0, 180], [7365.929, 0, 0], [6168.167, 0, 180]],
+    [[420, 0, 0], [420, 432, 180], [420, 864, 0], [420, 1296, 180], [420, 1728, 0], [0, 0, 0]],
+    [[100, 432, 0], [520, 2160, 0], [100, 714, 180], [100, 996, 0], [100, 1278, 180], [100, 1560, 0]],
+  ]],
+  ['410251-0006', '2024/LOTE 09-03', [720457.907, 30715.893, 725367.972, 33124.593], [
+    [[2333.22, 0, 0], [2614.541, 0, 180], [3762.303, 0, 0], [4043.625, 0, 180]],
+    [[740, 0, 0], [420, 0, 180], [1480, 0, 0], [1160, 0, 180]],
+    [[1900, 0, 0], [3047.762, 0, 180], [3329.083, 0, 0], [4476.845, 0, 180]],
+    [[0, 0, 0], [0, 432, 180], [0, 864, 0], [0, 1296, 180]],
+    [[420, 2126.7, 0], [740, 2126.7, 0], [1060, 2126.7, 0], [1380, 2126.7, 0]],
+  ]],
+  ['410252-0006', '2024/LOTE 09-03', [720462.907, 21540.948, 725372.972, 23949.648], [
+    [[1900, 0, 0], [3047.762, 0, 180], [3329.083, 0, 0], [4476.845, 0, 180]],
+    [[740, 0, 0], [420, 0, 180], [1480, 0, 0], [1160, 0, 180]],
+    [[2333.22, 0, 0], [2614.541, 0, 180], [3762.303, 0, 0], [4043.625, 0, 180]],
+    [[0, 432, 0], [0, 0, 180], [0, 1296, 0], [0, 864, 180]],
+    [[1380, 2126.7, 0], [1060, 2126.7, 0], [740, 2126.7, 0], [420, 2126.7, 0]],
+  ]],
+];
+
+for (const [ref, fichero, [x0, y0, x1, y1], colocaciones] of lateralesCincoPanos) {
+  const modelo = leerPlanoDxf(path.join(base, fichero + '.dxf')).modelo;
+  const programas = generarProgramasCortina(calcularDesdePlantilla({ ...adicionales[ref], cantidad: 1 }), false);
+  const esperadas = [], marcas = [];
+  for (const [i, p] of programas.entries()) {
+    const operaciones = primitivasDeEntidades(p.entidades, 1).filter(op => op.tipo !== 'texto');
+    const marca = p.entidades.textos.find(t => t.capa === 'ROTULADOR');
+    for (const [dx, dy, giro] of colocaciones[i]) {
+      const mover = ([x, y]) => giro ? [dx + p.largoMm - x, dy + p.anchoOcupadoMm - y] : [dx + x, dy + y];
+      esperadas.push(...operaciones.map(op => op.tipo === 'raya' ? { ...op, a: mover(op.a), b: mover(op.b) }
+        : { ...op, punto: mover(op.punto) }));
+      marcas.push({ ...marca, punto: mover([marca.x, marca.y]), giro: marca.giro + giro });
+    }
+  }
+  const reales = enCaja(modelo, { x0, y0, x1, y1 }).filter(p => p.tipo !== 'raya' ||
+    (!bordeInferior(p) && Math.hypot(p.a[0] - p.b[0], p.a[1] - p.b[1]) >= .02));
+  const resultado = compararOperaciones(esperadas.filter(p => !bordeInferior(p)), reales, 1);
+  const rotulos = modelo.filter(p => p.tipo === 'texto' && p.capa === 'ROTULADOR' && p.punto[0] >= x0 && p.punto[0] < x1 &&
+    p.punto[1] >= y0 && p.punto[1] < y1);
+  const rotulosIguales = rotulos.length === marcas.length && marcas.every(t => rotulos.some(p => p.valor === t.valor &&
+    Math.hypot(p.punto[0] - x0 - t.punto[0], p.punto[1] - y0 - t.punto[1]) <= 1 && Math.abs(p.h - t.h) <= 1 &&
+    Math.abs(((p.giro - t.giro) % 360 + 540) % 360 - 180) <= .01));
+  if (!resultado.coincide || !rotulosIguales) process.exitCode = 1;
+  console.log(ref, fichero, `${marcas.length} paños`, resultado.coincide && rotulosIguales ? 'Igual' : 'Difiere',
+    resultado.desviacionMm?.toFixed(3), 'mm', ...resultado.diferencias, ...(rotulosIguales ? [] : ['Difiere el rotulado.']));
+}
+
 for (const [ref, nombre, cantidad, fichero, x0, y0, opciones] of casos) {
   const linea = adicionales[ref] ?? lineas.find(l => l.CodArticle.endsWith(ref));
   const programa = generarProgramasCortina(calcularDesdePlantilla({ ...linea, cantidad: opciones?.unidades ?? cantidad }), false, opciones?.muestras)

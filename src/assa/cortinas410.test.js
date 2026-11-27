@@ -125,6 +125,22 @@ it('la 410174-0062 corta ocho solapas lisas y cuatro marcadas por unidad', () =>
     .reduce((n, p) => n + p.piezas * p.repeticiones, 0)).toBe(64);
 });
 
+it.each([
+  ['410241-0019', 'SIDE LEFT SNH2400 SWBO400_SWBU300_SWTO400_SWTU250_WTM310_WTMH1350 GLOSSY BLK PVC', 'B', 2426.7, 6, false],
+  ['410242-0019', 'SIDE RIGHT SNH2400_SWBO400_SWBU300_SWTO400_SWTU250_WTM310_WTMH1350 GLOSSYBLK PVC', 'C', 2426.7, 6, false],
+  ['410251-0006', 'LEFT PVC glossy black_WS 1200X200_SNH2100_SWBO400_SWBU300_SWTO400_SWTU250_WTM310_WTMH1350', 'B', 2126.7, 4, true],
+  ['410252-0006', 'RIGHT PVC glossy black_WS 1200X200_SNH2100_SWBO400_SWBU300_SWTO400_SWTU250_WTM310_WTMH1350', 'C', 2126.7, 4, true],
+])('corta los cinco paños rotulados de la %s', (codigo, descripcion, letra, alto, cantidad, ventana) => {
+  const linea = { ...cortinas[0], CodArticle: `H0K${codigo}`, cantidad, descripcion };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [420, alto] });
+  expect(lote.cortador).toMatchObject([{ material: 'ALPHA negro 580 g', unidades: 5 * cantidad, pedidas: 5 * cantidad, cuadra: true }]);
+  expect(lote.programas).toHaveLength(5);
+  expect(lote.programas.map(p => p.entidades.textos.find(t => t.capa === 'ROTULADOR')?.valor)).toEqual(Array(5).fill(letra));
+  expect(lote.programas[2].entidades.lineas.filter(l => l.capa === 'ROTULADOR')).toHaveLength(ventana ? 5 : 1);
+  expect(lote.programas[4].entidades.circulos).toHaveLength(4);
+});
+
 it('la 410124-0003 corta y rotula A1, A2 y A3 una vez por unidad', () => {
   const linea = { ...cortinas[0], CodArticle: 'H0K410124-0003', cantidad: 17,
     descripcion: 'TOP PVC 0,5MM GLOSSY BLK TNB2080XTWB300XTWT400_W/O OP_480X200_OPEN RECESS' };

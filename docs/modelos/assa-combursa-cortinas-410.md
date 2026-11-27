@@ -329,16 +329,14 @@ marcas laterales, pero no se localizó el juego completo de máquina.
 
 | Referencia | Líneas / unidades de RPS | Contraste pendiente |
 | --- | --- | --- |
-| `410241-0019`, `410242-0019` | 1 / 6 cada una | El 19-10-2024 máquina marca B y C. Queda por contrastar el contorno y las operaciones interiores de los cinco paños de cada mano. |
-| `410251-0006`, `410252-0006` | 1 / 4 cada una | El 09-03-2024 rotula B y C en el PVC de 580 g. Falta cotejar los cinco paños y las marcas de la ventana de cada mano. |
 | `410155-0002` | 1 / 4 | El 10-10-2026 distingue el cuerpo de 2 mm y el bloque de solapas rotulado «1 MM NEGRA». La OF registra resto de 1,2 mm. Falta completar el contraste del cuerpo y el despiece de solapas. |
 
 | Estado | Referencias |
 | --- | ---: |
-| Habilitadas | 54 |
+| Habilitadas | 58 |
 | A mano por duda de Taller | 42 |
 | A mano sin corte de taller localizado | 15 |
-| Pendientes de revisar | 5 |
+| Pendientes de revisar | 1 |
 | Total `410xxx` en RPS | 116 |
 
 ## Criba de la cuarta tanda
@@ -749,4 +747,35 @@ cotejaron las copias publicadas por SHA-256.
 
 ~~~text
 \\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 16-08 - 20261127-112128
+~~~
+
+## Tanda final de laterales de cinco paños
+
+Cada lateral lleva cinco paños de ALPHA negro de 580 g. El izquierdo
+se marca con B y el derecho con C. En las variantes con ventana, el
+rotulador marca el rectángulo de 1.200 × 200 mm en el tercer paño.
+La OF registra el velcro para coserlo en taller. El corte incluye
+los contornos, las marcas y cuatro agujeros de 25 mm en el quinto paño.
+
+| Referencia / OF | Maestro | Lote de máquina | Resultado |
+| --- | --- | --- | --- |
+| `410241-0019` / `0209393` | `HOK410241-0015.dwg` | 19-10-2024 | **Igual** en los 30 paños, 0,002 mm. |
+| `410242-0019` / `0209394` | `HOK410242-0015.dwg` | 19-10-2024 | **Igual** en los 30 paños, 0,003 mm. |
+| `410251-0006` / `0202012` | `HOK410251.dwg` | 09-03-2024 | **Igual** en los 20 paños, 0,003 mm. |
+| `410252-0006` / `0202013` | `HOK410252.dwg` y `HOK410252-0004.dwg` | 09-03-2024 | **Igual** en los 20 paños, 0,002 mm. |
+
+El contraste recompone las tiradas históricas con sus giros y cortes
+compartidos. El orillo hace de borde inferior en máquina. La web
+saca los cinco contornos por separado y aplica la repetición de RPS.
+Se verificaron también las letras, posición, giro y altura del rótulo.
+
+El lote 19-10-2024 tiene 25 líneas, 52 programas y 35 filas cuadradas.
+En el palet 1 las dos manos llevan 30 paños cada una. El lote 09-03-2024
+tiene 32 líneas, 63 programas y 43 filas cuadradas. En el palet 3 las
+dos manos llevan 20 paños cada una. Se releyeron cinco programas de
+cada lote tras confirmar con ODA y se cotejaron las copias por SHA-256.
+
+~~~text
+\\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 19-10 - 20261127-113023
+\\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 09-03 - 20261127-113024
 ~~~

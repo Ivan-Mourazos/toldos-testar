@@ -318,6 +318,47 @@ function techoSinEntrante(fondo, chaflanInterior) {
   ];
 }
 
+function lateralCincoPanos(letra, alto, ventana = false) {
+  const derecha = letra === 'C';
+  const reflejaX = ancho => ([x, y]) => [ancho - x, y];
+  const reflejaY = fondo => ([x, y]) => [x, fondo - y];
+  const bordeLargo = [[281.322, 0], [341.96, 1359.076], [433.22, alto], [22, alto],
+    [22, alto - 10], [0, alto - 32], [0, 32], [22, 10], [22, 0]];
+  const centro = [[420, 0], [420, alto + 6.7], [100, alto + 6.7], [0, 0]];
+  const tapa = [[0, 0], [420, 0], [420, 410], [410, 410], [388, 432], [32, 432], [10, 410], [0, 410]];
+  const tapaPerforada = [[0, 22], [10, 22], [32, 0], [288, 0], [310, 22], [320, 22], [320, 282], [0, 282]];
+  const marcaLarga = [[332, 1360], [322, 1360]];
+  const huecoVentana = [[386.22, 10], [186.22, 10], [186.22, 1210], [386.22, 1210], [386.22, 10]];
+  const cuarto = ventana && derecha ? tapa.map(reflejaY(432)) : tapa;
+  const quinto = ventana ? tapaPerforada.map(reflejaY(282)) : tapaPerforada;
+  const panos = [
+    [433.22, alto, derecha ? bordeLargo.map(reflejaX(433.22)) : bordeLargo,
+      tramos('ROTULADOR', derecha ? marcaLarga.map(reflejaX(433.22)) : marcaLarga)],
+    [420, alto + 6.7, derecha ? centro.map(reflejaY(alto + 6.7)) : centro, []],
+    [433.22, alto, derecha ? bordeLargo : bordeLargo.map(reflejaX(433.22)), [
+      ...tramos('ROTULADOR', derecha ? marcaLarga : marcaLarga.map(reflejaX(433.22))),
+      ...(ventana ? tramos('ROTULADOR', derecha ? huecoVentana.map(reflejaX(433.22)) : huecoVentana) : []),
+    ]],
+    [420, 432, cuarto, []],
+    [320, 282, quinto, [
+      ...[110, 210].flatMap(x => (ventana ? [85, 185] : [97, 197]).map(y => ['CUTTER', x, y, 12.5])),
+      ['ROTULADOR', 160, ventana ? 10 : 272, 160, ventana ? 20 : 262],
+    ]],
+  ];
+  const rotulos = derecha
+    ? (ventana ? [[162.733, 12.694, 0], [398.769, 12.759, 0], [260.626, 12.872, 0], [21.231, 419.241, 180], [21.231, 22.819, 180]]
+      : [[163.368, 12.694, 0], [399.404, 12.759, 0], [261.26, 12.872, 0], [399.404, 12.759, 0], [299.404, 259.18, 0]])
+    : (ventana ? [[260.398, 12.695, 0], [408.857, 2113.941, 180], [162.505, 12.873, 0], [11.142, 12.76, 0], [308.857, 22.82, 180]]
+      : [[260.255, 12.694, 0], [409.001, 2413.94, 180], [162.363, 12.872, 0], [10.999, 12.759, 0], [10.999, 259.18, 0]]);
+  return panos.map(([ancho, fondo, borde, extras], i) => {
+    const [x, y, giro] = rotulos[i];
+    return {
+      ...grupo(alpha, `paño ${letra}${i + 1}`, 1, 1, [ancho, fondo], [...tramosDisco([...borde, borde[0]]), ...extras]),
+      rotulos: [{ valor: letra, x, y, giro }],
+    };
+  });
+}
+
 function frenteConAbertura(ancho, borde, base, fondo, { marcarPliegue = true, marcarTaladros = true } = {}) {
   const alto = base + fondo;
   return [
@@ -672,6 +713,22 @@ const modelos = {
   '410179-0054': {
     descripcion: 'PLANE 2MM WB=300 WT=300 H=2900 SCHWARZ PVC, WHITE PKG 750MM',
     fichero: 'OK410179.dwg', medidasMm: [2900, 1000], grupos: lateralConMuestra,
+  },
+  '410241-0019': {
+    descripcion: 'SIDE LEFT SNH2400 SWBO400_SWBU300_SWTO400_SWTU250_WTM310_WTMH1350 GLOSSY BLK PVC',
+    fichero: 'HOK410241-0015.dwg', medidasMm: [420, 2426.7], grupos: lateralCincoPanos('B', 2420),
+  },
+  '410242-0019': {
+    descripcion: 'SIDE RIGHT SNH2400_SWBO400_SWBU300_SWTO400_SWTU250_WTM310_WTMH1350 GLOSSYBLK PVC',
+    fichero: 'HOK410242-0015.dwg', medidasMm: [420, 2426.7], grupos: lateralCincoPanos('C', 2420),
+  },
+  '410251-0006': {
+    descripcion: 'LEFT PVC GLOSSY BLACK_WS 1200X200_SNH2100_SWBO400_SWBU300_SWTO400_SWTU250_WTM310_WTMH1350',
+    fichero: 'HOK410251.dwg', medidasMm: [420, 2126.7], grupos: lateralCincoPanos('B', 2120, true),
+  },
+  '410252-0006': {
+    descripcion: 'RIGHT PVC GLOSSY BLACK_WS 1200X200_SNH2100_SWBO400_SWBU300_SWTO400_SWTU250_WTM310_WTMH1350',
+    fichero: 'HOK410252.dwg', medidasMm: [420, 2126.7], grupos: lateralCincoPanos('C', 2120, true),
   },
   '410300-0001': {
     descripcion: 'SPECIAL PVC 2MM BLACK, 500X490 - 200/170MM WELDED',
