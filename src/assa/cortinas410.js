@@ -267,7 +267,7 @@ function techoSinEntrante(fondo, chaflanInterior) {
   ];
 }
 
-function frenteConAbertura(ancho, borde, base, fondo, marcarPliegue = true) {
+function frenteConAbertura(ancho, borde, base, fondo, { marcarPliegue = true, marcarTaladros = true } = {}) {
   const alto = base + fondo;
   return [
     ['CUTTER', 0, 0, 0, base], ['CUTTER', 0, base, borde, base],
@@ -275,7 +275,7 @@ function frenteConAbertura(ancho, borde, base, fondo, marcarPliegue = true) {
     ['CUTTER', ancho - borde, alto, ancho - borde, base], ['CUTTER', ancho - borde, base, ancho, base],
     ['CUTTER', ancho, base, ancho, 0], ...(marcarPliegue ? [['ROTULADOR', borde, base, ancho - borde, base]] : []),
     ...[borde + 200, ancho - borde - 200].flatMap(x => [
-      ['CUTTER', x, base + 20, x, alto], ['ROTULADOR', x, base + 20, 4],
+      ['CUTTER', x, base + 20, x, alto], ...(marcarTaladros ? [['ROTULADOR', x, base + 20, 4]] : []),
     ]),
   ];
 }
@@ -323,22 +323,25 @@ const superiorConTapasJuntas = [
   },
 ];
 
-function superiorPlastelConAbertura(ancho, agujeros) {
-  const [cuerpo] = superiorPerforada(ancho, { alto: 1000, agujeros, tapa: [340, 370], tapasJuntas: true, alturaAgujeros: 150 });
-  return [cuerpo, {
-    ...grupo(lona3, 'frentes con abertura', 1, 2, [ancho, 575], frenteConAbertura(ancho, 300, 300, 275, false)),
-    frentesEnfrentados: 'centro',
+function superiorPlastelConAbertura(ancho, agujeros, { tapasJuntas = true, marcarTaladros = true, bocaSueltaEnOrillo = false } = {}) {
+  const plastel = superiorPerforada(ancho, { alto: 1000, agujeros, tapa: [340, 370], tapasJuntas, alturaAgujeros: 150 }).slice(0, -1);
+  return [...plastel, {
+    ...grupo(lona3, 'frentes con abertura', 1, 2, [ancho, 575], frenteConAbertura(ancho, 300, 300, 275, { marcarPliegue: false, marcarTaladros })),
+    frentesEnfrentados: 'centro', bocaSueltaEnOrillo,
   }];
 }
 
-function cortarFrentesEnfrentados(n, largo, alto, operaciones, cerrarFrenteSuelto, ladoBocas) {
-  if (n === 1) return entidadesDe(cerrarFrenteSuelto ? [...operaciones, ['CUTTER', 0, 0, largo, 0]] : operaciones);
+function cortarFrentesEnfrentados(n, largo, alto, { operaciones, cerrarFrenteSuelto, frentesEnfrentados, bocaSueltaEnOrillo }) {
+  if (n === 1 && !bocaSueltaEnOrillo) {
+    return entidadesDe(cerrarFrenteSuelto ? [...operaciones, ['CUTTER', 0, 0, largo, 0]] : operaciones);
+  }
   const invertir = (x, y) => [largo - x, alto - y];
   const invertidas = operaciones.filter(([, , y1, , y2]) => y1 !== alto || y2 !== alto)
     .map(([capa, x1, y1, x2, y2]) => y2 === undefined
       ? [capa, ...invertir(x1, y1), x2]
       : [capa, ...invertir(x1, y1), ...invertir(x2, y2)]);
-  const alCentro = ladoBocas === 'centro';
+  if (n === 1) return entidadesDe([...invertidas, ['CUTTER', 0, alto, largo, alto]]);
+  const alCentro = frentesEnfrentados === 'centro';
   const entidades = entidadesDe(alCentro ? [...operaciones, ['CUTTER', 0, 2 * alto, largo, 2 * alto]]
     : [...invertidas, ['CUTTER', 0, alto, largo, alto]]);
   unirEntidades(entidades, desplazarEntidades(entidadesDe(alCentro ? invertidas : operaciones), 0, alto));
@@ -540,6 +543,11 @@ const modelos = {
   '410134-0002': {
     descripcion: 'PLANE SC STANDARD 300X300X2500 OP=600 PVC SCHWARZ, REINFORCED',
     fichero: 'OK410134.dwg', medidasMm: [2500, 1000], grupos: superiorConTapasJuntas,
+  },
+  '410135-0106': {
+    descripcion: 'PLANE TWP OBEN WB300XWT300X3600 OP=600 SCHWARZ',
+    fichero: 'OK410135.dwg', medidasMm: [3600, 1000],
+    grupos: superiorPlastelConAbertura(3600, 8, { tapasJuntas: false, marcarTaladros: false, bocaSueltaEnOrillo: true }),
   },
   '410135-0108': {
     descripcion: 'PLANE TWP OBEN WB300XWT300X3200 OP=600 SCHWARZ SCHWARZ',
@@ -748,7 +756,7 @@ export function generarProgramasCortina(g, sueltas, muestras = 1) {
         if (p.tapa) entidades = columnaPvc(n, p.tapa);
         else if (p.anchoTapa) entidades = entidadesDe(tapasEnFilas(n, p.anchoTapa, 2));
         else if (p.frentesEnfrentados) {
-          entidades = cortarFrentesEnfrentados(n, largoMm, alto, p.operaciones, p.cerrarFrenteSuelto, p.frentesEnfrentados);
+          entidades = cortarFrentesEnfrentados(n, largoMm, alto, p);
         }
         else {
           entidades = entidadesVacias();

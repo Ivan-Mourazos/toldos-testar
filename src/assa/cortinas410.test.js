@@ -195,6 +195,21 @@ it.each([
   ]);
 });
 
+it('corta el frente suelto de la 410135-0106 con la abertura en el orillo', () => {
+  const linea = { ...cortinas[0], CodArticle: 'H0K410135-0106', cantidad: 3,
+    descripcion: 'PLANE TWP OBEN WB300xWT300x3600 OP=600 SCHWARZ' };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [3600, 1000] });
+  const frentes = lote.programas.filter(p => p.material === 'Lona 3 mm');
+  expect(frentes.map(p => [p.piezas, p.anchoOcupadoMm, p.entidades.circulos.length])).toEqual([[2, 1150, 0], [1, 575, 0]]);
+  expect(frentes[1].entidades.lineas).toContainEqual({ capa: 'CUTTER', x1: 3100, y1: 255, x2: 3100, y2: 0 });
+  expect(frentes[1].entidades.lineas).not.toContainEqual({ capa: 'CUTTER', x1: 300, y1: 0, x2: 3300, y2: 0 });
+  expect(lote.cortador).toMatchObject([
+    { material: 'Lona 3 mm', unidades: 3, pedidas: 3, cuadra: true },
+    { material: 'PLASTEL 8800 TE62 negra', unidades: 9, pedidas: 9, cuadra: true },
+  ]);
+});
+
 it.each([
   ['410130-0004', 'PLANE SC SEITLICH300X300X2900 ANFAHRSTREIFEN:WEIßS', 2900, 50, 50, 100],
   ['410130-0017', 'SC SIDE CURTAIN 300X300X2500 PARK GUIDE=WHITE', 2500, 60, 10, 50],

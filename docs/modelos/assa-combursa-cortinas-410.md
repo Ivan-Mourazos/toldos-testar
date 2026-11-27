@@ -330,14 +330,18 @@ marcas laterales, pero no se localizó el juego completo de máquina.
 | Referencia | Líneas / unidades de RPS | Contraste pendiente |
 | --- | --- | --- |
 | `410174-0062` | 1 / 16 | El 26-07-2025 lleva el rótulo y tiene solapas separadas con disco. Falta ligar el DXF a la OF del 16-08-2025 y contrastar el despiece completo. |
+| `410241-0019`, `410242-0019` | 1 / 6 cada una | El 19-10-2024 máquina marca B y C. Queda por contrastar el contorno y las operaciones interiores de los cinco paños de cada mano. |
 | `410300-0001` | 2 / 10 | El DXF del 07-07-2023 corta un contorno distinto al de las `0005` y `0006`. Falta ligar el contorno al maestro de esta variante. |
+| `410123-0004` | 2 / 8 | El 30-11-2024 marca A en los tres paños. Queda por contrastar el contorno del entrante cerrado. |
+| `410251-0006`, `410252-0006` | 1 / 4 cada una | El 09-03-2024 rotula B y C en el PVC de 580 g. Falta cotejar los cinco paños y las marcas de la ventana de cada mano. |
+| `410155-0002` | 1 / 4 | El 10-10-2026 distingue el cuerpo de 2 mm y el bloque de solapas rotulado «1 MM NEGRA». La OF registra resto de 1,2 mm. Falta completar el contraste del cuerpo y el despiece de solapas. |
 
 | Estado | Referencias |
 | --- | ---: |
-| Habilitadas | 50 |
+| Habilitadas | 51 |
 | A mano por duda de Taller | 42 |
 | A mano sin corte de taller localizado | 15 |
-| Pendientes de revisar | 9 |
+| Pendientes de revisar | 8 |
 | Total `410xxx` en RPS | 116 |
 
 ## Criba de la cuarta tanda
@@ -535,10 +539,8 @@ taladros junto a la abertura se marcan con rotulador.
 | `410135-0109` / `0222598` | 29-11-2025 | Cuerpo 3.400 × 1.000 con ocho agujeros. Dos tapas de 340 × 370 por cuerpo. Frente 3.400 × 575. | **Igual** en dos cuerpos y las primeras cuatro tapas de la columna, en el par de frentes y en el suelto. El bloque histórico incluye una quinta tapa y se comparó hasta el cuarto corte. La cantidad final se toma de RPS. |
 
 Los cinco bloques quedan dentro de 0,001 mm por herramienta. La
-`410135-0106` sigue pendiente. En el 06-04-2024 el frente doble tiene
-los cortes de la abertura y en el bloque suelto faltan el corte
-central y sus dos cortes cortos. Falta localizar el frente suelto
-completo para contrastarlo.
+`410135-0106` quedó habilitada en la sexta tanda, con el frente
+suelto orientado hacia el orillo del rollo.
 
 En la prueba del 29-11-2025, una de las 27 líneas de RPS se repartió
 entre dos palets. Salieron 55 programas y cuadraron las 39 filas del
@@ -662,4 +664,27 @@ verificaron las copias publicadas por SHA-256.
 
 ~~~text
 \\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 19-10 - 20261127-104534
+~~~
+
+## Sexta tanda del superior 410135-0106
+
+| Referencia / OF | Lote de máquina | Despiece en mm | Resultado |
+| --- | --- | --- | --- |
+| `410135-0106` / `0202633` | 06-04-2024 | Cuerpo PLASTEL de 3.600 × 1.000 con ocho agujeros y dos tapas sueltas de 340 × 370. Frente de lona de 3 mm de 3.600 × 575. | **Igual** en dos cuerpos, dos tapas, el par de frentes y el frente suelto, dentro de 0,001 mm. |
+
+El maestro y máquina dejan los frentes sin puntos de rotulador. En
+el frente suelto, los dos cortes cortos llegan al orillo, que hace
+de borde de la abertura. La OF de 2024 imputa lona de 3 mm de
+1.600 mm de ancho. La de 2023 imputa 1.000 mm y no se localizó su
+corte. El programa usa el rollo de 1.600 mm de la OF contrastada.
+
+La prueba del 06-04-2024 incluyó las 26 líneas con bulto confirmado.
+La OF `0202513` de `430172-0010` quedó fuera por falta de palet.
+Salieron 65 programas, con 44 filas de cortador cuadradas. En el
+palet 3, la `410135-0106` lleva nueve piezas de PLASTEL y tres
+frentes. Se verificaron sus seis programas tras confirmar con ODA,
+y las copias publicadas se cotejaron por SHA-256.
+
+~~~text
+\\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 06-04 - 20261127-105159
 ~~~
