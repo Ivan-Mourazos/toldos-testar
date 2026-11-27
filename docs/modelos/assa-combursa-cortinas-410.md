@@ -242,3 +242,99 @@ motivo que muestra la web es «Sin corte de taller para contrastar».
 | A mano sin corte de taller localizado | 14 |
 | Pendientes de revisar | 78 |
 | Total `410xxx` en RPS | 116 |
+
+## Criba de la cuarta tanda
+
+La tabla recoge las 78 referencias que quedaron pendientes tras la tercera
+tanda. Se leyó el rótulo del maestro o se localizó el dibujo de familia, y
+se comprobó el rótulo de la referencia en una copia del DXF de máquina.
+En 74 referencias coincide la fecha de un pedido. Las otras cuatro
+requieren ligar el DXF con el pedido por cantidad y despiece. La forma
+candidata orienta el contraste por herramienta y el despiece.
+
+Para regenerar la tabla tras copiar los DXF en tmp, ejecuta
+`node scripts/assa-investigacion/cribar-cortinas-410.mjs`. El script lee
+`lista-tanda4.json` (referencias con sus líneas de RPS y unidades),
+`seleccion-tanda4.json` (DXF candidatos por referencia), los maestros en
+`maestros-dxf/` y `maestros-tanda4-dxf/`, y los lotes en `cortes/<año>/`.
+
+| Referencia | Líneas / unidades | Maestro | Rótulo en máquina | Forma candidata |
+| --- | ---: | --- | --- | --- |
+| `410172-0105` | 3 / 38 | OK410172.dwg | 2025-05-17 | conMano |
+| `410173-0105` | 3 / 38 | OK410173.dwg | 2025-05-17 | conMano |
+| `410174-0060` | 2 / 114 | OK410174_.dwg | 2024-11-23 | conMano |
+| `410130-0017` | 2 / 38 | OK410130.dwg | 2024-06-01 | lateral |
+| `410143-0005` | 2 / 35 | HOK410143.dwg | 2025-05-03 | superiorConAbertura |
+| `410186-0001` | 2 / 33 | HOK410186.dwg | 2023-10-14 | conMano |
+| `410187-0001` | 2 / 33 | HOK410187.dwg | 2023-10-14 | conMano |
+| `410122-0008` | 2 / 20 | HOK410122.dwg | 2025-05-17 | Forma por revisar |
+| `410252-0002` | 2 / 20 | HOK410252.dwg | 2025-07-05 | Forma por revisar |
+| `410174-0025` | 2 / 16 | OK410174_.dwg | 2024-07-27 (otra fecha) | conMano |
+| `410300-0001` | 2 / 10 | OK410300 C.dwg (familia) | 2023-07-07 | Forma por revisar |
+| `410137-0037` | 2 / 9 | OK410137.dwg | 2023-04-28 | superiorConTapasJuntas |
+| `410123-0004` | 2 / 8 | HOK410123.dwg | 2024-11-30 | Forma por revisar |
+| `410129-0091` | 2 / 7 | OK410129.dwg | 2024-04-06 | superior perforada |
+| `410135-0106` | 2 / 7 | OK410135.dwg | 2024-04-06 | superiorConTapasJuntas |
+| `410130-0004` | 2 / 6 | OK410130.dwg | 2024-08-17 | lateral |
+| `410245-0001` | 2 / 5 | HOK410241-0014.dwg | 2024-11-09 | Forma por revisar |
+| `410129-0209` | 2 / 4 | OK410129.dwg | 2025-11-22 | superior perforada |
+| `410130-0170` | 2 / 4 | OK410130.dwg | 2024-06-01 | lateral |
+| `410129-0015` | 2 / 2 | OK410129.dwg | 2025-08-23 | superior perforada |
+| `410129-0112` | 2 / 2 | OK410129.dwg | 2025-02-01 | superior perforada |
+| `410179-0053` | 1 / 90 | OK410179.dwg | 2025-10-01 (otra fecha) | Lateral de marca continua, geometría por revisar |
+| `410130-0165` | 1 / 58 | OK410130.dwg | 2023-07-14 | lateral |
+| `410130-0166` | 1 / 58 | OK410130.dwg | 2023-10-28 | lateral |
+| `410182-0031` | 1 / 45 | OK410182.dwg | 2025-08-23 (otra fecha) | superior de 2 mm con tapas de PVC |
+| `410179-0054` | 1 / 30 | OK410179.dwg | 2025-11-29 | Forma por revisar |
+| `410129-0056` | 1 / 29 | OK410129.dwg | 2023-10-28 | superior perforada |
+| `410129-0205` | 1 / 25 | OK410129.dwg | 2023-07-14 | superior perforada |
+| `410129-0010` | 1 / 17 | OK410129.dwg | 2024-06-01 | superior perforada |
+| `410174-0062` | 1 / 16 | OK410174_.dwg | 2025-07-26 (otra fecha) | conMano |
+| `410174-0063` | 1 / 16 | OK410174.dwg | 2025-10-11 | conMano |
+| `410245-0002` | 1 / 16 | HOK410245.dwg | 2025-04-16 | Forma por revisar |
+| `410123-0005` | 1 / 8 | HOK410123.dwg | 2025-04-16 | Forma por revisar |
+| `410129-0212` | 1 / 8 | OK410129.dwg | 2026-03-21 | superior perforada |
+| `410149-0003` | 1 / 8 | HOK410149.dwg | 2025-10-11 | Forma por revisar |
+| `410241-0007` | 1 / 8 | HOK410241-0014.dwg | 2025-04-16 | Forma por revisar |
+| `410242-0003` | 1 / 8 | HOK410242-0004.dwg | 2025-04-16 | Forma por revisar |
+| `410121-0006` | 1 / 6 | HOK410121.dwg | 2024-10-19 | Forma por revisar |
+| `410130-0098` | 1 / 6 | OK410130.dwg | 2025-12-06 | Lateral de marca continua, geometría por revisar |
+| `410241-0019` | 1 / 6 | HOK410241-0015.dwg | 2024-10-19 | Forma por revisar |
+| `410242-0019` | 1 / 6 | HOK410242-0004.dwg | 2024-10-19 | Forma por revisar |
+| `410143-0006` | 1 / 5 | HOK410143.dwg | 2025-10-04 | superiorConAbertura |
+| `410170-0003` | 1 / 5 | OK410170.dwg | 2025-10-04 | conMano |
+| `410171-0003` | 1 / 5 | OK410171.dwg | 2025-10-04 | conMano |
+| `410121-0004` | 1 / 4 | HOK410121.dwg | 2024-06-22 | Forma por revisar |
+| `410129-0206` | 1 / 4 | OK410129.dwg | 2023-07-14 | superior perforada |
+| `410130-0015` | 1 / 4 | OK410130.dwg | 2024-02-03 | lateral |
+| `410130-0171` | 1 / 4 | OK410130.dwg | 2024-06-01 | lateral |
+| `410130-0173` | 1 / 4 | OK410130.dwg | 2025-04-05 | Lateral de marca continua, geometría por revisar |
+| `410143-0004` | 1 / 4 | HOK410143.dwg | 2024-03-23 | superiorConAbertura |
+| `410149-0001` | 1 / 4 | HOK410149.dwg | 2025-07-19 | Forma por revisar |
+| `410149-0002` | 1 / 4 | HOK410149.dwg | 2025-07-19 | Forma por revisar |
+| `410155-0002` | 1 / 4 | 0K410155.dwg | 2026-10-10 | Forma por revisar |
+| `410170-0002` | 1 / 4 | OK410170.dwg | 2024-03-23 | conMano |
+| `410171-0002` | 1 / 4 | OK410171.dwg | 2024-03-23 | conMano |
+| `410251-0006` | 1 / 4 | HOK410252-0004.dwg | 2024-03-09 | Forma por revisar |
+| `410252-0006` | 1 / 4 | HOK410252-0004.dwg | 2024-03-09 | Forma por revisar |
+| `410300-0005` | 1 / 4 | OK410300.dwg | 2025-03-15 | Forma por revisar |
+| `410300-0006` | 1 / 4 | OK410300.dwg | 2025-03-15 | Forma por revisar |
+| `410135-0109` | 1 / 3 | OK410135.dwg | 2025-11-29 | superiorConTapasJuntas |
+| `410129-0013` | 1 / 2 | OK410129.dwg | 2024-04-06 | superior perforada |
+| `410129-0052` | 1 / 2 | OK410129.dwg | 2025-04-05 | superior perforada |
+| `410129-0211` | 1 / 2 | OK410129.dwg | 2026-03-14 | superior perforada |
+| `410130-0003` | 1 / 2 | OK410130.dwg | 2025-08-23 | lateral |
+| `410130-0167` | 1 / 2 | OK410130.dwg | 2024-02-24 | lateral |
+| `410130-0169` | 1 / 2 | OK410130.dwg | 2024-05-11 | lateral |
+| `410130-0172` | 1 / 2 | OK410130.dwg | 2025-02-01 | lateral |
+| `410135-0108` | 1 / 2 | OK410135.dwg | 2025-04-05 | superiorConTapasJuntas |
+| `410122-0007` | 1 / 1 | HOK410122.dwg | 2024-11-09 | Forma por revisar |
+| `410129-0053` | 1 / 1 | OK410129.dwg | 2025-05-10 | superior perforada |
+| `410129-0115` | 1 / 1 | OK410129.dwg | 2024-07-27 | superior perforada |
+| `410129-0210` | 1 / 1 | OK410129.dwg | 2025-10-18 | superior perforada |
+| `410137-0038` | 1 / 1 | OK410137.dwg | 2024-06-01 | superiorConTapasJuntas |
+| `410137-0039` | 1 / 1 | OK410137.dwg | 2024-06-01 | superiorConTapasJuntas |
+| `410173-0106` | 1 / 1 | OK410172.dwg | 2026-03-21 | conMano |
+| `410241-0017` | 1 / 1 | HOK410241-0015.dwg | 2024-11-30 | Forma por revisar |
+| `410242-0008` | 1 / 1 | HOK410242-0004.dwg | 2024-11-30 | Forma por revisar |
+| `410252-0003` | 1 / 1 | HOK410121.dwg | 2024-11-09 | Forma por revisar |
