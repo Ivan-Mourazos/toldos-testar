@@ -51,6 +51,11 @@ Respuestas de Jaime y comprobaciones en el
   La `410130-0172` sigue a mano. Lleva PLASTEL negra de 2.040 mm, PVC
   negro de 900 g y lona de 3 mm. Los materiales comparten DXF con tiradas
   separadas.
+- **420150-0126 (27/11/2026).** ASSA cambió la referencia a NW 2.900
+  (pedido ROBA012908, `AR.26.05801`, posición 90: «Clad w.r.c NW2900 NH3400
+  NT600») y la oficina actualizó `COMBURSA (CRAWFORD).dwg`: cuerpo de
+  9.702 × 666 mm (antes 9.752), 10 agujeros centrales y canalón de 3.060 mm
+  (mitades de 1.530). RPS sigue diciendo NB=2950; la web corta NB 2.900 y avisa.
 - **Q-ASC04 (27/11/2026).** La descripción de RPS de la `430127-0023`
   (`NT600NB3450NH3600`) está mal. El pedido del cliente CRW3 022074
   (`AR.25.01183`, línea 17) pide «Lona envolvente con vierteaguas NT600
