@@ -9,7 +9,12 @@ const numero = (n: number) => n.toLocaleString('es-ES', { maximumFractionDigits:
 // Los bloques de canalón cuentan canalones (un entero o dos mitades); el resto, paños.
 const piezas = (p: Programa) => p.tipo === 'canalon'
   ? `${numero(p.canalones ?? 0)} canalones`
+  : p.tipo === 'cortina' ? `${p.nombrePiezas} · ${p.gruposDePiezas} por corte`
   : `${p.panos} ${p.panos === 1 ? 'paño' : 'paños'}`;
+const detalle = (p: Programa) => [
+  `${numero(p.largoMm)} × ${numero(p.anchoOcupadoMm)} mm`,
+  p.tipo === 'cortina' ? `${p.material} · rollo de ${numero(p.anchoRolloMm ?? 0)} mm` : 'orillo sin cortar',
+].join(' · ');
 
 export function VistaCorte({ programas }: { programas: Programa[] }) {
   const [ampliado, setAmpliado] = useState<Programa | null>(null);
@@ -18,8 +23,8 @@ export function VistaCorte({ programas }: { programas: Programa[] }) {
     <p className="combursa-ayuda">Cada conjunto se dibuja una vez. El cortador sigue su repetición. Las líneas a mano quedan fuera.</p>
     <div className="combursa-programas">{programas.map((p, i) => <article className="glass-panel" key={`${p.codigo}-${i}`}>
       <header><strong>{p.codigo}</strong><span>{piezas(p)} × {numero(p.repeticiones)}</span></header>
-      <button type="button" className="combursa-ampliar" aria-label={"Ampliar corte " + p.codigo + ", programa " + (i + 1)} onClick={() => setAmpliado(p)}><Dibujo programa={p} /><span>Ampliar dibujo</span></button>
-      <footer>{numero(p.largoMm)} × {numero(p.anchoOcupadoMm)} mm · orillo sin cortar</footer>
+      <button type="button" className="combursa-ampliar" aria-label={`Ampliar dibujo ${p.codigo}${p.material ? `, ${p.material}` : ''}, programa ${i + 1}`} onClick={() => setAmpliado(p)}><Dibujo programa={p} /><span>Ampliar dibujo</span></button>
+      <footer>{detalle(p)}</footer>
     </article>)}</div>
   </section>{ampliado && <Ampliacion programa={ampliado} onCerrar={() => setAmpliado(null)} />}</>;
 }
@@ -49,6 +54,6 @@ function Ampliacion({ programa, onCerrar }: { programa: Programa; onCerrar: () =
   return <dialog ref={dialogo} className="combursa-ampliacion" aria-label={"Corte ampliado " + programa.codigo} onCancel={e => { e.preventDefault(); e.stopPropagation(); onCerrar(); }}>
     <header><h2>{programa.codigo} · {piezas(programa)} × {numero(programa.repeticiones)}</h2><button type="button" className="ghost-button" autoFocus onClick={onCerrar}>Cerrar ampliación</button></header>
     <Dibujo programa={programa} />
-    <p>{numero(programa.largoMm)} × {numero(programa.anchoOcupadoMm)} mm · orillo sin cortar</p>
+    <p>{detalle(programa)}</p>
   </dialog>;
 }

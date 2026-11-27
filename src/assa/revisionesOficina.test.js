@@ -25,9 +25,7 @@ it('la vista muestra el grupo 5 y 6 una sola vez y mantiene la asignación manua
 it('reproduce el lote completo de oficina solo con las 25 líneas exactas de RPS', () => {
   const l = lote(), revision = revisionOficinaDelLote(l);
   expect(l.totalUnidades).toBe(314);
-  expect(l.aMano).toBe(4);
-  expect(l.lineas.filter(x => x.estado === 'a-mano').map(x => x.codigo).sort())
-    .toEqual(['410129-0117', '410130-0175', '410170-0001', '410171-0001']);
+  expect(l.aMano).toBe(0);
   expect(revision.hojas).toHaveLength(25);
   expect(revision.hojas.every(h => h.primitivas.length > 0)).toBe(true);
   expect(revision.corte.filter(p => p.tipo === 'texto' && /^PALET /.test(p.valor)).map(p => p.valor))
@@ -54,20 +52,22 @@ it.each(['cantidad', 'descripcion', 'of_', 'CodArticle'])('retira la revisión s
   expect(revisionOficinaDelLote(l)).toBeNull();
 });
 
-it('retira la revisión con palets distintos o sueltas elegidas, y no valida las líneas a mano', () => {
+it('retira la revisión con palets distintos o sueltas elegidas', () => {
   const l = lote();
   l.lineas[0].palet = 1;
   expect(revisionOficinaDelLote(l)).toBeNull();
   const s = lote();
   s.sueltas = { '420150-0087': true };
   expect(revisionOficinaDelLote(s)).toBeNull();
-  expect(lote().lineas.filter(l => l.estado === 'a-mano')).toHaveLength(4);
 });
 
 it('el plano de producción usa el corte calculado y no reproduce la copia histórica del 07-11', () => {
   const l = lote();
-  const cortes = leerPlanoTexto(planoDelLote(l)).modelo.filter(p => p.tipo === 'texto' && p.capa === 'texto');
+  const textos = leerPlanoTexto(planoDelLote(l)).modelo.filter(p => p.tipo === 'texto');
+  const cortes = textos.filter(p => p.capa === 'texto');
   expect(cortes.some(p => p.valor === 'PALET 5 y 6')).toBe(false);
   expect(cortes.some(p => p.valor === 'H0K420148-0040')).toBe(true);
-  expect(cortes.some(p => p.valor === 'H0K410130-0175')).toBe(false);
+  expect(cortes.some(p => p.valor === 'H0K410130-0175')).toBe(true);
+  expect(cortes.some(p => p.valor.includes('PVC 900 g negro'))).toBe(true);
+  expect(textos.some(p => p.capa === 'HOJAS' && p.valor === 'LONA NEGRA 900 gr')).toBe(true);
 });

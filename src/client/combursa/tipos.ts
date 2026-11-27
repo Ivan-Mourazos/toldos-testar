@@ -4,10 +4,10 @@ export type Entidades = {
   circulos: Array<{ capa: string; x: number; y: number; r: number }>;
   textos: Array<{ capa: string; x: number; y: number; h: number; valor: string }>;
 };
-export type Programa = { codigo: string; tipo?: 'canalon'; palet?: number | null; canalones?: number; referencias?: string[]; panos: number; filas?: number; unidos?: boolean; repeticiones: number; largoMm: number; anchoOcupadoMm: number; entidades: Entidades };
+export type Programa = { codigo: string; tipo?: 'canalon' | 'cortina'; palet?: number | null; canalones?: number; referencias?: string[]; panos: number; filas?: number; unidos?: boolean; repeticiones: number; largoMm: number; anchoOcupadoMm: number; entidades: Entidades; material?: string; anchoRolloMm?: number; gruposDePiezas?: number; nombrePiezas?: string };
 export type LineaLote = { IDOrderLine: string; CodOrder: string; NumLine?: number; CodArticle: string; descripcion: string;
   cantidad: number; of_: string | null; comentarioLinea: string | null; codigo: string | null;
   estado: 'validado' | 'a-mano'; motivos: string[]; avisos: string[]; corteMm?: number[]; terminadoMm?: number[]; palet?: number | null };
 /** Una fila del papel del cortador: lo que se corta de una referencia (o de un juego de canalones) en un palet. */
-export type FilaCortador = { palet: number | null; referencia: string; referencias?: string[]; material?: string; unidades: number; como: string[]; pedidas: number; cuadra: boolean };
+export type FilaCortador = { palet: number | null; referencia: string; referencias?: string[]; material?: string; porPiezas?: boolean; unidades: number; como: string[]; pedidas: number; cuadra: boolean };
 export type Lote = { nombre: string; fecha: string; lineas: LineaLote[]; programas: Programa[]; cortador: FilaCortador[]; avisos: string[]; paletsCompletos: boolean; paletsOficina?: Record<string, number[]> | null; totalUnidades: number; aMano: number; dwgDisponible: boolean; destino: string };

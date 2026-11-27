@@ -15,8 +15,8 @@ Respuestas de Jaime y comprobaciones en el
 
 - **Q-ASC01 y Q-ASC02.** Las cortinas `410xxx` se cortan a máquina, se cosen
   y van en sus palets, sin envarillar. El dibujo corresponde a la referencia
-  y las cotas se toman de TWB, TWT, OP, etc. La preparación multimaterial
-  por separado corresponde a esa fase. La web las mantiene a mano.
+  y las cotas se toman de TWB, TWT, OP, etc. Las cuatro variantes
+  [contrastadas](./assa-combursa-cortinas-410.md) ya salen en tiradas por material.
 - **Q-ASC03.** `420150-0133` habilitada en PLASTEL roja de 2.040 mm.
   La `410130-0172` sigue a mano. Lleva PLASTEL negra de 2.040 mm, PVC
   negro de 900 g y lona de 3 mm. Los materiales comparten DXF con tiradas
@@ -215,7 +215,9 @@ Q-GAN05–09 permanecen contestadas; estas preguntas no reabren sus respuestas.
 - **430127-0023.** El maestro dibuja un techo de 2.953 × 691 mm con un canalón de 3.063 mm. La línea de RPS pide una envolvente con NB 3.450 y NH 3.600 mm. Falta identificar el plano de la envolvente o corregir la referencia de esa línea.
 - **430172-0010.** El maestro dibuja 9.860 × 966 mm y un canalón de 3.660 mm. Con NB 3.250 y NH 3.200 mm, la línea necesita otro juego. Falta confirmar si la referencia del pedido corresponde al dibujo.
 - **420148-0115.** La ficha da un terminado de 9.805 × 595 mm. Falta localizar el contorno de corte de la variante en los maestros.
-- **Cortinas 410129-0117, 410130-0175, 410170-0001 y 410171-0001.** Hay planos de oficina y constan el despiece y los materiales en Q-AS0711-03. Falta asociar cada pieza con el material y su cantidad en un programa repetible, incluido el tapajuntas, las tiras y los refuerzos.
+- **Cortinas 410129-0117, 410130-0175, 410170-0001 y 410171-0001.** Resuelta
+  la preparación por materiales el 27/11/2026. Véase el
+  [contraste de cortinas](./assa-combursa-cortinas-410.md).
 - El [informe del catálogo](assa-combursa-catalogo.md) identifica el resto de referencias inventariadas que requieren revisión y separa las discrepancias de los DXF históricos de las dudas de plantilla.
 
 ## COMBURSA · lote 07-11 (03/11/2026)
@@ -245,7 +247,10 @@ pero no da por demostradas 22 unidades ni las convierte en stock.
   - `410129-0117`: **1 cuerpo PLASTEL** (`2000 × 900`, 4×Ø40) + **2 tapas PLASTEL** (`320 × 340`) + **1 frente 3 mm** (`2000 × 300`). En el 07-11 (27 uds), el «X8» sobre los 8 cuerpos es errata por **«X3»** (`3 × 8 + 3 = 27`, confirmado por RPS `30,70 m` frente a `30,60 m` teóricos); 3 mm = `5 × X5 + 2 = 27`.
   - `410130-0175`: **1 cuerpo PLASTEL** (`2300 × 900`) + **2 tapas PVC 900 g negro** (`324,1 × 340`, 1 lisa + 1 con 6×Ø40) + **1 frente 3 mm** (`2250 × 300`). En el 07-11 (54 uds), el «x2» sobre los 2 cuerpos es errata por **«x27»** (`27 × 2 = 54`); maqcorte corta 112 tapas (54 pares + 2 relleno, RPS `4,70 m`) y `5 × x10 + 4 = 54` frentes de 3 mm.
   - `410170-0001` (der.) y `410171-0001` (izq.): **1 cuerpo 2 mm** (`2600 × 1116`) + **2 tapas 2 mm** (`370 × 447,75`, 1 lisa + 1 con 6×Ø40, en bloque `2974 × 1116` repetido `× uds`) + **1 tira 1 mm** (`2600 × 416,2`) + **12 solapas 1 mm** (`350 × 400`: **8 sin marca + 4 con marca** de parking guide; las 22/mano del 07-11 son caso aislado).
-- Las cuatro cortinas siguen **a mano** en la web porque mezclan 2–3 materiales distintos (la web genera solo PLASTEL 2040). Scripts: `scripts/assa-investigacion/analizar-rps-cortinas.mjs`, `analizar-cortinas-0711.mjs`, `verificar-cuentas-q03.mjs` e `inspeccion-exacta-q03.mjs`.
+- El [corte automático del 27/11](./assa-combursa-cortinas-410.md) aplica
+  este despiece por material. Los cálculos del 24/11 se conservan en
+  `analizar-rps-cortinas.mjs`, `analizar-cortinas-0711.mjs`,
+  `verificar-cuentas-q03.mjs` e `inspeccion-exacta-q03.mjs`.
 
 | Referencia | Lotes fabricados contrastados (2023–2026) | Piezas por unidad verificadas |
 | --- | --- | --- |
@@ -266,7 +271,9 @@ pero no da por demostradas 22 unidades ni las convierte en stock.
 **Q-AS0711-05 · resuelta por pedidos anteriores (24/11/2026) para `420102-0021`, `430129-0002`, `430172-0005` y `430172-0034`.** El catálogo vigente habilita también `420148-0040`, con un cuerpo de 10.055 × 961 mm registrado en los dos maestros.
 - **Pasadas superpuestas (`430129-0002`, `430172-0005`, `430172-0034`):** analizados 55 lotes DXF (107 paños) y 24 lotes CMT legibles en máquina (36 paños) con `scripts/assa-investigacion/analizar-cmt-duplicados.mjs`, hay **0 pasadas dobles de corte** (`DISCO1`, `DISCO2` ni `CUTTER`). El 100 % son rabillos de **3 mm solo en `ROTULADOR`** (`CM-PEN-Def` en CMT) heredados de las plantillas de oficina. `compararOperaciones()` tolera rabillos ≤ 3,5 mm solo en `ROTULADOR` y mantiene estricto cualquier trazo largo o herramienta de corte. Además `430129-0002` valida su juego de canalón en 15/16 lotes (incluido el 07-11).
 - **`420102-0021` (triples y +4 sueltas):** en 30 lotes de `0021` y 1.134 filas de toda la familia `420102` (`scripts/assa-investigacion/analizar-420102-0021.mjs`), manda **en parejas de 2**; las tiras de 3 solo aparecen en el 4,6 % de filas (2 de 30 lotes en `0021`: `21-06-2025` y `03-10-2026`), sin regla fija. `extraerPanos()` ya lee tiras triples de 3 paños, validando la referencia hasta el último lote. Las +4 sueltas del 07-11 (`22` vs `18` RPS) son un caso único (`1/30` lotes, sin nota en pedido ni OF): la web sigue cortando la cantidad de RPS en parejas de 2.
-- **Qué queda a mano en la web.** Las cuatro cortinas (`410129-0117`, `410130-0175`, `410170-0001`, `410171-0001`) siguen a mano por el programa multimaterial pendiente. La copia exacta del 07-11 se conserva para el contraste. El DWG nuevo sale del catálogo y las cantidades de RPS.
+- **Corte de cortinas.** El [programa multimaterial del 27/11](./assa-combursa-cortinas-410.md)
+  habilita las cuatro variantes. La copia exacta del 07-11 se conserva para
+  el contraste. El DWG nuevo usa los dibujos validados y las cantidades de RPS.
 
 | Referencia | Lotes contrastados (geometría / líneas) | Canalón | CMT en máquina sin dobles de corte | Estado en web |
 | --- | --- | --- | --- | --- |

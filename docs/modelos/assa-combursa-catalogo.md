@@ -32,6 +32,9 @@ Jaime, 26/11/2026. Las dudas pendientes se recogen en
 Para cada palet, el DXF del lote coloca cada material en sus propias filas.
 Los canalones solo comparten una pila cuando coinciden el material y el juego
 de corte. Cada programa indica su material en el DXF y en el papel del cortador.
+Las cuatro [cortinas contrastadas](./assa-combursa-cortinas-410.md) ya usan
+este mismo flujo, con piezas y anchos de rollo por material. Las tablas de
+cobertura siguientes corresponden a la lectura del 26/11.
 
 ### Cobertura después de las respuestas de Jaime
 

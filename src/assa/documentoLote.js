@@ -3,6 +3,7 @@ import { leerPlantilla } from '../domain/corteLona/plantillas.js';
 import { escribirDxfPlano } from '../domain/corteLona/presentacion.js';
 import { anchoArial } from '../domain/corteLona/texto.js';
 import { cajaPrimitiva, transformarPrimitiva } from '../flujoDwg/planoDxf.js';
+import { dibujoConfeccionCortina } from './revisionesOficina.js';
 
 const vacio = () => ({ lineas: [], polilineas: [], arcos: [], circulos: [], textos: [], sombreados: [] });
 export function cajaDocumento(p) {
@@ -39,7 +40,7 @@ export function primitivasDeEntidades(e, escala = .001) {
 }
 
 function dibujoDe(l) {
-  const ps = primitivasDeEntidades(hojasPedidos([l], 0).entidades)
+  const ps = dibujoConfeccionCortina(l) ?? primitivasDeEntidades(hojasPedidos([l], 0).entidades)
     .filter(p => p.tipo !== 'texto' || ![String(l.NumLine ?? '—'), l.CodOrder.replaceAll('.', '')].includes(p.valor) && !p.valor.includes(`OF ${l.of_ || '—'}`));
   const b = juntarCajas(ps.length ? ps.map(cajaPrimitiva) : [{ x0: 0, y0: 0, x1: 1, y1: 1 }]);
   return mover(ps, -b.x0, -b.y0);
@@ -89,7 +90,7 @@ export function maquetarLote(lote, revision = null) {
     }
   } else for (const c of lote.cortador) {
     const material = c.material ? ` · ${c.material}` : '';
-    instrucciones.push(`P${c.palet ?? '—'} · ${c.referencia}${material} · ${c.unidades}/${c.pedidas} UDS · ${c.como.join(' + ')}`);
+    instrucciones.push(`P${c.palet ?? '—'} · ${c.referencia}${material} · ${c.unidades}/${c.pedidas} ${c.porPiezas ? 'PIEZAS' : 'UDS'} · ${c.como.join(' + ')}`);
   }
   const hojasCortador = [], series = [['Cantidades RPS', renglones], ['Repeticiones del corte', instrucciones]];
   const paginasPapel = series.reduce((n, [, rs]) => n + Math.ceil(rs.length / 13), 0);

@@ -10,7 +10,7 @@ const escapar = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '
 export function HojaCortador({ lote }: { lote: Lote }) {
   const imprimir = () => {
     const filas = lote.cortador.map(f => `<tr><td>${f.palet ?? '—'}</td><td>${escapar(f.referencia)}${f.referencias ? `<br><small>${escapar(f.referencias.join(' · '))}</small>` : ''}</td>`
-      + `<td>${escapar(f.material ?? '—')}</td><td class="n">${numero(f.unidades)}</td><td>${escapar(f.como.join(' + '))}</td></tr>`).join('');
+      + `<td>${escapar(f.material ?? '—')}</td><td class="n">${numero(f.unidades)}${f.porPiezas ? ' piezas' : ''}</td><td>${escapar(f.como.join(' + '))}</td></tr>`).join('');
     const w = window.open('', '_blank');
     if (!w) return;
     w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>${escapar(lote.nombre)} · cortador</title><style>
@@ -30,7 +30,7 @@ export function HojaCortador({ lote }: { lote: Lote }) {
         <td>{f.palet ?? 'Sin palet'}</td>
         <td className="combursa-referencia">{f.referencia.replace(/^CANALÓN /, 'Canalón ')}{f.referencias && <small>{f.referencias.join(' · ')}</small>}</td>
         <td>{f.material ?? '—'}</td>
-        <td className="combursa-numero">{numero(f.unidades)}</td>
+        <td className="combursa-numero">{numero(f.unidades)}{f.porPiezas ? ' piezas' : ''}</td>
         <td>{f.como.join(' + ')}</td>
         <td>{f.cuadra ? <span className="combursa-validado">{numero(f.pedidas)}</span> : <strong className="combursa-manual">{numero(f.pedidas)}</strong>}</td>
       </tr>)}</tbody>

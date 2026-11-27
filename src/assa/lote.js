@@ -2,6 +2,8 @@ import { codigoAssa } from './leerCorte.js';
 import { calcularFamilia, fechaLote, generarProgramas, entidadesVacias, desplazarEntidades, unirEntidades } from './faseA.js';
 import { bloqueCanalon, canalonDe, firmaCanalon, juegosCanalon, pilaDePlantilla } from './canalon.js';
 import { calcularDesdePlantilla, CANALON_SIN_PLANTILLA } from './modeloCorte.js';
+import { generarProgramasCortina } from './cortinas410.js';
+import { anchoArial } from '../domain/corteLona/texto.js';
 
 export { CANALON_SIN_PLANTILLA };
 
@@ -40,7 +42,7 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados, { pal
   // El palet lo pone el técnico del correo de Producción (Iván, 28/10/2026: «de principio ponemos el palet a mano»).
   for (const l of lineas) l.palet = Number.isSafeInteger(palets[l.IDOrderLine]) && palets[l.IDOrderLine] > 0 ? palets[l.IDOrderLine] : null;
   for (const [, ls] of Map.groupBy(lineas.filter(l => l.estado === 'validado'), l => l.codigo)) {
-    const firma = l => JSON.stringify([l.calculo.pieza, l.calculo.unidos, firmaCanalon(l.canalon)]);
+    const firma = l => JSON.stringify([l.calculo.pieza, l.calculo.unidos, l.calculo.grupos, firmaCanalon(l.canalon)]);
     if (new Set(ls.map(firma)).size === 1) continue;
     for (const l of ls) { l.estado = 'a-mano'; l.motivos.push('La referencia tiene dibujos de corte distintos en el mismo lote.'); }
   }
@@ -52,14 +54,24 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados, { pal
   // Como los cortes mandados (LOTE 31-10): una zona por palet con «PALET n» enorme; dentro, una fila por referencia con el
   // número de su línea de pedido (RPS) en grande, y debajo todo lo que lleva el palet.
   for (const [palet, ls] of [...Map.groupBy(lineas.filter(l => l.estado === 'validado' || l.palet), l => l.palet ?? 0)].sort((a, b) => (a[0] || 1e9) - (b[0] || 1e9))) {
-    const materialDe = l => l.calculo.material.nombre;
+    const materialDe = l => l.calculo.material?.nombre ?? '';
     const deCorte = ls.filter(l => l.estado === 'validado')
       .sort((a, b) => materialDe(a).localeCompare(materialDe(b), 'es') || orden(a, b));
-    const filas = [...Map.groupBy(deCorte, l => l.codigo).values()].map(grupo => ({ grupo, programas: [] }));
-    for (const fila of filas) {
-      const cantidad = fila.grupo.reduce((n, l) => n + l.cantidad, 0), g = { ...fila.grupo[0].calculo, cantidadPedida: cantidad };
-      fila.programas.push(...generarProgramas(g, { sueltas: sueltas[fila.grupo[0].codigo] === true }).map(p => ({ ...p, codigo: fila.grupo[0].codigo, palet })));
+    const filas = [];
+    for (const [codigo, grupo] of Map.groupBy(deCorte, l => l.codigo)) {
+      const cantidadPedida = grupo.reduce((n, l) => n + l.cantidad, 0);
+      const g = { ...grupo[0].calculo, cantidadPedida };
+      if (g.grupos) {
+        const corte = generarProgramasCortina(g, sueltas[codigo] === true);
+        for (const [material, programas] of Map.groupBy(corte, p => p.material)) {
+          filas.push({ grupo, material, programas: programas.map(p => ({ ...p, codigo, palet })) });
+        }
+      } else {
+        const programas = generarProgramas(g, { sueltas: sueltas[codigo] === true }).map(p => ({ ...p, codigo, palet }));
+        filas.push({ grupo, material: materialDe(grupo[0]), programas });
+      }
     }
+    filas.sort((a, b) => a.material.localeCompare(b.material, 'es'));
     // Un canalón por unidad, entero o dos mitades (taller, 28/10/2026). Las referencias del palet con el mismo juego de la
     // plantilla y material comparten bloques; van en la fila de la primera que lo lleva.
     let grupoCanalon = 0;
@@ -88,10 +100,16 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados, { pal
       for (const p of fila.programas) {
         // Los certificados reproducen el DXF guardado con el criterio anterior.
         if (!certificados) {
-          p.material = materialDe(fila.grupo[0]);
-          p.entidades.textos.push({ capa: 'texto', x: 100, y: p.anchoOcupadoMm + 720, h: ROTULO, literal: true, valor: p.material });
+          p.material = fila.material;
+          p.entidades.textos.push({ capa: 'texto', x: 100, y: p.anchoOcupadoMm + 720, h: ROTULO, literal: true,
+            valor: p.tipo === 'cortina' ? `${p.material} · rollo ${p.anchoRolloMm} mm` : p.material });
+          if (p.tipo === 'cortina') p.entidades.textos.push({ capa: 'texto', x: 100, y: p.anchoOcupadoMm + 1020, h: ROTULO,
+            literal: true, valor: `${p.nombrePiezas} · ${p.gruposDePiezas} por corte` });
         }
-        p.x = x; p.y = y; x += p.largoMm + HUECO;
+        const largoConRotulos = p.tipo === 'cortina'
+          ? Math.max(p.largoMm, ...p.entidades.textos.map(t => t.x + anchoArial(t.valor, t.h)))
+          : p.largoMm;
+        p.x = x; p.y = y; x += largoConRotulos + HUECO;
         unirEntidades(entidades, desplazarEntidades(p.entidades, p.x, p.y));
         programas.push(p);
       }
@@ -120,15 +138,19 @@ export function prepararLote(fecha, lineasRps, sueltas = {}, certificados, { pal
   // cada referencia, y debe coincidir con las cantidades que salen en el corte»): sale de los mismos programas del corte,
   // con sus repeticiones, por palet; y se comprueba contra lo que pide RPS.
   const cortador = [...Map.groupBy(programas, p => JSON.stringify([p.palet, p.material, p.codigo, p.grupoCanalon])).values()].map(ps => {
-    const p0 = ps[0], canalon = p0.tipo === 'canalon';
-    const unidades = ps.reduce((s, p) => s + (canalon ? p.canalones : p.panos) * p.repeticiones, 0);
-    const pedidas = validadas.filter(l => (l.palet ?? 0) === (p0.palet ?? 0) && (!p0.material || l.calculo.material.nombre === p0.material) &&
+    const p0 = ps[0], canalon = p0.tipo === 'canalon', cortina = p0.tipo === 'cortina';
+    const unidades = ps.reduce((s, p) => s + (p.canalones ?? p.piezas ?? p.panos) * p.repeticiones, 0);
+    const pedidas = validadas.filter(l => (l.palet ?? 0) === (p0.palet ?? 0) &&
+      (cortina || !p0.material || l.calculo.material?.nombre === p0.material) &&
       (canalon ? p0.referencias.includes(l.CodArticle) : l.codigo === p0.codigo))
-      .reduce((s, l) => s + l.cantidad, 0);
+      .reduce((s, l) => s + l.cantidad * (cortina ? l.calculo.grupos.filter(g => g.material.nombre === p0.material)
+        .reduce((n, g) => n + g.piezasPorGrupo * g.gruposPorUnidad, 0) : 1), 0);
     const como = ps.map(p => canalon ? `x${p.repeticiones} pila de ${p.enteros} ${p.enteros === 1 ? 'entero' : 'enteros'} + ${2 * p.parejas} mitades`
+      : cortina ? `${p.nombrePiezas} · ${p.gruposDePiezas} por corte × ${p.repeticiones}`
       : `x${p.repeticiones} de ${p.unidos ? `${p.filas} ${p.filas === 1 ? 'fila' : 'filas'} de 2 unidos` : `${p.panos} ${p.panos === 1 ? 'paño' : 'paños'}`}`);
     return { palet: p0.palet ?? null, referencia: canalon ? p0.codigo : validadas.find(l => l.codigo === p0.codigo)?.CodArticle ?? p0.codigo,
-      referencias: canalon ? p0.referencias : undefined, material: p0.material, unidades, como, pedidas, cuadra: unidades === pedidas };
+      referencias: canalon ? p0.referencias : undefined, material: p0.material, ...(cortina && { porPiezas: true }),
+      unidades, como, pedidas, cuadra: unidades === pedidas };
   }).sort((a, b) => (a.palet ?? 1e9) - (b.palet ?? 1e9) || String(a.referencia).localeCompare(String(b.referencia)));
   return { nombre, fecha, sueltas: { ...sueltas }, lineas: lineas.map(({ calculo: _calculo, ...l }) => l), programas, reparto, entidades, cortador,
     avisos: sinPalet ? [`Falta el palet de ${sinPalet} ${sinPalet === 1 ? 'línea' : 'líneas'}: ponlo del correo de Producción.`] : [],
