@@ -507,6 +507,9 @@ const marcasLateralesSinConfirmar = 'El plano lleva marcas laterales que faltan 
 const hombrosSinConfirmar = 'El plano deja 300 mm a cada lado de la abertura del frente y el corte deja 400 mm. Falta confirmar la medida.';
 const anchoTiraSinConfirmar = 'El corte de julio lleva una tira de 400 mm y el plano de 416,2 mm. Falta confirmar el ancho de corte.';
 const gramajeSinConfirmar = 'El corte indica PVC negro de 580 g y la lona de la OF figura en RPS con 650 g. Falta confirmar qué lona se prepara.';
+const separacionSolapasSinConfirmar = 'Falta confirmar si las solapas se entregan separadas o en tiras marcadas.';
+const rotuladoConNumeroSinConfirmar = letra =>
+  `El plano indica la letra ${letra}. Falta confirmar si hay que marcar también el número de pieza como en el DXF de máquina.`;
 const pendientes = {
   '410123-0005': gramajeSinConfirmar,
   '410129-0002': marcasLateralesSinConfirmar,
@@ -514,6 +517,7 @@ const pendientes = {
   '410129-0051': marcasLateralesSinConfirmar,
   '410129-0205': marcasLateralesSinConfirmar,
   '410129-0206': marcasLateralesSinConfirmar,
+  '410129-0211': 'RPS y el cuerpo del plano miden 2.200 mm. El frente del plano y de máquina mide 3.100 mm. Falta confirmar el largo.',
   '410174-0049': 'Falta confirmar cuántas solapas lisas y tiras para rotular se cortan en lona de 1 mm por cortina.',
   '410129-0003': 'La misma referencia de RPS figura como puerta y como cortina. Falta confirmar el dibujo y el despiece.',
   '410129-0105': 'El maestro dibuja cinco agujeros y el corte real lleva seis. Taller tiene que confirmar el dibujo de corte.',
@@ -521,18 +525,27 @@ const pendientes = {
   '410143-0004': hombrosSinConfirmar,
   '410143-0005': hombrosSinConfirmar,
   '410172-0104': 'Falta confirmar si la máquina separa las solapas de 1 mm o las marca para separarlas después.',
+  '410172-0105': separacionSolapasSinConfirmar,
   '410173-0104': 'Falta confirmar si la máquina separa las solapas de 1 mm o las marca para separarlas después.',
-  '410174-0060': 'Falta confirmar si las solapas se entregan separadas o en tiras marcadas.',
+  '410173-0105': separacionSolapasSinConfirmar,
+  '410174-0025': separacionSolapasSinConfirmar,
+  '410174-0060': separacionSolapasSinConfirmar,
+  '410174-0063': separacionSolapasSinConfirmar,
   '410179-0053': 'Un lote corta los cuerpos con disco y otro con cuchilla. Falta confirmar cómo cortar el cuerpo y si se perforan las tapas en máquina.',
   '410186-0001': anchoTiraSinConfirmar,
   '410187-0001': anchoTiraSinConfirmar,
   '410241-0007': gramajeSinConfirmar,
   '410241-0011': 'El plano marca D y el corte reciente marca D1 a D5. Falta confirmar qué rotular en las piezas.',
+  '410241-0017': rotuladoConNumeroSinConfirmar('B'),
   '410242-0003': gramajeSinConfirmar,
   '410242-0004': 'El plano marca C y el corte reciente marca C1 a C5. Falta confirmar qué rotular en las piezas.',
+  '410242-0008': rotuladoConNumeroSinConfirmar('C'),
+  '410245-0001': rotuladoConNumeroSinConfirmar('D'),
   '410245-0002': gramajeSinConfirmar,
   '410245-0005': 'Un corte lleva la letra D en rotulador y otro solo como rótulo del plano. Falta confirmar si se marca la lona.',
   '410251-0002': gramajeSinConfirmar,
+  '410252-0002': 'El corte indica PVC negro de 580 g y la lona de la OF figura en RPS con 620 g. Falta confirmar qué lona se prepara.',
+  '410252-0003': rotuladoConNumeroSinConfirmar('C'),
 };
 
 const sinCorteLocalizado = new Set([
