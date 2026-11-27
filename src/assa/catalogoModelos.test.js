@@ -38,9 +38,13 @@ it('retiene una referencia ausente de la plantilla y explica el motivo', () => {
   expect(lote.programas).toEqual([]);
 });
 
-it('mantiene a mano la 430127-0023 mientras Jaime confirma las medidas', () => {
-  const linea = { ...techo, CodArticle: '0K430127-0023', descripcion: 'NT600NB3450NH3600' };
-  expect(calcularDesdePlantilla(linea)).toMatchObject({ estado: 'a-mano', motivos: [expect.stringContaining('Jaime')] });
+it('corta la 430127-0023 con las medidas del pedido del cliente y no con la descripción errónea de RPS', () => {
+  const linea = { ...techo, CodArticle: 'H0K430127-0023', descripcion: 'LONA ENVOLVENTE C VIERTEAGUAS NT600NB3450NH3600 BL' };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [2953, 691],
+    fuentePlantilla: { fichero: 'COMBURSA (CRAWFORD).dwg' } });
+  expect(lote.lineas[0].avisos.join(' ')).toMatch(/CRW3 022074/);
+  expect(lote.programas.some(p => p.tipo === 'canalon')).toBe(true);
 });
 
 it('usa el cuerpo y el canalón de la 0005 para la 0010 con las cotas confirmadas', () => {

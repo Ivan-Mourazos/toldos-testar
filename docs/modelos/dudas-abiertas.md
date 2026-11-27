@@ -20,7 +20,6 @@ Respuestas de Jaime y comprobaciones en el
 
 | Duda | Pendiente | Mientras tanto |
 | --- | --- | --- |
-| Q-ASC04 | Jaime tiene que confirmar la `430127-0023`. Según taller no debería llevar NH. Los cinco pedidos de RPS traen NT 600, NB 3.450 y NH 3.600 mm. | Corte a mano. |
 | Q-ASC06 | Tamara tiene que guardar el dibujo de la `420148-0115`. | Corte a mano. |
 | Q-ASC08 | Tamara tiene que confirmar qué dibujo se usa en la `420148-0118`. | Corte a mano. |
 | Q-ASC09 | Tamara tiene que guardar el dibujo de la `430127-0068`. | Corte a mano. |
@@ -34,6 +33,12 @@ Respuestas de Jaime y comprobaciones en el
   La `410130-0172` sigue a mano. Lleva PLASTEL negra de 2.040 mm, PVC
   negro de 900 g y lona de 3 mm. Los materiales comparten DXF con tiradas
   separadas.
+- **Q-ASC04 (27/11/2026).** La descripción de RPS de la `430127-0023`
+  (`NT600NB3450NH3600`) está mal. El pedido del cliente CRW3 022074
+  (`AR.25.01183`, línea 17) pide «Lona envolvente con vierteaguas NT600
+  NB=2900», igual que la plantilla (corte 2.953 × 691 mm, canalón de
+  3.063 mm) y el Excel de medidas (2.903 × 625 mm). La web la corta con
+  NT 600 y NB 2.900 y avisa de que RPS dice otra cosa.
 - **Q-ASC05.** La `430172-0010` usa el dibujo y canalón de la
   `430172-0005` cuando RPS indica NT 900, NB 3.250 y NH 3.200 mm.
 - **Q-ASC07 y Q-ASC10.** Reconocidos los rótulos de tres cifras
@@ -225,7 +230,7 @@ Q-GAN05–09 permanecen contestadas; estas preguntas no reabren sus respuestas.
 
 ## COMBURSA · catálogo de plantillas (24/11/2026)
 
-- **430127-0023.** El maestro dibuja un techo de 2.953 × 691 mm con un canalón de 3.063 mm. La línea de RPS pide una envolvente con NB 3.450 y NH 3.600 mm. Falta identificar el plano de la envolvente o corregir la referencia de esa línea.
+- **430127-0023.** Resuelta en Q-ASC04 (27/11/2026): NT 600 y NB 2.900 según el pedido del cliente.
 - **430172-0010.** El maestro dibuja 9.860 × 966 mm y un canalón de 3.660 mm. Con NB 3.250 y NH 3.200 mm, la línea necesita otro juego. Falta confirmar si la referencia del pedido corresponde al dibujo.
 - **420148-0115.** La ficha da un terminado de 9.805 × 595 mm. Falta localizar el contorno de corte de la variante en los maestros.
 - **Cortinas 410129-0117, 410130-0175, 410170-0001 y 410171-0001.** Hay planos de oficina y constan el despiece y los materiales en Q-AS0711-03. Falta asociar cada pieza con el material y su cantidad en un programa repetible, incluido el tapajuntas, las tiras y los refuerzos.

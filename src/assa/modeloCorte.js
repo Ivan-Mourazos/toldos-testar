@@ -41,10 +41,13 @@ export function plantillaVigente(ref) {
     .sort((a, b) => catalogo.plantillasCorte[b].localeCompare(catalogo.plantillasCorte[a]))[0];
 }
 
-export function calcularDesdePlantilla(linea) {
-  const codigo = codigoAssa(linea.CodArticle);
-  if (familiaTunel(codigo) || codigo === 'D001624514-001') return calcularFamilia(linea);
+export function calcularDesdePlantilla(lineaRps) {
+  const codigo = codigoAssa(lineaRps.CodArticle);
+  if (familiaTunel(codigo) || codigo === 'D001624514-001') return calcularFamilia(lineaRps);
   const articulo = catalogo.referencias[codigo];
+  // Si la descripción de RPS está mal, mandan las medidas del pedido del cliente registradas en el catálogo.
+  const corregidas = articulo?.medidasPedidoCliente;
+  const linea = corregidas ? { ...lineaRps, descripcion: corregidas.descripcion } : lineaRps;
   const alias = articulo?.corteComo;
   const ref = alias ? catalogo.referencias[alias.codigo] : articulo;
   const medidas = ref?.medidasTerminadas.map(m => m.mm) ?? [];
@@ -93,6 +96,7 @@ export function calcularDesdePlantilla(linea) {
   const acabadoDibujo = cuerpo ? (terminadoMm && (iguales(acabado(cuerpo), terminadoMm) || confirmadoPorMedidas) ?
     terminadoMm : acabado(cuerpo).map(precision)) : patron.terminadoMm;
   const avisos = [...g.avisos];
+  if (corregidas) avisos.push(`RPS dice «${String(lineaRps.descripcion ?? '').trim()}»; se cortan las medidas del ${corregidas.fuente}: ${corregidas.descripcion}.`);
   if (!iguales(pieza.medidasMm, esperado)) avisos.push('Se aplican las medidas del dibujo vigente de la plantilla.');
   return { ...g, avisos, pieza, terminadoMm: acabadoDibujo, canalon,
     fuentePlantilla: { fichero: fuente, rotulo: cuerpo?.rotulo ?? null, ...(alias && { referencia: alias.codigo }) } };
