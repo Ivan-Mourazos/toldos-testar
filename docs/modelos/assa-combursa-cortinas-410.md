@@ -18,6 +18,7 @@ de corte tal como en los lotes. Las cortinas nunca se empatan para envarillar.
 | --- | --- |
 | `410124-0003` | ALPHA negro 580 g 2.500: 1 A1, 1 A2 y 1 frontal A3. El par A1/A2 ocupa 864 × 2.100, con abertura compartida. El A3 mide 3.330 × 320. Máquina corta con DISCO1 y marca las tres identificaciones de 10 mm con rotulador. |
 | `410129-0117` | PLASTEL negra 2.040: 1 cuerpo de 2.000 × 900 con 4 agujeros Ø40 y marcas laterales, y 2 tapas de 320 × 340. Lona 3 mm 1.600: 1 frente de 2.000 × 300. |
+| `410129-0212` | PLASTEL negra 2.040: 1 cuerpo de 1.900 × 900 con 4 agujeros Ø40 y marcas laterales, y 2 tapas de 320 × 340 junto al cuerpo. Lona 3 mm 1.600: 1 frente de 1.900 × 300. |
 | `410130-0006` y `410130-0018` | PLASTEL negra 2.040: 1 cuerpo de 3.000 × 1.000 o 2.400 × 1.000, con entrante y marcas de su variante. PVC negro 900 g 3.000: 1 tapa lisa y 1 de 6 agujeros Ø40, de 340 × 370. Lona 3 mm 1.600: 1 frente de 2.950 × 300 o 2.350 × 300 con marca de 750 × 100. |
 | `410130-0004` y `410130-0017` | PLASTEL negra 2.040: 1 cuerpo de 2.900 × 1.000 o 2.500 × 1.000, con entrante y marcas de su variante. PVC negro 900 g 3.000: 1 tapa lisa y 1 de 6 agujeros Ø40, de 340 × 370. Lona 3 mm 1.600: 1 frente de 2.850 × 300 o 2.450 × 300, con marca de 750 × 100 para la guía blanca. |
 | `410130-0165` | PLASTEL negra 2.040: 1 cuerpo de 2.500 × 900. PVC negro 900 g 3.000: 1 tapa lisa de 320 × 340 y 1 perforada de 324,1 × 340. Lona 3 mm 1.600: 1 frente de 2.450 × 300 con marca de 750 × 100. |
@@ -38,7 +39,7 @@ separada de las tiradas y multiplicadores antiguos.
 
 ## Contraste de máquina
 
-Se leyeron 83 bloques de DXF de maqcorte. Se contrastaron los contornos y
+Se leyeron 85 bloques de DXF de maqcorte. Se contrastaron los contornos y
 las marcas en ambos sentidos por herramienta, con tolerancia de 1 mm. Se
 admiten tramos consecutivos en un solo trazo o en varios cuando cubren el
 mismo recorrido. La cuenta por unidad y las incidencias de los rótulos
@@ -49,6 +50,7 @@ históricos están descritas en
 | --- | --- | --- |
 | `410124-0003` | 08-02-2025 (geometría) y 26-09-2026 (geometría y letras) | **Igual** en geometría por herramienta, dentro de 0,001 mm. El maestro identifica A1, A2 y A3 en la capa de números de paño. El corte de 2026 las lleva en rotulador, 17 de cada una. En el de 2025 aparecen como rótulos de plano. Las tres OF imputan ALPHA 580 g negro de 2.500 mm. |
 | `410129-0117` | 26-07 y 13-09 de 2025, 07-11-2026 | **Igual** en piezas y herramientas. Máximo 0,690 mm en los frentes de 3 mm. El «X8» del 07-11 elevaría la cantidad sobre las 27 de RPS. |
+| `410129-0212` | 21-03-2026 (cuerpos, tapas y frentes) | **Igual** al maestro `OK410129.dwg` y al DXF de máquina en geometría por herramienta, dentro de 0,001 mm. **Difiere** en un recorrido de DISCO1 repetido en la unión del cuerpo con una tapa. La web lo corta una sola vez. La OF `0225444` imputa PLASTEL y lona de 3 mm. |
 | `410130-0004` | 06-04 y 17-08 de 2024 | **Igual** al 06-04 en los tres materiales y al 17-08 en el cuerpo, dentro de 0,001 mm. El 17-08 **difiere** en el frente, que omite el cierre superior del bloque y añade una B de rotulador, y usa DISCO2 en los travesaños de PVC. La web sigue el cierre y el rectángulo de `OK410130.dwg` y el juego de máquina del 06-04. Las OF imputan PLASTEL y lona de 3 mm. El 17-08 identifica el resto de PVC como negro de 900 g. |
 | `410130-0006` | 06-04 y 13-04 de 2024 | **Igual** en contorno y herramientas geométricas. Máximo 0,023 mm. Usa la columna alternada con DISCO1. El 13-04 añade una letra B en rotulador. La web conserva la marca rectangular del maestro y del 06-04, con el blanco indicado en el rótulo del programa. |
 | `410130-0017` | 30-06-2023 y 01-06-2024 | **Igual** en el cuerpo de los dos lotes y en el juego de tapas y el frente del 01-06, dentro de 0,001 mm en geometría. **Difiere** del frente de 2023, marcado con cuatro círculos Ø5 en las esquinas. El 01-06 añade la B en rotulador. Se conserva el rectángulo del maestro `OK410130.dwg` y se indica blanco en el nombre del programa. Las OF imputan PLASTEL, lona de 3 mm y PVC negro de 900 g de 3.000 mm o resto de PVC. |
@@ -240,6 +242,19 @@ Se cotejaron por SHA-256 las copias de oficina y máquina.
 \\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 28-10 - 20261127-092306
 ```
 
+## Prueba con el lote 21-03-2026
+
+Se regeneraron 16 líneas de RPS. Salieron 19 programas y cuadraron las
+18 filas. La línea 1 de `AR.26.00703`, OF `0225444`, aporta al palet 1
+ocho cuerpos y 16 tapas de PLASTEL, más ocho frentes de 3 mm. Se
+releyeron los dos programas de la referencia en el DXF extraído del DWG
+confirmado con ODA. La desviación máxima fue de 0,00034 mm. Se
+verificaron las dos copias por SHA-256.
+
+```text
+\\192.168.0.128\Oftecnica\Oficina Tecnica\DXF PRUEBAS WEB\COMBURSA\Cortinas 410 - LOTE 21-03 - 20261127-092716
+```
+
 ## A mano por duda de Taller
 
 El SELECT de RPS entre 2023 y 2026 devolvió 216 líneas para 116 referencias
@@ -258,6 +273,7 @@ El SELECT de RPS entre 2023 y 2026 devolvió 216 líneas para 116 referencias
 | `410143-0003` | 3 / 29 | Los círculos Ø8 del frente cambian de herramienta entre 18-08-2023 y 08-06-2024. Q-A410-08. |
 | `410251-0002` | 3 / 21 | Los cortes del 16-11-2024, 10-05-2025 y 05-07-2025 indican PVC negro de 580 g. RPS imputa ALPHA 580 g, POLYMAR 650 g y resto de PVC, respectivamente. Q-A410-10. |
 | `410129-0051` | 3 / 5 | Los cortes del 30-06-2023 y 03-02-2024 traen los ocho agujeros y omiten las marcas laterales del maestro `OK410129.dwg`. Q-A410-06. |
+| `410129-0205` y `410129-0206` | 1 / 25 y 1 / 4 | El maestro `OK410129.dwg` lleva cuatro marcas laterales por cuerpo. El 14-07-2023 corta los agujeros y omite esas marcas en las dos referencias. Q-A410-06. |
 
 Las preguntas para Taller están en
 [Dudas abiertas](./dudas-abiertas.md#combursa--siguientes-cortinas-410-por-volumen).
@@ -298,10 +314,10 @@ motivo que muestra la web es «Sin corte de taller para contrastar».
 
 | Estado | Referencias |
 | --- | ---: |
-| Habilitadas | 16 |
-| A mano por duda de Taller | 13 |
+| Habilitadas | 17 |
+| A mano por duda de Taller | 15 |
 | A mano sin corte de taller localizado | 14 |
-| Pendientes de revisar | 73 |
+| Pendientes de revisar | 70 |
 | Total `410xxx` en RPS | 116 |
 
 ## Criba de la cuarta tanda
@@ -312,6 +328,10 @@ se comprobó el rótulo de la referencia en una copia del DXF de máquina.
 En 74 referencias coincide la fecha de un pedido. Las otras cuatro
 requieren ligar el DXF con el pedido por cantidad y despiece. La forma
 candidata orienta el contraste por herramienta y el despiece.
+
+En esta tanda se ligó por cantidad el corte de la `410182-0031`.
+Quedan por ligar al pedido los DXF de `410174-0025`, `410174-0062` y
+`410179-0053`. El resto de altas de la tanda se contrastaron en fecha.
 
 Para regenerar la tabla tras copiar los DXF en tmp, ejecuta
 `node scripts/assa-investigacion/cribar-cortinas-410.mjs`. El script lee

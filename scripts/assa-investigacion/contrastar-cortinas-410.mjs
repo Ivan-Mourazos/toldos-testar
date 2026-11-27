@@ -16,6 +16,8 @@ const casos = [
   ['410129-0117', 'tapas', 6, '2025/LOTE 13-09', 614055.83, 218094.35],
   ['410129-0117', 'frentes', 5, '2025/LOTE 26-07', 9460.78, 2123.75],
   ['410129-0117', 'frentes', 5, '2026/LOTE 07-11_', 122197.69, 89326.49],
+  ['410129-0212', 'juegos de cuerpo', 2, '2026/LOTE 21-03', 42383.25057, 74768.76546, { duplicado: true }],
+  ['410129-0212', 'frentes', 2, '2026/LOTE 21-03', 47486.69630, 75718.63349],
   ['410130-0004', 'cuerpos', 2, '2024/LOTE 06-04', 1020611.79666, 167027.03661],
   ['410130-0004', 'pares', 4, '2024/LOTE 06-04', 1029279.95379, 167027.03661],
   ['410130-0004', 'frentes', 4, '2024/LOTE 06-04', 1033774.53637, 167203.91105, { rotulos: true }],
@@ -98,6 +100,8 @@ const modelos = new Map();
 const adicionales = {
   '410124-0003': { CodArticle: 'H0K410124-0003', of_: '0232002',
     descripcion: 'TOP PVC 0,5MM GLOSSY BLK TNB2080XTWB300XTWT400_W/O OP_480X200_OPEN RECESS' },
+  '410129-0212': { CodArticle: '0K410129-0212', of_: '0225444',
+    descripcion: 'Top PVC WB300xWT250X1900 black' },
   '410130-0004': { CodArticle: 'H0K410130-0004', of_: '0202637',
     descripcion: 'PLANE SC SEITLICH300X300X2900 ANFAHRSTREIFEN:WEIßS' },
   '410130-0006': { CodArticle: 'H0K410130-0006', of_: '0202631',
@@ -149,6 +153,14 @@ for (const [ref, nombre, cantidad, fichero, x0, y0, opciones] of casos) {
     if (resultado.coincide || resultado.desviacionMm === null ||
       Math.abs(resultado.desviacionMm - opciones.diferenciaMm) > 1) process.exitCode = 1;
     console.log(ref, fichero, nombre, resultado.coincide ? 'Igual' : 'Difiere', resultado.desviacionMm?.toFixed(3), 'mm');
+    continue;
+  }
+  if (opciones?.duplicado) {
+    const soloDuplicados = Number.isFinite(resultado.desviacionMm) && resultado.desviacionMm <= 1
+      && resultado.diferencias.length === 1 && resultado.diferencias[0].includes('recorridos duplicados');
+    if (!soloDuplicados) process.exitCode = 1;
+    console.log(ref, fichero, nombre, resultado.coincide ? 'Igual' : 'Difiere', resultado.desviacionMm?.toFixed(3), 'mm',
+      ...resultado.diferencias);
     continue;
   }
   if (resultado.coincide) {

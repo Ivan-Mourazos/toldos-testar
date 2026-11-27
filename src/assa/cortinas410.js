@@ -33,14 +33,27 @@ function superiorConTapasPvc(ancho, agujeros, alturaAgujeros, anchoRolloMm, porT
   ];
 }
 
-const superior = [
-  grupo(MATERIAL_COMBURSA, 'cuerpos', 1, 2, [2000, 900], [
-    ...rectangulo('DISCO1', 2000, 900), ...marcasLaterales(0, 20), ...marcasLaterales(2000, 1980),
-    ...[400, 800, 1200, 1600].map(x => ['CUTTER', x, 800, 20]),
-  ]),
-  grupo(MATERIAL_COMBURSA, 'tapas', 1, 6, [320, 340], rectangulo('DISCO1', 320, 340), 2),
-  grupo(lona3, 'frentes', 1, 5, [2000, 300], rectangulo('CUTTER', 2000, 300)),
-];
+function superiorPerforada(ancho, { tapasJuntas = false, frentesPorTirada = 5 } = {}) {
+  const operaciones = [
+    ...rectangulo('DISCO1', ancho, 900), ...marcasLaterales(0, 20), ...marcasLaterales(ancho, ancho - 20),
+    ...agujerosDeCuerpo(ancho, 4, 800),
+  ];
+  const frente = grupo(lona3, 'frentes', 1, frentesPorTirada, [ancho, 300], rectangulo('CUTTER', ancho, 300));
+  if (tapasJuntas) {
+    return [
+      {
+        ...grupo(MATERIAL_COMBURSA, 'juegos de cuerpo y 2 tapas', 3, 2, [ancho, 900], operaciones),
+        tapasJuntoAlCuerpo: { ancho: 320, alto: 340, capa: 'DISCO1', cerrarBase: true },
+      },
+      frente,
+    ];
+  }
+  return [
+    grupo(MATERIAL_COMBURSA, 'cuerpos', 1, 2, [ancho, 900], operaciones),
+    grupo(MATERIAL_COMBURSA, 'tapas', 1, 6, [320, 340], rectangulo('DISCO1', 320, 340), 2),
+    frente,
+  ];
+}
 function lateral(largo, alto, [marcaInicio, marcaFin, longitudMarca], tapa, nombreFrente, frentesPorTirada, materialFrente = lona3) {
   const [inicio, fin] = [(alto - 300) / 2, (alto + 300) / 2], alturas = [inicio, fin];
   const cuerpo = grupo(MATERIAL_COMBURSA, 'cuerpos', 1, 2, [largo, alto], [
@@ -111,11 +124,11 @@ function frenteConAbertura(ancho, borde, base, fondo) {
   ];
 }
 
-function tapasEnFilas(columnas, ancho, filas) {
-  const altoTapa = 370, largo = columnas * ancho, alto = filas * altoTapa;
+function tapasEnFilas(columnas, ancho, filas, altoTapa = 370, capa = 'CUTTER') {
+  const largo = columnas * ancho, alto = filas * altoTapa;
   return [
-    ...Array.from({ length: columnas + 1 }, (_, i) => ['CUTTER', i * ancho, 0, i * ancho, alto]),
-    ...Array.from({ length: filas }, (_, i) => ['CUTTER', 0, (i + 1) * altoTapa, largo, (i + 1) * altoTapa]),
+    ...Array.from({ length: columnas + 1 }, (_, i) => [capa, i * ancho, 0, i * ancho, alto]),
+    ...Array.from({ length: filas }, (_, i) => [capa, 0, (i + 1) * altoTapa, largo, (i + 1) * altoTapa]),
   ];
 }
 
@@ -132,7 +145,7 @@ function superiorConAbertura(ancho, { altoCuerpo, agujeros, porTirada, anchoTapa
 const superiorConTapasJuntas = [
   {
     ...grupo(lona2, 'juegos de cuerpo y 2 tapas', 3, 2, [2500, 1000], cuerpoReforzado(2500, 1000, 7, 150)),
-    tapasJuntoAlCuerpo: 340,
+    tapasJuntoAlCuerpo: { ancho: 340, alto: 370, capa: 'CUTTER' },
   },
   {
     ...grupo(lona3, 'frentes', 1, 2, [2500, 575], [
@@ -177,7 +190,11 @@ const modelos = {
   },
   '410129-0117': {
     descripcion: 'TOP CURTAIN TWP TWB300XTWT250X2000',
-    fichero: 'COMBURSA (CRAWFORD)2.dwg', medidasMm: [2000, 900], grupos: superior,
+    fichero: 'COMBURSA (CRAWFORD)2.dwg', medidasMm: [2000, 900], grupos: superiorPerforada(2000),
+  },
+  '410129-0212': {
+    descripcion: 'TOP PVC WB300XWT250X1900 BLACK',
+    fichero: 'OK410129.dwg', medidasMm: [1900, 900], grupos: superiorPerforada(1900, { tapasJuntas: true, frentesPorTirada: 2 }),
   },
   '410130-0165': {
     descripcion: 'PLANE SC SEITLICH WB300XWT250XH2500 PARKING GUIDE WHITE/STANDARD (750MM)',
@@ -257,10 +274,13 @@ const modelos = {
   },
 };
 
+const marcasLateralesSinConfirmar = 'El plano lleva marcas laterales que faltan en los cortes guardados. Falta confirmar si se rotulan.';
 const pendientes = {
-  '410129-0002': 'El plano lleva marcas laterales que faltan en los cortes guardados. Falta confirmar si se rotulan.',
+  '410129-0002': marcasLateralesSinConfirmar,
   '410129-0005': 'La descripción de RPS indica 300 de largo y el dibujo de corte mide 3.000 mm. Falta confirmar el largo.',
-  '410129-0051': 'El plano lleva marcas laterales que faltan en los cortes guardados. Falta confirmar si se rotulan.',
+  '410129-0051': marcasLateralesSinConfirmar,
+  '410129-0205': marcasLateralesSinConfirmar,
+  '410129-0206': marcasLateralesSinConfirmar,
   '410174-0049': 'Falta confirmar cuántas solapas lisas y tiras para rotular se cortan en lona de 1 mm por cortina.',
   '410129-0003': 'La misma referencia de RPS figura como puerta y como cortina. Falta confirmar el dibujo y el despiece.',
   '410129-0105': 'El maestro dibuja cinco agujeros y el corte real lleva seis. Taller tiene que confirmar el dibujo de corte.',
@@ -327,7 +347,7 @@ export function generarProgramasCortina(g, sueltas) {
     return [[capacidad, Math.floor(cantidad / capacidad)], [cantidad % capacidad, 1]]
       .filter(([n, repeticiones]) => n && repeticiones)
       .map(([n, repeticiones]) => {
-        const largoTotal = p.anchoTapa ? largoMm * n : largoMm + (p.tapasJuntoAlCuerpo ?? 0);
+        const largoTotal = p.anchoTapa ? largoMm * n : largoMm + (p.tapasJuntoAlCuerpo?.ancho ?? 0);
         const anchoOcupadoMm = p.anchoTapa ? alto : alto * n;
         let entidades;
         if (p.tapa) entidades = columnaPvc(n, p.tapa);
@@ -338,8 +358,10 @@ export function generarProgramasCortina(g, sueltas) {
           const base = entidadesDe(p.operaciones, p.rotulos);
           for (let i = 0; i < n; i++) unirEntidades(entidades, desplazarEntidades(base, 0, i * alto));
           if (p.tapasJuntoAlCuerpo) {
-            const cortes = tapasEnFilas(1, p.tapasJuntoAlCuerpo, 2 * n).slice(1);
+            const { ancho, alto: altoTapa, capa, cerrarBase } = p.tapasJuntoAlCuerpo;
+            const cortes = tapasEnFilas(1, ancho, 2 * n, altoTapa, capa).slice(1);
             unirEntidades(entidades, desplazarEntidades(entidadesDe(cortes), largoMm, 0));
+            if (cerrarBase) unirEntidades(entidades, entidadesDe([[capa, 0, 0, largoTotal, 0]]));
           }
           if (p.cerrarSiSuelto && n === 1) {
             unirEntidades(entidades, entidadesDe([['CUTTER', 0, 0, largoMm, 0]]));

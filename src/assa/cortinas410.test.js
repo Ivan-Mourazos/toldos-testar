@@ -44,6 +44,20 @@ it('la 410130-0006 alterna tapas lisas y perforadas con DISCO1', () => {
   expect([...new Set(pvc[0].entidades.circulos.map(c => Math.floor(c.y / 370)))]).toEqual([1, 3, 5, 7]);
 });
 
+it('corta la 410129-0212 con las tapas unidas al borde del cuerpo de PLASTEL', () => {
+  const linea = { ...cortinas[0], CodArticle: '0K410129-0212', cantidad: 8,
+    descripcion: 'Top PVC WB300xWT250X1900 black' };
+  const lote = prepararLote(fecha, [linea]);
+  expect(lote.lineas[0]).toMatchObject({ estado: 'validado', corteMm: [1900, 900] });
+  expect(lote.cortador.map(f => [f.material, f.unidades, f.pedidas, f.cuadra])).toEqual([
+    ['Lona 3 mm', 8, 8, true], ['PLASTEL 8800 TE62 negra', 24, 24, true],
+  ]);
+  const cuerpos = lote.programas.find(p => p.material === 'PLASTEL 8800 TE62 negra');
+  expect(cuerpos).toMatchObject({ largoMm: 2220, anchoOcupadoMm: 1800, piezas: 6, repeticiones: 4 });
+  expect(cuerpos.entidades.circulos).toHaveLength(8);
+  expect(cuerpos.entidades.lineas).toContainEqual({ capa: 'DISCO1', x1: 0, y1: 0, x2: 2220, y2: 0 });
+});
+
 it.each([
   ['410130-0004', 'PLANE SC SEITLICH300X300X2900 ANFAHRSTREIFEN:WEIßS', 2900, 50, 50, 100],
   ['410130-0017', 'SC SIDE CURTAIN 300X300X2500 PARK GUIDE=WHITE', 2500, 60, 10, 50],
@@ -213,6 +227,8 @@ it.each([
   ['410241-0011', /marca D.*D1 a D5/],
   ['410242-0004', /marca C.*C1 a C5/],
   ['410129-0051', /marcas laterales.*faltan/],
+  ['410129-0205', /marcas laterales.*faltan/],
+  ['410129-0206', /marcas laterales.*faltan/],
   ['410245-0005', /letra D.*rotulador/],
   ['410251-0002', /580 g.*650 g/],
 ])('muestra por qué %s requiere una decisión de taller', (codigo, motivo) => {
