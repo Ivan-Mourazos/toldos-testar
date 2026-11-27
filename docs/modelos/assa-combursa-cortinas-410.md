@@ -276,6 +276,7 @@ El SELECT de RPS entre 2023 y 2026 devolvió 216 líneas para 116 referencias
 | `410143-0003` | 3 / 29 | Los círculos Ø8 del frente cambian de herramienta entre 18-08-2023 y 08-06-2024. Q-A410-08. |
 | `410143-0004` y `410143-0005` | 1 / 4 y 2 / 35 | En máquina cada hombro del frente mide 400 mm. El maestro deja 300 mm. Q-A410-11. |
 | `410251-0002` | 3 / 21 | Los cortes del 16-11-2024, 10-05-2025 y 05-07-2025 indican PVC negro de 580 g. RPS imputa ALPHA 580 g, POLYMAR 650 g y resto de PVC, respectivamente. Q-A410-10. |
+| `410123-0005`, `410241-0007`, `410242-0003`, `410245-0002` | 1 / 8 las tres primeras y 1 / 16 la última | El bloque A–D del palet 2 de 16-04-2025 pide PVC negro de 580 g. Las cuatro OF imputan el artículo `POLY10NEGRP250`, cuya descripción dice «650» y termina en «(580)». Q-A410-10. |
 | `410129-0051` | 3 / 5 | Los cortes del 30-06-2023 y 03-02-2024 traen los ocho agujeros y omiten las marcas laterales del maestro `OK410129.dwg`. Q-A410-06. |
 | `410129-0205` y `410129-0206` | 1 / 25 y 1 / 4 | El maestro `OK410129.dwg` lleva cuatro marcas laterales por cuerpo. El 14-07-2023 corta los agujeros y omite esas marcas en las dos referencias. Q-A410-06. |
 | `410186-0001` y `410187-0001` | 2 / 33 cada una | El corte de los dos cuerpos y sus tapas del 14-10-2023 coincide con las manos perforadas de 2 mm de la `410170-0001` y la `410171-0001` dentro de 0,001 mm. Las cortinas sin solapas llevan una marca rectangular. La tira de 1 mm mide 400 mm en el 21-07-2023 y 416,2 mm en los maestros. La `410187-0001` de octubre también mide 416,2 mm. Q-A410-12. |
@@ -314,13 +315,14 @@ motivo que muestra la web es «Sin corte de taller para contrastar».
 | Referencia | Líneas / unidades de RPS | Contraste pendiente |
 | --- | --- | --- |
 | `410172-0105` y `410173-0105` | 3 / 38 cada una | Los maestros y los lotes 03-05 y 17-05 de 2025 muestran las dos manos. Queda por cuadrar el despiece completo y las solapas de lona de 1 mm por OF. |
+| `410179-0053` y `410179-0054` | 1 / 90 y 1 / 30 | En 01-10 y 29-11 de 2025 aparecen el cuerpo de 2 mm y las tapas de PVC de 900 g. En la `0054`, el maestro y el corte indican hacer primero un cuerpo marcado y el resto sin marcar. El DXF localizado de la `0053` indica 28 unidades en cada uno de dos palets, y faltan los cortes del resto de las 90 de RPS. |
 
 | Estado | Referencias |
 | --- | ---: |
 | Habilitadas | 39 |
-| A mano por duda de Taller | 20 |
+| A mano por duda de Taller | 24 |
 | A mano sin corte de taller localizado | 14 |
-| Pendientes de revisar | 43 |
+| Pendientes de revisar | 39 |
 | Total `410xxx` en RPS | 116 |
 
 ## Criba de la cuarta tanda

@@ -354,6 +354,10 @@ it.each([
   ['410187-0001', /400 mm.*416,2 mm/],
   ['410174-0060', /tiras marcadas/],
   ['410245-0005', /letra D.*rotulador/],
+  ['410123-0005', /580 g.*650 g/],
+  ['410241-0007', /580 g.*650 g/],
+  ['410242-0003', /580 g.*650 g/],
+  ['410245-0002', /580 g.*650 g/],
   ['410251-0002', /580 g.*650 g/],
 ])('muestra por qué %s requiere una decisión de taller', (codigo, motivo) => {
   const lote = prepararLote(fecha, [{ ...cortinas[0], CodArticle: `H0K${codigo}` }]);
